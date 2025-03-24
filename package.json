@@ -1,0 +1,96 @@
+{
+  "name": "@fizz/paracharts",
+  "version": "0.19.0",
+  "description": "Not quite Parable Charts",
+  "contributors": [
+    "Josh Fennell",
+    "Simon Varey",
+    "Julianna Langston",
+    "Doug Schepers",
+    "Sam Reid"
+  ],
+  "license": "AGPL-3.0-or-later",
+  "publishConfig": {
+    "access": "restricted",
+    "registry": "https://npm.fizz.studio"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fizzstudio/paracharts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fizzstudio/paracharts/issues"
+  },
+  "homepage": "https://github.com/fizzstudio/paracharts#readme",
+  "type": "module",
+  "scripts": {
+    "demo": "vite --port 5176",
+    "build": "rimraf dist && tsc && vite build && api-extractor run --local --verbose",
+    "pretest": "npm run build",
+    "test": "vitest",
+    "doc": "api-documenter markdown --input-folder ./temp --output-folder ./docs",
+    "pubpatch": "npm version patch && npm publish",
+    "pubminor": "npm version minor && npm publish",
+    "pubmajor": "npm version major && npm publish",
+    "dev": "storybook dev --no-open -p 5180",
+    "storybook": "storybook dev -p 5180",
+    "build-storybook": "storybook build",
+    "test-storybook": "test-storybook",
+    "build-stories": "node src/stories/storiesBuilder.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": "./dist/paracharts.js",
+    "./stylesheet": "./dist/style.css"
+  },
+  "types": "./dist/paracharts.d.ts",
+  "devDependencies": {
+    "@fizz/chart-data": "^2.1.6-alpha.1",
+    "@fizz/line-chart-intersection": "^3.4.0",
+    "@fizz/line-chart-ui-utils": "^0.7.0",
+    "@fizz/test-utils": "^0.2.0",
+    "@fizz/ui-components": "^0.68.2",
+    "@microsoft/api-documenter": "^7.25.11",
+    "@microsoft/api-extractor": "^7.47.6",
+    "@storybook/addon-coverage": "^1.0.5",
+    "@storybook/addon-essentials": "^8.5.1",
+    "@storybook/addon-interactions": "^8.5.1",
+    "@storybook/addon-links": "^8.5.1",
+    "@storybook/blocks": "^8.5.1",
+    "@storybook/manager-api": "^8.5.1",
+    "@storybook/test": "^8.5.1",
+    "@storybook/test-runner": "^0.21.0",
+    "@storybook/theming": "^8.5.1",
+    "@storybook/web-components": "^8.5.1",
+    "@storybook/web-components-vite": "^8.5.1",
+    "@vitest/browser": "^2.1.1",
+    "@vitest/coverage-v8": "^2.1.1",
+    "eslint-plugin-storybook": "^0.11.2",
+    "rimraf": "^6.0.1",
+    "storybook": "^8.5.1",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.0",
+    "vitest": "^2.1.5"
+  },
+  "dependencies": {
+    "@fizz/breakdancer": "^0.22.0",
+    "@fizz/chart-classifier-utils": "^0.15.2",
+    "@fizz/chart-data-norm": "^0.5.0",
+    "@fizz/chart-metadata-validation": "^2.0.5-alpha.1",
+    "@fizz/chart-summary": "^0.5.2-alpha.1",
+    "@fizz/csv-processor": "^1.3.0",
+    "@fizz/dataframe": "^0.27.0",
+    "@fizz/grammatize-information": "^1.5.0",
+    "@fizz/line-chart-metadata": "^4.7.4-alpha.0",
+    "@fizz/line-chart-parameters": "^1.0.1",
+    "@fizz/templum": "^0.4.2",
+    "@fizz/todocharts": "^0.129.6",
+    "decimal.js": "^10.4.3",
+    "lit": "^3.2.0",
+    "printf": "^0.6.1",
+    "simple-statistics": "^7.8.3"
+  },
+  "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b"
+}
