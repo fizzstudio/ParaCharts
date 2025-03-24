@@ -1,0 +1,35 @@
+// .gitignore
+_ignore/
+# Cache files  
+.eslintcache
+.npm
+*.tsbuildinfo
+
+# Directories
+## This is the build process will output code.
+dist/           
+## The original reason we're here!
+node_modules/
+# TS types
+types/
+# api-extractor
+temp/
+
+integration-test/test_roll.js
+
+# Env files      
+## A good safeguard against accidentally publishing
+##  private information, including security keys
+.vscode/
+.env.           
+.env.test
+
+# Logs
+*.log logs npm-debug.log*
+
+# Misc files
+## experiments and references _ignore/        
+## Macs often create this file
+.DS_Store       
+## Personal project notes, not my reference notes.md
+*.org
