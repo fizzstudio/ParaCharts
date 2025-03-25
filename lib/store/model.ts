@@ -21,41 +21,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 //export declare type Datatype = 'string' | 'number' | 'date';
 
 import { 
-  DataFrame, type ScalarArray, type AnySeries,
-  type Box 
+  DataFrame, type ScalarArray
 } from '@fizz/dataframe';
-import { type Data } from '@fizz/chart-metadata-validation';
-import { Scalar } from './dataframe/box';
+import { type Manifest } from '@fizz/chart-metadata-validation';
+import { Box, Scalar } from './dataframe/box';
+
+//type SeriesRecordMap<X extends Scalar, Y extends Scalar> = Record<string, DataRecord<X, Y>>
 
 /**
  * A datapoint consisting of boxed x and y values.
  * @public
  */
-export class Datapoint2D {
+export class Datapoint2D<X extends Scalar, Y extends Scalar> {
+  constructor(public readonly x: Box<X>, public readonly y: Box<Y>) {}
 
-  public readonly x: Box<Scalar>;
-  public readonly y: Box<Scalar>;
-  public readonly series: AnySeries;
-
-  constructor(public readonly seriesKey: string, public readonly record: number, private model: Model) {
-    this.x = model.indepSeries().atBoxed(record);
-    this.y = model.data.col(seriesKey).atBoxed(record);
-    this.series = model.data.col(seriesKey);
-  }
-
-  formatX(context: FormatContext) {
-    return this.model.format(this.x, context);
-  }
-
-  formatY(context: FormatContext) {
-    return this.model.format(this.y, context);
-  }
-
-  format(context: FormatContext) {
-    return `${this.formatX(context)}, ${this.formatY(context)}`;
-  }
-
-  isEqual(other: Datapoint) {
+  isEqual(other: Datapoint2D<X, Y>) {
     return this.x.isEqual(other.x) && this.y.isEqual(other.y);
   }
 
@@ -68,53 +48,25 @@ export interface DatapointReference {
   y: string;
 }
 
-/** 
- * Context where a particular value appears. 
- * @public
- */
-export type FormatContext = keyof typeof formatContextSettings;
-// Settings that control the format for each context
-const formatContextSettings = {
-  xTick: 'axis.x.tick.labelFormat',
-  yTick: 'axis.y.tick.labelFormat',
-  linePoint: 'type.line.pointLabelFormat',
-  scatterPoint: 'type.scatter.pointLabelFormat',
-  barCluster: 'type.bar.clusterLabelFormat',
-  pieChunk: 'type.pie.chunkLabelFormat',
-  donutChunk: 'type.donut.chunkLabelFormat',
-  gaugeChunk: 'type.gauge.chunkLabelFormat',
-  steplinePoint: 'type.stepline.pointLabelFormat',
-  lollipopPoint: 'type.lollipop.pointLabelFormat',
-  lollipopCluster: 'type.lollipop.clusterLabelFormat',
-  jimX: 'jim.xValueFormat',
-  dataTableX: 'dataTable.xValueFormat',
-  dataTableY: 'dataTable.yValueFormat',
-  statusBar: 'statusBar.valueFormat',
-  domId: 'NA'
-};
-
 /**
  * Wrapper around the internal data frame that holds the chart data.
  * @public
  */
-export class Model {
-
-  public readonly indepType: Datatype;
-  // XXX For the moment, we assume all dependent-axis variables have the same type
-  public readonly depType: Datatype;
-
+// XXX For the moment, we assume all X-axis variables have the same type
+export class Model2D<X extends Scalar, Y extends Scalar> {
   private _data: DataFrame;
-  private _indepVar!: string;
-  private _depVars!: string[];
-  private _depFormat!: 'bare' | 'percent';
+  private _indepVar: string;
+  private _depVars: string[];
+  private _depFormat: 'bare' | 'percent';
 
-  constructor(datatypes: Datatypes, rawData: Data) {
+  constructor(manifest: Manifest/*, seriesRecords: SeriesRecordMap<X, Y>*/) {
     console.log('creating model');
-    const data: ScalarArray[] = [];
-    this._indepVar = rawData.independentUnit;
-    this._depVars = Object.keys(rawData.series);
-    this._depFormat = rawData.series[this._depVars[0]][0].endsWith('%') ? 'percent' : 'bare';
-    data.push(rawData.independentLabels);
+    const dataset = manifest.datasets[0];
+    this._indepVar = dataset.facets.y.units ?? 'number';
+    this._depVars = dataset.series.map((series) => series.key);
+    this._depFormat = dataset.series[0].records![0].x.endsWith('%') ? 'percent' : 'bare';
+    const data: ScalarArray[] = [rawData.independentLabels];
+    data.push();
     for (const dep of this._depVars) {
       data.push(rawData.series[dep]);
     }
@@ -151,4 +103,10 @@ export class Model {
     return new Datapoint(series, record, this);
   }
 
+}
+
+constructor(public readonly seriesKey: string, public readonly record: number, private model: Model) {
+  this.x = model.indepSeries().atBoxed(record);
+  this.y = model.data.col(seriesKey).atBoxed(record);
+  this.series = model.data.col(seriesKey);
 }
