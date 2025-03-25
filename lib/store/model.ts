@@ -14,21 +14,24 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type Datatypes } from '../components/todochart';
-import { type ChartController } from '../chartcontroller';
+/**
+ * Logical datatype of series elements.
+ * @public
+ */
+//export declare type Datatype = 'string' | 'number' | 'date';
 
 import { 
-  DataFrame, type ScalarArray, type Scalar, type Datatype, type DateSeries, type AnySeries,
+  DataFrame, type ScalarArray, type AnySeries,
   type Box 
 } from '@fizz/dataframe';
 import { type Data } from '@fizz/chart-metadata-validation';
-import { utils } from '../utilities';
+import { Scalar } from './dataframe/box';
 
 /**
  * A datapoint consisting of boxed x and y values.
  * @public
  */
-export class Datapoint {
+export class Datapoint2D {
 
   public readonly x: Box<Scalar>;
   public readonly y: Box<Scalar>;
@@ -105,7 +108,7 @@ export class Model {
   private _depVars!: string[];
   private _depFormat!: 'bare' | 'percent';
 
-  constructor(private ctrlr: ChartController, datatypes: Datatypes, rawData: Data) {
+  constructor(datatypes: Datatypes, rawData: Data) {
     console.log('creating model');
     const data: ScalarArray[] = [];
     this._indepVar = rawData.independentUnit;
@@ -146,19 +149,6 @@ export class Model {
 
   datapoint(series: string, record: number) {
     return new Datapoint(series, record, this);
-  }
-
-  format(box: Box<Scalar>, context: FormatContext) {
-    const settingVal = context === 'domId' 
-      ? 'domId' 
-      : this.ctrlr.settingStore.get(formatContextSettings[context]);
-    if (settingVal === 'raw') {
-      return (box.raw ?? box.value).toString();
-    } else if (settingVal === 'domId') {
-      return utils.strToId((box.raw ?? box.value).toString());
-    } else {
-      return box.value.toString();
-    }
   }
 
 }
