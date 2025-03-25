@@ -1,10 +1,8 @@
-import { Scalar } from "./dataframe/box";
+type PropKey = string | number;
 
-type Key = string | number;
+type DataRecord<X extends PropKey, Y extends PropKey> = { x: X, y: Y };
 
-type DataRecord<X extends Key, Y extends Key> = { x: X, y: Y };
-
-function mapRecords<X extends Key, Y extends Key>(
+function mapRecords<X extends PropKey, Y extends PropKey>(
   dimension: 'x' | 'y', records: DataRecord<X, Y>[]
 ): Record<(X | Y), (X | Y)[]> {
   const map = {} as Record<(X | Y), (X | Y)[]>;
@@ -39,5 +37,21 @@ export class Map2D<X extends string | number, Y extends string | number> {
       this.yMap = mapRecords('y', this.records) as Record<Y, X[]>;
     }
     return this.yMap[y] ?? null;
+  }
+}
+
+const MEMBERS = Symbol.for('Ordered-Map-Members');
+
+export class OrderedMap<V> {
+  private readonly [MEMBERS]: { key: string, value: V }[];
+  [n: number]: V | null;
+  [k: string]: V | null;
+
+  constructor(...members: { key: string, value: V }[]) {
+    this[MEMBERS] = members;
+    this[MEMBERS].forEach((member, index) => {
+      this[member.key] = member.value;
+      this[index] = member.value;
+    })
   }
 }
