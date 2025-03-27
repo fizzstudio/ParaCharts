@@ -65,3 +65,15 @@ export function enumerate<T>(iterable: Iterable<T>): [T, number][] {
   }
   return enumerations;
 }
+
+export function arrayEqual<T>(lhs: T[], rhs: T[]): boolean {
+  if (lhs.length !== rhs.length) {
+    return false;
+  }
+  lhs.forEach((l, index) => {
+    if (l !== rhs[index]) {
+      return false;
+    }
+  });
+  return true;
+}

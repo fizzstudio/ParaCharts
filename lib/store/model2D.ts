@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { enumerate } from "./helpers";
+import { arrayEqual, enumerate } from "./helpers";
 
 /**
  * A datapoint consisting of x and y value strings.
@@ -43,35 +43,52 @@ function mapDatapoints(dimension: 'x' | 'y', datapoints: Datapoint2D[]): Record<
 
 export class Series2D {
   [i: number]: Datapoint2D;
-  private xMap?: Record<string, string[]>;
-  private yMap?: Record<string, string[]>;
+  protected xMap: Record<string, string[]>;
+  private yMap: Record<string, string[]>;
+  public readonly xs: string[] = [];
 
   constructor(public readonly key: string, private readonly datapoints: Datapoint2D[]) {
-    this.datapoints.forEach((record, index) => this[index] = record);
+    this.datapoints.forEach((datapoint, index) => {
+      this[index] = datapoint;
+      this.xs.push(datapoint.x)
+    });
+    this.xMap = mapDatapoints('x', this.datapoints);
+    this.yMap = mapDatapoints('y', this.datapoints);
   }
 
   atX(x: string): string[] | null {
-    if (!(this.xMap)) {
-      this.xMap = mapDatapoints('x', this.datapoints);
-    }
     return this.xMap[x] ?? null;
   }
 
   atY(y: string): string[] | null {
-    if (!(this.yMap)) {
-      this.yMap = mapDatapoints('y', this.datapoints);
-    }
     return this.yMap[y] ?? null;
+  }
+}
+
+export class OrderedSeries2D extends Series2D {
+  constructor(key: string, datapoints: Datapoint2D[]) {
+    super(key, datapoints);
+    for (const [_x, ys] of Object.values(this.xMap)) {
+      if (ys.length > 1) {
+        throw new Error('ordered series can only have one y-value per x-label')
+      }
+    }
+  }
+
+  onlyAtX(x: string): string | null {
+    return this.xMap[x][0] ?? null;
   }
 }
 
 // Like a dictionary for series
 export class Model2D {
   public readonly keys: string[] = [];
-  private keyMap: Record<string, Series2D> = {};
+  protected keyMap: Record<string, Series2D> = {};
   [i: number]: Series2D;
+  public multi: boolean;
 
-  constructor(private readonly series: Series2D[]) {
+  constructor(protected readonly series: Series2D[]) {
+    this.multi = this.series.length > 1
     for (const [aSeries, seriesIndex] of enumerate(this.series)) {
       if (this.keys.includes(aSeries.key)) {
         throw new Error('Non-unique key');
@@ -84,5 +101,20 @@ export class Model2D {
 
   atKey(key: string): Series2D | null {
     return this.keyMap[key] ?? null;
+  }
+}
+
+export class OrderedModel2D extends Model2D {
+  declare keyMap: Record<string, OrderedSeries2D>;
+
+  constructor(series: OrderedSeries2D[]) {
+    super(series);
+    if (this.multi) {
+      this.series.forEach((series) => {
+        if (!arrayEqual(series.xs, this.series[0].xs)) {
+          throw new Error('each series in a ordered model must have all the same x-labels')
+        }
+      })
+    }
   }
 }
