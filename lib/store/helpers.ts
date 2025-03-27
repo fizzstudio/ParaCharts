@@ -55,3 +55,13 @@ export class OrderedMap<V> {
     })
   }
 }
+
+export function enumerate<T>(iterable: Iterable<T>): [T, number][] {
+  const enumerations: [T, number][] = [];
+  let index = 0;
+  for (const member of iterable) {
+    enumerations.push([member, index]);
+    index++;
+  }
+  return enumerations;
+}
