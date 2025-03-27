@@ -1,37 +1,65 @@
+/* ParaCharts: Chart Data Model
+Copyright (C) 2025 Fizz Studios
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
+
 import { enumerate } from "./helpers";
 
-export type Record2D = { x: string, y: string };
+/**
+ * A datapoint consisting of x and y value strings.
+ * @public
+ */
+// TODO?: box x and y values, allow for number and date values
+export class Datapoint2D {
+  constructor(public readonly x: string, public readonly y: string) {}
 
-function mapRecords(dimension: 'x' | 'y', records: Record2D[]): Record<string, string[]> {
+  isEqual(other: Datapoint2D) {
+    return this.x === other.x && this.y === other.y;
+  }
+
+}
+
+function mapDatapoints(dimension: 'x' | 'y', datapoints: Datapoint2D[]): Record<string, string[]> {
   const map = {} as Record<string, string[]>;
-  for (const record of records) {
-    if (!(record[dimension] in map)) {
-      map[record[dimension]] = [] as string[];
+  for (const datapoint of datapoints) {
+    if (!(datapoint[dimension] in map)) {
+      map[datapoint[dimension]] = [] as string[];
     }
-    map[record[dimension]].push(record[dimension === 'x' ? 'y' : 'x']);
+    map[datapoint[dimension]].push(datapoint[dimension === 'x' ? 'y' : 'x']);
   }
   return map;
 }
 
 export class Series2D {
-  [i: number]: Record2D;
+  [i: number]: Datapoint2D;
   private xMap?: Record<string, string[]>;
   private yMap?: Record<string, string[]>;
 
-  constructor(public readonly key: string, private readonly records: Record2D[]) {
-    this.records.forEach((record, index) => this[index] = record);
+  constructor(public readonly key: string, private readonly datapoints: Datapoint2D[]) {
+    this.datapoints.forEach((record, index) => this[index] = record);
   }
 
   atX(x: string): string[] | null {
     if (!(this.xMap)) {
-      this.xMap = mapRecords('x', this.records);
+      this.xMap = mapDatapoints('x', this.datapoints);
     }
     return this.xMap[x] ?? null;
   }
 
   atY(y: string): string[] | null {
     if (!(this.yMap)) {
-      this.yMap = mapRecords('y', this.records);
+      this.yMap = mapDatapoints('y', this.datapoints);
     }
     return this.yMap[y] ?? null;
   }
