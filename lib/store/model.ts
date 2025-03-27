@@ -24,29 +24,7 @@ import {
   DataFrame, type ScalarArray
 } from '@fizz/dataframe';
 import { type Manifest } from '@fizz/chart-metadata-validation';
-import { Box, Scalar } from './dataframe/box';
-
-//type SeriesRecordMap<X extends Scalar, Y extends Scalar> = Record<string, DataRecord<X, Y>>
-
-/**
- * A datapoint consisting of boxed x and y values.
- * @public
- */
-export class Datapoint2D<X extends Scalar, Y extends Scalar> {
-  constructor(public readonly x: Box<X>, public readonly y: Box<Y>) {}
-
-  isEqual(other: Datapoint2D<X, Y>) {
-    return this.x.isEqual(other.x) && this.y.isEqual(other.y);
-  }
-
-}
-
-export interface DatapointReference {
-  /** Record (i.e., model row) index. */
-  x: number;
-  /** Series (i.e., column) name. */
-  y: string;
-}
+import { Scalar } from './dataframe/box';
 
 /**
  * Wrapper around the internal data frame that holds the chart data.
