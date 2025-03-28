@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Manifest } from "@fizz/chart-metadata-validation";
 import { arrayEqual, enumerate } from "./helpers";
 
 /**
@@ -81,11 +82,20 @@ export class OrderedSeries2D extends Series2D {
 }
 
 // Like a dictionary for series
+// TODO?: allow for number and date values, add axes units properties, add bare/percent format, 
 export class Model2D {
   public readonly keys: string[] = [];
   protected keyMap: Record<string, Series2D> = {};
   [i: number]: Series2D;
   public multi: boolean;
+
+  static fromManifest(manifest: Manifest): Model2D {
+    const dataset = manifest.datasets[0];
+    const series = dataset.series.map((aSeries) => 
+      new Series2D(aSeries.key, aSeries.records!.map((record) => new Datapoint2D(record.x, record.y)))
+    );
+    return new Model2D(series);
+  }
 
   constructor(protected readonly series: Series2D[]) {
     this.multi = this.series.length > 1
@@ -106,6 +116,14 @@ export class Model2D {
 
 export class OrderedModel2D extends Model2D {
   declare keyMap: Record<string, OrderedSeries2D>;
+
+  static fromManifest(manifest: Manifest): OrderedModel2D {
+    const dataset = manifest.datasets[0];
+    const series = dataset.series.map((aSeries) => 
+      new OrderedSeries2D(aSeries.key, aSeries.records!.map((record) => new Datapoint2D(record.x, record.y)))
+    );
+    return new OrderedModel2D(series);
+  }
 
   constructor(series: OrderedSeries2D[]) {
     super(series);
