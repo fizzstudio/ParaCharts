@@ -14,20 +14,32 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { State, property } from "@lit-app/state";
+
 import type { Manifest } from "@fizz/paramanifest";
 
 import { Model2D } from "./model2D";
 import { AllSeriesData } from "./helpers";
 
-export class ParaStore {
-  private model: Model2D;
+export class ParaStore extends State {
+
+  @property()
+  private manifest: Manifest;
+  @property()
   private settings?: unknown;
+  @property()
   private focused = 'chart';
+  @property()
   private selected = null;
+  @property()
   private queryLevel = 'default';
+
+  private model: Model2D;
   
-  constructor(private manifest: Manifest, data?: AllSeriesData) {
-    const dataset = manifest.datasets[0];
+  constructor(manifest: Manifest, data?: AllSeriesData) {
+    super();
+    this.manifest = manifest;
+    const dataset = this.manifest.datasets[0];
     if (dataset.data.source === 'inline') {
       this.model = Model2D.fromManifest(manifest);
     } else if (data) {
@@ -36,5 +48,5 @@ export class ParaStore {
       throw new Error('store lacks external or inline chart data')
     }
   }
-  
+
 }
