@@ -87,6 +87,7 @@
     "@fizz/paramanifest": "^0.1.1",
     "@fizz/templum": "^0.4.2",
     "@fizz/todocharts": "^0.129.6",
+    "@lit-app/state": "^1.0.0",
     "decimal.js": "^10.4.3",
     "lit": "^3.2.0",
     "printf": "^0.6.1",
