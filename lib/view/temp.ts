@@ -51,3 +51,6 @@ const formatContextSettings = {
   statusBar: 'statusBar.valueFormat',
   domId: 'NA'
 };
+
+  //private keyEventManager?: KeyboardEventManager;
+  private _pointerEventManager = new PointerEventManager();

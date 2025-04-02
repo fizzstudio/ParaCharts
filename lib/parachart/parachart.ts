@@ -19,7 +19,7 @@ import { LitElement } from "lit";
 import { Manifest } from "@fizz/paramanifest";
 
 import { ParaStore } from "../store/parastore";
-import { AllSeriesData } from "../store/helpers";
+import { AllSeriesData } from "../common/types";
 import { StateController } from "@lit-app/state";
 
 class ParaChart extends LitElement {

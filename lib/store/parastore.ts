@@ -19,7 +19,7 @@ import { State, property } from "@lit-app/state";
 import type { Manifest } from "@fizz/paramanifest";
 
 import { Model2D } from "./model2D";
-import { AllSeriesData } from "./helpers";
+import { AllSeriesData } from "../common/types";
 
 export class ParaStore extends State {
 
