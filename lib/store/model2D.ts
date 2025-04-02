@@ -14,8 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Manifest } from "@fizz/chart-metadata-validation";
-import { arrayEqual, enumerate } from "./helpers";
+import type { Manifest, Series, XyPoint } from "@fizz/paramanifest";
+import { AllSeriesData, arrayEqual, enumerate } from "./helpers";
 
 /**
  * A datapoint consisting of x and y value strings.
@@ -47,6 +47,17 @@ export class Series2D {
   protected xMap: Record<string, string[]>;
   private yMap: Record<string, string[]>;
   public readonly xs: string[] = [];
+
+  static fromKeyAndData(key: string, data: XyPoint[]): Series2D {
+    return new Series2D(key, data.map((record) => new Datapoint2D(record.x, record.y)));
+  }
+
+  static fromSeriesManifest(seriesManifest: Series): Series2D {
+    if (!seriesManifest.records) {
+      throw new Error('only series manifests with inline data can use this method.');
+    }
+    return Series2D.fromKeyAndData(seriesManifest.key, seriesManifest.records!);
+  }
 
   constructor(public readonly key: string, private readonly datapoints: Datapoint2D[]) {
     this.datapoints.forEach((datapoint, index) => {
@@ -91,9 +102,15 @@ export class Model2D {
 
   static fromManifest(manifest: Manifest): Model2D {
     const dataset = manifest.datasets[0];
-    const series = dataset.series.map((aSeries) => 
-      new Series2D(aSeries.key, aSeries.records!.map((record) => new Datapoint2D(record.x, record.y)))
-    );
+    if (dataset.data.source !== 'inline') {
+      throw new Error('only manifests with inline data can use this method.');
+    }
+    const series = dataset.series.map((aSeries) => Series2D.fromSeriesManifest(aSeries));
+    return new Model2D(series);
+  }
+
+  static fromAllSeriesData(data: AllSeriesData): Model2D {
+    const series = Object.keys(data).map((key) => Series2D.fromKeyAndData(key, data[key]));
     return new Model2D(series);
   }
 
