@@ -21,6 +21,10 @@ import { AllSeriesData } from "./helpers";
 
 export class ParaStore {
   private model: Model2D;
+  private settings?: unknown;
+  private focused = 'chart';
+  private selected = null;
+  private queryLevel = 'default';
   
   constructor(private manifest: Manifest, data?: AllSeriesData) {
     const dataset = manifest.datasets[0];
@@ -31,6 +35,6 @@ export class ParaStore {
     } else {
       throw new Error('store lacks external or inline chart data')
     }
-
   }
+  
 }
