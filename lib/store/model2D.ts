@@ -15,7 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import type { Manifest, Series, XyPoint } from "@fizz/paramanifest";
-import { AllSeriesData, arrayEqual, enumerate } from "./helpers";
+import { arrayEqual, enumerate } from "./helpers";
+import { AllSeriesData } from "../common/types";
 
 /**
  * A datapoint consisting of x and y value strings.

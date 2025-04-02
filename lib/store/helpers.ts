@@ -1,7 +1,3 @@
-import { XyPoint } from "@fizz/paramanifest";
-
-export type AllSeriesData = Record<string, XyPoint[]>;
-
 type PropKey = string | number;
 
 type DataRecord<X extends PropKey, Y extends PropKey> = { x: X, y: Y };
