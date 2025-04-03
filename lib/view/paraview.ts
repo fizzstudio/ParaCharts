@@ -19,6 +19,8 @@ import { customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 
 import { ChartType } from '../common/types';
+import { ViewBox } from '../store/settings';
+import { View } from './base_view';
 
 type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
 type DataState = 'initial' | 'pending' | 'complete' | 'error';
