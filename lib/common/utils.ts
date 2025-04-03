@@ -14,6 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { ParaStore } from "../store/parastore";
+
 /**
  * Convert a number to a string with a given number of digits after the
  * decimal. 
@@ -41,4 +43,30 @@ export function fixed(strings: TemplateStringsArray, ...exprs: number[]) {
   const out = strings.slice(0, -1).map((s, i) => s + toFixed(exprs[i]));
   out.push(strings.at(-1)!);
   return out.join('');
+}
+
+export function generateUniqueId(baseId: string, store: ParaStore): string {
+  // remove non-word characters and replace spaces
+  baseId = baseId.replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
+  let i = 0;
+  let uid = baseId;
+  while (store.idList[uid]) {
+    uid = baseId + '-' + ++i;
+  }
+  store.idList[uid] = true;
+  return uid;
+}
+
+export function strToId(s: string): string {
+  return s.toLowerCase().replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
+}
+
+export function enumerate<T>(iterable: Iterable<T>): [T, number][] {
+  const enumerations: [T, number][] = [];
+  let index = 0;
+  for (const member of iterable) {
+    enumerations.push([member, index]);
+    index++;
+  }
+  return enumerations;
 }
