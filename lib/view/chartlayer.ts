@@ -1,4 +1,4 @@
-/* ParaCharts: Types
+/* ParaCharts: Chart Layers
 Copyright (C) 2025 Fizz Studios
 
 This program is free software: you can redistribute it and/or modify
@@ -14,12 +14,27 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { XyPoint, Manifest } from "@fizz/paramanifest";
+import { Container, View } from './base_view';
+import { type ChartLayerManager } from './chartlayermanager';
 
-export type AllSeriesData = Record<string, XyPoint[]>;
+export abstract class ChartLayer extends Container(View) {
 
-export type ChartType = Manifest['datasets'][number]['type'];
+  declare protected _parent: ChartLayerManager;
 
-export type AxisOrientation = 'horiz' | 'vert';
+  protected _createId(id: string) {
+    return `${id}-layer`;
+  }
 
-export type SnapLocation = 'start' | 'end' | 'center';
+  protected _addedToParent() {
+    //this.setSize(this._parent.width, this._parent.height);
+  }
+
+  get parent() {
+    return this._parent;
+  }
+
+  set parent(parent: ChartLayerManager) {
+    super.parent = parent;
+  }
+
+}

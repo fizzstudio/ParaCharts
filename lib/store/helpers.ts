@@ -1,3 +1,19 @@
+/* ParaCharts: Data Helpers
+Copyright (C) 2025 Fizz Studios
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
+
 type PropKey = string | number;
 
 type DataRecord<X extends PropKey, Y extends PropKey> = { x: X, y: Y };
@@ -54,16 +70,6 @@ export class OrderedMap<V> {
       this[index] = member.value;
     })
   }
-}
-
-export function enumerate<T>(iterable: Iterable<T>): [T, number][] {
-  const enumerations: [T, number][] = [];
-  let index = 0;
-  for (const member of iterable) {
-    enumerations.push([member, index]);
-    index++;
-  }
-  return enumerations;
 }
 
 export function arrayEqual<T>(lhs: T[], rhs: T[]): boolean {

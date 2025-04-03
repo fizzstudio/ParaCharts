@@ -1,4 +1,4 @@
-/* ParaCharts: ParaView Chart View
+/* ParaCharts: ParaView Chart Views
 Copyright (C) 2025 Fizz Studios
 
 This program is free software: you can redistribute it and/or modify
@@ -14,13 +14,20 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { LitElement, PropertyValueMap, PropertyValues, css } from 'lit';
+import { LitElement, PropertyValueMap, PropertyValues, css, html, nothing, svg } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 
 import { ChartType } from '../common/types';
-import { ViewBox } from '../store/settings';
+import { ViewBox } from '../store/settings_types';
 import { View } from './base_view';
+import { DocumentView } from './document_view';
+import { styles } from './styles';
+import { ParaStore } from '../store/parastore';
+import { SVGNS } from '../common/constants';
+import { fixed } from '../common/utils';
+import { classMap } from 'lit/directives/class-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
 
 type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
 type DataState = 'initial' | 'pending' | 'complete' | 'error';
@@ -56,8 +63,12 @@ export class ParaView extends LitElement {
   private chartRefs: Map<string, Ref<any>> = new Map();
 
   // TEMP
-  log(msg: string): void {
-    console.log(msg);
+  log(...msg: any[]): void {
+    console.log(...msg);
+  }
+
+  constructor(public store: ParaStore) {
+    super();
   }
 
   static styles = [
@@ -230,12 +241,12 @@ export class ParaView extends LitElement {
   createDocumentView() {
     this.log('creating document view', this.type);
 
-    this._jimerator = new Jimerator(this);
+    //this._jimerator = new Jimerator(this);
 
     this._documentView?.cleanup();
     this._documentView = new DocumentView(this);
 
-    this._jimerator.render();
+    //this._jimerator.render();
 
     this.computeViewBox();
     //this.activeSeries = this.controller.model!.depVars[0];
@@ -246,8 +257,8 @@ export class ParaView extends LitElement {
     this._viewBox = {
       x: 0,
       y: 0,
-      width: this._documentView?.boundingWidth ?? this.controller.settingStore.settings.chart.size.width!,
-      height: this._documentView?.boundingHeight ?? this.controller.settingStore.settings.chart.size.height!
+      width: this._documentView?.boundingWidth ?? this.store.settings.chart.size.width!,
+      height: this._documentView?.boundingHeight ?? this.store.settings.chart.size.height!
     };
     this.log('view box:', this._viewBox.width, 'x', this._viewBox.height);
   }
@@ -303,8 +314,8 @@ export class ParaView extends LitElement {
 
   rootStyle() {
     const style: { [prop: string]: any } = {
-      fontFamily: this.controller.settingStore.settings.chart.fontFamily,
-      fontWeight: this.controller.settingStore.settings.chart.fontWeight
+      fontFamily: this.store.settings.chart.fontFamily,
+      fontWeight: this.store.settings.chart.fontWeight
     };
     if (document.fullscreenElement === this.root) {
       const vbWidth = Math.round(this._viewBox.width);
@@ -320,7 +331,7 @@ export class ParaView extends LitElement {
     }
 
     const contrast = this.contrastLevel * 50;
-    if (this.todo.darkMode) {
+    if (this.store.darkMode) {
       style['--axisLineColor'] = `hsl(0, 0%, ${50 + contrast}%)`;
       style['--labelColor'] = `hsl(0, 0%, ${50 + contrast}%)`;
       style['--backgroundColor'] = `hsl(0, 0%, ${((100 - contrast) / 5) - 10}%)`;
@@ -338,11 +349,11 @@ export class ParaView extends LitElement {
 
   rootClasses() {
     return {
-      darkmode: this.todo.darkMode,
+      darkmode: this.store.darkMode,
     }
   }
 
-  hotkeyInfo(key: string, action: string, actionReceiver: View): HotkeyInfo {
+  /*hotkeyInfo(key: string, action: string, actionReceiver: View): HotkeyInfo {
     return {
       key,
       action,
@@ -360,7 +371,7 @@ export class ParaView extends LitElement {
    * (if said event isn't cancelled) perform the default action for the hotkey.
    * @param event - keydown event
    */
-  handleKeyEvent(event: KeyboardEvent) {    
+  /*handleKeyEvent(event: KeyboardEvent) {    
     const keyId = [ 
       event.altKey ? 'Alt+' : '',
       event.ctrlKey ? 'Ctrl+' : '',
@@ -373,9 +384,9 @@ export class ParaView extends LitElement {
       this.documentView!.focusLeaf.hotkeyActionManager.dispatch(hotkeyInfo);
       event.preventDefault();
     }
-  }
+  }*/
 
-  setLowVisionMode(lvm: boolean) {
+  /*setLowVisionMode(lvm: boolean) {
     this.controller.setSetting('color.isDarkModeEnabled', lvm);
     this.controller.setSetting('ui.isFullScreenEnabled', lvm);
     this._documentView!.setLowVisionMode(lvm);
@@ -391,14 +402,14 @@ export class ParaView extends LitElement {
         document.exitFullscreen();
       } 
     }
-  }
+  }*/
 
   render() {
     this.log('render');
     return html`
       <svg
         ${ref(this._rootRef)}
-        xmlns=${svgns}
+        xmlns=${SVGNS}
         aria-label=${this._documentView ? `${this._documentView.titleText}, Sonified chart` : 'loading...'}
         data-charttype=${this.type}
         role="application"
@@ -414,26 +425,19 @@ export class ParaView extends LitElement {
           } else {
             // exiting fullscreen mode
             this.log('exiting fullscreen');
-            if (this._controller.settingStore.settings.ui.isLowVisionModeEnabled) {
+            /*if (this._controller.settingStore.settings.ui.isLowVisionModeEnabled) {
               this._controller.setSetting('ui.isLowVisionModeEnabled', false);
             } else {
               this._controller.settingViews.update('ui.isFullScreenEnabled', false);
-            }
+            }*/
           }
         }}
         @focus=${() => {
           this.log('focus');
-          this.todo.deets?.onFocus();
+          //this.todo.deets?.onFocus();
           //this.documentView?.chartLayers.dataLayer.visitAndPlayCurrent();
           this.documentView?.chartLayers.dataLayer.chartLandingView.focus();
         }}
-        @keydown=${(event: KeyboardEvent) => this.handleKeyEvent(event)}
-        @pointerdown=${(ev: PointerEvent) => this._pointerEventManager.handleStart(ev)}
-        @pointerup=${(ev: PointerEvent) => this._pointerEventManager.handleEnd(ev)}
-        @pointercancel=${(ev: PointerEvent) => this._pointerEventManager.handleCancel(ev)}
-        @pointermove=${(ev: PointerEvent) => this._pointerEventManager.handleMove(ev)}
-        @click=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager.handleClick(ev)}
-        @dblclick=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager.handleDoubleClick(ev)}
       >
         <defs
           ${ref(this._defsRef)}
@@ -451,7 +455,6 @@ export class ParaView extends LitElement {
       }
         </defs>
         <metadata data-type="text/jim+json">
-          ${this._jimerator ? JSON.stringify(this.jim, undefined, 2) : ''}
         </metadata>
         <rect 
           ${ref(this._frameRef)}

@@ -21,14 +21,20 @@ import { Manifest } from "@fizz/paramanifest";
 import { ParaStore } from "../store/parastore";
 import { AllSeriesData } from "../common/types";
 import { StateController } from "@lit-app/state";
+import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
 
 class ParaChart extends LitElement {
   private store: ParaStore;
   private state: StateController<ParaStore>;
 
-  constructor(manifest: Manifest, data?: AllSeriesData) {
+  constructor(
+    manifest: Manifest, 
+    inputSettings: SettingsInput, 
+    data?: AllSeriesData,
+    suppleteSettingsWith?: DeepReadonly<Settings>
+  ) {
     super();
-    this.store = new ParaStore(manifest, data);
+    this.store = new ParaStore(manifest, inputSettings, data, suppleteSettingsWith);
     this.state = new StateController(this, this.store);
   }
 }

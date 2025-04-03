@@ -31,7 +31,7 @@ format(box: Box<Scalar>, context: FormatContext) {
  * Context where a particular value appears. 
  * @public
  */
-export type FormatContext = keyof typeof formatContextSettings;
+/*export type FormatContext = keyof typeof formatContextSettings;
 // Settings that control the format for each context
 const formatContextSettings = {
   xTick: 'axis.x.tick.labelFormat',
@@ -53,4 +53,4 @@ const formatContextSettings = {
 };
 
   //private keyEventManager?: KeyboardEventManager;
-  private _pointerEventManager = new PointerEventManager();
+  private _pointerEventManager = new PointerEventManager();*/

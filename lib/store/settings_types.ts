@@ -1,4 +1,4 @@
-/* ParaCharts: Settings
+/* ParaCharts: Setting Types
 Copyright (C) 2025 Fizz Studios
 
 This program is free software: you can redistribute it and/or modify
@@ -379,3 +379,7 @@ export interface Settings extends SettingGroup {
   sonification: SonificationSettings;
   dev: DevSettings;
 }
+
+export type DeepReadonly<T> = {
+  readonly [Property in keyof T]: T extends Setting ? T[Property] : DeepReadonly<T[Property]>;
+};
