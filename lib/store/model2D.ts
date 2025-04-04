@@ -19,67 +19,84 @@ import { arrayEqual } from "./helpers";
 import { AllSeriesData } from "../common/types";
 import { enumerate } from "../common/utils";
 
+type Scalar = number | string | Datapoint2D
+
 /**
- * A datapoint consisting of x and y value strings.
+ * A datapoint consisting of x and y values.
  * @public
  */
-// TODO?: box x and y values, allow for number and date values
-export class Datapoint2D {
+interface Datapoint2D {
+  x: Scalar;
+  y: number;
+  xRaw: string;
+  yRaw: string;
 
-  static fromRecord(record: XyPoint): Datapoint2D {
-    const y = parseFloat(record.y);
-    if (isNaN(y)) {
-      throw new Error('y values must be numbers');
-    }
-    return new Datapoint2D(record.x, y, record.y);
+  isEqual(other: Datapoint2D): boolean;
+
+  //new (xRaw: string, yRaw: string): this;
+  //fromRecord(record: XyPoint): Datapoint2D;
+}
+
+export class NominalDatapoint2D implements Datapoint2D {
+  public readonly x: string;
+  public readonly y: number;
+
+  static fromRecord(record: XyPoint): NominalDatapoint2D {
+    return new NominalDatapoint2D(record.x, record.y);
   }
 
-  constructor(public readonly x: string | number, public readonly y: number, public readonly yRaw: string) {}
+  constructor(public readonly xRaw: string, public readonly yRaw: string) {
+    this.x = this.xRaw;
+    this.y = parseFloat(yRaw);
+    if (isNaN(this.y)) {
+      throw new Error('y values must be numbers');
+    }
+  }
 
-  isEqual(other: Datapoint2D) {
+  isEqual(other: Datapoint2D): boolean {
     return this.x === other.x && this.y === other.y;
   }
-
 }
 
-export class NumericDatapoint2D extends Datapoint2D {
+export class NumericDatapoint2D implements Datapoint2D {
+  public readonly x: number;
+  public readonly y: number;
 
   static fromRecord(record: XyPoint): NumericDatapoint2D {
-    const x = parseFloat(record.x);
-    if (isNaN(x)) {
-      throw new Error('x values must be numbers for numeric datapoints');
-    }
-    const y = parseFloat(record.y);
-    if (isNaN(y)) {
-      throw new Error('y values must be numbers');
-    }
-    return new NumericDatapoint2D(x, record.x, y, record.y);
+    return new NumericDatapoint2D(record.x, record.y);
   }
 
-  constructor(
-    public readonly x: number, 
-    public readonly xRaw: string,
-    public readonly y: number, 
-    public readonly yRaw: string
-  ) {
-    super(x, y, yRaw);
+  constructor(public readonly xRaw: string, public readonly yRaw: string) {
+    this.x = parseFloat(xRaw);
+    if (isNaN(this.x)) {
+      throw new Error('x values in Numeric Datapoints must be numbers');
+    }
+    this.y = parseFloat(yRaw);
+    if (isNaN(this.y)) {
+      throw new Error('y values must be numbers');
+    }
+  }
+
+  isEqual(other: Datapoint2D): boolean {
+    return this.x === other.x && this.y === other.y;
   }
 }
 
-function mapDatapoints<K extends string | number, V extends string | number>(
+function mapDatapoints<K extends Scalar, V extends Scalar>(
   dimension: 'x' | 'y', datapoints: Datapoint2D[]
 ): Map<K, V[]> {
   const map = new Map<K, V[]>();
   for (const datapoint of datapoints) {
-    if (!(datapoint[dimension] in map)) {
-      map.set(datapoint[dimension] as K, []);
+    const key = datapoint[dimension] as K;
+    if (!map.has(key)) {
+      map.set(key, []);
     }
-    map.get(datapoint[dimension] as K)!.push(datapoint[dimension === 'x' ? 'y' : 'x'] as V);
+    map.get(key)!.push(datapoint[dimension === 'x' ? 'y' : 'x'] as V);
   }
   return map;
 }
 
-export class Series2D {
+export class Series2D<D extends Datapoint2D> {
   [i: number]: Datapoint2D;
   protected xMap: Map<string, number[]>;
   private yMap: Map<number, string[]>;

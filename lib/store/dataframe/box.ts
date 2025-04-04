@@ -15,6 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Decimal } from 'decimal.js';
+import { CalendarPeriod } from '../calendar_period';
 
 /** @public */
 export type DatapointValueRelationship = 'equal' | 'less' | 'greater';
@@ -26,13 +27,6 @@ function findMinMax(
     return { minValue: thisValue, maxValue: otherValue, relationship: 'less' };
   }
   return { minValue: otherValue, maxValue: thisValue, relationship: 'greater' };
-}
-
-export type CalendarPeriod = {
-  year?: number,
-  quarter?: number,
-  month?: number,
-  day?: number
 }
 
 /**
