@@ -18,139 +18,155 @@ import type { Manifest, Series, XyPoint } from "@fizz/paramanifest";
 import { arrayEqual } from "./helpers";
 import { AllSeriesData } from "../common/types";
 import { enumerate } from "../common/utils";
+import { CalendarPeriod } from "./calendar_period";
 
-type Scalar = number | string | Datapoint2D
+type Scalar = number | string | CalendarPeriod
 
 /**
  * A datapoint consisting of x and y values.
  * @public
  */
-interface Datapoint2D {
-  x: Scalar;
-  y: number;
-  xRaw: string;
-  yRaw: string;
-
-  isEqual(other: Datapoint2D): boolean;
-
-  //new (xRaw: string, yRaw: string): this;
-  //fromRecord(record: XyPoint): Datapoint2D;
-}
-
-export class NominalDatapoint2D implements Datapoint2D {
-  public readonly x: string;
+abstract class Datapoint2D<X extends Scalar>{
+  public readonly x: X;
   public readonly y: number;
 
-  static fromRecord(record: XyPoint): NominalDatapoint2D {
-    return new NominalDatapoint2D(record.x, record.y);
-  }
-
   constructor(public readonly xRaw: string, public readonly yRaw: string) {
-    this.x = this.xRaw;
+    this.x = this.getX();
     this.y = parseFloat(yRaw);
     if (isNaN(this.y)) {
       throw new Error('y values must be numbers');
     }
   }
 
-  isEqual(other: Datapoint2D): boolean {
+  isEqual(other: Datapoint2D<X>): boolean {
     return this.x === other.x && this.y === other.y;
   }
+
+  abstract getX(): X;
 }
 
-export class NumericDatapoint2D implements Datapoint2D {
-  public readonly x: number;
-  public readonly y: number;
+type DatapointConstructor<X extends Scalar, D extends Datapoint2D<X>> = 
+  new (xRaw: string, yRaw: string) => D
 
-  static fromRecord(record: XyPoint): NumericDatapoint2D {
-    return new NumericDatapoint2D(record.x, record.y);
+export function datapointFromRecord<X extends Scalar, D extends Datapoint2D<X>>(
+  constructor: DatapointConstructor<X, D>, record: XyPoint
+): D {
+  return new constructor(record.x, record.y);
+}
+
+export class NominalDatapoint2D extends Datapoint2D<string> {
+  
+  getX(): string {
+    return this.xRaw;
   }
 
-  constructor(public readonly xRaw: string, public readonly yRaw: string) {
-    this.x = parseFloat(xRaw);
-    if (isNaN(this.x)) {
+}
+
+export class NumericDatapoint2D extends Datapoint2D<number> {
+  
+  getX(): number {
+    const x = parseFloat(this.xRaw);
+    if (isNaN(x)) {
       throw new Error('x values in Numeric Datapoints must be numbers');
     }
-    this.y = parseFloat(yRaw);
-    if (isNaN(this.y)) {
-      throw new Error('y values must be numbers');
-    }
+    return x;
   }
 
-  isEqual(other: Datapoint2D): boolean {
-    return this.x === other.x && this.y === other.y;
-  }
 }
 
-function mapDatapoints<K extends Scalar, V extends Scalar>(
-  dimension: 'x' | 'y', datapoints: Datapoint2D[]
-): Map<K, V[]> {
-  const map = new Map<K, V[]>();
+function mapDatapointsXtoY<X extends Scalar>(
+  datapoints: Datapoint2D<X>[]
+): Map<X, number[]> {
+  const map = new Map<X, number[]>();
   for (const datapoint of datapoints) {
-    const key = datapoint[dimension] as K;
-    if (!map.has(key)) {
-      map.set(key, []);
+    if (!map.has(datapoint.x)) {
+      map.set(datapoint.x, []);
     }
-    map.get(key)!.push(datapoint[dimension === 'x' ? 'y' : 'x'] as V);
+    map.get(datapoint.x)!.push(datapoint.y);
   }
   return map;
 }
 
-export class Series2D<D extends Datapoint2D> {
-  [i: number]: Datapoint2D;
-  protected xMap: Map<string, number[]>;
-  private yMap: Map<number, string[]>;
-  public readonly xs: string[] = [];
+function mapDatapointsYtoX<X extends Scalar>(
+  datapoints: Datapoint2D<X>[]
+): Map<number, X[]> {
+  const map = new Map<number, X[]>();
+  for (const datapoint of datapoints) {
+    if (!map.has(datapoint.y)) {
+      map.set(datapoint.y, []);
+    }
+    map.get(datapoint.y)!.push(datapoint.x);
+  }
+  return map;
+}
+
+abstract class Series2D<X extends Scalar, D extends Datapoint2D<X>> {
+  [i: number]: Datapoint2D<X>;
+  protected xMap: Map<X, number[]>;
+  private yMap: Map<number, X[]>;
+  public readonly xs: X[] = [];
   public readonly length: number;
 
-  static fromKeyAndData(key: string, data: XyPoint[]): Series2D {
-    return new Series2D(key, data.map((record) => Datapoint2D.fromRecord(record)));
-  }
-
-  static fromSeriesManifest(seriesManifest: Series): Series2D {
-    if (!seriesManifest.records) {
-      throw new Error('only series manifests with inline data can use this method.');
-    }
-    return Series2D.fromKeyAndData(seriesManifest.key, seriesManifest.records!);
-  }
-
-  constructor(public readonly key: string, private readonly datapoints: Datapoint2D[]) {
+  constructor(public readonly key: string, private readonly datapoints: D[]) {
     this.datapoints.forEach((datapoint, index) => {
       this[index] = datapoint;
-      this.xs.push(`${datapoint.x}`);
+      this.xs.push(datapoint.x);
     });
-    this.xMap = mapDatapoints('x', this.datapoints);
-    this.yMap = mapDatapoints('y', this.datapoints);
+    this.xMap = mapDatapointsXtoY(this.datapoints);
+    this.yMap = mapDatapointsYtoX(this.datapoints);
     this.length = this.xs.length;
   }
 
-  atX(x: string): number[] | null {
+  atX(x: X): number[] | null {
     return this.xMap.get(x) ?? null;
   }
 
-  atY(y: number): string[] | null {
+  atY(y: number): X[] | null {
     return this.yMap.get(y) ?? null;
   }
 
-  [Symbol.iterator](): Iterator<Datapoint2D> {
+  [Symbol.iterator](): Iterator<D> {
     return this.datapoints[Symbol.iterator]();
   }
 }
 
-export class OrderedSeries2D extends Series2D {
+type SeriesConstructor<X extends Scalar, D extends Datapoint2D<X>, S extends Series2D<X, D>> = 
+  new (key: string, data: D[]) => S
 
-  static fromKeyAndData(key: string, data: XyPoint[]): OrderedSeries2D {
-    return new OrderedSeries2D(key, data.map((record) => Datapoint2D.fromRecord(record)));
+export function seriesFromKeyAndData<
+  X extends Scalar, 
+  D extends Datapoint2D<X>,
+  S extends Series2D<X, D>
+>(
+  seriesConstructor: SeriesConstructor<X, D, S>, 
+  datapointConstructor: DatapointConstructor<X, D>,
+  key: string, 
+  data: XyPoint[]): S {
+  return new seriesConstructor(
+    key, data.map((record) => datapointFromRecord(datapointConstructor, record))
+  );
+}
+
+export function seriesFromSeriesManifest<
+  X extends Scalar, 
+  D extends Datapoint2D<X>,
+  S extends Series2D<X, D>
+>(
+  seriesConstructor: SeriesConstructor<X, D, S>, 
+  datapointConstructor: DatapointConstructor<X, D>, 
+  seriesManifest: Series
+): S {
+  if (!seriesManifest.records) {
+    throw new Error('only series manifests with inline data can use this method.');
   }
+  return seriesFromKeyAndData(
+    seriesConstructor, datapointConstructor, seriesManifest.key, seriesManifest.records!
+  );
+}
 
-  static fromSeriesManifest(seriesManifest: Series): OrderedSeries2D {
-    if (!seriesManifest.records) {
-      throw new Error('only series manifests with inline data can use this method.');
-    }
-    return OrderedSeries2D.fromKeyAndData(seriesManifest.key, seriesManifest.records!);
-  }
+export class OrderedSeries2D<X extends Scalar, D extends Datapoint2D<X>> extends Series2D<X, D> {
 
-  constructor(key: string, datapoints: Datapoint2D[]) {
+  constructor(key: string, datapoints: D[]) {
     super(key, datapoints);
     for (const [_x, ys] of Object.values(this.xMap)) {
       if (ys.length > 1) {
@@ -159,63 +175,27 @@ export class OrderedSeries2D extends Series2D {
     }
   }
 
-  onlyAtX(x: string): number | null {
+  onlyAtX(x: X): number | null {
     return this.xMap.get(x)?.[0] ?? null;
   }
 }
 
-export class NumericSeries2D extends OrderedSeries2D {
-  declare datapoints: NumericDatapoint2D[]
 
-  static fromKeyAndData(key: string, data: XyPoint[]): NumericSeries2D {
-    return new NumericSeries2D(key, data.map((record) => NumericDatapoint2D.fromRecord(record)));
-  }
-
-  static fromSeriesManifest(seriesManifest: Series): NumericSeries2D {
-    if (!seriesManifest.records) {
-      throw new Error('only series manifests with inline data can use this method.');
-    }
-    return NumericSeries2D.fromKeyAndData(seriesManifest.key, seriesManifest.records!);
-  }
-
-  constructor(key: string, datapoints: NumericDatapoint2D[]) {
-    super(key, datapoints);
-    for (const [_x, ys] of Object.values(this.xMap)) {
-      if (ys.length > 1) {
-        throw new Error('ordered series can only have one y-value per x-label')
-      }
-    }
-  }
-
-  onlyAtX(x: string): number | null {
-    return this.xMap.get(x)?.[0] ?? null;
-  }
-}
+export class NominalSeries2D extends Series2D<string, NominalDatapoint2D> { }
+export class OrderedNominalSeries2D extends OrderedSeries2D<string, NominalDatapoint2D> { }
+export class NumericSeries2D extends Series2D<number, NumericDatapoint2D> { }
+export class OrderedNumericSeries2D extends OrderedSeries2D<number, NumericDatapoint2D> { }
 
 // Like a dictionary for series
-// TODO?: allow for number and date values, add axes units properties, add bare/percent format, 
-export class Model2D {
+// TODO?: add axes units properties, add bare/percent format, 
+export class Model2D<X extends Scalar, D extends Datapoint2D<X>, S extends Series2D<X, D>> {
   public readonly keys: string[] = [];
-  protected keyMap: Record<string, Series2D> = {};
-  [i: number]: Series2D;
+  protected keyMap: Record<string, S> = {};
+  [i: number]: S;
   public readonly multi: boolean;
   public readonly numSeries: number;
 
-  static fromManifest(manifest: Manifest): Model2D {
-    const dataset = manifest.datasets[0];
-    if (dataset.data.source !== 'inline') {
-      throw new Error('only manifests with inline data can use this method.');
-    }
-    const series = dataset.series.map((aSeries) => Series2D.fromSeriesManifest(aSeries));
-    return new Model2D(series);
-  }
-
-  static fromAllSeriesData(data: AllSeriesData): Model2D {
-    const series = Object.keys(data).map((key) => Series2D.fromKeyAndData(key, data[key]));
-    return new Model2D(series);
-  }
-
-  constructor(public readonly series: Series2D[]) {
+  constructor(public readonly series: S[]) {
     this.multi = this.series.length > 1;
     this.numSeries = this.series.length;
     for (const [aSeries, seriesIndex] of enumerate(this.series)) {
@@ -228,30 +208,62 @@ export class Model2D {
     }
   }
 
-  atKey(key: string): Series2D | null {
+  atKey(key: string): S | null {
     return this.keyMap[key] ?? null;
   }
 }
 
-export class OrderedModel2D extends Model2D {
-  declare keyMap: Record<string, OrderedSeries2D>;
+type ModelConstructor<
+  X extends Scalar, 
+  D extends Datapoint2D<X>,
+  S extends Series2D<X, D>,
+  M extends Model2D<X, D, S>
+> = new (series: S[]) => M;
+
+export function modelFromManifest<
+  X extends Scalar, 
+  D extends Datapoint2D<X>,
+  S extends Series2D<X, D>,
+  M extends Model2D<X, D, S>
+>(
+  modelConstructor: ModelConstructor<X, D, S, M>,
+  seriesConstructor: SeriesConstructor<X, D, S>, 
+  datapointConstructor: DatapointConstructor<X, D>, 
+  manifest: Manifest
+): M {
+  const dataset = manifest.datasets[0];
+  if (dataset.data.source !== 'inline') {
+    throw new Error('only manifests with inline data can use this method.');
+  }
+  const series = dataset.series.map((aSeries) => 
+    seriesFromSeriesManifest(seriesConstructor, datapointConstructor, aSeries)
+  );
+  return new modelConstructor(series);
+}
+
+export function modelFromAllSeriesData<
+  X extends Scalar, 
+  D extends Datapoint2D<X>,
+  S extends Series2D<X, D>,
+  M extends Model2D<X, D, S>
+>(
+  modelConstructor: ModelConstructor<X, D, S, M>,
+  seriesConstructor: SeriesConstructor<X, D, S>, 
+  datapointConstructor: DatapointConstructor<X, D>, 
+  data: AllSeriesData
+): M {
+  const series = Object.keys(data).map((key) => 
+    seriesFromKeyAndData(seriesConstructor, datapointConstructor, key, data[key])
+  );
+  return new modelConstructor(series);
+}
+
+abstract class OrderedModel2D<
+  X extends Scalar, D extends Datapoint2D<X>, S extends OrderedSeries2D<X, D>
+> extends Model2D<X, D, S>  {
   public readonly numXs: number;
 
-  static fromManifest(manifest: Manifest): Model2D {
-    const dataset = manifest.datasets[0];
-    if (dataset.data.source !== 'inline') {
-      throw new Error('only manifests with inline data can use this method.');
-    }
-    const series = dataset.series.map((aSeries) => OrderedSeries2D.fromSeriesManifest(aSeries));
-    return new OrderedModel2D(series);
-  }
-
-  static fromAllSeriesData(data: AllSeriesData): OrderedModel2D {
-    const series = Object.keys(data).map((key) => OrderedSeries2D.fromKeyAndData(key, data[key]));
-    return new OrderedModel2D(series);
-  }
-
-  constructor(series: OrderedSeries2D[]) {
+  constructor(series: S[]) {
     super(series);
     if (this.multi) {
       this.series.forEach((series) => {
@@ -263,3 +275,8 @@ export class OrderedModel2D extends Model2D {
     this.numXs = this.series[0].length;
   }
 }
+
+export class NominalModel2D extends Model2D<string, NominalDatapoint2D, NominalSeries2D> { }
+export class OrderedNominalModel2D extends OrderedModel2D<string, NominalDatapoint2D, OrderedNominalSeries2D> { }
+export class NumericModel2D extends Model2D<number, NumericDatapoint2D, NumericSeries2D> { }
+export class OrderedNumericModel2D extends OrderedModel2D<number, NumericDatapoint2D, OrderedNumericSeries2D> { }

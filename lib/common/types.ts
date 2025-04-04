@@ -23,3 +23,5 @@ export type ChartType = Manifest['datasets'][number]['type'];
 export type AxisOrientation = 'horiz' | 'vert';
 
 export type SnapLocation = 'start' | 'end' | 'center';
+
+export type Constructor = new (...args: any[]) => any;
