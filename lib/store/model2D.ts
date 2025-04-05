@@ -16,11 +16,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import type { Manifest, Series, XyPoint } from "@fizz/paramanifest";
 import { arrayEqual } from "./helpers";
-import { AllSeriesData } from "../common/types";
+import { AllSeriesData, ChartType, Datatype } from "../common/types";
 import { enumerate } from "../common/utils";
-import { CalendarPeriod } from "./calendar_period";
+import { calendarEquals, CalendarPeriod, parseCalendar } from "./calendar_period";
 
-type Scalar = number | string | CalendarPeriod
+type Scalar = number | string | CalendarPeriod;
 
 /**
  * A datapoint consisting of x and y values.
@@ -38,7 +38,7 @@ abstract class Datapoint2D<X extends Scalar>{
     }
   }
 
-  isEqual(other: Datapoint2D<X>): boolean {
+  public isEqual(other: Datapoint2D<X>): boolean {
     return this.x === other.x && this.y === other.y;
   }
 
@@ -70,6 +70,22 @@ export class NumericDatapoint2D extends Datapoint2D<number> {
       throw new Error('x values in Numeric Datapoints must be numbers');
     }
     return x;
+  }
+
+}
+
+export class CalendarDatapoint2D extends Datapoint2D<CalendarPeriod> {
+  
+  getX(): CalendarPeriod {
+    const x = parseCalendar(this.xRaw);
+    if (x === null) {
+      throw new Error('x values in Calendar Datapoints must be parsable');
+    }
+    return x;
+  }
+
+  public isEqual(other: Datapoint2D<CalendarPeriod>): boolean {
+    return calendarEquals(this.x, other.x) && this.y === other.y;
   }
 
 }
@@ -185,6 +201,8 @@ export class NominalSeries2D extends Series2D<string, NominalDatapoint2D> { }
 export class OrderedNominalSeries2D extends OrderedSeries2D<string, NominalDatapoint2D> { }
 export class NumericSeries2D extends Series2D<number, NumericDatapoint2D> { }
 export class OrderedNumericSeries2D extends OrderedSeries2D<number, NumericDatapoint2D> { }
+export class CalendarSeries2D extends Series2D<CalendarPeriod, CalendarDatapoint2D> { }
+export class OrderedCalendarSeries2D extends OrderedSeries2D<CalendarPeriod, CalendarDatapoint2D> { }
 
 // Like a dictionary for series
 // TODO?: add axes units properties, add bare/percent format, 
@@ -277,6 +295,82 @@ abstract class OrderedModel2D<
 }
 
 export class NominalModel2D extends Model2D<string, NominalDatapoint2D, NominalSeries2D> { }
+export const nominalModelFromManifest = (manifest: Manifest) => 
+  modelFromManifest(NominalModel2D, NominalSeries2D, NominalDatapoint2D, manifest);
+export const nominalModelFromSeriesData = (data: AllSeriesData) => 
+  modelFromAllSeriesData(NominalModel2D, NominalSeries2D, NominalDatapoint2D, data);
+
 export class OrderedNominalModel2D extends OrderedModel2D<string, NominalDatapoint2D, OrderedNominalSeries2D> { }
+export const orderedNominalModelFromManifest = (manifest: Manifest) => 
+  modelFromManifest(OrderedNominalModel2D, OrderedNominalSeries2D, NominalDatapoint2D, manifest);
+export const orderedNominalModelFromSeriesData = (data: AllSeriesData) => 
+  modelFromAllSeriesData(OrderedNominalModel2D, OrderedNominalSeries2D, NominalDatapoint2D, data);
+
 export class NumericModel2D extends Model2D<number, NumericDatapoint2D, NumericSeries2D> { }
+export const numericModelFromManifest = (manifest: Manifest) => 
+  modelFromManifest(NumericModel2D, NumericSeries2D, NumericDatapoint2D, manifest);
+export const numericModelFromSeriesData = (data: AllSeriesData) => 
+  modelFromAllSeriesData(NumericModel2D, NumericSeries2D, NumericDatapoint2D, data);
+
 export class OrderedNumericModel2D extends OrderedModel2D<number, NumericDatapoint2D, OrderedNumericSeries2D> { }
+export const orderedNumericModelFromManifest = (manifest: Manifest) => 
+  modelFromManifest(OrderedNumericModel2D, OrderedNumericSeries2D, NumericDatapoint2D, manifest);
+export const orderedNumericModelFromSeriesData = (data: AllSeriesData) => 
+  modelFromAllSeriesData(OrderedNumericModel2D, OrderedNumericSeries2D, NumericDatapoint2D, data);
+
+export class CalendarModel2D extends Model2D<CalendarPeriod, CalendarDatapoint2D, CalendarSeries2D> { }
+export const calendarModelFromManifest = (manifest: Manifest) => 
+  modelFromManifest(CalendarModel2D, CalendarSeries2D, CalendarDatapoint2D, manifest);
+export const calendarModelFromSeriesData = (data: AllSeriesData) => 
+  modelFromAllSeriesData(CalendarModel2D, CalendarSeries2D, CalendarDatapoint2D, data);
+
+export class OrderedCalendarModel2D extends OrderedModel2D<CalendarPeriod, CalendarDatapoint2D, OrderedCalendarSeries2D> { }
+export const orderedCalendarModelFromManifest = (manifest: Manifest) => 
+  modelFromManifest(OrderedCalendarModel2D, OrderedCalendarSeries2D, CalendarDatapoint2D, manifest);
+export const orderedCalendarModelFromSeriesData = (data: AllSeriesData) => 
+  modelFromAllSeriesData(OrderedCalendarModel2D, OrderedCalendarSeries2D, CalendarDatapoint2D, data);
+
+export type Model = NominalModel2D | OrderedNominalModel2D | NumericModel2D | OrderedNumericModel2D
+  | CalendarModel2D | OrderedCalendarModel2D;
+export type ModelFromManifest = (manifest: Manifest) => Model;
+export type ModelFromSeriesData = (data: AllSeriesData) => Model;
+
+export const ModelMap: Record<ChartType, 
+  Record<Datatype, [ModelConstructor<any, any, any, any>, ModelFromManifest, ModelFromSeriesData]>
+> = {
+  line: {
+    string: [OrderedNominalModel2D, orderedNominalModelFromManifest, orderedNominalModelFromSeriesData],
+    number: [OrderedNumericModel2D, orderedNumericModelFromManifest, orderedNumericModelFromSeriesData],
+    date: [OrderedCalendarModel2D, orderedCalendarModelFromManifest, orderedCalendarModelFromSeriesData]
+  },
+  stepline: {
+    string: [OrderedNominalModel2D, orderedNominalModelFromManifest, orderedNominalModelFromSeriesData],
+    number: [OrderedNumericModel2D, orderedNumericModelFromManifest, orderedNumericModelFromSeriesData],
+    date: [OrderedCalendarModel2D, orderedCalendarModelFromManifest, orderedCalendarModelFromSeriesData]
+  },
+  column: {
+    string: [OrderedNominalModel2D, orderedNominalModelFromManifest, orderedNominalModelFromSeriesData],
+    number: [OrderedNumericModel2D, orderedNumericModelFromManifest, orderedNumericModelFromSeriesData],
+    date: [OrderedCalendarModel2D, orderedCalendarModelFromManifest, orderedCalendarModelFromSeriesData]
+  },
+  bar: {
+    string: [OrderedNominalModel2D, orderedNominalModelFromManifest, orderedNominalModelFromSeriesData],
+    number: [OrderedNumericModel2D, orderedNumericModelFromManifest, orderedNumericModelFromSeriesData],
+    date: [OrderedCalendarModel2D, orderedCalendarModelFromManifest, orderedCalendarModelFromSeriesData]
+  },
+  lollipop: {
+    string: [OrderedNominalModel2D, orderedNominalModelFromManifest, orderedNominalModelFromSeriesData],
+    number: [OrderedNumericModel2D, orderedNumericModelFromManifest, orderedNumericModelFromSeriesData],
+    date: [OrderedCalendarModel2D, orderedCalendarModelFromManifest, orderedCalendarModelFromSeriesData]
+  },
+  scatter: {
+    string: [NominalModel2D, nominalModelFromManifest, nominalModelFromSeriesData],
+    number: [NumericModel2D, numericModelFromManifest, numericModelFromSeriesData],
+    date: [CalendarModel2D, calendarModelFromManifest, calendarModelFromSeriesData]
+  },
+  pie: {
+    string: [OrderedNominalModel2D, orderedNominalModelFromManifest, orderedNominalModelFromSeriesData],
+    number: [OrderedNumericModel2D, orderedNumericModelFromManifest, orderedNumericModelFromSeriesData],
+    date: [OrderedCalendarModel2D, orderedCalendarModelFromManifest, orderedCalendarModelFromSeriesData]
+  }
+}

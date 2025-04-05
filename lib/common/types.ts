@@ -25,3 +25,5 @@ export type AxisOrientation = 'horiz' | 'vert';
 export type SnapLocation = 'start' | 'end' | 'center';
 
 export type Constructor = new (...args: any[]) => any;
+
+export type Datatype = Manifest['datasets'][number]['facets']['x']['datatype'];
