@@ -14,13 +14,30 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+// * Prelude *
+
+// Imports
+
 import type { Manifest, Series, XyPoint } from "@fizz/paramanifest";
 import { arrayEqual } from "./helpers";
 import { AllSeriesData, ChartType, Datatype } from "../common/types";
 import { enumerate } from "../common/utils";
 import { calendarEquals, CalendarPeriod, parseCalendar } from "./calendar_period";
 
+// Types
+
 type Scalar = number | string | CalendarPeriod;
+
+// TODO: This type lacks a completeness type check
+type ScalarMap = {
+  number: number,
+  string: string,
+  date: CalendarPeriod
+}
+
+// * Datapoints *
+
+// Generic Datapoint
 
 /**
  * A datapoint consisting of x and y values.
@@ -45,14 +62,7 @@ abstract class Datapoint2D<X extends Scalar>{
   abstract getX(): X;
 }
 
-type DatapointConstructor<X extends Scalar, D extends Datapoint2D<X>> = 
-  new (xRaw: string, yRaw: string) => D
-
-export function datapointFromRecord<X extends Scalar, D extends Datapoint2D<X>>(
-  constructor: DatapointConstructor<X, D>, record: XyPoint
-): D {
-  return new constructor(record.x, record.y);
-}
+// Specific Datapoints
 
 export class NominalDatapoint2D extends Datapoint2D<string> {
   
@@ -90,6 +100,31 @@ export class CalendarDatapoint2D extends Datapoint2D<CalendarPeriod> {
 
 }
 
+// Datapoint Construction
+
+type DatapointMap<T extends Datatype> = Datapoint2D<ScalarMap[T]>
+
+type DatapointConstructor<T extends Datatype> 
+  = new (xRaw: string, yRaw: string) => DatapointMap<T>
+
+type DatapointConstructorMap = {
+  [T in Datatype]: DatapointConstructor<T>;
+};
+
+const DATAPOINT_CONSTRUCTORS: DatapointConstructorMap = {
+  'string': NominalDatapoint2D,
+  'number': NumericDatapoint2D,
+  'date': CalendarDatapoint2D
+}
+
+export function datapointFromRecord<T extends Datatype>(tp: T, record: XyPoint): DatapointMap<T> {
+  return new DATAPOINT_CONSTRUCTORS[tp](record.x, record.y);
+}
+
+// * Series *
+
+// Helpers
+
 function mapDatapointsXtoY<X extends Scalar>(
   datapoints: Datapoint2D<X>[]
 ): Map<X, number[]> {
@@ -116,14 +151,16 @@ function mapDatapointsYtoX<X extends Scalar>(
   return map;
 }
 
-abstract class Series2D<X extends Scalar, D extends Datapoint2D<X>> {
-  [i: number]: Datapoint2D<X>;
-  protected xMap: Map<X, number[]>;
-  private yMap: Map<number, X[]>;
-  public readonly xs: X[] = [];
+// Generic Series
+
+abstract class Series2D<T extends Datatype> {
+  [i: number]: Datapoint2D<ScalarMap[T]>;
+  protected xMap: Map<ScalarMap[T], number[]>;
+  private yMap: Map<number, ScalarMap[T][]>;
+  public readonly xs: ScalarMap[T][] = [];
   public readonly length: number;
 
-  constructor(public readonly key: string, private readonly datapoints: D[]) {
+  constructor(public readonly key: string, private readonly datapoints: DatapointMap<T>[]) {
     this.datapoints.forEach((datapoint, index) => {
       this[index] = datapoint;
       this.xs.push(datapoint.x);
@@ -133,21 +170,68 @@ abstract class Series2D<X extends Scalar, D extends Datapoint2D<X>> {
     this.length = this.xs.length;
   }
 
-  atX(x: X): number[] | null {
+  atX(x: ScalarMap[T]): number[] | null {
     return this.xMap.get(x) ?? null;
   }
 
-  atY(y: number): X[] | null {
+  atY(y: number): ScalarMap[T][] | null {
     return this.yMap.get(y) ?? null;
   }
 
-  [Symbol.iterator](): Iterator<D> {
+  [Symbol.iterator](): Iterator<DatapointMap<T>> {
     return this.datapoints[Symbol.iterator]();
   }
 }
 
-type SeriesConstructor<X extends Scalar, D extends Datapoint2D<X>, S extends Series2D<X, D>> = 
-  new (key: string, data: D[]) => S
+export class OrderedSeries2D<T extends Datatype> extends Series2D<T> {
+
+  constructor(key: string, datapoints: DatapointMap<T>[]) {
+    super(key, datapoints);
+    for (const [_x, ys] of Object.values(this.xMap)) {
+      if (ys.length > 1) {
+        throw new Error('ordered series can only have one y-value per x-label')
+      }
+    }
+  }
+
+  onlyAtX(x: ScalarMap[T]): number | null {
+    return this.xMap.get(x)?.[0] ?? null;
+  }
+}
+
+// Specific Series
+
+export class NominalSeries2D extends Series2D<'string'> { }
+export class OrderedNominalSeries2D extends OrderedSeries2D<'string'> { }
+export class NumericSeries2D extends Series2D<'number'> { }
+export class OrderedNumericSeries2D extends OrderedSeries2D<'number'> { }
+export class CalendarSeries2D extends Series2D<'date'> { }
+export class OrderedCalendarSeries2D extends OrderedSeries2D<'date'> { }
+
+// Series Construction
+
+type SeriesMap<T extends Datatype> = Series2D<T>
+
+type SeriesConstructor<T extends Datatype> 
+  = new (key: string, data: DatapointMap<T>[]) => S
+  = new (xRaw: string, yRaw: string) => DatapointMap<T>
+
+type SeriesConstructorMap = {
+  [T in Datatype]: SeriesConstructor<T>;
+};
+
+const UNORDERED_SERIES_CONSTRUCTORS: SeriesConstructorMap = {
+  'string': NominalSeries2D,
+  'number': NumericSeries2D,
+  'date': CalendarSeries2D
+}
+
+export function datapointFromRecord<T extends Datatype>(tp: T, record: XyPoint): DatapointMap<T> {
+  return new DATAPOINT_CONSTRUCTORS[tp](record.x, record.y);
+}
+
+type SeriesConstructor<T extends Datatype, S extends Series2D<T>> = 
+  new (key: string, data: DatapointMap<T>[]) => S
 
 export function seriesFromKeyAndData<
   X extends Scalar, 
@@ -180,29 +264,7 @@ export function seriesFromSeriesManifest<
   );
 }
 
-export class OrderedSeries2D<X extends Scalar, D extends Datapoint2D<X>> extends Series2D<X, D> {
-
-  constructor(key: string, datapoints: D[]) {
-    super(key, datapoints);
-    for (const [_x, ys] of Object.values(this.xMap)) {
-      if (ys.length > 1) {
-        throw new Error('ordered series can only have one y-value per x-label')
-      }
-    }
-  }
-
-  onlyAtX(x: X): number | null {
-    return this.xMap.get(x)?.[0] ?? null;
-  }
-}
-
-
-export class NominalSeries2D extends Series2D<string, NominalDatapoint2D> { }
-export class OrderedNominalSeries2D extends OrderedSeries2D<string, NominalDatapoint2D> { }
-export class NumericSeries2D extends Series2D<number, NumericDatapoint2D> { }
-export class OrderedNumericSeries2D extends OrderedSeries2D<number, NumericDatapoint2D> { }
-export class CalendarSeries2D extends Series2D<CalendarPeriod, CalendarDatapoint2D> { }
-export class OrderedCalendarSeries2D extends OrderedSeries2D<CalendarPeriod, CalendarDatapoint2D> { }
+// * Models *
 
 // Like a dictionary for series
 // TODO?: add axes units properties, add bare/percent format, 
@@ -374,3 +436,29 @@ export const ModelMap: Record<ChartType,
     date: [OrderedCalendarModel2D, orderedCalendarModelFromManifest, orderedCalendarModelFromSeriesData]
   }
 }
+
+/*
+
+type DatapointMap = {
+  string: NominalDatapoint2D,
+  number: NumericDatapoint2D,
+  date: CalendarDatapoint2D
+}
+
+Record<Datatype, DatapointConstructor<Datatype>>
+
+type T = ScalarMap['string']
+
+function getDatapointConstructor<T extends keyof ScalarMap>(tp: T): DatapointConstructor<T> {
+  if (tp === 'string') {
+    return NominalDatapoint2D;
+  }
+}
+
+type DatapointConstructorGeneric<X extends Scalar, D extends Datapoint2D<X>> = 
+  new (xRaw: string, yRaw: string) => D
+
+type DatapointConstructor<T extends Datatype> 
+  = DatapointConstructorGeneric<ScalarMap[T], Datapoint2D<ScalarMap[T]>>;
+
+*/
