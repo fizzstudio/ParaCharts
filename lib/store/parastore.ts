@@ -18,7 +18,7 @@ import { State, property } from "@lit-app/state";
 
 import type { Manifest } from "@fizz/paramanifest";
 
-import { Model, ModelMap } from "./model2D";
+import { Model2D, modelFromAllSeriesData, modelFromManifest } from "./model2D";
 import { AllSeriesData, ChartType, Datatype } from "../common/types";
 import { DeepReadonly, Settings, SettingsInput } from "./settings_types";
 import { SettingsSetter } from "./settings_setter";
@@ -56,7 +56,7 @@ export class ParaStore extends State {
   @property()
   public darkMode = false;
 
-  public readonly model: Model;
+  public readonly model: Model2D<Datatype>;
   public readonly type: ChartType;
   public readonly title: string;
   public readonly xAxisLabel: string;
@@ -82,12 +82,12 @@ export class ParaStore extends State {
     this.xAxisLabel = dataset.facets.x.label;
     this.yAxisLabel = dataset.facets.y.label;
     this.xDatatype = dataset.facets.x.datatype;
-    const [_modelClass, modelFromManifest, modelFromAllSeriesData] = ModelMap[this.type][this.xDatatype];
+    //const [_modelClass, modelFromManifest, modelFromAllSeriesData] = ModelMap[this.type][this.xDatatype];
     if (dataset.data.source === 'inline') {
-      this.model = modelFromManifest(manifest);
+      this.model = modelFromManifest(this.xDatatype, manifest);
       this.data = dataFromManifest(manifest);
     } else if (data) {
-      this.model = modelFromAllSeriesData(data);
+      this.model = modelFromAllSeriesData(this.xDatatype, data, this.type);
       this.data = data;
     } else {
       throw new Error('store lacks external or inline chart data')
