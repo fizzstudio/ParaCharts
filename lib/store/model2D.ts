@@ -26,9 +26,11 @@ import { calendarEquals, CalendarPeriod, parseCalendar } from "./calendar_period
 
 // Types
 
-//export type Scalar = number | string | CalendarPeriod;
+export type Scalar = number | string | CalendarPeriod;
 
-// TODO: This type lacks a completeness type check
+// TODO: This type lacks a completeness type check. This could be implemented by testing in Vitest
+// that `keyof ScalarMap extends Datatype` and vice versa and `ScalarMap[Datatype] extends Scalar` 
+// and vice versa. 
 type ScalarMap = {
   number: number,
   string: string,
@@ -43,8 +45,8 @@ type ScalarMap = {
  * A datapoint consisting of x and y values.
  * @public
  */
-abstract class Datapoint2D<T extends Datatype>{
-  public readonly x: ScalarMap[T];
+abstract class Datapoint2D<X extends Datatype>{
+  public readonly x: ScalarMap[X];
   public readonly y: number;
 
   constructor(public readonly xRaw: string, public readonly yRaw: string) {
@@ -55,11 +57,11 @@ abstract class Datapoint2D<T extends Datatype>{
     }
   }
 
-  public isEqual(other: Datapoint2D<T>): boolean {
+  public isEqual(other: Datapoint2D<X>): boolean {
     return this.x === other.x && this.y === other.y;
   }
 
-  abstract getX(): ScalarMap[T];
+  abstract getX(): ScalarMap[X];
 }
 
 // Specific Datapoints
@@ -102,31 +104,31 @@ export class CalendarDatapoint2D extends Datapoint2D<'date'> {
 
 // Datapoint Construction
 
-type DatapointConstructor<T extends Datatype> 
-  = new (xRaw: string, yRaw: string) => Datapoint2D<T>
+type DatapointConstructor<X extends Datatype> 
+  = new (xRaw: string, yRaw: string) => Datapoint2D<X>
 
 type DatapointConstructorMap = {
-  [T in Datatype]: DatapointConstructor<T>;
+  [X in Datatype]: DatapointConstructor<X>;
 };
 
 const DATAPOINT_CONSTRUCTORS: DatapointConstructorMap = {
-  'string': NominalDatapoint2D,
-  'number': NumericDatapoint2D,
-  'date': CalendarDatapoint2D
+  string: NominalDatapoint2D,
+  number: NumericDatapoint2D,
+  date: CalendarDatapoint2D
 }
 
-export function datapointFromRecord<T extends Datatype>(tp: T, record: XyPoint): Datapoint2D<T> {
-  return new DATAPOINT_CONSTRUCTORS[tp](record.x, record.y);
+export function datapointFromRecord<X extends Datatype>(datatype: X, record: XyPoint): Datapoint2D<X> {
+  return new DATAPOINT_CONSTRUCTORS[datatype](record.x, record.y);
 }
 
 // * Series *
 
 // Helpers
 
-function mapDatapointsXtoY<T extends Datatype>(
-  datapoints: Datapoint2D<T>[]
-): Map<ScalarMap[T], number[]> {
-  const map = new Map<ScalarMap[T], number[]>();
+function mapDatapointsXtoY<X extends Datatype>(
+  datapoints: Datapoint2D<X>[]
+): Map<ScalarMap[X], number[]> {
+  const map = new Map<ScalarMap[X], number[]>();
   for (const datapoint of datapoints) {
     if (!map.has(datapoint.x)) {
       map.set(datapoint.x, []);
@@ -136,10 +138,10 @@ function mapDatapointsXtoY<T extends Datatype>(
   return map;
 }
 
-function mapDatapointsYtoX<T extends Datatype>(
-  datapoints: Datapoint2D<T>[]
-): Map<number, ScalarMap[T][]> {
-  const map = new Map<number, ScalarMap[T][]>();
+function mapDatapointsYtoX<X extends Datatype>(
+  datapoints: Datapoint2D<X>[]
+): Map<number, ScalarMap[X][]> {
+  const map = new Map<number, ScalarMap[X][]>();
   for (const datapoint of datapoints) {
     if (!map.has(datapoint.y)) {
       map.set(datapoint.y, []);
@@ -151,14 +153,14 @@ function mapDatapointsYtoX<T extends Datatype>(
 
 // Generic Series
 
-abstract class Series2D<T extends Datatype> {
-  [i: number]: Datapoint2D<T>;
-  protected xMap: Map<ScalarMap[T], number[]>;
-  private yMap: Map<number, ScalarMap[T][]>;
-  public readonly xs: ScalarMap[T][] = [];
+abstract class Series2D<X extends Datatype> {
+  [i: number]: Datapoint2D<X>;
+  protected xMap: Map<ScalarMap[X], number[]>;
+  private yMap: Map<number, ScalarMap[X][]>;
+  public readonly xs: ScalarMap[X][] = [];
   public readonly length: number;
 
-  constructor(public readonly key: string, private readonly datapoints: Datapoint2D<T>[]) {
+  constructor(public readonly key: string, private readonly datapoints: Datapoint2D<X>[]) {
     this.datapoints.forEach((datapoint, index) => {
       this[index] = datapoint;
       this.xs.push(datapoint.x);
@@ -168,22 +170,22 @@ abstract class Series2D<T extends Datatype> {
     this.length = this.xs.length;
   }
 
-  atX(x: ScalarMap[T]): number[] | null {
+  atX(x: ScalarMap[X]): number[] | null {
     return this.xMap.get(x) ?? null;
   }
 
-  atY(y: number): ScalarMap[T][] | null {
+  atY(y: number): ScalarMap[X][] | null {
     return this.yMap.get(y) ?? null;
   }
 
-  [Symbol.iterator](): Iterator<Datapoint2D<T>> {
+  [Symbol.iterator](): Iterator<Datapoint2D<X>> {
     return this.datapoints[Symbol.iterator]();
   }
 }
 
-export class OrderedSeries2D<T extends Datatype> extends Series2D<T> {
+export class OrderedSeries2D<X extends Datatype> extends Series2D<X> {
 
-  constructor(key: string, datapoints: Datapoint2D<T>[]) {
+  constructor(key: string, datapoints: Datapoint2D<X>[]) {
     super(key, datapoints);
     for (const [_x, ys] of Object.values(this.xMap)) {
       if (ys.length > 1) {
@@ -192,7 +194,7 @@ export class OrderedSeries2D<T extends Datatype> extends Series2D<T> {
     }
   }
 
-  onlyAtX(x: ScalarMap[T]): number | null {
+  onlyAtX(x: ScalarMap[X]): number | null {
     return this.xMap.get(x)?.[0] ?? null;
   }
 }
@@ -222,17 +224,17 @@ type OrderedSeriesConstructorMap = {
   [T in Datatype]: OrderedSeriesConstructor<T>;
 };
 
-// TODO: There is no check that these constructors are unordered
+// TYPE SAFETY: There is no check that these constructors are unordered
 const UNORDERED_SERIES_CONSTRUCTORS: SeriesConstructorMap = {
-  'string': NominalSeries2D,
-  'number': NumericSeries2D,
-  'date': CalendarSeries2D
+  string: NominalSeries2D,
+  number: NumericSeries2D,
+  date: CalendarSeries2D
 }
 
 const ORDERED_SERIES_CONSTRUCTORS: OrderedSeriesConstructorMap = {
-  'string': OrderedNominalSeries2D,
-  'number': OrderedNumericSeries2D,
-  'date': OrderedCalendarSeries2D
+  string: OrderedNominalSeries2D,
+  number: OrderedNumericSeries2D,
+  date: OrderedCalendarSeries2D
 }
 
 type Order = 'unordered' | 'ordered';
@@ -243,22 +245,22 @@ const SERIES_CONSTRUCTORS: Record<Order, SeriesConstructorMap> = {
   'ordered': ORDERED_SERIES_CONSTRUCTORS
 }
 
-export function seriesFromKeyAndData<T extends Datatype>(
-  tp: T, key: string, data: XyPoint[], ordered: boolean
-): Series2D<T> {
+export function seriesFromKeyAndData<X extends Datatype>(
+  key: string, data: XyPoint[], datatype: X, ordered: boolean
+): Series2D<X> {
   const order = ordered ? 'ordered' : 'unordered';
-  const datapoints = data.map((record) => datapointFromRecord(tp, record));
-  return new SERIES_CONSTRUCTORS[order][tp](key, datapoints);
+  const datapoints = data.map((record) => datapointFromRecord(datatype, record));
+  return new SERIES_CONSTRUCTORS[order][datatype](key, datapoints);
 }
 
-export function seriesFromSeriesManifest<T extends Datatype>(
-  tp: T, seriesManifest: Series, ordered: boolean
-): Series2D<T> {
+export function seriesFromSeriesManifest<X extends Datatype>(
+  seriesManifest: Series, datatype: X, ordered: boolean
+): Series2D<X> {
   if (!seriesManifest.records) {
     throw new Error('only series manifests with inline data can use this method.');
   }
   return seriesFromKeyAndData(
-    tp, seriesManifest.key, seriesManifest.records!, ordered
+    seriesManifest.key, seriesManifest.records!, datatype, ordered
   );
 }
 
@@ -268,14 +270,14 @@ export function seriesFromSeriesManifest<T extends Datatype>(
 
 // Like a dictionary for series
 // TODO?: add axes units properties, add bare/percent format, 
-export class Model2D<T extends Datatype> {
+export class Model2D<X extends Datatype> {
   public readonly keys: string[] = [];
-  protected keyMap: Record<string, Series2D<T>> = {};
-  [i: number]: Series2D<T>;
+  protected keyMap: Record<string, Series2D<X>> = {};
+  [i: number]: Series2D<X>;
   public readonly multi: boolean;
   public readonly numSeries: number;
 
-  constructor(public readonly series: Series2D<T>[]) {
+  constructor(public readonly series: Series2D<X>[]) {
     this.multi = this.series.length > 1;
     this.numSeries = this.series.length;
     for (const [aSeries, seriesIndex] of enumerate(this.series)) {
@@ -288,18 +290,18 @@ export class Model2D<T extends Datatype> {
     }
   }
 
-  atKey(key: string): Series2D<T> | null {
+  atKey(key: string): Series2D<X> | null {
     return this.keyMap[key] ?? null;
   }
 }
 
-abstract class OrderedModel2D<T extends Datatype> extends Model2D<T>  {
-  declare series: OrderedSeries2D<T>[];
-  declare keyMap: Record<string, OrderedSeries2D<T>>;
+abstract class OrderedModel2D<X extends Datatype> extends Model2D<X>  {
+  declare series: OrderedSeries2D<X>[];
+  declare keyMap: Record<string, OrderedSeries2D<X>>;
 
   public readonly numXs: number;
 
-  constructor(series: OrderedSeries2D<T>[]) {
+  constructor(series: OrderedSeries2D<X>[]) {
     super(series);
     if (this.multi) {
       this.series.forEach((series) => {
@@ -323,7 +325,7 @@ export class OrderedCalendarModel2D extends OrderedModel2D<'date'> { }
 
 // Model Construction
 
-type ModelConstructor<T extends Datatype> = new (series: Series2D<T>[]) => Model2D<T>;
+type ModelConstructor<X extends Datatype> = new (series: Series2D<X>[]) => Model2D<X>;
 
 type OrderedModelConstructor<T extends Datatype> 
   = new (series: OrderedSeries2D<T>[]) => OrderedModel2D<T>;
@@ -338,24 +340,24 @@ type OrderedModelConstructorMap = {
 
 // TODO: There is no check that these constructors are unordered
 const UNORDERED_MODEL_CONSTRUCTORS: ModelConstructorMap = {
-  'string': NominalModel2D,
-  'number': NumericModel2D,
-  'date': CalendarModel2D
+  string: NominalModel2D,
+  number: NumericModel2D,
+  date: CalendarModel2D
 }
 
 const ORDERED_MODEL_CONSTRUCTORS: OrderedModelConstructorMap = {
-  'string': OrderedNominalModel2D,
-  'number': OrderedNumericModel2D,
-  'date': OrderedCalendarModel2D
+  string: OrderedNominalModel2D,
+  number: OrderedNumericModel2D,
+  date: OrderedCalendarModel2D
 }
 
 // TODO: There is no check these constructors are unordered/ordered
 const MODEL_CONSTRUCTORS: Record<Order, ModelConstructorMap> = {
-  'unordered': UNORDERED_MODEL_CONSTRUCTORS,
-  'ordered': ORDERED_MODEL_CONSTRUCTORS
+  unordered: UNORDERED_MODEL_CONSTRUCTORS,
+  ordered: ORDERED_MODEL_CONSTRUCTORS
 }
 
-export const MODEL_ORDERED: Record<ChartType, boolean> = {
+const MODEL_ORDERED: Record<ChartType, boolean> = {
   line: true,
   stepline: true,
   column: true,
@@ -365,34 +367,24 @@ export const MODEL_ORDERED: Record<ChartType, boolean> = {
   pie: true,
 }
 
-export function modelFromManifest<T extends Datatype>(tp: T, manifest: Manifest): Model2D<T> {
+export function modelFromManifest<X extends Datatype>(manifest: Manifest, datatype: X): Model2D<X> {
   const dataset = manifest.datasets[0];
   const order = MODEL_ORDERED[dataset.type];
   if (dataset.data.source !== 'inline') {
     throw new Error('only manifests with inline data can use this method.');
   }
   const series = dataset.series.map((seriesManifest) => 
-    seriesFromSeriesManifest<T>(tp, seriesManifest, order)
+    seriesFromSeriesManifest<X>(seriesManifest, datatype, order)
   );
-  return new MODEL_CONSTRUCTORS[order ? 'ordered' : 'unordered'][tp](series);
+  return new MODEL_CONSTRUCTORS[order ? 'ordered' : 'unordered'][datatype](series);
 }
 
-export function modelFromAllSeriesData<T extends Datatype>(
-  tp: T, data: AllSeriesData, chartType: ChartType
-): Model2D<T> {
+export function modelFromAllSeriesData<X extends Datatype>(
+  data: AllSeriesData, datatype: X, chartType: ChartType
+): Model2D<X> {
   const order = MODEL_ORDERED[chartType];
   const series = Object.keys(data).map((key) => 
-    seriesFromKeyAndData(tp, key, data[key], order)
+    seriesFromKeyAndData(key, data[key], datatype, order)
   );
-  return new MODEL_CONSTRUCTORS[order ? 'ordered' : 'unordered'][tp](series);
+  return new MODEL_CONSTRUCTORS[order ? 'ordered' : 'unordered'][datatype](series);
 }
-
-/*export const MODEL_ORDER: Record<ChartType, Order> = {
-  line: 'ordered',
-  stepline: 'ordered',
-  column: 'ordered',
-  bar: 'ordered',
-  lollipop: 'ordered',
-  scatter: 'unordered',
-  pie: 'ordered',
-}*/
