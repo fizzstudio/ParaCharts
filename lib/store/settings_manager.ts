@@ -24,12 +24,12 @@ import {
  * Helps set settings.
  * @internal
  */
-export class SettingsSetter {
+export class SettingsManager {
 
   static hydrateInput(input: SettingsInput): Partial<Settings> {
     const out: Partial<Settings> = {};
     for (const [path, value] of Object.entries(input)) {
-      SettingsSetter.set(path, value, out, true);
+      SettingsManager.set(path, value, out, true);
     }
     return out;
   }
@@ -98,8 +98,8 @@ export class SettingsSetter {
     return cursor;
   }
 
-  static getGroupLink<T extends SettingGroup>(path: string, group: T) {
-    return SettingsSetter.getGroup(path, group) as DeepReadonly<T>;
+  static getGroupLink<T extends SettingGroup>(path: string, group: SettingGroup) {
+    return SettingsManager.getGroup(path, group) as DeepReadonly<T>;
   }
 
   /**
@@ -115,20 +115,20 @@ export class SettingsSetter {
     if (segs.length < 2) {
       throw new Error('setting path must have at least two elements');
     }
-    return SettingsSetter.getGroup(segs.slice(0, -1).join('.'), group, create);
+    return SettingsManager.getGroup(segs.slice(0, -1).join('.'), group, create);
   }
 
-  /*get(path: string) {
-    const value = this.getGroupForSetting(path)[path.split('.').at(-1)!];
+  static get(path: string, group: SettingGroup) {
+    const value = SettingsManager.getGroupForSetting(path, group)[path.split('.').at(-1)!];
     if (typeof value === 'object') {
       throw new Error('can only get settings, not groups');
     }
     return value;
-  }*/
+  }
 
   static set(path: string, value: Setting | undefined, group: SettingGroup, create = false) {
     const segs = path.split('.');
-    const settingGroup = SettingsSetter.getGroupForSetting(path, group, create);
+    const settingGroup = SettingsManager.getGroupForSetting(path, group, create);
     settingGroup[segs.at(-1)!] = value;
   }
 
@@ -136,7 +136,7 @@ export class SettingsSetter {
     const clone: T = {} as T;
     const keys = Object.keys(settings) as (keyof T)[];
     for (const key of keys) {
-      SettingsSetter.cloneProp(clone, settings, key);
+      SettingsManager.cloneProp(clone, settings, key);
     }
     return clone;
   }
@@ -148,7 +148,7 @@ export class SettingsSetter {
     } else if (src[prop] === null) { 
       dest[prop] = null as T[keyof T];
     } else*/ if (typeof src[prop] === 'object') {
-      dest[prop] = SettingsSetter.cloneSettings(src[prop] as SettingGroup) as T[keyof T];
+      dest[prop] = SettingsManager.cloneSettings(src[prop] as SettingGroup) as T[keyof T];
     } else {
       dest[prop] = src[prop];
     }
@@ -169,12 +169,12 @@ export class SettingsSetter {
           this.suppleteSettings(settings[key] as SettingGroup, using[key] as SettingGroup);
         } else if (settings[key] === undefined) { 
           //opts[key] = using[key];
-          SettingsSetter.cloneProp(settings, using, key);
+          SettingsManager.cloneProp(settings, using, key);
         } else {
           continue;
         }  
       } else {
-        SettingsSetter.cloneProp(settings, using, key);
+        SettingsManager.cloneProp(settings, using, key);
       }
     }
   }

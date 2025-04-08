@@ -18,13 +18,12 @@ import { View, Container } from './base_view';
 import { type Layout } from './layout';
 import { 
   type Axis, type AxisOrientation,
-  HorizTick, VertTick,
-  HorizGridLine, VertGridLine
 } from './axis';
 
 import { mapn } from '@fizz/chart-classifier-utils';
 
 import { svg, type TemplateResult } from 'lit';
+import { HorizGridLine, HorizTick, VertGridLine, VertTick } from './rule';
 
 /**
  * A strip of tick marks.
@@ -100,7 +99,7 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
         : 0;
     }
     let indices = mapn(this._count + 1, i => i);
-    if (!todo().controller.settingStore.settings.grid.isDrawVertAxisOppositeLine) {
+    if (!this.axis.docView.paraview.store.settings.grid.isDrawVertAxisOppositeLine) {
       indices = isEast ? indices.slice(0, -1) : indices.slice(1);
     }
     const xs = indices.map(i => isEast ? this.parent.width - i*this._interval : i*this._interval);
@@ -112,7 +111,7 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
       this.append(new HorizGridLine(this.axis.orientationSettings.position));
       this._children.at(-1)!.x = xs[i];
       this._children.at(-1)!.y = y;
-      this._children.at(-1)!.hidden = !todo().controller.settingStore.settings.grid.isDrawVertLines;
+      this._children.at(-1)!.hidden = !this.axis.docView.paraview.store.settings.grid.isDrawVertLines;
     });
   }
 
@@ -142,7 +141,7 @@ export class VertTickStrip extends TickStrip<'vert'> {
     const length = this.axis.settings.tick.length;
     let x = length;
     let indices = mapn(this._count, i => i);
-    if (!todo().controller.settingStore.settings.grid.isDrawHorizAxisOppositeLine) {
+    if (!this.axis.docView.paraview.store.settings.grid.isDrawHorizAxisOppositeLine) {
       indices = isNorth ? indices.slice(1) : indices.slice(0, -1);
     }
     if (this.axis.orientationSettings.position === 'east') {
@@ -158,7 +157,7 @@ export class VertTickStrip extends TickStrip<'vert'> {
       this.append(new VertGridLine(this.axis.orientationSettings.position));
       this._children.at(-1)!.x = x;
       this._children.at(-1)!.y = ys[i];
-      this._children.at(-1)!.hidden = !todo().controller.settingStore.settings.grid.isDrawHorizLines;
+      this._children.at(-1)!.hidden = !this.axis.docView.paraview.store.settings.grid.isDrawHorizLines;
     });
   }
 

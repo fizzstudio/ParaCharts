@@ -21,8 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import type { Manifest, Series, XyPoint } from "@fizz/paramanifest";
 import { arrayEqual } from "./helpers";
 import { AllSeriesData, ChartType, Datatype } from "../common/types";
-import { enumerate } from "../common/utils";
-import { calendarEquals, CalendarPeriod, parseCalendar } from "./calendar_period";
+import { enumerate, mergeUnique, mergeUniqueBy } from "../common/utils";
+import { calendarEquals, CalendarPeriod, calendarString, parseCalendar } from "./calendar_period";
 
 // Types
 
@@ -37,6 +37,16 @@ type ScalarMap = {
   date: CalendarPeriod
 }
 
+// * Boxed Value *
+
+/**
+ * This represents a value and its raw string representation for formatting
+ * @public
+ */
+export class Box<T extends Datatype> {
+  constructor(public readonly value: ScalarMap[T], public readonly raw: string) { }
+}
+
 // * Datapoints *
 
 // Generic Datapoint
@@ -45,7 +55,7 @@ type ScalarMap = {
  * A datapoint consisting of x and y values.
  * @public
  */
-abstract class Datapoint2D<X extends Datatype>{
+export abstract class Datapoint2D<X extends Datatype> {
   public readonly x: ScalarMap[X];
   public readonly y: number;
 
@@ -61,7 +71,16 @@ abstract class Datapoint2D<X extends Datatype>{
     return this.x === other.x && this.y === other.y;
   }
 
+  public boxedX(): Box<X> {
+    return new Box(this.x, this.xRaw);
+  }
+
+  public boxedY(): Box<'number'> {
+    return new Box(this.y, this.yRaw);
+  }
+
   abstract getX(): ScalarMap[X];
+  abstract xToString(): string;
 }
 
 // Specific Datapoints
@@ -70,6 +89,10 @@ export class NominalDatapoint2D extends Datapoint2D<'string'> {
   
   getX(): string {
     return this.xRaw;
+  }
+
+  xToString(): string {
+    return this.x;
   }
 
 }
@@ -82,6 +105,10 @@ export class NumericDatapoint2D extends Datapoint2D<'number'> {
       throw new Error('x values in Numeric Datapoints must be numbers');
     }
     return x;
+  }
+
+  xToString(): string {
+    return this.x.toString();
   }
 
 }
@@ -98,6 +125,10 @@ export class CalendarDatapoint2D extends Datapoint2D<'date'> {
 
   public isEqual(other: Datapoint2D<'date'>): boolean {
     return calendarEquals(this.x, other.x) && this.y === other.y;
+  }
+
+  xToString(): string {
+    return calendarString(this.x);
   }
 
 }
@@ -153,17 +184,23 @@ function mapDatapointsYtoX<X extends Datatype>(
 
 // Generic Series
 
-abstract class Series2D<X extends Datatype> {
+export abstract class Series2D<X extends Datatype> {
   [i: number]: Datapoint2D<X>;
   protected xMap: Map<ScalarMap[X], number[]>;
   private yMap: Map<number, ScalarMap[X][]>;
   public readonly xs: ScalarMap[X][] = [];
+  public readonly ys: number[] = [];
   public readonly length: number;
+  public readonly boxedXs: Box<X>[] = [];
+  public readonly boxedYs: Box<'number'>[] = [];
 
-  constructor(public readonly key: string, private readonly datapoints: Datapoint2D<X>[]) {
+  constructor(public readonly key: string, public readonly datapoints: Datapoint2D<X>[]) {
     this.datapoints.forEach((datapoint, index) => {
       this[index] = datapoint;
       this.xs.push(datapoint.x);
+      this.boxedXs.push(new Box(datapoint.x, datapoint.xRaw));
+      this.ys.push(datapoint.y);
+      this.boxedYs.push(new Box(datapoint.y, datapoint.yRaw));
     });
     this.xMap = mapDatapointsXtoY(this.datapoints);
     this.yMap = mapDatapointsYtoX(this.datapoints);
@@ -183,7 +220,7 @@ abstract class Series2D<X extends Datatype> {
   }
 }
 
-export class OrderedSeries2D<X extends Datatype> extends Series2D<X> {
+abstract class OrderedSeries2D<X extends Datatype> extends Series2D<X> {
 
   constructor(key: string, datapoints: Datapoint2D<X>[]) {
     super(key, datapoints);
@@ -266,6 +303,29 @@ export function seriesFromSeriesManifest<X extends Datatype>(
 
 // * Models *
 
+// Helpers
+
+function hasDatapoint<X extends Datatype>(arr: Datapoint2D<X>[], datapoint: Datapoint2D<X> ): boolean {
+  for (const other of arr) {
+    if (datapoint.isEqual(other)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function mergeUniqueDatapoints<X extends Datatype>(...arrays: Datapoint2D<X>[][]): Datapoint2D<X>[] {
+  let uniques = [];
+  for (const arr of arrays) {
+    for (const datapoint of arr) {
+      if (!hasDatapoint(arr, datapoint)) {
+        uniques.push(datapoint)
+      }
+    }
+  }
+  return uniques;
+}
+
 // Generic Models
 
 // Like a dictionary for series
@@ -276,8 +336,13 @@ export class Model2D<X extends Datatype> {
   [i: number]: Series2D<X>;
   public readonly multi: boolean;
   public readonly numSeries: number;
+  public readonly xs: ScalarMap[X][];
+  public readonly ys: number[];
+  public readonly allPoints: Datapoint2D<X>[]
+  public readonly boxedXs: Box<X>[];
+  public readonly boxedYs: Box<'number'>[];
 
-  constructor(public readonly series: Series2D<X>[]) {
+  constructor(public readonly xDatatype: X, public readonly series: Series2D<X>[]) {
     this.multi = this.series.length > 1;
     this.numSeries = this.series.length;
     for (const [aSeries, seriesIndex] of enumerate(this.series)) {
@@ -288,6 +353,17 @@ export class Model2D<X extends Datatype> {
       this[seriesIndex] = aSeries;
       this.keyMap[aSeries.key] = aSeries;
     }
+    this.xs = mergeUnique(...this.series.map((series) => series.xs));
+    this.ys = mergeUnique(...this.series.map((series) => series.ys));
+    this.boxedXs = mergeUniqueBy(
+      (lhs: Box<X>, rhs: Box<X>) => lhs.raw === rhs.raw,
+      ...this.series.map((series) => series.boxedXs)
+    );
+    this.boxedYs = mergeUniqueBy(
+      (lhs: Box<'number'>, rhs: Box<'number'>) => lhs.raw === rhs.raw,
+      ...this.series.map((series) => series.boxedYs)
+    );
+    this.allPoints = mergeUniqueDatapoints(...this.series.map((series) => series.datapoints));
   }
 
   atKey(key: string): Series2D<X> | null {
@@ -295,14 +371,14 @@ export class Model2D<X extends Datatype> {
   }
 }
 
-abstract class OrderedModel2D<X extends Datatype> extends Model2D<X>  {
+export abstract class OrderedModel2D<X extends Datatype> extends Model2D<X>  {
   declare series: OrderedSeries2D<X>[];
   declare keyMap: Record<string, OrderedSeries2D<X>>;
 
   public readonly numXs: number;
 
-  constructor(series: OrderedSeries2D<X>[]) {
-    super(series);
+  constructor(xDatatype: X, series: OrderedSeries2D<X>[]) {
+    super(xDatatype, series);
     if (this.multi) {
       this.series.forEach((series) => {
         if (!arrayEqual(series.xs, this.series[0].xs)) {
@@ -325,17 +401,17 @@ export class OrderedCalendarModel2D extends OrderedModel2D<'date'> { }
 
 // Model Construction
 
-type ModelConstructor<X extends Datatype> = new (series: Series2D<X>[]) => Model2D<X>;
+type ModelConstructor<X extends Datatype> = new (datatype: X, series: Series2D<X>[]) => Model2D<X>;
 
-type OrderedModelConstructor<T extends Datatype> 
-  = new (series: OrderedSeries2D<T>[]) => OrderedModel2D<T>;
+type OrderedModelConstructor<X extends Datatype> 
+  = new (datatype: X, series: OrderedSeries2D<X>[]) => OrderedModel2D<X>;
 
 type ModelConstructorMap = {
-  [T in Datatype]: ModelConstructor<T>;
+  [X in Datatype]: ModelConstructor<X>;
 };
 
 type OrderedModelConstructorMap = {
-  [T in Datatype]: OrderedModelConstructor<T>;
+  [X in Datatype]: OrderedModelConstructor<X>;
 };
 
 // TODO: There is no check that these constructors are unordered
@@ -376,7 +452,7 @@ export function modelFromManifest<X extends Datatype>(manifest: Manifest, dataty
   const series = dataset.series.map((seriesManifest) => 
     seriesFromSeriesManifest<X>(seriesManifest, datatype, order)
   );
-  return new MODEL_CONSTRUCTORS[order ? 'ordered' : 'unordered'][datatype](series);
+  return new MODEL_CONSTRUCTORS[order ? 'ordered' : 'unordered'][datatype](datatype, series);
 }
 
 export function modelFromAllSeriesData<X extends Datatype>(
@@ -386,5 +462,5 @@ export function modelFromAllSeriesData<X extends Datatype>(
   const series = Object.keys(data).map((key) => 
     seriesFromKeyAndData(key, data[key], datatype, order)
   );
-  return new MODEL_CONSTRUCTORS[order ? 'ordered' : 'unordered'][datatype](series);
+  return new MODEL_CONSTRUCTORS[order ? 'ordered' : 'unordered'][datatype](datatype, series);
 }

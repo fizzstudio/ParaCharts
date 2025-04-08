@@ -21,7 +21,7 @@ import type { Manifest } from "@fizz/paramanifest";
 import { Model2D, modelFromAllSeriesData, modelFromManifest } from "./model2D";
 import { AllSeriesData, ChartType, Datatype } from "../common/types";
 import { DeepReadonly, Settings, SettingsInput } from "./settings_types";
-import { SettingsSetter } from "./settings_setter";
+import { SettingsManager } from "./settings_manager";
 import { defaults } from "./settings_defaults";
 import { Colors } from "../view/colors";
 import { DataSymbols } from "../view/symbol";
@@ -82,18 +82,17 @@ export class ParaStore extends State {
     this.xAxisLabel = dataset.facets.x.label;
     this.yAxisLabel = dataset.facets.y.label;
     this.xDatatype = dataset.facets.x.datatype;
-    //const [_modelClass, modelFromManifest, modelFromAllSeriesData] = ModelMap[this.type][this.xDatatype];
     if (dataset.data.source === 'inline') {
-      this.model = modelFromManifest(this.xDatatype, manifest);
+      this.model = modelFromManifest(manifest, this.xDatatype);
       this.data = dataFromManifest(manifest);
     } else if (data) {
-      this.model = modelFromAllSeriesData(this.xDatatype, data, this.type);
+      this.model = modelFromAllSeriesData(data, this.xDatatype, this.type);
       this.data = data;
     } else {
       throw new Error('store lacks external or inline chart data')
     }
-    const hydratedSettings = SettingsSetter.hydrateInput(inputSettings);
-    SettingsSetter.suppleteSettings(hydratedSettings, suppleteSettingsWith ?? defaults);
+    const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
+    SettingsManager.suppleteSettings(hydratedSettings, suppleteSettingsWith ?? defaults);
     this.settings = hydratedSettings as Settings;
     this.seriesProperties = new SeriesPropertyManager(this);
   }

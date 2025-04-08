@@ -19,7 +19,8 @@ import { Axis, type AxisOrientation } from './axis';
 import { type TickLabelTier, HorizTickLabelTier, VertTickLabelTier } from './ticklabeltier';
 //import { utils, fixed } from '../utilities';
 import { type PointChartType } from '../store/settings_types';
-import { enumerate } from '../common/utils';
+import { dedupPrimitive, enumerate, strToId } from '../common/utils';
+import { formatBox, formatDatapoint, formatDatapointX } from './formatter';
 
 // type CanComputeSize = {
 //   computeSize: (chart: PointChart<any, any>) => void;
@@ -38,6 +39,8 @@ export abstract class PointChart extends XYChart {
   //private seriesRefs: {[name: string]: Ref<SVGGElement>} = {};
   //private visitedMarkRefs: {[name: string]: Ref<SVGUseElement>} = {};
 
+  private selectors: string[][] = [];
+ 
   protected _addedToParent() {
     super._addedToParent();
     /*if (this._model.depType !== 'number') {
@@ -60,14 +63,16 @@ export abstract class PointChart extends XYChart {
 
   protected _createComponents() {
     /*const indep = this._model.indepVar;
-    const indepSeries = this._model.indepSeries();
+    const indepSeries = this._model.indepSeries();*/
     const xs: string[] = [];
-    for (const [i, record] of this._model.data) {
-      xs.push(this._model.format(
-        indepSeries.atBoxed(i), `${this.parent.docView.type as PointChartType}Point`));
-      const xId = utils.strToId(xs.at(-1)!);
-      todo().canvas.jimerator.addSelector(indep, i, `tick-x-${xId}`);
-    }*/
+    for (const [x, i] of enumerate(this.paraview.store.model.boxedXs)) {
+      xs.push(formatBox(x, `${this.parent.docView.type as PointChartType}Point`, this.paraview.store));
+      const xId = strToId(xs.at(-1)!);
+      if (this.selectors[i] === undefined) {
+        this.selectors[i] = [];
+      }
+      this.selectors[i].push(`tick-x-${xId}`);
+    }
     for (const [col, i] of enumerate(this.paraview.store.model.series)) {
       const seriesView = new XYSeriesView(this, col.key);
       this._chartLandingView.append(seriesView);
@@ -92,14 +97,14 @@ export abstract class PointChart extends XYChart {
 
   protected _computeXLabelInfo() {
     if (this._isComputeXTicks) {
-      const values = this._model.data.col(this._model.indepVar).toNumberSeries().data;
-      this._xLabelInfo = Axis.computeLabels(
-        todo().controller.settingStore.settings.axis.x.minValue ?? Math.min(...values), 
-        todo().controller.settingStore.settings.axis.x.maxValue ?? Math.max(...values),
+      const values = this.paraview.store.model.xs as number[];
+      this._xLabelInfo = Axis.computeNumericLabels(
+        this.paraview.store.settings.axis.x.minValue ?? Math.min(...values), 
+        this.paraview.store.settings.axis.x.maxValue ?? Math.max(...values),
         false);
     } else {
-      const values = this._model.indepSeries();
-      const labels = values.mapBoxed(x => this._model.format(x, 'xTick'));
+      const datapoints = this.paraview.store.model.allPoints;
+      const labels = dedupPrimitive(datapoints.map(point => formatDatapointX(point, 'xTick', this.paraview.store)));
       this._xLabelInfo = {
         labels,
         maxChars: Math.max(...labels.map(l => l.length))
@@ -108,14 +113,11 @@ export abstract class PointChart extends XYChart {
   }
 
   protected _computeYLabelInfo() {
-    const values = this._model.data
-      .dropCols([this._model.indepVar])
-      .mapCols(col => col.numberSeries.data)
-      .flat();
-    this._yLabelInfo = Axis.computeLabels(
-      todo().controller.settingStore.settings.axis.y.minValue ?? Math.min(...values), 
-      todo().controller.settingStore.settings.axis.y.maxValue ??  Math.max(...values), 
-      this._model.depFormat === 'percent');  
+    const values = this.paraview.store.model.ys;
+    this._yLabelInfo = Axis.computeNumericLabels(
+      this.paraview.store.settings.axis.y.minValue ?? Math.min(...values), 
+      this.paraview.store.settings.axis.y.maxValue ??  Math.max(...values), 
+      false /*this._model.depFormat === 'percent'*/);  
   }
 
   protected _layoutDatapoints() {
@@ -134,12 +136,12 @@ export abstract class PointChart extends XYChart {
   }
 
   getXTickLabelTiers<T extends AxisOrientation>(axis: Axis<T>): TickLabelTier<any>[] {
-    const xSeries = this._model.indepSeries();
+    //const xSeries = this.paraview.store.model.xs;
     const slots = this._xLabelInfo.labels.map((tickLabel, i) => 
       ({
         pos: this._tickIntervalX*i,
         text: tickLabel,
-        id: todo().canvas.jimerator.modelSelectors[xSeries.name!][i][0]
+        id: this.selectors[i][0]
       }));
     if (axis.isHoriz()) {
       return [new HorizTickLabelTier(
@@ -163,7 +165,7 @@ export abstract class PointChart extends XYChart {
       ({
         pos: this._tickIntervalY*i,
         text: tickLabel,
-        id: `tick-y-${utils.strToId(tickLabel)}`
+        id: `tick-y-${strToId(tickLabel)}`
       }));
     if (axis.isHoriz()) {
       return [new HorizTickLabelTier(
@@ -183,7 +185,7 @@ export abstract class PointChart extends XYChart {
   }
 
   seriesRef(series: string) {
-    return todo().canvas.ref<SVGGElement>(`series.${series}`);
+    return this.paraview.ref<SVGGElement>(`series.${series}`);
   }
 
   raiseSeries(series: string) {
@@ -192,14 +194,12 @@ export abstract class PointChart extends XYChart {
   }
 
   getDatapointGroupBbox(labelText: string) {
-    const xSeries = this._model.indepSeries();
-    // XXX Could take these directly from the DOM
-    const labels = xSeries.mapBoxed(box => this._model.format(box, 'xTick'));
+    const labels = this.paraview.store.model.boxedXs.map((box) => formatBox(box, 'xTick', this.paraview.store));
     const idx = labels.findIndex(label => label === labelText);
     if (idx === -1) {
       throw new Error(`no such datapoint with label '${labelText}'`);
     }
-    const g = todo().canvas.ref<SVGGElement>('dataset').value!.children[idx] as SVGGElement;
+    const g = this.paraview.ref<SVGGElement>('dataset').value!.children[idx] as SVGGElement;
     return g.getBBox();
   }
 
@@ -219,7 +219,7 @@ export class ChartPoint extends XYDatapointView {
   static width: number;
 
   static computeSize(chart: PointChart) {
-    const axisDivisions = chart.model.data.nRows - 1;
+    const axisDivisions = chart.paraview.store.model.numSeries;
     this.width = chart.parent.contentWidth/axisDivisions;
   }
 
@@ -253,7 +253,7 @@ export class ChartPoint extends XYDatapointView {
     // pixel height/y-value range
     const pxPerYUnit = canvasHeightPx/labelInfo.range!;
     // height (= distance from x-axis) in pixels
-    const height = (this.datapoint.y.number - labelInfo.min!)*pxPerYUnit;
+    const height = (this.datapoint.y - labelInfo.min!)*pxPerYUnit;
     // pixels above the datapoint
     this._x = ChartPoint.width*this.index;
     this._y = canvasHeightPx - height;
