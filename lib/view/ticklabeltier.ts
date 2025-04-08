@@ -89,7 +89,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
         x: 0,
         y: 0,
         // textAnchor: this.slotLabelTextAnchor(slot)
-      });
+      }, this.axis.docView.paraview);
       this.append(slot.label);
     }
   }

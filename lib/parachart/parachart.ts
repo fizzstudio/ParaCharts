@@ -23,7 +23,7 @@ import { AllSeriesData } from "../common/types";
 import { StateController } from "@lit-app/state";
 import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
 
-class ParaChart extends LitElement {
+export class ParaChart extends LitElement {
   private store: ParaStore;
   private state: StateController<ParaStore>;
 

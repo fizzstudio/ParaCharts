@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { View, Container } from './base_view';
 import { Label } from './label';
-import { type CardinalDirection } from '../store/settings_types';
+//import { type CardinalDirection } from '../store/settings_types';
 import { type ChartType } from '../common/types';
 import { ChartLayerManager } from './chartlayermanager';
 import { HorizAxis, VertAxis, type AxisCoord } from './axis';

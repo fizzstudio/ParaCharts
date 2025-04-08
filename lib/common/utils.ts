@@ -70,3 +70,36 @@ export function enumerate<T>(iterable: Iterable<T>): [T, number][] {
   }
   return enumerations;
 }
+
+export function mergeUnique<T>(...arrays: T[][]): T[] {
+  let set = new Set<T>();
+  for (const arr of arrays) {
+    set = set.union(new Set(arr));
+  }
+  return Array.from(set);
+}
+
+
+export function dedupPrimitive<T>(arr: T[]): T[] {
+  return Array.from(new Set(arr));
+}
+
+export function mergeUniqueBy<T>(
+  by: (lhs: T, rhs: T) => boolean = (lhs, rhs) => lhs === rhs, ...arrs: T[][]
+): T[] {
+  if (arrs.length === 0) {
+    return [];
+  }
+  const res = [...arrs.shift()!];
+  for (const otherArr of arrs) {
+    loop: for (const newElement of otherArr) {
+      for (const element of res) {
+        if (by(newElement, element)) {
+          break loop;
+        }
+      }
+      res.push(newElement)
+    }
+  }
+  return res;
+}

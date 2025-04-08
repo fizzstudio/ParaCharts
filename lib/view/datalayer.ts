@@ -37,8 +37,9 @@ import { DataSymbol } from './symbol';
 import { ParaView } from './paraview';
 import { Datapoint2D, Series2D } from '../store/model2D';
 import { strToId } from '../common/utils';
-import { SettingsSetter } from '../store/settings_setter';
+import { SettingsManager } from '../store/settings_manager';
 import { SeriesProperties } from '../store/series_properties';
+import { Datatype } from '../common/types';
 
 /**
  * @public
@@ -105,7 +106,7 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   get settings(): DeepReadonly<PlotSettings> {
-    return SettingsSetter.getGroupLink(this.managedSettingKeys[0], this.paraview.store.settings);
+    return SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.store.settings);
   }
 
   /*get model() {
@@ -346,7 +347,7 @@ export class DataView extends View {
   declare protected _currFocus: DataView | null;
   declare protected _prevFocus?: DataView;
 
-  protected _series!: Series2D;
+  protected _series!: Series2D<Datatype>;
 
   constructor(
     public readonly chart: DataLayer, 
@@ -526,7 +527,7 @@ export class DatapointView extends DataView {
     return this._parent.prev;
   }
 
-  get datapoint(): Datapoint2D {
+  get datapoint(): Datapoint2D<Datatype> {
     return this.series[this.index];
   }
 

@@ -36,6 +36,7 @@ import { type Datatype, type Scalar } from '@fizz/dataframe';
 import { type TemplateResult } from 'lit';
 import { literal } from 'lit/static-html.js';
 import Decimal from 'decimal.js';
+import { SettingsManager } from '../store/settings_manager';
 
 export type AxisOrientation = 'horiz' | 'vert';
 export type AxisCoord = 'x' | 'y';
@@ -61,7 +62,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   readonly datatype: Datatype;
 
   readonly chartLayers: ChartLayerManager;
-  readonly coord: AxisCoord;
+  //readonly coord: AxisCoord;
 
   protected _layout!: Layout;
   protected _titleText: string;
@@ -116,18 +117,20 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   constructor(
     public readonly docView: DocumentView, 
     public readonly orientation: T, 
-    vars: readonly string[], 
+    readonly coord: AxisCoord, 
     title?: string
   ) {
     super();
     this.chartLayers = docView.chartLayers;
-    this.coord = vars[0] === docView.
-    todo().controller.model!.indepVar ? 'x' : 'y';
     //this.settingGroup = `axis.${this.coord}`;
-    this.settings = todo().controller.settingStore.getGroupLink<AxisSettings>(this.managedSettingKeys[0]);
-    this.orientationSettings = todo().controller.settingStore.getGroupLink<OrientedAxisSettings<T>>(`axis.${orientation}`);
-    todo().controller.registerSettingManager(this);
-    this.datatype = todo().controller.model!.data.col(vars[0]).dtype;
+    this.settings = SettingsManager.getGroupLink<AxisSettings>(
+      this.managedSettingKeys[0], this.docView.paraview.store.settings
+    );
+    this.orientationSettings = SettingsManager.getGroupLink<OrientedAxisSettings<T>>(
+      `axis.${orientation}`, this.docView.paraview.store.settings
+    );
+    //todo().controller.registerSettingManager(this);
+    this.datatype = this.coord === 'y' ? 'number' : this.docView.paraview.store.model.xDatatype;
 
     this._titleText = title ?? this.settings.title.text ?? '';
   }
@@ -207,7 +210,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     this._orthoAxis = orthoAxis;
   }
 
-  abstract settingDidChange(key: string, value: Setting | undefined): boolean;
+  //abstract settingDidChange(key: string, value: Setting | undefined): boolean;
 
   abstract setPosition(): void;
 
@@ -222,8 +225,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     this._layout.append(this._tickStrip);
     this._createTickLabels();
     this._createAxisLine();
-    // XXX is this necessary?
-    this._updateSize();
   }
 
   layoutComponents() {
@@ -255,7 +256,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       x: 0,
       y: 0,
       angle: this._getAxisTitleAngle()
-    });
+    }, this.docView.paraview);
     this._layout.append(this._axisTitle);
   }
 
@@ -276,10 +277,9 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 export class HorizAxis extends Axis<'horiz'> {
 
   constructor(docView: DocumentView, title?: string) {
-    const orientation = todo().controller.settingStore.settings.chart.orientation;
+    const orientation = docView.paraview.store.settings.chart.orientation;
     super(docView, 'horiz',
-      orientation === 'north' || orientation === 'south' ?
-      [todo().controller.model!.indepVar] : todo().controller.model!.depVars,
+      orientation === 'north' || orientation === 'south' ? 'x' : 'y',
       title);
     this._layout = new ColumnLayout(0, 'center', 'horiz-axis-group');
     this.append(this._layout);
@@ -293,12 +293,12 @@ export class HorizAxis extends Axis<'horiz'> {
     ];
   }
 
-  settingDidChange(key: string, value: any) {
+  /*settingDidChange(key: string, value: any) {
     todo().controller.clearSettingManagers();
     todo().canvas.createDocumentView();
     todo().canvas.requestUpdate();
     return true;
-  }
+  }*/
 
   protected _createAxisLine() {
     this._axisLine = new HorizAxisLine(this);
@@ -377,11 +377,9 @@ export class HorizAxis extends Axis<'horiz'> {
 export class VertAxis extends Axis<'vert'> {
 
   constructor(docView: DocumentView, title?: string) {
-    const orientation = todo().controller.settingStore.settings.chart.orientation;
+    const orientation = docView.paraview.store.settings.chart.orientation;
     super(docView, 'vert',
-      orientation === 'east' || orientation === 'west' ?
-      [todo().controller.model!.indepVar] : todo().controller.model!.depVars, 
-      title);
+      orientation === 'east' || orientation === 'west' ? 'y' : 'x')
     this._layout = new RowLayout(0, 'center', 'vert-axis-group');
     this.append(this._layout);
   }
@@ -389,7 +387,7 @@ export class VertAxis extends Axis<'vert'> {
   protected _addedToParent() {
     super._addedToParent();
     const range = this.chartLayers.getYAxisInterval();
-    todo().controller.settingViews.add(this, {
+    /*todo().controller.settingViews.add(this, {
       type: 'textfield',
       key: 'axis.y.minValue',
       label: 'Min y-value',
@@ -417,7 +415,7 @@ export class VertAxis extends Axis<'vert'> {
           { err: `Max y-value (${value}) must be greater than min (${min})` } : {};
       },
       parentView: 'chartDetails.tabs.chart.general',
-    });  
+    });  */
   }
 
   computeSize(): [number, number] {
@@ -428,7 +426,7 @@ export class VertAxis extends Axis<'vert'> {
     ];
   }
 
-  settingDidChange(key: string, value: any) {
+  /*settingDidChange(key: string, value: any) {
     //this._settings[key] = value;
     todo().controller.clearSettingManagers();
     todo().canvas.createDocumentView();
@@ -437,7 +435,7 @@ export class VertAxis extends Axis<'vert'> {
     // quantization, and this needs to get reflected in the UI.
     todo().deets!.requestUpdate();
     return true;
-  }
+  }*/
 
   protected _createAxisLine() {
     this._axisLine = new VertAxisLine(this);

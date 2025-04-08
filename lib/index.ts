@@ -1,0 +1,1 @@
+export { ParaChart } from './parachart/parachart';

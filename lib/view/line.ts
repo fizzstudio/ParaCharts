@@ -22,6 +22,7 @@ import { type XYSeriesView } from './xychart';
 import { svg } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { OrderedModel2D } from '../store/model2D';
+import { Datatype } from '../common/types';
 
 /**
  * Class for drawing line charts.
@@ -130,7 +131,7 @@ export class LineSection extends ChartPoint {
     }
 
     // find midpoint between values for this and next
-    if (this.index < (this.chart.paraview.store.model as OrderedModel2D).numXs - 1) {
+    if (this.index < (this.chart.paraview.store.model as OrderedModel2D<Datatype>).numXs - 1) {
       this._computeNext();
     }
 

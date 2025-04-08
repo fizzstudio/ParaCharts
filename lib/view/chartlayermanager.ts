@@ -24,13 +24,13 @@ import { type DataLayer } from './datalayer';
 import { HighlightsLayer } from './highlightslayer';
 import { SelectionLayer } from './selectionlayer';
 import { LineChart } from './line';
-import { StepLineChart } from './stepline';
-import { LollipopChart } from './lollipop';
+//import { StepLineChart } from './stepline';
+//import { LollipopChart } from './lollipop';
 import { ScatterPlot } from './scatter';
 import { BarChart } from './bar';
-import { PieChart } from './pie';
-import { DonutChart } from './donut';
-import { GaugeChart } from './gauge';
+//import { PieChart } from './pie';
+//import { DonutChart } from './donut';
+//import { GaugeChart } from './gauge';
 import { XYChart } from './xychart';
 //import { type Model } from '../data/model';
 import { 
@@ -42,16 +42,17 @@ import { type Interval } from '@fizz/chart-classifier-utils';
 
 import { svg } from 'lit';
 
+// FIXME: Temporarily replace chart types that haven't been introduced yet
 export const chartClasses = {
   bar: BarChart,
   column: BarChart,
   line: LineChart,
   scatter: ScatterPlot,
-  pie: PieChart,
-  donut: DonutChart,
-  gauge: GaugeChart,
-  stepline: StepLineChart,
-  lollipop: LollipopChart
+  pie: BarChart, //PieChart,
+  donut: BarChart, //DonutChart,
+  gauge: BarChart, //GaugeChart,
+  stepline: LineChart, //StepLineChart,
+  lollipop: BarChart, //LollipopChart
 };
 
 export class ChartLayerManager extends View {
@@ -176,7 +177,7 @@ export class ChartLayerManager extends View {
     const ctor = chartClasses[this.docView.paraview.store.type];
     let dataLayer: DataLayer;
     if (ctor) {
-      dataLayer = new ctor(0);
+      dataLayer = new ctor(0, this.docView.paraview);
       this.append(dataLayer);
     } else {
       // TODO: Is this error possible?
@@ -190,10 +191,13 @@ export class ChartLayerManager extends View {
     return this.dataLayers[0] instanceof XYChart;
   }
 
-  /*getXAxisInterval(): Interval {
-    const numSeries = this.model.indepSeries().toNumberSeries();
-    return {start: numSeries.min, end: numSeries.max};
-  }*/
+  getXAxisInterval(): Interval {
+    if (this.docView.paraview.store.model.xDatatype !== 'number') {
+      throw new Error('X-axis intervals no specified for non-numeric x-axes')
+    }
+    const xs = this.docView.paraview.store.model.xs as number[];
+    return {start: Math.min(...xs), end: Math.max(...xs)};
+  }
 
   getYAxisInterval(): Interval {
     if (!(this.dataLayers[0] instanceof XYChart)) {
@@ -205,7 +209,7 @@ export class ChartLayerManager extends View {
     };
   }
 
-  /*getAxisInterval(coord: AxisCoord): Interval | undefined {
+  getAxisInterval(coord: AxisCoord): Interval | undefined {
     if (coord === 'x') { 
       return this.getXAxisInterval();
     } else if (coord === 'y') {
@@ -213,7 +217,7 @@ export class ChartLayerManager extends View {
     } else {
       throw new Error(`axis coordinate '${coord}' has no interval`);
     }
-  }*/
+  }
 
   getTickLabelTiers<T extends AxisOrientation>(axis: Axis<T>): TickLabelTier<T>[] {
     if (axis.coord === 'x') { 
