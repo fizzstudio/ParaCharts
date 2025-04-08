@@ -23,8 +23,8 @@ import { AllSeriesData, ChartType, Datatype } from "../common/types";
 import { DeepReadonly, Settings, SettingsInput } from "./settings_types";
 import { SettingsManager } from "./settings_manager";
 import { defaults } from "./settings_defaults";
-import { Colors } from "../view/colors";
-import { DataSymbols } from "../view/symbol";
+import { Colors } from "../temp_view/colors";
+import { DataSymbols } from "../temp_view/symbol";
 import { SeriesPropertyManager } from "./series_properties";
 
 function dataFromManifest(manifest: Manifest): AllSeriesData {
