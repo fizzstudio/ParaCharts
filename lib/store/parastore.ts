@@ -18,35 +18,82 @@ import { State, property } from "@lit-app/state";
 
 import type { Manifest } from "@fizz/paramanifest";
 
-import { Model2D } from "./model2D";
-import { AllSeriesData } from "./helpers";
+import { Model2D, modelFromAllSeriesData, modelFromManifest } from "./model2D";
+import { AllSeriesData, ChartType, Datatype } from "../common/types";
+import { DeepReadonly, Settings, SettingsInput } from "./settings_types";
+import { SettingsManager } from "./settings_manager";
+import { defaults } from "./settings_defaults";
+import { Colors } from "../temp_view/colors";
+import { DataSymbols } from "../temp_view/symbol";
+import { SeriesPropertyManager } from "./series_properties";
+
+function dataFromManifest(manifest: Manifest): AllSeriesData {
+  const dataset = manifest.datasets[0];
+  if (dataset.data.source !== 'inline') {
+    throw new Error('only manifests with inline data can use this function.');
+  }
+  const data: AllSeriesData = {};
+  for (const series of dataset.series) {
+    data[series.key] = series.records!;
+  }
+  return data;
+}
 
 export class ParaStore extends State {
 
   @property()
   private manifest: Manifest;
   @property()
-  private settings?: unknown;
+  public settings: Settings;
   @property()
   private focused = 'chart';
   @property()
   private selected = null;
   @property()
   private queryLevel = 'default';
+  @property()
+  private data: AllSeriesData;
+  @property()
+  public darkMode = false;
 
-  private model: Model2D;
+  public readonly model: Model2D<Datatype>;
+  public readonly type: ChartType;
+  public readonly title: string;
+  public readonly xAxisLabel: string;
+  public readonly yAxisLabel: string;
+  public readonly colors = new Colors();
+  public readonly symbols = new DataSymbols();
+  public readonly seriesProperties: SeriesPropertyManager;
+  private readonly xDatatype: Datatype;
+
+  public idList: Record<string, boolean> = {};
   
-  constructor(manifest: Manifest, data?: AllSeriesData) {
+  constructor(
+    manifest: Manifest, 
+    inputSettings: SettingsInput, 
+    data?: AllSeriesData,
+    suppleteSettingsWith?: DeepReadonly<Settings>
+  ) {
     super();
     this.manifest = manifest;
     const dataset = this.manifest.datasets[0];
+    this.type = dataset.type;
+    this.title = dataset.title;
+    this.xAxisLabel = dataset.facets.x.label;
+    this.yAxisLabel = dataset.facets.y.label;
+    this.xDatatype = dataset.facets.x.datatype;
     if (dataset.data.source === 'inline') {
-      this.model = Model2D.fromManifest(manifest);
+      this.model = modelFromManifest(manifest, this.xDatatype);
+      this.data = dataFromManifest(manifest);
     } else if (data) {
-      this.model = Model2D.fromAllSeriesData(data);
+      this.model = modelFromAllSeriesData(data, this.xDatatype, this.type);
+      this.data = data;
     } else {
       throw new Error('store lacks external or inline chart data')
     }
+    const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
+    SettingsManager.suppleteSettings(hydratedSettings, suppleteSettingsWith ?? defaults);
+    this.settings = hydratedSettings as Settings;
+    this.seriesProperties = new SeriesPropertyManager(this);
   }
-
 }
