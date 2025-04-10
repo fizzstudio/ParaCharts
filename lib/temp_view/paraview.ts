@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { LitElement, PropertyValueMap, PropertyValues, css, html, nothing, svg } from 'lit';
+import { LitElement, PropertyValueMap, PropertyValues, TemplateResult, css, html, nothing, svg } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 
@@ -32,7 +32,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
 type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
-@customElement('paraview')
+@customElement('para-view')
 export class ParaView extends LitElement {
 
   private type: ChartType = 'bar';
@@ -175,6 +175,7 @@ export class ParaView extends LitElement {
     super.connectedCallback();
     // create a default view box so the SVG element can have a size
     // while any data is loading
+    console.log('paraview connected callback')
     this.computeViewBox();
   }
 
@@ -404,8 +405,8 @@ export class ParaView extends LitElement {
     }
   }*/
 
-  render() {
-    this.log('render');
+  render(): TemplateResult {
+    this.log('render paraview');
     return html`
       <svg
         ${ref(this._rootRef)}

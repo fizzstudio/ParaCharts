@@ -103,3 +103,8 @@ export function mergeUniqueBy<T>(
   }
   return res;
 }
+
+// This marks a series of it/then options as exhaustive
+export function exhaustive(): never {
+  return null as never; 
+}
