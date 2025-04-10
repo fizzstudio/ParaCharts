@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { LitElement, PropertyValueMap, PropertyValues, TemplateResult, css, html, nothing, svg } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 
 import { ChartType } from '../common/types';
@@ -62,12 +62,15 @@ export class ParaView extends LitElement {
   private _isReady = false;
   private chartRefs: Map<string, Ref<any>> = new Map();
 
+  @property({ type: Object })
+  public store?: ParaStore;
+
   // TEMP
   log(...msg: any[]): void {
     console.log(...msg);
   }
 
-  constructor(public store: ParaStore) {
+  constructor() {
     super();
   }
 
