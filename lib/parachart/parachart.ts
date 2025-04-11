@@ -92,7 +92,8 @@ export class ParaChart extends LitElement {
       return html`Error loading manifest: ${this.error}`;
     }
     if (this.dataState === 'complete') {
-      return html`<para-view .store=${this.store!}></para-view>`;
+      const view = new ParaView(this.store!);
+      return view.render();
     }
     return exhaustive();
   }
