@@ -200,9 +200,6 @@ export class BarChart extends XYChart {
 
   protected _addedToParent() {
     super._addedToParent();
-    if (this.paraview.store.model.xDatatype !== 'number') {
-      throw new Error('bar chart dependent variables must be numbers');
-    }
 
     /*todo().controller.settingViews.add(this, {
       type: 'dropdown',

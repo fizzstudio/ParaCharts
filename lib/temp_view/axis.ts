@@ -379,7 +379,7 @@ export class VertAxis extends Axis<'vert'> {
   constructor(docView: DocumentView, title?: string) {
     const orientation = docView.paraview.store.settings.chart.orientation;
     super(docView, 'vert',
-      orientation === 'east' || orientation === 'west' ? 'y' : 'x')
+      orientation === 'east' || orientation === 'west' ? 'x' : 'y')
     this._layout = new RowLayout(0, 'center', 'vert-axis-group');
     this.append(this._layout);
   }
