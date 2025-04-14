@@ -91,7 +91,7 @@ export class SettingsManager {
           cursor = {};
           prev[seg] = cursor;
         } else {
-          throw new Error(`invalid setting group type '${typeof cursor}'`);          
+          throw new Error(`invalid setting group type '${typeof cursor}' in '${path}'`);          
         }  
       }
     }

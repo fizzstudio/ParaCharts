@@ -63,7 +63,7 @@ export abstract class DataLayer extends ChartLayer {
 
   //protected _model!: Model;
   //protected _sonifier!: Sonifier;
-  //protected _settings!: DeepReadonly<PlotSettings>;
+  protected _settings!: DeepReadonly<PlotSettings>;
   protected visibleSeries!: string[];
   protected _chartLandingView!: ChartLandingView;
   protected _playInterval: ReturnType<typeof setTimeout> | null = null;
@@ -91,6 +91,7 @@ export abstract class DataLayer extends ChartLayer {
   protected _addedToParent() {
     super._addedToParent();
     //this._model = todo().controller.model!;
+    this._settings = SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.store.settings);
     //this._sonifier = new Sonifier(this);
     //this.visibleSeries = Array.from(this._model.depVars);
     this._chartLandingView = new ChartLandingView();

@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { LitElement, PropertyValueMap, PropertyValues, css, html, nothing, svg } from 'lit';
+import { LitElement, PropertyValueMap, PropertyValues, TemplateResult, css, html, nothing, svg } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 
@@ -30,10 +30,8 @@ import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
-type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
-@customElement('paraview')
-export class ParaView extends LitElement {
+export class ParaView {
 
   private type: ChartType = 'bar';
   private chartTitle?: string;
@@ -42,9 +40,6 @@ export class ParaView extends LitElement {
   private darkMode = false;
   private contrastLevel: number = 1;
   private colorMode: ColorVisionMode = 'normal';
-
-  private dataState: DataState = 'initial';
-  private dataError?: unknown;
 
   private _viewBox!: ViewBox;
   private _prevFocusLeaf?: View;
@@ -68,7 +63,7 @@ export class ParaView extends LitElement {
   }
 
   constructor(public store: ParaStore) {
-    super();
+    this.createDocumentView();
   }
 
   static styles = [
@@ -171,19 +166,12 @@ export class ParaView extends LitElement {
     }
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    // create a default view box so the SVG element can have a size
-    // while any data is loading
-    this.computeViewBox();
-  }
-
-  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+  /*protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     // this.todo.signalManager.signal('canvasFirstUpdate');
     this.isReady = true;
-  }
+  }*/
 
-  protected updated(changedProperties: PropertyValues) {
+  /*protected updated(changedProperties: PropertyValues) {
     this.log('canvas updated');
     if (changedProperties.has('dataState')) {
       if (this.dataState === 'pending') {
@@ -213,7 +201,7 @@ export class ParaView extends LitElement {
         // this.isReady = true;
       }
     }
-  }
+  }*/
 
   ref<T>(key: string): Ref<T> {
     if (!this.chartRefs.has(key)) {
@@ -250,7 +238,7 @@ export class ParaView extends LitElement {
 
     this.computeViewBox();
     //this.activeSeries = this.controller.model!.depVars[0];
-    this.dispatchEvent(new CustomEvent('chartcreate', { bubbles: true, composed: true }));
+   // this.dispatchEvent(new CustomEvent('chartcreate', { bubbles: true, composed: true }));
   }
 
   private computeViewBox() {
@@ -404,8 +392,8 @@ export class ParaView extends LitElement {
     }
   }*/
 
-  render() {
-    this.log('render');
+  render(): TemplateResult {
+    this.log('render paraview');
     return html`
       <svg
         ${ref(this._rootRef)}
@@ -459,7 +447,7 @@ export class ParaView extends LitElement {
         <rect 
           ${ref(this._frameRef)}
           id="frame"
-          class=${this.dataState === 'pending' ? 'pending' : nothing}
+          class=${/*this.dataState === 'pending' ? 'pending' :*/ nothing}
           pointer-events="all"
           x="0"
           y="0"
@@ -468,20 +456,6 @@ export class ParaView extends LitElement {
         >
         </rect>
         ${this._documentView?.render() ?? ''}
-        <g
-          id="loading-message"
-          style=${styleMap(this.loadingMessageStyles)}
-        >
-          <rect
-            ${ref(this.loadingMessageRectRef)}
-          >
-          </rect>
-          <text
-            ${ref(this.loadingMessageTextRef)}
-          >
-            Loading...
-          </text>
-        </g>
       </svg>
     `;
   }

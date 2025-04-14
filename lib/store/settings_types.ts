@@ -306,6 +306,7 @@ export interface RadialSettings extends SettingGroup {
 /** @public */
 export interface ChartTypeSettings extends SettingGroup {
   bar: BarSettings;
+  column: BarSettings;
   line: LineSettings;
   scatter: ScatterSettings;
   pie: RadialSettings;

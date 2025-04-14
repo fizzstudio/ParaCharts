@@ -70,7 +70,9 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   }
 
   computeLayout() {
-    this.textHoriz = !this.slots[0].label!.angle;
+    console.log('compute layout', this.slots)
+    // FIXME: slots should always have members, label should never be undefined
+    this.textHoriz = this.slots.length > 1 && this.slots[0].label !== undefined ? !this.slots[0].label!.angle : false;
   }
 
   createTickLabels() {
