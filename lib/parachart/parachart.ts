@@ -24,7 +24,7 @@ import { StateController } from "@lit-app/state";
 import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
 import { customElement, property, state } from "lit/decorators.js";
 import { ParaLoader } from "../loader/paraloader";
-import { ParaView } from "../temp_view/paraview";
+import { ParaView } from "../immediate_view/paraview";
 import { exhaustive } from "../common/utils";
 
 @customElement('para-chart')
