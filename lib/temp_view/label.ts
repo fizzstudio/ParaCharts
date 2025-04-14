@@ -67,6 +67,7 @@ export class Label extends View {
     this._textAnchor = this.options.textAnchor ?? options.wrapWidth ? 'start' : 'middle';
     this._justify = this.options.justify ?? 'start';
     this._text = this.options.text;
+    this.computeSize();
   }
 
   protected _createId() {
@@ -143,7 +144,8 @@ export class Label extends View {
     }
     //todo().canvas.root!.append(text);
 
-    //const canvasRect = todo().canvas.root!.getBoundingClientRect();
+    // FIXME: root should exist
+    const canvasRect = this.paraview.root?.getBoundingClientRect() ?? {height: 1, width: 1, x: 1, y: 1};
     //const bbox = text.getBBox();
     const clientRect = text.getBoundingClientRect();
     let width = clientRect.width;
@@ -151,8 +153,9 @@ export class Label extends View {
     // E.g., suppose text-anchor is middle. The text baseline center will be
     // positioned at the origin of the view box, and the left half of the label
     // will extend into the negative x-axis. 
-    /*this._anchorXOffset = -(clientRect.x - canvasRect.x);
-    this._anchorYOffset = -(clientRect.y - canvasRect.y);*/
+    console.log('cs', clientRect.x, canvasRect.x, clientRect.y, canvasRect.y)
+    this._anchorXOffset = -(clientRect.x - canvasRect.x);
+    this._anchorYOffset = -(clientRect.y - canvasRect.y);
 
     if (this.options.wrapWidth !== undefined && width > this.options.wrapWidth) {
       text.textContent = '';
@@ -206,6 +209,7 @@ export class Label extends View {
   private makeTransform() {
     let t: string | undefined;
     if (this._angle) {
+      console.log('mt', this._x, this._anchorXOffset, this._y, this._anchorYOffset)
       t = fixed`
         translate(${this._x + this._anchorXOffset},${this._y + this._anchorYOffset})
         rotate(${this._angle})
@@ -217,6 +221,7 @@ export class Label extends View {
   render() {
     // TODO: figure out why `this._y` is larger here than for single line titles
     // HACK: divide `this._y` by 2 for `y` attribute value
+    console.log('r', this._x, this._anchorXOffset, this._y, this._anchorYOffset)
     return svg`
       <text 
         ${ref(this._elRef)}

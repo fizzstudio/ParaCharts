@@ -67,7 +67,7 @@ export class DocumentView extends Container(View) {
     let hasDirectLabels = false;
     if ( paraview.store.settings.chart.hasDirectLabels
         && this.type === 'line' 
-        && (this.chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || 
+        && (/*this.chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
           paraview.store.model.multi)
     ) {
       this._seriesLabelStrip = new SeriesLabelStrip(this.chartLayers.dataLayer as LineChart);
@@ -184,6 +184,7 @@ export class DocumentView extends Container(View) {
     } else if (this._vertAxis?.coord === coord) {
       return this._vertAxis;
     }
+    console.log('no axis!', this._horizAxis, this._vertAxis, coord)
     return undefined;
   }
 

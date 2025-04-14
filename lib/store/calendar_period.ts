@@ -6,11 +6,11 @@ export type CalendarPeriod = {
 }
 
 export function parseCalendar(input: string): CalendarPeriod | null {
-  throw new Error('not implemented');
+  return { year: parseInt(input) };
 }
 
 export function calendarEquals(lhs: CalendarPeriod, rhs: CalendarPeriod): boolean {
-  throw new Error('not implemented');
+  return lhs.year === rhs.year;
 }
 
 export function calendarString(period: CalendarPeriod): string {

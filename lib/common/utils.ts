@@ -40,6 +40,9 @@ export function fixed(strings: TemplateStringsArray, ...exprs: number[]) {
   if (exprs.length === 0) {
     return strings[0];
   }
+  if (exprs.some((expr) => isNaN(expr))) {
+    throw new Error('Cannot format NaNs in `fixed`');
+  }
   const out = strings.slice(0, -1).map((s, i) => s + toFixed(exprs[i]));
   out.push(strings.at(-1)!);
   return out.join('');
@@ -102,4 +105,9 @@ export function mergeUniqueBy<T>(
     }
   }
   return res;
+}
+
+// This marks a series of it/then options as exhaustive
+export function exhaustive(): never {
+  return null as never; 
 }

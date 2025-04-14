@@ -6,16 +6,21 @@
 
 import { LitElement } from 'lit';
 import { Manifest } from '@fizz/paramanifest';
-import { Size2d } from '@fizz/chart-classifier-utils';
-import { XyPoint } from '@fizz/paramanifest';
+import { TemplateResult } from 'lit';
 
 // @public (undocumented)
 export class ParaChart extends LitElement {
-    // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index.d.ts
-    // Warning: (ae-forgotten-export) The symbol "AllSeriesData" needs to be exported by the entry point index.d.ts
-    // Warning: (ae-forgotten-export) The symbol "DeepReadonly" needs to be exported by the entry point index.d.ts
-    // Warning: (ae-forgotten-export) The symbol "Settings" needs to be exported by the entry point index.d.ts
-    constructor(manifest: Manifest, inputSettings: SettingsInput, data?: AllSeriesData, suppleteSettingsWith?: DeepReadonly<Settings>);
+    constructor();
+    // (undocumented)
+    dataState: 'initial' | 'pending' | 'complete' | 'error';
+    // (undocumented)
+    filename: string;
+    // (undocumented)
+    render(): TemplateResult;
+    // (undocumented)
+    runloader(): Promise<void>;
+    // (undocumented)
+    setManifest(manifest: Manifest): void;
 }
 
 // (No @packageDocumentation comment for this package)
