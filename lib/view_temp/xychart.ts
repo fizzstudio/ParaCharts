@@ -18,7 +18,6 @@ import {
   DataLayer, ChartLandingView, DataView, DatapointView, SeriesView, 
   SONI_PLAY_SPEEDS, SONI_RIFF_SPEEDS 
 } from './datalayer';
-//import { utils } from '../utilities';
 import { type Setting } from '../store/settings_types';
 //import { keymaps } from '../input';
 //import { hotkeyActions } from '../input/defaultactions';
@@ -29,7 +28,9 @@ import { Axis, type AxisLabelInfo } from './axis';
 import { type ClassInfo } from 'lit/directives/class-map.js';
 //import { literal } from 'lit/static-html.js';
 import { ParaView } from './paraview';
-//import { strToId } from '../common/utils';
+import { strToId } from '../common/utils';
+import { formatDatapointX, formatDatapointY } from './formatter';
+import { literal } from 'lit/static-html.js';
 
 export type DatapointViewType<T extends XYDatapointView> = 
   (new (...args: any[]) => T);
@@ -86,12 +87,6 @@ export abstract class XYChart extends DataLayer {
     this.maxDatapointSize = this.width/2.5;
     this._isChordModeEnabled = this.paraview.store.settings.sonification.isChordModeEnabled;
     //todo().controller.registerSettingManager(this);
-    // this.controller.settingViews.add(this, {
-    //   type: 'checkbox',
-    //   key: 'sonification.isSoniEnabled',
-    //   label: 'Sonification enabled',
-    //   parentView: 'chartDetails.dialog.audio.sonificationSettings',
-    // });
     /*todo().controller.settingViews.add(this, {
       type: 'checkbox',
       key: 'sonification.isChordModeEnabled',
@@ -124,6 +119,10 @@ export abstract class XYChart extends DataLayer {
 
   get isChordModeEnabled() {
     return this._isChordModeEnabled;
+  }
+  
+  get xLabelInfo(): Readonly<AxisLabelInfo> {
+    return this._xLabelInfo;
   }
 
   get yLabelInfo(): Readonly<AxisLabelInfo<number>> {
@@ -196,9 +195,6 @@ export abstract class XYChart extends DataLayer {
   }
 
   moveRight() {
-    /*if (this._outlierMode) {
-      return this._moveNextOutlier();
-    }*/
     const leaf = this._chartLandingView.focusLeaf;
     if (leaf instanceof DatapointView) {
       if (!leaf.next) {
@@ -223,21 +219,16 @@ export abstract class XYChart extends DataLayer {
   }
 
   moveLeft() {
-    /*if (this._outlierMode) {
-      return this._movePrevOutlier();
-    }*/
     const leaf = this._chartLandingView.focusLeaf;
     if (leaf instanceof DatapointView) {
       if (!leaf.prev) {
         leaf.blur();
-        //leaf.parent!.focus();
       } else {
         leaf.prev!.focus();
       }
     } else if (leaf instanceof SeriesView) {
       if (!leaf.prev) {
         leaf.blur();
-        //this.focus();
       } else {
         // Move to the last datapoint of the previous series
         leaf.prev!.children.at(-1)!.focus();
@@ -273,7 +264,6 @@ export abstract class XYChart extends DataLayer {
         //this._sonifier.playNotification('series');
       }
     } else {
-      // this._actionManager!.call('no_series');
       // At chart root, so move to the first series landing
       this._chartLandingView.children[0].focus();
     }
@@ -304,7 +294,6 @@ export abstract class XYChart extends DataLayer {
         //this._sonifier.playNotification('series');
       }
     } else {
-      // this._actionManager!.call('no_series');
       // At chart root, so move to the first series landing 
       this._chartLandingView.children[0].focus(); 
     }
@@ -314,7 +303,6 @@ export abstract class XYChart extends DataLayer {
   }
 
   playSeriesRiff() {
-    // console.log('soni: playSeries: ??', this._currNavPoint)
     if (!(this.focusLeaf instanceof SeriesView)) {
       return;
     }
@@ -326,12 +314,7 @@ export abstract class XYChart extends DataLayer {
       let datapointArray = Array.from(seriesDatapoints)
 
       if (this._isChordModeEnabled) {
-        // TODO: play all datapoints in all series
-        // TODO: create array of arrays with all datapoints from all series
       }
-
-      // console.log('riff : soniNoteIndex:', this.soniNoteIndex)
-      // console.log('riff : soniSequenceIndex:', this.soniSequenceIndex)
 
       const noteCount = datapointArray.length;
       if (noteCount) {
@@ -339,33 +322,16 @@ export abstract class XYChart extends DataLayer {
           clearInterval(this._soniRiffInterval!);
         }
         this.soniSequenceIndex++;
-        // console.log('riff : soniSequenceIndex:', this.soniSequenceIndex)
 
         this._soniRiffInterval = setInterval(() => {
           const datapointNavPoint = datapointArray.shift();
-          // console.log('riff', datapointNavPoint)
   
           if (!datapointNavPoint) {
-            // console.log('end riff')
             clearInterval(this._soniRiffInterval!);
-            // TODO: put this event logic in the sonifier, not here
-            /*todo().canvas.dispatchEvent(new CustomEvent('note_sequence_ended', 
-              { 
-                detail: {
-                  noteCount,
-                  noteIndex: this.soniNoteIndex,
-                  sequenceIndex: this.soniSequenceIndex
-                },
-                bubbles: true, 
-                composed: true
-              }));*/
           } else {
-            // TODO: adapt this for chord mode
             const datapoint = datapointNavPoint.datapoint;
             //this._sonifier.playDatapoints(datapoint);
             this.soniNoteIndex++;
-            // this.sonifier.playDatapoints(...this.currentDatapoints);
-            // console.log('riff : soniNoteIndex:', this.soniNoteIndex)
           }
         }, SONI_RIFF_SPEEDS.at(this._soniRiffSpeedRateIndex));
       }
@@ -376,14 +342,6 @@ export abstract class XYChart extends DataLayer {
    * Play all datapoints to the right, if there are any
    */
   playRight() {
-    // if (this._outlierMode) {
-    //   this._playRightOutlier();
-    //   return;
-    // }
-    // if (this._xAxis.continuous) {
-    //   this._playRightContinuous();
-    //   return;
-    // }
     if (this.focusLeaf instanceof ChartLandingView) {
       return;
     }
@@ -401,14 +359,6 @@ export abstract class XYChart extends DataLayer {
    * Play all datapoints to the left, if there are any
    */
   playLeft() {
-    // if (this._outlierMode) {
-    //   this._playLeftOutlier();
-    //   return;
-    // }
-    // if (this._xAxis.continuous) {
-    //   this._playLeftContinuous();
-    //   return;
-    // }
     if (!(this.focusLeaf instanceof DatapointView)) {
       return;
     }
@@ -479,7 +429,6 @@ export abstract class XYChart extends DataLayer {
   queryData() {
     const leaf = this._chartLandingView.focusLeaf;
     if (leaf instanceof ChartLandingView) {
-      // TODO: describe chart?
       return;
     }
 
@@ -488,7 +437,6 @@ export abstract class XYChart extends DataLayer {
     const seriesLength = leaf.series.length;
 
     if (leaf instanceof XYDatapointView) {
-      // TODO: localize this text output
       const record = leaf.index;
 
       //msgArray.push(
@@ -660,16 +608,16 @@ export abstract class XYDatapointView extends DatapointView {
     super(seriesView);
   }
 
-  /*protected _createId(..._args: any[]): string {
+  protected _createId(..._args: any[]): string {
     return [
       'datapoint',
       strToId(this.series.key),
-      this.datapoint.formatX('domId'),
-      this.datapoint.formatY('domId')
+      formatDatapointX(this.datapoint, 'domId', this.paraview.store),
+      formatDatapointY(this.datapoint, 'domId', this.paraview.store),
     ].join('-'); 
-  }*/
+  }
 
-  /*protected _addedToParent() {
+  protected _addedToParent() {
     super._addedToParent();
     this.extraAttrs = [
       { 
@@ -682,21 +630,18 @@ export abstract class XYDatapointView extends DatapointView {
       },
       {
         attr: literal`data-label`,
-        value: this.datapoint.formatX('domId')
+        value: 
+        formatDatapointX(this.datapoint, 'domId', this.paraview.store),
       },
       {
         attr: literal`data-centroid`,
         value: this.centroid
       }
     ];
-  }*/
+  }
 
   get classes() {
     const classes: Mutable<ClassInfo> = super.classes;
-    //const seriesIdx = this.chart.model.depVars.indexOf(this.series.name!);
-    // NB: This will be affected by any sorting of the series views
-    // const seriesIdx = this._parent.index;
-    // classes[`series-${seriesIdx}`] = true;
     return classes as Readonly<ClassInfo>;
   }
 

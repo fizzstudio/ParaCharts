@@ -67,8 +67,7 @@ export class LineChart extends PointChart {
 
   settingDidChange(key: string, value: any) {
     if (!super.settingDidChange(key, value)) {
-      //this._settings[key] = value;
-      //todo().canvas.requestUpdate();
+      this.paraview.requestUpdate();
       return true;
     }
     return false;
@@ -110,14 +109,6 @@ export class LineSection extends ChartPoint {
   }
 
   get height() {
-    // const ys: number[] = [this._y];
-    // if (this.prevMidY !== undefined) {
-    //   ys.push(this.prevMidY);
-    // }
-    // if (this.nextMidY !== undefined) {
-    //   ys.push(this.nextMidY);
-    // }
-    // return Math.max(...ys) - Math.min(...ys);
     return this.chart.settings.selectedPointMarkerSize.height;
   }
 
@@ -145,7 +136,6 @@ export class LineSection extends ChartPoint {
       // pixel height/y-value range
       const pxPerYUnit = this.chart.height/this.chart.yLabelInfo.range!;
       // find midpoint y position
-      //const prevValue = this.chart.model.data.at(this.index - 1, this.series).number;
       const prevValue = this._prev!.datapoint.y;
       const prevMidDiff = Math.min(this.datapoint.y, prevValue) + 
         (Math.max(this.datapoint.y, prevValue) - Math.min(this.datapoint.y, prevValue))/2;
@@ -159,7 +149,6 @@ export class LineSection extends ChartPoint {
       // pixel height/y-value range
       const pxPerYUnit = this.chart.height/this.chart.yLabelInfo.range!;
       // find midpoint y position
-      //const nextValue = this.chart.model.data.at(this.index + 1, this.series).number;
       const nextValue = this._next!.datapoint.y;
       const nextMidDiff = Math.min(this.datapoint.y, nextValue) + 
         (Math.max(this.datapoint.y, nextValue) - Math.min(this.datapoint.y, nextValue))/2;

@@ -24,7 +24,7 @@ import { StateController } from "@lit-app/state";
 import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
 import { customElement, property, state } from "lit/decorators.js";
 import { ParaLoader } from "../loader/paraloader";
-import { ParaView } from "../immediate_view/paraview";
+import { ParaView } from "../view_temp/paraview";
 import { exhaustive } from "../common/utils";
 
 @customElement('para-chart')
@@ -92,8 +92,7 @@ export class ParaChart extends LitElement {
       return html`Error loading manifest: ${this.error}`;
     }
     if (this.dataState === 'complete') {
-      const view = new ParaView(this.store!);
-      return view.render();
+      return html`<para-view .store=${this.store}></para-view>`;
     }
     return exhaustive();
   }

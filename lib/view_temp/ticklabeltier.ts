@@ -20,7 +20,8 @@ import { type Axis, type VertAxis, type AxisOrientation } from './axis';
 import { Label } from './label';
 import { type TickStrip, HorizTickStrip, VertTickStrip } from './tickstrip';
 
-import { svg, type TemplateResult } from 'lit';
+import { type TemplateResult } from 'lit';
+import { ChartTooDenseError, ChartTooWideError, ParaView } from './paraview';
 
 export interface TickLabelTierSlot {
   pos: number;
@@ -38,11 +39,13 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
 
   textHoriz?: boolean;
 
-  constructor(public readonly axis: Axis<T>,
+  constructor(
+    public readonly axis: Axis<T>,
     public readonly slots: TickLabelTierSlot[],
-    protected _maxSlotSize: number
+    protected _maxSlotSize: number,
+    paraview: ParaView
   ) {
-    super();
+    super(paraview);
   }
 
   get class() {
@@ -87,10 +90,8 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
           this.axis.orientationSettings.position as string],
         role: 'axislabel',
         text: slot.text,
-        //axis: this._axis!.orientation,
         x: 0,
         y: 0,
-        // textAnchor: this.slotLabelTextAnchor(slot)
       }, this.axis.docView.paraview);
       this.append(slot.label);
     }
@@ -99,16 +100,6 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   protected abstract _slotLabelX(slot: TickLabelTierSlot): number;
 
   protected abstract _slotLabelY(slot: TickLabelTierSlot): number;
-
-  // protected abstract slotLabelTextAnchor(slot: TickLabelTierSlot): LabelTextAnchor;
-
-  // setLabelYs(y: number) {
-  //   for (const slot of this.slots) {
-  //     if (slot.label) {
-  //       slot.label.y = y;
-  //     }
-  //   }
-  // }
 
   abstract tickStrip(): TickStrip<T>;
 
@@ -135,23 +126,58 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     : 0;  
   }
 
-  // protected slotLabelTextAnchor(slot: TickLabelTierSlot): LabelTextAnchor {
-  //   return 'start';
-  // }
+  protected _computeWidth() {
+    const labels = this.slots.map(slot => slot.label).filter(label => label) as Label[];
+    return labels.length 
+      ? labels.at(-1)!.anchorX - labels[0].anchorX
+      : this.axis.width;
+  }
 
   createTickLabels() {
     super.createTickLabels();
-    // const tooWide = this.slots.some(slot => slot.label && slot.label.width > this.maxSlotSize);
     this.slots.forEach(slot => {
       if (slot.label) {
         slot.label.angle = this.axis.settings.tick.tickLabel.angle;
-        //slot.label.x += slot.label.height / 3;
         slot.label.x = this._slotLabelX(slot);
         slot.label.y = this._slotLabelY(slot);
-        //slot.label.y += this.axis.settings.tick.tickLabel.offsetPadding;
-        // slot.label.classList.push('rotated');
       }
     });
+    if (this.paraview.type !== 'bar' && this.paraview.type !== 'lollipop') {
+      this._checkLabelSpacing();
+    }
+  }
+
+  protected _checkLabelSpacing() {
+    const labels = this.slots.map(slot => slot.label).filter(label => label) as Label[];
+    const gaps = labels.slice(1).map((label, i) => label.left - labels[i].right);
+    const minGap = Math.min(...gaps);
+    if (minGap < (this.axis.settings.tick.tickLabel.gap as number)) {
+      // The actual labels won't have equal gaps between them, since the
+      // labels themselves won't all be the same size. But if I space them
+      // out so that they are equally spaced, the largest anchor gap between
+      // any adjacent pair of labels can be used as the x tick
+      // interval required for all labels to have a gap of at least the
+      // desired size.
+      const anchorGaps: number[] = [];
+      labels.slice(1).forEach((label, i) => {
+        label.x = labels[i].right + (this.axis.settings.tick.tickLabel.gap as number);
+        anchorGaps.push(label.anchorX - labels[i].anchorX);
+      });
+      const largestAnchorGap = Math.max(...anchorGaps);
+      // The labels may actually extend a bit past the start and end points of
+      // the x-axis, so we take that into account when computing the preferred width
+      // of the chart content
+      const preferredWidth = (largestAnchorGap/this.axis.tickStep)*(this.slots.length - 1);
+      if (preferredWidth > 600) {
+        const newTickStep = this.axis.tickStep + 1;
+        const newNumLabels = Math.floor(this.slots.length/newTickStep) + this.slots.length % newTickStep;
+        if (!newNumLabels) {
+          throw new Error('chart always too dense or too wide');
+        }
+        throw new ChartTooWideError(newTickStep);
+      }
+      throw new ChartTooDenseError(preferredWidth);
+    }
   }
 
   tickStrip() {
@@ -185,15 +211,10 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
       - slot.label!.anchorYOffset*2/3;
   }
 
-  // protected slotLabelTextAnchor(slot: TickLabelTierSlot): LabelTextAnchor {
-  //   return this.axis.orientationSettings.position === 'east' ? 'start' : 'end';
-  // }
-
   createTickLabels() {
     super.createTickLabels();
     this.slots.forEach(slot => {
       if (slot.label) {
-        //slot.label.y += slot.label.height/3;
         slot.label.x = this._slotLabelX(slot);
         slot.label.y = this._slotLabelY(slot);
       }

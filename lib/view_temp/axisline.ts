@@ -26,7 +26,7 @@ import { svg } from 'lit';
 export abstract class AxisLine<T extends AxisOrientation> extends View {
 
   constructor(public readonly axis: Axis<T>) {
-    super();
+    super(axis.paraview);
   }
 
   protected abstract getLineD(): string;

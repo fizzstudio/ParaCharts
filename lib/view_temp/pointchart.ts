@@ -22,10 +22,10 @@ import { type PointChartType } from '../store/settings_types';
 import { dedupPrimitive, enumerate, strToId } from '../common/utils';
 import { formatBox, formatDatapoint, formatDatapointX } from './formatter';
 
-// type CanComputeSize = {
-//   computeSize: (chart: PointChart<any, any>) => void;
-//   width: number;
-// };
+//@ts-expect-error
+import generateClusterAnalysis from '@fizz/clustering/clustering';
+//@ts-expect-error
+import { type coord } from '@fizz/clustering/clustering';
 
 /**
  * Abstract base class for charts that represent data values as points
@@ -36,34 +36,26 @@ export abstract class PointChart extends XYChart {
   protected _tickIntervalX!: number;
   protected _tickIntervalY!: number;
   protected _isComputeXTicks = false;
-  //private seriesRefs: {[name: string]: Ref<SVGGElement>} = {};
-  //private visitedMarkRefs: {[name: string]: Ref<SVGUseElement>} = {};
 
   private selectors: string[][] = [];
  
   protected _addedToParent() {
     super._addedToParent();
-    /*if (this._model.depType !== 'number') {
-      throw new Error('point chart dependent variables must be numbers');
-    }*/
   }
 
   get datapointViews() {
     return super.datapointViews as ChartPoint[];
   }
 
-  //protected sortSeries() {
-    // this.visibleSeries.sort((a, b) => 
-    //   this.model.data.at(0, b).number - this.model.data.at(0, a).number);  
-  //}
+  get isComputeXTicks(): boolean {
+    return this._isComputeXTicks;
+  }
 
   protected _newDatapointView(seriesView: XYSeriesView) {
     return new ChartPoint(seriesView);
   }
 
   protected _createComponents() {
-    /*const indep = this._model.indepVar;
-    const indepSeries = this._model.indepSeries();*/
     const xs: string[] = [];
     for (const [x, i] of enumerate(this.paraview.store.model.boxedXs)) {
       xs.push(formatBox(x, `${this.parent.docView.type as PointChartType}Point`, this.paraview.store));
@@ -125,11 +117,6 @@ export abstract class PointChart extends XYChart {
     this._tickIntervalY = this.height/(this._yLabelInfo.labels.length - 1);
     //this.updateGrid(this.tickIntervalY, this.tickIntervalX);
     ChartPoint.computeSize(this);
-    // for (const tickPoints of this.points) {
-    //   for (const point of tickPoints) {
-    //     point.computeLayout();
-    //   }
-    // }
     for (const datapointView of this.datapointViews) {
        datapointView.computeLayout();
     }
@@ -147,13 +134,15 @@ export abstract class PointChart extends XYChart {
       return [new HorizTickLabelTier(
         axis,
         slots,
-        this._tickIntervalX
+        this._tickIntervalX,
+        this.paraview
       )];
     } else if (axis.isVert()) {
       return [new VertTickLabelTier(
         axis,
         slots,
-        this._tickIntervalX
+        this._tickIntervalX,
+        this.paraview
       )];
     } else {
       throw new Error('impossible axis orientation!');
@@ -171,18 +160,28 @@ export abstract class PointChart extends XYChart {
       return [new HorizTickLabelTier(
         axis,
         slots,
-        this._tickIntervalY
+        this._tickIntervalY,
+        this.paraview
       )];
     } else if (axis.isVert()) {
       return [new VertTickLabelTier(
         axis,
         slots,
-        this._tickIntervalY
+        this._tickIntervalY,
+        this.paraview
       )];
     } else {
       throw new Error('impossible axis orientation!');
     }
   }
+
+  /*protected _generateClustering(){
+    const data: coord[] = []
+    for (let i = 0; i < this._model.data.data[0].data.length; i++){
+      data.push({x: Number(this._model.data.data[0].data[i]), y: Number(this._model.data.data[1].data[i])})
+    }
+    this._clustering = generateClusterAnalysis(data, true);
+  }*/
 
   seriesRef(series: string) {
     return this.paraview.ref<SVGGElement>(`series.${series}`);
@@ -204,7 +203,7 @@ export abstract class PointChart extends XYChart {
   }
 
   getTickX(idx: number) {
-    return this.datapointViews[idx].x; // this.points[idx][0].x;
+    return this.datapointViews[idx].x;
   }
 
 }
@@ -248,29 +247,26 @@ export class ChartPoint extends XYDatapointView {
   }
 
   computeLayout() {
-    const labelInfo = this.chart.yLabelInfo;
+    const ylabelInfo = this.chart.yLabelInfo;
+    const xlabelInfo = this.chart.xLabelInfo;
     const canvasHeightPx = this.chart.height;
     // pixel height/y-value range
-    const pxPerYUnit = canvasHeightPx/labelInfo.range!;
+    const pxPerYUnit = canvasHeightPx / ylabelInfo.range!;
     // height (= distance from x-axis) in pixels
-    const height = (this.datapoint.y - labelInfo.min!)*pxPerYUnit;
+    const height = (this.datapoint.y - ylabelInfo.min!) * pxPerYUnit;
     // pixels above the datapoint
-    this._x = ChartPoint.width*this.index;
+
+    //Scales points in proportion to the data range, should only activate for scatterplots
+    if (this.chart.isComputeXTicks){
+      const xTemp: number = (Number(this.datapoint.xRaw) - Number(xlabelInfo.min!)) / Number(xlabelInfo.range!);
+      const parentWidth: number = this.chart.parent.contentWidth;
+      this._x = parentWidth * xTemp;
+    }
+    else {
+      this._x = ChartPoint.width * this.index;
+    }
     this._y = canvasHeightPx - height;
   }
-
-  // focus() {
-  //   super.focus();
-  //   for (const v of this.chart.visitedDatapointViews) {
-  //     const seriesG = this.chart.seriesRef(v.series.name!).value!;
-  //     const visitedDatapoint = seriesG.children[v.index] as SVGElement;
-  //     this.chart.parent.highlightsLayer.activateMark(v.series.name!, visitedDatapoint.id);
-  //   }
-  // }
-
-  // blur() {
-  //   super.blur()
-  // }
 
 }
 

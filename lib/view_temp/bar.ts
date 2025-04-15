@@ -73,7 +73,6 @@ class BarCluster {
   }
 
   render() {
-    //const transform = fixed`translate(${this._x},0)`;
     return svg`
       <g
         id=${this.id}
@@ -144,7 +143,6 @@ export class BarStack {
   }
 
   render() {
-    //const transform = fixed`translate(${this._x},0)`;
     return svg`
       <g
         id=${this.id}
@@ -218,29 +216,23 @@ export class BarChart extends XYChart {
       parentView: 'chartDetails.tabs.chart.chart',
     });
     todo().deets!.chartPanel.requestUpdate();*/
-    // HACK: pattern fill
-    //this.set_fill(this.paraChart.yFacets.map(k => this.paraChart.model!.facets[k]));
     if (this._settings.isAbbrevSeries) {
       this._abbrevs = abbreviateSeries(this.paraview.store.model.keys);
     }
   }
 
-  /*settingDidChange(key: string, value: any) {
+  settingDidChange(key: string, value: any) {
     if (!super.settingDidChange(key, value)) {
       if (key === 'type.bar.stackContent') {
-        //const values: StackContentSettings[] = ['all', 'count'];
-        //this.controller.settingStore.set(key, values[value]); 
-        todo().controller.settingViews.setVisible('type.bar.stackCount', value === 'count');
-      } else if (key === 'type.bar.stackCount') {
-        //this._settings[key] = value;      
+        //todo().controller.settingViews.setVisible('type.bar.stackCount', value === 'count');
       }
-      todo().controller.clearSettingManagers();
-      todo().canvas.createDocumentView();
-      todo().canvas.requestUpdate();
+      //todo().controller.clearSettingManagers();
+      this.paraview.createDocumentView();
+      this.paraview.requestUpdate();
       return true;
     }
     return false;
-  }*/
+  }
 
   get settings() {
     return this._settings;
@@ -254,10 +246,6 @@ export class BarChart extends XYChart {
     return this._abbrevs;
   }
 
-  // get barList(): readonly Readonly<Bar>[] {
-  //   return this._barList;
-  // }
-
   protected _newDatapointView(seriesView: XYSeriesView, stack: BarStack) {
     return new Bar(seriesView, stack);
   }
@@ -270,27 +258,15 @@ export class BarChart extends XYChart {
     const clusters: BarCluster[] = [];
     for (const [x, i] of enumerate(xs)) {
       let cluster: BarCluster;
-      //if (this.paraChart.options.type.bar.clusterBy === undefined) {
-        const clusterKey = formatBox(x, 'barCluster', this.paraview.store);  
-        cluster = barData[clusterKey];
-        if (!cluster) {
-          cluster = new BarCluster(this, clusterKey);
-          barData[clusterKey] = cluster;
-          clusters.push(cluster);
-        }
-      //}
+      const clusterKey = formatBox(x, 'barCluster', this.paraview.store);  
+      cluster = barData[clusterKey];
+      if (!cluster) {
+        cluster = new BarCluster(this, clusterKey);
+        barData[clusterKey] = cluster;
+        clusters.push(cluster);
+      }
       //todo().canvas.jimerator.addSelector(indep, i, cluster.labelId);
     }
-
-    // for (const [i, col] of this.model.data.takeCols(this.visibleSeries).iterCols) {
-    //   const seriesView = new XYSeriesView(this, col.name!);
-    //   this.addChild(seriesView);
-    //   for (const [j, value] of col) {
-    //     const pointNavPoint = new XYDatapointView(this, col.name!);
-    //     // the `index` property of the new XYNavPoint will equal j
-    //     seriesNavPoint.addChild(pointNavPoint);
-    //   }
-    // }
 
     // Place the series into stacks in the order they appear in the 
     // model (i.e., first column will be bottommost in 'all' mode)
@@ -308,8 +284,6 @@ export class BarChart extends XYChart {
             clusters[j].stacks[stackKey] = stack;
           }
         } else if (this._settings.stackContent === 'count') {
-          //const dpKeys = Object.keys(record.datapoints).slice(1);
-          //const idx = dpKeys.indexOf(col.name!);
           const seriesPerStack = this._settings.stackCount;
           stackKey = seriesPerStack === 1 ? series.key : `stack${Math.floor(i/seriesPerStack)}`;
           stack = clusters[j].stacks[stackKey];
@@ -318,10 +292,8 @@ export class BarChart extends XYChart {
             clusters[j].stacks[stackKey] = stack;
           }
         } 
-        //if (this.paraChart.options.type.bar.orderBy === undefined) {
-          stack!.bars[series.key] = this._newDatapointView(seriesView, stack!);
-          seriesView.append(stack!.bars[series.key]);
-        //}
+        stack!.bars[series.key] = this._newDatapointView(seriesView, stack!);
+        seriesView.append(stack!.bars[series.key]);
         //todo().canvas.jimerator.addSelector(series.name!, j, this.datapointViews.at(-1)!.id);
       }
     }
@@ -362,10 +334,6 @@ export class BarChart extends XYChart {
       }
     }
   }
-
-  //protected sortSeries() {
-    //this.visibleSeries.reverse();
-  //}
 
   getXTickLabelTiers<T extends AxisOrientation>(axis: Axis<T>) {
     const clusters = Object.values(this._bars);
@@ -461,10 +429,6 @@ export class Bar extends XYDatapointView {
     return this._y;
   }
 
-  // protected get visitedTransform() {
-  //   return 'scaleX(1.15)';
-  // }
-
   computeLayout() {
     const orderIdx = Object.keys(this.stack.bars).indexOf(this.series.key);
     const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
@@ -486,8 +450,6 @@ export class Bar extends XYDatapointView {
   }
 
   render() {
-    // 'stacked' === this.paraChart.multiseries && this.params.yInfo.stackOffset ?
-    // aria-labelledby="${this.params.labelId}"
     const visitedScale = this._isVisited ? this.chart.settings.highlightScale : 1;
     const styles = {
       strokeWidth: this.chart.settings.lineWidth*visitedScale
