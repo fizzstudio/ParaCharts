@@ -25,6 +25,7 @@ import { ref } from 'lit/directives/ref.js';
 import { TodoEvent, type Actions } from '../input/actions';
 import { type HotkeyInfo } from '../input/defaultactions';*/
 import { fixed } from '../common/utils';
+import { ParaView } from './paraview';
 //import { todo } from '../components/todochart';
 
 export type SnapLocation = 'start' | 'end' | 'center';
@@ -115,14 +116,13 @@ export class View extends BaseView {
   protected _width = 0;
   protected _height = 0;
   protected _currFocus: View | null = null;
-  //protected _prevFocus?: View;
   //protected _eventActionManager: EventActionManager<this> | null = null;
   //protected _hotkeyActionManager!: HotkeyActionManager<this>;
   //protected _keymapManager: KeymapManager | null = null;
   protected _padding: Padding = {top: 0, bottom: 0, left: 0, right: 0};
   protected _hidden = false;
 
-  constructor() {
+  constructor(public paraview: ParaView) {
     super();
     //this._setActions();
     //this.updateKeymap();
@@ -153,15 +153,14 @@ export class View extends BaseView {
         }
         this._prev =  null;
         this._next = null;
-        //parent._didRemoveChild(this);
+        parent._didRemoveChild(this);
       }
       return;
     }
     // Update the size without updating the parent
-    //this._updateSize();
+    this.updateSize();
     this._parent = parent;
     // NB: we assume we've already been added to parent.children
-    // this._index = parent.children.indexOf(this);
     if (this.index) {
       this._prev = parent.children[this.index - 1];
       this._prev._next = this;
@@ -171,7 +170,7 @@ export class View extends BaseView {
       this._next._prev = this;
     }
     this._addedToParent();
-    //this._parent._didAddChild(this);
+    this._parent._didAddChild(this);
     if (!this._id) {
       // ID may have been set already, e.g., by a subclass constructor
       this._id = this._createId();
@@ -183,16 +182,15 @@ export class View extends BaseView {
   }
 
   protected _addedToParent() {
-    //this.updateSize();
   }
 
-  /*protected _didAddChild(_kid: View) {
-    this._updateSize();
+  protected _didAddChild(_kid: View) {
+    this.updateSize();
   }
 
   protected _didRemoveChild(_kid: View) {
-    this._updateSize();
-  }*/
+    this.updateSize();
+  }
 
   get children(): readonly View[] {
     return this._children;
@@ -233,17 +231,17 @@ export class View extends BaseView {
   set width(newWidth: number) {
     const oldWidth = this._width;
     this._width = newWidth;
-    /*if (this._parent && oldWidth !== newWidth) {
-      this._parent._updateSize();
-    }*/
+    if (this._parent && oldWidth !== newWidth) {
+      this._boundingSizeDidChange();
+    }
   }
 
   set height(newHeight: number) {
     const oldHeight = this._height;
     this._height = newHeight;
-    /*if (this._parent && oldHeight !== newHeight) {
-      this._parent._updateSize();
-    }*/
+    if (this._parent && oldHeight !== newHeight) {
+      this._boundingSizeDidChange();
+    }
   }
 
   get boundingWidth() {
@@ -264,9 +262,9 @@ export class View extends BaseView {
     this._padding = this._expandPadding(padding);
     const sizeChanged = oldVertPad !== this._padding.top + this._padding.bottom
       || oldHorizPad !== this._padding.left + this._padding.right;
-    /*if (sizeChanged) {
+    if (sizeChanged) {
       this._boundingSizeDidChange();
-    }*/
+    }
   }
 
   protected _expandPadding(padding: PaddingInput | number, defaults?: Padding): Padding {
@@ -321,9 +319,9 @@ export class View extends BaseView {
     const oldBoundWidth = this.boundingWidth;
     const oldBoundHeight = this.boundingHeight;
     this._hidden = hidden;
-    /*if (oldBoundWidth || oldBoundHeight) {
+    if (oldBoundWidth || oldBoundHeight) {
       this._boundingSizeDidChange();
-    }*/
+    }
   }
 
   get left() {
@@ -346,7 +344,7 @@ export class View extends BaseView {
     return [this.width, this.height];
   }
 
-  /*setSize(width: number, height: number) {
+  setSize(width: number, height: number) {
     const oldWidth = this._width;
     const oldHeight = this._height;
     this._width = width;
@@ -361,16 +359,16 @@ export class View extends BaseView {
     if (this._parent) {
       this._parent._childDidResize(this);
     }
-    todo().canvas.requestUpdate();
+    this.paraview.requestUpdate();
   }
 
-  protected _updateSize() {
+  updateSize() {
     this.setSize(...this.computeSize());
   }
 
   protected _childDidResize(_kid: View) {
-    this._updateSize();
-  }*/
+    this.updateSize();
+  }
 
   get prev() {
     return this._prev;
@@ -415,13 +413,8 @@ export class View extends BaseView {
   }
 
   set currFocus(view: View | null) {
-    //this._prevFocus = this._currFocus;
     this._currFocus = view;
   }
-
-  // get prevFocus() {
-  //   return this._prevFocus;
-  // }
 
   /*get eventActionManager() {
     return this._eventActionManager;
@@ -508,14 +501,17 @@ export class View extends BaseView {
   }
 
   append(child: View) {
-    //console.log(this._id || this.constructor.name, 'appended', child._id || child.constructor.name);
     this._children.push(child);
     child.parent = this;
   }
 
   prepend(child: View) {
-    //console.log(this._id || this.constructor.name, 'prepended', child._id || child.constructor.name);
     this._children.unshift(child);
+    child.parent = this;
+  }
+
+  insert(child: View, i: number) {
+    this._children.splice(i, 0, child);
     child.parent = this;
   }
 
@@ -547,6 +543,17 @@ export class View extends BaseView {
       }
       // kid._index = i;
     });
+  }
+
+  clearChildren() {
+    this._children.splice(0);
+    this.updateSize();
+  }
+
+  replaceChild(oldChild: View, newChild: View) {
+    const i = oldChild.index;
+    oldChild.remove();
+    this.insert(newChild, i);
   }
 
 }

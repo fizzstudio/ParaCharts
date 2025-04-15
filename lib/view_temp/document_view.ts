@@ -27,6 +27,7 @@ import { GridLayout } from './layout';
 import { SeriesLabelStrip } from './serieslabelstrip';
 import { LineChart } from './line';
 import { ParaView } from './paraview';
+import { ParaStore } from '../store/parastore';
 
 //export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
 
@@ -46,16 +47,20 @@ export class DocumentView extends Container(View) {
   private _grid: GridLayout;
   //private _legends: Legends = {};
 
-  constructor(public paraview: ParaView) {
-    super();
-    this.type = paraview.store.type;
-    this.setTitleText(paraview.store.title);
+  private store: ParaStore;
 
-    this.padding = paraview.store.settings.chart.padding;
-    this._grid = new GridLayout({
+  constructor(paraview: ParaView, contentWidth?: number, horizTickStep?: number) {
+    super(paraview);
+    this.store = paraview.store;
+
+    this.type = this.store.type;
+    this.setTitleText(this.store.title);
+
+    this.padding = this.store.settings.chart.padding;
+    this._grid = new GridLayout(this.paraview, {
       numCols:
-        (paraview.store.settings.legend.isDrawLegend &&
-        ['east', 'west'].includes(paraview.store.settings.legend.position))
+        (this.store.settings.legend.isDrawLegend &&
+        ['east', 'west'].includes(this.store.settings.legend.position))
         ? 4 : 3, 
       rowAligns: 'start', 
       colAligns: 'start',
@@ -65,10 +70,10 @@ export class DocumentView extends Container(View) {
     this._grid.append(this.chartLayers, {x: 1, y: 0});
 
     let hasDirectLabels = false;
-    if ( paraview.store.settings.chart.hasDirectLabels
+    if ( this.store.settings.chart.hasDirectLabels
         && this.type === 'line' 
         && (/*this.chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
-          paraview.store.model.multi)
+          this.store.model.multi)
     ) {
       this._seriesLabelStrip = new SeriesLabelStrip(this.chartLayers.dataLayer as LineChart);
       this._grid.append(this._seriesLabelStrip, {x: 2, y: 0});
@@ -83,21 +88,15 @@ export class DocumentView extends Container(View) {
       this._vertAxis.orthoAxis = this._horizAxis;
       this._horizAxis.orthoAxis = this._vertAxis;
       // XXX Change this method to set axis.titleText
-      this.xAxis!.setAxisLabelText(this.paraview.store.xAxisLabel);
-      this.yAxis!.setAxisLabelText(this.paraview.store.yAxisLabel);
+      this.xAxis!.setAxisLabelText(this.store.xAxisLabel);
+      this.yAxis!.setAxisLabelText(this.store.yAxisLabel);
       this._horizAxis.createComponents();
       this._horizAxis.layoutComponents();
       this._vertAxis.createComponents();
       this._vertAxis.layoutComponents();
-      // this._horizAxis.setPosition();
-      // this._vertAxis.setPosition();
 
-//      if (this._vertAxis!.orientationSettings.position === 'west') {
-//        this._horizGroup.reverseChildren();
-//      }
-
-      this._titleText = this.paraview.store.title 
-        ?? this.paraview.store.settings.chart.title.text 
+      this._titleText = this.store.title 
+        ?? this.store.settings.chart.title.text 
         ?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;
     }
 
@@ -113,27 +112,11 @@ export class DocumentView extends Container(View) {
      // Draw the layers on top of the axes
      this._grid.reverseChildren();
 
-//    if (this._controller.settingStore.settings.chart.title.position === 'top') {
-//      this._mainGroup.reverseChildren();
-//    }
-
     this._grid.layoutViews();
     
-    //this.setSize(this._grid.boundingWidth, this._grid.boundingHeight);
+    this.setSize(this._grid.boundingWidth, this._grid.boundingHeight);
 
-    //this.chartLayers.updateLoc();
-
-/*    if (this.controller.settingStore.settings.chart.title.position === 'top') {
-      const offset = this.controller.settingStore.settings.chart.title.marginTop + 
-         this.titleLabel!.height + this.controller.settingStore.settings.chart.title.marginBottom;
-      this.chartLayers.y += offset;
-      if (this._horizAxis) {
-        this._horizAxis.y += offset;
-      }
-      if (this._vertAxis) {
-        this._vertAxis.y += offset;
-      }
-    } */
+    this.chartLayers.updateLoc();
 
   }
 
@@ -155,7 +138,7 @@ export class DocumentView extends Container(View) {
 
   setTitleText(text?: string) {
     this._titleText = text 
-      ?? this.paraview.store.settings.chart.title.text 
+      ?? this.store.settings.chart.title.text 
       ?? '[TITLE]';
     if (this._titleLabel) {
       this._titleLabel.text = this._titleText;
@@ -197,7 +180,7 @@ export class DocumentView extends Container(View) {
   }*/
 
   private createTitle() {
-    const align = this.paraview.store.settings.chart.title.align ?? 'center';
+    const align = this.store.settings.chart.title.align ?? 'center';
     this._titleLabel = new Label({
       id: 'chart-title',
       role: 'heading',
@@ -209,9 +192,9 @@ export class DocumentView extends Container(View) {
       justify: align
     }, this.paraview);
     let titleRow = 0;
-    const titleMargin = this.paraview.store.settings.chart.title.margin;
-    const titlePos = this.paraview.store.settings.chart.title.position;
-    if (this.paraview.store.settings.chart.title.position === 'top') {
+    const titleMargin = this.store.settings.chart.title.margin;
+    const titlePos = this.store.settings.chart.title.position;
+    if (this.store.settings.chart.title.position === 'top') {
       this._grid.insertRow(0);
     } else {
       this._grid.insertRow(this._grid.numRows);
@@ -230,9 +213,6 @@ export class DocumentView extends Container(View) {
 
   cleanup() {
     // remove any event listeners we added, etc.
-    // this.chart.cleanup();
-    // this._horizAxis?.cleanup();
-    // this._vertAxis?.cleanup();
   }
 
   /*updateAllKeymaps() {

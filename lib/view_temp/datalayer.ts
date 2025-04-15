@@ -41,6 +41,9 @@ import { SettingsManager } from '../store/settings_manager';
 import { SeriesProperties } from '../store/series_properties';
 import { Datatype } from '../common/types';
 
+// @ts-expect-error
+import { type clusterObject } from '@fizz/clustering/clustering';
+
 /**
  * @public
  */
@@ -80,8 +83,11 @@ export abstract class DataLayer extends ChartLayer {
   //private _prevDatapointSeries?: string;
   //private _currentRecord = 0;
 
-  constructor(public readonly dataLayerIndex: number, public paraview: ParaView) {
-    super();
+  protected _isClustering: boolean = false;
+  protected _clustering?: clusterObject[];
+
+  constructor(public readonly dataLayerIndex: number, paraview: ParaView) {
+    super(paraview);
   }
 
   protected _createId() {
@@ -94,13 +100,9 @@ export abstract class DataLayer extends ChartLayer {
     this._settings = SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.store.settings);
     //this._sonifier = new Sonifier(this);
     //this.visibleSeries = Array.from(this._model.depVars);
-    this._chartLandingView = new ChartLandingView();
+    this._chartLandingView = new ChartLandingView(this.paraview);
     this.append(this._chartLandingView);
   }
-
-  // get focusLeaf() {
-  //   return super.focusLeaf as DataView;
-  // }
 
   get managedSettingKeys() {
     return [`type.${this._parent.docView.type}`];
@@ -134,6 +136,13 @@ export abstract class DataLayer extends ChartLayer {
     return this._chartLandingView.datapointViews;
   }
 
+  get isClustering(){
+    return this._isClustering;
+  }
+  get clustering(){
+    return this._clustering;
+  }
+
   get visitedDatapointViews() {
     return this.datapointViews.filter(v =>
       v.isVisited
@@ -151,26 +160,14 @@ export abstract class DataLayer extends ChartLayer {
   }
   
   init() {
-    // Sort series in descending order by screen height of their first value.
-    //this.sortSeries();
     this._createComponents();
     this._layoutComponents();
-    //this._currView = this;
   }
 
   abstract settingDidChange(key: string, value: Setting | undefined): boolean;
 
   protected abstract _createComponents(): void;
   protected abstract _layoutComponents(): void;
-  //protected abstract sortSeries(): void;
-
-  /**
-   * Register actions.
-   * @param actionRegistrations - Spread list of actions to register.
-   */
-  // registerActions(...actionRegistrations: ActionRegistration[]) {
-  //   this._actionManager!.register(...actionRegistrations);
-  // }
     
   abstract getXTickLabelTiers<T extends AxisOrientation>(axis: Axis<T>): TickLabelTier<any>[];
   abstract getYTickLabelTiers<T extends AxisOrientation>(axis: Axis<T>): TickLabelTier<any>[];
@@ -204,13 +201,6 @@ export abstract class DataLayer extends ChartLayer {
         
     // stop self-voicing of current passage
     //todo().controller.voice.shutUp();
-
-    // this._playListContinuous.forEach((item) => {
-    //   clearTimeout(item);
-    // });
-    // this._playListContinuous = [];
-
-    // TODO: clear status bar?
   }
   
   /**
@@ -254,10 +244,6 @@ export abstract class DataLayer extends ChartLayer {
     `);
   }
 
-  //shouldShowSettings() {
-  //  return this.chartType === this.view.type;
-  //}
-
 }
 
 /**
@@ -272,14 +258,6 @@ export class ChartLandingView extends View {
   protected _createId() {
     return 'chart-landing';
   }
-
-  // get width() {
-  //   return this._parent.width;
-  // }
-
-  // get height() {
-  //   return this._parent.height;
-  // }  
 
   get parent() {
     return this._parent;
@@ -354,7 +332,7 @@ export class DataView extends View {
     public readonly chart: DataLayer, 
     public readonly seriesKey: string,
   ) {
-    super();
+    super(chart.paraview);
   }
 
   protected _addedToParent() {
@@ -492,7 +470,7 @@ export class DatapointView extends DataView {
   private _isSelected = false;
   protected extraAttrs: {attr: StaticValue, value: any}[] = [];
   protected symbol?: DataSymbol;
-
+  protected _datapoint?: Datapoint2D<Datatype>;
   private _selectedMarker: SelectedDatapointMarker | null = null;
 
   constructor(seriesView: SeriesView) {
@@ -502,6 +480,11 @@ export class DatapointView extends DataView {
   protected _addedToParent() {
     super._addedToParent();
     this._createSymbol();
+    this._createDatapoint();
+  }
+  
+  protected _createDatapoint(){
+    this._datapoint = this.paraview.store.model.atKeyAndIndex(this.series.key, this.index)!;
   }
 
   get parent() {
@@ -543,7 +526,7 @@ export class DatapointView extends DataView {
     } else {
       this.chart.parent.highlightsLayer.deactivateMark(this.el.id);
     }
-    //todo().canvas.requestUpdate();
+    this.paraview.requestUpdate();
   }
 
   get isSelected() {
@@ -561,7 +544,7 @@ export class DatapointView extends DataView {
     } else {
       return;
     }
-    //todo().canvas.requestUpdate();
+    this.paraview.requestUpdate();
   }
 
   protected get _visitedTransform() {
@@ -590,10 +573,8 @@ export class DatapointView extends DataView {
   get styles(): StyleInfo {
     const styles: StyleInfo = {};
     let colorValue = this.chart.paraview.store.colors.colorValueAt(this.seriesProps.color);
-    //let colorValue = this._controller.colors.colorValueAt(this._parent.index);
     if (this._isVisited) {
       styles.transform = this._visitedTransform;
-      //styles.transition = 'all 0.5s ease-in-out';
       colorValue = this.chart.paraview.store.colors.colorValue('bright red');
     }
     styles.fill = colorValue;
@@ -617,6 +598,7 @@ export class DatapointView extends DataView {
     const series = this.seriesProps;
     const symbolType = series.symbol;
     this.symbol = DataSymbol.fromType(
+      this.chart.paraview,
       symbolType, 
       this.chart.paraview.store.settings.chart.symbolStrokeWidth,
       this.chart.paraview.store.colors,
@@ -668,7 +650,7 @@ export class DatapointView extends DataView {
 export class SelectedDatapointMarker extends View {
 
   constructor(private datapointView: DatapointView, x: number, y: number) {
-    super();
+    super(datapointView.paraview);
     this._x = x;
     this._y = y;
   }
@@ -686,18 +668,6 @@ export class SelectedDatapointMarker extends View {
   }
 
   render() {
-    // return svg`
-    //   <g
-    //     class="selected-datapoint-marker"
-    //   >
-    //     <rect
-    //       x=${this._x}
-    //       y=${this._y}
-    //       width=${this.width}
-    //       height=${this.height}
-    //     />
-    //   </g>
-    // `;
     return svg`
       <rect
         x=${this._x}

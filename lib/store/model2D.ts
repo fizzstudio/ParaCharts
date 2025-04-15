@@ -369,6 +369,11 @@ export class Model2D<X extends Datatype> {
   atKey(key: string): Series2D<X> | null {
     return this.keyMap[key] ?? null;
   }
+
+  
+  atKeyAndIndex(key: string, index: number): Datapoint2D<X> | null {
+    return this.atKey(key)?.[index] ?? null;
+  }
 }
 
 export abstract class OrderedModel2D<X extends Datatype> extends Model2D<X>  {

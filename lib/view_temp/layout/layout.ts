@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { View } from '../base_view';
 
 import { svg } from 'lit';
+import { ParaView } from '../paraview';
 
 /**
  * Abstract base class for views that lay out multiple views but
@@ -24,8 +25,8 @@ import { svg } from 'lit';
  */
 export abstract class Layout extends View {
 
-  constructor(id?: string) {
-    super();
+  constructor(paraview: ParaView, id?: string) {
+    super(paraview);
     if (id) {
       this._id = id;
     }
@@ -54,7 +55,7 @@ export abstract class Layout extends View {
   }
 
   setSize(width: number, height: number): void {
-    //super.setSize(width, height);
+    super.setSize(width, height);
     this.layoutViews();
   }
 

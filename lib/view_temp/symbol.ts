@@ -20,6 +20,7 @@ import { fixed } from '../common/utils';
 import { svg } from 'lit';
 import { styleMap, type StyleInfo } from 'lit/directives/style-map.js';
 import { Colors } from './colors';
+import { ParaView } from './paraview';
 
 export type DataSymbolShape = 
 'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
@@ -241,97 +242,6 @@ function starPath() {
   `;
 }
 
-// Each of these shapes has an area of roughly 100.
-// const shapePaths = {
-//   circle: 'm0,-5 a5,5 0 1,1 0,10 a5,5 0 1,1 0,-10',
-//   square: 'm-5,-5 h10 v10 h-10 z',
-//   triangle_up: fixed`m-${triSide/2},${triHeight/2.5} h${triSide} l-${triSide/2},-${triHeight} z`,
-//   triangle_down: fixed`m-${triSide/2},-${triHeight/2.5} h${triSide} l-${triSide/2},${triHeight} z`,
-//   diamond: fixed`
-//     m0,-${diamondRadius} 
-//     l${diamondRadius},${diamondRadius} 
-//     l-${diamondRadius},${diamondRadius} 
-//     l-${diamondRadius},-${diamondRadius} z`,
-//   plus: fixed`
-//     m-${plusSide*1.5},${plusSide/2} 
-//     h${plusSide} 
-//     v${plusSide} 
-//     h${plusSide} 
-//     v-${plusSide} 
-//     h${plusSide} 
-//     v-${plusSide} 
-//     h-${plusSide} 
-//     v-${plusSide} 
-//     h-${plusSide} 
-//     v${plusSide} 
-//     h-${plusSide} z`,
-//   x: fixed`
-//     m-${xSquareCircumRad},0
-//     l-${xSquareCircumRad},-${xSquareCircumRad}
-//     l${xSquareCircumRad},-${xSquareCircumRad}
-//     l${xSquareCircumRad},${xSquareCircumRad}
-//     l${xSquareCircumRad},-${xSquareCircumRad}
-//     l${xSquareCircumRad},${xSquareCircumRad}
-//     l-${xSquareCircumRad},${xSquareCircumRad}
-//     l${xSquareCircumRad},${xSquareCircumRad}
-//     l-${xSquareCircumRad},${xSquareCircumRad}
-//     l-${xSquareCircumRad},-${xSquareCircumRad}
-//     l-${xSquareCircumRad},${xSquareCircumRad}
-//     l-${xSquareCircumRad},-${xSquareCircumRad} z`,
-//   star: starPath2()
-// };
-
-// console.log('SHAPES', JSON.stringify(shapePaths, undefined, 2));
-
-// const shapePaths = {
-//   circle: 'm0,-5 a5,5 0 1,1 0,10 a5,5 0 1,1 0,-10',
-//   square: 'm-5,-5 h10 v10 h-10 z',
-//   triangle_up: 'm-7.60,5.26 h15.20 l-7.60,-13.16 z',
-//   triangle_down: 'm-7.60,-5.26 h15.20 l-7.60,13.16 z',
-//   diamond: `
-//     m0,-7.07 
-//     l7.07,7.07 
-//     l-7.07,7.07 
-//     l-7.07,-7.07 z`,
-//   plus: `
-//     m-6.71,2.24 
-//     h4.47 
-//     v4.47 
-//     h4.47 
-//     v-4.47 
-//     h4.47 
-//     v-4.47 
-//     h-4.47 
-//     v-4.47 
-//     h-4.47 
-//     v4.47 
-//     h-4.47 z`,
-//   x: `
-//     m-3.16,0
-//     l-3.16,-3.16
-//     l3.16,-3.16
-//     l3.16,3.16
-//     l3.16,-3.16
-//     l3.16,3.16
-//     l-3.16,3.16
-//     l3.16,3.16
-//     l-3.16,3.16
-//     l-3.16,-3.16
-//     l-3.16,3.16
-//     l-3.16,-3.16 z`,
-//   star: `
-//     m-2.70,-3.60
-//     l2.70,-3.71
-//     l2.70,3.71
-//     l4.36,1.42
-//     l-2.69,3.71
-//     l-0.00,4.59
-//     l-4.36,-1.42
-//     l-4.36,1.42
-//     l-0.00,-4.59
-//     l-2.69,-3.71 z`
-// };
-
 const shapeInfo = {
   circle: circleInfo(),
   square: squareInfo(),
@@ -355,6 +265,7 @@ export class DataSymbol extends View {
   public readonly type: DataSymbolType;
 
   static fromType(
+    paraview: ParaView,
     type: DataSymbolType, 
     symbolStrokeWidth: number, 
     colors: Colors,
@@ -370,10 +281,11 @@ export class DataSymbol extends View {
     } else {
       [shape, fill] = type.split('.') as [DataSymbolShape, DataSymbolFill];
     }
-    return new DataSymbol(shape, fill, symbolStrokeWidth, colors, color, classes, dashed);
+    return new DataSymbol(paraview, shape, fill, symbolStrokeWidth, colors, color, classes, dashed);
   }
 
   constructor(
+    paraview: ParaView,
     shape: DataSymbolShape,
     fill: DataSymbolFill,
     private symbolStrokeWidth: number,
@@ -382,7 +294,7 @@ export class DataSymbol extends View {
     private classes: string[] = [], 
     private dashed = false,
   ) {
-    super();
+    super(paraview);
     this.type = `${shape}.${fill}`;
   }
 
@@ -424,16 +336,6 @@ export class DataSymbol extends View {
         d=${shapeInfo[this.shape].path}
       />
     `;
-    // return svg`
-    //   <g
-    //     class="symbol ${this.fill}"
-    //     transform=${transform}
-    //   >
-    //     <path
-    //       d=${shapePaths[this.shape]}
-    //     />
-    //   </g>
-    // `;
   }
 
 }
