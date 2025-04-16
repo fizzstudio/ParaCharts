@@ -1,4 +1,4 @@
-/* ParaCharts: Layout Spacers
+/* ParaCharts: Chart Layers
 Copyright (C) 2025 Fizz Studios
 
 This program is free software: you can redistribute it and/or modify
@@ -14,47 +14,27 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { View } from '../base_view';
+import { Container, View } from './base_view';
+import { type ChartLayerManager } from './chartlayermanager';
 
-import { svg } from 'lit';
+export abstract class ChartLayer extends Container(View) {
 
-/**
- * Invisible spacer that creates space between views.
- */
-export class Spacer extends View {
+  declare protected _parent: ChartLayerManager;
 
-  constructor(public readonly size: number) {
-    super();
+  protected _createId(id: string) {
+    return `${id}-layer`;
   }
 
-  computeSize(): [number, number] {
-    return [this.size, this.size];
+  protected _addedToParent() {
+    this.setSize(this._parent.width, this._parent.height);
   }
 
-  render() {
-    return svg``;
+  get parent() {
+    return this._parent;
   }
 
-}
-
-/**
- * Horizontal spacer for row layouts.
- */
-export class RowSpacer extends Spacer {
-
-  computeSize(): [number, number] {
-    return [this.size, 0];
-  }
-
-}
-
-/**
- * Vertical spacer for view columns.
- */
-export class ColumnSpacer extends Spacer {
-
-  computeSize(): [number, number] {
-    return [0, this.size];
+  set parent(parent: ChartLayerManager) {
+    super.parent = parent;
   }
 
 }

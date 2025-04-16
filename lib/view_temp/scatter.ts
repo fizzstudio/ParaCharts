@@ -12,18 +12,7 @@ export class ScatterPlot extends PointChart {
     super(index, paraview);
     this._isComputeXTicks = true;
 
-    // TODO: allow toggle to show or hide symbols
-    /*this.has_symbols = true;
-    // set symbol for LineChart
-    this.set_symbol(dependent_facets);
-
-    // HACK: need to fix how default settings are assigned
-    this.base_symbol_size = 0;
-    if ( this.chart_obj.options.line && this.chart_obj.options.line.base_symbol_size ) {
-      this.base_symbol_size = this.chart_obj.options.line.base_symbol_size;
-    } else {
-      this.base_symbol_size = ParaSettings.options.line.base_symbol_size;
-    }*/
+    this._isClustering = true;
 
   }
 

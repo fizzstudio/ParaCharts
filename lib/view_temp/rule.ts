@@ -20,6 +20,7 @@ import { fixed } from '../common/utils';
 import { type VertDirection, type HorizDirection } from '../store/settings_types';
 
 import { svg } from 'lit';
+import { ParaView } from './paraview';
 
 /**
  * An axis rule line.
@@ -28,8 +29,8 @@ export abstract class AxisRule extends View {
 
   declare protected _parent: TickStrip;
 
-  constructor(protected _major = true) {
-    super();
+  constructor(paraview: ParaView, protected _major = true) {
+    super(paraview);
   }
 
   get parent() {
@@ -48,7 +49,7 @@ export abstract class AxisRule extends View {
 
   protected _addedToParent() {
     // we can't set the actual size until we have a parent
-    //this._updateSize();
+    this.updateSize();
   }
 
 }
@@ -62,8 +63,8 @@ export abstract class HorizRule extends AxisRule {
    * @param _orientation - The tick starts on the axis and points in this direction.
    * @param major 
    */
-  constructor(protected _orientation: VertDirection, major = true) {
-    super(major);
+  constructor(protected _orientation: VertDirection, paraview: ParaView, major = true) {
+    super(paraview, major);
   }
 
   protected get _length() {
@@ -101,8 +102,8 @@ export abstract class VertRule extends AxisRule {
    * @param _orientation - The tick starts on the axis and points in this direction.
    * @param major 
    */
-  constructor(protected _orientation: HorizDirection, major = true) {
-    super(major);
+  constructor(protected _orientation: HorizDirection, paraview: ParaView, major = true) {
+    super(paraview, major);
   }
 
   protected get _length() {
