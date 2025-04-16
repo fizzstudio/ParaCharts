@@ -22,10 +22,7 @@ import { type PointChartType } from '../store/settings_types';
 import { dedupPrimitive, enumerate, strToId } from '../common/utils';
 import { formatBox, formatDatapoint, formatDatapointX } from './formatter';
 
-//@ts-expect-error
-import generateClusterAnalysis from '@fizz/clustering/clustering';
-//@ts-expect-error
-import { type coord } from '@fizz/clustering/clustering';
+import { type coord, generateClusterAnalysis } from '@fizz/clustering';
 
 /**
  * Abstract base class for charts that represent data values as points
