@@ -6,6 +6,7 @@
 
 import { LitElement } from 'lit';
 import { Manifest } from '@fizz/paramanifest';
+import { PropertyValues } from 'lit';
 import { TemplateResult } from 'lit';
 
 // @public (undocumented)
@@ -14,13 +15,15 @@ export class ParaChart extends LitElement {
     // (undocumented)
     dataState: 'initial' | 'pending' | 'complete' | 'error';
     // (undocumented)
-    filename: string;
+    accessor filename: string;
     // (undocumented)
     render(): TemplateResult;
     // (undocumented)
     runloader(): Promise<void>;
     // (undocumented)
     setManifest(manifest: Manifest): void;
+    // (undocumented)
+    willUpdate(changedProperties: PropertyValues<this>): void;
 }
 
 // (No @packageDocumentation comment for this package)
