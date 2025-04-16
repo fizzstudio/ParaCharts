@@ -18,9 +18,10 @@ import { nothing, svg } from 'lit';
 import {type Ref, ref, createRef} from 'lit/directives/ref.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
-import { View, type SnapLocation } from './base_view';
+import { View, type SnapLocation } from '../view_temp/base_view';
 import { generateUniqueId, fixed } from '../common/utils';
-import { ParaView } from './paraview';
+import { ParaView } from '../view_temp/paraview';
+import { SVGNS } from '../common/constants';
 
 export type LabelTextAnchor = 'start' | 'middle' | 'end';
 
@@ -55,8 +56,8 @@ export class Label extends View {
   private _text: string;
   private _textLines: TextLine[] = [];
 
-  constructor(private options: LabelOptions, private paraview: ParaView) {
-    super();
+  constructor(private options: LabelOptions, paraview: ParaView) {
+    super(paraview);
     this.classList = options.classList ?? [];
     if (!this.classList.includes('label')) {
       this.classList.push('label');
@@ -84,9 +85,9 @@ export class Label extends View {
 
   set text(text: string) {
     this._text = text;
-    //this._updateSize();
+    this.updateSize();
     // updateSize() only requests an update if the size has changed
-    //todo().canvas.requestUpdate();
+    this.paraview.requestUpdate();
   }
 
   get angle() {
@@ -95,7 +96,7 @@ export class Label extends View {
 
   set angle(newAngle: number) {
     this._angle = newAngle;
-    //this._updateSize();
+    this.updateSize();
   }
 
   get anchorXOffset() {
@@ -104,6 +105,14 @@ export class Label extends View {
 
   get anchorYOffset() {
     return this._anchorYOffset;
+  }
+
+  get anchorX() {
+    return this._x + this._anchorXOffset;
+  }
+
+  get anchorY() {
+    return this._y + this._anchorYOffset;
   }
 
   get textAnchor() {
@@ -122,8 +131,7 @@ export class Label extends View {
   computeSize() {
     // XXX Need to make sure the label gets rendered here with the
     // same font settings it will ultimately be displayed with
-    const svgns = 'http://www.w3.org/2000/svg';
-    const text = document.createElementNS(svgns, 'text');
+    const text = document.createElementNS(SVGNS, 'text');
     if (this.options.classList) {
       text.classList.add(...this.options.classList);
     }
@@ -142,26 +150,27 @@ export class Label extends View {
       // No need for extra translations since we're at the origin
       text.setAttribute('transform', `rotate(${this._angle})`);
     }
-    //todo().canvas.root!.append(text);
+    // WAS `root`
+    this.paraview.renderRoot!.append(text);
 
-    // FIXME: root should exist
-    const canvasRect = this.paraview.root?.getBoundingClientRect() ?? {height: 1, width: 1, x: 1, y: 1};
-    //const bbox = text.getBBox();
+    /* WAS `root`
+    if (!this.paraview.root) {
+      throw new Error('no root!')
+    }*/
+    const canvasRect = this.paraview.root?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0);
     const clientRect = text.getBoundingClientRect();
     let width = clientRect.width;
     let height = clientRect.height;
     // E.g., suppose text-anchor is middle. The text baseline center will be
     // positioned at the origin of the view box, and the left half of the label
     // will extend into the negative x-axis. 
-    console.log('cs', clientRect.x, canvasRect.x, clientRect.y, canvasRect.y)
     this._anchorXOffset = -(clientRect.x - canvasRect.x);
     this._anchorYOffset = -(clientRect.y - canvasRect.y);
 
     if (this.options.wrapWidth !== undefined && width > this.options.wrapWidth) {
       text.textContent = '';
       const tokens = this._text.split(' ');
-      const tspans: SVGTSpanElement[] = [document.createElementNS(svgns, 'tspan')];
-      // tspans.at(-1)!.setAttribute('dy', '1.5rem');
+      const tspans: SVGTSpanElement[] = [document.createElementNS(SVGNS, 'tspan')];
       tspans.at(-1)!.textContent = tokens.shift()!;
       text.append(tspans.at(-1)!);
       while (tokens.length) {
@@ -172,7 +181,7 @@ export class Label extends View {
         let rect = tspan.getBoundingClientRect();
         if (rect.width >= this.options.wrapWidth) {
           tspan.textContent = oldContent;
-          tspans.push(document.createElementNS(svgns, 'tspan'));
+          tspans.push(document.createElementNS(SVGNS, 'tspan'));
           text.append(tspans.at(-1)!);
           tspans.at(-1)!.textContent = tok;
           tspans.at(-1)!.setAttribute('x', '0');

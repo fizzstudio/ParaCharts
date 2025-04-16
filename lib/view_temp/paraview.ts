@@ -15,11 +15,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { LitElement, PropertyValueMap, PropertyValues, TemplateResult, css, html, nothing, svg } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 
 import { ChartType } from '../common/types';
-import { ViewBox } from '../store/settings_types';
+import { ColorVisionMode, ViewBox } from '../store/settings_types';
 import { View } from './base_view';
 import { DocumentView } from './document_view';
 import { styles } from './styles';
@@ -28,18 +28,52 @@ import { SVGNS } from '../common/constants';
 import { fixed } from '../common/utils';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { SignalManager } from './signals';
 
-type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
+export class ChartTooDenseError extends Error {
+  constructor(public readonly preferredWidth: number) {
+    super();
+  }
+}
 
-export class ParaView {
+export class ChartTooWideError extends Error {
+  constructor(public readonly preferredTickStep: number) {
+    super();
+  }
+}
 
-  private type: ChartType = 'bar';
-  private chartTitle?: string;
-  private xAxisLabel?: string;
-  private yAxisLabel?: string;
-  private darkMode = false;
-  private contrastLevel: number = 1;
-  private colorMode: ColorVisionMode = 'normal';
+/**
+ * Data provided for the on focus callback
+ */
+export type c2mCallbackType = {
+  slice: string;
+  index: number;
+  //point: SupportedDataPointType;
+};
+
+@customElement('para-view')
+export class ParaView extends LitElement {
+
+  @property()
+  type: ChartType = 'bar';
+
+  @property()
+  chartTitle?: string;
+
+  @property()
+  xAxisLabel?: string;
+
+  @property()
+  yAxisLabel?: string;
+
+  @property({ type: Boolean })
+  darkMode = false;
+
+  @property()
+  contrastLevel: number = 1;
+
+  @property()
+  colorMode: ColorVisionMode = 'normal';
 
   private _viewBox!: ViewBox;
   private _prevFocusLeaf?: View;
@@ -51,19 +85,20 @@ export class ParaView {
   //private _jimerator!: Jimerator;
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
+  @state()
   private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
   };
   private _isReady = false;
   private chartRefs: Map<string, Ref<any>> = new Map();
 
+  private signalManager = new SignalManager();
+
+  public store!: ParaStore;
+
   // TEMP
   log(...msg: any[]): void {
     console.log(...msg);
-  }
-
-  constructor(public store: ParaStore) {
-    this.createDocumentView();
   }
 
   static styles = [
@@ -120,10 +155,6 @@ export class ParaView {
     return this._dataspaceRef.value;
   }
 
-  // get activeSeries() {
-  //   return this._activeSeries;
-  // }
-
   get documentView() {
     return this._documentView;
   }
@@ -136,25 +167,6 @@ export class ParaView {
     this._prevFocusLeaf = view;
   }
 
-  // set activeSeries(key: string) {
-  //   console.log('setting active series to', key);
-  //   this._activeSeries = key;
-  //   const series = this.controller.model!.data.col(this._activeSeries);
-  //   if (series.dtype !== 'number') {
-  //     throw new Error('active series must have datatype \'number\'');
-  //   }
-  //   this.todo.deets!.activeSeriesData = series.data.join(' ');
-  //   this.dispatchEvent(new CustomEvent('activeserieschange', { bubbles: true, composed: true }));
-  // }
-
-  /*get jim(): Jim {
-    return this._jimerator.jim;
-  }
-
-  get jimerator() {
-    return this._jimerator;
-  }*/
-
   get isReady() {
     return this._isReady;
   }
@@ -162,14 +174,47 @@ export class ParaView {
   set isReady(ready: boolean) {
     if (!this._isReady) {
       this._isReady = ready;
-      //this.todo.signalManager.signal('canvasReady');
+      this.signalManager.signal('canvasReady');
     }
   }
 
-  /*protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    // this.todo.signalManager.signal('canvasFirstUpdate');
+  connectedCallback() {
+    super.connectedCallback();
+    // FIXME: create store
+    // create a default view box so the SVG element can have a size
+    // while any data is loading
+    this.computeViewBox();
+    this.createDocumentView();
+  }
+
+  protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+    this.log('canvas will update');
+    for (const [k, v] of changedProperties.entries()) {
+      // @ts-ignore
+      this.log(`- ${k.toString()}:`, v, '->', this[k]);
+    }
+    if (changedProperties.has('width')) {
+      this.computeViewBox();
+    }
+    if (changedProperties.has('chartTitle') && this.documentView) {
+      this.documentView.setTitleText(this.chartTitle);
+    }
+    if (changedProperties.has('xAxisLabel') && this.documentView) {
+      this.documentView.xAxis!.setAxisLabelText(this.xAxisLabel);
+    }
+    if (changedProperties.has('yAxisLabel') && this.documentView) {
+      this.documentView.yAxis!.setAxisLabelText(this.yAxisLabel);
+    }
+    if (changedProperties.has('colorMode')) {
+      this.updateColorPalette(this.colorMode === 'normal' 
+        ? this.store.settings.color.colorPalette
+        : this.colorMode);
+    }
+  }
+
+  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     this.isReady = true;
-  }*/
+  }
 
   /*protected updated(changedProperties: PropertyValues) {
     this.log('canvas updated');
@@ -226,19 +271,46 @@ export class ParaView {
     }
   }
 
-  createDocumentView() {
+  updateColorPalette(paletteKey: string) {
+    this.store.colors.selectPaletteWithKey(paletteKey);
+    this.requestUpdate();
+  }
+
+  createDocumentView(contentWidth?: number) {
     this.log('creating document view', this.type);
 
     //this._jimerator = new Jimerator(this);
 
-    this._documentView?.cleanup();
-    this._documentView = new DocumentView(this);
+    if (this._documentView){
+      this._documentView?.cleanup();
+      this._documentView = undefined;
+    }
+    
+    let preferredWidth: number | undefined = contentWidth; 
+    let preferredTickStep: number | undefined = undefined;
+    while (!this._documentView) {
+      try {
+        this._documentView = new DocumentView(this, preferredWidth, preferredTickStep);
+      } catch (e) {
+        // Views registered as setting managers here need to get removed
+        // if an error occurs
+        //this._controller.clearSettingManagers();
+        if (e instanceof ChartTooDenseError) {
+          this.log('chart too dense; preferred width:', e.preferredWidth);
+          preferredWidth = e.preferredWidth;
+        } else if (e instanceof ChartTooWideError) {
+          this.log('chart too wide; preferred tick step:', e.preferredTickStep);
+          preferredTickStep = e.preferredTickStep;
+        } else {
+          throw e;
+        }
+      }
+    }
 
     //this._jimerator.render();
 
     this.computeViewBox();
-    //this.activeSeries = this.controller.model!.depVars[0];
-   // this.dispatchEvent(new CustomEvent('chartcreate', { bubbles: true, composed: true }));
+    //this.dispatchEvent(new CustomEvent('chartcreate', { bubbles: true, composed: true }));
   }
 
   private computeViewBox() {
@@ -256,44 +328,6 @@ export class ParaView {
     this.viewBox.y = y ?? this.viewBox.y;
     this.viewBox.width = width ?? this.viewBox.width;
     this.viewBox.height = height ?? this.viewBox.height;
-  }
-
-  /**
-   * Wire up the hotkey action event listeners
-   */
-  private initializeKeyActionMap() {
-    //this.keyEventManager = new KeyboardEventManager(this._documentView!.chart);
-
-    /*if (this._info.notes?.length > 0) {
-      this._keyEventManager.registerKeyEvent({
-        title: this._translator.translate("info-open"),
-        caseSensitive: false,
-        key: "i",
-        callback: this._availableActions.info
-      });
-    }*/
-
-    /*const hotkeyCallbackWrapper = (cb: (args: c2mCallbackType) => void) => {
-      cb({
-        slice: this._currentGroupName,
-        index: this._pointIndex,
-        //point: this.currentPoint
-      });
-    };*/
-
-    /*this._options.customHotkeys?.forEach((hotkey) => {
-      this._keyEventManager.registerKeyEvent({
-        ...hotkey,
-        key: keyboardEventToString(hotkey.key as KeyboardEvent),
-        callback: () => {
-          hotkeyCallbackWrapper(hotkey.callback);
-        }
-      });
-    });*/
-
-    //this._cleanUpTasks.push(() => {
-    //  this._keyEventManager.cleanup();
-    //});
   }
 
   updateDefs(el: SVGLinearGradientElement) {
@@ -327,11 +361,6 @@ export class ParaView {
       style['--axisLineColor'] = `hsl(0, 0%, ${50 - contrast}%)`;
       style['--labelColor'] = `hsl(0, 0%, ${50 - contrast}%)`;
     }
-
-    // if (this.colorMode === 'normal') {
-    //   Object.assign(style, this.controller.colorsPaletteStyles);
-    // }
-
     return style;
   }
 
@@ -340,6 +369,7 @@ export class ParaView {
       darkmode: this.store.darkMode,
     }
   }
+
 
   /*hotkeyInfo(key: string, action: string, actionReceiver: View): HotkeyInfo {
     return {
@@ -447,7 +477,7 @@ export class ParaView {
         <rect 
           ${ref(this._frameRef)}
           id="frame"
-          class=${/*this.dataState === 'pending' ? 'pending' :*/ nothing}
+          class=${nothing}
           pointer-events="all"
           x="0"
           y="0"
@@ -460,4 +490,10 @@ export class ParaView {
     `;
   }
 
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'para-view': ParaView;
+  }
 }

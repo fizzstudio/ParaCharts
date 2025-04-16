@@ -59,7 +59,7 @@ export class ChartLayerManager extends View {
 
   declare protected _parent: Layout;
 
-  private _contentWidth!: number;
+  private _contentWidth = this.docView.paraview.store.settings.chart.size.width!;
   private _orientation!: CardinalDirection;
   //private model!: Model;
   //private _backgroundAnnotationLayer!: AnnotationLayer;
@@ -69,7 +69,7 @@ export class ChartLayerManager extends View {
   //private _foregroundAnnotationLayer!: AnnotationLayer;
 
   constructor(public readonly docView: DocumentView) {
-    super();
+    super(docView.paraview);
   }
 
   protected _createId() {
@@ -85,17 +85,20 @@ export class ChartLayerManager extends View {
   }
 
   protected _addedToParent() {
-    //this.model = todo().controller.model!;
+    //this._model = todo().controller.model!;
     this._orientation = this.docView.paraview.store.settings.chart.orientation;
-    this._contentWidth = this.docView.paraview.store.settings.chart.size.width!;
+    this.createLayers();
+  }
+
+  createLayers() {
     //this._backgroundAnnotationLayer = new AnnotationLayer('background');
     //this.append(this._backgroundAnnotationLayer);
     this.createDataLayers();
-    this._highlightsLayer = new HighlightsLayer();
+    this._highlightsLayer = new HighlightsLayer(this.docView.paraview);
     this.append(this._highlightsLayer);
     //this._foregroundAnnotationLayer = new AnnotationLayer('foreground');
     //this.append(this._foregroundAnnotationLayer);
-    this._selectionLayer = new SelectionLayer();
+    this._selectionLayer = new SelectionLayer(this.docView.paraview);
     this.append(this._selectionLayer);    
   }
 
@@ -153,7 +156,11 @@ export class ChartLayerManager extends View {
     return this._orientation;
   }
 
-  /*get backgroundAnnotationLayer() {
+  /*get model(){
+    return this._model
+  }
+    
+  get backgroundAnnotationLayer() {
     return this._backgroundAnnotationLayer;
   }*/
 
@@ -230,16 +237,7 @@ export class ChartLayerManager extends View {
   }
 
   updateLoc() {
-    // this._x = this.controller.settingStore.settings.chart.padding;
-    // this._y = this.controller.settingStore.settings.chart.padding;
-    // if (this.shouldHaveAxes()) {
-    //   if (this.docView.vertAxis!.orientationSettings.position === 'west') {
-    //     this._x += this.docView.vertAxis!.width;
-    //   }
-    //   if (this.docView.horizAxis!.orientationSettings.position === 'north') {
-    //     this._y += this.docView.horizAxis!.height;
-    //   }  
-    // }
+
   }
 
   setLowVisionMode(lvm: boolean) {
@@ -264,7 +262,6 @@ export class ChartLayerManager extends View {
         scale(1,-1) 
       `;
     }
-    //clip-path="url(#clip-path)"
     return svg`
       <g
         id="chart-layers"

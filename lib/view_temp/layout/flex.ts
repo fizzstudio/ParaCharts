@@ -15,6 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { View, type SnapLocation } from '../base_view';
+import { ParaView } from '../paraview';
 import { Layout } from './layout';
 
 /**
@@ -22,8 +23,8 @@ import { Layout } from './layout';
  */
 export abstract class FlexLayout extends Layout {
 
-  constructor(public readonly gap: number, public readonly alignViews: SnapLocation, id?: string) {
-    super(id);
+  constructor(paraview: ParaView, public readonly gap: number, public readonly alignViews: SnapLocation, id?: string) {
+    super(paraview, id);
   }
 
 }
@@ -33,8 +34,8 @@ export abstract class FlexLayout extends Layout {
  */
 export class RowLayout extends FlexLayout {
 
-  constructor(gap: number, alignViews: SnapLocation, id?: string) {
-    super(gap, alignViews, id);
+  constructor(paraview: ParaView, gap: number, alignViews: SnapLocation, id?: string) {
+    super(paraview, gap, alignViews, id);
   }
 
   computeSize(): [number, number] {
@@ -76,8 +77,8 @@ export class RowLayout extends FlexLayout {
  */
 export class ColumnLayout extends FlexLayout {
 
-  constructor(gap: number, alignViews: SnapLocation, id?: string) {
-    super(gap, alignViews, id);
+  constructor(paraview: ParaView, gap: number, alignViews: SnapLocation, id?: string) {
+    super(paraview, gap, alignViews, id);
   }
 
   computeSize(): [number, number] {

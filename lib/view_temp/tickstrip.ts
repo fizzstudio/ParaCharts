@@ -39,7 +39,7 @@ export abstract class TickStrip<T extends AxisOrientation = AxisOrientation> ext
     protected _interval: number,
     protected _majorModulus: number
   ) {
-    super();
+    super(axis.paraview);
   }
 
   protected _addedToParent(): void {
@@ -67,6 +67,11 @@ export abstract class TickStrip<T extends AxisOrientation = AxisOrientation> ext
   }
 
   protected abstract _createRules(): void;
+
+  reset() {
+    this.clearChildren();
+    this._createRules();
+  }
 
 }
 
@@ -104,11 +109,11 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
     }
     const xs = indices.map(i => isEast ? this.parent.width - i*this._interval : i*this._interval);
     indices.forEach(i => {
-      this.append(new HorizTick(this.axis.orientationSettings.position, i % this._majorModulus === 0));   
+      this.append(new HorizTick(this.axis.orientationSettings.position, this.paraview, i % this._majorModulus === 0));   
       this._children.at(-1)!.x = xs[i];
       this._children.at(-1)!.y = y;
       this._children.at(-1)!.hidden = !this.axis.settings.tick.isDrawEnabled;
-      this.append(new HorizGridLine(this.axis.orientationSettings.position));
+      this.append(new HorizGridLine(this.axis.orientationSettings.position, this.paraview));
       this._children.at(-1)!.x = xs[i];
       this._children.at(-1)!.y = y;
       this._children.at(-1)!.hidden = !this.axis.docView.paraview.store.settings.grid.isDrawVertLines;
@@ -150,11 +155,11 @@ export class VertTickStrip extends TickStrip<'vert'> {
     const ys = indices.map(i => isNorth ?
       this.parent.height - i*this._interval : i*this._interval);
     indices.forEach(i => {
-      this.append(new VertTick(this.axis.orientationSettings.position, i % this._majorModulus === 0));
+      this.append(new VertTick(this.axis.orientationSettings.position, this.paraview, i % this._majorModulus === 0));
       this._children.at(-1)!.x = x;
       this._children.at(-1)!.y = ys[i];
       this._children.at(-1)!.hidden = !this.axis.settings.tick.isDrawEnabled;
-      this.append(new VertGridLine(this.axis.orientationSettings.position));
+      this.append(new VertGridLine(this.axis.orientationSettings.position, this.paraview));
       this._children.at(-1)!.x = x;
       this._children.at(-1)!.y = ys[i];
       this._children.at(-1)!.hidden = !this.axis.docView.paraview.store.settings.grid.isDrawHorizLines;

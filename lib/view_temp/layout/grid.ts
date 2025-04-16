@@ -15,6 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { View, type SnapLocation, type PaddingInput, type Padding } from '../base_view';
+import { ParaView } from '../paraview';
 import { Layout } from './layout';
 
 import { mapn } from '@fizz/chart-classifier-utils';
@@ -53,14 +54,13 @@ export class GridLayout extends Layout {
   private _colGaps: number[]; 
   private _rowAligns: SnapLocation[];
   private _colAligns: SnapLocation[];
-  //private _options: GridOptions;
   private _rows: (View | null)[][] = [];
   private _territories = new Map<View, GridTerritory>(); 
   private _hRules: number[] = []; 
   private _vRules: number[] = [];
 
-  constructor(options: GridOptionsInput, id?: string) {
-    super(id);
+  constructor(paraview: ParaView, options: GridOptionsInput, id?: string) {
+    super(paraview, id);
     this._numCols = options.numCols;
     this._rowGaps = options.rowGaps !== undefined
       ? this._expandRowGaps(options.rowGaps)
@@ -241,7 +241,7 @@ export class GridLayout extends Layout {
     this._arrangeChild(kid);
     this._adjustRules(kid);
     this._adjustGaps(kid);
-    //super._didAddChild(kid);
+    super._didAddChild(kid);
   }
 
   protected _didRemoveChild(kid: View): void {
@@ -250,7 +250,7 @@ export class GridLayout extends Layout {
     this._territories.delete(kid);
     this._contractRules();
     this._updateGaps();
-    //super._didRemoveChild(kid);
+    super._didRemoveChild(kid);
   }
 
   protected _firstEmptyCell() {
@@ -435,27 +435,6 @@ export class GridLayout extends Layout {
     }
   }
 
-  /**
-   * Remove empty rows and columns, and the corresponding rules.
-   */
-  // prune() {
-  //   this._rows = this._rows.filter(row => row.some(v => v !== null));
-  //   const cols: typeof this._rows = [];
-  //   this._rows.forEach((row, i) => {
-  //     row.forEach((v, j) => {
-  //       if (!cols[j]) {
-  //         cols[j] = [];
-  //       }
-  //       cols[j][i] = v;
-  //     });
-  //   });
-  //   cols.forEach((col, i) => {
-  //     if (col.every(v => v === null)) {
-  //       this._rows.forEach(row => row.splice(i, 1));
-  //     }
-  //   });
-  // }
-
   protected _arrangeChildren() {
     this._rows = [];
     this._territories.clear();
@@ -469,7 +448,7 @@ export class GridLayout extends Layout {
 
   protected _childDidResize(kid: View) {
     this._adjustRules(kid);
-    //super._childDidResize(kid);
+    super._childDidResize(kid);
   }
 
   computeSize(): [number, number] {

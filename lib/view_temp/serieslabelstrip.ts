@@ -34,7 +34,7 @@ export class SeriesLabelStrip extends Container(View) {
   protected leaders: LineLabelLeader[] = [];
 
   constructor(private _chart: LineChart) {
-    super();
+    super(_chart.paraview);
     const directLabelPadding = this._chart.settings.isDrawSymbols 
       ? this._chart.settings.seriesLabelPadding*2
       : this._chart.settings.seriesLabelPadding;
@@ -62,10 +62,6 @@ export class SeriesLabelStrip extends Container(View) {
     const topLabel = this.seriesLabels[0];
     // XXX This is rough: because when measured, labels may not get rendered with the
     // same font settings they will ultimately be displayed with.
-    //const top = topLabel.y - topLabel.height;
-    // if (top < 0) {
-    //   topLabel.y += -top;
-    // }
     if (topLabel.y < 0) {
       topLabel.y = 0;
     }
@@ -148,7 +144,7 @@ class LineLabelLeader extends View {
   private endY: number;
 
   constructor(private endpoint: LineSection, label: Label, private chart: LineChart) {
-    super();
+    super(chart.paraview);
     this.endX = this.chart.paraview.store.settings.type.line.leaderLineLength;
     this.endY = label.y + 2*label.anchorYOffset/3;
     this.lineD = fixed`
@@ -170,7 +166,6 @@ class LineLabelLeader extends View {
     const styles = {
       strokeWidth: 2, //this.chart.settings.lineWidth
     };
-    //const seriesIdx = this.endpoint.chart.model.depVars.indexOf(this.endpoint.series);
     const seriesIdx = this.endpoint.parent.index;
     return super.render(svg`
       <g
@@ -190,4 +185,3 @@ class LineLabelLeader extends View {
     `);
   }
 }
-
