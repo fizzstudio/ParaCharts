@@ -41,8 +41,7 @@ import { SettingsManager } from '../store/settings_manager';
 import { SeriesProperties } from '../store/series_properties';
 import { Datatype } from '../common/types';
 
-// @ts-expect-error
-import { type clusterObject } from '@fizz/clustering/clustering';
+import { type clusterObject } from '@fizz/clustering';
 
 /**
  * @public
