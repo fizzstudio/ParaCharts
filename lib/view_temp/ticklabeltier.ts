@@ -142,7 +142,8 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
         slot.label.y = this._slotLabelY(slot);
       }
     });
-    if (this.paraview.type !== 'bar' && this.paraview.type !== 'lollipop') {
+    // FIXME: paraview should always exist
+    if (this.paraview && this.paraview.type !== 'bar' && this.paraview.type !== 'lollipop') {
       this._checkLabelSpacing();
     }
   }

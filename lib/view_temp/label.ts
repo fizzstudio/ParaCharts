@@ -150,9 +150,14 @@ export class Label extends View {
       // No need for extra translations since we're at the origin
       text.setAttribute('transform', `rotate(${this._angle})`);
     }
-    this.paraview.root!.append(text);
+    // WAS `root`
+    this.paraview.renderRoot!.append(text);
 
-    const canvasRect = this.paraview.root!.getBoundingClientRect();
+    /* WAS `root`
+    if (!this.paraview.root) {
+      throw new Error('no root!')
+    }*/
+    const canvasRect = this.paraview.root?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0);
     const clientRect = text.getBoundingClientRect();
     let width = clientRect.width;
     let height = clientRect.height;

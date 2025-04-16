@@ -359,7 +359,10 @@ export class View extends BaseView {
     if (this._parent) {
       this._parent._childDidResize(this);
     }
-    this.paraview.requestUpdate();
+    // FIXME: paraview should always exist
+    if (this.paraview) {
+      this.paraview.requestUpdate();
+    }
   }
 
   updateSize() {
