@@ -89,7 +89,7 @@ export class ParaStore extends State {
       this.model = modelFromAllSeriesData(data, this.xDatatype, this.type);
       this.data = data;
     } else {
-      throw new Error('store lacks external or inline chart data')
+      throw new Error('store lacks external or inline chart data');
     }
     const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
     SettingsManager.suppleteSettings(hydratedSettings, suppleteSettingsWith ?? defaults);
