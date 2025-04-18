@@ -27,8 +27,11 @@ import {
 } from '../store/settings_types';
 import { Label } from './label';
 import { type AxisLine, HorizAxisLine, VertAxisLine } from './axisline';
-import { type TickLabelTier } from './ticklabeltier';
-import { type TickStrip } from './tickstrip';
+import { type TickLabelTier, HorizTickLabelTier, VertTickLabelTier } from './ticklabeltier';
+import { type TickStrip, HorizTickStrip, VertTickStrip } from './tickstrip';
+import { type AxisLabelInfo } from '../common/axisinfo';
+import { SettingsManager } from '../store/settings_manager';
+import { ParaStore } from '../store/parastore';
 
 import { mapn } from '@fizz/chart-classifier-utils';
 import { type Datatype, type Scalar } from '@fizz/dataframe';
@@ -36,20 +39,21 @@ import { type Datatype, type Scalar } from '@fizz/dataframe';
 import { type TemplateResult } from 'lit';
 import { literal } from 'lit/static-html.js';
 import Decimal from 'decimal.js';
-import { SettingsManager } from '../store/settings_manager';
-import { ParaStore } from '../store/parastore';
 
 export type AxisOrientation = 'horiz' | 'vert';
 export type AxisCoord = 'x' | 'y';
 export type OrthoAxis<T> = T extends 'horiz' ? 'vert' : 'horiz';
 
-export interface AxisLabelInfo<T extends Scalar = Scalar> {
-  min?: T;
-  max?: T;
-  range?: T;
-  interval?: T;
-  labels: string[];
-  maxChars: number;
+export class ChartTooDenseError extends Error {
+  constructor(public readonly preferredWidth: number) {
+    super();
+  }
+}
+
+export class ChartTooWideError extends Error {
+  constructor(public readonly preferredTickStep: number) {
+    super();
+  }
 }
 
 export abstract class Axis<T extends AxisOrientation> extends Container(View) {
@@ -64,6 +68,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   readonly chartLayers: ChartLayerManager;
 
+  protected _labelInfo: AxisLabelInfo;
   protected _layout!: Layout;
   protected _titleText: string;
   protected _orthoAxis!: Axis<OrthoAxis<T>>;
@@ -73,39 +78,9 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   protected _tickStrip: TickStrip | null = null;
   protected _axisLine!: AxisLine<T>;
   protected _tickStep: number;
+  protected _isInterval: boolean;
 
-  store: ParaStore;
-
-  static computeNumericLabels(
-    start: number, end: number, isPercent: boolean, isGrouping = true
-  ): AxisLabelInfo<number> {
-    const minDec = new Decimal(start);
-    const maxDec = new Decimal(end);
-    const diff = maxDec.sub(minDec);
-    const interval = diff.div(10);
-    let quantizedInterval: Decimal, quantizedMin: Decimal, quantizedMax: Decimal;
-    quantizedInterval = new Decimal(10).pow(interval.log(10).ceil());
-    if (quantizedInterval.div(diff).gte(0.8)) {
-      quantizedInterval = quantizedInterval.div(10);
-    } else if (quantizedInterval.div(diff).gte(0.5)) {
-      quantizedInterval = quantizedInterval.div(4);
-    } else if (quantizedInterval.div(diff).gte(0.2)) {
-      quantizedInterval = quantizedInterval.div(2);
-    }
-    quantizedMin = minDec.div(quantizedInterval).floor().mul(quantizedInterval);
-    quantizedMax = maxDec.div(quantizedInterval).ceil().mul(quantizedInterval);
-    const fmt = new Intl.NumberFormat(undefined, { maximumFractionDigits: 5, useGrouping: isGrouping });
-    const labels = mapn(quantizedMax.sub(quantizedMin).div(quantizedInterval).toNumber() + 1,
-      i => fmt.format(+quantizedMin.add(quantizedInterval.mul(i))) + (isPercent ? '%' : ''));
-    return {
-      min: quantizedMin.toNumber(),
-      max: quantizedMax.toNumber(),
-      range: quantizedMax.sub(quantizedMin).toNumber(),
-      interval: quantizedInterval.toNumber(),
-      labels,
-      maxChars: Math.max(...labels.map(l => l.length))
-    };
-  }
+  protected _store: ParaStore;
 
   constructor(
     public readonly docView: DocumentView, 
@@ -115,18 +90,25 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     tickStep?: number
   ) {
     super(docView.paraview);
-    this.store = this.paraview.store;
+    this._store = this.paraview.store;
     this.chartLayers = docView.chartLayers;
     //this.settingGroup = `axis.${this.coord}`;
     this.settings = SettingsManager.getGroupLink<AxisSettings>(
-      this.managedSettingKeys[0], this.store.settings
+      this.managedSettingKeys[0], this._store.settings
     );
     this._tickStep = tickStep ?? this.settings.tick.step;
     this.orientationSettings = SettingsManager.getGroupLink<OrientedAxisSettings<T>>(
-      `axis.${orientation}`, this.store.settings
+      `axis.${orientation}`, this._store.settings
     );
     //todo().controller.registerSettingManager(this);
-    this.datatype = this.coord === 'y' ? 'number' : this.store.model.xDatatype;
+    this.datatype = this.coord === 'y' ? 'number' : this._store.model!.xDatatype;
+
+    this._labelInfo = this.coord === 'x' 
+      ? this.chartLayers.dataLayer.axisInfo!.xLabelInfo
+      : this.chartLayers.dataLayer.axisInfo!.yLabelInfo;
+    this._isInterval = this.coord === 'x'
+      ? !!this.chartLayers.dataLayer.axisInfo!.options.isXInterval
+      : !!this.chartLayers.dataLayer.axisInfo!.options.isYInterval;
 
     this._titleText = title ?? this.settings.title.text ?? '';
   }
@@ -171,6 +153,14 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   get tickStep() {
     return this._tickStep;
+  }
+
+  get isInterval() {
+    return this._isInterval;
+  }
+
+  get tickLabelTiers(): readonly TickLabelTier<T>[] {
+    return this._tickLabelTiers;
   }
 
   get role() {
@@ -219,23 +209,50 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       this._createAxisTitle();
       this._createSpacer();
     }
-    this._tickLabelTiers = this.chartLayers.getTickLabelTiers(this);
+    let tiersOk = false;
+    while (!tiersOk) {
+      try {
+        this._tickLabelTiers = this._createTickLabelTiers();
+        tiersOk = true;
+      } catch (e) {
+        if (e instanceof ChartTooDenseError) {
+          console.log('chart too dense; preferred width:', e.preferredWidth);
+          this.chartLayers.contentWidth = e.preferredWidth;
+        } else if (e instanceof ChartTooWideError) {
+          console.log('chart too wide; preferred tick step:', e.preferredTickStep);
+          this._tickStep = e.preferredTickStep;
+        } else {
+          throw e;
+        }          
+      }
+    }
     this._tickLabelTiers.forEach(tier => this._layout.append(tier));
-    this._tickStrip = this._tickLabelTiers[0].tickStrip();
+    this._tickStrip = this._createTickStrip();
     this._layout.append(this._tickStrip);
-    this._createTickLabels();
     this._createAxisLine();
   }
+
+  abstract resize(width: number, height: number): void;
 
   layoutComponents() {
     this._layout.layoutViews();
   }
 
+  protected abstract _createTickLabelTiers(): TickLabelTier<T>[];
+
+  protected abstract _createTickStrip(): TickStrip<T>;
+
   protected abstract _createAxisLine(): void;
 
-  protected _createTickLabels() {
+  // protected _createTickLabels() {
+  //   for (const tier of this._tickLabelTiers) {
+  //     tier.createTickLabels();
+  //   }
+  // }
+
+  updateTickLabelIds() {
     for (const tier of this._tickLabelTiers) {
-      tier.createTickLabels();
+      tier.updateTickLabelIds();
     }
   }
 
@@ -300,14 +317,32 @@ export class HorizAxis extends Axis<'horiz'> {
     return true;
   }
 
+  protected _createTickLabelTiers() {
+    return [new HorizTickLabelTier(
+      this, this._labelInfo.labelTiers[0] as string[], this.chartLayers.contentWidth, this.paraview)];
+  }
+  
+  protected _createTickStrip() {
+    return new HorizTickStrip(
+      this, this._tickLabelTiers[0].tickInterval/this.tickStep, 1,
+      this.chartLayers.contentWidth, this.chartLayers.contentHeight);
+  }
+
   protected _createAxisLine() {
-    this._axisLine = new HorizAxisLine(this);
+    this._axisLine = new HorizAxisLine(this, this.chartLayers.contentWidth);
     this._layout.append(this._axisLine);
   }
+
 
   protected _createSpacer() {
     this._spacer = new ColumnSpacer(this.settings.title.gap, this.paraview);
     this._layout.append(this._spacer);
+  }
+
+  resize(width: number, height: number) {
+    this._tickLabelTiers.forEach(tier => tier.setLength(width));
+    this._tickStrip!.setContentSize(width, height);
+    this._axisLine.length = width;
   }
 
   layoutComponents() {
@@ -339,17 +374,21 @@ export class VertAxis extends Axis<'vert'> {
     this.append(this._layout);
   }
 
-  protected _addedToParent() {
+  /*protected _addedToParent() {
     super._addedToParent();
     const range = this.chartLayers.getYAxisInterval();
-    /*todo().controller.settingViews.add(this, {
+    todo().controller.settingViews.add(this, {
       type: 'textfield',
       key: 'axis.y.minValue',
       label: 'Min y-value',
       options: { inputType: 'number' },
       value: this.settings.minValue ?? range?.start,
       validator: value => {
-        const max = todo().controller.settingViews.value<number>('axis.y.maxValue');
+        const values = this.chartLayers.model.data
+          .dropCols([this.chartLayers.model.indepVar])
+          .mapCols(col => col.numberSeries.data)
+          .flat();
+        const max = Math.min(...values);
         // NB: If the new value is successfully validated, the inner chart
         // gets recreated, and `max` may change, due to re-quantization of
         // the tick values. 
@@ -365,13 +404,17 @@ export class VertAxis extends Axis<'vert'> {
       options: { inputType: 'number' },
       value: this.settings.maxValue ?? range?.end,
       validator: value => {
-        const min = todo().controller.settingViews.value<number>('axis.y.minValue');
+        const values = this.chartLayers.model.data
+          .dropCols([this.chartLayers.model.indepVar])
+          .mapCols(col => col.numberSeries.data)
+          .flat();
+        const min = Math.max(...values)
         return value as number <= min ?
           { err: `Max y-value (${value}) must be greater than min (${min})` } : {};
       },
       parentView: 'chartDetails.tabs.chart.general',
-    });  */
-  }
+    });  
+  }*/
 
   computeSize(): [number, number] {
     return [
@@ -391,8 +434,19 @@ export class VertAxis extends Axis<'vert'> {
     return true;
   }
 
+  protected _createTickLabelTiers() {
+    return [new VertTickLabelTier(
+      this, this._labelInfo.labelTiers[0] as string[], this.chartLayers.height, this.paraview)];
+  }
+
+  protected _createTickStrip() {
+    return new VertTickStrip(
+      this, this._tickLabelTiers[0].tickInterval/this.tickStep, 1,
+      this.chartLayers.contentWidth, this.chartLayers.contentHeight);
+  }
+
   protected _createAxisLine() {
-    this._axisLine = new VertAxisLine(this);
+    this._axisLine = new VertAxisLine(this, this.chartLayers.contentHeight);
     this._layout.append(this._axisLine);
   }
 
@@ -405,6 +459,13 @@ export class VertAxis extends Axis<'vert'> {
     return this._tickLabelTiers
       .map(tier => tier.width)
       .reduce((a, b) => a + b, 0);
+  }
+
+  resize(width: number, height: number) {
+    this._tickLabelTiers.forEach(tier => tier.setLength(height));
+    this._tickStrip!.setContentSize(width, height);
+    // resize axis line
+    // update layout size?
   }
 
   layoutComponents() {
