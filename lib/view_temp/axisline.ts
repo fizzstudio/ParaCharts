@@ -25,8 +25,17 @@ import { svg } from 'lit';
  */
 export abstract class AxisLine<T extends AxisOrientation> extends View {
 
-  constructor(public readonly axis: Axis<T>) {
+  constructor(public readonly axis: Axis<T>, length: number) {
     super(axis.paraview);
+    this.length = length;
+  }
+
+  get length() {
+    return 0;
+  }
+
+  set length(length: number) {
+
   }
 
   protected abstract getLineD(): string;
@@ -55,14 +64,13 @@ export abstract class AxisLine<T extends AxisOrientation> extends View {
  */
 export class HorizAxisLine extends AxisLine<'horiz'> {
 
-  get width() {
-    // NB: The overhang doesn't count toward the width
-    return this.axis.chartLayers.orientation === 'north' || this.axis.chartLayers.orientation === 'south' ? 
-      this.axis.chartLayers.contentWidth : this.axis.chartLayers.physWidth;
+  get length() {
+    return this.width;
   }
 
-  get height() {
-    return 0;   
+  set length(length: number) {
+    this.width = length;
+    super.length = length;
   }
   
   protected getLineD() {
@@ -83,14 +91,13 @@ export class HorizAxisLine extends AxisLine<'horiz'> {
  */
 export class VertAxisLine extends AxisLine<'vert'> {
 
-  get width() {
-    return 0;
+  get length() {
+    return this.height;
   }
 
-  get height() {
-    // NB: The overhang doesn't count toward the height
-    return this.axis.chartLayers.orientation === 'east' || this.axis.chartLayers.orientation === 'west' ? 
-      this.axis.chartLayers.contentWidth : this.axis.chartLayers.physHeight;
+  set length(length: number) {
+    this.height = length;
+    super.length = length;
   }
 
   protected getLineD() {

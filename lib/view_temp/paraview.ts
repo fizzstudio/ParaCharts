@@ -18,6 +18,8 @@ import { LitElement, PropertyValueMap, PropertyValues, TemplateResult, css, html
 import { customElement, property, state } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 
+import { logging } from '../common/logger';
+import { ParaComponent } from '../paracomponent';
 import { ChartType } from '../common/types';
 import { ColorVisionMode, ViewBox } from '../store/settings_types';
 import { View } from './base_view';
@@ -28,19 +30,6 @@ import { SVGNS } from '../common/constants';
 import { fixed } from '../common/utils';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { SignalManager } from './signals';
-
-export class ChartTooDenseError extends Error {
-  constructor(public readonly preferredWidth: number) {
-    super();
-  }
-}
-
-export class ChartTooWideError extends Error {
-  constructor(public readonly preferredTickStep: number) {
-    super();
-  }
-}
 
 /**
  * Data provided for the on focus callback
@@ -52,28 +41,15 @@ export type c2mCallbackType = {
 };
 
 @customElement('para-view')
-export class ParaView extends LitElement {
+export class ParaView extends logging(ParaComponent) {
 
-  @property()
-  type: ChartType = 'bar';
-
-  @property()
-  chartTitle?: string;
-
-  @property()
-  xAxisLabel?: string;
-
-  @property()
-  yAxisLabel?: string;
-
-  @property({ type: Boolean })
-  darkMode = false;
-
-  @property()
-  contrastLevel: number = 1;
-
-  @property()
-  colorMode: ColorVisionMode = 'normal';
+  @property() type: ChartType = 'bar';
+  @property() chartTitle?: string;
+  @property() xAxisLabel?: string;
+  @property() yAxisLabel?: string;
+  @property({ type: Boolean }) darkMode = false;
+  @property() contrastLevel: number = 1;
+  @property() colorMode: ColorVisionMode = 'normal';
 
   private _viewBox!: ViewBox;
   private _prevFocusLeaf?: View;
@@ -85,21 +61,13 @@ export class ParaView extends LitElement {
   //private _jimerator!: Jimerator;
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
-  @state()
-  private loadingMessageStyles: { [key: string]: any } = {
+  @state() private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
   };
   private _isReady = false;
   private chartRefs: Map<string, Ref<any>> = new Map();
 
-  private signalManager = new SignalManager();
-
-  public store!: ParaStore;
-
-  // TEMP
-  log(...msg: any[]): void {
-    console.log(...msg);
-  }
+  store!: ParaStore;
 
   static styles = [
     styles,
@@ -174,7 +142,7 @@ export class ParaView extends LitElement {
   set isReady(ready: boolean) {
     if (!this._isReady) {
       this._isReady = ready;
-      this.signalManager.signal('canvasReady');
+      this.controller.signalManager.signal('paraviewReady');
     }
   }
 
@@ -183,12 +151,17 @@ export class ParaView extends LitElement {
     // FIXME: create store
     // create a default view box so the SVG element can have a size
     // while any data is loading
+    this.store.subscribe((key, value) => {
+      if (key === 'data') {
+        this.createDocumentView();
+      }
+    });
+
     this.computeViewBox();
-    this.createDocumentView();
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    this.log('canvas will update');
+    this.log('will update');
     for (const [k, v] of changedProperties.entries()) {
       // @ts-ignore
       this.log(`- ${k.toString()}:`, v, '->', this[k]);
@@ -281,36 +254,11 @@ export class ParaView extends LitElement {
 
     //this._jimerator = new Jimerator(this);
 
-    if (this._documentView){
-      this._documentView?.cleanup();
-      this._documentView = undefined;
-    }
+    this._documentView = new DocumentView(this);
     
-    let preferredWidth: number | undefined = contentWidth; 
-    let preferredTickStep: number | undefined = undefined;
-    while (!this._documentView) {
-      try {
-        this._documentView = new DocumentView(this, preferredWidth, preferredTickStep);
-      } catch (e) {
-        // Views registered as setting managers here need to get removed
-        // if an error occurs
-        //this._controller.clearSettingManagers();
-        if (e instanceof ChartTooDenseError) {
-          this.log('chart too dense; preferred width:', e.preferredWidth);
-          preferredWidth = e.preferredWidth;
-        } else if (e instanceof ChartTooWideError) {
-          this.log('chart too wide; preferred tick step:', e.preferredTickStep);
-          preferredTickStep = e.preferredTickStep;
-        } else {
-          throw e;
-        }
-      }
-    }
-
     //this._jimerator.render();
 
     this.computeViewBox();
-    //this.dispatchEvent(new CustomEvent('chartcreate', { bubbles: true, composed: true }));
   }
 
   private computeViewBox() {
@@ -366,7 +314,7 @@ export class ParaView extends LitElement {
 
   rootClasses() {
     return {
-      darkmode: this.store.darkMode,
+      darkmode: this.store.darkMode
     }
   }
 
@@ -423,7 +371,7 @@ export class ParaView extends LitElement {
   }*/
 
   render(): TemplateResult {
-    this.log('render paraview');
+    this.log('render');
     return html`
       <svg
         ${ref(this._rootRef)}

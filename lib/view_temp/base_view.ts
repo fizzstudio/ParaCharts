@@ -132,6 +132,11 @@ export class View extends BaseView {
     return this._id;
   }
 
+  set id(id: string) {
+    this._id = id;
+    this.paraview.requestUpdate();
+  }
+
   get parent() {
     return this._parent;
   }

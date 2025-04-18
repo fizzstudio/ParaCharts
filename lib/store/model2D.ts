@@ -353,7 +353,11 @@ export class Model2D<X extends Datatype> {
       this[seriesIndex] = aSeries;
       this.keyMap[aSeries.key] = aSeries;
     }
-    this.xs = mergeUnique(...this.series.map((series) => series.xs));
+    this.xs = mergeUniqueBy(
+      (lhs, rhs) => xDatatype === 'date'
+        ? calendarEquals(lhs as CalendarPeriod, rhs as CalendarPeriod)
+        : lhs === rhs,
+      ...this.series.map((series) => series.xs));
     this.ys = mergeUnique(...this.series.map((series) => series.ys));
     this.boxedXs = mergeUniqueBy(
       (lhs: Box<X>, rhs: Box<X>) => lhs.raw === rhs.raw,

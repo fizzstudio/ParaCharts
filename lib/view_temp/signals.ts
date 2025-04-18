@@ -19,6 +19,10 @@ export interface Signal {
   resolver: (arg: any) => void;
 }
 
+export interface SignalResults {
+  [key: string]: any;
+}
+
 /**
  * Enables the use of Promise-based "signals" that can be awaited
  * in a function and emitted elsewhere. 
@@ -35,20 +39,32 @@ export class SignalManager {
     this._signals[name] = signal as Signal;
   }
 
-  async pending(name: string): Promise<any>;
-  async pending(name0: string, name1: string, ...rest: string[]): Promise<any[]>; 
-  async pending(...names: string[]) {
+  protected async _pending(isAny: boolean, names: string[]): Promise<any> {
     const signal = 'signal' + (names.length > 1 ? 's' : '');
-    console.log(`waiting for ${signal}: '${names.join(', ')}'`);
+    console.log(`waiting for ${isAny ? ' any of ' : ''}${signal}: '${names.join(', ')}'`);
     names.forEach(name => {
       if (!this._signals[name]) {
         this.addSignal(name);
       }
     });
-    const results = await Promise.all(names.map(name => this._signals[name].promise));
+    let f = isAny ? Promise.any : Promise.all;
+    f = f.bind(Promise);
+    const results = await f(names.map(name => this._signals[name].promise));
     console.log(`got ${signal}: '${names.join(', ')}'`);
     this.clear(...names);
-    return results.length === 1 ? results[0] : results;
+    return results.length === 1 ? results[0] : Object.fromEntries(names.map((n, i) => [n, results[i]]));
+  }
+
+  async pending(name: string): Promise<any>;
+  async pending(name0: string, name1: string, ...rest: string[]): Promise<SignalResults>; 
+  async pending(...names: string[]) {
+    return this._pending(false, names);
+  }
+
+  async pendingAny(name: string): Promise<any>;
+  async pendingAny(name0: string, name1: string, ...rest: string[]): Promise<SignalResults>; 
+  async pendingAny(...names: string[]) {
+    return this._pending(true, names);
   }
 
   signal(name: string, arg?: any) {

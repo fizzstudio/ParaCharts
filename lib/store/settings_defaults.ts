@@ -78,6 +78,7 @@ export const defaults: Settings = {
         tickLabel: {
           angle: -45,
           offsetPadding: 8,
+          gap: 0
         },
         step: 1
       },
@@ -106,6 +107,7 @@ export const defaults: Settings = {
         tickLabel: {
           angle: 0,
           offsetPadding: 0,
+          gap: 0
         },
         step: 1,
       },
