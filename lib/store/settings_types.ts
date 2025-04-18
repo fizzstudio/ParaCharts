@@ -149,6 +149,7 @@ export type LabelFormat = 'raw' | string;
 export interface TickLabelSettings extends SettingGroup {
   angle: number;
   offsetPadding: number;
+  gap: number;
 }
 
 /** @public */

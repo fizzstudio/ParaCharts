@@ -33,13 +33,14 @@ import { type TickLabelTier } from './ticklabeltier';
 //import { hotkeyActions, type TodoEventType } from '../input/defaultactions';
 //import { type Actions } from '../input/actions';
 //import { utils } from '../utilities';
-import { DataSymbol } from './symbol';
+import { DataSymbol, DataSymbols } from './symbol';
 import { ParaView } from './paraview';
 import { Datapoint2D, Series2D } from '../store/model2D';
 import { strToId } from '../common/utils';
 import { SettingsManager } from '../store/settings_manager';
 import { SeriesProperties } from '../store/series_properties';
 import { Datatype } from '../common/types';
+import { type AxisInfo } from '../common/axisinfo';
 
 import { type clusterObject } from '@fizz/clustering';
 
@@ -70,6 +71,7 @@ export abstract class DataLayer extends ChartLayer {
   protected _chartLandingView!: ChartLandingView;
   protected _playInterval: ReturnType<typeof setTimeout> | null = null;
   protected _speedRateIndex = 1;
+  protected _axisInfo: AxisInfo | null = null;
 
   // soni variables
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
@@ -158,6 +160,10 @@ export abstract class DataLayer extends ChartLayer {
     return this.paraview.ref<SVGGElement>(`dataset${this.index}`).value!;
   }
   
+  get axisInfo() {
+    return this._axisInfo;
+  }
+
   init() {
     this._createComponents();
     this._layoutComponents();
@@ -167,10 +173,7 @@ export abstract class DataLayer extends ChartLayer {
 
   protected abstract _createComponents(): void;
   protected abstract _layoutComponents(): void;
-    
-  abstract getXTickLabelTiers<T extends AxisOrientation>(axis: Axis<T>): TickLabelTier<any>[];
-  abstract getYTickLabelTiers<T extends AxisOrientation>(axis: Axis<T>): TickLabelTier<any>[];
-
+  
   getDatapointView(seriesName: string, recordLabel: string) {
     return this.chartLandingView.getSeriesView(seriesName)?.getDatapointViewForLabel(recordLabel);
   }
@@ -336,7 +339,7 @@ export class DataView extends View {
 
   protected _addedToParent() {
     super._addedToParent();
-    this._series = this.chart.paraview.store.model.atKey(this.seriesKey)!;
+    this._series = this.chart.paraview.store.model!.atKey(this.seriesKey)!;
   }
 
   get series() {
@@ -344,7 +347,7 @@ export class DataView extends View {
   }
 
   get seriesProps(): SeriesProperties {
-    return this.chart.paraview.store.seriesProperties.properties(this.seriesKey);
+    return this.chart.paraview.store.seriesProperties!.properties(this.seriesKey);
   }
 
   get children(): readonly DataView[] {
@@ -483,7 +486,7 @@ export class DatapointView extends DataView {
   }
   
   protected _createDatapoint(){
-    this._datapoint = this.paraview.store.model.atKeyAndIndex(this.series.key, this.index)!;
+    this._datapoint = this.paraview.store.model!.atKeyAndIndex(this.series.key, this.index)!;
   }
 
   get parent() {
@@ -595,14 +598,25 @@ export class DatapointView extends DataView {
 
   protected _createSymbol() {
     const series = this.seriesProps;
-    const symbolType = series.symbol;
+    let symbolType = series.symbol;
+    const index = this.parent.children.indexOf(this);
+    let color: number = series.color;
+    const types = new DataSymbols().types;
+    if (this.chart.isClustering){ 
+      let clustering = this.chart.clustering as clusterObject[]
+      for (let clusterId in clustering){
+        if (clustering[clusterId].dataPointIDs.indexOf(index) > -1){
+          color = Number(clusterId)
+          symbolType = types[color % types.length]
+        }
+      }
+    }
     this.symbol = DataSymbol.fromType(
-      this.chart.paraview,
+      this.paraview,
       symbolType, 
       this.chart.paraview.store.settings.chart.symbolStrokeWidth,
       this.chart.paraview.store.colors,
-      series.color
-    );
+      color);
     this.append(this.symbol);
   }
 
