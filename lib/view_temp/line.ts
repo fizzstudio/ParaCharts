@@ -134,12 +134,12 @@ export class LineSection extends ChartPoint {
       // find midpoint x position
       this._prevMidX = this._x - LineSection.width/2; // - 0.1;
       // pixel height/y-value range
-      const pxPerYUnit = this.chart.height/this.chart.yLabelInfo.range!;
+      const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
       // find midpoint y position
       const prevValue = this._prev!.datapoint.y;
       const prevMidDiff = Math.min(this.datapoint.y, prevValue) + 
         (Math.max(this.datapoint.y, prevValue) - Math.min(this.datapoint.y, prevValue))/2;
-      const prevMidHeight = (prevMidDiff - this.chart.yLabelInfo.min!)*pxPerYUnit;
+      const prevMidHeight = (prevMidDiff - this.chart.axisInfo!.yLabelInfo.min!)*pxPerYUnit;
       this._prevMidY = this.chart.height - prevMidHeight;
   }
 
@@ -147,12 +147,12 @@ export class LineSection extends ChartPoint {
       // find midpoint x position
       this._nextMidX = this._x + LineSection.width/2; // + 0.1;
       // pixel height/y-value range
-      const pxPerYUnit = this.chart.height/this.chart.yLabelInfo.range!;
+      const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
       // find midpoint y position
       const nextValue = this._next!.datapoint.y;
       const nextMidDiff = Math.min(this.datapoint.y, nextValue) + 
         (Math.max(this.datapoint.y, nextValue) - Math.min(this.datapoint.y, nextValue))/2;
-      const nextMidHeight = (nextMidDiff - this.chart.yLabelInfo.min!)*pxPerYUnit;
+      const nextMidHeight = (nextMidDiff - this.chart.axisInfo!.yLabelInfo.min!)*pxPerYUnit;
 
       this._nextMidY = this.chart.height - nextMidHeight;
   }

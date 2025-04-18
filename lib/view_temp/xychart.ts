@@ -21,7 +21,6 @@ import {
 import { type Setting } from '../store/settings_types';
 //import { keymaps } from '../input';
 //import { hotkeyActions } from '../input/defaultactions';
-import { Axis, type AxisLabelInfo } from './axis';
 //import { NOTE_LENGTH } from '../audio/sonifier';
 //import { type Actions, type Action } from '../input/actions';
 
@@ -73,8 +72,6 @@ export abstract class XYChart extends DataLayer {
   protected isGrouping = false;
   protected isConnector = false;
   protected maxDatapointSize!: number;
-  protected _xLabelInfo!: AxisLabelInfo;
-  protected _yLabelInfo!: AxisLabelInfo<number>; 
 
   private _isChordModeEnabled = false;
 
@@ -121,14 +118,6 @@ export abstract class XYChart extends DataLayer {
     return this._isChordModeEnabled;
   }
   
-  get xLabelInfo(): Readonly<AxisLabelInfo> {
-    return this._xLabelInfo;
-  }
-
-  get yLabelInfo(): Readonly<AxisLabelInfo<number>> {
-    return this._yLabelInfo;
-  }
-
   set isChordModeEnabled(isChordModeEnabled) {
     this._isChordModeEnabled = isChordModeEnabled;
     this._chartLandingView.focusLeaf.focus();
@@ -184,13 +173,9 @@ export abstract class XYChart extends DataLayer {
 
   protected abstract _newDatapointView(seriesView: XYSeriesView, ...rest: any[]): XYDatapointView;
 
-  protected abstract _computeXLabelInfo(): void;
-  protected abstract _computeYLabelInfo(): void;
   protected abstract _layoutDatapoints(): void;
 
   protected _layoutComponents() {
-    this._computeXLabelInfo();
-    this._computeYLabelInfo();
     this._layoutDatapoints();
   }
 

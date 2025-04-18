@@ -68,7 +68,7 @@ export class Label extends View {
     this._textAnchor = this.options.textAnchor ?? options.wrapWidth ? 'start' : 'middle';
     this._justify = this.options.justify ?? 'start';
     this._text = this.options.text;
-    this.computeSize();
+    //this.computeSize();
   }
 
   protected _createId() {
@@ -121,7 +121,7 @@ export class Label extends View {
 
   set textAnchor(textAnchor: LabelTextAnchor) {
     this._textAnchor = textAnchor;
-    //this._updateSize();
+    this.updateSize();
   }
 
   get bbox() {
@@ -151,7 +151,8 @@ export class Label extends View {
       text.setAttribute('transform', `rotate(${this._angle})`);
     }
     // WAS `root`
-    this.paraview.renderRoot!.append(text);
+    //this.paraview.renderRoot!.append(text);
+    this.paraview.root!.append(text);
 
     /* WAS `root`
     if (!this.paraview.root) {
@@ -218,7 +219,6 @@ export class Label extends View {
   private makeTransform() {
     let t: string | undefined;
     if (this._angle) {
-      console.log('mt', this._x, this._anchorXOffset, this._y, this._anchorYOffset)
       t = fixed`
         translate(${this._x + this._anchorXOffset},${this._y + this._anchorYOffset})
         rotate(${this._angle})
@@ -230,7 +230,6 @@ export class Label extends View {
   render() {
     // TODO: figure out why `this._y` is larger here than for single line titles
     // HACK: divide `this._y` by 2 for `y` attribute value
-    console.log('r', this._x, this._anchorXOffset, this._y, this._anchorYOffset)
     return svg`
       <text 
         ${ref(this._elRef)}

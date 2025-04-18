@@ -37,87 +37,121 @@ import { ParaStore } from '../store/parastore';
 export class DocumentView extends Container(View) {
 
   readonly type: ChartType;
-  readonly chartLayers: ChartLayerManager;
 
-  private _seriesLabelStrip: SeriesLabelStrip | null = null;
-  private _titleLabel?: Label;
-  private _horizAxis?: HorizAxis;
-  private _vertAxis?: VertAxis;
-  private _titleText!: string;
-  private _grid: GridLayout;
+  protected _chartLayers!: ChartLayerManager;
+  protected _seriesLabelStrip: SeriesLabelStrip | null = null;
+  protected _titleLabel?: Label;
+  protected _horizAxis?: HorizAxis;
+  protected _vertAxis?: VertAxis;
+  protected _titleText!: string;
+  protected _grid: GridLayout;
   //private _legends: Legends = {};
 
-  private store: ParaStore;
+  private _store: ParaStore;
 
-  constructor(paraview: ParaView, contentWidth?: number, horizTickStep?: number) {
+  constructor(paraview: ParaView) {
     super(paraview);
-    this.store = paraview.store;
+    this._store = paraview.store;
 
-    this.type = this.store.type;
-    this.setTitleText(this.store.title);
+    this.type = this._store.type;
+    this.setTitleText(this._store.title);
 
-    this.padding = this.store.settings.chart.padding;
+    this.padding = this._store.settings.chart.padding;
     this._grid = new GridLayout(this.paraview, {
       numCols:
-        (this.store.settings.legend.isDrawLegend &&
-        ['east', 'west'].includes(this.store.settings.legend.position))
+        (this._store.settings.legend.isDrawLegend &&
+        ['east', 'west'].includes(this._store.settings.legend.position))
         ? 4 : 3, 
       rowAligns: 'start', 
       colAligns: 'start',
     });
     this.append(this._grid);
-    this.chartLayers = new ChartLayerManager(this);
-    this._grid.append(this.chartLayers, {x: 1, y: 0});
 
-    let hasDirectLabels = false;
-    if ( this.store.settings.chart.hasDirectLabels
-        && this.type === 'line' 
-        && (/*this.chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
-          this.store.model.multi)
-    ) {
-      this._seriesLabelStrip = new SeriesLabelStrip(this.chartLayers.dataLayer as LineChart);
-      this._grid.append(this._seriesLabelStrip, {x: 2, y: 0});
-      hasDirectLabels = true;
-    }
+    this._populateGrid();
 
-    if (this.chartLayers.shouldHaveAxes()) {
-      this._vertAxis = new VertAxis(this);
-      this._grid.append(this._vertAxis, {x: 0, y: 0, height: 2});
-      this._horizAxis = new HorizAxis(this);
-      this._grid.append(this._horizAxis, {x: 1, y: 1, width: 2});
-      this._vertAxis.orthoAxis = this._horizAxis;
-      this._horizAxis.orthoAxis = this._vertAxis;
-      // XXX Change this method to set axis.titleText
-      this.xAxis!.setAxisLabelText(this.store.xAxisLabel);
-      this.yAxis!.setAxisLabelText(this.store.yAxisLabel);
-      this._horizAxis.createComponents();
-      this._horizAxis.layoutComponents();
-      this._vertAxis.createComponents();
-      this._vertAxis.layoutComponents();
-
-      this._titleText = this.store.title 
-        ?? this.store.settings.chart.title.text 
-        ?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;
-    }
-
-    /*if ( this.paraview.store.settings.legend.isDrawLegend) {
-      if ( this.paraview.store.settings.legend.isAlwaysDrawLegend
-        || (hasDirectLabels && this.paraview.store.settings.chart.hasLegendWithDirectLabels) 
-        || (!hasDirectLabels && this.paraview.store.model.multi)) {
-        this.addLegend(this.paraview.store.settings.legend.position);
-      }
-    }*/
-
-     this.createTitle();
-     // Draw the layers on top of the axes
-     this._grid.reverseChildren();
+    this.createTitle();
+    // Draw the layers on top of the axes
+    this._grid.reverseChildren();
 
     this._grid.layoutViews();
     
     this.setSize(this._grid.boundingWidth, this._grid.boundingHeight);
 
-    this.chartLayers.updateLoc();
+    //this.chartLayers.updateLoc();
 
+  }
+
+  protected _populateGrid() {
+    const horizAxisPos = this._store.settings.axis.horiz.position;
+
+    this._chartLayers = new ChartLayerManager(this);
+    // Creates layers, does not init data layer yet
+    this._grid.append(this._chartLayers, {
+      x: 1,
+      y: this._chartLayers.dataLayer.axisInfo && horizAxisPos === 'north' ? 1 : 0
+    });
+
+    if (this._chartLayers.dataLayer.axisInfo) {
+      this._vertAxis = new VertAxis(this);
+      this._horizAxis = new HorizAxis(this, undefined);
+      this._vertAxis.orthoAxis = this._horizAxis;
+      this._horizAxis.orthoAxis = this._vertAxis;
+      // XXX Change this method to set axis.titleText
+      this.xAxis!.setAxisLabelText(this._store.xAxisLabel);
+      this.yAxis!.setAxisLabelText(this._store.yAxisLabel);
+      this._horizAxis.createComponents();
+      this._vertAxis.createComponents();
+      this._horizAxis.layoutComponents();
+      this._vertAxis.layoutComponents();
+      this._grid.append(this._vertAxis, {
+        x: 0,
+        y: 0,
+        height: 2,
+        rowAlign: horizAxisPos === 'north' ? 'end' : 'start' 
+      });
+      this._grid.append(this._horizAxis, {
+        x: 1,
+        y: horizAxisPos === 'north' ? 0 : 1,
+        width: 1
+      });
+      this._chartLayers.dataLayer.init();
+      if (this._horizAxis.width < this._chartLayers.contentWidth) {
+        this._horizAxis.resize(this._chartLayers.contentWidth, this._chartLayers.contentHeight);
+        this._vertAxis.resize(this._chartLayers.contentWidth, this._chartLayers.contentHeight);
+      }
+
+      // Update tick label IDs now that JIM selectors have been created
+      this._horizAxis.updateTickLabelIds();
+      this._vertAxis.updateTickLabelIds();
+
+        // this._horizAxis.setPosition();
+        // this._vertAxis.setPosition();
+
+  //      if (this._vertAxis!.orientationSettings.position === 'west') {
+  //        this._horizGroup.reverseChildren();
+  //      }
+
+      this._titleText = this._store.title 
+        ?? this._store.settings.chart.title.text 
+        ?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;      
+    }
+    let hasDirectLabels = false;
+    if ( this._store.settings.chart.hasDirectLabels
+        && this.type === 'line' 
+        && (/*this._chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
+            this._store.model!.multi)
+    ) {
+      this._seriesLabelStrip = new SeriesLabelStrip(this._chartLayers.dataLayer as LineChart);
+      this._grid.append(this._seriesLabelStrip, {x: 2, y: 0});
+      hasDirectLabels = true;
+    }
+    // if ( this._store.settings.legend.isDrawLegend) {
+    //   if ( this._store.settings.legend.isAlwaysDrawLegend
+    //     || (hasDirectLabels && this._store.settings.chart.hasLegendWithDirectLabels) 
+    //     || (!hasDirectLabels && todo().controller.model!.depVars.length > 1)) {
+    //     this.addLegend(todo().controller.settingStore.settings.legend.position);
+    //   }
+    // }
   }
 
   protected _createId() {
@@ -132,13 +166,17 @@ export class DocumentView extends Container(View) {
     return `${this.type} chart`;
   }
 
+  get chartLayers() {
+    return this._chartLayers;
+  }
+
   get titleText() {
     return this._titleText;
   }
 
   setTitleText(text?: string) {
     this._titleText = text 
-      ?? this.store.settings.chart.title.text 
+      ?? this._store.settings.chart.title.text 
       ?? '[TITLE]';
     if (this._titleLabel) {
       this._titleLabel.text = this._titleText;
@@ -180,7 +218,7 @@ export class DocumentView extends Container(View) {
   }*/
 
   private createTitle() {
-    const align = this.store.settings.chart.title.align ?? 'center';
+    const align = this._store.settings.chart.title.align ?? 'center';
     this._titleLabel = new Label({
       id: 'chart-title',
       role: 'heading',
@@ -188,13 +226,13 @@ export class DocumentView extends Container(View) {
       text: this._titleText,
       x: 0,
       y: 0,
-      wrapWidth: this.chartLayers.dataLayer.width,
+      wrapWidth: this._chartLayers.dataLayer.width,
       justify: align
     }, this.paraview);
     let titleRow = 0;
-    const titleMargin = this.store.settings.chart.title.margin;
-    const titlePos = this.store.settings.chart.title.position;
-    if (this.store.settings.chart.title.position === 'top') {
+    const titleMargin = this._store.settings.chart.title.margin;
+    const titlePos = this._store.settings.chart.title.position;
+    if (this._store.settings.chart.title.position === 'top') {
       this._grid.insertRow(0);
     } else {
       this._grid.insertRow(this._grid.numRows);
@@ -227,22 +265,22 @@ export class DocumentView extends Container(View) {
     const margin = todo().controller.settingStore.settings.legend.margin;
     if (position === 'east') {
       this._legends.east = new Legend();
-      this._grid.append(this._legends.east, {x: 3, y: 0, margin: {left: margin}});
+      this._grid.append(this._legends.east, {x: 3, y: 0, height: 2, margin: {left: margin}});
     } else if (position === 'west') {
       this._legends.west = new Legend();
       this._grid.addColumnLeft();
-      this._grid.append(this._legends.west, {x: 0, y: 0, margin: {right: margin}});
+      this._grid.append(this._legends.west, {x: 0, y: 0, height: 2, margin: {right: margin}});
     } else if (position === 'south') {
       this._legends.south = new Legend({
         orientation: 'horiz', 
-        wrapWidth: this.chartLayers.boundingWidth
+        wrapWidth: this._chartLayers.boundingWidth
       });
       this._grid.insertRow(this._grid.numRows);
       this._grid.append(this._legends.south, {x: 1, y: -1, width: 1, colAlign: 'center', margin: {top: margin}});
     } else if (position === 'north') {
       this._legends.north = new Legend({
         orientation: 'horiz',
-        wrapWidth: this.chartLayers.boundingWidth
+        wrapWidth: this._chartLayers.boundingWidth
       });
       this._grid.insertRow(1);
       this._grid.append(this._legends.north, {x: 1, y: 0, width: 1, colAlign: 'center', margin: {bottom: margin}});
@@ -251,7 +289,7 @@ export class DocumentView extends Container(View) {
 
   setLowVisionMode(lvm: boolean) {
     // XXX May need to do the same for other visual elements as well
-    this.chartLayers.setLowVisionMode(lvm);
+    this._chartLayers.setLowVisionMode(lvm);
   }
 
 }
