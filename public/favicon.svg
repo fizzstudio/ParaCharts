@@ -4,15 +4,15 @@
 
   <style> 
     circle { 
-      fill: hsl(39, 100%, 50%); 
+      fill: hsl(279, 45%, 51%); 
     }
     
     @media (prefers-color-scheme: dark) { 
       circle { 
-        fill: hsl(39, 100%, 60%); 
+        fill: hsl(279, 45%, 71%); 
       }
     } 
-  </style>
+    </style>
 
   <g fill="hsl(258, 30%, 40%)">
     <circle id="circle-0-0" cx="50" cy="50" r="30" />
