@@ -68,8 +68,13 @@ export class ChartLayerManager extends View {
   private _selectionLayer!: SelectionLayer;
   //private _foregroundAnnotationLayer!: AnnotationLayer;
 
-  constructor(public readonly docView: DocumentView) {
+  constructor(public readonly docView: DocumentView, contentWidth?: number) {
     super(docView.paraview);
+    if (contentWidth !== undefined) {
+      this._contentWidth = contentWidth;
+    }
+    this._orientation = this.paraview.store.settings.chart.orientation;
+    this.createLayers();
   }
 
   protected _createId() {
@@ -82,12 +87,6 @@ export class ChartLayerManager extends View {
 
   set parent(parent: Layout) {
     super.parent = parent;
-  }
-
-  protected _addedToParent() {
-    //this._model = todo().controller.model!;
-    this._orientation = this.docView.paraview.store.settings.chart.orientation;
-    this.createLayers();
   }
 
   createLayers() {
@@ -190,49 +189,33 @@ export class ChartLayerManager extends View {
       // TODO: Is this error possible?
       throw new Error(`no class found for chart type '${this.docView.paraview.store.type}'`);
     }
-    dataLayer.init();
     this.dataLayers = [dataLayer];
   }
 
-  shouldHaveAxes() {
-    return this.dataLayers[0] instanceof XYChart;
-  }
-
   getXAxisInterval(): Interval {
-    if (this.docView.paraview.store.model.xDatatype !== 'number') {
+    if (this.docView.paraview.store.model!.xDatatype !== 'number') {
       throw new Error('X-axis intervals no specified for non-numeric x-axes')
     }
-    const xs = this.docView.paraview.store.model.xs as number[];
+    const xs = this.docView.paraview.store.model!.xs as number[];
     return {start: Math.min(...xs), end: Math.max(...xs)};
   }
 
+
   getYAxisInterval(): Interval {
-    if (!(this.dataLayers[0] instanceof XYChart)) {
-      throw new Error('cannot get y-axis interval for non-XYChart');
+    if (!this.dataLayers[0].axisInfo) {
+      throw new Error('chart is missing `axisInfo` object');
     }
     return {
-      start: this.dataLayers[0].yLabelInfo.min!, 
-      end: this.dataLayers[0].yLabelInfo.max!
+      start: this.dataLayers[0].axisInfo.yLabelInfo.min!, 
+      end: this.dataLayers[0].axisInfo.yLabelInfo.max!
     };
   }
 
   getAxisInterval(coord: AxisCoord): Interval | undefined {
     if (coord === 'x') { 
       return this.getXAxisInterval();
-    } else if (coord === 'y') {
+    } else {
       return this.getYAxisInterval();
-    } else {
-      throw new Error(`axis coordinate '${coord}' has no interval`);
-    }
-  }
-
-  getTickLabelTiers<T extends AxisOrientation>(axis: Axis<T>): TickLabelTier<T>[] {
-    if (axis.coord === 'x') { 
-      return this.dataLayers[0].getXTickLabelTiers(axis);
-    } else if (axis.coord === 'y') {
-      return this.dataLayers[0].getYTickLabelTiers(axis);
-    } else {
-      throw new Error(`axis coord '${axis.coord}' has no tick label tiers`);
     }
   }
 
