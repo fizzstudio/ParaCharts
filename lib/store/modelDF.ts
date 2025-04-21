@@ -14,3 +14,50 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { XyPoint } from "@fizz/paramanifest";
+import { Datatype } from "../common/types";
+import { DataFrame } from "./dataframe/dataframe";
+
+export class SeriesDF {
+  private readonly dataframe: DataFrame;
+
+  /*[i: number]: Datapoint2D<X>;
+  protected xMap: Map<ScalarMap[X], number[]>;
+  private yMap: Map<number, ScalarMap[X][]>;
+  public readonly xs: ScalarMap[X][] = [];
+  public readonly ys: number[] = [];
+  public readonly length: number;
+  public readonly boxedXs: Box<X>[] = [];
+  public readonly boxedYs: Box<'number'>[] = [];*/
+
+  constructor(
+    public readonly key: string, 
+    public readonly rawData: XyPoint[], 
+    public readonly dimensionSignature: Datatype[]
+  ) {
+    this.dataframe = new DataFrame(dimensionSignature);
+    this.rawData.forEach((datapoint) => this.dataframe.addDatapoint([datapoint.x, datapoint.y]));
+    /*this.datapoints.forEach((datapoint, index) => {
+      this[index] = datapoint;
+      this.xs.push(datapoint.x);
+      this.boxedXs.push(new Box(datapoint.x, datapoint.xRaw));
+      this.ys.push(datapoint.y);
+      this.boxedYs.push(new Box(datapoint.y, datapoint.yRaw));
+    });
+    this.xMap = mapDatapointsXtoY(this.datapoints);
+    this.yMap = mapDatapointsYtoX(this.datapoints);
+    this.length = this.xs.length;*/
+  }
+
+  /*atX(x: ScalarMap[X]): number[] | null {
+    return this.xMap.get(x) ?? null;
+  }
+
+  atY(y: number): ScalarMap[X][] | null {
+    return this.yMap.get(y) ?? null;
+  }
+
+  [Symbol.iterator](): Iterator<Datapoint2D<X>> {
+    return this.datapoints[Symbol.iterator]();
+  }*/
+}
