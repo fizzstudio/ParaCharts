@@ -16,19 +16,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { View, Container } from './base_view';
 import { type Layout } from './layout';
-import { type Axis, type VertAxis, type AxisOrientation } from './axis';
+import { type Axis, type VertAxis, type AxisOrientation, ChartTooDenseError, ChartTooWideError } from './axis';
 import { Label } from './label';
 import { type TickStrip, HorizTickStrip, VertTickStrip } from './tickstrip';
+import { ParaView } from './paraview';
 
 import { type TemplateResult } from 'lit';
-import { ChartTooDenseError, ChartTooWideError, ParaView } from './paraview';
-
-export interface TickLabelTierSlot {
-  pos: number;
-  text: string;
-  id: string;
-  label?: Label;
-}
 
 /**
  * A single tier of tick labels.
@@ -36,17 +29,29 @@ export interface TickLabelTierSlot {
 export abstract class TickLabelTier<T extends AxisOrientation> extends Container(View) {
 
   declare protected _parent: Layout;
+  declare protected _children: Label[];
 
   textHoriz?: boolean;
 
+  protected _tickInterval: number;
+
   constructor(
     public readonly axis: Axis<T>,
-    public readonly slots: TickLabelTierSlot[],
-    protected _maxSlotSize: number,
+    public readonly tickLabels: string[],
+    length: number,
     paraview: ParaView
   ) {
     super(paraview);
+    this._tickInterval = length/((tickLabels.length - 1)/axis.tickStep);
+    this.setLength(length);
   }
+
+  setLength(length: number) {
+    this.clearChildren();
+    this.createTickLabels();
+  }
+
+  abstract get length(): number;
 
   get class() {
     return 'tick-label-tier';
@@ -60,48 +65,53 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
     super.parent = parent;
   }
 
-  addSlot(slot: TickLabelTierSlot) {
-    this.slots.push(slot);
+  get tickInterval() {
+    return this._tickInterval;
   }
 
-  maxWidth() {
-    return Math.max(...this.slots.map(slot => slot.label?.width ?? 0));
+  protected _maxWidth() {
+    return Math.max(...this._children.map(kid => kid.width ?? 0));
   }
 
-  maxHeight() {
-    return Math.max(...this.slots.map(slot => slot.label?.height ?? 0));
+  protected _maxHeight() {
+    return Math.max(...this._children.map(kid => kid.height ?? 0));
   }
 
   computeLayout() {
-    console.log('compute layout', this.slots)
-    // FIXME: slots should always have members, label should never be undefined
-    this.textHoriz = this.slots.length > 1 && this.slots[0].label !== undefined ? !this.slots[0].label!.angle : false;
+    this.textHoriz = !this._children[0].angle;
   }
 
   createTickLabels() {
-    for (const [i, slot] of this.slots.entries()) {
-      if (i % this.axis.settings.tick.step) {
+    for (const [i, labelText] of this.tickLabels.entries()) {
+      if (i % this.axis.tickStep) {
         continue;
       }
-      slot.label = new Label({
-        id: slot.id,
+      const label = new Label({
         classList: [
           'tick-label', this.axis.orientation, 
           this.axis.orientationSettings.position as string],
         role: 'axislabel',
-        text: slot.text,
+        text: labelText,
         x: 0,
         y: 0,
       }, this.axis.docView.paraview);
-      this.append(slot.label);
+      this.append(label);
     }
   }
 
-  protected abstract _slotLabelX(slot: TickLabelTierSlot): number;
+  updateTickLabelIds() {
+    // const xSeries = todo().controller.model!.indepVar;
+    // for (const [i, label] of this._children.entries()) {
+    //   const id = this.axis.coord === 'x'
+    //     ? todo().canvas.jimerator.modelSelectors[xSeries][i*this.axis.tickStep][0]
+    //     : `tick-y-${utils.strToId(label.text)}`;
+    //   this._children[i].id = id;
+    // }
+  }
 
-  protected abstract _slotLabelY(slot: TickLabelTierSlot): number;
+  protected abstract _tickLabelX(index: number): number;
 
-  abstract tickStrip(): TickStrip<T>;
+  protected abstract _tickLabelY(index: number): number;
 
 }
 
@@ -110,49 +120,60 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
  */
 export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
 
+  get length() {
+    return this.width;
+  }
+
+  setLength(length: number) {
+    this.width = length;
+    super.setLength(length);
+  }
+
   computeSize(): [number, number] {
-    return [this.axis.width, this.textHoriz ? this.maxHeight() : this.maxWidth()];
+    return [this._computeWidth(), this.textHoriz ? this._maxHeight() : this._maxWidth()];
   }
 
-  protected _slotLabelX(slot: TickLabelTierSlot) {
+  protected _tickLabelX(index: number) {
+    // Labels are positioned with respect to their anchors. So if
+    // labels are center-anchored, the first and last labels will
+    // hang off the start and end boundaries of the tier.
+    // These "hanging off" bits won't contribute to the size of
+    // the tier, to make it easier to align.
+    let pos = this._tickInterval*index;
+    if (this.axis.isInterval) {
+      pos += this._tickInterval/2;
+    }
     return (this.axis.orientationSettings.labelOrder === 'westToEast' ? 
-      slot.pos : this.width - slot.pos) - slot.label!.anchorXOffset;
+      pos : this.width - pos) - this._children[index].anchorXOffset;
   }
 
-  protected _slotLabelY(slot: TickLabelTierSlot) {
+  protected _tickLabelY(index: number) {
     // Right-justify if west, left-justify if east;
     return this.axis.orientationSettings.position === 'north'
-    ? this.height - slot.label!.height 
+    ? this.height - this._children[index].height 
     : 0;  
   }
 
   protected _computeWidth() {
-    const labels = this.slots.map(slot => slot.label).filter(label => label) as Label[];
-    return labels.length 
-      ? labels.at(-1)!.anchorX - labels[0].anchorX
-      : this.axis.width;
+    return this._children.length 
+      ? this._children.at(-1)!.anchorX - this._children[0].anchorX
+      : this.width;
   }
 
   createTickLabels() {
     super.createTickLabels();
-    this.slots.forEach(slot => {
-      if (slot.label) {
-        slot.label.angle = this.axis.settings.tick.tickLabel.angle;
-        slot.label.x = this._slotLabelX(slot);
-        slot.label.y = this._slotLabelY(slot);
-      }
+    this._children.forEach((kid, i) => {
+      kid.angle = this.axis.settings.tick.tickLabel.angle;
+      kid.x = this._tickLabelX(i);
+      kid.y = this._tickLabelY(i);
     });
-    // FIXME: paraview should always exist
-    if (this.paraview && this.paraview.type !== 'bar' && this.paraview.type !== 'lollipop') {
-      this._checkLabelSpacing();
-    }
+    this._checkLabelSpacing();
   }
 
   protected _checkLabelSpacing() {
-    const labels = this.slots.map(slot => slot.label).filter(label => label) as Label[];
-    const gaps = labels.slice(1).map((label, i) => label.left - labels[i].right);
+    const gaps = this._children.slice(1).map((label, i) => label.left - this._children[i].right);
     const minGap = Math.min(...gaps);
-    if (minGap < (this.axis.settings.tick.tickLabel.gap as number)) {
+    if (Math.round(minGap) < this.axis.settings.tick.tickLabel.gap) {
       // The actual labels won't have equal gaps between them, since the
       // labels themselves won't all be the same size. But if I space them
       // out so that they are equally spaced, the largest anchor gap between
@@ -160,18 +181,18 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
       // interval required for all labels to have a gap of at least the
       // desired size.
       const anchorGaps: number[] = [];
-      labels.slice(1).forEach((label, i) => {
-        label.x = labels[i].right + (this.axis.settings.tick.tickLabel.gap as number);
-        anchorGaps.push(label.anchorX - labels[i].anchorX);
+      this._children.slice(1).forEach((label, i) => {
+        label.x = this._children[i].right + this.axis.settings.tick.tickLabel.gap;
+        anchorGaps.push(label.anchorX - this._children[i].anchorX);
       });
       const largestAnchorGap = Math.max(...anchorGaps);
       // The labels may actually extend a bit past the start and end points of
       // the x-axis, so we take that into account when computing the preferred width
       // of the chart content
-      const preferredWidth = (largestAnchorGap/this.axis.tickStep)*(this.slots.length - 1);
+      const preferredWidth = largestAnchorGap*((this.tickLabels.length - 1)/this.axis.tickStep);
       if (preferredWidth > 600) {
         const newTickStep = this.axis.tickStep + 1;
-        const newNumLabels = Math.floor(this.slots.length/newTickStep) + this.slots.length % newTickStep;
+        const newNumLabels = Math.floor(this.tickLabels.length/newTickStep) + this.tickLabels.length % newTickStep;
         if (!newNumLabels) {
           throw new Error('chart always too dense or too wide');
         }
@@ -181,10 +202,6 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     }
   }
 
-  tickStrip() {
-    return new HorizTickStrip(this.axis, this._maxSlotSize, 1);
-  }
-
 }
 
 /**
@@ -192,38 +209,40 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
  */
 export class VertTickLabelTier extends TickLabelTier<'vert'> {
 
-  declare public readonly axis: VertAxis;
-
-  computeSize(): [number, number] {
-    return [this.maxWidth(), this.axis.height];
+  get length() {
+    return this.height;
   }
 
-  protected _slotLabelX(slot: TickLabelTierSlot) {
+  setLength(length: number) {
+    this.height = length;
+    super.setLength(length);
+  }
+
+  computeSize(): [number, number] {
+    return [this._maxWidth(), this.height];
+  }
+
+  protected _tickLabelX(index: number) {
     // Right-justify if west, left-justify if east;
     return this.axis.orientationSettings.position === 'west'
-      ? this.width - slot.label!.width 
+      ? this.width - this._children[index].width 
       : 0;
   }
 
-  protected _slotLabelY(slot: TickLabelTierSlot) {
+  protected _tickLabelY(index: number) {
+    const pos = this._tickInterval*index;
     return (this.axis.orientationSettings.labelOrder === 'northToSouth'
-        ? slot.pos 
-        : this.height - slot.pos)
-      - slot.label!.anchorYOffset*2/3;
+        ? pos 
+        : this.height - pos)
+      - this._children[index].anchorYOffset*2/3;
   }
 
   createTickLabels() {
     super.createTickLabels();
-    this.slots.forEach(slot => {
-      if (slot.label) {
-        slot.label.x = this._slotLabelX(slot);
-        slot.label.y = this._slotLabelY(slot);
-      }
+    this._children.forEach((kid, i) => {
+        kid.x = this._tickLabelX(i);
+        kid.y = this._tickLabelY(i);
     });
-  }
-
-  tickStrip() {
-    return new VertTickStrip(this.axis, this._maxSlotSize, 1);
   }
 
 }

@@ -33,17 +33,29 @@ export abstract class TickStrip<T extends AxisOrientation = AxisOrientation> ext
   declare protected _parent: Layout;
 
   protected _count!: number;
+  protected _gridLineLength!: number;
 
   constructor(
     public readonly axis: Axis<T>,
     protected _interval: number,
-    protected _majorModulus: number
+    protected _majorModulus: number,
+    contentWidth: number,
+    contentHeight: number
   ) {
     super(axis.paraview);
+    this.setContentSize(contentWidth, contentHeight);
+  }
+
+  setContentSize(width: number, height: number) {
+    this.clearChildren();
+    this._createRules();
   }
 
   protected _addedToParent(): void {
     this._count = this._computeCount();
+    if (this.axis.isInterval) {
+      this._count++;
+    }
     this._createRules();    
   }
 
@@ -68,11 +80,6 @@ export abstract class TickStrip<T extends AxisOrientation = AxisOrientation> ext
 
   protected abstract _createRules(): void;
 
-  reset() {
-    this.clearChildren();
-    this._createRules();
-  }
-
 }
 
 /**
@@ -82,7 +89,7 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
 
   computeSize() {
     return [
-      this.axis.width,
+      this.width,
       // NB! The grid lines DON'T COUNT toward the height!
       (this.axis.settings.tick.isDrawEnabled || this.axis.orthoAxis.settings.line.isDrawOverhangEnabled)
         ? this.axis.settings.tick.length
@@ -94,26 +101,34 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
     return this.width;
   }
 
+  setContentSize(width: number, height: number) {
+    this.width = width;
+    this._gridLineLength = height;
+    super.setContentSize(width, height);
+  }
+
   protected _createRules() {
     const isEast = this.axis.orthoAxis.orientationSettings.position === 'east';
-    let length = this.axis.settings.tick.length;
+    let tickLength = this.axis.settings.tick.length;
     let y = 0;
     if (this.axis.orientationSettings.position === 'north') {
       y = (this.axis.settings.tick.isDrawEnabled || this.axis.orthoAxis.settings.line.isDrawOverhangEnabled)
-        ? length + this.axis.settings.tick.padding
+        ? tickLength + this.axis.settings.tick.padding
         : 0;
     }
     let indices = mapn(this._count + 1, i => i);
     if (!this.axis.docView.paraview.store.settings.grid.isDrawVertAxisOppositeLine) {
       indices = isEast ? indices.slice(0, -1) : indices.slice(1);
     }
-    const xs = indices.map(i => isEast ? this.parent.width - i*this._interval : i*this._interval);
+    const xs = indices.map(i => isEast ? this.width - i*this._interval : i*this._interval);
     indices.forEach(i => {
-      this.append(new HorizTick(this.axis.orientationSettings.position, this.paraview, i % this._majorModulus === 0));   
+      this.append(new HorizTick(
+        this.axis.orientationSettings.position, this.paraview, i % this._majorModulus === 0, tickLength));   
       this._children.at(-1)!.x = xs[i];
       this._children.at(-1)!.y = y;
       this._children.at(-1)!.hidden = !this.axis.settings.tick.isDrawEnabled;
-      this.append(new HorizGridLine(this.axis.orientationSettings.position, this.paraview));
+      this.append(new HorizGridLine(
+        this.axis.orientationSettings.position, this.paraview, undefined, this._gridLineLength));
       this._children.at(-1)!.x = xs[i];
       this._children.at(-1)!.y = y;
       this._children.at(-1)!.hidden = !this.axis.docView.paraview.store.settings.grid.isDrawVertLines;
@@ -133,7 +148,7 @@ export class VertTickStrip extends TickStrip<'vert'> {
       (this.axis.settings.tick.isDrawEnabled || this.axis.orthoAxis.settings.line.isDrawOverhangEnabled)
         ? this.axis.settings.tick.length
         : 0,
-      this.axis.height
+      this.height
     ] as [number, number];
   }
 
@@ -141,10 +156,16 @@ export class VertTickStrip extends TickStrip<'vert'> {
     return this.height;
   }
 
+  setContentSize(width: number, height: number) {
+    this._gridLineLength = width;
+    this.height = height;
+    super.setContentSize(width, height);
+  }
+
   protected _createRules() {
     const isNorth = this.axis.orthoAxis.orientationSettings.position === 'north';
-    const length = this.axis.settings.tick.length;
-    let x = length;
+    const tickLength = this.axis.settings.tick.length;
+    let x = tickLength;
     let indices = mapn(this._count, i => i);
     if (!this.axis.docView.paraview.store.settings.grid.isDrawHorizAxisOppositeLine) {
       indices = isNorth ? indices.slice(1) : indices.slice(0, -1);
@@ -153,13 +174,15 @@ export class VertTickStrip extends TickStrip<'vert'> {
       x = 0;
     }
     const ys = indices.map(i => isNorth ?
-      this.parent.height - i*this._interval : i*this._interval);
+      this.height - i*this._interval : i*this._interval);
     indices.forEach(i => {
-      this.append(new VertTick(this.axis.orientationSettings.position, this.paraview, i % this._majorModulus === 0));
+      this.append(new VertTick(
+        this.axis.orientationSettings.position, this.paraview, i % this._majorModulus === 0, tickLength));
       this._children.at(-1)!.x = x;
       this._children.at(-1)!.y = ys[i];
       this._children.at(-1)!.hidden = !this.axis.settings.tick.isDrawEnabled;
-      this.append(new VertGridLine(this.axis.orientationSettings.position, this.paraview));
+      this.append(new VertGridLine(
+        this.axis.orientationSettings.position, this.paraview, undefined, this._gridLineLength));
       this._children.at(-1)!.x = x;
       this._children.at(-1)!.y = ys[i];
       this._children.at(-1)!.hidden = !this.axis.docView.paraview.store.settings.grid.isDrawHorizLines;

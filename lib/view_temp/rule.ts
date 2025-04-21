@@ -22,6 +22,8 @@ import { type VertDirection, type HorizDirection } from '../store/settings_types
 import { svg } from 'lit';
 import { ParaView } from './paraview';
 
+type RuleOrientation = 'h' | 'v';
+
 /**
  * An axis rule line.
  */
@@ -29,8 +31,14 @@ export abstract class AxisRule extends View {
 
   declare protected _parent: TickStrip;
 
-  constructor(paraview: ParaView, protected _major = true) {
+  constructor(
+    paraview: ParaView,
+    protected _major = true,
+    length: number,
+    protected _orientation: RuleOrientation
+  ) {
     super(paraview);
+    this.length = length;
   }
 
   get parent() {
@@ -43,13 +51,31 @@ export abstract class AxisRule extends View {
 
   protected abstract get _class(): string;
 
-  protected abstract get _length(): number;
+  get length() {
+    return 0;
+  }
+
+  set length(length: number) {
+
+  }
 
   protected abstract get _shouldNegateLength(): boolean;
 
   protected _addedToParent() {
     // we can't set the actual size until we have a parent
     this.updateSize();
+  }
+
+  render() {
+    const length = this._shouldNegateLength ? -this.length : this.length;
+    const move = fixed`M${this._x},${this._y}`;
+    const line = this._orientation + fixed`${length}`;
+    return super.render(svg`
+      <path
+        class=${this._class}
+        d=${move + ' ' + line}
+      ></path>
+    `);
   }
 
 }
@@ -60,35 +86,28 @@ export abstract class AxisRule extends View {
 export abstract class HorizRule extends AxisRule {
 
   /**
-   * @param _orientation - The tick starts on the axis and points in this direction.
+   * @param _pointsTo - The tick starts on the axis and points in this direction.
    * @param major 
    */
-  constructor(protected _orientation: VertDirection, paraview: ParaView, major = true) {
-    super(paraview, major);
+  constructor(protected _pointsTo: VertDirection, paraview: ParaView, major = true, length: number) {
+    super(paraview, major, length, 'v');
   }
 
-  protected get _length() {
-    return this._height;
+  get length() {
+    return this.height;
+  }
+
+  set length(length: number) {
+    this.height = length;
+    super.length = length;
   }
 
   computeSize() {
     return [
       0,
       // computeSize() initially gets called before the parent is set
-      this._parent?.axis.settings.tick.length ?? 0
+      this.height
     ] as [number, number];
-  }
-
-  render() {
-    const length = this._shouldNegateLength ? -this._length : this._length;
-    return super.render(svg`
-      <path
-        class=${this._class}
-        d=${fixed`
-          M${this._x},${this._y} 
-          v${length}`}
-      ></path>
-    `);
   }
 
 }
@@ -99,35 +118,28 @@ export abstract class HorizRule extends AxisRule {
 export abstract class VertRule extends AxisRule {
 
   /**
-   * @param _orientation - The tick starts on the axis and points in this direction.
+   * @param _pointsTo - The tick starts on the axis and points in this direction.
    * @param major 
    */
-  constructor(protected _orientation: HorizDirection, paraview: ParaView, major = true) {
-    super(paraview, major);
+  constructor(protected _pointsTo: HorizDirection, paraview: ParaView, major = true, length: number) {
+    super(paraview, major, length, 'h');
   }
 
-  protected get _length() {
-    return this._width;
+  get length() {
+    return this.width;
+  }
+
+  set length(length: number) {
+    this.width = length;
+    super.length = length;
   }
 
   computeSize() {
     return [
       // computeSize() initially gets called before the parent is set
-      this._parent?.axis.settings.tick.length ?? 0,
+      this.width,
       0
     ] as [number, number];
-  }
-
-  render() {
-    const length = this._shouldNegateLength ? -this._length : this._length;
-    return super.render(svg`
-      <path
-        class=${this._class}
-        d=${fixed`
-          M${this._x},${this._y}
-          h${length}`}
-      ></path>
-    `);
   }
 
 }
@@ -137,24 +149,20 @@ export abstract class VertRule extends AxisRule {
  */
 export class HorizTick extends HorizRule {
 
-  computeSize() {
-    return [
-      0,
-      // computeSize() initially gets called before the parent is set
-      this._parent?.axis.settings.tick.length ?? 0
-    ] as [number, number];
-  }
-
   protected get _class(): string {
     return 'tick-horiz';
   }
 
-  protected get _length() {
-    return this._major ? super._length : super._length/2;
+  get length() {
+    return this._major ? super.length : super.length/2;
+  }
+
+  set length(length: number) {
+    super.length = length;
   }
 
   protected get _shouldNegateLength(): boolean {
-    return this._orientation === 'north';
+    return this._pointsTo === 'north';
   }
 
 }
@@ -164,24 +172,20 @@ export class HorizTick extends HorizRule {
  */
 export class VertTick extends VertRule {
 
-  computeSize() {
-    return [
-      // computeSize() initially gets called before the parent is set
-      this._parent?.axis.settings.tick.length ?? 0,
-      0
-    ] as [number, number];
-  }
-
   protected get _class(): string {
     return 'tick-vert';
   }
 
-  protected get _length() {
-    return this._major ? super._length : super._length/2;
+  get length() {
+    return this._major ? super.length : super.length/2;
+  }
+
+  set length(length: number) {
+    super.length = length;
   }
 
   protected get _shouldNegateLength(): boolean {
-    return this._orientation === 'west';
+    return this._pointsTo === 'west';
   }
 
 }
@@ -191,20 +195,12 @@ export class VertTick extends VertRule {
  */
 export class HorizGridLine extends HorizRule {
 
-  computeSize() {
-    return [
-      0,
-      // computeSize() initially gets called before the parent is set
-      this._parent?.axis.chartLayers.physHeight ?? 0
-    ] as [number, number];
-  }
-
   protected get _class(): string {
     return 'grid-horiz';
   }
 
   protected get _shouldNegateLength(): boolean {
-    return this._orientation === 'south';
+    return this._pointsTo === 'south';
   }
 
 }
@@ -214,20 +210,12 @@ export class HorizGridLine extends HorizRule {
  */
 export class VertGridLine extends VertRule {
 
-  computeSize() {
-    return [
-      // computeSize() initially gets called before the parent is set
-      this._parent?.axis.chartLayers.contentWidth ?? 0,
-      0
-    ] as [number, number];
-  }
-
   protected get _class(): string {
     return 'grid-vert';
   }
 
   protected get _shouldNegateLength(): boolean {
-    return this._orientation === 'east';
+    return this._pointsTo === 'east';
   }
 
 }
