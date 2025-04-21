@@ -23,19 +23,11 @@ import { arrayEqual } from "./helpers";
 import { AllSeriesData, ChartType, Datatype } from "../common/types";
 import { enumerate, mergeUnique, mergeUniqueBy } from "../common/utils";
 import { calendarEquals, CalendarPeriod, calendarString, parseCalendar } from "./calendar_period";
+import { ScalarMap } from "./dataframe/box";
 
 // Types
 
 export type Scalar = number | string | CalendarPeriod;
-
-// TODO: This type lacks a completeness type check. This could be implemented by testing in Vitest
-// that `keyof ScalarMap extends Datatype` and vice versa and `ScalarMap[Datatype] extends Scalar` 
-// and vice versa. 
-type ScalarMap = {
-  number: number,
-  string: string,
-  date: CalendarPeriod
-}
 
 // * Boxed Value *
 
