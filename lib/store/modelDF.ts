@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { zip } from "@fizz/chart-classifier-utils";
 import { enumerate } from "../common/utils";
-import { DataFrame, Dimension, RawDataPoint } from "./dataframe/dataframe";
+import { DataFrame, Facet, RawDataPoint } from "./dataframe/dataframe";
 
 export class SeriesDF {
   private readonly dataframe: DataFrame;
@@ -33,9 +33,9 @@ export class SeriesDF {
   constructor(
     public readonly key: string, 
     public readonly rawData: RawDataPoint[], 
-    public readonly dimensionSignatures: Dimension[]
+    public readonly facets: Facet[]
   ) {
-    this.dataframe = new DataFrame(dimensionSignatures);
+    this.dataframe = new DataFrame(facets);
     this.rawData.forEach((datapoint) => this.dataframe.addDatapoint(datapoint));
     /*this.datapoints.forEach((datapoint, index) => {
       this[index] = datapoint;
@@ -62,16 +62,20 @@ export class SeriesDF {
   }*/
 }
 
-function dimensionSignaturesEquals(lhs: Dimension[], rhs: Dimension[]): boolean {
+function facetsEquals(lhs: Facet[], rhs: Facet[]): boolean {
   if (lhs.length !== rhs.length) {
     return false;
   }
-  for (const [lDim, rDim] of zip(lhs, rhs)) {
-    if (lDim.key !== )
+  for (const [lFacet, rFacet] of zip(lhs, rhs)) {
+    if ((lFacet.key !== rFacet.key) || (lFacet.datatype !== rFacet.datatype)) {
+      return false;
+    }
   }
+  return true;
 }
 
 // Like a dictionary for series
+// TODO: In theory, facets should be a set, not an array. Maybe they should be sorted first?
 export class ModelDF {
   public readonly keys: string[] = [];
   protected keyMap: Record<string, SeriesDF> = {};
@@ -83,7 +87,7 @@ export class ModelDF {
   public readonly allPoints: Datapoint2D<X>[]
   public readonly boxedXs: Box<X>[];
   public readonly boxedYs: Box<'number'>[];*/
-  public readonly dimensionSignatures: Dimension[]
+  public readonly facets: Facet[]
 
   constructor(public readonly series: SeriesDF[]) {
     if (this.series.length === 0) {
@@ -91,18 +95,19 @@ export class ModelDF {
     }
     this.multi = this.series.length > 1;
     this.numSeries = this.series.length;
-    this.dimensionSignatures = this.series[0].dimensionSignatures;
-
+    this.facets = this.series[0].facets;
     for (const [aSeries, seriesIndex] of enumerate(this.series)) {
       if (this.keys.includes(aSeries.key)) {
         throw new Error('every series in a model must have a unique key');
       }
-      if (aSeries.dimensionSignatures)
+      if (!facetsEquals(aSeries.facets, this.facets)) {
+        throw new Error('every series in a model must have the same facets');
+      }
       this.keys.push(aSeries.key);
       this[seriesIndex] = aSeries;
       this.keyMap[aSeries.key] = aSeries;
     }
-    this.xs = mergeUniqueBy(
+    /*this.xs = mergeUniqueBy(
       (lhs, rhs) => xDatatype === 'date'
         ? calendarEquals(lhs as CalendarPeriod, rhs as CalendarPeriod)
         : lhs === rhs,
@@ -116,15 +121,15 @@ export class ModelDF {
       (lhs: Box<'number'>, rhs: Box<'number'>) => lhs.raw === rhs.raw,
       ...this.series.map((series) => series.boxedYs)
     );
-    this.allPoints = mergeUniqueDatapoints(...this.series.map((series) => series.datapoints));
+    this.allPoints = mergeUniqueDatapoints(...this.series.map((series) => series.datapoints));*/
   }
 
-  atKey(key: string): Series2D<X> | null {
+  /*atKey(key: string): Series2D<X> | null {
     return this.keyMap[key] ?? null;
   }
 
   
   atKeyAndIndex(key: string, index: number): Datapoint2D<X> | null {
     return this.atKey(key)?.[index] ?? null;
-  }
+  }*/
 }
