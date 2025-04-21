@@ -66,7 +66,11 @@ function arrayToCol(ary: DataArray<Scalar>, dtype?: Datatype, opts?: SeriesOpts)
   return new ctor(ary as DataArray<any>, opts);
 }*/
 
-type Dimension<T extends Datatype> = Box<T>[];
+export type RawDataPoint = Record<string, string>;
+
+export type Dimension = { key: string, datatype: Datatype };
+
+type DataFrameColumn<T extends Datatype> = Box<T>[];
 
 /**
  * Spreadsheet-like container for a series. Each column is a facet/dimension, 
@@ -75,13 +79,13 @@ type Dimension<T extends Datatype> = Box<T>[];
  */
 export class DataFrame {
 
-  private columns: Dimension<Datatype>[]; 
+  private columns: DataFrameColumn<Datatype>[]; 
 
-  constructor(private readonly dimensionSignature: Datatype[]) {
-    if (this.dimensionSignature.length === 0) {
+  constructor(private readonly dimensionSignatures: Dimension[]) {
+    if (this.dimensionSignatures.length === 0) {
       throw new Error('dataframes must have at least 1 column');
     }
-    this.columns = mapn(this.dimensionSignature.length, i => []);
+    this.columns = mapn(this.dimensionSignatures.length, _i => []);
     /*if (Array.isArray(srcData)) {
       if (Array.isArray(srcData[0])) {
         this.data = srcData.map((ary, i) => 
@@ -98,12 +102,18 @@ export class DataFrame {
     }*/
   }
 
-  public addDatapoint(rawDimensionValues: string[]): void {
-    if (rawDimensionValues.length !== this.nColumns) {
-      throw new Error(`datapoint ${rawDimensionValues} cannot be added to dataframe. This dataframe has ${this.nColumns} columns, but this datapoint as ${rawDimensionValues} dimensions`);
+  public addDatapoint(rawDatapoint: RawDataPoint): void {
+    const datapointNumDimensions = Object.keys(rawDatapoint).length;
+    if (datapointNumDimensions !== this.nColumns) {
+      throw new Error(`datapoint ${rawDatapoint} cannot be added to dataframe. This dataframe has ${this.nColumns} columns, but this datapoint as ${datapointNumDimensions} dimensions`);
     }
     mapn(this.nColumns, i => {
-      this.columns[i].push(new BOX_CONSTRUCTORS[this.dimensionSignature[i]](rawDimensionValues[i]));
+      const columnSignature = this.dimensionSignatures[i];
+      const columnRawValue = rawDatapoint[columnSignature.key];
+      if (columnRawValue === undefined) {
+        throw new Error(`datapoint ${rawDatapoint} is missing the facet ${columnSignature.key}`);
+      }
+      this.columns[i].push(new BOX_CONSTRUCTORS[columnSignature.datatype](columnRawValue));
     });
   }
 
