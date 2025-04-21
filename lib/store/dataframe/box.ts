@@ -139,3 +139,13 @@ export class DateBox extends Box<'date'> {
   }
 
 }
+
+type BoxConstructor<T extends Datatype> = new (raw: string) => Box<T>;
+
+type BoxConstructorMap = { [T in Datatype]: BoxConstructor<T> };
+
+export const BOX_CONSTRUCTORS: BoxConstructorMap = {
+  string: StringBox,
+  number: NumberBox,
+  date: DateBox
+}
