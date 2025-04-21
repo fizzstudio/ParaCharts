@@ -14,9 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { XyPoint } from "@fizz/paramanifest";
-import { Datatype } from "../common/types";
-import { DataFrame } from "./dataframe/dataframe";
+import { DataFrame, Dimension, RawDataPoint } from "./dataframe/dataframe";
 
 export class SeriesDF {
   private readonly dataframe: DataFrame;
@@ -32,11 +30,11 @@ export class SeriesDF {
 
   constructor(
     public readonly key: string, 
-    public readonly rawData: XyPoint[], 
-    public readonly dimensionSignature: Datatype[]
+    public readonly rawData: RawDataPoint[], 
+    public readonly dimensionSignatures: Dimension[]
   ) {
-    this.dataframe = new DataFrame(dimensionSignature);
-    this.rawData.forEach((datapoint) => this.dataframe.addDatapoint([datapoint.x, datapoint.y]));
+    this.dataframe = new DataFrame(dimensionSignatures);
+    this.rawData.forEach((datapoint) => this.dataframe.addDatapoint(datapoint));
     /*this.datapoints.forEach((datapoint, index) => {
       this[index] = datapoint;
       this.xs.push(datapoint.x);
