@@ -14,6 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { zip } from "@fizz/chart-classifier-utils";
+import { enumerate } from "../common/utils";
 import { DataFrame, Dimension, RawDataPoint } from "./dataframe/dataframe";
 
 export class SeriesDF {
@@ -58,4 +60,71 @@ export class SeriesDF {
   [Symbol.iterator](): Iterator<Datapoint2D<X>> {
     return this.datapoints[Symbol.iterator]();
   }*/
+}
+
+function dimensionSignaturesEquals(lhs: Dimension[], rhs: Dimension[]): boolean {
+  if (lhs.length !== rhs.length) {
+    return false;
+  }
+  for (const [lDim, rDim] of zip(lhs, rhs)) {
+    if (lDim.key !== )
+  }
+}
+
+// Like a dictionary for series
+export class ModelDF {
+  public readonly keys: string[] = [];
+  protected keyMap: Record<string, SeriesDF> = {};
+  [i: number]: SeriesDF;
+  public readonly multi: boolean;
+  public readonly numSeries: number;
+  /*public readonly xs: ScalarMap[X][];
+  public readonly ys: number[];
+  public readonly allPoints: Datapoint2D<X>[]
+  public readonly boxedXs: Box<X>[];
+  public readonly boxedYs: Box<'number'>[];*/
+  public readonly dimensionSignatures: Dimension[]
+
+  constructor(public readonly series: SeriesDF[]) {
+    if (this.series.length === 0) {
+      throw new Error('models must have at least one series');
+    }
+    this.multi = this.series.length > 1;
+    this.numSeries = this.series.length;
+    this.dimensionSignatures = this.series[0].dimensionSignatures;
+
+    for (const [aSeries, seriesIndex] of enumerate(this.series)) {
+      if (this.keys.includes(aSeries.key)) {
+        throw new Error('every series in a model must have a unique key');
+      }
+      if (aSeries.dimensionSignatures)
+      this.keys.push(aSeries.key);
+      this[seriesIndex] = aSeries;
+      this.keyMap[aSeries.key] = aSeries;
+    }
+    this.xs = mergeUniqueBy(
+      (lhs, rhs) => xDatatype === 'date'
+        ? calendarEquals(lhs as CalendarPeriod, rhs as CalendarPeriod)
+        : lhs === rhs,
+      ...this.series.map((series) => series.xs));
+    this.ys = mergeUnique(...this.series.map((series) => series.ys));
+    this.boxedXs = mergeUniqueBy(
+      (lhs: Box<X>, rhs: Box<X>) => lhs.raw === rhs.raw,
+      ...this.series.map((series) => series.boxedXs)
+    );
+    this.boxedYs = mergeUniqueBy(
+      (lhs: Box<'number'>, rhs: Box<'number'>) => lhs.raw === rhs.raw,
+      ...this.series.map((series) => series.boxedYs)
+    );
+    this.allPoints = mergeUniqueDatapoints(...this.series.map((series) => series.datapoints));
+  }
+
+  atKey(key: string): Series2D<X> | null {
+    return this.keyMap[key] ?? null;
+  }
+
+  
+  atKeyAndIndex(key: string, index: number): Datapoint2D<X> | null {
+    return this.atKey(key)?.[index] ?? null;
+  }
 }
