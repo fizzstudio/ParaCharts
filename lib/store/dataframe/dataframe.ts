@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { mapn } from '@fizz/chart-classifier-utils';
 
 import { Box, BOX_CONSTRUCTORS } from './box';
-import { Datatype } from '../../common/types';
+import { Datatype } from '@fizz/paramanifest';
 
 /*
 import { 

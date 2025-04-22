@@ -17,12 +17,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { zip } from "@fizz/chart-classifier-utils";
 import { enumerate } from "../common/utils";
 import { DataFrame, Facet, RawDataPoint } from "./dataframe/dataframe";
+import { Datatype } from "@fizz/paramanifest";
+import { ScalarMap } from "./dataframe/box";
+
+export type DataPointDF = Record<string, ScalarMap[Datatype]>;
 
 export class SeriesDF {
   private readonly dataframe: DataFrame;
 
-  /*[i: number]: Datapoint2D<X>;
-  protected xMap: Map<ScalarMap[X], number[]>;
+  [i: number]: DataPointDF;
+  /*protected xMap: Map<ScalarMap[X], number[]>;
   private yMap: Map<number, ScalarMap[X][]>;
   public readonly xs: ScalarMap[X][] = [];
   public readonly ys: number[] = [];

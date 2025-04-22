@@ -18,9 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 // Imports
 
-import type { Manifest, Series, XyPoint } from "@fizz/paramanifest";
+import type { AllSeriesData, ChartType, Datatype, Manifest, Series, XyPoint } from "@fizz/paramanifest";
 import { arrayEqual } from "./helpers";
-import { AllSeriesData, ChartType, Datatype } from "../common/types";
 import { enumerate, mergeUnique, mergeUniqueBy } from "../common/utils";
 import { calendarEquals, CalendarPeriod, calendarString, parseCalendar } from "./calendar_period";
 import { ScalarMap } from "./dataframe/box";
