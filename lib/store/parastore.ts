@@ -14,18 +14,20 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { State, property } from "@lit-app/state";
+import { State, property } from '@lit-app/state';
+import { produce } from 'immer';
 
-import type { Manifest } from "@fizz/paramanifest";
+import type { Manifest } from '@fizz/paramanifest';
 
-import { Model2D, modelFromAllSeriesData, modelFromManifest } from "./model2D";
-import { AllSeriesData, ChartType, Datatype } from "../common/types";
-import { DeepReadonly, Settings, SettingsInput } from "./settings_types";
-import { SettingsManager } from "./settings_manager";
-import { defaults } from "./settings_defaults";
-import { Colors } from "../view_temp/colors";
-import { DataSymbols } from "../view_temp/symbol";
-import { SeriesPropertyManager } from "./series_properties";
+import { Model2D, modelFromAllSeriesData, modelFromManifest } from './model2D';
+import { AllSeriesData, ChartType, Datatype } from '../common/types';
+import { DeepReadonly, Settings, SettingsInput } from './settings_types';
+import { SettingsManager } from './settings_manager';
+import { SettingControlManager } from './settings_controls';
+import { defaults } from './settings_defaults';
+import { Colors } from '../common/colors';
+import { DataSymbols } from '../view_temp/symbol';
+import { SeriesPropertyManager } from './series_properties';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -55,6 +57,7 @@ export class ParaStore extends State {
   @property() protected selected = null;
   @property() protected queryLevel = 'default';
 
+  protected _settingControls = new SettingControlManager(this); 
   protected _manifest: Manifest | null = null;
   protected _model: Model2D<Datatype> | null = null;
   protected _type: ChartType = 'line';
@@ -75,6 +78,10 @@ export class ParaStore extends State {
     SettingsManager.suppleteSettings(hydratedSettings, suppleteSettingsWith ?? defaults);
     this.settings = hydratedSettings as Settings;
     this.subscribe((key, value) => this._propertyChanged(key, value));
+  }
+
+  get settingControls() {
+    return this._settingControls;
   }
 
   get type() {
@@ -131,6 +138,10 @@ export class ParaStore extends State {
 
       }
     }
+  }
+
+  updateSettings(updater: (draft: Settings) => void) {
+    this.settings = produce(this.settings, updater);
   }
 
 }

@@ -83,19 +83,18 @@ export abstract class XYChart extends DataLayer {
     super._addedToParent();  
     this.maxDatapointSize = this.width/2.5;
     this._isChordModeEnabled = this.paraview.store.settings.sonification.isChordModeEnabled;
-    //todo().controller.registerSettingManager(this);
-    /*todo().controller.settingViews.add(this, {
+    this.paraview.store.settingControls.add({
       type: 'checkbox',
       key: 'sonification.isChordModeEnabled',
       label: 'Chord mode',
-      parentView: 'chartDetails.dialog.audio.sonificationSettings',
+      parentView: 'controlPanel.tabs.audio.sonification.dialog',
     });
-    todo().controller.settingViews.add(this, {
+    this.paraview.store.settingControls.add({
       type: 'checkbox',
       key: 'sonification.isRiffEnabled',
       label: 'Series riff enabled',
-      parentView: 'chartDetails.dialog.audio.sonificationSettings',
-    });*/
+      parentView: 'controlPanel.tabs.audio.sonification.dialog',
+    });
   }
 
   get managedSettingKeys() {
