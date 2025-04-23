@@ -36,7 +36,6 @@ import { XYChart } from './xychart';
 import { 
   type AxisCoord, type AxisOrientation, Axis
 } from './axis';
-import { type TickLabelTier } from './ticklabeltier';
 
 import { type Interval } from '@fizz/chart-classifier-utils';
 

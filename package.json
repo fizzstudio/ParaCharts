@@ -51,7 +51,6 @@
     "@fizz/line-chart-intersection": "^3.4.0",
     "@fizz/line-chart-ui-utils": "^0.7.0",
     "@fizz/test-utils": "^0.2.0",
-    "@fizz/ui-components": "^0.68.2",
     "@microsoft/api-documenter": "^7.25.11",
     "@microsoft/api-extractor": "^7.47.6",
     "@storybook/addon-coverage": "^1.0.5",
@@ -88,8 +87,10 @@
     "@fizz/paramanifest": "^0.1.3",
     "@fizz/templum": "^0.4.2",
     "@fizz/todocharts": "^0.129.6",
+    "@fizz/ui-components": "^0.69.0",
     "@lit-app/state": "^1.0.1",
     "decimal.js": "^10.4.3",
+    "immer": "^10.1.1",
     "lit": "^3.2.0",
     "printf": "^0.6.1",
     "simple-statistics": "^7.8.3"

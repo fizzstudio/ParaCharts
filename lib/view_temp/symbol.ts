@@ -19,7 +19,7 @@ import { fixed } from '../common/utils';
 
 import { svg } from 'lit';
 import { styleMap, type StyleInfo } from 'lit/directives/style-map.js';
-import { Colors } from './colors';
+import { Colors } from '../common/colors';
 import { ParaView } from './paraview';
 
 export type DataSymbolShape = 

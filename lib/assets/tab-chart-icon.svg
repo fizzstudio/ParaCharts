@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 100 100">
+  <style>
+    path.new {
+      fill: none;
+      stroke: black;
+      stroke-width: 8px;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+  </style>
+  <path class="new" d="M10,10 V90 H90 M22,60 L35,75 L50,58 L58,68 L90,28" />
+</svg>
