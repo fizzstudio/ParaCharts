@@ -122,7 +122,7 @@ export class View extends BaseView {
   protected _padding: Padding = {top: 0, bottom: 0, left: 0, right: 0};
   protected _hidden = false;
 
-  constructor(public paraview: ParaView) {
+  constructor(public readonly paraview: ParaView) {
     super();
     //this._setActions();
     //this.updateKeymap();

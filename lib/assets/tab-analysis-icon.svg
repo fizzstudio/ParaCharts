@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="10 10 80 80">
+  <style>
+    path {
+      fill: none;
+      stroke: black;
+      stroke-width: 7px;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+
+    circle {
+      fill: white;
+      stroke: black;
+      stroke-width: 6px;
+    }
+  </style>
+
+  <path d="M57.5 ,70 m23.3  2.6 -20.5 -35.0 v-20.3 h4.5 c1.3  0 2.5-1.1  2.5-2.5  0-1.3 -1.1 -2.5 -2.5 -2.5 h-30.1 c-1.3  0-2.5  1.1 -2.5  2.5  0 1.3  1.1  2.5  2.5  2.5 h4.7 v20.3 l-19.9  35.1 c-1.6  2.9 -1.6  6.5  0.0  9.4  1.7  2.9  4.7  4.7  8.2  4.7 h44.8 c3.4  0 6.5 -1.7  8.2 -4.7  1.7 -2.9  1.6 -6.5 -0.0 -9.5 z
+  M33,50 H67" />
+  <circle cx="40" cy="63" r="4" />
+  <circle cx="57" cy="72" r="4" />
+
+</svg>
