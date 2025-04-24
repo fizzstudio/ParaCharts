@@ -11,7 +11,11 @@ import { template } from './storyTemplate.ts';
 import { type ChartFamily, type ChartType, FAMILY_MEMBERS, familyCatalogMap, familyCatalogMapMulti, 
   familyManifestPathsMap } from './chartSelectorHelper.ts';
 import { allTemplate } from './allStoriesTemplate.ts';
-import { capitalize } from '../../lib/common/utils.ts';
+//import { capitalize } from '../../lib/common/utils.ts';
+
+function capitalize(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
 
 // Generator Functions
 
@@ -144,11 +148,11 @@ generateFamilyStories('pastry');
 
 buildFamilyManifestPathsMaps();
 
-generateFamilyAllStory('line', false);
+/*generateFamilyAllStory('line', false);
 generateFamilyAllStory('line', true);
 generateFamilyAllStory('bar', false);
 generateFamilyAllStory('bar', true);
 generateFamilyAllStory('scatter');
-generateFamilyAllStory('pastry');
+generateFamilyAllStory('pastry');*/
 
 console.log('Finished generating stories');
