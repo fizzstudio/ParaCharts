@@ -20,7 +20,7 @@ import { fixed } from '../common/utils';
 import { type VertDirection, type HorizDirection } from '../store/settings_types';
 
 import { svg } from 'lit';
-import { ParaView } from './paraview';
+import { ParaView } from '../paraview';
 
 type RuleOrientation = 'h' | 'v';
 
@@ -66,16 +66,16 @@ export abstract class AxisRule extends View {
     this.updateSize();
   }
 
-  render() {
+  content() {
     const length = this._shouldNegateLength ? -this.length : this.length;
     const move = fixed`M${this._x},${this._y}`;
     const line = this._orientation + fixed`${length}`;
-    return super.render(svg`
+    return svg`
       <path
         class=${this._class}
         d=${move + ' ' + line}
       ></path>
-    `);
+    `;
   }
 
 }

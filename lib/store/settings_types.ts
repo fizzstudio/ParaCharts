@@ -133,6 +133,7 @@ export interface ChartSettings extends SettingGroup {
   fontFamily: string;
   fontWeight: string;
   symbolStrokeWidth: number;
+  symbolHighlightScale: number;
   hasDirectLabels: boolean;
   hasLegendWithDirectLabels: boolean;
 }

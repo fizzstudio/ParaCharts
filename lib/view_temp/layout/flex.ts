@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { View, type SnapLocation } from '../base_view';
-import { ParaView } from '../paraview';
+import { ParaView } from '../../paraview';
 import { Layout } from './layout';
 
 /**
