@@ -1,5 +1,5 @@
 export const allTemplate = `import { %(manifestsMap)s } from "../autogen-manifest-paths";
-import { Chart, type ChartProps } from './Chart';
+import { Chart, type ChartProps } from '../Chart';
 import type { Meta, StoryObj } from "@storybook/web-components";
 
 type Story = StoryObj<ChartProps>;

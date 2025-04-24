@@ -1,20 +1,20 @@
-export const template = `import { Chart, type ChartProps } from '../Chart';
+import { Chart, type ChartProps } from '../Chart';
 
 import type { Meta, StoryObj } from '@storybook/web-components';
 
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Chart/%(chartFolder)s",
+  title: "Chart/Stepline Multi Charts",
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
-export const Chart%(index)s: Story = {
-  name: "%(manifestTitle)s",
+export const Chart6: Story = {
+  name: "261: Passenger cars - sales in selected countries worldwide 2005 to 2018 (6)",
   args: {
-    filename: "%(manifestPath)s",
+    filename: "manifests/autogen/line-multi/line-multi-manifest-261.json",
     config: { // change to configFile: "./sample_config.json",
       "ui.colorVisionMode": "deutan"
     },
@@ -36,4 +36,3 @@ export const Chart%(index)s: Story = {
     },*/
   }
 }
-`
