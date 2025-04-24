@@ -26,7 +26,7 @@ function generateStory(
   index: number
 ): void {
   const chartFolder = capitalize(chartType) + ' Charts';
-  const code = printf(template, { manifestTitle, chartType, chartFolder, manifestPath, index });
+  const code = printf(template, { manifestTitle, chartFolder, manifestPath, index });
   fs.writeFileSync(`./src/stories/autogen/${chartType}${index}.stories.ts`, code, 'utf8');
 }
 
@@ -39,7 +39,7 @@ function generateStoryMulti(
 ): void {
   const multiText = multi ? 'Multi' : 'Single';
   const chartFolder = `${capitalize(chartType)} ${multiText} Charts`;
-  const code = printf(template, { manifestTitle, chartType, chartFolder, manifestPath, index });
+  const code = printf(template, { manifestTitle, chartFolder, manifestPath, index });
   fs.writeFileSync(`./src/stories/autogen/${chartType}${multiText}${index}.stories.ts`, code, 'utf8');
 }
 
@@ -108,8 +108,7 @@ function generateAllStory(
 ): void {
   const chartFolder = capitalize(chartType) + ' Charts';
   const storyName = `All${capitalize(chartType)}Charts`;
-  const manifestsMap = family + 'Charts';
-  const code = printf(allTemplate, { chartType, chartFolder, manifestsMap, storyName });
+  const code = printf(allTemplate, { chartFolder, storyName, family, multi: 'false' });
   fs.writeFileSync(`./src/stories/autogen/all${chartType}.stories.ts`, code, 'utf8');
 }
 
@@ -121,8 +120,7 @@ function generateAllStoryMulti(
   const multiText = multi ? 'multi' : 'single';
   const chartFolder = `${capitalize(chartType)} ${capitalize(multiText)} Charts`;
   const storyName = `All${capitalize(multiText)}${capitalize(chartType)}Charts`;
-  const manifestsMap = multiText + capitalize(family) + 'Charts';
-  const code = printf(allTemplate, { chartType, chartFolder, manifestsMap, storyName });
+  const code = printf(allTemplate, { chartType, chartFolder, storyName, family, multi: 'true' });
   fs.writeFileSync(`./src/stories/autogen/all${multiText}${chartType}.stories.ts`, code, 'utf8');
 }
 
@@ -148,11 +146,11 @@ generateFamilyStories('pastry');
 
 buildFamilyManifestPathsMaps();
 
-/*generateFamilyAllStory('line', false);
+generateFamilyAllStory('line', false);
 generateFamilyAllStory('line', true);
 generateFamilyAllStory('bar', false);
 generateFamilyAllStory('bar', true);
 generateFamilyAllStory('scatter');
-generateFamilyAllStory('pastry');*/
+generateFamilyAllStory('pastry');
 
 console.log('Finished generating stories');

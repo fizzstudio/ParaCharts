@@ -1,13 +1,13 @@
-export const allTemplate = `import { Chart, type ChartProps } from '../Chart';
+import { Chart, type ChartProps } from '../Chart';
 import { familyManifestPathsMap } from '../chartSelectorHelper';
 import type { Meta, StoryObj } from "@storybook/web-components";
 
 type Story = StoryObj<ChartProps>;
 
-const titleToFilenameMap = familyManifestPathsMap('%(family)s', %(multi)s);
+const titleToFilenameMap = familyManifestPathsMap('bar', true);
 
 const meta = {
-  title: "Chart/%(chartFolder)s",
+  title: "Chart/Lollipop Multi Charts",
   render: (args) => Chart(args),
   argTypes: {
     filename: {
@@ -21,8 +21,8 @@ const meta = {
 
 export default meta;
 
-export const %(storyName)s: Story = {
-  name: 'All %(chartFolder)s',
+export const AllMultiLollipopCharts: Story = {
+  name: 'All Lollipop Multi Charts',
   args: {
     filename: '',
     config: { // change to configFile: "./sample_config.json",
@@ -46,4 +46,3 @@ export const %(storyName)s: Story = {
     }*/
   }
 };
-`;
