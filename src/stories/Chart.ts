@@ -7,15 +7,15 @@ import '../../lib';
 
 export interface ChartProps {
   filename: string;
+  config?: SettingsInput;  
 }
 
 /**
  * Primary UI component for user interaction
  */
 export const Chart = ({ 
-  filename
+  filename, config
 }: ChartProps) => {
-  console.log(`Storybook: filename: '${filename}'`)
   return html`
     <style>
       /*
@@ -66,6 +66,7 @@ export const Chart = ({
 
   <para-chart 
     filename=${filename} 
+    .config=${config ?? nothing}
   >
     <span slot="settings"></span>
   </para-chart>
