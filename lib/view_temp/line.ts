@@ -210,20 +210,21 @@ export class LineSection extends ChartPoint {
     return lineD;
   }
 
-  render() {
+  content() {
     // add setting for visited stroke-width multiplier
-    const visitedScale = this._isVisited ? this.chart.settings.highlightScale : 1;
+    const visitedScale = this.paraview.store.visitedDatapoints.includes(this._id)
+      ? this.chart.settings.highlightScale : 1;
     const styles = {
       strokeWidth: this.chart.settings.lineWidth*visitedScale
     };
-    return super.render(svg`
+    return svg`
       <path
         class="data-line"
         d=${this._lineD}
         style=${styleMap(styles)}
       >
       </path>
-    `);
+    `;
   }
 }
 

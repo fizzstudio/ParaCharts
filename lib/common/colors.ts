@@ -14,6 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { type ParaStore } from '../store';
+
 export interface Palette {
   key: string;
   title: string;
@@ -45,12 +47,12 @@ export class Colors {
   readonly palettes: Palette[];
   keys = new Map<string, Key>();
 
-  private paletteIndex = 0;
+  //private paletteIndex = 0;
   private primary = 'hsl(270, 50%, 50%)';
   private accent = 'hsl(270, 50%, 25%)';
   private active = 'hsl(270, 50%, 65%)';
 
-  constructor() {
+  constructor(protected _store: ParaStore) {
     this.palettes = [
       {
         key: 'diva',
@@ -105,10 +107,6 @@ export class Colors {
             name: 'brown'
           },
           {
-            value: 'hsl(0, 100%, 50%)',
-            name: 'bright red'
-          },
-          {
             value: 'hsl(240, 100%, 50%)',
             name: 'bright blue'
           },
@@ -135,6 +133,10 @@ export class Colors {
           {
             value: 'hsl(177, 70%, 41%)',
             name: 'cyan'
+          },
+          {
+            value: 'hsl(0, 100%, 50%)',
+            name: 'highlight'
           }
         ]
       },
@@ -161,6 +163,10 @@ export class Colors {
           {
             value: 'hsl(77, 98%, 25%)',
             name: 'forest green'
+          },
+          {
+            value: 'hsl(0, 100%, 50%)',
+            name: 'highlight'
           }
         ]
       },
@@ -187,7 +193,11 @@ export class Colors {
           {
             value: 'hsl(41, 100%, 50%)',
             name: 'orange'
-          }
+          },
+          {
+            value: 'hsl(0, 100%, 50%)',
+            name: 'highlight'
+          },
         ]
       },
       {
@@ -253,6 +263,10 @@ export class Colors {
           {
             value: 'hsl(0, 0%, 0%)',
             name: 'black'
+          },
+          {
+            value: 'hsl(0, 100%, 50%)',
+            name: 'highlight'
           }
         ]
       },
@@ -262,48 +276,52 @@ export class Colors {
         cvd: true,
         colors: [
           {
-            value: '#800080',
+            value: 'hsl(300, 100%, 25%)',
             name: ''
           },
           {
-            value: '#ff00ff',
+            value: 'hsl(300, 100%, 50%)',
             name: ''
           },
           {    
-            value: '#ca0088',
+            value: 'hsl(320, 100%, 40%)',
             name: ''
           },
           {
-             value: '#fa0080',
+             value: 'hsl(329, 100%, 49%)',
              name: ''
           },
           {
-             value: '#b400b4',
+             value: 'hsl(300, 100%, 35%)',
              name: ''
           },
           {
-             value: '#4477AA',
+             value: 'hsl(210, 43%, 47%)',
              name: ''
           },
           {
-             value: '#EE6677',
+             value: 'hsl(353, 80%, 67%)',
              name: ''
           },
           {
-             value: '#228833',
+             value: 'hsl(130, 60%, 33%)',
              name: ''
           },
           {
-             value: '#CCBB44',
+             value: 'hsl(52, 57%, 53%)',
              name: ''
           },
           {
-             value: '#66CCEE',
+             value: 'hsl(195, 80%, 67%)',
              name: ''
           },
           {
-            value: '#AA3377',
+            value: 'hsl(326, 54%, 43%)',
             name: ''
+          },
+          {
+            value: 'hsl(0, 100%, 50%)',
+            name: 'highlight'
           }
         ]
       },
@@ -348,32 +366,64 @@ export class Colors {
         cvd: true,
         colors: [
           {
-            value: '#77AADD',
+            value: 'hsl(210, 60%, 67%)',
             name: ''
           },
           {
-            value: '#99DDFF',
+            value: 'hsl(200, 100%, 80%)',
             name: ''
           },
           {
-            value: '#44BB99',
+            value: 'hsl(163, 47%, 50%)',
             name: ''
           },
           {
-            value: '#BBCC33',
+            value: 'hsl(67, 60%, 50%)',
             name: ''
           },
           {
-            value: '#AAAAOO',
+            value: 'hsl(60, 100%, 33%)',
             name: ''
           },
           {
-            value: '#EEDD88',
+            value: 'hsl(50, 75%, 73%)',
             name: ''
           },
           {
-            value: '#FFAABB',
+            value: 'hsl(348, 100%, 83%)',
             name: ''
+          },
+          {
+            value: 'hsl(210, 60%, 67%)',
+            name: ''
+          },
+          {
+            value: 'hsl(200, 100%, 80%)',
+            name: ''
+          },
+          {
+            value: 'hsl(163, 47%, 50%)',
+            name: ''
+          },
+          {
+            value: 'hsl(67, 60%, 50%)',
+            name: ''
+          },
+          {
+            value: 'hsl(60, 100%, 33%)',
+            name: ''
+          },
+          {
+            value: 'hsl(50, 75%, 73%)',
+            name: ''
+          },
+          {
+            value: 'hsl(348, 100%, 83%)',
+            name: ''
+          },
+          {
+            value: 'hsl(0, 100%, 50%)',
+            name: 'highlight'
           }
         ]
       },
@@ -383,46 +433,84 @@ export class Colors {
         cvd: true,
         colors: [
           {
-            value: '#262626',
+            value: 'hsl(0, 0%, 15%)',
             name: ''
           },
           {
-            value: '#595959',
+            value: 'hsl(0, 0%, 35%)',
             name: ''
           },
           {
-            value: '#7f7f7f',
+            value: 'hsl(0, 0%, 50%)',
             name: ''
           },
           {
-            value: '#a1a1a1',
+            value: 'hsl(0, 0%, 63%)',
             name: ''
           },
           {
-            value: '#bababa',
+            value: 'hsl(0, 0%, 73%)',
             name: ''
           },
           {
-            value: '#d4d4d4',
+            value: 'hsl(0, 0%, 83%)',
             name: ''
           },
           {
-            value: '#ededed',
+            value: 'hsl(0, 0%, 93%)',
             name: ''
+          },
+          {
+            value: 'hsl(0, 0%, 15%)',
+            name: ''
+          },
+          {
+            value: 'hsl(0, 0%, 35%)',
+            name: ''
+          },
+          {
+            value: 'hsl(0, 0%, 50%)',
+            name: ''
+          },
+          {
+            value: 'hsl(0, 0%, 63%)',
+            name: ''
+          },
+          {
+            value: 'hsl(0, 0%, 73%)',
+            name: ''
+          },
+          {
+            value: 'hsl(0, 0%, 83%)',
+            name: ''
+          },
+          {
+            value: 'hsl(0, 0%, 93%)',
+            name: ''
+          },
+          {
+            value: 'hsl(0, 100%, 50%)',
+            name: 'highlight'
           }
         ]
       }
     ];
 
-    this.selectPalette(0); // default
+    this.selectPaletteWithKey(this._store.settings.color.colorPalette); 
+  }
+
+  get paletteKey() {
+    return this._store.settings.color.colorVisionMode === 'normal'
+      ? this._store.settings.color.colorPalette
+      : this._store.settings.color.colorVisionMode;
   }
 
   get palette() {
-    const palette = this.palettes[this.paletteIndex];
+    const palette = this.palettes[this.indexOfPalette(this.paletteKey)];
     if (palette) {
       return palette;
     }
-    throw new Error(`no palette at index ${this.paletteIndex}`);
+    throw new Error(`no palette named '${this.paletteKey}'`);
   }
 
   addPalette(palette: Palette) {
@@ -439,12 +527,12 @@ export class Colors {
 
   /** Simply returns `index`, or -1 if it's out of bounds. */
   colorIndex(index: number) {
-    return this.palette.colors[index] !== undefined ? index : -1;
+    return this.palette.colors[index % this.palette.colors.length] !== undefined ? index : -1;
   }
 
   colorValue(color: string) {
     if (color === 'default') {
-      return 'gray';
+      return 'hsl(0, 0%, 50%)';
     }
     const c = this.palette.colors.find(entry => entry.name === color);
     if (!c) {
@@ -454,7 +542,11 @@ export class Colors {
   }
 
   colorValueAt(index: number) {
-    return this.palette.colors[index]?.value ?? 'gray';
+    if (index === -1) {
+      // highlight
+      return this.palette.colors.at(-1)!.value;
+    }
+    return this.palette.colors[index % this.palette.colors.length].value;
   }
 
   registerKey(key: string) {
@@ -486,15 +578,10 @@ export class Colors {
   //   this.active = color_obj.active;
   // }
 
-  selectPalette(index: number) {
-    if (index < 0 || index > this.palettes.length - 1) {
-      throw new Error(`invalid palette index '${index}'`);
-    }
-    this.paletteIndex = index;
-  }
-
   selectPaletteWithKey(key: string) {
-    this.selectPalette(this.indexOfPalette(key));
+    this._store.updateSettings(draft => {
+      draft.color.colorPalette = key;
+    });
   }
 
   /*get_palettes  ( palette_ids ) {

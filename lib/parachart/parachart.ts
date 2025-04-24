@@ -19,14 +19,12 @@ import { ParaComponent } from '../paracomponent';
 import { ParaController } from '../paracontroller';
 import { AllSeriesData } from "../common/types";
 import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
-import "../view_temp/paraview";
+import "../paraview";
 import "../control_panel";
 import { exhaustive } from "../common/utils";
-import { ParaStore } from '../store/parastore';
 
 import { html, css, PropertyValues, TemplateResult, nothing } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { StateController } from "@lit-app/state";
+import { customElement, property } from "lit/decorators.js";
 
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
@@ -37,15 +35,13 @@ export class ParaChart extends logging(ParaComponent) {
   private data?: AllSeriesData;
   private suppleteSettingsWith?: DeepReadonly<Settings>;
 
-  protected _state: StateController<ParaStore>;
-
   @property() accessor filename = '';
 
   constructor() {
     super();
     this._controller = new ParaController(this);
-    this._store = this._controller.store;
-    this._state = new StateController(this, this._controller.store);
+    // also creates the state controller
+    this.store = this._controller.store;
   }
 
   connectedCallback() {
@@ -75,12 +71,12 @@ export class ParaChart extends logging(ParaComponent) {
     return html`
       <figure>
         <para-view
-          .store=${this._controller.store}
+          .store=${this._store}
           colormode=${this._store?.settings.color.colorVisionMode ?? nothing}
         ></para-view>
         <para-control-panel
           .summary=${this.summary}
-          .store=${this._controller.store}
+          .store=${this._store}
         ></para-control-panel>
       </figure>
     `;

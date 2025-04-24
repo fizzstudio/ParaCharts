@@ -20,7 +20,7 @@ import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
 import { View, type SnapLocation } from '../view_temp/base_view';
 import { generateUniqueId, fixed } from '../common/utils';
-import { ParaView } from '../view_temp/paraview';
+import { ParaView } from '../paraview';
 import { SVGNS } from '../common/constants';
 
 export type LabelTextAnchor = 'start' | 'middle' | 'end';

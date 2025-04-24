@@ -2,10 +2,13 @@
 import { type ParaStore } from './store/parastore';
 
 import { LitElement } from 'lit';
+import { StateController } from '@lit-app/state';
 
 export class ParaComponent extends LitElement {
 
   protected _store!: ParaStore;
+  protected _storeState!: StateController<ParaStore>;
+  
 
   get store() {
     return this._store;
@@ -13,6 +16,7 @@ export class ParaComponent extends LitElement {
 
   set store(store: ParaStore) {
     this._store = store;
+    this._storeState = new StateController(this, store);
   }
 
   logName() {
