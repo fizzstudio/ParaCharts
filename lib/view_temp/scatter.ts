@@ -2,7 +2,7 @@
 import { PointChart, ChartPoint } from './pointchart';
 import { type ScatterSettings, Setting, type DeepReadonly } from '../store/settings_types';
 import { type XYSeriesView } from './xychart';
-import { ParaView } from './paraview';
+import { ParaView } from '../paraview';
 import { AxisInfo } from '../common/axisinfo';
 
 export class ScatterPlot extends PointChart {
