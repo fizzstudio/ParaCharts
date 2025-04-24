@@ -107,7 +107,11 @@ export function mergeUniqueBy<T>(
   return res;
 }
 
-// This marks a series of it/then options as exhaustive
+// This marks a series of if/then options as exhaustive
 export function exhaustive(): never {
   return null as never; 
+}
+
+export function capitalize(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
