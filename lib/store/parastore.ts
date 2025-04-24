@@ -16,16 +16,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { State, property } from "@lit-app/state";
 
-import type { Manifest } from "@fizz/paramanifest";
+import type { ChartType, Datatype, Manifest } from "@fizz/paramanifest";
 
 import { Model2D, modelFromAllSeriesData, modelFromManifest } from "./model2D";
-import { AllSeriesData, ChartType, Datatype } from "../common/types";
 import { DeepReadonly, Settings, SettingsInput } from "./settings_types";
 import { SettingsManager } from "./settings_manager";
 import { defaults } from "./settings_defaults";
 import { Colors } from "../view_temp/colors";
 import { DataSymbols } from "../view_temp/symbol";
 import { SeriesPropertyManager } from "./series_properties";
+import { RawDataPoint } from "./dataframe/dataframe";
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
