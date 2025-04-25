@@ -19,7 +19,7 @@ import { type Layout } from './layout';
 import { type Axis, type VertAxis, type AxisOrientation, ChartTooDenseError, ChartTooWideError } from './axis';
 import { Label } from './label';
 import { type TickStrip, HorizTickStrip, VertTickStrip } from './tickstrip';
-import { ParaView } from './paraview';
+import { ParaView } from '../paraview';
 
 import { type TemplateResult } from 'lit';
 

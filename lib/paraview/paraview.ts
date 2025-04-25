@@ -14,20 +14,21 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { LitElement, PropertyValueMap, PropertyValues, TemplateResult, css, html, nothing, svg } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 
+import { ParaViewController } from '.';
 import { logging } from '../common/logger';
 import { ParaComponent } from '../paracomponent';
 import { ChartType } from '../common/types';
-import { ColorVisionMode, ViewBox } from '../store/settings_types';
-import { View } from './base_view';
-import { DocumentView } from './document_view';
-import { styles } from './styles';
-import { ParaStore } from '../store/parastore';
+import { ViewBox } from '../store/settings_types';
+import { View } from '../view_temp/base_view';
+import { DocumentView } from '../view_temp/document_view';
+//import { styles } from './styles';
 import { SVGNS } from '../common/constants';
 import { fixed } from '../common/utils';
+
+import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
@@ -47,31 +48,48 @@ export class ParaView extends logging(ParaComponent) {
   @property() chartTitle?: string;
   @property() xAxisLabel?: string;
   @property() yAxisLabel?: string;
-  @property({ type: Boolean }) darkMode = false;
   @property() contrastLevel: number = 1;
-  @property() colorMode: ColorVisionMode = 'normal';
 
-  private _viewBox!: ViewBox;
-  private _prevFocusLeaf?: View;
-  private _rootRef = createRef<SVGSVGElement>();
-  private _defsRef = createRef<SVGDefsElement>();
-  private _frameRef = createRef<SVGRectElement>();
-  private _dataspaceRef = createRef<SVGGElement>();
-  private _documentView?: DocumentView;
+  protected _controller!: ParaViewController;
+  protected _viewBox!: ViewBox;
+  protected _prevFocusLeaf?: View;
+  protected _rootRef = createRef<SVGSVGElement>();
+  protected _defsRef = createRef<SVGDefsElement>();
+  protected _frameRef = createRef<SVGRectElement>();
+  protected _dataspaceRef = createRef<SVGGElement>();
+  protected _documentView?: DocumentView;
   //private _jimerator!: Jimerator;
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
   @state() private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
   };
-  private _isReady = false;
-  private chartRefs: Map<string, Ref<any>> = new Map();
-
-  store!: ParaStore;
+  protected _chartRefs: Map<string, Ref<any>> = new Map();
 
   static styles = [
-    styles,
+    //styles,
     css`
+      :host {
+        --axisLineColor: hsl(0, 0%, 0%);
+        --labelColor: hsl(0, 0%, 0%);
+        --tickGridColor: hsl(270, 50%, 50%);
+        --backgroundColor: white;
+        --themeColor: var(--fizzThemeColor, purple);
+        --themeColorLight: var(--fizzThemeColorLight, hsl(275.4, 100%, 88%));
+        --themeContrastColor: white;
+        --fizzThemeColor: var(--parachartsThemeColor, navy);
+        --fizzThemeColorLight: var(--parachartsThemeColorLight, hsl(210.5, 100%, 88%));
+        --visitedColor: red;
+        --selectedColor: var(--labelColor);
+        --datapointCentroid: 50% 50%;
+        --focusAnimation: all 0.5s ease-in-out;
+        --chartCursor: pointer;
+        --dataCursor: cell;
+
+        --focusShadowColor: gray;
+        --focusShadow: drop-shadow(0px 0px 4px var(--focusShadowColor));
+      }
+
       #frame {
         fill: var(--backgroundColor);
         stroke: none;
@@ -104,6 +122,39 @@ export class ParaView extends logging(ParaComponent) {
       .tick-vert {
         stroke: black;
       }
+      #y-axis-line {
+        fill: none;
+        stroke: var(--axisLineColor);
+        stroke-width: 2px;
+        stroke-linecap: round;
+      }
+      #x-axis-line {
+        fill: none;
+        stroke: var(--axisLineColor);
+        opacity: 1;
+        stroke-width: 2px;
+        stroke-linecap: round;
+      }
+      rect#data-backdrop {
+        stroke: none;
+        fill: none;
+        pointer-events: all;
+      }
+      .symbol {
+        /*stroke-width: 2;*/
+        stroke-linejoin: round;
+      }
+      .symbol.outline {
+        fill: white;
+      }
+      use.visited-mark {
+       pointer-events: none;
+      }
+      .data-line {
+        fill: none;
+        /*stroke-width: 3px;*/
+        stroke-linecap: round;
+      }
     `
   ];
 
@@ -135,29 +186,19 @@ export class ParaView extends logging(ParaComponent) {
     this._prevFocusLeaf = view;
   }
 
-  get isReady() {
-    return this._isReady;
-  }
-
-  set isReady(ready: boolean) {
-    if (!this._isReady) {
-      this._isReady = ready;
-      this.controller.signalManager.signal('paraviewReady');
-    }
-  }
-
   connectedCallback() {
     super.connectedCallback();
     // FIXME: create store
     // create a default view box so the SVG element can have a size
     // while any data is loading
-    this.store.subscribe((key, value) => {
+    this._controller = new ParaViewController(this._store);
+    this._store.subscribe((key, value) => {
       if (key === 'data') {
         this.createDocumentView();
       }
     });
 
-    this.computeViewBox();
+    this._computeViewBox();
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -167,7 +208,7 @@ export class ParaView extends logging(ParaComponent) {
       this.log(`- ${k.toString()}:`, v, '->', this[k]);
     }
     if (changedProperties.has('width')) {
-      this.computeViewBox();
+      this._computeViewBox();
     }
     if (changedProperties.has('chartTitle') && this.documentView) {
       this.documentView.setTitleText(this.chartTitle);
@@ -178,15 +219,10 @@ export class ParaView extends logging(ParaComponent) {
     if (changedProperties.has('yAxisLabel') && this.documentView) {
       this.documentView.yAxis!.setAxisLabelText(this.yAxisLabel);
     }
-    if (changedProperties.has('colorMode')) {
-      this.updateColorPalette(this.colorMode === 'normal' 
-        ? this.store.settings.color.colorPalette
-        : this.colorMode);
-    }
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    this.isReady = true;
+    this.dispatchEvent(new CustomEvent('paraviewready', {bubbles: true, composed: true, cancelable: true}));
   }
 
   /*protected updated(changedProperties: PropertyValues) {
@@ -222,31 +258,26 @@ export class ParaView extends logging(ParaComponent) {
   }*/
 
   ref<T>(key: string): Ref<T> {
-    if (!this.chartRefs.has(key)) {
-      this.chartRefs.set(key, createRef());
+    if (!this._chartRefs.has(key)) {
+      this._chartRefs.set(key, createRef());
     }
-    return this.chartRefs.get(key) as Ref<T>;
+    return this._chartRefs.get(key) as Ref<T>;
   }
 
   unref(key: string): void {
     if (key.endsWith('*')) {
       // assume key looks like 'foo.*'
       const prefix = key.slice(0, -1);
-      for (const refKey of this.chartRefs.keys()) {
+      for (const refKey of this._chartRefs.keys()) {
         if (refKey.startsWith(prefix)) {
-          this.chartRefs.delete(refKey);
+          this._chartRefs.delete(refKey);
         }
       }
-    } else if (!this.chartRefs.has(key)) {
+    } else if (!this._chartRefs.has(key)) {
       throw new Error(`no ref for key '${key}'`);
     } else {
-      this.chartRefs.delete(key);
+      this._chartRefs.delete(key);
     }
-  }
-
-  updateColorPalette(paletteKey: string) {
-    this.store.colors.selectPaletteWithKey(paletteKey);
-    this.requestUpdate();
   }
 
   createDocumentView(contentWidth?: number) {
@@ -258,15 +289,15 @@ export class ParaView extends logging(ParaComponent) {
     
     //this._jimerator.render();
 
-    this.computeViewBox();
+    this._computeViewBox();
   }
 
-  private computeViewBox() {
+  protected _computeViewBox() {
     this._viewBox = {
       x: 0,
       y: 0,
-      width: this._documentView?.boundingWidth ?? this.store.settings.chart.size.width!,
-      height: this._documentView?.boundingHeight ?? this.store.settings.chart.size.height!
+      width: this._documentView?.boundingWidth ?? this._store.settings.chart.size.width!,
+      height: this._documentView?.boundingHeight ?? this._store.settings.chart.size.height!
     };
     this.log('view box:', this._viewBox.width, 'x', this._viewBox.height);
   }
@@ -282,10 +313,10 @@ export class ParaView extends logging(ParaComponent) {
     this._defsRef.value!.appendChild(el);
   }
 
-  rootStyle() {
+  protected _rootStyle() {
     const style: { [prop: string]: any } = {
-      fontFamily: this.store.settings.chart.fontFamily,
-      fontWeight: this.store.settings.chart.fontWeight
+      fontFamily: this._store.settings.chart.fontFamily,
+      fontWeight: this._store.settings.chart.fontWeight
     };
     if (document.fullscreenElement === this.root) {
       const vbWidth = Math.round(this._viewBox.width);
@@ -301,7 +332,7 @@ export class ParaView extends logging(ParaComponent) {
     }
 
     const contrast = this.contrastLevel * 50;
-    if (this.store.darkMode) {
+    if (this._store.settings.color.isDarkModeEnabled) {
       style['--axisLineColor'] = `hsl(0, 0%, ${50 + contrast}%)`;
       style['--labelColor'] = `hsl(0, 0%, ${50 + contrast}%)`;
       style['--backgroundColor'] = `hsl(0, 0%, ${((100 - contrast) / 5) - 10}%)`;
@@ -312,45 +343,11 @@ export class ParaView extends logging(ParaComponent) {
     return style;
   }
 
-  rootClasses() {
+  protected _rootClasses() {
     return {
-      darkmode: this.store.darkMode
+      darkmode: this._store.settings.color.isDarkModeEnabled
     }
   }
-
-
-  /*hotkeyInfo(key: string, action: string, actionReceiver: View): HotkeyInfo {
-    return {
-      key,
-      action,
-      actionReceiver,
-      visited: this.documentView!.chartLayers.dataLayer.visitedDatapointViews,
-      selected: this.documentView!.chartLayers.dataLayer.selectedDatapointViews,
-      isChordMode: this.documentView!.chartLayers.dataLayer instanceof XYChart 
-        ? this.documentView!.chartLayers.dataLayer.isChordModeEnabled 
-        : false 
-    };
-  }
-
-  /**
-   * Dispatch a `TodoEvent` when a hotkey is pressed, and 
-   * (if said event isn't cancelled) perform the default action for the hotkey.
-   * @param event - keydown event
-   */
-  /*handleKeyEvent(event: KeyboardEvent) {    
-    const keyId = [ 
-      event.altKey ? 'Alt+' : '',
-      event.ctrlKey ? 'Ctrl+' : '',
-      event.shiftKey ? 'Shift+' : '',
-      event.key
-    ].join('');
-    this.log('KEY', keyId, this.documentView?.focusLeaf);
-    const hotkeyInfo = this.documentView?.focusLeaf.hotkeyInfo(keyId);
-    if (hotkeyInfo) {
-      this.documentView!.focusLeaf.hotkeyActionManager.dispatch(hotkeyInfo);
-      event.preventDefault();
-    }
-  }*/
 
   /*setLowVisionMode(lvm: boolean) {
     this.controller.setSetting('color.isDarkModeEnabled', lvm);
@@ -381,9 +378,9 @@ export class ParaView extends logging(ParaComponent) {
         role="application"
         tabindex="0"
         height=${fixed`${this._viewBox.height}px`}
-        class=${classMap(this.rootClasses())}
+        class=${classMap(this._rootClasses())}
         viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
-        style=${styleMap(this.rootStyle())}
+        style=${styleMap(this._rootStyle())}
         @fullscreenchange=${() => {
           if (document.fullscreenElement) {
             // entering fullscreen mode
@@ -404,6 +401,7 @@ export class ParaView extends logging(ParaComponent) {
           //this.documentView?.chartLayers.dataLayer.visitAndPlayCurrent();
           this.documentView?.chartLayers.dataLayer.chartLandingView.focus();
         }}
+        @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
       >
         <defs
           ${ref(this._defsRef)}

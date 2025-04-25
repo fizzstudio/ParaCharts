@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <style>
+    path {
+      fill: none;
+      stroke: black;
+      stroke-width: 8px;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+
+    circle {
+      fill: white;
+      stroke: black;
+      stroke-width: 6px;
+    }
+  </style>
+  <g>
+    <path d="M15,25 H85" />
+    <circle cx="28" cy="25" r="7" />
+  </g>
+
+  <g>
+    <path d="M15,50 H85" />
+    <circle cx="68" cy="50" r="7" />
+  </g>
+
+  <g>
+    <path d="M15,75 H85" />
+    <circle cx="50" cy="75" r="7" />
+  </g>
+
+</svg>

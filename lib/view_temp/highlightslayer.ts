@@ -9,31 +9,22 @@ export class HighlightsLayer extends ChartLayer {
     return super._createId('highlights');
   }
 
-  activateMark(datapointId: string) {
-    this._visitedMarkRef(datapointId).value!.setAttribute('href', `#${datapointId}`);
-  }
-
-  deactivateMark(datapointId: string) {
-    this._visitedMarkRef(datapointId).value!.setAttribute('href', '');
-  }
-
   protected _visitedMarkRef(datapointId: string) {
     return this._parent.docView.paraview.ref<SVGUseElement>(`visited-mark.${datapointId}`);
   }
 
-  render() {
-    return super.render(svg`
+  content() {
+    return svg`
       ${
-        this._parent.dataLayer.datapointViews.map(dpView => svg`
+        this.paraview.store.visitedDatapoints.map(id => svg`
           <use
-            ${ref(this._visitedMarkRef(dpView.id))} 
-            id="visited-mark-${dpView.id}"
+            ${ref(this._visitedMarkRef(id))} 
+            id="visited-mark-${id}"
             class="visited-mark"
-            href="" 
+            href="#${id}" 
           />
         `)
       }
-    `);
+    `;
   }
-
 }

@@ -152,7 +152,7 @@ export class ChartPoint extends XYDatapointView {
   }
 
   protected get _visitedTransform() {
-    return 'scale(1.5)';
+    return ''; //'scale(1.5)';
   }
 
   protected _computeX() {

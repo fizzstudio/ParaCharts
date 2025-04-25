@@ -329,12 +329,12 @@ export class BarChart extends XYChart {
     }
   }
 
-  render() {
-    return super.render(svg`
+  content() {
+    return svg`
       ${Object.entries(this._bars).map(([clusterKey, cluster]) => 
         cluster.render()
       )}
-    `);
+    `;
   }
 
 }
@@ -392,17 +392,18 @@ export class Bar extends XYDatapointView {
       Z`;
   }
 
-  render() {
-    const visitedScale = this._isVisited ? this.chart.settings.highlightScale : 1;
+  content() {
+    const visitedScale = this.paraview.store.visitedDatapoints.includes(this._id)
+      ? this.chart.settings.highlightScale : 1;
     const styles = {
       strokeWidth: this.chart.settings.lineWidth*visitedScale
     };
-    return super.render(svg`
+    return svg`
       <path
         d="${this._d}"
         style=${styleMap(styles)}
       ></path>
-    `);
+    `;
   }
 
 }

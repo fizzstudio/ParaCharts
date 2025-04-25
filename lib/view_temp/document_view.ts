@@ -26,7 +26,7 @@ import { keymaps } from '../input';*/
 import { GridLayout } from './layout';
 import { SeriesLabelStrip } from './serieslabelstrip';
 import { LineChart } from './line';
-import { ParaView } from './paraview';
+import { ParaView } from '../paraview';
 import { ParaStore } from '../store/parastore';
 
 //export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;

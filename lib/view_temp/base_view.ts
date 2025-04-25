@@ -25,7 +25,7 @@ import { ref } from 'lit/directives/ref.js';
 import { TodoEvent, type Actions } from '../input/actions';
 import { type HotkeyInfo } from '../input/defaultactions';*/
 import { fixed } from '../common/utils';
-import { ParaView } from './paraview';
+import { ParaView } from '../paraview';
 //import { todo } from '../components/todochart';
 
 export type SnapLocation = 'start' | 'end' | 'center';
@@ -93,8 +93,12 @@ export class BaseView {
     return null;
   }
 
-  render(content?: TemplateResult): TemplateResult {
-    return (this.hidden || !content) ? svg`` : content;
+  content(..._options: any[]): TemplateResult {
+    return svg``;
+  }
+
+  render(...options: any[]): TemplateResult {
+    return this.hidden ? svg`` : this.content(...options);
   }
 
 }
@@ -122,7 +126,7 @@ export class View extends BaseView {
   protected _padding: Padding = {top: 0, bottom: 0, left: 0, right: 0};
   protected _hidden = false;
 
-  constructor(public paraview: ParaView) {
+  constructor(public readonly paraview: ParaView) {
     super();
     //this._setActions();
     //this.updateKeymap();
@@ -598,10 +602,14 @@ export function Container<TBase extends Constructor<BaseView>>(Base: TBase) {
       return svg`${this.children.map(kid => kid.render())}`;
     }
 
-    render(content?: TemplateResult) {
+    content(): TemplateResult {
+      return this.renderChildren();
+    }
+
+    render() {
       const tx = this.x + this.padding.left;
       const ty = this.y + this.padding.top;
-      return super.render(staticSvg`
+      return staticSvg`
         <g
           ${this.ref}
           id=${this.id || nothing}
@@ -613,9 +621,9 @@ export function Container<TBase extends Constructor<BaseView>>(Base: TBase) {
             ${attrInfo.attr}=${attrInfo.value}
           `)}
         >
-          ${content ?? this.renderChildren()}
+          ${this.content()}
         </g>
-      `);
+      `;
     }
   }
 }

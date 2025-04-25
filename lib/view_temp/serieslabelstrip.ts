@@ -162,12 +162,12 @@ class LineLabelLeader extends View {
     return styles;
   }
 
-  render() {
+  content() {
     const styles = {
       strokeWidth: 2, //this.chart.settings.lineWidth
     };
     const seriesIdx = this.endpoint.parent.index;
-    return super.render(svg`
+    return svg`
       <g
         class="label-leader-line"
         style=${styleMap(this.styles)}
@@ -182,6 +182,6 @@ class LineLabelLeader extends View {
           r="1.8"
         />
       </g>
-    `);
+    `;
   }
 }
