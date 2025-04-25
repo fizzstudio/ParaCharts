@@ -17,10 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { State, property } from '@lit-app/state';
 import { produce } from 'immer';
 
-import type { Manifest } from '@fizz/paramanifest';
+import { dataFromManifest, type AllSeriesData, type ChartType, type Datatype, type Manifest } from '@fizz/paramanifest';
 
 import { Model2D, modelFromAllSeriesData, modelFromManifest } from './model2D';
-import { AllSeriesData, ChartType, Datatype } from '../common/types';
 import { DeepReadonly, Settings, SettingsInput } from './settings_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
@@ -32,18 +31,6 @@ import { keymap } from './keymap';
 import { KeymapManager } from './keymap_manager';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
-
-function dataFromManifest(manifest: Manifest): AllSeriesData {
-  const dataset = manifest.datasets[0];
-  if (dataset.data.source !== 'inline') {
-    throw new Error('only manifests with inline data can use this function.');
-  }
-  const data: AllSeriesData = {};
-  for (const series of dataset.series) {
-    data[series.key] = series.records!;
-  }
-  return data;
-}
 
 export class ParaStore extends State {
 
