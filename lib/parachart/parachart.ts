@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { logging } from '../common/logger';
 import { ParaComponent } from '../paracomponent';
 import { ParaController } from '../paracontroller';
-import { AllSeriesData } from "../common/types";
+import { AllSeriesData } from '@fizz/paramanifest'
 import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
 import "../paraview";
 import "../control_panel";
