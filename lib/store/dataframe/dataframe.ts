@@ -68,9 +68,10 @@ function arrayToCol(ary: DataArray<Scalar>, dtype?: Datatype, opts?: SeriesOpts)
 
 export type RawDataPoint = Record<string, string>;
 
-export type Facet = { key: string, datatype: Datatype };
+export type FacetSignature = { key: string, datatype: Datatype };
 
-type DataFrameColumn<T extends Datatype> = Box<T>[];
+export type DataFrameColumn<T extends Datatype> = Box<T>[];
+export type DataFrameRow = Record<string, Box<Datatype>>;
 
 /**
  * Spreadsheet-like container for a series. Each column is a facet/dimension, 
@@ -79,13 +80,17 @@ type DataFrameColumn<T extends Datatype> = Box<T>[];
  */
 export class DataFrame {
 
-  private columns: DataFrameColumn<Datatype>[]; 
+  private columns: DataFrameColumn<Datatype>[];
+  private facetKeyIndexMap: Record<string, number> = {};
 
-  constructor(private readonly facets: Facet[]) {
+  constructor(private readonly facets: FacetSignature[]) {
     if (this.facets.length === 0) {
       throw new Error('dataframes must have at least 1 column');
     }
     this.columns = mapn(this.facets.length, _i => []);
+    this.facets.forEach((signature, facetIndex) => {
+      this.facetKeyIndexMap[signature.key] = facetIndex;
+    })
     /*if (Array.isArray(srcData)) {
       if (Array.isArray(srcData[0])) {
         this.data = srcData.map((ary, i) => 
@@ -117,12 +122,26 @@ export class DataFrame {
     });
   }
 
-  get nRows() {
+  get nRows(): number {
     return this.columns[0].length;
   }
 
-  get nColumns() {
+  get nColumns(): number {
     return this.columns.length;
+  }
+
+  get rows(): DataFrameRow[] {
+    return mapn(this.nRows, (rowIndex) => {
+      const row: DataFrameRow = {};
+      this.columns.forEach((column, columnIndex) => {
+        row[this.facets[columnIndex].key] = column[rowIndex];
+      });
+      return row;
+    })
+  }
+
+  public facet(key: string): DataFrameColumn<Datatype> {
+    return this.columns[this.facetKeyIndexMap[key]];
   }
 
   /** Iterate over the rows, producing DataFrames of one row. */

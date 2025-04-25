@@ -16,41 +16,46 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { zip } from "@fizz/chart-classifier-utils";
 import { enumerate } from "../common/utils";
-import { DataFrame, Facet, RawDataPoint } from "./dataframe/dataframe";
+import { DataFrame, DataFrameColumn, DataFrameRow, FacetSignature, RawDataPoint } from "./dataframe/dataframe";
 import { Datatype } from "@fizz/paramanifest";
 import { ScalarMap } from "./dataframe/box";
 
-export type DataPointDF = Record<string, ScalarMap[Datatype]>;
+//export type DataPointDF = Record<string, ScalarMap[Datatype]>;
 
 export class SeriesDF {
   private readonly dataframe: DataFrame;
 
-  [i: number]: DataPointDF;
+  [i: number]: DataFrameRow;
+  public readonly length: number;
   /*protected xMap: Map<ScalarMap[X], number[]>;
   private yMap: Map<number, ScalarMap[X][]>;
   public readonly xs: ScalarMap[X][] = [];
   public readonly ys: number[] = [];
-  public readonly length: number;
+  
   public readonly boxedXs: Box<X>[] = [];
   public readonly boxedYs: Box<'number'>[] = [];*/
 
   constructor(
     public readonly key: string, 
     public readonly rawData: RawDataPoint[], 
-    public readonly facets: Facet[]
+    public readonly facets: FacetSignature[]
   ) {
     this.dataframe = new DataFrame(facets);
     this.rawData.forEach((datapoint) => this.dataframe.addDatapoint(datapoint));
-    /*this.datapoints.forEach((datapoint, index) => {
+    this.dataframe.rows.forEach((datapoint, index) => {
       this[index] = datapoint;
-      this.xs.push(datapoint.x);
+      /*this.xs.push(datapoint.x);
       this.boxedXs.push(new Box(datapoint.x, datapoint.xRaw));
       this.ys.push(datapoint.y);
-      this.boxedYs.push(new Box(datapoint.y, datapoint.yRaw));
+      this.boxedYs.push(new Box(datapoint.y, datapoint.yRaw));*/
     });
-    this.xMap = mapDatapointsXtoY(this.datapoints);
-    this.yMap = mapDatapointsYtoX(this.datapoints);
-    this.length = this.xs.length;*/
+    /*this.xMap = mapDatapointsXtoY(this.datapoints);
+    this.yMap = mapDatapointsYtoX(this.datapoints);*/
+    this.length = this.rawData.length;
+  }
+
+  public facet(key: string): DataFrameColumn<Datatype> {
+    return this.dataframe.facet(key);
   }
 
   /*atX(x: ScalarMap[X]): number[] | null {
@@ -66,7 +71,7 @@ export class SeriesDF {
   }*/
 }
 
-function facetsEquals(lhs: Facet[], rhs: Facet[]): boolean {
+function facetsEquals(lhs: FacetSignature[], rhs: FacetSignature[]): boolean {
   if (lhs.length !== rhs.length) {
     return false;
   }
@@ -91,7 +96,7 @@ export class ModelDF {
   public readonly allPoints: Datapoint2D<X>[]
   public readonly boxedXs: Box<X>[];
   public readonly boxedYs: Box<'number'>[];*/
-  public readonly facets: Facet[]
+  public readonly facets: FacetSignature[]
 
   constructor(public readonly series: SeriesDF[]) {
     if (this.series.length === 0) {
@@ -131,7 +136,6 @@ export class ModelDF {
   /*atKey(key: string): Series2D<X> | null {
     return this.keyMap[key] ?? null;
   }
-
   
   atKeyAndIndex(key: string, index: number): Datapoint2D<X> | null {
     return this.atKey(key)?.[index] ?? null;
