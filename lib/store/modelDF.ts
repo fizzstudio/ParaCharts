@@ -99,11 +99,12 @@ export class ModelDF {
   [i: number]: SeriesDF;
   public readonly multi: boolean;
   public readonly numSeries: number;
-  public readonly uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
   /*public readonly xs: ScalarMap[X][];
   public readonly ys: number[];
   public readonly allPoints: Datapoint2D<X>[]*/
-  public readonly facets: FacetSignature[]
+  public readonly facets: FacetSignature[];
+
+  private uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
 
   constructor(public readonly series: SeriesDF[]) {
     if (this.series.length === 0) {
@@ -112,7 +113,9 @@ export class ModelDF {
     this.multi = this.series.length > 1;
     this.numSeries = this.series.length;
     this.facets = this.series[0].facets;
-    this.facets.forEach((facet) => this.uniqueValuesForFacet[facet.key] = new BoxSet<Datatype>);
+    this.facets.forEach((facet) => {
+      this.uniqueValuesForFacet[facet.key] = new BoxSet<Datatype>;
+    });
     for (const [aSeries, seriesIndex] of enumerate(this.series)) {
       if (this.keys.includes(aSeries.key)) {
         throw new Error('every series in a model must have a unique key');
@@ -123,9 +126,9 @@ export class ModelDF {
       this.keys.push(aSeries.key);
       this[seriesIndex] = aSeries;
       this.keyMap[aSeries.key] = aSeries;
-      Object.keys(this.uniqueValuesForFacet).forEach(
-        (facetKey) => this.uniqueValuesForFacet[facetKey].merge(aSeries.allFacetValues(facetKey)!)
-      )
+      Object.keys(this.uniqueValuesForFacet).forEach((facetKey) => {
+        this.uniqueValuesForFacet[facetKey].merge(aSeries.allFacetValues(facetKey)!);
+      });
     }
     /*this.xs = mergeUniqueBy(
       (lhs, rhs) => xDatatype === 'date'

@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { State, property } from '@lit-app/state';
 import { produce } from 'immer';
 
-import { dataFromManifest, type AllSeriesData, type ChartType, type Datatype, type Manifest } from '@fizz/paramanifest';
+import { dataFromManifest, DisplayType, type AllSeriesData, type ChartType, type Datatype, type Manifest } from '@fizz/paramanifest';
 
 import { Model2D, modelFromAllSeriesData, modelFromManifest } from './model2D';
 import { DeepReadonly, Settings, SettingsInput } from './settings_types';
@@ -54,6 +54,9 @@ export class ParaStore extends State {
   protected _facets: FacetSignature[] | null = null;
   protected _type: ChartType = 'line';
   protected _title = '';
+  protected _axisFacetKeys: string[] = [];
+  protected _horizontalAxisFacetKey: string | null = null;
+  protected _verticalAxisFacetKey: string | null = null;
   //protected _xAxisLabel = '';
   //protected _yAxisLabel = '';
   protected _seriesProperties: SeriesPropertyManager | null = null;
@@ -62,6 +65,8 @@ export class ParaStore extends State {
   protected _keymapManager = new KeymapManager(keymap);
 
   public idList: Record<string, boolean> = {};
+
+  private _displayTypeForFacet: Record<string, DisplayType> = {};
   
   constructor(
     inputSettings: SettingsInput, 
@@ -117,6 +122,48 @@ export class ParaStore extends State {
     this._type = dataset.type;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
+    this._facets.forEach((facetSignature) => {
+      const facetManifest = dataset.facets[facetSignature.key];
+      this._displayTypeForFacet[facetSignature.key] = facetManifest.displayType!; // FIXME: remove !
+      if (facetManifest.displayType!.type === 'axis') {
+        this._axisFacetKeys.push(facetSignature.key);
+        if (facetManifest.displayType!.orientation === 'horizontal') {
+          if (this._horizontalAxisFacetKey === null) {
+            this._horizontalAxisFacetKey = facetSignature.key;
+          } else {
+            throw new Error('only one horizontal axis per chart');
+          }
+        } else {
+          if (this._verticalAxisFacetKey === null) {
+            this._verticalAxisFacetKey = facetSignature.key;
+          } else {
+            throw new Error('only one vertical axis per chart');
+          }
+        }
+      }
+    });
+    if (this._axisFacetKeys.length !== 0 && this._axisFacetKeys.length !== 2) {
+      throw new Error('charts must either have 2 or 0 axes')
+    }
+    if (this._horizontalAxisFacetKey === null || this._verticalAxisFacetKey === null) {
+      const independentAxes = this._axisFacetKeys.filter(
+        (key) => dataset.facets[key].variableType === 'independent'
+      );
+      const dependentAxes = this._axisFacetKeys.filter(
+        (key) => dataset.facets[key].variableType === 'dependent'
+      );
+      if (
+        independentAxes.length === 1 && 
+        dependentAxes.length === 1 &&
+        (this._horizontalAxisFacetKey === null || this._horizontalAxisFacetKey === independentAxes[0]) &&
+        (this._verticalAxisFacetKey === null || this._verticalAxisFacetKey === dependentAxes[0]) 
+      ) {
+        this._horizontalAxisFacetKey = independentAxes[0];
+        this._verticalAxisFacetKey = dependentAxes[0];
+      } else {
+        
+      }
+    }
     //this._xAxisLabel = dataset.facets.x.label;
     //this._yAxisLabel = dataset.facets.y.label;
     //this._xDatatype = dataset.facets.x.datatype;
