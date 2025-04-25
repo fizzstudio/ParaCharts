@@ -149,3 +149,25 @@ export const BOX_CONSTRUCTORS: BoxConstructorMap = {
   number: NumberBox,
   date: DateBox
 }
+
+export class BoxSet<T extends Datatype> {
+  private boxes: Box<T>[] = [];
+
+  get values(): Box<T>[] {
+    return this.boxes;
+  }
+
+  public has(box: Box<T>): boolean {
+    return this.boxes.some((otherBox) => box.isEqual(otherBox));
+  }
+
+  public add(box: Box<T>): void {
+    if (!this.has(box)) {
+      this.boxes.push(box);
+    }
+  }
+
+  public merge(boxes: Box<T>[]): void {
+    boxes.forEach((box) => this.add(box));
+  }
+}
