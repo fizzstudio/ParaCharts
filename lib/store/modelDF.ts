@@ -17,8 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { zip } from "@fizz/chart-classifier-utils";
 import { enumerate } from "../common/utils";
 import { DataFrame, DataFrameColumn, DataFrameRow, FacetSignature, RawDataPoint } from "./dataframe/dataframe";
-import { Datatype } from "@fizz/paramanifest";
-import { ScalarMap } from "./dataframe/box";
+import { AllSeriesData, Dataset, Datatype, Manifest, Series } from "@fizz/paramanifest";
+import { Box, BoxSet } from "./dataframe/box";
 
 //export type DataPointDF = Record<string, ScalarMap[Datatype]>;
 
@@ -27,13 +27,9 @@ export class SeriesDF {
 
   [i: number]: DataFrameRow;
   public readonly length: number;
+  private readonly uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
   /*protected xMap: Map<ScalarMap[X], number[]>;
-  private yMap: Map<number, ScalarMap[X][]>;
-  public readonly xs: ScalarMap[X][] = [];
-  public readonly ys: number[] = [];
-  
-  public readonly boxedXs: Box<X>[] = [];
-  public readonly boxedYs: Box<'number'>[] = [];*/
+  private yMap: Map<number, ScalarMap[X][]>;*/
 
   constructor(
     public readonly key: string, 
@@ -41,21 +37,25 @@ export class SeriesDF {
     public readonly facets: FacetSignature[]
   ) {
     this.dataframe = new DataFrame(facets);
+    this.facets.forEach((facet) => this.uniqueValuesForFacet[facet.key] = new BoxSet<Datatype>);
     this.rawData.forEach((datapoint) => this.dataframe.addDatapoint(datapoint));
     this.dataframe.rows.forEach((datapoint, index) => {
       this[index] = datapoint;
-      /*this.xs.push(datapoint.x);
-      this.boxedXs.push(new Box(datapoint.x, datapoint.xRaw));
-      this.ys.push(datapoint.y);
-      this.boxedYs.push(new Box(datapoint.y, datapoint.yRaw));*/
+      Object.keys(datapoint).forEach(
+        (facetKey) => this.uniqueValuesForFacet[facetKey].add(datapoint[facetKey])
+      );
     });
     /*this.xMap = mapDatapointsXtoY(this.datapoints);
     this.yMap = mapDatapointsYtoX(this.datapoints);*/
     this.length = this.rawData.length;
   }
 
-  public facet(key: string): DataFrameColumn<Datatype> {
+  public facet(key: string): DataFrameColumn<Datatype> | null {
     return this.dataframe.facet(key);
+  }
+
+  public allFacetValues(key: string): Box<Datatype>[] | null {
+    return this.uniqueValuesForFacet[key]?.values ?? null;
   }
 
   /*atX(x: ScalarMap[X]): number[] | null {
@@ -70,6 +70,14 @@ export class SeriesDF {
     return this.datapoints[Symbol.iterator]();
   }*/
 }
+
+export function seriesDFFromSeriesManifest(seriesManifest: Series, facets: FacetSignature[]): SeriesDF {
+  if (!seriesManifest.records) {
+    throw new Error('only series manifests with inline data can use this method.');
+  }
+  return new SeriesDF(seriesManifest.key, seriesManifest.records!, facets);
+}
+
 
 function facetsEquals(lhs: FacetSignature[], rhs: FacetSignature[]): boolean {
   if (lhs.length !== rhs.length) {
@@ -91,11 +99,10 @@ export class ModelDF {
   [i: number]: SeriesDF;
   public readonly multi: boolean;
   public readonly numSeries: number;
+  public readonly uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
   /*public readonly xs: ScalarMap[X][];
   public readonly ys: number[];
-  public readonly allPoints: Datapoint2D<X>[]
-  public readonly boxedXs: Box<X>[];
-  public readonly boxedYs: Box<'number'>[];*/
+  public readonly allPoints: Datapoint2D<X>[]*/
   public readonly facets: FacetSignature[]
 
   constructor(public readonly series: SeriesDF[]) {
@@ -105,6 +112,7 @@ export class ModelDF {
     this.multi = this.series.length > 1;
     this.numSeries = this.series.length;
     this.facets = this.series[0].facets;
+    this.facets.forEach((facet) => this.uniqueValuesForFacet[facet.key] = new BoxSet<Datatype>);
     for (const [aSeries, seriesIndex] of enumerate(this.series)) {
       if (this.keys.includes(aSeries.key)) {
         throw new Error('every series in a model must have a unique key');
@@ -115,6 +123,9 @@ export class ModelDF {
       this.keys.push(aSeries.key);
       this[seriesIndex] = aSeries;
       this.keyMap[aSeries.key] = aSeries;
+      Object.keys(this.uniqueValuesForFacet).forEach(
+        (facetKey) => this.uniqueValuesForFacet[facetKey].merge(aSeries.allFacetValues(facetKey)!)
+      )
     }
     /*this.xs = mergeUniqueBy(
       (lhs, rhs) => xDatatype === 'date'
@@ -133,11 +144,40 @@ export class ModelDF {
     this.allPoints = mergeUniqueDatapoints(...this.series.map((series) => series.datapoints));*/
   }
 
-  /*atKey(key: string): Series2D<X> | null {
+  public atKey(key: string): SeriesDF | null {
     return this.keyMap[key] ?? null;
   }
   
-  atKeyAndIndex(key: string, index: number): Datapoint2D<X> | null {
+  public atKeyAndIndex(key: string, index: number): DataFrameRow | null {
     return this.atKey(key)?.[index] ?? null;
-  }*/
+  }
+
+  public allFacetValues(key: string): Box<Datatype>[] | null {
+    return this.uniqueValuesForFacet[key]?.values ?? null;
+  }
+}
+
+export function facetsFromDataset(dataset: Dataset): FacetSignature[] {
+  return Object.keys(dataset.facets).map((key) => ({ key, datatype: dataset.facets[key].datatype }))
+}
+
+export function modelDFFromManifest(manifest: Manifest): ModelDF {
+  const dataset = manifest.datasets[0];
+  if (dataset.data.source !== 'inline') {
+    throw new Error('only manifests with inline data can use this method.');
+  }
+  const facets = facetsFromDataset(dataset);
+  const series = dataset.series.map((seriesManifest) => 
+    seriesDFFromSeriesManifest(seriesManifest, facets)
+  );
+  return new ModelDF(series);
+}
+
+export function modelDFFromAllSeriesData(
+  data: AllSeriesData, facets: FacetSignature[]
+): ModelDF {
+  const series = Object.keys(data).map((key) => 
+    new SeriesDF(key, data[key], facets)
+  );
+  return new ModelDF(series);
 }

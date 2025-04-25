@@ -140,8 +140,8 @@ export class DataFrame {
     })
   }
 
-  public facet(key: string): DataFrameColumn<Datatype> {
-    return this.columns[this.facetKeyIndexMap[key]];
+  public facet(key: string): DataFrameColumn<Datatype> | null {
+    return this.columns[this.facetKeyIndexMap[key]] ?? null;
   }
 
   /** Iterate over the rows, producing DataFrames of one row. */

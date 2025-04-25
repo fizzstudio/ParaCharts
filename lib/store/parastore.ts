@@ -29,6 +29,8 @@ import { DataSymbols } from '../view_temp/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { keymap } from './keymap';
 import { KeymapManager } from './keymap_manager';
+import { facetsFromDataset, ModelDF, modelDFFromAllSeriesData, modelDFFromManifest } from './modelDF';
+import { FacetSignature } from './dataframe/dataframe';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -48,13 +50,14 @@ export class ParaStore extends State {
 
   protected _settingControls = new SettingControlManager(this); 
   protected _manifest: Manifest | null = null;
-  protected _model: Model2D<Datatype> | null = null;
+  protected _model: ModelDF | null = null;
+  protected _facets: FacetSignature[] | null = null;
   protected _type: ChartType = 'line';
   protected _title = '';
-  protected _xAxisLabel = '';
-  protected _yAxisLabel = '';
+  //protected _xAxisLabel = '';
+  //protected _yAxisLabel = '';
   protected _seriesProperties: SeriesPropertyManager | null = null;
-  protected _xDatatype: Datatype = 'date';
+  //protected _xDatatype: Datatype = 'date';
   protected _colors: Colors;
   protected _keymapManager = new KeymapManager(keymap);
 
@@ -88,13 +91,13 @@ export class ParaStore extends State {
     return this._title;
   }
 
-  get xAxisLabel() {
+  /*get xAxisLabel() {
     return this._xAxisLabel;
   }
 
   get yAxisLabel() {
     return this._yAxisLabel;
-  }
+  }*/
 
   get seriesProperties() {
     return this._seriesProperties;
@@ -113,18 +116,19 @@ export class ParaStore extends State {
     const dataset = this._manifest.datasets[0];
     this._type = dataset.type;
     this._title = dataset.title;
-    this._xAxisLabel = dataset.facets.x.label;
-    this._yAxisLabel = dataset.facets.y.label;
-    this._xDatatype = dataset.facets.x.datatype;
+    this._facets = facetsFromDataset(dataset);
+    //this._xAxisLabel = dataset.facets.x.label;
+    //this._yAxisLabel = dataset.facets.y.label;
+    //this._xDatatype = dataset.facets.x.datatype;
     if (dataset.data.source === 'inline') {
-      this._model = modelFromManifest(manifest, this._xDatatype);
+      this._model = modelDFFromManifest(manifest);
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = dataFromManifest(manifest);
     } else if (data) {
-      this._model = modelFromAllSeriesData(data, this._xDatatype, this._type);
+      this._model = modelDFFromAllSeriesData(data, this._facets);
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = data;
     } else {
