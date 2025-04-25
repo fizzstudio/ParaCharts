@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 // Imports
 
-import type { AllSeriesData, ChartType, Datatype, Manifest, Series, XyPoint } from "@fizz/paramanifest";
+import type { AllSeriesData, ChartType, Datapoint, Datatype, Manifest, Series, XyPoint } from "@fizz/paramanifest";
 import { arrayEqual } from "./helpers";
 import { enumerate, mergeUnique, mergeUniqueBy } from "../common/utils";
 import { calendarEquals, CalendarPeriod, calendarString, parseCalendar } from "./calendar_period";
@@ -139,7 +139,7 @@ const DATAPOINT_CONSTRUCTORS: DatapointConstructorMap = {
   date: CalendarDatapoint2D
 }
 
-export function datapointFromRecord<X extends Datatype>(datatype: X, record: XyPoint): Datapoint2D<X> {
+export function datapointFromRecord<X extends Datatype>(datatype: X, record: Datapoint): Datapoint2D<X> {
   return new DATAPOINT_CONSTRUCTORS[datatype](record.x, record.y);
 }
 
@@ -274,7 +274,7 @@ const SERIES_CONSTRUCTORS: Record<Order, SeriesConstructorMap> = {
 }
 
 export function seriesFromKeyAndData<X extends Datatype>(
-  key: string, data: XyPoint[], datatype: X, ordered: boolean
+  key: string, data: Datapoint[], datatype: X, ordered: boolean
 ): Series2D<X> {
   const order = ordered ? 'ordered' : 'unordered';
   const datapoints = data.map((record) => datapointFromRecord(datatype, record));
