@@ -26,7 +26,7 @@ import { type Setting } from '../store/settings_types';
 
 import { type ClassInfo } from 'lit/directives/class-map.js';
 //import { literal } from 'lit/static-html.js';
-import { ParaView } from './paraview';
+import { ParaView } from '../paraview';
 import { strToId } from '../common/utils';
 import { formatDatapointX, formatDatapointY } from './formatter';
 import { literal } from 'lit/static-html.js';
@@ -83,19 +83,18 @@ export abstract class XYChart extends DataLayer {
     super._addedToParent();  
     this.maxDatapointSize = this.width/2.5;
     this._isChordModeEnabled = this.paraview.store.settings.sonification.isChordModeEnabled;
-    //todo().controller.registerSettingManager(this);
-    /*todo().controller.settingViews.add(this, {
+    this.paraview.store.settingControls.add({
       type: 'checkbox',
       key: 'sonification.isChordModeEnabled',
       label: 'Chord mode',
-      parentView: 'chartDetails.dialog.audio.sonificationSettings',
+      parentView: 'controlPanel.tabs.audio.sonification.dialog',
     });
-    todo().controller.settingViews.add(this, {
+    this.paraview.store.settingControls.add({
       type: 'checkbox',
       key: 'sonification.isRiffEnabled',
       label: 'Series riff enabled',
-      parentView: 'chartDetails.dialog.audio.sonificationSettings',
-    });*/
+      parentView: 'controlPanel.tabs.audio.sonification.dialog',
+    });
   }
 
   get managedSettingKeys() {
@@ -528,7 +527,7 @@ export class XYSeriesView extends SeriesView {
     const visited = this.chart.isChordModeEnabled 
       ? this.withSiblings.flatMap(sib => sib.children) 
       : this._children;
-    visited.forEach(v => v.isVisited = true);
+    this.paraview.store.visitedDatapoints = visited.map(v => v.id);
     if (!this.chart.isChordModeEnabled) {
       this.chart.raiseSeries(this.series.key!);
     }
@@ -548,9 +547,7 @@ export class XYSeriesView extends SeriesView {
 
   onBlur() {
     console.log('XY SERIES BLUR');
-    this.chart.visitedDatapointViews.forEach(p => {
-      p.isVisited = false;
-    });
+    this.paraview.store.visitedDatapoints = [];
   }
 
   select(extend: boolean) {
@@ -599,6 +596,7 @@ export abstract class XYDatapointView extends DatapointView {
       strToId(this.series.key),
       formatDatapointX(this.datapoint, 'domId', this.paraview.store),
       formatDatapointY(this.datapoint, 'domId', this.paraview.store),
+      `${this.index}`
     ].join('-'); 
   }
 
@@ -670,7 +668,7 @@ export abstract class XYDatapointView extends DatapointView {
     console.log('XY DATAPOINT FOCUS');
     super.onFocus();
     const visited = this.chart.isChordModeEnabled ? this.withSameIndexers : [this];
-    visited.forEach(v => v.isVisited = true);
+    this.paraview.store.visitedDatapoints = visited.map(v => v.id);
     if (!this.chart.isChordModeEnabled) {
       this.chart.raiseSeries(this.series.key!);
     }

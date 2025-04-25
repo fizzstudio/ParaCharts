@@ -19,8 +19,8 @@ import { fixed } from '../common/utils';
 
 import { svg } from 'lit';
 import { styleMap, type StyleInfo } from 'lit/directives/style-map.js';
-import { Colors } from './colors';
-import { ParaView } from './paraview';
+import { Colors } from '../common/colors';
+import { ParaView } from '../paraview';
 
 export type DataSymbolShape = 
 'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
@@ -253,6 +253,13 @@ const shapeInfo = {
   star: starInfo()
 };
 
+export interface DataSymbolOptions {
+  strokeWidth: number;
+  scale: number;
+  color?: number;
+  dashed: boolean;
+}
+
 /**
  * @remarks
  * Unlike the default for `Views`, `x` and `y` here locate the center of
@@ -260,50 +267,51 @@ const shapeInfo = {
  */
 export class DataSymbol extends View {
 
-  // declare protected _parent: ChartPoint;
-
   public readonly type: DataSymbolType;
+
+  protected _options: DataSymbolOptions;
 
   static fromType(
     paraview: ParaView,
-    type: DataSymbolType, 
-    symbolStrokeWidth: number, 
-    colors: Colors,
-    color?: number, 
+    type: DataSymbolType,
+    options?: Partial<DataSymbolOptions>,
     classes: string[] = []
   ) {
     let shape: DataSymbolShape, fill: DataSymbolFill;
-    let dashed = false;
     if (type === 'default') {
       shape = 'circle';
       fill = 'outline';
-      dashed = true;
+      options ??= {};
+      options.dashed = true;
     } else {
       [shape, fill] = type.split('.') as [DataSymbolShape, DataSymbolFill];
     }
-    return new DataSymbol(paraview, shape, fill, symbolStrokeWidth, colors, color, classes, dashed);
+    return new DataSymbol(paraview, shape, fill, options, classes);
   }
 
   constructor(
     paraview: ParaView,
     shape: DataSymbolShape,
     fill: DataSymbolFill,
-    private symbolStrokeWidth: number,
-    private colors: Colors,
-    private color?: number,
+    options?: Partial<DataSymbolOptions>,
     private classes: string[] = [], 
-    private dashed = false,
   ) {
     super(paraview);
     this.type = `${shape}.${fill}`;
+    this._options = {
+      strokeWidth: options?.strokeWidth ?? 1,
+      scale: options?.scale ?? 1,
+      color: options?.color,
+      dashed: options?.dashed ?? false
+    };
   }
 
   get width() {
-    return shapeInfo[this.shape].baseWidth + this.symbolStrokeWidth;
+    return shapeInfo[this.shape].baseWidth + this._options.strokeWidth;
   }
 
   get height() {
-    return shapeInfo[this.shape].baseHeight + this.symbolStrokeWidth;
+    return shapeInfo[this.shape].baseHeight + this._options.strokeWidth;
   }
 
   get shape() {
@@ -314,19 +322,31 @@ export class DataSymbol extends View {
     return this.type.split('.')[1] as DataSymbolFill;
   }
 
-  render() {
-    const transform = fixed`translate(${this._x + this.width/2},${this._y + this.height/2})`;
+  render(options?: Partial<DataSymbolOptions>) {
+    return super.render(options);
+  }
+
+  content(options?: Partial<DataSymbolOptions>) {
+    const opts = options ? Object.assign({}, this._options, options) : this._options;
+    let transform = fixed`translate(${this._x + this.width/2},${this._y + this.height/2})`;
+    if (opts.scale !== 1) {
+      transform += fixed` scale(${opts.scale})`;
+    }
     const styles: StyleInfo = {
-      strokeWidth: this.symbolStrokeWidth
+      strokeWidth: opts.strokeWidth
     };
-    if (this.dashed) {
+    if (opts.dashed) {
       styles.strokeDasharray = '1px 2px';
     }
-    if (this.color !== undefined) {
+    if (opts.color !== undefined) {
       if (this.fill === 'solid') {
-        styles.fill = this.colors.colorValueAt(this.color);
+        const col = this.paraview.store.colors.colorValueAt(opts.color).match(/\d+/g)!.map(Number);
+        col[1] -= Math.min(10, col[1]);
+        col[2] += Math.min(25, 100 - col[2]);
+        styles.fill = `hsl(${col[0]}, ${col[1]}%, ${col[2]}%)`;
+        //styles.fill = this.colors.colorValueAt(this.color);
       }
-      styles.stroke = this.colors.colorValueAt(this.color);
+      styles.stroke = this.paraview.store.colors.colorValueAt(opts.color);
     }
     return svg`
       <path

@@ -40,6 +40,7 @@ export const defaults: Settings = {
     fontFamily: 'Helvetica, sans-serif',
     fontWeight: '300',
     symbolStrokeWidth: 2,
+    symbolHighlightScale: 1.5,
     hasDirectLabels: true,
     hasLegendWithDirectLabels: false,
   },
@@ -165,7 +166,7 @@ export const defaults: Settings = {
       pointLabelFormat: 'raw',
       leaderLineLength: 30,
       isDrawSymbols: true,
-      highlightScale: 1.6,
+      highlightScale: 2,
       selectedPointMarkerSize: {
         width: 20,
         height: 20,

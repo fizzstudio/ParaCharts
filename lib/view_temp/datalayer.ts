@@ -34,13 +34,14 @@ import { type TickLabelTier } from './ticklabeltier';
 //import { type Actions } from '../input/actions';
 //import { utils } from '../utilities';
 import { DataSymbol, DataSymbols } from './symbol';
-import { ParaView } from './paraview';
+import { ParaView } from '../paraview';
 import { Datapoint2D, Series2D } from '../store/model2D';
 import { strToId } from '../common/utils';
 import { SettingsManager } from '../store/settings_manager';
 import { SeriesProperties } from '../store/series_properties';
 import { Datatype } from '../common/types';
 import { type AxisInfo } from '../common/axisinfo';
+import { type HotkeyEvent } from '../store/keymap_manager';
 
 import { type clusterObject } from '@fizz/clustering';
 
@@ -89,6 +90,21 @@ export abstract class DataLayer extends ChartLayer {
 
   constructor(public readonly dataLayerIndex: number, paraview: ParaView) {
     super(paraview);
+    paraview.store.keymapManager.addEventListener('hotkeypress', (e: HotkeyEvent) => {
+      if (e.action === 'move_right') {
+        this.clearPlay();
+        this.moveRight();    
+      } else if (e.action === 'move_left') {
+        this.clearPlay();
+        this.moveLeft();
+      } else if (e.action === 'move_up') {
+        this.clearPlay();
+        this.moveUp();
+      } else if (e.action === 'move_down') {
+        this.clearPlay();
+        this.moveDown();
+      }
+    });
   }
 
   protected _createId() {
@@ -146,7 +162,7 @@ export abstract class DataLayer extends ChartLayer {
 
   get visitedDatapointViews() {
     return this.datapointViews.filter(v =>
-      v.isVisited
+      this.paraview.store.visitedDatapoints.includes(v.id)
     );
   }
 
@@ -162,6 +178,14 @@ export abstract class DataLayer extends ChartLayer {
   
   get axisInfo() {
     return this._axisInfo;
+  }
+
+  get role() {
+    return 'dataset';
+  }
+
+  get ref() {
+    return ref(this.paraview.ref<SVGGElement>(`dataset${this.index}`));
   }
 
   init() {
@@ -235,17 +259,6 @@ export abstract class DataLayer extends ChartLayer {
     }
   }
 
-  render(content?: TemplateResult) {
-    return super.render(svg`
-      <g
-        ${ref(this.paraview.ref<SVGGElement>(`dataset${this.index}`))}
-        role="dataset"
-      >
-        ${content ?? this.renderChildren()}
-      </g>
-    `);
-  }
-
 }
 
 /**
@@ -311,7 +324,7 @@ export class ChartLandingView extends View {
     return 'At top level.'
   }
 
-  render() {
+  content() {
     return svg`${this.children.map(kid => kid.render())}`;
   }
 
@@ -383,9 +396,7 @@ export class DataView extends View {
   }
 
   onFocus() {
-    this.chart.visitedDatapointViews.forEach(p => {
-      p.isVisited = false;
-    });
+    this.paraview.store.visitedDatapoints = [];
   }
 
   select(_extend: boolean) {}
@@ -447,10 +458,6 @@ export class SeriesView extends Container(DataView) {
     super.onFocus();
   }
 
-  render(content?: TemplateResult) {
-    return super.render(content);
-  }
-
   getDatapointViewForLabel(label: string) {
     return this._children.find(view => 
       view.datapoint.x === label
@@ -468,7 +475,7 @@ export class DatapointView extends DataView {
 
   declare protected _parent: SeriesView;
 
-  protected _isVisited = false; 
+  //protected _isVisited = false; 
   private _isSelected = false;
   protected extraAttrs: {attr: StaticValue, value: any}[] = [];
   protected symbol?: DataSymbol;
@@ -517,20 +524,6 @@ export class DatapointView extends DataView {
     return this.series[this.index];
   }
 
-  get isVisited() {
-    return this._isVisited;
-  }
-
-  set isVisited(visited: boolean) {
-    this._isVisited = visited;
-    if (visited) {
-      this.chart.parent.highlightsLayer.activateMark(this.el.id);
-    } else {
-      this.chart.parent.highlightsLayer.deactivateMark(this.el.id);
-    }
-    this.paraview.requestUpdate();
-  }
-
   get isSelected() {
     return this._isSelected;
   }
@@ -567,7 +560,7 @@ export class DatapointView extends DataView {
 
   get classes(): ClassInfo {
     return {
-      visited: this._isVisited,
+      visited: this.paraview.store.visitedDatapoints.includes(this._id),
       selected: this._isSelected
     };
   }
@@ -575,9 +568,9 @@ export class DatapointView extends DataView {
   get styles(): StyleInfo {
     const styles: StyleInfo = {};
     let colorValue = this.chart.paraview.store.colors.colorValueAt(this.seriesProps.color);
-    if (this._isVisited) {
+    if (this.paraview.store.visitedDatapoints.includes(this._id)) {
       styles.transform = this._visitedTransform;
-      colorValue = this.chart.paraview.store.colors.colorValue('bright red');
+      colorValue = this.chart.paraview.store.colors.colorValue('highlight');
     }
     styles.fill = colorValue;
     styles.stroke = colorValue;
@@ -611,12 +604,10 @@ export class DatapointView extends DataView {
         }
       }
     }
-    this.symbol = DataSymbol.fromType(
-      this.paraview,
-      symbolType, 
-      this.chart.paraview.store.settings.chart.symbolStrokeWidth,
-      this.chart.paraview.store.colors,
-      color);
+    this.symbol = DataSymbol.fromType(this.paraview, symbolType, {
+      strokeWidth: this.paraview.store.settings.chart.symbolStrokeWidth,
+      color
+    });
     this.append(this.symbol);
   }
 
@@ -628,12 +619,19 @@ export class DatapointView extends DataView {
   }
 
   protected _renderSymbol() {
-    return this.symbol?.render() ?? svg``;
+    let opts = undefined;
+    if (this.paraview.store.visitedDatapoints.includes(this._id)) {
+      opts = {
+        scale: this.paraview.store.settings.chart.symbolHighlightScale,
+        color: -1
+      };
+    }
+    return this.symbol?.render(opts) ?? svg``;
   }
 
   // end symbols
 
-  render(content?: TemplateResult) {
+  render() {
     // on g: aria-labelledby="${this.params.labelId}"
     // originally came from: xAxis.tickLabelIds[j]
     return svg`
@@ -647,7 +645,7 @@ export class DatapointView extends DataView {
           ${attrInfo.attr}=${attrInfo.value}
         `)}
       >
-        ${content ?? ''}
+        ${this.content()}
         ${this.chart.settings.isDrawSymbols 
           ? this._renderSymbol() 
           : ''}

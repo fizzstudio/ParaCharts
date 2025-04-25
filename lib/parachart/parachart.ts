@@ -19,52 +19,66 @@ import { ParaComponent } from '../paracomponent';
 import { ParaController } from '../paracontroller';
 import { AllSeriesData } from "../common/types";
 import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
-import "../view_temp/paraview";
+import "../paraview";
+import "../control_panel";
 import { exhaustive } from "../common/utils";
-import { ParaStore } from '../store/parastore';
 
-import { html, PropertyValues, TemplateResult } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
-import { StateController } from "@lit-app/state";
+import { html, css, PropertyValues, TemplateResult, nothing } from "lit";
+import { customElement, property } from "lit/decorators.js";
 
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
+
+  protected _controller: ParaController;
   
   private inputSettings: SettingsInput = {};
   private data?: AllSeriesData;
   private suppleteSettingsWith?: DeepReadonly<Settings>;
 
-  protected _state: StateController<ParaStore>;
-
-  @property()
-  accessor filename = '';
+  @property() accessor filename = '';
 
   constructor() {
     super();
-    this._controller = new ParaController();
-    this._state = new StateController(this, this._controller.store);
+    this._controller = new ParaController(this);
+    // also creates the state controller
+    this.store = this._controller.store;
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this._controller.signalManager.signal('connect');
   }
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
-    this._controller.signalManager.signal('firstUpdate');
   }
 
   willUpdate(changedProperties: PropertyValues<this>) {
     if (changedProperties.has('filename') && this.filename !== '') {
       this.log(`changed: '${this.filename}`);
-      this._controller.signalManager.signal('dataUpdate', this.filename);
+      this.dispatchEvent(new CustomEvent('filenamechange', {bubbles: true, composed: true, cancelable: true}));
     }
   }
 
+  static styles = [
+    css`
+      figure {
+        display: inline-block;
+      }
+    `
+  ];
+
   render(): TemplateResult {
     this.log('render');
-    return  html`
-      <para-view .controller=${this._controller} .store=${this._controller.store}></para-view>
+    return html`
+      <figure>
+        <para-view
+          .store=${this._store}
+          colormode=${this._store?.settings.color.colorVisionMode ?? nothing}
+        ></para-view>
+        <para-control-panel
+          .summary=${this.summary}
+          .store=${this._store}
+        ></para-control-panel>
+      </figure>
     `;
   }
 
