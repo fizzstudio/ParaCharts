@@ -21,8 +21,6 @@ import { type XYSeriesView } from './xychart';
 
 import { svg } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
-import { OrderedModel2D } from '../store/model2D';
-import { Datatype } from '@fizz/paramanifest';
 
 /**
  * Class for drawing line charts.

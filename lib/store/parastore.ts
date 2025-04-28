@@ -17,9 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { State, property } from '@lit-app/state';
 import { produce } from 'immer';
 
-import { dataFromManifest, DisplayType, Facet, type AllSeriesData, type ChartType, type Datatype, type Manifest } from '@fizz/paramanifest';
+import { dataFromManifest, DisplayType, Facet, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
 
-import { Model2D, modelFromAllSeriesData, modelFromManifest } from './model2D';
 import { DeepReadonly, Settings, SettingsInput } from './settings_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
