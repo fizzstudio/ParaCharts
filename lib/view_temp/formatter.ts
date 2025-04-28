@@ -19,7 +19,7 @@ import { strToId } from "../common/utils";
 import { ParaStore } from "../store/parastore";
 import { SettingsManager } from "../store/settings_manager";
 import { Box } from "../store/dataframe/box";
-import { XYDatapoint } from "../store/dataframe/dataframe";
+import { XYDatapointDF } from "../store/modelDF";
 
 export function formatBox(
   box: Box<Datatype>, 
@@ -39,7 +39,7 @@ export function formatBox(
 }
 
 /*function formatXYDatapointValue(
-  datapoint: XYDatapoint, 
+  datapoint: XYDatapointDF, 
   dimension: 'x' | 'y',
   context: FormatContext, 
   store: ParaStore
@@ -59,7 +59,7 @@ export function formatBox(
 }*/
 
 export function formatXYDatapointX(
-  datapoint: XYDatapoint, 
+  datapoint: XYDatapointDF, 
   context: FormatContext, 
   store: ParaStore
 ): string {
@@ -67,7 +67,7 @@ export function formatXYDatapointX(
 }
 
 export function formatXYDatapointY(
-  datapoint: XYDatapoint, 
+  datapoint: XYDatapointDF, 
   context: FormatContext, 
   store: ParaStore
 ): string {
@@ -75,7 +75,7 @@ export function formatXYDatapointY(
 }
 
 export function formatXYDatapoint(
-  datapoint: XYDatapoint, 
+  datapoint: XYDatapointDF, 
   context: FormatContext, 
   store: ParaStore
 ): string {

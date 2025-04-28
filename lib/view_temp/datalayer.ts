@@ -42,8 +42,7 @@ import { type AxisInfo } from '../common/axisinfo';
 import { type HotkeyEvent } from '../store/keymap_manager';
 
 import { type clusterObject } from '@fizz/clustering';
-import { SeriesDF } from '../store/modelDF';
-import { DataFrameRow } from '../store/dataframe/dataframe';
+import { SeriesDF, DataPointDF } from '../store/modelDF';
 
 /**
  * @public
@@ -479,7 +478,7 @@ export class DatapointView extends DataView {
   private _isSelected = false;
   protected extraAttrs: {attr: StaticValue, value: any}[] = [];
   protected symbol?: DataSymbol;
-  protected _datapoint?: DataFrameRow;
+  protected _datapoint?: DataPointDF;
   private _selectedMarker: SelectedDatapointMarker | null = null;
 
   constructor(seriesView: SeriesView) {
@@ -492,7 +491,7 @@ export class DatapointView extends DataView {
     this._createDatapoint();
   }
   
-  protected _createDatapoint(): DataFrameRow {
+  protected _createDatapoint(): DataPointDF {
     return this._datapoint = this.paraview.store.model!.atKeyAndIndex(this.series.key, this.index)!;
   }
 
@@ -520,7 +519,7 @@ export class DatapointView extends DataView {
     return this._parent.prev;
   }
 
-  get datapoint(): DataFrameRow {
+  get datapoint(): DataPointDF {
     return this.series[this.index];
   }
 

@@ -30,7 +30,7 @@ import { ParaView } from '../paraview';
 import { strToId } from '../common/utils';
 import { formatXYDatapointX, formatXYDatapointY } from './formatter';
 import { literal } from 'lit/static-html.js';
-import { XYDatapoint } from '../store/dataframe/dataframe';
+import { XYDatapointDF } from '../store/modelDF';
 
 export type DatapointViewType<T extends XYDatapointView> = 
   (new (...args: any[]) => T);
@@ -584,7 +584,7 @@ export class XYSeriesView extends SeriesView {
 export abstract class XYDatapointView extends DatapointView {
 
   declare readonly chart: XYChart;
-  declare _datapoint: XYDatapoint;
+  declare _datapoint: XYDatapointDF;
 
   protected centroid?: string;
 
@@ -626,8 +626,8 @@ export abstract class XYDatapointView extends DatapointView {
   }
 
   // override to get more specific return type
-  get datapoint(): XYDatapoint {
-    return this.series[this.index] as XYDatapoint;
+  get datapoint(): XYDatapointDF {
+    return this.series[this.index] as XYDatapointDF;
   }
 
   get classes() {
