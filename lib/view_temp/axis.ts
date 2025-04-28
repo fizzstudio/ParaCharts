@@ -101,7 +101,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       `axis.${orientation}`, this._store.settings
     );
     //todo().controller.registerSettingManager(this);
-    this.datatype = this.coord === 'y' ? 'number' : this._store.model!.xDatatype;
+    this.datatype = this._store.getAxisFacet(this.orientation)!.datatype;
 
     this._labelInfo = this.coord === 'x' 
       ? this.chartLayers.dataLayer.axisInfo!.xLabelInfo

@@ -17,8 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { XYChart, XYDatapointView, XYSeriesView } from './xychart';
 import { AxisInfo } from '../common/axisinfo';
 import { type PointChartType } from '../store/settings_types';
-import { dedupPrimitive, enumerate, strToId } from '../common/utils';
-import { formatBox, formatDatapoint, formatDatapointX } from './formatter';
+import { enumerate, strToId } from '../common/utils';
+import { formatBox } from './formatter';
 
 import { type coord, generateClusterAnalysis } from '@fizz/clustering';
 
@@ -31,7 +31,7 @@ export abstract class PointChart extends XYChart {
   protected _addedToParent() {
     super._addedToParent();
     this._axisInfo = new AxisInfo(this.paraview.store, {
-      yValues: this.paraview.store.model!.ys
+      yValues: this.paraview.store.model!.allFacetValues('y')!.map((y) => y.value as number)
     });
   }
 
@@ -45,7 +45,7 @@ export abstract class PointChart extends XYChart {
 
   protected _createComponents() {
     const xs: string[] = [];
-    for (const [x, i] of enumerate(this.paraview.store.model!.boxedXs)) {
+    for (const [x, i] of enumerate(this.paraview.store.model!.allFacetValues('x')!)) {
       xs.push(formatBox(x, `${this.parent.docView.type as PointChartType}Point`, this.paraview.store));
       const xId = strToId(xs.at(-1)!);
       // if (this.selectors[i] === undefined) {
@@ -66,7 +66,7 @@ export abstract class PointChart extends XYChart {
     // NB: This only works properly because we haven't added series direct labels
     // yet, which are also direct children of the chart.
     this._chartLandingView.sortChildren((a: XYSeriesView, b: XYSeriesView) => {
-      return b.children[0].datapoint.y - a.children[0].datapoint.y;
+      return (b.children[0].datapoint.y.value as number) - (a.children[0].datapoint.y.value as number);
     });  
   }
 
@@ -84,10 +84,10 @@ export abstract class PointChart extends XYChart {
 
   protected _generateClustering(){
     const data: Array<coord> = []
-    const yValues = this.paraview.store.model!.ys;
-    const xValues = this.paraview.store.model!.xs as number[];
+    const yValues = this.paraview.store.model!.allFacetValues('y')!.map((y) => y.value as number);
+    const xValues = this.paraview.store.model!.allFacetValues('x')!.map((y) => y.value as number);
     for (let i = 0; i < xValues.length; i++){
-      data.push({x: xValues[i], y: yValues[i]})
+      data.push({x: xValues[i], y: yValues[i]});
     } 
     this._clustering = generateClusterAnalysis(data, true);
   } 
@@ -102,7 +102,7 @@ export abstract class PointChart extends XYChart {
   }
 
   getDatapointGroupBbox(labelText: string) {
-    const labels = this.paraview.store.model!.boxedXs.map((box) => formatBox(box, 'xTick', this.paraview.store));
+    const labels = this.paraview.store.model!.allFacetValues('x')!.map((box) => formatBox(box, 'xTick', this.paraview.store));
     const idx = labels.findIndex(label => label === labelText);
     if (idx === -1) {
       throw new Error(`no such datapoint with label '${labelText}'`);
@@ -127,7 +127,7 @@ export class ChartPoint extends XYDatapointView {
   static width: number;
 
   static computeSize(chart: PointChart) {
-    const axisDivisions = chart.paraview.store.model!.xs.length - 1;
+    const axisDivisions = chart.paraview.store.model!.allFacetValues('x')!.length - 1;
     this.width = chart.parent.contentWidth/axisDivisions;
   }
 
@@ -161,7 +161,7 @@ export class ChartPoint extends XYDatapointView {
 
   protected _computeY() {
     const pxPerYUnit = this.chart.height / this.chart.axisInfo!.yLabelInfo.range!;
-    return this.chart.height - (this.datapoint.y as number - this.chart.axisInfo!. yLabelInfo.min!) * pxPerYUnit;
+    return this.chart.height - (this.datapoint.y.value as number - this.chart.axisInfo!. yLabelInfo.min!) * pxPerYUnit;
   }
 
   computeLayout() {

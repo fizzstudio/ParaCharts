@@ -21,8 +21,6 @@ import { View, Container } from './base_view';
 import { svg } from 'lit';
 import { styleMap, StyleInfo } from 'lit/directives/style-map.js';
 import { type LineChart, type LineSection } from './line';
-import { OrderedModel2D } from '../store/model2D';
-import { Datatype } from '../common/types';
 
 /**
  * Strip of series labels and leader lines.
@@ -41,7 +39,7 @@ export class SeriesLabelStrip extends Container(View) {
     // Sort points from highest to lowest onscreen
     const endpoints = this._chart.datapointViews.
       filter(datapoint => 
-        datapoint.index === (this._chart.paraview.store.model as OrderedModel2D<Datatype>).numXs - 1
+        datapoint.index === this._chart.paraview.store.model!.allFacetValues('x')!.length - 1
       );
     endpoints.sort((a, b) => a.y - b.y);
     // Create labels
