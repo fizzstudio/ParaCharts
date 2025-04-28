@@ -66,7 +66,7 @@ export class ParaStore extends State {
 
   public idList: Record<string, boolean> = {};
 
-  private _displayTypeForFacet: Record<string, DisplayType> = {};
+  private _displayTypeForFacet: Record<string, DisplayType | undefined> = {}; // FIXME: | undefined
   
   constructor(
     inputSettings: SettingsInput, 
@@ -117,9 +117,9 @@ export class ParaStore extends State {
     this._facetKeys = Object.keys(dataset.facets);
     this._facetKeys.forEach((key) => {
       const facetManifest = dataset.facets[key];
-      this._displayTypeForFacet[key] = facetManifest.displayType!; // FIXME: remove !
+      this._displayTypeForFacet[key] = facetManifest.displayType;
       this._facetMap[key] = facetManifest;
-      if (facetManifest.displayType!.type === 'axis') {
+      if (facetManifest.displayType?.type === 'axis') { // FIXME: remove ?
         this._axisFacetKeys.push(key);
         if (facetManifest.displayType!.orientation === 'horizontal') {
           if (this._horizontalAxisFacetKey === null) {
@@ -139,7 +139,7 @@ export class ParaStore extends State {
     if (this._axisFacetKeys.length !== 0 && this._axisFacetKeys.length !== 2) {
       throw new Error('charts must either have 2 or 0 axes')
     }
-    if (this._horizontalAxisFacetKey === null || this._verticalAxisFacetKey === null) {
+    /*if (this._horizontalAxisFacetKey === null || this._verticalAxisFacetKey === null) {
       const independentAxes = this._axisFacetKeys.filter(
         (key) => dataset.facets[key].variableType === 'independent'
       );
@@ -166,9 +166,15 @@ export class ParaStore extends State {
           this._horizontalAxisFacetKey === 'x';
           this._verticalAxisFacetKey === 'y';
       } else {
-        throw new Error('axis facets cannot be determined');
+        throw new Error('axis facets cannot be determined'); FIXME: restore
       }
-    }
+    }*/
+    //////////////////////// TEMP //////////////////////////////////////////
+    this._displayTypeForFacet['x'] = {type: 'axis', orientation: 'horizontal'};
+    this._horizontalAxisFacetKey = 'x';
+    this._displayTypeForFacet['y'] = {type: 'axis', orientation: 'vertical'};
+    this._verticalAxisFacetKey = 'y';
+    ////////////////////////////////////////////////////////////////////////
     //this._xAxisLabel = dataset.facets.x.label;
     //this._yAxisLabel = dataset.facets.y.label;
     //this._xDatatype = dataset.facets.x.datatype;
