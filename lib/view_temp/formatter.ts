@@ -14,11 +14,12 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Datatype } from "../common/types";
+import { Datatype } from "@fizz/paramanifest";
 import { strToId } from "../common/utils";
-import { Box, Datapoint2D } from "../store/model2D";
 import { ParaStore } from "../store/parastore";
 import { SettingsManager } from "../store/settings_manager";
+import { Box } from "../store/dataframe/box";
+import { XYDatapoint } from "../store/dataframe/dataframe";
 
 export function formatBox(
   box: Box<Datatype>, 
@@ -37,8 +38,8 @@ export function formatBox(
   }
 }
 
-export function formatDatapointValue(
-  datapoint: Datapoint2D<Datatype>, 
+/*function formatXYDatapointValue(
+  datapoint: XYDatapoint, 
   dimension: 'x' | 'y',
   context: FormatContext, 
   store: ParaStore
@@ -47,7 +48,7 @@ export function formatDatapointValue(
     ? 'domId' 
     : SettingsManager.get(formatContextSettings[context], store.settings);
   if (settingVal === 'raw') {
-    return dimension === 'x' ? datapoint.xRaw : datapoint.yRaw;
+    return dimension === 'x' ? datapoint.x.raw : datapoint.y.raw;
   } else if (settingVal === 'domId') {
     return strToId(dimension === 'x' ? datapoint.xRaw : datapoint.yRaw);
   } else if (dimension === 'y') {
@@ -55,31 +56,31 @@ export function formatDatapointValue(
   } else {
     return datapoint.xToString();
   }
-}
+}*/
 
-export function formatDatapointX(
-  datapoint: Datapoint2D<Datatype>, 
+export function formatXYDatapointX(
+  datapoint: XYDatapoint, 
   context: FormatContext, 
   store: ParaStore
 ): string {
-  return formatDatapointValue(datapoint, 'x', context, store);
+  return formatBox(datapoint.x, context, store);
 }
 
-export function formatDatapointY(
-  datapoint: Datapoint2D<Datatype>, 
+export function formatXYDatapointY(
+  datapoint: XYDatapoint, 
   context: FormatContext, 
   store: ParaStore
 ): string {
-  return formatDatapointValue(datapoint, 'y', context, store);
+  return formatBox(datapoint.y, context, store);
 }
 
-export function formatDatapoint(
-  datapoint: Datapoint2D<Datatype>, 
+export function formatXYDatapoint(
+  datapoint: XYDatapoint, 
   context: FormatContext, 
   store: ParaStore
 ): string {
-  const x = formatDatapointValue(datapoint, 'x', context, store);
-  const y = formatDatapointValue(datapoint, 'y', context, store);
+  const x = formatXYDatapointX(datapoint, context, store);
+  const y = formatXYDatapointY(datapoint, context, store);
   return `${x}, ${y}`;
 }
 

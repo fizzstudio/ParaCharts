@@ -28,6 +28,7 @@ export class SeriesDF {
   [i: number]: DataFrameRow;
   public readonly length: number;
   private readonly uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
+  private readonly datapoints: DataFrameRow[] = [];
   /*protected xMap: Map<ScalarMap[X], number[]>;
   private yMap: Map<number, ScalarMap[X][]>;*/
 
@@ -41,6 +42,7 @@ export class SeriesDF {
     this.rawData.forEach((datapoint) => this.dataframe.addDatapoint(datapoint));
     this.dataframe.rows.forEach((datapoint, index) => {
       this[index] = datapoint;
+      this.datapoints.push(datapoint);
       Object.keys(datapoint).forEach(
         (facetKey) => this.uniqueValuesForFacet[facetKey].add(datapoint[facetKey])
       );
@@ -64,11 +66,11 @@ export class SeriesDF {
 
   atY(y: number): ScalarMap[X][] | null {
     return this.yMap.get(y) ?? null;
-  }
-
-  [Symbol.iterator](): Iterator<Datapoint2D<X>> {
-    return this.datapoints[Symbol.iterator]();
   }*/
+
+  [Symbol.iterator](): Iterator<DataFrameRow> {
+    return this.datapoints[Symbol.iterator]();
+  }
 }
 
 export function seriesDFFromSeriesManifest(seriesManifest: Series, facets: FacetSignature[]): SeriesDF {

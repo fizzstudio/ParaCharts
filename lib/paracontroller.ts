@@ -3,7 +3,7 @@ import { Logger } from './common/logger';
 import { ParaStore } from './store/parastore';
 import { ParaLoader } from "./loader/paraloader";
 import { DeepReadonly, Settings, SettingsInput } from "./store/settings_types";
-import { AllSeriesData } from "./common/types";
+import { AllSeriesData } from "@fizz/paramanifest";
 import { type ParaChart } from './parachart/parachart';
 
 import { Manifest } from "@fizz/paramanifest";

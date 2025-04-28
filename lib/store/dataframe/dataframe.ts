@@ -73,6 +73,12 @@ export type FacetSignature = { key: string, datatype: Datatype };
 export type DataFrameColumn<T extends Datatype> = Box<T>[];
 export type DataFrameRow = Record<string, Box<Datatype>>;
 
+export interface XYDatapoint {
+  x: Box<Datatype>,
+  y: Box<Datatype>,
+  [facetKey: string]: Box<Datatype>
+}
+
 /**
  * Spreadsheet-like container for a series. Each column is a facet/dimension, 
  * and each row is a datapoint.
