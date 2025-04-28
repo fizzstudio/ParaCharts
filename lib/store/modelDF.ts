@@ -20,15 +20,22 @@ import { DataFrame, DataFrameColumn, DataFrameRow, FacetSignature, RawDataPoint 
 import { AllSeriesData, Dataset, Datatype, Manifest, Series } from "@fizz/paramanifest";
 import { Box, BoxSet } from "./dataframe/box";
 
-//export type DataPointDF = Record<string, ScalarMap[Datatype]>;
+export type DataPointDF = DataFrameRow;
+
+export interface XYDatapointDF {
+  x: Box<Datatype>,
+  y: Box<Datatype>,
+  [facetKey: string]: Box<Datatype>
+}
+
 
 export class SeriesDF {
   private readonly dataframe: DataFrame;
 
-  [i: number]: DataFrameRow;
+  [i: number]: DataPointDF;
   public readonly length: number;
   private readonly uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
-  private readonly datapoints: DataFrameRow[] = [];
+  private readonly datapoints: DataPointDF[] = [];
   /*protected xMap: Map<ScalarMap[X], number[]>;
   private yMap: Map<number, ScalarMap[X][]>;*/
 
@@ -68,7 +75,7 @@ export class SeriesDF {
     return this.yMap.get(y) ?? null;
   }*/
 
-  [Symbol.iterator](): Iterator<DataFrameRow> {
+  [Symbol.iterator](): Iterator<DataPointDF> {
     return this.datapoints[Symbol.iterator]();
   }
 }
@@ -153,7 +160,7 @@ export class ModelDF {
     return this.keyMap[key] ?? null;
   }
   
-  public atKeyAndIndex(key: string, index: number): DataFrameRow | null {
+  public atKeyAndIndex(key: string, index: number): DataPointDF | null {
     return this.atKey(key)?.[index] ?? null;
   }
 

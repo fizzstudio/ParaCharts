@@ -31,8 +31,7 @@ import { AudioNotificationType } from './AudioEngine';
 import { type Axis } from '../view_temp/axis';
 import { type DataLayer } from '../view_temp/datalayer';
 import { type ParaStore } from '../store';
-import { type Datatype } from '@fizz/paramanifest';
-import { XYDatapoint } from '../store/dataframe/dataframe';
+import { XYDatapointDF } from '../store/modelDF';
 
 export const HERTZ = [
   16.3516, 17.32391, 18.35405, 19.44544, 20.60172, 21.82676, 23.12465, 24.49971, 25.95654, 27.5, 29.13524, 30.86771, // octave 0
@@ -154,7 +153,7 @@ export class Sonifier {
    * Play a given data point
    * @param datapoint - the data point to play
    */
-  playDatapoints(...datapoints: XYDatapoint[]) {
+  playDatapoints(...datapoints: XYDatapointDF[]) {
     this._checkAudioEngine();
 
     /* istanbul ignore next */
