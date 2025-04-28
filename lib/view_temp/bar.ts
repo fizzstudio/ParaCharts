@@ -6,10 +6,10 @@ import {
 } from '../store/settings_types';
 import { enumerate, fixed, strToId } from '../common/utils';
 import { formatBox } from './formatter';
-import { Box } from '../store/model2D';
 
 import { svg } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
+import { Box } from '../store/dataframe/box';
 
 type BarData = {[key: string]: BarCluster};
 

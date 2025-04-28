@@ -35,11 +35,9 @@ import { type TickLabelTier } from './ticklabeltier';
 //import { utils } from '../utilities';
 import { DataSymbol, DataSymbols } from './symbol';
 import { ParaView } from '../paraview';
-import { Datapoint2D, Series2D } from '../store/model2D';
 import { strToId } from '../common/utils';
 import { SettingsManager } from '../store/settings_manager';
 import { SeriesProperties } from '../store/series_properties';
-import { Datatype } from '@fizz/paramanifest';
 import { type AxisInfo } from '../common/axisinfo';
 import { type HotkeyEvent } from '../store/keymap_manager';
 
