@@ -1,6 +1,5 @@
 export * from './calendar_period';
-export * from './helpers';
-export * from './model2D';
+export * from './modelDF';
 export * from './parastore';
 export * from './series_properties';
 export * from './settings_controls';

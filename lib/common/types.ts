@@ -14,16 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { XyPoint, Manifest } from "@fizz/paramanifest";
-
-export type AllSeriesData = Record<string, XyPoint[]>;
-
-export type ChartType = Manifest['datasets'][number]['type'];
-
 export type AxisOrientation = 'horiz' | 'vert';
 
 export type SnapLocation = 'start' | 'end' | 'center';
 
 export type Constructor = new (...args: any[]) => any;
-
-export type Datatype = Manifest['datasets'][number]['facets']['x']['datatype'];

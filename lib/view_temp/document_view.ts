@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { View, Container } from './base_view';
 import { Label } from './label';
 //import { type CardinalDirection } from '../store/settings_types';
-import { type ChartType } from '../common/types';
+import { type ChartType } from '@fizz/paramanifest';
 import { ChartLayerManager } from './chartlayermanager';
 import { HorizAxis, VertAxis, type AxisCoord } from './axis';
 /*import { hotkeyActions } from '../input/defaultactions';
@@ -97,8 +97,8 @@ export class DocumentView extends Container(View) {
       this._vertAxis.orthoAxis = this._horizAxis;
       this._horizAxis.orthoAxis = this._vertAxis;
       // XXX Change this method to set axis.titleText
-      this.xAxis!.setAxisLabelText(this._store.xAxisLabel);
-      this.yAxis!.setAxisLabelText(this._store.yAxisLabel);
+      this.xAxis!.setAxisLabelText(this._store.getAxisFacet('horiz')!.label);
+      this.yAxis!.setAxisLabelText(this._store.getAxisFacet('vert')!.label);
       this._horizAxis.createComponents();
       this._vertAxis.createComponents();
       this._horizAxis.layoutComponents();

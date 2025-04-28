@@ -35,15 +35,14 @@ import { type TickLabelTier } from './ticklabeltier';
 //import { utils } from '../utilities';
 import { DataSymbol, DataSymbols } from './symbol';
 import { ParaView } from '../paraview';
-import { Datapoint2D, Series2D } from '../store/model2D';
 import { strToId } from '../common/utils';
 import { SettingsManager } from '../store/settings_manager';
 import { SeriesProperties } from '../store/series_properties';
-import { Datatype } from '../common/types';
 import { type AxisInfo } from '../common/axisinfo';
 import { type HotkeyEvent } from '../store/keymap_manager';
 
 import { type clusterObject } from '@fizz/clustering';
+import { SeriesDF, DataPointDF } from '../store/modelDF';
 
 /**
  * @public
@@ -341,7 +340,7 @@ export class DataView extends View {
   declare protected _currFocus: DataView | null;
   declare protected _prevFocus?: DataView;
 
-  protected _series!: Series2D<Datatype>;
+  protected _series!: SeriesDF;
 
   constructor(
     public readonly chart: DataLayer, 
@@ -460,7 +459,7 @@ export class SeriesView extends Container(DataView) {
 
   getDatapointViewForLabel(label: string) {
     return this._children.find(view => 
-      view.datapoint.x === label
+      view.datapoint.x.raw === label
     );
   }
 
@@ -479,7 +478,7 @@ export class DatapointView extends DataView {
   private _isSelected = false;
   protected extraAttrs: {attr: StaticValue, value: any}[] = [];
   protected symbol?: DataSymbol;
-  protected _datapoint?: Datapoint2D<Datatype>;
+  protected _datapoint?: DataPointDF;
   private _selectedMarker: SelectedDatapointMarker | null = null;
 
   constructor(seriesView: SeriesView) {
@@ -492,8 +491,8 @@ export class DatapointView extends DataView {
     this._createDatapoint();
   }
   
-  protected _createDatapoint(){
-    this._datapoint = this.paraview.store.model!.atKeyAndIndex(this.series.key, this.index)!;
+  protected _createDatapoint(): DataPointDF {
+    return this._datapoint = this.paraview.store.model!.atKeyAndIndex(this.series.key, this.index)!;
   }
 
   get parent() {
@@ -520,7 +519,7 @@ export class DatapointView extends DataView {
     return this._parent.prev;
   }
 
-  get datapoint(): Datapoint2D<Datatype> {
+  get datapoint(): DataPointDF {
     return this.series[this.index];
   }
 

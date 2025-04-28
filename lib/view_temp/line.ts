@@ -21,8 +21,6 @@ import { type XYSeriesView } from './xychart';
 
 import { svg } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
-import { OrderedModel2D } from '../store/model2D';
-import { Datatype } from '../common/types';
 
 /**
  * Class for drawing line charts.
@@ -122,7 +120,7 @@ export class LineSection extends ChartPoint {
     }
 
     // find midpoint between values for this and next
-    if (this.index < (this.chart.paraview.store.model as OrderedModel2D<Datatype>).numXs - 1) {
+    if (this.index < this.chart.paraview.store.model!.allFacetValues('x')!.length - 1) {
       this._computeNext();
     }
 
@@ -136,9 +134,10 @@ export class LineSection extends ChartPoint {
       // pixel height/y-value range
       const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
       // find midpoint y position
-      const prevValue = this._prev!.datapoint.y;
-      const prevMidDiff = Math.min(this.datapoint.y, prevValue) + 
-        (Math.max(this.datapoint.y, prevValue) - Math.min(this.datapoint.y, prevValue))/2;
+      const prevValue = this._prev!.datapoint.y.value as number;
+      const thisValue = this.datapoint.y.value as number;
+      const prevMidDiff = Math.min(thisValue, prevValue) + 
+        (Math.max(thisValue, prevValue) - Math.min(thisValue, prevValue))/2;
       const prevMidHeight = (prevMidDiff - this.chart.axisInfo!.yLabelInfo.min!)*pxPerYUnit;
       this._prevMidY = this.chart.height - prevMidHeight;
   }
@@ -149,9 +148,10 @@ export class LineSection extends ChartPoint {
       // pixel height/y-value range
       const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
       // find midpoint y position
-      const nextValue = this._next!.datapoint.y;
-      const nextMidDiff = Math.min(this.datapoint.y, nextValue) + 
-        (Math.max(this.datapoint.y, nextValue) - Math.min(this.datapoint.y, nextValue))/2;
+      const nextValue = this._next!.datapoint.y.value as number;
+      const thisValue = this.datapoint.y.value as number;
+      const nextMidDiff = Math.min(thisValue, nextValue) + 
+        (Math.max(thisValue, nextValue) - Math.min(thisValue, nextValue))/2;
       const nextMidHeight = (nextMidDiff - this.chart.axisInfo!.yLabelInfo.min!)*pxPerYUnit;
 
       this._nextMidY = this.chart.height - nextMidHeight;

@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { ParaViewController } from '.';
 import { logging } from '../common/logger';
 import { ParaComponent } from '../paracomponent';
-import { ChartType } from '../common/types';
+import { ChartType } from '@fizz/paramanifest';
 import { ViewBox } from '../store/settings_types';
 import { View } from '../view_temp/base_view';
 import { DocumentView } from '../view_temp/document_view';

@@ -1,6 +1,6 @@
 
 import { ParaStore } from '../store/parastore';
-import { formatBox, formatDatapointX } from '../view_temp/formatter';
+import { formatBox } from '../view_temp/formatter';
 
 import Decimal from 'decimal.js';
 
@@ -110,7 +110,7 @@ export class AxisInfo {
         Math.min(...this._options.xValues),
         Math.max(...this._options.xValues));
     } else {
-      const labels = this._store.model!.boxedXs.map(x => formatBox(x, 'xTick', this._store));
+      const labels = this._store.model!.allFacetValues('x')!.map(x => formatBox(x, 'xTick', this._store));
       this._xLabelInfo = {
         labelTiers: [labels]
       };

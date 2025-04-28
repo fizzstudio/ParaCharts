@@ -30,8 +30,8 @@ import { OscillatorAudioEngine, type AudioEngine } from '.';
 import { AudioNotificationType } from './AudioEngine';
 import { type Axis } from '../view_temp/axis';
 import { type DataLayer } from '../view_temp/datalayer';
-import { type Datapoint2D, type ParaStore } from '../store';
-import { type Datatype } from '../common/types';
+import { type ParaStore } from '../store';
+import { XYDatapointDF } from '../store/modelDF';
 
 export const HERTZ = [
   16.3516, 17.32391, 18.35405, 19.44544, 20.60172, 21.82676, 23.12465, 24.49971, 25.95654, 27.5, 29.13524, 30.86771, // octave 0
@@ -153,7 +153,7 @@ export class Sonifier {
    * Play a given data point
    * @param datapoint - the data point to play
    */
-  playDatapoints(...datapoints: Datapoint2D<Datatype>[]) {
+  playDatapoints(...datapoints: XYDatapointDF[]) {
     this._checkAudioEngine();
 
     /* istanbul ignore next */
@@ -164,8 +164,8 @@ export class Sonifier {
     const hertzes = this._getHertzRange();
 
     for (const datapoint of datapoints) {
-      const x = datapoint.x as number;
-      const y = datapoint.y;
+      const x = datapoint.x.value as number;
+      const y = datapoint.y.value as number;
       if (isUnplayable(x, this.chart.parent.docView.xAxis!)) {
         return;
       }
