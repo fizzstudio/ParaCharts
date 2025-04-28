@@ -28,8 +28,9 @@ import { type ClassInfo } from 'lit/directives/class-map.js';
 //import { literal } from 'lit/static-html.js';
 import { ParaView } from '../paraview';
 import { strToId } from '../common/utils';
-import { formatDatapointX, formatDatapointY } from './formatter';
+import { formatXYDatapointX, formatXYDatapointY } from './formatter';
 import { literal } from 'lit/static-html.js';
+import { XYDatapoint } from '../store/dataframe/dataframe';
 
 export type DatapointViewType<T extends XYDatapointView> = 
   (new (...args: any[]) => T);
@@ -583,6 +584,7 @@ export class XYSeriesView extends SeriesView {
 export abstract class XYDatapointView extends DatapointView {
 
   declare readonly chart: XYChart;
+  declare _datapoint: XYDatapoint;
 
   protected centroid?: string;
 
@@ -594,8 +596,8 @@ export abstract class XYDatapointView extends DatapointView {
     return [
       'datapoint',
       strToId(this.series.key),
-      formatDatapointX(this.datapoint, 'domId', this.paraview.store),
-      formatDatapointY(this.datapoint, 'domId', this.paraview.store),
+      formatXYDatapointX(this.datapoint, 'domId', this.paraview.store),
+      formatXYDatapointY(this.datapoint, 'domId', this.paraview.store),
       `${this.index}`
     ].join('-'); 
   }
@@ -614,13 +616,18 @@ export abstract class XYDatapointView extends DatapointView {
       {
         attr: literal`data-label`,
         value: 
-        formatDatapointX(this.datapoint, 'domId', this.paraview.store),
+        formatXYDatapointX(this.datapoint, 'domId', this.paraview.store),
       },
       {
         attr: literal`data-centroid`,
         value: this.centroid
       }
     ];
+  }
+
+  // override to get more specific return type
+  get datapoint(): XYDatapoint {
+    return this.series[this.index] as XYDatapoint;
   }
 
   get classes() {

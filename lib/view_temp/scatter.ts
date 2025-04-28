@@ -25,8 +25,8 @@ export class ScatterPlot extends PointChart {
   protected _addedToParent(): void {
     super._addedToParent();
     this._axisInfo = new AxisInfo(this.paraview.store, {
-      xValues: this.paraview.store.model!.xs as number[],
-      yValues: this.paraview.store.model!.ys
+      xValues: this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number),
+      yValues: this.paraview.store.model!.allFacetValues('y')!.map((x) => x.value as number),
     });
   }
 
@@ -39,7 +39,7 @@ export class ScatterPlot extends PointChart {
 class ScatterPoint extends ChartPoint {
   protected _computeX() {
     // Scales points in proportion to the data range
-    const xTemp = (this.datapoint.x as number - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
+    const xTemp = (this.datapoint.x.value as number - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
     const parentWidth: number = this.chart.parent.contentWidth;
     return parentWidth * xTemp;
   }

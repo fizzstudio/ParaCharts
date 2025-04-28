@@ -184,7 +184,7 @@ export class BarChart extends XYChart {
 
     this._clusteredData = this._clusterData();
     this._axisInfo = new AxisInfo(this.paraview.store, {
-      xTiers: [this.paraview.store.model!.boxedXs.map(x =>
+      xTiers: [this.paraview.store.model!.allFacetValues('x')!.map(x =>
         formatBox(x, 'barCluster', this.paraview.store))],
       yValues: Object.values(this._clusteredData).flatMap(c =>
         Object.values(c).map(s => Object.values(s)
@@ -247,7 +247,7 @@ export class BarChart extends XYChart {
 
   protected _clusterData() {
     const clusterMap: ClusterMap = {};
-    const xs = this.paraview.store.model!.boxedXs;
+    const xs = this.paraview.store.model!.allFacetValues('x')!;
 
     const clusters: Cluster[] = [];
     for (const [x, i] of enumerate(xs)) {
@@ -264,7 +264,7 @@ export class BarChart extends XYChart {
     // Place the series into stacks in the order they appear in the 
     // model (i.e., first column will be bottommost in 'all' mode)
     for (const [series, i] of enumerate(this.paraview.store.model!.series)) {
-      for (const [value, j] of enumerate(series.ys)) {
+      for (const [value, j] of enumerate(series.allFacetValues('y')!)) {
         let stack: Stack;
         let stackKey: string;
         if (this._settings.stackContent === 'all') {
@@ -283,7 +283,7 @@ export class BarChart extends XYChart {
             clusters[j][stackKey] = stack;
           }
         } 
-        stack![series.key] = {series: series.key, value: series.boxedYs[j]};
+        stack![series.key] = {series: series.key, value: series.allFacetValues('y')![j] as Box<'number'>};
       }
     }
     return clusterMap;
@@ -378,7 +378,7 @@ export class Bar extends XYDatapointView {
       .map(bar => bar._height)
       .reduce((a, b) => a + b, 0);
     const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
-    this._height = this.datapoint.y*pxPerYUnit;
+    this._height = (this.datapoint.y.value as number)*pxPerYUnit;
     this._x = this.stack.x + this.stack.cluster.x;
     this._y = this.chart.height - this._height - distFromXAxis;
   }
