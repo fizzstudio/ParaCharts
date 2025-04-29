@@ -14,11 +14,11 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { zip } from "@fizz/chart-classifier-utils";
 import { arrayEqualsBy, enumerate } from "../common/utils";
 import { DataFrame, DataFrameColumn, DataFrameRow, FacetSignature, RawDataPoint } from "./dataframe/dataframe";
 import { AllSeriesData, Dataset, Datatype, Manifest, Series } from "@fizz/paramanifest";
 import { Box, BoxSet } from "./dataframe/box";
+import { calculateWholeChartFacetStats, ChartFacetStats } from "./metadata";
 
 export type DataPointDF = DataFrameRow;
 
@@ -91,16 +91,19 @@ export function seriesDFFromSeriesManifest(seriesManifest: Series, facets: Facet
 // TODO: In theory, facets should be a set, not an array. Maybe they should be sorted first?
 export class ModelDF {
   public readonly keys: string[] = [];
-  protected keyMap: Record<string, SeriesDF> = {};
   [i: number]: SeriesDF;
+  public readonly facets: FacetSignature[];
   public readonly multi: boolean;
   public readonly numSeries: number;
+
+  protected keyMap: Record<string, SeriesDF> = {};
+  protected datatypeMap: Record<string, Datatype> = {};
+  private uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
+  private statsForFacet: Record<string, ChartFacetStats> = {};
+
   /*public readonly xs: ScalarMap[X][];
   public readonly ys: number[];
   public readonly allPoints: Datapoint2D<X>[]*/
-  public readonly facets: FacetSignature[];
-
-  private uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
 
   constructor(public readonly series: SeriesDF[]) {
     if (this.series.length === 0) {
@@ -111,6 +114,7 @@ export class ModelDF {
     this.facets = this.series[0].facets;
     this.facets.forEach((facet) => {
       this.uniqueValuesForFacet[facet.key] = new BoxSet<Datatype>;
+      this.datatypeMap[facet.key] = facet.datatype;
     });
     for (const [aSeries, seriesIndex] of enumerate(this.series)) {
       if (this.keys.includes(aSeries.key)) {
@@ -156,6 +160,17 @@ export class ModelDF {
 
   public allFacetValues(key: string): Box<Datatype>[] | null {
     return this.uniqueValuesForFacet[key]?.values ?? null;
+  }
+
+  public getFacetStats(key: string): ChartFacetStats | null {
+    const facetDatatype = this.datatypeMap[key];
+    // Checks for both non-existent and non-numerical facets
+    if (facetDatatype !== 'number') {
+      return null;
+    }
+    const allBoxes = this.allFacetValues(key) as Box<'number'>[];
+    const allValues = allBoxes.map((box) => box.value);
+    return calculateWholeChartFacetStats(allValues);
   }
 }
 
