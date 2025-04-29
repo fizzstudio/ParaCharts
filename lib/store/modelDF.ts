@@ -14,9 +14,11 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Memoize } from 'typescript-memoize';
+import { AllSeriesData, Dataset, Datatype, Manifest, Series } from "@fizz/paramanifest";
+
 import { arrayEqualsBy, enumerate } from "../common/utils";
 import { DataFrame, DataFrameColumn, DataFrameRow, FacetSignature, RawDataPoint } from "./dataframe/dataframe";
-import { AllSeriesData, Dataset, Datatype, Manifest, Series } from "@fizz/paramanifest";
 import { Box, BoxSet } from "./dataframe/box";
 import { calculateWholeChartFacetStats, ChartFacetStats } from "./metadata";
 
@@ -99,7 +101,6 @@ export class ModelDF {
   protected keyMap: Record<string, SeriesDF> = {};
   protected datatypeMap: Record<string, Datatype> = {};
   private uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
-  statsForFacet: Record<string, ChartFacetStats | null> = {}; // Should be private but needs to be public for memo
 
   /*public readonly xs: ScalarMap[X][];
   public readonly ys: number[];
@@ -150,13 +151,6 @@ export class ModelDF {
     this.allPoints = mergeUniqueDatapoints(...this.series.map((series) => series.datapoints));*/
   }
 
-  private memo<R>(memoKey: keyof this, func: (arg: string) => R | null, arg: string) {
-    if ((this[memoKey] as Record<string, R | null>)[arg] === undefined) {
-      (this[memoKey] as Record<string, R | null>)[arg] = func(arg);
-    }
-    return (this[memoKey] as Record<string, R | null>)[arg];
-  }
-
   public atKey(key: string): SeriesDF | null {
     return this.keyMap[key] ?? null;
   }
@@ -169,21 +163,16 @@ export class ModelDF {
     return this.uniqueValuesForFacet[key]?.values ?? null;
   }
 
+  @Memoize()
   public getFacetStats(key: string): ChartFacetStats | null {
-    return this.memo(
-      'statsForFacet', 
-      (innerKey) => {
-        const facetDatatype = this.datatypeMap[innerKey];
-        // Checks for both non-existent and non-numerical facets
-        if (facetDatatype !== 'number') {
-          return null;
-        }
-        const allBoxes = this.allFacetValues(innerKey) as Box<'number'>[];
-        const allValues = allBoxes.map((box) => box.value);
-        return calculateWholeChartFacetStats(allValues);
-      },
-      key
-    )
+    const facetDatatype = this.datatypeMap[key];
+    // Checks for both non-existent and non-numerical facets
+    if (facetDatatype !== 'number') {
+      return null;
+    }
+    const allBoxes = this.allFacetValues(key) as Box<'number'>[];
+    const allValues = allBoxes.map((box) => box.value);
+    return calculateWholeChartFacetStats(allValues);
   }
 }
 
