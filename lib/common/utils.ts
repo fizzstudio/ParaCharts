@@ -14,7 +14,10 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { zip } from "@fizz/chart-classifier-utils";
 import { ParaStore } from "../store/parastore";
+
+// String Formatting
 
 /**
  * Convert a number to a string with a given number of digits after the
@@ -48,6 +51,12 @@ export function fixed(strings: TemplateStringsArray, ...exprs: number[]) {
   return out.join('');
 }
 
+export function capitalize(string: string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+// ID Generation
+
 export function generateUniqueId(baseId: string, store: ParaStore): string {
   // remove non-word characters and replace spaces
   baseId = baseId.replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
@@ -64,6 +73,8 @@ export function strToId(s: string): string {
   return s.toLowerCase().replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
 }
 
+// Container Handling
+
 export function enumerate<T>(iterable: Iterable<T>): [T, number][] {
   const enumerations: [T, number][] = [];
   let index = 0;
@@ -74,14 +85,34 @@ export function enumerate<T>(iterable: Iterable<T>): [T, number][] {
   return enumerations;
 }
 
-export function mergeUnique<T>(...arrays: T[][]): T[] {
+export function arrayEqualsBy<L, R>(by: (lhs: L, rhs: R) => boolean, lhs: L[], rhs: R[]): boolean {
+  if (lhs.length !== rhs.length) {
+    return false;
+  }
+  for (const [l, r] of zip(lhs, rhs)) {
+    if (!by(l, r)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// Type System Magic
+
+// This marks a series of if/then options as exhaustive
+export function exhaustive(): never {
+  return null as never; 
+}
+
+// Simon: These functions were used for Model2D but have no use currently.
+//  However, they are general utility functions which might be useful later
+/*export function mergeUnique<T>(...arrays: T[][]): T[] {
   let set = new Set<T>();
   for (const arr of arrays) {
     set = set.union(new Set(arr));
   }
   return Array.from(set);
 }
-
 
 export function dedupPrimitive<T>(arr: T[]): T[] {
   return Array.from(new Set(arr));
@@ -105,13 +136,4 @@ export function mergeUniqueBy<T>(
     }
   }
   return res;
-}
-
-// This marks a series of if/then options as exhaustive
-export function exhaustive(): never {
-  return null as never; 
-}
-
-export function capitalize(string: string) {
-  return string.charAt(0).toUpperCase() + string.slice(1);
-}
+}*/

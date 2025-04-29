@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { zip } from "@fizz/chart-classifier-utils";
-import { enumerate } from "../common/utils";
+import { arrayEqualsBy, enumerate } from "../common/utils";
 import { DataFrame, DataFrameColumn, DataFrameRow, FacetSignature, RawDataPoint } from "./dataframe/dataframe";
 import { AllSeriesData, Dataset, Datatype, Manifest, Series } from "@fizz/paramanifest";
 import { Box, BoxSet } from "./dataframe/box";
@@ -87,19 +87,6 @@ export function seriesDFFromSeriesManifest(seriesManifest: Series, facets: Facet
   return new SeriesDF(seriesManifest.key, seriesManifest.records!, facets);
 }
 
-
-function facetsEquals(lhs: FacetSignature[], rhs: FacetSignature[]): boolean {
-  if (lhs.length !== rhs.length) {
-    return false;
-  }
-  for (const [lFacet, rFacet] of zip(lhs, rhs)) {
-    if ((lFacet.key !== rFacet.key) || (lFacet.datatype !== rFacet.datatype)) {
-      return false;
-    }
-  }
-  return true;
-}
-
 // Like a dictionary for series
 // TODO: In theory, facets should be a set, not an array. Maybe they should be sorted first?
 export class ModelDF {
@@ -129,7 +116,10 @@ export class ModelDF {
       if (this.keys.includes(aSeries.key)) {
         throw new Error('every series in a model must have a unique key');
       }
-      if (!facetsEquals(aSeries.facets, this.facets)) {
+      if (!arrayEqualsBy(
+        (l, r) => (l.key === r.key) && (l.datatype === r.datatype), 
+        aSeries.facets, this.facets
+      )) {
         throw new Error('every series in a model must have the same facets');
       }
       this.keys.push(aSeries.key);
