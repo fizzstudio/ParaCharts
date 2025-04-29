@@ -69,6 +69,13 @@ export function generateUniqueId(baseId: string, store: ParaStore): string {
   return uid;
 }
 
+/**
+ * Takes a string and normalizes it, stripping it of any non-alphanum characters and replacing its 
+ *   whitespaces with underscores, so that can can serve as a DOM id.
+ * @param {string} s A string, which may have spaces, punctuation, or other non-alphanum characters.
+ * @returns {string} The unique string, stripped of all non-alphanum characters, to be used as an id.
+ * @internal
+ */
 export function strToId(s: string): string {
   return s.toLowerCase().replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
 }
