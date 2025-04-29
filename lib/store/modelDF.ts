@@ -15,9 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Memoize } from 'typescript-memoize';
-import { AllSeriesData, Dataset, Datatype, Manifest, Series } from "@fizz/paramanifest";
+import { AllSeriesData, Dataset, Datatype, Manifest, Series, Theme1 as Theme } from "@fizz/paramanifest";
 
-import { arrayEqualsBy, enumerate } from "../common/utils";
+import { arrayEqualsBy, enumerate, strToId } from "../common/utils";
 import { DataFrame, DataFrameColumn, DataFrameRow, FacetSignature, RawDataPoint } from "./dataframe/dataframe";
 import { Box, BoxSet } from "./dataframe/box";
 import { calculateWholeChartFacetStats, ChartFacetStats } from "./metadata";
@@ -32,19 +32,24 @@ export interface XYDatapointDF {
 
 
 export class SeriesDF {
-  private readonly dataframe: DataFrame;
-
   [i: number]: DataPointDF;
   public readonly length: number;
+  public readonly id: string;
+  public readonly label: string;
+  public readonly theme?: Theme;
+
+  private readonly dataframe: DataFrame;
   private readonly uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
   private readonly datapoints: DataPointDF[] = [];
+
   /*protected xMap: Map<ScalarMap[X], number[]>;
   private yMap: Map<number, ScalarMap[X][]>;*/
-
   constructor(
     public readonly key: string, 
     public readonly rawData: RawDataPoint[], 
-    public readonly facets: FacetSignature[]
+    public readonly facets: FacetSignature[],
+    label?: string,
+    theme?: Theme
   ) {
     this.dataframe = new DataFrame(facets);
     this.facets.forEach((facet) => this.uniqueValuesForFacet[facet.key] = new BoxSet<Datatype>);
@@ -59,6 +64,11 @@ export class SeriesDF {
     /*this.xMap = mapDatapointsXtoY(this.datapoints);
     this.yMap = mapDatapointsYtoX(this.datapoints);*/
     this.length = this.rawData.length;
+    this.id = strToId(this.key); // TODO: see if we need to make this more unique
+    this.label = label ?? this.key;
+    if (theme) {
+      this.theme = theme;
+    }
   }
 
   public facet(key: string): DataFrameColumn<Datatype> | null {
@@ -86,7 +96,13 @@ export function seriesDFFromSeriesManifest(seriesManifest: Series, facets: Facet
   if (!seriesManifest.records) {
     throw new Error('only series manifests with inline data can use this method.');
   }
-  return new SeriesDF(seriesManifest.key, seriesManifest.records!, facets);
+  return new SeriesDF(
+    seriesManifest.key, 
+    seriesManifest.records!, 
+    facets, 
+    seriesManifest.label,
+    seriesManifest.theme
+  );
 }
 
 // Like a dictionary for series
@@ -192,6 +208,7 @@ export function modelDFFromManifest(manifest: Manifest): ModelDF {
   return new ModelDF(series);
 }
 
+// FIXME: This function does not include series labels (as seperate from series keys) or series themes
 export function modelDFFromAllSeriesData(
   data: AllSeriesData, facets: FacetSignature[]
 ): ModelDF {
