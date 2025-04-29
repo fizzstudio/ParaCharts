@@ -99,7 +99,7 @@ export class ModelDF {
   protected keyMap: Record<string, SeriesDF> = {};
   protected datatypeMap: Record<string, Datatype> = {};
   private uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
-  private statsForFacet: Record<string, ChartFacetStats> = {};
+  statsForFacet: Record<string, ChartFacetStats | null> = {}; // Should be private but needs to be public for memo
 
   /*public readonly xs: ScalarMap[X][];
   public readonly ys: number[];
@@ -150,6 +150,13 @@ export class ModelDF {
     this.allPoints = mergeUniqueDatapoints(...this.series.map((series) => series.datapoints));*/
   }
 
+  private memo<R>(memoKey: keyof this, func: (arg: string) => R | null, arg: string) {
+    if ((this[memoKey] as Record<string, R | null>)[arg] === undefined) {
+      (this[memoKey] as Record<string, R | null>)[arg] = func(arg);
+    }
+    return (this[memoKey] as Record<string, R | null>)[arg];
+  }
+
   public atKey(key: string): SeriesDF | null {
     return this.keyMap[key] ?? null;
   }
@@ -163,14 +170,20 @@ export class ModelDF {
   }
 
   public getFacetStats(key: string): ChartFacetStats | null {
-    const facetDatatype = this.datatypeMap[key];
-    // Checks for both non-existent and non-numerical facets
-    if (facetDatatype !== 'number') {
-      return null;
-    }
-    const allBoxes = this.allFacetValues(key) as Box<'number'>[];
-    const allValues = allBoxes.map((box) => box.value);
-    return calculateWholeChartFacetStats(allValues);
+    return this.memo(
+      'statsForFacet', 
+      (innerKey) => {
+        const facetDatatype = this.datatypeMap[innerKey];
+        // Checks for both non-existent and non-numerical facets
+        if (facetDatatype !== 'number') {
+          return null;
+        }
+        const allBoxes = this.allFacetValues(innerKey) as Box<'number'>[];
+        const allValues = allBoxes.map((box) => box.value);
+        return calculateWholeChartFacetStats(allValues);
+      },
+      key
+    )
   }
 }
 
