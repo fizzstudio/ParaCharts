@@ -65,6 +65,7 @@ export class ParaView extends logging(ParaComponent) {
     display: 'none'
   };
   protected _chartRefs: Map<string, Ref<any>> = new Map();
+  protected _fileSavePlaceholderRef = createRef<HTMLElement>();
 
   static styles = [
     //styles,
@@ -184,6 +185,10 @@ export class ParaView extends logging(ParaComponent) {
 
   set prevFocusLeaf(view: View | undefined) {
     this._prevFocusLeaf = view;
+  }
+
+  get fileSavePlaceholder() {
+    return this._fileSavePlaceholderRef.value!;
   }
 
   connectedCallback() {
@@ -433,6 +438,10 @@ export class ParaView extends logging(ParaComponent) {
         </rect>
         ${this._documentView?.render() ?? ''}
       </svg>
+      <div
+        ${ref(this._fileSavePlaceholderRef)}
+        hidden
+      ></div>
     `;
   }
 

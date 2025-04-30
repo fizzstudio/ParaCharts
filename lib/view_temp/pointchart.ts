@@ -151,10 +151,6 @@ export class ChartPoint extends XYDatapointView {
     return this._y - this.height/2;
   }
 
-  protected get _visitedTransform() {
-    return ''; //'scale(1.5)';
-  }
-
   protected _computeX() {
     return ChartPoint.width * this.index;
   }

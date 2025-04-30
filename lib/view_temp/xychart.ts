@@ -628,8 +628,8 @@ export abstract class XYDatapointView extends DatapointView {
     return classes as Readonly<ClassInfo>;
   }
 
-  get styles() {
-    const styles = super.styles;
+  get style() {
+    const styles = super.style;
     styles['--datapointCentroid'] = this.centroid;
     return styles;
   }

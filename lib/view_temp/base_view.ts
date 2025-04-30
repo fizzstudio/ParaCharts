@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { type TemplateResult, svg, nothing } from 'lit';
 import { svg as staticSvg, StaticValue } from 'lit/static-html.js';
 import { ref } from 'lit/directives/ref.js';
+import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
 /*import { 
   HotkeyActionManager, EventActionManager, type KeyRegistrations, KeymapManager,
@@ -582,6 +583,10 @@ export function Container<TBase extends Constructor<BaseView>>(Base: TBase) {
       return '';
     }
 
+    get style(): StyleInfo {
+      return {};
+    }
+
     get role() {
       return '';
     }
@@ -614,6 +619,7 @@ export function Container<TBase extends Constructor<BaseView>>(Base: TBase) {
           ${this.ref}
           id=${this.id || nothing}
           class=${this.class || nothing}
+          style=${Object.keys(this.style).length ? styleMap(this.style) : nothing}
           role=${this.role || nothing}
           aria-roledescription=${this.roleDescription || nothing}
           transform=${tx || ty ? fixed`translate(${tx},${ty})` : nothing}

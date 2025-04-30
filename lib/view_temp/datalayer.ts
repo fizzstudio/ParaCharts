@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type TemplateResult } from 'lit';
+import { type TemplateResult, nothing } from 'lit';
 import { svg, StaticValue } from 'lit/static-html.js';
 import { ref } from 'lit/directives/ref.js';
 import { styleMap, type StyleInfo } from 'lit/directives/style-map.js';
@@ -445,6 +445,17 @@ export class SeriesView extends Container(DataView) {
     return this._children;
   }
 
+  get style(): StyleInfo {
+    const style: StyleInfo = {};
+    let colorValue = this.chart.paraview.store.colors.colorValueAt(this.seriesProps.color);
+    if (this.paraview.store.visitedDatapoints.includes(this._id)) {
+      colorValue = this.chart.paraview.store.colors.colorValue('highlight');
+    }
+    style.fill = colorValue;
+    style.stroke = colorValue;
+    return style;
+  }
+
   nextSeriesLanding() {
     return this._next;    
   }
@@ -542,10 +553,6 @@ export class DatapointView extends DataView {
     this.paraview.requestUpdate();
   }
 
-  protected get _visitedTransform() {
-    return '';
-  }
-
   get selectedMarker() {
     return this._selectedMarker;
   }
@@ -565,17 +572,17 @@ export class DatapointView extends DataView {
     };
   }
 
-  get styles(): StyleInfo {
-    const styles: StyleInfo = {};
-    let colorValue = this.chart.paraview.store.colors.colorValueAt(this.seriesProps.color);
+  get style(): StyleInfo {
     if (this.paraview.store.visitedDatapoints.includes(this._id)) {
-      styles.transform = this._visitedTransform;
-      colorValue = this.chart.paraview.store.colors.colorValue('highlight');
+      const style: StyleInfo = {};
+      let colorValue = this.chart.paraview.store.colors.colorValue('highlight');
+      style.fill = colorValue;
+      style.stroke = colorValue;
+      return style;
     }
-    styles.fill = colorValue;
-    styles.stroke = colorValue;
-    return styles;
+    return {};
   }
+
 
   get ref() {
     return this.chart.paraview.ref<SVGGElement>(this.id);
@@ -638,7 +645,7 @@ export class DatapointView extends DataView {
       <g
         ${ref(this.ref)}
         id=${this.id}
-        style=${styleMap(this.styles)}
+        style=${Object.keys(this.style).length ? styleMap(this.style) : nothing}
         class="datapoint ${classMap(this.classes)}"
         role="datapoint"
         ${this.extraAttrs.map(attrInfo => svg`
