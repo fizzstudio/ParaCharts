@@ -29,6 +29,8 @@ import { customElement, property } from "lit/decorators.js";
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
 
+  @property({ type: Boolean }) headless = false;
+
   protected _controller: ParaController;
   
   private inputSettings: SettingsInput = {};
@@ -74,12 +76,20 @@ export class ParaChart extends logging(ParaComponent) {
           .store=${this._store}
           colormode=${this._store?.settings.color.colorVisionMode ?? nothing}
         ></para-view>
-        <para-control-panel
-          .summary=${this.summary}
-          .store=${this._store}
-        ></para-control-panel>
+        ${!this.headless ? html`
+          <para-control-panel
+            .summary=${this.summary}
+            .store=${this._store}
+          ></para-control-panel>` : ''
+        }
       </figure>
     `;
   }
 
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'para-chart': ParaChart;
+  }
 }

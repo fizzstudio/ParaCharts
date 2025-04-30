@@ -329,14 +329,6 @@ export class BarChart extends XYChart {
     }
   }
 
-  content() {
-    return svg`
-      ${Object.entries(this._bars).map(([clusterKey, cluster]) => 
-        cluster.render()
-      )}
-    `;
-  }
-
 }
 
 /**

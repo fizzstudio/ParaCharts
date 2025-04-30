@@ -1,6 +1,7 @@
 //import { styles } from '../../styles';
-//import { FileIO } from '../../data/fileio';
 import { ControlPanelTabPanel } from './tab_panel';
+import { ParaView } from '../../paraview';
+import { SVGNS } from '../../common/constants';
 
 import * as sb from '@fizz/sparkbraille-component';
 import '@fizz/sparkbraille-component';
@@ -18,9 +19,69 @@ export class DataPanel extends ControlPanelTabPanel {
   @property() sparkBrailleData!: string;
   @property({type: Boolean}) isSparkBrailleVisible = true;
 
-  // protected _fileio = new FileIO();
   protected _sparkBrailleRef = createRef<sb.SparkBraille>();
   protected _sparkBrailleWrapperRef = createRef<HTMLDivElement>();
+
+  protected _saveChart() {
+    const paraView = this.controlPanel.parentElement!.firstElementChild as ParaView;
+
+    const svg = paraView.root!.cloneNode(true) as SVGSVGElement;
+
+    const styles = this._extractStyles(paraView);
+    const styleEl = document.createElementNS(SVGNS, 'style');
+    styleEl.textContent = styles;
+    svg.prepend(styleEl);
+
+    const toPrune: Comment[] = [];
+    const pruneComments = (nodes: NodeList) => {
+      for (const node of nodes) {
+        if (node instanceof Comment) {
+          toPrune.push(node);
+        } else if (node.childNodes.length) {
+          pruneComments(node.childNodes);
+        }
+      }
+    };
+    pruneComments(svg.childNodes);
+    toPrune.forEach(c => c.remove());
+
+    svg.removeAttribute('role');
+
+    // XXX Also remove visited styling (not just the layer)
+    
+    const content = new XMLSerializer().serializeToString(svg)
+      .split('\n')
+      .filter(line => !line.match(/^\s*$/))
+      .join('\n');
+
+    const filetype = 'image/svg+xml';
+
+    const blob = new Blob([content], {type : `${filetype};charset=utf-8`});
+    const DOMURL = self.URL || self.webkitURL || self;
+    const url = DOMURL.createObjectURL(blob);
+
+    const downloadLinkEl = document.createElement('a');
+    paraView.fileSavePlaceholder.appendChild(downloadLinkEl);
+    const title = paraView.documentView!.titleText;
+    downloadLinkEl.download = `${title.replace(/\W/g, '_')}.svg`;
+    downloadLinkEl.href = url;
+    downloadLinkEl.click();
+    DOMURL.revokeObjectURL(url);
+    downloadLinkEl.remove();  
+  }
+
+  protected _extractStyles(paraView: ParaView) {
+    const stylesheets = paraView.shadowRoot!.adoptedStyleSheets;
+    const out: string[] = [];
+    for (const stylesheet of stylesheets) {
+      const rules = stylesheet.cssRules;
+      for (let i = 0; i < rules.length; i++) {
+        const rule = rules.item(i) as CSSRule;
+        out.push(rule.cssText.replace(/^:host/, ':root'));
+      }
+    }
+    return out.join('\n');
+  }
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -123,11 +184,7 @@ export class DataPanel extends ControlPanelTabPanel {
             Source Links
           </button>
           <button 
-            @click=${() => {
-              // this._fileio.saveChart(
-              //   this.controlPanel.todo.canvas.documentView!.titleText, 
-              //   this.controlPanel.todo.canvas.root);
-              }}
+            @click=${() => this._saveChart()}
           >
             Save chart
           </button>
