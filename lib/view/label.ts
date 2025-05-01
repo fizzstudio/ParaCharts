@@ -18,7 +18,7 @@ import { nothing, svg } from 'lit';
 import {type Ref, ref, createRef} from 'lit/directives/ref.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
-import { View, type SnapLocation } from '../view_temp/base_view';
+import { View, type SnapLocation } from '../view/base_view';
 import { generateUniqueId, fixed } from '../common/utils';
 import { ParaView } from '../paraview';
 import { SVGNS } from '../common/constants';
