@@ -24,7 +24,7 @@ import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
 import { defaults } from './settings_defaults';
 import { Colors } from '../common/colors';
-import { DataSymbols } from '../view_temp/symbol';
+import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { keymap } from './keymap';
 import { KeymapManager } from './keymap_manager';
@@ -34,6 +34,11 @@ import { AxisOrientation } from '../common/types';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
+export interface DataCursor {
+  seriesKey: string;
+  index: number;
+}
+
 export class ParaStore extends State {
 
   readonly symbols = new DataSymbols();
@@ -41,12 +46,14 @@ export class ParaStore extends State {
   @property() dataState: DataState = 'initial';
   @property() settings: Settings;
   @property() darkMode = false;
-  @property() visitedDatapoints: string[] = [];
+  @property() announcement = '';
 
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
   @property() protected selected = null;
   @property() protected queryLevel = 'default';
+  @property() protected _visitedDatapoints: DataCursor[] = [];
+  @property() protected _prevVisitedDatapoints: DataCursor[] = [];
 
   protected _settingControls = new SettingControlManager(this); 
   protected _manifest: Manifest | null = null;
@@ -62,6 +69,8 @@ export class ParaStore extends State {
   protected _seriesProperties: SeriesPropertyManager | null = null;
   protected _colors: Colors;
   protected _keymapManager = new KeymapManager(keymap);
+  protected _prependAnnouncements: string[] = [];
+  protected _appendAnnouncements: string[] = [];
 
   public idList: Record<string, boolean> = {};
 
@@ -216,4 +225,83 @@ export class ParaStore extends State {
     return this._facetMap[key] ?? null;
   }
 
+  announce(msg: string | string[]) {
+    /*
+    This sends an announcement to the Status Bar.
+    If the `msg` argument is an array, it joins the strings together with a
+    line-break, for clarity of reading.
+    Sometimes you may wish to prepend the next announcement with a message
+    (e.g. for navigation orientation); in this case, you call `prependAnnouncement`
+    with this message _before_ you call `announce`.
+    Sometimes you may also wish to append a message after the next announcement
+    (e.g. instructions on using the app); in this case, you call
+    `appendAnnouncement` with this message _before_ you call `announce`.
+    */
+
+    let announcement = '';
+    const linebreak = '\r\n';  // TODO: add option-based flags to enable or disable?
+
+    if (this._prependAnnouncements.length) {
+      const prependStr = this._joinStrArray(this._prependAnnouncements, linebreak);
+      announcement += prependStr ? `${prependStr} ${linebreak}` : '';
+      this._prependAnnouncements = [];
+    }
+
+    announcement += (typeof msg === 'string') ? msg : this._joinStrArray(msg, linebreak);
+
+    if (this._appendAnnouncements.length) {
+      const appendStr = this._joinStrArray(this._appendAnnouncements, linebreak);
+      announcement += appendStr ? `${linebreak} ${appendStr}` : '';
+      this._appendAnnouncements = [];
+    }
+
+    if (this.settings.ui.isAnnouncementEnabled) {
+      console.log('ANNOUNCE:', this.announcement);
+      this.announcement = announcement;
+    }
+  }
+
+  protected _joinStrArray(strArray: string[], linebreak?: string) : string {
+    strArray = strArray.filter(line => /\S/.test(line));
+    // if the string array only contains blank strings, ignore it
+    if (strArray.length) {
+      const strArrayLen = strArray.length - 1;
+      return strArray.reduce((acc, line, i) => {
+        const lineEnd = (i === strArrayLen) ? '.' : '';
+        const linebreakstr = (acc) ? ` ${linebreak}` : '';
+        const accStr = acc.match(/[.,?:;]$/) ? acc : `${acc}.`;
+        return `${accStr} ${linebreakstr}${line}${lineEnd}`;
+      });
+    }
+    return '';
+  }
+
+  get visitedDatapoints() {
+    return this._visitedDatapoints;
+  }
+
+  visit(datapoints: DataCursor[]) {
+    this._prevVisitedDatapoints = this._visitedDatapoints;
+    this._visitedDatapoints = datapoints;
+  }
+
+  isVisited(seriesKey: string, index: number) {
+    return !!this._visitedDatapoints.find(cursor =>
+      cursor.seriesKey === seriesKey && cursor.index === index);
+  }
+
+  isVisitedSeries(seriesKey: string) {
+    return !!this._visitedDatapoints.find(cursor =>
+      cursor.seriesKey === seriesKey);
+  }
+
+  wasVisited(seriesKey: string, index: number) {
+    return !!this._prevVisitedDatapoints.find(cursor =>
+      cursor.seriesKey === seriesKey && cursor.index === index);
+  }
+
+  wasVisitedSeries(seriesKey: string) {
+    return !!this._prevVisitedDatapoints.find(cursor =>
+      cursor.seriesKey === seriesKey);
+  }
 }
