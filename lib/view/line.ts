@@ -212,7 +212,7 @@ export class LineSection extends ChartPoint {
 
   content() {
     // add setting for visited stroke-width multiplier
-    const visitedScale = this.paraview.store.visitedDatapoints.includes(this._id)
+    const visitedScale = this.paraview.store.isVisited(this.seriesKey, this.index)
       ? this.chart.settings.highlightScale : 1;
     const styles = {
       strokeWidth: this.chart.settings.lineWidth*visitedScale

@@ -15,9 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { 
-  DataLayer, ChartLandingView, DataView, DatapointView, SeriesView, 
+  DataLayer,
   SONI_PLAY_SPEEDS, SONI_RIFF_SPEEDS 
 } from './datalayer';
+import { ChartLandingView, type DataView, DatapointView, SeriesView } from './data';
 import { type Setting } from '../store/settings_types';
 //import { keymaps } from '../input';
 //import { hotkeyActions } from '../input/defaultactions';
@@ -25,7 +26,6 @@ import { type Setting } from '../store/settings_types';
 //import { type Actions, type Action } from '../input/actions';
 
 import { type ClassInfo } from 'lit/directives/class-map.js';
-//import { literal } from 'lit/static-html.js';
 import { ParaView } from '../paraview';
 import { strToId } from '../common/utils';
 import { formatXYDatapointX, formatXYDatapointY } from './formatter';
@@ -522,16 +522,18 @@ export class XYSeriesView extends SeriesView {
     return todo().seriesSummaries[this.series.name!] ?? this.series.name!;
   }*/
 
-  onFocus() {
-    console.log('XY SERIES FOCUS');
-    super.onFocus();
+  protected _visit() {
     const visited = this.chart.isChordModeEnabled 
       ? this.withSiblings.flatMap(sib => sib.children) 
       : this._children;
-    this.paraview.store.visitedDatapoints = visited.map(v => v.id);
+    this.paraview.store.visit(visited.map(v => ({seriesKey: v.seriesKey, index: v.index})));
     if (!this.chart.isChordModeEnabled) {
       this.chart.raiseSeries(this.series.key!);
-    }
+    }    
+  }
+
+  onFocus() {
+    super.onFocus();
     /*todo().deets!.sparkBrailleData = this.series.data.join(' ');
     this.eventActionManager!.dispatch('series_focused', {
       visited,
@@ -547,8 +549,7 @@ export class XYSeriesView extends SeriesView {
   }
 
   onBlur() {
-    console.log('XY SERIES BLUR');
-    this.paraview.store.visitedDatapoints = [];
+    //this.paraview.store.clearVisited();
   }
 
   select(extend: boolean) {
@@ -671,14 +672,16 @@ export abstract class XYDatapointView extends DatapointView {
   //  }
   //}
 
-  onFocus() {
-    console.log('XY DATAPOINT FOCUS');
-    super.onFocus();
+  protected _visit() {
     const visited = this.chart.isChordModeEnabled ? this.withSameIndexers : [this];
-    this.paraview.store.visitedDatapoints = visited.map(v => v.id);
+    this.paraview.store.visit(visited.map(v => ({seriesKey: v.seriesKey, index: v.index})));
     if (!this.chart.isChordModeEnabled) {
       this.chart.raiseSeries(this.series.key!);
-    }
+    }    
+  }
+
+  onFocus() {
+    super.onFocus();
     /*todo().deets!.sparkBrailleData = this.series.data.join(' ');
     if (todo().controller.settingStore.settings.sonification.isSoniEnabled) {
       this.chart.sonifier.playDatapoints(...visited.map(v => v.datapoint));
