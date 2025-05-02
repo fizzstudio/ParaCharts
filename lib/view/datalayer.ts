@@ -30,6 +30,7 @@ import { SettingsManager } from '../store/settings_manager';
 import { type AxisInfo } from '../common/axisinfo';
 import { type HotkeyEvent } from '../store/keymap_manager';
 import { ChartLandingView, type DataView, type DatapointView } from './data';
+import { type LegendItem } from './legend';
 
 import { type clusterObject } from '@fizz/clustering';
 
@@ -54,7 +55,6 @@ export abstract class DataLayer extends ChartLayer {
   soniNoteIndex = 0;
   soniSequenceIndex = 0;
 
-  //protected _model!: Model;
   //protected _sonifier!: Sonifier;
   protected _settings!: DeepReadonly<PlotSettings>;
   protected visibleSeries!: string[];
@@ -77,7 +77,7 @@ export abstract class DataLayer extends ChartLayer {
   protected _isClustering: boolean = false;
   protected _clustering?: clusterObject[];
 
-  constructor(public readonly dataLayerIndex: number, paraview: ParaView) {
+  constructor(paraview: ParaView, public readonly dataLayerIndex: number) {
     super(paraview);
     paraview.store.keymapManager.addEventListener('hotkeypress', (e: HotkeyEvent) => {
       if (e.action === 'move_right') {
@@ -102,7 +102,6 @@ export abstract class DataLayer extends ChartLayer {
 
   protected _addedToParent() {
     super._addedToParent();
-    //this._model = todo().controller.model!;
     this._settings = SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.store.settings);
     //this._sonifier = new Sonifier(this);
     //this.visibleSeries = Array.from(this._model.depVars);
@@ -115,13 +114,10 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   get settings(): DeepReadonly<PlotSettings> {
-    return SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.store.settings);
-  }
-
-  /*get model() {
-    return this._model;
+    return this._settings;
   }
   
+  /*
   get sonifier() {
     return this._sonifier;
   }*/
@@ -182,10 +178,12 @@ export abstract class DataLayer extends ChartLayer {
     this._layoutComponents();
   }
 
-  abstract settingDidChange(key: string, value: Setting | undefined): boolean;
-
   protected abstract _createComponents(): void;
   protected abstract _layoutComponents(): void;
+
+  legend(): LegendItem[] {
+    return [];
+  }
 
   datapointView(seriesKey: string, index: number) {
     return this.datapointViews.find(view =>

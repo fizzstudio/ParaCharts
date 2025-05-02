@@ -46,7 +46,7 @@ export abstract class TickStrip<T extends AxisOrientation = AxisOrientation> ext
     this.setContentSize(contentWidth, contentHeight);
   }
 
-  setContentSize(width: number, height: number) {
+  setContentSize(_width: number, _height: number) {
     this.clearChildren();
     this._createRules();
   }
@@ -116,8 +116,8 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
         ? tickLength + this.axis.settings.tick.padding
         : 0;
     }
-    let indices = mapn(this._count + 1, i => i);
-    if (!this.axis.docView.paraview.store.settings.grid.isDrawVertAxisOppositeLine) {
+    let indices = mapn(this._count + (this.axis.isInterval ? 0 : 1), i => i);
+    if (!this.paraview.store.settings.grid.isDrawVertAxisOppositeLine) {
       indices = isEast ? indices.slice(0, -1) : indices.slice(1);
     }
     const xs = indices.map(i => isEast ? this.width - i*this._interval : i*this._interval);
@@ -131,7 +131,7 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
         this.axis.orientationSettings.position, this.paraview, undefined, this._gridLineLength));
       this._children.at(-1)!.x = xs[i];
       this._children.at(-1)!.y = y;
-      this._children.at(-1)!.hidden = !this.axis.docView.paraview.store.settings.grid.isDrawVertLines;
+      this._children.at(-1)!.hidden = !this.paraview.store.settings.grid.isDrawVertLines;
     });
   }
 

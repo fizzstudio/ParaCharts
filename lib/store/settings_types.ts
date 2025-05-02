@@ -99,6 +99,7 @@ export interface TitleSettings extends SettingGroup {
 
 /** @public */
 export interface LabelSettings extends SettingGroup {
+  isDrawEnabled: boolean;
   margin: number;
   fontSize: number;
   color: Color; // NOTE: not yet implemented
@@ -132,10 +133,13 @@ export interface ChartSettings extends SettingGroup {
   padding: number;
   fontFamily: string;
   fontWeight: string;
+  strokeWidth: number;
+  strokeHighlightScale: number;
   symbolStrokeWidth: number;
   symbolHighlightScale: number;
   hasDirectLabels: boolean;
   hasLegendWithDirectLabels: boolean;
+  isDrawSymbols: boolean;
 }
 
 /** @public */
@@ -233,7 +237,6 @@ export interface LegendSettings extends SettingGroup {
 
 /** @public */
 export interface PlotSettings extends SettingGroup {
-  isDrawSymbols?: boolean;
 }
 
 /** @public */
@@ -247,7 +250,6 @@ export interface BarSettings extends PlotSettings {
   barGap: number;
   isAbbrevSeries: boolean;
   clusterLabelFormat: LabelFormat;
-  highlightScale: number;
   lineWidth: number;
 }
 
@@ -272,7 +274,6 @@ export interface LineSettings extends PointSettings {
   seriesLabelPadding: number; // also used after leader lines
   leaderLineLength: number;
   isAlwaysShowSeriesLabel?: boolean;
-  highlightScale: number;
 }
 
 /** @public */
@@ -302,7 +303,8 @@ export interface RadialSettings extends SettingGroup {
   label: LabelSettings;
   isRenderCenterLabel: boolean;
   radius?: RadiusSettings;
-  chunkLabelFormat: LabelFormat;
+  sliceLabelFormat: LabelFormat;
+  sliceValueFormat: LabelFormat;
 }
 
 /** @public */

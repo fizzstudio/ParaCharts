@@ -94,7 +94,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
       if (i % this.axis.tickStep) {
         continue;
       }
-      const label = new Label({
+      const label = new Label(this.paraview, {
         classList: [
           'tick-label', this.axis.orientation, 
           this.axis.orientationSettings.position as string],
@@ -102,7 +102,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
         text: labelText,
         x: 0,
         y: 0,
-      }, this.axis.docView.paraview);
+      });
       this.append(label);
     }
   }
