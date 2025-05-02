@@ -1,6 +1,6 @@
 
 import { BaseSummarizer } from './summarizer';
-import { formatBox, formatXYDatapointX } from '../view/formatter';
+import { formatBox } from '../view/formatter';
 
 export class BasicSummarizer extends BaseSummarizer {
 
@@ -23,12 +23,13 @@ export class BasicSummarizer extends BaseSummarizer {
     } else {
       // Don't include the series name unless the previously-visited point
       // was in a different series
-      // const datapoint = this.datapoint.format('statusBar');
-      const datapoint = `${datapointIndex}`;
+      const dp = this._store.model!.atKeyAndIndex(seriesKey, datapointIndex);
+      const formatted = Object.entries(dp!).map(([key, box]) =>
+        formatBox(box, 'statusBar', this._store)).join(', ');
       if (!isSeriesChange) {
-        return datapoint;
+        return formatted;
       } else {
-        return `${seriesKey}: ${datapoint}`;
+        return `${seriesKey}: ${formatted}`;
       }
     }
   }

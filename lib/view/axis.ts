@@ -266,14 +266,14 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   protected abstract _createSpacer(): void;
 
   protected _createAxisTitle() {
-    this._axisTitle = new Label({
+    this._axisTitle = new Label(this.paraview, {
       text: this.titleText,
       classList: ['axis-title'],
       role: 'heading',
       x: 0,
       y: 0,
       angle: this._getAxisTitleAngle()
-    }, this.paraview);
+    });
     this._layout.append(this._axisTitle);
   }
 
