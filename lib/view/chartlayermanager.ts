@@ -28,7 +28,7 @@ import { LineChart } from './line';
 //import { LollipopChart } from './lollipop';
 import { ScatterPlot } from './scatter';
 import { BarChart } from './bar';
-//import { PieChart } from './pie';
+import { PieChart } from './chart_type/pie';
 //import { DonutChart } from './donut';
 //import { GaugeChart } from './gauge';
 import { XYChart } from './xychart';
@@ -47,7 +47,7 @@ export const chartClasses = {
   column: BarChart,
   line: LineChart,
   scatter: ScatterPlot,
-  pie: BarChart, //PieChart,
+  pie: PieChart,
   donut: BarChart, //DonutChart,
   gauge: BarChart, //GaugeChart,
   stepline: LineChart, //StepLineChart,
@@ -179,23 +179,23 @@ export class ChartLayerManager extends View {
   }
 
   private createDataLayers() {
-    const ctor = chartClasses[this.docView.paraview.store.type];
+    const ctor = chartClasses[this.paraview.store.type];
     let dataLayer: DataLayer;
     if (ctor) {
-      dataLayer = new ctor(0, this.docView.paraview);
+      dataLayer = new ctor(this.paraview, 0);
       this.append(dataLayer);
     } else {
       // TODO: Is this error possible?
-      throw new Error(`no class found for chart type '${this.docView.paraview.store.type}'`);
+      throw new Error(`no class found for chart type '${this.paraview.store.type}'`);
     }
     this.dataLayers = [dataLayer];
   }
 
   getXAxisInterval(): Interval {
-    if (this.docView.paraview.store.getFacet('x')!.datatype !== 'number') {
+    if (this.paraview.store.getFacet('x')!.datatype !== 'number') {
       throw new Error('x-axis intervals not specified for non-numeric x-axes')
     }
-    const xs = this.docView.paraview.store.model!.allFacetValues('x')!.map((box) => box.value as number);
+    const xs = this.paraview.store.model!.allFacetValues('x')!.map((box) => box.value as number);
     return {start: Math.min(...xs), end: Math.max(...xs)};
   }
 

@@ -158,8 +158,8 @@ export class LineSection extends ChartPoint {
   }
 
   protected _computeCentroid() {
-    const symWidth = this.symbol?.width ?? 0;
-    const symHeight = this.symbol?.height ?? 0;
+    const symWidth = this._symbol?.width ?? 0;
+    const symHeight = this._symbol?.height ?? 0;
     let centroidX = '50%';
     if (!this._prevMidX) {
       centroidX = `${symWidth/2}px`;
@@ -211,17 +211,10 @@ export class LineSection extends ChartPoint {
   }
 
   content() {
-    // add setting for visited stroke-width multiplier
-    const visitedScale = this.paraview.store.isVisited(this.seriesKey, this.index)
-      ? this.chart.settings.highlightScale : 1;
-    const styles = {
-      strokeWidth: this.chart.settings.lineWidth*visitedScale
-    };
     return svg`
       <path
         class="data-line"
         d=${this._lineD}
-        style=${styleMap(styles)}
       >
       </path>
     `;

@@ -3,6 +3,8 @@ import { View } from '../base_view';
 import { type DataLayer } from '../datalayer';
 import { type SeriesDF, type SeriesProperties } from '../../store';
 
+import { type StyleInfo } from 'lit/directives/style-map.js';
+
 /**
  * Abstract base class for datapoint and series views.
  * @public
@@ -15,17 +17,14 @@ export class DataView extends View {
   declare protected _prevFocus?: DataView;
 
   protected _series!: SeriesDF;
+  protected _isStyleEnabled = false;
 
   constructor(
     public readonly chart: DataLayer, 
     public readonly seriesKey: string,
   ) {
     super(chart.paraview);
-  }
-
-  protected _addedToParent() {
-    super._addedToParent();
-    this._series = this.chart.paraview.store.model!.atKey(this.seriesKey)!;
+    this._series = this.chart.paraview.store.model!.atKey(seriesKey)!;
   }
 
   get series() {
@@ -66,6 +65,24 @@ export class DataView extends View {
 
   get prevFocus() {
     return this._prevFocus;
+  }
+
+  get color(): number {
+    return this.seriesProps.color;
+  }
+
+  get style(): StyleInfo {
+    const style: StyleInfo = {};
+    if (this._isStyleEnabled) {
+      let colorValue = this.chart.paraview.store.colors.colorValueAt(this.color);
+      // if (this.paraview.store.isVisitedSeries(this.seriesKey)) {
+      //   colorValue = this.chart.paraview.store.colors.colorValue('highlight');
+      // }
+      style.fill = colorValue;
+      style.stroke = colorValue;
+      style.strokeWidth = this.paraview.store.settings.chart.strokeWidth;
+    }
+    return style;
   }
 
   onFocus() {

@@ -2,6 +2,8 @@
 import { DataView, type SeriesView } from './';
 import { DataSymbol, DataSymbols } from '../symbol';
 import { type DataPointDF } from '../../store';
+import { strToId } from '../../common/utils';
+import { formatBox } from '../formatter';
 
 import { type clusterObject } from '@fizz/clustering';
 
@@ -22,9 +24,8 @@ export class DatapointView extends DataView {
 
   //protected _isVisited = false; 
   private _isSelected = false;
-  protected extraAttrs: {attr: StaticValue, value: any}[] = [];
-  protected symbol?: DataSymbol;
-  protected _datapoint?: DataPointDF;
+  protected _extraAttrs: {attr: StaticValue, value: any}[] = [];
+  protected _symbol: DataSymbol | null = null;
   // private _selectedMarker: SelectedDatapointMarker | null = null;
 
   constructor(seriesView: SeriesView) {
@@ -34,13 +35,8 @@ export class DatapointView extends DataView {
   protected _addedToParent() {
     super._addedToParent();
     this._createSymbol();
-    this._createDatapoint();
   }
   
-  protected _createDatapoint(): DataPointDF {
-    return this._datapoint = this.paraview.store.model!.atKeyAndIndex(this.series.key, this.index)!;
-  }
-
   get parent() {
     return this._parent;
   }
@@ -106,15 +102,22 @@ export class DatapointView extends DataView {
     };
   }
 
+  get color(): number {
+    // Only used if per-datapoint styling is enabled (`_isStyleEnabled`)
+    return this.index;
+  }
+
   get style(): StyleInfo {
+    const style = super.style;
     if (this.paraview.store.isVisited(this.seriesKey, this.index)) {
-      const style: StyleInfo = {};
       let colorValue = this.chart.paraview.store.colors.colorValue('highlight');
       style.fill = colorValue;
       style.stroke = colorValue;
+      const visitedScale = this.paraview.store.settings.chart.strokeHighlightScale;
+      style.strokeWidth = this.paraview.store.settings.chart.strokeWidth*visitedScale;
       return style;
     }
-    return {};
+    return style;
   }
 
 
@@ -126,6 +129,17 @@ export class DatapointView extends DataView {
     return this.ref.value!;
   }
 
+  protected _createId(..._args: any[]): string {
+    const facets = Object.entries(this.datapoint).map(([key, box]) => 
+      `${key}_${formatBox(box, 'domId', this.paraview.store)}`).join('-');
+    return [
+      'datapoint',
+      strToId(this.series.key),
+      facets,
+      `${this.index}`
+    ].join('-'); 
+  }
+  
   protected _visit() {
     this.paraview.store.visit([{seriesKey: this.seriesKey, index: this.index}]);
   }
@@ -156,17 +170,17 @@ export class DatapointView extends DataView {
         }
       }
     }
-    this.symbol = DataSymbol.fromType(this.paraview, symbolType, {
+    this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
       strokeWidth: this.paraview.store.settings.chart.symbolStrokeWidth,
       color
     });
-    this.append(this.symbol);
+    this.append(this._symbol);
   }
 
   layoutSymbol() {
-    if (this.symbol) {
-      this.symbol.x = this._x - this.symbol.width/2;
-      this.symbol.y = this._y - this.symbol.height/2;
+    if (this._symbol) {
+      this._symbol.x = this._x - this._symbol.width/2;
+      this._symbol.y = this._y - this._symbol.height/2;
     }
   }
 
@@ -178,7 +192,7 @@ export class DatapointView extends DataView {
         color: -1
       };
     }
-    return this.symbol?.render(opts) ?? svg``;
+    return this._symbol?.render(opts) ?? svg``;
   }
 
   // end symbols
@@ -193,12 +207,12 @@ export class DatapointView extends DataView {
         style=${Object.keys(this.style).length ? styleMap(this.style) : nothing}
         class="datapoint ${classMap(this.classes)}"
         role="datapoint"
-        ${this.extraAttrs.map(attrInfo => svg`
+        ${this._extraAttrs.map(attrInfo => svg`
           ${attrInfo.attr}=${attrInfo.value}
         `)}
       >
         ${this.content()}
-        ${this.chart.settings.isDrawSymbols 
+        ${this.paraview.store.settings.chart.isDrawSymbols 
           ? this._renderSymbol() 
           : ''}
       </g>
