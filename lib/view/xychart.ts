@@ -76,8 +76,8 @@ export abstract class XYChart extends DataLayer {
 
   private _isChordModeEnabled = false;
 
-  constructor(dataLayerIndex: number, paraview: ParaView) {
-    super(dataLayerIndex, paraview);
+  constructor(paraview: ParaView, dataLayerIndex: number) {
+    super(paraview, dataLayerIndex);
   }
 
   protected _addedToParent() {
@@ -605,7 +605,7 @@ export abstract class XYDatapointView extends DatapointView {
 
   protected _addedToParent() {
     super._addedToParent();
-    this.extraAttrs = [
+    this._extraAttrs = [
       { 
         attr: literal`data-series`,
         value: this.series.key
@@ -628,7 +628,7 @@ export abstract class XYDatapointView extends DatapointView {
 
   // override to get more specific return type
   get datapoint(): XYDatapointDF {
-    return this.series[this.index] as XYDatapointDF;
+    return super.datapoint as XYDatapointDF;
   }
 
   get classes() {

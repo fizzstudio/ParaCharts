@@ -16,8 +16,9 @@ export class SeriesView extends Container(DataView) {
   declare protected _parent: ChartLandingView;
   declare protected _children: DatapointView[];
 
-  constructor(chart: DataLayer, seriesKey: string) {
+  constructor(chart: DataLayer, seriesKey: string, isStyleEnabled?: boolean) {
     super(chart, seriesKey);
+    this._isStyleEnabled = isStyleEnabled ?? true;
   }
 
   protected _createId() {
@@ -47,17 +48,6 @@ export class SeriesView extends Container(DataView) {
   // @ts-ignore
   get children(): readonly DatapointView[] { 
     return this._children;
-  }
-
-  get style(): StyleInfo {
-    const style: StyleInfo = {};
-    let colorValue = this.chart.paraview.store.colors.colorValueAt(this.seriesProps.color);
-    // if (this.paraview.store.isVisitedSeries(this.seriesKey)) {
-    //   colorValue = this.chart.paraview.store.colors.colorValue('highlight');
-    // }
-    style.fill = colorValue;
-    style.stroke = colorValue;
-    return style;
   }
 
   nextSeriesLanding() {

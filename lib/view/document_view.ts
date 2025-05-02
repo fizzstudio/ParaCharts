@@ -16,20 +16,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { View, Container } from './base_view';
 import { Label } from './label';
-//import { type CardinalDirection } from '../store/settings_types';
+import { type CardinalDirection, ParaStore } from '../store';
 import { type ChartType } from '@fizz/paramanifest';
 import { ChartLayerManager } from './chartlayermanager';
 import { HorizAxis, VertAxis, type AxisCoord } from './axis';
 /*import { hotkeyActions } from '../input/defaultactions';
 import { keymaps } from '../input';*/
-//import { Legend } from './legend';
+import { Legend } from './legend';
 import { GridLayout } from './layout';
 import { SeriesLabelStrip } from './serieslabelstrip';
 import { LineChart } from './line';
 import { ParaView } from '../paraview';
-import { ParaStore } from '../store/parastore';
 
-//export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
+export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
 
 /**
  * Root of the view hierarchy. 
@@ -45,9 +44,9 @@ export class DocumentView extends Container(View) {
   protected _vertAxis?: VertAxis;
   protected _titleText!: string;
   protected _grid: GridLayout;
-  //private _legends: Legends = {};
+  protected _legends: Legends = {};
 
-  private _store: ParaStore;
+  protected _store: ParaStore;
 
   constructor(paraview: ParaView) {
     super(paraview);
@@ -134,6 +133,8 @@ export class DocumentView extends Container(View) {
       this._titleText = this._store.title 
         ?? this._store.settings.chart.title.text 
         ?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;      
+    } else {
+      this._chartLayers.dataLayer.init();
     }
     let hasDirectLabels = false;
     if ( this._store.settings.chart.hasDirectLabels
@@ -145,13 +146,13 @@ export class DocumentView extends Container(View) {
       this._grid.append(this._seriesLabelStrip, {x: 2, y: 0});
       hasDirectLabels = true;
     }
-    // if ( this._store.settings.legend.isDrawLegend) {
-    //   if ( this._store.settings.legend.isAlwaysDrawLegend
-    //     || (hasDirectLabels && this._store.settings.chart.hasLegendWithDirectLabels) 
-    //     || (!hasDirectLabels && todo().controller.model!.depVars.length > 1)) {
-    //     this.addLegend(todo().controller.settingStore.settings.legend.position);
-    //   }
-    // }
+    if ( this._store.settings.legend.isDrawLegend) {
+      if ( this._store.settings.legend.isAlwaysDrawLegend
+        || (hasDirectLabels && this._store.settings.chart.hasLegendWithDirectLabels) 
+        || (!hasDirectLabels && this._store.model!.numSeries)) {
+        this.addLegend(this._store.settings.legend.position);
+      }
+    }
   }
 
   protected _createId() {
@@ -219,7 +220,7 @@ export class DocumentView extends Container(View) {
 
   private createTitle() {
     const align = this._store.settings.chart.title.align ?? 'center';
-    this._titleLabel = new Label({
+    this._titleLabel = new Label(this.paraview, {
       id: 'chart-title',
       role: 'heading',
       classList: ['chart-title'],
@@ -228,7 +229,7 @@ export class DocumentView extends Container(View) {
       y: 0,
       wrapWidth: this._chartLayers.dataLayer.width,
       justify: align
-    }, this.paraview);
+    });
     let titleRow = 0;
     const titleMargin = this._store.settings.chart.title.margin;
     const titlePos = this._store.settings.chart.title.position;
@@ -259,33 +260,34 @@ export class DocumentView extends Container(View) {
       v.children.forEach(update);
     };
     update(this);
-  }
+  }*/
 
   addLegend(position: CardinalDirection) {
-    const margin = todo().controller.settingStore.settings.legend.margin;
+    const items = this._chartLayers.dataLayer.legend();
+    const margin = this._store.settings.legend.margin;
     if (position === 'east') {
-      this._legends.east = new Legend();
+      this._legends.east = new Legend(this.paraview, items);
       this._grid.append(this._legends.east, {x: 3, y: 0, height: 2, margin: {left: margin}});
     } else if (position === 'west') {
-      this._legends.west = new Legend();
+      this._legends.west = new Legend(this.paraview, items);
       this._grid.addColumnLeft();
       this._grid.append(this._legends.west, {x: 0, y: 0, height: 2, margin: {right: margin}});
     } else if (position === 'south') {
-      this._legends.south = new Legend({
+      this._legends.south = new Legend(this.paraview, items, {
         orientation: 'horiz', 
         wrapWidth: this._chartLayers.boundingWidth
       });
       this._grid.insertRow(this._grid.numRows);
       this._grid.append(this._legends.south, {x: 1, y: -1, width: 1, colAlign: 'center', margin: {top: margin}});
     } else if (position === 'north') {
-      this._legends.north = new Legend({
+      this._legends.north = new Legend(this.paraview, items, {
         orientation: 'horiz',
         wrapWidth: this._chartLayers.boundingWidth
       });
       this._grid.insertRow(1);
       this._grid.append(this._legends.north, {x: 1, y: 0, width: 1, colAlign: 'center', margin: {bottom: margin}});
     }
-  }*/
+  }
 
   setLowVisionMode(lvm: boolean) {
     // XXX May need to do the same for other visual elements as well
