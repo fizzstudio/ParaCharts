@@ -10,16 +10,10 @@ export interface Summarizer {
 export abstract class BaseSummarizer implements Summarizer {
 
   constructor(protected _store: ParaStore) {}
-  
-  getChartSummary() {
-    return '';
-  }
-  
-  getSeriesSummary(seriesKey: string) {
-    return '';
-  }
 
-  getDatapointSummary(seriesKey: string, datapointIndex: number) {
-    return '';
-  }
+  abstract getChartSummary(): string;
+  
+  abstract getSeriesSummary(seriesKey: string): string;
+
+  abstract getDatapointSummary(seriesKey: string, datapointIndex: number): string;
 }
