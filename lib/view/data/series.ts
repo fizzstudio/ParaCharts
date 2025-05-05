@@ -70,7 +70,7 @@ export class SeriesView extends Container(DataView) {
 
   getDatapointViewForLabel(label: string) {
     return this._children.find(view => 
-      view.datapoint.x.raw === label
+      view.datapoint.facetBox('x')!.raw === label
     );
   }
 
