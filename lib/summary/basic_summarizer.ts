@@ -1,13 +1,16 @@
 
 import { BaseSummarizer } from './summarizer';
 import { formatBox } from '../view/formatter';
+import { Memoize } from 'typescript-memoize';
 
 export class BasicSummarizer extends BaseSummarizer {
 
+  @Memoize()
   getChartSummary() {
     return 'At top level.'
   }
 
+  @Memoize()
   getSeriesSummary(seriesKey: string) {
     return seriesKey;
   }

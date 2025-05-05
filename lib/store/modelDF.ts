@@ -19,17 +19,37 @@ import { AllSeriesData, Dataset, Datatype, Manifest, Series, Theme1 as Theme } f
 
 import { arrayEqualsBy, enumerate, strToId } from "../common/utils";
 import { DataFrame, DataFrameColumn, DataFrameRow, FacetSignature, RawDataPoint } from "./dataframe/dataframe";
-import { Box, BoxSet } from "./dataframe/box";
+import { Box, BoxSet, ScalarMap } from "./dataframe/box";
 import { calculateWholeChartFacetStats, ChartFacetStats } from "./metadata";
 
-export type DataPointDF = DataFrameRow;
+export class DataPointDF {
+  constructor(protected data: DataFrameRow, public seriesKey: string, public datapointIndex: number) { }
 
-export interface XYDatapointDF {
-  x: Box<Datatype>,
-  y: Box<Datatype>,
-  [facetKey: string]: Box<Datatype>
+  public facetBox(key: string): Box<Datatype> | null {
+    return this.data[key] ?? null;
+  }
+
+  public facetValue(key: string): ScalarMap[Datatype] | null {
+    return this.data[key].value ?? null;
+  }
 }
 
+export class XYDatapointDF extends DataPointDF {
+  constructor(data: DataFrameRow, seriesKey: string, datapointIndex: number) {
+    super(data, seriesKey, datapointIndex);
+    if (!('x' in data) || !('y' in data)) {
+      throw new Error('`XYDatapointDF` must contain `x` and `y` facets')
+    }
+  }
+
+  get x(): Box<Datatype> {
+    return this.data.x;
+  }
+
+  get y(): Box<Datatype> {
+    return this.data.y;
+  }
+}
 
 export class SeriesDF {
   [i: number]: DataPointDF;
@@ -54,11 +74,12 @@ export class SeriesDF {
     this.dataframe = new DataFrame(facets);
     this.facets.forEach((facet) => this.uniqueValuesForFacet[facet.key] = new BoxSet<Datatype>);
     this.rawData.forEach((datapoint) => this.dataframe.addDatapoint(datapoint));
-    this.dataframe.rows.forEach((datapoint, index) => {
+    this.dataframe.rows.forEach((row, index) => {
+      const datapoint = new DataPointDF(row, this.key, index);
       this[index] = datapoint;
       this.datapoints.push(datapoint);
-      Object.keys(datapoint).forEach(
-        (facetKey) => this.uniqueValuesForFacet[facetKey].add(datapoint[facetKey])
+      Object.keys(row).forEach(
+        (facetKey) => this.uniqueValuesForFacet[facetKey].add(row[facetKey])
       );
     });
     /*this.xMap = mapDatapointsXtoY(this.datapoints);
