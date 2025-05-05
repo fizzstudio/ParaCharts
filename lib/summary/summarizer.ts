@@ -1,9 +1,9 @@
-import { ParaStore } from '../store';
+import { DataPointDF, ParaStore } from '../store';
 
 export interface Summarizer {
   getChartSummary(): string;
   getSeriesSummary(seriesKey: string): string;
-  getDatapointSummary(seriesKey: string, datapointIndex: number): string;
+  getDatapointSummary(datapoint: DataPointDF): string;
   // ...
 }
 
@@ -15,5 +15,5 @@ export abstract class BaseSummarizer implements Summarizer {
   
   abstract getSeriesSummary(seriesKey: string): string;
 
-  abstract getDatapointSummary(seriesKey: string, datapointIndex: number): string;
+  abstract getDatapointSummary(datapoint: DataPointDF): string;
 }
