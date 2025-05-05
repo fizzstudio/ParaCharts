@@ -48,6 +48,70 @@ export interface Padding {
   right: number;
 }
 
+export interface CollisionEscape {
+  dists: number[];
+  shortest: number;
+}
+
+export class Collision {
+
+  constructor(
+    protected _centerDiffX: number,
+    protected _centerDiffY: number,
+    protected _rSumX: number,
+    protected _rSumY: number
+  ) { }
+
+  // {+x, -x, +y, -y}, shortest
+  escape(): CollisionEscape {
+    const padding = 0.001;
+    const ed = [0, 0, 0, 0];
+    if (this._centerDiffX > 0) {
+      ed[0] = (this._rSumX - this._centerDiffX) + padding;
+      ed[1] = -(this._rSumX + this._centerDiffX + padding);
+    } else {
+      ed[0] = (this._rSumX - this._centerDiffX) + padding;
+      ed[1] = -(this._rSumX + this._centerDiffX + padding);
+    }
+    if (this._centerDiffY > 0) {
+      ed[2] = (this._rSumY - this._centerDiffY) + padding;
+      ed[3] = -(this._rSumY + this._centerDiffY + padding);
+    } else {
+      ed[2] = (this._rSumY - this._centerDiffY) + padding;
+      ed[3] = -(this._rSumY + this._centerDiffY + padding);
+    }
+    let shortestEscape = 0;
+    for (let i = 1; i < 4; i++) {
+      if (Math.abs(ed[i]) < Math.abs(ed[shortestEscape])) {
+        shortestEscape = i;
+      }
+    }
+    return {
+      dists: ed,
+      shortest: shortestEscape,
+    };
+  }
+
+  escapeVector(): {x: number, y: number} {
+    const padding = 0.001;
+    // these are both positive
+    const hEscape = this._rSumX - Math.abs(this._centerDiffX);
+    const vEscape = this._rSumY - Math.abs(this._centerDiffY);
+    const ev = {x: 0, y: 0};
+    if (hEscape < vEscape) {
+      ev.x = this._centerDiffX > 0
+        ? hEscape + padding
+        : -hEscape - padding;
+    } else {
+      ev.y = this._centerDiffY > 0
+        ? vEscape + padding
+        : -vEscape - padding;
+    }
+    return ev;
+  }
+}
+
+
 export class BaseView {
   get id() {
     return '';
@@ -94,8 +158,12 @@ export class BaseView {
     return null;
   }
 
+  renderChildren(): TemplateResult {
+    return svg`${this.children.map(kid => kid.render())}`;
+  }
+
   content(..._options: any[]): TemplateResult {
-    return svg``;
+    return this.renderChildren();
   }
 
   render(...options: any[]): TemplateResult {
@@ -342,12 +410,20 @@ export class View extends BaseView {
     return this._x + this.boundingWidth;
   }
 
+  get centerX() {
+    return this.left + this.boundingWidth/2;
+  }
+
   get top() {
     return this._y;
   }
 
   get bottom() {
     return this._y + this.boundingHeight;
+  }
+
+  get centerY() {
+    return this.top + this.boundingHeight/2;
   }
 
   computeSize(): [number, number] {
@@ -475,6 +551,21 @@ export class View extends BaseView {
     return undefined;
   }*/
 
+  intersects(other: View): Collision | null {
+      const centerDiffX = this.centerX - other.centerX;
+      const rSumX = other.boundingWidth/2 + this.boundingWidth/2;
+      if (Math.abs(centerDiffX) >= rSumX) {
+          return null;
+      }
+      const centerDiffY = this.centerY - other.centerY;
+      const rSumY = other.boundingHeight/2 + this.boundingHeight/2;
+      if (Math.abs(centerDiffY) >= rSumY) {
+          return null;
+      }
+      return new Collision(centerDiffX, centerDiffY, rSumX, rSumY);
+  }
+
+
   focus(level = 0) {
     if (!this._parent) {
       return;
@@ -486,7 +577,9 @@ export class View extends BaseView {
     }
     this._parent!.currFocus = this;
     this._parent!.focus(level + 1);
-    if (!this._currFocus) {
+    if (this._currFocus) {
+      this.focusLeaf.onFocus();
+    } else {
       this.onFocus();
     }
   }
@@ -572,11 +665,10 @@ export class View extends BaseView {
 }
 
 export interface ContainableI {
-  get class(): string;
-  get style(): StyleInfo;
+  get classInfo(): string;
+  get styleInfo(): StyleInfo;
   get role(): string;
   get roleDescription(): string;
-  get extraAttrs(): {attr: StaticValue, value: any}[];
   get ref(): ReturnType<typeof ref> | null;
 }
 
@@ -589,14 +681,6 @@ type Containable = GConstructor<BaseView & Partial<ContainableI>>;
 export function Container<TBase extends Containable>(Base: TBase) {
   return class _Container extends Base {
 
-    renderChildren(): TemplateResult {
-      return svg`${this.children.map(kid => kid.render())}`;
-    }
-
-    content(): TemplateResult {
-      return this.renderChildren();
-    }
-
     render() {
       const tx = this.x + this.padding.left;
       const ty = this.y + this.padding.top;
@@ -604,16 +688,11 @@ export function Container<TBase extends Containable>(Base: TBase) {
         <g
           ${this.ref}
           id=${this.id || nothing}
-          class=${this.class || nothing}
-          style=${this.style ? (Object.keys(this.style).length ? styleMap(this.style) : nothing) : nothing}
+          class=${this.classInfo || nothing}
+          style=${this.styleInfo ? styleMap(this.styleInfo) : nothing}
           role=${this.role || nothing}
           aria-roledescription=${this.roleDescription || nothing}
-          transform=${tx || ty ? fixed`translate(${tx},${ty})` : nothing}
-          ${this.extraAttrs
-            ? this.extraAttrs.map(attrInfo => svg`
-                ${attrInfo.attr}=${attrInfo.value}
-              `)
-            : ''}
+          transform=${(tx || ty) ? fixed`translate(${tx},${ty})` : nothing}
         >
           ${this.content()}
         </g>

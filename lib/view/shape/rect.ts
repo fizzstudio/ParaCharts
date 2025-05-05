@@ -1,33 +1,37 @@
 
-import { View } from '../base_view';
-
-import { svg, css } from 'lit';
-import { styleMap, StyleInfo } from 'lit/directives/style-map.js';
+import { Shape, type ShapeOptions } from './shape';
 import { type ParaView } from '../../paraview';
+import { fixed } from '../../common/utils';
 
-export class Rect extends View {
+import { svg, nothing } from 'lit';
+import { styleMap } from 'lit/directives/style-map.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { ref } from 'lit/directives/ref.js';
 
-  constructor(paraview: ParaView, width: number, height: number,
-    protected _fill: string, protected _stroke: string = 'black', protected _strokeWidth: number = 2
-  ) {
-    super(paraview);
-    this._width = width;
-    this._height = height;
+export interface RectOptions extends ShapeOptions {
+  width: number;
+  height: number;
+}
+
+export class Rect extends Shape {
+
+  constructor(paraview: ParaView, options: RectOptions) {
+    super(paraview, options);
+    this._width = options.width;
+    this._height = options.height;
   }
 
   render() {
-    const styles: StyleInfo = { 
-      strokeWidth: this._strokeWidth,
-      stroke: this._stroke,
-      fill: this._fill
-    };
     return svg`
       <rect
-        style=${styleMap(styles)}
-        x=${this._x}
-        y=${this._y}
-        width=${this.width}
-        height=${this.height}
+        ${this._ref ? ref(this._ref) : undefined}
+        id=${this._id || nothing}
+        style=${styleMap(this._styleInfo)}
+        class=${classMap(this._classInfo)}      
+        x=${fixed`${this._x}`}
+        y=${fixed`${this._y}`}
+        width=${fixed`${this.width}`}
+        height=${fixed`${this.height}`}
       ></rect>
     `;
   }
