@@ -17,14 +17,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { ParaViewController } from '.';
 import { logging } from '../common/logger';
-import { ParaComponent } from '../paracomponent';
+import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest';
 import { ViewBox } from '../store/settings_types';
-import { View } from '../view_temp/base_view';
-import { DocumentView } from '../view_temp/document_view';
+import { View } from '../view/base_view';
+import { DocumentView } from '../view/document_view';
 //import { styles } from './styles';
 import { SVGNS } from '../common/constants';
 import { fixed } from '../common/utils';
+import { type Summarizer, BasicSummarizer } from '../summary';
 
 import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -65,6 +66,8 @@ export class ParaView extends logging(ParaComponent) {
     display: 'none'
   };
   protected _chartRefs: Map<string, Ref<any>> = new Map();
+  protected _fileSavePlaceholderRef = createRef<HTMLElement>();
+  protected _summarizer!: Summarizer;
 
   static styles = [
     //styles,
@@ -186,6 +189,14 @@ export class ParaView extends logging(ParaComponent) {
     this._prevFocusLeaf = view;
   }
 
+  get fileSavePlaceholder() {
+    return this._fileSavePlaceholderRef.value!;
+  }
+
+  get summarizer() {
+    return this._summarizer;
+  }
+
   connectedCallback() {
     super.connectedCallback();
     // FIXME: create store
@@ -197,6 +208,7 @@ export class ParaView extends logging(ParaComponent) {
         this.createDocumentView();
       }
     });
+    this._summarizer = new BasicSummarizer(this._store);
 
     this._computeViewBox();
   }
@@ -433,6 +445,10 @@ export class ParaView extends logging(ParaComponent) {
         </rect>
         ${this._documentView?.render() ?? ''}
       </svg>
+      <div
+        ${ref(this._fileSavePlaceholderRef)}
+        hidden
+      ></div>
     `;
   }
 

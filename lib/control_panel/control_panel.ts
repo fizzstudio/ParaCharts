@@ -1,7 +1,6 @@
 
 
-import { ParaComponent } from '../paracomponent';
-import { ParaDialog } from '../components';
+import { ParaDialog, ParaComponent } from '../components';
 import { logging } from '../common/logger';
 //import { styles } from '../../styles';
 import {
@@ -121,9 +120,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
     return this._annotationPanelRef.value!;
   }
 
-  get statusBar() {
-    return this._descriptionPanelRef.value!.statusBar;
-  }
+  // get statusBar() {
+  //   return this._descriptionPanelRef.value!.statusBar;
+  // }
 
   get dialog() {
     return this._dialogRef.value!;
@@ -185,13 +184,13 @@ export class ParaControlPanel extends logging(ParaComponent) {
     //this.srb.render(this.currentSeriesSummary());
   }
 
-  announce(text: string) {
-    this._descriptionPanelRef.value!.announce(text);
-  }
+  // announce(text: string) {
+  //   this._descriptionPanelRef.value!.announce(text);
+  // }
 
-  replay() {
-    this._descriptionPanelRef.value!.replay();
-  }
+  // replay() {
+  //   this._descriptionPanelRef.value!.replay();
+  // }
 
   getHelp() {
     return this._controlsPanelRef.value!.getHelp();

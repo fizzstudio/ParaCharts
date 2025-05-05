@@ -18,7 +18,7 @@ import { View } from './base_view';
 import { type Axis, type AxisOrientation } from './axis';
 import { fixed } from '../common/utils';
 
-import { svg } from 'lit';
+import { svg, nothing } from 'lit';
 
 /**
  * An axis line.
@@ -38,6 +38,10 @@ export abstract class AxisLine<T extends AxisOrientation> extends View {
 
   }
 
+  protected _createId(..._args: any[]): string {
+    return `${this.axis.coord}-axis-line`;
+  }
+
   protected abstract getLineD(): string;
   
   render() {
@@ -46,14 +50,11 @@ export abstract class AxisLine<T extends AxisOrientation> extends View {
     }
     const transform = fixed`translate(${this._x},${this._y})`;
     return svg`
-      <g
-        transform="${transform}"
-      >
-        <path 
-          id="${this.axis.coord}-axis-line" 
-          d=${this.getLineD()}
-        ></path>
-      </g>
+      <path 
+        transform=${this._x !== 0 || this._y !== 0 ? transform : nothing}
+        id=${this._id} 
+        d=${this.getLineD()}
+      ></path>
     `;
   }
 

@@ -1,5 +1,5 @@
 
-import { type ParaStore } from './store/parastore';
+import { type ParaStore } from '../store';
 
 import { LitElement } from 'lit';
 import { StateController } from '@lit-app/state';

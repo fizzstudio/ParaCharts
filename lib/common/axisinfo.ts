@@ -1,6 +1,6 @@
 
 import { ParaStore } from '../store/parastore';
-import { formatBox } from '../view_temp/formatter';
+import { formatBox } from '../view/formatter';
 
 import Decimal from 'decimal.js';
 

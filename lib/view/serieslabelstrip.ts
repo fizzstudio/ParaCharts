@@ -33,7 +33,7 @@ export class SeriesLabelStrip extends Container(View) {
 
   constructor(private _chart: LineChart) {
     super(_chart.paraview);
-    const directLabelPadding = this._chart.settings.isDrawSymbols 
+    const directLabelPadding = this.paraview.store.settings.chart.isDrawSymbols 
       ? this._chart.settings.seriesLabelPadding*2
       : this._chart.settings.seriesLabelPadding;
     // Sort points from highest to lowest onscreen
@@ -44,12 +44,12 @@ export class SeriesLabelStrip extends Container(View) {
     endpoints.sort((a, b) => a.y - b.y);
     // Create labels
     endpoints.forEach((ep, i) => {
-      this.seriesLabels.push(new Label({
+      this.seriesLabels.push(new Label(this.paraview, {
         text: ep.series.key!,
         x: directLabelPadding,
         y: ep.y,
         classList: ['serieslabel'],
-      }, this._chart.paraview));
+      }));
       this.append(this.seriesLabels.at(-1)!);
     });
     this.seriesLabels.forEach(label => {
@@ -95,7 +95,7 @@ export class SeriesLabelStrip extends Container(View) {
       }
     }
     if (colliders.length) {
-      const leaderLabelOffset = this._chart.settings.isDrawSymbols 
+      const leaderLabelOffset = this.paraview.store.settings.chart.isDrawSymbols 
         ? -this._chart.settings.seriesLabelPadding 
         : 0;
 

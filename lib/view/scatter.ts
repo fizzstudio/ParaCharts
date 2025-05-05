@@ -9,8 +9,8 @@ export class ScatterPlot extends PointChart {
 
   declare protected _settings: DeepReadonly<ScatterSettings>;
   
-  constructor(index: number, paraview: ParaView) {
-    super(index, paraview);
+  constructor(paraview: ParaView, index: number) {
+    super(paraview, index);
     this._isClustering = true;
   }
 

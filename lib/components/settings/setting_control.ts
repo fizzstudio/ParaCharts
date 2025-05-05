@@ -1,5 +1,5 @@
 
-import { ParaComponent } from '../../paracomponent';
+import { ParaComponent } from '../../components';
 import { type SettingControlInfo, type Setting, SettingsManager } from '../../store';
 //import { styles } from '../styles';
 

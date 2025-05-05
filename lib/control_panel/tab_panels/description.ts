@@ -1,12 +1,10 @@
 
 //import { styles } from '../../styles';
-import { StatusBarHistoryDialog} from '../dialogs';
-import { ScreenReaderBridge } from '../../screenreaderbridge';
 import { ControlPanelTabPanel } from './tab_panel';
+import { type AriaLive } from '../../components';
+import '../../components/aria_live';
 
-import { 
-  html, css, PropertyValues,
-} from 'lit';
+import { html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -16,13 +14,9 @@ import { styleMap } from 'lit/directives/style-map.js';
 export class DescriptionPanel extends ControlPanelTabPanel {
 
   @property() caption = '';
-
   @property() visibleStatus = '';
 
-  protected _statusBarHistory: readonly string[] = [];
-  protected _srb!: ScreenReaderBridge;
-  protected _statusBarRef = createRef<HTMLDivElement>();
-  protected _historyDialogRef = createRef<StatusBarHistoryDialog>();
+  protected _ariaLiveRegionRef = createRef<AriaLive>();
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -42,24 +36,8 @@ export class DescriptionPanel extends ControlPanelTabPanel {
         flex-direction: row;
         justify-content: space-between;
       }
-      #statusbar {
-        white-space: pre-line;
-      }
     `
   ];
-
-  get statusBar() {
-    return this._statusBarRef.value!;
-  }
-
-  get statusBarHistory() {
-    return this._statusBarHistory;
-  }
-
-  set statusBarHistory(history: readonly string[]) {
-    this._statusBarHistory = history;
-    this._historyDialogRef.value!.history = history;
-  }
 
   // get speechRate() {
   //   return this._controller.voice.rate;
@@ -69,55 +47,8 @@ export class DescriptionPanel extends ControlPanelTabPanel {
   //   this._controller.voice.rate = rate;
   // }
 
-  protected firstUpdated(_changedProperties: PropertyValues) {
-    this._initStatusBar();
-  }
-
-  protected _initStatusBar() {
-    // Do this after the status bar has been created
-    ScreenReaderBridge.addAriaAttributes(this.statusBar);
-    this.statusBar.setAttribute('lang', 'en');
-    this._srb = new ScreenReaderBridge(this.statusBar);  
-
-    const observer = new MutationObserver((mutationList) => {
-      mutationList.forEach((mutation) => {
-        if(mutation.addedNodes.length === 0){
-          return;
-        }
-        const addCC = mutation.addedNodes[0] as HTMLDivElement;
-
-        const msg = addCC.getAttribute('data-original-text');
-      
-        // const timestamp = addCC.getAttribute("data-created")
-        // Create a new array rather than mutating it so the assignment can
-        // trigger a reactive update of the history dialog.
-        this.statusBarHistory = [...this._statusBarHistory, msg ?? ''];
-
-        if (msg
-          && this._store.settings.ui.isVoicingEnabled 
-          && this._store.settings.ui.isAnnouncementEnabled) {
-          this._controller.voice.speak(msg);
-        }
-      })
-    });
-    observer.observe(this.statusBar, {
-      childList: true
-    });    
-  }
-
-  announce(text: string) {
-    this._srb.render(text);
-  }
-
-  replay() {
-    const msg = this._srb.lastCreatedElement?.textContent;
-    if (msg) {
-      this.announce(msg);
-    }
-  }
-
   clearStatusBar() {
-    this._srb.clear();
+    this._ariaLiveRegionRef.value!.clear();
   }
 
   render() {
@@ -138,24 +69,20 @@ export class DescriptionPanel extends ControlPanelTabPanel {
           <div id="desc-footer">
             <div id="status_split">
               <div id="visiblestatus">${this.visibleStatus}</div>
-              <div id="statusbar" 
-                ${ref(this._statusBarRef)}
-                class=${this.controlPanel.settings.isStatusBarVisible ? '' : 'sr-only'}
-              ></div>
+              <para-aria-live-region
+                ${ref(this._ariaLiveRegionRef)}
+                .store=${this._store}
+                .announcement=${this._store.announcement}
+              ></para-aria-live-region>
             </div>
             <button
-              @click=${() => this._historyDialogRef.value?.show()}
+              @click=${() => this._ariaLiveRegionRef.value!.showHistoryDialog()}
             >
               History
             </button>
           </div>
         </div>
       </figcaption>
-      <todo-status-bar-history-dialog 
-        ${ref(this._historyDialogRef)}
-        id="output-dialog" 
-      ></todo-status-bar-history-dialog>
-
     `;
   }
 

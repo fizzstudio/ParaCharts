@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { logging } from '../common/logger';
-import { ParaComponent } from '../paracomponent';
+import { ParaComponent } from '../components';
 import { ParaController } from '../paracontroller';
 import { AllSeriesData } from '@fizz/paramanifest'
 import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
@@ -28,6 +28,8 @@ import { customElement, property } from "lit/decorators.js";
 
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
+
+  @property({ type: Boolean }) headless = false;
 
   protected _controller: ParaController;
   
@@ -74,12 +76,20 @@ export class ParaChart extends logging(ParaComponent) {
           .store=${this._store}
           colormode=${this._store?.settings.color.colorVisionMode ?? nothing}
         ></para-view>
-        <para-control-panel
-          .summary=${this.summary}
-          .store=${this._store}
-        ></para-control-panel>
+        ${!this.headless ? html`
+          <para-control-panel
+            .summary=${this.summary}
+            .store=${this._store}
+          ></para-control-panel>` : ''
+        }
       </figure>
     `;
   }
 
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'para-chart': ParaChart;
+  }
 }
