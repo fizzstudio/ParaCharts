@@ -78,7 +78,6 @@ export class ParaChart extends logging(ParaComponent) {
         ></para-view>
         ${!this.headless ? html`
           <para-control-panel
-            .summary=${this.summary}
             .store=${this._store}
           ></para-control-panel>` : ''
         }

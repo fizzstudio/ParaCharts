@@ -39,8 +39,6 @@ import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 @customElement('para-control-panel')
 export class ParaControlPanel extends logging(ParaComponent) {
 
-  @state() summary = '';
-
   @property() sparkBrailleData!: string;
 
   @state() dataState: 'initial' | 'pending' | 'complete' | 'error' = 'initial';
@@ -171,6 +169,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
       // Any panels that need updating in response to changed data should
       // do so here
       this.annotationPanel.requestUpdate();
+      this.descriptionPanel.requestUpdate();
 
       // if (!this._isReady) {
       //   this.isReady = true;
@@ -251,7 +250,6 @@ export class ParaControlPanel extends logging(ParaComponent) {
           <para-description-panel
             ${ref(this._descriptionPanelRef)}
             .controlPanel=${this}
-            .caption=${this.summary}
           ></para-description-panel>
         </fizz-tab-panel>
 
