@@ -39,10 +39,13 @@ export const defaults: Settings = {
     //chartType: 'line'
     fontFamily: 'Helvetica, sans-serif',
     fontWeight: '300',
+    strokeWidth: 4,
+    strokeHighlightScale: 1.5,
     symbolStrokeWidth: 2,
     symbolHighlightScale: 1.5,
     hasDirectLabels: true,
     hasLegendWithDirectLabels: false,
+    isDrawSymbols: true
   },
   axis: {
     minInterval: 25,
@@ -142,7 +145,6 @@ export const defaults: Settings = {
       orderBy: undefined,
       barGap: 0.25,
       clusterLabelFormat: 'raw',
-      highlightScale: 2,
       lineWidth: 5,
     },
     column: {
@@ -155,7 +157,6 @@ export const defaults: Settings = {
       orderBy: undefined,
       barGap: 0.25,
       clusterLabelFormat: 'raw',
-      highlightScale: 2,
       lineWidth: 5,
     },
     line: {
@@ -165,8 +166,6 @@ export const defaults: Settings = {
       seriesLabelPadding: 5,
       pointLabelFormat: 'raw',
       leaderLineLength: 30,
-      isDrawSymbols: true,
-      highlightScale: 2,
       selectedPointMarkerSize: {
         width: 20,
         height: 20,
@@ -174,7 +173,6 @@ export const defaults: Settings = {
     },
     scatter: {
       pointLabelFormat: 'raw',
-      isDrawSymbols: true,
       symbolStrokeWidth: 2,
       selectedPointMarkerSize: {
         width: 20,
@@ -183,30 +181,36 @@ export const defaults: Settings = {
     },
     pie: {
       label: {
+        isDrawEnabled: false,
         margin: 3,
         fontSize: 15,
         color: 'black',
       },
       isRenderCenterLabel: true,
-      chunkLabelFormat: 'raw',
+      sliceLabelFormat: 'raw',
+      sliceValueFormat: 'raw'
     },
     donut: {
       label: {
+        isDrawEnabled: true,
         margin: 3,
         fontSize: 15,
         color: 'black',
       },
       isRenderCenterLabel: true,
-      chunkLabelFormat: 'raw',
+      sliceLabelFormat: 'raw',
+      sliceValueFormat: 'raw'
     },
     gauge: {
       label: {
+        isDrawEnabled: true,
         margin: 3,
         fontSize: 15,
         color: 'black',
       },
       isRenderCenterLabel: true,
-      chunkLabelFormat: 'raw',
+      sliceLabelFormat: 'raw',
+      sliceValueFormat: 'raw'
     },
     stepline: {
       lineWidth: 5,
@@ -215,9 +219,7 @@ export const defaults: Settings = {
       seriesLabelPadding: 5,
       pointLabelFormat: 'raw',
       leaderLineLength: 30,
-      isDrawSymbols: false,
       symbolStrokeWidth: 2,
-      highlightScale: 1.6,
       selectedPointMarkerSize: {
         width: 20,
         height: 20,
@@ -234,8 +236,6 @@ export const defaults: Settings = {
       orderBy: undefined,
       barGap: 0.25,
       clusterLabelFormat: 'raw',
-      highlightScale: 1.6,
-      isDrawSymbols: true
     },
   },
   grid: {

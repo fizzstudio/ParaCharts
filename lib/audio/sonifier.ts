@@ -28,8 +28,8 @@ SOFTWARE.
 
 import { OscillatorAudioEngine, type AudioEngine } from '.';
 import { AudioNotificationType } from './AudioEngine';
-import { type Axis } from '../view_temp/axis';
-import { type DataLayer } from '../view_temp/datalayer';
+import { type Axis } from '../view/axis';
+import { type DataLayer } from '../view/datalayer';
 import { type ParaStore } from '../store';
 import { XYDatapointDF } from '../store/modelDF';
 

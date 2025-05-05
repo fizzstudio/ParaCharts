@@ -1,5 +1,5 @@
 
-import { ParaComponent } from '../paracomponent';
+import { ParaComponent } from '../components';
 
 import { Dialog } from '@fizz/ui-components';
 import '@fizz/ui-components';

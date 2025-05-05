@@ -18,7 +18,7 @@ import { nothing, svg } from 'lit';
 import {type Ref, ref, createRef} from 'lit/directives/ref.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
-import { View, type SnapLocation } from '../view_temp/base_view';
+import { View, type SnapLocation } from '../view/base_view';
 import { generateUniqueId, fixed } from '../common/utils';
 import { ParaView } from '../paraview';
 import { SVGNS } from '../common/constants';
@@ -34,6 +34,7 @@ export interface LabelOptions {
   y: number;
   angle?: number;
   textAnchor?: LabelTextAnchor;
+  isPositionAtAnchor?: boolean;
   justify?: SnapLocation;
   wrapWidth?: number;
 }
@@ -47,16 +48,16 @@ export class Label extends View {
 
   public readonly classList: string[];
 
-  private _elRef: Ref<SVGTextElement> = createRef();
-  private _angle: number;
-  private _textAnchor: LabelTextAnchor;
-  private _justify: SnapLocation;
-  private _anchorXOffset!: number;
-  private _anchorYOffset!: number;
-  private _text: string;
-  private _textLines: TextLine[] = [];
+  protected _elRef: Ref<SVGTextElement> = createRef();
+  protected _angle: number;
+  protected _textAnchor: LabelTextAnchor;
+  protected _justify: SnapLocation;
+  protected _anchorXOffset!: number;
+  protected _anchorYOffset!: number;
+  protected _text: string;
+  protected _textLines: TextLine[] = [];
 
-  constructor(private options: LabelOptions, paraview: ParaView) {
+  constructor(paraview: ParaView, private options: LabelOptions) {
     super(paraview);
     this.classList = options.classList ?? [];
     if (!this.classList.includes('label')) {
@@ -108,11 +109,11 @@ export class Label extends View {
   }
 
   get anchorX() {
-    return this._x + this._anchorXOffset;
+    return this.options.isPositionAtAnchor ? this._x :  this._x + this._anchorXOffset;
   }
 
   get anchorY() {
-    return this._y + this._anchorYOffset;
+    return this.options.isPositionAtAnchor ? this._y :  this._y + this._anchorYOffset;
   }
 
   get textAnchor() {
@@ -216,13 +217,13 @@ export class Label extends View {
     return [width, height] as [number, number];
   }
 
-  private makeTransform() {
+  protected _makeTransform() {
     let t: string | undefined;
     if (this._angle) {
       t = fixed`
-        translate(${this._x + this._anchorXOffset},${this._y + this._anchorYOffset})
+        translate(${this.anchorX},${this.anchorY})
         rotate(${this._angle})
-        translate(${-this._x - this._anchorXOffset},${-this._y - this._anchorYOffset})`;
+        translate(${-this.anchorX},${-this.anchorY})`;
     }
     return t;
   }
@@ -235,16 +236,16 @@ export class Label extends View {
         ${ref(this._elRef)}
         class=${this.options.classList?.join(' ') ?? nothing} 
         role=${this.options.role ?? nothing}
-        x=${fixed`${this._x + this._anchorXOffset}`}
-        y=${fixed`${this._y + this._anchorYOffset}`}
+        x=${fixed`${this.anchorX}`}
+        y=${fixed`${this.anchorY}`}
         text-anchor=${this._textAnchor}
-        transform=${this.makeTransform() ?? nothing}
+        transform=${this._makeTransform() ?? nothing}
         id=${this.id}
       >
         ${this._textLines.length
           ? this._textLines.map((line, i) => 
             svg`
-              <tspan x=${this._x + line.offset} dy=${i === 0 ? '0' : '1.5rem'}>
+              <tspan x=${fixed`${this._x + line.offset}`} dy=${i === 0 ? '0' : '1.5rem'}>
                 ${line.text}
               </tspan>
             `)

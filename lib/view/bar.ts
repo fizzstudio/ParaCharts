@@ -329,12 +329,12 @@ export class BarChart extends XYChart {
     }
   }
 
-  content() {
-    return svg`
-      ${Object.entries(this._bars).map(([clusterKey, cluster]) => 
-        cluster.render()
-      )}
-    `;
+  legend() {
+    const keys = this.paraview.store.model!.keys;
+    return keys.map((key, i) => ({
+      label: key,
+      color: i
+    }));
   }
 
 }
@@ -383,6 +383,9 @@ export class Bar extends XYDatapointView {
     this._y = this.chart.height - this._height - distFromXAxis;
   }
 
+  protected _createSymbol() {
+  }
+
   protected get _d() {
     return fixed`
       M${this._x},${this._y + this.chart.settings.barGap}
@@ -393,15 +396,9 @@ export class Bar extends XYDatapointView {
   }
 
   content() {
-    const visitedScale = this.paraview.store.visitedDatapoints.includes(this._id)
-      ? this.chart.settings.highlightScale : 1;
-    const styles = {
-      strokeWidth: this.chart.settings.lineWidth*visitedScale
-    };
     return svg`
       <path
         d="${this._d}"
-        style=${styleMap(styles)}
       ></path>
     `;
   }

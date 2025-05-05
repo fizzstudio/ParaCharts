@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { type TemplateResult, svg, nothing } from 'lit';
 import { svg as staticSvg, StaticValue } from 'lit/static-html.js';
 import { ref } from 'lit/directives/ref.js';
+import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
 /*import { 
   HotkeyActionManager, EventActionManager, type KeyRegistrations, KeymapManager,
@@ -570,33 +571,23 @@ export class View extends BaseView {
 
 }
 
-type Constructor<T extends BaseView> = new (...args: any[]) => T;
+export interface ContainableI {
+  get class(): string;
+  get style(): StyleInfo;
+  get role(): string;
+  get roleDescription(): string;
+  get extraAttrs(): {attr: StaticValue, value: any}[];
+  get ref(): ReturnType<typeof ref> | null;
+}
+
+type GConstructor<T = {}> = new (...args: any[]) => T;
+type Containable = GConstructor<BaseView & Partial<ContainableI>>;
 
 /**
  * @public
  */
-export function Container<TBase extends Constructor<BaseView>>(Base: TBase) {
+export function Container<TBase extends Containable>(Base: TBase) {
   return class _Container extends Base {
-
-    get class() {
-      return '';
-    }
-
-    get role() {
-      return '';
-    }
-
-    get roleDescription() {
-      return '';
-    }
-
-    get extraAttrs(): {attr: StaticValue, value: any}[] {
-      return [];
-    }
-
-    get ref(): ReturnType<typeof ref> | null {
-      return null;
-    }
 
     renderChildren(): TemplateResult {
       return svg`${this.children.map(kid => kid.render())}`;
@@ -614,12 +605,15 @@ export function Container<TBase extends Constructor<BaseView>>(Base: TBase) {
           ${this.ref}
           id=${this.id || nothing}
           class=${this.class || nothing}
+          style=${this.style ? (Object.keys(this.style).length ? styleMap(this.style) : nothing) : nothing}
           role=${this.role || nothing}
           aria-roledescription=${this.roleDescription || nothing}
           transform=${tx || ty ? fixed`translate(${tx},${ty})` : nothing}
-          ${this.extraAttrs.map(attrInfo => svg`
-            ${attrInfo.attr}=${attrInfo.value}
-          `)}
+          ${this.extraAttrs
+            ? this.extraAttrs.map(attrInfo => svg`
+                ${attrInfo.attr}=${attrInfo.value}
+              `)
+            : ''}
         >
           ${this.content()}
         </g>

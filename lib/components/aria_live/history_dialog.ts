@@ -1,19 +1,14 @@
 
-import { ParaComponent } from '../../paracomponent';
+import { ParaComponent } from '../../components';
 
 import * as ui from '@fizz/ui-components';
 
-import { LitElement, html, css, nothing, type PropertyValueMap } from 'lit';
+import {html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 
-/**
- * Simple dialog that displays a message and a single
- * button to close the dialog. 
- * @public 
- */
-@customElement('para-status-bar-history-dialog')
-export class StatusBarHistoryDialog extends ParaComponent {
+@customElement('para-aria-live-history-dialog')
+export class AriaLiveHistoryDialog extends ParaComponent {
   protected _dialogRef: Ref<ui.Dialog> = createRef();
 
   /**
@@ -33,12 +28,12 @@ export class StatusBarHistoryDialog extends ParaComponent {
   `;
 
   render() {
-    const buttons = JSON.stringify([{tag: 'cancel', text: this.btnText}]);
+    const buttons = [{tag: 'cancel', text: this.btnText}];
     return html`
       <fizz-dialog
         ${ref(this._dialogRef)} 
         title="History" 
-        buttons=${buttons}
+        .buttons=${buttons}
       >
         <ul class="history"
         >
@@ -67,7 +62,7 @@ export class StatusBarHistoryDialog extends ParaComponent {
 declare global {
 
   interface HTMLElementTagNameMap {
-    'para-status-bar-history-dialog': StatusBarHistoryDialog;
+    'para-aria-live-history-dialog': AriaLiveHistoryDialog;
   }
 
 }

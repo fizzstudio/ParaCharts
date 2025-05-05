@@ -16,9 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { View, Container } from './base_view';
 import { type Layout } from './layout';
-import { type Axis, type VertAxis, type AxisOrientation, ChartTooDenseError, ChartTooWideError } from './axis';
+import { type Axis, type AxisOrientation, ChartTooDenseError, ChartTooWideError } from './axis';
 import { Label } from './label';
-import { type TickStrip, HorizTickStrip, VertTickStrip } from './tickstrip';
 import { ParaView } from '../paraview';
 
 import { type TemplateResult } from 'lit';
@@ -33,7 +32,8 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
 
   textHoriz?: boolean;
 
-  protected _tickInterval: number;
+  /** Distance between label centers (or starts or ends) */
+  protected _labelDistance!: number;
 
   constructor(
     public readonly axis: Axis<T>,
@@ -42,16 +42,19 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
     paraview: ParaView
   ) {
     super(paraview);
-    this._tickInterval = length/((tickLabels.length - 1)/axis.tickStep);
     this.setLength(length);
   }
 
   setLength(length: number) {
+    const n = this.axis.isInterval ? this.tickLabels.length : this.tickLabels.length - 1;
+    this._labelDistance = length/(n/this.axis.tickStep);
     this.clearChildren();
     this.createTickLabels();
   }
 
-  abstract get length(): number;
+  get length() {
+    return this._labelDistance*((this.tickLabels.length - 1)/this.axis.tickStep);
+  }
 
   get class() {
     return 'tick-label-tier';
@@ -66,7 +69,12 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   }
 
   get tickInterval() {
-    return this._tickInterval;
+    return this._labelDistance;
+  }
+
+  protected _createId(..._args: any[]): string {
+    // XXX needs index
+    return `tick-label-tier-${this.axis.orientation}`;
   }
 
   protected _maxWidth() {
@@ -86,7 +94,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
       if (i % this.axis.tickStep) {
         continue;
       }
-      const label = new Label({
+      const label = new Label(this.paraview, {
         classList: [
           'tick-label', this.axis.orientation, 
           this.axis.orientationSettings.position as string],
@@ -94,7 +102,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
         text: labelText,
         x: 0,
         y: 0,
-      }, this.axis.docView.paraview);
+      });
       this.append(label);
     }
   }
@@ -120,15 +128,6 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
  */
 export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
 
-  get length() {
-    return this.width;
-  }
-
-  setLength(length: number) {
-    this.width = length;
-    super.setLength(length);
-  }
-
   computeSize(): [number, number] {
     return [this._computeWidth(), this.textHoriz ? this._maxHeight() : this._maxWidth()];
   }
@@ -139,12 +138,12 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     // hang off the start and end boundaries of the tier.
     // These "hanging off" bits won't contribute to the size of
     // the tier, to make it easier to align.
-    let pos = this._tickInterval*index;
-    if (this.axis.isInterval) {
-      pos += this._tickInterval/2;
-    }
+    let pos = this._labelDistance*index;
+    // if (this.axis.isInterval) {
+    //   pos += this._labelDistance/2;
+    // }
     return (this.axis.orientationSettings.labelOrder === 'westToEast' ? 
-      pos : this.width - pos) - this._children[index].anchorXOffset;
+      pos : this.length - pos) - this._children[index].anchorXOffset;
   }
 
   protected _tickLabelY(index: number) {
@@ -157,7 +156,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   protected _computeWidth() {
     return this._children.length 
       ? this._children.at(-1)!.anchorX - this._children[0].anchorX
-      : this.width;
+      : 0; //this.width;
   }
 
   createTickLabels() {
@@ -167,6 +166,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
       kid.x = this._tickLabelX(i);
       kid.y = this._tickLabelY(i);
     });
+    this.updateSize();
     this._checkLabelSpacing();
   }
 
@@ -189,7 +189,8 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
       // The labels may actually extend a bit past the start and end points of
       // the x-axis, so we take that into account when computing the preferred width
       // of the chart content
-      const preferredWidth = largestAnchorGap*((this.tickLabels.length - 1)/this.axis.tickStep);
+      const n = this.axis.isInterval ? this.tickLabels.length : this.tickLabels.length - 1;
+      const preferredWidth = largestAnchorGap*(n/this.axis.tickStep);
       if (preferredWidth > 600) {
         const newTickStep = this.axis.tickStep + 1;
         const newNumLabels = Math.floor(this.tickLabels.length/newTickStep) + this.tickLabels.length % newTickStep;
@@ -209,10 +210,6 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
  */
 export class VertTickLabelTier extends TickLabelTier<'vert'> {
 
-  get length() {
-    return this.height;
-  }
-
   setLength(length: number) {
     this.height = length;
     super.setLength(length);
@@ -230,7 +227,7 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
   }
 
   protected _tickLabelY(index: number) {
-    const pos = this._tickInterval*index;
+    const pos = this._labelDistance*index;
     return (this.axis.orientationSettings.labelOrder === 'northToSouth'
         ? pos 
         : this.height - pos)
