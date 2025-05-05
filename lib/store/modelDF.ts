@@ -25,6 +25,10 @@ import { calculateWholeChartFacetStats, ChartFacetStats } from "./metadata";
 export class DataPointDF {
   constructor(protected data: DataFrameRow, public seriesKey: string, public datapointIndex: number) { }
 
+  public entries(): Iterable<[string, Box<Datatype>]> {
+    return Object.entries(this.data)[Symbol.iterator]();
+  }
+
   public facetBox(key: string): Box<Datatype> | null {
     return this.data[key] ?? null;
   }

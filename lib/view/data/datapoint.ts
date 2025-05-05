@@ -148,7 +148,7 @@ export class DatapointView extends DataView {
     super.onFocus();
     this._visit();
     this.paraview.store.announce(
-      this.paraview.summarizer.getDatapointSummary(this.seriesKey, this.index));
+      this.paraview.summarizer.getDatapointSummary(this.datapoint));
   }
 
   computeLayout() {}
