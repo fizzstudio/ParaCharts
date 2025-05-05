@@ -5,18 +5,21 @@ import { type AriaLive } from '../../components';
 import '../../components/aria_live';
 
 import { html, css } from 'lit';
-import { property, customElement } from 'lit/decorators.js';
+import { property, customElement, state } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { BasicSummarizer } from '../../summary';
 
 
 @customElement('para-description-panel')
 export class DescriptionPanel extends ControlPanelTabPanel {
 
-  @property() caption = '';
+  @state() caption = '';
   @property() visibleStatus = '';
 
   protected _ariaLiveRegionRef = createRef<AriaLive>();
+
+  private _summarizer = new BasicSummarizer(this._store); //FIXME: The whole ParaChart should have a common summarizer
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -57,6 +60,9 @@ export class DescriptionPanel extends ControlPanelTabPanel {
       flexDirection: 'column',
       gap: '0.5rem'
     };
+    if (this.controlPanel.dataState === 'complete') {
+      this.caption = this._summarizer.getChartSummary();
+    }
     return html`
       <figcaption>
         <div id="description" style=${styleMap(styles)}>
