@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import ss from 'simple-statistics';
+import { mean, median, mode } from 'simple-statistics';
 
 export interface ChartFacetStats {
   min: number;
@@ -33,8 +33,8 @@ export function calculateWholeChartFacetStats(facetValues: number[]): ChartFacet
     min,
     max,
     range: max - min,
-    mean: ss.mean(facetValues),
-    median: ss.median(facetValues),
-    mode: ss.mode(facetValues)
+    mean: mean(facetValues),
+    median: median(facetValues),
+    mode: mode(facetValues)
   };
 }
