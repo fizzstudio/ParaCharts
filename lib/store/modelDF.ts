@@ -14,11 +14,13 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { zip } from "@fizz/chart-classifier-utils";
-import { enumerate } from "../common/utils";
+import { Memoize } from 'typescript-memoize';
+import { AllSeriesData, Dataset, Datatype, Manifest, Series, Theme1 as Theme } from "@fizz/paramanifest";
+
+import { arrayEqualsBy, enumerate, strToId } from "../common/utils";
 import { DataFrame, DataFrameColumn, DataFrameRow, FacetSignature, RawDataPoint } from "./dataframe/dataframe";
-import { AllSeriesData, Dataset, Datatype, Manifest, Series } from "@fizz/paramanifest";
 import { Box, BoxSet } from "./dataframe/box";
+import { calculateWholeChartFacetStats, ChartFacetStats } from "./metadata";
 
 export type DataPointDF = DataFrameRow;
 
@@ -30,19 +32,24 @@ export interface XYDatapointDF {
 
 
 export class SeriesDF {
-  private readonly dataframe: DataFrame;
-
   [i: number]: DataPointDF;
   public readonly length: number;
+  public readonly id: string;
+  public readonly label: string;
+  public readonly theme?: Theme;
+
+  private readonly dataframe: DataFrame;
   private readonly uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
   private readonly datapoints: DataPointDF[] = [];
+
   /*protected xMap: Map<ScalarMap[X], number[]>;
   private yMap: Map<number, ScalarMap[X][]>;*/
-
   constructor(
     public readonly key: string, 
     public readonly rawData: RawDataPoint[], 
-    public readonly facets: FacetSignature[]
+    public readonly facets: FacetSignature[],
+    label?: string,
+    theme?: Theme
   ) {
     this.dataframe = new DataFrame(facets);
     this.facets.forEach((facet) => this.uniqueValuesForFacet[facet.key] = new BoxSet<Datatype>);
@@ -57,6 +64,11 @@ export class SeriesDF {
     /*this.xMap = mapDatapointsXtoY(this.datapoints);
     this.yMap = mapDatapointsYtoX(this.datapoints);*/
     this.length = this.rawData.length;
+    this.id = strToId(this.key); // TODO: see if we need to make this more unique
+    this.label = label ?? this.key;
+    if (theme) {
+      this.theme = theme;
+    }
   }
 
   public facet(key: string): DataFrameColumn<Datatype> | null {
@@ -84,36 +96,31 @@ export function seriesDFFromSeriesManifest(seriesManifest: Series, facets: Facet
   if (!seriesManifest.records) {
     throw new Error('only series manifests with inline data can use this method.');
   }
-  return new SeriesDF(seriesManifest.key, seriesManifest.records!, facets);
-}
-
-
-function facetsEquals(lhs: FacetSignature[], rhs: FacetSignature[]): boolean {
-  if (lhs.length !== rhs.length) {
-    return false;
-  }
-  for (const [lFacet, rFacet] of zip(lhs, rhs)) {
-    if ((lFacet.key !== rFacet.key) || (lFacet.datatype !== rFacet.datatype)) {
-      return false;
-    }
-  }
-  return true;
+  return new SeriesDF(
+    seriesManifest.key, 
+    seriesManifest.records!, 
+    facets, 
+    seriesManifest.label,
+    seriesManifest.theme
+  );
 }
 
 // Like a dictionary for series
 // TODO: In theory, facets should be a set, not an array. Maybe they should be sorted first?
 export class ModelDF {
   public readonly keys: string[] = [];
-  protected keyMap: Record<string, SeriesDF> = {};
   [i: number]: SeriesDF;
+  public readonly facets: FacetSignature[];
   public readonly multi: boolean;
   public readonly numSeries: number;
+
+  protected keyMap: Record<string, SeriesDF> = {};
+  protected datatypeMap: Record<string, Datatype> = {};
+  private uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
+
   /*public readonly xs: ScalarMap[X][];
   public readonly ys: number[];
   public readonly allPoints: Datapoint2D<X>[]*/
-  public readonly facets: FacetSignature[];
-
-  private uniqueValuesForFacet: Record<string, BoxSet<Datatype>> = {};
 
   constructor(public readonly series: SeriesDF[]) {
     if (this.series.length === 0) {
@@ -124,12 +131,16 @@ export class ModelDF {
     this.facets = this.series[0].facets;
     this.facets.forEach((facet) => {
       this.uniqueValuesForFacet[facet.key] = new BoxSet<Datatype>;
+      this.datatypeMap[facet.key] = facet.datatype;
     });
     for (const [aSeries, seriesIndex] of enumerate(this.series)) {
       if (this.keys.includes(aSeries.key)) {
         throw new Error('every series in a model must have a unique key');
       }
-      if (!facetsEquals(aSeries.facets, this.facets)) {
+      if (!arrayEqualsBy(
+        (l, r) => (l.key === r.key) && (l.datatype === r.datatype), 
+        aSeries.facets, this.facets
+      )) {
         throw new Error('every series in a model must have the same facets');
       }
       this.keys.push(aSeries.key);
@@ -167,6 +178,18 @@ export class ModelDF {
   public allFacetValues(key: string): Box<Datatype>[] | null {
     return this.uniqueValuesForFacet[key]?.values ?? null;
   }
+
+  @Memoize()
+  public getFacetStats(key: string): ChartFacetStats | null {
+    const facetDatatype = this.datatypeMap[key];
+    // Checks for both non-existent and non-numerical facets
+    if (facetDatatype !== 'number') {
+      return null;
+    }
+    const allBoxes = this.allFacetValues(key) as Box<'number'>[];
+    const allValues = allBoxes.map((box) => box.value);
+    return calculateWholeChartFacetStats(allValues);
+  }
 }
 
 export function facetsFromDataset(dataset: Dataset): FacetSignature[] {
@@ -185,6 +208,7 @@ export function modelDFFromManifest(manifest: Manifest): ModelDF {
   return new ModelDF(series);
 }
 
+// FIXME: This function does not include series labels (as seperate from series keys) or series themes
 export function modelDFFromAllSeriesData(
   data: AllSeriesData, facets: FacetSignature[]
 ): ModelDF {
