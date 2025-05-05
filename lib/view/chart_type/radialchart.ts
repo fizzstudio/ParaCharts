@@ -1,15 +1,14 @@
 
 import { DataLayer } from '../datalayer';
-import { DatapointView, SeriesView } from '../data';
+import { ChartLandingView, DatapointView, SeriesView } from '../data';
 import {
-  type RadiusSettings, type RadialSettings,
+  type RadialSettings,
   type RadialChartType, type DeepReadonly
 } from '../../store';
-import { Label } from '../label';
+import { Label, type LabelTextAnchor } from '../label';
 import { type ParaView } from '../../paraview';
 import { Sector } from '../shape/sector';
 import { formatBox } from '../formatter';
-
 import { enumerate } from '../../common/utils';
 
 export type ArcType = 'circle' | 'semicircle';
@@ -18,7 +17,7 @@ export abstract class RadialChart extends DataLayer {
 
   declare protected _settings: DeepReadonly<RadialSettings>;
   
-  protected _radius!: Required<RadiusSettings>;
+  //protected _radius!: Required<RadiusSettings>;
   protected _cx!: number;
   protected _cy!: number;
   protected _arcType: ArcType = 'circle';
@@ -47,8 +46,8 @@ export abstract class RadialChart extends DataLayer {
     //this.title = title;
     //this.label = null;
 
-    const radius: Partial<RadiusSettings> = this._settings.radius ?? {};
-    radius.innerPercent ??= 0.6;
+    // const radius: Partial<RadiusSettings> = this._settings.radius ?? {};
+    // radius.innerPercent ??= 0.6;
 
     this._cx = this._width/2;
     this._cy = this._height/2;
@@ -60,26 +59,26 @@ export abstract class RadialChart extends DataLayer {
 //      this.center_label.y_offset = this.options.center_label.y_offset ? this.options.center_label.y_offset : 0; // vertical baseline
     }
 
-    if (radius.outer === undefined) {
-      let outerRadiusCalc = Math.min(this._height, this._width)/this._radiusDivisor;
-      // for gauge charts that don't take up full height, move gauge down
-      if (this._arc < 1) {
-        outerRadiusCalc = Math.max(this._height, this._width)/this._radiusDivisor;
-        radius.outer = outerRadiusCalc;
-        this._cy = radius.outer;
-      } else {
-        radius.outer = outerRadiusCalc;
-      }
-    }
-    if (radius.inner === undefined) {
-      radius.inner = radius.outer*radius.innerPercent;
-    }
-    this._radius = radius as RadiusSettings;
+    // if (radius.outer === undefined) {
+    //   let outerRadiusCalc = Math.min(this._height, this._width)/this._radiusDivisor;
+    //   // for gauge charts that don't take up full height, move gauge down
+    //   if (this._arc < 1) {
+    //     outerRadiusCalc = Math.max(this._height, this._width)/this._radiusDivisor;
+    //     radius.outer = outerRadiusCalc;
+    //     this._cy = radius.outer;
+    //   } else {
+    //     radius.outer = outerRadiusCalc;
+    //   }
+    // }
+    // if (radius.inner === undefined) {
+    //   radius.inner = radius.outer*radius.innerPercent;
+    // }
+    // this._radius = radius as RadiusSettings;
 
     // for gauge charts that don't take up full height, move gauge down
-    if (this._arc < 1) {
-      this._cy = this._radius.outer;
-    }
+    // if (this._arc < 1) {
+    //   this._cy = this._radius.outer;
+    // }
     
     // optional central label
     /*this.centerLabel = {
@@ -102,9 +101,9 @@ export abstract class RadialChart extends DataLayer {
     //this.label_margin = chart_obj.options.axis.r.tick.margin;
   }
 
-  get radius() {
-    return this._radius;
-  }
+  // get radius() {
+  //   return this._radius;
+  // }
 
   get cx() {
     return this._cx;
@@ -120,6 +119,24 @@ export abstract class RadialChart extends DataLayer {
 
   get startAngleOffset() {
     return this._startAngleOffset;
+  }
+
+  init() {
+    super.init();
+    if (this._settings.label.isDrawEnabled) {
+      // this needs to happen after the datapoints have been created and laid out
+      this._createLabels();
+      const minX = Math.min(...this._labels.map(label => label.left));
+      const maxX = Math.max(...this._labels.map(label => label.right));
+      this._width = maxX - minX;
+      this._parent.width = this._width;
+      if (minX < 0) {
+        this.datapointViews.forEach(dp => {
+          dp.x += -minX; 
+        });
+        this._cx += -minX;
+      }
+    }
   }
 
   protected _createComponents() {
@@ -169,9 +186,6 @@ export abstract class RadialChart extends DataLayer {
       accum += percentage;
       //todo().canvas.jimerator.addSelector(ySeries.name!, i, datapointView.id);
     }
-    if (this._settings.label.isDrawEnabled) {
-      this._createLabels();
-    }
   }
 
   protected _createLabels() {
@@ -181,16 +195,60 @@ export abstract class RadialChart extends DataLayer {
     for (const [x, i] of enumerate(xSeries)) {
       const text = x;
       const slice = this._chartLandingView.children[0].children[i] as RadialSlice;
-      const arcCenter = slice.sector.arcCenter;
-      this.append(new Label(this.paraview, {
+      const arcCenter = slice.shape.arcCenter;
+      let labelX: number, labelY: number;
+      let anchor: LabelTextAnchor;
+      if (this._settings.sliceLabelPosition === 'inside') {
+        labelX = (slice.shape.x + arcCenter.x)/2;
+        labelY = (slice.shape.y + arcCenter.y)/2;
+        anchor = 'middle';
+      } else if (this._settings.sliceLabelPosition === 'outside') {
+        labelX = arcCenter.x;
+        labelY = arcCenter.y;
+        anchor = labelX > this.cx ? 'start' : 'end';
+      } else {
+        labelX = 0;
+        labelY = 0;
+        anchor = 'middle';
+      }
+      this._labels.push(new Label(this.paraview, {
         text, 
         classList: ['radial_label'], 
         role: 'axislabel', 
-        x: (slice.sector.x + arcCenter.x)/2,
-        y: (slice.sector.y + arcCenter.y)/2,
+        x: labelX,
+        y: labelY,
+        textAnchor: anchor,
         isPositionAtAnchor: true
       }));
+      slice.label = this._labels.at(-1)!;
+      // Labels draw as children of the slice so the highlights layer can `use` them
+      slice.append(slice.label);
     }
+    this._resolveLabelCollisions();
+  }
+
+  protected _resolveLabelCollisions() {
+    const slices = [...this.datapointViews] as RadialSlice[];
+    // Sort slices according to label height onscreen from lowest to highest
+    slices.sort((a, b) => b.label!.y - a.label!.y);
+
+    // const leaderLabelOffset = this.paraview.store.settings.chart.isDrawSymbols 
+    //   ? -this._chart.settings.seriesLabelPadding 
+    //   : 0;
+
+    slices.slice(1).forEach((s, i) => {
+      // Move each label up out of collision with the one onscreen below it.
+      if (s.label!.intersects(slices[i].label!)) {
+        s.label!.y = slices[i].label!.y - s.label!.height;
+      }
+    });
+
+    // colliders.forEach(c => {
+    //   // NB: this value already includes the series label padding
+    //   c.label.x += (this._chart.settings.leaderLineLength + leaderLabelOffset); 
+    //   this.leaders.push(new LineLabelLeader(c.endpoint, c.label, this._chart));
+    //   this.prepend(this.leaders.at(-1)!);
+    // });
   }
 
   protected abstract _createSlice(seriesView: SeriesView, params: RadialDatapointParams): RadialSlice;
@@ -202,7 +260,8 @@ export abstract class RadialChart extends DataLayer {
       formatBox(box, 'pieSliceValue', this.paraview.store));
     return xSeries.map((x, i) => ({
       label: `${x}: ${ySeries[i]}`,
-      color: i
+      color: i,
+      datapointIndex: i
     }));
   }
 
@@ -235,9 +294,25 @@ export abstract class RadialChart extends DataLayer {
   }
 
   moveUp() {
+    const leaf = this._chartLandingView.focusLeaf;
+    if (leaf instanceof DatapointView) {
+        // Keep the series view focused on the datapoint, but make
+        // the chart landing the new leaf
+        leaf.parent.blur();
+    }
   }
 
   moveDown() {
+    const leaf = this._chartLandingView.focusLeaf;
+    if (leaf instanceof ChartLandingView) {
+      if (leaf.children[0].currFocus) {
+        // Restore focus to the last-focused datapoint
+        leaf.children[0].focus();
+      } else {
+        // Focus on the first datapoint
+        this._chartLandingView.children[0].children[0].focus();
+      }
+    }
   }
 
   playRight() {
@@ -268,15 +343,23 @@ export abstract class RadialSlice extends DatapointView {
 
   declare readonly chart: RadialChart;
 
-  protected _sector!: Sector;
+  protected _label: Label | null = null;
   
   constructor(parent: SeriesView, protected _params: RadialDatapointParams) {
     super(parent);
     this._isStyleEnabled = true;
   }
 
-  get class() {
-    return `datapoint slice series-${this._params.seriesIdx}`;
+  get label() {
+    return this._label;
+  }
+
+  set label(label: Label | null) {
+    this._label = label;
+  }
+
+  get shape() {
+    return this._shape as Sector;
   }
 
   get role() {
@@ -287,12 +370,33 @@ export abstract class RadialSlice extends DatapointView {
     return 'datapoint';
   }
 
-  // get extraAttrs() {
-  //   return [{attr: literal`aria-labelledby`, value: this._params.label.id}];
-  // }
+  get styleInfo() {
+    const style = super.styleInfo;
+    delete style.strokeWidth;
+    delete style.stroke;
+    return style;
+  }
 
-  get sector() {
-    return this._sector;
+  get x() {
+    return super.x;
+  }
+
+  set x(x: number) {
+    if (this._label) {
+      this._label.x += x - this._x;
+    }
+    super.x = x;
+  }
+
+  get y() {
+    return super.y;
+  }
+
+  set y(y: number) {
+    if (this._label) {
+      this._label.y += y - this._y;
+    }
+    super.y = y;
   }
 
   protected _createSymbol() {

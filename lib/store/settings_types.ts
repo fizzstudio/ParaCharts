@@ -222,6 +222,8 @@ export interface AxesSettings extends SettingGroup {
   vert: OrientedAxisSettings<'vert'>;
 }
 
+export type LegendItemOrder = 'lexical' | 'chart';
+
 /** @public */
 export interface LegendSettings extends SettingGroup {
   isDrawLegend: boolean;
@@ -233,11 +235,13 @@ export interface LegendSettings extends SettingGroup {
   pairGap: number;
   position: CardinalDirection;
   margin: number;
+  itemOrder: LegendItemOrder;
 }
 
 /** @public */
 export interface PlotSettings extends SettingGroup {
 }
+
 
 /** @public */
 export interface BarSettings extends PlotSettings {
@@ -291,18 +295,14 @@ export interface ScatterSettings extends PointSettings {
 
 }
 
-/** @public */
-export interface RadiusSettings extends SettingGroup {
-  outer: number;
-  inner: number;
-  innerPercent: number;
-}
+export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
 /** @public */
 export interface RadialSettings extends SettingGroup {
   label: LabelSettings;
   isRenderCenterLabel: boolean;
-  radius?: RadiusSettings;
+  annularThickness: number;
+  sliceLabelPosition: SliceLabelPosition;
   sliceLabelFormat: LabelFormat;
   sliceValueFormat: LabelFormat;
 }

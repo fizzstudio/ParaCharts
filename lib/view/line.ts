@@ -16,11 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { PointChart, ChartPoint } from './pointchart';
 import { type LineSettings, type DeepReadonly } from '../store/settings_types';
-import { fixed } from '../common/utils';
-import { type XYSeriesView } from './xychart';
+import { XYSeriesView } from './xychart';
+import { Path } from './shape/path';
 
-import { svg } from 'lit';
-import { styleMap } from 'lit/directives/style-map.js';
+import { type Point } from '@fizz/chart-classifier-utils';
 
 /**
  * Class for drawing line charts.
@@ -102,16 +101,15 @@ export class LineSection extends ChartPoint {
   protected _nextMidX?: number;
   protected _nextMidY?: number;
 
-  get width() {
-    return this.chart.settings.selectedPointMarkerSize.width;
-  }
+  // get width() {
+  //   return this.chart.settings.selectedPointMarkerSize.width;
+  // }
 
-  get height() {
-    return this.chart.settings.selectedPointMarkerSize.height;
-  }
+  // get height() {
+  //   return this.chart.settings.selectedPointMarkerSize.height;
+  // }
 
   computeLayout() {
-    super.computeLayout();
     // find midpoint between values for next and previous, draw line as 2 segments
 
     // find midpoint between values for this and previous
@@ -126,35 +124,19 @@ export class LineSection extends ChartPoint {
 
     // calculate centroid for scale transforms
     this._computeCentroid();
+
+    // create shape and symbol
+    super.computeLayout();
   }
 
   protected _computePrev() {
-      // find midpoint x position
-      this._prevMidX = this._x - LineSection.width/2; // - 0.1;
-      // pixel height/y-value range
-      const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
-      // find midpoint y position
-      const prevValue = this._prev!.datapoint.y.value as number;
-      const thisValue = this.datapoint.y.value as number;
-      const prevMidDiff = Math.min(thisValue, prevValue) + 
-        (Math.max(thisValue, prevValue) - Math.min(thisValue, prevValue))/2;
-      const prevMidHeight = (prevMidDiff - this.chart.axisInfo!.yLabelInfo.min!)*pxPerYUnit;
-      this._prevMidY = this.chart.height - prevMidHeight;
-  }
+    this._prevMidX = -this.width/2; // - 0.1;
+    this._prevMidY = (this._prev!.y - this.y)/2;
+}
 
   protected _computeNext() {
-      // find midpoint x position
-      this._nextMidX = this._x + LineSection.width/2; // + 0.1;
-      // pixel height/y-value range
-      const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
-      // find midpoint y position
-      const nextValue = this._next!.datapoint.y.value as number;
-      const thisValue = this.datapoint.y.value as number;
-      const nextMidDiff = Math.min(thisValue, nextValue) + 
-        (Math.max(thisValue, nextValue) - Math.min(thisValue, nextValue))/2;
-      const nextMidHeight = (nextMidDiff - this.chart.axisInfo!.yLabelInfo.min!)*pxPerYUnit;
-
-      this._nextMidY = this.chart.height - nextMidHeight;
+      this._nextMidX = this.width/2; // + 0.1;
+      this._nextMidY = (this._next!.y - this.y)/2; 
   }
 
   protected _computeCentroid() {
@@ -194,30 +176,53 @@ export class LineSection extends ChartPoint {
     this.centroid = `${centroidX} ${centroidY}`;
   }
 
-  protected get _lineD() {
-    // default case assumes there's only 1 datapoint (no lines on either side)
-    let lineD = fixed`M${this._x},${this._y}`;
+  protected get _points(): Point[] {
     if (this._prevMidY !== undefined && this._nextMidY !== undefined) {
-      lineD = fixed`
-        M${this._prevMidX!},${this._prevMidY}
-        L${this._x},${this._y} 
-        L${this._nextMidX!},${this._nextMidY}`;
+      return [
+        {x: this._prevMidX!, y: this._prevMidY},
+        {x: 0, y: 0}, 
+        {x: this._nextMidX!, y: this._nextMidY}
+      ];
     } else if (this._prevMidY === undefined && this._nextMidY !== undefined) {
-      lineD = fixed`M${this._x},${this._y} L${this._nextMidX!},${this._nextMidY}`;
+      return [
+        {x: 0 , y: 0},
+        {x: this._nextMidX!, y: this._nextMidY}
+      ];
     } else if (this._prevMidY !== undefined && this._nextMidY === undefined) {
-      lineD = fixed`M${this._prevMidX!},${this._prevMidY} L${this._x},${this._y}`;
+      return [
+        {x: this._prevMidX!, y: this._prevMidY},
+        {x: 0, y: 0}
+      ];
+    } else {
+      // default case assumes there's only 1 datapoint (no lines on either side)
+      return [
+        {x: 0, y: 0}
+      ];
     }
-    return lineD;
   }
 
-  content() {
-    return svg`
-      <path
-        class="data-line"
-        d=${this._lineD}
-      >
-      </path>
-    `;
+  get classInfo() {
+    return {
+      dataLine: true,
+      ...super.classInfo
+    };
   }
+
+  get styleInfo() {
+    // Need to clear the fill for visiting
+    const style = super.styleInfo;
+    style.fill = 'none';
+    return style;
+  }
+
+  protected _createShape() {
+    this._shape = new Path(this.paraview, {
+      x: this._x,
+      y: this._y,
+      points: this._points
+    });
+    super._createShape();
+  }
+
 }
 

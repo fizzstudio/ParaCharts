@@ -71,7 +71,7 @@ export class DataView extends View {
     return this.seriesProps.color;
   }
 
-  get style(): StyleInfo {
+  get styleInfo(): StyleInfo {
     const style: StyleInfo = {};
     if (this._isStyleEnabled) {
       let colorValue = this.chart.paraview.store.colors.colorValueAt(this.color);

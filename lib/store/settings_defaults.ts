@@ -133,6 +133,7 @@ export const defaults: Settings = {
     pairGap: 30,
     position: 'east',
     margin: 20,
+    itemOrder: 'chart'
   },
   type: {
     bar: {
@@ -181,12 +182,14 @@ export const defaults: Settings = {
     },
     pie: {
       label: {
-        isDrawEnabled: false,
+        isDrawEnabled: true,
         margin: 3,
         fontSize: 15,
         color: 'black',
       },
       isRenderCenterLabel: true,
+      annularThickness: 1,
+      sliceLabelPosition: 'outside',
       sliceLabelFormat: 'raw',
       sliceValueFormat: 'raw'
     },
@@ -198,6 +201,8 @@ export const defaults: Settings = {
         color: 'black',
       },
       isRenderCenterLabel: true,
+      annularThickness: 0.5,
+      sliceLabelPosition: 'outside',
       sliceLabelFormat: 'raw',
       sliceValueFormat: 'raw'
     },
@@ -209,6 +214,8 @@ export const defaults: Settings = {
         color: 'black',
       },
       isRenderCenterLabel: true,
+      annularThickness: 0.5,
+      sliceLabelPosition: 'outside',
       sliceLabelFormat: 'raw',
       sliceValueFormat: 'raw'
     },

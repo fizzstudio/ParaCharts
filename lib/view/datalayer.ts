@@ -29,7 +29,7 @@ import { ParaView } from '../paraview';
 import { SettingsManager } from '../store/settings_manager';
 import { type AxisInfo } from '../common/axisinfo';
 import { type HotkeyEvent } from '../store/keymap_manager';
-import { ChartLandingView, type DataView, type DatapointView } from './data';
+import { ChartLandingView, DatapointView, SeriesView, type DataView } from './data';
 import { type LegendItem } from './legend';
 
 import { type clusterObject } from '@fizz/clustering';
@@ -179,8 +179,25 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   protected abstract _createComponents(): void;
-  protected abstract _layoutComponents(): void;
+  
+  protected _layoutComponents() {
+    for (const datapointView of this.datapointViews) {
+      datapointView.computeLocation();
+    }
+    for (const datapointView of this.datapointViews) {
+      datapointView.computeLayout();
+    }
+    this._layoutSymbols();
+  }
 
+  protected _newDatapointView(seriesView: SeriesView, ..._rest: any[]): DatapointView {
+    return new DatapointView(seriesView);
+  }
+
+  protected _newSeriesView(seriesKey: string, isStyleEnabled?: boolean, ..._rest: any[]): SeriesView {
+    return new SeriesView(this, seriesKey, isStyleEnabled);
+  }
+  
   legend(): LegendItem[] {
     return [];
   }

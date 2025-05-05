@@ -525,9 +525,31 @@ export class Colors {
     return this.palette.colors[index]?.name ?? 'default';
   }
 
-  /** Simply returns `index`, or -1 if it's out of bounds. */
-  colorIndex(index: number) {
-    return this.palette.colors[index % this.palette.colors.length] !== undefined ? index : -1;
+  /**
+   * Wrap color index if out of range.
+   * @param index 
+   * @returns valid index
+   */
+  wrapColorIndex(index: number) {
+    return index % this.palette.colors.length;
+  }
+
+  /**
+   * Get palette index of a color.
+   * @param name 
+   * @returns index or -1 if not found
+   */
+  colorIndex(name: string) {
+    return this.palette.colors.findIndex(c => c.name === name);
+  }
+
+  /**
+   * Get palette index of a color value.
+   * @param value 
+   * @returns index or -1 if not found
+   */
+  colorValueIndex(value: string) {
+    return this.palette.colors.findIndex(c => c.value === value);
   }
 
   colorValue(color: string) {
