@@ -4,6 +4,7 @@ import { type ScatterSettings, Setting, type DeepReadonly } from '../store/setti
 import { type XYSeriesView } from './xychart';
 import { ParaView } from '../paraview';
 import { AxisInfo } from '../common/axisinfo';
+import { coord, generateClusterAnalysis } from '@fizz/clustering';
 
 export class ScatterPlot extends PointChart {
 
@@ -11,7 +12,12 @@ export class ScatterPlot extends PointChart {
   
   constructor(paraview: ParaView, index: number) {
     super(paraview, index);
-    this._isClustering = true;
+    if (this.paraview.store.model?.numSeries === 1){
+      this._isClustering = true;
+    }
+    else{
+      this._isClustering = false;
+    }
   }
 
   get settings() {
@@ -34,6 +40,23 @@ export class ScatterPlot extends PointChart {
     return new ScatterPoint(seriesView);
   }
 
+  protected _createComponents(): void {
+    if (this.isClustering){
+      this._generateClustering();
+    }
+    super._createComponents()
+  }
+
+  protected _generateClustering(){
+    const data: Array<coord> = []
+    const seriesList = this.paraview.store.model!.series
+    for (let series of seriesList){
+      for (let i = 0; i < series.length; i++){
+        data.push({x: series[i].x.value as number, y: series[i].y.value as number});
+      } 
+    }
+    this._clustering = generateClusterAnalysis(data, true);
+  } 
 }
 
 class ScatterPoint extends ChartPoint {
