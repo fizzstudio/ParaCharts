@@ -10,7 +10,7 @@ import { type ParaView } from '../../paraview';
 import { Sector } from '../shape/sector';
 import { formatBox } from '../formatter';
 
-import { enumerate } from '../../common/utils';
+import { enumerate } from '@fizz/paramodel';
 
 export type ArcType = 'circle' | 'semicircle';
 

@@ -1,5 +1,5 @@
 import { SettingControl } from '.';
-import { strToId } from '../../common/utils';
+import { strToId } from '@fizz/paramodel';
 
 import { Slider } from '@fizz/ui-components';
 

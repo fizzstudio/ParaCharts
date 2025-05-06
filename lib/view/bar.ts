@@ -4,12 +4,12 @@ import { AxisInfo } from '../common/axisinfo';
 import { 
   type BarSettings, type StackContentOptions ,type DeepReadonly
 } from '../store/settings_types';
-import { enumerate, fixed, strToId } from '../common/utils';
+import { fixed } from '../common/utils';
 import { formatBox } from './formatter';
 
 import { svg } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
-import { Box } from '../store/dataframe/box';
+import { Box, enumerate, strToId } from '@fizz/paramodel';
 
 type BarData = {[key: string]: BarCluster};
 

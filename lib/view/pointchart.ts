@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { XYChart, XYDatapointView, XYSeriesView } from './xychart';
 import { AxisInfo } from '../common/axisinfo';
 import { type PointChartType } from '../store/settings_types';
-import { enumerate, strToId } from '../common/utils';
+import { enumerate, strToId } from '@fizz/paramodel';
 import { formatBox } from './formatter';
 
 import { type coord, generateClusterAnalysis } from '@fizz/clustering';
