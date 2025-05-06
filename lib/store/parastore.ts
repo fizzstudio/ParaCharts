@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { State, property } from '@lit-app/state';
 import { produce } from 'immer';
 
-import { dataFromManifest, DisplayType, Facet, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
+import { dataFromManifest, Facet, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
 
 import { DeepReadonly, Settings, SettingsInput } from './settings_types';
 import { SettingsManager } from './settings_manager';
@@ -28,9 +28,8 @@ import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { keymap } from './keymap';
 import { KeymapManager } from './keymap_manager';
-import { facetsFromDataset, Model, modelFromAllSeriesData, modelFromManifest } from '@fizz/paramodel';
-import { FacetSignature } from '@fizz/paramodel';
-import { AxisOrientation } from '../common/types';
+import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature 
+  } from '@fizz/paramodel';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -61,11 +60,6 @@ export class ParaStore extends State {
   protected _facets: FacetSignature[] | null = null;
   protected _type: ChartType = 'line';
   protected _title = '';
-  protected _facetKeys: string[] = [];
-  protected _facetMap: Record<string, Facet> = {};
-  protected _axisFacetKeys: string[] = [];
-  protected _horizontalAxisFacetKey: string | null = null;
-  protected _verticalAxisFacetKey: string | null = null;
   protected _seriesProperties: SeriesPropertyManager | null = null;
   protected _colors: Colors;
   protected _keymapManager = new KeymapManager(keymap);
@@ -74,8 +68,6 @@ export class ParaStore extends State {
 
   public idList: Record<string, boolean> = {};
 
-  private _displayTypeForFacet: Record<string, DisplayType | undefined> = {}; // FIXME: | undefined
-  
   constructor(
     inputSettings: SettingsInput, 
     suppleteSettingsWith?: DeepReadonly<Settings>
@@ -122,79 +114,15 @@ export class ParaStore extends State {
     this._type = dataset.type;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
-    this._facetKeys = Object.keys(dataset.facets);
-    this._facetKeys.forEach((key) => {
-      const facetManifest = dataset.facets[key];
-      this._displayTypeForFacet[key] = facetManifest.displayType;
-      this._facetMap[key] = facetManifest;
-      if (facetManifest.displayType?.type === 'axis') { // FIXME: remove ?
-        this._axisFacetKeys.push(key);
-        if (facetManifest.displayType!.orientation === 'horizontal') {
-          if (this._horizontalAxisFacetKey === null) {
-            this._horizontalAxisFacetKey = key;
-          } else {
-            throw new Error('only one horizontal axis per chart');
-          }
-        } else {
-          if (this._verticalAxisFacetKey === null) {
-            this._verticalAxisFacetKey = key;
-          } else {
-            throw new Error('only one vertical axis per chart');
-          }
-        }
-      }
-    });
-    if (this._axisFacetKeys.length !== 0 && this._axisFacetKeys.length !== 2) {
-      throw new Error('charts must either have 2 or 0 axes')
-    }
-    /*if (this._horizontalAxisFacetKey === null || this._verticalAxisFacetKey === null) {
-      const independentAxes = this._axisFacetKeys.filter(
-        (key) => dataset.facets[key].variableType === 'independent'
-      );
-      const dependentAxes = this._axisFacetKeys.filter(
-        (key) => dataset.facets[key].variableType === 'dependent'
-      );
-      if (
-        independentAxes.length === 1 && 
-        dependentAxes.length === 1 &&
-        (this._horizontalAxisFacetKey === null || this._horizontalAxisFacetKey === independentAxes[0]) &&
-        (this._verticalAxisFacetKey === null || this._verticalAxisFacetKey === dependentAxes[0]) 
-      ) {
-        // NOTE: One (but not both) of these might be rewriting the axis facet key to the same thing
-        this._horizontalAxisFacetKey = independentAxes[0];
-        this._verticalAxisFacetKey = dependentAxes[0];
-      } else if (
-        this._facetKeys.includes('x') 
-        && this._facetKeys.includes('y')
-        && this._displayTypeForFacet['x'].type === 'axis'
-        && this._displayTypeForFacet['y'].type === 'axis'
-        && (this._horizontalAxisFacetKey === null || this._horizontalAxisFacetKey === 'x')
-        && (this._verticalAxisFacetKey === null || this._verticalAxisFacetKey === 'y') ) {
-          // NOTE: One (but not both) of these might be rewriting the axis facet key to the same thing
-          this._horizontalAxisFacetKey === 'x';
-          this._verticalAxisFacetKey === 'y';
-      } else {
-        throw new Error('axis facets cannot be determined'); FIXME: restore
-      }
-    }*/
-    //////////////////////// TEMP //////////////////////////////////////////
-    this._displayTypeForFacet['x'] = {type: 'axis', orientation: 'horizontal'};
-    this._horizontalAxisFacetKey = 'x';
-    this._displayTypeForFacet['y'] = {type: 'axis', orientation: 'vertical'};
-    this._verticalAxisFacetKey = 'y';
-    ////////////////////////////////////////////////////////////////////////
-    //this._xAxisLabel = dataset.facets.x.label;
-    //this._yAxisLabel = dataset.facets.y.label;
-    //this._xDatatype = dataset.facets.x.datatype;
     if (dataset.data.source === 'inline') {
-      this._model = modelFromManifest(manifest);
+      this._model = modelFromInlineData(manifest);
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = dataFromManifest(manifest);
     } else if (data) {
-      this._model = modelFromAllSeriesData(data, this._facets);
+      this._model = modelFromExternalData(data, manifest);
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = data;
     } else {
@@ -212,17 +140,6 @@ export class ParaStore extends State {
 
   updateSettings(updater: (draft: Settings) => void) {
     this.settings = produce(this.settings, updater);
-  }
-
-  getAxisFacet(orientation: AxisOrientation): Facet | null {
-    if (orientation === 'horiz') {
-      return this._horizontalAxisFacetKey ? this._facetMap[this._horizontalAxisFacetKey] : null;
-    }
-    return this._verticalAxisFacetKey ? this._facetMap[this._verticalAxisFacetKey] : null;
-  }
-
-  getFacet(key: string): Facet | null {
-    return this._facetMap[key] ?? null;
   }
 
   announce(msg: string | string[]) {

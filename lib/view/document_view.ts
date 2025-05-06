@@ -96,8 +96,8 @@ export class DocumentView extends Container(View) {
       this._vertAxis.orthoAxis = this._horizAxis;
       this._horizAxis.orthoAxis = this._vertAxis;
       // XXX Change this method to set axis.titleText
-      this.xAxis!.setAxisLabelText(this._store.getAxisFacet('horiz')!.label);
-      this.yAxis!.setAxisLabelText(this._store.getAxisFacet('vert')!.label);
+      this.xAxis!.setAxisLabelText(this._store.model!.getAxisFacet('horiz')!.label);
+      this.yAxis!.setAxisLabelText(this._store.model!.getAxisFacet('vert')!.label);
       this._horizAxis.createComponents();
       this._vertAxis.createComponents();
       this._horizAxis.layoutComponents();

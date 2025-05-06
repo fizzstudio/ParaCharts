@@ -192,7 +192,7 @@ export class ChartLayerManager extends View {
   }
 
   getXAxisInterval(): Interval {
-    if (this.paraview.store.getFacet('x')!.datatype !== 'number') {
+    if (this.paraview.store.model!.getFacet('x')!.datatype !== 'number') {
       throw new Error('x-axis intervals not specified for non-numeric x-axes')
     }
     const xs = this.paraview.store.model!.allFacetValues('x')!.map((box) => box.value as number);
