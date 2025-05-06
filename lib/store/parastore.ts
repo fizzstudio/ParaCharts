@@ -28,7 +28,7 @@ import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { keymap } from './keymap';
 import { KeymapManager } from './keymap_manager';
-import { facetsFromDataset, ModelDF, modelDFFromAllSeriesData, modelDFFromManifest } from './modelDF';
+import { facetsFromDataset, Model, modelFromAllSeriesData, modelFromManifest } from '@fizz/paramodel';
 import { FacetSignature } from './dataframe/dataframe';
 import { AxisOrientation } from '../common/types';
 
@@ -57,7 +57,7 @@ export class ParaStore extends State {
 
   protected _settingControls = new SettingControlManager(this); 
   protected _manifest: Manifest | null = null;
-  protected _model: ModelDF | null = null;
+  protected _model: Model | null = null;
   protected _facets: FacetSignature[] | null = null;
   protected _type: ChartType = 'line';
   protected _title = '';
@@ -187,14 +187,14 @@ export class ParaStore extends State {
     //this._yAxisLabel = dataset.facets.y.label;
     //this._xDatatype = dataset.facets.x.datatype;
     if (dataset.data.source === 'inline') {
-      this._model = modelDFFromManifest(manifest);
+      this._model = modelFromManifest(manifest);
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = dataFromManifest(manifest);
     } else if (data) {
-      this._model = modelDFFromAllSeriesData(data, this._facets);
+      this._model = modelFromAllSeriesData(data, this._facets);
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = data;
     } else {

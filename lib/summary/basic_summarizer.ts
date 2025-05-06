@@ -1,8 +1,8 @@
 
 import { BaseSummarizer } from './summarizer';
-import { formatBox, formatDatapoint } from '../view/formatter';
+import { formatDatapoint } from '../view/formatter';
 import { Memoize } from 'typescript-memoize';
-import { DataPointDF } from '../store';
+import { DataPoint } from '@fizz/paramodel';
 
 export class BasicSummarizer extends BaseSummarizer {
 
@@ -17,7 +17,7 @@ export class BasicSummarizer extends BaseSummarizer {
   }
 
   @Memoize()
-  getDatapointSummary(datapoint: DataPointDF) {
+  getDatapointSummary(datapoint: DataPoint) {
     const visitedLength = this._store.visitedDatapoints.length;
     // We don't assume the datapoint we're summarizing is actually currently
     // visited; it might not be, in headless mode  
