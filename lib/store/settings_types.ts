@@ -17,8 +17,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { type Size2d } from '@fizz/chart-classifier-utils'
 
-import { type AxisOrientation, type SnapLocation } from '../common/types';
+import { type SnapLocation } from '../common/types';
 import { type Color } from '../common/color_types';
+import { AxisOrientation } from '@fizz/paramodel';
 
 /**
  * A single setting.
