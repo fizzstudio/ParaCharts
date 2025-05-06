@@ -1,9 +1,10 @@
 
 import { View } from '../base_view';
 import { type DataLayer } from '../datalayer';
-import { type SeriesDF, type SeriesProperties } from '../../store';
+import { type SeriesProperties } from '../../store';
 
 import { type StyleInfo } from 'lit/directives/style-map.js';
+import { Series } from '@fizz/paramodel';
 
 /**
  * Abstract base class for datapoint and series views.
@@ -16,7 +17,7 @@ export class DataView extends View {
   declare protected _currFocus: DataView | null;
   declare protected _prevFocus?: DataView;
 
-  protected _series!: SeriesDF;
+  protected _series!: Series;
   protected _isStyleEnabled = false;
 
   constructor(

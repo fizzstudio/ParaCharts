@@ -19,7 +19,7 @@ import { strToId } from "../common/utils";
 import { ParaStore } from "../store/parastore";
 import { SettingsManager } from "../store/settings_manager";
 import { Box } from "../store/dataframe/box";
-import { DataPointDF, XYDatapointDF } from "../store/modelDF";
+import { DataPoint, XYDatapoint } from "@fizz/paramodel";
 
 export function formatBox(
   box: Box<Datatype>, 
@@ -59,7 +59,7 @@ export function formatBox(
 }*/
 
 export function formatXYDatapointX(
-  datapoint: XYDatapointDF, 
+  datapoint: XYDatapoint, 
   context: FormatContext, 
   store: ParaStore
 ): string {
@@ -67,7 +67,7 @@ export function formatXYDatapointX(
 }
 
 export function formatXYDatapointY(
-  datapoint: XYDatapointDF, 
+  datapoint: XYDatapoint, 
   context: FormatContext, 
   store: ParaStore
 ): string {
@@ -75,7 +75,7 @@ export function formatXYDatapointY(
 }
 
 export function formatXYDatapoint(
-  datapoint: XYDatapointDF, 
+  datapoint: XYDatapoint, 
   context: FormatContext, 
   store: ParaStore
 ): string {
@@ -85,7 +85,7 @@ export function formatXYDatapoint(
 }
 
 export function formatDatapoint(
-  datapoint: DataPointDF, 
+  datapoint: DataPoint, 
   context: FormatContext, 
   store: ParaStore
 ): string {

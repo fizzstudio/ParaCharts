@@ -1,7 +1,7 @@
 
 import { DataView, type SeriesView } from './';
 import { DataSymbol, DataSymbols } from '../symbol';
-import { type DataPointDF } from '../../store';
+import { type DataPoint } from '@fizz/paramodel';
 import { strToId } from '../../common/utils';
 import { formatBox } from '../formatter';
 
@@ -61,7 +61,7 @@ export class DatapointView extends DataView {
     return this._parent.prev;
   }
 
-  get datapoint(): DataPointDF {
+  get datapoint(): DataPoint {
     return this.series[this.index];
   }
 

@@ -1,9 +1,10 @@
-import { DataPointDF, ParaStore } from '../store';
+import { DataPoint } from '@fizz/paramodel';
+import { ParaStore } from '../store';
 
 export interface Summarizer {
   getChartSummary(): string;
   getSeriesSummary(seriesKey: string): string;
-  getDatapointSummary(datapoint: DataPointDF): string;
+  getDatapointSummary(datapoint: DataPoint): string;
   // ...
 }
 
@@ -15,5 +16,5 @@ export abstract class BaseSummarizer implements Summarizer {
   
   abstract getSeriesSummary(seriesKey: string): string;
 
-  abstract getDatapointSummary(datapoint: DataPointDF): string;
+  abstract getDatapointSummary(datapoint: DataPoint): string;
 }
