@@ -2,7 +2,7 @@
 import { DataView, type ChartLandingView, type DatapointView } from '.';
 import { Container } from '../base_view';
 import { type DataLayer } from '../datalayer';
-import { strToId } from '../../common/utils';
+import { strToId } from '@fizz/paramodel';
 
 import { ref } from 'lit/directives/ref.js';
 import { type StyleInfo } from 'lit/directives/style-map.js';

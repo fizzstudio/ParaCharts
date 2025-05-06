@@ -69,41 +69,6 @@ export function generateUniqueId(baseId: string, store: ParaStore): string {
   return uid;
 }
 
-/**
- * Takes a string and normalizes it, stripping it of any non-alphanum characters and replacing its 
- *   whitespaces with underscores, so that can can serve as a DOM id.
- * @param {string} s A string, which may have spaces, punctuation, or other non-alphanum characters.
- * @returns {string} The unique string, stripped of all non-alphanum characters, to be used as an id.
- * @internal
- */
-export function strToId(s: string): string {
-  return s.toLowerCase().replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
-}
-
-// Container Handling
-
-export function enumerate<T>(iterable: Iterable<T>): [T, number][] {
-  const enumerations: [T, number][] = [];
-  let index = 0;
-  for (const member of iterable) {
-    enumerations.push([member, index]);
-    index++;
-  }
-  return enumerations;
-}
-
-export function arrayEqualsBy<L, R>(by: (lhs: L, rhs: R) => boolean, lhs: L[], rhs: R[]): boolean {
-  if (lhs.length !== rhs.length) {
-    return false;
-  }
-  for (const [l, r] of zip(lhs, rhs)) {
-    if (!by(l, r)) {
-      return false;
-    }
-  }
-  return true;
-}
-
 // Type System Magic
 
 // This marks a series of if/then options as exhaustive

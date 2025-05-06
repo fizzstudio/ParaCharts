@@ -27,10 +27,9 @@ import { type Setting } from '../store/settings_types';
 
 import { type ClassInfo } from 'lit/directives/class-map.js';
 import { ParaView } from '../paraview';
-import { strToId } from '../common/utils';
 import { formatXYDatapointX, formatXYDatapointY } from './formatter';
 import { literal } from 'lit/static-html.js';
-import { XYDatapoint } from '@fizz/paramodel';
+import { XYDatapoint, strToId } from '@fizz/paramodel';
 
 export type DatapointViewType<T extends XYDatapointView> = 
   (new (...args: any[]) => T);

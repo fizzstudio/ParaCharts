@@ -15,11 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Datatype } from "@fizz/paramanifest";
-import { strToId } from "../common/utils";
 import { ParaStore } from "../store/parastore";
 import { SettingsManager } from "../store/settings_manager";
-import { Box } from "../store/dataframe/box";
-import { DataPoint, XYDatapoint } from "@fizz/paramodel";
+import { Box, DataPoint, XYDatapoint, strToId } from '@fizz/paramodel';
 
 export function formatBox(
   box: Box<Datatype>, 

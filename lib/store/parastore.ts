@@ -29,7 +29,7 @@ import { SeriesPropertyManager } from './series_properties';
 import { keymap } from './keymap';
 import { KeymapManager } from './keymap_manager';
 import { facetsFromDataset, Model, modelFromAllSeriesData, modelFromManifest } from '@fizz/paramodel';
-import { FacetSignature } from './dataframe/dataframe';
+import { FacetSignature } from '@fizz/paramodel';
 import { AxisOrientation } from '../common/types';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';

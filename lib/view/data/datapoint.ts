@@ -1,8 +1,7 @@
 
 import { DataView, type SeriesView } from './';
 import { DataSymbol, DataSymbols } from '../symbol';
-import { type DataPoint } from '@fizz/paramodel';
-import { strToId } from '../../common/utils';
+import { type DataPoint, strToId } from '@fizz/paramodel';
 import { formatBox } from '../formatter';
 
 import { type clusterObject } from '@fizz/clustering';
