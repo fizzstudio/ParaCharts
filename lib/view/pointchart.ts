@@ -20,7 +20,6 @@ import { type PointChartType } from '../store/settings_types';
 import { enumerate, strToId } from '../common/utils';
 import { formatBox } from './formatter';
 
-import { type coord, generateClusterAnalysis } from '@fizz/clustering';
 
 /**
  * Abstract base class for charts that represent data values as points
@@ -82,15 +81,6 @@ export abstract class PointChart extends XYChart {
     }
   }
 
-  protected _generateClustering(){
-    const data: Array<coord> = []
-    const yValues = this.paraview.store.model!.allFacetValues('y')!.map((y) => y.value as number);
-    const xValues = this.paraview.store.model!.allFacetValues('x')!.map((y) => y.value as number);
-    for (let i = 0; i < xValues.length; i++){
-      data.push({x: xValues[i], y: yValues[i]});
-    } 
-    this._clustering = generateClusterAnalysis(data, true);
-  } 
 
   seriesRef(series: string) {
     return this.paraview.ref<SVGGElement>(`series.${series}`);
