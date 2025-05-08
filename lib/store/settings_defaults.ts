@@ -177,7 +177,8 @@ export const defaults: Settings = {
       selectedPointMarkerSize: {
         width: 20,
         height: 20,
-      }
+      },
+      showTrendLine: false
     },
     pie: {
       label: {

@@ -288,7 +288,7 @@ export interface StepLineSettings extends PointSettings {
 
 /** @public */
 export interface ScatterSettings extends PointSettings {
-
+  showTrendLine: boolean
 }
 
 /** @public */
