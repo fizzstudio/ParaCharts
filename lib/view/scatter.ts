@@ -4,11 +4,14 @@ import { type ScatterSettings, Setting, type DeepReadonly } from '../store/setti
 import { type XYSeriesView } from './xychart';
 import { ParaView } from '../paraview';
 import { AxisInfo } from '../common/axisinfo';
-import { coord, generateClusterAnalysis } from '@fizz/clustering';
+import { clusterObject, coord, generateClusterAnalysis } from '@fizz/clustering';
+import { DataSymbol, DataSymbols } from './symbol';
 
 export class ScatterPlot extends PointChart {
 
   declare protected _settings: DeepReadonly<ScatterSettings>;
+  protected _isClustering: boolean = false;
+  protected _clustering?: clusterObject[];
   
   constructor(paraview: ParaView, index: number) {
     super(paraview, index);
@@ -22,6 +25,14 @@ export class ScatterPlot extends PointChart {
 
   get settings() {
     return this._settings;
+  }
+
+  get isClustering(){
+    return this._isClustering;
+  }
+
+  get clustering(){
+    return this._clustering;
   }
 
   settingDidChange(key: string, value: Setting | undefined) {
@@ -60,11 +71,34 @@ export class ScatterPlot extends PointChart {
 }
 
 class ScatterPoint extends ChartPoint {
+  declare readonly chart: ScatterPlot;
   protected _computeX() {
     // Scales points in proportion to the data range
     const xTemp = (this.datapoint.x.value as number - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
     const parentWidth: number = this.chart.parent.contentWidth;
     return parentWidth * xTemp;
+  }
+  
+  protected _createSymbol(): void {
+    const series = this.seriesProps;
+    let symbolType = series.symbol;
+    const index = this.parent.children.indexOf(this);
+    let color: number = series.color;
+    const types = new DataSymbols().types;
+    if (this.chart.isClustering) {
+      let clustering = this.chart.clustering as clusterObject[]
+      for (let clusterId in clustering) {
+        if (clustering[clusterId].dataPointIDs.indexOf(index) > -1) {
+          color = Number(clusterId)
+          symbolType = types[color % types.length]
+        }
+      }
+    }
+    this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
+      strokeWidth: this.paraview.store.settings.chart.symbolStrokeWidth,
+      color
+    });
+    this.append(this._symbol);
   }
 }
 

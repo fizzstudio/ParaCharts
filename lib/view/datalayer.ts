@@ -32,7 +32,6 @@ import { type HotkeyEvent } from '../store/keymap_manager';
 import { ChartLandingView, type DataView, type DatapointView } from './data';
 import { type LegendItem } from './legend';
 
-import { type clusterObject } from '@fizz/clustering';
 
 /**
  * @public
@@ -74,8 +73,6 @@ export abstract class DataLayer extends ChartLayer {
   //private _prevDatapointSeries?: string;
   //private _currentRecord = 0;
 
-  protected _isClustering: boolean = false;
-  protected _clustering?: clusterObject[];
 
   constructor(paraview: ParaView, public readonly dataLayerIndex: number) {
     super(paraview);
@@ -136,13 +133,6 @@ export abstract class DataLayer extends ChartLayer {
 
   get datapointViews() {
     return this._chartLandingView.datapointViews;
-  }
-
-  get isClustering(){
-    return this._isClustering;
-  }
-  get clustering(){
-    return this._clustering;
   }
 
   get visitedDatapointViews() {
