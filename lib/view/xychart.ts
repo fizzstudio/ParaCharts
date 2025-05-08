@@ -642,6 +642,9 @@ export abstract class XYDatapointView extends DatapointView {
     return styles;
   }
 
+  get extraAttrs() {
+    return this._extraAttrs;
+  }
   /*protected get _eventActions(): Actions<this> {
     return {
       datapoint_focused: function(focusInfo: FocusInfo) {
