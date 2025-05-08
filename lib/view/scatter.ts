@@ -1,15 +1,16 @@
 
-import { PointChart, ChartPoint } from './pointchart';
+import { PointChart, ChartPoint, TrendLineView } from './pointchart';
 import { type ScatterSettings, Setting, type DeepReadonly } from '../store/settings_types';
 import { type XYSeriesView } from './xychart';
 import { ParaView } from '../paraview';
 import { AxisInfo } from '../common/axisinfo';
 import { coord, generateClusterAnalysis } from '@fizz/clustering';
+import { StateController } from '@lit-app/state';
 
 export class ScatterPlot extends PointChart {
 
   declare protected _settings: DeepReadonly<ScatterSettings>;
-  
+  protected _state!: StateController;
   constructor(paraview: ParaView, index: number) {
     super(paraview, index);
     if (this.paraview.store.model?.numSeries === 1){
@@ -34,17 +35,34 @@ export class ScatterPlot extends PointChart {
       xValues: this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number),
       yValues: this.paraview.store.model!.allFacetValues('y')!.map((x) => x.value as number),
     });
+    /*
+    let settingControls = this.paraview.store.settingControls
+    settingControls.add({
+      type: 'checkbox',
+      key: 'scatter.showTrendLine',
+      label: 'Show Trend Line',
+      parentView: 'controlPanel.tabs.chart.chart',
+    });
+    this.paraview.requestUpdate();
+    //this._state = new StateController(this, this._store.settingControls);
+    */
   }
 
   protected _newDatapointView(seriesView: XYSeriesView) {
     return new ScatterPoint(seriesView);
   }
-
+ 
   protected _createComponents(): void {
     if (this.isClustering){
       this._generateClustering();
     }
     super._createComponents()
+  }
+
+  protected _layoutComponents(): void {
+    super._layoutComponents()
+    let trendLine = new TrendLineView(this);
+      this.append(trendLine);
   }
 
   protected _generateClustering(){
