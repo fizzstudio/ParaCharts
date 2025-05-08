@@ -5,7 +5,6 @@ import { type DataPointDF } from '../../store';
 import { strToId } from '../../common/utils';
 import { formatBox } from '../formatter';
 
-import { type clusterObject } from '@fizz/clustering';
 
 import { type StaticValue } from 'lit/static-html.js';
 import { type ClassInfo, classMap } from 'lit/directives/class-map.js';
@@ -158,18 +157,7 @@ export class DatapointView extends DataView {
   protected _createSymbol() {
     const series = this.seriesProps;
     let symbolType = series.symbol;
-    const index = this.parent.children.indexOf(this);
     let color: number = series.color;
-    const types = new DataSymbols().types;
-    if (this.chart.isClustering){ 
-      let clustering = this.chart.clustering as clusterObject[]
-      for (let clusterId in clustering){
-        if (clustering[clusterId].dataPointIDs.indexOf(index) > -1){
-          color = Number(clusterId)
-          symbolType = types[color % types.length]
-        }
-      }
-    }
     this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
       strokeWidth: this.paraview.store.settings.chart.symbolStrokeWidth,
       color
