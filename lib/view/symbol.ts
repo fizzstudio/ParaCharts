@@ -16,11 +16,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { View } from './base_view';
 import { fixed } from '../common/utils';
-
-import { svg } from 'lit';
-import { styleMap, type StyleInfo } from 'lit/directives/style-map.js';
 import { Colors } from '../common/colors';
 import { ParaView } from '../paraview';
+
+import { svg, nothing } from 'lit';
+import { styleMap, type StyleInfo } from 'lit/directives/style-map.js';
 
 export type DataSymbolShape = 
 'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
@@ -270,6 +270,8 @@ export class DataSymbol extends View {
   public readonly type: DataSymbolType;
 
   protected _options: DataSymbolOptions;
+  protected _defsKey: string;
+  protected _styleInfo!: StyleInfo;
 
   static fromType(
     paraview: ParaView,
@@ -299,11 +301,21 @@ export class DataSymbol extends View {
     super(paraview);
     this.type = `${shape}.${fill}`;
     this._options = {
-      strokeWidth: options?.strokeWidth ?? 1,
+      strokeWidth: options?.strokeWidth ?? this.paraview.store.settings.chart.symbolStrokeWidth,
       scale: options?.scale ?? 1,
       color: options?.color,
       dashed: options?.dashed ?? false
     };
+    this._defsKey = `sym-${shape}-${fill}`;
+    if (!this.paraview.defs[this._defsKey]) {
+      this.paraview.addDef(this._defsKey, svg`
+        <path
+          id=${this._defsKey}
+          d=${shapeInfo[this.shape].path}
+        />
+      `);
+    }
+    this._updateStyleInfo();
   }
 
   get width() {
@@ -322,38 +334,66 @@ export class DataSymbol extends View {
     return this.type.split('.')[1] as DataSymbolFill;
   }
 
-  render(options?: Partial<DataSymbolOptions>) {
-    return super.render(options);
+  get color() {
+    return this._options.color;
   }
 
-  content(options?: Partial<DataSymbolOptions>) {
-    const opts = options ? Object.assign({}, this._options, options) : this._options;
-    let transform = fixed`translate(${this._x + this.width/2},${this._y + this.height/2})`;
-    if (opts.scale !== 1) {
-      transform += fixed` scale(${opts.scale})`;
-    }
-    const styles: StyleInfo = {
-      strokeWidth: opts.strokeWidth
+  set color(color: number | undefined) {
+    this._options.color = color;
+    this._updateStyleInfo();
+  }
+
+  get scale() {
+    return this._options.scale;
+  }
+
+  set scale(scale: number) {
+    this._options.scale = scale;
+  }
+
+  get styleInfo() {
+    return this._styleInfo;
+  }
+
+  set styleInfo(styleInfo: StyleInfo) {
+    this._styleInfo = styleInfo;
+  }
+
+  protected _updateStyleInfo() {
+    this._styleInfo = {
+      strokeWidth: this._options.strokeWidth,
     };
-    if (opts.dashed) {
-      styles.strokeDasharray = '1px 2px';
+    if (this._options.dashed) {
+      this._styleInfo.strokeDasharray = '1px 2px';
     }
-    if (opts.color !== undefined) {
+    if (this._options.color !== undefined) {
       if (this.fill === 'solid') {
-        const col = this.paraview.store.colors.colorValueAt(opts.color).match(/\d+/g)!.map(Number);
+        const col = this.paraview.store.colors.colorValueAt(
+          this._options.color).match(/\d+/g)!.map(Number);
         col[1] -= Math.min(10, col[1]);
         col[2] += Math.min(25, 100 - col[2]);
-        styles.fill = `hsl(${col[0]}, ${col[1]}%, ${col[2]}%)`;
+        this._styleInfo.fill = `hsl(${col[0]}, ${col[1]}%, ${col[2]}%)`;
         //styles.fill = this.colors.colorValueAt(this.color);
+      } else {
+        this._styleInfo.fill = 'white';
       }
-      styles.stroke = this.paraview.store.colors.colorValueAt(opts.color);
+      this._styleInfo.stroke = this.paraview.store.colors.colorValueAt(
+        this._options.color);
+    }
+  }
+
+  content() {
+    let transform = fixed`translate(${this._x + this.width/2},${this._y + this.height/2})`;
+    if (this._options.scale !== 1) {
+      transform += fixed` scale(${this._options.scale})`;
     }
     return svg`
-      <path
-        class="symbol ${this.fill} ${this.classes.join(' ')}"
-        style=${styleMap(styles)}
+      <use 
+        href="#${this._defsKey}"
+        id=${this._id || nothing}
         transform=${transform}
-        d=${shapeInfo[this.shape].path}
+        style=${styleMap(this._styleInfo)}
+        class="symbol ${this.fill} ${this.classes.join(' ')}"
       />
     `;
   }

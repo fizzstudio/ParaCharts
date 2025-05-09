@@ -68,6 +68,7 @@ export class ParaView extends logging(ParaComponent) {
   protected _chartRefs: Map<string, Ref<any>> = new Map();
   protected _fileSavePlaceholderRef = createRef<HTMLElement>();
   protected _summarizer!: Summarizer;
+  @state() protected _defs: {[key: string]: TemplateResult} = {};
 
   static styles = [
     //styles,
@@ -92,7 +93,9 @@ export class ParaView extends logging(ParaComponent) {
         --focusShadowColor: gray;
         --focusShadow: drop-shadow(0px 0px 4px var(--focusShadowColor));
       }
-
+      * {
+        font-family: "Trebuchet MS", Helvetica, sans-serif;
+      }
       #frame {
         fill: var(--backgroundColor);
         stroke: none;
@@ -158,6 +161,9 @@ export class ParaView extends logging(ParaComponent) {
         /*stroke-width: 3px;*/
         stroke-linecap: round;
       }
+      .chart-title {
+        font-size: 1.25rem;
+      }
     `
   ];
 
@@ -195,6 +201,10 @@ export class ParaView extends logging(ParaComponent) {
 
   get summarizer() {
     return this._summarizer;
+  }
+
+  get defs() {
+    return this._defs;
   }
 
   connectedCallback() {
@@ -321,8 +331,17 @@ export class ParaView extends logging(ParaComponent) {
     this.viewBox.height = height ?? this.viewBox.height;
   }
 
-  updateDefs(el: SVGLinearGradientElement) {
-    this._defsRef.value!.appendChild(el);
+  // updateDefs(el: SVGLinearGradientElement) {
+  //   this._defsRef.value!.appendChild(el);
+  // }
+
+  addDef(key: string, template: TemplateResult) {
+    if (this._defs[key]) {
+      throw new Error('view already in defs');
+    }
+    console.log('ADDING DEF', key);
+    this._defs = {...this._defs, [key]: template};
+    this.requestUpdate();
   }
 
   protected _rootStyle() {
@@ -418,6 +437,7 @@ export class ParaView extends logging(ParaComponent) {
         <defs
           ${ref(this._defsRef)}
         >
+          ${Object.entries(this._defs).map(([key, template]) => template)}
           ${this._documentView?.horizAxis ? svg`
             <clipPath id="clip-path">
               <rect 

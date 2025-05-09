@@ -23,7 +23,7 @@ export class SeriesPropertyManager {
 
   constructor(private store: ParaStore) {
     this.seriesList = store.model!.series.map((series, i) => 
-      new SeriesProperties(series.key, store.colors.colorIndex(i), store.symbols.symbolAt(i)));
+      new SeriesProperties(series.key, store.colors.wrapColorIndex(i), store.symbols.symbolAt(i)));
   }
 
   properties(key: string): SeriesProperties {

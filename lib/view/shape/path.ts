@@ -1,30 +1,24 @@
 
-import { View } from '../base_view';
-import { fixed, toFixed } from '../../common/utils';
+import { fixed } from '../../common/utils';
 import { type ParaView } from '../../paraview';
+import { Shape, type ShapeOptions } from './shape';
 
 import { type Point } from '@fizz/chart-classifier-utils';
 
-import { svg, css, nothing } from 'lit';
-import { styleMap, StyleInfo } from 'lit/directives/style-map.js';
+import { svg, nothing } from 'lit';
+import { styleMap } from 'lit/directives/style-map.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { ref } from 'lit/directives/ref.js';
 
-export interface PathOptions {
-  x?: number;
-  y?: number;
+export interface PathOptions extends ShapeOptions {
   points: Point[];
-  style?: StyleInfo;
 }
 
-export class Path extends View {
+export class Path extends Shape {
+  declare protected _options: PathOptions;
 
-  constructor(paraview: ParaView, protected _options: PathOptions) {
-    super(paraview);
-    this._x = _options.x ?? this._x;
-    this._y = _options.y ?? this._y;
-  }
-
-  get options() {
-    return this._options;
+  constructor(paraview: ParaView, options: PathOptions) {
+    super(paraview, options);
   }
 
   protected get _pathD() {
@@ -39,7 +33,10 @@ export class Path extends View {
   render() {
     return svg`
       <path
-        style=${this._options.style ? styleMap(this._options.style) : nothing}      
+        ${this._ref ? ref(this._ref) : undefined}
+        id=${this._id || nothing}
+        style=${styleMap(this._styleInfo)}
+        class=${classMap(this._classInfo)}
         d=${this._pathD}
       ></path>
     `;

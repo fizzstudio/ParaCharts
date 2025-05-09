@@ -61,6 +61,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
   static styles = [
     //styles,
     css`
+      * {
+        font-family: "Trebuchet MS", Helvetica, sans-serif;
+      }
       fizz-tab-details#controls {
         --background: #eee;
         --summary-marker-icon: url(${unsafeCSS(cpanelIcon)});

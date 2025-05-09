@@ -171,13 +171,11 @@ export abstract class XYChart extends DataLayer {
     return false;
   }
 
-  protected abstract _newDatapointView(seriesView: XYSeriesView, ...rest: any[]): XYDatapointView;
+  //protected abstract _layoutDatapoints(): void;
 
-  protected abstract _layoutDatapoints(): void;
-
-  protected _layoutComponents() {
-    this._layoutDatapoints();
-  }
+  // init() {
+  //   this._layoutDatapoints();
+  // }
 
   moveRight() {
     const leaf = this._chartLandingView.focusLeaf;
@@ -589,7 +587,7 @@ export abstract class XYDatapointView extends DatapointView {
 
   protected centroid?: string;
 
-  constructor(seriesView: XYSeriesView) { 
+  constructor(seriesView: SeriesView) { 
     super(seriesView);
   }
 
@@ -631,13 +629,8 @@ export abstract class XYDatapointView extends DatapointView {
     return super.datapoint as XYDatapointDF;
   }
 
-  get classes() {
-    const classes: Mutable<ClassInfo> = super.classes;
-    return classes as Readonly<ClassInfo>;
-  }
-
-  get style() {
-    const styles = super.style;
+  get styleInfo() {
+    const styles = super.styleInfo;
     styles['--datapointCentroid'] = this.centroid;
     return styles;
   }
@@ -653,7 +646,7 @@ export abstract class XYDatapointView extends DatapointView {
     };
   }*/
 
-  abstract computeLayout(): void;
+  //abstract computeLayout(): void;
 
   /*summary(focusInfo: FocusInfo) {
     if (focusInfo.visited.length > 1) {
