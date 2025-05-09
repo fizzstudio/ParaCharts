@@ -48,7 +48,7 @@ export const chartClasses = {
   bar: BarChart,
   column: BarChart,
   line: LineChart,
-  scatter: Histogram,
+  scatter: Heatmap,
   pie: PieChart,
   donut: PieChart,
   gauge: BarChart, //GaugeChart,

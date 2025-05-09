@@ -4,7 +4,7 @@ import { ParaView } from "../paraview";
 import { enumerate, fixed, strToId } from "../common/utils";
 import { formatBox } from "./formatter";
 import { AxisInfo } from "../common/axisinfo";
-import { DataView } from "./data";
+import { DatapointView, DataView, SeriesView } from "./data";
 import { DeepReadonly, HeatmapSettings, PointChartType } from "../store/settings_types";
 export class Heatmap extends XYChart {
   protected _resolution: number = 25;
@@ -235,6 +235,30 @@ export class Heatmap extends XYChart {
 
   moveDown() {
     const leaf = this._chartLandingView.focusLeaf;
+    if (leaf instanceof DatapointView) {
+      const nsi = leaf.nextSameIndexer;
+      if (nsi) {
+        leaf.blur(false);
+        nsi.focus();
+        //this._sonifier.playNotification('series');
+      } else {
+        //this._eventActionManager!.dispatch('final_series_reached');
+        return;
+      }
+    } else if (leaf instanceof SeriesView) {
+      if (!leaf.next) {
+        //this._eventActionManager!.dispatch('final_series_reached');
+        return;
+      } else {
+        leaf.next!.focus();
+        //this._sonifier.playNotification('series');
+      }
+    } else {
+      // At chart root, so move to the first series landing 
+      this._chartLandingView.children[0].children[this.paraview.store.model!.series[0].length].focus();
+    }
+    /*
+    const leaf = this._chartLandingView.focusLeaf;
     if (leaf instanceof HeatmapTileView) {
       const index = leaf.parent!.children.indexOf(leaf)
       const target = leaf.parent!.children[index + this.resolution]
@@ -246,7 +270,9 @@ export class Heatmap extends XYChart {
         target.focus()
       }
     }
+      */
   }
+  
 }
 
 export class HeatmapDatapointView extends XYDatapointView {
@@ -383,14 +409,14 @@ export class HeatmapTileView extends DataView {
     this._y = Math.floor((this.index - length) / this.chart.resolution) * this._height
     const id = this.index - length;
     this._count = this.chart.grid[id % this.chart.resolution][Math.floor(id / this.chart.resolution)]
-       /*
+       
    this._id = [
     'datapoint',
-    utils.strToId(this.series.name!),
+    strToId(this.seriesKey),
     `${this._x}`,
     `${this._y}`
   ].join('-'); 
-  */
+  
   }
   protected layoutSymbol(){
 
@@ -423,15 +449,17 @@ summary() {
   const right = (xInfo.min! + xSpan * ((this.index - length) % this.chart.resolution + 1)).toFixed(2)
   return `This block contains ${this.count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
   }
-/*
   onFocus() {
-    super.onFocus();
+    super.onFocus()
     this.isVisited = !this.isVisited
-    todo().controller.announce(this.summary())
-    todo().canvas.requestUpdate();
+    this._visit();
+    //this.paraview.store.announce(this.paraview.summarizer.getSeriesSummary(this.seriesKey));
+    //this.paraview.requestUpdate();
   }
 
-*/
+  protected _visit() {
+    this.paraview.store.visit([{ seriesKey: this.seriesKey, index: this.index }]);
+  }
 
   render() {
     const visitedScale = this.isVisited ? 10 : 1;
@@ -445,7 +473,7 @@ summary() {
         role="datapoint"
         stroke-width= '${3}'
         fill= '${color}'
-        stroke= '${this.isVisited ? 'hsl(0, 100.00%, 50.00%)' : color}'
+        stroke= '${this.paraview.store.visitedDatapoints.some(item => item.index === this.index) ? 'hsl(0, 100.00%, 50.00%)' : color}'
         id= '${this.id}'
       ></path>
     `;
