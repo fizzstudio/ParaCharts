@@ -40,13 +40,15 @@ import {
 import { type Interval } from '@fizz/chart-classifier-utils';
 
 import { svg } from 'lit';
+import { Heatmap } from './heatmap';
+import { Histogram } from './histogram';
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
 export const chartClasses = {
   bar: BarChart,
   column: BarChart,
   line: LineChart,
-  scatter: ScatterPlot,
+  scatter: Histogram,
   pie: PieChart,
   donut: PieChart,
   gauge: BarChart, //GaugeChart,
