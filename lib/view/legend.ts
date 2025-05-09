@@ -6,6 +6,7 @@ import { Label } from './label';
 import { type LegendSettings, type DeepReadonly, SettingsManager } from '../store';
 import { Rect } from './shape/rect';
 import { type ParaView } from '../paraview';
+import { TemplateResult } from 'lit';
 
 export type SeriesAttrs = {
   color: string;
@@ -16,6 +17,7 @@ export interface LegendItem {
   label: string;
   symbol?: DataSymbolType;
   color: number;
+  datapointIndex?: number;
 }
 
 export type LegendOrientation = 'horiz' | 'vert';
@@ -42,6 +44,7 @@ export class Legend extends Container(View) {
   declare protected _settings: DeepReadonly<LegendSettings>;
 
   protected _grid!: GridLayout;
+  protected _markers: Rect[] = [];
 
   constructor(paraview: ParaView,
     protected _items: LegendItem[],
@@ -61,9 +64,9 @@ export class Legend extends Container(View) {
 
     const hasLegendBox = this._settings.boxStyle.outline !== 'none' || this._settings.boxStyle.fill !== 'none';
 
-    //this.paraview.store.model!.keys.forEach(seriesKey => {
-    //  const series = this.paraview.store.seriesProperties!.properties(seriesKey);
     this._items.forEach(item => {
+      this._markers.push(new Rect(this.paraview, {width: 12, height: 6}));
+      views.push(this._markers.at(-1)!);
       views.push(DataSymbol.fromType(
         this.paraview,
         this.paraview.store.settings.chart.isDrawSymbols
@@ -79,9 +82,9 @@ export class Legend extends Container(View) {
     const pairGap = this.paraview.store.settings.legend.pairGap;   
     if (this._options.orientation === 'vert') {
       this._grid = new GridLayout(this.paraview, {
-        numCols: 2,
+        numCols: 3,
         colGaps: symLabelGap,
-        colAligns: ['center', 'start']
+        colAligns: ['center', 'center', 'start']
       }, 'legend-grid');
       this._grid.padding = hasLegendBox ? this.paraview.store.settings.legend.padding : 0;
       views.forEach(v => this._grid.append(v));
@@ -115,13 +118,34 @@ export class Legend extends Container(View) {
     // this.prepend(new Rect(this._width, this._height, 'white'));
 
     if (hasLegendBox) {
-      this.prepend(new Rect(this.paraview, this._width, this._height, 
-        this._settings.boxStyle.fill, this._settings.boxStyle.outline, this._settings.boxStyle.outlineWidth));
+      this.prepend(new Rect(this.paraview, {
+        width: this._width,
+        height: this._height,
+        fill: this._settings.boxStyle.fill,
+        stroke: this._settings.boxStyle.outline,
+        strokeWidth: this._settings.boxStyle.outlineWidth
+      }));
     }
   }
 
   computeSize(): [number, number] {
     return [this._grid?.boundingWidth ?? 0, this._grid?.boundingHeight ?? 0];
+  }
+
+  content() {
+    this._items.forEach((item, i) => {
+      const style = this._markers[i].styleInfo;
+      const visited = item.datapointIndex !== undefined
+        ? this.paraview.store.isVisited(
+          this.paraview.store.model!.keys[0], item.datapointIndex)
+        : this.paraview.store.isVisitedSeries(item.label);
+      if (visited) {
+        style.fill = this.paraview.store.colors.colorValueAt(-1);
+      } else {
+        style.fill = 'none';
+      }
+    });
+    return super.content();
   }
 
 }
