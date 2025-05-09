@@ -5,8 +5,8 @@ import { DeepReadonly, HistogramSettings, PointChartType } from "../store";
 import { formatBox } from "./formatter";
 import { XYChart, XYDatapointView, XYSeriesView } from "./xychart";
 import { svg } from "lit";
-import { DataView } from "./data";
-
+import { DatapointView, DataView, SeriesView } from "./data";
+import { DataCursor } from "../store";
 export class Histogram extends XYChart {
     protected _bins: number = 10;
     protected _data: Array<Array<number>> = [];
@@ -194,7 +194,6 @@ export class Histogram extends XYChart {
             const xIndex: number = Math.floor((point[0] - xMin) * this.bins / (xMax - xMin));
             grid[xIndex]++;
         }
-        console.log(grid)
         return this._grid = grid;
     }
     seriesRef(series: string) {
@@ -256,6 +255,30 @@ export class Histogram extends XYChart {
     
     moveDown() {
         const leaf = this._chartLandingView.focusLeaf;
+        if (leaf instanceof DatapointView) {
+            const nsi = leaf.nextSameIndexer;
+            if (nsi) {
+                leaf.blur(false);
+                nsi.focus();
+                //this._sonifier.playNotification('series');
+            } else {
+                //this._eventActionManager!.dispatch('final_series_reached');
+                return;
+            }
+        } else if (leaf instanceof SeriesView) {
+            if (!leaf.next) {
+                //this._eventActionManager!.dispatch('final_series_reached');
+                return;
+            } else {
+                leaf.next!.focus();
+                //this._sonifier.playNotification('series');
+            }
+        } else {
+            // At chart root, so move to the first series landing 
+            this._chartLandingView.children[0].children[this.paraview.store.model!.series[0].length].focus();
+        }
+        /*
+        const leaf = this._chartLandingView.focusLeaf;
         if (leaf instanceof HistogramBinView) {
             if (!leaf.prev || leaf.prev instanceof HistogramDatapointView) {
                 //leaf.blur(false)
@@ -265,6 +288,7 @@ export class Histogram extends XYChart {
                 leaf.prev!.focus();
             }
         }
+            */
     }
 
     moveUp() {
@@ -439,14 +463,14 @@ export class HistogramBinView extends DataView {
             this._y = (this.chart.grid.length - id - 1) % this.chart.bins * this._height + (this._height) 
             this._width = ((this.chart.grid[id] / this.chart.maxCount) * this.chart.parent.width * .9)
             this._count = this.chart.grid[id];
-            /*
+            
             this._id = [
                 'datapoint',
-                utils.strToId(this.series.name!),
+                strToId(this.seriesKey),
                 `${this._x}`,
                 `${this._y}`
             ].join('-');
-            */
+            
         }
     }
 
@@ -465,14 +489,20 @@ export class HistogramBinView extends DataView {
         It spans x values from ${left} to ${right}}`
         */
     }
-/*
+
     onFocus() {
+        console.log("bin focus called")
         super.onFocus()
         this.isVisited = !this.isVisited
-        todo().controller.announce(this.summary())
-        todo().canvas.requestUpdate();
+        this._visit();
+        //this.paraview.store.announce(this.paraview.summarizer.getSeriesSummary(this.seriesKey));
+        //this.paraview.requestUpdate();
     }
-*/
+
+    protected _visit() {
+        this.paraview.store.visit([{seriesKey: this.seriesKey, index: this.index}]);
+    }
+
 
     protected get _d() {
         return fixed`
@@ -486,8 +516,12 @@ export class HistogramBinView extends DataView {
     render() {
         let stroke = `hsl(0, 0%, 0%)`
         //let fill = todo().controller.colors.colorValueAt(this.seriesProps.color);
+        console.log(this.paraview.store.visitedDatapoints)
+        console.log({seriesKey: this.seriesKey, index: this.index})
+        console.log(this.paraview.store.visitedDatapoints.includes({seriesKey: this.seriesKey, index: this.index}))
         let fill = 0;
-        if (this.isVisited){
+        if (this.paraview.store.visitedDatapoints.some(item => item.index === this.index)){
+            console.log("in here")
             if (this.chart.settings.displayAxis == "x" || this.chart.settings.displayAxis == undefined){
                 return svg`
                     <g>
