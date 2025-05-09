@@ -295,6 +295,15 @@ export interface ScatterSettings extends PointSettings {
 
 }
 
+/** @public */
+export interface HeatmapSettings extends PointSettings {
+  resolution: number;
+}
+
+export interface HistogramSettings extends PointSettings {
+  bins: number;
+}
+
 export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
 /** @public */
