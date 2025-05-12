@@ -1,34 +1,24 @@
 import { Chart, type ChartProps } from '../Chart';
-import { familyManifestPathsMap } from '../chartSelectorHelper';
-import type { Meta, StoryObj } from "@storybook/web-components";
+
+import type { Meta, StoryObj } from '@storybook/web-components';
 
 type Story = StoryObj<ChartProps>;
 
-const titleToFilenameMap = familyManifestPathsMap('scatter', false);
-
 const meta = {
-  title: "Chart/Scatter Charts",
+  title: "Chart/Donut Charts",
   render: (args) => Chart(args),
-  argTypes: {
-    filename: {
-      description: 'Chart Title',
-      control: {type: 'select'},
-      options: Object.keys(titleToFilenameMap),
-      mapping: titleToFilenameMap
-    }
-  },
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
-export const AllScatterCharts: Story = {
-  name: 'All Scatter Charts',
+export const Chart40: Story = {
+  name: "Division of energy in the Universe (40)",
   args: {
-    filename: '',
+    filename: "manifests/pie-manifest-dark-matter.json",
     config: { // change to configFile: "./sample_config.json",
       "ui.colorVisionMode": "deutan"
     },
-    forcecharttype: "scatter",
+    forcecharttype: "donut",
     /*keybindings: { // change to keybindingsFile: './sample_keybindings.json',
       "chart": {
         "a": {
@@ -44,6 +34,6 @@ export const AllScatterCharts: Story = {
           "action": "move_down"
         }
       }
-    }*/
+    },*/
   }
-};
+}

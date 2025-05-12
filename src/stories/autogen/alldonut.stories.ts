@@ -4,10 +4,10 @@ import type { Meta, StoryObj } from "@storybook/web-components";
 
 type Story = StoryObj<ChartProps>;
 
-const titleToFilenameMap = familyManifestPathsMap('scatter', false);
+const titleToFilenameMap = familyManifestPathsMap('pastry', false);
 
 const meta = {
-  title: "Chart/Scatter Charts",
+  title: "Chart/Donut Charts",
   render: (args) => Chart(args),
   argTypes: {
     filename: {
@@ -21,14 +21,14 @@ const meta = {
 
 export default meta;
 
-export const AllScatterCharts: Story = {
-  name: 'All Scatter Charts',
+export const AllDonutCharts: Story = {
+  name: 'All Donut Charts',
   args: {
     filename: '',
     config: { // change to configFile: "./sample_config.json",
       "ui.colorVisionMode": "deutan"
     },
-    forcecharttype: "scatter",
+    forcecharttype: "donut",
     /*keybindings: { // change to keybindingsFile: './sample_keybindings.json',
       "chart": {
         "a": {

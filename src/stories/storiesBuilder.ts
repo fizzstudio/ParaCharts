@@ -8,9 +8,10 @@ import fs from 'node:fs';
 import { type CatalogListing } from '@fizz/chart-data';
 
 import { template } from './storyTemplate.ts';
-import { type ChartFamily, type ChartType, FAMILY_MEMBERS, familyCatalogMap, familyCatalogMapMulti} 
+import { type ChartFamily, FAMILY_MEMBERS, familyCatalogMap, familyCatalogMapMulti} 
   from './chartSelectorHelper.ts';
 import { allTemplate } from './allStoriesTemplate.ts';
+import { type ChartType } from '@fizz/paramanifest';
 //import { capitalize } from '../../lib/common/utils.ts';
 
 function capitalize(string: string) {
@@ -28,7 +29,7 @@ function generateStory(
   index: number
 ): void {
   const chartFolder = capitalize(chartType) + ' Charts';
-  const code = printf(template, { manifestTitle, chartFolder, manifestPath, index });
+  const code = printf(template, { manifestTitle, chartFolder, manifestPath, index, chartType });
   fs.writeFileSync(`${AUTOGEN_PATH}${chartType}${index}.stories.ts`, code, 'utf8');
 }
 
@@ -41,7 +42,7 @@ function generateStoryMulti(
 ): void {
   const multiText = multi ? 'Multi' : 'Single';
   const chartFolder = `${capitalize(chartType)} ${multiText} Charts`;
-  const code = printf(template, { manifestTitle, chartFolder, manifestPath, index });
+  const code = printf(template, { manifestTitle, chartFolder, manifestPath, index, chartType });
   fs.writeFileSync(`${AUTOGEN_PATH}${chartType}${multiText}${index}.stories.ts`, code, 'utf8');
 }
 
@@ -90,7 +91,7 @@ function generateAllStory(
 ): void {
   const chartFolder = capitalize(chartType) + ' Charts';
   const storyName = `All${capitalize(chartType)}Charts`;
-  const code = printf(allTemplate, { chartFolder, storyName, family, multi: 'false' });
+  const code = printf(allTemplate, { chartFolder, storyName, family, multi: 'false', chartType });
   fs.writeFileSync(`${AUTOGEN_PATH}all${chartType}.stories.ts`, code, 'utf8');
 }
 
@@ -102,7 +103,7 @@ function generateAllStoryMulti(
   const multiText = multi ? 'multi' : 'single';
   const chartFolder = `${capitalize(chartType)} ${capitalize(multiText)} Charts`;
   const storyName = `All${capitalize(multiText)}${capitalize(chartType)}Charts`;
-  const code = printf(allTemplate, { chartType, chartFolder, storyName, family, multi: 'true' });
+  const code = printf(allTemplate, { chartFolder, storyName, family, multi: 'true', chartType });
   fs.writeFileSync(`${AUTOGEN_PATH}all${multiText}${chartType}.stories.ts`, code, 'utf8');
 }
 
