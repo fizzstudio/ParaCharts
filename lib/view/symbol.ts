@@ -258,6 +258,7 @@ export interface DataSymbolOptions {
   scale: number;
   color?: number;
   dashed: boolean;
+  lighten?: boolean;
 }
 
 /**
@@ -304,7 +305,8 @@ export class DataSymbol extends View {
       strokeWidth: options?.strokeWidth ?? this.paraview.store.settings.chart.symbolStrokeWidth,
       scale: options?.scale ?? 1,
       color: options?.color,
-      dashed: options?.dashed ?? false
+      dashed: options?.dashed ?? false,
+      lighten: options?.lighten ?? false
     };
     this._defsKey = `sym-${shape}-${fill}`;
     if (!this.paraview.defs[this._defsKey]) {
@@ -368,13 +370,20 @@ export class DataSymbol extends View {
     }
     if (this._options.color !== undefined) {
       if (this.fill === 'solid') {
-        const col = this.paraview.store.colors.colorValueAt(
-          this._options.color).match(/\d+/g)!.map(Number);
-        col[1] -= Math.min(10, col[1]);
-        col[2] += Math.min(25, 100 - col[2]);
-        this._styleInfo.fill = `hsl(${col[0]}, ${col[1]}%, ${col[2]}%)`;
-        //styles.fill = this.colors.colorValueAt(this.color);
-      } else {
+        if (this._options.lighten) {
+          const col = this.paraview.store.colors.colorValueAt(
+            this._options.color).match(/\d+/g)!.map(Number);
+          //10 and 25 are magic numbers  
+          col[1] -= Math.min(10, col[1]);
+          col[2] += Math.min(25, 100 - col[2]);
+          this._styleInfo.fill = `hsl(${col[0]}, ${col[1]}%, ${col[2]}%)`;
+        }
+        else {
+          this._styleInfo.fill = this.paraview.store.colors.colorValueAt(
+            this._options.color);
+        }
+      }
+      else {
         this._styleInfo.fill = 'white';
       }
       this._styleInfo.stroke = this.paraview.store.colors.colorValueAt(

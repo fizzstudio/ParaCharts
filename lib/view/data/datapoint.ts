@@ -6,7 +6,6 @@ import { strToId } from '../../common/utils';
 import { formatBox } from '../formatter';
 import { type Shape } from '../shape/shape';
 
-import { type clusterObject } from '@fizz/clustering';
 
 import { type ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
@@ -184,18 +183,6 @@ export class DatapointView extends DataView {
   protected _createSymbol() {
     const series = this.seriesProps;
     let symbolType = series.symbol;
-    const index = this.parent.children.indexOf(this);
-    let color: number = series.color;
-    const types = new DataSymbols().types;
-    if (this.chart.isClustering){ 
-      let clustering = this.chart.clustering as clusterObject[]
-      for (let clusterId in clustering){
-        if (clustering[clusterId].dataPointIDs.indexOf(index) > -1){
-          color = Number(clusterId)
-          symbolType = types[color % types.length]
-        }
-      }
-    }
     this._symbol = DataSymbol.fromType(this.paraview, symbolType);
     this._symbol.id = `${this._id}-sym`;
     this.append(this._symbol);
@@ -280,6 +267,7 @@ export class DatapointView extends DataView {
     if (this._symbol) {
       this._symbol.scale = this._symbolScale;
       this._symbol.color = this._symbolColor;
+      console.log(this._symbol.color)
       this._symbol.hidden = !this.paraview.store.settings.chart.isDrawSymbols;
     }
     return super.content();
