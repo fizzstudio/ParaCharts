@@ -18,8 +18,7 @@ import { PointChart, ChartPoint } from './pointchart';
 import { type LineSettings, type DeepReadonly } from '../store/settings_types';
 import { XYSeriesView } from './xychart';
 import { Path } from './shape/path';
-
-import { type Point } from '@fizz/chart-classifier-utils';
+import { Vec2 } from '../common/vector';
 
 /**
  * Class for drawing line charts.
@@ -176,27 +175,27 @@ export class LineSection extends ChartPoint {
     this.centroid = `${centroidX} ${centroidY}`;
   }
 
-  protected get _points(): Point[] {
+  protected get _points(): Vec2[] {
     if (this._prevMidY !== undefined && this._nextMidY !== undefined) {
       return [
-        {x: this._prevMidX!, y: this._prevMidY},
-        {x: 0, y: 0}, 
-        {x: this._nextMidX!, y: this._nextMidY}
+        new Vec2(this._prevMidX!, this._prevMidY),
+        new Vec2(), 
+        new Vec2(this._nextMidX!, this._nextMidY)
       ];
     } else if (this._prevMidY === undefined && this._nextMidY !== undefined) {
       return [
-        {x: 0 , y: 0},
-        {x: this._nextMidX!, y: this._nextMidY}
+        new Vec2(),
+        new Vec2(this._nextMidX!, this._nextMidY)
       ];
     } else if (this._prevMidY !== undefined && this._nextMidY === undefined) {
       return [
-        {x: this._prevMidX!, y: this._prevMidY},
-        {x: 0, y: 0}
+        new Vec2(this._prevMidX!, this._prevMidY),
+        new Vec2()
       ];
     } else {
       // default case assumes there's only 1 datapoint (no lines on either side)
       return [
-        {x: 0, y: 0}
+        new Vec2()
       ];
     }
   }
