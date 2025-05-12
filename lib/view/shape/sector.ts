@@ -2,6 +2,7 @@
 import { fixed } from '../../common/utils';
 import { type ParaView } from '../../paraview';
 import { type ShapeOptions, Shape } from './shape';
+import { Vec2 } from '../../common/vector';
 
 import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -76,12 +77,16 @@ export class Sector extends Shape {
   }
 
   get arcCenter() {
-    return {
-      x: this._x + this._options.r*Math.cos(
+    return new Vec2(
+      this._x + this._options.r*Math.cos(
         radians(this._options.orientationAngle + this._options.centralAngle/2)),
-      y: this._y + this._options.r*Math.sin(
+      this._y + this._options.r*Math.sin(
         radians(this._options.orientationAngle + this._options.centralAngle/2))
-    };
+    );
+  }
+
+  get orientationVector() {
+    return this.arcCenter.subtract(new Vec2(this._x, this._y)).normalize();
   }
 
   computeLayout() {

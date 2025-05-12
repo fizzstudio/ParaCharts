@@ -69,7 +69,9 @@ export class Label extends View {
     this._textAnchor = this.options.textAnchor ?? (options.wrapWidth ? 'start' : 'middle');
     this._justify = this.options.justify ?? 'start';
     this._text = this.options.text;
-    //this.computeSize();
+    // It should be okay to go ahead and compute our size here, rather than
+    // waiting to be parented
+    this.updateSize();
   }
 
   protected _createId() {
