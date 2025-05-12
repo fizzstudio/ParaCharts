@@ -8,9 +8,10 @@ import fs from 'node:fs';
 import { type CatalogListing } from '@fizz/chart-data';
 
 import { template } from './storyTemplate.ts';
-import { type ChartFamily, type ChartType, FAMILY_MEMBERS, familyCatalogMap, familyCatalogMapMulti} 
+import { type ChartFamily, FAMILY_MEMBERS, familyCatalogMap, familyCatalogMapMulti} 
   from './chartSelectorHelper.ts';
 import { allTemplate } from './allStoriesTemplate.ts';
+import { type ChartType } from '@fizz/paramanifest';
 //import { capitalize } from '../../lib/common/utils.ts';
 
 function capitalize(string: string) {
