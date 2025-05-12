@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { logging } from '../common/logger';
 import { ParaComponent } from '../components';
 import { ParaController } from '../paracontroller';
-import { AllSeriesData } from '@fizz/paramanifest'
+import { AllSeriesData, ChartType } from '@fizz/paramanifest'
 import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
 import { SettingsManager } from '../store';
 import "../paraview";
@@ -40,6 +40,8 @@ export class ParaChart extends logging(ParaComponent) {
 
   @property() accessor filename = '';
   @property({type: Object}) accessor config: SettingsInput = {};
+
+  @property() accessor forcecharttype: ChartType | undefined;
 
   constructor() {
     super();

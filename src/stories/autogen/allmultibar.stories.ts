@@ -28,6 +28,7 @@ export const AllMultiBarCharts: Story = {
     config: { // change to configFile: "./sample_config.json",
       "ui.colorVisionMode": "deutan"
     },
+    forcecharttype: "bar",
     /*keybindings: { // change to keybindingsFile: './sample_keybindings.json',
       "chart": {
         "a": {
