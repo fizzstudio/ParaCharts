@@ -2,7 +2,7 @@
 
 // Imports
 
-import { ChartType } from '@fizz/paramanifest';
+import { type ChartType } from '@fizz/paramanifest';
 import CHART_CATALOG from '../../node_modules/@fizz/chart-data/data/chart_catalog.json' with { type: "json" };
 import { type CatalogListing } from '@fizz/chart-data';
 
