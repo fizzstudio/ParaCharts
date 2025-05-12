@@ -27,7 +27,7 @@ import { TodoEvent, type Actions } from '../input/actions';
 import { type HotkeyInfo } from '../input/defaultactions';*/
 import { fixed } from '../common/utils';
 import { ParaView } from '../paraview';
-//import { todo } from '../components/todochart';
+import { Vec2 } from '../common/vector';
 
 export type SnapLocation = 'start' | 'end' | 'center';
 
@@ -184,10 +184,9 @@ export class View extends BaseView {
   protected _prev: View | null = null;
   protected _next: View | null = null;
   protected _children: View[] = [];
-  protected _x = 0;
-  protected _y = 0;
-  protected _width = 0;
-  protected _height = 0;
+  protected _loc = new Vec2();
+  protected _width = -1;
+  protected _height = -1;
   protected _currFocus: View | null = null;
   //protected _eventActionManager: EventActionManager<this> | null = null;
   //protected _hotkeyActionManager!: HotkeyActionManager<this>;
@@ -235,8 +234,12 @@ export class View extends BaseView {
       }
       return;
     }
-    // Update the size without updating the parent
-    this.updateSize();
+    // A view may set its size before being parented, e.g.,
+    // in the constructor
+    if (this._width === -1 && this._height === -1) {
+      // Update the size without updating the parent
+      this.updateSize();
+    }
     this._parent = parent;
     // NB: we assume we've already been added to parent.children
     if (this.index) {
@@ -280,6 +283,31 @@ export class View extends BaseView {
 
   get isFocused() {
     return this._parent!.currFocus === this;
+  }
+
+  get loc() {
+    return this._loc.clone();
+  }
+
+  set loc(loc: Vec2) {
+    this._loc = loc;
+  }
+
+  // XXX These next 4 accessors are for legacy compatibility
+  protected get _x() {
+    return this._loc.x;
+  }
+
+  protected set _x(x: number) {
+    this._loc.x = x;
+  }
+
+  protected get _y() {
+    return this._loc.y;
+  }
+
+  protected set _y(y: number) {
+    this._loc.y = y;
   }
 
   get x() {
