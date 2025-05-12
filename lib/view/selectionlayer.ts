@@ -1,5 +1,8 @@
 
 import { ChartLayer } from './chartlayer';
+import { Rect } from './shape/rect';
+
+import { svg } from 'lit';
 
 export class SelectionLayer extends ChartLayer {
 
@@ -11,8 +14,60 @@ export class SelectionLayer extends ChartLayer {
     return 'selected-datapoint-marker';
   }
 
-  render() {
-    return super.render();
+  content() {
+    return svg`
+      ${
+        this.paraview.store.selectedDatapoints.map(cursor => {
+          const dpView = this._parent.dataLayer.datapointView(cursor.seriesKey, cursor.index)!;
+          // NB: Line datapoint height = 0
+          const rect = new Rect(this.paraview, {
+            width: dpView.width/2,
+            height: dpView.width/2,
+            x: dpView.x - dpView.width/4,
+            y: dpView.y - dpView.width/4,
+            fill: 'none',
+            stroke: 'black',
+            strokeWidth: 2
+          });
+          return rect.render();
+        })
+      }
+    `;
   }
-
 }
+
+/**
+ * Visual indication of selected state for datapoints.
+ */
+// export class SelectedDatapointMarker extends View {
+
+//   constructor(private datapointView: DatapointView, x: number, y: number) {
+//     super(datapointView.paraview);
+//     this._x = x;
+//     this._y = y;
+//   }
+
+//   protected _createId(..._args: any[]): string {
+//     return `select-${this.datapointView.id}`;
+//   }
+
+//   get width() {
+//     return this.datapointView.width;
+//   }
+
+//   get height() {
+//     return Math.max(this.datapointView.height, 20);
+//   }
+
+//   render() {
+//     return svg`
+//       <rect
+//         x=${this._x}
+//         y=${this._y}
+//         width=${this.width}
+//         height=${this.height}
+//       />
+//     `;
+//   }
+
+// }
