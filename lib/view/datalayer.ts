@@ -92,6 +92,12 @@ export abstract class DataLayer extends ChartLayer {
       } else if (e.action === 'move_down') {
         this.clearPlay();
         this.moveDown();
+      } else if (e.action === 'select') {
+        this.selectCurrent(false);
+      } else if (e.action === 'select_extend') {
+        this.selectCurrent(true);
+      } else if (e.action === 'select_clear') {
+        this.clearDatapointSelection();
       }
     });
   }
@@ -153,7 +159,7 @@ export abstract class DataLayer extends ChartLayer {
 
   get selectedDatapointViews() {
     return this.datapointViews.filter(v =>
-      v.isSelected
+      this.paraview.store.isSelected(v.seriesKey, v.index)
     );
   }
 
@@ -250,11 +256,18 @@ export abstract class DataLayer extends ChartLayer {
 
   abstract queryData(): void;
 
-  abstract clearDatapointSelection(): void;
-
   abstract playSeriesRiff(): void;
 
-  abstract selectCurrent(extend: boolean): void;
+  selectCurrent(extend = false) {
+    this._chartLandingView.focusLeaf.select(extend);
+  }
+
+  clearDatapointSelection(quiet = false) {
+    this.paraview.store.select([]);
+    if (!quiet) {
+      this.paraview.store.announce('No items selected.');
+    }
+  }
 
   cleanup() {
 
@@ -269,39 +282,3 @@ export abstract class DataLayer extends ChartLayer {
   }
 
 }
-
-/**
- * Visual indication of selected state for datapoints.
- */
-// export class SelectedDatapointMarker extends View {
-
-//   constructor(private datapointView: DatapointView, x: number, y: number) {
-//     super(datapointView.paraview);
-//     this._x = x;
-//     this._y = y;
-//   }
-
-//   protected _createId(..._args: any[]): string {
-//     return `select-${this.datapointView.id}`;
-//   }
-
-//   get width() {
-//     return this.datapointView.width;
-//   }
-
-//   get height() {
-//     return Math.max(this.datapointView.height, 20);
-//   }
-
-//   render() {
-//     return svg`
-//       <rect
-//         x=${this._x}
-//         y=${this._y}
-//         width=${this.width}
-//         height=${this.height}
-//       />
-//     `;
-//   }
-
-// }

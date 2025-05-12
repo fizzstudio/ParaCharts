@@ -1,0 +1,142 @@
+
+/**
+ * Basic 2D vector class.
+ */
+export class Vec2 {
+
+  constructor(protected _x = 0, protected _y = 0) {
+  }
+
+  get x() {
+    return this._x;
+  }
+
+  set x(x: number) {
+    this._x = x;
+  }
+
+  get y() {
+    return this._y;
+  }
+
+  set y(y: number) {
+    this._y = y;
+  }
+
+  clone() {
+    return new Vec2(this._x, this._y);
+  }
+
+  equal(other: Vec2) {
+    return this._x === other._x && this._y === other._y;
+  }
+
+  setX(x: number) {
+    return new Vec2(x, this._y);
+  }
+
+  setY(y: number) {
+    return new Vec2(this._x, y);
+  }
+  
+  add(other: Vec2) {
+    return new Vec2(
+      this._x + other._x,
+      this._y + other._y,
+    );
+  }
+
+  addScalar(scalar: number) {
+    return new Vec2(
+      this._x + scalar,
+      this._y + scalar,
+    );
+  }
+
+  addX(x: number) {
+    return new Vec2(
+      this._x + x,
+      this._y,
+    );
+  }
+
+  addY(y: number) {
+    return new Vec2(
+      this._x,
+      this._y + y,
+    );
+  }
+
+  subtract(other: Vec2) {
+    return new Vec2(
+      this._x - other._x,
+      this._y - other._y,
+    );
+  }
+  
+  subtractScalar(scalar: number) {
+    return new Vec2(
+      this._x - scalar,
+      this._y - scalar,
+    );
+  }
+
+  subtractX(x: number) {
+    return new Vec2(
+      this._x - x,
+      this._y,
+    );
+  }
+
+  subtractY(y: number) {
+    return new Vec2(
+      this._x,
+      this._y - y,
+    );
+  }
+
+  multiply(other: Vec2) {
+    return new Vec2(
+      this._x * other._x,
+      this._y * other._y,
+    );
+  }
+  
+  multiplyScalar(scalar: number) {
+    return new Vec2(
+      this._x * scalar,
+      this._y * scalar,
+    );
+  }
+  
+  divide(other: Vec2) {
+    return new Vec2(
+      this._x / other._x,
+      this._y / other._y,
+    );
+  }
+  
+  divideScalar(scalar: number) {
+    return new Vec2(
+      this._x / scalar,
+      this._y / scalar,
+    );
+  }
+
+  dot(other: Vec2) {
+    return this._x*other._x + this._y*other._y;
+  }
+  
+  length() {
+    return Math.sqrt(this.dot(this));
+  }
+  
+  normalize() {
+    return this.divideScalar(this.length());
+  }
+  
+  project(other: Vec2) {
+    return other.multiplyScalar(this.dot(other) / other.dot(other));
+  }
+
+}

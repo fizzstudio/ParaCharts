@@ -8,6 +8,7 @@ import { enumerate, fixed, strToId } from '../common/utils';
 import { formatBox } from './formatter';
 import { Box } from '../store/dataframe/box';
 import { Rect } from './shape/rect';
+import { Label } from './label';
 
 import { svg } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -86,6 +87,8 @@ export class BarStack {
   public bars: {[key: string]: Bar} = {};
   public readonly id: string;
   public readonly labelId: string;
+
+//  label: Label;
 
   private _x!: number;
 
@@ -179,6 +182,7 @@ export class BarChart extends XYChart {
   protected _clusteredData!: ClusterMap;
   private _abbrevs?: {[series: string]: string};
   private _bars!: BarData;
+  protected _stackLabels: Label[] = [];
 
   protected _addedToParent() {
     super._addedToParent();
@@ -310,6 +314,15 @@ export class BarChart extends XYChart {
           seriesViews[colName].append(stack.bars[colName]);
           //todo().canvas.jimerator.addSelector(colName, i, this.datapointViews.at(-1)!.id);
         }
+        // this._stackLabels.push(new Label(this.paraview, {
+        //   text: fixed`${Object.values(dataStack).map(item => item.value.value).reduce((a, b) => a + b)}`,
+        //   x: 0,
+        //   y: 0,
+        //   textAnchor: 'middle',
+        //   isPositionAtAnchor: true
+        // }));
+        // stack.label = this._stackLabels.at(-1)!;
+        // this.append(this._stackLabels.at(-1)!);
       }
     });
     this._bars = barData;
@@ -389,6 +402,7 @@ export class Bar extends XYDatapointView {
     this._height = (this.datapoint.y.value as number)*pxPerYUnit;
     this._x = this.stack.x + this.stack.cluster.x;
     this._y = this.chart.height - this._height - distFromXAxis;
+//    this.stack.label.x = this._x;
   }
 
   protected _createSymbol() {

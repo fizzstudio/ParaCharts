@@ -8,8 +8,10 @@ import {
 import { Label, type LabelTextAnchor } from '../label';
 import { type ParaView } from '../../paraview';
 import { Sector } from '../shape/sector';
+import { Path } from '../shape/path';
 import { formatBox } from '../formatter';
 import { enumerate } from '../../common/utils';
+import { Vec2 } from '../../common/vector';
 
 export type ArcType = 'circle' | 'semicircle';
 
@@ -28,7 +30,7 @@ export abstract class RadialChart extends DataLayer {
   // TODO: calculate radius_divisor based on longest label, for pie and donut
   protected _radiusDivisor = 2.3;
   
-  protected _labels: Label[] = [];
+  //protected _labels: Label[] = [];
   //private centerLabel: Label;
 
   constructor(paraview: ParaView, index: number) {
@@ -126,8 +128,9 @@ export abstract class RadialChart extends DataLayer {
     if (this._settings.label.isDrawEnabled) {
       // this needs to happen after the datapoints have been created and laid out
       this._createLabels();
-      const minX = Math.min(...this._labels.map(label => label.left));
-      const maxX = Math.max(...this._labels.map(label => label.right));
+      const labels = this.datapointViews.map(dp => (dp as RadialSlice).label!);
+      const minX = Math.min(...labels.map(label => label.left));
+      const maxX = Math.max(...labels.map(label => label.right));
       this._width = maxX - minX;
       this._parent.width = this._width;
       if (minX < 0) {
@@ -196,32 +199,37 @@ export abstract class RadialChart extends DataLayer {
       const text = x;
       const slice = this._chartLandingView.children[0].children[i] as RadialSlice;
       const arcCenter = slice.shape.arcCenter;
-      let labelX: number, labelY: number;
+      const gapVec = slice.shape.orientationVector.multiplyScalar(10);
+      let labelLoc: Vec2;
       let anchor: LabelTextAnchor;
       if (this._settings.sliceLabelPosition === 'inside') {
-        labelX = (slice.shape.x + arcCenter.x)/2;
-        labelY = (slice.shape.y + arcCenter.y)/2;
+        labelLoc = slice.shape.loc.add(arcCenter).divideScalar(2);
         anchor = 'middle';
       } else if (this._settings.sliceLabelPosition === 'outside') {
-        labelX = arcCenter.x;
-        labelY = arcCenter.y;
-        anchor = labelX > this.cx ? 'start' : 'end';
+        labelLoc = arcCenter.add(gapVec);
+        anchor = labelLoc.x > this.cx ? 'start' : 'end';
       } else {
-        labelX = 0;
-        labelY = 0;
+        labelLoc = new Vec2();
         anchor = 'middle';
       }
-      this._labels.push(new Label(this.paraview, {
+      slice.label = new Label(this.paraview, {
         text, 
         classList: ['radial_label'], 
         role: 'axislabel', 
-        x: labelX,
-        y: labelY,
+        x: labelLoc.x,
+        y: labelLoc.y,
         textAnchor: anchor,
         isPositionAtAnchor: true
-      }));
-      slice.label = this._labels.at(-1)!;
+      });
+      slice.leader = new Path(this.paraview, {
+        points: [arcCenter, labelLoc, labelLoc.x > slice.label.centerX
+          ? labelLoc.subtractX(slice.label.width)
+          : labelLoc.addX(slice.label.width)],
+        stroke: this.paraview.store.colors.colorValueAt(slice.color),
+        strokeWidth: 2
+      });
       // Labels draw as children of the slice so the highlights layer can `use` them
+      slice.append(slice.leader);
       slice.append(slice.label);
     }
     this._resolveLabelCollisions();
@@ -240,6 +248,7 @@ export abstract class RadialChart extends DataLayer {
       // Move each label up out of collision with the one onscreen below it.
       if (s.label!.intersects(slices[i].label!)) {
         s.label!.y = slices[i].label!.y - s.label!.height;
+        s.leader!.points = [s.leader!.points[0], s.label!.loc, s.leader!.points[2].setY(s.label!.y)];
       }
     });
 
@@ -344,6 +353,7 @@ export abstract class RadialSlice extends DatapointView {
   declare readonly chart: RadialChart;
 
   protected _label: Label | null = null;
+  protected _leader: Path | null = null;
   
   constructor(parent: SeriesView, protected _params: RadialDatapointParams) {
     super(parent);
@@ -356,6 +366,14 @@ export abstract class RadialSlice extends DatapointView {
 
   set label(label: Label | null) {
     this._label = label;
+  }
+
+  get leader() {
+    return this._leader;
+  }
+
+  set leader(leader: Path | null) {
+    this._leader = leader;
   }
 
   get shape() {
@@ -385,6 +403,9 @@ export abstract class RadialSlice extends DatapointView {
     if (this._label) {
       this._label.x += x - this._x;
     }
+    if (this._leader) {
+      this._leader.x += x - this._x;
+    }
     super.x = x;
   }
 
@@ -395,6 +416,9 @@ export abstract class RadialSlice extends DatapointView {
   set y(y: number) {
     if (this._label) {
       this._label.y += y - this._y;
+    }
+    if (this._leader) {
+      this._leader.y += y - this._y;
     }
     super.y = y;
   }
