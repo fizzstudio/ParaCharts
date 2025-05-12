@@ -18,6 +18,7 @@ export const Chart1: Story = {
     config: { // change to configFile: "./sample_config.json",
       "ui.colorVisionMode": "deutan"
     },
+    forcecharttype: "column",
     /*keybindings: { // change to keybindingsFile: './sample_keybindings.json',
       "chart": {
         "a": {

@@ -2,6 +2,7 @@
 
 // Imports
 
+import { type ChartType } from '@fizz/paramanifest';
 import CHART_CATALOG from '../../node_modules/@fizz/chart-data/data/chart_catalog.json' with { type: "json" };
 import { type CatalogListing } from '@fizz/chart-data';
 
@@ -10,12 +11,10 @@ import { type CatalogListing } from '@fizz/chart-data';
 const CHART_TYPE_FAMILIES = ['line', 'bar', 'pastry', 'scatter'] as const;
 export type ChartFamily = typeof CHART_TYPE_FAMILIES[number];
 
-export type ChartType = 'line' | 'stepline' | 'bar' | 'column' | 'lollipop' | 'pie' | 'scatter';
-
 export const FAMILY_MEMBERS: Record<ChartFamily, ChartType[]> = {
   'line': ['line', 'stepline'],
   'bar': ['bar', 'column', 'lollipop'],
-  'pastry': ['pie'],
+  'pastry': ['pie', 'donut'],
   'scatter': ['scatter']
 }
 
