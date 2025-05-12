@@ -7,6 +7,13 @@ type Story = StoryObj<ChartProps>;
 const meta = {
   title: "CSUN",
   render: (args) => Chart(args),
+  argTypes: {
+    legendOrder: {
+      description: 'Legend item order',
+      control: {type: 'select'},
+      options: ['lexical', 'chart']
+    },
+  },
 } satisfies Meta<ChartProps>;
 
 export default meta;
@@ -56,6 +63,7 @@ export const DemoChart6: Story = {
 export const DemoChart7: Story = {
   name: "7. Gross domestic product of the ASEAN countries from 2008 to 2018 (48)",
   args: {
-    filename: 'manifests/autogen/bar-multi/bar-multi-manifest-48.json'
+    filename: 'manifests/autogen/bar-multi/bar-multi-manifest-48.json',
+    legendOrder: "chart"
   }
 }
