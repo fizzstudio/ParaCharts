@@ -320,7 +320,6 @@ export class ParaStore extends State {
   }
 
   select(datapoints: DataCursor[]) {
-    console.log('SEL', datapoints);
     let newSelection: DataCursor[] = [];
     if (datapoints.length === 1) {
       if (!this.isSelected(datapoints[0].seriesKey, datapoints[0].index) 
@@ -332,7 +331,6 @@ export class ParaStore extends State {
     }
     this._prevSelectedDatapoints = this._selectedDatapoints;
     this._selectedDatapoints = newSelection;
-    console.log('DID SEL', this._selectedDatapoints);
   }
 
   extendSelection(datapoints: DataCursor[]) {

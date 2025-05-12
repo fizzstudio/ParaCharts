@@ -1,6 +1,6 @@
 
 //import { KeymapsInput } from '../../lib';
-import { type SettingsInput } from '../../lib/store/settings_types';
+import { type SettingsInput, type LegendItemOrder } from '../../lib/store/settings_types';
 
 import { html, nothing } from 'lit';
 import '../../lib';
@@ -8,14 +8,17 @@ import '../../lib';
 export interface ChartProps {
   filename: string;
   config?: SettingsInput;  
+  legendOrder: LegendItemOrder;
 }
 
 /**
  * Primary UI component for user interaction
  */
 export const Chart = ({ 
-  filename, config
+  filename, config, legendOrder
 }: ChartProps) => {
+  config ??= {};
+  config['legend.itemOrder'] = legendOrder;
   return html`
     <style>
       /*
