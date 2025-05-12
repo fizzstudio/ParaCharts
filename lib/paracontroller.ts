@@ -17,7 +17,7 @@ export class ParaController extends Logger {
   protected _data?: AllSeriesData;
   protected _suppleteSettingsWith?: DeepReadonly<Settings>;  
   
-  constructor(parachart: ParaChart, private _forceChartType?: ChartType) {
+  constructor(private parachart: ParaChart) {
     super();
     this._store = new ParaStore(this._inputSettings, this._suppleteSettingsWith);
     parachart.addEventListener('paraviewready', async () => {
@@ -46,7 +46,7 @@ export class ParaController extends Logger {
   async runLoader(filename: string): Promise<void> {
     this.log(`loading filename: '${filename}'`);
     this._store.dataState = 'pending';
-    const loadresult = await this._loader.load('fizz-chart-data', filename, this._forceChartType);
+    const loadresult = await this._loader.load('fizz-chart-data', filename, this.parachart.forcecharttype);
     this.log('loaded manifest')
     if (loadresult.result === 'success') {
       this._setManifest(loadresult.manifest);

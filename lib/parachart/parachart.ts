@@ -43,7 +43,7 @@ export class ParaChart extends logging(ParaComponent) {
 
   constructor() {
     super();
-    this._controller = new ParaController(this, this.forcecharttype);
+    this._controller = new ParaController(this);
     // also creates the state controller
     this.store = this._controller.store;
   }
