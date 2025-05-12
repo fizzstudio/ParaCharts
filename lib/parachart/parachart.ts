@@ -19,6 +19,7 @@ import { ParaComponent } from '../components';
 import { ParaController } from '../paracontroller';
 import { AllSeriesData, ChartType } from '@fizz/paramanifest'
 import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
+import { SettingsManager } from '../store';
 import "../paraview";
 import "../control_panel";
 import { exhaustive } from "../common/utils";
@@ -38,6 +39,7 @@ export class ParaChart extends logging(ParaComponent) {
   private suppleteSettingsWith?: DeepReadonly<Settings>;
 
   @property() accessor filename = '';
+  @property({type: Object}) accessor config: SettingsInput = {};
 
   @property() accessor forcecharttype: ChartType | undefined;
 
@@ -59,6 +61,12 @@ export class ParaChart extends logging(ParaComponent) {
     if (changedProperties.has('filename') && this.filename !== '') {
       this.log(`changed: '${this.filename}`);
       this.dispatchEvent(new CustomEvent('filenamechange', {bubbles: true, composed: true, cancelable: true}));
+    }
+    if (changedProperties.has('config')) {
+      Object.entries(this.config).forEach(([path, value]) =>
+        this._store.updateSettings(draft => {
+          SettingsManager.set(path, value, draft);
+        }));
     }
   }
 

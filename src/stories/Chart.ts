@@ -1,6 +1,6 @@
 
 //import { KeymapsInput } from '../../lib';
-import { type SettingsInput } from '../../lib/store/settings_types';
+import { type SettingsInput, type LegendItemOrder } from '../../lib/store/settings_types';
 
 import { html, nothing } from 'lit';
 import '../../lib';
@@ -8,7 +8,8 @@ import { ChartType } from '@fizz/paramanifest';
 
 export interface ChartProps {
   filename: string;
-  config?: SettingsInput;
+  config?: SettingsInput;  
+  legendOrder: LegendItemOrder;
   forcecharttype?: ChartType;
 }
 
@@ -16,8 +17,10 @@ export interface ChartProps {
  * Primary UI component for user interaction
  */
 export const Chart = ({ 
-  filename, config, forcecharttype
+  filename, config, legendOrder, forcecharttype
 }: ChartProps) => {
+  config ??= {};
+  config['legend.itemOrder'] = legendOrder;
   return html`
     <style>
       /*
