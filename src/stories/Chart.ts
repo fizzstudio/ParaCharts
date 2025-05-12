@@ -4,17 +4,19 @@ import { type SettingsInput } from '../../lib/store/settings_types';
 
 import { html, nothing } from 'lit';
 import '../../lib';
+import { ChartType } from '@fizz/paramanifest';
 
 export interface ChartProps {
   filename: string;
-  config?: SettingsInput;  
+  config?: SettingsInput;
+  forcecharttype?: ChartType;
 }
 
 /**
  * Primary UI component for user interaction
  */
 export const Chart = ({ 
-  filename, config
+  filename, config, forcecharttype
 }: ChartProps) => {
   return html`
     <style>
@@ -67,6 +69,7 @@ export const Chart = ({
   <para-chart 
     filename=${filename} 
     .config=${config ?? nothing}
+    forcecharttype=${forcecharttype ?? nothing}
   >
     <span slot="settings"></span>
   </para-chart>
