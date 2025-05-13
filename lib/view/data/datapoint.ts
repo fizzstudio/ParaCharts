@@ -266,8 +266,7 @@ export class DatapointView extends DataView {
     }
     if (this._symbol) {
       this._symbol.scale = this._symbolScale;
-      this._symbol.color = this._symbolColor;
-      console.log(this._symbol.color)
+      //this._symbol.color = this._symbolColor;
       this._symbol.hidden = !this.paraview.store.settings.chart.isDrawSymbols;
     }
     return super.content();
