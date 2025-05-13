@@ -47,7 +47,7 @@
   },
   "types": "./dist/paracharts.d.ts",
   "devDependencies": {
-    "@fizz/chart-data": "^2.1.6-alpha.1",
+    "@fizz/chart-data": "^2.1.6-alpha.4",
     "@fizz/line-chart-intersection": "^3.4.0",
     "@fizz/line-chart-ui-utils": "^0.7.0",
     "@fizz/test-utils": "^0.2.0",
@@ -84,7 +84,7 @@
     "@fizz/line-chart-metadata": "^4.7.4-alpha.0",
     "@fizz/line-chart-parameters": "^1.0.1",
     "@fizz/paramanifest": "^0.3.2",
-    "@fizz/paramodel": "^0.1.6-alpha.2",
+    "@fizz/paramodel": "^0.1.6-alpha.6",
     "@fizz/parasummary": "^0.1.5",
     "@fizz/templum": "^0.4.2",
     "@fizz/todocharts": "^0.129.6",
