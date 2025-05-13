@@ -1,6 +1,6 @@
 
 import { ParaStore } from '../store/parastore';
-import { formatBox } from '../view/formatter';
+import { formatBox } from '@fizz/parasummary';
 
 import Decimal from 'decimal.js';
 

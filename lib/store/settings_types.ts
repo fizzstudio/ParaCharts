@@ -389,3 +389,29 @@ export interface Settings extends SettingGroup {
 export type DeepReadonly<T> = {
   readonly [Property in keyof T]: T extends Setting ? T[Property] : DeepReadonly<T[Property]>;
 };
+
+/** 
+ * Context where a particular value appears. 
+ * @public
+ */
+export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
+// Settings that control the format for each context
+export const FORMAT_CONTEXT_SETTINGS = {
+  xTick: 'axis.x.tick.labelFormat',
+  yTick: 'axis.y.tick.labelFormat',
+  linePoint: 'type.line.pointLabelFormat',
+  scatterPoint: 'type.scatter.pointLabelFormat',
+  barCluster: 'type.bar.clusterLabelFormat',
+  pieSliceLabel: 'type.pie.sliceLabelFormat',
+  pieSliceValue: 'type.pie.sliceValueFormat',
+  donutSliceLabel: 'type.donut.sliceLabelFormat',
+  gaugeSliceLabel: 'type.gauge.sliceLabelFormat',
+  steplinePoint: 'type.stepline.pointLabelFormat',
+  lollipopPoint: 'type.lollipop.pointLabelFormat',
+  lollipopCluster: 'type.lollipop.clusterLabelFormat',
+  jimX: 'jim.xValueFormat',
+  dataTableX: 'dataTable.xValueFormat',
+  dataTableY: 'dataTable.yValueFormat',
+  statusBar: 'statusBar.valueFormat',
+  domId: 'NA'
+};
