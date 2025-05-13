@@ -98,6 +98,8 @@ export abstract class DataLayer extends ChartLayer {
         this.selectCurrent(true);
       } else if (e.action === 'select_clear') {
         this.clearDatapointSelection();
+      } else if (e.action === 'query_data') {
+        this.queryData(e);
       }
     });
   }
@@ -144,10 +146,10 @@ export abstract class DataLayer extends ChartLayer {
     return this._chartLandingView.datapointViews;
   }
 
-  get isClustering(){
+  get isClustering() {
     return this._isClustering;
   }
-  get clustering(){
+  get clustering() {
     return this._clustering;
   }
 
@@ -254,7 +256,7 @@ export abstract class DataLayer extends ChartLayer {
    */
   abstract playLeft(): void;
 
-  abstract queryData(): void;
+  abstract queryData(e: HotkeyEvent): void;
 
   abstract playSeriesRiff(): void;
 
