@@ -17,9 +17,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { State, property } from '@lit-app/state';
 import { produce } from 'immer';
 
-import { dataFromManifest, Facet, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
+import { dataFromManifest, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
+import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature 
+  } from '@fizz/paramodel';
+import { FormatType } from '@fizz/parasummary';
 
-import { DeepReadonly, Settings, SettingsInput } from './settings_types';
+import { DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext } from './settings_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
 import { defaults } from './settings_defaults';
@@ -28,8 +31,6 @@ import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { keymap } from './keymap';
 import { KeymapManager } from './keymap_manager';
-import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature 
-  } from '@fizz/paramodel';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -220,5 +221,10 @@ export class ParaStore extends State {
   wasVisitedSeries(seriesKey: string) {
     return !!this._prevVisitedDatapoints.find(cursor =>
       cursor.seriesKey === seriesKey);
+  }
+
+  getFormatType(context: FormatContext): FormatType {
+    return context === 'domId' ? 'domId' 
+      : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.settings) as FormatType;
   }
 }
