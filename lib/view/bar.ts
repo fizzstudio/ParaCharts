@@ -4,14 +4,14 @@ import { AxisInfo } from '../common/axisinfo';
 import { 
   type BarSettings, type StackContentOptions ,type DeepReadonly
 } from '../store/settings_types';
-import { enumerate, fixed, strToId } from '../common/utils';
-import { formatBox } from './formatter';
-import { Box } from '../store/dataframe/box';
+import { fixed } from '../common/utils';
 import { Rect } from './shape/rect';
 import { Label } from './label';
 
 import { svg } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
+import { Box, enumerate, strToId } from '@fizz/paramodel';
+import { formatBox } from '@fizz/parasummary';
 
 type BarData = {[key: string]: BarCluster};
 
@@ -190,7 +190,7 @@ export class BarChart extends XYChart {
     this._clusteredData = this._clusterData();
     this._axisInfo = new AxisInfo(this.paraview.store, {
       xTiers: [this.paraview.store.model!.allFacetValues('x')!.map(x =>
-        formatBox(x, 'barCluster', this.paraview.store))],
+        formatBox(x, this.paraview.store.getFormatType('barCluster')))],
       yValues: Object.values(this._clusteredData).flatMap(c =>
         Object.values(c).map(s => Object.values(s)
             .map(item => item.value.value)
@@ -257,7 +257,7 @@ export class BarChart extends XYChart {
     const clusters: Cluster[] = [];
     for (const [x, i] of enumerate(xs)) {
       //const clusterKey = this._model.format(xSeries.atBoxed(i), 'barCluster');  
-      const clusterKey = formatBox(x, 'barCluster', this.paraview.store);  
+      const clusterKey = formatBox(x, this.paraview.store.getFormatType('barCluster'));  
       let cluster = clusterMap[clusterKey];
       if (!cluster) {
         cluster = {};

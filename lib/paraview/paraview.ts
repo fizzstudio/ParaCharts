@@ -25,7 +25,7 @@ import { DocumentView } from '../view/document_view';
 //import { styles } from './styles';
 import { SVGNS } from '../common/constants';
 import { fixed } from '../common/utils';
-import { type Summarizer, BasicSummarizer } from '../summary';
+import { Summarizer, BasicXYChartSummarizer } from '@fizz/parasummary';
 
 import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -218,7 +218,7 @@ export class ParaView extends logging(ParaComponent) {
         this.createDocumentView();
       }
     });
-    this._summarizer = new BasicSummarizer(this._store);
+    this._summarizer = new BasicXYChartSummarizer(this._store.model!);
 
     this._computeViewBox();
   }
