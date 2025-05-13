@@ -16,6 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Datatype } from "@fizz/paramanifest";
 import { calendarEquals, CalendarPeriod, parseCalendar } from "../calendar_period";
+import { ComparisonResult } from "@fizz/dataframe";
+import Decimal from "decimal.js";
 
 // TODO: This type lacks a completeness type check. This could be implemented by testing in Vitest
 // that `keyof ScalarMap extends Datatype` and vice versa and `ScalarMap[Datatype] extends Scalar` 
@@ -31,6 +33,32 @@ export type ScalarMap = {
  * @public
  */
 export abstract class Box<T extends Datatype> {
+    compare(other: NumberBox): ComparisonResult {
+    if (!other.isNumber()) {
+      throw new Error('must compare number with number');
+    }
+    const result: Partial<ComparisonResult> = {
+      diff: 0
+    };
+    if (this.value === other.value) {
+      result.relationship = 'equal';
+    } else {
+      result.relationship = this.value as number > other.value ? 'greater' : 'less';
+      const min = new Decimal(Math.min(this.value as number, other.value));
+      const max = new Decimal(Math.max(this.value as number, other.value));
+      result.diff = max.sub(min).toNumber();
+      // calculate the percentage difference
+      const startVal = new Decimal(this.value as number);
+      const endVal = new Decimal(other.value);
+      if (startVal) {
+        result.percentageNext = endVal.sub(startVal).dividedBy(startVal).times(100).toNumber();  
+      } 
+      if (endVal) {
+        result.percentagePrev = startVal.sub(endVal).dividedBy(endVal).times(100).toNumber();  
+      }
+    }
+    return result as ComparisonResult;
+  }
   public readonly value: ScalarMap[T];
   
   constructor(public readonly raw: string) {

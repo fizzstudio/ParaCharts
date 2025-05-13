@@ -207,6 +207,9 @@ export class ParaView extends logging(ParaComponent) {
     return this._defs;
   }
 
+  get controller() {
+    return this._controller;
+  }
   connectedCallback() {
     super.connectedCallback();
     // FIXME: create store
