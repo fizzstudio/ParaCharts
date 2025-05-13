@@ -6,6 +6,7 @@ import { ParaView } from '../paraview';
 import { AxisInfo } from '../common/axisinfo';
 import { clusterObject, coord, generateClusterAnalysis } from '@fizz/clustering';
 import { DataSymbol, DataSymbols } from './symbol';
+import { Rect } from './shape/rect';
 
 export class ScatterPlot extends PointChart {
 
@@ -77,6 +78,16 @@ class ScatterPoint extends ChartPoint {
     const xTemp = (this.datapoint.x.value as number - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
     const parentWidth: number = this.chart.parent.width;
     return parentWidth * xTemp;
+  }
+
+  get width() {
+    //console.log(this._symbol?.width)
+    if (2 * this._symbol?.width!){
+      return 2 * this._symbol!.width
+    }
+    else{
+      return 24
+    }
   }
 
   protected _createSymbol(): void {
