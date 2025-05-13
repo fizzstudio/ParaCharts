@@ -8,9 +8,9 @@ import {
 import { Label } from '../label';
 import { type ParaView } from '../../paraview';
 import { Sector } from '../shape/sector';
-import { formatBox } from '../formatter';
 
 import { enumerate } from '@fizz/paramodel';
+import { formatBox } from '@fizz/parasummary';
 
 export type ArcType = 'circle' | 'semicircle';
 
@@ -197,9 +197,9 @@ export abstract class RadialChart extends DataLayer {
 
   legend() {
     const xSeries = this.paraview.store.model!.allFacetValues('x')!.map(box =>
-      formatBox(box, 'pieSliceLabel', this.paraview.store));
+      formatBox(box, this.paraview.store.getFormatType('pieSliceLabel')));
     const ySeries = this.paraview.store.model!.allFacetValues('y')!.map(box =>
-      formatBox(box, 'pieSliceValue', this.paraview.store));
+      formatBox(box, this.paraview.store.getFormatType('pieSliceValue')));
     return xSeries.map((x, i) => ({
       label: `${x}: ${ySeries[i]}`,
       color: i
