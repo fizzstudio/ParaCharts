@@ -25,7 +25,6 @@ import { DocumentView } from '../view/document_view';
 //import { styles } from './styles';
 import { SVGNS } from '../common/constants';
 import { fixed } from '../common/utils';
-import { type Summarizer, BasicSummarizer } from '../summary';
 
 import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
