@@ -27,9 +27,9 @@ import { type Setting } from '../store/settings_types';
 
 import { type ClassInfo } from 'lit/directives/class-map.js';
 import { ParaView } from '../paraview';
-import { formatXYDatapointX, formatXYDatapointY } from './formatter';
 import { literal } from 'lit/static-html.js';
 import { XYDatapoint, strToId } from '@fizz/paramodel';
+import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 
 export type DatapointViewType<T extends XYDatapointView> = 
   (new (...args: any[]) => T);
@@ -596,8 +596,8 @@ export abstract class XYDatapointView extends DatapointView {
     return [
       'datapoint',
       strToId(this.series.key),
-      formatXYDatapointX(this.datapoint, 'domId', this.paraview.store),
-      formatXYDatapointY(this.datapoint, 'domId', this.paraview.store),
+      formatXYDatapointX(this.datapoint, this.paraview.store.getFormatType('domId')),
+      formatXYDatapointY(this.datapoint, this.paraview.store.getFormatType('domId')),
       `${this.index}`
     ].join('-'); 
   }
@@ -616,7 +616,7 @@ export abstract class XYDatapointView extends DatapointView {
       {
         attr: literal`data-label`,
         value: 
-        formatXYDatapointX(this.datapoint, 'domId', this.paraview.store),
+        formatXYDatapointX(this.datapoint, this.paraview.store.getFormatType('domId')),
       },
       {
         attr: literal`data-centroid`,

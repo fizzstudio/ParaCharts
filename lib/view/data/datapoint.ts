@@ -2,7 +2,6 @@
 import { DataView, type SeriesView } from './';
 import { DataSymbol, DataSymbols } from '../symbol';
 import { type DataPoint, strToId } from '@fizz/paramodel';
-import { formatBox } from '../formatter';
 
 import { type clusterObject } from '@fizz/clustering';
 
@@ -11,6 +10,7 @@ import { type ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { svg, nothing } from 'lit';
 import { ref } from 'lit/directives/ref.js';
+import { formatBox } from '@fizz/parasummary';
 
 /**
  * Abstract base class for views representing datapoint values
@@ -130,7 +130,7 @@ export class DatapointView extends DataView {
 
   protected _createId(..._args: any[]): string {
     const facets = Object.entries(this.datapoint).map(([key, box]) => 
-      `${key}_${formatBox(box, 'domId', this.paraview.store)}`).join('-');
+      `${key}_${formatBox(box, this.paraview.store.getFormatType('domId'))}`).join('-');
     return [
       'datapoint',
       strToId(this.series.key),
@@ -147,7 +147,7 @@ export class DatapointView extends DataView {
     super.onFocus();
     this._visit();
     this.paraview.store.announce(
-      this.paraview.summarizer.getDatapointSummary(this.datapoint));
+      this.paraview.summarizer.getDatapointSummary(this.datapoint, 'raw'));
   }
 
   computeLayout() {}

@@ -8,8 +8,7 @@ import { html, css } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { BasicSummarizer } from '../../summary';
-
+import { BasicXYChartSummarizer } from '@fizz/parasummary';
 
 @customElement('para-description-panel')
 export class DescriptionPanel extends ControlPanelTabPanel {
@@ -19,7 +18,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
 
   protected _ariaLiveRegionRef = createRef<AriaLive>();
 
-  private _summarizer = new BasicSummarizer(this._store); //FIXME: The whole ParaChart should have a common summarizer
+  private _summarizer = new BasicXYChartSummarizer(this._store.model!); //FIXME: The whole ParaChart should have a common summarizer
 
   static styles = [
     ...ControlPanelTabPanel.styles,
