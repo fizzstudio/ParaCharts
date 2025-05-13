@@ -66,10 +66,12 @@ export class Label extends View {
     this._x = this.options.x;
     this._y = this.options.y;
     this._angle = this.options.angle ?? 0;
-    this._textAnchor = this.options.textAnchor ?? options.wrapWidth ? 'start' : 'middle';
+    this._textAnchor = this.options.textAnchor ?? (options.wrapWidth ? 'start' : 'middle');
     this._justify = this.options.justify ?? 'start';
     this._text = this.options.text;
-    //this.computeSize();
+    // It should be okay to go ahead and compute our size here, rather than
+    // waiting to be parented
+    this.updateSize();
   }
 
   protected _createId() {
@@ -127,6 +129,22 @@ export class Label extends View {
 
   get bbox() {
     return this._elRef.value!.getBBox();
+  }
+
+  get left() {
+    return this.options.isPositionAtAnchor ? this._x - this._anchorXOffset : this._x;
+  }
+
+  get right() {
+    return this.left + this.boundingWidth;
+  }
+
+  get top() {
+    return this.options.isPositionAtAnchor ? this._y - this._anchorYOffset : this._y;
+  }
+
+  get bottom() {
+    return this.top + this.boundingHeight;
   }
 
   computeSize() {

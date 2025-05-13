@@ -21,7 +21,7 @@ import { type DocumentView } from './document_view';
 import { type CardinalDirection } from '../store/settings_types';
 //import { AnnotationLayer } from './annotationlayer';
 import { type DataLayer } from './datalayer';
-import { HighlightsLayer } from './highlightslayer';
+import { HighlightsLayer } from './highlights_layer';
 import { SelectionLayer } from './selectionlayer';
 import { LineChart } from './line';
 //import { StepLineChart } from './stepline';
@@ -48,7 +48,7 @@ export const chartClasses = {
   line: LineChart,
   scatter: ScatterPlot,
   pie: PieChart,
-  donut: BarChart, //DonutChart,
+  donut: PieChart,
   gauge: BarChart, //GaugeChart,
   stepline: LineChart, //StepLineChart,
   lollipop: BarChart, //LollipopChart
@@ -58,20 +58,16 @@ export class ChartLayerManager extends View {
 
   declare protected _parent: Layout;
 
-  private _contentWidth = this.docView.paraview.store.settings.chart.size.width!;
   private _orientation!: CardinalDirection;
-  //private model!: Model;
   //private _backgroundAnnotationLayer!: AnnotationLayer;
   private dataLayers!: DataLayer[];
   private _highlightsLayer!: HighlightsLayer;
   private _selectionLayer!: SelectionLayer;
   //private _foregroundAnnotationLayer!: AnnotationLayer;
 
-  constructor(public readonly docView: DocumentView, contentWidth?: number) {
+  constructor(public readonly docView: DocumentView) {
     super(docView.paraview);
-    if (contentWidth !== undefined) {
-      this._contentWidth = contentWidth;
-    }
+    this._width = this.paraview.store.settings.chart.size.width!;
     this._orientation = this.paraview.store.settings.chart.orientation;
     this.createLayers();
   }
@@ -100,32 +96,11 @@ export class ChartLayerManager extends View {
     this.append(this._selectionLayer);    
   }
 
-  /** Logical width of the chart. */
-  get width() {
-    return this.contentWidth;
-  }
-
   /** Logical height of the chart. */
   get height() {
     return this.docView.paraview.store.settings.chart.size.height!;
   }
   
-  /** 
-   * Logical width of the main chart content; includes datapoints, but 
-   * not, e.g., series labels, leader lines, etc. 
-   */
-  get contentWidth() {
-    return this._contentWidth;
-  }
-
-  set contentWidth(newContentWidth: number) {
-    this._contentWidth = newContentWidth;
-  }
-
-  get contentHeight() {
-    return this.height;
-  }
-
   /** Physical width of the chart; i.e., width onscreen after any rotation. */
   get physWidth() {
     return this._orientation === 'north' || this._orientation === 'south' ?
@@ -138,27 +113,11 @@ export class ChartLayerManager extends View {
       this.height : this.width;
   }
 
-  /** Physical content width of the chart; i.e., content width onscreen after any rotation. */
-  get physContentWidth() {
-    return this._orientation === 'north' || this._orientation === 'south' ?
-      this.contentWidth : this.contentHeight;
-  }
-
-  /** Physical content height of the chart; i.e., content height onscreen after any rotation. */
-  get physContentHeight() {
-    return this._orientation === 'north' || this._orientation === 'south' ?
-      this.contentHeight : this.contentWidth;
-  }
-
   get orientation() {
     return this._orientation;
   }
-
-  /*get model(){
-    return this._model
-  }
     
-  get backgroundAnnotationLayer() {
+  /*get backgroundAnnotationLayer() {
     return this._backgroundAnnotationLayer;
   }*/
 
@@ -227,7 +186,7 @@ export class ChartLayerManager extends View {
   }
   
   render() {
-    let transform = fixed`translate(${this._x},${this._y})`;
+    let transform = fixed`translate(${this._x + this._padding.left},${this._y + this._padding.top})`;
     if (this._orientation === 'east') {
       transform += fixed`
         translate(${this.height},${0}) 
@@ -251,8 +210,8 @@ export class ChartLayerManager extends View {
       >
         <rect 
           id="data-backdrop" 
-          width=${this.physContentWidth} 
-          height=${this.physContentHeight}
+          width=${this.physWidth} 
+          height=${this.physHeight}
         />
         ${this.dataLayers.map(layer => layer.render())}
         ${this._highlightsLayer.render()}

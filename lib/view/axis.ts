@@ -217,7 +217,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       } catch (e) {
         if (e instanceof ChartTooDenseError) {
           console.log('chart too dense; preferred width:', e.preferredWidth);
-          this.chartLayers.contentWidth = e.preferredWidth;
+          this.chartLayers.width = e.preferredWidth;
         } else if (e instanceof ChartTooWideError) {
           console.log('chart too wide; preferred tick step:', e.preferredTickStep);
           this._tickStep = e.preferredTickStep;
@@ -305,7 +305,7 @@ export class HorizAxis extends Axis<'horiz'> {
   computeSize(): [number, number] {
     return [
       this.chartLayers.orientation === 'north' || this.chartLayers.orientation === 'south' ? 
-        this.chartLayers.contentWidth : this.chartLayers.physWidth,
+        this.chartLayers.width : this.chartLayers.physWidth,
       this._layout.height
     ];
   }
@@ -319,17 +319,17 @@ export class HorizAxis extends Axis<'horiz'> {
 
   protected _createTickLabelTiers() {
     return [new HorizTickLabelTier(
-      this, this._labelInfo.labelTiers[0] as string[], this.chartLayers.contentWidth, this.paraview)];
+      this, this._labelInfo.labelTiers[0] as string[], this.chartLayers.width, this.paraview)];
   }
   
   protected _createTickStrip() {
     return new HorizTickStrip(
       this, this._tickLabelTiers[0].tickInterval/this.tickStep, 1,
-      this.chartLayers.contentWidth, this.chartLayers.contentHeight);
+      this.chartLayers.width, this.chartLayers.height);
   }
 
   protected _createAxisLine() {
-    this._axisLine = new HorizAxisLine(this, this.chartLayers.contentWidth);
+    this._axisLine = new HorizAxisLine(this, this.chartLayers.width);
     this._layout.append(this._axisLine);
   }
 
@@ -420,7 +420,7 @@ export class VertAxis extends Axis<'vert'> {
     return [
       this._layout.width,
       this.chartLayers.orientation === 'east' || this.chartLayers.orientation === 'west' ? 
-        this.chartLayers.contentWidth : this.chartLayers.physHeight
+        this.chartLayers.width : this.chartLayers.physHeight
     ];
   }
 
@@ -442,11 +442,11 @@ export class VertAxis extends Axis<'vert'> {
   protected _createTickStrip() {
     return new VertTickStrip(
       this, this._tickLabelTiers[0].tickInterval/this.tickStep, 1,
-      this.chartLayers.contentWidth, this.chartLayers.contentHeight);
+      this.chartLayers.width, this.chartLayers.height);
   }
 
   protected _createAxisLine() {
-    this._axisLine = new VertAxisLine(this, this.chartLayers.contentHeight);
+    this._axisLine = new VertAxisLine(this, this.chartLayers.height);
     this._layout.append(this._axisLine);
   }
 

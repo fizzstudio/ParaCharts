@@ -5,6 +5,8 @@ import {
   type BarSettings, type StackContentOptions ,type DeepReadonly
 } from '../store/settings_types';
 import { fixed } from '../common/utils';
+import { Rect } from './shape/rect';
+import { Label } from './label';
 
 import { svg } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -86,6 +88,8 @@ export class BarStack {
   public readonly id: string;
   public readonly labelId: string;
 
+//  label: Label;
+
   private _x!: number;
 
   static computeSize(chart: BarChart) {
@@ -95,8 +99,8 @@ export class BarStack {
       BarStack.width = chart.settings.barWidthMin;
       BarCluster.width = BarStack.width*BarCluster.numStacks + BarCluster.padding*2;
     }
-    chart.parent.contentWidth = BarCluster.width*Object.keys(chart.bars).length;
-    console.log('setting chart content width to', chart.parent.contentWidth);
+    chart.parent.width = BarCluster.width*Object.keys(chart.bars).length;
+    console.log('setting chart content width to', chart.parent.width);
   }
 
   constructor(public readonly cluster: BarCluster, public readonly key: string) { 
@@ -178,6 +182,7 @@ export class BarChart extends XYChart {
   protected _clusteredData!: ClusterMap;
   private _abbrevs?: {[series: string]: string};
   private _bars!: BarData;
+  protected _stackLabels: Label[] = [];
 
   protected _addedToParent() {
     super._addedToParent();
@@ -309,32 +314,48 @@ export class BarChart extends XYChart {
           seriesViews[colName].append(stack.bars[colName]);
           //todo().canvas.jimerator.addSelector(colName, i, this.datapointViews.at(-1)!.id);
         }
+        // this._stackLabels.push(new Label(this.paraview, {
+        //   text: fixed`${Object.values(dataStack).map(item => item.value.value).reduce((a, b) => a + b)}`,
+        //   x: 0,
+        //   y: 0,
+        //   textAnchor: 'middle',
+        //   isPositionAtAnchor: true
+        // }));
+        // stack.label = this._stackLabels.at(-1)!;
+        // this.append(this._stackLabels.at(-1)!);
       }
     });
     this._bars = barData;
     this._chartLandingView.reverseChildren();
   }
 
-  protected _layoutDatapoints() {
+  protected _layoutComponents() {
     BarCluster.computeSize(this);
     BarStack.computeSize(this);
     for (const [clusterKey, cluster] of Object.entries(this._bars)) {
       cluster.computeLayout();
       for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
         stack.computeLayout();
-        for (const [orderKey, bar] of Object.entries(stack.bars)) {
-          bar.computeLayout();
-        }
+        // for (const [orderKey, bar] of Object.entries(stack.bars)) {
+        //   bar.computeLayout();
+        // }
       }
     }
+    super._layoutComponents();
   }
 
   legend() {
-    const keys = this.paraview.store.model!.keys;
-    return keys.map((key, i) => ({
-      label: key,
-      color: i
-    }));
+    if (this.paraview.store.settings.legend.itemOrder === 'chart') {
+      return this._chartLandingView.children.map(view => ({
+        label: view.seriesKey,
+        color: view.color  // series color
+      }));
+    } else {
+      return this.paraview.store.model!.keys.toSorted().map(key => ({
+        label: key,
+        color: this.paraview.store.seriesProperties!.properties(key).color
+      }));
+    }
   }
 
 }
@@ -372,35 +393,38 @@ export class Bar extends XYDatapointView {
     return this._y;
   }
 
-  computeLayout() {
+  computeLocation() {
     const orderIdx = Object.keys(this.stack.bars).indexOf(this.series.key);
-    const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
-      .map(bar => bar._height)
-      .reduce((a, b) => a + b, 0);
     const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
+    const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
+      .map(bar => (bar.datapoint.y.value as number)*pxPerYUnit)
+      .reduce((a, b) => a + b, 0);
     this._height = (this.datapoint.y.value as number)*pxPerYUnit;
     this._x = this.stack.x + this.stack.cluster.x;
     this._y = this.chart.height - this._height - distFromXAxis;
+//    this.stack.label.x = this._x;
   }
 
   protected _createSymbol() {
   }
 
-  protected get _d() {
-    return fixed`
-      M${this._x},${this._y + this.chart.settings.barGap}
-      v${this._height - this.chart.settings.barGap*2}
-      h${BarStack.width}
-      v${-(this._height - this.chart.settings.barGap*2)}
-      Z`;
-  }
+  // protected get _d() {
+  //   return fixed`
+  //     M${this._x},${this._y + this.chart.settings.barGap}
+  //     v${this._height - this.chart.settings.barGap*2}
+  //     h${BarStack.width}
+  //     v${-(this._height - this.chart.settings.barGap*2)}
+  //     Z`;
+  // }
 
-  content() {
-    return svg`
-      <path
-        d="${this._d}"
-      ></path>
-    `;
+  protected _createShape() {
+    this._shape = new Rect(this.paraview, {
+      x: this._x,
+      y: this._y,
+      width: BarStack.width,
+      height: this._height
+    });
+    super._createShape();
   }
 
 }

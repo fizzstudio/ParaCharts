@@ -62,6 +62,35 @@ export class SeriesView extends Container(DataView) {
     this.paraview.store.visit(this._children.map(v => ({seriesKey: v.seriesKey, index: v.index})));
   }
 
+  protected _composeSelectionAnnouncement() {
+    // This method assumes only a single series was visited when the select
+    // command was issued (i.e., we know nothing about chord mode here)
+    const newTotalSelected = this.paraview.store.selectedDatapoints.length;
+    const oldTotalSelected = this.paraview.store.prevSelectedDatapoints.length;
+    const justSelected = this.paraview.store.selectedDatapoints.filter(dc =>
+      !this.paraview.store.wasSelected(dc.seriesKey, dc.index));
+  
+    let s = newTotalSelected === 1 ? '' : 's';
+    const newTotSelText = `${newTotalSelected} point${s} selected.`;
+    s = justSelected.length === 1 ? '' : 's';
+    const justSelText = `Selected ${justSelected.length} point${s}.`;
+
+    if (oldTotalSelected === 0) {
+      return justSelText;
+    } else {
+      return `${justSelText} ${newTotSelText}`;
+    }
+  }
+
+  select(isExtend: boolean) {
+    if (isExtend) {
+      this.paraview.store.extendSelection(this.paraview.store.visitedDatapoints);
+    } else {
+      this.paraview.store.select(this.paraview.store.visitedDatapoints);
+    }
+    this.paraview.store.announce(this._composeSelectionAnnouncement());
+  }
+
   onFocus() {
     super.onFocus();
     this._visit();

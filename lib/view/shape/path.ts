@@ -1,34 +1,45 @@
 
-import { View } from '../base_view';
-import { fixed, toFixed } from '../../common/utils';
+import { fixed } from '../../common/utils';
 import { type ParaView } from '../../paraview';
+import { Shape, type ShapeOptions } from './shape';
+import { Vec2 } from '../../common/vector';
 
-import { type Point } from '@fizz/chart-classifier-utils';
+import { svg, nothing } from 'lit';
+import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { ref } from 'lit/directives/ref.js';
 
-import { svg, css, nothing } from 'lit';
-import { styleMap, StyleInfo } from 'lit/directives/style-map.js';
-
-export interface PathOptions {
-  x?: number;
-  y?: number;
-  points: Point[];
-  style?: StyleInfo;
+export interface PathOptions extends ShapeOptions {
+  points: Vec2[];
 }
 
-export class Path extends View {
+export class Path extends Shape {
+  declare protected _options: PathOptions;
 
-  constructor(paraview: ParaView, protected _options: PathOptions) {
-    super(paraview);
-    this._x = _options.x ?? this._x;
-    this._y = _options.y ?? this._y;
+  constructor(paraview: ParaView, options: PathOptions) {
+    super(paraview, options);
   }
 
-  get options() {
-    return this._options;
+  get styleInfo(): StyleInfo {
+    const style = super.styleInfo;
+    style.fill = 'none'
+    return style;
+  }
+
+  set styleInfo(styleInfo: StyleInfo) {
+    super.styleInfo = styleInfo;
+  }
+
+  get points() {
+    return this._options.points.map(p => p.clone());
+  }
+
+  set points(points: Vec2[]) {
+    this._options.points = points;
   }
 
   protected get _pathD() {
-    const relPoints = this._options.points.map(p => ({x: p.x + this._x, y: p.y + this._y}));
+    const relPoints = this._options.points.map(p => p.add(this._loc));
     let d = fixed`M${relPoints[0].x},${relPoints[0].y}`;
     relPoints.slice(1).forEach(p => {
       d += fixed`L${p.x},${p.y}`;
@@ -39,7 +50,10 @@ export class Path extends View {
   render() {
     return svg`
       <path
-        style=${this._options.style ? styleMap(this._options.style) : nothing}      
+        ${this._ref ? ref(this._ref) : undefined}
+        id=${this._id || nothing}
+        style=${styleMap(this.styleInfo)}
+        class=${classMap(this._classInfo)}
         d=${this._pathD}
       ></path>
     `;

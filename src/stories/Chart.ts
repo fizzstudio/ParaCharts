@@ -1,21 +1,26 @@
 
 //import { KeymapsInput } from '../../lib';
-import { type SettingsInput } from '../../lib/store/settings_types';
+import { type SettingsInput, type LegendItemOrder } from '../../lib/store/settings_types';
 
 import { html, nothing } from 'lit';
 import '../../lib';
+import { ChartType } from '@fizz/paramanifest';
 
 export interface ChartProps {
   filename: string;
   config?: SettingsInput;  
+  legendOrder: LegendItemOrder;
+  forcecharttype?: ChartType;
 }
 
 /**
  * Primary UI component for user interaction
  */
 export const Chart = ({ 
-  filename, config
+  filename, config, legendOrder, forcecharttype
 }: ChartProps) => {
+  config ??= {};
+  config['legend.itemOrder'] = legendOrder;
   return html`
     <style>
       /*
@@ -67,6 +72,7 @@ export const Chart = ({
   <para-chart 
     filename=${filename} 
     .config=${config ?? nothing}
+    forcecharttype=${forcecharttype ?? nothing}
   >
     <span slot="settings"></span>
   </para-chart>

@@ -46,25 +46,6 @@ export interface FocusInfo {
 }
 
 /**
- * Information about the results of a datapoint selection operation.
- * @public
- */
-export interface XYSelectionInfo {
-  /** Datapoint views that just got selected. */
-  selected: XYDatapointView[];
-  /** Datapoint views that just got deselected. */
-  deselected: XYDatapointView[];
-  /** Total number of datapoints that were previously selected. */
-  oldTotalSelected: number;
-  /** Total number of datapoints that are now selected. */
-  newTotalSelected: number;
-  /** Whether the selection was an extension. */
-  extend: boolean;
-  /** Whether chord mode was enabled. */
-  chordMode: boolean;
-}
-
-/**
  * Abstract base class for charts with X and Y axes.
  */
 export abstract class XYChart extends DataLayer {
@@ -170,13 +151,11 @@ export abstract class XYChart extends DataLayer {
     return false;
   }
 
-  protected abstract _newDatapointView(seriesView: XYSeriesView, ...rest: any[]): XYDatapointView;
+  //protected abstract _layoutDatapoints(): void;
 
-  protected abstract _layoutDatapoints(): void;
-
-  protected _layoutComponents() {
-    this._layoutDatapoints();
-  }
+  // init() {
+  //   this._layoutDatapoints();
+  // }
 
   moveRight() {
     const leaf = this._chartLandingView.focusLeaf;
@@ -356,60 +335,6 @@ export abstract class XYChart extends DataLayer {
     this._chartLandingView.focusLeaf.focus();
   }
 
-  selectCurrent(extend = false) {
-    this._chartLandingView.focusLeaf.select(extend);
-  }
-
-  clearDatapointSelection(quiet = false) {
-    this.selectedDatapointViews.forEach(p => {
-      p.isSelected = false;
-    });
-    if (!quiet) {
-      //this._chartLandingView.eventActionManager!.dispatch('selection_cleared');
-    }
-  }
-
-  /*composeDatapointSelectionAnnouncement(selInfo: XYSelectionInfo) {
-    const seriesAndVal = (view: DatapointView) => 
-      `${view.series.key} (${view.datapoint.format('statusBar')})`;
-    const recVal = (view: DatapointView) => 
-      `${view.datapoint.formatX('statusBar')}`;
-    const s = selInfo.newTotalSelected === 1 ? '' : 's';
-    const newTotSel = `${selInfo.newTotalSelected} point${s} selected.`;
-    if (this.paraview.store.settings.dev.isDebug) {
-      console.log('SEL', selInfo);
-    }
-    if (selInfo.chordMode) {
-      // XXX take hidden series into account
-      const numSeries = this.paraview.store.model.numSeries;
-      if (selInfo.oldTotalSelected === 0) {
-        return `Selected all points at ${recVal(selInfo.selected[0])}`;
-      } else if (selInfo.deselected.length === numSeries && selInfo.oldTotalSelected === numSeries) {
-        return `Deselected all points at ${recVal(selInfo.deselected[0])}. No points selected.`;
-      } else if (selInfo.selected.length) {
-        return `Selected all points at ${recVal(selInfo.selected[0])}. ${newTotSel}`;
-      } else if (selInfo.extend && selInfo.deselected.length) {
-        return `Deselected all points at ${recVal(selInfo.deselected[0])}. ${newTotSel}`;
-      } else {
-        return 'ERROR';
-      }
-    } else {
-      if (selInfo.oldTotalSelected === 0) {
-        return `Selected ${seriesAndVal(selInfo.selected[0])}`;
-      } else if (selInfo.oldTotalSelected === 1 && !selInfo.newTotalSelected) {
-        return `Deselected ${seriesAndVal(selInfo.deselected[0])}. No points selected.`;
-      } else if (!selInfo.extend && selInfo.selected.length && selInfo.oldTotalSelected) {
-        return `Selected ${seriesAndVal(selInfo.selected[0])}. 1 point selected.`;
-      } else if (selInfo.extend && selInfo.deselected.length) {
-        return `Deselected ${seriesAndVal(selInfo.deselected[0])}. ${newTotSel}`;
-      } else if (selInfo.extend && selInfo.selected.length) {
-        return `Selected ${seriesAndVal(selInfo.selected[0])}. ${newTotSel}`;
-      } else {
-        return 'ERROR';
-      }
-    }
-  }*/
-
   queryData() {
     const leaf = this._chartLandingView.focusLeaf;
     if (leaf instanceof ChartLandingView) {
@@ -551,29 +476,6 @@ export class XYSeriesView extends SeriesView {
     //this.paraview.store.clearVisited();
   }
 
-  select(extend: boolean) {
-    const targets = this.chart.isChordModeEnabled ? this.chart.datapointViews : this.children;
-    const oldSelected = Array.from(this.chart.selectedDatapointViews);
-    if (!extend) {
-      this.chart.clearDatapointSelection(true);
-    }
-    for (const target of targets) {
-      target.isSelected = true;
-    }
-    const selected = Array.from(
-      new Set(this.chart.selectedDatapointViews).difference(new Set(oldSelected)));
-    const deselected = Array.from(
-      new Set(oldSelected).difference(new Set(this.chart.selectedDatapointViews)));
-    /*this.eventActionManager!.dispatch('series_selected', {
-      selected,
-      deselected,
-      oldTotalSelected: oldSelected.length,
-      newTotalSelected: this.chart.selectedDatapointViews.length,
-      extend,
-      chordMode: this.chart.isChordModeEnabled
-    });*/
-  }
-
 }
 
 /**
@@ -588,7 +490,7 @@ export abstract class XYDatapointView extends DatapointView {
 
   protected centroid?: string;
 
-  constructor(seriesView: XYSeriesView) { 
+  constructor(seriesView: SeriesView) { 
     super(seriesView);
   }
 
@@ -630,13 +532,8 @@ export abstract class XYDatapointView extends DatapointView {
     return super.datapoint as XYDatapoint;
   }
 
-  get classes() {
-    const classes: Mutable<ClassInfo> = super.classes;
-    return classes as Readonly<ClassInfo>;
-  }
-
-  get style() {
-    const styles = super.style;
+  get styleInfo() {
+    const styles = super.styleInfo;
     styles['--datapointCentroid'] = this.centroid;
     return styles;
   }
@@ -652,7 +549,7 @@ export abstract class XYDatapointView extends DatapointView {
     };
   }*/
 
-  abstract computeLayout(): void;
+  //abstract computeLayout(): void;
 
   /*summary(focusInfo: FocusInfo) {
     if (focusInfo.visited.length > 1) {
@@ -695,54 +592,6 @@ export abstract class XYDatapointView extends DatapointView {
           false
       });
     }, NOTE_LENGTH*1000);*/
-  }
-
-  select(extend: boolean) {
-    const targets = this.chart.visitedDatapointViews;
-    if (!targets.length) {
-      throw new Error(`no visited datapoints for series: ${this.series.key}, index: ${this.index}`);
-    }
-    const oldNumSelected = targets.filter(v => v.isSelected).length;
-    const oldSelected = Array.from(this.chart.selectedDatapointViews);
-    const oldTotalSelected = oldSelected.length;
-
-    if (targets.length > 1 && !extend && oldTotalSelected >= oldNumSelected) {
-      this.chart.clearDatapointSelection(true);
-    }
-    let numSelected = 0;
-    for (const target of targets) {
-      const alreadySelected = this.chart.selectedDatapointViews.includes(target);
-      if (extend || targets.length > 1) {
-        if (alreadySelected) {
-          target.isSelected = false;
-        } else {
-          target.isSelected = true;
-          numSelected++;
-        }  
-      } else {
-        // Not extending and only 1 target
-        const prevSelected = this.chart.selectedDatapointViews;
-        this.chart.clearDatapointSelection(true);
-        if (!alreadySelected || prevSelected.length > 1) {
-          target.isSelected = true;
-          numSelected++;
-        }
-      } 
-    }
-    const selected = Array.from(
-      new Set(this.chart.selectedDatapointViews).difference(new Set(oldSelected)));
-    const deselected = Array.from(
-      new Set(oldSelected).difference(new Set(this.chart.selectedDatapointViews)));
-  
-    /*this.eventActionManager!.dispatch('datapoint_selected', {
-      selected,
-      deselected,
-      //oldNumSelected,
-      oldTotalSelected,
-      newTotalSelected: this.chart.selectedDatapointViews.length,
-      extend,
-      chordMode: this.chart.isChordModeEnabled
-    });*/
   }
 
 }

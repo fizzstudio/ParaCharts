@@ -1,14 +1,8 @@
 
 import { RadialChart, RadialSlice, type RadialDatapointParams } from './radialchart';
-import { 
-  type RadialChartType, type RadialSettings, Setting,
-} from '../../store';
-import { type ChartLayerManager } from '../chartlayermanager';
 import { type SeriesView } from '../data';
 import { Sector } from '../shape/sector';
 import { type ParaView } from '../../paraview';
-
-import { svg, TemplateResult } from 'lit';
 
 export class PieChart extends RadialChart {
 
@@ -26,18 +20,8 @@ export class PieChart extends RadialChart {
     return new PieSlice(seriesView, params); 
   }
 
-  protected _layoutComponents() {
-    for (const slice of this.datapointViews) {
-      //slice.computeLayout();
-    }
-  }
-
   setLowVisionMode(_lvm: boolean): void {
   }
-
-  //protected sortSeries() {
-    
-  //}
 
 }
 
@@ -45,15 +29,6 @@ export class PieSlice extends RadialSlice {
 
   constructor(parent: SeriesView, params: RadialDatapointParams) {
     super(parent, params);
-
-    this._sector = new Sector(this.paraview, {
-      x: this.chart.cx,
-      y: this.chart.cy,
-      r: this.chart.radius.outer,
-      centralAngle: params.percentage*360,
-      orientationAngle: (params.accum + this.chart.startAngleOffset)*360
-    });
-    //this.append(sector);
 
     // const {x, y, className} = this._computeLabelOptions();
     // this._params.label.x = x; 
@@ -73,6 +48,18 @@ export class PieSlice extends RadialSlice {
     return 0;
   }
   
+  protected _createShape() {
+    this._shape = new Sector(this.paraview, {
+      x: this.chart.cx,
+      y: this.chart.cy,
+      r: Math.min(this.chart.height, this.chart.width)/2,
+      centralAngle: this._params.percentage*360,
+      orientationAngle: (this._params.accum + this.chart.startAngleOffset)*360,
+      annularThickness: this.paraview.store.type === 'donut' ? 0.5 : 1
+    });
+    super._createShape();
+  }
+
   // protected _computeLabelOptions() {
   //   const r = this.chart.radius.outer;
   //   const sector = (this._children[0] as Sector);
@@ -95,10 +82,6 @@ export class PieSlice extends RadialSlice {
 
   select(_extend: boolean) {
     
-  }
-
-  content(..._options: any[]) {
-    return this._sector.render();
   }
 
 }

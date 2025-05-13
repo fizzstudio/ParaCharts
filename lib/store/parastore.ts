@@ -54,6 +54,8 @@ export class ParaStore extends State {
   @property() protected queryLevel = 'default';
   @property() protected _visitedDatapoints: DataCursor[] = [];
   @property() protected _prevVisitedDatapoints: DataCursor[] = [];
+  @property() protected _selectedDatapoints: DataCursor[] = [];
+  @property() protected _prevSelectedDatapoints: DataCursor[] = [];
 
   protected _settingControls = new SettingControlManager(this); 
   protected _manifest: Manifest | null = null;
@@ -198,6 +200,10 @@ export class ParaStore extends State {
     return this._visitedDatapoints;
   }
 
+  get prevVisitedDatapoints() {
+    return this._prevVisitedDatapoints;
+  }
+
   visit(datapoints: DataCursor[]) {
     this._prevVisitedDatapoints = this._visitedDatapoints;
     this._visitedDatapoints = datapoints;
@@ -220,6 +226,63 @@ export class ParaStore extends State {
 
   wasVisitedSeries(seriesKey: string) {
     return !!this._prevVisitedDatapoints.find(cursor =>
+      cursor.seriesKey === seriesKey);
+  }
+
+  get selectedDatapoints() {
+    return this._selectedDatapoints;
+  }
+
+  get prevSelectedDatapoints() {
+    return this._prevSelectedDatapoints;
+  }
+
+  select(datapoints: DataCursor[]) {
+    let newSelection: DataCursor[] = [];
+    if (datapoints.length === 1) {
+      if (!this.isSelected(datapoints[0].seriesKey, datapoints[0].index) 
+        || this._selectedDatapoints.length > 1) {
+        newSelection.push(datapoints[0]);
+      }
+    } else {
+      newSelection = datapoints;
+    }
+    this._prevSelectedDatapoints = this._selectedDatapoints;
+    this._selectedDatapoints = newSelection;
+  }
+
+  extendSelection(datapoints: DataCursor[]) {
+    const newSelection: DataCursor[] = [...this._selectedDatapoints];
+    for (const dp of datapoints) {
+      const alreadySelected = this.isSelected(dp.seriesKey, dp.index);
+      if (alreadySelected) {
+        newSelection.splice(newSelection.findIndex(newDP =>
+          newDP.seriesKey === dp.seriesKey && newDP.index === dp.index ), 1);
+      } else {
+        newSelection.push(dp);
+      }  
+    } 
+    this._prevSelectedDatapoints = this._selectedDatapoints;
+    this._selectedDatapoints = newSelection;
+  }
+
+  isSelected(seriesKey: string, index: number) {
+    return !!this._selectedDatapoints.find(cursor =>
+      cursor.seriesKey === seriesKey && cursor.index === index);
+  }
+
+  isSelectedSeries(seriesKey: string) {
+    return !!this._selectedDatapoints.find(cursor =>
+      cursor.seriesKey === seriesKey);
+  }
+
+  wasSelected(seriesKey: string, index: number) {
+    return !!this._prevSelectedDatapoints.find(cursor =>
+      cursor.seriesKey === seriesKey && cursor.index === index);
+  }
+
+  wasSelectedSeries(seriesKey: string) {
+    return !!this._prevSelectedDatapoints.find(cursor =>
       cursor.seriesKey === seriesKey);
   }
 
