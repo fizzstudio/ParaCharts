@@ -3,7 +3,7 @@ import { Logger } from './common/logger';
 import { ParaStore } from './store/parastore';
 import { ParaLoader } from "./loader/paraloader";
 import { DeepReadonly, Settings, SettingsInput } from "./store/settings_types";
-import { AllSeriesData } from "@fizz/paramanifest";
+import { AllSeriesData, ChartType } from "@fizz/paramanifest";
 import { type ParaChart } from './parachart/parachart';
 
 import { Manifest } from "@fizz/paramanifest";
@@ -17,7 +17,7 @@ export class ParaController extends Logger {
   protected _data?: AllSeriesData;
   protected _suppleteSettingsWith?: DeepReadonly<Settings>;  
   
-  constructor(parachart: ParaChart) {
+  constructor(private parachart: ParaChart) {
     super();
     this._store = new ParaStore(this._inputSettings, this._suppleteSettingsWith);
     parachart.addEventListener('paraviewready', async () => {
@@ -46,7 +46,7 @@ export class ParaController extends Logger {
   async runLoader(filename: string): Promise<void> {
     this.log(`loading filename: '${filename}'`);
     this._store.dataState = 'pending';
-    const loadresult = await this._loader.load('fizz-chart-data', filename);
+    const loadresult = await this._loader.load('fizz-chart-data', filename, this.parachart.forcecharttype);
     this.log('loaded manifest')
     if (loadresult.result === 'success') {
       this._setManifest(loadresult.manifest);

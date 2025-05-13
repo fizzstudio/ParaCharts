@@ -25,8 +25,8 @@ import { keymaps } from '../input';*/
 import { Legend } from './legend';
 import { GridLayout } from './layout';
 import { SeriesLabelStrip } from './serieslabelstrip';
-import { LineChart } from './line';
-import { ParaView } from '../paraview';
+import { type LineChart } from './line';
+import { type ParaView } from '../paraview';
 
 export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
 
@@ -114,9 +114,9 @@ export class DocumentView extends Container(View) {
         width: 1
       });
       this._chartLayers.dataLayer.init();
-      if (this._horizAxis.width < this._chartLayers.contentWidth) {
-        this._horizAxis.resize(this._chartLayers.contentWidth, this._chartLayers.contentHeight);
-        this._vertAxis.resize(this._chartLayers.contentWidth, this._chartLayers.contentHeight);
+      if (this._horizAxis.width < this._chartLayers.width) {
+        this._horizAxis.resize(this._chartLayers.width, this._chartLayers.height);
+        this._vertAxis.resize(this._chartLayers.width, this._chartLayers.height);
       }
 
       // Update tick label IDs now that JIM selectors have been created
@@ -134,6 +134,7 @@ export class DocumentView extends Container(View) {
         ?? this._store.settings.chart.title.text 
         ?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;      
     } else {
+      // No axis info
       this._chartLayers.dataLayer.init();
     }
     let hasDirectLabels = false;

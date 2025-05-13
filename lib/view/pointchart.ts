@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { SeriesView } from './data';
 import { XYChart, XYDatapointView, XYSeriesView } from './xychart';
 import { AxisInfo } from '../common/axisinfo';
 import { type PointChartType } from '../store/settings_types';
@@ -39,7 +40,11 @@ export abstract class PointChart extends XYChart {
     return super.datapointViews as ChartPoint[];
   }
 
-  protected _newDatapointView(seriesView: XYSeriesView) {
+  protected _newSeriesView(seriesKey: string) {
+    return new PointSeriesView(this, seriesKey);    
+  }
+
+  protected _newDatapointView(seriesView: SeriesView) {
     return new ChartPoint(seriesView);
   }
 
@@ -56,7 +61,7 @@ export abstract class PointChart extends XYChart {
       // this.selectors[i].push(`tick-x-${xId}`);
     }
     for (const [col, i] of enumerate(this.paraview.store.model!.series)) {
-      const seriesView = new XYSeriesView(this, col.key);
+      const seriesView = this._newSeriesView(col.key);
       this._chartLandingView.append(seriesView);
       for (const [value, j] of enumerate(col)) {
         const datapointView = this._newDatapointView(seriesView);
@@ -72,17 +77,12 @@ export abstract class PointChart extends XYChart {
     });  
   }
 
-  protected _layoutComponents() {
-    super._layoutComponents();
-    this._layoutSymbols();
-  }
-
-  protected _layoutDatapoints() {
-    ChartPoint.computeSize(this);
-    for (const datapointView of this.datapointViews) {
-       datapointView.computeLayout();
-    }
-  }
+  // protected _layoutDatapoints() {
+  //   ChartPoint.computeSize(this);
+  //   for (const datapointView of this.datapointViews) {
+  //      datapointView.computeLayout();
+  //   }
+  // }
 
   protected _generateClustering(){
     const data: Array<coord> = []
@@ -121,6 +121,17 @@ export abstract class PointChart extends XYChart {
 
 }
 
+export class PointSeriesView extends XYSeriesView {
+
+  get styleInfo() {
+    const style = super.styleInfo;
+    style.fill = 'none';
+    return style;
+  }
+
+}
+
+
 /**
  * Basic point marker.
  */
@@ -130,17 +141,18 @@ export class ChartPoint extends XYDatapointView {
 
   static width: number;
 
-  static computeSize(chart: PointChart) {
-    const axisDivisions = chart.paraview.store.model!.allFacetValues('x')!.length - 1;
-    this.width = chart.parent.contentWidth/axisDivisions;
-  }
+  // static computeSize(chart: PointChart) {
+  //   const axisDivisions = chart.paraview.store.model!.allFacetValues('x')!.length - 1;
+  //   this.width = chart.parent.contentWidth/axisDivisions;
+  // }
 
-  constructor(seriesView: XYSeriesView) {
+  constructor(seriesView: SeriesView) {
     super(seriesView);
   }
 
   get width() {
-    return ChartPoint.width;
+    const axisDivisions = this.paraview.store.model!.allFacetValues('x')!.length - 1;
+    return this.chart.parent.width/axisDivisions;
   }
 
   get height() {
@@ -156,7 +168,7 @@ export class ChartPoint extends XYDatapointView {
   }
 
   protected _computeX() {
-    return ChartPoint.width * this.index;
+    return this.width * this.index;
   }
 
   protected _computeY() {
@@ -164,7 +176,7 @@ export class ChartPoint extends XYDatapointView {
     return this.chart.height - (this.datapoint.y.value as number - this.chart.axisInfo!. yLabelInfo.min!) * pxPerYUnit;
   }
 
-  computeLayout() {
+  computeLocation() {
     this._x = this._computeX();
     this._y = this._computeY();
   }

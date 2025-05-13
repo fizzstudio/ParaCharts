@@ -29,7 +29,7 @@ import { ParaView } from '../paraview';
 import { SettingsManager } from '../store/settings_manager';
 import { type AxisInfo } from '../common/axisinfo';
 import { type HotkeyEvent } from '../store/keymap_manager';
-import { ChartLandingView, type DataView, type DatapointView } from './data';
+import { ChartLandingView, DatapointView, SeriesView, type DataView } from './data';
 import { type LegendItem } from './legend';
 
 import { type clusterObject } from '@fizz/clustering';
@@ -92,6 +92,12 @@ export abstract class DataLayer extends ChartLayer {
       } else if (e.action === 'move_down') {
         this.clearPlay();
         this.moveDown();
+      } else if (e.action === 'select') {
+        this.selectCurrent(false);
+      } else if (e.action === 'select_extend') {
+        this.selectCurrent(true);
+      } else if (e.action === 'select_clear') {
+        this.clearDatapointSelection();
       }
     });
   }
@@ -153,7 +159,7 @@ export abstract class DataLayer extends ChartLayer {
 
   get selectedDatapointViews() {
     return this.datapointViews.filter(v =>
-      v.isSelected
+      this.paraview.store.isSelected(v.seriesKey, v.index)
     );
   }
 
@@ -179,8 +185,25 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   protected abstract _createComponents(): void;
-  protected abstract _layoutComponents(): void;
+  
+  protected _layoutComponents() {
+    for (const datapointView of this.datapointViews) {
+      datapointView.computeLocation();
+    }
+    for (const datapointView of this.datapointViews) {
+      datapointView.computeLayout();
+    }
+    this._layoutSymbols();
+  }
 
+  protected _newDatapointView(seriesView: SeriesView, ..._rest: any[]): DatapointView {
+    return new DatapointView(seriesView);
+  }
+
+  protected _newSeriesView(seriesKey: string, isStyleEnabled?: boolean, ..._rest: any[]): SeriesView {
+    return new SeriesView(this, seriesKey, isStyleEnabled);
+  }
+  
   legend(): LegendItem[] {
     return [];
   }
@@ -233,11 +256,18 @@ export abstract class DataLayer extends ChartLayer {
 
   abstract queryData(): void;
 
-  abstract clearDatapointSelection(): void;
-
   abstract playSeriesRiff(): void;
 
-  abstract selectCurrent(extend: boolean): void;
+  selectCurrent(extend = false) {
+    this._chartLandingView.focusLeaf.select(extend);
+  }
+
+  clearDatapointSelection(quiet = false) {
+    this.paraview.store.select([]);
+    if (!quiet) {
+      this.paraview.store.announce('No items selected.');
+    }
+  }
 
   cleanup() {
 
@@ -252,39 +282,3 @@ export abstract class DataLayer extends ChartLayer {
   }
 
 }
-
-/**
- * Visual indication of selected state for datapoints.
- */
-// export class SelectedDatapointMarker extends View {
-
-//   constructor(private datapointView: DatapointView, x: number, y: number) {
-//     super(datapointView.paraview);
-//     this._x = x;
-//     this._y = y;
-//   }
-
-//   protected _createId(..._args: any[]): string {
-//     return `select-${this.datapointView.id}`;
-//   }
-
-//   get width() {
-//     return this.datapointView.width;
-//   }
-
-//   get height() {
-//     return Math.max(this.datapointView.height, 20);
-//   }
-
-//   render() {
-//     return svg`
-//       <rect
-//         x=${this._x}
-//         y=${this._y}
-//         width=${this.width}
-//         height=${this.height}
-//       />
-//     `;
-//   }
-
-// }

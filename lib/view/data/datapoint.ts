@@ -1,14 +1,16 @@
 
 import { DataView, type SeriesView } from './';
 import { DataSymbol, DataSymbols } from '../symbol';
-import { type DataPoint, strToId } from '@fizz/paramodel';
+import { type DataPointDF, type DataCursor } from '../../store';
+import { strToId } from '../../common/utils';
+import { formatBox } from '../formatter';
+import { type Shape } from '../shape/shape';
 
 import { type clusterObject } from '@fizz/clustering';
 
-import { type StaticValue } from 'lit/static-html.js';
 import { type ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
-import { svg, nothing } from 'lit';
+import { svg, nothing, TemplateResult } from 'lit';
 import { ref } from 'lit/directives/ref.js';
 import { formatBox } from '@fizz/parasummary';
 
@@ -21,9 +23,7 @@ export class DatapointView extends DataView {
 
   declare protected _parent: SeriesView;
 
-  //protected _isVisited = false; 
-  private _isSelected = false;
-  protected _extraAttrs: {attr: StaticValue, value: any}[] = [];
+  protected _shape: Shape | null = null;
   protected _symbol: DataSymbol | null = null;
   // private _selectedMarker: SelectedDatapointMarker | null = null;
 
@@ -33,7 +33,6 @@ export class DatapointView extends DataView {
 
   protected _addedToParent() {
     super._addedToParent();
-    this._createSymbol();
   }
   
   get parent() {
@@ -64,68 +63,80 @@ export class DatapointView extends DataView {
     return this.series[this.index];
   }
 
-  get isSelected() {
-    return this._isSelected;
-  }
-
-  set isSelected(selected: boolean) {
-    this._isSelected = selected;
-    // if (!selected && this._selectedMarker) {
-    //   this._selectedMarker.remove();
-    //   this._selectedMarker = null;
-    // } else if (selected && !this._selectedMarker) {
-    //   this._selectedMarker = new SelectedDatapointMarker(this, this._selectedMarkerX, this._selectedMarkerY);
-    //   this.chart.parent.selectionLayer.append(this._selectedMarker);
-    // } else {
-    //   return;
-    // }
-    this.paraview.requestUpdate();
-  }
-
   // get selectedMarker() {
   //   return this._selectedMarker;
   // }
 
-  protected get _selectedMarkerX() {
-    return 0;
+  // protected get _selectedMarkerX() {
+  //   return 0;
+  // }
+
+  // protected get _selectedMarkerY() {
+  //   return 0;
+  // }
+
+  get shape() {
+    return this._shape;
   }
 
-  protected get _selectedMarkerY() {
-    return 0;
-  }
-
-  get classes(): ClassInfo {
+  get classInfo(): ClassInfo {
     return {
+      datapoint: true,
       visited: this.paraview.store.isVisited(this.seriesKey, this.index),
-      selected: this._isSelected
+      selected: this.paraview.store.isSelected(this.seriesKey, this.index)
     };
   }
 
   get color(): number {
-    // Only used if per-datapoint styling is enabled (`_isStyleEnabled`)
-    return this.index;
+    return this._isStyleEnabled ? this.index : this._parent.color;
   }
 
-  get style(): StyleInfo {
-    const style = super.style;
+  get styleInfo(): StyleInfo {
+    const style = super.styleInfo;
     if (this.paraview.store.isVisited(this.seriesKey, this.index)) {
-      let colorValue = this.chart.paraview.store.colors.colorValue('highlight');
+      const colorValue = this.paraview.store.colors.colorValue('highlight');
       style.fill = colorValue;
       style.stroke = colorValue;
       const visitedScale = this.paraview.store.settings.chart.strokeHighlightScale;
       style.strokeWidth = this.paraview.store.settings.chart.strokeWidth*visitedScale;
-      return style;
     }
     return style;
   }
 
-
   get ref() {
-    return this.chart.paraview.ref<SVGGElement>(this.id);
+    return this.chart.paraview.ref<SVGElement>(this._id);
   }
 
   get el() {
     return this.ref.value!;
+  }
+
+  get x() {
+    return super.x;
+  }
+
+  set x(x: number) {
+    if (this._shape) {
+      this._shape.x += x - this._x;
+    }
+    if (this._symbol) {
+      this._symbol.x += x - this._x;
+    }
+    super.x = x;
+  }
+
+  get y() {
+    return super.y;
+  }
+
+  set y(y: number) {
+    if (this._shape) {
+      this._shape.y += y - this._y;
+    }
+    if (this._symbol) {
+      this._symbol.y += y - this._y;
+    }
+    super.y = y;
   }
 
   protected _createId(..._args: any[]): string {
@@ -150,9 +161,26 @@ export class DatapointView extends DataView {
       this.paraview.summarizer.getDatapointSummary(this.datapoint, 'raw'));
   }
 
-  computeLayout() {}
+  /** Compute and set `x` and `y` */
+  computeLocation() {}
 
-  //// Symbols
+  /** Do any other layout (which may depend on the location being set) */
+  computeLayout() {
+    this._createShape();
+    this._createSymbol();
+  }
+
+  /**
+   * Subclasses should override this;
+   * If there will be a shape, first set `this._shape`,
+   * THEN call `super._createShape()`.
+   * Otherwise, override with an empty method. 
+   */
+  protected _createShape() {
+    this._shape!.ref = this.ref;
+    this._shape!.id = this._id;
+    this.append(this._shape!);
+  }
 
   protected _createSymbol() {
     const series = this.seriesProps;
@@ -169,10 +197,8 @@ export class DatapointView extends DataView {
         }
       }
     }
-    this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
-      strokeWidth: this.paraview.store.settings.chart.symbolStrokeWidth,
-      color
-    });
+    this._symbol = DataSymbol.fromType(this.paraview, symbolType);
+    this._symbol.id = `${this._id}-sym`;
     this.append(this._symbol);
   }
 
@@ -183,39 +209,81 @@ export class DatapointView extends DataView {
     }
   }
 
-  protected _renderSymbol() {
-    let opts = undefined;
-    if (this.paraview.store.isVisited(this.seriesKey, this.index)) {
-      opts = {
-        scale: this.paraview.store.settings.chart.symbolHighlightScale,
-        color: -1
-      };
-    }
-    return this._symbol?.render(opts) ?? svg``;
+  protected get _symbolScale() {
+    return this.paraview.store.isVisited(this.seriesKey, this.index)
+      ? this.paraview.store.settings.chart.symbolHighlightScale
+      : 1;
   }
 
-  // end symbols
+  protected get _symbolColor() {
+    return this.paraview.store.isVisited(this.seriesKey, this.index)
+      ? -1
+      : undefined;
+  }
 
-  render() {
+  protected _composeSelectionAnnouncement(isExtend: boolean) {
+    // This method assumes only a single point was visited when the select
+    // command was issued (i.e., we know nothing about chord mode here)
+    const seriesAndVal = (cursor: DataCursor) => {
+      const dp = this.paraview.store.model!.atKeyAndIndex(cursor.seriesKey, cursor.index)!;
+      return `${cursor.seriesKey} (${formatBox(dp.x, 'statusBar', this.paraview.store)}, ${formatBox(dp.y, 'statusBar', this.paraview.store)})`;
+    };
+
+    const newTotalSelected = this.paraview.store.selectedDatapoints.length;
+    const oldTotalSelected = this.paraview.store.prevSelectedDatapoints.length;
+    const justSelected = this.paraview.store.selectedDatapoints.filter(dc =>
+      !this.paraview.store.wasSelected(dc.seriesKey, dc.index));
+    const justDeselected = this.paraview.store.prevSelectedDatapoints.filter(dc =>
+      !this.paraview.store.isSelected(dc.seriesKey, dc.index));
+  
+    const s = newTotalSelected === 1 ? '' : 's';
+    const newTotSel = `${newTotalSelected} point${s} selected.`;
+
+    if (oldTotalSelected === 0) {
+      // None were selected; selected 1
+      return `Selected ${seriesAndVal(justSelected[0])}`;
+    } else if (oldTotalSelected === 1 && !newTotalSelected) {
+      // 1 was selected; it has been deselected
+      return `Deselected ${seriesAndVal(justDeselected[0])}. No points selected.`;
+    } else if (!isExtend && justSelected.length && oldTotalSelected) {
+      // Selected 1 new, deselected others
+      return `Selected ${seriesAndVal(justSelected[0])}. 1 point selected.`;
+    } else if (!isExtend && newTotalSelected && oldTotalSelected) {
+      // Kept 1 selected, deselected others
+      return `Deselected ${seriesAndVal(justDeselected[0])}. 1 point selected.`;
+    } else if (isExtend && justDeselected.length) {
+      // Deselected 1
+      return `Deselected ${seriesAndVal(justDeselected[0])}. ${newTotSel}`;
+    } else if (isExtend && justSelected.length) {
+      // Selected 1
+      return `Selected ${seriesAndVal(justSelected[0])}. ${newTotSel}`;
+    } else {
+      return 'ERROR';
+    }
+  }
+
+  select(isExtend: boolean) {
+    if (isExtend) {
+      this.paraview.store.extendSelection(this.paraview.store.visitedDatapoints);
+    } else {
+      this.paraview.store.select(this.paraview.store.visitedDatapoints);
+    }  
+    this.paraview.store.announce(this._composeSelectionAnnouncement(isExtend));
+  }
+
+  content(): TemplateResult {
     // on g: aria-labelledby="${this.params.labelId}"
     // originally came from: xAxis.tickLabelIds[j]
-    return svg`
-      <g
-        ${ref(this.ref)}
-        id=${this.id}
-        style=${Object.keys(this.style).length ? styleMap(this.style) : nothing}
-        class="datapoint ${classMap(this.classes)}"
-        role="datapoint"
-        ${this._extraAttrs.map(attrInfo => svg`
-          ${attrInfo.attr}=${attrInfo.value}
-        `)}
-      >
-        ${this.content()}
-        ${this.paraview.store.settings.chart.isDrawSymbols 
-          ? this._renderSymbol() 
-          : ''}
-      </g>
-    `;
+    if (this._shape) {
+      this._shape.styleInfo = this.styleInfo;
+      this._shape.classInfo = this.classInfo;  
+    }
+    if (this._symbol) {
+      this._symbol.scale = this._symbolScale;
+      this._symbol.color = this._symbolColor;
+      this._symbol.hidden = !this.paraview.store.settings.chart.isDrawSymbols;
+    }
+    return super.content();
   }
 
 }
