@@ -133,6 +133,16 @@ export class ParaControlPanel extends logging(ParaComponent) {
     super.connectedCallback();
     this._settings = SettingsManager.getGroupLink<ControlPanelSettings>(
       this.managedSettingKeys[0], this._store.settings);
+    this._store.subscribe((key, value) => {
+      if (key === 'data') {
+        this.dataUpdated();
+      }
+    });
+  }
+
+  // Anything that needs to be done when data is updated, do here
+  private dataUpdated(): void {
+    this.dataState = 'complete';
   }
 
   settingDidChange(key: string, value: any) {
