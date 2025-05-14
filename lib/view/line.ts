@@ -19,7 +19,9 @@ import { type LineSettings, type DeepReadonly } from '../store/settings_types';
 import { XYSeriesView } from './xychart';
 import { Path } from './shape/path';
 import { Vec2 } from '../common/vector';
-
+import { ChartLandingView, DatapointView, SeriesView } from './data';
+import { describeAdjacentDatapoints, describeSelections, getDatapointMinMax, queryMessages } from '../store/queryutils';
+import { capitalize, join, interpolate as replace } from '@fizz/templum';
 /**
  * Class for drawing line charts.
  * @public
@@ -84,6 +86,86 @@ export class LineChart extends PointChart {
       //todo().controller.setSetting('type.line.lineWidth', 15);
     }
   }
+
+    queryData(): void {
+    const targetView = this.chartLandingView.focusLeaf
+    // TODO: localize this text output
+    // focused view: e.options!.focus
+    // all visited datapoint views: e.options!.visited
+    // const focusedDatapoint = e.targetView;
+    let msgArray: string[] = [];
+    let seriesLengths = [];
+    for (let series of this.paraview.store.model!.series) {
+      seriesLengths.push(series.rawData.length)
+    }
+    if (targetView instanceof ChartLandingView) {
+      this.paraview.store.announce(`Displaying Chart: ${this.paraview.store.title}`);
+      return
+    }
+    else if (targetView instanceof SeriesView) {
+      /*
+      if (e.options!.isChordMode) {
+        // console.log('focusedDatapoint', focusedDatapoint)
+        const visitedDatapoints = e.options!.visited as XYDatapointView[];
+        // console.log('visitedDatapoints', visitedDatapoints)
+        msgArray = this.describeChord(visitedDatapoints);
+      } */
+      msgArray.push(replace(
+        queryMessages.seriesKeyLength,
+        { seriesKey: targetView.seriesKey, datapointCount: targetView.series.length }
+      ));
+      //console.log('queryData: SeriesView:', targetView);
+    }
+    else if (targetView instanceof DatapointView) {
+      /*
+      if (e.options!.isChordMode) {
+        // focused view: e.options!.focus
+        // all visited datapoint views: e.options!.visited
+        // const focusedDatapoint = e.targetView;
+        // console.log('focusedDatapoint', focusedDatapoint)
+        const visitedDatapoints = e.options!.visited as XYDatapointView[];
+        // console.log('visitedDatapoints', visitedDatapoints)
+        msgArray = this.describeChord(visitedDatapoints);
+      }
+        */
+      const selectedDatapoints = this.paraview.store.selectedDatapoints;
+      const visitedDatapoint = this.paraview.store.visitedDatapoints[0];
+      msgArray.push(replace(
+        queryMessages.datapointKeyLength,
+        {
+          seriesKey: targetView.seriesKey,
+          datapointXY: `${targetView.series[visitedDatapoint.index].x.raw}, ${targetView.series[visitedDatapoint.index].y.raw}`,
+          datapointIndex: targetView.index + 1,
+          datapointCount: targetView.series.length
+        }
+      ));
+      //console.log(msgArray)
+      if (selectedDatapoints.length) {
+        const selectedDatapointViews = []
+
+        for (let datapoint of selectedDatapoints) {
+          const selectedDatapointView = targetView.chart.datapointViews.filter(datapointView => datapointView.seriesKey === datapoint.seriesKey)[datapoint.index];
+          selectedDatapointViews.push(selectedDatapointView)
+        }
+        // if there are selected datapoints, compare the current datapoint against each of those
+        //console.log(targetView.series.rawData)
+        const selectionMsgArray = describeSelections(this.paraview, targetView, selectedDatapointViews as DatapointView[]);
+        msgArray = msgArray.concat(selectionMsgArray);
+      } else {
+        //console.log('tv', targetView)
+        // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
+        const datapointMsgArray = describeAdjacentDatapoints(this.paraview, targetView);
+        msgArray = msgArray.concat(datapointMsgArray);
+      }
+      // also add the high or low indicators
+      const minMaxMsgArray = getDatapointMinMax(this.paraview,
+        targetView.series[visitedDatapoint.index].y.raw as unknown as number, targetView.seriesKey);
+      //console.log('minMaxMsgArray', minMaxMsgArray)z
+      msgArray = msgArray.concat(minMaxMsgArray)
+    }
+    this.paraview.store.announce(msgArray);
+  }
+
 
 }
 
