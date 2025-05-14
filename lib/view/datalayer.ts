@@ -31,7 +31,8 @@ import { type AxisInfo } from '../common/axisinfo';
 import { type HotkeyEvent } from '../store/keymap_manager';
 import { ChartLandingView, DatapointView, SeriesView, type DataView } from './data';
 import { type LegendItem } from './legend';
-
+import { describeAdjacentDatapoints, describeSelections, getDatapointMinMax, queryMessages } from '../store/queryutils';
+import { capitalize, join, interpolate as replace } from '@fizz/templum';
 import { type clusterObject } from '@fizz/clustering';
 
 /**
@@ -80,6 +81,7 @@ export abstract class DataLayer extends ChartLayer {
   constructor(paraview: ParaView, public readonly dataLayerIndex: number) {
     super(paraview);
     paraview.store.keymapManager.addEventListener('hotkeypress', (e: HotkeyEvent) => {
+      console.log(e)
       if (e.action === 'move_right') {
         this.clearPlay();
         this.moveRight();    
@@ -99,7 +101,7 @@ export abstract class DataLayer extends ChartLayer {
       } else if (e.action === 'select_clear') {
         this.clearDatapointSelection();
       } else if (e.action === 'query_data') {
-        this.queryData(e);
+        this.queryData();
       }
     });
   }
@@ -256,8 +258,6 @@ export abstract class DataLayer extends ChartLayer {
    */
   abstract playLeft(): void;
 
-  abstract queryData(e: HotkeyEvent): void;
-
   abstract playSeriesRiff(): void;
 
   selectCurrent(extend = false) {
@@ -282,5 +282,42 @@ export abstract class DataLayer extends ChartLayer {
       datapointView.layoutSymbol();
     }
   }
+
+  queryData(): void {
+      const targetView = this.chartLandingView.focusLeaf
+      // TODO: localize this text output
+      // focused view: e.options!.focus
+      // all visited datapoint views: e.options!.visited
+      // const focusedDatapoint = e.targetView;
+      let msgArray: string[] = [];
+      let seriesLengths = [];
+      for (let series of this.paraview.store.model!.series) {
+        seriesLengths.push(series.rawData.length)
+      }
+      if (targetView instanceof ChartLandingView) {
+        this.paraview.store.announce(`Displaying Chart: ${this.paraview.store.title}`);
+        return
+      }
+      else if (targetView instanceof SeriesView) {
+        msgArray.push(replace(
+          queryMessages.seriesKeyLength,
+          { seriesKey: targetView.seriesKey, datapointCount: targetView.series.length }
+        ));
+      }
+      else if (targetView instanceof DatapointView) {
+        const selectedDatapoints = this.paraview.store.selectedDatapoints;
+        const visitedDatapoint = this.paraview.store.visitedDatapoints[0];
+        msgArray.push(replace(
+          queryMessages.datapointKeyLength,
+          {
+            seriesKey: targetView.seriesKey,
+            datapointXY: `${targetView.series[visitedDatapoint.index].x.raw}, ${targetView.series[visitedDatapoint.index].y.raw}`,
+            datapointIndex: targetView.index + 1,
+            datapointCount: targetView.series.length
+          }
+        ));
+      }
+      this.paraview.store.announce(msgArray);
+    }
 
 }
