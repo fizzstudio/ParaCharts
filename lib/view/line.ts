@@ -26,8 +26,6 @@ import { Vec2 } from '../common/vector';
  */
 export class LineChart extends PointChart {
 
-  declare protected _settings: DeepReadonly<LineSettings>;
-
   protected _lowVisLineWidth: number | null = null;
 
   protected _addedToParent() {
@@ -58,7 +56,7 @@ export class LineChart extends PointChart {
   }
 
   get settings() {
-    return this._settings;
+    return super.settings as DeepReadonly<LineSettings>;
   }
 
   settingDidChange(key: string, value: any) {
@@ -117,7 +115,7 @@ export class LineSection extends ChartPoint {
     }
 
     // find midpoint between values for this and next
-    if (this.index < this.chart.paraview.store.model!.allFacetValues('x')!.length - 1) {
+    if (this.index < this.chart.paraview.store.model!.series[0].facet('x')!.length - 1) {
       this._computeNext();
     }
 

@@ -84,6 +84,8 @@ export interface ColorSettings extends SettingGroup {
   isDarkModeEnabled: boolean;
   contrastLevel: number;
   colorPalette: string;
+  /** comma-separated list of color names */
+  colorMap?: string;
 }
 
 /** @public */
@@ -243,15 +245,20 @@ export interface LegendSettings extends SettingGroup {
 export interface PlotSettings extends SettingGroup {
 }
 
+export type BarClusterMode = 'facet';
 
 /** @public */
 export interface BarSettings extends PlotSettings {
-  barWidthMin: number;
-  clusterBy?: string;
+  barWidth: number;
+  colorByDatapoint: boolean;
+  isDrawStackLabels: boolean;
+  isStackLabelInsideBar: boolean;
+  stackLabelGap: number;
+  clusterBy?: BarClusterMode;
   stackContent: StackContentOptions;
   stackCount: number;
   orderBy?: string;
-  clusterPaddingPx: number;
+  clusterGap: number;
   barGap: number;
   isAbbrevSeries: boolean;
   clusterLabelFormat: LabelFormat;
@@ -300,11 +307,13 @@ export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
 /** @public */
 export interface RadialSettings extends SettingGroup {
-  label: LabelSettings;
+  categoryLabel: LabelSettings;
+  valueLabel: LabelSettings;
   isRenderCenterLabel: boolean;
   annularThickness: number;
-  sliceLabelPosition: SliceLabelPosition;
-  sliceLabelFormat: LabelFormat;
+  categoryLabelPosition: SliceLabelPosition;
+  categoryLabelFormat: LabelFormat;
+  categoryLabelUnderlineGap: number;
   sliceValueFormat: LabelFormat;
 }
 

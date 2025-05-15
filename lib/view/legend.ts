@@ -41,7 +41,6 @@ const intersperse = (a: any[], b: any[]) => {
 export class Legend extends Container(View) {
 
   declare protected _parent: Layout;
-  declare protected _settings: DeepReadonly<LegendSettings>;
 
   protected _grid!: GridLayout;
   protected _markers: Rect[] = [];
@@ -54,15 +53,13 @@ export class Legend extends Container(View) {
   }
 
   get settings() {
-    return this._settings;
+    return SettingsManager.getGroupLink<LegendSettings>('legend', this.paraview.store.settings);
   }
 
   protected _addedToParent() {
-    this._settings = SettingsManager.getGroupLink('legend', this.paraview.store.settings);
-
     const views: View[] = [];
 
-    const hasLegendBox = this._settings.boxStyle.outline !== 'none' || this._settings.boxStyle.fill !== 'none';
+    const hasLegendBox = this.settings.boxStyle.outline !== 'none' || this.settings.boxStyle.fill !== 'none';
 
     this._items.forEach(item => {
       this._markers.push(new Rect(this.paraview, {width: 12, height: 6}));
@@ -121,9 +118,9 @@ export class Legend extends Container(View) {
       this.prepend(new Rect(this.paraview, {
         width: this._width,
         height: this._height,
-        fill: this._settings.boxStyle.fill,
-        stroke: this._settings.boxStyle.outline,
-        strokeWidth: this._settings.boxStyle.outlineWidth
+        fill: this.settings.boxStyle.fill,
+        stroke: this.settings.boxStyle.outline,
+        strokeWidth: this.settings.boxStyle.outlineWidth
       }));
     }
   }

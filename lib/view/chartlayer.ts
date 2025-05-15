@@ -26,7 +26,7 @@ export abstract class ChartLayer extends Container(View) {
   }
 
   protected _addedToParent() {
-    this.setSize(this._parent.width, this._parent.height);
+    this.setSize(this._parent.logicalWidth, this._parent.logicalHeight);
   }
 
   get parent() {
