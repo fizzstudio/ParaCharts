@@ -1,0 +1,89 @@
+{
+  "datasets": [
+    {
+      "type": "column",
+      "title": "",
+      "facets": {
+        "x": {
+          "label": "Category",
+          "variableType": "independent",
+          "measure": "nomimal",
+          "datatype": "string"
+        },
+        "y": {
+          "label": "Performance",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number"
+        }
+      },
+      "series": [
+        {
+          "key": "Responsibility performance",
+          "theme": {
+            "baseQuantity": "performance",
+            "baseKind": "dimensioned"
+          },
+          "records": [
+            {
+              "x": "Financial Oversight",
+              "y": "3.40"
+            },
+            {
+              "x": "IMPACT",
+              "y": "3.35"
+            },
+            {
+              "x": "Board Structure",
+              "y": "3.20"
+            },
+            {
+              "x": "Meetings",
+              "y": "3.18"
+            },
+            {
+              "x": "Chief Executive Oversight",
+              "y": "3.17"
+            },
+            {
+              "x": "Mission, Vision, & Strategic Direction",
+              "y": "3.08"
+            },
+            {
+              "x": "Program Oversight",
+              "y": "2.98"
+            },
+            {
+              "x": "Funding & Public Image",
+              "y": "2.97"
+            },
+            {
+              "x": "CULTURE",
+              "y": "2.86"
+            },
+            {
+              "x": "Board Composition",
+              "y": "2.69"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "color.colorPalette": "ffb",
+        "color.colorMap": "slate",
+        "chart.orientation": "east",
+        "chart.size.width": 360,
+        "axis.vert.labelOrder": "northToSouth",
+        "axis.y.tick.step": 1,
+        "type.bar.colorByDatapoint": true,
+        "type.bar.barWidth": 20,
+        "type.bar.isDrawStackLabels": true,
+        "legend.isDrawLegend": false,
+        "sonification.isEnabled": true
+      }
+    }
+  ]
+}

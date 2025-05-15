@@ -43,10 +43,12 @@ export abstract class TickStrip<T extends AxisOrientation = AxisOrientation> ext
     contentHeight: number
   ) {
     super(axis.paraview);
-    this.setContentSize(contentWidth, contentHeight);
+    // XXX this results in creating the rules twice, which is harmless, but stupid
+    this.resize(contentWidth, contentHeight, this._interval);
   }
 
-  setContentSize(_width: number, _height: number) {
+  resize(_width: number, _height: number, interval: number) {
+    this._interval = interval;
     this.clearChildren();
     this._createRules();
   }
@@ -101,10 +103,10 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
     return this.width;
   }
 
-  setContentSize(width: number, height: number) {
+  resize(width: number, height: number, interval: number) {
     this.width = width;
     this._gridLineLength = height;
-    super.setContentSize(width, height);
+    super.resize(width, height, interval);
   }
 
   protected _createRules() {
@@ -116,14 +118,16 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
         ? tickLength + this.axis.settings.tick.padding
         : 0;
     }
-    let indices = mapn(this._count + (this.axis.isInterval ? 0 : 1), i => i);
+    let indices = mapn(this._count + (this.axis.isInterval ? 0 : 1), i => i)
+      .filter(i => i % this.axis.tickStep === 0);
     if (!this.paraview.store.settings.grid.isDrawVertAxisOppositeLine) {
       indices = isEast ? indices.slice(0, -1) : indices.slice(1);
     }
-    const xs = indices.map(i => isEast ? this.width - i*this._interval : i*this._interval);
-    indices.forEach(i => {
+    // skip axis line tick
+    const xs = indices.map(i => isEast ? this.width - i*this._interval : i*this._interval).slice(1);
+    indices.forEach((idx, i) => {
       this.append(new HorizTick(
-        this.axis.orientationSettings.position, this.paraview, i % this._majorModulus === 0, tickLength));   
+        this.axis.orientationSettings.position, this.paraview, idx % this._majorModulus === 0, tickLength));   
       this._children.at(-1)!.x = xs[i];
       this._children.at(-1)!.y = y;
       this._children.at(-1)!.hidden = !this.axis.settings.tick.isDrawEnabled;
@@ -156,10 +160,10 @@ export class VertTickStrip extends TickStrip<'vert'> {
     return this.height;
   }
 
-  setContentSize(width: number, height: number) {
+  resize(width: number, height: number, interval: number) {
     this._gridLineLength = width;
     this.height = height;
-    super.setContentSize(width, height);
+    super.resize(width, height, interval);
   }
 
   protected _createRules() {

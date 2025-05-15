@@ -121,6 +121,17 @@ export class ParaStore extends State {
   setManifest(manifest: Manifest, data?: AllSeriesData) {
     this._manifest = manifest;
     const dataset = this._manifest.datasets[0];
+
+    if (dataset.settings) {
+      Object.entries(dataset.settings).forEach(([path, value]) =>
+        this.updateSettings(draft => {
+          SettingsManager.set(path, value, draft);
+        }));
+      if (this.settings.color.colorMap) {
+        this._colors.setColorMap(...this.settings.color.colorMap.split(',').map(c => c.trim()));
+      }
+    }
+
     this._type = dataset.type;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);

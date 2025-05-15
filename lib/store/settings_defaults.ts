@@ -137,9 +137,13 @@ export const defaults: Settings = {
   },
   type: {
     bar: {
-      barWidthMin: 10,
+      barWidth: 20,
+      colorByDatapoint: false,
+      isDrawStackLabels: false,
+      isStackLabelInsideBar: true,
+      stackLabelGap: 10,
       clusterBy: undefined,
-      clusterPaddingPx: 5,
+      clusterGap: 5,
       stackContent: 'all',
       stackCount: 1,
       isAbbrevSeries: true,
@@ -149,9 +153,13 @@ export const defaults: Settings = {
       lineWidth: 5,
     },
     column: {
-      barWidthMin: 10,
+      barWidth: 10,
+      colorByDatapoint: false,
+      isDrawStackLabels: true,
+      isStackLabelInsideBar: true,
+      stackLabelGap: 10,
       clusterBy: undefined,
-      clusterPaddingPx: 5,
+      clusterGap: 5,
       stackContent: 'all',
       stackCount: 1,
       isAbbrevSeries: true,
@@ -181,7 +189,13 @@ export const defaults: Settings = {
       }
     },
     pie: {
-      label: {
+      categoryLabel: {
+        isDrawEnabled: true,
+        margin: 3,
+        fontSize: 15,
+        color: 'black',
+      },
+      valueLabel: {
         isDrawEnabled: true,
         margin: 3,
         fontSize: 15,
@@ -189,12 +203,19 @@ export const defaults: Settings = {
       },
       isRenderCenterLabel: true,
       annularThickness: 1,
-      sliceLabelPosition: 'outside',
-      sliceLabelFormat: 'raw',
+      categoryLabelPosition: 'outside',
+      categoryLabelFormat: 'raw',
+      categoryLabelUnderlineGap: 4,
       sliceValueFormat: 'raw'
     },
     donut: {
-      label: {
+      categoryLabel: {
+        isDrawEnabled: true,
+        margin: 3,
+        fontSize: 15,
+        color: 'black',
+      },
+      valueLabel: {
         isDrawEnabled: true,
         margin: 3,
         fontSize: 15,
@@ -202,12 +223,19 @@ export const defaults: Settings = {
       },
       isRenderCenterLabel: true,
       annularThickness: 0.5,
-      sliceLabelPosition: 'outside',
-      sliceLabelFormat: 'raw',
+      categoryLabelPosition: 'outside',
+      categoryLabelFormat: 'raw',
+      categoryLabelUnderlineGap: 4,
       sliceValueFormat: 'raw'
     },
     gauge: {
-      label: {
+      categoryLabel: {
+        isDrawEnabled: true,
+        margin: 3,
+        fontSize: 15,
+        color: 'black',
+      },
+      valueLabel: {
         isDrawEnabled: true,
         margin: 3,
         fontSize: 15,
@@ -215,8 +243,9 @@ export const defaults: Settings = {
       },
       isRenderCenterLabel: true,
       annularThickness: 0.5,
-      sliceLabelPosition: 'outside',
-      sliceLabelFormat: 'raw',
+      categoryLabelPosition: 'outside',
+      categoryLabelFormat: 'raw',
+      categoryLabelUnderlineGap: 4,
       sliceValueFormat: 'raw'
     },
     stepline: {
@@ -233,10 +262,14 @@ export const defaults: Settings = {
       }
     },
     lollipop: {
-      barWidthMin: 10,
+      barWidth: 10,
+      colorByDatapoint: false,
+      isDrawStackLabels: true,
+      isStackLabelInsideBar: true,
+      stackLabelGap: 10,
       lineWidth: 5,
       clusterBy: undefined,
-      clusterPaddingPx: 5,
+      clusterGap: 5,
       stackContent: 'all',
       stackCount: 1,
       isAbbrevSeries: true,

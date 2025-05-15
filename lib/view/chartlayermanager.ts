@@ -58,6 +58,9 @@ export class ChartLayerManager extends View {
 
   declare protected _parent: Layout;
 
+  protected _logicalWidth!: number;
+  protected _logicalHeight!: number;
+
   private _orientation!: CardinalDirection;
   //private _backgroundAnnotationLayer!: AnnotationLayer;
   private dataLayers!: DataLayer[];
@@ -67,8 +70,9 @@ export class ChartLayerManager extends View {
 
   constructor(public readonly docView: DocumentView) {
     super(docView.paraview);
-    this._width = this.paraview.store.settings.chart.size.width!;
     this._orientation = this.paraview.store.settings.chart.orientation;
+    this.width = this.paraview.store.settings.chart.size.width!;
+    this.height = this.paraview.store.settings.chart.size.height!;
     this.createLayers();
   }
 
@@ -95,22 +99,63 @@ export class ChartLayerManager extends View {
     this._selectionLayer = new SelectionLayer(this.docView.paraview);
     this.append(this._selectionLayer);    
   }
-
-  /** Logical height of the chart. */
-  get height() {
-    return this.docView.paraview.store.settings.chart.size.height!;
-  }
   
   /** Physical width of the chart; i.e., width onscreen after any rotation. */
-  get physWidth() {
-    return this._orientation === 'north' || this._orientation === 'south' ?
-      this.width : this.height;
+  get width() {
+    return super.width;
+  }
+
+  set width(width: number) {
+    if (this._orientation === 'north' || this._orientation === 'south') {
+      this._logicalWidth = width;
+    } else {
+      this._logicalHeight = width;
+    }
+    super.width = width;
+    this._resizeLayers();
   }
 
   /** Physical height of the chart; i.e., height onscreen after any rotation. */
-  get physHeight() {
-    return this._orientation === 'north' || this._orientation === 'south' ?
-      this.height : this.width;
+  get height() {
+    return super.height;
+  }
+
+  set height(height: number) {
+    if (this._orientation === 'north' || this._orientation === 'south') {
+      this._logicalHeight = height;
+    } else {
+      this._logicalWidth = height;
+    }
+    super.height = height;
+    this._resizeLayers();
+  }
+
+  get logicalWidth() {
+    return this._logicalWidth;
+  }
+
+  set logicalWidth(logicalWidth: number) {
+    if (this._orientation === 'north' || this._orientation === 'south') {
+      this.width = logicalWidth;
+    } else {
+      this.height = logicalWidth;
+    }
+    this._logicalWidth = logicalWidth;
+    this._resizeLayers();
+  }
+
+  get logicalHeight() {
+    return this._logicalHeight;
+  }
+
+  set logicalHeight(logicalHeight: number) {
+    if (this._orientation === 'north' || this._orientation === 'south') {
+      this.height = logicalHeight;
+    } else {
+      this.width = logicalHeight;
+    }
+    this._logicalHeight = logicalHeight;
+    this._resizeLayers();
   }
 
   get orientation() {
@@ -137,6 +182,10 @@ export class ChartLayerManager extends View {
     return this._selectionLayer;
   }
 
+  protected _resizeLayers() {
+    this._children.forEach(kid => kid.setSize(this._logicalWidth, this._logicalHeight, false));
+  }
+
   private createDataLayers() {
     const ctor = chartClasses[this.paraview.store.type];
     let dataLayer: DataLayer;
@@ -154,7 +203,7 @@ export class ChartLayerManager extends View {
     if (this.paraview.store.getFacet('x')!.datatype !== 'number') {
       throw new Error('x-axis intervals not specified for non-numeric x-axes')
     }
-    const xs = this.paraview.store.model!.allFacetValues('x')!.map((box) => box.value as number);
+    const xs = this.paraview.store.model!. allFacetValues('x')!.map((box) => box.value as number);
     return {start: Math.min(...xs), end: Math.max(...xs)};
   }
 
@@ -189,17 +238,17 @@ export class ChartLayerManager extends View {
     let transform = fixed`translate(${this._x + this._padding.left},${this._y + this._padding.top})`;
     if (this._orientation === 'east') {
       transform += fixed`
-        translate(${this.height},${0}) 
+        translate(${this._logicalHeight},${0}) 
         rotate(90) 
       `;
     } else if (this._orientation === 'west') {
       transform += fixed`
-        translate(0,${this.height}) 
+        translate(0,${this._logicalHeight}) 
         rotate(-90) 
       `;
     } else if (this._orientation === 'south') {
       transform += fixed`
-        translate(0,${this.height}) 
+        translate(0,${this._logicalHeight}) 
         scale(1,-1) 
       `;
     }
@@ -210,8 +259,8 @@ export class ChartLayerManager extends View {
       >
         <rect 
           id="data-backdrop" 
-          width=${this.physWidth} 
-          height=${this.physHeight}
+          width=${this.width} 
+          height=${this.height}
         />
         ${this.dataLayers.map(layer => layer.render())}
         ${this._highlightsLayer.render()}

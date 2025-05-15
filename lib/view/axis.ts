@@ -304,8 +304,7 @@ export class HorizAxis extends Axis<'horiz'> {
 
   computeSize(): [number, number] {
     return [
-      this.chartLayers.orientation === 'north' || this.chartLayers.orientation === 'south' ? 
-        this.chartLayers.width : this.chartLayers.physWidth,
+      this.chartLayers.width,
       this._layout.height
     ];
   }
@@ -340,8 +339,9 @@ export class HorizAxis extends Axis<'horiz'> {
   }
 
   resize(width: number, height: number) {
+    console.log('RESIZE HORIZ');
     this._tickLabelTiers.forEach(tier => tier.setLength(width));
-    this._tickStrip!.setContentSize(width, height);
+    this._tickStrip!.resize(width, height, this._tickLabelTiers[0].tickInterval/this.tickStep);
     this._axisLine.length = width;
   }
 
@@ -419,8 +419,7 @@ export class VertAxis extends Axis<'vert'> {
   computeSize(): [number, number] {
     return [
       this._layout.width,
-      this.chartLayers.orientation === 'east' || this.chartLayers.orientation === 'west' ? 
-        this.chartLayers.width : this.chartLayers.physHeight
+      this.chartLayers.height
     ];
   }
 
@@ -462,10 +461,10 @@ export class VertAxis extends Axis<'vert'> {
   }
 
   resize(width: number, height: number) {
+    console.log('RESIZE VERT');
     this._tickLabelTiers.forEach(tier => tier.setLength(height));
-    this._tickStrip!.setContentSize(width, height);
-    // resize axis line
-    // update layout size?
+    this._tickStrip!.resize(width, height, this._tickLabelTiers[0].tickInterval/this.tickStep);
+    this._axisLine.length = height;
   }
 
   layoutComponents() {

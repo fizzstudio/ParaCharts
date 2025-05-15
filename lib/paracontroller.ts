@@ -46,7 +46,8 @@ export class ParaController extends Logger {
   async runLoader(filename: string): Promise<void> {
     this.log(`loading filename: '${filename}'`);
     this._store.dataState = 'pending';
-    const loadresult = await this._loader.load('fizz-chart-data', filename, this.parachart.forcecharttype);
+    const loadresult = await this._loader.load(
+      filename.startsWith('/') ? 'url' : 'fizz-chart-data', filename, this.parachart.forcecharttype);
     this.log('loaded manifest')
     if (loadresult.result === 'success') {
       this._setManifest(loadresult.manifest);
