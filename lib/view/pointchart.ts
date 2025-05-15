@@ -18,10 +18,10 @@ import { SeriesView } from './data';
 import { XYChart, XYDatapointView, XYSeriesView } from './xychart';
 import { AxisInfo } from '../common/axisinfo';
 import { type PointChartType } from '../store/settings_types';
-import { enumerate, strToId } from '../common/utils';
-import { formatBox } from './formatter';
+import { enumerate, strToId } from '@fizz/paramodel';
 
 import { type coord, generateClusterAnalysis } from '@fizz/clustering';
+import { formatBox } from '@fizz/parasummary';
 
 /**
  * Abstract base class for charts that represent data values as points
@@ -51,7 +51,7 @@ export abstract class PointChart extends XYChart {
   protected _createComponents() {
     const xs: string[] = [];
     for (const [x, i] of enumerate(this.paraview.store.model!.series[0].facet('x')!)) {
-      xs.push(formatBox(x, `${this.parent.docView.type as PointChartType}Point`, this.paraview.store));
+      xs.push(formatBox(x, this.paraview.store.getFormatType(`${this.parent.docView.type as PointChartType}Point`)));
       const xId = strToId(xs.at(-1)!);
       // if (this.selectors[i] === undefined) {
       //   this.selectors[i] = [];
@@ -102,7 +102,9 @@ export abstract class PointChart extends XYChart {
   }
 
   getDatapointGroupBbox(labelText: string) {
-    const labels = this.paraview.store.model!.allFacetValues('x')!.map((box) => formatBox(box, 'xTick', this.paraview.store));
+    const labels = this.paraview.store.model!.allFacetValues('x')!.map(
+      (box) => formatBox(box, this.paraview.store.getFormatType('xTick'))
+    );
     const idx = labels.findIndex(label => label === labelText);
     if (idx === -1) {
       throw new Error(`no such datapoint with label '${labelText}'`);

@@ -4,15 +4,15 @@ import { AxisInfo } from '../common/axisinfo';
 import { 
   type BarSettings, type StackContentOptions ,type DeepReadonly
 } from '../store/settings_types';
-import { enumerate, fixed, strToId } from '../common/utils';
-import { formatBox } from './formatter';
-import { Box } from '../store/dataframe/box';
+import { fixed } from '../common/utils';
 import { Rect } from './shape/rect';
 import { Label, LabelTextAnchor } from './label';
 
 import { svg } from 'lit';
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { SeriesView } from './data';
+import { Box, enumerate, strToId } from '@fizz/paramodel';
+import { formatBox } from '@fizz/parasummary';
 
 type BarData = {[key: string]: BarCluster};
 
@@ -283,7 +283,7 @@ export class BarChart extends XYChart {
 
     for (const [x, i] of enumerate(xs)) {
       //const clusterKey = this._model.format(xSeries.atBoxed(i), 'barCluster');  
-      const clusterKey = formatBox(x, 'barCluster', this.paraview.store);  
+      const clusterKey = formatBox(x, this.paraview.store.getFormatType('barCluster'));  
       let cluster = clusterMap[clusterKey];
       if (!cluster) {
         cluster = {};
