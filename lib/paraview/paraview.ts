@@ -25,7 +25,7 @@ import { DocumentView } from '../view/document_view';
 //import { styles } from './styles';
 import { SVGNS } from '../common/constants';
 import { fixed } from '../common/utils';
-import { type Summarizer, BasicSummarizer } from '../summary';
+import { Summarizer, BasicXYChartSummarizer } from '@fizz/parasummary';
 
 import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -229,12 +229,17 @@ export class ParaView extends logging(ParaComponent) {
     this._controller = new ParaViewController(this._store);
     this._store.subscribe((key, value) => {
       if (key === 'data') {
-        this.createDocumentView();
+        this.dataUpdated();
       }
     });
-    this._summarizer = new BasicSummarizer(this._store);
 
     this._computeViewBox();
+  }
+
+  // Anything that needs to be done when data is updated, do here
+  private dataUpdated(): void {
+    this.createDocumentView();
+    this._summarizer = new BasicXYChartSummarizer(this._store.model!);
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {

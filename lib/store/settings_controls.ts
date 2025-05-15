@@ -12,7 +12,7 @@ import {
   type SliderSettingControlOptions,
   type ButtonSettingControlOptions,
 } from '../components/settings';
-import { strToId } from '../common/utils';
+import { strToId } from '@fizz/paramodel';
 import { ParaStore } from './parastore';
 
 import { type TemplateResult } from 'lit';

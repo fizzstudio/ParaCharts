@@ -1,9 +1,7 @@
 
 import { DataView, type SeriesView } from './';
 import { DataSymbol, DataSymbols } from '../symbol';
-import { type DataPointDF, type DataCursor } from '../../store';
-import { strToId } from '../../common/utils';
-import { formatBox } from '../formatter';
+import { type DataCursor } from '../../store';
 import { type Shape } from '../shape/shape';
 
 import { type clusterObject } from '@fizz/clustering';
@@ -12,6 +10,8 @@ import { type ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { svg, nothing, TemplateResult } from 'lit';
 import { ref } from 'lit/directives/ref.js';
+import { formatBox } from '@fizz/parasummary';
+import { DataPoint, strToId } from '@fizz/paramodel';
 
 /**
  * Abstract base class for views representing datapoint values
@@ -58,7 +58,7 @@ export class DatapointView extends DataView {
     return this._parent.prev;
   }
 
-  get datapoint(): DataPointDF {
+  get datapoint(): DataPoint {
     return this.series[this.index];
   }
 
@@ -140,7 +140,7 @@ export class DatapointView extends DataView {
 
   protected _createId(..._args: any[]): string {
     const facets = Object.entries(this.datapoint).map(([key, box]) => 
-      `${key}_${formatBox(box, 'domId', this.paraview.store)}`).join('-');
+      `${key}_${formatBox(box, this.paraview.store.getFormatType('domId'))}`).join('-');
     return [
       'datapoint',
       strToId(this.series.key),
@@ -157,7 +157,7 @@ export class DatapointView extends DataView {
     super.onFocus();
     this._visit();
     this.paraview.store.announce(
-      this.paraview.summarizer.getDatapointSummary(this.seriesKey, this.index));
+      this.paraview.summarizer.getDatapointSummary(this.datapoint, 'raw'));
   }
 
   /** Compute and set `x` and `y` */
@@ -225,7 +225,7 @@ export class DatapointView extends DataView {
     // command was issued (i.e., we know nothing about chord mode here)
     const seriesAndVal = (cursor: DataCursor) => {
       const dp = this.paraview.store.model!.atKeyAndIndex(cursor.seriesKey, cursor.index)!;
-      return `${cursor.seriesKey} (${formatBox(dp.x, 'statusBar', this.paraview.store)}, ${formatBox(dp.y, 'statusBar', this.paraview.store)})`;
+      return `${cursor.seriesKey} (${formatBox(dp.facetBox('x')!, this.paraview.store.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this.paraview.store.getFormatType('statusBar'))})`;
     };
 
     const newTotalSelected = this.paraview.store.selectedDatapoints.length;

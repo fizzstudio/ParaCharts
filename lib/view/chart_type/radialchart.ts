@@ -9,8 +9,8 @@ import { Label, type LabelTextAnchor } from '../label';
 import { type ParaView } from '../../paraview';
 import { Sector } from '../shape/sector';
 import { Path } from '../shape/path';
-import { formatBox } from '../formatter';
-import { enumerate } from '../../common/utils';
+import { enumerate } from '@fizz/paramodel';
+import { formatBox } from '@fizz/parasummary';
 import { Vec2 } from '../../common/vector';
 import { ClassInfo } from 'lit/directives/class-map.js';
 
@@ -321,9 +321,9 @@ export abstract class RadialChart extends DataLayer {
 
   legend() {
     const xs = this.paraview.store.model!.series[0].facet('x')!.map(box =>
-      formatBox(box, 'pieSliceLabel', this.paraview.store));
+      formatBox(box, this.paraview.store.getFormatType('pieSliceLabel')));
     const ys = this.paraview.store.model!.series[0].facet('y')!.map(box =>
-      formatBox(box, 'pieSliceValue', this.paraview.store));
+      formatBox(box, this.paraview.store.getFormatType('pieSliceValue')));
     return xs.map((x, i) => ({
       label: `${x}: ${ys[i]}`,
       color: i,

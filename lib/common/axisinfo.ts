@@ -1,6 +1,6 @@
 
 import { ParaStore } from '../store/parastore';
-import { formatBox } from '../view/formatter';
+import { formatBox } from '@fizz/parasummary';
 
 import Decimal from 'decimal.js';
 
@@ -110,7 +110,7 @@ export class AxisInfo {
         Math.min(...this._options.xValues),
         Math.max(...this._options.xValues));
     } else {
-      const labels = this._store.model!.series[0].facet('x')!.map(x => formatBox(x, 'xTick', this._store));
+      const labels = this._store.model!.series[0].facet('x')!.map(x => formatBox(x, this._store.getFormatType('xTick'));
       this._xLabelInfo = {
         labelTiers: [labels]
       };
