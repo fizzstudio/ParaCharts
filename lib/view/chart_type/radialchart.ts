@@ -12,12 +12,11 @@ import { Path } from '../shape/path';
 import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 import { Vec2 } from '../../common/vector';
+import { ClassInfo } from 'lit/directives/class-map.js';
 
 export type ArcType = 'circle' | 'semicircle';
 
 export abstract class RadialChart extends DataLayer {
-
-  declare protected _settings: DeepReadonly<RadialSettings>;
   
   //protected _radius!: Required<RadiusSettings>;
   protected _cx!: number;
@@ -107,6 +106,10 @@ export abstract class RadialChart extends DataLayer {
   //   return this._radius;
   // }
 
+  get settings() {
+    return super.settings as DeepReadonly<RadialSettings>;
+  }
+
   get cx() {
     return this._cx;
   }
@@ -125,28 +128,64 @@ export abstract class RadialChart extends DataLayer {
 
   init() {
     super.init();
-    if (this._settings.label.isDrawEnabled) {
+    if (this.settings.categoryLabel.isDrawEnabled) {
       // this needs to happen after the datapoints have been created and laid out
       this._createLabels();
-      const labels = this.datapointViews.map(dp => (dp as RadialSlice).label!);
-      const minX = Math.min(...labels.map(label => label.left));
-      const maxX = Math.max(...labels.map(label => label.right));
-      this._width = maxX - minX;
-      this._parent.width = this._width;
-      if (minX < 0) {
-        this.datapointViews.forEach(dp => {
-          dp.x += -minX; 
-        });
-        this._cx += -minX;
-      }
+      this._resizeToFitLabels();
+      // const labels = this.datapointViews.map(dp => (dp as RadialSlice).categoryLabel!);
+      // const minX = Math.min(...labels.map(label => label.left));
+      // const maxX = Math.max(...labels.map(label => label.right));
+      // this._width = maxX - minX;
+      // this._parent.width = this._width;
+      // if (minX < 0) {
+      //   this.datapointViews.forEach(dp => {
+      //     dp.x += -minX; 
+      //   });
+      //   this._cx += -minX;
+      // }
+    }
+  }
+
+  protected _resizeToFitLabels() {
+    const labels = this.datapointViews.map(dp => (dp as RadialSlice).categoryLabel!);
+    const minX = Math.min(...labels.map(label => label.left));
+    if (minX < 0) {
+      console.log('OLD WIDTH', this._width);
+      this._parent.logicalWidth += -minX;
+      console.log('NEW WIDTH', this._width, minX);
+      this.datapointViews.forEach(dp => {
+        dp.x += -minX; 
+      });
+      this._cx += -minX;
+    }
+    const maxX = Math.max(...labels.map(label => label.right));
+    if (maxX > this._width) {
+      const diff = maxX - this._width;
+      this._parent.logicalWidth += diff;
+      console.log('NEW WIDTH', this._width);
+    }
+    const minY = Math.min(...labels.map(label => label.top));
+    if (minY < 0) {
+      this._parent.logicalHeight += -minY;
+      console.log('NEW HEIGHT', this._height);
+      this.datapointViews.forEach(dp => {
+        dp.y += -minY; 
+      });
+      this._cy += -minY;
+    }
+    const maxY = Math.max(...labels.map(label => label.bottom));
+    if (maxY > this._height) {
+      const diff = maxY - this._height;
+      this._parent.logicalHeight += diff;
+      console.log('NEW HEIGHT', this._height);
     }
   }
 
   protected _createComponents() {
-    const xSeries = this.paraview.store.model!.allFacetValues('x')!.map(box =>
+    const xs = this.paraview.store.model!.series[0].facet('x')!.map(box =>
       box.value as string
     );
-    const ySeries = this.paraview.store.model!.allFacetValues('y')!.map(box =>
+    const ys = this.paraview.store.model!.series[0].facet('y')!.map(box =>
       box.value as number);
 
     // const indep = this._model.indepVar;
@@ -158,13 +197,13 @@ export abstract class RadialChart extends DataLayer {
     //   //todo().canvas.jimerator.addSelector(indep, i, `tick-x-${xId}`);
     // }
 
-    const total = ySeries.reduce((a, b) => a + b, 0);
+    const total = ys.reduce((a, b) => a + b, 0);
     const seriesView = new SeriesView(this, this.paraview.store.model!.keys[0], false);
     this._chartLandingView.append(seriesView);
 
     let accum = 0;
-    for (const [x, i] of enumerate(xSeries)) {
-      const currDatapoint = ySeries.at(i)!;
+    for (const [x, i] of enumerate(xs)) {
+      const currDatapoint = ys.at(i)!;
 
       /*if (this.center_label.is_render && this.center_label.value_index === j) {
         // set percentage as center label value
@@ -183,7 +222,7 @@ export abstract class RadialChart extends DataLayer {
         seriesIdx: i, 
         percentage,
         accum,
-        numDatapoints: xSeries.length
+        numDatapoints: xs.length
       });
       seriesView.append(datapointView);
       accum += percentage;
@@ -192,45 +231,58 @@ export abstract class RadialChart extends DataLayer {
   }
 
   protected _createLabels() {
-    const xSeries = this.paraview.store.model!.allFacetValues('x')!.map(box =>
-      box.value as string
+    const xs = this.paraview.store.model!.series[0].facet('x')!.map(box =>
+      formatBox(box, 'pieSliceLabel', this.paraview.store)
     );
-    for (const [x, i] of enumerate(xSeries)) {
-      const text = x;
+    const ys = this.paraview.store.model!.series[0].facet('y')!.map(box =>
+      formatBox(box, 'pieSliceLabel', this.paraview.store)
+    );
+    for (const [x, i] of enumerate(xs)) {
       const slice = this._chartLandingView.children[0].children[i] as RadialSlice;
       const arcCenter = slice.shape.arcCenter;
       const gapVec = slice.shape.orientationVector.multiplyScalar(10);
       let labelLoc: Vec2;
       let anchor: LabelTextAnchor;
-      if (this._settings.sliceLabelPosition === 'inside') {
-        labelLoc = slice.shape.loc.add(arcCenter).divideScalar(2);
+      const sliceCenter = slice.shape.loc.add(arcCenter).divideScalar(2);
+      if (this.settings.categoryLabelPosition === 'inside') {
+        labelLoc = sliceCenter;
         anchor = 'middle';
-      } else if (this._settings.sliceLabelPosition === 'outside') {
+      } else if (this.settings.categoryLabelPosition === 'outside') {
         labelLoc = arcCenter.add(gapVec);
         anchor = labelLoc.x > this.cx ? 'start' : 'end';
       } else {
         labelLoc = new Vec2();
         anchor = 'middle';
       }
-      slice.label = new Label(this.paraview, {
-        text, 
-        classList: ['radial_label'], 
+      slice.categoryLabel = new Label(this.paraview, {
+        text: x, 
+        classList: ['radial-category-label'], 
         role: 'axislabel', 
-        x: labelLoc.x,
-        y: labelLoc.y,
+        loc: labelLoc,
         textAnchor: anchor,
         isPositionAtAnchor: true
       });
+      const underlineStart = labelLoc.addY(this.settings.categoryLabelUnderlineGap);
       slice.leader = new Path(this.paraview, {
-        points: [arcCenter, labelLoc, labelLoc.x > slice.label.centerX
-          ? labelLoc.subtractX(slice.label.width)
-          : labelLoc.addX(slice.label.width)],
+        points: [arcCenter, underlineStart, underlineStart.x > slice.categoryLabel.centerX
+          ? underlineStart.subtractX(slice.categoryLabel.width)
+          : underlineStart.addX(slice.categoryLabel.width)],
         stroke: this.paraview.store.colors.colorValueAt(slice.color),
         strokeWidth: 2
       });
+      slice.valueLabel = new Label(this.paraview, {
+        // XXX value will not always be a percentage
+        text: ys[i] + '%', 
+        classList: ['radial-value-label'], 
+        role: 'axislabel', 
+        loc: sliceCenter.add(slice.shape.orientationVector.multiplyScalar(40)),
+        textAnchor: 'middle',
+        isPositionAtAnchor: true
+      });
       // Labels draw as children of the slice so the highlights layer can `use` them
       slice.append(slice.leader);
-      slice.append(slice.label);
+      slice.append(slice.categoryLabel);
+      slice.append(slice.valueLabel);
     }
     this._resolveLabelCollisions();
   }
@@ -238,7 +290,7 @@ export abstract class RadialChart extends DataLayer {
   protected _resolveLabelCollisions() {
     const slices = [...this.datapointViews] as RadialSlice[];
     // Sort slices according to label height onscreen from lowest to highest
-    slices.sort((a, b) => b.label!.y - a.label!.y);
+    slices.sort((a, b) => b.categoryLabel!.y - a.categoryLabel!.y);
 
     // const leaderLabelOffset = this.paraview.store.settings.chart.isDrawSymbols 
     //   ? -this._chart.settings.seriesLabelPadding 
@@ -246,9 +298,14 @@ export abstract class RadialChart extends DataLayer {
 
     slices.slice(1).forEach((s, i) => {
       // Move each label up out of collision with the one onscreen below it.
-      if (s.label!.intersects(slices[i].label!)) {
-        s.label!.y = slices[i].label!.y - s.label!.height;
-        s.leader!.points = [s.leader!.points[0], s.label!.loc, s.leader!.points[2].setY(s.label!.y)];
+      if (s.categoryLabel!.intersects(slices[i].categoryLabel!)) {
+        const oldY = s.categoryLabel!.y;
+        s.categoryLabel!.y = slices[i].categoryLabel!.y - s.categoryLabel!.height;
+        const diff = s.categoryLabel!.y - oldY;
+        s.leader!.points = [
+          s.leader!.points[0],
+          s.leader!.points[1].addY(diff),
+          s.leader!.points[2].addY(diff)];
       }
     });
 
@@ -263,12 +320,12 @@ export abstract class RadialChart extends DataLayer {
   protected abstract _createSlice(seriesView: SeriesView, params: RadialDatapointParams): RadialSlice;
 
   legend() {
-    const xSeries = this.paraview.store.model!.allFacetValues('x')!.map(box =>
+    const xs = this.paraview.store.model!.series[0].facet('x')!.map(box =>
       formatBox(box, this.paraview.store.getFormatType('pieSliceLabel')));
-    const ySeries = this.paraview.store.model!.allFacetValues('y')!.map(box =>
+    const ys = this.paraview.store.model!.series[0].facet('y')!.map(box =>
       formatBox(box, this.paraview.store.getFormatType('pieSliceValue')));
-    return xSeries.map((x, i) => ({
-      label: `${x}: ${ySeries[i]}`,
+    return xs.map((x, i) => ({
+      label: `${x}: ${ys[i]}`,
       color: i,
       datapointIndex: i
     }));
@@ -352,7 +409,8 @@ export abstract class RadialSlice extends DatapointView {
 
   declare readonly chart: RadialChart;
 
-  protected _label: Label | null = null;
+  protected _categoryLabel: Label | null = null;
+  protected _valueLabel: Label | null = null;
   protected _leader: Path | null = null;
   
   constructor(parent: SeriesView, protected _params: RadialDatapointParams) {
@@ -360,12 +418,20 @@ export abstract class RadialSlice extends DatapointView {
     this._isStyleEnabled = true;
   }
 
-  get label() {
-    return this._label;
+  get categoryLabel() {
+    return this._categoryLabel;
   }
 
-  set label(label: Label | null) {
-    this._label = label;
+  set categoryLabel(label: Label | null) {
+    this._categoryLabel = label;
+  }
+
+  get valueLabel() {
+    return this._valueLabel;
+  }
+
+  set valueLabel(label: Label | null) {
+    this._valueLabel = label;
   }
 
   get leader() {
@@ -388,6 +454,11 @@ export abstract class RadialSlice extends DatapointView {
     return 'datapoint';
   }
 
+  get classInfo() {
+    const classInfo: ClassInfo = {['radial-slice']: true, ...super.classInfo};
+    return classInfo;
+  }
+
   get styleInfo() {
     const style = super.styleInfo;
     delete style.strokeWidth;
@@ -400,8 +471,11 @@ export abstract class RadialSlice extends DatapointView {
   }
 
   set x(x: number) {
-    if (this._label) {
-      this._label.x += x - this._x;
+    if (this._categoryLabel) {
+      this._categoryLabel.x += x - this._x;
+    }
+    if (this._valueLabel) {
+      this._valueLabel.x += x - this._x;
     }
     if (this._leader) {
       this._leader.x += x - this._x;
@@ -414,8 +488,11 @@ export abstract class RadialSlice extends DatapointView {
   }
 
   set y(y: number) {
-    if (this._label) {
-      this._label.y += y - this._y;
+    if (this._categoryLabel) {
+      this._categoryLabel.y += y - this._y;
+    }
+    if (this._valueLabel) {
+      this._valueLabel.y += y - this._y;
     }
     if (this._leader) {
       this._leader.y += y - this._y;

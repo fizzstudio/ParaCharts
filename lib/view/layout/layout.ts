@@ -61,10 +61,10 @@ export abstract class Layout extends View {
 
   abstract layoutViews(): void;
 
-  render() {
-    return svg`
-      ${this._children.map(kid => kid.render())}
-    `;
-  }
+  // render() {
+  //   return svg`
+  //     ${this._children.map(kid => kid.render())}
+  //   `;
+  // }
 
 }

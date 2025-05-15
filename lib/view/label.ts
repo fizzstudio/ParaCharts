@@ -22,6 +22,7 @@ import { View, type SnapLocation } from '../view/base_view';
 import { generateUniqueId, fixed } from '../common/utils';
 import { ParaView } from '../paraview';
 import { SVGNS } from '../common/constants';
+import { type Vec2 } from '../common/vector';
 
 export type LabelTextAnchor = 'start' | 'middle' | 'end';
 
@@ -30,8 +31,9 @@ export interface LabelOptions {
   classList?: string[];
   role?: string;
   text: string;
-  x: number;
-  y: number;
+  loc?: Vec2;
+  x?: number;
+  y?: number;
   angle?: number;
   textAnchor?: LabelTextAnchor;
   isPositionAtAnchor?: boolean;
@@ -63,8 +65,15 @@ export class Label extends View {
     if (!this.classList.includes('label')) {
       this.classList.push('label');
     }
-    this._x = this.options.x;
-    this._y = this.options.y;
+    if (this.options.loc) {
+      this._loc = this.options.loc;
+    }
+    if (this.options.x) {
+      this._x = this.options.x;
+    }
+    if (this.options.y) {
+      this._y = this.options.y;
+    }
     this._angle = this.options.angle ?? 0;
     this._textAnchor = this.options.textAnchor ?? (options.wrapWidth ? 'start' : 'middle');
     this._justify = this.options.justify ?? 'start';
@@ -173,10 +182,6 @@ export class Label extends View {
     //this.paraview.renderRoot!.append(text);
     this.paraview.root!.append(text);
 
-    /* WAS `root`
-    if (!this.paraview.root) {
-      throw new Error('no root!')
-    }*/
     const canvasRect = this.paraview.root?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0);
     const clientRect = text.getBoundingClientRect();
     let width = clientRect.width;
@@ -186,6 +191,7 @@ export class Label extends View {
     // will extend into the negative x-axis. 
     this._anchorXOffset = -(clientRect.x - canvasRect.x);
     this._anchorYOffset = -(clientRect.y - canvasRect.y);
+    //console.log('LABEL', this._text, this._anchorXOffset, this._anchorYOffset, clientRect);
 
     if (this.options.wrapWidth !== undefined && width > this.options.wrapWidth) {
       text.textContent = '';
@@ -213,6 +219,9 @@ export class Label extends View {
       width = clientRect.width;
       height = clientRect.height;
 
+      this._anchorXOffset = -(clientRect.x - canvasRect.x);
+      this._anchorYOffset = -(clientRect.y - canvasRect.y);
+  
       this._textLines = tspans.map(t => ({text: t.textContent!, offset: 0}));
 
       if (this._justify !== 'start') {

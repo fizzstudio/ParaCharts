@@ -56,7 +56,6 @@ export abstract class DataLayer extends ChartLayer {
   soniSequenceIndex = 0;
 
   //protected _sonifier!: Sonifier;
-  protected _settings!: DeepReadonly<PlotSettings>;
   protected visibleSeries!: string[];
   protected _chartLandingView!: ChartLandingView;
   protected _playInterval: ReturnType<typeof setTimeout> | null = null;
@@ -108,7 +107,6 @@ export abstract class DataLayer extends ChartLayer {
 
   protected _addedToParent() {
     super._addedToParent();
-    this._settings = SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.store.settings);
     //this._sonifier = new Sonifier(this);
     //this.visibleSeries = Array.from(this._model.depVars);
     this._chartLandingView = new ChartLandingView(this.paraview);
@@ -120,7 +118,7 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   get settings(): DeepReadonly<PlotSettings> {
-    return this._settings;
+    return SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.store.settings);
   }
   
   /*
