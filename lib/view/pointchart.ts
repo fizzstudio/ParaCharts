@@ -50,7 +50,7 @@ export abstract class PointChart extends XYChart {
 
   protected _createComponents() {
     const xs: string[] = [];
-    for (const [x, i] of enumerate(this.paraview.store.model!.allFacetValues('x')!)) {
+    for (const [x, i] of enumerate(this.paraview.store.model!.series[0].facet('x')!)) {
       xs.push(formatBox(x, `${this.parent.docView.type as PointChartType}Point`, this.paraview.store));
       const xId = strToId(xs.at(-1)!);
       // if (this.selectors[i] === undefined) {
@@ -147,7 +147,7 @@ export class ChartPoint extends XYDatapointView {
   }
 
   get width() {
-    const axisDivisions = this.paraview.store.model!.allFacetValues('x')!.length - 1;
+    const axisDivisions = this.paraview.store.model!.series[0].facet('x')!.length - 1;
     return this.chart.parent.width/axisDivisions;
   }
 

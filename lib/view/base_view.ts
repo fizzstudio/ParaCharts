@@ -458,13 +458,13 @@ export class View extends BaseView {
     return [this.width, this.height];
   }
 
-  setSize(width: number, height: number) {
+  setSize(width: number, height: number, isBubble = true) {
     const oldWidth = this._width;
     const oldHeight = this._height;
     this._width = width;
     this._height = height;
     const sizeChanged = oldWidth !== this._width || oldHeight !== this._height;
-    if (sizeChanged) {
+    if (sizeChanged && isBubble) {
       this._boundingSizeDidChange();
     }
   }
@@ -485,6 +485,28 @@ export class View extends BaseView {
 
   protected _childDidResize(_kid: View) {
     this.updateSize();
+  }
+
+  snapXTo(other: View, where: SnapLocation) {
+    if (where === 'start') {
+      this.x = other.left + other.padding.left;
+    } else if (where === 'end') {
+      this.x = other.right - other.padding.right - this.boundingWidth;
+    } else {
+      this.x = other.left + other.padding.left 
+        + other.width/2 - this.width/2 - this.padding.left;
+    }
+  }
+
+  snapYTo(other: View, where: SnapLocation) {
+    if (where === 'start') {
+      this.y = other.top + other.padding.top;
+    } else if (where === 'end') {
+      this.y = other.bottom - other.padding.bottom - this.boundingHeight;
+    } else {
+      this.y = other.top + other.padding.top 
+        + other.height/2 - this.height/2 - this.padding.top;
+    }
   }
 
   get prev() {

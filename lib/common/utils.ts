@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { zip } from "@fizz/chart-classifier-utils";
 import { ParaStore } from "../store/parastore";
+import { type View } from '../view/base_view';
 
 // String Formatting
 
@@ -110,6 +111,15 @@ export function arrayEqualsBy<L, R>(by: (lhs: L, rhs: R) => boolean, lhs: L[], r
 // This marks a series of if/then options as exhaustive
 export function exhaustive(): never {
   return null as never; 
+}
+
+export function groupBbox(...views: View[]) {
+  return new DOMRect(
+    Math.min(...views.map(v => v.left)),
+    Math.min(...views.map(v => v.top)),
+    Math.max(...views.map(v => v.width)),
+    Math.max(...views.map(v => v.height))
+  );
 }
 
 // Simon: These functions were used for Model2D but have no use currently.

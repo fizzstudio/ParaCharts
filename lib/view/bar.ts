@@ -1,5 +1,5 @@
 
-import { XYChart, XYDatapointView, XYSeriesView, type DatapointViewType } from './xychart';
+import { XYChart, XYDatapointView, XYSeriesView } from './xychart';
 import { AxisInfo } from '../common/axisinfo';
 import { 
   type BarSettings, type StackContentOptions ,type DeepReadonly
@@ -8,10 +8,11 @@ import { enumerate, fixed, strToId } from '../common/utils';
 import { formatBox } from './formatter';
 import { Box } from '../store/dataframe/box';
 import { Rect } from './shape/rect';
-import { Label } from './label';
+import { Label, LabelTextAnchor } from './label';
 
 import { svg } from 'lit';
-import { styleMap } from 'lit/directives/style-map.js';
+import { StyleInfo } from 'lit/directives/style-map.js';
+import { SeriesView } from './data';
 
 type BarData = {[key: string]: BarCluster};
 
@@ -23,23 +24,25 @@ class BarCluster {
   static padding: number;
   static numStacks: number;
 
-  public stacks: {[key: string]: BarStack} = {}
-  public readonly id: string;
-  public readonly labelId: string;
+  stacks: {[key: string]: BarStack} = {}
+  readonly id: string;
+  readonly labelId: string;
   
-  private _x!: number;
+  protected _x!: number;
 
   static computeSize(chart: BarChart) {
     //BarCluster.width = chart.paraview.store.settings.chart.size.width!/Object.values(chart.bars).length;
-    const axis = chart.parent.docView.horizAxis!;
-    BarCluster.width = axis.tickLabelTiers[0].tickInterval/axis.tickStep;
+    // n = this.axis.isInterval ? this.tickLabels.length : this.tickLabels.length - 1;
+    // chartlayer.(width or height)/(n/tickstep)
+    //BarCluster.width = axis.tickLabelTiers[0].tickInterval/axis.tickStep;
+    BarCluster.width = chart.parent.logicalWidth/chart.axisInfo!.xLabelInfo.labelTiers[0].length;
     console.log('computed bar cluster width:', BarCluster.width);
-    BarCluster.padding = chart.settings.clusterPaddingPx;
+    BarCluster.padding = chart.paraview.store.settings.type.bar.clusterGap;
     const numSeries = chart.paraview.store.model!.numSeries;
-    if (chart.settings.stackContent === 'all') {
+    if (chart.paraview.store.settings.type.bar.stackContent === 'all') {
       BarCluster.numStacks = 1;
-    } else if (chart.settings.stackContent === 'count') {
-      const seriesPerStack = chart.settings.stackCount;
+    } else if (chart.paraview.store.settings.type.bar.stackContent === 'count') {
+      const seriesPerStack = chart.paraview.store.settings.type.bar.stackCount;
       BarCluster.numStacks = Math.ceil(numSeries/seriesPerStack);
     } 
   }
@@ -84,22 +87,21 @@ export class BarStack {
 
   static width: number;
 
-  public bars: {[key: string]: Bar} = {};
-  public readonly id: string;
-  public readonly labelId: string;
+  bars: {[key: string]: Bar} = {};
+  readonly id: string;
+  readonly labelId: string;
 
-//  label: Label;
-
-  private _x!: number;
+  protected _label: Label | null = null;
+  protected _x!: number;
 
   static computeSize(chart: BarChart) {
     BarStack.width = (BarCluster.width - BarCluster.padding*2)/BarCluster.numStacks;
     console.log('computed bar stack width:', BarStack.width);
-    if (BarStack.width < chart.settings.barWidthMin /*&& todo().canvas.todo.isAutoresizeEnabled*/) {
-      BarStack.width = chart.settings.barWidthMin;
-      BarCluster.width = BarStack.width*BarCluster.numStacks + BarCluster.padding*2;
-    }
-    chart.parent.width = BarCluster.width*Object.keys(chart.bars).length;
+    // if (BarStack.width < chart.settings.barWidthMin /*&& todo().canvas.todo.isAutoresizeEnabled*/) {
+    //   BarStack.width = chart.settings.barWidthMin;
+    //   BarCluster.width = BarStack.width*BarCluster.numStacks + BarCluster.padding*2;
+    // }
+    chart.parent.logicalWidth = BarCluster.width*Object.keys(chart.bars).length;
     console.log('setting chart content width to', chart.parent.width);
   }
 
@@ -114,6 +116,14 @@ export class BarStack {
 
   get index() {
     return Object.keys(this.cluster.stacks).indexOf(this.key);
+  }
+
+  get label() {
+    return this._label;
+  }
+
+  set label(label: Label | null) {
+    this._label = label;
   }
 
   computeLayout() {
@@ -177,8 +187,6 @@ type ClusterMap = {[key: string]: Cluster};
  */
 export class BarChart extends XYChart {
 
-  declare protected _settings: DeepReadonly<BarSettings>;
-
   protected _clusteredData!: ClusterMap;
   private _abbrevs?: {[series: string]: string};
   private _bars!: BarData;
@@ -189,8 +197,9 @@ export class BarChart extends XYChart {
 
     this._clusteredData = this._clusterData();
     this._axisInfo = new AxisInfo(this.paraview.store, {
-      xTiers: [this.paraview.store.model!.allFacetValues('x')!.map(x =>
-        formatBox(x, 'barCluster', this.paraview.store))],
+      // xTiers: [this.paraview.store.model!.allFacetValues('x')!.map(x =>
+      //   formatBox(x, 'barCluster', this.paraview.store))],
+      xTiers: [Object.keys(this._clusteredData)],
       yValues: Object.values(this._clusteredData).flatMap(c =>
         Object.values(c).map(s => Object.values(s)
             .map(item => item.value.value)
@@ -216,7 +225,7 @@ export class BarChart extends XYChart {
       parentView: 'chartDetails.tabs.chart.chart',
     });
     todo().deets!.chartPanel.requestUpdate();*/
-    if (this._settings.isAbbrevSeries) {
+    if (this.paraview.store.settings.type.bar.isAbbrevSeries) {
       this._abbrevs = abbreviateSeries(this.paraview.store.model!.keys);
     }
   }
@@ -235,7 +244,7 @@ export class BarChart extends XYChart {
   }
 
   get settings() {
-    return this._settings;
+    return super.settings as DeepReadonly<BarSettings>;
   }
 
   get bars(): Readonly<BarData> {
@@ -252,9 +261,26 @@ export class BarChart extends XYChart {
 
   protected _clusterData() {
     const clusterMap: ClusterMap = {};
-    const xs = this.paraview.store.model!.allFacetValues('x')!;
+    const xs = this.paraview.store.model!.series[0].facet('x')!;
 
     const clusters: Cluster[] = [];
+
+    // if (this.paraview.store.settings.type.bar.clusterBy === 'facet') {
+    //   for (const facet of this.paraview.store.model!.facets) {
+    //     const cluster: Cluster = {};
+    //     clusterMap[facet.key] = cluster;
+    //     for (const series of this.paraview.store.model!.series) {
+    //       const item: StackItem = {
+    //         series: series.key,
+    //         value: series.facet(facet.key)![0] as Box<'number'>
+    //       };
+    //       const stack: Stack = {[series.key]: item};
+    //       cluster[series.key] = stack;
+    //     }
+    //   }
+    //   return clusterMap;
+    // }
+
     for (const [x, i] of enumerate(xs)) {
       //const clusterKey = this._model.format(xSeries.atBoxed(i), 'barCluster');  
       const clusterKey = formatBox(x, 'barCluster', this.paraview.store);  
@@ -269,18 +295,18 @@ export class BarChart extends XYChart {
     // Place the series into stacks in the order they appear in the 
     // model (i.e., first column will be bottommost in 'all' mode)
     for (const [series, i] of enumerate(this.paraview.store.model!.series)) {
-      for (const [value, j] of enumerate(series.allFacetValues('y')!)) {
+      for (const [value, j] of enumerate(series.facet('y')!)) {
         let stack: Stack;
         let stackKey: string;
-        if (this._settings.stackContent === 'all') {
+        if (this.paraview.store.settings.type.bar.stackContent === 'all') {
           stackKey = 'stack';
           stack = clusters[j][stackKey];
           if (!stack) {
             stack = {};
             clusters[j][stackKey] = stack;
           }
-        } else if (this._settings.stackContent === 'count') {
-          const seriesPerStack = this._settings.stackCount;
+        } else if (this.paraview.store.settings.type.bar.stackContent === 'count') {
+          const seriesPerStack = this.paraview.store.settings.type.bar.stackCount;
           stackKey = seriesPerStack === 1 ? series.key : `stack${Math.floor(i/seriesPerStack)}`;
           stack = clusters[j][stackKey];
           if (!stack) {
@@ -288,7 +314,7 @@ export class BarChart extends XYChart {
             clusters[j][stackKey] = stack;
           }
         } 
-        stack![series.key] = {series: series.key, value: series.allFacetValues('y')![j] as Box<'number'>};
+        stack![series.key] = {series: series.key, value: series.facet('y')![j] as Box<'number'>};
       }
     }
     return clusterMap;
@@ -314,15 +340,27 @@ export class BarChart extends XYChart {
           seriesViews[colName].append(stack.bars[colName]);
           //todo().canvas.jimerator.addSelector(colName, i, this.datapointViews.at(-1)!.id);
         }
-        // this._stackLabels.push(new Label(this.paraview, {
-        //   text: fixed`${Object.values(dataStack).map(item => item.value.value).reduce((a, b) => a + b)}`,
-        //   x: 0,
-        //   y: 0,
-        //   textAnchor: 'middle',
-        //   isPositionAtAnchor: true
-        // }));
-        // stack.label = this._stackLabels.at(-1)!;
-        // this.append(this._stackLabels.at(-1)!);
+        let textAnchor: LabelTextAnchor = 'middle';
+        let isPositionAtAnchor = false;
+        let angle = 0;
+        if (this._parent.orientation === 'east') {
+          textAnchor = 'start';
+          isPositionAtAnchor = false;
+          angle = -90;
+        }
+        if (this.paraview.store.settings.type.bar.isDrawStackLabels) {
+          this._stackLabels.push(new Label(this.paraview, {
+            text: fixed`${Object.values(dataStack).map(item => item.value.value).reduce((a, b) => a + b)}`,
+            classList: ['bar-stack-label'],
+            x: 0,
+            y: 0,
+            textAnchor,
+            isPositionAtAnchor,
+            angle
+          }));
+          stack.label = this._stackLabels.at(-1)!;
+          this.append(this._stackLabels.at(-1)!);
+        }
       }
     });
     this._bars = barData;
@@ -336,19 +374,83 @@ export class BarChart extends XYChart {
       cluster.computeLayout();
       for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
         stack.computeLayout();
-        // for (const [orderKey, bar] of Object.entries(stack.bars)) {
-        //   bar.computeLayout();
-        // }
       }
     }
     super._layoutComponents();
+
+    if (this.paraview.store.settings.type.bar.isDrawStackLabels) {
+      for (const [clusterKey, cluster] of Object.entries(this._bars)) {
+        for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
+          const bar0 = Object.values(stack.bars)[0];
+          stack.label!.snapXTo(bar0, 'center');
+          stack.label!.y = bar0.y + (this.paraview.store.settings.type.bar.isStackLabelInsideBar
+            ? this.paraview.store.settings.type.bar.stackLabelGap
+            : - stack.label!.height - this.paraview.store.settings.type.bar.stackLabelGap);
+        }
+      }
+      this._resizeToFitLabels();
+    }
+  }
+
+  protected _resizeToFitLabels() {
+    const labels = Object.values(this.bars).flatMap(cluster =>
+      Object.values(cluster.stacks)).map(stack => stack.label!);
+    const minX = Math.min(...labels.map(label => label.left));
+    if (minX < 0) {
+      this._parent.logicalWidth += -minX;
+      console.log('NEW WIDTH', this._width);
+      this.datapointViews.forEach(dp => {
+        dp.x += -minX; 
+      });
+    }
+    const maxX = Math.max(...labels.map(label => label.right));
+    if (maxX > this._width) {
+      const diff = maxX - this._width;
+      this._parent.logicalWidth += diff;
+      console.log('NEW WIDTH', this._width);
+    }
+    const minY = Math.min(...labels.map(label => label.top));
+    if (minY < 0) {
+      this._parent.logicalHeight += -minY;
+      console.log('NEW HEIGHT', this._height);
+      this.datapointViews.forEach(dp => {
+        dp.y += -minY; 
+      });
+      labels.forEach(label => {
+        label.y += -minY;
+      });
+    }
+    const maxY = Math.max(...labels.map(label => label.bottom));
+    if (maxY > this._height) {
+      const diff = maxY - this._height;
+      this._parent.logicalHeight += diff;
+      console.log('NEW HEIGHT', this._height);
+    }
+    //this._checkLabelSpacing();
+  }
+
+  protected _checkLabelSpacing() {
+    const labels = Object.values(this.bars).flatMap(cluster =>
+      Object.values(cluster.stacks)).map(stack => stack.label!);
+    const gaps = labels.slice(1).map((label, i) => label.left - labels[i].right);
+    const minGap = Math.min(...gaps);
+    if (Math.round(minGap) < 0) {
+      const diffBefore = labels.at(-1)!.x - labels[0].x;
+      labels.slice(1).forEach((label, i) => {
+        // NB: Even if the anchor is set to middle, the labels may be rotated, so 
+        // the anchor will no longer be in the middle of the bbox
+        label.x = labels[i].right + 0 + label.anchorXOffset;
+      });
+      const diffAfter = labels.at(-1)!.x - labels[0].x;
+      this._parent.logicalWidth += diffAfter - diffBefore;
+    }
   }
 
   legend() {
     if (this.paraview.store.settings.legend.itemOrder === 'chart') {
       return this._chartLandingView.children.map(view => ({
-        label: view.seriesKey,
-        color: view.color  // series color
+        label: (view as SeriesView).seriesKey,
+        color: (view as SeriesView).color  // series color
       }));
     } else {
       return this.paraview.store.model!.keys.toSorted().map(key => ({
@@ -375,14 +477,8 @@ export class Bar extends XYDatapointView {
     private stack: BarStack
   ) { 
     super(seriesView);
-  }
-
-  get width() {
-    return BarStack.width;
-  }
-
-  get height() {
-    return this._height;
+    //this._width = 45; //BarStack.width; // this.paraview.store.settings.type.bar.barWidth;
+    this._isStyleEnabled = this.paraview.store.settings.type.bar.colorByDatapoint;
   }
 
   get _selectedMarkerX() {
@@ -393,16 +489,22 @@ export class Bar extends XYDatapointView {
     return this._y;
   }
 
+  get styleInfo(): StyleInfo {
+    const style = super.styleInfo;
+    style.strokeWidth = 0;
+    return style;
+  }
+
   computeLocation() {
     const orderIdx = Object.keys(this.stack.bars).indexOf(this.series.key);
-    const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
+    const pxPerYUnit = this.chart.parent.logicalHeight/this.chart.axisInfo!.yLabelInfo.range!;
     const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
       .map(bar => (bar.datapoint.y.value as number)*pxPerYUnit)
       .reduce((a, b) => a + b, 0);
+    this._width = BarStack.width; 
     this._height = (this.datapoint.y.value as number)*pxPerYUnit;
-    this._x = this.stack.x + this.stack.cluster.x;
-    this._y = this.chart.height - this._height - distFromXAxis;
-//    this.stack.label.x = this._x;
+    this._x = this.stack.x + this.stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
+    this._y = this.chart.height - this.height - distFromXAxis;
   }
 
   protected _createSymbol() {
@@ -421,7 +523,7 @@ export class Bar extends XYDatapointView {
     this._shape = new Rect(this.paraview, {
       x: this._x,
       y: this._y,
-      width: BarStack.width,
+      width: this._width,
       height: this._height
     });
     super._createShape();

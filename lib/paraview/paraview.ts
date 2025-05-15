@@ -128,6 +128,20 @@ export class ParaView extends logging(ParaComponent) {
       .tick-vert {
         stroke: black;
       }
+      .tick-label {
+        font-size: 13px;
+      }
+      .bar-stack-label {
+        font-size: 13px;
+        fill: white;
+      }
+      .radial-value-label {
+        fill: white;
+      }
+      .radial-slice {
+        stroke: white;
+        stroke-width: 2;
+      }
       #y-axis-line {
         fill: none;
         stroke: var(--axisLineColor);
@@ -443,8 +457,8 @@ export class ParaView extends logging(ParaComponent) {
               <rect 
                 x=${0} 
                 y=${0} 
-                width=${this._documentView.chartLayers.physWidth} 
-                height=${this._documentView.chartLayers.physHeight}>
+                width=${this._documentView.chartLayers.width} 
+                height=${this._documentView.chartLayers.height}>
               </rect>
             </clipPath>
           ` : ''

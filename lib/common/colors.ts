@@ -47,6 +47,8 @@ export class Colors {
   readonly palettes: Palette[];
   keys = new Map<string, Key>();
 
+  protected _colorMap: Color[] | null = null;
+
   //private paletteIndex = 0;
   private primary = 'hsl(270, 50%, 50%)';
   private accent = 'hsl(270, 50%, 25%)';
@@ -263,6 +265,48 @@ export class Colors {
           {
             value: 'hsl(0, 0%, 0%)',
             name: 'black'
+          },
+          {
+            value: 'hsl(0, 100%, 50%)',
+            name: 'highlight'
+          }
+        ]
+      },
+      {
+        key: 'ffb',
+        title: 'FFB',
+        colors: [
+          {
+            value: 'rgb(210,67,62)',
+            name: 'red'
+          },
+          {
+            value: 'rgb(246,171,6)',
+            name: 'yellow'
+          },
+          {
+            value: 'rgb(33,131,57)',
+            name: 'green'
+          },
+          {
+            value: 'rgb(38,121,153)',
+            name: 'blue'
+          },
+          {
+            value: 'rgb(42,64,81)',
+            name: 'indigo'
+          },
+          {
+            value: 'rgb(13,53,67)',
+            name: 'slate'
+          },
+          {
+            value: 'rgb(48,64,69)',
+            name: 'dark gray'
+          },
+          {
+            value: 'rgb(204,204,204)',
+            name: 'light gray'
           },
           {
             value: 'hsl(0, 100%, 50%)',
@@ -495,8 +539,9 @@ export class Colors {
         ]
       }
     ];
-
-    this.selectPaletteWithKey(this._store.settings.color.colorPalette); 
+    if (_store.settings.color.colorMap) {
+      this.setColorMap(..._store.settings.color.colorMap.split(',').map(c => c.trim()));
+    }
   }
 
   get paletteKey() {
@@ -511,6 +556,22 @@ export class Colors {
       return palette;
     }
     throw new Error(`no palette named '${this.paletteKey}'`);
+  }
+
+  setColorMap(...colors: string[]) {
+    if (!colors.includes('highlight')) {
+      colors.push('highlight');
+    }
+    for (const color of colors) {
+      const idx = this.colorIndex(color);
+      if (idx === -1) {
+        throw new Error(`no color named '${color}' in current palette`);
+      }
+      if (!this._colorMap) {
+        this._colorMap = [];
+      }
+      this._colorMap.push(this.palette.colors[idx]);
+    }
   }
 
   addPalette(palette: Palette) {
@@ -564,11 +625,13 @@ export class Colors {
   }
 
   colorValueAt(index: number) {
+    const colors = this._colorMap ?? this.palette.colors;
     if (index === -1) {
       // highlight
-      return this.palette.colors.at(-1)!.value;
+      return colors.at(-1)!.value;
     }
-    return this.palette.colors[index % this.palette.colors.length].value;
+    // Never use 'highlight' for any series/datapoint color
+    return colors[index % (colors.length - 1)].value;
   }
 
   registerKey(key: string) {
