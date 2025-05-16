@@ -128,8 +128,12 @@ export class ParaView extends logging(ParaComponent) {
       .tick-vert {
         stroke: black;
       }
+      .label {
+        fill: var(--labelColor);
+      }
       .tick-label {
         font-size: 13px;
+        fill: var(--labelColor);
       }
       .bar-stack-label {
         font-size: 13px;
@@ -381,7 +385,7 @@ export class ParaView extends logging(ParaComponent) {
       }
     }
 
-    const contrast = this.contrastLevel * 50;
+    const contrast = this.store.settings.color.contrastLevel * 50;
     if (this._store.settings.color.isDarkModeEnabled) {
       style['--axisLineColor'] = `hsl(0, 0%, ${50 + contrast}%)`;
       style['--labelColor'] = `hsl(0, 0%, ${50 + contrast}%)`;
@@ -403,19 +407,19 @@ export class ParaView extends logging(ParaComponent) {
     this.controller.setSetting('color.isDarkModeEnabled', lvm);
     this.controller.setSetting('ui.isFullScreenEnabled', lvm);
     this._documentView!.setLowVisionMode(lvm);
-  }
+  }*/
   
-  setFullscreen(fullscreen: boolean) {
-    if (fullscreen) {
+  setFullscreen() {
+    //if (fullscreen) {
       if (!document.fullscreenElement && this.root && this.root.requestFullscreen) {
         this.root.requestFullscreen();
       }
-    } else {
-      if (document.fullscreenElement && document.exitFullscreen) {
-        document.exitFullscreen();
-      } 
-    }
-  }*/
+    // } else {
+    //   if (document.fullscreenElement && document.exitFullscreen) {
+    //     document.exitFullscreen();
+    //   } 
+    // }
+  }
 
   render(): TemplateResult {
     this.log('render');

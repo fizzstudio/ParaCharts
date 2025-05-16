@@ -8,13 +8,21 @@
           "label": "Category",
           "variableType": "independent",
           "measure": "nomimal",
-          "datatype": "string"
+          "datatype": "string",
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
         },
         "y": {
           "label": "Average",
           "variableType": "dependent",
           "measure": "ratio",
-          "datatype": "number"
+          "datatype": "number",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
         }
       },
       "series": [
@@ -82,7 +90,7 @@
         "type.bar.barWidth": 20,
         "type.bar.isDrawStackLabels": true,
         "legend.isDrawLegend": false,
-        "sonification.isEnabled": true
+        "sonification.isSoniEnabled": true
       }
     }
   ]

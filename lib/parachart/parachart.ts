@@ -23,9 +23,12 @@ import { SettingsManager } from '../store';
 import "../paraview";
 import "../control_panel";
 import { exhaustive } from "../common/utils";
+import { type ParaView } from '../paraview';
+import { type ParaControlPanel } from '../control_panel';
 
-import { html, css, PropertyValues, TemplateResult, nothing } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { createRef, ref } from 'lit/directives/ref.js';
 
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
@@ -33,7 +36,8 @@ export class ParaChart extends logging(ParaComponent) {
   @property({ type: Boolean }) headless = false;
 
   protected _controller: ParaController;
-  
+  protected _paraViewRef = createRef<ParaView>();  
+  protected _controlPanelRef = createRef<ParaControlPanel>();
   private inputSettings: SettingsInput = {};
   private data?: AllSeriesData;
   private suppleteSettingsWith?: DeepReadonly<Settings>;
@@ -48,6 +52,14 @@ export class ParaChart extends logging(ParaComponent) {
     this._controller = new ParaController(this);
     // also creates the state controller
     this.store = this._controller.store;
+  }
+
+  get paraView() {
+    return this._paraViewRef.value!;
+  }
+
+  get controlPanel() {
+    return this._controlPanelRef.value!;
   }
 
   connectedCallback() {
@@ -83,11 +95,14 @@ export class ParaChart extends logging(ParaComponent) {
     return html`
       <figure>
         <para-view
+          ${ref(this._paraViewRef)}
           .store=${this._store}
           colormode=${this._store?.settings.color.colorVisionMode ?? nothing}
         ></para-view>
         ${!this.headless ? html`
           <para-control-panel
+            ${ref(this._controlPanelRef)}
+            .paraChart=${this}
             .store=${this._store}
           ></para-control-panel>` : ''
         }

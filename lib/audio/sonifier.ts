@@ -156,20 +156,28 @@ export class Sonifier {
   playDatapoints(...datapoints: XYDatapoint[]) {
     this._checkAudioEngine();
 
-    /* istanbul ignore next */
     if (!this._audioEngine) {
       return;
     }
 
     const hertzes = this._getHertzRange();
 
-    for (const datapoint of datapoints) {
-      const x = datapoint.x.value as number;
-      const y = datapoint.y.value as number;
-      if (isUnplayable(x, this.chart.parent.docView.xAxis!)) {
-        return;
-      }
+    const xNominal = this._store.model!.getFacet('x')!.datatype === 'string';
 
+    datapoints.forEach((datapoint, i) => {
+      
+      const x = datapoint.data.x.value as number;
+      const y = datapoint.data.y.value as number;
+      // if (isUnplayable(x, this.chart.parent.docView.xAxis!)) {
+      //   return;
+      // }
+
+      const xDiff = xNominal
+        ? i
+        : (x - this.chart.parent.docView.xAxis!.range!.start);
+      const xRange = xNominal
+        ? (datapoints.length - 1)
+        : (this.chart.parent.docView.xAxis!.range!.end - this.chart.parent.docView.xAxis!.range!.start);
       const xPan =
         /*this._xAxis.type === 'log10'
           ? calcPan(
@@ -179,8 +187,7 @@ export class Sonifier {
               Math.log10(this._xAxis.minimum))
           )
           :*/ calcPan(
-            (x - this.chart.parent.docView.xAxis!.range!.start) /
-            (this.chart.parent.docView.xAxis!.range!.end - this.chart.parent.docView.xAxis!.range!.start)
+            xDiff / xRange 
           );
 
       /*if (current.type === 'annotation') {
@@ -203,8 +210,8 @@ export class Sonifier {
         scale: 'linear'
       });
 
-      this._audioEngine.playDataPoint(hertzes[yBin], xPan, NOTE_LENGTH);
-    }
+      this._audioEngine!.playDataPoint(hertzes[yBin], xPan, NOTE_LENGTH);
+    });
   }
 
   /**

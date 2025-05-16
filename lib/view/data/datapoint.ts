@@ -59,7 +59,7 @@ export class DatapointView extends DataView {
   }
 
   get datapoint(): DataPoint {
-    return this.series[this.index];
+    return this.series.datapoints[this.index];
   }
 
   // get selectedMarker() {

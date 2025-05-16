@@ -8,13 +8,21 @@
           "label": "Category",
           "variableType": "independent",
           "measure": "nomimal",
-          "datatype": "string"
+          "datatype": "string",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
         },
         "y": {
           "label": "Performance",
           "variableType": "dependent",
           "measure": "ratio",
-          "datatype": "number"
+          "datatype": "number",
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
         }
       },
       "series": [
@@ -133,7 +141,7 @@
         "type.bar.stackContent": "count",
         "type.bar.stackCount": 1,
         "legend.isDrawLegend": false,
-        "sonification.isEnabled": true
+        "sonification.isSoniEnabled": true
       }
     }
   ]
