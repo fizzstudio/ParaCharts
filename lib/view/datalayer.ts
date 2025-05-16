@@ -33,6 +33,8 @@ import { ChartLandingView, DatapointView, SeriesView, type DataView } from './da
 import { type LegendItem } from './legend';
 
 import { type clusterObject } from '@fizz/clustering';
+import { queryMessages } from '../store/query_utils';
+import { interpolate } from '@fizz/templum';
 
 /**
  * @public
@@ -113,6 +115,8 @@ export abstract class DataLayer extends ChartLayer {
         this.playLeft();    
       } else if (e.action === 'stop_play') {
         this.clearPlay();
+      } else if (e.action === 'query_data') {
+        this.queryData();
       }
     });
   }
@@ -270,8 +274,6 @@ export abstract class DataLayer extends ChartLayer {
    */
   abstract playLeft(): void;
 
-  abstract queryData(): void;
-
   abstract playSeriesRiff(): void;
 
   selectCurrent(extend = false) {
@@ -297,4 +299,40 @@ export abstract class DataLayer extends ChartLayer {
     }
   }
 
+  protected queryData(): void {
+      const targetView = this.chartLandingView.focusLeaf
+      // TODO: localize this text output
+      // focused view: e.options!.focus
+      // all visited datapoint views: e.options!.visited
+      // const focusedDatapoint = e.targetView;
+      let msgArray: string[] = [];
+      let seriesLengths = [];
+      for (let series of this.paraview.store.model!.series) {
+        seriesLengths.push(series.rawData.length)
+      }
+      if (targetView instanceof ChartLandingView) {
+        this.paraview.store.announce(`Displaying Chart: ${this.paraview.store.title}`);
+        return
+      }
+      else if (targetView instanceof SeriesView) {
+        msgArray.push(interpolate(
+          queryMessages.seriesKeyLength,
+          { seriesKey: targetView.seriesKey, datapointCount: targetView.series.length }
+        ));
+      }
+      else if (targetView instanceof DatapointView) {
+        const selectedDatapoints = this.paraview.store.selectedDatapoints;
+        const visitedDatapoint = this.paraview.store.visitedDatapoints[0];
+        msgArray.push(interpolate(
+          queryMessages.datapointKeyLength,
+          {
+            seriesKey: targetView.seriesKey,
+            datapointXY: `${targetView.series[visitedDatapoint.index].facetBox("x")!.raw}, ${targetView.series[visitedDatapoint.index].facetBox("y")!.raw}`,
+            datapointIndex: targetView.index + 1,
+            datapointCount: targetView.series.length
+          }
+        ));
+      }
+      this.paraview.store.announce(msgArray);
+    }
 }
