@@ -19,7 +19,7 @@ import { ref } from 'lit/directives/ref.js';
 import { ChartLayer } from './chartlayer';
 import { type ChartLayerManager } from './chartlayermanager';
 import { type Setting, type PlotSettings, type DeepReadonly } from '../store/settings_types';
-//import { Sonifier } from '../audio/sonifier';
+import { Sonifier } from '../audio/sonifier';
 //import { type Model, type DatapointReference } from '../data/model';
 //import { type ActionRegistration } from '../input';
 //import { keymaps } from '../input';
@@ -55,7 +55,7 @@ export abstract class DataLayer extends ChartLayer {
   soniNoteIndex = 0;
   soniSequenceIndex = 0;
 
-  //protected _sonifier!: Sonifier;
+  protected _sonifier!: Sonifier;
   protected visibleSeries!: string[];
   protected _chartLandingView!: ChartLandingView;
   protected _playInterval: ReturnType<typeof setTimeout> | null = null;
@@ -91,12 +91,28 @@ export abstract class DataLayer extends ChartLayer {
       } else if (e.action === 'move_down') {
         this.clearPlay();
         this.moveDown();
+      } else if (e.action === 'go_minimum') {
+        this._goSeriesMinMax(true);
+      } else if (e.action === 'go_maximum') {
+        this._goSeriesMinMax(false);
+      } else if (e.action === 'go_total_minimum') {
+        this._goChartMinMax(true);
+      } else if (e.action === 'go_total_maximum') {
+        this._goChartMinMax(false);
       } else if (e.action === 'select') {
         this.selectCurrent(false);
       } else if (e.action === 'select_extend') {
         this.selectCurrent(true);
       } else if (e.action === 'select_clear') {
         this.clearDatapointSelection();
+      } else if (e.action === 'play_right') {
+        this.clearPlay();
+        this.playRight();    
+      } else if (e.action === 'play_left') {
+        this.clearPlay();
+        this.playLeft();    
+      } else if (e.action === 'stop_play') {
+        this.clearPlay();
       }
     });
   }
@@ -107,7 +123,7 @@ export abstract class DataLayer extends ChartLayer {
 
   protected _addedToParent() {
     super._addedToParent();
-    //this._sonifier = new Sonifier(this);
+    this._sonifier = new Sonifier(this, this.paraview.store);
     //this.visibleSeries = Array.from(this._model.depVars);
     this._chartLandingView = new ChartLandingView(this.paraview);
     this.append(this._chartLandingView);
@@ -121,10 +137,9 @@ export abstract class DataLayer extends ChartLayer {
     return SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.store.settings);
   }
   
-  /*
   get sonifier() {
     return this._sonifier;
-  }*/
+  }
 
   get chartLandingView() {
     return this._chartLandingView;
@@ -230,6 +245,9 @@ export abstract class DataLayer extends ChartLayer {
   abstract moveLeft(): void;
   abstract moveUp(): void;
   abstract moveDown(): void;
+
+  protected abstract _goSeriesMinMax(isMin: boolean): void;
+  protected abstract _goChartMinMax(isMin: boolean): void;
 
   /**
    * Clear outstanding play intervals/timeouts

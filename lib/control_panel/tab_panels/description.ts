@@ -8,7 +8,6 @@ import { html, css } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { BasicXYChartSummarizer } from '@fizz/parasummary';
 
 @customElement('para-description-panel')
 export class DescriptionPanel extends ControlPanelTabPanel {
@@ -17,8 +16,6 @@ export class DescriptionPanel extends ControlPanelTabPanel {
   @property() visibleStatus = '';
 
   protected _ariaLiveRegionRef = createRef<AriaLive>();
-
-  private _summarizer?: BasicXYChartSummarizer; 
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -60,11 +57,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
       gap: '0.5rem'
     };
     if (this.controlPanel.dataState === 'complete') {
-      //FIXME: The whole ParaChart should have a common summarizer
-      if (!this._summarizer) {
-        this._summarizer = new BasicXYChartSummarizer(this._store.model!); 
-      }
-      this.caption = this._summarizer.getChartSummary();
+      this.caption = this._store.summarizer.getChartSummary();
     }
     return html`
       <figcaption>

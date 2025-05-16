@@ -491,7 +491,9 @@ export class Bar extends XYDatapointView {
 
   get styleInfo(): StyleInfo {
     const style = super.styleInfo;
-    style.strokeWidth = 0;
+    if (!this.paraview.store.isVisited(this.seriesKey, this.index)) {
+      style.strokeWidth = 0;
+    }
     return style;
   }
 
@@ -501,8 +503,8 @@ export class Bar extends XYDatapointView {
     const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
       .map(bar => (bar.datapoint.y.value as number)*pxPerYUnit)
       .reduce((a, b) => a + b, 0);
-    this._width = BarStack.width; 
-    this._height = (this.datapoint.y.value as number)*pxPerYUnit;
+    this._width = BarStack.width;
+    this._height = (this.datapoint.data.y.value as number)*pxPerYUnit;
     this._x = this.stack.x + this.stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
     this._y = this.chart.height - this.height - distFromXAxis;
   }

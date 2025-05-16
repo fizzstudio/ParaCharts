@@ -1,6 +1,7 @@
 //import { styles } from '../../styles';
 import { ControlPanelTabPanel } from './tab_panel';
 import { AdvancedControlSettingsDialog } from '../dialogs';
+import { keymap } from '../../store/keymap';
 
 import { 
   html, css,
@@ -53,17 +54,38 @@ export class ControlsPanel extends ControlPanelTabPanel {
     `;
   }
 
+  protected _getKeyTable() {
+    return html`
+      <table>
+        <tbody>
+          ${
+            Object.entries(keymap).map(([key, info]) => html`
+              <tr>
+                <th scope="row">${info.label}</th>
+                <td>${key}</td>
+                <td><button disable>edit</button></td>
+              </tr>
+            `)
+          }
+        </tbody>
+      </table>
+    `;
+  }
+
   render() {
-    const keyTable = html``; // this.controller.todo.keys.getTable();
     return html`
       <div id="controls-tab" class="tab-content">
         <div>
           <button
-            @click=${() => this.controlPanel.dialog.show('Key Bindings', keyTable)}
+            @click=${() => this.controlPanel.dialog.show('Key Bindings', this._getKeyTable())}
           >
             Keyboard Controls
           </button>
-          ${this._store.settingControls.getContent('controlPanel.tabs.controls.fullscreen')}
+          <button
+            @click=${() => this.controlPanel.paraChart.paraView.setFullscreen()}
+          >
+            Fullscreen
+          </button>
         </div>
         
         <section id="advanced">

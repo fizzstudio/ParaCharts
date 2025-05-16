@@ -628,7 +628,9 @@ export class View extends BaseView {
     this._parent!.currFocus = this;
     this._parent!.focus(level + 1);
     if (this._currFocus) {
-      this.focusLeaf.onFocus();
+      if (!level) {
+        this.focusLeaf.onFocus();
+      }
     } else {
       this.onFocus();
     }

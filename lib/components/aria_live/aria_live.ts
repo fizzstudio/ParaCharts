@@ -1,6 +1,7 @@
 
 import { ParaComponent } from '../paracomponent';
 import { ScreenReaderBridge, type AriaLiveHistoryDialog } from '.';
+import { Voicing } from './voicing';
 
 import { html, css, type PropertyValues } from 'lit';
 import { ref, createRef } from 'lit/directives/ref.js';
@@ -12,6 +13,7 @@ export class AriaLive extends ParaComponent {
   @property() announcement = '';
 
   protected _srb!: ScreenReaderBridge;
+  protected _voicing = new Voicing();
   protected _ariaLiveRef = createRef<HTMLElement>();
   protected _history: readonly string[] = [];
   protected _historyDialogRef = createRef<AriaLiveHistoryDialog>();
@@ -51,11 +53,11 @@ export class AriaLive extends ParaComponent {
         // trigger a reactive update of the history dialog.
         this._setHistory([...this._history, msg ?? '']);
 
-        // if (msg
-        //   && this._store.settings.ui.isVoicingEnabled 
-        //   && this._store.settings.ui.isAnnouncementEnabled) {
-        //   this.controller.voice.speak(msg);
-        // }
+        if (msg
+          && this._store.settings.ui.isVoicingEnabled 
+          && this._store.settings.ui.isAnnouncementEnabled) {
+          this._voicing.speak(msg);
+        }
       })
     });
     observer.observe(element, {
@@ -87,6 +89,8 @@ export class AriaLive extends ParaComponent {
   ];
 
   render() {
+    // XXX hack
+    this._voicing.rate = this._store.settings.ui.speechRate;
     return html`
       <div
         ${ref(this._ariaLiveRef)}

@@ -25,11 +25,10 @@ import { type Setting } from '../store/settings_types';
 //import { NOTE_LENGTH } from '../audio/sonifier';
 //import { type Actions, type Action } from '../input/actions';
 
-import { type ClassInfo } from 'lit/directives/class-map.js';
 import { ParaView } from '../paraview';
-import { literal } from 'lit/static-html.js';
 import { XYDatapoint, strToId } from '@fizz/paramodel';
 import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
+import { HotkeyEvent } from '../store/keymap_manager';
 
 export type DatapointViewType<T extends XYDatapointView> = 
   (new (...args: any[]) => T);
@@ -54,28 +53,40 @@ export abstract class XYChart extends DataLayer {
   protected isConnector = false;
   protected maxDatapointSize!: number;
 
-  private _isChordModeEnabled = false;
+  //private _isChordModeEnabled = false;
 
   constructor(paraview: ParaView, dataLayerIndex: number) {
     super(paraview, dataLayerIndex);
+    paraview.store.keymapManager.addEventListener('hotkeypress', (e: HotkeyEvent) => {
+      if (e.action === 'chord_mode_toggle') {
+        paraview.store.updateSettings(draft => {
+          draft.sonification.isChordModeEnabled = !draft.sonification.isChordModeEnabled;
+        });
+        if (paraview.store.settings.sonification.isChordModeEnabled) {
+          paraview.store.prependAnnouncement('Chord mode enabled');
+        } else {
+          paraview.store.prependAnnouncement('Chord mode disabled');
+        }      
+      }
+    });
   }
 
   protected _addedToParent() {
     super._addedToParent();  
-    this.maxDatapointSize = this.width/2.5;
-    this._isChordModeEnabled = this.paraview.store.settings.sonification.isChordModeEnabled;
-    this.paraview.store.settingControls.add({
-      type: 'checkbox',
-      key: 'sonification.isChordModeEnabled',
-      label: 'Chord mode',
-      parentView: 'controlPanel.tabs.audio.sonification.dialog',
-    });
-    this.paraview.store.settingControls.add({
-      type: 'checkbox',
-      key: 'sonification.isRiffEnabled',
-      label: 'Series riff enabled',
-      parentView: 'controlPanel.tabs.audio.sonification.dialog',
-    });
+    // this.maxDatapointSize = this.width/2.5;
+    // this._isChordModeEnabled = this.paraview.store.settings.sonification.isChordModeEnabled;
+    // this.paraview.store.settingControls.add({
+    //   type: 'checkbox',
+    //   key: 'sonification.isChordModeEnabled',
+    //   label: 'Chord mode',
+    //   parentView: 'controlPanel.tabs.audio.sonification.dialog',
+    // });
+    // this.paraview.store.settingControls.add({
+    //   type: 'checkbox',
+    //   key: 'sonification.isRiffEnabled',
+    //   label: 'Series riff enabled',
+    //   parentView: 'controlPanel.tabs.audio.sonification.dialog',
+    // });
   }
 
   get managedSettingKeys() {
@@ -94,14 +105,14 @@ export abstract class XYChart extends DataLayer {
     return super.selectedDatapointViews as XYDatapointView[];
   }
 
-  get isChordModeEnabled() {
-    return this._isChordModeEnabled;
-  }
+  // get isChordModeEnabled() {
+  //   return this._isChordModeEnabled;
+  // }
   
-  set isChordModeEnabled(isChordModeEnabled) {
-    this._isChordModeEnabled = isChordModeEnabled;
-    this._chartLandingView.focusLeaf.focus();
-  }
+  // set isChordModeEnabled(isChordModeEnabled) {
+  //   this._isChordModeEnabled = isChordModeEnabled;
+  //   this._chartLandingView.focusLeaf.focus();
+  // }
   
   /*protected get _hotkeyActions(): Actions<this> {
     return {...super._hotkeyActions, ...hotkeyActions['chart.xy']};
@@ -143,13 +154,13 @@ export abstract class XYChart extends DataLayer {
     return {...super.keymap, ...keymaps['chart.xy']};
   }*/
 
-  settingDidChange(key: string, value: Setting) {
-    if (key === 'sonification.isChordModeEnabled') {
-      this.isChordModeEnabled = value as boolean;
-      return true;
-    }
-    return false;
-  }
+  // settingDidChange(key: string, value: Setting) {
+  //   if (key === 'sonification.isChordModeEnabled') {
+  //     this.isChordModeEnabled = value as boolean;
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
   //protected abstract _layoutDatapoints(): void;
 
@@ -161,7 +172,7 @@ export abstract class XYChart extends DataLayer {
     const leaf = this._chartLandingView.focusLeaf;
     if (leaf instanceof DatapointView) {
       if (!leaf.next) {
-        if (this._isChordModeEnabled) {
+        if (this.paraview.store.settings.sonification.isChordModeEnabled) {
           //this._eventActionManager!.dispatch('series_endpoint_reached');
         } else if (leaf.nextSeriesLanding) {
           // Make sure we don't get focused if we return to the landing for this series
@@ -203,7 +214,7 @@ export abstract class XYChart extends DataLayer {
   }
 
   moveUp() {
-    if (this._isChordModeEnabled) {
+    if (this.paraview.store.settings.sonification.isChordModeEnabled) {
       //this._eventActionManager!.dispatch('chord_mode_no_up_down');
       return;
     }
@@ -233,7 +244,7 @@ export abstract class XYChart extends DataLayer {
   }
 
   moveDown() {
-    if (this._isChordModeEnabled) {
+    if (this.paraview.store.settings.sonification.isChordModeEnabled) {
       //this._eventActionManager!.dispatch('chord_mode_no_up_down');
       return;
     }
@@ -262,6 +273,65 @@ export abstract class XYChart extends DataLayer {
     }
   }
 
+  /**
+   * Navigate to the series minimum/maximum datapoint
+   * @param isMin If true, go the the minimum. Otherwise, go to the maximum
+   */
+  protected _goSeriesMinMax(isMin: boolean) {
+    const currView = this.focusLeaf;
+    if (currView instanceof ChartLandingView) {
+      this._goChartMinMax(isMin);
+    } else {
+      let seriesChildren = null;
+      let seriesKey = null;
+      let index: number | null = null;
+
+      if (currView instanceof SeriesView) {
+        seriesKey = currView.seriesKey;
+        seriesChildren = currView.children;
+      } else if (currView instanceof DatapointView) {
+        seriesKey = currView.seriesKey;
+        index = currView.index;
+        seriesChildren = currView.parent!.children;
+      }
+
+      if (seriesChildren && seriesKey) {
+        const stats = this.paraview.store.model!.getFacetStats('y')!;
+        // Indices of min/max values
+        const seriesMatchArray = isMin 
+          ? stats.min.datapoints.map(dp => dp.datapointIndex)   
+          : stats.max.datapoints.map(dp => dp.datapointIndex);
+        if (index !== null && seriesMatchArray.length > 1) {
+          // TODO: If there is more than one datapoint that has the same series minimum value, find the next one to nav to:
+          //       Find the current x label, if it matches one in `seriesMins`, 
+          //       remove all entries up to and including that point,
+          //       and use the next item on the list.
+          //       But also cycle around if it's the last item in the list
+          const currentRecordIndex = seriesMatchArray.indexOf(index);
+          if (currentRecordIndex !== -1 && currentRecordIndex !== seriesMatchArray.length + 1) {
+            seriesMatchArray.splice(0, currentRecordIndex);
+          }
+        }
+        const newViews = seriesChildren.filter(view => 
+          seriesMatchArray.includes(view.index));
+        newViews[0]?.focus();
+      }
+    }
+  }
+
+  /**
+   * Navigate to (one of) the chart minimum/maximum datapoint(s)
+   * @param isMin If true, go the the minimum. Otherwise, go to the maximum
+   */
+  protected _goChartMinMax(isMin: boolean) {
+    const currView = this.focusLeaf;
+    const stats = this.paraview.store.model!.getFacetStats('y')!;
+    const matchTarget = isMin ? stats.min.value : stats.max.value;
+    const chartMatchArray = this._chartLandingView.datapointViews.filter(view =>
+      view.datapoint.data.y.value === matchTarget);
+    chartMatchArray[0].focus();
+  }
+
   raiseSeries(_series: string) {
   }
 
@@ -276,7 +346,7 @@ export abstract class XYChart extends DataLayer {
       let seriesDatapoints = currentSeries.children;
       let datapointArray = Array.from(seriesDatapoints)
 
-      if (this._isChordModeEnabled) {
+      if (this.paraview.store.settings.sonification.isChordModeEnabled) {
       }
 
       const noteCount = datapointArray.length;
@@ -447,11 +517,11 @@ export class XYSeriesView extends SeriesView {
   }*/
 
   protected _visit() {
-    const visited = this.chart.isChordModeEnabled 
+    const visited = this.paraview.store.settings.sonification.isChordModeEnabled 
       ? this.withSiblings.flatMap(sib => sib.children) 
       : this._children;
     this.paraview.store.visit(visited.map(v => ({seriesKey: v.seriesKey, index: v.index})));
-    if (!this.chart.isChordModeEnabled) {
+    if (!this.paraview.store.settings.sonification.isChordModeEnabled) {
       this.chart.raiseSeries(this.series.key!);
     }    
   }
@@ -498,33 +568,33 @@ export abstract class XYDatapointView extends DatapointView {
     return [
       'datapoint',
       strToId(this.series.key),
-      formatXYDatapointX(this.datapoint, this.paraview.store.getFormatType('domId')),
-      formatXYDatapointY(this.datapoint, this.paraview.store.getFormatType('domId')),
+      // formatXYDatapointX(this.datapoint, this.paraview.store.getFormatType('domId')),
+      // formatXYDatapointY(this.datapoint, this.paraview.store.getFormatType('domId')),
       `${this.index}`
     ].join('-'); 
   }
 
   protected _addedToParent() {
     super._addedToParent();
-    this._extraAttrs = [
-      { 
-        attr: literal`data-series`,
-        value: this.series.key
-      },
-      {
-        attr: literal`data-index`,
-        value: this.index
-      },
-      {
-        attr: literal`data-label`,
-        value: 
-        formatXYDatapointX(this.datapoint, this.paraview.store.getFormatType('domId')),
-      },
-      {
-        attr: literal`data-centroid`,
-        value: this.centroid
-      }
-    ];
+    // this._extraAttrs = [
+    //   { 
+    //     attr: literal`data-series`,
+    //     value: this.series.key
+    //   },
+    //   {
+    //     attr: literal`data-index`,
+    //     value: this.index
+    //   },
+    //   {
+    //     attr: literal`data-label`,
+    //     value: 
+    //     formatXYDatapointX(this.datapoint, this.paraview.store.getFormatType('domId')),
+    //   },
+    //   {
+    //     attr: literal`data-centroid`,
+    //     value: this.centroid
+    //   }
+    // ];
   }
 
   // override to get more specific return type
@@ -569,11 +639,27 @@ export abstract class XYDatapointView extends DatapointView {
   //}
 
   protected _visit() {
-    const visited = this.chart.isChordModeEnabled ? this.withSameIndexers : [this];
+    const visited = this.paraview.store.settings.sonification.isChordModeEnabled
+      ? this.withSameIndexers
+      : [this];
     this.paraview.store.visit(visited.map(v => ({seriesKey: v.seriesKey, index: v.index})));
-    if (!this.chart.isChordModeEnabled) {
+    if (!this.paraview.store.settings.sonification.isChordModeEnabled) {
       this.chart.raiseSeries(this.series.key!);
-    }    
+    }
+    //todo().deets!.sparkBrailleData = this.series.data.join(' ');
+    if (this.paraview.store.settings.sonification.isSoniEnabled) {
+      this.chart.sonifier.playDatapoints(...visited.map(v => v.datapoint));
+    }  
+    // setTimeout(() => {
+    //   this.eventActionManager!.dispatch('datapoint_focused', {
+    //     visited,
+    //     isSeriesChange: 
+    //       this.chart.isChordModeEnabled ? false : 
+    //       !(todo().canvas.prevFocusLeaf instanceof DataView) ? true :
+    //       (todo().canvas.prevFocusLeaf as DataView).series.name !== visited[0].series.name ? true :
+    //       false
+    //   });
+    // }, NOTE_LENGTH*1000);
   }
 
   onFocus() {

@@ -21,6 +21,7 @@ import { dataFromManifest, type AllSeriesData, type ChartType, type Manifest } f
 import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature 
   } from '@fizz/paramodel';
 import { FormatType } from '@fizz/parasummary';
+import { BasicXYChartSummarizer } from '@fizz/parasummary';
 
 import { DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext } from './settings_types';
 import { SettingsManager } from './settings_manager';
@@ -68,6 +69,8 @@ export class ParaStore extends State {
   protected _keymapManager = new KeymapManager(keymap);
   protected _prependAnnouncements: string[] = [];
   protected _appendAnnouncements: string[] = [];
+  protected _summarizer!: BasicXYChartSummarizer; 
+  
 
   public idList: Record<string, boolean> = {};
 
@@ -111,6 +114,10 @@ export class ParaStore extends State {
     return this._keymapManager;
   }
 
+  get summarizer() {
+    return this._summarizer;
+  }
+
   setManifest(manifest: Manifest, data?: AllSeriesData) {
     this._manifest = manifest;
     const dataset = this._manifest.datasets[0];
@@ -142,6 +149,7 @@ export class ParaStore extends State {
     } else {
       throw new Error('store lacks external or inline chart data');
     }
+    this._summarizer = new BasicXYChartSummarizer(this._model);
   }
 
   protected _propertyChanged(key: string, value: any) {
@@ -154,6 +162,14 @@ export class ParaStore extends State {
 
   updateSettings(updater: (draft: Settings) => void) {
     this.settings = produce(this.settings, updater);
+  }
+
+  prependAnnouncement(msg: string) {
+    this._prependAnnouncements.push(msg);
+  }
+
+  appendAnnouncement(msg: string) {
+    this._appendAnnouncements.push(msg);
   }
 
   announce(msg: string | string[]) {
