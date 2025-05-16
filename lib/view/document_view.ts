@@ -68,12 +68,13 @@ export class DocumentView extends Container(View) {
 
     this._populateGrid();
 
-    this.createTitle();
+    if (this._store.title) {
+      this.createTitle();
+    }
     // Draw the layers on top of the axes
     this._grid.reverseChildren();
 
     this._grid.layoutViews();
-    
     this.setSize(this._grid.boundingWidth, this._grid.boundingHeight);
 
     //this.chartLayers.updateLoc();
@@ -105,16 +106,18 @@ export class DocumentView extends Container(View) {
       this._grid.append(this._vertAxis, {
         x: 0,
         y: 0,
-        height: 2,
+        height: 1,
         rowAlign: horizAxisPos === 'north' ? 'end' : 'start' 
       });
       this._grid.append(this._horizAxis, {
         x: 1,
         y: horizAxisPos === 'north' ? 0 : 1,
-        width: 1
+        width: 1,
+        rowAlign: 'end'
       });
       this._chartLayers.dataLayer.init();
-      if (this._horizAxis.width < this._chartLayers.width) {
+      if (this._horizAxis.width < this._chartLayers.width || this._vertAxis.height < this._chartLayers.height) {
+        console.log('RESIZE to', this._chartLayers.width, this._chartLayers.height);
         this._horizAxis.resize(this._chartLayers.width, this._chartLayers.height);
         this._vertAxis.resize(this._chartLayers.width, this._chartLayers.height);
       }
@@ -226,8 +229,6 @@ export class DocumentView extends Container(View) {
       role: 'heading',
       classList: ['chart-title'],
       text: this._titleText,
-      x: 0,
-      y: 0,
       wrapWidth: this._chartLayers.dataLayer.width,
       justify: align
     });

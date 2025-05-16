@@ -1,0 +1,65 @@
+{
+  "datasets": [
+    {
+      "type": "column",
+      "title": "",
+      "facets": {
+        "x": {
+          "label": "Category",
+          "variableType": "independent",
+          "measure": "nomimal",
+          "datatype": "string"
+        },
+        "y": {
+          "label": "Average",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number"
+        }
+      },
+      "series": [
+        {
+          "key": "Category averages",
+          "theme": {
+            "baseQuantity": "average",
+            "baseKind": "dimensioned"
+          },
+          "records": [
+            {
+              "x": "PEOPLE",
+              "y": "3.15"
+            },
+            {
+              "x": "CULTURE",
+              "y": "3.09"
+            },
+            {
+              "x": "WORK",
+              "y": "3.40"
+            },
+            {
+              "x": "IMPACT",
+              "y": "3.55"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "color.colorPalette": "ffb",
+        "color.colorMap": "blue,yellow,red,green",
+        "chart.orientation": "east",
+        "chart.size.width": 180,
+        "axis.vert.labelOrder": "northToSouth",
+        "axis.y.tick.step": 2,
+        "type.bar.colorByDatapoint": true,
+        "type.bar.barWidth": 20,
+        "type.bar.isDrawStackLabels": true,
+        "legend.isDrawLegend": false,
+        "sonification.isEnabled": true
+      }
+    }
+  ]
+}
