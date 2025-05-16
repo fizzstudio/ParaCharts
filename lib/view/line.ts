@@ -20,7 +20,7 @@ import { XYSeriesView } from './xychart';
 import { Path } from './shape/path';
 import { Vec2 } from '../common/vector';
 import { ChartLandingView, DatapointView, SeriesView } from './data';
-import { describeAdjacentDatapoints, describeSelections, getDatapointMinMax, queryMessages } from '../store/queryutils';
+import { describeAdjacentDatapoints, describeSelections, getDatapointMinMax, queryMessages } from '../store/query_utils';
 import { capitalize, join, interpolate as replace } from '@fizz/templum';
 /**
  * Class for drawing line charts.

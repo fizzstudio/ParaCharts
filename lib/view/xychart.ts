@@ -35,7 +35,7 @@ import { HotkeyEvent } from '../store/keymap_manager';
 
 import { ComparisonRelationship} from '@fizz/dataframe';
 import { NumberBox } from '../store/dataframe/box';
-import { describeAdjacentDatapoints, describeSelections, getDatapointMinMax, queryMessages } from '../store/queryutils';
+import { describeAdjacentDatapoints, describeSelections, getDatapointMinMax, queryMessages } from '../store/query_utils';
 
 export type DatapointViewType<T extends XYDatapointView> = 
   (new (...args: any[]) => T);

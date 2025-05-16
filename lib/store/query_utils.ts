@@ -1,7 +1,7 @@
 import { ParaView } from '../paraview';
 import { capitalize, join, interpolate as replace } from '@fizz/templum';
 import { ComparisonRelationship } from '@fizz/dataframe';
-import { NumberBox } from '../store/dataframe/box';
+import { NumberBox } from './dataframe/box';
 import { DatapointView } from '../view/data';
 
 export function describeSelections(paraview: ParaView, targetView: DatapointView, selectedDatapoints: DatapointView[]): string[] {
@@ -163,6 +163,8 @@ export const queryMessages = {
     'compareGreaterNext': 'will decrease by',
     'compareLessNext': 'will grow by',
     'compareEqualNext': 'will stay the same in',
+    'percentageOfSeries': '${datapointXY:string}% of total amount in series: ${seriesKey:string}. Datapoint ${datapointIndex:number} of ${datapointCount:number}.',
+    'percentageOfChart': '${datapointXY:string}% of total amount in chart: ${chartKey:string}. Datapoint ${datapointIndex:number} of ${datapointCount:number}.',
 } as const;
 
 export const comparisonMsgs: Record<ComparisonRelationship, ComparisonMsgs> = {
