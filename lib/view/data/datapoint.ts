@@ -139,7 +139,7 @@ export class DatapointView extends DataView {
   }
 
   protected _createId(..._args: any[]): string {
-    const facets = Object.entries(this.datapoint).map(([key, box]) => 
+    const facets = [...this.datapoint.entries()].map(([key, box]) => 
       `${key}_${formatBox(box, this.paraview.store.getFormatType('domId'))}`).join('-');
     return [
       'datapoint',

@@ -164,7 +164,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   }
 
   protected _tickLabelY(index: number) {
-    const facet = this.paraview.store.getAxisFacet(this.axis.orientation);
+    const facet = this.paraview.store.model!.getAxisFacet(this.axis.orientation);
     const tickLen = facet!.variableType === 'independent'
       ? this.paraview.store.settings.axis.x.tick.length
       : this.paraview.store.settings.axis.y.tick.length;
