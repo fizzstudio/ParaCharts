@@ -6,8 +6,6 @@ import { ParaView } from '../paraview';
 import { AxisInfo } from '../common/axisinfo';
 
 export class ScatterPlot extends PointChart {
-
-  declare protected _settings: DeepReadonly<ScatterSettings>;
   
   constructor(paraview: ParaView, index: number) {
     super(paraview, index);
@@ -15,7 +13,7 @@ export class ScatterPlot extends PointChart {
   }
 
   get settings() {
-    return this._settings;
+    return super.settings as DeepReadonly<ScatterSettings>;
   }
 
   settingDidChange(key: string, value: Setting | undefined) {

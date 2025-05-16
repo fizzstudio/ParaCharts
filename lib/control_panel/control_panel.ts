@@ -44,7 +44,6 @@ export class ParaControlPanel extends logging(ParaComponent) {
   @state() dataState: 'initial' | 'pending' | 'complete' | 'error' = 'initial';
   dataError?: unknown;
 
-  protected _settings!: DeepReadonly<ControlPanelSettings>;
   @state() protected _isOpen = false;
   protected _tabDeetsRef = createRef<TabDetails>();
   protected _descriptionPanelRef = createRef<DescriptionPanel>();
@@ -102,7 +101,8 @@ export class ParaControlPanel extends logging(ParaComponent) {
   ];
 
   get settings() {
-    return this._settings;
+    return SettingsManager.getGroupLink<ControlPanelSettings>(
+      this.managedSettingKeys[0], this._store.settings);
   }
 
   get managedSettingKeys() {
@@ -131,8 +131,6 @@ export class ParaControlPanel extends logging(ParaComponent) {
 
   connectedCallback() {
     super.connectedCallback();
-    this._settings = SettingsManager.getGroupLink<ControlPanelSettings>(
-      this.managedSettingKeys[0], this._store.settings);
     this._store.subscribe((key, value) => {
       if (key === 'data') {
         this.dataUpdated();
@@ -240,10 +238,10 @@ export class ParaControlPanel extends logging(ParaComponent) {
     return html`
       <fizz-tab-details 
         ${ref(this._tabDeetsRef)}
-        ?open=${this._settings.isControlPanelDefaultOpen}
+        ?open=${this.settings.isControlPanelDefaultOpen}
         id="controls"
         class=${deetsState}
-        tablabelmode=${tabLabelModes[this._settings.tabLabelStyle]}
+        tablabelmode=${tabLabelModes[this.settings.tabLabelStyle]}
         @open=${() => this._isOpen = true}
         @close=${() => this._isOpen = false}
         @invalidvalue=${(e: CustomEvent) => this._msgDialogRef.value!.show(e.detail)}
@@ -269,20 +267,20 @@ export class ParaControlPanel extends logging(ParaComponent) {
         <fizz-tab-panel
           tablabel="Data"
           icon=${tabDataIcon}
-          ?hidden=${!this._settings.isDataTabVisible}
+          ?hidden=${!this.settings.isDataTabVisible}
         >
           <para-data-panel
             ${ref(this._dataPanelRef)}
             .controlPanel=${this}
             .sparkBrailleData=${this.sparkBrailleData}
-            .isSparkBrailleVisible=${this._settings.isSparkBrailleVisible}
+            .isSparkBrailleVisible=${this.settings.isSparkBrailleVisible}
           ></para-data-panel>
         </fizz-tab-panel>
 
         <fizz-tab-panel
           tablabel="Colors"
           icon=${tabColorsIcon}
-          ?hidden=${!this._settings.isColorsTabVisible}
+          ?hidden=${!this.settings.isColorsTabVisible}
         >
           <para-colors-panel
             ${ref(this._colorsPanelRef)}
@@ -293,7 +291,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
         <fizz-tab-panel
           tablabel="Audio"
           icon=${tabAudioIcon}
-          ?hidden=${!this._settings.isAudioTabVisible}
+          ?hidden=${!this.settings.isAudioTabVisible}
         >
           <para-audio-panel
             .controlPanel=${this}
@@ -303,7 +301,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
         <fizz-tab-panel
           tablabel="Controls"
           icon=${tabControlsIcon}
-          ?hidden=${!this._settings.isControlsTabVisible}
+          ?hidden=${!this.settings.isControlsTabVisible}
         >
           <para-controls-panel
             ${ref(this._controlsPanelRef)}
@@ -314,7 +312,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
         <fizz-tab-panel
           tablabel="Chart"
           icon=${tabChartIcon}
-          ?hidden=${!this._settings.isChartTabVisible}
+          ?hidden=${!this.settings.isChartTabVisible}
         >
           <para-chart-panel
             ${ref(this._chartPanelRef)}
@@ -325,7 +323,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
         <fizz-tab-panel
           tablabel="Annotations"
           icon=${tabAnalysisIcon}
-          ?hidden=${!this._settings.isAnnotationsTabVisible}
+          ?hidden=${!this.settings.isAnnotationsTabVisible}
         >
           <para-annotation-panel
             ${ref(this._annotationPanelRef)}
@@ -336,7 +334,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
         <fizz-tab-panel
           tablabel="Analysis"
           icon=${tabAnalysisIcon}
-          ?hidden=${!this._settings.isAnalysisTabVisible}
+          ?hidden=${!this.settings.isAnalysisTabVisible}
         >
           <para-analysis-panel
             .controlPanel=${this}
