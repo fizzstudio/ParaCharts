@@ -18,7 +18,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
 
   protected _ariaLiveRegionRef = createRef<AriaLive>();
 
-  private _summarizer = new BasicXYChartSummarizer(this._store.model!); //FIXME: The whole ParaChart should have a common summarizer
+  private _summarizer?: BasicXYChartSummarizer; 
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -60,6 +60,10 @@ export class DescriptionPanel extends ControlPanelTabPanel {
       gap: '0.5rem'
     };
     if (this.controlPanel.dataState === 'complete') {
+      //FIXME: The whole ParaChart should have a common summarizer
+      if (!this._summarizer) {
+        this._summarizer = new BasicXYChartSummarizer(this._store.model!); 
+      }
       this.caption = this._summarizer.getChartSummary();
     }
     return html`

@@ -131,6 +131,16 @@ export class ParaControlPanel extends logging(ParaComponent) {
 
   connectedCallback() {
     super.connectedCallback();
+    this._store.subscribe((key, value) => {
+      if (key === 'data') {
+        this.dataUpdated();
+      }
+    });
+  }
+
+  // Anything that needs to be done when data is updated, do here
+  private dataUpdated(): void {
+    this.dataState = 'complete';
   }
 
   settingDidChange(key: string, value: any) {
