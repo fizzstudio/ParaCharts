@@ -449,7 +449,7 @@ export class HistogramBinView extends DataView {
             this._y = this.chart.parent.height;
             this._width = this.chart.parent.width / this.chart.bins;
             this._x = (this.index - length) % this.chart.bins * this._width
-            this._height = ((this.chart.grid[id] / this.chart.maxCount) * this._y * .9)
+            this._height = (((this.chart.grid[id] - this.chart.axisInfo!.yLabelInfo!.min!) / this.chart.axisInfo!.yLabelInfo!.max!) * this._y)
             this._count = this.chart.grid[id];
             /*
             this._id = [
@@ -467,7 +467,7 @@ export class HistogramBinView extends DataView {
             this._x = 0;
             this._height = this.chart.parent.height / this.chart.bins;
             this._y = (this.chart.grid.length - id - 1) % this.chart.bins * this._height + (this._height) 
-            this._width = ((this.chart.grid[id] / this.chart.maxCount) * this.chart.parent.width * .9)
+            this._width = (((this.chart.grid[id] - this.chart.axisInfo!.xLabelInfo!.min!) / this.chart.axisInfo!.xLabelInfo!.max!) * this.chart.parent.width)
             this._count = this.chart.grid[id];
             
             this._id = [
@@ -490,6 +490,8 @@ export class HistogramBinView extends DataView {
         const xSpan = xInfo.range! / this.chart.bins;
         const left = (xInfo.min! + xSpan * ((this.index - length) % this.chart.bins)).toFixed(2)
         const right = (xInfo.min! + xSpan * ((this.index - length) % this.chart.bins + 1)).toFixed(2)
+        console.log(this.count)
+        console.log(length)
         return `This bin contains ${this.count} datapoints, which is ${(100 * this.count / length).toFixed(2)}% of the overall data. 
         It spans x values from ${left} to ${right}}`
         
