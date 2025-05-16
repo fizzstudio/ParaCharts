@@ -1,5 +1,5 @@
 
-
+import { type ParaChart } from '../parachart/parachart';
 import { ParaDialog, ParaComponent } from '../components';
 import { logging } from '../common/logger';
 //import { styles } from '../../styles';
@@ -43,6 +43,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
 
   @state() dataState: 'initial' | 'pending' | 'complete' | 'error' = 'initial';
   dataError?: unknown;
+  paraChart!: ParaChart
 
   @state() protected _isOpen = false;
   protected _tabDeetsRef = createRef<TabDetails>();
@@ -349,10 +350,10 @@ export class ParaControlPanel extends logging(ParaComponent) {
 
   private renderDialog() {
     return html`
-      <todo-dialog 
+      <para-dialog 
         ${ref(this._dialogRef)}
         id="generic-dialog" 
-      ></todo-dialog>
+      ></para-dialog>
       <fizz-msg-dialog 
         ${ref(this._msgDialogRef)}
       ></fizz-msg-dialog>
