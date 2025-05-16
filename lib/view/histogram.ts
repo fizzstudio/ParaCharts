@@ -7,13 +7,20 @@ import { XYChart, XYDatapointView, XYSeriesView } from "./xychart";
 import { svg } from "lit";
 import { DatapointView, DataView, SeriesView } from "./data";
 import { DataCursor } from "../store";
+import { ParaView } from "../paraview";
 export class Histogram extends XYChart {
-    protected _bins: number = 10;
+    protected _bins: number = 20;
     protected _data: Array<Array<number>> = [];
     protected _grid: Array<number> = [];
     protected _maxCount: number = 0;
     declare protected _settings: DeepReadonly<HistogramSettings>;
-
+    constructor(
+        paraview: ParaView,
+        dataLayerIndex: number
+    ) {
+        super(paraview, dataLayerIndex);
+        this._generateBins();
+    }
     protected _addedToParent() {
         super._addedToParent();
         /*
@@ -32,12 +39,12 @@ export class Histogram extends XYChart {
         if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined){
             this._axisInfo = new AxisInfo(this.paraview.store, {
                   xValues: this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number),
-                  yValues: this.paraview.store.model!.allFacetValues('y')!.map((x) => x.value as number),
+                  yValues: this.grid,
                 });
         }
         else{
-            new AxisInfo(this.paraview.store, {
-                xValues: this.paraview.store.model!.allFacetValues('y')!.map((x) => x.value as number),
+            this._axisInfo = new AxisInfo(this.paraview.store, {
+                xValues: this.grid,
                 yValues: this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number),
               });
         }
@@ -104,37 +111,36 @@ export class Histogram extends XYChart {
     protected _createComponents() {
         //this.parent.parent.parent!._vertAxis = new VertAxis(this.parent.parent.parent as DocumentView)
         const xs: string[] = [];
-                for (const [x, i] of enumerate(this.paraview.store.model!.allFacetValues('x')!)) {
-                    xs.push(formatBox(x, `${this.parent.docView.type as PointChartType}Point`, this.paraview.store));
-                    const xId = strToId(xs.at(-1)!);
-                    // if (this.selectors[i] === undefined) {
-                    //   this.selectors[i] = [];
-                    // }
-                    // this.selectors[i].push(`tick-x-${xId}`);
-                }
-                for (const [col, i] of enumerate(this.paraview.store.model!.series)) {
-                    const seriesView = new XYSeriesView(this, col.key);
-                    this._chartLandingView.append(seriesView);
-                    for (const [value, j] of enumerate(col)) {
-                        const datapointView = this._newDatapointView(seriesView);
-                        seriesView.append(datapointView);
-                        // the `index` property of the datapoint view will equal j
-                        //todo().canvas.jimerator.addSelector(col.name!, j, datapointView.id);
-                    }
-                    for (let i = 0; i < this._bins; i++) {
-                        const bin = new HistogramBinView(this, seriesView.seriesKey);
-                        seriesView.append(bin)
-                    }
-                }
-                // NB: This only works properly because we haven't added series direct labels
-                // yet, which are also direct children of the chart.
-                this._chartLandingView.sortChildren((a: XYSeriesView, b: XYSeriesView) => {
-                    return (b.children[0].datapoint.y.value as number) - (a.children[0].datapoint.y.value as number);
-                });
+        for (const [x, i] of enumerate(this.paraview.store.model!.allFacetValues('x')!)) {
+            xs.push(formatBox(x, `${this.parent.docView.type as PointChartType}Point`, this.paraview.store));
+            const xId = strToId(xs.at(-1)!);
+            // if (this.selectors[i] === undefined) {
+            //   this.selectors[i] = [];
+            // }
+            // this.selectors[i].push(`tick-x-${xId}`);
+        }
+        for (const [col, i] of enumerate(this.paraview.store.model!.series)) {
+            const seriesView = new XYSeriesView(this, col.key);
+            this._chartLandingView.append(seriesView);
+            for (const [value, j] of enumerate(col)) {
+                const datapointView = this._newDatapointView(seriesView);
+                seriesView.append(datapointView);
+                // the `index` property of the datapoint view will equal j
+                //todo().canvas.jimerator.addSelector(col.name!, j, datapointView.id);
+            }
+            for (let i = 0; i < this._bins; i++) {
+                const bin = new HistogramBinView(this, seriesView.seriesKey);
+                seriesView.append(bin)
+            }
+        }
+        // NB: This only works properly because we haven't added series direct labels
+        // yet, which are also direct children of the chart.
+        this._chartLandingView.sortChildren((a: XYSeriesView, b: XYSeriesView) => {
+            return (b.children[0].datapoint.y.value as number) - (a.children[0].datapoint.y.value as number);
+        });
     }
 
     protected _layoutComponents() {
-        this._generateBins();
         const values = this._grid.flat();
         this._maxCount = Math.max(...values);
         super._layoutComponents();
@@ -475,8 +481,7 @@ export class HistogramBinView extends DataView {
     }
 
     summary() {
-        /*
-        const length = this.chart.model.data.col(this.chart.model.indepVar).toNumberSeries().data.length
+        const length = this.paraview.store.model!.series.flat()[0].length
         //const yInfo = this.chart.axisInfo!.yLabelInfo!
         //const ySpan = yInfo.range! / this.chart.bins
         //const up = (yInfo.max! - ySpan * (Math.floor((this.index - length) / this.chart.bins))).toFixed(2)
@@ -485,18 +490,16 @@ export class HistogramBinView extends DataView {
         const xSpan = xInfo.range! / this.chart.bins;
         const left = (xInfo.min! + xSpan * ((this.index - length) % this.chart.bins)).toFixed(2)
         const right = (xInfo.min! + xSpan * ((this.index - length) % this.chart.bins + 1)).toFixed(2)
-        return `This bin contains ${this.count} datapoints, which is ${(100 * this.count / this.chart.model.data.col(this.chart.model.indepVar).toNumberSeries().data.length).toFixed(2)}% of the overall data. 
+        return `This bin contains ${this.count} datapoints, which is ${(100 * this.count / length).toFixed(2)}% of the overall data. 
         It spans x values from ${left} to ${right}}`
-        */
+        
     }
 
     onFocus() {
-        console.log("bin focus called")
         super.onFocus()
         this.isVisited = !this.isVisited
         this._visit();
-        //this.paraview.store.announce(this.paraview.summarizer.getSeriesSummary(this.seriesKey));
-        //this.paraview.requestUpdate();
+        this.paraview.store.announce(this.summary());
     }
 
     protected _visit() {
@@ -516,12 +519,8 @@ export class HistogramBinView extends DataView {
     render() {
         let stroke = `hsl(0, 0%, 0%)`
         //let fill = todo().controller.colors.colorValueAt(this.seriesProps.color);
-        console.log(this.paraview.store.visitedDatapoints)
-        console.log({seriesKey: this.seriesKey, index: this.index})
-        console.log(this.paraview.store.visitedDatapoints.includes({seriesKey: this.seriesKey, index: this.index}))
         let fill = 0;
         if (this.paraview.store.visitedDatapoints.some(item => item.index === this.index)){
-            console.log("in here")
             if (this.chart.settings.displayAxis == "x" || this.chart.settings.displayAxis == undefined){
                 return svg`
                     <g>
