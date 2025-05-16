@@ -4,7 +4,7 @@ import { type ScatterSettings, Setting, type DeepReadonly } from '../store/setti
 import { type XYSeriesView } from './xychart';
 import { ParaView } from '../paraview';
 import { AxisInfo } from '../common/axisinfo';
-import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../store/queryutils';
+import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../store/query_utils';
 import { ChartLandingView, SeriesView, DatapointView } from './data';
 import { capitalize, join, interpolate as replace } from '@fizz/templum';
 

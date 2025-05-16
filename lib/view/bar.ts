@@ -12,7 +12,7 @@ import { Label } from './label';
 
 import { svg } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
-import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../store/queryutils';
+import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../store/query_utils';
 import { ChartLandingView, SeriesView, DatapointView } from './data';
 import { capitalize, join, interpolate as replace } from '@fizz/templum';
 

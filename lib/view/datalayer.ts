@@ -31,7 +31,7 @@ import { type AxisInfo } from '../common/axisinfo';
 import { type HotkeyEvent } from '../store/keymap_manager';
 import { ChartLandingView, DatapointView, SeriesView, type DataView } from './data';
 import { type LegendItem } from './legend';
-import { describeAdjacentDatapoints, describeSelections, getDatapointMinMax, queryMessages } from '../store/queryutils';
+import { describeAdjacentDatapoints, describeSelections, getDatapointMinMax, queryMessages } from '../store/query_utils';
 import { capitalize, join, interpolate as replace } from '@fizz/templum';
 import { type clusterObject } from '@fizz/clustering';
 
