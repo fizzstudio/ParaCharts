@@ -47,7 +47,7 @@ export class Colors {
   readonly palettes: Palette[];
   keys = new Map<string, Key>();
 
-  protected _colorMap: Color[] | null = null;
+  protected _colorMap: number[] | null = null;
 
   //private paletteIndex = 0;
   private primary = 'hsl(270, 50%, 50%)';
@@ -570,7 +570,7 @@ export class Colors {
       if (!this._colorMap) {
         this._colorMap = [];
       }
-      this._colorMap.push(this.palette.colors[idx]);
+      this._colorMap.push(idx);
     }
   }
 
@@ -625,7 +625,9 @@ export class Colors {
   }
 
   colorValueAt(index: number) {
-    const colors = this._colorMap ?? this.palette.colors;
+    const colors = this._colorMap
+      ? this._colorMap.map(i => this.palette.colors[i])
+      : this.palette.colors;
     if (index === -1) {
       // highlight
       return colors.at(-1)!.value;
