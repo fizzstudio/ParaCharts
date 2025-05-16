@@ -8,13 +8,21 @@
           "label": "Rewarding",
           "variableType": "independent",
           "measure": "nomimal",
-          "datatype": "string"
+          "datatype": "string",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
         },
         "y": {
           "label": "Percent",
           "variableType": "dependent",
           "measure": "ratio",
-          "datatype": "number"
+          "datatype": "number",
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
         }
       },
       "series": [
@@ -60,7 +68,7 @@
         "axis.x.tick.tickLabel.angle": 0,
         "axis.y.tick.step": 1,
         "legend.isDrawLegend": false,
-        "sonification.isEnabled": true
+        "sonification.isSoniEnabled": true
       }
     }
   ]

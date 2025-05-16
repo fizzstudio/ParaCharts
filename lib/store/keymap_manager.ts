@@ -52,6 +52,7 @@ export class HotkeyEvent extends Event {
  * Associates a key event with an action.
  */
 export interface KeyRegistration {
+  label: string;
   /** ID of action to associate with this hotkey. */
   action: string;
   /** If the hotkey should be case sensitive. Default true. */
