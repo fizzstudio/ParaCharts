@@ -89,7 +89,6 @@
         "axis.y.tick.step": 1,
         "type.bar.colorByDatapoint": false,
         "type.bar.barWidth": 20,
-        "type.bar.isDrawStackLabels": true,
         "type.bar.stackContent": "count",
         "type.bar.stackCount": 1,
         "legend.isDrawLegend": true,
