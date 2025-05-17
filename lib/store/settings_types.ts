@@ -254,6 +254,7 @@ export interface BarSettings extends PlotSettings {
   isDrawStackLabels: boolean;
   isStackLabelInsideBar: boolean;
   stackLabelGap: number;
+  isDrawBarLabels: boolean;
   clusterBy?: BarClusterMode;
   stackContent: StackContentOptions;
   stackCount: number;
