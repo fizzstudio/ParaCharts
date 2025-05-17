@@ -164,9 +164,10 @@ export class DatapointView extends DataView {
   computeLocation() {}
 
   /** Do any other layout (which may depend on the location being set) */
-  computeLayout() {
+  completeLayout() {
     this._createShape();
     this._createSymbol();
+    this.layoutSymbol();
   }
 
   /**

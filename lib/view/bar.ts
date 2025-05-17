@@ -8,13 +8,17 @@ import { fixed } from '../common/utils';
 import { Rect } from './shape/rect';
 import { Label, LabelTextAnchor } from './label';
 
-import { svg } from 'lit';
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { SeriesView } from './data';
 import { Box, enumerate, strToId } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 
-type BarData = {[key: string]: BarCluster};
+type BarClusterMap = {[key: string]: BarCluster};
+
+interface BarStackItem {
+  series: string;
+  value: Box<'number'>;
+}
 
 /**
  * Container for a cluster of bar chart stacks.
@@ -57,26 +61,26 @@ class BarCluster {
   }
 
   get index() {
-    return Object.keys(this.chart.bars).indexOf(this.key);
+    return Object.keys(this.chart.clusteredData).indexOf(this.key);
   }
 
   computeLayout() {
     this._x = this.index*BarCluster.width;
   }
 
-  render() {
-    return svg`
-      <g
-        id=${this.id}
-      >
-        ${ 
-          Object.entries(this.stacks).map(([stackKey, stack]) => 
-            stack.render()
-          )
-        }
-      </g>
-    `;
-  }
+  // render() {
+  //   return svg`
+  //     <g
+  //       id=${this.id}
+  //     >
+  //       ${ 
+  //         Object.entries(this.stacks).map(([stackKey, stack]) => 
+  //           stack.render()
+  //         )
+  //       }
+  //     </g>
+  //   `;
+  // }
 
 }
 
@@ -87,7 +91,8 @@ export class BarStack {
 
   static width: number;
 
-  bars: {[key: string]: Bar} = {};
+  bars: {[key: string]: BarStackItem} = {};
+
   readonly id: string;
   readonly labelId: string;
 
@@ -101,7 +106,7 @@ export class BarStack {
     //   BarStack.width = chart.settings.barWidthMin;
     //   BarCluster.width = BarStack.width*BarCluster.numStacks + BarCluster.padding*2;
     // }
-    chart.parent.logicalWidth = BarCluster.width*Object.keys(chart.bars).length;
+    chart.parent.logicalWidth = BarCluster.width*Object.keys(chart.clusteredData).length;
     console.log('setting chart content width to', chart.parent.width);
   }
 
@@ -130,19 +135,19 @@ export class BarStack {
     this._x = BarCluster.padding + this.index*BarStack.width;
   }
 
-  render() {
-    return svg`
-      <g
-        id=${this.id}
-        class="stack"
-        role="datapoint_group"
-      >
-        ${Object.entries(this.bars).map(([orderKey, bar]) => 
-          bar.render()
-        )}
-      </g>
-    `;
-  }
+  // render() {
+  //   return svg`
+  //     <g
+  //       id=${this.id}
+  //       class="stack"
+  //       role="datapoint_group"
+  //     >
+  //       ${Object.entries(this.bars).map(([orderKey, bar]) => 
+  //         bar.render()
+  //       )}
+  //     </g>
+  //   `;
+  // }
 
 }
 
@@ -174,22 +179,13 @@ function abbreviateSeries(keys: readonly string[]) {
   return abbrevMap;
 }
 
-interface StackItem {
-  series: string;
-  value: Box<'number'>;
-}
-type Stack = {[colName: string]: StackItem};
-type Cluster = {[stackKey: string]: Stack};
-type ClusterMap = {[key: string]: Cluster};
-
 /**
  * Class for drawing bar charts.
  */
 export class BarChart extends XYChart {
 
-  protected _clusteredData!: ClusterMap;
+  protected _clusteredData!: BarClusterMap;
   private _abbrevs?: {[series: string]: string};
-  private _bars!: BarData;
   protected _stackLabels: Label[] = [];
 
   protected _addedToParent() {
@@ -201,7 +197,7 @@ export class BarChart extends XYChart {
       //   formatBox(x, 'barCluster', this.paraview.store))],
       xTiers: [Object.keys(this._clusteredData)],
       yValues: Object.values(this._clusteredData).flatMap(c =>
-        Object.values(c).map(s => Object.values(s)
+        Object.values(c.stacks).map(s => Object.values(s.bars)
             .map(item => item.value.value)
             .reduce((a, b) => a + b, 0))),
       yMin: 0,
@@ -231,15 +227,15 @@ export class BarChart extends XYChart {
   }
 
   settingDidChange(key: string, value: any) {
-    if (!super.settingDidChange(key, value)) {
-      if (key === 'type.bar.stackContent') {
-        //todo().controller.settingViews.setVisible('type.bar.stackCount', value === 'count');
-      }
-      //todo().controller.clearSettingManagers();
-      this.paraview.createDocumentView();
-      this.paraview.requestUpdate();
-      return true;
-    }
+    // if (!super.settingDidChange(key, value)) {
+    //   if (key === 'type.bar.stackContent') {
+    //     //todo().controller.settingViews.setVisible('type.bar.stackCount', value === 'count');
+    //   }
+    //   //todo().controller.clearSettingManagers();
+    //   this.paraview.createDocumentView();
+    //   this.paraview.requestUpdate();
+    //   return true;
+    // }
     return false;
   }
 
@@ -247,12 +243,12 @@ export class BarChart extends XYChart {
     return super.settings as DeepReadonly<BarSettings>;
   }
 
-  get bars(): Readonly<BarData> {
-    return this._bars;
-  }
-
   get abbrevs() {
     return this._abbrevs;
+  }
+
+  get clusteredData() {
+    return this._clusteredData;
   }
 
   protected _newDatapointView(seriesView: XYSeriesView, stack: BarStack) {
@@ -260,10 +256,10 @@ export class BarChart extends XYChart {
   }
 
   protected _clusterData() {
-    const clusterMap: ClusterMap = {};
+    const clusterMap: BarClusterMap = {};
     const xs = this.paraview.store.model!.series[0].facet('x')!;
 
-    const clusters: Cluster[] = [];
+    const clusters: BarCluster[] = [];
 
     // if (this.paraview.store.settings.type.bar.clusterBy === 'facet') {
     //   for (const facet of this.paraview.store.model!.facets) {
@@ -286,7 +282,7 @@ export class BarChart extends XYChart {
       const clusterKey = formatBox(x, this.paraview.store.getFormatType('barCluster'));  
       let cluster = clusterMap[clusterKey];
       if (!cluster) {
-        cluster = {};
+        cluster = new BarCluster(this, clusterKey);
         clusterMap[clusterKey] = cluster;
         clusters.push(cluster);
       }
@@ -296,155 +292,183 @@ export class BarChart extends XYChart {
     // model (i.e., first column will be bottommost in 'all' mode)
     for (const [series, i] of enumerate(this.paraview.store.model!.series)) {
       for (const [value, j] of enumerate(series.facet('y')!)) {
-        let stack: Stack;
+        let stack: BarStack;
         let stackKey: string;
         if (this.paraview.store.settings.type.bar.stackContent === 'all') {
           stackKey = 'stack';
-          stack = clusters[j][stackKey];
+          stack = clusters[j].stacks[stackKey];
           if (!stack) {
-            stack = {};
-            clusters[j][stackKey] = stack;
+            stack = new BarStack(clusters[j], stackKey);
+            clusters[j].stacks[stackKey] = stack;
           }
         } else if (this.paraview.store.settings.type.bar.stackContent === 'count') {
           const seriesPerStack = this.paraview.store.settings.type.bar.stackCount;
           stackKey = seriesPerStack === 1 ? series.key : `stack${Math.floor(i/seriesPerStack)}`;
-          stack = clusters[j][stackKey];
+          stack = clusters[j].stacks[stackKey];
           if (!stack) {
-            stack = {};
-            clusters[j][stackKey] = stack;
+            stack = new BarStack(clusters[j], stackKey);
+            clusters[j].stacks[stackKey] = stack;
           }
         } 
-        stack![series.key] = {series: series.key, value: series.facet('y')![j] as Box<'number'>};
+        stack!.bars[series.key] = {series: series.key, value: series.facet('y')![j] as Box<'number'>};
       }
     }
     return clusterMap;
   }
 
-  protected _createComponents() {
-    const barData: BarData = {};
-
-    const seriesViews: {[key: string]: XYSeriesView} = {};
-    Object.entries(this._clusteredData).forEach( ([clusterKey, dataCluster], i) => {
-      const cluster = new BarCluster(this, clusterKey)
-      barData[clusterKey] = cluster;
-      //todo().canvas.jimerator.addSelector(this._model.indepVar, i, cluster.labelId);
-      for (const [stackKey, dataStack] of Object.entries(dataCluster)) {
-        const stack = new BarStack(cluster, stackKey);
-        cluster.stacks[stackKey] = stack;
-        for (const [colName, item] of Object.entries(dataStack)) {
-          if (!seriesViews[colName]) {
-            seriesViews[colName] = new XYSeriesView(this, colName);
-            this._chartLandingView.append(seriesViews[colName]);
-          }
-          stack.bars[colName] = this._newDatapointView(seriesViews[colName], stack);
-          seriesViews[colName].append(stack.bars[colName]);
-          //todo().canvas.jimerator.addSelector(colName, i, this.datapointViews.at(-1)!.id);
-        }
-        let textAnchor: LabelTextAnchor = 'middle';
-        let isPositionAtAnchor = false;
-        let angle = 0;
-        if (this._parent.orientation === 'east') {
-          textAnchor = 'start';
-          isPositionAtAnchor = false;
-          angle = -90;
-        }
-        if (this.paraview.store.settings.type.bar.isDrawStackLabels) {
-          this._stackLabels.push(new Label(this.paraview, {
-            text: fixed`${Object.values(dataStack).map(item => item.value.value).reduce((a, b) => a + b)}`,
-            classList: ['bar-stack-label'],
-            x: 0,
-            y: 0,
-            textAnchor,
-            isPositionAtAnchor,
-            angle
-          }));
-          stack.label = this._stackLabels.at(-1)!;
-          this.append(this._stackLabels.at(-1)!);
-        }
-      }
-    });
-    this._bars = barData;
-    this._chartLandingView.reverseChildren();
-  }
-
-  protected _layoutComponents() {
+  protected _beginLayout() {
+    // Datapoint layout depends on this happening first
     BarCluster.computeSize(this);
     BarStack.computeSize(this);
-    for (const [clusterKey, cluster] of Object.entries(this._bars)) {
+    for (const [clusterKey, cluster] of Object.entries(this._clusteredData)) {
       cluster.computeLayout();
       for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
         stack.computeLayout();
       }
     }
-    super._layoutComponents();
+    super._beginLayout();
+  }
 
-    if (this.paraview.store.settings.type.bar.isDrawStackLabels) {
-      for (const [clusterKey, cluster] of Object.entries(this._bars)) {
-        for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
-          const bar0 = Object.values(stack.bars)[0];
-          stack.label!.snapXTo(bar0, 'center');
-          stack.label!.y = bar0.y + (this.paraview.store.settings.type.bar.isStackLabelInsideBar
-            ? this.paraview.store.settings.type.bar.stackLabelGap
-            : - stack.label!.height - this.paraview.store.settings.type.bar.stackLabelGap);
+  protected _createDatapoints() {
+    const seriesViews: {[key: string]: XYSeriesView} = {};
+    Object.entries(this._clusteredData).forEach( ([clusterKey, cluster], i) => {
+      //const cluster = new BarCluster(this, clusterKey)
+      //barData[clusterKey] = cluster;
+      //todo().canvas.jimerator.addSelector(this._model.indepVar, i, cluster.labelId);
+      for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
+        //const stack = new BarStack(cluster, stackKey);
+        //cluster.stacks[stackKey] = stack;
+        for (const [colName, item] of Object.entries(stack.bars)) {
+          if (!seriesViews[colName]) {
+            seriesViews[colName] = new XYSeriesView(this, colName);
+            this._chartLandingView.append(seriesViews[colName]);
+          }
+          seriesViews[colName].append(this._newDatapointView(seriesViews[colName], stack));
+          //todo().canvas.jimerator.addSelector(colName, i, this.datapointViews.at(-1)!.id);
         }
       }
-      this._resizeToFitLabels();
-    }
+    });
+    //this._bars = barData;
+    this._chartLandingView.reverseChildren();
   }
 
-  protected _resizeToFitLabels() {
-    const labels = Object.values(this.bars).flatMap(cluster =>
-      Object.values(cluster.stacks)).map(stack => stack.label!);
-    const minX = Math.min(...labels.map(label => label.left));
-    if (minX < 0) {
-      this._parent.logicalWidth += -minX;
-      console.log('NEW WIDTH', this._width);
-      this.datapointViews.forEach(dp => {
-        dp.x += -minX; 
-      });
-    }
-    const maxX = Math.max(...labels.map(label => label.right));
-    if (maxX > this._width) {
-      const diff = maxX - this._width;
-      this._parent.logicalWidth += diff;
-      console.log('NEW WIDTH', this._width);
-    }
-    const minY = Math.min(...labels.map(label => label.top));
-    if (minY < 0) {
-      this._parent.logicalHeight += -minY;
-      console.log('NEW HEIGHT', this._height);
-      this.datapointViews.forEach(dp => {
-        dp.y += -minY; 
-      });
-      labels.forEach(label => {
-        label.y += -minY;
-      });
-    }
-    const maxY = Math.max(...labels.map(label => label.bottom));
-    if (maxY > this._height) {
-      const diff = maxY - this._height;
-      this._parent.logicalHeight += diff;
-      console.log('NEW HEIGHT', this._height);
-    }
-    //this._checkLabelSpacing();
+  // protected _createComponents() {
+  //   const barData: BarData = {};
+
+  //   const seriesViews: {[key: string]: XYSeriesView} = {};
+  //   Object.entries(this._clusteredData).forEach( ([clusterKey, dataCluster], i) => {
+  //     const cluster = new BarCluster(this, clusterKey)
+  //     barData[clusterKey] = cluster;
+  //     //todo().canvas.jimerator.addSelector(this._model.indepVar, i, cluster.labelId);
+  //     for (const [stackKey, dataStack] of Object.entries(dataCluster)) {
+  //       const stack = new BarStack(cluster, stackKey);
+  //       cluster.stacks[stackKey] = stack;
+  //       for (const [colName, item] of Object.entries(dataStack)) {
+  //         if (!seriesViews[colName]) {
+  //           seriesViews[colName] = new XYSeriesView(this, colName);
+  //           this._chartLandingView.append(seriesViews[colName]);
+  //         }
+  //         stack.bars[colName] = this._newDatapointView(seriesViews[colName], stack);
+  //         seriesViews[colName].append(stack.bars[colName]);
+  //         //todo().canvas.jimerator.addSelector(colName, i, this.datapointViews.at(-1)!.id);
+  //       }
+  //       let textAnchor: LabelTextAnchor = 'middle';
+  //       let isPositionAtAnchor = false;
+  //       let angle = 0;
+  //       if (this._parent.orientation === 'east') {
+  //         textAnchor = 'start';
+  //         isPositionAtAnchor = false;
+  //         angle = -90;
+  //       }
+  //       if (this.paraview.store.settings.type.bar.isDrawStackLabels) {
+  //         this._stackLabels.push(new Label(this.paraview, {
+  //           text: fixed`${Object.values(dataStack).map(item => item.value.value).reduce((a, b) => a + b)}`,
+  //           classList: ['bar-stack-label'],
+  //           x: 0,
+  //           y: 0,
+  //           textAnchor,
+  //           isPositionAtAnchor,
+  //           angle
+  //         }));
+  //         stack.label = this._stackLabels.at(-1)!;
+  //         this.append(this._stackLabels.at(-1)!);
+  //       }
+  //     }
+  //   });
+  //   this._bars = barData;
+  //   this._chartLandingView.reverseChildren();
+  // }
+
+  protected _completeLayout() {
+    super._completeLayout();
+
+    // if (this.paraview.store.settings.type.bar.isDrawStackLabels) {
+    //   for (const [clusterKey, cluster] of Object.entries(this._bars)) {
+    //     for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
+    //       const bar0 = Object.values(stack.bars)[0];
+    //       stack.label!.snapXTo(bar0, 'center');
+    //       stack.label!.y = bar0.y + (this.paraview.store.settings.type.bar.isStackLabelInsideBar
+    //         ? this.paraview.store.settings.type.bar.stackLabelGap
+    //         : - stack.label!.height - this.paraview.store.settings.type.bar.stackLabelGap);
+    //     }
+    //   }
+    //   this._resizeToFitLabels();
+    // }
   }
 
-  protected _checkLabelSpacing() {
-    const labels = Object.values(this.bars).flatMap(cluster =>
-      Object.values(cluster.stacks)).map(stack => stack.label!);
-    const gaps = labels.slice(1).map((label, i) => label.left - labels[i].right);
-    const minGap = Math.min(...gaps);
-    if (Math.round(minGap) < 0) {
-      const diffBefore = labels.at(-1)!.x - labels[0].x;
-      labels.slice(1).forEach((label, i) => {
-        // NB: Even if the anchor is set to middle, the labels may be rotated, so 
-        // the anchor will no longer be in the middle of the bbox
-        label.x = labels[i].right + 0 + label.anchorXOffset;
-      });
-      const diffAfter = labels.at(-1)!.x - labels[0].x;
-      this._parent.logicalWidth += diffAfter - diffBefore;
-    }
-  }
+  // protected _resizeToFitLabels() {
+  //   const labels = Object.values(this.bars).flatMap(cluster =>
+  //     Object.values(cluster.stacks)).map(stack => stack.label!);
+  //   const minX = Math.min(...labels.map(label => label.left));
+  //   if (minX < 0) {
+  //     this._parent.logicalWidth += -minX;
+  //     console.log('NEW WIDTH', this._width);
+  //     this.datapointViews.forEach(dp => {
+  //       dp.x += -minX; 
+  //     });
+  //   }
+  //   const maxX = Math.max(...labels.map(label => label.right));
+  //   if (maxX > this._width) {
+  //     const diff = maxX - this._width;
+  //     this._parent.logicalWidth += diff;
+  //     console.log('NEW WIDTH', this._width);
+  //   }
+  //   const minY = Math.min(...labels.map(label => label.top));
+  //   if (minY < 0) {
+  //     this._parent.logicalHeight += -minY;
+  //     console.log('NEW HEIGHT', this._height);
+  //     this.datapointViews.forEach(dp => {
+  //       dp.y += -minY; 
+  //     });
+  //     labels.forEach(label => {
+  //       label.y += -minY;
+  //     });
+  //   }
+  //   const maxY = Math.max(...labels.map(label => label.bottom));
+  //   if (maxY > this._height) {
+  //     const diff = maxY - this._height;
+  //     this._parent.logicalHeight += diff;
+  //     console.log('NEW HEIGHT', this._height);
+  //   }
+  //   //this._checkLabelSpacing();
+  // }
+
+  // protected _checkLabelSpacing() {
+  //   const labels = Object.values(this.bars).flatMap(cluster =>
+  //     Object.values(cluster.stacks)).map(stack => stack.label!);
+  //   const gaps = labels.slice(1).map((label, i) => label.left - labels[i].right);
+  //   const minGap = Math.min(...gaps);
+  //   if (Math.round(minGap) < 0) {
+  //     const diffBefore = labels.at(-1)!.x - labels[0].x;
+  //     labels.slice(1).forEach((label, i) => {
+  //       // NB: Even if the anchor is set to middle, the labels may be rotated, so 
+  //       // the anchor will no longer be in the middle of the bbox
+  //       label.x = labels[i].right + 0 + label.anchorXOffset;
+  //     });
+  //     const diffAfter = labels.at(-1)!.x - labels[0].x;
+  //     this._parent.logicalWidth += diffAfter - diffBefore;
+  //   }
+  // }
 
   legend() {
     if (this.paraview.store.settings.legend.itemOrder === 'chart') {
@@ -470,7 +494,7 @@ export class Bar extends XYDatapointView {
   declare readonly chart: BarChart;
   declare protected _parent: XYSeriesView; 
 
-  protected _height!: number;
+  protected _label: Label | null = null;
 
   constructor(
     seriesView: XYSeriesView,
@@ -479,6 +503,36 @@ export class Bar extends XYDatapointView {
     super(seriesView);
     //this._width = 45; //BarStack.width; // this.paraview.store.settings.type.bar.barWidth;
     this._isStyleEnabled = this.paraview.store.settings.type.bar.colorByDatapoint;
+  }
+
+  get x() {
+    return super.x;
+  }
+
+  set x(x: number) {
+    if (this._label) {
+      this._label.x += x - this._x;
+    }
+    super.x = x;
+  }
+
+  get y() {
+    return super.y;
+  }
+
+  set y(y: number) {
+    if (this._label) {
+      this._label.y += y - this._y;
+    }
+    super.y = y;
+  }
+
+  get label() {
+    return this._label;
+  }
+
+  set label(label: Label | null) {
+    this._label = label;
   }
 
   get _selectedMarkerX() {
@@ -501,12 +555,43 @@ export class Bar extends XYDatapointView {
     const orderIdx = Object.keys(this.stack.bars).indexOf(this.series.key);
     const pxPerYUnit = this.chart.parent.logicalHeight/this.chart.axisInfo!.yLabelInfo.range!;
     const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
+      // @ts-ignore
       .map(bar => (bar.datapoint.y.value as number)*pxPerYUnit)
       .reduce((a, b) => a + b, 0);
     this._width = BarStack.width;
+    // @ts-ignore
     this._height = (this.datapoint.data.y.value as number)*pxPerYUnit;
     this._x = this.stack.x + this.stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
     this._y = this.chart.height - this.height - distFromXAxis;
+    console.log('BAR', this._x, this._y, this._width, this._height);
+  }
+
+  completeLayout() {
+    super.completeLayout();
+    if (this.paraview.store.settings.type.bar.isDrawBarLabels) {
+      let textAnchor: LabelTextAnchor = 'middle';
+      let isPositionAtAnchor = false;
+      let angle = 0;
+      if (this.chart.parent.orientation === 'east') {
+        textAnchor = 'start';
+        isPositionAtAnchor = false;
+        angle = -90;
+      }
+      this._label = new Label(this.paraview, {
+        // @ts-ignore
+        text: formatBox(this.datapoint.data.y, this.paraview.store.getFormatType('pieSliceValue')),
+        classList: ['bar-label'],
+        textAnchor,
+        isPositionAtAnchor,
+        angle
+      });
+      this.append(this._label);
+
+      this._label.styleInfo = {stroke: 'none', fill: 'white'};
+      this._label.snapXTo(this, 'center');
+      this._label.y = this._y + (this.paraview.store.settings.type.bar.stackLabelGap);
+
+    }
   }
 
   protected _createSymbol() {

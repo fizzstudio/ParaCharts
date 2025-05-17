@@ -88,7 +88,6 @@
         "axis.y.tick.step": 1,
         "type.bar.colorByDatapoint": true,
         "type.bar.barWidth": 20,
-        "type.bar.isDrawStackLabels": true,
         "legend.isDrawLegend": false,
         "sonification.isSoniEnabled": true
       }
