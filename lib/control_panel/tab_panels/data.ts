@@ -62,7 +62,7 @@ export class DataPanel extends ControlPanelTabPanel {
 
     const downloadLinkEl = document.createElement('a');
     paraView.fileSavePlaceholder.appendChild(downloadLinkEl);
-    const title = paraView.documentView!.titleText;
+    const title = paraView.documentView!.titleText || 'parachart';
     downloadLinkEl.download = `${title.replace(/\W/g, '_')}.svg`;
     downloadLinkEl.href = url;
     downloadLinkEl.click();
@@ -145,7 +145,7 @@ export class DataPanel extends ControlPanelTabPanel {
             `
             : nothing
           }
-          <button 
+          <!--<button 
             @click=${() => {
                 // this.controlPanel.dialog.show(
                 //   'JSON Image Metadata', 
@@ -160,13 +160,13 @@ export class DataPanel extends ControlPanelTabPanel {
             }
           >
             JIM
-          </button>
-          <button 
+          </button>-->
+          <!--<button 
             @click=${() => this.controlPanel.dialog.show('Save data')}
           >
             Save data
-          </button>
-          <button 
+          </button>-->
+          <!--<button 
             @click=${() => {
               // this.controlPanel.dialog.show('Data table', html`
               //   <todo-datatable
@@ -177,17 +177,17 @@ export class DataPanel extends ControlPanelTabPanel {
             }}
           >
             Data table
-          </button>
-          <button 
+          </button>-->
+          <!--<button 
             @click=${() => this.controlPanel.dialog.show('Source links')}
           >
             Source Links
-          </button>
-          <button 
+          </button>-->
+          <!--<button 
             @click=${() => this._saveChart()}
           >
             Save chart
-          </button>
+          </button>-->
         </div>
       </div>
       <div

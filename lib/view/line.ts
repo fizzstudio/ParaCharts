@@ -60,10 +60,10 @@ export class LineChart extends PointChart {
   }
 
   settingDidChange(key: string, value: any) {
-    if (!super.settingDidChange(key, value)) {
-      this.paraview.requestUpdate();
-      return true;
-    }
+    // if (!super.settingDidChange(key, value)) {
+    //   this.paraview.requestUpdate();
+    //   return true;
+    // }
     return false;
   }
 
@@ -106,7 +106,7 @@ export class LineSection extends ChartPoint {
   //   return this.chart.settings.selectedPointMarkerSize.height;
   // }
 
-  computeLayout() {
+  completeLayout() {
     // find midpoint between values for next and previous, draw line as 2 segments
 
     // find midpoint between values for this and previous
@@ -123,7 +123,7 @@ export class LineSection extends ChartPoint {
     this._computeCentroid();
 
     // create shape and symbol
-    super.computeLayout();
+    super.completeLayout();
   }
 
   protected _computePrev() {

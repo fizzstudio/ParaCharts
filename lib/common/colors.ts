@@ -277,19 +277,19 @@ export class Colors {
         title: 'FFB',
         colors: [
           {
-            value: 'rgb(210,67,62)',
+            value: 'hsl(4, 50%, 52%)', //'rgb(210,67,62)',
             name: 'red'
           },
           {
-            value: 'rgb(246,171,6)',
+            value: 'hsl(39, 70%, 44%)', // rgb(246,171,6)',
             name: 'yellow'
           },
           {
-            value: 'rgb(33,131,57)',
+            value: 'hsl(131, 100%, 18%)', // 'rgb(33,131,57)',
             name: 'green'
           },
           {
-            value: 'rgb(38,121,153)',
+            value: 'hsl(210, 25%, 25%)', //'rgb(38,121,153)',
             name: 'blue'
           },
           {

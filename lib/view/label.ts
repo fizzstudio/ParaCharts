@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { nothing, svg } from 'lit';
 import {type Ref, ref, createRef} from 'lit/directives/ref.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 
 import { View, type SnapLocation } from '../view/base_view';
 import { generateUniqueId, fixed } from '../common/utils';
@@ -58,6 +59,7 @@ export class Label extends View {
   protected _anchorYOffset!: number;
   protected _text: string;
   protected _textLines: TextLine[] = [];
+  protected _styleInfo: StyleInfo = {};
 
   constructor(paraview: ParaView, private options: LabelOptions) {
     super(paraview);
@@ -156,6 +158,14 @@ export class Label extends View {
     return this.top + this.boundingHeight;
   }
 
+  get styleInfo() {
+    return this._styleInfo;
+  }
+
+  set styleInfo(styleInfo: StyleInfo) {
+    this._styleInfo = styleInfo;
+  }
+  
   computeSize() {
     // XXX Need to make sure the label gets rendered here with the
     // same font settings it will ultimately be displayed with
@@ -268,6 +278,7 @@ export class Label extends View {
         text-anchor=${this._textAnchor}
         transform=${this._makeTransform() ?? nothing}
         id=${this.id}
+        style=${styleMap(this._styleInfo)}
       >
         ${this._textLines.length
           ? this._textLines.map((line, i) => 

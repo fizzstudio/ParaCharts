@@ -166,7 +166,9 @@ export class Sonifier {
 
     datapoints.forEach((datapoint, i) => {
       
+      // @ts-ignore
       const x = datapoint.data.x.value as number;
+      // @ts-ignore
       const y = datapoint.data.y.value as number;
       // if (isUnplayable(x, this.chart.parent.docView.xAxis!)) {
       //   return;

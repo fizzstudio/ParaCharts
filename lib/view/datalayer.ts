@@ -145,14 +145,6 @@ export abstract class DataLayer extends ChartLayer {
     return this._chartLandingView;
   }
 
-  /*get keymap() {
-    return keymaps.chart;
-  }
-
-  protected get _hotkeyActions() {
-    return hotkeyActions.chart;
-  }*/
-
   get datapointViews() {
     return this._chartLandingView.datapointViews;
   }
@@ -193,21 +185,34 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   init() {
-    this._createComponents();
-    this._layoutComponents();
+    this._beginLayout();
+    this._completeLayout();
+    //this._layoutComponents();
   }
 
-  protected abstract _createComponents(): void;
-  
-  protected _layoutComponents() {
+  protected abstract _createDatapoints(): void;
+
+  protected _beginLayout() {
+    this._createDatapoints();
     for (const datapointView of this.datapointViews) {
       datapointView.computeLocation();
     }
     for (const datapointView of this.datapointViews) {
-      datapointView.computeLayout();
+      datapointView.completeLayout();
     }
-    this._layoutSymbols();
   }
+
+  protected _completeLayout() {}
+  
+  // protected _layoutComponents() {
+  //   for (const datapointView of this.datapointViews) {
+  //     datapointView.computeLocation();
+  //   }
+  //   for (const datapointView of this.datapointViews) {
+  //     datapointView.completeLayout();
+  //   }
+  //   //this._layoutSymbols();
+  // }
 
   protected _newDatapointView(seriesView: SeriesView, ..._rest: any[]): DatapointView {
     return new DatapointView(seriesView);
@@ -291,10 +296,10 @@ export abstract class DataLayer extends ChartLayer {
 
   abstract setLowVisionMode(lvm: boolean): void; 
 
-  protected _layoutSymbols() {
-    for (const datapointView of this.datapointViews) {
-      datapointView.layoutSymbol();
-    }
-  }
+  // protected _layoutSymbols() {
+  //   for (const datapointView of this.datapointViews) {
+  //     datapointView.layoutSymbol();
+  //   }
+  // }
 
 }
