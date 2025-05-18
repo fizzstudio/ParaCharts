@@ -80,6 +80,7 @@ export const defaults: Settings = {
         length: 10,
         labelFormat: 'raw',
         tickLabel: {
+          isDrawEnabled: true,
           angle: -45,
           offsetPadding: 8,
           gap: 0
@@ -109,6 +110,7 @@ export const defaults: Settings = {
         length: 10,
         labelFormat: 'raw',
         tickLabel: {
+          isDrawEnabled: true,
           angle: 0,
           offsetPadding: 0,
           gap: 0
@@ -207,7 +209,7 @@ export const defaults: Settings = {
       annularThickness: 1,
       categoryLabelPosition: 'outside',
       categoryLabelFormat: 'raw',
-      categoryLabelUnderlineGap: 4,
+      categoryLabelUnderlineGap: 6,
       sliceValueFormat: 'raw'
     },
     donut: {
@@ -227,7 +229,7 @@ export const defaults: Settings = {
       annularThickness: 0.5,
       categoryLabelPosition: 'outside',
       categoryLabelFormat: 'raw',
-      categoryLabelUnderlineGap: 4,
+      categoryLabelUnderlineGap: 6,
       sliceValueFormat: 'raw'
     },
     gauge: {
@@ -247,7 +249,7 @@ export const defaults: Settings = {
       annularThickness: 0.5,
       categoryLabelPosition: 'outside',
       categoryLabelFormat: 'raw',
-      categoryLabelUnderlineGap: 4,
+      categoryLabelUnderlineGap: 6,
       sliceValueFormat: 'raw'
     },
     stepline: {

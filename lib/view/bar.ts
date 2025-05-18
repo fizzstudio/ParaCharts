@@ -21,7 +21,7 @@ interface BarStackItem {
 }
 
 /**
- * Container for a cluster of bar chart stacks.
+ * Contains clustered bar stack data.
  */
 class BarCluster {
   static width: number;
@@ -68,24 +68,10 @@ class BarCluster {
     this._x = this.index*BarCluster.width;
   }
 
-  // render() {
-  //   return svg`
-  //     <g
-  //       id=${this.id}
-  //     >
-  //       ${ 
-  //         Object.entries(this.stacks).map(([stackKey, stack]) => 
-  //           stack.render()
-  //         )
-  //       }
-  //     </g>
-  //   `;
-  // }
-
 }
 
 /**
- * Visual stack containing one or more bar chart bars. 
+ * Contains data for bars contained in a stack.
  */
 export class BarStack {
 
@@ -135,20 +121,6 @@ export class BarStack {
     this._x = BarCluster.padding + this.index*BarStack.width;
   }
 
-  // render() {
-  //   return svg`
-  //     <g
-  //       id=${this.id}
-  //       class="stack"
-  //       role="datapoint_group"
-  //     >
-  //       ${Object.entries(this.bars).map(([orderKey, bar]) => 
-  //         bar.render()
-  //       )}
-  //     </g>
-  //   `;
-  // }
-
 }
 
 function abbreviateSeries(keys: readonly string[]) {
@@ -185,7 +157,7 @@ function abbreviateSeries(keys: readonly string[]) {
 export class BarChart extends XYChart {
 
   protected _clusteredData!: BarClusterMap;
-  private _abbrevs?: {[series: string]: string};
+  protected _abbrevs?: {[series: string]: string};
   protected _stackLabels: Label[] = [];
 
   protected _addedToParent() {
@@ -494,11 +466,12 @@ export class Bar extends XYDatapointView {
   declare readonly chart: BarChart;
   declare protected _parent: XYSeriesView; 
 
-  protected _label: Label | null = null;
+  protected _recordLabel: Label | null = null;
+  protected _valueLabel: Label | null = null;
 
   constructor(
     seriesView: XYSeriesView,
-    private stack: BarStack
+    protected _stack: BarStack
   ) { 
     super(seriesView);
     //this._width = 45; //BarStack.width; // this.paraview.store.settings.type.bar.barWidth;
@@ -510,8 +483,8 @@ export class Bar extends XYDatapointView {
   }
 
   set x(x: number) {
-    if (this._label) {
-      this._label.x += x - this._x;
+    if (this._valueLabel) {
+      this._valueLabel.x += x - this._x;
     }
     super.x = x;
   }
@@ -521,18 +494,26 @@ export class Bar extends XYDatapointView {
   }
 
   set y(y: number) {
-    if (this._label) {
-      this._label.y += y - this._y;
+    if (this._valueLabel) {
+      this._valueLabel.y += y - this._y;
     }
     super.y = y;
   }
 
-  get label() {
-    return this._label;
+  get recordLabel() {
+    return this._recordLabel;
   }
 
-  set label(label: Label | null) {
-    this._label = label;
+  set recordLabel(label: Label | null) {
+    this._recordLabel = label;
+  }
+
+  get valueLabel() {
+    return this._valueLabel;
+  }
+
+  set valueLabel(label: Label | null) {
+    this._valueLabel = label;
   }
 
   get _selectedMarkerX() {
@@ -552,18 +533,17 @@ export class Bar extends XYDatapointView {
   }
 
   computeLocation() {
-    const orderIdx = Object.keys(this.stack.bars).indexOf(this.series.key);
+    const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
     const pxPerYUnit = this.chart.parent.logicalHeight/this.chart.axisInfo!.yLabelInfo.range!;
-    const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
+    const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
       // @ts-ignore
       .map(bar => (bar.datapoint.y.value as number)*pxPerYUnit)
       .reduce((a, b) => a + b, 0);
     this._width = BarStack.width;
     // @ts-ignore
     this._height = (this.datapoint.data.y.value as number)*pxPerYUnit;
-    this._x = this.stack.x + this.stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
+    this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
     this._y = this.chart.height - this.height - distFromXAxis;
-    console.log('BAR', this._x, this._y, this._width, this._height);
   }
 
   completeLayout() {
@@ -577,7 +557,16 @@ export class Bar extends XYDatapointView {
         isPositionAtAnchor = false;
         angle = -90;
       }
-      this._label = new Label(this.paraview, {
+      this._recordLabel = new Label(this.paraview, {
+        // @ts-ignore
+        text: formatBox(this.datapoint.data.x, this.paraview.store.getFormatType('pieSliceValue')),
+        classList: ['bar-label'],
+        textAnchor,
+        isPositionAtAnchor,
+        angle
+      });
+      this.append(this._recordLabel);
+      this._valueLabel = new Label(this.paraview, {
         // @ts-ignore
         text: formatBox(this.datapoint.data.y, this.paraview.store.getFormatType('pieSliceValue')),
         classList: ['bar-label'],
@@ -585,11 +574,14 @@ export class Bar extends XYDatapointView {
         isPositionAtAnchor,
         angle
       });
-      this.append(this._label);
+      this.append(this._valueLabel);
 
-      this._label.styleInfo = {stroke: 'none', fill: 'white'};
-      this._label.snapXTo(this, 'center');
-      this._label.y = this._y + (this.paraview.store.settings.type.bar.stackLabelGap);
+      this._recordLabel.styleInfo = {stroke: 'none', fill: 'white'};
+      this._recordLabel.snapXTo(this, 'center');
+      this._recordLabel.y = this.chart.height - this._recordLabel.height - this.paraview.store.settings.type.bar.stackLabelGap;
+      this._valueLabel.styleInfo = {stroke: 'none', fill: 'white'};
+      this._valueLabel.snapXTo(this, 'center');
+      this._valueLabel.y = this._y + (this.paraview.store.settings.type.bar.stackLabelGap);
 
     }
   }
@@ -614,6 +606,18 @@ export class Bar extends XYDatapointView {
       height: this._height
     });
     super._createShape();
+  }
+
+  get selectedMarker() {
+    return new Rect(this.paraview, {
+      width: this._width + 4,
+      height: this._height + 4,
+      x: this._x - 2,
+      y: this._y - 2,
+      fill: 'none',
+      stroke: 'black',
+      strokeWidth: 2
+    });
   }
 
 }
