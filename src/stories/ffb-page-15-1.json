@@ -53,7 +53,7 @@
       },
       "settings": {
         "color.colorPalette": "ffb",
-        "color.colorMap": "yellow,blue,indigo,light gray",
+        "color.colorMap": "neutral,somewhat_rewarding,very_rewarding",
         "chart.orientation": "north",
         "chart.size.width": 360,
         "chart.title.align": "start",

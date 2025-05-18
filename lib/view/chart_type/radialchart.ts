@@ -249,7 +249,13 @@ export abstract class RadialChart extends DataLayer {
         anchor = 'middle';
       } else if (this.settings.categoryLabelPosition === 'outside') {
         labelLoc = arcCenter.add(gapVec);
-        anchor = labelLoc.x > this.cx ? 'start' : 'end';
+        if (labelLoc.x > this.cx) {
+          labelLoc.x += 5;
+          anchor = 'start';
+        } else {
+          labelLoc.x -= 5;
+          anchor = 'end';
+        }
       } else {
         labelLoc = new Vec2();
         anchor = 'middle';
@@ -262,7 +268,9 @@ export abstract class RadialChart extends DataLayer {
         textAnchor: anchor,
         isPositionAtAnchor: true
       });
-      const underlineStart = labelLoc.addY(this.settings.categoryLabelUnderlineGap);
+      const underlineStart = labelLoc
+        //.addX(slice.categoryLabel.textAnchor === 'start' ? 5 : -5)
+        .addY(this.settings.categoryLabelUnderlineGap);
       slice.leader = new Path(this.paraview, {
         points: [arcCenter, underlineStart, underlineStart.x > slice.categoryLabel.centerX
           ? underlineStart.subtractX(slice.categoryLabel.width)
@@ -446,10 +454,6 @@ export abstract class RadialChart extends DataLayer {
   }
 
   playLeft() {
-    
-  }
-
-  selectCurrent(extend: boolean) {
     
   }
 
