@@ -286,8 +286,14 @@ export class DocumentView extends Container(View) {
         orientation: 'horiz',
         wrapWidth: this._chartLayers.boundingWidth
       });
-      this._grid.insertRow(1);
-      this._grid.append(this._legends.north, {x: 1, y: 0, width: 1, colAlign: 'center', margin: {bottom: margin}});
+      this._grid.insertRow(this._store.title ? 1 : 0);
+      this._grid.append(this._legends.north, {
+        x: 1,
+        y: 0,
+        width: 1,
+        colAlign: 'center',
+        margin: {bottom: margin}
+      });
     }
   }
 
