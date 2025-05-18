@@ -268,6 +268,9 @@ export class Label extends View {
   render() {
     // TODO: figure out why `this._y` is larger here than for single line titles
     // HACK: divide `this._y` by 2 for `y` attribute value
+    if (this.options!.classList!.includes('radial-value-label') || this.options!.classList!.includes('bar-label')){
+      this.styleInfo.fill = this.paraview.store.colors.contrastValueAt(this.parent!.index)
+    }
     return svg`
       <text 
         ${ref(this._elRef)}
