@@ -48,6 +48,7 @@ export class ParaStore extends State {
   @property() settings: Settings;
   @property() darkMode = false;
   @property() announcement = '';
+  @property()  _sparkBrailleData: string = ''
 
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';

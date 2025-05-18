@@ -120,6 +120,8 @@ export class DataPanel extends ControlPanelTabPanel {
   ];
 
   render() {
+    const paraView = this.controlPanel.parentElement!.firstElementChild as ParaView;
+    this.sparkBrailleData = paraView.store._sparkBrailleData
     return html`   
       <div 
         id="data-page" 
@@ -135,7 +137,7 @@ export class DataPanel extends ControlPanelTabPanel {
                 @click=${() => {
                   this.isSparkBrailleVisible = !this.isSparkBrailleVisible;
                   // XXX Does this work?
-                  this._store.settings.controlPanel.isSparkBrailleVisible = this.isSparkBrailleVisible;
+                  //this._store.settings.controlPanel.isSparkBrailleVisible = this.isSparkBrailleVisible;
                   //this.controlPanel.requestUpdate();
                   this._sparkBrailleRef.value!.focus();
                 }}
