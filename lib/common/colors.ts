@@ -293,7 +293,7 @@ export class Colors {
             name: 'blue'
           },
           {
-            value: 'rgb(42,64,81)',
+            value: 'hsl(4, 50%, 52%)', //'rgb(42,64,81)',
             name: 'indigo'
           },
           {
@@ -305,8 +305,28 @@ export class Colors {
             name: 'dark gray'
           },
           {
-            value: 'rgb(204,204,204)',
+            value: 'hsl(0, 0%, 80%)', // 'rgb(204,204,204)',
             name: 'light gray'
+          },
+          {
+            name: 'no_opinion',
+            value: 'hsl(0, 0%, 80%)'
+          },
+          {
+            name: 'very_unrewarding',
+            value: 'hsl(4, 50%, 52%)'
+          },
+          {
+            name: 'neutral',
+            value: 'hsl(39, 70%, 44%)'
+          },
+          {
+            name: 'somewhat_rewarding',
+            value: 'hsl(131, 100%, 18%)'
+          },
+          {
+            name: 'very_rewarding',
+            value: 'hsl(210, 25%, 25%)'
           },
           {
             value: 'hsl(0, 100%, 50%)',
