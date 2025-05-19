@@ -288,7 +288,7 @@ export class DocumentView extends Container(View) {
         orientation: 'horiz',
         wrapWidth: this._chartLayers.boundingWidth
       });
-      this._grid.insertRow(this._store.title ? 1 : 0);
+      this._grid.insertRow(this._store.settings.chart.title.isDrawTitle && this._store.title ? 1 : 0);
       this._grid.append(this._legends.north, {
         x: 1,
         y: 0,
