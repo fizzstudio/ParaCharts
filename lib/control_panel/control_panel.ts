@@ -180,7 +180,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
       //this.todo.signalManager.signal('controlPanelDataLoadComplete');
       // Any panels that need updating in response to changed data should
       // do so here
-      this.annotationPanel.requestUpdate();
+      // this.annotationPanel.requestUpdate();
       this.descriptionPanel.requestUpdate();
 
       // if (!this._isReady) {

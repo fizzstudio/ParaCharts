@@ -21,6 +21,7 @@ import { Label, type LabelTextAnchor } from './label';
 import { ParaView } from '../paraview';
 
 import { type TemplateResult } from 'lit';
+import { svg } from 'lit';
 
 /**
  * A single tier of tick labels.
@@ -43,6 +44,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   ) {
     super(paraview);
     this.setLength(length);
+    this._hidden = !this.axis.settings.tick.tickLabel.isDrawEnabled;
   }
 
   setLength(length: number) {

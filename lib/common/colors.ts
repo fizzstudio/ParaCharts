@@ -298,8 +298,8 @@ export class Colors {
             contrastValue: 'hsl(0, 0%, 100%)'
           },
           {
-            value: 'rgb(42,64,81)',
-            name: 'indigo',
+            value: 'hsl(4, 50%, 52%)', //'rgb(42,64,81)',
+            name: 'indigo'
             contrastValue: 'hsl(0, 0%, 100%)'
           },
           {
@@ -313,9 +313,29 @@ export class Colors {
             contrastValue: 'hsl(0, 0%, 100%)'
           },
           {
-            value: 'rgb(204,204,204)',
-            name: 'light gray',
+            value: 'hsl(0, 0%, 80%)', // 'rgb(204,204,204)',
+            name: 'light gray'
             contrastValue: 'hsl(0, 0%, 0%)'
+          },
+          {
+            name: 'no_opinion',
+            value: 'hsl(0, 0%, 80%)'
+          },
+          {
+            name: 'very_unrewarding',
+            value: 'hsl(4, 50%, 52%)'
+          },
+          {
+            name: 'neutral',
+            value: 'hsl(39, 70%, 44%)'
+          },
+          {
+            name: 'somewhat_rewarding',
+            value: 'hsl(131, 100%, 18%)'
+          },
+          {
+            name: 'very_rewarding',
+            value: 'hsl(210, 25%, 25%)'
           },
           {
             value: 'hsl(0, 100%, 50%)',
