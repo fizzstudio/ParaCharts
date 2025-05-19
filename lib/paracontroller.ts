@@ -24,6 +24,7 @@ export class ParaController extends Logger {
       if (parachart.filename) {
         await this.runLoader(parachart.filename);
         this.log('ParaCharts will now commence the raising of the roof and/or the dead');
+        parachart.ready();
       }
       parachart.addEventListener('filenamechange', () =>
         this.runLoader(parachart.filename));
