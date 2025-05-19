@@ -57,7 +57,7 @@ export class DocumentView extends Container(View) {
 
     //this.padding = this._store.settings.chart.padding;
     const pad = Math.max(8 + 1.1*16, this._store.settings.chart.padding);
-    this.padding = {left: pad, right: pad};
+    this.padding = {left: pad, right: pad, top: pad};
     this._grid = new GridLayout(this.paraview, {
       numCols:
         (this._store.settings.legend.isDrawLegend &&
