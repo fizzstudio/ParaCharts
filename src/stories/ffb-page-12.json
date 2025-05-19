@@ -3,6 +3,10 @@
     {
       "type": "column",
       "title": "",
+      "chartTheme": {
+        "baseQuantity": "performance",
+        "baseKind": "dimensioned"
+      },
       "facets": {
         "x": {
           "label": "Category",
