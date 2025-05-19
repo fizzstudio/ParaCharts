@@ -209,7 +209,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
   }
 
   render() {
-    this.log('render', this.dataState);
+    this.log('render', this._isOpen);
     let deetsState = this._isOpen ? 'expanded' : 'collapsed';
 //    deetsState += this.todo.darkMode ? ' darkmode' : '';
    
@@ -244,8 +244,18 @@ export class ParaControlPanel extends logging(ParaComponent) {
         id="controls"
         class=${deetsState}
         tablabelmode=${tabLabelModes[this.settings.tabLabelStyle]}
-        @open=${() => this._isOpen = true}
-        @close=${() => this._isOpen = false}
+        @open=${
+          () => {
+            console.log('CPANEL OPEN');
+            this._isOpen = true;
+          }
+        }
+        @close=${
+          () => {
+            console.log('CPANEL CLOSE');
+            this._isOpen = false;
+          }
+        }
         @invalidvalue=${(e: CustomEvent) => this._msgDialogRef.value!.show(e.detail)}
         @ready=${() => {
           // this.log('fizz-tab-details ready; focusing data layer');
@@ -265,7 +275,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
             .controlPanel=${this}
           ></para-description-panel>
         </fizz-tab-panel>
-
+        <!--
         <fizz-tab-panel
           tablabel="Data"
           icon=${tabDataIcon}
@@ -278,7 +288,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
             .isSparkBrailleVisible=${this.settings.isSparkBrailleVisible}
           ></para-data-panel>
         </fizz-tab-panel>
-
+      -->
         <fizz-tab-panel
           tablabel="Colors"
           icon=${tabColorsIcon}

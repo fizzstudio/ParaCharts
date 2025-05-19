@@ -45,6 +45,8 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
     super(paraview);
     this.setLength(length);
     this._hidden = !this.axis.settings.tick.tickLabel.isDrawEnabled;
+    // XXX temp hack
+    this._padding = {top: 5, bottom: 0, left: 0, right: 0};
   }
 
   setLength(length: number) {
