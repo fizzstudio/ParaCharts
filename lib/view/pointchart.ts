@@ -48,7 +48,7 @@ export abstract class PointChart extends XYChart {
     return new ChartPoint(seriesView);
   }
 
-  protected _createComponents() {
+  protected _createDatapoints() {
     const xs: string[] = [];
     for (const [x, i] of enumerate(this.paraview.store.model!.series[0].facet('x')!)) {
       xs.push(formatBox(x, this.paraview.store.getFormatType(`${this.parent.docView.type as PointChartType}Point`)));

@@ -41,6 +41,7 @@ interface Record {
 export interface Color {
   value: string;
   name: string;
+  contrastValue?: string;
 }
 
 export class Colors {
@@ -277,36 +278,64 @@ export class Colors {
         title: 'FFB',
         colors: [
           {
-            value: 'rgb(210,67,62)',
-            name: 'red'
+            value: 'hsl(4, 50%, 52%)', //'rgb(210,67,62)',
+            name: 'red',
+            contrastValue: 'hsl(0, 0%, 100%)'
           },
           {
-            value: 'rgb(246,171,6)',
-            name: 'yellow'
+            value: 'hsl(39, 70%, 44%)', // rgb(246,171,6)',
+            name: 'yellow',
+            contrastValue: 'hsl(0, 0%, 100%)'
           },
           {
-            value: 'rgb(33,131,57)',
-            name: 'green'
+            value: 'hsl(131, 100%, 18%)', // 'rgb(33,131,57)',
+            name: 'green',
+            contrastValue: 'hsl(0, 0%, 100%)'
           },
           {
-            value: 'rgb(38,121,153)',
-            name: 'blue'
+            value: 'hsl(210, 25%, 25%)', //'rgb(38,121,153)',
+            name: 'blue',
+            contrastValue: 'hsl(0, 0%, 100%)'
           },
           {
-            value: 'rgb(42,64,81)',
-            name: 'indigo'
+            value: 'hsl(4, 50%, 52%)', //'rgb(42,64,81)',
+            name: 'indigo',
+            contrastValue: 'hsl(0, 0%, 100%)'
           },
           {
             value: 'rgb(13,53,67)',
-            name: 'slate'
+            name: 'slate',
+            contrastValue: 'hsl(0, 0%, 100%)'
           },
           {
             value: 'rgb(48,64,69)',
-            name: 'dark gray'
+            name: 'dark gray',
+            contrastValue: 'hsl(0, 0%, 100%)'
           },
           {
-            value: 'rgb(204,204,204)',
-            name: 'light gray'
+            value: 'hsl(0, 0%, 80%)', // 'rgb(204,204,204)',
+            name: 'light gray',
+            contrastValue: 'hsl(0, 0%, 0%)'
+          },
+          {
+            name: 'no_opinion',
+            value: 'hsl(0, 0%, 80%)'
+          },
+          {
+            name: 'very_unrewarding',
+            value: 'hsl(4, 50%, 52%)'
+          },
+          {
+            name: 'neutral',
+            value: 'hsl(39, 70%, 44%)'
+          },
+          {
+            name: 'somewhat_rewarding',
+            value: 'hsl(131, 100%, 18%)'
+          },
+          {
+            name: 'very_rewarding',
+            value: 'hsl(210, 25%, 25%)'
           },
           {
             value: 'hsl(0, 100%, 50%)',
@@ -634,6 +663,18 @@ export class Colors {
     }
     // Never use 'highlight' for any series/datapoint color
     return colors[index % (colors.length - 1)].value;
+  }
+
+  contrastValueAt(index: number) {
+    const colors = this._colorMap
+      ? this._colorMap.map(i => this.palette.colors[i])
+      : this.palette.colors;
+    if (index === -1) {
+      // highlight
+      return colors.at(-1)!.value;
+    }
+    // Never use 'highlight' for any series/datapoint color
+    return colors[index % (colors.length - 1)].contrastValue ?? `hsl(0, 0%, 100%)`;
   }
 
   registerKey(key: string) {

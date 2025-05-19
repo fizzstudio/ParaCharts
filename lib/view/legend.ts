@@ -86,13 +86,13 @@ export class Legend extends Container(View) {
       this._grid.padding = hasLegendBox ? this.paraview.store.settings.legend.padding : 0;
       views.forEach(v => this._grid.append(v));
     } else {
-      let labelsPerRow = views.length/2;
+      let labelsPerRow = views.length/3;
       while (true) {
         const colGaps = intersperse(
           new Array(labelsPerRow).fill(symLabelGap),
           new Array(labelsPerRow - 1).fill(pairGap));
         this._grid = new GridLayout(this.paraview, {
-          numCols: labelsPerRow*2,
+          numCols: labelsPerRow*3,
           colGaps: colGaps,
         }, 'legend-grid');  
         this._grid.padding = hasLegendBox ? this.paraview.store.settings.legend.padding : 0;
