@@ -70,7 +70,7 @@ export class DocumentView extends Container(View) {
 
     this._populateGrid();
 
-    if (this._store.title) {
+    if (this._store.settings.chart.title.isDrawTitle && this._store.title) {
       this.createTitle();
     }
     // Draw the layers on top of the axes
