@@ -616,4 +616,7 @@ export class Bar extends XYDatapointView {
     super._createShape();
   }
 
+   onFocus() {
+    super.onFocus();
+  }
 }

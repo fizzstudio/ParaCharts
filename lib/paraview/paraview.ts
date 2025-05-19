@@ -243,7 +243,7 @@ export class ParaView extends logging(ParaComponent) {
   // Anything that needs to be done when data is updated, do here
   private dataUpdated(): void {
     this.createDocumentView();
-    this._summarizer = new BasicXYChartSummarizer(this._store.model!);
+    //this._summarizer = new BasicXYChartSummarizer(this._store.model!);
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {

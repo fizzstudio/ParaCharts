@@ -530,9 +530,13 @@ export class XYSeriesView extends SeriesView {
   onFocus() {
     super.onFocus();
     let data = []
-    for (let point of this.series.rawData){
+    for (let point of this.series.rawData) {
       data.push(point.y)
     }
+    if (this.paraview.store.type == "bar" || "column"){
+      this.paraview.store.updateSettings(draft => {
+      draft.controlPanel.isSparkBrailleBar = true
+    })};
     this.paraview.store._sparkBrailleData = data.join(' ');
     /*todo().deets!.sparkBrailleData = this.series.data.join(' ');
     this.eventActionManager!.dispatch('series_focused', {
@@ -674,6 +678,10 @@ export abstract class XYDatapointView extends DatapointView {
     for (let point of this.series.rawData){
       data.push(point.y)
     }
+    if (this.paraview.store.type == "bar" || "column"){
+      this.paraview.store.updateSettings(draft => {
+      draft.controlPanel.isSparkBrailleBar = true
+    })};
     this.paraview.store._sparkBrailleData = data.join(' ');
     /*todo().deets!.sparkBrailleData = this.series.data.join(' ');
     if (todo().controller.settingStore.settings.sonification.isSoniEnabled) {

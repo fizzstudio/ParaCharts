@@ -156,8 +156,8 @@ export class DatapointView extends DataView {
   onFocus() {
     super.onFocus();
     this._visit();
-    this.paraview.store.announce(
-      this.paraview.summarizer.getDatapointSummary(this.datapoint, 'raw'));
+    //this.paraview.store.announce(
+    //this.paraview.summarizer.getDatapointSummary(this.datapoint, 'raw'));
   }
 
   /** Compute and set `x` and `y` */
