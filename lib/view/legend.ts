@@ -27,14 +27,15 @@ export interface LegendOptions {
   wrapWidth: number;
 }
 
-const intersperse = (a: any[], b: any[]) => {
+const intersperse = (...arrays: any[][]) => {
   const out: any[] = [];
-  a.forEach((x, i) => {
-    out.push(x);
-    if (b[i] !== undefined) {
-      out.push(b[i]);
-    }
-  });
+  for (let i = 0; i < Math.max(...arrays.map(a => a.length)); i++) {
+    arrays.forEach(array => {
+      if (array[i] !== undefined) {
+        out.push(array[i]);
+      }
+    });  
+  }
   return out;
 };
 
@@ -89,6 +90,7 @@ export class Legend extends Container(View) {
       let labelsPerRow = views.length/3;
       while (true) {
         const colGaps = intersperse(
+          new Array(labelsPerRow).fill(0),
           new Array(labelsPerRow).fill(symLabelGap),
           new Array(labelsPerRow - 1).fill(pairGap));
         this._grid = new GridLayout(this.paraview, {
