@@ -21,6 +21,8 @@ export class DataPanel extends ControlPanelTabPanel {
 
   protected _sparkBrailleRef = createRef<sb.SparkBraille>();
   protected _sparkBrailleWrapperRef = createRef<HTMLDivElement>();
+  protected _isSBProp = false;
+  protected _isBar = false;
 
   protected _saveChart() {
     const paraView = this.controlPanel.parentElement!.firstElementChild as ParaView;
@@ -122,6 +124,8 @@ export class DataPanel extends ControlPanelTabPanel {
   render() {
     const paraView = this.controlPanel.parentElement!.firstElementChild as ParaView;
     this.sparkBrailleData = paraView.store._sparkBrailleData
+    this._isSBProp = paraView.store.settings.controlPanel.isSparkBrailleProportional;
+    this._isBar = paraView.store.settings.controlPanel.isSparkBrailleBar;
     return html`   
       <div 
         id="data-page" 
@@ -201,8 +205,11 @@ export class DataPanel extends ControlPanelTabPanel {
           What should happen when a braille cell is selected?
         -->
         <fizz-sparkbraille
+          ?bar=${this._isBar}
+          ?isProp=${this._isSBProp}
           ${ref(this._sparkBrailleRef)}
-          data=${this.sparkBrailleData}
+          data=${this._isSBProp ? '' : this.sparkBrailleData}
+          labeledData=${this._isSBProp ? this.sparkBrailleData : ''}
           @select=${(e: CustomEvent) => {
             const index = e.detail*2;
             //chart.hiliteSegmentRangeById('series', `${index}`, `${index + 1}`);
