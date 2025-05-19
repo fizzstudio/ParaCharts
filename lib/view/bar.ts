@@ -630,15 +630,15 @@ export class Bar extends XYDatapointView {
 
   completeLayout() {
     super.completeLayout();
-    if (this.paraview.store.settings.type.bar.isDrawBarLabels) {
-      let textAnchor: LabelTextAnchor = 'middle';
-      let isPositionAtAnchor = false;
-      let angle = 0;
-      if (this.chart.parent.orientation === 'east') {
-        textAnchor = 'start';
-        isPositionAtAnchor = false;
-        angle = -90;
-      }
+    let textAnchor: LabelTextAnchor = 'middle';
+    let isPositionAtAnchor = false;
+    let angle = 0;
+    if (this.chart.parent.orientation === 'east') {
+      textAnchor = 'start';
+      isPositionAtAnchor = false;
+      angle = -90;
+    }
+    if (this.paraview.store.settings.type.bar.isDrawRecordLabels) {
       this._recordLabel = new Label(this.paraview, {
         // @ts-ignore
         text: formatBox(this.datapoint.data.x, this.paraview.store.getFormatType('pieSliceValue')),
@@ -648,6 +648,14 @@ export class Bar extends XYDatapointView {
         angle
       });
       this.append(this._recordLabel);
+      this._recordLabel.styleInfo = {
+        stroke: 'none',
+        fill: this.paraview.store.colors.contrastValueAt(this._isStyleEnabled ? this.index : this.parent.index)
+      };
+      this._recordLabel.snapXTo(this, 'center');
+      this._recordLabel.y = this.chart.height - this._recordLabel.height - this.paraview.store.settings.type.bar.stackLabelGap;
+    }
+    if (this.paraview.store.settings.type.bar.isDrawValueLabels) {
       this._valueLabel = new Label(this.paraview, {
         // @ts-ignore
         text: formatBox(this.datapoint.data.y, this.paraview.store.getFormatType('pieSliceValue')),
@@ -657,14 +665,12 @@ export class Bar extends XYDatapointView {
         angle
       });
       this.append(this._valueLabel);
-
-      this._recordLabel.styleInfo = {stroke: 'none', fill: 'white'};
-      this._recordLabel.snapXTo(this, 'center');
-      this._recordLabel.y = this.chart.height - this._recordLabel.height - this.paraview.store.settings.type.bar.stackLabelGap;
-      this._valueLabel.styleInfo = {stroke: 'none', fill: 'white'};
+      this._valueLabel.styleInfo = {
+        stroke: 'none',
+        fill: this.paraview.store.colors.contrastValueAt(this._isStyleEnabled ? this.index : this.parent.index)
+      };
       this._valueLabel.snapXTo(this, 'center');
       this._valueLabel.y = this._y + (this.paraview.store.settings.type.bar.stackLabelGap);
-
     }
   }
 
