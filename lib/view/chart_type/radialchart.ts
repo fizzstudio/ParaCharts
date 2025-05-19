@@ -287,8 +287,11 @@ export abstract class RadialChart extends DataLayer {
         role: 'axislabel', 
         loc: sliceCenter.add(slice.shape.orientationVector.multiplyScalar(40)),
         textAnchor: 'middle',
-        isPositionAtAnchor: true
+        isPositionAtAnchor: true,
       });
+      slice.valueLabel.styleInfo = {
+        fill: this.paraview.store.colors.contrastValueAt(i)
+      };
       // Labels draw as children of the slice so the highlights layer can `use` them
       slice.append(slice.leader);
       slice.append(slice.categoryLabel);
