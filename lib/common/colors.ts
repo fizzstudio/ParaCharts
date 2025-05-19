@@ -299,7 +299,7 @@ export class Colors {
           },
           {
             value: 'hsl(4, 50%, 52%)', //'rgb(42,64,81)',
-            name: 'indigo'
+            name: 'indigo',
             contrastValue: 'hsl(0, 0%, 100%)'
           },
           {
@@ -314,7 +314,7 @@ export class Colors {
           },
           {
             value: 'hsl(0, 0%, 80%)', // 'rgb(204,204,204)',
-            name: 'light gray'
+            name: 'light gray',
             contrastValue: 'hsl(0, 0%, 0%)'
           },
           {
