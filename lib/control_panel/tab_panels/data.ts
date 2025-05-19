@@ -129,6 +129,7 @@ export class DataPanel extends ControlPanelTabPanel {
           <p>Source: <span id="source-name">unknown</span></p>
         </div>
         <div id="data-buttons">
+          <!--
           ${this.controlPanel.settings.isSparkBrailleControlVisible
             ? html`  
               <button 
@@ -145,6 +146,7 @@ export class DataPanel extends ControlPanelTabPanel {
             `
             : nothing
           }
+          -->
           <!--<button 
             @click=${() => {
                 // this.controlPanel.dialog.show(
@@ -198,6 +200,7 @@ export class DataPanel extends ControlPanelTabPanel {
         <!-- 
           What should happen when a braille cell is selected?
         -->
+        <!--
         <fizz-sparkbraille
           ${ref(this._sparkBrailleRef)}
           data=${this.sparkBrailleData}
@@ -207,6 +210,7 @@ export class DataPanel extends ControlPanelTabPanel {
           }}
         >
         </fizz-sparkbraille>
+-->
       </div>
     `;
   }

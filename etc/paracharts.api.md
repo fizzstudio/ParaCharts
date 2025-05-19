@@ -84,6 +84,8 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _paraViewRef: Ref<ParaView>;
     // (undocumented)
+    ready(): void;
+    // (undocumented)
     render(): TemplateResult;
     // (undocumented)
     static styles: CSSResult[];

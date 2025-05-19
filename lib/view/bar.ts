@@ -323,7 +323,7 @@ export class BarChart extends XYChart {
       }
     });
     //this._bars = barData;
-    this._chartLandingView.reverseChildren();
+    //this._chartLandingView.reverseChildren();
   }
 
   // protected _createComponents() {

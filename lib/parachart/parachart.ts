@@ -94,6 +94,11 @@ export class ParaChart extends logging(ParaComponent) {
     `
   ];
 
+  // XXX temp hack
+  ready() {
+    this._controlPanelRef.value!.hidden = false;
+  }
+
   render(): TemplateResult {
     this.log('render');
     return html`
@@ -108,6 +113,7 @@ export class ParaChart extends logging(ParaComponent) {
             ${ref(this._controlPanelRef)}
             .paraChart=${this}
             .store=${this._store}
+            hidden
           ></para-control-panel>` : ''
         }
       </figure>
