@@ -61,6 +61,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
     css`
       * {
         font-family: "Trebuchet MS", Helvetica, sans-serif;
+        font-size: var(--control-panel-font-size, 1rem);
       }
       fizz-tab-details#controls {
         --background: #eee;
