@@ -283,7 +283,7 @@ export class Label extends View {
         ${this._textLines.length
           ? this._textLines.map((line, i) => 
             svg`
-              <tspan x=${fixed`${this._x + line.offset}`} dy=${i === 0 ? '0' : '1.5rem'}>
+              <tspan x=${fixed`${this._x + line.offset}`} dy=${i === 0 ? '0' : '1rem'}>
                 ${line.text}
               </tspan>
             `)
