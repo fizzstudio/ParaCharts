@@ -90,6 +90,7 @@ export interface ColorSettings extends SettingGroup {
 
 /** @public */
 export interface TitleSettings extends SettingGroup {
+  isDrawTitle: boolean;
   text?: string;
   margin: number;
   fontSize: number;
