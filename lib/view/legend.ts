@@ -51,6 +51,7 @@ export class Legend extends Container(View) {
     protected _options: Partial<LegendOptions> = {orientation: 'vert'}
   ) {
     super(paraview);
+    console.log('ITEMS', _items);
   }
 
   get settings() {
