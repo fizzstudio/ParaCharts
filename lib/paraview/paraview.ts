@@ -92,6 +92,7 @@ export class ParaView extends logging(ParaComponent) {
 
         --focusShadowColor: gray;
         --focusShadow: drop-shadow(0px 0px 4px var(--focusShadowColor));
+        display: block;
       }
       * {
         font-family: "Trebuchet MS", Helvetica, sans-serif;
