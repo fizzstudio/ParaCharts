@@ -3,6 +3,7 @@ import { DataView, type SeriesView } from './';
 import { DataSymbol, DataSymbols } from '../symbol';
 import { type DataCursor } from '../../store';
 import { type Shape } from '../shape/shape';
+import { Rect } from '../shape/rect';
 
 import { type clusterObject } from '@fizz/clustering';
 
@@ -24,7 +25,6 @@ export class DatapointView extends DataView {
 
   protected _shape: Shape | null = null;
   protected _symbol: DataSymbol | null = null;
-  // private _selectedMarker: SelectedDatapointMarker | null = null;
 
   constructor(seriesView: SeriesView) {
     super(seriesView.chart, seriesView.series.key);
@@ -62,17 +62,17 @@ export class DatapointView extends DataView {
     return this.series.datapoints[this.index];
   }
 
-  // get selectedMarker() {
-  //   return this._selectedMarker;
-  // }
-
-  // protected get _selectedMarkerX() {
-  //   return 0;
-  // }
-
-  // protected get _selectedMarkerY() {
-  //   return 0;
-  // }
+  get selectedMarker(): Shape {
+    return new Rect(this.paraview, {
+      width: this._width/2,
+      height: this._width/2,
+      x: this._x - this._width/4,
+      y: this._y - this._width/4,
+      fill: 'none',
+      stroke: 'black',
+      strokeWidth: 2
+    });
+  }
 
   get shape() {
     return this._shape;

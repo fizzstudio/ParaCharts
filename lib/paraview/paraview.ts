@@ -135,7 +135,7 @@ export class ParaView extends logging(ParaComponent) {
         font-size: 13px;
         fill: var(--labelColor);
       }
-      .bar-stack-label {
+      .bar-label {
         font-size: 13px;
         fill: white;
       }
