@@ -29,6 +29,7 @@ export const defaults: Settings = {
       height: 360
     },
     title: {
+      isDrawTitle: true,
       margin: 40,
       fontSize: 22,
       align: 'center',
