@@ -20,16 +20,7 @@ export class SelectionLayer extends ChartLayer {
         this.paraview.store.selectedDatapoints.map(cursor => {
           const dpView = this._parent.dataLayer.datapointView(cursor.seriesKey, cursor.index)!;
           // NB: Line datapoint height = 0
-          const rect = new Rect(this.paraview, {
-            width: dpView.width/2,
-            height: dpView.width/2,
-            x: dpView.x - dpView.width/4,
-            y: dpView.y - dpView.width/4,
-            fill: 'none',
-            stroke: 'black',
-            strokeWidth: 2
-          });
-          return rect.render();
+          return dpView.selectedMarker.render();
         })
       }
     `;

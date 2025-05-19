@@ -155,6 +155,7 @@ export type LabelFormat = 'raw' | string;
 
 /** @public */
 export interface TickLabelSettings extends SettingGroup {
+  isDrawEnabled: boolean;
   angle: number;
   offsetPadding: number;
   gap: number;
@@ -254,6 +255,7 @@ export interface BarSettings extends PlotSettings {
   isDrawStackLabels: boolean;
   isStackLabelInsideBar: boolean;
   stackLabelGap: number;
+  isDrawBarLabels: boolean;
   clusterBy?: BarClusterMode;
   stackContent: StackContentOptions;
   stackCount: number;

@@ -80,6 +80,7 @@ export const defaults: Settings = {
         length: 10,
         labelFormat: 'raw',
         tickLabel: {
+          isDrawEnabled: true,
           angle: -45,
           offsetPadding: 8,
           gap: 0
@@ -109,6 +110,7 @@ export const defaults: Settings = {
         length: 10,
         labelFormat: 'raw',
         tickLabel: {
+          isDrawEnabled: true,
           angle: 0,
           offsetPadding: 0,
           gap: 0
@@ -142,6 +144,7 @@ export const defaults: Settings = {
       isDrawStackLabels: false,
       isStackLabelInsideBar: true,
       stackLabelGap: 10,
+      isDrawBarLabels: true,
       clusterBy: undefined,
       clusterGap: 5,
       stackContent: 'all',
@@ -155,8 +158,9 @@ export const defaults: Settings = {
     column: {
       barWidth: 10,
       colorByDatapoint: false,
-      isDrawStackLabels: true,
+      isDrawStackLabels: false,
       isStackLabelInsideBar: true,
+      isDrawBarLabels: true,
       stackLabelGap: 10,
       clusterBy: undefined,
       clusterGap: 5,
@@ -205,7 +209,7 @@ export const defaults: Settings = {
       annularThickness: 1,
       categoryLabelPosition: 'outside',
       categoryLabelFormat: 'raw',
-      categoryLabelUnderlineGap: 4,
+      categoryLabelUnderlineGap: 6,
       sliceValueFormat: 'raw'
     },
     donut: {
@@ -225,7 +229,7 @@ export const defaults: Settings = {
       annularThickness: 0.5,
       categoryLabelPosition: 'outside',
       categoryLabelFormat: 'raw',
-      categoryLabelUnderlineGap: 4,
+      categoryLabelUnderlineGap: 6,
       sliceValueFormat: 'raw'
     },
     gauge: {
@@ -245,7 +249,7 @@ export const defaults: Settings = {
       annularThickness: 0.5,
       categoryLabelPosition: 'outside',
       categoryLabelFormat: 'raw',
-      categoryLabelUnderlineGap: 4,
+      categoryLabelUnderlineGap: 6,
       sliceValueFormat: 'raw'
     },
     stepline: {
@@ -264,9 +268,10 @@ export const defaults: Settings = {
     lollipop: {
       barWidth: 10,
       colorByDatapoint: false,
-      isDrawStackLabels: true,
+      isDrawStackLabels: false,
       isStackLabelInsideBar: true,
       stackLabelGap: 10,
+      isDrawBarLabels: true,
       lineWidth: 5,
       clusterBy: undefined,
       clusterGap: 5,
