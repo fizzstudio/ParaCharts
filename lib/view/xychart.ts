@@ -328,6 +328,7 @@ export abstract class XYChart extends DataLayer {
     const stats = this.paraview.store.model!.getFacetStats('y')!;
     const matchTarget = isMin ? stats.min.value : stats.max.value;
     const chartMatchArray = this._chartLandingView.datapointViews.filter(view =>
+      // @ts-ignore
       view.datapoint.data.y.value === matchTarget);
     chartMatchArray[0].focus();
   }

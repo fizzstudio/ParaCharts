@@ -189,7 +189,7 @@ export class VertTickStrip extends TickStrip<'vert'> {
         this.axis.orientationSettings.position, this.paraview, undefined, this._gridLineLength));
       this._children.at(-1)!.x = x;
       this._children.at(-1)!.y = ys[i];
-      this._children.at(-1)!.hidden = !this.axis.docView.paraview.store.settings.grid.isDrawHorizLines;
+      this._children.at(-1)!.hidden = !this.paraview.store.settings.grid.isDrawHorizLines;
     });
   }
 

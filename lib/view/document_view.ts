@@ -55,7 +55,9 @@ export class DocumentView extends Container(View) {
     this.type = this._store.type;
     this.setTitleText(this._store.title);
 
-    this.padding = this._store.settings.chart.padding;
+    //this.padding = this._store.settings.chart.padding;
+    const pad = Math.max(8 + 1.1*16, this._store.settings.chart.padding);
+    this.padding = {left: pad, right: pad};
     this._grid = new GridLayout(this.paraview, {
       numCols:
         (this._store.settings.legend.isDrawLegend &&
@@ -286,8 +288,14 @@ export class DocumentView extends Container(View) {
         orientation: 'horiz',
         wrapWidth: this._chartLayers.boundingWidth
       });
-      this._grid.insertRow(1);
-      this._grid.append(this._legends.north, {x: 1, y: 0, width: 1, colAlign: 'center', margin: {bottom: margin}});
+      this._grid.insertRow(this._store.title ? 1 : 0);
+      this._grid.append(this._legends.north, {
+        x: 1,
+        y: 0,
+        width: 1,
+        colAlign: 'center',
+        margin: {bottom: margin}
+      });
     }
   }
 

@@ -180,7 +180,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
       //this.todo.signalManager.signal('controlPanelDataLoadComplete');
       // Any panels that need updating in response to changed data should
       // do so here
-      this.annotationPanel.requestUpdate();
+      // this.annotationPanel.requestUpdate();
       this.descriptionPanel.requestUpdate();
 
       // if (!this._isReady) {
@@ -299,7 +299,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           ></para-audio-panel>
         </fizz-tab-panel>
 
-        <fizz-tab-panel
+        <!--<fizz-tab-panel
           tablabel="Controls"
           icon=${tabControlsIcon}
           ?hidden=${!this.settings.isControlsTabVisible}
@@ -308,9 +308,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
             ${ref(this._controlsPanelRef)}
             .controlPanel=${this}
           ></para-controls-panel>
-        </fizz-tab-panel>
+        </fizz-tab-panel>-->
 
-        <fizz-tab-panel
+        <!--<fizz-tab-panel
           tablabel="Chart"
           icon=${tabChartIcon}
           ?hidden=${!this.settings.isChartTabVisible}
@@ -319,9 +319,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
             ${ref(this._chartPanelRef)}
             .controlPanel=${this}
           ></para-chart-panel>
-        </fizz-tab-panel>
+        </fizz-tab-panel>-->
 
-        <fizz-tab-panel
+        <!--<fizz-tab-panel
           tablabel="Annotations"
           icon=${tabAnalysisIcon}
           ?hidden=${!this.settings.isAnnotationsTabVisible}
@@ -330,9 +330,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
             ${ref(this._annotationPanelRef)}
             .controlPanel=${this}
           ></para-annotation-panel>
-        </fizz-tab-panel>
+        </fizz-tab-panel>-->
 
-        <fizz-tab-panel
+        <!--<fizz-tab-panel
           tablabel="Analysis"
           icon=${tabAnalysisIcon}
           ?hidden=${!this.settings.isAnalysisTabVisible}
@@ -340,7 +340,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           <para-analysis-panel
             .controlPanel=${this}
           ></para-analysis-panel>
-        </fizz-tab-panel>
+        </fizz-tab-panel>-->
         <!-- Only show the debug tab if we're in development mode -->
         <!-- \${(this.todo.canvas?.documentView?.chart && LitElement.disableWarning) ? this.renderTabDebug() : ''}  -->     
       </fizz-tab-details>

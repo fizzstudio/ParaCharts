@@ -13,6 +13,8 @@ import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 import { Vec2 } from '../../common/vector';
 import { ClassInfo } from 'lit/directives/class-map.js';
+import { interpolate } from '@fizz/templum';
+import { queryMessages, describeSelections, getDatapointMinMax } from '../../store/query_utils';
 
 export type ArcType = 'circle' | 'semicircle';
 
@@ -181,7 +183,7 @@ export abstract class RadialChart extends DataLayer {
     }
   }
 
-  protected _createComponents() {
+  protected _createDatapoints() {
     const xs = this.paraview.store.model!.series[0].facet('x')!.map(box =>
       box.value as string
     );
@@ -232,10 +234,10 @@ export abstract class RadialChart extends DataLayer {
 
   protected _createLabels() {
     const xs = this.paraview.store.model!.series[0].facet('x')!.map(box =>
-      formatBox(box, 'pieSliceLabel', this.paraview.store)
+      formatBox(box, this.paraview.store.getFormatType('pieSliceLabel'))
     );
     const ys = this.paraview.store.model!.series[0].facet('y')!.map(box =>
-      formatBox(box, 'pieSliceLabel', this.paraview.store)
+      formatBox(box, this.paraview.store.getFormatType('pieSliceLabel'))
     );
     for (const [x, i] of enumerate(xs)) {
       const slice = this._chartLandingView.children[0].children[i] as RadialSlice;
@@ -249,7 +251,13 @@ export abstract class RadialChart extends DataLayer {
         anchor = 'middle';
       } else if (this.settings.categoryLabelPosition === 'outside') {
         labelLoc = arcCenter.add(gapVec);
-        anchor = labelLoc.x > this.cx ? 'start' : 'end';
+        if (labelLoc.x > this.cx) {
+          labelLoc.x += 5;
+          anchor = 'start';
+        } else {
+          labelLoc.x -= 5;
+          anchor = 'end';
+        }
       } else {
         labelLoc = new Vec2();
         anchor = 'middle';
@@ -262,7 +270,9 @@ export abstract class RadialChart extends DataLayer {
         textAnchor: anchor,
         isPositionAtAnchor: true
       });
-      const underlineStart = labelLoc.addY(this.settings.categoryLabelUnderlineGap);
+      const underlineStart = labelLoc
+        //.addX(slice.categoryLabel.textAnchor === 'start' ? 5 : -5)
+        .addY(this.settings.categoryLabelUnderlineGap);
       slice.leader = new Path(this.paraview, {
         points: [arcCenter, underlineStart, underlineStart.x > slice.categoryLabel.centerX
           ? underlineStart.subtractX(slice.categoryLabel.width)
@@ -381,6 +391,66 @@ export abstract class RadialChart extends DataLayer {
     }
   }
 
+  /**
+   * Navigate to the series minimum/maximum datapoint
+   * @param isMin If true, go the the minimum. Otherwise, go to the maximum
+   */
+  protected _goSeriesMinMax(isMin: boolean) {
+    const currView = this.focusLeaf;
+    if (currView instanceof ChartLandingView) {
+      this._goChartMinMax(isMin);
+    } else {
+      let seriesChildren = null;
+      let seriesKey = null;
+      let index: number | null = null;
+
+      if (currView instanceof SeriesView) {
+        seriesKey = currView.seriesKey;
+        seriesChildren = currView.children;
+      } else if (currView instanceof DatapointView) {
+        seriesKey = currView.seriesKey;
+        index = currView.index;
+        seriesChildren = currView.parent!.children;
+      }
+
+      if (seriesChildren && seriesKey) {
+        const stats = this.paraview.store.model!.getFacetStats('y')!;
+        // Indices of min/max values
+        const seriesMatchArray = isMin 
+          ? stats.min.datapoints.map(dp => dp.datapointIndex)   
+          : stats.max.datapoints.map(dp => dp.datapointIndex);
+        if (index !== null && seriesMatchArray.length > 1) {
+          // TODO: If there is more than one datapoint that has the same series minimum value, find the next one to nav to:
+          //       Find the current x label, if it matches one in `seriesMins`, 
+          //       remove all entries up to and including that point,
+          //       and use the next item on the list.
+          //       But also cycle around if it's the last item in the list
+          const currentRecordIndex = seriesMatchArray.indexOf(index);
+          if (currentRecordIndex !== -1 && currentRecordIndex !== seriesMatchArray.length + 1) {
+            seriesMatchArray.splice(0, currentRecordIndex);
+          }
+        }
+        const newViews = seriesChildren.filter(view => 
+          seriesMatchArray.includes(view.index));
+        newViews[0]?.focus();
+      }
+    }
+  }
+
+  /**
+   * Navigate to (one of) the chart minimum/maximum datapoint(s)
+   * @param isMin If true, go the the minimum. Otherwise, go to the maximum
+   */
+  protected _goChartMinMax(isMin: boolean) {
+    const currView = this.focusLeaf;
+    const stats = this.paraview.store.model!.getFacetStats('y')!;
+    const matchTarget = isMin ? stats.min.value : stats.max.value;
+    const chartMatchArray = this._chartLandingView.datapointViews.filter(view =>
+      // @ts-ignore
+      view.datapoint.data.y.value === matchTarget);
+    chartMatchArray[0].focus();
+  }
+
   playRight() {
     
   }
@@ -389,12 +459,87 @@ export abstract class RadialChart extends DataLayer {
     
   }
 
-  selectCurrent(extend: boolean) {
-    
-  }
+  queryData(): void {
+      const targetView = this.chartLandingView.focusLeaf
+      // TODO: localize this text output
+      // focused view: e.options!.focus
+      // all visited datapoint views: e.options!.visited
+      // const focusedDatapoint = e.targetView;
+      let msgArray: string[] = [];
+      let seriesLengths = [];
+      for (let series of this.paraview.store.model!.series) {
+        seriesLengths.push(series.rawData.length)
+      }
+      if (targetView instanceof ChartLandingView) {
+        this.paraview.store.announce(`Displaying Chart: ${this.paraview.store.title}`);
+        return
+      }
+      else if (targetView instanceof SeriesView) {
+        msgArray.push(interpolate(
+          queryMessages.seriesKeyLength,
+          { seriesKey: targetView.seriesKey, datapointCount: targetView.series.length }
+        ));
+        //console.log('queryData: SeriesView:', targetView);
+      }
+      else if (targetView instanceof DatapointView) {
+        const selectedDatapoints = this.paraview.store.selectedDatapoints;
+        const visitedDatapoint = this.paraview.store.visitedDatapoints[0];
+        /*
+        msgArray.push(replace(
+          queryMessages.datapointKeyLength,
+          {
+            seriesKey: targetView.seriesKey,
+            datapointXY: `${targetView.series[visitedDatapoint.index].x.raw}, ${targetView.series[visitedDatapoint.index].y.raw}`,
+            datapointIndex: targetView.index + 1,
+            datapointCount: targetView.series.length
+          }
+        ));
+        */
+        //console.log(msgArray)
+        if (selectedDatapoints.length) {
+          console.log("in here")
+          const selectedDatapointViews = []
 
-  queryData() {
-  }
+          for (let datapoint of selectedDatapoints) {
+            const selectedDatapointView = targetView.chart.datapointViews.filter(datapointView => datapointView.seriesKey === datapoint.seriesKey)[datapoint.index];
+            selectedDatapointViews.push(selectedDatapointView)
+          }
+          // if there are selected datapoints, compare the current datapoint against each of those
+          //console.log(targetView.series.rawData)
+          const selectionMsgArray = describeSelections(this.paraview, targetView, selectedDatapointViews as DatapointView[]);
+          msgArray = msgArray.concat(selectionMsgArray);
+        } else {
+          //console.log('tv', targetView)
+          // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
+          msgArray.push(interpolate(
+            queryMessages.percentageOfChart,
+            {
+              chartKey: targetView.seriesKey,
+              datapointXY: `${targetView.series[visitedDatapoint.index].facetBox("x")!.raw}, ${targetView.series[visitedDatapoint.index].facetBox("y")!.raw}`,
+              datapointIndex: targetView.index + 1,
+              datapointCount: targetView.series.length
+            }));
+          if (this.paraview.store.model!.numSeries > 1) {
+            msgArray.push(interpolate(
+              queryMessages.percentageOfSeries,
+              {
+                seriesKey: targetView.seriesKey,
+                datapointXY: `${targetView.series[visitedDatapoint.index].facetBox("x")!.raw}, ${targetView.series[visitedDatapoint.index].facetBox("y")!.raw}`,
+                datapointIndex: targetView.index + 1,
+                datapointCount: targetView.series.length
+              }));
+          }
+          //const datapointMsgArray = describeAdjacentDatapoints(this.paraview, targetView);
+          //msgArray = msgArray.concat(datapointMsgArray);
+        } 
+        // also add the high or low indicators
+        const minMaxMsgArray = getDatapointMinMax(this.paraview,
+          targetView.series[visitedDatapoint.index].facetBox("y")!.raw as unknown as number, targetView.seriesKey);
+        //console.log('minMaxMsgArray', minMaxMsgArray)z
+        msgArray = msgArray.concat(minMaxMsgArray)
+      }
+      this.paraview.store.announce(msgArray);
+    }
 
 }
 
@@ -501,6 +646,10 @@ export abstract class RadialSlice extends DatapointView {
   }
 
   protected _createSymbol() {
+  }
+
+  completeLayout() {
+    super.completeLayout();
   }
 
 }

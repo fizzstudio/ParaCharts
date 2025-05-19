@@ -145,31 +145,31 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     // datapointView?.focus();
   }
 
-  render() {
-    return html`   
-      <div id="annotation-tab" class="tab-content">
-        <section id="annotations">
-          ${this.showAnnotations()}
-        </section>
-        <div>
-          <button
-            @click=${
-              () => {} //todo().canvas.documentView!.chartLayers.foregroundAnnotationLayer.addAnnotation()
-            }
-          >
-            Add Annotation
-          </button>
-        </div>
-      </div>
-      <!--
-      <todo-annotation-settings-dialog
-        ${ref(this.dialogRef)}
-        id="annotation-settings-dialog"
-        .controller=${this.controller}
-      ></todo-annotation-settings-dialog>
-          -->
-    `;
-  }
+  // render() {
+  //   return html`   
+  //     <div id="annotation-tab" class="tab-content">
+  //       <section id="annotations">
+  //         ${this.showAnnotations()}
+  //       </section>
+  //       <div>
+  //         <button
+  //           @click=${
+  //             () => {} //todo().canvas.documentView!.chartLayers.foregroundAnnotationLayer.addAnnotation()
+  //           }
+  //         >
+  //           Add Annotation
+  //         </button>
+  //       </div>
+  //     </div>
+  //     <!--
+  //     <todo-annotation-settings-dialog
+  //       ${ref(this.dialogRef)}
+  //       id="annotation-settings-dialog"
+  //       .controller=${this.controller}
+  //     ></todo-annotation-settings-dialog>
+  //         -->
+  //   `;
+  // }
   // <!-- 
   // <section id="advanced">
   //   <button 

@@ -732,8 +732,11 @@ type Containable = GConstructor<BaseView & Partial<ContainableI>>;
  */
 export function Container<TBase extends Containable>(Base: TBase) {
   return class _Container extends Base {
-
+  
     render() {
+      if (this.hidden) {
+        return svg``;
+      }
       const tx = this.x + this.padding.left;
       const ty = this.y + this.padding.top;
       return staticSvg`
