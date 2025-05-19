@@ -319,7 +319,8 @@ export class Colors {
           },
           {
             name: 'no_opinion',
-            value: 'hsl(0, 0%, 80%)'
+            value: 'hsl(0, 0%, 80%)',
+            contrastValue: 'hsl(0, 0%, 0%)'
           },
           {
             name: 'very_unrewarding',
