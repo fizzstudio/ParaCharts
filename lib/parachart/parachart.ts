@@ -84,8 +84,12 @@ export class ParaChart extends logging(ParaComponent) {
 
   static styles = [
     css`
+      :host {
+        --summary-marker-size: 1.1rem;
+      }
       figure {
         display: inline-block;
+        margin: 0;
       }
     `
   ];
