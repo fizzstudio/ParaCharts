@@ -4,32 +4,89 @@
 
 ```ts
 
+import { AllSeriesData } from '@fizz/paramanifest';
+import { AxisOrientation } from '@fizz/paramodel';
+import { BasicXYChartSummarizer } from '@fizz/parasummary';
+import { ButtonDescriptor } from '@fizz/ui-components';
+import { ChartType as ChartType_2 } from '@fizz/paramanifest';
+import { ClassInfo } from 'lit/directives/class-map.js';
+import { clusterObject } from '@fizz/clustering';
+import { CSSResult } from 'lit';
+import { DataPoint } from '@fizz/paramodel';
+import { Datatype } from '@fizz/dataframe';
+import { Dialog } from '@fizz/ui-components';
+import { DirectiveResult } from 'lit-html/directive.js';
+import { FacetSignature } from '@fizz/paramodel';
+import { FormatType } from '@fizz/parasummary';
+import { Interval } from '@fizz/chart-classifier-utils';
 import { LitElement } from 'lit';
 import { Manifest } from '@fizz/paramanifest';
+import { MessageDialog } from '@fizz/ui-components';
+import { Model } from '@fizz/paramodel';
+import { Padding as Padding_2 } from './base_view';
+import { Padding as Padding_3 } from '../base_view';
+import { PaddingInput as PaddingInput_2 } from './base_view';
+import { PaddingInput as PaddingInput_3 } from '../base_view';
+import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
+import { Ref } from 'lit-html/directives/ref.js';
+import { Ref as Ref_2 } from 'lit/directives/ref.js';
+import { RefDirective } from 'lit-html/directives/ref.js';
+import * as sb from '@fizz/sparkbraille-component';
+import { Series } from '@fizz/paramodel';
 import { Size2d } from '@fizz/chart-classifier-utils';
 import { State } from '@lit-app/state';
 import { StateController } from '@lit-app/state';
+import { StaticValue } from 'lit-html/static.js';
+import { StyleInfo } from 'lit-html/directives/style-map.js';
+import { StyleInfo as StyleInfo_2 } from 'lit/directives/style-map.js';
+import { Summarizer } from '@fizz/parasummary';
+import { TabDetails } from '@fizz/ui-components';
 import { TemplateResult } from 'lit';
-import { XyPoint } from '@fizz/paramanifest';
+import { TemplateResult as TemplateResult_2 } from 'lit-html';
+import * as ui from '@fizz/ui-components';
+import { View as View_2 } from '../base_view';
+import { XYDatapoint } from '@fizz/paramodel';
 
 // Warning: (ae-forgotten-export) The symbol "ParaChart_base" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
 export class ParaChart extends ParaChart_base {
     constructor();
+    // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    accessor config: SettingsInput;
     // (undocumented)
     connectedCallback(): void;
+    // Warning: (ae-forgotten-export) The symbol "ParaController" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _controller: ParaController;
+    // (undocumented)
+    get controlPanel(): ParaControlPanel;
+    // Warning: (ae-forgotten-export) The symbol "ParaControlPanel" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _controlPanelRef: Ref<ParaControlPanel>;
     // (undocumented)
     accessor filename: string;
     // (undocumented)
     protected firstUpdated(_changedProperties: PropertyValues): void;
     // (undocumented)
-    render(): TemplateResult;
-    // Warning: (ae-forgotten-export) The symbol "ParaStore" needs to be exported by the entry point index.d.ts
+    accessor forcecharttype: ChartType_2 | undefined;
+    // (undocumented)
+    headless: boolean;
+    // (undocumented)
+    get paraView(): ParaView;
+    // Warning: (ae-forgotten-export) The symbol "ParaView" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    protected _state: StateController<ParaStore>;
+    protected _paraViewRef: Ref<ParaView>;
+    // (undocumented)
+    render(): TemplateResult;
+    // (undocumented)
+    static styles: CSSResult[];
     // (undocumented)
     willUpdate(changedProperties: PropertyValues<this>): void;
 }
