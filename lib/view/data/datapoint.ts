@@ -149,13 +149,13 @@ export class DatapointView extends DataView {
     ].join('-'); 
   }
   
-  protected _visit() {
+  protected _visit(_isNewComponentFocus = false) {
     this.paraview.store.visit([{seriesKey: this.seriesKey, index: this.index}]);
   }
 
-  onFocus() {
-    super.onFocus();
-    this._visit();
+  onFocus(isNewComponentFocus = false) {
+    super.onFocus(isNewComponentFocus);
+    this._visit(isNewComponentFocus);
     this.paraview.store.announce(
       this.paraview.summarizer.getDatapointSummary(this.datapoint, 'raw'));
   }
