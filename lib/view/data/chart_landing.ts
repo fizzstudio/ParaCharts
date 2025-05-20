@@ -52,11 +52,11 @@ export class ChartLandingView extends View {
     return super.focusLeaf as DataView;
   }
 
-  onFocus() {
+  onFocus(isNewComponentFocus = false) {
     // Set browser focus on our SVG group
     this.parent.dataset.focus();
     this.paraview.store.visit([]);
-    this.paraview.store.announce(this.paraview.summarizer.getChartSummary());
+    this.paraview.store.announce(this.paraview.summarizer.getChartSummary(), isNewComponentFocus);
   }
 
   getSeriesView(seriesName: string) {

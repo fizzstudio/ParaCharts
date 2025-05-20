@@ -48,6 +48,7 @@ export class ParaStore extends State {
   @property() settings: Settings;
   @property() darkMode = false;
   @property() announcement = '';
+  @property() clearAriaLive = false;
 
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
@@ -172,7 +173,7 @@ export class ParaStore extends State {
     this._appendAnnouncements.push(msg);
   }
 
-  announce(msg: string | string[]) {
+  announce(msg: string | string[], clearAriaLive = false) {
     /*
     This sends an announcement to the Status Bar.
     If the `msg` argument is an array, it joins the strings together with a
@@ -201,8 +202,10 @@ export class ParaStore extends State {
       this._appendAnnouncements = [];
     }
 
+    this.clearAriaLive = clearAriaLive;
     if (this.settings.ui.isAnnouncementEnabled) {
       this.announcement = announcement;
+      console.log('CLEAR', this.clearAriaLive);
       console.log('ANNOUNCE:', this.announcement);
     }
   }

@@ -87,6 +87,7 @@ export class ScreenReaderBridge {
    * Clear the contents of the live region
    */
   public clear(): void {
+    console.log('SRB: CLEAR');
     this._element.innerHTML = '';
   }
 
