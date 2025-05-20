@@ -455,7 +455,7 @@ export class ParaView extends logging(ParaComponent) {
           this.log('focus');
           //this.todo.deets?.onFocus();
           //this.documentView?.chartLayers.dataLayer.visitAndPlayCurrent();
-          this.documentView?.chartLayers.dataLayer.chartLandingView.focus();
+          this.documentView?.chartLayers.dataLayer.chartLandingView.focus(true);
         }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
       >
