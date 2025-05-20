@@ -25,7 +25,12 @@ export class AriaLive extends ParaComponent {
   }
 
   protected willUpdate(changedProperties: PropertyValues) {
+    // XXX this won't happen unless the announcement actually changes!
     if (changedProperties.has('announcement') && this.announcement) {
+      console.log(`ANN UPDATED: '${this.announcement}'`);
+      if (this._store.clearAriaLive) {
+        this._srb.clear();
+      }
       this._srb.render(this.announcement);
     }
   }
