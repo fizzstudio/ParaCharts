@@ -25,6 +25,8 @@ import "../control_panel";
 import { exhaustive } from "../common/utils";
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
+import { type AriaLive } from '../components';
+import '../components/aria_live';
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
@@ -38,6 +40,8 @@ export class ParaChart extends logging(ParaComponent) {
   protected _controller: ParaController;
   protected _paraViewRef = createRef<ParaView>();  
   protected _controlPanelRef = createRef<ParaControlPanel>();
+  protected _ariaLiveRegionRef = createRef<AriaLive>();
+
   private inputSettings: SettingsInput = {};
   private data?: AllSeriesData;
   private suppleteSettingsWith?: DeepReadonly<Settings>;
@@ -99,6 +103,14 @@ export class ParaChart extends logging(ParaComponent) {
     this._controlPanelRef.value!.hidden = false;
   }
 
+  clearAriaLive() {
+    this._ariaLiveRegionRef.value!.clear();
+  }
+
+  showAriaLiveHistory() {
+    this._ariaLiveRegionRef.value!.showHistoryDialog();
+  }
+
   render(): TemplateResult {
     this.log('render');
     return html`
@@ -116,6 +128,11 @@ export class ParaChart extends logging(ParaComponent) {
             hidden
           ></para-control-panel>` : ''
         }
+        <para-aria-live-region
+          ${ref(this._ariaLiveRegionRef)}
+          .store=${this._store}
+          .announcement=${this._store.announcement}
+        ></para-aria-live-region>
       </figure>
     `;
   }
