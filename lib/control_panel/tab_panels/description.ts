@@ -1,8 +1,6 @@
 
 //import { styles } from '../../styles';
 import { ControlPanelTabPanel } from './tab_panel';
-import { type AriaLive } from '../../components';
-import '../../components/aria_live';
 
 import { html, css } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
@@ -14,8 +12,6 @@ export class DescriptionPanel extends ControlPanelTabPanel {
 
   @state() caption = '';
   @property() visibleStatus = '';
-
-  protected _ariaLiveRegionRef = createRef<AriaLive>();
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -47,7 +43,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
   // }
 
   clearStatusBar() {
-    this._ariaLiveRegionRef.value!.clear();
+    this._controlPanel.paraChart.clearAriaLive();
   }
 
   render() {
@@ -71,14 +67,15 @@ export class DescriptionPanel extends ControlPanelTabPanel {
           <div id="desc-footer">
             <div id="status_split">
               <div id="visiblestatus">${this.visibleStatus}</div>
-              <para-aria-live-region
-                ${ref(this._ariaLiveRegionRef)}
-                .store=${this._store}
-                .announcement=${this._store.announcement}
-              ></para-aria-live-region>
+              <div id="statusbar"
+                aria-hidden="true"
+                ?hidden=${!this.controlPanel.settings.isStatusBarVisible}
+              >
+                ${this._store.announcement}
+              </div>
             </div>
             <button
-              @click=${() => this._ariaLiveRegionRef.value!.showHistoryDialog()}
+              @click=${() => this._controlPanel.paraChart.showAriaLiveHistory()}
             >
               History
             </button>
