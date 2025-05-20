@@ -429,7 +429,6 @@ export class ParaView extends logging(ParaComponent) {
       <svg
         ${ref(this._rootRef)}
         xmlns=${SVGNS}
-        aria-label=${this._documentView ? `${this._documentView.titleText}, Sonified chart` : 'loading...'}
         data-charttype=${this.type}
         role="application"
         tabindex="0"
