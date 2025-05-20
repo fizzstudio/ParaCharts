@@ -96,6 +96,7 @@ export class ParaView extends logging(ParaComponent) {
       }
       * {
         font-family: "Trebuchet MS", Helvetica, sans-serif;
+        font-size: var(--chart-view-font-size, 1rem);
       }
       #frame {
         fill: var(--backgroundColor);

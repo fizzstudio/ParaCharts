@@ -134,7 +134,7 @@ export interface ChartSettings extends SettingGroup {
   size: Partial<Size2d>;
   title: TitleSettings;
   orientation: CardinalDirection;
-  padding: number;
+  padding: string;
   fontFamily: string;
   fontWeight: string;
   strokeWidth: number;
