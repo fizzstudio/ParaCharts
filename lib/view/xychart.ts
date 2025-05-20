@@ -640,6 +640,7 @@ export abstract class XYDatapointView extends DatapointView {
   //}
 
   protected _visit() {
+    super._visit();
     const visited = this.paraview.store.settings.sonification.isChordModeEnabled
       ? this.withSameIndexers
       : [this];
