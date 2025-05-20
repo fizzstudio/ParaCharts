@@ -3,6 +3,7 @@ import { ParaComponent } from '../paracomponent';
 import { ScreenReaderBridge, type AriaLiveHistoryDialog } from '.';
 import { Voicing } from './voicing';
 import { styles } from '../../view/styles';
+import { type Announcement } from '../../store';
 
 import { html, css, type PropertyValues } from 'lit';
 import { ref, createRef } from 'lit/directives/ref.js';
@@ -11,7 +12,7 @@ import { property, customElement } from 'lit/decorators.js';
 @customElement('para-aria-live-region')
 export class AriaLive extends ParaComponent {
 
-  @property() announcement = '';
+  @property({type: Object}) announcement: Announcement = { text: '' };
 
   protected _srb!: ScreenReaderBridge;
   protected _voicing = new Voicing();
@@ -25,8 +26,11 @@ export class AriaLive extends ParaComponent {
   }
 
   protected willUpdate(changedProperties: PropertyValues) {
-    if (changedProperties.has('announcement') && this.announcement) {
-      this._srb.render(this.announcement);
+    if (changedProperties.has('announcement') && this.announcement.text) {
+      if (this.announcement.clear) {
+        this._srb.clear();
+      }
+      this._srb.render(this.announcement.text);
     }
   }
 
