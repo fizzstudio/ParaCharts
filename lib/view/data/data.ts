@@ -86,7 +86,7 @@ export class DataView extends View {
     return style;
   }
 
-  onFocus() {
+  onFocus(_isNewComponentFocus = false) {
     //this.paraview.store.clearVisited();
   }
 
