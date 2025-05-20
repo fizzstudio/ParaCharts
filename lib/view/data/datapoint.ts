@@ -151,13 +151,15 @@ export class DatapointView extends DataView {
   
   protected _visit() {
     this.paraview.store.visit([{seriesKey: this.seriesKey, index: this.index}]);
+    const announcement = this.paraview.store.model!.multi
+      ? this.paraview.summarizer.getDatapointSummaryWithSeries(this.datapoint, 'raw')
+      : this.paraview.summarizer.getDatapointSummary(this.datapoint, 'raw');
+    this.paraview.store.announce(announcement);
   }
 
   onFocus() {
     super.onFocus();
     this._visit();
-    this.paraview.store.announce(
-      this.paraview.summarizer.getDatapointSummaryWithSeries(this.datapoint, 'raw'));
   }
 
   /** Compute and set `x` and `y` */
