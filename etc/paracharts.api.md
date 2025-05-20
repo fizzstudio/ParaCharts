@@ -53,6 +53,12 @@ import { XYDatapoint } from '@fizz/paramodel';
 // @public (undocumented)
 export class ParaChart extends ParaChart_base {
     constructor();
+    // Warning: (ae-forgotten-export) The symbol "AriaLive" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _ariaLiveRegionRef: Ref<AriaLive>;
+    // (undocumented)
+    clearAriaLive(): void;
     // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
@@ -87,6 +93,8 @@ export class ParaChart extends ParaChart_base {
     ready(): void;
     // (undocumented)
     render(): TemplateResult;
+    // (undocumented)
+    showAriaLiveHistory(): void;
     // (undocumented)
     static styles: CSSResult[];
     // (undocumented)
