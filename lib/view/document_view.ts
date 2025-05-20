@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { View, Container } from './base_view';
+import { View, Container, Padding } from './base_view';
 import { Label } from './label';
 import { type CardinalDirection, ParaStore } from '../store';
 import { type ChartType } from '@fizz/paramanifest';
@@ -55,9 +55,15 @@ export class DocumentView extends Container(View) {
     this.type = this._store.type;
     this.setTitleText(this._store.title);
 
-    //this.padding = this._store.settings.chart.padding;
-    const pad = Math.max(8 + 1.1*16, this._store.settings.chart.padding);
-    this.padding = {left: pad, right: pad, top: pad};
+    const expandedPadding = this._parsePadding(this._store.settings.chart.padding);
+    // XXX temp hack for cpanel icon 
+    const leftPad = Math.max(8 + 1.1*16, expandedPadding.left);
+    this.padding = {
+      left: leftPad,
+      right: expandedPadding.right,
+      top: expandedPadding.top,
+      bottom: expandedPadding.bottom
+    };
     this._grid = new GridLayout(this.paraview, {
       numCols:
         (this._store.settings.legend.isDrawLegend &&
@@ -83,6 +89,37 @@ export class DocumentView extends Container(View) {
 
   }
 
+  /**
+   * Parse `padding` like CSS padding (1-4 numbers, same order as CSS)
+   */
+  protected _parsePadding(padding: string): Padding {
+    const vals = padding.trim().split(' ');
+    if (vals.length === 0) {
+      throw new Error(`must supply between 1 and 4 values for chart padding`);
+    }
+    if (vals.length === 1) {
+      return this._expandPadding(parseFloat(vals[0]));
+    } else if (vals.length === 2) {
+      return this._expandPadding({
+        vert: parseFloat(vals[0]),
+        horiz: parseFloat(vals[1])
+      });
+    } else if (vals.length === 3) {
+      return this._expandPadding({
+        top: parseFloat(vals[0]),
+        horiz: parseFloat(vals[1]),
+        bottom: parseFloat(vals[2])
+      });
+    } else {
+      return this._expandPadding({
+        top: parseFloat(vals[0]),
+        right: parseFloat(vals[1]),
+        bottom: parseFloat(vals[2]),
+        left: parseFloat(vals[3])
+      });
+    }
+  }  
+  
   protected _populateGrid() {
     const horizAxisPos = this._store.settings.axis.horiz.position;
 
