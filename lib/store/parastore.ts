@@ -195,7 +195,6 @@ export class ParaStore extends State {
     }
 
     announcement += (typeof msg === 'string') ? msg : this._joinStrArray(msg, linebreak);
-
     if (this._appendAnnouncements.length) {
       const appendStr = this._joinStrArray(this._appendAnnouncements, linebreak);
       announcement += appendStr ? `${linebreak} ${appendStr}` : '';
@@ -203,8 +202,8 @@ export class ParaStore extends State {
     }
 
     if (this.settings.ui.isAnnouncementEnabled) {
-      console.log('ANNOUNCE:', this.announcement);
       this.announcement = announcement;
+      console.log('ANNOUNCE:', this.announcement);
     }
   }
 

@@ -36,7 +36,7 @@ export const defaults: Settings = {
       position: 'top',
     },
     orientation: 'north',
-    padding: 15,
+    padding: '8 10',
     //chartType: 'line'
     fontFamily: 'Helvetica, sans-serif',
     fontWeight: '300',
