@@ -40,6 +40,13 @@ export interface DataCursor {
   index: number;
 }
 
+// This mostly exists so that each new announcement will be considered
+// distinct, even if the text is the same
+export interface Announcement {
+  text: string;
+  clear?: boolean;
+}
+
 export class ParaStore extends State {
 
   readonly symbols = new DataSymbols();
@@ -47,8 +54,7 @@ export class ParaStore extends State {
   @property() dataState: DataState = 'initial';
   @property() settings: Settings;
   @property() darkMode = false;
-  @property() announcement = '';
-  @property() clearAriaLive = false;
+  @property() announcement: Announcement = { text: '' };
 
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
@@ -202,11 +208,9 @@ export class ParaStore extends State {
       this._appendAnnouncements = [];
     }
 
-    this.clearAriaLive = clearAriaLive;
     if (this.settings.ui.isAnnouncementEnabled) {
-      this.announcement = announcement;
-      console.log('CLEAR', this.clearAriaLive);
-      console.log('ANNOUNCE:', this.announcement);
+      this.announcement = { text: announcement, clear: clearAriaLive };
+      console.log('ANNOUNCE:', this.announcement.text);
     }
   }
 
