@@ -616,7 +616,7 @@ export class View extends BaseView {
   }
 
 
-  focus(level = 0) {
+  focus(isNewComponentFocus = false, level = 0) {
     if (!this._parent) {
       return;
     }
@@ -626,17 +626,17 @@ export class View extends BaseView {
       this._parent!.currFocus.blur(false);
     }
     this._parent!.currFocus = this;
-    this._parent!.focus(level + 1);
+    this._parent!.focus(isNewComponentFocus, level + 1);
     if (this._currFocus) {
       if (!level) {
-        this.focusLeaf.onFocus();
+        this.focusLeaf.onFocus(isNewComponentFocus);
       }
     } else {
-      this.onFocus();
+      this.onFocus(isNewComponentFocus);
     }
   }
 
-  onFocus() {
+  onFocus(_isNewComponentFocus = false) {
   }
 
   blur(parentOnFocus = true) {

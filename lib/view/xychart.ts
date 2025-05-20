@@ -639,8 +639,8 @@ export abstract class XYDatapointView extends DatapointView {
   //  }
   //}
 
-  protected _visit() {
-    super._visit();
+  protected _visit(isNewComponentFocus = false) {
+    super._visit(isNewComponentFocus);
     const visited = this.paraview.store.settings.sonification.isChordModeEnabled
       ? this.withSameIndexers
       : [this];
@@ -649,7 +649,7 @@ export abstract class XYDatapointView extends DatapointView {
       this.chart.raiseSeries(this.series.key!);
     }
     //todo().deets!.sparkBrailleData = this.series.data.join(' ');
-    if (this.paraview.store.settings.sonification.isSoniEnabled) {
+    if (this.paraview.store.settings.sonification.isSoniEnabled && !isNewComponentFocus) {
       this.chart.sonifier.playDatapoints(...visited.map(v => v.datapoint));
     }  
     // setTimeout(() => {
@@ -664,8 +664,8 @@ export abstract class XYDatapointView extends DatapointView {
     // }, NOTE_LENGTH*1000);
   }
 
-  onFocus() {
-    super.onFocus();
+  onFocus(isNewComponentFocus = false) {
+    super.onFocus(isNewComponentFocus);
     /*todo().deets!.sparkBrailleData = this.series.data.join(' ');
     if (todo().controller.settingStore.settings.sonification.isSoniEnabled) {
       this.chart.sonifier.playDatapoints(...visited.map(v => v.datapoint));

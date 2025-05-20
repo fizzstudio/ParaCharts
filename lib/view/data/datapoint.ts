@@ -149,7 +149,7 @@ export class DatapointView extends DataView {
     ].join('-'); 
   }
   
-  protected _visit() {
+  protected _visit(_isNewComponentFocus = false) {
     this.paraview.store.visit([{seriesKey: this.seriesKey, index: this.index}]);
     const announcement = this.paraview.store.model!.multi
       ? this.paraview.summarizer.getDatapointSummaryWithSeries(this.datapoint, 'raw')
@@ -157,9 +157,9 @@ export class DatapointView extends DataView {
     this.paraview.store.announce(announcement);
   }
 
-  onFocus() {
-    super.onFocus();
-    this._visit();
+  onFocus(isNewComponentFocus = false) {
+    super.onFocus(isNewComponentFocus);
+    this._visit(isNewComponentFocus);
   }
 
   /** Compute and set `x` and `y` */
