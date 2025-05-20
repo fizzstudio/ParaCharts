@@ -427,11 +427,12 @@ export class ParaView extends logging(ParaComponent) {
     this.log('render');
     return html`
       <svg
+        role="application"
+        tabindex="0"
+        aria-label=${this._documentView ? `${this._documentView.titleText}, accessible ${this.type} chart` : 'loading...'}
         ${ref(this._rootRef)}
         xmlns=${SVGNS}
         data-charttype=${this.type}
-        role="application"
-        tabindex="0"
         height=${fixed`${this._viewBox.height}px`}
         class=${classMap(this._rootClasses())}
         viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
