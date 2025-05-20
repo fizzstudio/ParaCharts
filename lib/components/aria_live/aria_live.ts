@@ -2,6 +2,7 @@
 import { ParaComponent } from '../paracomponent';
 import { ScreenReaderBridge, type AriaLiveHistoryDialog } from '.';
 import { Voicing } from './voicing';
+import { styles } from '../../view/styles';
 
 import { html, css, type PropertyValues } from 'lit';
 import { ref, createRef } from 'lit/directives/ref.js';
@@ -81,6 +82,7 @@ export class AriaLive extends ParaComponent {
   }
 
   static styles = [
+    styles,
     css`
       div {
         white-space: pre-line;
@@ -94,7 +96,7 @@ export class AriaLive extends ParaComponent {
     return html`
       <div
         ${ref(this._ariaLiveRef)}
-        class=${this._store.settings.isStatusBarVisible ? '' : 'sr-only'}
+        class="sr-only"
       ></div>
       <para-aria-live-history-dialog 
         ${ref(this._historyDialogRef)}

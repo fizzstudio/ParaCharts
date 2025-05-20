@@ -96,6 +96,7 @@ export class ParaView extends logging(ParaComponent) {
       }
       * {
         font-family: "Trebuchet MS", Helvetica, sans-serif;
+        font-size: var(--chart-view-font-size, 1rem);
       }
       #frame {
         fill: var(--backgroundColor);
@@ -428,7 +429,6 @@ export class ParaView extends logging(ParaComponent) {
       <svg
         ${ref(this._rootRef)}
         xmlns=${SVGNS}
-        aria-label=${this._documentView ? `${this._documentView.titleText}, Sonified chart` : 'loading...'}
         data-charttype=${this.type}
         role="application"
         tabindex="0"
