@@ -117,6 +117,7 @@ export class ParaChart extends logging(ParaComponent) {
       <figure>
         <para-view
           ${ref(this._paraViewRef)}
+          .paraChart=${this}
           .store=${this._store}
           colormode=${this._store?.settings.color.colorVisionMode ?? nothing}
         ></para-view>

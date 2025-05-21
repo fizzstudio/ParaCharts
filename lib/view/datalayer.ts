@@ -117,6 +117,50 @@ export abstract class DataLayer extends ChartLayer {
         this.clearPlay();
       } else if (e.action === 'query_data') {
         this.queryData();
+      } else if (e.action === 'sonification_mode_toggle') {
+        this.paraview.store.updateSettings(draft => {
+          draft.sonification.isSoniEnabled = !draft.sonification.isSoniEnabled;
+          this.paraview.store.announce(
+            `Sonification ${draft.sonification.isSoniEnabled ? 'enabled' : 'disabled'}`);
+        });
+      } else if (e.action === 'announcement_mode_toggle') {
+          if (this.paraview.store.settings.ui.isAnnouncementEnabled) {
+            this.paraview.store.announce('Announcements disabled');
+            this.paraview.store.updateSettings(draft => {
+              draft.ui.isAnnouncementEnabled = false;
+            });
+          } else {
+            this.paraview.store.updateSettings(draft => {
+              draft.ui.isAnnouncementEnabled = true;
+            });
+            this.paraview.store.announce('Announcements enabled');
+          }
+      } else if (e.action === 'voicing_mode_toggle') {
+          if (this.paraview.store.settings.ui.isVoicingEnabled) {
+            this.paraview.store.announce('Self-voicing disabled');
+            this.paraview.store.updateSettings(draft => {
+              draft.ui.isVoicingEnabled = false;
+            });
+          } else {
+            this.paraview.store.updateSettings(draft => {
+              draft.ui.isVoicingEnabled = true;
+            });
+            this.paraview.store.announce('Self-voicing enabled');
+          }
+      } else if (e.action === 'dark_mode_toggle') {
+        this.paraview.store.updateSettings(draft => {
+          draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
+          this.paraview.store.announce(
+            `Dark mode ${draft.color.isDarkModeEnabled ? 'enabled' : 'disabled'}`);
+        });
+      } else if (e.action === 'low_vision_mode_toggle') {
+        this.paraview.store.updateSettings(draft => {
+          draft.ui.isLowVisionModeEnabled = !draft.ui.isLowVisionModeEnabled;
+          this.paraview.store.announce(
+            `Low vision mode ${draft.ui.isLowVisionModeEnabled ? 'enabled' : 'disabled'}`);
+        });
+      } else if (e.action === 'open_help') {
+        this.paraview.paraChart.controlPanel.showHelpDialog();
       }
     });
   }
