@@ -43,7 +43,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
 
   @state() dataState: 'initial' | 'pending' | 'complete' | 'error' = 'initial';
   dataError?: unknown;
-  paraChart!: ParaChart
+  paraChart!: ParaChart;
 
   @state() protected _isOpen = false;
   protected _tabDeetsRef = createRef<TabDetails>();
@@ -204,8 +204,8 @@ export class ParaControlPanel extends logging(ParaComponent) {
   //   this._descriptionPanelRef.value!.replay();
   // }
 
-  getHelp() {
-    return this._controlsPanelRef.value!.getHelp();
+  showHelpDialog(){
+    return this._controlsPanelRef.value!.showHelpDialog();
   }
 
   render() {
@@ -247,13 +247,11 @@ export class ParaControlPanel extends logging(ParaComponent) {
         openbuttonarialabel="Open or close ParaCharts control panel"
         @open=${
           () => {
-            console.log('CPANEL OPEN');
             this._isOpen = true;
           }
         }
         @close=${
           () => {
-            console.log('CPANEL CLOSE');
             this._isOpen = false;
           }
         }
@@ -264,7 +262,8 @@ export class ParaControlPanel extends logging(ParaComponent) {
           //   this.todo.canvas.documentView.chartLayers.dataLayer.focus();
           // }
           //this.isReady = true;
-          // XXX may need to fire an event here
+          // XXX TEMP for FFB
+          this._tabDeetsRef.value!.hide('Controls');
         }}
       >
         <fizz-tab-panel
@@ -311,7 +310,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           ></para-audio-panel>
         </fizz-tab-panel>
 
-        <!--<fizz-tab-panel
+        -<fizz-tab-panel
           tablabel="Controls"
           icon=${tabControlsIcon}
           ?hidden=${!this.settings.isControlsTabVisible}
@@ -320,7 +319,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
             ${ref(this._controlsPanelRef)}
             .controlPanel=${this}
           ></para-controls-panel>
-        </fizz-tab-panel>-->
+        </fizz-tab-panel>
 
         <!--<fizz-tab-panel
           tablabel="Chart"
