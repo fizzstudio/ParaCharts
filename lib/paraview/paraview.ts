@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-
+import { type ParaChart } from '../parachart/parachart';
 import { ParaViewController } from '.';
 import { logging } from '../common/logger';
 import { ParaComponent } from '../components';
@@ -45,6 +45,8 @@ export type c2mCallbackType = {
 @customElement('para-view')
 export class ParaView extends logging(ParaComponent) {
 
+  paraChart!: ParaChart;
+  
   @property() type: ChartType = 'bar';
   @property() chartTitle?: string;
   @property() xAxisLabel?: string;
@@ -429,7 +431,7 @@ export class ParaView extends logging(ParaComponent) {
       <svg
         role="application"
         tabindex="0"
-        aria-label=${this._documentView ? `${this._documentView.titleText}, accessible ${this.type} chart` : 'loading...'}
+        aria-label=${this._documentView ? `${this._documentView.titleText}, accessible chart` : 'loading...'}
         ${ref(this._rootRef)}
         xmlns=${SVGNS}
         data-charttype=${this.type}
