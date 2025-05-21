@@ -31,7 +31,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
     });
   }
 
-  getHelp() {
+  protected _getHelp() {
     // TODO: update help dialog with user-defined key map
     return html`
       <p>ParaCharts is an accessible data visualization app with multimodal features for different disabilities. You can explore it using the mouse, touchscreen, or keyboard.</p>
@@ -52,6 +52,10 @@ export class ControlsPanel extends ControlPanelTabPanel {
 
       <p>Explore the collapsible Control Panel to find many more accessibility features, including options for color blindness, dark mode with fine-grained contrast, self-voicing, SparkBraille tactile support, and more.</p>
     `;
+  }
+
+  showHelpDialog() {
+    this.controlPanel.dialog.show('Help', this._getHelp());
   }
 
   protected _getKeyTable() {
@@ -90,7 +94,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
         
         <section id="advanced">
           <button 
-            @click=${() => this.controlPanel.dialog.show('Help', this.getHelp())}
+            @click=${() => this.showHelpDialog()}
           >
             Help
           </button>
