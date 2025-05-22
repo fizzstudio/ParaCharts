@@ -310,7 +310,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           ></para-audio-panel>
         </fizz-tab-panel>
 
-        -<fizz-tab-panel
+        <fizz-tab-panel
           tablabel="Controls"
           icon=${tabControlsIcon}
           ?hidden=${!this.settings.isControlsTabVisible}
@@ -352,8 +352,6 @@ export class ParaControlPanel extends logging(ParaComponent) {
             .controlPanel=${this}
           ></para-analysis-panel>
         </fizz-tab-panel>-->
-        <!-- Only show the debug tab if we're in development mode -->
-        <!-- \${(this.todo.canvas?.documentView?.chart && LitElement.disableWarning) ? this.renderTabDebug() : ''}  -->     
       </fizz-tab-details>
       ${this.renderDialog()}
     `;
