@@ -71,7 +71,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
                 aria-hidden="true"
                 ?hidden=${!this.controlPanel.settings.isStatusBarVisible}
               >
-                ${this._store.announcement}
+                ${this._store.announcement.text}
               </div>
             </div>
             <button
