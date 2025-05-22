@@ -146,7 +146,7 @@ export const defaults: Settings = {
       isStackLabelInsideBar: true,
       stackLabelGap: 10,
       isDrawRecordLabels: false,
-      isDrawValueLabels: true,
+      isDrawValueLabels: false,
       clusterBy: undefined,
       clusterGap: 5,
       stackContent: 'all',
