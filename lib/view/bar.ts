@@ -618,8 +618,7 @@ export class Bar extends XYDatapointView {
     const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
     const pxPerYUnit = this.chart.parent.logicalHeight/this.chart.axisInfo!.yLabelInfo.range!;
     const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
-      // @ts-ignore
-      .map(bar => (bar.datapoint.y.value as number)*pxPerYUnit)
+      .map(bar => bar.value.value*pxPerYUnit)
       .reduce((a, b) => a + b, 0);
     this._width = BarStack.width;
     // @ts-ignore
