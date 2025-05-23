@@ -5,8 +5,6 @@ import { type DataCursor } from '../../store';
 import { type Shape } from '../shape/shape';
 import { Rect } from '../shape/rect';
 
-import { type clusterObject } from '@fizz/clustering';
-
 import { type ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { svg, nothing, TemplateResult } from 'lit';
@@ -188,18 +186,6 @@ export class DatapointView extends DataView {
   protected _createSymbol() {
     const series = this.seriesProps;
     let symbolType = series.symbol;
-    const index = this.parent.children.indexOf(this);
-    let color: number = series.color;
-    const types = new DataSymbols().types;
-    if (this.chart.isClustering){ 
-      let clustering = this.chart.clustering as clusterObject[]
-      for (let clusterId in clustering){
-        if (clustering[clusterId].dataPointIDs.indexOf(index) > -1){
-          color = Number(clusterId)
-          symbolType = types[color % types.length]
-        }
-      }
-    }
     this._symbol = DataSymbol.fromType(this.paraview, symbolType);
     this._symbol.id = `${this._id}-sym`;
     this._symbol.role = 'datapoint';
@@ -221,7 +207,7 @@ export class DatapointView extends DataView {
 
   protected get _symbolColor() {
     return this.paraview.store.isVisited(this.seriesKey, this.index)
-      ? -1
+      ? -1 as number
       : undefined;
   }
 
