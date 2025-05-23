@@ -533,7 +533,7 @@ export class XYSeriesView extends SeriesView {
     for (let point of this.series.rawData) {
       data.push(point.y)
     }
-    if (this.paraview.store.type == "bar" || "column"){
+    if (this.paraview.store.type == "bar" || this.paraview.store.type == "column"){
       this.paraview.store.updateSettings(draft => {
       draft.controlPanel.isSparkBrailleBar = true
     })};
@@ -678,7 +678,7 @@ export abstract class XYDatapointView extends DatapointView {
     for (let point of this.series.rawData){
       data.push(point.y)
     }
-    if (this.paraview.store.type == "bar" || "column"){
+    if (this.paraview.store.type == "bar" || this.paraview.store.type == "column"){
       this.paraview.store.updateSettings(draft => {
       draft.controlPanel.isSparkBrailleBar = true
     })};
