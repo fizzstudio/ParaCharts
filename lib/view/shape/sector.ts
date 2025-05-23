@@ -135,6 +135,7 @@ export class Sector extends Shape {
         id=${this._id || nothing}
         style=${styleMap(this._styleInfo)}
         class=${classMap(this._classInfo)}
+        role=${this._role || nothing}
         d=${this._pathD}
       ></path>
     `;

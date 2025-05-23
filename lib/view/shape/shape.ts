@@ -17,6 +17,7 @@ export interface ShapeOptions {
 }
 
 export abstract class Shape extends View {
+  protected _role = '';
   protected _styleInfo: StyleInfo;
   protected _classInfo: ClassInfo = {};
   protected _ref: Ref<SVGElement> | null = null;
@@ -34,6 +35,14 @@ export abstract class Shape extends View {
 
   get options() {
     return this._options;
+  }
+
+  get role() {
+    return this._role;
+  }
+
+  set role(role: string) {
+    this._role = role;
   }
 
   get styleInfo() {
