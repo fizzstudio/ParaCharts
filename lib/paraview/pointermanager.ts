@@ -197,7 +197,9 @@ export class PointerEventManager {
       if (datapointEl) {
         // const series = datapointEl.dataset.series as string;
         // const index = +datapointEl.dataset.index!;
-        const id = datapointEl.id.endsWith('-sym')
+        const id = (datapointEl.id.endsWith('-sym')
+          || datapointEl.id.endsWith('-rlb')
+          || datapointEl.id.endsWith('-vlb'))
           ? datapointEl.id.slice(0, -4)
           : datapointEl.id;
         const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointViewForId(id)!;
