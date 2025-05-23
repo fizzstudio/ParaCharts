@@ -273,6 +273,7 @@ export class DataSymbol extends View {
   protected _options: DataSymbolOptions;
   protected _defsKey: string;
   protected _styleInfo!: StyleInfo;
+  protected _role = '';
 
   static fromType(
     paraview: ParaView,
@@ -361,6 +362,14 @@ export class DataSymbol extends View {
     this._styleInfo = styleInfo;
   }
 
+  get role() {
+    return this._role;
+  }
+
+  set role(role: string) {
+    this._role = role;
+  }
+
   protected _updateStyleInfo() {
     this._styleInfo = {
       strokeWidth: this._options.strokeWidth,
@@ -400,6 +409,7 @@ export class DataSymbol extends View {
       <use 
         href="#${this._defsKey}"
         id=${this._id || nothing}
+        role=${this._role || nothing}
         transform=${transform}
         style=${styleMap(this._styleInfo)}
         class="symbol ${this.fill} ${this.classes.join(' ')}"

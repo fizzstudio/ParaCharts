@@ -54,6 +54,7 @@ export class Path extends Shape {
         id=${this._id || nothing}
         style=${styleMap(this.styleInfo)}
         class=${classMap(this._classInfo)}
+        role=${this._role || nothing}
         d=${this._pathD}
       ></path>
     `;
