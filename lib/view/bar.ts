@@ -641,7 +641,9 @@ export class Bar extends XYDatapointView {
       this._recordLabel = new Label(this.paraview, {
         // @ts-ignore
         text: formatBox(this.datapoint.data.x, this.paraview.store.getFormatType('pieSliceValue')),
+        id: this._id + '-rlb',
         classList: ['bar-label'],
+        role: 'datapoint',
         textAnchor,
         isPositionAtAnchor,
         angle
@@ -658,7 +660,9 @@ export class Bar extends XYDatapointView {
       this._valueLabel = new Label(this.paraview, {
         // @ts-ignore
         text: formatBox(this.datapoint.data.y, this.paraview.store.getFormatType('pieSliceValue')),
+        id: this._id + '-vlb',
         classList: ['bar-label'],
+        role: 'datapoint',
         textAnchor,
         isPositionAtAnchor,
         angle

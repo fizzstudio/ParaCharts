@@ -264,8 +264,9 @@ export abstract class RadialChart extends DataLayer {
       }
       slice.categoryLabel = new Label(this.paraview, {
         text: x, 
+        id: slice.id + '-rlb',
         classList: ['radial-category-label'], 
-        role: 'axislabel', 
+        role: 'datapoint', 
         loc: labelLoc,
         textAnchor: anchor,
         isPositionAtAnchor: true
@@ -283,9 +284,10 @@ export abstract class RadialChart extends DataLayer {
       slice.valueLabel = new Label(this.paraview, {
         // XXX value will not always be a percentage
         text: ys[i] + '%', 
+        id: slice.id + '-vlb',
         classList: ['radial-value-label'], 
-        role: 'axislabel', 
-        loc: sliceCenter.add(slice.shape.orientationVector.multiplyScalar(40)),
+        role: 'datapoint', 
+        loc: sliceCenter.add(slice.shape.orientationVector.multiplyScalar(55)),
         textAnchor: 'middle',
         isPositionAtAnchor: true,
       });
