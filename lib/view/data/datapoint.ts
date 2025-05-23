@@ -181,6 +181,7 @@ export class DatapointView extends DataView {
   protected _createShape() {
     this._shape!.ref = this.ref;
     this._shape!.id = this._id;
+    this._shape!.role = 'datapoint';
     this.append(this._shape!);
   }
 
@@ -201,6 +202,7 @@ export class DatapointView extends DataView {
     }
     this._symbol = DataSymbol.fromType(this.paraview, symbolType);
     this._symbol.id = `${this._id}-sym`;
+    this._symbol.role = 'datapoint';
     this.append(this._symbol);
   }
 

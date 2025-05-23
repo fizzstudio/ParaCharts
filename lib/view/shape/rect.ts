@@ -27,7 +27,8 @@ export class Rect extends Shape {
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}
         style=${styleMap(this._styleInfo)}
-        class=${classMap(this._classInfo)}      
+        class=${classMap(this._classInfo)}    
+        role=${this._role ||  nothing}  
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}
         width=${fixed`${this.width}`}

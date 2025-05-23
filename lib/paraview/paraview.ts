@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { PointerEventManager } from './pointermanager';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaViewController } from '.';
 import { logging } from '../common/logger';
@@ -70,6 +71,7 @@ export class ParaView extends logging(ParaComponent) {
   protected _chartRefs: Map<string, Ref<any>> = new Map();
   protected _fileSavePlaceholderRef = createRef<HTMLElement>();
   protected _summarizer!: Summarizer;
+  protected _pointerEventManager = new PointerEventManager(this);
   @state() protected _defs: {[key: string]: TemplateResult} = {};
 
   static styles = [
@@ -460,6 +462,12 @@ export class ParaView extends logging(ParaComponent) {
           this.documentView?.chartLayers.dataLayer.chartLandingView.focus(true);
         }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
+        @pointerdown=${(ev: PointerEvent) => this._pointerEventManager.handleStart(ev)}
+        @pointerup=${(ev: PointerEvent) => this._pointerEventManager.handleEnd(ev)}
+        @pointercancel=${(ev: PointerEvent) => this._pointerEventManager.handleCancel(ev)}
+        @pointermove=${(ev: PointerEvent) => this._pointerEventManager.handleMove(ev)}
+        @click=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager.handleClick(ev)}
+        @dblclick=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager.handleDoubleClick(ev)}
       >
         <defs
           ${ref(this._defsRef)}
