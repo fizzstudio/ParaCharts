@@ -23,6 +23,20 @@ export class PieChart extends RadialChart {
   setLowVisionMode(_lvm: boolean): void {
   }
 
+  onFocus() {
+    super.onFocus()
+    let data = []
+    for (let series of this.paraview.store.model!.series){
+      for (let point of series.rawData) {
+        data.push({ label: point.x, value: Number(point.y) })
+      }
+    }
+    
+    this.paraview.store.updateSettings(draft => {
+      draft.controlPanel.isSparkBrailleProportional = true
+    });
+    this.paraview.store._sparkBrailleData = JSON.stringify(data)
+  }
 }
 
 export class PieSlice extends RadialSlice {

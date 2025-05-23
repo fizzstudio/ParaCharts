@@ -17,7 +17,7 @@ import { ref, createRef } from 'lit/directives/ref.js';
 export class DataPanel extends ControlPanelTabPanel {
 
   @property() sparkBrailleData!: string;
-  @property({type: Boolean}) isSparkBrailleVisible = true;
+  @property({type: Boolean}) isSparkBrailleVisible = false;
 
   protected _sparkBrailleRef = createRef<sb.SparkBraille>();
   protected _sparkBrailleWrapperRef = createRef<HTMLDivElement>();
@@ -200,6 +200,7 @@ export class DataPanel extends ControlPanelTabPanel {
         ${ref(this._sparkBrailleWrapperRef)} 
         id="sparkbraille"
         class=${this.isSparkBrailleVisible ? nothing : 'hidden'}
+        ?hidden=${!this.isSparkBrailleVisible}
       >
         <!-- 
           What should happen when a braille cell is selected?
