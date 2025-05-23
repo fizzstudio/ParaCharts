@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { PointChart, ChartPoint } from './pointchart';
 import { type LineSettings, type DeepReadonly } from '../store/settings_types';
-import { XYSeriesView } from './xychart';
+import { XYDatapointView, XYSeriesView } from './xychart';
 import { Path } from './shape/path';
 import { Vec2 } from '../common/vector';
 import { interpolate } from '@fizz/templum';
@@ -86,6 +86,70 @@ export class LineChart extends PointChart {
     }
   }
 
+    moveUp() {
+      if (this.paraview.store.settings.sonification.isChordModeEnabled) {
+        //this._eventActionManager!.dispatch('chord_mode_no_up_down');
+        return;
+      }
+      const leaf = this._chartLandingView.focusLeaf;
+      if (leaf instanceof XYDatapointView) {
+        const withSameIndexersSorted = leaf.withSameIndexers.sort((a,b) => Number(b.datapoint.y.value) - Number(a.datapoint.y.value));
+        const relativeIndex = withSameIndexersSorted.indexOf(leaf)
+        const psi = withSameIndexersSorted[relativeIndex - 1]
+        if (psi) {
+          leaf.blur(false);
+          psi.focus();
+          //this._sonifier.playNotification('series');
+        } else {
+          //this._eventActionManager!.dispatch('first_series_reached');
+          return;
+        }
+      } else if (leaf instanceof SeriesView) {
+        if (!leaf.prev) {
+          //this._eventActionManager!.dispatch('first_series_reached');
+          return;
+        } else {
+          leaf.prev!.focus();
+          //this._sonifier.playNotification('series');
+        }
+      } else {
+        // At chart root, so move to the first series landing
+        this._chartLandingView.children[0].focus();
+      }
+    }
+  
+    moveDown() {
+      if (this.paraview.store.settings.sonification.isChordModeEnabled) {
+        //this._eventActionManager!.dispatch('chord_mode_no_up_down');
+        return;
+      }
+      const leaf = this._chartLandingView.focusLeaf;
+      if (leaf instanceof XYDatapointView) {
+        const withSameIndexersSorted = leaf.withSameIndexers.sort((a,b) => Number(b.datapoint.y.value) - Number(a.datapoint.y.value));
+        const relativeIndex = withSameIndexersSorted.indexOf(leaf)
+        const nsi = withSameIndexersSorted[relativeIndex + 1]
+        if (nsi) {
+          leaf.blur(false);
+          nsi.focus();
+          //this._sonifier.playNotification('series');
+        } else {
+          //this._eventActionManager!.dispatch('final_series_reached');
+          return;
+        }
+      } else if (leaf instanceof SeriesView) {
+        if (!leaf.next) {
+          //this._eventActionManager!.dispatch('final_series_reached');
+          return;
+        } else {
+          leaf.next!.focus();
+          //this._sonifier.playNotification('series');
+        }
+      } else {
+        // At chart root, so move to the first series landing 
+        this._chartLandingView.children[0].focus(); 
+      }
+    }
+    
   queryData(): void {
     const targetView = this.chartLandingView.focusLeaf
     // TODO: localize this text output
