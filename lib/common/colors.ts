@@ -431,6 +431,10 @@ export class Colors {
           {
             value: 'hsl(324, 35%, 62%)',
             name: ''
+          },
+          {
+            value: 'hsl(0, 100%, 50%)',
+            name: 'highlight'
           }
         ]
       },
