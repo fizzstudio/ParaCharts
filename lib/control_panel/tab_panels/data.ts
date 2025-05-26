@@ -17,10 +17,12 @@ import { ref, createRef } from 'lit/directives/ref.js';
 export class DataPanel extends ControlPanelTabPanel {
 
   @property() sparkBrailleData!: string;
-  @property({type: Boolean}) isSparkBrailleVisible = true;
+  @property({type: Boolean}) isSparkBrailleVisible = false;
 
   protected _sparkBrailleRef = createRef<sb.SparkBraille>();
   protected _sparkBrailleWrapperRef = createRef<HTMLDivElement>();
+  protected _isSBProp = false;
+  protected _isBar = false;
 
   protected _saveChart() {
     const paraView = this.controlPanel.parentElement!.firstElementChild as ParaView;
@@ -120,6 +122,10 @@ export class DataPanel extends ControlPanelTabPanel {
   ];
 
   render() {
+    const paraView = this.controlPanel.parentElement!.firstElementChild as ParaView;
+    this.sparkBrailleData = paraView.store._sparkBrailleData
+    this._isSBProp = paraView.store.settings.controlPanel.isSparkBrailleProportional;
+    this._isBar = paraView.store.settings.controlPanel.isSparkBrailleBar;
     return html`   
       <div 
         id="data-page" 
@@ -129,14 +135,15 @@ export class DataPanel extends ControlPanelTabPanel {
           <p>Source: <span id="source-name">unknown</span></p>
         </div>
         <div id="data-buttons">
-          <!--
           ${this.controlPanel.settings.isSparkBrailleControlVisible
             ? html`  
               <button 
                 @click=${() => {
                   this.isSparkBrailleVisible = !this.isSparkBrailleVisible;
                   // XXX Does this work?
-                  this._store.settings.controlPanel.isSparkBrailleVisible = this.isSparkBrailleVisible;
+                  paraView.store.updateSettings(draft => {
+                    draft.controlPanel.isSparkBrailleVisible = this.isSparkBrailleVisible;
+                  })
                   //this.controlPanel.requestUpdate();
                   this._sparkBrailleRef.value!.focus();
                 }}
@@ -146,7 +153,6 @@ export class DataPanel extends ControlPanelTabPanel {
             `
             : nothing
           }
-          -->
           <!--<button 
             @click=${() => {
                 // this.controlPanel.dialog.show(
@@ -196,21 +202,23 @@ export class DataPanel extends ControlPanelTabPanel {
         ${ref(this._sparkBrailleWrapperRef)} 
         id="sparkbraille"
         class=${this.isSparkBrailleVisible ? nothing : 'hidden'}
-      >
+        ?hidden=${!this.isSparkBrailleVisible}
+    >
         <!-- 
           What should happen when a braille cell is selected?
         -->
-        <!--
         <fizz-sparkbraille
           ${ref(this._sparkBrailleRef)}
-          data=${this.sparkBrailleData}
+          ?bar=${this._isBar}
+          ?isProp=${this._isSBProp}
+          data=${this._isSBProp ? '' : this.sparkBrailleData}
+          labeledData=${this._isSBProp ? this.sparkBrailleData : ''}
           @select=${(e: CustomEvent) => {
             const index = e.detail*2;
             //chart.hiliteSegmentRangeById('series', `${index}`, `${index + 1}`);
           }}
         >
         </fizz-sparkbraille>
--->
       </div>
     `;
   }
