@@ -66,6 +66,8 @@ export interface ControlPanelSettings extends SettingGroup {
   isCaptionVisible: boolean;
   isStatusBarVisible: boolean;
   isSparkBrailleVisible: boolean;
+  isSparkBrailleProportional: boolean;
+  isSparkBrailleBar: boolean;
   isDataTabVisible: boolean;
   isColorsTabVisible: boolean;
   isAudioTabVisible: boolean;
