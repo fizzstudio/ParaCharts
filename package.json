@@ -86,6 +86,7 @@
     "@fizz/paramanifest": "^0.3.2",
     "@fizz/paramodel": "^0.1.7-alpha.0",
     "@fizz/parasummary": "^0.2.2-alpha.7",
+    "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.4.2",
     "@fizz/todocharts": "^0.129.6",
     "@fizz/ui-components": "^0.69.3",
