@@ -71,8 +71,6 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _controlPanelRef: Ref<ParaControlPanel>;
     // (undocumented)
-    accessor filename: string;
-    // (undocumented)
     protected firstUpdated(_changedProperties: PropertyValues): void;
     // (undocumented)
     accessor forcecharttype: ChartType_2 | undefined;
@@ -89,7 +87,13 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _loaderPromise: Promise<void> | null;
     // (undocumented)
+    accessor manifest: string;
+    // (undocumented)
     protected _manifest?: Manifest;
+    // Warning: (ae-forgotten-export) The symbol "SourceKind" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    manifestType: SourceKind;
     // (undocumented)
     get paraView(): ParaView;
     // Warning: (ae-forgotten-export) The symbol "ParaView" needs to be exported by the entry point index.d.ts
@@ -103,7 +107,7 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     render(): TemplateResult;
     // (undocumented)
-    protected _runLoader(filename: string): Promise<void>;
+    protected _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void>;
     // (undocumented)
     protected _setManifest(manifest: Manifest): void;
     // (undocumented)
@@ -129,7 +133,7 @@ export class ParaHelper {
     // (undocumented)
     protected _createParaChart(): void;
     // (undocumented)
-    loadManifest(url: string): Promise<void>;
+    loadManifest(manifestInput: string, manifestType?: SourceKind): Promise<void>;
     // (undocumented)
     protected _paraChart: ParaChart;
     // (undocumented)

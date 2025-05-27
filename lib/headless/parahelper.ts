@@ -2,6 +2,7 @@
 import { ParaChart } from '../parachart/parachart';
 import '../parachart/parachart';
 import { ParaApi } from '../api/api';
+import { type SourceKind } from '../loader/paraloader';
 
 export class ParaHelper {
 
@@ -23,10 +24,11 @@ export class ParaHelper {
     document.body.append(this._paraChart);
   }
 
-  loadManifest(url: string) {
-    this._paraChart.setAttribute('filename', url);
+  loadManifest(manifestInput: string, manifestType: SourceKind = 'url') {
+    this._paraChart.setAttribute('manifest', manifestInput);
+    this._paraChart.setAttribute('manifesttype', manifestType);
     return new Promise<void>((resolve) => {
-      this._paraChart.addEventListener('filenamechange', async () => {
+      this._paraChart.addEventListener('manifestchange', async () => {
         // Once the filename has been set, we can wait for the load to complete
         await this._paraChart.loaded;
         resolve();

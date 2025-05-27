@@ -143,11 +143,11 @@ export class DataPanel extends ControlPanelTabPanel {
           >
             Source Links
           </button>-->
-          <!--<button 
+          <button 
             @click=${() => this._saveChart()}
           >
             Save chart
-          </button>-->
+          </button>
         </div>
       </div>
       <div
