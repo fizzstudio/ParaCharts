@@ -24,38 +24,9 @@ export class DataPanel extends ControlPanelTabPanel {
 
   protected _saveChart() {
     const paraView = this.controlPanel.parentElement!.firstElementChild as ParaView;
-
-    const svg = paraView.root!.cloneNode(true) as SVGSVGElement;
-
-    const styles = this._extractStyles(paraView);
-    const styleEl = document.createElementNS(SVGNS, 'style');
-    styleEl.textContent = styles;
-    svg.prepend(styleEl);
-
-    const toPrune: Comment[] = [];
-    const pruneComments = (nodes: NodeList) => {
-      for (const node of nodes) {
-        if (node instanceof Comment) {
-          toPrune.push(node);
-        } else if (node.childNodes.length) {
-          pruneComments(node.childNodes);
-        }
-      }
-    };
-    pruneComments(svg.childNodes);
-    toPrune.forEach(c => c.remove());
-
-    svg.removeAttribute('role');
-
-    // XXX Also remove visited styling (not just the layer)
-    
-    const content = new XMLSerializer().serializeToString(svg)
-      .split('\n')
-      .filter(line => !line.match(/^\s*$/))
-      .join('\n');
+    const content = paraView.serialize();
 
     const filetype = 'image/svg+xml';
-
     const blob = new Blob([content], {type : `${filetype};charset=utf-8`});
     const DOMURL = self.URL || self.webkitURL || self;
     const url = DOMURL.createObjectURL(blob);
@@ -68,19 +39,6 @@ export class DataPanel extends ControlPanelTabPanel {
     downloadLinkEl.click();
     DOMURL.revokeObjectURL(url);
     downloadLinkEl.remove();  
-  }
-
-  protected _extractStyles(paraView: ParaView) {
-    const stylesheets = paraView.shadowRoot!.adoptedStyleSheets;
-    const out: string[] = [];
-    for (const stylesheet of stylesheets) {
-      const rules = stylesheet.cssRules;
-      for (let i = 0; i < rules.length; i++) {
-        const rule = rules.item(i) as CSSRule;
-        out.push(rule.cssText.replace(/^:host/, ':root'));
-      }
-    }
-    return out.join('\n');
   }
 
   static styles = [
