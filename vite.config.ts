@@ -6,14 +6,22 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   build: {
-    sourcemap: true,
     lib: {
       entry: resolve(__dirname, 'lib/index.ts'),
       name: 'paracharts',
       fileName: 'paracharts',
       formats: ['es']
     },
-    emptyOutDir: false
+    rollupOptions: {
+      output: {
+        // WORKAROUND for immer.js esm (see https://github.com/immerjs/immer/issues/557)
+        intro: `window.process = {
+          env: {
+            NODE_ENV: "production"
+          }
+        };`
+      }
+    }
   },
   server: {
     port: 5180
