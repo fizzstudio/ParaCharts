@@ -275,7 +275,6 @@ export class ParaControlPanel extends logging(ParaComponent) {
             .controlPanel=${this}
           ></para-description-panel>
         </fizz-tab-panel>
-        <!--
         <fizz-tab-panel
           tablabel="Data"
           icon=${tabDataIcon}
@@ -288,7 +287,6 @@ export class ParaControlPanel extends logging(ParaComponent) {
             .isSparkBrailleVisible=${this.settings.isSparkBrailleVisible}
           ></para-data-panel>
         </fizz-tab-panel>
-      -->
         <fizz-tab-panel
           tablabel="Colors"
           icon=${tabColorsIcon}

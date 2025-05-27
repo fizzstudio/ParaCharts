@@ -403,7 +403,7 @@ export class ParaView extends logging(ParaComponent) {
       const rules = stylesheet.cssRules;
       for (let i = 0; i < rules.length; i++) {
         const rule = rules.item(i) as CSSRule;
-        out.push(rule.cssText.replace(/^:host/, ':root'));
+        out.push(rule.cssText.replace(/^:host/, 'svg'));
       }
     }
     return out.join('\n');

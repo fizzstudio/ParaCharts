@@ -27,7 +27,7 @@ import { type ParaControlPanel } from '../control_panel';
 import { type AriaLive } from '../components';
 import '../components/aria_live';
 import { ParaStore } from '../store';
-import { ParaLoader } from '../loader/paraloader';
+import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { styles } from '../view/styles';
 
 import { Manifest } from '@fizz/paramanifest';
@@ -41,7 +41,8 @@ import { classMap } from 'lit/directives/class-map.js';
 export class ParaChart extends logging(ParaComponent) {
 
   @property({ type: Boolean }) headless = false;
-  @property() accessor filename = '';
+  @property() accessor manifest = '';
+  @property() manifestType: SourceKind = 'url';
   @property({type: Object}) accessor config: SettingsInput = {};
   @property() accessor forcecharttype: ChartType | undefined;
 
@@ -65,8 +66,8 @@ export class ParaChart extends logging(ParaComponent) {
       this.addEventListener('paraviewready', async () => {
         resolve();
         // It's now safe to load a manifest
-        if (this.filename) {
-          this._loaderPromise = this._runLoader(this.filename).then(() =>
+        if (this.manifest) {
+          this._loaderPromise = this._runLoader(this.manifest, this.manifestType).then(() =>
             this.log('ParaCharts will now commence the raising of the roof and/or the dead'));
         }
       });
@@ -97,10 +98,10 @@ export class ParaChart extends logging(ParaComponent) {
   }
 
   willUpdate(changedProperties: PropertyValues<this>) {
-    if (changedProperties.has('filename') && this.filename !== '') {
-      this.log(`changed: '${this.filename}`);
-      this._loaderPromise = this._runLoader(this.filename);
-      this.dispatchEvent(new CustomEvent('filenamechange', {bubbles: true, composed: true, cancelable: true}));
+    if (changedProperties.has('manifest') && this.manifest !== '') {
+      this.log(`manifest changed: '${this.manifestType === 'content' ? '<content>' : this.manifest}`);
+      this._loaderPromise = this._runLoader(this.manifest, this.manifestType);
+      this.dispatchEvent(new CustomEvent('manifestchange', {bubbles: true, composed: true, cancelable: true}));
     }
     if (changedProperties.has('config')) {
       Object.entries(this.config).forEach(([path, value]) =>
@@ -128,11 +129,10 @@ export class ParaChart extends logging(ParaComponent) {
     this._store.setManifest(manifest);
   }
 
-  protected async _runLoader(filename: string): Promise<void> {
-    this.log(`loading filename: '${filename}'`);
+  protected async _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void> {
+    this.log(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
     this._store.dataState = 'pending';
-    const loadresult = await this._loader.load(
-      filename.startsWith('/') ? 'url' : 'fizz-chart-data', filename, this.forcecharttype);
+    const loadresult = await this._loader.load(this.manifestType, manifestInput, this.forcecharttype);
     this.log('loaded manifest')
     if (loadresult.result === 'success') {
       this._setManifest(loadresult.manifest);
@@ -153,7 +153,8 @@ export class ParaChart extends logging(ParaComponent) {
 
   render(): TemplateResult {
     this.log('render');
-    // We can't truly hide 
+    // We can't truly hide the para-chart, or labels don't get a proper size,
+    // so we fall back on sr-only
     const classes = {
       'sr-only': this.headless
     };

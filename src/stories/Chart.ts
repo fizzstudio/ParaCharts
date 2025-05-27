@@ -70,7 +70,8 @@ export const Chart = ({
     </style>
 
   <para-chart 
-    filename=${filename} 
+    manifest=${filename}
+    manifesttype=${filename.startsWith('/') ? 'url' : 'fizz-chart-data'} 
     .config=${config ?? nothing}
     forcecharttype=${forcecharttype ?? nothing}
   >
