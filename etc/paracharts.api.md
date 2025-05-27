@@ -10,7 +10,6 @@ import { BasicXYChartSummarizer } from '@fizz/parasummary';
 import { ButtonDescriptor } from '@fizz/ui-components';
 import { ChartType as ChartType_2 } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
-import { clusterObject } from '@fizz/clustering';
 import { CSSResult } from 'lit';
 import { DataPoint } from '@fizz/paramodel';
 import { Datatype } from '@fizz/dataframe';
@@ -65,10 +64,6 @@ export class ParaChart extends ParaChart_base {
     accessor config: SettingsInput;
     // (undocumented)
     connectedCallback(): void;
-    // Warning: (ae-forgotten-export) The symbol "ParaController" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    protected _controller: ParaController;
     // (undocumented)
     get controlPanel(): ParaControlPanel;
     // Warning: (ae-forgotten-export) The symbol "ParaControlPanel" needs to be exported by the entry point index.d.ts
@@ -84,21 +79,63 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     headless: boolean;
     // (undocumented)
+    protected _inputSettings: SettingsInput;
+    // (undocumented)
+    get loaded(): Promise<void> | null;
+    // Warning: (ae-forgotten-export) The symbol "ParaLoader" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _loader: ParaLoader;
+    // (undocumented)
+    protected _loaderPromise: Promise<void> | null;
+    // (undocumented)
+    protected _manifest?: Manifest;
+    // (undocumented)
     get paraView(): ParaView;
     // Warning: (ae-forgotten-export) The symbol "ParaView" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
     protected _paraViewRef: Ref<ParaView>;
     // (undocumented)
-    ready(): void;
+    get ready(): Promise<void>;
+    // (undocumented)
+    protected _readyPromise: Promise<void>;
     // (undocumented)
     render(): TemplateResult;
+    // (undocumented)
+    protected _runLoader(filename: string): Promise<void>;
+    // (undocumented)
+    protected _setManifest(manifest: Manifest): void;
     // (undocumented)
     showAriaLiveHistory(): void;
     // (undocumented)
     static styles: CSSResult[];
+    // Warning: (ae-forgotten-export) The symbol "DeepReadonly" needs to be exported by the entry point index.d.ts
+    // Warning: (ae-forgotten-export) The symbol "Settings" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _suppleteSettingsWith?: DeepReadonly<Settings>;
     // (undocumented)
     willUpdate(changedProperties: PropertyValues<this>): void;
+}
+
+// @public (undocumented)
+export class ParaHelper {
+    constructor();
+    // Warning: (ae-forgotten-export) The symbol "ParaApi" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _api: ParaApi;
+    // (undocumented)
+    protected _createParaChart(): void;
+    // (undocumented)
+    loadManifest(url: string): Promise<void>;
+    // (undocumented)
+    protected _paraChart: ParaChart;
+    // (undocumented)
+    get ready(): Promise<void>;
+    // (undocumented)
+    serializeChart(): string;
 }
 
 // (No @packageDocumentation comment for this package)

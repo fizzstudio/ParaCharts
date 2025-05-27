@@ -25,6 +25,7 @@
   "type": "module",
   "scripts": {
     "demo": "vite --port 5176",
+    "headless": "vite --port 5177 --open /headless.html",
     "build": "rimraf dist && tsc && vite build && api-extractor run --local --verbose",
     "pretest": "npm run build",
     "test": "vitest",
