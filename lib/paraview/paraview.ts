@@ -53,6 +53,7 @@ export class ParaView extends logging(ParaComponent) {
   @property() xAxisLabel?: string;
   @property() yAxisLabel?: string;
   @property() contrastLevel: number = 1;
+  @property({type: Boolean}) disableFocus = false;
 
   protected _controller!: ParaViewController;
   protected _viewBox!: ViewBox;
@@ -364,6 +365,50 @@ export class ParaView extends logging(ParaComponent) {
   //   this._defsRef.value!.appendChild(el);
   // }
 
+   serialize() {
+    const svg = this.root!.cloneNode(true) as SVGSVGElement;
+
+    const styles = this._extractStyles();
+    const styleEl = document.createElementNS(SVGNS, 'style');
+    styleEl.textContent = styles;
+    svg.prepend(styleEl);
+
+    const toPrune: Comment[] = [];
+    const pruneComments = (nodes: NodeList) => {
+      for (const node of nodes) {
+        if (node instanceof Comment) {
+          toPrune.push(node);
+        } else if (node.childNodes.length) {
+          pruneComments(node.childNodes);
+        }
+      }
+    };
+    pruneComments(svg.childNodes);
+    toPrune.forEach(c => c.remove());
+
+    svg.removeAttribute('role');
+
+    // XXX Also remove visited styling (not just the layer)
+    
+    return new XMLSerializer().serializeToString(svg)
+      .split('\n')
+      .filter(line => !line.match(/^\s*$/))
+      .join('\n');
+  }
+
+  protected _extractStyles() {
+    const stylesheets = this.shadowRoot!.adoptedStyleSheets;
+    const out: string[] = [];
+    for (const stylesheet of stylesheets) {
+      const rules = stylesheet.cssRules;
+      for (let i = 0; i < rules.length; i++) {
+        const rule = rules.item(i) as CSSRule;
+        out.push(rule.cssText.replace(/^:host/, ':root'));
+      }
+    }
+    return out.join('\n');
+  }
+
   addDef(key: string, template: TemplateResult) {
     if (this._defs[key]) {
       throw new Error('view already in defs');
@@ -432,7 +477,7 @@ export class ParaView extends logging(ParaComponent) {
     return html`
       <svg
         role="application"
-        tabindex="0"
+        tabindex=${this.disableFocus ? -1 : 0}
         aria-label=${this._documentView ? `${this._documentView.titleText}, accessible chart` : 'loading...'}
         ${ref(this._rootRef)}
         xmlns=${SVGNS}

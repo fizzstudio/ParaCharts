@@ -16,7 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { logging } from '../common/logger';
 import { ParaComponent } from '../components';
-import { ParaController } from '../paracontroller';
 import { AllSeriesData, ChartType } from '@fizz/paramanifest'
 import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
 import { SettingsManager } from '../store';
@@ -27,35 +26,51 @@ import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
 import { type AriaLive } from '../components';
 import '../components/aria_live';
+import { ParaStore } from '../store';
+import { ParaLoader } from '../loader/paraloader';
+import { styles } from '../view/styles';
+
+import { Manifest } from '@fizz/paramanifest';
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
 
   @property({ type: Boolean }) headless = false;
+  @property() accessor filename = '';
+  @property({type: Object}) accessor config: SettingsInput = {};
+  @property() accessor forcecharttype: ChartType | undefined;
 
-  protected _controller: ParaController;
   protected _paraViewRef = createRef<ParaView>();  
   protected _controlPanelRef = createRef<ParaControlPanel>();
   protected _ariaLiveRegionRef = createRef<AriaLive>();
+  protected _manifest?: Manifest;
+  protected _loader = new ParaLoader();
 
-  private inputSettings: SettingsInput = {};
+  protected _inputSettings: SettingsInput = {};
   private data?: AllSeriesData;
-  private suppleteSettingsWith?: DeepReadonly<Settings>;
-
-  @property() accessor filename = '';
-  @property({type: Object}) accessor config: SettingsInput = {};
-
-  @property() accessor forcecharttype: ChartType | undefined;
+  protected _suppleteSettingsWith?: DeepReadonly<Settings>;
+  protected _readyPromise: Promise<void>;
+  protected _loaderPromise: Promise<void> | null = null;
 
   constructor() {
     super();
-    this._controller = new ParaController(this);
     // also creates the state controller
-    this.store = this._controller.store;
+    this.store = new ParaStore(this._inputSettings, this._suppleteSettingsWith);
+    this._readyPromise = new Promise((resolve) => {
+      this.addEventListener('paraviewready', async () => {
+        resolve();
+        // It's now safe to load a manifest
+        if (this.filename) {
+          this._loaderPromise = this._runLoader(this.filename).then(() =>
+            this.log('ParaCharts will now commence the raising of the roof and/or the dead'));
+        }
+      });
+    });    
   }
 
   get paraView() {
@@ -64,6 +79,14 @@ export class ParaChart extends logging(ParaComponent) {
 
   get controlPanel() {
     return this._controlPanelRef.value!;
+  }
+
+  get ready() {
+    return this._readyPromise;
+  }
+
+  get loaded() {
+    return this._loaderPromise;
   }
 
   connectedCallback() {
@@ -76,6 +99,7 @@ export class ParaChart extends logging(ParaComponent) {
   willUpdate(changedProperties: PropertyValues<this>) {
     if (changedProperties.has('filename') && this.filename !== '') {
       this.log(`changed: '${this.filename}`);
+      this._loaderPromise = this._runLoader(this.filename);
       this.dispatchEvent(new CustomEvent('filenamechange', {bubbles: true, composed: true, cancelable: true}));
     }
     if (changedProperties.has('config')) {
@@ -87,6 +111,7 @@ export class ParaChart extends logging(ParaComponent) {
   }
 
   static styles = [
+    styles,
     css`
       :host {
         --summary-marker-size: 1.1rem;
@@ -98,9 +123,24 @@ export class ParaChart extends logging(ParaComponent) {
     `
   ];
 
-  // XXX temp hack
-  ready() {
-    this._controlPanelRef.value!.hidden = false;
+  protected _setManifest(manifest: Manifest): void {
+    this._manifest = manifest;
+    this._store.setManifest(manifest);
+  }
+
+  protected async _runLoader(filename: string): Promise<void> {
+    this.log(`loading filename: '${filename}'`);
+    this._store.dataState = 'pending';
+    const loadresult = await this._loader.load(
+      filename.startsWith('/') ? 'url' : 'fizz-chart-data', filename, this.forcecharttype);
+    this.log('loaded manifest')
+    if (loadresult.result === 'success') {
+      this._setManifest(loadresult.manifest);
+      this._store.dataState = 'complete';
+    } else {
+      console.error(loadresult.error);
+      this._store.dataState = 'error';
+    }
   }
 
   clearAriaLive() {
@@ -113,20 +153,27 @@ export class ParaChart extends logging(ParaComponent) {
 
   render(): TemplateResult {
     this.log('render');
+    // We can't truly hide 
+    const classes = {
+      'sr-only': this.headless
+    };
     return html`
-      <figure>
+      <figure
+        class=${classMap(classes)}
+        aria-hidden=${this.headless ? 'true' : 'false'}
+      >
         <para-view
           ${ref(this._paraViewRef)}
           .paraChart=${this}
           .store=${this._store}
           colormode=${this._store?.settings.color.colorVisionMode ?? nothing}
+          ?disableFocus=${this.headless}
         ></para-view>
         ${!this.headless ? html`
           <para-control-panel
             ${ref(this._controlPanelRef)}
             .paraChart=${this}
             .store=${this._store}
-            hidden
           ></para-control-panel>` : ''
         }
         <para-aria-live-region
