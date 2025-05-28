@@ -21,6 +21,7 @@ export const Chart = ({
 }: ChartProps) => {
   config ??= {};
   config['legend.itemOrder'] = legendOrder;
+  config['controlPanel.isControlPanelDefaultOpen'] = true;
   return html`
     <style>
       /*

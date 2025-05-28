@@ -301,7 +301,7 @@ export const defaults: Settings = {
     isLowVisionModeEnabled: false
   },
   controlPanel: {
-    isControlPanelDefaultOpen: true,
+    isControlPanelDefaultOpen: false,
     tabLabelStyle: 'label',
     isCaptionVisible: true,
     isStatusBarVisible: true,
