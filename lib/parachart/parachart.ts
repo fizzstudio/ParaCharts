@@ -94,9 +94,6 @@ export class ParaChart extends logging(ParaComponent) {
     super.connectedCallback();
   }
 
-  protected firstUpdated(_changedProperties: PropertyValues): void {
-  }
-
   willUpdate(changedProperties: PropertyValues<this>) {
     if (changedProperties.has('manifest') && this.manifest !== '') {
       this.log(`manifest changed: '${this.manifestType === 'content' ? '<content>' : this.manifest}`);
@@ -170,7 +167,7 @@ export class ParaChart extends logging(ParaComponent) {
           colormode=${this._store?.settings.color.colorVisionMode ?? nothing}
           ?disableFocus=${this.headless}
         ></para-view>
-        ${!this.headless ? html`
+        ${!this.headless && this._store.model ? html`
           <para-control-panel
             ${ref(this._controlPanelRef)}
             .paraChart=${this}
