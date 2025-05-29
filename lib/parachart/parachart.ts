@@ -33,9 +33,10 @@ import { styles } from '../view/styles';
 import { Manifest } from '@fizz/paramanifest';
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, queryAssignedElements } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { SlotLoader } from '../loader/slotloader';
 
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
@@ -50,6 +51,7 @@ export class ParaChart extends logging(ParaComponent) {
   protected _ariaLiveRegionRef = createRef<AriaLive>();
   protected _manifest?: Manifest;
   protected _loader = new ParaLoader();
+  private _slotLoader = new SlotLoader();
 
   protected _inputSettings: SettingsInput = {};
   private data?: AllSeriesData;
@@ -57,6 +59,10 @@ export class ParaChart extends logging(ParaComponent) {
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
 
+  @queryAssignedElements({flatten: true})
+  private _slotted!: HTMLElement[];
+
+  
   constructor() {
     super();
     // also creates the state controller
@@ -65,9 +71,27 @@ export class ParaChart extends logging(ParaComponent) {
       this.addEventListener('paraviewready', async () => {
         resolve();
         // It's now safe to load a manifest
+        console.log("this.filename")
+        console.log(this.filename)
         if (this.filename) {
           this._loaderPromise = this._runLoader(this.filename).then(() =>
             this.log('ParaCharts will now commence the raising of the roof and/or the dead'));
+        }
+        else if (this._slotted) {
+          this.log(`loading from slot`);
+          console.log(this._slotted)
+          this._store.dataState = 'pending';
+          const loadresult = await this._slotLoader.findManifest(this._slotted)
+          this.log('loaded manifest')
+          console.log(loadresult)
+          if (loadresult.result === 'success') {
+            console.log(loadresult.manifest)
+            this._setManifest(loadresult.manifest!);
+            this._store.dataState = 'complete';
+          } else {
+            console.error(loadresult.error);
+            this._store.dataState = 'error';
+          }
         }
       });
     });    
@@ -135,6 +159,7 @@ export class ParaChart extends logging(ParaComponent) {
       filename.startsWith('/') ? 'url' : 'fizz-chart-data', filename, this.forcecharttype);
     this.log('loaded manifest')
     if (loadresult.result === 'success') {
+      console.log(loadresult.manifest)
       this._setManifest(loadresult.manifest);
       this._store.dataState = 'complete';
     } else {
@@ -181,6 +206,11 @@ export class ParaChart extends logging(ParaComponent) {
           .store=${this._store}
           .announcement=${this._store.announcement}
         ></para-aria-live-region>
+        <slot
+          @slotchange=${(e: Event) => {
+            //this._signalManager.signal('slotChange');
+          }}
+        ></slot>
       </figure>
     `;
   }
