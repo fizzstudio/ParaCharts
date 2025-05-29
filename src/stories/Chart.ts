@@ -5,22 +5,40 @@ import { type SettingsInput, type LegendItemOrder } from '../../lib/store/settin
 import { html, nothing } from 'lit';
 import '../../lib';
 import { ChartType } from '@fizz/paramanifest';
+import { DirectiveResult } from 'lit/async-directive.js';
+import { UnsafeHTMLDirective } from 'lit/directives/unsafe-html.js';
+import { DataAndTypes, KeymapsInput } from '@fizz/todocharts';
 
 export interface ChartProps {
   filename: string;
   config?: SettingsInput;  
   legendOrder: LegendItemOrder;
   forcecharttype?: ChartType;
+  slot?: DirectiveResult<typeof UnsafeHTMLDirective>;
+  type?: string;
+  //height: number;
+  chartTitle?: string;
+  xAxisLabel?: string;
+  yAxisLabel?: string;
+  configFile?: string;
+  data?: DataAndTypes;
+  dataFile?: string;
+  keybindings?: KeymapsInput;
+  keybindingsFile?: string;
+  summary?: string;
+  debug?: boolean;
 }
 
 /**
  * Primary UI component for user interaction
  */
 export const Chart = ({ 
-  filename, config, legendOrder, forcecharttype
+  filename, config, legendOrder, forcecharttype, slot
 }: ChartProps) => {
+  console.log("chart loading")
   config ??= {};
   config['legend.itemOrder'] = legendOrder;
+  console.log(slot)
   return html`
     <style>
       /*
@@ -74,6 +92,7 @@ export const Chart = ({
     .config=${config ?? nothing}
     forcecharttype=${forcecharttype ?? nothing}
   >
+    ${slot ?? ``}
     <span slot="settings"></span>
   </para-chart>
   `;

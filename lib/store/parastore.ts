@@ -156,7 +156,8 @@ export class ParaStore extends State {
     } else {
       throw new Error('store lacks external or inline chart data');
     }
-    this._summarizer = new BasicXYChartSummarizer(this._model);
+    //this._summarizer = new BasicXYChartSummarizer(this._model);
+
   }
 
   protected _propertyChanged(key: string, value: any) {

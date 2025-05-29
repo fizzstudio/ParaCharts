@@ -54,6 +54,7 @@ class BarCluster {
   }
 
   constructor(public readonly chart: BarChart, public readonly key: string) {
+    //console.log(this.key)
     this.id = `barcluster-${strToId(this.key)}`;
     this.labelId = `tick-x-${this.id}`;
   }
