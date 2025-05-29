@@ -90,6 +90,10 @@ export class ParaChart extends logging(ParaComponent) {
     return this._loaderPromise;
   }
 
+  get loader() {
+    return this._loader;
+  }
+
   connectedCallback() {
     super.connectedCallback();
   }
@@ -124,18 +128,16 @@ export class ParaChart extends logging(ParaComponent) {
     `
   ];
 
-  protected _setManifest(manifest: Manifest): void {
-    this._manifest = manifest;
-    this._store.setManifest(manifest);
-  }
-
   protected async _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void> {
     this.log(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
     this._store.dataState = 'pending';
-    const loadresult = await this._loader.load(this.manifestType, manifestInput, this.forcecharttype);
+    const loadresult = await this._loader.load(
+      this.manifestType, manifestInput, 
+      this.forcecharttype);
     this.log('loaded manifest')
     if (loadresult.result === 'success') {
-      this._setManifest(loadresult.manifest);
+      this._manifest = loadresult.manifest;
+      this._store.setManifest(loadresult.manifest, loadresult.data);
       this._store.dataState = 'complete';
     } else {
       console.error(loadresult.error);

@@ -1,0 +1,264 @@
+{
+  "datasets": [
+    {
+      "type": "line",
+      "title": "Gross domestic product of the BRIC countries from 2014 to 2024",
+      "chartTheme": {
+        "baseQuantity": "GDP",
+        "baseKind": "dimensioned",
+        "locale": "BRIC nation",
+        "aggregate": "estimated"
+      },
+      "facets": {
+        "x": {
+          "label": "Year",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "date",
+          "units": "year",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "GDP in billions of U.S. dollars",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "units": "U.S. dollar",
+          "multiplier": 1000000000,
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "Brazil",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "Brazil",
+            "aggregate": "estimated"
+          },
+          "records": [
+            {
+              "x": "2014",
+              "y": "2456.11"
+            },
+            {
+              "x": "2015",
+              "y": "1799.88"
+            },
+            {
+              "x": "2016",
+              "y": "1795.37"
+            },
+            {
+              "x": "2017",
+              "y": "2052.81"
+            },
+            {
+              "x": "2018",
+              "y": "1867.82"
+            },
+            {
+              "x": "2019*",
+              "y": "1847.02"
+            },
+            {
+              "x": "2020*",
+              "y": "1893.01"
+            },
+            {
+              "x": "2021*",
+              "y": "1987.82"
+            },
+            {
+              "x": "2022*",
+              "y": "2084.3"
+            },
+            {
+              "x": "2023*",
+              "y": "2188.89"
+            },
+            {
+              "x": "2024*",
+              "y": "2296.03"
+            }
+          ]
+        },
+        {
+          "key": "Russia",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "Russia",
+            "aggregate": "estimated"
+          },
+          "records": [
+            {
+              "x": "2014",
+              "y": "2058.31"
+            },
+            {
+              "x": "2015",
+              "y": "1356.84"
+            },
+            {
+              "x": "2016",
+              "y": "1280.52"
+            },
+            {
+              "x": "2017",
+              "y": "1579.29"
+            },
+            {
+              "x": "2018",
+              "y": "1657.29"
+            },
+            {
+              "x": "2019*",
+              "y": "1637.89"
+            },
+            {
+              "x": "2020*",
+              "y": "1657.54"
+            },
+            {
+              "x": "2021*",
+              "y": "1714.31"
+            },
+            {
+              "x": "2022*",
+              "y": "1782.06"
+            },
+            {
+              "x": "2023*",
+              "y": "1858.61"
+            },
+            {
+              "x": "2024*",
+              "y": "1940.44"
+            }
+          ]
+        },
+        {
+          "key": "India",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "India",
+            "aggregate": "estimated"
+          },
+          "records": [
+            {
+              "x": "2014",
+              "y": "2039.13"
+            },
+            {
+              "x": "2015",
+              "y": "2103.59"
+            },
+            {
+              "x": "2016",
+              "y": "2289.75"
+            },
+            {
+              "x": "2017",
+              "y": "2652.25"
+            },
+            {
+              "x": "2018",
+              "y": "2718.73"
+            },
+            {
+              "x": "2019*",
+              "y": "2935.57"
+            },
+            {
+              "x": "2020*",
+              "y": "3202.18"
+            },
+            {
+              "x": "2021*",
+              "y": "3509.65"
+            },
+            {
+              "x": "2022*",
+              "y": "3847.97"
+            },
+            {
+              "x": "2023*",
+              "y": "4223.84"
+            },
+            {
+              "x": "2024*",
+              "y": "4631.76"
+            }
+          ]
+        },
+        {
+          "key": "China",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "China",
+            "aggregate": "estimated"
+          },
+          "records": [
+            {
+              "x": "2014",
+              "y": "10534.53"
+            },
+            {
+              "x": "2015",
+              "y": "11226.19"
+            },
+            {
+              "x": "2016",
+              "y": "11221.84"
+            },
+            {
+              "x": "2017",
+              "y": "12062.29"
+            },
+            {
+              "x": "2018",
+              "y": "13368.07"
+            },
+            {
+              "x": "2019*",
+              "y": "14140.16"
+            },
+            {
+              "x": "2020*",
+              "y": "15269.94"
+            },
+            {
+              "x": "2021*",
+              "y": "16579.11"
+            },
+            {
+              "x": "2022*",
+              "y": "17952.1"
+            },
+            {
+              "x": "2023*",
+              "y": "19407.74"
+            },
+            {
+              "x": "2024*",
+              "y": "20978.97"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      }
+    }
+  ]
+}

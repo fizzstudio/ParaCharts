@@ -1,0 +1,127 @@
+{
+  "datasets": [
+    {
+      "type": "column",
+      "title": "Gross domestic product of the ASEAN countries from 2008 to 2018",
+      "chartTheme": {
+        "baseQuantity": "GDP",
+        "baseKind": "dimensioned",
+        "locale": "ASEAN nation"
+      },
+      "facets": {
+        "x": {
+          "label": "Year",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "date",
+          "units": "year",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Gross domestic product in millions of dollars",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "units": "dollar",
+          "multiplier": 1000000,
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "Brunei",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "Brunei"
+          }
+        },
+        {
+          "key": "Cambodia",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "Cambodia"
+          }
+        },
+        {
+          "key": "Indonesia",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "Indonesia"
+          }
+        },
+        {
+          "key": "Laos",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "Laos"
+          }
+        },
+        {
+          "key": "Malaysia",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "Malaysia"
+          }
+        },
+        {
+          "key": "Myanmar",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "Myanmar"
+          }
+        },
+        {
+          "key": "Philippines",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "Philippines"
+          }
+        },
+        {
+          "key": "Singapore",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "Singapore"
+          }
+        },
+        {
+          "key": "Thailand",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "Thailand"
+          }
+        },
+        {
+          "key": "Vietnam",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "dimensioned",
+            "locale": "Vietnam"
+          }
+        }
+      ],
+      "data": {
+        "source": "external",
+        "path": "para:preload"
+      },
+      "settings": {
+        "sonification.isEnabled": true
+      }
+    }
+  ]
+}
