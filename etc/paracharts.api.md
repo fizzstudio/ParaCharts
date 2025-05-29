@@ -26,6 +26,7 @@ import { Padding as Padding_2 } from './base_view';
 import { Padding as Padding_3 } from '../base_view';
 import { PaddingInput as PaddingInput_2 } from './base_view';
 import { PaddingInput as PaddingInput_3 } from '../base_view';
+import papa from 'papaparse';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
 import { Ref } from 'lit-html/directives/ref.js';
@@ -80,6 +81,8 @@ export class ParaChart extends ParaChart_base {
     protected _inputSettings: SettingsInput;
     // (undocumented)
     get loaded(): Promise<void> | null;
+    // (undocumented)
+    get loader(): ParaLoader;
     // Warning: (ae-forgotten-export) The symbol "ParaLoader" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
@@ -109,8 +112,6 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void>;
     // (undocumented)
-    protected _setManifest(manifest: Manifest): void;
-    // (undocumented)
     showAriaLiveHistory(): void;
     // (undocumented)
     static styles: CSSResult[];
@@ -133,7 +134,9 @@ export class ParaHelper {
     // (undocumented)
     protected _createParaChart(): void;
     // (undocumented)
-    loadManifest(manifestInput: string, manifestType?: SourceKind): Promise<void>;
+    loadData(url: string): Promise<string[]>;
+    // (undocumented)
+    loadManifest(input: string, type?: SourceKind): Promise<void>;
     // (undocumented)
     protected _paraChart: ParaChart;
     // (undocumented)

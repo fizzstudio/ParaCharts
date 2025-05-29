@@ -24,9 +24,18 @@ export class ParaHelper {
     document.body.append(this._paraChart);
   }
 
-  loadManifest(manifestInput: string, manifestType: SourceKind = 'url') {
-    this._paraChart.setAttribute('manifest', manifestInput);
-    this._paraChart.setAttribute('manifesttype', manifestType);
+  loadData(url: string): Promise<string[]> {
+    return this._paraChart.loader.preloadData(url);
+  }
+
+  loadManifest(
+    input: string,
+    type: SourceKind = 'url',
+    // format: SourceFormat = 'manifest',
+    // templateOptions?: TemplateOptions
+  ): Promise<void> {
+    this._paraChart.manifest = input;
+    this._paraChart.manifestType = type;
     return new Promise<void>((resolve) => {
       this._paraChart.addEventListener('manifestchange', async () => {
         // Once the filename has been set, we can wait for the load to complete

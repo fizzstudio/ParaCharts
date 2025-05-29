@@ -1,0 +1,150 @@
+{
+  "datasets": [
+    {
+      "type": "line",
+      "title": "Gross domestic product (GDP) growth in EU and Euro area 2024",
+      "chartTheme": {
+        "baseQuantity": "GDP growth",
+        "baseKind": "rate",
+        "locale": "region"
+      },
+      "facets": {
+        "x": {
+          "label": "Year",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "date",
+          "units": "year",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "GDP growth rate",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "multiplier": 0.01,
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "EU",
+          "theme": {
+            "baseQuantity": "GDP growth",
+            "baseKind": "rate",
+            "locale": "the EU"
+          },
+          "records": [
+            {
+              "x": "2014",
+              "y": "1.87"
+            },
+            {
+              "x": "2015",
+              "y": "2.5"
+            },
+            {
+              "x": "2016",
+              "y": "2.08"
+            },
+            {
+              "x": "2017",
+              "y": "2.75"
+            },
+            {
+              "x": "2018",
+              "y": "2.2"
+            },
+            {
+              "x": "2019*",
+              "y": "1.53"
+            },
+            {
+              "x": "2020*",
+              "y": "1.64"
+            },
+            {
+              "x": "2021*",
+              "y": "1.66"
+            },
+            {
+              "x": "2022*",
+              "y": "1.6"
+            },
+            {
+              "x": "2023*",
+              "y": "1.56"
+            },
+            {
+              "x": "2024*",
+              "y": "1.55"
+            }
+          ]
+        },
+        {
+          "key": "Euro area",
+          "theme": {
+            "baseQuantity": "GDP growth",
+            "baseKind": "rate",
+            "locale": "the Euro area"
+          },
+          "records": [
+            {
+              "x": "2014",
+              "y": "1.41"
+            },
+            {
+              "x": "2015",
+              "y": "2.1"
+            },
+            {
+              "x": "2016",
+              "y": "1.9"
+            },
+            {
+              "x": "2017",
+              "y": "2.54"
+            },
+            {
+              "x": "2018",
+              "y": "1.94"
+            },
+            {
+              "x": "2019*",
+              "y": "1.16"
+            },
+            {
+              "x": "2020*",
+              "y": "1.39"
+            },
+            {
+              "x": "2021*",
+              "y": "1.44"
+            },
+            {
+              "x": "2022*",
+              "y": "1.39"
+            },
+            {
+              "x": "2023*",
+              "y": "1.34"
+            },
+            {
+              "x": "2024*",
+              "y": "1.33"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      }
+    }
+  ]
+}

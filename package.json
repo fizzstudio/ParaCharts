@@ -65,6 +65,7 @@
     "@storybook/theming": "^8.5.1",
     "@storybook/web-components": "^8.5.1",
     "@storybook/web-components-vite": "^8.5.1",
+    "@types/papaparse": "^5.3.16",
     "@vitest/browser": "^2.1.1",
     "@vitest/coverage-v8": "^2.1.1",
     "eslint-plugin-storybook": "^0.11.2",
@@ -94,6 +95,7 @@
     "decimal.js": "^10.4.3",
     "immer": "^10.1.1",
     "lit": "^3.2.0",
+    "papaparse": "^5.5.3",
     "printf": "^0.6.1",
     "simple-statistics": "^7.8.8",
     "typescript-memoize": "^1.1.1"
