@@ -138,12 +138,16 @@ export class ParaStore extends State {
         this._colors.setColorMap(...this.settings.color.colorMap.split(',').map(c => c.trim()));
       }
     }
-
     this._type = dataset.type;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
     if (dataset.data.source === 'inline') {
+      //console.log("test1")
+      //console.log("manifest")
+      //console.log(manifest)
+      //console.log(manifest.datasets[0].facets)
       this._model = modelFromInlineData(manifest);
+      //console.log("test2")
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
@@ -156,7 +160,7 @@ export class ParaStore extends State {
     } else {
       throw new Error('store lacks external or inline chart data');
     }
-    this._summarizer = new BasicXYChartSummarizer(this._model);
+    //this._summarizer = new BasicXYChartSummarizer(this._model);
   }
 
   protected _propertyChanged(key: string, value: any) {
