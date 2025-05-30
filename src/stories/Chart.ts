@@ -11,14 +11,17 @@ export interface ChartProps {
   config?: SettingsInput;  
   legendOrder: LegendItemOrder;
   forcecharttype?: ChartType;
+  slot: string;
 }
 
 /**
  * Primary UI component for user interaction
  */
 export const Chart = ({ 
-  filename, config, legendOrder, forcecharttype
+  filename, config, legendOrder, forcecharttype, slot
 }: ChartProps) => {
+  console.log("filename")
+  console.log(filename)
   config ??= {};
   config['legend.itemOrder'] = legendOrder;
   return html`
@@ -75,6 +78,7 @@ export const Chart = ({
     .config=${config ?? nothing}
     forcecharttype=${forcecharttype ?? nothing}
   >
+    ${slot ?? ``}
     <span slot="settings"></span>
   </para-chart>
   `;

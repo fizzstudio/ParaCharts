@@ -53,7 +53,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
       gap: '0.5rem'
     };
     if (this.controlPanel.dataState === 'complete') {
-      this.caption = this._store.summarizer.getChartSummary();
+      //this.caption = this._store.summarizer.getChartSummary();
     }
     return html`
       <figcaption>
