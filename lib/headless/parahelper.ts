@@ -2,7 +2,7 @@
 import { ParaChart } from '../parachart/parachart';
 import '../parachart/parachart';
 import { ParaApi } from '../api/api';
-import { type SourceKind } from '../loader/paraloader';
+import { type SourceKind, type FieldInfo } from '../loader/paraloader';
 
 export class ParaHelper {
 
@@ -24,7 +24,7 @@ export class ParaHelper {
     document.body.append(this._paraChart);
   }
 
-  loadData(url: string): Promise<string[]> {
+  loadData(url: string): Promise<FieldInfo[]> {
     return this._paraChart.loader.preloadData(url);
   }
 

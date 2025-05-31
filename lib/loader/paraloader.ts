@@ -10,12 +10,17 @@ type LoadSuccess = {
   result: 'success',
   manifest: Manifest,
   data?: AllSeriesData
-}
+};
 
 type LoadFailure = {
   result: 'failure',
   error: string
-}
+};
+
+export type FieldInfo = {
+  name: string;
+  type: Datatype;
+};
 
 type LoadResult = LoadSuccess | LoadFailure;
 
@@ -86,9 +91,9 @@ export class ParaLoader {
   /**
    * Fetch and parse a CSV, storing the parse results.
    * @param url - CSV URL
-   * @returns List of CSV column names
+   * @returns List of FieldInfo records
    */
-  async preloadData(url: string): Promise<string[]> {
+  async preloadData(url: string): Promise<FieldInfo[]> {
     const csvText = await (await fetch(url)).text();
     papa.parse(csvText, {
       header: true,
@@ -99,7 +104,14 @@ export class ParaLoader {
         throw new Error(`Papa Parse error: ${error}`);
       }
     });
-    return this._csvParseResult!.meta.fields!;
+
+    return this._csvParseResult!.meta.fields!.map(field => ({
+      name: field,
+      // XXX need to detect date formats
+      type: isNaN(parseFloat((this._csvParseResult!.data[0] as Record<string, string>)[field] as string))
+        ? 'string'
+        : 'number'
+    }));
   }
 
 }

@@ -13,6 +13,7 @@ import { ClassInfo } from 'lit/directives/class-map.js';
 import { CSSResult } from 'lit';
 import { DataPoint } from '@fizz/paramodel';
 import { Datatype } from '@fizz/dataframe';
+import { Datatype as Datatype_2 } from '@fizz/paramanifest';
 import { Dialog } from '@fizz/ui-components';
 import { DirectiveResult } from 'lit-html/directive.js';
 import { FacetSignature } from '@fizz/paramodel';
@@ -133,8 +134,10 @@ export class ParaHelper {
     protected _api: ParaApi;
     // (undocumented)
     protected _createParaChart(): void;
+    // Warning: (ae-forgotten-export) The symbol "FieldInfo" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
-    loadData(url: string): Promise<string[]>;
+    loadData(url: string): Promise<FieldInfo[]>;
     // (undocumented)
     loadManifest(input: string, type?: SourceKind): Promise<void>;
     // (undocumented)
