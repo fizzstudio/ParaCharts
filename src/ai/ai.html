@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>Headless demo -- ParaCharts</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22green%22/><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+	<style>
+		:root {
+			--parachartsThemeColor: hsl(194, 28%, 45%);
+    	--parachartsThemeColorLight: hsl(194, 28%, 85%);
+		}
+
+		body {
+			font-family: 'Helvetica Neue', Arial, sans-serif;
+			color: #333;
+			font-weight: 300;
+		}
+		.hidden {
+			display: none;
+		}
+		#summary {
+			width: 20rem;
+			line-height: 1.5;
+			border: solid black 1px;
+			padding: 1rem;
+			border-radius: 0.5rem;
+		}
+		span {
+			padding: 0.25rem;
+		}
+		span.series_0 {
+			background: hsl(225, 30%, 52%);
+		}
+		span.series_1 {
+			background: hsl(12, 69%, 35%);
+		}
+		span.series_2 {
+			background: hsl(75, 43%, 45%);
+		}
+		span.series_3 {
+			background: hsl(40, 98%, 69%);
+		}
+		span.series_4 {
+			background: hsl(215, 37%, 66%);
+		}
+		span.series_5 {
+			background: hsl(63, 100%, 23%);
+		}
+		span.series_6 {
+			background: hsl(34, 57%, 46%);
+		}
+		span.series_7 {
+			background: hsl(51, 56%, 64%);
+		}
+		span.series_8 {
+			background: hsl(253, 26%, 43%);
+		}
+		span.series_9 {
+			background: hsl(85, 65%, 36%);
+		}
+
+		h1 { 
+			position: fixed; 
+			bottom: 0; 
+			right: 0; 
+			margin: 1rem; 
+			font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+			font-style: italic;
+			font-weight: normal;
+			color: hsl(0, 0%, 40%);
+		} 
+	</style>
+</head>
+<body>
+  	<script type="module" src="/src/ai/demo.ts"></script>
+	<h1>@fizz/paracharts AI-enhanced Demo</h1>
+  	<main>
+    	<section id="content-container">
+				<para-chart-ai></para-chart-ai>
+			</section>
+  	</main>
+</body>
+</html>
