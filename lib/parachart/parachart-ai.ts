@@ -14,35 +14,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { logging } from '../common/logger';
-import { ParaComponent } from '../components';
-import { AllSeriesData, ChartType } from '@fizz/paramanifest'
-import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
-import { SettingsManager } from '../store';
-import "../paraview";
-import "../control_panel";
-import { type ParaView } from '../paraview';
-import { type ParaControlPanel } from '../control_panel';
-import { type AriaLive } from '../components';
-import '../components/aria_live';
-import { ParaStore } from '../store';
-import { ParaLoader, type SourceKind } from '../loader/paraloader';
-import { styles } from '../view/styles';
-
-import { Manifest } from '@fizz/paramanifest';
-
-import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import { createRef, ref } from 'lit/directives/ref.js';
-import { classMap } from 'lit/directives/class-map.js';
+import { customElement } from 'lit/decorators.js';
 import { ParaChart } from './parachart';
 
 @customElement('para-chart-ai')
 export class ParaChartAi extends ParaChart {
 
   constructor() {
+    console.log('AI-enhanced ParaChart created');
     super();
-    console.log('AI-enhanced ParaChart created')
   }
 
 }
