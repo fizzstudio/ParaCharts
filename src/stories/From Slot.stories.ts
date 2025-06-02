@@ -11,12 +11,13 @@ const meta = {
   render: (args) => Chart(args),
   argTypes: {
 
+    /*
     type: {
       description: 'Type of chart',
       control: {type: 'select'},
       options: ['bar', 'line']
     },
-
+*/
     // height: {
     //     description: "Height of chart",
     //     control: {
@@ -24,18 +25,19 @@ const meta = {
     //         min: 100,
     //     }
     // },
-
+/*
     summary: {
       description: 'Accessible summary',
       control: 'text'
     },
 
-
+*/
+/*
     dataFile: {
       description: 'File where data is located.',
       control: 'text'
     }
-
+*/
   }
 } satisfies Meta<ChartProps>;
 
@@ -46,7 +48,7 @@ type Story = StoryObj<ChartProps>;
 export const FromSlot: Story = {
   args: {
     filename: "",
-    type: "bar",
+    type: "pie",
     summary: '',
     chartTitle: '',
     xAxisLabel: '',
@@ -55,7 +57,7 @@ export const FromSlot: Story = {
     keybindingsFile: './sample_keybindings.json',
     slot: unsafeHTML(`
           <table>
-          <caption>Division of energy in the Universe</caption>
+          <caption>Division of energy in the Universe (Table)</caption>
           <thead>
             <tr>
               <th>Kind of energy</th>
@@ -82,25 +84,18 @@ export const FromSlot: Story = {
           </tbody>
         </table>
         <script id="some-manifest" type="application/json">
+          {
+          "datasets": [
             {
-            "datasets": [
-                {
-                "type": "pie",
-                
-          "series": [
-          ],
-    
-                
-      
-      "data": {
-        "source": "inline"
-      },
-      "settings": {
-        "sonification.isEnabled": true
-      }
-    }
-  ]
-}
+              "type": "pie",
+              
+              
+              "data": {
+                "source": "inline"
+              }
+            }
+          ]
+        }
 
         </script>
 
@@ -110,28 +105,8 @@ export const FromSlot: Story = {
 
 
 /*
-"title": "Division of energy in the Universe",
-"facets": {
-                    "x": {
-                    "label": "Kind of energy",
-                    "variableType": "independent",
-                    "measure": "nominal",
-                    "datatype": "string",
-                    "displayType": {
-                        "type": "marking"
-                    }
-                    },
-                    "y": {
-                    "label": "Proportion of total energy in the Universe",
-                    "variableType": "dependent",
-                    "measure": "ratio",
-                    "datatype": "number",
-                    "multiplier": 0.01,
-                    "displayType": {
-                        "type": "angle"
-                    }
-                    }
-                },
+
+                 
 "series": [
                     {
                     "key": "Proportion of total energy in the Universe",

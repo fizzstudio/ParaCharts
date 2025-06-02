@@ -75,8 +75,11 @@ export class SlotLoader {
     console.log(manifest.datasets[0].facets)
     if (!manifest.datasets[0].facets){
       manifest.datasets[0].facets = this.loadManifestFromElement(els).facets
-      console.log("returned facets")
-      console.log( manifest.datasets[0].facets)
+    }
+    if (manifest.datasets[0]!.facets){
+      if (!manifest.datasets[0]!.facets.keys){
+        manifest.datasets[0].facets = this.loadManifestFromElement(els).facets
+      }
     }
     if (!manifest.datasets[0]!.series){
       let series = {key: manifest.datasets[0].facets.y.label, theme: {baseQuantity: '', baseKind: "number" as "number"}, records: this.loadDataFromElement(els, manifest)}
