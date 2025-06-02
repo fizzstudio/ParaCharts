@@ -7,15 +7,15 @@ _ignore/
 
 # Directories
 ## This is the build process will output code.
-dist/           
+dist/
 ## The original reason we're here!
 node_modules/
 # TS types
 types/
 # api-extractor
 temp/
-
-integration-test/test_roll.js
+## This is the AI-enhanced build process will output code.
+dist-ai/
 
 # Env files      
 ## A good safeguard against accidentally publishing
