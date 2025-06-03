@@ -27,6 +27,7 @@
     "demo": "vite --port 5176",
     "headless": "vite --port 5177 --open /headless.html",
     "build": "rimraf dist && tsc && vite build && api-extractor run --local --verbose",
+    "build:ai": "rimraf dist-ai && tsc --project ai.tsconfig.json && vite build --config ai.vite.config.ts && api-extractor run --local --verbose --config ai.api-extractor.json",
     "pretest": "npm run build",
     "test": "vitest",
     "doc": "api-documenter markdown --input-folder ./temp --output-folder ./docs",

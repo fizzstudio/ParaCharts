@@ -1,1 +1,1 @@
-import '../../lib/parachart/parachart-ai';
+import '../../lib-ai/parachart-ai';

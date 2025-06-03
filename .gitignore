@@ -16,6 +16,8 @@ types/
 temp/
 ## This is the AI-enhanced build process will output code.
 dist-ai/
+# TS types for the AI-enhanced build process
+types-ai/
 
 # Env files      
 ## A good safeguard against accidentally publishing
