@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, 'lib/index-ai.ts'),
+      entry: resolve(__dirname, 'lib-ai/index-ai.ts'),
       name: 'paracharts',
       fileName: 'paracharts',
       formats: ['es']
@@ -21,7 +21,8 @@ export default defineConfig({
           }
         };`
       }
-    }
+    },
+    outDir: 'dist-ai'
   },
   server: {
     port: 5180

@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { customElement } from 'lit/decorators.js';
-import { ParaChart } from './parachart';
+import { ParaChart } from '../lib/parachart/parachart';
 
 @customElement('para-chart-ai')
 export class ParaChartAi extends ParaChart {
