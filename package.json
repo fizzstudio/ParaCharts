@@ -25,8 +25,10 @@
   "type": "module",
   "scripts": {
     "demo": "vite --port 5176",
-    "headless": "vite --port 5177 --open /headless.html",
+    "headless": "vite --port 5177 --open src/demo/headless.html",
+    "demo:ai": "vite --port 5178 --open src/ai/ai.html",
     "build": "rimraf dist && tsc && vite build && api-extractor run --local --verbose",
+    "build:ai": "rimraf dist-ai && tsc --project ai.tsconfig.json && vite build --config ai.vite.config.ts && api-extractor run --local --verbose --config ai.api-extractor.json",
     "pretest": "npm run build",
     "test": "vitest",
     "doc": "api-documenter markdown --input-folder ./temp --output-folder ./docs",
@@ -99,6 +101,9 @@
     "printf": "^0.6.1",
     "simple-statistics": "^7.8.8",
     "typescript-memoize": "^1.1.1"
+  },
+  "optionalDependencies":{
+    "@fizz/series-analyzer": "0.13.7"
   },
   "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b"
 }
