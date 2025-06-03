@@ -306,6 +306,8 @@ export const defaults: Settings = {
     isCaptionVisible: true,
     isStatusBarVisible: true,
     isSparkBrailleVisible: false,
+    isSparkBrailleProportional: false,
+    isSparkBrailleBar: false,
     isSparkBrailleControlVisible: true,
     isDataTabVisible: true,
     isColorsTabVisible: true,
