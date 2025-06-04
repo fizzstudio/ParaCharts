@@ -4,6 +4,10 @@ import '../parachart/parachart';
 import { ParaApi } from '../api/api';
 import { type SourceKind, type FieldInfo } from '../loader/paraloader';
 
+export { FieldInfo };
+
+export { type Manifest } from '@fizz/paramanifest';
+
 export class ParaHelper {
 
   protected _paraChart!: ParaChart;
