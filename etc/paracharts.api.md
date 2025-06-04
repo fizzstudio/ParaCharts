@@ -130,6 +130,8 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _suppleteSettingsWith?: DeepReadonly<Settings>;
     // (undocumented)
+    type?: ChartType_2;
+    // (undocumented)
     willUpdate(changedProperties: PropertyValues<this>): void;
 }
 

@@ -481,7 +481,7 @@ export class ParaView extends logging(ParaComponent) {
         aria-label=${this._documentView ? `${this._documentView.titleText}, accessible chart` : 'loading...'}
         ${ref(this._rootRef)}
         xmlns=${SVGNS}
-        data-charttype=${this.type}
+        data-charttype=${this.paraChart.type ?? this.type}
         width=${fixed`${this._viewBox.width}px`}
         height=${fixed`${this._viewBox.height}px`}
         class=${classMap(this._rootClasses())}

@@ -33,9 +33,10 @@ import { styles } from '../view/styles';
 import { Manifest } from '@fizz/paramanifest';
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, queryAssignedElements } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { SlotLoader } from '../loader/slotloader';
 
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
@@ -45,12 +46,14 @@ export class ParaChart extends logging(ParaComponent) {
   @property() manifestType: SourceKind = 'url';
   @property({type: Object}) accessor config: SettingsInput = {};
   @property() accessor forcecharttype: ChartType | undefined;
+  @property() type?: ChartType
 
   protected _paraViewRef = createRef<ParaView>();  
   protected _controlPanelRef = createRef<ParaControlPanel>();
   protected _ariaLiveRegionRef = createRef<AriaLive>();
   protected _manifest?: Manifest;
   protected _loader = new ParaLoader();
+  private _slotLoader = new SlotLoader();
 
   protected _inputSettings: SettingsInput = {};
   private data?: AllSeriesData;
@@ -70,9 +73,27 @@ export class ParaChart extends logging(ParaComponent) {
           this._loaderPromise = this._runLoader(this.manifest, this.manifestType).then(() =>
             this.log('ParaCharts will now commence the raising of the roof and/or the dead'));
         }
+        else if (this._slotted) {
+          this.log(`loading from slot`);
+          const table = this._slotted[0].getElementsByTagName("table")[0]
+          const manifest = this._slotted[0].getElementsByClassName("manifest")[0] as HTMLElement
+          this._store.dataState = 'pending';
+          const loadresult = await this._slotLoader.findManifest([table, manifest], "some-manifest")
+          this.log('loaded manifest')
+          if (loadresult.result === 'success') {
+            this.store.setManifest(loadresult.manifest!);
+            this._store.dataState = 'complete';
+          } else {
+            //console.error(loadresult.error);
+            this._store.dataState = 'error';
+          }
+        }
       });
     });    
   }
+
+  @queryAssignedElements({flatten: true})
+  private _slotted!: HTMLElement[];
 
   get paraView() {
     return this._paraViewRef.value!;
@@ -185,6 +206,11 @@ export class ParaChart extends logging(ParaComponent) {
           .store=${this._store}
           .announcement=${this._store.announcement}
         ></para-aria-live-region>
+        <slot
+          @slotchange=${(e: Event) => {
+            //this._signalManager.signal('slotChange');
+          }}
+        ></slot>
       </figure>
     `;
   }

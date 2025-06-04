@@ -139,7 +139,10 @@ export class ParaStore extends State {
         this._colors.setColorMap(...this.settings.color.colorMap.split(',').map(c => c.trim()));
       }
     }
-
+    let paraChart = document.getElementsByTagName("para-chart")[0]
+    if (paraChart.type){
+      this._type = paraChart.type
+    }
     this._type = dataset.type;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);

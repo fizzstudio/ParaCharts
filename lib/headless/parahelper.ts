@@ -7,7 +7,49 @@ import { type SourceKind, type FieldInfo } from '../loader/paraloader';
 export { FieldInfo };
 
 export { type Manifest } from '@fizz/paramanifest';
+const test = `<table>
+          <caption>Division of energy in the Universe (Table)</caption>
+          <thead>
+            <tr>
+              <th>Kind of energy</th>
+              <th>Proportion</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Dark Energy</td>
+              <td>73%</td>
+            </tr>
+            <tr>
+              <td>Dark Matter</td>
+              <td>23%</td>
+            </tr>
+            <tr>
+              <td>Nonluminous Matter</td>
+              <td>3.6%</td>
+            </tr>
+            <tr>
+              <td>Luminous Matter</td>
+              <td>0.4%</td>
+            </tr>
+          </tbody>
+        </table>
+        <script id="some-manifest" type="application/json">
+          {
+          "datasets": [
+            {
+              "type": "pie",
+              
+              
+              "data": {
+                "source": "inline"
+              }
+            }
+          ]
+        }
 
+        </script>
+`
 export class ParaHelper {
 
   protected _paraChart!: ParaChart;
