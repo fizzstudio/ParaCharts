@@ -49,6 +49,14 @@ import * as ui from '@fizz/ui-components';
 import { View as View_2 } from '../base_view';
 import { XYDatapoint } from '@fizz/paramodel';
 
+// @public (undocumented)
+export type FieldInfo = {
+    name: string;
+    type: Datatype_2;
+};
+
+export { Manifest }
+
 // Warning: (ae-forgotten-export) The symbol "ParaChart_base" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -134,8 +142,6 @@ export class ParaHelper {
     protected _api: ParaApi;
     // (undocumented)
     protected _createParaChart(): void;
-    // Warning: (ae-forgotten-export) The symbol "FieldInfo" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     loadData(url: string): Promise<FieldInfo[]>;
     // (undocumented)
