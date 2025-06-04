@@ -102,7 +102,8 @@ export class ParaChart extends logging(ParaComponent) {
   }
 
   willUpdate(changedProperties: PropertyValues<this>) {
-    if (changedProperties.has('manifest') && this.manifest !== '') {
+    // Don't load a manifest before the paraview has rendered
+    if (changedProperties.has('manifest') && this.manifest !== '' && this._paraViewRef.value) {
       this.log(`manifest changed: '${this.manifestType === 'content' ? '<content>' : this.manifest}`);
       this._loaderPromise = this._runLoader(this.manifest, this.manifestType);
       this.dispatchEvent(new CustomEvent('manifestchange', {bubbles: true, composed: true, cancelable: true}));
