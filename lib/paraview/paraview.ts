@@ -98,8 +98,6 @@ export class ParaView extends logging(ParaComponent) {
         --focusShadowColor: gray;
         --focusShadow: drop-shadow(0px 0px 4px var(--focusShadowColor));
         display: block;
-      }
-      * {
         font-family: "Trebuchet MS", Helvetica, sans-serif;
         font-size: var(--chart-view-font-size, 1rem);
       }
@@ -365,10 +363,11 @@ export class ParaView extends logging(ParaComponent) {
   //   this._defsRef.value!.appendChild(el);
   // }
 
-   serialize() {
+  serialize() {
     const svg = this.root!.cloneNode(true) as SVGSVGElement;
+    svg.id = 'para-' + window.crypto.randomUUID();
 
-    const styles = this._extractStyles();
+    const styles = this._extractStyles(svg.id);
     const styleEl = document.createElementNS(SVGNS, 'style');
     styleEl.textContent = styles;
     svg.prepend(styleEl);
@@ -396,14 +395,14 @@ export class ParaView extends logging(ParaComponent) {
       .join('\n');
   }
 
-  protected _extractStyles() {
+  protected _extractStyles(id: string) {
     const stylesheets = this.shadowRoot!.adoptedStyleSheets;
     const out: string[] = [];
     for (const stylesheet of stylesheets) {
       const rules = stylesheet.cssRules;
       for (let i = 0; i < rules.length; i++) {
         const rule = rules.item(i) as CSSRule;
-        out.push(rule.cssText.replace(/^:host/, 'svg'));
+        out.push(rule.cssText.replace(/^:host/, `#${id}`));
       }
     }
     return out.join('\n');
@@ -482,6 +481,7 @@ export class ParaView extends logging(ParaComponent) {
         ${ref(this._rootRef)}
         xmlns=${SVGNS}
         data-charttype=${this.type}
+        width=${fixed`${this._viewBox.width}px`}
         height=${fixed`${this._viewBox.height}px`}
         class=${classMap(this._rootClasses())}
         viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
