@@ -29,21 +29,5 @@ export const AllSingleBarCharts: Story = {
       "ui.colorVisionMode": "deutan"
     },
     forcecharttype: "bar",
-    /*keybindings: { // change to keybindingsFile: './sample_keybindings.json',
-      "chart": {
-        "a": {
-          "action": "move_left"
-        },
-        "d": {
-          "action": "move_right"
-        },
-        "w": {
-          "action": "move_up"
-        },
-        "s": {
-          "action": "move_down"
-        }
-      }
-    }*/
   }
 };
