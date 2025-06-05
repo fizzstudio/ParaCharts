@@ -61,6 +61,10 @@ export abstract class TickStrip<T extends AxisOrientation = AxisOrientation> ext
     this._createRules();    
   }
 
+  protected _createId(..._args: any[]): string {
+    return `${this.axis.coord}-axis-tick-strip`;
+  }
+
   get parent() {
     return this._parent;
   }
@@ -110,7 +114,7 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
   }
 
   protected _createRules() {
-    const isEast = this.axis.orthoAxis.orientationSettings.position === 'east';
+    const isOrthoEast = this.axis.orthoAxis.orientationSettings.position === 'east';
     let tickLength = this.axis.settings.tick.length;
     let y = 0;
     if (this.axis.orientationSettings.position === 'north') {
@@ -121,10 +125,13 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
     let indices = mapn(this._count + (this.axis.isInterval ? 0 : 1), i => i)
       .filter(i => i % this.axis.tickStep === 0);
     if (!this.paraview.store.settings.grid.isDrawVertAxisOppositeLine) {
-      indices = isEast ? indices.slice(0, -1) : indices.slice(1);
+      indices = isOrthoEast ? indices.slice(0, -1) : indices.slice(1);
     }
     // skip axis line tick
-    const xs = indices.map(i => isEast ? this.width - i*this._interval : i*this._interval).slice(1);
+    indices = indices.slice(1);
+    const xs = indices.map(i => isOrthoEast
+      ? this.width - i*this._interval
+      : i*this._interval);
     indices.forEach((idx, i) => {
       this.append(new HorizTick(
         this.axis.orientationSettings.position, this.paraview, idx % this._majorModulus === 0, tickLength));   
