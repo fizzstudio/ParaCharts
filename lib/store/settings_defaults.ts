@@ -136,7 +136,7 @@ export const defaults: Settings = {
     pairGap: 30,
     position: 'east',
     margin: 20,
-    itemOrder: 'chart'
+    itemOrder: 'series'
   },
   type: {
     bar: {

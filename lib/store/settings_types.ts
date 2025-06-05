@@ -229,7 +229,7 @@ export interface AxesSettings extends SettingGroup {
   vert: OrientedAxisSettings<'vert'>;
 }
 
-export type LegendItemOrder = 'lexical' | 'chart';
+export type LegendItemOrder = 'alphabetical' | 'series';
 
 /** @public */
 export interface LegendSettings extends SettingGroup {
