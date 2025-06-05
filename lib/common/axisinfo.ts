@@ -110,8 +110,8 @@ export class AxisInfo {
         Math.min(...this._options.xValues),
         Math.max(...this._options.xValues));
     } else {
-      const labels = this._store.model!.series[0].facet('x')!.map(
-        (x) => formatBox(x, this._store.getFormatType('xTick'))
+      const labels = this._store.model!.series[0].datapoints.map(
+        (p) => formatBox(p.facetBox('x')!, this._store.getFormatType('xTick'))
       );
       this._xLabelInfo = {
         labelTiers: [labels]

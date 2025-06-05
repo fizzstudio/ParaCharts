@@ -231,7 +231,7 @@ export class BarChart extends XYChart {
 
   protected _clusterData() {
     const clusterMap: BarClusterMap = {};
-    const xs = this.paraview.store.model!.series[0].facet('x')!;
+    const xs = this.paraview.store.model!.series[0].datapoints.map(dp => dp.facetBox('x')!);
 
     const clusters: BarCluster[] = [];
 
@@ -265,7 +265,7 @@ export class BarChart extends XYChart {
     // Place the series into stacks in the reverse order to how they appear in the 
     // model (i.e., first series will be topmost onscreen in 'all' mode)
     for (const [series, i] of enumerate(this.paraview.store.model!.series).toReversed()) {
-      for (const [value, j] of enumerate(series.facet('y')!)) {
+      for (const [value, j] of enumerate(series.datapoints.map(dp => dp.facetBox('y')))) {
         let stack: BarStack;
         let stackKey: string;
         if (this.paraview.store.settings.type.bar.stackContent === 'all') {
@@ -284,7 +284,7 @@ export class BarChart extends XYChart {
             clusters[j].stacks[stackKey] = stack;
           }
         } 
-        stack!.bars[series.key] = {series: series.key, value: series.facet('y')![j] as Box<'number'>};
+        stack!.bars[series.key] = {series: series.key, value: series.datapoints[j].facetBox('y') as Box<'number'>};
       }
     }
     return clusterMap;

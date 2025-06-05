@@ -197,7 +197,7 @@ export class LineSection extends ChartPoint {
     }
 
     // find midpoint between values for this and next
-    if (this.index < this.chart.paraview.store.model!.series[0].facet('x')!.length - 1) {
+    if (this.index < this.chart.paraview.store.model!.series[0].length - 1) {
       this._computeNext();
     }
 
