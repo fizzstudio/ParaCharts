@@ -262,9 +262,9 @@ export class BarChart extends XYChart {
       }
     }
 
-    // Place the series into stacks in the order they appear in the 
-    // model (i.e., first column will be bottommost in 'all' mode)
-    for (const [series, i] of enumerate(this.paraview.store.model!.series)) {
+    // Place the series into stacks in the reverse order to how they appear in the 
+    // model (i.e., first series will be topmost onscreen in 'all' mode)
+    for (const [series, i] of enumerate(this.paraview.store.model!.series).toReversed()) {
       for (const [value, j] of enumerate(series.facet('y')!)) {
         let stack: BarStack;
         let stackKey: string;
@@ -306,12 +306,8 @@ export class BarChart extends XYChart {
   protected _createDatapoints() {
     const seriesViews: {[key: string]: XYSeriesView} = {};
     Object.entries(this._clusteredData).forEach( ([clusterKey, cluster], i) => {
-      //const cluster = new BarCluster(this, clusterKey)
-      //barData[clusterKey] = cluster;
       //todo().canvas.jimerator.addSelector(this._model.indepVar, i, cluster.labelId);
       for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
-        //const stack = new BarStack(cluster, stackKey);
-        //cluster.stacks[stackKey] = stack;
         for (const [colName, item] of Object.entries(stack.bars)) {
           if (!seriesViews[colName]) {
             seriesViews[colName] = new XYSeriesView(this, colName);
@@ -322,8 +318,9 @@ export class BarChart extends XYChart {
         }
       }
     });
-    //this._bars = barData;
-    //this._chartLandingView.reverseChildren();
+    // First child of chart landing is bottom-most series, so we reverse them
+    // so that navigation starts at the top
+    this._chartLandingView.reverseChildren();
   }
 
   // protected _createComponents() {
@@ -445,7 +442,7 @@ export class BarChart extends XYChart {
   // }
 
   legend() {
-    if (this.paraview.store.settings.legend.itemOrder === 'chart') {
+    if (this.paraview.store.settings.legend.itemOrder === 'series') {
       return this._chartLandingView.children.map(view => ({
         label: (view as SeriesView).seriesKey,
         color: (view as SeriesView).color  // series color
