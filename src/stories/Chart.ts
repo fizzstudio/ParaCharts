@@ -75,7 +75,7 @@ export const Chart = ({
     manifesttype=${filename.startsWith('/') ? 'url' : 'fizz-chart-data'} 
     .config=${config ?? nothing}
     forcecharttype=${forcecharttype ?? nothing}
-    type="donut"
+    type=${forcecharttype ?? nothing}
   >
     <slot>${slot ?? ``}</slot>
     <span slot="settings"></span>

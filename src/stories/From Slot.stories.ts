@@ -48,7 +48,7 @@ type Story = StoryObj<ChartProps>;
 export const FromSlot: Story = {
   args: {
     filename: "",
-    type: "pie",
+    forcecharttype: "pie",
     summary: '',
     chartTitle: '',
     xAxisLabel: '',
