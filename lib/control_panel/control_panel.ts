@@ -319,7 +319,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           ></para-controls-panel>
         </fizz-tab-panel>
 
-        <!--<fizz-tab-panel
+        <fizz-tab-panel
           tablabel="Chart"
           icon=${tabChartIcon}
           ?hidden=${!this.settings.isChartTabVisible}
@@ -328,9 +328,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
             ${ref(this._chartPanelRef)}
             .controlPanel=${this}
           ></para-chart-panel>
-        </fizz-tab-panel>-->
+        </fizz-tab-panel>
 
-        <!--<fizz-tab-panel
+        <fizz-tab-panel
           tablabel="Annotations"
           icon=${tabAnalysisIcon}
           ?hidden=${!this.settings.isAnnotationsTabVisible}
@@ -339,9 +339,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
             ${ref(this._annotationPanelRef)}
             .controlPanel=${this}
           ></para-annotation-panel>
-        </fizz-tab-panel>-->
+        </fizz-tab-panel>
 
-        <!--<fizz-tab-panel
+        <fizz-tab-panel
           tablabel="Analysis"
           icon=${tabAnalysisIcon}
           ?hidden=${!this.settings.isAnalysisTabVisible}
@@ -349,7 +349,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           <para-analysis-panel
             .controlPanel=${this}
           ></para-analysis-panel>
-        </fizz-tab-panel>-->
+        </fizz-tab-panel>
       </fizz-tab-details>
       ${this.renderDialog()}
     `;

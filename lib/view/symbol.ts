@@ -405,7 +405,8 @@ export class DataSymbol extends View {
     if (this._options.scale !== 1) {
       transform += fixed` scale(${this._options.scale})`;
     }
-    return svg`
+    return this.paraview.store.settings.type.line.isDrawSymbols ?
+    svg`
       <use 
         href="#${this._defsKey}"
         id=${this._id || nothing}
@@ -414,7 +415,7 @@ export class DataSymbol extends View {
         style=${styleMap(this._styleInfo)}
         class="symbol ${this.fill} ${this.classes.join(' ')}"
       />
-    `;
+    ` : svg``;
   }
 
 }

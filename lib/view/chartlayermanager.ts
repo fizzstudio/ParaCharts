@@ -40,6 +40,7 @@ import {
 import { type Interval } from '@fizz/chart-classifier-utils';
 
 import { svg } from 'lit';
+import { Histogram } from './histogram';
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
 export const chartClasses = {

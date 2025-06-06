@@ -48,6 +48,7 @@ export class Path extends Shape {
   }
 
   render() {
+    this.styleInfo.strokeWidth = this.options.strokeWidth
     return svg`
       <path
         ${this._ref ? ref(this._ref) : undefined}

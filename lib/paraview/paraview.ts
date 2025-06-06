@@ -240,6 +240,9 @@ export class ParaView extends logging(ParaComponent) {
       if (key === 'data') {
         this.dataUpdated();
       }
+      if (key === 'settings'){
+        this.createDocumentView();
+      }
     });
 
     this._computeViewBox();

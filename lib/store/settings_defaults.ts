@@ -185,7 +185,8 @@ export const defaults: Settings = {
       selectedPointMarkerSize: {
         width: 20,
         height: 20,
-      }
+      },
+      isDrawSymbols: true
     },
     scatter: {
       pointLabelFormat: 'raw',
