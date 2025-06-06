@@ -175,7 +175,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
     }
     return true;
   }
-  
+
   protected updated(changedProperties: PropertyValues) {
     if (changedProperties.has('dataState') && this.dataState === 'complete') {
       //this.todo.signalManager.signal('controlPanelDataLoadComplete');
