@@ -2,9 +2,18 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
+import packageConfig from './package.json';
+import * as child from 'child_process';
+
+const commitHash = child.execSync('git rev-parse --short HEAD').toString();
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(packageConfig.version),
+    __COMMIT_HASH__: JSON.stringify(commitHash),
+  },
   build: {
     lib: {
       entry: resolve(__dirname, 'lib/index.ts'),
