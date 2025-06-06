@@ -1,4 +1,4 @@
-import { ParaHelper } from '../../lib';
+import { ParaHelper } from '../../../../lib';
 
 window.addEventListener('load', () => new Demo());
 
