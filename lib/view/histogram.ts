@@ -11,7 +11,7 @@ import { ParaView } from "../paraview";
 import { enumerate, strToId } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
 export class Histogram extends XYChart {
-    protected _bins: number = 20;
+    protected _bins: number;
     protected _data: Array<Array<number>> = [];
     protected _grid: Array<number> = [];
     protected _maxCount: number = 0;
@@ -21,6 +21,7 @@ export class Histogram extends XYChart {
         dataLayerIndex: number
     ) {
         super(paraview, dataLayerIndex);
+        this._bins = this.paraview.store.settings.type.histogram.bins ?? 20
         this._generateBins();
     }
     protected _addedToParent() {
@@ -38,8 +39,6 @@ export class Histogram extends XYChart {
             .flat();
         const xValues = this._model.data.col(targetAxis).toNumberSeries().data;
         */
-       console.log("test")
-       console.log(this.paraview.store.model!)
         if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined){
             this._axisInfo = new AxisInfo(this.paraview.store, {
                   xValues: this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number),
@@ -54,32 +53,35 @@ export class Histogram extends XYChart {
         }
         this.paraview.store.settingControls.add({
             type: 'textfield',
-            key: 'type.scatter.resolution',
+            key: 'type.histogram.bins',
             label: 'Bins',
             options: {
                 inputType: 'number',
                 min: 5,
                 max: 100
             },
-            parentView: 'chartDetails.tabs.chart.chart',
+            parentView: 'controlPanel.tabs.chart.chart',
         });
 
 
-        const variables = [...this.paraview.store.model!.facets]
-        //variables.unshift(this.model.indepVar)
+        const variables = this.paraview.store.model?.facets.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)
+        //console.log("UNDER HERE")
+        //console.log(this.paraview.store.model?.keys)
+        //console.log(this.paraview.store.model?.facets.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label))
+        //console.log("ABOVE HERE")
         this.paraview.store.settingControls.add({
             type: 'dropdown',
-            key: 'type.scatter.groupingAxis',
+            key: 'type.histogram.groupingAxis',
             label: 'Axis to group:',
-            options: {options: variables},
-            parentView: 'chartDetails.tabs.chart.chart'
+            options: {options: variables as string[]},
+            parentView: 'controlPanel.tabs.chart.chart'
           });
         this.paraview.store.settingControls.add({
             type: 'dropdown',
-            key: 'type.scatter.displayAxis',
+            key: 'type.histogram.displayAxis',
             label: 'Axis to display histogram:',
             options: { options: ["x", "y" ] },
-            parentView: 'chartDetails.tabs.chart.chart'
+            parentView: 'controlPanel.tabs.chart.chart'
         });
     }
 
@@ -109,23 +111,42 @@ export class Histogram extends XYChart {
         return new HistogramDatapointView(seriesView);
     }
 
-    protected _createComponents() {
+    protected _beginLayout() {
+
+        this._createDatapoints();
+        for (const datapointView of this.datapointViews) {
+            datapointView.computeLocation();
+        }
+        for (const datapointView of this.datapointViews) {
+            datapointView.completeLayout();
+        }
+
+    }
+
+    completeLayout() {
+        super._completeLayout();
+    }
+
+    protected _createDatapoints() {
+        console.log("Histogram createDatapoints start")
         //this.parent.parent.parent!._vertAxis = new VertAxis(this.parent.parent.parent as DocumentView)
         const xs: string[] = [];
         for (const [x, i] of enumerate(this.paraview.store.model!.allFacetValues('x')!)) {
-            xs.push(formatBox(x, `${this.parent.docView.type as PointChartType}Point`, this.paraview.store));
+            xs.push(formatBox(x, this.paraview.store.getFormatType(`${this.parent.docView.type as PointChartType}Point`)));
             const xId = strToId(xs.at(-1)!);
             // if (this.selectors[i] === undefined) {
             //   this.selectors[i] = [];
             // }
             // this.selectors[i].push(`tick-x-${xId}`);
         }
+        console.log(this.paraview.store.model!.series)
         for (const [col, i] of enumerate(this.paraview.store.model!.series)) {
+            console.log("IN HERE DUMMY")
             const seriesView = new XYSeriesView(this, col.key);
             this._chartLandingView.append(seriesView);
             for (const [value, j] of enumerate(col)) {
-                const datapointView = this._newDatapointView(seriesView);
-                seriesView.append(datapointView);
+                //const datapointView = this._newDatapointView(seriesView);
+                //seriesView.append(datapointView);
                 // the `index` property of the datapoint view will equal j
                 //todo().canvas.jimerator.addSelector(col.name!, j, datapointView.id);
             }
@@ -144,37 +165,73 @@ export class Histogram extends XYChart {
     protected _layoutComponents() {
         const values = this._grid.flat();
         this._maxCount = Math.max(...values);
-        super._layoutComponents();
+        //super._layoutComponents();
     }
-
+/*
+    protected _createDatapoints(): void {
+    super._createDatapoints()
+    }
+    */
     protected _layoutDatapoints() {
+        console.log(this.datapointViews)
         for (const datapointView of this.datapointViews) {
             datapointView.computeLayout();
         }
     }
 
     protected _generateBins(): Array<number> {
-        /*
-        const targetAxis = this.settings.groupingAxis as DeepReadonly<string | undefined> ?? this._model.indepVar
-        const yValues = this._model.data
-            .dropCols([targetAxis])
-            .mapCols(col => col.numberSeries.data)
-            .flat();
-        const xValues = this._model.data.col(targetAxis).toNumberSeries().data;
+        //console.log("generateBins")
+        const targetAxis = this.paraview.store.settings.type.histogram.groupingAxis as DeepReadonly<string | undefined> 
+                            ?? this.paraview.store.model?.facets.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)[0]
 
-        const workingAxisInfo = new AxisInfo(this._model, {
+        let targetFacet;
+        for (let facet of this.paraview.store.model!.facets){
+            if (this.paraview.store.model!.getFacet(facet.key as string)!.label == targetAxis){
+                targetFacet = facet.key
+            }
+        }
+        console.log(targetFacet)
+        //HACK: THIS WILL BREAK IF WE EVER ADD MORE FACETS THAN JUST X/Y
+        let nonTargetFacet;
+        if (targetFacet == "y"){
+            nonTargetFacet = "x"
+        }
+        else{
+            nonTargetFacet = "y"
+        }
+        let workingAxisInfo
+        if (targetFacet){
+            
+            const yValues = []
+            const xValues = []
+            for (let datapoint of this.paraview.store.model!.series[0]) {
+                xValues.push(datapoint.facetAsNumber(targetFacet) as number)
+            }
+            for (let datapoint of this.paraview.store.model!.series[0]) {
+                yValues.push(datapoint.facetAsNumber(nonTargetFacet) as number)
+            }
+            //console.log("xValues")
+            //console.log(xValues)
+            console.log("yValues")
+            console.log(yValues)
+            console.log("below")
+            console.log(this.paraview.store.settings.axis.x.maxValue)
+            workingAxisInfo = new AxisInfo(this.paraview.store, {
             xValues: xValues,
-            yValues: yValues
-        });
-        */
-        const workingAxisInfo = new AxisInfo(this.paraview.store, {
+            yValues: yValues,
+          });
+        }
+        else{
+            workingAxisInfo = new AxisInfo(this.paraview.store, {
             xValues: this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number),
             yValues: this.paraview.store.model!.allFacetValues('y')!.map((x) => x.value as number),
           });
+        }
+        
         const seriesList = this.paraview.store.model!.series
         for (let series of seriesList) {
             for (let i = 0; i < series.length; i++) {
-                this._data.push([series[i].x.value as number, series[i].y.value as number]);
+                this._data.push([series[i].facetAsNumber("x")! , series[i].facetAsNumber("y")!]);
             } 
         }
 
@@ -201,6 +258,7 @@ export class Histogram extends XYChart {
             const xIndex: number = Math.floor((point[0] - xMin) * this.bins / (xMax - xMin));
             grid[xIndex]++;
         }
+        //console.log(grid)
         return this._grid = grid;
     }
     seriesRef(series: string) {
@@ -325,7 +383,18 @@ export class HistogramDatapointView extends XYDatapointView {
     constructor(
         seriesView: XYSeriesView,
     ) {
+        //console.log("HistogramDownView constructor")
         super(seriesView);
+        //console.log("after super call")
+        //console.log(this.seriesKey)
+        //console.log(this.id)
+        //console.log(this.index)
+        this._id = [
+                'datapoint-unused',
+                strToId(this.seriesKey),
+                `${this._x}`,
+                `${this._y}`
+            ].join('-');
     }
 
     get width() {
@@ -442,28 +511,31 @@ export class HistogramBinView extends DataView {
     }
     protected layoutSymbol(){
     }
-    computeLayout() {
+    /*
+     completeLayout() {
+    //super.completeLayout();
+  }
+    */
+    completeLayout() {
         if (this.chart.settings.displayAxis == "x" || this.chart.settings.displayAxis == undefined){
             //const targetAxis = this.chart.settings.groupingAxis as DeepReadonly<string | undefined> ?? this.chart.model.indepVar
-            const length = this.chart.paraview.store!.model!.series[0].length
-            const id = this.index - length;
+            //console.log("length")
+            //console.log(length)
+            const id = this.index;
             this._y = this.chart.parent.height;
             this._width = this.chart.parent.width / this.chart.bins;
-            this._x = (this.index - length) % this.chart.bins * this._width
+            this._x = (this.index) % this.chart.bins * this._width
             this._height = (((this.chart.grid[id] - this.chart.axisInfo!.yLabelInfo!.min!) / this.chart.axisInfo!.yLabelInfo!.max!) * this._y)
             this._count = this.chart.grid[id];
-            /*
             this._id = [
-                'datapoint',
-                utils.strToId(this.series.name!),
+                'datapoint-tile',
+                strToId(this.seriesKey),
                 `${this._x}`,
                 `${this._y}`
             ].join('-');
-            */
         }
         else {
             //const targetAxis = this.chart.settings.groupingAxis as DeepReadonly<string | undefined> ?? this.chart.model.indepVar
-            const length = this.chart.paraview.store!.model!.series[0].length
             const id = this.index - length;
             this._x = 0;
             this._height = this.chart.parent.height / this.chart.bins;
@@ -472,7 +544,7 @@ export class HistogramBinView extends DataView {
             this._count = this.chart.grid[id];
             
             this._id = [
-                'datapoint',
+                'datapoint-tile',
                 strToId(this.seriesKey),
                 `${this._x}`,
                 `${this._y}`
@@ -520,6 +592,7 @@ export class HistogramBinView extends DataView {
     }
 
     render() {
+        console.log("HistogramBinView render")
         let stroke = `hsl(0, 0%, 0%)`
         //let fill = todo().controller.colors.colorValueAt(this.seriesProps.color);
         let fill = 0;

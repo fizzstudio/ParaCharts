@@ -241,7 +241,9 @@ export class ParaView extends logging(ParaComponent) {
         this.dataUpdated();
       }
       if (key === 'settings'){
-        this.createDocumentView();
+        if (this._documentView){
+          this.dataUpdated();
+        }
       }
     });
 
@@ -312,6 +314,9 @@ export class ParaView extends logging(ParaComponent) {
   }*/
 
   ref<T>(key: string): Ref<T> {
+    //console.log("paraview ref")
+    //console.log(key)
+    //console.log(this._chartRefs)
     if (!this._chartRefs.has(key)) {
       this._chartRefs.set(key, createRef());
     }

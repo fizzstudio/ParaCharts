@@ -196,6 +196,9 @@ export const defaults: Settings = {
         height: 20,
       }
     },
+    histogram: {
+      bins: 20
+    },
     pie: {
       categoryLabel: {
         isDrawEnabled: true,

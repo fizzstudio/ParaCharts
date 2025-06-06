@@ -38,8 +38,17 @@ function computeLabels(
     const maxDec = new Decimal(end);
     const diff = maxDec.sub(minDec);
     const interval = diff.div(10);
+    //console.log(start)
+    //console.log(end)
     let quantizedInterval: Decimal, quantizedMin: Decimal, quantizedMax: Decimal;
+    //console.log("Start")
     quantizedInterval = new Decimal(10).pow(interval.log(10).ceil());
+    //console.log(new Decimal(10))
+    //console.log(interval)
+    //onsole.log(interval.log(10))
+    //console.log(new Decimal(10).pow(interval.log(10)))
+    //console.log(interval)
+    //console.log(JSON.parse(JSON.stringify(quantizedInterval)))
     if (quantizedInterval.div(diff).gte(0.8)) {
       quantizedInterval = quantizedInterval.div(10);
     } else if (quantizedInterval.div(diff).gte(0.5)) {
@@ -49,10 +58,19 @@ function computeLabels(
     }
     quantizedMin = minDec.div(quantizedInterval).floor().mul(quantizedInterval);
     quantizedMax = maxDec.div(quantizedInterval).ceil().mul(quantizedInterval);
+    //console.log("STOP")
+    //console.log(quantizedMax)
+    //console.log(quantizedMin)
+    console.trace()
+    //console.log(minDec.div(quantizedInterval))
+    //console.log(maxDec.div(quantizedInterval))
+    //console.log(quantizedMax.sub(quantizedMin).div(quantizedInterval).toNumber() +  1)
     const fmt = new Intl.NumberFormat(undefined, { maximumFractionDigits: 5, useGrouping: isGrouping });
+    
     const labels = new Array(quantizedMax.sub(quantizedMin).div(quantizedInterval).toNumber() + 1)
       .fill(0)
       .map((_, i) => fmt.format(+quantizedMin.add(quantizedInterval.mul(i))) + (isPercent ? '%' : ''));
+      
     return {
       min: quantizedMin.toNumber(),
       max: quantizedMax.toNumber(),
@@ -98,6 +116,8 @@ export class AxisInfo {
   }
 
   protected _computeYLabels(yMin: number, yMax: number) {
+   // console.log(this._store.settings.axis.y.minValue ?? yMin)
+    //console.log(this._store.settings.axis.y.maxValue ?? yMax)
     return computeLabels(
       this._store.settings.axis.y.minValue ?? yMin, 
       this._store.settings.axis.y.maxValue ?? yMax, 
@@ -120,6 +140,8 @@ export class AxisInfo {
   }
 
   protected _computeYLabelInfo() {
+  console.log("this._options.yValues")
+    console.log(this._options.yValues)
     this._yLabelInfo = this._computeYLabels(
       this._options.yMin ?? Math.min(...this._options.yValues),
       this._options.yMax ?? Math.max(...this._options.yValues));
