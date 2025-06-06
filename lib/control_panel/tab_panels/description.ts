@@ -10,7 +10,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 @customElement('para-description-panel')
 export class DescriptionPanel extends ControlPanelTabPanel {
 
-  @state() caption = '';
+  @property() caption = '';
   @property() visibleStatus = '';
 
   static styles = [
@@ -52,9 +52,6 @@ export class DescriptionPanel extends ControlPanelTabPanel {
       flexDirection: 'column',
       gap: '0.5rem'
     };
-    if (this.controlPanel.dataState === 'complete') {
-      this.caption = this._store.summarizer.getChartSummary();
-    }
     return html`
       <figcaption>
         <div id="description" style=${styleMap(styles)}>
