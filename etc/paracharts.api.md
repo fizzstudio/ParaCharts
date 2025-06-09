@@ -89,8 +89,6 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     headless: boolean;
     // (undocumented)
-    protected _inputSettings: SettingsInput;
-    // (undocumented)
     get loaded(): Promise<void> | null;
     // (undocumented)
     get loader(): ParaLoader;

@@ -10,6 +10,9 @@
 			--parachartsThemeColor: hsl(194, 28%, 45%);
     		--parachartsThemeColorLight: hsl(194, 28%, 85%);
 		}
+		.chart {
+			--para-stroke-width: 20;
+		}
 		body {
 			font-family: 'Helvetica Neue', Arial, sans-serif;
 			color: #333;
@@ -32,8 +35,7 @@
 		import { ParaHelper } from '/dist/paracharts.js';
 		const helper = new ParaHelper();
 		await helper.ready;
-		await helper.loadData('/src/headless/bar-multi-manifest-48.csv');
-    	await helper.loadManifest('/src/headless/bar-multi-manifest-48-external.json');
+    	await helper.loadManifest('/src/headless/line-multi-manifest-128.json');
     	const content = helper.serializeChart();
     	const container = document.getElementById('content-container');
     	container.innerHTML = content;
