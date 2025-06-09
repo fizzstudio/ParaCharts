@@ -216,6 +216,11 @@ export class ParaStore extends State {
     }
   }
 
+  public async asyncAnnounce(msgPromise: Promise<string | string[]>): Promise<void> {
+    const msg = await msgPromise;
+    this.announce(msg);
+  }
+
   protected _joinStrArray(strArray: string[], linebreak?: string) : string {
     strArray = strArray.filter(line => /\S/.test(line));
     // if the string array only contains blank strings, ignore it

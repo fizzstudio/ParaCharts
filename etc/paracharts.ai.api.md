@@ -35,6 +35,7 @@ import { Ref as Ref_2 } from 'lit/directives/ref.js';
 import { RefDirective } from 'lit-html/directives/ref.js';
 import * as sb from '@fizz/sparkbraille-component';
 import { Series } from '@fizz/paramodel';
+import { SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { Size2d } from '@fizz/chart-classifier-utils';
 import { State } from '@lit-app/state';
 import { StateController } from '@lit-app/state';
