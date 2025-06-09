@@ -249,7 +249,6 @@ export class ParaView extends logging(ParaComponent) {
   private dataUpdated(): void {
     this.createDocumentView();
     this._summarizer = new BasicXYChartSummarizer(this._store.model!);
-    this.paraChart.controlPanel.descriptionPanel.caption = this._summarizer.getChartSummary();
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {

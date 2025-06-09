@@ -1,6 +1,4 @@
-import { ChartType, Data, Manifest, type Datatype, type Series, type AllSeriesData } from '@fizz/paramanifest';
-
-import { exhaustive } from '../common/utils';
+import { ChartType, Manifest, type Datatype, type AllSeriesData } from '@fizz/paramanifest';
 
 import papa from 'papaparse';
 

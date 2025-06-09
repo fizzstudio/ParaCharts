@@ -54,7 +54,7 @@ export class ChartLandingView extends View {
 
   onFocus(isNewComponentFocus = false) {
     this.paraview.store.visit([]);
-    this.paraview.store.announce(this.paraview.summarizer.getChartSummary());
+    this.paraview.store.asyncAnnounce(this.paraview.summarizer.getChartSummary());
   }
 
   getSeriesView(seriesName: string) {

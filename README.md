@@ -17,3 +17,4 @@ Note the following about the AI-enhanced version build:
 - Only the basic version in the `dist` folder is published to the Fizz NPM
 - Currently, the basic ParaChart element has the tag `<para-chart>` and the AI-enhanced ParaChart element has the tag `<para-chart-ai>` 
 - `lib-ai/index-ai.ts` is the entry point for the AI-enhanced version. Anything which should be exported by the AI-enhanced version, but not the basic version, should be exported in this file. Any additional TypeScript files which shouldn't/needn't be built into the basic version should be in the `lib-ai` folder.
+- Private dependencies which are only required for the AI-enhanced version are set as optionalDependencies. These dependencies are installed if they can be found, but are otherwise ignored.

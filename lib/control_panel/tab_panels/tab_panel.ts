@@ -6,7 +6,7 @@ import { css } from 'lit';
 
 export abstract class ControlPanelTabPanel extends SettingControlContainer {
 
-  _controlPanel!: ParaControlPanel;
+  protected _controlPanel!: ParaControlPanel;
 
   get controlPanel() {
     return this._controlPanel;
