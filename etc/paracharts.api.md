@@ -6,6 +6,7 @@
 
 import { AllSeriesData } from '@fizz/paramanifest';
 import { AxisOrientation } from '@fizz/paramodel';
+import { BasicXYChartSummarizer } from '@fizz/parasummary';
 import { ButtonDescriptor } from '@fizz/ui-components';
 import { ChartType as ChartType_2 } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit-html/directives/class-map.js';

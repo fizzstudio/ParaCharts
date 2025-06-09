@@ -24,9 +24,8 @@
   "homepage": "https://github.com/fizzstudio/paracharts#readme",
   "type": "module",
   "scripts": {
-    "demo": "vite --port 5176",
-    "headless": "vite --port 5177 --open src/demo/headless.html",
-    "demo:ai": "vite --port 5178 --open src/ai/ai.html",
+    "demo:headless": "vite --port 5177 --open src/demo/headless/vite/headless.html",
+    "demo:ai": "vite --port 5178 --open src/demo/ai/ai.html",
     "build": "rimraf dist && tsc && vite build && api-extractor run --local --verbose",
     "build:ai": "rimraf dist-ai && tsc --project ai.tsconfig.json && vite build --config ai.vite.config.ts && api-extractor run --local --verbose --config ai.api-extractor.json",
     "pretest": "npm run build",

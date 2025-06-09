@@ -1,5 +1,6 @@
 
 //import { styles } from '../../styles';
+import { BasicXYChartSummarizer } from '@fizz/parasummary';
 import { ControlPanelTabPanel } from './tab_panel';
 
 import { html, css } from 'lit';
@@ -12,6 +13,8 @@ export class DescriptionPanel extends ControlPanelTabPanel {
 
   @property() caption = '';
   @property() visibleStatus = '';
+
+  private _summarizer?: BasicXYChartSummarizer;
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -53,7 +56,10 @@ export class DescriptionPanel extends ControlPanelTabPanel {
 
   private async setCaption(): Promise<void> {
     if (this.controlPanel.dataState === 'complete') {
-      this.caption = await this._store.summarizer.getChartSummary();
+      if (!this._summarizer) {
+        this._summarizer = new BasicXYChartSummarizer(this.store.model!);
+      }
+      this.caption = await this._summarizer.getChartSummary();
     }
   }
 

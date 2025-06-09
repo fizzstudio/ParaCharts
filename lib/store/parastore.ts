@@ -20,7 +20,7 @@ import { produce } from 'immer';
 import { dataFromManifest, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
 import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature, SeriesAnalyzerConstructor 
   } from '@fizz/paramodel';
-import { FormatType } from '@fizz/parasummary';
+import { BasicXYChartSummarizer, FormatType } from '@fizz/parasummary';
 
 import { DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext } from './settings_types';
 import { SettingsManager } from './settings_manager';
