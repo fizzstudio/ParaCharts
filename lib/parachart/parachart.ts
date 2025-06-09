@@ -36,6 +36,7 @@ import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { SeriesAnalyzerConstructor } from '@fizz/paramodel';
 
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
@@ -58,10 +59,10 @@ export class ParaChart extends logging(ParaComponent) {
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
 
-  constructor() {
+  constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor) {
     super();
     // also creates the state controller
-    this.store = new ParaStore(this._inputSettings, this._suppleteSettingsWith);
+    this.store = new ParaStore(this._inputSettings, this._suppleteSettingsWith, seriesAnalyzerConstructor);
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
         resolve();
