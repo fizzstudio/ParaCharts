@@ -39,7 +39,7 @@ export class SeriesLabelStrip extends Container(View) {
     // Sort points from highest to lowest onscreen
     const endpoints = this._chart.datapointViews.
       filter(datapoint => 
-        datapoint.index === this._chart.paraview.store.model!.series[0].facet('x')!.length - 1
+        datapoint.index === this._chart.paraview.store.model!.series[0].length - 1
       );
     endpoints.sort((a, b) => a.y - b.y);
     // Create labels

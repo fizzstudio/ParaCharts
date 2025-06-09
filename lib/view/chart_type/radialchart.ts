@@ -184,11 +184,11 @@ export abstract class RadialChart extends DataLayer {
   }
 
   protected _createDatapoints() {
-    const xs = this.paraview.store.model!.series[0].facet('x')!.map(box =>
-      box.value as string
+    const xs = this.paraview.store.model!.series[0].datapoints.map(dp =>
+      dp.facetValue('x') as string
     );
-    const ys = this.paraview.store.model!.series[0].facet('y')!.map(box =>
-      box.value as number);
+    const ys = this.paraview.store.model!.series[0].datapoints.map(dp =>
+      dp.facetAsNumber('y')!);
 
     // const indep = this._model.indepVar;
     // const xs: string[] = [];
@@ -200,7 +200,7 @@ export abstract class RadialChart extends DataLayer {
     // }
 
     const total = ys.reduce((a, b) => a + b, 0);
-    const seriesView = new SeriesView(this, this.paraview.store.model!.keys[0], false);
+    const seriesView = new SeriesView(this, this.paraview.store.model!.seriesKeys[0], false);
     this._chartLandingView.append(seriesView);
 
     let accum = 0;
@@ -233,11 +233,11 @@ export abstract class RadialChart extends DataLayer {
   }
 
   protected _createLabels() {
-    const xs = this.paraview.store.model!.series[0].facet('x')!.map(box =>
-      formatBox(box, this.paraview.store.getFormatType('pieSliceLabel'))
+    const xs = this.paraview.store.model!.series[0].datapoints.map(dp =>
+      formatBox(dp.facetBox('x')!, this.paraview.store.getFormatType('pieSliceLabel'))
     );
-    const ys = this.paraview.store.model!.series[0].facet('y')!.map(box =>
-      formatBox(box, this.paraview.store.getFormatType('pieSliceLabel'))
+    const ys = this.paraview.store.model!.series[0].datapoints.map(dp =>
+      formatBox(dp.facetBox('y')!, this.paraview.store.getFormatType('pieSliceLabel'))
     );
     for (const [x, i] of enumerate(xs)) {
       const slice = this._chartLandingView.children[0].children[i] as RadialSlice;
@@ -335,10 +335,10 @@ export abstract class RadialChart extends DataLayer {
   protected abstract _createSlice(seriesView: SeriesView, params: RadialDatapointParams): RadialSlice;
 
   legend() {
-    const xs = this.paraview.store.model!.series[0].facet('x')!.map(box =>
-      formatBox(box, this.paraview.store.getFormatType('pieSliceLabel')));
-    const ys = this.paraview.store.model!.series[0].facet('y')!.map(box =>
-      formatBox(box, this.paraview.store.getFormatType('pieSliceValue')));
+    const xs = this.paraview.store.model!.series[0].datapoints.map(dp =>
+      formatBox(dp.facetBox('x')!, this.paraview.store.getFormatType('pieSliceLabel')));
+    const ys = this.paraview.store.model!.series[0].datapoints.map(dp =>
+      formatBox(dp.facetBox('y')!, this.paraview.store.getFormatType('pieSliceValue')));
     return xs.map((x, i) => ({
       label: `${x}: ${ys[i]}`,
       color: i,
