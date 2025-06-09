@@ -157,6 +157,8 @@ export abstract class DataLayer extends ChartLayer {
         });
       } else if (e.action === 'open_help') {
         this.paraview.paraChart.controlPanel.showHelpDialog();
+      } else if (e.action === 'announce_version_info') {
+        this.paraview.store.announce(`Version ${__APP_VERSION__}; commit ${__COMMIT_HASH__}`)
       }
     });
   }

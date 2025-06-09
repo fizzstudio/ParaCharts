@@ -7,6 +7,7 @@ import { type LegendSettings, type DeepReadonly, SettingsManager } from '../stor
 import { Rect } from './shape/rect';
 import { type ParaView } from '../paraview';
 import { TemplateResult } from 'lit';
+import { ClassInfo } from 'lit/directives/class-map.js';
 
 export type SeriesAttrs = {
   color: string;
@@ -51,11 +52,14 @@ export class Legend extends Container(View) {
     protected _options: Partial<LegendOptions> = {orientation: 'vert'}
   ) {
     super(paraview);
-    console.log('ITEMS', _items);
   }
 
   get settings() {
     return SettingsManager.getGroupLink<LegendSettings>('legend', this.paraview.store.settings);
+  }
+
+  get classInfo() {
+    return { legend: true };
   }
 
   protected _addedToParent() {

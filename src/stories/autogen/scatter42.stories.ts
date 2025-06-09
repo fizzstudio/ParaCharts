@@ -19,21 +19,5 @@ export const Chart42: Story = {
       "ui.colorVisionMode": "deutan"
     },
     forcecharttype: "scatter",
-    /*keybindings: { // change to keybindingsFile: './sample_keybindings.json',
-      "chart": {
-        "a": {
-          "action": "move_left"
-        },
-        "d": {
-          "action": "move_right"
-        },
-        "w": {
-          "action": "move_up"
-        },
-        "s": {
-          "action": "move_down"
-        }
-      }
-    },*/
   }
 }

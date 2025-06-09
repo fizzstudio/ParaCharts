@@ -21,7 +21,6 @@ import { dataFromManifest, type AllSeriesData, type ChartType, type Manifest } f
 import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature, SeriesAnalyzerConstructor 
   } from '@fizz/paramodel';
 import { FormatType } from '@fizz/parasummary';
-import { BasicXYChartSummarizer } from '@fizz/parasummary';
 
 import { DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext } from './settings_types';
 import { SettingsManager } from './settings_manager';
@@ -55,6 +54,7 @@ export class ParaStore extends State {
   @property() settings: Settings;
   @property() darkMode = false;
   @property() announcement: Announcement = { text: '' };
+  @property()  _sparkBrailleData: string = ''
 
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
@@ -123,10 +123,6 @@ export class ParaStore extends State {
     return this._keymapManager;
   }
 
-  get summarizer() {
-    return this._summarizer;
-  }
-
   setManifest(manifest: Manifest, data?: AllSeriesData) {
     this._manifest = manifest;
     const dataset = this._manifest.datasets[0];
@@ -158,7 +154,6 @@ export class ParaStore extends State {
     } else {
       throw new Error('store lacks external or inline chart data');
     }
-    this._summarizer = new BasicXYChartSummarizer(this._model);
   }
 
   protected _propertyChanged(key: string, value: any) {

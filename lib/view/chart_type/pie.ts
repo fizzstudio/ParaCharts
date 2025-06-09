@@ -95,4 +95,15 @@ export class PieSlice extends RadialSlice {
     });
   }
 
+  onFocus() {
+    super.onFocus()
+    let data = []
+    for (let point of this.series.rawData) {
+      data.push({ label: point.x, value: Number(point.y) })
+    }
+    this.paraview.store.updateSettings(draft => {
+      draft.controlPanel.isSparkBrailleProportional = true
+    });
+    this.paraview.store._sparkBrailleData = JSON.stringify(data)
+  }
 }
