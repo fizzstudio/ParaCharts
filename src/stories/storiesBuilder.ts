@@ -28,8 +28,9 @@ function generateStory(
   manifestPath: string, 
   index: number
 ): void {
-  const chartFolder = capitalize(chartType) + ' Charts';
-  const code = printf(template, { manifestTitle, chartFolder, manifestPath, index, chartType });
+  const typeFolder = capitalize(chartType) + ' Charts';
+  const topFolder = 'Basic Charts'
+  const code = printf(template, { manifestTitle, typeFolder, topFolder, manifestPath, index, chartType });
   fs.writeFileSync(`${AUTOGEN_PATH}${chartType}${index}.stories.ts`, code, 'utf8');
 }
 

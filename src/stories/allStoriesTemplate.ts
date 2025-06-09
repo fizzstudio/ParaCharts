@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('%(family)s', %(multi)s);
 
 const meta = {
-  title: "Chart/%(chartFolder)s",
+  title: "%(topFolder)s/%(typeFolder)s",
   render: (args) => Chart(args),
   argTypes: {
     filename: {
@@ -22,7 +22,7 @@ const meta = {
 export default meta;
 
 export const %(storyName)s: Story = {
-  name: 'All %(chartFolder)s',
+  name: 'All %(typeFolder)s',
   args: {
     filename: '',
     config: { // change to configFile: "./sample_config.json",
