@@ -19,9 +19,9 @@ import { produceWithPatches, enablePatches } from 'immer';
 enablePatches();
 
 import { dataFromManifest, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
-import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature 
+import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature, SeriesAnalyzerConstructor 
   } from '@fizz/paramodel';
-import { FormatType } from '@fizz/parasummary';
+import { BasicXYChartSummarizer, FormatType } from '@fizz/parasummary';
 
 import {
   DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
@@ -83,13 +83,15 @@ export class ParaStore extends State {
   protected _keymapManager = new KeymapManager(keymap);
   protected _prependAnnouncements: string[] = [];
   protected _appendAnnouncements: string[] = [];
-  
+  protected _summarizer!: BasicXYChartSummarizer; 
+  protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
 
   public idList: Record<string, boolean> = {};
 
   constructor(
     inputSettings: SettingsInput, 
-    suppleteSettingsWith?: DeepReadonly<Settings>
+    suppleteSettingsWith?: DeepReadonly<Settings>,
+    seriesAnalyzerConstructor?: SeriesAnalyzerConstructor
   ) {
     super();
     const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
@@ -97,6 +99,7 @@ export class ParaStore extends State {
     this.settings = hydratedSettings as Settings;
     this.subscribe((key, value) => this._propertyChanged(key, value));
     this._colors = new Colors(this);
+    this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
   }
 
   get settingControls() {
@@ -145,14 +148,14 @@ export class ParaStore extends State {
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
     if (dataset.data.source === 'inline') {
-      this._model = modelFromInlineData(manifest);
+      this._model = modelFromInlineData(manifest, this._seriesAnalyzerConstructor);
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = dataFromManifest(manifest);
     } else if (data) {
-      this._model = modelFromExternalData(data, manifest);
+      this._model = modelFromExternalData(data, manifest, this._seriesAnalyzerConstructor);
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = data;
     } else {
@@ -259,6 +262,11 @@ export class ParaStore extends State {
       this.announcement = { text: announcement, clear: clearAriaLive };
       console.log('ANNOUNCE:', this.announcement.text);
     }
+  }
+
+  public async asyncAnnounce(msgPromise: Promise<string | string[]>): Promise<void> {
+    const msg = await msgPromise;
+    this.announce(msg);
   }
 
   protected _joinStrArray(strArray: string[], linebreak?: string) : string {

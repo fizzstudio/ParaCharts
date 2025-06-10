@@ -1,5 +1,6 @@
 
 //import { styles } from '../../styles';
+import { BasicXYChartSummarizer } from '@fizz/parasummary';
 import { ControlPanelTabPanel } from './tab_panel';
 
 import { html, css } from 'lit';
@@ -12,6 +13,8 @@ export class DescriptionPanel extends ControlPanelTabPanel {
 
   @property() caption = '';
   @property() visibleStatus = '';
+
+  private _summarizer?: BasicXYChartSummarizer;
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -34,6 +37,11 @@ export class DescriptionPanel extends ControlPanelTabPanel {
     `
   ];
 
+  connectedCallback(): void {
+    super.connectedCallback();
+    this._store.subscribe(this.setCaption.bind(this));
+  }
+
   // get speechRate() {
   //   return this._controller.voice.rate;
   // }
@@ -44,6 +52,15 @@ export class DescriptionPanel extends ControlPanelTabPanel {
 
   clearStatusBar() {
     this._controlPanel.paraChart.clearAriaLive();
+  }
+
+  private async setCaption(): Promise<void> {
+    if (this.controlPanel.dataState === 'complete') {
+      if (!this._summarizer) {
+        this._summarizer = new BasicXYChartSummarizer(this.store.model!);
+      }
+      this.caption = await this._summarizer.getChartSummary();
+    }
   }
 
   render() {

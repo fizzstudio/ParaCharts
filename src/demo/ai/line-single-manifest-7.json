@@ -1,0 +1,85 @@
+{
+  "datasets": [
+    {
+      "type": "line",
+      "title": "Estimated number of World of Warcraft subscribers 2015 to 2023",
+      "facets": {
+        "x": {
+          "label": "Year",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "date",
+          "units": "year",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Subscribers in millions",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "units": "number",
+          "multiplier": 1000000,
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "Subscribers in millions",
+          "theme": {
+            "baseQuantity": "subscriber",
+            "baseKind": "number",
+            "entity": "World of Warcraft",
+            "aggregate": "estimated"
+          },
+          "records": [
+            {
+              "x": "2015",
+              "y": "5.5"
+            },
+            {
+              "x": "2016*",
+              "y": "5.67"
+            },
+            {
+              "x": "2017*",
+              "y": "5.42"
+            },
+            {
+              "x": "2018*",
+              "y": "5.19"
+            },
+            {
+              "x": "2019*",
+              "y": "5.03"
+            },
+            {
+              "x": "2020*",
+              "y": "4.88"
+            },
+            {
+              "x": "2021*",
+              "y": "4.74"
+            },
+            {
+              "x": "2022*",
+              "y": "4.59"
+            },
+            {
+              "x": "2023*",
+              "y": "4.46"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      }
+    }
+  ]
+}
