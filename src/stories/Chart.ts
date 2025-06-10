@@ -3,9 +3,9 @@
 import { type SettingsInput, type LegendItemOrder } from '../../lib/store/settings_types';
 
 import { html, nothing } from 'lit';
-import '../../lib';
+import '/lib';
 import { ChartType } from '@fizz/paramanifest';
-import '../../lib-ai';
+import '/lib-ai/index-ai.ts';
 
 export interface ChartProps {
   filename: string;

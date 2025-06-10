@@ -12,11 +12,11 @@ import { type ChartFamily, FAMILY_MEMBERS, familyCatalogMap, familyCatalogMapMul
   from './chartSelectorHelper.ts';
 import { allTemplate } from './allStoriesTemplate.ts';
 import { type ChartType } from '@fizz/paramanifest';
-import { capitalize } from '../../lib/common/utils.ts';
+//import { capitalize } from '../../lib/common/utils.ts';
 
-/*function capitalize(string: string) {
+function capitalize(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
-}*/
+}
 
 const AUTOGEN_PATH = './src/stories/autogen/'
 
@@ -31,7 +31,7 @@ function generateCode(
   index: number
 ): string {
   const topFolder = ai ? 'Ai-enhanced Charts' : 'Basic Charts';
-  const chartElement = ai ? 'AiChart' : 'Charts';
+  const chartElement = ai ? 'AiChart' : 'Chart';
   return printf(template, 
     { manifestTitle, typeFolder, topFolder, manifestPath, index, chartType, chartElement }
   );
@@ -114,7 +114,7 @@ function generateAllStory(
   family: ChartFamily
 ): void {
   const topFolder = ai ? 'Ai-enhanced Charts' : 'Basic Charts';
-  const chartElement = ai ? 'AiChart' : 'Charts';
+  const chartElement = ai ? 'AiChart' : 'Chart';
   const typeFolder = capitalize(chartType) + ' Charts';
   const storyName = `All${ai ? 'AI' : ''}${capitalize(chartType)}Charts`;
   const code = printf(allTemplate, 
@@ -130,7 +130,7 @@ function generateAllStoryMulti(
   multi: boolean
 ): void {
   const topFolder = ai ? 'Ai-enhanced Charts' : 'Basic Charts';
-  const chartElement = ai ? 'AiChart' : 'Charts';
+  const chartElement = ai ? 'AiChart' : 'Chart';
   const multiText = multi ? 'multi' : 'single';
   const typeFolder = `${capitalize(chartType)} ${capitalize(multiText)} Charts`;
   const storyName = `All${capitalize(multiText)}${capitalize(chartType)}Charts`;
