@@ -12,13 +12,14 @@ export interface ChartProps {
   config?: SettingsInput;  
   legendOrder: LegendItemOrder;
   forcecharttype?: ChartType;
+  slot?: string;
 }
 
 /**
  * Primary UI component for user interaction
  */
 export const Chart = ({ 
-  filename, config, legendOrder, forcecharttype
+  filename, config, legendOrder, forcecharttype, slot
 }: ChartProps) => {
   config ??= {};
   config['legend.itemOrder'] = legendOrder;
@@ -75,7 +76,9 @@ export const Chart = ({
     manifesttype=${filename.startsWith('/') ? 'url' : 'fizz-chart-data'} 
     .config=${config ?? nothing}
     forcecharttype=${forcecharttype ?? nothing}
+    type=${forcecharttype ?? nothing}
   >
+    <slot>${slot ?? ``}</slot>
     <span slot="settings"></span>
   </para-chart>
   `;
