@@ -197,7 +197,13 @@ export const defaults: Settings = {
       }
     },
     histogram: {
-      bins: 20
+      pointLabelFormat: 'raw',
+      bins: 20,
+      displayAxis: `x`,
+      selectedPointMarkerSize: {
+        width: 20,
+        height: 20,
+      }
     },
     pie: {
       categoryLabel: {

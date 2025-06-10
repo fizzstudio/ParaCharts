@@ -21,9 +21,13 @@ export class Histogram extends XYChart {
         dataLayerIndex: number
     ) {
         super(paraview, dataLayerIndex);
+        this._settings = this.paraview.store.settings.type.histogram;
         this._bins = this.paraview.store.settings.type.histogram.bins ?? 20
         this._generateBins();
+       
     }
+
+
     protected _addedToParent() {
         super._addedToParent();
         /*
@@ -39,16 +43,48 @@ export class Histogram extends XYChart {
             .flat();
         const xValues = this._model.data.col(targetAxis).toNumberSeries().data;
         */
+       ///console.log("displayAxis")
+       //console.log(this.paraview.store.settings.type.histogram.displayAxis)
+
+        const targetAxis = this.settings.groupingAxis as DeepReadonly<string | undefined> 
+                            ?? this.paraview.store.model?.facets.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)[0]
+        console.log("targetAxis")
+        console.log(targetAxis)
+        let targetFacet;
+        for (let facet of this.paraview.store.model!.facets){
+            if (this.paraview.store.model!.getFacet(facet.key as string)!.label == targetAxis){
+                targetFacet = facet.key
+            }
+        }
+        //HACK: THIS WILL BREAK IF WE EVER ADD MORE FACETS THAN JUST X/Y
+        let nonTargetFacet;
+        if (targetFacet == "y"){
+            nonTargetFacet = "x"
+        }
+        else{
+            nonTargetFacet = "y"
+        }
+
+        //console.log("targetFacet")
+        //console.log(targetFacet)
+        //console.log("nonTargetFacet")
+        //console.log(nonTargetFacet)
+        this.settings
+
+
+
+
+   
         if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined){
             this._axisInfo = new AxisInfo(this.paraview.store, {
-                  xValues: this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number),
+                  xValues: this.paraview.store.model!.allFacetValues(targetFacet!)!.map((x) => x.value as number),
                   yValues: this.grid,
                 });
         }
         else{
             this._axisInfo = new AxisInfo(this.paraview.store, {
                 xValues: this.grid,
-                yValues: this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number),
+                yValues: this.paraview.store.model!.allFacetValues(targetFacet!)!.map((x) => x.value as number),
               });
         }
         this.paraview.store.settingControls.add({
@@ -65,10 +101,7 @@ export class Histogram extends XYChart {
 
 
         const variables = this.paraview.store.model?.facets.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)
-        //console.log("UNDER HERE")
-        //console.log(this.paraview.store.model?.keys)
-        //console.log(this.paraview.store.model?.facets.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label))
-        //console.log("ABOVE HERE")
+
         this.paraview.store.settingControls.add({
             type: 'dropdown',
             key: 'type.histogram.groupingAxis',
@@ -96,6 +129,9 @@ export class Histogram extends XYChart {
 */
 
     get datapointViews() {
+        //console.log("HISTAGRAM DATAPOINTVIEWS CALL")
+        //console.trace()
+        //console.log(super.datapointViews)
         return super.datapointViews as HistogramDatapointView[];
     }
 
@@ -106,13 +142,15 @@ export class Histogram extends XYChart {
     get maxCount() {
         return this._maxCount;
     }
+    get settings() {
+        return this._settings;
+    }
 
     protected _newDatapointView(seriesView: XYSeriesView) {
         return new HistogramDatapointView(seriesView);
     }
 
     protected _beginLayout() {
-
         this._createDatapoints();
         for (const datapointView of this.datapointViews) {
             datapointView.computeLocation();
@@ -128,7 +166,6 @@ export class Histogram extends XYChart {
     }
 
     protected _createDatapoints() {
-        console.log("Histogram createDatapoints start")
         //this.parent.parent.parent!._vertAxis = new VertAxis(this.parent.parent.parent as DocumentView)
         const xs: string[] = [];
         for (const [x, i] of enumerate(this.paraview.store.model!.allFacetValues('x')!)) {
@@ -139,9 +176,7 @@ export class Histogram extends XYChart {
             // }
             // this.selectors[i].push(`tick-x-${xId}`);
         }
-        console.log(this.paraview.store.model!.series)
         for (const [col, i] of enumerate(this.paraview.store.model!.series)) {
-            console.log("IN HERE DUMMY")
             const seriesView = new XYSeriesView(this, col.key);
             this._chartLandingView.append(seriesView);
             for (const [value, j] of enumerate(col)) {
@@ -173,7 +208,6 @@ export class Histogram extends XYChart {
     }
     */
     protected _layoutDatapoints() {
-        console.log(this.datapointViews)
         for (const datapointView of this.datapointViews) {
             datapointView.computeLayout();
         }
@@ -181,7 +215,7 @@ export class Histogram extends XYChart {
 
     protected _generateBins(): Array<number> {
         //console.log("generateBins")
-        const targetAxis = this.paraview.store.settings.type.histogram.groupingAxis as DeepReadonly<string | undefined> 
+        const targetAxis = this.settings.groupingAxis as DeepReadonly<string | undefined> 
                             ?? this.paraview.store.model?.facets.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)[0]
 
         let targetFacet;
@@ -190,7 +224,6 @@ export class Histogram extends XYChart {
                 targetFacet = facet.key
             }
         }
-        console.log(targetFacet)
         //HACK: THIS WILL BREAK IF WE EVER ADD MORE FACETS THAN JUST X/Y
         let nonTargetFacet;
         if (targetFacet == "y"){
@@ -201,7 +234,6 @@ export class Histogram extends XYChart {
         }
         let workingAxisInfo
         if (targetFacet){
-            
             const yValues = []
             const xValues = []
             for (let datapoint of this.paraview.store.model!.series[0]) {
@@ -210,12 +242,6 @@ export class Histogram extends XYChart {
             for (let datapoint of this.paraview.store.model!.series[0]) {
                 yValues.push(datapoint.facetAsNumber(nonTargetFacet) as number)
             }
-            //console.log("xValues")
-            //console.log(xValues)
-            console.log("yValues")
-            console.log(yValues)
-            console.log("below")
-            console.log(this.paraview.store.settings.axis.x.maxValue)
             workingAxisInfo = new AxisInfo(this.paraview.store, {
             xValues: xValues,
             yValues: yValues,
@@ -231,10 +257,9 @@ export class Histogram extends XYChart {
         const seriesList = this.paraview.store.model!.series
         for (let series of seriesList) {
             for (let i = 0; i < series.length; i++) {
-                this._data.push([series[i].facetAsNumber("x")! , series[i].facetAsNumber("y")!]);
+                this._data.push([series[i].facetAsNumber(targetFacet ?? "x")! , series[i].facetAsNumber(nonTargetFacet ?? "y")!]);
             } 
         }
-
         const y: Array<number> = [];
         const x: Array<number> = [];
 
@@ -247,7 +272,6 @@ export class Histogram extends XYChart {
         let xMax: number = workingAxisInfo?.xLabelInfo.max!;
         let xMin: number = workingAxisInfo?.xLabelInfo.min!;
 
-
         const grid: Array<number> = [];
 
         for (let i = 0; i < this.bins; i++) {
@@ -258,7 +282,7 @@ export class Histogram extends XYChart {
             const xIndex: number = Math.floor((point[0] - xMin) * this.bins / (xMax - xMin));
             grid[xIndex]++;
         }
-        //console.log(grid)
+        
         return this._grid = grid;
     }
     seriesRef(series: string) {
@@ -383,12 +407,7 @@ export class HistogramDatapointView extends XYDatapointView {
     constructor(
         seriesView: XYSeriesView,
     ) {
-        //console.log("HistogramDownView constructor")
         super(seriesView);
-        //console.log("after super call")
-        //console.log(this.seriesKey)
-        //console.log(this.id)
-        //console.log(this.index)
         this._id = [
                 'datapoint-unused',
                 strToId(this.seriesKey),
@@ -519,8 +538,6 @@ export class HistogramBinView extends DataView {
     completeLayout() {
         if (this.chart.settings.displayAxis == "x" || this.chart.settings.displayAxis == undefined){
             //const targetAxis = this.chart.settings.groupingAxis as DeepReadonly<string | undefined> ?? this.chart.model.indepVar
-            //console.log("length")
-            //console.log(length)
             const id = this.index;
             this._y = this.chart.parent.height;
             this._width = this.chart.parent.width / this.chart.bins;
@@ -561,10 +578,8 @@ export class HistogramBinView extends DataView {
         //const down = (yInfo.max! - ySpan * (Math.floor((this.index - length) / this.chart.bins) + 1)).toFixed(2)
         const xInfo = this.chart.axisInfo!.xLabelInfo!
         const xSpan = xInfo.range! / this.chart.bins;
-        const left = (xInfo.min! + xSpan * ((this.index - length) % this.chart.bins)).toFixed(2)
-        const right = (xInfo.min! + xSpan * ((this.index - length) % this.chart.bins + 1)).toFixed(2)
-        console.log(this.count)
-        console.log(length)
+        const left = (xInfo.min! + xSpan * ((this.index) % this.chart.bins)).toFixed(2)
+        const right = (xInfo.min! + xSpan * ((this.index) % this.chart.bins + 1)).toFixed(2)
         return `This bin contains ${this.count} datapoints, which is ${(100 * this.count / length).toFixed(2)}% of the overall data. 
         It spans x values from ${left} to ${right}}`
         
@@ -592,7 +607,6 @@ export class HistogramBinView extends DataView {
     }
 
     render() {
-        console.log("HistogramBinView render")
         let stroke = `hsl(0, 0%, 0%)`
         //let fill = todo().controller.colors.colorValueAt(this.seriesProps.color);
         let fill = 0;

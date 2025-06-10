@@ -318,7 +318,7 @@ export interface HeatmapSettings extends PointSettings {
 export interface HistogramSettings extends PointSettings {
   bins: number;
   displayAxis: string;
-  groupingAxis: string;
+  groupingAxis?: string;
 }
 
 export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
