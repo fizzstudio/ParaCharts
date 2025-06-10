@@ -16,13 +16,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { customElement } from 'lit/decorators.js';
 import { ParaChart } from '../lib/parachart/parachart';
+import { SeriesAnalyzer } from '@fizz/series-analyzer';
 
 @customElement('para-chart-ai')
 export class ParaChartAi extends ParaChart {
 
   constructor() {
     console.log('AI-enhanced ParaChart created');
-    super();
+    super(SeriesAnalyzer);
   }
 
 }

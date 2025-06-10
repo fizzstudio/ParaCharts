@@ -15,15 +15,18 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { State, property } from '@lit-app/state';
-import { produce } from 'immer';
+import { produceWithPatches, enablePatches } from 'immer';
+enablePatches();
 
 import { dataFromManifest, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
-import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature 
+import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature, SeriesAnalyzerConstructor 
   } from '@fizz/paramodel';
-import { FormatType } from '@fizz/parasummary';
-import { BasicXYChartSummarizer } from '@fizz/parasummary';
+import { BasicXYChartSummarizer, FormatType } from '@fizz/parasummary';
 
-import { DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext } from './settings_types';
+import {
+  DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
+  type Setting
+} from './settings_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
 import { defaults } from './settings_defaults';
@@ -47,6 +50,8 @@ export interface Announcement {
   clear?: boolean;
 }
 
+export type SettingObserver = (oldValue: Setting, newValue: Setting) => void;
+
 export class ParaStore extends State {
 
   readonly symbols = new DataSymbols();
@@ -67,6 +72,7 @@ export class ParaStore extends State {
   @property() protected _prevSelectedDatapoints: DataCursor[] = [];
 
   protected _settingControls = new SettingControlManager(this); 
+  protected _settingObservers: { [path: string]: SettingObserver[] } = {};
   protected _manifest: Manifest | null = null;
   protected _model: Model | null = null;
   protected _facets: FacetSignature[] | null = null;
@@ -78,13 +84,14 @@ export class ParaStore extends State {
   protected _prependAnnouncements: string[] = [];
   protected _appendAnnouncements: string[] = [];
   protected _summarizer!: BasicXYChartSummarizer; 
-  
+  protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
 
   public idList: Record<string, boolean> = {};
 
   constructor(
     inputSettings: SettingsInput, 
-    suppleteSettingsWith?: DeepReadonly<Settings>
+    suppleteSettingsWith?: DeepReadonly<Settings>,
+    seriesAnalyzerConstructor?: SeriesAnalyzerConstructor
   ) {
     super();
     const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
@@ -92,6 +99,7 @@ export class ParaStore extends State {
     this.settings = hydratedSettings as Settings;
     this.subscribe((key, value) => this._propertyChanged(key, value));
     this._colors = new Colors(this);
+    this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
   }
 
   get settingControls() {
@@ -122,10 +130,6 @@ export class ParaStore extends State {
     return this._keymapManager;
   }
 
-  get summarizer() {
-    return this._summarizer;
-  }
-
   setManifest(manifest: Manifest, data?: AllSeriesData) {
     this._manifest = manifest;
     const dataset = this._manifest.datasets[0];
@@ -147,20 +151,19 @@ export class ParaStore extends State {
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
     if (dataset.data.source === 'inline') {
-      this._model = modelFromInlineData(manifest);
+      this._model = modelFromInlineData(manifest, this._seriesAnalyzerConstructor);
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = dataFromManifest(manifest);
     } else if (data) {
-      this._model = modelFromExternalData(data, manifest);
+      this._model = modelFromExternalData(data, manifest, this._seriesAnalyzerConstructor);
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = data;
     } else {
       throw new Error('store lacks external or inline chart data');
     }
-    this._summarizer = new BasicXYChartSummarizer(this._model);
   }
 
   protected _propertyChanged(key: string, value: any) {
@@ -171,8 +174,56 @@ export class ParaStore extends State {
     }
   }
 
-  updateSettings(updater: (draft: Settings) => void) {
-    this.settings = produce(this.settings, updater);
+  updateSettings(updater: (draft: Settings) => void, ignoreObservers = false) {
+    const [newSettings, patches, inversePatches] = produceWithPatches(this.settings, updater);
+    this.settings = newSettings;
+    if (ignoreObservers) {
+      return;
+    }
+    const observed: { [path: string]: Partial<{oldValue: Setting, newValue: Setting}> } = {};
+    for (const patch of patches) {
+      if (patch.op !== 'replace') {
+        console.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        continue;
+      }
+      observed[patch.path.join('.')] = {newValue: patch.value};
+    }
+    for (const patch of inversePatches) {
+      if (patch.op !== 'replace') {
+        console.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        continue;
+      }
+      observed[patch.path.join('.')].oldValue = patch.value;
+    }
+    for (const [path, values] of Object.entries(observed)) {
+      this._settingObservers[path]?.forEach(observer =>
+        observer.call(null, values.oldValue, values.newValue)
+      );
+    }
+  }
+
+  observeSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
+    if (!this._settingObservers[path]) {
+      this._settingObservers[path] = [];
+    }
+    if (this._settingObservers[path].includes(observer)) {
+      throw new Error(`observer already registered for setting '${path}'`);
+    }
+    this._settingObservers[path].push(observer);
+  }
+
+  unobserveSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
+    if (!this._settingObservers[path]) {
+      throw new Error(`no observers for setting '${path}'`);
+    }
+    const idx = this._settingObservers[path].indexOf(observer);
+    if (idx === -1) {
+      throw new Error(`observer not registered for setting '${path}'`);
+    }
+    this._settingObservers[path].splice(idx, 1);
+    if (this._settingObservers[path].length === 0) {
+      delete this._settingObservers[path];
+    }
   }
 
   prependAnnouncement(msg: string) {
@@ -216,6 +267,11 @@ export class ParaStore extends State {
       this.announcement = { text: announcement, clear: clearAriaLive };
       console.log('ANNOUNCE:', this.announcement.text);
     }
+  }
+
+  public async asyncAnnounce(msgPromise: Promise<string | string[]>): Promise<void> {
+    const msg = await msgPromise;
+    this.announce(msg);
   }
 
   protected _joinStrArray(strArray: string[], linebreak?: string) : string {

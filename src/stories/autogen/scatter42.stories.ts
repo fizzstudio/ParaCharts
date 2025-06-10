@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Chart/Scatter Charts",
+  title: "Basic Charts/Scatter Charts",
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
@@ -15,25 +15,6 @@ export const Chart42: Story = {
   name: "d3 (42)",
   args: {
     filename: "manifests/scatter-manifest-d3.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "scatter",
-    /*keybindings: { // change to keybindingsFile: './sample_keybindings.json',
-      "chart": {
-        "a": {
-          "action": "move_left"
-        },
-        "d": {
-          "action": "move_right"
-        },
-        "w": {
-          "action": "move_up"
-        },
-        "s": {
-          "action": "move_down"
-        }
-      }
-    },*/
   }
 }

@@ -175,7 +175,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
     }
     return true;
   }
-  
+
   protected updated(changedProperties: PropertyValues) {
     if (changedProperties.has('dataState') && this.dataState === 'complete') {
       //this.todo.signalManager.signal('controlPanelDataLoadComplete');
@@ -262,8 +262,6 @@ export class ParaControlPanel extends logging(ParaComponent) {
           //   this.todo.canvas.documentView.chartLayers.dataLayer.focus();
           // }
           //this.isReady = true;
-          // XXX TEMP for FFB
-          this._tabDeetsRef.value!.hide('Controls');
         }}
       >
         <fizz-tab-panel

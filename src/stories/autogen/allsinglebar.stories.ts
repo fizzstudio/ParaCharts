@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('bar', true);
 
 const meta = {
-  title: "Chart/Bar Single Charts",
+  title: "Basic Charts/Bar Single Charts",
   render: (args) => Chart(args),
   argTypes: {
     filename: {
@@ -25,25 +25,6 @@ export const AllSingleBarCharts: Story = {
   name: 'All Bar Single Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "bar",
-    /*keybindings: { // change to keybindingsFile: './sample_keybindings.json',
-      "chart": {
-        "a": {
-          "action": "move_left"
-        },
-        "d": {
-          "action": "move_right"
-        },
-        "w": {
-          "action": "move_up"
-        },
-        "s": {
-          "action": "move_down"
-        }
-      }
-    }*/
   }
 };

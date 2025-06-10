@@ -57,6 +57,7 @@ export interface UISettings extends SettingGroup {
   speechRate: number;
   isFullScreenEnabled: boolean;
   isLowVisionModeEnabled: boolean;
+  lowVisionStrokeWidth: number;
 }
 
 /** @public */
@@ -229,7 +230,7 @@ export interface AxesSettings extends SettingGroup {
   vert: OrientedAxisSettings<'vert'>;
 }
 
-export type LegendItemOrder = 'lexical' | 'chart';
+export type LegendItemOrder = 'alphabetical' | 'series';
 
 /** @public */
 export interface LegendSettings extends SettingGroup {

@@ -136,7 +136,7 @@ export const defaults: Settings = {
     pairGap: 30,
     position: 'east',
     margin: 20,
-    itemOrder: 'chart'
+    itemOrder: 'series'
   },
   type: {
     bar: {
@@ -298,10 +298,11 @@ export const defaults: Settings = {
     isAnnouncementEnabled: true,
     speechRate: 1,
     isFullScreenEnabled: false,
-    isLowVisionModeEnabled: false
+    isLowVisionModeEnabled: false,
+    lowVisionStrokeWidth: 15,
   },
   controlPanel: {
-    isControlPanelDefaultOpen: true,
+    isControlPanelDefaultOpen: false,
     tabLabelStyle: 'label',
     isCaptionVisible: true,
     isStatusBarVisible: true,

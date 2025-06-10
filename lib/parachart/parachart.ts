@@ -28,6 +28,7 @@ import { type AriaLive } from '../components';
 import '../components/aria_live';
 import { ParaStore } from '../store';
 import { ParaLoader, type SourceKind } from '../loader/paraloader';
+import { CustomPropertyLoader } from '../store/custom_property_loader';
 import { styles } from '../view/styles';
 
 import { Manifest } from '@fizz/paramanifest';
@@ -37,6 +38,7 @@ import { customElement, property, queryAssignedElements } from 'lit/decorators.j
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { SlotLoader } from '../loader/slotloader';
+import { SeriesAnalyzerConstructor } from '@fizz/paramodel';
 
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
@@ -55,16 +57,24 @@ export class ParaChart extends logging(ParaComponent) {
   protected _loader = new ParaLoader();
   private _slotLoader = new SlotLoader();
 
-  protected _inputSettings: SettingsInput = {};
   private data?: AllSeriesData;
   protected _suppleteSettingsWith?: DeepReadonly<Settings>;
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
 
-  constructor() {
+  constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor) {
     super();
+    const customPropLoader = new CustomPropertyLoader();
+    const cssProps = customPropLoader.processProperties();
     // also creates the state controller
-    this.store = new ParaStore(this._inputSettings, this._suppleteSettingsWith);
+    this.store = new ParaStore(
+      Object.assign(cssProps, this.config),
+      this._suppleteSettingsWith,
+      seriesAnalyzerConstructor);
+    customPropLoader.store = this.store;
+    customPropLoader.registerColors();
+    customPropLoader.registerSymbols();
+
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
         resolve();

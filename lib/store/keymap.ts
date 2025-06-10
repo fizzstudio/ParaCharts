@@ -165,5 +165,9 @@ export const keymap: KeyRegistrations = {
     label: 'Toggle chord mode',
     caseSensitive: false,
     action: 'chord_mode_toggle'
+  },
+  'Ctrl+Shift+V': {
+    label: 'Announce version info',
+    action: 'announce_version_info'
   }
 };

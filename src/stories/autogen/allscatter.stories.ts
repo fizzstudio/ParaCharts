@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('scatter', false);
 
 const meta = {
-  title: "Chart/Scatter Charts",
+  title: "Basic Charts/Scatter Charts",
   render: (args) => Chart(args),
   argTypes: {
     filename: {
@@ -25,25 +25,6 @@ export const AllScatterCharts: Story = {
   name: 'All Scatter Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "scatter",
-    /*keybindings: { // change to keybindingsFile: './sample_keybindings.json',
-      "chart": {
-        "a": {
-          "action": "move_left"
-        },
-        "d": {
-          "action": "move_right"
-        },
-        "w": {
-          "action": "move_up"
-        },
-        "s": {
-          "action": "move_down"
-        }
-      }
-    }*/
   }
 };

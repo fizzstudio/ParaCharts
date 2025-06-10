@@ -19,6 +19,7 @@ import { ref } from 'lit/directives/ref.js';
 import { ChartLayer } from './chartlayer';
 import { type ChartLayerManager } from './chartlayermanager';
 import { type Setting, type PlotSettings, type DeepReadonly } from '../store/settings_types';
+import { defaults } from '../store/settings_defaults';
 import { Sonifier } from '../audio/sonifier';
 //import { type Model, type DatapointReference } from '../data/model';
 //import { type ActionRegistration } from '../input';
@@ -154,9 +155,20 @@ export abstract class DataLayer extends ChartLayer {
           draft.ui.isLowVisionModeEnabled = !draft.ui.isLowVisionModeEnabled;
           this.paraview.store.announce(
             `Low vision mode ${draft.ui.isLowVisionModeEnabled ? 'enabled' : 'disabled'}`);
+          if (draft.ui.isLowVisionModeEnabled) {
+            draft.color.isDarkModeEnabled = true;
+            draft.chart.strokeWidth = draft.ui.lowVisionStrokeWidth;
+            draft.ui.isFullScreenEnabled = true;
+          } else {
+            draft.color.isDarkModeEnabled = false;
+            draft.chart.strokeWidth = defaults.chart.strokeWidth;
+            draft.ui.isFullScreenEnabled = false;
+          }
         });
       } else if (e.action === 'open_help') {
         this.paraview.paraChart.controlPanel.showHelpDialog();
+      } else if (e.action === 'announce_version_info') {
+        this.paraview.store.announce(`Version ${__APP_VERSION__}; commit ${__COMMIT_HASH__}`)
       }
     });
   }

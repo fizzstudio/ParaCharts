@@ -9,7 +9,8 @@ import { AxisOrientation } from '@fizz/paramodel';
 import { BasicXYChartSummarizer } from '@fizz/parasummary';
 import { ButtonDescriptor } from '@fizz/ui-components';
 import { ChartType as ChartType_2 } from '@fizz/paramanifest';
-import { ClassInfo } from 'lit/directives/class-map.js';
+import { ClassInfo } from 'lit-html/directives/class-map.js';
+import { ClassInfo as ClassInfo_2 } from 'lit/directives/class-map.js';
 import { CSSResult } from 'lit';
 import { DataPoint } from '@fizz/paramodel';
 import { Datatype } from '@fizz/dataframe';
@@ -35,6 +36,7 @@ import { Ref as Ref_2 } from 'lit/directives/ref.js';
 import { RefDirective } from 'lit-html/directives/ref.js';
 import * as sb from '@fizz/sparkbraille-component';
 import { Series } from '@fizz/paramodel';
+import { SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { Size2d } from '@fizz/chart-classifier-utils';
 import { State } from '@lit-app/state';
 import { StateController } from '@lit-app/state';
@@ -61,7 +63,7 @@ export { Manifest }
 //
 // @public (undocumented)
 export class ParaChart extends ParaChart_base {
-    constructor();
+    constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor);
     // Warning: (ae-forgotten-export) The symbol "AriaLive" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
@@ -86,8 +88,6 @@ export class ParaChart extends ParaChart_base {
     accessor forcecharttype: ChartType_2 | undefined;
     // (undocumented)
     headless: boolean;
-    // (undocumented)
-    protected _inputSettings: SettingsInput;
     // (undocumented)
     get loaded(): Promise<void> | null;
     // (undocumented)

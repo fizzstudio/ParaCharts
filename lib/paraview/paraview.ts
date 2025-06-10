@@ -241,7 +241,6 @@ export class ParaView extends logging(ParaComponent) {
         this.dataUpdated();
       }
     });
-
     this._computeViewBox();
   }
 
@@ -273,6 +272,46 @@ export class ParaView extends logging(ParaComponent) {
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     this.log('ready');
+    
+    this._store.observeSetting('ui.isFullScreenEnabled', (_oldVal, newVal) => {
+      if (newVal) {
+        try {
+          this.root!.requestFullscreen();
+        } catch {
+          console.error('failed to enter fullscreen');
+          this._store.updateSettings(draft => {
+            draft.ui.isFullScreenEnabled = false;
+          }, true);
+        }
+      } else {
+        try {
+          document.exitFullscreen();
+        } catch {
+          console.error('failed to exit fullscreen');
+          this._store.updateSettings(draft => {
+            draft.ui.isFullScreenEnabled = true;
+          }, true);
+        }
+      }
+    });
+    this.root!.addEventListener('fullscreenchange', () => {
+      if (document.fullscreenElement) {
+        if (!this._store.settings.ui.isFullScreenEnabled) {
+          // fullscreen was entered manually
+          this._store.updateSettings(draft => {
+            draft.ui.isFullScreenEnabled = true;
+          }, true);
+        }
+      } else {
+        if (this._store.settings.ui.isFullScreenEnabled) {
+          // fullscreen was exited manually
+          this._store.updateSettings(draft => {
+            draft.ui.isFullScreenEnabled = false;
+          }, true);
+        }
+      }
+    });
+
     this.dispatchEvent(new CustomEvent('paraviewready', {bubbles: true, composed: true, cancelable: true}));
   }
 

@@ -18,6 +18,7 @@ import { type TemplateResult, svg, nothing } from 'lit';
 import { svg as staticSvg, StaticValue } from 'lit/static-html.js';
 import { ref } from 'lit/directives/ref.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
+import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
 /*import { 
   HotkeyActionManager, EventActionManager, type KeyRegistrations, KeymapManager,
@@ -717,7 +718,7 @@ export class View extends BaseView {
 }
 
 export interface ContainableI {
-  get classInfo(): string;
+  get classInfo(): ClassInfo;
   get styleInfo(): StyleInfo;
   get role(): string;
   get roleDescription(): string;
@@ -743,7 +744,7 @@ export function Container<TBase extends Containable>(Base: TBase) {
         <g
           ${this.ref}
           id=${this.id || nothing}
-          class=${this.classInfo || nothing}
+          class=${this.classInfo ? classMap(this.classInfo) : nothing}
           style=${this.styleInfo ? styleMap(this.styleInfo) : nothing}
           role=${this.role || nothing}
           aria-roledescription=${this.roleDescription || nothing}

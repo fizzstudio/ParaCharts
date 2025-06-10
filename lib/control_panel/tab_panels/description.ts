@@ -1,5 +1,6 @@
 
 //import { styles } from '../../styles';
+import { BasicXYChartSummarizer } from '@fizz/parasummary';
 import { ControlPanelTabPanel } from './tab_panel';
 
 import { html, css } from 'lit';
@@ -10,8 +11,10 @@ import { styleMap } from 'lit/directives/style-map.js';
 @customElement('para-description-panel')
 export class DescriptionPanel extends ControlPanelTabPanel {
 
-  @state() caption = '';
+  @property() caption = '';
   @property() visibleStatus = '';
+
+  private _summarizer?: BasicXYChartSummarizer;
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -34,6 +37,11 @@ export class DescriptionPanel extends ControlPanelTabPanel {
     `
   ];
 
+  connectedCallback(): void {
+    super.connectedCallback();
+    this._store.subscribe(this.setCaption.bind(this));
+  }
+
   // get speechRate() {
   //   return this._controller.voice.rate;
   // }
@@ -46,15 +54,21 @@ export class DescriptionPanel extends ControlPanelTabPanel {
     this._controlPanel.paraChart.clearAriaLive();
   }
 
+  private async setCaption(): Promise<void> {
+    if (this.controlPanel.dataState === 'complete') {
+      if (!this._summarizer) {
+        this._summarizer = new BasicXYChartSummarizer(this.store.model!);
+      }
+      this.caption = await this._summarizer.getChartSummary();
+    }
+  }
+
   render() {
     const styles = {
       display: 'flex',
       flexDirection: 'column',
       gap: '0.5rem'
     };
-    if (this.controlPanel.dataState === 'complete') {
-      this.caption = this._store.summarizer.getChartSummary();
-    }
     return html`
       <figcaption>
         <div id="description" style=${styleMap(styles)}>

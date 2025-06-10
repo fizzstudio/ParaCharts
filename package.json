@@ -1,6 +1,6 @@
 {
   "name": "@fizz/paracharts",
-  "version": "0.28.1",
+  "version": "0.30.0",
   "description": "Not quite Parable Charts",
   "contributors": [
     "Josh Fennell",
@@ -24,11 +24,11 @@
   "homepage": "https://github.com/fizzstudio/paracharts#readme",
   "type": "module",
   "scripts": {
-    "demo": "vite --port 5176",
-    "headless": "vite --port 5177 --open src/demo/headless.html",
-    "demo:ai": "vite --port 5178 --open src/ai/ai.html",
+    "demo:headless": "vite --port 5177 --open src/demo/headless/vite/headless.html",
+    "demo:ai": "vite --port 5178 --open src/demo/ai/ai.html",
     "build": "rimraf dist && tsc && vite build && api-extractor run --local --verbose",
     "build:ai": "rimraf dist-ai && tsc --project ai.tsconfig.json && vite build --config ai.vite.config.ts && api-extractor run --local --verbose --config ai.api-extractor.json",
+    "build:stories": "node src/stories/storiesBuilder.ts",
     "pretest": "npm run build",
     "test": "vitest",
     "doc": "api-documenter markdown --input-folder ./temp --output-folder ./docs",
@@ -38,8 +38,7 @@
     "dev": "storybook dev --no-open -p 5180",
     "storybook": "storybook dev -p 5180",
     "build-storybook": "storybook build",
-    "test-storybook": "test-storybook",
-    "build-stories": "node src/stories/storiesBuilder.ts"
+    "test-storybook": "test-storybook"
   },
   "files": [
     "dist"
@@ -50,7 +49,7 @@
   },
   "types": "./dist/paracharts.d.ts",
   "devDependencies": {
-    "@fizz/chart-data": "^2.1.6-alpha.7",
+    "@fizz/chart-data": "^2.1.6-alpha.9",
     "@fizz/line-chart-intersection": "^3.4.0",
     "@fizz/line-chart-ui-utils": "^0.7.0",
     "@fizz/test-utils": "^0.2.0",
@@ -87,13 +86,13 @@
     "@fizz/grammatize-information": "^1.5.0",
     "@fizz/line-chart-metadata": "^4.7.4-alpha.0",
     "@fizz/line-chart-parameters": "^1.0.1",
-    "@fizz/paramanifest": "^0.3.2",
-    "@fizz/paramodel": "^0.1.7-alpha.0",
-    "@fizz/parasummary": "^0.2.2-alpha.7",
+    "@fizz/paramanifest": "^0.3.3-alpha.0",
+    "@fizz/paramodel": "^0.1.9-alpha.8",
+    "@fizz/parasummary": "^0.3.2-alpha.1",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.4.2",
     "@fizz/todocharts": "^0.129.6",
-    "@fizz/ui-components": "^0.69.3",
+    "@fizz/ui-components": "^0.69.4",
     "@lit-app/state": "^1.0.1",
     "decimal.js": "^10.4.3",
     "immer": "^10.1.1",
@@ -104,7 +103,7 @@
     "typescript-memoize": "^1.1.1"
   },
   "optionalDependencies": {
-    "@fizz/series-analyzer": "0.13.7"
+    "@fizz/series-analyzer": "^0.13.8"
   },
   "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b"
 }
