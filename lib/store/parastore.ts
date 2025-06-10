@@ -15,14 +15,18 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { State, property } from '@lit-app/state';
-import { produce } from 'immer';
+import { produceWithPatches, enablePatches } from 'immer';
+enablePatches();
 
 import { dataFromManifest, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
 import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature 
   } from '@fizz/paramodel';
 import { FormatType } from '@fizz/parasummary';
 
-import { DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext } from './settings_types';
+import {
+  DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
+  type Setting
+} from './settings_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
 import { defaults } from './settings_defaults';
@@ -46,6 +50,8 @@ export interface Announcement {
   clear?: boolean;
 }
 
+export type SettingObserver = (oldValue: Setting, newValue: Setting) => void;
+
 export class ParaStore extends State {
 
   readonly symbols = new DataSymbols();
@@ -66,6 +72,7 @@ export class ParaStore extends State {
   @property() protected _prevSelectedDatapoints: DataCursor[] = [];
 
   protected _settingControls = new SettingControlManager(this); 
+  protected _settingObservers: { [path: string]: SettingObserver[] } = {};
   protected _manifest: Manifest | null = null;
   protected _model: Model | null = null;
   protected _facets: FacetSignature[] | null = null;
@@ -161,8 +168,54 @@ export class ParaStore extends State {
     }
   }
 
-  updateSettings(updater: (draft: Settings) => void) {
-    this.settings = produce(this.settings, updater);
+  updateSettings(updater: (draft: Settings) => void, ignoreObservers = false) {
+    const [newSettings, patches, inversePatches] = produceWithPatches(this.settings, updater);
+    this.settings = newSettings;
+    if (ignoreObservers) {
+      return;
+    }
+    const observed: { [path: string]: Partial<{oldValue: Setting, newValue: Setting}> } = {};
+    for (const patch of patches) {
+      if (patch.op !== 'replace') {
+        throw new Error(`unexpected patch op '${patch.op}' (${patch.path})`);
+      }
+      observed[patch.path.join('.')] = {newValue: patch.value};
+    }
+    for (const patch of inversePatches) {
+      if (patch.op !== 'replace') {
+        throw new Error(`unexpected patch op '${patch.op}'`);
+      }
+      observed[patch.path.join('.')].oldValue = patch.value;
+    }
+    for (const [path, values] of Object.entries(observed)) {
+      this._settingObservers[path]?.forEach(observer =>
+        observer.call(null, values.oldValue, values.newValue)
+      );
+    }
+  }
+
+  observeSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
+    if (!this._settingObservers[path]) {
+      this._settingObservers[path] = [];
+    }
+    if (this._settingObservers[path].includes(observer)) {
+      throw new Error(`observer already registered for setting '${path}'`);
+    }
+    this._settingObservers[path].push(observer);
+  }
+
+  unobserveSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
+    if (!this._settingObservers[path]) {
+      throw new Error(`no observers for setting '${path}'`);
+    }
+    const idx = this._settingObservers[path].indexOf(observer);
+    if (idx === -1) {
+      throw new Error(`observer not registered for setting '${path}'`);
+    }
+    this._settingObservers[path].splice(idx, 1);
+    if (this._settingObservers[path].length === 0) {
+      delete this._settingObservers[path];
+    }
   }
 
   prependAnnouncement(msg: string) {

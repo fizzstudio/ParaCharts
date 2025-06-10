@@ -298,7 +298,8 @@ export const defaults: Settings = {
     isAnnouncementEnabled: true,
     speechRate: 1,
     isFullScreenEnabled: false,
-    isLowVisionModeEnabled: false
+    isLowVisionModeEnabled: false,
+    lowVisionStrokeWidth: 15,
   },
   controlPanel: {
     isControlPanelDefaultOpen: false,

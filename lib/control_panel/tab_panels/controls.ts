@@ -86,7 +86,9 @@ export class ControlsPanel extends ControlPanelTabPanel {
             Keyboard Controls
           </button>
           <button
-            @click=${() => this.controlPanel.paraChart.paraView.setFullscreen()}
+            @click=${() => this.store.updateSettings(draft => {
+              draft.ui.isFullScreenEnabled = true;
+            })}
           >
             Fullscreen
           </button>

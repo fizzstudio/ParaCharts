@@ -57,6 +57,7 @@ export interface UISettings extends SettingGroup {
   speechRate: number;
   isFullScreenEnabled: boolean;
   isLowVisionModeEnabled: boolean;
+  lowVisionStrokeWidth: number;
 }
 
 /** @public */
