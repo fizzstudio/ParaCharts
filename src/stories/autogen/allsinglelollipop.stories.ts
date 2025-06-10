@@ -25,9 +25,6 @@ export const AllSingleLollipopCharts: Story = {
   name: 'All Lollipop Single Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "lollipop",
   }
 };

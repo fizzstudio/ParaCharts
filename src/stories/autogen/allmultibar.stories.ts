@@ -25,9 +25,6 @@ export const AllMultiBarCharts: Story = {
   name: 'All Bar Multi Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "bar",
   }
 };

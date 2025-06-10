@@ -15,9 +15,6 @@ export const Chart26: Story = {
   name: "843: New York Yankees revenue 2001 to 2018 (26)",
   args: {
     filename: "manifests/autogen/line-single/line-single-manifest-843.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "line",
   }
 }

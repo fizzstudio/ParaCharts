@@ -15,9 +15,6 @@ export const Chart27: Story = {
   name: "881: FedEx's revenue 2009 to 2019 (27)",
   args: {
     filename: "manifests/autogen/line-single/line-single-manifest-881.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "line",
   }
 }

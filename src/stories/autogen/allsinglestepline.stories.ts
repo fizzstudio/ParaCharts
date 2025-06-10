@@ -25,9 +25,6 @@ export const AllSingleSteplineCharts: Story = {
   name: 'All Stepline Single Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "stepline",
   }
 };

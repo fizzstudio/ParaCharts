@@ -15,9 +15,6 @@ export const Chart5: Story = {
   name: "233: Advertising spending in Vietnam 2004-2018, by medium (5)",
   args: {
     filename: "manifests/autogen/line-multi/line-multi-manifest-233.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "stepline",
   }
 }

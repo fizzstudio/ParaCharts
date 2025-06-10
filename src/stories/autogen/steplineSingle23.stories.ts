@@ -15,9 +15,6 @@ export const Chart23: Story = {
   name: "605: Samsung Electronics' operating profit 2009-2019, by quarter (23)",
   args: {
     filename: "manifests/autogen/line-single/line-single-manifest-605.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "stepline",
   }
 }

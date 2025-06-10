@@ -15,9 +15,6 @@ export const Chart40: Story = {
   name: "Division of energy in the Universe (40)",
   args: {
     filename: "manifests/pie-manifest-dark-matter.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "donut",
   }
 }

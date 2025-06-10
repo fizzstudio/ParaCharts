@@ -15,9 +15,6 @@ export const Chart17: Story = {
   name: "328: General Motors - number of employees 2019 (17)",
   args: {
     filename: "manifests/autogen/line-single/line-single-manifest-328.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "line",
   }
 }

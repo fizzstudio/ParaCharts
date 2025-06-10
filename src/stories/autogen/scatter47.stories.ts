@@ -15,9 +15,6 @@ export const Chart47: Story = {
   name: "Iris Flower Data Set (47)",
   args: {
     filename: "manifests/scatter-manifest-iris-petal.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "scatter",
   }
 }

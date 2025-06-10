@@ -15,9 +15,6 @@ export const Chart9: Story = {
   name: "67: Gross domestic product of the BRIC countries from 2014 to 2024 (9)",
   args: {
     filename: "manifests/autogen/line-multi/line-multi-manifest-67.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "stepline",
   }
 }

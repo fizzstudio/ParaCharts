@@ -25,9 +25,6 @@ export const AllMultiLineCharts: Story = {
   name: 'All Line Multi Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "line",
   }
 };

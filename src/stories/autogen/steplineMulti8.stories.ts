@@ -15,9 +15,6 @@ export const Chart8: Story = {
   name: "57: Distribution of GDP across economic sectors in China 2008 to 2018 (8)",
   args: {
     filename: "manifests/autogen/line-multi/line-multi-manifest-57.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "stepline",
   }
 }

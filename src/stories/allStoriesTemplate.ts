@@ -25,9 +25,6 @@ export const %(storyName)s: Story = {
   name: 'All %(chartFolder)s',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "%(chartType)s",
   }
 };
