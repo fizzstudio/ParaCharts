@@ -7,16 +7,16 @@ import fs from 'node:fs';
 
 import { type CatalogListing } from '@fizz/chart-data';
 
-import { template } from './storyTemplate.ts';
+import { basicTemplate } from './basicStoryTemplate.ts';
 import { type ChartFamily, FAMILY_MEMBERS, familyCatalogMap, familyCatalogMapMulti} 
   from './chartSelectorHelper.ts';
 import { allTemplate } from './allStoriesTemplate.ts';
 import { type ChartType } from '@fizz/paramanifest';
-//import { capitalize } from '../../lib/common/utils.ts';
+import { capitalize } from '../../lib/common/utils.ts';
 
-function capitalize(string: string) {
+/*function capitalize(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
-}
+}*/
 
 const AUTOGEN_PATH = './src/stories/autogen/'
 
@@ -30,7 +30,7 @@ function generateStory(
 ): void {
   const typeFolder = capitalize(chartType) + ' Charts';
   const topFolder = 'Basic Charts'
-  const code = printf(template, { manifestTitle, typeFolder, topFolder, manifestPath, index, chartType });
+  const code = printf(basicTemplate, { manifestTitle, typeFolder, topFolder, manifestPath, index, chartType });
   fs.writeFileSync(`${AUTOGEN_PATH}${chartType}${index}.stories.ts`, code, 'utf8');
 }
 
@@ -43,7 +43,7 @@ function generateStoryMulti(
 ): void {
   const multiText = multi ? 'Multi' : 'Single';
   const chartFolder = `${capitalize(chartType)} ${multiText} Charts`;
-  const code = printf(template, { manifestTitle, chartFolder, manifestPath, index, chartType });
+  const code = printf(basicTemplate, { manifestTitle, chartFolder, manifestPath, index, chartType });
   fs.writeFileSync(`${AUTOGEN_PATH}${chartType}${multiText}${index}.stories.ts`, code, 'utf8');
 }
 

@@ -1,4 +1,4 @@
-export const template = `import { Chart, type ChartProps } from '../Chart';
+export const basicTemplate = `import { Chart, type ChartProps } from '../Chart';
 
 import type { Meta, StoryObj } from '@storybook/web-components';
 
