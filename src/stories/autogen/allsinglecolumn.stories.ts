@@ -25,9 +25,6 @@ export const AllSingleColumnCharts: Story = {
   name: 'All Column Single Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "column",
   }
 };

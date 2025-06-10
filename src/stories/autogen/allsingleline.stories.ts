@@ -25,9 +25,6 @@ export const AllSingleLineCharts: Story = {
   name: 'All Line Single Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "line",
   }
 };

@@ -25,9 +25,6 @@ export const AllMultiLollipopCharts: Story = {
   name: 'All Lollipop Multi Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "lollipop",
   }
 };

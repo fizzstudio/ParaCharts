@@ -196,7 +196,7 @@ export class BarChart extends XYChart {
     });
     todo().deets!.chartPanel.requestUpdate();*/
     if (this.paraview.store.settings.type.bar.isAbbrevSeries) {
-      this._abbrevs = abbreviateSeries(this.paraview.store.model!.seriesKeys);
+      this._abbrevs = abbreviateSeries(this.paraview.store.model!.keys);
     }
   }
 
@@ -448,7 +448,7 @@ export class BarChart extends XYChart {
         color: (view as SeriesView).color  // series color
       }));
     } else {
-      return this.paraview.store.model!.seriesKeys.toSorted().map(key => ({
+      return this.paraview.store.model!.keys.toSorted().map(key => ({
         label: key,
         color: this.paraview.store.seriesProperties!.properties(key).color
       }));

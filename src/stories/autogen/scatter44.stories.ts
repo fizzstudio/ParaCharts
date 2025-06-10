@@ -15,9 +15,6 @@ export const Chart44: Story = {
   name: "Old Faithful Geyser Eruptions (44)",
   args: {
     filename: "manifests/scatter-manifest-geyser.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "scatter",
   }
 }

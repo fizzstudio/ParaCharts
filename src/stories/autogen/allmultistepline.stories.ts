@@ -25,9 +25,6 @@ export const AllMultiSteplineCharts: Story = {
   name: 'All Stepline Multi Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "stepline",
   }
 };

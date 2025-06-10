@@ -25,9 +25,6 @@ export const AllPieCharts: Story = {
   name: 'All Pie Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "pie",
   }
 };

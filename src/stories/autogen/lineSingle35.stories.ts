@@ -15,9 +15,6 @@ export const Chart35: Story = {
   name: "Charizard: Holographic Charizard Card Price (35)",
   args: {
     filename: "manifests/autogen/line-single/line-single-manifest-Charizard.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "line",
   }
 }

@@ -25,9 +25,6 @@ export const AllSingleBarCharts: Story = {
   name: 'All Bar Single Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "bar",
   }
 };

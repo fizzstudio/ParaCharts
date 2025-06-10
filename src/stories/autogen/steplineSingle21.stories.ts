@@ -15,9 +15,6 @@ export const Chart21: Story = {
   name: "541: USA - number of arrests for all offenses 1990 to 2018 (21)",
   args: {
     filename: "manifests/autogen/line-single/line-single-manifest-541.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "stepline",
   }
 }

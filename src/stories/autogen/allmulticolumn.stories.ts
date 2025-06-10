@@ -25,9 +25,6 @@ export const AllMultiColumnCharts: Story = {
   name: 'All Column Multi Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "column",
   }
 };

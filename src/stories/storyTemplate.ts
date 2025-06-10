@@ -15,9 +15,6 @@ export const Chart%(index)s: Story = {
   name: "%(manifestTitle)s",
   args: {
     filename: "%(manifestPath)s",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "%(chartType)s",
   }
 }

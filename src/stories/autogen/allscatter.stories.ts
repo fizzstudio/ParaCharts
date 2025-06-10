@@ -25,9 +25,6 @@ export const AllScatterCharts: Story = {
   name: 'All Scatter Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "scatter",
   }
 };

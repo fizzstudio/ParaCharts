@@ -15,9 +15,6 @@ export const Chart13: Story = {
   name: "1066: Median age of the population in Vietnam 2015 (13)",
   args: {
     filename: "manifests/autogen/line-single/line-single-manifest-1066.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "stepline",
   }
 }

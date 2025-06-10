@@ -180,13 +180,15 @@ export class ParaStore extends State {
     const observed: { [path: string]: Partial<{oldValue: Setting, newValue: Setting}> } = {};
     for (const patch of patches) {
       if (patch.op !== 'replace') {
-        throw new Error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        console.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        continue;
       }
       observed[patch.path.join('.')] = {newValue: patch.value};
     }
     for (const patch of inversePatches) {
       if (patch.op !== 'replace') {
-        throw new Error(`unexpected patch op '${patch.op}'`);
+        console.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        continue;
       }
       observed[patch.path.join('.')].oldValue = patch.value;
     }

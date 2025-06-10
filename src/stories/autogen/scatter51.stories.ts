@@ -15,9 +15,6 @@ export const Chart51: Story = {
   name: "s2 (51)",
   args: {
     filename: "manifests/scatter-manifest-s2.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "scatter",
   }
 }
