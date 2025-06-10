@@ -263,6 +263,10 @@ export class ParaStore extends State {
       cursor.seriesKey === seriesKey);
   }
 
+  clearVisited(){
+    this._visitedDatapoints = []
+  }
+
   get selectedDatapoints() {
     return this._selectedDatapoints;
   }
@@ -318,6 +322,10 @@ export class ParaStore extends State {
   wasSelectedSeries(seriesKey: string) {
     return !!this._prevSelectedDatapoints.find(cursor =>
       cursor.seriesKey === seriesKey);
+  }
+
+  clearSelected(){
+    this._selectedDatapoints = []
   }
 
   getFormatType(context: FormatContext): FormatType {

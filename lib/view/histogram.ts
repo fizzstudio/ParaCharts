@@ -10,6 +10,8 @@ import { DataCursor } from "../store";
 import { ParaView } from "../paraview";
 import { enumerate, strToId } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
+import { Rect } from "./shape/rect";
+import { Shape } from "./shape/shape";
 export class Histogram extends XYChart {
     protected _bins: number;
     protected _data: Array<Array<number>> = [];
@@ -24,7 +26,10 @@ export class Histogram extends XYChart {
         this._settings = this.paraview.store.settings.type.histogram;
         this._bins = this.paraview.store.settings.type.histogram.bins ?? 20
         this._generateBins();
-       
+        this.paraview.store.clearVisited();
+        this.paraview.store.clearSelected();
+        console.log('visited in constructor')
+        console.log(this.paraview.store.visitedDatapoints)
     }
 
 
@@ -48,8 +53,6 @@ export class Histogram extends XYChart {
 
         const targetAxis = this.settings.groupingAxis as DeepReadonly<string | undefined> 
                             ?? this.paraview.store.model?.facets.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)[0]
-        console.log("targetAxis")
-        console.log(targetAxis)
         let targetFacet;
         for (let facet of this.paraview.store.model!.facets){
             if (this.paraview.store.model!.getFacet(facet.key as string)!.label == targetAxis){
@@ -63,18 +66,7 @@ export class Histogram extends XYChart {
         }
         else{
             nonTargetFacet = "y"
-        }
-
-        //console.log("targetFacet")
-        //console.log(targetFacet)
-        //console.log("nonTargetFacet")
-        //console.log(nonTargetFacet)
-        this.settings
-
-
-
-
-   
+        }   
         if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined){
             this._axisInfo = new AxisInfo(this.paraview.store, {
                   xValues: this.paraview.store.model!.allFacetValues(targetFacet!)!.map((x) => x.value as number),
@@ -129,10 +121,7 @@ export class Histogram extends XYChart {
 */
 
     get datapointViews() {
-        //console.log("HISTAGRAM DATAPOINTVIEWS CALL")
-        //console.trace()
-        //console.log(super.datapointViews)
-        return super.datapointViews as HistogramDatapointView[];
+        return super.datapointViews;
     }
 
     get grid() {
@@ -147,7 +136,7 @@ export class Histogram extends XYChart {
     }
 
     protected _newDatapointView(seriesView: XYSeriesView) {
-        return new HistogramDatapointView(seriesView);
+        return new HistogramBinView(this, seriesView);
     }
 
     protected _beginLayout() {
@@ -186,7 +175,7 @@ export class Histogram extends XYChart {
                 //todo().canvas.jimerator.addSelector(col.name!, j, datapointView.id);
             }
             for (let i = 0; i < this._bins; i++) {
-                const bin = new HistogramBinView(this, seriesView.seriesKey);
+                const bin = new HistogramBinView(this, seriesView);
                 seriesView.append(bin)
             }
         }
@@ -209,7 +198,7 @@ export class Histogram extends XYChart {
     */
     protected _layoutDatapoints() {
         for (const datapointView of this.datapointViews) {
-            datapointView.computeLayout();
+            datapointView.completeLayout();
         }
     }
 
@@ -332,7 +321,7 @@ export class Histogram extends XYChart {
     moveLeft() {
         const leaf = this._chartLandingView.focusLeaf;
         if (leaf instanceof HistogramBinView) {
-            if (!leaf.prev || leaf.prev instanceof HistogramDatapointView) {
+            if (!leaf.prev) {
                 //leaf.blur(false)
                 //this._eventActionManager!.dispatch('series_endpoint_reached');
             }
@@ -344,19 +333,35 @@ export class Histogram extends XYChart {
     
     moveDown() {
         const leaf = this._chartLandingView.focusLeaf;
-        if (leaf instanceof DatapointView) {
+        //console.log("leaf")
+        //console.log(leaf)
+        if (leaf instanceof HistogramBinView) {
+            /*
             const nsi = leaf.nextSameIndexer;
+            console.log(nsi)
             if (nsi) {
-                leaf.blur(false);
+                console.log("test1")
+                //leaf.blur(false);
                 nsi.focus();
                 //this._sonifier.playNotification('series');
             } else {
+                console.log("test2")
+                leaf.prev!.focus();
                 //this._eventActionManager!.dispatch('final_series_reached');
                 return;
             }
+                */
+            if (!leaf.prev) {
+                //leaf.blur(false)
+                //this._eventActionManager!.dispatch('series_endpoint_reached');
+            }
+            else {
+                //console.log(leaf.next)
+                leaf.prev!.focus();
+            }
         } else if (leaf instanceof SeriesView) {
             if (!leaf.next) {
-                //this._eventActionManager!.dispatch('final_series_reached');
+                this._chartLandingView.children[0].children[0].focus();
                 return;
             } else {
                 leaf.next!.focus();
@@ -364,20 +369,9 @@ export class Histogram extends XYChart {
             }
         } else {
             // At chart root, so move to the first series landing 
-            this._chartLandingView.children[0].children[this.paraview.store.model!.series[0].length].focus();
+            //console.log("going to series focus")
+            this._chartLandingView.children[0].focus(); 
         }
-        /*
-        const leaf = this._chartLandingView.focusLeaf;
-        if (leaf instanceof HistogramBinView) {
-            if (!leaf.prev || leaf.prev instanceof HistogramDatapointView) {
-                //leaf.blur(false)
-                //this._eventActionManager!.dispatch('series_endpoint_reached');
-            }
-            else {
-                leaf.prev!.focus();
-            }
-        }
-            */
     }
 
     moveUp() {
@@ -395,97 +389,7 @@ export class Histogram extends XYChart {
 
 }
 
-export class HistogramDatapointView extends XYDatapointView {
-
-    declare readonly chart: Histogram;
-    declare protected _parent: XYSeriesView;
-
-    protected _height!: number;
-    protected _width!: number;
-    protected _color: number = 0;
-
-    constructor(
-        seriesView: XYSeriesView,
-    ) {
-        super(seriesView);
-        this._id = [
-                'datapoint-unused',
-                strToId(this.seriesKey),
-                `${this._x}`,
-                `${this._y}`
-            ].join('-');
-    }
-
-    get width() {
-        return this._width;
-    }
-
-    get height() {
-        return this._height;
-    }
-
-    get color() {
-        return this._color
-    }
-
-    get _selectedMarkerX() {
-        return this._x;
-    }
-
-    get _selectedMarkerY() {
-        return this._y;
-    }
-
-    // protected get visitedTransform() {
-    //   return 'scaleX(1.15)';
-    // }
-
-    computeLayout() {
-        /*
-        const orderIdx = Object.keys(this.stack.bars).indexOf(this.series.name!);
-        const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
-          .map(bar => bar._height)
-          .reduce((a, b) => a + b, 0);
-        const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
-        this._height = this.datapoint.y.number*pxPerYUnit;
-        this._x = this.stack.x + this.stack.cluster.x;
-        this._y = this.chart.height - this._height - distFromXAxis;
-        */
-        if (this.chart.settings.displayAxis == "x" || undefined){
-            this._height = this.chart.height / this.chart.bins;
-            this._width = this.chart.width / this.chart.bins;
-            this._x = this.index % this.chart.bins * this._width
-            this._y = Math.floor(this.index / this.chart.bins) * this._height
-        }
-        
-    }
-
-    protected get _d() {
-
-        return fixed`
-      M${this._x},${this._y}
-      v${this._height}
-      h${this._width}
-      v${-1 * this._height}
-      Z`;
-    }
-
-    render() {
-        // 'stacked' === this.paraChart.multiseries && this.params.yInfo.stackOffset ?
-        // aria-labelledby="${this.params.labelId}"
-        //const visitedScale = this._isVisited ? this.chart.settings.highlightScale : 1;
-        const visitedScale = 1.5
-        const styles = {
-            strokeWidth: 2 * visitedScale,
-            fill: this.color,
-            stroke: "white"
-        };
-        return svg``;
-    }
-
-}
-
-export class HistogramBinView extends DataView {
+export class HistogramBinView extends DatapointView {
 
     declare readonly chart: Histogram;
     declare protected _parent: XYSeriesView;
@@ -496,10 +400,10 @@ export class HistogramBinView extends DataView {
     protected isVisited: boolean = false;
     constructor(
         chart: Histogram,
-        seriesKey: string
+        series: SeriesView
     ) {
 
-        super(chart, seriesKey);
+        super(series);
     }
 
     get width() {
@@ -522,13 +426,25 @@ export class HistogramBinView extends DataView {
         return this._y;
     }
 
+    get selectedMarker(): Shape {
+        return new Rect(this.paraview, {
+          width: this._width,
+          height: this._height,
+          x: this._x,
+          y: this._y - this._height,
+          fill: 'none',
+          stroke: 'black',
+          strokeWidth: 4
+        });
+      }
+
     // protected get visitedTransform() {
     //   return 'scaleX(1.15)';
     // }
 
-    protected computeLocation(){
+    computeLocation(){
     }
-    protected layoutSymbol(){
+    layoutSymbol(){
     }
     /*
      completeLayout() {
@@ -657,3 +573,96 @@ export class HistogramBinView extends DataView {
     }
 
 }
+
+
+/*
+export class HistogramDatapointView extends XYDatapointView {
+
+    declare readonly chart: Histogram;
+    declare protected _parent: XYSeriesView;
+
+    protected _height!: number;
+    protected _width!: number;
+    protected _color: number = 0;
+
+    constructor(
+        seriesView: XYSeriesView,
+    ) {
+        super(seriesView);
+        this._id = [
+                'datapoint-unused',
+                strToId(this.seriesKey),
+                `${this._x}`,
+                `${this._y}`
+            ].join('-');
+    }
+
+    get width() {
+        return this._width;
+    }
+
+    get height() {
+        return this._height;
+    }
+
+    get color() {
+        return this._color
+    }
+
+    get _selectedMarkerX() {
+        return this._x;
+    }
+
+    get _selectedMarkerY() {
+        return this._y;
+    }
+
+    // protected get visitedTransform() {
+    //   return 'scaleX(1.15)';
+    // }
+
+    computeLayout() {
+        
+        const orderIdx = Object.keys(this.stack.bars).indexOf(this.series.name!);
+        const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
+          .map(bar => bar._height)
+          .reduce((a, b) => a + b, 0);
+        const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
+        this._height = this.datapoint.y.number*pxPerYUnit;
+        this._x = this.stack.x + this.stack.cluster.x;
+        this._y = this.chart.height - this._height - distFromXAxis;
+        
+        if (this.chart.settings.displayAxis == "x" || undefined){
+            this._height = this.chart.height / this.chart.bins;
+            this._width = this.chart.width / this.chart.bins;
+            this._x = this.index % this.chart.bins * this._width
+            this._y = Math.floor(this.index / this.chart.bins) * this._height
+        }
+        
+    }
+
+    protected get _d() {
+
+        return fixed`
+      M${this._x},${this._y}
+      v${this._height}
+      h${this._width}
+      v${-1 * this._height}
+      Z`;
+    }
+
+    render() {
+        // 'stacked' === this.paraChart.multiseries && this.params.yInfo.stackOffset ?
+        // aria-labelledby="${this.params.labelId}"
+        //const visitedScale = this._isVisited ? this.chart.settings.highlightScale : 1;
+        const visitedScale = 1.5
+        const styles = {
+            strokeWidth: 2 * visitedScale,
+            fill: this.color,
+            stroke: "white"
+        };
+        return svg``;
+    }
+
+}
+*/
