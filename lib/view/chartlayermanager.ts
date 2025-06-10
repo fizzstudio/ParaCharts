@@ -39,6 +39,8 @@ import {
 
 import { type Interval } from '@fizz/chart-classifier-utils';
 
+import { calendarNumber, type CalendarPeriod } from '@fizz/paramodel';
+
 import { svg } from 'lit';
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
@@ -200,10 +202,15 @@ export class ChartLayerManager extends View {
   }
 
   getXAxisInterval(): Interval {
-    if (this.paraview.store.model!.getFacet('x')!.datatype !== 'number') {
-      throw new Error('x-axis intervals not specified for non-numeric x-axes')
+    let xs: number[] = [];
+    if (this.paraview.store.model!.getFacet('x')!.datatype === 'number') {
+      xs = this.paraview.store.model!.allFacetValues('x')!.map((box) => box.value as number);
+    } else if (this.paraview.store.model!.getFacet('x')!.datatype === 'date') { 
+      xs = this.paraview.store.model!.allFacetValues('x')!.map((box) =>
+        calendarNumber(box.value as CalendarPeriod));
+    } else {
+      throw new Error('axis must be of type number or date to take interval');
     }
-    const xs = this.paraview.store.model!. allFacetValues('x')!.map((box) => box.value as number);
     return {start: Math.min(...xs), end: Math.max(...xs)};
   }
 
