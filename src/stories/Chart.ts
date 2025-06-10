@@ -23,6 +23,7 @@ export const Chart = ({
 }: ChartProps) => {
   config ??= {};
   config['legend.itemOrder'] = legendOrder;
+  config['controlPanel.isControlPanelDefaultOpen'] = true;
   return html`
     <style>
       /*
@@ -74,7 +75,7 @@ export const Chart = ({
   <para-chart 
     manifest=${filename}
     manifesttype=${filename.startsWith('/') ? 'url' : 'fizz-chart-data'} 
-    .config=${config ?? nothing}
+    .config=${config}
     forcecharttype=${forcecharttype ?? nothing}
     type=${forcecharttype ?? nothing}
   >
@@ -89,6 +90,7 @@ export const AiChart = ({
 }: ChartProps) => {
   config ??= {};
   config['legend.itemOrder'] = legendOrder;
+  config['controlPanel.isControlPanelDefaultOpen'] = true;
   return html`
     <style>
       /*
@@ -140,7 +142,7 @@ export const AiChart = ({
   <para-chart-ai 
     manifest=${filename}
     manifesttype=${filename.startsWith('/') ? 'url' : 'fizz-chart-data'} 
-    .config=${config ?? nothing}
+    .config=${config}
     forcecharttype=${forcecharttype ?? nothing}
   >
     <span slot="settings"></span>

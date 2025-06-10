@@ -1,7 +1,7 @@
 //import { styles } from '../../styles';
 import { ControlPanelTabPanel } from './tab_panel';
 import { ParaView } from '../../paraview';
-import { SVGNS } from '../../common/constants';
+import '../datatable';
 
 import * as sb from '@fizz/sparkbraille-component';
 import '@fizz/sparkbraille-component';
@@ -132,18 +132,18 @@ export class DataPanel extends ControlPanelTabPanel {
           >
             Save data
           </button>-->
-          <!--<button 
+          <button 
             @click=${() => {
-              // this.controlPanel.dialog.show('Data table', html`
-              //   <todo-datatable
-              //     .model=${this.controller.model}
-              //   >
-              //   </todo-datatable>
-              // `);
+              this.controlPanel.dialog.show('Data table', html`
+                <para-datatable
+                  .model=${this._store.model}
+                >
+                </para-datatable>
+              `);
             }}
           >
             Data table
-          </button>-->
+          </button>
           <!--<button 
             @click=${() => this.controlPanel.dialog.show('Source links')}
           >
