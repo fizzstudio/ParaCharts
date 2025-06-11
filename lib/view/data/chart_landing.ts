@@ -1,6 +1,6 @@
 
 import { View } from '../base_view';
-import { type DataLayer } from '../datalayer';
+import { type DataLayer } from '../layers';
 import { type DataView, type SeriesView, type DatapointView } from '.';
 
 import { svg } from 'lit';

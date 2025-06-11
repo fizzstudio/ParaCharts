@@ -14,8 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Container, View } from './base_view';
-import { type ChartLayerManager } from './chartlayermanager';
+import { Container, View } from '../base_view';
+import { type ChartLayerManager } from '.';
 
 export abstract class ChartLayer extends Container(View) {
 

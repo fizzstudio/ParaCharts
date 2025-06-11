@@ -19,9 +19,9 @@ import { produceWithPatches, enablePatches } from 'immer';
 enablePatches();
 
 import { dataFromManifest, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
-import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature, SeriesAnalyzerConstructor 
+import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature, SeriesAnalyzerConstructor, XYDatapoint 
   } from '@fizz/paramodel';
-import { BasicXYChartSummarizer, FormatType } from '@fizz/parasummary';
+import { BasicXYChartSummarizer, FormatType, formatXYDatapointX } from '@fizz/parasummary';
 
 import {
   DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
@@ -52,6 +52,19 @@ export interface Announcement {
 
 export type SettingObserver = (oldValue: Setting, newValue: Setting) => void;
 
+export interface Annotation {
+  seriesKey: string;
+  index: number;
+  annotation: string;
+  timestamp?: Date;
+}
+
+export interface RangeHighlight {
+  startPortion: number;
+  endPortion: number;
+}
+
+
 export class ParaStore extends State {
 
   readonly symbols = new DataSymbols();
@@ -60,6 +73,7 @@ export class ParaStore extends State {
   @property() settings: Settings;
   @property() darkMode = false;
   @property() announcement: Announcement = { text: '' };
+  @property() annotations: Annotation[] = [];
   @property()  _sparkBrailleData: string = ''
 
   @property() protected data: AllSeriesData | null = null;
@@ -70,6 +84,7 @@ export class ParaStore extends State {
   @property() protected _prevVisitedDatapoints: DataCursor[] = [];
   @property() protected _selectedDatapoints: DataCursor[] = [];
   @property() protected _prevSelectedDatapoints: DataCursor[] = [];
+  @property() protected _rangeHighlights: RangeHighlight[] = [];
 
   protected _settingControls = new SettingControlManager(this); 
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
@@ -100,6 +115,7 @@ export class ParaStore extends State {
     this.subscribe((key, value) => this._propertyChanged(key, value));
     this._colors = new Colors(this);
     this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
+    this._getUrlAnnotations();
   }
 
   get settingControls() {
@@ -128,6 +144,10 @@ export class ParaStore extends State {
 
   get keymapManager() {
     return this._keymapManager;
+  }
+
+  get rangeHighlights() {
+    return this._rangeHighlights;
   }
 
   setManifest(manifest: Manifest, data?: AllSeriesData) {
@@ -384,4 +404,63 @@ export class ParaStore extends State {
     return context === 'domId' ? 'domId' 
       : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.settings) as FormatType;
   }
+
+  addAnnotation() {
+    let newAnnotationList: Annotation[] = [...this.annotations];
+
+    this._selectedDatapoints.forEach((dp) => {
+      const recordLabel = formatXYDatapointX(
+        this._model!.atKeyAndIndex(dp.seriesKey, dp.index) as XYDatapoint, 'raw');
+      let annotationText = prompt('Annotation:') as string;
+      if (annotationText) {
+        newAnnotationList.push({
+          seriesKey: dp.seriesKey,
+          index: dp.index,
+          annotation: `${dp.seriesKey}, ${recordLabel}: ${annotationText}`
+        });
+      }
+    });
+    this.annotations = newAnnotationList;
+  }
+
+  protected _getUrlAnnotations() {
+    const trimText = (textStr: string) => 
+      textStr.replace(/(\r\n|\n|\r)/gm, '').replace(/\s+/g, ' ').trim();
+
+    let location = window.location;
+    let page_url = location.hostname + location.pathname;
+    let page_title = document.title;
+
+    let isAnnotation = false;
+    let query = location.search;
+    if (query) {
+      var url_params = new URLSearchParams(query);
+      let searchStr = url_params.get('text');
+      let note_str = url_params.get('note');
+
+      if (searchStr) {
+        isAnnotation = false;
+        searchStr = trimText(searchStr);
+        // find_text_nodes();
+      }
+    }
+  }
+
+  highlightRange(startPortion: number, endPortion: number) {
+    if (this._rangeHighlights.find(rhl =>
+      rhl.startPortion === startPortion && rhl.endPortion === endPortion)) {
+      throw new Error('range already highlighted');
+    }
+    this._rangeHighlights = [...this._rangeHighlights, {startPortion, endPortion}];
+  }
+
+  unhighlightRange(startPortion: number, endPortion: number) {
+    const index = this._rangeHighlights.findIndex(rhl =>
+      rhl.startPortion === startPortion && rhl.endPortion === endPortion);
+    if (index === -1) {
+      throw new Error('range not highlighted');
+    }
+    this._rangeHighlights = this._rangeHighlights.toSpliced(index, 1);
+  }
+
 }

@@ -18,14 +18,14 @@ import { View, Container, Padding } from './base_view';
 import { Label } from './label';
 import { type CardinalDirection, ParaStore } from '../store';
 import { type ChartType } from '@fizz/paramanifest';
-import { ChartLayerManager } from './chartlayermanager';
+import { ChartLayerManager } from './layers';
 import { HorizAxis, VertAxis, type AxisCoord } from './axis';
 /*import { hotkeyActions } from '../input/defaultactions';
 import { keymaps } from '../input';*/
 import { Legend } from './legend';
 import { GridLayout } from './layout';
 import { SeriesLabelStrip } from './serieslabelstrip';
-import { type LineChart } from './line';
+import { type LineChart } from './layers';
 import { type ParaView } from '../paraview';
 
 export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
@@ -334,11 +334,6 @@ export class DocumentView extends Container(View) {
         margin: {bottom: margin}
       });
     }
-  }
-
-  setLowVisionMode(lvm: boolean) {
-    // XXX May need to do the same for other visual elements as well
-    this._chartLayers.setLowVisionMode(lvm);
   }
 
 }

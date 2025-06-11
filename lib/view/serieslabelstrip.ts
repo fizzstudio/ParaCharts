@@ -20,7 +20,7 @@ import { View, Container } from './base_view';
 
 import { svg } from 'lit';
 import { styleMap, StyleInfo } from 'lit/directives/style-map.js';
-import { type LineChart, type LineSection } from './line';
+import { type LineChart, type LineSection } from './layers';
 
 /**
  * Strip of series labels and leader lines.
