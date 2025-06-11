@@ -192,8 +192,8 @@ export interface AxisSettings extends SettingGroup {
   title: AxisTitleSettings;
   line: AxisLineSettings;
   tick: TickSettings;
-  minValue?: number;
-  maxValue?: number;
+  minValue: number | 'unset';
+  maxValue: number | 'unset';
 }
 
 /** @public */
@@ -310,6 +310,18 @@ export interface ScatterSettings extends PointSettings {
 
 }
 
+/** @public */
+export interface HeatmapSettings extends PointSettings {
+  resolution: number;
+}
+
+export interface HistogramSettings extends PointSettings {
+  bins: number;
+  displayAxis: string;
+  groupingAxis?: string;
+}
+
+
 export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
 /** @public */
@@ -330,6 +342,7 @@ export interface ChartTypeSettings extends SettingGroup {
   column: BarSettings;
   line: LineSettings;
   scatter: ScatterSettings;
+  histogram: HistogramSettings;
   pie: RadialSettings;
   donut: RadialSettings;
   gauge: RadialSettings;

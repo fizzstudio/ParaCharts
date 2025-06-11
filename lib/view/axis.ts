@@ -374,47 +374,52 @@ export class VertAxis extends Axis<'vert'> {
     this.append(this._layout);
   }
 
-  /*protected _addedToParent() {
+  protected _addedToParent() {
     super._addedToParent();
     const range = this.chartLayers.getYAxisInterval();
-    todo().controller.settingViews.add(this, {
+    this.paraview.store.settingControls.add({
       type: 'textfield',
       key: 'axis.y.minValue',
       label: 'Min y-value',
       options: { inputType: 'number' },
       value: this.settings.minValue ?? range?.start,
       validator: value => {
-        const values = this.chartLayers.model.data
-          .dropCols([this.chartLayers.model.indepVar])
-          .mapCols(col => col.numberSeries.data)
-          .flat();
-        const max = Math.min(...values);
+        const yValues = this.paraview.store.model!.allFacetValues('y')!.map((y) => y.value as number)
+        const min = Math.min(...yValues);
         // NB: If the new value is successfully validated, the inner chart
         // gets recreated, and `max` may change, due to re-quantization of
         // the tick values. 
-        return value as number >= max ?
-          { err: `Min y-value (${value}) must be less than max (${max})` } : {};
+        return value as number >= min ?
+          { err: `Min y-value (${value}) must be less than (${min})`} : {};
       },
-      parentView: 'chartDetails.tabs.chart.general',
+      parentView: 'controlPanel.tabs.chart.general',
     });
-    todo().controller.settingViews.add(this, {
+    this.paraview.store.settingControls.add({
       type: 'textfield',
       key: 'axis.y.maxValue',
       label: 'Max y-value',
       options: { inputType: 'number' },
       value: this.settings.maxValue ?? range?.end,
       validator: value => {
-        const values = this.chartLayers.model.data
-          .dropCols([this.chartLayers.model.indepVar])
-          .mapCols(col => col.numberSeries.data)
-          .flat();
-        const min = Math.max(...values)
-        return value as number <= min ?
-          { err: `Max y-value (${value}) must be greater than min (${min})` } : {};
+        const yValues = this.paraview.store.model!.allFacetValues('y')!.map((y) => y.value as number)
+        const max = Math.max(...yValues)
+        return value as number <= max ?
+          { err: `Max y-value (${value}) must be greater than (${max})`} : {};
       },
-      parentView: 'chartDetails.tabs.chart.general',
-    });  
-  }*/
+      parentView: 'controlPanel.tabs.chart.general',
+    }); 
+    //Sets the default value in the control panel to make using the arrows easier
+    if (this.paraview.store.settings.axis.y.maxValue == "unset"){
+      this.paraview.store.updateSettings(draft => {
+      draft.axis.y.maxValue = this.chartLayers.dataLayer.axisInfo!.yLabelInfo.max!;
+    });
+    }
+    if (this.paraview.store.settings.axis.y.minValue == "unset"){
+      this.paraview.store.updateSettings(draft => {
+      draft.axis.y.minValue = this.chartLayers.dataLayer.axisInfo!.yLabelInfo.min!;
+    });
+    }    
+  }
 
   computeSize(): [number, number] {
     return [

@@ -78,49 +78,50 @@ export abstract class DataLayer extends ChartLayer {
   constructor(paraview: ParaView, public readonly dataLayerIndex: number) {
     super(paraview);
     paraview.store.keymapManager.addEventListener('hotkeypress', (e: HotkeyEvent) => {
-      if (e.action === 'move_right') {
-        this.clearPlay();
-        this.moveRight();    
-      } else if (e.action === 'move_left') {
-        this.clearPlay();
-        this.moveLeft();
-      } else if (e.action === 'move_up') {
-        this.clearPlay();
-        this.moveUp();
-      } else if (e.action === 'move_down') {
-        this.clearPlay();
-        this.moveDown();
-      } else if (e.action === 'go_minimum') {
-        this._goSeriesMinMax(true);
-      } else if (e.action === 'go_maximum') {
-        this._goSeriesMinMax(false);
-      } else if (e.action === 'go_total_minimum') {
-        this._goChartMinMax(true);
-      } else if (e.action === 'go_total_maximum') {
-        this._goChartMinMax(false);
-      } else if (e.action === 'select') {
-        this.selectCurrent(false);
-      } else if (e.action === 'select_extend') {
-        this.selectCurrent(true);
-      } else if (e.action === 'select_clear') {
-        this.clearDatapointSelection();
-      } else if (e.action === 'play_right') {
-        this.clearPlay();
-        this.playRight();    
-      } else if (e.action === 'play_left') {
-        this.clearPlay();
-        this.playLeft();    
-      } else if (e.action === 'stop_play') {
-        this.clearPlay();
-      } else if (e.action === 'query_data') {
-        this.queryData();
-      } else if (e.action === 'sonification_mode_toggle') {
-        this.paraview.store.updateSettings(draft => {
-          draft.sonification.isSoniEnabled = !draft.sonification.isSoniEnabled;
-          this.paraview.store.announce(
-            `Sonification ${draft.sonification.isSoniEnabled ? 'enabled' : 'disabled'}`);
-        });
-      } else if (e.action === 'announcement_mode_toggle') {
+      if (this.isActive){
+        if (e.action === 'move_right') {
+          this.clearPlay();
+          this.moveRight();
+        } else if (e.action === 'move_left') {
+          this.clearPlay();
+          this.moveLeft();
+        } else if (e.action === 'move_up') {
+          this.clearPlay();
+          this.moveUp();
+        } else if (e.action === 'move_down') {
+          this.clearPlay();
+          this.moveDown();
+        } else if (e.action === 'go_minimum') {
+          this._goSeriesMinMax(true);
+        } else if (e.action === 'go_maximum') {
+          this._goSeriesMinMax(false);
+        } else if (e.action === 'go_total_minimum') {
+          this._goChartMinMax(true);
+        } else if (e.action === 'go_total_maximum') {
+          this._goChartMinMax(false);
+        } else if (e.action === 'select') {
+          this.selectCurrent(false);
+        } else if (e.action === 'select_extend') {
+          this.selectCurrent(true);
+        } else if (e.action === 'select_clear') {
+          this.clearDatapointSelection();
+        } else if (e.action === 'play_right') {
+          this.clearPlay();
+          this.playRight();
+        } else if (e.action === 'play_left') {
+          this.clearPlay();
+          this.playLeft();
+        } else if (e.action === 'stop_play') {
+          this.clearPlay();
+        } else if (e.action === 'query_data') {
+          this.queryData();
+        } else if (e.action === 'sonification_mode_toggle') {
+          this.paraview.store.updateSettings(draft => {
+            draft.sonification.isSoniEnabled = !draft.sonification.isSoniEnabled;
+            this.paraview.store.announce(
+              `Sonification ${draft.sonification.isSoniEnabled ? 'enabled' : 'disabled'}`);
+          });
+        } else if (e.action === 'announcement_mode_toggle') {
           if (this.paraview.store.settings.ui.isAnnouncementEnabled) {
             this.paraview.store.announce('Announcements disabled');
             this.paraview.store.updateSettings(draft => {
@@ -132,7 +133,7 @@ export abstract class DataLayer extends ChartLayer {
             });
             this.paraview.store.announce('Announcements enabled');
           }
-      } else if (e.action === 'voicing_mode_toggle') {
+        } else if (e.action === 'voicing_mode_toggle') {
           if (this.paraview.store.settings.ui.isVoicingEnabled) {
             this.paraview.store.announce('Self-voicing disabled');
             this.paraview.store.updateSettings(draft => {
@@ -144,33 +145,33 @@ export abstract class DataLayer extends ChartLayer {
             });
             this.paraview.store.announce('Self-voicing enabled');
           }
-      } else if (e.action === 'dark_mode_toggle') {
-        this.paraview.store.updateSettings(draft => {
-          draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
-          this.paraview.store.announce(
-            `Dark mode ${draft.color.isDarkModeEnabled ? 'enabled' : 'disabled'}`);
-        });
-      } else if (e.action === 'low_vision_mode_toggle') {
-        this.paraview.store.updateSettings(draft => {
-          draft.ui.isLowVisionModeEnabled = !draft.ui.isLowVisionModeEnabled;
-          this.paraview.store.announce(
-            `Low vision mode ${draft.ui.isLowVisionModeEnabled ? 'enabled' : 'disabled'}`);
-          if (draft.ui.isLowVisionModeEnabled) {
-            draft.color.isDarkModeEnabled = true;
-            draft.chart.strokeWidth = draft.ui.lowVisionStrokeWidth;
-            draft.ui.isFullScreenEnabled = true;
-          } else {
-            draft.color.isDarkModeEnabled = false;
-            draft.chart.strokeWidth = defaults.chart.strokeWidth;
-            draft.ui.isFullScreenEnabled = false;
-          }
-        });
-      } else if (e.action === 'open_help') {
-        this.paraview.paraChart.controlPanel.showHelpDialog();
-      } else if (e.action === 'announce_version_info') {
-        this.paraview.store.announce(`Version ${__APP_VERSION__}; commit ${__COMMIT_HASH__}`)
-      }
-    });
+        } else if (e.action === 'dark_mode_toggle') {
+          this.paraview.store.updateSettings(draft => {
+            draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
+            this.paraview.store.announce(
+              `Dark mode ${draft.color.isDarkModeEnabled ? 'enabled' : 'disabled'}`);
+          });
+        } else if (e.action === 'low_vision_mode_toggle') {
+          this.paraview.store.updateSettings(draft => {
+            draft.ui.isLowVisionModeEnabled = !draft.ui.isLowVisionModeEnabled;
+            this.paraview.store.announce(
+              `Low vision mode ${draft.ui.isLowVisionModeEnabled ? 'enabled' : 'disabled'}`);
+            if (draft.ui.isLowVisionModeEnabled) {
+              draft.color.isDarkModeEnabled = true;
+              draft.chart.strokeWidth = draft.ui.lowVisionStrokeWidth;
+              draft.ui.isFullScreenEnabled = true;
+            } else {
+              draft.color.isDarkModeEnabled = false;
+              draft.chart.strokeWidth = defaults.chart.strokeWidth;
+              draft.ui.isFullScreenEnabled = false;
+            }
+          });
+        } else if (e.action === 'open_help') {
+          this.paraview.paraChart.controlPanel.showHelpDialog();
+        } else if (e.action === 'announce_version_info') {
+          this.paraview.store.announce(`Version ${__APP_VERSION__}; commit ${__COMMIT_HASH__}`)
+        }
+    }});
   }
 
   protected _createId() {
@@ -338,7 +339,7 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   cleanup() {
-
+    super.cleanup();
   }
 
   abstract setLowVisionMode(lvm: boolean): void; 

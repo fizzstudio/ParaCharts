@@ -33,6 +33,19 @@ export abstract class PointChart extends XYChart {
     this._axisInfo = new AxisInfo(this.paraview.store, {
       yValues: this.paraview.store.model!.allFacetValues('y')!.map((y) => y.value as number)
     });
+    this.paraview.store.observeSetting('axis.y.maxValue', (_oldVal, newVal) => {
+      if (this.isActive){
+        this.paraview.createDocumentView();
+        this.paraview.requestUpdate();
+      }
+    });
+    this.paraview.store.observeSetting('axis.y.minValue', (_oldVal, newVal) => {
+      if (this.isActive){
+        this.paraview.createDocumentView();
+        this.paraview.requestUpdate();
+      }
+    });
+    
   }
 
   get datapointViews() {
