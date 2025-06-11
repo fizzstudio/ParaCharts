@@ -14,12 +14,12 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { SeriesView } from './data';
-import { XYChart, XYDatapointView, XYSeriesView } from './xychart';
-import { AxisInfo } from '../common/axisinfo';
-import { type PointChartType } from '../store/settings_types';
-import { enumerate, strToId } from '@fizz/paramodel';
+import { SeriesView } from '../../../data';
+import { XYChart, XYDatapointView, XYSeriesView } from '.';
+import { AxisInfo } from '../../../../common/axisinfo';
+import { type PointChartType } from '../../../../store/settings_types';
 
+import { enumerate, strToId } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 
 /**

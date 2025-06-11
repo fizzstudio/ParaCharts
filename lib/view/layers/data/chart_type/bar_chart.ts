@@ -1,19 +1,20 @@
 
-import { XYChart, XYDatapointView, XYSeriesView } from './xychart';
-import { AxisInfo } from '../common/axisinfo';
+import { XYChart, XYDatapointView, XYSeriesView } from '.';
+import { AxisInfo } from '../../../../common/axisinfo';
 import { 
   type BarSettings, type StackContentOptions ,type DeepReadonly
-} from '../store/settings_types';
-import { fixed } from '../common/utils';
-import { Rect } from './shape/rect';
-import { Label, LabelTextAnchor } from './label';
+} from '../../../../store/settings_types';
+import { fixed } from '../../../../common/utils';
+import { Rect } from '../../../shape/rect';
+import { Label, LabelTextAnchor } from '../../../label';
+import { ChartLandingView, DatapointView, SeriesView } from '../../../data';
+import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../../../../store/query_utils';
 
-import { StyleInfo } from 'lit/directives/style-map.js';
-import { ChartLandingView, DatapointView, SeriesView } from './data';
 import { Box, enumerate, strToId } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
-import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../store/query_utils';
 import { interpolate } from '@fizz/templum';
+
+import { StyleInfo } from 'lit/directives/style-map.js';
 
 type BarClusterMap = {[key: string]: BarCluster};
 

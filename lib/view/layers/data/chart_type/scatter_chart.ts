@@ -1,11 +1,10 @@
 
-import { PointChart, ChartPoint } from './pointchart';
-import { type ScatterSettings, Setting, type DeepReadonly } from '../store/settings_types';
-import { type XYSeriesView } from './xychart';
-import { ParaView } from '../paraview';
-import { AxisInfo } from '../common/axisinfo';
+import { type XYSeriesView, PointChart, ChartPoint } from '.';
+import { type ScatterSettings, Setting, type DeepReadonly } from '../../../../store/settings_types';
+import { ParaView } from '../../../../paraview';
+import { AxisInfo } from '../../../../common/axisinfo';
 import { clusterObject, coord, generateClusterAnalysis } from '@fizz/clustering';
-import { DataSymbol, DataSymbols } from './symbol';
+import { DataSymbol, DataSymbols } from '../../../symbol';
 import { TemplateResult } from 'lit';
 
 export class ScatterPlot extends PointChart {

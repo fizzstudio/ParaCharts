@@ -1,5 +1,5 @@
 
-import { ChartLayer } from './chartlayer';
+import { ChartLayer } from '.';
 
 import { svg } from 'lit';
 

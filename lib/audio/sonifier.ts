@@ -29,7 +29,7 @@ SOFTWARE.
 import { OscillatorAudioEngine, type AudioEngine } from '.';
 import { AudioNotificationType } from './AudioEngine';
 import { type Axis } from '../view/axis';
-import { type DataLayer } from '../view/datalayer';
+import { type DataLayer } from '../view/layers';
 import { type ParaStore } from '../store';
 import { XYDatapoint } from '@fizz/paramodel';
 

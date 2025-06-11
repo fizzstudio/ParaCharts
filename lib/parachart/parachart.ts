@@ -80,8 +80,9 @@ export class ParaChart extends logging(ParaComponent) {
         resolve();
         // It's now safe to load a manifest
         if (this.manifest) {
-          this._loaderPromise = this._runLoader(this.manifest, this.manifestType).then(() =>
-            this.log('ParaCharts will now commence the raising of the roof and/or the dead'));
+          this._loaderPromise = this._runLoader(this.manifest, this.manifestType).then(() => {
+            this.log('ParaCharts will now commence the raising of the roof and/or the dead');
+          });
         }
         else if (this._slotted) {
           this.log(`loading from slot`);

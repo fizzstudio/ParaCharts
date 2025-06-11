@@ -1,6 +1,6 @@
 
-import { ChartLayer } from './chartlayer';
-import { Rect } from './shape/rect';
+import { ChartLayer } from '.';
+import { Rect } from '../shape/rect';
 
 import { svg } from 'lit';
 
