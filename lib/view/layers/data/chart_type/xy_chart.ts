@@ -17,18 +17,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { 
   DataLayer,
   SONI_PLAY_SPEEDS, SONI_RIFF_SPEEDS 
-} from './datalayer';
-import { ChartLandingView, DatapointView, SeriesView } from './data';
-import { type Setting } from '../store/settings_types';
+} from '../data_layer';
+import { ChartLandingView, DatapointView, SeriesView } from '../../../data';
+import { type Setting } from '../../../../store/settings_types';
 //import { keymaps } from '../input';
 //import { hotkeyActions } from '../input/defaultactions';
 //import { NOTE_LENGTH } from '../audio/sonifier';
 //import { type Actions, type Action } from '../input/actions';
 
-import { ParaView } from '../paraview';
+import { ParaView } from '../../../../paraview';
+import { HotkeyEvent } from '../../../../store/keymap_manager';
+
 import { XYDatapoint, strToId } from '@fizz/paramodel';
 import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
-import { HotkeyEvent } from '../store/keymap_manager';
 
 export type DatapointViewType<T extends XYDatapointView> = 
   (new (...args: any[]) => T);
@@ -472,9 +473,6 @@ export abstract class XYChart extends DataLayer {
   capitalize(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }*/
-
-  setLowVisionMode(_lvm: boolean): void {
-  }
 
 }
 

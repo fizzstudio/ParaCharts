@@ -18,7 +18,7 @@ import { Container, View } from './base_view';
 import { ColumnLayout, RowLayout, type Layout, type Spacer, RowSpacer, ColumnSpacer } from './layout';
 import { type DocumentView } from './document_view';
 //import { SettingManager } from '../../settings/settingman';
-import { type ChartLayerManager } from './chartlayermanager';
+import { type ChartLayerManager } from './layers';
 import {
   type Setting,
   type AxisSettings,

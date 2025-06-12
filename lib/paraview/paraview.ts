@@ -187,6 +187,10 @@ export class ParaView extends logging(ParaComponent) {
       .chart-title {
         font-size: 1.25rem;
       }
+      .range-highlight {
+        fill: purple;
+        opacity: 0.3;
+      }
     `
   ];
 
@@ -494,23 +498,9 @@ export class ParaView extends logging(ParaComponent) {
       darkmode: this._store.settings.color.isDarkModeEnabled
     }
   }
-
-  /*setLowVisionMode(lvm: boolean) {
-    this.controller.setSetting('color.isDarkModeEnabled', lvm);
-    this.controller.setSetting('ui.isFullScreenEnabled', lvm);
-    this._documentView!.setLowVisionMode(lvm);
-  }*/
   
-  setFullscreen() {
-    //if (fullscreen) {
-      if (!document.fullscreenElement && this.root && this.root.requestFullscreen) {
-        this.root.requestFullscreen();
-      }
-    // } else {
-    //   if (document.fullscreenElement && document.exitFullscreen) {
-    //     document.exitFullscreen();
-    //   } 
-    // }
+  focusDatapoint(seriesKey: string, index: number) {
+    this._documentView!.chartLayers.dataLayer.focusDatapoint(seriesKey, index);
   }
 
   render(): TemplateResult {

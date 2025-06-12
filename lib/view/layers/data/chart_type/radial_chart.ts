@@ -1,20 +1,20 @@
 
-import { DataLayer } from '../datalayer';
-import { ChartLandingView, DatapointView, SeriesView } from '../data';
+import { DataLayer } from '..';
+import { ChartLandingView, DatapointView, SeriesView } from '../../../data';
 import {
   type RadialSettings,
   type RadialChartType, type DeepReadonly
-} from '../../store';
-import { Label, type LabelTextAnchor } from '../label';
-import { type ParaView } from '../../paraview';
-import { Sector } from '../shape/sector';
-import { Path } from '../shape/path';
+} from '../../../../store';
+import { Label, type LabelTextAnchor } from '../../../label';
+import { type ParaView } from '../../../../paraview';
+import { Sector } from '../../../shape/sector';
+import { Path } from '../../../shape/path';
 import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
-import { Vec2 } from '../../common/vector';
+import { Vec2 } from '../../../../common/vector';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { interpolate } from '@fizz/templum';
-import { queryMessages, describeSelections, getDatapointMinMax } from '../../store/query_utils';
+import { queryMessages, describeSelections, getDatapointMinMax } from '../../../../store/query_utils';
 
 export type ArcType = 'circle' | 'semicircle';
 

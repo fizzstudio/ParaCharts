@@ -1,8 +1,8 @@
 
-import { RadialChart, RadialSlice, type RadialDatapointParams } from './radialchart';
-import { type SeriesView } from '../data';
-import { Sector } from '../shape/sector';
-import { type ParaView } from '../../paraview';
+import { RadialChart, RadialSlice, type RadialDatapointParams } from '.';
+import { type SeriesView } from '../../../data';
+import { Sector } from '../../../shape/sector';
+import { type ParaView } from '../../../../paraview';
 
 export class PieChart extends RadialChart {
 
@@ -15,9 +15,6 @@ export class PieChart extends RadialChart {
   
   protected _createSlice(seriesView: SeriesView, params: RadialDatapointParams): RadialSlice {
     return new PieSlice(seriesView, params); 
-  }
-
-  setLowVisionMode(_lvm: boolean): void {
   }
 
 }
