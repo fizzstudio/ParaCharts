@@ -21,7 +21,7 @@ enablePatches();
 import { dataFromManifest, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
 import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature, SeriesAnalyzerConstructor 
   } from '@fizz/paramodel';
-import { BasicXYChartSummarizer, FormatType } from '@fizz/parasummary';
+import { Summarizer, FormatType } from '@fizz/parasummary';
 
 import {
   DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
@@ -83,7 +83,7 @@ export class ParaStore extends State {
   protected _keymapManager = new KeymapManager(keymap);
   protected _prependAnnouncements: string[] = [];
   protected _appendAnnouncements: string[] = [];
-  protected _summarizer!: BasicXYChartSummarizer; 
+  protected _summarizer!: Summarizer; 
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
 
   public idList: Record<string, boolean> = {};
