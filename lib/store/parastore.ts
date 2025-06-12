@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import papa from 'papaparse';
 import { State, property } from '@lit-app/state';
 import { produceWithPatches, enablePatches } from 'immer';
 enablePatches();
@@ -21,7 +22,7 @@ enablePatches();
 import { dataFromManifest, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
 import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature, SeriesAnalyzerConstructor, XYDatapoint 
   } from '@fizz/paramodel';
-import { Summarizer, FormatType, formatXYDatapointX } from '@fizz/parasummary';
+import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 
 import {
   DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
@@ -461,6 +462,15 @@ export class ParaStore extends State {
       throw new Error('range not highlighted');
     }
     this._rangeHighlights = this._rangeHighlights.toSpliced(index, 1);
+  }
+
+  getModelCsv() {
+    const xLabel = this.model!.independentFacet!.label;
+    return papa.unparse(this.model!.series[0].datapoints.map((dp, i) => ({
+      [xLabel]: formatXYDatapointX(dp as XYDatapoint, 'raw'),
+      ...Object.fromEntries(this.model!.series.map(s =>
+        [s.key, formatXYDatapointY(s[i] as XYDatapoint, 'value')]))
+    })));
   }
 
 }
