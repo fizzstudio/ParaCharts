@@ -30,6 +30,7 @@ import { HotkeyEvent } from '../../../../store/keymap_manager';
 
 import { XYDatapoint, strToId } from '@fizz/paramodel';
 import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
+import { Rect } from '../../../shape/rect';
 
 export type DatapointViewType<T extends XYDatapointView> = 
   (new (...args: any[]) => T);
@@ -88,6 +89,10 @@ export abstract class XYChart extends DataLayer {
     //   label: 'Series riff enabled',
     //   parentView: 'controlPanel.tabs.audio.sonification.dialog',
     // });
+     //const xs = this.seriesViews[0].children.map(v => v.datapoint.x.toNumber());
+      //console.log(this.paraview.store.model?.series[0].rawData)
+      const xs = this.paraview.store.model?.series[0].rawData
+      this.addRangeHighlight(this.paraview, Number(xs![1].x), Number(xs![4].x));
   }
 
   get managedSettingKeys() {
@@ -474,6 +479,16 @@ export abstract class XYChart extends DataLayer {
     return string.charAt(0).toUpperCase() + string.slice(1);
   }*/
 
+    addRangeHighlight(paraview: ParaView, start: number, end: number) {
+    //const layer = todo().canvas.documentView!.chartLayers.backgroundAnnotationLayer;
+    //console.log(paraview.documentView)
+    //console.log(this.parent)
+    const layer = this.parent.backgroundAnnotationLayer!
+    layer.addGroup('range-highlights', true);
+    layer.group('range-highlights')!.append(new RangeHighlight(paraview, this, start, end));
+    //todo().canvas.requestUpdate();
+  }
+
 }
 
 type Mutable<Type> = {
@@ -696,6 +711,27 @@ export abstract class XYDatapointView extends DatapointView {
           false
       });
     }, NOTE_LENGTH*1000);*/
+  }
+
+}
+
+export class RangeHighlight extends Rect {
+
+  constructor(paraview: ParaView, chart: XYChart, start: number, end: number) {
+    console.log(paraview.store.model!.series[0].rawData)
+    console.log(start)
+    console.log(end)
+    const xs = paraview.store.model!.series[0].rawData.map(v => Number(v.x));
+    const startPx = chart.width*(start - xs[0])/(xs.at(-1)! - xs[0]);
+    const endPx = chart.width*(end - xs[0])/(xs.at(-1)! - xs[0]);
+    super(paraview, {
+      x: startPx,
+      y: 0,
+      width: endPx - startPx,
+      height: chart.height,
+      fill: "none",
+      stroke: "black"
+    });
   }
 
 }
