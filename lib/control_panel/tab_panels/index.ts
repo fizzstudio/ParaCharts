@@ -1,3 +1,4 @@
+export * from './tab_panel';
 export * from './analysis';
 export * from './annotation';
 export * from './audio';

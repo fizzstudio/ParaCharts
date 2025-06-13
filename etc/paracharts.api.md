@@ -6,7 +6,6 @@
 
 import { AllSeriesData } from '@fizz/paramanifest';
 import { AxisOrientation } from '@fizz/paramodel';
-import { BasicXYChartSummarizer } from '@fizz/parasummary';
 import { ButtonDescriptor } from '@fizz/ui-components';
 import { ChartType as ChartType_2 } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit-html/directives/class-map.js';
@@ -24,10 +23,12 @@ import { LitElement } from 'lit';
 import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';
 import { Model } from '@fizz/paramodel';
-import { Padding as Padding_2 } from './base_view';
-import { Padding as Padding_3 } from '../base_view';
+import { Padding as Padding_2 } from '../base_view';
+import { Padding as Padding_3 } from '../../base_view';
+import { Padding as Padding_4 } from './base_view';
 import { PaddingInput as PaddingInput_2 } from './base_view';
 import { PaddingInput as PaddingInput_3 } from '../base_view';
+import { PaddingInput as PaddingInput_4 } from '../../base_view';
 import papa from 'papaparse';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
@@ -129,6 +130,8 @@ export class ParaChart extends ParaChart_base {
     //
     // (undocumented)
     protected _suppleteSettingsWith?: DeepReadonly<Settings>;
+    // (undocumented)
+    type?: ChartType_2;
     // (undocumented)
     willUpdate(changedProperties: PropertyValues<this>): void;
 }

@@ -1,14 +1,13 @@
-
-import { PointChart, ChartPoint, TrendLineView } from './pointchart';
-import { type ScatterSettings, Setting, type DeepReadonly } from '../store/settings_types';
-import { XYDatapointView, type XYSeriesView } from './xychart';
-import { ParaView } from '../paraview';
-import { AxisInfo } from '../common/axisinfo';
+import { type XYSeriesView, PointChart, ChartPoint, XYDatapointView, TrendLineView} from '.';
+import { type ScatterSettings, Setting, type DeepReadonly } from '../../../../store/settings_types';
+import { ParaView } from '../../../../paraview';
+import { AxisInfo } from '../../../../common/axisinfo';
 import { clusterObject, coord, generateClusterAnalysis } from '@fizz/clustering';
-import { DataSymbol, DataSymbols } from './symbol';
+import { DataSymbol, DataSymbols } from '../../../symbol';
 import { svg, TemplateResult } from 'lit';
-import { Colors } from '../common/colors';
-import { View } from './base_view';
+import { View } from '../../../base_view';
+import { Colors } from '../../../../common/colors';
+
 
 export class ScatterPlot extends PointChart {
 

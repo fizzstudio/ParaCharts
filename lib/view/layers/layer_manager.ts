@@ -14,36 +14,30 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { View } from './base_view';
-import { fixed } from '../common/utils';
-import { type Layout } from './layout';
-import { type DocumentView } from './document_view';
-import { type CardinalDirection } from '../store/settings_types';
-//import { AnnotationLayer } from './annotationlayer';
-import { type DataLayer } from './datalayer';
-import { HighlightsLayer } from './highlights_layer';
-import { SelectionLayer } from './selectionlayer';
-import { LineChart } from './line';
+import { View } from '../base_view';
+import { fixed } from '../../common/utils';
+import { type Layout } from '../layout';
+import { type DocumentView } from '../document_view';
+import { type CardinalDirection } from '../../store/settings_types';
+import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer } from '.';
+import { LineChart, ScatterPlot, BarChart, PieChart } from './data/chart_type';
 //import { StepLineChart } from './stepline';
 //import { LollipopChart } from './lollipop';
-import { ScatterPlot } from './scatter';
-import { BarChart } from './bar';
-import { PieChart } from './chart_type/pie';
 //import { DonutChart } from './donut';
 //import { GaugeChart } from './gauge';
-import { XYChart } from './xychart';
 //import { type Model } from '../data/model';
 import { 
   type AxisCoord, type AxisOrientation, Axis
-} from './axis';
+} from '../axis';
 
 import { type Interval } from '@fizz/chart-classifier-utils';
 
 import { calendarNumber, type CalendarPeriod } from '@fizz/paramodel';
 
 import { svg } from 'lit';
-import { Histogram } from './histogram';
-import { Heatmap } from './heatmap';
+import { Heatmap } from './data/chart_type/heatmap';
+import { Histogram } from './data/chart_type/histogram';
+
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
 export const chartClasses = {
@@ -67,12 +61,12 @@ export class ChartLayerManager extends View {
   protected _logicalWidth!: number;
   protected _logicalHeight!: number;
 
-  private _orientation!: CardinalDirection;
-  //private _backgroundAnnotationLayer!: AnnotationLayer;
-  private dataLayers!: DataLayer[];
-  private _highlightsLayer!: HighlightsLayer;
-  private _selectionLayer!: SelectionLayer;
-  //private _foregroundAnnotationLayer!: AnnotationLayer;
+  protected _orientation!: CardinalDirection;
+  protected _backgroundAnnotationLayer!: AnnotationLayer;
+  protected _dataLayers!: DataLayer[];
+  protected _highlightsLayer!: HighlightsLayer;
+  protected _selectionLayer!: SelectionLayer;
+  protected _foregroundAnnotationLayer!: AnnotationLayer;
 
   constructor(public readonly docView: DocumentView) {
     super(docView.paraview);
@@ -95,14 +89,14 @@ export class ChartLayerManager extends View {
   }
 
   createLayers() {
-    //this._backgroundAnnotationLayer = new AnnotationLayer('background');
-    //this.append(this._backgroundAnnotationLayer);
+    this._backgroundAnnotationLayer = new AnnotationLayer(this.paraview, 'background');
+    this.append(this._backgroundAnnotationLayer);
     this.createDataLayers();
-    this._highlightsLayer = new HighlightsLayer(this.docView.paraview);
+    this._highlightsLayer = new HighlightsLayer(this.paraview);
     this.append(this._highlightsLayer);
-    //this._foregroundAnnotationLayer = new AnnotationLayer('foreground');
-    //this.append(this._foregroundAnnotationLayer);
-    this._selectionLayer = new SelectionLayer(this.docView.paraview);
+    this._foregroundAnnotationLayer = new AnnotationLayer(this.paraview, 'foreground');
+    this.append(this._foregroundAnnotationLayer);
+    this._selectionLayer = new SelectionLayer(this.paraview);
     this.append(this._selectionLayer);    
   }
   
@@ -168,21 +162,21 @@ export class ChartLayerManager extends View {
     return this._orientation;
   }
     
-  /*get backgroundAnnotationLayer() {
+  get backgroundAnnotationLayer() {
     return this._backgroundAnnotationLayer;
-  }*/
+  }
 
   get dataLayer() {
-    return this.dataLayers[0];
+    return this._dataLayers[0];
   }
 
   get highlightsLayer() {
     return this._highlightsLayer;
   }
 
-  /*get foregroundAnnotationLayer() {
+  get foregroundAnnotationLayer() {
     return this._foregroundAnnotationLayer;
-  }*/
+  }
 
   get selectionLayer() {
     return this._selectionLayer;
@@ -202,7 +196,7 @@ export class ChartLayerManager extends View {
       // TODO: Is this error possible?
       throw new Error(`no class found for chart type '${this.paraview.store.type}'`);
     }
-    this.dataLayers = [dataLayer];
+    this._dataLayers = [dataLayer];
   }
 
   getXAxisInterval(): Interval {
@@ -220,12 +214,12 @@ export class ChartLayerManager extends View {
 
 
   getYAxisInterval(): Interval {
-    if (!this.dataLayers[0].axisInfo) {
+    if (!this._dataLayers[0].axisInfo) {
       throw new Error('chart is missing `axisInfo` object');
     }
     return {
-      start: this.dataLayers[0].axisInfo.yLabelInfo.min!, 
-      end: this.dataLayers[0].axisInfo.yLabelInfo.max!
+      start: this._dataLayers[0].axisInfo.yLabelInfo.min!, 
+      end: this._dataLayers[0].axisInfo.yLabelInfo.max!
     };
   }
 
@@ -239,10 +233,6 @@ export class ChartLayerManager extends View {
 
   updateLoc() {
 
-  }
-
-  setLowVisionMode(lvm: boolean) {
-    this.dataLayer.setLowVisionMode(lvm);
   }
   
   render() {
@@ -273,8 +263,10 @@ export class ChartLayerManager extends View {
           width=${this.width} 
           height=${this.height}
         />
-        ${this.dataLayers.map(layer => layer.render())}
+        ${this._backgroundAnnotationLayer.render()}
+        ${this._dataLayers.map(layer => layer.render())}
         ${this._highlightsLayer.render()}
+        ${this._foregroundAnnotationLayer.render()}
         ${this._selectionLayer.render()}
       </g>
     `;

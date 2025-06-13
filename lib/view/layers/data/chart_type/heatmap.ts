@@ -1,14 +1,15 @@
 import { enumerate, strToId } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
 import { svg } from "lit";
-import { AxisInfo, computeLabels } from "../common/axisinfo";
-import { fixed } from "../common/utils";
-import { ParaView } from "../paraview";
-import { DeepReadonly, HeatmapSettings, PointChartType } from "../store";
-import { DatapointView, SeriesView } from "./data";
-import { XYChart, XYDatapointView, XYSeriesView } from "./xychart";
-import { Rect } from "./shape/rect";
-import { Shape } from "./shape/shape";
+import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
+import { fixed } from "../../../../common/utils";
+import { ParaView } from "../../../../paraview";
+import { DeepReadonly, HeatmapSettings, PointChartType } from "../../../../store";
+import { DatapointView, SeriesView } from "../../../data";
+
+import { Rect } from "../../../shape/rect";
+import { Shape } from "../../../shape/shape";
+import { XYChart, XYSeriesView } from "./xy_chart";
 
 export class Heatmap extends XYChart {
     protected _resolution: number = 25;

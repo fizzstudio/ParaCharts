@@ -1,7 +1,7 @@
 //import { styles } from '../../styles';
 import { ControlPanelTabPanel } from './tab_panel';
 import { ParaView } from '../../paraview';
-import { SVGNS } from '../../common/constants';
+import '../datatable';
 
 import * as sb from '@fizz/sparkbraille-component';
 import '@fizz/sparkbraille-component';
@@ -25,18 +25,22 @@ export class DataPanel extends ControlPanelTabPanel {
   protected _isBar = false;
 
   protected _saveChart() {
-    const paraView = this.controlPanel.parentElement!.firstElementChild as ParaView;
-    const content = paraView.serialize();
+    this._download(this.controlPanel.paraChart.paraView.serialize(), 'image/svg+xml', 'svg');
+  }
 
-    const filetype = 'image/svg+xml';
-    const blob = new Blob([content], {type : `${filetype};charset=utf-8`});
+  protected _saveData() {
+    this._download(this._store.getModelCsv(), 'text/csv', 'csv');
+  }
+
+  protected _download(content: string, mimeType: string, extension: string) {
+    const paraView = this.controlPanel.paraChart.paraView;
+    const blob = new Blob([content], {type : `${mimeType};charset=utf-8`});
     const DOMURL = self.URL || self.webkitURL || self;
     const url = DOMURL.createObjectURL(blob);
-
     const downloadLinkEl = document.createElement('a');
     paraView.fileSavePlaceholder.appendChild(downloadLinkEl);
     const title = paraView.documentView!.titleText || 'parachart';
-    downloadLinkEl.download = `${title.replace(/\W/g, '_')}.svg`;
+    downloadLinkEl.download = `${title.replace(/\W/g, '_')}.${extension}`;
     downloadLinkEl.href = url;
     downloadLinkEl.click();
     DOMURL.revokeObjectURL(url);
@@ -127,28 +131,28 @@ export class DataPanel extends ControlPanelTabPanel {
           >
             JIM
           </button>-->
-          <!--<button 
-            @click=${() => this.controlPanel.dialog.show('Save data')}
+          <button 
+            @click=${() => this._saveData()}
           >
             Save data
-          </button>-->
-          <!--<button 
+          </button>
+          <button 
             @click=${() => {
-              // this.controlPanel.dialog.show('Data table', html`
-              //   <todo-datatable
-              //     .model=${this.controller.model}
-              //   >
-              //   </todo-datatable>
-              // `);
+              this.controlPanel.dialog.show('Data table', html`
+                <para-datatable
+                  .model=${this._store.model}
+                >
+                </para-datatable>
+              `);
             }}
           >
             Data table
-          </button>-->
-          <!--<button 
+          </button>
+          <button 
             @click=${() => this.controlPanel.dialog.show('Source links')}
           >
             Source Links
-          </button>-->
+          </button>
           <button 
             @click=${() => this._saveChart()}
           >

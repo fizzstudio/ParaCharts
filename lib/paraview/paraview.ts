@@ -26,7 +26,7 @@ import { DocumentView } from '../view/document_view';
 //import { styles } from './styles';
 import { SVGNS } from '../common/constants';
 import { fixed } from '../common/utils';
-import { Summarizer, BasicXYChartSummarizer } from '@fizz/parasummary';
+import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer } from '@fizz/parasummary';
 
 import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -187,6 +187,10 @@ export class ParaView extends logging(ParaComponent) {
       .chart-title {
         font-size: 1.25rem;
       }
+      .range-highlight {
+        fill: purple;
+        opacity: 0.3;
+      }
     `
   ];
 
@@ -247,7 +251,9 @@ export class ParaView extends logging(ParaComponent) {
   // Anything that needs to be done when data is updated, do here
   private dataUpdated(): void {
     this.createDocumentView();
-    this._summarizer = new BasicXYChartSummarizer(this._store.model!);
+    this._summarizer = (this.store.type === 'pie' || this.store.type === 'donut')
+      ? new PastryChartSummarizer(this._store.model!)
+      : new PlaneChartSummarizer(this._store.model!);
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -496,23 +502,9 @@ export class ParaView extends logging(ParaComponent) {
       darkmode: this._store.settings.color.isDarkModeEnabled
     }
   }
-
-  /*setLowVisionMode(lvm: boolean) {
-    this.controller.setSetting('color.isDarkModeEnabled', lvm);
-    this.controller.setSetting('ui.isFullScreenEnabled', lvm);
-    this._documentView!.setLowVisionMode(lvm);
-  }*/
   
-  setFullscreen() {
-    //if (fullscreen) {
-      if (!document.fullscreenElement && this.root && this.root.requestFullscreen) {
-        this.root.requestFullscreen();
-      }
-    // } else {
-    //   if (document.fullscreenElement && document.exitFullscreen) {
-    //     document.exitFullscreen();
-    //   } 
-    // }
+  focusDatapoint(seriesKey: string, index: number) {
+    this._documentView!.chartLayers.dataLayer.focusDatapoint(seriesKey, index);
   }
 
   cleanup() {
@@ -528,7 +520,7 @@ export class ParaView extends logging(ParaComponent) {
         aria-label=${this._documentView ? `${this._documentView.titleText}, accessible chart` : 'loading...'}
         ${ref(this._rootRef)}
         xmlns=${SVGNS}
-        data-charttype=${this.type}
+        data-charttype=${this.paraChart.type ?? this.type}
         width=${fixed`${this._viewBox.width}px`}
         height=${fixed`${this._viewBox.height}px`}
         class=${classMap(this._rootClasses())}

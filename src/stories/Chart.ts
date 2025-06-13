@@ -12,16 +12,18 @@ export interface ChartProps {
   config?: SettingsInput;  
   legendOrder: LegendItemOrder;
   forcecharttype?: ChartType;
+  slot?: string;
 }
 
 /**
  * Primary UI component for user interaction
  */
 export const Chart = ({ 
-  filename, config, legendOrder, forcecharttype
+  filename, config, legendOrder, forcecharttype, slot
 }: ChartProps) => {
   config ??= {};
   config['legend.itemOrder'] = legendOrder;
+  config['controlPanel.isControlPanelDefaultOpen'] = true;
   return html`
     <style>
       /*
@@ -73,9 +75,11 @@ export const Chart = ({
   <para-chart 
     manifest=${filename}
     manifesttype=${filename.startsWith('/') ? 'url' : 'fizz-chart-data'} 
-    .config=${config ?? nothing}
+    .config=${config}
     forcecharttype=${forcecharttype ?? nothing}
+    type=${forcecharttype ?? nothing}
   >
+    <slot>${slot ?? ``}</slot>
     <span slot="settings"></span>
   </para-chart>
   `;
@@ -86,6 +90,7 @@ export const AiChart = ({
 }: ChartProps) => {
   config ??= {};
   config['legend.itemOrder'] = legendOrder;
+  config['controlPanel.isControlPanelDefaultOpen'] = true;
   return html`
     <style>
       /*
@@ -137,7 +142,7 @@ export const AiChart = ({
   <para-chart-ai 
     manifest=${filename}
     manifesttype=${filename.startsWith('/') ? 'url' : 'fizz-chart-data'} 
-    .config=${config ?? nothing}
+    .config=${config}
     forcecharttype=${forcecharttype ?? nothing}
   >
     <span slot="settings"></span>

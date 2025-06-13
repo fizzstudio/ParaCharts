@@ -1,17 +1,16 @@
-
-import { AxisInfo, computeLabels } from "../common/axisinfo";
-import { fixed } from "../common/utils";
-import { DeepReadonly, HistogramSettings, PointChartType } from "../store";
-
-import { XYChart, XYDatapointView, XYSeriesView } from "./xychart";
-import { svg } from "lit";
-import { DatapointView, DataView, SeriesView } from "./data";
-import { DataCursor } from "../store";
-import { ParaView } from "../paraview";
 import { enumerate, strToId } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
-import { Rect } from "./shape/rect";
-import { Shape } from "./shape/shape";
+import { svg } from "lit";
+import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
+import { fixed } from "../../../../common/utils";
+import { ParaView } from "../../../../paraview";
+import { DeepReadonly, HistogramSettings, PointChartType } from "../../../../store";
+import { Rect } from "../../../shape/rect";
+import { Shape } from "../../../shape/shape";
+import { XYChart, XYSeriesView } from "./xy_chart";
+import { DatapointView, SeriesView } from "../../../data";
+
+
 export class Histogram extends XYChart {
     protected _bins: number = 20;
     protected _data: Array<Array<number>> = [];

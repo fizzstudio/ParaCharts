@@ -14,14 +14,14 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { PointChart, ChartPoint } from './pointchart';
-import { type LineSettings, type DeepReadonly } from '../store/settings_types';
-import { XYSeriesView } from './xychart';
-import { Path } from './shape/path';
-import { Vec2 } from '../common/vector';
+import { XYSeriesView, PointChart, ChartPoint } from '.';
+import { type LineSettings, type DeepReadonly } from '../../../../store/settings_types';
+import { Path } from '../../../shape/path';
+import { Vec2 } from '../../../../common/vector';
+import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../../../../store/query_utils';
+import { ChartLandingView, SeriesView, DatapointView } from '../../../data';
+
 import { interpolate } from '@fizz/templum';
-import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../store/query_utils';
-import { ChartLandingView, SeriesView, DatapointView } from './data';
 
 /**
  * Class for drawing line charts.
@@ -78,18 +78,6 @@ export class LineChart extends PointChart {
 
   protected _newDatapointView(seriesView: XYSeriesView) {
     return new LineSection(seriesView);
-  }
-
-  setLowVisionMode(lvm: boolean) {
-    if (!lvm) {
-      // restore saved line width
-      //todo().controller.setSetting('type.line.lineWidth', this._lowVisLineWidth!);
-      this._lowVisLineWidth = null;
-    } else {
-      // save current line width
-      this._lowVisLineWidth = this.paraview.store.settings.type.line.lineWidth;
-      //todo().controller.setSetting('type.line.lineWidth', 15);
-    }
   }
 
   queryData(): void {

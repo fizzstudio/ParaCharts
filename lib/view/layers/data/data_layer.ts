@@ -16,24 +16,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { ref } from 'lit/directives/ref.js';
 
-import { ChartLayer } from './chartlayer';
-import { type ChartLayerManager } from './chartlayermanager';
-import { type Setting, type PlotSettings, type DeepReadonly } from '../store/settings_types';
-import { defaults } from '../store/settings_defaults';
-import { Sonifier } from '../audio/sonifier';
+import { ChartLayer } from '..';
+import { type ChartLayerManager } from '..';
+import { type Setting, type PlotSettings, type DeepReadonly } from '../../../store/settings_types';
+import { defaults } from '../../../store/settings_defaults';
+import { Sonifier } from '../../../audio/sonifier';
 //import { type Model, type DatapointReference } from '../data/model';
 //import { type ActionRegistration } from '../input';
 //import { keymaps } from '../input';
 //import { hotkeyActions, type TodoEventType } from '../input/defaultactions';
 //import { type Actions } from '../input/actions';
-import { ParaView } from '../paraview';
-import { SettingsManager } from '../store/settings_manager';
-import { type AxisInfo } from '../common/axisinfo';
-import { type HotkeyEvent } from '../store/keymap_manager';
-import { ChartLandingView, DatapointView, SeriesView, type DataView } from './data';
-import { type LegendItem } from './legend';
+import { ParaView } from '../../../paraview';
+import { SettingsManager } from '../../../store/settings_manager';
+import { type AxisInfo } from '../../../common/axisinfo';
+import { type HotkeyEvent } from '../../../store/keymap_manager';
+import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../../data';
+import { type LegendItem } from '../../legend';
+import { queryMessages } from '../../../store/query_utils';
 
-import { queryMessages } from '../store/query_utils';
 import { interpolate } from '@fizz/templum';
 
 /**
@@ -289,6 +289,10 @@ export abstract class DataLayer extends ChartLayer {
     return this.datapointViews.find(dp => dp.id === id);
   }
 
+  focusDatapoint(seriesKey: string, index: number, isNewComponentFocus = false) {
+    this.datapointView(seriesKey, index)!.focus(isNewComponentFocus);
+  }
+
   /**
    * Move focus to the navpoint to the right, if there is one
    */
@@ -341,8 +345,6 @@ export abstract class DataLayer extends ChartLayer {
   cleanup() {
     super.cleanup();
   }
-
-  abstract setLowVisionMode(lvm: boolean): void; 
 
   // protected _layoutSymbols() {
   //   for (const datapointView of this.datapointViews) {

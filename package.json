@@ -1,6 +1,6 @@
 {
   "name": "@fizz/paracharts",
-  "version": "0.30.0",
+  "version": "0.33.1",
   "description": "Not quite Parable Charts",
   "contributors": [
     "Josh Fennell",
@@ -87,8 +87,8 @@
     "@fizz/line-chart-metadata": "^4.7.4-alpha.0",
     "@fizz/line-chart-parameters": "^1.0.1",
     "@fizz/paramanifest": "^0.3.3-alpha.0",
-    "@fizz/paramodel": "^0.1.9-alpha.8",
-    "@fizz/parasummary": "^0.3.2-alpha.1",
+    "@fizz/paramodel": "^0.1.10-alpha.0",
+    "@fizz/parasummary": "^0.3.3",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.4.2",
     "@fizz/todocharts": "^0.129.6",

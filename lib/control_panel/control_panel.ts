@@ -328,7 +328,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           ></para-chart-panel>
         </fizz-tab-panel>
 
-        <!--<fizz-tab-panel
+        <fizz-tab-panel
           tablabel="Annotations"
           icon=${tabAnalysisIcon}
           ?hidden=${!this.settings.isAnnotationsTabVisible}
@@ -337,7 +337,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
             ${ref(this._annotationPanelRef)}
             .controlPanel=${this}
           ></para-annotation-panel>
-        </fizz-tab-panel>-->
+        </fizz-tab-panel>
 
         <!--<fizz-tab-panel
           tablabel="Analysis"
