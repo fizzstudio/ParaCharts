@@ -192,8 +192,8 @@ export interface AxisSettings extends SettingGroup {
   title: AxisTitleSettings;
   line: AxisLineSettings;
   tick: TickSettings;
-  minValue?: number;
-  maxValue?: number;
+  minValue: number | 'unset';
+  maxValue: number | 'unset';
 }
 
 /** @public */
@@ -307,8 +307,21 @@ export interface StepLineSettings extends PointSettings {
 
 /** @public */
 export interface ScatterSettings extends PointSettings {
-
+  isDrawTrendLine: boolean;
+  isShowOutliers: boolean;
 }
+
+/** @public */
+export interface HeatmapSettings extends PointSettings {
+  resolution: number;
+}
+
+export interface HistogramSettings extends PointSettings {
+  bins: number;
+  displayAxis: string;
+  groupingAxis: string;
+}
+
 
 export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
@@ -330,6 +343,8 @@ export interface ChartTypeSettings extends SettingGroup {
   column: BarSettings;
   line: LineSettings;
   scatter: ScatterSettings;
+  histogram: HistogramSettings;
+  heatmap: HeatmapSettings;
   pie: RadialSettings;
   donut: RadialSettings;
   gauge: RadialSettings;
@@ -417,6 +432,8 @@ export const FORMAT_CONTEXT_SETTINGS = {
   yTick: 'axis.y.tick.labelFormat',
   linePoint: 'type.line.pointLabelFormat',
   scatterPoint: 'type.scatter.pointLabelFormat',
+  histogramPoint: 'type.histogram.pointLabelFormat',
+  heatmapPoint: 'type.histogram.pointLabelFormat',
   barCluster: 'type.bar.clusterLabelFormat',
   pieSliceLabel: 'type.pie.sliceLabelFormat',
   pieSliceValue: 'type.pie.sliceValueFormat',

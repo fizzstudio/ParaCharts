@@ -31,7 +31,7 @@ export interface AxisLabelInfo {
   labelTiers: (Tier | ChildTier)[];
 }
 
-function computeLabels(
+export function computeLabels(
     start: number, end: number, isPercent: boolean, isGrouping = true
   ): AxisLabelInfo {
     const minDec = new Decimal(start);
@@ -92,15 +92,15 @@ export class AxisInfo {
 
   protected _computeXLabels(xMin: number, xMax: number) {
     return computeLabels(
-      this._store.settings.axis.x.minValue ?? xMin, 
-      this._store.settings.axis.x.maxValue ?? xMax,
+      this._store.settings.axis.x.minValue == 'unset' ? xMin : this._store.settings.axis.x.minValue as number, 
+      this._store.settings.axis.x.maxValue == 'unset' ? xMax : this._store.settings.axis.x.maxValue as number,
       false);
   }
 
   protected _computeYLabels(yMin: number, yMax: number) {
     return computeLabels(
-      this._store.settings.axis.y.minValue ?? yMin, 
-      this._store.settings.axis.y.maxValue ?? yMax, 
+      this._store.settings.axis.y.minValue == 'unset' ? yMin : this._store.settings.axis.y.minValue as number, 
+      this._store.settings.axis.y.maxValue == 'unset' ? yMax : this._store.settings.axis.y.maxValue as number,
       false); //this._model.depFormat === 'percent');  
   }  
 

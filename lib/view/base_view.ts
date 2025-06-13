@@ -194,7 +194,7 @@ export class View extends BaseView {
   //protected _keymapManager: KeymapManager | null = null;
   protected _padding: Padding = {top: 0, bottom: 0, left: 0, right: 0};
   protected _hidden = false;
-
+  isActive: boolean = true;
   constructor(public readonly paraview: ParaView) {
     super();
     //this._setActions();
@@ -713,6 +713,11 @@ export class View extends BaseView {
     const i = oldChild.index;
     oldChild.remove();
     this.insert(newChild, i);
+  }
+
+  cleanup() {
+  this.isActive = false;
+  this._children.map((child) => child.cleanup()) 
   }
 
 }

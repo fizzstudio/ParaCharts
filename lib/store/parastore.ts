@@ -234,6 +234,12 @@ export class ParaStore extends State {
     this._settingObservers[path].push(observer);
   }
 
+  observeSettings(paths: string[], observer: (oldValue: Setting, newValue: Setting) => void){
+    for (let path of paths){
+      this.observeSetting(path, observer);
+    }
+  }
+
   unobserveSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
     if (!this._settingObservers[path]) {
       throw new Error(`no observers for setting '${path}'`);
@@ -344,6 +350,10 @@ export class ParaStore extends State {
       cursor.seriesKey === seriesKey);
   }
 
+  clearVisited() {
+    this._visitedDatapoints = []
+  }
+
   get selectedDatapoints() {
     return this._selectedDatapoints;
   }
@@ -399,6 +409,10 @@ export class ParaStore extends State {
   wasSelectedSeries(seriesKey: string) {
     return !!this._prevSelectedDatapoints.find(cursor =>
       cursor.seriesKey === seriesKey);
+  }
+
+  clearSelected() {
+    this._selectedDatapoints = []
   }
 
   getFormatType(context: FormatContext): FormatType {

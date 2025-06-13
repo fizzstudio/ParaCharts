@@ -88,6 +88,8 @@ export const defaults: Settings = {
         },
         step: 1
       },
+      minValue: 'unset',
+      maxValue: 'unset',
     },
     y: {
       title: {
@@ -118,6 +120,8 @@ export const defaults: Settings = {
         },
         step: 1,
       },
+      minValue: 'unset',
+      maxValue: 'unset',
     },
   },
   legend: {
@@ -185,11 +189,32 @@ export const defaults: Settings = {
       selectedPointMarkerSize: {
         width: 20,
         height: 20,
-      }
+      },
+      isDrawSymbols: true
     },
     scatter: {
+      isDrawTrendLine: false,
+      isShowOutliers: false,
       pointLabelFormat: 'raw',
       symbolStrokeWidth: 2,
+      selectedPointMarkerSize: {
+        width: 20,
+        height: 20,
+      }
+    },
+    histogram: {
+      pointLabelFormat: 'raw',
+      bins: 20,
+      displayAxis: `x`,
+      groupingAxis: ``,
+      selectedPointMarkerSize: {
+        width: 20,
+        height: 20,
+      }
+    },
+    heatmap: {
+      pointLabelFormat: 'raw',
+      resolution: 20,
       selectedPointMarkerSize: {
         width: 20,
         height: 20,

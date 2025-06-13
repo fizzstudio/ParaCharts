@@ -33,25 +33,31 @@ export class LineChart extends PointChart {
 
   protected _addedToParent() {
     super._addedToParent();
-    //todo().controller.registerSettingManager(this);
-    /*todo().controller.settingViews.add(this, {
+    this.paraview.store.settingControls.add({
       type: 'textfield',
       key: 'type.line.lineWidth',
       label: 'Line width',
       options: {
         inputType: 'number', 
         min: 1, 
-        max: this._settings.lineWidthMax
+        max: this.paraview.store.settings.type.line.lineWidthMax as number
       },
-      parentView: 'chartDetails.tabs.chart.chart',
+      parentView: 'controlPanel.tabs.chart.chart',
     });
-    todo().controller.settingViews.add(this, {
+    this.paraview.store.settingControls.add({
       type: 'checkbox',
       key: 'type.line.isDrawSymbols',
       label: 'Show symbols',
-      parentView: 'chartDetails.tabs.chart.chart',
+      parentView: 'controlPanel.tabs.chart.chart',
     });
-    todo().deets!.chartPanel.requestUpdate();*/
+
+    this.paraview.store.observeSetting('type.line.lineWidth', (_oldVal, newVal) => {
+      if (this.isActive) {
+        this._chartLandingView.clearChildren()
+        this._beginLayout()
+        this._completeLayout()
+      }
+    });
   }
 
   get datapointViews() {
@@ -286,7 +292,8 @@ export class LineSection extends ChartPoint {
     this._shape = new Path(this.paraview, {
       x: this._x,
       y: this._y,
-      points: this._points
+      points: this._points,
+      strokeWidth: this.paraview.store.settings.type.line.lineWidth 
     });
     super._createShape();
   }
