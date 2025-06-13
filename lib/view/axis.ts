@@ -382,10 +382,9 @@ export class VertAxis extends Axis<'vert'> {
       key: 'axis.y.minValue',
       label: 'Min y-value',
       options: { inputType: 'number' },
-      value: this.settings.minValue ?? range?.start,
+      value: this.settings.minValue == "unset" ? range?.start : this.settings.minValue,
       validator: value => {
-        const yValues = this.paraview.store.model!.allFacetValues('y')!.map((y) => y.value as number)
-        const min = Math.min(...yValues);
+        const min = Math.min(...this.chartLayers.dataLayer.axisInfo!.options.yValues)
         // NB: If the new value is successfully validated, the inner chart
         // gets recreated, and `max` may change, due to re-quantization of
         // the tick values. 
@@ -399,26 +398,14 @@ export class VertAxis extends Axis<'vert'> {
       key: 'axis.y.maxValue',
       label: 'Max y-value',
       options: { inputType: 'number' },
-      value: this.settings.maxValue ?? range?.end,
+      value: this.settings.maxValue == "unset" ? range?.end : this.settings.maxValue,
       validator: value => {
-        const yValues = this.paraview.store.model!.allFacetValues('y')!.map((y) => y.value as number)
-        const max = Math.max(...yValues)
+        const max = Math.max(...this.chartLayers.dataLayer.axisInfo!.options.yValues)
         return value as number <= max ?
           { err: `Max y-value (${value}) must be greater than (${max})`} : {};
       },
       parentView: 'controlPanel.tabs.chart.general',
     }); 
-    //Sets the default value in the control panel to make using the arrows easier
-    if (this.paraview.store.settings.axis.y.maxValue == "unset"){
-      this.paraview.store.updateSettings(draft => {
-      draft.axis.y.maxValue = this.chartLayers.dataLayer.axisInfo!.yLabelInfo.max!;
-    });
-    }
-    if (this.paraview.store.settings.axis.y.minValue == "unset"){
-      this.paraview.store.updateSettings(draft => {
-      draft.axis.y.minValue = this.chartLayers.dataLayer.axisInfo!.yLabelInfo.min!;
-    });
-    }    
   }
 
   computeSize(): [number, number] {

@@ -204,6 +204,15 @@ export const defaults: Settings = {
       pointLabelFormat: 'raw',
       bins: 20,
       displayAxis: `x`,
+      groupingAxis: ``,
+      selectedPointMarkerSize: {
+        width: 20,
+        height: 20,
+      }
+    },
+    heatmap: {
+      pointLabelFormat: 'raw',
+      resolution: 20,
       selectedPointMarkerSize: {
         width: 20,
         height: 20,

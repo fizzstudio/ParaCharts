@@ -31,7 +31,7 @@ export interface AxisLabelInfo {
   labelTiers: (Tier | ChildTier)[];
 }
 
-function computeLabels(
+export function computeLabels(
     start: number, end: number, isPercent: boolean, isGrouping = true
   ): AxisLabelInfo {
     const minDec = new Decimal(start);

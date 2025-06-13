@@ -74,7 +74,7 @@ export class ParaView extends logging(ParaComponent) {
   protected _summarizer!: Summarizer;
   protected _pointerEventManager = new PointerEventManager(this);
   @state() protected _defs: {[key: string]: TemplateResult} = {};
-
+  isActive: boolean = true;
   static styles = [
     //styles,
     css`
@@ -274,40 +274,44 @@ export class ParaView extends logging(ParaComponent) {
     this.log('ready');
     
     this._store.observeSetting('ui.isFullScreenEnabled', (_oldVal, newVal) => {
-      if (newVal) {
-        try {
-          this.root!.requestFullscreen();
-        } catch {
-          console.error('failed to enter fullscreen');
-          this._store.updateSettings(draft => {
-            draft.ui.isFullScreenEnabled = false;
-          }, true);
-        }
-      } else {
-        try {
-          document.exitFullscreen();
-        } catch {
-          console.error('failed to exit fullscreen');
-          this._store.updateSettings(draft => {
-            draft.ui.isFullScreenEnabled = true;
-          }, true);
+      if (this.isActive){
+        if (newVal) {
+          try {
+            this.root!.requestFullscreen();
+          } catch {
+            console.error('failed to enter fullscreen');
+            this._store.updateSettings(draft => {
+              draft.ui.isFullScreenEnabled = false;
+            }, true);
+          }
+        } else {
+          try {
+            document.exitFullscreen();
+          } catch {
+            console.error('failed to exit fullscreen');
+            this._store.updateSettings(draft => {
+              draft.ui.isFullScreenEnabled = true;
+            }, true);
+          }
         }
       }
     });
     this.root!.addEventListener('fullscreenchange', () => {
-      if (document.fullscreenElement) {
-        if (!this._store.settings.ui.isFullScreenEnabled) {
-          // fullscreen was entered manually
-          this._store.updateSettings(draft => {
-            draft.ui.isFullScreenEnabled = true;
-          }, true);
-        }
-      } else {
-        if (this._store.settings.ui.isFullScreenEnabled) {
-          // fullscreen was exited manually
-          this._store.updateSettings(draft => {
-            draft.ui.isFullScreenEnabled = false;
-          }, true);
+      if (this.isActive) {
+        if (document.fullscreenElement) {
+          if (!this._store.settings.ui.isFullScreenEnabled) {
+            // fullscreen was entered manually
+            this._store.updateSettings(draft => {
+              draft.ui.isFullScreenEnabled = true;
+            }, true);
+          }
+        } else {
+          if (this._store.settings.ui.isFullScreenEnabled) {
+            // fullscreen was exited manually
+            this._store.updateSettings(draft => {
+              draft.ui.isFullScreenEnabled = false;
+            }, true);
+          }
         }
       }
     });
@@ -374,7 +378,7 @@ export class ParaView extends logging(ParaComponent) {
     this.log('creating document view', this.type);
 
     //this._jimerator = new Jimerator(this);
-
+    this._documentView?.cleanup();
     this._documentView = new DocumentView(this);
     
     //this._jimerator.render();
@@ -509,6 +513,10 @@ export class ParaView extends logging(ParaComponent) {
     //     document.exitFullscreen();
     //   } 
     // }
+  }
+
+  cleanup() {
+    this.isActive = false;
   }
 
   render(): TemplateResult {

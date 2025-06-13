@@ -42,6 +42,8 @@ import { type Interval } from '@fizz/chart-classifier-utils';
 import { calendarNumber, type CalendarPeriod } from '@fizz/paramodel';
 
 import { svg } from 'lit';
+import { Histogram } from './histogram';
+import { Heatmap } from './heatmap';
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
 export const chartClasses = {
@@ -49,6 +51,8 @@ export const chartClasses = {
   column: BarChart,
   line: LineChart,
   scatter: ScatterPlot,
+  histogram: Histogram,
+  heatmap: Heatmap,
   pie: PieChart,
   donut: PieChart,
   gauge: BarChart, //GaugeChart,
