@@ -21,6 +21,9 @@ import { type PointChartType } from '../store/settings_types';
 import { enumerate, strToId } from '@fizz/paramodel';
 
 import { formatBox } from '@fizz/parasummary';
+import { svg } from 'lit';
+import { linearRegression } from 'simple-statistics';
+import { View } from './base_view';
 
 /**
  * Abstract base class for charts that represent data values as points
@@ -183,3 +186,38 @@ export class ChartPoint extends XYDatapointView {
 
 }
 
+export class TrendLineView extends View {
+  protected x1: number = 0;
+  protected x2: number = 0;
+  protected y1: number = 0;
+  protected y2: number = 0;
+
+  constructor(private chart: XYChart) {
+    super(chart.paraview);
+    this._generateEndpoints()
+  }
+
+  protected _generateEndpoints() {
+    const pointsArray: number[][] = [];
+    for (const child of this.chart.datapointViews) {
+      pointsArray.push([child.x, child.y])
+    }
+    const linReg: { m: number; b: number; } = linearRegression(pointsArray);
+    this.y1 = linReg.b
+    this.x2 = this.chart.parent.width
+    this.y2 = this.x2 * linReg.m + linReg.b
+    if (this.y2 < 0) {
+      this.x2 = -1 * linReg.b / linReg.m
+      this.y2 = 0;
+    }
+    if (this.y2 > this.chart.parent.height) {
+      this.x2 = (this.chart.parent.height - linReg.b) / linReg.m
+      this.y2 = this.chart.parent.height;
+    }
+  }
+
+  render() {
+    return svg`
+    <line x1=${this.x1} x2=${this.x2} y1=${this.y1} y2=${this.y2} style="stroke:red;stroke-width:3"/>
+    `}
+}

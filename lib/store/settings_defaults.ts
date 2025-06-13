@@ -193,6 +193,8 @@ export const defaults: Settings = {
       isDrawSymbols: true
     },
     scatter: {
+      isDrawTrendLine: false,
+      isShowOutliers: false,
       pointLabelFormat: 'raw',
       symbolStrokeWidth: 2,
       selectedPointMarkerSize: {
