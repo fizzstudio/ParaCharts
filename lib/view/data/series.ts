@@ -91,10 +91,10 @@ export class SeriesView extends Container(DataView) {
     this.paraview.store.announce(this._composeSelectionAnnouncement());
   }
 
-  onFocus() {
+  async onFocus() {
     super.onFocus();
     this._visit();
-    this.paraview.store.announce(this.paraview.summarizer.getSeriesSummary(this.seriesKey));
+    this.paraview.store.announce(await this.paraview.summarizer.getSeriesSummary(this.seriesKey));
   }
 
   getDatapointViewForLabel(label: string) {
