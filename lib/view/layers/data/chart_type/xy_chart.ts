@@ -344,14 +344,11 @@ export abstract class XYChart extends DataLayer {
     if (this.paraview.store.settings.sonification.isSoniEnabled
       && this.paraview.store.settings.sonification.isRiffEnabled) {
       const currentSeries = this.focusLeaf;
-
-      let seriesDatapoints = currentSeries.children;
-      let datapointArray = Array.from(seriesDatapoints)
-
+      const seriesDatapoints = Array.from(currentSeries.children);
       if (this.paraview.store.settings.sonification.isChordModeEnabled) {
       }
 
-      const noteCount = datapointArray.length;
+      const noteCount = seriesDatapoints.length;
       if (noteCount) {
         if (this._soniRiffInterval!) {
           clearInterval(this._soniRiffInterval!);
@@ -359,13 +356,12 @@ export abstract class XYChart extends DataLayer {
         this.soniSequenceIndex++;
 
         this._soniRiffInterval = setInterval(() => {
-          const datapointNavPoint = datapointArray.shift();
-  
+          const datapointNavPoint = seriesDatapoints.shift();
           if (!datapointNavPoint) {
             clearInterval(this._soniRiffInterval!);
           } else {
             const datapoint = datapointNavPoint.datapoint;
-            //this._sonifier.playDatapoints(datapoint);
+            this._sonifier.playDatapoints(datapoint as XYDatapoint);
             this.soniNoteIndex++;
           }
         }, SONI_RIFF_SPEEDS.at(this._soniRiffSpeedRateIndex));
@@ -525,8 +521,8 @@ export class XYSeriesView extends SeriesView {
     }    
   }
 
-  onFocus() {
-    super.onFocus();
+  onFocus(isNewComponentFocus = false) {
+    super.onFocus(isNewComponentFocus);
     let data = []
     for (let point of this.series.rawData) {
       data.push(point.y)
