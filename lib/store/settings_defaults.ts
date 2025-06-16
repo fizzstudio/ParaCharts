@@ -14,8 +14,23 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type Settings } from './settings_types';
+import { type SettingsInput, type Settings } from './settings_types';
 import { HERTZ } from '../common/constants';
+import { ChartType } from '@fizz/paramanifest';
+
+export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}> = {
+  bar: {
+    'chart.orientation': 'east',
+    'axis.vert.labelOrder': 'northToSouth',
+    'axis.x.tick.isDrawEnabled': false,
+    'grid.isDrawHorizLines': false,
+  },
+  column: {
+    'axis.x.tick.isDrawEnabled': false,
+    'axis.y.line.isDrawOverhangEnabled': false,
+    'grid.isDrawVertLines': false,
+  }
+};
 
 /**
  * Default values for all settings.
