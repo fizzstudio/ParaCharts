@@ -26,11 +26,11 @@ import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY } from '
 
 import {
   DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
-  type Setting
+  type Setting,
 } from './settings_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
-import { defaults } from './settings_defaults';
+import { defaults, chartTypeDefaults } from './settings_defaults';
 import { Colors } from '../common/colors';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
@@ -154,6 +154,13 @@ export class ParaStore extends State {
   setManifest(manifest: Manifest, data?: AllSeriesData) {
     this._manifest = manifest;
     const dataset = this._manifest.datasets[0];
+
+    if (chartTypeDefaults[dataset.type]) {
+      Object.entries(chartTypeDefaults[dataset.type]!).forEach(([path, value]) =>
+        this.updateSettings(draft => {
+          SettingsManager.set(path, value, draft);
+        }));
+    }
 
     if (dataset.settings) {
       Object.entries(dataset.settings).forEach(([path, value]) =>
