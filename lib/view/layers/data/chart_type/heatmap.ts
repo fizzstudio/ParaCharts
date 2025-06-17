@@ -142,7 +142,6 @@ export class Heatmap extends XYChart {
                 //const datapointView = this._newDatapointView(seriesView);
                 //seriesView.append(datapointView);
                 // the `index` property of the datapoint view will equal j
-                //todo().canvas.jimerator.addSelector(col.name!, j, datapointView.id);
             }
             for (let i = 0; i < this._resolution ** 2; i++) {
                 const heatmapTile = new HeatmapTileView(this, seriesView);

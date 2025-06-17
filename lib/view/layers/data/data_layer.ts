@@ -35,6 +35,7 @@ import { type LegendItem } from '../../legend';
 import { queryMessages } from '../../../store/query_utils';
 
 import { interpolate } from '@fizz/templum';
+import { StyleInfo } from 'lit/directives/style-map.js';
 
 /**
  * @public
@@ -156,15 +157,8 @@ export abstract class DataLayer extends ChartLayer {
             draft.ui.isLowVisionModeEnabled = !draft.ui.isLowVisionModeEnabled;
             this.paraview.store.announce(
               `Low vision mode ${draft.ui.isLowVisionModeEnabled ? 'enabled' : 'disabled'}`);
-            if (draft.ui.isLowVisionModeEnabled) {
-              draft.color.isDarkModeEnabled = true;
-              draft.chart.strokeWidth = draft.ui.lowVisionStrokeWidth;
-              draft.ui.isFullScreenEnabled = true;
-            } else {
-              draft.color.isDarkModeEnabled = false;
-              draft.chart.strokeWidth = defaults.chart.strokeWidth;
-              draft.ui.isFullScreenEnabled = false;
-            }
+            draft.color.isDarkModeEnabled = draft.ui.isLowVisionModeEnabled;
+            draft.ui.isFullScreenEnabled = draft.ui.isLowVisionModeEnabled;
           });
         } else if (e.action === 'open_help') {
           this.paraview.paraChart.controlPanel.showHelpDialog();
@@ -238,6 +232,13 @@ export abstract class DataLayer extends ChartLayer {
     this._beginLayout();
     this._completeLayout();
     //this._layoutComponents();
+  }
+
+  /**
+   * Mutate `styleInfo` with any custom series styles.
+   * @param styleInfo 
+   */
+  updateSeriesStyle(_styleInfo: StyleInfo) {
   }
 
   protected abstract _createDatapoints(): void;

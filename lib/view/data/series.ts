@@ -50,6 +50,17 @@ export class SeriesView extends Container(DataView) {
     return this._children;
   }
 
+  get modelIndex() {
+    // This is used by datapoint views to extract the correct ID from the JIM
+    // (series views may reorder their children)
+    return this.paraview.store.model!.keys.indexOf(this.seriesKey);
+  }
+
+  protected _updateStyleInfo(styleInfo: StyleInfo): void {
+    super._updateStyleInfo(styleInfo);
+    this.chart.updateSeriesStyle(styleInfo);
+  }
+
   nextSeriesLanding() {
     return this._next;    
   }
@@ -91,10 +102,13 @@ export class SeriesView extends Container(DataView) {
     this.paraview.store.announce(this._composeSelectionAnnouncement());
   }
 
-  onFocus() {
+  onFocus(isNewComponentFocus = false) {
     super.onFocus();
     this._visit();
     this.paraview.store.announce(this.paraview.summarizer.getSeriesSummary(this.seriesKey));
+    if (!isNewComponentFocus) {
+      this.chart.playSeriesRiff();
+    }
   }
 
   getDatapointViewForLabel(label: string) {

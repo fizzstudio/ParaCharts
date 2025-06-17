@@ -57,7 +57,6 @@ export interface UISettings extends SettingGroup {
   speechRate: number;
   isFullScreenEnabled: boolean;
   isLowVisionModeEnabled: boolean;
-  lowVisionStrokeWidth: number;
 }
 
 /** @public */
@@ -289,6 +288,8 @@ export interface PointSettings extends PlotSettings {
 export interface LineSettings extends PointSettings {
   lineWidth: number;
   lineWidthMax: number;
+  lowVisionLineWidth: number;
+  lineHighlightScale: number;
   baseSymbolSize: number;
   seriesLabelPadding: number; // also used after leader lines
   leaderLineLength: number;

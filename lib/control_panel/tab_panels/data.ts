@@ -115,22 +115,21 @@ export class DataPanel extends ControlPanelTabPanel {
             `
             : nothing
           }
-          <!--<button 
+          <button 
             @click=${() => {
-                // this.controlPanel.dialog.show(
-                //   'JSON Image Metadata', 
-                //   html`
-                //     <pre>
-                //       <code>
-                //         ${JSON.stringify(this.controlPanel.todo.canvas.jim, undefined, 2)}
-                //       </code>
-                //     </pre>`
-                // );
-              }
+              this.controlPanel.dialog.show(
+                'JSON Image Metadata', 
+                html`
+                  <pre>
+                    <code>
+                      ${JSON.stringify(this._store.jimerator!.jim, undefined, 2)}
+                    </code>
+                  </pre>`
+              )}
             }
           >
             JIM
-          </button>-->
+          </button>
           <button 
             @click=${() => this._saveData()}
           >

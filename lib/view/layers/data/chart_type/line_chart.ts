@@ -23,13 +23,13 @@ import { ChartLandingView, SeriesView, DatapointView } from '../../../data';
 
 import { interpolate } from '@fizz/templum';
 
+import { type StyleInfo } from 'lit/directives/style-map.js';
+
 /**
  * Class for drawing line charts.
  * @public
  */
 export class LineChart extends PointChart {
-
-  protected _lowVisLineWidth: number | null = null;
 
   protected _addedToParent() {
     super._addedToParent();
@@ -68,12 +68,22 @@ export class LineChart extends PointChart {
     return super.settings as DeepReadonly<LineSettings>;
   }
 
-  settingDidChange(key: string, value: any) {
-    // if (!super.settingDidChange(key, value)) {
-    //   this.paraview.requestUpdate();
-    //   return true;
-    // }
-    return false;
+  updateSeriesStyle(styleInfo: StyleInfo) {
+    super.updateSeriesStyle(styleInfo);
+    styleInfo.strokeWidth = this.effectiveLineWidth;
+  }
+
+  get effectiveLineWidth() {
+    return this.paraview.store.settings.ui.isLowVisionModeEnabled
+      ? this.paraview.store.settings.type.line.lowVisionLineWidth
+      : this.paraview.store.settings.type.line.lineWidth;
+  }
+
+  get effectiveVisitedScale() {
+    return this.paraview.store.settings.ui.isLowVisionModeEnabled
+      ? 1
+      : this.paraview.store.settings.type.line.lineHighlightScale;
+
   }
 
   protected _newDatapointView(seriesView: XYSeriesView) {
@@ -276,7 +286,7 @@ export class LineSection extends ChartPoint {
 
   get classInfo() {
     return {
-      dataLine: true,
+      'data-line': true,
       ...super.classInfo
     };
   }
@@ -288,12 +298,16 @@ export class LineSection extends ChartPoint {
     return style;
   }
 
+  protected _addVisitedStyleInfo(styleInfo: StyleInfo) {
+    super._addVisitedStyleInfo(styleInfo);
+    styleInfo.strokeWidth = this.chart.effectiveLineWidth*this.chart.effectiveVisitedScale;
+  }
+
   protected _createShape() {
     this._shape = new Path(this.paraview, {
       x: this._x,
       y: this._y,
       points: this._points,
-      strokeWidth: this.paraview.store.settings.type.line.lineWidth 
     });
     super._createShape();
   }

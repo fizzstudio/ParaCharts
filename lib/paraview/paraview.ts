@@ -63,7 +63,6 @@ export class ParaView extends logging(ParaComponent) {
   protected _frameRef = createRef<SVGRectElement>();
   protected _dataspaceRef = createRef<SVGGElement>();
   protected _documentView?: DocumentView;
-  //private _jimerator!: Jimerator;
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
   @state() private loadingMessageStyles: { [key: string]: any } = {
@@ -383,12 +382,9 @@ export class ParaView extends logging(ParaComponent) {
   createDocumentView(contentWidth?: number) {
     this.log('creating document view', this.type);
 
-    //this._jimerator = new Jimerator(this);
     this._documentView?.cleanup();
     this._documentView = new DocumentView(this);
     
-    //this._jimerator.render();
-
     this._computeViewBox();
   }
 
@@ -415,7 +411,7 @@ export class ParaView extends logging(ParaComponent) {
 
   serialize() {
     const svg = this.root!.cloneNode(true) as SVGSVGElement;
-    svg.id = 'para-' + window.crypto.randomUUID();
+    svg.id = 'para' + (window.crypto.randomUUID?.() ?? '');
 
     const styles = this._extractStyles(svg.id);
     const styleEl = document.createElementNS(SVGNS, 'style');
@@ -571,6 +567,7 @@ export class ParaView extends logging(ParaComponent) {
       }
         </defs>
         <metadata data-type="text/jim+json">
+          ${this._store.jimerator ? JSON.stringify(this._store.jimerator.jim, undefined, 2) : ''}
         </metadata>
         <rect 
           ${ref(this._frameRef)}
