@@ -155,10 +155,6 @@ export abstract class DataLayer extends ChartLayer {
         } else if (e.action === 'low_vision_mode_toggle') {
           this.paraview.store.updateSettings(draft => {
             draft.ui.isLowVisionModeEnabled = !draft.ui.isLowVisionModeEnabled;
-            this.paraview.store.announce(
-              `Low vision mode ${draft.ui.isLowVisionModeEnabled ? 'enabled' : 'disabled'}`);
-            draft.color.isDarkModeEnabled = draft.ui.isLowVisionModeEnabled;
-            draft.ui.isFullScreenEnabled = draft.ui.isLowVisionModeEnabled;
           });
         } else if (e.action === 'open_help') {
           this.paraview.paraChart.controlPanel.showHelpDialog();
