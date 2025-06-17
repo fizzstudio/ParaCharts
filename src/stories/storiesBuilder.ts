@@ -10,7 +10,7 @@ import { type CatalogListing } from '@fizz/chart-data';
 import { template } from './storyTemplate.ts';
 import { familyCatalogMap, familyCatalogMapMulti } from './chartSelectorHelper.ts';
 import { allTemplate } from './allStoriesTemplate.ts';
-import { CHART_FAMILY_MEMBERS, ChartTypeFamily, type ChartType } from '@fizz/paramanifest';
+import { CHART_FAMILY_MEMBERS, type ChartTypeFamily, type ChartType } from '@fizz/paramanifest';
 //import { capitalize } from '../../lib/common/utils.ts';
 
 function capitalize(string: string) {

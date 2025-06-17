@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('bar', true);
 
 const meta = {
-  title: "Ai-enhanced Charts/Lollipop Single Charts",
+  title: "AI-enhanced Charts/Lollipop Single Charts",
   render: (args) => AiChart(args),
   argTypes: {
     filename: {
@@ -25,9 +25,6 @@ export const AllSingleLollipopCharts: Story = {
   name: 'All Lollipop Single Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "lollipop",
   }
 };
