@@ -91,13 +91,21 @@ export class DatapointView extends DataView {
   get styleInfo(): StyleInfo {
     const style = super.styleInfo;
     if (this.paraview.store.isVisited(this.seriesKey, this.index)) {
-      const colorValue = this.paraview.store.colors.colorValue('highlight');
-      style.fill = colorValue;
-      style.stroke = colorValue;
-      const visitedScale = this.paraview.store.settings.chart.strokeHighlightScale;
-      style.strokeWidth = this.paraview.store.settings.chart.strokeWidth*visitedScale;
+      this._addVisitedStyleInfo(style);
     }
     return style;
+  }
+
+  /**
+   * Mutate `styleInfo` with visited styling.
+   * @param styleInfo 
+   */
+  protected _addVisitedStyleInfo(styleInfo: StyleInfo) {
+    const colorValue = this.paraview.store.colors.colorValue('highlight');
+    styleInfo.fill = colorValue;
+    styleInfo.stroke = colorValue;
+    const visitedScale = this.paraview.store.settings.chart.strokeHighlightScale;
+    styleInfo.strokeWidth = this.paraview.store.settings.chart.strokeWidth*visitedScale;
   }
 
   get ref() {
@@ -137,8 +145,10 @@ export class DatapointView extends DataView {
   }
 
   protected _createId(..._args: any[]): string {
-    return this.paraview.store.jimerator!.jim.selectors[
-      `datapoint${this._parent.modelIndex*this._series.length + 1}`].dom as string;
+    const jimIndex = this._parent.modelIndex*this._series.length + this.index + 1; 
+    const id = this.paraview.store.jimerator!.jim.selectors[`datapoint${jimIndex}`].dom as string;
+    // don't include the '#' from JIM
+    return id.slice(1);
   }
   
   protected _visit(_isNewComponentFocus = false) {

@@ -73,17 +73,21 @@ export class DataView extends View {
   }
 
   get styleInfo(): StyleInfo {
-    const style: StyleInfo = {};
+    const styleInfo: StyleInfo = {};
     if (this._isStyleEnabled) {
-      let colorValue = this.chart.paraview.store.colors.colorValueAt(this.color);
-      // if (this.paraview.store.isVisitedSeries(this.seriesKey)) {
-      //   colorValue = this.chart.paraview.store.colors.colorValue('highlight');
-      // }
-      style.fill = colorValue;
-      style.stroke = colorValue;
-      style.strokeWidth = this.paraview.store.settings.chart.strokeWidth;
+      this._updateStyleInfo(styleInfo);
     }
-    return style;
+    return styleInfo;
+  }
+
+  protected _updateStyleInfo(styleInfo: StyleInfo) {
+    let colorValue = this.chart.paraview.store.colors.colorValueAt(this.color);
+    // if (this.paraview.store.isVisitedSeries(this.seriesKey)) {
+    //   colorValue = this.chart.paraview.store.colors.colorValue('highlight');
+    // }
+    styleInfo.fill = colorValue;
+    styleInfo.stroke = colorValue;
+    styleInfo.strokeWidth = this.paraview.store.settings.chart.strokeWidth;
   }
 
   onFocus(_isNewComponentFocus = false) {

@@ -56,6 +56,11 @@ export class SeriesView extends Container(DataView) {
     return this.paraview.store.model!.keys.indexOf(this.seriesKey);
   }
 
+  protected _updateStyleInfo(styleInfo: StyleInfo): void {
+    super._updateStyleInfo(styleInfo);
+    this.chart.updateSeriesStyle(styleInfo);
+  }
+
   nextSeriesLanding() {
     return this._next;    
   }
