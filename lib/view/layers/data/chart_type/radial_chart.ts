@@ -196,7 +196,6 @@ export abstract class RadialChart extends DataLayer {
     //   xs.push(this._model.format(
     //     xSeries.atBoxed(i), `${this.parent.docView.type as RadialChartType}Slice`));
     //   //const xId = utils.strToId(xs.at(-1)!);
-    //   //todo().canvas.jimerator.addSelector(indep, i, `tick-x-${xId}`);
     // }
 
     const total = ys.reduce((a, b) => a + b, 0);
@@ -228,7 +227,6 @@ export abstract class RadialChart extends DataLayer {
       });
       seriesView.append(datapointView);
       accum += percentage;
-      //todo().canvas.jimerator.addSelector(ySeries.name!, i, datapointView.id);
     }
   }
 

@@ -137,14 +137,8 @@ export class DatapointView extends DataView {
   }
 
   protected _createId(..._args: any[]): string {
-    const facets = [...this.datapoint.entries()].map(([key, box]) => 
-      `${key}_${formatBox(box, this.paraview.store.getFormatType('domId'))}`).join('-');
-    return [
-      'datapoint',
-      strToId(this.series.key),
-      facets,
-      `${this.index}`
-    ].join('-'); 
+    return this.paraview.store.jimerator!.jim.selectors[
+      `datapoint${this._parent.modelIndex*this._series.length + 1}`].dom as string;
   }
   
   protected _visit(_isNewComponentFocus = false) {

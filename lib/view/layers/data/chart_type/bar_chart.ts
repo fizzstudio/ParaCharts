@@ -307,7 +307,6 @@ export class BarChart extends XYChart {
   protected _createDatapoints() {
     const seriesViews: {[key: string]: XYSeriesView} = {};
     Object.entries(this._clusteredData).forEach( ([clusterKey, cluster], i) => {
-      //todo().canvas.jimerator.addSelector(this._model.indepVar, i, cluster.labelId);
       for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
         for (const [colName, item] of Object.entries(stack.bars)) {
           if (!seriesViews[colName]) {
@@ -315,7 +314,6 @@ export class BarChart extends XYChart {
             this._chartLandingView.append(seriesViews[colName]);
           }
           seriesViews[colName].append(this._newDatapointView(seriesViews[colName], stack));
-          //todo().canvas.jimerator.addSelector(colName, i, this.datapointViews.at(-1)!.id);
         }
       }
     });
@@ -323,53 +321,6 @@ export class BarChart extends XYChart {
     // so that navigation starts at the top
     this._chartLandingView.reverseChildren();
   }
-
-  // protected _createComponents() {
-  //   const barData: BarData = {};
-
-  //   const seriesViews: {[key: string]: XYSeriesView} = {};
-  //   Object.entries(this._clusteredData).forEach( ([clusterKey, dataCluster], i) => {
-  //     const cluster = new BarCluster(this, clusterKey)
-  //     barData[clusterKey] = cluster;
-  //     //todo().canvas.jimerator.addSelector(this._model.indepVar, i, cluster.labelId);
-  //     for (const [stackKey, dataStack] of Object.entries(dataCluster)) {
-  //       const stack = new BarStack(cluster, stackKey);
-  //       cluster.stacks[stackKey] = stack;
-  //       for (const [colName, item] of Object.entries(dataStack)) {
-  //         if (!seriesViews[colName]) {
-  //           seriesViews[colName] = new XYSeriesView(this, colName);
-  //           this._chartLandingView.append(seriesViews[colName]);
-  //         }
-  //         stack.bars[colName] = this._newDatapointView(seriesViews[colName], stack);
-  //         seriesViews[colName].append(stack.bars[colName]);
-  //         //todo().canvas.jimerator.addSelector(colName, i, this.datapointViews.at(-1)!.id);
-  //       }
-  //       let textAnchor: LabelTextAnchor = 'middle';
-  //       let isPositionAtAnchor = false;
-  //       let angle = 0;
-  //       if (this._parent.orientation === 'east') {
-  //         textAnchor = 'start';
-  //         isPositionAtAnchor = false;
-  //         angle = -90;
-  //       }
-  //       if (this.paraview.store.settings.type.bar.isDrawStackLabels) {
-  //         this._stackLabels.push(new Label(this.paraview, {
-  //           text: fixed`${Object.values(dataStack).map(item => item.value.value).reduce((a, b) => a + b)}`,
-  //           classList: ['bar-stack-label'],
-  //           x: 0,
-  //           y: 0,
-  //           textAnchor,
-  //           isPositionAtAnchor,
-  //           angle
-  //         }));
-  //         stack.label = this._stackLabels.at(-1)!;
-  //         this.append(this._stackLabels.at(-1)!);
-  //       }
-  //     }
-  //   });
-  //   this._bars = barData;
-  //   this._chartLandingView.reverseChildren();
-  // }
 
   protected _completeLayout() {
     super._completeLayout();

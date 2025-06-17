@@ -19,9 +19,14 @@ import { State, property } from '@lit-app/state';
 import { produceWithPatches, enablePatches } from 'immer';
 enablePatches();
 
-import { dataFromManifest, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
-import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature, SeriesAnalyzerConstructor, XYDatapoint 
-  } from '@fizz/paramodel';
+import {
+  dataFromManifest, type AllSeriesData, type ChartType, type Manifest,
+  Jimerator
+} from '@fizz/paramanifest';
+import {
+  facetsFromDataset, Model, modelFromExternalData, modelFromInlineData,
+  FacetSignature, SeriesAnalyzerConstructor, XYDatapoint 
+} from '@fizz/paramodel';
 import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 
 import {
@@ -90,6 +95,7 @@ export class ParaStore extends State {
   protected _settingControls = new SettingControlManager(this); 
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
   protected _manifest: Manifest | null = null;
+  protected _jimerator: Jimerator | null = null;
   protected _model: Model | null = null;
   protected _facets: FacetSignature[] | null = null;
   protected _type: ChartType = 'line';
@@ -135,6 +141,10 @@ export class ParaStore extends State {
     return this._title;
   }
 
+  get jimerator() {
+    return this._jimerator;
+  }
+
   get seriesProperties() {
     return this._seriesProperties;
   }
@@ -176,6 +186,10 @@ export class ParaStore extends State {
     // if (paraChart.type){
     //   this._type = paraChart.type
     // }
+
+    this._jimerator = new Jimerator(this._manifest, data);
+    this._jimerator.render();
+
     this._type = dataset.type;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
