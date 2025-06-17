@@ -90,14 +90,14 @@ export class SlotLoader {
     if (!dataset!.series){
       dataset.series = [];
       for (let i = 1; i< vars.length; i++){
-          let series = {key:vars[i].label, theme: {baseQuantity: '', baseKind: "number" as "number"}, records: this.loadDataFromElement(els, manifest, vars[i].label)}
+          let series = {key:vars[i].label, theme: {baseQuantity: '', baseKind: "number" as "number", entity: vars[i].label}, records: this.loadDataFromElement(els, manifest, vars[i].label)}
           dataset.series.push(series)
         }
     }
     if (dataset!.series){
       if (dataset!.series.keys.length == 0){
         for (let i = 1; i< vars.length; i++){
-          let series = {key:vars[i].label, theme: {baseQuantity: '', baseKind: "number" as "number"}, records: this.loadDataFromElement(els, manifest, vars[i].label)}
+          let series = {key:vars[i].label, theme: {baseQuantity: '', baseKind: "number" as "number", entity: vars[i].label}, records: this.loadDataFromElement(els, manifest, vars[i].label)}
           dataset.series.push(series)
         }
       
@@ -217,6 +217,12 @@ export class SlotLoader {
     else if (vars.length == 2){
       let facets = { x: vars[0], y: vars[1] };
       facets["x"].variableType = "independent"
+      if (!facets["x"].units){
+        facets["x"].units = "point"
+      }
+      if (!facets["y"].units){
+        facets["y"].units = "point"
+      }
       return facets;
     }
     else{
@@ -224,6 +230,7 @@ export class SlotLoader {
     for (let facet of vars){
       if (facet.variableType == "independent"){
         indepFacet = facet
+        break;
       }
     }
     if (indepFacet == undefined){
@@ -231,11 +238,22 @@ export class SlotLoader {
     }
     let depFacetName = '';
     for (let facet of vars.toSpliced(vars.indexOf(indepFacet), 1)) {
-      depFacetName = depFacetName.concat(facet.label, " ")
+      //Truncate generated facet name if it's too long
+      if (depFacetName.concat(facet.label, " ").length > 50){
+        depFacetName = depFacetName.concat("...")
+        break;
+      }
+      depFacetName = depFacetName.concat(facet.label, ", ")
     }
     let facets = {x: vars[0], y: vars[1]};
     facets["x"].variableType = "independent"
     facets["y"].label = depFacetName
+    if (!facets["x"].units){
+        facets["x"].units = "point"
+      }
+      if (!facets["y"].units){
+        facets["y"].units = "point"
+      }
     return facets;
     }
     
