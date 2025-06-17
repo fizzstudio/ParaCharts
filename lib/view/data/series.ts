@@ -50,6 +50,12 @@ export class SeriesView extends Container(DataView) {
     return this._children;
   }
 
+  get modelIndex() {
+    // This is used by datapoint views to extract the correct ID from the JIM
+    // (series views may reorder their children)
+    return this.paraview.store.model!.keys.indexOf(this.seriesKey);
+  }
+
   nextSeriesLanding() {
     return this._next;    
   }

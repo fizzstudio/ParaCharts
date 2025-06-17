@@ -76,18 +76,6 @@ export abstract class XYChart extends DataLayer {
     super._addedToParent();  
     // this.maxDatapointSize = this.width/2.5;
     // this._isChordModeEnabled = this.paraview.store.settings.sonification.isChordModeEnabled;
-    // this.paraview.store.settingControls.add({
-    //   type: 'checkbox',
-    //   key: 'sonification.isChordModeEnabled',
-    //   label: 'Chord mode',
-    //   parentView: 'controlPanel.tabs.audio.sonification.dialog',
-    // });
-    // this.paraview.store.settingControls.add({
-    //   type: 'checkbox',
-    //   key: 'sonification.isRiffEnabled',
-    //   label: 'Series riff enabled',
-    //   parentView: 'controlPanel.tabs.audio.sonification.dialog',
-    // });
   }
 
   get managedSettingKeys() {
@@ -566,16 +554,6 @@ export abstract class XYDatapointView extends DatapointView {
 
   constructor(seriesView: SeriesView) { 
     super(seriesView);
-  }
-
-  protected _createId(..._args: any[]): string {
-    return [
-      'datapoint',
-      strToId(this.series.key),
-      // formatXYDatapointX(this.datapoint, this.paraview.store.getFormatType('domId')),
-      // formatXYDatapointY(this.datapoint, this.paraview.store.getFormatType('domId')),
-      `${this.index}`
-    ].join('-'); 
   }
 
   protected _addedToParent() {
