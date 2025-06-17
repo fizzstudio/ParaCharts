@@ -19,6 +19,7 @@ import { DirectiveResult } from 'lit-html/directive.js';
 import { FacetSignature } from '@fizz/paramodel';
 import { FormatType } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
+import { Jimerator } from '@fizz/paramanifest';
 import { LitElement } from 'lit';
 import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';

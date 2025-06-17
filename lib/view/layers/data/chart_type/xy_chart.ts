@@ -77,18 +77,6 @@ export abstract class XYChart extends DataLayer {
     super._addedToParent();  
     // this.maxDatapointSize = this.width/2.5;
     // this._isChordModeEnabled = this.paraview.store.settings.sonification.isChordModeEnabled;
-    // this.paraview.store.settingControls.add({
-    //   type: 'checkbox',
-    //   key: 'sonification.isChordModeEnabled',
-    //   label: 'Chord mode',
-    //   parentView: 'controlPanel.tabs.audio.sonification.dialog',
-    // });
-    // this.paraview.store.settingControls.add({
-    //   type: 'checkbox',
-    //   key: 'sonification.isRiffEnabled',
-    //   label: 'Series riff enabled',
-    //   parentView: 'controlPanel.tabs.audio.sonification.dialog',
-    // });
      //const xs = this.seriesViews[0].children.map(v => v.datapoint.x.toNumber());
       //console.log(this.paraview.store.model?.series[0].rawData)
       const xs = this.paraview.store.model?.series[0].rawData
@@ -349,14 +337,11 @@ export abstract class XYChart extends DataLayer {
     if (this.paraview.store.settings.sonification.isSoniEnabled
       && this.paraview.store.settings.sonification.isRiffEnabled) {
       const currentSeries = this.focusLeaf;
-
-      let seriesDatapoints = currentSeries.children;
-      let datapointArray = Array.from(seriesDatapoints)
-
+      const seriesDatapoints = Array.from(currentSeries.children);
       if (this.paraview.store.settings.sonification.isChordModeEnabled) {
       }
 
-      const noteCount = datapointArray.length;
+      const noteCount = seriesDatapoints.length;
       if (noteCount) {
         if (this._soniRiffInterval!) {
           clearInterval(this._soniRiffInterval!);
@@ -364,13 +349,12 @@ export abstract class XYChart extends DataLayer {
         this.soniSequenceIndex++;
 
         this._soniRiffInterval = setInterval(() => {
-          const datapointNavPoint = datapointArray.shift();
-  
+          const datapointNavPoint = seriesDatapoints.shift();
           if (!datapointNavPoint) {
             clearInterval(this._soniRiffInterval!);
           } else {
             const datapoint = datapointNavPoint.datapoint;
-            //this._sonifier.playDatapoints(datapoint);
+            this._sonifier.playDatapoints(datapoint as XYDatapoint);
             this.soniNoteIndex++;
           }
         }, SONI_RIFF_SPEEDS.at(this._soniRiffSpeedRateIndex));
@@ -540,8 +524,8 @@ export class XYSeriesView extends SeriesView {
     }    
   }
 
-  onFocus() {
-    super.onFocus();
+  onFocus(isNewComponentFocus = false) {
+    super.onFocus(isNewComponentFocus);
     let data = []
     for (let point of this.series.rawData) {
       data.push(point.y)
@@ -585,16 +569,6 @@ export abstract class XYDatapointView extends DatapointView {
 
   constructor(seriesView: SeriesView) { 
     super(seriesView);
-  }
-
-  protected _createId(..._args: any[]): string {
-    return [
-      'datapoint',
-      strToId(this.series.key),
-      // formatXYDatapointX(this.datapoint, this.paraview.store.getFormatType('domId')),
-      // formatXYDatapointY(this.datapoint, this.paraview.store.getFormatType('domId')),
-      `${this.index}`
-    ].join('-'); 
   }
 
   protected _addedToParent() {

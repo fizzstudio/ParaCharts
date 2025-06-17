@@ -63,7 +63,6 @@ export class ParaView extends logging(ParaComponent) {
   protected _frameRef = createRef<SVGRectElement>();
   protected _dataspaceRef = createRef<SVGGElement>();
   protected _documentView?: DocumentView;
-  //private _jimerator!: Jimerator;
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
   @state() private loadingMessageStyles: { [key: string]: any } = {
@@ -74,7 +73,7 @@ export class ParaView extends logging(ParaComponent) {
   protected _summarizer!: Summarizer;
   protected _pointerEventManager = new PointerEventManager(this);
   @state() protected _defs: {[key: string]: TemplateResult} = {};
-
+  isActive: boolean = true;
   static styles = [
     //styles,
     css`
@@ -280,40 +279,44 @@ export class ParaView extends logging(ParaComponent) {
     this.log('ready');
     
     this._store.observeSetting('ui.isFullScreenEnabled', (_oldVal, newVal) => {
-      if (newVal) {
-        try {
-          this.root!.requestFullscreen();
-        } catch {
-          console.error('failed to enter fullscreen');
-          this._store.updateSettings(draft => {
-            draft.ui.isFullScreenEnabled = false;
-          }, true);
-        }
-      } else {
-        try {
-          document.exitFullscreen();
-        } catch {
-          console.error('failed to exit fullscreen');
-          this._store.updateSettings(draft => {
-            draft.ui.isFullScreenEnabled = true;
-          }, true);
+      if (this.isActive){
+        if (newVal) {
+          try {
+            this.root!.requestFullscreen();
+          } catch {
+            console.error('failed to enter fullscreen');
+            this._store.updateSettings(draft => {
+              draft.ui.isFullScreenEnabled = false;
+            }, true);
+          }
+        } else {
+          try {
+            document.exitFullscreen();
+          } catch {
+            console.error('failed to exit fullscreen');
+            this._store.updateSettings(draft => {
+              draft.ui.isFullScreenEnabled = true;
+            }, true);
+          }
         }
       }
     });
     this.root!.addEventListener('fullscreenchange', () => {
-      if (document.fullscreenElement) {
-        if (!this._store.settings.ui.isFullScreenEnabled) {
-          // fullscreen was entered manually
-          this._store.updateSettings(draft => {
-            draft.ui.isFullScreenEnabled = true;
-          }, true);
-        }
-      } else {
-        if (this._store.settings.ui.isFullScreenEnabled) {
-          // fullscreen was exited manually
-          this._store.updateSettings(draft => {
-            draft.ui.isFullScreenEnabled = false;
-          }, true);
+      if (this.isActive) {
+        if (document.fullscreenElement) {
+          if (!this._store.settings.ui.isFullScreenEnabled) {
+            // fullscreen was entered manually
+            this._store.updateSettings(draft => {
+              draft.ui.isFullScreenEnabled = true;
+            }, true);
+          }
+        } else {
+          if (this._store.settings.ui.isFullScreenEnabled) {
+            // fullscreen was exited manually
+            this._store.updateSettings(draft => {
+              draft.ui.isFullScreenEnabled = false;
+            }, true);
+          }
         }
       }
     });
@@ -379,12 +382,9 @@ export class ParaView extends logging(ParaComponent) {
   createDocumentView(contentWidth?: number) {
     this.log('creating document view', this.type);
 
-    //this._jimerator = new Jimerator(this);
-
+    this._documentView?.cleanup();
     this._documentView = new DocumentView(this);
     
-    //this._jimerator.render();
-
     this._computeViewBox();
   }
 
@@ -411,7 +411,7 @@ export class ParaView extends logging(ParaComponent) {
 
   serialize() {
     const svg = this.root!.cloneNode(true) as SVGSVGElement;
-    svg.id = 'para-' + window.crypto.randomUUID();
+    svg.id = 'para' + (window.crypto.randomUUID?.() ?? '');
 
     const styles = this._extractStyles(svg.id);
     const styleEl = document.createElementNS(SVGNS, 'style');
@@ -503,6 +503,10 @@ export class ParaView extends logging(ParaComponent) {
     this._documentView!.chartLayers.dataLayer.focusDatapoint(seriesKey, index);
   }
 
+  cleanup() {
+    this.isActive = false;
+  }
+
   render(): TemplateResult {
     this.log('render');
     return html`
@@ -563,6 +567,7 @@ export class ParaView extends logging(ParaComponent) {
       }
         </defs>
         <metadata data-type="text/jim+json">
+          ${this._store.jimerator ? JSON.stringify(this._store.jimerator.jim, undefined, 2) : ''}
         </metadata>
         <rect 
           ${ref(this._frameRef)}

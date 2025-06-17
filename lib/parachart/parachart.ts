@@ -84,7 +84,7 @@ export class ParaChart extends logging(ParaComponent) {
             this.log('ParaCharts will now commence the raising of the roof and/or the dead');
           });
         }
-        else if (this._slotted) {
+        else if (this._slotted.length) {
           this.log(`loading from slot`);
           const table = this._slotted[0].getElementsByTagName("table")[0]
           const manifest = this._slotted[0].getElementsByClassName("manifest")[0] as HTMLElement

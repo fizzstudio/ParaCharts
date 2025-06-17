@@ -14,9 +14,9 @@ export class HighlightsLayer extends ChartLayer {
       ${
         this.paraview.store.visitedDatapoints.map(cursor => {
           const dpView = this._parent.dataLayer.datapointView(cursor.seriesKey, cursor.index);
-          return dpView!.children.map(kid => svg`
+          return dpView!.children.map((kid, i) => svg`
             <use
-              id="visited-mark-${cursor.seriesKey}-${cursor.index}"
+              id="visited-mark-${cursor.seriesKey}-${cursor.index}-${i}"
               class="visited-mark"
               href="#${kid.id}" 
             />

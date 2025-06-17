@@ -17,6 +17,14 @@ export class ChartPanel extends ControlPanelTabPanel {
   static styles = [
     ...ControlPanelTabPanel.styles,
     css`
+    .setting-views {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+        align-content: space-between;
+        gap: 0.5em;
+        margin-bottom: .5em;
+      }
     `
   ];
 
@@ -27,13 +35,13 @@ export class ChartPanel extends ControlPanelTabPanel {
           ${ref(this._generalSettingViewsRef)}
           class="setting-views"
         >
-          ${this._store.settingControls.getContent('general')}
+          ${this._store.settingControls.getContent('controlPanel.tabs.chart.general')}
         </div>
         <div
           ${ref(this._chartSettingViewsRef)}
           class="setting-views"
         >
-          ${this._store.settingControls.getContent('chart')}
+          ${this._store.settingControls.getContent('controlPanel.tabs.chart.chart')}
         </div>
       </div>
     `;

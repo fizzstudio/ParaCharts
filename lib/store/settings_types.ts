@@ -57,7 +57,6 @@ export interface UISettings extends SettingGroup {
   speechRate: number;
   isFullScreenEnabled: boolean;
   isLowVisionModeEnabled: boolean;
-  lowVisionStrokeWidth: number;
 }
 
 /** @public */
@@ -192,8 +191,8 @@ export interface AxisSettings extends SettingGroup {
   title: AxisTitleSettings;
   line: AxisLineSettings;
   tick: TickSettings;
-  minValue?: number;
-  maxValue?: number;
+  minValue: number | 'unset';
+  maxValue: number | 'unset';
 }
 
 /** @public */
@@ -289,6 +288,8 @@ export interface PointSettings extends PlotSettings {
 export interface LineSettings extends PointSettings {
   lineWidth: number;
   lineWidthMax: number;
+  lowVisionLineWidth: number;
+  lineHighlightScale: number;
   baseSymbolSize: number;
   seriesLabelPadding: number; // also used after leader lines
   leaderLineLength: number;
@@ -307,8 +308,21 @@ export interface StepLineSettings extends PointSettings {
 
 /** @public */
 export interface ScatterSettings extends PointSettings {
-
+  isDrawTrendLine: boolean;
+  isShowOutliers: boolean;
 }
+
+/** @public */
+export interface HeatmapSettings extends PointSettings {
+  resolution: number;
+}
+
+export interface HistogramSettings extends PointSettings {
+  bins: number;
+  displayAxis: string;
+  groupingAxis: string;
+}
+
 
 export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
@@ -330,6 +344,8 @@ export interface ChartTypeSettings extends SettingGroup {
   column: BarSettings;
   line: LineSettings;
   scatter: ScatterSettings;
+  histogram: HistogramSettings;
+  heatmap: HeatmapSettings;
   pie: RadialSettings;
   donut: RadialSettings;
   gauge: RadialSettings;
@@ -417,6 +433,8 @@ export const FORMAT_CONTEXT_SETTINGS = {
   yTick: 'axis.y.tick.labelFormat',
   linePoint: 'type.line.pointLabelFormat',
   scatterPoint: 'type.scatter.pointLabelFormat',
+  histogramPoint: 'type.histogram.pointLabelFormat',
+  heatmapPoint: 'type.histogram.pointLabelFormat',
   barCluster: 'type.bar.clusterLabelFormat',
   pieSliceLabel: 'type.pie.sliceLabelFormat',
   pieSliceValue: 'type.pie.sliceValueFormat',
