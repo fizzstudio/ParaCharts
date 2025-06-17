@@ -44,7 +44,6 @@ export class AnnotationLayer extends ChartLayer {
   renderChildren() {
     if (this.type === 'foreground') {
       if (this.paraview.store.rangeHighlights) {
-        console.log('RHL', this.paraview.store.rangeHighlights);
         this.addGroup('range-highlights', true);
         this.group('range-highlights')!.clearChildren();
         for (const rhl of this.paraview.store.rangeHighlights) {

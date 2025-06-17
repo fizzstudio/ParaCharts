@@ -197,6 +197,8 @@ export const defaults: Settings = {
     line: {
       lineWidth: 5,
       lineWidthMax: 25,
+      lowVisionLineWidth: 15,
+      lineHighlightScale: 1.5, 
       baseSymbolSize: 10,
       seriesLabelPadding: 5,
       pointLabelFormat: 'raw',
@@ -339,7 +341,6 @@ export const defaults: Settings = {
     speechRate: 1,
     isFullScreenEnabled: false,
     isLowVisionModeEnabled: false,
-    lowVisionStrokeWidth: 15,
   },
   controlPanel: {
     isControlPanelDefaultOpen: false,
