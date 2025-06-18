@@ -102,18 +102,26 @@ export class KeymapManager extends EventTarget {
     action,
     caseSensitive = true
   }: KeyRegistration) {
-    const checkKey = caseSensitive ? keyId : keyId.toUpperCase();
-    if (checkKey in this.keyDetails) {
+    if (keyId in this.keyDetails) {
       console.log('overriding key binding for', keyId);
     }
     try {
-      this.keyDetails[checkKey] = {
+      this.keyDetails[keyId] = {
         key: keyId,
         //title: this.todo.controller.translator.translate(titleId),
         //description,
         action,
         //keyDescription
       };
+      if (!caseSensitive) {
+        this.keyDetails[`Shift+${keyId.toLocaleUpperCase()}`] = {
+          key: keyId,
+          //title: this.todo.controller.translator.translate(titleId),
+          //description,
+          action,
+          //keyDescription
+        };
+      }
     } catch (e) {
       if (e instanceof Error) {
         console.warn(e.message);
@@ -133,16 +141,7 @@ export class KeymapManager extends EventTarget {
   }
 
   actionForKey(key: string): string | undefined {
-    //return this.keyDetails[key]?.action;
-    if (key in this.keyDetails) {
-      // case-sensitive match
-      return this.keyDetails[key].action;
-    } else if (key.toUpperCase() in this.keyDetails) {
-      // case-insensitive match
-      // XXX does this work with the shift key?
-      return this.keyDetails[key.toUpperCase()].action;
-    }
-    return undefined;
+    return this.keyDetails[key]?.action;
   }
 
   onKeydown(key: string) {
