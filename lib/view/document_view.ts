@@ -189,9 +189,8 @@ export class DocumentView extends Container(View) {
       this._grid.append(this._seriesLabelStrip, {x: 2, y: 0});
       hasDirectLabels = true;
     }
-
-    if ( this._store.settings.legend.isDrawLegend) {
-      if ( this._store.settings.legend.isAlwaysDrawLegend
+    if (this._store.settings.legend.isDrawLegend) {
+      if (this._store.settings.legend.isAlwaysDrawLegend
         || (hasDirectLabels && this._store.settings.chart.hasLegendWithDirectLabels) 
         || (!hasDirectLabels && this._store.model!.multi)) {
         this.addLegend(this._store.settings.legend.position);
