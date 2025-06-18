@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const AiChart34: Story = {
-  name: "979: Total number of gang-related homicides in the United States 2012 (34)",
+  name: "881: FedEx's revenue 2009 to 2019 (34)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-979.json",
+    filename: "manifests/autogen/line-single/line-single-manifest-881.json",
     forcecharttype: "stepline",
   }
 }

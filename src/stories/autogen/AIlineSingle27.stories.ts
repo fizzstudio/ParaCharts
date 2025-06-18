@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const AiChart27: Story = {
-  name: "881: FedEx's revenue 2009 to 2019 (27)",
+  name: "508: Indonesia: number of internet users 2017 to 2023 (27)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-881.json",
+    filename: "manifests/autogen/line-single/line-single-manifest-508.json",
     forcecharttype: "line",
   }
 }

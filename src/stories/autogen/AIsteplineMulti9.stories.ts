@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const AiChart9: Story = {
-  name: "67: Gross domestic product of the BRIC countries from 2014 to 2024 (9)",
+  name: "128: Gross domestic product (GDP) growth in EU and Euro area 2024 (9)",
   args: {
-    filename: "manifests/autogen/line-multi/line-multi-manifest-67.json",
+    filename: "manifests/autogen/line-multi/line-multi-manifest-128.json",
     forcecharttype: "stepline",
   }
 }

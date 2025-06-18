@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const AiChart10: Story = {
-  name: "76: Inflation rate in EU and Euro area 2024 (10)",
+  name: "16: Distribution of the workforce across economic sectors in India 2019 (10)",
   args: {
-    filename: "manifests/autogen/line-multi/line-multi-manifest-76.json",
+    filename: "manifests/autogen/line-multi/line-multi-manifest-16.json",
     forcecharttype: "line",
   }
 }

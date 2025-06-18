@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const Chart35: Story = {
-  name: "Charizard: Holographic Charizard Card Price (35)",
+  name: "887: Youth unemployment rate in India in 2019 (35)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-Charizard.json",
+    filename: "manifests/autogen/line-single/line-single-manifest-887.json",
     forcecharttype: "line",
   }
 }

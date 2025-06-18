@@ -49,7 +49,7 @@
   },
   "types": "./dist/paracharts.d.ts",
   "devDependencies": {
-    "@fizz/chart-data": "^2.1.6-alpha.9",
+    "@fizz/chart-data": "^2.1.6-alpha.13",
     "@fizz/line-chart-intersection": "^3.4.0",
     "@fizz/line-chart-ui-utils": "^0.7.0",
     "@fizz/test-utils": "^0.2.0",

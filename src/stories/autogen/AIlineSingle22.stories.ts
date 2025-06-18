@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const AiChart22: Story = {
-  name: "595: Number of births in Canada 2000 to 2019 (22)",
+  name: "128: Cattle population worldwide 2012 to 2019 (22)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-595.json",
+    filename: "manifests/autogen/line-single/line-single-manifest-128.json",
     forcecharttype: "line",
   }
 }

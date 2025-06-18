@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const AiChart23: Story = {
-  name: "605: Samsung Electronics' operating profit 2009-2019, by quarter (23)",
+  name: "172: Median household income in the United States 1990 to 2018 (23)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-605.json",
+    filename: "manifests/autogen/line-single/line-single-manifest-172.json",
     forcecharttype: "line",
   }
 }
