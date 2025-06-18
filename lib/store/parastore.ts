@@ -14,22 +14,28 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import papa from 'papaparse';
 import { State, property } from '@lit-app/state';
 import { produceWithPatches, enablePatches } from 'immer';
 enablePatches();
 
-import { dataFromManifest, type AllSeriesData, type ChartType, type Manifest } from '@fizz/paramanifest';
-import { facetsFromDataset, Model, modelFromExternalData, modelFromInlineData, FacetSignature, SeriesAnalyzerConstructor, XYDatapoint 
-  } from '@fizz/paramodel';
-import { Summarizer, FormatType, formatXYDatapointX } from '@fizz/parasummary';
+import {
+  dataFromManifest, type AllSeriesData, type ChartType, type Manifest,
+  Jimerator
+} from '@fizz/paramanifest';
+import {
+  facetsFromDataset, Model, modelFromExternalData, modelFromInlineData,
+  FacetSignature, SeriesAnalyzerConstructor, XYDatapoint 
+} from '@fizz/paramodel';
+import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 
 import {
   DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
-  type Setting
+  type Setting,
 } from './settings_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
-import { defaults } from './settings_defaults';
+import { defaults, chartTypeDefaults } from './settings_defaults';
 import { Colors } from '../common/colors';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
@@ -89,6 +95,7 @@ export class ParaStore extends State {
   protected _settingControls = new SettingControlManager(this); 
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
   protected _manifest: Manifest | null = null;
+  protected _jimerator: Jimerator | null = null;
   protected _model: Model | null = null;
   protected _facets: FacetSignature[] | null = null;
   protected _type: ChartType = 'line';
@@ -134,6 +141,10 @@ export class ParaStore extends State {
     return this._title;
   }
 
+  get jimerator() {
+    return this._jimerator;
+  }
+
   get seriesProperties() {
     return this._seriesProperties;
   }
@@ -154,6 +165,13 @@ export class ParaStore extends State {
     this._manifest = manifest;
     const dataset = this._manifest.datasets[0];
 
+    if (chartTypeDefaults[dataset.type]) {
+      Object.entries(chartTypeDefaults[dataset.type]!).forEach(([path, value]) =>
+        this.updateSettings(draft => {
+          SettingsManager.set(path, value, draft);
+        }));
+    }
+
     if (dataset.settings) {
       Object.entries(dataset.settings).forEach(([path, value]) =>
         this.updateSettings(draft => {
@@ -168,6 +186,10 @@ export class ParaStore extends State {
     // if (paraChart.type){
     //   this._type = paraChart.type
     // }
+
+    this._jimerator = new Jimerator(this._manifest, data);
+    this._jimerator.render();
+
     this._type = dataset.type;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
@@ -231,6 +253,12 @@ export class ParaStore extends State {
       throw new Error(`observer already registered for setting '${path}'`);
     }
     this._settingObservers[path].push(observer);
+  }
+
+  observeSettings(paths: string[], observer: (oldValue: Setting, newValue: Setting) => void){
+    for (let path of paths){
+      this.observeSetting(path, observer);
+    }
   }
 
   unobserveSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
@@ -343,6 +371,10 @@ export class ParaStore extends State {
       cursor.seriesKey === seriesKey);
   }
 
+  clearVisited() {
+    this._visitedDatapoints = []
+  }
+
   get selectedDatapoints() {
     return this._selectedDatapoints;
   }
@@ -398,6 +430,10 @@ export class ParaStore extends State {
   wasSelectedSeries(seriesKey: string) {
     return !!this._prevSelectedDatapoints.find(cursor =>
       cursor.seriesKey === seriesKey);
+  }
+
+  clearSelected() {
+    this._selectedDatapoints = []
   }
 
   getFormatType(context: FormatContext): FormatType {
@@ -461,6 +497,15 @@ export class ParaStore extends State {
       throw new Error('range not highlighted');
     }
     this._rangeHighlights = this._rangeHighlights.toSpliced(index, 1);
+  }
+
+  getModelCsv() {
+    const xLabel = this.model!.independentFacet!.label;
+    return papa.unparse(this.model!.series[0].datapoints.map((dp, i) => ({
+      [xLabel]: formatXYDatapointX(dp as XYDatapoint, 'raw'),
+      ...Object.fromEntries(this.model!.series.map(s =>
+        [s.key, formatXYDatapointY(s[i] as XYDatapoint, 'value')]))
+    })));
   }
 
 }

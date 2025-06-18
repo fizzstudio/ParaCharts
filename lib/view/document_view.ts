@@ -292,6 +292,7 @@ export class DocumentView extends Container(View) {
   }
 
   cleanup() {
+    super.cleanup();
     // remove any event listeners we added, etc.
   }
 
