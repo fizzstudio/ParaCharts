@@ -38,6 +38,54 @@ export class Path extends Shape {
     this._options.points = points;
   }
 
+  get xs() {
+    return this.points.map(point => point.x);
+  }
+
+  get ys() {
+    return this.points.map(point => point.y);
+  }
+
+  get width() {
+    return Math.max(...this.xs) - Math.min(...this.xs); 
+  }
+
+  get height() {
+    return Math.max(...this.ys) - Math.min(...this.ys); 
+  }
+
+  get left() {
+    return this._x + Math.min(...this.xs);
+  }
+
+  set left(left: number) {
+    this._x += left - this.left;
+  }
+
+  get right() {
+    return this._x + Math.max(...this.xs);
+  }
+
+  set right(right: number) {
+    this._x += right - this.right;
+  }
+
+  get top() {
+    return this._y + Math.min(...this.ys);
+  }
+
+  set top(top: number) {
+    this._y += top - this.top;
+  }
+
+  get bottom() {
+    return this._y + Math.max(...this.ys);
+  }
+
+  set bottom(bottom: number) {
+    this._y += bottom - this.bottom;
+  }
+
   protected get _pathD() {
     const relPoints = this._options.points.map(p => p.add(this._loc));
     let d = fixed`M${relPoints[0].x},${relPoints[0].y}`;

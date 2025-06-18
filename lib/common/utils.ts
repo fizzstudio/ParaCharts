@@ -87,6 +87,19 @@ export function groupBbox(...views: View[]) {
   );
 }
 
+export function bboxOfBboxes(...bboxes: DOMRect[]) {
+  const left = Math.min(...bboxes.map(b => b.left));
+  const right = Math.max(...bboxes.map(b => b.right));
+  const top = Math.min(...bboxes.map(b => b.top));
+  const bottom = Math.max(...bboxes.map(b => b.bottom));
+  return new DOMRect(
+    left,
+    top,
+    right - left,
+    bottom - top
+  );
+}
+
 // Simon: These functions were used for Model2D but have no use currently.
 //  However, they are general utility functions which might be useful later
 /*export function mergeUnique<T>(...arrays: T[][]): T[] {

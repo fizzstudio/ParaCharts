@@ -484,11 +484,11 @@ export class GridLayout extends Layout {
         .slice(territory.x, territory.x + territory.width - 1)
         .reduce((a, b) => a + b, 0);
     if (align === 'start') {
-      kid.x = colLeft;
+      kid.left = colLeft;
     } else if (align === 'end') {
-      kid.x = colLeft + spanWidth - kid.boundingWidth;
+      kid.right = colLeft + spanWidth;
     } else {
-      kid.x = colLeft + spanWidth/2 - kid.width/2 - kid.padding.left;
+      kid.centerX = colLeft + spanWidth/2;
     }
   }
 
@@ -509,11 +509,11 @@ export class GridLayout extends Layout {
         .slice(territory.y, territory.y + territory.height - 1)
         .reduce((a, b) => a + b, 0);
     if (align === 'start') {
-      kid.y = rowTop;
+      kid.top = rowTop;
     } else if (align === 'end') {
-      kid.y = rowTop + spanHeight - kid.boundingHeight;
+      kid.bottom = rowTop + spanHeight;
     } else {
-      kid.y = rowTop + spanHeight/2 - kid.height/2 - kid.padding.top;
+      kid.centerY = rowTop + spanHeight/2;
     }
   }
 
