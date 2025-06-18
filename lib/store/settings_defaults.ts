@@ -340,7 +340,7 @@ export const defaults: Settings = {
     isVoicingEnabled: false,
     isAnnouncementEnabled: true,
     speechRate: 1,
-    isFullScreenEnabled: false,
+    isFullscreenEnabled: false,
     isLowVisionModeEnabled: false,
     isFocusRingEnabled: false,
     focusRingGap: 4

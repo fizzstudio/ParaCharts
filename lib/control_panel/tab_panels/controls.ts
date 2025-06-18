@@ -25,7 +25,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
     super.connectedCallback();
     this._store.settingControls.add({
       type: 'button',
-      key: 'ui.isFullScreenEnabled',
+      key: 'ui.isFullscreenEnabled',
       label: 'Fullscreen',
       parentView: 'controlPanel.tabs.controls.fullscreen',
     });
@@ -87,7 +87,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
           </button>
           <button
             @click=${() => this.store.updateSettings(draft => {
-              draft.ui.isFullScreenEnabled = true;
+              draft.ui.isFullscreenEnabled = true;
             })}
           >
             Fullscreen

@@ -278,50 +278,59 @@ export class ParaView extends logging(ParaComponent) {
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     this.log('ready');
     
-    this._store.observeSetting('ui.isFullScreenEnabled', (_oldVal, newVal) => {
+    this._store.observeSetting('ui.isFullscreenEnabled', (_oldVal, newVal) => {
       if (this.isActive){
-        if (newVal) {
+        if (newVal && !document.fullscreenElement) {
           try {
             this.root!.requestFullscreen();
           } catch {
             console.error('failed to enter fullscreen');
             this._store.updateSettings(draft => {
-              draft.ui.isFullScreenEnabled = false;
+              draft.ui.isFullscreenEnabled = false;
             }, true);
           }
-        } else {
+        } else if (!newVal && document.fullscreenElement) {
           try {
             document.exitFullscreen();
           } catch {
             console.error('failed to exit fullscreen');
             this._store.updateSettings(draft => {
-              draft.ui.isFullScreenEnabled = true;
+              draft.ui.isFullscreenEnabled = true;
             }, true);
           }
         }
       }
     });
-    this.root!.addEventListener('fullscreenchange', () => {
-      if (this.isActive) {
-        if (document.fullscreenElement) {
-          if (!this._store.settings.ui.isFullScreenEnabled) {
-            // fullscreen was entered manually
-            this._store.updateSettings(draft => {
-              draft.ui.isFullScreenEnabled = true;
-            }, true);
-          }
-        } else {
-          if (this._store.settings.ui.isFullScreenEnabled) {
-            // fullscreen was exited manually
-            this._store.updateSettings(draft => {
-              draft.ui.isFullScreenEnabled = false;
-            }, true);
-          }
-        }
-      }
+    this._store.observeSetting('ui.isLowVisionModeEnabled', (_oldVal: boolean, newVal: boolean) => {
+      this._store.updateSettings(draft => {
+        this._store.announce(`Low vision mode ${newVal ? 'enabled' : 'disabled'}`);
+        draft.color.isDarkModeEnabled = newVal;
+        draft.ui.isFullscreenEnabled = newVal;
+      });
     });
-
     this.dispatchEvent(new CustomEvent('paraviewready', {bubbles: true, composed: true, cancelable: true}));
+  }
+
+  protected _onFullscreenChange() {
+    if (document.fullscreenElement) {
+      if (!this._store.settings.ui.isFullscreenEnabled) {
+        // fullscreen was entered manually
+        this._store.updateSettings(draft => {
+          draft.ui.isFullscreenEnabled = true;
+        }, true);
+      }
+    } else {
+      if (this._store.settings.ui.isLowVisionModeEnabled) {
+        this._store.updateSettings(draft => {
+          draft.ui.isLowVisionModeEnabled = false;
+        });
+      } else if (this._store.settings.ui.isFullscreenEnabled) {
+        // fullscreen was exited manually
+        this._store.updateSettings(draft => {
+          draft.ui.isFullscreenEnabled = false;
+        }, true);
+      }
+    }
   }
 
   /*protected updated(changedProperties: PropertyValues) {
@@ -522,20 +531,7 @@ export class ParaView extends logging(ParaComponent) {
         class=${classMap(this._rootClasses())}
         viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
         style=${styleMap(this._rootStyle())}
-        @fullscreenchange=${() => {
-          if (document.fullscreenElement) {
-            // entering fullscreen mode
-            this.log('entering fullscreen');
-          } else {
-            // exiting fullscreen mode
-            this.log('exiting fullscreen');
-            /*if (this._controller.settingStore.settings.ui.isLowVisionModeEnabled) {
-              this._controller.setSetting('ui.isLowVisionModeEnabled', false);
-            } else {
-              this._controller.settingViews.update('ui.isFullScreenEnabled', false);
-            }*/
-          }
-        }}
+        @fullscreenchange=${() => this._onFullscreenChange()}
         @focus=${() => {
           this.log('focus');
           //this.todo.deets?.onFocus();
