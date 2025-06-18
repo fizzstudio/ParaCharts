@@ -103,7 +103,7 @@ export class SeriesView extends Container(DataView) {
   }
 
   async onFocus(isNewComponentFocus = false) {
-    super.onFocus();
+    await super.onFocus();
     this._visit();
     this.paraview.store.announce(await this.paraview.summarizer.getSeriesSummary(this.seriesKey));
     if (!isNewComponentFocus) {

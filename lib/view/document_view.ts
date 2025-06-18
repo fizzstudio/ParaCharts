@@ -129,7 +129,6 @@ export class DocumentView extends Container(View) {
       x: 1,
       y: this._chartLayers.dataLayer.axisInfo && horizAxisPos === 'north' ? 1 : 0
     });
-
     if (this._chartLayers.dataLayer.axisInfo) {
       this._vertAxis = new VertAxis(this);
       this._horizAxis = new HorizAxis(this, undefined);
@@ -179,6 +178,7 @@ export class DocumentView extends Container(View) {
       // No axis info
       this._chartLayers.dataLayer.init();
     }
+
     let hasDirectLabels = false;
     if ( this._store.settings.chart.hasDirectLabels
         && this.type === 'line' 
@@ -189,10 +189,11 @@ export class DocumentView extends Container(View) {
       this._grid.append(this._seriesLabelStrip, {x: 2, y: 0});
       hasDirectLabels = true;
     }
+
     if ( this._store.settings.legend.isDrawLegend) {
       if ( this._store.settings.legend.isAlwaysDrawLegend
         || (hasDirectLabels && this._store.settings.chart.hasLegendWithDirectLabels) 
-        || (!hasDirectLabels && this._store.model!.numSeries)) {
+        || (!hasDirectLabels && this._store.model!.multi)) {
         this.addLegend(this._store.settings.legend.position);
       }
     }

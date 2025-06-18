@@ -297,17 +297,17 @@ export abstract class DataLayer extends ChartLayer {
   /**
    * Move focus to the navpoint to the right, if there is one
    */
-  abstract moveRight(): void; 
+  abstract moveRight(): Promise<void>; 
 
   /**
    * Move focus to the navpoint to the left, if there is one
    */
-  abstract moveLeft(): void;
-  abstract moveUp(): void;
-  abstract moveDown(): void;
+  abstract moveLeft(): Promise<void>;
+  abstract moveUp(): Promise<void>;
+  abstract moveDown(): Promise<void>;
 
-  protected abstract _goSeriesMinMax(isMin: boolean): void;
-  protected abstract _goChartMinMax(isMin: boolean): void;
+  protected abstract _goSeriesMinMax(isMin: boolean): Promise<void>;
+  protected abstract _goChartMinMax(isMin: boolean): Promise<void>;
 
   /**
    * Clear outstanding play intervals/timeouts
@@ -323,12 +323,12 @@ export abstract class DataLayer extends ChartLayer {
   /**
    * Play all datapoints to the right, if there are any
    */
-  abstract playRight(): void;
+  abstract playRight(): Promise<void>;
 
   /**
    * Play all datapoints to the left, if there are any
    */
-  abstract playLeft(): void;
+  abstract playLeft(): Promise<void>;
 
   abstract playSeriesRiff(): void;
 

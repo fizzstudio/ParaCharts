@@ -46,7 +46,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
     this.setLength(length);
     this._hidden = !this.axis.settings.tick.tickLabel.isDrawEnabled;
     // XXX temp hack
-    this._padding = {top: 5, bottom: 0, left: 0, right: 0};
+    //this._padding = {top: 0, bottom: 0, left: 0, right: 0};
   }
 
   setLength(length: number) {
@@ -109,7 +109,6 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
         role: 'axislabel',
         text: labelText,
         textAnchor: this._labelTextAnchor,
-        isPositionAtAnchor: true,
         wrapWidth: this._labelWrapWidth,
         x: 0,
         y: 0,
@@ -164,7 +163,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     return (this.axis.orientationSettings.labelOrder === 'westToEast'
       ? pos 
       : this.length - pos
-    ); // - this._children[index].anchorXOffset;
+    ); 
   }
 
   protected _tickLabelY(index: number) {
@@ -203,8 +202,8 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
       this._children.slice(1).forEach((label, i) => {
         // NB: Even if the anchor is set to middle, the labels may be rotated, so 
         // the anchor will no longer be in the middle of the bbox
-        label.x = this._children[i].right + this.axis.settings.tick.tickLabel.gap + label.anchorXOffset;
-        anchorGaps.push(label.anchorX - this._children[i].anchorX);
+        label.left = this._children[i].right + this.axis.settings.tick.tickLabel.gap;
+        anchorGaps.push(label.x - this._children[i].x);
       });
       const largestAnchorGap = Math.max(...anchorGaps);  
 
@@ -261,7 +260,6 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
     return (this.axis.orientationSettings.labelOrder === 'northToSouth'
         ? pos + this._labelDistance/2 + this._children[index].height/3
         : this.height - pos + this._children[index].height/3)
-      //- this._children[index].anchorYOffset*2/3;
   }
 
   createTickLabels() {

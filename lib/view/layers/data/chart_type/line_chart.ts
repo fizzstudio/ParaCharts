@@ -20,6 +20,7 @@ import { Path } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../../../../store/query_utils';
 import { ChartLandingView, SeriesView, DatapointView } from '../../../data';
+import { bboxOfBboxes } from '../../../../common/utils';
 
 import { interpolate } from '@fizz/templum';
 
@@ -184,13 +185,32 @@ export class LineSection extends ChartPoint {
   protected _nextMidX?: number;
   protected _nextMidY?: number;
 
-  // get width() {
-  //   return this.chart.settings.selectedPointMarkerSize.width;
-  // }
+  get height() {
+    // apparently this can get called before the shape is created
+    return this._shape?.height ?? 0;
+  }
 
-  // get height() {
-  //   return this.chart.settings.selectedPointMarkerSize.height;
-  // }
+  get left() {
+    return this._shape!.left;
+  }
+
+  get right() {
+    return this._shape!.right;
+  }
+
+  get top() {
+    return this._shape!.top;
+  }
+
+  get bottom() {
+    return this._shape!.bottom;
+  }
+
+  get outerBbox() {
+    return this._symbol
+      ? bboxOfBboxes(this._shape!.outerBbox, this._symbol!.outerBbox)
+      : this._shape!.outerBbox;
+  }
 
   completeLayout() {
     // find midpoint between values for next and previous, draw line as 2 segments

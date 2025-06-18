@@ -19,7 +19,7 @@ import { fixed } from '../../common/utils';
 import { type Layout } from '../layout';
 import { type DocumentView } from '../document_view';
 import { type CardinalDirection } from '../../store/settings_types';
-import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer } from '.';
+import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, FocusLayer } from '.';
 import { LineChart, ScatterPlot, BarChart, PieChart } from './data/chart_type';
 //import { StepLineChart } from './stepline';
 //import { LollipopChart } from './lollipop';
@@ -67,6 +67,7 @@ export class ChartLayerManager extends View {
   protected _highlightsLayer!: HighlightsLayer;
   protected _selectionLayer!: SelectionLayer;
   protected _foregroundAnnotationLayer!: AnnotationLayer;
+  protected _focusLayer!: FocusLayer;
 
   constructor(public readonly docView: DocumentView) {
     super(docView.paraview);
@@ -97,7 +98,9 @@ export class ChartLayerManager extends View {
     this._foregroundAnnotationLayer = new AnnotationLayer(this.paraview, 'foreground');
     this.append(this._foregroundAnnotationLayer);
     this._selectionLayer = new SelectionLayer(this.paraview);
-    this.append(this._selectionLayer);    
+    this.append(this._selectionLayer);  
+    this._focusLayer = new FocusLayer(this.paraview);
+    this.append(this._focusLayer);  
   }
   
   /** Physical width of the chart; i.e., width onscreen after any rotation. */
@@ -268,6 +271,7 @@ export class ChartLayerManager extends View {
         ${this._highlightsLayer.render()}
         ${this._foregroundAnnotationLayer.render()}
         ${this._selectionLayer.render()}
+        ${this._focusLayer.render()}
       </g>
     `;
   }
