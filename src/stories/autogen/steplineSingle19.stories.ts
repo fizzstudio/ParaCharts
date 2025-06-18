@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const Chart19: Story = {
-  name: "489: Growth rate of the global cosmetics market 2004 to 2018 (19)",
+  name: "1047: Number of Xbox Live MAU Q1 2016 - Q4 2019 (19)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-489.json",
+    filename: "manifests/autogen/line-single/line-single-manifest-1047.json",
     forcecharttype: "stepline",
   }
 }

@@ -5,19 +5,16 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Ai-enhanced Charts/Line Single Charts",
+  title: "AI-enhanced Charts/Line Single Charts",
   render: (args) => AiChart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const AiChart23: Story = {
-  name: "605: Samsung Electronics' operating profit 2009-2019, by quarter (23)",
+  name: "172: Median household income in the United States 1990 to 2018 (23)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-605.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
+    filename: "manifests/autogen/line-single/line-single-manifest-172.json",
     forcecharttype: "line",
   }
 }

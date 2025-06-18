@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('bar', true);
 
 const meta = {
-  title: "Ai-enhanced Charts/Bar Multi Charts",
+  title: "AI-enhanced Charts/Bar Multi Charts",
   render: (args) => AiChart(args),
   argTypes: {
     filename: {
@@ -25,9 +25,6 @@ export const AllMultiBarCharts: Story = {
   name: 'All Bar Multi Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "bar",
   }
 };

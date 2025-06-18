@@ -5,19 +5,16 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Ai-enhanced Charts/Line Single Charts",
+  title: "AI-enhanced Charts/Line Single Charts",
   render: (args) => AiChart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const AiChart28: Story = {
-  name: "887: Youth unemployment rate in India in 2019 (28)",
+  name: "541: USA - number of arrests for all offenses 1990 to 2018 (28)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-887.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
+    filename: "manifests/autogen/line-single/line-single-manifest-541.json",
     forcecharttype: "line",
   }
 }

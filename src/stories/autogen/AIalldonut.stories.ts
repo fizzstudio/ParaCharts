@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('pastry', false);
 
 const meta = {
-  title: "Ai-enhanced Charts/Donut Charts",
+  title: "AI-enhanced Charts/Donut Charts",
   render: (args) => AiChart(args),
   argTypes: {
     filename: {
@@ -25,9 +25,6 @@ export const AllAIDonutCharts: Story = {
   name: 'All Donut Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "donut",
   }
 };

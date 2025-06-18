@@ -5,19 +5,16 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Ai-enhanced Charts/Stepline Single Charts",
+  title: "AI-enhanced Charts/Stepline Single Charts",
   render: (args) => AiChart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const AiChart19: Story = {
-  name: "489: Growth rate of the global cosmetics market 2004 to 2018 (19)",
+  name: "1047: Number of Xbox Live MAU Q1 2016 - Q4 2019 (19)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-489.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
+    filename: "manifests/autogen/line-single/line-single-manifest-1047.json",
     forcecharttype: "stepline",
   }
 }

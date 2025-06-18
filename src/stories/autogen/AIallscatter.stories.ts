@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('scatter', false);
 
 const meta = {
-  title: "Ai-enhanced Charts/Scatter Charts",
+  title: "AI-enhanced Charts/Scatter Charts",
   render: (args) => AiChart(args),
   argTypes: {
     filename: {
@@ -25,9 +25,6 @@ export const AllAIScatterCharts: Story = {
   name: 'All Scatter Charts',
   args: {
     filename: '',
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
     forcecharttype: "scatter",
   }
 };

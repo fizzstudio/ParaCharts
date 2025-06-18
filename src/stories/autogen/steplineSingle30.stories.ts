@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const Chart30: Story = {
-  name: "930: Suicide rate in Japan 2009 to 2018 (30)",
+  name: "605: Samsung Electronics' operating profit 2009-2019, by quarter (30)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-930.json",
+    filename: "manifests/autogen/line-single/line-single-manifest-605.json",
     forcecharttype: "stepline",
   }
 }

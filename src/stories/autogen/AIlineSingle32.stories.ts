@@ -5,19 +5,16 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Ai-enhanced Charts/Line Single Charts",
+  title: "AI-enhanced Charts/Line Single Charts",
   render: (args) => AiChart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const AiChart32: Story = {
-  name: "951: National debt of Ireland 2024 (32)",
+  name: "746: Inflation rate in Sri Lanka 2024 (32)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-951.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
+    filename: "manifests/autogen/line-single/line-single-manifest-746.json",
     forcecharttype: "line",
   }
 }
