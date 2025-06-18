@@ -1,15 +1,14 @@
-import { enumerate, strToId } from "@fizz/paramodel";
+import { Box, calendarNumber, enumerate, strToId } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
 import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
-import { fixed } from "../../../../common/utils";
+import { boxToNumber, fixed } from "../../../../common/utils";
 import { ParaView } from "../../../../paraview";
 import { DeepReadonly, HistogramSettings, PointChartType } from "../../../../store";
 import { Rect } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { XYChart, XYSeriesView } from "./xy_chart";
 import { DatapointView, SeriesView } from "../../../data";
-
 
 export class Histogram extends XYChart {
     protected _bins: number = 20;
@@ -51,16 +50,18 @@ export class Histogram extends XYChart {
         else {
             nonTargetFacet = "y"
         }
+        const targetFacetBoxes = this.paraview.store.model!.allFacetValues(targetFacet!)!;
+        const targetFacetNumbers = targetFacetBoxes.map((b) => boxToNumber(b, targetFacetBoxes));
         if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined) {
             this._axisInfo = new AxisInfo(this.paraview.store, {
-                xValues: this.paraview.store.model!.allFacetValues(targetFacet!)!.map((x) => x.value as number),
+                xValues: targetFacetNumbers,
                 yValues: this.grid,
             });
         }
         else {
             this._axisInfo = new AxisInfo(this.paraview.store, {
                 xValues: this.grid,
-                yValues: this.paraview.store.model!.allFacetValues(targetFacet!)!.map((x) => x.value as number),
+                yValues: targetFacetNumbers,
             });
         }
     }
@@ -179,6 +180,7 @@ export class Histogram extends XYChart {
                 // the `index` property of the datapoint view will equal j
             }
             for (let i = 0; i < this._bins; i++) {
+                console.log('bin no', i)
                 const bin = new HistogramBinView(this, seriesView);
                 seriesView.append(bin)
             }
@@ -216,6 +218,7 @@ export class Histogram extends XYChart {
         }
         let workingLabels;
         if (targetFacet) {
+            console.log('tf')
             const yValues = []
             const xValues = []
             for (let datapoint of this.paraview.store.model!.series[0]) {
@@ -227,7 +230,10 @@ export class Histogram extends XYChart {
             workingLabels = computeLabels(Math.min(...xValues), Math.max(...xValues), false)
         }
         else {
-            workingLabels = computeLabels(Math.min(...this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number)), Math.max(...this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number)), false)
+            console.log('ntf', this.paraview.store.model!.allFacetValues('x'))
+            const xBoxes = this.paraview.store.model!.allFacetValues('x')!;
+            const xNumbers = xBoxes.map((x) => boxToNumber(x, xBoxes));
+            workingLabels = computeLabels(Math.min(...xNumbers), Math.max(...xNumbers), false);
         }
         const seriesList = this.paraview.store.model!.series
         this._data = [];
@@ -239,7 +245,8 @@ export class Histogram extends XYChart {
 
         const y: Array<number> = [];
         const x: Array<number> = [];
-
+        
+        console.log('data', this._data)
         for (let point of this._data) {
             x.push(point[0]);
             y.push(point[1]);
@@ -248,18 +255,22 @@ export class Histogram extends XYChart {
         let xMax: number = workingLabels.max!
         let xMin: number = workingLabels.min!
 
-        //console.log(xMax)
-        //console.log(xMin)
+        console.log('xmax', xMax)
+        console.log('xmin', xMin)
         const grid: Array<number> = [];
 
         for (let i = 0; i < this.bins; i++) {
             grid.push(0);
         }
+                console.log('grid0', grid)
 
         for (let point of this._data) {
-            const xIndex: number = Math.floor((point[0] - xMin) * this.bins / (xMax - xMin));
+            // TODO: check that `- 1` is correct
+            const xIndex: number = Math.floor((point[0] - xMin) * (this.bins - 1) / (xMax - xMin));
+            console.log('xi', xIndex)
             grid[xIndex]++;
         }
+        console.log('grid', grid)
         return this._grid = grid;
     }
     seriesRef(series: string) {

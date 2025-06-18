@@ -17,6 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { zip } from "@fizz/chart-classifier-utils";
 import { ParaStore } from "../store/parastore";
 import { type View } from '../view/base_view';
+import { Box, calendarNumber } from "@fizz/paramodel";
+import { Datatype } from "@fizz/paramanifest";
 
 // String Formatting
 
@@ -85,6 +87,16 @@ export function groupBbox(...views: View[]) {
     Math.max(...views.map(v => v.width)),
     Math.max(...views.map(v => v.height))
   );
+}
+
+export function boxToNumber(box: Box<Datatype>, allBoxes: Box<Datatype>[]): number {
+    if (box.isNumber()) {
+        return box.value;
+    }
+    if (box.isDate()) {
+        return calendarNumber(box.value);
+    }
+    return allBoxes.findIndex((otherBox) => otherBox.value === box.value);
 }
 
 // Simon: These functions were used for Model2D but have no use currently.

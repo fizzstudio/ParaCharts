@@ -509,7 +509,7 @@ export class XYSeriesView extends SeriesView {
     }    
   }
 
-  onFocus(isNewComponentFocus = false) {
+  async onFocus(isNewComponentFocus = false) {
     super.onFocus(isNewComponentFocus);
     let data = []
     for (let point of this.series.rawData) {
