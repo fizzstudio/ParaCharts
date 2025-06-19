@@ -55,8 +55,10 @@ export interface UISettings extends SettingGroup {
   isVoicingEnabled: boolean;
   isAnnouncementEnabled: boolean;
   speechRate: number;
-  isFullScreenEnabled: boolean;
+  isFullscreenEnabled: boolean;
   isLowVisionModeEnabled: boolean;
+  isFocusRingEnabled: boolean;
+  focusRingGap: number;
 }
 
 /** @public */
@@ -139,6 +141,7 @@ export interface ChartSettings extends SettingGroup {
   padding: string;
   fontFamily: string;
   fontWeight: string;
+  stroke: string;
   strokeWidth: number;
   strokeHighlightScale: number;
   symbolStrokeWidth: number;

@@ -35,9 +35,14 @@ export interface LabelOptions {
   loc?: Vec2;
   x?: number;
   y?: number;
+  left?: number;
+  right?: number;
+  top?: number;
+  bottom?: number;
+  centerX?: number;
+  centerY?: number;
   angle?: number;
   textAnchor?: LabelTextAnchor;
-  isPositionAtAnchor?: boolean;
   justify?: SnapLocation;
   wrapWidth?: number;
 }
@@ -55,8 +60,6 @@ export class Label extends View {
   protected _angle: number;
   protected _textAnchor: LabelTextAnchor;
   protected _justify: SnapLocation;
-  protected _anchorXOffset!: number;
-  protected _anchorYOffset!: number;
   protected _text: string;
   protected _textLines: TextLine[] = [];
   protected _styleInfo: StyleInfo = {};
@@ -67,6 +70,14 @@ export class Label extends View {
     if (!this.classList.includes('label')) {
       this.classList.push('label');
     }
+    this._angle = this.options.angle ?? 0;
+    this._textAnchor = this.options.textAnchor ?? (options.wrapWidth ? 'start' : 'middle');
+    this._justify = this.options.justify ?? 'start';
+    this._text = this.options.text;
+    // It should be okay to go ahead and compute our size here, rather than
+    // waiting to be parented
+    this.updateSize();
+
     if (this.options.loc) {
       this._loc = this.options.loc;
     }
@@ -76,13 +87,24 @@ export class Label extends View {
     if (this.options.y) {
       this._y = this.options.y;
     }
-    this._angle = this.options.angle ?? 0;
-    this._textAnchor = this.options.textAnchor ?? (options.wrapWidth ? 'start' : 'middle');
-    this._justify = this.options.justify ?? 'start';
-    this._text = this.options.text;
-    // It should be okay to go ahead and compute our size here, rather than
-    // waiting to be parented
-    this.updateSize();
+    if (this.options.left) {
+      this.left = this.options.left;
+    }
+    if (this.options.right) {
+      this.right = this.options.right;
+    }
+    if (this.options.top) {
+      this.top = this.options.top;
+    }
+    if (this.options.bottom) {
+      this.bottom = this.options.bottom;
+    }
+    if (this.options.centerX) {
+      this.centerX = this.options.centerX;
+    }
+    if (this.options.centerY) {
+      this.centerY = this.options.centerY;
+    }
   }
 
   protected _createId() {
@@ -113,22 +135,6 @@ export class Label extends View {
     this.updateSize();
   }
 
-  get anchorXOffset() {
-    return this._anchorXOffset;
-  }
-
-  get anchorYOffset() {
-    return this._anchorYOffset;
-  }
-
-  get anchorX() {
-    return this.options.isPositionAtAnchor ? this._x :  this._x + this._anchorXOffset;
-  }
-
-  get anchorY() {
-    return this.options.isPositionAtAnchor ? this._y :  this._y + this._anchorYOffset;
-  }
-
   get textAnchor() {
     return this._textAnchor;
   }
@@ -140,22 +146,6 @@ export class Label extends View {
 
   get bbox() {
     return this._elRef.value!.getBBox();
-  }
-
-  get left() {
-    return this.options.isPositionAtAnchor ? this._x - this._anchorXOffset : this._x;
-  }
-
-  get right() {
-    return this.left + this.boundingWidth;
-  }
-
-  get top() {
-    return this.options.isPositionAtAnchor ? this._y - this._anchorYOffset : this._y;
-  }
-
-  get bottom() {
-    return this.top + this.boundingHeight;
   }
 
   get styleInfo() {
@@ -199,9 +189,8 @@ export class Label extends View {
     // E.g., suppose text-anchor is middle. The text baseline center will be
     // positioned at the origin of the view box, and the left half of the label
     // will extend into the negative x-axis. 
-    this._anchorXOffset = -(clientRect.x - canvasRect.x);
-    this._anchorYOffset = -(clientRect.y - canvasRect.y);
-    //console.log('LABEL', this._text, this._anchorXOffset, this._anchorYOffset, clientRect);
+    this._locOffset.x = -(clientRect.x - canvasRect.x);
+    this._locOffset.y = -(clientRect.y - canvasRect.y);
 
     if (this.options.wrapWidth !== undefined && width > this.options.wrapWidth) {
       text.textContent = '';
@@ -229,8 +218,8 @@ export class Label extends View {
       width = clientRect.width;
       height = clientRect.height;
 
-      this._anchorXOffset = -(clientRect.x - canvasRect.x);
-      this._anchorYOffset = -(clientRect.y - canvasRect.y);
+      this._locOffset.x = -(clientRect.x - canvasRect.x);
+      this._locOffset.y = -(clientRect.y - canvasRect.y);
   
       this._textLines = tspans.map(t => ({text: t.textContent!, offset: 0}));
 
@@ -258,9 +247,9 @@ export class Label extends View {
     let t: string | undefined;
     if (this._angle) {
       t = fixed`
-        translate(${this.anchorX},${this.anchorY})
+        translate(${this._x},${this._y})
         rotate(${this._angle})
-        translate(${-this.anchorX},${-this.anchorY})`;
+        translate(${-this._x},${-this._y})`;
     }
     return t;
   }
@@ -273,8 +262,8 @@ export class Label extends View {
         ${ref(this._elRef)}
         class=${this.options.classList?.join(' ') ?? nothing} 
         role=${this.options.role ?? nothing}
-        x=${fixed`${this.anchorX}`}
-        y=${fixed`${this.anchorY}`}
+        x=${fixed`${this._x}`}
+        y=${fixed`${this._y}`}
         text-anchor=${this._textAnchor}
         transform=${this._makeTransform() ?? nothing}
         id=${this.id}

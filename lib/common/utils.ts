@@ -89,6 +89,19 @@ export function groupBbox(...views: View[]) {
   );
 }
 
+export function bboxOfBboxes(...bboxes: DOMRect[]) {
+  const left = Math.min(...bboxes.map(b => b.left));
+  const right = Math.max(...bboxes.map(b => b.right));
+  const top = Math.min(...bboxes.map(b => b.top));
+  const bottom = Math.max(...bboxes.map(b => b.bottom));
+  return new DOMRect(
+    left,
+    top,
+    right - left,
+    bottom - top
+  );
+}
+
 export function boxToNumber(box: Box<Datatype>, allBoxes: Box<Datatype>[]): number {
     if (box.isNumber()) {
         return box.value;

@@ -114,6 +114,9 @@ export class Collision {
 
 
 export class BaseView {
+
+  readonly isContainer: boolean = false;
+
   get id() {
     return '';
   }
@@ -159,6 +162,10 @@ export class BaseView {
     return null;
   }
 
+  get styleInfo(): StyleInfo {
+    return {};
+  }
+
   renderChildren(): TemplateResult {
     return svg`${this.children.map(kid => kid.render())}`;
   }
@@ -186,6 +193,8 @@ export class View extends BaseView {
   protected _next: View | null = null;
   protected _children: View[] = [];
   protected _loc = new Vec2();
+  /** Offset of loc from top left corner of bbox */
+  protected _locOffset = new Vec2();
   protected _width = -1;
   protected _height = -1;
   protected _currFocus: View | null = null;
@@ -292,6 +301,14 @@ export class View extends BaseView {
 
   set loc(loc: Vec2) {
     this._loc = loc;
+  }
+
+  get locOffset() {
+    return this._locOffset.clone();
+  }
+
+  set locOffset(locOffset: Vec2) {
+    this._locOffset = locOffset;
   }
 
   // XXX These next 4 accessors are for legacy compatibility
@@ -432,27 +449,62 @@ export class View extends BaseView {
   }
 
   get left() {
-    return this._x;
+    return this._x - this._locOffset.x;
+  }
+
+  set left(left: number) {
+    this._x = left + this._locOffset.x;
   }
 
   get right() {
-    return this._x + this.boundingWidth;
+    return this.left + this.boundingWidth;
+  }
+
+  set right(right: number) {
+    this._x = right - this.boundingWidth + this._locOffset.x;
   }
 
   get centerX() {
     return this.left + this.boundingWidth/2;
   }
 
+  set centerX(centerX: number) {
+    this._x = centerX - this.boundingWidth/2 + this._locOffset.x;
+  }
+
   get top() {
-    return this._y;
+    return this._y - this._locOffset.y;
+  }
+
+  set top(top: number) {
+    this._y = top + this._locOffset.y;
   }
 
   get bottom() {
-    return this._y + this.boundingHeight;
+    return this.top + this.boundingHeight;
+  }
+
+  set bottom(bottom: number) {
+    this._y = bottom - this.boundingHeight + this._locOffset.y;
   }
 
   get centerY() {
     return this.top + this.boundingHeight/2;
+  }
+
+  set centerY(centerY: number) {
+    this._y = centerY - this.boundingHeight/2 + this._locOffset.y;
+  }
+
+  get bbox(): DOMRect {
+    return new DOMRect(this.left, this.top, this.width, this.height);
+  }
+
+  /**
+   * Bounding box inclusive of stroke width
+   */
+  get outerBbox(): DOMRect {
+    return this.bbox;
   }
 
   computeSize(): [number, number] {
@@ -603,56 +655,55 @@ export class View extends BaseView {
   }*/
 
   intersects(other: View): Collision | null {
-      const centerDiffX = this.centerX - other.centerX;
-      const rSumX = other.boundingWidth/2 + this.boundingWidth/2;
-      if (Math.abs(centerDiffX) >= rSumX) {
-          return null;
-      }
-      const centerDiffY = this.centerY - other.centerY;
-      const rSumY = other.boundingHeight/2 + this.boundingHeight/2;
-      if (Math.abs(centerDiffY) >= rSumY) {
-          return null;
-      }
-      return new Collision(centerDiffX, centerDiffY, rSumX, rSumY);
+    const centerDiffX = this.centerX - other.centerX;
+    const rSumX = other.boundingWidth/2 + this.boundingWidth/2;
+    if (Math.abs(centerDiffX) >= rSumX) {
+        return null;
+    }
+    const centerDiffY = this.centerY - other.centerY;
+    const rSumY = other.boundingHeight/2 + this.boundingHeight/2;
+    if (Math.abs(centerDiffY) >= rSumY) {
+        return null;
+    }
+    return new Collision(centerDiffX, centerDiffY, rSumX, rSumY);
   }
 
 
-  focus(isNewComponentFocus = false, level = 0) {
+  async focus(isNewComponentFocus = false, level = 0) {
     if (!this._parent) {
       return;
     }
     //this.siblings.forEach(sib => sib.isFocused = false);
     if (this._parent!.currFocus && this._parent!.currFocus !== this && !level) {
       // Only auto-blur at the bottom level to avoid setting the prev leaf twice
-      this._parent!.currFocus.blur(false);
+      await this._parent!.currFocus.blur(false);
     }
     this._parent!.currFocus = this;
-    this._parent!.focus(isNewComponentFocus, level + 1);
+    await this._parent!.focus(isNewComponentFocus, level + 1);
     if (this._currFocus) {
       if (!level) {
-        this.focusLeaf.onFocus(isNewComponentFocus);
+        await this.focusLeaf.onFocus(isNewComponentFocus);
       }
     } else {
-      this.onFocus(isNewComponentFocus);
+      await this.onFocus(isNewComponentFocus);
     }
   }
 
-  onFocus(_isNewComponentFocus = false) {
+  async onFocus(_isNewComponentFocus = false) {
   }
 
-  blur(parentOnFocus = true) {
+  async blur(parentOnFocus = true) {
     /*if (todo().canvas.documentView?.focusLeaf === this) {
       todo().canvas.prevFocusLeaf = this;
     }*/
     this._parent!.currFocus = null;
-    this.onBlur();
+    await this.onBlur();
     if (parentOnFocus) {
-      this._parent!.onFocus();
+      await this._parent!.onFocus();
     }
   }
 
-  onBlur() {
-
+  async onBlur() {
   }
 
   get focusLeaf(): View {
@@ -738,6 +789,8 @@ type Containable = GConstructor<BaseView & Partial<ContainableI>>;
  */
 export function Container<TBase extends Containable>(Base: TBase) {
   return class _Container extends Base {
+
+    readonly isContainer = true;
   
     render() {
       if (this.hidden) {
@@ -750,7 +803,7 @@ export function Container<TBase extends Containable>(Base: TBase) {
           ${this.ref}
           id=${this.id || nothing}
           class=${this.classInfo ? classMap(this.classInfo) : nothing}
-          style=${this.styleInfo ? styleMap(this.styleInfo) : nothing}
+          style=${Object.keys(this.styleInfo).length ? styleMap(this.styleInfo) : nothing}
           role=${this.role || nothing}
           aria-roledescription=${this.roleDescription || nothing}
           transform=${(tx || ty) ? fixed`translate(${tx},${ty})` : nothing}

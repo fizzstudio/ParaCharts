@@ -52,9 +52,9 @@ export class ChartLandingView extends View {
     return super.focusLeaf as DataView;
   }
 
-  onFocus(isNewComponentFocus = false) {
+  async onFocus(isNewComponentFocus = false) {
     this.paraview.store.visit([]);
-    this.paraview.store.asyncAnnounce(this.paraview.summarizer.getChartSummary());
+    await this.paraview.store.asyncAnnounce(this.paraview.summarizer.getChartSummary());
   }
 
   getSeriesView(seriesName: string) {

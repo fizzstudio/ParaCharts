@@ -160,8 +160,8 @@ export class DatapointView extends DataView {
     this.paraview.store.announce(announcement);
   }
 
-  onFocus(isNewComponentFocus = false) {
-    super.onFocus(isNewComponentFocus);
+  async onFocus(isNewComponentFocus = false) {
+    await super.onFocus(isNewComponentFocus);
     this._visit(isNewComponentFocus);
   }
 
@@ -199,8 +199,8 @@ export class DatapointView extends DataView {
 
   layoutSymbol() {
     if (this._symbol) {
-      this._symbol.x = this._x - this._symbol.width/2;
-      this._symbol.y = this._y - this._symbol.height/2;
+      this._symbol.x = this._x;
+      this._symbol.y = this._y;
     }
   }
 

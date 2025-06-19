@@ -21,8 +21,6 @@ export class ParaViewController extends Logger {
     ].filter(mod => mod);
     if (mods.includes(key)) {
       key = '';
-    } else if (mods.includes('Shift') && key !== key.toLocaleLowerCase()) {
-      mods = mods.filter(mod => mod !== 'Shift');
     }
     const keyId = (key ? [...mods, key] : mods).join('+');
     if (this._store.keymapManager.onKeydown(keyId)) {
