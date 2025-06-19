@@ -1,4 +1,4 @@
-import { AiChart, type ChartProps } from '../Chart';
+import { Chart, type ChartProps } from '../Chart';
 import { familyManifestPathsMap } from '../chartSelectorHelper';
 import type { Meta, StoryObj } from "@storybook/web-components";
 
@@ -7,8 +7,8 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('bar', true);
 
 const meta = {
-  title: "AI-enhanced Charts/Bar Multi Charts",
-  render: (args) => AiChart(args),
+  title: "Basic Charts/Bar Charts/Multi Column Charts",
+  render: (args) => Chart(args),
   argTypes: {
     filename: {
       description: 'Chart Title',
@@ -21,10 +21,10 @@ const meta = {
 
 export default meta;
 
-export const AllMultiBarCharts: Story = {
-  name: 'All Bar Multi Charts',
+export const AllMultiColumnCharts: Story = {
+  name: 'All Multi Column Charts',
   args: {
     filename: '',
-    forcecharttype: "bar",
+    forcecharttype: "column",
   }
 };

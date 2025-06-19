@@ -2,14 +2,13 @@ import { enumerate, strToId } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
 import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
-import { fixed } from "../../../../common/utils";
+import { boxToNumber, fixed } from "../../../../common/utils";
 import { ParaView } from "../../../../paraview";
 import { DeepReadonly, HistogramSettings, PointChartType } from "../../../../store";
 import { Rect } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { XYChart, XYSeriesView } from "./xy_chart";
 import { DatapointView, SeriesView } from "../../../data";
-
 
 export class Histogram extends XYChart {
   protected _bins: number = 20;
@@ -34,36 +33,38 @@ export class Histogram extends XYChart {
     this.paraview.store.clearVisited();
     this.paraview.store.clearSelected();
 
-    const targetAxis = this.settings.groupingAxis as DeepReadonly<string> == '' ?
-      this.paraview.store.model?.facets.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)[0]
-      : this.settings.groupingAxis
-    let targetFacet;
-    for (let facet of this.paraview.store.model!.facets) {
-      if (this.paraview.store.model!.getFacet(facet.key as string)!.label == targetAxis) {
-        targetFacet = facet.key
-      }
+        const targetAxis = this.settings.groupingAxis as DeepReadonly<string> == '' ?
+            this.paraview.store.model?.facets.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)[0]
+            : this.settings.groupingAxis
+        let targetFacet;
+        for (let facet of this.paraview.store.model!.facets) {
+            if (this.paraview.store.model!.getFacet(facet.key as string)!.label == targetAxis) {
+                targetFacet = facet.key
+            }
+        }
+        //HACK: THIS WILL BREAK IF WE EVER ADD MORE FACETS THAN JUST X/Y
+        let nonTargetFacet;
+        if (targetFacet == "y") {
+            nonTargetFacet = "x"
+        }
+        else {
+            nonTargetFacet = "y"
+        }
+        const targetFacetBoxes = this.paraview.store.model!.allFacetValues(targetFacet!)!;
+        const targetFacetNumbers = targetFacetBoxes.map((b) => boxToNumber(b, targetFacetBoxes));
+        if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined) {
+            this._axisInfo = new AxisInfo(this.paraview.store, {
+                xValues: targetFacetNumbers,
+                yValues: this.grid,
+            });
+        }
+        else {
+            this._axisInfo = new AxisInfo(this.paraview.store, {
+                xValues: this.grid,
+                yValues: targetFacetNumbers,
+            });
+        }
     }
-    //HACK: THIS WILL BREAK IF WE EVER ADD MORE FACETS THAN JUST X/Y
-    let nonTargetFacet;
-    if (targetFacet == "y") {
-      nonTargetFacet = "x"
-    }
-    else {
-      nonTargetFacet = "y"
-    }
-    if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined) {
-      this._axisInfo = new AxisInfo(this.paraview.store, {
-        xValues: this.paraview.store.model!.allFacetValues(targetFacet!)!.map((x) => x.value as number),
-        yValues: this.grid,
-      });
-    }
-    else {
-      this._axisInfo = new AxisInfo(this.paraview.store, {
-        xValues: this.grid,
-        yValues: this.paraview.store.model!.allFacetValues(targetFacet!)!.map((x) => x.value as number),
-      });
-    }
-  }
 
   protected _addedToParent() {
     super._addedToParent();
@@ -227,7 +228,9 @@ export class Histogram extends XYChart {
       workingLabels = computeLabels(Math.min(...xValues), Math.max(...xValues), false)
     }
     else {
-      workingLabels = computeLabels(Math.min(...this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number)), Math.max(...this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number)), false)
+      const xBoxes = this.paraview.store.model!.allFacetValues('x')!;
+      const xNumbers = xBoxes.map((x) => boxToNumber(x, xBoxes));
+      workingLabels = computeLabels(Math.min(...xNumbers), Math.max(...xNumbers), false);
     }
     const seriesList = this.paraview.store.model!.series
     this._data = [];
@@ -256,15 +259,17 @@ export class Histogram extends XYChart {
       grid.push(0);
     }
 
-    for (let point of this._data) {
-      const xIndex: number = Math.floor((point[0] - xMin) * this.bins / (xMax - xMin));
-      grid[xIndex]++;
+        for (let point of this._data) {
+          // TODO: check that `- 1` is correct
+          const xIndex: number = Math.floor((point[0] - xMin) * (this.bins - 1) / (xMax - xMin));
+          console.log('xi', xIndex)
+          grid[xIndex]++;
+        }
+        return this._grid = grid;
     }
-    return this._grid = grid;
-  }
-  seriesRef(series: string) {
-    return this.paraview.ref<SVGGElement>(`series.${series}`);
-  }
+    seriesRef(series: string) {
+        return this.paraview.ref<SVGGElement>(`series.${series}`);
+    }
 
   raiseSeries(series: string) {
     const seriesG = this.seriesRef(series).value!;

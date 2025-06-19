@@ -1,14 +1,14 @@
-import { AiChart, type ChartProps } from '../Chart';
+import { Chart, type ChartProps } from '../Chart';
 import { familyManifestPathsMap } from '../chartSelectorHelper';
 import type { Meta, StoryObj } from "@storybook/web-components";
 
 type Story = StoryObj<ChartProps>;
 
-const titleToFilenameMap = familyManifestPathsMap('bar', true);
+const titleToFilenameMap = familyManifestPathsMap('pastry', false);
 
 const meta = {
-  title: "AI-enhanced Charts/Lollipop Single Charts",
-  render: (args) => AiChart(args),
+  title: "Basic Charts/Pastry Charts/Donut Charts",
+  render: (args) => Chart(args),
   argTypes: {
     filename: {
       description: 'Chart Title',
@@ -21,10 +21,10 @@ const meta = {
 
 export default meta;
 
-export const AllSingleLollipopCharts: Story = {
-  name: 'All Lollipop Single Charts',
+export const AllDonutCharts: Story = {
+  name: 'All Donut Charts',
   args: {
     filename: '',
-    forcecharttype: "lollipop",
+    forcecharttype: "donut",
   }
 };

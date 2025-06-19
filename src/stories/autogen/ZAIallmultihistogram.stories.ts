@@ -4,10 +4,10 @@ import type { Meta, StoryObj } from "@storybook/web-components";
 
 type Story = StoryObj<ChartProps>;
 
-const titleToFilenameMap = familyManifestPathsMap('line', true);
+const titleToFilenameMap = familyManifestPathsMap('bar', true);
 
 const meta = {
-  title: "AI-enhanced Charts/Line Single Charts",
+  title: "AI-enhanced Charts/Histograms",
   render: (args) => AiChart(args),
   argTypes: {
     filename: {
@@ -21,10 +21,10 @@ const meta = {
 
 export default meta;
 
-export const AllSingleLineCharts: Story = {
-  name: 'All Line Single Charts',
+export const AllMultiHistogramCharts: Story = {
+  name: 'All Multi Histogram Charts',
   args: {
     filename: '',
-    forcecharttype: "line",
+    forcecharttype: "histogram",
   }
 };

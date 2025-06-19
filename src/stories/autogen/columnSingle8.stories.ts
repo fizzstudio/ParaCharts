@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Column Single Charts",
+  title: "Basic Charts/Bar Charts/Single Column Charts",
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 

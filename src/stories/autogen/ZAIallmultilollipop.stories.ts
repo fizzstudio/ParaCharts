@@ -4,10 +4,10 @@ import type { Meta, StoryObj } from "@storybook/web-components";
 
 type Story = StoryObj<ChartProps>;
 
-const titleToFilenameMap = familyManifestPathsMap('line', true);
+const titleToFilenameMap = familyManifestPathsMap('bar', true);
 
 const meta = {
-  title: "AI-enhanced Charts/Stepline Single Charts",
+  title: "AI-enhanced Charts/Bar Charts/Multi Lollipop Charts",
   render: (args) => AiChart(args),
   argTypes: {
     filename: {
@@ -21,10 +21,10 @@ const meta = {
 
 export default meta;
 
-export const AllSingleSteplineCharts: Story = {
-  name: 'All Stepline Single Charts',
+export const AllMultiLollipopCharts: Story = {
+  name: 'All Multi Lollipop Charts',
   args: {
     filename: '',
-    forcecharttype: "stepline",
+    forcecharttype: "lollipop",
   }
 };

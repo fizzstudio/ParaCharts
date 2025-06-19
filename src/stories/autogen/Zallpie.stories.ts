@@ -4,10 +4,10 @@ import type { Meta, StoryObj } from "@storybook/web-components";
 
 type Story = StoryObj<ChartProps>;
 
-const titleToFilenameMap = familyManifestPathsMap('bar', true);
+const titleToFilenameMap = familyManifestPathsMap('pastry', false);
 
 const meta = {
-  title: "Basic Charts/Lollipop Multi Charts",
+  title: "Basic Charts/Pastry Charts/Pie Charts",
   render: (args) => Chart(args),
   argTypes: {
     filename: {
@@ -21,10 +21,10 @@ const meta = {
 
 export default meta;
 
-export const AllMultiLollipopCharts: Story = {
-  name: 'All Lollipop Multi Charts',
+export const AllPieCharts: Story = {
+  name: 'All Pie Charts',
   args: {
     filename: '',
-    forcecharttype: "lollipop",
+    forcecharttype: "pie",
   }
 };

@@ -4,10 +4,10 @@ import type { Meta, StoryObj } from "@storybook/web-components";
 
 type Story = StoryObj<ChartProps>;
 
-const titleToFilenameMap = familyManifestPathsMap('bar', true);
+const titleToFilenameMap = familyManifestPathsMap('pastry', false);
 
 const meta = {
-  title: "AI-enhanced Charts/Column Single Charts",
+  title: "AI-enhanced Charts/Pastry Charts/Donut Charts",
   render: (args) => AiChart(args),
   argTypes: {
     filename: {
@@ -21,10 +21,10 @@ const meta = {
 
 export default meta;
 
-export const AllSingleColumnCharts: Story = {
-  name: 'All Column Single Charts',
+export const AllAIDonutCharts: Story = {
+  name: 'All Donut Charts',
   args: {
     filename: '',
-    forcecharttype: "column",
+    forcecharttype: "donut",
   }
 };

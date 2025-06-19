@@ -1,4 +1,4 @@
-import { Chart, type ChartProps } from '../Chart';
+import { AiChart, type ChartProps } from '../Chart';
 import { familyManifestPathsMap } from '../chartSelectorHelper';
 import type { Meta, StoryObj } from "@storybook/web-components";
 
@@ -7,8 +7,8 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('line', true);
 
 const meta = {
-  title: "Basic Charts/Stepline Single Charts",
-  render: (args) => Chart(args),
+  title: "AI-enhanced Charts/Line Charts/Multi Line Charts",
+  render: (args) => AiChart(args),
   argTypes: {
     filename: {
       description: 'Chart Title',
@@ -21,10 +21,10 @@ const meta = {
 
 export default meta;
 
-export const AllSingleSteplineCharts: Story = {
-  name: 'All Stepline Single Charts',
+export const AllMultiLineCharts: Story = {
+  name: 'All Multi Line Charts',
   args: {
     filename: '',
-    forcecharttype: "stepline",
+    forcecharttype: "line",
   }
 };

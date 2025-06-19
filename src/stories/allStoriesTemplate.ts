@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('%(family)s', %(multi)s);
 
 const meta = {
-  title: "%(topFolder)s/%(typeFolder)s",
+  title: "%(topFolder)s/%(typePath)s",
   render: (args) => %(chartElement)s(args),
   argTypes: {
     filename: {

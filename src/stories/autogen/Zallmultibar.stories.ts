@@ -4,10 +4,10 @@ import type { Meta, StoryObj } from "@storybook/web-components";
 
 type Story = StoryObj<ChartProps>;
 
-const titleToFilenameMap = familyManifestPathsMap('scatter', false);
+const titleToFilenameMap = familyManifestPathsMap('bar', true);
 
 const meta = {
-  title: "Basic Charts/Heatmap Charts",
+  title: "Basic Charts/Bar Charts/Multi Bar Charts",
   render: (args) => Chart(args),
   argTypes: {
     filename: {
@@ -21,10 +21,10 @@ const meta = {
 
 export default meta;
 
-export const AllHeatmapCharts: Story = {
-  name: 'All Heatmap Charts',
+export const AllMultiBarCharts: Story = {
+  name: 'All Multi Bar Charts',
   args: {
     filename: '',
-    forcecharttype: "heatmap",
+    forcecharttype: "bar",
   }
 };

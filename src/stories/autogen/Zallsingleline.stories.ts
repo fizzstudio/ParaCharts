@@ -1,14 +1,14 @@
-import { AiChart, type ChartProps } from '../Chart';
+import { Chart, type ChartProps } from '../Chart';
 import { familyManifestPathsMap } from '../chartSelectorHelper';
 import type { Meta, StoryObj } from "@storybook/web-components";
 
 type Story = StoryObj<ChartProps>;
 
-const titleToFilenameMap = familyManifestPathsMap('scatter', false);
+const titleToFilenameMap = familyManifestPathsMap('line', true);
 
 const meta = {
-  title: "AI-enhanced Charts/Heatmap Charts",
-  render: (args) => AiChart(args),
+  title: "Basic Charts/Line Charts/Single Line Charts",
+  render: (args) => Chart(args),
   argTypes: {
     filename: {
       description: 'Chart Title',
@@ -21,10 +21,10 @@ const meta = {
 
 export default meta;
 
-export const AllAIHeatmapCharts: Story = {
-  name: 'All Heatmap Charts',
+export const AllSingleLineCharts: Story = {
+  name: 'All Single Line Charts',
   args: {
     filename: '',
-    forcecharttype: "heatmap",
+    forcecharttype: "line",
   }
 };
