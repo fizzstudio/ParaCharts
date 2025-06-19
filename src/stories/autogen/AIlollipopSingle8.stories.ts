@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "AI-enhanced Charts/Lollipop Single Charts",
+  title: "AI-enhanced Charts/Bar Charts/Single Lollipop Charts",
   render: (args) => AiChart(args),
 } satisfies Meta<ChartProps>;
 

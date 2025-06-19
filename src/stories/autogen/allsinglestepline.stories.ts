@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('line', true);
 
 const meta = {
-  title: "Basic Charts/Stepline Single Charts",
+  title: "Basic Charts/Line Charts/Single Stepline Charts",
   render: (args) => Chart(args),
   argTypes: {
     filename: {
@@ -22,7 +22,7 @@ const meta = {
 export default meta;
 
 export const AllSingleSteplineCharts: Story = {
-  name: 'All Stepline Single Charts',
+  name: 'All Single Stepline Charts',
   args: {
     filename: '',
     forcecharttype: "stepline",

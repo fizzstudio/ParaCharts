@@ -19,6 +19,32 @@ function capitalize(string: string) {
 
 const AUTOGEN_PATH = './src/stories/autogen/'
 
+const CHART_TYPE_FOLDERS_SINGLE: Record<ChartType, string> = {
+  'line': 'Line Charts/Single Line Charts',
+  'stepline': 'Line Charts/Single Stepline Charts',
+  'bar': 'Bar Charts/Single Bar Charts',
+  'column': 'Bar Charts/Single Column Charts',
+  'lollipop': 'Bar Charts/Single Lollipop Charts',
+  'pie': 'Pastry Charts/Pie Charts',
+  'donut': 'Pastry Charts/Donut Charts',
+  'scatter': 'Scatter Charts',
+  'histogram': 'Histograms',
+  'heatmap': 'Heat Maps'
+}
+
+const CHART_TYPE_FOLDERS_MULTI: Record<ChartType, string> = {
+  'line': 'Line Charts/Multi Line Charts',
+  'stepline': 'Line Charts/Multi Stepline Charts',
+  'bar': 'Bar Charts/Multi Bar Charts',
+  'column': 'Bar Charts/Multi Column Charts',
+  'lollipop': 'Bar Charts/Multi Lollipop Charts',
+  'pie': 'Pastry Charts/Pie Charts',
+  'donut': 'Pastry Charts/Donut Charts',
+  'scatter': 'Scatter Charts',
+  'histogram': 'Histograms',
+  'heatmap': 'Heat Maps'
+}
+
 // Generator Functions
 
 function generateCode(
@@ -43,7 +69,7 @@ function generateStory(
   manifestPath: string, 
   index: number
 ): void {
-  const typeFolder = capitalize(chartType) + ' Charts';
+  const typeFolder = CHART_TYPE_FOLDERS_SINGLE[chartType];
   const code = generateCode(
     ai, typeFolder, manifestTitle, chartType, manifestPath, index
   );
@@ -59,7 +85,7 @@ function generateStoryMulti(
   multi: boolean
 ): void {
   const multiText = multi ? 'Multi' : 'Single';
-  const typeFolder = `${capitalize(chartType)} ${multiText} Charts`;
+  const typeFolder = multi ? CHART_TYPE_FOLDERS_MULTI[chartType] : CHART_TYPE_FOLDERS_SINGLE[chartType];
   const code = generateCode(
     ai, typeFolder, manifestTitle, chartType, manifestPath, index
   );
@@ -114,10 +140,11 @@ function generateAllStory(
 ): void {
   const topFolder = ai ? 'AI-enhanced Charts' : 'Basic Charts';
   const chartElement = ai ? 'AiChart' : 'Chart';
-  const typeFolder = capitalize(chartType) + ' Charts';
+  const typeFolder = `${capitalize(chartType)} Charts`
+  const typePath = CHART_TYPE_FOLDERS_SINGLE[chartType];
   const storyName = `All${ai ? 'AI' : ''}${capitalize(chartType)}Charts`;
   const code = printf(allTemplate, 
-    { topFolder, typeFolder, storyName, family, multi: 'false', chartType, chartElement }
+    { topFolder, typeFolder, typePath, storyName, family, multi: 'false', chartType, chartElement }
   );
   fs.writeFileSync(`${AUTOGEN_PATH}${ai ? 'AI' : ''}all${chartType}.stories.ts`, code, 'utf8');
 }
@@ -131,10 +158,11 @@ function generateAllStoryMulti(
   const topFolder = ai ? 'AI-enhanced Charts' : 'Basic Charts';
   const chartElement = ai ? 'AiChart' : 'Chart';
   const multiText = multi ? 'multi' : 'single';
-  const typeFolder = `${capitalize(chartType)} ${capitalize(multiText)} Charts`;
+  const typeFolder = `${capitalize(multiText)} ${capitalize(chartType)} Charts`
+  const typePath = multi ? CHART_TYPE_FOLDERS_MULTI[chartType] : CHART_TYPE_FOLDERS_SINGLE[chartType];
   const storyName = `All${capitalize(multiText)}${capitalize(chartType)}Charts`;
   const code = printf(allTemplate, 
-    { topFolder, typeFolder, storyName, family, multi: 'true', chartType, chartElement }
+    { topFolder, typeFolder, typePath, storyName, family, multi: 'true', chartType, chartElement }
   );
   fs.writeFileSync(`${AUTOGEN_PATH}${ai ? 'AI' : ''}all${multiText}${chartType}.stories.ts`, code, 'utf8');
 }

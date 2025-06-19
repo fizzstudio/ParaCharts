@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('line', true);
 
 const meta = {
-  title: "AI-enhanced Charts/Line Single Charts",
+  title: "AI-enhanced Charts/Line Charts/Single Line Charts",
   render: (args) => AiChart(args),
   argTypes: {
     filename: {
@@ -22,7 +22,7 @@ const meta = {
 export default meta;
 
 export const AllSingleLineCharts: Story = {
-  name: 'All Line Single Charts',
+  name: 'All Single Line Charts',
   args: {
     filename: '',
     forcecharttype: "line",

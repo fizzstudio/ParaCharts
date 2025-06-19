@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('line', true);
 
 const meta = {
-  title: "AI-enhanced Charts/Stepline Multi Charts",
+  title: "AI-enhanced Charts/Line Charts/Multi Stepline Charts",
   render: (args) => AiChart(args),
   argTypes: {
     filename: {
@@ -22,7 +22,7 @@ const meta = {
 export default meta;
 
 export const AllMultiSteplineCharts: Story = {
-  name: 'All Stepline Multi Charts',
+  name: 'All Multi Stepline Charts',
   args: {
     filename: '',
     forcecharttype: "stepline",

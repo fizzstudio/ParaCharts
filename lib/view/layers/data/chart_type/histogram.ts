@@ -1,4 +1,4 @@
-import { Box, calendarNumber, enumerate, strToId } from "@fizz/paramodel";
+import { enumerate, strToId } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
 import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";

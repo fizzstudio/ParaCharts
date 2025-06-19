@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('scatter', false);
 
 const meta = {
-  title: "AI-enhanced Charts/Heatmap Charts",
+  title: "AI-enhanced Charts/Heat Maps",
   render: (args) => AiChart(args),
   argTypes: {
     filename: {

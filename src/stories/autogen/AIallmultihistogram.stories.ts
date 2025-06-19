@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('bar', true);
 
 const meta = {
-  title: "AI-enhanced Charts/Histogram Multi Charts",
+  title: "AI-enhanced Charts/Histograms",
   render: (args) => AiChart(args),
   argTypes: {
     filename: {
@@ -22,7 +22,7 @@ const meta = {
 export default meta;
 
 export const AllMultiHistogramCharts: Story = {
-  name: 'All Histogram Multi Charts',
+  name: 'All Multi Histogram Charts',
   args: {
     filename: '',
     forcecharttype: "histogram",

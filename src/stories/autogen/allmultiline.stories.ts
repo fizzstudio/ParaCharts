@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('line', true);
 
 const meta = {
-  title: "Basic Charts/Line Multi Charts",
+  title: "Basic Charts/Line Charts/Multi Line Charts",
   render: (args) => Chart(args),
   argTypes: {
     filename: {
@@ -22,7 +22,7 @@ const meta = {
 export default meta;
 
 export const AllMultiLineCharts: Story = {
-  name: 'All Line Multi Charts',
+  name: 'All Multi Line Charts',
   args: {
     filename: '',
     forcecharttype: "line",

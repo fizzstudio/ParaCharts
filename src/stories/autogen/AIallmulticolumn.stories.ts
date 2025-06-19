@@ -7,7 +7,7 @@ type Story = StoryObj<ChartProps>;
 const titleToFilenameMap = familyManifestPathsMap('bar', true);
 
 const meta = {
-  title: "AI-enhanced Charts/Column Multi Charts",
+  title: "AI-enhanced Charts/Bar Charts/Multi Column Charts",
   render: (args) => AiChart(args),
   argTypes: {
     filename: {
@@ -22,7 +22,7 @@ const meta = {
 export default meta;
 
 export const AllMultiColumnCharts: Story = {
-  name: 'All Column Multi Charts',
+  name: 'All Multi Column Charts',
   args: {
     filename: '',
     forcecharttype: "column",
