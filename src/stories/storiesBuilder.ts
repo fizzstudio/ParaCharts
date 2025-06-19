@@ -146,7 +146,7 @@ function generateAllStory(
   const code = printf(allTemplate, 
     { topFolder, typeFolder, typePath, storyName, family, multi: 'false', chartType, chartElement }
   );
-  fs.writeFileSync(`${AUTOGEN_PATH}${ai ? 'AI' : ''}all${chartType}.stories.ts`, code, 'utf8');
+  fs.writeFileSync(`${AUTOGEN_PATH}Z${ai ? 'AI' : ''}all${chartType}.stories.ts`, code, 'utf8');
 }
 
 function generateAllStoryMulti(
@@ -164,7 +164,7 @@ function generateAllStoryMulti(
   const code = printf(allTemplate, 
     { topFolder, typeFolder, typePath, storyName, family, multi: 'true', chartType, chartElement }
   );
-  fs.writeFileSync(`${AUTOGEN_PATH}${ai ? 'AI' : ''}all${multiText}${chartType}.stories.ts`, code, 'utf8');
+  fs.writeFileSync(`${AUTOGEN_PATH}Z${ai ? 'AI' : ''}all${multiText}${chartType}.stories.ts`, code, 'utf8');
 }
 
 function generateFamilyAllStory(family: ChartTypeFamily, ai: boolean, multi?: boolean): void {

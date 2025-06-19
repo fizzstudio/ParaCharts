@@ -48,7 +48,28 @@ const preview: Preview = {
             'Scatter Charts',
             'Histograms',
             'Heat Maps'
-          ], 'AI-Enhanced Charts'],
+          ], 'AI-enhanced Charts', [
+            'Pastry Charts', 
+            'Bar Charts', [
+              'Single Bar Charts',
+              'Multi Bar Charts',
+              'Single Column Charts',
+              'Multi Column Charts',
+              'Single Lollipop Charts',
+              'Multi Lollipop Charts',
+            ],
+            'Line Charts',[
+              'Single Line Charts',
+              'Multi Line Charts',
+              'Single Stepline Charts',
+              'Multi Stepline Charts'
+            ],
+            'Scatter Charts',
+            'Histograms',
+            'Heat Maps'
+          ]
+        ],
+        method: 'alphabetical'
       },
     },
   },
