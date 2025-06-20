@@ -492,10 +492,11 @@ export class XYSeriesView extends SeriesView {
     for (let point of this.series.rawData) {
       data.push(point.y)
     }
-    if (this.paraview.store.type == "bar" || this.paraview.store.type == "column"){
+    if (this.paraview.store.type == "bar" || this.paraview.store.type == "column") {
       this.paraview.store.updateSettings(draft => {
-      draft.controlPanel.isSparkBrailleBar = true
-    })};
+        draft.controlPanel.isSparkBrailleBar = true
+      })
+    };
     this.paraview.store._sparkBrailleData = data.join(' ');
     /*todo().deets!.sparkBrailleData = this.series.data.join(' ');
     this.eventActionManager!.dispatch('series_focused', {
