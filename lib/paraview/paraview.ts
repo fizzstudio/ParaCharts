@@ -187,8 +187,22 @@ export class ParaView extends logging(ParaComponent) {
         font-size: 1.25rem;
       }
       .range-highlight {
-        fill: purple;
+        fill: fuchsia;
         opacity: 0.3;
+      }
+      .linebreaker-marker {
+        stroke: purple;
+        fill: purple;
+        stroke-width: 3px;
+      }
+      .trend-line{
+        display: inline;
+        fill: none;
+        stroke: hsl(315, 89%, 46%);
+        stroke-width: 8px;
+        stroke-linecap: butt;
+        stroke-dasharray: 12 12;
+        stroke-opacity: 0.5;
       }
     `
   ];

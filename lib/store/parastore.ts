@@ -41,6 +41,7 @@ import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { keymap } from './keymap';
 import { KeymapManager } from './keymap_manager';
+import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -58,16 +59,39 @@ export interface Announcement {
 
 export type SettingObserver = (oldValue: Setting, newValue: Setting) => void;
 
-export interface Annotation {
+export interface BaseAnnotation {
+  annotation: string;
+  id: string;
+  seriesKey?: string;
+  index?: number;
+}
+
+export interface PointAnnotation extends BaseAnnotation {
   seriesKey: string;
   index: number;
   annotation: string;
   timestamp?: Date;
 }
 
+export interface MDRAnnotation extends BaseAnnotation{
+  annotation: string;
+}
+
 export interface RangeHighlight {
   startPortion: number;
   endPortion: number;
+}
+
+export interface LineBreak {
+  startPortion: number;
+}
+
+export interface TrendLine {
+  startPortion: number;
+  endPortion: number;
+  startIndex: number;
+  endIndex: number;
+  seriesKey: string;
 }
 
 
@@ -79,7 +103,7 @@ export class ParaStore extends State {
   @property() settings: Settings;
   @property() darkMode = false;
   @property() announcement: Announcement = { text: '' };
-  @property() annotations: Annotation[] = [];
+  @property() annotations: BaseAnnotation[] = [];
   @property()  _sparkBrailleData: string = ''
 
   @property() protected data: AllSeriesData | null = null;
@@ -91,6 +115,8 @@ export class ParaStore extends State {
   @property() protected _selectedDatapoints: DataCursor[] = [];
   @property() protected _prevSelectedDatapoints: DataCursor[] = [];
   @property() protected _rangeHighlights: RangeHighlight[] = [];
+  @property() protected _lineBreaks: LineBreak[] = [];
+  @property() protected _trendLines: TrendLine[] = [];
 
   protected _settingControls = new SettingControlManager(this); 
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
@@ -159,6 +185,14 @@ export class ParaStore extends State {
 
   get rangeHighlights() {
     return this._rangeHighlights;
+  }
+
+  get lineBreaks() {
+    return this._lineBreaks
+  }
+
+  get trendLines() {
+    return this._trendLines
   }
 
   setManifest(manifest: Manifest, data?: AllSeriesData) {
@@ -442,7 +476,7 @@ export class ParaStore extends State {
   }
 
   addAnnotation() {
-    let newAnnotationList: Annotation[] = [...this.annotations];
+    let newAnnotationList: PointAnnotation[] = []
 
     this._selectedDatapoints.forEach((dp) => {
       const recordLabel = formatXYDatapointX(
@@ -452,11 +486,75 @@ export class ParaStore extends State {
         newAnnotationList.push({
           seriesKey: dp.seriesKey,
           index: dp.index,
-          annotation: `${dp.seriesKey}, ${recordLabel}: ${annotationText}`
+          annotation: `${dp.seriesKey}, ${recordLabel}: ${annotationText}`,
+          id: `${dp.seriesKey}-${recordLabel}`
         });
       }
     });
-    this.annotations = newAnnotationList;
+    this.annotations = [...this.annotations, ...newAnnotationList];
+  }
+
+  async showMDRAnnotations() {
+    if (this.type == "line") {
+      if (this.settings.controlPanel.isMDRAnnotationsVisible) {
+        let seriesAnalysis;
+        let seriesKey: string;
+        if (this.selectedDatapoints.length > 0){
+          seriesKey = this.selectedDatapoints[0].seriesKey;
+          seriesAnalysis = await this.model?.getSeriesAnalysis(seriesKey)
+        }
+        else{
+          seriesKey = this.model!.series[0][0].seriesKey
+          seriesAnalysis = await this.model?.getSeriesAnalysis(seriesKey)
+        }
+        const length = this.model!.series[0].length - 1
+        let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i])
+        for (let sequence of relevantSequences!) {
+          this.highlightRange(sequence.start / length, (sequence.end - 1) / length)
+        }
+
+        this.addModelLineBreaks(seriesAnalysis!.sequences, seriesKey)
+        this.addModelTrendLines(seriesAnalysis!.sequences, seriesKey)
+
+        let message = `Detected trend: ${seriesAnalysis?.message}, consisting of ${seriesAnalysis?.messageSeqs.length} datapoint sequences from`
+        for (let seq of relevantSequences!) {
+          message = message.concat(" ", String(this.model!.allPoints[seq.start].facetAsNumber("x")), " to ", String(this.model!.allPoints[seq.end - 1].facetAsNumber("x")), ` (${String(seq.message)})`, ",")
+        }
+        if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
+          const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation")
+          this.annotations.splice(index, 1)
+        }
+        this.annotations.push({
+          annotation: message,
+          id: `trend-analysis-annotation`
+        })
+      }
+      else {
+        let seriesAnalysis;
+        let seriesKey: string;
+        if (this.selectedDatapoints.length > 0) {
+          seriesKey = this.selectedDatapoints[0].seriesKey
+          seriesAnalysis = await this.model?.getSeriesAnalysis(seriesKey)
+        }
+        else {
+          seriesKey = this.model!.series[0][0].seriesKey
+          seriesAnalysis = await this.model!.getSeriesAnalysis(seriesKey)
+        }
+        const length = this.model!.series[0].length - 1
+        let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i])
+        for (let sequence of relevantSequences!) {
+          this.unhighlightRange(sequence.start / length, (sequence.end - 1) / length)
+        }
+
+        this.removeModelLineBreaks(seriesAnalysis!.sequences, seriesKey)
+        this.removeModelTrendLines(seriesAnalysis!.sequences, seriesKey)
+
+        if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
+          const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation")
+          this.annotations.splice(index, 1)
+        }
+      }
+    }
   }
 
   protected _getUrlAnnotations() {
@@ -508,4 +606,79 @@ export class ParaStore extends State {
     })));
   }
 
+  addModelLineBreaks(sequences: SequenceInfo[], seriesKey: string) {
+    const series = this.model!.series.filter(s => s[0].seriesKey == seriesKey)[0]
+    const length = series.length - 1
+    for (let seq of sequences) {
+      this.addLineBreak(seq.start / length, seriesKey)
+    }
+    this.addLineBreak((sequences[sequences.length - 1].end -1) / length, seriesKey)
+
+  }
+
+  removeModelLineBreaks(sequences: SequenceInfo[], seriesKey: string) {
+    const series = this.model!.series.filter(s => s[0].seriesKey == seriesKey)[0]
+    const length = series.length - 1
+    for (let seq of sequences) {
+      const index = this._lineBreaks.findIndex(lb =>
+        lb.startPortion === seq.start / length);
+      if (index === -1) {
+        //throw new Error('range not highlighted');
+      }
+      else {
+        this._lineBreaks = this._lineBreaks.toSpliced(index, 1);
+      }
+    }
+    const index = this._lineBreaks.findIndex(lb =>
+      lb.startPortion === (sequences[sequences.length - 1].end - 1) / length);
+    if (index === -1) {
+      //throw new Error('range not highlighted');
+    }
+    else {
+      this._lineBreaks = this._lineBreaks.toSpliced(index, 1);
+    }
+  }
+
+  addLineBreak(startPortion: number, seriesKey: string){
+    if (this._lineBreaks.find(lb =>
+      lb.startPortion === startPortion)) {
+      //throw new Error('range already highlighted');
+    }
+    else{
+      this._lineBreaks = [...this._lineBreaks, {startPortion: startPortion}];
+    }
+  }
+
+  addModelTrendLines(sequences: SequenceInfo[], seriesKey: string){
+    const series = this.model!.series.filter(s => s[0].seriesKey == seriesKey)[0]
+    const length = series.length - 1
+    for (let seq of sequences) {
+      this.addTrendLine(seq.start / length, (seq.end - 1) / length, seq.start, seq.end, seriesKey)
+    }
+  }
+
+  addTrendLine(startPortion: number, endPortion: number, startIndex: number, endIndex: number, seriesKey: string){
+    if (this._trendLines.find(tl =>
+      tl.startPortion === startPortion && tl.endPortion === endPortion)) {
+      //throw new Error('range already highlighted');
+    }
+    else{
+      this._trendLines = [...this._trendLines, {startPortion: startPortion, endPortion: endPortion, startIndex: startIndex, endIndex: endIndex, seriesKey: seriesKey}];
+    }
+  }
+
+  removeModelTrendLines(sequences: SequenceInfo[], seriesKey: string) {
+    const series = this.model!.series.filter(s => s[0].seriesKey == seriesKey)[0]
+    const length = series.length - 1
+    for (let seq of sequences) {
+      const index = this._trendLines.findIndex(tl =>
+        tl.startPortion === seq.start / length && tl.endPortion === (seq.end - 1) / length);
+      if (index === -1) {
+        //throw new Error('range not highlighted');
+      }
+      else {
+        this._trendLines = this._trendLines.toSpliced(index, 1);
+      }
+    }
+  }
 }

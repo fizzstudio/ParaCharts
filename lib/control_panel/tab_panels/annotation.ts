@@ -61,9 +61,11 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     const target = (event?.target as HTMLElement);
     if (target) {
       this._highlightAnnotation(target);
-      const seriesKey = target.dataset.series!;
-      const index = parseInt(target.dataset.index!);
-      this._goToAnnotation(seriesKey, index);
+      if (target.dataset.series && target.dataset.index!) {
+        const seriesKey = target.dataset.series!;
+        const index = parseInt(target.dataset.index!);
+        this._goToAnnotation(seriesKey, index);
+      }
     }
   }
 
@@ -93,6 +95,20 @@ export class AnnotationPanel extends ControlPanelTabPanel {
             }
           >
             Add Annotation
+          </button>
+        </div>
+         <div>
+          <button
+            @click=${
+              () => {
+                this._store.updateSettings(draft => {
+                draft.controlPanel.isMDRAnnotationsVisible = !this._store.settings.controlPanel.isMDRAnnotationsVisible;
+              });
+              this._store.showMDRAnnotations()
+              }
+            }
+          >
+            Show Trend Annotations
           </button>
         </div>
       </div>

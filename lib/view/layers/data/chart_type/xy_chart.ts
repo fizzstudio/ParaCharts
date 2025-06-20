@@ -77,10 +77,6 @@ export abstract class XYChart extends DataLayer {
     super._addedToParent();  
     // this.maxDatapointSize = this.width/2.5;
     // this._isChordModeEnabled = this.paraview.store.settings.sonification.isChordModeEnabled;
-     //const xs = this.seriesViews[0].children.map(v => v.datapoint.x.toNumber());
-      //console.log(this.paraview.store.model?.series[0].rawData)
-      const xs = this.paraview.store.model?.series[0].rawData
-      this.addRangeHighlight(this.paraview, Number(xs![1].x), Number(xs![4].x));
   }
 
   get managedSettingKeys() {
