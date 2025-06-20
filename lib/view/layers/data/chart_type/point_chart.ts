@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { SeriesView } from '../../../data';
 import { XYChart, XYDatapointView, XYSeriesView } from '.';
 import { AxisInfo } from '../../../../common/axisinfo';
-import { type PointChartType } from '../../../../store/settings_types';
+import { Setting, type PointChartType } from '../../../../store/settings_types';
 
 import { enumerate, strToId } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
@@ -37,19 +37,21 @@ export abstract class PointChart extends XYChart {
     this._axisInfo = new AxisInfo(this.paraview.store, {
       yValues: this.paraview.store.model!.allFacetValues('y')!.map((y) => y.value as number)
     });
-    this.paraview.store.observeSetting('axis.y.maxValue', (_oldVal, newVal) => {
-      if (this.isActive){
-        this.paraview.createDocumentView();
-        this.paraview.requestUpdate();
-      }
-    });
-    this.paraview.store.observeSetting('axis.y.minValue', (_oldVal, newVal) => {
-      if (this.isActive){
-        this.paraview.createDocumentView();
-        this.paraview.requestUpdate();
-      }
-    });
-    
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if (['axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
+      // this._axisInfo!.updateYRange();
+      // for (const datapointView of this.datapointViews) {
+      //   datapointView.computeLocation();
+      // }
+      // for (const datapointView of this.datapointViews) {
+      //   datapointView.completeLayout();
+      // }
+      this.paraview.createDocumentView();
+      this.paraview.requestUpdate();
+    }
+    super.settingDidChange(path, oldValue, newValue);
   }
 
   get datapointViews() {

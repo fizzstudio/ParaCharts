@@ -51,14 +51,6 @@ export class LineChart extends PointChart {
       label: 'Show symbols',
       parentView: 'controlPanel.tabs.chart.chart',
     });
-
-    this.paraview.store.observeSetting('type.line.lineWidth', (_oldVal, newVal) => {
-      if (this.isActive) {
-        this._chartLandingView.clearChildren()
-        this._beginLayout()
-        this._completeLayout()
-      }
-    });
   }
 
   get datapointViews() {
@@ -238,8 +230,8 @@ export class LineSection extends ChartPoint {
 }
 
   protected _computeNext() {
-      this._nextMidX = this.width/2; // + 0.1;
-      this._nextMidY = (this._next!.y - this.y)/2; 
+    this._nextMidX = this.width/2; // + 0.1;
+    this._nextMidY = (this._next!.y - this.y)/2; 
   }
 
   protected _computeCentroid() {
@@ -324,6 +316,9 @@ export class LineSection extends ChartPoint {
   }
 
   protected _createShape() {
+    // If datapoints are layed out again after the initial layout,
+    // we need to replace the original shape and symbol
+    this._shape?.remove();
     this._shape = new Path(this.paraview, {
       x: this._x,
       y: this._y,

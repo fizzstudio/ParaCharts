@@ -200,7 +200,13 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     this._orthoAxis = orthoAxis;
   }
 
-  abstract settingDidChange(key: string, value: Setting | undefined): boolean;
+  // settingDidChange(path: string, _oldValue?: Setting, _newValue?: Setting): void {
+  //   if (['axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
+  //     this._layout.clearChildren();
+  //     this.createComponents();
+  //     this.layoutComponents();
+  //   }
+  // }
 
   abstract setPosition(): void;
 
@@ -281,10 +287,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     return 0;
   }
 
-  cleanup() {
-
-  }
-
 }
 
 /**
@@ -309,12 +311,12 @@ export class HorizAxis extends Axis<'horiz'> {
     ];
   }
 
-  settingDidChange(key: string, value: any) {
-    //todo().controller.clearSettingManagers();
-    this.paraview.createDocumentView();
-    this.paraview.requestUpdate();
-    return true;
-  }
+  // settingDidChange(key: string, value: any) {
+  //   //todo().controller.clearSettingManagers();
+  //   this.paraview.createDocumentView();
+  //   this.paraview.requestUpdate();
+  //   return true;
+  // }
 
   protected _createTickLabelTiers() {
     return [new HorizTickLabelTier(
@@ -382,7 +384,7 @@ export class VertAxis extends Axis<'vert'> {
       key: 'axis.y.minValue',
       label: 'Min y-value',
       options: { inputType: 'number' },
-      value: this.settings.minValue == "unset" ? range?.start : this.settings.minValue,
+      value: this.settings.minValue === 'unset' ? range.start : this.settings.minValue,
       validator: value => {
         const min = Math.min(...this.chartLayers.dataLayer.axisInfo!.options.yValues)
         // NB: If the new value is successfully validated, the inner chart
@@ -415,15 +417,15 @@ export class VertAxis extends Axis<'vert'> {
     ];
   }
 
-  settingDidChange(key: string, value: any) {
-    //todo().controller.clearSettingManagers();
-    this.paraview.createDocumentView();
-    this.paraview.requestUpdate();
-    // Changing one axis bound may cause the other to change due to
-    // quantization, and this needs to get reflected in the UI.
-    //todo().deets!.requestUpdate();
-    return true;
-  }
+  // settingDidChange(key: string, value: any) {
+  //   //todo().controller.clearSettingManagers();
+  //   this.paraview.createDocumentView();
+  //   this.paraview.requestUpdate();
+  //   // Changing one axis bound may cause the other to change due to
+  //   // quantization, and this needs to get reflected in the UI.
+  //   //todo().deets!.requestUpdate();
+  //   return true;
+  // }
 
   protected _createTickLabelTiers() {
     return [new VertTickLabelTier(

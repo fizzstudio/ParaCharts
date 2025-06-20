@@ -7,6 +7,7 @@ import { html, css } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { type Unsubscribe } from '@lit-app/state';
 
 @customElement('para-description-panel')
 export class DescriptionPanel extends ControlPanelTabPanel {
@@ -15,6 +16,8 @@ export class DescriptionPanel extends ControlPanelTabPanel {
   @property() visibleStatus = '';
 
   private _summarizer?: Summarizer;
+  protected _storeChangeUnsub!: Unsubscribe;
+
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -39,7 +42,12 @@ export class DescriptionPanel extends ControlPanelTabPanel {
 
   connectedCallback(): void {
     super.connectedCallback();
-    this._store.subscribe(this.setCaption.bind(this));
+    this._storeChangeUnsub = this._store.subscribe(this.setCaption.bind(this));
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._storeChangeUnsub();
   }
 
   // get speechRate() {

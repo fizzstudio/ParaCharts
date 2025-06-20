@@ -90,6 +90,16 @@ export class AxisInfo {
     return this._options;
   }
 
+  updateYRange() {
+    // this._options.yMin = min === 'unset'
+    //   ? Math.min(...this._options.yValues)
+    //   : min;
+    // this._options.yMax = max === 'unset'
+    //   ? Math.max(...this._options.yValues)
+    //   : max;
+    this._computeYLabelInfo();
+  }
+
   protected _computeXLabels(xMin: number, xMax: number) {
     return computeLabels(
       this._store.settings.axis.x.minValue == 'unset' ? xMin : this._store.settings.axis.x.minValue as number, 
@@ -98,10 +108,7 @@ export class AxisInfo {
   }
 
   protected _computeYLabels(yMin: number, yMax: number) {
-    return computeLabels(
-      this._store.settings.axis.y.minValue == 'unset' ? yMin : this._store.settings.axis.y.minValue as number, 
-      this._store.settings.axis.y.maxValue == 'unset' ? yMax : this._store.settings.axis.y.maxValue as number,
-      false); //this._model.depFormat === 'percent');  
+    return computeLabels(yMin, yMax, false); //this._model.depFormat === 'percent');  
   }  
 
   protected _computeXLabelInfo() {
@@ -120,9 +127,13 @@ export class AxisInfo {
   }
 
   protected _computeYLabelInfo() {
-    this._yLabelInfo = this._computeYLabels(
-      this._options.yMin ?? Math.min(...this._options.yValues),
-      this._options.yMax ?? Math.max(...this._options.yValues));
+    const yMin = this._store.settings.axis.y.minValue === 'unset'
+      ? this._options.yMin ?? Math.min(...this._options.yValues)
+      : this._store.settings.axis.y.minValue;
+    const yMax = this._store.settings.axis.y.maxValue === 'unset'
+      ? this._options.yMax ?? Math.max(...this._options.yValues)
+      : this._store.settings.axis.y.maxValue;
+    this._yLabelInfo = this._computeYLabels(yMin, yMax);
   }
 
 }

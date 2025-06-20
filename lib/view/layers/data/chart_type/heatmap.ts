@@ -4,7 +4,7 @@ import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
 import { fixed } from "../../../../common/utils";
 import { ParaView } from "../../../../paraview";
-import { DeepReadonly, HeatmapSettings, PointChartType } from "../../../../store";
+import { DeepReadonly, HeatmapSettings, PointChartType, type Setting } from "../../../../store";
 import { DatapointView, SeriesView } from "../../../data";
 
 import { Rect } from "../../../shape/rect";
@@ -79,22 +79,16 @@ export class Heatmap extends XYChart {
       },
       parentView: 'controlPanel.tabs.chart.chart',
     });
-    this.paraview.store.observeSetting('type.heatmap.resolution', (_oldVal, newVal) => {
-      if (this.isActive) {
-        this.paraview.createDocumentView();
-        this.paraview.requestUpdate();
-      }
-    });
   }
-  /*
-    settingDidChange(key: string, value: any) {
-      if (!super.settingDidChange(key, value)) {
-        this.paraview.requestUpdate();
-        return true;
-      }
-      return false;
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if (path === 'type.heatmap.resolution') {
+      this.paraview.createDocumentView();
+      this.paraview.requestUpdate();
     }
-      */
+    super.settingDidChange(path, oldValue, newValue);
+  }
+
   protected _beginLayout() {
     this._createDatapoints();
     for (const datapointView of this.datapointViews) {

@@ -54,28 +54,13 @@ export abstract class XYChart extends DataLayer {
   protected isConnector = false;
   protected maxDatapointSize!: number;
 
-  //private _isChordModeEnabled = false;
-
   constructor(paraview: ParaView, dataLayerIndex: number) {
     super(paraview, dataLayerIndex);
-    paraview.store.keymapManager.addEventListener('hotkeypress', (e: HotkeyEvent) => {
-      if (e.action === 'chord_mode_toggle') {
-        paraview.store.updateSettings(draft => {
-          draft.sonification.isChordModeEnabled = !draft.sonification.isChordModeEnabled;
-        });
-        if (paraview.store.settings.sonification.isChordModeEnabled) {
-          paraview.store.prependAnnouncement('Chord mode enabled');
-        } else {
-          paraview.store.prependAnnouncement('Chord mode disabled');
-        }      
-      }
-    });
   }
 
   protected _addedToParent() {
     super._addedToParent();  
     // this.maxDatapointSize = this.width/2.5;
-    // this._isChordModeEnabled = this.paraview.store.settings.sonification.isChordModeEnabled;
   }
 
   get managedSettingKeys() {
@@ -142,14 +127,6 @@ export abstract class XYChart extends DataLayer {
   get keymap() {
     return {...super.keymap, ...keymaps['chart.xy']};
   }*/
-
-  // settingDidChange(key: string, value: Setting) {
-  //   if (key === 'sonification.isChordModeEnabled') {
-  //     this.isChordModeEnabled = value as boolean;
-  //     return true;
-  //   }
-  //   return false;
-  // }
 
   //protected abstract _layoutDatapoints(): void;
 
@@ -266,10 +243,10 @@ export abstract class XYChart extends DataLayer {
    * Navigate to the series minimum/maximum datapoint
    * @param isMin If true, go the the minimum. Otherwise, go to the maximum
    */
-  protected async _goSeriesMinMax(isMin: boolean) {
+  async goSeriesMinMax(isMin: boolean) {
     const currView = this.focusLeaf;
     if (currView instanceof ChartLandingView) {
-      this._goChartMinMax(isMin);
+      this.goChartMinMax(isMin);
     } else {
       let seriesChildren = null;
       let seriesKey = null;
@@ -312,7 +289,7 @@ export abstract class XYChart extends DataLayer {
    * Navigate to (one of) the chart minimum/maximum datapoint(s)
    * @param isMin If true, go the the minimum. Otherwise, go to the maximum
    */
-  protected async _goChartMinMax(isMin: boolean) {
+  async goChartMinMax(isMin: boolean) {
     const currView = this.focusLeaf;
     const stats = this.paraview.store.model!.getFacetStats('y')!;
     const matchTarget = isMin ? stats.min.value : stats.max.value;
