@@ -5,16 +5,16 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Line Single Charts",
+  title: "Basic Charts/Line Charts/Single Line Charts",
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart20: Story = {
-  name: "508: Indonesia: number of internet users 2017 to 2023 (20)",
+  name: "1066: Median age of the population in Vietnam 2015 (20)",
   args: {
-    filename: "manifests/autogen/line-single/line-single-manifest-508.json",
+    filename: "manifests/autogen/line-single/line-single-manifest-1066.json",
     forcecharttype: "line",
   }
 }

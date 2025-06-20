@@ -146,6 +146,7 @@ export class DatapointView extends DataView {
 
   protected _createId(..._args: any[]): string {
     const jimIndex = this._parent.modelIndex*this._series.length + this.index + 1; 
+    console.log('ci', jimIndex, this.paraview.store.jimerator!.jim.selectors)
     const id = this.paraview.store.jimerator!.jim.selectors[`datapoint${jimIndex}`].dom as string;
     // don't include the '#' from JIM
     return id.slice(1);
@@ -159,8 +160,8 @@ export class DatapointView extends DataView {
     this.paraview.store.announce(announcement);
   }
 
-  onFocus(isNewComponentFocus = false) {
-    super.onFocus(isNewComponentFocus);
+  async onFocus(isNewComponentFocus = false) {
+    await super.onFocus(isNewComponentFocus);
     this._visit(isNewComponentFocus);
   }
 
@@ -190,6 +191,9 @@ export class DatapointView extends DataView {
   protected _createSymbol() {
     const series = this.seriesProps;
     let symbolType = series.symbol;
+    // If datapoints are layed out again after the initial layout,
+    // we need to replace the original shape and symbol
+    this._symbol?.remove();
     this._symbol = DataSymbol.fromType(this.paraview, symbolType);
     this._symbol.id = `${this._id}-sym`;
     this._symbol.role = 'datapoint';
@@ -198,8 +202,8 @@ export class DatapointView extends DataView {
 
   layoutSymbol() {
     if (this._symbol) {
-      this._symbol.x = this._x - this._symbol.width/2;
-      this._symbol.y = this._y - this._symbol.height/2;
+      this._symbol.x = this._x;
+      this._symbol.y = this._y;
     }
   }
 

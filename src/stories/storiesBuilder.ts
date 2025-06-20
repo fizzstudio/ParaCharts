@@ -8,10 +8,9 @@ import fs from 'node:fs';
 import { type CatalogListing } from '@fizz/chart-data';
 
 import { template } from './storyTemplate.ts';
-import { type ChartFamily, FAMILY_MEMBERS, familyCatalogMap, familyCatalogMapMulti} 
-  from './chartSelectorHelper.ts';
+import { familyCatalogMap, familyCatalogMapMulti } from './chartSelectorHelper.ts';
 import { allTemplate } from './allStoriesTemplate.ts';
-import { type ChartType } from '@fizz/paramanifest';
+import { CHART_FAMILY_MEMBERS, type ChartTypeFamily, type ChartType } from '@fizz/paramanifest';
 //import { capitalize } from '../../lib/common/utils.ts';
 
 function capitalize(string: string) {
@@ -19,6 +18,32 @@ function capitalize(string: string) {
 }
 
 const AUTOGEN_PATH = './src/stories/autogen/'
+
+const CHART_TYPE_FOLDERS_SINGLE: Record<ChartType, string> = {
+  'line': 'Line Charts/Single Line Charts',
+  'stepline': 'Line Charts/Single Stepline Charts',
+  'bar': 'Bar Charts/Single Bar Charts',
+  'column': 'Bar Charts/Single Column Charts',
+  'lollipop': 'Bar Charts/Single Lollipop Charts',
+  'pie': 'Pastry Charts/Pie Charts',
+  'donut': 'Pastry Charts/Donut Charts',
+  'scatter': 'Scatter Charts',
+  'histogram': 'Histograms',
+  'heatmap': 'Heat Maps'
+}
+
+const CHART_TYPE_FOLDERS_MULTI: Record<ChartType, string> = {
+  'line': 'Line Charts/Multi Line Charts',
+  'stepline': 'Line Charts/Multi Stepline Charts',
+  'bar': 'Bar Charts/Multi Bar Charts',
+  'column': 'Bar Charts/Multi Column Charts',
+  'lollipop': 'Bar Charts/Multi Lollipop Charts',
+  'pie': 'Pastry Charts/Pie Charts',
+  'donut': 'Pastry Charts/Donut Charts',
+  'scatter': 'Scatter Charts',
+  'histogram': 'Histograms',
+  'heatmap': 'Heat Maps'
+}
 
 // Generator Functions
 
@@ -30,7 +55,7 @@ function generateCode(
   manifestPath: string, 
   index: number
 ): string {
-  const topFolder = ai ? 'Ai-enhanced Charts' : 'Basic Charts';
+  const topFolder = ai ? 'AI-enhanced Charts' : 'Basic Charts';
   const chartElement = ai ? 'AiChart' : 'Chart';
   return printf(template, 
     { manifestTitle, typeFolder, topFolder, manifestPath, index, chartType, chartElement }
@@ -44,7 +69,7 @@ function generateStory(
   manifestPath: string, 
   index: number
 ): void {
-  const typeFolder = capitalize(chartType) + ' Charts';
+  const typeFolder = CHART_TYPE_FOLDERS_SINGLE[chartType];
   const code = generateCode(
     ai, typeFolder, manifestTitle, chartType, manifestPath, index
   );
@@ -60,7 +85,7 @@ function generateStoryMulti(
   multi: boolean
 ): void {
   const multiText = multi ? 'Multi' : 'Single';
-  const typeFolder = `${capitalize(chartType)} ${multiText} Charts`;
+  const typeFolder = multi ? CHART_TYPE_FOLDERS_MULTI[chartType] : CHART_TYPE_FOLDERS_SINGLE[chartType];
   const code = generateCode(
     ai, typeFolder, manifestTitle, chartType, manifestPath, index
   );
@@ -92,11 +117,11 @@ function generateTypeStoriesMulti(
   }
 }
 
-function generateFamilyStories(family: ChartFamily, ai: boolean, multi?: boolean): void {
+function generateFamilyStories(family: ChartTypeFamily, ai: boolean, multi?: boolean): void {
   const familyManifests = multi === undefined
     ? familyCatalogMap(family)
     : familyCatalogMapMulti(family, multi);
-  const familyMembers = FAMILY_MEMBERS[family];
+  const familyMembers = CHART_FAMILY_MEMBERS[family];
   for (const chartType of familyMembers) {
     if (multi === undefined) {
       generateTypeStories(ai, chartType, familyManifests);
@@ -111,37 +136,39 @@ function generateFamilyStories(family: ChartFamily, ai: boolean, multi?: boolean
 function generateAllStory(
   ai: boolean,
   chartType: ChartType, 
-  family: ChartFamily
+  family: ChartTypeFamily
 ): void {
-  const topFolder = ai ? 'Ai-enhanced Charts' : 'Basic Charts';
+  const topFolder = ai ? 'AI-enhanced Charts' : 'Basic Charts';
   const chartElement = ai ? 'AiChart' : 'Chart';
-  const typeFolder = capitalize(chartType) + ' Charts';
+  const typeFolder = `${capitalize(chartType)} Charts`
+  const typePath = CHART_TYPE_FOLDERS_SINGLE[chartType];
   const storyName = `All${ai ? 'AI' : ''}${capitalize(chartType)}Charts`;
   const code = printf(allTemplate, 
-    { topFolder, typeFolder, storyName, family, multi: 'false', chartType, chartElement }
+    { topFolder, typeFolder, typePath, storyName, family, multi: 'false', chartType, chartElement }
   );
-  fs.writeFileSync(`${AUTOGEN_PATH}${ai ? 'AI' : ''}all${chartType}.stories.ts`, code, 'utf8');
+  fs.writeFileSync(`${AUTOGEN_PATH}z${ai ? 'AI' : ''}all${chartType}.stories.ts`, code, 'utf8');
 }
 
 function generateAllStoryMulti(
   ai: boolean,
   chartType: ChartType,
-  family: ChartFamily,
+  family: ChartTypeFamily,
   multi: boolean
 ): void {
-  const topFolder = ai ? 'Ai-enhanced Charts' : 'Basic Charts';
+  const topFolder = ai ? 'AI-enhanced Charts' : 'Basic Charts';
   const chartElement = ai ? 'AiChart' : 'Chart';
   const multiText = multi ? 'multi' : 'single';
-  const typeFolder = `${capitalize(chartType)} ${capitalize(multiText)} Charts`;
+  const typeFolder = `${capitalize(multiText)} ${capitalize(chartType)} Charts`
+  const typePath = multi ? CHART_TYPE_FOLDERS_MULTI[chartType] : CHART_TYPE_FOLDERS_SINGLE[chartType];
   const storyName = `All${capitalize(multiText)}${capitalize(chartType)}Charts`;
   const code = printf(allTemplate, 
-    { topFolder, typeFolder, storyName, family, multi: 'true', chartType, chartElement }
+    { topFolder, typeFolder, typePath, storyName, family, multi: 'true', chartType, chartElement }
   );
-  fs.writeFileSync(`${AUTOGEN_PATH}${ai ? 'AI' : ''}all${multiText}${chartType}.stories.ts`, code, 'utf8');
+  fs.writeFileSync(`${AUTOGEN_PATH}z${ai ? 'AI' : ''}all${multiText}${chartType}.stories.ts`, code, 'utf8');
 }
 
-function generateFamilyAllStory(family: ChartFamily, ai: boolean, multi?: boolean): void {
-  const familyMembers = FAMILY_MEMBERS[family];
+function generateFamilyAllStory(family: ChartTypeFamily, ai: boolean, multi?: boolean): void {
+  const familyMembers = CHART_FAMILY_MEMBERS[family];
   for (const chartType of familyMembers) {
     if (multi === undefined) {
       generateAllStory(ai, chartType, family);
@@ -159,25 +186,26 @@ fs.rmSync(AUTOGEN_PATH, { force: true, recursive: true })
 
 fs.mkdirSync(AUTOGEN_PATH);
 
-const MULTIABLE_FAMILIES: ChartFamily[] = ['line', 'bar'];
-const NON_MULTIABLE_FAMILIES: ChartFamily[] = ['scatter', 'pastry'];
+const MULTIABLE_FAMILIES: ChartTypeFamily[] = ['line', 'bar'];
+const NON_MULTIABLE_FAMILIES: ChartTypeFamily[] = ['scatter', 'pastry'];
 
 for (const family of MULTIABLE_FAMILIES) {
-  generateFamilyStories(family, false, false);
-  generateFamilyStories(family, true, false);
-  generateFamilyStories(family, false, true);
-  generateFamilyStories(family, true, true);
   generateFamilyAllStory(family, false, false);
   generateFamilyAllStory(family, true, false);
   generateFamilyAllStory(family, false, true);
   generateFamilyAllStory(family, true, true);
+  generateFamilyStories(family, false, false);
+  generateFamilyStories(family, true, false);
+  generateFamilyStories(family, false, true);
+  generateFamilyStories(family, true, true);
+
 }
 
 for (const family of NON_MULTIABLE_FAMILIES) {
-  generateFamilyStories(family, false);
-  generateFamilyStories(family, true);
   generateFamilyAllStory(family, false);
   generateFamilyAllStory(family, true);
+  generateFamilyStories(family, false);
+  generateFamilyStories(family, true);
 }
 
 console.log('Finished generating stories');

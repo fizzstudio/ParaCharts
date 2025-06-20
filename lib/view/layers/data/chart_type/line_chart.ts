@@ -20,6 +20,7 @@ import { Path } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../../../../store/query_utils';
 import { ChartLandingView, SeriesView, DatapointView } from '../../../data';
+import { bboxOfBboxes } from '../../../../common/utils';
 
 import { interpolate } from '@fizz/templum';
 
@@ -49,14 +50,6 @@ export class LineChart extends PointChart {
       key: 'type.line.isDrawSymbols',
       label: 'Show symbols',
       parentView: 'controlPanel.tabs.chart.chart',
-    });
-
-    this.paraview.store.observeSetting('type.line.lineWidth', (_oldVal, newVal) => {
-      if (this.isActive) {
-        this._chartLandingView.clearChildren()
-        this._beginLayout()
-        this._completeLayout()
-      }
     });
   }
 
@@ -184,13 +177,32 @@ export class LineSection extends ChartPoint {
   protected _nextMidX?: number;
   protected _nextMidY?: number;
 
-  // get width() {
-  //   return this.chart.settings.selectedPointMarkerSize.width;
-  // }
+  get height() {
+    // apparently this can get called before the shape is created
+    return this._shape?.height ?? 0;
+  }
 
-  // get height() {
-  //   return this.chart.settings.selectedPointMarkerSize.height;
-  // }
+  get left() {
+    return this._shape!.left;
+  }
+
+  get right() {
+    return this._shape!.right;
+  }
+
+  get top() {
+    return this._shape!.top;
+  }
+
+  get bottom() {
+    return this._shape!.bottom;
+  }
+
+  get outerBbox() {
+    return this._symbol
+      ? bboxOfBboxes(this._shape!.outerBbox, this._symbol!.outerBbox)
+      : this._shape!.outerBbox;
+  }
 
   completeLayout() {
     // find midpoint between values for next and previous, draw line as 2 segments
@@ -218,8 +230,8 @@ export class LineSection extends ChartPoint {
 }
 
   protected _computeNext() {
-      this._nextMidX = this.width/2; // + 0.1;
-      this._nextMidY = (this._next!.y - this.y)/2; 
+    this._nextMidX = this.width/2; // + 0.1;
+    this._nextMidY = (this._next!.y - this.y)/2; 
   }
 
   protected _computeCentroid() {
@@ -304,6 +316,9 @@ export class LineSection extends ChartPoint {
   }
 
   protected _createShape() {
+    // If datapoints are layed out again after the initial layout,
+    // we need to replace the original shape and symbol
+    this._shape?.remove();
     this._shape = new Path(this.paraview, {
       x: this._x,
       y: this._y,

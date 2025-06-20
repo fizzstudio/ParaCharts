@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const Chart49: Story = {
-  name: "s1 (49)",
+  name: "d3 (49)",
   args: {
-    filename: "manifests/scatter-manifest-s1.json",
+    filename: "manifests/scatter-manifest-d3.json",
     forcecharttype: "scatter",
   }
 }

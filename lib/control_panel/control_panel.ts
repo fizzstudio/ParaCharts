@@ -28,6 +28,8 @@ import cpanelIconAlt from '../assets/info-icon-alt.svg';
 import { MessageDialog, TabDetails, TabLabelMode } from '@fizz/ui-components';
 import '@fizz/ui-components';
 
+import { type Unsubscribe } from '@lit-app/state';
+
 import { 
   html, css, PropertyValues,
   unsafeCSS
@@ -55,6 +57,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
   protected _controlsPanelRef = createRef<ControlsPanel>();
   protected _dialogRef = createRef<ParaDialog>();
   protected _msgDialogRef = createRef<MessageDialog>();
+  protected _storeChangeUnsub!: Unsubscribe;
 
   static styles = [
     //styles,
@@ -133,11 +136,16 @@ export class ParaControlPanel extends logging(ParaComponent) {
 
   connectedCallback() {
     super.connectedCallback();
-    this._store.subscribe((key, value) => {
+    this._storeChangeUnsub = this._store.subscribe((key, value) => {
       if (key === 'data') {
         this.dataUpdated();
       }
     });
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._storeChangeUnsub();
   }
 
   // Anything that needs to be done when data is updated, do here

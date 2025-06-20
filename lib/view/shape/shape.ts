@@ -45,6 +45,47 @@ export abstract class Shape extends View {
     this._role = role;
   }
 
+  get stroke(): string {
+    if (this._options.stroke) {
+      return this._options.stroke;
+    }
+    let cursor = this._parent;
+    while (cursor) {
+      if (cursor.styleInfo.stroke) {
+        return cursor.styleInfo.stroke as string;
+      }
+      cursor = cursor.parent;
+    }
+    return this.paraview.store.settings.chart.stroke;
+  }
+
+  get strokeWidth(): number {
+    if (this._options.strokeWidth !== undefined) {
+      return this._options.strokeWidth;
+    }
+    let cursor = this._parent;
+    while (cursor) {
+      if (cursor.styleInfo.strokeWidth !== undefined) {
+        return cursor.styleInfo.strokeWidth as number;
+      }
+      cursor = cursor.parent;
+    }
+    return this.paraview.store.settings.chart.strokeWidth;
+  }
+
+  get effectiveStrokeWidth(): number {
+    return this.stroke === 'none' ? 0 : this.strokeWidth;
+  }
+
+  get outerBbox() {
+    return new DOMRect(
+      this.left - this.effectiveStrokeWidth/2,
+      this.top - this.effectiveStrokeWidth/2,
+      this.width + this.effectiveStrokeWidth,
+      this.height + this.effectiveStrokeWidth
+    );
+  }
+
   get styleInfo() {
     return this._styleInfo;
   }

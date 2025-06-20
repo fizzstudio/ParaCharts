@@ -55,6 +55,7 @@ export const defaults: Settings = {
     //chartType: 'line'
     fontFamily: 'Helvetica, sans-serif',
     fontWeight: '300',
+    stroke: 'purple',
     strokeWidth: 4,
     strokeHighlightScale: 1.5,
     symbolStrokeWidth: 2,
@@ -339,8 +340,10 @@ export const defaults: Settings = {
     isVoicingEnabled: false,
     isAnnouncementEnabled: true,
     speechRate: 1,
-    isFullScreenEnabled: false,
+    isFullscreenEnabled: false,
     isLowVisionModeEnabled: false,
+    isFocusRingEnabled: false,
+    focusRingGap: 4
   },
   controlPanel: {
     isControlPanelDefaultOpen: false,

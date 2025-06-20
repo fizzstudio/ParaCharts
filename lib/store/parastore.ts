@@ -42,6 +42,7 @@ import { SeriesPropertyManager } from './series_properties';
 import { keymap } from './keymap';
 import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
+import { type ParaChart } from '../parachart/parachart';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -57,7 +58,7 @@ export interface Announcement {
   clear?: boolean;
 }
 
-export type SettingObserver = (oldValue: Setting, newValue: Setting) => void;
+export type SettingObserver = (oldValue?: Setting, newValue?: Setting) => void;
 
 export interface BaseAnnotation {
   annotation: string;
@@ -137,6 +138,7 @@ export class ParaStore extends State {
   public idList: Record<string, boolean> = {};
 
   constructor(
+    protected _paraChart: ParaChart,
     inputSettings: SettingsInput, 
     suppleteSettingsWith?: DeepReadonly<Settings>,
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor
@@ -274,8 +276,9 @@ export class ParaStore extends State {
     }
     for (const [path, values] of Object.entries(observed)) {
       this._settingObservers[path]?.forEach(observer =>
-        observer.call(null, values.oldValue, values.newValue)
+        observer(values.oldValue, values.newValue)
       );
+      this._paraChart.paraView?.settingDidChange(path, values.oldValue, values.newValue);
     }
   }
 

@@ -267,7 +267,6 @@ export abstract class RadialChart extends DataLayer {
         role: 'datapoint', 
         loc: labelLoc,
         textAnchor: anchor,
-        isPositionAtAnchor: true
       });
       const underlineStart = labelLoc
         //.addX(slice.categoryLabel.textAnchor === 'start' ? 5 : -5)
@@ -287,7 +286,6 @@ export abstract class RadialChart extends DataLayer {
         role: 'datapoint', 
         loc: sliceCenter.add(slice.shape.orientationVector.multiplyScalar(55)),
         textAnchor: 'middle',
-        isPositionAtAnchor: true,
       });
       slice.valueLabel.styleInfo = {
         fill: this.paraview.store.colors.contrastValueAt(i)
@@ -344,52 +342,52 @@ export abstract class RadialChart extends DataLayer {
     }));
   }
 
-  moveRight() {
+  async moveRight() {
     const leaf = this._chartLandingView.focusLeaf;
     if (leaf instanceof DatapointView) {
       if (leaf.next) {
-        leaf.next.focus();
+        await leaf.next.focus();
       } else {
-        leaf.parent.children[0].focus();
+        await leaf.parent.children[0].focus();
       }
     } else {
       // Skip series view and go straight to the first datapoint
-      this._chartLandingView.children[0].children[0].focus();
+      await this._chartLandingView.children[0].children[0].focus();
     }
   }
 
-  moveLeft() {
+  async moveLeft() {
     const leaf = this._chartLandingView.focusLeaf;
     if (leaf instanceof DatapointView) {
       if (leaf.prev) {
-        leaf.prev.focus();
+        await leaf.prev.focus();
       } else {
-        leaf.parent.children.at(-1)!.focus();
+        await leaf.parent.children.at(-1)!.focus();
       }
     } else {
       // Skip series view and go straight to the first datapoint
-      this._chartLandingView.children[0].children[0].focus();
+      await this._chartLandingView.children[0].children[0].focus();
     }
   }
 
-  moveUp() {
+  async moveUp() {
     const leaf = this._chartLandingView.focusLeaf;
     if (leaf instanceof DatapointView) {
-        // Keep the series view focused on the datapoint, but make
-        // the chart landing the new leaf
-        leaf.parent.blur();
+      // Keep the series view focused on the datapoint, but make
+      // the chart landing the new leaf
+      await leaf.parent.blur();
     }
   }
 
-  moveDown() {
+  async moveDown() {
     const leaf = this._chartLandingView.focusLeaf;
     if (leaf instanceof ChartLandingView) {
       if (leaf.children[0].currFocus) {
         // Restore focus to the last-focused datapoint
-        leaf.children[0].focus();
+        await leaf.children[0].focus();
       } else {
         // Focus on the first datapoint
-        this._chartLandingView.children[0].children[0].focus();
+        await this._chartLandingView.children[0].children[0].focus();
       }
     }
   }
@@ -398,10 +396,10 @@ export abstract class RadialChart extends DataLayer {
    * Navigate to the series minimum/maximum datapoint
    * @param isMin If true, go the the minimum. Otherwise, go to the maximum
    */
-  protected _goSeriesMinMax(isMin: boolean) {
+  async goSeriesMinMax(isMin: boolean) {
     const currView = this.focusLeaf;
     if (currView instanceof ChartLandingView) {
-      this._goChartMinMax(isMin);
+      this.goChartMinMax(isMin);
     } else {
       let seriesChildren = null;
       let seriesKey = null;
@@ -435,7 +433,7 @@ export abstract class RadialChart extends DataLayer {
         }
         const newViews = seriesChildren.filter(view => 
           seriesMatchArray.includes(view.index));
-        newViews[0]?.focus();
+        await newViews[0]?.focus();
       }
     }
   }
@@ -444,22 +442,20 @@ export abstract class RadialChart extends DataLayer {
    * Navigate to (one of) the chart minimum/maximum datapoint(s)
    * @param isMin If true, go the the minimum. Otherwise, go to the maximum
    */
-  protected _goChartMinMax(isMin: boolean) {
+  async goChartMinMax(isMin: boolean) {
     const currView = this.focusLeaf;
     const stats = this.paraview.store.model!.getFacetStats('y')!;
     const matchTarget = isMin ? stats.min.value : stats.max.value;
     const chartMatchArray = this._chartLandingView.datapointViews.filter(view =>
       // @ts-ignore
       view.datapoint.data.y.value === matchTarget);
-    chartMatchArray[0].focus();
+    await chartMatchArray[0].focus();
   }
 
-  playRight() {
-    
+  async playRight() {
   }
 
-  playLeft() {
-    
+  async playLeft() {
   }
 
   queryData(): void {

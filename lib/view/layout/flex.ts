@@ -48,12 +48,12 @@ export class RowLayout extends FlexLayout {
 
   protected _snapChildY(kid: View) {
     if (this.alignViews === 'start') {
-      kid.y = this.top + this._padding.top;
+      kid.top = this.top + this._padding.top;
     } else if (this.alignViews === 'end') {
-      kid.y = this.bottom - this._padding.bottom - kid.boundingHeight;
+      kid.bottom = this.bottom - this._padding.bottom;
     } else {
-      kid.y = this.top + this._padding.top 
-        + this.height/2 - kid.height/2 - kid.padding.top;
+      kid.centerY = this.top + this._padding.top 
+        + this.height/2;
     }
   }
 
@@ -61,11 +61,11 @@ export class RowLayout extends FlexLayout {
     if (!this._children.length) {
       return;
     }
-    this._children[0].x = this._x + this._padding.left;
+    this._children[0].left = this._x + this._padding.left;
     this._snapChildY(this._children[0]);
     // Lay out child views from left to right
     this._children.slice(1).forEach((kid, i) => {
-      kid.x = this._children[kid.index - 1].right + this.gap;
+      kid.left = this._children[kid.index - 1].right + this.gap;
       this._snapChildY(kid);
     });
   }
@@ -91,12 +91,12 @@ export class ColumnLayout extends FlexLayout {
 
   protected _snapChildX(kid: View) {
     if (this.alignViews === 'start') {
-      kid.x = this.left + this._padding.left;
+      kid.left = this.left + this._padding.left;
     } else if (this.alignViews === 'end') {
-      kid.x = this.right - this._padding.right - kid.boundingWidth;
+      kid.right = this.right - this._padding.right;
     } else {
-      kid.x = this.left + this._padding.left 
-        + this.width/2 - kid.width/2 - kid.padding.left;
+      kid.centerX = this.left + this._padding.left 
+        + this.width/2;
     }
   }
 
@@ -105,11 +105,11 @@ export class ColumnLayout extends FlexLayout {
       return;
     }
     this._snapChildX(this._children[0]);
-    this._children[0].y = this._y + this._padding.top;
+    this._children[0].top = this._y + this._padding.top;
     // Lay out child views from top to bottom
     this._children.slice(1).forEach((kid, i) => {
       this._snapChildX(kid);
-      kid.y = this._children[kid.index - 1].bottom + this.gap;
+      kid.top = this._children[kid.index - 1].bottom + this.gap;
     });
   }
 
