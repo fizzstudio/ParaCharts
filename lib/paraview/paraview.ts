@@ -20,12 +20,14 @@ import { ParaViewController } from '.';
 import { logging } from '../common/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest';
-import { ViewBox } from '../store/settings_types';
+import { type ViewBox, type Setting, type HotkeyEvent } from '../store';
 import { View } from '../view/base_view';
 import { DocumentView } from '../view/document_view';
 //import { styles } from './styles';
 import { SVGNS } from '../common/constants';
 import { fixed } from '../common/utils';
+import { HotkeyActions } from './hotkey_actions';
+
 import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer } from '@fizz/parasummary';
 
 import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
@@ -33,6 +35,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { Unsubscribe } from '@lit-app/state';
 
 /**
  * Data provided for the on focus callback
@@ -72,8 +75,12 @@ export class ParaView extends logging(ParaComponent) {
   protected _fileSavePlaceholderRef = createRef<HTMLElement>();
   protected _summarizer!: Summarizer;
   protected _pointerEventManager = new PointerEventManager(this);
+  protected _hotkeyActions!: HotkeyActions;
   @state() protected _defs: {[key: string]: TemplateResult} = {};
-  isActive: boolean = true;
+
+  protected _hotkeyListener: (e: HotkeyEvent) => void;
+  protected _storeChangeUnsub!: Unsubscribe;
+
   static styles = [
     //styles,
     css`
@@ -193,6 +200,19 @@ export class ParaView extends logging(ParaComponent) {
     `
   ];
 
+  constructor() {
+    super();
+    // Create the listener here so it can be added and removed on connect/disconnect
+    this._hotkeyListener = (e: HotkeyEvent) => {
+      const handler = this._hotkeyActions.actions[e.action as keyof HotkeyActions['actions']];
+      if (handler) {
+        handler();
+      } else {
+        console.warn(`no handler for hotkey action '${e.action}'`);
+      }
+    };
+  }
+
   get viewBox() {
     return this._viewBox;
   }
@@ -235,16 +255,23 @@ export class ParaView extends logging(ParaComponent) {
 
   connectedCallback() {
     super.connectedCallback();
-    // FIXME: create store
     // create a default view box so the SVG element can have a size
     // while any data is loading
-    this._controller = new ParaViewController(this._store);
-    this._store.subscribe((key, value) => {
+    this._controller ??= new ParaViewController(this._store);
+    this._storeChangeUnsub = this._store.subscribe((key, value) => {
       if (key === 'data') {
         this.dataUpdated();
       }
     });
     this._computeViewBox();
+    this._hotkeyActions ??= new HotkeyActions(this);
+    this._store.keymapManager.addEventListener('hotkeypress', this._hotkeyListener);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._storeChangeUnsub();
+    this._store.keymapManager.removeEventListener('hotkeyPress', this._hotkeyListener);
   }
 
   // Anything that needs to be done when data is updated, do here
@@ -276,39 +303,39 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    this.log('ready');
-    
-    this._store.observeSetting('ui.isFullscreenEnabled', (_oldVal, newVal) => {
-      if (this.isActive){
-        if (newVal && !document.fullscreenElement) {
-          try {
-            this.root!.requestFullscreen();
-          } catch {
-            console.error('failed to enter fullscreen');
-            this._store.updateSettings(draft => {
-              draft.ui.isFullscreenEnabled = false;
-            }, true);
-          }
-        } else if (!newVal && document.fullscreenElement) {
-          try {
-            document.exitFullscreen();
-          } catch {
-            console.error('failed to exit fullscreen');
-            this._store.updateSettings(draft => {
-              draft.ui.isFullscreenEnabled = true;
-            }, true);
-          }
+    this.log('ready');    
+    this.dispatchEvent(new CustomEvent('paraviewready', {bubbles: true, composed: true, cancelable: true}));
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+    this._documentView?.settingDidChange(path, oldValue, newValue);
+    if (path === 'ui.isFullscreenEnabled') {
+      if (newValue && !document.fullscreenElement) {
+        try {
+          this.root!.requestFullscreen();
+        } catch {
+          console.error('failed to enter fullscreen');
+          this._store.updateSettings(draft => {
+            draft.ui.isFullscreenEnabled = false;
+          }, true);
+        }
+      } else if (!newValue && document.fullscreenElement) {
+        try {
+          document.exitFullscreen();
+        } catch {
+          console.error('failed to exit fullscreen');
+          this._store.updateSettings(draft => {
+            draft.ui.isFullscreenEnabled = true;
+          }, true);
         }
       }
-    });
-    this._store.observeSetting('ui.isLowVisionModeEnabled', (_oldVal: boolean, newVal: boolean) => {
+    } else if (path === 'ui.isLowVisionModeEnabled') {
       this._store.updateSettings(draft => {
-        this._store.announce(`Low vision mode ${newVal ? 'enabled' : 'disabled'}`);
-        draft.color.isDarkModeEnabled = newVal;
-        draft.ui.isFullscreenEnabled = newVal;
+        this._store.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
+        draft.color.isDarkModeEnabled = !!newValue;
+        draft.ui.isFullscreenEnabled = !!newValue;
       });
-    });
-    this.dispatchEvent(new CustomEvent('paraviewready', {bubbles: true, composed: true, cancelable: true}));
+    }
   }
 
   protected _onFullscreenChange() {
@@ -388,12 +415,9 @@ export class ParaView extends logging(ParaComponent) {
     }
   }
 
-  createDocumentView(contentWidth?: number) {
+  createDocumentView() {
     this.log('creating document view', this.type);
-
-    this._documentView?.cleanup();
-    this._documentView = new DocumentView(this);
-    
+    this._documentView = new DocumentView(this);    
     this._computeViewBox();
   }
 
@@ -510,10 +534,6 @@ export class ParaView extends logging(ParaComponent) {
   
   focusDatapoint(seriesKey: string, index: number) {
     this._documentView!.chartLayers.dataLayer.focusDatapoint(seriesKey, index);
-  }
-
-  cleanup() {
-    this.isActive = false;
   }
 
   render(): TemplateResult {

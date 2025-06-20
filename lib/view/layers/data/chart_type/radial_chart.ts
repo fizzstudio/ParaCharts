@@ -396,10 +396,10 @@ export abstract class RadialChart extends DataLayer {
    * Navigate to the series minimum/maximum datapoint
    * @param isMin If true, go the the minimum. Otherwise, go to the maximum
    */
-  protected async _goSeriesMinMax(isMin: boolean) {
+  async goSeriesMinMax(isMin: boolean) {
     const currView = this.focusLeaf;
     if (currView instanceof ChartLandingView) {
-      this._goChartMinMax(isMin);
+      this.goChartMinMax(isMin);
     } else {
       let seriesChildren = null;
       let seriesKey = null;
@@ -442,7 +442,7 @@ export abstract class RadialChart extends DataLayer {
    * Navigate to (one of) the chart minimum/maximum datapoint(s)
    * @param isMin If true, go the the minimum. Otherwise, go to the maximum
    */
-  protected async _goChartMinMax(isMin: boolean) {
+  async goChartMinMax(isMin: boolean) {
     const currView = this.focusLeaf;
     const stats = this.paraview.store.model!.getFacetStats('y')!;
     const matchTarget = isMin ? stats.min.value : stats.max.value;

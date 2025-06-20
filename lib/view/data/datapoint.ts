@@ -191,6 +191,9 @@ export class DatapointView extends DataView {
   protected _createSymbol() {
     const series = this.seriesProps;
     let symbolType = series.symbol;
+    // If datapoints are layed out again after the initial layout,
+    // we need to replace the original shape and symbol
+    this._symbol?.remove();
     this._symbol = DataSymbol.fromType(this.paraview, symbolType);
     this._symbol.id = `${this._id}-sym`;
     this._symbol.role = 'datapoint';

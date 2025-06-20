@@ -19,6 +19,7 @@ import { svg as staticSvg, StaticValue } from 'lit/static-html.js';
 import { ref } from 'lit/directives/ref.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
+import { type Setting } from '../store';
 
 /*import { 
   HotkeyActionManager, EventActionManager, type KeyRegistrations, KeymapManager,
@@ -203,7 +204,6 @@ export class View extends BaseView {
   //protected _keymapManager: KeymapManager | null = null;
   protected _padding: Padding = {top: 0, bottom: 0, left: 0, right: 0};
   protected _hidden = false;
-  isActive: boolean = true;
   constructor(public readonly paraview: ParaView) {
     super();
     //this._setActions();
@@ -766,9 +766,8 @@ export class View extends BaseView {
     this.insert(newChild, i);
   }
 
-  cleanup() {
-  this.isActive = false;
-  this._children.map((child) => child.cleanup()) 
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+    this._children.forEach(kid => kid.settingDidChange(path, oldValue, newValue));
   }
 
 }

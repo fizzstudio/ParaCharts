@@ -40,10 +40,6 @@ export class ScatterPlot extends PointChart {
     return super.datapointViews as ScatterPoint[];
   }
 
-  settingDidChange(key: string, value: Setting | undefined) {
-    return false;
-  }
-
   protected _addedToParent(): void {
     super._addedToParent();
     this._axisInfo = new AxisInfo(this.paraview.store, {
@@ -62,13 +58,14 @@ export class ScatterPlot extends PointChart {
       label: 'Show outliers',
       parentView: 'controlPanel.tabs.chart.chart',
     });
+  }
 
-    this.paraview.store.observeSettings(['type.scatter.isDrawTrendLine', 'type.scatter.isShowOutliers'], (_oldVal, newVal) => {
-      if (this.isActive) {
-        this.paraview.createDocumentView();
-        this.paraview.requestUpdate();
-      }
-    });
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if (['type.scatter.isDrawTrendLine', 'type.scatter.isShowOutliers'].includes(path)) {
+      this.paraview.createDocumentView();
+      this.paraview.requestUpdate();
+    }
+    super.settingDidChange(path, oldValue, newValue);
   }
 
   protected _newDatapointView(seriesView: XYSeriesView) {
@@ -181,7 +178,6 @@ class ScatterPoint extends ChartPoint {
         }
       }
     }
-
     this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
       strokeWidth: this.paraview.store.settings.chart.symbolStrokeWidth,
       color: color,

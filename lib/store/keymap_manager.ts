@@ -48,13 +48,15 @@ export class HotkeyEvent extends Event {
 //   caseSensitive?: boolean;
 // }
 
+import { type HotkeyActions } from '../paraview/hotkey_actions';
+
 /**
  * Associates a key event with an action.
  */
 export interface KeyRegistration {
   label: string;
   /** ID of action to associate with this hotkey. */
-  action: string;
+  action: keyof HotkeyActions['actions'];
   /** If the hotkey should be case sensitive. Default true. */
   caseSensitive?: boolean;
 }

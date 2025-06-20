@@ -33,8 +33,8 @@ import { PaddingInput as PaddingInput_4 } from '../../base_view';
 import papa from 'papaparse';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
-import { Ref } from 'lit-html/directives/ref.js';
-import { Ref as Ref_2 } from 'lit/directives/ref.js';
+import { Ref } from 'lit/directives/ref.js';
+import { Ref as Ref_2 } from 'lit-html/directives/ref.js';
 import { RefDirective } from 'lit-html/directives/ref.js';
 import * as sb from '@fizz/sparkbraille-component';
 import { Series } from '@fizz/paramodel';
@@ -50,6 +50,7 @@ import { TabDetails } from '@fizz/ui-components';
 import { TemplateResult } from 'lit';
 import { TemplateResult as TemplateResult_2 } from 'lit-html';
 import * as ui from '@fizz/ui-components';
+import { Unsubscribe } from '@lit-app/state';
 import { View as View_2 } from '../base_view';
 import { XYDatapoint } from '@fizz/paramodel';
 
@@ -69,7 +70,7 @@ export class ParaChart extends ParaChart_base {
     // Warning: (ae-forgotten-export) The symbol "AriaLive" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    protected _ariaLiveRegionRef: Ref<AriaLive>;
+    protected _ariaLiveRegionRef: Ref_2<AriaLive>;
     // (undocumented)
     clearAriaLive(): void;
     // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index.d.ts
@@ -83,7 +84,7 @@ export class ParaChart extends ParaChart_base {
     // Warning: (ae-forgotten-export) The symbol "ParaControlPanel" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    protected _controlPanelRef: Ref<ParaControlPanel>;
+    protected _controlPanelRef: Ref_2<ParaControlPanel>;
     // (undocumented)
     protected firstUpdated(_changedProperties: PropertyValues): void;
     // (undocumented)
@@ -113,7 +114,7 @@ export class ParaChart extends ParaChart_base {
     // Warning: (ae-forgotten-export) The symbol "ParaView" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    protected _paraViewRef: Ref<ParaView>;
+    protected _paraViewRef: Ref_2<ParaView>;
     // (undocumented)
     get ready(): Promise<void>;
     // (undocumented)

@@ -4,7 +4,7 @@ import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
 import { boxToNumber, fixed } from "../../../../common/utils";
 import { ParaView } from "../../../../paraview";
-import { DeepReadonly, HistogramSettings, PointChartType } from "../../../../store";
+import { DeepReadonly, HistogramSettings, PointChartType, type Setting } from "../../../../store";
 import { Rect } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { XYChart, XYSeriesView } from "./xy_chart";
@@ -94,37 +94,24 @@ export class Histogram extends XYChart {
       options: { options: ["x", "y"] },
       parentView: 'controlPanel.tabs.chart.chart'
     });
-    this.paraview.store.observeSetting('type.histogram.bins', (_oldVal, newVal) => {
-      if (this.isActive) {
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if (['type.histogram.groupingAxis', 'type.histogram.displayAxis', 'axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
+      this.paraview.createDocumentView();
+      this.paraview.requestUpdate();
+    } else if (path === 'type.histogram.bins') {
         this.paraview.createDocumentView();
         this.paraview.requestUpdate();
-
         this.paraview.store.updateSettings(draft => {
           draft.axis.y.maxValue = 'unset'
         });
         this.paraview.store.updateSettings(draft => {
           draft.axis.y.minValue = 'unset'
         });
-
-      }
-    });
-    this.paraview.store.observeSettings(['type.histogram.groupingAxis', 'type.histogram.displayAxis', 'axis.y.maxValue', 'axis.y.minValue'], (_oldVal, newVal) => {
-      if (this.isActive) {
-        this.paraview.createDocumentView();
-        this.paraview.requestUpdate();
-      }
-    });
-  }
-
-  /*
-  settingDidChange(key: string, value: any) {
-      if (!super.settingDidChange(key, value)) {
-        this.paraview.requestUpdate();
-        return true;
-      }
-      return false;
     }
-*/
+    super.settingDidChange(path, oldValue, newValue);
+  }
 
   get datapointViews() {
     return super.datapointViews;
