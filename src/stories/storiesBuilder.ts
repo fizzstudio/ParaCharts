@@ -146,7 +146,7 @@ function generateAllStory(
   const code = printf(allTemplate, 
     { topFolder, typeFolder, typePath, storyName, family, multi: 'false', chartType, chartElement }
   );
-  fs.writeFileSync(`${AUTOGEN_PATH}Z${ai ? 'AI' : ''}all${chartType}.stories.ts`, code, 'utf8');
+  fs.writeFileSync(`${AUTOGEN_PATH}z${ai ? 'AI' : ''}all${chartType}.stories.ts`, code, 'utf8');
 }
 
 function generateAllStoryMulti(
@@ -164,7 +164,7 @@ function generateAllStoryMulti(
   const code = printf(allTemplate, 
     { topFolder, typeFolder, typePath, storyName, family, multi: 'true', chartType, chartElement }
   );
-  fs.writeFileSync(`${AUTOGEN_PATH}Z${ai ? 'AI' : ''}all${multiText}${chartType}.stories.ts`, code, 'utf8');
+  fs.writeFileSync(`${AUTOGEN_PATH}z${ai ? 'AI' : ''}all${multiText}${chartType}.stories.ts`, code, 'utf8');
 }
 
 function generateFamilyAllStory(family: ChartTypeFamily, ai: boolean, multi?: boolean): void {
@@ -190,21 +190,22 @@ const MULTIABLE_FAMILIES: ChartTypeFamily[] = ['line', 'bar'];
 const NON_MULTIABLE_FAMILIES: ChartTypeFamily[] = ['scatter', 'pastry'];
 
 for (const family of MULTIABLE_FAMILIES) {
-  generateFamilyStories(family, false, false);
-  generateFamilyStories(family, true, false);
-  generateFamilyStories(family, false, true);
-  generateFamilyStories(family, true, true);
   generateFamilyAllStory(family, false, false);
   generateFamilyAllStory(family, true, false);
   generateFamilyAllStory(family, false, true);
   generateFamilyAllStory(family, true, true);
+  generateFamilyStories(family, false, false);
+  generateFamilyStories(family, true, false);
+  generateFamilyStories(family, false, true);
+  generateFamilyStories(family, true, true);
+
 }
 
 for (const family of NON_MULTIABLE_FAMILIES) {
-  generateFamilyStories(family, false);
-  generateFamilyStories(family, true);
   generateFamilyAllStory(family, false);
   generateFamilyAllStory(family, true);
+  generateFamilyStories(family, false);
+  generateFamilyStories(family, true);
 }
 
 console.log('Finished generating stories');
