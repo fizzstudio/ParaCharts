@@ -64,13 +64,14 @@ export class SlotLoader {
     }
     else {
       console.log("Manifest ID not found or not present, attempting manifest construction from data")
-      let manifest = {datasets: [{type: '' as 'line', chartTheme: {baseQuantity: '', baseKind: "number" as "number"},  title: '', facets: {}, series: [], data: {source: 'inline' as 'inline'}}]}
+      let manifest = {datasets: [{type: '' as 'line', chartTheme: {baseQuantity: 'Y unit', baseKind: "number" as "number"},  title: '', facets: {}, series: [], data: {source: 'inline' as 'inline'}}]}
       return {result: "success", manifest: this.validateManifest(els, manifest).manifest}
     }
     return {result: "failure", manifest: undefined};
   }
 
   validateManifest(els: HTMLElement[], manifest: Manifest): {result: string, manifest: Manifest | undefined}{
+    const paraChart = document.getElementsByTagName("para-chart")[0]
     const table = els[0] as HTMLTableElement;
     const dataset = manifest.datasets[0]
     if (!dataset.title){
@@ -102,6 +103,10 @@ export class SlotLoader {
         }
       
       }
+    }
+    const isRadial = paraChart.type == "pie" || paraChart.type == "donut"
+    if (isRadial){
+      dataset.series[0].theme.baseKind = "proportion"
     }
     for (let i = 1; i < vars.length; i++) {
       if (manifest!.datasets[0]!.series[0]!.records!.length == 0) {
@@ -152,6 +157,9 @@ export class SlotLoader {
       varsFiltered = vars.filter(v => v.label == key)[0]
     }
     let index = vars.indexOf(varsFiltered!)
+    if (index == -1){
+      index = 1;
+    }
     const cols = vars.map(v => [] as string[]);
     Array.from(table.rows).slice(1).forEach((tr: HTMLTableRowElement) => {
       const vals = this.loadRow(tr, vars);
@@ -217,11 +225,11 @@ export class SlotLoader {
     else if (vars.length == 2){
       let facets = { x: vars[0], y: vars[1] };
       facets["x"].variableType = "independent"
-      if (!facets["x"].units){
-        facets["x"].units = "point"
+      if (["Year", "year", "Years", "years"].includes(facets["x"].label)){
+        facets["x"].units = "year"
       }
-      if (!facets["y"].units){
-        facets["y"].units = "point"
+      else if (!facets["x"].units) {
+        facets["x"].units = "point"
       }
       return facets;
     }
@@ -248,13 +256,13 @@ export class SlotLoader {
     let facets = {x: vars[0], y: vars[1]};
     facets["x"].variableType = "independent"
     facets["y"].label = depFacetName
-    if (!facets["x"].units){
+      if (["Year", "year", "Years", "years"].includes(facets["x"].label)){
+        facets["x"].units = "year"
+      }
+      else if (!facets["x"].units) {
         facets["x"].units = "point"
       }
-      if (!facets["y"].units){
-        facets["y"].units = "point"
-      }
-    return facets;
+      return facets;
     }
     
   }
