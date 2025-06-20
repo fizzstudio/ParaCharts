@@ -17,11 +17,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { logging } from '../common/logger';
 import { ParaComponent } from '../components';
 import { AllSeriesData, ChartType } from '@fizz/paramanifest'
-import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
+import { DeepReadonly, Settings, SettingsInput } from '../store/settings_types';
 import { SettingsManager } from '../store';
-import "../paraview";
-import "../control_panel";
-import { exhaustive } from "../common/utils";
+import '../paraview';
+import '../control_panel';
+import { exhaustive } from '../common/utils';
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
 import { type AriaLive } from '../components';
@@ -68,6 +68,7 @@ export class ParaChart extends logging(ParaComponent) {
     const cssProps = customPropLoader.processProperties();
     // also creates the state controller
     this.store = new ParaStore(
+      this,
       Object.assign(cssProps, this.config),
       this._suppleteSettingsWith,
       seriesAnalyzerConstructor);

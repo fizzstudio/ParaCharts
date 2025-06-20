@@ -46,7 +46,7 @@ export class SeriesLabelStrip extends Container(View) {
     endpoints.forEach((ep, i) => {
       this.seriesLabels.push(new Label(this.paraview, {
         text: ep.series.key!,
-        x: directLabelPadding,
+        left: directLabelPadding,
         y: ep.y,
         classList: ['serieslabel'],
       }));
@@ -54,7 +54,7 @@ export class SeriesLabelStrip extends Container(View) {
     });
     this.seriesLabels.forEach(label => {
       // Roughly center each label on its series endpoint
-      label.y -= 2*label.anchorYOffset/3;
+        label.y += label.locOffset.y/2;
     });
     // If the highest label is offscreen at all, push it back onscreen
     const topLabel = this.seriesLabels[0];
@@ -87,7 +87,7 @@ export class SeriesLabelStrip extends Container(View) {
     // I don't know whether that will hold for all possible diacritics
     // (I suspect not).
     for (let i = 1; i < this.seriesLabels.length; i++) { 
-      if (this.seriesLabels[i].y < this.seriesLabels[i - 1].bottom) {
+      if (this.seriesLabels[i].top < this.seriesLabels[i - 1].bottom) {
         if (colliders.at(-1)?.label !== this.seriesLabels[i - 1]) {
           colliders.push({label: this.seriesLabels[i - 1], endpoint: endpoints[i - 1]});
         }
@@ -102,7 +102,7 @@ export class SeriesLabelStrip extends Container(View) {
       // Re-sort colliders from lowest to highest onscreen.
       colliders.reverse().slice(1).forEach((c, i) => {
         // Move each label up out of collision with the one onscreen below it.
-        c.label.y = colliders[i].label.y! - c.label.height;
+        c.label.bottom = colliders[i].label.top; // - c.label.height;
       });
       // Test for collision with labels that weren't originally in collision.
       //If all collisions can't be resolved, switch to a different labeling approach.
@@ -144,7 +144,7 @@ class LineLabelLeader extends View {
   constructor(private endpoint: LineSection, label: Label, private chart: LineChart) {
     super(chart.paraview);
     this.endX = this.chart.paraview.store.settings.type.line.leaderLineLength;
-    this.endY = label.y + 2*label.anchorYOffset/3;
+    this.endY = label.y - label.locOffset.y/2;
     this.lineD = fixed`
       M${0},${endpoint.y}
       L${this.endX},${this.endY}`;

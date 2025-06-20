@@ -54,28 +54,13 @@ export abstract class XYChart extends DataLayer {
   protected isConnector = false;
   protected maxDatapointSize!: number;
 
-  //private _isChordModeEnabled = false;
-
   constructor(paraview: ParaView, dataLayerIndex: number) {
     super(paraview, dataLayerIndex);
-    paraview.store.keymapManager.addEventListener('hotkeypress', (e: HotkeyEvent) => {
-      if (e.action === 'chord_mode_toggle') {
-        paraview.store.updateSettings(draft => {
-          draft.sonification.isChordModeEnabled = !draft.sonification.isChordModeEnabled;
-        });
-        if (paraview.store.settings.sonification.isChordModeEnabled) {
-          paraview.store.prependAnnouncement('Chord mode enabled');
-        } else {
-          paraview.store.prependAnnouncement('Chord mode disabled');
-        }      
-      }
-    });
   }
 
   protected _addedToParent() {
     super._addedToParent();  
     // this.maxDatapointSize = this.width/2.5;
-    // this._isChordModeEnabled = this.paraview.store.settings.sonification.isChordModeEnabled;
   }
 
   get managedSettingKeys() {
@@ -143,21 +128,13 @@ export abstract class XYChart extends DataLayer {
     return {...super.keymap, ...keymaps['chart.xy']};
   }*/
 
-  // settingDidChange(key: string, value: Setting) {
-  //   if (key === 'sonification.isChordModeEnabled') {
-  //     this.isChordModeEnabled = value as boolean;
-  //     return true;
-  //   }
-  //   return false;
-  // }
-
   //protected abstract _layoutDatapoints(): void;
 
   // init() {
   //   this._layoutDatapoints();
   // }
 
-  moveRight() {
+  async moveRight() {
     const leaf = this._chartLandingView.focusLeaf;
     if (leaf instanceof DatapointView) {
       if (!leaf.next) {
@@ -165,44 +142,44 @@ export abstract class XYChart extends DataLayer {
           //this._eventActionManager!.dispatch('series_endpoint_reached');
         } else if (leaf.nextSeriesLanding) {
           // Make sure we don't get focused if we return to the landing for this series
-          leaf.blur(false);
-          leaf.nextSeriesLanding.focus();
+          await leaf.blur(false);
+          await leaf.nextSeriesLanding.focus();
         } else {
           //this._eventActionManager!.dispatch('final_series_endpoint_reached');
         }
       } else {
-        leaf.next!.focus();
+        await leaf.next!.focus();
       }
     } else if (leaf instanceof SeriesView) {
       // Move to the first datapoint
-      leaf.children[0].focus();
+      await leaf.children[0].focus();
     } else {
-      this._chartLandingView.children[0].focus();
+      await this._chartLandingView.children[0].focus();
     }
   }
 
-  moveLeft() {
+  async moveLeft() {
     const leaf = this._chartLandingView.focusLeaf;
     if (leaf instanceof DatapointView) {
       if (!leaf.prev) {
-        leaf.blur();
+        await leaf.blur();
       } else {
-        leaf.prev!.focus();
+        await leaf.prev!.focus();
       }
     } else if (leaf instanceof SeriesView) {
       if (!leaf.prev) {
-        leaf.blur();
+        await leaf.blur();
       } else {
         // Move to the last datapoint of the previous series
-        leaf.prev!.children.at(-1)!.focus();
+        await leaf.prev!.children.at(-1)!.focus();
       }
     } else {
       // At chart root, so move to the first series landing
-      this._chartLandingView.children[0].focus();
+      await this._chartLandingView.children[0].focus();
     }
   }
 
-  moveUp() {
+  async moveUp() {
     if (this.paraview.store.settings.sonification.isChordModeEnabled) {
       //this._eventActionManager!.dispatch('chord_mode_no_up_down');
       return;
@@ -211,8 +188,8 @@ export abstract class XYChart extends DataLayer {
     if (leaf instanceof DatapointView) {
       const psi = leaf.prevSameIndexer;
       if (psi) {
-        leaf.blur(false);
-        psi.focus();
+        await leaf.blur(false);
+        await psi.focus();
         //this._sonifier.playNotification('series');
       } else {
         //this._eventActionManager!.dispatch('first_series_reached');
@@ -223,16 +200,16 @@ export abstract class XYChart extends DataLayer {
         //this._eventActionManager!.dispatch('first_series_reached');
         return;
       } else {
-        leaf.prev!.focus();
+        await leaf.prev!.focus();
         //this._sonifier.playNotification('series');
       }
     } else {
       // At chart root, so move to the first series landing
-      this._chartLandingView.children[0].focus();
+      await this._chartLandingView.children[0].focus();
     }
   }
 
-  moveDown() {
+  async moveDown() {
     if (this.paraview.store.settings.sonification.isChordModeEnabled) {
       //this._eventActionManager!.dispatch('chord_mode_no_up_down');
       return;
@@ -241,8 +218,8 @@ export abstract class XYChart extends DataLayer {
     if (leaf instanceof DatapointView) {
       const nsi = leaf.nextSameIndexer;
       if (nsi) {
-        leaf.blur(false);
-        nsi.focus();
+        await leaf.blur(false);
+        await nsi.focus();
         //this._sonifier.playNotification('series');
       } else {
         //this._eventActionManager!.dispatch('final_series_reached');
@@ -253,12 +230,12 @@ export abstract class XYChart extends DataLayer {
         //this._eventActionManager!.dispatch('final_series_reached');
         return;
       } else {
-        leaf.next!.focus();
+        await leaf.next!.focus();
         //this._sonifier.playNotification('series');
       }
     } else {
       // At chart root, so move to the first series landing 
-      this._chartLandingView.children[0].focus(); 
+      await this._chartLandingView.children[0].focus(); 
     }
   }
 
@@ -266,10 +243,10 @@ export abstract class XYChart extends DataLayer {
    * Navigate to the series minimum/maximum datapoint
    * @param isMin If true, go the the minimum. Otherwise, go to the maximum
    */
-  protected _goSeriesMinMax(isMin: boolean) {
+  async goSeriesMinMax(isMin: boolean) {
     const currView = this.focusLeaf;
     if (currView instanceof ChartLandingView) {
-      this._goChartMinMax(isMin);
+      this.goChartMinMax(isMin);
     } else {
       let seriesChildren = null;
       let seriesKey = null;
@@ -303,7 +280,7 @@ export abstract class XYChart extends DataLayer {
         }
         const newViews = seriesChildren.filter(view => 
           seriesMatchArray.includes(view.index));
-        newViews[0]?.focus();
+        await newViews[0]?.focus();
       }
     }
   }
@@ -312,14 +289,14 @@ export abstract class XYChart extends DataLayer {
    * Navigate to (one of) the chart minimum/maximum datapoint(s)
    * @param isMin If true, go the the minimum. Otherwise, go to the maximum
    */
-  protected _goChartMinMax(isMin: boolean) {
+  async goChartMinMax(isMin: boolean) {
     const currView = this.focusLeaf;
     const stats = this.paraview.store.model!.getFacetStats('y')!;
     const matchTarget = isMin ? stats.min.value : stats.max.value;
     const chartMatchArray = this._chartLandingView.datapointViews.filter(view =>
       // @ts-ignore
       view.datapoint.data.y.value === matchTarget);
-    chartMatchArray[0].focus();
+    await chartMatchArray[0].focus();
   }
 
   raiseSeries(_series: string) {
@@ -360,7 +337,7 @@ export abstract class XYChart extends DataLayer {
   /**
    * Play all datapoints to the right, if there are any
    */
-  playRight() {
+  async playRight() {
     if (this.focusLeaf instanceof ChartLandingView) {
       return;
     }
@@ -371,13 +348,13 @@ export abstract class XYChart extends DataLayer {
         this.moveRight();
       }
     }, SONI_PLAY_SPEEDS.at(this._soniSpeedRateIndex));
-    this._chartLandingView.focusLeaf.focus();
+    await this._chartLandingView.focusLeaf.focus();
   }
   
   /**
    * Play all datapoints to the left, if there are any
    */
-  playLeft() {
+  async playLeft() {
     if (!(this.focusLeaf instanceof DatapointView)) {
       return;
     }
@@ -388,7 +365,7 @@ export abstract class XYChart extends DataLayer {
         this.moveLeft();
       }
     }, SONI_PLAY_SPEEDS.at(this._soniSpeedRateIndex));
-    this._chartLandingView.focusLeaf.focus();
+    await this._chartLandingView.focusLeaf.focus();
   }
 
   queryData() {
@@ -535,7 +512,7 @@ export class XYSeriesView extends SeriesView {
     });*/
   }
 
-  onBlur() {
+  async onBlur() {
     //this.paraview.store.clearVisited();
   }
 
@@ -646,8 +623,8 @@ export abstract class XYDatapointView extends DatapointView {
     // }, NOTE_LENGTH*1000);
   }
 
-  onFocus(isNewComponentFocus = false) {
-    super.onFocus(isNewComponentFocus);
+  async onFocus(isNewComponentFocus = false) {
+    await super.onFocus(isNewComponentFocus);
     let data = []
     for (let point of this.series.rawData){
       data.push(point.y)

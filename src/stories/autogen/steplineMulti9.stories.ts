@@ -5,16 +5,16 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Stepline Multi Charts",
+  title: "Basic Charts/Line Charts/Multi Stepline Charts",
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const Chart9: Story = {
-  name: "67: Gross domestic product of the BRIC countries from 2014 to 2024 (9)",
+  name: "128: Gross domestic product (GDP) growth in EU and Euro area 2024 (9)",
   args: {
-    filename: "manifests/autogen/line-multi/line-multi-manifest-67.json",
+    filename: "manifests/autogen/line-multi/line-multi-manifest-128.json",
     forcecharttype: "stepline",
   }
 }

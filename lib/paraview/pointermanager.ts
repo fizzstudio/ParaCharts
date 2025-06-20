@@ -185,7 +185,7 @@ export class PointerEventManager {
    * Set selected element and add a highlight box.
    * @param target - The element to be selected; deselects if absent or `null`.
    */
-  protected _selectElement(target: SVGGraphicsElement, isAdd?: boolean) {
+  protected async _selectElement(target: SVGGraphicsElement, isAdd?: boolean) {
     if (!target) {
       this._clearSelectedElements();
     } else {
@@ -203,7 +203,7 @@ export class PointerEventManager {
           ? datapointEl.id.slice(0, -4)
           : datapointEl.id;
         const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointViewForId(id)!;
-        datapointView.focus();
+        await datapointView.focus();
         this._paraView.documentView!.chartLayers.dataLayer.selectCurrent(!!isAdd);
   
         // TODO: remove all element selection code, since it's extraneous to chart datapoint selection

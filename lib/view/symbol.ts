@@ -318,15 +318,26 @@ export class DataSymbol extends View {
         />
       `);
     }
+    this._locOffset.x = this.width/2;
+    this._locOffset.y = this.height/2;
     this._updateStyleInfo();
   }
 
   get width() {
-    return shapeInfo[this.shape].baseWidth + this._options.strokeWidth;
+    return shapeInfo[this.shape].baseWidth*this._options.scale;
   }
 
   get height() {
-    return shapeInfo[this.shape].baseHeight + this._options.strokeWidth;
+    return shapeInfo[this.shape].baseHeight*this._options.scale;
+  }
+
+  get outerBbox() {
+    return new DOMRect(
+      this._x - this.width/2 - this._options.scale*this._options.strokeWidth/2,
+      this._y - this.height/2 - this._options.scale*this._options.strokeWidth/2,
+      this.width + this._options.scale*this._options.strokeWidth,
+      this.height + this._options.scale*this._options.strokeWidth
+    );
   }
 
   get shape() {
@@ -401,7 +412,7 @@ export class DataSymbol extends View {
   }
 
   content() {
-    let transform = fixed`translate(${this._x + this.width/2},${this._y + this.height/2})`;
+    let transform = fixed`translate(${this._x},${this._y})`;
     if (this._options.scale !== 1) {
       transform += fixed` scale(${this._options.scale})`;
     }

@@ -92,8 +92,8 @@ export class PieSlice extends RadialSlice {
     });
   }
 
-  onFocus() {
-    super.onFocus()
+  async onFocus() {
+    await super.onFocus()
     let data = []
     for (let point of this.series.rawData) {
       data.push({ label: point.x, value: Number(point.y) })

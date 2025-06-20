@@ -20,12 +20,14 @@ import { ParaViewController } from '.';
 import { logging } from '../common/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest';
-import { ViewBox } from '../store/settings_types';
+import { type ViewBox, type Setting, type HotkeyEvent } from '../store';
 import { View } from '../view/base_view';
 import { DocumentView } from '../view/document_view';
 //import { styles } from './styles';
 import { SVGNS } from '../common/constants';
 import { fixed } from '../common/utils';
+import { HotkeyActions } from './hotkey_actions';
+
 import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer } from '@fizz/parasummary';
 
 import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
@@ -33,6 +35,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { Unsubscribe } from '@lit-app/state';
 
 /**
  * Data provided for the on focus callback
@@ -72,8 +75,12 @@ export class ParaView extends logging(ParaComponent) {
   protected _fileSavePlaceholderRef = createRef<HTMLElement>();
   protected _summarizer!: Summarizer;
   protected _pointerEventManager = new PointerEventManager(this);
+  protected _hotkeyActions!: HotkeyActions;
   @state() protected _defs: {[key: string]: TemplateResult} = {};
-  isActive: boolean = true;
+
+  protected _hotkeyListener: (e: HotkeyEvent) => void;
+  protected _storeChangeUnsub!: Unsubscribe;
+
   static styles = [
     //styles,
     css`
@@ -193,6 +200,19 @@ export class ParaView extends logging(ParaComponent) {
     `
   ];
 
+  constructor() {
+    super();
+    // Create the listener here so it can be added and removed on connect/disconnect
+    this._hotkeyListener = (e: HotkeyEvent) => {
+      const handler = this._hotkeyActions.actions[e.action as keyof HotkeyActions['actions']];
+      if (handler) {
+        handler();
+      } else {
+        console.warn(`no handler for hotkey action '${e.action}'`);
+      }
+    };
+  }
+
   get viewBox() {
     return this._viewBox;
   }
@@ -235,16 +255,23 @@ export class ParaView extends logging(ParaComponent) {
 
   connectedCallback() {
     super.connectedCallback();
-    // FIXME: create store
     // create a default view box so the SVG element can have a size
     // while any data is loading
-    this._controller = new ParaViewController(this._store);
-    this._store.subscribe((key, value) => {
+    this._controller ??= new ParaViewController(this._store);
+    this._storeChangeUnsub = this._store.subscribe((key, value) => {
       if (key === 'data') {
         this.dataUpdated();
       }
     });
     this._computeViewBox();
+    this._hotkeyActions ??= new HotkeyActions(this);
+    this._store.keymapManager.addEventListener('hotkeypress', this._hotkeyListener);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._storeChangeUnsub();
+    this._store.keymapManager.removeEventListener('hotkeyPress', this._hotkeyListener);
   }
 
   // Anything that needs to be done when data is updated, do here
@@ -276,52 +303,61 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    this.log('ready');
-    
-    this._store.observeSetting('ui.isFullScreenEnabled', (_oldVal, newVal) => {
-      if (this.isActive){
-        if (newVal) {
-          try {
-            this.root!.requestFullscreen();
-          } catch {
-            console.error('failed to enter fullscreen');
-            this._store.updateSettings(draft => {
-              draft.ui.isFullScreenEnabled = false;
-            }, true);
-          }
-        } else {
-          try {
-            document.exitFullscreen();
-          } catch {
-            console.error('failed to exit fullscreen');
-            this._store.updateSettings(draft => {
-              draft.ui.isFullScreenEnabled = true;
-            }, true);
-          }
-        }
-      }
-    });
-    this.root!.addEventListener('fullscreenchange', () => {
-      if (this.isActive) {
-        if (document.fullscreenElement) {
-          if (!this._store.settings.ui.isFullScreenEnabled) {
-            // fullscreen was entered manually
-            this._store.updateSettings(draft => {
-              draft.ui.isFullScreenEnabled = true;
-            }, true);
-          }
-        } else {
-          if (this._store.settings.ui.isFullScreenEnabled) {
-            // fullscreen was exited manually
-            this._store.updateSettings(draft => {
-              draft.ui.isFullScreenEnabled = false;
-            }, true);
-          }
-        }
-      }
-    });
-
+    this.log('ready');    
     this.dispatchEvent(new CustomEvent('paraviewready', {bubbles: true, composed: true, cancelable: true}));
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+    this._documentView?.settingDidChange(path, oldValue, newValue);
+    if (path === 'ui.isFullscreenEnabled') {
+      if (newValue && !document.fullscreenElement) {
+        try {
+          this.root!.requestFullscreen();
+        } catch {
+          console.error('failed to enter fullscreen');
+          this._store.updateSettings(draft => {
+            draft.ui.isFullscreenEnabled = false;
+          }, true);
+        }
+      } else if (!newValue && document.fullscreenElement) {
+        try {
+          document.exitFullscreen();
+        } catch {
+          console.error('failed to exit fullscreen');
+          this._store.updateSettings(draft => {
+            draft.ui.isFullscreenEnabled = true;
+          }, true);
+        }
+      }
+    } else if (path === 'ui.isLowVisionModeEnabled') {
+      this._store.updateSettings(draft => {
+        this._store.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
+        draft.color.isDarkModeEnabled = !!newValue;
+        draft.ui.isFullscreenEnabled = !!newValue;
+      });
+    }
+  }
+
+  protected _onFullscreenChange() {
+    if (document.fullscreenElement) {
+      if (!this._store.settings.ui.isFullscreenEnabled) {
+        // fullscreen was entered manually
+        this._store.updateSettings(draft => {
+          draft.ui.isFullscreenEnabled = true;
+        }, true);
+      }
+    } else {
+      if (this._store.settings.ui.isLowVisionModeEnabled) {
+        this._store.updateSettings(draft => {
+          draft.ui.isLowVisionModeEnabled = false;
+        });
+      } else if (this._store.settings.ui.isFullscreenEnabled) {
+        // fullscreen was exited manually
+        this._store.updateSettings(draft => {
+          draft.ui.isFullscreenEnabled = false;
+        }, true);
+      }
+    }
   }
 
   /*protected updated(changedProperties: PropertyValues) {
@@ -379,12 +415,9 @@ export class ParaView extends logging(ParaComponent) {
     }
   }
 
-  createDocumentView(contentWidth?: number) {
+  createDocumentView() {
     this.log('creating document view', this.type);
-
-    this._documentView?.cleanup();
-    this._documentView = new DocumentView(this);
-    
+    this._documentView = new DocumentView(this);    
     this._computeViewBox();
   }
 
@@ -503,10 +536,6 @@ export class ParaView extends logging(ParaComponent) {
     this._documentView!.chartLayers.dataLayer.focusDatapoint(seriesKey, index);
   }
 
-  cleanup() {
-    this.isActive = false;
-  }
-
   render(): TemplateResult {
     this.log('render');
     return html`
@@ -522,20 +551,7 @@ export class ParaView extends logging(ParaComponent) {
         class=${classMap(this._rootClasses())}
         viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
         style=${styleMap(this._rootStyle())}
-        @fullscreenchange=${() => {
-          if (document.fullscreenElement) {
-            // entering fullscreen mode
-            this.log('entering fullscreen');
-          } else {
-            // exiting fullscreen mode
-            this.log('exiting fullscreen');
-            /*if (this._controller.settingStore.settings.ui.isLowVisionModeEnabled) {
-              this._controller.setSetting('ui.isLowVisionModeEnabled', false);
-            } else {
-              this._controller.settingViews.update('ui.isFullScreenEnabled', false);
-            }*/
-          }
-        }}
+        @fullscreenchange=${() => this._onFullscreenChange()}
         @focus=${() => {
           this.log('focus');
           //this.todo.deets?.onFocus();

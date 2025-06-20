@@ -24,6 +24,54 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
+    options: {
+      storySort: {
+        order: [
+          'Chart', 
+          'CSUN', 
+          'Basic Charts', [
+            'Pastry Charts', 
+            'Bar Charts', [
+              'Single Bar Charts',
+              'Multi Bar Charts',
+              'Single Column Charts',
+              'Multi Column Charts',
+              'Single Lollipop Charts',
+              'Multi Lollipop Charts',
+            ],
+            'Line Charts',[
+              'Single Line Charts',
+              'Multi Line Charts',
+              'Single Stepline Charts',
+              'Multi Stepline Charts'
+            ],
+            'Scatter Charts',
+            'Histograms',
+            'Heat Maps'
+          ], 'AI-enhanced Charts', [
+            'Pastry Charts', 
+            'Bar Charts', [
+              'Single Bar Charts',
+              'Multi Bar Charts',
+              'Single Column Charts',
+              'Multi Column Charts',
+              'Single Lollipop Charts',
+              'Multi Lollipop Charts',
+            ],
+            'Line Charts',[
+              'Single Line Charts',
+              'Multi Line Charts',
+              'Single Stepline Charts',
+              'Multi Stepline Charts'
+            ],
+            'Scatter Charts',
+            'Histograms',
+            'Heat Maps'
+          ]
+        ],
+        method: 'alphabetical'
+      },
+    },
   },
 };
 
