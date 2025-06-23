@@ -44,6 +44,38 @@ export class AnnotationLayer extends ChartLayer {
   }
 
   renderChildren() {
+    if (this.type === 'foreground') {
+      if (this.paraview.store.trendLines) {
+        this.addGroup('trend-lines', true);
+        this.group('trend-lines')!.clearChildren();
+        for (const tl of this.paraview.store.trendLines) {
+          const series = this.paraview.store.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
+          const minValue = Number(this.paraview.store.settings.axis.y.minValue)
+          const maxValue = Number(this.paraview.store.settings.axis.y.maxValue)
+          const startHeight = this.height - (series.datapoints[tl.startIndex].facetAsNumber("y")! - minValue) / (maxValue - minValue) * this.height;
+          const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetAsNumber("y")! - minValue) / (maxValue - minValue) * this.height;
+          const startPx = this.width * tl.startPortion;
+          const endPx = this.width * tl.endPortion;
+          const linebreak = new Path(this.paraview, {
+            x: this._x,
+            y: this._y,
+            points: [new Vec2(startPx, startHeight), new Vec2(endPx, endHeight),],
+          });
+          const colorValue = this.paraview.store.colors.colorValue('highlight');
+    linebreak.styleInfo.fill = colorValue;
+    linebreak.styleInfo.stroke = colorValue;
+          //linebreak.styleInfo.fill = "blue"
+          //linebreak.styleInfo.stroke = "blue"
+          linebreak.classInfo = { 'trend-line': true }
+          this.group('trend-lines')!.append(linebreak);
+        }
+      }
+      else {
+        if (this._groups.has('trend-lines')) {
+          this.removeGroup('trend-lines', true);
+        }
+      }
+    }
     if (this.type === 'background') {
       if (this.paraview.store.rangeHighlights) {
         this.addGroup('range-highlights', true);
@@ -82,33 +114,8 @@ export class AnnotationLayer extends ChartLayer {
         }
       }
       else {
-       if (this._groups.has('range-highlights')) {
-        this.removeGroup('linebreaks', true);
-       }
-      }
-      if (this.paraview.store.trendLines) {
-        this.addGroup('trend-lines', true);
-        this.group('trend-lines')!.clearChildren();
-        for (const tl of this.paraview.store.trendLines) {
-          const series = this.paraview.store.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
-          const minValue = Number(this.paraview.store.settings.axis.y.minValue)
-          const maxValue = Number(this.paraview.store.settings.axis.y.maxValue)
-          const startHeight = this.height - (series.datapoints[tl.startIndex].facetAsNumber("y")! - minValue) / (maxValue - minValue) * this.height;
-          const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetAsNumber("y")! - minValue) / (maxValue - minValue) * this.height;
-          const startPx = this.width * tl.startPortion;
-          const endPx = this.width * tl.endPortion;
-          const linebreak = new Path(this.paraview, {
-            x: this._x,
-            y: this._y,
-            points: [new Vec2(startPx, startHeight), new Vec2(endPx, endHeight),],
-          });
-          linebreak.classInfo = { 'trend-line': true }
-          this.group('trend-lines')!.append(linebreak);
-        }
-      }
-      else {
-        if (this._groups.has('trend-lines')) {
-        this.removeGroup('trend-lines', true);
+        if (this._groups.has('range-highlights')) {
+          this.removeGroup('linebreaks', true);
         }
       }
     }

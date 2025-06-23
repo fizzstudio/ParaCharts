@@ -432,6 +432,10 @@ export class ParaStore extends State {
     }
     this._prevSelectedDatapoints = this._selectedDatapoints;
     this._selectedDatapoints = newSelection;
+    if (this.settings.controlPanel.isMDRAnnotationsVisible){
+      this.removeMDRAnnotations(this._prevSelectedDatapoints)
+      this.showMDRAnnotations();
+    }
   }
 
   extendSelection(datapoints: DataCursor[]) {
@@ -510,6 +514,13 @@ export class ParaStore extends State {
           seriesKey = this.model!.series[0][0].seriesKey
           seriesAnalysis = await this.model?.getSeriesAnalysis(seriesKey)
         }
+        if (!seriesAnalysis){
+          console.log("This chart does not support AI trend annotations")
+          this.updateSettings(draft => {
+            draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
+          });
+          return
+        }
         const length = this.model!.series[0].length - 1
         let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i])
         for (let sequence of relevantSequences!) {
@@ -533,30 +544,44 @@ export class ParaStore extends State {
         })
       }
       else {
-        let seriesAnalysis;
-        let seriesKey: string;
-        if (this.selectedDatapoints.length > 0) {
-          seriesKey = this.selectedDatapoints[0].seriesKey
-          seriesAnalysis = await this.model?.getSeriesAnalysis(seriesKey)
-        }
-        else {
-          seriesKey = this.model!.series[0][0].seriesKey
-          seriesAnalysis = await this.model!.getSeriesAnalysis(seriesKey)
-        }
-        const length = this.model!.series[0].length - 1
-        let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i])
-        for (let sequence of relevantSequences!) {
-          this.unhighlightRange(sequence.start / length, (sequence.end - 1) / length)
-        }
-
-        this.removeModelLineBreaks(seriesAnalysis!.sequences, seriesKey)
-        this.removeModelTrendLines(seriesAnalysis!.sequences, seriesKey)
-
-        if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
-          const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation")
-          this.annotations.splice(index, 1)
-        }
+        this.removeMDRAnnotations()
       }
+    }
+    else {
+      console.log("Trend annotations not currently supported for this chart type")
+      this.updateSettings(draft => {
+        draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
+      });
+      return;
+    }
+  }
+
+  async removeMDRAnnotations(selectedDatapoints? : DataCursor[]) {
+    let seriesAnalysis;
+    let seriesKey: string;
+    if (!selectedDatapoints){
+      selectedDatapoints = this.selectedDatapoints
+    }
+    if (selectedDatapoints.length > 0) {
+      seriesKey = selectedDatapoints[0].seriesKey
+      seriesAnalysis = await this.model?.getSeriesAnalysis(seriesKey)
+    }
+    else {
+      seriesKey = this.model!.series[0][0].seriesKey
+      seriesAnalysis = await this.model!.getSeriesAnalysis(seriesKey)
+    }
+    const length = this.model!.series[0].length - 1
+    let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i])
+    for (let sequence of relevantSequences!) {
+      this.unhighlightRange(sequence.start / length, (sequence.end - 1) / length)
+    }
+
+    this.removeModelLineBreaks(seriesAnalysis!.sequences, seriesKey)
+    this.removeModelTrendLines(seriesAnalysis!.sequences, seriesKey)
+
+    if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
+      const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation")
+      this.annotations.splice(index, 1)
     }
   }
 
