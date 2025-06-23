@@ -50,8 +50,9 @@ export class AnnotationLayer extends ChartLayer {
         this.group('trend-lines')!.clearChildren();
         for (const tl of this.paraview.store.trendLines) {
           const series = this.paraview.store.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
-          const minValue = Number(this.paraview.store.settings.axis.y.minValue)
-          const maxValue = Number(this.paraview.store.settings.axis.y.maxValue)
+          const range = this.parent.getYAxisInterval();
+          const minValue = range.start ?? Number(this.paraview.store.settings.axis.y.minValue)
+          const maxValue = range.end ?? Number(this.paraview.store.settings.axis.y.maxValue)
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetAsNumber("y")! - minValue) / (maxValue - minValue) * this.height;
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetAsNumber("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
@@ -62,10 +63,8 @@ export class AnnotationLayer extends ChartLayer {
             points: [new Vec2(startPx, startHeight), new Vec2(endPx, endHeight),],
           });
           const colorValue = this.paraview.store.colors.colorValue('highlight');
-    linebreak.styleInfo.fill = colorValue;
-    linebreak.styleInfo.stroke = colorValue;
-          //linebreak.styleInfo.fill = "blue"
-          //linebreak.styleInfo.stroke = "blue"
+          linebreak.styleInfo.fill = colorValue;
+          linebreak.styleInfo.stroke = colorValue;
           linebreak.classInfo = { 'trend-line': true }
           this.group('trend-lines')!.append(linebreak);
         }
@@ -98,9 +97,10 @@ export class AnnotationLayer extends ChartLayer {
           this.removeGroup('range-highlights', true);
         }
       }
+
       if (this.paraview.store.lineBreaks) {
-        this.addGroup('line-breaks', true);
-        this.group('line-breaks')!.clearChildren();
+        this.addGroup('linebreaker-markers', true);
+        this.group('linebreaker-markers')!.clearChildren();
         for (const lb of this.paraview.store.lineBreaks) {
           const startPx = this.width * lb.startPortion;
           const linebreak = new Rect(this.paraview, {
@@ -110,11 +110,11 @@ export class AnnotationLayer extends ChartLayer {
             height: this.height
           })
           linebreak.classInfo = { 'linebreaker-marker': true }
-          this.group('line-breaks')!.append(linebreak);
+          this.group('linebreaker-markers')!.append(linebreak);
         }
       }
       else {
-        if (this._groups.has('range-highlights')) {
+        if (this._groups.has('linebreaks')) {
           this.removeGroup('linebreaks', true);
         }
       }

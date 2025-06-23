@@ -138,12 +138,6 @@ export class AxisInfo {
       ? this._options.yMax ?? Math.max(...this._options.yValues)
       : this._store.settings.axis.y.maxValue;
     this._yLabelInfo = this._computeYLabels(yMin, yMax);
-    if (this._store.settings.axis.y.minValue == "unset" || this._store.settings.axis.y.maxValue == "unset") {
-      this._store.updateSettings(draft => {
-        draft.axis.y.minValue = this._yLabelInfo.min!
-        draft.axis.y.maxValue = this._yLabelInfo.max!
-      });
-    }
   }
 
 }

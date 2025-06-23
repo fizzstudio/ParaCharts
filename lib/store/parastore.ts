@@ -506,15 +506,15 @@ export class ParaStore extends State {
       if (this.settings.controlPanel.isMDRAnnotationsVisible) {
         let seriesAnalysis;
         let seriesKey: string;
-        if (this.selectedDatapoints.length > 0){
+        if (this.selectedDatapoints.length > 0) {
           seriesKey = this.selectedDatapoints[0].seriesKey;
           seriesAnalysis = await this.model?.getSeriesAnalysis(seriesKey)
         }
-        else{
+        else {
           seriesKey = this.model!.series[0][0].seriesKey
           seriesAnalysis = await this.model?.getSeriesAnalysis(seriesKey)
         }
-        if (!seriesAnalysis){
+        if (!seriesAnalysis) {
           console.log("This chart does not support AI trend annotations")
           this.updateSettings(draft => {
             draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
@@ -556,10 +556,10 @@ export class ParaStore extends State {
     }
   }
 
-  async removeMDRAnnotations(selectedDatapoints? : DataCursor[]) {
+  async removeMDRAnnotations(selectedDatapoints?: DataCursor[]) {
     let seriesAnalysis;
     let seriesKey: string;
-    if (!selectedDatapoints){
+    if (!selectedDatapoints) {
       selectedDatapoints = this.selectedDatapoints
     }
     if (selectedDatapoints.length > 0) {
@@ -613,7 +613,7 @@ export class ParaStore extends State {
       rhl.startPortion === startPortion && rhl.endPortion === endPortion)) {
       throw new Error('range already highlighted');
     }
-    this._rangeHighlights = [...this._rangeHighlights, {startPortion, endPortion}];
+    this._rangeHighlights = [...this._rangeHighlights, { startPortion, endPortion }];
   }
 
   unhighlightRange(startPortion: number, endPortion: number) {
@@ -640,7 +640,7 @@ export class ParaStore extends State {
     for (let seq of sequences) {
       this.addLineBreak(seq.start / length, seriesKey)
     }
-    this.addLineBreak((sequences[sequences.length - 1].end -1) / length, seriesKey)
+    this.addLineBreak((sequences[sequences.length - 1].end - 1) / length, seriesKey)
 
   }
 
@@ -667,17 +667,17 @@ export class ParaStore extends State {
     }
   }
 
-  addLineBreak(startPortion: number, seriesKey: string){
+  addLineBreak(startPortion: number, seriesKey: string) {
     if (this._lineBreaks.find(lb =>
       lb.startPortion === startPortion)) {
       //throw new Error('range already highlighted');
     }
-    else{
-      this._lineBreaks = [...this._lineBreaks, {startPortion: startPortion}];
+    else {
+      this._lineBreaks = [...this._lineBreaks, { startPortion: startPortion }];
     }
   }
 
-  addModelTrendLines(sequences: SequenceInfo[], seriesKey: string){
+  addModelTrendLines(sequences: SequenceInfo[], seriesKey: string) {
     const series = this.model!.series.filter(s => s[0].seriesKey == seriesKey)[0]
     const length = series.length - 1
     for (let seq of sequences) {
@@ -685,13 +685,13 @@ export class ParaStore extends State {
     }
   }
 
-  addTrendLine(startPortion: number, endPortion: number, startIndex: number, endIndex: number, seriesKey: string){
+  addTrendLine(startPortion: number, endPortion: number, startIndex: number, endIndex: number, seriesKey: string) {
     if (this._trendLines.find(tl =>
       tl.startPortion === startPortion && tl.endPortion === endPortion)) {
       //throw new Error('range already highlighted');
     }
-    else{
-      this._trendLines = [...this._trendLines, {startPortion: startPortion, endPortion: endPortion, startIndex: startIndex, endIndex: endIndex, seriesKey: seriesKey}];
+    else {
+      this._trendLines = [...this._trendLines, { startPortion: startPortion, endPortion: endPortion, startIndex: startIndex, endIndex: endIndex, seriesKey: seriesKey }];
     }
   }
 
