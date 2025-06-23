@@ -354,6 +354,7 @@ export const defaults: Settings = {
     isSparkBrailleProportional: false,
     isSparkBrailleBar: false,
     isSparkBrailleControlVisible: true,
+    isMDRAnnotationsVisible: false,
     isDataTabVisible: true,
     isColorsTabVisible: true,
     isAudioTabVisible: true,
