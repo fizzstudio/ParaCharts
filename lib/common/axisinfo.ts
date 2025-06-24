@@ -102,7 +102,6 @@ export class AxisInfo {
   }
 
   protected _computeXLabels(xMin: number, xMax: number) {
-    console.log('cxl', xMin, xMax, this._store.settings.axis.x.minValue)
     return computeLabels(
       this._store.settings.axis.x.minValue === 'unset' ? xMin : this._store.settings.axis.x.minValue as number, 
       this._store.settings.axis.x.maxValue === 'unset' ? xMax : this._store.settings.axis.x.maxValue as number,
