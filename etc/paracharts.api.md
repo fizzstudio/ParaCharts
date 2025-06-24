@@ -30,6 +30,7 @@ import { Padding as Padding_4 } from './base_view';
 import { PaddingInput as PaddingInput_2 } from './base_view';
 import { PaddingInput as PaddingInput_3 } from '../base_view';
 import { PaddingInput as PaddingInput_4 } from '../../base_view';
+import { PairAnalyzerConstructor } from '@fizz/paramodel';
 import papa from 'papaparse';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
@@ -37,6 +38,7 @@ import { Ref } from 'lit/directives/ref.js';
 import { Ref as Ref_2 } from 'lit-html/directives/ref.js';
 import { RefDirective } from 'lit-html/directives/ref.js';
 import * as sb from '@fizz/sparkbraille-component';
+import { SequenceInfo } from '@fizz/series-analyzer';
 import { Series } from '@fizz/paramodel';
 import { SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { Size2d } from '@fizz/chart-classifier-utils';
@@ -66,7 +68,9 @@ export { Manifest }
 //
 // @public (undocumented)
 export class ParaChart extends ParaChart_base {
-    constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor);
+    constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
+    // (undocumented)
+    get ariaLiveRegion(): AriaLive;
     // Warning: (ae-forgotten-export) The symbol "AriaLive" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
