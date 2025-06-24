@@ -25,6 +25,7 @@ export interface AvailableActions {
   openHelp(): void;
   announceVersionInfo(): void;
   chordModeToggle(): void;
+  shutUp(): void;
 }
 
 
@@ -149,6 +150,9 @@ export class HotkeyActions {
         } else {
           store.prependAnnouncement('Chord mode disabled');
         }      
+      },
+      shutUp() {
+        paraView.paraChart.ariaLiveRegion.voicing.shutUp();
       }
     };
   }

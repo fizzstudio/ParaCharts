@@ -132,6 +132,10 @@ export class ParaChart extends logging(ParaComponent) {
     return this._loader;
   }
 
+  get ariaLiveRegion() {
+    return this._ariaLiveRegionRef.value!;
+  }
+
   connectedCallback() {
     super.connectedCallback();
   }

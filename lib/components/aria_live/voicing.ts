@@ -27,7 +27,7 @@ export class Voicing {
     }
   }
 
-  shutUp () {
+  shutUp() {
     console.log('Shut Up!')
     if (this._voice && this._voice.speaking) {
       this._voice.cancel();

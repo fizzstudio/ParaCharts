@@ -20,6 +20,10 @@ export class AriaLive extends ParaComponent {
   protected _history: readonly string[] = [];
   protected _historyDialogRef = createRef<AriaLiveHistoryDialog>();
 
+  get voicing() {
+    return this._voicing;
+  }
+
   protected _setHistory(history: readonly string[]) {
     this._history = history;
     this._historyDialogRef.value!.history = history;

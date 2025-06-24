@@ -169,5 +169,13 @@ export const keymap: KeyRegistrations = {
   'Ctrl+Shift+V': {
     label: 'Announce version info',
     action: 'announceVersionInfo'
+  },
+  Ctrl: {
+    label: 'Stop speaking (self-voicing mode)',
+    action: 'shutUp'
+  },
+  Escape: {
+    label: 'Stop speaking (self-voicing mode)',
+    action: 'shutUp'
   }
 };
