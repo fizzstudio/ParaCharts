@@ -38,7 +38,7 @@ import { customElement, property, queryAssignedElements } from 'lit/decorators.j
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { SlotLoader } from '../loader/slotloader';
-import { SeriesAnalyzerConstructor } from '@fizz/paramodel';
+import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
 
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
@@ -62,7 +62,10 @@ export class ParaChart extends logging(ParaComponent) {
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
 
-  constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor) {
+  constructor(
+    seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
+    pairAnalyzerConstructor?: PairAnalyzerConstructor
+  ) {
     super();
     const customPropLoader = new CustomPropertyLoader();
     const cssProps = customPropLoader.processProperties();
@@ -71,7 +74,9 @@ export class ParaChart extends logging(ParaComponent) {
       this,
       Object.assign(cssProps, this.config),
       this._suppleteSettingsWith,
-      seriesAnalyzerConstructor);
+      seriesAnalyzerConstructor,
+      pairAnalyzerConstructor
+    );
     customPropLoader.store = this.store;
     customPropLoader.registerColors();
     customPropLoader.registerSymbols();

@@ -25,7 +25,8 @@ import {
 } from '@fizz/paramanifest';
 import {
   facetsFromDataset, Model, modelFromExternalData, modelFromInlineData,
-  FacetSignature, SeriesAnalyzerConstructor, XYDatapoint 
+  FacetSignature, SeriesAnalyzerConstructor, XYDatapoint, 
+  PairAnalyzerConstructor
 } from '@fizz/paramodel';
 import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 
@@ -108,6 +109,7 @@ export class ParaStore extends State {
   protected _appendAnnouncements: string[] = [];
   protected _summarizer!: Summarizer; 
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
+  protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
 
   public idList: Record<string, boolean> = {};
 
@@ -115,7 +117,8 @@ export class ParaStore extends State {
     protected _paraChart: ParaChart,
     inputSettings: SettingsInput, 
     suppleteSettingsWith?: DeepReadonly<Settings>,
-    seriesAnalyzerConstructor?: SeriesAnalyzerConstructor
+    seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
+    pairAnalyzerConstructor?: PairAnalyzerConstructor
   ) {
     super();
     const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
@@ -124,6 +127,7 @@ export class ParaStore extends State {
     this.subscribe((key, value) => this._propertyChanged(key, value));
     this._colors = new Colors(this);
     this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
+    this._pairAnalyzerConstructor = pairAnalyzerConstructor;
     this._getUrlAnnotations();
   }
 
@@ -196,14 +200,23 @@ export class ParaStore extends State {
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
     if (dataset.data.source === 'inline') {
-      this._model = modelFromInlineData(manifest, this._seriesAnalyzerConstructor);
+      this._model = modelFromInlineData(
+        manifest, 
+        this._seriesAnalyzerConstructor,
+        this._pairAnalyzerConstructor
+      );
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = dataFromManifest(manifest);
     } else if (data) {
-      this._model = modelFromExternalData(data, manifest, this._seriesAnalyzerConstructor);
+      this._model = modelFromExternalData(
+        data, 
+        manifest, 
+        this._seriesAnalyzerConstructor,
+        this._pairAnalyzerConstructor
+      );
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = data;
     } else {
