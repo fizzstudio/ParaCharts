@@ -23,7 +23,7 @@ import { View, type SnapLocation } from '../view/base_view';
 import { generateUniqueId, fixed } from '../common/utils';
 import { ParaView } from '../paraview';
 import { SVGNS } from '../common/constants';
-import { type Vec2 } from '../common/vector';
+import { Vec2 } from '../common/vector';
 
 export type LabelTextAnchor = 'start' | 'middle' | 'end';
 
@@ -52,6 +52,13 @@ interface TextLine {
   offset: number;
 }
 
+interface TextCornerOffsets {
+  topLeft: Vec2;
+  topRight: Vec2;
+  bottomRight: Vec2;
+  bottomLeft: Vec2;
+}
+
 export class Label extends View {
 
   public readonly classList: string[];
@@ -61,6 +68,7 @@ export class Label extends View {
   protected _textAnchor: LabelTextAnchor;
   protected _justify: SnapLocation;
   protected _text: string;
+  protected _textCornerOffsets!: TextCornerOffsets;
   protected _textLines: TextLine[] = [];
   protected _styleInfo: StyleInfo = {};
 
@@ -148,6 +156,38 @@ export class Label extends View {
     return this._elRef.value!.getBBox();
   }
 
+  get topLeft() {
+    return this._loc.add(this._textCornerOffsets.topLeft);
+  }
+
+  set topLeft(topLeft: Vec2) {
+    this._loc = topLeft.subtract(this._textCornerOffsets.topLeft);
+  }
+
+  get topRight() {
+    return this._loc.add(this._textCornerOffsets.topRight);
+  }
+
+  set topRight(topRight: Vec2) {
+    this._loc = topRight.subtract(this._textCornerOffsets.topRight);
+  }
+
+  get bottomRight() {
+    return this._loc.add(this._textCornerOffsets.bottomRight);
+  }
+
+  set bottomRight(bottomRight: Vec2) {
+    this._loc = bottomRight.subtract(this._textCornerOffsets.bottomRight);
+  }
+
+  get bottomLeft() {
+    return this._loc.add(this._textCornerOffsets.bottomLeft);
+  }
+
+  set bottomLeft(bottomLeft: Vec2) {
+    this._loc = bottomLeft.subtract(this._textCornerOffsets.bottomLeft);
+  }
+
   get styleInfo() {
     return this._styleInfo;
   }
@@ -192,6 +232,8 @@ export class Label extends View {
     this._locOffset.x = -(clientRect.x - canvasRect.x);
     this._locOffset.y = -(clientRect.y - canvasRect.y);
 
+    let top = 0, bottom = 0, left = 0, right = 0;
+
     if (this.options.wrapWidth !== undefined && width > this.options.wrapWidth) {
       text.textContent = '';
       const tokens = this._text.split(' ');
@@ -233,11 +275,38 @@ export class Label extends View {
           this._textLines[i].offset = x;
         });
       }
-  
+      // XXX needs testing
+      tspans.forEach(t => {
+        const numChars = t.getNumberOfChars();
+        for (let i = 0; i < numChars; i++) {
+          const extent = t.getExtentOfChar(i);
+          top = Math.min(top, extent.y);
+          bottom = Math.max(bottom, extent.y + extent.height);
+          left = Math.min(left, extent.x);
+          right = Math.max(right, extent.x + extent.width);
+        }
+      });
       tspans.forEach(t => t.remove());
     } else {
       this._textLines = [];
+      const numChars = text.getNumberOfChars();
+      top = text.getExtentOfChar(0).y;
+      bottom = text.getExtentOfChar(0).y + text.getExtentOfChar(0).height;
+      left = text.getExtentOfChar(0).x;
+      right = text.getExtentOfChar(numChars - 1).x + text.getExtentOfChar(numChars - 1).width;
     }
+
+    // Coord system is vertically mirrored, so flip the sign of the angle
+    const topLeft = new Vec2(left, top).rotate(-this._angle*Math.PI/180);
+    const topRight = new Vec2(right, top).rotate(-this._angle*Math.PI/180);
+    const bottomRight = new Vec2(right, bottom).rotate(-this._angle*Math.PI/180);
+    const bottomLeft = new Vec2(left, bottom).rotate(-this._angle*Math.PI/180);
+    this._textCornerOffsets = {
+      topLeft, 
+      topRight,
+      bottomRight,
+      bottomLeft
+    };
 
     text.remove();
     return [width, height] as [number, number];

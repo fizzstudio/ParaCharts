@@ -35,7 +35,6 @@ export interface AxisLabelInfo {
 export function computeLabels(
     start: number, end: number, isPercent: boolean, isGrouping = true
   ): AxisLabelInfo {
-    console.log('cl', start, end, isPercent, isGrouping)
     const minDec = new Decimal(start);
     const maxDec = new Decimal(end);
     const diff = maxDec.sub(minDec);
@@ -103,7 +102,6 @@ export class AxisInfo {
   }
 
   protected _computeXLabels(xMin: number, xMax: number) {
-    console.log('cxl', xMin, xMax, this._store.settings.axis.x.minValue)
     return computeLabels(
       this._store.settings.axis.x.minValue === 'unset' ? xMin : this._store.settings.axis.x.minValue as number, 
       this._store.settings.axis.x.maxValue === 'unset' ? xMax : this._store.settings.axis.x.maxValue as number,
@@ -115,7 +113,6 @@ export class AxisInfo {
   }  
 
   protected _computeXLabelInfo() {
-    console.log('cxli', this._options.xValues)
     if (this._options.xValues) {
       this._xLabelInfo = this._computeXLabels(
         Math.min(...this._options.xValues),

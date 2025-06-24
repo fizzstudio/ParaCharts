@@ -22,6 +22,7 @@ import { ParaView } from '../paraview';
 
 import { type TemplateResult } from 'lit';
 import { svg } from 'lit';
+import { Vec2 } from '../common/vector';
 
 /**
  * A single tier of tick labels.
@@ -181,8 +182,14 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     super.createTickLabels();
     this._children.forEach((kid, i) => {
       kid.angle = this.axis.settings.tick.tickLabel.angle;
-      kid.x = this._tickLabelX(i);
-      kid.y = this._tickLabelY(i);
+      if (kid.angle === 0) {
+        kid.top = this._tickLabelY(i);
+        kid.centerX = this._tickLabelX(i);
+      } else if (kid.angle > 0) {
+        kid.topLeft = new Vec2(this._tickLabelX(i), this._tickLabelY(i));
+      } else {
+        kid.topRight = new Vec2(this._tickLabelX(i), this._tickLabelY(i));
+      }
     });
     this.updateSize();
     this._checkLabelSpacing();

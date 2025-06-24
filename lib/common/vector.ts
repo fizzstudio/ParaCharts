@@ -139,4 +139,19 @@ export class Vec2 {
     return other.multiplyScalar(this.dot(other) / other.dot(other));
   }
 
+  rotate(rads: number) {
+    // NB: In a normal Cartesian coordinate system, with the below,
+    // positive rotations are clockwise. The SVG coordinate system
+    // is vertically mirrored, though, so they will appear
+    // counter-clockwise.
+    const m00 = Math.cos(rads);
+    const m01 = Math.sin(rads);
+    const m10 = -m01;
+    const m11 = m00;
+    return new Vec2(
+      this._x*m00 + this._y*m01,
+      this._x*m10 + this._y*m11
+    );
+  }
+
 }
