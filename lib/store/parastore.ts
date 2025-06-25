@@ -433,7 +433,7 @@ export class ParaStore extends State {
   }
 
   everVisitedSeries(seriesKey: string): boolean {
-    return !!this._everVisitedDatapoints.find(cursor =>
+    return this._everVisitedDatapoints.some(cursor =>
       cursor.seriesKey === seriesKey);
   }
 
