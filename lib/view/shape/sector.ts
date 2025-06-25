@@ -85,8 +85,39 @@ export class Sector extends Shape {
     );
   }
 
+  get arcLeft() {
+    return new Vec2(
+      this._x + this._options.r*Math.cos(
+        radians(this._options.orientationAngle)),
+      this._y + this._options.r*Math.sin(
+        radians(this._options.orientationAngle))
+    );
+  }
+
+  get arcRight() {
+    return new Vec2(
+      this._x + this._options.r*Math.cos(
+        radians(this._options.orientationAngle + this._options.centralAngle)),
+      this._y + this._options.r*Math.sin(
+        radians(this._options.orientationAngle + this._options.centralAngle))
+    );
+  }
+
   get orientationVector() {
-    return this.arcCenter.subtract(new Vec2(this._x, this._y)).normalize();
+    return this.arcCenter.subtract(this._loc).normalize();
+  }
+
+  containsPoint(point: Vec2) {
+    const v = point.subtract(this._loc);
+    let theta = v.y >= 0 ? Math.acos(v.x/v.length()) : -Math.acos(v.x/v.length());
+    if (theta < 0) {
+      theta = 2*Math.PI + theta;
+    }
+    const withinArc = theta >= radians(this._options.orientationAngle)
+      && theta <= radians(this._options.orientationAngle + this._options.centralAngle);
+    return this._options.annularThickness === undefined
+      ? withinArc
+      : withinArc && (v.length() >= this._options.r - this._options.annularThickness*this._options.r);
   }
 
   computeLayout() {

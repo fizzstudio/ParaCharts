@@ -330,16 +330,31 @@ export interface HistogramSettings extends PointSettings {
 
 export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
+export interface RadialCategoryLabelSettings extends SettingGroup {
+  isDrawEnabled: boolean;
+  position: SliceLabelPosition;
+  outsideLabelGap: number;
+  outsideArcDistance: number;
+  outsideHorizShift: number;
+  format: LabelFormat;
+  underlineGap: number;
+}
+
+export interface RadialValueLabelSettings extends SettingGroup {
+  isDrawEnabled: boolean;
+  format: LabelFormat;
+  /** Value between 0 and 1 indicating position as distance along radius */
+  position: number;
+}
+
 /** @public */
 export interface RadialSettings extends SettingGroup {
-  categoryLabel: LabelSettings;
-  valueLabel: LabelSettings;
+  categoryLabel: RadialCategoryLabelSettings;
+  valueLabel: RadialValueLabelSettings;
   isRenderCenterLabel: boolean;
   annularThickness: number;
-  categoryLabelPosition: SliceLabelPosition;
-  categoryLabelFormat: LabelFormat;
-  categoryLabelUnderlineGap: number;
-  sliceValueFormat: LabelFormat;
+  centerLabel: 'none' | 'title';
+  centerLabelPadding: number;
 }
 
 /** @public */
