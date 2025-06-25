@@ -137,8 +137,11 @@ export class DocumentView extends Container(View) {
       ////////////////////////////////////////////
       // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
       //   have two axes
-      const horizAxisFacet = this._store.model!.getAxisFacet('horiz') ?? this._store.model!.facetMap['x']!;
-      const vertAxisFacet = this._store.model!.getAxisFacet('vert') ?? this._store.model!.facetMap['y']!;
+      // const horizAxisFacet = this._store.model!.getAxisFacet('horiz') ?? this._store.model!.facetMap['x']!;
+      // const vertAxisFacet = this._store.model!.getAxisFacet('vert') ?? this._store.model!.facetMap['y']!;
+      const horizAxisFacet = this._chartLayers.dataLayer.axisInfo.horizFacet;
+      const vertAxisFacet = this._chartLayers.dataLayer.axisInfo.vertFacet;
+
       ////////////////////////////////////////////
       // XXX Change this method to set axis.titleText
       this._horizAxis.setAxisLabelText(horizAxisFacet.label);

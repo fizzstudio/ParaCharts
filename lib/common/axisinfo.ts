@@ -23,6 +23,7 @@ export interface AxisOptions {
   // Are datapoint views drawn on ticks (false) or between them (true)?
   isXInterval?: boolean;
   isYInterval?: boolean;
+  isXVertical?: boolean;
 }
 
 export interface AxisLabelInfo {
@@ -89,6 +90,26 @@ export class AxisInfo {
 
   get options() {
     return this._options;
+  }
+
+  get horizFacet() {
+    // return this._store.model!.getAxisFacet('horiz')
+    //   ?? (this._options.isXVertical
+    //     ? this._store.model!.dependentFacet!
+    //     : this._store.model!.independentFacet!); 
+    return this._options.isXVertical
+        ? this._store.model!.dependentFacet!
+        : this._store.model!.independentFacet!; 
+  }
+
+  get vertFacet() {
+    // return this._store.model!.getAxisFacet('vert')
+    //   ?? (this._options.isXVertical
+    //     ? this._store.model!.independentFacet!
+    //     : this._store.model!.dependentFacet!); 
+    return this._options.isXVertical
+        ? this._store.model!.independentFacet!
+        : this._store.model!.dependentFacet!; 
   }
 
   updateYRange() {
