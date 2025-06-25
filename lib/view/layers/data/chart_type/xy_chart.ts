@@ -598,7 +598,7 @@ export abstract class XYDatapointView extends DatapointView {
   //  }
   //}
 
-  protected _visit(isNewComponentFocus = false) {
+  protected async _visit(isNewComponentFocus = false) {
     super._visit(isNewComponentFocus);
     const visited = this.paraview.store.settings.sonification.isChordModeEnabled
       ? this.withSameIndexers

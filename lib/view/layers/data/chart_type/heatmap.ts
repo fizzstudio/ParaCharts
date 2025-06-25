@@ -432,7 +432,7 @@ export class HeatmapTileView extends DatapointView {
     //this.paraview.requestUpdate();
   }
 
-  protected _visit() {
+  protected async _visit(_isNewComponentFocus = false) {
     this.paraview.store.visit([{ seriesKey: this.seriesKey, index: this.index }]);
   }
 
