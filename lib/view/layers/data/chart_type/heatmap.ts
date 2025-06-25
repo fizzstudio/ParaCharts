@@ -7,7 +7,7 @@ import { ParaView } from "../../../../paraview";
 import { DeepReadonly, HeatmapSettings, PointChartType, type Setting } from "../../../../store";
 import { DatapointView, SeriesView } from "../../../data";
 
-import { Rect } from "../../../shape/rect";
+import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { XYChart, XYSeriesView } from "./xy_chart";
 
@@ -345,7 +345,7 @@ export class HeatmapTileView extends DatapointView {
   }
 
   get selectedMarker(): Shape {
-    return new Rect(this.paraview, {
+    return new RectShape(this.paraview, {
       width: this._width,
       height: this._height,
       x: this._x,

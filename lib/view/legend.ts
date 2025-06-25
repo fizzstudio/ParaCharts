@@ -4,7 +4,7 @@ import { GridLayout, type Layout } from './layout';
 import { type DataSymbolType, DataSymbol } from './symbol';
 import { Label } from './label';
 import { type LegendSettings, type DeepReadonly, SettingsManager } from '../store';
-import { Rect } from './shape/rect';
+import { RectShape } from './shape/rect';
 import { type ParaView } from '../paraview';
 import { TemplateResult } from 'lit';
 import { ClassInfo } from 'lit/directives/class-map.js';
@@ -45,7 +45,7 @@ export class Legend extends Container(View) {
   declare protected _parent: Layout;
 
   protected _grid!: GridLayout;
-  protected _markers: Rect[] = [];
+  protected _markers: RectShape[] = [];
 
   constructor(paraview: ParaView,
     protected _items: LegendItem[],
@@ -68,7 +68,7 @@ export class Legend extends Container(View) {
     const hasLegendBox = this.settings.boxStyle.outline !== 'none' || this.settings.boxStyle.fill !== 'none';
 
     this._items.forEach(item => {
-      this._markers.push(new Rect(this.paraview, {width: 12, height: 6}));
+      this._markers.push(new RectShape(this.paraview, {width: 12, height: 6}));
       views.push(this._markers.at(-1)!);
       views.push(DataSymbol.fromType(
         this.paraview,
@@ -122,7 +122,7 @@ export class Legend extends Container(View) {
     // this.prepend(new Rect(this._width, this._height, 'white'));
 
     if (hasLegendBox) {
-      this.prepend(new Rect(this.paraview, {
+      this.prepend(new RectShape(this.paraview, {
         width: this._width,
         height: this._height,
         fill: this.settings.boxStyle.fill,

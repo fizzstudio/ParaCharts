@@ -7,14 +7,15 @@ import {
 } from '../../../../store';
 import { Label, LabelTextCorners, type LabelTextAnchor } from '../../../label';
 import { type ParaView } from '../../../../paraview';
-import { Sector } from '../../../shape/sector';
-import { Path } from '../../../shape/path';
+import { SectorShape } from '../../../shape/sector';
+import { PathShape } from '../../../shape/path';
 import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 import { Vec2 } from '../../../../common/vector';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { interpolate } from '@fizz/templum';
 import { queryMessages, describeSelections, getDatapointMinMax } from '../../../../store/query_utils';
+import { Shape } from '../../../shape/shape';
 
 export type ArcType = 'circle' | 'semicircle';
 
@@ -240,6 +241,9 @@ export abstract class RadialChart extends DataLayer {
       //   xSeries.atBoxed(i), `${this.parent.docView.type as RadialChartType}Slice`);
       // modify percentage by arc degree, for circle fragments
       const percentage = this._arc*currDatapoint/total;
+      if (i) {
+        accum += percentage/2;
+      }
       const datapointView = this._createSlice(seriesView, {
         seriesIdx: i, 
         percentage,
@@ -247,7 +251,7 @@ export abstract class RadialChart extends DataLayer {
         numDatapoints: xs.length
       });
       seriesView.append(datapointView);
-      accum += percentage;
+      accum += percentage/2;
     }
   }
 
@@ -335,7 +339,7 @@ export abstract class RadialChart extends DataLayer {
   }
 
   protected _createCategoryLabelLeader(slice: RadialSlice, arcCenter: Vec2, underlineStart: Vec2) {
-    return new Path(this.paraview, {
+    return new PathShape(this.paraview, {
       points: [arcCenter, underlineStart, underlineStart.x > slice.categoryLabel!.centerX
         ? underlineStart.subtractX(slice.categoryLabel!.width)
         : underlineStart.addX(slice.categoryLabel!.width)],
@@ -598,10 +602,12 @@ export interface RadialDatapointParams {
 export abstract class RadialSlice extends DatapointView {
 
   declare readonly chart: RadialChart;
+  declare protected _shape: SectorShape | null;
+
 
   protected _categoryLabel: Label | null = null;
   protected _valueLabel: Label | null = null;
-  protected _leader: Path | null = null;
+  protected _leader: PathShape | null = null;
   
   constructor(parent: SeriesView, protected _params: RadialDatapointParams) {
     super(parent);
@@ -628,12 +634,12 @@ export abstract class RadialSlice extends DatapointView {
     return this._leader;
   }
 
-  set leader(leader: Path | null) {
+  set leader(leader: PathShape | null) {
     this._leader = leader;
   }
 
   get shape() {
-    return this._shape as Sector;
+    return this._shape as SectorShape;
   }
 
   get role() {
@@ -691,6 +697,23 @@ export abstract class RadialSlice extends DatapointView {
   }
 
   protected _createSymbol() {
+  }
+
+  focusRingShape() {
+    const shape = this._shape!.clone();
+    shape.centralAngle += 20*360/(2*Math.PI*shape.r);
+    if (shape.annularThickness! < 1) {
+      shape.r += 10;
+      // a0/r0 = A
+      // r1 = r0 + D
+      // a1 = a0 + D
+      // A1 = (a0 + D)/(r0 + D)
+      const a0 = shape.annularThickness!*shape.r;
+      shape.annularThickness = (a0 + 20)/(shape.r + 10);
+    } else {
+      shape.scale = (shape.r + 10)/shape.r;
+    }
+    return shape;
   }
 
   completeLayout() {

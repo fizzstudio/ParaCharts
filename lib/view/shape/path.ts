@@ -13,11 +13,22 @@ export interface PathOptions extends ShapeOptions {
   points: Vec2[];
 }
 
-export class Path extends Shape {
-  declare protected _options: PathOptions;
+export class PathShape extends Shape {
+  protected _points: Vec2[];
 
   constructor(paraview: ParaView, options: PathOptions) {
     super(paraview, options);
+    this._points = options.points.map(p => p.clone());
+  }
+
+  protected get _options(): PathOptions {
+    let options = super._options as PathOptions;
+    options.points = this._points.map(p => p.clone());
+    return options;
+  }
+
+  clone(): PathShape {
+    return new PathShape(this.paraview, this._options);
   }
 
   get styleInfo(): StyleInfo {
@@ -31,19 +42,19 @@ export class Path extends Shape {
   }
 
   get points() {
-    return this._options.points.map(p => p.clone());
+    return this._points.map(p => p.clone());
   }
 
   set points(points: Vec2[]) {
-    this._options.points = points;
+    this._points = points.map(p => p.clone());
   }
 
   get xs() {
-    return this.points.map(point => point.x);
+    return this._points.map(point => point.x);
   }
 
   get ys() {
-    return this.points.map(point => point.y);
+    return this._points.map(point => point.y);
   }
 
   get width() {
@@ -87,7 +98,7 @@ export class Path extends Shape {
   }
 
   protected get _pathD() {
-    const relPoints = this._options.points.map(p => p.add(this._loc));
+    const relPoints = this._points.map(p => p.add(this._loc));
     let d = fixed`M${relPoints[0].x},${relPoints[0].y}`;
     relPoints.slice(1).forEach(p => {
       d += fixed`L${p.x},${p.y}`;

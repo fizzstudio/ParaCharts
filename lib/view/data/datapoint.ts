@@ -3,7 +3,7 @@ import { DataView, type SeriesView } from './';
 import { DataSymbol, DataSymbols } from '../symbol';
 import { type DataCursor } from '../../store';
 import { type Shape } from '../shape/shape';
-import { Rect } from '../shape/rect';
+import { RectShape } from '../shape/rect';
 
 import { type ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
@@ -61,7 +61,7 @@ export class DatapointView extends DataView {
   }
 
   get selectedMarker(): Shape {
-    return new Rect(this.paraview, {
+    return new RectShape(this.paraview, {
       width: this._width/2,
       height: this._width/2,
       x: this._x - this._width/4,

@@ -1,7 +1,7 @@
 
 import { RadialChart, RadialSlice, type RadialDatapointParams } from '.';
 import { type SeriesView } from '../../../data';
-import { Sector } from '../../../shape/sector';
+import { SectorShape } from '../../../shape/sector';
 import { type ParaView } from '../../../../paraview';
 
 export class PieChart extends RadialChart {
@@ -44,13 +44,13 @@ export class PieSlice extends RadialSlice {
   }
   
   protected _createShape() {
-    this._shape = new Sector(this.paraview, {
+    this._shape = new SectorShape(this.paraview, {
       x: this._x,
       y: this._y,
       r: this.chart.radius,
       centralAngle: this._params.percentage*360,
-      orientationAngle: (this._params.accum + this.chart.startAngleOffset)*360,
-      annularThickness: this.paraview.store.type === 'donut' ? this.chart.settings.annularThickness : 1
+      orientationAngle: this._params.accum*360,
+      annularThickness: this.chart.settings.annularThickness
     });
     super._createShape();
   }
@@ -76,13 +76,13 @@ export class PieSlice extends RadialSlice {
   // }
 
   get selectedMarker() {
-    return new Sector(this.paraview, {
+    return new SectorShape(this.paraview, {
       x: this._x,
       y: this._y,
       r: this.chart.radius,
       centralAngle: this._params.percentage*360,
-      orientationAngle: (this._params.accum + this.chart.startAngleOffset)*360,
-      annularThickness: this.paraview.store.type === 'donut' ? this.chart.settings.annularThickness : 1,
+      orientationAngle: this._params.accum*360,
+      annularThickness: this.chart.settings.annularThickness,
       fill: 'none',
       stroke: 'black',
       strokeWidth: 2

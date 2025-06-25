@@ -2,8 +2,8 @@
 import { ChartLayer } from '../layer';
 import { View, Container } from '../../base_view';
 import { type ParaView } from '../../../paraview';
-import { Rect } from '../../shape/rect';
-import { Path } from '../../shape/path';
+import { RectShape } from '../../shape/rect';
+import { PathShape } from '../../shape/path';
 import { Vec2 } from '../../../common/vector';
 
 export type AnnotationType = 'foreground' | 'background';
@@ -57,7 +57,7 @@ export class AnnotationLayer extends ChartLayer {
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetAsNumber("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
           const endPx = this.width * tl.endPortion;
-          const linebreak = new Path(this.paraview, {
+          const linebreak = new PathShape(this.paraview, {
             x: this._x,
             y: this._y,
             points: [new Vec2(startPx, startHeight), new Vec2(endPx, endHeight),],
@@ -82,7 +82,7 @@ export class AnnotationLayer extends ChartLayer {
         for (const rhl of this.paraview.store.rangeHighlights) {
           const startPx = this.width * rhl.startPortion;
           const endPx = this.width * rhl.endPortion;
-          const rect = new Rect(this.paraview, {
+          const rect = new RectShape(this.paraview, {
             x: startPx,
             y: 0,
             width: endPx - startPx,
@@ -103,7 +103,7 @@ export class AnnotationLayer extends ChartLayer {
         this.group('linebreaker-markers')!.clearChildren();
         for (const lb of this.paraview.store.lineBreaks) {
           const startPx = this.width * lb.startPortion;
-          const linebreak = new Rect(this.paraview, {
+          const linebreak = new RectShape(this.paraview, {
             x: startPx - 1.5,
             y: 0,
             width: 3,

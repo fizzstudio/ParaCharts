@@ -1,6 +1,6 @@
 
 import { ChartLayer } from '.';
-import { Rect } from '../shape/rect';
+import { RectShape } from '../shape/rect';
 
 import { svg } from 'lit';
 
