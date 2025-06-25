@@ -1,6 +1,6 @@
 
-import { ChartLayer } from '.';
-import { FocusRing } from './data/focus_ring';
+import { ChartLayer } from '..';
+import { FocusRing } from './focus_ring';
 
 import { svg } from 'lit';
 
