@@ -151,12 +151,24 @@ export class DatapointView extends DataView {
     return id.slice(1);
   }
   
-  protected _visit(_isNewComponentFocus = false) {
+  protected async _visit(_isNewComponentFocus = false) {
     this.paraview.store.visit([{seriesKey: this.seriesKey, index: this.index}]);
-    const announcement = this.paraview.store.model!.multi
-      ? this.paraview.summarizer.getDatapointSummaryWithSeries(this.datapoint, 'raw')
-      : this.paraview.summarizer.getDatapointSummary(this.datapoint, 'raw');
-    this.paraview.store.announce(announcement);
+    const announcements = [this.paraview.summarizer.getDatapointSummary(this.datapoint, 'raw')]; //'statusBar'
+    
+    const isSeriesChange = !this.paraview.store.wasVisitedSeries(this.seriesKey);
+    if (isSeriesChange) {
+      if (this.paraview.store.isVisitedSeries(this.seriesKey)) {
+        // if we've already been to this series just announce the series name
+        announcements.push(this.seriesKey);
+      } else {
+        const seriesSummary = await this.paraview.summarizer.getSeriesSummary(this.seriesKey);
+        //seriesSummary = seriesSummary.slice(0, seriesSummary.length - 1);
+        //seriesSummaryAppend = replace(this.messages.seriesSummary, { seriesKey, seriesSummary });
+        announcements.push(seriesSummary);
+      }
+    }
+      
+    this.paraview.store.announce(announcements);
   }
 
   async onFocus(isNewComponentFocus = false) {
