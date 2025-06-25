@@ -21,13 +21,10 @@ export class PieChart extends RadialChart {
 
 export class PieSlice extends RadialSlice {
 
-  protected _r: number;
-
   constructor(parent: SeriesView, params: RadialDatapointParams) {
     super(parent, params);
     this._x = this.chart.cx;
     this._y = this.chart.cy;
-    this._r = Math.min(this.chart.height, this.chart.width)/2;
     // const {x, y, className} = this._computeLabelOptions();
     // this._params.label.x = x; 
     // this._params.label.y = y;
@@ -50,10 +47,10 @@ export class PieSlice extends RadialSlice {
     this._shape = new Sector(this.paraview, {
       x: this._x,
       y: this._y,
-      r: this._r,
+      r: this.chart.radius,
       centralAngle: this._params.percentage*360,
       orientationAngle: (this._params.accum + this.chart.startAngleOffset)*360,
-      annularThickness: this.paraview.store.type === 'donut' ? 0.5 : 1
+      annularThickness: this.paraview.store.type === 'donut' ? this.chart.settings.annularThickness : 1
     });
     super._createShape();
   }
@@ -82,10 +79,10 @@ export class PieSlice extends RadialSlice {
     return new Sector(this.paraview, {
       x: this._x,
       y: this._y,
-      r: this._r,
+      r: this.chart.radius,
       centralAngle: this._params.percentage*360,
       orientationAngle: (this._params.accum + this.chart.startAngleOffset)*360,
-      annularThickness: this.paraview.store.type === 'donut' ? 0.5 : 1,
+      annularThickness: this.paraview.store.type === 'donut' ? this.chart.settings.annularThickness : 1,
       fill: 'none',
       stroke: 'black',
       strokeWidth: 2
