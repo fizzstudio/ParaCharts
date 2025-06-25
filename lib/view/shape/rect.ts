@@ -13,12 +13,23 @@ export interface RectOptions extends ShapeOptions {
   height: number;
 }
 
-export class Rect extends Shape {
+export class RectShape extends Shape {
 
   constructor(paraview: ParaView, options: RectOptions) {
     super(paraview, options);
     this._width = options.width;
     this._height = options.height;
+  }
+
+  protected get _options(): RectOptions {
+    let options = super._options as RectOptions;
+    options.width = this._width;
+    options.height = this._height;
+    return options;
+  }
+
+  clone(): RectShape {
+    return new RectShape(this.paraview, this._options);
   }
 
   render() {

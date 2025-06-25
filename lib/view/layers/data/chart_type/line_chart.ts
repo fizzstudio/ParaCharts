@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { XYSeriesView, PointChart, ChartPoint } from '.';
 import { type LineSettings, type DeepReadonly } from '../../../../store/settings_types';
-import { Path } from '../../../shape/path';
+import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../../../../store/query_utils';
 import { ChartLandingView, SeriesView, DatapointView } from '../../../data';
@@ -319,7 +319,7 @@ export class LineSection extends ChartPoint {
     // If datapoints are layed out again after the initial layout,
     // we need to replace the original shape and symbol
     this._shape?.remove();
-    this._shape = new Path(this.paraview, {
+    this._shape = new PathShape(this.paraview, {
       x: this._x,
       y: this._y,
       points: this._points,

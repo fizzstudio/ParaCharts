@@ -20,6 +20,7 @@ import { ref } from 'lit/directives/ref.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type Setting } from '../store';
+import { type Shape } from './shape/shape';
 
 /*import { 
   HotkeyActionManager, EventActionManager, type KeyRegistrations, KeymapManager,
@@ -768,6 +769,10 @@ export class View extends BaseView {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
     this._children.forEach(kid => kid.settingDidChange(path, oldValue, newValue));
+  }
+
+  focusRingShape(): Shape | null {
+    return null;
   }
 
 }

@@ -5,7 +5,7 @@ import {
   type BarSettings, type StackContentOptions ,type DeepReadonly
 } from '../../../../store/settings_types';
 import { fixed } from '../../../../common/utils';
-import { Rect } from '../../../shape/rect';
+import { RectShape } from '../../../shape/rect';
 import { Label, LabelTextAnchor } from '../../../label';
 import { ChartLandingView, DatapointView, SeriesView } from '../../../data';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../../../../store/query_utils';
@@ -635,7 +635,7 @@ export class Bar extends XYDatapointView {
   // }
 
   protected _createShape() {
-    this._shape = new Rect(this.paraview, {
+    this._shape = new RectShape(this.paraview, {
       x: this._x,
       y: this._y,
       width: this._width,
@@ -645,7 +645,7 @@ export class Bar extends XYDatapointView {
   }
 
   get selectedMarker() {
-    return new Rect(this.paraview, {
+    return new RectShape(this.paraview, {
       width: this._width + 4,
       height: this._height + 4,
       x: this._x - 2,

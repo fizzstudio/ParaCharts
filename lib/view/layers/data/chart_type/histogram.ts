@@ -5,7 +5,7 @@ import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
 import { boxToNumber, fixed } from "../../../../common/utils";
 import { ParaView } from "../../../../paraview";
 import { DeepReadonly, HistogramSettings, PointChartType, type Setting } from "../../../../store";
-import { Rect } from "../../../shape/rect";
+import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { XYChart, XYSeriesView } from "./xy_chart";
 import { DatapointView, SeriesView } from "../../../data";
@@ -388,7 +388,7 @@ export class HistogramBinView extends DatapointView {
   }
 
   get selectedMarker(): Shape {
-    return new Rect(this.paraview, {
+    return new RectShape(this.paraview, {
       width: this._width,
       height: this._height,
       x: this._x,
