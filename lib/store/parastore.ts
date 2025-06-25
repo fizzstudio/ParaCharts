@@ -114,6 +114,7 @@ export class ParaStore extends State {
   @property() protected queryLevel = 'default';
   @property() protected _visitedDatapoints: DataCursor[] = [];
   @property() protected _prevVisitedDatapoints: DataCursor[] = [];
+  @property() protected _everVisitedDatapoints: DataCursor[] = [];
   @property() protected _selectedDatapoints: DataCursor[] = [];
   @property() protected _prevSelectedDatapoints: DataCursor[] = [];
   @property() protected _rangeHighlights: RangeHighlight[] = [];
@@ -396,9 +397,14 @@ export class ParaStore extends State {
     return this._prevVisitedDatapoints;
   }
 
+  get everVisitedDatapoints(): DataCursor[] {
+    return this._everVisitedDatapoints;
+  }
+
   visit(datapoints: DataCursor[]) {
     this._prevVisitedDatapoints = this._visitedDatapoints;
     this._visitedDatapoints = datapoints;
+    this._everVisitedDatapoints.push(...datapoints);
   }
 
   isVisited(seriesKey: string, index: number) {
@@ -421,8 +427,18 @@ export class ParaStore extends State {
       cursor.seriesKey === seriesKey);
   }
 
+  everVisited(seriesKey: string, index: number): boolean {
+    return !!this._everVisitedDatapoints.find(cursor =>
+      cursor.seriesKey === seriesKey && cursor.index === index);
+  }
+
+  everVisitedSeries(seriesKey: string): boolean {
+    return !!this._everVisitedDatapoints.find(cursor =>
+      cursor.seriesKey === seriesKey);
+  }
+
   clearVisited() {
-    this._visitedDatapoints = []
+    this._visitedDatapoints = [];
   }
 
   get selectedDatapoints() {
