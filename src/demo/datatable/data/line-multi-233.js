@@ -1,4 +1,4 @@
-<table>
+const line_multi_233 = `<table>
     <caption>Advertising spending in Vietnam 2004-2018, by medium</caption>
     <tr>
         <td data-type="date" data-independent="true">Year</td>
@@ -160,4 +160,4 @@
         <td>2.6</td>
         <td>2.4</td>
     </tr>
-</table>
+</table>`

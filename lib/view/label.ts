@@ -41,10 +41,15 @@ export interface LabelOptions {
   bottom?: number;
   centerX?: number;
   centerY?: number;
+  topLeft?: Vec2;
+  topRight?: Vec2;
+  bottomRight?: Vec2;
+  bottomLeft?: Vec2;
   angle?: number;
   textAnchor?: LabelTextAnchor;
   justify?: SnapLocation;
   wrapWidth?: number;
+  lineSpacing?: number;
 }
 
 interface TextLine {
@@ -52,7 +57,7 @@ interface TextLine {
   offset: number;
 }
 
-interface TextCornerOffsets {
+export interface LabelTextCorners {
   topLeft: Vec2;
   topRight: Vec2;
   bottomRight: Vec2;
@@ -67,8 +72,10 @@ export class Label extends View {
   protected _angle: number;
   protected _textAnchor: LabelTextAnchor;
   protected _justify: SnapLocation;
+  protected _lineSpacing: number;
+  protected _lineHeight!: number;
   protected _text: string;
-  protected _textCornerOffsets!: TextCornerOffsets;
+  protected _textCornerOffsets!: LabelTextCorners;
   protected _textLines: TextLine[] = [];
   protected _styleInfo: StyleInfo = {};
 
@@ -81,6 +88,7 @@ export class Label extends View {
     this._angle = this.options.angle ?? 0;
     this._textAnchor = this.options.textAnchor ?? (options.wrapWidth ? 'start' : 'middle');
     this._justify = this.options.justify ?? 'start';
+    this._lineSpacing = this.options.lineSpacing ?? 0;
     this._text = this.options.text;
     // It should be okay to go ahead and compute our size here, rather than
     // waiting to be parented
@@ -112,6 +120,18 @@ export class Label extends View {
     }
     if (this.options.centerY) {
       this.centerY = this.options.centerY;
+    }
+    if (this.options.topLeft) {
+      this.topLeft = this.options.topLeft;
+    }
+    if (this.options.topRight) {
+      this.topRight = this.options.topRight;
+    }
+    if (this.options.bottomRight) {
+      this.bottomRight = this.options.bottomRight;
+    }
+    if (this.options.bottomLeft) {
+      this.bottomLeft = this.options.bottomLeft;
     }
   }
 
@@ -188,6 +208,15 @@ export class Label extends View {
     this._loc = bottomLeft.subtract(this._textCornerOffsets.bottomLeft);
   }
 
+  get textCorners(): LabelTextCorners {
+    return {
+      topLeft: this.topLeft,
+      topRight: this.topRight,
+      bottomRight: this.bottomRight,
+      bottomLeft: this.bottomLeft
+    };
+  }
+
   get styleInfo() {
     return this._styleInfo;
   }
@@ -252,7 +281,7 @@ export class Label extends View {
           text.append(tspans.at(-1)!);
           tspans.at(-1)!.textContent = tok;
           tspans.at(-1)!.setAttribute('x', '0');
-          tspans.at(-1)!.setAttribute('dy', '1.5rem');
+          tspans.at(-1)!.setAttribute('dy', `${rect.height + this._lineSpacing}px`);
         }
       }
 
@@ -286,6 +315,7 @@ export class Label extends View {
           right = Math.max(right, extent.x + extent.width);
         }
       });
+      this._lineHeight = tspans[0].getExtentOfChar(0).height;
       tspans.forEach(t => t.remove());
     } else {
       this._textLines = [];
@@ -294,6 +324,7 @@ export class Label extends View {
       bottom = text.getExtentOfChar(0).y + text.getExtentOfChar(0).height;
       left = text.getExtentOfChar(0).x;
       right = text.getExtentOfChar(numChars - 1).x + text.getExtentOfChar(numChars - 1).width;
+      this._lineHeight = text.getExtentOfChar(0).height;
     }
 
     // Coord system is vertically mirrored, so flip the sign of the angle
@@ -341,7 +372,10 @@ export class Label extends View {
         ${this._textLines.length
           ? this._textLines.map((line, i) => 
             svg`
-              <tspan x=${fixed`${this._x + line.offset}`} dy=${i === 0 ? '0' : '1rem'}>
+              <tspan
+                x=${fixed`${this._x + line.offset}`}
+                dy=${i === 0 ? '0' : this._lineHeight + this._lineSpacing}
+              >
                 ${line.text}
               </tspan>
             `)

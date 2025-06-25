@@ -5,7 +5,7 @@ import {
   type RadialSettings,
   type RadialChartType, type DeepReadonly
 } from '../../../../store';
-import { Label, type LabelTextAnchor } from '../../../label';
+import { Label, LabelTextCorners, type LabelTextAnchor } from '../../../label';
 import { type ParaView } from '../../../../paraview';
 import { Sector } from '../../../shape/sector';
 import { Path } from '../../../shape/path';
@@ -23,6 +23,7 @@ export abstract class RadialChart extends DataLayer {
   //protected _radius!: Required<RadiusSettings>;
   protected _cx!: number;
   protected _cy!: number;
+  protected _radius!: number;
   protected _arcType: ArcType = 'circle';
   // start slices at 12 o'clock
   protected _startAngleOffset = -0.25;
@@ -31,8 +32,7 @@ export abstract class RadialChart extends DataLayer {
   // TODO: calculate radius_divisor based on longest label, for pie and donut
   protected _radiusDivisor = 2.3;
   
-  //protected _labels: Label[] = [];
-  //private centerLabel: Label;
+  protected _centerLabel: Label | null = null;
 
   constructor(paraview: ParaView, index: number) {
     super(paraview, index);
@@ -54,6 +54,7 @@ export abstract class RadialChart extends DataLayer {
 
     this._cx = this._width/2;
     this._cy = this._height/2;
+    this._radius = Math.min(this._height, this._width)/2;
 
     if (this._arcType === 'semicircle') {
       this._arc = 0.5; // semicircle
@@ -128,12 +129,32 @@ export abstract class RadialChart extends DataLayer {
     return this._startAngleOffset;
   }
 
+  get radius() {
+    return this._radius;
+  }
+
   init() {
     super.init();
     if (this.settings.categoryLabel.isDrawEnabled) {
       // this needs to happen after the datapoints have been created and laid out
       this._createLabels();
       this._resizeToFitLabels();
+      if (this.settings.centerLabel === 'title') {
+        this.paraview.store.updateSettings(draft => {
+            draft.chart.title.isDrawTitle = false;
+        });
+        this._centerLabel = new Label(this.paraview, {
+          text: this.paraview.store.title,
+          centerX: this._cx,
+          centerY: this._cy,
+          textAnchor: 'middle',
+          wrapWidth: 2*(this.radius - this.settings.annularThickness*this.radius)
+            - this.settings.centerLabelPadding*2,
+          id: 'chart-title',
+          classList: ['chart-title']
+        });
+        this.append(this._centerLabel);
+      }
       // const labels = this.datapointViews.map(dp => (dp as RadialSlice).categoryLabel!);
       // const minX = Math.min(...labels.map(label => label.left));
       // const maxX = Math.max(...labels.map(label => label.right));
@@ -240,62 +261,87 @@ export abstract class RadialChart extends DataLayer {
     for (const [x, i] of enumerate(xs)) {
       const slice = this._chartLandingView.children[0].children[i] as RadialSlice;
       const arcCenter = slice.shape.arcCenter;
-      const gapVec = slice.shape.orientationVector.multiplyScalar(10);
-      let labelLoc: Vec2;
-      let anchor: LabelTextAnchor;
+      // Distance of cat label from chart circumference
+      const arcDistVec = slice.shape.orientationVector.multiplyScalar(
+        this.settings.categoryLabel.outsideArcDistance);
+      let catLabelLoc: Vec2;
+      let catLabelAnchor: LabelTextAnchor;
       const sliceCenter = slice.shape.loc.add(arcCenter).divideScalar(2);
-      if (this.settings.categoryLabelPosition === 'inside') {
-        labelLoc = sliceCenter;
-        anchor = 'middle';
-      } else if (this.settings.categoryLabelPosition === 'outside') {
-        labelLoc = arcCenter.add(gapVec);
-        if (labelLoc.x > this.cx) {
-          labelLoc.x += 5;
-          anchor = 'start';
+      let catLabelPosProp: keyof LabelTextCorners = 'topLeft';
+      if (this.settings.categoryLabel.position === 'inside') {
+        catLabelLoc = sliceCenter;
+        catLabelAnchor = 'middle';
+      } else if (this.settings.categoryLabel.position === 'outside') {
+        catLabelLoc = arcCenter.add(arcDistVec);
+        if (catLabelLoc.x > this.cx) {
+          catLabelLoc.x += this.settings.categoryLabel.outsideHorizShift;
+          catLabelAnchor = 'start';
         } else {
-          labelLoc.x -= 5;
-          anchor = 'end';
+          catLabelLoc.x -= this.settings.categoryLabel.outsideHorizShift;
+          catLabelAnchor = 'end';
+        }
+        if (catLabelLoc.y > this.cy) {
+          catLabelPosProp = catLabelAnchor === 'start' ? 'topLeft' : 'topRight';
+        } else {
+          catLabelPosProp = catLabelAnchor === 'start' ? 'bottomLeft' : 'bottomRight';
         }
       } else {
-        labelLoc = new Vec2();
-        anchor = 'middle';
+        // XXX not very useful, is it?
+        catLabelLoc = new Vec2();
+        catLabelAnchor = 'middle';
       }
       slice.categoryLabel = new Label(this.paraview, {
         text: x, 
         id: slice.id + '-rlb',
         classList: ['radial-category-label'], 
         role: 'datapoint', 
-        loc: labelLoc,
-        textAnchor: anchor,
+        [catLabelPosProp]: catLabelLoc,
+        textAnchor: catLabelAnchor,
       });
-      const underlineStart = labelLoc
-        //.addX(slice.categoryLabel.textAnchor === 'start' ? 5 : -5)
-        .addY(this.settings.categoryLabelUnderlineGap);
-      slice.leader = new Path(this.paraview, {
-        points: [arcCenter, underlineStart, underlineStart.x > slice.categoryLabel.centerX
-          ? underlineStart.subtractX(slice.categoryLabel.width)
-          : underlineStart.addX(slice.categoryLabel.width)],
-        stroke: this.paraview.store.colors.colorValueAt(slice.color),
-        strokeWidth: 2
-      });
+      const underlineStart = slice.categoryLabel.textCorners[catLabelPosProp.endsWith('Left')
+        ? 'bottomLeft'
+        : 'bottomRight'].addY(this.settings.categoryLabel.underlineGap);
+      slice.leader = this._createCategoryLabelLeader(slice, arcCenter, underlineStart);
       slice.valueLabel = new Label(this.paraview, {
         // XXX value will not always be a percentage
         text: ys[i] + '%', 
         id: slice.id + '-vlb',
         classList: ['radial-value-label'], 
         role: 'datapoint', 
-        loc: sliceCenter.add(slice.shape.orientationVector.multiplyScalar(55)),
+        loc: slice.shape.loc.add(
+          slice.shape.orientationVector.multiplyScalar(this.radius*this.settings.valueLabel.position)),
         textAnchor: 'middle',
       });
-      slice.valueLabel.styleInfo = {
-        fill: this.paraview.store.colors.contrastValueAt(i)
-      };
+      if (!Object.values(slice.valueLabel.textCorners).every(point =>
+        slice.shape.containsPoint(point))) {
+        slice.categoryLabel.text += `: ${slice.valueLabel.text}`;
+        slice.valueLabel = null;
+        slice.leader = this._createCategoryLabelLeader(slice, arcCenter, underlineStart);
+      } else {
+        slice.valueLabel.styleInfo = {
+          fill: this.paraview.store.colors.contrastValueAt(i)
+        };
+      }
       // Labels draw as children of the slice so the highlights layer can `use` them
       slice.append(slice.leader);
       slice.append(slice.categoryLabel);
-      slice.append(slice.valueLabel);
+      if (slice.valueLabel) {
+        slice.append(slice.valueLabel);
+      }
     }
-    this._resolveLabelCollisions();
+    if (this.settings.categoryLabel.position === 'outside') {
+      this._resolveLabelCollisions();
+    }
+  }
+
+  protected _createCategoryLabelLeader(slice: RadialSlice, arcCenter: Vec2, underlineStart: Vec2) {
+    return new Path(this.paraview, {
+      points: [arcCenter, underlineStart, underlineStart.x > slice.categoryLabel!.centerX
+        ? underlineStart.subtractX(slice.categoryLabel!.width)
+        : underlineStart.addX(slice.categoryLabel!.width)],
+      stroke: this.paraview.store.colors.colorValueAt(slice.color),
+      strokeWidth: 2
+    });
   }
 
   protected _resolveLabelCollisions() {
@@ -311,7 +357,7 @@ export abstract class RadialChart extends DataLayer {
       // Move each label up out of collision with the one onscreen below it.
       if (s.categoryLabel!.intersects(slices[i].categoryLabel!)) {
         const oldY = s.categoryLabel!.y;
-        s.categoryLabel!.y = slices[i].categoryLabel!.y - s.categoryLabel!.height;
+        s.categoryLabel!.bottom = slices[i].categoryLabel!.top - this.settings.categoryLabel.outsideLabelGap; // - s.categoryLabel!.height;
         const diff = s.categoryLabel!.y - oldY;
         s.leader!.points = [
           s.leader!.points[0],
