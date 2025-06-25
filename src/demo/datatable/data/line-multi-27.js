@@ -1,4 +1,4 @@
-<table>
+const line_multi_27 = `<table>
   <caption>Distribution of GDP across economic sectors in China 2008 to 2018</caption>
   <tr>
     <td data-type="date" data-independent="true">Year</td>
@@ -72,4 +72,4 @@
     <td>40.7</td>
     <td>52.2</td>
   </tr>
-</table>
+</table>`

@@ -1,4 +1,4 @@
-<table>
+const pastry_47 = `<table>
     <caption>Division of energy in the Universe</caption>
     <thead>
         <tr>
@@ -24,4 +24,4 @@
             <td>0.4%</td>
         </tr>
     </tbody>
-</table>
+</table>`

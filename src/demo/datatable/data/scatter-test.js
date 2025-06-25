@@ -1,4 +1,4 @@
-<table>
+const scatter_test = `<table>
     <caption>Scatterplot test</caption>
     <thead>
         <tr>
@@ -108,4 +108,4 @@
             <td>5.5</td>
         </tr>
     </tbody>
-</table>
+</table>`

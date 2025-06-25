@@ -1,4 +1,4 @@
-<table>
+const bar_1018 = `<table>
     <caption>Unemployment rate in Greece 1999-2019</caption>
     <thead>
         <tr>
@@ -92,4 +92,4 @@
             <td>11.85%</td>
         </tr>
     </tbody>
-</table>
+</table>`
