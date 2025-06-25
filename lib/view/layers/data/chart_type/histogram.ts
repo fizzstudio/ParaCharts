@@ -468,7 +468,7 @@ export class HistogramBinView extends DatapointView {
     this.paraview.store.announce(this.summary());
   }
 
-  protected _visit() {
+  protected async _visit() {
     this.paraview.store.visit([{ seriesKey: this.seriesKey, index: this.index }]);
   }
 
