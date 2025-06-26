@@ -1,6 +1,6 @@
 export const template = `import { %(chartElement)s, type ChartProps } from '../Chart';
 
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
 
 type Story = StoryObj<ChartProps>;
 
