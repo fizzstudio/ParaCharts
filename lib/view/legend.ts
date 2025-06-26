@@ -148,6 +148,7 @@ export class Legend extends Container(View) {
       } else {
         style.fill = 'none';
       }
+      this._markers[i].styleInfo = style;
     });
     return super.content();
   }
