@@ -1,6 +1,6 @@
 
 //import { KeymapsInput } from '../../lib';
-import { type SettingsInput, type LegendItemOrder } from '../../lib/store/settings_types';
+import { type SettingsInput } from '../../lib/store/settings_types';
 
 import { html, nothing } from 'lit';
 import '/lib';
@@ -10,7 +10,6 @@ import '/lib-ai/index-ai.ts';
 export interface ChartProps {
   filename: string;
   config?: SettingsInput;  
-  legendOrder: LegendItemOrder;
   forcecharttype?: ChartType;
   slot?: string;
 }
@@ -19,10 +18,9 @@ export interface ChartProps {
  * Primary UI component for user interaction
  */
 export const Chart = ({ 
-  filename, config, legendOrder, forcecharttype, slot
+  filename, config, forcecharttype, slot
 }: ChartProps) => {
   config ??= {};
-  config['legend.itemOrder'] = legendOrder;
   config['controlPanel.isControlPanelDefaultOpen'] = true;
   return html`
     <style>
@@ -86,10 +84,9 @@ export const Chart = ({
 };
 
 export const AiChart = ({ 
-  filename, config, legendOrder, forcecharttype
+  filename, config, forcecharttype
 }: ChartProps) => {
   config ??= {};
-  config['legend.itemOrder'] = legendOrder;
   config['controlPanel.isControlPanelDefaultOpen'] = true;
   return html`
     <style>
