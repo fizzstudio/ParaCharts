@@ -326,6 +326,7 @@ export interface HistogramSettings extends PointSettings {
   bins: number;
   displayAxis: string;
   groupingAxis: string;
+  relativeAxes: "Counts" | "Percentage";
 }
 
 

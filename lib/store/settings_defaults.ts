@@ -230,7 +230,8 @@ export const defaults: Settings = {
       selectedPointMarkerSize: {
         width: 20,
         height: 20,
-      }
+      },
+      relativeAxes: "Counts"
     },
     heatmap: {
       pointLabelFormat: 'raw',
