@@ -50,7 +50,6 @@
   },
   "types": "./dist/paracharts.d.ts",
   "devDependencies": {
-    "@chromatic-com/storybook": "^4.0.1",
     "@fizz/chart-data": "^2.1.8",
     "@fizz/line-chart-intersection": "^3.4.0",
     "@fizz/line-chart-ui-utils": "^0.7.0",

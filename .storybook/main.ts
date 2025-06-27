@@ -22,8 +22,7 @@ const config: StorybookConfig = {
   addons: [
     "@storybook/addon-links",
     "@storybook/addon-coverage",
-    "@storybook/addon-docs",
-    "@chromatic-com/storybook"
+    "@storybook/addon-docs"
   ],
 
   framework: {
