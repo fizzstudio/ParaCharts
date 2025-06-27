@@ -168,7 +168,10 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   }
 
   protected _tickLabelY(index: number) {
-    const facet = this.paraview.store.model!.getAxisFacet(this.axis.orientation);
+    // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
+    //   have two axes
+    const facet = this.paraview.store.model!.getAxisFacet(this.axis.orientation) 
+       ?? this.paraview.store.model!.facetMap[this.axis.orientation === 'horiz' ? 'x' : 'y']!;
     const tickLen = facet!.variableType === 'independent'
       ? this.paraview.store.settings.axis.x.tick.length
       : this.paraview.store.settings.axis.y.tick.length;
