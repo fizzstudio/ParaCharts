@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { svg, TemplateResult } from 'lit';
 import { type ParaStore } from '../store';
 
 export interface Palette {
@@ -21,6 +22,8 @@ export interface Palette {
   title: string;
   cvd?: boolean;
   colors: Color[];
+  patterns?: Pattern[];
+  isPattern?: boolean;
 }
 
 interface Key {
@@ -40,6 +43,12 @@ interface Record {
 
 export interface Color {
   value: string;
+  name: string;
+  contrastValue?: string;
+}
+
+export interface Pattern {
+  value: TemplateResult;
   name: string;
   contrastValue?: string;
 }
@@ -571,7 +580,101 @@ export class Colors {
             name: 'highlight'
           }
         ]
-      }
+      },
+      {
+        key: 'pattern',
+        title: 'pattern',
+        isPattern: true,
+        colors: [
+            {
+            value: `hsl(0, 0%, 15%)`,
+            name: ''
+          },
+          {
+            value: `hsl(0, 0%, 15%)`,
+            name: ''
+          },
+          {
+            value: `hsl(0, 0%, 15%)`,
+            name: ''
+          },
+          {
+            value: `hsl(0, 0%, 15%)`,
+            name: ''
+          },
+          {
+            value: `hsl(0, 0%, 15%)`,
+            name: ''
+          },
+          {
+            value: `hsl(0, 0%, 15%)`,
+            name: ''
+          },
+          {
+            value: `hsl(0, 100%, 50%)`,
+            name: 'highlight'
+          }],
+        patterns: [
+          {
+            value: svg`
+              <pattern id="Pattern0" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)">
+                <line x1="0" y="0" x2="0" y2="10" stroke="black" stroke-width="5" />
+              </pattern>
+              `,
+            name: 'diagonal_lines'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern1" patternUnits="userSpaceOnUse" width="10" height="10">
+                <circle cx="5" cy="5" r="2" fill="black" />
+              </pattern>
+              `,
+            name: 'dots'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern2" patternUnits="userSpaceOnUse" width="10" height="10">
+                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="black" stroke-width="5"/>
+              </pattern>
+              `,
+            name: 'grid'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern3" patternUnits="userSpaceOnUse" width="10" height="10">
+                <path d="M 0 0 L 10 10 M 10 0 L 0 10" stroke="black" stroke-width="3"/>
+              </pattern>
+               `,
+            name: 'crosshatch'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern4" patternUnits="userSpaceOnUse" width="20" height="10">
+                <path d="M 0 5 Q 5 0, 10 5 T 20 5" fill="none" stroke="black" stroke-width="3"/>
+              </pattern>
+              `,
+            name: 'waves'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern5" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(135)">
+                <line x1="0" y="0" x2="0" y2="10" stroke="black" stroke-width="5" />
+              </pattern>`,
+            name: 'diagonal_lines2'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern6" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+              <circle cx="10" cy="10" r="10" fill="purple" />
+              </pattern>`,
+            name: ''
+          },
+          {
+            value: svg`hsl(0, 100%, 50%)`,
+            name: 'highlight'
+          }
+        ]
+      },
     ];
     if (_store.settings.color.colorMap) {
       this.setColorMap(..._store.settings.color.colorMap.split(',').map(c => c.trim()));
@@ -668,6 +771,16 @@ export class Colors {
     }
     // Never use 'highlight' for any series/datapoint color
     return colors[index % (colors.length - 1)].value;
+  }
+
+  patternValueAt(index: number) {
+    const patterns = this.palette.patterns;
+    if (index === -1) {
+      // highlight
+      return patterns!.at(-1)!.value;
+    }
+    // Never use 'highlight' for any series/datapoint color
+    return patterns![index % (patterns!.length - 1)].value;
   }
 
   contrastValueAt(index: number) {
