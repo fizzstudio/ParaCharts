@@ -157,14 +157,12 @@ export class DatapointView extends DataView {
     const seriesPreviouslyVisited = this.paraview.store.everVisitedSeries(this.seriesKey);
 
     this.paraview.store.visit([{seriesKey: this.seriesKey, index: this.index}]);
-    const announcements = [this.paraview.summarizer.getDatapointSummary(this.datapoint, 'raw')]; //'statusBar'
+    const announcements = [this.paraview.summarizer.getDatapointSummary(this.datapoint, 'statusBar')];
     
     const isSeriesChange = !this.paraview.store.wasVisitedSeries(this.seriesKey);
     if (isSeriesChange) {
-      if (seriesPreviouslyVisited) {
-        // if we've already been to this series just announce the series name
-        announcements.push(this.seriesKey);
-      } else {
+      announcements[0] = `${this.seriesKey}: ${announcements[0]}`;
+      if (!seriesPreviouslyVisited) {
         const seriesSummary = await this.paraview.summarizer.getSeriesSummary(this.seriesKey);
         //seriesSummary = seriesSummary.slice(0, seriesSummary.length - 1);
         //seriesSummaryAppend = replace(this.messages.seriesSummary, { seriesKey, seriesSummary });
