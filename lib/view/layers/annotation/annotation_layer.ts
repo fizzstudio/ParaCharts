@@ -57,14 +57,14 @@ export class AnnotationLayer extends ChartLayer {
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetAsNumber("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
           const endPx = this.width * tl.endPortion;
+          const colorValue = this.paraview.store.colors.colorValue('highlight');
           const linebreak = new PathShape(this.paraview, {
             x: this._x,
             y: this._y,
             points: [new Vec2(startPx, startHeight), new Vec2(endPx, endHeight),],
+            fill : colorValue,
+            stroke: colorValue
           });
-          const colorValue = this.paraview.store.colors.colorValue('highlight');
-          linebreak.styleInfo.fill = colorValue;
-          linebreak.styleInfo.stroke = colorValue;
           linebreak.classInfo = { 'trend-line': true }
           this.group('trend-lines')!.append(linebreak);
         }
