@@ -2,7 +2,8 @@
 import { XYChart, XYDatapointView, XYSeriesView } from '.';
 import { AxisInfo } from '../../../../common/axisinfo';
 import { 
-  type BarSettings, type StackContentOptions ,type DeepReadonly
+  type BarSettings, type StackContentOptions ,type DeepReadonly,
+  Setting
 } from '../../../../store/settings_types';
 import { fixed } from '../../../../common/utils';
 import { RectShape } from '../../../shape/rect';
@@ -189,17 +190,25 @@ export class BarChart extends XYChart {
     }
   }
 
-  settingDidChange(key: string, value: any) {
-    // if (!super.settingDidChange(key, value)) {
-    //   if (key === 'type.bar.stackContent') {
-    //     //todo().controller.settingViews.setVisible('type.bar.stackCount', value === 'count');
-    //   }
-    //   //todo().controller.clearSettingManagers();
-    //   this.paraview.createDocumentView();
-    //   this.paraview.requestUpdate();
-    //   return true;
-    // }
-    return false;
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if (['color.colorPalette', 'color.colorVisionMode'].includes(path)) {
+      if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern') 
+         || this.paraview.store.settings.color.colorPalette === 'pattern'){
+        this.paraview.createDocumentView();
+        this.paraview.requestUpdate();
+      }
+      // if (!super.settingDidChange(key, value)) {
+      //   if (key === 'type.bar.stackContent') {
+      //     //todo().controller.settingViews.setVisible('type.bar.stackCount', value === 'count');
+      //   }
+      //   //todo().controller.clearSettingManagers();
+      //   this.paraview.createDocumentView();
+      //   this.paraview.requestUpdate();
+      //   return true;
+      // }
+    }
+    
+    super.settingDidChange(path, oldValue, newValue);
   }
 
   get settings() {
@@ -657,11 +666,13 @@ export class Bar extends XYDatapointView {
   // }
 
   protected _createShape() {
+    const isPattern = this.paraview.store.colors.palette.isPattern;
     this._shape = new RectShape(this.paraview, {
       x: this._x,
       y: this._y,
       width: this._width,
-      height: this._height
+      height: this._height,
+      isPattern: isPattern ? true : false
     });
     super._createShape();
   }

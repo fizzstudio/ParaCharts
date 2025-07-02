@@ -3,7 +3,8 @@ import { DataLayer } from '..';
 import { ChartLandingView, DatapointView, SeriesView } from '../../../data';
 import {
   type RadialSettings,
-  type RadialChartType, type DeepReadonly
+  type RadialChartType, type DeepReadonly,
+  Setting
 } from '../../../../store';
 import { Label, LabelTextCorners, type LabelTextAnchor } from '../../../label';
 import { type ParaView } from '../../../../paraview';
@@ -169,6 +170,17 @@ export abstract class RadialChart extends DataLayer {
       // }
     }
   }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+      if (['color.colorPalette', 'color.colorVisionMode'].includes(path)) {
+        if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern') 
+           || this.paraview.store.settings.color.colorPalette === 'pattern'){
+          this.paraview.createDocumentView();
+          this.paraview.requestUpdate();
+        }
+      }
+      super.settingDidChange(path, oldValue, newValue);
+    }
 
   protected _resizeToFitLabels() {
     const labels = this.datapointViews.map(dp => (dp as RadialSlice).categoryLabel!);
