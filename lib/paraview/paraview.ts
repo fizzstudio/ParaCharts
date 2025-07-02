@@ -272,10 +272,11 @@ export class ParaView extends logging(ParaComponent) {
     // create a default view box so the SVG element can have a size
     // while any data is loading
     this._controller ??= new ParaViewController(this._store);
-    this._storeChangeUnsub = this._store.subscribe((key, value) => {
+    this._storeChangeUnsub = this._store.subscribe(async (key, value) => {
       if (key === 'data') {
         this.dataUpdated();
       }
+      await this._documentView?.storeDidChange(key, value);
     });
     this._computeViewBox();
     this._hotkeyActions ??= new HotkeyActions(this);
@@ -598,8 +599,8 @@ export class ParaView extends logging(ParaComponent) {
     }
   }
 
-  focusDatapoint(seriesKey: string, index: number) {
-    this._documentView!.chartLayers.dataLayer.focusDatapoint(seriesKey, index);
+  navToDatapoint(seriesKey: string, index: number) {
+    this._documentView!.chartLayers.dataLayer.navToDatapoint(seriesKey, index);
   }
 
   render(): TemplateResult {
@@ -619,13 +620,12 @@ export class ParaView extends logging(ParaComponent) {
         style=${styleMap(this._rootStyle())}
         @fullscreenchange=${() => this._onFullscreenChange()}
         @focus=${() => {
-        if (!this._store.settings.chart.isStatic) {
-          this.log('focus');
-          //this.todo.deets?.onFocus();
-          //this.documentView?.chartLayers.dataLayer.visitAndPlayCurrent();
-          this.documentView?.chartLayers.dataLayer.chartLandingView.focus(true);
-        }
-      }}
+          if (!this._store.settings.chart.isStatic) {
+            this.log('focus');
+            //this.todo.deets?.onFocus();
+            this.documentView?.chartLayers.dataLayer.navMap.visitDatapoints();
+          }
+        }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
         @pointerdown=${(ev: PointerEvent) => this._pointerEventManager?.handleStart(ev)}
         @pointerup=${(ev: PointerEvent) => this._pointerEventManager?.handleEnd(ev)}

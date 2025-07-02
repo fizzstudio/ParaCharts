@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { View } from './base_view';
 import { type TickStrip } from './tickstrip';
 import { fixed } from '../common/utils';
-import { type VertDirection, type HorizDirection } from '../store/settings_types';
+import { type VertCardinalDirection, type HorizCardinalDirection } from '../store/settings_types';
 
 import { svg } from 'lit';
 import { ParaView } from '../paraview';
@@ -35,7 +35,7 @@ export abstract class AxisRule extends View {
     paraview: ParaView,
     protected _major = true,
     length: number,
-    protected _orientation: RuleOrientation, 
+    protected _orientation: RuleOrientation,
     private darken: boolean = false
   ) {
     super(paraview);
@@ -89,9 +89,9 @@ export abstract class HorizRule extends AxisRule {
 
   /**
    * @param _pointsTo - The tick starts on the axis and points in this direction.
-   * @param major 
+   * @param major
    */
-  constructor(protected _pointsTo: VertDirection, paraview: ParaView, major = true, length: number, darken: boolean = false) {
+  constructor(protected _pointsTo: VertCardinalDirection, paraview: ParaView, major = true, length: number, darken: boolean = false) {
     super(paraview, major, length, 'v', darken);
   }
 
@@ -121,9 +121,9 @@ export abstract class VertRule extends AxisRule {
 
   /**
    * @param _pointsTo - The tick starts on the axis and points in this direction.
-   * @param major 
+   * @param major
    */
-  constructor(protected _pointsTo: HorizDirection, paraview: ParaView, major = true, length: number, darken: boolean = false) {
+  constructor(protected _pointsTo: HorizCardinalDirection, paraview: ParaView, major = true, length: number, darken: boolean = false) {
     super(paraview, major, length, 'h', darken);
   }
 

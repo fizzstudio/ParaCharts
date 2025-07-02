@@ -346,7 +346,7 @@ export class LineSection extends ChartPoint {
   content() {
     if (this._shape) {
       this._shape.styleInfo = this.styleInfo;
-      this._shape.classInfo = this.classInfo;  
+      this._shape.classInfo = this.classInfo;
     }
     if (this._symbol) {
       this._symbol.scale = this._symbolScale;
@@ -355,6 +355,6 @@ export class LineSection extends ChartPoint {
     }
     return this.renderChildren();
   }
-  
+
 }
 

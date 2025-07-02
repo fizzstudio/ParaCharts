@@ -48,6 +48,14 @@ export const keymap: KeyRegistrations = {
     label: 'Move down',
     action: 'moveDown'
   },
+  'Shift+ArrowUp': {
+    label: 'Move out',
+    action: 'moveOut'
+  },
+  'Shift+ArrowDown': {
+    label: 'Move in',
+    action: 'moveIn'
+  },
   'Shift+End': {
     label: 'Play datapoints to the right',
     action: 'playRight'
@@ -162,9 +170,9 @@ export const keymap: KeyRegistrations = {
   //   action: 'describeIntersections'
   // },
   c: {
-    label: 'Toggle chord mode',
+    label: 'Jump to chord landing',
     caseSensitive: false,
-    action: 'chordModeToggle'
+    action: 'jumpToChordLanding'
   },
   'Ctrl+Shift+V': {
     label: 'Announce version info',

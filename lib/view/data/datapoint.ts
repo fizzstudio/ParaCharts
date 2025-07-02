@@ -10,7 +10,7 @@ import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { svg, nothing, TemplateResult } from 'lit';
 import { ref } from 'lit/directives/ref.js';
 import { formatBox } from '@fizz/parasummary';
-import { Datapoint } from '@fizz/paramodel';
+import { Datapoint, strToId } from '@fizz/paramodel';
 
 /**
  * Abstract base class for views representing datapoint values
@@ -31,7 +31,7 @@ export class DatapointView extends DataView {
   protected _addedToParent() {
     super._addedToParent();
   }
-  
+
   get parent() {
     return this._parent;
   }
@@ -40,12 +40,12 @@ export class DatapointView extends DataView {
     super.parent = parent;
   }
 
-  get sameIndexers() {
-    return super.sameIndexers as this[]; 
+  get cousins() {
+    return super.cousins as this[];
   }
 
-  get withSameIndexers() {
-    return super.withSameIndexers as this[];
+  get withCousins() {
+    return super.withCousins as this[];
   }
 
   get nextSeriesLanding() {
@@ -98,7 +98,7 @@ export class DatapointView extends DataView {
 
   /**
    * Mutate `styleInfo` with visited styling.
-   * @param styleInfo 
+   * @param styleInfo
    */
   protected _addVisitedStyleInfo(styleInfo: StyleInfo) {
     const colorValue = this.paraview.store.colors.colorValue('highlight');
@@ -145,37 +145,10 @@ export class DatapointView extends DataView {
   }
 
   protected _createId(..._args: any[]): string {
-    const jimIndex = this._parent.modelIndex*this._series.length + this.index + 1; 
+    const jimIndex = this._parent.modelIndex*this._series.length + this.index + 1;
     const id = this.paraview.store.jimerator!.jim.selectors[`datapoint${jimIndex}`].dom as string;
     // don't include the '#' from JIM
     return id.slice(1);
-  }
-  
-  protected async _visit(_isNewComponentFocus = false) {
-    // NOTE: this needs to be done before the datapoint is visited, to check whether the series has 
-    //   ever been visited before this point
-    const seriesPreviouslyVisited = this.paraview.store.everVisitedSeries(this.seriesKey);
-
-    this.paraview.store.visit([{seriesKey: this.seriesKey, index: this.index}]);
-    const announcements = [this.paraview.summarizer.getDatapointSummary(this.datapoint, 'statusBar')];
-    
-    const isSeriesChange = !this.paraview.store.wasVisitedSeries(this.seriesKey);
-    if (isSeriesChange) {
-      announcements[0] = `${this.seriesKey}: ${announcements[0]}`;
-      if (!seriesPreviouslyVisited) {
-        const seriesSummary = await this.paraview.summarizer.getSeriesSummary(this.seriesKey);
-        //seriesSummary = seriesSummary.slice(0, seriesSummary.length - 1);
-        //seriesSummaryAppend = replace(this.messages.seriesSummary, { seriesKey, seriesSummary });
-        announcements.push(seriesSummary);
-      }
-    }
-      
-    this.paraview.store.announce(announcements);
-  }
-
-  async onFocus(isNewComponentFocus = false) {
-    await super.onFocus(isNewComponentFocus);
-    this._visit(isNewComponentFocus);
   }
 
   /** Compute and set `x` and `y` */
@@ -192,7 +165,7 @@ export class DatapointView extends DataView {
    * Subclasses should override this;
    * If there will be a shape, first set `this._shape`,
    * THEN call `super._createShape()`.
-   * Otherwise, override with an empty method. 
+   * Otherwise, override with an empty method.
    */
   protected _createShape() {
     this._shape!.ref = this.ref;
@@ -246,7 +219,7 @@ export class DatapointView extends DataView {
       !this.paraview.store.wasSelected(dc.seriesKey, dc.index));
     const justDeselected = this.paraview.store.prevSelectedDatapoints.filter(dc =>
       !this.paraview.store.isSelected(dc.seriesKey, dc.index));
-  
+
     const s = newTotalSelected === 1 ? '' : 's';
     const newTotSel = `${newTotalSelected} point${s} selected.`;
 
@@ -278,7 +251,7 @@ export class DatapointView extends DataView {
       this.paraview.store.extendSelection(this.paraview.store.visitedDatapoints);
     } else {
       this.paraview.store.select(this.paraview.store.visitedDatapoints);
-    }  
+    }
     this.paraview.store.announce(this._composeSelectionAnnouncement(isExtend));
   }
 
@@ -287,7 +260,7 @@ export class DatapointView extends DataView {
     // originally came from: xAxis.tickLabelIds[j]
     if (this._shape) {
       this._shape.styleInfo = this.styleInfo;
-      this._shape.classInfo = this.classInfo;  
+      this._shape.classInfo = this.classInfo;
     }
     if (this._symbol) {
       this._symbol.scale = this._symbolScale;
