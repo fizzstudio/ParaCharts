@@ -15,6 +15,7 @@ export interface ShapeOptions {
   stroke?: string; // black
   strokeWidth?: number; // 2,
   scale?: number;
+  isPattern?: boolean;
 }
 
 export abstract class Shape extends View {
@@ -23,6 +24,7 @@ export abstract class Shape extends View {
   protected _styleInfo: StyleInfo;
   protected _classInfo: ClassInfo = {};
   protected _ref: Ref<SVGElement> | null = null;
+  protected _isPattern: boolean = false
 
   constructor(paraview: ParaView, options: ShapeOptions) {
     super(paraview);

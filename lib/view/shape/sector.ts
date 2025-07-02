@@ -8,6 +8,7 @@ import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ref } from 'lit/directives/ref.js';
+import { DatapointView } from '../data';
 
 export interface SectorOptions extends ShapeOptions {
   r: number;
@@ -47,6 +48,9 @@ export class SectorShape extends Shape {
     if (options.annularThickness) {
       this._annularThickness = options.annularThickness;
     }
+    if (options.isPattern){
+      this._isPattern = options.isPattern;
+    }
     this.computeLayout();
   }
 
@@ -57,6 +61,9 @@ export class SectorShape extends Shape {
     options.orientationAngle = this._orientationAngle;
     if (this._annularThickness) {
       options.annularThickness = this._annularThickness;
+    }
+    if (this._isPattern){
+      options.isPattern = this._isPattern
     }
     return options;
   }
@@ -211,7 +218,45 @@ export class SectorShape extends Shape {
   }
 
   render() {
-    return svg`
+    if (this._options.isPattern) {
+      let index = this.parent!.index
+      let parent = this.parent! as DatapointView
+      this._styleInfo.fill = `url(#Pattern${index})`
+      //I can't figure out why the visited styles don't auto-apply, so I'm doing it manually here
+      if (this.paraview.store.isVisited(parent.seriesKey, index)) {
+        this._styleInfo.stroke = this.paraview.store.colors.colorValue('highlight');
+        this._styleInfo.strokeWidth = 6
+      }
+      return svg`
+          <defs>${this.paraview.store.colors.patternValueAt(index)}</defs>
+          <path
+            d=${this._pathD}
+            transform=${this._scale !== 1
+          ? `translate(${this._x},${this._y})
+                scale(${this._scale})
+                translate(${-this._x},${-this._y})`
+          : nothing}
+            fill="white"
+          stroke="black"
+          stroke-width=4
+          ></path>
+          <path
+            ${this._ref ? ref(this._ref) : undefined}
+            id=${this._id || nothing}
+            style=${styleMap(this._styleInfo)}
+            class=${classMap(this._classInfo)}
+            role=${this._role || nothing}
+            d=${this._pathD}
+            transform=${this._scale !== 1
+          ? `translate(${this._x},${this._y})
+                scale(${this._scale})
+                translate(${-this._x},${-this._y})`
+          : nothing}
+          ></path>
+        `;
+    }
+    else {
+      return svg`
       <path
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}
@@ -226,6 +271,6 @@ export class SectorShape extends Shape {
           : nothing}
       ></path>
     `;
+    }
   }
-
 }

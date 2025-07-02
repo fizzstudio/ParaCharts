@@ -587,28 +587,84 @@ export class Colors {
         isPattern: true,
         colors: [
             {
-            value: `hsl(0, 0%, 15%)`,
-            name: ''
+            value: 'hsl(225, 30%, 52%)',
+            name: 'blue'
           },
           {
-            value: `hsl(0, 0%, 15%)`,
-            name: ''
+            value: 'hsl(12, 69%, 35%)',
+            name: 'red'
           },
           {
-            value: `hsl(0, 0%, 15%)`,
-            name: ''
+            value: 'hsl(75, 43%, 45%)',
+            name: 'green'
           },
           {
-            value: `hsl(0, 0%, 15%)`,
-            name: ''
+            value: 'hsl(40, 98%, 69%)',
+            name: 'yellow'
           },
           {
-            value: `hsl(0, 0%, 15%)`,
-            name: ''
+            value: 'hsl(215, 37%, 66%)',
+            name: 'light blue'
           },
           {
-            value: `hsl(0, 0%, 15%)`,
-            name: ''
+            value: 'hsl(63, 100%, 23%)',
+            name: 'olive green'
+          },
+          {
+            value: 'hsl(34, 57%, 46%)',
+            name: 'caramel'
+          },
+          {
+            value: 'hsl(51, 56%, 64%)',
+            name: 'tan'
+          },
+          {
+            value: 'hsl(253, 26%, 43%)',
+            name: 'purple'
+          },
+          {
+            value: 'hsl(85, 65%, 36%)',
+            name: 'forest green'
+          },
+          {
+            value: 'hsl(12, 56%, 51%)',
+            name: 'red-orange'
+          },
+          {
+            value: 'hsl(30, 42%, 35%)',
+            name: 'brown'
+          },
+          {
+            value: 'hsl(240, 100%, 50%)',
+            name: 'bright blue'
+          },
+          {
+            value: 'hsl(120, 100%, 50%)',
+            name: 'lime green'
+          },
+          {
+            value: 'hsl(39, 100%, 50%)',
+            name: 'orange'
+          },
+          {
+            value: 'hsl(300, 100%, 25%)',
+            name: 'royal purple'
+          },
+          {
+            value: 'hsl(51, 100%, 50%)',
+            name: 'lemon yellow'
+          },
+          {
+            value: 'hsl(328, 100%, 54%)',
+            name: 'fuschia'
+          },
+          {
+            value: 'hsl(177, 70%, 41%)',
+            name: 'cyan'
+          },
+          {
+            value: 'hsl(0, 100%, 50%)',
+            name: 'highlight'
           },
           {
             value: `hsl(0, 100%, 50%)`,
@@ -617,55 +673,55 @@ export class Colors {
         patterns: [
           {
             value: svg`
-              <pattern id="Pattern0" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)">
-                <line x1="0" y="0" x2="0" y2="10" stroke="black" stroke-width="5" />
+              <pattern id="Pattern0"  patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)">
+                <line class="pattern" x1="0" y="0" x2="0" y2="10" stroke='hsl(225, 30%, 52%)' stroke-width="5" />
               </pattern>
               `,
             name: 'diagonal_lines'
           },
           {
             value: svg`
-              <pattern id="Pattern1" patternUnits="userSpaceOnUse" width="10" height="10">
-                <circle cx="5" cy="5" r="2" fill="black" />
+              <pattern id="Pattern1" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10">
+                <circle cx="5" cy="5" r="2" fill='hsl(12, 69%, 35%)' />
               </pattern>
               `,
             name: 'dots'
           },
           {
             value: svg`
-              <pattern id="Pattern2" patternUnits="userSpaceOnUse" width="10" height="10">
-                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="black" stroke-width="5"/>
+              <pattern id="Pattern2" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10">
+                <path d="M 10 0 L 0 0 0 10" fill="none" stroke='hsl(75, 43%, 45%)' stroke-width="5"/>
               </pattern>
               `,
             name: 'grid'
           },
           {
             value: svg`
-              <pattern id="Pattern3" patternUnits="userSpaceOnUse" width="10" height="10">
-                <path d="M 0 0 L 10 10 M 10 0 L 0 10" stroke="black" stroke-width="3"/>
+              <pattern id="Pattern3" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10">
+                <path d="M 0 0 L 10 10 M 10 0 L 0 10" stroke='hsl(40, 98%, 69%)' stroke-width="3"/>
               </pattern>
                `,
             name: 'crosshatch'
           },
           {
             value: svg`
-              <pattern id="Pattern4" patternUnits="userSpaceOnUse" width="20" height="10">
-                <path d="M 0 5 Q 5 0, 10 5 T 20 5" fill="none" stroke="black" stroke-width="3"/>
+              <pattern id="Pattern4" class="pattern" patternUnits="userSpaceOnUse" width="20" height="10">
+                <path d="M 0 5 Q 5 0, 10 5 T 20 5" fill="none" stroke='hsl(215, 37%, 66%)' stroke-width="3"/>
               </pattern>
               `,
             name: 'waves'
           },
           {
             value: svg`
-              <pattern id="Pattern5" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(135)">
-                <line x1="0" y="0" x2="0" y2="10" stroke="black" stroke-width="5" />
+              <pattern id="Pattern5" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(135)">
+                <line x1="0" y="0" x2="0" y2="10" stroke='hsl(63, 100%, 23%)' stroke-width="5" />
               </pattern>`,
             name: 'diagonal_lines2'
           },
           {
             value: svg`
-              <pattern id="Pattern6" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-              <circle cx="10" cy="10" r="10" fill="purple" />
+              <pattern id="Pattern6" class="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+              <circle cx="10" cy="10" r="10" fill='hsl(34, 57%, 46%)'" />
               </pattern>`,
             name: ''
           },

@@ -44,13 +44,15 @@ export class PieSlice extends RadialSlice {
   }
   
   protected _createShape() {
+    const isPattern = this.paraview.store.colors.palette.isPattern;
     this._shape = new SectorShape(this.paraview, {
       x: this._x,
       y: this._y,
       r: this.chart.radius,
       centralAngle: this._params.percentage*360,
       orientationAngle: this._params.accum*360,
-      annularThickness: this.chart.settings.annularThickness
+      annularThickness: this.chart.settings.annularThickness,
+      isPattern: isPattern ? true : false
     });
     super._createShape();
   }
