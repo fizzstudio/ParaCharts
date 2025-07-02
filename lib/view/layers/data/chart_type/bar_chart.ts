@@ -28,31 +28,27 @@ interface BarStackItem {
  * Contains clustered bar stack data.
  */
 class BarCluster {
-  static width: number;
-  static padding: number;
-  static numStacks: number;
-
   stacks: {[key: string]: BarStack} = {}
   readonly id: string;
   readonly labelId: string;
   
-  protected _x!: number;
-
   static computeSize(chart: BarChart) {
-    //BarCluster.width = chart.paraview.store.settings.chart.size.width!/Object.values(chart.bars).length;
+    // BarCluster.width = chart.paraview.store.settings.chart.size.width!/Object.values(chart.bars).length;
     // n = this.axis.isInterval ? this.tickLabels.length : this.tickLabels.length - 1;
     // chartlayer.(width or height)/(n/tickstep)
-    //BarCluster.width = axis.tickLabelTiers[0].tickInterval/axis.tickStep;
-    BarCluster.width = chart.parent.logicalWidth/chart.axisInfo!.xLabelInfo.labelTiers[0].length;
-    console.log('computed bar cluster width:', BarCluster.width);
-    BarCluster.padding = chart.paraview.store.settings.type.bar.clusterGap;
-    const numSeries = chart.paraview.store.model!.numSeries;
-    if (chart.paraview.store.settings.type.bar.stackContent === 'all') {
-      BarCluster.numStacks = 1;
-    } else if (chart.paraview.store.settings.type.bar.stackContent === 'count') {
-      const seriesPerStack = chart.paraview.store.settings.type.bar.stackCount;
-      BarCluster.numStacks = Math.ceil(numSeries/seriesPerStack);
-    } 
+    // BarCluster.width = axis.tickLabelTiers[0].tickInterval/axis.tickStep;
+
+    // BarCluster.width = chart.parent.logicalWidth/chart.axisInfo!.xLabelInfo.labelTiers[0].length;
+    // console.log('computed bar cluster width:', BarCluster.width);
+    // BarCluster.padding = chart.paraview.store.settings.type.bar.clusterGap;
+    // const numSeries = chart.paraview.store.model!.numSeries;
+    // if (chart.paraview.store.settings.type.bar.stackContent === 'all') {
+    //   BarCluster.numStacks = 1;
+    // } else if (chart.paraview.store.settings.type.bar.stackContent === 'count') {
+    //   const seriesPerStack = chart.paraview.store.settings.type.bar.stackCount;
+    //   BarCluster.numStacks = Math.ceil(numSeries/seriesPerStack);
+    // } 
+    //BarCluster.width = chart.stackWidth*chart.stacksPerCluster + (chart.stacksPerCluster - 1)*chart.settings.barGap;
   }
 
   constructor(public readonly chart: BarChart, public readonly key: string) {
@@ -60,16 +56,8 @@ class BarCluster {
     this.labelId = `tick-x-${this.id}`;
   }
 
-  get x() {
-    return this._x;
-  }
-
   get index() {
     return Object.keys(this.chart.clusteredData).indexOf(this.key);
-  }
-
-  computeLayout() {
-    this._x = this.index*BarCluster.width;
   }
 
 }
@@ -79,34 +67,27 @@ class BarCluster {
  */
 export class BarStack {
 
-  static width: number;
-
   bars: {[key: string]: BarStackItem} = {};
 
   readonly id: string;
   readonly labelId: string;
 
   protected _label: Label | null = null;
-  protected _x!: number;
 
-  static computeSize(chart: BarChart) {
-    BarStack.width = (BarCluster.width - BarCluster.padding*2)/BarCluster.numStacks;
-    console.log('computed bar stack width:', BarStack.width);
-    // if (BarStack.width < chart.settings.barWidthMin /*&& todo().canvas.todo.isAutoresizeEnabled*/) {
-    //   BarStack.width = chart.settings.barWidthMin;
-    //   BarCluster.width = BarStack.width*BarCluster.numStacks + BarCluster.padding*2;
-    // }
-    chart.parent.logicalWidth = BarCluster.width*Object.keys(chart.clusteredData).length;
-    console.log('setting chart content width to', chart.parent.width);
-  }
+  // static computeSize(chart: BarChart) {
+  //   BarStack.width = (BarCluster.width - BarCluster.padding*2)/BarCluster.numStacks;
+  //   console.log('computed bar stack width:', BarStack.width);
+  //   // if (BarStack.width < chart.settings.barWidthMin /*&& todo().canvas.todo.isAutoresizeEnabled*/) {
+  //   //   BarStack.width = chart.settings.barWidthMin;
+  //   //   BarCluster.width = BarStack.width*BarCluster.numStacks + BarCluster.padding*2;
+  //   // }
+  //   chart.parent.logicalWidth = BarCluster.width*Object.keys(chart.clusteredData).length;
+  //   console.log('setting chart content width to', chart.parent.width);
+  // }
 
   constructor(public readonly cluster: BarCluster, public readonly key: string) { 
     this.id = `barstack-${strToId(this.cluster.key)}-${strToId(this.key)}`;
     this.labelId = `tick-x-${this.id}`;
-  }
-
-  get x() {
-    return this._x;
   }
 
   get index() {
@@ -119,10 +100,6 @@ export class BarStack {
 
   set label(label: Label | null) {
     this._label = label;
-  }
-
-  computeLayout() {
-    this._x = BarCluster.padding + this.index*BarStack.width;
   }
 
 }
@@ -163,6 +140,9 @@ export class BarChart extends XYChart {
   protected _clusteredData!: BarClusterMap;
   protected _abbrevs?: {[series: string]: string};
   protected _stackLabels: Label[] = [];
+  protected _stackWidth!: number;
+  protected _stacksPerCluster!: number;
+  protected _clusterWidth!: number;
 
   protected _addedToParent() {
     super._addedToParent();
@@ -179,6 +159,14 @@ export class BarChart extends XYChart {
       yMin: 0,
       isXInterval: true
     });
+
+    const numSeries = this.paraview.store.model!.numSeries;
+    if (this.settings.stackContent === 'all') {
+      this._stacksPerCluster = 1;
+    } else if (this.settings.stackContent === 'count') {
+      const seriesPerStack = this.settings.stackCount;
+      this._stacksPerCluster = Math.ceil(numSeries/seriesPerStack);
+    } 
 
     /*todo().controller.settingViews.add(this, {
       type: 'dropdown',
@@ -233,6 +221,18 @@ export class BarChart extends XYChart {
 
   get clusteredData() {
     return this._clusteredData;
+  }
+
+  get stackWidth() {
+    return this._stackWidth;
+  }
+
+  get stacksPerCluster() {
+    return this._stacksPerCluster;
+  }
+
+  get clusterWidth() {
+    return this._clusterWidth;
   }
 
   protected _newDatapointView(seriesView: XYSeriesView, stack: BarStack) {
@@ -302,14 +302,32 @@ export class BarChart extends XYChart {
 
   protected _beginLayout() {
     // Datapoint layout depends on this happening first
-    BarCluster.computeSize(this);
-    BarStack.computeSize(this);
-    for (const [clusterKey, cluster] of Object.entries(this._clusteredData)) {
-      cluster.computeLayout();
-      for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
-        stack.computeLayout();
-      }
-    }
+    const numClusters = Object.values(this._clusteredData).length;
+    // Assume all clusters have same number of stacks
+    //const stacksPerCluster = Object.values(Object.values(this._clusteredData)[0].stacks).length;
+    const clusterGapSpace = (numClusters - 1)*this.settings.clusterGap;
+    const barGapSpace = (this._stacksPerCluster - 1)*this.settings.barGap*numClusters;
+    // Initial stack width based on current chart width
+    this._stackWidth = Math.max(this.settings.minBarWidth,
+      (this._parent.logicalWidth - clusterGapSpace - barGapSpace)/(numClusters*this._stacksPerCluster));
+    console.log('computed bar stack width:', this._stackWidth);
+    //BarCluster.computeSize(this);
+    //BarStack.computeSize(this);
+
+    this._clusterWidth = this._stackWidth*this._stacksPerCluster + (this._stacksPerCluster - 1)*this.settings.barGap;
+
+    //this._parent.logicalWidth = this._stackWidth*this._stacksPerCluster*numClusters + clusterGapSpace + barGapSpace;
+    // Each cluster gets 1/2 a cluster gap on each side
+    this._parent.logicalWidth = this._clusterWidth*numClusters + this.settings.clusterGap*numClusters;
+    console.log('setting chart content width to', this._parent.logicalWidth);
+
+
+    // for (const [clusterKey, cluster] of Object.entries(this._clusteredData)) {
+    //   cluster.computeLayout();
+    //   for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
+    //     stack.computeLayout();
+    //   }
+    // }
     super._beginLayout();
   }
 
@@ -495,7 +513,6 @@ export class BarChart extends XYChart {
       this.paraview.store.announce(msgArray);
     }
 
-
 }
 
 /**
@@ -578,10 +595,15 @@ export class Bar extends XYDatapointView {
     const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
       .map(bar => bar.value.value*pxPerYUnit)
       .reduce((a, b) => a + b, 0);
-    this._width = BarStack.width;
+    this._width = this.chart.stackWidth;
     // @ts-ignore
     this._height = (this.datapoint.data.y.value as number)*pxPerYUnit;
-    this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
+    //this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
+    this._x = this.chart.settings.clusterGap/2
+      + this.chart.clusterWidth*this._stack.cluster.index
+      + this.chart.settings.clusterGap*this._stack.cluster.index
+      + this.chart.stackWidth*this._stack.index
+      + this.chart.settings.barGap*this._stack.index;
     this._y = this.chart.height - this.height - distFromXAxis;
   }
 

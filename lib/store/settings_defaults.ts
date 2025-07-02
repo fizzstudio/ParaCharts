@@ -161,6 +161,7 @@ export const defaults: Settings = {
   type: {
     bar: {
       barWidth: 20,
+      minBarWidth: 20,
       colorByDatapoint: false,
       isDrawStackLabels: false,
       isStackLabelInsideBar: true,
@@ -168,7 +169,7 @@ export const defaults: Settings = {
       isDrawRecordLabels: false,
       isDrawValueLabels: false,
       clusterBy: undefined,
-      clusterGap: 5,
+      clusterGap: 10,
       stackContent: 'all',
       stackCount: 1,
       isAbbrevSeries: true,
@@ -179,6 +180,7 @@ export const defaults: Settings = {
     },
     column: {
       barWidth: 10,
+      minBarWidth: 20,
       colorByDatapoint: false,
       isDrawStackLabels: false,
       isStackLabelInsideBar: true,
@@ -186,7 +188,7 @@ export const defaults: Settings = {
       isDrawValueLabels: true,
       stackLabelGap: 10,
       clusterBy: undefined,
-      clusterGap: 5,
+      clusterGap: 10,
       stackContent: 'all',
       stackCount: 1,
       isAbbrevSeries: true,
@@ -228,7 +230,8 @@ export const defaults: Settings = {
       selectedPointMarkerSize: {
         width: 20,
         height: 20,
-      }
+      },
+      relativeAxes: "Counts"
     },
     heatmap: {
       pointLabelFormat: 'raw',
@@ -313,6 +316,7 @@ export const defaults: Settings = {
     },
     lollipop: {
       barWidth: 10,
+      minBarWidth: 6,
       colorByDatapoint: false,
       isDrawStackLabels: false,
       isStackLabelInsideBar: true,
@@ -343,7 +347,7 @@ export const defaults: Settings = {
     isFullscreenEnabled: false,
     isLowVisionModeEnabled: false,
     isFocusRingEnabled: false,
-    focusRingGap: 4
+    focusRingGap: 10
   },
   controlPanel: {
     isControlPanelDefaultOpen: false,

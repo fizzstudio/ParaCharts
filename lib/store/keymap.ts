@@ -84,10 +84,10 @@ export const keymap: KeyRegistrations = {
   // 'End': {
   //   action: 'last_point'
   // },
-  // ' ': {
-  //   label: 'Repeat last message',
-  //   action: 'replay'
-  // },
+  ' ': {
+    label: 'Repeat last message',
+    action: 'repeatLastAnnouncement'
+  },
   Enter: {
     label: 'Select a datapoint',
     action: 'select'

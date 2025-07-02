@@ -170,11 +170,11 @@ export class SectorShape extends Shape {
   containsPoint(point: Vec2) {
     const v = point.subtract(this._loc);
     let theta = v.y >= 0 ? Math.acos(v.x/v.length()) : -Math.acos(v.x/v.length());
-    if (theta < 0) {
-      theta = 2*Math.PI + theta;
-    }
-    const withinArc = theta >= radians(this._orientationAngle)
-      && theta <= radians(this._orientationAngle + this._centralAngle);
+    // if (theta < 0) {
+    //   theta = 2*Math.PI + theta;
+    // }
+    const withinArc = theta >= radians(this._orientationAngle - this._centralAngle/2)
+      && theta <= radians(this._orientationAngle + this._centralAngle/2);
     return (this._annularThickness === null || this._annularThickness === 1)
       ? withinArc
       : withinArc && (v.length() >= this._r - this._annularThickness*this._r);

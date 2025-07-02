@@ -258,6 +258,7 @@ export type BarClusterMode = 'facet';
 /** @public */
 export interface BarSettings extends PlotSettings {
   barWidth: number;
+  minBarWidth: number;
   colorByDatapoint: boolean;
   isDrawStackLabels: boolean;
   isStackLabelInsideBar: boolean;
@@ -325,6 +326,7 @@ export interface HistogramSettings extends PointSettings {
   bins: number;
   displayAxis: string;
   groupingAxis: string;
+  relativeAxes: "Counts" | "Percentage";
 }
 
 

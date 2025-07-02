@@ -713,17 +713,18 @@ export abstract class RadialSlice extends DatapointView {
 
   focusRingShape() {
     const shape = this._shape!.clone();
-    shape.centralAngle += 20*360/(2*Math.PI*shape.r);
+    const gap = this.paraview.store.settings.ui.focusRingGap;
+    shape.centralAngle += 2*gap*360/(2*Math.PI*shape.r);
     if (shape.annularThickness! < 1) {
-      shape.r += 10;
+      shape.r += gap;
       // a0/r0 = A
       // r1 = r0 + D
       // a1 = a0 + D
       // A1 = (a0 + D)/(r0 + D)
       const a0 = shape.annularThickness!*shape.r;
-      shape.annularThickness = (a0 + 20)/(shape.r + 10);
+      shape.annularThickness = (a0 + 2*gap)/(shape.r + gap);
     } else {
-      shape.scale = (shape.r + 10)/shape.r;
+      shape.scale = (shape.r + gap)/shape.r;
     }
     return shape;
   }
