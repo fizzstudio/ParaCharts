@@ -142,7 +142,7 @@ class ScatterPoint extends ChartPoint {
 
   protected _computeX() {
     // Scales points in proportion to the data range
-    const xTemp = (this.datapoint.x.value as number - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
+    const xTemp = (this.datapoint.facetValueNumericized(this.datapoint.indepKey)! - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
     const parentWidth: number = this.chart.parent.width;
     return parentWidth * xTemp;
   }

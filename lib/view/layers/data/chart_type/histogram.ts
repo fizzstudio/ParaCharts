@@ -209,8 +209,8 @@ export class Histogram extends XYChart {
     // NB: This only works properly because we haven't added series direct labels
     // yet, which are also direct children of the chart.
     this._chartLandingView.sortChildren((a: XYSeriesView, b: XYSeriesView) => {
-      return (b.children[0].datapoint.y.value as number) - (a.children[0].datapoint.y.value as number);
-    });
+      return (b.children[0].datapoint.facetValueNumericized(b.children[0].datapoint.depKey)!) - (a.children[0].datapoint.facetValueNumericized(a.children[0].datapoint.depKey)!);
+    });  
   }
 
   protected _layoutDatapoints() {
@@ -242,10 +242,10 @@ export class Histogram extends XYChart {
       const yValues = []
       const xValues = []
       for (let datapoint of this.paraview.store.model!.series[0]) {
-        xValues.push(datapoint.facetAsNumber(targetFacet) as number)
+        xValues.push(datapoint.facetValueNumericized(targetFacet)!)
       }
       for (let datapoint of this.paraview.store.model!.series[0]) {
-        yValues.push(datapoint.facetAsNumber(nonTargetFacet) as number)
+        yValues.push(datapoint.facetValueNumericized(nonTargetFacet)!)
       }
       workingLabels = computeLabels(Math.min(...xValues), Math.max(...xValues), false)
     }
@@ -258,7 +258,7 @@ export class Histogram extends XYChart {
     this._data = [];
     for (let series of seriesList) {
       for (let i = 0; i < series.length; i++) {
-        this._data.push([series[i].facetAsNumber(targetFacet ?? "x")!, series[i].facetAsNumber(nonTargetFacet ?? "y")!]);
+        this._data.push([series[i].facetValueNumericized(targetFacet ?? "x")!, series[i].facetValueNumericized(nonTargetFacet ?? "y")!]);
       }
     }
 

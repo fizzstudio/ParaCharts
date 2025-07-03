@@ -88,7 +88,7 @@ export abstract class PointChart extends XYChart {
     // NB: This only works properly because we haven't added series direct labels
     // yet, which are also direct children of the chart.
     this._chartLandingView.sortChildren((a: XYSeriesView, b: XYSeriesView) => {
-      return (b.children[0].datapoint.y.value as number) - (a.children[0].datapoint.y.value as number);
+      return (b.children[0].datapoint.facetValueNumericized(b.children[0].datapoint.depKey)!) - (a.children[0].datapoint.facetValueNumericized(a.children[0].datapoint.depKey)!);
     });  
   }
 
@@ -178,7 +178,7 @@ export class ChartPoint extends XYDatapointView {
 
   protected _computeY() {
     const pxPerYUnit = this.chart.height / this.chart.axisInfo!.yLabelInfo.range!;
-    return this.chart.height - (this.datapoint.y.value as number - this.chart.axisInfo!. yLabelInfo.min!) * pxPerYUnit;
+    return this.chart.height - (this.datapoint.facetValueNumericized(this.datapoint.depKey)! - this.chart.axisInfo!. yLabelInfo.min!) * pxPerYUnit;
   }
 
   computeLocation() {

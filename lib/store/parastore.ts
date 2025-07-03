@@ -25,8 +25,8 @@ import {
 } from '@fizz/paramanifest';
 import {
   facetsFromDataset, Model, modelFromExternalData, modelFromInlineData,
-  FacetSignature, SeriesAnalyzerConstructor, XYDatapoint, 
-  PairAnalyzerConstructor
+  FacetSignature, SeriesAnalyzerConstructor, PairAnalyzerConstructor,
+  PlaneDatapoint
 } from '@fizz/paramodel';
 import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 
@@ -516,7 +516,7 @@ export class ParaStore extends State {
 
     this._selectedDatapoints.forEach((dp) => {
       const recordLabel = formatXYDatapointX(
-        this._model!.atKeyAndIndex(dp.seriesKey, dp.index) as XYDatapoint, 'raw');
+        this._model!.atKeyAndIndex(dp.seriesKey, dp.index) as PlaneDatapoint, 'raw');
       let annotationText = prompt('Annotation:') as string;
       if (annotationText) {
         newAnnotationList.push({
@@ -561,7 +561,7 @@ export class ParaStore extends State {
 
         let message = `Detected trend: ${seriesAnalysis?.message}, consisting of ${seriesAnalysis?.messageSeqs.length} datapoint sequences from`
         for (let seq of relevantSequences!) {
-          message = message.concat(" ", String(this.model!.allPoints[seq.start].facetAsNumber("x")), " to ", String(this.model!.allPoints[seq.end - 1].facetAsNumber("x")), ` (${String(seq.message)})`, ",")
+          message += ` ${this.model!.allPoints[seq.start].facetValueNumericized("x")} to ${this.model!.allPoints[seq.end - 1].facetValueNumericized("x")} (${seq.message}),`;
         }
         if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
           const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation")
@@ -657,9 +657,9 @@ export class ParaStore extends State {
   getModelCsv() {
     const xLabel = this.model!.independentFacet!.label;
     return papa.unparse(this.model!.series[0].datapoints.map((dp, i) => ({
-      [xLabel]: formatXYDatapointX(dp as XYDatapoint, 'raw'),
+      [xLabel]: formatXYDatapointX(dp as PlaneDatapoint, 'raw'),
       ...Object.fromEntries(this.model!.series.map(s =>
-        [s.key, formatXYDatapointY(s[i] as XYDatapoint, 'value')]))
+        [s.key, formatXYDatapointY(s[i] as PlaneDatapoint, 'value')]))
     })));
   }
 
