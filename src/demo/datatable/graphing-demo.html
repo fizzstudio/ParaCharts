@@ -54,11 +54,13 @@
         console.log(simplified.toString());
         var xVals = [];
         var yVals = [];
-        for (var i = 0; i < 100; i++) {
+        const points = 100
+        const xBounds = 10
+        for (var i = 0; i < points; i++) {
             var tr = document.createElement("tr");
             var td1 = document.createElement("td");
             var td2 = document.createElement("td");
-            var xVal = i / 5 - 10;
+            var xVal = i / (points / (2 * xBounds)) - xBounds;
             var yVal = simplified.evaluate({ x: xVal });
             td1.innerHTML = String(xVal);
             td2.innerHTML = yVal;
