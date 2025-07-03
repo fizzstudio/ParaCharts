@@ -16,6 +16,8 @@ import { formatBox } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 
 import { StyleInfo } from 'lit/directives/style-map.js';
+import { PathShape } from '../../../shape/path';
+import { Vec2 } from '../../../../common/vector';
 
 type BarClusterMap = {[key: string]: BarCluster};
 
@@ -148,15 +150,16 @@ export class BarChart extends XYChart {
     super._addedToParent();
 
     this._clusteredData = this._clusterData();
+    const yValues = Object.values(this._clusteredData).flatMap(c =>
+        Object.values(c.stacks).map(s => Object.values(s.bars)
+            .map(item => item.value.value)
+            .reduce((a, b) => a + b, 0)))
     this._axisInfo = new AxisInfo(this.paraview.store, {
       // xTiers: [this.paraview.store.model!.allFacetValues('x')!.map(x =>
       //   formatBox(x, 'barCluster', this.paraview.store))],
       xTiers: [Object.keys(this._clusteredData)],
-      yValues: Object.values(this._clusteredData).flatMap(c =>
-        Object.values(c.stacks).map(s => Object.values(s.bars)
-            .map(item => item.value.value)
-            .reduce((a, b) => a + b, 0))),
-      yMin: 0,
+      yValues: yValues,
+      yMin: Math.min(0, Math.min(...yValues)),
       isXInterval: true
     });
 
@@ -352,6 +355,20 @@ export class BarChart extends XYChart {
   protected _completeLayout() {
     super._completeLayout();
 
+    const yValues = Object.values(this._clusteredData).flatMap(c =>
+      Object.values(c.stacks).map(s => Object.values(s.bars)
+        .map(item => item.value.value)
+        .reduce((a, b) => a + b, 0)))
+    if (Math.min(...yValues) < 0) {
+      const zeroHeight = (this.axisInfo!.yLabelInfo.max! * this.parent.logicalHeight / this.axisInfo!.yLabelInfo.range!);
+      const xAxis = new PathShape(this.paraview, {
+        x: this._x,
+        y: this._y,
+        points: [new Vec2(0, zeroHeight), new Vec2(this.parent.logicalWidth, zeroHeight),]
+      });
+      xAxis.classInfo = { 'visible-axis': true }
+      this.chartLandingView.append(xAxis)
+    }
     // if (this.paraview.store.settings.type.bar.isDrawStackLabels) {
     //   for (const [clusterKey, cluster] of Object.entries(this._bars)) {
     //     for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
@@ -595,6 +612,7 @@ export class Bar extends XYDatapointView {
     const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
       .map(bar => bar.value.value*pxPerYUnit)
       .reduce((a, b) => a + b, 0);
+    const zeroHeight = this.chart.parent.logicalHeight - (this.chart.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / this.chart.axisInfo!.yLabelInfo.range!);
     this._width = this.chart.stackWidth;
     // @ts-ignore
     this._height = (this.datapoint.data.y.value as number)*pxPerYUnit;
@@ -604,7 +622,9 @@ export class Bar extends XYDatapointView {
       + this.chart.settings.clusterGap*this._stack.cluster.index
       + this.chart.stackWidth*this._stack.index
       + this.chart.settings.barGap*this._stack.index;
-    this._y = this.chart.height - this.height - distFromXAxis;
+    // @ts-ignore
+    this.datapoint.data.y.value as number < 0 ? this._y = this.chart.height - distFromXAxis - zeroHeight
+      : this._y = this.chart.height - this.height - distFromXAxis - zeroHeight
   }
 
   completeLayout() {
@@ -671,7 +691,7 @@ export class Bar extends XYDatapointView {
       x: this._x,
       y: this._y,
       width: this._width,
-      height: this._height,
+      height: Math.abs(this._height),
       isPattern: isPattern ? true : false
     });
     super._createShape();
