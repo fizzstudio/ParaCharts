@@ -35,7 +35,8 @@ export abstract class AxisRule extends View {
     paraview: ParaView,
     protected _major = true,
     length: number,
-    protected _orientation: RuleOrientation
+    protected _orientation: RuleOrientation, 
+    private darken: boolean = false
   ) {
     super(paraview);
     this.length = length;
@@ -72,6 +73,7 @@ export abstract class AxisRule extends View {
     const line = this._orientation + fixed`${length}`;
     return svg`
       <path
+        id=${this.darken ? 'grid-zero' : ''}
         class=${this._class}
         d=${move + ' ' + line}
       ></path>
@@ -89,8 +91,8 @@ export abstract class HorizRule extends AxisRule {
    * @param _pointsTo - The tick starts on the axis and points in this direction.
    * @param major 
    */
-  constructor(protected _pointsTo: VertDirection, paraview: ParaView, major = true, length: number) {
-    super(paraview, major, length, 'v');
+  constructor(protected _pointsTo: VertDirection, paraview: ParaView, major = true, length: number, darken: boolean = false) {
+    super(paraview, major, length, 'v', darken);
   }
 
   get length() {
@@ -121,8 +123,8 @@ export abstract class VertRule extends AxisRule {
    * @param _pointsTo - The tick starts on the axis and points in this direction.
    * @param major 
    */
-  constructor(protected _pointsTo: HorizDirection, paraview: ParaView, major = true, length: number) {
-    super(paraview, major, length, 'h');
+  constructor(protected _pointsTo: HorizDirection, paraview: ParaView, major = true, length: number, darken: boolean = false) {
+    super(paraview, major, length, 'h', darken);
   }
 
   get length() {

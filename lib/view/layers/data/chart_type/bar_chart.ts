@@ -354,21 +354,6 @@ export class BarChart extends XYChart {
 
   protected _completeLayout() {
     super._completeLayout();
-
-    const yValues = Object.values(this._clusteredData).flatMap(c =>
-      Object.values(c.stacks).map(s => Object.values(s.bars)
-        .map(item => item.value.value)
-        .reduce((a, b) => a + b, 0)))
-    if (Math.min(...yValues) < 0) {
-      const zeroHeight = (this.axisInfo!.yLabelInfo.max! * this.parent.logicalHeight / this.axisInfo!.yLabelInfo.range!);
-      const xAxis = new PathShape(this.paraview, {
-        x: this._x,
-        y: this._y,
-        points: [new Vec2(0, zeroHeight), new Vec2(this.parent.logicalWidth, zeroHeight),]
-      });
-      xAxis.classInfo = { 'visible-axis': true }
-      this.chartLandingView.append(xAxis)
-    }
     // if (this.paraview.store.settings.type.bar.isDrawStackLabels) {
     //   for (const [clusterKey, cluster] of Object.entries(this._bars)) {
     //     for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
