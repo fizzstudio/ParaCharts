@@ -24,6 +24,7 @@ import { mapn } from '@fizz/chart-classifier-utils';
 
 import { svg, type TemplateResult } from 'lit';
 import { HorizGridLine, HorizTick, VertGridLine, VertTick } from './rule';
+import { Label } from './label';
 
 /**
  * A strip of tick marks.
@@ -132,7 +133,7 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
     const xs = indices.map(i => isOrthoEast
       ? this.width - i*this._interval
       : i*this._interval);
-    const zeroIndex = indices.length - this.axis.tickLabelTiers[0].tickLabels.indexOf("0")
+    const zeroIndex = indices.length - this.axis.tickLabelTiers[0].children.findIndex((c: Label) => c.text == "0")
     indices.forEach((idx, i) => {
       this.append(new HorizTick(
         this.axis.orientationSettings.position, this.paraview, idx % this._majorModulus === 0, tickLength));   
@@ -187,7 +188,7 @@ export class VertTickStrip extends TickStrip<'vert'> {
     }
     const ys = indices.map(i => isNorth ?
       this.height - i*this._interval : i*this._interval);
-    const zeroIndex = indices.length - this.axis.tickLabelTiers[0].tickLabels.indexOf("0")
+    const zeroIndex = indices.length - this.axis.tickLabelTiers[0].children.findIndex((c: Label) => c.text == "0")
     indices.forEach(i => {
       this.append(new VertTick(
         this.axis.orientationSettings.position, this.paraview, i % this._majorModulus === 0, tickLength));
