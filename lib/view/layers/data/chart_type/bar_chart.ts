@@ -685,7 +685,7 @@ export class Bar extends XYDatapointView {
   get selectedMarker() {
     return new RectShape(this.paraview, {
       width: this._width + 4,
-      height: this._height + 4,
+      height: Math.abs(this._height) + 4,
       x: this._x - 2,
       y: this._y - 2,
       fill: 'none',

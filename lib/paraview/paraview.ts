@@ -211,12 +211,6 @@ export class ParaView extends logging(ParaComponent) {
         stroke-dasharray: 12 12;
         stroke-opacity: 0.8;
       }
-      .visible-axis{
-        stroke: black;
-        stroke-width: 4;
-        stroke-dasharray: 25 10;
-        stroke-opacity: 0.5;
-      }
     `
   ];
 
