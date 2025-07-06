@@ -16,8 +16,6 @@ import { formatBox } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 
 import { StyleInfo } from 'lit/directives/style-map.js';
-import { PathShape } from '../../../shape/path';
-import { Vec2 } from '../../../../common/vector';
 
 type BarClusterMap = {[key: string]: BarCluster};
 
