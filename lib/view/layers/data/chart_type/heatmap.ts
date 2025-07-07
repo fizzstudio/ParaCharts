@@ -145,8 +145,8 @@ export class Heatmap extends XYChart {
     // NB: This only works properly because we haven't added series direct labels
     // yet, which are also direct children of the chart.
     this._chartLandingView.sortChildren((a: XYSeriesView, b: XYSeriesView) => {
-      return (b.children[0].datapoint.y.value as number) - (a.children[0].datapoint.y.value as number);
-    });
+      return (b.children[0].datapoint.facetValueNumericized(b.children[0].datapoint.depKey)!) - (a.children[0].datapoint.facetValueNumericized(a.children[0].datapoint.depKey)!);
+    });  
   }
 
 
@@ -169,7 +169,7 @@ export class Heatmap extends XYChart {
     this._data = [];
     for (let series of seriesList) {
       for (let i = 0; i < series.length; i++) {
-        this._data.push([series[i].facetAsNumber("x")!, series[i].facetAsNumber("y")!]);
+        this._data.push([series[i].facetValueNumericized("x")!, series[i].facetValueNumericized("y")!]);
       }
     }
 

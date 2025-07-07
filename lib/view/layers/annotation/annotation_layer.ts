@@ -53,8 +53,8 @@ export class AnnotationLayer extends ChartLayer {
           const range = this.parent.getYAxisInterval();
           const minValue = range.start ?? Number(this.paraview.store.settings.axis.y.minValue)
           const maxValue = range.end ?? Number(this.paraview.store.settings.axis.y.maxValue)
-          const startHeight = this.height - (series.datapoints[tl.startIndex].facetAsNumber("y")! - minValue) / (maxValue - minValue) * this.height;
-          const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetAsNumber("y")! - minValue) / (maxValue - minValue) * this.height;
+          const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
+          const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
           const endPx = this.width * tl.endPortion;
           const colorValue = this.paraview.store.colors.colorValue('highlight');

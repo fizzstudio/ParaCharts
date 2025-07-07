@@ -1,7 +1,7 @@
 
 import { ParaComponent } from '../components';
 
-import { XYDatapoint, type Model } from '@fizz/paramodel';
+import { PlaneDatapoint, type Model } from '@fizz/paramodel';
 import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 
 import { html, css, nothing, render, type PropertyValues } from 'lit';
@@ -57,11 +57,11 @@ export class DataTableView extends ParaComponent {
             ${this.model.series[0].datapoints.map((dp, i) => html`
               <tr>
                 <td>
-                  ${formatXYDatapointX(dp as XYDatapoint, 'raw')}
+                  ${formatXYDatapointX(dp as PlaneDatapoint, 'raw')}
                 </td>
                 ${this.model.series.map(s => html`
                   <td>
-                    ${formatXYDatapointY(s[i] as XYDatapoint, 'value')}
+                    ${formatXYDatapointY(s[i] as PlaneDatapoint, 'value')}
                   </td>
                 `)}
               </tr>

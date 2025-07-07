@@ -11,7 +11,7 @@ import { ChartType as ChartType_2 } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { ClassInfo as ClassInfo_2 } from 'lit-html/directives/class-map.js';
 import { CSSResult } from 'lit';
-import { DataPoint } from '@fizz/paramodel';
+import { Datapoint } from '@fizz/paramodel';
 import { Datatype } from '@fizz/dataframe';
 import { Datatype as Datatype_2 } from '@fizz/paramanifest';
 import { Dialog } from '@fizz/ui-components';
@@ -32,6 +32,7 @@ import { PaddingInput as PaddingInput_3 } from '../base_view';
 import { PaddingInput as PaddingInput_4 } from '../../base_view';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';
 import papa from 'papaparse';
+import { PlaneDatapoint } from '@fizz/paramodel';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
 import { Ref } from 'lit/directives/ref.js';
@@ -54,7 +55,6 @@ import { TemplateResult as TemplateResult_2 } from 'lit-html';
 import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
 import { View as View_2 } from '../base_view';
-import { XYDatapoint } from '@fizz/paramodel';
 
 // @public (undocumented)
 export type FieldInfo = {
