@@ -62,7 +62,8 @@ export const defaults: Settings = {
     symbolHighlightScale: 1.5,
     hasDirectLabels: true,
     hasLegendWithDirectLabels: false,
-    isDrawSymbols: true
+    isDrawSymbols: true,
+    isStatic: true
   },
   axis: {
     minInterval: 25,
@@ -201,7 +202,7 @@ export const defaults: Settings = {
       lineWidth: 5,
       lineWidthMax: 25,
       lowVisionLineWidth: 15,
-      lineHighlightScale: 1.5, 
+      lineHighlightScale: 1.5,
       baseSymbolSize: 10,
       seriesLabelPadding: 5,
       pointLabelFormat: 'raw',
