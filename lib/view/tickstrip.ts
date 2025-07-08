@@ -24,6 +24,7 @@ import { mapn } from '@fizz/chart-classifier-utils';
 
 import { svg, type TemplateResult } from 'lit';
 import { HorizGridLine, HorizTick, VertGridLine, VertTick } from './rule';
+import { Label } from './label';
 
 /**
  * A strip of tick marks.
@@ -132,6 +133,7 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
     const xs = indices.map(i => isOrthoEast
       ? this.width - i*this._interval
       : i*this._interval);
+    const zeroIndex = indices.length - this.axis.tickLabelTiers[0].children.findIndex((c: Label) => c.text == "0")
     indices.forEach((idx, i) => {
       this.append(new HorizTick(
         this.axis.orientationSettings.position, this.paraview, idx % this._majorModulus === 0, tickLength));   
@@ -139,7 +141,7 @@ export class HorizTickStrip extends TickStrip<'horiz'> {
       this._children.at(-1)!.y = y;
       this._children.at(-1)!.hidden = !this.axis.settings.tick.isDrawEnabled;
       this.append(new HorizGridLine(
-        this.axis.orientationSettings.position, this.paraview, undefined, this._gridLineLength));
+        this.axis.orientationSettings.position, this.paraview, undefined, this._gridLineLength, i == zeroIndex ? true : false));
       this._children.at(-1)!.x = xs[i];
       this._children.at(-1)!.y = y;
       this._children.at(-1)!.hidden = !this.paraview.store.settings.grid.isDrawVertLines;
@@ -186,6 +188,7 @@ export class VertTickStrip extends TickStrip<'vert'> {
     }
     const ys = indices.map(i => isNorth ?
       this.height - i*this._interval : i*this._interval);
+    const zeroIndex = indices.length - this.axis.tickLabelTiers[0].children.findIndex((c: Label) => c.text == "0")
     indices.forEach(i => {
       this.append(new VertTick(
         this.axis.orientationSettings.position, this.paraview, i % this._majorModulus === 0, tickLength));
@@ -193,7 +196,7 @@ export class VertTickStrip extends TickStrip<'vert'> {
       this._children.at(-1)!.y = ys[i];
       this._children.at(-1)!.hidden = !this.axis.settings.tick.isDrawEnabled;
       this.append(new VertGridLine(
-        this.axis.orientationSettings.position, this.paraview, undefined, this._gridLineLength));
+        this.axis.orientationSettings.position, this.paraview, undefined, this._gridLineLength, i == zeroIndex ? true : false));
       this._children.at(-1)!.x = x;
       this._children.at(-1)!.y = ys[i];
       this._children.at(-1)!.hidden = !this.paraview.store.settings.grid.isDrawHorizLines;

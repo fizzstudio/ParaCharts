@@ -148,15 +148,16 @@ export class BarChart extends XYChart {
     super._addedToParent();
 
     this._clusteredData = this._clusterData();
+    const yValues = Object.values(this._clusteredData).flatMap(c =>
+        Object.values(c.stacks).map(s => Object.values(s.bars)
+            .map(item => item.value.value)
+            .reduce((a, b) => a + b, 0)))
     this._axisInfo = new AxisInfo(this.paraview.store, {
       // xTiers: [this.paraview.store.model!.allFacetValues('x')!.map(x =>
       //   formatBox(x, 'barCluster', this.paraview.store))],
       xTiers: [Object.keys(this._clusteredData)],
-      yValues: Object.values(this._clusteredData).flatMap(c =>
-        Object.values(c.stacks).map(s => Object.values(s.bars)
-            .map(item => item.value.value)
-            .reduce((a, b) => a + b, 0))),
-      yMin: 0,
+      yValues: yValues,
+      yMin: Math.min(0, Math.min(...yValues)),
       isXInterval: true
     });
 
@@ -351,7 +352,6 @@ export class BarChart extends XYChart {
 
   protected _completeLayout() {
     super._completeLayout();
-
     // if (this.paraview.store.settings.type.bar.isDrawStackLabels) {
     //   for (const [clusterKey, cluster] of Object.entries(this._bars)) {
     //     for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
@@ -595,16 +595,19 @@ export class Bar extends XYDatapointView {
     const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
       .map(bar => bar.value.value*pxPerYUnit)
       .reduce((a, b) => a + b, 0);
+    const zeroHeight = this.chart.parent.logicalHeight - (this.chart.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / this.chart.axisInfo!.yLabelInfo.range!);
     this._width = this.chart.stackWidth;
     // @ts-ignore
-    this._height = (this.datapoint.data.y.value as number)*pxPerYUnit;
+    this._height = Math.abs((this.datapoint.data.y.value as number)*pxPerYUnit);
     //this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
     this._x = this.chart.settings.clusterGap/2
       + this.chart.clusterWidth*this._stack.cluster.index
       + this.chart.settings.clusterGap*this._stack.cluster.index
       + this.chart.stackWidth*this._stack.index
       + this.chart.settings.barGap*this._stack.index;
-    this._y = this.chart.height - this.height - distFromXAxis;
+    // @ts-ignore
+    this.datapoint.data.y.value as number < 0 ? this._y = this.chart.height - distFromXAxis - zeroHeight
+      : this._y = this.chart.height - this.height - distFromXAxis - zeroHeight
   }
 
   completeLayout() {

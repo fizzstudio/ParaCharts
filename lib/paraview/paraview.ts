@@ -133,6 +133,10 @@ export class ParaView extends logging(ParaComponent) {
         stroke: var(--axisLineColor);
         opacity: 0.2;
       }
+      #grid-zero {
+        opacity: 0.6;
+        stroke-width: 2;
+      }  
       .tick-horiz {
         stroke: black;
       }
