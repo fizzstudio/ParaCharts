@@ -33,7 +33,7 @@ export type Setting = string | number | boolean;
 export type SettingGroup = {[key: string]: Setting | SettingGroup | undefined};
 
 /**
- * A mapping of dotted setting paths to values. 
+ * A mapping of dotted setting paths to values.
  * @public
  */
 export type SettingsInput = {[path: string]: Setting};
@@ -150,6 +150,7 @@ export interface ChartSettings extends SettingGroup {
   hasDirectLabels: boolean;
   hasLegendWithDirectLabels: boolean;
   isDrawSymbols: boolean;
+  isStatic: boolean;
 }
 
 /** @public */
@@ -443,8 +444,8 @@ export type DeepReadonly<T> = {
   readonly [Property in keyof T]: T extends Setting ? T[Property] : DeepReadonly<T[Property]>;
 };
 
-/** 
- * Context where a particular value appears. 
+/**
+ * Context where a particular value appears.
  * @public
  */
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;

@@ -50,7 +50,7 @@ export type c2mCallbackType = {
 export class ParaView extends logging(ParaComponent) {
 
   paraChart!: ParaChart;
-  
+
   @property() type: ChartType = 'bar';
   @property() chartTitle?: string;
   @property() xAxisLabel?: string;
@@ -74,7 +74,7 @@ export class ParaView extends logging(ParaComponent) {
   protected _chartRefs: Map<string, Ref<any>> = new Map();
   protected _fileSavePlaceholderRef = createRef<HTMLElement>();
   protected _summarizer!: Summarizer;
-  protected _pointerEventManager = new PointerEventManager(this);
+  protected _pointerEventManager: PointerEventManager | null = null;
   protected _hotkeyActions!: HotkeyActions;
   @state() protected _defs: {[key: string]: TemplateResult} = {};
 
@@ -136,7 +136,7 @@ export class ParaView extends logging(ParaComponent) {
       #grid-zero {
         opacity: 0.6;
         stroke-width: 2;
-      }  
+      }
       .tick-horiz {
         stroke: black;
       }
@@ -280,6 +280,9 @@ export class ParaView extends logging(ParaComponent) {
     this._computeViewBox();
     this._hotkeyActions ??= new HotkeyActions(this);
     this._store.keymapManager.addEventListener('hotkeypress', this._hotkeyListener);
+    if (!this._store.settings.chart.isStatic) {
+      this._pointerEventManager = new PointerEventManager(this);
+    }
   }
 
   disconnectedCallback() {
@@ -317,7 +320,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    this.log('ready');    
+    this.log('ready');
     this.dispatchEvent(new CustomEvent('paraviewready', {bubbles: true, composed: true, cancelable: true}));
   }
 
@@ -431,7 +434,7 @@ export class ParaView extends logging(ParaComponent) {
 
   createDocumentView() {
     this.log('creating document view', this.type);
-    this._documentView = new DocumentView(this);    
+    this._documentView = new DocumentView(this);
     this._computeViewBox();
   }
 
@@ -481,7 +484,7 @@ export class ParaView extends logging(ParaComponent) {
     svg.removeAttribute('role');
 
     // XXX Also remove visited styling (not just the layer)
-    
+
     return new XMLSerializer().serializeToString(svg)
       .split('\n')
       .filter(line => !line.match(/^\s*$/))
@@ -545,7 +548,7 @@ export class ParaView extends logging(ParaComponent) {
       darkmode: this._store.settings.color.isDarkModeEnabled
     }
   }
-  
+
   focusDatapoint(seriesKey: string, index: number) {
     this._documentView!.chartLayers.dataLayer.focusDatapoint(seriesKey, index);
   }
@@ -567,18 +570,20 @@ export class ParaView extends logging(ParaComponent) {
         style=${styleMap(this._rootStyle())}
         @fullscreenchange=${() => this._onFullscreenChange()}
         @focus=${() => {
-          this.log('focus');
-          //this.todo.deets?.onFocus();
-          //this.documentView?.chartLayers.dataLayer.visitAndPlayCurrent();
-          this.documentView?.chartLayers.dataLayer.chartLandingView.focus(true);
+          if (!this._store.settings.chart.isStatic) {
+            this.log('focus');
+            //this.todo.deets?.onFocus();
+            //this.documentView?.chartLayers.dataLayer.visitAndPlayCurrent();
+            this.documentView?.chartLayers.dataLayer.chartLandingView.focus(true);
+          }
         }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
-        @pointerdown=${(ev: PointerEvent) => this._pointerEventManager.handleStart(ev)}
-        @pointerup=${(ev: PointerEvent) => this._pointerEventManager.handleEnd(ev)}
-        @pointercancel=${(ev: PointerEvent) => this._pointerEventManager.handleCancel(ev)}
-        @pointermove=${(ev: PointerEvent) => this._pointerEventManager.handleMove(ev)}
-        @click=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager.handleClick(ev)}
-        @dblclick=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager.handleDoubleClick(ev)}
+        @pointerdown=${(ev: PointerEvent) => this._pointerEventManager?.handleStart(ev)}
+        @pointerup=${(ev: PointerEvent) => this._pointerEventManager?.handleEnd(ev)}
+        @pointercancel=${(ev: PointerEvent) => this._pointerEventManager?.handleCancel(ev)}
+        @pointermove=${(ev: PointerEvent) => this._pointerEventManager?.handleMove(ev)}
+        @click=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleClick(ev)}
+        @dblclick=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleDoubleClick(ev)}
       >
         <defs
           ${ref(this._defsRef)}
@@ -586,10 +591,10 @@ export class ParaView extends logging(ParaComponent) {
           ${Object.entries(this._defs).map(([key, template]) => template)}
           ${this._documentView?.horizAxis ? svg`
             <clipPath id="clip-path">
-              <rect 
-                x=${0} 
-                y=${0} 
-                width=${this._documentView.chartLayers.width} 
+              <rect
+                x=${0}
+                y=${0}
+                width=${this._documentView.chartLayers.width}
                 height=${this._documentView.chartLayers.height}>
               </rect>
             </clipPath>
@@ -599,7 +604,7 @@ export class ParaView extends logging(ParaComponent) {
         <metadata data-type="text/jim+json">
           ${this._store.jimerator ? JSON.stringify(this._store.jimerator.jim, undefined, 2) : ''}
         </metadata>
-        <rect 
+        <rect
           ${ref(this._frameRef)}
           id="frame"
           class=${nothing}

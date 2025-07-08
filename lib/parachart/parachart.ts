@@ -50,7 +50,7 @@ export class ParaChart extends logging(ParaComponent) {
   @property() accessor forcecharttype: ChartType | undefined;
   @property() type?: ChartType
 
-  protected _paraViewRef = createRef<ParaView>();  
+  protected _paraViewRef = createRef<ParaView>();
   protected _controlPanelRef = createRef<ParaControlPanel>();
   protected _ariaLiveRegionRef = createRef<AriaLive>();
   protected _manifest?: Manifest;
@@ -106,7 +106,7 @@ export class ParaChart extends logging(ParaComponent) {
           }
         }
       });
-    });    
+    });
   }
 
   @queryAssignedElements({flatten: true})
@@ -175,7 +175,7 @@ export class ParaChart extends logging(ParaComponent) {
     this.log(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
     this._store.dataState = 'pending';
     const loadresult = await this._loader.load(
-      this.manifestType, manifestInput, 
+      this.manifestType, manifestInput,
       this.forcecharttype);
     this.log('loaded manifest')
     if (loadresult.result === 'success') {
@@ -215,7 +215,7 @@ export class ParaChart extends logging(ParaComponent) {
           colormode=${this._store?.settings.color.colorVisionMode ?? nothing}
           ?disableFocus=${this.headless}
         ></para-view>
-        ${!this.headless ? html`
+        ${!(this.headless || this._store.settings.chart.isStatic) ? html`
           <para-control-panel
             ${ref(this._controlPanelRef)}
             .paraChart=${this}
