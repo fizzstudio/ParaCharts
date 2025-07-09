@@ -53,4 +53,8 @@ export class ParaHelper {
     return this._api.serializeChart();
   }
 
+  downloadPNG() {
+    this._api.downloadPNG();
+  }
+
 }

@@ -56,7 +56,7 @@ export class ParaView extends logging(ParaComponent) {
   @property() xAxisLabel?: string;
   @property() yAxisLabel?: string;
   @property() contrastLevel: number = 1;
-  @property({type: Boolean}) disableFocus = false;
+  @property({ type: Boolean }) disableFocus = false;
 
   protected _controller!: ParaViewController;
   protected _viewBox!: ViewBox;
@@ -76,7 +76,7 @@ export class ParaView extends logging(ParaComponent) {
   protected _summarizer!: Summarizer;
   protected _pointerEventManager: PointerEventManager | null = null;
   protected _hotkeyActions!: HotkeyActions;
-  @state() protected _defs: {[key: string]: TemplateResult} = {};
+  @state() protected _defs: { [key: string]: TemplateResult } = {};
 
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
@@ -321,7 +321,7 @@ export class ParaView extends logging(ParaComponent) {
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     this.log('ready');
-    this.dispatchEvent(new CustomEvent('paraviewready', {bubbles: true, composed: true, cancelable: true}));
+    this.dispatchEvent(new CustomEvent('paraviewready', { bubbles: true, composed: true, cancelable: true }));
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
@@ -504,12 +504,51 @@ export class ParaView extends logging(ParaComponent) {
     return out.join('\n');
   }
 
+  downloadImage() {
+    // hat tip: https://takuti.me/note/javascript-save-svg-as-image/
+    const data = this.serialize();
+    const svgBlob = new Blob([data], {
+      type: 'image/svg+xml;charset=utf-8'
+    });
+    const svgURL = URL.createObjectURL(svgBlob);
+    const img = new Image();
+    img.addEventListener('load', () => {
+      const bbox = this._rootRef.value!.getBBox();
+      const canvas = document.createElement('canvas');
+      canvas.width = bbox.width;
+      canvas.height = bbox.height;
+      const context = canvas.getContext('2d')!;
+      context.drawImage(img, 0, 0, bbox.width, bbox.height);
+      URL.revokeObjectURL(svgURL);
+      canvas.toBlob(canvasBlob => {
+        if (canvasBlob) {
+          const blobURL = URL.createObjectURL(canvasBlob);
+          this.downloadContent(blobURL, 'png');
+          URL.revokeObjectURL(blobURL);
+        } else {
+          throw new Error('failed to create image download blob');
+        }
+      });
+    });
+    img.src = svgURL;
+  }
+
+  downloadContent(url: string, extension: string) {
+    const downloadLinkEl = document.createElement('a');
+    this.fileSavePlaceholder.appendChild(downloadLinkEl);
+    const title = this._documentView!.titleText || 'parachart';
+    downloadLinkEl.download = `${title.replace(/\W/g, '_')}.${extension}`;
+    downloadLinkEl.href = url;
+    downloadLinkEl.click();
+    downloadLinkEl.remove();
+  }
+
   addDef(key: string, template: TemplateResult) {
     if (this._defs[key]) {
       throw new Error('view already in defs');
     }
     console.log('ADDING DEF', key);
-    this._defs = {...this._defs, [key]: template};
+    this._defs = { ...this._defs, [key]: template };
     this.requestUpdate();
   }
 
@@ -570,13 +609,13 @@ export class ParaView extends logging(ParaComponent) {
         style=${styleMap(this._rootStyle())}
         @fullscreenchange=${() => this._onFullscreenChange()}
         @focus=${() => {
-          if (!this._store.settings.chart.isStatic) {
-            this.log('focus');
-            //this.todo.deets?.onFocus();
-            //this.documentView?.chartLayers.dataLayer.visitAndPlayCurrent();
-            this.documentView?.chartLayers.dataLayer.chartLandingView.focus(true);
-          }
-        }}
+        if (!this._store.settings.chart.isStatic) {
+          this.log('focus');
+          //this.todo.deets?.onFocus();
+          //this.documentView?.chartLayers.dataLayer.visitAndPlayCurrent();
+          this.documentView?.chartLayers.dataLayer.chartLandingView.focus(true);
+        }
+      }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
         @pointerdown=${(ev: PointerEvent) => this._pointerEventManager?.handleStart(ev)}
         @pointerup=${(ev: PointerEvent) => this._pointerEventManager?.handleEnd(ev)}

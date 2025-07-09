@@ -152,6 +152,8 @@ export class ParaHelper {
     // (undocumented)
     protected _createParaChart(): void;
     // (undocumented)
+    downloadPNG(): void;
+    // (undocumented)
     loadData(url: string): Promise<FieldInfo[]>;
     // (undocumented)
     loadManifest(input: string, type?: SourceKind): Promise<void>;

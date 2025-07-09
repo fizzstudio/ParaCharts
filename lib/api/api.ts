@@ -10,4 +10,8 @@ export class ParaApi {
     return this._paraChart.paraView.serialize();
   }
 
+  downloadPNG() {
+    this._paraChart.paraView.downloadImage();
+  }
+
 }
