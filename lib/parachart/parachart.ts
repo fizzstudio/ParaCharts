@@ -29,6 +29,7 @@ import '../components/aria_live';
 import { ParaStore } from '../store';
 import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../store/custom_property_loader';
+import { ParaApi } from '../api/api';
 import { styles } from '../view/styles';
 
 import { Manifest } from '@fizz/paramanifest';
@@ -46,6 +47,8 @@ export class ParaChart extends logging(ParaComponent) {
   @property({ type: Boolean }) headless = false;
   @property() accessor manifest = '';
   @property() manifestType: SourceKind = 'url';
+  // `data` must be a URL, if set
+  @property() data = '';
   @property({type: Object}) accessor config: SettingsInput = {};
   @property() accessor forcecharttype: ChartType | undefined;
   @property() type?: ChartType
@@ -57,10 +60,10 @@ export class ParaChart extends logging(ParaComponent) {
   protected _loader = new ParaLoader();
   private _slotLoader = new SlotLoader();
 
-  private data?: AllSeriesData;
   protected _suppleteSettingsWith?: DeepReadonly<Settings>;
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
+  protected _api: ParaApi;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -80,17 +83,20 @@ export class ParaChart extends logging(ParaComponent) {
     customPropLoader.store = this.store;
     customPropLoader.registerColors();
     customPropLoader.registerSymbols();
+    this._api = new ParaApi(this);
 
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
         resolve();
         // It's now safe to load a manifest
         if (this.manifest) {
+          if (this.data) {
+            await this._loader.preloadData(this.data);
+          }
           this._loaderPromise = this._runLoader(this.manifest, this.manifestType).then(() => {
             this.log('ParaCharts will now commence the raising of the roof and/or the dead');
           });
-        }
-        else if (this._slotted.length) {
+        } else if (this._slotted.length) {
           this.log(`loading from slot`);
           const table = this._slotted[0].getElementsByTagName("table")[0]
           const manifest = this._slotted[0].getElementsByClassName("manifest")[0] as HTMLElement
@@ -235,6 +241,14 @@ export class ParaChart extends logging(ParaComponent) {
 
   showAriaLiveHistory() {
     this._ariaLiveRegionRef.value!.showHistoryDialog();
+  }
+
+  downloadSVG() {
+    this._api.downloadSVG();
+  }
+
+  downloadPNG() {
+    this._api.downloadPNG();
   }
 
   render(): TemplateResult {

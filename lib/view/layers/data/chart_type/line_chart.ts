@@ -40,8 +40,8 @@ export class LineChart extends PointChart {
       key: 'type.line.lineWidth',
       label: 'Line width',
       options: {
-        inputType: 'number', 
-        min: 1, 
+        inputType: 'number',
+        min: 1,
         max: this.paraview.store.settings.type.line.lineWidthMax as number
       },
       parentView: 'controlPanel.tabs.chart.chart',
@@ -83,6 +83,20 @@ export class LineChart extends PointChart {
 
   protected _newDatapointView(seriesView: XYSeriesView) {
     return new LineSection(seriesView);
+  }
+
+  legend() {
+    if (this.paraview.store.settings.legend.itemOrder === 'series') {
+      return this._chartLandingView.children.map(view => ({
+        label: (view as SeriesView).seriesKey,
+        color: (view as SeriesView).color  // series color
+      }));
+    } else {
+      return this.paraview.store.model!.keys.toSorted().map(key => ({
+        label: key,
+        color: this.paraview.store.seriesProperties!.properties(key).color
+      }));
+    }
   }
 
   queryData(): void {
@@ -168,7 +182,7 @@ export class LineChart extends PointChart {
 
 /**
  * A visual indicator of a line chart datapoint, plus line segments
- * drawn halfway to its neighbors. 
+ * drawn halfway to its neighbors.
  */
 export class LineSection extends ChartPoint {
 
@@ -233,7 +247,7 @@ export class LineSection extends ChartPoint {
 
   protected _computeNext() {
     this._nextMidX = this.width/2; // + 0.1;
-    this._nextMidY = (this._next!.y - this.y)/2; 
+    this._nextMidY = (this._next!.y - this.y)/2;
   }
 
   protected _computeCentroid() {
@@ -248,11 +262,11 @@ export class LineSection extends ChartPoint {
 
     let centroidY = '50%';
     if (!this._prevMidY && this._nextMidY) {
-      centroidY = (this._y > this._nextMidY) 
-        ? `calc(100% - ${symHeight/2}px)` 
+      centroidY = (this._y > this._nextMidY)
+        ? `calc(100% - ${symHeight/2}px)`
         : `${symHeight/2}px`;
     } else if (!this._nextMidY && this._prevMidY) {
-      centroidY = (this._y > this._prevMidY) 
+      centroidY = (this._y > this._prevMidY)
         ? `calc(100% - ${symHeight/2}px)`
         : `${symHeight/2}px`;
     } else if (this._nextMidY && this._prevMidY) {
@@ -261,7 +275,7 @@ export class LineSection extends ChartPoint {
       const symTop = this._y - symHeight/2;
       const symBot = this._y + symHeight/2;
       // NB: Strokes aren't taken into account here when computing the
-      // element size, I think because we're using box-sizing: content-box. 
+      // element size, I think because we're using box-sizing: content-box.
       if (symBot > this._nextMidY && symBot > this._prevMidY) {
         centroidY = `calc(100% - ${symHeight/2}px)`;
       } else if (symTop < this._nextMidY && symTop < this._prevMidY) {
@@ -277,7 +291,7 @@ export class LineSection extends ChartPoint {
     if (this._prevMidY !== undefined && this._nextMidY !== undefined) {
       return [
         new Vec2(this._prevMidX!, this._prevMidY),
-        new Vec2(), 
+        new Vec2(),
         new Vec2(this._nextMidX!, this._nextMidY)
       ];
     } else if (this._prevMidY === undefined && this._nextMidY !== undefined) {

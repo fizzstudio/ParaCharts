@@ -1,6 +1,6 @@
 {
   "name": "@fizz/paracharts",
-  "version": "0.34.3",
+  "version": "0.35.0-alpha.3",
   "description": "Not quite Parable Charts",
   "contributors": [
     "Josh Fennell",

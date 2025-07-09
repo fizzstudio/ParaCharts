@@ -31,7 +31,7 @@ import { type ParaView } from '../paraview';
 export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
 
 /**
- * Root of the view hierarchy. 
+ * Root of the view hierarchy.
  */
 export class DocumentView extends Container(View) {
 
@@ -56,7 +56,7 @@ export class DocumentView extends Container(View) {
     this.setTitleText(this._store.title);
 
     const expandedPadding = this._parsePadding(this._store.settings.chart.padding);
-    // XXX temp hack for cpanel icon 
+    // XXX temp hack for cpanel icon
     const leftPad = Math.max(8 + 1.1*16, expandedPadding.left);
     this.padding = {
       left: leftPad,
@@ -68,8 +68,8 @@ export class DocumentView extends Container(View) {
       numCols:
         (this._store.settings.legend.isDrawLegend &&
         ['east', 'west'].includes(this._store.settings.legend.position))
-        ? 4 : 3, 
-      rowAligns: 'start', 
+        ? 4 : 3,
+      rowAligns: 'start',
       colAligns: 'start',
     });
     this.append(this._grid);
@@ -118,8 +118,8 @@ export class DocumentView extends Container(View) {
         left: parseFloat(vals[3])
       });
     }
-  }  
-  
+  }
+
   protected _populateGrid() {
     const horizAxisPos = this._store.settings.axis.horiz.position;
 
@@ -151,7 +151,7 @@ export class DocumentView extends Container(View) {
         x: 0,
         y: 0,
         height: 1,
-        rowAlign: horizAxisPos === 'north' ? 'end' : 'start' 
+        rowAlign: horizAxisPos === 'north' ? 'end' : 'start'
       });
       this._grid.append(this._horizAxis, {
         x: 1,
@@ -177,9 +177,9 @@ export class DocumentView extends Container(View) {
   //        this._horizGroup.reverseChildren();
   //      }
 
-      this._titleText = this._store.title 
-        ?? this._store.settings.chart.title.text 
-        ?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;      
+      this._titleText = this._store.title
+        ?? this._store.settings.chart.title.text
+        ?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;
     } else {
       // No axis info
       this._chartLayers.dataLayer.init();
@@ -187,7 +187,7 @@ export class DocumentView extends Container(View) {
 
     let hasDirectLabels = false;
     if ( this._store.settings.chart.hasDirectLabels
-        && this.type === 'line' 
+        && this.type === 'line'
         && (/*this._chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
             this._store.model!.multi)
     ) {
@@ -197,7 +197,7 @@ export class DocumentView extends Container(View) {
     }
     if (this._store.settings.legend.isDrawLegend) {
       if (this._store.settings.legend.isAlwaysDrawLegend
-        || (hasDirectLabels && this._store.settings.chart.hasLegendWithDirectLabels) 
+        || (hasDirectLabels && this._store.settings.chart.hasLegendWithDirectLabels)
         || (!hasDirectLabels && this._store.model!.multi)) {
         this.addLegend(this._store.settings.legend.position);
       }
@@ -225,8 +225,8 @@ export class DocumentView extends Container(View) {
   }
 
   setTitleText(text?: string) {
-    this._titleText = text 
-      ?? this._store.settings.chart.title.text 
+    this._titleText = text
+      ?? this._store.settings.chart.title.text
       ?? '[TITLE]';
     if (this._titleLabel) {
       this._titleLabel.text = this._titleText;
@@ -317,7 +317,7 @@ export class DocumentView extends Container(View) {
       this._grid.append(this._legends.west, {x: 0, y: 0, height: 2, margin: {right: margin}});
     } else if (position === 'south') {
       this._legends.south = new Legend(this.paraview, items, {
-        orientation: 'horiz', 
+        orientation: 'horiz',
         wrapWidth: this._chartLayers.boundingWidth
       });
       this._grid.insertRow(this._grid.numRows);
