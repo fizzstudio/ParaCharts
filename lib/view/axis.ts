@@ -390,7 +390,9 @@ export class VertAxis extends Axis<'vert'> {
       options: { inputType: 'number' },
       value: this.settings.minValue === 'unset' ? range.start : this.settings.minValue,
       validator: value => {
-        const min = Math.min(...this.chartLayers.dataLayer.axisInfo!.options.yValues)
+        const min = this.paraview.store.settings.axis.y.maxValue == "unset" 
+          ? Math.max(...this.chartLayers.dataLayer.axisInfo!.options.yValues)
+          : this.paraview.store.settings.axis.y.maxValue as number
         // NB: If the new value is successfully validated, the inner chart
         // gets recreated, and `max` may change, due to re-quantization of
         // the tick values. 
@@ -406,7 +408,9 @@ export class VertAxis extends Axis<'vert'> {
       options: { inputType: 'number' },
       value: this.settings.maxValue == "unset" ? range?.end : this.settings.maxValue,
       validator: value => {
-        const max = Math.max(...this.chartLayers.dataLayer.axisInfo!.options.yValues)
+        const max = this.paraview.store.settings.axis.y.minValue == "unset" 
+          ? Math.min(...this.chartLayers.dataLayer.axisInfo!.options.yValues)
+          : this.paraview.store.settings.axis.y.minValue as number
         return value as number <= max ?
           { err: `Max y-value (${value}) must be greater than (${max})`} : {};
       },

@@ -101,14 +101,55 @@ export class ParaChart extends logging(ParaComponent) {
           const table = this._slotted[0].getElementsByTagName("table")[0]
           const manifest = this._slotted[0].getElementsByClassName("manifest")[0] as HTMLElement
           this._store.dataState = 'pending';
-          const loadresult = await this._slotLoader.findManifest([table, manifest], "some-manifest")
-          this.log('loaded manifest')
-          if (loadresult.result === 'success') {
-            this.store.setManifest(loadresult.manifest!);
-            this._store.dataState = 'complete';
-          } else {
-            //console.error(loadresult.error);
-            this._store.dataState = 'error';
+          if (table) {
+            const loadresult = await this._slotLoader.findManifest([table, manifest], "some-manifest")
+            this.log('loaded manifest')
+            if (loadresult.result === 'success') {
+              this.store.setManifest(loadresult.manifest!);
+              this._store.dataState = 'complete';
+            } else {
+              //console.error(loadresult.error);
+              this._store.dataState = 'error';
+            }
+          }
+          else {
+            console.log("No datatable in slot")
+            if (this.getAttribute("type") === 'graph') {
+              const tempTable = document.createElement("table")
+              //Using a temporary, very sparse table to load the canvas, as the model isn't configured to load with literally no data
+              //The numbers here don't matter as long as they're outside the default graphing calc viewport
+              tempTable.innerHTML = `<table>
+                          <caption>No graph data present</caption>
+                          <thead>
+                              <tr>
+                                  <th>X</th>
+                                  <th>Y</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr>
+                                  <td>100</td>
+                                  <td>100</td>
+                              </tr>
+                              <tr>
+                                  <td>101</td>
+                                  <td>101</td>
+                              </tr>
+                          </tbody>
+                      </table>`
+              const loadresult = await this._slotLoader.findManifest([tempTable], "some-manifest")
+              this.log('loaded manifest')
+              if (loadresult.result === 'success') {
+                this.store.setManifest(loadresult.manifest!);
+                this._store.dataState = 'complete';
+              } else {
+                //console.error(loadresult.error);
+                this._store.dataState = 'error';
+              }
+            }
+            else {
+              this._store.dataState = 'error'
+            }
           }
         }
       });
