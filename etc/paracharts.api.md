@@ -90,6 +90,8 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _controlPanelRef: Ref_2<ParaControlPanel>;
     // (undocumented)
+    data: string;
+    // (undocumented)
     protected firstUpdated(_changedProperties: PropertyValues): void;
     // (undocumented)
     accessor forcecharttype: ChartType_2 | undefined;
