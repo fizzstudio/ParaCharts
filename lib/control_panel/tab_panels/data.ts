@@ -6,8 +6,8 @@ import '../datatable';
 import * as sb from '@fizz/sparkbraille-component';
 import '@fizz/sparkbraille-component';
 
-import { 
-  html, css, nothing, 
+import {
+  html, css, nothing,
 } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
@@ -25,26 +25,19 @@ export class DataPanel extends ControlPanelTabPanel {
   protected _isBar = false;
 
   protected _saveChart() {
-    this._download(this.controlPanel.paraChart.paraView.serialize(), 'image/svg+xml', 'svg');
+    const serialized = this.controlPanel.paraChart.paraView.serialize();
+    const blob = new Blob([serialized], {type: 'image/svg+xml;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    this._controlPanel.paraChart.paraView.downloadContent(url, 'svg');
+    URL.revokeObjectURL(url);
   }
 
   protected _saveData() {
-    this._download(this._store.getModelCsv(), 'text/csv', 'csv');
-  }
-
-  protected _download(content: string, mimeType: string, extension: string) {
-    const paraView = this.controlPanel.paraChart.paraView;
-    const blob = new Blob([content], {type : `${mimeType};charset=utf-8`});
-    const DOMURL = self.URL || self.webkitURL || self;
-    const url = DOMURL.createObjectURL(blob);
-    const downloadLinkEl = document.createElement('a');
-    paraView.fileSavePlaceholder.appendChild(downloadLinkEl);
-    const title = paraView.documentView!.titleText || 'parachart';
-    downloadLinkEl.download = `${title.replace(/\W/g, '_')}.${extension}`;
-    downloadLinkEl.href = url;
-    downloadLinkEl.click();
-    DOMURL.revokeObjectURL(url);
-    downloadLinkEl.remove();  
+    const csv = this._store.getModelCsv();
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    this._controlPanel.paraChart.paraView.downloadContent(url, 'csv');
+    URL.revokeObjectURL(url);
   }
 
   static styles = [
@@ -88,9 +81,9 @@ export class DataPanel extends ControlPanelTabPanel {
     this.sparkBrailleData = paraView.store._sparkBrailleData
     this._isSBProp = paraView.store.settings.controlPanel.isSparkBrailleProportional;
     this._isBar = paraView.store.settings.controlPanel.isSparkBrailleBar;
-    return html`   
-      <div 
-        id="data-page" 
+    return html`
+      <div
+        id="data-page"
         class="tab-content"
       >
         <div>
@@ -98,8 +91,8 @@ export class DataPanel extends ControlPanelTabPanel {
         </div>
         <div id="data-buttons">
           ${this.controlPanel.settings.isSparkBrailleControlVisible
-            ? html`  
-              <button 
+            ? html`
+              <button
                 @click=${() => {
                   this.isSparkBrailleVisible = !this.isSparkBrailleVisible;
                   // XXX Does this work?
@@ -115,10 +108,10 @@ export class DataPanel extends ControlPanelTabPanel {
             `
             : nothing
           }
-          <button 
+          <button
             @click=${() => {
               this.controlPanel.dialog.show(
-                'JSON Image Metadata', 
+                'JSON Image Metadata',
                 html`
                   <pre>
                     <code>
@@ -130,12 +123,12 @@ export class DataPanel extends ControlPanelTabPanel {
           >
             JIM
           </button>
-          <button 
+          <button
             @click=${() => this._saveData()}
           >
             Save data
           </button>
-          <button 
+          <button
             @click=${() => {
               this.controlPanel.dialog.show('Data table', html`
                 <para-datatable
@@ -147,25 +140,27 @@ export class DataPanel extends ControlPanelTabPanel {
           >
             Data table
           </button>
-          <button 
+          <button
             @click=${() => this.controlPanel.dialog.show('Source links')}
           >
             Source Links
           </button>
-          <button 
-            @click=${() => this._saveChart()}
+          <button
+            @click=${() => {
+              this._saveChart();
+            }}
           >
             Save chart
           </button>
         </div>
       </div>
       <div
-        ${ref(this._sparkBrailleWrapperRef)} 
+        ${ref(this._sparkBrailleWrapperRef)}
         id="sparkbraille"
         class=${this.isSparkBrailleVisible ? nothing : 'hidden'}
         ?hidden=${!this.isSparkBrailleVisible}
     >
-        <!-- 
+        <!--
           What should happen when a braille cell is selected?
         -->
         <fizz-sparkbraille
