@@ -46,6 +46,8 @@ export class ParaChart extends logging(ParaComponent) {
   @property({ type: Boolean }) headless = false;
   @property() accessor manifest = '';
   @property() manifestType: SourceKind = 'url';
+  // `data` must be a URL, if set
+  @property() data = '';
   @property({type: Object}) accessor config: SettingsInput = {};
   @property() accessor forcecharttype: ChartType | undefined;
   @property() type?: ChartType
@@ -57,7 +59,6 @@ export class ParaChart extends logging(ParaComponent) {
   protected _loader = new ParaLoader();
   private _slotLoader = new SlotLoader();
 
-  private data?: AllSeriesData;
   protected _suppleteSettingsWith?: DeepReadonly<Settings>;
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
@@ -86,11 +87,13 @@ export class ParaChart extends logging(ParaComponent) {
         resolve();
         // It's now safe to load a manifest
         if (this.manifest) {
+          if (this.data) {
+            await this._loader.preloadData(this.data);
+          }
           this._loaderPromise = this._runLoader(this.manifest, this.manifestType).then(() => {
             this.log('ParaCharts will now commence the raising of the roof and/or the dead');
           });
-        }
-        else if (this._slotted.length) {
+        } else if (this._slotted.length) {
           this.log(`loading from slot`);
           const table = this._slotted[0].getElementsByTagName("table")[0]
           const manifest = this._slotted[0].getElementsByClassName("manifest")[0] as HTMLElement
