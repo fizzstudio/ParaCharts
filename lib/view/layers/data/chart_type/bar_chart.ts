@@ -16,8 +16,6 @@ import { formatBox } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 
 import { StyleInfo } from 'lit/directives/style-map.js';
-import { PathShape } from '../../../shape/path';
-import { Vec2 } from '../../../../common/vector';
 
 type BarClusterMap = {[key: string]: BarCluster};
 
@@ -600,7 +598,7 @@ export class Bar extends XYDatapointView {
     const zeroHeight = this.chart.parent.logicalHeight - (this.chart.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / this.chart.axisInfo!.yLabelInfo.range!);
     this._width = this.chart.stackWidth;
     // @ts-ignore
-    this._height = (this.datapoint.data.y.value as number)*pxPerYUnit;
+    this._height = Math.abs((this.datapoint.data.y.value as number)*pxPerYUnit);
     //this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
     this._x = this.chart.settings.clusterGap/2
       + this.chart.clusterWidth*this._stack.cluster.index
@@ -676,7 +674,7 @@ export class Bar extends XYDatapointView {
       x: this._x,
       y: this._y,
       width: this._width,
-      height: Math.abs(this._height),
+      height: this._height,
       isPattern: isPattern ? true : false
     });
     super._createShape();

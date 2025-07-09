@@ -28,8 +28,7 @@ import { type Setting } from '../../../../store/settings_types';
 import { ParaView } from '../../../../paraview';
 import { HotkeyEvent } from '../../../../store/keymap_manager';
 
-import { XYDatapoint, strToId } from '@fizz/paramodel';
-import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
+import { PlaneDatapoint } from '@fizz/paramodel';
 
 export type DatapointViewType<T extends XYDatapointView> = 
   (new (...args: any[]) => T);
@@ -325,8 +324,8 @@ export abstract class XYChart extends DataLayer {
           if (!datapointNavPoint) {
             clearInterval(this._soniRiffInterval!);
           } else {
-            const datapoint = datapointNavPoint.datapoint;
-            this._sonifier.playDatapoints(datapoint as XYDatapoint);
+            const datapoint = datapointNavPoint.datapoint as PlaneDatapoint;
+            this._sonifier.playDatapoints(datapoint);
             this.soniNoteIndex++;
           }
         }, SONI_RIFF_SPEEDS.at(this._soniRiffSpeedRateIndex));
@@ -526,7 +525,7 @@ export class XYSeriesView extends SeriesView {
 export abstract class XYDatapointView extends DatapointView {
 
   declare readonly chart: XYChart;
-  declare _datapoint: XYDatapoint;
+  declare _datapoint: PlaneDatapoint;
 
   protected centroid?: string;
 
@@ -558,8 +557,8 @@ export abstract class XYDatapointView extends DatapointView {
   }
 
   // override to get more specific return type
-  get datapoint(): XYDatapoint {
-    return super.datapoint as XYDatapoint;
+  get datapoint(): PlaneDatapoint {
+    return super.datapoint as PlaneDatapoint;
   }
 
   get styleInfo() {

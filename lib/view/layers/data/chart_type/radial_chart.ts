@@ -222,7 +222,7 @@ export abstract class RadialChart extends DataLayer {
       dp.facetValue('x') as string
     );
     const ys = this.paraview.store.model!.series[0].datapoints.map(dp =>
-      dp.facetAsNumber('y')!);
+      dp.facetValueNumericized('y')!);
 
     // const indep = this._model.indepVar;
     // const xs: string[] = [];
