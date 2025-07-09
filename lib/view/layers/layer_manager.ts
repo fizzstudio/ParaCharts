@@ -37,6 +37,7 @@ import { calendarNumber, type CalendarPeriod } from '@fizz/paramodel';
 import { svg } from 'lit';
 import { Heatmap } from './data/chart_type/heatmap';
 import { Histogram } from './data/chart_type/histogram';
+import { GraphingCalculator } from './data/chart_type/calculator';
 
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
@@ -52,6 +53,7 @@ export const chartClasses = {
   gauge: BarChart, //GaugeChart,
   stepline: LineChart, //StepLineChart,
   lollipop: BarChart, //LollipopChart
+  graph: GraphingCalculator
 };
 
 export class ChartLayerManager extends View {

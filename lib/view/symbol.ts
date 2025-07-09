@@ -21,6 +21,7 @@ import { ParaView } from '../paraview';
 
 import { svg, nothing } from 'lit';
 import { styleMap, type StyleInfo } from 'lit/directives/style-map.js';
+import { DatapointView } from './data';
 
 export type DataSymbolShape = 
 'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
@@ -416,7 +417,14 @@ export class DataSymbol extends View {
     if (this._options.scale !== 1) {
       transform += fixed` scale(${this._options.scale})`;
     }
-    return this.paraview.store.settings.type.line.isDrawSymbols ?
+    let type = this.paraview.store.type
+    if (this.parent instanceof DatapointView){
+      if (this._y < 0 || this._y > this.parent.chart.parent.logicalHeight){
+        this.hidden = true;
+      }
+    }
+    //@ts-ignore Remove when graph is added to ChartTypes in ParaModel
+    return this.hidden ? svg`` : this.paraview.store.settings.type[type]!.isDrawSymbols ?
     svg`
       <use 
         href="#${this._defsKey}"

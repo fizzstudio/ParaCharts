@@ -34,7 +34,8 @@ export class LineChart extends PointChart {
 
   protected _addedToParent() {
     super._addedToParent();
-    this.paraview.store.settingControls.add({
+    if (this.paraview.store.type === "line"){
+      this.paraview.store.settingControls.add({
       type: 'textfield',
       key: 'type.line.lineWidth',
       label: 'Line width',
@@ -51,6 +52,7 @@ export class LineChart extends PointChart {
       label: 'Show symbols',
       parentView: 'controlPanel.tabs.chart.chart',
     });
+    }
   }
 
   get datapointViews() {
