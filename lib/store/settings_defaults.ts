@@ -350,7 +350,9 @@ export const defaults: Settings = {
       isDrawSymbols: false,
       equation: '',
       xMin: -10,
-      xMax: 10
+      xMax: 10,
+      preset: '',
+      renderPts: 100
     }
   },
   grid: {

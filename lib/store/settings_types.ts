@@ -335,6 +335,8 @@ export interface GraphSettings extends LineSettings{
   equation: string;
   xMin: number;
   xMax: number;
+  preset: string;
+  renderPts: number;
 }
 
 

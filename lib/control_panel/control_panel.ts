@@ -74,8 +74,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
         --summary-marker-font-weight: bold;
         --control-panel-icon-size: 1.1rem;
         --contents-margin: 2px 0 0 0;
-        width: 0;
-        min-width: 100%;
+        width: 1;
+        min-width: 40rem;
+        max-width: 50%;
       }
       fizz-tab-details#controls.collapsed {
         /*width: rem;*/

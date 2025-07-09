@@ -8,7 +8,8 @@ import { parse, simplify } from "mathjs";
 export class GraphingCalculator extends LineChart {
   protected xMin: number = -10;
   protected xMax: number = 10;
-
+  protected renderPts: number = 100;
+  protected currEquations: string[] = [];
   protected _addedToParent() {
     super._addedToParent();
     this.paraview.store.settingControls.add({
@@ -44,6 +45,18 @@ export class GraphingCalculator extends LineChart {
 
     this.paraview.store.settingControls.add({
       type: 'textfield',
+      key: 'type.graph.renderPts',
+      label: '# of Rendering points',
+      options: {
+        inputType: 'number',
+        min: 5,
+        max: 200
+      },
+      parentView: 'controlPanel.tabs.graphing.general',
+    });
+
+    this.paraview.store.settingControls.add({
+      type: 'textfield',
       key: 'type.graph.equation',
       label: 'Equation',
       options: {
@@ -51,6 +64,15 @@ export class GraphingCalculator extends LineChart {
       },
       parentView: 'controlPanel.tabs.graphing.general',
     });
+
+    this.paraview.store.settingControls.add({
+      type: 'dropdown',
+      key: 'type.graph.preset',
+      label: 'Example equations:',
+      options: { options: ['', 'x', 'x^2', 'sin(x)', 'sqrt(x)','(x/2)^3-2x', '2(sin(x)+cos(2x/3))'] as string[] },
+      parentView: 'controlPanel.tabs.graphing.general'
+    });
+
     this._axisInfo = new AxisInfo(this.paraview.store, {
       xValues: [this.paraview.store.settings.type.graph.xMin ?? this.xMin, this.paraview.store.settings.type.graph.xMax ?? this.xMax],
       yValues: [-10, 10],
@@ -62,8 +84,15 @@ export class GraphingCalculator extends LineChart {
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['type.graph.equation'].includes(path)) {
       this.addEquation(newValue as string);
-      //this.paraview.createDocumentView();
-      //this.paraview.requestUpdate();
+    }
+    else if (['type.graph.preset'].includes(path)) {
+      this.paraview.store.updateSettings(draft => {
+            draft.type.graph.equation = String(newValue);
+          });
+    }
+    else if (['type.graph.renderPts'].includes(path)) {
+      this.renderPts = Number(newValue)
+      this.addEquation(this.paraview.store.settings.type.graph.equation)
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -89,17 +118,20 @@ export class GraphingCalculator extends LineChart {
       console.log(simplified.toString());
       var xVals = [];
       var yVals = [];
-      const points = 50
+      const points = this.renderPts
       const xBounds = 10
       for (var i = 0; i < points + 1; i++) {
         var tr = document.createElement("tr");
         var td1 = document.createElement("td");
         var td2 = document.createElement("td");
-        var xVal = parseFloat((i / (points / (2 * xBounds)) - xBounds).toFixed(3));
-        var yVal = simplified.evaluate({ x: xVal }).toFixed(3);
-        td1.innerHTML = String(xVal);
-        td2.innerHTML = yVal;
-        if (!Number.isNaN(yVal) && yVal !== Infinity && yVal !== -Infinity && yVal.im === undefined) {
+        var xVal = parseFloat((i / (points / (2 * xBounds)) - xBounds).toFixed(3))
+        const simpEval = simplified.evaluate({ x: xVal })
+        if (simpEval.im === undefined){
+          var yVal = simpEval.toFixed(3);
+        }
+        if (yVal !== undefined && !Number.isNaN(yVal) && yVal !== Infinity && yVal !== "Infinity" && yVal !== -Infinity && yVal !== "-Infinity" && yVal.im === undefined) {
+          td1.innerHTML = String(xVal);
+          td2.innerHTML = yVal;
           tr.append(td1);
           tr.append(td2);
           table.append(tr);
@@ -163,6 +195,16 @@ export class GraphLine extends LineSection{
     const xTemp = (this.datapoint.facetValueNumericized(this.datapoint.indepKey)! - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
     const parentWidth: number = this.chart.parent.width;
     return parentWidth * xTemp;
+  }
+
+  protected _computePrev() {
+      this._prevMidX = !this.prev ? undefined : (this.prev.x - this.x)/2 // - 0.1;
+      this._prevMidY = (this._prev!.y - this.y)/2;
+  }
+
+  protected _computeNext() {
+    this._nextMidX = !this.next ? undefined : (this.next.x - this.x) / 2; // + 0.1;
+    this._nextMidY = (this._next!.y - this.y) / 2;
   }
 
   content(){
