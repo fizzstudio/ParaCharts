@@ -29,6 +29,7 @@ import '../components/aria_live';
 import { ParaStore } from '../store';
 import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../store/custom_property_loader';
+import { ParaApi } from '../api/api';
 import { styles } from '../view/styles';
 
 import { Manifest } from '@fizz/paramanifest';
@@ -62,6 +63,7 @@ export class ParaChart extends logging(ParaComponent) {
   protected _suppleteSettingsWith?: DeepReadonly<Settings>;
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
+  protected _api: ParaApi;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -81,6 +83,7 @@ export class ParaChart extends logging(ParaComponent) {
     customPropLoader.store = this.store;
     customPropLoader.registerColors();
     customPropLoader.registerSymbols();
+    this._api = new ParaApi(this);
 
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
@@ -197,6 +200,14 @@ export class ParaChart extends logging(ParaComponent) {
 
   showAriaLiveHistory() {
     this._ariaLiveRegionRef.value!.showHistoryDialog();
+  }
+
+  downloadSVG() {
+    this._api.downloadSVG();
+  }
+
+  downloadPNG() {
+    this._api.downloadPNG();
   }
 
   render(): TemplateResult {
