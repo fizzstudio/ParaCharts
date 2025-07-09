@@ -677,6 +677,7 @@ export class Colors {
                 <line class="pattern" x1="0" y="0" x2="0" y2="10" stroke='hsl(225, 30%, 52%)' stroke-width="5" />
               </pattern>
               `,
+              contrastValue: "hsl(0, 0%, 0%)",
             name: 'diagonal_lines'
           },
           {
@@ -685,6 +686,7 @@ export class Colors {
                 <circle cx="5" cy="5" r="2" fill='hsl(12, 69%, 35%)' />
               </pattern>
               `,
+              contrastValue: "hsl(0, 0%, 0%)",
             name: 'dots'
           },
           {
@@ -693,6 +695,7 @@ export class Colors {
                 <path d="M 10 0 L 0 0 0 10" fill="none" stroke='hsl(75, 43%, 45%)' stroke-width="5"/>
               </pattern>
               `,
+              contrastValue: "hsl(0, 0%, 0%)",
             name: 'grid'
           },
           {
@@ -701,6 +704,7 @@ export class Colors {
                 <path d="M 0 0 L 10 10 M 10 0 L 0 10" stroke='hsl(40, 98%, 69%)' stroke-width="3"/>
               </pattern>
                `,
+               contrastValue: "hsl(0, 0%, 0%)",
             name: 'crosshatch'
           },
           {
@@ -709,6 +713,7 @@ export class Colors {
                 <path d="M 0 5 Q 5 0, 10 5 T 20 5" fill="none" stroke='hsl(215, 37%, 66%)' stroke-width="3"/>
               </pattern>
               `,
+              contrastValue: "hsl(0, 0%, 0%)",
             name: 'waves'
           },
           {
@@ -716,6 +721,7 @@ export class Colors {
               <pattern id="Pattern5" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(135)">
                 <line x1="0" y="0" x2="0" y2="10" stroke='hsl(63, 100%, 23%)' stroke-width="5" />
               </pattern>`,
+              contrastValue: "hsl(0, 0%, 0%)",
             name: 'diagonal_lines2'
           },
           {
@@ -723,6 +729,7 @@ export class Colors {
               <pattern id="Pattern6" class="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
               <circle cx="10" cy="10" r="10" fill='hsl(34, 57%, 46%)'" />
               </pattern>`,
+              contrastValue: "hsl(0, 0%, 0%)",
             name: ''
           },
           {
@@ -840,12 +847,14 @@ export class Colors {
   }
 
   contrastValueAt(index: number) {
-    const colors = this._colorMap
+    const colors = this.palette.isPattern 
+      ? this.palette.patterns!
+      : this._colorMap
       ? this._colorMap.map(i => this.palette.colors[i])
       : this.palette.colors;
     if (index === -1) {
       // highlight
-      return colors.at(-1)!.value;
+      return colors.at(-1)!.contrastValue;
     }
     // Never use 'highlight' for any series/datapoint color
     return colors[index % (colors.length - 1)].contrastValue ?? `hsl(0, 0%, 100%)`;

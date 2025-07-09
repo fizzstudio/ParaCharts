@@ -13,8 +13,11 @@ export class ParaViewController extends Logger {
   }
 
   handleKeyEvent(event: KeyboardEvent) {
-    let key = event.key === 'Control' ? 'Ctrl' : event.key; 
-    let mods = [ 
+    if (this._store.settings.chart.isStatic) {
+      return;
+    }
+    let key = event.key === 'Control' ? 'Ctrl' : event.key;
+    let mods = [
       event.altKey ? 'Alt' : '',
       event.ctrlKey ? 'Ctrl' : '',
       event.shiftKey ? 'Shift' : '',
@@ -28,5 +31,5 @@ export class ParaViewController extends Logger {
       event.preventDefault();
     }
   }
-  
+
 }
