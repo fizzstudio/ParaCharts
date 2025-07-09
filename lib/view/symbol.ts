@@ -423,9 +423,7 @@ export class DataSymbol extends View {
         this.hidden = true;
       }
     }
-    //@ts-ignore Remove when graph is added to ChartTypes in ParaModel
-    return this.hidden ? svg`` : this.paraview.store.settings.type[type]!.isDrawSymbols ?
-    svg`
+    return this.hidden ? svg`` : svg`
       <use 
         href="#${this._defsKey}"
         id=${this._id || nothing}
@@ -434,7 +432,7 @@ export class DataSymbol extends View {
         style=${styleMap(this._styleInfo)}
         class="symbol ${this.fill} ${this.classes.join(' ')}"
       />
-    ` : svg``;
+    `;
   }
 
 }

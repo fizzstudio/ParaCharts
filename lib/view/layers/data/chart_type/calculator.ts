@@ -160,8 +160,8 @@ export class GraphLine extends LineSection{
 
   protected _computeX() {
     // Scales points in proportion to the data range
-    const xTemp = (this.datapoint.x.value as number - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
-    const parentWidth: number = this.chart.parent.logicalWidth;
+    const xTemp = (this.datapoint.facetValueNumericized(this.datapoint.indepKey)! - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
+    const parentWidth: number = this.chart.parent.width;
     return parentWidth * xTemp;
   }
 
@@ -176,7 +176,7 @@ export class GraphLine extends LineSection{
     if (this._symbol) {
       this._symbol.scale = this._symbolScale;
       this._symbol.color = this._symbolColor;
-      this._symbol.hidden = !this.paraview.store.settings.chart.isDrawSymbols;
+      this._symbol.hidden = !this.paraview.store.settings.type.graph.isDrawSymbols;
       if (this._symbol.y < 0 || this._symbol.y > this.chart.parent.logicalHeight){
         this._symbol.hidden = true;
       }
