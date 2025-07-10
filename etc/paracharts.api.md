@@ -140,6 +140,8 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     showAriaLiveHistory(): void;
     // (undocumented)
+    get slotted(): HTMLElement[];
+    // (undocumented)
     static styles: CSSResult[];
     // Warning: (ae-forgotten-export) The symbol "DeepReadonly" needs to be exported by the entry point index.d.ts
     // Warning: (ae-forgotten-export) The symbol "Settings" needs to be exported by the entry point index.d.ts

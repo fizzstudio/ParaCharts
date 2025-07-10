@@ -98,7 +98,7 @@ export class GraphingCalculator extends LineChart {
   }
 
   addEquation(eq: string) {
-    var container = document.querySelector('#data');
+    var container = this.paraview.paraChart.slotted[0]
     var table = document.createElement("table");
     var trVar = document.createElement("tr");
     var xVar = document.createElement("td");
