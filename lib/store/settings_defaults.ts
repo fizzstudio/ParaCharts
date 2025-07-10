@@ -338,7 +338,7 @@ export const defaults: Settings = {
       lineWidth: 5,
       lineWidthMax: 25,
       lowVisionLineWidth: 15,
-      lineHighlightScale: 1.5, 
+      lineHighlightScale: 1.5,
       baseSymbolSize: 10,
       seriesLabelPadding: 5,
       pointLabelFormat: 'raw',
@@ -371,7 +371,7 @@ export const defaults: Settings = {
     focusRingGap: 10
   },
   controlPanel: {
-    isControlPanelDefaultOpen: false,
+    isControlPanelDefaultOpen: true,
     tabLabelStyle: 'label',
     isCaptionVisible: true,
     isStatusBarVisible: true,
