@@ -405,6 +405,10 @@ export class ParaStore extends State {
     this._prevVisitedDatapoints = this._visitedDatapoints;
     this._visitedDatapoints = datapoints;
     this._everVisitedDatapoints.push(...datapoints);
+    if (this.settings.controlPanel.isMDRAnnotationsVisible) {
+      this.removeMDRAnnotations(this._prevVisitedDatapoints)
+      this.showMDRAnnotations();
+    }
   }
 
   isVisited(seriesKey: string, index: number) {
@@ -461,10 +465,6 @@ export class ParaStore extends State {
     }
     this._prevSelectedDatapoints = this._selectedDatapoints;
     this._selectedDatapoints = newSelection;
-    if (this.settings.controlPanel.isMDRAnnotationsVisible){
-      this.removeMDRAnnotations(this._prevSelectedDatapoints)
-      this.showMDRAnnotations();
-    }
   }
 
   extendSelection(datapoints: DataCursor[]) {
@@ -535,8 +535,8 @@ export class ParaStore extends State {
       if (this.settings.controlPanel.isMDRAnnotationsVisible) {
         let seriesAnalysis;
         let seriesKey: string;
-        if (this.selectedDatapoints.length > 0) {
-          seriesKey = this.selectedDatapoints[0].seriesKey;
+        if (this.visitedDatapoints.length > 0) {
+          seriesKey = this.visitedDatapoints[0].seriesKey;
           seriesAnalysis = await this.model?.getSeriesAnalysis(seriesKey)
         }
         else {
@@ -585,14 +585,14 @@ export class ParaStore extends State {
     }
   }
 
-  async removeMDRAnnotations(selectedDatapoints?: DataCursor[]) {
+  async removeMDRAnnotations(visitedDatapoints?: DataCursor[]) {
     let seriesAnalysis;
     let seriesKey: string;
-    if (!selectedDatapoints) {
-      selectedDatapoints = this.selectedDatapoints
+    if (!visitedDatapoints) {
+      visitedDatapoints = this.visitedDatapoints
     }
-    if (selectedDatapoints.length > 0) {
-      seriesKey = selectedDatapoints[0].seriesKey
+    if (visitedDatapoints.length > 0) {
+      seriesKey = visitedDatapoints[0].seriesKey
       seriesAnalysis = await this.model?.getSeriesAnalysis(seriesKey)
     }
     else {
