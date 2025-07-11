@@ -1,5 +1,3 @@
-import { Settings } from '../../lib/store/settings_types';
-import { defaults } from '../../lib/store/settings_defaults';
 import { Chart, type ChartProps } from './Chart';
 
 import type { Meta, StoryObj } from '@storybook/web-components';
