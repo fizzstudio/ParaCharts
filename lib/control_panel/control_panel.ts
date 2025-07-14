@@ -30,7 +30,7 @@ import '@fizz/ui-components';
 
 import { type Unsubscribe } from '@lit-app/state';
 
-import { 
+import {
   html, css, PropertyValues,
   unsafeCSS
 } from 'lit';
@@ -67,9 +67,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
         font-family: "Trebuchet MS", Helvetica, sans-serif;
         font-size: var(--control-panel-font-size, 1rem);
       }
-      fizz-tab-details#controls {
+      fizz-tab-details {
         --background: #eee;
-        --summary-marker-icon: url(${unsafeCSS(cpanelIcon)});
+        --summary-marker-icon: var(--control-panel-icon, url(${unsafeCSS(cpanelIcon)}));
         /*--control-panel-icon: url(${unsafeCSS(cpanelIconAlt)});*/
         --summary-marker-font-weight: bold;
         --control-panel-icon-size: 1.1rem;
@@ -78,7 +78,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
         min-width: 40rem;
         max-width: 50%;
       }
-      fizz-tab-details#controls.collapsed {
+      fizz-tab-details.collapsed {
         /*width: rem;*/
         /*min-width: unset;*/
         position: relative;
@@ -92,7 +92,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
         border: 2px solid transparent;
       }
 
-      fizz-tab-details#controls.expanded {
+      fizz-tab-details.expanded {
         border: 2px solid var(--themeColor);
         border-radius: 4px;
         --background: none;
@@ -101,7 +101,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
         --summary-margin: -2px 0;
       }
 
-      fizz-tab-details#controls.collapsed.darkmode  {
+      fizz-tab-details.collapsed.darkmode  {
         --control-panel-icon-color: ghostwhite;
       }
     `
@@ -170,7 +170,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
         this._tabDeetsRef.value!.hide(tabName);
       }
     } else if (shortKey === 'isControlPanelDefaultOpen'
-      || shortKey === 'tabLabelStyle' 
+      || shortKey === 'tabLabelStyle'
     ) {
       this.requestUpdate();
     } else if (shortKey === 'isCaptionVisible'
@@ -226,7 +226,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
     this.log('render', this._isOpen);
     let deetsState = this._isOpen ? 'expanded' : 'collapsed';
 //    deetsState += this.todo.darkMode ? ' darkmode' : '';
-   
+
     const tabBarStyle = {
       //['--background-selected']: 'white'
       //['--title-font-size']: '1rem',
@@ -252,10 +252,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
     //   }));
     // }}
     return html`
-      <fizz-tab-details 
+      <fizz-tab-details
         ${ref(this._tabDeetsRef)}
         ?open=${this.settings.isControlPanelDefaultOpen}
-        id="controls"
         class=${deetsState}
         tablabelmode=${tabLabelModes[this.settings.tabLabelStyle]}
         openbuttonarialabel="Open or close ParaCharts control panel"
@@ -380,11 +379,11 @@ export class ParaControlPanel extends logging(ParaComponent) {
 
   private renderDialog() {
     return html`
-      <para-dialog 
+      <para-dialog
         ${ref(this._dialogRef)}
-        id="generic-dialog" 
+        id="generic-dialog"
       ></para-dialog>
-      <fizz-msg-dialog 
+      <fizz-msg-dialog
         ${ref(this._msgDialogRef)}
       ></fizz-msg-dialog>
     `;
@@ -405,7 +404,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
 
   private getJsonStr( json: object, isWrapped?: boolean, indents?: number ) {
     if (isWrapped) {
-      return `   
+      return `
         <pre><code>${JSON.stringify(json, null, indents)}
         </code></pre>
       `;
