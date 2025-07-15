@@ -86,12 +86,22 @@ export const keymap: KeyRegistrations = {
   // 'Shift+PageUp': {
   //   action: 'play_backward_category'
   // },
-  // Home: {
-  //   action: 'first_point'
-  // },
-  // 'End': {
-  //   action: 'last_point'
-  // },
+  Home: {
+    label: 'Go to first point in series',
+    action: 'goFirst'
+  },
+  End: {
+    label: 'Go to last point in series',
+    action: 'goLast'
+  },
+  ';': {
+    label: 'Go to first point in series',
+    action: 'goFirst'
+  },
+  "'": {
+    label: 'Go to last point in series',
+    action: 'goLast'
+  },
   ' ': {
     label: 'Repeat last message',
     action: 'repeatLastAnnouncement'

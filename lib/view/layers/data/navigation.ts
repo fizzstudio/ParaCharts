@@ -193,13 +193,17 @@ export class NavLayer {
     return [];
   }
 
+  goToNode(node: NavNode) {
+    this._cursor = node;
+    this.map.visitDatapoints();
+  }
+
   goTo<T extends NavNodeType>(
     type: T,
     optionsOrIndex: Readonly<NavNodeOptionsType<T>> | number) {
     const node = this.get(type, optionsOrIndex);
     if (node) {
-      this._cursor = node;
-      this.map.visitDatapoints();
+      this.goToNode(node);
     } else {
       throw new Error(`nav node not found (type='${type}')`);
     }
@@ -270,20 +274,22 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     return cursor;
   }
 
-  allNodes(dir: Direction) {
+  allNodes(dir: Direction, type?: NavNodeType) {
     let count = 1;
     let cursor: NavNode | undefined = undefined;
     const all: NavNode[] = [];
-    do {
+    while (true) {
       cursor = this.peekNode(dir, count++);
-      if (cursor) {
+      if (cursor && (!type || type === cursor.type)) {
         if (all.includes(cursor)) {
           // there's a loop in the graph
           break;
         }
         all.push(cursor);
+      } else {
+        break;
       }
-    } while(cursor);
+    }
     return all;
   }
 
@@ -308,6 +314,10 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
       throw new Error('unknown nav link type');
     }
     this._layer.map.visitDatapoints();
+  }
+
+  go() {
+    this._layer.goToNode(this);
   }
 
 }
