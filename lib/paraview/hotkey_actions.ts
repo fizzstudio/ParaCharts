@@ -8,6 +8,8 @@ export interface AvailableActions {
   moveDown(): void;
   moveIn(): void;
   moveOut(): void;
+  goFirst(): void;
+  goLast(): void;
   goMinimum(): void;
   goMaximum(): void;
   goTotalMinimum(): void;
@@ -65,6 +67,12 @@ export class HotkeyActions {
       moveOut() {
         chart().clearPlay();
         chart().move('out');
+      },
+      goFirst() {
+        chart().navFirst();
+      },
+      goLast() {
+        chart().navLast();
       },
       goMinimum() {
         chart().goSeriesMinMax(true);

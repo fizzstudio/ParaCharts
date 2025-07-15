@@ -31,7 +31,7 @@ import { type AxisInfo } from '../../../common/axisinfo';
 import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../../data';
 import { type LegendItem } from '../../legend';
 import { queryMessages } from '../../../store/query_utils';
-import { NavMap, NavLayer, NavNode } from './navigation';
+import { NavMap, NavLayer, NavNode, NavNodeType } from './navigation';
 
 import { interpolate } from '@fizz/templum';
 import { StyleInfo } from 'lit/directives/style-map.js';
@@ -392,6 +392,30 @@ export abstract class DataLayer extends ChartLayer {
       }
     }
     super.storeDidChange(key, value);
+  }
+
+  navFirst() {
+    const type = this._navMap.cursor.type;
+    if (['datapoint', 'chord', 'series'].includes(type)) {
+      const dir: Partial<Record<NavNodeType, Direction>> = {
+        datapoint: 'left',
+        chord: 'left',
+        series: 'up'
+      };
+      this._navMap.cursor.allNodes(dir[type]!, type).at(-1)?.go();
+    }
+  }
+
+  navLast() {
+    const type = this._navMap.cursor.type;
+    if (['datapoint', 'chord', 'series'].includes(type)) {
+      const dir: Partial<Record<NavNodeType, Direction>> = {
+        datapoint: 'right',
+        chord: 'right',
+        series: 'down'
+      };
+      this._navMap.cursor.allNodes(dir[type]!, type).at(-1)?.go();
+    }
   }
 
   navToChordLanding() {
