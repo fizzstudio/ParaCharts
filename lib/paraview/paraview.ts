@@ -504,7 +504,17 @@ export class ParaView extends logging(ParaComponent) {
     return out.join('\n');
   }
 
-  downloadImage() {
+  downloadSVG() {
+    const data = this.serialize();
+    const svgBlob = new Blob([data], {
+      type: 'image/svg+xml;charset=utf-8'
+    });
+    const svgURL = URL.createObjectURL(svgBlob);
+    this.downloadContent(svgURL, 'svg');
+    URL.revokeObjectURL(svgURL);
+  }
+
+  downloadPNG() {
     // hat tip: https://takuti.me/note/javascript-save-svg-as-image/
     const data = this.serialize();
     const svgBlob = new Blob([data], {

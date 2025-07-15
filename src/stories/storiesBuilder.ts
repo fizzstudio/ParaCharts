@@ -29,7 +29,8 @@ const CHART_TYPE_FOLDERS_SINGLE: Record<ChartType, string> = {
   'donut': 'Pastry Charts/Donut Charts',
   'scatter': 'Scatter Charts',
   'histogram': 'Histograms',
-  'heatmap': 'Heat Maps'
+  'heatmap': 'Heat Maps',
+  'graph': 'Graph'
 }
 
 const CHART_TYPE_FOLDERS_MULTI: Record<ChartType, string> = {
@@ -42,7 +43,8 @@ const CHART_TYPE_FOLDERS_MULTI: Record<ChartType, string> = {
   'donut': 'Pastry Charts/Donut Charts',
   'scatter': 'Scatter Charts',
   'histogram': 'Histograms',
-  'heatmap': 'Heat Maps'
+  'heatmap': 'Heat Maps',
+  'graph': 'Graph'
 }
 
 // Generator Functions
@@ -187,7 +189,7 @@ fs.rmSync(AUTOGEN_PATH, { force: true, recursive: true })
 fs.mkdirSync(AUTOGEN_PATH);
 
 const MULTIABLE_FAMILIES: ChartTypeFamily[] = ['line', 'bar'];
-const NON_MULTIABLE_FAMILIES: ChartTypeFamily[] = ['scatter', 'pastry'];
+const NON_MULTIABLE_FAMILIES: ChartTypeFamily[] = ['scatter', 'pastry', 'histogram'];
 
 for (const family of MULTIABLE_FAMILIES) {
   generateFamilyAllStory(family, false, false);

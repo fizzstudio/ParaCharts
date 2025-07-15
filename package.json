@@ -1,6 +1,6 @@
 {
   "name": "@fizz/paracharts",
-  "version": "0.35.0-alpha.1",
+  "version": "0.35.0-alpha.4",
   "description": "Not quite Parable Charts",
   "contributors": [
     "Josh Fennell",
@@ -87,8 +87,8 @@
     "@fizz/grammatize-information": "^1.5.0",
     "@fizz/line-chart-metadata": "^4.7.4-alpha.0",
     "@fizz/line-chart-parameters": "^1.0.1",
-    "@fizz/paramanifest": "^0.3.8",
-    "@fizz/paramodel": "^0.4.3",
+    "@fizz/paramanifest": "^0.5.0",
+    "@fizz/paramodel": "^0.4.4",
     "@fizz/parasummary": "^0.4.1",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.4.2",
@@ -98,6 +98,7 @@
     "decimal.js": "^10.4.3",
     "immer": "^10.1.1",
     "lit": "^3.2.0",
+    "mathjs": "^14.5.3",
     "papaparse": "^5.5.3",
     "printf": "^0.6.1",
     "simple-statistics": "^7.8.8",

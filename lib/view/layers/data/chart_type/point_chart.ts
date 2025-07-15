@@ -34,9 +34,12 @@ export abstract class PointChart extends XYChart {
  
   protected _addedToParent() {
     super._addedToParent();
-    this._axisInfo = new AxisInfo(this.paraview.store, {
+    //@ts-ignore Remove when graph is added to ChartTypes in ParaManifest
+    if (this.paraview.store.type !== "graph"){
+      this._axisInfo = new AxisInfo(this.paraview.store, {
       yValues: this.paraview.store.model!.allFacetValues('y')!.map((y) => y.value as number)
     });
+    }
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {

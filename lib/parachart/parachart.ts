@@ -29,6 +29,7 @@ import '../components/aria_live';
 import { ParaStore } from '../store';
 import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../store/custom_property_loader';
+import { ParaApi } from '../api/api';
 import { styles } from '../view/styles';
 
 import { Manifest } from '@fizz/paramanifest';
@@ -46,6 +47,8 @@ export class ParaChart extends logging(ParaComponent) {
   @property({ type: Boolean }) headless = false;
   @property() accessor manifest = '';
   @property() manifestType: SourceKind = 'url';
+  // `data` must be a URL, if set
+  @property() data = '';
   @property({type: Object}) accessor config: SettingsInput = {};
   @property() accessor forcecharttype: ChartType | undefined;
   @property() type?: ChartType
@@ -57,10 +60,10 @@ export class ParaChart extends logging(ParaComponent) {
   protected _loader = new ParaLoader();
   private _slotLoader = new SlotLoader();
 
-  private data?: AllSeriesData;
   protected _suppleteSettingsWith?: DeepReadonly<Settings>;
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
+  protected _api: ParaApi;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -80,29 +83,73 @@ export class ParaChart extends logging(ParaComponent) {
     customPropLoader.store = this.store;
     customPropLoader.registerColors();
     customPropLoader.registerSymbols();
+    this._api = new ParaApi(this);
 
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
         resolve();
         // It's now safe to load a manifest
         if (this.manifest) {
+          if (this.data) {
+            await this._loader.preloadData(this.data);
+          }
           this._loaderPromise = this._runLoader(this.manifest, this.manifestType).then(() => {
             this.log('ParaCharts will now commence the raising of the roof and/or the dead');
           });
-        }
-        else if (this._slotted.length) {
+        } else if (this._slotted.length) {
           this.log(`loading from slot`);
           const table = this._slotted[0].getElementsByTagName("table")[0]
           const manifest = this._slotted[0].getElementsByClassName("manifest")[0] as HTMLElement
           this._store.dataState = 'pending';
-          const loadresult = await this._slotLoader.findManifest([table, manifest], "some-manifest")
-          this.log('loaded manifest')
-          if (loadresult.result === 'success') {
-            this.store.setManifest(loadresult.manifest!);
-            this._store.dataState = 'complete';
-          } else {
-            //console.error(loadresult.error);
-            this._store.dataState = 'error';
+          if (table) {
+            const loadresult = await this._slotLoader.findManifest([table, manifest], "some-manifest")
+            this.log('loaded manifest')
+            if (loadresult.result === 'success') {
+              this.store.setManifest(loadresult.manifest!);
+              this._store.dataState = 'complete';
+            } else {
+              //console.error(loadresult.error);
+              this._store.dataState = 'error';
+            }
+          }
+          else {
+            console.log("No datatable in slot")
+            if (this.getAttribute("type") === 'graph') {
+              const tempTable = document.createElement("table")
+              //Using a temporary, very sparse table to load the canvas, as the model isn't configured to load with literally no data
+              //The numbers here don't matter as long as they're outside the default graphing calc viewport
+              tempTable.innerHTML = `<table>
+                          <caption>No graph data present</caption>
+                          <thead>
+                              <tr>
+                                  <th>X</th>
+                                  <th>Y</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr>
+                                  <td>100</td>
+                                  <td>100</td>
+                              </tr>
+                              <tr>
+                                  <td>101</td>
+                                  <td>101</td>
+                              </tr>
+                          </tbody>
+                      </table>`
+              const loadresult = await this._slotLoader.findManifest([tempTable], "some-manifest")
+              this.log('loaded manifest')
+              if (loadresult.result === 'success') {
+                this.store.setManifest(loadresult.manifest!);
+                this._store.dataState = 'complete';
+              } else {
+                //console.error(loadresult.error);
+                this._store.dataState = 'error';
+              }
+            }
+            else {
+              this._store.dataState = 'error'
+            }
           }
         }
       });
@@ -136,6 +183,10 @@ export class ParaChart extends logging(ParaComponent) {
     return this._ariaLiveRegionRef.value!;
   }
 
+  get slotted(){
+    return this._slotted;
+  }
+  
   connectedCallback() {
     super.connectedCallback();
   }
@@ -194,6 +245,14 @@ export class ParaChart extends logging(ParaComponent) {
 
   showAriaLiveHistory() {
     this._ariaLiveRegionRef.value!.showHistoryDialog();
+  }
+
+  downloadSVG() {
+    this._api.downloadSVG();
+  }
+
+  downloadPNG() {
+    this._api.downloadPNG();
   }
 
   render(): TemplateResult {

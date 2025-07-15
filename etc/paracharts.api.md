@@ -69,6 +69,10 @@ export { Manifest }
 // @public (undocumented)
 export class ParaChart extends ParaChart_base {
     constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
+    // Warning: (ae-forgotten-export) The symbol "ParaApi" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _api: ParaApi;
     // (undocumented)
     get ariaLiveRegion(): AriaLive;
     // Warning: (ae-forgotten-export) The symbol "AriaLive" needs to be exported by the entry point index.d.ts
@@ -89,6 +93,12 @@ export class ParaChart extends ParaChart_base {
     //
     // (undocumented)
     protected _controlPanelRef: Ref_2<ParaControlPanel>;
+    // (undocumented)
+    data: string;
+    // (undocumented)
+    downloadPNG(): void;
+    // (undocumented)
+    downloadSVG(): void;
     // (undocumented)
     protected firstUpdated(_changedProperties: PropertyValues): void;
     // (undocumented)
@@ -130,6 +140,8 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     showAriaLiveHistory(): void;
     // (undocumented)
+    get slotted(): HTMLElement[];
+    // (undocumented)
     static styles: CSSResult[];
     // Warning: (ae-forgotten-export) The symbol "DeepReadonly" needs to be exported by the entry point index.d.ts
     // Warning: (ae-forgotten-export) The symbol "Settings" needs to be exported by the entry point index.d.ts
@@ -145,8 +157,6 @@ export class ParaChart extends ParaChart_base {
 // @public (undocumented)
 export class ParaHelper {
     constructor();
-    // Warning: (ae-forgotten-export) The symbol "ParaApi" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     protected _api: ParaApi;
     // (undocumented)

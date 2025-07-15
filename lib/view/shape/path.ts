@@ -8,6 +8,7 @@ import { svg, nothing } from 'lit';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ref } from 'lit/directives/ref.js';
+import { DatapointView } from '../data';
 
 export interface PathOptions extends ShapeOptions {
   points: Vec2[];
@@ -107,7 +108,26 @@ export class PathShape extends Shape {
   }
 
   render() {
-    return svg`
+    if (this.parent instanceof DatapointView){
+      return svg`
+      <defs>
+        <clipPath id="chartbox">
+          <rect x="0" y="0" width=${this.parent.chart.parent.logicalWidth} height=${this.parent.chart.parent.logicalHeight} />
+        </clipPath>
+      </defs>
+      <path
+        ${this._ref ? ref(this._ref) : undefined}
+        id=${this._id || nothing}
+        style=${styleMap(this.styleInfo)}
+        class=${classMap(this._classInfo)}
+        role=${this._role || nothing}
+        d=${this._pathD}
+        clip-path="url(#chartbox)"
+      ></path>
+    `;
+    }
+    else{
+      return svg`
       <path
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}
@@ -117,6 +137,7 @@ export class PathShape extends Shape {
         d=${this._pathD}
       ></path>
     `;
+    }
   }
 
 }
