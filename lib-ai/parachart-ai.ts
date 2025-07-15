@@ -28,7 +28,14 @@ export class ParaChartAi extends ParaChart {
   static styles = [
     styles,
     css`
+      :host {
       --control-panel-icon: url(${unsafeCSS(cpanelIconAlt)});
+        --summary-marker-size: 1.1rem;
+      }
+      figure {
+        display: inline-block;
+        margin: 0;
+      }
     `
   ];
 
