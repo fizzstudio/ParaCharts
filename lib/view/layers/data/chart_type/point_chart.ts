@@ -106,7 +106,7 @@ export abstract class PointChart extends XYChart {
     return this.paraview.ref<SVGGElement>(`series.${series}`);
   }
 
-  raiseSeries(series: string) {
+  _raiseSeries(series: string) {
     const seriesG = this.seriesRef(series).value!;
     this.dataset.append(seriesG);
   }

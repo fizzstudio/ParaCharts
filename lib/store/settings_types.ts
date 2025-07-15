@@ -68,8 +68,6 @@ export interface ControlPanelSettings extends SettingGroup {
   isCaptionVisible: boolean;
   isStatusBarVisible: boolean;
   isSparkBrailleVisible: boolean;
-  isSparkBrailleProportional: boolean;
-  isSparkBrailleBar: boolean;
   isDataTabVisible: boolean;
   isColorsTabVisible: boolean;
   isAudioTabVisible: boolean;
@@ -123,16 +121,23 @@ export interface ViewBox extends SettingGroup {
   height: number;
 }
 
+export type VertDirection = 'up' | 'down';
+export type HorizDirection = 'left' | 'right';
+export type PlaneDirection = VertDirection | HorizDirection;
+export type DepthDirection = 'in' | 'out';
+export type Direction = VertDirection | HorizDirection | DepthDirection;
+export const directions: Direction[] = ['up', 'down', 'left', 'right', 'in', 'out'];
+
 /** @public */
-export type VertDirection = 'north' | 'south';
+export type VertCardinalDirection = 'north' | 'south';
 /** @public */
-export type HorizDirection = 'east' | 'west';
+export type HorizCardinalDirection = 'east' | 'west';
 
 /**
  * Which direction is "up" on a chart.
  * @public
  */
-export type CardinalDirection = VertDirection | HorizDirection;
+export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
 
 /** @public */
 export interface ChartSettings extends SettingGroup {
@@ -213,7 +218,7 @@ export interface AxisTitleSettings extends SettingGroup {
 
 /** @public */
 export interface OrientedAxisSettings<T extends AxisOrientation> extends SettingGroup {
-  position: T extends 'horiz' ? VertDirection : HorizDirection;
+  position: T extends 'horiz' ? VertCardinalDirection : HorizCardinalDirection;
   labelOrder: T extends 'horiz' ? 'westToEast' | 'eastToWest' : 'southToNorth' | 'northToSouth';
 }
 
@@ -426,7 +431,6 @@ export interface SonificationSettings extends SettingGroup {
   isSoniEnabled: boolean;
   isRiffEnabled: boolean;
   isNotificationEnabled: boolean;
-  isChordModeEnabled: boolean;
   hertzLower: number;
   hertzUpper: number;
   soniPlaySpeed?: number;

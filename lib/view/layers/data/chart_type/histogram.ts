@@ -161,21 +161,6 @@ export class Histogram extends XYChart {
     return new HistogramBinView(this, seriesView);
   }
 
-  protected _beginLayout() {
-    this._createDatapoints();
-    for (const datapointView of this.datapointViews) {
-      datapointView.computeLocation();
-    }
-    for (const datapointView of this.datapointViews) {
-      datapointView.completeLayout();
-    }
-
-  }
-
-  completeLayout() {
-    super._completeLayout();
-  }
-
   protected _createDatapoints() {
     const xs: string[] = [];
     for (const [p, i] of enumerate(this.paraview.store.model!.series[0].datapoints)) {
@@ -196,21 +181,21 @@ export class Histogram extends XYChart {
     //added together in the same bin
     /*
     for (const [col, i] of enumerate(this.paraview.store.model!.series)) {
-      
-      
+
+
       for (const [value, j] of enumerate(col)) {
         //const datapointView = this._newDatapointView(seriesView);
         //seriesView.append(datapointView);
         // the `index` property of the datapoint view will equal j
       }
-      
+
     }
       */
     // NB: This only works properly because we haven't added series direct labels
     // yet, which are also direct children of the chart.
     this._chartLandingView.sortChildren((a: XYSeriesView, b: XYSeriesView) => {
       return (b.children[0].datapoint.facetValueNumericized(b.children[0].datapoint.depKey)!) - (a.children[0].datapoint.facetValueNumericized(a.children[0].datapoint.depKey)!);
-    });  
+    });
   }
 
   protected _layoutDatapoints() {
@@ -290,12 +275,12 @@ export class Histogram extends XYChart {
         return this.paraview.ref<SVGGElement>(`series.${series}`);
     }
 
-  raiseSeries(series: string) {
+  _raiseSeries(series: string) {
     const seriesG = this.seriesRef(series).value!;
     this.dataset.append(seriesG);
   }
 
-  /* 
+  /*
   getDatapointGroupBbox(labelText: string) {
       const xSeries = this._model.indepSeries();
       // XXX Could take these directly from the DOM
@@ -362,7 +347,7 @@ export class Histogram extends XYChart {
         //this._sonifier.playNotification('series');
       }
     } else {
-      // At chart root, so move to the first series landing 
+      // At chart root, so move to the first series landing
       await this._chartLandingView.children[0].focus();
     }
   }
@@ -493,33 +478,22 @@ export class HistogramBinView extends DatapointView {
     const xSpan = xInfo.range! / this.chart.bins;
     const left = (xInfo.min! + xSpan * ((this.index) % this.chart.bins)).toFixed(2)
     const right = (xInfo.min! + xSpan * ((this.index) % this.chart.bins + 1)).toFixed(2)
-    return `This bin contains ${this.count} datapoints, which is ${(100 * this.count / length).toFixed(2)}% of the overall data. 
+    return `This bin contains ${this.count} datapoints, which is ${(100 * this.count / length).toFixed(2)}% of the overall data.
         It spans x values from ${left} to ${right}}`
 
   }
 
-  async onFocus() {
-    await super.onFocus()
-    this.isVisited = !this.isVisited
-    this._visit();
-    this.paraview.store.announce(this.summary());
-  }
-
-  protected async _visit() {
-    this.paraview.store.visit([{ seriesKey: this.seriesKey, index: this.index }]);
-  }
-
-  //Note: I'm overriding this for now because at the time of writing JIM doesn't support visualizations with a 
+  //Note: I'm overriding this for now because at the time of writing JIM doesn't support visualizations with a
   //different number of visible datapoints (treating bins as datapoints in this case) than exist in the dataset
-  
+
   protected _createId(..._args: any[]): string {
-    //const jimIndex = this._parent.modelIndex*this._series.length + this.index + 1; 
+    //const jimIndex = this._parent.modelIndex*this._series.length + this.index + 1;
     //const id = this.paraview.store.jimerator!.jim.selectors[`datapoint${jimIndex}`].dom as string;
     const id = `datapoint-${this.index}`
     // don't include the '#' from JIM
     return id;
   }
-    
+
 
   protected get _d() {
     return fixed`
@@ -629,7 +603,7 @@ export class HistogramDatapointView extends XYDatapointView {
     // }
 
     computeLayout() {
-        
+
         const orderIdx = Object.keys(this.stack.bars).indexOf(this.series.name!);
         const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
           .map(bar => bar._height)
@@ -638,14 +612,14 @@ export class HistogramDatapointView extends XYDatapointView {
         this._height = this.datapoint.y.number*pxPerYUnit;
         this._x = this.stack.x + this.stack.cluster.x;
         this._y = this.chart.height - this._height - distFromXAxis;
-        
+
         if (this.chart.settings.displayAxis == "x" || undefined){
             this._height = this.chart.height / this.chart.bins;
             this._width = this.chart.width / this.chart.bins;
             this._x = this.index % this.chart.bins * this._width
             this._y = Math.floor(this.index / this.chart.bins) * this._height
         }
-        
+
     }
 
     protected get _d() {

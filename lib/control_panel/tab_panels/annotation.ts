@@ -64,7 +64,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
       if (target.dataset.series && target.dataset.index!) {
         const seriesKey = target.dataset.series!;
         const index = parseInt(target.dataset.index!);
-        this._goToAnnotation(seriesKey, index);
+        this._navToAnnotation(seriesKey, index);
       }
     }
   }
@@ -78,12 +78,12 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     annotationEl.scrollIntoView(false);
   }
 
-  protected _goToAnnotation(seriesKey: string, index: number) {
-    this._controlPanel.paraChart.paraView.focusDatapoint(seriesKey, index);
+  protected _navToAnnotation(seriesKey: string, index: number) {
+    this._controlPanel.paraChart.paraView.navToDatapoint(seriesKey, index);
   }
 
   render() {
-    return html`   
+    return html`
       <div id="annotation-tab" class="tab-content">
         <section id="annotations">
           ${this.showAnnotations()}

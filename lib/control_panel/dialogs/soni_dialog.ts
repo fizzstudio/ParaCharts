@@ -11,7 +11,7 @@ import { ref, createRef } from 'lit/directives/ref.js';
 
 
 /**
- * @public 
+ * @public
  */
 @customElement('para-soni-settings-dialog')
 export class SoniSettingsDialog extends SettingControlContainer {
@@ -60,12 +60,6 @@ export class SoniSettingsDialog extends SettingControlContainer {
     });
     this._store.settingControls.add({
       type: 'checkbox',
-      key: 'sonification.isChordModeEnabled',
-      label: 'Chord mode',
-      parentView: 'controlPanel.tabs.audio.sonification.dialog',
-    });
-    this._store.settingControls.add({
-      type: 'checkbox',
       key: 'sonification.isRiffEnabled',
       label: 'Series riff enabled',
       parentView: 'controlPanel.tabs.audio.sonification.dialog',
@@ -75,8 +69,8 @@ export class SoniSettingsDialog extends SettingControlContainer {
   render() {
     return html`
       <fizz-dialog
-        ${ref(this._dialogRef)} 
-        title="Sonification Settings" 
+        ${ref(this._dialogRef)}
+        title="Sonification Settings"
         .buttons=${[{ tag: 'cancel', text: this.btnText }]}
       >
         ${this._store.settingControls.getContent('controlPanel.tabs.audio.sonification.dialog')}

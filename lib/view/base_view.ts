@@ -22,9 +22,9 @@ import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type Setting } from '../store';
 import { type Shape } from './shape/shape';
 
-/*import { 
+/*import {
   HotkeyActionManager, EventActionManager, type KeyRegistrations, KeymapManager,
-  type KeyDetails 
+  type KeyDetails
 } from '../input';
 import { TodoEvent, type Actions } from '../input/actions';
 import { type HotkeyInfo } from '../input/defaultactions';*/
@@ -188,7 +188,7 @@ export class BaseView {
  * @public
  */
 export class View extends BaseView {
-  
+
   protected _id!: string;
   protected _parent: View | null = null;
   protected _prev: View | null = null;
@@ -401,11 +401,11 @@ export class View extends BaseView {
         out = {top: padding.all, bottom: padding.all, left: padding.all, right: padding.all};
       }
       if (padding.horiz !== undefined) {
-        out.left = padding.horiz; 
+        out.left = padding.horiz;
         out.right = padding.horiz;
       }
       if (padding.vert !== undefined) {
-        out.top = padding.vert; 
+        out.top = padding.vert;
         out.bottom = padding.vert;
       }
       if (padding.top !== undefined) {
@@ -547,7 +547,7 @@ export class View extends BaseView {
     } else if (where === 'end') {
       this.x = other.right - other.padding.right - this.boundingWidth;
     } else {
-      this.x = other.left + other.padding.left 
+      this.x = other.left + other.padding.left
         + other.width/2 - this.width/2 - this.padding.left;
     }
   }
@@ -558,7 +558,7 @@ export class View extends BaseView {
     } else if (where === 'end') {
       this.y = other.bottom - other.padding.bottom - this.boundingHeight;
     } else {
-      this.y = other.top + other.padding.top 
+      this.y = other.top + other.padding.top
         + other.height/2 - this.height/2 - this.padding.top;
     }
   }
@@ -579,26 +579,26 @@ export class View extends BaseView {
     return this._parent!.children;
   }
 
-  get sameIndexers(): readonly View[] {
+  get cousins(): readonly View[] {
     return this._parent!.siblings.map(sib => sib.children[this.index]);
   }
 
-  get withSameIndexers(): readonly View[] {
+  get withCousins(): readonly View[] {
     return this._parent!.withSiblings.map(view => view.children[this.index]);
   }
 
-  get nextSameIndexer(): View | null {
+  get nextCousin(): View | null {
     if (!this._parent!.next) {
       return null;
     }
-    return this.sameIndexers[this._parent!.index];
+    return this.cousins[this._parent!.index];
   }
 
-  get prevSameIndexer(): View | null {
+  get prevCousin(): View | null {
     if (!this._parent!.prev) {
       return null;
-    } 
-    return this.sameIndexers[this._parent!.index - 1];
+    }
+    return this.cousins[this._parent!.index - 1];
   }
 
   get currFocus() {
@@ -748,7 +748,7 @@ export class View extends BaseView {
       } else {
         if (i === this._children.length - 1) {
           kid._next = null;
-        } 
+        }
         kid._prev = this._children[i - 1];
         kid._prev._next = kid;
       }
@@ -771,7 +771,15 @@ export class View extends BaseView {
     this._children.forEach(kid => kid.settingDidChange(path, oldValue, newValue));
   }
 
+  async storeDidChange(key: string, value: any) {
+    this._children.forEach(kid => kid.storeDidChange(key, value));
+  }
+
   focusRingShape(): Shape | null {
+    return null;
+  }
+
+  focusRingBbox(): DOMRect | null {
     return null;
   }
 
@@ -795,7 +803,7 @@ export function Container<TBase extends Containable>(Base: TBase) {
   return class _Container extends Base {
 
     readonly isContainer = true;
-  
+
     render() {
       if (this.hidden) {
         return svg``;
