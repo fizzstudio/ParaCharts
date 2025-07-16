@@ -427,8 +427,12 @@ export abstract class DataLayer extends ChartLayer {
     }
   }
 
+  get shouldDrawFocusRing() {
+    return this._navMap.cursor.type !== 'top';
+  }
+
   focusRingBbox() {
-    if (['series', 'chord', 'datapoint'].includes(this._navMap.cursor.type)) {
+    if (['series', 'chord', 'datapoint', 'sequence'].includes(this._navMap.cursor.type)) {
       return bboxOfBboxes(...this._navMap.cursor.datapointViews.map(view => view.outerBbox));
     }
     return null;

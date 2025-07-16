@@ -12,8 +12,9 @@ export class FocusLayer extends ChartLayer {
 
   content() {
     const leaf = this._parent.dataLayer.focusLeaf;
-    const ring = (this.paraview.store.settings.ui.isLowVisionModeEnabled
-      || this.paraview.store.settings.ui.isFocusRingEnabled)
+    const ring = this._parent.dataLayer.shouldDrawFocusRing
+      && (this.paraview.store.settings.ui.isLowVisionModeEnabled
+        || this.paraview.store.settings.ui.isFocusRingEnabled)
       ? new FocusRing(this.paraview, leaf)
       : null;
     return svg`
