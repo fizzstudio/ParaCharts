@@ -10,7 +10,7 @@ export class PieChart extends RadialChart {
     super(paraview, index);
   }
 
-  protected _playSeriesRiff() {
+  protected _playRiff() {
   }
 
   protected _createSlice(seriesView: SeriesView, params: RadialDatapointParams): RadialSlice {

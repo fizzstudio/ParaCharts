@@ -41,6 +41,7 @@ import { RefDirective } from 'lit-html/directives/ref.js';
 import * as sb from '@fizz/sparkbraille-component';
 import { SequenceInfo } from '@fizz/series-analyzer';
 import { Series } from '@fizz/paramodel';
+import { SeriesAnalysis } from '@fizz/series-analyzer';
 import { SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { Size2d } from '@fizz/chart-classifier-utils';
 import { State } from '@lit-app/state';

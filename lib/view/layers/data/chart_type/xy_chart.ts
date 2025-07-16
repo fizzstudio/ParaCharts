@@ -177,19 +177,18 @@ export abstract class XYChart extends DataLayer {
     });
   }
 
-  _playSeriesRiff() {
+  protected _playRiff() {
     if (this.paraview.store.settings.sonification.isSoniEnabled
       && this.paraview.store.settings.sonification.isRiffEnabled) {
-      // copy the array of datapoints so we can safely mutate it
-      const seriesDatapoints = [...this._navMap.cursor.at(0)!.series.datapoints];
-      const noteCount = seriesDatapoints.length;
+      const datapoints = this._navMap.cursor.datapointViews.map(view => view.datapoint) ;
+      const noteCount = datapoints.length;
       if (noteCount) {
         if (this._soniRiffInterval!) {
           clearInterval(this._soniRiffInterval!);
         }
         this.soniSequenceIndex++;
         this._soniRiffInterval = setInterval(() => {
-          const datapoint = seriesDatapoints.shift();
+          const datapoint = datapoints.shift();
           if (!datapoint) {
             clearInterval(this._soniRiffInterval!);
           } else {
@@ -201,7 +200,7 @@ export abstract class XYChart extends DataLayer {
     }
   }
 
-  _playDatapoints(datapoints: PlaneDatapoint[]): void {
+  protected _playDatapoints(datapoints: PlaneDatapoint[]): void {
     this.sonifier.playDatapoints(...datapoints);
   }
 
