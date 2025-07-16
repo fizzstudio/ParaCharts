@@ -115,6 +115,7 @@ export class ParaStore extends State {
   @property() annotations: BaseAnnotation[] = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() navNode: NavNode | null = null;
+  @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
 
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
@@ -265,6 +266,12 @@ export class ParaStore extends State {
     } else {
       throw new Error('store lacks external or inline chart data');
     }
+    this._model.keys.forEach(async seriesKey => {
+      this.seriesAnalyses = {
+        [seriesKey]: await this._model!.getSeriesAnalysis(seriesKey),
+        ...this.seriesAnalyses
+      };
+    });
   }
 
   protected _propertyChanged(key: string, value: any) {

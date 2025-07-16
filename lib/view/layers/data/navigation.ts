@@ -12,13 +12,14 @@ const oppositeDirs: Record<Direction, Direction> = {
   out: 'in'
 };
 
-export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord';
+export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence';
 
 export type NavNodeOptionsType<T extends NavNodeType> =
   T extends 'top' ? TopNavNodeOptions :
   T extends 'series' ? SeriesNavNodeOptions :
   T extends 'datapoint' ? DatapointNavNodeOptions :
   T extends 'chord' ? ChordNavNodeOptions :
+  T extends 'sequence' ? SequenceNavNodeOptions :
   never;
 
 export interface TopNavNodeOptions {}
@@ -30,6 +31,12 @@ export interface DatapointNavNodeOptions {
   index: number;
 }
 export interface ChordNavNodeOptions {}
+export interface SequenceNavNodeOptions {
+  seriesKey: string;
+  // start and end as in series analysis fields
+  start: number;
+  end: number;
+}
 
 function nodeOptionsEq<T extends NavNodeType>(
   options1: NavNodeOptionsType<T>,

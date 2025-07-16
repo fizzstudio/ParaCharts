@@ -25,6 +25,7 @@ import { bboxOfBboxes } from '../../../../common/utils';
 import { interpolate } from '@fizz/templum';
 
 import { type StyleInfo } from 'lit/directives/style-map.js';
+import { NavNode } from '../navigation';
 
 /**
  * Class for drawing line charts.
@@ -83,6 +84,50 @@ export class LineChart extends PointChart {
 
   protected _newDatapointView(seriesView: XYSeriesView) {
     return new LineSection(seriesView);
+  }
+
+  async storeDidChange(key: string, value: any) {
+    await super.storeDidChange(key, value);
+    if (key === 'seriesAnalyses') {
+      if (Object.keys(this.paraview.store.seriesAnalyses).length === this.paraview.store.model!.keys.length
+        && this.paraview.store.seriesAnalyses[this.paraview.store.model!.keys[0]]) {
+        this._navMap.root.query('series').forEach(seriesNode => {
+          const analysis = this.paraview.store.seriesAnalyses[seriesNode.options.seriesKey]!;
+          const datapointNodes = seriesNode.allNodes('right', 'datapoint');
+          const seqNodes: NavNode<'sequence'>[] = [];
+          analysis.sequences.forEach(seq => {
+            const seqNode = new NavNode(seriesNode.layer, 'sequence', {
+              seriesKey: seriesNode.options.seriesKey,
+              start: seq.start,
+              end: seq.end
+            });
+            seqNodes.push(seqNode);
+            seriesNode.datapointViews.slice(seq.start, seq.end).forEach(view => {
+              seqNode.addDatapointView(view);
+            });
+          });
+          seqNodes.slice(0, -1).forEach((seqNode, i) => {
+            seqNode.connect('right', seqNodes[i + 1]);
+          });
+          seqNodes.forEach(seqNode => {
+            // Unless the first datapoint of the sequence already has an
+            // 'out' link set (i.e., it's a boundary node), make a reciprocal
+            // link to it
+            seqNode.connect('in', datapointNodes[seqNode.options.start],
+              !datapointNodes[seqNode.options.start].getLink('out'));
+            for (let i = seqNode.options.start + 1; i < seqNode.options.end; i++) {
+              // non-reciprocal 'out' links from remaining datapoints to sequence
+              datapointNodes[i].connect('out', seqNode, false);
+            }
+            if (seqNode.peekNode('right', 1)) {
+              // We aren't on the last sequence, so the final datapoint is a boundary point.
+              // Make a non-reciprocal 'in' link to the next sequence
+              datapointNodes[seqNode.options.end - 1].connect('in', seqNode.peekNode('right', 1)!, false);
+            }
+          });
+        });
+      }
+    }
   }
 
   legend() {

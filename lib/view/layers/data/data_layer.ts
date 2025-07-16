@@ -234,13 +234,14 @@ export abstract class DataLayer extends ChartLayer {
       if (node.type === 'datapoint') {
         datapoint = node.at(0)!.datapoint;
       }
-
-      const stats = this.paraview.store.model!.atKey(seriesKey)!.getFacetStats('y')!
+      const depKey = this.paraview.store.model!.dependentFacetKey!;
+      const stats = this.paraview.store.model!.atKey(seriesKey)!.getFacetStats(depKey)!;
       let seriesMatchArray = isMin
         ? stats.min.datapoints
         : stats.max.datapoints;
       if (datapoint && seriesMatchArray.length > 1) {
-        // TODO: If there is more than one datapoint that has the same series minimum value, find the next one to nav to:
+        // TODO: If there is more than one datapoint that has the same series minimum value,
+        //       find the next one to nav to:
         //       Find the current x label, if it matches one in `seriesMins`,
         //       remove all entries up to and including that point,
         //       and use the next item on the list.
@@ -259,7 +260,7 @@ export abstract class DataLayer extends ChartLayer {
 
   /**
    * Navigate to (one of) the chart minimum/maximum datapoint(s)
-   * @param isMin If true, go the the minimum. Otherwise, go to the maximum
+   * @param isMin - If true, go the the minimum. Otherwise, go to the maximum
    */
   goChartMinMax(isMin: boolean) {
     const stats = this.paraview.store.model!.getFacetStats('y')!;
@@ -288,7 +289,8 @@ export abstract class DataLayer extends ChartLayer {
    */
   abstract playDir(dir: HorizDirection): void;
 
-  protected abstract _playSeriesRiff(): void;
+  /** Play a riff for the current nav node */
+  protected abstract _playRiff(): void;
 
   protected abstract _playDatapoints(datapoints: Datapoint[]): void;
 
@@ -362,9 +364,7 @@ export abstract class DataLayer extends ChartLayer {
         this._raiseSeries(seriesKey);
         this.paraview.store.announce(
           await this.paraview.summarizer.getSeriesSummary(seriesKey));
-        //if (!isNewComponentFocus) {
-        this._playSeriesRiff();
-        //}
+        this._playRiff();
         this.paraview.store.sparkBrailleInfo = this._sparkBrailleInfo();
       } else if (node.type === 'datapoint') {
         this._raiseSeries(seriesKey);
@@ -389,6 +389,8 @@ export abstract class DataLayer extends ChartLayer {
         if (this.paraview.store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
           this._playDatapoints(node.datapointViews.map(view => view.datapoint));
         }
+      } else if (node.type === 'sequence') {
+        this._playRiff();
       }
     }
     super.storeDidChange(key, value);
