@@ -59,6 +59,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
 
   protected _selectAnnotation(event: Event) {
     const target = (event?.target as HTMLElement);
+    console.log(target)
     if (target) {
       this._highlightAnnotation(target);
       if (target.dataset.series && target.dataset.index!) {
@@ -95,6 +96,29 @@ export class AnnotationPanel extends ControlPanelTabPanel {
             }
           >
             Add Annotation
+          </button>
+        </div>
+        <div> 
+          <button
+            @click=${
+              () => {
+                this._store.addUserLineBreaks()
+              }
+            }
+          >
+            Add Line breaks
+          </button>
+        </div>
+         <div>
+          <button
+            @click=${
+              () => {
+                this._store.clearUserLineBreaks()
+                this._store.clearUserTrendLines()
+              }
+            }
+          >
+            Remove added line breaks
           </button>
         </div>
          <div>

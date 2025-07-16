@@ -27,6 +27,7 @@ export interface AvailableActions {
   chordModeToggle(): void;
   shutUp(): void;
   repeatLastAnnouncement(): void;
+  addAnnotation(): void;
 }
 
 
@@ -158,6 +159,9 @@ export class HotkeyActions {
       repeatLastAnnouncement() {
         paraView.paraChart.ariaLiveRegion.replay();
       },
+      addAnnotation() {
+        store.addAnnotation();
+      }
     };
   }
 
