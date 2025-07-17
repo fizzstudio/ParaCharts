@@ -10,7 +10,7 @@ import {type Ref, ref, createRef} from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 
-/** 
+/**
  * Data table view.
  * @internal
  */
@@ -27,7 +27,7 @@ export class DataTableView extends ParaComponent {
       thead {
         position: sticky;
         top: 0;
-        background: var(--themeColorLight);
+        background: var(--theme-color-light);
       }
       .wrapper {
         overflow: scroll;

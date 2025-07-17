@@ -28,8 +28,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
         gap: 0.5rem;
       }
       #desc-footer {
-        background-color: var(--themeColorLight);
-        margin: -0.19rem -0.25rem 0px;
+        background-color: var(--theme-color-light);
         padding: 0.2rem;
         display: flex;
         gap: 1rem;
@@ -84,8 +83,8 @@ export class DescriptionPanel extends ControlPanelTabPanel {
     return html`
       <figcaption>
         <div id="description" style=${styleMap(styles)}>
-          <div 
-            id="caption" 
+          <div
+            id="caption"
             ?hidden=${!this.controlPanel.settings.isCaptionVisible}
           >
             ${this.caption}

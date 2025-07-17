@@ -85,39 +85,39 @@ export class ParaView extends logging(ParaComponent) {
     //styles,
     css`
       :host {
-        --axisLineColor: hsl(0, 0%, 0%);
-        --labelColor: hsl(0, 0%, 0%);
-        --tickGridColor: hsl(270, 50%, 50%);
-        --backgroundColor: white;
-        --themeColor: var(--fizzThemeColor, purple);
-        --themeColorLight: var(--fizzThemeColorLight, hsl(275.4, 100%, 88%));
-        --themeContrastColor: white;
-        --fizzThemeColor: var(--parachartsThemeColor, navy);
-        --fizzThemeColorLight: var(--parachartsThemeColorLight, hsl(210.5, 100%, 88%));
-        --visitedColor: red;
-        --selectedColor: var(--labelColor);
-        --datapointCentroid: 50% 50%;
-        --focusAnimation: all 0.5s ease-in-out;
-        --chartCursor: pointer;
-        --dataCursor: cell;
+        --axis-line-color: hsl(0, 0%, 0%);
+        --label-color: hsl(0, 0%, 0%);
+        --tick-grid-color: hsl(270, 50%, 50%);
+        --background-color: white;
+        --theme-color: var(--fizz-theme-color, purple);
+        --theme-color-light: var(--fizz-theme-color-light, hsl(275.4, 100%, 88%));
+        --theme-contrast-color: white;
+        --fizz-theme-color: var(--paracharts-theme-color, navy);
+        --fizz-theme-color-light: var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%));
+        --visited-color: red;
+        --selected-color: var(--label-color);
+        --datapoint-centroid: 50% 50%;
+        --focus-animation: all 0.5s ease-in-out;
+        --chart-cursor: pointer;
+        --data-cursor: cell;
 
-        --focusShadowColor: gray;
-        --focusShadow: drop-shadow(0px 0px 4px var(--focusShadowColor));
+        --focus-shadow-color: gray;
+        --focus-shadow: drop-shadow(0px 0px 4px var(--focus-shadow-color));
         display: block;
         font-family: "Trebuchet MS", Helvetica, sans-serif;
         font-size: var(--chart-view-font-size, 1rem);
       }
       #frame {
-        fill: var(--backgroundColor);
+        fill: var(--background-color);
         stroke: none;
       }
       #frame.pending {
         fill: lightgray;
       }
       .darkmode {
-        --axisLineColor: ghostwhite;
-        --labelColor: ghostwhite;
-        --backgroundColor: black;
+        --axis-line-color: ghostwhite;
+        --label-color: ghostwhite;
+        --background-color: black;
       }
       #loading-message {
         fill: black;
@@ -126,11 +126,11 @@ export class ParaView extends logging(ParaComponent) {
         fill: white;
       }
       .grid-horiz {
-        stroke: var(--axisLineColor);
+        stroke: var(--axis-line-color);
         opacity: 0.2;
       }
       .grid-vert {
-        stroke: var(--axisLineColor);
+        stroke: var(--axis-line-color);
         opacity: 0.2;
       }
       #grid-zero {
@@ -144,11 +144,11 @@ export class ParaView extends logging(ParaComponent) {
         stroke: black;
       }
       .label {
-        fill: var(--labelColor);
+        fill: var(--label-color);
       }
       .tick-label {
         font-size: 13px;
-        fill: var(--labelColor);
+        fill: var(--label-color);
       }
       .bar-label {
         font-size: 13px;
@@ -163,13 +163,13 @@ export class ParaView extends logging(ParaComponent) {
       }
       #y-axis-line {
         fill: none;
-        stroke: var(--axisLineColor);
+        stroke: var(--axis-line-color);
         stroke-width: 2px;
         stroke-linecap: round;
       }
       #x-axis-line {
         fill: none;
-        stroke: var(--axisLineColor);
+        stroke: var(--axis-line-color);
         opacity: 1;
         stroke-width: 2px;
         stroke-linecap: round;
@@ -583,12 +583,12 @@ export class ParaView extends logging(ParaComponent) {
 
     const contrast = this.store.settings.color.contrastLevel * 50;
     if (this._store.settings.color.isDarkModeEnabled) {
-      style['--axisLineColor'] = `hsl(0, 0%, ${50 + contrast}%)`;
-      style['--labelColor'] = `hsl(0, 0%, ${50 + contrast}%)`;
-      style['--backgroundColor'] = `hsl(0, 0%, ${((100 - contrast) / 5) - 10}%)`;
+      style['--axis-line-color'] = `hsl(0, 0%, ${50 + contrast}%)`;
+      style['--label-color'] = `hsl(0, 0%, ${50 + contrast}%)`;
+      style['--background-color'] = `hsl(0, 0%, ${((100 - contrast) / 5) - 10}%)`;
     } else {
-      style['--axisLineColor'] = `hsl(0, 0%, ${50 - contrast}%)`;
-      style['--labelColor'] = `hsl(0, 0%, ${50 - contrast}%)`;
+      style['--axis-line-color'] = `hsl(0, 0%, ${50 - contrast}%)`;
+      style['--label-color'] = `hsl(0, 0%, ${50 - contrast}%)`;
     }
     return style;
   }
