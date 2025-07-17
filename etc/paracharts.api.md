@@ -16,6 +16,7 @@ import { Datatype } from '@fizz/dataframe';
 import { Datatype as Datatype_2 } from '@fizz/paramanifest';
 import { Dialog } from '@fizz/ui-components';
 import { DirectiveResult } from 'lit-html/directive.js';
+import { Facet } from '@fizz/paramanifest';
 import { FacetSignature } from '@fizz/paramodel';
 import { FormatType } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
