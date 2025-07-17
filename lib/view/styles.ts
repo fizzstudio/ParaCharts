@@ -19,21 +19,21 @@ import { css } from 'lit';
 export const styles = css`
   :host,
   :root {
-    --axisLineColor: hsl(0, 0%, 0%);
-    --labelColor: hsl(0, 0%, 0%);
-    --tickGridColor: hsl(270, 50%, 50%);
-    --backgroundColor: white;
-    --themeColor: var(--fizzThemeColor, purple);
-    --themeColorLight: var(--fizzThemeColorLight, hsl(275.4, 100%, 88%));
-    --themeContrastColor: white;
-    --fizzThemeColor: var(--parachartsThemeColor, navy);
-    --fizzThemeColorLight: var(--parachartsThemeColorLight, hsl(210.5, 100%, 88%));
-    --visitedColor: red;
-    --selectedColor: var(--labelColor);
-    --datapointCentroid: 50% 50%;
-    --focusAnimation: all 0.5s ease-in-out;
-    --chartCursor: pointer;
-    --dataCursor: cell;
+    --axis-line-color: hsl(0, 0%, 0%);
+    --label-color: hsl(0, 0%, 0%);
+    --tick-grid-color: hsl(270, 50%, 50%);
+    --background-color: white;
+    --theme-color: var(--fizz-theme-color, purple);
+    --theme-color-light: var(--fizz-theme-color-light, hsl(275.4, 100%, 88%));
+    --theme-contrast-color: white;
+    --fizz-theme-color: var(--paracharts-theme-color, navy);
+    --fizz-theme-color-light: var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%));
+    --visited-color: red;
+    --selected-color: var(--label-color);
+    --datapoint-centroid: 50% 50%;
+    --focus-animation: all 0.5s ease-in-out;
+    --chart-cursor: pointer;
+    --data-cursor: cell;
 
     /* default color palette */
     --color-palette-series-0: hsl(225, 30%, 52%);
@@ -47,10 +47,10 @@ export const styles = css`
     --color-palette-series-8: hsl(253, 26%, 43%);
     --color-palette-series-9: hsl(85, 65%, 36%);
 
-    --focusShadowColor: gray;
-    --focusShadow: drop-shadow(0px 0px 4px var(--focusShadowColor));
+    --focus-shadow-color: gray;
+    --focus-shadow: drop-shadow(0px 0px 4px var(--focus-shadow-color));
   }
-  
+
   .hidden { display: none !important; }
 
   /* https://kittygiraudel.com/snippets/sr-only-class/ */
@@ -73,13 +73,13 @@ export const styles = css`
   }
   #y-axis-line {
     fill: none;
-    stroke: var(--axisLineColor);
+    stroke: var(--axis-line-color);
     stroke-width: 2px;
     stroke-linecap: round;
   }
   #x-axis-line {
     fill: none;
-    stroke: var(--axisLineColor);
+    stroke: var(--axis-line-color);
     opacity: 1;
     stroke-width: 2px;
     stroke-linecap: round;
@@ -95,13 +95,13 @@ export const styles = css`
   }*/
   .label {
     display: block;
-    fill: var(--labelColor);
+    fill: var(--label-color);
   }
   .axis-title {
     text-anchor: middle;
   }
   .tick-label {
-    fill: var(--labelColor);
+    fill: var(--label-color);
   }
   /*.tick-label.horiz {
     text-anchor: middle;
@@ -122,8 +122,8 @@ export const styles = css`
     opacity: 0.2;
   }
   .tickmark-y-0 {
-    fill: var(--tickGridColor);
-    stroke: var(--tickGridColor);
+    fill: var(--tick-grid-color);
+    stroke: var(--tick-grid-color);
     opacity: 1;
     stroke-width: 2px;
     stroke-linecap: round;
@@ -136,8 +136,8 @@ export const styles = css`
     opacity: 0.2;
   }
   .tickmark-x-0 {
-    fill: var(--tickGridColor);
-    stroke: var(--tickGridColor);
+    fill: var(--tick-grid-color);
+    stroke: var(--tick-grid-color);
     opacity: 1;
     stroke-width: 2px;
     stroke-linecap: round;
@@ -195,7 +195,7 @@ export const styles = css`
     text-anchor: middle;
   }
   g.datapoint {
-    transform-origin: var(--datapointCentroid);
+    transform-origin: var(--datapoint-centroid);
   }
   g.datapoint g.datapoint_popup rect {
     fill: hsl(0, 0%, 25%);
@@ -222,25 +222,25 @@ export const styles = css`
     transition: opacity 0.3s ease-in-out 2s;
   }
   g.datapoint.visited {
-    fill: var(--visitedColor, red);
-    stroke: var(--visitedColor, red);
+    fill: var(--visited-color, red);
+    stroke: var(--visited-color, red);
     transform-box: fill-box;
-/*    transition: var(--focusAnimation); */
-  } 
+/*    transition: var(--focus-animation); */
+  }
   g.datapoint.visited:focus {
     /*outline: none;
     box-shadow: none;*/
-    transition: var(--focusAnimation);
-    filter: var(--focusShadow);
+    transition: var(--focus-animation);
+    filter: var(--focus-shadow);
     /*animation: pulse-animation 2s infinite;*/
   }
 
   [data-charttype="stepline"] g.datapoint.visited {
-    fill: var(--visitedColor, red);
-    stroke: var(--visitedColor, red);
+    fill: var(--visited-color, red);
+    stroke: var(--visited-color, red);
     transform: none;
-/*    transition: var(--focusAnimation); */
-  } 
+/*    transition: var(--focus-animation); */
+  }
 
   /* use#visited-mark {
     fill: inherit;
@@ -266,7 +266,7 @@ export const styles = css`
   }*/
   .selected-datapoint-marker {
     fill: transparent;
-    stroke: var(--selectedColor);
+    stroke: var(--selected-color);
     stroke-width: 3px;
     /*opacity: 0.5;*/
     pointer-events: none;
@@ -289,13 +289,13 @@ export const styles = css`
     text-anchor: middle;
   }
 
-  :fullscreen, 
+  :fullscreen,
   ::backdrop {
-    background-color: var(--backgroundColor);
+    background-color: var(--background-color);
   }
 
   /* COLOR PALETTES */
-  
+
   .theme-diva {
     --color-palette-series-0: hsl(225, 30%, 52%);
     --color-palette-series-1: hsl(12, 69%, 35%);
@@ -356,7 +356,7 @@ export const styles = css`
     --color-palette-series-5: #d4d4d4;
     --color-palette-series-6: #ededed;
   }
-  
+
   .series-0 {
     fill: var(--color-palette-series-0);
     stroke: var(--color-palette-series-0);
@@ -442,7 +442,7 @@ export const styles = css`
   figure {
     display: inline-block;
   }
-  
+
   svg {
     display: block;
   }
@@ -473,7 +473,7 @@ export const styles = css`
     margin: 0;
   }
 
-  #chart-colors-presets label { 
+  #chart-colors-presets label {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -503,8 +503,8 @@ export const styles = css`
 
   #output-dialog button {
     color: white;
-    background-color: var(--themeColor);
-    border: 1px solid var(--themeColor);
+    background-color: var(--theme-color);
+    border: 1px solid var(--theme-color);
   }
 
   #output-dialog h1 {
@@ -517,9 +517,9 @@ export const styles = css`
 
   button {
     margin: 0.2rem;
-    background-color: var(--themeColor);
-    color: var(--themeContrastColor);
-    border: thin solid var(--themeColor);
+    background-color: var(--theme-color);
+    color: var(--theme-contrast-color);
+    border: thin solid var(--theme-color);
     border-radius: 0.2em;
     padding: 0.2em;
   }
@@ -531,10 +531,10 @@ export const styles = css`
   }
 
   [role="graphics-document"] {
-    cursor: var(--chartCursor);
+    cursor: var(--chart-cursor);
   }
 
   #chart-layers {
-    cursor: var(--dataCursor);
+    cursor: var(--data-cursor);
   }
 `;

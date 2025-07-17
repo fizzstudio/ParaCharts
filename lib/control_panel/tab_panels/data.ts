@@ -66,8 +66,7 @@ export class DataPanel extends ControlPanelTabPanel {
         max-width: 8rem;
       }
       #sparkbraille {
-        background-color: var(--themeColorLight);
-        margin: -0.19rem -0.25rem 0px;
+        background-color: var(--theme-color-light);
         padding: 0.2rem;
       }
     `

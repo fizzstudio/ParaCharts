@@ -33,7 +33,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
 
       ol.annotations li.selected {
         font-weight: bold;
-        background-color: var(--themeColorLight);
+        background-color: var(--theme-color-light);
       }
     `
   ];

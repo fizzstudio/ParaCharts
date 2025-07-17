@@ -25,7 +25,7 @@ import tabAnalysisIcon from '../assets/tab-analysis-icon.svg';
 import cpanelIcon from '../assets/info-icon.svg';
 import cpanelIconAlt from '../assets/info-icon-alt.svg';
 
-import { MessageDialog, TabDetails, TabLabelMode } from '@fizz/ui-components';
+import { MessageDialog, FizzTabs, TabLabelMode } from '@fizz/ui-components';
 import '@fizz/ui-components';
 
 import { type Unsubscribe } from '@lit-app/state';
@@ -48,7 +48,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
   paraChart!: ParaChart;
 
   @state() protected _isOpen = false;
-  protected _tabDeetsRef = createRef<TabDetails>();
+  protected _tabsRef = createRef<FizzTabs>();
   protected _descriptionPanelRef = createRef<DescriptionPanel>();
   protected _dataPanelRef = createRef<DataPanel>();
   protected _colorsPanelRef = createRef<ColorsPanel>();
@@ -67,9 +67,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
         font-family: "Trebuchet MS", Helvetica, sans-serif;
         font-size: var(--control-panel-font-size, 1rem);
       }
-      fizz-tab-details {
+      fizz-tabs {
         --background: #eee;
-        --summary-marker-icon: var(--control-panel-icon, url(${unsafeCSS(cpanelIcon)}));
+        --toggle-button-icon: var(--control-panel-icon, url(${unsafeCSS(cpanelIcon)}));
         /*--control-panel-icon: url(${unsafeCSS(cpanelIconAlt)});*/
         --summary-marker-font-weight: bold;
         --control-panel-icon-size: 1.1rem;
@@ -78,22 +78,22 @@ export class ParaControlPanel extends logging(ParaComponent) {
         min-width: 40rem;
         max-width: 50%;
       }
-      fizz-tab-details.collapsed {
+      fizz-tabs.collapsed {
         /*width: rem;*/
         /*min-width: unset;*/
         position: relative;
         top: -2.5rem;
         /*--background: none;
         --control-panel-background: none;
-        --control-panel-icon-color: var(--themeColor);
+        --control-panel-icon-color: var(--theme-color);
         --control-panel-icon-size: 1.5rem;
-        --themeContrastColor: var(--themeColor);
+        --theme-contrast-color: var(--theme-color);
         --border: none;*/
         border: 2px solid transparent;
       }
 
-      fizz-tab-details.expanded {
-        border: 2px solid var(--themeColor);
+      fizz-tabs.expanded {
+        border: 2px solid var(--theme-color);
         border-radius: 4px;
         --background: none;
         --control-panel-icon-color: ghostwhite;
@@ -101,7 +101,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
         --summary-margin: -2px 0;
       }
 
-      fizz-tab-details.collapsed.darkmode  {
+      fizz-tabs.collapsed.darkmode  {
         --control-panel-icon-color: ghostwhite;
       }
     `
@@ -142,6 +142,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
 
   connectedCallback() {
     super.connectedCallback();
+    this._isOpen = this.settings.isControlPanelDefaultOpen;
     this._storeChangeUnsub = this._store.subscribe((key, value) => {
       if (key === 'data') {
         this.dataUpdated();
@@ -165,9 +166,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
     const tabName = shortKey.match(regex)?.[1];
     if (tabName) {
       if (value) {
-        this._tabDeetsRef.value!.show(tabName);
+        this._tabsRef.value!.show(tabName);
       } else {
-        this._tabDeetsRef.value!.hide(tabName);
+        this._tabsRef.value!.hide(tabName);
       }
     } else if (shortKey === 'isControlPanelDefaultOpen'
       || shortKey === 'tabLabelStyle'
@@ -210,14 +211,6 @@ export class ParaControlPanel extends logging(ParaComponent) {
     //this.srb.render(this.currentSeriesSummary());
   }
 
-  // announce(text: string) {
-  //   this._descriptionPanelRef.value!.announce(text);
-  // }
-
-  // replay() {
-  //   this._descriptionPanelRef.value!.replay();
-  // }
-
   showHelpDialog(){
     return this._controlsPanelRef.value!.showHelpDialog();
   }
@@ -252,8 +245,8 @@ export class ParaControlPanel extends logging(ParaComponent) {
     //   }));
     // }}
     return html`
-      <fizz-tab-details
-        ${ref(this._tabDeetsRef)}
+      <fizz-tabs
+        ${ref(this._tabsRef)}
         ?open=${this.settings.isControlPanelDefaultOpen}
         class=${deetsState}
         tablabelmode=${tabLabelModes[this.settings.tabLabelStyle]}
@@ -372,7 +365,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
             .controlPanel=${this}
           ></para-analysis-panel>
         </fizz-tab-panel>-->
-      </fizz-tab-details>
+      </fizz-tabs>
       ${this.renderDialog()}
     `;
   }
