@@ -435,6 +435,7 @@ export interface SonificationSettings extends SettingGroup {
   hertzUpper: number;
   soniPlaySpeed?: number;
   riffSpeed?: riffSpeeds;
+  isArpeggiateChords: boolean;
 }
 
 /** @public */

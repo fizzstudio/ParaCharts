@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import {
   DataLayer,
+  RiffOrder,
   SONI_PLAY_SPEEDS, SONI_RIFF_SPEEDS
 } from '../data_layer';
 import { ChartLandingView, DatapointView, SeriesView } from '../../../data';
@@ -169,7 +170,7 @@ export abstract class XYChart extends DataLayer {
       const chordNode = new NavNode(this._navMap.root, 'chord', {});
       chordNode.connect('down', node);
       chordNode.connect('up', node.allNodes('down').at(-1)!);
-      node.allNodes('down').forEach(node => chordNode.addDatapointView(node.at(0)!));
+      chordNode.allNodes('down', 'datapoint').forEach(node => chordNode.addDatapointView(node.at(0)!));
     });
     // Link chord landings
     this._navMap.root.query('chord').slice(0, -1).forEach((node, i) => {
@@ -177,10 +178,15 @@ export abstract class XYChart extends DataLayer {
     });
   }
 
-  protected _playRiff() {
+  protected _playRiff(order?: RiffOrder) {
     if (this.paraview.store.settings.sonification.isSoniEnabled
       && this.paraview.store.settings.sonification.isRiffEnabled) {
-      const datapoints = this._navMap.cursor.datapointViews.map(view => view.datapoint) ;
+      const datapoints = this._navMap.cursor.datapointViews.map(view => view.datapoint);
+      if (order === 'sorted') {
+        datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
+      } else if (order === 'reversed') {
+        datapoints.reverse();
+      }
       const noteCount = datapoints.length;
       if (noteCount) {
         if (this._soniRiffInterval!) {
