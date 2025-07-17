@@ -44,6 +44,8 @@ import { bboxOfBboxes } from '../../../common/utils';
  */
 export type LandingView = ChartLandingView | DataView;
 
+export type RiffOrder = 'normal' | 'sorted' | 'reversed';
+
 
 // Soni Constants
 export const SONI_PLAY_SPEEDS = [1000, 250, 100, 50, 25];
@@ -290,7 +292,11 @@ export abstract class DataLayer extends ChartLayer {
   abstract playDir(dir: HorizDirection): void;
 
   /** Play a riff for the current nav node */
-  protected abstract _playRiff(): void;
+  protected abstract _playRiff(order?: RiffOrder): void;
+
+  protected _chordRiffOrder(): RiffOrder {
+    return 'normal';
+  }
 
   protected abstract _playDatapoints(datapoints: Datapoint[]): void;
 
@@ -387,7 +393,11 @@ export abstract class DataLayer extends ChartLayer {
         this.paraview.store.sparkBrailleInfo = this._sparkBrailleInfo();
       } else if (node.type === 'chord') {
         if (this.paraview.store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
-          this._playDatapoints(node.datapointViews.map(view => view.datapoint));
+          if (this.paraview.store.settings.sonification.isArpeggiateChords) {
+            this._playRiff(this._chordRiffOrder());
+          } else {
+            this._playDatapoints(node.datapointViews.map(view => view.datapoint));
+          }
         }
       } else if (node.type === 'sequence') {
         this._playRiff();

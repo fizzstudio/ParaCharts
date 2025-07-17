@@ -64,6 +64,12 @@ export class SoniSettingsDialog extends SettingControlContainer {
       label: 'Series riff enabled',
       parentView: 'controlPanel.tabs.audio.sonification.dialog',
     });
+    this._store.settingControls.add({
+      type: 'checkbox',
+      key: 'sonification.isArpeggiateChords',
+      label: 'Chords are arpeggiated',
+      parentView: 'controlPanel.tabs.audio.sonification.dialog',
+    });
   }
 
   render() {
