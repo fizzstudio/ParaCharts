@@ -14,13 +14,13 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { View } from './base_view';
-import { type TickStrip } from './tickstrip';
-import { fixed } from '../common/utils';
-import { type VertCardinalDirection, type HorizCardinalDirection } from '../store/settings_types';
+import { View } from '../base_view';
+import { type TickStrip } from './tick_strip';
+import { fixed } from '../../common/utils';
+import { type VertCardinalDirection, type HorizCardinalDirection } from '../../store/settings_types';
 
 import { svg } from 'lit';
-import { ParaView } from '../paraview';
+import { ParaView } from '../../paraview';
 
 type RuleOrientation = 'h' | 'v';
 
