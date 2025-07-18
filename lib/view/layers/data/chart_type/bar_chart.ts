@@ -275,9 +275,13 @@ export class BarChart extends XYChart {
       }
     }
 
-    // Place the series into stacks in the reverse order to how they appear in the
-    // model (i.e., first series will be topmost onscreen in 'all' mode)
-    for (const [series, i] of enumerate(this.paraview.store.model!.series).toReversed()) {
+    const allSeries = [...this.paraview.store.model!.series];
+    if (this.paraview.store.type === 'column') {
+      // Place the series into stacks in the reverse order to how they appear in the
+      // model (i.e., first series will be topmost onscreen in 'all' mode)
+      allSeries.reverse();
+    }
+    for (const [series, i] of enumerate(allSeries)) {
       for (const [value, j] of enumerate(series.datapoints.map(dp => dp.facetBox('y')))) {
         let stack: BarStack;
         let stackKey: string;
@@ -347,9 +351,11 @@ export class BarChart extends XYChart {
         }
       }
     });
-    // First child of chart landing is bottom-most series, so we reverse them
-    // so that navigation starts at the top
-    this._chartLandingView.reverseChildren();
+    if (this.paraview.store.type === 'column') {
+      // First child of chart landing is bottom-most series, so we reverse them
+      // so that navigation starts at the top
+      this._chartLandingView.reverseChildren();
+    }
   }
 
   protected _completeLayout() {
