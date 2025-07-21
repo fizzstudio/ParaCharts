@@ -164,10 +164,10 @@ export class HotkeyActions {
         chart().navToChordLanding();
       },
       shutUp() {
-        paraView.paraChart.ariaLiveRegion.voicing.shutUp();
+        paraView.paraChart.controlPanel.descriptionPanel.ariaLiveRegion.voicing.shutUp();
       },
       repeatLastAnnouncement() {
-        paraView.paraChart.ariaLiveRegion.replay();
+        paraView.paraChart.controlPanel.descriptionPanel.ariaLiveRegion.replay();
       },
     };
   }

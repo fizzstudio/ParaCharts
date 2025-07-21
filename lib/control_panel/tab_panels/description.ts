@@ -2,6 +2,8 @@
 //import { styles } from '../../styles';
 import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer } from '@fizz/parasummary';
 import { ControlPanelTabPanel } from './tab_panel';
+import { type AriaLive } from '../../components';
+import '../../components/aria_live';
 
 import { html, css } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
@@ -17,7 +19,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
 
   private _summarizer?: Summarizer;
   protected _storeChangeUnsub!: Unsubscribe;
-
+  protected _ariaLiveRegionRef = createRef<AriaLive>();
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -39,6 +41,10 @@ export class DescriptionPanel extends ControlPanelTabPanel {
     `
   ];
 
+  get ariaLiveRegion() {
+    return this._ariaLiveRegionRef.value!;
+  }
+
   connectedCallback(): void {
     super.connectedCallback();
     this._storeChangeUnsub = this._store.subscribe(this.setCaption.bind(this));
@@ -58,7 +64,15 @@ export class DescriptionPanel extends ControlPanelTabPanel {
   // }
 
   clearStatusBar() {
-    this._controlPanel.paraChart.clearAriaLive();
+    this.clearAriaLive();
+  }
+
+  clearAriaLive() {
+    this._ariaLiveRegionRef.value!.clear();
+  }
+
+  protected _showAriaLiveHistory() {
+    this._ariaLiveRegionRef.value!.showHistoryDialog();
   }
 
   private async setCaption(): Promise<void> {
@@ -96,11 +110,15 @@ export class DescriptionPanel extends ControlPanelTabPanel {
                 aria-hidden="true"
                 ?hidden=${!this.controlPanel.settings.isStatusBarVisible}
               >
-                ${this._store.announcement.text}
+                <para-aria-live-region
+                  ${ref(this._ariaLiveRegionRef)}
+                  .store=${this._store}
+                  .announcement=${this._store.announcement}
+                ></para-aria-live-region>
               </div>
             </div>
             <button
-              @click=${() => this._controlPanel.paraChart.showAriaLiveHistory()}
+              @click=${() => this._showAriaLiveHistory()}
             >
               History
             </button>
