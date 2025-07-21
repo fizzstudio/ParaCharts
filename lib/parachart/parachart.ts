@@ -232,6 +232,10 @@ export class ParaChart extends logging(ParaComponent) {
     }
   }
 
+  getChartSVG() {
+    return this._api.serializeChart();
+  }
+
   downloadSVG() {
     this._api.downloadSVG();
   }
