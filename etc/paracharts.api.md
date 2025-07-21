@@ -98,6 +98,8 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     accessor forcecharttype: ChartType_2 | undefined;
     // (undocumented)
+    getChartSVG(): string;
+    // (undocumented)
     headless: boolean;
     // (undocumented)
     get loaded(): Promise<void> | null;
