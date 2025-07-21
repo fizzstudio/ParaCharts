@@ -63,7 +63,7 @@ export class AriaLive extends ParaComponent {
         this._setHistory([...this._history, msg ?? '']);
 
         if (msg
-          && this._store.settings.ui.isVoicingEnabled 
+          && this._store.settings.ui.isVoicingEnabled
           && this._store.settings.ui.isAnnouncementEnabled) {
           this._voicing.speak(msg);
         }
@@ -104,9 +104,8 @@ export class AriaLive extends ParaComponent {
     return html`
       <div
         ${ref(this._ariaLiveRef)}
-        class="sr-only"
       ></div>
-      <para-aria-live-history-dialog 
+      <para-aria-live-history-dialog
         ${ref(this._historyDialogRef)}
       ></para-aria-live-history-dialog>
     `;

@@ -75,14 +75,6 @@ export class ParaChart extends ParaChart_base {
     //
     // (undocumented)
     protected _api: ParaApi;
-    // (undocumented)
-    get ariaLiveRegion(): AriaLive;
-    // Warning: (ae-forgotten-export) The symbol "AriaLive" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    protected _ariaLiveRegionRef: Ref_2<AriaLive>;
-    // (undocumented)
-    clearAriaLive(): void;
     // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
@@ -139,8 +131,6 @@ export class ParaChart extends ParaChart_base {
     render(): TemplateResult;
     // (undocumented)
     protected _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void>;
-    // (undocumented)
-    showAriaLiveHistory(): void;
     // (undocumented)
     get slotted(): HTMLElement[];
     // (undocumented)
