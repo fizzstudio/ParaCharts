@@ -19,7 +19,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
 
   private _summarizer?: Summarizer;
   protected _storeChangeUnsub!: Unsubscribe;
-  protected _ariaLiveRegionRef = createRef<AriaLive>();
+  //protected _ariaLiveRegionRef = createRef<AriaLive>();
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -41,9 +41,9 @@ export class DescriptionPanel extends ControlPanelTabPanel {
     `
   ];
 
-  get ariaLiveRegion() {
-    return this._ariaLiveRegionRef.value!;
-  }
+  // get ariaLiveRegion() {
+  //   return this._ariaLiveRegionRef.value!;
+  // }
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -64,16 +64,17 @@ export class DescriptionPanel extends ControlPanelTabPanel {
   // }
 
   clearStatusBar() {
-    this.clearAriaLive();
+    this._controlPanel.paraChart.clearAriaLive();
+    // this.clearAriaLive();
   }
 
-  clearAriaLive() {
-    this._ariaLiveRegionRef.value!.clear();
-  }
+  // clearAriaLive() {
+  //   this._ariaLiveRegionRef.value!.clear();
+  // }
 
-  protected _showAriaLiveHistory() {
-    this._ariaLiveRegionRef.value!.showHistoryDialog();
-  }
+  // protected _showAriaLiveHistory() {
+  //   this._ariaLiveRegionRef.value!.showHistoryDialog();
+  // }
 
   private async setCaption(): Promise<void> {
     if (this.controlPanel.dataState === 'complete') {
@@ -110,15 +111,11 @@ export class DescriptionPanel extends ControlPanelTabPanel {
                 aria-hidden="true"
                 ?hidden=${!this.controlPanel.settings.isStatusBarVisible}
               >
-                <para-aria-live-region
-                  ${ref(this._ariaLiveRegionRef)}
-                  .store=${this._store}
-                  .announcement=${this._store.announcement}
-                ></para-aria-live-region>
+                ${this._store.announcement.text}
               </div>
             </div>
             <button
-              @click=${() => this._showAriaLiveHistory()}
+              @click=${() => this._controlPanel.paraChart.showAriaLiveHistory()}
             >
               History
             </button>
