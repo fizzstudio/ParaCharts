@@ -29,7 +29,8 @@ import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../store/custom_property_loader';
 import { ParaApi } from '../api/api';
 import { styles } from '../view/styles';
-
+import { type AriaLive } from '../components';
+import '../components/aria_live';
 import { Manifest } from '@fizz/paramanifest';
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
@@ -53,6 +54,7 @@ export class ParaChart extends logging(ParaComponent) {
 
   protected _paraViewRef = createRef<ParaView>();
   protected _controlPanelRef = createRef<ParaControlPanel>();
+  protected _ariaLiveRegionRef = createRef<AriaLive>();
   protected _manifest?: Manifest;
   protected _loader = new ParaLoader();
   private _slotLoader = new SlotLoader();
@@ -176,6 +178,10 @@ export class ParaChart extends logging(ParaComponent) {
     return this._loader;
   }
 
+  get ariaLiveRegion() {
+    return this._ariaLiveRegionRef.value!;
+  }
+
   get slotted(){
     return this._slotted;
   }
@@ -232,6 +238,14 @@ export class ParaChart extends logging(ParaComponent) {
     }
   }
 
+  clearAriaLive() {
+    this._ariaLiveRegionRef.value!.clear();
+  }
+
+  showAriaLiveHistory() {
+    this._ariaLiveRegionRef.value!.showHistoryDialog();
+  }
+
   getChartSVG() {
     return this._api.serializeChart();
   }
@@ -270,6 +284,11 @@ export class ParaChart extends logging(ParaComponent) {
             .store=${this._store}
           ></para-control-panel>` : ''
         }
+        <para-aria-live-region
+          ${ref(this._ariaLiveRegionRef)}
+          .store=${this._store}
+          .announcement=${this._store.announcement}
+        ></para-aria-live-region>
         <slot
           @slotchange=${(e: Event) => {
             //this._signalManager.signal('slotChange');
