@@ -1,14 +1,13 @@
 
 import { DataView, type SeriesView } from './';
-import { DataSymbol, DataSymbols } from '../symbol';
+import { DataSymbol } from '../symbol';
 import { type DataCursor } from '../../store';
-import { type Shape } from '../shape/shape';
+import { Shape } from '../shape/shape';
 import { RectShape } from '../shape/rect';
 
 import { type ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { svg, nothing, TemplateResult } from 'lit';
-import { ref } from 'lit/directives/ref.js';
 import { formatBox } from '@fizz/parasummary';
 import { Datapoint, strToId } from '@fizz/paramodel';
 
@@ -21,7 +20,7 @@ export class DatapointView extends DataView {
 
   declare protected _parent: SeriesView;
 
-  protected _shape: Shape | null = null;
+  protected _shapes: Shape[] = [];
   protected _symbol: DataSymbol | null = null;
 
   constructor(seriesView: SeriesView) {
@@ -72,8 +71,8 @@ export class DatapointView extends DataView {
     });
   }
 
-  get shape() {
-    return this._shape;
+  get shapes() {
+    return [...this._shapes];
   }
 
   get classInfo(): ClassInfo {
@@ -108,6 +107,16 @@ export class DatapointView extends DataView {
     styleInfo.strokeWidth = this.paraview.store.settings.chart.strokeWidth*visitedScale;
   }
 
+  /**
+   * May be overridden to apply shape-specific style info
+   * (e.g., if only a particular shape should be highlighted on visitation)
+   * @param shapeIndex - Index of the shape in `_shapes`.
+   * @returns Style info
+   */
+  protected _shapeStyleInfo(_shapeIndex: number): StyleInfo {
+    return this.styleInfo;
+  }
+
   get ref() {
     return this.chart.paraview.ref<SVGElement>(this._id);
   }
@@ -121,9 +130,9 @@ export class DatapointView extends DataView {
   }
 
   set x(x: number) {
-    if (this._shape) {
-      this._shape.x += x - this._x;
-    }
+    this._shapes.forEach(shape => {
+      shape.x += x - this._x;
+    });
     if (this._symbol) {
       this._symbol.x += x - this._x;
     }
@@ -135,9 +144,9 @@ export class DatapointView extends DataView {
   }
 
   set y(y: number) {
-    if (this._shape) {
-      this._shape.y += y - this._y;
-    }
+    this._shapes.forEach(shape => {
+      shape.y += y - this._y;
+    });
     if (this._symbol) {
       this._symbol.y += y - this._y;
     }
@@ -156,33 +165,44 @@ export class DatapointView extends DataView {
 
   /** Do any other layout (which may depend on the location being set) */
   completeLayout() {
-    this._createShape();
+    this._createShapes();
     this._createSymbol();
+    if (this._children.length === 1) {
+      // We won't be using a group
+      const kid = this._children[0] as (Shape | DataSymbol);
+      //this._shape!.ref = this.ref;
+      kid.id = this._id;
+      kid.role = 'datapoint';
+    } else {
+      this._children.forEach((kid, i) => {
+        const sfx = kid instanceof Shape
+          ? `${i}`
+          : 'sym';
+        kid.id = `${this._id}-${sfx}`;
+      });
+    }
     this.layoutSymbol();
   }
 
   /**
    * Subclasses should override this;
-   * If there will be a shape, first set `this._shape`,
-   * THEN call `super._createShape()`.
+   * If there will be shapes, add them to `this._shapes` first,
+   * THEN call `super._createShapes()`.
    * Otherwise, override with an empty method.
    */
-  protected _createShape() {
-    this._shape!.ref = this.ref;
-    this._shape!.id = this._id;
-    this._shape!.role = 'datapoint';
-    this.append(this._shape!);
+  protected _createShapes() {
+    this._shapes.forEach(shape => {
+      this.append(shape);
+    })
   }
 
   protected _createSymbol() {
     const series = this.seriesProps;
     let symbolType = series.symbol;
-    // If datapoints are layed out again after the initial layout,
+    // If datapoints are laid out again after the initial layout,
     // we need to replace the original shape and symbol
     this._symbol?.remove();
     this._symbol = DataSymbol.fromType(this.paraview, symbolType);
-    this._symbol.id = `${this._id}-sym`;
-    this._symbol.role = 'datapoint';
     this.append(this._symbol);
   }
 
@@ -258,16 +278,25 @@ export class DatapointView extends DataView {
   content(): TemplateResult {
     // on g: aria-labelledby="${this.params.labelId}"
     // originally came from: xAxis.tickLabelIds[j]
-    if (this._shape) {
-      this._shape.styleInfo = this.styleInfo;
-      this._shape.classInfo = this.classInfo;
-    }
+    this._shapes.forEach((shape, i) => {
+      shape.styleInfo = this._shapeStyleInfo(i);
+      //shape.classInfo = this.classInfo;
+    });
     if (this._symbol) {
       this._symbol.scale = this._symbolScale;
       this._symbol.color = this._symbolColor;
       this._symbol.hidden = !this.paraview.store.settings.chart.isDrawSymbols;
     }
-    return super.content();
+    return this._children.length > 1
+      ? svg`
+        <g
+          id=${this._id}
+          class=${classMap(this.classInfo)}
+          role="datapoint"
+        >
+          ${super.content()}
+        </g>`
+      : super.content();
   }
 
 }

@@ -11,7 +11,6 @@ import { Series } from '@fizz/paramodel';
  * @public
  */
 export class DataView extends View {
-  declare protected _children: DataView[];
   declare protected _prev: this | null;
   declare protected _next: this | null;
   declare protected _currFocus: DataView | null;
@@ -21,7 +20,7 @@ export class DataView extends View {
   protected _isStyleEnabled = false;
 
   constructor(
-    public readonly chart: DataLayer, 
+    public readonly chart: DataLayer,
     public readonly seriesKey: string,
   ) {
     super(chart.paraview);
@@ -36,10 +35,6 @@ export class DataView extends View {
     return this.chart.paraview.store.seriesProperties!.properties(this.seriesKey);
   }
 
-  get children(): readonly DataView[] {
-    return this._children;
-  }
-
   get siblings(): readonly this[] {
     return super.siblings.filter(sib => sib instanceof DataView) as this[];
   }
@@ -49,11 +44,11 @@ export class DataView extends View {
   }
 
   get prev() {
-    return super.prev as this | null; 
+    return super.prev as this | null;
   }
 
   get next()  {
-    return super.next as this | null; 
+    return super.next as this | null;
   }
 
   get currFocus() {

@@ -265,10 +265,24 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     this._links.set(dir, node);
   }
 
+  removeLink(dir: Direction) {
+    this._links.delete(dir);
+  }
+
   connect(dir: Direction, to: NavLayer | NavNode, isReciprocal = true) {
     this.setLink(dir, to);
     if (to instanceof NavNode && isReciprocal) {
       to.setLink(oppositeDirs[dir], this);
+    }
+  }
+
+  disconnect(dir: Direction, isReciprocal = true) {
+    const linked = this._links.get(dir);
+    if (linked) {
+      this.removeLink(dir);
+      if (linked instanceof NavNode && isReciprocal) {
+        linked.removeLink(oppositeDirs[dir]);
+      }
     }
   }
 
