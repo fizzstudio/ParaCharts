@@ -171,7 +171,7 @@ export type LabelFormat = 'raw' | string;
 export interface TickLabelSettings extends SettingGroup {
   isDrawEnabled: boolean;
   angle: number;
-  offsetPadding: number;
+  offsetGap: number;
   gap: number;
 }
 

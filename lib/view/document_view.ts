@@ -83,7 +83,7 @@ export class DocumentView extends Container(View) {
     this._grid.reverseChildren();
 
     this._grid.layoutViews();
-    this.setSize(this._grid.boundingWidth, this._grid.boundingHeight);
+    this.setSize(this._grid.paddedWidth, this._grid.paddedHeight);
 
     //this.chartLayers.updateLoc();
 
@@ -321,14 +321,14 @@ export class DocumentView extends Container(View) {
     } else if (position === 'south') {
       this._legends.south = new Legend(this.paraview, items, {
         orientation: 'horiz',
-        wrapWidth: this._chartLayers.boundingWidth
+        wrapWidth: this._chartLayers.paddedWidth
       });
       this._grid.insertRow(this._grid.numRows);
       this._grid.append(this._legends.south, {x: 1, y: -1, width: 1, colAlign: 'center', margin: {top: margin}});
     } else if (position === 'north') {
       this._legends.north = new Legend(this.paraview, items, {
         orientation: 'horiz',
-        wrapWidth: this._chartLayers.boundingWidth
+        wrapWidth: this._chartLayers.paddedWidth
       });
       this._grid.insertRow(this._store.settings.chart.title.isDrawTitle && this._store.title ? 1 : 0);
       this._grid.append(this._legends.north, {

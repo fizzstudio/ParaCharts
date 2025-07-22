@@ -100,7 +100,7 @@ export const defaults: Settings = {
         tickLabel: {
           isDrawEnabled: true,
           angle: -45,
-          offsetPadding: 8,
+          offsetGap: 8,
           gap: 0
         },
         step: 1
@@ -132,7 +132,7 @@ export const defaults: Settings = {
         tickLabel: {
           isDrawEnabled: true,
           angle: 0,
-          offsetPadding: 0,
+          offsetGap: 0,
           gap: 0
         },
         step: 1,

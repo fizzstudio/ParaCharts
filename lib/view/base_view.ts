@@ -369,11 +369,11 @@ export class View extends BaseView {
     }
   }
 
-  get boundingWidth() {
+  get paddedWidth() {
     return this._hidden ? 0 : this.width + this._padding.left + this._padding.right;
   }
 
-  get boundingHeight() {
+  get paddedHeight() {
     return this._hidden ? 0 : this.height + this._padding.top + this._padding.bottom;
   }
 
@@ -441,8 +441,8 @@ export class View extends BaseView {
   }
 
   set hidden(hidden: boolean) {
-    const oldBoundWidth = this.boundingWidth;
-    const oldBoundHeight = this.boundingHeight;
+    const oldBoundWidth = this.paddedWidth;
+    const oldBoundHeight = this.paddedHeight;
     this._hidden = hidden;
     if (oldBoundWidth || oldBoundHeight) {
       this._boundingSizeDidChange();
@@ -457,20 +457,36 @@ export class View extends BaseView {
     this._x = left + this._locOffset.x;
   }
 
+  get paddedLeft() {
+    return this.left - this._padding.left;
+  }
+
+  set paddedLeft(paddedLeft: number) {
+    this._x = paddedLeft + this._padding.left + this._locOffset.x;
+  }
+
   get right() {
-    return this.left + this.boundingWidth;
+    return this.left + this.width;
   }
 
   set right(right: number) {
-    this._x = right - this.boundingWidth + this._locOffset.x;
+    this._x = right - this.width + this._locOffset.x;
+  }
+
+  get paddedRight() {
+    return this.right + this._padding.right;
+  }
+
+  set paddedRight(paddedRight: number) {
+    this._x = paddedRight - this._padding.right - this.width + this._locOffset.x;
   }
 
   get centerX() {
-    return this.left + this.boundingWidth/2;
+    return this.left + this.width/2;
   }
 
   set centerX(centerX: number) {
-    this._x = centerX - this.boundingWidth/2 + this._locOffset.x;
+    this._x = centerX - this.width/2 + this._locOffset.x;
   }
 
   get top() {
@@ -481,20 +497,36 @@ export class View extends BaseView {
     this._y = top + this._locOffset.y;
   }
 
+  get paddedTop() {
+    return this.top - this._padding.top;
+  }
+
+  set paddedTop(paddedTop: number) {
+    this._y = paddedTop + this._padding.top + this._locOffset.y;
+  }
+
   get bottom() {
-    return this.top + this.boundingHeight;
+    return this.top + this.height;
   }
 
   set bottom(bottom: number) {
-    this._y = bottom - this.boundingHeight + this._locOffset.y;
+    this._y = bottom - this.height + this._locOffset.y;
+  }
+
+  get paddedBottom() {
+    return this.bottom + this._padding.bottom;
+  }
+
+  set paddedBottom(paddedBottom: number) {
+    this._y = paddedBottom - this._padding.bottom - this.height + this._locOffset.y;
   }
 
   get centerY() {
-    return this.top + this.boundingHeight/2;
+    return this.top + this.height/2;
   }
 
   set centerY(centerY: number) {
-    this._y = centerY - this.boundingHeight/2 + this._locOffset.y;
+    this._y = centerY - this.height/2 + this._locOffset.y;
   }
 
   get bbox(): DOMRect {
@@ -543,23 +575,21 @@ export class View extends BaseView {
 
   snapXTo(other: View, where: SnapLocation) {
     if (where === 'start') {
-      this.x = other.left + other.padding.left;
+      this.left = other.left;
     } else if (where === 'end') {
-      this.x = other.right - other.padding.right - this.boundingWidth;
+      this.right = other.right;
     } else {
-      this.x = other.left + other.padding.left
-        + other.width/2 - this.width/2 - this.padding.left;
+      this.centerX = other.centerX;
     }
   }
 
   snapYTo(other: View, where: SnapLocation) {
     if (where === 'start') {
-      this.y = other.top + other.padding.top;
+      this.top = other.top;
     } else if (where === 'end') {
-      this.y = other.bottom - other.padding.bottom - this.boundingHeight;
+      this.bottom = other.bottom;
     } else {
-      this.y = other.top + other.padding.top
-        + other.height/2 - this.height/2 - this.padding.top;
+      this.centerY = other.centerY;
     }
   }
 
@@ -657,12 +687,12 @@ export class View extends BaseView {
 
   intersects(other: View): Collision | null {
     const centerDiffX = this.centerX - other.centerX;
-    const rSumX = other.boundingWidth/2 + this.boundingWidth/2;
+    const rSumX = other.paddedWidth/2 + this.paddedWidth/2;
     if (Math.abs(centerDiffX) >= rSumX) {
         return null;
     }
     const centerDiffY = this.centerY - other.centerY;
-    const rSumY = other.boundingHeight/2 + this.boundingHeight/2;
+    const rSumY = other.paddedHeight/2 + this.paddedHeight/2;
     if (Math.abs(centerDiffY) >= rSumY) {
         return null;
     }
@@ -808,8 +838,8 @@ export function Container<TBase extends Containable>(Base: TBase) {
       if (this.hidden) {
         return svg``;
       }
-      const tx = this.x + this.padding.left;
-      const ty = this.y + this.padding.top;
+      const tx = this.x;
+      const ty = this.y;
       return staticSvg`
         <g
           ${this.ref}

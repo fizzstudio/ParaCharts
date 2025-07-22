@@ -443,8 +443,8 @@ export class ParaView extends logging(ParaComponent) {
     this._viewBox = {
       x: 0,
       y: 0,
-      width: this._documentView?.boundingWidth ?? this._store.settings.chart.size.width!,
-      height: this._documentView?.boundingHeight ?? this._store.settings.chart.size.height!
+      width: this._documentView?.paddedWidth ?? this._store.settings.chart.size.width!,
+      height: this._documentView?.paddedHeight ?? this._store.settings.chart.size.height!
     };
     this.log('view box:', this._viewBox.width, 'x', this._viewBox.height);
   }
