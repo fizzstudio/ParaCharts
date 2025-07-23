@@ -21,12 +21,17 @@ enablePatches();
 
 import {
   dataFromManifest, type AllSeriesData, type ChartType, type Manifest,
-  Jimerator
+  Jimerator,
+  isLineType,
+  isPastryType
 } from '@fizz/paramanifest';
 import {
   facetsFromDataset, Model, modelFromExternalData, modelFromInlineData,
   FacetSignature, SeriesAnalyzerConstructor, PairAnalyzerConstructor,
-  PlaneDatapoint
+  PlaneDatapoint,
+  planeModelFromInlineData,
+  planeModelFromExternalData,
+  PlaneModel
 } from '@fizz/paramodel';
 import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 
@@ -244,34 +249,44 @@ export class ParaStore extends State {
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
     if (dataset.data.source === 'inline') {
-      this._model = modelFromInlineData(
-        manifest,
-        this._seriesAnalyzerConstructor,
-        this._pairAnalyzerConstructor
-      );
+      if (isPastryType(dataset.type)) {
+        this._model = modelFromInlineData(manifest);
+      } else {
+        this._model = planeModelFromInlineData(
+          manifest,
+          this._seriesAnalyzerConstructor,
+          this._pairAnalyzerConstructor
+        );
+      }
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = dataFromManifest(manifest);
     } else if (data) {
-      this._model = modelFromExternalData(
-        data,
-        manifest,
-        this._seriesAnalyzerConstructor,
-        this._pairAnalyzerConstructor
-      );
+      if (isPastryType(dataset.type)) {
+        this._model = modelFromExternalData(data, manifest);
+      } else {
+        this._model = planeModelFromExternalData(
+          data,
+          manifest,
+          this._seriesAnalyzerConstructor,
+          this._pairAnalyzerConstructor
+        );
+      }
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = data;
     } else {
       throw new Error('store lacks external or inline chart data');
     }
-    this._model.keys.forEach(async seriesKey => {
-      this.seriesAnalyses = {
-        [seriesKey]: await this._model!.getSeriesAnalysis(seriesKey),
-        ...this.seriesAnalyses
-      };
-    });
+    if (this._model instanceof PlaneModel) {
+      this._model.seriesKeys.forEach(async (seriesKey) => {
+        this.seriesAnalyses = {
+          [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey),
+          ...this.seriesAnalyses
+        };
+      });
+    }
   }
 
   protected _propertyChanged(key: string, value: any) {
@@ -546,86 +561,93 @@ export class ParaStore extends State {
   }
 
   async showMDRAnnotations() {
-    if (this.type == "line") {
+    if (this.type === 'line') {
       if (this.settings.controlPanel.isMDRAnnotationsVisible) {
         let seriesAnalysis;
         let seriesKey: string;
         if (this.visitedDatapoints.length > 0) {
           seriesKey = this.visitedDatapoints[0].seriesKey;
-          seriesAnalysis = await this.model?.getSeriesAnalysis(seriesKey)
-        }
-        else {
+          seriesAnalysis = this.model 
+            ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
+            : undefined;
+        } else {
           seriesKey = this.model!.series[0][0].seriesKey
-          seriesAnalysis = await this.model?.getSeriesAnalysis(seriesKey)
-        }
+          seriesAnalysis = this.model 
+            ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
+            : undefined;
+        };
         if (!seriesAnalysis) {
           console.log("This chart does not support AI trend annotations")
           this.updateSettings(draft => {
             draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
           });
-          return
-        }
-        const length = this.model!.series[0].length - 1
-        let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i])
+          return;
+        };
+        const length = this.model!.series[0].length - 1;
+        let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i]);
         for (let sequence of relevantSequences!) {
-          this.highlightRange(sequence.start / length, (sequence.end - 1) / length)
-        }
+          this.highlightRange(sequence.start / length, (sequence.end - 1) / length);
+        };
 
-        this.addModelLineBreaks(seriesAnalysis!.sequences, seriesKey)
-        this.addModelTrendLines(seriesAnalysis!.sequences, seriesKey)
+        this.addModelLineBreaks(seriesAnalysis!.sequences, seriesKey);
+        this.addModelTrendLines(seriesAnalysis!.sequences, seriesKey);
 
-        let message = `Detected trend: ${seriesAnalysis?.message}, consisting of ${seriesAnalysis?.messageSeqs.length} datapoint sequences from`
+        let message = `Detected trend: ${seriesAnalysis?.message}, consisting of ${seriesAnalysis?.messageSeqs.length} datapoint sequences from`;
         for (let seq of relevantSequences!) {
           message += ` ${this.model!.allPoints[seq.start].facetValueNumericized("x")} to ${this.model!.allPoints[seq.end - 1].facetValueNumericized("x")} (${seq.message}),`;
         }
         if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
-          const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation")
-          this.annotations.splice(index, 1)
+          const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation");
+          this.annotations.splice(index, 1);
         }
         this.annotations.push({
           annotation: message,
           id: `trend-analysis-annotation`
-        })
+        });
+      } else {
+        this.removeMDRAnnotations();
       }
-      else {
-        this.removeMDRAnnotations()
-      }
-    }
-    else {
-      console.log("Trend annotations not currently supported for this chart type")
+    } else {
+      console.log("Trend annotations not currently supported for this chart type");
       this.updateSettings(draft => {
         draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
       });
-      return;
     }
   }
 
   async removeMDRAnnotations(visitedDatapoints?: DataCursor[]) {
-    let seriesAnalysis;
-    let seriesKey: string;
+    let seriesAnalysis: SeriesAnalysis | null = null;
+    let seriesKey: string | null = null;
     if (!visitedDatapoints) {
-      visitedDatapoints = this.visitedDatapoints
+      visitedDatapoints = this.visitedDatapoints;
     }
-    if (visitedDatapoints.length > 0) {
-      seriesKey = visitedDatapoints[0].seriesKey
-      seriesAnalysis = await this.model?.getSeriesAnalysis(seriesKey)
+    if (this.type !== 'line') {
+      // No MDR annotations need to be removed
+    } else if (visitedDatapoints.length > 0) {
+      seriesKey = visitedDatapoints[0].seriesKey;
+      seriesAnalysis = this.model 
+        ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
+        : null;
+    } else {
+      seriesKey = this.model!.series[0][0].seriesKey;
+      seriesAnalysis = this.model 
+        ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
+        : null;
     }
-    else {
-      seriesKey = this.model!.series[0][0].seriesKey
-      seriesAnalysis = await this.model!.getSeriesAnalysis(seriesKey)
-    }
-    const length = this.model!.series[0].length - 1
-    let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i])
+    const length = this.model!.series[0].length - 1;
+    let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i]);
     for (let sequence of relevantSequences!) {
-      this.unhighlightRange(sequence.start / length, (sequence.end - 1) / length)
+      this.unhighlightRange(sequence.start / length, (sequence.end - 1) / length);
     }
 
-    this.removeModelLineBreaks(seriesAnalysis!.sequences, seriesKey)
-    this.removeModelTrendLines(seriesAnalysis!.sequences, seriesKey)
+    if (seriesKey !== null) {
+      this.removeModelLineBreaks(seriesAnalysis!.sequences, seriesKey);
+      this.removeModelTrendLines(seriesAnalysis!.sequences, seriesKey);
+    }
 
     if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
-      const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation")
-      this.annotations.splice(index, 1)
+      const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation");
+      this.annotations.splice(index, 1);
     }
   }
 
@@ -670,7 +692,7 @@ export class ParaStore extends State {
   }
 
   getModelCsv() {
-    const xLabel = this.model!.independentFacet!.label;
+    const xLabel = this._model!.getFacet(this.model!.independentFacetKeys[0])!.label; // TODO: Assumes exactly 1 indep facet
     return papa.unparse(this.model!.series[0].datapoints.map((dp, i) => ({
       [xLabel]: formatXYDatapointX(dp as PlaneDatapoint, 'raw'),
       ...Object.fromEntries(this.model!.series.map(s =>
