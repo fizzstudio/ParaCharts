@@ -10,6 +10,7 @@ import { property, customElement, state } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { type Unsubscribe } from '@lit-app/state';
+import { PlaneModel } from '@fizz/paramodel';
 
 @customElement('para-description-panel')
 export class DescriptionPanel extends ControlPanelTabPanel {
@@ -82,7 +83,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
         if (this.store.model!.type === 'pie' || this.store.model!.type === 'donut') {
           this._summarizer = new PastryChartSummarizer(this.store.model!);
         } else {
-          this._summarizer = new PlaneChartSummarizer(this.store.model!);
+          this._summarizer = new PlaneChartSummarizer(this.store.model as PlaneModel);
         }
       }
       this.caption = await this._summarizer.getChartSummary();
