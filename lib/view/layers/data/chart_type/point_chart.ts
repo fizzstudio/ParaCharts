@@ -19,11 +19,12 @@ import { XYChart, XYDatapointView, XYSeriesView } from '.';
 import { AxisInfo } from '../../../../common/axisinfo';
 import { Setting, type PointChartType } from '../../../../store/settings_types';
 
-import { enumerate, strToId } from '@fizz/paramodel';
+import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 import { svg } from 'lit';
 import { linearRegression } from 'simple-statistics';
 import { View } from '../../../base_view';
+import { strToId } from '@fizz/paramanifest';
 
 
 /**

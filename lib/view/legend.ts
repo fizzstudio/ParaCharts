@@ -141,7 +141,7 @@ export class Legend extends Container(View) {
       const style = this._markers[i].styleInfo;
       const visited = item.datapointIndex !== undefined
         ? this.paraview.store.isVisited(
-          this.paraview.store.model!.keys[0], item.datapointIndex)
+          this.paraview.store.model!.seriesKeys[0], item.datapointIndex)
         : this.paraview.store.isVisitedSeries(item.label);
       if (visited) {
         style.fill = this.paraview.store.colors.colorValueAt(-1);

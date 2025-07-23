@@ -7,8 +7,9 @@ import { DataSymbol, DataSymbols } from '../../../symbol';
 import { svg, TemplateResult } from 'lit';
 import { View } from '../../../base_view';
 import { Colors } from '../../../../common/colors';
-import { enumerate, strToId } from '@fizz/paramodel';
+import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
+import { strToId } from '@fizz/paramanifest';
 
 
 export class ScatterPlot extends PointChart {

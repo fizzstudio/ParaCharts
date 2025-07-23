@@ -236,7 +236,7 @@ export abstract class DataLayer extends ChartLayer {
       if (node.type === 'datapoint') {
         datapoint = node.at(0)!.datapoint;
       }
-      const depKey = this.paraview.store.model!.dependentFacetKey!;
+      const depKey = this.paraview.store.model!.dependentFacetKeys[0]!; // TODO: Assumes exactly 1 dep facet
       const stats = this.paraview.store.model!.atKey(seriesKey)!.getFacetStats(depKey)!;
       let seriesMatchArray = isMin
         ? stats.min.datapoints

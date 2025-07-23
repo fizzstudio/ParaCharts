@@ -119,7 +119,7 @@ export abstract class XYChart extends DataLayer {
   protected _createNavMap() {
     super._createNavMap();
     this._createPrimaryNavNodes();
-    if (this.paraview.store.model!.keys.length > 1) {
+    if (this.paraview.store.model!.seriesKeys.length > 1) {
       this._createNavLinksBetweenSeries();
       this._createChordNavNodes();
     }

@@ -11,11 +11,12 @@ import { Label, LabelTextAnchor } from '../../../label';
 import { ChartLandingView, DatapointView, SeriesView } from '../../../data';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../../../../store/query_utils';
 
-import { Box, enumerate, strToId } from '@fizz/paramodel';
+import { Box, enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 
 import { StyleInfo } from 'lit/directives/style-map.js';
+import { strToId } from '@fizz/paramanifest';
 
 type BarClusterMap = {[key: string]: BarCluster};
 
@@ -189,7 +190,7 @@ export class BarChart extends XYChart {
     });
     todo().deets!.chartPanel.requestUpdate();*/
     if (this.paraview.store.settings.type.bar.isAbbrevSeries) {
-      this._abbrevs = abbreviateSeries(this.paraview.store.model!.keys);
+      this._abbrevs = abbreviateSeries(this.paraview.store.model!.seriesKeys);
     }
   }
 
@@ -435,7 +436,7 @@ export class BarChart extends XYChart {
         color: (view as SeriesView).color  // series color
       }));
     } else {
-      return this.paraview.store.model!.keys.toSorted().map(key => ({
+      return this.paraview.store.model!.seriesKeys.toSorted().map(key => ({
         label: key,
         color: this.paraview.store.seriesProperties!.properties(key).color
       }));

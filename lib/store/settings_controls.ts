@@ -12,13 +12,13 @@ import {
   type SliderSettingControlOptions,
   type ButtonSettingControlOptions,
 } from '../components/settings';
-import { strToId } from '@fizz/paramodel';
 import { ParaStore } from './parastore';
 
 import { type TemplateResult } from 'lit';
 import { html, literal } from 'lit/static-html.js';
 import { State, property } from '@lit-app/state';
 import { produce } from 'immer';
+import { strToId } from '@fizz/paramanifest';
 
 
 export type SettingControlOptionsType<T extends SettingControlType> = 

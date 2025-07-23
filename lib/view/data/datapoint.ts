@@ -10,7 +10,7 @@ import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { svg, nothing, TemplateResult } from 'lit';
 import { ref } from 'lit/directives/ref.js';
 import { formatBox } from '@fizz/parasummary';
-import { Datapoint, strToId } from '@fizz/paramodel';
+import { Datapoint } from '@fizz/paramodel';
 
 /**
  * Abstract base class for views representing datapoint values
