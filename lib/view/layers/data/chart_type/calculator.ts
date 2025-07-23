@@ -163,7 +163,7 @@ export class GraphingCalculator extends LineChart {
     return super.settings as DeepReadonly<GraphSettings>;
   }
 
-  
+
 
   updateSeriesStyle(styleInfo: StyleInfo) {
     super.updateSeriesStyle(styleInfo);
@@ -208,11 +208,11 @@ export class GraphLine extends LineSection{
   }
 
   content(){
-    if (this._shape) {
-      this._shape.styleInfo = this.styleInfo;
-      this._shape.classInfo = this.classInfo;  
-      if (this._shape.y < 0 || this._shape.y > this.chart.parent.logicalHeight){
-        this._shape.hidden = true;
+    if (this._shapes.length) {
+      this._shapes[0].styleInfo = this.styleInfo;
+      this._shapes[0].classInfo = this.classInfo;
+      if (this._shapes[0].y < 0 || this._shapes[0].y > this.chart.parent.logicalHeight){
+        this._shapes[0].hidden = true;
       }
     }
     if (this._symbol) {

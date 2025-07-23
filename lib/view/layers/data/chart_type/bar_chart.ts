@@ -676,16 +676,16 @@ export class Bar extends XYDatapointView {
   //     Z`;
   // }
 
-  protected _createShape() {
+  protected _createShapes() {
     const isPattern = this.paraview.store.colors.palette.isPattern;
-    this._shape = new RectShape(this.paraview, {
+    this._shapes.push(new RectShape(this.paraview, {
       x: this._x,
       y: this._y,
       width: this._width,
       height: this._height,
       isPattern: isPattern ? true : false
-    });
-    super._createShape();
+    }));
+    super._createShapes();
   }
 
   get selectedMarker() {

@@ -145,6 +145,7 @@ export class ParaView extends logging(ParaComponent) {
       }
       .label {
         fill: var(--label-color);
+        stroke: none;
       }
       .tick-label {
         font-size: 13px;
@@ -155,7 +156,7 @@ export class ParaView extends logging(ParaComponent) {
         fill: white;
       }
       .radial-value-label {
-        fill: white;
+        fill: var(--label-color);
       }
       .radial-slice {
         stroke: white;
