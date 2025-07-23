@@ -46,7 +46,7 @@ export class SeriesView extends Container(DataView) {
   }
 
   // @ts-ignore
-  get children(): readonly DatapointView[] { 
+  get children(): readonly DatapointView[] {
     return this._children;
   }
 
@@ -62,15 +62,11 @@ export class SeriesView extends Container(DataView) {
   }
 
   nextSeriesLanding() {
-    return this._next;    
+    return this._next;
   }
 
   prevSeriesLanding() {
     return this._prev;
-  }
-
-  protected _visit() {
-    this.paraview.store.visit(this._children.map(v => ({seriesKey: v.seriesKey, index: v.index})));
   }
 
   protected _composeSelectionAnnouncement() {
@@ -80,7 +76,7 @@ export class SeriesView extends Container(DataView) {
     const oldTotalSelected = this.paraview.store.prevSelectedDatapoints.length;
     const justSelected = this.paraview.store.selectedDatapoints.filter(dc =>
       !this.paraview.store.wasSelected(dc.seriesKey, dc.index));
-  
+
     let s = newTotalSelected === 1 ? '' : 's';
     const newTotSelText = `${newTotalSelected} point${s} selected.`;
     s = justSelected.length === 1 ? '' : 's';
@@ -100,21 +96,6 @@ export class SeriesView extends Container(DataView) {
       this.paraview.store.select(this.paraview.store.visitedDatapoints);
     }
     this.paraview.store.announce(this._composeSelectionAnnouncement());
-  }
-
-  onFocus(isNewComponentFocus = false) {
-    super.onFocus();
-    this._visit();
-    this.paraview.store.announce(this.paraview.summarizer.getSeriesSummary(this.seriesKey));
-    if (!isNewComponentFocus) {
-      this.chart.playSeriesRiff();
-    }
-  }
-
-  getDatapointViewForLabel(label: string) {
-    return this._children.find(view => 
-      view.datapoint.facetBox('x')!.raw === label
-    );
   }
 
 }

@@ -33,7 +33,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
 
       ol.annotations li.selected {
         font-weight: bold;
-        background-color: var(--themeColorLight);
+        background-color: var(--theme-color-light);
       }
     `
   ];
@@ -61,9 +61,11 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     const target = (event?.target as HTMLElement);
     if (target) {
       this._highlightAnnotation(target);
-      const seriesKey = target.dataset.series!;
-      const index = parseInt(target.dataset.index!);
-      this._goToAnnotation(seriesKey, index);
+      if (target.dataset.series && target.dataset.index!) {
+        const seriesKey = target.dataset.series!;
+        const index = parseInt(target.dataset.index!);
+        this._navToAnnotation(seriesKey, index);
+      }
     }
   }
 
@@ -76,12 +78,12 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     annotationEl.scrollIntoView(false);
   }
 
-  protected _goToAnnotation(seriesKey: string, index: number) {
-    this._controlPanel.paraChart.paraView.focusDatapoint(seriesKey, index);
+  protected _navToAnnotation(seriesKey: string, index: number) {
+    this._controlPanel.paraChart.paraView.navToDatapoint(seriesKey, index);
   }
 
   render() {
-    return html`   
+    return html`
       <div id="annotation-tab" class="tab-content">
         <section id="annotations">
           ${this.showAnnotations()}
@@ -93,6 +95,20 @@ export class AnnotationPanel extends ControlPanelTabPanel {
             }
           >
             Add Annotation
+          </button>
+        </div>
+         <div>
+          <button
+            @click=${
+              () => {
+                this._store.updateSettings(draft => {
+                draft.controlPanel.isMDRAnnotationsVisible = !this._store.settings.controlPanel.isMDRAnnotationsVisible;
+              });
+              this._store.showMDRAnnotations()
+              }
+            }
+          >
+            Show Trend Annotations
           </button>
         </div>
       </div>

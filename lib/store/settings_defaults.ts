@@ -55,13 +55,15 @@ export const defaults: Settings = {
     //chartType: 'line'
     fontFamily: 'Helvetica, sans-serif',
     fontWeight: '300',
+    stroke: 'purple',
     strokeWidth: 4,
     strokeHighlightScale: 1.5,
     symbolStrokeWidth: 2,
     symbolHighlightScale: 1.5,
     hasDirectLabels: true,
     hasLegendWithDirectLabels: false,
-    isDrawSymbols: true
+    isDrawSymbols: true,
+    isStatic: false
   },
   axis: {
     minInterval: 25,
@@ -98,7 +100,7 @@ export const defaults: Settings = {
         tickLabel: {
           isDrawEnabled: true,
           angle: -45,
-          offsetPadding: 8,
+          offsetGap: 8,
           gap: 0
         },
         step: 1
@@ -130,7 +132,7 @@ export const defaults: Settings = {
         tickLabel: {
           isDrawEnabled: true,
           angle: 0,
-          offsetPadding: 0,
+          offsetGap: 0,
           gap: 0
         },
         step: 1,
@@ -160,6 +162,7 @@ export const defaults: Settings = {
   type: {
     bar: {
       barWidth: 20,
+      minBarWidth: 20,
       colorByDatapoint: false,
       isDrawStackLabels: false,
       isStackLabelInsideBar: true,
@@ -167,7 +170,7 @@ export const defaults: Settings = {
       isDrawRecordLabels: false,
       isDrawValueLabels: false,
       clusterBy: undefined,
-      clusterGap: 5,
+      clusterGap: 10,
       stackContent: 'all',
       stackCount: 1,
       isAbbrevSeries: true,
@@ -178,6 +181,7 @@ export const defaults: Settings = {
     },
     column: {
       barWidth: 10,
+      minBarWidth: 20,
       colorByDatapoint: false,
       isDrawStackLabels: false,
       isStackLabelInsideBar: true,
@@ -185,7 +189,7 @@ export const defaults: Settings = {
       isDrawValueLabels: true,
       stackLabelGap: 10,
       clusterBy: undefined,
-      clusterGap: 5,
+      clusterGap: 10,
       stackContent: 'all',
       stackCount: 1,
       isAbbrevSeries: true,
@@ -198,7 +202,7 @@ export const defaults: Settings = {
       lineWidth: 5,
       lineWidthMax: 25,
       lowVisionLineWidth: 15,
-      lineHighlightScale: 1.5, 
+      lineHighlightScale: 1.5,
       baseSymbolSize: 10,
       seriesLabelPadding: 5,
       pointLabelFormat: 'raw',
@@ -227,7 +231,8 @@ export const defaults: Settings = {
       selectedPointMarkerSize: {
         width: 20,
         height: 20,
-      }
+      },
+      relativeAxes: "Counts"
     },
     heatmap: {
       pointLabelFormat: 'raw',
@@ -240,62 +245,62 @@ export const defaults: Settings = {
     pie: {
       categoryLabel: {
         isDrawEnabled: true,
-        margin: 3,
-        fontSize: 15,
-        color: 'black',
+        position: 'outside',
+        outsideLabelGap: 10,
+        outsideArcDistance: 10,
+        outsideHorizShift: 5,
+        format: 'raw',
+        underlineGap: 2,
       },
       valueLabel: {
         isDrawEnabled: true,
-        margin: 3,
-        fontSize: 15,
-        color: 'black',
+        format: 'raw',
+        position: 0.85,
       },
       isRenderCenterLabel: true,
       annularThickness: 1,
-      categoryLabelPosition: 'outside',
-      categoryLabelFormat: 'raw',
-      categoryLabelUnderlineGap: 6,
-      sliceValueFormat: 'raw'
+      centerLabel: 'none',
+      centerLabelPadding: 10
     },
     donut: {
       categoryLabel: {
         isDrawEnabled: true,
-        margin: 3,
-        fontSize: 15,
-        color: 'black',
+        position: 'outside',
+        outsideLabelGap: 10,
+        outsideArcDistance: 10,
+        outsideHorizShift: 5,
+        format: 'raw',
+        underlineGap: 2,
       },
       valueLabel: {
         isDrawEnabled: true,
-        margin: 3,
-        fontSize: 15,
-        color: 'black',
+        format: 'raw',
+        position: 0.85,
       },
       isRenderCenterLabel: true,
       annularThickness: 0.5,
-      categoryLabelPosition: 'outside',
-      categoryLabelFormat: 'raw',
-      categoryLabelUnderlineGap: 6,
-      sliceValueFormat: 'raw'
+      centerLabel: 'title',
+      centerLabelPadding: 15
     },
     gauge: {
       categoryLabel: {
         isDrawEnabled: true,
-        margin: 3,
-        fontSize: 15,
-        color: 'black',
+        position: 'outside',
+        outsideLabelGap: 4,
+        outsideArcDistance: 10,
+        outsideHorizShift: 5,
+        format: 'raw',
+        underlineGap: 6,
       },
       valueLabel: {
         isDrawEnabled: true,
-        margin: 3,
-        fontSize: 15,
-        color: 'black',
+        format: 'raw',
+        position: 0.85,
       },
       isRenderCenterLabel: true,
       annularThickness: 0.5,
-      categoryLabelPosition: 'outside',
-      categoryLabelFormat: 'raw',
-      categoryLabelUnderlineGap: 6,
-      sliceValueFormat: 'raw'
+      centerLabel: 'none',
+      centerLabelPadding: 10
     },
     stepline: {
       lineWidth: 5,
@@ -312,6 +317,7 @@ export const defaults: Settings = {
     },
     lollipop: {
       barWidth: 10,
+      minBarWidth: 6,
       colorByDatapoint: false,
       isDrawStackLabels: false,
       isStackLabelInsideBar: true,
@@ -328,6 +334,26 @@ export const defaults: Settings = {
       barGap: 0.25,
       clusterLabelFormat: 'raw',
     },
+    graph: {
+      lineWidth: 5,
+      lineWidthMax: 25,
+      lowVisionLineWidth: 15,
+      lineHighlightScale: 1.5,
+      baseSymbolSize: 10,
+      seriesLabelPadding: 5,
+      pointLabelFormat: 'raw',
+      leaderLineLength: 30,
+      selectedPointMarkerSize: {
+        width: 20,
+        height: 20,
+      },
+      isDrawSymbols: false,
+      equation: '',
+      xMin: -10,
+      xMax: 10,
+      preset: '',
+      renderPts: 100
+    }
   },
   grid: {
     isDrawHorizLines: true,
@@ -339,24 +365,26 @@ export const defaults: Settings = {
     isVoicingEnabled: false,
     isAnnouncementEnabled: true,
     speechRate: 1,
-    isFullScreenEnabled: false,
+    isFullscreenEnabled: false,
     isLowVisionModeEnabled: false,
+    isFocusRingEnabled: false,
+    focusRingGap: 10
   },
   controlPanel: {
-    isControlPanelDefaultOpen: false,
+    isControlPanelDefaultOpen: true,
     tabLabelStyle: 'label',
     isCaptionVisible: true,
     isStatusBarVisible: true,
     isSparkBrailleVisible: false,
-    isSparkBrailleProportional: false,
-    isSparkBrailleBar: false,
     isSparkBrailleControlVisible: true,
+    isMDRAnnotationsVisible: false,
     isDataTabVisible: true,
     isColorsTabVisible: true,
     isAudioTabVisible: true,
     isControlsTabVisible: true,
     isChartTabVisible: true,
     isAnnotationsTabVisible: true,
+    isGraphingTabVisible: true,
     isAnalysisTabVisible: true,
     isColorPaletteControlVisible: true,
     isCVDControlVisible: true,
@@ -381,11 +409,11 @@ export const defaults: Settings = {
     isSoniEnabled: false,
     isRiffEnabled: true,
     isNotificationEnabled: true,
-    isChordModeEnabled: false,
     hertzLower: 35,
     hertzUpper: HERTZ.length - 12,
     soniPlaySpeed: 3,
-    riffSpeed: 'medium'
+    riffSpeed: 'medium',
+    isArpeggiateChords: true
   },
   dev: {
     isDebug: false

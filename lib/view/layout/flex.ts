@@ -40,32 +40,25 @@ export class RowLayout extends FlexLayout {
 
   computeSize(): [number, number] {
     return [
-      this._children.reduce((sum, kid) => sum + kid.boundingWidth, 0) 
+      this._children.reduce((sum, kid) => sum + kid.paddedWidth, 0)
         + this.gap*(this._children.length - 1),
-      Math.max(...this._children.map(kid => kid.boundingHeight))
+      Math.max(...this._children.map(kid => kid.paddedHeight))
     ];
   }
 
   protected _snapChildY(kid: View) {
-    if (this.alignViews === 'start') {
-      kid.y = this.top + this._padding.top;
-    } else if (this.alignViews === 'end') {
-      kid.y = this.bottom - this._padding.bottom - kid.boundingHeight;
-    } else {
-      kid.y = this.top + this._padding.top 
-        + this.height/2 - kid.height/2 - kid.padding.top;
-    }
+    kid.snapYTo(this, this.alignViews);
   }
 
   layoutViews() {
     if (!this._children.length) {
       return;
     }
-    this._children[0].x = this._x + this._padding.left;
+    this._children[0].paddedLeft = this._x;
     this._snapChildY(this._children[0]);
     // Lay out child views from left to right
-    this._children.slice(1).forEach((kid, i) => {
-      kid.x = this._children[kid.index - 1].right + this.gap;
+    this._children.slice(1).forEach(kid => {
+      kid.paddedLeft = this._children[kid.index - 1].paddedRight + this.gap;
       this._snapChildY(kid);
     });
   }
@@ -83,21 +76,14 @@ export class ColumnLayout extends FlexLayout {
 
   computeSize(): [number, number] {
     return [
-      Math.max(...this._children.map(kid => kid.boundingWidth)),
-      this._children.reduce((sum, kid) => sum + kid.boundingHeight, 0) 
+      Math.max(...this._children.map(kid => kid.paddedWidth)),
+      this._children.reduce((sum, kid) => sum + kid.paddedHeight, 0)
         + this.gap*(this._children.length - 1)
     ];
   }
 
   protected _snapChildX(kid: View) {
-    if (this.alignViews === 'start') {
-      kid.x = this.left + this._padding.left;
-    } else if (this.alignViews === 'end') {
-      kid.x = this.right - this._padding.right - kid.boundingWidth;
-    } else {
-      kid.x = this.left + this._padding.left 
-        + this.width/2 - kid.width/2 - kid.padding.left;
-    }
+    kid.snapXTo(this, this.alignViews);
   }
 
   layoutViews() {
@@ -105,11 +91,11 @@ export class ColumnLayout extends FlexLayout {
       return;
     }
     this._snapChildX(this._children[0]);
-    this._children[0].y = this._y + this._padding.top;
+    this._children[0].paddedTop = this._y;
     // Lay out child views from top to bottom
-    this._children.slice(1).forEach((kid, i) => {
+    this._children.slice(1).forEach(kid => {
       this._snapChildX(kid);
-      kid.y = this._children[kid.index - 1].bottom + this.gap;
+      kid.paddedTop = this._children[kid.index - 1].paddedBottom + this.gap;
     });
   }
 

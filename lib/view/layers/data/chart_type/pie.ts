@@ -1,7 +1,7 @@
 
 import { RadialChart, RadialSlice, type RadialDatapointParams } from '.';
 import { type SeriesView } from '../../../data';
-import { Sector } from '../../../shape/sector';
+import { SectorShape } from '../../../shape/sector';
 import { type ParaView } from '../../../../paraview';
 
 export class PieChart extends RadialChart {
@@ -10,26 +10,23 @@ export class PieChart extends RadialChart {
     super(paraview, index);
   }
 
-  playSeriesRiff() {
+  protected _playRiff() {
   }
-  
+
   protected _createSlice(seriesView: SeriesView, params: RadialDatapointParams): RadialSlice {
-    return new PieSlice(seriesView, params); 
+    return new PieSlice(seriesView, params);
   }
 
 }
 
 export class PieSlice extends RadialSlice {
 
-  protected _r: number;
-
   constructor(parent: SeriesView, params: RadialDatapointParams) {
     super(parent, params);
     this._x = this.chart.cx;
     this._y = this.chart.cy;
-    this._r = Math.min(this.chart.height, this.chart.width)/2;
     // const {x, y, className} = this._computeLabelOptions();
-    // this._params.label.x = x; 
+    // this._params.label.x = x;
     // this._params.label.y = y;
     // this._params.label.classList.push(className);
     // this._params.label.hidden = false;
@@ -45,15 +42,17 @@ export class PieSlice extends RadialSlice {
     // XXX
     return 0;
   }
-  
+
   protected _createShape() {
-    this._shape = new Sector(this.paraview, {
+    const isPattern = this.paraview.store.colors.palette.isPattern;
+    this._shape = new SectorShape(this.paraview, {
       x: this._x,
       y: this._y,
-      r: this._r,
+      r: this.chart.radius,
       centralAngle: this._params.percentage*360,
-      orientationAngle: (this._params.accum + this.chart.startAngleOffset)*360,
-      annularThickness: this.paraview.store.type === 'donut' ? 0.5 : 1
+      orientationAngle: this._params.accum*360,
+      annularThickness: this.chart.settings.annularThickness,
+      isPattern: isPattern ? true : false
     });
     super._createShape();
   }
@@ -79,28 +78,16 @@ export class PieSlice extends RadialSlice {
   // }
 
   get selectedMarker() {
-    return new Sector(this.paraview, {
+    return new SectorShape(this.paraview, {
       x: this._x,
       y: this._y,
-      r: this._r,
+      r: this.chart.radius,
       centralAngle: this._params.percentage*360,
-      orientationAngle: (this._params.accum + this.chart.startAngleOffset)*360,
-      annularThickness: this.paraview.store.type === 'donut' ? 0.5 : 1,
+      orientationAngle: this._params.accum*360,
+      annularThickness: this.chart.settings.annularThickness,
       fill: 'none',
       stroke: 'black',
       strokeWidth: 2
     });
-  }
-
-  onFocus() {
-    super.onFocus()
-    let data = []
-    for (let point of this.series.rawData) {
-      data.push({ label: point.x, value: Number(point.y) })
-    }
-    this.paraview.store.updateSettings(draft => {
-      draft.controlPanel.isSparkBrailleProportional = true
-    });
-    this.paraview.store._sparkBrailleData = JSON.stringify(data)
   }
 }

@@ -17,20 +17,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { logging } from '../common/logger';
 import { ParaComponent } from '../components';
 import { AllSeriesData, ChartType } from '@fizz/paramanifest'
-import { DeepReadonly, Settings, SettingsInput } from "../store/settings_types";
+import { DeepReadonly, Settings, SettingsInput } from '../store/settings_types';
 import { SettingsManager } from '../store';
-import "../paraview";
-import "../control_panel";
-import { exhaustive } from "../common/utils";
+import '../paraview';
+import '../control_panel';
+import { exhaustive } from '../common/utils';
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
-import { type AriaLive } from '../components';
-import '../components/aria_live';
 import { ParaStore } from '../store';
 import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../store/custom_property_loader';
+import { ParaApi } from '../api/api';
 import { styles } from '../view/styles';
-
+import { type AriaLive } from '../components';
+import '../components/aria_live';
 import { Manifest } from '@fizz/paramanifest';
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
@@ -38,7 +38,7 @@ import { customElement, property, queryAssignedElements } from 'lit/decorators.j
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { SlotLoader } from '../loader/slotloader';
-import { SeriesAnalyzerConstructor } from '@fizz/paramodel';
+import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
 
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
@@ -46,61 +46,113 @@ export class ParaChart extends logging(ParaComponent) {
   @property({ type: Boolean }) headless = false;
   @property() accessor manifest = '';
   @property() manifestType: SourceKind = 'url';
+  // `data` must be a URL, if set
+  @property() data = '';
   @property({type: Object}) accessor config: SettingsInput = {};
   @property() accessor forcecharttype: ChartType | undefined;
   @property() type?: ChartType
 
-  protected _paraViewRef = createRef<ParaView>();  
+  protected _paraViewRef = createRef<ParaView>();
   protected _controlPanelRef = createRef<ParaControlPanel>();
   protected _ariaLiveRegionRef = createRef<AriaLive>();
   protected _manifest?: Manifest;
   protected _loader = new ParaLoader();
   private _slotLoader = new SlotLoader();
 
-  private data?: AllSeriesData;
   protected _suppleteSettingsWith?: DeepReadonly<Settings>;
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
+  protected _api: ParaApi;
 
-  constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor) {
+  constructor(
+    seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
+    pairAnalyzerConstructor?: PairAnalyzerConstructor
+  ) {
     super();
     const customPropLoader = new CustomPropertyLoader();
     const cssProps = customPropLoader.processProperties();
     // also creates the state controller
     this.store = new ParaStore(
+      this,
       Object.assign(cssProps, this.config),
       this._suppleteSettingsWith,
-      seriesAnalyzerConstructor);
+      seriesAnalyzerConstructor,
+      pairAnalyzerConstructor
+    );
     customPropLoader.store = this.store;
     customPropLoader.registerColors();
     customPropLoader.registerSymbols();
+    this._api = new ParaApi(this);
 
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
         resolve();
         // It's now safe to load a manifest
         if (this.manifest) {
+          if (this.data) {
+            await this._loader.preloadData(this.data);
+          }
           this._loaderPromise = this._runLoader(this.manifest, this.manifestType).then(() => {
             this.log('ParaCharts will now commence the raising of the roof and/or the dead');
           });
-        }
-        else if (this._slotted.length) {
+        } else if (this._slotted.length) {
           this.log(`loading from slot`);
           const table = this._slotted[0].getElementsByTagName("table")[0]
           const manifest = this._slotted[0].getElementsByClassName("manifest")[0] as HTMLElement
           this._store.dataState = 'pending';
-          const loadresult = await this._slotLoader.findManifest([table, manifest], "some-manifest")
-          this.log('loaded manifest')
-          if (loadresult.result === 'success') {
-            this.store.setManifest(loadresult.manifest!);
-            this._store.dataState = 'complete';
-          } else {
-            //console.error(loadresult.error);
-            this._store.dataState = 'error';
+          if (table) {
+            const loadresult = await this._slotLoader.findManifest([table, manifest], "some-manifest")
+            this.log('loaded manifest')
+            if (loadresult.result === 'success') {
+              this.store.setManifest(loadresult.manifest!);
+              this._store.dataState = 'complete';
+            } else {
+              //console.error(loadresult.error);
+              this._store.dataState = 'error';
+            }
+          }
+          else {
+            console.log("No datatable in slot")
+            if (this.getAttribute("type") === 'graph') {
+              const tempTable = document.createElement("table")
+              //Using a temporary, very sparse table to load the canvas, as the model isn't configured to load with literally no data
+              //The numbers here don't matter as long as they're outside the default graphing calc viewport
+              tempTable.innerHTML = `<table>
+                          <caption>No graph data present</caption>
+                          <thead>
+                              <tr>
+                                  <th>X</th>
+                                  <th>Y</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr>
+                                  <td>100</td>
+                                  <td>100</td>
+                              </tr>
+                              <tr>
+                                  <td>101</td>
+                                  <td>101</td>
+                              </tr>
+                          </tbody>
+                      </table>`
+              const loadresult = await this._slotLoader.findManifest([tempTable], "some-manifest")
+              this.log('loaded manifest')
+              if (loadresult.result === 'success') {
+                this.store.setManifest(loadresult.manifest!);
+                this._store.dataState = 'complete';
+              } else {
+                //console.error(loadresult.error);
+                this._store.dataState = 'error';
+              }
+            }
+            else {
+              this._store.dataState = 'error'
+            }
           }
         }
       });
-    });    
+    });
   }
 
   @queryAssignedElements({flatten: true})
@@ -124,6 +176,14 @@ export class ParaChart extends logging(ParaComponent) {
 
   get loader() {
     return this._loader;
+  }
+
+  get ariaLiveRegion() {
+    return this._ariaLiveRegionRef.value!;
+  }
+
+  get slotted(){
+    return this._slotted;
   }
 
   connectedCallback() {
@@ -165,7 +225,7 @@ export class ParaChart extends logging(ParaComponent) {
     this.log(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
     this._store.dataState = 'pending';
     const loadresult = await this._loader.load(
-      this.manifestType, manifestInput, 
+      this.manifestType, manifestInput,
       this.forcecharttype);
     this.log('loaded manifest')
     if (loadresult.result === 'success') {
@@ -184,6 +244,18 @@ export class ParaChart extends logging(ParaComponent) {
 
   showAriaLiveHistory() {
     this._ariaLiveRegionRef.value!.showHistoryDialog();
+  }
+
+  getChartSVG() {
+    return this._api.serializeChart();
+  }
+
+  downloadSVG() {
+    this._api.downloadSVG();
+  }
+
+  downloadPNG() {
+    this._api.downloadPNG();
   }
 
   render(): TemplateResult {
@@ -205,7 +277,7 @@ export class ParaChart extends logging(ParaComponent) {
           colormode=${this._store?.settings.color.colorVisionMode ?? nothing}
           ?disableFocus=${this.headless}
         ></para-view>
-        ${!this.headless ? html`
+        ${!(this.headless || this._store.settings.chart.isStatic) ? html`
           <para-control-panel
             ${ref(this._controlPanelRef)}
             .paraChart=${this}

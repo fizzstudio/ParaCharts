@@ -21,6 +21,7 @@ import { ParaView } from '../paraview';
 
 import { svg, nothing } from 'lit';
 import { styleMap, type StyleInfo } from 'lit/directives/style-map.js';
+import { DatapointView } from './data';
 
 export type DataSymbolShape = 
 'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
@@ -318,15 +319,26 @@ export class DataSymbol extends View {
         />
       `);
     }
+    this._locOffset.x = this.width/2;
+    this._locOffset.y = this.height/2;
     this._updateStyleInfo();
   }
 
   get width() {
-    return shapeInfo[this.shape].baseWidth + this._options.strokeWidth;
+    return shapeInfo[this.shape].baseWidth*this._options.scale;
   }
 
   get height() {
-    return shapeInfo[this.shape].baseHeight + this._options.strokeWidth;
+    return shapeInfo[this.shape].baseHeight*this._options.scale;
+  }
+
+  get outerBbox() {
+    return new DOMRect(
+      this._x - this.width/2 - this._options.scale*this._options.strokeWidth/2,
+      this._y - this.height/2 - this._options.scale*this._options.strokeWidth/2,
+      this.width + this._options.scale*this._options.strokeWidth,
+      this.height + this._options.scale*this._options.strokeWidth
+    );
   }
 
   get shape() {
@@ -401,12 +413,17 @@ export class DataSymbol extends View {
   }
 
   content() {
-    let transform = fixed`translate(${this._x + this.width/2},${this._y + this.height/2})`;
+    let transform = fixed`translate(${this._x},${this._y})`;
     if (this._options.scale !== 1) {
       transform += fixed` scale(${this._options.scale})`;
     }
-    return this.paraview.store.settings.type.line.isDrawSymbols ?
-    svg`
+    let type = this.paraview.store.type
+    if (this.parent instanceof DatapointView){
+      if (this._y < 0 || this._y > this.parent.chart.parent.logicalHeight){
+        this.hidden = true;
+      }
+    }
+    return this.hidden ? svg`` : svg`
       <use 
         href="#${this._defsKey}"
         id=${this._id || nothing}
@@ -415,7 +432,7 @@ export class DataSymbol extends View {
         style=${styleMap(this._styleInfo)}
         class="symbol ${this.fill} ${this.classes.join(' ')}"
       />
-    ` : svg``;
+    `;
   }
 
 }

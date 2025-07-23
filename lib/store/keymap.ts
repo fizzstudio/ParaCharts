@@ -5,60 +5,68 @@ export const keymap: KeyRegistrations = {
   v: {
     label: 'Toggle self-voicing mode',
     caseSensitive: false,
-    action: 'voicing_mode_toggle'
+    action: 'voicingModeToggle'
   },
   b: {
     label: 'Toggle screen reader announcements',
     caseSensitive: false,
-    action: 'announcement_mode_toggle'
+    action: 'announcementModeToggle'
   },
   s: {
     label: 'Toggle sonification mode',
     caseSensitive: false,
-    action: 'sonification_mode_toggle'
+    action: 'sonificationModeToggle'
   },
   k: {
     label: 'Toggle dark mode',
     caseSensitive: false,
-    action: 'dark_mode_toggle'
+    action: 'darkModeToggle'
   },
   l: {
     label: 'Toggle low-vision mode',
     caseSensitive: false,
-    action: 'low_vision_mode_toggle'
+    action: 'lowVisionModeToggle'
   },
   h: {
     label: 'Show the help dialog',
     caseSensitive: false,
-    action: 'open_help'
+    action: 'openHelp'
   },
   ArrowRight: {
     label: 'Move right',
-    action: 'move_right'
+    action: 'moveRight'
   },
   ArrowLeft: {
     label: 'Move left',
-    action: 'move_left'
+    action: 'moveLeft'
   },
   ArrowUp: {
     label: 'Move up',
-    action: 'move_up'
+    action: 'moveUp'
   },
   ArrowDown: {
     label: 'Move down',
-    action: 'move_down'
+    action: 'moveDown'
+  },
+  'Shift+ArrowUp': {
+    label: 'Move out',
+    action: 'moveOut'
+  },
+  'Shift+ArrowDown': {
+    label: 'Move in',
+    action: 'moveIn'
   },
   'Shift+End': {
     label: 'Play datapoints to the right',
-    action: 'play_right'
+    action: 'playRight'
   },
   'Shift+Home': {
     label: 'Play datapoints to the left',
-    action: 'play_left'
+    action: 'playLeft'
   },
   'Ctrl+Control': {
     label: 'Stop playing',
-    action: 'stop_play'
+    action: 'stopPlay'
   },
   // PageUp: {
   //   action: 'previous_stat'
@@ -78,15 +86,25 @@ export const keymap: KeyRegistrations = {
   // 'Shift+PageUp': {
   //   action: 'play_backward_category'
   // },
-  // Home: {
-  //   action: 'first_point'
-  // },
-  // 'End': {
-  //   action: 'last_point'
-  // },
+  Home: {
+    label: 'Go to first point in series',
+    action: 'goFirst'
+  },
+  End: {
+    label: 'Go to last point in series',
+    action: 'goLast'
+  },
+  ';': {
+    label: 'Go to first point in series',
+    action: 'goFirst'
+  },
+  "'": {
+    label: 'Go to last point in series',
+    action: 'goLast'
+  },
   ' ': {
     label: 'Repeat last message',
-    action: 'replay'
+    action: 'repeatLastAnnouncement'
   },
   Enter: {
     label: 'Select a datapoint',
@@ -94,18 +112,18 @@ export const keymap: KeyRegistrations = {
   },
   'Shift+Enter': {
     label: 'Extend the datapoint selection',
-    action: 'select_extend'
+    action: 'selectExtend'
   },
   u: {
     label: 'Clear the datapoint selection',
     caseSensitive: false,
-    action: 'select_clear'
+    action: 'selectClear'
   },
-  a: {
-    label: 'Add an annotation',
-    caseSensitive: false,
-    action: 'add_annotation'
-  },
+  // a: {
+  //   label: 'Add an annotation',
+  //   caseSensitive: false,
+  //   action: 'add_annotation'
+  // },
   // 'Ctrl+ArrowLeft': {
   //   action: 'previous_tenth'
   // },
@@ -114,19 +132,19 @@ export const keymap: KeyRegistrations = {
   // },
   '[': {
     label: 'Go to the series minimum',
-    action: 'go_minimum'
+    action: 'goMinimum'
   },
   ']': {
     label: 'Go to the series maximum',
-    action: 'go_maximum'
+    action: 'goMaximum'
   },
   'Shift+{': {
     label: 'Go to the chart minimum',
-    action: 'go_total_minimum'
+    action: 'goTotalMinimum'
   },
   'Shift+}': {
     label: 'Go to the chart maximum',
-    action: 'go_total_maximum'
+    action: 'goTotalMaximum'
   },
   // t: {
   //   caseSensitive: false,
@@ -151,23 +169,31 @@ export const keymap: KeyRegistrations = {
   q: {
     label: 'Query data',
     caseSensitive: false,
-    action: 'query_data'
+    action: 'queryData'
   },
-  w: {
-    label: 'Describe series',
-    action: 'describe_series'
-  },
-  e: {
-    label: 'Describe intersections',
-    action: 'describe_intersections'
-  },
+  // w: {
+  //   label: 'Describe series',
+  //   action: 'describeSeries'
+  // },
+  // e: {
+  //   label: 'Describe intersections',
+  //   action: 'describeIntersections'
+  // },
   c: {
-    label: 'Toggle chord mode',
+    label: 'Jump to chord landing',
     caseSensitive: false,
-    action: 'chord_mode_toggle'
+    action: 'jumpToChordLanding'
   },
   'Ctrl+Shift+V': {
     label: 'Announce version info',
-    action: 'announce_version_info'
+    action: 'announceVersionInfo'
+  },
+  Ctrl: {
+    label: 'Stop speaking (self-voicing mode)',
+    action: 'shutUp'
+  },
+  Escape: {
+    label: 'Stop speaking (self-voicing mode)',
+    action: 'shutUp'
   }
 };

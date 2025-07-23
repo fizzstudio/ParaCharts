@@ -17,13 +17,31 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { customElement } from 'lit/decorators.js';
 import { ParaChart } from '../lib/parachart/parachart';
 import { SeriesAnalyzer } from '@fizz/series-analyzer';
+import { AiSeriesPairMetadataAnalyzer } from '@fizz/paramodel';
+import { css, unsafeCSS } from 'lit';
+import { styles } from '../lib/view/styles';
+import cpanelIconAlt from '../lib/assets/info-icon-alt.svg';
 
 @customElement('para-chart-ai')
 export class ParaChartAi extends ParaChart {
 
+  static styles = [
+    styles,
+    css`
+      :host {
+      --control-panel-icon: url(${unsafeCSS(cpanelIconAlt)});
+        --summary-marker-size: 1.1rem;
+      }
+      figure {
+        display: inline-block;
+        margin: 0;
+      }
+    `
+  ];
+
   constructor() {
     console.log('AI-enhanced ParaChart created');
-    super(SeriesAnalyzer);
+    super(SeriesAnalyzer, AiSeriesPairMetadataAnalyzer);
   }
 
 }

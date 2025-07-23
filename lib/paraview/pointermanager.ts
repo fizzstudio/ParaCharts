@@ -101,7 +101,7 @@ export class PointerEventManager {
    */
   handleMove(event: PointerEvent) {
     const target = event.target as SVGGraphicsElement;
-    // To avoid "implicit pointer capture", where the event listener element prevents the event target 
+    // To avoid "implicit pointer capture", where the event listener element prevents the event target
     // from changing to a another element, even a child element, se must explicitly release the pointer
     //  after every `pointermove` event handling
     target.releasePointerCapture(event.pointerId);
@@ -177,7 +177,7 @@ export class PointerEventManager {
       // this._selectElement(target);
       return;
     } else {
-      // this._outputUtterance(utteranceArray); 
+      // this._outputUtterance(utteranceArray);
     }
   }
 
@@ -185,7 +185,7 @@ export class PointerEventManager {
    * Set selected element and add a highlight box.
    * @param target - The element to be selected; deselects if absent or `null`.
    */
-  protected _selectElement(target: SVGGraphicsElement, isAdd?: boolean) {
+  protected async _selectElement(target: SVGGraphicsElement, isAdd?: boolean) {
     if (!target) {
       this._clearSelectedElements();
     } else {
@@ -203,13 +203,16 @@ export class PointerEventManager {
           ? datapointEl.id.slice(0, -4)
           : datapointEl.id;
         const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointViewForId(id)!;
-        datapointView.focus();
+        this._paraView.documentView!.chartLayers.dataLayer.navMap.goTo('datapoint', {
+          seriesKey: datapointView.seriesKey,
+          index: datapointView.index
+        });
         this._paraView.documentView!.chartLayers.dataLayer.selectCurrent(!!isAdd);
-  
+
         // TODO: remove all element selection code, since it's extraneous to chart datapoint selection
         this._selectedElement = target;
         this._selectedElements.push(target);
-  
+
         // this._createSelectBox(target);
       } else {
         // might have clicked on an axis label, axis tick label or something else we can act on,
@@ -234,7 +237,7 @@ export class PointerEventManager {
   //     let x = bbox.x;
   //     let y = bbox.y;
 
-  //     // find any transforms on the element 
+  //     // find any transforms on the element
   //     // TODO: fix this hack
   //     const transforms = (target.parentNode! as SVGGraphicsElement).getAttribute('transform');
   //     if (transforms) {

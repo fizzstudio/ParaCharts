@@ -19,10 +19,12 @@ import { svg as staticSvg, StaticValue } from 'lit/static-html.js';
 import { ref } from 'lit/directives/ref.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
+import { type Setting } from '../store';
+import { type Shape } from './shape/shape';
 
-/*import { 
+/*import {
   HotkeyActionManager, EventActionManager, type KeyRegistrations, KeymapManager,
-  type KeyDetails 
+  type KeyDetails
 } from '../input';
 import { TodoEvent, type Actions } from '../input/actions';
 import { type HotkeyInfo } from '../input/defaultactions';*/
@@ -114,6 +116,9 @@ export class Collision {
 
 
 export class BaseView {
+
+  readonly isContainer: boolean = false;
+
   get id() {
     return '';
   }
@@ -159,6 +164,10 @@ export class BaseView {
     return null;
   }
 
+  get styleInfo(): StyleInfo {
+    return {};
+  }
+
   renderChildren(): TemplateResult {
     return svg`${this.children.map(kid => kid.render())}`;
   }
@@ -179,13 +188,15 @@ export class BaseView {
  * @public
  */
 export class View extends BaseView {
-  
+
   protected _id!: string;
   protected _parent: View | null = null;
   protected _prev: View | null = null;
   protected _next: View | null = null;
   protected _children: View[] = [];
   protected _loc = new Vec2();
+  /** Offset of loc from top left corner of bbox */
+  protected _locOffset = new Vec2();
   protected _width = -1;
   protected _height = -1;
   protected _currFocus: View | null = null;
@@ -194,7 +205,6 @@ export class View extends BaseView {
   //protected _keymapManager: KeymapManager | null = null;
   protected _padding: Padding = {top: 0, bottom: 0, left: 0, right: 0};
   protected _hidden = false;
-  isActive: boolean = true;
   constructor(public readonly paraview: ParaView) {
     super();
     //this._setActions();
@@ -294,6 +304,14 @@ export class View extends BaseView {
     this._loc = loc;
   }
 
+  get locOffset() {
+    return this._locOffset.clone();
+  }
+
+  set locOffset(locOffset: Vec2) {
+    this._locOffset = locOffset;
+  }
+
   // XXX These next 4 accessors are for legacy compatibility
   protected get _x() {
     return this._loc.x;
@@ -351,11 +369,11 @@ export class View extends BaseView {
     }
   }
 
-  get boundingWidth() {
+  get paddedWidth() {
     return this._hidden ? 0 : this.width + this._padding.left + this._padding.right;
   }
 
-  get boundingHeight() {
+  get paddedHeight() {
     return this._hidden ? 0 : this.height + this._padding.top + this._padding.bottom;
   }
 
@@ -383,11 +401,11 @@ export class View extends BaseView {
         out = {top: padding.all, bottom: padding.all, left: padding.all, right: padding.all};
       }
       if (padding.horiz !== undefined) {
-        out.left = padding.horiz; 
+        out.left = padding.horiz;
         out.right = padding.horiz;
       }
       if (padding.vert !== undefined) {
-        out.top = padding.vert; 
+        out.top = padding.vert;
         out.bottom = padding.vert;
       }
       if (padding.top !== undefined) {
@@ -423,8 +441,8 @@ export class View extends BaseView {
   }
 
   set hidden(hidden: boolean) {
-    const oldBoundWidth = this.boundingWidth;
-    const oldBoundHeight = this.boundingHeight;
+    const oldBoundWidth = this.paddedWidth;
+    const oldBoundHeight = this.paddedHeight;
     this._hidden = hidden;
     if (oldBoundWidth || oldBoundHeight) {
       this._boundingSizeDidChange();
@@ -432,27 +450,94 @@ export class View extends BaseView {
   }
 
   get left() {
-    return this._x;
+    return this._x - this._locOffset.x;
+  }
+
+  set left(left: number) {
+    this._x = left + this._locOffset.x;
+  }
+
+  get paddedLeft() {
+    return this.left - this._padding.left;
+  }
+
+  set paddedLeft(paddedLeft: number) {
+    this._x = paddedLeft + this._padding.left + this._locOffset.x;
   }
 
   get right() {
-    return this._x + this.boundingWidth;
+    return this.left + this.width;
+  }
+
+  set right(right: number) {
+    this._x = right - this.width + this._locOffset.x;
+  }
+
+  get paddedRight() {
+    return this.right + this._padding.right;
+  }
+
+  set paddedRight(paddedRight: number) {
+    this._x = paddedRight - this._padding.right - this.width + this._locOffset.x;
   }
 
   get centerX() {
-    return this.left + this.boundingWidth/2;
+    return this.left + this.width/2;
+  }
+
+  set centerX(centerX: number) {
+    this._x = centerX - this.width/2 + this._locOffset.x;
   }
 
   get top() {
-    return this._y;
+    return this._y - this._locOffset.y;
+  }
+
+  set top(top: number) {
+    this._y = top + this._locOffset.y;
+  }
+
+  get paddedTop() {
+    return this.top - this._padding.top;
+  }
+
+  set paddedTop(paddedTop: number) {
+    this._y = paddedTop + this._padding.top + this._locOffset.y;
   }
 
   get bottom() {
-    return this._y + this.boundingHeight;
+    return this.top + this.height;
+  }
+
+  set bottom(bottom: number) {
+    this._y = bottom - this.height + this._locOffset.y;
+  }
+
+  get paddedBottom() {
+    return this.bottom + this._padding.bottom;
+  }
+
+  set paddedBottom(paddedBottom: number) {
+    this._y = paddedBottom - this._padding.bottom - this.height + this._locOffset.y;
   }
 
   get centerY() {
-    return this.top + this.boundingHeight/2;
+    return this.top + this.height/2;
+  }
+
+  set centerY(centerY: number) {
+    this._y = centerY - this.height/2 + this._locOffset.y;
+  }
+
+  get bbox(): DOMRect {
+    return new DOMRect(this.left, this.top, this.width, this.height);
+  }
+
+  /**
+   * Bounding box inclusive of stroke width
+   */
+  get outerBbox(): DOMRect {
+    return this.bbox;
   }
 
   computeSize(): [number, number] {
@@ -490,23 +575,21 @@ export class View extends BaseView {
 
   snapXTo(other: View, where: SnapLocation) {
     if (where === 'start') {
-      this.x = other.left + other.padding.left;
+      this.left = other.left;
     } else if (where === 'end') {
-      this.x = other.right - other.padding.right - this.boundingWidth;
+      this.right = other.right;
     } else {
-      this.x = other.left + other.padding.left 
-        + other.width/2 - this.width/2 - this.padding.left;
+      this.centerX = other.centerX;
     }
   }
 
   snapYTo(other: View, where: SnapLocation) {
     if (where === 'start') {
-      this.y = other.top + other.padding.top;
+      this.top = other.top;
     } else if (where === 'end') {
-      this.y = other.bottom - other.padding.bottom - this.boundingHeight;
+      this.bottom = other.bottom;
     } else {
-      this.y = other.top + other.padding.top 
-        + other.height/2 - this.height/2 - this.padding.top;
+      this.centerY = other.centerY;
     }
   }
 
@@ -526,26 +609,26 @@ export class View extends BaseView {
     return this._parent!.children;
   }
 
-  get sameIndexers(): readonly View[] {
+  get cousins(): readonly View[] {
     return this._parent!.siblings.map(sib => sib.children[this.index]);
   }
 
-  get withSameIndexers(): readonly View[] {
+  get withCousins(): readonly View[] {
     return this._parent!.withSiblings.map(view => view.children[this.index]);
   }
 
-  get nextSameIndexer(): View | null {
+  get nextCousin(): View | null {
     if (!this._parent!.next) {
       return null;
     }
-    return this.sameIndexers[this._parent!.index];
+    return this.cousins[this._parent!.index];
   }
 
-  get prevSameIndexer(): View | null {
+  get prevCousin(): View | null {
     if (!this._parent!.prev) {
       return null;
-    } 
-    return this.sameIndexers[this._parent!.index - 1];
+    }
+    return this.cousins[this._parent!.index - 1];
   }
 
   get currFocus() {
@@ -603,56 +686,55 @@ export class View extends BaseView {
   }*/
 
   intersects(other: View): Collision | null {
-      const centerDiffX = this.centerX - other.centerX;
-      const rSumX = other.boundingWidth/2 + this.boundingWidth/2;
-      if (Math.abs(centerDiffX) >= rSumX) {
-          return null;
-      }
-      const centerDiffY = this.centerY - other.centerY;
-      const rSumY = other.boundingHeight/2 + this.boundingHeight/2;
-      if (Math.abs(centerDiffY) >= rSumY) {
-          return null;
-      }
-      return new Collision(centerDiffX, centerDiffY, rSumX, rSumY);
+    const centerDiffX = this.centerX - other.centerX;
+    const rSumX = other.paddedWidth/2 + this.paddedWidth/2;
+    if (Math.abs(centerDiffX) >= rSumX) {
+        return null;
+    }
+    const centerDiffY = this.centerY - other.centerY;
+    const rSumY = other.paddedHeight/2 + this.paddedHeight/2;
+    if (Math.abs(centerDiffY) >= rSumY) {
+        return null;
+    }
+    return new Collision(centerDiffX, centerDiffY, rSumX, rSumY);
   }
 
 
-  focus(isNewComponentFocus = false, level = 0) {
+  async focus(isNewComponentFocus = false, level = 0) {
     if (!this._parent) {
       return;
     }
     //this.siblings.forEach(sib => sib.isFocused = false);
     if (this._parent!.currFocus && this._parent!.currFocus !== this && !level) {
       // Only auto-blur at the bottom level to avoid setting the prev leaf twice
-      this._parent!.currFocus.blur(false);
+      await this._parent!.currFocus.blur(false);
     }
     this._parent!.currFocus = this;
-    this._parent!.focus(isNewComponentFocus, level + 1);
+    await this._parent!.focus(isNewComponentFocus, level + 1);
     if (this._currFocus) {
       if (!level) {
-        this.focusLeaf.onFocus(isNewComponentFocus);
+        await this.focusLeaf.onFocus(isNewComponentFocus);
       }
     } else {
-      this.onFocus(isNewComponentFocus);
+      await this.onFocus(isNewComponentFocus);
     }
   }
 
-  onFocus(_isNewComponentFocus = false) {
+  async onFocus(_isNewComponentFocus = false) {
   }
 
-  blur(parentOnFocus = true) {
+  async blur(parentOnFocus = true) {
     /*if (todo().canvas.documentView?.focusLeaf === this) {
       todo().canvas.prevFocusLeaf = this;
     }*/
     this._parent!.currFocus = null;
-    this.onBlur();
+    await this.onBlur();
     if (parentOnFocus) {
-      this._parent!.onFocus();
+      await this._parent!.onFocus();
     }
   }
 
-  onBlur() {
-
+  async onBlur() {
   }
 
   get focusLeaf(): View {
@@ -696,7 +778,7 @@ export class View extends BaseView {
       } else {
         if (i === this._children.length - 1) {
           kid._next = null;
-        } 
+        }
         kid._prev = this._children[i - 1];
         kid._prev._next = kid;
       }
@@ -715,9 +797,20 @@ export class View extends BaseView {
     this.insert(newChild, i);
   }
 
-  cleanup() {
-  this.isActive = false;
-  this._children.map((child) => child.cleanup()) 
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+    this._children.forEach(kid => kid.settingDidChange(path, oldValue, newValue));
+  }
+
+  async storeDidChange(key: string, value: any) {
+    this._children.forEach(kid => kid.storeDidChange(key, value));
+  }
+
+  focusRingShape(): Shape | null {
+    return null;
+  }
+
+  focusRingBbox(): DOMRect | null {
+    return null;
   }
 
 }
@@ -738,19 +831,21 @@ type Containable = GConstructor<BaseView & Partial<ContainableI>>;
  */
 export function Container<TBase extends Containable>(Base: TBase) {
   return class _Container extends Base {
-  
+
+    readonly isContainer = true;
+
     render() {
       if (this.hidden) {
         return svg``;
       }
-      const tx = this.x + this.padding.left;
-      const ty = this.y + this.padding.top;
+      const tx = this.x;
+      const ty = this.y;
       return staticSvg`
         <g
           ${this.ref}
           id=${this.id || nothing}
           class=${this.classInfo ? classMap(this.classInfo) : nothing}
-          style=${this.styleInfo ? styleMap(this.styleInfo) : nothing}
+          style=${Object.keys(this.styleInfo).length ? styleMap(this.styleInfo) : nothing}
           role=${this.role || nothing}
           aria-roledescription=${this.roleDescription || nothing}
           transform=${(tx || ty) ? fixed`translate(${tx},${ty})` : nothing}

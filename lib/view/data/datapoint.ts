@@ -3,14 +3,14 @@ import { DataView, type SeriesView } from './';
 import { DataSymbol, DataSymbols } from '../symbol';
 import { type DataCursor } from '../../store';
 import { type Shape } from '../shape/shape';
-import { Rect } from '../shape/rect';
+import { RectShape } from '../shape/rect';
 
 import { type ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { svg, nothing, TemplateResult } from 'lit';
 import { ref } from 'lit/directives/ref.js';
 import { formatBox } from '@fizz/parasummary';
-import { DataPoint, strToId } from '@fizz/paramodel';
+import { Datapoint, strToId } from '@fizz/paramodel';
 
 /**
  * Abstract base class for views representing datapoint values
@@ -31,7 +31,7 @@ export class DatapointView extends DataView {
   protected _addedToParent() {
     super._addedToParent();
   }
-  
+
   get parent() {
     return this._parent;
   }
@@ -40,12 +40,12 @@ export class DatapointView extends DataView {
     super.parent = parent;
   }
 
-  get sameIndexers() {
-    return super.sameIndexers as this[]; 
+  get cousins() {
+    return super.cousins as this[];
   }
 
-  get withSameIndexers() {
-    return super.withSameIndexers as this[];
+  get withCousins() {
+    return super.withCousins as this[];
   }
 
   get nextSeriesLanding() {
@@ -56,12 +56,12 @@ export class DatapointView extends DataView {
     return this._parent.prev;
   }
 
-  get datapoint(): DataPoint {
+  get datapoint(): Datapoint {
     return this.series.datapoints[this.index];
   }
 
   get selectedMarker(): Shape {
-    return new Rect(this.paraview, {
+    return new RectShape(this.paraview, {
       width: this._width/2,
       height: this._width/2,
       x: this._x - this._width/4,
@@ -98,7 +98,7 @@ export class DatapointView extends DataView {
 
   /**
    * Mutate `styleInfo` with visited styling.
-   * @param styleInfo 
+   * @param styleInfo
    */
   protected _addVisitedStyleInfo(styleInfo: StyleInfo) {
     const colorValue = this.paraview.store.colors.colorValue('highlight');
@@ -145,23 +145,10 @@ export class DatapointView extends DataView {
   }
 
   protected _createId(..._args: any[]): string {
-    const jimIndex = this._parent.modelIndex*this._series.length + this.index + 1; 
+    const jimIndex = this._parent.modelIndex*this._series.length + this.index + 1;
     const id = this.paraview.store.jimerator!.jim.selectors[`datapoint${jimIndex}`].dom as string;
     // don't include the '#' from JIM
     return id.slice(1);
-  }
-  
-  protected _visit(_isNewComponentFocus = false) {
-    this.paraview.store.visit([{seriesKey: this.seriesKey, index: this.index}]);
-    const announcement = this.paraview.store.model!.multi
-      ? this.paraview.summarizer.getDatapointSummaryWithSeries(this.datapoint, 'raw')
-      : this.paraview.summarizer.getDatapointSummary(this.datapoint, 'raw');
-    this.paraview.store.announce(announcement);
-  }
-
-  onFocus(isNewComponentFocus = false) {
-    super.onFocus(isNewComponentFocus);
-    this._visit(isNewComponentFocus);
   }
 
   /** Compute and set `x` and `y` */
@@ -178,7 +165,7 @@ export class DatapointView extends DataView {
    * Subclasses should override this;
    * If there will be a shape, first set `this._shape`,
    * THEN call `super._createShape()`.
-   * Otherwise, override with an empty method. 
+   * Otherwise, override with an empty method.
    */
   protected _createShape() {
     this._shape!.ref = this.ref;
@@ -190,6 +177,9 @@ export class DatapointView extends DataView {
   protected _createSymbol() {
     const series = this.seriesProps;
     let symbolType = series.symbol;
+    // If datapoints are layed out again after the initial layout,
+    // we need to replace the original shape and symbol
+    this._symbol?.remove();
     this._symbol = DataSymbol.fromType(this.paraview, symbolType);
     this._symbol.id = `${this._id}-sym`;
     this._symbol.role = 'datapoint';
@@ -198,8 +188,8 @@ export class DatapointView extends DataView {
 
   layoutSymbol() {
     if (this._symbol) {
-      this._symbol.x = this._x - this._symbol.width/2;
-      this._symbol.y = this._y - this._symbol.height/2;
+      this._symbol.x = this._x;
+      this._symbol.y = this._y;
     }
   }
 
@@ -229,7 +219,7 @@ export class DatapointView extends DataView {
       !this.paraview.store.wasSelected(dc.seriesKey, dc.index));
     const justDeselected = this.paraview.store.prevSelectedDatapoints.filter(dc =>
       !this.paraview.store.isSelected(dc.seriesKey, dc.index));
-  
+
     const s = newTotalSelected === 1 ? '' : 's';
     const newTotSel = `${newTotalSelected} point${s} selected.`;
 
@@ -261,7 +251,7 @@ export class DatapointView extends DataView {
       this.paraview.store.extendSelection(this.paraview.store.visitedDatapoints);
     } else {
       this.paraview.store.select(this.paraview.store.visitedDatapoints);
-    }  
+    }
     this.paraview.store.announce(this._composeSelectionAnnouncement(isExtend));
   }
 
@@ -270,7 +260,7 @@ export class DatapointView extends DataView {
     // originally came from: xAxis.tickLabelIds[j]
     if (this._shape) {
       this._shape.styleInfo = this.styleInfo;
-      this._shape.classInfo = this.classInfo;  
+      this._shape.classInfo = this.classInfo;
     }
     if (this._symbol) {
       this._symbol.scale = this._symbolScale;

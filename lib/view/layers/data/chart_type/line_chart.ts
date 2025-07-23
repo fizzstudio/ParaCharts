@@ -16,14 +16,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { XYSeriesView, PointChart, ChartPoint } from '.';
 import { type LineSettings, type DeepReadonly } from '../../../../store/settings_types';
-import { Path } from '../../../shape/path';
+import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../../../../store/query_utils';
 import { ChartLandingView, SeriesView, DatapointView } from '../../../data';
+import { bboxOfBboxes } from '../../../../common/utils';
 
 import { interpolate } from '@fizz/templum';
 
 import { type StyleInfo } from 'lit/directives/style-map.js';
+import { NavNode } from '../navigation';
 
 /**
  * Class for drawing line charts.
@@ -33,31 +35,25 @@ export class LineChart extends PointChart {
 
   protected _addedToParent() {
     super._addedToParent();
-    this.paraview.store.settingControls.add({
+    if (this.paraview.store.type === "line"){
+      this.paraview.store.settingControls.add({
       type: 'textfield',
       key: 'type.line.lineWidth',
       label: 'Line width',
       options: {
-        inputType: 'number', 
-        min: 1, 
+        inputType: 'number',
+        min: 1,
         max: this.paraview.store.settings.type.line.lineWidthMax as number
       },
       parentView: 'controlPanel.tabs.chart.chart',
     });
     this.paraview.store.settingControls.add({
       type: 'checkbox',
-      key: 'type.line.isDrawSymbols',
+      key: 'chart.isDrawSymbols',
       label: 'Show symbols',
       parentView: 'controlPanel.tabs.chart.chart',
     });
-
-    this.paraview.store.observeSetting('type.line.lineWidth', (_oldVal, newVal) => {
-      if (this.isActive) {
-        this._chartLandingView.clearChildren()
-        this._beginLayout()
-        this._completeLayout()
-      }
-    });
+    }
   }
 
   get datapointViews() {
@@ -88,6 +84,64 @@ export class LineChart extends PointChart {
 
   protected _newDatapointView(seriesView: XYSeriesView) {
     return new LineSection(seriesView);
+  }
+
+  async storeDidChange(key: string, value: any) {
+    await super.storeDidChange(key, value);
+    if (key === 'seriesAnalyses') {
+      if (Object.keys(this.paraview.store.seriesAnalyses).length === this.paraview.store.model!.keys.length
+        && this.paraview.store.seriesAnalyses[this.paraview.store.model!.keys[0]]) {
+        this._navMap.root.query('series').forEach(seriesNode => {
+          const analysis = this.paraview.store.seriesAnalyses[seriesNode.options.seriesKey]!;
+          const datapointNodes = seriesNode.allNodes('right', 'datapoint');
+          const seqNodes: NavNode<'sequence'>[] = [];
+          analysis.sequences.forEach(seq => {
+            const seqNode = new NavNode(seriesNode.layer, 'sequence', {
+              seriesKey: seriesNode.options.seriesKey,
+              start: seq.start,
+              end: seq.end
+            });
+            seqNodes.push(seqNode);
+            seriesNode.datapointViews.slice(seq.start, seq.end).forEach(view => {
+              seqNode.addDatapointView(view);
+            });
+          });
+          seqNodes.slice(0, -1).forEach((seqNode, i) => {
+            seqNode.connect('right', seqNodes[i + 1]);
+          });
+          seqNodes.forEach(seqNode => {
+            // Unless the first datapoint of the sequence already has an
+            // 'out' link set (i.e., it's a boundary node), make a reciprocal
+            // link to it
+            seqNode.connect('in', datapointNodes[seqNode.options.start],
+              !datapointNodes[seqNode.options.start].getLink('out'));
+            for (let i = seqNode.options.start + 1; i < seqNode.options.end; i++) {
+              // non-reciprocal 'out' links from remaining datapoints to sequence
+              datapointNodes[i].connect('out', seqNode, false);
+            }
+            if (seqNode.peekNode('right', 1)) {
+              // We aren't on the last sequence, so the final datapoint is a boundary point.
+              // Make a non-reciprocal 'in' link to the next sequence
+              datapointNodes[seqNode.options.end - 1].connect('in', seqNode.peekNode('right', 1)!, false);
+            }
+          });
+        });
+      }
+    }
+  }
+
+  legend() {
+    if (this.paraview.store.settings.legend.itemOrder === 'series') {
+      return this._chartLandingView.children.map(view => ({
+        label: (view as SeriesView).seriesKey,
+        color: (view as SeriesView).color  // series color
+      }));
+    } else {
+      return this.paraview.store.model!.keys.toSorted().map(key => ({
+        label: key,
+        color: this.paraview.store.seriesProperties!.properties(key).color
+      }));
+    }
   }
 
   queryData(): void {
@@ -173,7 +227,7 @@ export class LineChart extends PointChart {
 
 /**
  * A visual indicator of a line chart datapoint, plus line segments
- * drawn halfway to its neighbors. 
+ * drawn halfway to its neighbors.
  */
 export class LineSection extends ChartPoint {
 
@@ -184,13 +238,32 @@ export class LineSection extends ChartPoint {
   protected _nextMidX?: number;
   protected _nextMidY?: number;
 
-  // get width() {
-  //   return this.chart.settings.selectedPointMarkerSize.width;
-  // }
+  get height() {
+    // apparently this can get called before the shape is created
+    return this._shape?.height ?? 0;
+  }
 
-  // get height() {
-  //   return this.chart.settings.selectedPointMarkerSize.height;
-  // }
+  get left() {
+    return this._shape!.left;
+  }
+
+  get right() {
+    return this._shape!.right;
+  }
+
+  get top() {
+    return this._shape!.top;
+  }
+
+  get bottom() {
+    return this._shape!.bottom;
+  }
+
+  get outerBbox() {
+    return this._symbol
+      ? bboxOfBboxes(this._shape!.outerBbox, this._symbol!.outerBbox)
+      : this._shape!.outerBbox;
+  }
 
   completeLayout() {
     // find midpoint between values for next and previous, draw line as 2 segments
@@ -218,8 +291,8 @@ export class LineSection extends ChartPoint {
 }
 
   protected _computeNext() {
-      this._nextMidX = this.width/2; // + 0.1;
-      this._nextMidY = (this._next!.y - this.y)/2; 
+    this._nextMidX = this.width/2; // + 0.1;
+    this._nextMidY = (this._next!.y - this.y)/2;
   }
 
   protected _computeCentroid() {
@@ -234,11 +307,11 @@ export class LineSection extends ChartPoint {
 
     let centroidY = '50%';
     if (!this._prevMidY && this._nextMidY) {
-      centroidY = (this._y > this._nextMidY) 
-        ? `calc(100% - ${symHeight/2}px)` 
+      centroidY = (this._y > this._nextMidY)
+        ? `calc(100% - ${symHeight/2}px)`
         : `${symHeight/2}px`;
     } else if (!this._nextMidY && this._prevMidY) {
-      centroidY = (this._y > this._prevMidY) 
+      centroidY = (this._y > this._prevMidY)
         ? `calc(100% - ${symHeight/2}px)`
         : `${symHeight/2}px`;
     } else if (this._nextMidY && this._prevMidY) {
@@ -247,7 +320,7 @@ export class LineSection extends ChartPoint {
       const symTop = this._y - symHeight/2;
       const symBot = this._y + symHeight/2;
       // NB: Strokes aren't taken into account here when computing the
-      // element size, I think because we're using box-sizing: content-box. 
+      // element size, I think because we're using box-sizing: content-box.
       if (symBot > this._nextMidY && symBot > this._prevMidY) {
         centroidY = `calc(100% - ${symHeight/2}px)`;
       } else if (symTop < this._nextMidY && symTop < this._prevMidY) {
@@ -263,7 +336,7 @@ export class LineSection extends ChartPoint {
     if (this._prevMidY !== undefined && this._nextMidY !== undefined) {
       return [
         new Vec2(this._prevMidX!, this._prevMidY),
-        new Vec2(), 
+        new Vec2(),
         new Vec2(this._nextMidX!, this._nextMidY)
       ];
     } else if (this._prevMidY === undefined && this._nextMidY !== undefined) {
@@ -304,7 +377,10 @@ export class LineSection extends ChartPoint {
   }
 
   protected _createShape() {
-    this._shape = new Path(this.paraview, {
+    // If datapoints are layed out again after the initial layout,
+    // we need to replace the original shape and symbol
+    this._shape?.remove();
+    this._shape = new PathShape(this.paraview, {
       x: this._x,
       y: this._y,
       points: this._points,
@@ -312,6 +388,18 @@ export class LineSection extends ChartPoint {
     super._createShape();
   }
 
-  
+  content() {
+    if (this._shape) {
+      this._shape.styleInfo = this.styleInfo;
+      this._shape.classInfo = this.classInfo;
+    }
+    if (this._symbol) {
+      this._symbol.scale = this._symbolScale;
+      this._symbol.color = this._symbolColor;
+      this._symbol.hidden = !this.paraview.store.settings.chart.isDrawSymbols;
+    }
+    return this.renderChildren();
+  }
+
 }
 

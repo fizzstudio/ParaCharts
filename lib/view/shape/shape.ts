@@ -12,29 +12,41 @@ export interface ShapeOptions {
   x?: number;
   y?: number;
   fill?: string;
-  stroke?: string, // black
-  strokeWidth?: number // 2
+  stroke?: string; // black
+  strokeWidth?: number; // 2,
+  scale?: number;
+  isPattern?: boolean;
 }
 
 export abstract class Shape extends View {
+  protected _scale: number;
   protected _role = '';
   protected _styleInfo: StyleInfo;
   protected _classInfo: ClassInfo = {};
   protected _ref: Ref<SVGElement> | null = null;
+  protected _isPattern: boolean = false
 
-  constructor(paraview: ParaView, protected _options: ShapeOptions) {
+  constructor(paraview: ParaView, options: ShapeOptions) {
     super(paraview);
-    this._x = _options.x ?? this._x;
-    this._y = _options.y ?? this._y;
+    this._x = options.x ?? this._x;
+    this._y = options.y ?? this._y;
+    this._scale = options.scale ?? 1;
     this._styleInfo = { 
-      strokeWidth: this._options.strokeWidth,
-      stroke: this._options.stroke,
-      fill: this._options.fill
+      strokeWidth: options.strokeWidth,
+      stroke: options.stroke,
+      fill: options.fill
     };
   }
 
-  get options() {
-    return this._options;
+  protected get _options(): ShapeOptions {
+    return {
+      x: this._x,
+      y: this._y,
+      fill: this._styleInfo.fill as string | undefined,
+      stroke: this._styleInfo.stroke as string | undefined,
+      strokeWidth: this._styleInfo.strokeWidth as number | undefined,
+      scale: this._scale
+    }
   }
 
   get role() {
@@ -45,20 +57,85 @@ export abstract class Shape extends View {
     this._role = role;
   }
 
+  get stroke(): string {
+    if (this._styleInfo.stroke) {
+      return this._styleInfo.stroke as string;
+    }
+    let cursor = this._parent;
+    while (cursor) {
+      if (cursor.styleInfo.stroke) {
+        return cursor.styleInfo.stroke as string;
+      }
+      cursor = cursor.parent;
+    }
+    return this.paraview.store.settings.chart.stroke;
+  }
+
+  set stroke(stroke: string) {
+    this._styleInfo.stroke = stroke;
+  }
+
+  get strokeWidth(): number {
+    if (this._styleInfo.strokeWidth !== undefined) {
+      return this._styleInfo.strokeWidth as number;
+    }
+    let cursor = this._parent;
+    while (cursor) {
+      if (cursor.styleInfo.strokeWidth !== undefined) {
+        return cursor.styleInfo.strokeWidth as number;
+      }
+      cursor = cursor.parent;
+    }
+    return this.paraview.store.settings.chart.strokeWidth;
+  }
+
+  set strokeWidth(strokeWidth: number) {
+    this._styleInfo.strokeWidth = strokeWidth;
+  }
+
+  get effectiveStrokeWidth(): number {
+    return this.stroke === 'none' ? 0 : this.strokeWidth;
+  }
+
+  get fill() {
+    return this._styleInfo.fill as string | undefined;
+  }
+
+  set fill(fill: string | undefined) {
+    this._styleInfo.fill = fill;
+  }
+
+  get outerBbox() {
+    return new DOMRect(
+      this.left - this.effectiveStrokeWidth/2,
+      this.top - this.effectiveStrokeWidth/2,
+      this.width + this.effectiveStrokeWidth,
+      this.height + this.effectiveStrokeWidth
+    );
+  }
+
+  get scale() {
+    return this._scale;
+  }
+
+  set scale(scale: number) {
+    this._scale = scale;
+  }
+
   get styleInfo() {
-    return this._styleInfo;
+    return structuredClone(this._styleInfo);
   }
 
   set styleInfo(styleInfo: StyleInfo) {
-    this._styleInfo = styleInfo;
+    this._styleInfo = structuredClone(styleInfo);
   }
 
   get classInfo() {
-    return this._classInfo;
+    return structuredClone(this._classInfo);
   }
 
   set classInfo(classInfo: ClassInfo) {
-    this._classInfo = classInfo;
+    this._classInfo = structuredClone(classInfo);
   }
 
   get ref() {
@@ -68,5 +145,7 @@ export abstract class Shape extends View {
   set ref(ref: Ref<SVGElement> | null) {
     this._ref = ref;
   }
+
+  abstract clone(): Shape;
 
 }

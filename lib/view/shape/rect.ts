@@ -13,16 +13,43 @@ export interface RectOptions extends ShapeOptions {
   height: number;
 }
 
-export class Rect extends Shape {
+export class RectShape extends Shape {
 
   constructor(paraview: ParaView, options: RectOptions) {
     super(paraview, options);
     this._width = options.width;
     this._height = options.height;
+    if (options.isPattern){
+      this._isPattern = options.isPattern;
+    }
+  }
+
+  protected get _options(): RectOptions {
+    let options = super._options as RectOptions;
+    options.width = this._width;
+    options.height = this._height;
+    options.isPattern = this._isPattern
+    return options;
+  }
+
+  clone(): RectShape {
+    return new RectShape(this.paraview, this._options);
   }
 
   render() {
-    return svg`
+    if (this._options.isPattern) {
+      let index = this.parent!.parent!.index
+      this._styleInfo.fill = `url(#Pattern${index})`
+      return svg`
+      <defs>${this.paraview.store.colors.patternValueAt(index)}</defs>
+      <rect
+        x=${fixed`${this._x}`}
+        y=${fixed`${this._y}`}
+        width=${fixed`${this.width}`}
+        height=${fixed`${this.height}`}
+        fill="white"
+        stroke-width=2
+      ></rect>
       <rect
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}
@@ -35,6 +62,22 @@ export class Rect extends Shape {
         height=${fixed`${this.height}`}
       ></rect>
     `;
+    }
+    else{
+      return svg`
+      <rect
+        ${this._ref ? ref(this._ref) : undefined}
+        id=${this._id || nothing}
+        style=${styleMap(this._styleInfo)}
+        class=${classMap(this._classInfo)}    
+        role=${this._role ||  nothing}  
+        x=${fixed`${this._x}`}
+        y=${fixed`${this._y}`}
+        width=${fixed`${this.width}`}
+        height=${fixed`${this.height}`}
+      ></rect>
+    `;
+    }
   }
 
 }

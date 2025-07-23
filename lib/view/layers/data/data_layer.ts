@@ -18,8 +18,7 @@ import { ref } from 'lit/directives/ref.js';
 
 import { ChartLayer } from '..';
 import { type ChartLayerManager } from '..';
-import { type Setting, type PlotSettings, type DeepReadonly } from '../../../store/settings_types';
-import { defaults } from '../../../store/settings_defaults';
+import { type PlotSettings, type DeepReadonly, type Direction, HorizDirection } from '../../../store/settings_types';
 import { Sonifier } from '../../../audio/sonifier';
 //import { type Model, type DatapointReference } from '../data/model';
 //import { type ActionRegistration } from '../input';
@@ -29,18 +28,23 @@ import { Sonifier } from '../../../audio/sonifier';
 import { ParaView } from '../../../paraview';
 import { SettingsManager } from '../../../store/settings_manager';
 import { type AxisInfo } from '../../../common/axisinfo';
-import { type HotkeyEvent } from '../../../store/keymap_manager';
 import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../../data';
 import { type LegendItem } from '../../legend';
 import { queryMessages } from '../../../store/query_utils';
+import { NavMap, NavLayer, NavNode, NavNodeType } from './navigation';
 
 import { interpolate } from '@fizz/templum';
 import { StyleInfo } from 'lit/directives/style-map.js';
+import { Datapoint } from '@fizz/paramodel';
+import { SparkBrailleInfo } from '../../../store';
+import { bboxOfBboxes } from '../../../common/utils';
 
 /**
  * @public
  */
 export type LandingView = ChartLandingView | DataView;
+
+export type RiffOrder = 'normal' | 'sorted' | 'reversed';
 
 
 // Soni Constants
@@ -58,6 +62,7 @@ export abstract class DataLayer extends ChartLayer {
   soniNoteIndex = 0;
   soniSequenceIndex = 0;
 
+  protected _navMap!: NavMap;
   protected _sonifier!: Sonifier;
   protected visibleSeries!: string[];
   protected _chartLandingView!: ChartLandingView;
@@ -71,101 +76,8 @@ export abstract class DataLayer extends ChartLayer {
   protected _soniSpeedRateIndex = 1;
   protected _soniRiffSpeedRateIndex = 1;
 
-  //private _currentSeries?: string;
-  // Series of previously-visited datapoint.
-  //private _prevDatapointSeries?: string;
-  //private _currentRecord = 0;
-
   constructor(paraview: ParaView, public readonly dataLayerIndex: number) {
     super(paraview);
-    paraview.store.keymapManager.addEventListener('hotkeypress', (e: HotkeyEvent) => {
-      if (this.isActive){
-        if (e.action === 'move_right') {
-          this.clearPlay();
-          this.moveRight();
-        } else if (e.action === 'move_left') {
-          this.clearPlay();
-          this.moveLeft();
-        } else if (e.action === 'move_up') {
-          this.clearPlay();
-          this.moveUp();
-        } else if (e.action === 'move_down') {
-          this.clearPlay();
-          this.moveDown();
-        } else if (e.action === 'go_minimum') {
-          this._goSeriesMinMax(true);
-        } else if (e.action === 'go_maximum') {
-          this._goSeriesMinMax(false);
-        } else if (e.action === 'go_total_minimum') {
-          this._goChartMinMax(true);
-        } else if (e.action === 'go_total_maximum') {
-          this._goChartMinMax(false);
-        } else if (e.action === 'select') {
-          this.selectCurrent(false);
-        } else if (e.action === 'select_extend') {
-          this.selectCurrent(true);
-        } else if (e.action === 'select_clear') {
-          this.clearDatapointSelection();
-        } else if (e.action === 'play_right') {
-          this.clearPlay();
-          this.playRight();
-        } else if (e.action === 'play_left') {
-          this.clearPlay();
-          this.playLeft();
-        } else if (e.action === 'stop_play') {
-          this.clearPlay();
-        } else if (e.action === 'query_data') {
-          this.queryData();
-        } else if (e.action === 'sonification_mode_toggle') {
-          this.paraview.store.updateSettings(draft => {
-            draft.sonification.isSoniEnabled = !draft.sonification.isSoniEnabled;
-            this.paraview.store.announce(
-              `Sonification ${draft.sonification.isSoniEnabled ? 'enabled' : 'disabled'}`);
-          });
-        } else if (e.action === 'announcement_mode_toggle') {
-          if (this.paraview.store.settings.ui.isAnnouncementEnabled) {
-            this.paraview.store.announce('Announcements disabled');
-            this.paraview.store.updateSettings(draft => {
-              draft.ui.isAnnouncementEnabled = false;
-            });
-          } else {
-            this.paraview.store.updateSettings(draft => {
-              draft.ui.isAnnouncementEnabled = true;
-            });
-            this.paraview.store.announce('Announcements enabled');
-          }
-        } else if (e.action === 'voicing_mode_toggle') {
-          if (this.paraview.store.settings.ui.isVoicingEnabled) {
-            this.paraview.store.announce('Self-voicing disabled');
-            this.paraview.store.updateSettings(draft => {
-              draft.ui.isVoicingEnabled = false;
-            });
-          } else {
-            this.paraview.store.updateSettings(draft => {
-              draft.ui.isVoicingEnabled = true;
-            });
-            this.paraview.store.announce('Self-voicing enabled');
-          }
-        } else if (e.action === 'dark_mode_toggle') {
-          this.paraview.store.updateSettings(draft => {
-            draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
-            this.paraview.store.announce(
-              `Dark mode ${draft.color.isDarkModeEnabled ? 'enabled' : 'disabled'}`);
-          });
-        } else if (e.action === 'low_vision_mode_toggle') {
-          this.paraview.store.updateSettings(draft => {
-            draft.ui.isLowVisionModeEnabled = !draft.ui.isLowVisionModeEnabled;
-            this.paraview.store.announce(
-              `Low vision mode ${draft.ui.isLowVisionModeEnabled ? 'enabled' : 'disabled'}`);
-            draft.color.isDarkModeEnabled = draft.ui.isLowVisionModeEnabled;
-            draft.ui.isFullScreenEnabled = draft.ui.isLowVisionModeEnabled;
-          });
-        } else if (e.action === 'open_help') {
-          this.paraview.paraChart.controlPanel.showHelpDialog();
-        } else if (e.action === 'announce_version_info') {
-          this.paraview.store.announce(`Version ${__APP_VERSION__}; commit ${__COMMIT_HASH__}`)
-        }
-    }});
   }
 
   protected _createId() {
@@ -187,7 +99,11 @@ export abstract class DataLayer extends ChartLayer {
   get settings(): DeepReadonly<PlotSettings> {
     return SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.store.settings);
   }
-  
+
+  get navMap() {
+    return this._navMap;
+  }
+
   get sonifier() {
     return this._sonifier;
   }
@@ -215,7 +131,7 @@ export abstract class DataLayer extends ChartLayer {
   get dataset() {
     return this.paraview.ref<SVGGElement>(`dataset${this.index}`).value!;
   }
-  
+
   get axisInfo() {
     return this._axisInfo;
   }
@@ -234,9 +150,18 @@ export abstract class DataLayer extends ChartLayer {
     //this._layoutComponents();
   }
 
+  protected _createNavMap() {
+    this._navMap = new NavMap(this.paraview.store);
+    const root = this._navMap.layer('root')!;
+    // Chart landing (visits no points)
+    const chartLandingNode = new NavNode(root, 'top', {});
+    root.registerNode(chartLandingNode);
+    root.cursor = chartLandingNode;
+  }
+
   /**
    * Mutate `styleInfo` with any custom series styles.
-   * @param styleInfo 
+   * @param styleInfo
    */
   updateSeriesStyle(_styleInfo: StyleInfo) {
   }
@@ -251,10 +176,11 @@ export abstract class DataLayer extends ChartLayer {
     for (const datapointView of this.datapointViews) {
       datapointView.completeLayout();
     }
+    this._createNavMap();
   }
 
-  protected _completeLayout() {}
-  
+  protected _completeLayout() { }
+
   // protected _layoutComponents() {
   //   for (const datapointView of this.datapointViews) {
   //     datapointView.computeLocation();
@@ -272,7 +198,7 @@ export abstract class DataLayer extends ChartLayer {
   protected _newSeriesView(seriesKey: string, isStyleEnabled?: boolean, ..._rest: any[]): SeriesView {
     return new SeriesView(this, seriesKey, isStyleEnabled);
   }
-  
+
   legend(): LegendItem[] {
     return [];
   }
@@ -281,33 +207,73 @@ export abstract class DataLayer extends ChartLayer {
     return this.datapointViews.find(view =>
       view.seriesKey === seriesKey && view.index === index);
   }
-  
-  getDatapointView(seriesName: string, recordLabel: string) {
-    return this.chartLandingView.getSeriesView(seriesName)?.getDatapointViewForLabel(recordLabel);
-  }
 
   datapointViewForId(id: string) {
     return this.datapointViews.find(dp => dp.id === id);
   }
 
-  focusDatapoint(seriesKey: string, index: number, isNewComponentFocus = false) {
-    this.datapointView(seriesKey, index)!.focus(isNewComponentFocus);
+  navToDatapoint(seriesKey: string, index: number) {
+    this._navMap.goTo('datapoint', {seriesKey, index});
+  }
+
+  move(dir: Direction) {
+    this._navMap.cursor!.move(dir);
   }
 
   /**
-   * Move focus to the navpoint to the right, if there is one
+   * Navigate to the series minimum/maximum datapoint
+   * @param isMin - If true, go the the minimum. Otherwise, go to the maximum
    */
-  abstract moveRight(): void; 
+  goSeriesMinMax(isMin: boolean) {
+    const node = this._navMap.cursor;
+    if (node.type === 'top' || node.type === 'chord') {
+      this.goChartMinMax(isMin);
+    } else {
+      let datapoint: Datapoint | null = null;
+
+      const seriesKey = node.at(0)!.seriesKey;
+
+      if (node.type === 'datapoint') {
+        datapoint = node.at(0)!.datapoint;
+      }
+      const depKey = this.paraview.store.model!.dependentFacetKey!;
+      const stats = this.paraview.store.model!.atKey(seriesKey)!.getFacetStats(depKey)!;
+      let seriesMatchArray = isMin
+        ? stats.min.datapoints
+        : stats.max.datapoints;
+      if (datapoint && seriesMatchArray.length > 1) {
+        // TODO: If there is more than one datapoint that has the same series minimum value,
+        //       find the next one to nav to:
+        //       Find the current x label, if it matches one in `seriesMins`,
+        //       remove all entries up to and including that point,
+        //       and use the next item on the list.
+        //       But also cycle around if it's the last item in the list
+        const currentRecordIndex = seriesMatchArray.findIndex(dp => dp === datapoint);
+        if (currentRecordIndex !== -1 && currentRecordIndex !== seriesMatchArray.length + 1) {
+          seriesMatchArray = seriesMatchArray.toSpliced(0, currentRecordIndex);
+        }
+      }
+      this._navMap.goTo('datapoint', {
+        seriesKey: seriesMatchArray[0].seriesKey,
+        index: seriesMatchArray[0].datapointIndex
+      });
+    }
+  }
 
   /**
-   * Move focus to the navpoint to the left, if there is one
+   * Navigate to (one of) the chart minimum/maximum datapoint(s)
+   * @param isMin - If true, go the the minimum. Otherwise, go to the maximum
    */
-  abstract moveLeft(): void;
-  abstract moveUp(): void;
-  abstract moveDown(): void;
-
-  protected abstract _goSeriesMinMax(isMin: boolean): void;
-  protected abstract _goChartMinMax(isMin: boolean): void;
+  goChartMinMax(isMin: boolean) {
+    const stats = this.paraview.store.model!.getFacetStats('y')!;
+    const matchTarget = isMin ? stats.min.value : stats.max.value;
+    const matchDatapoint = this.paraview.store.model!.allPoints.find(dp =>
+      dp.facetValueAsNumber('y') === matchTarget)!;
+    this._navMap.goTo('datapoint', {
+      seriesKey: matchDatapoint?.seriesKey,
+      index: matchDatapoint?.datapointIndex
+    });
+  }
 
   /**
    * Clear outstanding play intervals/timeouts
@@ -315,25 +281,27 @@ export abstract class DataLayer extends ChartLayer {
   clearPlay() {
     clearInterval(this._soniInterval!);
     clearInterval(this._soniRiffInterval!);
-        
+
     // stop self-voicing of current passage
     //todo().controller.voice.shutUp();
   }
-  
-  /**
-   * Play all datapoints to the right, if there are any
-   */
-  abstract playRight(): void;
 
   /**
-   * Play all datapoints to the left, if there are any
+   * Play all datapoints in the given direction.
    */
-  abstract playLeft(): void;
+  abstract playDir(dir: HorizDirection): void;
 
-  abstract playSeriesRiff(): void;
+  /** Play a riff for the current nav node */
+  protected abstract _playRiff(order?: RiffOrder): void;
+
+  protected _chordRiffOrder(): RiffOrder {
+    return 'normal';
+  }
+
+  protected abstract _playDatapoints(datapoints: Datapoint[]): void;
 
   selectCurrent(extend = false) {
-    this._chartLandingView.focusLeaf.select(extend);
+    this._navMap.cursor.at(0)!.select(extend);
   }
 
   clearDatapointSelection(quiet = false) {
@@ -343,50 +311,140 @@ export abstract class DataLayer extends ChartLayer {
     }
   }
 
-  cleanup() {
-    super.cleanup();
-  }
-
   // protected _layoutSymbols() {
   //   for (const datapointView of this.datapointViews) {
   //     datapointView.layoutSymbol();
   //   }
   // }
 
-  protected queryData(): void {
-      const targetView = this.chartLandingView.focusLeaf
-      // TODO: localize this text output
-      // focused view: e.options!.focus
-      // all visited datapoint views: e.options!.visited
-      // const focusedDatapoint = e.targetView;
-      let msgArray: string[] = [];
-      let seriesLengths = [];
-      for (let series of this.paraview.store.model!.series) {
-        seriesLengths.push(series.rawData.length)
-      }
-      if (targetView instanceof ChartLandingView) {
-        this.paraview.store.announce(`Displaying Chart: ${this.paraview.store.title}`);
-        return
-      }
-      else if (targetView instanceof SeriesView) {
-        msgArray.push(interpolate(
-          queryMessages.seriesKeyLength,
-          { seriesKey: targetView.seriesKey, datapointCount: targetView.series.length }
-        ));
-      }
-      else if (targetView instanceof DatapointView) {
-        const selectedDatapoints = this.paraview.store.selectedDatapoints;
-        const visitedDatapoint = this.paraview.store.visitedDatapoints[0];
-        msgArray.push(interpolate(
-          queryMessages.datapointKeyLength,
-          {
-            seriesKey: targetView.seriesKey,
-            datapointXY: `${targetView.series[visitedDatapoint.index].facetBox("x")!.raw}, ${targetView.series[visitedDatapoint.index].facetBox("y")!.raw}`,
-            datapointIndex: targetView.index + 1,
-            datapointCount: targetView.series.length
-          }
-        ));
-      }
-      this.paraview.store.announce(msgArray);
+  queryData(): void {
+    const targetView = this.chartLandingView.focusLeaf
+    // TODO: localize this text output
+    // focused view: e.options!.focus
+    // all visited datapoint views: e.options!.visited
+    // const focusedDatapoint = e.targetView;
+    let msgArray: string[] = [];
+    let seriesLengths = [];
+    for (let series of this.paraview.store.model!.series) {
+      seriesLengths.push(series.rawData.length)
     }
+    if (targetView instanceof ChartLandingView) {
+      this.paraview.store.announce(`Displaying Chart: ${this.paraview.store.title}`);
+      return
+    }
+    else if (targetView instanceof SeriesView) {
+      msgArray.push(interpolate(
+        queryMessages.seriesKeyLength,
+        { seriesKey: targetView.seriesKey, datapointCount: targetView.series.length }
+      ));
+    }
+    else if (targetView instanceof DatapointView) {
+      const selectedDatapoints = this.paraview.store.selectedDatapoints;
+      const visitedDatapoint = this.paraview.store.visitedDatapoints[0];
+      msgArray.push(interpolate(
+        queryMessages.datapointKeyLength,
+        {
+          seriesKey: targetView.seriesKey,
+          datapointXY: `${targetView.series[visitedDatapoint.index].facetBox("x")!.raw}, ${targetView.series[visitedDatapoint.index].facetBox("y")!.raw}`,
+          datapointIndex: targetView.index + 1,
+          datapointCount: targetView.series.length
+        }
+      ));
+    }
+    this.paraview.store.announce(msgArray);
+  }
+
+  protected _raiseSeries(_series: string) {
+  }
+
+  protected abstract _sparkBrailleInfo(): SparkBrailleInfo | null;
+
+  async storeDidChange(key: string, value: any) {
+    if (key === 'navNode') {
+      //const tag = value as string;
+      const node = value as NavNode;
+      const seriesKey = node.at(0)?.seriesKey ?? '';
+      if (node.type === 'top') {
+        await this.paraview.store.asyncAnnounce(this.paraview.summarizer.getChartSummary());
+      } else if (node.type === 'series') {
+        this._raiseSeries(seriesKey);
+        this.paraview.store.announce(
+          await this.paraview.summarizer.getSeriesSummary(seriesKey));
+        this._playRiff();
+        this.paraview.store.sparkBrailleInfo = this._sparkBrailleInfo();
+      } else if (node.type === 'datapoint') {
+        this._raiseSeries(seriesKey);
+        // NOTE: this needs to be done before the datapoint is visited, to check whether the series has
+        //   ever been visited before this point
+        const seriesPreviouslyVisited = this.paraview.store.everVisitedSeries(seriesKey);
+        const announcements = [this.paraview.summarizer.getDatapointSummary(node.at(0)!.datapoint, 'statusBar')];
+        const isSeriesChange = !this.paraview.store.wasVisitedSeries(seriesKey);
+        if (isSeriesChange) {
+          announcements[0] = `${seriesKey}: ${announcements[0]}`;
+          if (!seriesPreviouslyVisited) {
+            const seriesSummary = await this.paraview.summarizer.getSeriesSummary(seriesKey);
+            announcements.push(seriesSummary);
+          }
+        }
+        this.paraview.store.announce(announcements);
+        if (this.paraview.store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
+          this._playDatapoints([node.at(0)!.datapoint]);
+        }
+        this.paraview.store.sparkBrailleInfo = this._sparkBrailleInfo();
+      } else if (node.type === 'chord') {
+        if (this.paraview.store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
+          if (this.paraview.store.settings.sonification.isArpeggiateChords) {
+            this._playRiff(this._chordRiffOrder());
+          } else {
+            this._playDatapoints(node.datapointViews.map(view => view.datapoint));
+          }
+        }
+      } else if (node.type === 'sequence') {
+        this._playRiff();
+      }
+    }
+    super.storeDidChange(key, value);
+  }
+
+  navFirst() {
+    const type = this._navMap.cursor.type;
+    if (['datapoint', 'chord', 'series'].includes(type)) {
+      const dir: Partial<Record<NavNodeType, Direction>> = {
+        datapoint: 'left',
+        chord: 'left',
+        series: 'up'
+      };
+      this._navMap.cursor.allNodes(dir[type]!, type).at(-1)?.go();
+    }
+  }
+
+  navLast() {
+    const type = this._navMap.cursor.type;
+    if (['datapoint', 'chord', 'series'].includes(type)) {
+      const dir: Partial<Record<NavNodeType, Direction>> = {
+        datapoint: 'right',
+        chord: 'right',
+        series: 'down'
+      };
+      this._navMap.cursor.allNodes(dir[type]!, type).at(-1)?.go();
+    }
+  }
+
+  navToChordLanding() {
+    if (this._navMap.cursor.type === 'datapoint') {
+      this._navMap.cursor.layer.goTo(
+        'chord', (this._navMap.cursor as NavNode<'datapoint'>).options.index);
+    }
+  }
+
+  get shouldDrawFocusRing() {
+    return this._navMap.cursor.type !== 'top';
+  }
+
+  focusRingBbox() {
+    if (['series', 'chord', 'datapoint', 'sequence'].includes(this._navMap.cursor.type)) {
+      return bboxOfBboxes(...this._navMap.cursor.datapointViews.map(view => view.outerBbox));
+    }
+    return null;
+  }
 }

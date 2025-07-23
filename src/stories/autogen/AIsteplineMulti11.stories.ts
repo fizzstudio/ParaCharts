@@ -5,19 +5,16 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Ai-enhanced Charts/Stepline Multi Charts",
+  title: "AI-enhanced Charts/Line Charts/Multi Stepline Charts",
   render: (args) => AiChart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
 export const AiChart11: Story = {
-  name: "Pokemon: Holographic Pokemon Card Price (11)",
+  name: "175: Distribution of gross domestic product (GDP) across economic sectors Pakistan 2018 (11)",
   args: {
-    filename: "manifests/autogen/line-multi/line-multi-manifest-Pokemon.json",
-    config: { // change to configFile: "./sample_config.json",
-      "ui.colorVisionMode": "deutan"
-    },
+    filename: "manifests/autogen/line-multi/line-multi-manifest-175.json",
     forcecharttype: "stepline",
   }
 }

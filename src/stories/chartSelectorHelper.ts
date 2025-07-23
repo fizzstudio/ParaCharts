@@ -2,23 +2,11 @@
 
 // Imports
 
-import { type ChartType } from '@fizz/paramanifest';
+import { CHART_FAMILY_MEMBERS, type ChartTypeFamily, type ChartType } from '@fizz/paramanifest';
 import CHART_CATALOG from '../../node_modules/@fizz/chart-data/data/chart_catalog.json' with { type: "json" };
 import { type CatalogListing } from '@fizz/chart-data';
 
-// Types and Constants
-
-const CHART_TYPE_FAMILIES = ['line', 'bar', 'pastry', 'scatter'] as const;
-export type ChartFamily = typeof CHART_TYPE_FAMILIES[number];
-
-export const FAMILY_MEMBERS: Record<ChartFamily, ChartType[]> = {
-  'line': ['line', 'stepline'],
-  'bar': ['bar', 'column', 'lollipop'],
-  'pastry': ['pie', 'donut'],
-  'scatter': ['scatter']
-}
-
-//const ignoreMulti: ChartType[] = ['pastry', 'scatter'];
+// Constants
 
 const HIDE_EXTERNAL = true;
 
@@ -31,9 +19,9 @@ function checkExternal(listing: CatalogListing): boolean {
   return !listing.external;
 }
 
-export function familyCatalogMapMulti(family: ChartFamily, multi: boolean): Record<string, CatalogListing> {
+export function familyCatalogMapMulti(family: ChartTypeFamily, multi: boolean): Record<string, CatalogListing> {
   const catalog = CHART_CATALOG.filter((listing) => {
-    return FAMILY_MEMBERS[family].includes(listing.type as ChartType) 
+    return CHART_FAMILY_MEMBERS[family].includes(listing.type as ChartType) 
       && listing.multi === multi && checkExternal(listing);
   });
   const map = {};
@@ -43,9 +31,9 @@ export function familyCatalogMapMulti(family: ChartFamily, multi: boolean): Reco
   return map;
 }
 
-export function familyCatalogMap(family: ChartFamily): Record<string, CatalogListing> {
+export function familyCatalogMap(family: ChartTypeFamily): Record<string, CatalogListing> {
   const catalog = CHART_CATALOG.filter((listing) => {
-    return FAMILY_MEMBERS[family].includes(listing.type as ChartType) && checkExternal(listing);
+    return CHART_FAMILY_MEMBERS[family].includes(listing.type as ChartType) && checkExternal(listing);
   });
   const map = {};
   for (const listing of catalog) {
@@ -54,7 +42,7 @@ export function familyCatalogMap(family: ChartFamily): Record<string, CatalogLis
   return map;
 }
 
-export function familyManifestPathsMap(family: ChartFamily, multi?: boolean): Record<string, string> {
+export function familyManifestPathsMap(family: ChartTypeFamily, multi?: boolean): Record<string, string> {
   const catalogMap = multi === undefined
     ? familyCatalogMap(family)
     : familyCatalogMapMulti(family, multi);

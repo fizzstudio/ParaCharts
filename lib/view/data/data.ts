@@ -90,7 +90,7 @@ export class DataView extends View {
     styleInfo.strokeWidth = this.paraview.store.settings.chart.strokeWidth;
   }
 
-  onFocus(_isNewComponentFocus = false) {
+  async onFocus(_isNewComponentFocus = false) {
     //this.paraview.store.clearVisited();
   }
 

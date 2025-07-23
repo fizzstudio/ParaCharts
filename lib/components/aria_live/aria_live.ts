@@ -20,6 +20,10 @@ export class AriaLive extends ParaComponent {
   protected _history: readonly string[] = [];
   protected _historyDialogRef = createRef<AriaLiveHistoryDialog>();
 
+  get voicing() {
+    return this._voicing;
+  }
+
   protected _setHistory(history: readonly string[]) {
     this._history = history;
     this._historyDialogRef.value!.history = history;
@@ -59,7 +63,7 @@ export class AriaLive extends ParaComponent {
         this._setHistory([...this._history, msg ?? '']);
 
         if (msg
-          && this._store.settings.ui.isVoicingEnabled 
+          && this._store.settings.ui.isVoicingEnabled
           && this._store.settings.ui.isAnnouncementEnabled) {
           this._voicing.speak(msg);
         }
@@ -102,7 +106,7 @@ export class AriaLive extends ParaComponent {
         ${ref(this._ariaLiveRef)}
         class="sr-only"
       ></div>
-      <para-aria-live-history-dialog 
+      <para-aria-live-history-dialog
         ${ref(this._historyDialogRef)}
       ></para-aria-live-history-dialog>
     `;

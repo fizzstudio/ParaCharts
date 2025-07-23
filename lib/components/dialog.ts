@@ -11,8 +11,8 @@ import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 
 /**
  * Simple dialog that displays a message and a single
- * button to close the dialog. 
- * @public 
+ * button to close the dialog.
+ * @public
  */
 @customElement('para-dialog')
 export class ParaDialog extends ParaComponent {
@@ -46,20 +46,20 @@ export class ParaDialog extends ParaComponent {
 
     button {
       margin: 0.2rem;
-      background-color: var(--themeColor);
-      color: var(--themeContrastColor);
-      border: thin solid var(--themeColor);
+      background-color: var(--theme-color);
+      color: var(--theme-contrast-color);
+      border: thin solid var(--theme-color);
       border-radius: 0.2em;
       padding: 0.2em;
     }
 
 
     pre {
-      height: 60vh; 
+      height: 60vh;
       width: 80vw;
       padding: 1rem;
-      overflow-y: 
-      scroll; background-color: 
+      overflow-y:
+      scroll; background-color:
       black; color: white;
     }
 
@@ -67,7 +67,7 @@ export class ParaDialog extends ParaComponent {
       border-collapse: collapse;
       margin: 0 2rem;
     }
-    
+
     th, td {
       border-bottom: 1px solid hsl(0, 0%, 75%);
       padding: 0.35em 2.5em;
@@ -88,8 +88,8 @@ export class ParaDialog extends ParaComponent {
     const buttons = [{tag: 'cancel', text: this.btnText}];
     return html`
       <fizz-dialog
-        ${ref(this._dialogRef)} 
-        title="${this.title}" 
+        ${ref(this._dialogRef)}
+        title="${this.title}"
         .buttons=${buttons}
       >
         ${this._content}

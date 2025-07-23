@@ -4,7 +4,7 @@ import { GridLayout, type Layout } from './layout';
 import { type DataSymbolType, DataSymbol } from './symbol';
 import { Label } from './label';
 import { type LegendSettings, type DeepReadonly, SettingsManager } from '../store';
-import { Rect } from './shape/rect';
+import { RectShape } from './shape/rect';
 import { type ParaView } from '../paraview';
 import { TemplateResult } from 'lit';
 import { ClassInfo } from 'lit/directives/class-map.js';
@@ -35,7 +35,7 @@ const intersperse = (...arrays: any[][]) => {
       if (array[i] !== undefined) {
         out.push(array[i]);
       }
-    });  
+    });
   }
   return out;
 };
@@ -45,7 +45,7 @@ export class Legend extends Container(View) {
   declare protected _parent: Layout;
 
   protected _grid!: GridLayout;
-  protected _markers: Rect[] = [];
+  protected _markers: RectShape[] = [];
 
   constructor(paraview: ParaView,
     protected _items: LegendItem[],
@@ -68,7 +68,7 @@ export class Legend extends Container(View) {
     const hasLegendBox = this.settings.boxStyle.outline !== 'none' || this.settings.boxStyle.fill !== 'none';
 
     this._items.forEach(item => {
-      this._markers.push(new Rect(this.paraview, {width: 12, height: 6}));
+      this._markers.push(new RectShape(this.paraview, {width: 12, height: 6}));
       views.push(this._markers.at(-1)!);
       views.push(DataSymbol.fromType(
         this.paraview,
@@ -82,7 +82,7 @@ export class Legend extends Container(View) {
       views.push(new Label(this.paraview, {text: item.label, x: 0, y: 0, textAnchor: 'start'}));
     });
     const symLabelGap = this.paraview.store.settings.legend.symbolLabelGap;
-    const pairGap = this.paraview.store.settings.legend.pairGap;   
+    const pairGap = this.paraview.store.settings.legend.pairGap;
     if (this._options.orientation === 'vert') {
       this._grid = new GridLayout(this.paraview, {
         numCols: 3,
@@ -101,11 +101,11 @@ export class Legend extends Container(View) {
         this._grid = new GridLayout(this.paraview, {
           numCols: labelsPerRow*3,
           colGaps: colGaps,
-        }, 'legend-grid');  
+        }, 'legend-grid');
         this._grid.padding = hasLegendBox ? this.paraview.store.settings.legend.padding : 0;
         views.forEach(v => this._grid.append(v));
-        if (this._options.wrapWidth === undefined || 
-            this._grid.boundingWidth <= this._options.wrapWidth || 
+        if (this._options.wrapWidth === undefined ||
+            this._grid.paddedWidth <= this._options.wrapWidth ||
             labelsPerRow === 1) {
           break;
         }
@@ -122,7 +122,7 @@ export class Legend extends Container(View) {
     // this.prepend(new Rect(this._width, this._height, 'white'));
 
     if (hasLegendBox) {
-      this.prepend(new Rect(this.paraview, {
+      this.prepend(new RectShape(this.paraview, {
         width: this._width,
         height: this._height,
         fill: this.settings.boxStyle.fill,
@@ -133,7 +133,7 @@ export class Legend extends Container(View) {
   }
 
   computeSize(): [number, number] {
-    return [this._grid?.boundingWidth ?? 0, this._grid?.boundingHeight ?? 0];
+    return [this._grid?.paddedWidth ?? 0, this._grid?.paddedHeight ?? 0];
   }
 
   content() {
@@ -148,6 +148,7 @@ export class Legend extends Container(View) {
       } else {
         style.fill = 'none';
       }
+      this._markers[i].styleInfo = style;
     });
     return super.content();
   }
