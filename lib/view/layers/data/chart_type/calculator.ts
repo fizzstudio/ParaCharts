@@ -7,7 +7,7 @@ import { parse, simplify } from "mathjs";
 import { html } from "lit";
 
 export class GraphingCalculator extends LineChart {
-  protected renderPts: number = 100;
+  protected renderPts: number = 50;
   protected currEquations: string[] = [];
   protected _addedToParent() {
     super._addedToParent();
@@ -16,7 +16,7 @@ export class GraphingCalculator extends LineChart {
       key: 'axis.x.minValue',
       label: 'Min x-value',
       options: { inputType: 'number' },
-      value: -10,
+      value: this.paraview.store.settings.axis.x.minValue === 'unset' ? -10 : this.paraview.store.settings.axis.x.minValue,
       validator: value => {
         const min = this.paraview.store.settings.axis.x.maxValue == "unset" 
           ? 10
@@ -25,7 +25,7 @@ export class GraphingCalculator extends LineChart {
         // gets recreated, and `max` may change, due to re-quantization of
         // the tick values. 
         return value as number >= min ?
-          { err: `Min y-value (${value}) must be less than (${min})`} : {};
+          { err: `Min x-value (${value}) must be less than (${min})`} : {};
       },
       parentView: 'controlPanel.tabs.chart.general',
     });
@@ -34,7 +34,7 @@ export class GraphingCalculator extends LineChart {
       key: 'axis.x.maxValue',
       label: 'Max x-value',
       options: { inputType: 'number' },
-      value: 10,
+      value: this.paraview.store.settings.axis.x.maxValue === 'unset' ? 10 : this.paraview.store.settings.axis.x.maxValue,
       validator: value => {
         const max = this.paraview.store.settings.axis.x.minValue == "unset" 
           ? -10
@@ -43,27 +43,19 @@ export class GraphingCalculator extends LineChart {
         // gets recreated, and `max` may change, due to re-quantization of
         // the tick values. 
         return value as number <= max ?
-          { err: `Min y-value (${value}) must be less than (${max})`} : {};
+          { err: `Min x-value (${value}) must be less than (${max})`} : {};
       },
       parentView: 'controlPanel.tabs.chart.general',
     });
-/*
-    let panel = this.paraview.paraChart.getElementsByTagName('para-chart-panel')[0]
-    console.log(this.paraview.paraChart)
-    console.log(panel)
-    let resetButton = document.createElement('button');
-    resetButton.innerHTML = `<button
-            @click=${() => {
-              this._axisInfo = new AxisInfo(this.paraview.store, {
-                xValues: [-10, 10],
-                yValues: [-10, 10]
-              })
-            }}
-          >
-            Save data
-          </button>`
-    panel.append(resetButton)
-*/
+    this.paraview.store.settingControls.add({
+      type: 'button',
+      key: 'type.graph.resetAxes',
+      label: 'Reset Axes to default',
+      parentView: 'controlPanel.tabs.chart.chart',
+    });
+
+
+
     this.paraview.store.settingControls.add({
       type: 'textfield',
       key: 'type.graph.lineWidth',
@@ -113,8 +105,8 @@ export class GraphingCalculator extends LineChart {
     });
 
     this._axisInfo = new AxisInfo(this.paraview.store, {
-      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.type.graph.xMin, 
-        this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.type.graph.xMax],
+      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.axis.x.minValue, 
+        this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.axis.x.maxValue],
       yValues: [-10, 10],
       yMin: -10,
       yMax: 10
@@ -141,16 +133,18 @@ export class GraphingCalculator extends LineChart {
       this.addEquation(this.paraview.store.settings.type.graph.equation)
     }
     else if (['axis.x.maxValue', 'axis.x.minValue'].includes(path)){
-      if (path === 'axis.x.maxValue'){
-        this.paraview.store.updateSettings(draft => {
-            draft.type.graph.xMax = Number(newValue);
-          });
-      }
-      else if (path === 'axis.x.minValue'){
-        this.paraview.store.updateSettings(draft => {
-            draft.type.graph.xMin = Number(newValue);
-          });
-      }
+      this.addEquation(this.paraview.store.settings.type.graph.equation)
+    }
+    else if (['type.graph.resetAxes'].includes(path)){
+      this.paraview.store.clearVisited();
+      this.paraview.store.clearSelected();
+      this.paraview.store.sparkBrailleInfo = null;
+      this.paraview.store.updateSettings(draft => {
+        draft.axis.x.maxValue = 'unset';
+        draft.axis.x.minValue = 'unset';
+        draft.axis.y.maxValue = 'unset';
+        draft.axis.y.minValue = 'unset';
+      });
       this.addEquation(this.paraview.store.settings.type.graph.equation)
     }
     super.settingDidChange(path, oldValue, newValue);
@@ -158,8 +152,8 @@ export class GraphingCalculator extends LineChart {
 
   addEquation(eq: string) {
     this._axisInfo = new AxisInfo(this.paraview.store, {
-      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.type.graph.xMin,
-      this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.type.graph.xMax],
+      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.axis.x.minValue,
+      this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.axis.x.maxValue],
       yValues: [-10, 10],
       yMin: -10,
       yMax: 10
@@ -211,12 +205,6 @@ export class GraphingCalculator extends LineChart {
           container.removeChild(container.firstElementChild);
         }
         container.append(table);
-        this.paraview.store.updateSettings(draft => {
-            draft.type.graph.xMax = xMax;
-          });
-        this.paraview.store.updateSettings(draft => {
-            draft.type.graph.xMin = xMin;
-          });
         this.paraview.dispatchEvent(new CustomEvent('paraviewready', {bubbles: true, composed: true, cancelable: true}));
       }
     }
