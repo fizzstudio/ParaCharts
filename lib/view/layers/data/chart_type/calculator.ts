@@ -7,8 +7,6 @@ import { parse, simplify } from "mathjs";
 import { html } from "lit";
 
 export class GraphingCalculator extends LineChart {
-  //protected xMin: number = -10;
-  //protected xMax: number = 10;
   protected renderPts: number = 100;
   protected currEquations: string[] = [];
   protected _addedToParent() {
@@ -115,8 +113,8 @@ export class GraphingCalculator extends LineChart {
     });
 
     this._axisInfo = new AxisInfo(this.paraview.store, {
-      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.type.graph.xMin /*?? this.xMin*/, 
-        this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.type.graph.xMax /*?? this.xMax*/],
+      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.type.graph.xMin, 
+        this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.type.graph.xMax],
       yValues: [-10, 10],
       yMin: -10,
       yMax: 10
@@ -160,8 +158,8 @@ export class GraphingCalculator extends LineChart {
 
   addEquation(eq: string) {
     this._axisInfo = new AxisInfo(this.paraview.store, {
-      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.type.graph.xMin /*?? this.xMin*/,
-      this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.type.graph.xMax /*?? this.xMax*/],
+      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.type.graph.xMin,
+      this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.type.graph.xMax],
       yValues: [-10, 10],
       yMin: -10,
       yMax: 10
