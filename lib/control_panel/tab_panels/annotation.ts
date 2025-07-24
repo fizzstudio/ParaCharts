@@ -97,6 +97,29 @@ export class AnnotationPanel extends ControlPanelTabPanel {
             Add Annotation
           </button>
         </div>
+        <div> 
+          <button
+            @click=${
+              () => {
+                this._store.addUserLineBreaks()
+              }
+            }
+          >
+            Add Line breaks
+          </button>
+        </div>
+         <div>
+          <button
+            @click=${
+              () => {
+                this._store.clearUserLineBreaks()
+                this._store.clearUserTrendLines()
+              }
+            }
+          >
+            Remove added line breaks
+          </button>
+        </div>
          <div>
           <button
             @click=${

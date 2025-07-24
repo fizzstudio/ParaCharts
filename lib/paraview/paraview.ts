@@ -205,7 +205,17 @@ export class ParaView extends logging(ParaComponent) {
       .linebreaker-marker {
         fill: hsl(0, 17.30%, 37.50%);
       }
+      .user-linebreaker-marker {
+        fill: hsl(0, 87%, 48%);
+      }
       .trend-line{
+        display: inline;
+        stroke-width: 8px;
+        stroke-linecap: butt;
+        stroke-dasharray: 12 12;
+        stroke-opacity: 0.8;
+      }
+      .user-trend-line{
         display: inline;
         stroke-width: 8px;
         stroke-linecap: butt;

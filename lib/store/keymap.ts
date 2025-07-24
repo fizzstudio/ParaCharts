@@ -119,11 +119,11 @@ export const keymap: KeyRegistrations = {
     caseSensitive: false,
     action: 'selectClear'
   },
-  // a: {
-  //   label: 'Add an annotation',
-  //   caseSensitive: false,
-  //   action: 'add_annotation'
-  // },
+  a: {
+    label: 'Add an annotation',
+    caseSensitive: false,
+    action: 'addAnnotation'
+  },
   // 'Ctrl+ArrowLeft': {
   //   action: 'previous_tenth'
   // },

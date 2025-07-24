@@ -31,6 +31,7 @@ export interface AvailableActions {
   jumpToChordLanding(): void;
   shutUp(): void;
   repeatLastAnnouncement(): void;
+  addAnnotation(): void;
 }
 
 
@@ -169,6 +170,9 @@ export class HotkeyActions {
         // paraView.paraChart.controlPanel.descriptionPanel.ariaLiveRegion.replay();
         paraView.paraChart.ariaLiveRegion.replay();
       },
+      addAnnotation() {
+        store.addAnnotation();
+      }
     };
   }
 
