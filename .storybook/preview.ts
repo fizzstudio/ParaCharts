@@ -29,7 +29,7 @@ const preview: Preview = {
         order: [
           'Chart', 
           'CSUN', 
-          'Basic Charts', [
+          'AI-enhanced Charts', [
             'Pastry Charts', 
             'Bar Charts', [
               'Single Bar Charts',
@@ -48,7 +48,7 @@ const preview: Preview = {
             'Scatter Charts',
             'Histograms',
             'Heat Maps'
-          ], 'AI-enhanced Charts', [
+          ], 'Basic Charts', [
             'Pastry Charts', 
             'Bar Charts', [
               'Single Bar Charts',
