@@ -168,6 +168,10 @@ export class BaseView {
     return {};
   }
 
+  get classInfo(): ClassInfo {
+    return {};
+  }
+
   renderChildren(): TemplateResult {
     return svg`${this.children.map(kid => kid.render())}`;
   }
@@ -205,6 +209,9 @@ export class View extends BaseView {
   //protected _keymapManager: KeymapManager | null = null;
   protected _padding: Padding = {top: 0, bottom: 0, left: 0, right: 0};
   protected _hidden = false;
+  protected _styleInfo: StyleInfo = {};
+  protected _classInfo: ClassInfo = {};
+
   constructor(public readonly paraview: ParaView) {
     super();
     //this._setActions();
@@ -593,6 +600,22 @@ export class View extends BaseView {
     }
   }
 
+  get styleInfo() {
+    return structuredClone(this._styleInfo);
+  }
+
+  set styleInfo(styleInfo: StyleInfo) {
+    this._styleInfo = structuredClone(styleInfo);
+  }
+
+  get classInfo() {
+    return structuredClone(this._classInfo);
+  }
+
+  set classInfo(classInfo: ClassInfo) {
+    this._classInfo = structuredClone(classInfo);
+  }
+
   get prev() {
     return this._prev;
   }
@@ -816,6 +839,7 @@ export class View extends BaseView {
 }
 
 export interface ContainableI {
+  // Having these defined here prevents TS errors
   get classInfo(): ClassInfo;
   get styleInfo(): StyleInfo;
   get role(): string;
@@ -838,13 +862,13 @@ export function Container<TBase extends Containable>(Base: TBase) {
       if (this.hidden) {
         return svg``;
       }
-      const tx = this.x;
-      const ty = this.y;
+      const tx = this.x + this.padding.left;
+      const ty = this.y + this.padding.top;
       return staticSvg`
         <g
           ${this.ref}
           id=${this.id || nothing}
-          class=${this.classInfo ? classMap(this.classInfo) : nothing}
+          class=${Object.keys(this.classInfo).length ? classMap(this.classInfo) : nothing}
           style=${Object.keys(this.styleInfo).length ? styleMap(this.styleInfo) : nothing}
           role=${this.role || nothing}
           aria-roledescription=${this.roleDescription || nothing}

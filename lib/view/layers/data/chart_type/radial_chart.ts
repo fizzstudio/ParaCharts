@@ -379,13 +379,14 @@ export abstract class RadialChart extends DataLayer {
   }
 
   protected _createCategoryLabelLeader(slice: RadialSlice, arcCenter: Vec2, underlineStart: Vec2) {
-    return new PathShape(this.paraview, {
+    const path = new PathShape(this.paraview, {
       points: [arcCenter, underlineStart, underlineStart.x > slice.categoryLabel!.centerX
         ? underlineStart.subtractX(slice.categoryLabel!.width)
         : underlineStart.addX(slice.categoryLabel!.width)],
       stroke: this.paraview.store.colors.colorValueAt(slice.color),
-      strokeWidth: 2
     });
+    path.classInfo = { 'radial-cat-label-leader': true };
+    return path;
   }
 
   protected _resolveLabelCollisions() {

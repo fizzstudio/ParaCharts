@@ -160,6 +160,14 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   /**
+   * Stroke width for visited datapoints. Can be overridden.
+   */
+  get visitedStrokeWidth(): number {
+    const visitedScale = this.paraview.store.settings.chart.strokeHighlightScale;
+    return this.paraview.store.settings.chart.strokeWidth*visitedScale;
+  }
+
+  /**
    * Mutate `styleInfo` with any custom series styles.
    * @param styleInfo
    */

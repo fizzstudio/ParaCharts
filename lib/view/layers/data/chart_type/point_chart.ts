@@ -32,7 +32,7 @@ import { strToId } from '@fizz/paramanifest';
  * (connected or not).
  */
 export abstract class PointChart extends XYChart {
- 
+
   protected _addedToParent() {
     super._addedToParent();
     //@ts-ignore Remove when graph is added to ChartTypes in ParaManifest
@@ -63,7 +63,7 @@ export abstract class PointChart extends XYChart {
   }
 
   protected _newSeriesView(seriesKey: string) {
-    return new PointSeriesView(this, seriesKey);    
+    return new PointSeriesView(this, seriesKey);
   }
 
   protected _newDatapointView(seriesView: SeriesView) {
@@ -93,7 +93,7 @@ export abstract class PointChart extends XYChart {
     // yet, which are also direct children of the chart.
     this._chartLandingView.sortChildren((a: XYSeriesView, b: XYSeriesView) => {
       return (b.children[0].datapoint.facetValueNumericized(b.children[0].datapoint.depKey)!) - (a.children[0].datapoint.facetValueNumericized(a.children[0].datapoint.depKey)!);
-    });  
+    });
   }
 
   // protected _layoutDatapoints() {
@@ -131,12 +131,6 @@ export abstract class PointChart extends XYChart {
 }
 
 export class PointSeriesView extends XYSeriesView {
-
-  get styleInfo() {
-    const style = super.styleInfo;
-    style.fill = 'none';
-    return style;
-  }
 
 }
 

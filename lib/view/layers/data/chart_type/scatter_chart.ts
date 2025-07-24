@@ -10,6 +10,7 @@ import { Colors } from '../../../../common/colors';
 import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 import { strToId } from '@fizz/paramanifest';
+import { ClassInfo } from 'lit/directives/class-map.js';
 
 
 export class ScatterPlot extends PointChart {
@@ -122,9 +123,19 @@ export class ScatterPlot extends PointChart {
       }
     }
 
-    this.paraview.store.model!.numSeries > 1 ? this._clustering = generateClusterAnalysis(data, true, labels) :
-      this.paraview.store.settings.type.scatter.isShowOutliers ? this._clustering = generateClusterAnalysis(data, false)
-        : this._clustering = generateClusterAnalysis(data, true)
+    if (this.paraview.store.model!.numSeries > 1) {
+      this._clustering = generateClusterAnalysis(data, true, labels);
+    } else if (this.paraview.store.settings.type.scatter.isShowOutliers) {
+      this._clustering = generateClusterAnalysis(data, false);
+    } else {
+      this._clustering = generateClusterAnalysis(data, true);
+    }
+
+    this._clustering.forEach((cluster, i) => {
+      this.paraview.styleManager.set(`.cluster-${i}`, {
+        stroke: this.paraview.store.colors.colorValueAt(i)
+      });
+    });
 
     const datapointViews = this.datapointViews
     for (let cluster of this._clustering) {
@@ -201,13 +212,20 @@ class ScatterPoint extends ChartPoint {
     }
     this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
       strokeWidth: this.paraview.store.settings.chart.symbolStrokeWidth,
-      color: color,
+      //color: color,
       lighten: true
     });
     this._symbol.role = 'datapoint'
     this._symbol.id = `${this._id}-sym`;
     this.symbolColor = color;
     this.append(this._symbol);
+  }
+
+  get classInfo(): ClassInfo {
+    return {
+      [`cluster-${this.clusterID}`]: this.clusterID !== undefined,
+      ...super.classInfo
+    };
   }
 
   render() {
@@ -289,7 +307,7 @@ export class ClusterShellView extends View {
     const testPoint = this.selectionLayer.children[0] as SelectedDatapointMarker;
     const pointID = testPoint.datapointView._extraAttrs[1].value;
     let color: number = 0;
-    let targetId = clustering.findIndex((e: clusterObject) => { 
+    let targetId = clustering.findIndex((e: clusterObject) => {
       return e.dataPointIDs.includes(pointID)})
     return targetId
     */

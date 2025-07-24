@@ -363,7 +363,7 @@ export const defaults: Settings = {
   ui: {
     isVoicingEnabled: false,
     isAnnouncementEnabled: true,
-    speechRate: 1,
+    speechRate: 1.25,
     isFullscreenEnabled: false,
     isLowVisionModeEnabled: false,
     isFocusRingEnabled: false,
