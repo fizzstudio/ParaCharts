@@ -495,6 +495,8 @@ export class ParaView extends logging(ParaComponent) {
     pruneComments(svg.childNodes);
     toPrune.forEach(c => c.remove());
 
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
     svg.removeAttribute('role');
 
     // XXX Also remove visited styling (not just the layer)
