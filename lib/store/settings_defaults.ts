@@ -100,7 +100,7 @@ export const defaults: Settings = {
         tickLabel: {
           isDrawEnabled: true,
           angle: -45,
-          offsetPadding: 8,
+          offsetGap: 8,
           gap: 0
         },
         step: 1
@@ -132,7 +132,7 @@ export const defaults: Settings = {
         tickLabel: {
           isDrawEnabled: true,
           angle: 0,
-          offsetPadding: 0,
+          offsetGap: 0,
           gap: 0
         },
         step: 1,
@@ -349,10 +349,9 @@ export const defaults: Settings = {
       },
       isDrawSymbols: false,
       equation: '',
-      xMin: -10,
-      xMax: 10,
       preset: '',
-      renderPts: 100
+      renderPts: 50,
+      resetAxes: false
     }
   },
   grid: {
@@ -376,8 +375,6 @@ export const defaults: Settings = {
     isCaptionVisible: true,
     isStatusBarVisible: true,
     isSparkBrailleVisible: false,
-    isSparkBrailleProportional: false,
-    isSparkBrailleBar: false,
     isSparkBrailleControlVisible: true,
     isMDRAnnotationsVisible: false,
     isDataTabVisible: true,
@@ -411,11 +408,11 @@ export const defaults: Settings = {
     isSoniEnabled: false,
     isRiffEnabled: true,
     isNotificationEnabled: true,
-    isChordModeEnabled: false,
     hertzLower: 35,
     hertzUpper: HERTZ.length - 12,
     soniPlaySpeed: 3,
-    riffSpeed: 'medium'
+    riffSpeed: 'medium',
+    isArpeggiateChords: true
   },
   dev: {
     isDebug: false

@@ -224,7 +224,7 @@ export class Label extends View {
   set styleInfo(styleInfo: StyleInfo) {
     this._styleInfo = styleInfo;
   }
-  
+
   computeSize() {
     // XXX Need to make sure the label gets rendered here with the
     // same font settings it will ultimately be displayed with
@@ -257,7 +257,7 @@ export class Label extends View {
     let height = clientRect.height;
     // E.g., suppose text-anchor is middle. The text baseline center will be
     // positioned at the origin of the view box, and the left half of the label
-    // will extend into the negative x-axis. 
+    // will extend into the negative x-axis.
     this._locOffset.x = -(clientRect.x - canvasRect.x);
     this._locOffset.y = -(clientRect.y - canvasRect.y);
 
@@ -291,7 +291,7 @@ export class Label extends View {
 
       this._locOffset.x = -(clientRect.x - canvasRect.x);
       this._locOffset.y = -(clientRect.y - canvasRect.y);
-  
+
       this._textLines = tspans.map(t => ({text: t.textContent!, offset: 0}));
 
       if (this._justify !== 'start') {
@@ -333,7 +333,7 @@ export class Label extends View {
     const bottomRight = new Vec2(right, bottom).rotate(-this._angle*Math.PI/180);
     const bottomLeft = new Vec2(left, bottom).rotate(-this._angle*Math.PI/180);
     this._textCornerOffsets = {
-      topLeft, 
+      topLeft,
       topRight,
       bottomRight,
       bottomLeft
@@ -358,9 +358,9 @@ export class Label extends View {
     // TODO: figure out why `this._y` is larger here than for single line titles
     // HACK: divide `this._y` by 2 for `y` attribute value
     return svg`
-      <text 
+      <text
         ${ref(this._elRef)}
-        class=${this.options.classList?.join(' ') ?? nothing} 
+        class=${this.options.classList?.join(' ') ?? nothing}
         role=${this.options.role ?? nothing}
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}
@@ -370,7 +370,7 @@ export class Label extends View {
         style=${styleMap(this._styleInfo)}
       >
         ${this._textLines.length
-          ? this._textLines.map((line, i) => 
+          ? this._textLines.map((line, i) =>
             svg`
               <tspan
                 x=${fixed`${this._x + line.offset}`}

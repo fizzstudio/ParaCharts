@@ -1,7 +1,7 @@
 
 import { XYChart, XYDatapointView, XYSeriesView } from '.';
 import { AxisInfo } from '../../../../common/axisinfo';
-import { 
+import {
   type BarSettings, type StackContentOptions ,type DeepReadonly,
   Setting
 } from '../../../../store/settings_types';
@@ -31,7 +31,7 @@ class BarCluster {
   stacks: {[key: string]: BarStack} = {}
   readonly id: string;
   readonly labelId: string;
-  
+
   static computeSize(chart: BarChart) {
     // BarCluster.width = chart.paraview.store.settings.chart.size.width!/Object.values(chart.bars).length;
     // n = this.axis.isInterval ? this.tickLabels.length : this.tickLabels.length - 1;
@@ -47,7 +47,7 @@ class BarCluster {
     // } else if (chart.paraview.store.settings.type.bar.stackContent === 'count') {
     //   const seriesPerStack = chart.paraview.store.settings.type.bar.stackCount;
     //   BarCluster.numStacks = Math.ceil(numSeries/seriesPerStack);
-    // } 
+    // }
     //BarCluster.width = chart.stackWidth*chart.stacksPerCluster + (chart.stacksPerCluster - 1)*chart.settings.barGap;
   }
 
@@ -85,7 +85,7 @@ export class BarStack {
   //   console.log('setting chart content width to', chart.parent.width);
   // }
 
-  constructor(public readonly cluster: BarCluster, public readonly key: string) { 
+  constructor(public readonly cluster: BarCluster, public readonly key: string) {
     this.id = `barstack-${strToId(this.cluster.key)}-${strToId(this.key)}`;
     this.labelId = `tick-x-${this.id}`;
   }
@@ -158,7 +158,9 @@ export class BarChart extends XYChart {
       xTiers: [Object.keys(this._clusteredData)],
       yValues: yValues,
       yMin: Math.min(0, Math.min(...yValues)),
-      isXInterval: true
+      isXInterval: true,
+      // manifest can override this
+      isXVertical: this.paraview.store.type === 'bar'
     });
 
     const numSeries = this.paraview.store.model!.numSeries;
@@ -167,7 +169,7 @@ export class BarChart extends XYChart {
     } else if (this.settings.stackContent === 'count') {
       const seriesPerStack = this.settings.stackCount;
       this._stacksPerCluster = Math.ceil(numSeries/seriesPerStack);
-    } 
+    }
 
     /*todo().controller.settingViews.add(this, {
       type: 'dropdown',
@@ -176,7 +178,7 @@ export class BarChart extends XYChart {
       options: {options: ['All', 'Count'], values: ['all', 'count']},
       parentView: 'chartDetails.tabs.chart.chart',
       //dontSaveValue: true
-    }); 
+    });
     todo().controller.settingViews.add(this, {
       type: 'textfield',
       key: 'type.bar.stackCount',
@@ -193,7 +195,7 @@ export class BarChart extends XYChart {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['color.colorPalette', 'color.colorVisionMode'].includes(path)) {
-      if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern') 
+      if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
          || this.paraview.store.settings.color.colorPalette === 'pattern'){
         this.paraview.createDocumentView();
         this.paraview.requestUpdate();
@@ -208,7 +210,7 @@ export class BarChart extends XYChart {
       //   return true;
       // }
     }
-    
+
     super.settingDidChange(path, oldValue, newValue);
   }
 
@@ -263,8 +265,8 @@ export class BarChart extends XYChart {
     // }
 
     for (const [x, i] of enumerate(xs)) {
-      //const clusterKey = this._model.format(xSeries.atBoxed(i), 'barCluster');  
-      const clusterKey = formatBox(x, this.paraview.store.getFormatType('barCluster'));  
+      //const clusterKey = this._model.format(xSeries.atBoxed(i), 'barCluster');
+      const clusterKey = formatBox(x, this.paraview.store.getFormatType('barCluster'));
       let cluster = clusterMap[clusterKey];
       if (!cluster) {
         cluster = new BarCluster(this, clusterKey);
@@ -273,9 +275,13 @@ export class BarChart extends XYChart {
       }
     }
 
-    // Place the series into stacks in the reverse order to how they appear in the 
-    // model (i.e., first series will be topmost onscreen in 'all' mode)
-    for (const [series, i] of enumerate(this.paraview.store.model!.series).toReversed()) {
+    const allSeries = [...this.paraview.store.model!.series];
+    if (this.paraview.store.type === 'column') {
+      // Place the series into stacks in the reverse order to how they appear in the
+      // model (i.e., first series will be topmost onscreen in 'all' mode)
+      allSeries.reverse();
+    }
+    for (const [series, i] of enumerate(allSeries)) {
       for (const [value, j] of enumerate(series.datapoints.map(dp => dp.facetBox('y')))) {
         let stack: BarStack;
         let stackKey: string;
@@ -294,7 +300,7 @@ export class BarChart extends XYChart {
             stack = new BarStack(clusters[j], stackKey);
             clusters[j].stacks[stackKey] = stack;
           }
-        } 
+        }
         stack!.bars[series.key] = {series: series.key, value: series.datapoints[j].facetBox('y') as Box<'number'>};
       }
     }
@@ -345,9 +351,11 @@ export class BarChart extends XYChart {
         }
       }
     });
-    // First child of chart landing is bottom-most series, so we reverse them
-    // so that navigation starts at the top
-    this._chartLandingView.reverseChildren();
+    if (this.paraview.store.type === 'column') {
+      // First child of chart landing is bottom-most series, so we reverse them
+      // so that navigation starts at the top
+      this._chartLandingView.reverseChildren();
+    }
   }
 
   protected _completeLayout() {
@@ -374,7 +382,7 @@ export class BarChart extends XYChart {
   //     this._parent.logicalWidth += -minX;
   //     console.log('NEW WIDTH', this._width);
   //     this.datapointViews.forEach(dp => {
-  //       dp.x += -minX; 
+  //       dp.x += -minX;
   //     });
   //   }
   //   const maxX = Math.max(...labels.map(label => label.right));
@@ -388,7 +396,7 @@ export class BarChart extends XYChart {
   //     this._parent.logicalHeight += -minY;
   //     console.log('NEW HEIGHT', this._height);
   //     this.datapointViews.forEach(dp => {
-  //       dp.y += -minY; 
+  //       dp.y += -minY;
   //     });
   //     labels.forEach(label => {
   //       label.y += -minY;
@@ -411,7 +419,7 @@ export class BarChart extends XYChart {
   //   if (Math.round(minGap) < 0) {
   //     const diffBefore = labels.at(-1)!.x - labels[0].x;
   //     labels.slice(1).forEach((label, i) => {
-  //       // NB: Even if the anchor is set to middle, the labels may be rotated, so 
+  //       // NB: Even if the anchor is set to middle, the labels may be rotated, so
   //       // the anchor will no longer be in the middle of the bbox
   //       label.x = labels[i].right + 0 + label.anchorXOffset;
   //     });
@@ -521,7 +529,7 @@ export class BarChart extends XYChart {
 export class Bar extends XYDatapointView {
 
   declare readonly chart: BarChart;
-  declare protected _parent: XYSeriesView; 
+  declare protected _parent: XYSeriesView;
 
   protected _recordLabel: Label | null = null;
   protected _valueLabel: Label | null = null;
@@ -529,7 +537,7 @@ export class Bar extends XYDatapointView {
   constructor(
     seriesView: XYSeriesView,
     protected _stack: BarStack
-  ) { 
+  ) {
     super(seriesView);
     //this._width = 45; //BarStack.width; // this.paraview.store.settings.type.bar.barWidth;
     this._isStyleEnabled = this.paraview.store.settings.type.bar.colorByDatapoint;
@@ -668,16 +676,16 @@ export class Bar extends XYDatapointView {
   //     Z`;
   // }
 
-  protected _createShape() {
+  protected _createShapes() {
     const isPattern = this.paraview.store.colors.palette.isPattern;
-    this._shape = new RectShape(this.paraview, {
+    this._shapes.push(new RectShape(this.paraview, {
       x: this._x,
       y: this._y,
       width: this._width,
       height: this._height,
       isPattern: isPattern ? true : false
-    });
-    super._createShape();
+    }));
+    super._createShapes();
   }
 
   get selectedMarker() {

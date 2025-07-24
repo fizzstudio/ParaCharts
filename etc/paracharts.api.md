@@ -8,15 +8,17 @@ import { AllSeriesData } from '@fizz/paramanifest';
 import { AxisOrientation } from '@fizz/paramodel';
 import { ButtonDescriptor } from '@fizz/ui-components';
 import { ChartType as ChartType_2 } from '@fizz/paramanifest';
-import { ClassInfo } from 'lit/directives/class-map.js';
-import { ClassInfo as ClassInfo_2 } from 'lit-html/directives/class-map.js';
+import { ClassInfo } from 'lit-html/directives/class-map.js';
+import { ClassInfo as ClassInfo_2 } from 'lit/directives/class-map.js';
 import { CSSResult } from 'lit';
 import { Datapoint } from '@fizz/paramodel';
 import { Datatype } from '@fizz/dataframe';
 import { Datatype as Datatype_2 } from '@fizz/paramanifest';
 import { Dialog } from '@fizz/ui-components';
 import { DirectiveResult } from 'lit-html/directive.js';
+import { Facet } from '@fizz/paramanifest';
 import { FacetSignature } from '@fizz/paramodel';
+import { FizzTabs } from '@fizz/ui-components';
 import { FormatType } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
 import { Jimerator } from '@fizz/paramanifest';
@@ -41,6 +43,7 @@ import { RefDirective } from 'lit-html/directives/ref.js';
 import * as sb from '@fizz/sparkbraille-component';
 import { SequenceInfo } from '@fizz/series-analyzer';
 import { Series } from '@fizz/paramodel';
+import { SeriesAnalysis } from '@fizz/series-analyzer';
 import { SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { Size2d } from '@fizz/chart-classifier-utils';
 import { State } from '@lit-app/state';
@@ -49,7 +52,6 @@ import { StaticValue } from 'lit-html/static.js';
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { StyleInfo as StyleInfo_2 } from 'lit-html/directives/style-map.js';
 import { Summarizer } from '@fizz/parasummary';
-import { TabDetails } from '@fizz/ui-components';
 import { TemplateResult } from 'lit';
 import { TemplateResult as TemplateResult_2 } from 'lit-html';
 import * as ui from '@fizz/ui-components';
@@ -103,6 +105,8 @@ export class ParaChart extends ParaChart_base {
     protected firstUpdated(_changedProperties: PropertyValues): void;
     // (undocumented)
     accessor forcecharttype: ChartType_2 | undefined;
+    // (undocumented)
+    getChartSVG(): string;
     // (undocumented)
     headless: boolean;
     // (undocumented)

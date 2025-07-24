@@ -44,6 +44,7 @@ import { keymap } from './keymap';
 import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { type ParaChart } from '../parachart/parachart';
+import { type NavNode } from '../view/layers/data/navigation';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -98,6 +99,12 @@ export interface TrendLine {
   seriesKey: string;
 }
 
+export interface SparkBrailleInfo {
+  data: string;
+  isProportional?: boolean;
+  isBar?: boolean;
+}
+
 
 export class ParaStore extends State {
 
@@ -108,7 +115,9 @@ export class ParaStore extends State {
   @property() darkMode = false;
   @property() announcement: Announcement = { text: '' };
   @property() annotations: BaseAnnotation[] = [];
-  @property()  _sparkBrailleData: string = ''
+  @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
+  @property() navNode: NavNode | null = null;
+  @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
 
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
@@ -125,7 +134,7 @@ export class ParaStore extends State {
   @property() protected _modelTrendLines: TrendLine[] = [];
   @property() protected _userTrendLines: TrendLine[] = [];
 
-  protected _settingControls = new SettingControlManager(this); 
+  protected _settingControls = new SettingControlManager(this);
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
   protected _manifest: Manifest | null = null;
   protected _jimerator: Jimerator | null = null;
@@ -138,7 +147,7 @@ export class ParaStore extends State {
   protected _keymapManager = new KeymapManager(keymap);
   protected _prependAnnouncements: string[] = [];
   protected _appendAnnouncements: string[] = [];
-  protected _summarizer!: Summarizer; 
+  protected _summarizer!: Summarizer;
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
 
@@ -146,7 +155,7 @@ export class ParaStore extends State {
 
   constructor(
     protected _paraChart: ParaChart,
-    inputSettings: SettingsInput, 
+    inputSettings: SettingsInput,
     suppleteSettingsWith?: DeepReadonly<Settings>,
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
     pairAnalyzerConstructor?: PairAnalyzerConstructor
@@ -248,7 +257,7 @@ export class ParaStore extends State {
     this._facets = facetsFromDataset(dataset);
     if (dataset.data.source === 'inline') {
       this._model = modelFromInlineData(
-        manifest, 
+        manifest,
         this._seriesAnalyzerConstructor,
         this._pairAnalyzerConstructor
       );
@@ -259,8 +268,8 @@ export class ParaStore extends State {
       this.data = dataFromManifest(manifest);
     } else if (data) {
       this._model = modelFromExternalData(
-        data, 
-        manifest, 
+        data,
+        manifest,
         this._seriesAnalyzerConstructor,
         this._pairAnalyzerConstructor
       );
@@ -269,6 +278,12 @@ export class ParaStore extends State {
     } else {
       throw new Error('store lacks external or inline chart data');
     }
+    this._model.keys.forEach(async seriesKey => {
+      this.seriesAnalyses = {
+        [seriesKey]: await this._model!.getSeriesAnalysis(seriesKey),
+        ...this.seriesAnalyses
+      };
+    });
   }
 
   protected _propertyChanged(key: string, value: any) {
@@ -415,7 +430,7 @@ export class ParaStore extends State {
 
   visit(datapoints: DataCursor[]) {
     this._prevVisitedDatapoints = this._visitedDatapoints;
-    this._visitedDatapoints = datapoints;
+    this._visitedDatapoints = [...datapoints];
     this._everVisitedDatapoints.push(...datapoints);
     if (this.settings.controlPanel.isMDRAnnotationsVisible) {
       this.removeMDRAnnotations(this._prevVisitedDatapoints)
@@ -468,7 +483,7 @@ export class ParaStore extends State {
   select(datapoints: DataCursor[]) {
     let newSelection: DataCursor[] = [];
     if (datapoints.length === 1) {
-      if (!this.isSelected(datapoints[0].seriesKey, datapoints[0].index) 
+      if (!this.isSelected(datapoints[0].seriesKey, datapoints[0].index)
         || this._selectedDatapoints.length > 1) {
         newSelection.push(datapoints[0]);
       }
@@ -488,8 +503,8 @@ export class ParaStore extends State {
           newDP.seriesKey === dp.seriesKey && newDP.index === dp.index ), 1);
       } else {
         newSelection.push(dp);
-      }  
-    } 
+      }
+    }
     this._prevSelectedDatapoints = this._selectedDatapoints;
     this._selectedDatapoints = newSelection;
   }
@@ -519,14 +534,14 @@ export class ParaStore extends State {
   }
 
   getFormatType(context: FormatContext): FormatType {
-    return context === 'domId' ? 'domId' 
+    return context === 'domId' ? 'domId'
       : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.settings) as FormatType;
   }
 
   addAnnotation() {
-    let newAnnotationList: PointAnnotation[] = []
+    const newAnnotationList: PointAnnotation[] = [];
 
-    this._selectedDatapoints.forEach((dp) => {
+    this._visitedDatapoints.forEach((dp) => {
       const recordLabel = formatXYDatapointX(
         this._model!.atKeyAndIndex(dp.seriesKey, dp.index) as PlaneDatapoint, 'raw');
       let annotationText = prompt('Annotation:') as string;
@@ -627,7 +642,7 @@ export class ParaStore extends State {
   }
 
   protected _getUrlAnnotations() {
-    const trimText = (textStr: string) => 
+    const trimText = (textStr: string) =>
       textStr.replace(/(\r\n|\n|\r)/gm, '').replace(/\s+/g, ' ').trim();
 
     let location = window.location;

@@ -16,13 +16,10 @@ import { ref, createRef } from 'lit/directives/ref.js';
 @customElement('para-data-panel')
 export class DataPanel extends ControlPanelTabPanel {
 
-  @property() sparkBrailleData!: string;
   @property({type: Boolean}) isSparkBrailleVisible = false;
 
   protected _sparkBrailleRef = createRef<sb.SparkBraille>();
   protected _sparkBrailleWrapperRef = createRef<HTMLDivElement>();
-  protected _isSBProp = false;
-  protected _isBar = false;
 
   protected _saveChart() {
     const serialized = this.controlPanel.paraChart.paraView.serialize();
@@ -69,8 +66,7 @@ export class DataPanel extends ControlPanelTabPanel {
         max-width: 8rem;
       }
       #sparkbraille {
-        background-color: var(--themeColorLight);
-        margin: -0.19rem -0.25rem 0px;
+        background-color: var(--theme-color-light);
         padding: 0.2rem;
       }
     `
@@ -78,9 +74,6 @@ export class DataPanel extends ControlPanelTabPanel {
 
   render() {
     const paraView = this.controlPanel.parentElement!.firstElementChild as ParaView;
-    this.sparkBrailleData = paraView.store._sparkBrailleData
-    this._isSBProp = paraView.store.settings.controlPanel.isSparkBrailleProportional;
-    this._isBar = paraView.store.settings.controlPanel.isSparkBrailleBar;
     return html`
       <div
         id="data-page"
@@ -165,10 +158,14 @@ export class DataPanel extends ControlPanelTabPanel {
         -->
         <fizz-sparkbraille
           ${ref(this._sparkBrailleRef)}
-          ?bar=${this._isBar}
-          ?isProp=${this._isSBProp}
-          data=${this._isSBProp ? '' : this.sparkBrailleData}
-          labeledData=${this._isSBProp ? this.sparkBrailleData : ''}
+          ?bar=${this._store.sparkBrailleInfo?.isBar}
+          ?isProp=${this._store.sparkBrailleInfo?.isProportional}
+          data=${this._store.sparkBrailleInfo?.isProportional
+            ? ''
+            : this._store.sparkBrailleInfo?.data ?? ''}
+          labeledData=${this._store.sparkBrailleInfo?.isProportional
+            ? this._store.sparkBrailleInfo?.data ?? ''
+            : ''}
           @select=${(e: CustomEvent) => {
             const index = e.detail*2;
             //chart.hiliteSegmentRangeById('series', `${index}`, `${index + 1}`);

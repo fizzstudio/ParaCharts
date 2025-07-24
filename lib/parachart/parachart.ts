@@ -24,14 +24,13 @@ import '../control_panel';
 import { exhaustive } from '../common/utils';
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
-import { type AriaLive } from '../components';
-import '../components/aria_live';
 import { ParaStore } from '../store';
 import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../store/custom_property_loader';
 import { ParaApi } from '../api/api';
 import { styles } from '../view/styles';
-
+import { type AriaLive } from '../components';
+import '../components/aria_live';
 import { Manifest } from '@fizz/paramanifest';
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
@@ -186,7 +185,7 @@ export class ParaChart extends logging(ParaComponent) {
   get slotted(){
     return this._slotted;
   }
-  
+
   connectedCallback() {
     super.connectedCallback();
   }
@@ -245,6 +244,10 @@ export class ParaChart extends logging(ParaComponent) {
 
   showAriaLiveHistory() {
     this._ariaLiveRegionRef.value!.showHistoryDialog();
+  }
+
+  getChartSVG() {
+    return this._api.serializeChart();
   }
 
   downloadSVG() {

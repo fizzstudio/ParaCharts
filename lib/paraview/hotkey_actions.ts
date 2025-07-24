@@ -2,19 +2,23 @@
 import { type ParaView } from './paraview';
 
 export interface AvailableActions {
-  moveRight(): Promise<void>;
-  moveLeft(): Promise<void>;
-  moveUp(): Promise<void>;
-  moveDown(): Promise<void>;
-  goMinimum(): Promise<void>;
-  goMaximum(): Promise<void>;
-  goTotalMinimum(): Promise<void>;
-  goTotalMaximum(): Promise<void>;
+  moveRight(): void;
+  moveLeft(): void;
+  moveUp(): void;
+  moveDown(): void;
+  moveIn(): void;
+  moveOut(): void;
+  goFirst(): void;
+  goLast(): void;
+  goMinimum(): void;
+  goMaximum(): void;
+  goTotalMinimum(): void;
+  goTotalMaximum(): void;
   select(): void;
   selectExtend(): void;
   selectClear(): void;
-  playRight(): Promise<void>;
-  playLeft(): Promise<void>;
+  playRight(): void;
+  playLeft(): void;
   stopPlay(): void;
   queryData(): void;
   sonificationModeToggle(): void;
@@ -24,7 +28,7 @@ export interface AvailableActions {
   lowVisionModeToggle(): void;
   openHelp(): void;
   announceVersionInfo(): void;
-  chordModeToggle(): void;
+  jumpToChordLanding(): void;
   shutUp(): void;
   repeatLastAnnouncement(): void;
   addAnnotation(): void;
@@ -41,33 +45,47 @@ export class HotkeyActions {
     // actions close over a value that might be removed)
     const chart = () => paraView.documentView!.chartLayers.dataLayer;
     this.actions = {
-      async moveRight() {
+      moveRight() {
         chart().clearPlay();
-        await chart().moveRight();
+        chart().move('right');
       },
-      async moveLeft() {
+      moveLeft() {
         chart().clearPlay();
-        await chart().moveLeft();
+        chart().move('left');
       },
-      async moveUp() {
+      moveUp() {
         chart().clearPlay();
-        await chart().moveUp();
+        chart().move('up');
       },
-      async moveDown() {
+      moveDown() {
         chart().clearPlay();
-        await chart().moveDown();
+        chart().move('down');
       },
-      async goMinimum() {
-        await chart().goSeriesMinMax(true);
+      moveIn() {
+        chart().clearPlay();
+        chart().move('in');
       },
-      async goMaximum() {
-        await chart().goSeriesMinMax(false);
+      moveOut() {
+        chart().clearPlay();
+        chart().move('out');
       },
-      async goTotalMinimum() {
-        await chart().goChartMinMax(true);
+      goFirst() {
+        chart().navFirst();
       },
-      async goTotalMaximum() {
-        await chart().goChartMinMax(false);
+      goLast() {
+        chart().navLast();
+      },
+      goMinimum() {
+        chart().goSeriesMinMax(true);
+      },
+      goMaximum() {
+        chart().goSeriesMinMax(false);
+      },
+      goTotalMinimum() {
+        chart().goChartMinMax(true);
+      },
+      goTotalMaximum() {
+        chart().goChartMinMax(false);
       },
       select() {
         chart().selectCurrent(false);
@@ -78,13 +96,13 @@ export class HotkeyActions {
       selectClear() {
         chart().clearDatapointSelection();
       },
-      async playRight() {
+      playRight() {
         chart().clearPlay();
-        await chart().playRight();
+        chart().playDir('right');
       },
-      async playLeft() {
+      playLeft() {
         chart().clearPlay();
-        await chart().playLeft();
+        chart().playDir('left');
       },
       stopPlay() {
         chart().clearPlay();
@@ -114,7 +132,6 @@ export class HotkeyActions {
       },
       voicingModeToggle() {
         if (store.settings.ui.isVoicingEnabled) {
-          store.announce('Self-voicing disabled');
           store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = false;
           });
@@ -122,7 +139,6 @@ export class HotkeyActions {
           store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = true;
           });
-          store.announce('Self-voicing enabled');
         }
       },
       darkModeToggle() {
@@ -143,20 +159,15 @@ export class HotkeyActions {
       announceVersionInfo() {
         store.announce(`Version ${__APP_VERSION__}; commit ${__COMMIT_HASH__}`);
       },
-      chordModeToggle() {
-        store.updateSettings(draft => {
-          draft.sonification.isChordModeEnabled = !draft.sonification.isChordModeEnabled;
-        });
-        if (store.settings.sonification.isChordModeEnabled) {
-          store.prependAnnouncement('Chord mode enabled');
-        } else {
-          store.prependAnnouncement('Chord mode disabled');
-        }      
+      jumpToChordLanding() {
+        chart().navToChordLanding();
       },
       shutUp() {
+        // paraView.paraChart.controlPanel.descriptionPanel.ariaLiveRegion.voicing.shutUp();
         paraView.paraChart.ariaLiveRegion.voicing.shutUp();
       },
       repeatLastAnnouncement() {
+        // paraView.paraChart.controlPanel.descriptionPanel.ariaLiveRegion.replay();
         paraView.paraChart.ariaLiveRegion.replay();
       },
       addAnnotation() {

@@ -23,7 +23,7 @@ import { mapn } from '@fizz/chart-classifier-utils';
 export interface GridOptionsInput {
   numCols: number;
   rowGaps?: number | number[];
-  colGaps?: number | number[]; 
+  colGaps?: number | number[];
   rowAligns?: SnapLocation | SnapLocation[];
   colAligns?: SnapLocation | SnapLocation[];
 }
@@ -51,12 +51,12 @@ export class GridLayout extends Layout {
 
   private _numCols: number;
   private _rowGaps: number[];
-  private _colGaps: number[]; 
+  private _colGaps: number[];
   private _rowAligns: SnapLocation[];
   private _colAligns: SnapLocation[];
   private _rows: (View | null)[][] = [];
-  private _territories = new Map<View, GridTerritory>(); 
-  private _hRules: number[] = []; 
+  private _territories = new Map<View, GridTerritory>();
+  private _hRules: number[] = [];
   private _vRules: number[] = [];
 
   constructor(paraview: ParaView, options: GridOptionsInput, id?: string) {
@@ -101,11 +101,11 @@ export class GridLayout extends Layout {
 
   get colGaps() {
     return Array.from(this._colGaps);
-  } 
+  }
 
   get rowAligns() {
     return Array.from(this._rowAligns);
-  } 
+  }
 
   get colAligns() {
     return Array.from(this._colAligns);
@@ -133,7 +133,7 @@ export class GridLayout extends Layout {
     this._colGaps = this._expandColGaps(colGaps);
     this.setSize(...this.computeSize());
     this.layoutViews();
-  } 
+  }
 
   protected _expandColGaps(colGaps: number | number[]) {
     return typeof colGaps === 'object'
@@ -144,7 +144,7 @@ export class GridLayout extends Layout {
   set rowAligns(rowAligns: SnapLocation | SnapLocation[]) {
     this._rowAligns = this._expandRowAligns(rowAligns);
     this.layoutViews();
-  } 
+  }
 
   protected _expandRowAligns(rowAligns: SnapLocation | SnapLocation[]) {
     return typeof rowAligns === 'object'
@@ -298,7 +298,7 @@ export class GridLayout extends Layout {
     });
     rows.forEach(row =>
       cols.forEach(col => {
-        if (this._rows[row][col]) { 
+        if (this._rows[row][col]) {
           throw new Error('grid children cannot overlap');
         }
         this._rows[row][col] = kid;
@@ -311,21 +311,21 @@ export class GridLayout extends Layout {
     const hRuleStart = territory.y;
     const hRuleEnd = hRuleStart + territory.height;
     const hDiff = this._hRules[hRuleEnd] - this._hRules[hRuleStart];
-    if (hDiff < kid.boundingHeight) {
-      this._hRules[hRuleEnd] = this._hRules[hRuleStart] + kid.boundingHeight;
+    if (hDiff < kid.paddedHeight) {
+      this._hRules[hRuleEnd] = this._hRules[hRuleStart] + kid.paddedHeight;
       this._hRules.slice(hRuleEnd + 1).forEach((hRule, i) => {
-        this._hRules[hRuleEnd + 1 + i] += kid.boundingHeight - hDiff;
+        this._hRules[hRuleEnd + 1 + i] += kid.paddedHeight - hDiff;
       });
     }
     const vRuleStart = territory.x;
     const vRuleEnd = vRuleStart + territory.width;
     const vDiff = this._vRules[vRuleEnd] - this._vRules[vRuleStart];
-    if (vDiff < kid.boundingWidth) {
-      this._vRules[vRuleEnd] = this._vRules[vRuleStart] + kid.boundingWidth;
+    if (vDiff < kid.paddedWidth) {
+      this._vRules[vRuleEnd] = this._vRules[vRuleStart] + kid.paddedWidth;
       this._vRules.slice(vRuleEnd + 1).forEach((vRule, i) => {
-        this._vRules[vRuleEnd + 1 + i] += kid.boundingWidth - vDiff;
+        this._vRules[vRuleEnd + 1 + i] += kid.paddedWidth - vDiff;
       });
-    }  
+    }
   }
 
   protected _contractRules() {
@@ -469,7 +469,7 @@ export class GridLayout extends Layout {
 
   protected _snapChildX(kid: View) {
     const territory = this._territories.get(kid)!;
-    let colLeft = this.left + this._padding.left;
+    let colLeft = this.left; // + this._padding.left;
     const colWidths = this._vRules.slice(1).map((vr, i) => vr - this._vRules[i]);
     const colGaps = this._colGaps;
     for (let i = 0; i < territory.x; i++) {
@@ -479,7 +479,7 @@ export class GridLayout extends Layout {
     const spanWidth =
       colWidths
         .slice(territory.x, territory.x + territory.width)
-        .reduce((a, b) => a + b, 0) + 
+        .reduce((a, b) => a + b, 0) +
       colGaps
         .slice(territory.x, territory.x + territory.width - 1)
         .reduce((a, b) => a + b, 0);
@@ -494,7 +494,7 @@ export class GridLayout extends Layout {
 
   protected _snapChildY(kid: View) {
     const territory = this._territories.get(kid)!;
-    let rowTop = this.top + this._padding.top;
+    let rowTop = this.top; // + this._padding.top;
     const rowHeights = this._hRules.slice(1).map((hr, i) => hr - this._hRules[i]);
     const rowGaps = this._rowGaps;
     for (let i = 0; i < territory.y; i++) {

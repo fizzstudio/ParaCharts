@@ -26,10 +26,11 @@ export class FocusRing extends Container(View) {
       inner.fill = 'none';
       this.append(inner);
     } else {
-      const x = focusView.outerBbox.left - strokeWidthOuter/2 - gap;
-      const y = focusView.outerBbox.top - strokeWidthOuter/2 - gap;
-      const width = focusView.outerBbox.width + strokeWidthOuter + gap*2;
-      const height = focusView.outerBbox.height + strokeWidthOuter + gap*2;
+      const bbox = focusView.focusRingBbox() ?? focusView.outerBbox;
+      const x = bbox.left - strokeWidthOuter/2 - gap;
+      const y = bbox.top - strokeWidthOuter/2 - gap;
+      const width = bbox.width + strokeWidthOuter + gap*2;
+      const height = bbox.height + strokeWidthOuter + gap*2;
       this.append(new RectShape(paraview, {
         x,
         y,

@@ -63,7 +63,7 @@ export class AriaLive extends ParaComponent {
         this._setHistory([...this._history, msg ?? '']);
 
         if (msg
-          && this._store.settings.ui.isVoicingEnabled 
+          && this._store.settings.ui.isVoicingEnabled
           && this._store.settings.ui.isAnnouncementEnabled) {
           this._voicing.speak(msg);
         }
@@ -82,8 +82,12 @@ export class AriaLive extends ParaComponent {
     this._srb.clear();
   }
 
+  get lastAnnouncement() {
+    return this._srb.lastCreatedElement?.textContent;
+  }
+
   replay() {
-    const msg = this._srb.lastCreatedElement?.textContent;
+    const msg = this.lastAnnouncement;
     if (msg) {
       this._store.announce(msg);
     }
@@ -106,7 +110,7 @@ export class AriaLive extends ParaComponent {
         ${ref(this._ariaLiveRef)}
         class="sr-only"
       ></div>
-      <para-aria-live-history-dialog 
+      <para-aria-live-history-dialog
         ${ref(this._historyDialogRef)}
       ></para-aria-live-history-dialog>
     `;

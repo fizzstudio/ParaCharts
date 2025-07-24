@@ -4,14 +4,58 @@ import { LineChart, LineSection } from "./line_chart";
 import { XYSeriesView } from "./xy_chart";
 import { AxisInfo } from "../../../../common/axisinfo";
 import { parse, simplify } from "mathjs";
+import { html } from "lit";
 
 export class GraphingCalculator extends LineChart {
-  protected xMin: number = -10;
-  protected xMax: number = 10;
-  protected renderPts: number = 100;
+  protected renderPts: number = 50;
   protected currEquations: string[] = [];
   protected _addedToParent() {
     super._addedToParent();
+    this.paraview.store.settingControls.add({
+      type: 'textfield',
+      key: 'axis.x.minValue',
+      label: 'Min x-value',
+      options: { inputType: 'number' },
+      value: this.paraview.store.settings.axis.x.minValue === 'unset' ? -10 : this.paraview.store.settings.axis.x.minValue,
+      validator: value => {
+        const min = this.paraview.store.settings.axis.x.maxValue == "unset" 
+          ? 10
+          : this.paraview.store.settings.axis.x.maxValue as number
+        // NB: If the new value is successfully validated, the inner chart
+        // gets recreated, and `max` may change, due to re-quantization of
+        // the tick values. 
+        return value as number >= min ?
+          { err: `Min x-value (${value}) must be less than (${min})`} : {};
+      },
+      parentView: 'controlPanel.tabs.chart.general',
+    });
+    this.paraview.store.settingControls.add({
+      type: 'textfield',
+      key: 'axis.x.maxValue',
+      label: 'Max x-value',
+      options: { inputType: 'number' },
+      value: this.paraview.store.settings.axis.x.maxValue === 'unset' ? 10 : this.paraview.store.settings.axis.x.maxValue,
+      validator: value => {
+        const max = this.paraview.store.settings.axis.x.minValue == "unset" 
+          ? -10
+          : this.paraview.store.settings.axis.x.minValue as number
+        // NB: If the new value is successfully validated, the inner chart
+        // gets recreated, and `max` may change, due to re-quantization of
+        // the tick values. 
+        return value as number <= max ?
+          { err: `Min x-value (${value}) must be less than (${max})`} : {};
+      },
+      parentView: 'controlPanel.tabs.chart.general',
+    });
+    this.paraview.store.settingControls.add({
+      type: 'button',
+      key: 'type.graph.resetAxes',
+      label: 'Reset Axes to default',
+      parentView: 'controlPanel.tabs.chart.chart',
+    });
+
+
+
     this.paraview.store.settingControls.add({
       type: 'textfield',
       key: 'type.graph.lineWidth',
@@ -27,19 +71,6 @@ export class GraphingCalculator extends LineChart {
       type: 'checkbox',
       key: 'type.graph.isDrawSymbols',
       label: 'Show symbols',
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
-
-
-    this.paraview.store.settingControls.add({
-      type: 'textfield',
-      key: 'type.graph.lineWidth',
-      label: 'Line width',
-      options: {
-        inputType: 'number',
-        min: 1,
-        max: this.paraview.store.settings.type.graph.lineWidthMax as number
-      },
       parentView: 'controlPanel.tabs.chart.chart',
     });
 
@@ -74,7 +105,8 @@ export class GraphingCalculator extends LineChart {
     });
 
     this._axisInfo = new AxisInfo(this.paraview.store, {
-      xValues: [this.paraview.store.settings.type.graph.xMin ?? this.xMin, this.paraview.store.settings.type.graph.xMax ?? this.xMax],
+      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.axis.x.minValue, 
+        this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.axis.x.maxValue],
       yValues: [-10, 10],
       yMin: -10,
       yMax: 10
@@ -83,6 +115,9 @@ export class GraphingCalculator extends LineChart {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['type.graph.equation'].includes(path)) {
+      this.paraview.store.clearVisited();
+      this.paraview.store.clearSelected();
+      this.paraview.store.sparkBrailleInfo = null;
       this.addEquation(newValue as string);
     }
     else if (['type.graph.preset'].includes(path)) {
@@ -91,13 +126,38 @@ export class GraphingCalculator extends LineChart {
           });
     }
     else if (['type.graph.renderPts'].includes(path)) {
+      this.paraview.store.clearVisited();
+      this.paraview.store.clearSelected();
+      this.paraview.store.sparkBrailleInfo = null;
       this.renderPts = Number(newValue)
+      this.addEquation(this.paraview.store.settings.type.graph.equation)
+    }
+    else if (['axis.x.maxValue', 'axis.x.minValue'].includes(path)){
+      this.addEquation(this.paraview.store.settings.type.graph.equation)
+    }
+    else if (['type.graph.resetAxes'].includes(path)){
+      this.paraview.store.clearVisited();
+      this.paraview.store.clearSelected();
+      this.paraview.store.sparkBrailleInfo = null;
+      this.paraview.store.updateSettings(draft => {
+        draft.axis.x.maxValue = 'unset';
+        draft.axis.x.minValue = 'unset';
+        draft.axis.y.maxValue = 'unset';
+        draft.axis.y.minValue = 'unset';
+      });
       this.addEquation(this.paraview.store.settings.type.graph.equation)
     }
     super.settingDidChange(path, oldValue, newValue);
   }
 
   addEquation(eq: string) {
+    this._axisInfo = new AxisInfo(this.paraview.store, {
+      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.axis.x.minValue,
+      this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.axis.x.maxValue],
+      yValues: [-10, 10],
+      yMin: -10,
+      yMax: 10
+    })
     var container = this.paraview.paraChart.slotted[0]
     var table = document.createElement("table");
     var trVar = document.createElement("tr");
@@ -119,12 +179,13 @@ export class GraphingCalculator extends LineChart {
       var xVals = [];
       var yVals = [];
       const points = this.renderPts
-      const xBounds = 10
+      const xMax = this.axisInfo!.xLabelInfo!.max ?? 10
+      const xMin = this.axisInfo!.xLabelInfo!.min ?? -10
       for (var i = 0; i < points + 1; i++) {
         var tr = document.createElement("tr");
         var td1 = document.createElement("td");
         var td2 = document.createElement("td");
-        var xVal = parseFloat((i / (points / (2 * xBounds)) - xBounds).toFixed(3))
+        var xVal = parseFloat((i / (points / ((xMax - xMin))) + (xMin)).toFixed(3))
         const simpEval = simplified.evaluate({ x: xVal })
         if (simpEval.im === undefined){
           var yVal = simpEval.toFixed(3);
@@ -144,12 +205,6 @@ export class GraphingCalculator extends LineChart {
           container.removeChild(container.firstElementChild);
         }
         container.append(table);
-        this.paraview.store.updateSettings(draft => {
-            draft.type.graph.xMax = xBounds;
-          });
-        this.paraview.store.updateSettings(draft => {
-            draft.type.graph.xMin = -1 * xBounds;
-          });
         this.paraview.dispatchEvent(new CustomEvent('paraviewready', {bubbles: true, composed: true, cancelable: true}));
       }
     }
@@ -163,7 +218,7 @@ export class GraphingCalculator extends LineChart {
     return super.settings as DeepReadonly<GraphSettings>;
   }
 
-  
+
 
   updateSeriesStyle(styleInfo: StyleInfo) {
     super.updateSeriesStyle(styleInfo);
@@ -185,6 +240,25 @@ export class GraphingCalculator extends LineChart {
 
   protected _newDatapointView(seriesView: XYSeriesView) {
     return new GraphLine(seriesView);
+  }
+
+  protected _sparkBrailleInfo() {
+    let data = this._navMap.cursor.datapointViews[0].series.datapoints.map(dp =>
+      dp.facetValueAsNumber('y')!).join(' ')
+    //Sparkbrailles with more than 50 points either get cut off by the edge of the panel, or push the panel outwards and make it look bad
+    if (this._navMap.cursor.datapointViews[0].series.datapoints.length > 50) {
+      const length = this._navMap.cursor.datapointViews[0].series.datapoints.length
+      let indices = []
+      for (let i = 0; i < 50; i++) {
+        indices.push(Math.floor(i * length / 50))
+      }
+      data = this._navMap.cursor.datapointViews[0].series.datapoints.filter((e, index) => { return indices.includes(index); }).map(dp =>
+        dp.facetValueAsNumber('y')!).join(' ');
+    }
+    return {
+      data: data,
+      isBar: this.paraview.store.type === 'bar' || this.paraview.store.type === 'column'
+    };
   }
 }
 
@@ -208,11 +282,11 @@ export class GraphLine extends LineSection{
   }
 
   content(){
-    if (this._shape) {
-      this._shape.styleInfo = this.styleInfo;
-      this._shape.classInfo = this.classInfo;  
-      if (this._shape.y < 0 || this._shape.y > this.chart.parent.logicalHeight){
-        this._shape.hidden = true;
+    if (this._shapes.length) {
+      this._shapes[0].styleInfo = this.styleInfo;
+      this._shapes[0].classInfo = this.classInfo;
+      if (this._shapes[0].y < 0 || this._shapes[0].y > this.chart.parent.logicalHeight){
+        this._shapes[0].hidden = true;
       }
     }
     if (this._symbol) {
