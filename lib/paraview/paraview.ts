@@ -146,6 +146,7 @@ export class ParaView extends logging(ParaComponent) {
       }
       .label {
         fill: var(--label-color);
+        stroke: none;
       }
       .tick-label {
         font-size: 13px;
@@ -156,7 +157,7 @@ export class ParaView extends logging(ParaComponent) {
         fill: white;
       }
       .radial-value-label {
-        fill: white;
+        fill: var(--label-color);
       }
       .radial-slice {
         stroke: white;
@@ -205,7 +206,17 @@ export class ParaView extends logging(ParaComponent) {
       .linebreaker-marker {
         fill: hsl(0, 17.30%, 37.50%);
       }
+      .user-linebreaker-marker {
+        fill: hsl(0, 87%, 48%);
+      }
       .trend-line{
+        display: inline;
+        stroke-width: 8px;
+        stroke-linecap: butt;
+        stroke-dasharray: 12 12;
+        stroke-opacity: 0.8;
+      }
+      .user-trend-line{
         display: inline;
         stroke-width: 8px;
         stroke-linecap: butt;
@@ -354,6 +365,18 @@ export class ParaView extends logging(ParaComponent) {
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
       });
+    } else if (path === 'ui.isVoicingEnabled') {
+      if (this._store.settings.ui.isVoicingEnabled) {
+        const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+        if (lastAnnouncement) {
+          this._store.appendAnnouncement(lastAnnouncement);
+        }
+        this._store.announce('Self-voicing enabled.');
+      } else {
+        this.paraChart.ariaLiveRegion.voicing.shutUp();
+        // Voicing is disabled at this point, so manually push this message through
+        this.paraChart.ariaLiveRegion.voicing.speak('Self-voicing disabled.');
+      }
     }
   }
 
@@ -483,6 +506,8 @@ export class ParaView extends logging(ParaComponent) {
     pruneComments(svg.childNodes);
     toPrune.forEach(c => c.remove());
 
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
     svg.removeAttribute('role');
 
     // XXX Also remove visited styling (not just the layer)

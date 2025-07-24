@@ -31,6 +31,7 @@ export interface AvailableActions {
   jumpToChordLanding(): void;
   shutUp(): void;
   repeatLastAnnouncement(): void;
+  addAnnotation(): void;
 }
 
 
@@ -131,7 +132,6 @@ export class HotkeyActions {
       },
       voicingModeToggle() {
         if (store.settings.ui.isVoicingEnabled) {
-          store.announce('Self-voicing disabled');
           store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = false;
           });
@@ -139,7 +139,6 @@ export class HotkeyActions {
           store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = true;
           });
-          store.announce('Self-voicing enabled');
         }
       },
       darkModeToggle() {
@@ -171,6 +170,9 @@ export class HotkeyActions {
         // paraView.paraChart.controlPanel.descriptionPanel.ariaLiveRegion.replay();
         paraView.paraChart.ariaLiveRegion.replay();
       },
+      addAnnotation() {
+        store.addAnnotation();
+      }
     };
   }
 

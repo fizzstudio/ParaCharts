@@ -304,13 +304,13 @@ export abstract class RadialChart extends DataLayer {
     );
     for (const [x, i] of enumerate(xs)) {
       const slice = this._chartLandingView.children[0].children[i] as RadialSlice;
-      const arcCenter = slice.shape.arcCenter;
+      const arcCenter = slice.shapes[0].arcCenter;
       // Distance of cat label from chart circumference
-      const arcDistVec = slice.shape.orientationVector.multiplyScalar(
+      const arcDistVec = slice.shapes[0].orientationVector.multiplyScalar(
         this.settings.categoryLabel.outsideArcDistance);
       let catLabelLoc: Vec2;
       let catLabelAnchor: LabelTextAnchor;
-      const sliceCenter = slice.shape.loc.add(arcCenter).divideScalar(2);
+      const sliceCenter = slice.shapes[0].loc.add(arcCenter).divideScalar(2);
       let catLabelPosProp: keyof LabelTextCorners = 'topLeft';
       if (this.settings.categoryLabel.position === 'inside') {
         catLabelLoc = sliceCenter;
@@ -352,12 +352,12 @@ export abstract class RadialChart extends DataLayer {
         id: slice.id + '-vlb',
         classList: ['radial-value-label'],
         role: 'datapoint',
-        loc: slice.shape.loc.add(
-          slice.shape.orientationVector.multiplyScalar(this.radius * this.settings.valueLabel.position)),
+        loc: slice.shapes[0].loc.add(
+          slice.shapes[0].orientationVector.multiplyScalar(this.radius * this.settings.valueLabel.position)),
         textAnchor: 'middle',
       });
       if (!Object.values(slice.valueLabel.textCorners).every(point =>
-        slice.shape.containsPoint(point))) {
+        slice.shapes[0].containsPoint(point))) {
         slice.categoryLabel.text += `: ${slice.valueLabel.text}`;
         slice.valueLabel = null;
         slice.leader = this._createCategoryLabelLeader(slice, arcCenter, underlineStart);
@@ -551,7 +551,7 @@ export interface RadialDatapointParams {
 export abstract class RadialSlice extends DatapointView {
 
   declare readonly chart: RadialChart;
-  declare protected _shape: SectorShape | null;
+  declare protected _shapes: SectorShape[];
 
 
   protected _categoryLabel: Label | null = null;
@@ -587,8 +587,8 @@ export abstract class RadialSlice extends DatapointView {
     this._leader = leader;
   }
 
-  get shape() {
-    return this._shape as SectorShape;
+  get shapes() {
+    return this._shapes;
   }
 
   get role() {
@@ -649,7 +649,7 @@ export abstract class RadialSlice extends DatapointView {
   }
 
   focusRingShape() {
-    const shape = this._shape!.clone();
+    const shape = this._shapes[0].clone();
     const gap = this.paraview.store.settings.ui.focusRingGap;
     shape.centralAngle += 2 * gap * 360 / (2 * Math.PI * shape.r);
     if (shape.annularThickness! < 1) {
