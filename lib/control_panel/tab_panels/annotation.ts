@@ -59,7 +59,6 @@ export class AnnotationPanel extends ControlPanelTabPanel {
 
   protected _selectAnnotation(event: Event) {
     const target = (event?.target as HTMLElement);
-    console.log(target)
     if (target) {
       this._highlightAnnotation(target);
       if (target.dataset.series && target.dataset.index!) {
