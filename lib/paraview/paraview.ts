@@ -354,6 +354,18 @@ export class ParaView extends logging(ParaComponent) {
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
       });
+    } else if (path === 'ui.isVoicingEnabled') {
+      if (this._store.settings.ui.isVoicingEnabled) {
+        const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+        if (lastAnnouncement) {
+          this._store.appendAnnouncement(lastAnnouncement);
+        }
+        this._store.announce('Self-voicing enabled.');
+      } else {
+        this.paraChart.ariaLiveRegion.voicing.shutUp();
+        // Voicing is disabled at this point, so manually push this message through
+        this.paraChart.ariaLiveRegion.voicing.speak('Self-voicing disabled.');
+      }
     }
   }
 

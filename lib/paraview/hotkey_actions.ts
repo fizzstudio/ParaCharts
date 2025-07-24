@@ -131,7 +131,6 @@ export class HotkeyActions {
       },
       voicingModeToggle() {
         if (store.settings.ui.isVoicingEnabled) {
-          store.announce('Self-voicing disabled');
           store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = false;
           });
@@ -139,7 +138,6 @@ export class HotkeyActions {
           store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = true;
           });
-          store.announce('Self-voicing enabled');
         }
       },
       darkModeToggle() {
