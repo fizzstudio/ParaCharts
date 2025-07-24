@@ -90,9 +90,9 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         </section>
         <div>
           <button
-            @click=${
-              () => this._store.addAnnotation()
-            }
+            @click=${() => {
+              this._store.addAnnotation();
+            }}
           >
             Add Annotation
           </button>
@@ -102,9 +102,9 @@ export class AnnotationPanel extends ControlPanelTabPanel {
             @click=${
               () => {
                 this._store.updateSettings(draft => {
-                draft.controlPanel.isMDRAnnotationsVisible = !this._store.settings.controlPanel.isMDRAnnotationsVisible;
-              });
-              this._store.showMDRAnnotations()
+                  draft.controlPanel.isMDRAnnotationsVisible = !this._store.settings.controlPanel.isMDRAnnotationsVisible;
+                });
+                this._store.showMDRAnnotations()
               }
             }
           >

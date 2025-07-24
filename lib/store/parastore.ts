@@ -527,9 +527,9 @@ export class ParaStore extends State {
   }
 
   addAnnotation() {
-    let newAnnotationList: PointAnnotation[] = []
+    const newAnnotationList: PointAnnotation[] = [];
 
-    this._selectedDatapoints.forEach((dp) => {
+    this._visitedDatapoints.forEach((dp) => {
       const recordLabel = formatXYDatapointX(
         this._model!.atKeyAndIndex(dp.seriesKey, dp.index) as PlaneDatapoint, 'raw');
       let annotationText = prompt('Annotation:') as string;
