@@ -4,6 +4,7 @@ import { formatBox } from '@fizz/parasummary';
 
 import Decimal from 'decimal.js';
 import { boxToNumber } from './utils';
+import { Facet } from '@fizz/paramanifest';
 
 export type Tier = string[];
 export interface ChildTierItem {
@@ -23,6 +24,7 @@ export interface AxisOptions {
   // Are datapoint views drawn on ticks (false) or between them (true)?
   isXInterval?: boolean;
   isYInterval?: boolean;
+  isXVertical?: boolean;
 }
 
 export interface AxisLabelInfo {
@@ -89,6 +91,28 @@ export class AxisInfo {
 
   get options() {
     return this._options;
+  }
+
+  get horizFacet(): Facet {
+    // return this._store.model!.getAxisFacet('horiz')
+    //   ?? (this._options.isXVertical
+    //     ? this._store.model!.dependentFacet!
+    //     : this._store.model!.independentFacet!); 
+    const facetKey = this._options.isXVertical
+        ? this._store.model!.dependentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
+        : this._store.model!.independentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
+    return this._store.model!.getFacet(facetKey)!
+  }
+
+  get vertFacet(): Facet {
+    // return this._store.model!.getAxisFacet('vert')
+    //   ?? (this._options.isXVertical
+    //     ? this._store.model!.independentFacet!
+    //     : this._store.model!.dependentFacet!); 
+    const facetKey = this._options.isXVertical
+        ? this._store.model!.independentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
+        : this._store.model!.dependentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
+    return this._store.model!.getFacet(facetKey)!
   }
 
   updateYRange() {

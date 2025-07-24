@@ -19,12 +19,13 @@ import { type LineSettings, type DeepReadonly } from '../../../../store/settings
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../../../../store/query_utils';
-import { ChartLandingView, SeriesView, DatapointView } from '../../../data';
+import { ChartLandingView, SeriesView, DatapointView, DataView } from '../../../data';
 import { bboxOfBboxes } from '../../../../common/utils';
 
 import { interpolate } from '@fizz/templum';
 
 import { type StyleInfo } from 'lit/directives/style-map.js';
+import { NavNode } from '../navigation';
 
 /**
  * Class for drawing line charts.
@@ -34,23 +35,25 @@ export class LineChart extends PointChart {
 
   protected _addedToParent() {
     super._addedToParent();
-    this.paraview.store.settingControls.add({
-      type: 'textfield',
-      key: 'type.line.lineWidth',
-      label: 'Line width',
-      options: {
-        inputType: 'number', 
-        min: 1, 
-        max: this.paraview.store.settings.type.line.lineWidthMax as number
-      },
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
-    this.paraview.store.settingControls.add({
-      type: 'checkbox',
-      key: 'type.line.isDrawSymbols',
-      label: 'Show symbols',
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
+    if (this.paraview.store.type === "line") {
+      this.paraview.store.settingControls.add({
+        type: 'textfield',
+        key: 'type.line.lineWidth',
+        label: 'Line width',
+        options: {
+          inputType: 'number',
+          min: 1,
+          max: this.paraview.store.settings.type.line.lineWidthMax as number
+        },
+        parentView: 'controlPanel.tabs.chart.chart',
+      });
+      this.paraview.store.settingControls.add({
+        type: 'checkbox',
+        key: 'chart.isDrawSymbols',
+        label: 'Show symbols',
+        parentView: 'controlPanel.tabs.chart.chart',
+      });
+    }
   }
 
   get datapointViews() {
@@ -76,11 +79,99 @@ export class LineChart extends PointChart {
     return this.paraview.store.settings.ui.isLowVisionModeEnabled
       ? 1
       : this.paraview.store.settings.type.line.lineHighlightScale;
-
   }
 
   protected _newDatapointView(seriesView: XYSeriesView) {
     return new LineSection(seriesView);
+  }
+
+  async storeDidChange(key: string, value: any) {
+    await super.storeDidChange(key, value);
+    if (key === 'seriesAnalyses') {
+      if (Object.keys(this.paraview.store.seriesAnalyses).length === this.paraview.store.model!.seriesKeys.length
+        && this.paraview.store.seriesAnalyses[this.paraview.store.model!.seriesKeys[0]]) {
+        // Analyses have been generated for all series (i.e., we're in AI mode)
+        this._createSequenceNavNodes();
+      }
+    }
+  }
+
+  protected _createSequenceNavNodes() {
+    const seriesSeqNodes: NavNode<'sequence'>[][] = [];
+    this._navMap.root.query('series').forEach(seriesNode => {
+      if (seriesSeqNodes.length) {
+        seriesNode.connect('left', seriesSeqNodes.at(-1)!.at(-1)!);
+      }
+      const analysis = this.paraview.store.seriesAnalyses[seriesNode.options.seriesKey]!;
+      const datapointNodes = seriesNode.allNodes('right', 'datapoint');
+      const seqNodes: NavNode<'sequence'>[] = [];
+      analysis.sequences.forEach(seq => {
+        const seqNode = new NavNode(seriesNode.layer, 'sequence', {
+          seriesKey: seriesNode.options.seriesKey,
+          start: seq.start,
+          end: seq.end
+        });
+        seqNodes.push(seqNode);
+        seriesNode.datapointViews.slice(seq.start, seq.end).forEach(view => {
+          seqNode.addDatapointView(view);
+        });
+      });
+      seriesSeqNodes.push(seqNodes);
+      seqNodes.slice(0, -1).forEach((seqNode, i) => {
+        seqNode.connect('right', seqNodes[i + 1]);
+      });
+      // Replace series link to datapoints with link to sequences
+      seriesNode.connect('right', seqNodes[0]);
+      // Breaks first and last datapoint links with series landings
+      datapointNodes[0].disconnect('left', false);
+      datapointNodes.at(-1)!.disconnect('right');
+      seqNodes.forEach(seqNode => {
+        // Unless the first datapoint of the sequence already has an
+        // 'out' link set (i.e., it's a boundary node), make a reciprocal
+        // link to it
+        seqNode.connect('in', datapointNodes[seqNode.options.start],
+          !datapointNodes[seqNode.options.start].getLink('out'));
+        for (let i = seqNode.options.start + 1; i < seqNode.options.end; i++) {
+          // non-reciprocal 'out' links from remaining datapoints to sequence
+          datapointNodes[i].connect('out', seqNode, false);
+        }
+        if (seqNode.peekNode('right', 1)) {
+          // We aren't on the last sequence, so the final datapoint is a boundary point.
+          // Make a non-reciprocal 'in' link to the next sequence
+          datapointNodes[seqNode.options.end - 1].connect('in', seqNode.peekNode('right', 1)!, false);
+        }
+      });
+    });
+    // Make sequence node 'down' links
+    seriesSeqNodes.slice(0, -1).forEach((seqNodes, i) => {
+      seqNodes.forEach(node => {
+        const nodeBelow = seriesSeqNodes[i + 1].find(otherNode =>
+          otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
+        node.connect('down', nodeBelow, false);
+      });
+    });
+    // Make sequence node 'up' links
+    seriesSeqNodes.slice(1).forEach((seqNodes, i) => {
+      seqNodes.forEach((node, j) => {
+        const nodeAbove = seriesSeqNodes[i].find(otherNode =>
+          otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
+        node.connect('up', nodeAbove, false);
+      });
+    });
+  }
+
+  legend() {
+    if (this.paraview.store.settings.legend.itemOrder === 'series') {
+      return this._chartLandingView.children.map(view => ({
+        label: (view as SeriesView).seriesKey,
+        color: (view as SeriesView).color  // series color
+      }));
+    } else {
+      return this.paraview.store.model!.seriesKeys.toSorted().map(key => ({
+        label: key,
+        color: this.paraview.store.seriesProperties!.properties(key).color
+      }));
+    }
   }
 
   queryData(): void {
@@ -166,7 +257,7 @@ export class LineChart extends PointChart {
 
 /**
  * A visual indicator of a line chart datapoint, plus line segments
- * drawn halfway to its neighbors. 
+ * drawn halfway to its neighbors.
  */
 export class LineSection extends ChartPoint {
 
@@ -177,31 +268,32 @@ export class LineSection extends ChartPoint {
   protected _nextMidX?: number;
   protected _nextMidY?: number;
 
-  get height() {
-    // apparently this can get called before the shape is created
-    return this._shape?.height ?? 0;
-  }
+  // get height() {
+  //   // apparently this can get called before the shape is created
+  //   return bboxOfBboxes(...this._shapes.map(shape => shape.bbox)).height ?? 0;
+  // }
 
-  get left() {
-    return this._shape!.left;
-  }
+  // get left() {
+  //   return this._shape!.left;
+  // }
 
-  get right() {
-    return this._shape!.right;
-  }
+  // get right() {
+  //   return this._shape!.right;
+  // }
 
-  get top() {
-    return this._shape!.top;
-  }
+  // get top() {
+  //   return this._shape!.top;
+  // }
 
-  get bottom() {
-    return this._shape!.bottom;
-  }
+  // get bottom() {
+  //   return this._shape!.bottom;
+  // }
 
   get outerBbox() {
+    const shapeOuters = this._shapes.map(shape => shape.outerBbox);
     return this._symbol
-      ? bboxOfBboxes(this._shape!.outerBbox, this._symbol!.outerBbox)
-      : this._shape!.outerBbox;
+      ? bboxOfBboxes(...shapeOuters, this._symbol!.outerBbox)
+      : bboxOfBboxes(...shapeOuters);
   }
 
   completeLayout() {
@@ -225,13 +317,13 @@ export class LineSection extends ChartPoint {
   }
 
   protected _computePrev() {
-    this._prevMidX = -this.width/2; // - 0.1;
-    this._prevMidY = (this._prev!.y - this.y)/2;
-}
+    this._prevMidX = -this.width / 2; // - 0.1;
+    this._prevMidY = (this._prev!.y - this.y) / 2;
+  }
 
   protected _computeNext() {
-    this._nextMidX = this.width/2; // + 0.1;
-    this._nextMidY = (this._next!.y - this.y)/2; 
+    this._nextMidX = this.width / 2; // + 0.1;
+    this._nextMidY = (this._next!.y - this.y) / 2;
   }
 
   protected _computeCentroid() {
@@ -239,31 +331,31 @@ export class LineSection extends ChartPoint {
     const symHeight = this._symbol?.height ?? 0;
     let centroidX = '50%';
     if (!this._prevMidX) {
-      centroidX = `${symWidth/2}px`;
+      centroidX = `${symWidth / 2}px`;
     } else if (!this._nextMidX) {
-      centroidX = `calc(100% - ${symWidth/2}px)`;
+      centroidX = `calc(100% - ${symWidth / 2}px)`;
     }
 
     let centroidY = '50%';
     if (!this._prevMidY && this._nextMidY) {
-      centroidY = (this._y > this._nextMidY) 
-        ? `calc(100% - ${symHeight/2}px)` 
-        : `${symHeight/2}px`;
+      centroidY = (this._y > this._nextMidY)
+        ? `calc(100% - ${symHeight / 2}px)`
+        : `${symHeight / 2}px`;
     } else if (!this._nextMidY && this._prevMidY) {
-      centroidY = (this._y > this._prevMidY) 
-        ? `calc(100% - ${symHeight/2}px)`
-        : `${symHeight/2}px`;
+      centroidY = (this._y > this._prevMidY)
+        ? `calc(100% - ${symHeight / 2}px)`
+        : `${symHeight / 2}px`;
     } else if (this._nextMidY && this._prevMidY) {
       // NB: layoutSymbol() hasn't been called yet, so we can't refer,
       // directly or indirectly, to the symbol's location
-      const symTop = this._y - symHeight/2;
-      const symBot = this._y + symHeight/2;
+      const symTop = this._y - symHeight / 2;
+      const symBot = this._y + symHeight / 2;
       // NB: Strokes aren't taken into account here when computing the
-      // element size, I think because we're using box-sizing: content-box. 
+      // element size, I think because we're using box-sizing: content-box.
       if (symBot > this._nextMidY && symBot > this._prevMidY) {
-        centroidY = `calc(100% - ${symHeight/2}px)`;
+        centroidY = `calc(100% - ${symHeight / 2}px)`;
       } else if (symTop < this._nextMidY && symTop < this._prevMidY) {
-        centroidY = `${symHeight/2}px`;
+        centroidY = `${symHeight / 2}px`;
       } else {
         centroidY = `${this._y - Math.min(this._prevMidY, this._nextMidY)}px`;
       }
@@ -275,7 +367,7 @@ export class LineSection extends ChartPoint {
     if (this._prevMidY !== undefined && this._nextMidY !== undefined) {
       return [
         new Vec2(this._prevMidX!, this._prevMidY),
-        new Vec2(), 
+        new Vec2(),
         new Vec2(this._nextMidX!, this._nextMidY)
       ];
     } else if (this._prevMidY === undefined && this._nextMidY !== undefined) {
@@ -312,21 +404,63 @@ export class LineSection extends ChartPoint {
 
   protected _addVisitedStyleInfo(styleInfo: StyleInfo) {
     super._addVisitedStyleInfo(styleInfo);
-    styleInfo.strokeWidth = this.chart.effectiveLineWidth*this.chart.effectiveVisitedScale;
+    styleInfo.strokeWidth = this.chart.effectiveLineWidth * this.chart.effectiveVisitedScale;
   }
 
-  protected _createShape() {
-    // If datapoints are layed out again after the initial layout,
+  protected _shapeStyleInfo(shapeIndex: number): StyleInfo {
+    if (this.paraview.store.navNode?.type === 'sequence') {
+      const node = this.paraview.store.navNode as NavNode<'sequence'>;
+      if ((this.index === node.options.start && this.index && !shapeIndex)
+        || (this.index === node.options.end - 1 && shapeIndex)) {
+        return {};
+      }
+    }
+    return super._shapeStyleInfo(shapeIndex);
+  }
+
+  protected _createShapes() {
+    // If datapoints are laid out again after the initial layout,
     // we need to replace the original shape and symbol
-    this._shape?.remove();
-    this._shape = new PathShape(this.paraview, {
-      x: this._x,
-      y: this._y,
-      points: this._points,
+    this._shapes.forEach(shape => {
+      shape.remove();
     });
-    super._createShape();
+    const points = this._points;
+    if (points.length === 3) {
+      const slices = [points.slice(0, -1), points.slice(1)];
+      // XXX We can't do this until the series analysis completes!
+      // const seq = this.paraview.store.seriesAnalyses[this.seriesKey]?.sequences?.find(seqInfo =>
+      //   seqInfo.start <= this.index && this.index < seqInfo.end);
+      // if (seq) {
+      //   if (this.index === seq.start) {
+      //     slices.reverse();
+      //   }
+      // }
+      this._shapes.push(
+        new PathShape(this.paraview, {
+          x: this._x,
+          y: this._y,
+          points: slices[0],
+          isClip: true
+        }),
+        new PathShape(this.paraview, {
+          x: this._x,
+          y: this._y,
+          points: slices[1],
+          isClip: true
+        })
+      );
+    } else if (points.length === 2) {
+      this._shapes.push(
+        new PathShape(this.paraview, {
+          x: this._x,
+          y: this._y,
+          points: points,
+          isClip: true
+        })
+      );
+    }
+    super._createShapes();
   }
 
-  
 }
 

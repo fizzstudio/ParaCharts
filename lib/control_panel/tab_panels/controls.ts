@@ -39,14 +39,25 @@ export class ControlsPanel extends ControlPanelTabPanel {
         <li>Navigate using the arrow keys:
           <ul>
             <li><b>Right or left arrow keys</b>: move to the next or previous data point in this series</li>
-            <li><b>Up or down arrow keys</b>: move to the next or previous data series</li>
+            <li><b>Up or down arrow keys</b>: move to the previous or next data series</li>
           </ul>
         </li>
         <li><b>Enter key</b>: select current data point</li>
+        <li><b>Shift + Enter key</b>: add current data point to selection</li>
         <li><b>Q key</b>: get more information about this data point or series, and compare selected data points</li>
         <li><b>S key</b>: toggle sonification on or off</li>
+        <li><b>V key</b>: toggle self-voicing on or off</li>
         <li><b>L key</b>: low vision mode</li>
         <li><b>C key</b>: chord mode</li>
+        <li>High/low jump keys:
+          <ul>
+            <li><b>] (right bracket) key</b>: jump to the highest data point in this series</li>
+            <li><b>Shift + ] (right bracket) key</b>: jump to the highest data point in the chart</li>
+            <li><b>[ (left bracket) key</b>: jump to the lowest data point in this series</li>
+            <li><b>Shift + [ (left bracket) key</b>: jump to the lowest data point in the chart</li>
+          </ul>
+        </li>
+        <li><b>Escape key</b> or <b>Control key</b>: stop speaking</li>
         <li><b>H key</b>: open this Help dialog</li>
       </ul>
 

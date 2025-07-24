@@ -7,8 +7,9 @@ import { DataSymbol, DataSymbols } from '../../../symbol';
 import { svg, TemplateResult } from 'lit';
 import { View } from '../../../base_view';
 import { Colors } from '../../../../common/colors';
-import { enumerate, strToId } from '@fizz/paramodel';
+import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
+import { strToId } from '@fizz/paramanifest';
 
 
 export class ScatterPlot extends PointChart {
@@ -142,7 +143,7 @@ class ScatterPoint extends ChartPoint {
 
   protected _computeX() {
     // Scales points in proportion to the data range
-    const xTemp = (this.datapoint.x.value as number - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
+    const xTemp = (this.datapoint.facetValueNumericized(this.datapoint.indepKey)! - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
     const parentWidth: number = this.chart.parent.width;
     return parentWidth * xTemp;
   }

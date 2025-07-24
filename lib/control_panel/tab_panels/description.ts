@@ -2,12 +2,15 @@
 //import { styles } from '../../styles';
 import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer } from '@fizz/parasummary';
 import { ControlPanelTabPanel } from './tab_panel';
+import { type AriaLive } from '../../components';
+import '../../components/aria_live';
 
 import { html, css } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { type Unsubscribe } from '@lit-app/state';
+import { PlaneModel } from '@fizz/paramodel';
 
 @customElement('para-description-panel')
 export class DescriptionPanel extends ControlPanelTabPanel {
@@ -17,7 +20,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
 
   private _summarizer?: Summarizer;
   protected _storeChangeUnsub!: Unsubscribe;
-
+  //protected _ariaLiveRegionRef = createRef<AriaLive>();
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -28,8 +31,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
         gap: 0.5rem;
       }
       #desc-footer {
-        background-color: var(--themeColorLight);
-        margin: -0.19rem -0.25rem 0px;
+        background-color: var(--theme-color-light);
         padding: 0.2rem;
         display: flex;
         gap: 1rem;
@@ -39,6 +41,10 @@ export class DescriptionPanel extends ControlPanelTabPanel {
       }
     `
   ];
+
+  // get ariaLiveRegion() {
+  //   return this._ariaLiveRegionRef.value!;
+  // }
 
   connectedCallback(): void {
     super.connectedCallback();
@@ -60,7 +66,16 @@ export class DescriptionPanel extends ControlPanelTabPanel {
 
   clearStatusBar() {
     this._controlPanel.paraChart.clearAriaLive();
+    // this.clearAriaLive();
   }
+
+  // clearAriaLive() {
+  //   this._ariaLiveRegionRef.value!.clear();
+  // }
+
+  // protected _showAriaLiveHistory() {
+  //   this._ariaLiveRegionRef.value!.showHistoryDialog();
+  // }
 
   private async setCaption(): Promise<void> {
     if (this.controlPanel.dataState === 'complete') {
@@ -68,7 +83,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
         if (this.store.model!.type === 'pie' || this.store.model!.type === 'donut') {
           this._summarizer = new PastryChartSummarizer(this.store.model!);
         } else {
-          this._summarizer = new PlaneChartSummarizer(this.store.model!);
+          this._summarizer = new PlaneChartSummarizer(this.store.model as PlaneModel);
         }
       }
       this.caption = await this._summarizer.getChartSummary();
@@ -84,8 +99,8 @@ export class DescriptionPanel extends ControlPanelTabPanel {
     return html`
       <figcaption>
         <div id="description" style=${styleMap(styles)}>
-          <div 
-            id="caption" 
+          <div
+            id="caption"
             ?hidden=${!this.controlPanel.settings.isCaptionVisible}
           >
             ${this.caption}

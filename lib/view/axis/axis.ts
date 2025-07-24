@@ -14,31 +14,28 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Container, View } from './base_view';
-import { ColumnLayout, RowLayout, type Layout, type Spacer, RowSpacer, ColumnSpacer } from './layout';
-import { type DocumentView } from './document_view';
-//import { SettingManager } from '../../settings/settingman';
-import { type ChartLayerManager } from './layers';
+import { Container, Padding, PaddingInput, View } from '../base_view';
+import { ColumnLayout, RowLayout, type Layout } from '../layout';
+import { type DocumentView } from '../document_view';
+import { type ChartLayerManager } from '../layers';
 import {
-  type Setting,
   type AxisSettings,
   type OrientedAxisSettings,
   type DeepReadonly
-} from '../store/settings_types';
-import { Label } from './label';
-import { type AxisLine, HorizAxisLine, VertAxisLine } from './axisline';
-import { type TickLabelTier, HorizTickLabelTier, VertTickLabelTier } from './ticklabeltier';
-import { type TickStrip, HorizTickStrip, VertTickStrip } from './tickstrip';
-import { type AxisLabelInfo } from '../common/axisinfo';
-import { SettingsManager } from '../store/settings_manager';
-import { ParaStore } from '../store/parastore';
+} from '../../store/settings_types';
+import { Label } from '../label';
+import { type AxisLine, HorizAxisLine, VertAxisLine } from './axis_line';
+import { type TickLabelTier, HorizTickLabelTier, VertTickLabelTier } from './tick_label_tier';
+import { type TickStrip, HorizTickStrip, VertTickStrip } from './tick_strip';
+import { type AxisLabelInfo } from '../../common/axisinfo';
+import { SettingsManager } from '../../store/settings_manager';
+import { ParaStore } from '../../store/parastore';
 
-import { mapn } from '@fizz/chart-classifier-utils';
 import { type Datatype, type Scalar } from '@fizz/dataframe';
 
 import { type TemplateResult } from 'lit';
 import { literal } from 'lit/static-html.js';
-import Decimal from 'decimal.js';
+import { PlaneModel } from '@fizz/paramodel';
 
 export type AxisOrientation = 'horiz' | 'vert';
 export type AxisCoord = 'x' | 'y';
@@ -60,7 +57,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   declare protected _parent: Layout;
 
-  //readonly settingGroup: string;
   readonly settings: DeepReadonly<AxisSettings>;
   readonly orientationSettings: DeepReadonly<OrientedAxisSettings<T>>;
 
@@ -73,7 +69,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   protected _titleText: string;
   protected _orthoAxis!: Axis<OrthoAxis<T>>;
   protected _axisTitle?: Label;
-  protected _spacer!: Spacer;
   protected _tickLabelTiers: TickLabelTier<T>[] = [];
   protected _tickStrip: TickStrip | null = null;
   protected _axisLine!: AxisLine<T>;
@@ -83,16 +78,15 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   protected _store: ParaStore;
 
   constructor(
-    public readonly docView: DocumentView, 
-    public readonly orientation: T, 
-    readonly coord: AxisCoord, 
+    public readonly docView: DocumentView,
+    public readonly orientation: T,
+    readonly coord: AxisCoord,
     title?: string,
     tickStep?: number
   ) {
     super(docView.paraview);
     this._store = this.paraview.store;
     this.chartLayers = docView.chartLayers;
-    //this.settingGroup = `axis.${this.coord}`;
     this.settings = SettingsManager.getGroupLink<AxisSettings>(
       this.managedSettingKeys[0], this._store.settings
     );
@@ -100,10 +94,14 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     this.orientationSettings = SettingsManager.getGroupLink<OrientedAxisSettings<T>>(
       `axis.${orientation}`, this._store.settings
     );
-    //todo().controller.registerSettingManager(this);
-    this.datatype = this._store.model!.getAxisFacet(this.orientation)!.datatype;
 
-    this._labelInfo = this.coord === 'x' 
+    // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
+    //   have two axes
+    const axisFacet = (this._store.model as PlaneModel).getAxisFacet(this.orientation) 
+      ?? this._store.model!.getFacet(coord)!;
+    this.datatype = axisFacet.datatype;
+
+    this._labelInfo = this.coord === 'x'
       ? this.chartLayers.dataLayer.axisInfo!.xLabelInfo
       : this.chartLayers.dataLayer.axisInfo!.yLabelInfo;
     this._isInterval = this.coord === 'x'
@@ -113,7 +111,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     this._titleText = title ?? this.settings.title.text ?? '';
   }
 
-  protected _createId() { 
+  protected _createId() {
     return `${this.coord}-axis`;
   }
 
@@ -208,12 +206,9 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   //   }
   // }
 
-  abstract setPosition(): void;
-
   createComponents() {
     if (this.settings.title.isDrawTitle && this._titleText) {
       this._createAxisTitle();
-      this._createSpacer();
     }
     let tiersOk = false;
     while (!tiersOk) {
@@ -229,7 +224,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
           this._tickStep = e.preferredTickStep;
         } else {
           throw e;
-        }          
+        }
       }
     }
     this._tickLabelTiers.forEach(tier => this._layout.append(tier));
@@ -269,19 +264,18 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     }
   }
 
-  protected abstract _createSpacer(): void;
-
   protected _createAxisTitle() {
     this._axisTitle = new Label(this.paraview, {
       text: this.titleText,
       classList: ['axis-title'],
       role: 'heading',
-      x: 0,
-      y: 0,
       angle: this._getAxisTitleAngle()
     });
+    this._axisTitle.padding = this._getAxisTitlePadding();
     this._layout.append(this._axisTitle);
   }
+
+  protected abstract _getAxisTitlePadding(): PaddingInput;
 
   protected _getAxisTitleAngle() {
     return 0;
@@ -322,7 +316,7 @@ export class HorizAxis extends Axis<'horiz'> {
     return [new HorizTickLabelTier(
       this, this._labelInfo.labelTiers[0] as string[], this.chartLayers.width, this.paraview)];
   }
-  
+
   protected _createTickStrip() {
     return new HorizTickStrip(
       this, this._tickLabelTiers[0].tickInterval/this.tickStep, 1,
@@ -334,30 +328,23 @@ export class HorizAxis extends Axis<'horiz'> {
     this._layout.append(this._axisLine);
   }
 
-
-  protected _createSpacer() {
-    this._spacer = new ColumnSpacer(this.settings.title.gap, this.paraview);
-    this._layout.append(this._spacer);
+  protected _getAxisTitlePadding(): PaddingInput {
+    return this.orientationSettings.position === 'south'
+      ? { top: this.settings.title.gap }
+      : { bottom: this.settings.title.gap };
   }
 
   resize(width: number, height: number) {
-    console.log('RESIZE HORIZ');
     this._tickLabelTiers.forEach(tier => tier.setLength(width));
     this._tickStrip!.resize(width, height, this._tickLabelTiers[0].tickInterval/this.tickStep);
     this._axisLine.length = width;
   }
 
   layoutComponents() {
-    this._tickLabelTiers.forEach(tier => tier.computeLayout());
-
     if (this.orientationSettings.position === 'south') {
       this._layout.reverseChildren();
     }
     super.layoutComponents();
-  }
-
-  setPosition() {
-
   }
 
 }
@@ -386,10 +373,12 @@ export class VertAxis extends Axis<'vert'> {
       options: { inputType: 'number' },
       value: this.settings.minValue === 'unset' ? range.start : this.settings.minValue,
       validator: value => {
-        const min = Math.min(...this.chartLayers.dataLayer.axisInfo!.options.yValues)
+        const min = this.paraview.store.settings.axis.y.maxValue == "unset"
+          ? Math.max(...this.chartLayers.dataLayer.axisInfo!.options.yValues)
+          : this.paraview.store.settings.axis.y.maxValue as number
         // NB: If the new value is successfully validated, the inner chart
         // gets recreated, and `max` may change, due to re-quantization of
-        // the tick values. 
+        // the tick values.
         return value as number >= min ?
           { err: `Min y-value (${value}) must be less than (${min})`} : {};
       },
@@ -402,12 +391,14 @@ export class VertAxis extends Axis<'vert'> {
       options: { inputType: 'number' },
       value: this.settings.maxValue == "unset" ? range?.end : this.settings.maxValue,
       validator: value => {
-        const max = Math.max(...this.chartLayers.dataLayer.axisInfo!.options.yValues)
+        const max = this.paraview.store.settings.axis.y.minValue == "unset"
+          ? Math.min(...this.chartLayers.dataLayer.axisInfo!.options.yValues)
+          : this.paraview.store.settings.axis.y.minValue as number
         return value as number <= max ?
           { err: `Max y-value (${value}) must be greater than (${max})`} : {};
       },
       parentView: 'controlPanel.tabs.chart.general',
-    }); 
+    });
   }
 
   computeSize(): [number, number] {
@@ -443,9 +434,10 @@ export class VertAxis extends Axis<'vert'> {
     this._layout.append(this._axisLine);
   }
 
-  protected _createSpacer() {
-    this._spacer = new RowSpacer(this.settings.title.gap, this.paraview);
-    this._layout.append(this._spacer);
+  protected _getAxisTitlePadding(): PaddingInput {
+    return this.orientationSettings.position === 'west'
+      ? { right: this.settings.title.gap }
+      : { left: this.settings.title.gap };
   }
 
   tickLabelTotalWidth() {
@@ -455,7 +447,6 @@ export class VertAxis extends Axis<'vert'> {
   }
 
   resize(width: number, height: number) {
-    console.log('RESIZE VERT');
     this._tickLabelTiers.forEach(tier => tier.setLength(height));
     this._tickStrip!.resize(width, height, this._tickLabelTiers[0].tickInterval/this.tickStep);
     this._axisLine.length = height;
@@ -467,9 +458,6 @@ export class VertAxis extends Axis<'vert'> {
       this._layout.reverseChildren();
     }
     super.layoutComponents();
-  }
-
-  setPosition() {
   }
 
   protected _getAxisTitleAngle() {

@@ -18,8 +18,7 @@ import { ref } from 'lit/directives/ref.js';
 
 import { ChartLayer } from '..';
 import { type ChartLayerManager } from '..';
-import { type Setting, type PlotSettings, type DeepReadonly } from '../../../store/settings_types';
-import { defaults } from '../../../store/settings_defaults';
+import { type PlotSettings, type DeepReadonly, type Direction, HorizDirection } from '../../../store/settings_types';
 import { Sonifier } from '../../../audio/sonifier';
 //import { type Model, type DatapointReference } from '../data/model';
 //import { type ActionRegistration } from '../input';
@@ -32,14 +31,20 @@ import { type AxisInfo } from '../../../common/axisinfo';
 import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../../data';
 import { type LegendItem } from '../../legend';
 import { queryMessages } from '../../../store/query_utils';
+import { NavMap, NavLayer, NavNode, NavNodeType } from './navigation';
 
 import { interpolate } from '@fizz/templum';
 import { StyleInfo } from 'lit/directives/style-map.js';
+import { Datapoint } from '@fizz/paramodel';
+import { SparkBrailleInfo } from '../../../store';
+import { bboxOfBboxes } from '../../../common/utils';
 
 /**
  * @public
  */
 export type LandingView = ChartLandingView | DataView;
+
+export type RiffOrder = 'normal' | 'sorted' | 'reversed';
 
 
 // Soni Constants
@@ -57,6 +62,7 @@ export abstract class DataLayer extends ChartLayer {
   soniNoteIndex = 0;
   soniSequenceIndex = 0;
 
+  protected _navMap!: NavMap;
   protected _sonifier!: Sonifier;
   protected visibleSeries!: string[];
   protected _chartLandingView!: ChartLandingView;
@@ -92,6 +98,10 @@ export abstract class DataLayer extends ChartLayer {
 
   get settings(): DeepReadonly<PlotSettings> {
     return SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.store.settings);
+  }
+
+  get navMap() {
+    return this._navMap;
   }
 
   get sonifier() {
@@ -140,9 +150,18 @@ export abstract class DataLayer extends ChartLayer {
     //this._layoutComponents();
   }
 
+  protected _createNavMap() {
+    this._navMap = new NavMap(this.paraview.store);
+    const root = this._navMap.layer('root')!;
+    // Chart landing (visits no points)
+    const chartLandingNode = new NavNode(root, 'top', {});
+    root.registerNode(chartLandingNode);
+    root.cursor = chartLandingNode;
+  }
+
   /**
    * Mutate `styleInfo` with any custom series styles.
-   * @param styleInfo 
+   * @param styleInfo
    */
   updateSeriesStyle(_styleInfo: StyleInfo) {
   }
@@ -157,6 +176,7 @@ export abstract class DataLayer extends ChartLayer {
     for (const datapointView of this.datapointViews) {
       datapointView.completeLayout();
     }
+    this._createNavMap();
   }
 
   protected _completeLayout() { }
@@ -188,32 +208,72 @@ export abstract class DataLayer extends ChartLayer {
       view.seriesKey === seriesKey && view.index === index);
   }
 
-  getDatapointView(seriesName: string, recordLabel: string) {
-    return this.chartLandingView.getSeriesView(seriesName)?.getDatapointViewForLabel(recordLabel);
-  }
-
   datapointViewForId(id: string) {
     return this.datapointViews.find(dp => dp.id === id);
   }
 
-  focusDatapoint(seriesKey: string, index: number, isNewComponentFocus = false) {
-    this.datapointView(seriesKey, index)!.focus(isNewComponentFocus);
+  navToDatapoint(seriesKey: string, index: number) {
+    this._navMap.goTo('datapoint', {seriesKey, index});
+  }
+
+  move(dir: Direction) {
+    this._navMap.cursor!.move(dir);
   }
 
   /**
-   * Move focus to the navpoint to the right, if there is one
+   * Navigate to the series minimum/maximum datapoint
+   * @param isMin - If true, go the the minimum. Otherwise, go to the maximum
    */
-  abstract moveRight(): Promise<void>;
+  goSeriesMinMax(isMin: boolean) {
+    const node = this._navMap.cursor;
+    if (node.type === 'top' || node.type === 'chord') {
+      this.goChartMinMax(isMin);
+    } else {
+      let datapoint: Datapoint | null = null;
+
+      const seriesKey = node.at(0)!.seriesKey;
+
+      if (node.type === 'datapoint') {
+        datapoint = node.at(0)!.datapoint;
+      }
+      const depKey = this.paraview.store.model!.dependentFacetKeys[0]!; // TODO: Assumes exactly 1 dep facet
+      const stats = this.paraview.store.model!.atKey(seriesKey)!.getFacetStats(depKey)!;
+      let seriesMatchArray = isMin
+        ? stats.min.datapoints
+        : stats.max.datapoints;
+      if (datapoint && seriesMatchArray.length > 1) {
+        // TODO: If there is more than one datapoint that has the same series minimum value,
+        //       find the next one to nav to:
+        //       Find the current x label, if it matches one in `seriesMins`,
+        //       remove all entries up to and including that point,
+        //       and use the next item on the list.
+        //       But also cycle around if it's the last item in the list
+        const currentRecordIndex = seriesMatchArray.findIndex(dp => dp === datapoint);
+        if (currentRecordIndex !== -1 && currentRecordIndex !== seriesMatchArray.length + 1) {
+          seriesMatchArray = seriesMatchArray.toSpliced(0, currentRecordIndex);
+        }
+      }
+      this._navMap.goTo('datapoint', {
+        seriesKey: seriesMatchArray[0].seriesKey,
+        index: seriesMatchArray[0].datapointIndex
+      });
+    }
+  }
 
   /**
-   * Move focus to the navpoint to the left, if there is one
+   * Navigate to (one of) the chart minimum/maximum datapoint(s)
+   * @param isMin - If true, go the the minimum. Otherwise, go to the maximum
    */
-  abstract moveLeft(): Promise<void>;
-  abstract moveUp(): Promise<void>;
-  abstract moveDown(): Promise<void>;
-
-  abstract goSeriesMinMax(isMin: boolean): Promise<void>;
-  abstract goChartMinMax(isMin: boolean): Promise<void>;
+  goChartMinMax(isMin: boolean) {
+    const stats = this.paraview.store.model!.getFacetStats('y')!;
+    const matchTarget = isMin ? stats.min.value : stats.max.value;
+    const matchDatapoint = this.paraview.store.model!.allPoints.find(dp =>
+      dp.facetValueAsNumber('y') === matchTarget)!;
+    this._navMap.goTo('datapoint', {
+      seriesKey: matchDatapoint?.seriesKey,
+      index: matchDatapoint?.datapointIndex
+    });
+  }
 
   /**
    * Clear outstanding play intervals/timeouts
@@ -227,19 +287,21 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   /**
-   * Play all datapoints to the right, if there are any
+   * Play all datapoints in the given direction.
    */
-  abstract playRight(): Promise<void>;
+  abstract playDir(dir: HorizDirection): void;
 
-  /**
-   * Play all datapoints to the left, if there are any
-   */
-  abstract playLeft(): Promise<void>;
+  /** Play a riff for the current nav node */
+  protected abstract _playRiff(order?: RiffOrder): void;
 
-  abstract playSeriesRiff(): void;
+  protected _chordRiffOrder(): RiffOrder {
+    return 'normal';
+  }
+
+  protected abstract _playDatapoints(datapoints: Datapoint[]): void;
 
   selectCurrent(extend = false) {
-    this._chartLandingView.focusLeaf.select(extend);
+    this._navMap.cursor.at(0)!.select(extend);
   }
 
   clearDatapointSelection(quiet = false) {
@@ -290,5 +352,99 @@ export abstract class DataLayer extends ChartLayer {
       ));
     }
     this.paraview.store.announce(msgArray);
+  }
+
+  protected _raiseSeries(_series: string) {
+  }
+
+  protected abstract _sparkBrailleInfo(): SparkBrailleInfo | null;
+
+  async storeDidChange(key: string, value: any) {
+    if (key === 'navNode') {
+      //const tag = value as string;
+      const node = value as NavNode;
+      const seriesKey = node.at(0)?.seriesKey ?? '';
+      if (node.type === 'top') {
+        await this.paraview.store.asyncAnnounce(this.paraview.summarizer.getChartSummary());
+      } else if (node.type === 'series') {
+        this._raiseSeries(seriesKey);
+        this.paraview.store.announce(
+          await this.paraview.summarizer.getSeriesSummary(seriesKey));
+        this._playRiff();
+        this.paraview.store.sparkBrailleInfo = this._sparkBrailleInfo();
+      } else if (node.type === 'datapoint') {
+        this._raiseSeries(seriesKey);
+        // NOTE: this needs to be done before the datapoint is visited, to check whether the series has
+        //   ever been visited before this point
+        const seriesPreviouslyVisited = this.paraview.store.everVisitedSeries(seriesKey);
+        const announcements = [this.paraview.summarizer.getDatapointSummary(node.at(0)!.datapoint, 'statusBar')];
+        const isSeriesChange = !this.paraview.store.wasVisitedSeries(seriesKey);
+        if (isSeriesChange) {
+          announcements[0] = `${seriesKey}: ${announcements[0]}`;
+          if (!seriesPreviouslyVisited) {
+            const seriesSummary = await this.paraview.summarizer.getSeriesSummary(seriesKey);
+            announcements.push(seriesSummary);
+          }
+        }
+        this.paraview.store.announce(announcements);
+        if (this.paraview.store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
+          this._playDatapoints([node.at(0)!.datapoint]);
+        }
+        this.paraview.store.sparkBrailleInfo = this._sparkBrailleInfo();
+      } else if (node.type === 'chord') {
+        if (this.paraview.store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
+          if (this.paraview.store.settings.sonification.isArpeggiateChords) {
+            this._playRiff(this._chordRiffOrder());
+          } else {
+            this._playDatapoints(node.datapointViews.map(view => view.datapoint));
+          }
+        }
+      } else if (node.type === 'sequence') {
+        this._playRiff();
+      }
+    }
+    super.storeDidChange(key, value);
+  }
+
+  navFirst() {
+    const type = this._navMap.cursor.type;
+    if (['datapoint', 'chord', 'series'].includes(type)) {
+      const dir: Partial<Record<NavNodeType, Direction>> = {
+        datapoint: 'left',
+        chord: 'left',
+        series: 'up'
+      };
+      this._navMap.cursor.allNodes(dir[type]!, type).at(-1)?.go();
+    }
+  }
+
+  navLast() {
+    const type = this._navMap.cursor.type;
+    if (['datapoint', 'chord', 'series'].includes(type)) {
+      const dir: Partial<Record<NavNodeType, Direction>> = {
+        datapoint: 'right',
+        chord: 'right',
+        series: 'down'
+      };
+      this._navMap.cursor.allNodes(dir[type]!, type).at(-1)?.go();
+    }
+  }
+
+  navToChordLanding() {
+    if (this._navMap.cursor.type === 'datapoint') {
+      this._navMap.cursor.layer.goTo(
+        'chord', (this._navMap.cursor as NavNode<'datapoint'>).options.index);
+    }
+  }
+
+  get shouldDrawFocusRing() {
+    return this._navMap.cursor.type !== 'top';
+  }
+
+  focusRingBbox() {
+    if (['series', 'chord', 'datapoint', 'sequence'].includes(this._navMap.cursor.type)) {
+      return bboxOfBboxes(...this._navMap.cursor.datapointViews.map(view => view.outerBbox));
+    }
+    return null;
   }
 }

@@ -62,7 +62,8 @@ export const defaults: Settings = {
     symbolHighlightScale: 1.5,
     hasDirectLabels: true,
     hasLegendWithDirectLabels: false,
-    isDrawSymbols: true
+    isDrawSymbols: true,
+    isStatic: false
   },
   axis: {
     minInterval: 25,
@@ -99,7 +100,7 @@ export const defaults: Settings = {
         tickLabel: {
           isDrawEnabled: true,
           angle: -45,
-          offsetPadding: 8,
+          offsetGap: 8,
           gap: 0
         },
         step: 1
@@ -131,7 +132,7 @@ export const defaults: Settings = {
         tickLabel: {
           isDrawEnabled: true,
           angle: 0,
-          offsetPadding: 0,
+          offsetGap: 0,
           gap: 0
         },
         step: 1,
@@ -201,7 +202,7 @@ export const defaults: Settings = {
       lineWidth: 5,
       lineWidthMax: 25,
       lowVisionLineWidth: 15,
-      lineHighlightScale: 1.5, 
+      lineHighlightScale: 1.5,
       baseSymbolSize: 10,
       seriesLabelPadding: 5,
       pointLabelFormat: 'raw',
@@ -230,7 +231,8 @@ export const defaults: Settings = {
       selectedPointMarkerSize: {
         width: 20,
         height: 20,
-      }
+      },
+      relativeAxes: "Counts"
     },
     heatmap: {
       pointLabelFormat: 'raw',
@@ -332,6 +334,25 @@ export const defaults: Settings = {
       barGap: 0.25,
       clusterLabelFormat: 'raw',
     },
+    graph: {
+      lineWidth: 5,
+      lineWidthMax: 25,
+      lowVisionLineWidth: 15,
+      lineHighlightScale: 1.5,
+      baseSymbolSize: 10,
+      seriesLabelPadding: 5,
+      pointLabelFormat: 'raw',
+      leaderLineLength: 30,
+      selectedPointMarkerSize: {
+        width: 20,
+        height: 20,
+      },
+      isDrawSymbols: false,
+      equation: '',
+      preset: '',
+      renderPts: 50,
+      resetAxes: false
+    }
   },
   grid: {
     isDrawHorizLines: true,
@@ -346,16 +367,14 @@ export const defaults: Settings = {
     isFullscreenEnabled: false,
     isLowVisionModeEnabled: false,
     isFocusRingEnabled: false,
-    focusRingGap: 4
+    focusRingGap: 10
   },
   controlPanel: {
-    isControlPanelDefaultOpen: false,
+    isControlPanelDefaultOpen: true,
     tabLabelStyle: 'label',
     isCaptionVisible: true,
     isStatusBarVisible: true,
     isSparkBrailleVisible: false,
-    isSparkBrailleProportional: false,
-    isSparkBrailleBar: false,
     isSparkBrailleControlVisible: true,
     isMDRAnnotationsVisible: false,
     isDataTabVisible: true,
@@ -364,6 +383,7 @@ export const defaults: Settings = {
     isControlsTabVisible: true,
     isChartTabVisible: true,
     isAnnotationsTabVisible: true,
+    isGraphingTabVisible: true,
     isAnalysisTabVisible: true,
     isColorPaletteControlVisible: true,
     isCVDControlVisible: true,
@@ -388,11 +408,11 @@ export const defaults: Settings = {
     isSoniEnabled: false,
     isRiffEnabled: true,
     isNotificationEnabled: true,
-    isChordModeEnabled: false,
     hertzLower: 35,
     hertzUpper: HERTZ.length - 12,
     soniPlaySpeed: 3,
-    riffSpeed: 'medium'
+    riffSpeed: 'medium',
+    isArpeggiateChords: true
   },
   dev: {
     isDebug: false

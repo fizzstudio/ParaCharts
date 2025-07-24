@@ -33,7 +33,7 @@ export type Setting = string | number | boolean;
 export type SettingGroup = {[key: string]: Setting | SettingGroup | undefined};
 
 /**
- * A mapping of dotted setting paths to values. 
+ * A mapping of dotted setting paths to values.
  * @public
  */
 export type SettingsInput = {[path: string]: Setting};
@@ -68,14 +68,13 @@ export interface ControlPanelSettings extends SettingGroup {
   isCaptionVisible: boolean;
   isStatusBarVisible: boolean;
   isSparkBrailleVisible: boolean;
-  isSparkBrailleProportional: boolean;
-  isSparkBrailleBar: boolean;
   isDataTabVisible: boolean;
   isColorsTabVisible: boolean;
   isAudioTabVisible: boolean;
   isControlsTabVisible: boolean;
   isChartTabVisible: boolean;
   isAnnotationsTabVisible: boolean;
+  isGraphingTabVisible: boolean;
   isMDRAnnotationsVisible: boolean;
   isAnalysisTabVisible: boolean;
   isSparkBrailleControlVisible: boolean;
@@ -122,16 +121,23 @@ export interface ViewBox extends SettingGroup {
   height: number;
 }
 
+export type VertDirection = 'up' | 'down';
+export type HorizDirection = 'left' | 'right';
+export type PlaneDirection = VertDirection | HorizDirection;
+export type DepthDirection = 'in' | 'out';
+export type Direction = VertDirection | HorizDirection | DepthDirection;
+export const directions: Direction[] = ['up', 'down', 'left', 'right', 'in', 'out'];
+
 /** @public */
-export type VertDirection = 'north' | 'south';
+export type VertCardinalDirection = 'north' | 'south';
 /** @public */
-export type HorizDirection = 'east' | 'west';
+export type HorizCardinalDirection = 'east' | 'west';
 
 /**
  * Which direction is "up" on a chart.
  * @public
  */
-export type CardinalDirection = VertDirection | HorizDirection;
+export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
 
 /** @public */
 export interface ChartSettings extends SettingGroup {
@@ -150,6 +156,7 @@ export interface ChartSettings extends SettingGroup {
   hasDirectLabels: boolean;
   hasLegendWithDirectLabels: boolean;
   isDrawSymbols: boolean;
+  isStatic: boolean;
 }
 
 /** @public */
@@ -164,7 +171,7 @@ export type LabelFormat = 'raw' | string;
 export interface TickLabelSettings extends SettingGroup {
   isDrawEnabled: boolean;
   angle: number;
-  offsetPadding: number;
+  offsetGap: number;
   gap: number;
 }
 
@@ -211,7 +218,7 @@ export interface AxisTitleSettings extends SettingGroup {
 
 /** @public */
 export interface OrientedAxisSettings<T extends AxisOrientation> extends SettingGroup {
-  position: T extends 'horiz' ? VertDirection : HorizDirection;
+  position: T extends 'horiz' ? VertCardinalDirection : HorizCardinalDirection;
   labelOrder: T extends 'horiz' ? 'westToEast' | 'eastToWest' : 'southToNorth' | 'northToSouth';
 }
 
@@ -326,6 +333,14 @@ export interface HistogramSettings extends PointSettings {
   bins: number;
   displayAxis: string;
   groupingAxis: string;
+  relativeAxes: "Counts" | "Percentage";
+}
+
+export interface GraphSettings extends LineSettings{
+  equation: string;
+  preset: string;
+  renderPts: number;
+  resetAxes: boolean;
 }
 
 
@@ -371,6 +386,7 @@ export interface ChartTypeSettings extends SettingGroup {
   gauge: RadialSettings;
   stepline: StepLineSettings;
   lollipop: LollipopSettings;
+  graph: GraphSettings;
 }
 
 /** @public */
@@ -414,11 +430,11 @@ export interface SonificationSettings extends SettingGroup {
   isSoniEnabled: boolean;
   isRiffEnabled: boolean;
   isNotificationEnabled: boolean;
-  isChordModeEnabled: boolean;
   hertzLower: number;
   hertzUpper: number;
   soniPlaySpeed?: number;
   riffSpeed?: riffSpeeds;
+  isArpeggiateChords: boolean;
 }
 
 /** @public */
@@ -442,8 +458,8 @@ export type DeepReadonly<T> = {
   readonly [Property in keyof T]: T extends Setting ? T[Property] : DeepReadonly<T[Property]>;
 };
 
-/** 
- * Context where a particular value appears. 
+/**
+ * Context where a particular value appears.
  * @public
  */
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
@@ -452,6 +468,7 @@ export const FORMAT_CONTEXT_SETTINGS = {
   xTick: 'axis.x.tick.labelFormat',
   yTick: 'axis.y.tick.labelFormat',
   linePoint: 'type.line.pointLabelFormat',
+  graphPoint: 'type.graph.pointLabelFormat',
   scatterPoint: 'type.scatter.pointLabelFormat',
   histogramPoint: 'type.histogram.pointLabelFormat',
   heatmapPoint: 'type.histogram.pointLabelFormat',

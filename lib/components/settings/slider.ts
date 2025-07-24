@@ -1,11 +1,11 @@
 import { SettingControl } from '.';
-import { strToId } from '@fizz/paramodel';
 
 import { Slider } from '@fizz/ui-components';
 
 import { customElement } from 'lit/decorators.js';
 import { html, nothing } from 'lit';
 import { ref, createRef } from 'lit/directives/ref.js';
+import { strToId } from '@fizz/paramanifest';
 
 export interface SliderSettingControlOptions {
   min?: number;

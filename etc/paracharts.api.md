@@ -8,15 +8,17 @@ import { AllSeriesData } from '@fizz/paramanifest';
 import { AxisOrientation } from '@fizz/paramodel';
 import { ButtonDescriptor } from '@fizz/ui-components';
 import { ChartType as ChartType_2 } from '@fizz/paramanifest';
-import { ClassInfo } from 'lit/directives/class-map.js';
-import { ClassInfo as ClassInfo_2 } from 'lit-html/directives/class-map.js';
+import { ClassInfo } from 'lit-html/directives/class-map.js';
+import { ClassInfo as ClassInfo_2 } from 'lit/directives/class-map.js';
 import { CSSResult } from 'lit';
-import { DataPoint } from '@fizz/paramodel';
+import { Datapoint } from '@fizz/paramodel';
 import { Datatype } from '@fizz/dataframe';
 import { Datatype as Datatype_2 } from '@fizz/paramanifest';
 import { Dialog } from '@fizz/ui-components';
 import { DirectiveResult } from 'lit-html/directive.js';
+import { Facet } from '@fizz/paramanifest';
 import { FacetSignature } from '@fizz/paramodel';
+import { FizzTabs } from '@fizz/ui-components';
 import { FormatType } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
 import { Jimerator } from '@fizz/paramanifest';
@@ -32,6 +34,7 @@ import { PaddingInput as PaddingInput_3 } from '../base_view';
 import { PaddingInput as PaddingInput_4 } from '../../base_view';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';
 import papa from 'papaparse';
+import { PlaneDatapoint } from '@fizz/paramodel';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
 import { Ref } from 'lit/directives/ref.js';
@@ -40,6 +43,7 @@ import { RefDirective } from 'lit-html/directives/ref.js';
 import * as sb from '@fizz/sparkbraille-component';
 import { SequenceInfo } from '@fizz/series-analyzer';
 import { Series } from '@fizz/paramodel';
+import { SeriesAnalysis } from '@fizz/series-analyzer';
 import { SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { Size2d } from '@fizz/chart-classifier-utils';
 import { State } from '@lit-app/state';
@@ -48,13 +52,11 @@ import { StaticValue } from 'lit-html/static.js';
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { StyleInfo as StyleInfo_2 } from 'lit-html/directives/style-map.js';
 import { Summarizer } from '@fizz/parasummary';
-import { TabDetails } from '@fizz/ui-components';
 import { TemplateResult } from 'lit';
 import { TemplateResult as TemplateResult_2 } from 'lit-html';
 import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
 import { View as View_2 } from '../base_view';
-import { XYDatapoint } from '@fizz/paramodel';
 
 // @public (undocumented)
 export type FieldInfo = {
@@ -69,6 +71,10 @@ export { Manifest }
 // @public (undocumented)
 export class ParaChart extends ParaChart_base {
     constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
+    // Warning: (ae-forgotten-export) The symbol "ParaApi" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _api: ParaApi;
     // (undocumented)
     get ariaLiveRegion(): AriaLive;
     // Warning: (ae-forgotten-export) The symbol "AriaLive" needs to be exported by the entry point index.d.ts
@@ -90,9 +96,17 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _controlPanelRef: Ref_2<ParaControlPanel>;
     // (undocumented)
+    data: string;
+    // (undocumented)
+    downloadPNG(): void;
+    // (undocumented)
+    downloadSVG(): void;
+    // (undocumented)
     protected firstUpdated(_changedProperties: PropertyValues): void;
     // (undocumented)
     accessor forcecharttype: ChartType_2 | undefined;
+    // (undocumented)
+    getChartSVG(): string;
     // (undocumented)
     headless: boolean;
     // (undocumented)
@@ -130,6 +144,8 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     showAriaLiveHistory(): void;
     // (undocumented)
+    get slotted(): HTMLElement[];
+    // (undocumented)
     static styles: CSSResult[];
     // Warning: (ae-forgotten-export) The symbol "DeepReadonly" needs to be exported by the entry point index.d.ts
     // Warning: (ae-forgotten-export) The symbol "Settings" needs to be exported by the entry point index.d.ts
@@ -145,12 +161,12 @@ export class ParaChart extends ParaChart_base {
 // @public (undocumented)
 export class ParaHelper {
     constructor();
-    // Warning: (ae-forgotten-export) The symbol "ParaApi" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     protected _api: ParaApi;
     // (undocumented)
     protected _createParaChart(): void;
+    // (undocumented)
+    downloadPNG(): void;
     // (undocumented)
     loadData(url: string): Promise<FieldInfo[]>;
     // (undocumented)

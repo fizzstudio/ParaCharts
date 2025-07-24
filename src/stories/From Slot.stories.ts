@@ -61,7 +61,7 @@ export const FromSlot: Story = {
           <thead>
             <tr>
               <th>Kind of energy</th>
-              <th>Proportion</th>
+              <th>Proportion of total energy in the Universe</th>
             </tr>
           </thead>
           <tbody>

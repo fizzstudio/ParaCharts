@@ -36,6 +36,7 @@ import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Unsubscribe } from '@lit-app/state';
+import { PlaneModel } from '@fizz/paramodel';
 
 /**
  * Data provided for the on focus callback
@@ -50,13 +51,13 @@ export type c2mCallbackType = {
 export class ParaView extends logging(ParaComponent) {
 
   paraChart!: ParaChart;
-  
+
   @property() type: ChartType = 'bar';
   @property() chartTitle?: string;
   @property() xAxisLabel?: string;
   @property() yAxisLabel?: string;
   @property() contrastLevel: number = 1;
-  @property({type: Boolean}) disableFocus = false;
+  @property({ type: Boolean }) disableFocus = false;
 
   protected _controller!: ParaViewController;
   protected _viewBox!: ViewBox;
@@ -74,9 +75,9 @@ export class ParaView extends logging(ParaComponent) {
   protected _chartRefs: Map<string, Ref<any>> = new Map();
   protected _fileSavePlaceholderRef = createRef<HTMLElement>();
   protected _summarizer!: Summarizer;
-  protected _pointerEventManager = new PointerEventManager(this);
+  protected _pointerEventManager: PointerEventManager | null = null;
   protected _hotkeyActions!: HotkeyActions;
-  @state() protected _defs: {[key: string]: TemplateResult} = {};
+  @state() protected _defs: { [key: string]: TemplateResult } = {};
 
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
@@ -85,39 +86,39 @@ export class ParaView extends logging(ParaComponent) {
     //styles,
     css`
       :host {
-        --axisLineColor: hsl(0, 0%, 0%);
-        --labelColor: hsl(0, 0%, 0%);
-        --tickGridColor: hsl(270, 50%, 50%);
-        --backgroundColor: white;
-        --themeColor: var(--fizzThemeColor, purple);
-        --themeColorLight: var(--fizzThemeColorLight, hsl(275.4, 100%, 88%));
-        --themeContrastColor: white;
-        --fizzThemeColor: var(--parachartsThemeColor, navy);
-        --fizzThemeColorLight: var(--parachartsThemeColorLight, hsl(210.5, 100%, 88%));
-        --visitedColor: red;
-        --selectedColor: var(--labelColor);
-        --datapointCentroid: 50% 50%;
-        --focusAnimation: all 0.5s ease-in-out;
-        --chartCursor: pointer;
-        --dataCursor: cell;
+        --axis-line-color: hsl(0, 0%, 0%);
+        --label-color: hsl(0, 0%, 0%);
+        --tick-grid-color: hsl(270, 50%, 50%);
+        --background-color: white;
+        --theme-color: var(--fizz-theme-color, purple);
+        --theme-color-light: var(--fizz-theme-color-light, hsl(275.4, 100%, 88%));
+        --theme-contrast-color: white;
+        --fizz-theme-color: var(--paracharts-theme-color, navy);
+        --fizz-theme-color-light: var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%));
+        --visited-color: red;
+        --selected-color: var(--label-color);
+        --datapoint-centroid: 50% 50%;
+        --focus-animation: all 0.5s ease-in-out;
+        --chart-cursor: pointer;
+        --data-cursor: cell;
 
-        --focusShadowColor: gray;
-        --focusShadow: drop-shadow(0px 0px 4px var(--focusShadowColor));
+        --focus-shadow-color: gray;
+        --focus-shadow: drop-shadow(0px 0px 4px var(--focus-shadow-color));
         display: block;
         font-family: "Trebuchet MS", Helvetica, sans-serif;
         font-size: var(--chart-view-font-size, 1rem);
       }
       #frame {
-        fill: var(--backgroundColor);
+        fill: var(--background-color);
         stroke: none;
       }
       #frame.pending {
         fill: lightgray;
       }
       .darkmode {
-        --axisLineColor: ghostwhite;
-        --labelColor: ghostwhite;
-        --backgroundColor: black;
+        --axis-line-color: ghostwhite;
+        --label-color: ghostwhite;
+        --background-color: black;
       }
       #loading-message {
         fill: black;
@@ -126,12 +127,16 @@ export class ParaView extends logging(ParaComponent) {
         fill: white;
       }
       .grid-horiz {
-        stroke: var(--axisLineColor);
+        stroke: var(--axis-line-color);
         opacity: 0.2;
       }
       .grid-vert {
-        stroke: var(--axisLineColor);
+        stroke: var(--axis-line-color);
         opacity: 0.2;
+      }
+      #grid-zero {
+        opacity: 0.6;
+        stroke-width: 2;
       }
       .tick-horiz {
         stroke: black;
@@ -140,18 +145,19 @@ export class ParaView extends logging(ParaComponent) {
         stroke: black;
       }
       .label {
-        fill: var(--labelColor);
+        fill: var(--label-color);
+        stroke: none;
       }
       .tick-label {
         font-size: 13px;
-        fill: var(--labelColor);
+        fill: var(--label-color);
       }
       .bar-label {
         font-size: 13px;
         fill: white;
       }
       .radial-value-label {
-        fill: white;
+        fill: var(--label-color);
       }
       .radial-slice {
         stroke: white;
@@ -159,13 +165,13 @@ export class ParaView extends logging(ParaComponent) {
       }
       #y-axis-line {
         fill: none;
-        stroke: var(--axisLineColor);
+        stroke: var(--axis-line-color);
         stroke-width: 2px;
         stroke-linecap: round;
       }
       #x-axis-line {
         fill: none;
-        stroke: var(--axisLineColor);
+        stroke: var(--axis-line-color);
         opacity: 1;
         stroke-width: 2px;
         stroke-linecap: round;
@@ -200,7 +206,17 @@ export class ParaView extends logging(ParaComponent) {
       .linebreaker-marker {
         fill: hsl(0, 17.30%, 37.50%);
       }
+      .user-linebreaker-marker {
+        fill: hsl(0, 87%, 48%);
+      }
       .trend-line{
+        display: inline;
+        stroke-width: 8px;
+        stroke-linecap: butt;
+        stroke-dasharray: 12 12;
+        stroke-opacity: 0.8;
+      }
+      .user-trend-line{
         display: inline;
         stroke-width: 8px;
         stroke-linecap: butt;
@@ -268,14 +284,18 @@ export class ParaView extends logging(ParaComponent) {
     // create a default view box so the SVG element can have a size
     // while any data is loading
     this._controller ??= new ParaViewController(this._store);
-    this._storeChangeUnsub = this._store.subscribe((key, value) => {
+    this._storeChangeUnsub = this._store.subscribe(async (key, value) => {
       if (key === 'data') {
         this.dataUpdated();
       }
+      await this._documentView?.storeDidChange(key, value);
     });
     this._computeViewBox();
     this._hotkeyActions ??= new HotkeyActions(this);
     this._store.keymapManager.addEventListener('hotkeypress', this._hotkeyListener);
+    if (!this._store.settings.chart.isStatic) {
+      this._pointerEventManager = new PointerEventManager(this);
+    }
   }
 
   disconnectedCallback() {
@@ -289,7 +309,7 @@ export class ParaView extends logging(ParaComponent) {
     this.createDocumentView();
     this._summarizer = (this.store.type === 'pie' || this.store.type === 'donut')
       ? new PastryChartSummarizer(this._store.model!)
-      : new PlaneChartSummarizer(this._store.model!);
+      : new PlaneChartSummarizer(this._store.model as PlaneModel);
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -313,8 +333,8 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    this.log('ready');    
-    this.dispatchEvent(new CustomEvent('paraviewready', {bubbles: true, composed: true, cancelable: true}));
+    this.log('ready');
+    this.dispatchEvent(new CustomEvent('paraviewready', { bubbles: true, composed: true, cancelable: true }));
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
@@ -345,6 +365,18 @@ export class ParaView extends logging(ParaComponent) {
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
       });
+    } else if (path === 'ui.isVoicingEnabled') {
+      if (this._store.settings.ui.isVoicingEnabled) {
+        const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+        if (lastAnnouncement) {
+          this._store.appendAnnouncement(lastAnnouncement);
+        }
+        this._store.announce('Self-voicing enabled.');
+      } else {
+        this.paraChart.ariaLiveRegion.voicing.shutUp();
+        // Voicing is disabled at this point, so manually push this message through
+        this.paraChart.ariaLiveRegion.voicing.speak('Self-voicing disabled.');
+      }
     }
   }
 
@@ -427,7 +459,7 @@ export class ParaView extends logging(ParaComponent) {
 
   createDocumentView() {
     this.log('creating document view', this.type);
-    this._documentView = new DocumentView(this);    
+    this._documentView = new DocumentView(this);
     this._computeViewBox();
   }
 
@@ -435,8 +467,8 @@ export class ParaView extends logging(ParaComponent) {
     this._viewBox = {
       x: 0,
       y: 0,
-      width: this._documentView?.boundingWidth ?? this._store.settings.chart.size.width!,
-      height: this._documentView?.boundingHeight ?? this._store.settings.chart.size.height!
+      width: this._documentView?.paddedWidth ?? this._store.settings.chart.size.width!,
+      height: this._documentView?.paddedHeight ?? this._store.settings.chart.size.height!
     };
     this.log('view box:', this._viewBox.width, 'x', this._viewBox.height);
   }
@@ -474,10 +506,12 @@ export class ParaView extends logging(ParaComponent) {
     pruneComments(svg.childNodes);
     toPrune.forEach(c => c.remove());
 
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
     svg.removeAttribute('role');
 
     // XXX Also remove visited styling (not just the layer)
-    
+
     return new XMLSerializer().serializeToString(svg)
       .split('\n')
       .filter(line => !line.match(/^\s*$/))
@@ -497,12 +531,61 @@ export class ParaView extends logging(ParaComponent) {
     return out.join('\n');
   }
 
+  downloadSVG() {
+    const data = this.serialize();
+    const svgBlob = new Blob([data], {
+      type: 'image/svg+xml;charset=utf-8'
+    });
+    const svgURL = URL.createObjectURL(svgBlob);
+    this.downloadContent(svgURL, 'svg');
+    URL.revokeObjectURL(svgURL);
+  }
+
+  downloadPNG() {
+    // hat tip: https://takuti.me/note/javascript-save-svg-as-image/
+    const data = this.serialize();
+    const svgBlob = new Blob([data], {
+      type: 'image/svg+xml;charset=utf-8'
+    });
+    const svgURL = URL.createObjectURL(svgBlob);
+    const img = new Image();
+    img.addEventListener('load', () => {
+      const bbox = this._rootRef.value!.getBBox();
+      const canvas = document.createElement('canvas');
+      canvas.width = bbox.width;
+      canvas.height = bbox.height;
+      const context = canvas.getContext('2d')!;
+      context.drawImage(img, 0, 0, bbox.width, bbox.height);
+      URL.revokeObjectURL(svgURL);
+      canvas.toBlob(canvasBlob => {
+        if (canvasBlob) {
+          const blobURL = URL.createObjectURL(canvasBlob);
+          this.downloadContent(blobURL, 'png');
+          URL.revokeObjectURL(blobURL);
+        } else {
+          throw new Error('failed to create image download blob');
+        }
+      });
+    });
+    img.src = svgURL;
+  }
+
+  downloadContent(url: string, extension: string) {
+    const downloadLinkEl = document.createElement('a');
+    this.fileSavePlaceholder.appendChild(downloadLinkEl);
+    const title = this._documentView!.titleText || 'parachart';
+    downloadLinkEl.download = `${title.replace(/\W/g, '_')}.${extension}`;
+    downloadLinkEl.href = url;
+    downloadLinkEl.click();
+    downloadLinkEl.remove();
+  }
+
   addDef(key: string, template: TemplateResult) {
     if (this._defs[key]) {
       throw new Error('view already in defs');
     }
     console.log('ADDING DEF', key);
-    this._defs = {...this._defs, [key]: template};
+    this._defs = { ...this._defs, [key]: template };
     this.requestUpdate();
   }
 
@@ -526,12 +609,12 @@ export class ParaView extends logging(ParaComponent) {
 
     const contrast = this.store.settings.color.contrastLevel * 50;
     if (this._store.settings.color.isDarkModeEnabled) {
-      style['--axisLineColor'] = `hsl(0, 0%, ${50 + contrast}%)`;
-      style['--labelColor'] = `hsl(0, 0%, ${50 + contrast}%)`;
-      style['--backgroundColor'] = `hsl(0, 0%, ${((100 - contrast) / 5) - 10}%)`;
+      style['--axis-line-color'] = `hsl(0, 0%, ${50 + contrast}%)`;
+      style['--label-color'] = `hsl(0, 0%, ${50 + contrast}%)`;
+      style['--background-color'] = `hsl(0, 0%, ${((100 - contrast) / 5) - 10}%)`;
     } else {
-      style['--axisLineColor'] = `hsl(0, 0%, ${50 - contrast}%)`;
-      style['--labelColor'] = `hsl(0, 0%, ${50 - contrast}%)`;
+      style['--axis-line-color'] = `hsl(0, 0%, ${50 - contrast}%)`;
+      style['--label-color'] = `hsl(0, 0%, ${50 - contrast}%)`;
     }
     return style;
   }
@@ -541,9 +624,9 @@ export class ParaView extends logging(ParaComponent) {
       darkmode: this._store.settings.color.isDarkModeEnabled
     }
   }
-  
-  focusDatapoint(seriesKey: string, index: number) {
-    this._documentView!.chartLayers.dataLayer.focusDatapoint(seriesKey, index);
+
+  navToDatapoint(seriesKey: string, index: number) {
+    this._documentView!.chartLayers.dataLayer.navToDatapoint(seriesKey, index);
   }
 
   render(): TemplateResult {
@@ -563,18 +646,19 @@ export class ParaView extends logging(ParaComponent) {
         style=${styleMap(this._rootStyle())}
         @fullscreenchange=${() => this._onFullscreenChange()}
         @focus=${() => {
-          this.log('focus');
-          //this.todo.deets?.onFocus();
-          //this.documentView?.chartLayers.dataLayer.visitAndPlayCurrent();
-          this.documentView?.chartLayers.dataLayer.chartLandingView.focus(true);
+          if (!this._store.settings.chart.isStatic) {
+            this.log('focus');
+            //this.todo.deets?.onFocus();
+            this.documentView?.chartLayers.dataLayer.navMap.visitDatapoints();
+          }
         }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
-        @pointerdown=${(ev: PointerEvent) => this._pointerEventManager.handleStart(ev)}
-        @pointerup=${(ev: PointerEvent) => this._pointerEventManager.handleEnd(ev)}
-        @pointercancel=${(ev: PointerEvent) => this._pointerEventManager.handleCancel(ev)}
-        @pointermove=${(ev: PointerEvent) => this._pointerEventManager.handleMove(ev)}
-        @click=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager.handleClick(ev)}
-        @dblclick=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager.handleDoubleClick(ev)}
+        @pointerdown=${(ev: PointerEvent) => this._pointerEventManager?.handleStart(ev)}
+        @pointerup=${(ev: PointerEvent) => this._pointerEventManager?.handleEnd(ev)}
+        @pointercancel=${(ev: PointerEvent) => this._pointerEventManager?.handleCancel(ev)}
+        @pointermove=${(ev: PointerEvent) => this._pointerEventManager?.handleMove(ev)}
+        @click=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleClick(ev)}
+        @dblclick=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleDoubleClick(ev)}
       >
         <defs
           ${ref(this._defsRef)}
@@ -582,10 +666,10 @@ export class ParaView extends logging(ParaComponent) {
           ${Object.entries(this._defs).map(([key, template]) => template)}
           ${this._documentView?.horizAxis ? svg`
             <clipPath id="clip-path">
-              <rect 
-                x=${0} 
-                y=${0} 
-                width=${this._documentView.chartLayers.width} 
+              <rect
+                x=${0}
+                y=${0}
+                width=${this._documentView.chartLayers.width}
                 height=${this._documentView.chartLayers.height}>
               </rect>
             </clipPath>
@@ -595,7 +679,7 @@ export class ParaView extends logging(ParaComponent) {
         <metadata data-type="text/jim+json">
           ${this._store.jimerator ? JSON.stringify(this._store.jimerator.jim, undefined, 2) : ''}
         </metadata>
-        <rect 
+        <rect
           ${ref(this._frameRef)}
           id="frame"
           class=${nothing}

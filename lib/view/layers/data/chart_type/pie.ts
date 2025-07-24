@@ -10,11 +10,11 @@ export class PieChart extends RadialChart {
     super(paraview, index);
   }
 
-  playSeriesRiff() {
+  protected _playRiff() {
   }
-  
+
   protected _createSlice(seriesView: SeriesView, params: RadialDatapointParams): RadialSlice {
-    return new PieSlice(seriesView, params); 
+    return new PieSlice(seriesView, params);
   }
 
 }
@@ -26,7 +26,7 @@ export class PieSlice extends RadialSlice {
     this._x = this.chart.cx;
     this._y = this.chart.cy;
     // const {x, y, className} = this._computeLabelOptions();
-    // this._params.label.x = x; 
+    // this._params.label.x = x;
     // this._params.label.y = y;
     // this._params.label.classList.push(className);
     // this._params.label.hidden = false;
@@ -42,17 +42,19 @@ export class PieSlice extends RadialSlice {
     // XXX
     return 0;
   }
-  
-  protected _createShape() {
-    this._shape = new SectorShape(this.paraview, {
+
+  protected _createShapes() {
+    const isPattern = this.paraview.store.colors.palette.isPattern;
+    this._shapes.push(new SectorShape(this.paraview, {
       x: this._x,
       y: this._y,
       r: this.chart.radius,
       centralAngle: this._params.percentage*360,
       orientationAngle: this._params.accum*360,
-      annularThickness: this.chart.settings.annularThickness
-    });
-    super._createShape();
+      annularThickness: this.chart.settings.annularThickness,
+      isPattern: isPattern ? true : false
+    }));
+    super._createShapes();
   }
 
   // protected _computeLabelOptions() {
@@ -87,17 +89,5 @@ export class PieSlice extends RadialSlice {
       stroke: 'black',
       strokeWidth: 2
     });
-  }
-
-  async onFocus() {
-    await super.onFocus()
-    let data = []
-    for (let point of this.series.rawData) {
-      data.push({ label: point.x, value: Number(point.y) })
-    }
-    this.paraview.store.updateSettings(draft => {
-      draft.controlPanel.isSparkBrailleProportional = true
-    });
-    this.paraview.store._sparkBrailleData = JSON.stringify(data)
   }
 }

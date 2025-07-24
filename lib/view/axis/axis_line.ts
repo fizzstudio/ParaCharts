@@ -14,9 +14,9 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { View } from './base_view';
+import { View } from '../base_view';
 import { type Axis, type AxisOrientation } from './axis';
-import { fixed } from '../common/utils';
+import { fixed } from '../../common/utils';
 
 import { svg, nothing } from 'lit';
 
@@ -43,16 +43,16 @@ export abstract class AxisLine<T extends AxisOrientation> extends View {
   }
 
   protected abstract getLineD(): string;
-  
+
   render() {
     if (!this.axis.settings.line.isDrawEnabled) {
       return svg``;
     }
     const transform = fixed`translate(${this._x},${this._y})`;
     return svg`
-      <path 
+      <path
         transform=${this._x !== 0 || this._y !== 0 ? transform : nothing}
-        id=${this._id} 
+        id=${this._id}
         d=${this.getLineD()}
       ></path>
     `;
@@ -73,7 +73,7 @@ export class HorizAxisLine extends AxisLine<'horiz'> {
     this.width = length;
     super.length = length;
   }
-  
+
   protected getLineD() {
     if (this.axis.settings.line.isDrawOverhangEnabled) {
       const tickLength = this.axis.orthoAxis.settings.tick.length;

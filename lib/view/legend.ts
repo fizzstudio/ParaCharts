@@ -35,7 +35,7 @@ const intersperse = (...arrays: any[][]) => {
       if (array[i] !== undefined) {
         out.push(array[i]);
       }
-    });  
+    });
   }
   return out;
 };
@@ -82,7 +82,7 @@ export class Legend extends Container(View) {
       views.push(new Label(this.paraview, {text: item.label, x: 0, y: 0, textAnchor: 'start'}));
     });
     const symLabelGap = this.paraview.store.settings.legend.symbolLabelGap;
-    const pairGap = this.paraview.store.settings.legend.pairGap;   
+    const pairGap = this.paraview.store.settings.legend.pairGap;
     if (this._options.orientation === 'vert') {
       this._grid = new GridLayout(this.paraview, {
         numCols: 3,
@@ -101,11 +101,11 @@ export class Legend extends Container(View) {
         this._grid = new GridLayout(this.paraview, {
           numCols: labelsPerRow*3,
           colGaps: colGaps,
-        }, 'legend-grid');  
+        }, 'legend-grid');
         this._grid.padding = hasLegendBox ? this.paraview.store.settings.legend.padding : 0;
         views.forEach(v => this._grid.append(v));
-        if (this._options.wrapWidth === undefined || 
-            this._grid.boundingWidth <= this._options.wrapWidth || 
+        if (this._options.wrapWidth === undefined ||
+            this._grid.paddedWidth <= this._options.wrapWidth ||
             labelsPerRow === 1) {
           break;
         }
@@ -133,7 +133,7 @@ export class Legend extends Container(View) {
   }
 
   computeSize(): [number, number] {
-    return [this._grid?.boundingWidth ?? 0, this._grid?.boundingHeight ?? 0];
+    return [this._grid?.paddedWidth ?? 0, this._grid?.paddedHeight ?? 0];
   }
 
   content() {
@@ -141,7 +141,7 @@ export class Legend extends Container(View) {
       const style = this._markers[i].styleInfo;
       const visited = item.datapointIndex !== undefined
         ? this.paraview.store.isVisited(
-          this.paraview.store.model!.keys[0], item.datapointIndex)
+          this.paraview.store.model!.seriesKeys[0], item.datapointIndex)
         : this.paraview.store.isVisitedSeries(item.label);
       if (visited) {
         style.fill = this.paraview.store.colors.colorValueAt(-1);

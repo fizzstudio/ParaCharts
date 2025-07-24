@@ -19,7 +19,7 @@ export function describeSelections(paraview: ParaView, targetView: DatapointView
         const other = selfSelected ? 'this.messages.other' : undefined;
         msgArray.push(interpolate(queryMessages.comparisonSelectedDatapoints, { other }));
         const sortedDatapoints = selectedDatapoints.toSorted((a, b) =>
-            a.datapoint.facetAsNumber("y")! > b.datapoint.facetAsNumber("y")! ? -1 : 1);
+            a.datapoint.facetValueNumericized("y")! > b.datapoint.facetValueNumericized("y")! ? -1 : 1);
         for (const view of sortedDatapoints) {
             if (view !== targetView) {
                 const viewValue = view.series[view.index].facetBox("y")!.raw as unknown as number

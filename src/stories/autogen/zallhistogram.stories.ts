@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from "@storybook/web-components-vite";
 
 type Story = StoryObj<ChartProps>;
 
-const titleToFilenameMap = familyManifestPathsMap('bar', true);
+const titleToFilenameMap = familyManifestPathsMap('histogram', false);
 
 const meta = {
   title: "Basic Charts/Histograms",
@@ -21,8 +21,8 @@ const meta = {
 
 export default meta;
 
-export const AllSingleHistogramCharts: Story = {
-  name: 'All Single Histogram Charts',
+export const AllHistogramCharts: Story = {
+  name: 'All Histogram Charts',
   args: {
     filename: '',
     forcecharttype: "histogram",

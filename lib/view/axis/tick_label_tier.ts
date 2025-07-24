@@ -14,15 +14,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { View, Container } from './base_view';
-import { type Layout } from './layout';
+import { View, Container } from '../base_view';
+import { type Layout } from '../layout';
 import { type Axis, type AxisOrientation, ChartTooDenseError, ChartTooWideError } from './axis';
-import { Label, type LabelTextAnchor } from './label';
-import { ParaView } from '../paraview';
+import { Label, type LabelTextAnchor } from '../label';
+import { ParaView } from '../../paraview';
 
 import { type TemplateResult } from 'lit';
-import { svg } from 'lit';
-import { Vec2 } from '../common/vector';
+import { Vec2 } from '../../common/vector';
+import { PlaneModel } from '@fizz/paramodel';
 
 /**
  * A single tier of tick labels.
@@ -31,8 +31,6 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
 
   declare protected _parent: Layout;
   declare protected _children: Label[];
-
-  textHoriz?: boolean;
 
   /** Distance between label centers (or starts or ends) */
   protected _labelDistance!: number;
@@ -90,10 +88,6 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
     return Math.max(...this._children.map(kid => kid.height ?? 0));
   }
 
-  computeLayout() {
-    this.textHoriz = !this._children[0].angle;
-  }
-
   protected abstract get _labelTextAnchor(): LabelTextAnchor;
 
   protected abstract get _labelWrapWidth(): number | undefined;
@@ -105,7 +99,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
       }
       const label = new Label(this.paraview, {
         classList: [
-          'tick-label', this.axis.orientation, 
+          'tick-label', this.axis.orientation,
           this.axis.orientationSettings.position as string],
         role: 'axislabel',
         text: labelText,
@@ -139,6 +133,16 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
  */
 export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
 
+  constructor(
+    readonly axis: Axis<'horiz'>,
+    readonly tickLabels: string[],
+    length: number,
+    paraview: ParaView
+  ) {
+    super(axis, tickLabels, length, paraview);
+    this.padding = {top: this.axis.settings.tick.tickLabel.offsetGap};
+  }
+
   protected get _labelTextAnchor(): LabelTextAnchor {
     return this.axis.settings.tick.tickLabel.angle ? 'end' : 'middle';
   }
@@ -162,20 +166,23 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     //   pos += this._labelDistance/2;
     // }
     return (this.axis.orientationSettings.labelOrder === 'westToEast'
-      ? pos 
+      ? pos
       : this.length - pos
-    ); 
+    );
   }
 
   protected _tickLabelY(index: number) {
-    const facet = this.paraview.store.model!.getAxisFacet(this.axis.orientation);
+    // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
+    //   have two axes
+    const facet = (this.paraview.store.model as PlaneModel).getAxisFacet(this.axis.orientation)
+       ?? this.paraview.store.model!.getFacet(this.axis.orientation === 'horiz' ? 'x' : 'y')!;
     const tickLen = facet!.variableType === 'independent'
       ? this.paraview.store.settings.axis.x.tick.length
       : this.paraview.store.settings.axis.y.tick.length;
     // Right-justify if west, left-justify if east;
     return this.axis.orientationSettings.position === 'north'
-    ? this.height // - this._children[index].height 
-    : tickLen;  
+    ? this.height // - this._children[index].height
+    : 0; //tickLen;
   }
 
   createTickLabels() {
@@ -207,12 +214,12 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
       // desired size.
       const anchorGaps: number[] = [];
       this._children.slice(1).forEach((label, i) => {
-        // NB: Even if the anchor is set to middle, the labels may be rotated, so 
+        // NB: Even if the anchor is set to middle, the labels may be rotated, so
         // the anchor will no longer be in the middle of the bbox
         label.left = this._children[i].right + this.axis.settings.tick.tickLabel.gap;
         anchorGaps.push(label.x - this._children[i].x);
       });
-      const largestAnchorGap = Math.max(...anchorGaps);  
+      const largestAnchorGap = Math.max(...anchorGaps);
 
       // The labels may actually extend a bit past the start and end points of
       // the x-axis, so we take that into account when computing the preferred width
@@ -238,6 +245,16 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
  */
 export class VertTickLabelTier extends TickLabelTier<'vert'> {
 
+  constructor(
+    readonly axis: Axis<'vert'>,
+    readonly tickLabels: string[],
+    length: number,
+    paraview: ParaView
+  ) {
+    super(axis, tickLabels, length, paraview);
+    this.padding = {right: this.axis.settings.tick.tickLabel.offsetGap};
+  }
+
   protected get _labelTextAnchor(): LabelTextAnchor {
     return 'end';
   }
@@ -258,7 +275,7 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
   protected _tickLabelX(index: number) {
     // Right-justify if west, left-justify if east;
     return this.axis.orientationSettings.position === 'west'
-      ? this.width //- this._children[index].width 
+      ? this.width //- this._children[index].width
       : 0;
   }
 

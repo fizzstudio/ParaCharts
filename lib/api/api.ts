@@ -10,4 +10,12 @@ export class ParaApi {
     return this._paraChart.paraView.serialize();
   }
 
+  downloadSVG() {
+    this._paraChart.paraView.downloadSVG();
+  }
+
+  downloadPNG() {
+    this._paraChart.paraView.downloadPNG();
+  }
+
 }

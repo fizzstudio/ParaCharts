@@ -1,4 +1,4 @@
-import { enumerate, strToId } from "@fizz/paramodel";
+import { enumerate } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
 import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
@@ -10,6 +10,7 @@ import { DatapointView, SeriesView } from "../../../data";
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { XYChart, XYSeriesView } from "./xy_chart";
+import { strToId } from "@fizz/paramanifest";
 
 export class Heatmap extends XYChart {
   protected _resolution: number = 25;
@@ -44,11 +45,6 @@ export class Heatmap extends XYChart {
 
   protected _addedToParent() {
     super._addedToParent();
-    /*
-    if (this._model.depType !== 'number') {
-      throw new Error('point chart dependent variables must be numbers');
-    }
-      */
     this._axisInfo = new AxisInfo(this.paraview.store, {
       xValues: this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number),
       yValues: this.paraview.store.model!.allFacetValues('y')!.map((x) => x.value as number),
@@ -60,8 +56,8 @@ export class Heatmap extends XYChart {
           key: 'type.scatter.resolution',
           label: 'Resolution',
           options: {
-            inputType: 'number', 
-            min: 5, 
+            inputType: 'number',
+            min: 5,
             max: 100
           },
           parentView: 'chartDetails.tabs.chart.chart',
@@ -89,32 +85,39 @@ export class Heatmap extends XYChart {
     super.settingDidChange(path, oldValue, newValue);
   }
 
-  protected _beginLayout() {
-    this._createDatapoints();
-    for (const datapointView of this.datapointViews) {
-      datapointView.computeLocation();
-    }
-    for (const datapointView of this.datapointViews) {
-      datapointView.completeLayout();
-    }
-  }
-
-  completeLayout() {
-    super._completeLayout();
-  }
-
-  get datapointViews() {
-    return super.datapointViews;
-  }
   get grid() {
     return this._grid;
   }
+
   get maxCount() {
     return this._maxCount;
   }
+
   get settings() {
     return this._settings;
   }
+
+  protected _createPrimaryNavNodes() {
+    super._createPrimaryNavNodes();
+    // Create vertical links between datapoints
+    this._navMap.root.query('series').forEach(seriesNode => {
+      seriesNode.allNodes('right')
+        // skip bottom row
+        .slice(0, -this._resolution).forEach((pointNode, i) => {
+        pointNode.connect('down', pointNode.layer.get('datapoint', i + this._resolution)!);
+      });
+    });
+  }
+
+  protected _createNavLinksBetweenSeries() {
+    // Don't do anything here, since we create vertical links between rows
+    // XXX For the case of a multi-series heatmap, we need to do ... something
+  }
+
+  protected _createChordNavNodes() {
+
+  }
+
   protected _newDatapointView(seriesView: XYSeriesView) {
     return new HeatmapTileView(this, seriesView);
   }
@@ -145,11 +148,9 @@ export class Heatmap extends XYChart {
     // NB: This only works properly because we haven't added series direct labels
     // yet, which are also direct children of the chart.
     this._chartLandingView.sortChildren((a: XYSeriesView, b: XYSeriesView) => {
-      return (b.children[0].datapoint.y.value as number) - (a.children[0].datapoint.y.value as number);
+      return (b.children[0].datapoint.facetValueNumericized(b.children[0].datapoint.depKey)!) - (a.children[0].datapoint.facetValueNumericized(a.children[0].datapoint.depKey)!);
     });
   }
-
-
 
   protected _layoutDatapoints() {
     for (const datapointView of this.datapointViews) {
@@ -163,13 +164,13 @@ export class Heatmap extends XYChart {
 
     //for (let i = 0; i < xValues.length; i++){
     //  this._data.push([xValues[i],yValues[i]])
-    //} 
+    //}
 
     const seriesList = this.paraview.store.model!.series
     this._data = [];
     for (let series of seriesList) {
       for (let i = 0; i < series.length; i++) {
-        this._data.push([series[i].facetAsNumber("x")!, series[i].facetAsNumber("y")!]);
+        this._data.push([series[i].facetValueNumericized("x")!, series[i].facetValueNumericized("y")!]);
       }
     }
 
@@ -208,27 +209,16 @@ export class Heatmap extends XYChart {
     }
     return this._grid = grid;
   }
+
   seriesRef(series: string) {
     return this.paraview.ref<SVGGElement>(`series.${series}`);
   }
 
-  raiseSeries(series: string) {
+  _raiseSeries(series: string) {
     const seriesG = this.seriesRef(series).value!;
     this.dataset.append(seriesG);
   }
-  /*
-    getDatapointGroupBbox(labelText: string) {
-      const xSeries = this._model.indepSeries();
-      // XXX Could take these directly from the DOM
-      const labels = xSeries.mapBoxed(box => this._model.format(box, 'xTick'));
-      const idx = labels.findIndex(label => label === labelText);
-      if (idx === -1) {
-        throw new Error(`no such datapoint with label '${labelText}'`);
-      }
-      const g = todo().canvas.ref<SVGGElement>('dataset').value!.children[idx] as SVGGElement;
-      return g.getBBox();
-    }
-  */
+
   getTickX(idx: number) {
     return this.datapointViews[idx].x; // this.points[idx][0].x;
   }
@@ -237,72 +227,12 @@ export class Heatmap extends XYChart {
     return this._resolution
   }
 
-  async moveRight() {
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof HeatmapTileView) {
-      if (!leaf.next) {
-        //leaf.blur(false)
-        //this._eventActionManager!.dispatch('series_endpoint_reached');
-      }
-      else {
-        await leaf.next!.focus();
-      }
-    }
+  goSeriesMinMax(isMin: boolean): void {
+
   }
 
-  async moveLeft() {
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof HeatmapTileView) {
-      if (!leaf.prev) {
-        //leaf.blur(false)
-        //this._eventActionManager!.dispatch('series_endpoint_reached');
-      }
-      else {
-        await leaf.prev!.focus();
-      }
-    }
-  }
+  goChartMinMax(isMin: boolean): void {
 
-  async moveUp() {
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof HeatmapTileView) {
-      const index = leaf.parent!.children.indexOf(leaf)
-      const target = leaf.parent!.children[index - this.resolution]
-      if (!target) {
-        //leaf.blur(false)
-        //this._eventActionManager!.dispatch('series_endpoint_reached');
-      }
-      else {
-        await target.focus()
-      }
-    }
-  }
-
-  async moveDown() {
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof HeatmapTileView) {
-      const index = leaf.parent!.children.indexOf(leaf)
-      const target = leaf.parent!.children[index + this.resolution]
-
-      if (!target) {
-        //leaf.blur(false)
-        //this._eventActionManager!.dispatch('series_endpoint_reached');
-      }
-      else {
-        await target.focus()
-      }
-    } else if (leaf instanceof SeriesView) {
-      if (!leaf.next) {
-        await this._chartLandingView.children[0].children[0].focus();
-        return;
-      } else {
-        await leaf.next!.focus();
-        //this._sonifier.playNotification('series');
-      }
-    } else {
-      // At chart root, so move to the first series landing 
-      await this._chartLandingView.children[0].focus();
-    }
   }
 
 }
@@ -361,7 +291,7 @@ export class HeatmapTileView extends DatapointView {
   // }
 
   protected _createId(..._args: any[]): string {
-    //const facets = [...this.datapoint.entries()].map(([key, box]) => 
+    //const facets = [...this.datapoint.entries()].map(([key, box]) =>
     // `${key}_${formatBox(box, this.paraview.store.getFormatType('domId'))}`).join('-');
     //console.log([...this.datapoint.entries()])
     //console.log(facets)
@@ -369,7 +299,7 @@ export class HeatmapTileView extends DatapointView {
     return [
       'datapoint',
       strToId(this.series.key),
-      //facets, 
+      //facets,
       `${this.index}`
     ].join('-');
   }
@@ -423,17 +353,6 @@ export class HeatmapTileView extends DatapointView {
     const left = (xInfo.min! + xSpan * ((this.index - length) % this.chart.resolution)).toFixed(2)
     const right = (xInfo.min! + xSpan * ((this.index - length) % this.chart.resolution + 1)).toFixed(2)
     return `This block contains ${this.count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
-  }
-  async onFocus() {
-    await super.onFocus()
-    this.isVisited = !this.isVisited
-    this._visit();
-    //this.paraview.store.announce(this.paraview.summarizer.getSeriesSummary(this.seriesKey));
-    //this.paraview.requestUpdate();
-  }
-
-  protected async _visit(_isNewComponentFocus = false) {
-    this.paraview.store.visit([{ seriesKey: this.seriesKey, index: this.index }]);
   }
 
   render() {
@@ -510,7 +429,7 @@ export class HeatmapDatapointView extends DatapointView {
     // }
 
     computeLayout() {
-        
+
         const orderIdx = Object.keys(this.stack.bars).indexOf(this.series.name!);
         const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
           .map(bar => bar._height)
@@ -519,7 +438,7 @@ export class HeatmapDatapointView extends DatapointView {
         this._height = this.datapoint.y.number*pxPerYUnit;
         this._x = this.stack.x + this.stack.cluster.x;
         this._y = this.chart.height - this._height - distFromXAxis;
-        
+
 
         this._height = this.chart.height / this.chart.resolution;
         this._width = this.chart.width / this.chart.resolution;

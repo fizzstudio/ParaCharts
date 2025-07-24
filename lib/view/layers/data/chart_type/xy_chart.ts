@@ -14,12 +14,13 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { 
+import {
   DataLayer,
-  SONI_PLAY_SPEEDS, SONI_RIFF_SPEEDS 
+  RiffOrder,
+  SONI_PLAY_SPEEDS, SONI_RIFF_SPEEDS
 } from '../data_layer';
 import { ChartLandingView, DatapointView, SeriesView } from '../../../data';
-import { type Setting } from '../../../../store/settings_types';
+import { HorizDirection, type Setting } from '../../../../store/settings_types';
 //import { keymaps } from '../input';
 //import { hotkeyActions } from '../input/defaultactions';
 //import { NOTE_LENGTH } from '../audio/sonifier';
@@ -27,11 +28,11 @@ import { type Setting } from '../../../../store/settings_types';
 
 import { ParaView } from '../../../../paraview';
 import { HotkeyEvent } from '../../../../store/keymap_manager';
+import { NavNode } from '../navigation';
 
-import { XYDatapoint, strToId } from '@fizz/paramodel';
-import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
+import { PlaneDatapoint, Datapoint } from '@fizz/paramodel';
 
-export type DatapointViewType<T extends XYDatapointView> = 
+export type DatapointViewType<T extends XYDatapointView> =
   (new (...args: any[]) => T);
 
 /**
@@ -59,12 +60,8 @@ export abstract class XYChart extends DataLayer {
   }
 
   protected _addedToParent() {
-    super._addedToParent();  
+    super._addedToParent();
     // this.maxDatapointSize = this.width/2.5;
-  }
-
-  get managedSettingKeys() {
-    return super.managedSettingKeys.concat('sonification.isChordModeEnabled');
   }
 
   get datapointViews() {
@@ -79,15 +76,6 @@ export abstract class XYChart extends DataLayer {
     return super.selectedDatapointViews as XYDatapointView[];
   }
 
-  // get isChordModeEnabled() {
-  //   return this._isChordModeEnabled;
-  // }
-  
-  // set isChordModeEnabled(isChordModeEnabled) {
-  //   this._isChordModeEnabled = isChordModeEnabled;
-  //   this._chartLandingView.focusLeaf.focus();
-  // }
-  
   /*protected get _hotkeyActions(): Actions<this> {
     return {...super._hotkeyActions, ...hotkeyActions['chart.xy']};
   }
@@ -121,212 +109,96 @@ export abstract class XYChart extends DataLayer {
       chord_mode_no_up_down: function() {
         todo().controller.announce('Cannot switch series in chord mode.');
       },
-    };    
+    };
   }
 
   get keymap() {
     return {...super.keymap, ...keymaps['chart.xy']};
   }*/
 
-  //protected abstract _layoutDatapoints(): void;
-
-  // init() {
-  //   this._layoutDatapoints();
-  // }
-
-  async moveRight() {
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof DatapointView) {
-      if (!leaf.next) {
-        if (this.paraview.store.settings.sonification.isChordModeEnabled) {
-          //this._eventActionManager!.dispatch('series_endpoint_reached');
-        } else if (leaf.nextSeriesLanding) {
-          // Make sure we don't get focused if we return to the landing for this series
-          await leaf.blur(false);
-          await leaf.nextSeriesLanding.focus();
-        } else {
-          //this._eventActionManager!.dispatch('final_series_endpoint_reached');
-        }
-      } else {
-        await leaf.next!.focus();
-      }
-    } else if (leaf instanceof SeriesView) {
-      // Move to the first datapoint
-      await leaf.children[0].focus();
-    } else {
-      await this._chartLandingView.children[0].focus();
+  protected _createNavMap() {
+    super._createNavMap();
+    this._createPrimaryNavNodes();
+    if (this.paraview.store.model!.seriesKeys.length > 1) {
+      this._createNavLinksBetweenSeries();
+      this._createChordNavNodes();
     }
   }
 
-  async moveLeft() {
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof DatapointView) {
-      if (!leaf.prev) {
-        await leaf.blur();
-      } else {
-        await leaf.prev!.focus();
-      }
-    } else if (leaf instanceof SeriesView) {
-      if (!leaf.prev) {
-        await leaf.blur();
-      } else {
-        // Move to the last datapoint of the previous series
-        await leaf.prev!.children.at(-1)!.focus();
-      }
-    } else {
-      // At chart root, so move to the first series landing
-      await this._chartLandingView.children[0].focus();
-    }
+  protected _createPrimaryNavNodes() {
+    // Create series and datapoint nav nodes, and link them horizontally thusly:
+    // - [SERIES-A]-[SERIES-A-POINT-0]- ... -[SERIES-A-POINT-(N-1)]-[SERIES-B]-[SERIES-B-POINT-0]- ...
+    let left = this._navMap.root.get('top')!;
+    this._chartLandingView.children.forEach((seriesView, i) => {
+      const seriesNode = new NavNode(this._navMap.root, 'series', {
+        seriesKey: seriesView.seriesKey
+      });
+      seriesNode.connect('left', left);
+      left = seriesNode;
+      seriesView.children.forEach(dp => seriesNode.addDatapointView(dp));
+      seriesView.children.forEach((dp, j) => {
+        const node = new NavNode(this._navMap.root, 'datapoint', {
+          seriesKey: dp.seriesKey,
+          index: dp.index
+        });
+        node.addDatapointView(dp);
+        node.connect('left', left);
+        left = node;
+      });
+    });
   }
 
-  async moveUp() {
-    if (this.paraview.store.settings.sonification.isChordModeEnabled) {
-      //this._eventActionManager!.dispatch('chord_mode_no_up_down');
-      return;
-    }
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof DatapointView) {
-      const psi = leaf.prevSameIndexer;
-      if (psi) {
-        await leaf.blur(false);
-        await psi.focus();
-        //this._sonifier.playNotification('series');
-      } else {
-        //this._eventActionManager!.dispatch('first_series_reached');
-        return;
+  protected _createNavLinksBetweenSeries() {
+    // Create vertical links between series and datapoints
+    this._chartLandingView.children.slice(0, -1).forEach((seriesView, i) => {
+      const seriesNode = this._navMap.root.get('series', i)!;
+      const nextSeriesNode = this._navMap.root.get('series', i + 1)!;
+      seriesNode.connect('down', nextSeriesNode);
+      for (let j = 1; j <= seriesView.children.length; j++) {
+        seriesNode.peekNode('right', j)!.connect(
+          'down', nextSeriesNode.peekNode('right', j)!);
       }
-    } else if (leaf instanceof SeriesView) {
-      if (!leaf.prev) {
-        //this._eventActionManager!.dispatch('first_series_reached');
-        return;
-      } else {
-        await leaf.prev!.focus();
-        //this._sonifier.playNotification('series');
-      }
-    } else {
-      // At chart root, so move to the first series landing
-      await this._chartLandingView.children[0].focus();
-    }
+    });
   }
 
-  async moveDown() {
-    if (this.paraview.store.settings.sonification.isChordModeEnabled) {
-      //this._eventActionManager!.dispatch('chord_mode_no_up_down');
-      return;
-    }
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof DatapointView) {
-      const nsi = leaf.nextSameIndexer;
-      if (nsi) {
-        await leaf.blur(false);
-        await nsi.focus();
-        //this._sonifier.playNotification('series');
-      } else {
-        //this._eventActionManager!.dispatch('final_series_reached');
-        return;
-      }
-    } else if (leaf instanceof SeriesView) {
-      if (!leaf.next) {
-        //this._eventActionManager!.dispatch('final_series_reached');
-        return;
-      } else {
-        await leaf.next!.focus();
-        //this._sonifier.playNotification('series');
-      }
-    } else {
-      // At chart root, so move to the first series landing 
-      await this._chartLandingView.children[0].focus(); 
-    }
+  protected _createChordNavNodes() {
+    // Create chord landings
+    // NB: This will produce the nodes in insertion order
+    this._navMap.root.query('datapoint', {
+      seriesKey: this._chartLandingView.children[0].seriesKey
+    }).forEach((node, i) => {
+      const chordNode = new NavNode(this._navMap.root, 'chord', {});
+      chordNode.connect('down', node);
+      chordNode.connect('up', node.allNodes('down').at(-1)!);
+      chordNode.allNodes('down', 'datapoint').forEach(node => chordNode.addDatapointView(node.at(0)!));
+    });
+    // Link chord landings
+    this._navMap.root.query('chord').slice(0, -1).forEach((node, i) => {
+      node.connect('right', this._navMap.root.get('chord', i + 1)!);
+    });
   }
 
-  /**
-   * Navigate to the series minimum/maximum datapoint
-   * @param isMin If true, go the the minimum. Otherwise, go to the maximum
-   */
-  async goSeriesMinMax(isMin: boolean) {
-    const currView = this.focusLeaf;
-    if (currView instanceof ChartLandingView) {
-      this.goChartMinMax(isMin);
-    } else {
-      let seriesChildren = null;
-      let seriesKey = null;
-      let index: number | null = null;
-
-      if (currView instanceof SeriesView) {
-        seriesKey = currView.seriesKey;
-        seriesChildren = currView.children;
-      } else if (currView instanceof DatapointView) {
-        seriesKey = currView.seriesKey;
-        index = currView.index;
-        seriesChildren = currView.parent!.children;
-      }
-
-      if (seriesChildren && seriesKey) {
-        const stats = this.paraview.store.model!.getFacetStats('y')!;
-        // Indices of min/max values
-        const seriesMatchArray = isMin 
-          ? stats.min.datapoints.map(dp => dp.datapointIndex)   
-          : stats.max.datapoints.map(dp => dp.datapointIndex);
-        if (index !== null && seriesMatchArray.length > 1) {
-          // TODO: If there is more than one datapoint that has the same series minimum value, find the next one to nav to:
-          //       Find the current x label, if it matches one in `seriesMins`, 
-          //       remove all entries up to and including that point,
-          //       and use the next item on the list.
-          //       But also cycle around if it's the last item in the list
-          const currentRecordIndex = seriesMatchArray.indexOf(index);
-          if (currentRecordIndex !== -1 && currentRecordIndex !== seriesMatchArray.length + 1) {
-            seriesMatchArray.splice(0, currentRecordIndex);
-          }
-        }
-        const newViews = seriesChildren.filter(view => 
-          seriesMatchArray.includes(view.index));
-        await newViews[0]?.focus();
-      }
-    }
-  }
-
-  /**
-   * Navigate to (one of) the chart minimum/maximum datapoint(s)
-   * @param isMin If true, go the the minimum. Otherwise, go to the maximum
-   */
-  async goChartMinMax(isMin: boolean) {
-    const currView = this.focusLeaf;
-    const stats = this.paraview.store.model!.getFacetStats('y')!;
-    const matchTarget = isMin ? stats.min.value : stats.max.value;
-    const chartMatchArray = this._chartLandingView.datapointViews.filter(view =>
-      // @ts-ignore
-      view.datapoint.data.y.value === matchTarget);
-    await chartMatchArray[0].focus();
-  }
-
-  raiseSeries(_series: string) {
-  }
-
-  playSeriesRiff() {
-    if (!(this.focusLeaf instanceof SeriesView)) {
-      return;
-    }
+  protected _playRiff(order?: RiffOrder) {
     if (this.paraview.store.settings.sonification.isSoniEnabled
       && this.paraview.store.settings.sonification.isRiffEnabled) {
-      const currentSeries = this.focusLeaf;
-      const seriesDatapoints = Array.from(currentSeries.children);
-      if (this.paraview.store.settings.sonification.isChordModeEnabled) {
+      const datapoints = this._navMap.cursor.datapointViews.map(view => view.datapoint);
+      if (order === 'sorted') {
+        datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
+      } else if (order === 'reversed') {
+        datapoints.reverse();
       }
-
-      const noteCount = seriesDatapoints.length;
+      const noteCount = datapoints.length;
       if (noteCount) {
         if (this._soniRiffInterval!) {
           clearInterval(this._soniRiffInterval!);
         }
         this.soniSequenceIndex++;
-
         this._soniRiffInterval = setInterval(() => {
-          const datapointNavPoint = seriesDatapoints.shift();
-          if (!datapointNavPoint) {
+          const datapoint = datapoints.shift();
+          if (!datapoint) {
             clearInterval(this._soniRiffInterval!);
           } else {
-            const datapoint = datapointNavPoint.datapoint;
-            this._sonifier.playDatapoints(datapoint as XYDatapoint);
+            this._sonifier.playDatapoints(datapoint as PlaneDatapoint);
             this.soniNoteIndex++;
           }
         }, SONI_RIFF_SPEEDS.at(this._soniRiffSpeedRateIndex));
@@ -334,38 +206,32 @@ export abstract class XYChart extends DataLayer {
     }
   }
 
-  /**
-   * Play all datapoints to the right, if there are any
-   */
-  async playRight() {
-    if (this.focusLeaf instanceof ChartLandingView) {
-      return;
-    }
-    this._soniInterval = setInterval(() => {
-      if (!this.focusLeaf.next && this.focusLeaf instanceof DatapointView) {
-        this.clearPlay();
-      } else {
-        this.moveRight();
-      }
-    }, SONI_PLAY_SPEEDS.at(this._soniSpeedRateIndex));
-    await this._chartLandingView.focusLeaf.focus();
+  protected _playDatapoints(datapoints: PlaneDatapoint[]): void {
+    this.sonifier.playDatapoints(...datapoints);
   }
-  
-  /**
-   * Play all datapoints to the left, if there are any
-   */
-  async playLeft() {
-    if (!(this.focusLeaf instanceof DatapointView)) {
+
+  playDir(dir: HorizDirection) {
+    if (this._navMap.cursor.type !== 'datapoint') {
       return;
     }
+    let cursor = this._navMap.cursor;
     this._soniInterval = setInterval(() => {
-      if (!this.focusLeaf.prev) {
-        this.clearPlay();
+      const next = cursor.peekNode(dir, 1);
+      if (next && next.type === 'datapoint') {
+        this._playDatapoints([next.at(0)!.datapoint as PlaneDatapoint]);
+        cursor = next;
       } else {
-        this.moveLeft();
+        this.clearPlay();
       }
     }, SONI_PLAY_SPEEDS.at(this._soniSpeedRateIndex));
-    await this._chartLandingView.focusLeaf.focus();
+  }
+
+  protected _sparkBrailleInfo() {
+    return  {
+      data: this._navMap.cursor.datapointViews[0].series.datapoints.map(dp =>
+        dp.facetValueAsNumber('y')!).join(' '),
+      isBar: this.paraview.store.type === 'bar' || this.paraview.store.type === 'column'
+    };
   }
 
   queryData() {
@@ -383,15 +249,15 @@ export abstract class XYChart extends DataLayer {
 
       //msgArray.push(
       //  `${seriesKey} (${leaf.datapoint.format('statusBar')}). Datapoint ${record + 1} of ${seriesLength}.`);
-      
+
       /*if (this.selectedDatapointViews.length) {
-        const alreadySelected = leaf.isSelected; 
+        const alreadySelected = leaf.isSelected;
         if (this.selectedDatapointViews.length > 1 || !alreadySelected) {
           msgArray.push(`Comparison to ${alreadySelected ? 'other' : ''} selected datapoints:`);
           this.selectedDatapointViews.forEach(datapoint => {
             if (datapoint !== leaf) {
               const comparisonResult = this.compareDatapoints(leaf, datapoint);
-              const comparison = (comparisonResult.diff) 
+              const comparison = (comparisonResult.diff)
                 ? `${comparisonResult.diff} ${comparisonResult.comparator}`
                 : `${this.capitalize(comparisonResult.comparator)}`;
               msgArray.push(
@@ -408,18 +274,18 @@ export abstract class XYChart extends DataLayer {
     //todo().controller.announce(msgArray);
   }
 
-  /*compareDatapoints(datapoint1: XYDatapointView, datapoint2: XYDatapointView) : 
+  /*compareDatapoints(datapoint1: XYDatapointView, datapoint2: XYDatapointView) :
     {
       comparator: string,
       diff: number
-    } 
+    }
   {
     // TODO: localize this text output
     // TODO: move this to some statistical / NLP module
     const value1 = datapoint1.datapoint.y;
     const value2 = datapoint2.datapoint.y;
     const result = value1.compare(value2);
-    let comparator = ''; 
+    let comparator = '';
     if (result.relationship === 'equal') {
       comparator = 'equal to';
     } else {
@@ -458,64 +324,6 @@ export class XYSeriesView extends SeriesView {
     return super.siblings as this[];
   }
 
-  /*protected get _eventActions(): Actions<this> {
-    return {
-      series_focused: function(_focusInfo: FocusInfo) {
-        todo().controller.announce(this._focusSummary());
-        this.chart.playSeriesRiff();
-      },
-      series_selected: function(selectionInfo: XYSelectionInfo) {
-        todo().controller.announce(selectionInfo.chordMode 
-          ? 'Selected all datapoints.' 
-          : `Selected all datapoints in series ${selectionInfo.selected[0].series.name}.`);
-      },    
-    };
-  }
-
-  protected _focusSummary() {
-    return todo().seriesSummaries[this.series.name!] ?? this.series.name!;
-  }*/
-
-  protected _visit() {
-    const visited = this.paraview.store.settings.sonification.isChordModeEnabled 
-      ? this.withSiblings.flatMap(sib => sib.children) 
-      : this._children;
-    this.paraview.store.visit(visited.map(v => ({seriesKey: v.seriesKey, index: v.index})));
-    if (!this.paraview.store.settings.sonification.isChordModeEnabled) {
-      this.chart.raiseSeries(this.series.key!);
-    }    
-  }
-
-  async onFocus(isNewComponentFocus = false) {
-    await super.onFocus(isNewComponentFocus);
-    let data = []
-    for (let point of this.series.rawData) {
-      data.push(point.y)
-    }
-    if (this.paraview.store.type == "bar" || this.paraview.store.type == "column") {
-      this.paraview.store.updateSettings(draft => {
-        draft.controlPanel.isSparkBrailleBar = true
-      })
-    };
-    this.paraview.store._sparkBrailleData = data.join(' ');
-    /*todo().deets!.sparkBrailleData = this.series.data.join(' ');
-    this.eventActionManager!.dispatch('series_focused', {
-      visited,
-      isSeriesChange: 
-        this.chart.isChordModeEnabled
-          ? false
-          : !(todo().canvas.prevFocusLeaf instanceof DataView)
-            ? true
-            : (todo().canvas.prevFocusLeaf as DataView).series.name !== visited[0].series.name
-              ? true
-              : false
-    });*/
-  }
-
-  async onBlur() {
-    //this.paraview.store.clearVisited();
-  }
-
 }
 
 /**
@@ -526,18 +334,18 @@ export class XYSeriesView extends SeriesView {
 export abstract class XYDatapointView extends DatapointView {
 
   declare readonly chart: XYChart;
-  declare _datapoint: XYDatapoint;
+  declare _datapoint: PlaneDatapoint;
 
   protected centroid?: string;
 
-  constructor(seriesView: SeriesView) { 
+  constructor(seriesView: SeriesView) {
     super(seriesView);
   }
 
   protected _addedToParent() {
     super._addedToParent();
     // this._extraAttrs = [
-    //   { 
+    //   {
     //     attr: literal`data-series`,
     //     value: this.series.key
     //   },
@@ -547,7 +355,7 @@ export abstract class XYDatapointView extends DatapointView {
     //   },
     //   {
     //     attr: literal`data-label`,
-    //     value: 
+    //     value:
     //     formatXYDatapointX(this.datapoint, this.paraview.store.getFormatType('domId')),
     //   },
     //   {
@@ -558,13 +366,13 @@ export abstract class XYDatapointView extends DatapointView {
   }
 
   // override to get more specific return type
-  get datapoint(): XYDatapoint {
-    return super.datapoint as XYDatapoint;
+  get datapoint(): PlaneDatapoint {
+    return super.datapoint as PlaneDatapoint;
   }
 
   get styleInfo() {
     const styles = super.styleInfo;
-    styles['--datapointCentroid'] = this.centroid;
+    styles['--datapoint-centroid'] = this.centroid;
     return styles;
   }
 
@@ -575,7 +383,7 @@ export abstract class XYDatapointView extends DatapointView {
       },
       datapoint_selected: function(selectionInfo: XYSelectionInfo) {
         todo().controller.announce(this.chart.composeDatapointSelectionAnnouncement(selectionInfo));
-      },      
+      },
     };
   }*/
 
@@ -598,51 +406,26 @@ export abstract class XYDatapointView extends DatapointView {
   //  }
   //}
 
-  protected async _visit(isNewComponentFocus = false) {
-    super._visit(isNewComponentFocus);
-    const visited = this.paraview.store.settings.sonification.isChordModeEnabled
-      ? this.withSameIndexers
-      : [this];
-    this.paraview.store.visit(visited.map(v => ({seriesKey: v.seriesKey, index: v.index})));
-    if (!this.paraview.store.settings.sonification.isChordModeEnabled) {
-      this.chart.raiseSeries(this.series.key!);
-    }
-    //todo().deets!.sparkBrailleData = this.series.data.join(' ');
-    if (this.paraview.store.settings.sonification.isSoniEnabled && !isNewComponentFocus) {
-      this.chart.sonifier.playDatapoints(...visited.map(v => v.datapoint));
-    }  
-    // setTimeout(() => {
-    //   this.eventActionManager!.dispatch('datapoint_focused', {
-    //     visited,
-    //     isSeriesChange: 
-    //       this.chart.isChordModeEnabled ? false : 
-    //       !(todo().canvas.prevFocusLeaf instanceof DataView) ? true :
-    //       (todo().canvas.prevFocusLeaf as DataView).series.name !== visited[0].series.name ? true :
-    //       false
-    //   });
-    // }, NOTE_LENGTH*1000);
-  }
-
   async onFocus(isNewComponentFocus = false) {
     await super.onFocus(isNewComponentFocus);
-    let data = []
-    for (let point of this.series.rawData){
-      data.push(point.y)
-    }
-    if (this.paraview.store.type == "bar" || this.paraview.store.type == "column"){
-      this.paraview.store.updateSettings(draft => {
-      draft.controlPanel.isSparkBrailleBar = true
-    })};
-    this.paraview.store._sparkBrailleData = data.join(' ');
+    // let data = []
+    // for (let point of this.series.rawData){
+    //   data.push(point.y)
+    // }
+    // if (this.paraview.store.type == "bar" || this.paraview.store.type == "column"){
+    //   this.paraview.store.updateSettings(draft => {
+    //   draft.controlPanel.isSparkBrailleBar = true
+    // })};
+    // this.paraview.store.sparkBrailleData = data.join(' ');
     /*todo().deets!.sparkBrailleData = this.series.data.join(' ');
     if (todo().controller.settingStore.settings.sonification.isSoniEnabled) {
       this.chart.sonifier.playDatapoints(...visited.map(v => v.datapoint));
-    }  
+    }
     setTimeout(() => {
       this.eventActionManager!.dispatch('datapoint_focused', {
         visited,
-        isSeriesChange: 
-          this.chart.isChordModeEnabled ? false : 
+        isSeriesChange:
+          this.chart.isChordModeEnabled ? false :
           !(todo().canvas.prevFocusLeaf instanceof DataView) ? true :
           (todo().canvas.prevFocusLeaf as DataView).series.name !== visited[0].series.name ? true :
           false
