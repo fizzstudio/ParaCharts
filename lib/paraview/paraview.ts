@@ -36,6 +36,7 @@ import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Unsubscribe } from '@lit-app/state';
+import { PlaneModel } from '@fizz/paramodel';
 
 /**
  * Data provided for the on focus callback
@@ -308,7 +309,7 @@ export class ParaView extends logging(ParaComponent) {
     this.createDocumentView();
     this._summarizer = (this.store.type === 'pie' || this.store.type === 'donut')
       ? new PastryChartSummarizer(this._store.model!)
-      : new PlaneChartSummarizer(this._store.model!);
+      : new PlaneChartSummarizer(this._store.model as PlaneModel);
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {

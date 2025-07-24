@@ -22,6 +22,7 @@ import { ParaView } from '../../paraview';
 
 import { type TemplateResult } from 'lit';
 import { Vec2 } from '../../common/vector';
+import { PlaneModel } from '@fizz/paramodel';
 
 /**
  * A single tier of tick labels.
@@ -173,8 +174,8 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   protected _tickLabelY(index: number) {
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
     //   have two axes
-    const facet = this.paraview.store.model!.getAxisFacet(this.axis.orientation)
-       ?? this.paraview.store.model!.facetMap[this.axis.orientation === 'horiz' ? 'x' : 'y']!;
+    const facet = (this.paraview.store.model as PlaneModel).getAxisFacet(this.axis.orientation)
+       ?? this.paraview.store.model!.getFacet(this.axis.orientation === 'horiz' ? 'x' : 'y')!;
     const tickLen = facet!.variableType === 'independent'
       ? this.paraview.store.settings.axis.x.tick.length
       : this.paraview.store.settings.axis.y.tick.length;

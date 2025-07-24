@@ -35,6 +35,7 @@ import { type Datatype, type Scalar } from '@fizz/dataframe';
 
 import { type TemplateResult } from 'lit';
 import { literal } from 'lit/static-html.js';
+import { PlaneModel } from '@fizz/paramodel';
 
 export type AxisOrientation = 'horiz' | 'vert';
 export type AxisCoord = 'x' | 'y';
@@ -96,7 +97,8 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
     //   have two axes
-    const axisFacet = this._store.model!.getAxisFacet(this.orientation) ?? this._store.model!.facetMap[coord]!;
+    const axisFacet = (this._store.model as PlaneModel).getAxisFacet(this.orientation) 
+      ?? this._store.model!.getFacet(coord)!;
     this.datatype = axisFacet.datatype;
 
     this._labelInfo = this.coord === 'x'

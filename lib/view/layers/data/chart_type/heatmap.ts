@@ -1,4 +1,4 @@
-import { enumerate, strToId } from "@fizz/paramodel";
+import { enumerate } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
 import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
@@ -10,6 +10,7 @@ import { DatapointView, SeriesView } from "../../../data";
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { XYChart, XYSeriesView } from "./xy_chart";
+import { strToId } from "@fizz/paramanifest";
 
 export class Heatmap extends XYChart {
   protected _resolution: number = 25;

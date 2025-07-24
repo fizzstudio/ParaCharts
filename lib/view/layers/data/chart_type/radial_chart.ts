@@ -261,7 +261,7 @@ export abstract class RadialChart extends DataLayer {
     // }
 
     const total = ys.reduce((a, b) => a + b, 0);
-    const seriesView = new SeriesView(this, this.paraview.store.model!.keys[0], false);
+    const seriesView = new SeriesView(this, this.paraview.store.model!.seriesKeys[0], false);
     this._chartLandingView.append(seriesView);
 
     let accum = 0;

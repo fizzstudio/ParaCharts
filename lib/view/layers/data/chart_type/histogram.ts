@@ -1,4 +1,4 @@
-import { enumerate, strToId } from "@fizz/paramodel";
+import { enumerate } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
 import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
@@ -9,6 +9,7 @@ import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { XYChart, XYSeriesView } from "./xy_chart";
 import { DatapointView, SeriesView } from "../../../data";
+import { strToId } from "@fizz/paramanifest";
 
 export class Histogram extends XYChart {
   protected _bins: number = 20;
@@ -34,10 +35,10 @@ export class Histogram extends XYChart {
     this.paraview.store.clearSelected();
 
     const targetAxis = this.settings.groupingAxis as DeepReadonly<string> == '' ?
-      this.paraview.store.model?.facets.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)[0]
+      this.paraview.store.model?.facetSignatures.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)[0]
       : this.settings.groupingAxis
     let targetFacet;
-    for (let facet of this.paraview.store.model!.facets) {
+    for (let facet of this.paraview.store.model!.facetSignatures) {
       if (this.paraview.store.model!.getFacet(facet.key as string)!.label == targetAxis) {
         targetFacet = facet.key
       }
@@ -101,7 +102,7 @@ export class Histogram extends XYChart {
       },
       parentView: 'controlPanel.tabs.chart.chart',
     });
-    const variables = this.paraview.store.model?.facets.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)
+    const variables = this.paraview.store.model?.facetSignatures.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)
     this.paraview.store.settingControls.add({
       type: 'dropdown',
       key: 'type.histogram.groupingAxis',
@@ -206,10 +207,10 @@ export class Histogram extends XYChart {
 
   protected _generateBins(): Array<number> {
     const targetAxis = this.settings.groupingAxis as DeepReadonly<string | undefined>
-      ?? this.paraview.store.model?.facets.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)[0]
+      ?? this.paraview.store.model?.facetSignatures.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)[0]
 
     let targetFacet;
-    for (let facet of this.paraview.store.model!.facets) {
+    for (let facet of this.paraview.store.model!.facetSignatures) {
       if (this.paraview.store.model!.getFacet(facet.key as string)!.label == targetAxis) {
         targetFacet = facet.key
       }

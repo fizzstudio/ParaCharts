@@ -88,8 +88,8 @@ export class LineChart extends PointChart {
   async storeDidChange(key: string, value: any) {
     await super.storeDidChange(key, value);
     if (key === 'seriesAnalyses') {
-      if (Object.keys(this.paraview.store.seriesAnalyses).length === this.paraview.store.model!.keys.length
-        && this.paraview.store.seriesAnalyses[this.paraview.store.model!.keys[0]]) {
+      if (Object.keys(this.paraview.store.seriesAnalyses).length === this.paraview.store.model!.seriesKeys.length
+        && this.paraview.store.seriesAnalyses[this.paraview.store.model!.seriesKeys[0]]) {
         // Analyses have been generated for all series (i.e., we're in AI mode)
         this._createSequenceNavNodes();
       }
@@ -167,7 +167,7 @@ export class LineChart extends PointChart {
         color: (view as SeriesView).color  // series color
       }));
     } else {
-      return this.paraview.store.model!.keys.toSorted().map(key => ({
+      return this.paraview.store.model!.seriesKeys.toSorted().map(key => ({
         label: key,
         color: this.paraview.store.seriesProperties!.properties(key).color
       }));
