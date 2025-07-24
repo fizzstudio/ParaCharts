@@ -1,5 +1,5 @@
 import { type Datatype } from '@fizz/dataframe';
-import { ChartType, DisplayType, Facet, isPastryType, Manifest, SeriesManifest } from '@fizz/paramanifest';
+import { ChartType, DisplayType, Facet, Manifest, SeriesManifest } from '@fizz/paramanifest';
 
 /*interface DataVar {
   name: string;
