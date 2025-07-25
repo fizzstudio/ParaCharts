@@ -98,6 +98,8 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     data: string;
     // (undocumented)
+    accessor description: string | undefined;
+    // (undocumented)
     downloadPNG(): void;
     // (undocumented)
     downloadSVG(): void;
