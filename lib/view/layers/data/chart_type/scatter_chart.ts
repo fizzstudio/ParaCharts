@@ -131,11 +131,11 @@ export class ScatterPlot extends PointChart {
       this._clustering = generateClusterAnalysis(data, true);
     }
 
-    this._clustering.forEach((cluster, i) => {
-      this.paraview.styleManager.set(`.cluster-${i}`, {
-        stroke: this.paraview.store.colors.colorValueAt(i)
-      });
-    });
+    // this._clustering.forEach((cluster, i) => {
+    //   this.paraview.styleManager.set(`.cluster-${i}`, {
+    //     stroke: this.paraview.store.colors.colorValueAt(i)
+    //   });
+    // });
 
     const datapointViews = this.datapointViews
     for (let cluster of this._clustering) {
