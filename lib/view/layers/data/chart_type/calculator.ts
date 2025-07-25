@@ -18,12 +18,12 @@ export class GraphingCalculator extends LineChart {
       options: { inputType: 'number' },
       value: this.paraview.store.settings.axis.x.minValue === 'unset' ? -10 : this.paraview.store.settings.axis.x.minValue,
       validator: value => {
-        const min = this.paraview.store.settings.axis.x.maxValue == "unset" 
+        const min = this.paraview.store.settings.axis.x.maxValue == "unset"
           ? 10
           : this.paraview.store.settings.axis.x.maxValue as number
         // NB: If the new value is successfully validated, the inner chart
         // gets recreated, and `max` may change, due to re-quantization of
-        // the tick values. 
+        // the tick values.
         return value as number >= min ?
           { err: `Min x-value (${value}) must be less than (${min})`} : {};
       },
@@ -36,12 +36,12 @@ export class GraphingCalculator extends LineChart {
       options: { inputType: 'number' },
       value: this.paraview.store.settings.axis.x.maxValue === 'unset' ? 10 : this.paraview.store.settings.axis.x.maxValue,
       validator: value => {
-        const max = this.paraview.store.settings.axis.x.minValue == "unset" 
+        const max = this.paraview.store.settings.axis.x.minValue == "unset"
           ? -10
           : this.paraview.store.settings.axis.x.minValue as number
         // NB: If the new value is successfully validated, the inner chart
         // gets recreated, and `max` may change, due to re-quantization of
-        // the tick values. 
+        // the tick values.
         return value as number <= max ?
           { err: `Min x-value (${value}) must be less than (${max})`} : {};
       },
@@ -105,7 +105,7 @@ export class GraphingCalculator extends LineChart {
     });
 
     this._axisInfo = new AxisInfo(this.paraview.store, {
-      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.axis.x.minValue, 
+      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.axis.x.minValue,
         this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.axis.x.maxValue],
       yValues: [-10, 10],
       yMin: -10,
@@ -281,23 +281,23 @@ export class GraphLine extends LineSection{
     this._nextMidY = (this._next!.y - this.y) / 2;
   }
 
-  content(){
-    if (this._shapes.length) {
-      this._shapes[0].styleInfo = this.styleInfo;
-      this._shapes[0].classInfo = this.classInfo;
-      if (this._shapes[0].y < 0 || this._shapes[0].y > this.chart.parent.logicalHeight){
-        this._shapes[0].hidden = true;
+  protected _contentUpdateShapes() {
+    super._contentUpdateShapes();
+    this._shapes.forEach(shape => {
+      if (shape.y < 0 || shape.y > this.chart.parent.logicalHeight) {
+        shape.hidden = true;
       }
-    }
+    });
+  }
+
+  protected _contentUpdateSymbol() {
+    super._contentUpdateSymbol();
     if (this._symbol) {
-      this._symbol.scale = this._symbolScale;
-      this._symbol.color = this._symbolColor;
       this._symbol.hidden = !this.paraview.store.settings.type.graph.isDrawSymbols;
-      if (this._symbol.y < 0 || this._symbol.y > this.chart.parent.logicalHeight){
+      if (this._symbol.y < 0 || this._symbol.y > this.chart.parent.logicalHeight) {
         this._symbol.hidden = true;
       }
     }
-     return this.renderChildren();
   }
 
 }

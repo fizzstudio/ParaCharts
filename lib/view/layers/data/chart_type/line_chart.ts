@@ -81,6 +81,10 @@ export class LineChart extends PointChart {
       : this.paraview.store.settings.type.line.lineHighlightScale;
   }
 
+  get visitedStrokeWidth(): number {
+    return this.effectiveLineWidth * this.effectiveVisitedScale;
+  }
+
   protected _newDatapointView(seriesView: XYSeriesView) {
     return new LineSection(seriesView);
   }
@@ -395,24 +399,16 @@ export class LineSection extends ChartPoint {
     };
   }
 
-  get styleInfo() {
-    // Need to clear the fill for visiting
-    const style = super.styleInfo;
-    style.fill = 'none';
-    return style;
-  }
-
-  protected _addVisitedStyleInfo(styleInfo: StyleInfo) {
-    super._addVisitedStyleInfo(styleInfo);
-    styleInfo.strokeWidth = this.chart.effectiveLineWidth * this.chart.effectiveVisitedScale;
-  }
-
   protected _shapeStyleInfo(shapeIndex: number): StyleInfo {
     if (this.paraview.store.navNode?.type === 'sequence') {
       const node = this.paraview.store.navNode as NavNode<'sequence'>;
       if ((this.index === node.options.start && this.index && !shapeIndex)
         || (this.index === node.options.end - 1 && shapeIndex)) {
-        return {};
+        return {
+          fill: this._parent.styleInfo.fill,
+          stroke: this._parent.styleInfo.stroke,
+          strokeWidth: this._parent.styleInfo.strokeWidth
+        };
       }
     }
     return super._shapeStyleInfo(shapeIndex);

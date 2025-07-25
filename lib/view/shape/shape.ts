@@ -21,8 +21,6 @@ export interface ShapeOptions {
 export abstract class Shape extends View {
   protected _scale: number;
   protected _role = '';
-  protected _styleInfo: StyleInfo;
-  protected _classInfo: ClassInfo = {};
   protected _ref: Ref<SVGElement> | null = null;
   protected _isPattern: boolean = false
 
@@ -31,11 +29,17 @@ export abstract class Shape extends View {
     this._x = options.x ?? this._x;
     this._y = options.y ?? this._y;
     this._scale = options.scale ?? 1;
-    this._styleInfo = { 
-      strokeWidth: options.strokeWidth,
-      stroke: options.stroke,
-      fill: options.fill
-    };
+    // Don't create the fields in `_styleInfo` unless the options are
+    // actually set
+    if (options.strokeWidth) {
+      this._styleInfo.strokeWidth = options.strokeWidth;
+    }
+    if (options.stroke) {
+      this._styleInfo.stroke = options.stroke;
+    }
+    if (options.fill) {
+      this._styleInfo.fill = options.fill;
+    }
   }
 
   protected get _options(): ShapeOptions {
@@ -120,22 +124,6 @@ export abstract class Shape extends View {
 
   set scale(scale: number) {
     this._scale = scale;
-  }
-
-  get styleInfo() {
-    return structuredClone(this._styleInfo);
-  }
-
-  set styleInfo(styleInfo: StyleInfo) {
-    this._styleInfo = structuredClone(styleInfo);
-  }
-
-  get classInfo() {
-    return structuredClone(this._classInfo);
-  }
-
-  set classInfo(classInfo: ClassInfo) {
-    this._classInfo = structuredClone(classInfo);
   }
 
   get ref() {

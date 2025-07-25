@@ -68,11 +68,15 @@ export class DataView extends View {
   }
 
   get styleInfo(): StyleInfo {
-    const styleInfo: StyleInfo = {};
+    const styleInfo = super.styleInfo;
     if (this._isStyleEnabled) {
       this._updateStyleInfo(styleInfo);
     }
     return styleInfo;
+  }
+
+  set styleInfo(styleInfo: StyleInfo) {
+    super.styleInfo = styleInfo;
   }
 
   protected _updateStyleInfo(styleInfo: StyleInfo) {
