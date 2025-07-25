@@ -50,7 +50,8 @@ export class ParaChart extends logging(ParaComponent) {
   @property() data = '';
   @property({type: Object}) accessor config: SettingsInput = {};
   @property() accessor forcecharttype: ChartType | undefined;
-  @property() type?: ChartType
+  @property() type?: ChartType;
+  @property() accessor description: string | undefined;
 
   protected _paraViewRef = createRef<ParaView>();
   protected _controlPanelRef = createRef<ParaControlPanel>();
@@ -225,8 +226,11 @@ export class ParaChart extends logging(ParaComponent) {
     this.log(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
     this._store.dataState = 'pending';
     const loadresult = await this._loader.load(
-      this.manifestType, manifestInput,
-      this.forcecharttype);
+      this.manifestType, 
+      manifestInput,
+      this.forcecharttype,
+      this.description
+    );
     this.log('loaded manifest')
     if (loadresult.result === 'success') {
       this._manifest = loadresult.manifest;
