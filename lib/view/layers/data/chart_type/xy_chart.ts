@@ -201,7 +201,7 @@ export abstract class XYChart extends DataLayer {
             this._sonifier.playDatapoints(datapoint as PlaneDatapoint);
             this.soniNoteIndex++;
           }
-        }, SONI_RIFF_SPEEDS.at(this._soniRiffSpeedRateIndex));
+        }, SONI_RIFF_SPEEDS.at(this.paraview.store.settings.sonification.riffSpeedIndex));
       }
     }
   }

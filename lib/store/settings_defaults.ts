@@ -412,6 +412,7 @@ export const defaults: Settings = {
     hertzUpper: HERTZ.length - 12,
     soniPlaySpeed: 3,
     riffSpeed: 'medium',
+	//riffSpeedIndex: 2
     isArpeggiateChords: true
   },
   dev: {
