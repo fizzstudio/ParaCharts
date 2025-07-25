@@ -95,10 +95,10 @@ export class ParaChart extends logging(ParaComponent) {
           this._loaderPromise = this._runLoader(this.manifest, this.manifestType).then(() => {
             this.log('ParaCharts will now commence the raising of the roof and/or the dead');
           });
-        } else if (this._slotted.length) {
+        } else if (this.getElementsByTagName("table")[0]) {
           this.log(`loading from slot`);
-          const table = this._slotted[0].getElementsByTagName("table")[0]
-          const manifest = this._slotted[0].getElementsByClassName("manifest")[0] as HTMLElement
+          const table = this.getElementsByTagName("table")[0]
+          const manifest = this.getElementsByClassName("manifest")[0] as HTMLElement
           this._store.dataState = 'pending';
           if (table) {
             const loadresult = await this._slotLoader.findManifest([table, manifest], "some-manifest")
@@ -111,6 +111,7 @@ export class ParaChart extends logging(ParaComponent) {
               this._store.dataState = 'error';
             }
           }
+        }
           else {
             console.log("No datatable in slot")
             if (this.getAttribute("type") === 'graph') {
@@ -150,7 +151,6 @@ export class ParaChart extends logging(ParaComponent) {
               this._store.dataState = 'error'
             }
           }
-        }
       });
     });
   }

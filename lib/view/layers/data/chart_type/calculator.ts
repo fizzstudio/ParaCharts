@@ -158,7 +158,7 @@ export class GraphingCalculator extends LineChart {
       yMin: -10,
       yMax: 10
     })
-    var container = this.paraview.paraChart.slotted[0]
+    var container = this.paraview.paraChart;
     var table = document.createElement("table");
     var trVar = document.createElement("tr");
     var xVar = document.createElement("td");
@@ -201,8 +201,8 @@ export class GraphingCalculator extends LineChart {
         }
       }
       if (container){
-        if(container.firstElementChild){
-          container.removeChild(container.firstElementChild);
+        if(container.getElementsByTagName('table')[0]){
+          container.removeChild(container.getElementsByTagName('table')[0]);
         }
         container.append(table);
         this.paraview.dispatchEvent(new CustomEvent('paraviewready', {bubbles: true, composed: true, cancelable: true}));
