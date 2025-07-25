@@ -130,8 +130,11 @@ export class SlotLoader {
       if (/\b(year|month|day)\b/i.test(vars[i].label)) {
         facet.datatype = 'date';
       }
-      else if (/\d/.test(cols[i][0])) {
+      else if (!isNaN(Number(cols[i][0].replace('%', '')))) {
         facet.datatype = 'number';
+      }
+      else {
+        facet.datatype = 'string';
       }
     }
     return {result: 'success', manifest: manifest };
