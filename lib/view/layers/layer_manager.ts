@@ -21,14 +21,12 @@ import { type DocumentView } from '../document_view';
 import { type CardinalDirection } from '../../store/settings_types';
 import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, FocusLayer } from '.';
 import { LineChart, ScatterPlot, BarChart, PieChart } from './data/chart_type';
+import { type AxisCoord } from '../axis';
 //import { StepLineChart } from './stepline';
 //import { LollipopChart } from './lollipop';
 //import { DonutChart } from './donut';
 //import { GaugeChart } from './gauge';
 //import { type Model } from '../data/model';
-import {
-  type AxisCoord, type AxisOrientation, Axis
-} from '../axis';
 
 import { type Interval } from '@fizz/chart-classifier-utils';
 

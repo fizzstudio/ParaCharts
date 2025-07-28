@@ -149,13 +149,13 @@ export class ParaView extends logging(ParaComponent) {
       .label-leader {
         stroke-width: 2;
       }
-      #y-axis-line {
+      #vert-axis-line {
         fill: none;
         stroke: var(--axis-line-color);
         stroke-width: 2px;
         stroke-linecap: round;
       }
-      #x-axis-line {
+      #horiz-axis-line {
         fill: none;
         stroke: var(--axis-line-color);
         opacity: 1;
