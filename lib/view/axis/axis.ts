@@ -32,6 +32,7 @@ import { SettingsManager } from '../../store/settings_manager';
 import { ParaStore } from '../../store/parastore';
 
 import { type Datatype, type Scalar } from '@fizz/dataframe';
+import { type Facet } from '@fizz/paramanifest';
 
 import { type TemplateResult } from 'lit';
 import { literal } from 'lit/static-html.js';
@@ -64,6 +65,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   readonly chartLayers: ChartLayerManager;
 
+  protected _facet: Facet;
   protected _labelInfo: AxisLabelInfo;
   protected _layout!: Layout;
   protected _titleText: string;
@@ -80,26 +82,25 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   constructor(
     public readonly docView: DocumentView,
     public readonly orientation: T,
-    readonly coord: AxisCoord,
-    title?: string,
-    tickStep?: number
+    // readonly coord: AxisCoord,
   ) {
     super(docView.paraview);
     this._store = this.paraview.store;
     this.chartLayers = docView.chartLayers;
-    this.settings = SettingsManager.getGroupLink<AxisSettings>(
-      this.managedSettingKeys[0], this._store.settings
-    );
-    this._tickStep = tickStep ?? this.settings.tick.step;
-    this.orientationSettings = SettingsManager.getGroupLink<OrientedAxisSettings<T>>(
-      `axis.${orientation}`, this._store.settings
-    );
 
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
     //   have two axes
-    const axisFacet = (this._store.model as PlaneModel).getAxisFacet(this.orientation)
-      ?? this._store.model!.getFacet(coord)!;
-    this.datatype = axisFacet.datatype;
+    this._facet = this.chartLayers.dataLayer.axisInfo!.getFacetForOrientation(this.orientation);
+    //  ?? this._store.model!.getFacet(coord)!;
+    this.datatype = this._facet.datatype;
+
+    this.settings = SettingsManager.getGroupLink<AxisSettings>(
+      this.managedSettingKeys[0], this._store.settings
+    );
+    this._tickStep = this.settings.tick.step;
+    this.orientationSettings = SettingsManager.getGroupLink<OrientedAxisSettings<T>>(
+      `axis.${orientation}`, this._store.settings
+    );
 
     this._labelInfo = this.coord === 'x'
       ? this.chartLayers.dataLayer.axisInfo!.xLabelInfo
@@ -108,11 +109,16 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       ? !!this.chartLayers.dataLayer.axisInfo!.options.isXInterval
       : !!this.chartLayers.dataLayer.axisInfo!.options.isYInterval;
 
-    this._titleText = title ?? this.settings.title.text ?? '';
+    this._titleText = this.settings.title.text ?? '';
+  }
+
+  get coord() {
+    return this._store.model!.facetKeys.find(key =>
+      this._store.model!.getFacet(key) === this._facet) as AxisCoord;
   }
 
   protected _createId() {
-    return `${this.coord}-axis`;
+    return `${this.orientation}-axis`;
   }
 
   isHoriz(): this is Axis<'horiz'> {
@@ -290,11 +296,8 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
  */
 export class HorizAxis extends Axis<'horiz'> {
 
-  constructor(docView: DocumentView, title?: string, tickStep?: number) {
-    const orientation = docView.paraview.store.settings.chart.orientation;
-    super(docView, 'horiz',
-      orientation === 'north' || orientation === 'south' ? 'x' : 'y',
-      title, tickStep);
+  constructor(docView: DocumentView) {
+    super(docView, 'horiz');
     this._layout = new ColumnLayout(this.paraview, 0, 'center', 'horiz-axis-group');
     this.append(this._layout);
   }
@@ -357,10 +360,8 @@ export class HorizAxis extends Axis<'horiz'> {
  */
 export class VertAxis extends Axis<'vert'> {
 
-  constructor(docView: DocumentView, title?: string) {
-    const orientation = docView.paraview.store.settings.chart.orientation;
-    super(docView, 'vert',
-      orientation === 'east' || orientation === 'west' ? 'x' : 'y')
+  constructor(docView: DocumentView) {
+    super(docView, 'vert');
     this._layout = new RowLayout(this.paraview, 0, 'center', 'vert-axis-group');
     this.append(this._layout);
   }

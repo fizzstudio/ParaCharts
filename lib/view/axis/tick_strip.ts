@@ -63,7 +63,7 @@ export abstract class TickStrip<T extends AxisOrientation = AxisOrientation> ext
   }
 
   protected _createId(..._args: any[]): string {
-    return `${this.axis.coord}-axis-tick-strip`;
+    return `${this.axis.orientation}-axis-tick-strip`;
   }
 
   get parent() {
