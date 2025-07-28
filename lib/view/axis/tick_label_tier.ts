@@ -38,6 +38,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   constructor(
     public readonly axis: Axis<T>,
     public readonly tickLabels: string[],
+    public readonly tierIndex: number,
     length: number,
     paraview: ParaView
   ) {
@@ -77,7 +78,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
 
   protected _createId(..._args: any[]): string {
     // XXX needs index
-    return `tick-label-tier-${this.axis.orientation}`;
+    return `tick-label-tier-${this.axis.orientation}-${this.tierIndex}`;
   }
 
   protected _maxLabelWidth() {
@@ -98,6 +99,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
         continue;
       }
       const label = new Label(this.paraview, {
+        id: `tick-label-${this.axis.orientation}-${i}`,
         classList: [
           'tick-label', this.axis.orientation,
           this.axis.orientationSettings.position as string],
@@ -136,10 +138,11 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   constructor(
     readonly axis: Axis<'horiz'>,
     readonly tickLabels: string[],
+    tierIndex: number,
     length: number,
     paraview: ParaView
   ) {
-    super(axis, tickLabels, length, paraview);
+    super(axis, tickLabels, tierIndex, length, paraview);
     this.padding = {top: this.axis.settings.tick.tickLabel.offsetGap};
   }
 
@@ -248,10 +251,11 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
   constructor(
     readonly axis: Axis<'vert'>,
     readonly tickLabels: string[],
+    tierIndex: number,
     length: number,
     paraview: ParaView
   ) {
-    super(axis, tickLabels, length, paraview);
+    super(axis, tickLabels, tierIndex, length, paraview);
     this.padding = {right: this.axis.settings.tick.tickLabel.offsetGap};
   }
 

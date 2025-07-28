@@ -97,7 +97,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
     //   have two axes
-    const axisFacet = (this._store.model as PlaneModel).getAxisFacet(this.orientation) 
+    const axisFacet = (this._store.model as PlaneModel).getAxisFacet(this.orientation)
       ?? this._store.model!.getFacet(coord)!;
     this.datatype = axisFacet.datatype;
 
@@ -266,6 +266,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   protected _createAxisTitle() {
     this._axisTitle = new Label(this.paraview, {
+      id: `axis-title-${this.orientation}`,
       text: this.titleText,
       classList: ['axis-title'],
       role: 'heading',
@@ -313,8 +314,9 @@ export class HorizAxis extends Axis<'horiz'> {
   // }
 
   protected _createTickLabelTiers() {
-    return [new HorizTickLabelTier(
-      this, this._labelInfo.labelTiers[0] as string[], this.chartLayers.width, this.paraview)];
+    return this._labelInfo.labelTiers.map((tier, i) =>
+      new HorizTickLabelTier(
+        this, tier as string[], i, this.chartLayers.width, this.paraview));
   }
 
   protected _createTickStrip() {
@@ -419,8 +421,9 @@ export class VertAxis extends Axis<'vert'> {
   // }
 
   protected _createTickLabelTiers() {
-    return [new VertTickLabelTier(
-      this, this._labelInfo.labelTiers[0] as string[], this.chartLayers.height, this.paraview)];
+    return this._labelInfo.labelTiers.map((tier, i) =>
+      new VertTickLabelTier(
+        this, tier as string[], i, this.chartLayers.height, this.paraview));
   }
 
   protected _createTickStrip() {
