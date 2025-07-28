@@ -35,16 +35,6 @@ export class PathShape extends Shape {
     return new PathShape(this.paraview, this._options);
   }
 
-  get styleInfo(): StyleInfo {
-    const style = super.styleInfo;
-    style.fill = 'none'
-    return style;
-  }
-
-  set styleInfo(styleInfo: StyleInfo) {
-    super.styleInfo = styleInfo;
-  }
-
   get points() {
     return this._points.map(p => p.clone());
   }
@@ -115,8 +105,8 @@ export class PathShape extends Shape {
       <path
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}
-        style=${styleMap(this.styleInfo)}
-        class=${classMap(this._classInfo)}
+        style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+        class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         role=${this._role || nothing}
         d=${this._pathD}
         clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}

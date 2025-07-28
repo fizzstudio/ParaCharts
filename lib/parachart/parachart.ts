@@ -50,7 +50,8 @@ export class ParaChart extends logging(ParaComponent) {
   @property() data = '';
   @property({type: Object}) accessor config: SettingsInput = {};
   @property() accessor forcecharttype: ChartType | undefined;
-  @property() type?: ChartType
+  @property() type?: ChartType;
+  @property() accessor description: string | undefined;
 
   protected _paraViewRef = createRef<ParaView>();
   protected _controlPanelRef = createRef<ParaControlPanel>();
@@ -95,10 +96,10 @@ export class ParaChart extends logging(ParaComponent) {
           this._loaderPromise = this._runLoader(this.manifest, this.manifestType).then(() => {
             this.log('ParaCharts will now commence the raising of the roof and/or the dead');
           });
-        } else if (this._slotted.length) {
+        } else if (this.getElementsByTagName("table")[0]) {
           this.log(`loading from slot`);
-          const table = this._slotted[0].getElementsByTagName("table")[0]
-          const manifest = this._slotted[0].getElementsByClassName("manifest")[0] as HTMLElement
+          const table = this.getElementsByTagName("table")[0]
+          const manifest = this.getElementsByClassName("manifest")[0] as HTMLElement
           this._store.dataState = 'pending';
           if (table) {
             const loadresult = await this._slotLoader.findManifest([table, manifest], "some-manifest")
@@ -111,6 +112,7 @@ export class ParaChart extends logging(ParaComponent) {
               this._store.dataState = 'error';
             }
           }
+        }
           else {
             console.log("No datatable in slot")
             if (this.getAttribute("type") === 'graph') {
@@ -150,7 +152,6 @@ export class ParaChart extends logging(ParaComponent) {
               this._store.dataState = 'error'
             }
           }
-        }
       });
     });
   }
@@ -225,8 +226,11 @@ export class ParaChart extends logging(ParaComponent) {
     this.log(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
     this._store.dataState = 'pending';
     const loadresult = await this._loader.load(
-      this.manifestType, manifestInput,
-      this.forcecharttype);
+      this.manifestType, 
+      manifestInput,
+      this.forcecharttype,
+      this.description
+    );
     this.log('loaded manifest')
     if (loadresult.result === 'success') {
       this._manifest = loadresult.manifest;

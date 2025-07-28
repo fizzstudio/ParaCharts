@@ -27,6 +27,7 @@ import { DocumentView } from '../view/document_view';
 import { SVGNS } from '../common/constants';
 import { fixed } from '../common/utils';
 import { HotkeyActions } from './hotkey_actions';
+import { StyleManager } from './style_manager';
 
 import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer } from '@fizz/parasummary';
 
@@ -81,33 +82,11 @@ export class ParaView extends logging(ParaComponent) {
 
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
+  protected _styleManager!: StyleManager;
 
   static styles = [
     //styles,
     css`
-      :host {
-        --axis-line-color: hsl(0, 0%, 0%);
-        --label-color: hsl(0, 0%, 0%);
-        --tick-grid-color: hsl(270, 50%, 50%);
-        --background-color: white;
-        --theme-color: var(--fizz-theme-color, purple);
-        --theme-color-light: var(--fizz-theme-color-light, hsl(275.4, 100%, 88%));
-        --theme-contrast-color: white;
-        --fizz-theme-color: var(--paracharts-theme-color, navy);
-        --fizz-theme-color-light: var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%));
-        --visited-color: red;
-        --selected-color: var(--label-color);
-        --datapoint-centroid: 50% 50%;
-        --focus-animation: all 0.5s ease-in-out;
-        --chart-cursor: pointer;
-        --data-cursor: cell;
-
-        --focus-shadow-color: gray;
-        --focus-shadow: drop-shadow(0px 0px 4px var(--focus-shadow-color));
-        display: block;
-        font-family: "Trebuchet MS", Helvetica, sans-serif;
-        font-size: var(--chart-view-font-size, 1rem);
-      }
       #frame {
         fill: var(--background-color);
         stroke: none;
@@ -159,8 +138,15 @@ export class ParaView extends logging(ParaComponent) {
       .radial-value-label {
         fill: var(--label-color);
       }
+      .radial-cat-label-leader {
+        fill: none;
+        stroke-width: 2;
+      }
       .radial-slice {
         stroke: white;
+        stroke-width: 2;
+      }
+      .label-leader {
         stroke-width: 2;
       }
       #y-axis-line {
@@ -223,6 +209,11 @@ export class ParaView extends logging(ParaComponent) {
         stroke-dasharray: 12 12;
         stroke-opacity: 0.8;
       }
+      .datapoint.visited {
+        stroke: var(--visited-color);
+        fill: var(--visited-color);
+        stroke-width: var(--visited-stroke-width);
+      }
     `
   ];
 
@@ -279,6 +270,10 @@ export class ParaView extends logging(ParaComponent) {
     return this._defs;
   }
 
+  get styleManager() {
+    return this._styleManager;
+  }
+
   connectedCallback() {
     super.connectedCallback();
     // create a default view box so the SVG element can have a size
@@ -296,6 +291,32 @@ export class ParaView extends logging(ParaComponent) {
     if (!this._store.settings.chart.isStatic) {
       this._pointerEventManager = new PointerEventManager(this);
     }
+    this._styleManager = new StyleManager(this.shadowRoot!.adoptedStyleSheets[0]);
+    this._styleManager.set(':host', {
+      '--axis-line-color': 'hsl(0, 0%, 0%)',
+      '--label-color': 'hsl(0, 0%, 0%)',
+      '--tick-grid-color': 'hsl(270, 50%, 50%)',
+      '--background-color': 'white',
+      '--theme-color': 'var(--fizz-theme-color, purple)',
+      '--theme-color-light': 'var(--fizz-theme-color-light, hsl(275.4, 100%, 88%))',
+      '--theme-contrast-color': 'white',
+      '--fizz-theme-color': 'var(--paracharts-theme-color, navy)',
+      '--fizz-theme-color-light': 'var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%))',
+      '--visited-color': () => this._store.colors.colorValue('highlight'),
+      '--visited-stroke-width': () =>
+        this._documentView?.chartLayers.dataLayer.visitedStrokeWidth ?? 0,
+      '--selected-color': 'var(--label-color)',
+      '--datapoint-centroid': '50% 50%',
+      '--focus-animation': 'all 0.5s ease-in-out',
+      '--chart-cursor': 'pointer',
+      '--data-cursor': 'cell',
+      '--focus-shadow-color': 'gray',
+      '--focus-shadow': 'drop-shadow(0px 0px 4px var(--focus-shadow-color))',
+      'display': 'block',
+      'font-family': '"Trebuchet MS", Helvetica, sans-serif',
+      'font-size': 'var(--chart-view-font-size, 1rem)'
+    });
+    this._styleManager.update();
   }
 
   disconnectedCallback() {
@@ -378,6 +399,7 @@ export class ParaView extends logging(ParaComponent) {
         this.paraChart.ariaLiveRegion.voicing.speak('Self-voicing disabled.');
       }
     }
+    this._styleManager.update();
   }
 
   protected _onFullscreenChange() {
@@ -461,6 +483,8 @@ export class ParaView extends logging(ParaComponent) {
     this.log('creating document view', this.type);
     this._documentView = new DocumentView(this);
     this._computeViewBox();
+    // The style manager may get declaration values from chart objects
+    this._styleManager.update();
   }
 
   protected _computeViewBox() {

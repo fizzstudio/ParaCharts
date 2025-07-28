@@ -49,12 +49,6 @@ export const FromSlot: Story = {
   args: {
     filename: "",
     forcecharttype: "pie",
-    summary: '',
-    chartTitle: '',
-    xAxisLabel: '',
-    yAxisLabel: '',
-    configFile: "./sample_config.json",
-    keybindingsFile: './sample_keybindings.json',
     slot: unsafeHTML(`
           <table>
           <caption>Division of energy in the Universe (Table)</caption>

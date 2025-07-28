@@ -2,7 +2,7 @@
 //import { KeymapsInput } from '../../lib';
 import { type SettingsInput } from '../../lib/store/settings_types';
 
-import { html, nothing } from 'lit';
+import { html, nothing, TemplateResult } from 'lit';
 import '/lib';
 import { ChartType } from '@fizz/paramanifest';
 import '/lib-ai/index-ai.ts';
@@ -11,14 +11,16 @@ export interface ChartProps {
   filename: string;
   config?: SettingsInput;  
   forcecharttype?: ChartType;
-  slot?: string;
+  slot?: TemplateResult;
+  legendOrder?: 'lexical' | 'chart';
+  description?: string;
 }
 
 /**
  * Primary UI component for user interaction
  */
 export const Chart = ({ 
-  filename, config, forcecharttype, slot
+  filename, config, forcecharttype, slot, legendOrder, description
 }: ChartProps) => {
   config ??= {};
   config['controlPanel.isControlPanelDefaultOpen'] = true;
@@ -76,6 +78,7 @@ export const Chart = ({
     .config=${config}
     forcecharttype=${forcecharttype ?? nothing}
     type=${forcecharttype ?? nothing}
+    description=${description ?? nothing}
   >
     <slot>${slot ?? ``}</slot>
     <span slot="settings"></span>
@@ -84,7 +87,7 @@ export const Chart = ({
 };
 
 export const AiChart = ({ 
-  filename, config, forcecharttype
+  filename, config, forcecharttype, slot, legendOrder, description
 }: ChartProps) => {
   config ??= {};
   config['controlPanel.isControlPanelDefaultOpen'] = true;
@@ -141,6 +144,7 @@ export const AiChart = ({
     manifesttype=${filename.startsWith('/') ? 'url' : 'fizz-chart-data'} 
     .config=${config}
     forcecharttype=${forcecharttype ?? nothing}
+    description=${description ?? nothing}
   >
     <span slot="settings"></span>
   </para-chart-ai>

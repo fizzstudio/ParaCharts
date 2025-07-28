@@ -87,26 +87,6 @@ export class DatapointView extends DataView {
     return this._isStyleEnabled ? this.index : this._parent.color;
   }
 
-  get styleInfo(): StyleInfo {
-    const style = super.styleInfo;
-    if (this.paraview.store.isVisited(this.seriesKey, this.index)) {
-      this._addVisitedStyleInfo(style);
-    }
-    return style;
-  }
-
-  /**
-   * Mutate `styleInfo` with visited styling.
-   * @param styleInfo
-   */
-  protected _addVisitedStyleInfo(styleInfo: StyleInfo) {
-    const colorValue = this.paraview.store.colors.colorValue('highlight');
-    styleInfo.fill = colorValue;
-    styleInfo.stroke = colorValue;
-    const visitedScale = this.paraview.store.settings.chart.strokeHighlightScale;
-    styleInfo.strokeWidth = this.paraview.store.settings.chart.strokeWidth*visitedScale;
-  }
-
   /**
    * May be overridden to apply shape-specific style info
    * (e.g., if only a particular shape should be highlighted on visitation)
@@ -275,28 +255,41 @@ export class DatapointView extends DataView {
     this.paraview.store.announce(this._composeSelectionAnnouncement(isExtend));
   }
 
-  content(): TemplateResult {
-    // on g: aria-labelledby="${this.params.labelId}"
-    // originally came from: xAxis.tickLabelIds[j]
+  protected _contentUpdateShapes() {
     this._shapes.forEach((shape, i) => {
       shape.styleInfo = this._shapeStyleInfo(i);
       //shape.classInfo = this.classInfo;
     });
+  }
+
+  protected _contentUpdateSymbol() {
     if (this._symbol) {
       this._symbol.scale = this._symbolScale;
       this._symbol.color = this._symbolColor;
       this._symbol.hidden = !this.paraview.store.settings.chart.isDrawSymbols;
     }
-    return this._children.length > 1
-      ? svg`
+  }
+
+  content(): TemplateResult {
+    // on g: aria-labelledby="${this.params.labelId}"
+    // originally came from: xAxis.tickLabelIds[j]
+    this._contentUpdateShapes();
+    this._contentUpdateSymbol();
+    if (this._children.length === 1) {
+      // classInfo may change, so needs to get reassigned here
+      const kid = this._children[0] as (Shape | DataSymbol);
+      kid.classInfo = this.classInfo;
+      return super.content();
+    } else {
+      return svg`
         <g
           id=${this._id}
           class=${classMap(this.classInfo)}
           role="datapoint"
         >
           ${super.content()}
-        </g>`
-      : super.content();
+        </g>`;
+    }
   }
 
 }

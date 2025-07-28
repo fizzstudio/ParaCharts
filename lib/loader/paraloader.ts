@@ -32,6 +32,7 @@ export class ParaLoader {
     kind: SourceKind,
     manifestInput: string,
     chartType?: ChartType,
+    description?: string
   ): Promise<LoadResult> {
     let manifest: Manifest;
     if (kind === 'content') {
@@ -81,6 +82,10 @@ export class ParaLoader {
     if (chartType) {
       manifest.datasets[0].type = chartType;
       console.log('manifest chart type changed')
+    }
+    if (description) {
+      manifest.datasets[0].description = description;
+      console.log('manifest description changed')
     }
     // XXX include `data` here for proper external data loading
     return { result: 'success', manifest };

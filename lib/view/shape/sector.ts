@@ -200,7 +200,7 @@ export class SectorShape extends Shape {
     }
     return fixed`
       M${mx},${my}
-      L${this._startX},${this._startY} 
+      L${this._startX},${this._startY}
       A${this._r},${this._r}
         0 ${this._arcLarge} ${this._arcSweep}
         ${this._endX},${this._endY}
@@ -243,8 +243,8 @@ export class SectorShape extends Shape {
           <path
             ${this._ref ? ref(this._ref) : undefined}
             id=${this._id || nothing}
-            style=${styleMap(this._styleInfo)}
-            class=${classMap(this._classInfo)}
+            style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+            class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
             role=${this._role || nothing}
             d=${this._pathD}
             transform=${this._scale !== 1
@@ -260,8 +260,8 @@ export class SectorShape extends Shape {
       <path
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}
-        style=${styleMap(this._styleInfo)}
-        class=${classMap(this._classInfo)}
+        style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+        class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         role=${this._role || nothing}
         d=${this._pathD}
         transform=${this._scale !== 1

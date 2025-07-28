@@ -38,7 +38,7 @@
   <h1>@fizz/paracharts Live Server Headless Demo</h1>
   <script src="./data/line-multi-233.js"></script>
   <script type="module">
-    const container = document.querySelector('#data');
+    const container = document.getElementsByTagName('para-chart')[0]
     const table = document.createElement("table")
     container.append(table)
     table.innerHTML = line_multi_233;
@@ -49,8 +49,6 @@
   <main>
     <section id="content-container">
       <para-chart type="line">
-        <slot id="data">
-        </slot>
       </para-chart>
     </section>
   </main>

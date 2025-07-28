@@ -28,7 +28,7 @@ export const styles = css`
     --theme-contrast-color: white;
     --fizz-theme-color: var(--paracharts-theme-color, navy);
     --fizz-theme-color-light: var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%));
-    --visited-color: red;
+    /*--visited-color: red;*/
     --selected-color: var(--label-color);
     --datapoint-centroid: 50% 50%;
     --focus-animation: all 0.5s ease-in-out;

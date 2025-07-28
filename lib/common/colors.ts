@@ -366,7 +366,7 @@ export class Colors {
             value: 'hsl(300, 100%, 50%)',
             name: ''
           },
-          {    
+          {
             value: 'hsl(320, 100%, 40%)',
             name: ''
           },
@@ -788,7 +788,7 @@ export class Colors {
 
   /**
    * Wrap color index if out of range.
-   * @param index 
+   * @param index
    * @returns valid index
    */
   wrapColorIndex(index: number) {
@@ -797,7 +797,7 @@ export class Colors {
 
   /**
    * Get palette index of a color.
-   * @param name 
+   * @param name
    * @returns index or -1 if not found
    */
   colorIndex(name: string) {
@@ -806,7 +806,7 @@ export class Colors {
 
   /**
    * Get palette index of a color value.
-   * @param value 
+   * @param value
    * @returns index or -1 if not found
    */
   colorValueIndex(value: string) {
@@ -847,7 +847,7 @@ export class Colors {
   }
 
   contrastValueAt(index: number) {
-    const colors = this.palette.isPattern 
+    const colors = this.palette.isPattern
       ? this.palette.patterns!
       : this._colorMap
       ? this._colorMap.map(i => this.palette.colors[i])

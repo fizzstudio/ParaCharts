@@ -53,9 +53,9 @@ export class RectShape extends Shape {
       <rect
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}
-        style=${styleMap(this._styleInfo)}
-        class=${classMap(this._classInfo)}    
-        role=${this._role ||  nothing}  
+        style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+        class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
+        role=${this._role ||  nothing}
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}
         width=${fixed`${this.width}`}
@@ -68,9 +68,9 @@ export class RectShape extends Shape {
       <rect
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}
-        style=${styleMap(this._styleInfo)}
-        class=${classMap(this._classInfo)}    
-        role=${this._role ||  nothing}  
+        style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+        class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
+        role=${this._role ||  nothing}
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}
         width=${fixed`${this.width}`}

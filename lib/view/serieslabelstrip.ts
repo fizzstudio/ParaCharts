@@ -33,12 +33,12 @@ export class SeriesLabelStrip extends Container(View) {
 
   constructor(private _chart: LineChart) {
     super(_chart.paraview);
-    const directLabelPadding = this.paraview.store.settings.chart.isDrawSymbols 
+    const directLabelPadding = this.paraview.store.settings.chart.isDrawSymbols
       ? this._chart.settings.seriesLabelPadding*2
       : this._chart.settings.seriesLabelPadding;
     // Sort points from highest to lowest onscreen
     const endpoints = this._chart.datapointViews.
-      filter(datapoint => 
+      filter(datapoint =>
         datapoint.index === this._chart.paraview.store.model!.series[0].length - 1
       );
     endpoints.sort((a, b) => a.y - b.y);
@@ -63,7 +63,7 @@ export class SeriesLabelStrip extends Container(View) {
     if (topLabel.y < 0) {
       topLabel.y = 0;
     }
-    // Same for the lowest label 
+    // Same for the lowest label
     const botLabel = this.seriesLabels.at(-1)!;
     const diff = botLabel.bottom - this.height;
     if (diff > 0) {
@@ -86,7 +86,7 @@ export class SeriesLabelStrip extends Container(View) {
     // NB: It looks like all labels will have the same bbox height, although
     // I don't know whether that will hold for all possible diacritics
     // (I suspect not).
-    for (let i = 1; i < this.seriesLabels.length; i++) { 
+    for (let i = 1; i < this.seriesLabels.length; i++) {
       if (this.seriesLabels[i].top < this.seriesLabels[i - 1].bottom) {
         if (colliders.at(-1)?.label !== this.seriesLabels[i - 1]) {
           colliders.push({label: this.seriesLabels[i - 1], endpoint: endpoints[i - 1]});
@@ -95,8 +95,8 @@ export class SeriesLabelStrip extends Container(View) {
       }
     }
     if (colliders.length) {
-      const leaderLabelOffset = this.paraview.store.settings.chart.isDrawSymbols 
-        ? -this._chart.settings.seriesLabelPadding 
+      const leaderLabelOffset = this.paraview.store.settings.chart.isDrawSymbols
+        ? -this._chart.settings.seriesLabelPadding
         : 0;
 
       // Re-sort colliders from lowest to highest onscreen.
@@ -123,7 +123,7 @@ export class SeriesLabelStrip extends Container(View) {
       }
       colliders.forEach(c => {
         // NB: this value already includes the series label padding
-        c.label.x += (this._chart.settings.leaderLineLength + leaderLabelOffset); 
+        c.label.x += (this._chart.settings.leaderLineLength + leaderLabelOffset);
         this.leaders.push(new LineLabelLeader(c.endpoint, c.label, this._chart));
         this.prepend(this.leaders.at(-1)!);
       });
@@ -161,20 +161,15 @@ class LineLabelLeader extends View {
   }
 
   content() {
-    const styles = {
-      strokeWidth: 2, //this.chart.settings.lineWidth
-    };
-    const seriesIdx = this.endpoint.parent.index;
     return svg`
       <g
-        class="label-leader-line"
+        class="label-leader"
         style=${styleMap(this.styles)}
       >
         <path
           d=${this.lineD}
-          style=${styleMap(styles)}
           />
-        <circle 
+        <circle
           cx=${this.endX}
           cy=${this.endY}
           r="1.8"

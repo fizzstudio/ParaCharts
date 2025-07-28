@@ -20,10 +20,11 @@ import { Colors } from '../common/colors';
 import { ParaView } from '../paraview';
 
 import { svg, nothing } from 'lit';
-import { styleMap, type StyleInfo } from 'lit/directives/style-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { DatapointView } from './data';
 
-export type DataSymbolShape = 
+export type DataSymbolShape =
 'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
 
 export type DataSymbolFill = 'outline' | 'solid';
@@ -94,9 +95,9 @@ function diamondInfo(): ShapeInfo {
   const radius = Math.sqrt(2*side**2)/2;
   return {
     path: fixed`
-      m0,-${radius} 
-      l${radius},${radius} 
-      l-${radius},${radius} 
+      m0,-${radius}
+      l${radius},${radius}
+      l-${radius},${radius}
       l-${radius},-${radius} z`,
     baseWidth: radius*2,
     baseHeight: radius*2
@@ -112,17 +113,17 @@ function plusInfo(): ShapeInfo {
   const side = Math.sqrt(squareArea);
   return {
     path: fixed`
-      m${-side*1.5},${side/2} 
-      h${side} 
-      v${side} 
-      h${side} 
-      v${-side} 
-      h${side} 
-      v${-side} 
-      h${-side} 
-      v${-side} 
-      h${-side} 
-      v${side} 
+      m${-side*1.5},${side/2}
+      h${side}
+      v${side}
+      h${side}
+      v${-side}
+      h${side}
+      v${-side}
+      h${-side}
+      v${-side}
+      h${-side}
+      v${side}
       h${-side} z`,
     baseWidth: side*3,
     baseHeight: side*3
@@ -223,7 +224,7 @@ function starPath() {
   const n = t*Math.sin(72*Math.PI/180); // vert dist from C to D
   const m = s*Math.cos(Math.asin(n/s)); // horiz dist from C to D
   const oppVertDist = s*2 + t; // distance between opposite star outer vertices (e.g., A to E)
-  const height = oppVertDist*Math.cos(18*Math.PI/180); // total height of star 
+  const height = oppVertDist*Math.cos(18*Math.PI/180); // total height of star
   const q = height - h - n;                    // vert dist from D to E
   const p = s*Math.sin(Math.acos(q/s));        // horiz dist from D to E
   const r = s*Math.sin(54*Math.PI/180);        // horiz dist from E to F
@@ -273,14 +274,12 @@ export class DataSymbol extends View {
 
   protected _options: DataSymbolOptions;
   protected _defsKey: string;
-  protected _styleInfo!: StyleInfo;
   protected _role = '';
 
   static fromType(
     paraview: ParaView,
     type: DataSymbolType,
     options?: Partial<DataSymbolOptions>,
-    classes: string[] = []
   ) {
     let shape: DataSymbolShape, fill: DataSymbolFill;
     if (type === 'default') {
@@ -291,7 +290,7 @@ export class DataSymbol extends View {
     } else {
       [shape, fill] = type.split('.') as [DataSymbolShape, DataSymbolFill];
     }
-    return new DataSymbol(paraview, shape, fill, options, classes);
+    return new DataSymbol(paraview, shape, fill, options);
   }
 
   constructor(
@@ -299,7 +298,6 @@ export class DataSymbol extends View {
     shape: DataSymbolShape,
     fill: DataSymbolFill,
     options?: Partial<DataSymbolOptions>,
-    private classes: string[] = [], 
   ) {
     super(paraview);
     this.type = `${shape}.${fill}`;
@@ -322,6 +320,10 @@ export class DataSymbol extends View {
     this._locOffset.x = this.width/2;
     this._locOffset.y = this.height/2;
     this._updateStyleInfo();
+    this._classInfo = {
+      symbol: true,
+      [fill]: true
+    };
   }
 
   get width() {
@@ -366,14 +368,6 @@ export class DataSymbol extends View {
     this._options.scale = scale;
   }
 
-  get styleInfo() {
-    return this._styleInfo;
-  }
-
-  set styleInfo(styleInfo: StyleInfo) {
-    this._styleInfo = styleInfo;
-  }
-
   get role() {
     return this._role;
   }
@@ -394,7 +388,7 @@ export class DataSymbol extends View {
         if (this._options.lighten) {
           const col = this.paraview.store.colors.colorValueAt(
             this._options.color).match(/\d+/g)!.map(Number);
-          //10 and 25 are magic numbers  
+          //10 and 25 are magic numbers
           col[1] -= Math.min(10, col[1]);
           col[2] += Math.min(25, 100 - col[2]);
           this._styleInfo.fill = `hsl(${col[0]}, ${col[1]}%, ${col[2]}%)`;
@@ -424,13 +418,13 @@ export class DataSymbol extends View {
       }
     }
     return this.hidden ? svg`` : svg`
-      <use 
+      <use
         href="#${this._defsKey}"
         id=${this._id || nothing}
         role=${this._role || nothing}
+        style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+        class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         transform=${transform}
-        style=${styleMap(this._styleInfo)}
-        class="symbol ${this.fill} ${this.classes.join(' ')}"
       />
     `;
   }
@@ -446,14 +440,14 @@ export class DataSymbols {
   readonly fills: readonly DataSymbolFill[] = [
     'outline', 'solid'
   ];
-  
+
   // TODO: confirm with Josh that this doesn't have to be readonly
   // readonly types: readonly DataSymbolType[] =
-  //   this.fills.flatMap(fill => 
+  //   this.fills.flatMap(fill =>
   //     this.shapes.map(shape => `${shape}.${fill}` as DataSymbolType));
-  
+
   types: readonly DataSymbolType[] =
-    this.fills.flatMap(fill => 
+    this.fills.flatMap(fill =>
       this.shapes.map(shape => `${shape}.${fill}` as DataSymbolType));
 
   symbolAt(index: number) {
