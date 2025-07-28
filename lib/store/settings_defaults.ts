@@ -63,7 +63,8 @@ export const defaults: Settings = {
     hasDirectLabels: true,
     hasLegendWithDirectLabels: false,
     isDrawSymbols: true,
-    isStatic: false
+    isStatic: false,
+    isShowVisitedDatapointsOnly: false
   },
   axis: {
     minInterval: 25,
