@@ -131,11 +131,11 @@ export class ScatterPlot extends PointChart {
       this._clustering = generateClusterAnalysis(data, true);
     }
 
-    this._clustering.forEach((cluster, i) => {
-      this.paraview.styleManager.set(`.cluster-${i}`, {
-        stroke: this.paraview.store.colors.colorValueAt(i)
-      });
-    });
+    // this._clustering.forEach((cluster, i) => {
+    //   this.paraview.styleManager.set(`.cluster-${i}`, {
+    //     stroke: this.paraview.store.colors.colorValueAt(i)
+    //   });
+    // });
 
     const datapointViews = this.datapointViews
     for (let cluster of this._clustering) {
@@ -154,7 +154,7 @@ class ScatterPoint extends ChartPoint {
 
   protected _computeX() {
     // Scales points in proportion to the data range
-    const xTemp = (this.datapoint.facetValueNumericized(this.datapoint.indepKey)! - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
+    const xTemp = (this.datapoint.facetValueNumericized('x')! - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
     const parentWidth: number = this.chart.parent.width;
     return parentWidth * xTemp;
   }

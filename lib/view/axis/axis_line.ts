@@ -39,7 +39,7 @@ export abstract class AxisLine<T extends AxisOrientation> extends View {
   }
 
   protected _createId(..._args: any[]): string {
-    return `${this.axis.coord}-axis-line`;
+    return `${this.axis.orientation}-axis-line`;
   }
 
   protected abstract getLineD(): string;
