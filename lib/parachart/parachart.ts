@@ -75,6 +75,7 @@ export class ParaChart extends logging(ParaComponent) {
     // also creates the state controller
     this.store = new ParaStore(
       this,
+      // XXX config won't get set until connectedCallback()
       Object.assign(cssProps, this.config),
       this._suppleteSettingsWith,
       seriesAnalyzerConstructor,
@@ -226,7 +227,7 @@ export class ParaChart extends logging(ParaComponent) {
     this.log(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
     this._store.dataState = 'pending';
     const loadresult = await this._loader.load(
-      this.manifestType, 
+      this.manifestType,
       manifestInput,
       this.forcecharttype,
       this.description

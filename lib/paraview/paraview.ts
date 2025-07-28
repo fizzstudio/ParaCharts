@@ -316,6 +316,14 @@ export class ParaView extends logging(ParaComponent) {
       'font-family': '"Trebuchet MS", Helvetica, sans-serif',
       'font-size': 'var(--chart-view-font-size, 1rem)'
     });
+    if (this._store.settings.chart.isShowVisitedDatapointsOnly) {
+      this._styleManager.set('.datapoint:not(.visited)', {
+        'display': 'none'
+      });
+      this._styleManager.set('.leg-right', {
+        'display': 'none'
+      });
+    }
     this._styleManager.update();
   }
 

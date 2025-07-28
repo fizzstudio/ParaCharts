@@ -579,12 +579,12 @@ export class ParaStore extends State {
         let seriesKey: string;
         if (this.visitedDatapoints.length > 0) {
           seriesKey = this.visitedDatapoints[0].seriesKey;
-          seriesAnalysis = this.model 
+          seriesAnalysis = this.model
             ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
             : undefined;
         } else {
           seriesKey = this.model!.series[0][0].seriesKey
-          seriesAnalysis = this.model 
+          seriesAnalysis = this.model
             ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
             : undefined;
         };
@@ -637,12 +637,12 @@ export class ParaStore extends State {
       // No MDR annotations need to be removed
     } else if (visitedDatapoints.length > 0) {
       seriesKey = visitedDatapoints[0].seriesKey;
-      seriesAnalysis = this.model 
+      seriesAnalysis = this.model
         ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
         : null;
     } else {
       seriesKey = this.model!.series[0][0].seriesKey;
-      seriesAnalysis = this.model 
+      seriesAnalysis = this.model
         ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
         : null;
     }

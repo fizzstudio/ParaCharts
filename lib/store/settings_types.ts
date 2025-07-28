@@ -157,6 +157,7 @@ export interface ChartSettings extends SettingGroup {
   hasLegendWithDirectLabels: boolean;
   isDrawSymbols: boolean;
   isStatic: boolean;
+  isShowVisitedDatapointsOnly: boolean;
 }
 
 /** @public */
