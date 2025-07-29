@@ -14,26 +14,9 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import type { StorybookConfig } from "@storybook/web-components-vite";
+import { addons } from 'storybook/manager-api';
+import fizzTheme from '../.storybook/FizzTheme';
 
-const config: StorybookConfig = {
-  stories: ["../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
-
-  addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-coverage",
-    "@storybook/addon-docs"
-  ],
-
-  framework: {
-    name: "@storybook/web-components-vite",
-    options: {},
-  },
-
-  managerHead: (head) => 
-    `${head}
-      <link rel="shortcut icon" href="../public/favicon.svg" type="image/xml+svg">`,
-
-  docs: {}
-};
-export default config;
+addons.setConfig({
+  theme: fizzTheme,
+});

@@ -24,22 +24,23 @@
   "homepage": "https://github.com/fizzstudio/paracharts#readme",
   "type": "module",
   "scripts": {
+    "dev": "storybook dev --no-open -p 5180",
+    "dev:test": "storybook dev --no-open -p 5180 -c .storybook-test",
+    "go": "npm i && storybook dev --no-open -p 5180",
     "demo:headless": "vite --port 5177 --open src/demo/headless/vite/headless.html",
     "demo:ai": "vite --port 5178 --open src/demo/ai/ai.html",
+    "storybook": "storybook dev -p 5180",
     "build": "rimraf dist && tsc && vite build && api-extractor run --local --verbose",
     "build:ai": "rimraf dist-ai && tsc --project ai.tsconfig.json && vite build --config ai.vite.config.ts && api-extractor run --local --verbose --config ai.api-extractor.json",
     "build:stories": "node src/stories/storiesBuilder.ts",
+    "build-storybook": "storybook build",
+    "doc": "api-documenter markdown --input-folder ./temp --output-folder ./docs",
     "pretest": "npm run build",
     "test": "npx vitest --project=storybook",
-    "doc": "api-documenter markdown --input-folder ./temp --output-folder ./docs",
+    "test-storybook": "test-storybook --url http://localhost:5180/ --maxWorkers=2",
     "pubpatch": "npm version patch && npm publish",
     "pubminor": "npm version minor && npm publish",
-    "pubmajor": "npm version major && npm publish",
-    "dev": "storybook dev --no-open -p 5180",
-    "go": "npm i && storybook dev --no-open -p 5180",
-    "storybook": "storybook dev -p 5180",
-    "build-storybook": "storybook build",
-    "test-storybook": "test-storybook --url http://localhost:5180/ --maxWorkers=2"
+    "pubmajor": "npm version major && npm publish"
   },
   "files": [
     "dist"
