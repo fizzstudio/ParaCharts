@@ -79,6 +79,7 @@ export const Chart = ({
     forcecharttype=${forcecharttype ?? nothing}
     type=${forcecharttype ?? nothing}
     description=${description ?? nothing}
+    data-testid="para-chart"
   >
     <slot>${slot ?? ``}</slot>
     <span slot="settings"></span>
@@ -145,6 +146,7 @@ export const AiChart = ({
     .config=${config}
     forcecharttype=${forcecharttype ?? nothing}
     description=${description ?? nothing}
+    data-testid="para-chart"
   >
     <span slot="settings"></span>
   </para-chart-ai>

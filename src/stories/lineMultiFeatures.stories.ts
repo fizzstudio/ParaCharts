@@ -1,6 +1,7 @@
 import { Chart, type ChartProps } from './Chart';
 
 import type { Meta, StoryObj } from '@storybook/web-components';
+import { expect } from 'storybook/test';
 
 type Story = StoryObj<ChartProps>;
 
@@ -21,5 +22,10 @@ export const FeaturesChart0: Story = {
       'chart.isDrawSymbols': false,
       'legend.isAlwaysDrawLegend': true
     }
-  }
+  },
+  play: async ({ canvas, userEvent }) => {
+    const parachart = await canvas.findByTestId('para-chart');
+    //await userEvent.click(button);
+    await expect(parachart).toBeInTheDocument();
+  },
 }
