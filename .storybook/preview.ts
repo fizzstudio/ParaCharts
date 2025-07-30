@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import type { Preview } from "@storybook/web-components";
+import type { Preview } from "@storybook/web-components-vite";
 
 const preview: Preview = {
   parameters: {
@@ -72,7 +72,7 @@ const preview: Preview = {
         method: 'alphabetical'
       },
     },
-  },
+  }
 };
 
 export default preview;

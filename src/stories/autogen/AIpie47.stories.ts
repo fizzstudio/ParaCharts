@@ -1,6 +1,7 @@
 import { AiChart, type ChartProps } from '../Chart';
 
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import { expect } from 'storybook/test';
 
 type Story = StoryObj<ChartProps>;
 
@@ -16,5 +17,9 @@ export const AiChart47: Story = {
   args: {
     filename: "manifests/pie-manifest-dark-matter.json",
     forcecharttype: "pie",
+  },
+  play: async ({ canvas, userEvent }) => {
+    const parachart = await canvas.findByTestId('para-chart');
+    await expect(parachart).toBeInTheDocument();
   }
 }
