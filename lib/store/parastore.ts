@@ -441,7 +441,11 @@ export class ParaStore extends State {
   visit(datapoints: DataCursor[]) {
     this._prevVisitedDatapoints = this._visitedDatapoints;
     this._visitedDatapoints = [...datapoints];
-    this._everVisitedDatapoints.push(...datapoints);
+    for (let datapoint of datapoints){
+      if (!this.everVisited(datapoint.seriesKey, datapoint.index)){
+        this._everVisitedDatapoints.push(datapoint);
+      }
+    }
     if (this.settings.controlPanel.isMDRAnnotationsVisible) {
       this.removeMDRAnnotations(this._prevVisitedDatapoints)
       this.showMDRAnnotations();
