@@ -1,5 +1,6 @@
 import {Chart, type ChartProps} from './Chart';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import { expect } from 'storybook/test';
 
 import { html, TemplateResult } from 'lit';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
@@ -78,7 +79,11 @@ export const FromSlot: Story = {
           </tbody>
         </table>
     `) as TemplateResult
-  }
+  },
+  play: async ({ canvas, userEvent }) => {
+    const parachart = await canvas.findByTestId('para-chart');
+    await expect(parachart).toBeInTheDocument();
+  },
 };
 
 
