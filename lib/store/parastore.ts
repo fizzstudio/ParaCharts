@@ -242,7 +242,7 @@ export class ParaStore extends State {
     if (dataset.settings) {
       Object.entries(dataset.settings).forEach(([path, value]) =>
         this.updateSettings(draft => {
-          SettingsManager.set(path, value, draft);
+          SettingsManager.set(path, value as Setting | undefined, draft);
         }));
       if (this.settings.color.colorMap) {
         this._colors.setColorMap(...this.settings.color.colorMap.split(',').map(c => c.trim()));
