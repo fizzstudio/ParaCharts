@@ -133,6 +133,9 @@ export class GraphingCalculator extends LineChart {
       this.addEquation(this.paraview.store.settings.type.graph.equation)
     }
     else if (['axis.x.maxValue', 'axis.x.minValue'].includes(path)){
+      this.paraview.store.clearVisited();
+      this.paraview.store.clearSelected();
+      this.paraview.store.sparkBrailleInfo = null;
       this.addEquation(this.paraview.store.settings.type.graph.equation)
     }
     else if (['type.graph.resetAxes'].includes(path)){

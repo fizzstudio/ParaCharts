@@ -445,6 +445,8 @@ export class LineSection extends ChartPoint {
           isClip: true
         })
       );
+      this._shapes[0].classInfo = {'leg-left': true};
+      this._shapes[1].classInfo = {'leg-right': true};
     } else if (points.length === 2) {
       this._shapes.push(
         new PathShape(this.paraview, {
@@ -454,6 +456,9 @@ export class LineSection extends ChartPoint {
           isClip: true
         })
       );
+      this._shapes[0].classInfo = this._prevMidY !== undefined
+        ? {'leg-left': true}
+        : { 'leg-right': true};
     }
     super._createShapes();
   }

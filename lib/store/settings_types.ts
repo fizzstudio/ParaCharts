@@ -157,6 +157,7 @@ export interface ChartSettings extends SettingGroup {
   hasLegendWithDirectLabels: boolean;
   isDrawSymbols: boolean;
   isStatic: boolean;
+  isShowVisitedDatapointsOnly: boolean;
 }
 
 /** @public */
@@ -434,8 +435,10 @@ export interface SonificationSettings extends SettingGroup {
   hertzUpper: number;
   soniPlaySpeed?: number;
   riffSpeed?: riffSpeeds;
+  riffSpeedIndex: number;  // 👈 Add this line
   isArpeggiateChords: boolean;
 }
+
 
 /** @public */
 export interface Settings extends SettingGroup {

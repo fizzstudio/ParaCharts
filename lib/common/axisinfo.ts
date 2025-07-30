@@ -5,6 +5,8 @@ import { formatBox } from '@fizz/parasummary';
 import Decimal from 'decimal.js';
 import { boxToNumber } from './utils';
 import { Facet } from '@fizz/paramanifest';
+import { AxisOrientation, type PlaneModel } from '@fizz/paramodel';
+import { or } from 'mathjs';
 
 export type Tier = string[];
 export interface ChildTierItem {
@@ -66,7 +68,7 @@ export function computeLabels(
 
 export class AxisInfo {
   protected _xLabelInfo!: AxisLabelInfo;
-  protected _yLabelInfo!: AxisLabelInfo; 
+  protected _yLabelInfo!: AxisLabelInfo;
 
   constructor(protected _store: ParaStore, protected _options: AxisOptions) {
     if (_options.xTiers) {
@@ -94,25 +96,25 @@ export class AxisInfo {
   }
 
   get horizFacet(): Facet {
-    // return this._store.model!.getAxisFacet('horiz')
-    //   ?? (this._options.isXVertical
-    //     ? this._store.model!.dependentFacet!
-    //     : this._store.model!.independentFacet!); 
-    const facetKey = this._options.isXVertical
-        ? this._store.model!.dependentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
-        : this._store.model!.independentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
-    return this._store.model!.getFacet(facetKey)!
+    return (this._store.model as PlaneModel).getAxisFacet('horiz')
+      ?? this._store.model!.getFacet(this._options.isXVertical ? 'y' : 'x')!;
+    // const facetKey = this._options.isXVertical
+    //     ? this._store.model!.dependentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
+    //     : this._store.model!.independentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
+    // return this._store.model!.getFacet(facetKey)!
   }
 
   get vertFacet(): Facet {
-    // return this._store.model!.getAxisFacet('vert')
-    //   ?? (this._options.isXVertical
-    //     ? this._store.model!.independentFacet!
-    //     : this._store.model!.dependentFacet!); 
-    const facetKey = this._options.isXVertical
-        ? this._store.model!.independentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
-        : this._store.model!.dependentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
-    return this._store.model!.getFacet(facetKey)!
+    return (this._store.model as PlaneModel).getAxisFacet('vert')
+      ?? this._store.model!.getFacet(this._options.isXVertical ? 'x' : 'y')!;
+    // const facetKey = this._options.isXVertical
+    //     ? this._store.model!.independentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
+    //     : this._store.model!.dependentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
+    // return this._store.model!.getFacet(facetKey)!
+  }
+
+  getFacetForOrientation(orientation: AxisOrientation) {
+    return orientation === 'horiz' ? this.horizFacet : this.vertFacet;
   }
 
   updateYRange() {
@@ -127,14 +129,14 @@ export class AxisInfo {
 
   protected _computeXLabels(xMin: number, xMax: number) {
     return computeLabels(
-      this._store.settings.axis.x.minValue === 'unset' ? xMin : this._store.settings.axis.x.minValue as number, 
+      this._store.settings.axis.x.minValue === 'unset' ? xMin : this._store.settings.axis.x.minValue as number,
       this._store.settings.axis.x.maxValue === 'unset' ? xMax : this._store.settings.axis.x.maxValue as number,
       false);
   }
 
   protected _computeYLabels(yMin: number, yMax: number) {
-    return computeLabels(yMin, yMax, false); //this._model.depFormat === 'percent');  
-  }  
+    return computeLabels(yMin, yMax, false); //this._model.depFormat === 'percent');
+  }
 
   protected _computeXLabelInfo() {
     if (this._options.xValues) {

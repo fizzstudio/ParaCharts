@@ -49,7 +49,7 @@ export type RiffOrder = 'normal' | 'sorted' | 'reversed';
 
 // Soni Constants
 export const SONI_PLAY_SPEEDS = [1000, 250, 100, 50, 25];
-export const SONI_RIFF_SPEEDS = [200, 150, 100];
+export const SONI_RIFF_SPEEDS = [450, 300, 150, 100, 75];
 
 /**
  * Abstract base class for a data layer view where chart datapoints are rendered.

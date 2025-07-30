@@ -33,6 +33,7 @@ export class SeriesLabelStrip extends Container(View) {
 
   constructor(private _chart: LineChart) {
     super(_chart.paraview);
+    this._id = 'series-label-strip';
     const directLabelPadding = this.paraview.store.settings.chart.isDrawSymbols
       ? this._chart.settings.seriesLabelPadding*2
       : this._chart.settings.seriesLabelPadding;

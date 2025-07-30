@@ -248,11 +248,6 @@ export class ParaStore extends State {
         this._colors.setColorMap(...this.settings.color.colorMap.split(',').map(c => c.trim()));
       }
     }
-    // XXX doesn't work in Storybook, since the element is inside an iframe
-    // let paraChart = document.getElementsByTagName("para-chart")[0]
-    // if (paraChart.type){
-    //   this._type = paraChart.type
-    // }
 
     this._jimerator = new Jimerator(this._manifest, data);
     this._jimerator.render();
@@ -446,7 +441,11 @@ export class ParaStore extends State {
   visit(datapoints: DataCursor[]) {
     this._prevVisitedDatapoints = this._visitedDatapoints;
     this._visitedDatapoints = [...datapoints];
-    this._everVisitedDatapoints.push(...datapoints);
+    for (let datapoint of datapoints){
+      if (!this.everVisited(datapoint.seriesKey, datapoint.index)){
+        this._everVisitedDatapoints.push(datapoint);
+      }
+    }
     if (this.settings.controlPanel.isMDRAnnotationsVisible) {
       this.removeMDRAnnotations(this._prevVisitedDatapoints)
       this.showMDRAnnotations();
@@ -579,12 +578,12 @@ export class ParaStore extends State {
         let seriesKey: string;
         if (this.visitedDatapoints.length > 0) {
           seriesKey = this.visitedDatapoints[0].seriesKey;
-          seriesAnalysis = this.model 
+          seriesAnalysis = this.model
             ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
             : undefined;
         } else {
           seriesKey = this.model!.series[0][0].seriesKey
-          seriesAnalysis = this.model 
+          seriesAnalysis = this.model
             ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
             : undefined;
         };
@@ -637,12 +636,12 @@ export class ParaStore extends State {
       // No MDR annotations need to be removed
     } else if (visitedDatapoints.length > 0) {
       seriesKey = visitedDatapoints[0].seriesKey;
-      seriesAnalysis = this.model 
+      seriesAnalysis = this.model
         ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
         : null;
     } else {
       seriesKey = this.model!.series[0][0].seriesKey;
-      seriesAnalysis = this.model 
+      seriesAnalysis = this.model
         ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
         : null;
     }

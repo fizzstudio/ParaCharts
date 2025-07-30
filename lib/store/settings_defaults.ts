@@ -63,7 +63,8 @@ export const defaults: Settings = {
     hasDirectLabels: true,
     hasLegendWithDirectLabels: false,
     isDrawSymbols: true,
-    isStatic: false
+    isStatic: false,
+    isShowVisitedDatapointsOnly: false
   },
   axis: {
     minInterval: 25,
@@ -412,6 +413,7 @@ export const defaults: Settings = {
     hertzUpper: HERTZ.length - 12,
     soniPlaySpeed: 3,
     riffSpeed: 'medium',
+	riffSpeedIndex: 2,
     isArpeggiateChords: true
   },
   dev: {

@@ -176,7 +176,7 @@ export class ChartPoint extends XYDatapointView {
 
   protected _computeY() {
     const pxPerYUnit = this.chart.height / this.chart.axisInfo!.yLabelInfo.range!;
-    return this.chart.height - (this.datapoint.facetValueNumericized(this.datapoint.depKey)! - this.chart.axisInfo!. yLabelInfo.min!) * pxPerYUnit;
+    return this.chart.height - (this.datapoint.facetValueNumericized('y')! - this.chart.axisInfo!. yLabelInfo.min!) * pxPerYUnit;
   }
 
   computeLocation() {
