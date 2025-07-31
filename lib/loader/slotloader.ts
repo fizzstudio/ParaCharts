@@ -14,7 +14,9 @@ export class SlotLoader {
   }
 
   async findManifest(
-    els: HTMLElement[], manifestID?: string
+    els: HTMLElement[], 
+    manifestID?: string,
+    description?: string
   ): Promise<{ result: string; manifest?: Manifest; }> {
     if (manifestID) {
       console.log(`Loading from manifest ID: ${manifestID}`)
@@ -23,10 +25,14 @@ export class SlotLoader {
           const manifestRaw 
             = await fetch(document.getElementById(manifestID)!.getAttribute('src') as string);
           const manifest = await manifestRaw.json() as Manifest;
+          if (description) {
+            manifest.datasets[0].description = description;
+            console.log('manifest description changed');
+          }
           return { result: 'success', manifest: manifest };
         } else {
             let manifest = JSON.parse(document.getElementById(manifestID)!.innerHTML);
-            let filledManifest = this.validateManifest(els, manifest).manifest;
+            let filledManifest = this.validateManifest(els, manifest, description).manifest;
             return { result: 'success', manifest: filledManifest };
             /*
             if (JSON.parse(document.getElementById(manifestID)!.innerHTML).datasets[0].series[0].records.length > 0){
@@ -46,7 +52,7 @@ export class SlotLoader {
 
     if (document.getElementsByClassName('manifest').length > 0) {
       let manifest = JSON.parse(document.getElementsByClassName('manifest')[0]!.innerHTML);
-      let filledManifest = this.validateManifest(els, manifest).manifest;
+      let filledManifest = this.validateManifest(els, manifest, description).manifest;
       return { result: 'success', manifest: filledManifest };
     } else {
       console.log('Manifest ID not found or not present, attempting manifest construction from data');
@@ -60,13 +66,15 @@ export class SlotLoader {
           data: {source: 'inline'}
         }]
       }
-      return {result: 'success', manifest: this.validateManifest(els, manifest).manifest}
+      return {result: 'success', manifest: this.validateManifest(els, manifest, description).manifest}
     }
     return {result: 'failure', manifest: undefined};
   }
 
   validateManifest(
-    els: HTMLElement[], manifest: Manifest
+    els: HTMLElement[], 
+    manifest: Manifest,
+    description?: string
   ): {result: string, manifest: Manifest | undefined} {
     const paraChart = document.getElementsByTagName('para-chart')[0];
     const table = els[0] as HTMLTableElement;
@@ -136,6 +144,10 @@ export class SlotLoader {
       else {
         facet.datatype = 'string';
       }
+    }
+    if (description) {
+      manifest.datasets[0].description = description;
+      console.log('manifest description changed');
     }
     return {result: 'success', manifest: manifest };
   }

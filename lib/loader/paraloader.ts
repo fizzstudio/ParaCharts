@@ -85,7 +85,7 @@ export class ParaLoader {
     }
     if (description) {
       manifest.datasets[0].description = description;
-      console.log('manifest description changed')
+      console.log('manifest description changed');
     }
     // XXX include `data` here for proper external data loading
     return { result: 'success', manifest };
