@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { type ParaView } from '../../../../paraview';
 import { XYSeriesView, PointChart, ChartPoint } from '.';
 import { type LineSettings, type DeepReadonly } from '../../../../store/settings_types';
 import { PathShape } from '../../../shape/path';
@@ -32,6 +33,11 @@ import { NavNode } from '../navigation';
  * @public
  */
 export class LineChart extends PointChart {
+
+  constructor(paraview: ParaView, dataLayerIndex: number) {
+    super(paraview, dataLayerIndex);
+    this._observeStore();
+  }
 
   protected _addedToParent() {
     super._addedToParent();
@@ -400,8 +406,8 @@ export class LineSection extends ChartPoint {
   }
 
   protected _shapeStyleInfo(shapeIndex: number): StyleInfo {
-    if (this.paraview.store.navNode?.type === 'sequence') {
-      const node = this.paraview.store.navNode as NavNode<'sequence'>;
+    if (this.chart.navMap.cursor.type === 'sequence') {
+      const node = this.chart.navMap.cursor as NavNode<'sequence'>;
       if ((this.index === node.options.start && this.index && !shapeIndex)
         || (this.index === node.options.end - 1 && shapeIndex)) {
         return {
