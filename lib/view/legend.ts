@@ -87,7 +87,9 @@ export class Legend extends Container(View) {
       this._grid = new GridLayout(this.paraview, {
         numCols: 3,
         colGaps: symLabelGap,
-        colAligns: ['center', 'center', 'start']
+        colAligns: ['center', 'center', 'start'],
+        isAutoWidth: true,
+        isAutoHeight: true
       }, 'legend-grid');
       this._grid.padding = hasLegendBox ? this.paraview.store.settings.legend.padding : 0;
       views.forEach(v => this._grid.append(v));
@@ -123,13 +125,14 @@ export class Legend extends Container(View) {
 
     if (hasLegendBox) {
       this.prepend(new RectShape(this.paraview, {
-        width: this._width,
-        height: this._height,
+        width: this._grid.width,
+        height: this._grid.height,
         fill: this.settings.boxStyle.fill,
         stroke: this.settings.boxStyle.outline,
         strokeWidth: this.settings.boxStyle.outlineWidth
       }));
     }
+    this.updateSize();
   }
 
   computeSize(): [number, number] {

@@ -7,11 +7,11 @@ import { ParaView } from "../../../../paraview";
 import { DeepReadonly, HistogramSettings, PointChartType, type Setting } from "../../../../store";
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
-import { XYChart, XYSeriesView } from "./xy_chart";
+import { PlanePlotView, PlaneSeriesView } from ".";
 import { DatapointView, SeriesView } from "../../../data";
 import { strToId } from "@fizz/paramanifest";
 
-export class Histogram extends XYChart {
+export class Histogram extends PlanePlotView {
   protected _bins: number = 20;
   protected _data: Array<Array<number>> = [];
   protected _grid: Array<number> = [];
@@ -158,7 +158,7 @@ export class Histogram extends XYChart {
     return this._settings;
   }
 
-  protected _newDatapointView(seriesView: XYSeriesView) {
+  protected _newDatapointView(seriesView: PlaneSeriesView) {
     return new HistogramBinView(this, seriesView);
   }
 
@@ -172,7 +172,7 @@ export class Histogram extends XYChart {
       // }
       // this.selectors[i].push(`tick-x-${xId}`);
     }
-    const seriesView = new XYSeriesView(this, this.paraview.store.model!.series[0].key);
+    const seriesView = new PlaneSeriesView(this, this.paraview.store.model!.series[0].key);
     this._chartLandingView.append(seriesView);
     for (let i = 0; i < this._bins; i++) {
         const bin = new HistogramBinView(this, seriesView);
@@ -194,7 +194,7 @@ export class Histogram extends XYChart {
       */
     // NB: This only works properly because we haven't added series direct labels
     // yet, which are also direct children of the chart.
-    this._chartLandingView.sortChildren((a: XYSeriesView, b: XYSeriesView) => {
+    this._chartLandingView.sortChildren((a: PlaneSeriesView, b: PlaneSeriesView) => {
       return (b.children[0].datapoint.facetValueNumericized(b.children[0].datapoint.depKey)!) - (a.children[0].datapoint.facetValueNumericized(a.children[0].datapoint.depKey)!);
     });
   }
@@ -371,7 +371,7 @@ export class Histogram extends XYChart {
 export class HistogramBinView extends DatapointView {
 
   declare readonly chart: Histogram;
-  declare protected _parent: XYSeriesView;
+  declare protected _parent: PlaneSeriesView;
 
   protected _height!: number;
   protected _width!: number;

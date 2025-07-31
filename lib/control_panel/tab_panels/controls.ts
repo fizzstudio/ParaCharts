@@ -3,7 +3,7 @@ import { ControlPanelTabPanel } from './tab_panel';
 import { AdvancedControlSettingsDialog } from '../dialogs';
 import { keymap } from '../../store/keymap';
 
-import { 
+import {
   html, css,
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
@@ -28,6 +28,17 @@ export class ControlsPanel extends ControlPanelTabPanel {
       key: 'ui.isFullscreenEnabled',
       label: 'Fullscreen',
       parentView: 'controlPanel.tabs.controls.fullscreen',
+    });
+    this._store.settingControls.add({
+      type: 'slider',
+      key: 'chart.fontScale',
+      label: 'Font scale',
+      options: {
+        min: 0.5,
+        max: 2,
+        step: 0.1,
+      },
+      parentView: 'controlPanel.tabs.controls',
     });
   }
 
@@ -104,9 +115,9 @@ export class ControlsPanel extends ControlPanelTabPanel {
             Fullscreen
           </button>
         </div>
-        
+        ${this._store.settingControls.getContent('controlPanel.tabs.controls')}
         <section id="advanced">
-          <button 
+          <button
             @click=${() => this.showHelpDialog()}
           >
             Help

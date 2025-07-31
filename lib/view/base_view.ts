@@ -207,6 +207,9 @@ export class View extends BaseView {
   protected _locOffset = new Vec2();
   protected _width = -1;
   protected _height = -1;
+  protected _canWidthFlex = false;
+  protected _canHeightFlex = false;
+  protected _isBubbleSizeChange = false;
   protected _currFocus: View | null = null;
   //protected _eventActionManager: EventActionManager<this> | null = null;
   //protected _hotkeyActionManager!: HotkeyActionManager<this>;
@@ -253,14 +256,14 @@ export class View extends BaseView {
         }
         this._prev =  null;
         this._next = null;
+        this._removedFromParent();
         parent._didRemoveChild(this);
       }
       return;
     }
-    // A view may set its size before being parented, e.g.,
+    // A view may have set its size before being parented, e.g.,
     // in the constructor
     if (this._width === -1 && this._height === -1) {
-      // Update the size without updating the parent
       this.updateSize();
     }
     this._parent = parent;
@@ -277,7 +280,9 @@ export class View extends BaseView {
     this._parent._didAddChild(this);
     if (!this._id) {
       // ID may have been set already, e.g., by a subclass constructor
-      this._id = this._createId();
+      // NB: Use the setter here to allow datapoint views to hook into this
+      // and register their ID
+      this.id = this._createId();
     }
   }
 
@@ -288,12 +293,15 @@ export class View extends BaseView {
   protected _addedToParent() {
   }
 
+  protected _removedFromParent() {
+  }
+
   protected _didAddChild(_kid: View) {
-    this.updateSize();
+    //this.updateSize();
   }
 
   protected _didRemoveChild(_kid: View) {
-    this.updateSize();
+    //this.updateSize();
   }
 
   get children(): readonly View[] {
@@ -368,16 +376,16 @@ export class View extends BaseView {
   set width(newWidth: number) {
     const oldWidth = this._width;
     this._width = newWidth;
-    if (this._parent && oldWidth !== newWidth) {
-      this._boundingSizeDidChange();
+    if (oldWidth !== newWidth) {
+      this._boundingSizeDidChange(oldWidth, this._height);
     }
   }
 
   set height(newHeight: number) {
     const oldHeight = this._height;
     this._height = newHeight;
-    if (this._parent && oldHeight !== newHeight) {
-      this._boundingSizeDidChange();
+    if (oldHeight !== newHeight) {
+      this._boundingSizeDidChange(this._width, oldHeight);
     }
   }
 
@@ -400,7 +408,7 @@ export class View extends BaseView {
     const sizeChanged = oldVertPad !== this._padding.top + this._padding.bottom
       || oldHorizPad !== this._padding.left + this._padding.right;
     if (sizeChanged) {
-      this._boundingSizeDidChange();
+      this._boundingSizeDidChange(oldHorizPad + this._width, oldVertPad + this._height);
     }
   }
 
@@ -448,6 +456,22 @@ export class View extends BaseView {
     }
   }
 
+  get canWidthFlex() {
+    return this._canWidthFlex;
+  }
+
+  set canWidthFlex(canWidthFlex: boolean) {
+    this._canWidthFlex = canWidthFlex;
+  }
+
+  get canHeightFlex() {
+    return this._canHeightFlex;
+  }
+
+  set canHeightFlex(canHeightFlex: boolean) {
+    this._canHeightFlex = canHeightFlex;
+  }
+
   get hidden() {
     return this._hidden;
   }
@@ -457,7 +481,7 @@ export class View extends BaseView {
     const oldBoundHeight = this.paddedHeight;
     this._hidden = hidden;
     if (oldBoundWidth || oldBoundHeight) {
-      this._boundingSizeDidChange();
+      this._boundingSizeDidChange(oldBoundWidth, oldBoundHeight);
     }
   }
 
@@ -557,32 +581,47 @@ export class View extends BaseView {
   }
 
   setSize(width: number, height: number, isBubble = true) {
+    //console.log('SET SIZE', this.id || this.constructor.name, width, height, isBubble);
     const oldWidth = this._width;
     const oldHeight = this._height;
     this._width = width;
     this._height = height;
     const sizeChanged = oldWidth !== this._width || oldHeight !== this._height;
-    if (sizeChanged && isBubble) {
-      this._boundingSizeDidChange();
+    if (sizeChanged) {
+      this._boundingSizeDidChange(oldWidth, oldHeight, isBubble);
     }
   }
 
-  protected _boundingSizeDidChange() {
-    if (this._parent) {
-      this._parent._childDidResize(this);
-    }
-    // FIXME: paraview should always exist
-    if (this.paraview) {
-      this.paraview.requestUpdate();
-    }
+  resize(width: number, height: number) {
+    this.setSize(width, height);
   }
 
-  updateSize() {
-    this.setSize(...this.computeSize());
+  get isBubbleSizeChange() {
+    return this._isBubbleSizeChange;
+  }
+
+  set isBubbleSizeChange(isBubbleSizeChange: boolean) {
+    this._isBubbleSizeChange = isBubbleSizeChange;
+  }
+
+  protected _boundingSizeDidChange(_oldWidth: number, _oldHeight: number, isBubble = true) {
+    // if (this._parent && (isBubble && this._isBubbleSizeChange)) {
+    //   this._bubbleSizeChange();
+    // }
+    //this.paraview.requestUpdate();
+  }
+
+  protected _bubbleSizeChange() {
+    console.log('BUBBLING SIZE CHANGE', this.id || this.constructor.name);
+    this._parent!._childDidResize(this);
+  }
+
+  updateSize(isBubble = true) {
+    this.setSize(...this.computeSize(), isBubble);
   }
 
   protected _childDidResize(_kid: View) {
-    this.updateSize();
+    //this.updateSize();
   }
 
   snapXTo(other: View, where: SnapLocation) {
@@ -606,19 +645,19 @@ export class View extends BaseView {
   }
 
   get styleInfo() {
-    return structuredClone(this._styleInfo);
+    return {...this._styleInfo};
   }
 
   set styleInfo(styleInfo: StyleInfo) {
-    this._styleInfo = structuredClone(styleInfo);
+    this._styleInfo = {...styleInfo};
   }
 
   get classInfo() {
-    return structuredClone(this._classInfo);
+    return {...this._classInfo};
   }
 
   set classInfo(classInfo: ClassInfo) {
-    this._classInfo = structuredClone(classInfo);
+    this._classInfo = {...classInfo};
   }
 
   get prev() {
@@ -769,18 +808,25 @@ export class View extends BaseView {
     return this._currFocus ? this._currFocus.focusLeaf : this;
   }
 
+  protected _didAddChildToList(_child: View) {}
+
   append(child: View) {
     this._children.push(child);
+    this._didAddChildToList(child);
+    // console.log('SETTING PARENT OF', child.id || child.constructor.name, 'TO', this.id || this.constructor.name);
     child.parent = this;
+    // console.log('DID SET PARENT');
   }
 
   prepend(child: View) {
     this._children.unshift(child);
+    this._didAddChildToList(child);
     child.parent = this;
   }
 
   insert(child: View, i: number) {
     this._children.splice(i, 0, child);
+    this._didAddChildToList(child);
     child.parent = this;
   }
 
@@ -834,10 +880,10 @@ export class View extends BaseView {
     return this._isObserveStore;
   }
 
-  protected _observeStore() {
+  observeStore() {
     this._isObserveStore = true;
     if (this._parent) {
-      this._parent._observeStore();
+      this._parent.observeStore();
     }
   }
 

@@ -4,6 +4,8 @@ import { type ParaStore } from '../../../store';
 import { type Direction } from '../../../store';
 import { DataLayer } from './data_layer';
 import { clusterObject } from '@fizz/clustering';
+import { BaseChartInfo } from '../../../chart_types';
+import { type Datapoint } from '@fizz/paramodel';
 
 const oppositeDirs: Record<Direction, Direction> = {
   up: 'down',
@@ -14,7 +16,9 @@ const oppositeDirs: Record<Direction, Direction> = {
   out: 'in'
 };
 
-export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence' | 'cluster';
+export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence' | 'cluster' | 'scatterpoint';
+export type DatapointNavNodeType = 'datapoint' | 'scatterpoint';
+
 
 export type NavNodeOptionsType<T extends NavNodeType> =
   T extends 'top' ? TopNavNodeOptions :
@@ -23,7 +27,13 @@ export type NavNodeOptionsType<T extends NavNodeType> =
   T extends 'chord' ? ChordNavNodeOptions :
   T extends 'sequence' ? SequenceNavNodeOptions :
   T extends 'cluster' ? ClusterNavNodeOptions :
+  T extends 'scatterpoint' ? ScatterPointNavNodeOptions :
   never;
+
+export interface DatapointCursor {
+  seriesKey: string;
+  index: number;
+}
 
 export interface TopNavNodeOptions {}
 export interface SeriesNavNodeOptions {
@@ -32,6 +42,9 @@ export interface SeriesNavNodeOptions {
 export interface DatapointNavNodeOptions {
   seriesKey: string;
   index: number;
+}
+export interface ScatterPointNavNodeOptions extends DatapointNavNodeOptions{
+  cluster: number;
 }
 export interface ChordNavNodeOptions {
   index: number;
@@ -85,7 +98,7 @@ export class NavMap {
   protected _currentLayer: NavLayer;
   protected _runTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(protected _store: ParaStore, protected _chart: DataLayer) {
+  constructor(protected _store: ParaStore, protected _chart: BaseChartInfo) {
     this._currentLayer = new NavLayer(this, 'root');
     this._layers.set(this._currentLayer.name, this._currentLayer);
   }
@@ -118,13 +131,8 @@ export class NavMap {
   }
 
   async visitDatapoints() {
-    // NB: cursor may have no datapoints
-    // await this.cursor!.at(0)?.focus();
-    this._store.visit(this.cursor!.datapointViews.map(view => ({
-      seriesKey: view.seriesKey,
-      index: view.index,
-      datapointView: view
-    })));
+    console.log('VISIT', this.cursor.datapoints);
+    this._store.visit(this.cursor.datapoints);
     if (this._runTimer) {
       clearTimeout(this._runTimer);
     } else {
@@ -150,6 +158,7 @@ export class NavMap {
   }
 
   goTo<T extends NavNodeType>(type: T, options: Readonly<NavNodeOptionsType<T>>) {
+    console.log('GOTO', type, options);
     const node = this.node(type, options);
     if (node) {
       node.layer.cursor = node;
@@ -244,7 +253,7 @@ export class NavLayer {
 
 export class NavNode<T extends NavNodeType = NavNodeType> {
   protected _links: Map<Direction, NavLayer | NavNode> = new Map();
-  protected _datapointViews: DatapointView[] = [];
+  // protected _datapoints: DatapointCursor[] = [];
   // NB: This is the index of the nav node in the layer's list of nodes
   // of this type, NOT, e.g., the index of a datapoint in a series
   protected _index = -1;
@@ -252,14 +261,15 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
   constructor(
     protected _layer: NavLayer,
     protected _type: T,
-    protected _options: NavNodeOptionsType<T>
+    protected _options: NavNodeOptionsType<T>,
+    protected _store: ParaStore
   ) {
     _layer.registerNode(this);
   }
 
-  get datapointViews(): readonly DatapointView[] {
-    return this._datapointViews;
-  }
+  // get datapoints(): readonly DatapointCursor[] {
+  //   return this._datapoints;
+  // }
 
   get type() {
     return this._type;
@@ -279,6 +289,29 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
 
   set index(index: number) {
     this._index = index;
+  }
+
+  get datapoints() {
+    const datapoints: Datapoint[] = [];
+    if (this.isNodeType('datapoint') || this.isNodeType('scatterpoint')) {
+      datapoints.push(this._store.model!.atKeyAndIndex(this._options.seriesKey, this._options.index)!);
+    } else if (this.isNodeType('series')) {
+      const seriesLength = this._store.model!.atKey(this._options.seriesKey)!.length;
+      for (let i = 0; i < seriesLength; i++) {
+        datapoints.push(this._store.model!.atKeyAndIndex(this._options.seriesKey, i)!);
+      }
+    } else if (this.isNodeType('chord')) {
+      datapoints.push(...this._store.model!.series.map(series =>
+        series.datapoints[this._options.index]));
+    } else if (this.isNodeType('sequence')) {
+      for (let i = this._options.start; i < this._options.end; i++) {
+        datapoints.push(this._store.model!.atKeyAndIndex(this._options.seriesKey, i)!);
+      }
+    } else if (this.isNodeType('cluster')) {
+      datapoints.push(...this._store.model!.atKey(this._options.seriesKey)!.datapoints.filter(dp =>
+        this._options.datapoints.includes(dp.datapointIndex)));
+    }
+    return datapoints;
   }
 
   getLink(dir: Direction) {
@@ -338,15 +371,16 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     return all;
   }
 
-  addDatapointView(datapointView: DatapointView) {
-    this._datapointViews.push(datapointView);
-  }
+  // addDatapoint(seriesKey: string, index: number) {
+  //   this._datapoints.push({seriesKey, index});
+  // }
 
-  at(index: number): DatapointView | undefined {
-    return this._datapointViews.at(index);
-  }
+  // at(index: number): DatapointCursor | undefined {
+  //   return this._datapoints.at(index);
+  // }
 
   async move(dir: Direction) {
+    console.log('MOVE', dir);
     const link = this._links.get(dir);
     if (!link) {
       return;
@@ -365,8 +399,13 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     this._layer.goToNode(this);
   }
 
-  isNodeType<N extends T>(nodeType: N): this is NavNode<N> {
+  isNodeType<N extends NavNodeType>(nodeType: N): this is NavNode<N> {
+    // @ts-ignore
     return this.type === nodeType;
+  }
+
+  isDatapointNode(): this is NavNode<'datapoint'> {
+    return this.type === 'datapoint';
   }
 
 }

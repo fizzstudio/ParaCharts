@@ -24,46 +24,88 @@ import { mapn } from '@fizz/chart-classifier-utils';
 
 import { svg, type TemplateResult } from 'lit';
 import { HorizGridLine, HorizTick, VertGridLine, VertTick } from './rule';
-import { Label } from '../label';
+import { ParaView } from '../../paraview';
+import { HorizCardinalDirection, OrientedAxisSettings, VertCardinalDirection } from '../../store';
+
+export interface TickStripOptions {
+  orientation: AxisOrientation;
+  length: number;
+  plotWidth: number;
+  plotHeight: number;
+  tickCount: number;
+  isInterval: boolean;
+  isDrawOverhang: boolean; // the axis line draws the overhang, not us
+  tickStep: number;
+  orthoAxisPosition: VertCardinalDirection | HorizCardinalDirection;
+  zeroIndex: number;
+}
 
 /**
  * A strip of tick marks.
  */
-export abstract class TickStrip<T extends AxisOrientation = AxisOrientation> extends Container(View) {
+export abstract class TickStrip extends Container(View) {
 
   declare protected _parent: Layout;
 
-  protected _count!: number;
-  protected _gridLineLength!: number;
+  protected _count: number;
+  protected _interval!: number;
+  protected _indices: number[] = [];
 
-  constructor(
-    public readonly axis: Axis<T>,
-    protected _interval: number,
+  constructor(paraview: ParaView,
+    protected _axisSettings: OrientedAxisSettings<AxisOrientation>,
     protected _majorModulus: number,
-    contentWidth: number,
-    contentHeight: number
+    protected _options: TickStripOptions
   ) {
-    super(axis.paraview);
+    super(paraview);
     // XXX this results in creating the rules twice, which is harmless, but stupid
-    this.resize(contentWidth, contentHeight, this._interval);
+    this._updateSizeFromLength(this._options.length);
+    //this._computeCount();
+    this._count = this._options.tickCount;
+    if (this._options.isInterval) {
+      //this._count++;
+    }
+    this._computeInterval();
   }
 
-  resize(_width: number, _height: number, interval: number) {
-    this._interval = interval;
+  resize(width: number, height: number) {
+    console.log('TICK STRIP RESIZE');
+    super.resize(width, height);
+    this._computeInterval();
     this.clearChildren();
-    this._createRules();
+    this._createTicks();
+  }
+
+  // protected _computeCount() {
+  //   // XXX CIRCULAR DEPENDENCY between this and computeInterval()
+  //   const intervalCount = this._length / this._interval;
+  //   this._count = Math.round(intervalCount);
+  //   if (this._options.isInterval) {
+  //     this._count++;
+  //   }
+  // }
+
+  protected _computeInterval() {
+    const n = this._options.isInterval
+      ? this._count
+      : this._count - 1;
+    this._interval = this._length/(n/this._options.tickStep);
   }
 
   protected _addedToParent(): void {
-    this._count = this._computeCount();
-    if (this.axis.isInterval) {
-      this._count++;
-    }
-    this._createRules();
+    this._createTicks();
   }
 
+  /**
+   * Overridden by subclasses to set the appropriate size dimension from `length`.
+   */
+  protected _updateSizeFromLength(length: number) {
+    this.updateSize();
+  }
+
+  protected abstract get _length(): number;
+
   protected _createId(..._args: any[]): string {
-    return `${this.axis.orientation}-axis-tick-strip`;
+    return `${this._options.orientation}-axis-tick-strip`;
   }
 
   get parent() {
@@ -78,129 +120,177 @@ export abstract class TickStrip<T extends AxisOrientation = AxisOrientation> ext
     super.parent = parent;
   }
 
-  protected abstract get _length(): number;
-
-  protected _computeCount() {
-    const intervalCount = this._length / this._interval;
-    return Math.round(intervalCount);
-  }
-
-  protected abstract _createRules(): void;
+  protected abstract _createTicks(): void;
+  abstract addRules(length: number): void;
 
 }
 
 /**
  * A horizontal strip of tick marks.
  */
-export class HorizTickStrip extends TickStrip<'horiz'> {
+export class HorizTickStrip extends TickStrip {
+
+  protected _ruleXs: number[] = [];
+  protected _ruleY = 0;
+
+  constructor(paraview: ParaView,
+    _axisSettings: OrientedAxisSettings<AxisOrientation>,
+    _majorModulus: number,
+    _options: TickStripOptions
+  ) {
+    super(paraview, _axisSettings, _majorModulus, _options);
+    this._canWidthFlex = true;
+  }
 
   computeSize() {
     return [
-      this.width,
+      this._options.length,
       // NB! The grid lines DON'T COUNT toward the height!
-      (this.axis.settings.tick.isDrawEnabled || this.axis.orthoAxis.settings.line.isDrawOverhangEnabled)
-        ? this.axis.settings.tick.length
+      (this._axisSettings.tick.isDrawEnabled || this._options.isDrawOverhang)
+        ? this._axisSettings.tick.length
         : 0
     ] as [number, number];
   }
 
-  get _length() {
-    return this.width;
+  protected get _length(): number {
+    return this._width;
   }
 
-  resize(width: number, height: number, interval: number) {
-    this.width = width;
-    this._gridLineLength = height;
-    super.resize(width, height, interval);
+  protected _updateSizeFromLength(length: number) {
+    this._width = length;
+    super._updateSizeFromLength(length);
   }
 
-  protected _createRules() {
-    const isOrthoEast = this.axis.orthoAxis.orientationSettings.position === 'east';
-    let tickLength = this.axis.settings.tick.length;
-    let y = 0;
-    if (this.axis.orientationSettings.position === 'north') {
-      y = (this.axis.settings.tick.isDrawEnabled || this.axis.orthoAxis.settings.line.isDrawOverhangEnabled)
-        ? tickLength + this.axis.settings.tick.padding
+  // resize(width: number, height: number, interval: number) {
+  //   this.width = width;
+  //   this._gridLineLength = height;
+  //   super.resize(width, height, interval);
+  // }
+
+  protected _createTicks() {
+    const isOrthoEast = this._options.orthoAxisPosition === 'east';
+    let tickLength = this._axisSettings.tick.length;
+    this._ruleY = 0;
+    if (this._axisSettings.position === 'north') {
+      this._ruleY = (this._axisSettings.tick.isDrawEnabled || this._options.isDrawOverhang)
+        ? tickLength + this._axisSettings.tick.padding
         : 0;
     }
-    let indices = mapn(this._count + (this.axis.isInterval ? 0 : 1), i => i)
-      .filter(i => i % this.axis.tickStep === 0);
+    this._indices = mapn(this._count + (this._options.isInterval ? 1 : 0), i => i)
+      .filter(i => i % this._options.tickStep === 0);
     if (!this.paraview.store.settings.grid.isDrawVertAxisOppositeLine) {
-      indices = isOrthoEast ? indices.slice(0, -1) : indices.slice(1);
+      this._indices = isOrthoEast
+        ? this._indices.slice(0, -1)
+        : this._indices.slice(1);
     }
     // skip axis line tick
-    indices = indices.slice(1);
-    const xs = indices.map(i => isOrthoEast
+    this._indices = this._indices.slice(1);
+    this._ruleXs = this._indices.map(i => isOrthoEast
       ? this.width - i*this._interval
       : i*this._interval);
-    const zeroIndex = this.axis.tickLabelTiers[0].children.findIndex((c: Label) => c.text == "0") - 1
-    indices.forEach((idx, i) => {
+    this._indices.forEach((idx, i) => {
       this.append(new HorizTick(
-        this.axis.orientationSettings.position, this.paraview, idx % this._majorModulus === 0, tickLength));
-      this._children.at(-1)!.x = xs[i];
-      this._children.at(-1)!.y = y;
-      this._children.at(-1)!.hidden = !this.axis.settings.tick.isDrawEnabled;
-      this.append(new HorizGridLine(
-        this.axis.orientationSettings.position, this.paraview, undefined, this._gridLineLength, i == zeroIndex ? true : false));
-      this._children.at(-1)!.x = xs[i];
-      this._children.at(-1)!.y = y;
-      this._children.at(-1)!.hidden = !this.paraview.store.settings.grid.isDrawVertLines;
+        this._axisSettings.position as VertCardinalDirection,
+        this.paraview, idx % this._majorModulus === 0, tickLength));
+      this._children.at(-1)!.x = this._ruleXs[i];
+      this._children.at(-1)!.y = this._ruleY;
+      this._children.at(-1)!.hidden = !this._axisSettings.tick.isDrawEnabled;
     });
   }
 
+  addRules(length: number) {
+    this._indices.forEach((idx, i) => {
+      this.append(new HorizGridLine(
+        this._axisSettings.position as VertCardinalDirection,
+        this.paraview, undefined, length, i === this._options.zeroIndex ? true : false));
+      this._children.at(-1)!.x = this._ruleXs[i];
+      this._children.at(-1)!.y = this._ruleY;
+      this._children.at(-1)!.hidden = !this.paraview.store.settings.grid.isDrawVertLines;
+    });
+  }
 }
 
 /**
  * A vertical strip of tick marks.
  */
-export class VertTickStrip extends TickStrip<'vert'> {
+export class VertTickStrip extends TickStrip {
+
+  protected _ruleX = 0;
+  protected _ruleYs: number[] = [];
+
+  constructor(paraview: ParaView,
+    _axisSettings: OrientedAxisSettings<AxisOrientation>,
+    _majorModulus: number,
+    _options: TickStripOptions
+  ) {
+    super(paraview, _axisSettings, _majorModulus, _options);
+    this._canHeightFlex = true;
+  }
 
   computeSize() {
+    console.log('TICK STRIP COMPUTE SIZE');
     return [
       // NB! The grid lines DON'T COUNT toward the width!
-      (this.axis.settings.tick.isDrawEnabled || this.axis.orthoAxis.settings.line.isDrawOverhangEnabled)
-        ? this.axis.settings.tick.length
+      (this._axisSettings.tick.isDrawEnabled || this._options.isDrawOverhang)
+        ? this._axisSettings.tick.length
         : 0,
-      this.height
+      this._options.length
     ] as [number, number];
   }
 
-  get _length() {
-    return this.height;
+  protected get _length(): number {
+    return this._height;
   }
 
-  resize(width: number, height: number, interval: number) {
-    this._gridLineLength = width;
-    this.height = height;
-    super.resize(width, height, interval);
+  protected _updateSizeFromLength(length: number) {
+    this._height = length;
+    super._updateSizeFromLength(length);
   }
 
-  protected _createRules() {
-    const isNorth = this.axis.orthoAxis.orientationSettings.position === 'north';
-    const tickLength = this.axis.settings.tick.length;
-    let x = tickLength;
-    let indices = mapn(this._count, i => i);
-    if (!this.axis.docView.paraview.store.settings.grid.isDrawHorizAxisOppositeLine) {
-      indices = isNorth ? indices.slice(1) : indices.slice(0, -1);
+  // protected _adjustToSizeConstraint() {
+  //   this._gridLineLength = width;
+  //   this.height = height;
+  //   super.resize(width, height, interval);
+  // }
+
+  protected _createTicks() {
+    const isNorth = this._options.orthoAxisPosition === 'north';
+    const tickLength = this._axisSettings.tick.length;
+    this._ruleX = tickLength;
+    console.log('COUNT', this._count);
+    this._indices = mapn(this._count, i => i);
+    if (!this.paraview.store.settings.grid.isDrawHorizAxisOppositeLine) {
+      this._indices = isNorth
+        ? this._indices.slice(1)
+        : this._indices.slice(0, -1);
     }
-    if (this.axis.orientationSettings.position === 'east') {
-      x = 0;
+    if (this._axisSettings.position === 'east') {
+      this._ruleX = 0;
     }
-    const ys = indices.map(i => isNorth ?
-      this.height - i*this._interval : i*this._interval);
-    const zeroIndex = indices.length - this.axis.tickLabelTiers[0].children.findIndex((c: Label) => c.text == "0")
-    indices.forEach(i => {
+    this._ruleYs = this._indices.map(i => isNorth
+      ? this.height - i*this._interval
+      : i*this._interval);
+    console.log('YS', this._ruleYs, this._options.plotWidth);
+    this._indices.forEach(i => {
       this.append(new VertTick(
-        this.axis.orientationSettings.position, this.paraview, i % this._majorModulus === 0, tickLength));
-      this._children.at(-1)!.x = x;
-      this._children.at(-1)!.y = ys[i];
-      this._children.at(-1)!.hidden = !this.axis.settings.tick.isDrawEnabled;
-      this.append(new VertGridLine(
-        this.axis.orientationSettings.position, this.paraview, undefined, this._gridLineLength, i == zeroIndex ? true : false));
-      this._children.at(-1)!.x = x;
-      this._children.at(-1)!.y = ys[i];
-      this._children.at(-1)!.hidden = !this.paraview.store.settings.grid.isDrawHorizLines;
+        this._axisSettings.position as HorizCardinalDirection,
+        this.paraview, i % this._majorModulus === 0, tickLength));
+      this._children.at(-1)!.x = this._ruleX;
+      this._children.at(-1)!.y = this._ruleYs[i];
+      this._children.at(-1)!.hidden = !this._axisSettings.tick.isDrawEnabled;
     });
   }
 
+  addRules(length: number) {
+    this._indices.forEach(i => {
+      this.append(new VertGridLine(
+        this._axisSettings.position as HorizCardinalDirection,
+        // XXX don't use `plotWidth` here
+        this.paraview, undefined, length,
+        this._indices.length - i - 1 === this._options.zeroIndex ? true : false));
+      this._children.at(-1)!.x = this._ruleX;
+      this._children.at(-1)!.y = this._ruleYs[i];
+      this._children.at(-1)!.hidden = !this.paraview.store.settings.grid.isDrawHorizLines;
+    });
+  }
 }

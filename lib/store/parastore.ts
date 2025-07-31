@@ -31,7 +31,8 @@ import {
   PlaneDatapoint,
   planeModelFromInlineData,
   planeModelFromExternalData,
-  PlaneModel
+  PlaneModel,
+  Datapoint
 } from '@fizz/paramodel';
 import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 
@@ -50,14 +51,10 @@ import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { type ParaChart } from '../parachart/parachart';
 import { DatapointView } from '../view/data';
+import { type DatapointCursor } from '../view/layers/data/navigation';
+import { exp } from 'mathjs';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
-
-export interface DataCursor {
-  seriesKey: string;
-  index: number;
-  datapointView: DatapointView;
-}
 
 // This mostly exists so that each new announcement will be considered
 // distinct, even if the text is the same
@@ -111,6 +108,18 @@ export interface SparkBrailleInfo {
   isBar?: boolean;
 }
 
+/**
+ * Convert a datapoint ID string of format `${seriesKey}-${index}` into a DatapointCursor.
+ * @param id - The ID
+ * @returns DatapointCursor
+ */
+export function datapointIdToCursor(id: string): DatapointCursor {
+  const [seriesKey, index] = id.split('-');
+  return {
+    seriesKey,
+    index: parseInt(index)
+  };
+}
 
 export class ParaStore extends State {
 
@@ -123,6 +132,7 @@ export class ParaStore extends State {
   @property() annotations: BaseAnnotation[] = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
+  @property() frontSeries = '';
   @property() soloSeries = '';
 
   @property() protected _hiddenSeriesList: string[] = [];
@@ -130,11 +140,12 @@ export class ParaStore extends State {
   @property() protected focused = 'chart';
   @property() protected selected = null;
   @property() protected queryLevel = 'default';
-  protected _visitedDatapoints: DataCursor[] = [];
-  protected _prevVisitedDatapoints: DataCursor[] = [];
-  protected _everVisitedDatapoints: DataCursor[] = [];
-  @property() protected _selectedDatapoints: DataCursor[] = [];
-  @property() protected _prevSelectedDatapoints: DataCursor[] = [];
+  /** `${seriesKey}-${index}` */
+  protected _visitedDatapoints = new Set<string>();
+  protected _prevVisitedDatapoints = new Set<string>();
+  protected _everVisitedDatapoints = new Set<string>();
+  @property() protected _selectedDatapoints = new Set<string>();
+  @property() protected _prevSelectedDatapoints = new Set<string>();
   @property() protected _rangeHighlights: RangeHighlight[] = [];
   @property() protected _modelLineBreaks: LineBreak[] = [];
   @property() protected _userLineBreaks: LineBreak[] = [];
@@ -161,7 +172,7 @@ export class ParaStore extends State {
   public idList: Record<string, boolean> = {};
 
   constructor(
-    protected _paraChart: ParaChart,
+    public paraChart: ParaChart,
     inputSettings: SettingsInput,
     suppleteSettingsWith?: DeepReadonly<Settings>,
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -335,7 +346,7 @@ export class ParaStore extends State {
       this._settingObservers[path]?.forEach(observer =>
         observer(values.oldValue, values.newValue)
       );
-      this._paraChart.settingDidChange(path, values.oldValue, values.newValue);
+      this.paraChart.settingDidChange(path, values.oldValue, values.newValue);
     }
   }
 
@@ -445,63 +456,70 @@ export class ParaStore extends State {
     return this._prevVisitedDatapoints;
   }
 
-  get everVisitedDatapoints(): DataCursor[] {
+  get everVisitedDatapoints() {
     return this._everVisitedDatapoints;
   }
 
-  visit(datapoints: DataCursor[]) {
+  visit(datapoints: Datapoint[]) {
     this._prevVisitedDatapoints = this._visitedDatapoints;
-    this._prevVisitedDatapoints.map(c => c.datapointView.isVisited = false)
-    this._visitedDatapoints = [...datapoints];
-    this._visitedDatapoints.map(c => c.datapointView.isVisited = true)
-    for (let datapoint of datapoints){
-      if (!datapoint.datapointView.everVisited ){
-        this._everVisitedDatapoints.push(datapoint);
-        datapoint.datapointView.everVisited = true;
-      }
+    // this._prevVisitedDatapoints.forEach((view) => {
+    //   view.isVisited = false;
+    // });
+    this._visitedDatapoints = new Set();
+    datapoints.forEach(datapoint => {
+      this._visitedDatapoints.add(`${datapoint.seriesKey}-${datapoint.datapointIndex}`);
+      // cursor.datapointView.isVisited = true;
+    });
+    //this._visitedDatapoints.map(c => c.datapointView.isVisited = true)
+    for (const datapoint of datapoints) {
+      //if (!datapoint.datapointView.everVisited) {
+        // this._everVisitedDatapoints.push(datapoint);
+        this._everVisitedDatapoints.add(`${datapoint.seriesKey}-${datapoint.datapointIndex}`);
+        // datapoint.datapointView.everVisited = true;
+      //}
     }
     if (this.settings.controlPanel.isMDRAnnotationsVisible) {
-      this.removeMDRAnnotations(this._prevVisitedDatapoints)
+      this.removeMDRAnnotations(this._prevVisitedDatapoints);
       this.showMDRAnnotations();
     }
     // NB: Making _visitedDatapoints a lit-app/state property proved
     // problematic for performance
-    this._paraChart.paraView.requestUpdate();
+    this.paraChart.paraView.requestUpdate();
+  }
+
+  protected _datapointSetHas(
+    seriesKey: string, index: number, collection: Set<string>
+  ): boolean {
+    return collection.has(`${seriesKey}-${index}`);
   }
 
   isVisited(seriesKey: string, index: number) {
-    return !!this._visitedDatapoints.find(cursor =>
-      cursor.seriesKey === seriesKey && cursor.index === index);
+    return this._datapointSetHas(seriesKey, index, this._visitedDatapoints);
   }
 
   isVisitedSeries(seriesKey: string) {
-    return !!this._visitedDatapoints.find(cursor =>
-      cursor.seriesKey === seriesKey);
+    return this._visitedDatapoints.values().some(value => value.startsWith(seriesKey));
   }
 
   wasVisited(seriesKey: string, index: number) {
-    return !!this._prevVisitedDatapoints.find(cursor =>
-      cursor.seriesKey === seriesKey && cursor.index === index);
+    return this._datapointSetHas(seriesKey, index, this._prevVisitedDatapoints);
   }
 
   wasVisitedSeries(seriesKey: string) {
-    return !!this._prevVisitedDatapoints.find(cursor =>
-      cursor.seriesKey === seriesKey);
+    return this._prevVisitedDatapoints.values().some(value => value.startsWith(seriesKey));
   }
 
   everVisited(seriesKey: string, index: number): boolean {
-    return !!this._everVisitedDatapoints.find(cursor =>
-      cursor.seriesKey === seriesKey && cursor.index === index);
+    return this._datapointSetHas(seriesKey, index, this._everVisitedDatapoints);
   }
 
   everVisitedSeries(seriesKey: string): boolean {
-    return this._everVisitedDatapoints.some(cursor =>
-      cursor.seriesKey === seriesKey);
+    return this._everVisitedDatapoints.values().some(value => value.startsWith(seriesKey));
   }
 
   clearVisited() {
     this._prevVisitedDatapoints = this._visitedDatapoints;
-    this._visitedDatapoints = [];
+    this._visitedDatapoints = new Set();
   }
 
   get selectedDatapoints() {
@@ -512,35 +530,41 @@ export class ParaStore extends State {
     return this._prevSelectedDatapoints;
   }
 
-  select(datapoints: DataCursor[]) {
-    let newSelection: DataCursor[] = [];
-    if (datapoints.length === 1) {
-      if (!datapoints[0].datapointView.isSelected
-        || this._selectedDatapoints.length > 1) {
-        newSelection.push(datapoints[0]);
+  select() {
+    let newSelection = new Set<string>();
+    if (this._visitedDatapoints.size === 1) {
+      const datapointId = [...this._visitedDatapoints.values()][0];
+      const {seriesKey, index} = datapointIdToCursor(datapointId);
+      if (!this.isSelected(seriesKey, index)
+        || this._selectedDatapoints.size > 1) {
+        newSelection.add(datapointId);
       }
     } else {
-      for (let datapoint of datapoints) {
-        if (!datapoint.datapointView.isSelected) {
-          newSelection.push(datapoint);
+      for (const datapointId of this._visitedDatapoints) {
+        const {seriesKey, index} = datapointIdToCursor(datapointId);
+        if (!this.isSelected(seriesKey, index)) {
+          newSelection.add(datapointId);
         }
       }
     }
     this._prevSelectedDatapoints = this._selectedDatapoints;
-    this._prevSelectedDatapoints.map(c => c.datapointView.isSelected = false)
+    // this._prevSelectedDatapoints.forEach(view => {
+    //   view.isSelected = false;
+    // });
     this._selectedDatapoints = newSelection;
-    this._selectedDatapoints.map(c => c.datapointView.isSelected = true)
+    // this._selectedDatapoints.forEach(view => {
+    //   view.isSelected = true;
+    // });
   }
 
-  extendSelection(datapoints: DataCursor[]) {
-    const newSelection: DataCursor[] = [...this._selectedDatapoints];
-    for (const dp of datapoints) {
-      const alreadySelected = this.isSelected(dp.seriesKey, dp.index);
-      if (alreadySelected) {
-        newSelection.splice(newSelection.findIndex(newDP =>
-          newDP.seriesKey === dp.seriesKey && newDP.index === dp.index ), 1);
+  extendSelection() {
+    const newSelection = new Set(this._selectedDatapoints);
+    for (const datapointId of this._visitedDatapoints) {
+      const {seriesKey, index} = datapointIdToCursor(datapointId);
+      if (this.isSelected(seriesKey, index)) {
+        newSelection.delete(datapointId);
       } else {
-        newSelection.push(dp);
+        newSelection.add(datapointId);
       }
     }
     this._prevSelectedDatapoints = this._selectedDatapoints;
@@ -548,28 +572,24 @@ export class ParaStore extends State {
   }
 
   isSelected(seriesKey: string, index: number) {
-    return !!this._selectedDatapoints.find(cursor =>
-      cursor.seriesKey === seriesKey && cursor.index === index);
+    return this._datapointSetHas(seriesKey, index, this._selectedDatapoints);
   }
 
   isSelectedSeries(seriesKey: string) {
-    return !!this._selectedDatapoints.find(cursor =>
-      cursor.seriesKey === seriesKey);
+    return this._selectedDatapoints.values().some(value => value.startsWith(seriesKey));
   }
 
   wasSelected(seriesKey: string, index: number) {
-    return !!this._prevSelectedDatapoints.find(cursor =>
-      cursor.seriesKey === seriesKey && cursor.index === index);
+    return this._datapointSetHas(seriesKey, index, this._prevSelectedDatapoints);
   }
 
   wasSelectedSeries(seriesKey: string) {
-    return !!this._prevSelectedDatapoints.find(cursor =>
-      cursor.seriesKey === seriesKey);
+    return this._prevSelectedDatapoints.values().some(value => value.startsWith(seriesKey));
   }
 
   clearSelected() {
     this._prevSelectedDatapoints = this._selectedDatapoints;
-    this._selectedDatapoints = []
+    this._selectedDatapoints = new Set();
   }
 
   getFormatType(context: FormatContext): FormatType {
@@ -580,16 +600,17 @@ export class ParaStore extends State {
   addAnnotation() {
     const newAnnotationList: PointAnnotation[] = [];
 
-    this._visitedDatapoints.forEach((dp) => {
+    this._visitedDatapoints.forEach(dpId => {
+      const {seriesKey, index} = datapointIdToCursor(dpId);
       const recordLabel = formatXYDatapointX(
-        this._model!.atKeyAndIndex(dp.seriesKey, dp.index) as PlaneDatapoint, 'raw');
+        this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
       let annotationText = prompt('Annotation:') as string;
       if (annotationText) {
         newAnnotationList.push({
-          seriesKey: dp.seriesKey,
-          index: dp.index,
-          annotation: `${dp.seriesKey}, ${recordLabel}: ${annotationText}`,
-          id: `${dp.seriesKey}-${recordLabel}`
+          seriesKey,
+          index,
+          annotation: `${seriesKey}, ${recordLabel}: ${annotationText}`,
+          id: `${seriesKey}-${recordLabel}`
         });
       }
     });
@@ -601,13 +622,13 @@ export class ParaStore extends State {
       if (this.settings.controlPanel.isMDRAnnotationsVisible) {
         let seriesAnalysis;
         let seriesKey: string;
-        if (this.visitedDatapoints.length > 0) {
-          seriesKey = this.visitedDatapoints[0].seriesKey;
+        if (this.visitedDatapoints.size > 0) {
+          seriesKey = this.visitedDatapoints.keys()!.toArray()[0];
           seriesAnalysis = this.model
             ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
             : undefined;
         } else {
-          seriesKey = this.model!.series[0][0].seriesKey
+          seriesKey = this.model!.series[0][0].seriesKey;
           seriesAnalysis = this.model
             ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
             : undefined;
@@ -651,7 +672,7 @@ export class ParaStore extends State {
     }
   }
 
-  async removeMDRAnnotations(visitedDatapoints?: DataCursor[]) {
+  async removeMDRAnnotations(visitedDatapoints?: Set<string>) {
     let seriesAnalysis: SeriesAnalysis | null = null;
     let seriesKey: string | null = null;
     if (!visitedDatapoints) {
@@ -659,8 +680,8 @@ export class ParaStore extends State {
     }
     if (this.type !== 'line') {
       // No MDR annotations need to be removed
-    } else if (visitedDatapoints.length > 0) {
-      seriesKey = visitedDatapoints[0].seriesKey;
+    } else if (visitedDatapoints.size > 0) {
+      seriesKey = this.visitedDatapoints.keys()!.toArray()[0];
       seriesAnalysis = this.model
         ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
         : null;
@@ -791,9 +812,10 @@ export class ParaStore extends State {
   }
 
   addUserLineBreaks() {
-    for (let point of this.selectedDatapoints) {
-      const series = this.model!.series.filter(s => s[0].seriesKey == point.seriesKey)[0]
-      const length = series.length - 1
+    for (const [keyIdx, point] of this.selectedDatapoints) {
+      const [seriesKey, index] = keyIdx.split('-');
+      const series = this.model!.series.filter(s => s[0].seriesKey === seriesKey)[0];
+      const length = series.length - 1;
       this.addLineBreak(point.index / length, point.index, point.seriesKey, false)
       this.annotations.push({
         seriesKey: point.seriesKey,

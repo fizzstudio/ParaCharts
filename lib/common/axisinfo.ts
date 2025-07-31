@@ -171,7 +171,7 @@ export class AxisInfo {
         Math.max(...this._options.xValues));
     } else {
       const labels = this._store.model!.series[0].datapoints.map(
-        (p) => formatBox(p.facetBox('x')!, this._store.getFormatType('xTick'))
+        (p) => formatBox(p.facetBox('x')!, this._store.getFormatType('horizTick'))
       );
       this._xLabelInfo = {
         labelTiers: [labels]

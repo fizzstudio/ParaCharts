@@ -1,5 +1,5 @@
 
-import { ChartLayer } from '../layer';
+import { PlotLayer } from '../layer';
 import { View, Container } from '../../base_view';
 import { type ParaView } from '../../../paraview';
 import { RectShape } from '../../shape/rect';
@@ -8,11 +8,11 @@ import { Vec2 } from '../../../common/vector';
 
 export type AnnotationType = 'foreground' | 'background';
 
-export class AnnotationLayer extends ChartLayer {
+export class AnnotationLayer extends PlotLayer {
   protected _groups = new Map<string, DecorationGroup>();
 
-  constructor(paraview: ParaView, public readonly type: AnnotationType) {
-    super(paraview);
+  constructor(paraview: ParaView, width: number, height: number, public readonly type: AnnotationType) {
+    super(paraview, width, height);
   }
 
   protected _createId() {

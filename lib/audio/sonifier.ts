@@ -32,6 +32,8 @@ import { type Axis } from '../view/axis';
 import { type DataLayer } from '../view/layers';
 import { type ParaStore } from '../store';
 import { PlaneDatapoint } from '@fizz/paramodel';
+import { BaseChartInfo } from '../chart_types';
+import { AxisLabelInfo } from '../common/axisinfo';
 
 export const HERTZ = [
   16.3516, 17.32391, 18.35405, 19.44544, 20.60172, 21.82676, 23.12465, 24.49971, 25.95654, 27.5, 29.13524, 30.86771, // octave 0
@@ -52,8 +54,8 @@ export const NOTE_LENGTH = 0.25;
 //   lower: 21
 // };
 
-export const isUnplayable = (value: number, axis: Axis<any>) => {
-  return isNaN(value) || value < axis.range!.start || value > axis.range!.end;
+export const isUnplayable = (value: number, axisInfo: AxisLabelInfo) => {
+  return isNaN(value) || value < axisInfo.min! || value > axisInfo.max!;
 };
 
 export const calcPan = (pct: number) => (isNaN(pct) ? 0 : (pct * 2 - 1) * 0.98);
@@ -122,7 +124,7 @@ export class Sonifier {
 
   //private _playListContinuous: NodeJS.Timeout[] = [];
 
-  constructor(private chart: DataLayer, protected _store: ParaStore) {}
+  constructor(protected _chartInfo: BaseChartInfo, protected _store: ParaStore) {}
 
   /**
    * Confirm the audio engine was initialized
@@ -165,7 +167,7 @@ export class Sonifier {
     const xNominal = this._store.model!.getFacet('x')!.datatype === 'string';
 
     datapoints.forEach((datapoint, i) => {
-      
+
       const x = datapoint.facetValueNumericized(datapoint.indepKey)!;
       const y = datapoint.facetValueNumericized(datapoint.depKey)!;
       // if (isUnplayable(x, this.chart.parent.docView.xAxis!)) {
@@ -174,10 +176,10 @@ export class Sonifier {
 
       const xDiff = xNominal
         ? i
-        : (x - this.chart.parent.docView.xAxis!.range!.start);
+        : (x - this._chartInfo.axisInfo!.xLabelInfo.min!);
       const xRange = xNominal
         ? (datapoints.length - 1)
-        : (this.chart.parent.docView.xAxis!.range!.end - this.chart.parent.docView.xAxis!.range!.start);
+        : (this._chartInfo.axisInfo!.xLabelInfo.range!);
       const xPan =
         /*this._xAxis.type === 'log10'
           ? calcPan(
@@ -187,7 +189,7 @@ export class Sonifier {
               Math.log10(this._xAxis.minimum))
           )
           :*/ calcPan(
-            xDiff / xRange 
+            xDiff / xRange
           );
 
       /*if (current.type === 'annotation') {
@@ -198,24 +200,24 @@ export class Sonifier {
         return;
       }*/
 
-      if (isUnplayable(y, this.chart.parent.docView.yAxis!)) {
+      if (isUnplayable(y, this._chartInfo.axisInfo!.yLabelInfo)) {
         return;
       }
 
       if (cont) {
         let hertzMin = Math.min(...hertzes)
-        const pct = (y - this.chart.parent.docView.yAxis!.range!.start)
-          / (this.chart.parent.docView.yAxis!.range!.end - this.chart.parent.docView.yAxis!.range!.start);
+        const pct = (y - this._chartInfo.axisInfo!.yLabelInfo.max!)
+          / this._chartInfo.axisInfo!.yLabelInfo.range!;
         const hz = hertzMin * (1.05946 ** (pct * hertzes.length))
-        let pan = calcPan((x - this.chart.axisInfo!.xLabelInfo.min!)
-          / (this.chart.axisInfo!.xLabelInfo.max! - this.chart.axisInfo!.xLabelInfo.min!))
+        let pan = calcPan((x - this._chartInfo.axisInfo!.xLabelInfo.min!)
+          / this._chartInfo.axisInfo!.xLabelInfo.range!)
         this._audioEngine!.playDataPoint(hz, pan, NOTE_LENGTH);
       }
       else {
         const yBin = interpolateBin({
           point: y,
-          min: this.chart.parent.docView.yAxis!.range!.start,
-          max: this.chart.parent.docView.yAxis!.range!.end,
+          min: this._chartInfo.axisInfo!.yLabelInfo.min!,
+          max: this._chartInfo.axisInfo!.yLabelInfo.max!,
           bins: hertzes.length - 1,
           scale: 'linear'
         });

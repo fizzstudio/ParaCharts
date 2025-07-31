@@ -1,7 +1,7 @@
 
 import { DataView, type SeriesView } from './';
 import { DataSymbol } from '../symbol';
-import { type DataCursor } from '../../store';
+import { datapointIdToCursor } from '../../store';
 import { Shape } from '../shape/shape';
 import { RectShape } from '../shape/rect';
 
@@ -22,9 +22,9 @@ export class DatapointView extends DataView {
 
   protected _shapes: Shape[] = [];
   protected _symbol: DataSymbol | null = null;
-  isVisited: boolean = false;
-  isSelected: boolean = false;
-  everVisited: boolean = false;
+  // isVisited: boolean = false;
+  // isSelected: boolean = false;
+  // everVisited: boolean = false;
 
   constructor(seriesView: SeriesView) {
     super(seriesView.chart, seriesView.series.key);
@@ -32,6 +32,11 @@ export class DatapointView extends DataView {
 
   protected _addedToParent() {
     super._addedToParent();
+  }
+
+  protected _removedFromParent() {
+    super._removedFromParent();
+    this._parent.chart.unregisterDatapoint(this);
   }
 
   get parent() {
@@ -62,6 +67,14 @@ export class DatapointView extends DataView {
     return this.series.datapoints[this.index];
   }
 
+  /**
+   * Identifier of the form: `${seriesKey}-${index}`
+   * NB: *NOT* the same as the `id` property (the DOM ID)
+   */
+  get datapointId(): string {
+    return `${this.seriesKey}-${this.index}`;
+  }
+
   get selectedMarker(): Shape {
     return new RectShape(this.paraview, {
       width: this._width/2,
@@ -82,8 +95,8 @@ export class DatapointView extends DataView {
   get classInfo(): ClassInfo {
     return {
       datapoint: true,
-      visited: this.isVisited,
-      selected: this.isSelected
+      visited: this.paraview.store.isVisited(this.seriesKey, this.index),
+      selected: this.paraview.store.isSelected(this.seriesKey, this.index)
     };
   }
 
@@ -150,6 +163,15 @@ export class DatapointView extends DataView {
     return id.slice(1);
   }
 
+  get id(): string {
+    return super.id;
+  }
+
+  set id(id: string) {
+    super.id = id;
+    this._parent.chart.registerDatapoint(this);
+  }
+
   /** Compute and set `x` and `y` */
   computeLocation() {}
 
@@ -204,13 +226,13 @@ export class DatapointView extends DataView {
   }
 
   protected get _symbolScale() {
-    return this.isVisited
+    return this.paraview.store.isVisited(this.seriesKey, this.index)
       ? this.paraview.store.settings.chart.symbolHighlightScale
       : 1;
   }
 
   protected get _symbolColor() {
-    return this.isVisited
+    return this.paraview.store.isVisited(this.seriesKey, this.index)
       ? -1 as number
       : undefined;
   }
@@ -218,39 +240,40 @@ export class DatapointView extends DataView {
   protected _composeSelectionAnnouncement(isExtend: boolean) {
     // This method assumes only a single point was visited when the select
     // command was issued (i.e., we know nothing about chord mode here)
-    const seriesAndVal = (cursor: DataCursor) => {
-      const dp = this.paraview.store.model!.atKeyAndIndex(cursor.seriesKey, cursor.index)!;
-      return `${cursor.seriesKey} (${formatBox(dp.facetBox('x')!, this.paraview.store.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this.paraview.store.getFormatType('statusBar'))})`;
+    const seriesAndVal = (datapointId: string) => {
+      const {seriesKey, index} = datapointIdToCursor(datapointId);
+      const dp = this.paraview.store.model!.atKeyAndIndex(seriesKey, index)!;
+      return `${seriesKey} (${formatBox(dp.facetBox('x')!, this.paraview.store.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this.paraview.store.getFormatType('statusBar'))})`;
     };
 
-    const newTotalSelected = this.paraview.store.selectedDatapoints.length;
-    const oldTotalSelected = this.paraview.store.prevSelectedDatapoints.length;
-    const justSelected = this.paraview.store.selectedDatapoints.filter(dc =>
-      !this.paraview.store.wasSelected(dc.seriesKey, dc.index));
-    const justDeselected = this.paraview.store.prevSelectedDatapoints.filter(dc =>
-      !this.paraview.store.isSelected(dc.seriesKey, dc.index));
+    const newTotalSelected = this.paraview.store.selectedDatapoints.size;
+    const oldTotalSelected = this.paraview.store.prevSelectedDatapoints.size;
+    const justSelected = this.paraview.store.selectedDatapoints.difference(
+      this.paraview.store.prevSelectedDatapoints);
+    const justDeselected = this.paraview.store.prevSelectedDatapoints.difference(
+      this.paraview.store.selectedDatapoints);
 
     const s = newTotalSelected === 1 ? '' : 's';
     const newTotSel = `${newTotalSelected} point${s} selected.`;
 
     if (oldTotalSelected === 0) {
       // None were selected; selected 1
-      return `Selected ${seriesAndVal(justSelected[0])}`;
+      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}`;
     } else if (oldTotalSelected === 1 && !newTotalSelected) {
       // 1 was selected; it has been deselected
-      return `Deselected ${seriesAndVal(justDeselected[0])}. No points selected.`;
-    } else if (!isExtend && justSelected.length && oldTotalSelected) {
+      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. No points selected.`;
+    } else if (!isExtend && justSelected.size && oldTotalSelected) {
       // Selected 1 new, deselected others
-      return `Selected ${seriesAndVal(justSelected[0])}. 1 point selected.`;
+      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}. 1 point selected.`;
     } else if (!isExtend && newTotalSelected && oldTotalSelected) {
       // Kept 1 selected, deselected others
-      return `Deselected ${seriesAndVal(justDeselected[0])}. 1 point selected.`;
-    } else if (isExtend && justDeselected.length) {
+      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. 1 point selected.`;
+    } else if (isExtend && justDeselected.size) {
       // Deselected 1
-      return `Deselected ${seriesAndVal(justDeselected[0])}. ${newTotSel}`;
-    } else if (isExtend && justSelected.length) {
+      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. ${newTotSel}`;
+    } else if (isExtend && justSelected.size) {
       // Selected 1
-      return `Selected ${seriesAndVal(justSelected[0])}. ${newTotSel}`;
+      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}. ${newTotSel}`;
     } else {
       return 'ERROR';
     }
@@ -258,9 +281,9 @@ export class DatapointView extends DataView {
 
   select(isExtend: boolean) {
     if (isExtend) {
-      this.paraview.store.extendSelection(this.paraview.store.visitedDatapoints);
+      this.paraview.store.extendSelection();
     } else {
-      this.paraview.store.select(this.paraview.store.visitedDatapoints);
+      this.paraview.store.select();
     }
     this.paraview.store.announce(this._composeSelectionAnnouncement(isExtend));
   }
