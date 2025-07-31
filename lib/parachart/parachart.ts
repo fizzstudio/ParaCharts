@@ -16,12 +16,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { logging } from '../common/logger';
 import { ParaComponent } from '../components';
-import { AllSeriesData, ChartType } from '@fizz/paramanifest'
+import { ChartType } from '@fizz/paramanifest'
 import { DeepReadonly, Settings, SettingsInput } from '../store/settings_types';
 import { SettingsManager } from '../store';
 import '../paraview';
 import '../control_panel';
-import { exhaustive } from '../common/utils';
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
 import { ParaStore } from '../store';
@@ -99,11 +98,15 @@ export class ParaChart extends logging(ParaComponent) {
           });
         } else if (this.getElementsByTagName("table")[0]) {
           this.log(`loading from slot`);
-          const table = this.getElementsByTagName("table")[0]
-          const manifest = this.getElementsByClassName("manifest")[0] as HTMLElement
+          const table = this.getElementsByTagName("table")[0];
+          const manifest = this.getElementsByClassName("manifest")[0] as HTMLElement;
           this._store.dataState = 'pending';
           if (table) {
-            const loadresult = await this._slotLoader.findManifest([table, manifest], "some-manifest")
+            const loadresult = await this._slotLoader.findManifest(
+              [table, manifest], 
+              "some-manifest",
+              this.description
+            )
             this.log('loaded manifest')
             if (loadresult.result === 'success') {
               this.store.setManifest(loadresult.manifest!);
