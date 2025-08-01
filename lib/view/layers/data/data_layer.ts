@@ -78,6 +78,7 @@ export abstract class DataLayer extends ChartLayer {
 
   constructor(paraview: ParaView, public readonly dataLayerIndex: number) {
     super(paraview);
+    this._observeStore();
   }
 
   protected _createId() {
@@ -151,7 +152,7 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   protected _createNavMap() {
-    this._navMap = new NavMap(this.paraview.store);
+    this._navMap = new NavMap(this.paraview.store, this);
     const root = this._navMap.layer('root')!;
     // Chart landing (visits no points)
     const chartLandingNode = new NavNode(root, 'top', {});
@@ -224,8 +225,8 @@ export abstract class DataLayer extends ChartLayer {
     this._navMap.goTo('datapoint', {seriesKey, index});
   }
 
-  move(dir: Direction) {
-    this._navMap.cursor!.move(dir);
+  async move(dir: Direction) {
+    await this._navMap.cursor!.move(dir);
   }
 
   /**
@@ -367,51 +368,51 @@ export abstract class DataLayer extends ChartLayer {
 
   protected abstract _sparkBrailleInfo(): SparkBrailleInfo | null;
 
-  async storeDidChange(key: string, value: any) {
-    if (key === 'navNode') {
-      //const tag = value as string;
-      const node = value as NavNode;
-      const seriesKey = node.at(0)?.seriesKey ?? '';
-      if (node.type === 'top') {
-        await this.paraview.store.asyncAnnounce(this.paraview.summarizer.getChartSummary());
-      } else if (node.type === 'series') {
-        this._raiseSeries(seriesKey);
-        this.paraview.store.announce(
-          await this.paraview.summarizer.getSeriesSummary(seriesKey));
-        this._playRiff();
-        this.paraview.store.sparkBrailleInfo = this._sparkBrailleInfo();
-      } else if (node.type === 'datapoint') {
-        this._raiseSeries(seriesKey);
-        // NOTE: this needs to be done before the datapoint is visited, to check whether the series has
-        //   ever been visited before this point
-        const seriesPreviouslyVisited = this.paraview.store.everVisitedSeries(seriesKey);
-        const announcements = [this.paraview.summarizer.getDatapointSummary(node.at(0)!.datapoint, 'statusBar')];
-        const isSeriesChange = !this.paraview.store.wasVisitedSeries(seriesKey);
-        if (isSeriesChange) {
-          announcements[0] = `${seriesKey}: ${announcements[0]}`;
-          if (!seriesPreviouslyVisited) {
-            const seriesSummary = await this.paraview.summarizer.getSeriesSummary(seriesKey);
-            announcements.push(seriesSummary);
-          }
-        }
-        this.paraview.store.announce(announcements);
-        if (this.paraview.store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
-          this._playDatapoints([node.at(0)!.datapoint]);
-        }
-        this.paraview.store.sparkBrailleInfo = this._sparkBrailleInfo();
-      } else if (node.type === 'chord') {
-        if (this.paraview.store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
-          if (this.paraview.store.settings.sonification.isArpeggiateChords) {
-            this._playRiff(this._chordRiffOrder());
-          } else {
-            this._playDatapoints(node.datapointViews.map(view => view.datapoint));
-          }
-        }
-      } else if (node.type === 'sequence') {
-        this._playRiff();
-      }
+  async navRunDidStart(cursor: NavNode) {
+    if (cursor.type === 'series' || cursor.type === 'datapoint') {
+    const seriesKey = cursor.at(0)?.seriesKey ?? '';
+      this._raiseSeries(seriesKey);
     }
-    super.storeDidChange(key, value);
+  }
+
+  async navRunDidEnd(cursor: NavNode) {
+    const seriesKey = cursor.at(0)?.seriesKey ?? '';
+    if (cursor.type === 'top') {
+      await this.paraview.store.asyncAnnounce(this.paraview.summarizer.getChartSummary());
+    } else if (cursor.type === 'series') {
+      this.paraview.store.announce(
+        await this.paraview.summarizer.getSeriesSummary(seriesKey));
+      this._playRiff();
+      this.paraview.store.sparkBrailleInfo = this._sparkBrailleInfo();
+    } else if (cursor.type === 'datapoint') {
+      // NOTE: this needs to be done before the datapoint is visited, to check whether the series has
+      //   ever been visited before this point
+      const seriesPreviouslyVisited = this.paraview.store.everVisitedSeries(seriesKey);
+      const announcements = [this.paraview.summarizer.getDatapointSummary(cursor.at(0)!.datapoint, 'statusBar')];
+      const isSeriesChange = !this.paraview.store.wasVisitedSeries(seriesKey);
+      if (isSeriesChange) {
+        announcements[0] = `${seriesKey}: ${announcements[0]}`;
+        if (!seriesPreviouslyVisited) {
+          const seriesSummary = await this.paraview.summarizer.getSeriesSummary(seriesKey);
+          announcements.push(seriesSummary);
+        }
+      }
+      this.paraview.store.announce(announcements);
+      if (this.paraview.store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
+        this._playDatapoints([cursor.at(0)!.datapoint]);
+      }
+      this.paraview.store.sparkBrailleInfo = this._sparkBrailleInfo();
+    } else if (cursor.type === 'chord') {
+      if (this.paraview.store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
+        if (this.paraview.store.settings.sonification.isArpeggiateChords) {
+          this._playRiff(this._chordRiffOrder());
+        } else {
+          this._playDatapoints(cursor.datapointViews.map(view => view.datapoint));
+        }
+      }
+    } else if (cursor.type === 'sequence') {
+      this._playRiff();
+    }
   }
 
   navFirst() {

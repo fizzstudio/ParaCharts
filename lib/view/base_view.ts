@@ -211,6 +211,7 @@ export class View extends BaseView {
   protected _hidden = false;
   protected _styleInfo: StyleInfo = {};
   protected _classInfo: ClassInfo = {};
+  protected _isObserveStore = false;
 
   constructor(public readonly paraview: ParaView) {
     super();
@@ -824,8 +825,23 @@ export class View extends BaseView {
     this._children.forEach(kid => kid.settingDidChange(path, oldValue, newValue));
   }
 
+  get isObserveStore() {
+    return this._isObserveStore;
+  }
+
+  protected _observeStore() {
+    this._isObserveStore = true;
+    if (this._parent) {
+      this._parent._observeStore();
+    }
+  }
+
   async storeDidChange(key: string, value: any) {
-    this._children.forEach(kid => kid.storeDidChange(key, value));
+    this._children.forEach(kid => {
+      if (kid.isObserveStore) {
+        kid.storeDidChange(key, value);
+      }
+    });
   }
 
   focusRingShape(): Shape | null {

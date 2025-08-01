@@ -49,7 +49,6 @@ import { keymap } from './keymap';
 import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { type ParaChart } from '../parachart/parachart';
-import { type NavNode } from '../view/layers/data/navigation';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -121,16 +120,15 @@ export class ParaStore extends State {
   @property() announcement: Announcement = { text: '' };
   @property() annotations: BaseAnnotation[] = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
-  @property() navNode: NavNode | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
 
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
   @property() protected selected = null;
   @property() protected queryLevel = 'default';
-  @property() protected _visitedDatapoints: DataCursor[] = [];
-  @property() protected _prevVisitedDatapoints: DataCursor[] = [];
-  @property() protected _everVisitedDatapoints: DataCursor[] = [];
+  protected _visitedDatapoints: DataCursor[] = [];
+  protected _prevVisitedDatapoints: DataCursor[] = [];
+  protected _everVisitedDatapoints: DataCursor[] = [];
   @property() protected _selectedDatapoints: DataCursor[] = [];
   @property() protected _prevSelectedDatapoints: DataCursor[] = [];
   @property() protected _rangeHighlights: RangeHighlight[] = [];
@@ -450,6 +448,9 @@ export class ParaStore extends State {
       this.removeMDRAnnotations(this._prevVisitedDatapoints)
       this.showMDRAnnotations();
     }
+    // NB: Making _visitedDatapoints a lit-app/state property proved
+    // problematic for performance
+    this._paraChart.paraView.requestUpdate();
   }
 
   isVisited(seriesKey: string, index: number) {

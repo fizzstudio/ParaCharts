@@ -2,12 +2,12 @@
 import { type ParaView } from './paraview';
 
 export interface AvailableActions {
-  moveRight(): void;
-  moveLeft(): void;
-  moveUp(): void;
-  moveDown(): void;
-  moveIn(): void;
-  moveOut(): void;
+  moveRight(): Promise<void>;
+  moveLeft(): Promise<void>;
+  moveUp(): Promise<void>;
+  moveDown(): Promise<void>;
+  moveIn(): Promise<void>;
+  moveOut(): Promise<void>;
   goFirst(): void;
   goLast(): void;
   goMinimum(): void;
@@ -45,27 +45,27 @@ export class HotkeyActions {
     // actions close over a value that might be removed)
     const chart = () => paraView.documentView!.chartLayers.dataLayer;
     this.actions = {
-      moveRight() {
+      async moveRight() {
         chart().clearPlay();
         chart().move('right');
       },
-      moveLeft() {
+      async moveLeft() {
         chart().clearPlay();
         chart().move('left');
       },
-      moveUp() {
+      async moveUp() {
         chart().clearPlay();
         chart().move('up');
       },
-      moveDown() {
+      async moveDown() {
         chart().clearPlay();
         chart().move('down');
       },
-      moveIn() {
+      async moveIn() {
         chart().clearPlay();
         chart().move('in');
       },
-      moveOut() {
+      async moveOut() {
         chart().clearPlay();
         chart().move('out');
       },

@@ -2,6 +2,7 @@
 import { DatapointView } from '../../data';
 import { type ParaStore } from '../../../store';
 import { type Direction } from '../../../store';
+import { DataLayer } from './data_layer';
 
 const oppositeDirs: Record<Direction, Direction> = {
   up: 'down',
@@ -70,8 +71,9 @@ function nodeOptionsMatch<T extends NavNodeType>(
 export class NavMap {
   protected _layers: Map<string, NavLayer> = new Map();
   protected _currentLayer: NavLayer;
+  protected _runTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(protected _store: ParaStore) {
+  constructor(protected _store: ParaStore, protected _chart: DataLayer) {
     this._currentLayer = new NavLayer(this, 'root');
     this._layers.set(this._currentLayer.name, this._currentLayer);
   }
@@ -103,14 +105,23 @@ export class NavMap {
     this._layers.set(layer.name, layer);
   }
 
-  visitDatapoints() {
+  async visitDatapoints() {
     // NB: cursor may have no datapoints
     // await this.cursor!.at(0)?.focus();
     this._store.visit(this.cursor!.datapointViews.map(view => ({
       seriesKey: view.seriesKey,
       index: view.index
     })));
-    this._store.navNode = this.cursor;
+    if (this._runTimer) {
+      clearTimeout(this._runTimer);
+    } else {
+      await this._chart.navRunDidStart(this.cursor);
+    }
+    this._runTimer = setTimeout(() => {
+      this._runTimer = null;
+      this._chart.navRunDidEnd(this.cursor);
+    }, 250);
+    //this._chart.navCursorDidChange(this.cursor);
   }
 
   node<T extends NavNodeType>(
@@ -322,7 +333,7 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     return this._datapointViews.at(index);
   }
 
-  move(dir: Direction) {
+  async move(dir: Direction) {
     const link = this._links.get(dir);
     if (!link) {
       return;
