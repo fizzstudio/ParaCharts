@@ -837,6 +837,9 @@ export class View extends BaseView {
   }
 
   async storeDidChange(key: string, value: any) {
+    if (!this._isObserveStore) {
+      return;
+    }
     this._children.forEach(kid => {
       if (kid.isObserveStore) {
         kid.storeDidChange(key, value);
