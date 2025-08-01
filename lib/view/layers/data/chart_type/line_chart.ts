@@ -34,11 +34,6 @@ import { NavNode } from '../navigation';
  */
 export class LineChart extends PointChart {
 
-  constructor(paraview: ParaView, dataLayerIndex: number) {
-    super(paraview, dataLayerIndex);
-    this._observeStore();
-  }
-
   protected _addedToParent() {
     super._addedToParent();
     if (this.paraview.store.type === "line") {

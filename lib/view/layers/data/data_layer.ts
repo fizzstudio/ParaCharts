@@ -78,7 +78,6 @@ export abstract class DataLayer extends ChartLayer {
 
   constructor(paraview: ParaView, public readonly dataLayerIndex: number) {
     super(paraview);
-    this._observeStore();
   }
 
   protected _createId() {
@@ -146,6 +145,9 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   init() {
+    // At this point, we're fully connected to the root of the view tree,
+    // so we can safely observe
+    this._observeStore();
     this._beginLayout();
     this._completeLayout();
     //this._layoutComponents();
