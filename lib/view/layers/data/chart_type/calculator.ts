@@ -5,6 +5,10 @@ import { XYSeriesView } from "./xy_chart";
 import { AxisInfo } from "../../../../common/axisinfo";
 import { parse, simplify } from "mathjs";
 import { html } from "lit";
+import { Box, PlaneDatapoint} from "@fizz/paramodel";
+import { RiffOrder, SONI_RIFF_SPEEDS } from "../data_layer";
+import { NumberBox } from "@fizz/dataframe";
+import { isUnplayable } from "../../../../audio/sonifier";
 
 export class GraphingCalculator extends LineChart {
   protected renderPts: number = 50;
@@ -113,44 +117,78 @@ export class GraphingCalculator extends LineChart {
     })
   }
 
+  protected _createDatapoints(): void {
+    super._createDatapoints();
+    if (this.paraview.store.settings.type.graph.visitedSeries > -1) {
+      const visited = this.chartLandingView.datapointViews.filter(v =>
+        v.seriesKey == this.paraview.store.model!.seriesKeys[this.paraview.store.settings.type.graph.visitedSeries]
+      );
+      this.paraview.store.visit(visited)
+    }
+  }
+
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['type.graph.equation'].includes(path)) {
-      this.paraview.store.clearVisited();
-      this.paraview.store.clearSelected();
-      this.paraview.store.sparkBrailleInfo = null;
+      this.clearStore()
+      this.paraview.store.updateSettings(draft => {
+        draft.type.graph.visitedSeries = -1;
+      });
       this.addEquation(newValue as string);
     }
     else if (['type.graph.preset'].includes(path)) {
       this.paraview.store.updateSettings(draft => {
-            draft.type.graph.equation = String(newValue);
-          });
+        draft.type.graph.equation = String(newValue);
+      });
     }
     else if (['type.graph.renderPts'].includes(path)) {
-      this.paraview.store.clearVisited();
-      this.paraview.store.clearSelected();
-      this.paraview.store.sparkBrailleInfo = null;
+      const seriesFocused = this.isSeriesFocused();
+      this.clearStore()
       this.renderPts = Number(newValue)
+      this.paraview.store.updateSettings(draft => {
+        draft.type.graph.visitedSeries = seriesFocused;
+      });
       this.addEquation(this.paraview.store.settings.type.graph.equation)
     }
-    else if (['axis.x.maxValue', 'axis.x.minValue'].includes(path)){
-      this.paraview.store.clearVisited();
-      this.paraview.store.clearSelected();
-      this.paraview.store.sparkBrailleInfo = null;
+    else if (['axis.x.maxValue', 'axis.x.minValue'].includes(path)) {
+      const seriesFocused = this.isSeriesFocused();
+      this.clearStore()
+      this.paraview.store.updateSettings(draft => {
+        draft.type.graph.visitedSeries = seriesFocused;
+      });
       this.addEquation(this.paraview.store.settings.type.graph.equation)
     }
-    else if (['type.graph.resetAxes'].includes(path)){
-      this.paraview.store.clearVisited();
-      this.paraview.store.clearSelected();
-      this.paraview.store.sparkBrailleInfo = null;
+    else if (['type.graph.resetAxes'].includes(path)) {
+      const seriesFocused = this.isSeriesFocused();
+      this.clearStore()
       this.paraview.store.updateSettings(draft => {
         draft.axis.x.maxValue = 'unset';
         draft.axis.x.minValue = 'unset';
         draft.axis.y.maxValue = 'unset';
         draft.axis.y.minValue = 'unset';
       });
+      this.paraview.store.updateSettings(draft => {
+        draft.type.graph.visitedSeries = seriesFocused;
+      });
       this.addEquation(this.paraview.store.settings.type.graph.equation)
     }
     super.settingDidChange(path, oldValue, newValue);
+  }
+
+  clearStore() {
+    clearInterval(this._soniRiffInterval!);
+    this.paraview.store.clearVisited();
+    this.paraview.store.clearSelected();
+    this.paraview.store.sparkBrailleInfo = null;
+  }
+
+  isSeriesFocused(): number {
+    const visited = this.paraview.store.visitedDatapoints
+    if (visited.length > 0) {
+      if (visited.length == this.paraview.store.model!.atKey(visited[0].seriesKey)!.datapoints.length){
+        return this.paraview.store.model?.seriesKeys.findIndex(s => s == visited[0].seriesKey)!
+      }
+    }
+    return -1;
   }
 
   addEquation(eq: string) {
@@ -184,11 +222,11 @@ export class GraphingCalculator extends LineChart {
       const points = this.renderPts
       const xMax = this.axisInfo!.xLabelInfo!.max ?? 10
       const xMin = this.axisInfo!.xLabelInfo!.min ?? -10
-      for (var i = 0; i < points + 1; i++) {
+      for (var i = 0; i < points; i++) {
         var tr = document.createElement("tr");
         var td1 = document.createElement("td");
         var td2 = document.createElement("td");
-        var xVal = parseFloat((i / (points / ((xMax - xMin))) + (xMin)).toFixed(3))
+        var xVal = parseFloat((i / ((points - 1) / ((xMax - xMin))) + (xMin)).toFixed(3))
         const simpEval = simplified.evaluate({ x: xVal })
         if (simpEval.im === undefined){
           var yVal = simpEval.toFixed(3);
@@ -214,7 +252,7 @@ export class GraphingCalculator extends LineChart {
   }
 
   get datapointViews() {
-    return super.datapointViews as LineSection[];
+    return super.datapointViews as GraphLine[];
   }
 
   get settings() {
@@ -262,6 +300,48 @@ export class GraphingCalculator extends LineChart {
       data: data,
       isBar: this.paraview.store.type === 'bar' || this.paraview.store.type === 'column'
     };
+  }
+
+  protected _playRiff(order?: RiffOrder) {
+    if (this.paraview.store.settings.sonification.isSoniEnabled
+      && this.paraview.store.settings.sonification.isRiffEnabled) {
+      const datapoints = this._navMap.cursor.datapointViews.map(view => view.datapoint) as PlaneDatapoint[];
+      if (order === 'sorted') {
+        datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
+      } else if (order === 'reversed') {
+        datapoints.reverse();
+      }
+      const datapointsFilled: PlaneDatapoint[] = []
+      const seriesKey = datapoints[0].seriesKey
+      const INTERNAL_POINTS = 10
+      for (let i = 0; i < datapoints.length - 1; i++) {
+        if (isUnplayable(datapoints[i].facetValueNumericized(datapoints[i].depKey)!, this.parent.docView.yAxis!)){
+          continue
+        }
+        datapointsFilled.push(datapoints[i])
+        for (let j = 1; j < INTERNAL_POINTS; j++) {
+          const y = ((datapoints[i + 1].facetValueAsNumber("y")! - datapoints[i].facetValueAsNumber("y")!) * j / INTERNAL_POINTS) + datapoints[i].facetValueAsNumber("y")!
+          datapointsFilled.push(new PlaneDatapoint({x: new NumberBox(0) as unknown as Box<'number'>, y: new NumberBox(y) as unknown as Box<'number'>}, seriesKey, j + INTERNAL_POINTS * i, "x", "y"))
+        }
+      }
+      datapointsFilled.push(datapoints[datapoints.length - 1])
+      const noteCount = datapointsFilled.length;
+      if (noteCount) {
+        if (this._soniRiffInterval!) {
+          clearInterval(this._soniRiffInterval!);
+        }
+        this.soniSequenceIndex++;
+        this._soniRiffInterval = setInterval(() => {
+          const datapoint = datapointsFilled.shift();
+          if (!datapoint) {
+            clearInterval(this._soniRiffInterval!);
+          } else {
+            this._sonifier.playDatapoints(true, datapoint as PlaneDatapoint);
+            this.soniNoteIndex++;
+          }
+        }, SONI_RIFF_SPEEDS.at(this.paraview.store.settings.sonification.riffSpeedIndex)! / INTERNAL_POINTS);
+      }
+    }
   }
 }
 
