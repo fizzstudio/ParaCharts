@@ -3,6 +3,7 @@ import { DatapointView } from '../../data';
 import { type ParaStore } from '../../../store';
 import { type Direction } from '../../../store';
 import { DataLayer } from './data_layer';
+import { clusterObject } from '@fizz/clustering';
 
 const oppositeDirs: Record<Direction, Direction> = {
   up: 'down',
@@ -13,7 +14,7 @@ const oppositeDirs: Record<Direction, Direction> = {
   out: 'in'
 };
 
-export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence';
+export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence' | 'cluster';
 
 export type NavNodeOptionsType<T extends NavNodeType> =
   T extends 'top' ? TopNavNodeOptions :
@@ -21,6 +22,7 @@ export type NavNodeOptionsType<T extends NavNodeType> =
   T extends 'datapoint' ? DatapointNavNodeOptions :
   T extends 'chord' ? ChordNavNodeOptions :
   T extends 'sequence' ? SequenceNavNodeOptions :
+  T extends 'cluster' ? ClusterNavNodeOptions :
   never;
 
 export interface TopNavNodeOptions {}
@@ -37,6 +39,14 @@ export interface SequenceNavNodeOptions {
   // start and end as in series analysis fields
   start: number;
   end: number;
+}
+
+export interface ClusterNavNodeOptions {
+  seriesKey: string;
+  start: number;
+  end: number;
+  datapoints: number[];
+  clustering: clusterObject
 }
 
 function nodeOptionsEq<T extends NavNodeType>(

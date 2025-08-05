@@ -11,6 +11,7 @@ import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 import { strToId } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
+import { NavNode } from '../navigation';
 
 
 export class ScatterPlot extends PointChart {
@@ -143,6 +144,86 @@ export class ScatterPlot extends PointChart {
         datapointViews[id].clusterID = cluster.id
       }
     }
+  }
+
+  async storeDidChange(key: string, value: any) {
+    await super.storeDidChange(key, value);
+    if (key === 'seriesAnalyses') {
+      if (this.isClustering) {
+        this._createClusterNavNodes();
+      }
+    }
+  }
+
+  protected _createClusterNavNodes() {
+    if (this.isClustering) {
+      const seriesClusterNodes: NavNode<'cluster'>[][] = [];
+      this._navMap.root.query('series').forEach(seriesNode => {
+        if (seriesClusterNodes.length) {
+          seriesNode.connect('left', seriesClusterNodes.at(-1)!.at(-1)!);
+        }
+        const clustering = this.clustering
+        const datapointNodes = seriesNode.allNodes('right', 'datapoint');
+        const clusterNodes: NavNode<'cluster'>[] = [];
+        
+        clustering!.forEach(cluster => {
+          const clusterNode = new NavNode(seriesNode.layer, 'cluster', {
+            seriesKey: seriesNode.options.seriesKey,
+            start: cluster.dataPointIDs[0],
+            end: cluster.dataPointIDs[cluster.dataPointIDs.length - 1],
+            datapoints: cluster.dataPointIDs,
+            clustering: cluster
+          });
+          clusterNodes.push(clusterNode);
+          clusterNode.options.datapoints.forEach(id => {
+            clusterNode.addDatapointView(seriesNode.datapointViews[id]);
+          });
+        });
+        seriesClusterNodes.push(clusterNodes);
+        clusterNodes.sort((a,b) => {return a.options.clustering.centroid[0] - b.options.clustering.centroid[0]})
+        clusterNodes.slice(0, -1).forEach((clusterNode, i) => {
+          clusterNode.connect('right', clusterNodes[i + 1]);
+        });
+        // Replace series link to datapoints with link to clusters
+        seriesNode.connect('right', clusterNodes[0]);
+        // Breaks first and last datapoint links with series landings
+        datapointNodes[0].disconnect('left', false);
+        datapointNodes.at(-1)!.disconnect('right');
+        clusterNodes.forEach(clusterNode => {
+          // Unless the first datapoint of the cluster already has an
+          // 'out' link set (i.e., it's a boundary node), make a reciprocal
+          // link to it
+          clusterNode.connect('in', datapointNodes[clusterNode.options.start],
+            !datapointNodes[clusterNode.options.start].getLink('out'));
+          for (let i of clusterNode.options.datapoints) {
+            // non-reciprocal 'out' links from remaining datapoints to cluster
+            datapointNodes[i].connect('out', clusterNode, false);
+          }
+          if (clusterNode.peekNode('right', 1)) {
+            // We aren't on the last cluster, so the final datapoint is a boundary point.
+            // Make a non-reciprocal 'in' link to the next cluster
+            datapointNodes[clusterNode.options.end - 1].connect('in', clusterNode.peekNode('right', 1)!, false);
+          }
+        });
+      });
+      // Make cluster node 'down' links
+      seriesClusterNodes.slice(0, -1).forEach((clusterNodes, i) => {
+        clusterNodes.forEach(node => {
+          const nodeBelow = seriesClusterNodes[i + 1].find(otherNode =>
+            otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
+          node.connect('down', nodeBelow, false);
+        });
+      });
+      // Make cluster node 'up' links
+      seriesClusterNodes.slice(1).forEach((clusterNodes, i) => {
+        clusterNodes.forEach((node, j) => {
+          const nodeAbove = seriesClusterNodes[i].find(otherNode =>
+            otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
+          node.connect('up', nodeAbove, false);
+        });
+      });
+    }
+
   }
 
 }
