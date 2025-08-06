@@ -313,18 +313,23 @@ export class GraphingCalculator extends LineChart {
       }
       const datapointsFilled: PlaneDatapoint[] = []
       const seriesKey = datapoints[0].seriesKey
-      const INTERNAL_POINTS = 10
+      const INTERNAL_SEGMENTS = 10
       for (let i = 0; i < datapoints.length - 1; i++) {
-        if (isUnplayable(datapoints[i].facetValueNumericized(datapoints[i].depKey)!, this.parent.docView.yAxis!)){
-          continue
-        }
         datapointsFilled.push(datapoints[i])
-        for (let j = 1; j < INTERNAL_POINTS; j++) {
-          const y = ((datapoints[i + 1].facetValueAsNumber("y")! - datapoints[i].facetValueAsNumber("y")!) * j / INTERNAL_POINTS) + datapoints[i].facetValueAsNumber("y")!
-          datapointsFilled.push(new PlaneDatapoint({x: new NumberBox(0) as unknown as Box<'number'>, y: new NumberBox(y) as unknown as Box<'number'>}, seriesKey, j + INTERNAL_POINTS * i, "x", "y"))
+        for (let j = 1; j < INTERNAL_SEGMENTS; j++) {
+          const y = ((datapoints[i + 1].facetValueAsNumber("y")! - datapoints[i].facetValueAsNumber("y")!) * j / INTERNAL_SEGMENTS) + datapoints[i].facetValueAsNumber("y")!
+          const x = ((datapoints[i + 1].facetValueAsNumber("x")! - datapoints[i].facetValueAsNumber("x")!) * j / INTERNAL_SEGMENTS) + datapoints[i].facetValueAsNumber("x")!
+          datapointsFilled.push(new PlaneDatapoint({x: new NumberBox(x) as unknown as Box<'number'>, y: new NumberBox(y) as unknown as Box<'number'>}, seriesKey, j + INTERNAL_SEGMENTS * i, "x", "y"))
         }
       }
       datapointsFilled.push(datapoints[datapoints.length - 1])
+      //Trim unplayable notes from front and back, but not between playable notes
+      while(datapointsFilled.length > 0 && isUnplayable(datapointsFilled[0].facetValueNumericized(datapointsFilled[0].depKey)!, this.parent.docView.yAxis!)){
+        datapointsFilled.shift()
+      }
+      while(datapointsFilled.length > 0 && isUnplayable(datapointsFilled[datapointsFilled.length - 1].facetValueNumericized(datapointsFilled[datapointsFilled.length - 1].depKey)!, this.parent.docView.yAxis!)){
+        datapointsFilled.pop()
+      }
       const noteCount = datapointsFilled.length;
       if (noteCount) {
         if (this._soniRiffInterval!) {
@@ -339,7 +344,10 @@ export class GraphingCalculator extends LineChart {
             this._sonifier.playDatapoints(true, datapoint as PlaneDatapoint);
             this.soniNoteIndex++;
           }
-        }, SONI_RIFF_SPEEDS.at(this.paraview.store.settings.sonification.riffSpeedIndex)! / INTERNAL_POINTS);
+        }, SONI_RIFF_SPEEDS.at(this.paraview.store.settings.sonification.riffSpeedIndex)! / INTERNAL_SEGMENTS);
+      }
+      else{
+        console.log("No sonifiable notes detected, ensure some portion of the graph is visible on screen")
       }
     }
   }

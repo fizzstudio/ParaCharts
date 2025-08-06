@@ -202,20 +202,23 @@ export class Sonifier {
         return;
       }
 
-      const yBin = interpolateBin({
-        point: y,
-        min: this.chart.parent.docView.yAxis!.range!.start,
-        max: this.chart.parent.docView.yAxis!.range!.end,
-        bins: hertzes.length - 1,
-        scale: 'linear'
-      });
       if (cont) {
         let hertzMin = Math.min(...hertzes)
-        const pct = (y - this.chart.parent.docView.yAxis!.range!.start) / (this.chart.parent.docView.yAxis!.range!.end - this.chart.parent.docView.yAxis!.range!.start);
+        const pct = (y - this.chart.parent.docView.yAxis!.range!.start)
+          / (this.chart.parent.docView.yAxis!.range!.end - this.chart.parent.docView.yAxis!.range!.start);
         const hz = hertzMin * (1.05946 ** (pct * hertzes.length))
-        this._audioEngine!.playDataPoint(hz, xPan, NOTE_LENGTH);
+        let pan = calcPan((x - this.chart.axisInfo!.xLabelInfo.min!)
+          / (this.chart.axisInfo!.xLabelInfo.max! - this.chart.axisInfo!.xLabelInfo.min!))
+        this._audioEngine!.playDataPoint(hz, pan, NOTE_LENGTH);
       }
       else {
+        const yBin = interpolateBin({
+          point: y,
+          min: this.chart.parent.docView.yAxis!.range!.start,
+          max: this.chart.parent.docView.yAxis!.range!.end,
+          bins: hertzes.length - 1,
+          scale: 'linear'
+        });
         this._audioEngine!.playDataPoint(hertzes[yBin], xPan, NOTE_LENGTH);
       }
     });
