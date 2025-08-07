@@ -23,6 +23,7 @@ export class DatapointView extends DataView {
   protected _shapes: Shape[] = [];
   protected _symbol: DataSymbol | null = null;
   isVisited: boolean = false;
+  isSelected: boolean = false;
   everVisited: boolean = false;
 
   constructor(seriesView: SeriesView) {
@@ -81,7 +82,7 @@ export class DatapointView extends DataView {
     return {
       datapoint: true,
       visited: this.isVisited,
-      selected: this.paraview.store.isSelected(this.seriesKey, this.index)
+      selected: this.isSelected
     };
   }
 

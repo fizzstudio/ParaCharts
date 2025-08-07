@@ -511,7 +511,9 @@ export class ParaStore extends State {
       newSelection = datapoints;
     }
     this._prevSelectedDatapoints = this._selectedDatapoints;
+    this._prevSelectedDatapoints.map(c => c.datapointView.isSelected = false)
     this._selectedDatapoints = newSelection;
+    this._selectedDatapoints.map(c => c.datapointView.isSelected = true)
   }
 
   extendSelection(datapoints: DataCursor[]) {
