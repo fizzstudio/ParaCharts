@@ -342,6 +342,7 @@ export interface GraphSettings extends LineSettings{
   preset: string;
   renderPts: number;
   resetAxes: boolean;
+  visitedSeries: number;
 }
 
 

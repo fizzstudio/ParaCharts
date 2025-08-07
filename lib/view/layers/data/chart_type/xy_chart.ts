@@ -198,7 +198,7 @@ export abstract class XYChart extends DataLayer {
           if (!datapoint) {
             clearInterval(this._soniRiffInterval!);
           } else {
-            this._sonifier.playDatapoints(datapoint as PlaneDatapoint);
+            this._sonifier.playDatapoints(false, datapoint as PlaneDatapoint);
             this.soniNoteIndex++;
           }
         }, SONI_RIFF_SPEEDS.at(this.paraview.store.settings.sonification.riffSpeedIndex));
@@ -207,7 +207,7 @@ export abstract class XYChart extends DataLayer {
   }
 
   protected _playDatapoints(datapoints: PlaneDatapoint[]): void {
-    this.sonifier.playDatapoints(...datapoints);
+    this.sonifier.playDatapoints(false, ...datapoints);
   }
 
   playDir(dir: HorizDirection) {
