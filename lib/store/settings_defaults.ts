@@ -352,7 +352,8 @@ export const defaults: Settings = {
       equation: '',
       preset: '',
       renderPts: 50,
-      resetAxes: false
+      resetAxes: false,
+      visitedSeries: -1
     }
   },
   grid: {
