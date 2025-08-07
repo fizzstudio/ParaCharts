@@ -120,7 +120,8 @@ export class NavMap {
     // await this.cursor!.at(0)?.focus();
     this._store.visit(this.cursor!.datapointViews.map(view => ({
       seriesKey: view.seriesKey,
-      index: view.index
+      index: view.index,
+      datapointView: view
     })));
     if (this._runTimer) {
       clearTimeout(this._runTimer);

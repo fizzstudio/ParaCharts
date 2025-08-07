@@ -49,12 +49,14 @@ import { keymap } from './keymap';
 import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { type ParaChart } from '../parachart/parachart';
+import { DatapointView } from '../view/data';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
 export interface DataCursor {
   seriesKey: string;
   index: number;
+  datapointView: DatapointView;
 }
 
 // This mostly exists so that each new announcement will be considered
@@ -438,10 +440,13 @@ export class ParaStore extends State {
 
   visit(datapoints: DataCursor[]) {
     this._prevVisitedDatapoints = this._visitedDatapoints;
+    this._prevVisitedDatapoints.map(c => c.datapointView.isVisited = false)
     this._visitedDatapoints = [...datapoints];
+    this._visitedDatapoints.map(c => c.datapointView.isVisited = true)
     for (let datapoint of datapoints){
-      if (!this.everVisited(datapoint.seriesKey, datapoint.index)){
+      if (!datapoint.datapointView.everVisited ){
         this._everVisitedDatapoints.push(datapoint);
+        datapoint.datapointView.everVisited = true;
       }
     }
     if (this.settings.controlPanel.isMDRAnnotationsVisible) {

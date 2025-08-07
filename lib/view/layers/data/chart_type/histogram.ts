@@ -376,7 +376,6 @@ export class HistogramBinView extends DatapointView {
   protected _height!: number;
   protected _width!: number;
   protected _count: number = 0;
-  protected isVisited: boolean = false;
   constructor(
     chart: Histogram,
     series: SeriesView

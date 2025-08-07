@@ -18,9 +18,8 @@ export class SelectionLayer extends ChartLayer {
     return svg`
       ${
         this.paraview.store.selectedDatapoints.map(cursor => {
-          const dpView = this._parent.dataLayer.datapointView(cursor.seriesKey, cursor.index)!;
           // NB: Line datapoint height = 0
-          return dpView.selectedMarker.render();
+          return cursor.datapointView.selectedMarker.render();
         })
       }
     `;

@@ -22,6 +22,8 @@ export class DatapointView extends DataView {
 
   protected _shapes: Shape[] = [];
   protected _symbol: DataSymbol | null = null;
+  isVisited: boolean = false;
+  everVisited: boolean = false;
 
   constructor(seriesView: SeriesView) {
     super(seriesView.chart, seriesView.series.key);
@@ -78,7 +80,7 @@ export class DatapointView extends DataView {
   get classInfo(): ClassInfo {
     return {
       datapoint: true,
-      visited: this.paraview.store.isVisited(this.seriesKey, this.index),
+      visited: this.isVisited,
       selected: this.paraview.store.isSelected(this.seriesKey, this.index)
     };
   }
@@ -194,13 +196,13 @@ export class DatapointView extends DataView {
   }
 
   protected get _symbolScale() {
-    return this.paraview.store.isVisited(this.seriesKey, this.index)
+    return this.isVisited
       ? this.paraview.store.settings.chart.symbolHighlightScale
       : 1;
   }
 
   protected get _symbolColor() {
-    return this.paraview.store.isVisited(this.seriesKey, this.index)
+    return this.isVisited
       ? -1 as number
       : undefined;
   }
