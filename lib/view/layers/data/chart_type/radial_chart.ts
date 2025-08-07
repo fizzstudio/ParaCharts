@@ -352,7 +352,13 @@ export abstract class RadialChart extends DataLayer {
         (catLabelPosProp.endsWith('Left')
           ? slice.categoryLabel.paddedLeft
           : slice.categoryLabel.paddedRight),
-        slice.categoryLabel.bottom).addY(this.settings.categoryLabel.underlineGap);
+        this.settings.categoryLabel.leaderStyle === 'direct'
+          ? slice.categoryLabel.centerY
+          : slice.categoryLabel.bottom
+        ).addY(this.settings.categoryLabel.leaderStyle === 'underline'
+          ? this.settings.categoryLabel.underlineGap
+          : 0
+        );
       slice.leader = this._createCategoryLabelLeader(slice, arcCenter, underlineStart);
       slice.valueLabel = new Label(this.paraview, {
         // XXX value will not always be a percentage
@@ -387,10 +393,13 @@ export abstract class RadialChart extends DataLayer {
   }
 
   protected _createCategoryLabelLeader(slice: RadialSlice, arcCenter: Vec2, underlineStart: Vec2) {
+    const underlineSize = this.settings.categoryLabel.leaderStyle === 'direct'
+      ? this.settings.categoryLabel.outsideHorizPadding
+      : slice.categoryLabel!.paddedWidth;
     const path = new PathShape(this.paraview, {
       points: [arcCenter, underlineStart, underlineStart.x > slice.categoryLabel!.centerX
-        ? underlineStart.subtractX(slice.categoryLabel!.paddedWidth)
-        : underlineStart.addX(slice.categoryLabel!.paddedWidth)],
+        ? underlineStart.subtractX(underlineSize)
+        : underlineStart.addX(underlineSize)],
       stroke: this.paraview.store.colors.colorValueAt(slice.color),
     });
     path.classInfo = { 'radial-cat-label-leader': true };
@@ -501,8 +510,8 @@ export abstract class RadialChart extends DataLayer {
           return matchingDatapointViews[0];
         })
         const selectionMsgArray = describeSelections(
-          this.paraview, 
-          visitedDatapoint, 
+          this.paraview,
+          visitedDatapoint,
           selectedDatapointViews
         );
         msgArray.push(...selectionMsgArray);
@@ -532,7 +541,7 @@ export abstract class RadialChart extends DataLayer {
       // also add the high or low indicators
       const minMaxMsgArray = getDatapointMinMax(
         this.paraview,
-        visitedDatapoint.datapoint.facetValueAsNumber('y')!, 
+        visitedDatapoint.datapoint.facetValueAsNumber('y')!,
         seriesKey
       );
       msgArray.push(...minMaxMsgArray);
