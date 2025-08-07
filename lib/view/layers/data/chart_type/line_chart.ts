@@ -204,7 +204,6 @@ export class LineChart extends PointChart {
         queryMessages.seriesKeyLength,
         { seriesKey, datapointCount }
       ));
-      //console.log('queryData: SeriesView:', targetView);
     } else if (queriedNode.isNodeType('datapoint')) {
       /*
       if (e.options!.isChordMode) {

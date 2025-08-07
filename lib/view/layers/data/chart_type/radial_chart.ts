@@ -14,7 +14,7 @@ import { type ParaView } from '../../../../paraview';
 import { SectorShape } from '../../../shape/sector';
 import { PathShape } from '../../../shape/path';
 import { Datapoint, enumerate } from '@fizz/paramodel';
-import { formatBox } from '@fizz/parasummary';
+import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { Vec2 } from '../../../../common/vector';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { interpolate } from '@fizz/templum';
@@ -23,6 +23,7 @@ import { Shape } from '../../../shape/shape';
 import {
   NavLayer, NavNode,
 } from '../navigation';
+import { datapointMatchKeyAndIndex } from '../../../../common/utils';
 
 export type ArcType = 'circle' | 'semicircle';
 
@@ -451,31 +452,28 @@ export abstract class RadialChart extends DataLayer {
     };
   }
 
+  // TODO: localize this text output
+  // focused view: e.options!.focus
+  // all visited datapoint views: e.options!.visited
   queryData(): void {
-    const targetView = this.chartLandingView.focusLeaf
-    // TODO: localize this text output
-    // focused view: e.options!.focus
-    // all visited datapoint views: e.options!.visited
-    // const focusedDatapoint = e.targetView;
-    let msgArray: string[] = [];
-    let seriesLengths = [];
-    for (let series of this.paraview.store.model!.series) {
-      seriesLengths.push(series.rawData.length)
-    }
-    if (targetView instanceof ChartLandingView) {
-      this.paraview.store.announce(`Displaying Chart: ${this.paraview.store.title}`);
-      return
-    }
-    else if (targetView instanceof SeriesView) {
+    const msgArray: string[] = [];
+
+    const queriedNode = this._navMap.cursor;
+
+    if (queriedNode.isNodeType('top')) {
+      msgArray.push(`Displaying Chart: ${this.paraview.store.title}`);
+    } else if (queriedNode.isNodeType('series')) {
+      const seriesKey = queriedNode.options.seriesKey;
+      const datapointCount = this.paraview.store.model!.atKey(seriesKey)!.length;
       msgArray.push(interpolate(
         queryMessages.seriesKeyLength,
-        { seriesKey: targetView.seriesKey, datapointCount: targetView.series.length }
+        { seriesKey, datapointCount }
       ));
-      //console.log('queryData: SeriesView:', targetView);
-    }
-    else if (targetView instanceof DatapointView) {
+    } else if (queriedNode.isNodeType('datapoint')) {
+
       const selectedDatapoints = this.paraview.store.selectedDatapoints;
-      const visitedDatapoint = this.paraview.store.visitedDatapoints[0];
+      const visitedDatapoint = queriedNode.datapointViews[0];
+      const seriesKey = queriedNode.options.seriesKey;
       /*
       msgArray.push(replace(
         queryMessages.datapointKeyLength,
@@ -487,48 +485,50 @@ export abstract class RadialChart extends DataLayer {
         }
       ));
       */
-      //console.log(msgArray)
       if (selectedDatapoints.length) {
-        console.log("in here")
-        const selectedDatapointViews = []
-
-        for (let datapoint of selectedDatapoints) {
-          const selectedDatapointView = targetView.chart.datapointViews.filter(datapointView => datapointView.seriesKey === datapoint.seriesKey)[datapoint.index];
-          selectedDatapointViews.push(selectedDatapointView)
-        }
         // if there are selected datapoints, compare the current datapoint against each of those
-        //console.log(targetView.series.rawData)
-        const selectionMsgArray = describeSelections(this.paraview, targetView, selectedDatapointViews as DatapointView[]);
-        msgArray = msgArray.concat(selectionMsgArray);
+        const selectedDatapointViews = selectedDatapoints.map((cursor) => {
+          const matchingDatapointViews = this.datapointViews.filter((datapoint) => {
+            datapointMatchKeyAndIndex(datapoint, cursor.seriesKey, cursor.index)
+          })
+          return matchingDatapointViews[0];
+        })
+        const selectionMsgArray = describeSelections(
+          this.paraview, 
+          visitedDatapoint, 
+          selectedDatapointViews
+        );
+        msgArray.push(...selectionMsgArray);
       } else {
-        //console.log('tv', targetView)
         // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
         msgArray.push(interpolate(
           queryMessages.percentageOfChart,
           {
-            chartKey: targetView.seriesKey,
-            datapointXY: `${targetView.series[visitedDatapoint.index].facetBox("x")!.raw}, ${targetView.series[visitedDatapoint.index].facetBox("y")!.raw}`,
-            datapointIndex: targetView.index + 1,
-            datapointCount: targetView.series.length
-          }));
-        if (this.paraview.store.model!.numSeries > 1) {
+            chartKey: seriesKey,
+            datapointXY: formatXYDatapoint(visitedDatapoint.datapoint, 'raw'),
+            datapointIndex: queriedNode.options.index + 1,
+            datapointCount: this.paraview.store.model!.atKey(seriesKey)!.length
+          }
+        ));
+        if (this.paraview.store.model!.multi) {
           msgArray.push(interpolate(
             queryMessages.percentageOfSeries,
             {
-              seriesKey: targetView.seriesKey,
-              datapointXY: `${targetView.series[visitedDatapoint.index].facetBox("x")!.raw}, ${targetView.series[visitedDatapoint.index].facetBox("y")!.raw}`,
-              datapointIndex: targetView.index + 1,
-              datapointCount: targetView.series.length
-            }));
+            seriesKey,
+            datapointXY: formatXYDatapoint(visitedDatapoint.datapoint, 'raw'),
+            datapointIndex: queriedNode.options.index + 1,
+            datapointCount: this.paraview.store.model!.atKey(seriesKey)!.length
+            }
+          ));
         }
-        //const datapointMsgArray = describeAdjacentDatapoints(this.paraview, targetView);
-        //msgArray = msgArray.concat(datapointMsgArray);
       }
       // also add the high or low indicators
-      const minMaxMsgArray = getDatapointMinMax(this.paraview,
-        targetView.series[visitedDatapoint.index].facetBox("y")!.raw as unknown as number, targetView.seriesKey);
-      //console.log('minMaxMsgArray', minMaxMsgArray)z
-      msgArray = msgArray.concat(minMaxMsgArray)
+      const minMaxMsgArray = getDatapointMinMax(
+        this.paraview,
+        visitedDatapoint.datapoint.facetValueAsNumber('y')!, 
+        seriesKey
+      );
+      msgArray.push(...minMaxMsgArray);
     }
     this.paraview.store.announce(msgArray);
   }
