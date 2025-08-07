@@ -312,6 +312,8 @@ export abstract class RadialChart extends DataLayer {
       let catLabelAnchor: LabelTextAnchor;
       const sliceCenter = slice.shapes[0].loc.add(arcCenter).divideScalar(2);
       let catLabelPosProp: keyof LabelTextCorners = 'topLeft';
+      let catLabelLeftPad = 0;
+      let catLabelRightPad = 0;
       if (this.settings.categoryLabel.position === 'inside') {
         catLabelLoc = sliceCenter;
         catLabelAnchor = 'middle';
@@ -320,9 +322,11 @@ export abstract class RadialChart extends DataLayer {
         if (catLabelLoc.x > this.cx) {
           catLabelLoc.x += this.settings.categoryLabel.outsideHorizShift;
           catLabelAnchor = 'start';
+          catLabelLeftPad = this.settings.categoryLabel.outsideHorizPadding;
         } else {
           catLabelLoc.x -= this.settings.categoryLabel.outsideHorizShift;
           catLabelAnchor = 'end';
+          catLabelRightPad = this.settings.categoryLabel.outsideHorizPadding;
         }
         if (catLabelLoc.y > this.cy) {
           catLabelPosProp = catLabelAnchor === 'start' ? 'topLeft' : 'topRight';
@@ -342,9 +346,12 @@ export abstract class RadialChart extends DataLayer {
         [catLabelPosProp]: catLabelLoc,
         textAnchor: catLabelAnchor,
       });
-      const underlineStart = slice.categoryLabel.textCorners[catLabelPosProp.endsWith('Left')
-        ? 'bottomLeft'
-        : 'bottomRight'].addY(this.settings.categoryLabel.underlineGap);
+      slice.categoryLabel.padding = {left: catLabelLeftPad, right: catLabelRightPad};
+      const underlineStart = new Vec2(
+        (catLabelPosProp.endsWith('Left')
+          ? slice.categoryLabel.paddedLeft
+          : slice.categoryLabel.paddedRight),
+        slice.categoryLabel.bottom).addY(this.settings.categoryLabel.underlineGap);
       slice.leader = this._createCategoryLabelLeader(slice, arcCenter, underlineStart);
       slice.valueLabel = new Label(this.paraview, {
         // XXX value will not always be a percentage
@@ -381,8 +388,8 @@ export abstract class RadialChart extends DataLayer {
   protected _createCategoryLabelLeader(slice: RadialSlice, arcCenter: Vec2, underlineStart: Vec2) {
     const path = new PathShape(this.paraview, {
       points: [arcCenter, underlineStart, underlineStart.x > slice.categoryLabel!.centerX
-        ? underlineStart.subtractX(slice.categoryLabel!.width)
-        : underlineStart.addX(slice.categoryLabel!.width)],
+        ? underlineStart.subtractX(slice.categoryLabel!.paddedWidth)
+        : underlineStart.addX(slice.categoryLabel!.paddedWidth)],
       stroke: this.paraview.store.colors.colorValueAt(slice.color),
     });
     path.classInfo = { 'radial-cat-label-leader': true };

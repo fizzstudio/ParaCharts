@@ -354,6 +354,7 @@ export interface RadialCategoryLabelSettings extends SettingGroup {
   outsideLabelGap: number;
   outsideArcDistance: number;
   outsideHorizShift: number;
+  outsideHorizPadding: number;
   format: LabelFormat;
   underlineGap: number;
 }
