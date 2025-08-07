@@ -234,46 +234,6 @@ export abstract class XYChart extends DataLayer {
     };
   }
 
-  queryData() {
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof ChartLandingView) {
-      return;
-    }
-
-    const msgArray = [];
-    const seriesKey = leaf.series.key!;
-    const seriesLength = leaf.series.length;
-
-    if (leaf instanceof XYDatapointView) {
-      const record = leaf.index;
-
-      //msgArray.push(
-      //  `${seriesKey} (${leaf.datapoint.format('statusBar')}). Datapoint ${record + 1} of ${seriesLength}.`);
-
-      /*if (this.selectedDatapointViews.length) {
-        const alreadySelected = leaf.isSelected;
-        if (this.selectedDatapointViews.length > 1 || !alreadySelected) {
-          msgArray.push(`Comparison to ${alreadySelected ? 'other' : ''} selected datapoints:`);
-          this.selectedDatapointViews.forEach(datapoint => {
-            if (datapoint !== leaf) {
-              const comparisonResult = this.compareDatapoints(leaf, datapoint);
-              const comparison = (comparisonResult.diff)
-                ? `${comparisonResult.diff} ${comparisonResult.comparator}`
-                : `${this.capitalize(comparisonResult.comparator)}`;
-              msgArray.push(
-                `${comparison} ${datapoint.series.key} (${datapoint.datapoint.format('statusBar')})`);
-            }
-          });
-        }
-      }*/
-    } else if (leaf instanceof XYSeriesView) {
-      // TODO: describe series?
-      msgArray.push(`${seriesKey}. ${seriesLength} datapoints.`);
-    }
-
-    //todo().controller.announce(msgArray);
-  }
-
   /*compareDatapoints(datapoint1: XYDatapointView, datapoint2: XYDatapointView) :
     {
       comparator: string,
