@@ -352,4 +352,8 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     this._layer.goToNode(this);
   }
 
+  isNodeType<N extends T>(nodeType: N): this is NavNode<N> {
+    return this.type === nodeType;
+  }
+
 }

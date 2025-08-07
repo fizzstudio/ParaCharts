@@ -328,41 +328,10 @@ export abstract class DataLayer extends ChartLayer {
   //   }
   // }
 
+  // NOTE: This should be overriden in subclasses
   queryData(): void {
-    const targetView = this.chartLandingView.focusLeaf
-    // TODO: localize this text output
-    // focused view: e.options!.focus
-    // all visited datapoint views: e.options!.visited
-    // const focusedDatapoint = e.targetView;
-    let msgArray: string[] = [];
-    let seriesLengths = [];
-    for (let series of this.paraview.store.model!.series) {
-      seriesLengths.push(series.rawData.length)
-    }
-    if (targetView instanceof ChartLandingView) {
-      this.paraview.store.announce(`Displaying Chart: ${this.paraview.store.title}`);
-      return
-    }
-    else if (targetView instanceof SeriesView) {
-      msgArray.push(interpolate(
-        queryMessages.seriesKeyLength,
-        { seriesKey: targetView.seriesKey, datapointCount: targetView.series.length }
-      ));
-    }
-    else if (targetView instanceof DatapointView) {
-      const selectedDatapoints = this.paraview.store.selectedDatapoints;
-      const visitedDatapoint = this.paraview.store.visitedDatapoints[0];
-      msgArray.push(interpolate(
-        queryMessages.datapointKeyLength,
-        {
-          seriesKey: targetView.seriesKey,
-          datapointXY: `${targetView.series[visitedDatapoint.index].facetBox("x")!.raw}, ${targetView.series[visitedDatapoint.index].facetBox("y")!.raw}`,
-          datapointIndex: targetView.index + 1,
-          datapointCount: targetView.series.length
-        }
-      ));
-    }
-    this.paraview.store.announce(msgArray);
+    const queryType = this._navMap.cursor.type;
+    this.paraview.store.announce(`[ParaChart/Internal] Error: DataLayer.queryData should be overriden. Query Type: ${queryType}`);
   }
 
   protected _raiseSeries(_series: string) {
