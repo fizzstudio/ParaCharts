@@ -107,6 +107,13 @@ export class ScatterPlot extends PointChart {
     }
   }
 
+  protected _completeLayout(): void {
+    super._completeLayout();
+    if (this.isClustering) {
+      this._createClusterNavNodes();
+    }
+  }
+
   protected _generateClustering() {
     const data: Array<coord> = []
     const seriesList = this.paraview.store.model!.series
@@ -150,7 +157,8 @@ export class ScatterPlot extends PointChart {
     await super.storeDidChange(key, value);
     if (key === 'seriesAnalyses') {
       if (this.isClustering) {
-        this._createClusterNavNodes();
+        //console.log("before storeDidChange createClusterNavNodes call")
+        //this._createClusterNavNodes();
       }
     }
   }
@@ -226,6 +234,37 @@ export class ScatterPlot extends PointChart {
 
   }
 
+  async navRunDidEnd(cursor: NavNode): Promise<void> {
+    if (cursor.type === 'cluster') {
+      for (let child of this.children) {
+        //const child = this.chart.parent.selectionLayer.children[childID]
+        if (child instanceof ClusterShellView) {
+          child.remove();
+        }
+      }
+      if (this.isClustering) {
+        //@ts-ignore
+        this.append(new ClusterShellView(this, cursor.options.clustering.id))
+      }
+    }
+    else if (cursor.type === 'datapoint') {
+      if (this.isClustering){
+        for (let child of this.children) {
+          //const child = this.chart.parent.selectionLayer.children[childID]
+          if (child instanceof ClusterShellView) {
+            child.remove();
+          }
+        }
+        if (this.isClustering) {
+          //@ts-ignore
+          this.append(new ClusterShellView(this, cursor.datapointViews[0].clusterID))
+        }
+      }
+
+    }
+    this.paraview.requestUpdate();
+    super.navRunDidEnd(cursor)
+  }
 }
 
 class ScatterPoint extends ChartPoint {
