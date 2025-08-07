@@ -5,7 +5,7 @@ import {
   type BarSettings, type StackContentOptions ,type DeepReadonly,
   Setting
 } from '../../../../store/settings_types';
-import { fixed } from '../../../../common/utils';
+import { datapointMatchKeyAndIndex, fixed } from '../../../../common/utils';
 import { RectShape } from '../../../shape/rect';
 import { Label, LabelTextAnchor } from '../../../label';
 import { ChartLandingView, DatapointView, SeriesView } from '../../../data';
@@ -131,10 +131,6 @@ function abbreviateSeries(keys: readonly string[]) {
   const abbrevMap: {[key: string]: string} = {};
   keys.forEach((k, i) => abbrevMap![k] = abbrevs[i]);
   return abbrevMap;
-}
-
-function datapointMatchKeyAndIndex(datapoint: XYDatapointView, key: string, index: number): boolean {
-  return datapoint.seriesKey === key && datapoint.index === index;
 }
 
 /**
@@ -451,82 +447,82 @@ export class BarChart extends XYChart {
   // focused view: e.options!.focus
   // all visited datapoint views: e.options!.visited
   queryData(): void {
-      const msgArray: string[] = [];
+    const msgArray: string[] = [];
 
-      const queriedNode = this._navMap.cursor;
+    const queriedNode = this._navMap.cursor;
 
-      if (queriedNode.isNodeType('top')) {
-        msgArray.push(`Displaying Chart: ${this.paraview.store.title}`);
-      } else if (queriedNode.isNodeType('series')) {
-        /*
-        if (e.options!.isChordMode) {
-          // console.log('focusedDatapoint', focusedDatapoint)
-          const visitedDatapoints = e.options!.visited as XYDatapointView[];
-          // console.log('visitedDatapoints', visitedDatapoints)
-          msgArray = this.describeChord(visitedDatapoints);
-        } */
-        const seriesKey = queriedNode.options.seriesKey;
-        const datapointCount = this.paraview.store.model!.atKey(seriesKey)!.length;
-        msgArray.push(interpolate(
-          queryMessages.seriesKeyLength,
-          { seriesKey, datapointCount }
-        ));
-        //console.log('queryData: SeriesView:', targetView);
-      } else if (queriedNode.isNodeType('datapoint')) {
-        /*
-        if (e.options!.isChordMode) {
-          // focused view: e.options!.focus
-          // all visited datapoint views: e.options!.visited
-          // const focusedDatapoint = e.targetView;
-          // console.log('focusedDatapoint', focusedDatapoint)
-          const visitedDatapoints = e.options!.visited as XYDatapointView[];
-          // console.log('visitedDatapoints', visitedDatapoints)
-          msgArray = this.describeChord(visitedDatapoints);
-        }
-          */
-        const selectedDatapoints = this.paraview.store.selectedDatapoints;
-        const visitedDatapoint = queriedNode.datapointViews[0];
-        const seriesKey = queriedNode.options.seriesKey;
-        msgArray.push(interpolate(
-          queryMessages.datapointKeyLength,
-          {
-            seriesKey,
-            datapointXY: formatXYDatapoint(visitedDatapoint.datapoint, 'raw'),
-            datapointIndex: queriedNode.options.index + 1,
-            datapointCount: this.paraview.store.model!.atKey(seriesKey)!.length
-          }
-        ));
-
-        if (selectedDatapoints.length > 0) {
-          // if there are selected datapoints, compare the current datapoint against each of those
-          const selectedDatapointViews = selectedDatapoints.map((cursor) => {
-            const matchingDatapointViews = this.datapointViews.filter((datapoint) => {
-              datapointMatchKeyAndIndex(datapoint, cursor.seriesKey,cursor.index)
-            })
-            return matchingDatapointViews[0];
-          })
-          const selectionMsgArray = describeSelections(
-            this.paraview, 
-            visitedDatapoint, 
-            selectedDatapointViews
-          );
-          msgArray.push(...selectionMsgArray);
-        } else {
-          // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
-          const datapointMsg = describeAdjacentDatapoints(this.paraview, visitedDatapoint);
-          msgArray.push(datapointMsg);
-        }
-
-        // also add the high or low indicators
-        const minMaxMsgArray = getDatapointMinMax(
-          this.paraview,
-          visitedDatapoint.datapoint.facetValueAsNumber('y')!, 
-          seriesKey
-        );
-        msgArray.push(...minMaxMsgArray);
+    if (queriedNode.isNodeType('top')) {
+      msgArray.push(`Displaying Chart: ${this.paraview.store.title}`);
+    } else if (queriedNode.isNodeType('series')) {
+      /*
+      if (e.options!.isChordMode) {
+        // console.log('focusedDatapoint', focusedDatapoint)
+        const visitedDatapoints = e.options!.visited as XYDatapointView[];
+        // console.log('visitedDatapoints', visitedDatapoints)
+        msgArray = this.describeChord(visitedDatapoints);
+      } */
+      const seriesKey = queriedNode.options.seriesKey;
+      const datapointCount = this.paraview.store.model!.atKey(seriesKey)!.length;
+      msgArray.push(interpolate(
+        queryMessages.seriesKeyLength,
+        { seriesKey, datapointCount }
+      ));
+      //console.log('queryData: SeriesView:', targetView);
+    } else if (queriedNode.isNodeType('datapoint')) {
+      /*
+      if (e.options!.isChordMode) {
+        // focused view: e.options!.focus
+        // all visited datapoint views: e.options!.visited
+        // const focusedDatapoint = e.targetView;
+        // console.log('focusedDatapoint', focusedDatapoint)
+        const visitedDatapoints = e.options!.visited as XYDatapointView[];
+        // console.log('visitedDatapoints', visitedDatapoints)
+        msgArray = this.describeChord(visitedDatapoints);
       }
-      this.paraview.store.announce(msgArray);
+        */
+      const selectedDatapoints = this.paraview.store.selectedDatapoints;
+      const visitedDatapoint = queriedNode.datapointViews[0];
+      const seriesKey = queriedNode.options.seriesKey;
+      msgArray.push(interpolate(
+        queryMessages.datapointKeyLength,
+        {
+          seriesKey,
+          datapointXY: formatXYDatapoint(visitedDatapoint.datapoint, 'raw'),
+          datapointIndex: queriedNode.options.index + 1,
+          datapointCount: this.paraview.store.model!.atKey(seriesKey)!.length
+        }
+      ));
+
+      if (selectedDatapoints.length > 0) {
+        // if there are selected datapoints, compare the current datapoint against each of those
+        const selectedDatapointViews = selectedDatapoints.map((cursor) => {
+          const matchingDatapointViews = this.datapointViews.filter((datapoint) => {
+            datapointMatchKeyAndIndex(datapoint, cursor.seriesKey,cursor.index)
+          })
+          return matchingDatapointViews[0];
+        })
+        const selectionMsgArray = describeSelections(
+          this.paraview, 
+          visitedDatapoint, 
+          selectedDatapointViews
+        );
+        msgArray.push(...selectionMsgArray);
+      } else {
+        // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
+        const datapointMsg = describeAdjacentDatapoints(this.paraview, visitedDatapoint);
+        msgArray.push(datapointMsg);
+      }
+
+      // also add the high or low indicators
+      const minMaxMsgArray = getDatapointMinMax(
+        this.paraview,
+        visitedDatapoint.datapoint.facetValueAsNumber('y')!, 
+        seriesKey
+      );
+      msgArray.push(...minMaxMsgArray);
     }
+    this.paraview.store.announce(msgArray);
+  }
 
 }
 
