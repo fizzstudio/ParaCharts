@@ -449,7 +449,7 @@ export class BarChart extends XYChart {
   queryData(): void {
     const msgArray: string[] = [];
 
-    const queriedNode = this._navMap.cursor;
+    const queriedNode = this._navMap!.cursor;
 
     if (queriedNode.isNodeType('top')) {
       msgArray.push(`Displaying Chart: ${this.paraview.store.title}`);
@@ -501,8 +501,8 @@ export class BarChart extends XYChart {
           return matchingDatapointViews[0];
         })
         const selectionMsgArray = describeSelections(
-          this.paraview, 
-          visitedDatapoint, 
+          this.paraview,
+          visitedDatapoint,
           selectedDatapointViews
         );
         msgArray.push(...selectionMsgArray);
@@ -515,7 +515,7 @@ export class BarChart extends XYChart {
       // also add the high or low indicators
       const minMaxMsgArray = getDatapointMinMax(
         this.paraview,
-        visitedDatapoint.datapoint.facetValueAsNumber('y')!, 
+        visitedDatapoint.datapoint.facetValueAsNumber('y')!,
         seriesKey
       );
       msgArray.push(...minMaxMsgArray);

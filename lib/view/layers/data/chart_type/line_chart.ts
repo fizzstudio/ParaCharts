@@ -94,17 +94,29 @@ export class LineChart extends PointChart {
   async storeDidChange(key: string, value: any) {
     await super.storeDidChange(key, value);
     if (key === 'seriesAnalyses') {
-      if (Object.keys(this.paraview.store.seriesAnalyses).length === this.paraview.store.model!.seriesKeys.length
-        && this.paraview.store.seriesAnalyses[this.paraview.store.model!.seriesKeys[0]]) {
-        // Analyses have been generated for all series (i.e., we're in AI mode)
-        this._createSequenceNavNodes();
-      }
+      // This gets called each time a series analysis completes after a
+      // new manifest is loaded in AI mode. The following call will only
+      // do anything once analyses have been generated for all series.
+      this._createSequenceNavNodes();
     }
   }
 
+  protected _canCreateSequenceNavNodes(): boolean {
+    return !!this._navMap && Object.keys(this.paraview.store.seriesAnalyses).length === this.paraview.store.model!.seriesKeys.length
+        && !!this.paraview.store.seriesAnalyses[this.paraview.store.model!.seriesKeys[0]];
+  }
+
+  protected _createNavMap() {
+    super._createNavMap();
+    // In AI mode, the following call will only do anything when the doc view
+    // has been recreated (so the series analyses already exist)
+    this._createSequenceNavNodes();
+  }
+
   protected _createSequenceNavNodes() {
+    if (!this._canCreateSequenceNavNodes()) return;
     const seriesSeqNodes: NavNode<'sequence'>[][] = [];
-    this._navMap.root.query('series').forEach(seriesNode => {
+    this._navMap!.root.query('series').forEach(seriesNode => {
       if (seriesSeqNodes.length) {
         seriesNode.connect('left', seriesSeqNodes.at(-1)!.at(-1)!);
       }
@@ -186,7 +198,7 @@ export class LineChart extends PointChart {
   queryData(): void {
     const msgArray: string[] = [];
 
-    const queriedNode = this._navMap.cursor;
+    const queriedNode = this._navMap!.cursor;
 
     if (queriedNode.isNodeType('top')) {
       msgArray.push(`Displaying Chart: ${this.paraview.store.title}`);
@@ -238,8 +250,8 @@ export class LineChart extends PointChart {
           return matchingDatapointViews[0];
         })
         const selectionMsgArray = describeSelections(
-          this.paraview, 
-          visitedDatapoint, 
+          this.paraview,
+          visitedDatapoint,
           selectedDatapointViews
         );
         msgArray.push(...selectionMsgArray);
@@ -252,7 +264,7 @@ export class LineChart extends PointChart {
       // also add the high or low indicators
       const minMaxMsgArray = getDatapointMinMax(
         this.paraview,
-        visitedDatapoint.datapoint.facetValueAsNumber('y')!, 
+        visitedDatapoint.datapoint.facetValueAsNumber('y')!,
         seriesKey
       );
       msgArray.push(...minMaxMsgArray);
@@ -403,8 +415,8 @@ export class LineSection extends ChartPoint {
   }
 
   protected _shapeStyleInfo(shapeIndex: number): StyleInfo {
-    if (this.chart.navMap.cursor.type === 'sequence') {
-      const node = this.chart.navMap.cursor as NavNode<'sequence'>;
+    if (this.chart.navMap!.cursor.isNodeType('sequence')) {
+      const node = this.chart.navMap!.cursor;
       if ((this.index === node.options.start && this.index && !shapeIndex)
         || (this.index === node.options.end - 1 && shapeIndex)) {
         return {

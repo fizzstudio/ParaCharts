@@ -203,7 +203,7 @@ export class PointerEventManager {
           ? datapointEl.id.slice(0, -4)
           : datapointEl.id;
         const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointViewForId(id)!;
-        this._paraView.documentView!.chartLayers.dataLayer.navMap.goTo('datapoint', {
+        this._paraView.documentView!.chartLayers.dataLayer.navMap!.goTo('datapoint', {
           seriesKey: datapointView.seriesKey,
           index: datapointView.index
         });

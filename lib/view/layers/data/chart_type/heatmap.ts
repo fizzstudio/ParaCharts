@@ -100,7 +100,7 @@ export class Heatmap extends XYChart {
   protected _createPrimaryNavNodes() {
     super._createPrimaryNavNodes();
     // Create vertical links between datapoints
-    this._navMap.root.query('series').forEach(seriesNode => {
+    this._navMap!.root.query('series').forEach(seriesNode => {
       seriesNode.allNodes('right')
         // skip bottom row
         .slice(0, -this._resolution).forEach((pointNode, i) => {

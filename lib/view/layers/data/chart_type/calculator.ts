@@ -284,16 +284,16 @@ export class GraphingCalculator extends LineChart {
   }
 
   protected _sparkBrailleInfo() {
-    let data = this._navMap.cursor.datapointViews[0].series.datapoints.map(dp =>
+    let data = this._navMap!.cursor.datapointViews[0].series.datapoints.map(dp =>
       dp.facetValueAsNumber('y')!).join(' ')
     //Sparkbrailles with more than 50 points either get cut off by the edge of the panel, or push the panel outwards and make it look bad
-    if (this._navMap.cursor.datapointViews[0].series.datapoints.length > 50) {
-      const length = this._navMap.cursor.datapointViews[0].series.datapoints.length
+    if (this._navMap!.cursor.datapointViews[0].series.datapoints.length > 50) {
+      const length = this._navMap!.cursor.datapointViews[0].series.datapoints.length
       let indices = []
       for (let i = 0; i < 50; i++) {
         indices.push(Math.floor(i * length / 50))
       }
-      data = this._navMap.cursor.datapointViews[0].series.datapoints.filter((e, index) => { return indices.includes(index); }).map(dp =>
+      data = this._navMap!.cursor.datapointViews[0].series.datapoints.filter((e, index) => { return indices.includes(index); }).map(dp =>
         dp.facetValueAsNumber('y')!).join(' ');
     }
     return {
@@ -305,7 +305,7 @@ export class GraphingCalculator extends LineChart {
   protected _playRiff(order?: RiffOrder) {
     if (this.paraview.store.settings.sonification.isSoniEnabled
       && this.paraview.store.settings.sonification.isRiffEnabled) {
-      const datapoints = this._navMap.cursor.datapointViews.map(view => view.datapoint) as PlaneDatapoint[];
+      const datapoints = this._navMap!.cursor.datapointViews.map(view => view.datapoint) as PlaneDatapoint[];
       if (order === 'sorted') {
         datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
       } else if (order === 'reversed') {

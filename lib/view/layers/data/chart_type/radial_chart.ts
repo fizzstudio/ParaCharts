@@ -191,9 +191,9 @@ export abstract class RadialChart extends DataLayer {
 
   protected _createNavMap() {
     super._createNavMap();
-    const layer = new NavLayer(this._navMap, 'slices');
+    const layer = new NavLayer(this._navMap!, 'slices');
     directions.forEach(dir => {
-      this._navMap.node('top', {})!.connect(dir, layer);
+      this._navMap!.node('top', {})!.connect(dir, layer);
     });
     const nodes = this._chartLandingView.children[0].children.map((datapointView, i) => {
       const node = new NavNode(layer, 'datapoint', {
@@ -201,8 +201,8 @@ export abstract class RadialChart extends DataLayer {
         index: datapointView.index
       });
       node.addDatapointView(datapointView);
-      node.connect('out', this._navMap.root);
-      node.connect('up', this._navMap.root);
+      node.connect('out', this._navMap!.root);
+      node.connect('up', this._navMap!.root);
       return node;
     });
     nodes.slice(0, -1).forEach((node, i) => {
@@ -459,7 +459,7 @@ export abstract class RadialChart extends DataLayer {
 
   protected _sparkBrailleInfo() {
     return  {
-      data: JSON.stringify(this._navMap.cursor.datapointViews[0].series.datapoints.map(dp => ({
+      data: JSON.stringify(this._navMap!.cursor.datapointViews[0].series.datapoints.map(dp => ({
           // XXX shouldn't assume x is string (or that we have an 'x' facet, for that matter)
           label: dp.facetValue('x') as string,
           value: dp.facetValueAsNumber('y')
@@ -474,7 +474,7 @@ export abstract class RadialChart extends DataLayer {
   queryData(): void {
     const msgArray: string[] = [];
 
-    const queriedNode = this._navMap.cursor;
+    const queriedNode = this._navMap!.cursor;
 
     if (queriedNode.isNodeType('top')) {
       msgArray.push(`Displaying Chart: ${this.paraview.store.title}`);
@@ -550,8 +550,8 @@ export abstract class RadialChart extends DataLayer {
   }
 
   focusRingShape(): Shape | null {
-    if (this._navMap.cursor.type === 'datapoint') {
-      return this._navMap.cursor.at(0)!.focusRingShape();
+    if (this._navMap!.cursor.type === 'datapoint') {
+      return this._navMap!.cursor.at(0)!.focusRingShape();
     }
     return null;
   }
