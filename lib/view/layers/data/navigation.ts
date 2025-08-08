@@ -33,7 +33,9 @@ export interface DatapointNavNodeOptions {
   seriesKey: string;
   index: number;
 }
-export interface ChordNavNodeOptions {}
+export interface ChordNavNodeOptions {
+  index: number;
+}
 export interface SequenceNavNodeOptions {
   seriesKey: string;
   // start and end as in series analysis fields
@@ -360,6 +362,10 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
 
   go() {
     this._layer.goToNode(this);
+  }
+
+  isNodeType<N extends T>(nodeType: N): this is NavNode<N> {
+    return this.type === nodeType;
   }
 
 }

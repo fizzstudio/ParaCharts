@@ -342,6 +342,7 @@ export interface GraphSettings extends LineSettings{
   preset: string;
   renderPts: number;
   resetAxes: boolean;
+  visitedSeries: number;
 }
 
 
@@ -353,6 +354,8 @@ export interface RadialCategoryLabelSettings extends SettingGroup {
   outsideLabelGap: number;
   outsideArcDistance: number;
   outsideHorizShift: number;
+  outsideHorizPadding: number;
+  leaderStyle: 'direct' | 'underline';
   format: LabelFormat;
   underlineGap: number;
 }

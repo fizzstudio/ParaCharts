@@ -440,7 +440,7 @@ export class ParaStore extends State {
     this._prevVisitedDatapoints = this._visitedDatapoints;
     this._visitedDatapoints = [...datapoints];
     for (let datapoint of datapoints){
-      if (!this.everVisited(datapoint.seriesKey, datapoint.index)){
+      if (!this.everVisited(datapoint.seriesKey, datapoint.index)) {
         this._everVisitedDatapoints.push(datapoint);
       }
     }

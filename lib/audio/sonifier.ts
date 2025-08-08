@@ -153,7 +153,7 @@ export class Sonifier {
    * Play a given data point
    * @param datapoint - the data point to play
    */
-  playDatapoints(...datapoints: PlaneDatapoint[]) {
+  playDatapoints(cont = false, ...datapoints: PlaneDatapoint[]) {
     this._checkAudioEngine();
 
     if (!this._audioEngine) {
@@ -202,15 +202,25 @@ export class Sonifier {
         return;
       }
 
-      const yBin = interpolateBin({
-        point: y,
-        min: this.chart.parent.docView.yAxis!.range!.start,
-        max: this.chart.parent.docView.yAxis!.range!.end,
-        bins: hertzes.length - 1,
-        scale: 'linear'
-      });
-
-      this._audioEngine!.playDataPoint(hertzes[yBin], xPan, NOTE_LENGTH);
+      if (cont) {
+        let hertzMin = Math.min(...hertzes)
+        const pct = (y - this.chart.parent.docView.yAxis!.range!.start)
+          / (this.chart.parent.docView.yAxis!.range!.end - this.chart.parent.docView.yAxis!.range!.start);
+        const hz = hertzMin * (1.05946 ** (pct * hertzes.length))
+        let pan = calcPan((x - this.chart.axisInfo!.xLabelInfo.min!)
+          / (this.chart.axisInfo!.xLabelInfo.max! - this.chart.axisInfo!.xLabelInfo.min!))
+        this._audioEngine!.playDataPoint(hz, pan, NOTE_LENGTH);
+      }
+      else {
+        const yBin = interpolateBin({
+          point: y,
+          min: this.chart.parent.docView.yAxis!.range!.start,
+          max: this.chart.parent.docView.yAxis!.range!.end,
+          bins: hertzes.length - 1,
+          scale: 'linear'
+        });
+        this._audioEngine!.playDataPoint(hertzes[yBin], xPan, NOTE_LENGTH);
+      }
     });
   }
 
