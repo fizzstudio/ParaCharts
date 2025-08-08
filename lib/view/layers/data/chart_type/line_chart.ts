@@ -91,6 +91,7 @@ export class LineChart extends PointChart {
     return new LineSection(seriesView);
   }
 
+
   async storeDidChange(key: string, value: any) {
     await super.storeDidChange(key, value);
     if (key === 'seriesAnalyses') {
