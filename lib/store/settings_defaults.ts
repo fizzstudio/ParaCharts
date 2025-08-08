@@ -249,7 +249,9 @@ export const defaults: Settings = {
         position: 'outside',
         outsideLabelGap: 10,
         outsideArcDistance: 10,
-        outsideHorizShift: 5,
+        outsideHorizShift: 15,
+        outsideHorizPadding: 10,
+        leaderStyle: 'direct',
         format: 'raw',
         underlineGap: 2,
       },
@@ -269,7 +271,9 @@ export const defaults: Settings = {
         position: 'outside',
         outsideLabelGap: 10,
         outsideArcDistance: 10,
-        outsideHorizShift: 5,
+        outsideHorizShift: 15,
+        outsideHorizPadding: 10,
+        leaderStyle: 'direct',
         format: 'raw',
         underlineGap: 2,
       },
@@ -289,7 +293,9 @@ export const defaults: Settings = {
         position: 'outside',
         outsideLabelGap: 4,
         outsideArcDistance: 10,
-        outsideHorizShift: 5,
+        outsideHorizShift: 15,
+        outsideHorizPadding: 10,
+        leaderStyle: 'direct',
         format: 'raw',
         underlineGap: 6,
       },
@@ -352,7 +358,8 @@ export const defaults: Settings = {
       equation: '',
       preset: '',
       renderPts: 50,
-      resetAxes: false
+      resetAxes: false,
+      visitedSeries: -1
     }
   },
   grid: {

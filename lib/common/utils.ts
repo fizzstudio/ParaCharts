@@ -19,6 +19,7 @@ import { ParaStore } from "../store/parastore";
 import { type View } from '../view/base_view';
 import { Box, calendarNumber } from "@fizz/paramodel";
 import { Datatype } from "@fizz/paramanifest";
+import { DatapointView } from "../view/data";
 
 // String Formatting
 
@@ -110,6 +111,10 @@ export function boxToNumber(box: Box<Datatype>, allBoxes: Box<Datatype>[]): numb
         return calendarNumber(box.value);
     }
     return allBoxes.findIndex((otherBox) => otherBox.value === box.value);
+}
+
+export function datapointMatchKeyAndIndex(datapoint: DatapointView, key: string, index: number): boolean {
+  return datapoint.seriesKey === key && datapoint.index === index;
 }
 
 // Simon: These functions were used for Model2D but have no use currently.

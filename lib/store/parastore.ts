@@ -503,12 +503,16 @@ export class ParaStore extends State {
   select(datapoints: DataCursor[]) {
     let newSelection: DataCursor[] = [];
     if (datapoints.length === 1) {
-      if (!this.isSelected(datapoints[0].seriesKey, datapoints[0].index)
+      if (!datapoints[0].datapointView.isSelected
         || this._selectedDatapoints.length > 1) {
         newSelection.push(datapoints[0]);
       }
     } else {
-      newSelection = datapoints;
+      for (let datapoint of datapoints) {
+        if (!datapoint.datapointView.isSelected) {
+          newSelection.push(datapoint);
+        }
+      }
     }
     this._prevSelectedDatapoints = this._selectedDatapoints;
     this._prevSelectedDatapoints.map(c => c.datapointView.isSelected = false)

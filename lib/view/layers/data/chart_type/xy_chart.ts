@@ -128,16 +128,16 @@ export abstract class XYChart extends DataLayer {
   protected _createPrimaryNavNodes() {
     // Create series and datapoint nav nodes, and link them horizontally thusly:
     // - [SERIES-A]-[SERIES-A-POINT-0]- ... -[SERIES-A-POINT-(N-1)]-[SERIES-B]-[SERIES-B-POINT-0]- ...
-    let left = this._navMap.root.get('top')!;
+    let left = this._navMap!.root.get('top')!;
     this._chartLandingView.children.forEach((seriesView, i) => {
-      const seriesNode = new NavNode(this._navMap.root, 'series', {
+      const seriesNode = new NavNode(this._navMap!.root, 'series', {
         seriesKey: seriesView.seriesKey
       });
       seriesNode.connect('left', left);
       left = seriesNode;
       seriesView.children.forEach(dp => seriesNode.addDatapointView(dp));
       seriesView.children.forEach((dp, j) => {
-        const node = new NavNode(this._navMap.root, 'datapoint', {
+        const node = new NavNode(this._navMap!.root, 'datapoint', {
           seriesKey: dp.seriesKey,
           index: dp.index
         });
@@ -151,8 +151,8 @@ export abstract class XYChart extends DataLayer {
   protected _createNavLinksBetweenSeries() {
     // Create vertical links between series and datapoints
     this._chartLandingView.children.slice(0, -1).forEach((seriesView, i) => {
-      const seriesNode = this._navMap.root.get('series', i)!;
-      const nextSeriesNode = this._navMap.root.get('series', i + 1)!;
+      const seriesNode = this._navMap!.root.get('series', i)!;
+      const nextSeriesNode = this._navMap!.root.get('series', i + 1)!;
       seriesNode.connect('down', nextSeriesNode);
       for (let j = 1; j <= seriesView.children.length; j++) {
         seriesNode.peekNode('right', j)!.connect(
@@ -164,24 +164,24 @@ export abstract class XYChart extends DataLayer {
   protected _createChordNavNodes() {
     // Create chord landings
     // NB: This will produce the nodes in insertion order
-    this._navMap.root.query('datapoint', {
+    this._navMap!.root.query('datapoint', {
       seriesKey: this._chartLandingView.children[0].seriesKey
-    }).forEach((node, i) => {
-      const chordNode = new NavNode(this._navMap.root, 'chord', {});
-      chordNode.connect('down', node);
-      chordNode.connect('up', node.allNodes('down').at(-1)!);
-      chordNode.allNodes('down', 'datapoint').forEach(node => chordNode.addDatapointView(node.at(0)!));
+    }).forEach(node => {
+      const chordNode = new NavNode(this._navMap!.root, 'chord', {index: node.options.index});
+      [node, ...node.allNodes('down', 'datapoint')].forEach(node => {
+        chordNode.addDatapointView(node.at(0)!);
+      });
     });
     // Link chord landings
-    this._navMap.root.query('chord').slice(0, -1).forEach((node, i) => {
-      node.connect('right', this._navMap.root.get('chord', i + 1)!);
+    this._navMap!.root.query('chord').slice(0, -1).forEach((node, i) => {
+      node.connect('right', this._navMap!.root.get('chord', i + 1)!);
     });
   }
 
   protected _playRiff(order?: RiffOrder) {
     if (this.paraview.store.settings.sonification.isSoniEnabled
       && this.paraview.store.settings.sonification.isRiffEnabled) {
-      const datapoints = this._navMap.cursor.datapointViews.map(view => view.datapoint);
+      const datapoints = this._navMap!.cursor.datapointViews.map(view => view.datapoint);
       if (order === 'sorted') {
         datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
       } else if (order === 'reversed') {
@@ -198,7 +198,7 @@ export abstract class XYChart extends DataLayer {
           if (!datapoint) {
             clearInterval(this._soniRiffInterval!);
           } else {
-            this._sonifier.playDatapoints(datapoint as PlaneDatapoint);
+            this._sonifier.playDatapoints(false, datapoint as PlaneDatapoint);
             this.soniNoteIndex++;
           }
         }, SONI_RIFF_SPEEDS.at(this.paraview.store.settings.sonification.riffSpeedIndex));
@@ -207,14 +207,14 @@ export abstract class XYChart extends DataLayer {
   }
 
   protected _playDatapoints(datapoints: PlaneDatapoint[]): void {
-    this.sonifier.playDatapoints(...datapoints);
+    this.sonifier.playDatapoints(false, ...datapoints);
   }
 
   playDir(dir: HorizDirection) {
-    if (this._navMap.cursor.type !== 'datapoint') {
+    if (this._navMap!.cursor.type !== 'datapoint') {
       return;
     }
-    let cursor = this._navMap.cursor;
+    let cursor = this._navMap!.cursor;
     this._soniInterval = setInterval(() => {
       const next = cursor.peekNode(dir, 1);
       if (next && next.type === 'datapoint') {
@@ -228,50 +228,10 @@ export abstract class XYChart extends DataLayer {
 
   protected _sparkBrailleInfo() {
     return  {
-      data: this._navMap.cursor.datapointViews[0].series.datapoints.map(dp =>
+      data: this._navMap!.cursor.datapointViews[0].series.datapoints.map(dp =>
         dp.facetValueAsNumber('y')!).join(' '),
       isBar: this.paraview.store.type === 'bar' || this.paraview.store.type === 'column'
     };
-  }
-
-  queryData() {
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof ChartLandingView) {
-      return;
-    }
-
-    const msgArray = [];
-    const seriesKey = leaf.series.key!;
-    const seriesLength = leaf.series.length;
-
-    if (leaf instanceof XYDatapointView) {
-      const record = leaf.index;
-
-      //msgArray.push(
-      //  `${seriesKey} (${leaf.datapoint.format('statusBar')}). Datapoint ${record + 1} of ${seriesLength}.`);
-
-      /*if (this.selectedDatapointViews.length) {
-        const alreadySelected = leaf.isSelected;
-        if (this.selectedDatapointViews.length > 1 || !alreadySelected) {
-          msgArray.push(`Comparison to ${alreadySelected ? 'other' : ''} selected datapoints:`);
-          this.selectedDatapointViews.forEach(datapoint => {
-            if (datapoint !== leaf) {
-              const comparisonResult = this.compareDatapoints(leaf, datapoint);
-              const comparison = (comparisonResult.diff)
-                ? `${comparisonResult.diff} ${comparisonResult.comparator}`
-                : `${this.capitalize(comparisonResult.comparator)}`;
-              msgArray.push(
-                `${comparison} ${datapoint.series.key} (${datapoint.datapoint.format('statusBar')})`);
-            }
-          });
-        }
-      }*/
-    } else if (leaf instanceof XYSeriesView) {
-      // TODO: describe series?
-      msgArray.push(`${seriesKey}. ${seriesLength} datapoints.`);
-    }
-
-    //todo().controller.announce(msgArray);
   }
 
   /*compareDatapoints(datapoint1: XYDatapointView, datapoint2: XYDatapointView) :
