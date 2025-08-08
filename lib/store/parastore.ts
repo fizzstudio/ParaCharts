@@ -503,7 +503,11 @@ export class ParaStore extends State {
         newSelection.push(datapoints[0]);
       }
     } else {
-      newSelection = datapoints;
+      for (let datapoint of datapoints) {
+        if (!this.isSelected(datapoint.seriesKey, datapoint.index)) {
+          newSelection.push(datapoint);
+        }
+      }
     }
     this._prevSelectedDatapoints = this._selectedDatapoints;
     this._selectedDatapoints = newSelection;

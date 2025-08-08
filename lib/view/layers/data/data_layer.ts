@@ -312,7 +312,29 @@ export abstract class DataLayer extends ChartLayer {
   protected abstract _playDatapoints(datapoints: Datapoint[]): void;
 
   selectCurrent(extend = false) {
-    this._navMap.cursor.at(0)!.select(extend);
+    const cursor = this._navMap!.cursor;
+    if (cursor.type === 'series') {
+      cursor.at(0)!.parent.select(extend);
+    }
+    else if (cursor.type === 'sequence') {
+      //Replace this with dedicated select() method at some point
+      if (extend) {
+        this.paraview.store.extendSelection(this.paraview.store.visitedDatapoints);
+      } else {
+        this.paraview.store.select(this.paraview.store.visitedDatapoints);
+      }
+    }
+    else if (cursor.type === 'cluster') {
+      //Replace this with dedicated select() method at some point
+      if (extend) {
+        this.paraview.store.extendSelection(this.paraview.store.visitedDatapoints);
+      } else {
+        this.paraview.store.select(this.paraview.store.visitedDatapoints);
+      }
+    }
+    else {
+      cursor.at(0)!.select(extend);
+    }
   }
 
   clearDatapointSelection(quiet = false) {
