@@ -62,7 +62,7 @@ export abstract class DataLayer extends ChartLayer {
   soniNoteIndex = 0;
   soniSequenceIndex = 0;
 
-  protected _navMap!: NavMap;
+  protected _navMap: NavMap | null = null;
   protected _sonifier!: Sonifier;
   protected visibleSeries!: string[];
   protected _chartLandingView!: ChartLandingView;
@@ -226,11 +226,11 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   navToDatapoint(seriesKey: string, index: number) {
-    this._navMap.goTo('datapoint', {seriesKey, index});
+    this._navMap!.goTo('datapoint', {seriesKey, index});
   }
 
   async move(dir: Direction) {
-    await this._navMap.cursor!.move(dir);
+    await this._navMap!.cursor!.move(dir);
   }
 
   /**
@@ -238,7 +238,7 @@ export abstract class DataLayer extends ChartLayer {
    * @param isMin - If true, go the the minimum. Otherwise, go to the maximum
    */
   goSeriesMinMax(isMin: boolean) {
-    const node = this._navMap.cursor;
+    const node = this._navMap!.cursor;
     if (node.type === 'top' || node.type === 'chord') {
       this.goChartMinMax(isMin);
     } else {
@@ -266,7 +266,7 @@ export abstract class DataLayer extends ChartLayer {
           seriesMatchArray = seriesMatchArray.toSpliced(0, currentRecordIndex);
         }
       }
-      this._navMap.goTo('datapoint', {
+      this._navMap!.goTo('datapoint', {
         seriesKey: seriesMatchArray[0].seriesKey,
         index: seriesMatchArray[0].datapointIndex
       });
@@ -282,7 +282,7 @@ export abstract class DataLayer extends ChartLayer {
     const matchTarget = isMin ? stats.min.value : stats.max.value;
     const matchDatapoint = this.paraview.store.model!.allPoints.find(dp =>
       dp.facetValueAsNumber('y') === matchTarget)!;
-    this._navMap.goTo('datapoint', {
+    this._navMap!.goTo('datapoint', {
       seriesKey: matchDatapoint?.seriesKey,
       index: matchDatapoint?.datapointIndex
     });
@@ -314,7 +314,7 @@ export abstract class DataLayer extends ChartLayer {
   protected abstract _playDatapoints(datapoints: Datapoint[]): void;
 
   selectCurrent(extend = false) {
-    this._navMap.cursor.at(0)!.select(extend);
+    this._navMap!.cursor.at(0)!.select(extend);
   }
 
   clearDatapointSelection(quiet = false) {
@@ -332,7 +332,7 @@ export abstract class DataLayer extends ChartLayer {
 
   // NOTE: This should be overriden in subclasses
   queryData(): void {
-    const queryType = this._navMap.cursor.type;
+    const queryType = this._navMap!.cursor.type;
     this.paraview.store.announce(`[ParaChart/Internal] Error: DataLayer.queryData should be overriden. Query Type: ${queryType}`);
   }
 
@@ -389,50 +389,50 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   navFirst() {
-    const type = this._navMap.cursor.type;
+    const type = this._navMap!.cursor.type;
     if (['datapoint', 'chord', 'series'].includes(type)) {
       const dir: Partial<Record<NavNodeType, Direction>> = {
         datapoint: 'left',
         chord: 'left',
         series: 'up'
       };
-      this._navMap.cursor.allNodes(dir[type]!, type).at(-1)?.go();
+      this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
     }
   }
 
   navLast() {
-    const type = this._navMap.cursor.type;
+    const type = this._navMap!.cursor.type;
     if (['datapoint', 'chord', 'series'].includes(type)) {
       const dir: Partial<Record<NavNodeType, Direction>> = {
         datapoint: 'right',
         chord: 'right',
         series: 'down'
       };
-      this._navMap.cursor.allNodes(dir[type]!, type).at(-1)?.go();
+      this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
     }
   }
 
   navToChordLanding() {
-    if (this._navMap.cursor.isNodeType('datapoint')) {
-      const seriesKey = this._navMap.cursor.options.seriesKey;
-      this._navMap.cursor.layer.goTo('chord', this._navMap.cursor.options.index);
+    if (this._navMap!.cursor.isNodeType('datapoint')) {
+      const seriesKey = this._navMap!.cursor.options.seriesKey;
+      this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
       this._chordPrevSeriesKey = seriesKey;
-    } else if (this._navMap.cursor.isNodeType('chord')) {
-      this._navMap.cursor.layer.goTo(
+    } else if (this._navMap!.cursor.isNodeType('chord')) {
+      this._navMap!.cursor.layer.goTo(
         'datapoint', {
           seriesKey: this._chordPrevSeriesKey,
-          index: this._navMap.cursor.options.index
+          index: this._navMap!.cursor.options.index
         });
     }
   }
 
   get shouldDrawFocusRing() {
-    return this._navMap.cursor.type !== 'top';
+    return this._navMap!.cursor.type !== 'top';
   }
 
   focusRingBbox() {
-    if (['series', 'chord', 'datapoint', 'sequence'].includes(this._navMap.cursor.type)) {
-      return bboxOfBboxes(...this._navMap.cursor.datapointViews.map(view => view.outerBbox));
+    if (['series', 'chord', 'datapoint', 'sequence'].includes(this._navMap!.cursor.type)) {
+      return bboxOfBboxes(...this._navMap!.cursor.datapointViews.map(view => view.outerBbox));
     }
     return null;
   }

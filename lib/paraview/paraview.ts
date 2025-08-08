@@ -681,7 +681,7 @@ export class ParaView extends logging(ParaComponent) {
           if (!this._store.settings.chart.isStatic) {
             this.log('focus');
             //this.todo.deets?.onFocus();
-            this.documentView?.chartLayers.dataLayer.navMap.visitDatapoints();
+            this.documentView?.chartLayers.dataLayer.navMap?.visitDatapoints();
           }
         }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
