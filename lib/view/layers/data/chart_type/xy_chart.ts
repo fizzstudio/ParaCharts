@@ -166,11 +166,11 @@ export abstract class XYChart extends DataLayer {
     // NB: This will produce the nodes in insertion order
     this._navMap.root.query('datapoint', {
       seriesKey: this._chartLandingView.children[0].seriesKey
-    }).forEach((node, i) => {
-      const chordNode = new NavNode(this._navMap.root, 'chord', {});
-      chordNode.connect('down', node);
-      chordNode.connect('up', node.allNodes('down').at(-1)!);
-      chordNode.allNodes('down', 'datapoint').forEach(node => chordNode.addDatapointView(node.at(0)!));
+    }).forEach(node => {
+      const chordNode = new NavNode(this._navMap.root, 'chord', {index: node.options.index});
+      [node, ...node.allNodes('down', 'datapoint')].forEach(node => {
+        chordNode.addDatapointView(node.at(0)!);
+      });
     });
     // Link chord landings
     this._navMap.root.query('chord').slice(0, -1).forEach((node, i) => {

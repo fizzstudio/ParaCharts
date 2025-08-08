@@ -31,7 +31,9 @@ export interface DatapointNavNodeOptions {
   seriesKey: string;
   index: number;
 }
-export interface ChordNavNodeOptions {}
+export interface ChordNavNodeOptions {
+  index: number;
+}
 export interface SequenceNavNodeOptions {
   seriesKey: string;
   // start and end as in series analysis fields
