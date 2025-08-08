@@ -76,6 +76,8 @@ export abstract class DataLayer extends ChartLayer {
   protected _soniSpeedRateIndex = 1;
   protected _soniRiffSpeedRateIndex = 1;
 
+  protected _chordPrevSeriesKey = '';
+
   constructor(paraview: ParaView, public readonly dataLayerIndex: number) {
     super(paraview);
   }
@@ -411,9 +413,16 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   navToChordLanding() {
-    if (this._navMap.cursor.type === 'datapoint') {
+    if (this._navMap.cursor.isNodeType('datapoint')) {
+      const seriesKey = this._navMap.cursor.options.seriesKey;
+      this._navMap.cursor.layer.goTo('chord', this._navMap.cursor.options.index);
+      this._chordPrevSeriesKey = seriesKey;
+    } else if (this._navMap.cursor.isNodeType('chord')) {
       this._navMap.cursor.layer.goTo(
-        'chord', (this._navMap.cursor as NavNode<'datapoint'>).options.index);
+        'datapoint', {
+          seriesKey: this._chordPrevSeriesKey,
+          index: this._navMap.cursor.options.index
+        });
     }
   }
 
