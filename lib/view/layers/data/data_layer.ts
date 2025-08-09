@@ -150,9 +150,8 @@ export abstract class DataLayer extends ChartLayer {
     // At this point, we're fully connected to the root of the view tree,
     // so we can safely observe
     this._observeStore();
-    this._beginLayout();
-    this._completeLayout();
-    //this._layoutComponents();
+    this._layoutDatapoints();
+    this._createNavMap();
   }
 
   protected _createNavMap() {
@@ -181,18 +180,23 @@ export abstract class DataLayer extends ChartLayer {
 
   protected abstract _createDatapoints(): void;
 
-  protected _beginLayout() {
+  protected _beginDatapointLayout() {
     this._createDatapoints();
     for (const datapointView of this.datapointViews) {
       datapointView.computeLocation();
     }
+  }
+
+  protected _completeDatapointLayout() {
     for (const datapointView of this.datapointViews) {
       datapointView.completeLayout();
     }
-    this._createNavMap();
   }
 
-  protected _completeLayout() { }
+  protected _layoutDatapoints() {
+    this._beginDatapointLayout();
+    this._completeDatapointLayout();
+  }
 
   // protected _layoutComponents() {
   //   for (const datapointView of this.datapointViews) {

@@ -99,16 +99,16 @@ export class ScatterPlot extends PointChart {
     this.datapointViewsStatic = super.datapointViews as ScatterPoint[]
   }
 
-  protected _beginLayout(): void {
-    super._beginLayout();
+  protected _beginDatapointLayout(): void {
+    super._beginDatapointLayout();
     if (this.paraview.store.settings.type.scatter.isDrawTrendLine) {
       let trendLine = new TrendLineView(this);
       this.append(trendLine);
     }
   }
 
-  protected _completeLayout(): void {
-    super._completeLayout();
+  protected _createNavMap() {
+    super._createNavMap();
     if (this.isClustering) {
       this._createClusterNavNodes();
     }
