@@ -11,23 +11,19 @@ import { ref } from 'lit/directives/ref.js';
 
 export interface PathOptions extends ShapeOptions {
   points: Vec2[];
-  isClip?: boolean;
 }
 
 export class PathShape extends Shape {
   protected _points: Vec2[];
-  protected _isClip: boolean;
 
   constructor(paraview: ParaView, options: PathOptions) {
     super(paraview, options);
     this._points = options.points.map(p => p.clone());
-    this._isClip = !!options.isClip;
   }
 
   protected get _options(): PathOptions {
     let options = super._options as PathOptions;
     options.points = this._points.map(p => p.clone());
-    options.isClip = this._isClip;
     return options;
   }
 

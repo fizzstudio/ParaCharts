@@ -67,7 +67,8 @@ export class DatapointView extends DataView {
       y: this._y - this._width/4,
       fill: 'none',
       stroke: 'black',
-      strokeWidth: 2
+      strokeWidth: 2,
+      isClip: this.shouldClip
     });
   }
 
@@ -131,6 +132,12 @@ export class DatapointView extends DataView {
       this._symbol.y += y - this._y;
     }
     super.y = y;
+  }
+
+  get shouldClip() {
+    const obb = this.outerBbox;
+    return (obb.x < this.chart.x || obb.y < this.chart.y
+      || obb.right > this.chart.right || obb.bottom > this.chart.bottom);
   }
 
   protected _createId(..._args: any[]): string {

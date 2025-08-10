@@ -16,13 +16,15 @@ export interface ShapeOptions {
   strokeWidth?: number; // 2,
   scale?: number;
   isPattern?: boolean;
+  isClip?: boolean;
 }
 
 export abstract class Shape extends View {
   protected _scale: number;
   protected _role = '';
   protected _ref: Ref<SVGElement> | null = null;
-  protected _isPattern: boolean = false
+  protected _isPattern: boolean = false;
+  protected _isClip: boolean;
 
   constructor(paraview: ParaView, options: ShapeOptions) {
     super(paraview);
@@ -40,6 +42,7 @@ export abstract class Shape extends View {
     if (options.fill) {
       this._styleInfo.fill = options.fill;
     }
+    this._isClip = !!options.isClip;
   }
 
   protected get _options(): ShapeOptions {
@@ -49,7 +52,8 @@ export abstract class Shape extends View {
       fill: this._styleInfo.fill as string | undefined,
       stroke: this._styleInfo.stroke as string | undefined,
       strokeWidth: this._styleInfo.strokeWidth as number | undefined,
-      scale: this._scale
+      scale: this._scale,
+      isClip: this._isClip
     }
   }
 
@@ -124,6 +128,14 @@ export abstract class Shape extends View {
 
   set scale(scale: number) {
     this._scale = scale;
+  }
+
+  get isClip() {
+    return this._isClip;
+  }
+
+  set isClip(isClip: boolean) {
+    this._isClip = isClip;
   }
 
   get ref() {
