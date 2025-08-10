@@ -260,7 +260,6 @@ export class ScatterPlot extends PointChart {
           this.append(new ClusterShellView(this, cursor.datapointViews[0].clusterID))
         }
       }
-
     }
     this.paraview.requestUpdate();
     super.navRunDidEnd(cursor)
@@ -305,7 +304,7 @@ class ScatterPoint extends ChartPoint {
   }
 
   protected get _symbolColor() {
-    return this.paraview.store.isVisited(this.seriesKey, this.index)
+    return this.isVisited
       ? -1
       : this.symbolColor;
   }

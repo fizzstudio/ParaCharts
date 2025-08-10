@@ -245,7 +245,7 @@ export class HeatmapTileView extends DatapointView {
   protected _height!: number;
   protected _width!: number;
   protected _count: number = 0;
-  protected isVisited: boolean = false;
+
   constructor(
     chart: Heatmap,
     series: SeriesView
@@ -356,7 +356,6 @@ export class HeatmapTileView extends DatapointView {
   }
 
   render() {
-    const visitedScale = this.isVisited ? 10 : 1;
     let color = `hsl(0, 0%, 0%)`
     if (this._count > 0) {
       color = `hsl(0, 0%, ${(85 * this._count / this.chart.maxCount) + 15}%)`

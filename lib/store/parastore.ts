@@ -49,12 +49,14 @@ import { keymap } from './keymap';
 import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { type ParaChart } from '../parachart/parachart';
+import { DatapointView } from '../view/data';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
 export interface DataCursor {
   seriesKey: string;
   index: number;
+  datapointView: DatapointView;
 }
 
 // This mostly exists so that each new announcement will be considered
@@ -438,10 +440,13 @@ export class ParaStore extends State {
 
   visit(datapoints: DataCursor[]) {
     this._prevVisitedDatapoints = this._visitedDatapoints;
+    this._prevVisitedDatapoints.map(c => c.datapointView.isVisited = false)
     this._visitedDatapoints = [...datapoints];
+    this._visitedDatapoints.map(c => c.datapointView.isVisited = true)
     for (let datapoint of datapoints){
-      if (!this.everVisited(datapoint.seriesKey, datapoint.index)) {
+      if (!datapoint.datapointView.everVisited ){
         this._everVisitedDatapoints.push(datapoint);
+        datapoint.datapointView.everVisited = true;
       }
     }
     if (this.settings.controlPanel.isMDRAnnotationsVisible) {
@@ -498,19 +503,21 @@ export class ParaStore extends State {
   select(datapoints: DataCursor[]) {
     let newSelection: DataCursor[] = [];
     if (datapoints.length === 1) {
-      if (!this.isSelected(datapoints[0].seriesKey, datapoints[0].index)
+      if (!datapoints[0].datapointView.isSelected
         || this._selectedDatapoints.length > 1) {
         newSelection.push(datapoints[0]);
       }
     } else {
       for (let datapoint of datapoints) {
-        if (!this.isSelected(datapoint.seriesKey, datapoint.index)) {
+        if (!datapoint.datapointView.isSelected) {
           newSelection.push(datapoint);
         }
       }
     }
     this._prevSelectedDatapoints = this._selectedDatapoints;
+    this._prevSelectedDatapoints.map(c => c.datapointView.isSelected = false)
     this._selectedDatapoints = newSelection;
+    this._selectedDatapoints.map(c => c.datapointView.isSelected = true)
   }
 
   extendSelection(datapoints: DataCursor[]) {
