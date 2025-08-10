@@ -166,14 +166,14 @@ export class ScatterPlot extends PointChart {
   protected _createClusterNavNodes() {
     if (this.isClustering) {
       const seriesClusterNodes: NavNode<'cluster'>[][] = [];
-      this._navMap.root.query('series').forEach(seriesNode => {
+      this._navMap!.root.query('series').forEach(seriesNode => {
         if (seriesClusterNodes.length) {
           seriesNode.connect('left', seriesClusterNodes.at(-1)!.at(-1)!);
         }
         const clustering = this.clustering
         const datapointNodes = seriesNode.allNodes('right', 'datapoint');
         const clusterNodes: NavNode<'cluster'>[] = [];
-        
+
         clustering!.forEach(cluster => {
           const clusterNode = new NavNode(seriesNode.layer, 'cluster', {
             seriesKey: seriesNode.options.seriesKey,

@@ -476,6 +476,9 @@ export class LineSection extends ChartPoint {
         ? {'leg-left': true}
         : { 'leg-right': true};
     }
+    this._shapes.forEach(shape => {
+      (shape as PathShape).isClip = this.shouldClip;
+    })
     super._createShapes();
   }
 

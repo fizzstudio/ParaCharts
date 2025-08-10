@@ -282,7 +282,7 @@ export class HeatmapTileView extends DatapointView {
       y: this._y,
       fill: 'none',
       stroke: 'red',
-      strokeWidth: 4
+      strokeWidth: 4,
     });
   }
 

@@ -698,7 +698,8 @@ export class Bar extends XYDatapointView {
       y: this._y - 2,
       fill: 'none',
       stroke: 'black',
-      strokeWidth: 2
+      strokeWidth: 2,
+      isClip: this.shouldClip
     });
   }
 

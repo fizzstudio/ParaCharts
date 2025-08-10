@@ -75,6 +75,7 @@ export class RectShape extends Shape {
         y=${fixed`${this._y}`}
         width=${fixed`${this.width}`}
         height=${fixed`${this.height}`}
+        clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
       ></rect>
     `;
     }

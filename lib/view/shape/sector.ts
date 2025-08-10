@@ -232,13 +232,14 @@ export class SectorShape extends Shape {
           <path
             d=${this._pathD}
             transform=${this._scale !== 1
-          ? `translate(${this._x},${this._y})
-                scale(${this._scale})
-                translate(${-this._x},${-this._y})`
-          : nothing}
+              ? `translate(${this._x},${this._y})
+                    scale(${this._scale})
+                    translate(${-this._x},${-this._y})`
+              : nothing}
             fill="white"
-          stroke="black"
-          stroke-width=4
+            stroke="black"
+            stroke-width=4
+            clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
           ></path>
           <path
             ${this._ref ? ref(this._ref) : undefined}
@@ -248,10 +249,11 @@ export class SectorShape extends Shape {
             role=${this._role || nothing}
             d=${this._pathD}
             transform=${this._scale !== 1
-          ? `translate(${this._x},${this._y})
-                scale(${this._scale})
-                translate(${-this._x},${-this._y})`
-          : nothing}
+              ? `translate(${this._x},${this._y})
+                    scale(${this._scale})
+                    translate(${-this._x},${-this._y})`
+              : nothing}
+            clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
           ></path>
         `;
     }
@@ -269,6 +271,7 @@ export class SectorShape extends Shape {
              scale(${this._scale})
              translate(${-this._x},${-this._y})`
           : nothing}
+        clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
       ></path>
     `;
     }
