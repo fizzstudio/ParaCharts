@@ -10,6 +10,7 @@ import { ButtonDescriptor } from '@fizz/ui-components';
 import { ChartType as ChartType_2 } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { ClassInfo as ClassInfo_2 } from 'lit-html/directives/class-map.js';
+import { clusterObject } from '@fizz/clustering';
 import { CSSResult } from 'lit';
 import { Datapoint } from '@fizz/paramodel';
 import { Datatype } from '@fizz/dataframe';
