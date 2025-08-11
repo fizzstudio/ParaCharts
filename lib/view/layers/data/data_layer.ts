@@ -435,16 +435,22 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   navToChordLanding() {
-    if (this._navMap!.cursor.isNodeType('datapoint')) {
-      const seriesKey = this._navMap!.cursor.options.seriesKey;
-      this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
-      this._chordPrevSeriesKey = seriesKey;
-    } else if (this._navMap!.cursor.isNodeType('chord')) {
-      this._navMap!.cursor.layer.goTo(
-        'datapoint', {
+    //Add to this list when adding chord support for additional chart types
+    if (['line', 'bar', 'column'].includes(this.paraview.store.type) && this.paraview.store.model!.series.length > 1) {
+      if (this._navMap!.cursor.isNodeType('datapoint')) {
+        const seriesKey = this._navMap!.cursor.options.seriesKey;
+        this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
+        this._chordPrevSeriesKey = seriesKey;
+      } else if (this._navMap!.cursor.isNodeType('chord')) {
+        this._navMap!.cursor.layer.goTo(
+          'datapoint', {
           seriesKey: this._chordPrevSeriesKey,
           index: this._navMap!.cursor.options.index
         });
+      }
+    }
+    else {
+      console.log("Chord mode not supported for this chart type")
     }
   }
 

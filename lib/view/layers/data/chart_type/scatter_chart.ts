@@ -170,16 +170,19 @@ export class ScatterPlot extends PointChart {
         if (seriesClusterNodes.length) {
           seriesNode.connect('left', seriesClusterNodes.at(-1)!.at(-1)!);
         }
-        const clustering = this.clustering
+        let clustering = this.clustering
+        if (this.paraview.store.model!.numSeries > 1){
+          clustering = clustering!.slice(seriesNode.index, seriesNode.index + 1)
+        }
         const datapointNodes = seriesNode.allNodes('right', 'datapoint');
         const clusterNodes: NavNode<'cluster'>[] = [];
 
         clustering!.forEach(cluster => {
           const clusterNode = new NavNode(seriesNode.layer, 'cluster', {
             seriesKey: seriesNode.options.seriesKey,
-            start: cluster.dataPointIDs[0],
-            end: cluster.dataPointIDs[cluster.dataPointIDs.length - 1],
-            datapoints: cluster.dataPointIDs,
+            start: this.datapointViews[cluster.dataPointIDs[0]].index,
+            end: this.datapointViews[cluster.dataPointIDs[cluster.dataPointIDs.length - 1]].index,
+            datapoints: this.datapointViews.filter((a, i) => cluster.dataPointIDs.includes(i)).map(d => d.index),
             clustering: cluster
           });
           clusterNodes.push(clusterNode);
@@ -214,30 +217,22 @@ export class ScatterPlot extends PointChart {
           }
         });
       });
-      // Make cluster node 'down' links
-      seriesClusterNodes.slice(0, -1).forEach((clusterNodes, i) => {
-        clusterNodes.forEach(node => {
-          const nodeBelow = seriesClusterNodes[i + 1].find(otherNode =>
-            otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
-          node.connect('down', nodeBelow, false);
+      const top = this.navMap!.node('top', {})!
+      seriesClusterNodes.forEach((clusterNodes, i) => {
+        clusterNodes.forEach((node, j) => {
+          node.connect('out', top, false);
         });
       });
-      // Make cluster node 'up' links
-      seriesClusterNodes.slice(1).forEach((clusterNodes, i) => {
-        clusterNodes.forEach((node, j) => {
-          const nodeAbove = seriesClusterNodes[i].find(otherNode =>
-            otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
-          node.connect('up', nodeAbove, false);
-        });
+      top.connect('right', seriesClusterNodes[0][0], true);
+      seriesClusterNodes.slice(0, -1).forEach((clusterNodes, i) => {
+        clusterNodes[clusterNodes.length - 1].connect('right', seriesClusterNodes[i + 1][0], true)
       });
     }
-
   }
 
   async navRunDidEnd(cursor: NavNode): Promise<void> {
     if (cursor.type === 'cluster') {
       for (let child of this.children) {
-        //const child = this.chart.parent.selectionLayer.children[childID]
         if (child instanceof ClusterShellView) {
           child.remove();
         }
@@ -250,7 +245,6 @@ export class ScatterPlot extends PointChart {
     else if (cursor.type === 'datapoint') {
       if (this.isClustering){
         for (let child of this.children) {
-          //const child = this.chart.parent.selectionLayer.children[childID]
           if (child instanceof ClusterShellView) {
             child.remove();
           }
@@ -258,6 +252,13 @@ export class ScatterPlot extends PointChart {
         if (this.isClustering) {
           //@ts-ignore
           this.append(new ClusterShellView(this, cursor.datapointViews[0].clusterID))
+        }
+      }
+    }
+    else if (cursor.type === 'top') {
+      for (let child of this.children) {
+        if (child instanceof ClusterShellView) {
+          child.remove();
         }
       }
     }
