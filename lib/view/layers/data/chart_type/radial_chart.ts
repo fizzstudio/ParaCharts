@@ -503,14 +503,8 @@ export abstract class RadialChart extends DataLayer {
       */
       if (selectedDatapoints.length) {
         // if there are selected datapoints, compare the current datapoint against each of those
-        const selectedDatapointViews = selectedDatapoints.map((cursor) => {
-          const matchingDatapointViews = this.datapointViews.filter((datapoint) => {
-            datapointMatchKeyAndIndex(datapoint, cursor.seriesKey, cursor.index)
-          })
-          return matchingDatapointViews[0];
-        })
+        const selectedDatapointViews = selectedDatapoints.map((cursor) => cursor.datapointView);
         const selectionMsgArray = describeSelections(
-          this.paraview,
           visitedDatapoint,
           selectedDatapointViews
         );

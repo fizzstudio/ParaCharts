@@ -1,43 +1,40 @@
 import { ParaView } from '../paraview';
 import { capitalize, join, interpolate} from '@fizz/templum';
-import { ComparisonRelationship, ComparisonResult, NumberBox } from '@fizz/dataframe';
+import { ComparisonRelationship, ComparisonResult } from '@fizz/dataframe';
 import { DatapointView } from '../view/data';
 import Decimal from 'decimal.js';
+import { formatXYDatapoint } from '@fizz/parasummary';
 
-export function describeSelections(paraview: ParaView, targetView: DatapointView, selectedDatapoints: DatapointView[]): string[] {
-    //console.log('queryData: DatapointView:', targetView);
-    const msgArray: string[] = [];
+export function describeSelections(
+  visitedDatapoint: DatapointView, 
+  selectedDatapoints: DatapointView[]
+): string[] {
+  const msgArray: string[] = [];
 
-    // if there are selected datapoints other than the focused datapoint (which may or may not be 
-    // selected), compare the current datapoint against each of those
-    //console.log(this.paraview.store.selectedDatapoints)
-    //const selfSelected = targetView.isSelected;
-    const visitedDatapoint = paraview.store.visitedDatapoints[0]
-    const selfSelected = selectedDatapoints.filter(point => point.seriesKey === visitedDatapoint.seriesKey && point.index === visitedDatapoint.index).length > 0;
-    const othersSelected = selectedDatapoints.length >= (selfSelected ? 2 : 1);
-    if (othersSelected) {
-        const other = selfSelected ? 'this.messages.other' : undefined;
-        msgArray.push(interpolate(queryMessages.comparisonSelectedDatapoints, { other }));
-        const sortedDatapoints = selectedDatapoints.toSorted((a, b) =>
-            a.datapoint.facetValueNumericized("y")! > b.datapoint.facetValueNumericized("y")! ? -1 : 1);
-        for (const view of sortedDatapoints) {
-            if (view !== targetView) {
-                const viewValue = view.series[view.index].facetBox("y")!.raw as unknown as number
-                const targetValue = targetView.series[targetView.index].facetBox("y")!.raw as unknown as number
-                const result = compare(targetValue, viewValue);
-                const comparatorMsg = comparisonMsgs[result.relationship].msg;
-                const diff = result.diff! !== 0 ? interpolate('${diff:number} ', { diff: result.diff! }) : undefined;
-                msgArray.push(capitalize(interpolate(
-                    '${diff:string?}${comparatorMsg:string} ${seriesName:string} ${datapointXY:string}',
-                    {
-                        diff, comparatorMsg, seriesName: view.seriesKey,
-                        datapointXY: `${view.series[view.index].facetBox("x")!.raw}, ${view.series[view.index].facetBox("y")!.raw}`
-                    }
-                )));
-            }
-        };
-    }
-    return msgArray;
+  // if there are selected datapoints other than the focused datapoint (which may or may not be 
+  // selected), compare the current datapoint against each of those
+  const selfSelected = selectedDatapoints.some((point) => point.equals(visitedDatapoint));
+  const othersSelected = selectedDatapoints.length >= (selfSelected ? 2 : 1);
+  if (othersSelected) {
+    const other = selfSelected ? queryMessages.other : undefined;
+    msgArray.push(interpolate(queryMessages.comparisonSelectedDatapoints, { other }));
+    const sortedDatapoints = selectedDatapoints.toSorted((a, b) =>
+      a.datapoint.facetValueNumericized('y')! > b.datapoint.facetValueNumericized('y')! ? -1 : 1);
+    for (const view of sortedDatapoints) {
+      if (!view.equals(visitedDatapoint)) {
+        const viewValue = view.datapoint.facetValueNumericized('y')!;
+        const targetValue = visitedDatapoint.datapoint.facetValueNumericized('y')!;
+        const result = compare(targetValue, viewValue);
+        const comparatorMsg = comparisonMsgs[result.relationship].msg;
+        const diff = result.diff! !== 0 ? interpolate('${diff:number} ', { diff: result.diff! }) : undefined;
+        msgArray.push(capitalize(interpolate(
+          '${diff:string?}${comparatorMsg:string} ${seriesName:string} ${datapointXY:string}',
+          { diff, comparatorMsg, seriesName: view.seriesKey, datapointXY: formatXYDatapoint(view.datapoint, 'raw') }
+        )));
+      }
+    };
+  }
+  return msgArray;
 }
 
 export function getDatapointMinMax(paraview: ParaView, value: number, seriesKey: string): string[] {
