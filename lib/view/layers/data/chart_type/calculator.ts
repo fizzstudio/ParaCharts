@@ -1,5 +1,5 @@
 import { StyleInfo } from "lit/directives/style-map.js";
-import { DeepReadonly, GraphSettings, LineSettings, Setting } from "../../../../store";
+import { DataCursor, DeepReadonly, GraphSettings, LineSettings, Setting } from "../../../../store";
 import { LineChart, LineSection } from "./line_chart";
 import { XYSeriesView } from "./xy_chart";
 import { AxisInfo } from "../../../../common/axisinfo";
@@ -122,8 +122,12 @@ export class GraphingCalculator extends LineChart {
     if (this.paraview.store.settings.type.graph.visitedSeries > -1) {
       const visited = this.chartLandingView.datapointViews.filter(v =>
         v.seriesKey == this.paraview.store.model!.seriesKeys[this.paraview.store.settings.type.graph.visitedSeries]
-      );
-      this.paraview.store.visit(visited.map((dv) => {return {seriesKey: dv.seriesKey, index: dv.index, datapointView: dv}}))
+      ).map((datapointView) => ({  
+        seriesKey: datapointView.seriesKey,
+        index: datapointView.index,
+        datapointView: datapointView
+      }));
+      this.paraview.store.visit(visited);
     }
   }
 

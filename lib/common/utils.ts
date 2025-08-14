@@ -16,16 +16,27 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { zip } from "@fizz/chart-classifier-utils";
 import { ParaStore } from "../store/parastore";
-import { type View } from '../view/base_view';
+import { BboxAnchor, type View } from '../view/base_view';
 import { Box, calendarNumber } from "@fizz/paramodel";
 import { Datatype } from "@fizz/paramanifest";
 import { DatapointView } from "../view/data";
+
+const bboxOppositeAnchors: Record<BboxAnchor, BboxAnchor> = {
+  top: 'bottom',
+  bottom: 'top',
+  left: 'right',
+  right: 'left',
+  topLeft: 'bottomRight',
+  topRight: 'bottomLeft',
+  bottomRight: 'topLeft',
+  bottomLeft: 'topRight'
+};
 
 // String Formatting
 
 /**
  * Convert a number to a string with a given number of digits after the
- * decimal. 
+ * decimal.
  * @param n - Number.
  * @param digits  - Number of digits after the decimal.
  * @param bareInt - Represent integers without a decimal.
@@ -78,7 +89,7 @@ export function generateUniqueId(baseId: string, store: ParaStore): string {
 
 // This marks a series of if/then options as exhaustive
 export function exhaustive(): never {
-  return null as never; 
+  return null as never;
 }
 
 export function groupBbox(...views: View[]) {
@@ -115,6 +126,10 @@ export function boxToNumber(box: Box<Datatype>, allBoxes: Box<Datatype>[]): numb
 
 export function datapointMatchKeyAndIndex(datapoint: DatapointView, key: string, index: number): boolean {
   return datapoint.seriesKey === key && datapoint.index === index;
+}
+
+export function bboxOppositeAnchor(anchor: BboxAnchor): BboxAnchor {
+  return bboxOppositeAnchors[anchor];
 }
 
 // Simon: These functions were used for Model2D but have no use currently.

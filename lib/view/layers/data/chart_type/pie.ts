@@ -51,6 +51,7 @@ export class PieSlice extends RadialSlice {
       r: this.chart.radius,
       centralAngle: this._params.percentage*360,
       orientationAngle: this._params.accum*360,
+      orientationAngleOffset: this.chart.settings.orientationAngleOffset,
       annularThickness: this.chart.settings.annularThickness,
       isPattern: isPattern ? true : false
     }));

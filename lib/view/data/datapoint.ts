@@ -302,4 +302,8 @@ export class DatapointView extends DataView {
     }
   }
 
+  public equals(other: DatapointView): boolean {
+    return this.datapoint.seriesKey === other.datapoint.seriesKey && this.datapoint.datapointIndex === other.datapoint.datapointIndex;
+  }
+
 }

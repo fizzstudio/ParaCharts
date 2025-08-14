@@ -308,7 +308,7 @@ export class BarChart extends XYChart {
     return clusterMap;
   }
 
-  protected _beginLayout() {
+  protected _beginDatapointLayout() {
     // Datapoint layout depends on this happening first
     const numClusters = Object.values(this._clusteredData).length;
     // Assume all clusters have same number of stacks
@@ -336,7 +336,7 @@ export class BarChart extends XYChart {
     //     stack.computeLayout();
     //   }
     // }
-    super._beginLayout();
+    super._beginDatapointLayout();
   }
 
   protected _createDatapoints() {
@@ -359,8 +359,8 @@ export class BarChart extends XYChart {
     }
   }
 
-  protected _completeLayout() {
-    super._completeLayout();
+  protected _completeDatapointLayout() {
+    super._completeDatapointLayout();
     // if (this.paraview.store.settings.type.bar.isDrawStackLabels) {
     //   for (const [clusterKey, cluster] of Object.entries(this._bars)) {
     //     for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
@@ -494,14 +494,8 @@ export class BarChart extends XYChart {
 
       if (selectedDatapoints.length > 0) {
         // if there are selected datapoints, compare the current datapoint against each of those
-        const selectedDatapointViews = selectedDatapoints.map((cursor) => {
-          const matchingDatapointViews = this.datapointViews.filter((datapoint) => {
-            datapointMatchKeyAndIndex(datapoint, cursor.seriesKey,cursor.index)
-          })
-          return matchingDatapointViews[0];
-        })
+        const selectedDatapointViews = selectedDatapoints.map((cursor) => cursor.datapointView);
         const selectionMsgArray = describeSelections(
-          this.paraview,
           visitedDatapoint,
           selectedDatapointViews
         );

@@ -346,35 +346,35 @@ export interface GraphSettings extends LineSettings{
 }
 
 
-export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
+// export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
-export interface RadialCategoryLabelSettings extends SettingGroup {
-  isDrawEnabled: boolean;
-  position: SliceLabelPosition;
-  outsideLabelGap: number;
-  outsideArcDistance: number;
-  outsideHorizShift: number;
-  outsideHorizPadding: number;
+export interface RadialOutsideLabelSettings extends SettingGroup {
+  vertGap: number;
+  arcGap: number;
+  horizShift: number;
+  horizPadding: number;
   leaderStyle: 'direct' | 'underline';
   format: LabelFormat;
   underlineGap: number;
+  contents: string;
 }
 
-export interface RadialValueLabelSettings extends SettingGroup {
-  isDrawEnabled: boolean;
+export interface RadialInsideLabelSettings extends SettingGroup {
   format: LabelFormat;
   /** Value between 0 and 1 indicating position as distance along radius */
   position: number;
+  contents: string;
 }
 
 /** @public */
 export interface RadialSettings extends SettingGroup {
-  categoryLabel: RadialCategoryLabelSettings;
-  valueLabel: RadialValueLabelSettings;
+  outsideLabels: RadialOutsideLabelSettings;
+  insideLabels: RadialInsideLabelSettings;
   isRenderCenterLabel: boolean;
   annularThickness: number;
   centerLabel: 'none' | 'title';
   centerLabelPadding: number;
+  orientationAngleOffset: number;
 }
 
 /** @public */

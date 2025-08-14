@@ -40,8 +40,8 @@ export const defaults: Settings = {
   chart: {
     type: 'bar',
     size: {
-      width: 360,
-      height: 360
+      width: 600,
+      height: 450
     },
     title: {
       isDrawTitle: true,
@@ -244,70 +244,70 @@ export const defaults: Settings = {
       }
     },
     pie: {
-      categoryLabel: {
-        isDrawEnabled: true,
-        position: 'outside',
-        outsideLabelGap: 10,
-        outsideArcDistance: 10,
-        outsideHorizShift: 15,
-        outsideHorizPadding: 10,
+      outsideLabels: {
+        vertGap: 10,
+        arcGap: 10,
+        horizShift: 15,
+        horizPadding: 10,
         leaderStyle: 'direct',
         format: 'raw',
         underlineGap: 2,
+        contents: 'percentage:(value)'
       },
-      valueLabel: {
-        isDrawEnabled: true,
+      insideLabels: {
         format: 'raw',
-        position: 0.85,
+        position: 0.9,
+        contents: 'category'
       },
       isRenderCenterLabel: true,
       annularThickness: 1,
       centerLabel: 'none',
-      centerLabelPadding: 10
+      centerLabelPadding: 10,
+      orientationAngleOffset: 90
     },
     donut: {
-      categoryLabel: {
-        isDrawEnabled: true,
-        position: 'outside',
-        outsideLabelGap: 10,
-        outsideArcDistance: 10,
-        outsideHorizShift: 15,
-        outsideHorizPadding: 10,
+      outsideLabels: {
+        vertGap: 10,
+        arcGap: 10,
+        horizShift: 15,
+        horizPadding: 10,
         leaderStyle: 'direct',
         format: 'raw',
         underlineGap: 2,
+        contents: 'percentage:(value)'
       },
-      valueLabel: {
-        isDrawEnabled: true,
+      insideLabels: {
         format: 'raw',
         position: 0.85,
+        contents: 'category'
       },
       isRenderCenterLabel: true,
       annularThickness: 0.5,
       centerLabel: 'title',
-      centerLabelPadding: 15
+      centerLabelPadding: 15,
+      orientationAngleOffset: 90,
     },
     gauge: {
-      categoryLabel: {
-        isDrawEnabled: true,
-        position: 'outside',
-        outsideLabelGap: 4,
-        outsideArcDistance: 10,
-        outsideHorizShift: 15,
-        outsideHorizPadding: 10,
+      outsideLabels: {
+        vertGap: 4,
+        arcGap: 10,
+        horizShift: 15,
+        horizPadding: 10,
         leaderStyle: 'direct',
         format: 'raw',
         underlineGap: 6,
+        contents: 'percentage:(value)'
       },
-      valueLabel: {
-        isDrawEnabled: true,
+      insideLabels: {
         format: 'raw',
         position: 0.85,
+        contents: 'category'
       },
       isRenderCenterLabel: true,
       annularThickness: 0.5,
       centerLabel: 'none',
-      centerLabelPadding: 10
+      centerLabelPadding: 10,
+      orientationAngleOffset: 90
     },
     stepline: {
       lineWidth: 5,
