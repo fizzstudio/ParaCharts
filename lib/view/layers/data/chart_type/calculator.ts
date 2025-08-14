@@ -223,7 +223,7 @@ export class GraphingCalculator extends LineChart {
       console.log(simplified.toString());
       var xVals = [];
       var yVals = [];
-      const points = this.renderPts
+      const points = this.settings.renderPts
       const xMax = this.axisInfo!.xLabelInfo!.max ?? 10
       const xMin = this.axisInfo!.xLabelInfo!.min ?? -10
       for (var i = 0; i < points; i++) {
