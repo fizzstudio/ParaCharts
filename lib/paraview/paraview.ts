@@ -164,7 +164,8 @@ export class ParaView extends logging(ParaComponent) {
       }
       rect#data-backdrop {
         stroke: none;
-        fill: none;
+        fill: none; // lightgray
+        opacity: 0.125;
         pointer-events: all;
       }
       .symbol {

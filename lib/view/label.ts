@@ -20,7 +20,7 @@ import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
 
-import { View, type SnapLocation } from '../view/base_view';
+import { View, type SnapLocation, type BboxAnchorCorner } from '../view/base_view';
 import { generateUniqueId, fixed } from '../common/utils';
 import { ParaView } from '../paraview';
 import { SVGNS } from '../common/constants';
@@ -58,12 +58,7 @@ interface TextLine {
   offset: number;
 }
 
-export interface LabelTextCorners {
-  topLeft: Vec2;
-  topRight: Vec2;
-  bottomRight: Vec2;
-  bottomLeft: Vec2;
-}
+export type LabelTextCorners = Record<BboxAnchorCorner, Vec2>;
 
 export class Label extends View {
 
@@ -259,25 +254,46 @@ export class Label extends View {
 
     let top = 0, bottom = 0, left = 0, right = 0;
 
-    if (this.options.wrapWidth !== undefined && width > this.options.wrapWidth) {
+    const wrapMode = this.options.wrapWidth !== undefined && width > this.options.wrapWidth;
+    if (wrapMode || this._text.includes('\n')) {
       text.textContent = '';
-      const tokens = this._text.split(' ');
       const tspans: SVGTSpanElement[] = [document.createElementNS(SVGNS, 'tspan')];
+      const tokens = this._text.split(wrapMode ? /(\s+)/ : /(\n+)/);
+      // XXX Assumes first token is non-whitespace
       tspans.at(-1)!.textContent = tokens.shift()!;
       text.append(tspans.at(-1)!);
       while (tokens.length) {
         const tok = tokens.shift()!;
-        const tspan = tspans.at(-1)!;
-        const oldContent = tspan.textContent!;
-        tspan.textContent += ' ' + tok;
-        let rect = tspan.getBoundingClientRect();
-        if (rect.width >= this.options.wrapWidth) {
-          tspan.textContent = oldContent;
+        if (tok.includes('\n')) {
           tspans.push(document.createElementNS(SVGNS, 'tspan'));
           text.append(tspans.at(-1)!);
-          tspans.at(-1)!.textContent = tok;
-          tspans.at(-1)!.setAttribute('x', '0');
-          tspans.at(-1)!.setAttribute('dy', `${rect.height + this._lineSpacing}px`);
+          continue;
+        }
+        if (!tok.match(/\w/)) {
+          // only whitespace
+          continue;
+        }
+        const tspan = tspans.at(-1)!;
+        const oldContent = tspan.textContent;
+        if (wrapMode) {
+          tspan.textContent += ' ' + tok;
+          const rect = tspan.getBoundingClientRect();
+          if (rect.width >= this.options.wrapWidth!) {
+            tspan.textContent = oldContent;
+            tspans.push(document.createElementNS(SVGNS, 'tspan'));
+            text.append(tspans.at(-1)!);
+            tspans.at(-1)!.textContent = tok;
+            tspans.at(-1)!.setAttribute('x', '0');
+            tspans.at(-1)!.setAttribute('dy', `${rect.height + this._lineSpacing}px`);
+          }
+        } else {
+          tspan.textContent = tok;
+          const rect = tspan.getBoundingClientRect();
+          //text.append(tspans.at(-1)!);
+          if (tspans.length > 1) {
+            tspans.at(-1)!.setAttribute('x', '0');
+            tspans.at(-1)!.setAttribute('dy', `${rect.height + this._lineSpacing}px`);
+          }
         }
       }
 
