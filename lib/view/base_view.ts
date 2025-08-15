@@ -815,8 +815,9 @@ export class View extends BaseView {
   }
 
   clearChildren() {
-    this._children.splice(0);
-    this.updateSize();
+    [...this._children].forEach(kid => {
+      kid.remove();
+    });
   }
 
   replaceChild(oldChild: View, newChild: View) {

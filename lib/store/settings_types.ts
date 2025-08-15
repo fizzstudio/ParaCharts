@@ -375,6 +375,8 @@ export interface RadialSettings extends SettingGroup {
   centerLabel: 'none' | 'title';
   centerLabelPadding: number;
   orientationAngleOffset: number;
+  explode: string;
+  explodeDistance: number;
 }
 
 /** @public */

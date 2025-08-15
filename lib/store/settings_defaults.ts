@@ -263,7 +263,9 @@ export const defaults: Settings = {
       annularThickness: 1,
       centerLabel: 'none',
       centerLabelPadding: 10,
-      orientationAngleOffset: 90
+      orientationAngleOffset: 90,
+      explode: '',
+      explodeDistance: 20
     },
     donut: {
       outsideLabels: {
@@ -286,6 +288,8 @@ export const defaults: Settings = {
       centerLabel: 'title',
       centerLabelPadding: 15,
       orientationAngleOffset: 90,
+      explode: '',
+      explodeDistance: 20
     },
     gauge: {
       outsideLabels: {
@@ -307,7 +311,9 @@ export const defaults: Settings = {
       annularThickness: 0.5,
       centerLabel: 'none',
       centerLabelPadding: 10,
-      orientationAngleOffset: 90
+      orientationAngleOffset: 90,
+      explode: '',
+      explodeDistance: 20
     },
     stepline: {
       lineWidth: 5,

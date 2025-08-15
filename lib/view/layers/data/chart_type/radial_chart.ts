@@ -1,6 +1,6 @@
 
 import { DataLayer } from '..';
-import { ChartLandingView, DatapointView, SeriesView } from '../../../data';
+import { DatapointView, SeriesView } from '../../../data';
 import {
   type RadialSettings,
   type RadialChartType, type DeepReadonly,
@@ -11,15 +11,13 @@ import {
 } from '../../../../store';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type ParaView } from '../../../../paraview';
-import { SectorShape } from '../../../shape/sector';
-import { PathShape } from '../../../shape/path';
+import { type Shape, SectorShape, PathShape } from '../../../shape';
 import { Datapoint, enumerate } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { Vec2 } from '../../../../common/vector';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { interpolate } from '@fizz/templum';
 import { queryMessages, describeSelections, getDatapointMinMax } from '../../../../store/query_utils';
-import { Shape } from '../../../shape/shape';
 import {
   NavLayer, NavNode,
 } from '../navigation';
@@ -120,6 +118,8 @@ export abstract class RadialChart extends DataLayer {
         min: 0,
         max: 360,
         step: 1,
+        compact: true,
+        width: '8rem'
       },
       parentView: 'controlPanel.tabs.chart.chart'
     });
@@ -128,16 +128,26 @@ export abstract class RadialChart extends DataLayer {
       type: 'dropdown',
       key: `type.${this.paraview.store.type}.insideLabels.contents`,
       label: 'Inside labels:',
-      options: {options: labelContents},
+      options: { options: labelContents },
       parentView: 'controlPanel.tabs.chart.chart'
     });
     this.paraview.store.settingControls.add({
       type: 'dropdown',
       key: `type.${this.paraview.store.type}.outsideLabels.contents`,
       label: 'Outside labels:',
-      options: {options: labelContents},
+      options: { options: labelContents },
       parentView: 'controlPanel.tabs.chart.chart'
     });
+    this.paraview.store.settingControls.add({
+      type: 'textfield',
+      key: `type.${this.paraview.store.type}.explode`,
+      label: 'Explode',
+      options: {
+        inputType: 'text',
+      },
+      parentView: 'controlPanel.tabs.chart.chart',
+    });
+
   }
 
   // get radius() {
@@ -218,11 +228,13 @@ export abstract class RadialChart extends DataLayer {
       }
     }
 
-    const settings = ['orientationAngleOffset', 'insideLabels.contents', 'outsideLabels.contents'];
+    const settings = ['explode', 'orientationAngleOffset', 'insideLabels.contents', 'outsideLabels.contents'];
     if (settings.map(s => `type.${this.paraview.store.type}.${s}`).includes(path)) {
       this._resetRadius();
       this._chartLandingView.clearChildren();
       this._layoutDatapoints();
+      // Needed to replace existing node datapoint views
+      this._createNavMap();
       // XXX `_resizeToFitLabels()` will recreate the datapoints, which may
       // cause inside labels to move outside, potentially requiring a second
       // resize. We don't currently do that...
@@ -276,7 +288,7 @@ export abstract class RadialChart extends DataLayer {
         const slice = this.datapointViews.find(slice => slice.outsideLabel?.paddedLeft === minX)!;
         const v = slice.shapes[0].arcCenter.subtract(slice.shapes[0].loc);
         const x = Math.abs(v.x);
-        const scale = Math.max((x + minX)/x, 0.5);
+        const scale = Math.max((x + minX) / x, 0.5);
         if (scale < minScale) {
           minScale = scale;
         }
@@ -287,7 +299,7 @@ export abstract class RadialChart extends DataLayer {
         const slice = this.datapointViews.find(slice => slice.outsideLabel?.paddedRight === maxX)!;
         const v = slice.shapes[0].arcCenter.subtract(slice.shapes[0].loc);
         const x = Math.abs(v.x);
-        const scale = Math.max((x - (maxX - this._width))/x, 0.5);
+        const scale = Math.max((x - (maxX - this._width)) / x, 0.5);
         if (scale < minScale) {
           minScale = scale;
         }
@@ -297,7 +309,7 @@ export abstract class RadialChart extends DataLayer {
         const slice = this.datapointViews.find(slice => slice.outsideLabel?.paddedTop === minY)!;
         const v = slice.shapes[0].arcCenter.subtract(slice.shapes[0].loc);
         const y = Math.abs(v.y);
-        const scale = Math.max((y + minY)/y, 0.5);
+        const scale = Math.max((y + minY) / y, 0.5);
         if (scale < minScale) {
           minScale = scale;
         }
@@ -307,16 +319,17 @@ export abstract class RadialChart extends DataLayer {
         const slice = this.datapointViews.find(slice => slice.outsideLabel?.paddedBottom === maxY)!;
         const v = slice.shapes[0].arcCenter.subtract(slice.shapes[0].loc);
         const y = Math.abs(v.y);
-        const scale = Math.max((y - (maxY - this._height))/y, 0.5);
+        const scale = Math.max((y - (maxY - this._height)) / y, 0.5);
         if (scale < minScale) {
           minScale = scale;
         }
       }
 
-      if (Math.round(minScale*100) < 100) {
+      if (Math.round(minScale * 100) < 100) {
         this._radius *= minScale;
         this._chartLandingView.clearChildren();
         this._layoutDatapoints();
+        this._createNavMap();
       } else {
         break;
       }
@@ -543,10 +556,16 @@ export abstract class RadialSlice extends DatapointView {
   protected _outsideLabel: Label | null = null;
   protected _insideLabel: Label | null = null;
   protected _leader: PathShape | null = null;
+  protected _focusRingShape: SectorShape | null = null;
 
   constructor(parent: SeriesView, protected _params: RadialDatapointParams) {
     super(parent);
     this._isStyleEnabled = true;
+  }
+
+  protected _addedToParent(): void {
+    super._addedToParent();
+    this.isVisited = this.paraview.store.isVisited(this.seriesKey, this.index);
   }
 
   get percentage() {
@@ -574,7 +593,14 @@ export abstract class RadialSlice extends DatapointView {
   }
 
   get classInfo() {
-    const classInfo: ClassInfo = { ['radial-slice']: true, ...super.classInfo };
+    const classInfo: ClassInfo = {
+      ...super.classInfo,
+      'radial-slice': true,
+      // bad workaround for the problem that, when a visited datapoint is recreated,
+      // the store data cursor now has a ref to the old instance
+      // visited: this.paraview.store.isVisited(this.seriesKey, this.index),
+      // selected: this.paraview.store.isSelected(this.seriesKey, this.index)
+    };
     return classInfo;
   }
 
@@ -630,6 +656,28 @@ export abstract class RadialSlice extends DatapointView {
     return this.shapes[0].arcCenter.y > this.chart.cy;
   }
 
+  protected _createShapes(): void {
+    const shape = this._shapes[0].clone();
+    const gap = this.paraview.store.settings.ui.focusRingGap;
+    const oldCentralAngle = shape.centralAngle;
+    shape.centralAngle += 2 * gap * 360 / (2 * Math.PI * shape.r);
+    shape.orientationAngle -= (shape.centralAngle - oldCentralAngle)/2;
+    if (shape.annularThickness! < 1) {
+      shape.r += gap;
+      // a0/r0 = A
+      // r1 = r0 + D
+      // a1 = a0 + D
+      // A1 = (a0 + D)/(r0 + D)
+      const a0 = shape.annularThickness! * shape.r;
+      shape.annularThickness = (a0 + 2 * gap) / (shape.r + gap);
+    } else {
+      shape.scale = (shape.r + gap) / shape.r;
+    }
+    //shape.loc = shape.loc.add(shape.orientationVector.multiplyScalar(-gap));
+    this._focusRingShape = shape;
+    super._createShapes();
+  }
+
   protected _labelContents(contentsSetting: string): string {
     const tokens = contentsSetting.split(/:/);
     const fields = tokens.map(t => {
@@ -644,7 +692,7 @@ export abstract class RadialSlice extends DatapointView {
       } else if (t === 'category') {
         str = this._params.category;
       } else if (t === 'percentage') {
-        str = `${Math.round(this._params.percentage*100)}%`;
+        str = `${Math.round(this._params.percentage * 100)}%`;
       } else if (t === 'value') {
         str = `${this._params.value}`;
       } else {
@@ -765,25 +813,7 @@ export abstract class RadialSlice extends DatapointView {
   }
 
   focusRingShape() {
-    const shape = this._shapes[0].clone();
-    const gap = this.paraview.store.settings.ui.focusRingGap;
-    shape.centralAngle += 2 * gap * 360 / (2 * Math.PI * shape.r);
-    if (shape.annularThickness! < 1) {
-      shape.r += gap;
-      // a0/r0 = A
-      // r1 = r0 + D
-      // a1 = a0 + D
-      // A1 = (a0 + D)/(r0 + D)
-      const a0 = shape.annularThickness! * shape.r;
-      shape.annularThickness = (a0 + 2 * gap) / (shape.r + gap);
-    } else {
-      shape.scale = (shape.r + gap) / shape.r;
-    }
-    return shape;
-  }
-
-  completeLayout() {
-    super.completeLayout();
+    return this._focusRingShape;
   }
 
 }

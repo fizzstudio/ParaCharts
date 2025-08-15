@@ -215,6 +215,14 @@ export class ParaView extends logging(ParaComponent) {
         fill: var(--visited-color);
         stroke-width: var(--visited-stroke-width);
       }
+
+      .control-column {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.5em;
+      }
     `
   ];
 

@@ -67,7 +67,8 @@ export class GraphingCalculator extends LineChart {
       options: {
         inputType: 'number',
         min: 1,
-        max: this.paraview.store.settings.type.graph.lineWidthMax as number
+        max: this.paraview.store.settings.type.graph.lineWidthMax as number,
+        size: 2
       },
       parentView: 'controlPanel.tabs.chart.chart',
     });
@@ -122,7 +123,7 @@ export class GraphingCalculator extends LineChart {
     if (this.paraview.store.settings.type.graph.visitedSeries > -1) {
       const visited = this.chartLandingView.datapointViews.filter(v =>
         v.seriesKey == this.paraview.store.model!.seriesKeys[this.paraview.store.settings.type.graph.visitedSeries]
-      ).map((datapointView) => ({  
+      ).map((datapointView) => ({
         seriesKey: datapointView.seriesKey,
         index: datapointView.index,
         datapointView: datapointView
