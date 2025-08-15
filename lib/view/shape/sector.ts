@@ -231,6 +231,15 @@ export class SectorShape extends Shape {
     this.computeLayout();
   }
 
+  get orientationAngle() {
+    return this._orientationAngle;
+  }
+
+  set orientationAngle(orientationAngle: number) {
+    this._orientationAngle = orientationAngle;
+    this.computeLayout();
+  }
+
   get annularThickness() {
     return this._annularThickness;
   }
