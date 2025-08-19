@@ -8,7 +8,7 @@ import { Box, PlaneDatapoint} from "@fizz/paramodel";
 import { RiffOrder, SONI_RIFF_SPEEDS } from "../data_layer";
 import { NumberBox } from "@fizz/dataframe";
 import { isUnplayable } from "../../../../audio/sonifier";
-import { NavNode } from "../navigation";
+import { NavLayer, NavNode } from "../navigation";
 
 export class GraphingCalculator extends LineChart {
   protected renderPts: number = 50;
@@ -149,6 +149,9 @@ export class GraphingCalculator extends LineChart {
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['type.graph.equation'].includes(path)) {
       this.clearStore()
+      if (newValue !== oldValue){
+        this.navMap!.goTo('top', {})
+      }
       this.paraview.store.updateSettings(draft => {
         draft.type.graph.visitedSeries = -1;
       });
@@ -388,41 +391,54 @@ export class GraphingCalculator extends LineChart {
   async move(dir: Direction) {
     const cursor = this._navMap!.cursor!;
     const link = cursor.getLink(dir)
-    if (dir === 'left' && cursor.type === 'datapoint' && cursor.datapointViews[0].index === 0) {
-      this.paraview.store.updateSettings(draft => {
-        draft.axis.x.minValue = this.axisInfo!.xLabelInfo.min! - 1;;
-      });
+    if (this.checkHorizExpand(cursor, link, dir) || this.checkVertExpand(cursor, link, dir)) {
       return
     }
+    await cursor.move(dir);
+  }
 
-    else if (dir === 'right' && cursor.type === 'datapoint'){
+  checkHorizExpand(cursor: NavNode, link: NavLayer | NavNode | undefined, dir: string): boolean {
+    if (dir === 'left' && cursor.type === 'datapoint' && cursor.datapointViews[0].index === 0) {
+      this.paraview.store.updateSettings(draft => {
+        draft.axis.x.minValue = this.axisInfo!.xLabelInfo.min! - 1;
+      });
+      return true;
+    }
+    else if (dir === 'right' && cursor.type === 'datapoint') {
       if (cursor.datapointViews[0].index
         === this.paraview.store.model!.series[this.paraview.store.model?.seriesKeys.findIndex(s => s == cursor.datapointViews[0].seriesKey)!].length - 1) {
         this.paraview.store.updateSettings(draft => {
           draft.axis.x.maxValue = this.axisInfo!.xLabelInfo.max! + 1;
         });
-        return
+        return true;
       }
     }
-    if (link instanceof NavNode && (link.type === "series" || link.type === "datapoint")) {
-      if ((dir === "left" || dir === "right") && link.datapointViews[0].datapoint.facetValueAsNumber("y")! > this.axisInfo!.yLabelInfo.max!) {
-        const yTier = Math.abs(Number(this.axisInfo?.yLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.yLabelInfo.labelTiers[0][1]))
-        const newYMax = Math.ceil(link.datapointViews[0].datapoint.facetValueAsNumber("y")! / yTier) * yTier;
+    return false;
+  }
+
+  checkVertExpand(cursor: NavNode, link: NavLayer | NavNode | undefined, dir: string): boolean {
+    if (link instanceof NavNode && cursor.type === 'datapoint' && (link.type === "series" || link.type === "datapoint")) {
+      const yTier = Math.abs(Number(this.axisInfo?.yLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.yLabelInfo.labelTiers[0][1]))
+      const cursorYVal = cursor.datapointViews[0].datapoint.facetValueAsNumber("y")!
+      const linkYVal = link.datapointViews[0].datapoint.facetValueAsNumber("y")!
+      if ((dir === "left" || dir === "right") && cursorYVal <= this.axisInfo!.yLabelInfo.max!
+        && linkYVal >= this.axisInfo!.yLabelInfo.max!) {
+        const newYMax = Math.ceil((linkYVal + 1) / yTier) * yTier;
         this.paraview.store.updateSettings(draft => {
           draft.axis.y.maxValue = newYMax
         });
-        return
+        return true;
       }
-      else if ((dir === "left" || dir === "right")  && link.datapointViews[0].datapoint.facetValueAsNumber("y")! < this.axisInfo!.yLabelInfo.min!) {
-        const yTier = Math.abs(Number(this.axisInfo?.yLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.yLabelInfo.labelTiers[0][1]))
-        const newYMin = Math.floor(link.datapointViews[0].datapoint.facetValueAsNumber("y")! / yTier) * yTier;
+      else if ((dir === "left" || dir === "right") && cursorYVal >= this.axisInfo!.yLabelInfo.min!
+        && linkYVal <= this.axisInfo!.yLabelInfo.min!) {
+        const newYMin = Math.floor((linkYVal - 1) / yTier) * yTier;
         this.paraview.store.updateSettings(draft => {
           draft.axis.y.minValue = newYMin;
         });
-        return
+        return true;
       }
     }
-    await cursor.move(dir);
+    return false;
   }
 
   handlePan(startX: number, startY: number, endX: number, endY: number) {
