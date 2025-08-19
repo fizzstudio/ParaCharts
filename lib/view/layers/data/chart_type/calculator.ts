@@ -1,14 +1,14 @@
 import { StyleInfo } from "lit/directives/style-map.js";
-import { DataCursor, DeepReadonly, GraphSettings, LineSettings, Setting } from "../../../../store";
+import { DataCursor, DeepReadonly, Direction, GraphSettings, LineSettings, Setting } from "../../../../store";
 import { LineChart, LineSection } from "./line_chart";
 import { XYSeriesView } from "./xy_chart";
 import { AxisInfo } from "../../../../common/axisinfo";
 import { parse, simplify } from "mathjs";
-import { html } from "lit";
 import { Box, PlaneDatapoint} from "@fizz/paramodel";
 import { RiffOrder, SONI_RIFF_SPEEDS } from "../data_layer";
 import { NumberBox } from "@fizz/dataframe";
 import { isUnplayable } from "../../../../audio/sonifier";
+import { NavLayer, NavNode } from "../navigation";
 
 export class GraphingCalculator extends LineChart {
   protected renderPts: number = 50;
@@ -118,9 +118,24 @@ export class GraphingCalculator extends LineChart {
     })
   }
 
-  protected _createDatapoints(): void {
-    super._createDatapoints();
-    if (this.paraview.store.settings.type.graph.visitedSeries > -1) {
+  init() {
+    // At this point, we're fully connected to the root of the view tree,
+    // so we can safely observe
+    this._observeStore();
+    this._layoutDatapoints();
+    this._createNavMap();
+    if (this.paraview.store.prevVisitedDatapoints.length == 1) {
+      for (let point of this.paraview.store.prevVisitedDatapoints) {
+        const xVal = point.datapointView.datapoint.facetValueAsNumber("x")!
+        const xPct = (xVal - this.axisInfo!.xLabelInfo.min!) / this.axisInfo!.xLabelInfo.range!
+        if (xPct < 0 || xPct > 1) {
+          continue
+        }
+        const datapointView = this.chartLandingView.datapointViews.sort((a, b) => Math.abs(a.datapoint.facetValueAsNumber("x")! - xVal) - Math.abs(b.datapoint.facetValueAsNumber("x")! - xVal))[0]
+        this.navToDatapoint(datapointView.seriesKey, datapointView.index)
+      }
+    }
+    else if (this.paraview.store.settings.type.graph.visitedSeries > -1) {
       const visited = this.chartLandingView.datapointViews.filter(v =>
         v.seriesKey == this.paraview.store.model!.seriesKeys[this.paraview.store.settings.type.graph.visitedSeries]
       ).map((datapointView) => ({
@@ -135,6 +150,9 @@ export class GraphingCalculator extends LineChart {
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['type.graph.equation'].includes(path)) {
       this.clearStore()
+      if (newValue !== oldValue){
+        this.navMap!.goTo('top', {})
+      }
       this.paraview.store.updateSettings(draft => {
         draft.type.graph.visitedSeries = -1;
       });
@@ -161,6 +179,9 @@ export class GraphingCalculator extends LineChart {
         draft.type.graph.visitedSeries = seriesFocused;
       });
       this.addEquation(this.paraview.store.settings.type.graph.equation)
+    }
+    else if (['axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
+      this.clearStore()
     }
     else if (['type.graph.resetAxes'].includes(path)) {
       const seriesFocused = this.isSeriesFocused();
@@ -197,7 +218,7 @@ export class GraphingCalculator extends LineChart {
   }
 
   addEquation(eq: string) {
-    this._axisInfo = new AxisInfo(this.paraview.store, {
+    const axisInfo = new AxisInfo(this.paraview.store, {
       xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.axis.x.minValue,
       this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.axis.x.maxValue],
       yValues: [-10, 10],
@@ -225,8 +246,8 @@ export class GraphingCalculator extends LineChart {
       var xVals = [];
       var yVals = [];
       const points = this.settings.renderPts
-      const xMax = this.axisInfo!.xLabelInfo!.max ?? 10
-      const xMin = this.axisInfo!.xLabelInfo!.min ?? -10
+      const xMax = axisInfo!.xLabelInfo!.max ?? 10
+      const xMin = axisInfo!.xLabelInfo!.min ?? -10
       for (var i = 0; i < points; i++) {
         var tr = document.createElement("tr");
         var td1 = document.createElement("td");
@@ -355,6 +376,115 @@ export class GraphingCalculator extends LineChart {
         console.log("No sonifiable notes detected, ensure some portion of the graph is visible on screen")
       }
     }
+  }
+
+  protected _createPrimaryNavNodes() {
+    super._createPrimaryNavNodes();
+    // Create vertical links between datapoints
+    this._navMap!.root.query('series').forEach(seriesNode => {
+      seriesNode.allNodes('right')
+        .forEach((pointNode) => {
+          pointNode.connect('out', seriesNode!);
+        });
+    });
+  }
+
+  async move(dir: Direction) {
+    const cursor = this._navMap!.cursor!;
+    const link = cursor.getLink(dir)
+    if (this.checkHorizExpand(cursor, link, dir) || this.checkVertExpand(cursor, link, dir)) {
+      return
+    }
+    await cursor.move(dir);
+  }
+
+  checkHorizExpand(cursor: NavNode, link: NavLayer | NavNode | undefined, dir: string): boolean {
+    if (dir === 'left' && cursor.type === 'datapoint' && cursor.datapointViews[0].index === 0) {
+      this.paraview.store.updateSettings(draft => {
+        draft.axis.x.minValue = this.axisInfo!.xLabelInfo.min! - 1;
+      });
+      return true;
+    }
+    else if (dir === 'right' && cursor.type === 'datapoint') {
+      if (cursor.datapointViews[0].index
+        === this.paraview.store.model!.series[this.paraview.store.model?.seriesKeys.findIndex(s => s == cursor.datapointViews[0].seriesKey)!].length - 1) {
+        this.paraview.store.updateSettings(draft => {
+          draft.axis.x.maxValue = this.axisInfo!.xLabelInfo.max! + 1;
+        });
+        return true;
+      }
+    }
+    return false;
+  }
+
+  checkVertExpand(cursor: NavNode, link: NavLayer | NavNode | undefined, dir: string): boolean {
+    if (link instanceof NavNode && cursor.type === 'datapoint' && (link.type === "series" || link.type === "datapoint")) {
+      const yTier = Math.abs(Number(this.axisInfo?.yLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.yLabelInfo.labelTiers[0][1]))
+      const cursorYVal = cursor.datapointViews[0].datapoint.facetValueAsNumber("y")!
+      const linkYVal = link.datapointViews[0].datapoint.facetValueAsNumber("y")!
+      if ((dir === "left" || dir === "right") && cursorYVal <= this.axisInfo!.yLabelInfo.max!
+        && linkYVal >= this.axisInfo!.yLabelInfo.max!) {
+        const newYMax = Math.ceil((linkYVal + 1) / yTier) * yTier;
+        this.paraview.store.updateSettings(draft => {
+          draft.axis.y.maxValue = newYMax
+        });
+        return true;
+      }
+      else if ((dir === "left" || dir === "right") && cursorYVal >= this.axisInfo!.yLabelInfo.min!
+        && linkYVal <= this.axisInfo!.yLabelInfo.min!) {
+        const newYMin = Math.floor((linkYVal - 1) / yTier) * yTier;
+        this.paraview.store.updateSettings(draft => {
+          draft.axis.y.minValue = newYMin;
+        });
+        return true;
+      }
+    }
+    return false;
+  }
+
+  handlePan(startX: number, startY: number, endX: number, endY: number) {
+    const xRange = this.axisInfo!.xLabelInfo.range!
+    const yRange = this.axisInfo!.yLabelInfo.range!
+    const xTier = Math.abs(Number(this.axisInfo?.xLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.xLabelInfo.labelTiers[0][1]))
+    const yTier = Math.abs(Number(this.axisInfo?.yLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.yLabelInfo.labelTiers[0][1]))
+    const changeHorizRaw = (endX - startX) / this.width
+    const changeVertRaw = (endY - startY) / this.height
+    const changeHoriz = Math.round(changeHorizRaw * xRange / xTier) * xTier;
+    const changeVert = Math.round(changeVertRaw * yRange / yTier) * yTier;
+    if (changeHoriz !== 0 || changeVert !== 0) {
+      const seriesFocused = this.isSeriesFocused();
+      this.clearStore()
+      this.paraview.store.updateSettings(draft => {
+        draft.axis.x.maxValue = this.axisInfo!.xLabelInfo.max! - (changeHoriz);
+        draft.axis.x.minValue = this.axisInfo!.xLabelInfo.min! - (changeHoriz);
+        draft.axis.y.maxValue = this.axisInfo!.yLabelInfo.max! + (changeVert);
+        draft.axis.y.minValue = this.axisInfo!.yLabelInfo.min! + (changeVert);
+      });
+      this.paraview.store.updateSettings(draft => {
+        draft.type.graph.visitedSeries = seriesFocused;
+      });
+    }
+
+  }
+
+  handleZoom(x: number, y: number): void {
+    const xTier = Math.abs(Number(this.axisInfo?.xLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.xLabelInfo.labelTiers[0][1]))
+    const yTier = Math.abs(Number(this.axisInfo?.yLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.yLabelInfo.labelTiers[0][1]))
+    const xConverted = (x / this.width) * this.axisInfo!.xLabelInfo.range! + this.axisInfo!.xLabelInfo.min!
+    const yConverted = ((this.height - y) / this.height) * this.axisInfo!.yLabelInfo.range! + this.axisInfo!.yLabelInfo.min!
+    const xRounded = Math.round( xConverted / xTier) * xTier
+    const yRounded = Math.round( yConverted / yTier) * yTier
+    const seriesFocused = this.isSeriesFocused();
+    this.clearStore()
+    this.paraview.store.updateSettings(draft => {
+      draft.axis.x.maxValue = xRounded + xTier * 2
+      draft.axis.x.minValue = xRounded - xTier * 2
+      draft.axis.y.maxValue = yRounded + yTier * 2
+      draft.axis.y.minValue = yRounded - yTier * 2
+    });
+    this.paraview.store.updateSettings(draft => {
+      draft.type.graph.visitedSeries = seriesFocused;
+    });
   }
 }
 

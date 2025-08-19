@@ -489,6 +489,7 @@ export class ParaStore extends State {
   }
 
   clearVisited() {
+    this._prevVisitedDatapoints = this._visitedDatapoints;
     this._visitedDatapoints = [];
   }
 
@@ -556,6 +557,7 @@ export class ParaStore extends State {
   }
 
   clearSelected() {
+    this._prevSelectedDatapoints = this._selectedDatapoints;
     this._selectedDatapoints = []
   }
 

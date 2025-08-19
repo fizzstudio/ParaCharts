@@ -468,4 +468,8 @@ export abstract class DataLayer extends ChartLayer {
     }
     return null;
   }
+
+  handlePan(startX: number, startY: number, endX: number, endY: number){}
+
+  handleZoom(x: number, y: number){}
 }
