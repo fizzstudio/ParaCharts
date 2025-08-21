@@ -31,7 +31,7 @@ import { type AxisInfo } from '../../../common/axisinfo';
 import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../../data';
 import { type LegendItem } from '../../legend';
 import { queryMessages } from '../../../store/query_utils';
-import { NavMap, NavLayer, NavNode, NavNodeType } from './navigation';
+import { NavMap, NavLayer, NavNode, NavNodeType, SequenceNavNodeOptions } from './navigation';
 
 import { interpolate } from '@fizz/templum';
 import { StyleInfo } from 'lit/directives/style-map.js';
@@ -410,6 +410,7 @@ export abstract class DataLayer extends ChartLayer {
         }
       }
     } else if (cursor.type === 'sequence') {
+      this.paraview.store.announce(this.paraview.summarizer.getSequenceSummary(cursor.options as SequenceNavNodeOptions));
       this._playRiff();
     }
   }
