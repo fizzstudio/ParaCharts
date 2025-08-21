@@ -46,7 +46,7 @@ export class SeriesLabelStrip extends Container(View) {
     // Create labels
     endpoints.forEach((ep, i) => {
       this.seriesLabels.push(new Label(this.paraview, {
-        text: ep.series.key!,
+        text: ep.series.label,
         left: directLabelPadding,
         y: ep.y,
         classList: ['serieslabel'],
