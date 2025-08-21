@@ -83,8 +83,12 @@ export class Colors {
             name: 'green'
           },
           {
-            value: 'hsl(40, 98%, 69%)',
+            value: 'hsl(40, 98%, 55%)',
             name: 'yellow'
+          },
+          {
+            value: 'hsl(34, 57%, 46%)',
+            name: 'caramel'
           },
           {
             value: 'hsl(215, 37%, 66%)',
@@ -94,10 +98,7 @@ export class Colors {
             value: 'hsl(63, 100%, 23%)',
             name: 'olive green'
           },
-          {
-            value: 'hsl(34, 57%, 46%)',
-            name: 'caramel'
-          },
+
           {
             value: 'hsl(51, 56%, 64%)',
             name: 'tan'

@@ -51,7 +51,7 @@ export const defaults: Settings = {
       position: 'top',
     },
     orientation: 'north',
-    padding: '8 10',
+    padding: '8 10 15 10',
     //chartType: 'line'
     fontFamily: 'Helvetica, sans-serif',
     fontWeight: '300',
@@ -364,7 +364,7 @@ export const defaults: Settings = {
   ui: {
     isVoicingEnabled: false,
     isAnnouncementEnabled: true,
-    speechRate: 1.25,
+    speechRate: 1.4,
     isFullscreenEnabled: false,
     isLowVisionModeEnabled: false,
     isFocusRingEnabled: false,
