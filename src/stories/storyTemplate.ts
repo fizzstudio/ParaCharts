@@ -3,7 +3,7 @@ export const template = `import { %(chartElement)s, type ChartProps } from '../C
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { expect } from 'storybook/test';
 
-import { chartTypeTestMap } from '../test';
+import { chartTypeTestMap } from '../tests';
 
 type Story = StoryObj<ChartProps>;
 
