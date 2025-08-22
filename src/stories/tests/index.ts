@@ -1,14 +1,5 @@
 import type { ChartType, ChartTypeFamily } from '@fizz/paramanifest';
 
-export const familyTestMap: Record<ChartTypeFamily, any> = {
-    'line': [],
-    'bar': [],
-    'pastry': [],
-    'scatter': [],
-    'histogram': [],
-    'graph': []
-};
-
 export const chartTypeTestMap: Record<ChartType, any> = {
     'line': [],
     'stepline': [],
