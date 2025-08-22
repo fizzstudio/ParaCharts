@@ -21,7 +21,7 @@ export const AiChart33: Story = {
     forcecharttype: "line",
   },
   play: async (playArgs) => {
-    const testFunctions = chartTypeTestMap[chartType];
+    const testFunctions = chartTypeTestMap['line'];
     if (testFunctions && Array.isArray(testFunctions)) {
       for (const testFunction of testFunctions) {
         await testFunction(playArgs);

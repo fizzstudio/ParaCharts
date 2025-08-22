@@ -21,7 +21,7 @@ export const Chart47: Story = {
     forcecharttype: "donut",
   },
   play: async (playArgs) => {
-    const testFunctions = chartTypeTestMap[chartType];
+    const testFunctions = chartTypeTestMap['donut'];
     if (testFunctions && Array.isArray(testFunctions)) {
       for (const testFunction of testFunctions) {
         await testFunction(playArgs);

@@ -21,7 +21,7 @@ export const AiChart1: Story = {
     forcecharttype: "lollipop",
   },
   play: async (playArgs) => {
-    const testFunctions = chartTypeTestMap[chartType];
+    const testFunctions = chartTypeTestMap['lollipop'];
     if (testFunctions && Array.isArray(testFunctions)) {
       for (const testFunction of testFunctions) {
         await testFunction(playArgs);
