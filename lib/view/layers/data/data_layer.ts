@@ -410,7 +410,7 @@ export abstract class DataLayer extends ChartLayer {
         }
       }
     } else if (cursor.type === 'sequence') {
-      this.paraview.store.announce(this.paraview.summarizer.getSequenceSummary(cursor.options as SequenceNavNodeOptions));
+      this.paraview.store.announce(await this.paraview.summarizer.getSequenceSummary(cursor.options as SequenceNavNodeOptions));
       this._playRiff();
     }
   }
