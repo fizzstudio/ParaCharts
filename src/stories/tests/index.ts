@@ -1,5 +1,7 @@
 import type { ChartType, ChartTypeFamily } from '@fizz/paramanifest';
 
+import * as pieTestFunctions from './pieTests';
+
 export const chartTypeTestMap: Record<ChartType, any> = {
     'line': [],
     'stepline': [],
@@ -9,7 +11,7 @@ export const chartTypeTestMap: Record<ChartType, any> = {
     'histogram': [],
     'scatter': [],
     'heatmap': [],
-    'pie': [],
+    'pie': pieTestFunctions,
     'donut': [],
     'graph': []
 };
