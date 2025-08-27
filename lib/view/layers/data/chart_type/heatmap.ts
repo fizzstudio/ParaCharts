@@ -30,8 +30,6 @@ export class Heatmap extends XYChart {
   _init() {
     this._settings = this.paraview.store.settings.type.heatmap
     this._resolution = this.paraview.store.settings.type.heatmap.resolution ?? 20
-    console.log("init resolution")
-    console.log(this.resolution)
     this._generateHeatmap();
     const values = this._grid.flat();
     this._maxCount = Math.max(...values);
@@ -152,12 +150,6 @@ export class Heatmap extends XYChart {
     });
   }
 
-  protected _layoutDatapoints() {
-    for (const datapointView of this.datapointViews) {
-      datapointView.completeLayout();
-    }
-  }
-
   protected _generateHeatmap(): Array<Array<number>> {
     //const xValues = this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number)
     //const yValues = this.paraview.store.model!.allFacetValues('y')!.map((x) => x.value as number)
@@ -266,6 +258,14 @@ export class HeatmapTileView extends DatapointView {
     return this._count
   }
 
+  get fillColor(){
+    let color = `hsl(0, 0%, 0%)`
+    if (this._count > 0) {
+      color = `hsl(0, 0%, ${(85 * this._count / this.chart.maxCount) + 15}%)`
+    }
+    return color
+  }
+
   get _selectedMarkerX() {
     return this._x;
   }
@@ -307,22 +307,20 @@ export class HeatmapTileView extends DatapointView {
   completeLayout() {
     this._height = this.chart.parent.height / this.chart.resolution;
     this._width = this.chart.parent.width / this.chart.resolution;
-    //const length = this.chart.paraview.store!.model!.series[0].length
     this._x = (this.index) % this.chart.resolution * this._width
     this._y = Math.floor((this.index) / this.chart.resolution) * this._height
     const id = this.index;
     this._count = this.chart.grid[id % this.chart.resolution][Math.floor(id / this.chart.resolution)]
-    //console.log(this._count)
     this._id = [
       'datapoint',
       strToId(this.seriesKey),
       `${this._x}`,
       `${this._y}`
     ].join('-');
-
+    super.completeLayout();
   }
 
-  computeLayout() {
+  protected _createSymbol() {
   }
 
   layoutSymbol() {
@@ -330,7 +328,6 @@ export class HeatmapTileView extends DatapointView {
 
 
   protected get _d() {
-
     return fixed`
       M${this._x},${this._y}
       v${this._height}
@@ -341,26 +338,43 @@ export class HeatmapTileView extends DatapointView {
 
 
   summary() {
-
     const length = this.chart.paraview.store!.model!.series[0].length
+    const xInfo = this.chart.axisInfo!.xLabelInfo!
     const yInfo = this.chart.axisInfo!.yLabelInfo!
+    const xSpan = xInfo.range! / this.chart.resolution
     const ySpan = yInfo.range! / this.chart.resolution
     const up = (yInfo.max! - ySpan * (Math.floor((this.index - length) / this.chart.resolution))).toFixed(2)
     const down = (yInfo.max! - ySpan * (Math.floor((this.index - length) / this.chart.resolution) + 1)).toFixed(2)
-
-    const xInfo = this.chart.axisInfo!.xLabelInfo!
-    const xSpan = xInfo.range! / this.chart.resolution
     const left = (xInfo.min! + xSpan * ((this.index - length) % this.chart.resolution)).toFixed(2)
     const right = (xInfo.min! + xSpan * ((this.index - length) % this.chart.resolution + 1)).toFixed(2)
     return `This block contains ${this.count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
   }
 
-  render() {
+  protected _createShapes() {
+    //console.log("createShapes call")
+    const shape = new RectShape(this.paraview, {
+      x: this._x,
+      y: this._y,
+      width: this._width,
+      height: this._height,
+      fill: this.fillColor,
+      stroke: this.fillColor
+    });
+    //console.log(this.fillColor)
+    //shape.styleInfo.fill = this.fillColor;
+    this._shapes.push(shape)
+    super._createShapes();
+  }
+
+
+
+    protected _contentUpdateShapes() {}
+  
+  prender() {
     let color = `hsl(0, 0%, 0%)`
     if (this._count > 0) {
       color = `hsl(0, 0%, ${(85 * this._count / this.chart.maxCount) + 15}%)`
     }
-    //console.log(color)
     return svg`
       <path
         d='${this._d}'
@@ -371,102 +385,50 @@ export class HeatmapTileView extends DatapointView {
         id= '${this.id}'
       ></path>
     `;
-    /*
-    return super.render(svg`
-      <path
-        d='${this._d}'
-        role="datapoint"
-        stroke-width= '${3}'
-        fill= '${color}'
-        stroke= '${this.isVisited ? 'hsl(0, 100.00%, 50.00%)' : color}'
-        id= '${this.id}'
-      ></path>
-    `);
-    */
   }
 
 }
 
+export class HeatmapTile extends RectShape {
 /*
-export class HeatmapDatapointView extends DatapointView {
-
-    declare readonly chart: Heatmap;
-    declare protected _parent: XYSeriesView;
-
-    protected _height!: number;
-    protected _width!: number;
-    protected _color!: number;
-
-    constructor(
-        seriesView: XYSeriesView,
-    ) {
-        super(seriesView);
+  constructor(paraview: ParaView, options: RectOptions) {
+    super(paraview, options);
+    this._width = options.width;
+    this._height = options.height;
+    if (options.isPattern){
+      this._isPattern = options.isPattern;
     }
+    console.log(this._styleInfo)
+  }
 
-    get width() {
-        return this._width;
+  protected get _options(): RectOptions {
+    let options = super._options as RectOptions;
+    options.width = this._width;
+    options.height = this._height;
+    options.isPattern = this._isPattern
+    return options;
+  }
+  
+  clone(): RectShape {
+    return new RectShape(this.paraview, this._options);
+  }
+
+  render() {
+    let color = `hsl(0, 0%, 0%)`
+    if (this.parent._count > 0) {
+      color = `hsl(0, 0%, ${(85 * this.parent._count / this.parent.chart.maxCount) + 15}%)`
     }
-
-    get height() {
-        return this._height;
-    }
-
-    get color() {
-        return this._color
-    }
-
-    get _selectedMarkerX() {
-        return this._x;
-    }
-
-    get _selectedMarkerY() {
-        return this._y;
-    }
-
-    // protected get visitedTransform() {
-    //   return 'scaleX(1.15)';
-    // }
-
-    computeLayout() {
-
-        const orderIdx = Object.keys(this.stack.bars).indexOf(this.series.name!);
-        const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
-          .map(bar => bar._height)
-          .reduce((a, b) => a + b, 0);
-        const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
-        this._height = this.datapoint.y.number*pxPerYUnit;
-        this._x = this.stack.x + this.stack.cluster.x;
-        this._y = this.chart.height - this._height - distFromXAxis;
-
-
-        this._height = this.chart.height / this.chart.resolution;
-        this._width = this.chart.width / this.chart.resolution;
-        this._x = this.index % this.chart.resolution * this._width
-        this._y = Math.floor(this.index / this.chart.resolution) * this._height
-    }
-
-    protected get _d() {
-
-        return fixed`
-      M${this._x},${this._y}
-      v${this._height}
-      h${this._width}
-      v${-1 * this._height}
-      Z`;
-    }
-
-    render() {
-        // 'stacked' === this.paraChart.multiseries && this.params.yInfo.stackOffset ?
-        // aria-labelledby="${this.params.labelId}"
-        //const visitedScale = this._isVisited ? this.chart.settings.highlightScale : 1;
-        const visitedScale = 1.5
-        const styles = {
-            strokeWidth: 2 * visitedScale,
-            fill: this.color,
-            stroke: "white"
-        };
-        return svg``;
-    }
-
+    console.log(this.parent.fillColor)
+    return svg`
+      <path
+        d='${this._d}'
+        role="datapoint"
+        stroke-width= '${3}'
+        fill= '${this.parent.fillColor}'
+        stroke= '${this.paraview.store.visitedDatapoints.some(item => item.index === this.index) ? 'hsl(0, 100.00%, 50.00%)' : color}'
+        id= '${this.id}'
+      ></path>
+    `;
+  }
+  */
 }
-*/
