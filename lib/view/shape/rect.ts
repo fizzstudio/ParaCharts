@@ -15,7 +15,7 @@ export interface RectOptions extends ShapeOptions {
 
 export class RectShape extends Shape {
 
-  constructor(paraview: ParaView, options: RectOptions) {
+  constructor(paraview: ParaView, public options: RectOptions) {
     super(paraview, options);
     this._width = options.width;
     this._height = options.height;
