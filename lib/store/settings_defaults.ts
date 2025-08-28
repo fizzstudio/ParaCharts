@@ -237,7 +237,7 @@ export const defaults: Settings = {
     },
     heatmap: {
       pointLabelFormat: 'raw',
-      resolution: 5,
+      resolution: 20,
       selectedPointMarkerSize: {
         width: 20,
         height: 20,
