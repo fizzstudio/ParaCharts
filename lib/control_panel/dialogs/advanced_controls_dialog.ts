@@ -10,7 +10,7 @@ import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 
 /**
- * @public 
+ * @public
  */
 @customElement('para-advanced-control-settings-dialog')
 export class AdvancedControlSettingsDialog extends logging(ParaComponent) {
@@ -64,13 +64,19 @@ export class AdvancedControlSettingsDialog extends logging(ParaComponent) {
       label: 'Status bar visible',
       parentView: 'controlPanel.tabs.controls.dialog.settings',
     });
+    this._store.settingControls.add({
+      type: 'checkbox',
+      key: 'controlPanel.isCaptionExternalWhenControlPanelClosed',
+      label: 'Caption external when control panel closed',
+      parentView: 'controlPanel.tabs.controls.dialog.settings',
+    });
   }
 
   render() {
     return html`
       <fizz-dialog
-        ${ref(this._dialogRef)} 
-        title="Advanced Settings" 
+        ${ref(this._dialogRef)}
+        title="Advanced Settings"
         .buttons=${[{tag: 'cancel', text: this.btnText}]}
       >
         <div id="controls">

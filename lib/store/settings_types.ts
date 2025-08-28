@@ -67,6 +67,7 @@ export interface ControlPanelSettings extends SettingGroup {
   tabLabelStyle: TabLabelStyle;
   isCaptionVisible: boolean;
   isStatusBarVisible: boolean;
+  isCaptionExternalWhenControlPanelClosed: boolean;
   isSparkBrailleVisible: boolean;
   isDataTabVisible: boolean;
   isColorsTabVisible: boolean;
