@@ -21,6 +21,8 @@ import { DeepReadonly, Settings, SettingsInput } from '../store/settings_types';
 import { SettingsManager } from '../store';
 import '../paraview';
 import '../control_panel';
+import '../control_panel/caption';
+import { type ParaCaptionBox } from '../control_panel/caption';
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
 import { ParaStore } from '../store';
@@ -51,7 +53,9 @@ export class ParaChart extends logging(ParaComponent) {
   @property() accessor forcecharttype: ChartType | undefined;
   @property() type?: ChartType;
   @property() accessor description: string | undefined;
+  @property({type: Boolean, attribute: false}) isControlPanelOpen = false;
 
+  readonly captionBox: ParaCaptionBox;
   protected _paraViewRef = createRef<ParaView>();
   protected _controlPanelRef = createRef<ParaControlPanel>();
   protected _ariaLiveRegionRef = createRef<AriaLive>();
@@ -80,6 +84,9 @@ export class ParaChart extends logging(ParaComponent) {
       seriesAnalyzerConstructor,
       pairAnalyzerConstructor
     );
+    this.captionBox = document.createElement('para-caption-box');
+    this.captionBox.store = this._store;
+    this.captionBox.parachart = this;
     customPropLoader.store = this.store;
     customPropLoader.registerColors();
     customPropLoader.registerSymbols();
@@ -103,7 +110,7 @@ export class ParaChart extends logging(ParaComponent) {
           this._store.dataState = 'pending';
           if (table) {
             const loadresult = await this._slotLoader.findManifest(
-              [table, manifest], 
+              [table, manifest],
               "some-manifest",
               this.description
             )
@@ -193,6 +200,7 @@ export class ParaChart extends logging(ParaComponent) {
 
   connectedCallback() {
     super.connectedCallback();
+    this.isControlPanelOpen = this._store.settings.controlPanel.isControlPanelDefaultOpen;
   }
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
@@ -220,7 +228,7 @@ export class ParaChart extends logging(ParaComponent) {
         --summary-marker-size: 1.1rem;
       }
       figure {
-        display: inline-block;
+        display: inline grid;
         margin: 0;
       }
     `
@@ -285,12 +293,14 @@ export class ParaChart extends logging(ParaComponent) {
           colormode=${this._store?.settings.color.colorVisionMode ?? nothing}
           ?disableFocus=${this.headless}
         ></para-view>
-        ${!(this.headless || this._store.settings.chart.isStatic) ? html`
-          <para-control-panel
-            ${ref(this._controlPanelRef)}
-            .paraChart=${this}
-            .store=${this._store}
-          ></para-control-panel>` : ''
+        ${!(this.headless || this._store.settings.chart.isStatic)
+          ? html`
+            <para-control-panel
+              ${ref(this._controlPanelRef)}
+              .paraChart=${this}
+              .store=${this._store}
+            ></para-control-panel>`
+          : ''
         }
         <para-aria-live-region
           ${ref(this._ariaLiveRegionRef)}

@@ -47,7 +47,6 @@ export class ParaControlPanel extends logging(ParaComponent) {
   dataError?: unknown;
   paraChart!: ParaChart;
 
-  @state() protected _isOpen = false;
   protected _tabsRef = createRef<FizzTabs>();
   protected _descriptionPanelRef = createRef<DescriptionPanel>();
   protected _dataPanelRef = createRef<DataPanel>();
@@ -67,6 +66,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
         font-family: "Trebuchet MS", Helvetica, sans-serif;
         font-size: var(--control-panel-font-size, 1rem);
       }
+      #wrapper {
+        position: relative;
+      }
       fizz-tabs {
         --background: #eee;
         --toggle-button-icon: var(--control-panel-icon, url(${unsafeCSS(cpanelIcon)}));
@@ -81,8 +83,8 @@ export class ParaControlPanel extends logging(ParaComponent) {
       fizz-tabs.collapsed {
         /*width: rem;*/
         /*min-width: unset;*/
-        position: relative;
-        top: -2.5rem;
+        position: absolute;
+        bottom: 10px;
         /*--background: none;
         --control-panel-background: none;
         --control-panel-icon-color: var(--theme-color);
@@ -142,7 +144,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
 
   connectedCallback() {
     super.connectedCallback();
-    this._isOpen = this.settings.isControlPanelDefaultOpen;
+    //this._isOpen = this.settings.isControlPanelDefaultOpen;
     this._storeChangeUnsub = this._store.subscribe((key, value) => {
       if (key === 'data') {
         this.dataUpdated();
@@ -206,6 +208,10 @@ export class ParaControlPanel extends logging(ParaComponent) {
     }
   }
 
+  externalizeCaptionBox() {
+    this.after(this.paraChart.captionBox);
+  }
+
   onFocus() {
     this._descriptionPanelRef.value!.clearStatusBar();
     //this.srb.render(this.currentSeriesSummary());
@@ -216,8 +222,8 @@ export class ParaControlPanel extends logging(ParaComponent) {
   }
 
   render() {
-    this.log('render', this._isOpen);
-    let deetsState = this._isOpen ? 'expanded' : 'collapsed';
+    this.log('render');
+    let deetsState = this.paraChart.isControlPanelOpen ? 'expanded' : 'collapsed';
 //    deetsState += this.todo.darkMode ? ' darkmode' : '';
 
     const tabBarStyle = {
@@ -245,127 +251,135 @@ export class ParaControlPanel extends logging(ParaComponent) {
     //   }));
     // }}
     return html`
-      <fizz-tabs
-        ${ref(this._tabsRef)}
-        ?open=${this.settings.isControlPanelDefaultOpen}
-        class=${deetsState}
-        tablabelmode=${tabLabelModes[this.settings.tabLabelStyle]}
-        openbuttonarialabel="Open or close ParaCharts control panel"
-        @open=${
-          () => {
-            this._isOpen = true;
+      <div id="wrapper">
+        <fizz-tabs
+          ${ref(this._tabsRef)}
+          ?open=${this.settings.isControlPanelDefaultOpen}
+          class=${deetsState}
+          tablabelmode=${tabLabelModes[this.settings.tabLabelStyle]}
+          openbuttonarialabel="Open or close ParaCharts control panel"
+          @open=${
+            () => {
+              this.paraChart.isControlPanelOpen = true;
+              if (this.settings.isCaptionExternalWhenControlPanelClosed) {
+                this._descriptionPanelRef.value!.internalizeCaptionBox();
+              }
+            }
           }
-        }
-        @close=${
-          () => {
-            this._isOpen = false;
+          @close=${
+            () => {
+              this.paraChart.isControlPanelOpen = false;
+              if (this.settings.isCaptionExternalWhenControlPanelClosed) {
+                this.externalizeCaptionBox();
+              }
+            }
           }
-        }
-        @invalidvalue=${(e: CustomEvent) => this._msgDialogRef.value!.show(e.detail)}
-        @ready=${() => {
-          // this.log('fizz-tab-details ready; focusing data layer');
-          // if (this.todo.canvas.documentView) {
-          //   this.todo.canvas.documentView.chartLayers.dataLayer.focus();
-          // }
-          //this.isReady = true;
-        }}
-      >
-        <fizz-tab-panel
-          tablabel="Description"
-          icon=${tabDescriptionIcon}
+          @invalidvalue=${(e: CustomEvent) => this._msgDialogRef.value!.show(e.detail)}
+          @ready=${() => {
+            // this.log('fizz-tab-details ready; focusing data layer');
+            // if (this.todo.canvas.documentView) {
+            //   this.todo.canvas.documentView.chartLayers.dataLayer.focus();
+            // }
+            //this.isReady = true;
+          }}
         >
-          <para-description-panel
-            ${ref(this._descriptionPanelRef)}
-            .controlPanel=${this}
-          ></para-description-panel>
-        </fizz-tab-panel>
-        <fizz-tab-panel
-          tablabel="Data"
-          icon=${tabDataIcon}
-          ?hidden=${!this.settings.isDataTabVisible}
-        >
-          <para-data-panel
-            ${ref(this._dataPanelRef)}
-            .controlPanel=${this}
-            .sparkBrailleData=${this.sparkBrailleData}
-            .isSparkBrailleVisible=${this.settings.isSparkBrailleVisible}
-          ></para-data-panel>
-        </fizz-tab-panel>
-        <fizz-tab-panel
-          tablabel="Colors"
-          icon=${tabColorsIcon}
-          ?hidden=${!this.settings.isColorsTabVisible}
-        >
-          <para-colors-panel
-            ${ref(this._colorsPanelRef)}
-            .controlPanel=${this}
-          ></para-colors-panel>
-        </fizz-tab-panel>
+          <fizz-tab-panel
+            tablabel="Description"
+            icon=${tabDescriptionIcon}
+          >
+            <para-description-panel
+              ${ref(this._descriptionPanelRef)}
+              .controlPanel=${this}
+            ></para-description-panel>
+          </fizz-tab-panel>
+          <fizz-tab-panel
+            tablabel="Data"
+            icon=${tabDataIcon}
+            ?hidden=${!this.settings.isDataTabVisible}
+          >
+            <para-data-panel
+              ${ref(this._dataPanelRef)}
+              .controlPanel=${this}
+              .sparkBrailleData=${this.sparkBrailleData}
+              .isSparkBrailleVisible=${this.settings.isSparkBrailleVisible}
+            ></para-data-panel>
+          </fizz-tab-panel>
+          <fizz-tab-panel
+            tablabel="Colors"
+            icon=${tabColorsIcon}
+            ?hidden=${!this.settings.isColorsTabVisible}
+          >
+            <para-colors-panel
+              ${ref(this._colorsPanelRef)}
+              .controlPanel=${this}
+            ></para-colors-panel>
+          </fizz-tab-panel>
 
-        <fizz-tab-panel
-          tablabel="Audio"
-          icon=${tabAudioIcon}
-          ?hidden=${!this.settings.isAudioTabVisible}
-        >
-          <para-audio-panel
-            .controlPanel=${this}
-          ></para-audio-panel>
-        </fizz-tab-panel>
+          <fizz-tab-panel
+            tablabel="Audio"
+            icon=${tabAudioIcon}
+            ?hidden=${!this.settings.isAudioTabVisible}
+          >
+            <para-audio-panel
+              .controlPanel=${this}
+            ></para-audio-panel>
+          </fizz-tab-panel>
 
-        <fizz-tab-panel
-          tablabel="Controls"
-          icon=${tabControlsIcon}
-          ?hidden=${!this.settings.isControlsTabVisible}
-        >
-          <para-controls-panel
-            ${ref(this._controlsPanelRef)}
-            .controlPanel=${this}
-          ></para-controls-panel>
-        </fizz-tab-panel>
+          <fizz-tab-panel
+            tablabel="Controls"
+            icon=${tabControlsIcon}
+            ?hidden=${!this.settings.isControlsTabVisible}
+          >
+            <para-controls-panel
+              ${ref(this._controlsPanelRef)}
+              .controlPanel=${this}
+            ></para-controls-panel>
+          </fizz-tab-panel>
 
-        <fizz-tab-panel
-          tablabel="Chart"
-          icon=${tabChartIcon}
-          ?hidden=${!this.settings.isChartTabVisible}
-        >
-          <para-chart-panel
-            ${ref(this._chartPanelRef)}
-            .controlPanel=${this}
-          ></para-chart-panel>
-        </fizz-tab-panel>
+          <fizz-tab-panel
+            tablabel="Chart"
+            icon=${tabChartIcon}
+            ?hidden=${!this.settings.isChartTabVisible}
+          >
+            <para-chart-panel
+              ${ref(this._chartPanelRef)}
+              .controlPanel=${this}
+            ></para-chart-panel>
+          </fizz-tab-panel>
 
-        <fizz-tab-panel
-          tablabel="Annotations"
-          icon=${tabAnalysisIcon}
-          ?hidden=${!this.settings.isAnnotationsTabVisible}
-        >
-          <para-annotation-panel
-            ${ref(this._annotationPanelRef)}
-            .controlPanel=${this}
-          ></para-annotation-panel>
-        </fizz-tab-panel>
+          <fizz-tab-panel
+            tablabel="Annotations"
+            icon=${tabAnalysisIcon}
+            ?hidden=${!this.settings.isAnnotationsTabVisible}
+          >
+            <para-annotation-panel
+              ${ref(this._annotationPanelRef)}
+              .controlPanel=${this}
+            ></para-annotation-panel>
+          </fizz-tab-panel>
 
-        <fizz-tab-panel
-          tablabel="Graphing"
-          icon=${tabAnalysisIcon}
-          ?hidden=${!this.settings.isGraphingTabVisible}
-        >
-          <para-graphing-panel
-            ${ref(this._graphingPanelRef)}
-            .controlPanel=${this}
-          ></para-graphing-panel>
-        </fizz-tab-panel>
+          <fizz-tab-panel
+            tablabel="Graphing"
+            icon=${tabAnalysisIcon}
+            ?hidden=${!this.settings.isGraphingTabVisible}
+          >
+            <para-graphing-panel
+              ${ref(this._graphingPanelRef)}
+              .controlPanel=${this}
+            ></para-graphing-panel>
+          </fizz-tab-panel>
 
-        <!--<fizz-tab-panel
-          tablabel="Analysis"
-          icon=${tabAnalysisIcon}
-          ?hidden=${!this.settings.isAnalysisTabVisible}
-        >
-          <para-analysis-panel
-            .controlPanel=${this}
-          ></para-analysis-panel>
-        </fizz-tab-panel>-->
-      </fizz-tabs>
+          <!--<fizz-tab-panel
+            tablabel="Analysis"
+            icon=${tabAnalysisIcon}
+            ?hidden=${!this.settings.isAnalysisTabVisible}
+          >
+            <para-analysis-panel
+              .controlPanel=${this}
+            ></para-analysis-panel>
+          </fizz-tab-panel>-->
+        </fizz-tabs>
+      </div>
       ${this.renderDialog()}
     `;
   }

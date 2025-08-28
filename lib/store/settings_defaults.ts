@@ -79,7 +79,7 @@ export const defaults: Settings = {
     },
     x: {
       title: {
-        isDrawTitle: true,
+        isDrawTitle: false,
         gap: 8,
         fontSize: 15
       },
@@ -388,6 +388,7 @@ export const defaults: Settings = {
     tabLabelStyle: 'label',
     isCaptionVisible: true,
     isStatusBarVisible: true,
+    isCaptionExternalWhenControlPanelClosed: true,
     isSparkBrailleVisible: false,
     isSparkBrailleControlVisible: true,
     isMDRAnnotationsVisible: false,
