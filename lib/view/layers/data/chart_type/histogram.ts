@@ -2,7 +2,7 @@ import { enumerate } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
 import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
-import { boxToNumber, fixed } from "../../../../common/utils";
+import { fixed } from "../../../../common/utils";
 import { ParaView } from "../../../../paraview";
 import { DeepReadonly, HistogramSettings, PointChartType, type Setting } from "../../../../store";
 import { RectShape } from "../../../shape/rect";
@@ -53,7 +53,7 @@ export class Histogram extends XYChart {
     }
 
     const targetFacetBoxes = this.paraview.store.model!.allFacetValues(targetFacet!)!;
-    const targetFacetNumbers = targetFacetBoxes.map((b) => boxToNumber(b, targetFacetBoxes));
+    const targetFacetNumbers = targetFacetBoxes.map((b) => b.asNumber()!);
     if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined) {
       if (this.settings.relativeAxes == "Counts") {
         console.log("in here")
@@ -237,7 +237,7 @@ export class Histogram extends XYChart {
     }
     else {
       const xBoxes = this.paraview.store.model!.allFacetValues('x')!;
-      const xNumbers = xBoxes.map((x) => boxToNumber(x, xBoxes));
+      const xNumbers = xBoxes.map((x) => x.asNumber()!);
       workingLabels = computeLabels(Math.min(...xNumbers), Math.max(...xNumbers), false);
     }
     const seriesList = this.paraview.store.model!.series

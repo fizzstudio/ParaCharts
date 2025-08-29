@@ -3,7 +3,6 @@ import { ParaStore } from '../store/parastore';
 import { formatBox } from '@fizz/parasummary';
 
 import Decimal from 'decimal.js';
-import { boxToNumber } from './utils';
 import { Facet } from '@fizz/paramanifest';
 import { AxisOrientation, type PlaneModel } from '@fizz/paramodel';
 import { or } from 'mathjs';
