@@ -1,4 +1,5 @@
 import { Test, TestRunner, ExpectFunction } from './TestRunner';
+import * as shadow from 'shadow-dom-testing-library';
 
 export default class PieTestRunner extends TestRunner {
 
@@ -10,15 +11,9 @@ export default class PieTestRunner extends TestRunner {
     async exampleTestFn1() {
         const parachart = await this.canvas.findByTestId('para-chart');
         await this.expect(parachart).toBeInTheDocument();
-        const heading = await this.canvas.getByRole('heading', { level: 2 });
-        this.expect(heading).toHaveTextContent('foo');
-    }
-
-    @Test
-    async exampleTestFn2() {
-        console.log('Test function 2');
-        const parachart = await this.canvas.findByTestId('para-chart');
-        await this.expect(parachart).toBeInTheDocument();
+        const application = shadow.getByShadowRole(parachart, 'application');
+        const ariaLabel = application.getAttribute('aria-label');
+        await this.expect(ariaLabel).toContain(this.manifest.datasets[0].title);
     }
 
 }

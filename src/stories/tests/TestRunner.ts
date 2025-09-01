@@ -18,7 +18,7 @@ export class TestRunner {
   canvas: any;
   userEvent: any;
   expect: ExpectFunction;
-  manifest?: Manifest;
+  manifest: Manifest = { datasets: [] };
 
   constructor(canvas: any, userEvent: any, expect: ExpectFunction) {
     this.canvas = canvas;
