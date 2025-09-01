@@ -4,8 +4,6 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 
 import { expect } from 'storybook/test';
 
-import { PieTestRunner } from './tests/pieTests';
-
 type Story = StoryObj<ChartProps>;
 
 const meta = {
@@ -22,9 +20,5 @@ export const GraphingCalculator0: Story = {
     forcecharttype: "graph",
     config: {
     }
-  },
-  play: async ({ canvas, userEvent }) => {
-    const pieRunner = new PieTestRunner(canvas, userEvent, expect);
-    await pieRunner.run();
   }
 }

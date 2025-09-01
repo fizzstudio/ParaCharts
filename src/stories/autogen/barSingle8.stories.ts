@@ -21,6 +21,7 @@ export const Chart8: Story = {
     forcecharttype: "bar",
   },
   play: async ({canvas, userEvent}) => {
-    await (new Runner(canvas, userEvent, expect)).run();
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/bar-single/bar-single-manifest-27.json");
+    await runner.run();
   }
 }

@@ -21,6 +21,7 @@ export const AiChart0: Story = {
     forcecharttype: "lollipop",
   },
   play: async ({canvas, userEvent}) => {
-    await (new Runner(canvas, userEvent, expect)).run();
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/bar-multi/bar-multi-manifest-14.json");
+    await runner.run();
   }
 }

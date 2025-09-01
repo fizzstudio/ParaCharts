@@ -21,6 +21,7 @@ export const Chart54: Story = {
     forcecharttype: "heatmap",
   },
   play: async ({canvas, userEvent}) => {
-    await (new Runner(canvas, userEvent, expect)).run();
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/scatter-manifest-iris-petal.json");
+    await runner.run();
   }
 }

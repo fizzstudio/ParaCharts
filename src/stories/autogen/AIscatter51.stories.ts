@@ -21,6 +21,7 @@ export const AiChart51: Story = {
     forcecharttype: "scatter",
   },
   play: async ({canvas, userEvent}) => {
-    await (new Runner(canvas, userEvent, expect)).run();
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/scatter-manifest-geyser.json");
+    await runner.run();
   }
 }

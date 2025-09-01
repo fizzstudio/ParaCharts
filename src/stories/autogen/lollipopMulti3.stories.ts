@@ -21,6 +21,7 @@ export const Chart3: Story = {
     forcecharttype: "lollipop",
   },
   play: async ({canvas, userEvent}) => {
-    await (new Runner(canvas, userEvent, expect)).run();
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/bar-multi/bar-multi-manifest-178.json");
+    await runner.run();
   }
 }

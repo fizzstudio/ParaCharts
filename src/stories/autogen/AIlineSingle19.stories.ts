@@ -21,6 +21,7 @@ export const AiChart19: Story = {
     forcecharttype: "line",
   },
   play: async ({canvas, userEvent}) => {
-    await (new Runner(canvas, userEvent, expect)).run();
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/line-single/line-single-manifest-1047.json");
+    await runner.run();
   }
 }

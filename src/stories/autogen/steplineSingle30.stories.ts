@@ -21,6 +21,7 @@ export const Chart30: Story = {
     forcecharttype: "stepline",
   },
   play: async ({canvas, userEvent}) => {
-    await (new Runner(canvas, userEvent, expect)).run();
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/line-single/line-single-manifest-605.json");
+    await runner.run();
   }
 }

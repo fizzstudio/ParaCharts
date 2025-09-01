@@ -21,6 +21,7 @@ export const AiChart7: Story = {
     forcecharttype: "column",
   },
   play: async ({canvas, userEvent}) => {
-    await (new Runner(canvas, userEvent, expect)).run();
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/bar-single/bar-single-manifest-13.json");
+    await runner.run();
   }
 }

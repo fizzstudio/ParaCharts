@@ -21,6 +21,7 @@ export const AiChart5: Story = {
     forcecharttype: "column",
   },
   play: async ({canvas, userEvent}) => {
-    await (new Runner(canvas, userEvent, expect)).run();
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/bar-multi/bar-multi-manifest-61.json");
+    await runner.run();
   }
 }

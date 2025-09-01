@@ -21,7 +21,8 @@ export const %(chartElement)s%(index)s: Story = {
     forcecharttype: "%(chartType)s",
   },
   play: async ({canvas, userEvent}) => {
-    await (new Runner(canvas, userEvent, expect)).run();
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("%(manifestPath)s");
+    await runner.run();
   }
 }
 `
