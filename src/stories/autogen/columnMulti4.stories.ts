@@ -3,7 +3,7 @@ import { Chart, type ChartProps } from '../Chart';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { expect } from 'storybook/test';
 
-import { chartTypeTestMap } from '../test';
+import Runner from '../tests/columnTests';
 
 type Story = StoryObj<ChartProps>;
 
@@ -20,12 +20,7 @@ export const Chart4: Story = {
     filename: "manifests/autogen/bar-multi/bar-multi-manifest-48.json",
     forcecharttype: "column",
   },
-  play: async (playArgs) => {
-    const testFunctions = chartTypeTestMap['column'];
-    if (testFunctions && Array.isArray(testFunctions)) {
-      for (const testFunction of testFunctions) {
-        await testFunction(playArgs);
-      }
-    }
+  play: async ({canvas, userEvent}) => {
+    await (new Runner(canvas, userEvent, expect)).run();
   }
 }
