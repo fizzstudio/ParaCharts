@@ -50,6 +50,7 @@ export class ParaCaptionBox extends logging(ParaComponent) {
 
   connectedCallback(): void {
     super.connectedCallback();
+    this.setCaption();
     this._storeChangeUnsub = this._store.subscribe(this.setCaption.bind(this));
   }
 
