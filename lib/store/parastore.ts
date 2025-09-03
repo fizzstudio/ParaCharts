@@ -329,7 +329,7 @@ export class ParaStore extends State {
       this._settingObservers[path]?.forEach(observer =>
         observer(values.oldValue, values.newValue)
       );
-      this._paraChart.paraView?.settingDidChange(path, values.oldValue, values.newValue);
+      this._paraChart.settingDidChange(path, values.oldValue, values.newValue);
     }
   }
 

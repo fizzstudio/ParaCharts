@@ -26,12 +26,11 @@ export class ParaCaptionBox extends logging(ParaComponent) {
   static styles = [
     css`
       figcaption.external {
-        border: solid 2px var(--theme-color);
+        border: var(--caption-border);
       }
       #description {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
+        display: grid;
+        grid-template-columns: var(--caption-grid-template-columns);
       }
       #caption {
         padding: 0.25rem;
@@ -39,10 +38,10 @@ export class ParaCaptionBox extends logging(ParaComponent) {
       #desc-footer {
         background-color: var(--theme-color-light);
         padding: 0.2rem;
-        display: flex;
+        display: var(--exploration-bar-display);
+        flex-direction: column;
         gap: 1rem;
         align-items: center;
-        flex-direction: row;
         justify-content: space-between;
       }
     `
@@ -77,34 +76,36 @@ export class ParaCaptionBox extends logging(ParaComponent) {
   }
 
   render() {
-    const styles = {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '0.5rem'
-    };
     return html`
       <figcaption class=${this.parachart.isControlPanelOpen ? '' : 'external'}>
-        <div id="description" style=${styleMap(styles)}>
+        <div id="description">
           <div
             id="caption"
             ?hidden=${!this._store.settings.controlPanel.isCaptionVisible}
           >
             ${this._caption}
           </div>
-          <div id="desc-footer">
+          <div
+            id="desc-footer"
+            ?hidden=${!this._store.settings.controlPanel.isStatusBarVisible}
+          >
             <div id="status_split">
               <div id="statusbar"
                 aria-hidden="true"
-                ?hidden=${!this._store.settings.controlPanel.isStatusBarVisible}
               >
                 ${this._store.announcement.text}
               </div>
             </div>
-            <button
-              @click=${() => this.parachart.showAriaLiveHistory()}
-            >
-              History
-            </button>
+            ${!this._store.settings.controlPanel.caption.isCaptionExternalWhenControlPanelClosed
+              || this.parachart.isControlPanelOpen
+              ? html`
+                <button
+                  @click=${() => this.parachart.showAriaLiveHistory()}
+                >
+                  History
+                </button>`
+              : ''
+            }
           </div>
         </div>
       </figcaption>
