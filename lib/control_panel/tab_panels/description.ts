@@ -58,7 +58,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
   }
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
-    if (this._controlPanel.settings.isControlPanelDefaultOpen || !this._controlPanel.settings.isCaptionExternalWhenControlPanelClosed) {
+    if (this._controlPanel.settings.isControlPanelDefaultOpen || !this._controlPanel.settings.caption.isCaptionExternalWhenControlPanelClosed) {
       this.internalizeCaptionBox();
     } else {
       this._controlPanel.externalizeCaptionBox();

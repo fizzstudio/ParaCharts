@@ -388,7 +388,11 @@ export const defaults: Settings = {
     tabLabelStyle: 'label',
     isCaptionVisible: true,
     isStatusBarVisible: true,
-    isCaptionExternalWhenControlPanelClosed: true,
+    caption: {
+      isCaptionExternalWhenControlPanelClosed: true,
+      hasBorder: false,
+      isExplorationBarBeside: true
+    },
     isSparkBrailleVisible: false,
     isSparkBrailleControlVisible: true,
     isMDRAnnotationsVisible: false,
