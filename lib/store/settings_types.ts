@@ -62,12 +62,19 @@ export interface UISettings extends SettingGroup {
 }
 
 /** @public */
+export interface CaptionBoxSettings extends SettingGroup {
+  isCaptionExternalWhenControlPanelClosed: boolean;
+  hasBorder: boolean;
+  isExplorationBarBeside: boolean;
+}
+
+/** @public */
 export interface ControlPanelSettings extends SettingGroup {
   isControlPanelDefaultOpen: boolean;
   tabLabelStyle: TabLabelStyle;
   isCaptionVisible: boolean;
   isStatusBarVisible: boolean;
-  isCaptionExternalWhenControlPanelClosed: boolean;
+  caption: CaptionBoxSettings;
   isSparkBrailleVisible: boolean;
   isDataTabVisible: boolean;
   isColorsTabVisible: boolean;
