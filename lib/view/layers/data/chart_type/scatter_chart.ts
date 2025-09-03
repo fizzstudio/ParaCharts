@@ -11,7 +11,7 @@ import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 import { strToId } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
-import { NavNode } from '../navigation';
+import { ClusterNavNodeOptions, NavNode } from '../navigation';
 
 
 export class ScatterPlot extends PointChart {
@@ -62,9 +62,8 @@ export class ScatterPlot extends PointChart {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['type.scatter.isDrawTrendLine', 'type.scatter.isShowOutliers'].includes(path)) {
-      this.paraview.createDocumentView();
-      this.paraview.requestUpdate();
+    if (['type.scatter.isShowOutliers'].includes(path)) {
+      this.updateOutliers();
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -101,10 +100,13 @@ export class ScatterPlot extends PointChart {
 
   protected _beginDatapointLayout(): void {
     super._beginDatapointLayout();
-    if (this.paraview.store.settings.type.scatter.isDrawTrendLine) {
-      let trendLine = new TrendLineView(this);
-      this.append(trendLine);
+    for (let child of this.children) {
+      if (child instanceof ScatterTrendLineView) {
+        child.remove();
+      }
     }
+    let trendLine = new ScatterTrendLineView(this);
+    this.append(trendLine);
   }
 
   protected _createNavMap() {
@@ -133,10 +135,9 @@ export class ScatterPlot extends PointChart {
 
     if (this.paraview.store.model!.numSeries > 1) {
       this._clustering = generateClusterAnalysis(data, true, labels);
-    } else if (this.paraview.store.settings.type.scatter.isShowOutliers) {
+    } 
+    else {
       this._clustering = generateClusterAnalysis(data, false);
-    } else {
-      this._clustering = generateClusterAnalysis(data, true);
     }
 
     // this._clustering.forEach((cluster, i) => {
@@ -150,15 +151,9 @@ export class ScatterPlot extends PointChart {
       for (let id of cluster.dataPointIDs) {
         datapointViews[id].clusterID = cluster.id
       }
-    }
-  }
-
-  async storeDidChange(key: string, value: any) {
-    await super.storeDidChange(key, value);
-    if (key === 'seriesAnalyses') {
-      if (this.isClustering) {
-        //console.log("before storeDidChange createClusterNavNodes call")
-        //this._createClusterNavNodes();
+      for (let id of cluster.outlierIDs) {
+        datapointViews[id].clusterID = cluster.id
+        datapointViews[id].isOutlier = true;
       }
     }
   }
@@ -182,7 +177,7 @@ export class ScatterPlot extends PointChart {
             seriesKey: seriesNode.options.seriesKey,
             start: this.datapointViews[cluster.dataPointIDs[0]].index,
             end: this.datapointViews[cluster.dataPointIDs[cluster.dataPointIDs.length - 1]].index,
-            datapoints: this.datapointViews.filter((a, i) => cluster.dataPointIDs.includes(i)).map(d => d.index),
+            datapoints: this.datapointViews.filter((a, i) => cluster.dataPointIDs.includes(i) || cluster.outlierIDs.includes(i)).map(d => d.index),
             clustering: cluster
           });
           clusterNodes.push(clusterNode);
@@ -232,17 +227,18 @@ export class ScatterPlot extends PointChart {
 
   async navRunDidEnd(cursor: NavNode): Promise<void> {
     if (cursor.type === 'cluster') {
+      let options = cursor.options as ClusterNavNodeOptions
       for (let child of this.children) {
         if (child instanceof ClusterShellView) {
           child.remove();
         }
       }
       if (this.isClustering) {
-        //@ts-ignore
-        this.append(new ClusterShellView(this, cursor.options.clustering.id))
+        this.append(new ClusterShellView(this, options.clustering.id))
       }
     }
     else if (cursor.type === 'datapoint') {
+      let datapointViews = cursor.datapointViews as ScatterPoint[]
       if (this.isClustering){
         for (let child of this.children) {
           if (child instanceof ClusterShellView) {
@@ -250,8 +246,7 @@ export class ScatterPlot extends PointChart {
           }
         }
         if (this.isClustering) {
-          //@ts-ignore
-          this.append(new ClusterShellView(this, cursor.datapointViews[0].clusterID))
+          this.append(new ClusterShellView(this, datapointViews[0].clusterID))
         }
       }
     }
@@ -265,12 +260,22 @@ export class ScatterPlot extends PointChart {
     this.paraview.requestUpdate();
     super.navRunDidEnd(cursor)
   }
+
+  updateOutliers() {
+    for (let datapoint of this.datapointViews) {
+      if (datapoint.isOutlier) {
+        datapoint.completeLayout();
+      }
+    }
+  }
+
 }
 
 class ScatterPoint extends ChartPoint {
   declare readonly chart: ScatterPlot;
-  protected symbolColor: number | undefined;
+  symbolColor: number | undefined;
   clusterID?: number;
+  isOutlier: boolean = false;
 
   protected _computeX() {
     // Scales points in proportion to the data range
@@ -291,19 +296,6 @@ class ScatterPoint extends ChartPoint {
   protected _createShape(): void {
   }
 
-  select(isExtend: boolean) {
-    super.select(isExtend);
-    for (let child of this.chart.children) {
-      //const child = this.chart.parent.selectionLayer.children[childID]
-      if (child instanceof ClusterShellView) {
-        child.remove();
-      }
-    }
-    if (this.chart.isClustering) {
-      this.chart.append(new ClusterShellView(this.chart, this.clusterID))
-    }
-  }
-
   protected get _symbolColor() {
     return this.isVisited
       ? -1
@@ -313,31 +305,30 @@ class ScatterPoint extends ChartPoint {
   protected _createSymbol(): void {
     const series = this.seriesProps;
     let symbolType = series.symbol;
-    const datapointViews = this.chart.datapointViewsStatic
-    const index = datapointViews!.indexOf(this)
     let color: number = series.color;
     const types = new DataSymbols().types;
     if (this.chart.isClustering) {
-      let clustering = this.chart.clustering as clusterObject[]
-      for (let clusterId in clustering) {
-        if (clustering[clusterId].dataPointIDs.indexOf(index) > -1) {
-          color = Number(clusterId)
-          symbolType = types[color % types.length]
-          break;
-        }
-        else {
-          symbolType = types[8]
-        }
+      if (this.clusterID !== undefined) {
+        color = Number(this.clusterID)
+        symbolType = types[color % types.length]
+      }
+      else {
+        symbolType = types[8]
+      }
+      const isShowOutliers = this.paraview.store.settings.type.scatter.isShowOutliers
+      if (isShowOutliers && this.isOutlier) {
+        color = 0
+        symbolType = types[8]
       }
     }
     this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
       strokeWidth: this.paraview.store.settings.chart.symbolStrokeWidth,
-      //color: color,
       lighten: true
     });
     this._symbol.role = 'datapoint'
     this._symbol.id = `${this._id}-sym`;
     this.symbolColor = color;
+    this._children = this.children.filter(c => c.id == this._symbol!.id)
     this.append(this._symbol);
   }
 
@@ -351,6 +342,14 @@ class ScatterPoint extends ChartPoint {
   render() {
     return super.render()
   }
+}
+
+export class ScatterTrendLineView extends TrendLineView{
+  render() {
+    if (!this.paraview.store.settings.type.scatter.isDrawTrendLine) { return svg``}
+    return svg`
+    <line x1=${this.x1} x2=${this.x2} y1=${this.y1} y2=${this.y2} style="stroke:red;stroke-width:3"/>
+    `}
 }
 
 export class ClusterShellView extends View {
@@ -407,6 +406,7 @@ export class ClusterShellView extends View {
     }
     return pointsString;
   }
+
   get centroid() {
     const c: number[] = [0, 0]
     for (let point of this.points!) {
@@ -415,6 +415,7 @@ export class ClusterShellView extends View {
     }
     return c;
   }
+
   get color() {
     if (this.clusterID !== undefined) {
       return this.clusterID
@@ -422,16 +423,8 @@ export class ClusterShellView extends View {
     else {
       return 0
     }
-    /*
-    const clustering = this.selectionLayer.parent.dataLayer.clustering as clusterObject[];
-    const testPoint = this.selectionLayer.children[0] as SelectedDatapointMarker;
-    const pointID = testPoint.datapointView._extraAttrs[1].value;
-    let color: number = 0;
-    let targetId = clustering.findIndex((e: clusterObject) => {
-      return e.dataPointIDs.includes(pointID)})
-    return targetId
-    */
   }
+
   render() {
     let colors = new Colors(this.paraview.store);
     return svg`<g>
