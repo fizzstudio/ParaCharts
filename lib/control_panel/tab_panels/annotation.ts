@@ -57,6 +57,28 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     `;
   }
 
+  showCandidates() {
+    return html`
+      <ol class="candidates">
+        ${this._store.userCandidates.map(item => html`
+            <li
+             cand="${item}"
+             @mouseover=${(event: Event) => {
+              let length = this.store.model!.series[0].length - 1;
+        this.store.highlightRange(item.params[0] / length, item.params[item.params.length - 1]! / length )
+            }}
+            @mouseleave=${(event: Event) => {
+              let length = this.store.model!.series[0].length - 1;
+        this.store.unhighlightRange(item.params[0] / length, item.params[item.params.length - 1]! / length )
+            }}
+            >${item.category}</li>
+          `)
+      }
+      </ol>
+    `;
+  }
+
+
   protected _selectAnnotation(event: Event) {
     const target = (event?.target as HTMLElement);
     if (target) {
@@ -83,6 +105,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
   }
 
   render() {
+    const isLine = this._store.type === 'line' ? true : false
     return html`
       <div id="annotation-tab" class="tab-content">
         <section id="annotations">
@@ -97,7 +120,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
             Add Annotation
           </button>
         </div>
-        <div> 
+        <div ?hidden=${!isLine}> 
           <button
             @click=${
               () => {
@@ -108,7 +131,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
             Add Line breaks
           </button>
         </div>
-         <div>
+         <div ?hidden=${!isLine}>
           <button
             @click=${
               () => {
@@ -120,7 +143,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
             Remove added line breaks
           </button>
         </div>
-         <div>
+         <div ?hidden=${!isLine}>
           <button
             @click=${
               () => {
@@ -131,10 +154,25 @@ export class AnnotationPanel extends ControlPanelTabPanel {
               }
             }
           >
-            Show Trend Annotations
+            ${this._store.settings.controlPanel.isMDRAnnotationsVisible ? "Remove Trend Annotations" : "Show Trend Annotations"}
           </button>
         </div>
+        <div ?hidden=${!isLine}>
+          <button
+            @click=${
+              () => {
+                this._store.submitTrend()
+              }
+            }
+          >
+            Show trend candidates
+          </button>
+        </div>
+
       </div>
+              <div id="candidates">
+          ${this.showCandidates()}
+        </div>
     `;
   }
 }

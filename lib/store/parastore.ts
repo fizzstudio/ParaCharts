@@ -50,7 +50,8 @@ import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { type ParaChart } from '../parachart/parachart';
 import { DatapointView } from '../view/data';
-
+import { Candidate, genCandidates} from '@fizz/chart-message-candidates'
+import { Interval, Line } from '@fizz/chart-classifier-utils';
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
 export interface DataCursor {
@@ -138,6 +139,7 @@ export class ParaStore extends State {
   @property() protected _userLineBreaks: LineBreak[] = [];
   @property() protected _modelTrendLines: TrendLine[] = [];
   @property() protected _userTrendLines: TrendLine[] = [];
+  @property() protected _userCandidates: Candidate[] = [];
 
   protected _settingControls = new SettingControlManager(this);
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
@@ -226,6 +228,10 @@ export class ParaStore extends State {
 
   get userTrendLines() {
     return this._userTrendLines;
+  }
+
+  get userCandidates() {
+    return this._userCandidates;
   }
 
   setManifest(manifest: Manifest, data?: AllSeriesData) {
@@ -858,5 +864,24 @@ export class ParaStore extends State {
 
   clearUserTrendLines() {
     this._userTrendLines = [];
+  }
+
+  submitTrend() {
+    const breaks: Interval[] = [];
+    if (this.userLineBreaks.length > 0) {
+      this.userLineBreaks[0].index !== 0 ? breaks.push({ start: 0, end: this.userLineBreaks[0].index }) : undefined
+      for (let i = 0; i < this.userLineBreaks.length - 1; i++) {
+        breaks.push({ start: this.userLineBreaks[i].index, end: this.userLineBreaks[i + 1].index })
+      }
+      this.userLineBreaks[this.userLineBreaks.length - 1].index !== this.model!.series[0].length - 1 ? breaks.push({ start: this.userLineBreaks[this.userLineBreaks.length - 1].index, end: this.model!.series[0].length}) : undefined
+    }
+    else{
+      breaks.push({ start: 0, end: this.model!.series[0].length})
+    }
+    const axisInfo = this._paraChart.paraView.documentView!.chartLayers.dataLayer.axisInfo!
+    let {candidates, slopeInfo} = genCandidates(new Line(this.model!.allPoints.map(p => {return {x: p.facetValueAsNumber("x")!, y: p.facetValueAsNumber("y")!}})), 
+    breaks, undefined, undefined, {start: axisInfo.yLabelInfo.min!, end: axisInfo.yLabelInfo.max!}, true)
+    candidates = candidates.filter(c => !['Poss', 'Big'].some(pfx => c.category.toString().startsWith(pfx)))
+    this._userCandidates = candidates;
   }
 }
