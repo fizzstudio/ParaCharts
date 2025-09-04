@@ -82,6 +82,10 @@ export class ParaChart extends ParaChart_base {
     //
     // (undocumented)
     protected _ariaLiveRegionRef: Ref_2<AriaLive>;
+    // Warning: (ae-forgotten-export) The symbol "ParaCaptionBox" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    readonly captionBox: ParaCaptionBox;
     // (undocumented)
     clearAriaLive(): void;
     // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index.d.ts
@@ -112,6 +116,8 @@ export class ParaChart extends ParaChart_base {
     getChartSVG(): string;
     // (undocumented)
     headless: boolean;
+    // (undocumented)
+    isControlPanelOpen: boolean;
     // (undocumented)
     get loaded(): Promise<void> | null;
     // (undocumented)
@@ -144,10 +150,20 @@ export class ParaChart extends ParaChart_base {
     render(): TemplateResult;
     // (undocumented)
     protected _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void>;
+    // Warning: (ae-forgotten-export) The symbol "Setting" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
     // (undocumented)
     showAriaLiveHistory(): void;
     // (undocumented)
     get slotted(): HTMLElement[];
+    // (undocumented)
+    get styleManager(): StyleManager;
+    // Warning: (ae-forgotten-export) The symbol "StyleManager" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _styleManager: StyleManager;
     // (undocumented)
     static styles: CSSResult[];
     // Warning: (ae-forgotten-export) The symbol "DeepReadonly" needs to be exported by the entry point index.d.ts

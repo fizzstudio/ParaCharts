@@ -30,8 +30,6 @@ import { type AxisCoord } from '../axis';
 
 import { type Interval } from '@fizz/chart-classifier-utils';
 
-import { calendarNumber, type CalendarPeriod } from '@fizz/paramodel';
-
 import { svg } from 'lit';
 import { Heatmap } from './data/chart_type/heatmap';
 import { Histogram } from './data/chart_type/histogram';
@@ -204,11 +202,10 @@ export class ChartLayerManager extends View {
 
   getXAxisInterval(): Interval {
     let xs: number[] = [];
-    if (this.paraview.store.model!.getFacet('x')!.datatype === 'number') {
-      xs = this.paraview.store.model!.allFacetValues('x')!.map((box) => box.value as number);
-    } else if (this.paraview.store.model!.getFacet('x')!.datatype === 'date') {
-      xs = this.paraview.store.model!.allFacetValues('x')!.map((box) =>
-        calendarNumber(box.value as CalendarPeriod));
+    if (this.paraview.store.model!.getFacet('x')!.datatype === 'number' 
+      || this.paraview.store.model!.getFacet('x')!.datatype === 'date'
+    ) {
+      xs = this.paraview.store.model!.allFacetValues('x')!.map((box) => box.asNumber()!);
     } else {
       throw new Error('axis must be of type number or date to take interval');
     }

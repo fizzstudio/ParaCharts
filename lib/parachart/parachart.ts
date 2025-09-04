@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { logging } from '../common/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest'
-import { DeepReadonly, Settings, SettingsInput } from '../store/settings_types';
+import { DeepReadonly, Settings, SettingsInput, type Setting } from '../store/settings_types';
 import { SettingsManager } from '../store';
 import '../paraview';
 import '../control_panel';
@@ -32,6 +32,8 @@ import { ParaApi } from '../api/api';
 import { styles } from '../view/styles';
 import { type AriaLive } from '../components';
 import '../components/aria_live';
+import { StyleManager } from './style_manager';
+
 import { Manifest } from '@fizz/paramanifest';
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
@@ -67,6 +69,7 @@ export class ParaChart extends logging(ParaComponent) {
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
   protected _api: ParaApi;
+  protected _styleManager!: StyleManager;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -198,9 +201,57 @@ export class ParaChart extends logging(ParaComponent) {
     return this._slotted;
   }
 
+  get styleManager() {
+    return this._styleManager;
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this.isControlPanelOpen = this._store.settings.controlPanel.isControlPanelDefaultOpen;
+
+    this._styleManager = new StyleManager(this.shadowRoot!.adoptedStyleSheets[0]);
+    this._styleManager.set(':host', {
+      '--axis-line-color': 'hsl(0, 0%, 0%)',
+      '--label-color': 'hsl(0, 0%, 0%)',
+      '--tick-grid-color': 'hsl(270, 50%, 50%)',
+      '--background-color': 'white',
+      '--theme-color': 'var(--fizz-theme-color, purple)',
+      '--theme-color-light': 'var(--fizz-theme-color-light, hsl(275.4, 100%, 88%))',
+      '--theme-contrast-color': 'white',
+      '--fizz-theme-color': 'var(--paracharts-theme-color, navy)',
+      '--fizz-theme-color-light': 'var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%))',
+      '--visited-color': () => this._store.colors.colorValue('highlight'),
+      '--visited-stroke-width': () =>
+        this._paraViewRef.value?.documentView?.chartLayers.dataLayer.visitedStrokeWidth ?? 0,
+      '--selected-color': 'var(--label-color)',
+      '--datapoint-centroid': '50% 50%',
+      '--focus-animation': 'all 0.5s ease-in-out',
+      '--chart-cursor': 'pointer',
+      '--data-cursor': 'cell',
+      '--focus-shadow-color': 'gray',
+      '--focus-shadow': 'drop-shadow(0px 0px 4px var(--focus-shadow-color))',
+      '--caption-border': () => this._store.settings.controlPanel.caption.hasBorder
+        ? 'solid 2px var(--theme-color)'
+        : 'none',
+      '--caption-grid-template-columns': () => this._store.settings.controlPanel.caption.isExplorationBarBeside
+        ? 'auto auto'
+        : '1fr',
+      '--exploration-bar-display': () => this._store.settings.controlPanel.isStatusBarVisible
+        ? 'flex'
+        : 'none',
+      'display': 'block',
+      'font-family': '"Trebuchet MS", Helvetica, sans-serif',
+      'font-size': 'var(--chart-view-font-size, 1rem)'
+    });
+    if (this._store.settings.chart.isShowVisitedDatapointsOnly) {
+      this._styleManager.set('.datapoint:not(.visited)', {
+        'display': 'none'
+      });
+      this._styleManager.set('.leg-right', {
+        'display': 'none'
+      });
+    }
+    this._styleManager.update();
   }
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
@@ -252,6 +303,12 @@ export class ParaChart extends logging(ParaComponent) {
       console.error(loadresult.error);
       this._store.dataState = 'error';
     }
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+    this.log('setting did change:', path, '=', newValue, `(was ${oldValue})`);
+    this._paraViewRef.value?.settingDidChange(path, oldValue, newValue);
+    this._styleManager.update();
   }
 
   clearAriaLive() {

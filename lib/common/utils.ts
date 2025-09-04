@@ -14,10 +14,9 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { zip } from "@fizz/chart-classifier-utils";
 import { ParaStore } from "../store/parastore";
 import { BboxAnchor, type View } from '../view/base_view';
-import { Box, calendarNumber } from "@fizz/paramodel";
+import { Box } from "@fizz/paramodel";
 import { Datatype } from "@fizz/paramanifest";
 import { DatapointView } from "../view/data";
 
@@ -114,7 +113,7 @@ export function bboxOfBboxes(...bboxes: DOMRect[]) {
   );
 }
 
-export function boxToNumber(box: Box<Datatype>, allBoxes: Box<Datatype>[]): number {
+/*export function boxToNumber(box: Box<Datatype>, allBoxes: Box<Datatype>[]): number {
     if (box.isNumber()) {
         return box.value;
     }
@@ -122,7 +121,7 @@ export function boxToNumber(box: Box<Datatype>, allBoxes: Box<Datatype>[]): numb
         return calendarNumber(box.value);
     }
     return allBoxes.findIndex((otherBox) => otherBox.value === box.value);
-}
+}*/
 
 export function datapointMatchKeyAndIndex(datapoint: DatapointView, key: string, index: number): boolean {
   return datapoint.seriesKey === key && datapoint.index === index;
