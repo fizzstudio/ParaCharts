@@ -1,5 +1,5 @@
 import { expect as _expect } from 'storybook/test';
-
+import * as shadow from 'shadow-dom-testing-library';
 import { Manifest } from '@fizz/paramanifest';
 
 export type ExpectFunction = typeof _expect;
@@ -26,6 +26,20 @@ export class TestRunner {
     this.expect = expect;
   }
 
+    @Test
+    async parachartInDocument() {
+        const parachart = await this.canvas.findByTestId('para-chart');
+        await this.expect(parachart).toBeInTheDocument();
+    }
+
+    @Test
+    async ariaLabelContainsDatasetTitle() {
+        const parachart = await this.canvas.findByTestId('para-chart');
+        const application = shadow.getByShadowRole(parachart, 'application');
+        const ariaLabel = application.getAttribute('aria-label');
+        await this.expect(ariaLabel).toContain(this.manifest.datasets[0].title);
+    }
+
   async loadManifest(manifestPath: string) {
     const prefix = '/node_modules/@fizz/chart-data/data/';
     const response = await fetch(prefix + manifestPath);
@@ -41,4 +55,5 @@ export class TestRunner {
       await (this as any)[name]();
     }
   }
+  
 }
