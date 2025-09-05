@@ -59,6 +59,7 @@ export interface UISettings extends SettingGroup {
   isLowVisionModeEnabled: boolean;
   isFocusRingEnabled: boolean;
   focusRingGap: number;
+  navRunTimeoutMs: number;
 }
 
 /** @public */

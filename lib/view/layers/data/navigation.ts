@@ -133,7 +133,7 @@ export class NavMap {
     this._runTimer = setTimeout(() => {
       this._runTimer = null;
       this._chart.navRunDidEnd(this.cursor);
-    }, 250);
+    }, this._store.settings.ui.navRunTimeoutMs);
     //this._chart.navCursorDidChange(this.cursor);
   }
 
