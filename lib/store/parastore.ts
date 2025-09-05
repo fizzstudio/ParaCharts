@@ -708,7 +708,9 @@ export class ParaStore extends State {
   highlightRange(startPortion: number, endPortion: number) {
     if (this._rangeHighlights.find(rhl =>
       rhl.startPortion === startPortion && rhl.endPortion === endPortion)) {
-      throw new Error('range already highlighted');
+      //throw new Error('range already highlighted');
+      console.log("Range already highlighted")
+      return
     }
     this._rangeHighlights = [...this._rangeHighlights, { startPortion, endPortion }];
   }
@@ -717,7 +719,9 @@ export class ParaStore extends State {
     const index = this._rangeHighlights.findIndex(rhl =>
       rhl.startPortion === startPortion && rhl.endPortion === endPortion);
     if (index === -1) {
-      throw new Error('range not highlighted');
+      //throw new Error('range not highlighted');
+      console.log("Range not highlighted")
+      return
     }
     this._rangeHighlights = this._rangeHighlights.toSpliced(index, 1);
   }
@@ -866,7 +870,7 @@ export class ParaStore extends State {
     this._userTrendLines = [];
   }
 
-  submitTrend() {
+  showTrends() {
     const breaks: Interval[] = [];
     if (this.userLineBreaks.length > 0) {
       this.userLineBreaks[0].index !== 0 ? breaks.push({ start: 0, end: this.userLineBreaks[0].index }) : undefined
@@ -883,5 +887,20 @@ export class ParaStore extends State {
     breaks, undefined, undefined, {start: axisInfo.yLabelInfo.min!, end: axisInfo.yLabelInfo.max!}, true)
     candidates = candidates.filter(c => !['Poss', 'Big'].some(pfx => c.category.toString().startsWith(pfx)))
     this._userCandidates = candidates;
+  }
+
+  submitTrend(cand: Candidate, supp1: string, supp2: string){
+    const axisInfo = this._paraChart.paraView.documentView!.chartLayers.dataLayer.axisInfo!
+    let trainDatum = {
+      chart: this._manifest!.datasets[0].title,
+      cands: this.userCandidates,
+      selectedCand: cand,
+      axisStart: axisInfo.yLabelInfo.min!,
+      axisEnd: axisInfo.yLabelInfo.max!,
+      points: this.model!.allPoints,
+      isBig: supp1,
+      isPossible: supp2
+    }
+    console.log(trainDatum)
   }
 }
