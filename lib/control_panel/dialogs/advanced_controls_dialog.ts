@@ -70,6 +70,12 @@ export class AdvancedControlSettingsDialog extends logging(ParaComponent) {
       label: 'Caption external when control panel closed',
       parentView: 'controlPanel.tabs.controls.dialog.settings',
     });
+    this._store.settingControls.add({
+      type: 'checkbox',
+      key: 'controlPanel.caption.isExplorationBarBeside',
+      label: 'Exploration bar is beside caption',
+      parentView: 'controlPanel.tabs.controls.dialog.settings',
+    });
   }
 
   render() {
