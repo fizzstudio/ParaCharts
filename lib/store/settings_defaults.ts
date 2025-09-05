@@ -381,7 +381,8 @@ export const defaults: Settings = {
     isFullscreenEnabled: false,
     isLowVisionModeEnabled: false,
     isFocusRingEnabled: false,
-    focusRingGap: 10
+    focusRingGap: 10,
+    navRunTimeoutMs: 125
   },
   controlPanel: {
     isControlPanelDefaultOpen: true,
