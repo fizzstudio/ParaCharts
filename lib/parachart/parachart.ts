@@ -42,6 +42,7 @@ import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { SlotLoader } from '../loader/slotloader';
 import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
+import { initParaSummary } from '@fizz/parasummary';
 
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
@@ -98,6 +99,7 @@ export class ParaChart extends logging(ParaComponent) {
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
         resolve();
+        await initParaSummary();
         // It's now safe to load a manifest
         if (this.manifest) {
           if (this.data) {
