@@ -26,19 +26,28 @@ export class TestRunner {
     this.expect = expect;
   }
 
-    @Test
-    async parachartInDocument() {
-        const parachart = await this.canvas.findByTestId('para-chart');
-        await this.expect(parachart).toBeInTheDocument();
-    }
+  @Test
+  async parachartInDocument() {
+    const parachart = await this.canvas.findByTestId('para-chart');
+    await this.expect(parachart).toBeInTheDocument();
+  }
 
-    @Test
-    async ariaLabelContainsDatasetTitle() {
-        const parachart = await this.canvas.findByTestId('para-chart');
-        const application = shadow.getByShadowRole(parachart, 'application');
-        const ariaLabel = application.getAttribute('aria-label');
-        await this.expect(ariaLabel).toContain(this.manifest.datasets[0].title);
-    }
+  @Test
+  async ariaLabelContainsDatasetTitle() {
+    const parachart = await this.canvas.findByTestId('para-chart');
+    const application = shadow.getByShadowRole(parachart, 'application');
+    const ariaLabel = application.getAttribute('aria-label');
+    await this.expect(ariaLabel).toContain(this.manifest.datasets[0].title);
+  }
+
+  @Test
+  async keyboardFocus() {
+    const parachart = await this.canvas.findByTestId('para-chart');
+    const application = shadow.getByShadowRole(parachart, 'application');
+    application.focus();
+    await this.userEvent.tab();
+    await this.userEvent.tab();
+  }
 
   async loadManifest(manifestPath: string) {
     const prefix = '/node_modules/@fizz/chart-data/data/';
@@ -55,5 +64,5 @@ export class TestRunner {
       await (this as any)[name]();
     }
   }
-  
+
 }
