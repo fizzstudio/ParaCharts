@@ -44,9 +44,10 @@ export class TestRunner {
   async keyboardFocus() {
     const parachart = await this.canvas.findByTestId('para-chart');
     const application = shadow.getByShadowRole(parachart, 'application');
-    application.focus();
+    await application.focus();
+    console.log(document.activeElement!.id + '--');
     await this.userEvent.tab();
-    await this.userEvent.tab();
+    console.log(document.activeElement + '--');
   }
 
   async loadManifest(manifestPath: string) {
