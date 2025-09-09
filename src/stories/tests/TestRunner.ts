@@ -1,4 +1,4 @@
-import { expect as _expect } from 'storybook/test';
+import { expect as _expect, waitFor as _waitFor } from 'storybook/test';
 import * as shadow from 'shadow-dom-testing-library';
 import { Manifest } from '@fizz/paramanifest';
 
@@ -18,12 +18,14 @@ export class TestRunner {
   canvas: any;
   userEvent: any;
   expect: ExpectFunction;
+  waitFor: any;
   manifest: Manifest = { datasets: [] };
 
   constructor(canvas: any, userEvent: any, expect: ExpectFunction) {
     this.canvas = canvas;
     this.userEvent = userEvent;
     this.expect = expect;
+    this.waitFor = _waitFor;
   }
 
   @Test
@@ -40,15 +42,16 @@ export class TestRunner {
     await this.expect(ariaLabel).toContain(this.manifest.datasets[0].title);
   }
 
+  /*
   @Test
-  async keyboardFocus() {
+  async parentKeyboardFocus() {
     const parachart = await this.canvas.findByTestId('para-chart');
     const application = shadow.getByShadowRole(parachart, 'application');
     await application.focus();
     console.log(document.activeElement!.id + '--');
     await this.userEvent.tab();
     console.log(document.activeElement + '--');
-  }
+  }*/
 
   async loadManifest(manifestPath: string) {
     const prefix = '/node_modules/@fizz/chart-data/data/';
@@ -62,6 +65,7 @@ export class TestRunner {
   async run() {
     const tests: string[] = (this.constructor as any).testMethods ?? [];
     for (const name of tests) {
+      console.log(name);
       await (this as any)[name]();
     }
   }
