@@ -1,5 +1,5 @@
 import { StyleInfo } from "lit/directives/style-map.js";
-import { DataCursor, DeepReadonly, Direction, GraphSettings, LineSettings, Setting } from "../../../../store";
+import { DeepReadonly, Direction, GraphSettings, Setting } from "../../../../store";
 import { LineChart, LineSection } from "./line_chart";
 import { XYSeriesView } from "./xy_chart";
 import { AxisInfo } from "../../../../common/axisinfo";
