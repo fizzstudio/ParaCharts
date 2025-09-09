@@ -18,9 +18,15 @@ export default class BarTestRunner extends TestRunner {
     const ariaLive = shadow.getByShadowTestId(parachart, 'sr-status');
     const records = this.manifest.datasets[0]!.series[0]!.records!;
     for (const {x, y} of records) {
+      let announcement: string | undefined = '';
       await this.waitFor(() => {
-        const announcement = ariaLive.querySelector('div')?.textContent;
+        announcement = ariaLive.querySelector('div')?.textContent;
         this.expect(announcement).toContain(`${x}, ${y}`);
+      });
+      await this.userEvent.keyboard('q');
+      await this.waitFor(() => {
+        const updatedAnnouncement = ariaLive.querySelector('div')?.textContent;
+        this.expect(announcement).not.toBe(updatedAnnouncement);
       });
       await this.userEvent.keyboard('{ArrowRight}');
     }
