@@ -214,6 +214,7 @@ export interface AxisSettings extends SettingGroup {
   tick: TickSettings;
   minValue: number | 'unset';
   maxValue: number | 'unset';
+  interval: number | 'unset';
 }
 
 /** @public */

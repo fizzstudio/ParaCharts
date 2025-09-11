@@ -108,6 +108,7 @@ export const defaults: Settings = {
       },
       minValue: 'unset',
       maxValue: 'unset',
+      interval: 'unset',
     },
     y: {
       title: {
@@ -140,6 +141,7 @@ export const defaults: Settings = {
       },
       minValue: 'unset',
       maxValue: 'unset',
+      interval: 'unset'
     },
   },
   legend: {
