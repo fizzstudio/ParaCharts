@@ -123,6 +123,7 @@ export class ParaStore extends State {
   @property() annotations: BaseAnnotation[] = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
+  @property() soloSeries = '';
 
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';

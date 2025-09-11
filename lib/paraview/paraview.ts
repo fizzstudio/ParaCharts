@@ -213,6 +213,9 @@ export class ParaView extends logging(ParaComponent) {
         fill: var(--visited-color);
         stroke-width: var(--visited-stroke-width);
       }
+      .lowlight {
+        opacity: 0.20;
+      }
 
       .control-column {
         display: flex;
