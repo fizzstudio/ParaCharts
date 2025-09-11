@@ -3,11 +3,6 @@
 Paracharts is designed with accessibility at its core, offering features that go beyond standard keyboard navigation and screen reader support.
 These features are not only valuable for users of screen readers, but are also essential for voice-based interfaces such as smart speakers and smart glasses, where visual access to data is limited or unavailable.
 
-## Keyboard Navigation
-
-All interactive chart elements are accessible via keyboard.
-Users can navigate data points, legends, and controls using standard keyboard shortcuts, ensuring full functionality without a mouse.
-
 ## Screen Reader Support
 
 Paracharts provides semantic markup and ARIA attributes, enabling screen readers to accurately convey chart structure, data, and context.

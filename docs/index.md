@@ -8,10 +8,10 @@ ParaCharts is a powerful and flexible charting library designed to make data vis
 
 ## User Guide
 
-This section is for end-users of ParaCharts applications.
+This section is for end-users of ParaCharts.
 
-- [Accessibility Features](accessibility.md): Learn about sonification, keyboard navigation, screen reader support, and other accessibility options.
-- [Settings](settings.md): Instructions for adjusting chart settings and preferences.
+- [Shortcuts and commands](shortcuts-and-commands.md): contains a comprehensive reference of the shortcuts and commands available in ParaCharts.
+- [Accessibility Features](accessibility.md): Learn about sonification, screen reader support, self-voicing mode, and low-vision mode.
 - [Chart Types](chart-types.md): Overview of available chart types and their use cases.
 - [AI Descriptions](ai-descriptions.md): How to use AI-generated chart descriptions for improved understanding and accessibility.
 

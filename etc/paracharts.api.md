@@ -82,6 +82,10 @@ export class ParaChart extends ParaChart_base {
     //
     // (undocumented)
     protected _ariaLiveRegionRef: Ref_2<AriaLive>;
+    // Warning: (ae-forgotten-export) The symbol "ParaCaptionBox" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    readonly captionBox: ParaCaptionBox;
     // (undocumented)
     clearAriaLive(): void;
     // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index.d.ts
@@ -112,6 +116,8 @@ export class ParaChart extends ParaChart_base {
     getChartSVG(): string;
     // (undocumented)
     headless: boolean;
+    // (undocumented)
+    isControlPanelOpen: boolean;
     // (undocumented)
     get loaded(): Promise<void> | null;
     // (undocumented)
