@@ -99,6 +99,8 @@ export class LineChart extends PointChart {
       // new manifest is loaded in AI mode. The following call will only
       // do anything once analyses have been generated for all series.
       this._createSequenceNavNodes();
+    } else if (key === 'soloSeries') {
+      //this._raiseSeries(value);
     }
   }
 
