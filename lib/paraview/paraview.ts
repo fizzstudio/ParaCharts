@@ -216,6 +216,9 @@ export class ParaView extends logging(ParaComponent) {
       .lowlight {
         opacity: 0.20;
       }
+      .hidden {
+        display: none;
+      }
 
       .control-column {
         display: flex;

@@ -125,6 +125,7 @@ export class ParaStore extends State {
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() soloSeries = '';
 
+  @property() protected _hiddenSeriesList: string[] = [];
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
   @property() protected selected = null;
@@ -227,6 +228,10 @@ export class ParaStore extends State {
 
   get userTrendLines() {
     return this._userTrendLines;
+  }
+
+  get hiddenSeriesList(): readonly string[] {
+    return this._hiddenSeriesList;
   }
 
   setManifest(manifest: Manifest, data?: AllSeriesData) {
@@ -425,6 +430,11 @@ export class ParaStore extends State {
       });
     }
     return '';
+  }
+
+  hide(seriesKey: string) {
+    if (this._hiddenSeriesList.includes(seriesKey)) return;
+    this._hiddenSeriesList = [...this._hiddenSeriesList, seriesKey];
   }
 
   get visitedDatapoints() {
