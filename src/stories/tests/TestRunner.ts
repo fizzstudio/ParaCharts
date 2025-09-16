@@ -53,6 +53,26 @@ export class TestRunner {
     console.log(document.activeElement + '--');
   }*/
 
+  @Test
+  async annotations() {
+    const parachart = await this.canvas.findByTestId('para-chart');
+    const application = shadow.getByShadowRole(parachart, 'application');
+    await application.focus();
+    await this.userEvent.keyboard('{ArrowRight}');
+    const controlPanel = shadow.getByShadowTestId(parachart, 'control-panel');
+    const annotationTab = shadow.getByShadowText(controlPanel, 'Annotations');
+    await annotationTab.click();
+    const addButton = shadow.getByShadowText(controlPanel, 'Add Annotation');
+    await addButton.click();
+    await this.userEvent.keyboard('{ArrowRight}');
+    await this.userEvent.keyboard('{ArrowLeft}');
+    const ariaLive = shadow.getByShadowTestId(parachart, 'sr-status');
+    await this.waitFor(() => {
+      const announcement = ariaLive.querySelector('div')?.textContent;
+      this.expect(announcement).toContain('Annotation'); // or your test annotation text
+    });
+  }
+
   async loadManifest(manifestPath: string) {
     const prefix = '/node_modules/@fizz/chart-data/data/';
     const response = await fetch(prefix + manifestPath);
