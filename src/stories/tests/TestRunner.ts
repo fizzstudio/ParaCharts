@@ -59,17 +59,24 @@ export class TestRunner {
     const application = shadow.getByShadowRole(parachart, 'application');
     await application.focus();
     await this.userEvent.keyboard('{ArrowRight}');
-    const controlPanel = shadow.getByShadowTestId(parachart, 'control-panel');
-    const annotationTab = shadow.getByShadowText(controlPanel, 'Annotations');
-    await annotationTab.click();
-    const addButton = shadow.getByShadowText(controlPanel, 'Add Annotation');
-    await addButton.click();
+      const addButton = shadow.getByShadowText(application, 'Add Annotation');
+      await addButton.click();
+      let input: HTMLElement | null = null;
+      await this.waitFor(() => {
+        const dialog = document.querySelector('fizz-dialog');
+        input = dialog?.shadowRoot?.querySelector('input[type="text"]') ?? null;
+        this.expect(input).not.toBeNull();
+      });
+      await input!.focus();
+      await this.userEvent.keyboard('test annotation');
+      await this.userEvent.tab();
+      await this.userEvent.keyboard('{Enter}');
     await this.userEvent.keyboard('{ArrowRight}');
     await this.userEvent.keyboard('{ArrowLeft}');
     const ariaLive = shadow.getByShadowTestId(parachart, 'sr-status');
     await this.waitFor(() => {
       const announcement = ariaLive.querySelector('div')?.textContent;
-      this.expect(announcement).toContain('Annotation'); // or your test annotation text
+      this.expect(announcement).toContain('test annotation');
     });
   }
 
