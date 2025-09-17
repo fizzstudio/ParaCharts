@@ -66,11 +66,11 @@ export class AnnotationPanel extends ControlPanelTabPanel {
           <div
            @mouseover=${(event: Event) => {
               let length = this.store.model!.series[0].length - 1;
-              this.store.highlightRange(item.params[0] / length, item.params[item.params.length - 1]! / length )
+              this.store.highlightRange(item.params[0] / length, (item.params[item.params.length - 1]! - 1) / length )
             }}
             @mouseleave=${(event: Event) => {
               let length = this.store.model!.series[0].length - 1;
-              this.store.unhighlightRange(item.params[0] / length, item.params[item.params.length - 1]! / length )
+              this.store.unhighlightRange(item.params[0] / length, (item.params[item.params.length - 1]! - 1) / length )
             }}>
             <input type="radio" name="cand" id="${item.toString()}" value="${item}"/>
             <label for="${item.toString()}">${item.category}</label>
@@ -173,6 +173,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
   }
 
   render() {
+    console.log("this._controlPanel.paraChart.train", this._controlPanel.paraChart.train)
     const isLine = this._store.type === 'line' ? true : false
     return html`
       <div id="annotation-tab" class="tab-content">
@@ -225,7 +226,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
             ${this._store.settings.controlPanel.isMDRAnnotationsVisible ? "Remove Trend Annotations" : "Show Trend Annotations"}
           </button>
         </div>
-        <div ?hidden=${!isLine}>
+        <div ?hidden=${!isLine || !this._controlPanel.paraChart.train}>
           <button
             @click=${
               () => {

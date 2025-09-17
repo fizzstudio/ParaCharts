@@ -873,33 +873,36 @@ export class ParaStore extends State {
   showTrends() {
     const breaks: Interval[] = [];
     if (this.userLineBreaks.length > 0) {
-      this.userLineBreaks[0].index !== 0 ? breaks.push({ start: 0, end: this.userLineBreaks[0].index }) : undefined
+      this.userLineBreaks[0].index !== 0 ? breaks.push({ start: 0, end: this.userLineBreaks[0].index + 1 }) : undefined
       for (let i = 0; i < this.userLineBreaks.length - 1; i++) {
-        breaks.push({ start: this.userLineBreaks[i].index, end: this.userLineBreaks[i + 1].index })
+        breaks.push({ start: this.userLineBreaks[i].index, end: this.userLineBreaks[i + 1].index + 1 })
       }
-      this.userLineBreaks[this.userLineBreaks.length - 1].index !== this.model!.series[0].length - 1 ? breaks.push({ start: this.userLineBreaks[this.userLineBreaks.length - 1].index, end: this.model!.series[0].length}) : undefined
+      this.userLineBreaks[this.userLineBreaks.length - 1].index !== this.model!.series[0].length - 1 ? breaks.push({ start: this.userLineBreaks[this.userLineBreaks.length - 1].index, end: this.model!.series[0].length }) : undefined
     }
-    else{
-      breaks.push({ start: 0, end: this.model!.series[0].length})
+    else {
+      breaks.push({ start: 0, end: this.model!.series[0].length })
     }
     const axisInfo = this._paraChart.paraView.documentView!.chartLayers.dataLayer.axisInfo!
-    let {candidates, slopeInfo} = genCandidates(new Line(this.model!.allPoints.map(p => {return {x: p.facetValueAsNumber("x")!, y: p.facetValueAsNumber("y")!}})), 
-    breaks, undefined, undefined, {start: axisInfo.yLabelInfo.min!, end: axisInfo.yLabelInfo.max!}, true)
+    let { candidates, slopeInfo } = genCandidates(new Line(this.model!.allPoints.map(p => { return { x: p.facetValueAsNumber("x")!, y: p.facetValueAsNumber("y")! } })),
+      breaks, undefined, undefined, { start: axisInfo.yLabelInfo.min!, end: axisInfo.yLabelInfo.max! }, true)
     candidates = candidates.filter(c => !['Poss', 'Big'].some(pfx => c.category.toString().startsWith(pfx)))
     this._userCandidates = candidates;
   }
 
-  submitTrend(cand: Candidate, supp1: string, supp2: string){
+  submitTrend(cand: Candidate, supp1: string, supp2: string) {
     const axisInfo = this._paraChart.paraView.documentView!.chartLayers.dataLayer.axisInfo!
+    const points = this.model!.allPoints
     let trainDatum = {
       chart: this._manifest!.datasets[0].title,
       cands: this.userCandidates,
       selectedCand: cand,
       axisStart: axisInfo.yLabelInfo.min!,
       axisEnd: axisInfo.yLabelInfo.max!,
-      points: this.model!.allPoints,
+      points: points,
       isBig: supp1,
-      isPossible: supp2
+      isPossible: supp2,
+      vertMagnitude: cand.magnitude,
+      horizMagnitude: (cand.params[cand.params.length - 1]! - 1 - cand.params[0]) / (points.length - 1)
     }
     console.log(trainDatum)
   }
