@@ -1,4 +1,4 @@
-import { keymap } from '../../lib/store/keymap';
+import { keymap } from '../../lib/store/keymap.ts';
 
 let table = [`| Key / Shortcut         | Description                                      |
 |------------------------|--------------------------------------------------|`];
