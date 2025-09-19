@@ -60,34 +60,13 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   }
 
   protected _reset() {
-    console.log('TIER RESET', this.axis.coord, this._length, this.axis.isInterval);
     const n = this.axis.isInterval ? this.tickLabels.length : this.tickLabels.length - 1;
     this._labelDistance = this._length/(n/this._tickStep);
     this.clearChildren();
     this.createTickLabels(false);
   }
 
-  // protected _adjustToSizeConstraint() {
-  //   console.log('TIER ADJUSTING', this.axis.coord, this._length, this.axis.isInterval);
-  //   const n = this.axis.isInterval ? this.tickLabels.length : this.tickLabels.length - 1;
-  //   this._labelDistance = this._length/(n/this._tickStep);
-  //   this.clearChildren();
-  //   this.createTickLabels(false);
-  // }
-
-  // setLength(length: number, checkLabels = true) {
-  //   const n = this.axis.isInterval ? this.tickLabels.length : this.tickLabels.length - 1;
-  //   this._labelDistance = length/(n/this._tickStep);
-  //   this.clearChildren();
-  //   this.createTickLabels(checkLabels);
-  // }
-
   protected abstract get _length(): number;
-
-  // get length() {
-  //   const n = this.axis.isInterval ? this.tickLabels.length : this.tickLabels.length - 1;
-  //   return this._labelDistance*(n/this._tickStep);
-  // }
 
   get class() {
     return 'tick-label-tier';
@@ -256,7 +235,6 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     if (checkLabels) {
       const { width, tickStep } = this._optimizeLabelSpacing();
       this._tickStep = tickStep;
-      console.log('SET TIER LENGTH', width);
       this._width = width;
       //this._adjustToSizeConstraint();
       // this.setLength(width, false);
@@ -373,7 +351,6 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     if (++this._childResizeCount === this._children.length) {
       this._childResizeCount = 0;
       this._tickStep = this._getTickStepForWidth(this._width);
-      console.log('TICK STEP', this._tickStep);
       // Recreate the labels with the new tick step without changing the width
       // this.setLength(this._width, false);
       //this._adjustToSizeConstraint();
@@ -401,7 +378,6 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
   }
 
   protected _updateSizeFromLength(length: number) {
-    console.log('SET SIZE TO', length);
     this._height = length;
   }
 
@@ -416,11 +392,6 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
   protected get _labelWrapWidth() {
     return undefined;
   }
-
-  // setLength(length: number) {
-  //   this.height = length;
-  //   super.setLength(length);
-  // }
 
   computeSize(): [number, number] {
     return [this._maxLabelWidth(), this._height];

@@ -22,12 +22,14 @@ import { type AxisInfo } from '../common/axisinfo';
 import { type LegendItem } from '../view//legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
 import { Logger } from '../common/logger';
-import { ParaStore, type SparkBrailleInfo } from '../store';
+import { ParaStore, type SparkBrailleInfo, datapointIdToCursor } from '../store';
 import { Sonifier } from '../audio/sonifier';
+import { type AxisCoord } from '../view/axis';
 
 import { Datapoint, type PlaneModel } from '@fizz/paramodel';
 import { ChartType } from '@fizz/paramanifest';
-import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer } from '@fizz/parasummary';
+import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer, formatBox } from '@fizz/parasummary';
+import { Interval } from '@fizz/chart-classifier-utils';
 
 import { Unsubscribe } from '@lit-app/state';
 
@@ -209,11 +211,82 @@ export abstract class BaseChartInfo extends Logger {
     });
   }
 
+  protected _composePointSelectionAnnouncement(isExtend: boolean) {
+    // This method assumes only a single point was visited when the select
+    // command was issued (i.e., we know nothing about chord mode here)
+    const seriesAndVal = (datapointId: string) => {
+      const {seriesKey, index} = datapointIdToCursor(datapointId);
+      const dp = this._store.model!.atKeyAndIndex(seriesKey, index)!;
+      return `${seriesKey} (${formatBox(dp.facetBox('x')!, this._store.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this._store.getFormatType('statusBar'))})`;
+    };
+
+    const newTotalSelected = this._store.selectedDatapoints.size;
+    const oldTotalSelected = this._store.prevSelectedDatapoints.size;
+    const justSelected = this._store.selectedDatapoints.difference(
+      this._store.prevSelectedDatapoints);
+    const justDeselected = this._store.prevSelectedDatapoints.difference(
+      this._store.selectedDatapoints);
+
+    const s = newTotalSelected === 1 ? '' : 's';
+    const newTotSel = `${newTotalSelected} point${s} selected.`;
+
+    if (oldTotalSelected === 0) {
+      // None were selected; selected 1
+      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}`;
+    } else if (oldTotalSelected === 1 && !newTotalSelected) {
+      // 1 was selected; it has been deselected
+      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. No points selected.`;
+    } else if (!isExtend && justSelected.size && oldTotalSelected) {
+      // Selected 1 new, deselected others
+      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}. 1 point selected.`;
+    } else if (!isExtend && newTotalSelected && oldTotalSelected) {
+      // Kept 1 selected, deselected others
+      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. 1 point selected.`;
+    } else if (isExtend && justDeselected.size) {
+      // Deselected 1
+      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. ${newTotSel}`;
+    } else if (isExtend && justSelected.size) {
+      // Selected 1
+      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}. ${newTotSel}`;
+    } else {
+      return 'ERROR';
+    }
+  }
+
+  protected _composeSeriesSelectionAnnouncement() {
+    // This method assumes only a single series was visited when the select
+    // command was issued (i.e., we know nothing about chord mode here)
+    const newTotalSelected = this._store.selectedDatapoints.size;
+    const oldTotalSelected = this._store.prevSelectedDatapoints.size;
+    const justSelected = this._store.selectedDatapoints.values().filter(id => {
+      const cursor = datapointIdToCursor(id);
+      return !this._store.wasSelected(cursor.seriesKey, cursor.index);
+    }).toArray();
+
+    let s = newTotalSelected === 1 ? '' : 's';
+    const newTotSelText = `${newTotalSelected} point${s} selected.`;
+    s = justSelected.length === 1 ? '' : 's';
+    const justSelText = `Selected ${justSelected.length} point${s}.`;
+
+    if (oldTotalSelected === 0) {
+      return justSelText;
+    } else {
+      return `${justSelText} ${newTotSelText}`;
+    }
+  }
+
   selectCurrent(extend = false) {
     if (extend) {
       this._store.extendSelection();
     } else {
       this._store.select();
+    }
+    const announcement =
+      this._navMap!.cursor.isNodeType('datapoint') ? this._composePointSelectionAnnouncement(extend) :
+      this._navMap!.cursor.isNodeType('series') ? this._composeSeriesSelectionAnnouncement() :
+      '';
+    if (announcement) {
+      this._store.announce(announcement);
     }
   }
 
@@ -314,8 +387,8 @@ export abstract class BaseChartInfo extends Logger {
         if (this._store.settings.sonification.isArpeggiateChords) {
           this._playRiff(this._chordRiffOrder());
         } else {
-          const datapoints = cursor.datapoints.map(dpCursor =>
-            this._store.model!.atKeyAndIndex(dpCursor.seriesKey, dpCursor.index)!);
+          const datapoints = cursor.datapoints.map(dp =>
+            this._store.model!.atKeyAndIndex(dp.seriesKey, dp.datapointIndex)!);
           this._playDatapoints(datapoints);
         }
       }
@@ -353,5 +426,36 @@ export abstract class BaseChartInfo extends Logger {
   }
 
   protected abstract _sparkBrailleInfo(): SparkBrailleInfo | null;
+
+  getXAxisInterval(): Interval {
+    let xs: number[] = [];
+    if (this._store.model!.getFacet('x')!.datatype === 'number'
+      || this._store.model!.getFacet('x')!.datatype === 'date'
+    ) {
+      xs = this._store.model!.allFacetValues('x')!.map((box) => box.asNumber()!);
+    } else {
+      throw new Error('axis must be of type number or date to take interval');
+    }
+    return {start: Math.min(...xs), end: Math.max(...xs)};
+  }
+
+
+  getYAxisInterval(): Interval {
+    if (!this.axisInfo) {
+      throw new Error('chart is missing `axisInfo` object');
+    }
+    return {
+      start: this.axisInfo.yLabelInfo.min!,
+      end: this.axisInfo.yLabelInfo.max!
+    };
+  }
+
+  getAxisInterval(coord: AxisCoord): Interval | undefined {
+    if (coord === 'x') {
+      return this.getXAxisInterval();
+    } else {
+      return this.getYAxisInterval();
+    }
+  }
 
 }

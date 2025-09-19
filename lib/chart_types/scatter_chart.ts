@@ -90,7 +90,6 @@ export class ScatterChartInfo extends PointChartInfo {
     } else {
       this._clustering = generateClusterAnalysis(data, false);
     }
-    console.log('CLUSTERING', this._clustering);
   }
 
   get navDatapointType(): DatapointNavNodeType {
@@ -103,7 +102,6 @@ export class ScatterChartInfo extends PointChartInfo {
   }
 
   protected _createClusterNavNodes() {
-    console.log('NAV LAYERS', this._navMap!._layers);
     const seriesClusterNodes: NavNode<'cluster'>[][] = [];
     this._navMap!.root.query('series').forEach(seriesNode => {
       if (seriesClusterNodes.length) {
@@ -175,7 +173,6 @@ export class ScatterChartInfo extends PointChartInfo {
   }
 
   async navRunDidEnd(cursor: NavNode): Promise<void> {
-    console.log('NAV END', cursor);
     if (!this._clustering) return;
     if (cursor.isNodeType('cluster')) {
       this._currentCluster = cursor.options.clustering.id;

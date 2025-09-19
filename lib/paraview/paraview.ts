@@ -637,7 +637,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   navToDatapoint(seriesKey: string, index: number) {
-    this._documentView!.chartLayers.dataLayer.navToDatapoint(seriesKey, index);
+    this._documentView!.chartInfo.navToDatapoint(seriesKey, index);
   }
 
   render(): TemplateResult {
@@ -660,7 +660,7 @@ export class ParaView extends logging(ParaComponent) {
           if (!this._store.settings.chart.isStatic) {
             this.log('focus');
             //this.todo.deets?.onFocus();
-            this.documentView?.chartLayers.dataLayer.navMap?.visitDatapoints();
+            this.documentView?.chartInfo.navMap?.visitDatapoints();
           }
         }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}

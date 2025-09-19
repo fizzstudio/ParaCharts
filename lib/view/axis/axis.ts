@@ -192,9 +192,9 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     return this._titleText;
   }
 
-  get range() {
-    return this.chartLayers.getAxisInterval(this.coord);
-  }
+  // get range() {
+  //   return this.chartLayers.getAxisInterval(this.coord);
+  // }
 
   get orthoAxis() {
     return this._orthoAxis;
@@ -208,16 +208,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     this._layout.resize(width, height);
     super.resize(width, height);
   }
-
-  // constrainSize(maxWidth: number, maxHeight: number, isBubble = false) {
-  //   // An axis needs to constrain its layout
-  //   console.log('AXIS CONSTRAIN', this.id || this.constructor.name, maxWidth, maxHeight, isBubble);
-  //   this.setSize(Math.min(this._width, maxWidth), Math.min(this._height, maxHeight), isBubble);
-  //   this._children.forEach(kid => {
-  //     kid.constrainSize(this._width, this._height, false);
-  //   });
-  //   this._adjustToSizeConstraint();
-  // }
 
   abstract get length(): number;
 
@@ -234,7 +224,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   // }
 
   createComponents() {
-    console.log('CREATING AXIS COMPONENTS', this.coord);
     if (this.orientationSettings.title.isDrawTitle && this._titleText) {
       this._createAxisTitle();
       this._appendTitle();
@@ -258,18 +247,15 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     // }
     this._tickLabelTiers = this._createTickLabelTiers();
     // if (this.orientation === 'horiz') {
-    //   console.log('SET CHART WIDTH FROM TIER', this._tickLabelTiers[0].width, this._tickLabelTiers[0].length);
     //   // this.chartLayers.width = this._tickLabelTiers[0].width;
     // }
     this._appendTickLabelTiers();
     this._tickStrip = this._createTickStrip();
-    // console.log('TICK STRIP SIZE', this._tickStrip.width, this._tickStrip.height);
     this._appendTickStrip();
     this._createAxisLine();
     this._appendAxisLine();
   }
 
-  // abstract resize(width: number, height: number): void;
 
   layoutComponents() {
 //    this._layout.layoutViews();
@@ -293,12 +279,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   protected abstract _appendTickStrip(): void;
   protected abstract _createAxisLine(): void;
   protected abstract _appendAxisLine(): void;
-
-  // protected _createTickLabels() {
-  //   for (const tier of this._tickLabelTiers) {
-  //     tier.createTickLabels();
-  //   }
-  // }
 
   updateTickLabelIds() {
     for (const tier of this._tickLabelTiers) {
@@ -357,17 +337,8 @@ export class HorizAxis extends Axis<'horiz'> {
     ];
   }
 
-  // settingDidChange(key: string, value: any) {
-  //   //todo().controller.clearSettingManagers();
-  //   this.paraview.createDocumentView();
-  //   this.paraview.requestUpdate();
-  //   return true;
-  // }
-
   protected _appendTitle(): void {
-    console.log('APPEND AXIS TITLE');
     this._layout.append(this._axisTitle!);
-    console.log('DID APPEND TITLE');
   }
 
   protected _createTickLabelTiers() {
@@ -377,7 +348,6 @@ export class HorizAxis extends Axis<'horiz'> {
   }
 
   protected _appendTickLabelTiers() {
-    console.log('HTIER APPEND');
     this._tickLabelTiers.forEach((tier, i) => {
       this._layout.splitRowTop(0, 'end');
       this._layout.append(tier);
@@ -418,12 +388,6 @@ export class HorizAxis extends Axis<'horiz'> {
       ? { top: this.orientationSettings.title.gap }
       : { bottom: this.orientationSettings.title.gap };
   }
-
-  // resize(width: number, height: number) {
-  //   this._tickLabelTiers.forEach(tier => tier.setLength(width, false));
-  //   this._tickStrip!.resize(width, height, this._tickLabelTiers[0].tickInterval/this.tickStep);
-  //   this._axisLine.length = width;
-  // }
 
   layoutComponents() {
     if (this.orientationSettings.position === 'south') {
@@ -511,16 +475,6 @@ export class VertAxis extends Axis<'vert'> {
     ];
   }
 
-  // settingDidChange(key: string, value: any) {
-  //   //todo().controller.clearSettingManagers();
-  //   this.paraview.createDocumentView();
-  //   this.paraview.requestUpdate();
-  //   // Changing one axis bound may cause the other to change due to
-  //   // quantization, and this needs to get reflected in the UI.
-  //   //todo().deets!.requestUpdate();
-  //   return true;
-  // }
-
   protected _appendTitle(): void {
     this._layout.append(this._axisTitle!);
   }
@@ -585,12 +539,6 @@ export class VertAxis extends Axis<'vert'> {
       .map(tier => tier.width)
       .reduce((a, b) => a + b, 0);
   }
-
-  // resize(width: number, height: number) {
-  //   this._tickLabelTiers.forEach(tier => tier.setLength(height));
-  //   this._tickStrip!.resize(width, height, this._tickLabelTiers[0].tickInterval/this.tickStep);
-  //   this._axisLine.length = height;
-  // }
 
   layoutComponents() {
     if (this.orientationSettings.position === 'west') {

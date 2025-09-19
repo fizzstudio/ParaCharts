@@ -68,7 +68,6 @@ export abstract class TickStrip extends Container(View) {
   }
 
   resize(width: number, height: number) {
-    console.log('TICK STRIP RESIZE');
     super.resize(width, height);
     this._computeInterval();
     this.clearChildren();
@@ -228,7 +227,6 @@ export class VertTickStrip extends TickStrip {
   }
 
   computeSize() {
-    console.log('TICK STRIP COMPUTE SIZE');
     return [
       // NB! The grid lines DON'T COUNT toward the width!
       (this._axisSettings.tick.isDrawEnabled || this._options.isDrawOverhang)
@@ -257,7 +255,6 @@ export class VertTickStrip extends TickStrip {
     const isNorth = this._options.orthoAxisPosition === 'north';
     const tickLength = this._axisSettings.tick.length;
     this._ruleX = tickLength;
-    console.log('COUNT', this._count);
     this._indices = mapn(this._count, i => i);
     if (!this.paraview.store.settings.grid.isDrawHorizAxisOppositeLine) {
       this._indices = isNorth
@@ -270,7 +267,6 @@ export class VertTickStrip extends TickStrip {
     this._ruleYs = this._indices.map(i => isNorth
       ? this.height - i*this._interval
       : i*this._interval);
-    console.log('YS', this._ruleYs, this._options.plotWidth);
     this._indices.forEach(i => {
       this.append(new VertTick(
         this._axisSettings.position as HorizCardinalDirection,

@@ -581,7 +581,6 @@ export class View extends BaseView {
   }
 
   setSize(width: number, height: number, isBubble = true) {
-    //console.log('SET SIZE', this.id || this.constructor.name, width, height, isBubble);
     const oldWidth = this._width;
     const oldHeight = this._height;
     this._width = width;
@@ -612,7 +611,6 @@ export class View extends BaseView {
   }
 
   protected _bubbleSizeChange() {
-    console.log('BUBBLING SIZE CHANGE', this.id || this.constructor.name);
     this._parent!._childDidResize(this);
   }
 
@@ -813,9 +811,7 @@ export class View extends BaseView {
   append(child: View) {
     this._children.push(child);
     this._didAddChildToList(child);
-    // console.log('SETTING PARENT OF', child.id || child.constructor.name, 'TO', this.id || this.constructor.name);
     child.parent = this;
-    // console.log('DID SET PARENT');
   }
 
   prepend(child: View) {

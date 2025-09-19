@@ -53,6 +53,7 @@ export class DocumentView extends Container(View) {
     this._store = paraview.store;
 
     this.type = this._store.type;
+    // @ts-ignore
     this._chartInfo = new chartInfoClasses[this.type](this.type, this._store);
 
     this.setTitleText(this._store.title);
@@ -156,14 +157,12 @@ export class DocumentView extends Container(View) {
       this._vertAxis.createComponents();
       this._horizAxis.layoutComponents();
       this._vertAxis.layoutComponents();
-      console.log('🅰️ APPEND VERT AXIS');
       this._grid.append(this._vertAxis, {
         x: 0,
         y: this._titleLabel ? 1 : 0, // XXX title might be at bottom
         height: 1,
         rowAlign: horizAxisPos === 'north' ? 'end' : 'start'
       });
-      console.log('🅰️ APPEND HORIZ AXIS');
       this._grid.append(this._horizAxis, {
         x: 1,
         y: (horizAxisPos === 'north' ? 0 : 1) + (this._titleLabel ? 1 : 0),
@@ -206,7 +205,6 @@ export class DocumentView extends Container(View) {
     const plotHeight = this._vertAxis ? this._grid.rowHeight(plotRow) : this._grid.height;
     this._chartLayers = new PlotLayerManager(this, plotWidth, plotHeight);
     this._chartLayers.dataLayer.init();
-    console.log('🅰️ APPEND LAYERS');
     this._grid.append(this._chartLayers, {
       x: 1,
       y: plotRow
@@ -223,7 +221,6 @@ export class DocumentView extends Container(View) {
             this._store.model!.multi)
     ) {
       this._directLabelStrip = new DirectLabelStrip(this._chartLayers.dataLayer as LinePlotView);
-      console.log('🅰️ APPEND DIRECT LABEL STRIP');
       this._grid.append(this._directLabelStrip, {
         x: 2,
         y: plotRow,
@@ -250,10 +247,8 @@ export class DocumentView extends Container(View) {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
-    console.log('SET', path, oldValue, newValue);
     this._chartInfo.settingDidChange(path, oldValue, newValue);
     if (['chart.size.width', 'chart.size.height'].includes(path)) {
-      console.log('RESIZE', path, newValue);
       this._grid.remove();
       this._createGrid();
       //this.paraview.requestUpdate();
@@ -347,14 +342,12 @@ export class DocumentView extends Container(View) {
     let titleRow = 0;
     const titleMargin = this._store.settings.chart.title.margin;
     const titlePos = this._store.settings.chart.title.position;
-    console.log('INSERT TITLE ROW');
     if (this._store.settings.chart.title.position === 'top') {
       this._grid.insertRow(0, this._store.settings.chart.title.margin);
     } else {
       this._grid.insertRow(this._grid.numRows, this._store.settings.chart.title.margin);
       titleRow = this._grid.numRows;
     }
-    console.log('🅰️ APPEND TITLE');
     this._grid.append(this._titleLabel, {
       x: 0,
       y: titleRow,
@@ -390,7 +383,6 @@ export class DocumentView extends Container(View) {
   addLegend(position: CardinalDirection) {
     const items = this._chartInfo.legend();
     const margin = this._store.settings.legend.margin;
-    console.log('🅰️ APPEND LEGEND');
     if (position === 'east') {
       this._legends.east = new Legend(this.paraview, items);
       this._grid.append(this._legends.east, {

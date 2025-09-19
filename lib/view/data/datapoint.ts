@@ -22,9 +22,6 @@ export class DatapointView extends DataView {
 
   protected _shapes: Shape[] = [];
   protected _symbol: DataSymbol | null = null;
-  // isVisited: boolean = false;
-  // isSelected: boolean = false;
-  // everVisited: boolean = false;
 
   constructor(seriesView: SeriesView) {
     super(seriesView.chart, seriesView.series.key);
@@ -235,57 +232,6 @@ export class DatapointView extends DataView {
     return this.paraview.store.isVisited(this.seriesKey, this.index)
       ? -1 as number
       : undefined;
-  }
-
-  protected _composeSelectionAnnouncement(isExtend: boolean) {
-    // This method assumes only a single point was visited when the select
-    // command was issued (i.e., we know nothing about chord mode here)
-    const seriesAndVal = (datapointId: string) => {
-      const {seriesKey, index} = datapointIdToCursor(datapointId);
-      const dp = this.paraview.store.model!.atKeyAndIndex(seriesKey, index)!;
-      return `${seriesKey} (${formatBox(dp.facetBox('x')!, this.paraview.store.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this.paraview.store.getFormatType('statusBar'))})`;
-    };
-
-    const newTotalSelected = this.paraview.store.selectedDatapoints.size;
-    const oldTotalSelected = this.paraview.store.prevSelectedDatapoints.size;
-    const justSelected = this.paraview.store.selectedDatapoints.difference(
-      this.paraview.store.prevSelectedDatapoints);
-    const justDeselected = this.paraview.store.prevSelectedDatapoints.difference(
-      this.paraview.store.selectedDatapoints);
-
-    const s = newTotalSelected === 1 ? '' : 's';
-    const newTotSel = `${newTotalSelected} point${s} selected.`;
-
-    if (oldTotalSelected === 0) {
-      // None were selected; selected 1
-      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}`;
-    } else if (oldTotalSelected === 1 && !newTotalSelected) {
-      // 1 was selected; it has been deselected
-      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. No points selected.`;
-    } else if (!isExtend && justSelected.size && oldTotalSelected) {
-      // Selected 1 new, deselected others
-      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}. 1 point selected.`;
-    } else if (!isExtend && newTotalSelected && oldTotalSelected) {
-      // Kept 1 selected, deselected others
-      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. 1 point selected.`;
-    } else if (isExtend && justDeselected.size) {
-      // Deselected 1
-      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. ${newTotSel}`;
-    } else if (isExtend && justSelected.size) {
-      // Selected 1
-      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}. ${newTotSel}`;
-    } else {
-      return 'ERROR';
-    }
-  }
-
-  select(isExtend: boolean) {
-    if (isExtend) {
-      this.paraview.store.extendSelection();
-    } else {
-      this.paraview.store.select();
-    }
-    this.paraview.store.announce(this._composeSelectionAnnouncement(isExtend));
   }
 
   protected _contentUpdateShapes() {

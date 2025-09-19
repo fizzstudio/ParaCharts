@@ -41,7 +41,6 @@ export abstract class PastryPlotView extends DataLayer {
     index: number,
     chartInfo: BaseChartInfo
   ) {
-    console.log('CREATING PASTRY', width, height);
     super(paraview, width, height, index, chartInfo);
   }
 
@@ -210,7 +209,6 @@ export abstract class PastryPlotView extends DataLayer {
     this._radius = Math.min(this._height, this._width) / 2;
     this._cx = this._width / 2;
     this._cy = this._height / 2;
-    console.log('RESET RADIUS', this._radius, this._cx, this._cy);
   }
 
   protected _resizeToFitLabels() {
@@ -398,11 +396,6 @@ export abstract class RadialSlice extends DatapointView {
   constructor(parent: SeriesView, protected _params: RadialDatapointParams) {
     super(parent);
     this._isStyleEnabled = true;
-  }
-
-  protected _addedToParent(): void {
-    super._addedToParent();
-    this.isVisited = this.paraview.store.isVisited(this.seriesKey, this.index);
   }
 
   get percentage() {

@@ -462,21 +462,12 @@ export class ParaStore extends State {
 
   visit(datapoints: Datapoint[]) {
     this._prevVisitedDatapoints = this._visitedDatapoints;
-    // this._prevVisitedDatapoints.forEach((view) => {
-    //   view.isVisited = false;
-    // });
     this._visitedDatapoints = new Set();
     datapoints.forEach(datapoint => {
       this._visitedDatapoints.add(`${datapoint.seriesKey}-${datapoint.datapointIndex}`);
-      // cursor.datapointView.isVisited = true;
     });
-    //this._visitedDatapoints.map(c => c.datapointView.isVisited = true)
     for (const datapoint of datapoints) {
-      //if (!datapoint.datapointView.everVisited) {
-        // this._everVisitedDatapoints.push(datapoint);
-        this._everVisitedDatapoints.add(`${datapoint.seriesKey}-${datapoint.datapointIndex}`);
-        // datapoint.datapointView.everVisited = true;
-      //}
+      this._everVisitedDatapoints.add(`${datapoint.seriesKey}-${datapoint.datapointIndex}`);
     }
     if (this.settings.controlPanel.isMDRAnnotationsVisible) {
       this.removeMDRAnnotations(this._prevVisitedDatapoints);
@@ -548,13 +539,7 @@ export class ParaStore extends State {
       }
     }
     this._prevSelectedDatapoints = this._selectedDatapoints;
-    // this._prevSelectedDatapoints.forEach(view => {
-    //   view.isSelected = false;
-    // });
     this._selectedDatapoints = newSelection;
-    // this._selectedDatapoints.forEach(view => {
-    //   view.isSelected = true;
-    // });
   }
 
   extendSelection() {
@@ -812,16 +797,17 @@ export class ParaStore extends State {
   }
 
   addUserLineBreaks() {
-    for (const [keyIdx, point] of this.selectedDatapoints) {
-      const [seriesKey, index] = keyIdx.split('-');
+    for (const datapointId of this.selectedDatapoints) {
+      //const [seriesKey, index] = keyIdx.split('-');
+      const {seriesKey, index} = datapointIdToCursor(datapointId);
       const series = this.model!.series.filter(s => s[0].seriesKey === seriesKey)[0];
       const length = series.length - 1;
-      this.addLineBreak(point.index / length, point.index, point.seriesKey, false)
+      this.addLineBreak(index / length, index, seriesKey, false)
       this.annotations.push({
-        seriesKey: point.seriesKey,
-        index: point.index,
-        annotation: `${series.key}, ${series.rawData[point.index].x}: Added line break`,
-        id: `line-break-${point.index}`
+        seriesKey,
+        index,
+        annotation: `${series.key}, ${series.rawData[index].x}: Added line break`,
+        id: `line-break-${index}`
       })
     }
     if (this.userLineBreaks.length) {

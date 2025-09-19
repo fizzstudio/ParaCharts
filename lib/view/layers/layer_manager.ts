@@ -217,37 +217,6 @@ export class PlotLayerManager extends View {
     this._dataLayers = [dataLayer];
   }
 
-  getXAxisInterval(): Interval {
-    let xs: number[] = [];
-    if (this.paraview.store.model!.getFacet('x')!.datatype === 'number'
-      || this.paraview.store.model!.getFacet('x')!.datatype === 'date'
-    ) {
-      xs = this.paraview.store.model!.allFacetValues('x')!.map((box) => box.asNumber()!);
-    } else {
-      throw new Error('axis must be of type number or date to take interval');
-    }
-    return {start: Math.min(...xs), end: Math.max(...xs)};
-  }
-
-
-  getYAxisInterval(): Interval {
-    if (!this._dataLayers[0].axisInfo) {
-      throw new Error('chart is missing `axisInfo` object');
-    }
-    return {
-      start: this._dataLayers[0].axisInfo.yLabelInfo.min!,
-      end: this._dataLayers[0].axisInfo.yLabelInfo.max!
-    };
-  }
-
-  getAxisInterval(coord: AxisCoord): Interval | undefined {
-    if (coord === 'x') {
-      return this.getXAxisInterval();
-    } else {
-      return this.getYAxisInterval();
-    }
-  }
-
   updateLoc() {
 
   }

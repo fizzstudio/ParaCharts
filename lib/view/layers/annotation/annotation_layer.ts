@@ -5,6 +5,7 @@ import { type ParaView } from '../../../paraview';
 import { RectShape } from '../../shape/rect';
 import { PathShape } from '../../shape/path';
 import { Vec2 } from '../../../common/vector';
+import { datapointIdToCursor } from '../../../store';
 
 export type AnnotationType = 'foreground' | 'background';
 
@@ -50,7 +51,7 @@ export class AnnotationLayer extends PlotLayer {
         this.group('trend-lines')!.clearChildren();
         for (const tl of this.paraview.store.modelTrendLines) {
           const series = this.paraview.store.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
-          const range = this.parent.getYAxisInterval();
+          const range = this.parent.docView.chartInfo.getYAxisInterval();
           const minValue = range.start ?? Number(this.paraview.store.settings.axis.y.minValue)
           const maxValue = range.end ?? Number(this.paraview.store.settings.axis.y.maxValue)
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
@@ -79,12 +80,13 @@ export class AnnotationLayer extends PlotLayer {
         this.addGroup('user-trend-lines', true);
         this.group('user-trend-lines')!.clearChildren();
         let tls = structuredClone(this.paraview.store.userTrendLines);
-        if (this.paraview.store.visitedDatapoints.length > 0) {
-          tls = tls.filter(a => a.seriesKey == this.paraview.store.visitedDatapoints[0].seriesKey)
+        if (this.paraview.store.visitedDatapoints.size > 0) {
+          const cursor = datapointIdToCursor(this.paraview.store.visitedDatapoints.values().toArray()[0]);
+          tls = tls.filter(a => a.seriesKey == cursor.seriesKey)
         }
         for (const tl of tls) {
           const series = this.paraview.store.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
-          const range = this.parent.getYAxisInterval();
+          const range = this.parent.docView.chartInfo.getYAxisInterval();
           const minValue = range.start ?? Number(this.paraview.store.settings.axis.y.minValue)
           const maxValue = range.end ?? Number(this.paraview.store.settings.axis.y.maxValue)
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
@@ -158,8 +160,9 @@ export class AnnotationLayer extends PlotLayer {
         this.addGroup('user-linebreaker-markers', true);
         this.group('user-linebreaker-markers')!.clearChildren();
         let lbs = structuredClone(this.paraview.store.userLineBreaks);
-        if (this.paraview.store.visitedDatapoints.length > 0){
-          lbs = lbs.filter(a => a.seriesKey == this.paraview.store.visitedDatapoints[0].seriesKey)
+        if (this.paraview.store.visitedDatapoints.size > 0){
+          const cursor = datapointIdToCursor(this.paraview.store.visitedDatapoints.values().toArray()[0]);
+          lbs = lbs.filter(a => a.seriesKey == cursor.seriesKey);
         }
         for (const lb of lbs) {
           const index = this.paraview.store.model!.series.findIndex(a => a.key == lb.seriesKey);
