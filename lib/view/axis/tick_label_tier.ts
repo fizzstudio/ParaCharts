@@ -107,7 +107,6 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   protected abstract get _labelWrapWidth(): number | undefined;
 
   createTickLabels(_checkLabels = true) {
-    console.log('CREATING TICK LABELS');
     for (const [i, labelText] of this.tickLabels.entries()) {
       if (i % this._tickStep) {
         continue;

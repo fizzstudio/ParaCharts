@@ -131,7 +131,6 @@ export class NavMap {
   }
 
   async visitDatapoints() {
-    console.log('VISIT', this.cursor.datapoints);
     this._store.visit(this.cursor.datapoints);
     if (this._runTimer) {
       clearTimeout(this._runTimer);
@@ -158,7 +157,6 @@ export class NavMap {
   }
 
   goTo<T extends NavNodeType>(type: T, options: Readonly<NavNodeOptionsType<T>>) {
-    console.log('GOTO', type, options);
     const node = this.node(type, options);
     if (node) {
       node.layer.cursor = node;
@@ -220,7 +218,10 @@ export class NavLayer {
     if (list) {
       return typeof optionsOrIndex === 'number'
         ? list[optionsOrIndex]
-        : list.find((node: NavNode<T>) => nodeOptionsEq(node.options, optionsOrIndex));
+        // Every item in `optionsOrIndex` must have a corresponding item with
+        // the same value in `node.options`, but the converse is not true;
+        // i.e., node.options may have items lacking in `optionsOrIndex`
+        : list.find((node: NavNode<T>) => nodeOptionsEq(optionsOrIndex, node.options));
     }
     return undefined;
   }
@@ -294,6 +295,7 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
   get datapoints() {
     const datapoints: Datapoint[] = [];
     if (this.isNodeType('datapoint') || this.isNodeType('scatterpoint')) {
+      // @ts-ignore
       datapoints.push(this._store.model!.atKeyAndIndex(this._options.seriesKey, this._options.index)!);
     } else if (this.isNodeType('series')) {
       const seriesLength = this._store.model!.atKey(this._options.seriesKey)!.length;
@@ -371,16 +373,7 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     return all;
   }
 
-  // addDatapoint(seriesKey: string, index: number) {
-  //   this._datapoints.push({seriesKey, index});
-  // }
-
-  // at(index: number): DatapointCursor | undefined {
-  //   return this._datapoints.at(index);
-  // }
-
   async move(dir: Direction) {
-    console.log('MOVE', dir);
     const link = this._links.get(dir);
     if (!link) {
       return;

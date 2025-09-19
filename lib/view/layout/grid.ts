@@ -113,7 +113,6 @@ export class GridLayout extends Layout {
       ? this._expandColAligns(options.colAligns)
       : new Array(this._numCols).fill('center');
     this._rows.push(new Array(this._numCols).fill(null));
-    console.log('CREATING GRID', id, this._width, this._height, this._rowGaps);
     this._resetRules();
   }
 
@@ -299,7 +298,6 @@ export class GridLayout extends Layout {
     this._vRules.splice(idx + 1, 0, colViews.length
       ? Math.max(...colViews.map(v => v!.paddedRight))
       : this._vRules[idx + 1]);
-    console.log('SPLIT COL RIGHT', idx, [...this._vRules], [...this._rows], [...this._colGaps]);
   }
 
   addRowTop() {
@@ -341,7 +339,6 @@ export class GridLayout extends Layout {
     this._hRules.splice(idx + 1, 0, rowViews.length
       ? Math.min(...rowViews.map(v => v!.paddedTop))
       : this._hRules[idx]);
-    console.log('SPLIT ROW TOP', idx, [...this._hRules], [...this._rows], [...this._rowGaps]);
   }
 
   insertRow(index: number, rowGap = 0, rowAlign: SnapLocation = 'center') {
@@ -369,7 +366,6 @@ export class GridLayout extends Layout {
     this._vRules.push(this._isAutoWidth
       ? 0
       : (this._width - this._colGaps.reduce((a, b) => a + b, 0)));
-    console.log('RESET RULES', this._id, [...this._hRules], [...this._vRules]);
   }
 
   protected _defaultMargin(x: number, y: number): Padding {
@@ -490,18 +486,12 @@ export class GridLayout extends Layout {
   }
 
   protected _didAddChild(kid: View) {
-    console.log('DID ADD CHILD', this.id, kid.id || kid.constructor.name);
     this._arrangeChild(kid);
-    console.log('RULES BEFORE', [...this._hRules], [...this._vRules]);
     this._adjustRules(kid);
-    console.log('RULES AFTER', [...this._hRules], [...this._vRules]);
-    // console.log('ADJUST GAPS');
     // this._adjustGaps(kid);
-    console.log('UPDATING SIZE');
     if (this._isAutoWidth || this._isAutoHeight) {
       this.updateSize();
     }
-    console.log('DO LAYOUT');
     this.layoutViews();
     super._didAddChild(kid);
   }
@@ -598,7 +588,6 @@ export class GridLayout extends Layout {
    */
   protected _rowShrinkability(row: number): number {
     const rowHeight = this.rowHeight(row);
-    console.log('ROW HEIGHT', rowHeight, this._hRules);
     if (!rowHeight) {
       return 0;
     }
@@ -611,7 +600,6 @@ export class GridLayout extends Layout {
         }
       }
     ) as View[];
-    console.log('ROW VIEWS', rowViews);
     if (!rowViews.length) {
       return rowHeight;
     }
@@ -620,8 +608,6 @@ export class GridLayout extends Layout {
       // A non-shrinking view with grid height > 1 cell may have more
       // available space than rowHeight
       : Math.min(rowHeight, this._viewAvailHeight(view)));
-    console.log('VIEW AVAIL HEIGHT', this._viewAvailHeight(rowViews[0]));
-    console.log('VIEW FLEX VALS', viewFlexVals, roundHundredths(Math.min(...viewFlexVals)));
     return roundHundredths(Math.min(...viewFlexVals));
     // const canShrink = rowViews.filter(view => view.isHeightCanShrink);
     // const cantShrink = rowViews.filter(view => !view.isHeightCanShrink);
@@ -911,7 +897,6 @@ export class GridLayout extends Layout {
 
   protected _adjustRules(kid: View) {
     const territory = this._territories.get(kid)!;
-    console.log('|| ADJUST RULES FOR', kid.id || kid.constructor.name, territory);
     const hRuleStart = territory.y;
     const hRuleEnd = hRuleStart + territory.height;
     const vRuleStart = territory.x;
@@ -924,7 +909,6 @@ export class GridLayout extends Layout {
     if (this._isAutoWidth) {
       // Diff between kid width and the width of its territory
       const territoryDiff = kid.paddedWidth - this._territoryPhysWidth(territory);
-      console.log('AUTO-WIDTH; expand territory by', territoryDiff);
       if (territoryDiff > 0) {
         this._vRules[vRuleEnd] += territoryDiff;
         this._vRules.slice(vRuleEnd + 1).forEach((vRule, i) => {
@@ -935,13 +919,11 @@ export class GridLayout extends Layout {
       const territoryPhysWidth = this._territoryPhysWidth(territory, false);
       const widthDiff = kid.paddedWidth - territoryPhysWidth;
       if (widthDiff > 0) {
-        console.log('FIXED WIDTH; KID', kid.paddedWidth, 'TPW', territoryPhysWidth, 'DIFF', widthDiff, this._vRules);
         let otherCols = this._rows[0].map((_, i) => i).filter(i =>
           i < territory.x || i >= territory.x + territory.width);
         let availShrink = otherCols.map(i => this._columnShrinkability(i));
         otherCols = otherCols.filter((_rowIdx, i) => availShrink[i]);
         availShrink = availShrink.filter(avail => avail).map(avail => avail);
-        console.log('AVAIL COL SHRINK', otherCols, availShrink);
         // NB: otherCols may be empty
         const availShrinkSum = availShrink.reduce((a, b) => a + b, 0);
         if (availShrinkSum < widthDiff) {
@@ -954,19 +936,16 @@ export class GridLayout extends Layout {
               availShrink, otherCols);
           }
           kidWidthShrink = widthDiff - availShrinkSum;
-          console.log('KIDWIDTHSHRINK', kidWidthShrink, columnShrinkage);
         } else {
           // apportion space among shrinkable columns
           columnShrinkage = this._apportionShrinkage(
             widthDiff, availShrinkSum,
             availShrink, otherCols);
-          console.log('COL SHRINK', columnShrinkage);
         }
       }
     }
 
     if (this._isAutoHeight) {
-      console.log('AUTO-HEIGHT');
       // views in bottom-most row of territory that end on hRuleEnd
       const prevRowTerritories = this._rows[hRuleEnd - 1]
         .filter(view => view)
@@ -991,13 +970,10 @@ export class GridLayout extends Layout {
       const territoryPhysHeight = this._territoryPhysHeight(territory, false);
       const heightDiff = kid.paddedHeight - territoryPhysHeight;
       if (heightDiff > 0) {
-        console.log('FIXED HEIGHT; KID', kid.paddedHeight, 'TPH', territoryPhysHeight, 'DIFF', heightDiff, this._hRules);
         let otherRows = this._rows.map((_, i) => i).filter(i =>
           i < territory.y || i >= territory.y + territory.height);
-        console.log('OTHER ROWS', otherRows);
         // shrinkability for each row in `otherRows`
         let availShrink = otherRows.map(i => this._rowShrinkability(i));
-        console.log('AVAIL SHRINK', availShrink);
         otherRows = otherRows.filter((_rowIdx, i) => availShrink[i]);
         availShrink = availShrink.filter(avail => avail);
         const availShrinkSum = availShrink.reduce((a, b) => a + b, 0);
@@ -1012,14 +988,12 @@ export class GridLayout extends Layout {
           rowShrinkage = this._apportionShrinkage(
             heightDiff, availShrinkSum,
             availShrink, otherRows);
-          console.log('ROW SHRINK', rowShrinkage);
         }
       }
     }
 
     const toResize = new Map<View, {width: number, height: number}>();
     if (rowShrinkage.size) {
-      console.log('ROWS WILL SHRINK');
       rowShrinkage.entries().forEach(([idx, shrink]) => {
         this._rows[idx].forEach(view => {
           if (view) {
@@ -1027,13 +1001,10 @@ export class GridLayout extends Layout {
           }
         });
       });
-      console.log('TO RESIZE', toResize);
       const rowsAbove = new Map(rowShrinkage.entries().filter(([idx, shrink]) =>
         idx < territory.y));
       const rowsBelow = new Map(rowShrinkage.entries().filter(([idx, shrink]) =>
         idx >= territory.y + territory.height));
-      console.log('ROWS ABOVE', rowsAbove, rowsBelow);
-      console.log('HRULES BEFORE', [...this._hRules]);
       // Move hrules above territory up
       rowsAbove.forEach((shrink, idx) => {
         this._hRules.splice(idx + 1, rowsAbove.size,
@@ -1047,10 +1018,8 @@ export class GridLayout extends Layout {
       //   this._hRules.splice(idx, rowsBelow.size,
       //     ...this._hRules.slice(idx).map(hr => hr + shrink));
       // });
-      console.log('HRULES', this._hRules);
     }
     if (columnShrinkage.size) {
-      console.log('COLS WILL SHRINK');
       columnShrinkage.entries().forEach(([idx, shrink]) => {
         this._rows.map(row => row[idx]).forEach(view => {
           if (view) {
@@ -1058,12 +1027,10 @@ export class GridLayout extends Layout {
           }
         });
       });
-      console.log('TO RESIZE', toResize);
       const colsLeft = columnShrinkage.entries().filter(([idx, shrink]) =>
         idx < territory.x).toArray();
       const colsRight = columnShrinkage.entries().filter(([idx, shrink]) =>
         idx >= territory.x + territory.width).toArray().toReversed();
-      console.log('VRULES BEFORE', [...this._vRules]);
       // Move vrules at territory left
       colsLeft.forEach(([idx, shrink]) => {
         const shrunk = this._vRules.slice(idx + 1, territory.x + 1).map(vr => vr - shrink);
@@ -1076,17 +1043,13 @@ export class GridLayout extends Layout {
           ...this._vRules.slice(start, idx + 1).map(vr => vr + shrink)
         );
       });
-      console.log('VRULES', this._vRules);
     }
     toResize.forEach((newSize, view) => {
       // Set the size without notifying the parent of the size change
-      console.log('RESIZING VIEW', view.id || view.constructor.name, [...this._hRules]);
       // view.constrainSize(newSize.width, newSize.height);
       view.resize(newSize.width, newSize.height);
-      console.log('RESIZING VIEW COMPLETE', [...this._hRules]);
     });
     if (kidWidthShrink || kidHeightShrink) {
-      console.log('KID RESIZE', kid.width - kidWidthShrink, kid.height - kidHeightShrink);
       // kid.constrainSize(kid.width - kidWidthShrink, kid.height - kidHeightShrink);
       kid.resize(kid.width - kidWidthShrink, kid.height - kidHeightShrink);
     }
@@ -1096,7 +1059,6 @@ export class GridLayout extends Layout {
 
   protected _adjustViewToRules(view: View) {
     const territory = this._territories.get(view)!;
-    console.log('<<>> ADJUST VIEW', view.id || view.constructor.name, territory);
     let viewWidthShrink = 0;
     let viewHeightShrink = 0;
     const territoryPhysWidth = this._territoryPhysWidth(territory, false);
@@ -1254,7 +1216,6 @@ export class GridLayout extends Layout {
   // }
 
   protected _arrangeChildren() {
-    console.log('GRID ARRANGE KIDS');
     this._rows = [];
     this._territories.clear();
     this._resetRules();
@@ -1266,7 +1227,6 @@ export class GridLayout extends Layout {
   }
 
   protected _childDidResize(kid: View) {
-    console.log('GRID CHILD DID RESIZE', kid.id || kid.constructor.name);
     this._adjustRules(kid);
     super._childDidResize(kid);
   }
@@ -1285,40 +1245,33 @@ export class GridLayout extends Layout {
   }
 
   resize(width: number, height: number) {
-    console.log('>> GRID RESIZE', this.id || this.constructor.name, width, height);
     const toResize = new Map<View, {width: number, height: number}>();
 
     if (this._width !== width) {
       const indices = mapn(this.numCols, i => i);
       if (this._width > width) {
-        console.log('-- WIDTH SHRINK', this._vRules);
         const colShrinkability = indices.map(i => this._columnShrinkability(i));
         const apportioned = this._apportionShrinkage(
           this._width - width,
           colShrinkability.reduce((a, b) => a + b, 0),
           colShrinkability, indices);
-        console.log('COL SHRINK', colShrinkability, apportioned);
         indices.forEach(i => {
           this._vRules[i + 1] -= apportioned.get(i)!;
           indices.slice(i + 1).forEach(j => {
             this._vRules[j + 1] -= apportioned.get(i)!;
           });
         });
-        console.log('VRULES', this._vRules);
 
         apportioned.entries().forEach(([idx, shrink]) => {
           this._rows.map(row => row[idx]).forEach(view => {
             if (view && shrink && view.canWidthFlex) {
-              console.log('VIEW WILL SHRINK', view.id, shrink);
               toResize.set(view, {width: view.width - shrink, height: view.height});
             }
           });
         });
       } else if (this._width < width) {
-        console.log('++ WIDTH GROW', this._vRules);
         const colGrowability = indices.map(i => this._columnCanGrow(i));
         const numGrowers = colGrowability.reduce((a, b) => (a ? 1 : 0) + (b ? 1 : 0), 0);
-        console.log('COL GROW', colGrowability);
         const apportioned = colGrowability.map(canGrow => canGrow
           ? (width - this._width)/numGrowers
           : 0);
@@ -1328,12 +1281,10 @@ export class GridLayout extends Layout {
             this._vRules[j + 1] += apportioned[i];
           });
         });
-        console.log('VRULES', this._vRules);
 
         apportioned.forEach((grow, idx) => {
           this._rows.map(row => row[idx]).forEach(view => {
             if (view && grow) {
-              console.log('WILL GROW', view.width, grow, view.id);
               toResize.set(view, {width: view.width + grow, height: view.height});
             }
           });
@@ -1343,37 +1294,31 @@ export class GridLayout extends Layout {
     }
 
     if (this._height > height) {
-      console.log('-- HEIGHT SHRINK', this._hRules);
       const indices = mapn(this.numRows, i => i);
       const shrinkability = indices.map(i => this._rowShrinkability(i));
       const apportioned = this._apportionShrinkage(
         this._height - height,
         shrinkability.reduce((a, b) => a + b, 0),
         shrinkability, indices);
-      console.log('ROW SHRINK', shrinkability, apportioned);
       indices.forEach(i => {
         this._hRules[i + 1] -= apportioned.get(i)!;
         indices.slice(i + 1).forEach(j => {
           this._hRules[j + 1] -= apportioned.get(i)!;
         });
       });
-      console.log('HRULES', this._hRules);
 
       apportioned.entries().forEach(([idx, shrink]) => {
         this._rows[idx].forEach(view => {
           if (view && shrink && view.canHeightFlex) {
-            console.log('VIEW WILL SHRINK', view.id, shrink);
             toResize.set(view, {width: view.width, height: view.height - shrink});
           }
         });
       });
       this._height = height;
     } else if (this._height < height) {
-      console.log('++ HEIGHT GROW', this._hRules);
       const indices = mapn(this.numRows, i => i);
       const growability = indices.map(i => this._rowCanGrow(i));
       const numGrowers = growability.reduce((a, b) => (a ? 1 : 0) + (b ? 1 : 0), 0);
-      console.log('ROW GROW', growability);
       const apportioned = growability.map(canGrow => canGrow
         ? (height - this._height)/numGrowers
         : 0);
@@ -1383,12 +1328,10 @@ export class GridLayout extends Layout {
           this._hRules[j + 1] += apportioned[i];
         });
       });
-      console.log('HRULES', this._hRules);
 
       apportioned.forEach((grow, idx) => {
         this._rows[idx].forEach(view => {
           if (view && grow) {
-            console.log('WILL GROW', view.height, grow, view.id);
             toResize.set(view, {width: view.width, height: view.height + grow});
           }
         });
@@ -1413,17 +1356,10 @@ export class GridLayout extends Layout {
     // }
 
     toResize.forEach((newSize, view) => {
-      // Set the size without notifying the parent of the size change
-      console.log('REALLY WILL RESIZE', view.id || view.constructor.name,
-        view.width, view.height, '->', newSize.width, newSize.height);
-      // view.constrainSize(newSize.width, newSize.height);
       if (! (view instanceof Label)) {
         // Resizing a label does nothing except incorrectly set the size
         view.resize(newSize.width, newSize.height);
       }
-      // view._adjustToSizeConstraint();
-      console.log('REALLY DID RESIZE', view.id || view.constructor.name,
-        view.width, view.height);
     });
     // A view itself may not resize, but there may be empty space in its
     // cell that can be reduced, so we need to re-layout the grid children
@@ -1431,12 +1367,9 @@ export class GridLayout extends Layout {
   }
 
   layoutViews() {
-    console.log('** LAYING OUT VIEWS', this.id, 'ROWS', this._rows.map(row =>
-      `[${row.map(viewOrNull => viewOrNull?.id ?? '(null)')}]`).join(''));
     this._children.forEach((kid, i) => {
       this._snapChildX(kid);
       this._snapChildY(kid);
-      console.log('SET LOC', kid.id || kid.constructor.name, kid.x, kid.y);
     });
   }
 
@@ -1470,11 +1403,9 @@ export class GridLayout extends Layout {
     let rowTop = this.top; // + this._padding.top;
     const rowHeights = this._hRules.slice(1).map((hr, i) => hr - this._hRules[i]);
     const rowGaps = this._rowGaps;
-    console.log('ROW HEIGHTS', rowHeights, rowGaps);
     for (let i = 0; i < territory.y; i++) {
       rowTop += rowHeights[i] + rowGaps[i];
     }
-    console.log('ROW TOP', rowTop);
     const align = territory.rowAlign ?? this._rowAligns[territory.y];
     const spanHeight =
       rowHeights
@@ -1486,7 +1417,6 @@ export class GridLayout extends Layout {
     if (align === 'start') {
       kid.paddedTop = rowTop;
     } else if (align === 'end') {
-      console.log('SETTING PADDED BOTTOM to', rowTop + spanHeight);
       kid.paddedBottom = rowTop + spanHeight;
     } else {
       kid.centerY = rowTop + spanHeight/2;

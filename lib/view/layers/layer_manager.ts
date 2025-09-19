@@ -74,7 +74,6 @@ export class PlotLayerManager extends View {
     this.height = height;
     this._canWidthFlex = true;
     this._canHeightFlex = true;
-    console.log('LAYERS SIZE', width, height);
     this.createLayers();
   }
 
