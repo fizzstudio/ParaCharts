@@ -108,6 +108,7 @@ export const defaults: Settings = {
       },
       minValue: 'unset',
       maxValue: 'unset',
+      interval: 'unset',
     },
     y: {
       title: {
@@ -140,6 +141,7 @@ export const defaults: Settings = {
       },
       minValue: 'unset',
       maxValue: 'unset',
+      interval: 'unset'
     },
   },
   legend: {
@@ -381,14 +383,19 @@ export const defaults: Settings = {
     isFullscreenEnabled: false,
     isLowVisionModeEnabled: false,
     isFocusRingEnabled: false,
-    focusRingGap: 10
+    focusRingGap: 10,
+    navRunTimeoutMs: 125
   },
   controlPanel: {
     isControlPanelDefaultOpen: true,
     tabLabelStyle: 'label',
     isCaptionVisible: true,
     isStatusBarVisible: true,
-    isCaptionExternalWhenControlPanelClosed: true,
+    caption: {
+      isCaptionExternalWhenControlPanelClosed: true,
+      hasBorder: false,
+      isExplorationBarBeside: true
+    },
     isSparkBrailleVisible: false,
     isSparkBrailleControlVisible: true,
     isMDRAnnotationsVisible: false,

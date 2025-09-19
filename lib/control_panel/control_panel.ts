@@ -261,7 +261,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           @open=${
             () => {
               this.paraChart.isControlPanelOpen = true;
-              if (this.settings.isCaptionExternalWhenControlPanelClosed) {
+              if (this.settings.caption.isCaptionExternalWhenControlPanelClosed) {
                 this._descriptionPanelRef.value!.internalizeCaptionBox();
               }
             }
@@ -269,7 +269,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           @close=${
             () => {
               this.paraChart.isControlPanelOpen = false;
-              if (this.settings.isCaptionExternalWhenControlPanelClosed) {
+              if (this.settings.caption.isCaptionExternalWhenControlPanelClosed) {
                 this.externalizeCaptionBox();
               }
             }

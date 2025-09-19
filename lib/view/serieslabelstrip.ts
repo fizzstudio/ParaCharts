@@ -21,6 +21,7 @@ import { View, Container } from './base_view';
 import { svg } from 'lit';
 import { styleMap, StyleInfo } from 'lit/directives/style-map.js';
 import { type LineChart, type LineSection } from './layers';
+import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
 /**
  * Strip of series labels and leader lines.
@@ -50,6 +51,12 @@ export class SeriesLabelStrip extends Container(View) {
         left: directLabelPadding,
         y: ep.y,
         classList: ['serieslabel'],
+        pointerEnter: (e) => {
+          this.paraview.store.soloSeries = ep.seriesKey;
+        },
+        pointerLeave: (e) => {
+          this.paraview.store.soloSeries = '';
+        }
       }));
       this.append(this.seriesLabels.at(-1)!);
     });
@@ -138,41 +145,48 @@ export class SeriesLabelStrip extends Container(View) {
  */
 class LineLabelLeader extends View {
 
-  private lineD: string;
-  private endX: number;
-  private endY: number;
+  protected _lineD: string;
+  protected _endX: number;
+  protected _endY: number;
 
-  constructor(private endpoint: LineSection, label: Label, private chart: LineChart) {
-    super(chart.paraview);
-    this.endX = this.chart.paraview.store.settings.type.line.leaderLineLength;
-    this.endY = label.y - label.locOffset.y/2;
-    this.lineD = fixed`
-      M${0},${endpoint.y}
-      L${this.endX},${this.endY}`;
+  constructor(protected _endpoint: LineSection, label: Label, protected _chart: LineChart) {
+    super(_chart.paraview);
+    this._endX = this._chart.paraview.store.settings.type.line.leaderLineLength;
+    this._endY = label.y - label.locOffset.y/2;
+    this._lineD = fixed`
+      M${0},${_endpoint.y}
+      L${this._endX},${this._endY}`;
   }
 
-  get styles(): StyleInfo {
+  get styleInfo(): StyleInfo {
     const styles: StyleInfo = {};
     // const colorValue = this._controller.colors.colorValue(
     //   this._controller.seriesManager.series(this.endpoint.seriesKey).color);
-    let colorValue = this.chart.paraview.store.colors.colorValueAt(this.endpoint.seriesProps.color);
+    let colorValue = this._chart.paraview.store.colors.colorValueAt(this._endpoint.seriesProps.color);
     styles.fill = colorValue;
     styles.stroke = colorValue;
     return styles;
   }
 
+  get classInfo(): ClassInfo {
+    return {
+      'label-leader': true,
+      'lowlight': !!(this.paraview.store.soloSeries && (this.paraview.store.soloSeries !== this._endpoint.seriesKey))
+    }
+  }
+
   content() {
     return svg`
       <g
-        class="label-leader"
-        style=${styleMap(this.styles)}
+        class=${classMap(this.classInfo)}
+        style=${styleMap(this.styleInfo)}
       >
         <path
-          d=${this.lineD}
+          d=${this._lineD}
           />
         <circle
-          cx=${this.endX}
-          cy=${this.endY}
+          cx=${this._endX}
+          cy=${this._endY}
           r="1.8"
         />
       </g>

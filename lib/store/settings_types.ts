@@ -59,6 +59,14 @@ export interface UISettings extends SettingGroup {
   isLowVisionModeEnabled: boolean;
   isFocusRingEnabled: boolean;
   focusRingGap: number;
+  navRunTimeoutMs: number;
+}
+
+/** @public */
+export interface CaptionBoxSettings extends SettingGroup {
+  isCaptionExternalWhenControlPanelClosed: boolean;
+  hasBorder: boolean;
+  isExplorationBarBeside: boolean;
 }
 
 /** @public */
@@ -67,7 +75,7 @@ export interface ControlPanelSettings extends SettingGroup {
   tabLabelStyle: TabLabelStyle;
   isCaptionVisible: boolean;
   isStatusBarVisible: boolean;
-  isCaptionExternalWhenControlPanelClosed: boolean;
+  caption: CaptionBoxSettings;
   isSparkBrailleVisible: boolean;
   isDataTabVisible: boolean;
   isColorsTabVisible: boolean;
@@ -206,6 +214,7 @@ export interface AxisSettings extends SettingGroup {
   tick: TickSettings;
   minValue: number | 'unset';
   maxValue: number | 'unset';
+  interval: number | 'unset';
 }
 
 /** @public */

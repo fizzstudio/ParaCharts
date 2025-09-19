@@ -61,13 +61,19 @@ export class AdvancedControlSettingsDialog extends logging(ParaComponent) {
     this._store.settingControls.add({
       type: 'checkbox',
       key: 'controlPanel.isStatusBarVisible',
-      label: 'Status bar visible',
+      label: 'Exploration bar visible',
       parentView: 'controlPanel.tabs.controls.dialog.settings',
     });
     this._store.settingControls.add({
       type: 'checkbox',
-      key: 'controlPanel.isCaptionExternalWhenControlPanelClosed',
+      key: 'controlPanel.caption.isCaptionExternalWhenControlPanelClosed',
       label: 'Caption external when control panel closed',
+      parentView: 'controlPanel.tabs.controls.dialog.settings',
+    });
+    this._store.settingControls.add({
+      type: 'checkbox',
+      key: 'controlPanel.caption.isExplorationBarBeside',
+      label: 'Exploration bar is beside caption',
       parentView: 'controlPanel.tabs.controls.dialog.settings',
     });
   }

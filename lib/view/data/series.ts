@@ -6,6 +6,8 @@ import { type DataLayer } from '../layers';
 
 import { ref } from 'lit/directives/ref.js';
 import { type StyleInfo } from 'lit/directives/style-map.js';
+import { type ClassInfo } from 'lit/directives/class-map.js';
+import { TemplateResult } from 'lit';
 
 /**
  * Abstract base class for a view representing an entire series.
@@ -35,6 +37,14 @@ export class SeriesView extends Container(DataView) {
 
   get class() {
     return 'series';
+  }
+
+  get classInfo(): ClassInfo {
+    return {
+      series: true,
+      lowlight: !!(this.paraview.store.soloSeries && (this.paraview.store.soloSeries !== this._series.key)),
+      hidden: this.paraview.store.hiddenSeriesList.includes(this._series.key)
+    };
   }
 
   get parent() {

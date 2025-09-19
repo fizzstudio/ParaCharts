@@ -123,7 +123,9 @@ export class ParaStore extends State {
   @property() annotations: BaseAnnotation[] = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
+  @property() soloSeries = '';
 
+  @property() protected _hiddenSeriesList: string[] = [];
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
   @property() protected selected = null;
@@ -228,6 +230,10 @@ export class ParaStore extends State {
     return this._userTrendLines;
   }
 
+  get hiddenSeriesList(): readonly string[] {
+    return this._hiddenSeriesList;
+  }
+
   setManifest(manifest: Manifest, data?: AllSeriesData) {
     this._manifest = manifest;
     const dataset = this._manifest.datasets[0];
@@ -329,7 +335,7 @@ export class ParaStore extends State {
       this._settingObservers[path]?.forEach(observer =>
         observer(values.oldValue, values.newValue)
       );
-      this._paraChart.paraView?.settingDidChange(path, values.oldValue, values.newValue);
+      this._paraChart.settingDidChange(path, values.oldValue, values.newValue);
     }
   }
 
@@ -424,6 +430,11 @@ export class ParaStore extends State {
       });
     }
     return '';
+  }
+
+  hide(seriesKey: string) {
+    if (this._hiddenSeriesList.includes(seriesKey)) return;
+    this._hiddenSeriesList = [...this._hiddenSeriesList, seriesKey];
   }
 
   get visitedDatapoints() {

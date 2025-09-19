@@ -51,6 +51,9 @@ export interface LabelOptions {
   justify?: SnapLocation;
   wrapWidth?: number;
   lineSpacing?: number;
+  pointerEnter?: (e: PointerEvent) => void;
+  pointerLeave?: (e: PointerEvent) => void;
+  click?: (e: MouseEvent) => void;
 }
 
 interface TextLine {
@@ -380,6 +383,9 @@ export class Label extends View {
         transform=${this._makeTransform() ?? nothing}
         id=${this.id}
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+        @pointerenter=${this.options.pointerEnter ?? nothing}
+        @pointerleave=${this.options.pointerLeave ?? nothing}
+        @click=${this.options.click ?? nothing}
       >
         ${this._textLines.length
           ? this._textLines.map((line, i) =>
