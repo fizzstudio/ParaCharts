@@ -49,7 +49,16 @@ export class AnnotationPanel extends ControlPanelTabPanel {
             <li
               data-series="${item.seriesKey}"
               data-index="${item.index}"
-              @click=${(event: Event) => this._selectAnnotation(event)}
+              @click=${(event: Event) => {
+                item.isSelected = !item.isSelected;
+                this._selectAnnotation(event);
+                }}
+              @dblclick=${(event: Event) => {
+                this._store.annotations = this._store.annotations.filter(p => !(p.id == item.id))
+                }}
+              @onkeydown=${(event: Event) => {
+                console.log("TEST")
+                }}  
             >${item.annotation}</li>
           `)
       }

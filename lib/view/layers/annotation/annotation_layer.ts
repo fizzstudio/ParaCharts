@@ -5,6 +5,8 @@ import { type ParaView } from '../../../paraview';
 import { RectShape } from '../../shape/rect';
 import { PathShape } from '../../shape/path';
 import { Vec2 } from '../../../common/vector';
+import { Label } from '../../label';
+import { PointAnnotation } from '../../../store';
 
 export type AnnotationType = 'foreground' | 'background';
 
@@ -109,6 +111,88 @@ export class AnnotationLayer extends ChartLayer {
         }
       }
 
+      if (this.paraview.store.annotations) {
+        this.addGroup('annotation-labels', true);
+        this.group('annotation-labels')!.clearChildren();
+        
+        let annots = structuredClone(this.paraview.store.annotations.filter(a => a.type == 'datapoint' && a.isSelected == true) as unknown as PointAnnotation[]);
+        console.log(annots)
+        
+        for (const annot of annots) {
+          const seriesKey = this.paraview.store.model!.series.filter(s => s[0].seriesKey == annot.seriesKey)[0].key
+          //const datapoint = series[annot.index!]
+          const datapoint = this.paraview.documentView?.chartLayers.dataLayer.datapointViews.filter(d => d.seriesKey == seriesKey && d.index == annot.index )[0]
+          if (!datapoint){
+            break
+          }
+          console.log(datapoint)
+          let label = new Label(this.paraview, {
+            text: annot.text,
+            x: datapoint.x,
+            y: datapoint.y - 40,
+            //wrapWidth: 10, Not working
+            classList: ['annotationlabel']
+          })
+          console.log(label)
+          console.log(label.el)
+          console.log(label.width)
+          //let bbox = label.el.getBoundingClientRect()
+          //console.log(bbox)
+          let rect = new RectShape(this.paraview, {
+            width: label.width + 10,
+            height: label.height + 10,
+            x: label.x - label.width / 2 - 5,
+            y: label.y - label.height / 2 - 10,
+            fill: `hsla(0, 0%, 71%, 0.28)`,
+            //fill: "red",
+            stroke: "black",
+          })
+          let shape = new PathShape(this.paraview, {
+            points: [new Vec2(label.x - label.width / 2 - 5, label.y - label.height / 2 - 10), 
+                     new Vec2(label.x - label.width / 2 - 5, label.y + label.height / 2),
+
+                     new Vec2(label.x - Math.min(label.width / 4, 15), label.y + label.height / 2),
+                     new Vec2(label.x, label.y + label.height / 2 + 10),
+                     new Vec2(label.x + Math.min(label.width / 4, 15), label.y + label.height / 2),
+
+                     new Vec2(label.x + label.width / 2 + 5, label.y + label.height / 2),
+                     new Vec2(label.x + label.width / 2 + 5, label.y - label.height / 2 - 10),
+                     new Vec2(label.x - label.width / 2 - 5, label.y - label.height / 2 - 10)],
+            fill: `hsla(0, 0%, 71%, 0.28)`,
+            stroke: "black",
+          })
+          /*
+          const range = this.parent.getYAxisInterval();
+          const minValue = range.start ?? Number(this.paraview.store.settings.axis.y.minValue)
+          const maxValue = range.end ?? Number(this.paraview.store.settings.axis.y.maxValue)
+          const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
+          const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
+          const startPx = this.width * tl.startPortion;
+          const endPx = this.width * tl.endPortion;
+          const colorValue = this.paraview.store.colors.colorValue('highlight');
+          const trendLine = new PathShape(this.paraview, {
+            x: this._x,
+            y: this._y,
+            points: [new Vec2(startPx, startHeight), new Vec2(endPx, endHeight),],
+            fill : colorValue,
+            stroke: colorValue
+          });
+
+          trendLine.classInfo = { 'user-trend-line': true }
+          */
+          shape.classInfo = {'label-box': true }
+          shape.styleInfo['border-radius'] = '5em'; 
+          this.group('annotation-labels')!.append(shape);
+          this.group('annotation-labels')!.append(label);
+          
+        }
+          
+      }
+      else {
+        if (this._groups.has('annotation-labels')) {
+          this.removeGroup('annotation-labels', true);
+        }
+      }
     }
     if (this.type === 'background') {
       if (this.paraview.store.rangeHighlights) {

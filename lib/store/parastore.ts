@@ -69,16 +69,20 @@ export interface Announcement {
 export type SettingObserver = (oldValue?: Setting, newValue?: Setting) => void;
 
 export interface BaseAnnotation {
+  type: string;
   annotation: string;
   id: string;
   seriesKey?: string;
   index?: number;
+  isSelected?: boolean;
 }
 
 export interface PointAnnotation extends BaseAnnotation {
+  type: "datapoint";
   seriesKey: string;
   index: number;
   annotation: string;
+  text: string;
   timestamp?: Date;
 }
 
@@ -157,6 +161,7 @@ export class ParaStore extends State {
   protected _summarizer!: Summarizer;
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
+  protected annotID: number = 0;
 
   public idList: Record<string, boolean> = {};
 
@@ -586,11 +591,14 @@ export class ParaStore extends State {
       let annotationText = prompt('Annotation:') as string;
       if (annotationText) {
         newAnnotationList.push({
+          type: "datapoint",
           seriesKey: dp.seriesKey,
           index: dp.index,
           annotation: `${dp.seriesKey}, ${recordLabel}: ${annotationText}`,
-          id: `${dp.seriesKey}-${recordLabel}`
+          text: annotationText,
+          id: `${dp.seriesKey}-${recordLabel}-${this.annotID}`
         });
+        this.annotID += 1
       }
     });
     this.annotations = [...this.annotations, ...newAnnotationList];
@@ -637,6 +645,7 @@ export class ParaStore extends State {
           this.annotations.splice(index, 1);
         }
         this.annotations.push({
+          type: 'trend',
           annotation: message,
           id: `trend-analysis-annotation`
         });
@@ -796,6 +805,7 @@ export class ParaStore extends State {
       const length = series.length - 1
       this.addLineBreak(point.index / length, point.index, point.seriesKey, false)
       this.annotations.push({
+        type: "lineBreak",
         seriesKey: point.seriesKey,
         index: point.index,
         annotation: `${series.key}, ${series.rawData[point.index].x}: Added line break`,
