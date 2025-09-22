@@ -93,7 +93,8 @@ export class DatapointView extends DataView {
     return {
       datapoint: true,
       visited: this.paraview.store.isVisited(this.seriesKey, this.index),
-      selected: this.paraview.store.isSelected(this.seriesKey, this.index)
+      selected: this.paraview.store.isSelected(this.seriesKey, this.index),
+      highlighted: this.chart.chartInfo.isHighlighted(this.seriesKey, this.index)
     };
   }
 
@@ -223,15 +224,17 @@ export class DatapointView extends DataView {
   }
 
   protected get _symbolScale() {
-    return this.paraview.store.isVisited(this.seriesKey, this.index)
+    return (
+      this.paraview.store.isVisited(this.seriesKey, this.index)
+      || this.chart.chartInfo.isHighlighted(this.seriesKey, this.index))
       ? this.paraview.store.settings.chart.symbolHighlightScale
       : 1;
   }
 
   protected get _symbolColor() {
-    return this.paraview.store.isVisited(this.seriesKey, this.index)
-      ? -1 as number
-      : undefined;
+    return this.chart.chartInfo.isHighlighted(this.seriesKey, this.index) ? -2 as number :
+           this.paraview.store.isVisited(this.seriesKey, this.index) ? -1 as number :
+           undefined;
   }
 
   protected _contentUpdateShapes() {

@@ -58,7 +58,7 @@ export class AnnotationLayer extends PlotLayer {
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
           const endPx = this.width * tl.endPortion;
-          const colorValue = this.paraview.store.colors.colorValue('highlight');
+          const colorValue = this.paraview.store.colors.colorValue('visit');
           const trendLine = new PathShape(this.paraview, {
             x: this._x,
             y: this._y,

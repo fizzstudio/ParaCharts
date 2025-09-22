@@ -312,7 +312,7 @@ export class SectorShape extends Shape {
       this._styleInfo.fill = `url(#Pattern${index})`
       //I can't figure out why the visited styles don't auto-apply, so I'm doing it manually here
       if (this.paraview.store.isVisited(parent.seriesKey, index)) {
-        this._styleInfo.stroke = this.paraview.store.colors.colorValue('highlight');
+        this._styleInfo.stroke = this.paraview.store.colors.colorValue('visit');
         this._styleInfo.strokeWidth = 6
       }
       return svg`

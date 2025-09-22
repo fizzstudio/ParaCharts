@@ -167,6 +167,37 @@ export class NavMap {
     }
   }
 
+  datapointsForSelector(layerName: string, selector: string): readonly Datapoint[] {
+    const layer = this._layers.get(layerName);
+    if (!layer) {
+      throw new Error(`no such layer '${layerName}'`);
+    }
+    const fields = selector.split(/-/);
+    const nodeType = fields[0] as NavNodeType;
+    let node: NavNode<NavNodeType> | undefined = undefined;
+    if (nodeType === 'datapoint') {
+      // XXX need to allow multiple indices
+      node = layer.get('datapoint', {
+        seriesKey: fields[1],
+        index: parseInt(fields[2])
+      });
+    } else if (nodeType === 'sequence') {
+      node = layer.get('sequence', {
+        seriesKey: fields[1],
+        start: parseInt(fields[2]),
+        end: parseInt(fields[3])
+      });
+    } else if (nodeType === 'series') {
+      node = layer.get('series', {seriesKey: fields[1]});
+    } else {
+      throw new Error(`selectors are undefined for type '${nodeType}'`);
+    }
+    if (!node) {
+      return [];
+    }
+    return node.datapoints;
+  }
+
 }
 
 export class NavLayer {
@@ -213,7 +244,8 @@ export class NavLayer {
 
   get<T extends NavNodeType>(
     type: T,
-    optionsOrIndex: Readonly<NavNodeOptionsType<T>> | number = 0) {
+    optionsOrIndex: Readonly<NavNodeOptionsType<T>> | number = 0
+  ): NavNode<NavNodeType> | undefined {
     const list = this._nodes.get(type);
     if (list) {
       return typeof optionsOrIndex === 'number'
@@ -226,7 +258,7 @@ export class NavLayer {
     return undefined;
   }
 
-  query<T extends NavNodeType>(type: T, options: Partial<NavNodeOptionsType<T>> = {}) {
+  query<T extends NavNodeType>(type: T, options: Partial<NavNodeOptionsType<T>> = {}): NavNode<T>[] {
     const list = this._nodes.get(type) as NavNode<T>[];
     if (list) {
       return list.filter(node => nodeOptionsMatch(options, node.options));

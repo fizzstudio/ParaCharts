@@ -11,6 +11,7 @@ export class HighlightsLayer extends PlotLayer {
   }
 
   content() {
+    const selector = this.paraview.store.highlightedSelector;
     return svg`
       ${
         this.paraview.store.visitedDatapoints.values().map(datapointId => {
@@ -23,6 +24,19 @@ export class HighlightsLayer extends PlotLayer {
             />
           `;
         })
+      }
+      ${
+        selector
+          ? this.paraview.documentView!.chartInfo.datapointsForSelector(selector).map(datapoint => {
+              return svg`
+                <use
+                  id="highlighted-mark-${datapoint.seriesKey}-${datapoint.datapointIndex}"
+                  class="highlighted-mark"
+                  href="#${this._parent.dataLayer.datapointDomIds.get(`${datapoint.seriesKey}-${datapoint.datapointIndex}`)}"
+                />
+              `;
+            })
+          : ''
       }
     `;
   }
