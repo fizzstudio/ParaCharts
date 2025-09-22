@@ -494,7 +494,7 @@ export class ParaView extends logging(ParaComponent) {
     const svg = this.root!.cloneNode(true) as SVGSVGElement;
     svg.id = 'para' + (window.crypto.randomUUID?.() ?? '');
 
-    const styles = this._extractStyles(svg.id);
+    const styles = this.paraChart.extractStyles(svg.id) + '\n' + this.extractStyles(svg.id);
     const styleEl = document.createElementNS(SVGNS, 'style');
     styleEl.textContent = styles;
     svg.prepend(styleEl);
@@ -522,19 +522,6 @@ export class ParaView extends logging(ParaComponent) {
       .split('\n')
       .filter(line => !line.match(/^\s*$/))
       .join('\n');
-  }
-
-  protected _extractStyles(id: string) {
-    const stylesheets = this.shadowRoot!.adoptedStyleSheets;
-    const out: string[] = [];
-    for (const stylesheet of stylesheets) {
-      const rules = stylesheet.cssRules;
-      for (let i = 0; i < rules.length; i++) {
-        const rule = rules.item(i) as CSSRule;
-        out.push(rule.cssText.replace(/^:host/, `#${id}`));
-      }
-    }
-    return out.join('\n');
   }
 
   downloadSVG() {

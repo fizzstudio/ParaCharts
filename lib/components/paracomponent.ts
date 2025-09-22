@@ -8,7 +8,7 @@ export class ParaComponent extends LitElement {
 
   protected _store!: ParaStore;
   protected _storeState!: StateController<ParaStore>;
-  
+
 
   get store() {
     return this._store;
@@ -21,6 +21,19 @@ export class ParaComponent extends LitElement {
 
   logName() {
     return this.nodeName;
+  }
+
+  extractStyles(id: string) {
+    const stylesheets = this.shadowRoot!.adoptedStyleSheets;
+    const out: string[] = [];
+    for (const stylesheet of stylesheets) {
+      const rules = stylesheet.cssRules;
+      for (let i = 0; i < rules.length; i++) {
+        const rule = rules.item(i) as CSSRule;
+        out.push(rule.cssText.replace(/^:host/, `#${id}`));
+      }
+    }
+    return out.join('\n');
   }
 
 }
