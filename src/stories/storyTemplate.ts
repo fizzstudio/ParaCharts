@@ -3,6 +3,8 @@ export const template = `import { %(chartElement)s, type ChartProps } from '../C
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { expect } from 'storybook/test';
 
+import Runner from '../tests/%(chartType)sTests';
+
 type Story = StoryObj<ChartProps>;
 
 const meta = {
@@ -18,9 +20,9 @@ export const %(chartElement)s%(index)s: Story = {
     filename: "%(manifestPath)s",
     forcecharttype: "%(chartType)s",
   },
-  play: async ({ canvas, userEvent }) => {
-    const parachart = await canvas.findByTestId('para-chart');
-    await expect(parachart).toBeInTheDocument();
+  play: async ({canvas, userEvent}) => {
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("%(manifestPath)s");
+    await runner.run();
   }
 }
 `

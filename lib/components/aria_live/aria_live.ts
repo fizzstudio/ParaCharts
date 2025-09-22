@@ -109,6 +109,7 @@ export class AriaLive extends ParaComponent {
       <div
         ${ref(this._ariaLiveRef)}
         class="sr-only"
+        data-testid="sr-status"
       ></div>
       <para-aria-live-history-dialog
         ${ref(this._historyDialogRef)}

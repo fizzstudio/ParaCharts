@@ -2,6 +2,8 @@ import { Chart, type ChartProps } from './Chart';
 
 import type { Meta, StoryObj } from '@storybook/web-components';
 
+import { expect } from 'storybook/test';
+
 type Story = StoryObj<ChartProps>;
 
 const meta = {
