@@ -114,21 +114,29 @@ export class AxisInfo {
   }
 
   get horizFacet(): Facet {
-    return (this._store.model as PlaneModel).getAxisFacet('horiz')
-      ?? this._store.model!.getFacet(this._options.isXVertical ? 'y' : 'x')!;
+    // return (this._store.model as PlaneModel).getAxisFacet('horiz')
+    //   ?? this._store.model!.getFacet(this._options.isXVertical ? 'y' : 'x')!;
     // const facetKey = this._options.isXVertical
     //     ? this._store.model!.dependentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
     //     : this._store.model!.independentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
     // return this._store.model!.getFacet(facetKey)!
+    return (this._store.model as PlaneModel).getAxisFacet(this._options.isXVertical
+      ? 'vert'
+      : 'horiz'
+    )!;
   }
 
   get vertFacet(): Facet {
-    return (this._store.model as PlaneModel).getAxisFacet('vert')
-      ?? this._store.model!.getFacet(this._options.isXVertical ? 'x' : 'y')!;
+    // return (this._store.model as PlaneModel).getAxisFacet('vert')
+    //   ?? this._store.model!.getFacet(this._options.isXVertical ? 'x' : 'y')!;
     // const facetKey = this._options.isXVertical
     //     ? this._store.model!.independentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
     //     : this._store.model!.dependentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
     // return this._store.model!.getFacet(facetKey)!
+    return (this._store.model as PlaneModel).getAxisFacet(this._options.isXVertical
+      ? 'horiz'
+      : 'vert'
+    )!;
   }
 
   getFacetForOrientation(orientation: AxisOrientation) {
