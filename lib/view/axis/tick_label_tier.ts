@@ -34,8 +34,6 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
 
   /** Distance between label centers (or starts or ends) */
   protected _labelDistance!: number;
-  protected _childResizeCount = 0;
-  protected _ignoreChildResize = false;
 
   constructor(
     public readonly axis: Axis<T>,
@@ -46,24 +44,16 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
     paraview: ParaView
   ) {
     super(paraview);
-    // this.setLength(length);
     this._hidden = !this.axis.orientationSettings.tick.tickLabel.isDrawEnabled;
     this._updateSizeFromLength(length);
-    this._reset();
+    this.createTickLabels();
   }
 
   protected abstract _updateSizeFromLength(length: number): void;
 
   resize(width: number, height: number) {
     super.resize(width, height);
-    this._reset();
-  }
-
-  protected _reset() {
-    const n = this.axis.isInterval ? this.tickLabels.length : this.tickLabels.length - 1;
-    this._labelDistance = this._length/(n/this._tickStep);
-    this.clearChildren();
-    this.createTickLabels(false);
+    this.createTickLabels();
   }
 
   protected abstract get _length(): number;
@@ -107,6 +97,11 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   protected abstract get _labelWrapWidth(): number | undefined;
 
   createTickLabels(_checkLabels = true) {
+    const n = this.axis.isInterval
+      ? this.tickLabels.length
+      : this.tickLabels.length - 1;
+    this._labelDistance = this._length/(n/this._tickStep);
+    this.clearChildren();
     for (const [i, labelText] of this.tickLabels.entries()) {
       if (i % this._tickStep) {
         continue;
@@ -214,12 +209,8 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   createTickLabels(checkLabels = true) {
     super.createTickLabels();
     this._children.forEach((kid, i) => {
-      // XXX this causes the label size to change, which causes
-      // _childDidResize() to get called, which recreates the labels ...
       if (this.paraview.store.settings.axis.horiz.tick.tickLabel.angle) {
-        this._ignoreChildResize = true;
         kid.angle = this.axis.orientationSettings.tick.tickLabel.angle;
-        this._ignoreChildResize = false;
       }
       if (kid.angle === 0) {
         kid.top = this._tickLabelY(i);
@@ -232,73 +223,14 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     });
     this.updateSize();
     if (checkLabels) {
-      const { width, tickStep } = this._optimizeLabelSpacing();
-      this._tickStep = tickStep;
-      this._width = width;
-      //this._adjustToSizeConstraint();
-      // this.setLength(width, false);
+      this._tickStep = this._optimizeLabelSpacing();
+      this.createTickLabels(false);
     }
-    //this._checkLabelSpacing();
   }
 
-  // protected _checkLabelSpacing() {
-  //   const gaps = this._children.slice(1).map((label, i) => label.left - this._children[i].right);
-  //   const minGap = Math.min(...gaps);
-  //   if (Math.round(minGap) < this.axis.orientationSettings.tick.tickLabel.gap) {
-  //     // The actual labels won't have equal gaps between them, since the
-  //     // labels themselves won't all be the same size. But if I space them
-  //     // out so that they are equally spaced, the largest anchor gap between
-  //     // any adjacent pair of labels can be used as the x tick
-  //     // interval required for all labels to have a gap of at least the
-  //     // desired size.
-  //     const anchorGaps: number[] = [];
-  //     this._children.slice(1).forEach((label, i) => {
-  //       // NB: Even if the anchor is set to middle, the labels may be rotated, so
-  //       // the anchor will no longer be in the middle of the bbox
-  //       label.left = this._children[i].right + this.axis.orientationSettings.tick.tickLabel.gap;
-  //       anchorGaps.push(label.x - this._children[i].x);
-  //     });
-  //     const largestAnchorGap = Math.max(...anchorGaps);
-
-  //     // The labels may actually extend a bit past the start and end points of
-  //     // the x-axis, so we take that into account when computing the preferred width
-  //     // of the chart content
-  //     const n = this.axis.isInterval ? this.tickLabels.length : this.tickLabels.length - 1;
-  //     const preferredWidth = largestAnchorGap*(n/this._tickStep);
-  //     if (preferredWidth > 800 && this.axis.datatype !== 'string') {
-  //       const newTickStep = this._tickStep + 1;
-  //       const newNumLabels = Math.floor(this.tickLabels.length/newTickStep) + this.tickLabels.length % newTickStep;
-  //       if (!newNumLabels) {
-  //         throw new Error('chart always too dense or too wide');
-  //       }
-  //       throw new ChartTooWideError(newTickStep);
-  //     }
-  //     throw new ChartTooDenseError(preferredWidth);
-  //   }
-  // }
-
-  protected _packLabelBboxes(bboxes: DOMRect[], anchorOffsets: number[], tickStep: number) {
-    // The actual labels won't have equal gaps between their bboxes, since the
-    // labels themselves won't all be the same size. But if we space them
-    // out with equal gaps, the largest anchor gap between
-    // any adjacent pair of labels can be used as the x tick
-    // interval required for all labels to have a gap of at least the
-    // desired size.
-    const anchorGaps: number[] = [];
-    bboxes.slice(1).forEach((bbox, i) => {
-      const newLeft = bboxes[i].right + this.axis.orientationSettings.tick.tickLabel.gap;
-      anchorGaps.push(newLeft + anchorOffsets[i + 1] - bboxes[i].left - anchorOffsets[i]);
-      bboxes[i + 1] = new DOMRect(newLeft, bbox.y, bbox.width, bbox.height);
-    });
-    const n = this.axis.isInterval ? this.tickLabels.length : this.tickLabels.length - 1;
-    return Math.max(...anchorGaps)*(n/tickStep);
-  }
-
-  protected _optimizeLabelSpacing(): {width: number, tickStep: number} {
-    console.log('OPTIMIZE');
+  protected _optimizeLabelSpacing(): number {
     const origBboxes = this._children.map(kid => kid.bbox);
     let bboxes = [...origBboxes];
-    console.log('BBOXES', bboxes);
     const anchorOffsets = this._children.map(kid => kid.locOffset.x);
 
     let tickStep = this._tickStep;
@@ -306,54 +238,24 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     while (true) {
       const gaps = bboxes.slice(1).map((bbox, i) => bbox.left - bboxes[i].right);
       const minGap = Math.min(...gaps);
-      console.log('MINGAP', minGap, 'TICKSTEP', tickStep, 'WIDTH', width,
-        `(WANTED: ${this.axis.orientationSettings.tick.tickLabel.gap})`
-      );
-      width = this._packLabelBboxes(bboxes, anchorOffsets, tickStep);
+      // console.log('MINGAP', minGap, 'TICKSTEP', tickStep, 'WIDTH', width,
+      //   `(WANTED: ${this.axis.orientationSettings.tick.tickLabel.gap})`
+      // );
       if (Math.round(minGap) < this.axis.orientationSettings.tick.tickLabel.gap) {
-        if (width > 800 && this.axis.datatype !== 'string') {
-          tickStep++;
-          bboxes = origBboxes.filter((bbox, i) => i % tickStep === 0);
-          const newNumLabels = Math.floor(this.tickLabels.length/tickStep) + this.tickLabels.length % tickStep;
-          if (!newNumLabels) {
-            throw new Error('chart always too dense or too wide');
-          }
-          continue;
+        // if (width > 800 && this.axis.datatype !== 'string') {
+        tickStep++;
+        bboxes = origBboxes.filter((bbox, i) => i % tickStep === 0);
+        const newLabelCount = Math.floor(this.tickLabels.length/tickStep) + this.tickLabels.length % tickStep;
+        if (!newLabelCount) {
+          throw new Error('tick labels will always overlap');
         }
         continue;
+        // }
+        // continue;
       }
       break;
     }
-    return { width, tickStep };
-  }
-
-  protected _getTickStepForWidth(width: number): number {
-    const origBboxes = this._children.map(kid => kid.bbox);
-    const anchorOffsets = this._children.map(kid => kid.locOffset.x);
-    let tickStep = 1;
-    while (true) {
-      const bboxes = origBboxes.filter((bbox, i) => i % tickStep === 0);
-      const packedWidth = this._packLabelBboxes(bboxes, anchorOffsets, tickStep);
-      if (packedWidth > width && bboxes.length > 1) {
-        tickStep++;
-      } else {
-        break;
-      }
-    }
     return tickStep;
-  }
-
-  protected _childDidResize(_kid: View) {
-    if (this._ignoreChildResize) {
-      return;
-    }
-    if (++this._childResizeCount === this._children.length) {
-      this._childResizeCount = 0;
-      this._tickStep = this._getTickStepForWidth(this._width);
-      // Recreate the labels with the new tick step without changing the width
-      // this.setLength(this._width, false);
-      //this._adjustToSizeConstraint();
-    }
   }
 
 }
