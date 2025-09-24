@@ -15,25 +15,32 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Container, View } from '../base_view';
-import { type ChartLayerManager } from '.';
+import { type PlotLayerManager } from '.';
+import { ParaView } from '../../paraview';
 
-export abstract class ChartLayer extends Container(View) {
+export abstract class PlotLayer extends Container(View) {
 
-  declare protected _parent: ChartLayerManager;
+  declare protected _parent: PlotLayerManager;
+
+  constructor(paraview: ParaView, width: number, height: number) {
+    super(paraview);
+    this._width = width;
+    this._height = height;
+  }
 
   protected _createId(id: string) {
     return `${id}-layer`;
   }
 
   protected _addedToParent() {
-    this.setSize(this._parent.logicalWidth, this._parent.logicalHeight);
+    this.setSize(this._parent.logicalWidth, this._parent.logicalHeight, false);
   }
 
   get parent() {
     return this._parent;
   }
 
-  set parent(parent: ChartLayerManager) {
+  set parent(parent: PlotLayerManager) {
     super.parent = parent;
   }
 

@@ -20,7 +20,7 @@ import { type Layout } from '../layout';
 import { type DocumentView } from '../document_view';
 import { type CardinalDirection } from '../../store/settings_types';
 import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, FocusLayer } from '.';
-import { LineChart, ScatterPlot, BarChart, PieChart } from './data/chart_type';
+import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, Bar } from './data/chart_type';
 import { type AxisCoord } from '../axis';
 //import { StepLineChart } from './stepline';
 //import { LollipopChart } from './lollipop';
@@ -31,28 +31,28 @@ import { type AxisCoord } from '../axis';
 import { type Interval } from '@fizz/chart-classifier-utils';
 
 import { svg } from 'lit';
-import { Heatmap } from './data/chart_type/heatmap';
+import { HeatMapPlotView } from './data/chart_type';
 import { Histogram } from './data/chart_type/histogram';
-import { GraphingCalculator } from './data/chart_type/calculator';
+import { GraphingCalculator } from './data/chart_type/calculator_plot_view';
 
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
 export const chartClasses = {
-  bar: BarChart,
-  column: BarChart,
-  line: LineChart,
-  scatter: ScatterPlot,
+  bar: BarPlotView,
+  column: BarPlotView,
+  line: LinePlotView,
+  scatter: ScatterPlotView,
   histogram: Histogram,
-  heatmap: Heatmap,
-  pie: PieChart,
-  donut: PieChart,
-  gauge: BarChart, //GaugeChart,
-  stepline: LineChart, //StepLineChart,
-  lollipop: BarChart, //LollipopChart
+  heatmap: HeatMapPlotView,
+  pie: PiePlotView,
+  donut: PiePlotView,
+  gauge: BarPlotView, //GaugeChart,
+  stepline: LinePlotView, //StepLineChart,
+  lollipop: BarPlotView, //LollipopChart
   graph: GraphingCalculator
 };
 
-export class ChartLayerManager extends View {
+export class PlotLayerManager extends View {
 
   declare protected _parent: Layout;
 
@@ -67,11 +67,13 @@ export class ChartLayerManager extends View {
   protected _foregroundAnnotationLayer!: AnnotationLayer;
   protected _focusLayer!: FocusLayer;
 
-  constructor(public readonly docView: DocumentView) {
+  constructor(public readonly docView: DocumentView, width: number, height: number) {
     super(docView.paraview);
     this._orientation = this.paraview.store.settings.chart.orientation;
-    this.width = this.paraview.store.settings.chart.size.width!;
-    this.height = this.paraview.store.settings.chart.size.height!;
+    this.width = width;
+    this.height = height;
+    this._canWidthFlex = true;
+    this._canHeightFlex = true;
     this.createLayers();
   }
 
@@ -88,16 +90,16 @@ export class ChartLayerManager extends View {
   }
 
   createLayers() {
-    this._backgroundAnnotationLayer = new AnnotationLayer(this.paraview, 'background');
+    this._backgroundAnnotationLayer = new AnnotationLayer(this.paraview, this._width, this._height, 'background');
     this.append(this._backgroundAnnotationLayer);
     this.createDataLayers();
-    this._highlightsLayer = new HighlightsLayer(this.paraview);
+    this._highlightsLayer = new HighlightsLayer(this.paraview, this._width, this._height);
     this.append(this._highlightsLayer);
-    this._foregroundAnnotationLayer = new AnnotationLayer(this.paraview, 'foreground');
+    this._foregroundAnnotationLayer = new AnnotationLayer(this.paraview, this._width, this._height, 'foreground');
     this.append(this._foregroundAnnotationLayer);
-    this._selectionLayer = new SelectionLayer(this.paraview);
+    this._selectionLayer = new SelectionLayer(this.paraview, this._width, this._height);
     this.append(this._selectionLayer);
-    this._focusLayer = new FocusLayer(this.paraview);
+    this._focusLayer = new FocusLayer(this.paraview, this._width, this._height);
     this.append(this._focusLayer);
   }
 
@@ -184,51 +186,34 @@ export class ChartLayerManager extends View {
   }
 
   protected _resizeLayers() {
-    this._children.forEach(kid => kid.setSize(this._logicalWidth, this._logicalHeight, false));
+    this._children.forEach(kid => {
+      kid.resize(this._logicalWidth, this._logicalHeight);
+    });
+  }
+
+  resize(width: number, height: number): void {
+    super.resize(width, height);
+    if (this._orientation === 'north' || this._orientation === 'south') {
+      this._logicalWidth = width;
+      this._logicalHeight = height;
+    } else {
+      this._logicalHeight = width;
+      this._logicalWidth = height;
+    }
+    this._resizeLayers();
   }
 
   private createDataLayers() {
     const ctor = chartClasses[this.paraview.store.type];
     let dataLayer: DataLayer;
     if (ctor) {
-      dataLayer = new ctor(this.paraview, 0);
+      dataLayer = new ctor(this.paraview, this._width, this._height, 0, this.docView.chartInfo);
       this.append(dataLayer);
     } else {
       // TODO: Is this error possible?
       throw new Error(`no class found for chart type '${this.paraview.store.type}'`);
     }
     this._dataLayers = [dataLayer];
-  }
-
-  getXAxisInterval(): Interval {
-    let xs: number[] = [];
-    if (this.paraview.store.model!.getFacet('x')!.datatype === 'number' 
-      || this.paraview.store.model!.getFacet('x')!.datatype === 'date'
-    ) {
-      xs = this.paraview.store.model!.allFacetValues('x')!.map((box) => box.asNumber()!);
-    } else {
-      throw new Error('axis must be of type number or date to take interval');
-    }
-    return {start: Math.min(...xs), end: Math.max(...xs)};
-  }
-
-
-  getYAxisInterval(): Interval {
-    if (!this._dataLayers[0].axisInfo) {
-      throw new Error('chart is missing `axisInfo` object');
-    }
-    return {
-      start: this._dataLayers[0].axisInfo.yLabelInfo.min!,
-      end: this._dataLayers[0].axisInfo.yLabelInfo.max!
-    };
-  }
-
-  getAxisInterval(coord: AxisCoord): Interval | undefined {
-    if (coord === 'x') {
-      return this.getXAxisInterval();
-    } else {
-      return this.getYAxisInterval();
-    }
   }
 
   updateLoc() {
@@ -260,8 +245,8 @@ export class ChartLayerManager extends View {
       >
         <rect
           id="data-backdrop"
-          width=${this.width}
-          height=${this.height}
+          width=${this._logicalWidth}
+          height=${this._logicalHeight}
         />
         ${this._backgroundAnnotationLayer.render()}
         ${this._dataLayers.map(layer => layer.render())}

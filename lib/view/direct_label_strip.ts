@@ -1,4 +1,4 @@
-/* ParaCharts: Series Label Strips
+/* ParaCharts: Direct Label Strips
 Copyright (C) 2025 Fizz Studios
 
 This program is free software: you can redistribute it and/or modify
@@ -20,21 +20,21 @@ import { View, Container } from './base_view';
 
 import { svg } from 'lit';
 import { styleMap, StyleInfo } from 'lit/directives/style-map.js';
-import { type LineChart, type LineSection } from './layers';
+import { type LinePlotView, type LineSection } from './layers';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
 /**
  * Strip of series labels and leader lines.
  * @public
  */
-export class SeriesLabelStrip extends Container(View) {
+export class DirectLabelStrip extends Container(View) {
 
   protected seriesLabels: Label[] = [];
   protected leaders: LineLabelLeader[] = [];
 
-  constructor(private _chart: LineChart) {
+  constructor(private _chart: LinePlotView) {
     super(_chart.paraview);
-    this._id = 'series-label-strip';
+    this._id = 'direct-label-strip';
     const directLabelPadding = this.paraview.store.settings.chart.isDrawSymbols
       ? this._chart.settings.seriesLabelPadding*2
       : this._chart.settings.seriesLabelPadding;
@@ -71,12 +71,12 @@ export class SeriesLabelStrip extends Container(View) {
     if (topLabel.y < 0) {
       topLabel.y = 0;
     }
-    // Same for the lowest label
+    // // Same for the lowest label
     const botLabel = this.seriesLabels.at(-1)!;
     const diff = botLabel.bottom - this.height;
-    if (diff > 0) {
-      botLabel.y -= diff;
-    }
+    // if (diff > 0) {
+    //   botLabel.y -= diff;
+    // }
     this.resolveSeriesLabelCollisions(endpoints);
   }
 
@@ -149,7 +149,7 @@ class LineLabelLeader extends View {
   protected _endX: number;
   protected _endY: number;
 
-  constructor(protected _endpoint: LineSection, label: Label, protected _chart: LineChart) {
+  constructor(protected _endpoint: LineSection, label: Label, protected _chart: LinePlotView) {
     super(_chart.paraview);
     this._endX = this._chart.paraview.store.settings.type.line.leaderLineLength;
     this._endY = label.y - label.locOffset.y/2;

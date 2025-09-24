@@ -16,70 +16,49 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import {
   DataLayer,
-  RiffOrder,
-  SONI_PLAY_SPEEDS, SONI_RIFF_SPEEDS
 } from '../data_layer';
-import { ChartLandingView, DatapointView, SeriesView } from '../../../data';
-import { HorizDirection, type Setting } from '../../../../store/settings_types';
+import { type BaseChartInfo } from '../../../../chart_types';
+import { DatapointView, SeriesView } from '../../../data';
 //import { keymaps } from '../input';
 //import { hotkeyActions } from '../input/defaultactions';
 //import { NOTE_LENGTH } from '../audio/sonifier';
 //import { type Actions, type Action } from '../input/actions';
 
 import { ParaView } from '../../../../paraview';
-import { HotkeyEvent } from '../../../../store/keymap_manager';
-import { NavNode } from '../navigation';
 
 import { PlaneDatapoint, Datapoint } from '@fizz/paramodel';
 
-export type DatapointViewType<T extends XYDatapointView> =
+export type DatapointViewType<T extends PlaneDatapointView> =
   (new (...args: any[]) => T);
-
-/**
- * Information about a view focus action.
- * @public
- */
-export interface FocusInfo {
-  /** List of all visited datapoint views. */
-  visited: XYDatapointView[];
-  /** Whether the focused series has chnaged. */
-  isSeriesChange?: boolean;
-}
 
 /**
  * Abstract base class for charts with X and Y axes.
  */
-export abstract class XYChart extends DataLayer {
+export abstract class PlanePlotView extends DataLayer {
 
-  protected isGrouping = false;
-  protected isConnector = false;
-  protected maxDatapointSize!: number;
-
-  constructor(paraview: ParaView, dataLayerIndex: number) {
-    super(paraview, dataLayerIndex);
-  }
-
-  protected _addedToParent() {
-    super._addedToParent();
-    // this.maxDatapointSize = this.width/2.5;
+  constructor(
+    paraview: ParaView,
+    width: number,
+    height: number,
+    dataLayerIndex: number,
+    chartInfo: BaseChartInfo
+  ) {
+    super(paraview, width, height, dataLayerIndex, chartInfo);
   }
 
   get datapointViews() {
-    return super.datapointViews as XYDatapointView[];
+    return super.datapointViews as PlaneDatapointView[];
   }
 
   get visitedDatapointViews() {
-    return super.visitedDatapointViews as XYDatapointView[];
+    return super.visitedDatapointViews as PlaneDatapointView[];
   }
 
   get selectedDatapointViews() {
-    return super.selectedDatapointViews as XYDatapointView[];
+    return super.selectedDatapointViews as PlaneDatapointView[];
   }
 
-  /*protected get _hotkeyActions(): Actions<this> {
-    return {...super._hotkeyActions, ...hotkeyActions['chart.xy']};
-  }
-
+  /*
   protected get _eventActions(): Actions<this> {
     return {
       ...super._eventActions,
@@ -110,129 +89,7 @@ export abstract class XYChart extends DataLayer {
         todo().controller.announce('Cannot switch series in chord mode.');
       },
     };
-  }
-
-  get keymap() {
-    return {...super.keymap, ...keymaps['chart.xy']};
   }*/
-
-  protected _createNavMap() {
-    super._createNavMap();
-    this._createPrimaryNavNodes();
-    if (this.paraview.store.model!.seriesKeys.length > 1) {
-      this._createNavLinksBetweenSeries();
-      this._createChordNavNodes();
-    }
-  }
-
-  protected _createPrimaryNavNodes() {
-    // Create series and datapoint nav nodes, and link them horizontally thusly:
-    // - [SERIES-A]-[SERIES-A-POINT-0]- ... -[SERIES-A-POINT-(N-1)]-[SERIES-B]-[SERIES-B-POINT-0]- ...
-    let left = this._navMap!.root.get('top')!;
-    this._chartLandingView.children.forEach((seriesView, i) => {
-      const seriesNode = new NavNode(this._navMap!.root, 'series', {
-        seriesKey: seriesView.seriesKey
-      });
-      seriesNode.connect('left', left);
-      left = seriesNode;
-      seriesView.children.forEach(dp => seriesNode.addDatapointView(dp));
-      seriesView.children.forEach((dp, j) => {
-        const node = new NavNode(this._navMap!.root, 'datapoint', {
-          seriesKey: dp.seriesKey,
-          index: dp.index
-        });
-        node.addDatapointView(dp);
-        node.connect('left', left);
-        left = node;
-      });
-    });
-  }
-
-  protected _createNavLinksBetweenSeries() {
-    // Create vertical links between series and datapoints
-    this._chartLandingView.children.slice(0, -1).forEach((seriesView, i) => {
-      const seriesNode = this._navMap!.root.get('series', i)!;
-      const nextSeriesNode = this._navMap!.root.get('series', i + 1)!;
-      seriesNode.connect('down', nextSeriesNode);
-      for (let j = 1; j <= seriesView.children.length; j++) {
-        seriesNode.peekNode('right', j)!.connect(
-          'down', nextSeriesNode.peekNode('right', j)!);
-      }
-    });
-  }
-
-  protected _createChordNavNodes() {
-    // Create chord landings
-    // NB: This will produce the nodes in insertion order
-    this._navMap!.root.query('datapoint', {
-      seriesKey: this._chartLandingView.children[0].seriesKey
-    }).forEach(node => {
-      const chordNode = new NavNode(this._navMap!.root, 'chord', {index: node.options.index});
-      [node, ...node.allNodes('down', 'datapoint')].forEach(node => {
-        chordNode.addDatapointView(node.at(0)!);
-      });
-    });
-    // Link chord landings
-    this._navMap!.root.query('chord').slice(0, -1).forEach((node, i) => {
-      node.connect('right', this._navMap!.root.get('chord', i + 1)!);
-    });
-  }
-
-  protected _playRiff(order?: RiffOrder) {
-    if (this.paraview.store.settings.sonification.isSoniEnabled
-      && this.paraview.store.settings.sonification.isRiffEnabled) {
-      const datapoints = this._navMap!.cursor.datapointViews.map(view => view.datapoint);
-      if (order === 'sorted') {
-        datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
-      } else if (order === 'reversed') {
-        datapoints.reverse();
-      }
-      const noteCount = datapoints.length;
-      if (noteCount) {
-        if (this._soniRiffInterval!) {
-          clearInterval(this._soniRiffInterval!);
-        }
-        this.soniSequenceIndex++;
-        this._soniRiffInterval = setInterval(() => {
-          const datapoint = datapoints.shift();
-          if (!datapoint) {
-            clearInterval(this._soniRiffInterval!);
-          } else {
-            this._sonifier.playDatapoints(false, datapoint as PlaneDatapoint);
-            this.soniNoteIndex++;
-          }
-        }, SONI_RIFF_SPEEDS.at(this.paraview.store.settings.sonification.riffSpeedIndex));
-      }
-    }
-  }
-
-  protected _playDatapoints(datapoints: PlaneDatapoint[]): void {
-    this.sonifier.playDatapoints(false, ...datapoints);
-  }
-
-  playDir(dir: HorizDirection) {
-    if (this._navMap!.cursor.type !== 'datapoint') {
-      return;
-    }
-    let cursor = this._navMap!.cursor;
-    this._soniInterval = setInterval(() => {
-      const next = cursor.peekNode(dir, 1);
-      if (next && next.type === 'datapoint') {
-        this._playDatapoints([next.at(0)!.datapoint as PlaneDatapoint]);
-        cursor = next;
-      } else {
-        this.clearPlay();
-      }
-    }, SONI_PLAY_SPEEDS.at(this._soniSpeedRateIndex));
-  }
-
-  protected _sparkBrailleInfo() {
-    return  {
-      data: this._navMap!.cursor.datapointViews[0].series.datapoints.map(dp =>
-        dp.facetValueAsNumber('y')!).join(' '),
-      isBar: this.paraview.store.type === 'bar' || this.paraview.store.type === 'column'
-    };
-  }
 
   /*compareDatapoints(datapoint1: XYDatapointView, datapoint2: XYDatapointView) :
     {
@@ -271,13 +128,13 @@ type Mutable<Type> = {
  * Abstract base class for a view representing an entire series on an XYChart.
  * @public
  */
-export class XYSeriesView extends SeriesView {
+export class PlaneSeriesView extends SeriesView {
 
-  declare protected _children: XYDatapointView[];
-  declare chart: XYChart;
+  declare protected _children: PlaneDatapointView[];
+  declare chart: PlanePlotView;
 
-  get children(): readonly XYDatapointView[] {
-    return super.children as XYDatapointView[];
+  get children(): readonly PlaneDatapointView[] {
+    return super.children as PlaneDatapointView[];
   }
 
   get siblings(): readonly this[] {
@@ -291,9 +148,9 @@ export class XYSeriesView extends SeriesView {
  * (e.g., points, bars, etc.).
  * @public
  */
-export abstract class XYDatapointView extends DatapointView {
+export abstract class PlaneDatapointView extends DatapointView {
 
-  declare readonly chart: XYChart;
+  declare readonly chart: PlanePlotView;
   declare _datapoint: PlaneDatapoint;
 
   protected centroid?: string;

@@ -45,7 +45,7 @@ export abstract class AxisLine<T extends AxisOrientation> extends View {
   protected abstract getLineD(): string;
 
   render() {
-    if (!this.axis.settings.line.isDrawEnabled) {
+    if (!this.axis.settings.line.isDrawAxisLine) {
       return svg``;
     }
     const transform = fixed`translate(${this._x},${this._y})`;
@@ -65,6 +65,12 @@ export abstract class AxisLine<T extends AxisOrientation> extends View {
  */
 export class HorizAxisLine extends AxisLine<'horiz'> {
 
+  constructor(axis: Axis<'horiz'>, length: number) {
+    super(axis, length);
+    this._height = 0;
+    this._canWidthFlex = true;
+  }
+
   get length() {
     return this.width;
   }
@@ -75,9 +81,9 @@ export class HorizAxisLine extends AxisLine<'horiz'> {
   }
 
   protected getLineD() {
-    if (this.axis.settings.line.isDrawOverhangEnabled) {
-      const tickLength = this.axis.orthoAxis.settings.tick.length;
-      const x = this.axis.orthoAxis.orientationSettings.position === 'west' ?
+    if (this.axis.settings.line.isDrawOverhang) {
+      const tickLength = this.paraview.store.settings.axis.vert.tick.length;
+      const x = this.paraview.store.settings.axis.vert.position === 'west' ?
         -tickLength : 0;
       return fixed`M${x},0 h${this.width + tickLength}`;
     } else {
@@ -92,6 +98,12 @@ export class HorizAxisLine extends AxisLine<'horiz'> {
  */
 export class VertAxisLine extends AxisLine<'vert'> {
 
+  constructor(axis: Axis<'vert'>, length: number) {
+    super(axis, length);
+    this._width = 0;
+    this._canHeightFlex = true;
+  }
+
   get length() {
     return this.height;
   }
@@ -102,9 +114,9 @@ export class VertAxisLine extends AxisLine<'vert'> {
   }
 
   protected getLineD() {
-    if (this.axis.settings.line.isDrawOverhangEnabled) {
-      const tickLength = this.axis.orthoAxis.settings.tick.length;
-      const y = this.axis.orthoAxis.orientationSettings.position === 'north' ?
+    if (this.axis.settings.line.isDrawOverhang) {
+      const tickLength = this.paraview.store.settings.axis.horiz.tick.length;
+      const y = this.paraview.store.settings.axis.horiz.position === 'north' ?
         -tickLength : 0;
       return fixed`M0,${y} v${this.height + tickLength}`;
     } else {

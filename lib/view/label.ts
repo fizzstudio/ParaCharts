@@ -25,6 +25,7 @@ import { generateUniqueId, fixed } from '../common/utils';
 import { ParaView } from '../paraview';
 import { SVGNS } from '../common/constants';
 import { Vec2 } from '../common/vector';
+import { Setting } from '../store';
 
 export type LabelTextAnchor = 'start' | 'middle' | 'end';
 
@@ -77,6 +78,8 @@ export class Label extends View {
 
   constructor(paraview: ParaView, private options: LabelOptions) {
     super(paraview);
+    this._canWidthFlex = true;
+    this._canHeightFlex = true;
     if (options.classList) {
       if (!options.classList.includes('label')) {
         options.classList.push('label');
@@ -174,9 +177,9 @@ export class Label extends View {
     this.updateSize();
   }
 
-  get bbox() {
-    return this._elRef.value!.getBBox();
-  }
+  // get bbox() {
+  //   return this._elRef.value!.getBBox();
+  // }
 
   get topLeft() {
     return this._loc.add(this._textCornerOffsets.topLeft);
@@ -367,6 +370,17 @@ export class Label extends View {
         translate(${-this._x},${-this._y})`;
     }
     return t;
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+    if (this._id === 'chart-title') {
+      console.log('WILL UPDATE SIZE', this._width, this._height);
+    }
+    this.updateSize();
+    if (this._id === 'chart-title') {
+      console.log('DID UPDATE SIZE', this._width, this._height);
+    }
+    super.settingDidChange(path, oldValue, newValue);
   }
 
   render() {

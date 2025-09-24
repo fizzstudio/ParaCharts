@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { SeriesView } from '../../../data';
-import { XYChart, XYDatapointView, XYSeriesView } from '.';
+import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
 import { AxisInfo } from '../../../../common/axisinfo';
 import { Setting, type PointChartType } from '../../../../store/settings_types';
 
@@ -31,16 +31,7 @@ import { strToId } from '@fizz/paramanifest';
  * Abstract base class for charts that represent data values as points
  * (connected or not).
  */
-export abstract class PointChart extends XYChart {
-
-  protected _addedToParent() {
-    super._addedToParent();
-    if (this.paraview.store.type !== "graph"){
-      this._axisInfo = new AxisInfo(this.paraview.store, {
-      yValues: this.paraview.store.model!.allFacetValues('y')!.map((y) => y.value as number)
-    });
-    }
-  }
+export abstract class PointPlotView extends PlanePlotView {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
@@ -57,8 +48,15 @@ export abstract class PointChart extends XYChart {
     super.settingDidChange(path, oldValue, newValue);
   }
 
+  async storeDidChange(key: string, value: any) {
+    await super.storeDidChange(key, value);
+    if (key === 'frontSeries') {
+      this._raiseSeries(value);
+    }
+  }
+
   get datapointViews() {
-    return super.datapointViews as ChartPoint[];
+    return super.datapointViews as PointDatapointView[];
   }
 
   protected _newSeriesView(seriesKey: string) {
@@ -66,7 +64,7 @@ export abstract class PointChart extends XYChart {
   }
 
   protected _newDatapointView(seriesView: SeriesView) {
-    return new ChartPoint(seriesView);
+    return new PointDatapointView(seriesView);
   }
 
   protected _createDatapoints() {
@@ -90,7 +88,7 @@ export abstract class PointChart extends XYChart {
     }
     // NB: This only works properly because we haven't added series direct labels
     // yet, which are also direct children of the chart.
-    this._chartLandingView.sortChildren((a: XYSeriesView, b: XYSeriesView) => {
+    this._chartLandingView.sortChildren((a: PlaneSeriesView, b: PlaneSeriesView) => {
       return (b.children[0].datapoint.facetValueNumericized(b.children[0].datapoint.depKey)!) - (a.children[0].datapoint.facetValueNumericized(a.children[0].datapoint.depKey)!);
     });
   }
@@ -107,13 +105,14 @@ export abstract class PointChart extends XYChart {
   }
 
   _raiseSeries(series: string) {
+    console.log('RAISING', series);
     const seriesG = this.seriesRef(series).value!;
     this.dataset.append(seriesG);
   }
 
   getDatapointGroupBbox(labelText: string) {
     const labels = this.paraview.store.model!.allFacetValues('x')!.map(
-      (box) => formatBox(box, this.paraview.store.getFormatType('xTick'))
+      (box) => formatBox(box, this.paraview.store.getFormatType('horizTick'))
     );
     const idx = labels.findIndex(label => label === labelText);
     if (idx === -1) {
@@ -129,7 +128,7 @@ export abstract class PointChart extends XYChart {
 
 }
 
-export class PointSeriesView extends XYSeriesView {
+export class PointSeriesView extends PlaneSeriesView {
 
 }
 
@@ -137,9 +136,9 @@ export class PointSeriesView extends XYSeriesView {
 /**
  * Basic point marker.
  */
-export class ChartPoint extends XYDatapointView {
+export class PointDatapointView extends PlaneDatapointView {
 
-  declare readonly chart: PointChart;
+  declare readonly chart: PointPlotView;
 
   static width: number;
 
@@ -154,7 +153,7 @@ export class ChartPoint extends XYDatapointView {
 
   get width() {
     const axisDivisions = this.paraview.store.model!.series[0].length - 1;
-    return this.chart.parent.width/axisDivisions;
+    return this.chart.width/axisDivisions;
   }
 
   get height() {
@@ -174,8 +173,9 @@ export class ChartPoint extends XYDatapointView {
   }
 
   protected _computeY() {
-    const pxPerYUnit = this.chart.height / this.chart.axisInfo!.yLabelInfo.range!;
-    return this.chart.height - (this.datapoint.facetValueNumericized('y')! - this.chart.axisInfo!. yLabelInfo.min!) * pxPerYUnit;
+    const yLabelInfo = this.chart.parent.docView.chartInfo.axisInfo!.yLabelInfo;
+    const pxPerYUnit = this.chart.height / yLabelInfo.range!;
+    return this.chart.height - (this.datapoint.facetValueNumericized('y')! - yLabelInfo.min!) * pxPerYUnit;
   }
 
   computeLocation() {
@@ -191,7 +191,7 @@ export class TrendLineView extends View {
   protected y1: number = 0;
   protected y2: number = 0;
 
-  constructor(private chart: XYChart) {
+  constructor(private chart: PlanePlotView) {
     super(chart.paraview);
     this._generateEndpoints()
   }

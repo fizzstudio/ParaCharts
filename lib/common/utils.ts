@@ -57,9 +57,9 @@ export function fixed(strings: TemplateStringsArray, ...exprs: (number | string)
   if (exprs.length === 0) {
     return strings[0];
   }
-  if (exprs.some((expr) => typeof expr === 'number' && isNaN(expr))) {
-    throw new Error('Cannot format NaNs in `fixed`');
-  }
+  // if (exprs.some((expr) => typeof expr === 'number' && isNaN(expr))) {
+  //   throw new Error('Cannot format NaNs in `fixed`; ' + 'strings: ' + strings + '; exprs: ' + exprs);
+  // }
   const out = strings.slice(0, -1).map((s, i) =>
     s + (typeof exprs[i] === 'number' ? toFixed(exprs[i]) : exprs[i]));
   out.push(strings.at(-1)!);

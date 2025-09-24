@@ -1,13 +1,11 @@
 
 import { DataLayer } from '..';
+import { type BaseChartInfo } from '../../../../chart_types';
 import { DatapointView, SeriesView } from '../../../data';
 import {
   type RadialSettings,
   type RadialChartType, type DeepReadonly,
   Setting,
-  Direction, directions,
-  SparkBrailleInfo,
-  HorizDirection
 } from '../../../../store';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type ParaView } from '../../../../paraview';
@@ -16,19 +14,13 @@ import { Datapoint, enumerate } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { Vec2 } from '../../../../common/vector';
 import { ClassInfo } from 'lit/directives/class-map.js';
-import { interpolate } from '@fizz/templum';
-import { queryMessages, describeSelections, getDatapointMinMax } from '../../../../store/query_utils';
-import {
-  NavLayer, NavNode,
-} from '../navigation';
 import { datapointMatchKeyAndIndex, bboxOppositeAnchor } from '../../../../common/utils';
 import { type BboxAnchorCorner } from '../../../base_view';
 
 export type ArcType = 'circle' | 'semicircle';
 
-export abstract class RadialChart extends DataLayer {
+export abstract class PastryPlotView extends DataLayer {
 
-  //protected _radius!: Required<RadiusSettings>;
   protected _cx!: number;
   protected _cy!: number;
   protected _radius!: number;
@@ -42,8 +34,14 @@ export abstract class RadialChart extends DataLayer {
 
   protected _centerLabel: Label | null = null;
 
-  constructor(paraview: ParaView, index: number) {
-    super(paraview, index);
+  constructor(
+    paraview: ParaView,
+    width: number,
+    height: number,
+    index: number,
+    chartInfo: BaseChartInfo
+  ) {
+    super(paraview, width, height, index, chartInfo);
   }
 
   protected _addedToParent() {
@@ -109,44 +107,6 @@ export abstract class RadialChart extends DataLayer {
 
     //this.label_font_size = chart_obj.options.axis.r.tick.font_size;
     //this.label_margin = chart_obj.options.axis.r.tick.margin;
-
-    this.paraview.store.settingControls.add({
-      type: 'slider',
-      key: `type.${this.paraview.store.type}.orientationAngleOffset`,
-      label: 'Orientation',
-      options: {
-        min: 0,
-        max: 360,
-        step: 1,
-        compact: true,
-        width: '8rem'
-      },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
-    const labelContents = ['', 'category', 'percentage:(value)'];
-    this.paraview.store.settingControls.add({
-      type: 'dropdown',
-      key: `type.${this.paraview.store.type}.insideLabels.contents`,
-      label: 'Inside labels:',
-      options: { options: labelContents },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
-    this.paraview.store.settingControls.add({
-      type: 'dropdown',
-      key: `type.${this.paraview.store.type}.outsideLabels.contents`,
-      label: 'Outside labels:',
-      options: { options: labelContents },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
-    this.paraview.store.settingControls.add({
-      type: 'textfield',
-      key: `type.${this.paraview.store.type}.explode`,
-      label: 'Explode',
-      options: {
-        inputType: 'text',
-      },
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
 
   }
 
@@ -234,7 +194,7 @@ export abstract class RadialChart extends DataLayer {
       this._chartLandingView.clearChildren();
       this._layoutDatapoints();
       // Needed to replace existing node datapoint views
-      this._createNavMap();
+      // this._createNavMap();
       // XXX `_resizeToFitLabels()` will recreate the datapoints, which may
       // cause inside labels to move outside, potentially requiring a second
       // resize. We don't currently do that...
@@ -243,28 +203,6 @@ export abstract class RadialChart extends DataLayer {
     }
 
     super.settingDidChange(path, oldValue, newValue);
-  }
-
-  protected _createNavMap() {
-    super._createNavMap();
-    const layer = new NavLayer(this._navMap!, 'slices');
-    directions.forEach(dir => {
-      this._navMap!.node('top', {})!.connect(dir, layer);
-    });
-    const nodes = this._chartLandingView.children[0].children.map((datapointView, i) => {
-      const node = new NavNode(layer, 'datapoint', {
-        seriesKey: datapointView.seriesKey,
-        index: datapointView.index
-      });
-      node.addDatapointView(datapointView);
-      node.connect('out', this._navMap!.root);
-      node.connect('up', this._navMap!.root);
-      return node;
-    });
-    nodes.slice(0, -1).forEach((node, i) => {
-      node.connect('right', layer.get('datapoint', i + 1)!);
-    });
-    nodes.at(-1)!.connect('right', nodes[0]);
   }
 
   protected _resetRadius() {
@@ -329,7 +267,7 @@ export abstract class RadialChart extends DataLayer {
         this._radius *= minScale;
         this._chartLandingView.clearChildren();
         this._layoutDatapoints();
-        this._createNavMap();
+        //this._createNavMap();
       } else {
         break;
       }
@@ -425,114 +363,11 @@ export abstract class RadialChart extends DataLayer {
 
   protected abstract _createSlice(seriesView: SeriesView, params: RadialDatapointParams): RadialSlice;
 
-  legend() {
-    const xs = this.paraview.store.model!.series[0].datapoints.map(dp =>
-      formatBox(dp.facetBox('x')!, this.paraview.store.getFormatType('pieSliceLabel')));
-    const ys = this.paraview.store.model!.series[0].datapoints.map(dp =>
-      formatBox(dp.facetBox('y')!, this.paraview.store.getFormatType('pieSliceValue')));
-    return xs.map((x, i) => ({
-      label: `${x}: ${ys[i]}`,
-      color: i,
-      datapointIndex: i
-    }));
-  }
-
-  protected _playDatapoints(datapoints: Datapoint[]): void {
-  }
-
-  playDir(dir: HorizDirection): void {
-
-  }
-
-  protected _sparkBrailleInfo() {
-    return {
-      data: JSON.stringify(this._navMap!.cursor.datapointViews[0].series.datapoints.map(dp => ({
-        // XXX shouldn't assume x is string (or that we have an 'x' facet, for that matter)
-        label: dp.facetValue('x') as string,
-        value: dp.facetValueAsNumber('y')
-      }))),
-      isProportional: true
-    };
-  }
-
-  // TODO: localize this text output
-  // focused view: e.options!.focus
-  // all visited datapoint views: e.options!.visited
-  queryData(): void {
-    const msgArray: string[] = [];
-
-    const queriedNode = this._navMap!.cursor;
-
-    if (queriedNode.isNodeType('top')) {
-      msgArray.push(`Displaying Chart: ${this.paraview.store.title}`);
-    } else if (queriedNode.isNodeType('series')) {
-      const seriesKey = queriedNode.options.seriesKey;
-      const datapointCount = this.paraview.store.model!.atKey(seriesKey)!.length;
-      msgArray.push(interpolate(
-        queryMessages.seriesKeyLength,
-        { seriesKey, datapointCount }
-      ));
-    } else if (queriedNode.isNodeType('datapoint')) {
-
-      const selectedDatapoints = this.paraview.store.selectedDatapoints;
-      const visitedDatapoint = queriedNode.datapointViews[0];
-      const seriesKey = queriedNode.options.seriesKey;
-      /*
-      msgArray.push(replace(
-        queryMessages.datapointKeyLength,
-        {
-          seriesKey: targetView.seriesKey,
-          datapointXY: `${targetView.series[visitedDatapoint.index].x.raw}, ${targetView.series[visitedDatapoint.index].y.raw}`,
-          datapointIndex: targetView.index + 1,
-          datapointCount: targetView.series.length
-        }
-      ));
-      */
-      if (selectedDatapoints.length) {
-        // if there are selected datapoints, compare the current datapoint against each of those
-        const selectedDatapointViews = selectedDatapoints.map((cursor) => cursor.datapointView);
-        const selectionMsgArray = describeSelections(
-          visitedDatapoint,
-          selectedDatapointViews
-        );
-        msgArray.push(...selectionMsgArray);
-      } else {
-        // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
-        msgArray.push(interpolate(
-          queryMessages.percentageOfChart,
-          {
-            chartKey: seriesKey,
-            datapointXY: formatXYDatapoint(visitedDatapoint.datapoint, 'raw'),
-            datapointIndex: queriedNode.options.index + 1,
-            datapointCount: this.paraview.store.model!.atKey(seriesKey)!.length
-          }
-        ));
-        if (this.paraview.store.model!.multi) {
-          msgArray.push(interpolate(
-            queryMessages.percentageOfSeries,
-            {
-              seriesKey,
-              datapointXY: formatXYDatapoint(visitedDatapoint.datapoint, 'raw'),
-              datapointIndex: queriedNode.options.index + 1,
-              datapointCount: this.paraview.store.model!.atKey(seriesKey)!.length
-            }
-          ));
-        }
-      }
-      // also add the high or low indicators
-      const minMaxMsgArray = getDatapointMinMax(
-        this.paraview,
-        visitedDatapoint.datapoint.facetValueAsNumber('y')!,
-        seriesKey
-      );
-      msgArray.push(...minMaxMsgArray);
-    }
-    this.paraview.store.announce(msgArray);
-  }
-
   focusRingShape(): Shape | null {
-    if (this._navMap!.cursor.type === 'datapoint') {
-      return this._navMap!.cursor.at(0)!.focusRingShape();
+    const chartInfo = this._parent.docView.chartInfo;
+    const cursor = chartInfo.navMap!.cursor;
+    if (cursor.isNodeType('datapoint')) {
+      return this.datapointView(cursor.options.seriesKey, cursor.options.index)!.focusRingShape();
     }
     return null;
   }
@@ -550,7 +385,7 @@ export interface RadialDatapointParams {
 
 export abstract class RadialSlice extends DatapointView {
 
-  declare readonly chart: RadialChart;
+  declare readonly chart: PastryPlotView;
   declare protected _shapes: SectorShape[];
 
   protected _outsideLabel: Label | null = null;
@@ -561,11 +396,6 @@ export abstract class RadialSlice extends DatapointView {
   constructor(parent: SeriesView, protected _params: RadialDatapointParams) {
     super(parent);
     this._isStyleEnabled = true;
-  }
-
-  protected _addedToParent(): void {
-    super._addedToParent();
-    this.isVisited = this.paraview.store.isVisited(this.seriesKey, this.index);
   }
 
   get percentage() {
