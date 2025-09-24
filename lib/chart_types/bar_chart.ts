@@ -5,6 +5,7 @@ import { DeepReadonly, BarSettings, datapointIdToCursor } from '../store';
 import {
   queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax
 } from '../store/query_utils';
+import { type Label } from '../view/label';
 
 import { ChartType, strToId } from '@fizz/paramanifest';
 import { enumerate, Box } from '@fizz/paramodel';

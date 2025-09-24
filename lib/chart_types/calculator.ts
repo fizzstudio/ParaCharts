@@ -1,15 +1,12 @@
-import { StyleInfo } from "lit/directives/style-map.js";
 import { LineChartInfo } from '.';
-import { DeepReadonly, Direction, GraphSettings, Setting } from "../../../../store";
-import { LinePlotView, LineSection } from '.';
-import { PlaneSeriesView } from ".";
-import { AxisInfo } from "../../../../common/axisinfo";
-import { parse, simplify } from "mathjs";
+import { Direction } from '../store';
+import { AxisInfo } from '../common';
 import { Box, PlaneDatapoint} from "@fizz/paramodel";
-import { RiffOrder, SONI_RIFF_SPEEDS } from '../../../../chart_types';
+import { RiffOrder, SONI_RIFF_SPEEDS } from '.';
 import { NumberBox } from "@fizz/dataframe";
-import { isUnplayable } from "../../../../audio/sonifier";
-import { NavLayer, NavNode } from "../navigation";
+import { isUnplayable } from '../audio/sonifier';
+import { DatapointNavNodeOptions } from '../view/layers';
+import { NavNode, NavLayer } from '../view/layers';
 
 export class GraphingCalculatorInfo extends LineChartInfo {
   protected _renderPts: number = 50;
@@ -146,28 +143,29 @@ export class GraphingCalculatorInfo extends LineChartInfo {
   }
 
   protected _sparkBrailleInfo() {
-    let data = this._navMap!.cursor.datapointViews[0].series.datapoints.map(dp =>
-      dp.facetValueAsNumber('y')!).join(' ')
+    const options = this._navMap!.cursor.options as DatapointNavNodeOptions;
+    const datapoints = this._store.model!.atKey(options.seriesKey)!.datapoints;
+    let data = datapoints.map(dp => dp.facetValueAsNumber('y')!).join(' ');
     //Sparkbrailles with more than 50 points either get cut off by the edge of the panel, or push the panel outwards and make it look bad
-    if (this._navMap!.cursor.datapointViews[0].series.datapoints.length > 50) {
-      const length = this._navMap!.cursor.datapointViews[0].series.datapoints.length
-      let indices = []
+    if (datapoints.length > 50) {
+      const indices: number[] = [];
       for (let i = 0; i < 50; i++) {
-        indices.push(Math.floor(i * length / 50))
+        indices.push(Math.floor(i * datapoints.length / 50));
       }
-      data = this._navMap!.cursor.datapointViews[0].series.datapoints.filter((e, index) => { return indices.includes(index); }).map(dp =>
+      data = datapoints.filter((e, index) => { return indices.includes(index); }).map(dp =>
         dp.facetValueAsNumber('y')!).join(' ');
     }
     return {
       data: data,
-      isBar: this.paraview.store.type === 'bar' || this.paraview.store.type === 'column'
+      isBar: false
     };
   }
 
   protected _playRiff(order?: RiffOrder) {
-    if (this.paraview.store.settings.sonification.isSoniEnabled
-      && this.paraview.store.settings.sonification.isRiffEnabled) {
-      const datapoints = this._navMap!.cursor.datapointViews.map(view => view.datapoint) as PlaneDatapoint[];
+    if (this._store.settings.sonification.isSoniEnabled
+      && this._store.settings.sonification.isRiffEnabled) {
+      const series = this._seriesInNavOrder();
+      const datapoints = series.map(s => s.datapoints[this._navMap!.cursor.index]) as PlaneDatapoint[];
       if (order === 'sorted') {
         datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
       } else if (order === 'reversed') {
@@ -186,27 +184,35 @@ export class GraphingCalculatorInfo extends LineChartInfo {
       }
       datapointsFilled.push(datapoints[datapoints.length - 1])
       //Trim unplayable notes from front and back, but not between playable notes
-      while(datapointsFilled.length > 0 && isUnplayable(datapointsFilled[0].facetValueNumericized(datapointsFilled[0].depKey)!, this.parent.docView.yAxis!)){
+      while(datapointsFilled.length > 0
+        && isUnplayable(
+          datapointsFilled[0].facetValueNumericized(datapointsFilled[0].depKey)!,
+          this._axisInfo!.yLabelInfo)
+      ) {
         datapointsFilled.shift()
       }
-      while(datapointsFilled.length > 0 && isUnplayable(datapointsFilled[datapointsFilled.length - 1].facetValueNumericized(datapointsFilled[datapointsFilled.length - 1].depKey)!, this.parent.docView.yAxis!)){
-        datapointsFilled.pop()
+      while(datapointsFilled.length > 0
+        && isUnplayable(
+          datapointsFilled[datapointsFilled.length - 1].facetValueNumericized(datapointsFilled[datapointsFilled.length - 1].depKey)!,
+          this._axisInfo!.yLabelInfo)
+      ) {
+        datapointsFilled.pop();
       }
       const noteCount = datapointsFilled.length;
       if (noteCount) {
         if (this._soniRiffInterval!) {
           clearInterval(this._soniRiffInterval!);
         }
-        this.soniSequenceIndex++;
+        this._soniSequenceIndex++;
         this._soniRiffInterval = setInterval(() => {
           const datapoint = datapointsFilled.shift();
           if (!datapoint) {
             clearInterval(this._soniRiffInterval!);
           } else {
             this._sonifier.playDatapoints(true, datapoint as PlaneDatapoint);
-            this.soniNoteIndex++;
+            this._soniNoteIndex++;
           }
-        }, SONI_RIFF_SPEEDS.at(this.paraview.store.settings.sonification.riffSpeedIndex)! / INTERNAL_SEGMENTS);
+        }, SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! / INTERNAL_SEGMENTS);
       }
       else{
         console.log("No sonifiable notes detected, ensure some portion of the graph is visible on screen")
@@ -233,4 +239,54 @@ export class GraphingCalculatorInfo extends LineChartInfo {
     }
     await cursor.move(dir);
   }
+
+  checkHorizExpand(cursor: NavNode, link: NavLayer | NavNode | undefined, dir: string): boolean {
+    const options = cursor.options as DatapointNavNodeOptions;
+    if (dir === 'left' && cursor.type === 'datapoint' && options.index === 0) {
+      this._store.updateSettings(draft => {
+        draft.axis.x.minValue = this.axisInfo!.xLabelInfo.min! - 1;
+      });
+      return true;
+    }
+    else if (dir === 'right' && cursor.type === 'datapoint') {
+      if (options.index
+        === this._store.model!.series[this._store.model?.seriesKeys.findIndex(s => s === options.seriesKey)!].length - 1) {
+        this._store.updateSettings(draft => {
+          draft.axis.x.maxValue = this.axisInfo!.xLabelInfo.max! + 1;
+        });
+        return true;
+      }
+    }
+    return false;
+  }
+
+  checkVertExpand(cursor: NavNode, link: NavLayer | NavNode | undefined, dir: string): boolean {
+    if (link instanceof NavNode && cursor.type === 'datapoint' && (link.type === "series" || link.type === "datapoint")) {
+      const series = this._store.model!.series[0];
+      const cursorDatapoint = series.datapoints[cursor.index] as PlaneDatapoint;
+      const linkDatapoint = series.datapoints[link.index] as PlaneDatapoint;
+
+      const yTier = Math.abs(Number(this.axisInfo?.yLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.yLabelInfo.labelTiers[0][1]));
+      const cursorYVal = cursorDatapoint.facetValueAsNumber("y")!;
+      const linkYVal = linkDatapoint.facetValueAsNumber("y")!;
+      if ((dir === "left" || dir === "right") && cursorYVal <= this.axisInfo!.yLabelInfo.max!
+        && linkYVal >= this.axisInfo!.yLabelInfo.max!) {
+        const newYMax = Math.ceil((linkYVal + 1) / yTier) * yTier;
+        this._store.updateSettings(draft => {
+          draft.axis.y.maxValue = newYMax
+        });
+        return true;
+      }
+      else if ((dir === "left" || dir === "right") && cursorYVal >= this.axisInfo!.yLabelInfo.min!
+        && linkYVal <= this.axisInfo!.yLabelInfo.min!) {
+        const newYMin = Math.floor((linkYVal - 1) / yTier) * yTier;
+        this._store.updateSettings(draft => {
+          draft.axis.y.minValue = newYMin;
+        });
+        return true;
+      }
+    }
+    return false;
+  }
+
 }

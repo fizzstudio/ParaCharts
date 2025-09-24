@@ -4,6 +4,7 @@ import { BarChartInfo } from './bar_chart';
 import { PastryChartInfo } from './pastry_chart';
 import { ScatterChartInfo } from './scatter_chart';
 import { HeatMapInfo } from './heat_map';
+import { GraphingCalculatorInfo } from './calculator';
 
 export * from './base_chart';
 export * from './plane_chart';
@@ -12,6 +13,7 @@ export * from './line_chart';
 export * from './pastry_chart';
 export * from './scatter_chart';
 export * from './heat_map';
+export * from './calculator';
 
 export const chartInfoClasses = {
   bar: BarChartInfo,
@@ -25,5 +27,5 @@ export const chartInfoClasses = {
   // gauge: BarChart, //GaugeChart,
   // stepline: LineChart, //StepLineChart,
   // lollipop: BarChart, //LollipopChart
-  // graph: GraphingCalculator
+  graph: GraphingCalculatorInfo
 };
