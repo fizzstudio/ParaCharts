@@ -50,6 +50,7 @@ import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { type ParaChart } from '../parachart/parachart';
 import { DatapointView } from '../view/data';
+import { Popup } from '../view/popup';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -125,6 +126,7 @@ export class ParaStore extends State {
   @property() darkMode = false;
   @property() announcement: Announcement = { text: '' };
   @property() annotations: BaseAnnotation[] = [];
+  @property() popups: Popup[] = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() soloSeries = '';

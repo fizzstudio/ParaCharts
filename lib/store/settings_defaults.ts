@@ -181,6 +181,7 @@ export const defaults: Settings = {
       barGap: 0.25,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
+      showPopups: false
     },
     column: {
       barWidth: 10,
@@ -200,6 +201,7 @@ export const defaults: Settings = {
       barGap: 0.25,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
+      showPopups: false
     },
     line: {
       lineWidth: 5,
@@ -214,7 +216,8 @@ export const defaults: Settings = {
         width: 20,
         height: 20,
       },
-      isDrawSymbols: true
+      isDrawSymbols: true,
+      showPopups: false
     },
     scatter: {
       isDrawTrendLine: false,
@@ -348,6 +351,7 @@ export const defaults: Settings = {
       orderBy: undefined,
       barGap: 0.25,
       clusterLabelFormat: 'raw',
+      showPopups: false
     },
     graph: {
       lineWidth: 5,
@@ -367,7 +371,8 @@ export const defaults: Settings = {
       preset: '',
       renderPts: 50,
       resetAxes: false,
-      visitedSeries: -1
+      visitedSeries: -1,
+      showPopups: false
     }
   },
   grid: {

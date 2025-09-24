@@ -17,6 +17,8 @@ export interface ShapeOptions {
   scale?: number;
   isPattern?: boolean;
   isClip?: boolean;
+  pointerEnter?: (e: PointerEvent) => void;
+  pointerLeave?: (e: PointerEvent) => void;
 }
 
 export abstract class Shape extends View {

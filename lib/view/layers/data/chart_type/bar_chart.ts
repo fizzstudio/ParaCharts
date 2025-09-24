@@ -17,6 +17,7 @@ import { interpolate } from '@fizz/templum';
 
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { strToId } from '@fizz/paramanifest';
+import { Popup } from '../../../popup';
 
 type BarClusterMap = {[key: string]: BarCluster};
 
@@ -192,10 +193,17 @@ export class BarChart extends XYChart {
     if (this.paraview.store.settings.type.bar.isAbbrevSeries) {
       this._abbrevs = abbreviateSeries(this.paraview.store.model!.seriesKeys);
     }
+
+    this.paraview.store.settingControls.add({
+      type: 'checkbox',
+      key: 'chart.showPopups',
+      label: 'Show popups',
+      parentView: 'controlPanel.tabs.chart.chart',
+    });
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['color.colorPalette', 'color.colorVisionMode'].includes(path)) {
+    if (['color.colorPalette', 'color.colorVisionMode', 'chart.showPopups'].includes(path)) {
       if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
          || this.paraview.store.settings.color.colorPalette === 'pattern'){
         this.paraview.createDocumentView();
@@ -679,9 +687,38 @@ export class Bar extends XYDatapointView {
       y: this._y,
       width: this._width,
       height: this._height,
-      isPattern: isPattern ? true : false
+      isPattern: isPattern ? true : false,
+      pointerEnter: (e) => {
+        this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined
+      },
+      pointerLeave: (e) => {
+        this.paraview.store.settings.chart.showPopups ? this.removePopup() : undefined
+      },
     }));
     super._createShapes();
+  }
+
+  addPopup() {
+    let popup = new Popup(this.paraview,
+      {
+        text: this.paraview.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
+        x: this.x + this.width / 2,
+        y: this.y - 40,
+        wrapWidth: 150,
+        textAnchor: "middle",
+        classList: ['annotationlabel'],
+        id: this.id
+      },
+      {
+        shape: "boxWithArrow",
+        fill: `hsla(0, 0%, 90%, 0.85)`,
+        stroke: "black",
+      })
+    this.paraview.store.popups.push(popup)
+  }
+
+  removePopup() {
+    this.paraview.store.popups = this.paraview.store.popups.filter(p => p.id !== this.id)
   }
 
   get selectedMarker() {

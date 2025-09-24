@@ -292,6 +292,7 @@ export interface BarSettings extends PlotSettings {
   isAbbrevSeries: boolean;
   clusterLabelFormat: LabelFormat;
   lineWidth: number;
+  showPopups: boolean;
 }
 
 /** @public */
@@ -317,6 +318,7 @@ export interface LineSettings extends PointSettings {
   seriesLabelPadding: number; // also used after leader lines
   leaderLineLength: number;
   isAlwaysShowSeriesLabel?: boolean;
+  showPopups: boolean;
 }
 
 /** @public */

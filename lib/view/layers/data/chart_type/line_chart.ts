@@ -28,6 +28,8 @@ import { interpolate } from '@fizz/templum';
 import { type StyleInfo } from 'lit/directives/style-map.js';
 import { NavNode } from '../navigation';
 import { formatXYDatapoint } from '@fizz/parasummary';
+import { RectShape } from '../../../shape';
+import { Popup } from '../../../popup';
 
 /**
  * Class for drawing line charts.
@@ -53,6 +55,12 @@ export class LineChart extends PointChart {
         type: 'checkbox',
         key: 'chart.isDrawSymbols',
         label: 'Show symbols',
+        parentView: 'controlPanel.tabs.chart.chart',
+      });
+      this.paraview.store.settingControls.add({
+        type: 'checkbox',
+        key: 'chart.showPopups',
+        label: 'Show popups',
         parentView: 'controlPanel.tabs.chart.chart',
       });
     }
@@ -106,7 +114,7 @@ export class LineChart extends PointChart {
 
   protected _canCreateSequenceNavNodes(): boolean {
     return !!this._navMap && Object.keys(this.paraview.store.seriesAnalyses).length === this.paraview.store.model!.seriesKeys.length
-        && !!this.paraview.store.seriesAnalyses[this.paraview.store.model!.seriesKeys[0]];
+      && !!this.paraview.store.seriesAnalyses[this.paraview.store.model!.seriesKeys[0]];
   }
 
   protected _createNavMap() {
@@ -457,8 +465,24 @@ export class LineSection extends ChartPoint {
           isClip: true
         })
       );
-      this._shapes[0].classInfo = {'leg-left': true};
-      this._shapes[1].classInfo = {'leg-right': true};
+      let invis = new RectShape(this.paraview, {
+        x: this._x + slices[0][0].x,
+        y: 0,
+        width: slices[1][1].x - slices[0][0].x,
+        height: this.chart.height,
+        stroke: "white",
+        fill: "white",
+        pointerEnter: (e) => {
+          this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined;
+        },
+        pointerLeave: (e) => {
+          this.paraview.store.settings.chart.showPopups ? this.removePopup() : undefined;
+        }
+      })
+      this._shapes[0].classInfo = { 'leg-left': true };
+      this._shapes[1].classInfo = { 'leg-right': true };
+      invis.classInfo = { 'invis': true };
+      this.append(invis)
     } else if (points.length === 2) {
       this._shapes.push(
         new PathShape(this.paraview, {
@@ -468,9 +492,25 @@ export class LineSection extends ChartPoint {
           isClip: true
         })
       );
+      let invis = new RectShape(this.paraview, {
+        x: points[0].x == 0 ? this._x : this._x + points[0].x,
+        y: 0,
+        width: points[0].x == 0 ? points[1].x : this.x,
+        height: this.chart.height,
+        stroke: "white",
+        fill: "white",
+        pointerEnter: (e) => {
+          this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined;
+        },
+        pointerLeave: (e) => {
+          this.paraview.store.settings.chart.showPopups ? this.removePopup() : undefined;
+        }
+      })
       this._shapes[0].classInfo = this._prevMidY !== undefined
-        ? {'leg-left': true}
-        : { 'leg-right': true};
+        ? { 'leg-left': true }
+        : { 'leg-right': true };
+      invis.classInfo = { 'invis': true };
+      this.append(invis)
     }
     this._shapes.forEach(shape => {
       (shape as PathShape).isClip = this.shouldClip;
@@ -478,5 +518,27 @@ export class LineSection extends ChartPoint {
     super._createShapes();
   }
 
+  addPopup() {
+    let popup = new Popup(this.paraview,
+      {
+        text: this.paraview.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
+        x: this.x,
+        y: this.y - 40,
+        wrapWidth: 150,
+        textAnchor: "middle",
+        classList: ['annotationlabel'],
+        id: this.id
+      },
+      {
+        shape: "boxWithArrow",
+        fill: `hsla(0, 0%, 90%, 0.85)`,
+        stroke: "black",
+      })
+    this.paraview.store.popups.push(popup)
+  }
+
+  removePopup() {
+    this.paraview.store.popups.shift();
+  }
 }
 

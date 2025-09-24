@@ -43,7 +43,7 @@ export abstract class PointChart extends XYChart {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
+    if (['axis.y.maxValue', 'axis.y.minValue', 'chart.showPopups'].includes(path)) {
       // this._axisInfo!.updateYRange();
       // for (const datapointView of this.datapointViews) {
       //   datapointView.computeLocation();
