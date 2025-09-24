@@ -12,6 +12,8 @@ import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { BarChartInfo } from '../../../../chart_types/bar_chart';
 
+const MIN_BAR_WIDTH_FOR_GAPS = 8;
+const BAR_GAP_PERCENTAGE = 0.125;
 
 function abbreviateSeries(keys: readonly string[]) {
   let len = 1;
@@ -45,11 +47,14 @@ function abbreviateSeries(keys: readonly string[]) {
  * Class for drawing bar charts.
  */
 export class BarPlotView extends PlanePlotView {
+  declare protected _chartInfo: BarChartInfo;
 
   protected _abbrevs?: {[series: string]: string};
   protected _stackLabels: Label[] = [];
-  protected _stackWidth!: number;
+  protected _numBars!: number;
+  protected _barWidth!: number;
   protected _clusterWidth!: number;
+  protected _availSpace!: number;
 
   protected _addedToParent() {
     super._addedToParent();
@@ -101,12 +106,20 @@ export class BarPlotView extends PlanePlotView {
     return this._abbrevs;
   }
 
-  get stackWidth() {
-    return this._stackWidth;
+  get numBars() {
+    return this._numBars;
+  }
+
+  get barWidth() {
+    return this._barWidth;
   }
 
   get clusterWidth() {
     return this._clusterWidth;
+  }
+
+  get availSpace() {
+    return this._availSpace;
   }
 
   protected _newDatapointView(seriesView: PlaneSeriesView, stack: BarStack) {
@@ -114,38 +127,37 @@ export class BarPlotView extends PlanePlotView {
   }
 
   protected _beginDatapointLayout() {
-    const chartInfo = this._parent.docView.chartInfo as BarChartInfo;
     // Datapoint layout depends on this happening first
-    const numClusters = Object.values(chartInfo.clusteredData).length;
+    const numClusters = Object.values(this._chartInfo.clusteredData).length;
     // Assume all clusters have same number of stacks
     //const stacksPerCluster = Object.values(Object.values(this._clusteredData)[0].stacks).length;
     // Each cluster is surrounded by 1/2 `clusterGap` on each side; so the first
     // cluster will have 1/2 `clusterGap` on its left, ditto for the last cluster
     // on its right, and each cluster is separated by `clusterGap`
-    const totalClusterGapSpace = numClusters*chartInfo.settings.clusterGap;
-    const totalBarGapSpace = (chartInfo.stacksPerCluster - 1)*chartInfo.settings.barGap*numClusters;
-    // Initial stack width based on current chart width
-    this._stackWidth = Math.max(0, //chartInfo.settings.minBarWidth,
-      (this._width - totalClusterGapSpace - totalBarGapSpace)/(numClusters*chartInfo.stacksPerCluster));
-    console.log('computed bar stack width:', this._stackWidth, 'plot width:', this._width, totalClusterGapSpace, totalBarGapSpace);
-    //BarCluster.computeSize(this);
-    //BarStack.computeSize(this);
 
-    this._clusterWidth = this._stackWidth*chartInfo.stacksPerCluster
-      + (chartInfo.stacksPerCluster - 1)*chartInfo.settings.barGap;
+    this._numBars = numClusters*this._chartInfo.stacksPerCluster;
+    let maxBarWidth = this._width/this._numBars;
+    let gapWidth = 0;
+    if (maxBarWidth >= MIN_BAR_WIDTH_FOR_GAPS) {
+      this._barWidth = (1 - BAR_GAP_PERCENTAGE)*maxBarWidth;
+      gapWidth = BAR_GAP_PERCENTAGE*maxBarWidth;
+    } else {
+      this._barWidth = maxBarWidth;
+    }
+    // this._clusterWidth = this._stackWidth*this._chartInfo.stacksPerCluster
+    //   + (this._chartInfo.stacksPerCluster - 1)*gapWidth;
+    this._availSpace = gapWidth*this._numBars;
 
-    //this._parent.logicalWidth = this._stackWidth*this._stacksPerCluster*numClusters + clusterGapSpace + barGapSpace;
-    // Each cluster gets 1/2 a cluster gap on each side
-//    this._parent.logicalWidth = this._clusterWidth*numClusters + chartInfo.settings.clusterGap*numClusters;
-//    console.log('setting chart content width to', this._parent.logicalWidth);
+    // const totalClusterGapSpace = numClusters*this._chartInfo.settings.clusterGap;
+    // const totalBarGapSpace = (this._chartInfo.stacksPerCluster - 1)*this._chartInfo.settings.barGap*numClusters;
+    // // Initial stack width based on current chart width
+    // this._stackWidth = Math.max(0, //chartInfo.settings.minBarWidth,
+    //   (this._width - totalClusterGapSpace - totalBarGapSpace)/(numClusters*this._chartInfo.stacksPerCluster));
+    // console.log('computed bar stack width:', this._stackWidth, 'plot width:', this._width, totalClusterGapSpace, totalBarGapSpace);
 
+    // this._clusterWidth = this._stackWidth*this._chartInfo.stacksPerCluster
+    //   + (this._chartInfo.stacksPerCluster - 1)*this._chartInfo.settings.barGap;
 
-    // for (const [clusterKey, cluster] of Object.entries(this._clusteredData)) {
-    //   cluster.computeLayout();
-    //   for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
-    //     stack.computeLayout();
-    //   }
-    // }
     super._beginDatapointLayout();
   }
 
@@ -317,7 +329,7 @@ export class Bar extends PlaneDatapointView {
   }
 
   computeLocation() {
-    const chartInfo = this.chart.parent.docView.chartInfo as BarChartInfo;
+    const chartInfo = this.chart.chartInfo as BarChartInfo;
     const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
     const pxPerYUnit = this.chart.parent.logicalHeight/chartInfo.axisInfo!.yLabelInfo.range!;
     const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
@@ -325,15 +337,20 @@ export class Bar extends PlaneDatapointView {
       .reduce((a, b) => a + b, 0);
     const zeroHeight = this.chart.parent.logicalHeight
       - (chartInfo.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!);
-    this._width = this.chart.stackWidth;
+
+    const idealWidth = this.chart.barWidth;
+    this._width = Math.max(this.chart.barWidth, chartInfo.settings.barWidth);
     // @ts-ignore
     this._height = Math.abs((this.datapoint.data.y.value as number)*pxPerYUnit);
     //this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
-    this._x = chartInfo.settings.clusterGap/2
-      + this.chart.clusterWidth*this._stack.cluster.index
-      + chartInfo.settings.clusterGap*this._stack.cluster.index
-      + this.chart.stackWidth*this._stack.index
-      + chartInfo.settings.barGap*this._stack.index;
+
+    // const clusterGap = Math.min(chartInfo.settings.clusterGap, this.chart.stackGap);
+    const barGap = Math.min(chartInfo.settings.barGap, this.chart.availSpace/this.chart.numBars);
+    this._x = barGap/2
+      + idealWidth*this._stack.cluster.index
+      //+ clusterGap*this._stack.cluster.index
+      //+ idealWidth*this._stack.index
+      + barGap*this._stack.cluster.index;
     // @ts-ignore
     this.datapoint.data.y.value as number < 0 ? this._y = this.chart.height - distFromXAxis - zeroHeight
       : this._y = this.chart.height - this.height - distFromXAxis - zeroHeight
