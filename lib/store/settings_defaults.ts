@@ -40,8 +40,8 @@ export const defaults: Settings = {
   chart: {
     type: 'bar',
     size: {
-      width: 360,
-      height: 360
+      width: 600,
+      height: 450
     },
     title: {
       isDrawTitle: true,
@@ -63,7 +63,8 @@ export const defaults: Settings = {
     hasDirectLabels: true,
     hasLegendWithDirectLabels: false,
     isDrawSymbols: true,
-    isStatic: false
+    isStatic: false,
+    isShowVisitedDatapointsOnly: false
   },
   axis: {
     minInterval: 25,
@@ -78,7 +79,7 @@ export const defaults: Settings = {
     },
     x: {
       title: {
-        isDrawTitle: true,
+        isDrawTitle: false,
         gap: 8,
         fontSize: 15
       },
@@ -107,6 +108,7 @@ export const defaults: Settings = {
       },
       minValue: 'unset',
       maxValue: 'unset',
+      interval: 'unset',
     },
     y: {
       title: {
@@ -139,6 +141,7 @@ export const defaults: Settings = {
       },
       minValue: 'unset',
       maxValue: 'unset',
+      interval: 'unset'
     },
   },
   legend: {
@@ -243,64 +246,76 @@ export const defaults: Settings = {
       }
     },
     pie: {
-      categoryLabel: {
-        isDrawEnabled: true,
-        position: 'outside',
-        outsideLabelGap: 10,
-        outsideArcDistance: 10,
-        outsideHorizShift: 5,
+      outsideLabels: {
+        vertGap: 10,
+        arcGap: 10,
+        horizShift: 15,
+        horizPadding: 10,
+        leaderStyle: 'direct',
         format: 'raw',
         underlineGap: 2,
+        contents: 'percentage:(value)'
       },
-      valueLabel: {
-        isDrawEnabled: true,
+      insideLabels: {
         format: 'raw',
-        position: 0.85,
+        position: 0.9,
+        contents: 'category'
       },
       isRenderCenterLabel: true,
       annularThickness: 1,
       centerLabel: 'none',
-      centerLabelPadding: 10
+      centerLabelPadding: 10,
+      orientationAngleOffset: 90,
+      explode: '',
+      explodeDistance: 20
     },
     donut: {
-      categoryLabel: {
-        isDrawEnabled: true,
-        position: 'outside',
-        outsideLabelGap: 10,
-        outsideArcDistance: 10,
-        outsideHorizShift: 5,
+      outsideLabels: {
+        vertGap: 10,
+        arcGap: 10,
+        horizShift: 15,
+        horizPadding: 10,
+        leaderStyle: 'direct',
         format: 'raw',
         underlineGap: 2,
+        contents: 'percentage:(value)'
       },
-      valueLabel: {
-        isDrawEnabled: true,
+      insideLabels: {
         format: 'raw',
         position: 0.85,
+        contents: 'category'
       },
       isRenderCenterLabel: true,
       annularThickness: 0.5,
       centerLabel: 'title',
-      centerLabelPadding: 15
+      centerLabelPadding: 15,
+      orientationAngleOffset: 90,
+      explode: '',
+      explodeDistance: 20
     },
     gauge: {
-      categoryLabel: {
-        isDrawEnabled: true,
-        position: 'outside',
-        outsideLabelGap: 4,
-        outsideArcDistance: 10,
-        outsideHorizShift: 5,
+      outsideLabels: {
+        vertGap: 4,
+        arcGap: 10,
+        horizShift: 15,
+        horizPadding: 10,
+        leaderStyle: 'direct',
         format: 'raw',
         underlineGap: 6,
+        contents: 'percentage:(value)'
       },
-      valueLabel: {
-        isDrawEnabled: true,
+      insideLabels: {
         format: 'raw',
         position: 0.85,
+        contents: 'category'
       },
       isRenderCenterLabel: true,
       annularThickness: 0.5,
       centerLabel: 'none',
-      centerLabelPadding: 10
+      centerLabelPadding: 10,
+      orientationAngleOffset: 90,
+      explode: '',
+      explodeDistance: 20
     },
     stepline: {
       lineWidth: 5,
@@ -349,10 +364,10 @@ export const defaults: Settings = {
       },
       isDrawSymbols: false,
       equation: '',
-      xMin: -10,
-      xMax: 10,
       preset: '',
-      renderPts: 100
+      renderPts: 50,
+      resetAxes: false,
+      visitedSeries: -1
     }
   },
   grid: {
@@ -364,17 +379,23 @@ export const defaults: Settings = {
   ui: {
     isVoicingEnabled: false,
     isAnnouncementEnabled: true,
-    speechRate: 1,
+    speechRate: 1.25,
     isFullscreenEnabled: false,
     isLowVisionModeEnabled: false,
     isFocusRingEnabled: false,
-    focusRingGap: 10
+    focusRingGap: 10,
+    navRunTimeoutMs: 125
   },
   controlPanel: {
     isControlPanelDefaultOpen: true,
     tabLabelStyle: 'label',
     isCaptionVisible: true,
     isStatusBarVisible: true,
+    caption: {
+      isCaptionExternalWhenControlPanelClosed: true,
+      hasBorder: false,
+      isExplorationBarBeside: true
+    },
     isSparkBrailleVisible: false,
     isSparkBrailleControlVisible: true,
     isMDRAnnotationsVisible: false,
@@ -413,6 +434,7 @@ export const defaults: Settings = {
     hertzUpper: HERTZ.length - 12,
     soniPlaySpeed: 3,
     riffSpeed: 'medium',
+	riffSpeedIndex: 2,
     isArpeggiateChords: true
   },
   dev: {

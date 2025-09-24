@@ -17,9 +17,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { nothing, svg } from 'lit';
 import {type Ref, ref, createRef} from 'lit/directives/ref.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
+import { classMap } from 'lit/directives/class-map.js';
 
-import { View, type SnapLocation } from '../view/base_view';
+import { View, type SnapLocation, type BboxAnchorCorner } from '../view/base_view';
 import { generateUniqueId, fixed } from '../common/utils';
 import { ParaView } from '../paraview';
 import { SVGNS } from '../common/constants';
@@ -50,6 +51,9 @@ export interface LabelOptions {
   justify?: SnapLocation;
   wrapWidth?: number;
   lineSpacing?: number;
+  pointerEnter?: (e: PointerEvent) => void;
+  pointerLeave?: (e: PointerEvent) => void;
+  click?: (e: MouseEvent) => void;
 }
 
 interface TextLine {
@@ -57,16 +61,9 @@ interface TextLine {
   offset: number;
 }
 
-export interface LabelTextCorners {
-  topLeft: Vec2;
-  topRight: Vec2;
-  bottomRight: Vec2;
-  bottomLeft: Vec2;
-}
+export type LabelTextCorners = Record<BboxAnchorCorner, Vec2>;
 
 export class Label extends View {
-
-  public readonly classList: string[];
 
   protected _elRef: Ref<SVGTextElement> = createRef();
   protected _angle: number;
@@ -77,13 +74,18 @@ export class Label extends View {
   protected _text: string;
   protected _textCornerOffsets!: LabelTextCorners;
   protected _textLines: TextLine[] = [];
-  protected _styleInfo: StyleInfo = {};
 
   constructor(paraview: ParaView, private options: LabelOptions) {
     super(paraview);
-    this.classList = options.classList ?? [];
-    if (!this.classList.includes('label')) {
-      this.classList.push('label');
+    if (options.classList) {
+      if (!options.classList.includes('label')) {
+        options.classList.push('label');
+      }
+      this._classInfo = Object.fromEntries(options.classList.map(cls => [cls, true]));
+    } else {
+      this._classInfo = {
+        label: true
+      };
     }
     this._angle = this.options.angle ?? 0;
     this._textAnchor = this.options.textAnchor ?? (options.wrapWidth ? 'start' : 'middle');
@@ -217,14 +219,6 @@ export class Label extends View {
     };
   }
 
-  get styleInfo() {
-    return this._styleInfo;
-  }
-
-  set styleInfo(styleInfo: StyleInfo) {
-    this._styleInfo = styleInfo;
-  }
-
   computeSize() {
     // XXX Need to make sure the label gets rendered here with the
     // same font settings it will ultimately be displayed with
@@ -263,25 +257,46 @@ export class Label extends View {
 
     let top = 0, bottom = 0, left = 0, right = 0;
 
-    if (this.options.wrapWidth !== undefined && width > this.options.wrapWidth) {
+    const wrapMode = this.options.wrapWidth !== undefined && width > this.options.wrapWidth;
+    if (wrapMode || this._text.includes('\n')) {
       text.textContent = '';
-      const tokens = this._text.split(' ');
       const tspans: SVGTSpanElement[] = [document.createElementNS(SVGNS, 'tspan')];
+      const tokens = this._text.split(wrapMode ? /(\s+)/ : /(\n+)/);
+      // XXX Assumes first token is non-whitespace
       tspans.at(-1)!.textContent = tokens.shift()!;
       text.append(tspans.at(-1)!);
       while (tokens.length) {
         const tok = tokens.shift()!;
-        const tspan = tspans.at(-1)!;
-        const oldContent = tspan.textContent!;
-        tspan.textContent += ' ' + tok;
-        let rect = tspan.getBoundingClientRect();
-        if (rect.width >= this.options.wrapWidth) {
-          tspan.textContent = oldContent;
+        if (tok.includes('\n')) {
           tspans.push(document.createElementNS(SVGNS, 'tspan'));
           text.append(tspans.at(-1)!);
-          tspans.at(-1)!.textContent = tok;
-          tspans.at(-1)!.setAttribute('x', '0');
-          tspans.at(-1)!.setAttribute('dy', `${rect.height + this._lineSpacing}px`);
+          continue;
+        }
+        if (!tok.match(/\w/)) {
+          // only whitespace
+          continue;
+        }
+        const tspan = tspans.at(-1)!;
+        const oldContent = tspan.textContent;
+        if (wrapMode) {
+          tspan.textContent += ' ' + tok;
+          const rect = tspan.getBoundingClientRect();
+          if (rect.width >= this.options.wrapWidth!) {
+            tspan.textContent = oldContent;
+            tspans.push(document.createElementNS(SVGNS, 'tspan'));
+            text.append(tspans.at(-1)!);
+            tspans.at(-1)!.textContent = tok;
+            tspans.at(-1)!.setAttribute('x', '0');
+            tspans.at(-1)!.setAttribute('dy', `${rect.height + this._lineSpacing}px`);
+          }
+        } else {
+          tspan.textContent = tok;
+          const rect = tspan.getBoundingClientRect();
+          //text.append(tspans.at(-1)!);
+          if (tspans.length > 1) {
+            tspans.at(-1)!.setAttribute('x', '0');
+            tspans.at(-1)!.setAttribute('dy', `${rect.height + this._lineSpacing}px`);
+          }
         }
       }
 
@@ -360,14 +375,17 @@ export class Label extends View {
     return svg`
       <text
         ${ref(this._elRef)}
-        class=${this.options.classList?.join(' ') ?? nothing}
+        class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         role=${this.options.role ?? nothing}
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}
         text-anchor=${this._textAnchor}
         transform=${this._makeTransform() ?? nothing}
         id=${this.id}
-        style=${styleMap(this._styleInfo)}
+        style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+        @pointerenter=${this.options.pointerEnter ?? nothing}
+        @pointerleave=${this.options.pointerLeave ?? nothing}
+        @click=${this.options.click ?? nothing}
       >
         ${this._textLines.length
           ? this._textLines.map((line, i) =>

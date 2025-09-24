@@ -1,11 +1,13 @@
 
+import { strToId } from '@fizz/paramanifest';
 import { DataView, type ChartLandingView, type DatapointView } from '.';
 import { Container } from '../base_view';
 import { type DataLayer } from '../layers';
-import { strToId } from '@fizz/paramodel';
 
 import { ref } from 'lit/directives/ref.js';
 import { type StyleInfo } from 'lit/directives/style-map.js';
+import { type ClassInfo } from 'lit/directives/class-map.js';
+import { TemplateResult } from 'lit';
 
 /**
  * Abstract base class for a view representing an entire series.
@@ -37,6 +39,14 @@ export class SeriesView extends Container(DataView) {
     return 'series';
   }
 
+  get classInfo(): ClassInfo {
+    return {
+      series: true,
+      lowlight: !!(this.paraview.store.soloSeries && (this.paraview.store.soloSeries !== this._series.key)),
+      hidden: this.paraview.store.hiddenSeriesList.includes(this._series.key)
+    };
+  }
+
   get parent() {
     return this._parent;
   }
@@ -53,7 +63,7 @@ export class SeriesView extends Container(DataView) {
   get modelIndex() {
     // This is used by datapoint views to extract the correct ID from the JIM
     // (series views may reorder their children)
-    return this.paraview.store.model!.keys.indexOf(this.seriesKey);
+    return this.paraview.store.model!.seriesKeys.indexOf(this.seriesKey);
   }
 
   protected _updateStyleInfo(styleInfo: StyleInfo): void {

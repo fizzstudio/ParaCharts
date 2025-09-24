@@ -2,12 +2,12 @@
 import { type ParaView } from './paraview';
 
 export interface AvailableActions {
-  moveRight(): void;
-  moveLeft(): void;
-  moveUp(): void;
-  moveDown(): void;
-  moveIn(): void;
-  moveOut(): void;
+  moveRight(): Promise<void>;
+  moveLeft(): Promise<void>;
+  moveUp(): Promise<void>;
+  moveDown(): Promise<void>;
+  moveIn(): Promise<void>;
+  moveOut(): Promise<void>;
   goFirst(): void;
   goLast(): void;
   goMinimum(): void;
@@ -31,6 +31,7 @@ export interface AvailableActions {
   jumpToChordLanding(): void;
   shutUp(): void;
   repeatLastAnnouncement(): void;
+  addAnnotation(): void;
 }
 
 
@@ -44,27 +45,27 @@ export class HotkeyActions {
     // actions close over a value that might be removed)
     const chart = () => paraView.documentView!.chartLayers.dataLayer;
     this.actions = {
-      moveRight() {
+      async moveRight() {
         chart().clearPlay();
         chart().move('right');
       },
-      moveLeft() {
+      async moveLeft() {
         chart().clearPlay();
         chart().move('left');
       },
-      moveUp() {
+      async moveUp() {
         chart().clearPlay();
         chart().move('up');
       },
-      moveDown() {
+      async moveDown() {
         chart().clearPlay();
         chart().move('down');
       },
-      moveIn() {
+      async moveIn() {
         chart().clearPlay();
         chart().move('in');
       },
-      moveOut() {
+      async moveOut() {
         chart().clearPlay();
         chart().move('out');
       },
@@ -131,7 +132,6 @@ export class HotkeyActions {
       },
       voicingModeToggle() {
         if (store.settings.ui.isVoicingEnabled) {
-          store.announce('Self-voicing disabled');
           store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = false;
           });
@@ -139,7 +139,6 @@ export class HotkeyActions {
           store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = true;
           });
-          store.announce('Self-voicing enabled');
         }
       },
       darkModeToggle() {
@@ -171,6 +170,9 @@ export class HotkeyActions {
         // paraView.paraChart.controlPanel.descriptionPanel.ariaLiveRegion.replay();
         paraView.paraChart.ariaLiveRegion.replay();
       },
+      addAnnotation() {
+        store.addAnnotation();
+      }
     };
   }
 

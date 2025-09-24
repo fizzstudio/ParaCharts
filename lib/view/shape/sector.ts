@@ -14,14 +14,29 @@ export interface SectorOptions extends ShapeOptions {
   r: number;
   /** Angle measure of sector arc */
   centralAngle: number;
-  /** Rotation of sector; 0=center of arc is at 3 o'clock; positive=clockwise */
+  /** Rotation of sector */
   orientationAngle: number;
+  /** Whether increasing the orientation angle moves counterclockwise */
+  orientationAngleCounterclockwise?: boolean;
   /** Set to a value < 1 for an annular sector */
   annularThickness?: number;
+  /** Default is arc counterclockwise endpoint */
+  arcCenterIsOrientationAnchor?: boolean;
+  /** Default is 90 (midnight) */
+  orientationAngleOffset?: number;
 }
 
 function radians(deg: number) {
-  return deg*Math.PI*2/360;
+  return deg*Math.PI/180;
+}
+
+function degrees(rad: number) {
+  return rad*180/Math.PI;
+}
+
+function normalizeAngle(angle: number) {
+  angle %= 360;
+  return angle < 0 ? 360 + angle : angle;
 }
 
 function interp(a: number, b: number, t: number) {
@@ -32,7 +47,10 @@ export class SectorShape extends Shape {
   protected _r: number;
   protected _centralAngle: number;
   protected _orientationAngle: number;
+  protected _orientationAngleCounterclockwise: boolean;
   protected _annularThickness: number | null = null;
+  protected _arcCenterIsOrientationAnchor: boolean;
+  protected _orientationAngleOffset: number;
   protected _startX!: number;
   protected _startY!: number;
   protected _endX!: number;
@@ -45,9 +63,12 @@ export class SectorShape extends Shape {
     this._r = options.r;
     this._centralAngle = options.centralAngle;
     this._orientationAngle = options.orientationAngle;
+    this._orientationAngleCounterclockwise = !!options.orientationAngleCounterclockwise;
     if (options.annularThickness) {
       this._annularThickness = options.annularThickness;
     }
+    this._arcCenterIsOrientationAnchor = !!options.arcCenterIsOrientationAnchor;
+    this._orientationAngleOffset = options.orientationAngleOffset ?? 90;
     if (options.isPattern){
       this._isPattern = options.isPattern;
     }
@@ -59,9 +80,12 @@ export class SectorShape extends Shape {
     options.r = this._r;
     options.centralAngle = this._centralAngle;
     options.orientationAngle = this._orientationAngle;
+    options.orientationAngleCounterclockwise = this._orientationAngleCounterclockwise;
     if (this._annularThickness) {
       options.annularThickness = this._annularThickness;
     }
+    options.arcCenterIsOrientationAnchor = this._arcCenterIsOrientationAnchor;
+    options.orientationAngleOffset = this._orientationAngleOffset;
     if (this._isPattern){
       options.isPattern = this._isPattern
     }
@@ -115,25 +139,78 @@ export class SectorShape extends Shape {
     return this._endY;
   }
 
-  get arcCenter() {
+  protected _orientationAngleToPolar(angle: number) {
+    return normalizeAngle((this._orientationAngleCounterclockwise
+      ? angle
+      : 360 - angle) + this._orientationAngleOffset);
+  }
+
+  protected _polarAngleToOrientation(angle: number) {
+    const theta = angle - this._orientationAngleOffset;
+    const normed = normalizeAngle(this._orientationAngleCounterclockwise
+      ? theta
+      : 360 - theta);
+    return normed;
+  }
+
+  /**
+   * Convert polar angle to Cartesian vector.
+   * @returns Vector with origin at circle center, positive y UP
+   */
+  protected _angleToVector(angle: number): Vec2 {
     return new Vec2(
-      this._x + this._r*Math.cos(radians(this._orientationAngle)),
-      this._y + this._r*Math.sin(radians(this._orientationAngle))
+      this._r*Math.cos(radians(angle)),
+      this._r*Math.sin(radians(angle))
     );
+  }
+
+  /**
+   * Convert Cartesian vector to polar angle.
+   */
+  protected _vectorToAngle(v: Vec2): number {
+    // Don't assume the vector is of radius length
+    v = v.normalize();
+    // xAngle will be between -90 and +90, so drop sign
+    const xAngle = Math.abs(degrees(Math.asin(v.y)));
+    if (v.x >= 0 && v.y >= 0) {
+      return xAngle;
+    } else if (v.x < 0 && v.y >= 0) {
+      return 180 - xAngle;
+    } else if (v.x < 0 && v.y < 0) {
+      return 180 + xAngle;
+    } else {
+      return 360 - xAngle;
+    }
+  }
+
+  get arcCenterAngle() {
+    return this._orientationAngleToPolar(this._arcCenterIsOrientationAnchor
+      ? this._orientationAngle
+      : this._orientationAngle + this._centralAngle/2);
+  }
+
+  get arcCenter() {
+    return this._angleToVector(this.arcCenterAngle).multiply(new Vec2(1, -1)).add(this._loc);
+  }
+
+  get arcLeftAngle() {
+    return this._orientationAngleToPolar(this._arcCenterIsOrientationAnchor
+      ? this._orientationAngle + this._centralAngle/2
+      : this._orientationAngle);
   }
 
   get arcLeft() {
-    return new Vec2(
-      this._x + this._r*Math.cos(radians(this._orientationAngle - this._centralAngle/2)),
-      this._y + this._r*Math.sin(radians(this._orientationAngle - this._centralAngle/2))
-    );
+    return this._angleToVector(this.arcLeftAngle).multiply(new Vec2(1, -1)).add(this._loc);
+  }
+
+  get arcRightAngle() {
+    return this._orientationAngleToPolar(this._arcCenterIsOrientationAnchor
+      ? this._orientationAngle + this._centralAngle/2
+      : this._orientationAngle + this._centralAngle);
   }
 
   get arcRight() {
-    return new Vec2(
-      this._x + this._r*Math.cos(radians(this._orientationAngle + this._centralAngle/2)),
-      this._y + this._r*Math.sin(radians(this._orientationAngle + this._centralAngle/2))
-    );
+    return this._angleToVector(this.arcRightAngle).multiply(new Vec2(1, -1)).add(this._loc);
   }
 
   get r() {
@@ -154,6 +231,15 @@ export class SectorShape extends Shape {
     this.computeLayout();
   }
 
+  get orientationAngle() {
+    return this._orientationAngle;
+  }
+
+  set orientationAngle(orientationAngle: number) {
+    this._orientationAngle = orientationAngle;
+    this.computeLayout();
+  }
+
   get annularThickness() {
     return this._annularThickness;
   }
@@ -168,25 +254,27 @@ export class SectorShape extends Shape {
   }
 
   containsPoint(point: Vec2) {
+    // Convert to polar coords
     const v = point.subtract(this._loc);
-    let theta = v.y >= 0 ? Math.acos(v.x/v.length()) : -Math.acos(v.x/v.length());
-    // if (theta < 0) {
-    //   theta = 2*Math.PI + theta;
-    // }
-    const withinArc = theta >= radians(this._orientationAngle - this._centralAngle/2)
-      && theta <= radians(this._orientationAngle + this._centralAngle/2);
+    v.y = -v.y;
+    //let theta = v.y >= 0 ? Math.acos(v.x/v.length()) : -Math.acos(v.x/v.length());
+    const theta = this._polarAngleToOrientation(this._vectorToAngle(v));
+    const left = this._polarAngleToOrientation(this.arcLeftAngle);
+    const right = this._polarAngleToOrientation(this.arcRightAngle);
+    const withinArc = theta >= left
+      && theta <= (right === 0 ? 360 : right);
     return (this._annularThickness === null || this._annularThickness === 1)
-      ? withinArc
+      ? withinArc && (v.length() <= this._r)
       : withinArc && (v.length() >= this._r - this._annularThickness*this._r);
   }
 
   computeLayout() {
-    const thetaLeft = this._orientationAngle - this._centralAngle/2;
-    const thetaRight = this._orientationAngle + this._centralAngle/2;
-    this._startX = this._x + this._r*Math.cos(radians(thetaLeft));
-    this._startY = this._y + this._r*Math.sin(radians(thetaLeft));
-    this._endX = this._x + this._r*Math.cos(radians(thetaRight));
-    this._endY = this._y + this._r*Math.sin(radians(thetaRight));
+    const thetaLeft = radians(this.arcLeftAngle);
+    const thetaRight = radians(this.arcRightAngle);
+    this._startX = this._x + this._r*Math.cos(thetaLeft);
+    this._startY = this._y - this._r*Math.sin(thetaLeft);
+    this._endX = this._x + this._r*Math.cos(thetaRight);
+    this._endY = this._y - this._r*Math.sin(thetaRight);
     this._arcLarge = this._centralAngle >= 180 ? 1 : 0;
   }
 
@@ -200,7 +288,7 @@ export class SectorShape extends Shape {
     }
     return fixed`
       M${mx},${my}
-      L${this._startX},${this._startY} 
+      L${this._startX},${this._startY}
       A${this._r},${this._r}
         0 ${this._arcLarge} ${this._arcSweep}
         ${this._endX},${this._endY}
@@ -232,26 +320,28 @@ export class SectorShape extends Shape {
           <path
             d=${this._pathD}
             transform=${this._scale !== 1
-          ? `translate(${this._x},${this._y})
-                scale(${this._scale})
-                translate(${-this._x},${-this._y})`
-          : nothing}
+              ? `translate(${this._x},${this._y})
+                    scale(${this._scale})
+                    translate(${-this._x},${-this._y})`
+              : nothing}
             fill="white"
-          stroke="black"
-          stroke-width=4
+            stroke="black"
+            stroke-width=4
+            clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
           ></path>
           <path
             ${this._ref ? ref(this._ref) : undefined}
             id=${this._id || nothing}
-            style=${styleMap(this._styleInfo)}
-            class=${classMap(this._classInfo)}
+            style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+            class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
             role=${this._role || nothing}
             d=${this._pathD}
             transform=${this._scale !== 1
-          ? `translate(${this._x},${this._y})
-                scale(${this._scale})
-                translate(${-this._x},${-this._y})`
-          : nothing}
+              ? `translate(${this._x},${this._y})
+                    scale(${this._scale})
+                    translate(${-this._x},${-this._y})`
+              : nothing}
+            clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
           ></path>
         `;
     }
@@ -260,8 +350,8 @@ export class SectorShape extends Shape {
       <path
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}
-        style=${styleMap(this._styleInfo)}
-        class=${classMap(this._classInfo)}
+        style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+        class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         role=${this._role || nothing}
         d=${this._pathD}
         transform=${this._scale !== 1
@@ -269,6 +359,7 @@ export class SectorShape extends Shape {
              scale(${this._scale})
              translate(${-this._x},${-this._y})`
           : nothing}
+        clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
       ></path>
     `;
     }

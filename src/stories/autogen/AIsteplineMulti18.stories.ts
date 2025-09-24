@@ -1,6 +1,9 @@
 import { AiChart, type ChartProps } from '../Chart';
 
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import { expect } from 'storybook/test';
+
+import Runner from '../tests/steplineTests';
 
 type Story = StoryObj<ChartProps>;
 
@@ -16,5 +19,9 @@ export const AiChart18: Story = {
   args: {
     filename: "manifests/autogen/line-multi/line-multi-manifest-Pokemon.json",
     forcecharttype: "stepline",
+  },
+  play: async ({canvas, userEvent}) => {
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/line-multi/line-multi-manifest-Pokemon.json");
+    await runner.run();
   }
 }

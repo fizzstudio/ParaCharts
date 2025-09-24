@@ -22,6 +22,7 @@ import { ParaView } from '../../paraview';
 
 import { type TemplateResult } from 'lit';
 import { Vec2 } from '../../common/vector';
+import { PlaneModel } from '@fizz/paramodel';
 
 /**
  * A single tier of tick labels.
@@ -37,6 +38,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   constructor(
     public readonly axis: Axis<T>,
     public readonly tickLabels: string[],
+    public readonly tierIndex: number,
     length: number,
     paraview: ParaView
   ) {
@@ -76,7 +78,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
 
   protected _createId(..._args: any[]): string {
     // XXX needs index
-    return `tick-label-tier-${this.axis.orientation}`;
+    return `tick-label-tier-${this.axis.orientation}-${this.tierIndex}`;
   }
 
   protected _maxLabelWidth() {
@@ -97,6 +99,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
         continue;
       }
       const label = new Label(this.paraview, {
+        id: `tick-label-${this.axis.orientation}-${i}`,
         classList: [
           'tick-label', this.axis.orientation,
           this.axis.orientationSettings.position as string],
@@ -135,10 +138,11 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   constructor(
     readonly axis: Axis<'horiz'>,
     readonly tickLabels: string[],
+    tierIndex: number,
     length: number,
     paraview: ParaView
   ) {
-    super(axis, tickLabels, length, paraview);
+    super(axis, tickLabels, tierIndex, length, paraview);
     this.padding = {top: this.axis.settings.tick.tickLabel.offsetGap};
   }
 
@@ -173,8 +177,8 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   protected _tickLabelY(index: number) {
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
     //   have two axes
-    const facet = this.paraview.store.model!.getAxisFacet(this.axis.orientation)
-       ?? this.paraview.store.model!.facetMap[this.axis.orientation === 'horiz' ? 'x' : 'y']!;
+    const facet = (this.paraview.store.model as PlaneModel).getAxisFacet(this.axis.orientation)
+       ?? this.paraview.store.model!.getFacet(this.axis.orientation === 'horiz' ? 'x' : 'y')!;
     const tickLen = facet!.variableType === 'independent'
       ? this.paraview.store.settings.axis.x.tick.length
       : this.paraview.store.settings.axis.y.tick.length;
@@ -247,10 +251,11 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
   constructor(
     readonly axis: Axis<'vert'>,
     readonly tickLabels: string[],
+    tierIndex: number,
     length: number,
     paraview: ParaView
   ) {
-    super(axis, tickLabels, length, paraview);
+    super(axis, tickLabels, tierIndex, length, paraview);
     this.padding = {right: this.axis.settings.tick.tickLabel.offsetGap};
   }
 

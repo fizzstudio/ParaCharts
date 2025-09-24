@@ -2,23 +2,26 @@
 //import { KeymapsInput } from '../../lib';
 import { type SettingsInput } from '../../lib/store/settings_types';
 
-import { html, nothing } from 'lit';
+import { html, nothing, TemplateResult } from 'lit';
 import '/lib';
 import { ChartType } from '@fizz/paramanifest';
 import '/lib-ai/index-ai.ts';
 
 export interface ChartProps {
   filename: string;
+  manifestType?: 'url' | 'fizz-chart-data';
   config?: SettingsInput;  
   forcecharttype?: ChartType;
-  slot?: string;
+  slot?: TemplateResult;
+  legendOrder?: 'lexical' | 'chart';
+  description?: string;
 }
 
 /**
  * Primary UI component for user interaction
  */
 export const Chart = ({ 
-  filename, config, forcecharttype, slot
+  filename, config, forcecharttype, slot, legendOrder, description, manifestType
 }: ChartProps) => {
   config ??= {};
   config['controlPanel.isControlPanelDefaultOpen'] = true;
@@ -72,10 +75,12 @@ export const Chart = ({
 
   <para-chart 
     manifest=${filename}
-    manifesttype=${filename.startsWith('/') ? 'url' : 'fizz-chart-data'} 
+    manifesttype=${manifestType ?? 'fizz-chart-data'} 
     .config=${config}
     forcecharttype=${forcecharttype ?? nothing}
     type=${forcecharttype ?? nothing}
+    description=${description ?? nothing}
+    data-testid="para-chart"
   >
     <slot>${slot ?? ``}</slot>
     <span slot="settings"></span>
@@ -84,7 +89,7 @@ export const Chart = ({
 };
 
 export const AiChart = ({ 
-  filename, config, forcecharttype
+  filename, config, forcecharttype, slot, legendOrder, description, manifestType
 }: ChartProps) => {
   config ??= {};
   config['controlPanel.isControlPanelDefaultOpen'] = true;
@@ -138,10 +143,13 @@ export const AiChart = ({
 
   <para-chart-ai 
     manifest=${filename}
-    manifesttype=${filename.startsWith('/') ? 'url' : 'fizz-chart-data'} 
+    manifesttype=${manifestType ?? 'fizz-chart-data'} 
     .config=${config}
     forcecharttype=${forcecharttype ?? nothing}
+    description=${description ?? nothing}
+    data-testid="para-chart"
   >
+    <slot>${slot ?? ``}</slot>
     <span slot="settings"></span>
   </para-chart-ai>
   `;

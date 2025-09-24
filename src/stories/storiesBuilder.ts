@@ -125,6 +125,9 @@ function generateFamilyStories(family: ChartTypeFamily, ai: boolean, multi?: boo
     : familyCatalogMapMulti(family, multi);
   const familyMembers = CHART_FAMILY_MEMBERS[family];
   for (const chartType of familyMembers) {
+    if (chartType === 'heatmap') {
+      continue;
+    }
     if (multi === undefined) {
       generateTypeStories(ai, chartType, familyManifests);
     } else {
@@ -172,6 +175,9 @@ function generateAllStoryMulti(
 function generateFamilyAllStory(family: ChartTypeFamily, ai: boolean, multi?: boolean): void {
   const familyMembers = CHART_FAMILY_MEMBERS[family];
   for (const chartType of familyMembers) {
+    if (chartType === 'heatmap') {
+      continue;
+    }
     if (multi === undefined) {
       generateAllStory(ai, chartType, family);
     } else {

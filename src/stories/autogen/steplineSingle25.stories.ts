@@ -1,6 +1,9 @@
 import { Chart, type ChartProps } from '../Chart';
 
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import { expect } from 'storybook/test';
+
+import Runner from '../tests/steplineTests';
 
 type Story = StoryObj<ChartProps>;
 
@@ -16,5 +19,9 @@ export const Chart25: Story = {
   args: {
     filename: "manifests/autogen/line-single/line-single-manifest-375.json",
     forcecharttype: "stepline",
+  },
+  play: async ({canvas, userEvent}) => {
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/line-single/line-single-manifest-375.json");
+    await runner.run();
   }
 }

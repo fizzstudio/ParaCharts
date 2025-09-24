@@ -1,6 +1,6 @@
-import { enumerate, strToId } from "@fizz/paramodel";
+import { enumerate } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
-import { svg } from "lit";
+import { nothing, svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
 import { fixed } from "../../../../common/utils";
 import { ParaView } from "../../../../paraview";
@@ -10,6 +10,11 @@ import { DatapointView, SeriesView } from "../../../data";
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { XYChart, XYSeriesView } from "./xy_chart";
+import { strToId } from "@fizz/paramanifest";
+import { classMap } from "lit/directives/class-map.js";
+import { ref } from "lit/directives/ref.js";
+import { styleMap } from "lit/directives/style-map.js";
+import { NavNode } from "../navigation";
 
 export class Heatmap extends XYChart {
   protected _resolution: number = 25;
@@ -29,8 +34,6 @@ export class Heatmap extends XYChart {
   _init() {
     this._settings = this.paraview.store.settings.type.heatmap
     this._resolution = this.paraview.store.settings.type.heatmap.resolution ?? 20
-    console.log("init resolution")
-    console.log(this.resolution)
     this._generateHeatmap();
     const values = this._grid.flat();
     this._maxCount = Math.max(...values);
@@ -48,21 +51,6 @@ export class Heatmap extends XYChart {
       xValues: this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number),
       yValues: this.paraview.store.model!.allFacetValues('y')!.map((x) => x.value as number),
     });
-    /*
-        todo().controller.registerSettingManager(this);
-        todo().controller.settingViews.add(this, {
-          type: 'textfield',
-          key: 'type.scatter.resolution',
-          label: 'Resolution',
-          options: {
-            inputType: 'number',
-            min: 5,
-            max: 100
-          },
-          parentView: 'chartDetails.tabs.chart.chart',
-        });
-        todo().deets!.chartPanel.requestUpdate();
-        */
     this.paraview.store.settingControls.add({
       type: 'textfield',
       key: 'type.heatmap.resolution',
@@ -99,12 +87,12 @@ export class Heatmap extends XYChart {
   protected _createPrimaryNavNodes() {
     super._createPrimaryNavNodes();
     // Create vertical links between datapoints
-    this._navMap.root.query('series').forEach(seriesNode => {
+    this._navMap!.root.query('series').forEach(seriesNode => {
       seriesNode.allNodes('right')
         // skip bottom row
         .slice(0, -this._resolution).forEach((pointNode, i) => {
-        pointNode.connect('down', pointNode.layer.get('datapoint', i + this._resolution)!);
-      });
+          pointNode.connect('down', pointNode.layer.get('datapoint', i + this._resolution)!);
+        });
     });
   }
 
@@ -134,11 +122,6 @@ export class Heatmap extends XYChart {
     for (const [col, i] of enumerate(this.paraview.store.model!.series)) {
       const seriesView = new XYSeriesView(this, col.key);
       this._chartLandingView.append(seriesView);
-      for (const [value, j] of enumerate(col)) {
-        //const datapointView = this._newDatapointView(seriesView);
-        //seriesView.append(datapointView);
-        // the `index` property of the datapoint view will equal j
-      }
       for (let i = 0; i < this._resolution ** 2; i++) {
         const heatmapTile = new HeatmapTileView(this, seriesView);
         seriesView.append(heatmapTile)
@@ -151,20 +134,7 @@ export class Heatmap extends XYChart {
     });
   }
 
-  protected _layoutDatapoints() {
-    for (const datapointView of this.datapointViews) {
-      datapointView.completeLayout();
-    }
-  }
-
   protected _generateHeatmap(): Array<Array<number>> {
-    //const xValues = this.paraview.store.model!.allFacetValues('x')!.map((x) => x.value as number)
-    //const yValues = this.paraview.store.model!.allFacetValues('y')!.map((x) => x.value as number)
-
-    //for (let i = 0; i < xValues.length; i++){
-    //  this._data.push([xValues[i],yValues[i]])
-    //}
-
     const seriesList = this.paraview.store.model!.series
     this._data = [];
     for (let series of seriesList) {
@@ -188,10 +158,8 @@ export class Heatmap extends XYChart {
     let yMin: number = yLabels.min!;
     let xMin: number = xLabels.min!;
 
-
     xMax += (xMax - xMin) / 10
     xMin -= (xMax - xMin) / 10
-
 
     const grid: Array<Array<number>> = [];
 
@@ -234,6 +202,55 @@ export class Heatmap extends XYChart {
 
   }
 
+  async navRunDidEnd(cursor: NavNode) {
+    if (cursor.type === 'datapoint') {
+      const dpView = cursor.datapointViews[0] as HeatmapTileView;
+      this.paraview.store.announce(dpView.summary())
+    }
+    //Sam: Most stuff here (summaries, sparkbraille, sonification) is not implemented yet for heatmaps, 
+    // I'm overriding to prevent errors, uncomment this as they get added
+    /*
+      const seriesKey = cursor.at(0)?.seriesKey ?? '';
+      if (cursor.type === 'top') {
+        await this.paraview.store.asyncAnnounce(this.paraview.summarizer.getChartSummary());
+      } else if (cursor.type === 'series') {
+        this.paraview.store.announce(
+          await this.paraview.summarizer.getSeriesSummary(seriesKey));
+        this._playRiff();
+        this.paraview.store.sparkBrailleInfo = this._sparkBrailleInfo();
+      } else if (cursor.type === 'datapoint') {
+        // NOTE: this needs to be done before the datapoint is visited, to check whether the series has
+        //   ever been visited before this point
+        const seriesPreviouslyVisited = this.paraview.store.everVisitedSeries(seriesKey);
+        const announcements = [this.paraview.summarizer.getDatapointSummary(cursor.at(0)!.datapoint, 'statusBar')];
+        const isSeriesChange = !this.paraview.store.wasVisitedSeries(seriesKey);
+        if (isSeriesChange) {
+          announcements[0] = `${seriesKey}: ${announcements[0]}`;
+          if (!seriesPreviouslyVisited) {
+            const seriesSummary = await this.paraview.summarizer.getSeriesSummary(seriesKey);
+            announcements.push(seriesSummary);
+          }
+        }
+        this.paraview.store.announce(announcements);
+        if (this.paraview.store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
+          this._playDatapoints([cursor.at(0)!.datapoint]);
+        }
+        this.paraview.store.sparkBrailleInfo = this._sparkBrailleInfo();
+      } else if (cursor.type === 'chord') {
+        if (this.paraview.store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
+          if (this.paraview.store.settings.sonification.isArpeggiateChords) {
+            this._playRiff(this._chordRiffOrder());
+          } else {
+            this._playDatapoints(cursor.datapointViews.map(view => view.datapoint));
+          }
+        }
+      } else if (cursor.type === 'sequence') {
+        this.paraview.store.announce(await this.paraview.summarizer.getSequenceSummary(cursor.options as SequenceNavNodeOptions));
+        this._playRiff();
+      }
+        */
+  }
+
 }
 
 export class HeatmapTileView extends DatapointView {
@@ -244,7 +261,7 @@ export class HeatmapTileView extends DatapointView {
   protected _height!: number;
   protected _width!: number;
   protected _count: number = 0;
-  protected isVisited: boolean = false;
+
   constructor(
     chart: Heatmap,
     series: SeriesView
@@ -265,6 +282,14 @@ export class HeatmapTileView extends DatapointView {
     return this._count
   }
 
+  get fillColor() {
+    let color = `hsl(0, 0%, 0%)`
+    if (this._count > 0) {
+      color = `hsl(0, 0%, ${(85 * this._count / this.chart.maxCount) + 15}%)`
+    }
+    return color
+  }
+
   get _selectedMarkerX() {
     return this._x;
   }
@@ -275,26 +300,19 @@ export class HeatmapTileView extends DatapointView {
 
   get selectedMarker(): Shape {
     return new RectShape(this.paraview, {
-      width: this._width,
-      height: this._height,
-      x: this._x,
-      y: this._y,
+      width: this._width + 4,
+      height: this._height + 4,
+      x: this._x - 2,
+      y: this._y - 2,
       fill: 'none',
       stroke: 'red',
-      strokeWidth: 4
+      strokeWidth: 5,
     });
   }
-
-  // protected get visitedTransform() {
-  //   return 'scaleX(1.15)';
-  // }
 
   protected _createId(..._args: any[]): string {
     //const facets = [...this.datapoint.entries()].map(([key, box]) =>
     // `${key}_${formatBox(box, this.paraview.store.getFormatType('domId'))}`).join('-');
-    //console.log([...this.datapoint.entries()])
-    //console.log(facets)
-
     return [
       'datapoint',
       strToId(this.series.key),
@@ -306,167 +324,84 @@ export class HeatmapTileView extends DatapointView {
   completeLayout() {
     this._height = this.chart.parent.height / this.chart.resolution;
     this._width = this.chart.parent.width / this.chart.resolution;
-    //const length = this.chart.paraview.store!.model!.series[0].length
     this._x = (this.index) % this.chart.resolution * this._width
     this._y = Math.floor((this.index) / this.chart.resolution) * this._height
     const id = this.index;
     this._count = this.chart.grid[id % this.chart.resolution][Math.floor(id / this.chart.resolution)]
-    //console.log(this._count)
     this._id = [
       'datapoint',
       strToId(this.seriesKey),
       `${this._x}`,
       `${this._y}`
     ].join('-');
-
+    super.completeLayout();
   }
 
-  computeLayout() {
-  }
-
-  layoutSymbol() {
-  }
-
-
-  protected get _d() {
-
-    return fixed`
-      M${this._x},${this._y}
-      v${this._height}
-      h${this._width}
-      v${-1 * this._height}
-      Z`;
-  }
-
+  protected _createSymbol() { }
+  protected _contentUpdateShapes() { }
+  layoutSymbol() { }
 
   summary() {
-
-    const length = this.chart.paraview.store!.model!.series[0].length
-    const yInfo = this.chart.axisInfo!.yLabelInfo!
-    const ySpan = yInfo.range! / this.chart.resolution
-    const up = (yInfo.max! - ySpan * (Math.floor((this.index - length) / this.chart.resolution))).toFixed(2)
-    const down = (yInfo.max! - ySpan * (Math.floor((this.index - length) / this.chart.resolution) + 1)).toFixed(2)
-
     const xInfo = this.chart.axisInfo!.xLabelInfo!
+    const yInfo = this.chart.axisInfo!.yLabelInfo!
     const xSpan = xInfo.range! / this.chart.resolution
-    const left = (xInfo.min! + xSpan * ((this.index - length) % this.chart.resolution)).toFixed(2)
-    const right = (xInfo.min! + xSpan * ((this.index - length) % this.chart.resolution + 1)).toFixed(2)
+    const ySpan = yInfo.range! / this.chart.resolution
+    const up = (yInfo.max! - ySpan * (Math.floor((this.index) / this.chart.resolution))).toFixed(2)
+    const down = (yInfo.max! - ySpan * (Math.floor((this.index) / this.chart.resolution) + 1)).toFixed(2)
+    const left = (xInfo.min! + xSpan * ((this.index) % this.chart.resolution)).toFixed(2)
+    const right = (xInfo.min! + xSpan * ((this.index) % this.chart.resolution + 1)).toFixed(2)
     return `This block contains ${this.count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
   }
 
-  render() {
-    const visitedScale = this.isVisited ? 10 : 1;
-    let color = `hsl(0, 0%, 0%)`
-    if (this._count > 0) {
-      color = `hsl(0, 0%, ${(85 * this._count / this.chart.maxCount) + 15}%)`
-    }
-    //console.log(color)
-    return svg`
-      <path
-        d='${this._d}'
-        role="datapoint"
-        stroke-width= '${3}'
-        fill= '${color}'
-        stroke= '${this.paraview.store.visitedDatapoints.some(item => item.index === this.index) ? 'hsl(0, 100.00%, 50.00%)' : color}'
-        id= '${this.id}'
-      ></path>
-    `;
-    /*
-    return super.render(svg`
-      <path
-        d='${this._d}'
-        role="datapoint"
-        stroke-width= '${3}'
-        fill= '${color}'
-        stroke= '${this.isVisited ? 'hsl(0, 100.00%, 50.00%)' : color}'
-        id= '${this.id}'
-      ></path>
-    `);
-    */
+  protected _createShapes() {
+    const shape = new HeatmapTile(this.paraview, {
+      x: this._x,
+      y: this._y,
+      width: this._width,
+      height: this._height,
+      fill: this.fillColor,
+      stroke: this.fillColor
+    });
+    this._shapes.push(shape)
+    super._createShapes();
+  }
+}
+
+export class HeatmapTile extends RectShape {
+  get count() {
+    let parent = this.parent as HeatmapTileView;
+    return parent.count;
+  }
+  get chart() {
+    let parent = this.parent as HeatmapTileView;
+    return parent.chart;
+  }
+  get fillColor() {
+    let parent = this.parent as HeatmapTileView;
+    return parent.fillColor;
   }
 
+  get parentIndex() {
+    let parent = this.parent as HeatmapTileView;
+    return parent.index;
+  }
+  render() {
+    this._styleInfo.stroke = this.paraview.store.visitedDatapoints.some(item => item.index === this.parentIndex) ? 'hsl(0, 100.00%, 50.00%)' : this.options.stroke ?? this._options.stroke
+    return svg`
+        <rect
+          ${this._ref ? ref(this._ref) : undefined}
+          id=${this._id || nothing}
+          style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+          class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
+          role=${this._role || nothing}
+          x=${fixed`${this._x}`}
+          y=${fixed`${this._y}`}
+          width=${fixed`${this.width}`}
+          height=${fixed`${this.height}`}
+          fill= '${this.fillColor}'
+
+          clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
+        ></rect>
+      `;
+  }
 }
-
-/*
-export class HeatmapDatapointView extends DatapointView {
-
-    declare readonly chart: Heatmap;
-    declare protected _parent: XYSeriesView;
-
-    protected _height!: number;
-    protected _width!: number;
-    protected _color!: number;
-
-    constructor(
-        seriesView: XYSeriesView,
-    ) {
-        super(seriesView);
-    }
-
-    get width() {
-        return this._width;
-    }
-
-    get height() {
-        return this._height;
-    }
-
-    get color() {
-        return this._color
-    }
-
-    get _selectedMarkerX() {
-        return this._x;
-    }
-
-    get _selectedMarkerY() {
-        return this._y;
-    }
-
-    // protected get visitedTransform() {
-    //   return 'scaleX(1.15)';
-    // }
-
-    computeLayout() {
-
-        const orderIdx = Object.keys(this.stack.bars).indexOf(this.series.name!);
-        const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
-          .map(bar => bar._height)
-          .reduce((a, b) => a + b, 0);
-        const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
-        this._height = this.datapoint.y.number*pxPerYUnit;
-        this._x = this.stack.x + this.stack.cluster.x;
-        this._y = this.chart.height - this._height - distFromXAxis;
-
-
-        this._height = this.chart.height / this.chart.resolution;
-        this._width = this.chart.width / this.chart.resolution;
-        this._x = this.index % this.chart.resolution * this._width
-        this._y = Math.floor(this.index / this.chart.resolution) * this._height
-    }
-
-    protected get _d() {
-
-        return fixed`
-      M${this._x},${this._y}
-      v${this._height}
-      h${this._width}
-      v${-1 * this._height}
-      Z`;
-    }
-
-    render() {
-        // 'stacked' === this.paraChart.multiseries && this.params.yInfo.stackOffset ?
-        // aria-labelledby="${this.params.labelId}"
-        //const visitedScale = this._isVisited ? this.chart.settings.highlightScale : 1;
-        const visitedScale = 1.5
-        const styles = {
-            strokeWidth: 2 * visitedScale,
-            fill: this.color,
-            stroke: "white"
-        };
-        return svg``;
-    }
-
-}
-*/

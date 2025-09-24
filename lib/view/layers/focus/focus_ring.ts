@@ -13,9 +13,10 @@ export class FocusRing extends Container(View) {
   constructor(paraview: ParaView, focusView: View) {
     super(paraview);
     const gap = paraview.store.settings.ui.focusRingGap;
-
     let shape = focusView.focusRingShape();
     if (shape) {
+      // `shape` may have been the child of a previous focus ring
+      shape.remove();
       shape.stroke = 'white';
       shape.strokeWidth = strokeWidthOuter;
       shape.fill = 'none';

@@ -82,8 +82,12 @@ export class AriaLive extends ParaComponent {
     this._srb.clear();
   }
 
+  get lastAnnouncement() {
+    return this._srb.lastCreatedElement?.textContent;
+  }
+
   replay() {
-    const msg = this._srb.lastCreatedElement?.textContent;
+    const msg = this.lastAnnouncement;
     if (msg) {
       this._store.announce(msg);
     }
@@ -105,6 +109,7 @@ export class AriaLive extends ParaComponent {
       <div
         ${ref(this._ariaLiveRef)}
         class="sr-only"
+        data-testid="sr-status"
       ></div>
       <para-aria-live-history-dialog
         ${ref(this._historyDialogRef)}

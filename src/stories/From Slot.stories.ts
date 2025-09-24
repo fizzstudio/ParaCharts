@@ -1,5 +1,6 @@
 import {Chart, type ChartProps} from './Chart';
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import { expect } from 'storybook/test';
 
 import { html, TemplateResult } from 'lit';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
@@ -49,19 +50,13 @@ export const FromSlot: Story = {
   args: {
     filename: "",
     forcecharttype: "pie",
-    summary: '',
-    chartTitle: '',
-    xAxisLabel: '',
-    yAxisLabel: '',
-    configFile: "./sample_config.json",
-    keybindingsFile: './sample_keybindings.json',
     slot: unsafeHTML(`
           <table>
           <caption>Division of energy in the Universe (Table)</caption>
           <thead>
             <tr>
               <th>Kind of energy</th>
-              <th>Proportion</th>
+              <th>Proportion of total energy in the Universe</th>
             </tr>
           </thead>
           <tbody>
@@ -84,7 +79,11 @@ export const FromSlot: Story = {
           </tbody>
         </table>
     `) as TemplateResult
-  }
+  },
+  play: async ({ canvas, userEvent }) => {
+    const parachart = await canvas.findByTestId('para-chart');
+    await expect(parachart).toBeInTheDocument();
+  },
 };
 
 

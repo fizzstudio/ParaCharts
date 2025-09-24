@@ -19,11 +19,12 @@ import { XYChart, XYDatapointView, XYSeriesView } from '.';
 import { AxisInfo } from '../../../../common/axisinfo';
 import { Setting, type PointChartType } from '../../../../store/settings_types';
 
-import { enumerate, strToId } from '@fizz/paramodel';
+import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 import { svg } from 'lit';
 import { linearRegression } from 'simple-statistics';
 import { View } from '../../../base_view';
+import { strToId } from '@fizz/paramanifest';
 
 
 /**
@@ -31,10 +32,9 @@ import { View } from '../../../base_view';
  * (connected or not).
  */
 export abstract class PointChart extends XYChart {
- 
+
   protected _addedToParent() {
     super._addedToParent();
-    //@ts-ignore Remove when graph is added to ChartTypes in ParaManifest
     if (this.paraview.store.type !== "graph"){
       this._axisInfo = new AxisInfo(this.paraview.store, {
       yValues: this.paraview.store.model!.allFacetValues('y')!.map((y) => y.value as number)
@@ -62,7 +62,7 @@ export abstract class PointChart extends XYChart {
   }
 
   protected _newSeriesView(seriesKey: string) {
-    return new PointSeriesView(this, seriesKey);    
+    return new PointSeriesView(this, seriesKey);
   }
 
   protected _newDatapointView(seriesView: SeriesView) {
@@ -92,7 +92,7 @@ export abstract class PointChart extends XYChart {
     // yet, which are also direct children of the chart.
     this._chartLandingView.sortChildren((a: XYSeriesView, b: XYSeriesView) => {
       return (b.children[0].datapoint.facetValueNumericized(b.children[0].datapoint.depKey)!) - (a.children[0].datapoint.facetValueNumericized(a.children[0].datapoint.depKey)!);
-    });  
+    });
   }
 
   // protected _layoutDatapoints() {
@@ -130,12 +130,6 @@ export abstract class PointChart extends XYChart {
 }
 
 export class PointSeriesView extends XYSeriesView {
-
-  get styleInfo() {
-    const style = super.styleInfo;
-    style.fill = 'none';
-    return style;
-  }
 
 }
 
@@ -181,7 +175,7 @@ export class ChartPoint extends XYDatapointView {
 
   protected _computeY() {
     const pxPerYUnit = this.chart.height / this.chart.axisInfo!.yLabelInfo.range!;
-    return this.chart.height - (this.datapoint.facetValueNumericized(this.datapoint.depKey)! - this.chart.axisInfo!. yLabelInfo.min!) * pxPerYUnit;
+    return this.chart.height - (this.datapoint.facetValueNumericized('y')! - this.chart.axisInfo!. yLabelInfo.min!) * pxPerYUnit;
   }
 
   computeLocation() {

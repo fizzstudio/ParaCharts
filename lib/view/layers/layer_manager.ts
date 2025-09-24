@@ -21,18 +21,14 @@ import { type DocumentView } from '../document_view';
 import { type CardinalDirection } from '../../store/settings_types';
 import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, FocusLayer } from '.';
 import { LineChart, ScatterPlot, BarChart, PieChart } from './data/chart_type';
+import { type AxisCoord } from '../axis';
 //import { StepLineChart } from './stepline';
 //import { LollipopChart } from './lollipop';
 //import { DonutChart } from './donut';
 //import { GaugeChart } from './gauge';
 //import { type Model } from '../data/model';
-import { 
-  type AxisCoord, type AxisOrientation, Axis
-} from '../axis';
 
 import { type Interval } from '@fizz/chart-classifier-utils';
-
-import { calendarNumber, type CalendarPeriod } from '@fizz/paramodel';
 
 import { svg } from 'lit';
 import { Heatmap } from './data/chart_type/heatmap';
@@ -100,11 +96,11 @@ export class ChartLayerManager extends View {
     this._foregroundAnnotationLayer = new AnnotationLayer(this.paraview, 'foreground');
     this.append(this._foregroundAnnotationLayer);
     this._selectionLayer = new SelectionLayer(this.paraview);
-    this.append(this._selectionLayer);  
+    this.append(this._selectionLayer);
     this._focusLayer = new FocusLayer(this.paraview);
-    this.append(this._focusLayer);  
+    this.append(this._focusLayer);
   }
-  
+
   /** Physical width of the chart; i.e., width onscreen after any rotation. */
   get width() {
     return super.width;
@@ -166,7 +162,7 @@ export class ChartLayerManager extends View {
   get orientation() {
     return this._orientation;
   }
-    
+
   get backgroundAnnotationLayer() {
     return this._backgroundAnnotationLayer;
   }
@@ -206,11 +202,10 @@ export class ChartLayerManager extends View {
 
   getXAxisInterval(): Interval {
     let xs: number[] = [];
-    if (this.paraview.store.model!.getFacet('x')!.datatype === 'number') {
-      xs = this.paraview.store.model!.allFacetValues('x')!.map((box) => box.value as number);
-    } else if (this.paraview.store.model!.getFacet('x')!.datatype === 'date') { 
-      xs = this.paraview.store.model!.allFacetValues('x')!.map((box) =>
-        calendarNumber(box.value as CalendarPeriod));
+    if (this.paraview.store.model!.getFacet('x')!.datatype === 'number' 
+      || this.paraview.store.model!.getFacet('x')!.datatype === 'date'
+    ) {
+      xs = this.paraview.store.model!.allFacetValues('x')!.map((box) => box.asNumber()!);
     } else {
       throw new Error('axis must be of type number or date to take interval');
     }
@@ -223,13 +218,13 @@ export class ChartLayerManager extends View {
       throw new Error('chart is missing `axisInfo` object');
     }
     return {
-      start: this._dataLayers[0].axisInfo.yLabelInfo.min!, 
+      start: this._dataLayers[0].axisInfo.yLabelInfo.min!,
       end: this._dataLayers[0].axisInfo.yLabelInfo.max!
     };
   }
 
   getAxisInterval(coord: AxisCoord): Interval | undefined {
-    if (coord === 'x') { 
+    if (coord === 'x') {
       return this.getXAxisInterval();
     } else {
       return this.getYAxisInterval();
@@ -239,23 +234,23 @@ export class ChartLayerManager extends View {
   updateLoc() {
 
   }
-  
+
   render() {
     let transform = fixed`translate(${this._x + this._padding.left},${this._y + this._padding.top})`;
     if (this._orientation === 'east') {
       transform += fixed`
-        translate(${this._logicalHeight},${0}) 
-        rotate(90) 
+        translate(${this._logicalHeight},${0})
+        rotate(90)
       `;
     } else if (this._orientation === 'west') {
       transform += fixed`
-        translate(0,${this._logicalHeight}) 
-        rotate(-90) 
+        translate(0,${this._logicalHeight})
+        rotate(-90)
       `;
     } else if (this._orientation === 'south') {
       transform += fixed`
-        translate(0,${this._logicalHeight}) 
-        scale(1,-1) 
+        translate(0,${this._logicalHeight})
+        scale(1,-1)
       `;
     }
     return svg`
@@ -263,9 +258,9 @@ export class ChartLayerManager extends View {
         id="chart-layers"
         transform=${transform}
       >
-        <rect 
-          id="data-backdrop" 
-          width=${this.width} 
+        <rect
+          id="data-backdrop"
+          width=${this.width}
           height=${this.height}
         />
         ${this._backgroundAnnotationLayer.render()}

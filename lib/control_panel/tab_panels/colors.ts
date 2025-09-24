@@ -1,7 +1,7 @@
 //import { styles } from '../../styles';
 import { ControlPanelTabPanel } from './tab_panel';
 
-import { 
+import {
   html, css, nothing
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
@@ -16,20 +16,13 @@ import colorVisionIconGray from '../../assets/color-vision-grayscale-icon.svg';
 @customElement('para-colors-panel')
 export class ColorsPanel extends ControlPanelTabPanel {
   protected _state!: StateController;
-  
+
 
   static styles = [
     ...ControlPanelTabPanel.styles,
     css`
       #setting-colorcontrastlevel {
         --width: 6rem;
-      }
-      .control-column {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 0.5em;
       }
     `
   ];
@@ -100,12 +93,12 @@ export class ColorsPanel extends ControlPanelTabPanel {
       label: 'Color palette:',
       options: {options: colorPalettes},
       parentView: 'controlPanel.tabs.color.colorPalette'
-    });  
+    });
     this._state = new StateController(this, this._store.settingControls);
   }
 
   render() {
-    return html`   
+    return html`
       <div class="tab-content">
         <div class="control-column">
           ${this._store.settingControls.getContent('controlPanel.tabs.color.colorContrast')}
@@ -123,7 +116,7 @@ export class ColorsPanel extends ControlPanelTabPanel {
           `
           : nothing
         }
-      </div>  
+      </div>
     `;
   }
 

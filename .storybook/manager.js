@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { addons } from '@storybook/manager-api';
+import { addons } from 'storybook/manager-api';
 import fizzTheme from './FizzTheme';
 
 addons.setConfig({

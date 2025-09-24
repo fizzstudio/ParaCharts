@@ -59,6 +59,14 @@ export interface UISettings extends SettingGroup {
   isLowVisionModeEnabled: boolean;
   isFocusRingEnabled: boolean;
   focusRingGap: number;
+  navRunTimeoutMs: number;
+}
+
+/** @public */
+export interface CaptionBoxSettings extends SettingGroup {
+  isCaptionExternalWhenControlPanelClosed: boolean;
+  hasBorder: boolean;
+  isExplorationBarBeside: boolean;
 }
 
 /** @public */
@@ -67,6 +75,7 @@ export interface ControlPanelSettings extends SettingGroup {
   tabLabelStyle: TabLabelStyle;
   isCaptionVisible: boolean;
   isStatusBarVisible: boolean;
+  caption: CaptionBoxSettings;
   isSparkBrailleVisible: boolean;
   isDataTabVisible: boolean;
   isColorsTabVisible: boolean;
@@ -157,6 +166,7 @@ export interface ChartSettings extends SettingGroup {
   hasLegendWithDirectLabels: boolean;
   isDrawSymbols: boolean;
   isStatic: boolean;
+  isShowVisitedDatapointsOnly: boolean;
 }
 
 /** @public */
@@ -204,6 +214,7 @@ export interface AxisSettings extends SettingGroup {
   tick: TickSettings;
   minValue: number | 'unset';
   maxValue: number | 'unset';
+  interval: number | 'unset';
 }
 
 /** @public */
@@ -338,40 +349,44 @@ export interface HistogramSettings extends PointSettings {
 
 export interface GraphSettings extends LineSettings{
   equation: string;
-  xMin: number;
-  xMax: number;
   preset: string;
   renderPts: number;
+  resetAxes: boolean;
+  visitedSeries: number;
 }
 
 
-export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
+// export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
-export interface RadialCategoryLabelSettings extends SettingGroup {
-  isDrawEnabled: boolean;
-  position: SliceLabelPosition;
-  outsideLabelGap: number;
-  outsideArcDistance: number;
-  outsideHorizShift: number;
+export interface RadialOutsideLabelSettings extends SettingGroup {
+  vertGap: number;
+  arcGap: number;
+  horizShift: number;
+  horizPadding: number;
+  leaderStyle: 'direct' | 'underline';
   format: LabelFormat;
   underlineGap: number;
+  contents: string;
 }
 
-export interface RadialValueLabelSettings extends SettingGroup {
-  isDrawEnabled: boolean;
+export interface RadialInsideLabelSettings extends SettingGroup {
   format: LabelFormat;
   /** Value between 0 and 1 indicating position as distance along radius */
   position: number;
+  contents: string;
 }
 
 /** @public */
 export interface RadialSettings extends SettingGroup {
-  categoryLabel: RadialCategoryLabelSettings;
-  valueLabel: RadialValueLabelSettings;
+  outsideLabels: RadialOutsideLabelSettings;
+  insideLabels: RadialInsideLabelSettings;
   isRenderCenterLabel: boolean;
   annularThickness: number;
   centerLabel: 'none' | 'title';
   centerLabelPadding: number;
+  orientationAngleOffset: number;
+  explode: string;
+  explodeDistance: number;
 }
 
 /** @public */
@@ -435,8 +450,10 @@ export interface SonificationSettings extends SettingGroup {
   hertzUpper: number;
   soniPlaySpeed?: number;
   riffSpeed?: riffSpeeds;
+  riffSpeedIndex: number;  // 👈 Add this line
   isArpeggiateChords: boolean;
 }
+
 
 /** @public */
 export interface Settings extends SettingGroup {

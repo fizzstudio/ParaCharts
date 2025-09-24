@@ -21,6 +21,7 @@ import { View, Container } from './base_view';
 import { svg } from 'lit';
 import { styleMap, StyleInfo } from 'lit/directives/style-map.js';
 import { type LineChart, type LineSection } from './layers';
+import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
 /**
  * Strip of series labels and leader lines.
@@ -33,22 +34,29 @@ export class SeriesLabelStrip extends Container(View) {
 
   constructor(private _chart: LineChart) {
     super(_chart.paraview);
-    const directLabelPadding = this.paraview.store.settings.chart.isDrawSymbols 
+    this._id = 'series-label-strip';
+    const directLabelPadding = this.paraview.store.settings.chart.isDrawSymbols
       ? this._chart.settings.seriesLabelPadding*2
       : this._chart.settings.seriesLabelPadding;
     // Sort points from highest to lowest onscreen
     const endpoints = this._chart.datapointViews.
-      filter(datapoint => 
+      filter(datapoint =>
         datapoint.index === this._chart.paraview.store.model!.series[0].length - 1
       );
     endpoints.sort((a, b) => a.y - b.y);
     // Create labels
     endpoints.forEach((ep, i) => {
       this.seriesLabels.push(new Label(this.paraview, {
-        text: ep.series.key!,
+        text: ep.series.label,
         left: directLabelPadding,
         y: ep.y,
         classList: ['serieslabel'],
+        pointerEnter: (e) => {
+          this.paraview.store.soloSeries = ep.seriesKey;
+        },
+        pointerLeave: (e) => {
+          this.paraview.store.soloSeries = '';
+        }
       }));
       this.append(this.seriesLabels.at(-1)!);
     });
@@ -63,7 +71,7 @@ export class SeriesLabelStrip extends Container(View) {
     if (topLabel.y < 0) {
       topLabel.y = 0;
     }
-    // Same for the lowest label 
+    // Same for the lowest label
     const botLabel = this.seriesLabels.at(-1)!;
     const diff = botLabel.bottom - this.height;
     if (diff > 0) {
@@ -86,7 +94,7 @@ export class SeriesLabelStrip extends Container(View) {
     // NB: It looks like all labels will have the same bbox height, although
     // I don't know whether that will hold for all possible diacritics
     // (I suspect not).
-    for (let i = 1; i < this.seriesLabels.length; i++) { 
+    for (let i = 1; i < this.seriesLabels.length; i++) {
       if (this.seriesLabels[i].top < this.seriesLabels[i - 1].bottom) {
         if (colliders.at(-1)?.label !== this.seriesLabels[i - 1]) {
           colliders.push({label: this.seriesLabels[i - 1], endpoint: endpoints[i - 1]});
@@ -95,8 +103,8 @@ export class SeriesLabelStrip extends Container(View) {
       }
     }
     if (colliders.length) {
-      const leaderLabelOffset = this.paraview.store.settings.chart.isDrawSymbols 
-        ? -this._chart.settings.seriesLabelPadding 
+      const leaderLabelOffset = this.paraview.store.settings.chart.isDrawSymbols
+        ? -this._chart.settings.seriesLabelPadding
         : 0;
 
       // Re-sort colliders from lowest to highest onscreen.
@@ -123,7 +131,7 @@ export class SeriesLabelStrip extends Container(View) {
       }
       colliders.forEach(c => {
         // NB: this value already includes the series label padding
-        c.label.x += (this._chart.settings.leaderLineLength + leaderLabelOffset); 
+        c.label.x += (this._chart.settings.leaderLineLength + leaderLabelOffset);
         this.leaders.push(new LineLabelLeader(c.endpoint, c.label, this._chart));
         this.prepend(this.leaders.at(-1)!);
       });
@@ -137,46 +145,48 @@ export class SeriesLabelStrip extends Container(View) {
  */
 class LineLabelLeader extends View {
 
-  private lineD: string;
-  private endX: number;
-  private endY: number;
+  protected _lineD: string;
+  protected _endX: number;
+  protected _endY: number;
 
-  constructor(private endpoint: LineSection, label: Label, private chart: LineChart) {
-    super(chart.paraview);
-    this.endX = this.chart.paraview.store.settings.type.line.leaderLineLength;
-    this.endY = label.y - label.locOffset.y/2;
-    this.lineD = fixed`
-      M${0},${endpoint.y}
-      L${this.endX},${this.endY}`;
+  constructor(protected _endpoint: LineSection, label: Label, protected _chart: LineChart) {
+    super(_chart.paraview);
+    this._endX = this._chart.paraview.store.settings.type.line.leaderLineLength;
+    this._endY = label.y - label.locOffset.y/2;
+    this._lineD = fixed`
+      M${0},${_endpoint.y}
+      L${this._endX},${this._endY}`;
   }
 
-  get styles(): StyleInfo {
+  get styleInfo(): StyleInfo {
     const styles: StyleInfo = {};
     // const colorValue = this._controller.colors.colorValue(
     //   this._controller.seriesManager.series(this.endpoint.seriesKey).color);
-    let colorValue = this.chart.paraview.store.colors.colorValueAt(this.endpoint.seriesProps.color);
+    let colorValue = this._chart.paraview.store.colors.colorValueAt(this._endpoint.seriesProps.color);
     styles.fill = colorValue;
     styles.stroke = colorValue;
     return styles;
   }
 
+  get classInfo(): ClassInfo {
+    return {
+      'label-leader': true,
+      'lowlight': !!(this.paraview.store.soloSeries && (this.paraview.store.soloSeries !== this._endpoint.seriesKey))
+    }
+  }
+
   content() {
-    const styles = {
-      strokeWidth: 2, //this.chart.settings.lineWidth
-    };
-    const seriesIdx = this.endpoint.parent.index;
     return svg`
       <g
-        class="label-leader-line"
-        style=${styleMap(this.styles)}
+        class=${classMap(this.classInfo)}
+        style=${styleMap(this.styleInfo)}
       >
         <path
-          d=${this.lineD}
-          style=${styleMap(styles)}
+          d=${this._lineD}
           />
-        <circle 
-          cx=${this.endX}
-          cy=${this.endY}
+        <circle
+          cx=${this._endX}
+          cy=${this._endY}
           r="1.8"
         />
       </g>

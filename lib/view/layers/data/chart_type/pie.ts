@@ -43,18 +43,24 @@ export class PieSlice extends RadialSlice {
     return 0;
   }
 
-  protected _createShape() {
+  protected _createShapes() {
     const isPattern = this.paraview.store.colors.palette.isPattern;
-    this._shape = new SectorShape(this.paraview, {
+    const slice = new SectorShape(this.paraview, {
       x: this._x,
       y: this._y,
       r: this.chart.radius,
       centralAngle: this._params.percentage*360,
       orientationAngle: this._params.accum*360,
+      orientationAngleOffset: this.chart.settings.orientationAngleOffset,
       annularThickness: this.chart.settings.annularThickness,
       isPattern: isPattern ? true : false
     });
-    super._createShape();
+    this._shapes.push(slice);
+    const explode = this.chart.settings.explode.split(':').map(idx => parseInt(idx));
+    if (explode.includes(this.index)) {
+      slice.loc = slice.loc.add(slice.orientationVector.multiplyScalar(this.chart.settings.explodeDistance));
+    }
+    super._createShapes();
   }
 
   // protected _computeLabelOptions() {
@@ -84,6 +90,7 @@ export class PieSlice extends RadialSlice {
       r: this.chart.radius,
       centralAngle: this._params.percentage*360,
       orientationAngle: this._params.accum*360,
+      orientationAngleOffset: this.chart.settings.orientationAngleOffset,
       annularThickness: this.chart.settings.annularThickness,
       fill: 'none',
       stroke: 'black',

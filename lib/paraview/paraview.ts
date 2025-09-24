@@ -36,6 +36,7 @@ import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Unsubscribe } from '@lit-app/state';
+import { PlaneModel } from '@fizz/paramodel';
 
 /**
  * Data provided for the on focus callback
@@ -84,29 +85,6 @@ export class ParaView extends logging(ParaComponent) {
   static styles = [
     //styles,
     css`
-      :host {
-        --axis-line-color: hsl(0, 0%, 0%);
-        --label-color: hsl(0, 0%, 0%);
-        --tick-grid-color: hsl(270, 50%, 50%);
-        --background-color: white;
-        --theme-color: var(--fizz-theme-color, purple);
-        --theme-color-light: var(--fizz-theme-color-light, hsl(275.4, 100%, 88%));
-        --theme-contrast-color: white;
-        --fizz-theme-color: var(--paracharts-theme-color, navy);
-        --fizz-theme-color-light: var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%));
-        --visited-color: red;
-        --selected-color: var(--label-color);
-        --datapoint-centroid: 50% 50%;
-        --focus-animation: all 0.5s ease-in-out;
-        --chart-cursor: pointer;
-        --data-cursor: cell;
-
-        --focus-shadow-color: gray;
-        --focus-shadow: drop-shadow(0px 0px 4px var(--focus-shadow-color));
-        display: block;
-        font-family: "Trebuchet MS", Helvetica, sans-serif;
-        font-size: var(--chart-view-font-size, 1rem);
-      }
       #frame {
         fill: var(--background-color);
         stroke: none;
@@ -145,6 +123,7 @@ export class ParaView extends logging(ParaComponent) {
       }
       .label {
         fill: var(--label-color);
+        stroke: none;
       }
       .tick-label {
         font-size: 13px;
@@ -155,19 +134,26 @@ export class ParaView extends logging(ParaComponent) {
         fill: white;
       }
       .radial-value-label {
-        fill: white;
+        fill: var(--label-color);
+      }
+      .radial-cat-label-leader {
+        fill: none;
+        stroke-width: 2;
       }
       .radial-slice {
         stroke: white;
         stroke-width: 2;
       }
-      #y-axis-line {
+      .label-leader {
+        stroke-width: 2;
+      }
+      #vert-axis-line {
         fill: none;
         stroke: var(--axis-line-color);
         stroke-width: 2px;
         stroke-linecap: round;
       }
-      #x-axis-line {
+      #horiz-axis-line {
         fill: none;
         stroke: var(--axis-line-color);
         opacity: 1;
@@ -176,7 +162,8 @@ export class ParaView extends logging(ParaComponent) {
       }
       rect#data-backdrop {
         stroke: none;
-        fill: none;
+        fill: none; // lightgray
+        opacity: 0.125;
         pointer-events: all;
       }
       .symbol {
@@ -204,12 +191,41 @@ export class ParaView extends logging(ParaComponent) {
       .linebreaker-marker {
         fill: hsl(0, 17.30%, 37.50%);
       }
+      .user-linebreaker-marker {
+        fill: hsl(0, 87%, 48%);
+      }
       .trend-line{
         display: inline;
         stroke-width: 8px;
         stroke-linecap: butt;
         stroke-dasharray: 12 12;
         stroke-opacity: 0.8;
+      }
+      .user-trend-line{
+        display: inline;
+        stroke-width: 8px;
+        stroke-linecap: butt;
+        stroke-dasharray: 12 12;
+        stroke-opacity: 0.8;
+      }
+      .datapoint.visited {
+        stroke: var(--visited-color);
+        fill: var(--visited-color);
+        stroke-width: var(--visited-stroke-width);
+      }
+      .lowlight {
+        opacity: 0.20;
+      }
+      .hidden {
+        display: none;
+      }
+
+      .control-column {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.5em;
       }
     `
   ];
@@ -297,7 +313,7 @@ export class ParaView extends logging(ParaComponent) {
     this.createDocumentView();
     this._summarizer = (this.store.type === 'pie' || this.store.type === 'donut')
       ? new PastryChartSummarizer(this._store.model!)
-      : new PlaneChartSummarizer(this._store.model!);
+      : new PlaneChartSummarizer(this._store.model as PlaneModel);
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -353,6 +369,18 @@ export class ParaView extends logging(ParaComponent) {
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
       });
+    } else if (path === 'ui.isVoicingEnabled') {
+      if (this._store.settings.ui.isVoicingEnabled) {
+        const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+        if (lastAnnouncement) {
+          this._store.appendAnnouncement(lastAnnouncement);
+        }
+        this._store.announce('Self-voicing enabled.');
+      } else {
+        this.paraChart.ariaLiveRegion.voicing.shutUp();
+        // Voicing is disabled at this point, so manually push this message through
+        this.paraChart.ariaLiveRegion.voicing.speak('Self-voicing disabled.');
+      }
     }
   }
 
@@ -437,6 +465,8 @@ export class ParaView extends logging(ParaComponent) {
     this.log('creating document view', this.type);
     this._documentView = new DocumentView(this);
     this._computeViewBox();
+    // The style manager may get declaration values from chart objects
+    this.paraChart.styleManager.update();
   }
 
   protected _computeViewBox() {
@@ -464,7 +494,7 @@ export class ParaView extends logging(ParaComponent) {
     const svg = this.root!.cloneNode(true) as SVGSVGElement;
     svg.id = 'para' + (window.crypto.randomUUID?.() ?? '');
 
-    const styles = this._extractStyles(svg.id);
+    const styles = this.paraChart.extractStyles(svg.id) + '\n' + this.extractStyles(svg.id);
     const styleEl = document.createElementNS(SVGNS, 'style');
     styleEl.textContent = styles;
     svg.prepend(styleEl);
@@ -482,6 +512,8 @@ export class ParaView extends logging(ParaComponent) {
     pruneComments(svg.childNodes);
     toPrune.forEach(c => c.remove());
 
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
     svg.removeAttribute('role');
 
     // XXX Also remove visited styling (not just the layer)
@@ -490,19 +522,6 @@ export class ParaView extends logging(ParaComponent) {
       .split('\n')
       .filter(line => !line.match(/^\s*$/))
       .join('\n');
-  }
-
-  protected _extractStyles(id: string) {
-    const stylesheets = this.shadowRoot!.adoptedStyleSheets;
-    const out: string[] = [];
-    for (const stylesheet of stylesheets) {
-      const rules = stylesheet.cssRules;
-      for (let i = 0; i < rules.length; i++) {
-        const rule = rules.item(i) as CSSRule;
-        out.push(rule.cssText.replace(/^:host/, `#${id}`));
-      }
-    }
-    return out.join('\n');
   }
 
   downloadSVG() {
@@ -623,7 +642,7 @@ export class ParaView extends logging(ParaComponent) {
           if (!this._store.settings.chart.isStatic) {
             this.log('focus');
             //this.todo.deets?.onFocus();
-            this.documentView?.chartLayers.dataLayer.navMap.visitDatapoints();
+            this.documentView?.chartLayers.dataLayer.navMap?.visitDatapoints();
           }
         }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}

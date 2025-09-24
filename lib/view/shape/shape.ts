@@ -16,26 +16,33 @@ export interface ShapeOptions {
   strokeWidth?: number; // 2,
   scale?: number;
   isPattern?: boolean;
+  isClip?: boolean;
 }
 
 export abstract class Shape extends View {
   protected _scale: number;
   protected _role = '';
-  protected _styleInfo: StyleInfo;
-  protected _classInfo: ClassInfo = {};
   protected _ref: Ref<SVGElement> | null = null;
-  protected _isPattern: boolean = false
+  protected _isPattern: boolean = false;
+  protected _isClip: boolean;
 
   constructor(paraview: ParaView, options: ShapeOptions) {
     super(paraview);
     this._x = options.x ?? this._x;
     this._y = options.y ?? this._y;
     this._scale = options.scale ?? 1;
-    this._styleInfo = { 
-      strokeWidth: options.strokeWidth,
-      stroke: options.stroke,
-      fill: options.fill
-    };
+    // Don't create the fields in `_styleInfo` unless the options are
+    // actually set
+    if (options.strokeWidth) {
+      this._styleInfo.strokeWidth = options.strokeWidth;
+    }
+    if (options.stroke) {
+      this._styleInfo.stroke = options.stroke;
+    }
+    if (options.fill) {
+      this._styleInfo.fill = options.fill;
+    }
+    this._isClip = !!options.isClip;
   }
 
   protected get _options(): ShapeOptions {
@@ -45,7 +52,8 @@ export abstract class Shape extends View {
       fill: this._styleInfo.fill as string | undefined,
       stroke: this._styleInfo.stroke as string | undefined,
       strokeWidth: this._styleInfo.strokeWidth as number | undefined,
-      scale: this._scale
+      scale: this._scale,
+      isClip: this._isClip
     }
   }
 
@@ -122,20 +130,12 @@ export abstract class Shape extends View {
     this._scale = scale;
   }
 
-  get styleInfo() {
-    return structuredClone(this._styleInfo);
+  get isClip() {
+    return this._isClip;
   }
 
-  set styleInfo(styleInfo: StyleInfo) {
-    this._styleInfo = structuredClone(styleInfo);
-  }
-
-  get classInfo() {
-    return structuredClone(this._classInfo);
-  }
-
-  set classInfo(classInfo: ClassInfo) {
-    this._classInfo = structuredClone(classInfo);
+  set isClip(isClip: boolean) {
+    this._isClip = isClip;
   }
 
   get ref() {

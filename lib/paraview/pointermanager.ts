@@ -11,6 +11,8 @@ interface PointerDetails {
   target: Element;
   x: number;
   y: number;
+  offsetX: number;
+  offsetY: number;
   value?: {
     x: any;
     y: any;
@@ -57,7 +59,9 @@ export class PointerEventManager {
       id: event.pointerId,
       target: event.target as SVGGraphicsElement,
       x: event.clientX,
-      y: event.clientY
+      y: event.clientY,
+      offsetX: event.offsetX,
+      offsetY: event.offsetY
     };
   }
 
@@ -77,6 +81,14 @@ export class PointerEventManager {
    * @param event - The event on the element.
    */
   handleEnd(event: PointerEvent) {
+    if (this._paraView.store.type === 'graph'){
+      let start = this._touchArray[0]
+      const startRelativeX = start.offsetX - this._paraView.documentView!.padding.left - this._paraView.documentView!.chartLayers.x
+      const startRelativeY = start.offsetY - this._paraView.documentView!.padding.top - this._paraView.documentView!.chartLayers.y
+      const endRelativeX = event.offsetX - this._paraView.documentView!.padding.left - this._paraView.documentView!.chartLayers.x
+      const endRelativeY = event.offsetY - this._paraView.documentView!.padding.top - this._paraView.documentView!.chartLayers.y
+      this._paraView.documentView!.chartLayers.dataLayer.handlePan(startRelativeX, startRelativeY, endRelativeX, endRelativeY)
+    }
     // Note: `handleEnd` is not currently used, but will be when we add marquee dragging
     this.handleCancel(event);
   }
@@ -172,6 +184,11 @@ export class PointerEventManager {
    */
   handleDoubleClick(event: PointerEvent | MouseEvent) {
     const target = event.target as SVGGraphicsElement;
+    if (this._paraView.store.type === 'graph') {
+      const endRelativeX = event.offsetX - this._paraView.documentView!.padding.left - this._paraView.documentView!.chartLayers.x
+      const endRelativeY = event.offsetY - this._paraView.documentView!.padding.top - this._paraView.documentView!.chartLayers.y
+      this._paraView.documentView!.chartLayers.dataLayer.handleZoom(endRelativeX, endRelativeY)
+    }
     event.preventDefault();
     if (target === this._paraView.root || target === this._dataRoot) {
       // this._selectElement(target);
@@ -203,7 +220,7 @@ export class PointerEventManager {
           ? datapointEl.id.slice(0, -4)
           : datapointEl.id;
         const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointViewForId(id)!;
-        this._paraView.documentView!.chartLayers.dataLayer.navMap.goTo('datapoint', {
+        this._paraView.documentView!.chartLayers.dataLayer.navMap!.goTo('datapoint', {
           seriesKey: datapointView.seriesKey,
           index: datapointView.index
         });

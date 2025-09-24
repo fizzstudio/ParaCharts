@@ -1,17 +1,65 @@
 import { StyleInfo } from "lit/directives/style-map.js";
-import { DeepReadonly, GraphSettings, LineSettings, Setting } from "../../../../store";
+import { DeepReadonly, Direction, GraphSettings, Setting } from "../../../../store";
 import { LineChart, LineSection } from "./line_chart";
 import { XYSeriesView } from "./xy_chart";
 import { AxisInfo } from "../../../../common/axisinfo";
 import { parse, simplify } from "mathjs";
+import { Box, PlaneDatapoint} from "@fizz/paramodel";
+import { RiffOrder, SONI_RIFF_SPEEDS } from "../data_layer";
+import { NumberBox } from "@fizz/dataframe";
+import { isUnplayable } from "../../../../audio/sonifier";
+import { NavLayer, NavNode } from "../navigation";
 
 export class GraphingCalculator extends LineChart {
-  protected xMin: number = -10;
-  protected xMax: number = 10;
-  protected renderPts: number = 100;
+  protected renderPts: number = 50;
   protected currEquations: string[] = [];
   protected _addedToParent() {
     super._addedToParent();
+    this.paraview.store.settingControls.add({
+      type: 'textfield',
+      key: 'axis.x.minValue',
+      label: 'Min x-value',
+      options: { inputType: 'number' },
+      value: this.paraview.store.settings.axis.x.minValue === 'unset' ? -10 : this.paraview.store.settings.axis.x.minValue,
+      validator: value => {
+        const min = this.paraview.store.settings.axis.x.maxValue == "unset"
+          ? 10
+          : this.paraview.store.settings.axis.x.maxValue as number
+        // NB: If the new value is successfully validated, the inner chart
+        // gets recreated, and `max` may change, due to re-quantization of
+        // the tick values.
+        return value as number >= min ?
+          { err: `Min x-value (${value}) must be less than (${min})`} : {};
+      },
+      parentView: 'controlPanel.tabs.chart.general',
+    });
+    this.paraview.store.settingControls.add({
+      type: 'textfield',
+      key: 'axis.x.maxValue',
+      label: 'Max x-value',
+      options: { inputType: 'number' },
+      value: this.paraview.store.settings.axis.x.maxValue === 'unset' ? 10 : this.paraview.store.settings.axis.x.maxValue,
+      validator: value => {
+        const max = this.paraview.store.settings.axis.x.minValue == "unset"
+          ? -10
+          : this.paraview.store.settings.axis.x.minValue as number
+        // NB: If the new value is successfully validated, the inner chart
+        // gets recreated, and `max` may change, due to re-quantization of
+        // the tick values.
+        return value as number <= max ?
+          { err: `Min x-value (${value}) must be less than (${max})`} : {};
+      },
+      parentView: 'controlPanel.tabs.chart.general',
+    });
+    this.paraview.store.settingControls.add({
+      type: 'button',
+      key: 'type.graph.resetAxes',
+      label: 'Reset Axes to default',
+      parentView: 'controlPanel.tabs.chart.chart',
+    });
+
+
+
     this.paraview.store.settingControls.add({
       type: 'textfield',
       key: 'type.graph.lineWidth',
@@ -19,7 +67,8 @@ export class GraphingCalculator extends LineChart {
       options: {
         inputType: 'number',
         min: 1,
-        max: this.paraview.store.settings.type.graph.lineWidthMax as number
+        max: this.paraview.store.settings.type.graph.lineWidthMax as number,
+        size: 2
       },
       parentView: 'controlPanel.tabs.chart.chart',
     });
@@ -27,19 +76,6 @@ export class GraphingCalculator extends LineChart {
       type: 'checkbox',
       key: 'type.graph.isDrawSymbols',
       label: 'Show symbols',
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
-
-
-    this.paraview.store.settingControls.add({
-      type: 'textfield',
-      key: 'type.graph.lineWidth',
-      label: 'Line width',
-      options: {
-        inputType: 'number',
-        min: 1,
-        max: this.paraview.store.settings.type.graph.lineWidthMax as number
-      },
       parentView: 'controlPanel.tabs.chart.chart',
     });
 
@@ -74,31 +110,122 @@ export class GraphingCalculator extends LineChart {
     });
 
     this._axisInfo = new AxisInfo(this.paraview.store, {
-      xValues: [this.paraview.store.settings.type.graph.xMin ?? this.xMin, this.paraview.store.settings.type.graph.xMax ?? this.xMax],
+      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.axis.x.minValue,
+        this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.axis.x.maxValue],
       yValues: [-10, 10],
       yMin: -10,
       yMax: 10
     })
   }
 
+  init() {
+    // At this point, we're fully connected to the root of the view tree,
+    // so we can safely observe
+    this._observeStore();
+    this._layoutDatapoints();
+    this._createNavMap();
+    if (this.paraview.store.prevVisitedDatapoints.length == 1) {
+      for (let point of this.paraview.store.prevVisitedDatapoints) {
+        const xVal = point.datapointView.datapoint.facetValueAsNumber("x")!
+        const xPct = (xVal - this.axisInfo!.xLabelInfo.min!) / this.axisInfo!.xLabelInfo.range!
+        if (xPct < 0 || xPct > 1) {
+          continue
+        }
+        const datapointView = this.chartLandingView.datapointViews.sort((a, b) => Math.abs(a.datapoint.facetValueAsNumber("x")! - xVal) - Math.abs(b.datapoint.facetValueAsNumber("x")! - xVal))[0]
+        this.navToDatapoint(datapointView.seriesKey, datapointView.index)
+      }
+    }
+    else if (this.paraview.store.settings.type.graph.visitedSeries > -1) {
+      const visited = this.chartLandingView.datapointViews.filter(v =>
+        v.seriesKey == this.paraview.store.model!.seriesKeys[this.paraview.store.settings.type.graph.visitedSeries]
+      ).map((datapointView) => ({
+        seriesKey: datapointView.seriesKey,
+        index: datapointView.index,
+        datapointView: datapointView
+      }));
+      this.paraview.store.visit(visited);
+    }
+  }
+
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['type.graph.equation'].includes(path)) {
+      this.clearStore()
+      if (newValue !== oldValue){
+        this.navMap!.goTo('top', {})
+      }
+      this.paraview.store.updateSettings(draft => {
+        draft.type.graph.visitedSeries = -1;
+      });
       this.addEquation(newValue as string);
     }
     else if (['type.graph.preset'].includes(path)) {
       this.paraview.store.updateSettings(draft => {
-            draft.type.graph.equation = String(newValue);
-          });
+        draft.type.graph.equation = String(newValue);
+      });
     }
     else if (['type.graph.renderPts'].includes(path)) {
+      const seriesFocused = this.isSeriesFocused();
+      this.clearStore()
       this.renderPts = Number(newValue)
+      this.paraview.store.updateSettings(draft => {
+        draft.type.graph.visitedSeries = seriesFocused;
+      });
+      this.addEquation(this.paraview.store.settings.type.graph.equation)
+    }
+    else if (['axis.x.maxValue', 'axis.x.minValue'].includes(path)) {
+      const seriesFocused = this.isSeriesFocused();
+      this.clearStore()
+      this.paraview.store.updateSettings(draft => {
+        draft.type.graph.visitedSeries = seriesFocused;
+      });
+      this.addEquation(this.paraview.store.settings.type.graph.equation)
+    }
+    else if (['axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
+      this.clearStore()
+    }
+    else if (['type.graph.resetAxes'].includes(path)) {
+      const seriesFocused = this.isSeriesFocused();
+      this.clearStore()
+      this.paraview.store.updateSettings(draft => {
+        draft.axis.x.maxValue = 'unset';
+        draft.axis.x.minValue = 'unset';
+        draft.axis.y.maxValue = 'unset';
+        draft.axis.y.minValue = 'unset';
+      });
+      this.paraview.store.updateSettings(draft => {
+        draft.type.graph.visitedSeries = seriesFocused;
+      });
       this.addEquation(this.paraview.store.settings.type.graph.equation)
     }
     super.settingDidChange(path, oldValue, newValue);
   }
 
+  clearStore() {
+    clearInterval(this._soniRiffInterval!);
+    this.paraview.store.clearVisited();
+    this.paraview.store.clearSelected();
+    this.paraview.store.sparkBrailleInfo = null;
+  }
+
+  isSeriesFocused(): number {
+    const visited = this.paraview.store.visitedDatapoints
+    if (visited.length > 0) {
+      if (visited.length == this.paraview.store.model!.atKey(visited[0].seriesKey)!.datapoints.length){
+        return this.paraview.store.model?.seriesKeys.findIndex(s => s == visited[0].seriesKey)!
+      }
+    }
+    return -1;
+  }
+
   addEquation(eq: string) {
-    var container = this.paraview.paraChart.slotted[0]
+    const axisInfo = new AxisInfo(this.paraview.store, {
+      xValues: [this.paraview.store.settings.axis.x.minValue == "unset" ? -10 : this.paraview.store.settings.axis.x.minValue,
+      this.paraview.store.settings.axis.x.maxValue == "unset" ? 10 : this.paraview.store.settings.axis.x.maxValue],
+      yValues: [-10, 10],
+      yMin: -10,
+      yMax: 10
+    })
+    var container = this.paraview.paraChart;
     var table = document.createElement("table");
     var trVar = document.createElement("tr");
     var xVar = document.createElement("td");
@@ -118,13 +245,14 @@ export class GraphingCalculator extends LineChart {
       console.log(simplified.toString());
       var xVals = [];
       var yVals = [];
-      const points = this.renderPts
-      const xBounds = 10
-      for (var i = 0; i < points + 1; i++) {
+      const points = this.settings.renderPts
+      const xMax = axisInfo!.xLabelInfo!.max ?? 10
+      const xMin = axisInfo!.xLabelInfo!.min ?? -10
+      for (var i = 0; i < points; i++) {
         var tr = document.createElement("tr");
         var td1 = document.createElement("td");
         var td2 = document.createElement("td");
-        var xVal = parseFloat((i / (points / (2 * xBounds)) - xBounds).toFixed(3))
+        var xVal = parseFloat((i / ((points - 1) / ((xMax - xMin))) + (xMin)).toFixed(3))
         const simpEval = simplified.evaluate({ x: xVal })
         if (simpEval.im === undefined){
           var yVal = simpEval.toFixed(3);
@@ -140,30 +268,24 @@ export class GraphingCalculator extends LineChart {
         }
       }
       if (container){
-        if(container.firstElementChild){
-          container.removeChild(container.firstElementChild);
+        if(container.getElementsByTagName('table')[0]){
+          container.removeChild(container.getElementsByTagName('table')[0]);
         }
         container.append(table);
-        this.paraview.store.updateSettings(draft => {
-            draft.type.graph.xMax = xBounds;
-          });
-        this.paraview.store.updateSettings(draft => {
-            draft.type.graph.xMin = -1 * xBounds;
-          });
         this.paraview.dispatchEvent(new CustomEvent('paraviewready', {bubbles: true, composed: true, cancelable: true}));
       }
     }
   }
 
   get datapointViews() {
-    return super.datapointViews as LineSection[];
+    return super.datapointViews as GraphLine[];
   }
 
   get settings() {
     return super.settings as DeepReadonly<GraphSettings>;
   }
 
-  
+
 
   updateSeriesStyle(styleInfo: StyleInfo) {
     super.updateSeriesStyle(styleInfo);
@@ -186,6 +308,184 @@ export class GraphingCalculator extends LineChart {
   protected _newDatapointView(seriesView: XYSeriesView) {
     return new GraphLine(seriesView);
   }
+
+  protected _sparkBrailleInfo() {
+    let data = this._navMap!.cursor.datapointViews[0].series.datapoints.map(dp =>
+      dp.facetValueAsNumber('y')!).join(' ')
+    //Sparkbrailles with more than 50 points either get cut off by the edge of the panel, or push the panel outwards and make it look bad
+    if (this._navMap!.cursor.datapointViews[0].series.datapoints.length > 50) {
+      const length = this._navMap!.cursor.datapointViews[0].series.datapoints.length
+      let indices = []
+      for (let i = 0; i < 50; i++) {
+        indices.push(Math.floor(i * length / 50))
+      }
+      data = this._navMap!.cursor.datapointViews[0].series.datapoints.filter((e, index) => { return indices.includes(index); }).map(dp =>
+        dp.facetValueAsNumber('y')!).join(' ');
+    }
+    return {
+      data: data,
+      isBar: this.paraview.store.type === 'bar' || this.paraview.store.type === 'column'
+    };
+  }
+
+  protected _playRiff(order?: RiffOrder) {
+    if (this.paraview.store.settings.sonification.isSoniEnabled
+      && this.paraview.store.settings.sonification.isRiffEnabled) {
+      const datapoints = this._navMap!.cursor.datapointViews.map(view => view.datapoint) as PlaneDatapoint[];
+      if (order === 'sorted') {
+        datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
+      } else if (order === 'reversed') {
+        datapoints.reverse();
+      }
+      const datapointsFilled: PlaneDatapoint[] = []
+      const seriesKey = datapoints[0].seriesKey
+      const INTERNAL_SEGMENTS = 10
+      for (let i = 0; i < datapoints.length - 1; i++) {
+        datapointsFilled.push(datapoints[i])
+        for (let j = 1; j < INTERNAL_SEGMENTS; j++) {
+          const y = ((datapoints[i + 1].facetValueAsNumber("y")! - datapoints[i].facetValueAsNumber("y")!) * j / INTERNAL_SEGMENTS) + datapoints[i].facetValueAsNumber("y")!
+          const x = ((datapoints[i + 1].facetValueAsNumber("x")! - datapoints[i].facetValueAsNumber("x")!) * j / INTERNAL_SEGMENTS) + datapoints[i].facetValueAsNumber("x")!
+          datapointsFilled.push(new PlaneDatapoint({x: new NumberBox(x) as unknown as Box<'number'>, y: new NumberBox(y) as unknown as Box<'number'>}, seriesKey, j + INTERNAL_SEGMENTS * i, "x", "y"))
+        }
+      }
+      datapointsFilled.push(datapoints[datapoints.length - 1])
+      //Trim unplayable notes from front and back, but not between playable notes
+      while(datapointsFilled.length > 0 && isUnplayable(datapointsFilled[0].facetValueNumericized(datapointsFilled[0].depKey)!, this.parent.docView.yAxis!)){
+        datapointsFilled.shift()
+      }
+      while(datapointsFilled.length > 0 && isUnplayable(datapointsFilled[datapointsFilled.length - 1].facetValueNumericized(datapointsFilled[datapointsFilled.length - 1].depKey)!, this.parent.docView.yAxis!)){
+        datapointsFilled.pop()
+      }
+      const noteCount = datapointsFilled.length;
+      if (noteCount) {
+        if (this._soniRiffInterval!) {
+          clearInterval(this._soniRiffInterval!);
+        }
+        this.soniSequenceIndex++;
+        this._soniRiffInterval = setInterval(() => {
+          const datapoint = datapointsFilled.shift();
+          if (!datapoint) {
+            clearInterval(this._soniRiffInterval!);
+          } else {
+            this._sonifier.playDatapoints(true, datapoint as PlaneDatapoint);
+            this.soniNoteIndex++;
+          }
+        }, SONI_RIFF_SPEEDS.at(this.paraview.store.settings.sonification.riffSpeedIndex)! / INTERNAL_SEGMENTS);
+      }
+      else{
+        console.log("No sonifiable notes detected, ensure some portion of the graph is visible on screen")
+      }
+    }
+  }
+
+  protected _createPrimaryNavNodes() {
+    super._createPrimaryNavNodes();
+    // Create vertical links between datapoints
+    this._navMap!.root.query('series').forEach(seriesNode => {
+      seriesNode.allNodes('right')
+        .forEach((pointNode) => {
+          pointNode.connect('out', seriesNode!);
+        });
+    });
+  }
+
+  async move(dir: Direction) {
+    const cursor = this._navMap!.cursor!;
+    const link = cursor.getLink(dir)
+    if (this.checkHorizExpand(cursor, link, dir) || this.checkVertExpand(cursor, link, dir)) {
+      return
+    }
+    await cursor.move(dir);
+  }
+
+  checkHorizExpand(cursor: NavNode, link: NavLayer | NavNode | undefined, dir: string): boolean {
+    if (dir === 'left' && cursor.type === 'datapoint' && cursor.datapointViews[0].index === 0) {
+      this.paraview.store.updateSettings(draft => {
+        draft.axis.x.minValue = this.axisInfo!.xLabelInfo.min! - 1;
+      });
+      return true;
+    }
+    else if (dir === 'right' && cursor.type === 'datapoint') {
+      if (cursor.datapointViews[0].index
+        === this.paraview.store.model!.series[this.paraview.store.model?.seriesKeys.findIndex(s => s == cursor.datapointViews[0].seriesKey)!].length - 1) {
+        this.paraview.store.updateSettings(draft => {
+          draft.axis.x.maxValue = this.axisInfo!.xLabelInfo.max! + 1;
+        });
+        return true;
+      }
+    }
+    return false;
+  }
+
+  checkVertExpand(cursor: NavNode, link: NavLayer | NavNode | undefined, dir: string): boolean {
+    if (link instanceof NavNode && cursor.type === 'datapoint' && (link.type === "series" || link.type === "datapoint")) {
+      const yTier = Math.abs(Number(this.axisInfo?.yLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.yLabelInfo.labelTiers[0][1]))
+      const cursorYVal = cursor.datapointViews[0].datapoint.facetValueAsNumber("y")!
+      const linkYVal = link.datapointViews[0].datapoint.facetValueAsNumber("y")!
+      if ((dir === "left" || dir === "right") && cursorYVal <= this.axisInfo!.yLabelInfo.max!
+        && linkYVal >= this.axisInfo!.yLabelInfo.max!) {
+        const newYMax = Math.ceil((linkYVal + 1) / yTier) * yTier;
+        this.paraview.store.updateSettings(draft => {
+          draft.axis.y.maxValue = newYMax
+        });
+        return true;
+      }
+      else if ((dir === "left" || dir === "right") && cursorYVal >= this.axisInfo!.yLabelInfo.min!
+        && linkYVal <= this.axisInfo!.yLabelInfo.min!) {
+        const newYMin = Math.floor((linkYVal - 1) / yTier) * yTier;
+        this.paraview.store.updateSettings(draft => {
+          draft.axis.y.minValue = newYMin;
+        });
+        return true;
+      }
+    }
+    return false;
+  }
+
+  handlePan(startX: number, startY: number, endX: number, endY: number) {
+    const xRange = this.axisInfo!.xLabelInfo.range!
+    const yRange = this.axisInfo!.yLabelInfo.range!
+    const xTier = Math.abs(Number(this.axisInfo?.xLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.xLabelInfo.labelTiers[0][1]))
+    const yTier = Math.abs(Number(this.axisInfo?.yLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.yLabelInfo.labelTiers[0][1]))
+    const changeHorizRaw = (endX - startX) / this.width
+    const changeVertRaw = (endY - startY) / this.height
+    const changeHoriz = Math.round(changeHorizRaw * xRange / xTier) * xTier;
+    const changeVert = Math.round(changeVertRaw * yRange / yTier) * yTier;
+    if (changeHoriz !== 0 || changeVert !== 0) {
+      const seriesFocused = this.isSeriesFocused();
+      this.clearStore()
+      this.paraview.store.updateSettings(draft => {
+        draft.axis.x.maxValue = this.axisInfo!.xLabelInfo.max! - (changeHoriz);
+        draft.axis.x.minValue = this.axisInfo!.xLabelInfo.min! - (changeHoriz);
+        draft.axis.y.maxValue = this.axisInfo!.yLabelInfo.max! + (changeVert);
+        draft.axis.y.minValue = this.axisInfo!.yLabelInfo.min! + (changeVert);
+      });
+      this.paraview.store.updateSettings(draft => {
+        draft.type.graph.visitedSeries = seriesFocused;
+      });
+    }
+
+  }
+
+  handleZoom(x: number, y: number): void {
+    const xTier = Math.abs(Number(this.axisInfo?.xLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.xLabelInfo.labelTiers[0][1]))
+    const yTier = Math.abs(Number(this.axisInfo?.yLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.yLabelInfo.labelTiers[0][1]))
+    const xConverted = (x / this.width) * this.axisInfo!.xLabelInfo.range! + this.axisInfo!.xLabelInfo.min!
+    const yConverted = ((this.height - y) / this.height) * this.axisInfo!.yLabelInfo.range! + this.axisInfo!.yLabelInfo.min!
+    const xRounded = Math.round( xConverted / xTier) * xTier
+    const yRounded = Math.round( yConverted / yTier) * yTier
+    const seriesFocused = this.isSeriesFocused();
+    this.clearStore()
+    this.paraview.store.updateSettings(draft => {
+      draft.axis.x.maxValue = xRounded + xTier * 2
+      draft.axis.x.minValue = xRounded - xTier * 2
+      draft.axis.y.maxValue = yRounded + yTier * 2
+      draft.axis.y.minValue = yRounded - yTier * 2
+    });
+    this.paraview.store.updateSettings(draft => {
+      draft.type.graph.visitedSeries = seriesFocused;
+    });
+  }
 }
 
 export class GraphLine extends LineSection{
@@ -207,23 +507,23 @@ export class GraphLine extends LineSection{
     this._nextMidY = (this._next!.y - this.y) / 2;
   }
 
-  content(){
-    if (this._shape) {
-      this._shape.styleInfo = this.styleInfo;
-      this._shape.classInfo = this.classInfo;  
-      if (this._shape.y < 0 || this._shape.y > this.chart.parent.logicalHeight){
-        this._shape.hidden = true;
+  protected _contentUpdateShapes() {
+    super._contentUpdateShapes();
+    this._shapes.forEach(shape => {
+      if (shape.y < 0 || shape.y > this.chart.parent.logicalHeight) {
+        shape.hidden = true;
       }
-    }
+    });
+  }
+
+  protected _contentUpdateSymbol() {
+    super._contentUpdateSymbol();
     if (this._symbol) {
-      this._symbol.scale = this._symbolScale;
-      this._symbol.color = this._symbolColor;
       this._symbol.hidden = !this.paraview.store.settings.type.graph.isDrawSymbols;
-      if (this._symbol.y < 0 || this._symbol.y > this.chart.parent.logicalHeight){
+      if (this._symbol.y < 0 || this._symbol.y > this.chart.parent.logicalHeight) {
         this._symbol.hidden = true;
       }
     }
-     return this.renderChildren();
   }
 
 }

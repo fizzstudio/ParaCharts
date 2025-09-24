@@ -2,6 +2,7 @@
 import { SettingControlContainer } from '../setting_control_container';
 import { logging } from '../../common/logger';
 import { HERTZ } from '../../common/constants';
+import { SONI_RIFF_SPEEDS } from '../../view/layers/data/data_layer';
 
 import * as ui from '@fizz/ui-components';
 
@@ -70,6 +71,18 @@ export class SoniSettingsDialog extends SettingControlContainer {
       label: 'Chords are arpeggiated',
       parentView: 'controlPanel.tabs.audio.sonification.dialog',
     });
+    this._store.settingControls.add({
+      type: 'slider',
+      key: 'sonification.riffSpeedIndex',
+      label: 'Riff speed',
+      options: {
+      min: 0,
+      max: SONI_RIFF_SPEEDS.length - 1,
+      step: 1,
+    },
+    parentView: 'controlPanel.tabs.audio.sonification.dialog',
+  });
+
   }
 
   render() {

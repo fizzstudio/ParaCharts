@@ -2,6 +2,8 @@
 import { DatapointView } from '../../data';
 import { type ParaStore } from '../../../store';
 import { type Direction } from '../../../store';
+import { DataLayer } from './data_layer';
+import { clusterObject } from '@fizz/clustering';
 
 const oppositeDirs: Record<Direction, Direction> = {
   up: 'down',
@@ -12,7 +14,7 @@ const oppositeDirs: Record<Direction, Direction> = {
   out: 'in'
 };
 
-export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence';
+export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence' | 'cluster';
 
 export type NavNodeOptionsType<T extends NavNodeType> =
   T extends 'top' ? TopNavNodeOptions :
@@ -20,6 +22,7 @@ export type NavNodeOptionsType<T extends NavNodeType> =
   T extends 'datapoint' ? DatapointNavNodeOptions :
   T extends 'chord' ? ChordNavNodeOptions :
   T extends 'sequence' ? SequenceNavNodeOptions :
+  T extends 'cluster' ? ClusterNavNodeOptions :
   never;
 
 export interface TopNavNodeOptions {}
@@ -30,12 +33,22 @@ export interface DatapointNavNodeOptions {
   seriesKey: string;
   index: number;
 }
-export interface ChordNavNodeOptions {}
+export interface ChordNavNodeOptions {
+  index: number;
+}
 export interface SequenceNavNodeOptions {
   seriesKey: string;
   // start and end as in series analysis fields
   start: number;
   end: number;
+}
+
+export interface ClusterNavNodeOptions {
+  seriesKey: string;
+  start: number;
+  end: number;
+  datapoints: number[];
+  clustering: clusterObject
 }
 
 function nodeOptionsEq<T extends NavNodeType>(
@@ -70,8 +83,9 @@ function nodeOptionsMatch<T extends NavNodeType>(
 export class NavMap {
   protected _layers: Map<string, NavLayer> = new Map();
   protected _currentLayer: NavLayer;
+  protected _runTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(protected _store: ParaStore) {
+  constructor(protected _store: ParaStore, protected _chart: DataLayer) {
     this._currentLayer = new NavLayer(this, 'root');
     this._layers.set(this._currentLayer.name, this._currentLayer);
   }
@@ -103,14 +117,24 @@ export class NavMap {
     this._layers.set(layer.name, layer);
   }
 
-  visitDatapoints() {
+  async visitDatapoints() {
     // NB: cursor may have no datapoints
     // await this.cursor!.at(0)?.focus();
     this._store.visit(this.cursor!.datapointViews.map(view => ({
       seriesKey: view.seriesKey,
-      index: view.index
+      index: view.index,
+      datapointView: view
     })));
-    this._store.navNode = this.cursor;
+    if (this._runTimer) {
+      clearTimeout(this._runTimer);
+    } else {
+      await this._chart.navRunDidStart(this.cursor);
+    }
+    this._runTimer = setTimeout(() => {
+      this._runTimer = null;
+      this._chart.navRunDidEnd(this.cursor);
+    }, this._store.settings.ui.navRunTimeoutMs);
+    //this._chart.navCursorDidChange(this.cursor);
   }
 
   node<T extends NavNodeType>(
@@ -265,10 +289,24 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     this._links.set(dir, node);
   }
 
+  removeLink(dir: Direction) {
+    this._links.delete(dir);
+  }
+
   connect(dir: Direction, to: NavLayer | NavNode, isReciprocal = true) {
     this.setLink(dir, to);
     if (to instanceof NavNode && isReciprocal) {
       to.setLink(oppositeDirs[dir], this);
+    }
+  }
+
+  disconnect(dir: Direction, isReciprocal = true) {
+    const linked = this._links.get(dir);
+    if (linked) {
+      this.removeLink(dir);
+      if (linked instanceof NavNode && isReciprocal) {
+        linked.removeLink(oppositeDirs[dir]);
+      }
     }
   }
 
@@ -308,7 +346,7 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     return this._datapointViews.at(index);
   }
 
-  move(dir: Direction) {
+  async move(dir: Direction) {
     const link = this._links.get(dir);
     if (!link) {
       return;
@@ -325,6 +363,10 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
 
   go() {
     this._layer.goToNode(this);
+  }
+
+  isNodeType<N extends T>(nodeType: N): this is NavNode<N> {
+    return this.type === nodeType;
   }
 
 }

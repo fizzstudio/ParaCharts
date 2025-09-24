@@ -131,7 +131,7 @@ export class DocumentView extends Container(View) {
     });
     if (this._chartLayers.dataLayer.axisInfo) {
       this._vertAxis = new VertAxis(this);
-      this._horizAxis = new HorizAxis(this, undefined);
+      this._horizAxis = new HorizAxis(this);
       this._vertAxis.orthoAxis = this._horizAxis;
       this._horizAxis.orthoAxis = this._vertAxis;
       ////////////////////////////////////////////

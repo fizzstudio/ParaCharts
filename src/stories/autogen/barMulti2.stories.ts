@@ -1,6 +1,9 @@
 import { Chart, type ChartProps } from '../Chart';
 
-import type { Meta, StoryObj } from '@storybook/web-components';
+import type { Meta, StoryObj } from '@storybook/web-components-vite';
+import { expect } from 'storybook/test';
+
+import Runner from '../tests/barTests';
 
 type Story = StoryObj<ChartProps>;
 
@@ -16,5 +19,9 @@ export const Chart2: Story = {
   args: {
     filename: "manifests/autogen/bar-multi/bar-multi-manifest-15.json",
     forcecharttype: "bar",
+  },
+  play: async ({canvas, userEvent}) => {
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/bar-multi/bar-multi-manifest-15.json");
+    await runner.run();
   }
 }

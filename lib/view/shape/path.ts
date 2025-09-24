@@ -8,7 +8,6 @@ import { svg, nothing } from 'lit';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ref } from 'lit/directives/ref.js';
-import { DatapointView } from '../data';
 
 export interface PathOptions extends ShapeOptions {
   points: Vec2[];
@@ -32,16 +31,6 @@ export class PathShape extends Shape {
     return new PathShape(this.paraview, this._options);
   }
 
-  get styleInfo(): StyleInfo {
-    const style = super.styleInfo;
-    style.fill = 'none'
-    return style;
-  }
-
-  set styleInfo(styleInfo: StyleInfo) {
-    super.styleInfo = styleInfo;
-  }
-
   get points() {
     return this._points.map(p => p.clone());
   }
@@ -59,11 +48,11 @@ export class PathShape extends Shape {
   }
 
   get width() {
-    return Math.max(...this.xs) - Math.min(...this.xs); 
+    return Math.max(...this.xs) - Math.min(...this.xs);
   }
 
   get height() {
-    return Math.max(...this.ys) - Math.min(...this.ys); 
+    return Math.max(...this.ys) - Math.min(...this.ys);
   }
 
   get left() {
@@ -108,36 +97,17 @@ export class PathShape extends Shape {
   }
 
   render() {
-    if (this.parent instanceof DatapointView){
-      return svg`
-      <defs>
-        <clipPath id="chartbox">
-          <rect x="0" y="0" width=${this.parent.chart.parent.logicalWidth} height=${this.parent.chart.parent.logicalHeight} />
-        </clipPath>
-      </defs>
+    return svg`
       <path
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}
-        style=${styleMap(this.styleInfo)}
-        class=${classMap(this._classInfo)}
+        style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+        class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         role=${this._role || nothing}
         d=${this._pathD}
-        clip-path="url(#chartbox)"
+        clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
       ></path>
     `;
-    }
-    else{
-      return svg`
-      <path
-        ${this._ref ? ref(this._ref) : undefined}
-        id=${this._id || nothing}
-        style=${styleMap(this.styleInfo)}
-        class=${classMap(this._classInfo)}
-        role=${this._role || nothing}
-        d=${this._pathD}
-      ></path>
-    `;
-    }
   }
 
 }
