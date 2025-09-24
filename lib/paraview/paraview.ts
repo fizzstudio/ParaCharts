@@ -373,6 +373,12 @@ export class ParaView extends logging(ParaComponent) {
         this._store.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
+        if (newValue) {
+          draft.chart.fontScale = 2;
+        } else {
+          // XXX ideally, we save and restore
+          draft.chart.fontScale = 1;
+        }
       });
     } else if (path === 'ui.isVoicingEnabled') {
       if (this._store.settings.ui.isVoicingEnabled) {

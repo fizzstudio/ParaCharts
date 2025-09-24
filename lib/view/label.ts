@@ -222,6 +222,10 @@ export class Label extends View {
     };
   }
 
+  resize(width: number, height: number): void {
+    // pretend to resize for grid layout
+  }
+
   computeSize() {
     // XXX Need to make sure the label gets rendered here with the
     // same font settings it will ultimately be displayed with
@@ -373,13 +377,7 @@ export class Label extends View {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
-    if (this._id === 'chart-title') {
-      console.log('WILL UPDATE SIZE', this._width, this._height);
-    }
     this.updateSize();
-    if (this._id === 'chart-title') {
-      console.log('DID UPDATE SIZE', this._width, this._height);
-    }
     super.settingDidChange(path, oldValue, newValue);
   }
 

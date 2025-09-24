@@ -35,8 +35,9 @@ export class ControlsPanel extends ControlPanelTabPanel {
       label: 'Font scale',
       options: {
         min: 0.5,
-        max: 2,
+        max: 3,
         step: 0.1,
+        showValue: true
       },
       parentView: 'controlPanel.tabs.controls',
     });
