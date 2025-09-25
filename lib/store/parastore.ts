@@ -144,6 +144,7 @@ export class ParaStore extends State {
   protected _visitedDatapoints = new Set<string>();
   protected _prevVisitedDatapoints = new Set<string>();
   protected _everVisitedDatapoints = new Set<string>();
+  @property() protected _highlightedSelector = '';
   @property() protected _selectedDatapoints = new Set<string>();
   @property() protected _prevSelectedDatapoints = new Set<string>();
   @property() protected _rangeHighlights: RangeHighlight[] = [];
@@ -511,6 +512,14 @@ export class ParaStore extends State {
   clearVisited() {
     this._prevVisitedDatapoints = this._visitedDatapoints;
     this._visitedDatapoints = new Set();
+  }
+
+  get highlightedSelector() {
+    return this._highlightedSelector;
+  }
+
+  highlight(selector: string) {
+    this._highlightedSelector = selector;
   }
 
   get selectedDatapoints() {

@@ -222,7 +222,8 @@ export class ParaChart extends logging(ParaComponent) {
       '--theme-contrast-color': 'white',
       '--fizz-theme-color': 'var(--paracharts-theme-color, navy)',
       '--fizz-theme-color-light': 'var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%))',
-      '--visited-color': () => this._store.colors.colorValue('highlight'),
+      '--visited-color': () => this._store.colors.colorValue('visit'),
+      '--highlighted-color': () => this._store.colors.colorValue('highlight'),
       '--visited-stroke-width': () =>
         this._paraViewRef.value?.documentView?.chartLayers.dataLayer.visitedStrokeWidth ?? 0,
       '--selected-color': 'var(--label-color)',

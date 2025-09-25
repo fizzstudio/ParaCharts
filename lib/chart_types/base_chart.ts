@@ -382,6 +382,9 @@ export abstract class BaseChartInfo extends Logger {
         this._playDatapoints([datapoint]);
       }
       this._store.sparkBrailleInfo = this._sparkBrailleInfo();
+
+      // this._store.highlight(`datapoint-${cursor.options.seriesKey}-${cursor.options.index}`);
+
     } else if (cursor.isNodeType('chord')) {
       if (this._store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
         if (this._store.settings.sonification.isArpeggiateChords) {
@@ -392,9 +395,34 @@ export abstract class BaseChartInfo extends Logger {
           this._playDatapoints(datapoints);
         }
       }
-    } else if (cursor.type === 'sequence') {
+    } else if (cursor.isNodeType('sequence')) {
       this._playRiff();
+
+      // this._store.highlight(
+      //   `sequence-${cursor.options.seriesKey}-${cursor.options.start}-${cursor.options.end}`);
+
     }
+  }
+
+  /** Nav map layer from which to interpret selectors */
+  get selectorLayer(): string {
+    return 'root';
+  }
+
+  datapointsForSelector(selector: string): readonly Datapoint[] {
+    return this._navMap!.datapointsForSelector(this.selectorLayer, selector);
+  }
+
+  isHighlighted(seriesKey: string, index: number): boolean {
+    if (this._store.highlightedSelector) {
+      const datapoints = this.datapointsForSelector(this._store.highlightedSelector);
+      for (const datapoint of datapoints) {
+        if (datapoint.seriesKey === seriesKey && datapoint.datapointIndex === index) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   get shouldDrawFocusRing() {
