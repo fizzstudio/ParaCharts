@@ -171,8 +171,7 @@ export class GridLayout extends Layout {
 
     const shifted = this._hRules.slice(gapHRule + 1).map(hr => hr - (gap - oldGap));
     this._hRules.splice(gapHRule + 1, shifted.length, ...shifted);
-    // rows on either side of gap shrink by gap/2
-    this._hRules[gapHRule] -= gap/2;
+    this._hRules[gapHRule] -= gap;
     this._territories.keys().forEach(view => {
       this._adjustViewToRules(view);
     })
@@ -197,11 +196,10 @@ export class GridLayout extends Layout {
     }
     const oldGap = this._colGaps[i];
     this._colGaps[i] = gap;
-    const gapVRule = i + 1;
+    const gapVRule = i + 1; // vrule where the gap fits
     const shifted = this._vRules.slice(gapVRule + 1).map(vr => vr - (gap - oldGap));
     this._vRules.splice(gapVRule + 1, shifted.length, ...shifted);
-    // cols on either side of gap shrink by gap/2
-    this._vRules[gapVRule] -= gap/2;
+    this._vRules[gapVRule] -= gap;
     this._territories.keys().forEach(view => {
       this._adjustViewToRules(view);
     })
