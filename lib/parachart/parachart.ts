@@ -248,6 +248,8 @@ export class ParaChart extends logging(ParaComponent) {
       '--vert-axis-title-font-size': () => this._store.settings.axis.vert.title.fontSize,
       '--horiz-axis-tick-label-font-size': () => this._store.settings.axis.horiz.tick.tickLabel.fontSize,
       '--vert-axis-tick-label-font-size': () => this._store.settings.axis.vert.tick.tickLabel.fontSize,
+      '--direct-label-font-size': () => this._store.settings.chart.directLabelFontSize,
+      '--legend-label-font-size': () => this._store.settings.legend.fontSize,
       'display': 'block',
       'font-family': '"Trebuchet MS", Helvetica, sans-serif',
       'font-size': 'var(--chart-view-font-size, 1rem)'

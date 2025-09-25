@@ -164,6 +164,7 @@ export interface ChartSettings extends SettingGroup {
   symbolStrokeWidth: number;
   symbolHighlightScale: number;
   hasDirectLabels: boolean;
+  directLabelFontSize: string;
   hasLegendWithDirectLabels: boolean;
   isDrawSymbols: boolean;
   isStatic: boolean;
@@ -267,6 +268,7 @@ export interface LegendSettings extends SettingGroup {
   position: CardinalDirection;
   margin: number;
   itemOrder: LegendItemOrder;
+  fontSize: string;
 }
 
 export interface PlotAreaSettings extends SettingGroup {

@@ -126,6 +126,12 @@ export class ParaView extends logging(ParaComponent) {
       .axis-title.vert {
         font-size: calc(var(--vert-axis-title-font-size)*var(--chart-font-scale));
       }
+      .serieslabel {
+        font-size: calc(var(--direct-label-font-size)*var(--chart-font-scale));
+      }
+      .legend-label {
+        font-size: calc(var(--legend-label-font-size)*var(--chart-font-scale));
+      }
       .label {
         fill: var(--label-color);
         stroke: none;

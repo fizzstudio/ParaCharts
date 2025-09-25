@@ -79,7 +79,13 @@ export class Legend extends Container(View) {
           color: item.color
         }
       ));
-      views.push(new Label(this.paraview, {text: item.label, x: 0, y: 0, textAnchor: 'start'}));
+      views.push(new Label(this.paraview, {
+        text: item.label,
+        x: 0,
+        y: 0,
+        textAnchor: 'start',
+        classList: ['legend-label']
+      }));
     });
     const symLabelGap = this.paraview.store.settings.legend.symbolLabelGap;
     const pairGap = this.paraview.store.settings.legend.pairGap;
