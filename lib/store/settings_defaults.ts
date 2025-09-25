@@ -62,6 +62,7 @@ export const defaults: Settings = {
     symbolStrokeWidth: 2,
     symbolHighlightScale: 1.5,
     hasDirectLabels: true,
+    directLabelFontSize: '10pt',
     hasLegendWithDirectLabels: false,
     isDrawSymbols: true,
     isStatic: false,
@@ -162,7 +163,8 @@ export const defaults: Settings = {
     pairGap: 30,
     position: 'east',
     margin: 20,
-    itemOrder: 'series'
+    itemOrder: 'series',
+    fontSize: '10pt'
   },
   plotArea: {
     size: {
