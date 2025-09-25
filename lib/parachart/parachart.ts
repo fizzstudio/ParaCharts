@@ -316,7 +316,11 @@ export class ParaChart extends logging(ParaComponent) {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
     this.log('setting did change:', path, '=', newValue, `(was ${oldValue})`);
+    // Update the style manager before the paraview so, e.g., any font scale
+    // change can take effect ...
+    this._styleManager.update();
     this._paraViewRef.value?.settingDidChange(path, oldValue, newValue);
+    // ... then update it again to pick up any changed values from the view tree
     this._styleManager.update();
   }
 

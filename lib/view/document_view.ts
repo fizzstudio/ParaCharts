@@ -74,6 +74,7 @@ export class DocumentView extends Container(View) {
   }
 
   protected _createGrid() {
+    this._grid?.remove();
     this._grid = new GridLayout(this.paraview, {
       width: this._store.settings.chart.size.width - this._padding.left - this._padding.right,
       height: this._store.settings.chart.size.height - this._padding.top - this._padding.bottom,
@@ -130,6 +131,12 @@ export class DocumentView extends Container(View) {
   }
 
   protected _populateGrid() {
+
+    const shouldAddDirectLabelStrip = this._store.settings.chart.hasDirectLabels
+      && this.type === 'line'
+      && /*this._chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
+        this._store.model!.multi;
+
     if (this._store.settings.chart.title.isDrawTitle && this._store.title) {
       this.createTitle();
     }
@@ -215,11 +222,7 @@ export class DocumentView extends Container(View) {
     this._chartLayers.dataLayer.observeStore();
 
 
-    if (this._store.settings.chart.hasDirectLabels
-        && this.type === 'line'
-        && (/*this._chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
-            this._store.model!.multi)
-    ) {
+    if (shouldAddDirectLabelStrip) {
       this._directLabelStrip = new DirectLabelStrip(this._chartLayers.dataLayer as LinePlotView);
       this._grid.append(this._directLabelStrip, {
         x: 2,
@@ -248,8 +251,7 @@ export class DocumentView extends Container(View) {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
     this._chartInfo.settingDidChange(path, oldValue, newValue);
-    if (['chart.size.width', 'chart.size.height'].includes(path)) {
-      this._grid.remove();
+    if (['chart.size.width', 'chart.size.height', 'chart.fontScale'].includes(path)) {
       this._createGrid();
       //this.paraview.requestUpdate();
     }
@@ -352,7 +354,7 @@ export class DocumentView extends Container(View) {
       x: 0,
       y: titleRow,
       colAlign: align,
-      width: this._chartInfo.axisInfo ? 2 : 1
+      width: 4
       // margin: {
       //   top: titlePos === 'top' ? 0 : titleMargin,
       //   bottom: titlePos === 'bottom' ? 0 : titleMargin
