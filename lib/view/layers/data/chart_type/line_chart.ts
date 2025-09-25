@@ -441,6 +441,28 @@ export class LineSection extends ChartPoint {
       shape.remove();
     });
     const points = this._points;
+    let cousins = this.withCousins.map((c, i) => [c, i]).toSorted((a: this[], b: this[]) => a[0].y - b[0].y) as [this, number][]
+    let y = 0;
+    let height = 0;
+    if (cousins.length === 1) {
+      y = 0;
+      height = this.chart.height;
+    }
+    else {
+      if (cousins[0][1] === this.parent.index) {
+        y = 0;
+        height = (cousins[1][0].y - this.y) / 2 + this.y
+      }
+      else if (cousins[cousins.length - 1][1] === this.parent.index) {
+        y = (this.y - cousins[cousins.length - 2][0].y) / 2 + cousins[cousins.length - 2][0].y
+        height = this.chart.height - ((this.y - cousins[cousins.length - 2][0].y) / 2 + cousins[cousins.length - 2][0].y)
+      }
+      else {
+        let index = cousins.findIndex(c => c[1] === this.parent.index)!
+        y = (this.y - cousins[index - 1][0].y) / 2 + cousins[index - 1][0].y
+        height = (cousins[index + 1][0].y - this.y) / 2 + this.y - ((this.y - cousins[index - 1][0].y) / 2 + cousins[index - 1][0].y)
+      }
+    }
     if (points.length === 3) {
       const slices = [points.slice(0, -1), points.slice(1)];
       // XXX We can't do this until the series analysis completes!
@@ -467,9 +489,9 @@ export class LineSection extends ChartPoint {
       );
       let invis = new RectShape(this.paraview, {
         x: this._x + slices[0][0].x,
-        y: 0,
+        y: y,
         width: slices[1][1].x - slices[0][0].x,
-        height: this.chart.height,
+        height: height,
         stroke: "white",
         fill: "white",
         pointerEnter: (e) => {
@@ -494,9 +516,9 @@ export class LineSection extends ChartPoint {
       );
       let invis = new RectShape(this.paraview, {
         x: points[0].x == 0 ? this._x : this._x + points[0].x,
-        y: 0,
+        y: y,
         width: points[0].x == 0 ? points[1].x : this.x,
-        height: this.chart.height,
+        height: height,
         stroke: "white",
         fill: "white",
         pointerEnter: (e) => {
