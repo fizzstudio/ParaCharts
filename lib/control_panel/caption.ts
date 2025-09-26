@@ -71,7 +71,7 @@ export class ParaCaptionBox extends logging(ParaComponent) {
           this._summarizer = new PlaneChartSummarizer(this.store.model as PlaneModel);
         }
       }
-      this._caption = await this._summarizer.getChartSummary();
+      this._caption = (await this._summarizer.getChartSummary()).text;
     }
   }
 

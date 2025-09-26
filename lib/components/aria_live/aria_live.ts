@@ -12,7 +12,7 @@ import { property, customElement } from 'lit/decorators.js';
 @customElement('para-aria-live-region')
 export class AriaLive extends ParaComponent {
 
-  @property({type: Object}) announcement: Announcement = { text: '' };
+  @property({type: Object}) announcement: Announcement = { text: '', highlights: [] };
 
   protected _srb!: ScreenReaderBridge;
   protected _voicing = new Voicing();
@@ -34,7 +34,7 @@ export class AriaLive extends ParaComponent {
       if (this.announcement.clear) {
         this._srb.clear();
       }
-      this._srb.render(this.announcement.text);
+      this._srb.render(this.announcement.text, this.announcement.highlights);
     }
   }
 
@@ -55,7 +55,8 @@ export class AriaLive extends ParaComponent {
         }
         const addCC = mutation.addedNodes[0] as HTMLDivElement;
 
-        const msg = addCC.getAttribute('data-original-text');
+        const msg = addCC.getAttribute(ScreenReaderBridge.ORIGINAL_TEXT_ATTRIBUTE);
+        const highlights = addCC.getAttribute(ScreenReaderBridge.ORIGINAL_HIGHLIGHT_ATTRIBUTE);
 
         // const timestamp = addCC.getAttribute("data-created")
         // Create a new array rather than mutating it so the assignment can
@@ -65,7 +66,7 @@ export class AriaLive extends ParaComponent {
         if (msg
           && this._store.settings.ui.isVoicingEnabled
           && this._store.settings.ui.isAnnouncementEnabled) {
-          this._voicing.speak(msg);
+          this._voicing.speak(msg, JSON.parse(highlights!));
         }
       })
     });

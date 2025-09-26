@@ -1,3 +1,5 @@
+import { Highlight } from '@fizz/parasummary';
+
 export class Voicing {
   private _voice: SpeechSynthesis | null = null;
   private _lang: string = 'en-US';
@@ -13,7 +15,7 @@ export class Voicing {
     }
   }
 
-  speak(msg: string) {
+  speak(msg: string, highlights: Highlight[]) {
     if (this._voice) {
       this.shutUp();
   
@@ -22,6 +24,8 @@ export class Voicing {
       utterance.lang = this._lang;
       utterance.pitch = this._pitch;
       utterance.volume = this._volume;
+
+      
   
       this._voice.speak(utterance);
     }

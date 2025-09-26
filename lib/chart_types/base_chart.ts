@@ -357,9 +357,9 @@ export abstract class BaseChartInfo extends Logger {
   async navRunDidEnd(cursor: NavNode) {
     //const seriesKey = cursor.options.seriesKey ?? '';
     if (cursor.isNodeType('top')) {
-      await this._store.asyncAnnounce(this._summarizer.getChartSummary());
+      this._store.highlightedAnnounce(await this._summarizer.getChartSummary());
     } else if (cursor.isNodeType('series')) {
-      this._store.announce(
+      this._store.highlightedAnnounce(
         await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
       this._playRiff();
       this._store.sparkBrailleInfo = this._sparkBrailleInfo();
@@ -374,7 +374,7 @@ export abstract class BaseChartInfo extends Logger {
         announcements[0] = `${cursor.options.seriesKey}: ${announcements[0]}`;
         if (!seriesPreviouslyVisited) {
           const seriesSummary = await this._summarizer.getSeriesSummary(cursor.options.seriesKey);
-          announcements.push(seriesSummary);
+          announcements.push(seriesSummary.text);
         }
       }
       this._store.announce(announcements);

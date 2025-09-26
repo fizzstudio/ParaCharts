@@ -34,7 +34,8 @@ import {
   PlaneModel,
   Datapoint
 } from '@fizz/paramodel';
-import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
+import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY, 
+  HighlightedSummary, Highlight } from '@fizz/parasummary';
 
 import {
   DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
@@ -60,6 +61,7 @@ export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 // distinct, even if the text is the same
 export interface Announcement {
   text: string;
+  highlights: Highlight[];
   clear?: boolean;
 }
 
@@ -128,7 +130,7 @@ export class ParaStore extends State {
   @property() dataState: DataState = 'initial';
   @property() settings: Settings;
   @property() darkMode = false;
-  @property() announcement: Announcement = { text: '' };
+  @property() announcement: Announcement = { text: '', highlights: [] };
   @property() annotations: BaseAnnotation[] = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
@@ -389,7 +391,7 @@ export class ParaStore extends State {
     this._appendAnnouncements.push(msg);
   }
 
-  announce(msg: string | string[], clearAriaLive = false) {
+  announce(msg: string | string[], clearAriaLive = false, highlights?: Highlight[]) {
     /*
     This sends an announcement to the Status Bar.
     If the `msg` argument is an array, it joins the strings together with a
@@ -419,9 +421,13 @@ export class ParaStore extends State {
     }
 
     if (this.settings.ui.isAnnouncementEnabled) {
-      this.announcement = { text: announcement, clear: clearAriaLive };
+      this.announcement = { text: announcement, highlights: highlights ?? [], clear: clearAriaLive };
       console.log('ANNOUNCE:', this.announcement.text);
     }
+  }
+
+  highlightedAnnounce(msg: HighlightedSummary, clearAriaLive = false): void {
+    this.announce(msg.text, clearAriaLive, msg.highlights);
   }
 
   public async asyncAnnounce(msgPromise: Promise<string | string[]>): Promise<void> {

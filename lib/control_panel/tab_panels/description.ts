@@ -96,7 +96,7 @@ export class DescriptionPanel extends ControlPanelTabPanel {
           this._summarizer = new PlaneChartSummarizer(this.store.model as PlaneModel);
         }
       }
-      this.caption = await this._summarizer.getChartSummary();
+      this.caption = (await this._summarizer.getChartSummary()).text;
     }
   }
 
