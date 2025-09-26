@@ -100,7 +100,7 @@ export class SoniSettingsDialog extends SettingControlContainer {
    * Show the dialog
    */
   async show() {
-    await this._dialogRef.value!.show(() => this._dialogRef.value!.button('cancel')!.focus());
+    await this._dialogRef.value!.show();
   }
 }
 
