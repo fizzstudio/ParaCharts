@@ -76,7 +76,13 @@ export class Legend extends Container(View) {
           ? (item.symbol ?? 'square.solid')
           : 'square.solid',
         {
-          color: item.color
+          color: item.color,
+          pointerEnter: (e) => {
+            this.paraview.store.soloSeries = item.label;
+          },
+          pointerLeave: (e) => {
+            this.paraview.store.soloSeries = '';
+          }
         }
       ));
       views.push(new Label(this.paraview, {
@@ -84,7 +90,13 @@ export class Legend extends Container(View) {
         x: 0,
         y: 0,
         textAnchor: 'start',
-        classList: ['legend-label']
+        classList: ['legend-label'],
+        pointerEnter: (e) => {
+          this.paraview.store.soloSeries = item.label;
+        },
+        pointerLeave: (e) => {
+          this.paraview.store.soloSeries = '';
+        }
       }));
     });
     const symLabelGap = this.paraview.store.settings.legend.symbolLabelGap;
