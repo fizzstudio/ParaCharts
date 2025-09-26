@@ -261,6 +261,8 @@ export interface DataSymbolOptions {
   color?: number;
   dashed: boolean;
   lighten?: boolean;
+  pointerEnter?: (e: PointerEvent) => void;
+  pointerLeave?: (e: PointerEvent) => void;
 }
 
 /**
@@ -306,7 +308,9 @@ export class DataSymbol extends View {
       scale: options?.scale ?? 1,
       color: options?.color,
       dashed: options?.dashed ?? false,
-      lighten: options?.lighten ?? false
+      lighten: options?.lighten ?? false,
+      pointerEnter: options?.pointerEnter,
+      pointerLeave: options?.pointerLeave
     };
     this._defsKey = `sym-${shape}-${fill}`;
     if (!this.paraview.defs[this._defsKey]) {
@@ -425,6 +429,8 @@ export class DataSymbol extends View {
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         transform=${transform}
+        @pointerenter=${this._options.pointerEnter ?? nothing}
+        @pointerleave=${this._options.pointerLeave ?? nothing}
       />
     `;
   }
