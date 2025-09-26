@@ -365,7 +365,7 @@ export class HorizAxis extends Axis<'horiz'> {
       isDrawOverhang: this.paraview.store.settings.axis.y.line.isDrawOverhang,
       tickStep: this._tickStep,
       orthoAxisPosition: this.paraview.store.settings.axis.vert.position,
-      zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0')
+      zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0') - 1
     });
   }
 

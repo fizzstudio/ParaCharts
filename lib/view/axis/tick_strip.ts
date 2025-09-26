@@ -201,7 +201,7 @@ export class HorizTickStrip extends TickStrip {
     this._indices.forEach((idx, i) => {
       this.append(new HorizGridLine(
         this._axisSettings.position as VertCardinalDirection,
-        this.paraview, undefined, length, i === this._options.zeroIndex ? true : false));
+        this.paraview, undefined, length, i === this._options.zeroIndex));
       this._children.at(-1)!.x = this._ruleXs[i];
       this._children.at(-1)!.y = this._ruleY;
       this._children.at(-1)!.hidden = !this.paraview.store.settings.grid.isDrawVertLines;
@@ -283,7 +283,7 @@ export class VertTickStrip extends TickStrip {
         this._axisSettings.position as HorizCardinalDirection,
         // XXX don't use `plotWidth` here
         this.paraview, undefined, length,
-        this._indices.length - i - 1 === this._options.zeroIndex ? true : false));
+        this._indices.length - i - 1 === this._options.zeroIndex));
       this._children.at(-1)!.x = this._ruleX;
       this._children.at(-1)!.y = this._ruleYs[i];
       this._children.at(-1)!.hidden = !this.paraview.store.settings.grid.isDrawHorizLines;

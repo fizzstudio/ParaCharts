@@ -192,50 +192,6 @@ export class GraphingCalculator extends LinePlotView {
     return new GraphLine(seriesView);
   }
 
-  checkHorizExpand(cursor: NavNode, link: NavLayer | NavNode | undefined, dir: string): boolean {
-    if (dir === 'left' && cursor.type === 'datapoint' && cursor.datapointViews[0].index === 0) {
-      this.paraview.store.updateSettings(draft => {
-        draft.axis.x.minValue = this.axisInfo!.xLabelInfo.min! - 1;
-      });
-      return true;
-    }
-    else if (dir === 'right' && cursor.type === 'datapoint') {
-      if (cursor.datapointViews[0].index
-        === this.paraview.store.model!.series[this.paraview.store.model?.seriesKeys.findIndex(s => s == cursor.datapointViews[0].seriesKey)!].length - 1) {
-        this.paraview.store.updateSettings(draft => {
-          draft.axis.x.maxValue = this.axisInfo!.xLabelInfo.max! + 1;
-        });
-        return true;
-      }
-    }
-    return false;
-  }
-
-  checkVertExpand(cursor: NavNode, link: NavLayer | NavNode | undefined, dir: string): boolean {
-    if (link instanceof NavNode && cursor.type === 'datapoint' && (link.type === "series" || link.type === "datapoint")) {
-      const yTier = Math.abs(Number(this.axisInfo?.yLabelInfo.labelTiers[0][0]) - Number(this.axisInfo?.yLabelInfo.labelTiers[0][1]))
-      const cursorYVal = cursor.datapointViews[0].datapoint.facetValueAsNumber("y")!
-      const linkYVal = link.datapointViews[0].datapoint.facetValueAsNumber("y")!
-      if ((dir === "left" || dir === "right") && cursorYVal <= this.axisInfo!.yLabelInfo.max!
-        && linkYVal >= this.axisInfo!.yLabelInfo.max!) {
-        const newYMax = Math.ceil((linkYVal + 1) / yTier) * yTier;
-        this.paraview.store.updateSettings(draft => {
-          draft.axis.y.maxValue = newYMax
-        });
-        return true;
-      }
-      else if ((dir === "left" || dir === "right") && cursorYVal >= this.axisInfo!.yLabelInfo.min!
-        && linkYVal <= this.axisInfo!.yLabelInfo.min!) {
-        const newYMin = Math.floor((linkYVal - 1) / yTier) * yTier;
-        this.paraview.store.updateSettings(draft => {
-          draft.axis.y.minValue = newYMin;
-        });
-        return true;
-      }
-    }
-    return false;
-  }
-
   handlePan(startX: number, startY: number, endX: number, endY: number) {
     const axisInfo = this._chartInfo.axisInfo!;
     const xRange = axisInfo.xLabelInfo.range!;
@@ -288,7 +244,7 @@ export class GraphLine extends LineSection{
 
   protected _computeX() {
     // Scales points in proportion to the data range
-    const xTemp = (this.datapoint.facetValueNumericized(this.datapoint.indepKey)! - this.chart.axisInfo!.xLabelInfo.min!) / this.chart.axisInfo!.xLabelInfo.range!;
+    const xTemp = (this.datapoint.facetValueNumericized(this.datapoint.indepKey)! - this.chart.chartInfo.axisInfo!.xLabelInfo.min!) / this.chart.chartInfo.axisInfo!.xLabelInfo.range!;
     const parentWidth: number = this.chart.parent.width;
     return parentWidth * xTemp;
   }
