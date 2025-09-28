@@ -1,40 +1,49 @@
 # Accessibility Features
 
-Paracharts is designed with accessibility at its core, offering features that go beyond standard keyboard navigation and screen reader support.
-These features are not only valuable for users of screen readers, but are also essential for voice-based interfaces such as smart speakers and smart glasses, where visual access to data is limited or unavailable.
+ParaCharts is designed with accessibility at its core. This page explains the practical controls users can use to make charts easier to perceive and navigate.
 
-## Screen Reader Support
+## What you can do (quick)
 
-Paracharts provides semantic markup and ARIA attributes, enabling screen readers to accurately convey chart structure, data, and context.
-This ensures users with visual impairments can understand and interact with charts effectively.
+- Enable/disable sonification: press `s` when the chart is focused.
+- Toggle self-voicing (text-to-speech): press `v` when the chart is focused.
+- Query a focused point for a detailed description: press `Q`.
+- Access the latest AI-generated summary in the ARIA live region (announced automatically when updated).
 
-## Self-Voicing Mode
+## Screen reader behavior
 
-In addition to screen reader support, Paracharts offers a built-in self-voicing mode. When enabled, this feature allows the chart to speak its content and updates directly, using the browser's speech synthesis capabilities. This is especially valuable for users who do not use a traditional screen reader, or for hands-free and eyes-free scenarios such as smart glasses, kiosks, or voice-first devices.
+ParaCharts provides semantic markup and ARIA attributes so screen readers can announce chart summaries, updates, and focused points. When a chart or element is focused, the chart updates an ARIA live region with a short description.
 
-To toggle self-voicing mode, press the `v` key while the chart is focused. Once enabled, all chart announcements, descriptions, and navigation feedback will be spoken aloud automatically. You can stop the speech at any time by pressing either the `Ctrl` key or the `Escape` key.
+Practical tips:
 
-Self-voicing mode works in tandem with other accessibility features, such as sonification and AI-powered descriptions, to provide a rich, multimodal experience for all users.
+- If you want a quick overview, focus the chart and wait for the AI summary to be announced.
+- To hear details for a data point, focus the point and press `Q`.
+- If announcements are too frequent, toggle self-voicing off or reduce live-region verbosity in your app settings.
 
-## Sonification
+## Sonification (audio representation of data)
 
-A key challenge with traditional chart accessibility is that serial navigation, which moves through data point by point, can be slow and overwhelming.
-This makes it difficult to grasp overall trends or patterns.
-Paracharts addresses this by translating chart data into audio cues.
-Sonification allows users to perceive the shape, direction, and outliers in data through sound, providing an immediate sense of the data’s structure that would otherwise require extensive navigation.
-This approach is especially useful for voice-based platforms, where audio is the primary mode of interaction.
+Sonification translates data values into sound to give an immediate sense of trends and outliers.
 
-When a chart is focused, use `s` shortcut to toggle sonification mode.
-After enabling sonification mode, from the beginning of the chart, press the left arrow key to hear all of the points in the chart sonified in sequence.
-When arrowing through the chart point by point, sonification mode also gives users immediate audio feedback of the value of that particular point.
+How to use it:
 
-## AI-Powered Descriptions
+- Focus the chart and press `s` to toggle sonification mode.
+- Use the arrow keys to step through points and hear their values.
+- From the start of the series, press the left arrow to play points in sequence.
 
-Paracharts uses AI to generate concise, context-aware textual summaries of charts.
-These descriptions highlight key insights, trends, and anomalies, giving users a quick overview of the data.
-This helps users understand the main points without needing to examine each data point individually, making data more accessible to those who rely on screen readers, voice assistants, or prefer text-based information.
+What to expect:
 
-The chart descriptions are updated dynamically as chart elements are focused.
-These updates are located in an ARIA live region, making them easily accessible for screen reader users.
-Additionally, when self-voicing mode is enabled, the updated descriptions are sent directly to the built-in speech engine.
-When an individual point in a chart is focused, the `Q` command can be used to query that point, updating its description to contain more detail.
+- Pitch generally maps to value (higher = higher pitch).
+- Additional audio cues may indicate series boundaries or outliers.
+
+## Self-voicing and AI descriptions
+
+Self-voicing mode uses the browser's speech synthesis to read chart announcements and AI summaries automatically.
+
+- Toggle: press `v` while the chart is focused.
+- While enabled, AI summaries and important announcements are spoken automatically.
+- For a point-level description, focus the point and press `Q` to request more detail.
+
+## Troubleshooting (audio & screen reader)
+
+- No sound: ensure your device volume and browser audio permissions are enabled.
+- Announcements not heard: check that a screen reader or self-voicing mode is active and the browser focus is on the chart.
+- Sonification too fast/slow: look for playback speed controls in the control panel (or use keyboard shortcuts if provided).

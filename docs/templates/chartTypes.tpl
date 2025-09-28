@@ -58,9 +58,6 @@ Heatmaps are powerful for visualizing data density, correlations, or distributio
 
 Heatmaps are especially useful for large datasets where individual values are less important than overall trends or concentrations.
 
-
-<!-- No heatmap.svg found in assets; add image here if available. -->
-
 ---
 
 ## Manifest Encoding for Each Chart Type
