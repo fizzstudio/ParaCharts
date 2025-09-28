@@ -1,11 +1,9 @@
 # ParaCharts Documentation
 
-Welcome to the ParaCharts documentation. This repo contains two audiences:
+Welcome to the paracharts documentation.
+This site contains information on how to get the most out of ParaCharts as an end-user, as well as developer documentation.
 
-- User docs — how to interact with charts and the UI (keyboard, audio, export).
-- Developer docs — how to embed and configure ParaCharts in your app.
-
-## Quick links — user docs
+## User Guide
 
 - [Chart Types](chartTypes.md) — overview of chart types and guidance for choosing one.
 - [Control Panel & Settings](controlPanel.md) — quick guide to the control panel tabs and common settings.
