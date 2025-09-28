@@ -267,6 +267,18 @@ export interface LegendSettings extends SettingGroup {
   itemOrder: LegendItemOrder;
 }
 
+export interface PopupSettings extends SettingGroup {
+  opacity: number;
+  leftPadding: number;
+  rightPadding: number;
+  upPadding: number;
+  downPadding: number;
+  margin: number;
+  maxWidth: number;
+  shape: "box" | "boxWithArrow";
+  activation: "onHover" | "onFocus" | "onSelect";
+}
+
 /** @public */
 export interface PlotSettings extends SettingGroup {
 }
@@ -462,6 +474,7 @@ export interface Settings extends SettingGroup {
   chart: ChartSettings;
   axis: AxesSettings;
   legend: LegendSettings;
+  popup: PopupSettings;
   type: ChartTypeSettings;
   grid: GridSettings;
   ui: UISettings;

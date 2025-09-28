@@ -162,6 +162,17 @@ export const defaults: Settings = {
     margin: 20,
     itemOrder: 'series'
   },
+  popup :{
+    opacity: .9,
+    leftPadding: 10,
+    rightPadding: 10,
+    upPadding: 10,
+    downPadding: 10,
+    margin: 40,
+    maxWidth: 150,
+    shape: "boxWithArrow",
+    activation: "onHover"
+  },
   type: {
     bar: {
       barWidth: 20,

@@ -495,10 +495,10 @@ export class LineSection extends ChartPoint {
         stroke: "white",
         fill: "white",
         pointerEnter: (e) => {
-          this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined;
+          this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onHover" ? this.addPopup() : undefined;
         },
         pointerLeave: (e) => {
-          this.paraview.store.settings.chart.showPopups ? this.removePopup() : undefined;
+          this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onHover" ? this.removePopup(this.id) : undefined;
         }
       })
       this._shapes[0].classInfo = { 'leg-left': true };
@@ -525,7 +525,7 @@ export class LineSection extends ChartPoint {
           this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined;
         },
         pointerLeave: (e) => {
-          this.paraview.store.settings.chart.showPopups ? this.removePopup() : undefined;
+          this.paraview.store.settings.chart.showPopups ? this.removePopup(this.id) : undefined;
         }
       })
       this._shapes[0].classInfo = this._prevMidY !== undefined
@@ -545,22 +545,20 @@ export class LineSection extends ChartPoint {
       {
         text: this.paraview.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
         x: this.x,
-        y: this.y - 40,
-        wrapWidth: 150,
+        y: this.y,
         textAnchor: "middle",
         classList: ['annotationlabel'],
         id: this.id
       },
       {
-        shape: "boxWithArrow",
-        fill: `hsla(0, 0%, 90%, 0.85)`,
-        stroke: "black",
+        fill: this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.color), 6), 
+        stroke: this.paraview.store.colors.colorValueAt(this.color),
       })
     this.paraview.store.popups.push(popup)
   }
 
-  removePopup() {
-    this.paraview.store.popups.shift();
+  removePopup(id: string) {
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1) 
   }
 }
 

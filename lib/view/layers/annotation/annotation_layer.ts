@@ -148,17 +148,29 @@ export class AnnotationLayer extends ChartLayer {
       }
 
       if (this.paraview.store.popups) {
-        this.addGroup('hover-popups', true);
-        this.group('hover-popups')!.clearChildren();
+        this.addGroup('datapoint-popups', true);
+        this.group('datapoint-popups')!.clearChildren();
+        if (this.paraview.store.settings.popup.activation === "onFocus"){
+          this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
+          for (let dp of this.paraview.store.visitedDatapoints){
+            dp.datapointView.addPopup()
+          }
+        }
+        else if (this.paraview.store.settings.popup.activation === "onSelect"){
+          this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
+          for (let dp of this.paraview.store.selectedDatapoints){
+            dp.datapointView.addPopup()
+          }
+        }
         for (const popup of this.paraview.store.popups) {
           popup.classInfo = { 'popup': true }
-          this.group('hover-popups')!.append(popup);
+          this.group('datapoint-popups')!.append(popup);
         }
 
       }
       else {
-        if (this._groups.has('hover-popups')) {
-          this.removeGroup('hover-popups', true);
+        if (this._groups.has('datapoint-popups')) {
+          this.removeGroup('datapoint-popups', true);
         }
       }
     }

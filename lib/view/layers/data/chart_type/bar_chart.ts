@@ -692,7 +692,7 @@ export class Bar extends XYDatapointView {
         this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.removePopup() : undefined
+        this.paraview.store.settings.chart.showPopups ? this.removePopup(this.id) : undefined
       },
     }));
     super._createShapes();
@@ -703,22 +703,22 @@ export class Bar extends XYDatapointView {
       {
         text: this.paraview.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
         x: this.x + this.width / 2,
-        y: this.y - 40,
-        wrapWidth: 150,
+        y: this.y,
         textAnchor: "middle",
         classList: ['annotationlabel'],
         id: this.id
       },
       {
         shape: "boxWithArrow",
-        fill: `hsla(0, 0%, 90%, 0.85)`,
-        stroke: "black",
+        fill: this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.color), 5),
+        stroke: this.paraview.store.colors.colorValueAt(this.color),
       })
     this.paraview.store.popups.push(popup)
   }
 
-  removePopup() {
-    this.paraview.store.popups = this.paraview.store.popups.filter(p => p.id !== this.id)
+  removePopup(id: string) {
+   this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1) 
+   this.paraview.requestUpdate()
   }
 
   get selectedMarker() {
