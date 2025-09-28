@@ -35,6 +35,10 @@
     "build:stories": "node src/stories/storiesBuilder.ts",
     "build-storybook": "storybook build",
     "doc": "api-documenter markdown --input-folder ./temp --output-folder ./docs",
+  "docs:generate": "ts-node ./docs/scripts/buildDocs.ts",
+  "docs:dev": "npm run docs:generate && vitepress dev docs",
+  "docs:build": "npm run docs:generate && vitepress build docs",
+  "docs:serve": "vitepress preview docs",
     "pretest": "npm run build",
     "test": "npx vitest run --project=storybook --poolOptions.threads.maxThreads 2",
     "test-storybook": "test-storybook --url http://localhost:5180/ --maxWorkers=2",
@@ -74,7 +78,8 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3",
     "vite": "^5.4.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "vitepress": "^1.6.4"
   },
   "dependencies": {
     "@fizz/chart-classifier-utils": "^0.16.0",

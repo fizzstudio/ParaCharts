@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 const templatesDir = path.resolve(__dirname, '..', 'templates');
 const scriptsDir = path.resolve(__dirname);
-const outDir = path.resolve(__dirname, '..', 'markdown');
+const outDir = path.resolve(__dirname, '..');
 
 async function buildDocs() {
     if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
@@ -35,6 +35,12 @@ async function buildDocs() {
 
             const tpl = fs.readFileSync(tplPath, 'utf8');
             const rendered = mustache.render(tpl, context);
+
+            // Avoid overwriting dotfiles or the .vitepress directory
+            if (name.startsWith('.') || name === '.vitepress') {
+                console.log(`Skipping reserved name ${name}`);
+                continue;
+            }
 
             const outPath = path.join(outDir, `${name}.md`);
             fs.writeFileSync(outPath, rendered, 'utf8');
