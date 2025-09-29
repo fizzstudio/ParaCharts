@@ -27,7 +27,11 @@ export class Voicing {
 
       utterance.onboundary = (event: SpeechSynthesisEvent) => {
         const wordIndex = event.charIndex;
-        // Highlighting here
+        for (const highlight of highlights) {
+          if (wordIndex >= highlight.start && wordIndex >= highlight.end) {
+            
+          }
+        }
       }
   
       this._voice.speak(utterance);
