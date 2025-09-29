@@ -393,15 +393,16 @@ export class ParaView extends logging(ParaComponent) {
       });
     } else if (path === 'ui.isVoicingEnabled') {
       if (this._store.settings.ui.isVoicingEnabled) {
+        const msg = ['Self-voicing enabled.'];
         const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
         if (lastAnnouncement) {
-          this._store.appendAnnouncement(lastAnnouncement);
+          msg.push(lastAnnouncement);
         }
-        this._store.announce('Self-voicing enabled.');
+        this._store.announce(msg);
       } else {
         this.paraChart.ariaLiveRegion.voicing.shutUp();
         // Voicing is disabled at this point, so manually push this message through
-        this.paraChart.ariaLiveRegion.voicing.speak('Self-voicing disabled.');
+        this.paraChart.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
       }
     }
   }
