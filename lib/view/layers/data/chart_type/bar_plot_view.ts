@@ -1,7 +1,7 @@
 
 import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
 import {
-  Setting
+  Setting, DeepReadonly, BarSettings
 } from '../../../../store/settings_types';
 import { RectShape } from '../../../shape/rect';
 import { Label, LabelTextAnchor } from '../../../label';
@@ -13,8 +13,8 @@ import { StyleInfo } from 'lit/directives/style-map.js';
 import { BarChartInfo } from '../../../../chart_types/bar_chart';
 import { Popup } from '../../../popup';
 
-const MIN_BAR_WIDTH_FOR_GAPS = 8;
-const BAR_GAP_PERCENTAGE = 0.125;
+const MIN_STACK_WIDTH_FOR_GAPS = 8;
+const STACK_GAP_PERCENTAGE = 0.125;
 
 function abbreviateSeries(keys: readonly string[]) {
   let len = 1;
@@ -51,9 +51,9 @@ export class BarPlotView extends PlanePlotView {
   declare protected _chartInfo: BarChartInfo;
 
   protected _abbrevs?: {[series: string]: string};
-  protected _stackLabels: Label[] = [];
-  protected _numBars!: number;
-  protected _barWidth!: number;
+  protected _totalLabels: Label[] = [];
+  protected _numStacks!: number;
+  protected _stackWidth!: number;
   protected _clusterWidth!: number;
   protected _availSpace!: number;
 
@@ -80,7 +80,7 @@ export class BarPlotView extends PlanePlotView {
     if (this.paraview.store.settings.type.bar.isAbbrevSeries) {
       this._abbrevs = abbreviateSeries(this.paraview.store.model!.seriesKeys);
     }
-    
+
     this.paraview.store.settingControls.add({
       type: 'checkbox',
       key: 'chart.showPopups',
@@ -114,12 +114,12 @@ export class BarPlotView extends PlanePlotView {
     return this._abbrevs;
   }
 
-  get numBars() {
-    return this._numBars;
+  get numStacks() {
+    return this._numStacks;
   }
 
-  get barWidth() {
-    return this._barWidth;
+  get stackWidth() {
+    return this._stackWidth;
   }
 
   get clusterWidth() {
@@ -143,18 +143,18 @@ export class BarPlotView extends PlanePlotView {
     // cluster will have 1/2 `clusterGap` on its left, ditto for the last cluster
     // on its right, and each cluster is separated by `clusterGap`
 
-    this._numBars = numClusters*this._chartInfo.stacksPerCluster;
-    let maxBarWidth = this._width/this._numBars;
+    this._numStacks = numClusters*this._chartInfo.stacksPerCluster;
+    let maxStackWidth = (this._width - numClusters*this._chartInfo.settings.clusterGap)/this._numStacks;
     let gapWidth = 0;
-    if (maxBarWidth >= MIN_BAR_WIDTH_FOR_GAPS) {
-      this._barWidth = (1 - BAR_GAP_PERCENTAGE)*maxBarWidth;
-      gapWidth = BAR_GAP_PERCENTAGE*maxBarWidth;
+    if (maxStackWidth >= MIN_STACK_WIDTH_FOR_GAPS) {
+      this._stackWidth = (1 - STACK_GAP_PERCENTAGE)*maxStackWidth;
+      gapWidth = STACK_GAP_PERCENTAGE*maxStackWidth;
     } else {
-      this._barWidth = maxBarWidth;
+      this._stackWidth = maxStackWidth;
     }
     // this._clusterWidth = this._stackWidth*this._chartInfo.stacksPerCluster
     //   + (this._chartInfo.stacksPerCluster - 1)*gapWidth;
-    this._availSpace = gapWidth*this._numBars;
+    this._availSpace = gapWidth*this._numStacks;
 
     // const totalClusterGapSpace = numClusters*this._chartInfo.settings.clusterGap;
     // const totalBarGapSpace = (this._chartInfo.stacksPerCluster - 1)*this._chartInfo.settings.barGap*numClusters;
@@ -192,18 +192,46 @@ export class BarPlotView extends PlanePlotView {
 
   protected _completeDatapointLayout() {
     super._completeDatapointLayout();
-    // if (this.paraview.store.settings.type.bar.isDrawStackLabels) {
-    //   for (const [clusterKey, cluster] of Object.entries(this._bars)) {
-    //     for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
-    //       const bar0 = Object.values(stack.bars)[0];
-    //       stack.label!.snapXTo(bar0, 'center');
-    //       stack.label!.y = bar0.y + (this.paraview.store.settings.type.bar.isStackLabelInsideBar
-    //         ? this.paraview.store.settings.type.bar.stackLabelGap
-    //         : - stack.label!.height - this.paraview.store.settings.type.bar.stackLabelGap);
-    //     }
-    //   }
-    //   this._resizeToFitLabels();
-    // }
+    if (this._chartInfo.settings.stacking === 'standard' && this._chartInfo.settings.isDrawTotalLabels) {
+      this._totalLabels.forEach(label => {
+        label.remove();
+      });
+      this._totalLabels = [];
+      const seriesViews = this._chartLandingView.children;
+
+      let angle = 0;
+      if (this.parent.orientation === 'east') {
+        //textAnchor = 'start';
+        angle = -90;
+      }
+
+      let i = 0;
+      for (const [clusterKey, cluster] of Object.entries(this._chartInfo.clusteredData)) {
+        for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
+          const bar0 = Object.values(stack.bars).at(-1)!;
+          const seriesView = seriesViews.find(sv => sv.seriesKey === bar0.series)!;
+          const barView = seriesView.children[i++];
+          const sum = Object.values(stack.bars).map(barStackItem => {
+            const seriesView = seriesViews.find(sv => sv.seriesKey === barStackItem.series)!;
+            return seriesView.children[i - 1].datapoint;
+          }).reduce((a, b) => a + b.facetValueAsNumber('y')!, 0);
+
+          this._totalLabels.push(new Label(this.paraview, {
+            // XXX hack
+            text: sum.toFixed(2),
+            id: this._id + '-slb',
+            classList: [`${this.paraview.store.type}-total-label`],
+            role: 'datapoint',
+            // textAnchor,
+            angle
+          }));
+          this.append(this._totalLabels.at(-1)!);
+          this._totalLabels.at(-1)!.centerX = barView.centerX;
+          this._totalLabels.at(-1)!.bottom = barView.top;
+        }
+      }
+      // this._resizeToFitLabels();
+    }
   }
 
   // protected _resizeToFitLabels() {
@@ -259,7 +287,6 @@ export class BarPlotView extends PlanePlotView {
   //     this._parent.logicalWidth += diffAfter - diffBefore;
   //   }
   // }
-
 }
 
 /**
@@ -271,7 +298,7 @@ export class Bar extends PlaneDatapointView {
   declare protected _parent: PlaneSeriesView;
 
   protected _recordLabel: Label | null = null;
-  protected _valueLabel: Label | null = null;
+  protected _dataLabel: Label | null = null;
 
   constructor(
     seriesView: PlaneSeriesView,
@@ -291,8 +318,8 @@ export class Bar extends PlaneDatapointView {
   }
 
   set x(x: number) {
-    if (this._valueLabel) {
-      this._valueLabel.x += x - this._x;
+    if (this._dataLabel) {
+      this._dataLabel.x += x - this._x;
     }
     super.x = x;
   }
@@ -302,8 +329,8 @@ export class Bar extends PlaneDatapointView {
   }
 
   set y(y: number) {
-    if (this._valueLabel) {
-      this._valueLabel.y += y - this._y;
+    if (this._dataLabel) {
+      this._dataLabel.y += y - this._y;
     }
     super.y = y;
   }
@@ -316,12 +343,12 @@ export class Bar extends PlaneDatapointView {
     this._recordLabel = label;
   }
 
-  get valueLabel() {
-    return this._valueLabel;
+  get dataLabel() {
+    return this._dataLabel;
   }
 
-  set valueLabel(label: Label | null) {
-    this._valueLabel = label;
+  set dataLabel(label: Label | null) {
+    this._dataLabel = label;
   }
 
   get _selectedMarkerX() {
@@ -345,43 +372,48 @@ export class Bar extends PlaneDatapointView {
     const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
     const pxPerYUnit = this.chart.parent.logicalHeight/chartInfo.axisInfo!.yLabelInfo.range!;
     const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
+      // .map(bar => bar.value.value*pxPerYUnit + chartInfo.settings.stackInsideGap)
       .map(bar => bar.value.value*pxPerYUnit)
       .reduce((a, b) => a + b, 0);
     const zeroHeight = this.chart.parent.logicalHeight
       - (chartInfo.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!);
 
-    const idealWidth = this.chart.barWidth;
-    this._width = this.chart.barWidth
+    const idealWidth = this.chart.stackWidth;
+    this._width = this.chart.stackWidth;
     // @ts-ignore
     this._height = Math.abs((this.datapoint.data.y.value as number)*pxPerYUnit);
     //this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
 
     // const clusterGap = Math.min(chartInfo.settings.clusterGap, this.chart.stackGap);
-    const barGap = Math.min(chartInfo.settings.barGap, this.chart.availSpace/this.chart.numBars);
-    this._x = barGap/2
-      + idealWidth*this._stack.cluster.index
-      //+ clusterGap*this._stack.cluster.index
-      //+ idealWidth*this._stack.index
-      + barGap*this._stack.cluster.index;
+    // const barGap = Math.min(chartInfo.settings.barGap, this.chart.availSpace/this.chart.numStacks);
+    const barGap = this.chart.availSpace/this.chart.numStacks;
+    const clusterGap = chartInfo.settings.clusterGap;
+    // XXX this seems slightly off
+    this._x = clusterGap/2 + barGap/2
+      + idealWidth*(chartInfo.stacksPerCluster*this._stack.cluster.index + this._stack.index)
+      + clusterGap*this._stack.cluster.index
+      + barGap*(chartInfo.stacksPerCluster*this._stack.cluster.index + this._stack.index);
     // @ts-ignore
-    this.datapoint.data.y.value as number < 0 ? this._y = this.chart.height - distFromXAxis - zeroHeight
-      : this._y = this.chart.height - this.height - distFromXAxis - zeroHeight
+    this._y = this.datapoint.data.y.value as number < 0
+      ? this.chart.height - distFromXAxis - zeroHeight
+      : this.chart.height - this.height - distFromXAxis - zeroHeight;
   }
 
   completeLayout() {
     super.completeLayout();
+    const chartInfo = this.chart.chartInfo as BarChartInfo;
     let textAnchor: LabelTextAnchor = 'middle';
     let angle = 0;
     if (this.chart.parent.orientation === 'east') {
       textAnchor = 'start';
       angle = -90;
     }
-    if (this.paraview.store.settings.type.bar.isDrawRecordLabels) {
+    if (chartInfo.settings.isDrawRecordLabels) {
       this._recordLabel = new Label(this.paraview, {
         // @ts-ignore
         text: formatBox(this.datapoint.data.x, this.paraview.store.getFormatType('pieSliceValue')),
         id: this._id + '-rlb',
-        classList: ['bar-label'],
+        classList: [`${this.paraview.store.type}-label`],
         role: 'datapoint',
         textAnchor,
         angle
@@ -392,25 +424,35 @@ export class Bar extends PlaneDatapointView {
         fill: this.paraview.store.colors.contrastValueAt(this._isStyleEnabled ? this.index : this.parent.index)
       };
       this._recordLabel.centerX = this.centerX;
-      this._recordLabel.y = this.chart.height - this._recordLabel.height - this.paraview.store.settings.type.bar.stackLabelGap;
+      this._recordLabel.y = this.chart.height - this._recordLabel.height - chartInfo.settings.stackLabelGap;
     }
-    if (this.paraview.store.settings.type.bar.isDrawValueLabels) {
-      this._valueLabel = new Label(this.paraview, {
+    if (chartInfo.settings.isDrawDataLabels) {
+      this._dataLabel = new Label(this.paraview, {
         // @ts-ignore
         text: formatBox(this.datapoint.data.y, this.paraview.store.getFormatType('pieSliceValue')),
-        id: this._id + '-vlb',
-        classList: ['bar-label'],
+        id: this._id + '-blb',
+        classList: [`${this.paraview.store.type}-label`],
         role: 'datapoint',
         textAnchor,
         angle
       });
-      this.append(this._valueLabel);
-      this._valueLabel.styleInfo = {
+      this.append(this._dataLabel);
+      this._dataLabel.styleInfo = {
         stroke: 'none',
-        fill: this.paraview.store.colors.contrastValueAt(this._isStyleEnabled ? this.index : this.parent.index)
+        fill: this.paraview.store.colors.contrastValueAt(this._isStyleEnabled
+          ? this.index
+          : this.parent.index)
       };
-      this._valueLabel.centerX = this.centerX;
-      this._valueLabel.y = this._y + (this.paraview.store.settings.type.bar.stackLabelGap);
+      this._dataLabel.centerX = this.centerX;
+      if (chartInfo.settings.dataLabelPosition === 'center') {
+        this._dataLabel.centerY = this.centerY;
+      } else if (chartInfo.settings.dataLabelPosition === 'end') {
+        this._dataLabel.top = this.top;
+      } else if (chartInfo.settings.dataLabelPosition === 'base') {
+        this._dataLabel.bottom = this.bottom;
+      } else {
+        this._dataLabel.bottom = this.top;
+      }
     }
   }
 
@@ -457,7 +499,7 @@ export class Bar extends PlaneDatapointView {
     });
   }
 
-  
+
   addPopup(text?: string) {
     let datapointText = `${this.seriesKey} ${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
     let popup = new Popup(this.paraview,
@@ -475,7 +517,7 @@ export class Bar extends PlaneDatapointView {
   }
 
   removePopup(id: string) {
-   this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1) 
+   this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
    this.paraview.requestUpdate()
   }
 

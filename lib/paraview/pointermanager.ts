@@ -206,7 +206,8 @@ export class PointerEventManager {
         // const index = +datapointEl.dataset.index!;
         const id = (datapointEl.id.endsWith('-sym')
           || datapointEl.id.endsWith('-rlb')
-          || datapointEl.id.endsWith('-vlb'))
+          || datapointEl.id.endsWith('-blb')   // bar label
+          || datapointEl.id.endsWith('-ilb'))  // slice inside label
           ? datapointEl.id.slice(0, -4)
           : datapointEl.id;
         const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointViewForId(id)!;
