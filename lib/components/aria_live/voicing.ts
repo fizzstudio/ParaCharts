@@ -26,10 +26,15 @@ export class Voicing {
       utterance.volume = this._volume;
 
       utterance.onboundary = (event: SpeechSynthesisEvent) => {
+        console.log('onb')
         const wordIndex = event.charIndex;
         for (const highlight of highlights) {
+          const spans = document.getElementsByClassName(`span-${highlight.id}`);
+          const span = spans.item(0) as HTMLSpanElement;
           if (wordIndex >= highlight.start && wordIndex >= highlight.end) {
-            
+            span.setAttribute('background-color', 'blue');
+          } else {
+            span.removeAttribute('background-color');
           }
         }
       }
