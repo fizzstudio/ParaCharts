@@ -277,6 +277,7 @@ export interface PopupSettings extends SettingGroup {
   maxWidth: number;
   shape: "box" | "boxWithArrow";
   activation: "onHover" | "onFocus" | "onSelect";
+  borderRadius: number;
 }
 
 /** @public */

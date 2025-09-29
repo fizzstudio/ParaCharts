@@ -2,9 +2,9 @@ import { Vec2 } from "../common/vector";
 import { ParaView } from "../paraview";
 import { View } from "./base_view";
 import { Label, LabelOptions } from "./label";
-import { PathShape, ShapeOptions } from "./shape";
+import { PathOptions, PathShape, ShapeOptions } from "./shape";
 import { ParaComponent } from "../components";
-import { logging } from "../common";
+import { fixed, logging } from "../common";
 import { Dialog } from '@fizz/ui-components';
 import '@fizz/ui-components';
 import { html, css } from 'lit';
@@ -12,14 +12,13 @@ import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 
 export interface PopupLabelOptions extends LabelOptions {
-
 }
+
+export type ShapeTypes = "box" | "boxWithArrow";
 
 export interface PopupShapeOptions extends ShapeOptions {
-    shape?: "box" | "boxWithArrow"
+    shape?: ShapeTypes
 }
-
-
 
 
 export class Popup extends View {
@@ -66,7 +65,7 @@ export class Popup extends View {
         let width = label.width
         let height = label.height
         if (boxType === "boxWithArrow") {
-            let shape = new PathShape(this.paraview, {
+            let shape = new PopupPathShape(this.paraview, {
                 points: [new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding),
                 new Vec2(x - width / 2 - this.leftPadding, y + this.downPadding),
 
@@ -79,11 +78,12 @@ export class Popup extends View {
                 new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding)],
                 fill: options.fill,
                 stroke: options.stroke,
+                shape: "boxWithArrow"
             })
             return shape
         }
         else {
-            let shape = new PathShape(this.paraview, {
+            let shape = new PopupPathShape(this.paraview, {
                 points: [new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding),
                 new Vec2(x - width / 2 - this.leftPadding, y + this.downPadding),
                 new Vec2(x + width / 2 + this.rightPadding, y + this.downPadding),
@@ -91,6 +91,7 @@ export class Popup extends View {
                 new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding)],
                 fill: options.fill,
                 stroke: options.stroke,
+                shape: "box"
             })
             return shape
         }
@@ -239,6 +240,18 @@ export class PopupSettingsDialog extends logging(ParaComponent) {
             value: 40,
             parentView: 'controlPanel.tabs.chart.dialog.popups',
         });
+        this._store.settingControls.add({
+            type: 'textfield',
+            key: 'popup.borderRadius',
+            label: 'Border radius',
+            options: {
+                inputType: 'number',
+                min: 0,
+                max: 20
+            },
+            value: 10,
+            parentView: 'controlPanel.tabs.chart.dialog.popups',
+        });
 
     }
 
@@ -271,5 +284,60 @@ export class PopupSettingsDialog extends logging(ParaComponent) {
 declare global {
     interface HTMLElementTagNameMap {
         'para-popup-settings-dialog': PopupSettingsDialog;
+    }
+}
+
+export interface PopupPathOptions extends PathOptions {
+    shape: ShapeTypes
+}
+export class PopupPathShape extends PathShape {
+    shape: ShapeTypes
+    constructor(paraview: ParaView, private options: PopupPathOptions) {
+        super(paraview, options);
+        this._points = options.points.map(p => p.clone());
+        this.shape = this.options.shape
+    }
+
+    //This defines which points on shapes are curved/border-radiused
+    //0 === hard corner, 1 === curve, the first and last numbers should match because they apply to the same point
+    protected curvePoints: { "boxWithArrow": number[], "box": number[] } = {
+        "boxWithArrow": [1, 1, 0, 0, 0, 1, 1, 1],
+        "box": [1, 1, 1, 1, 1]
+    }
+
+    protected get _pathD() {
+        const rad = this.paraview.store.settings.popup.borderRadius
+        let addCurve = this.curvePoints[this.shape]
+        const relPoints = this._points.map(p => p.add(this._loc));
+        let d = fixed``
+        if (!addCurve[0]) {
+            d += fixed`M${relPoints[0].x},${relPoints[0].y}`;
+        }
+        else {
+            let p = relPoints[0]
+            let nextP = relPoints[(0 + 1) % relPoints.length]
+            let diffX1 = Math.sign(p.x - nextP.x)
+            let diffY1 = Math.sign(p.y - nextP.y)
+            d += fixed`M${p.x - diffX1 * rad},${p.y - diffY1 * rad}`;
+        }
+        for (let i = 1; i < relPoints.length; i++) {
+            let p = relPoints[i % relPoints.length]
+            if (!addCurve[i % relPoints.length]) {
+                d += fixed`L${p.x},${p.y}`;
+            }
+            else {
+                let prevP = relPoints[(i - 1 + relPoints.length) % relPoints.length]
+                //This line looks like it does because ._points stores the same point twice
+                //and this is the easiest way to correct for it
+                let nextP = relPoints[(i + 1 + (i === relPoints.length - 1 ? 1 : 0)) % relPoints.length]
+                let diffX1 = Math.sign(p.x - prevP.x)
+                let diffY1 = Math.sign(p.y - prevP.y)
+                let diffX2 = Math.sign(nextP.x - p.x)
+                let diffY2 = Math.sign(nextP.y - p.y)
+                d += fixed`L${p.x - diffX1 * rad},${p.y - diffY1 * rad}`;
+                d += fixed`A ${rad}, ${rad}, 0, 0, 0, ${p.x + diffX2 * rad}, ${p.y + diffY2 * rad}`
+            }
+        }
+        return d;
     }
 }

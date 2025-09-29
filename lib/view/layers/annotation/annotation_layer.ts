@@ -150,13 +150,13 @@ export class AnnotationLayer extends ChartLayer {
       if (this.paraview.store.popups) {
         this.addGroup('datapoint-popups', true);
         this.group('datapoint-popups')!.clearChildren();
-        if (this.paraview.store.settings.popup.activation === "onFocus"){
+        if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onFocus"){
           this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
           for (let dp of this.paraview.store.visitedDatapoints){
             dp.datapointView.addPopup()
           }
         }
-        else if (this.paraview.store.settings.popup.activation === "onSelect"){
+        else if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onSelect"){
           this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
           for (let dp of this.paraview.store.selectedDatapoints){
             dp.datapointView.addPopup()

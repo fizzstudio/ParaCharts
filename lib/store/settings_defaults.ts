@@ -171,7 +171,8 @@ export const defaults: Settings = {
     margin: 40,
     maxWidth: 150,
     shape: "boxWithArrow",
-    activation: "onHover"
+    activation: "onHover",
+    borderRadius: 10
   },
   type: {
     bar: {
