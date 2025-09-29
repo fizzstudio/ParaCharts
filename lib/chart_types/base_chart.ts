@@ -357,9 +357,9 @@ export abstract class BaseChartInfo extends Logger {
   async navRunDidEnd(cursor: NavNode) {
     //const seriesKey = cursor.options.seriesKey ?? '';
     if (cursor.isNodeType('top')) {
-      this._store.highlightedAnnounce(await this._summarizer.getChartSummary());
+      this._store.announce(await this._summarizer.getChartSummary());
     } else if (cursor.isNodeType('series')) {
-      this._store.highlightedAnnounce(
+      this._store.announce(
         await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
       this._playRiff();
       this._store.sparkBrailleInfo = this._sparkBrailleInfo();

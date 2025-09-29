@@ -12,7 +12,7 @@ import { property, customElement } from 'lit/decorators.js';
 @customElement('para-aria-live-region')
 export class AriaLive extends ParaComponent {
 
-  @property({type: Object}) announcement: Announcement = { text: '', highlights: [] };
+  @property({type: Object}) announcement: Announcement = { text: '', html: '', highlights: [] };
 
   protected _srb!: ScreenReaderBridge;
   protected _voicing = new Voicing();

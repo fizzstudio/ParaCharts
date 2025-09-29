@@ -61,6 +61,7 @@ export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 // distinct, even if the text is the same
 export interface Announcement {
   text: string;
+  html: string;
   highlights: Highlight[];
   clear?: boolean;
 }
@@ -130,7 +131,7 @@ export class ParaStore extends State {
   @property() dataState: DataState = 'initial';
   @property() settings: Settings;
   @property() darkMode = false;
-  @property() announcement: Announcement = { text: '', highlights: [] };
+  @property() announcement: Announcement = { text: '', html: '', highlights: [] };
   @property() annotations: BaseAnnotation[] = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
@@ -381,7 +382,10 @@ export class ParaStore extends State {
     }
   }
 
-  announce(msg: string | string[], clearAriaLive = false, highlights?: Highlight[]) {
+  announce(
+    msg: string | string[] | HighlightedSummary, 
+    clearAriaLive = false
+  ): void {
     /*
     This sends an announcement to the Status Bar.
     If the `msg` argument is an array, it joins the strings together with a
@@ -389,23 +393,26 @@ export class ParaStore extends State {
     */
 
     let announcement = '';
+    let html = '';
     const linebreak = '\r\n';  // TODO: add option-based flags to enable or disable?
+    let highlights: Highlight[] = [];
 
-    announcement += (typeof msg === 'string') ? msg : this._joinStrArray(msg, linebreak);
+    if (typeof msg === 'string') {
+      announcement = msg;
+      html = msg;
+    } else if (Array.isArray(msg)) {
+      announcement = this._joinStrArray(msg, linebreak);
+      html = announcement;
+    } else {
+      announcement = msg.text;
+      html = msg.html;
+      highlights = msg.highlights ?? [];
+    }
 
     if (this.settings.ui.isAnnouncementEnabled) {
-      this.announcement = { text: announcement, highlights: highlights ?? [], clear: clearAriaLive };
+      this.announcement = { text: announcement, html, highlights, clear: clearAriaLive };
       console.log('ANNOUNCE:', this.announcement.text);
     }
-  }
-
-  highlightedAnnounce(msg: HighlightedSummary, clearAriaLive = false): void {
-    this.announce(msg.text, clearAriaLive, msg.highlights);
-  }
-
-  public async asyncAnnounce(msgPromise: Promise<string | string[]>): Promise<void> {
-    const msg = await msgPromise;
-    this.announce(msg);
   }
 
   protected _joinStrArray(strArray: string[], linebreak?: string) : string {
