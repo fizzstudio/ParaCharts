@@ -54,8 +54,8 @@ export const NOTE_LENGTH = 0.25;
 //   lower: 21
 // };
 
-export const isUnplayable = (value: number, axisInfo: AxisLabelInfo) => {
-  return isNaN(value) || value < axisInfo.min! || value > axisInfo.max!;
+export const isUnplayable = (value: number, yMin: number, yMax: number) => {
+  return isNaN(value) || value < yMin! || value > yMax!;
 };
 
 export const calcPan = (pct: number) => (isNaN(pct) ? 0 : (pct * 2 - 1) * 0.98);
@@ -155,7 +155,15 @@ export class Sonifier {
    * Play a given data point
    * @param datapoint - the data point to play
    */
-  playDatapoints(cont = false, ...datapoints: PlaneDatapoint[]) {
+  playDatapoints(datapoints: PlaneDatapoint[], {
+    cont = false,
+    invert = false,
+    durationVariable = false
+  }: {
+    cont?: boolean,
+    invert?: boolean,
+    durationVariable?: boolean
+  } = {}) {
     this._checkAudioEngine();
 
     if (!this._audioEngine) {
@@ -168,8 +176,10 @@ export class Sonifier {
 
     datapoints.forEach((datapoint, i) => {
 
-      const x = datapoint.facetValueNumericized(datapoint.indepKey)!;
-      const y = datapoint.facetValueNumericized(datapoint.depKey)!;
+      // Pastry chart datapoints currently fake being plane datapoints,
+      // and so don't have indep and dep keys
+      const x = datapoint.facetValueNumericized(datapoint.indepKey ?? 'x')!;
+      let y = datapoint.facetValueNumericized(datapoint.depKey ?? 'y')!;
       // if (isUnplayable(x, this.chart.parent.docView.xAxis!)) {
       //   return;
       // }
@@ -200,14 +210,23 @@ export class Sonifier {
         return;
       }*/
 
-      if (isUnplayable(y, this._chartInfo.axisInfo!.yLabelInfo)) {
-        return;
+      let yMin: number, yMax: number;
+      if (this._chartInfo.axisInfo) {
+        yMin = this._chartInfo.axisInfo.yLabelInfo.min!;
+        yMax = this._chartInfo.axisInfo.yLabelInfo.max!;
+      } else {
+        const yInt = this._store.model!.getFacetInterval('y')!;
+        yMin = yInt.start;
+        yMax = yInt.end;
       }
-
+      const origY = y;
+      if (invert) {
+        y = yMax - (y - yMin);
+      }
+      if (isUnplayable(y, yMin, yMax)) return;
       if (cont) {
         let hertzMin = Math.min(...hertzes)
-        const pct = (y - this._chartInfo.axisInfo!.yLabelInfo.max!)
-          / this._chartInfo.axisInfo!.yLabelInfo.range!;
+        const pct = (y - yMin) / (yMax - yMin);
         const hz = hertzMin * (1.05946 ** (pct * hertzes.length))
         let pan = calcPan((x - this._chartInfo.axisInfo!.xLabelInfo.min!)
           / this._chartInfo.axisInfo!.xLabelInfo.range!)
@@ -216,12 +235,15 @@ export class Sonifier {
       else {
         const yBin = interpolateBin({
           point: y,
-          min: this._chartInfo.axisInfo!.yLabelInfo.min!,
-          max: this._chartInfo.axisInfo!.yLabelInfo.max!,
+          min: yMin,
+          max: yMax,
           bins: hertzes.length - 1,
           scale: 'linear'
         });
-        this._audioEngine!.playDataPoint(hertzes[yBin], xPan, NOTE_LENGTH);
+        const duration = durationVariable
+          ? (0.1 + (origY - yMin)/(yMax - yMin))
+          : NOTE_LENGTH;
+        this._audioEngine!.playDataPoint(hertzes[yBin], xPan, duration);
       }
     });
   }

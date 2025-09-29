@@ -164,8 +164,7 @@ export class GraphingCalculatorInfo extends LineChartInfo {
   protected _playRiff(order?: RiffOrder) {
     if (this._store.settings.sonification.isSoniEnabled
       && this._store.settings.sonification.isRiffEnabled) {
-      const series = this._seriesInNavOrder();
-      const datapoints = series.map(s => s.datapoints[this._navMap!.cursor.index]) as PlaneDatapoint[];
+      const datapoints = this._navMap!.cursor.datapoints as PlaneDatapoint[];
       if (order === 'sorted') {
         datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
       } else if (order === 'reversed') {
@@ -187,14 +186,14 @@ export class GraphingCalculatorInfo extends LineChartInfo {
       while(datapointsFilled.length > 0
         && isUnplayable(
           datapointsFilled[0].facetValueNumericized(datapointsFilled[0].depKey)!,
-          this._axisInfo!.yLabelInfo)
+          this._axisInfo!.yLabelInfo.min!, this._axisInfo!.yLabelInfo.max!)
       ) {
         datapointsFilled.shift()
       }
       while(datapointsFilled.length > 0
         && isUnplayable(
           datapointsFilled[datapointsFilled.length - 1].facetValueNumericized(datapointsFilled[datapointsFilled.length - 1].depKey)!,
-          this._axisInfo!.yLabelInfo)
+          this._axisInfo!.yLabelInfo.min!, this._axisInfo!.yLabelInfo.max!)
       ) {
         datapointsFilled.pop();
       }
@@ -209,7 +208,7 @@ export class GraphingCalculatorInfo extends LineChartInfo {
           if (!datapoint) {
             clearInterval(this._soniRiffInterval!);
           } else {
-            this._sonifier.playDatapoints(true, datapoint as PlaneDatapoint);
+            this._sonifier.playDatapoints([datapoint as PlaneDatapoint], {cont: true});
             this._soniNoteIndex++;
           }
         }, SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! / INTERNAL_SEGMENTS);

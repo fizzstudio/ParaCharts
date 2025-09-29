@@ -404,6 +404,11 @@ export abstract class BaseChartInfo extends Logger {
     }
   }
 
+  /** Can be overridden by subclasses. */
+  seriesInNavOrder() {
+    return this._store.model!.series;
+  }
+
   /** Nav map layer from which to interpret selectors */
   get selectorLayer(): string {
     return 'root';

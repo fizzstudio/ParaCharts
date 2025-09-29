@@ -40,7 +40,7 @@ export abstract class PointChartInfo extends PlaneChartInfo {
     });
   }
 
-  protected _seriesInNavOrder(): Series[] {
+  seriesInNavOrder(): Series[] {
     const depFacet = this._store.model!.dependentFacetKeys[0];
     // Sort by value of first datapoint from greatest to least
     return this._store.model!.series.toSorted((a, b) =>
