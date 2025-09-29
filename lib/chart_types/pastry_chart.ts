@@ -23,6 +23,7 @@ import { interpolate } from '@fizz/templum';
 import {
   NavLayer, NavNode,
 } from '../view/layers/data/navigation'
+import { type PlaneDatapoint } from '@fizz/paramodel';
 
 import { ChartType } from '@fizz/paramanifest';
 
@@ -110,7 +111,8 @@ export class PastryChartInfo extends BaseChartInfo {
     }));
   }
 
-  protected _playDatapoints(datapoints: Datapoint[]): void {
+  protected _playDatapoints(datapoints: PlaneDatapoint[]): void {
+    this._sonifier.playDatapoints(datapoints, {invert: true, durationVariable: true});
   }
 
   playDir(dir: HorizDirection): void {

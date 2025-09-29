@@ -48,11 +48,6 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     }
   }
 
-  /** Can be overridden by subclasses. */
-  protected _seriesInNavOrder() {
-    return this._store.model!.series;
-  }
-
   protected get _datapointNavNodeType(): DatapointNavNodeType {
     return 'datapoint';
   }
@@ -70,7 +65,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     let left = this._navMap!.root.get('top')!;
     const depFacet = this._store.model!.dependentFacetKeys[0];
     // Sort by value of first datapoint from greatest to least
-    const sortedSeries = this._seriesInNavOrder();
+    const sortedSeries = this.seriesInNavOrder();
     sortedSeries.forEach((series, i) => {
       const seriesNode = new NavNode(this._navMap!.root, 'series', {
         seriesKey: series.key
@@ -106,7 +101,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     // Create chord landings
     // NB: This will produce the nodes in insertion order
     this._navMap!.root.query(this._datapointNavNodeType, {
-      seriesKey: this._seriesInNavOrder()[0].key
+      seriesKey: this.seriesInNavOrder()[0].key
     }).forEach(node => {
       const chordNode = new NavNode(
         this._navMap!.root, 'chord', {index: node.options.index}, this._store);
@@ -123,8 +118,9 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   protected _playRiff(order?: RiffOrder) {
     if (this._store.settings.sonification.isSoniEnabled
       && this._store.settings.sonification.isRiffEnabled) {
-      const series = this._seriesInNavOrder();
-      const datapoints = series.map(s => s.datapoints[this._navMap!.cursor.index]); // this._navMap!.cursor.datapoints;
+      // const series = this._seriesInNavOrder();
+      // const datapoints = series.map(s => s.datapoints[this._navMap!.cursor.index]); // this._navMap!.cursor.datapoints;
+      const datapoints = this._navMap!.cursor.datapoints;
       if (order === 'sorted') {
         datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
       } else if (order === 'reversed') {
@@ -141,7 +137,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
           if (!datapoint) {
             clearInterval(this._soniRiffInterval!);
           } else {
-            this._sonifier.playDatapoints(false, datapoint as PlaneDatapoint);
+            this._sonifier.playDatapoints([datapoint as PlaneDatapoint]);
             this._soniNoteIndex++;
           }
         }, SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex));
@@ -150,7 +146,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   }
 
   protected _playDatapoints(datapoints: PlaneDatapoint[]): void {
-    this._sonifier.playDatapoints(false, ...datapoints);
+    this._sonifier.playDatapoints(datapoints);
   }
 
   playDir(dir: HorizDirection) {
