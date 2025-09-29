@@ -25,7 +25,10 @@ export class Voicing {
       utterance.pitch = this._pitch;
       utterance.volume = this._volume;
 
-      
+      utterance.onboundary = (event: SpeechSynthesisEvent) => {
+        const wordIndex = event.charIndex;
+        // Highlighting here
+      }
   
       this._voice.speak(utterance);
     }
