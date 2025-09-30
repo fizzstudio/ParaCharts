@@ -29,6 +29,9 @@ export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}
     'axis.horiz.tick.isDrawEnabled': true,
     'axis.y.line.isDrawOverhangEnabled': false,
     'grid.isDrawVertLines': false,
+  },
+  line: {
+    'grid.isDrawVertLines': false
   }
 };
 

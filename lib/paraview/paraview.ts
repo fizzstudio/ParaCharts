@@ -78,6 +78,8 @@ export class ParaView extends logging(ParaComponent) {
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
 
+  protected _lowVisionModeSaved = new Map<string, any>();
+
   static styles = [
     //styles,
     css`
@@ -382,10 +384,14 @@ export class ParaView extends logging(ParaComponent) {
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
         if (newValue) {
+          this._lowVisionModeSaved.set('chart.fontScale', draft.chart.fontScale);
+          this._lowVisionModeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
           draft.chart.fontScale = 2;
+          draft.grid.isDrawVertLines = true;
         } else {
-          // XXX ideally, we save and restore
-          draft.chart.fontScale = 1;
+          draft.chart.fontScale = this._lowVisionModeSaved.get('chart.fontScale');
+          draft.grid.isDrawVertLines = this._lowVisionModeSaved.get('grid.isDrawVertLines');
+          this._lowVisionModeSaved.clear();
         }
       });
     } else if (path === 'ui.isVoicingEnabled') {
