@@ -33,7 +33,7 @@ export class Voicing {
           if (wordIndex >= highlight.start && wordIndex < highlight.end) {
             anyHighlighted = true;
             this._store.highlight(highlight.id);
-            console.log('h', highlight.id);
+            console.log('highlight point ', highlight.id, ' at ', wordIndex);
           }
           /*const spans = document.getElementsByClassName(`span-${highlight.id}`);
           const span = spans.item(0) as HTMLSpanElement;
