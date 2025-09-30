@@ -6,6 +6,7 @@
 
 import { AllSeriesData } from '@fizz/paramanifest';
 import { AxisOrientation as AxisOrientation_2 } from '@fizz/paramodel';
+import { Box as AxisOrientation_2 } from '@fizz/paramodel';
 import { Box } from '@fizz/paramodel';
 import { ButtonDescriptor } from '@fizz/ui-components';
 import { ChartType as ChartType_2 } from '@fizz/paramanifest';
@@ -228,10 +229,10 @@ export interface AxesSettings extends SettingGroup {
     y: YAxisSettings;
 }
 
-// Warning: (ae-forgotten-export) The symbol "Axis_base_2" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "Axis_base" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export abstract class Axis<T extends AxisOrientation> extends Axis_base_2 {
+export abstract class Axis<T extends AxisOrientation> extends Axis_base {
     constructor(docView: DocumentView, orientation: T);
     // (undocumented)
     get asHoriz(): Axis<'horiz'>;
@@ -512,8 +513,6 @@ export interface AxisTitleSettings extends SettingGroup {
 export class Bar extends XYDatapointView {
     constructor(seriesView: XYSeriesView, _stack: BarStack);
     // (undocumented)
-    addPopup(): void;
-    // (undocumented)
     readonly chart: BarChart;
     // (undocumented)
     completeLayout(): void;
@@ -530,8 +529,6 @@ export class Bar extends XYDatapointView {
     set recordLabel(label: Label | null);
     // (undocumented)
     protected _recordLabel: Label | null;
-    // (undocumented)
-    removePopup(id: string): void;
     // (undocumented)
     get selectedMarker(): RectShape;
     // (undocumented)
@@ -644,8 +641,6 @@ export interface BarSettings extends PlotSettings {
     // (undocumented)
     orderBy?: string;
     // (undocumented)
-    showPopups: boolean;
-    // (undocumented)
     stackContent: StackContentOptions;
     // (undocumented)
     stackCount: number;
@@ -688,11 +683,7 @@ export interface BaseAnnotation {
     // (undocumented)
     index?: number;
     // (undocumented)
-    isSelected?: boolean;
-    // (undocumented)
     seriesKey?: string;
-    // (undocumented)
-    type: string;
 }
 
 // @public (undocumented)
@@ -819,10 +810,8 @@ export class ChartLayerManager extends View {
     get foregroundAnnotationLayer(): AnnotationLayer;
     // (undocumented)
     protected _foregroundAnnotationLayer: AnnotationLayer;
-    // Warning: (ae-forgotten-export) The symbol "AxisCoord_2" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
-    getAxisInterval(coord: AxisCoord_2): Interval | undefined;
+    getAxisInterval(coord: AxisCoord): Interval | undefined;
     // (undocumented)
     getXAxisInterval(): Interval;
     // (undocumented)
@@ -868,10 +857,6 @@ export class ChartLayerManager extends View {
 
 // @public (undocumented)
 export class ChartPanel extends ControlPanelTabPanel {
-    // Warning: (ae-forgotten-export) The symbol "PopupSettingsDialog" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    protected _popupDialogRef: Ref_2<PopupSettingsDialog>;
     // (undocumented)
     render(): TemplateResult<1>;
     // (undocumented)
@@ -1408,8 +1393,6 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     protected _addedToParent(): void;
     // (undocumented)
-    addPopup(): void;
-    // (undocumented)
     get classInfo(): ClassInfo;
     // (undocumented)
     get color(): number;
@@ -1455,8 +1438,6 @@ export class DatapointView extends DataView_2 {
     get prevSeriesLanding(): SeriesView | null;
     // (undocumented)
     get ref(): Ref_2<SVGElement>;
-    // (undocumented)
-    removePopup(id: string): void;
     // (undocumented)
     select(isExtend: boolean): void;
     // (undocumented)
@@ -2189,8 +2170,6 @@ export class LineChart extends PointChart {
 // @public
 export class LineSection extends ChartPoint {
     // (undocumented)
-    addPopup(): void;
-    // (undocumented)
     readonly chart: LineChart;
     // (undocumented)
     get classInfo(): {
@@ -2219,8 +2198,6 @@ export class LineSection extends ChartPoint {
     // (undocumented)
     protected _prevMidY?: number;
     // (undocumented)
-    removePopup(id: string): void;
-    // (undocumented)
     protected _shapeStyleInfo(shapeIndex: number): StyleInfo;
 }
 
@@ -2242,8 +2219,6 @@ export interface LineSettings extends PointSettings {
     lowVisionLineWidth: number;
     // (undocumented)
     seriesLabelPadding: number;
-    // (undocumented)
-    showPopups: boolean;
 }
 
 // Warning: (ae-forgotten-export) The symbol "Constructor_2" needs to be exported by the entry point index.d.ts
@@ -2542,6 +2517,8 @@ export class ParaChart extends ParaChart_base {
 // @public (undocumented)
 export class ParaComponent extends LitElement {
     // (undocumented)
+    extractStyles(id: string): string;
+    // (undocumented)
     logName(): string;
     // (undocumented)
     get store(): ParaStore;
@@ -2674,8 +2651,6 @@ export class ParaStore extends State {
     // (undocumented)
     annotations: BaseAnnotation[];
     // (undocumented)
-    protected annotID: number;
-    // (undocumented)
     announce(msg: string | string[], clearAriaLive?: boolean): void;
     // (undocumented)
     announcement: Announcement;
@@ -2777,10 +2752,6 @@ export class ParaStore extends State {
     protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
     // (undocumented)
     protected _paraChart: ParaChart;
-    // Warning: (ae-forgotten-export) The symbol "Popup" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    popups: Popup[];
     // (undocumented)
     prependAnnouncement(msg: string): void;
     // (undocumented)
@@ -2934,8 +2905,6 @@ export class ParaView extends ParaView_base {
     downloadPNG(): void;
     // (undocumented)
     downloadSVG(): void;
-    // (undocumented)
-    protected _extractStyles(id: string): string;
     // (undocumented)
     get fileSavePlaceholder(): HTMLElement;
     // (undocumented)
@@ -3114,11 +3083,7 @@ export interface PointAnnotation extends BaseAnnotation {
     // (undocumented)
     seriesKey: string;
     // (undocumented)
-    text: string;
-    // (undocumented)
     timestamp?: Date;
-    // (undocumented)
-    type: "datapoint";
 }
 
 // @public
@@ -3158,28 +3123,6 @@ export interface PointSettings extends PlotSettings {
     pointLabelFormat: LabelFormat;
     // (undocumented)
     selectedPointMarkerSize: Size2d;
-}
-
-// @public (undocumented)
-export interface PopupSettings extends SettingGroup {
-    // (undocumented)
-    activation: "onHover" | "onFocus" | "onSelect";
-    // (undocumented)
-    downPadding: number;
-    // (undocumented)
-    leftPadding: number;
-    // (undocumented)
-    margin: number;
-    // (undocumented)
-    maxWidth: number;
-    // (undocumented)
-    opacity: number;
-    // (undocumented)
-    rightPadding: number;
-    // (undocumented)
-    shape: "box" | "boxWithArrow";
-    // (undocumented)
-    upPadding: number;
 }
 
 // @public (undocumented)
@@ -3811,8 +3754,6 @@ export interface Settings extends SettingGroup {
     // (undocumented)
     legend: LegendSettings;
     // (undocumented)
-    popup: PopupSettings;
-    // (undocumented)
     sonification: SonificationSettings;
     // (undocumented)
     statusBar: StatusBarSettings;
@@ -3901,10 +3842,6 @@ export interface ShapeOptions {
     isClip?: boolean;
     // (undocumented)
     isPattern?: boolean;
-    // (undocumented)
-    pointerEnter?: (e: PointerEvent) => void;
-    // (undocumented)
-    pointerLeave?: (e: PointerEvent) => void;
     // (undocumented)
     scale?: number;
     // (undocumented)
@@ -4061,10 +3998,10 @@ export interface TickLabelSettings extends SettingGroup {
     offsetGap: number;
 }
 
-// Warning: (ae-forgotten-export) The symbol "TickLabelTier_base_2" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "TickLabelTier_base" needs to be exported by the entry point index.d.ts
 //
 // @public
-export abstract class TickLabelTier<T extends AxisOrientation> extends TickLabelTier_base_2 {
+export abstract class TickLabelTier<T extends AxisOrientation> extends TickLabelTier_base {
     constructor(axis: Axis<T>, tickLabels: string[], tierIndex: number, length: number, paraview: ParaView);
     // (undocumented)
     readonly axis: Axis<T>;
@@ -4132,10 +4069,10 @@ export interface TickSettings extends SettingGroup {
     tickLabel: TickLabelSettings;
 }
 
-// Warning: (ae-forgotten-export) The symbol "TickStrip_base_2" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "TickStrip_base" needs to be exported by the entry point index.d.ts
 //
 // @public
-export abstract class TickStrip<T extends AxisOrientation = AxisOrientation> extends TickStrip_base_2 {
+export abstract class TickStrip<T extends AxisOrientation = AxisOrientation> extends TickStrip_base {
     constructor(axis: Axis<T>, _interval: number, _majorModulus: number, contentWidth: number, contentHeight: number);
     // (undocumented)
     protected _addedToParent(): void;

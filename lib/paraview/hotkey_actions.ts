@@ -43,7 +43,7 @@ export class HotkeyActions {
     const store = paraView.store;
     // Always return the current data layer (i.e., don't let the
     // actions close over a value that might be removed)
-    const chart = () => paraView.documentView!.chartLayers.dataLayer;
+    const chart = () => paraView.documentView!.chartInfo;
     this.actions = {
       async moveRight() {
         chart().clearPlay();

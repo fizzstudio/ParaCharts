@@ -1,10 +1,9 @@
 
-import { ChartLayer } from '.';
-import { RectShape } from '../shape/rect';
+import { PlotLayer } from '.';
 
 import { svg } from 'lit';
 
-export class SelectionLayer extends ChartLayer {
+export class SelectionLayer extends PlotLayer {
 
   protected _createId() {
     return super._createId('selection');
@@ -15,11 +14,13 @@ export class SelectionLayer extends ChartLayer {
   }
 
   content() {
+    const dataLayer = this._parent.dataLayer;
     return svg`
       ${
-        this.paraview.store.selectedDatapoints.map(cursor => {
+        this.paraview.store.selectedDatapoints.values().map(datapointId => {
           // NB: Line datapoint height = 0
-          return cursor.datapointView.selectedMarker.render();
+          return dataLayer.datapointViewForId(dataLayer.datapointDomIds.get(datapointId)!)!.selectedMarker.render();
+          //return cursor.datapointView.selectedMarker.render();
         })
       }
     `;

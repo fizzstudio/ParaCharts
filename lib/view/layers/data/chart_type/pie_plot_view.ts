@@ -1,17 +1,9 @@
 
-import { RadialChart, RadialSlice, type RadialDatapointParams } from '.';
+import { PastryPlotView, RadialSlice, type RadialDatapointParams } from '.';
 import { type SeriesView } from '../../../data';
 import { SectorShape } from '../../../shape/sector';
-import { type ParaView } from '../../../../paraview';
 
-export class PieChart extends RadialChart {
-
-  constructor(paraview: ParaView,  index: number) {
-    super(paraview, index);
-  }
-
-  protected _playRiff() {
-  }
+export class PiePlotView extends PastryPlotView {
 
   protected _createSlice(seriesView: SeriesView, params: RadialDatapointParams): RadialSlice {
     return new PieSlice(seriesView, params);

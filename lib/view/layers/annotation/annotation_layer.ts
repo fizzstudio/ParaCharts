@@ -1,5 +1,5 @@
 
-import { ChartLayer } from '../layer';
+import { PlotLayer } from '../layer';
 import { View, Container } from '../../base_view';
 import { type ParaView } from '../../../paraview';
 import { RectShape } from '../../shape/rect';
@@ -8,14 +8,15 @@ import { Vec2 } from '../../../common/vector';
 import { Label } from '../../label';
 import { PointAnnotation } from '../../../store';
 import { Popup } from '../../popup';
+import { datapointIdToCursor } from '../../../store';
 
 export type AnnotationType = 'foreground' | 'background';
 
-export class AnnotationLayer extends ChartLayer {
+export class AnnotationLayer extends PlotLayer {
   protected _groups = new Map<string, DecorationGroup>();
 
-  constructor(paraview: ParaView, public readonly type: AnnotationType) {
-    super(paraview);
+  constructor(paraview: ParaView, width: number, height: number, public readonly type: AnnotationType) {
+    super(paraview, width, height);
   }
 
   protected _createId() {
@@ -53,14 +54,14 @@ export class AnnotationLayer extends ChartLayer {
         this.group('trend-lines')!.clearChildren();
         for (const tl of this.paraview.store.modelTrendLines) {
           const series = this.paraview.store.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
-          const range = this.parent.getYAxisInterval();
+          const range = this.parent.docView.chartInfo.getYAxisInterval();
           const minValue = range.start ?? Number(this.paraview.store.settings.axis.y.minValue)
           const maxValue = range.end ?? Number(this.paraview.store.settings.axis.y.maxValue)
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
           const endPx = this.width * tl.endPortion;
-          const colorValue = this.paraview.store.colors.colorValue('highlight');
+          const colorValue = this.paraview.store.colors.colorValue('visit');
           const trendLine = new PathShape(this.paraview, {
             x: this._x,
             y: this._y,
@@ -82,12 +83,13 @@ export class AnnotationLayer extends ChartLayer {
         this.addGroup('user-trend-lines', true);
         this.group('user-trend-lines')!.clearChildren();
         let tls = structuredClone(this.paraview.store.userTrendLines);
-        if (this.paraview.store.visitedDatapoints.length > 0) {
-          tls = tls.filter(a => a.seriesKey == this.paraview.store.visitedDatapoints[0].seriesKey)
+        if (this.paraview.store.visitedDatapoints.size > 0) {
+          const cursor = datapointIdToCursor(this.paraview.store.visitedDatapoints.values().toArray()[0]);
+          tls = tls.filter(a => a.seriesKey == cursor.seriesKey)
         }
         for (const tl of tls) {
           const series = this.paraview.store.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
-          const range = this.parent.getYAxisInterval();
+          const range = this.parent.docView.chartInfo.getYAxisInterval();
           const minValue = range.start ?? Number(this.paraview.store.settings.axis.y.minValue)
           const maxValue = range.end ?? Number(this.paraview.store.settings.axis.y.maxValue)
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
@@ -222,8 +224,9 @@ export class AnnotationLayer extends ChartLayer {
         this.addGroup('user-linebreaker-markers', true);
         this.group('user-linebreaker-markers')!.clearChildren();
         let lbs = structuredClone(this.paraview.store.userLineBreaks);
-        if (this.paraview.store.visitedDatapoints.length > 0) {
-          lbs = lbs.filter(a => a.seriesKey == this.paraview.store.visitedDatapoints[0].seriesKey)
+        if (this.paraview.store.visitedDatapoints.size > 0){
+          const cursor = datapointIdToCursor(this.paraview.store.visitedDatapoints.values().toArray()[0]);
+          lbs = lbs.filter(a => a.seriesKey == cursor.seriesKey);
         }
         for (const lb of lbs) {
           const index = this.paraview.store.model!.series.findIndex(a => a.key == lb.seriesKey);

@@ -11,8 +11,8 @@ import { property, state } from 'lit/decorators.js';
 
 export type SettingControlType = 'textfield' | 'dropdown' | 'checkbox' | 'radio' | 'slider' | 'button';
 
-export type SettingControlValueType<T extends SettingControlType> = 
-  T extends 'textfield' ? string | number : 
+export type SettingControlValueType<T extends SettingControlType> =
+  T extends 'textfield' ? string | number :
   T extends 'dropdown' ? string :
   T extends 'checkbox' ? boolean :
   T extends 'radio' ? string :
@@ -72,7 +72,7 @@ export abstract class SettingControl<T extends SettingControlType> extends ParaC
       >
         ${this.content()}
       </div>
-    `;    
+    `;
   }
 
 }

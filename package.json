@@ -1,6 +1,6 @@
 {
   "name": "@fizz/paracharts",
-  "version": "0.35.0",
+  "version": "0.36.0",
   "description": "Not quite Parable Charts",
   "contributors": [
     "Josh Fennell",
@@ -84,7 +84,7 @@
     "@fizz/parasummary": "^0.6.2",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.4.2",
-    "@fizz/ui-components": "^0.70.1",
+    "@fizz/ui-components": "^0.70.3",
     "@lit-app/state": "^1.0.1",
     "decimal.js": "^10.4.3",
     "immer": "^10.1.1",

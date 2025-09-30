@@ -222,7 +222,8 @@ export class ParaChart extends logging(ParaComponent) {
       '--theme-contrast-color': 'white',
       '--fizz-theme-color': 'var(--paracharts-theme-color, navy)',
       '--fizz-theme-color-light': 'var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%))',
-      '--visited-color': () => this._store.colors.colorValue('highlight'),
+      '--visited-color': () => this._store.colors.colorValue('visit'),
+      '--highlighted-color': () => this._store.colors.colorValue('highlight'),
       '--visited-stroke-width': () =>
         this._paraViewRef.value?.documentView?.chartLayers.dataLayer.visitedStrokeWidth ?? 0,
       '--selected-color': 'var(--label-color)',
@@ -241,6 +242,14 @@ export class ParaChart extends logging(ParaComponent) {
       '--exploration-bar-display': () => this._store.settings.controlPanel.isStatusBarVisible
         ? 'flex'
         : 'none',
+      '--chart-font-scale': () => this._store.settings.chart.fontScale,
+      '--chart-title-font-size': () => this._store.settings.chart.title.fontSize,
+      '--horiz-axis-title-font-size': () => this._store.settings.axis.horiz.title.fontSize,
+      '--vert-axis-title-font-size': () => this._store.settings.axis.vert.title.fontSize,
+      '--horiz-axis-tick-label-font-size': () => this._store.settings.axis.horiz.tick.tickLabel.fontSize,
+      '--vert-axis-tick-label-font-size': () => this._store.settings.axis.vert.tick.tickLabel.fontSize,
+      '--direct-label-font-size': () => this._store.settings.chart.directLabelFontSize,
+      '--legend-label-font-size': () => this._store.settings.legend.fontSize,
       'display': 'block',
       'font-family': '"Trebuchet MS", Helvetica, sans-serif',
       'font-size': 'var(--chart-view-font-size, 1rem)'
@@ -309,7 +318,11 @@ export class ParaChart extends logging(ParaComponent) {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
     this.log('setting did change:', path, '=', newValue, `(was ${oldValue})`);
+    // Update the style manager before the paraview so, e.g., any font scale
+    // change can take effect ...
+    this._styleManager.update();
     this._paraViewRef.value?.settingDidChange(path, oldValue, newValue);
+    // ... then update it again to pick up any changed values from the view tree
     this._styleManager.update();
   }
 

@@ -220,11 +220,12 @@ export class PointerEventManager {
           ? datapointEl.id.slice(0, -4)
           : datapointEl.id;
         const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointViewForId(id)!;
-        this._paraView.documentView!.chartLayers.dataLayer.navMap!.goTo('datapoint', {
+        const chartInfo = this._paraView.documentView!.chartInfo;
+        chartInfo.navMap!.goTo(chartInfo.navDatapointType, {
           seriesKey: datapointView.seriesKey,
           index: datapointView.index
         });
-        this._paraView.documentView!.chartLayers.dataLayer.selectCurrent(!!isAdd);
+        this._paraView.documentView!.chartInfo.selectCurrent(!!isAdd);
 
         // TODO: remove all element selection code, since it's extraneous to chart datapoint selection
         this._selectedElement = target;

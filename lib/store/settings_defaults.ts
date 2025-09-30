@@ -22,13 +22,16 @@ export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}
   bar: {
     'chart.orientation': 'east',
     'axis.vert.labelOrder': 'northToSouth',
-    'axis.x.tick.isDrawEnabled': false,
+    'axis.horiz.tick.isDrawEnabled': false,
     'grid.isDrawHorizLines': false,
   },
   column: {
-    'axis.x.tick.isDrawEnabled': false,
+    'axis.horiz.tick.isDrawEnabled': true,
     'axis.y.line.isDrawOverhangEnabled': false,
     'grid.isDrawVertLines': false,
+  },
+  line: {
+    'grid.isDrawVertLines': false
   }
 };
 
@@ -46,7 +49,7 @@ export const defaults: Settings = {
     title: {
       isDrawTitle: true,
       margin: 40,
-      fontSize: 22,
+      fontSize: '12pt',
       align: 'center',
       position: 'top',
     },
@@ -55,12 +58,14 @@ export const defaults: Settings = {
     //chartType: 'line'
     fontFamily: 'Helvetica, sans-serif',
     fontWeight: '300',
+    fontScale: 1,
     stroke: 'purple',
     strokeWidth: 4,
     strokeHighlightScale: 1.5,
     symbolStrokeWidth: 2,
     symbolHighlightScale: 1.5,
     hasDirectLabels: true,
+    directLabelFontSize: '10pt',
     hasLegendWithDirectLabels: false,
     isDrawSymbols: true,
     isStatic: false,
@@ -71,28 +76,14 @@ export const defaults: Settings = {
     datapointMargin: 3,
     horiz: {
       position: 'south',
-      labelOrder: 'westToEast'
-    },
-    vert: {
-      position: 'west',
-      labelOrder: 'southToNorth'
-    },
-    x: {
       title: {
         isDrawTitle: false,
         gap: 8,
-        fontSize: 15
-      },
-      line: {
-        isDrawEnabled: true,
-        isDrawOverhangEnabled: true,
-        strokeWidth: 2,
-        strokeLinecap: 'round',
+        fontSize: '12pt'
       },
       tick: {
         isDrawEnabled: true,
         padding: 3,
-        fontSize: 13,
         opacity: 1,
         strokeWidth: 2,
         strokeLinecap: 'round',
@@ -100,32 +91,26 @@ export const defaults: Settings = {
         labelFormat: 'raw',
         tickLabel: {
           isDrawEnabled: true,
+          fontSize: '10pt',
           angle: -45,
-          offsetGap: 8,
+          offsetGap: 4,
           gap: 0
         },
         step: 1
       },
-      minValue: 'unset',
-      maxValue: 'unset',
+      labelOrder: 'westToEast',
       interval: 'unset',
     },
-    y: {
+    vert: {
+      position: 'west',
       title: {
         isDrawTitle: true,
         gap: 8,
-        fontSize: 15
-      },
-      line: {
-        isDrawEnabled: true,
-        isDrawOverhangEnabled: true,
-        strokeWidth: 2,
-        strokeLinecap: 'round',
+        fontSize: '12pt'
       },
       tick: {
         isDrawEnabled: true,
         padding: 3,
-        fontSize: 13,
         opacity: 1,
         strokeWidth: 2,
         strokeLinecap: 'round',
@@ -133,11 +118,32 @@ export const defaults: Settings = {
         labelFormat: 'raw',
         tickLabel: {
           isDrawEnabled: true,
+          fontSize: '10pt',
           angle: 0,
           offsetGap: 0,
           gap: 0
         },
         step: 1,
+      },
+      labelOrder: 'southToNorth'
+    },
+    x: {
+      line: {
+        isDrawAxisLine: true,
+        isDrawOverhang: true,
+        strokeWidth: 2,
+        strokeLinecap: 'round',
+      },
+      minValue: 'unset',
+      maxValue: 'unset',
+      interval: 'unset'
+    },
+    y: {
+      line: {
+        isDrawAxisLine: true,
+        isDrawOverhang: true,
+        strokeWidth: 2,
+        strokeLinecap: 'round',
       },
       minValue: 'unset',
       maxValue: 'unset',
@@ -150,17 +156,24 @@ export const defaults: Settings = {
     isAlwaysDrawLegend: false,
     boxStyle: {
       outline: 'none',
-      // outline: 'gray',
+      //outline: 'gray',
       outlineWidth: 1,
       fill: 'none',
-      // fill: 'aliceblue',
+      //fill: 'aliceblue',
     },
     padding: 10,
     symbolLabelGap: 5,
     pairGap: 30,
     position: 'east',
     margin: 20,
-    itemOrder: 'series'
+    itemOrder: 'series',
+    fontSize: '10pt'
+  },
+  plotArea: {
+    size: {
+      width: 600,
+      height: 250
+    }
   },
   popup :{
     opacity: .9,
@@ -177,7 +190,6 @@ export const defaults: Settings = {
   type: {
     bar: {
       barWidth: 20,
-      minBarWidth: 20,
       colorByDatapoint: false,
       isDrawStackLabels: false,
       isStackLabelInsideBar: true,
@@ -190,14 +202,13 @@ export const defaults: Settings = {
       stackCount: 1,
       isAbbrevSeries: true,
       orderBy: undefined,
-      barGap: 0.25,
+      barGap: 10,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
       showPopups: false
     },
     column: {
       barWidth: 10,
-      minBarWidth: 20,
       colorByDatapoint: false,
       isDrawStackLabels: false,
       isStackLabelInsideBar: true,
@@ -205,12 +216,12 @@ export const defaults: Settings = {
       isDrawValueLabels: true,
       stackLabelGap: 10,
       clusterBy: undefined,
-      clusterGap: 10,
+      clusterGap: 0,
       stackContent: 'all',
       stackCount: 1,
       isAbbrevSeries: true,
       orderBy: undefined,
-      barGap: 0.25,
+      barGap: 10,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
       showPopups: false
@@ -451,10 +462,11 @@ export const defaults: Settings = {
     hertzUpper: HERTZ.length - 12,
     soniPlaySpeed: 3,
     riffSpeed: 'medium',
-	riffSpeedIndex: 2,
+	  riffSpeedIndex: 2,
     isArpeggiateChords: true
   },
   dev: {
-    isDebug: false
+    isDebug: false,
+    isShowGridTerritories: false
   }
 };

@@ -106,7 +106,7 @@ export interface TitleSettings extends SettingGroup {
   isDrawTitle: boolean;
   text?: string;
   margin: number;
-  fontSize: number;
+  fontSize: string;
   //fontColor: string;
   align?: SnapLocation;
   position?: 'top' | 'bottom';
@@ -151,18 +151,20 @@ export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
 /** @public */
 export interface ChartSettings extends SettingGroup {
   type: ChartType;
-  size: Partial<Size2d>;
+  size: Size2d;
   title: TitleSettings;
   orientation: CardinalDirection;
   padding: string;
   fontFamily: string;
   fontWeight: string;
+  fontScale: number;
   stroke: string;
   strokeWidth: number;
   strokeHighlightScale: number;
   symbolStrokeWidth: number;
   symbolHighlightScale: number;
   hasDirectLabels: boolean;
+  directLabelFontSize: string;
   hasLegendWithDirectLabels: boolean;
   isDrawSymbols: boolean;
   isStatic: boolean;
@@ -172,6 +174,7 @@ export interface ChartSettings extends SettingGroup {
 /** @public */
 export interface DevSettings extends SettingGroup {
   isDebug: boolean;
+  isShowGridTerritories: boolean;
 }
 
 /** @public */
@@ -180,6 +183,7 @@ export type LabelFormat = 'raw' | string;
 /** @public */
 export interface TickLabelSettings extends SettingGroup {
   isDrawEnabled: boolean;
+  fontSize: string;
   angle: number;
   offsetGap: number;
   gap: number;
@@ -189,7 +193,6 @@ export interface TickLabelSettings extends SettingGroup {
 export interface TickSettings extends SettingGroup {
   isDrawEnabled?: boolean;
   padding: number;
-  fontSize: number;
   opacity: number;
   strokeWidth: number;
   strokeLinecap: string;
@@ -201,17 +204,15 @@ export interface TickSettings extends SettingGroup {
 
 /** @public */
 export interface AxisLineSettings extends SettingGroup {
-  isDrawEnabled?: boolean;
-  isDrawOverhangEnabled?: boolean;
+  isDrawAxisLine: boolean;
+  isDrawOverhang: boolean;
   strokeWidth: number;
   strokeLinecap: string;
 }
 
 /** @public */
 export interface AxisSettings extends SettingGroup {
-  title: AxisTitleSettings;
   line: AxisLineSettings;
-  tick: TickSettings;
   minValue: number | 'unset';
   maxValue: number | 'unset';
   interval: number | 'unset';
@@ -222,7 +223,7 @@ export interface AxisTitleSettings extends SettingGroup {
   isDrawTitle?: boolean;
   text?: string;
   gap: number;
-  fontSize: number;
+  fontSize: string;
   align?: 'start' | 'middle' | 'end';
   position?: 'top' | 'bottom';
 }
@@ -230,6 +231,8 @@ export interface AxisTitleSettings extends SettingGroup {
 /** @public */
 export interface OrientedAxisSettings<T extends AxisOrientation> extends SettingGroup {
   position: T extends 'horiz' ? VertCardinalDirection : HorizCardinalDirection;
+  title: AxisTitleSettings;
+  tick: TickSettings;
   labelOrder: T extends 'horiz' ? 'westToEast' | 'eastToWest' : 'southToNorth' | 'northToSouth';
 }
 
@@ -265,6 +268,11 @@ export interface LegendSettings extends SettingGroup {
   position: CardinalDirection;
   margin: number;
   itemOrder: LegendItemOrder;
+  fontSize: string;
+}
+
+export interface PlotAreaSettings extends SettingGroup {
+  size: Size2d;
 }
 
 export interface PopupSettings extends SettingGroup {
@@ -289,7 +297,7 @@ export type BarClusterMode = 'facet';
 /** @public */
 export interface BarSettings extends PlotSettings {
   barWidth: number;
-  minBarWidth: number;
+  // minBarWidth: number;
   colorByDatapoint: boolean;
   isDrawStackLabels: boolean;
   isStackLabelInsideBar: boolean;
@@ -476,6 +484,7 @@ export interface Settings extends SettingGroup {
   axis: AxesSettings;
   legend: LegendSettings;
   popup: PopupSettings;
+  plotArea: PlotAreaSettings;
   type: ChartTypeSettings;
   grid: GridSettings;
   ui: UISettings;
@@ -499,8 +508,8 @@ export type DeepReadonly<T> = {
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
 // Settings that control the format for each context
 export const FORMAT_CONTEXT_SETTINGS = {
-  xTick: 'axis.x.tick.labelFormat',
-  yTick: 'axis.y.tick.labelFormat',
+  horizTick: 'axis.horiz.tick.labelFormat',
+  vertTick: 'axis.vert.tick.labelFormat',
   linePoint: 'type.line.pointLabelFormat',
   graphPoint: 'type.graph.pointLabelFormat',
   scatterPoint: 'type.scatter.pointLabelFormat',

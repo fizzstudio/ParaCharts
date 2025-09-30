@@ -20,6 +20,7 @@ import { fixed } from '../../common/utils';
 import { type VertCardinalDirection, type HorizCardinalDirection } from '../../store/settings_types';
 
 import { svg } from 'lit';
+import { classMap } from 'lit/directives/class-map.js';
 import { ParaView } from '../../paraview';
 
 type RuleOrientation = 'h' | 'v';
@@ -50,8 +51,6 @@ export abstract class AxisRule extends View {
     super.parent = parent;
   }
 
-  protected abstract get _class(): string;
-
   get length() {
     return 0;
   }
@@ -74,7 +73,7 @@ export abstract class AxisRule extends View {
     return svg`
       <path
         id=${this.darken ? 'grid-zero' : ''}
-        class=${this._class}
+        class=${classMap(this.classInfo)}
         d=${move + ' ' + line}
       ></path>
     `;
@@ -151,8 +150,11 @@ export abstract class VertRule extends AxisRule {
  */
 export class HorizTick extends HorizRule {
 
-  protected get _class(): string {
-    return 'tick-horiz';
+  get classInfo() {
+    return {
+      'tick': true,
+      'tick-horiz': true
+    };
   }
 
   get length() {
@@ -174,8 +176,11 @@ export class HorizTick extends HorizRule {
  */
 export class VertTick extends VertRule {
 
-  protected get _class(): string {
-    return 'tick-vert';
+  get classInfo() {
+    return {
+      'tick': true,
+      'tick-vert': true
+    };
   }
 
   get length() {
@@ -197,8 +202,11 @@ export class VertTick extends VertRule {
  */
 export class HorizGridLine extends HorizRule {
 
-  protected get _class(): string {
-    return 'grid-horiz';
+  get classInfo() {
+    return {
+      'grid': true,
+      'grid-horiz': true
+    };
   }
 
   protected get _shouldNegateLength(): boolean {
@@ -212,8 +220,11 @@ export class HorizGridLine extends HorizRule {
  */
 export class VertGridLine extends VertRule {
 
-  protected get _class(): string {
-    return 'grid-vert';
+  get classInfo() {
+    return {
+      'grid': true,
+      'grid-vert': true
+    };
   }
 
   protected get _shouldNegateLength(): boolean {
