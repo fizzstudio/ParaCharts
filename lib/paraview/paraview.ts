@@ -111,11 +111,8 @@ export class ParaView extends logging(ParaComponent) {
         opacity: 0.6;
         stroke-width: 2;
       }
-      .tick-horiz {
-        stroke: black;
-      }
-      .tick-vert {
-        stroke: black;
+      .tick {
+        stroke: var(--label-color);
       }
       .chart-title {
         font-size: calc(var(--chart-title-font-size)*var(--chart-font-scale));
