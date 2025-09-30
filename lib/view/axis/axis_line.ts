@@ -19,6 +19,7 @@ import { type Axis, type AxisOrientation } from './axis';
 import { fixed } from '../../common/utils';
 
 import { svg, nothing } from 'lit';
+import { classMap } from 'lit/directives/class-map.js';
 
 /**
  * An axis line.
@@ -28,6 +29,7 @@ export abstract class AxisLine<T extends AxisOrientation> extends View {
   constructor(public readonly axis: Axis<T>, length: number) {
     super(axis.paraview);
     this.length = length;
+    this._classInfo = {'axis-line': true, [`axis-line-${axis.orientation}`]: true};
   }
 
   get length() {
@@ -53,6 +55,7 @@ export abstract class AxisLine<T extends AxisOrientation> extends View {
       <path
         transform=${this._x !== 0 || this._y !== 0 ? transform : nothing}
         id=${this._id}
+        class=${classMap(this._classInfo)}
         d=${this.getLineD()}
       ></path>
     `;

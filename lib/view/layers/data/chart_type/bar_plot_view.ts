@@ -274,6 +274,10 @@ export class Bar extends PlaneDatapointView {
     this._isStyleEnabled = this.paraview.store.settings.type.bar.colorByDatapoint;
   }
 
+  get classInfo() {
+    return { 'bar': true, ...super.classInfo };
+  }
+
   get x() {
     return super.x;
   }

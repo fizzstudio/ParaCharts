@@ -109,7 +109,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
       const label = new Label(this.paraview, {
         id: `tick-label-${this.axis.orientation}-${i}`,
         classList: [
-          'tick-label', this.axis.orientation,
+          'tick-label', `tick-label-${this.axis.orientation}`,
           this.axis.orientationSettings.position as string],
         role: 'axislabel',
         text: labelText,

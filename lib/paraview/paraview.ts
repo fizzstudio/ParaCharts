@@ -119,13 +119,13 @@ export class ParaView extends logging(ParaComponent) {
       .chart-title {
         font-size: calc(var(--chart-title-font-size)*var(--chart-font-scale));
       }
-      .axis-title.horiz {
+      .axis-title-horiz {
         font-size: calc(var(--horiz-axis-title-font-size)*var(--chart-font-scale));
       }
-      .axis-title.vert {
+      .axis-title-vert {
         font-size: calc(var(--vert-axis-title-font-size)*var(--chart-font-scale));
       }
-      .serieslabel {
+      .direct-label {
         font-size: calc(var(--direct-label-font-size)*var(--chart-font-scale));
       }
       .legend-label {
@@ -135,26 +135,23 @@ export class ParaView extends logging(ParaComponent) {
         fill: var(--label-color);
         stroke: none;
       }
-      .tick-label.horiz {
+      .tick-label-horiz {
         font-size: calc(var(--horiz-axis-tick-label-font-size)*var(--chart-font-scale));
-        fill: var(--label-color);
       }
-      .tick-label.vert {
+      .tick-label-vert {
         font-size: calc(var(--vert-axis-tick-label-font-size)*var(--chart-font-scale));
-        fill: var(--label-color);
       }
       .bar-label {
         font-size: 13px;
         fill: white;
       }
-      .radial-value-label {
-        fill: var(--label-color);
+      .pastry-inside-label {
       }
-      .radial-cat-label-leader {
+      .pastry-outside-label-leader {
         fill: none;
         stroke-width: 2;
       }
-      .radial-slice {
+      .pastry-slice {
         stroke: white;
         stroke-width: 2;
       }

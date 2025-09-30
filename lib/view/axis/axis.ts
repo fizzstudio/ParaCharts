@@ -265,7 +265,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     this._axisTitle = new Label(this.paraview, {
       id: `axis-title-${this.orientation}`,
       text: this.titleText,
-      classList: ['axis-title', this.orientation],
+      classList: [`axis-title-${this.orientation}`],
       role: 'heading',
       angle: this._getAxisTitleAngle()
     });
