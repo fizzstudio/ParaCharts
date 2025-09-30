@@ -2,7 +2,7 @@ import { CustomProjectConfig } from 'lost-pixel';
 
 export const config: CustomProjectConfig = {
   storybookShots: {
-    storybookUrl: './storybook-static',
+    storybookUrl: 'http://localhost:5180',
   },
   // OSS mode 
   generateOnly: true,
