@@ -52,7 +52,6 @@ import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { type ParaChart } from '../parachart/parachart';
 import { DatapointView } from '../view/data';
 import { type DatapointCursor } from '../view/layers/data/navigation';
-import { exp } from 'mathjs';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 

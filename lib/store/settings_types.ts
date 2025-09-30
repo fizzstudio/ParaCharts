@@ -83,7 +83,6 @@ export interface ControlPanelSettings extends SettingGroup {
   isControlsTabVisible: boolean;
   isChartTabVisible: boolean;
   isAnnotationsTabVisible: boolean;
-  isGraphingTabVisible: boolean;
   isMDRAnnotationsVisible: boolean;
   isAnalysisTabVisible: boolean;
   isSparkBrailleControlVisible: boolean;
@@ -410,7 +409,6 @@ export interface ChartTypeSettings extends SettingGroup {
   gauge: RadialSettings;
   stepline: StepLineSettings;
   lollipop: LollipopSettings;
-  graph: GraphSettings;
 }
 
 /** @public */
