@@ -1,5 +1,8 @@
 on:
   workflow_dispatch:
+  push:
+    branches:
+      ryan-storybook-tests
 
 jobs:
   build:
