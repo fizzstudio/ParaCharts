@@ -15,13 +15,21 @@ export class AriaLive extends ParaComponent {
   @property({type: Object}) announcement: Announcement = { text: '', html: '', highlights: [] };
 
   protected _srb!: ScreenReaderBridge;
-  protected _voicing = new Voicing(this.store);
+  protected _voicing!: Voicing;
   protected _ariaLiveRef = createRef<HTMLElement>();
   protected _history: readonly string[] = [];
   protected _historyDialogRef = createRef<AriaLiveHistoryDialog>();
 
   get voicing() {
     return this._voicing;
+  }
+
+  // @simonvarey: I added this so that `Voicing` could recieve `store` for highlighting.
+  //   In theory, it should have been possible to add this to `_initAriaLiveRegion`, but that
+  //   caused errors when I tried.
+  connectedCallback(): void {
+    super.connectedCallback();
+    this._voicing = new Voicing(this.store);
   }
 
   protected _setHistory(history: readonly string[]) {

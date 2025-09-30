@@ -29,9 +29,8 @@ export class Voicing {
       utterance.onboundary = (event: SpeechSynthesisEvent) => {
         const wordIndex = event.charIndex;
         let anyHighlighted = false;
-        console.log('h0', this._store)
         for (const highlight of highlights) {
-          if (wordIndex >= highlight.start && wordIndex >= highlight.end) {
+          if (wordIndex >= highlight.start && wordIndex < highlight.end) {
             anyHighlighted = true;
             this._store.highlight(highlight.id);
             console.log('h', highlight.id);
@@ -45,7 +44,7 @@ export class Voicing {
           }*/
         }
         if (!anyHighlighted) {
-          this._store.highlight('');
+          //this._store.highlight('');
         }
       }
   
