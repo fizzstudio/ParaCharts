@@ -1,4 +1,5 @@
 import { Highlight } from '@fizz/parasummary';
+import { ParaStore } from '../../store';
 
 export class Voicing {
   private _voice: SpeechSynthesis | null = null;
@@ -8,7 +9,7 @@ export class Voicing {
   private _volume: number = 1.0;
   private _pitch: number = 1.0;
   
-  constructor() {
+  constructor(private _store: ParaStore) {
     this._voice = window.speechSynthesis;
     if (!this._voice) {
       console.warn('Speech Synthesis unsupported');
@@ -26,16 +27,25 @@ export class Voicing {
       utterance.volume = this._volume;
 
       utterance.onboundary = (event: SpeechSynthesisEvent) => {
-        console.log('onb')
         const wordIndex = event.charIndex;
+        let anyHighlighted = false;
+        console.log('h0', this._store)
         for (const highlight of highlights) {
-          const spans = document.getElementsByClassName(`span-${highlight.id}`);
+          if (wordIndex >= highlight.start && wordIndex >= highlight.end) {
+            anyHighlighted = true;
+            this._store.highlight(highlight.id);
+            console.log('h', highlight.id);
+          }
+          /*const spans = document.getElementsByClassName(`span-${highlight.id}`);
           const span = spans.item(0) as HTMLSpanElement;
           if (wordIndex >= highlight.start && wordIndex >= highlight.end) {
             span.setAttribute('background-color', 'blue');
           } else {
             span.removeAttribute('background-color');
-          }
+          }*/
+        }
+        if (!anyHighlighted) {
+          this._store.highlight('');
         }
       }
   

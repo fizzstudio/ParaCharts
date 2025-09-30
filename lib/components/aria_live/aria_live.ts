@@ -15,7 +15,7 @@ export class AriaLive extends ParaComponent {
   @property({type: Object}) announcement: Announcement = { text: '', html: '', highlights: [] };
 
   protected _srb!: ScreenReaderBridge;
-  protected _voicing = new Voicing();
+  protected _voicing = new Voicing(this.store);
   protected _ariaLiveRef = createRef<HTMLElement>();
   protected _history: readonly string[] = [];
   protected _historyDialogRef = createRef<AriaLiveHistoryDialog>();
