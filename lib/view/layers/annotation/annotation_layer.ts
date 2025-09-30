@@ -155,13 +155,17 @@ export class AnnotationLayer extends PlotLayer {
         if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onFocus"){
           this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
           for (let dp of this.paraview.store.visitedDatapoints){
-            dp.datapointView.addPopup()
+            const {seriesKey, index} = datapointIdToCursor(dp);
+            const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
+            datapointView.addPopup()
           }
         }
         else if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onSelect"){
           this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
           for (let dp of this.paraview.store.selectedDatapoints){
-            dp.datapointView.addPopup()
+            const {seriesKey, index} = datapointIdToCursor(dp);
+            const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
+            datapointView.addPopup()
           }
         }
         for (const popup of this.paraview.store.popups) {

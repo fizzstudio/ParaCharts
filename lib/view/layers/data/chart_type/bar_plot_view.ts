@@ -11,6 +11,7 @@ import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { BarChartInfo } from '../../../../chart_types/bar_chart';
+import { Popup } from '../../../popup';
 
 const MIN_BAR_WIDTH_FOR_GAPS = 8;
 const BAR_GAP_PERCENTAGE = 0.125;
@@ -79,10 +80,17 @@ export class BarPlotView extends PlanePlotView {
     if (this.paraview.store.settings.type.bar.isAbbrevSeries) {
       this._abbrevs = abbreviateSeries(this.paraview.store.model!.seriesKeys);
     }
+    
+    this.paraview.store.settingControls.add({
+      type: 'checkbox',
+      key: 'chart.showPopups',
+      label: 'Show popups',
+      parentView: 'controlPanel.tabs.chart.chart',
+    });
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['color.colorPalette', 'color.colorVisionMode'].includes(path)) {
+    if (['color.colorPalette', 'color.colorVisionMode', 'chart.showPopups'].includes(path)) {
       if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
          || this.paraview.store.settings.color.colorPalette === 'pattern'){
         this.paraview.createDocumentView();
@@ -425,7 +433,13 @@ export class Bar extends PlaneDatapointView {
       y: this._y,
       width: this._width,
       height: this._height,
-      isPattern: isPattern ? true : false
+      isPattern: isPattern ? true : false,
+      pointerEnter: (e) => {
+        this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined
+      },
+      pointerLeave: (e) => {
+        this.paraview.store.settings.chart.showPopups ? this.removePopup(this.id) : undefined
+      },
     }));
     super._createShapes();
   }
@@ -441,6 +455,30 @@ export class Bar extends PlaneDatapointView {
       strokeWidth: 2,
       isClip: this.shouldClip
     });
+  }
+
+  
+  addPopup() {
+    let popup = new Popup(this.paraview,
+      {
+        text: this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
+        x: this.x + this.width / 2,
+        y: this.y,
+        textAnchor: "middle",
+        classList: ['annotationlabel'],
+        id: this.id
+      },
+      {
+        shape: "boxWithArrow",
+        fill: this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.color), 5),
+        stroke: this.paraview.store.colors.colorValueAt(this.color),
+      })
+    this.paraview.store.popups.push(popup)
+  }
+
+  removePopup(id: string) {
+   this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1) 
+   this.paraview.requestUpdate()
   }
 
 }
