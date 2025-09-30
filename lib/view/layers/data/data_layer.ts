@@ -18,7 +18,7 @@ import { ref } from 'lit/directives/ref.js';
 
 import { ChartLayer } from '..';
 import { type ChartLayerManager } from '..';
-import { type PlotSettings, type DeepReadonly, type Direction, HorizDirection } from '../../../store/settings_types';
+import { type PlotSettings, type DeepReadonly, type Direction, HorizDirection, Setting } from '../../../store/settings_types';
 import { Sonifier } from '../../../audio/sonifier';
 //import { type Model, type DatapointReference } from '../data/model';
 //import { type ActionRegistration } from '../input';
@@ -163,12 +163,25 @@ export abstract class DataLayer extends ChartLayer {
     root.cursor = chartLandingNode;
   }
 
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if (['ui.isLowVisionModeEnabled'].includes(path)) {
+      if (!oldValue) {
+        this.paraview.store.updateSettings(draft => {
+          draft.popup.activation = 'onSelect'
+        });
+      }
+
+    }
+    super.settingDidChange(path, oldValue, newValue);
+  }
+
   /**
    * Stroke width for visited datapoints. Can be overridden.
    */
   get visitedStrokeWidth(): number {
     const visitedScale = this.paraview.store.settings.chart.strokeHighlightScale;
-    return this.paraview.store.settings.chart.strokeWidth*visitedScale;
+    return this.paraview.store.settings.chart.strokeWidth * visitedScale;
   }
 
   /**
@@ -230,7 +243,7 @@ export abstract class DataLayer extends ChartLayer {
   }
 
   navToDatapoint(seriesKey: string, index: number) {
-    this._navMap!.goTo('datapoint', {seriesKey, index});
+    this._navMap!.goTo('datapoint', { seriesKey, index });
   }
 
   async move(dir: Direction) {
@@ -369,7 +382,7 @@ export abstract class DataLayer extends ChartLayer {
 
   async navRunDidStart(cursor: NavNode) {
     if (cursor.type === 'series' || cursor.type === 'datapoint') {
-    const seriesKey = cursor.at(0)?.seriesKey ?? '';
+      const seriesKey = cursor.at(0)?.seriesKey ?? '';
       this._raiseSeries(seriesKey);
     }
   }
@@ -470,7 +483,7 @@ export abstract class DataLayer extends ChartLayer {
     return null;
   }
 
-  handlePan(startX: number, startY: number, endX: number, endY: number){}
+  handlePan(startX: number, startY: number, endX: number, endY: number) { }
 
-  handleZoom(x: number, y: number){}
+  handleZoom(x: number, y: number) { }
 }
