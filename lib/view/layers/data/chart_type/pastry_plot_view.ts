@@ -425,7 +425,7 @@ export abstract class RadialSlice extends DatapointView {
   get classInfo() {
     const classInfo: ClassInfo = {
       ...super.classInfo,
-      'radial-slice': true,
+      'pastry-slice': true,
       // bad workaround for the problem that, when a visited datapoint is recreated,
       // the store data cursor now has a ref to the old instance
       // visited: this.paraview.store.isVisited(this.seriesKey, this.index),
@@ -559,7 +559,7 @@ export abstract class RadialSlice extends DatapointView {
     this._outsideLabel = new Label(this.paraview, {
       text: this._labelContents(contents || this.chart.settings.outsideLabels.contents),
       id: this.id + '-rlb',
-      classList: ['radial-category-label'],
+      classList: ['pastry-outside-label'],
       role: 'datapoint',
       [bboxAnchor]: loc,
       textAnchor: textAnchor,
@@ -591,7 +591,7 @@ export abstract class RadialSlice extends DatapointView {
         : underlineStart.addX(underlineSize)],
       stroke: this.paraview.store.colors.colorValueAt(this.color),
     });
-    path.classInfo = { 'radial-cat-label-leader': true };
+    path.classInfo = { 'pastry-outside-label-leader': true };
     return path;
   }
 
@@ -613,7 +613,7 @@ export abstract class RadialSlice extends DatapointView {
     this._insideLabel = new Label(this.paraview, {
       text: this._labelContents(this.chart.settings.insideLabels.contents),
       id: this.id + '-vlb',
-      classList: ['radial-value-label'],
+      classList: ['pastry-inside-label'],
       role: 'datapoint',
       [bboxOppositeAnchor(bboxAnchor)]: sector.loc.add(
         sector.orientationVector.multiplyScalar(
