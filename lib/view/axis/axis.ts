@@ -17,8 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { Container, Padding, PaddingInput, View } from '../base_view';
 import { GridLayout, type Layout } from '../layout';
 import { type GridTerritoryInput } from '../layout';
-import { type DocumentView } from '../document_view';
-import { type PlotLayerManager } from '../layers';
+//import { type FlexLayout, type Layout, RowLayout, ColumnLayout } from '../layout';
 import {
   type AxisSettings,
   type OrientedAxisSettings,
@@ -28,9 +27,9 @@ import { Label } from '../label';
 import { type AxisLine, HorizAxisLine, VertAxisLine } from './axis_line';
 import { type TickLabelTier, HorizTickLabelTier, VertTickLabelTier } from './tick_label_tier';
 import { type TickStrip, HorizTickStrip, VertTickStrip } from './tick_strip';
-import { type AxisLabelInfo } from '../../common/axisinfo';
+import { type AxisInfo, type AxisLabelInfo } from '../../common/axisinfo';
 import { SettingsManager } from '../../store/settings_manager';
-import { ParaStore } from '../../store/parastore';
+import { type ParaStore } from '../../store/parastore';
 
 import { type Datatype, type Scalar } from '@fizz/dataframe';
 import { type Facet } from '@fizz/paramanifest';
@@ -39,6 +38,7 @@ import { type TemplateResult } from 'lit';
 import { literal } from 'lit/static-html.js';
 import { PlaneModel } from '@fizz/paramodel';
 import { Popup } from '../popup';
+import { type ParaView } from '../../paraview';
 
 export type AxisOrientation = 'horiz' | 'vert';
 export type AxisCoord = 'x' | 'y';
@@ -57,7 +57,6 @@ export class ChartTooWideError extends Error {
 }
 
 export abstract class Axis<T extends AxisOrientation> extends Container(View) {
-
   declare protected _parent: Layout;
 
   readonly settings: DeepReadonly<AxisSettings>;
@@ -65,13 +64,10 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   readonly datatype: Datatype;
 
-  readonly chartLayers: PlotLayerManager;
-
-  protected _facet: Facet;
   protected _labelInfo: AxisLabelInfo;
+  // protected _layout!: FlexLayout;
   protected _layout!: GridLayout;
   protected _titleText: string;
-  protected _orthoAxis!: Axis<OrthoAxis<T>>;
   protected _axisTitle?: Label;
   protected _tickLabelTiers: TickLabelTier<T>[] = [];
   protected _tickStrip: TickStrip | null = null;
@@ -82,16 +78,18 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   protected _store: ParaStore;
 
   constructor(
-    public readonly docView: DocumentView,
+    paraview: ParaView,
     public readonly orientation: T,
+    protected _facet: Facet,
+    protected _axisInfo: AxisInfo,
+    _length: number
   ) {
-    super(docView.paraview);
+    super(paraview);
     this._store = this.paraview.store;
-    this.chartLayers = docView.chartLayers;
 
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
     //   have two axes
-    this._facet = docView.chartInfo.axisInfo!.getFacetForOrientation(this.orientation);
+    // this._facet = docView.chartInfo.axisInfo!.getFacetForOrientation(this.orientation);
     //  ?? this._store.model!.getFacet(coord)!;
     this.datatype = this._facet.datatype;
 
@@ -104,11 +102,11 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     this._tickStep = this.orientationSettings.ticks.step;
 
     this._labelInfo = this.coord === 'x'
-      ? docView.chartInfo.axisInfo!.xLabelInfo
-      : docView.chartInfo.axisInfo!.yLabelInfo;
+      ? this._axisInfo!.xLabelInfo
+      : this._axisInfo!.yLabelInfo;
     this._isInterval = this.coord === 'x'
-      ? !!docView.chartInfo.axisInfo!.options.isXInterval
-      : !!docView.chartInfo.axisInfo!.options.isYInterval;
+      ? !!this._axisInfo!.options.isXInterval
+      : !!this._axisInfo!.options.isYInterval;
 
     this._titleText = this.orientationSettings.title.text ?? '';
   }
@@ -197,16 +195,8 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   //   return this.chartLayers.getAxisInterval(this.coord);
   // }
 
-  get orthoAxis() {
-    return this._orthoAxis;
-  }
-
   get layout() {
     return this._layout;
-  }
-
-  set orthoAxis(orthoAxis: Axis<OrthoAxis<T>>) {
-    this._orthoAxis = orthoAxis;
   }
 
   resize(width: number, height: number) {
@@ -248,7 +238,8 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   }
 
   layoutComponents() {
-//    this._layout.layoutViews();
+    // uncomment if using flex layout
+    // this._layout.layoutViews();
   }
 
   protected _createAxisTitle() {
@@ -344,17 +335,20 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
  */
 export class HorizAxis extends Axis<'horiz'> {
 
-  constructor(docView: DocumentView) {
-    super(docView, 'horiz');
+  constructor(paraview: ParaView, facet: Facet, axisInfo: AxisInfo, length: number) {
+    super(paraview, 'horiz', facet, axisInfo, length);
+    this._width = length;
     this._canWidthFlex = true;
     this._layout = new GridLayout(this.paraview, {
       numCols: 1,
       rowAligns: 'end',
       colAligns: 'center',
       canWidthFlex: true,
-      width: this.docView.width,
+      // width: this.docView.width,
+      width: this.width,
       isAutoHeight: true
     }, 'horiz-axis-layout');
+    // this._layout = new ColumnLayout(this.paraview, 0, 'center', 'horiz-axis-layout');
     this._layout.isBubbleSizeChange = true;
     this.append(this._layout);
   }
@@ -365,6 +359,8 @@ export class HorizAxis extends Axis<'horiz'> {
 
   computeSize(): [number, number] {
     return [
+      // uncomment if using flex layout
+      // this._width,
       this._layout.width,
       this._layout.height
     ];
@@ -377,7 +373,7 @@ export class HorizAxis extends Axis<'horiz'> {
   protected _createTickLabelTiers() {
     return this._labelInfo.labelTiers.map((tier, i) =>
       new HorizTickLabelTier(
-        this, tier as string[], i, this.docView.width, this._tickStep, this.paraview));
+        this, tier as string[], i, this._width, this._tickStep, this.paraview));
   }
 
   protected _appendTickLabelTiers() {
@@ -390,9 +386,7 @@ export class HorizAxis extends Axis<'horiz'> {
   protected _createTickStrip() {
     return new HorizTickStrip(this.paraview, this.orientationSettings, 1, {
       orientation: this.orientation,
-      length: this.docView.width,
-      plotWidth: this.docView.width,
-      plotHeight: this._layout.height,
+      length: this._width,
       tickCount: this._labelInfo.labelTiers[0].length,
       isInterval: this._isInterval,
       isDrawOverhang: this.paraview.store.settings.axis.vert.line.isDrawOverhang,
@@ -408,7 +402,7 @@ export class HorizAxis extends Axis<'horiz'> {
   }
 
   protected _createAxisLine() {
-    this._axisLine = new HorizAxisLine(this, this.docView.width);
+    this._axisLine = new HorizAxisLine(this, this._width);
   }
 
   protected _appendAxisLine() {
@@ -438,17 +432,20 @@ export class HorizAxis extends Axis<'horiz'> {
  */
 export class VertAxis extends Axis<'vert'> {
 
-  constructor(docView: DocumentView) {
-    super(docView, 'vert');
+  constructor(paraview: ParaView, facet: Facet, axisInfo: AxisInfo, length: number) {
+    super(paraview, 'vert', facet, axisInfo, length);
+    this._height = length;
     this._canHeightFlex = true;
     this._layout = new GridLayout(this.paraview, {
       numCols: 1, // new cols will get added as needed
       rowAligns: 'center',
       colAligns: 'start',
       canHeightFlex: true,
-      height: this.docView.height,
+      // height: this.docView.height,
+      height: this.height,
       isAutoWidth: true,
     }, 'vert-axis-layout');
+    // this._layout = new RowLayout(this.paraview, 0, 'center', 'vert-axis-layout');
     this._layout.isBubbleSizeChange = true;
     this.append(this._layout);
   }
@@ -472,7 +469,7 @@ export class VertAxis extends Axis<'vert'> {
         : this.settings.minValue,
       validator: value => {
         const min = this.paraview.store.settings.axis.y.maxValue === 'unset'
-          ? Math.max(...this.docView.chartInfo.axisInfo!.options.yValues)
+          ? Math.max(...this._axisInfo.options.yValues)
           : this.paraview.store.settings.axis.y.maxValue as number
         // NB: If the new value is successfully validated, the inner chart
         // gets recreated, and `max` may change, due to re-quantization of
@@ -492,7 +489,7 @@ export class VertAxis extends Axis<'vert'> {
         : this.settings.maxValue,
       validator: value => {
         const max = this.paraview.store.settings.axis.y.minValue == "unset"
-          ? Math.min(...this.docView.chartInfo.axisInfo!.options.yValues)
+          ? Math.min(...this._axisInfo.options.yValues)
           : this.paraview.store.settings.axis.y.minValue as number
         return value as number <= max ?
           { err: `Max y-value (${value}) must be greater than (${max})`} : {};
@@ -505,6 +502,7 @@ export class VertAxis extends Axis<'vert'> {
     return [
       this._layout.width,
       this._layout.height
+      // this._height
     ];
   }
 
@@ -515,7 +513,7 @@ export class VertAxis extends Axis<'vert'> {
   protected _createTickLabelTiers() {
     return this._labelInfo.labelTiers.map((tier, i) =>
       new VertTickLabelTier(
-        this, tier as string[], i, this.docView.height, this._tickStep, this.paraview));
+        this, tier as string[], i, this._height, this._tickStep, this.paraview));
   }
 
   protected _appendTickLabelTiers() {
@@ -530,9 +528,7 @@ export class VertAxis extends Axis<'vert'> {
   protected _createTickStrip() {
     return new VertTickStrip(this.paraview, this.orientationSettings, 1, {
       orientation: this.orientation,
-      length: this.docView.height,
-      plotWidth: this.docView.width,
-      plotHeight: this.docView.height,
+      length: this._height,
       tickCount: this._labelInfo.labelTiers[0].length,
       isInterval: this._isInterval,
       isDrawOverhang: this.paraview.store.settings.axis.horiz.line.isDrawOverhang,
@@ -551,7 +547,7 @@ export class VertAxis extends Axis<'vert'> {
   }
 
   protected _createAxisLine() {
-    this._axisLine = new VertAxisLine(this, this.docView.height);
+    this._axisLine = new VertAxisLine(this, this._height);
   }
 
   protected _appendAxisLine() {

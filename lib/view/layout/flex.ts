@@ -28,6 +28,11 @@ export abstract class FlexLayout extends Layout {
   constructor(paraview: ParaView, public readonly gap: number, public readonly alignViews: SnapLocation, id?: string) {
     super(paraview, id);
   }
+
+  protected _didAddChild(_kid: View) {
+    this.updateSize();
+  }
+
 }
 
 /**
@@ -54,7 +59,7 @@ export class RowLayout extends FlexLayout {
   }
 
   layoutViews() {
-    this.log.info('LAYOUT ROW', this.id);
+    // console.log('LAYOUT ROW', this.id);
     if (!this._children.length) {
       return;
     }
@@ -65,7 +70,8 @@ export class RowLayout extends FlexLayout {
       kid.paddedLeft = this._children[kid.index - 1].paddedRight + this.gap;
       this._snapChildY(kid);
     });
-    this.log.info('LOCS', this._children.map(kid => fixed`(${kid.x},${kid.y})`).join(' '));
+    // console.log('LOCS', this._children.map(kid => fixed`(${kid.x},${kid.y})`).join(' '));
+    // console.log('ROW LOC', this._x, this._y, this.centerY, this.top, this.height);
   }
 
 }

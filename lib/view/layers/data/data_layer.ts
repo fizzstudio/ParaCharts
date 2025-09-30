@@ -221,7 +221,7 @@ export abstract class DataLayer extends PlotLayer {
   // }
 
   protected _animateReveal() {
-      let start = -1;
+    let start = -1;
     const bez = new Bezier(0.2, 0.9, 0.5, 1, 10);
     const linear = new Bezier(0, 0, 1, 1, 10);
     const step = (timestamp: number) => {
