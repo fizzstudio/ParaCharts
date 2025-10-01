@@ -4,126 +4,17 @@ import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
 import { fixed } from "../../../../common/utils";
 import { ParaView } from "../../../../paraview";
-import { DeepReadonly, HistogramSettings, PointChartType, type Setting } from "../../../../store";
+import { datapointIdToCursor, DeepReadonly, HistogramSettings, PointChartType, type Setting } from "../../../../store";
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { PlanePlotView, PlaneSeriesView } from ".";
 import { DatapointView, SeriesView } from "../../../data";
 import { strToId } from "@fizz/paramanifest";
+import { HistogramChartInfo } from '../../../../chart_types/histogram_chart';
 
 export class Histogram extends PlanePlotView {
-  protected _bins: number = 20;
-  protected _data: Array<Array<number>> = [];
-  protected _grid: Array<number> = [];
-  protected _maxCount: number = 0;
   declare protected _settings: DeepReadonly<HistogramSettings>;
-  constructor(
-    paraview: ParaView,
-    dataLayerIndex: number
-  ) {
-    super(paraview, dataLayerIndex);
-    this._init()
-  }
-
-  _init() {
-    this._settings = this.paraview.store.settings.type.histogram;
-    this._bins = this.paraview.store.settings.type.histogram.bins ?? 20
-    this._generateBins();
-    const values = this._grid.flat();
-    this._maxCount = Math.max(...values);
-    this.paraview.store.clearVisited();
-    this.paraview.store.clearSelected();
-
-    const targetAxis = this.settings.groupingAxis as DeepReadonly<string> == '' ?
-      this.paraview.store.model?.facetSignatures.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)[0]
-      : this.settings.groupingAxis
-    let targetFacet;
-    for (let facet of this.paraview.store.model!.facetSignatures) {
-      if (this.paraview.store.model!.getFacet(facet.key as string)!.label == targetAxis) {
-        targetFacet = facet.key
-      }
-    }
-    //HACK: THIS WILL BREAK IF WE EVER ADD MORE FACETS THAN JUST X/Y
-    let nonTargetFacet;
-    if (targetFacet == "y") {
-      nonTargetFacet = "x"
-    }
-    else {
-      nonTargetFacet = "y"
-    }
-
-    const targetFacetBoxes = this.paraview.store.model!.allFacetValues(targetFacet!)!;
-    const targetFacetNumbers = targetFacetBoxes.map((b) => b.asNumber()!);
-    if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined) {
-      if (this.settings.relativeAxes == "Counts") {
-        this._axisInfo = new AxisInfo(this.paraview.store, {
-          xValues: targetFacetNumbers,
-          yValues: this.grid,
-        });
-      }
-      else {
-        const sum = this.grid.reduce((a, c) => a + c)
-        const pctGrid = this.grid.map(g => g / sum)
-        this._axisInfo = new AxisInfo(this.paraview.store, {
-          xValues: targetFacetNumbers,
-          yValues: pctGrid
-        });
-      }
-    }
-    else {
-      if (this.settings.relativeAxes == "Counts") {
-        this._axisInfo = new AxisInfo(this.paraview.store, {
-          xValues: this.grid,
-          yValues: targetFacetNumbers,
-        });
-      }
-      else {
-        const sum = this.grid.reduce((a, c) => a + c)
-        const pctGrid = this.grid.map(g => g / sum)
-        this._axisInfo = new AxisInfo(this.paraview.store, {
-          xValues: pctGrid,
-          yValues: targetFacetNumbers,
-        });
-      }
-    }
-  }
-
-  protected _addedToParent() {
-    super._addedToParent();
-    this.paraview.store.settingControls.add({
-      type: 'textfield',
-      key: 'type.histogram.bins',
-      label: 'Bins',
-      options: {
-        inputType: 'number',
-        min: 5,
-        max: 100
-      },
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
-    const variables = this.paraview.store.model?.facetSignatures.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)
-    this.paraview.store.settingControls.add({
-      type: 'dropdown',
-      key: 'type.histogram.groupingAxis',
-      label: 'Axis to group:',
-      options: { options: variables as string[] },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
-    this.paraview.store.settingControls.add({
-      type: 'dropdown',
-      key: 'type.histogram.displayAxis',
-      label: 'Axis to display histogram:',
-      options: { options: ["x", "y"] },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
-    this.paraview.store.settingControls.add({
-      type: 'dropdown',
-      key: 'type.histogram.relativeAxes',
-      label: 'Show counts vs percentages:',
-      options: { options: ["Counts", "Percentage"] },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
-  }
+  declare protected _chartInfo: HistogramChartInfo;
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['type.histogram.groupingAxis', 'type.histogram.displayAxis', 'type.histogram.relativeAxes', 'axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
@@ -142,17 +33,14 @@ export class Histogram extends PlanePlotView {
     super.settingDidChange(path, oldValue, newValue);
   }
 
+  get chartInfo() {
+    return this._chartInfo;
+  }
+
   get datapointViews() {
     return super.datapointViews;
   }
 
-  get grid() {
-    return this._grid;
-  }
-
-  get maxCount() {
-    return this._maxCount;
-  }
   get settings() {
     return this._settings;
   }
@@ -173,7 +61,7 @@ export class Histogram extends PlanePlotView {
     }
     const seriesView = new PlaneSeriesView(this, this.paraview.store.model!.series[0].key);
     this._chartLandingView.append(seriesView);
-    for (let i = 0; i < this._bins; i++) {
+    for (let i = 0; i < this.chartInfo.bins; i++) {
         const bin = new HistogramBinView(this, seriesView);
         seriesView.append(bin)
       }
@@ -204,165 +92,17 @@ export class Histogram extends PlanePlotView {
     }
   }
 
-  protected _generateBins(): Array<number> {
-    const targetAxis = this.settings.groupingAxis as DeepReadonly<string | undefined>
-      ?? this.paraview.store.model?.facetSignatures.map((facet) => this.paraview.store.model?.getFacet(facet.key)?.label)[0]
-
-    let targetFacet;
-    for (let facet of this.paraview.store.model!.facetSignatures) {
-      if (this.paraview.store.model!.getFacet(facet.key as string)!.label == targetAxis) {
-        targetFacet = facet.key
-      }
-    }
-    //HACK: THIS WILL BREAK IF WE EVER ADD MORE FACETS THAN JUST X/Y
-    let nonTargetFacet;
-    if (targetFacet == "y") {
-      nonTargetFacet = "x"
-    }
-    else {
-      nonTargetFacet = "y"
-    }
-    let workingLabels;
-    if (targetFacet) {
-      const yValues = []
-      const xValues = []
-      for (let datapoint of this.paraview.store.model!.series[0]) {
-        xValues.push(datapoint.facetValueNumericized(targetFacet)!)
-      }
-      for (let datapoint of this.paraview.store.model!.series[0]) {
-        yValues.push(datapoint.facetValueNumericized(nonTargetFacet)!)
-      }
-      workingLabels = computeLabels(Math.min(...xValues), Math.max(...xValues), false)
-    }
-    else {
-      const xBoxes = this.paraview.store.model!.allFacetValues('x')!;
-      const xNumbers = xBoxes.map((x) => x.asNumber()!);
-      workingLabels = computeLabels(Math.min(...xNumbers), Math.max(...xNumbers), false);
-    }
-    const seriesList = this.paraview.store.model!.series
-    this._data = [];
-    for (let series of seriesList) {
-      for (let i = 0; i < series.length; i++) {
-        this._data.push([series[i].facetValueNumericized(targetFacet ?? "x")!, series[i].facetValueNumericized(nonTargetFacet ?? "y")!]);
-      }
-    }
-
-    const y: Array<number> = [];
-    const x: Array<number> = [];
-
-    for (let point of this._data) {
-      x.push(point[0]);
-      y.push(point[1]);
-    }
-
-    let xMax: number = workingLabels.max!
-    let xMin: number = workingLabels.min!
-
-    const grid: Array<number> = [];
-
-    for (let i = 0; i < this.bins; i++) {
-      grid.push(0);
-    }
-
-        for (let point of this._data) {
-          // TODO: check that `- 1` is correct
-          const xIndex: number = Math.floor((point[0] - xMin) * (this.bins - 1) / (xMax - xMin));
-          grid[xIndex]++;
-        }
-        return this._grid = grid;
-    }
-    seriesRef(series: string) {
-        return this.paraview.ref<SVGGElement>(`series.${series}`);
-    }
+  seriesRef(series: string) {
+      return this.paraview.ref<SVGGElement>(`series.${series}`);
+  }
 
   _raiseSeries(series: string) {
     const seriesG = this.seriesRef(series).value!;
     this.dataset.append(seriesG);
   }
 
-  /*
-  getDatapointGroupBbox(labelText: string) {
-      const xSeries = this._model.indepSeries();
-      // XXX Could take these directly from the DOM
-      const labels = xSeries.mapBoxed(box => this._model.format(box, 'xTick'));
-      const idx = labels.findIndex(label => label === labelText);
-      if (idx === -1) {
-          throw new Error(`no such datapoint with label '${labelText}'`);
-      }
-      const g = todo().canvas.ref<SVGGElement>('dataset').value!.children[idx] as SVGGElement;
-      return g.getBBox();
-  }
-*/
-
   getTickX(idx: number) {
     return this.datapointViews[idx].x; // this.points[idx][0].x;
-  }
-
-  get bins() {
-    return this._bins;
-  }
-
-  async moveRight() {
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof HistogramBinView) {
-      if (!leaf.next) {
-        //leaf.blur(false)
-        //this._eventActionManager!.dispatch('series_endpoint_reached');
-      }
-      else {
-        await leaf.next!.focus();
-      }
-    }
-  }
-
-  async moveLeft() {
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof HistogramBinView) {
-      if (!leaf.prev) {
-        //leaf.blur(false)
-        //this._eventActionManager!.dispatch('series_endpoint_reached');
-      }
-      else {
-        await leaf.prev!.focus();
-      }
-    }
-  }
-
-  async moveDown() {
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof HistogramBinView) {
-      if (!leaf.prev) {
-        //leaf.blur(false)
-        //this._eventActionManager!.dispatch('series_endpoint_reached');
-      }
-      else {
-        await leaf.prev!.focus();
-      }
-    } else if (leaf instanceof SeriesView) {
-      if (!leaf.next) {
-        await this._chartLandingView.children[0].children[0].focus();
-        return;
-      } else {
-        await leaf.next!.focus();
-        //this._sonifier.playNotification('series');
-      }
-    } else {
-      // At chart root, so move to the first series landing
-      await this._chartLandingView.children[0].focus();
-    }
-  }
-
-  async moveUp() {
-    const leaf = this._chartLandingView.focusLeaf;
-    if (leaf instanceof HistogramBinView) {
-      if (!leaf.next) {
-        //leaf.blur(false)
-        //this._eventActionManager!.dispatch('series_endpoint_reached');
-      }
-      else {
-        await leaf.next!.focus();
-      }
-    }
   }
 
 }
@@ -429,16 +169,17 @@ export class HistogramBinView extends DatapointView {
 }
   */
   completeLayout() {
+    const info = this.chart.chartInfo;
     if (this.chart.settings.displayAxis == "x" || this.chart.settings.displayAxis == undefined) {
       const id = this.index;
       this._y = this.chart.parent.height;
-      this._width = this.chart.parent.width / this.chart.bins;
-      this._x = (this.index) % this.chart.bins * this._width
-      this._height = (((this.chart.grid[id] - this.chart.axisInfo!.yLabelInfo!.min!) / this.chart.axisInfo!.yLabelInfo!.max!) * this._y)
+      this._width = this.chart.parent.width / info.bins;
+      this._x = (this.index) % info.bins * this._width
+      this._height = (((info.grid[id] - info.axisInfo!.yLabelInfo!.min!) / info.axisInfo!.yLabelInfo!.max!) * this._y)
       if (this.chart.settings.relativeAxes == "Percentage"){
-        this._height = this._height / this.chart.grid.reduce((a, c) => a + c)
+        this._height = this._height / info.grid.reduce((a, c) => a + c)
       }
-      this._count = this.chart.grid[id];
+      this._count = info.grid[id];
       this._id = [
         'datapoint-tile',
         strToId(this.seriesKey),
@@ -449,13 +190,13 @@ export class HistogramBinView extends DatapointView {
     else {
       const id = this.index - length;
       this._x = 0;
-      this._height = this.chart.parent.height / this.chart.bins;
-      this._y = (this.chart.grid.length - id - 1) % this.chart.bins * this._height + (this._height)
-      this._width = (((this.chart.grid[id] - this.chart.axisInfo!.xLabelInfo!.min!) / this.chart.axisInfo!.xLabelInfo!.max!) * this.chart.parent.width)
+      this._height = this.chart.parent.height / info.bins;
+      this._y = (info.grid.length - id - 1) % info.bins * this._height + (this._height)
+      this._width = (((info.grid[id] - info.axisInfo!.xLabelInfo!.min!) / info.axisInfo!.xLabelInfo!.max!) * this.chart.parent.width)
       if (this.chart.settings.relativeAxes == "Percentage"){
-        this._width = this._width / this.chart.grid.reduce((a, c) => a + c)
+        this._width = this._width / info.grid.reduce((a, c) => a + c)
       }
-      this._count = this.chart.grid[id];
+      this._count = info.grid[id];
 
       this._id = [
         'datapoint-tile',
@@ -473,10 +214,10 @@ export class HistogramBinView extends DatapointView {
     //const ySpan = yInfo.range! / this.chart.bins
     //const up = (yInfo.max! - ySpan * (Math.floor((this.index - length) / this.chart.bins))).toFixed(2)
     //const down = (yInfo.max! - ySpan * (Math.floor((this.index - length) / this.chart.bins) + 1)).toFixed(2)
-    const xInfo = this.chart.axisInfo!.xLabelInfo!
-    const xSpan = xInfo.range! / this.chart.bins;
-    const left = (xInfo.min! + xSpan * ((this.index) % this.chart.bins)).toFixed(2)
-    const right = (xInfo.min! + xSpan * ((this.index) % this.chart.bins + 1)).toFixed(2)
+    const xInfo = this.chart.chartInfo.axisInfo!.xLabelInfo!
+    const xSpan = xInfo.range! / this.chart.chartInfo.bins;
+    const left = (xInfo.min! + xSpan * ((this.index) % this.chart.chartInfo.bins)).toFixed(2)
+    const right = (xInfo.min! + xSpan * ((this.index) % this.chart.chartInfo.bins + 1)).toFixed(2)
     return `This bin contains ${this.count} datapoints, which is ${(100 * this.count / length).toFixed(2)}% of the overall data.
         It spans x values from ${left} to ${right}}`
 
@@ -506,7 +247,10 @@ export class HistogramBinView extends DatapointView {
   render() {
     let stroke = `hsl(0, 0%, 0%)`
     let fill = this.paraview.store.colors.colorValueAt(0)
-    if (this.paraview.store.visitedDatapoints.some(item => item.index === this.index)) {
+    if (this.paraview.store.visitedDatapoints.values().some(item => {
+      const cursor = datapointIdToCursor(item);
+      return cursor.index === this.index;
+    })) {
       if (this.chart.settings.displayAxis == "x" || this.chart.settings.displayAxis == undefined) {
         return svg`
                     <g>
