@@ -150,7 +150,12 @@ export class HotkeyActions {
       },
       lowVisionModeToggle() {
         store.updateSettings(draft => {
-          draft.ui.isLowVisionModeEnabled = !draft.ui.isLowVisionModeEnabled;
+          if (draft.ui.isLowVisionModeEnabled) {
+            // Allow the exit from fullscreen to disable LV mode
+            draft.ui.isFullscreenEnabled = false;
+          } else {
+            draft.ui.isLowVisionModeEnabled = true;
+          }
         });
       },
       openHelp() {
