@@ -185,7 +185,8 @@ export const defaults: Settings = {
     maxWidth: 150,
     shape: "boxWithArrow",
     activation: "onHover",
-    borderRadius: 10
+    borderRadius: 10,
+    backgroundColor: "dark"
   },
   type: {
     bar: {

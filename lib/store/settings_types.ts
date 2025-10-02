@@ -286,6 +286,7 @@ export interface PopupSettings extends SettingGroup {
   shape: "box" | "boxWithArrow";
   activation: "onHover" | "onFocus" | "onSelect";
   borderRadius: number;
+  backgroundColor: "dark" | "light"
 }
 
 /** @public */
