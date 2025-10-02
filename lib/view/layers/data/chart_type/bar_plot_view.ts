@@ -470,12 +470,14 @@ export class Bar extends PlaneDatapointView {
       },
       {
         shape: "boxWithArrow",
-        fill: this.paraview.store.settings.popup.backgroundColor === "light" ? 
+        fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)" 
+        : this.paraview.store.settings.popup.backgroundColor === "light" ? 
         this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.color), 6)
         : this.paraview.store.colors.colorValueAt(this.color), 
-        stroke: this.paraview.store.settings.popup.backgroundColor === "light" ? 
+        stroke: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)" 
+        : this.paraview.store.settings.popup.backgroundColor === "light" ? 
         this.paraview.store.colors.colorValueAt(this.color)
-        : "black", 
+        : "black",  
       })
     this.paraview.store.popups.push(popup)
   }
