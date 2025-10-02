@@ -275,6 +275,20 @@ export interface PlotAreaSettings extends SettingGroup {
   size: Size2d;
 }
 
+export interface PopupSettings extends SettingGroup {
+  opacity: number;
+  leftPadding: number;
+  rightPadding: number;
+  upPadding: number;
+  downPadding: number;
+  margin: number;
+  maxWidth: number;
+  shape: "box" | "boxWithArrow";
+  activation: "onHover" | "onFocus" | "onSelect";
+  borderRadius: number;
+  backgroundColor: "dark" | "light"
+}
+
 /** @public */
 export interface PlotSettings extends SettingGroup {
 }
@@ -300,6 +314,7 @@ export interface BarSettings extends PlotSettings {
   isAbbrevSeries: boolean;
   clusterLabelFormat: LabelFormat;
   lineWidth: number;
+  showPopups: boolean;
 }
 
 /** @public */
@@ -325,6 +340,7 @@ export interface LineSettings extends PointSettings {
   seriesLabelPadding: number; // also used after leader lines
   leaderLineLength: number;
   isAlwaysShowSeriesLabel?: boolean;
+  showPopups: boolean;
 }
 
 /** @public */
@@ -468,6 +484,7 @@ export interface Settings extends SettingGroup {
   chart: ChartSettings;
   axis: AxesSettings;
   legend: LegendSettings;
+  popup: PopupSettings;
   plotArea: PlotAreaSettings;
   type: ChartTypeSettings;
   grid: GridSettings;

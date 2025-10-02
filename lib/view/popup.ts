@@ -1,0 +1,393 @@
+import { Vec2 } from "../common/vector";
+import { ParaView } from "../paraview";
+import { View } from "./base_view";
+import { Label, LabelOptions } from "./label";
+import { PathOptions, PathShape, ShapeOptions } from "./shape";
+import { ParaComponent } from "../components";
+import { fixed, logging } from "../common";
+import { Dialog } from '@fizz/ui-components';
+import '@fizz/ui-components';
+import { html, css } from 'lit';
+import { property, customElement } from 'lit/decorators.js';
+import { ref, createRef } from 'lit/directives/ref.js';
+
+export interface PopupLabelOptions extends LabelOptions {
+}
+
+export type ShapeTypes = "box" | "boxWithArrow";
+
+export interface PopupShapeOptions extends ShapeOptions {
+    shape?: ShapeTypes
+}
+
+
+export class Popup extends View {
+    protected label: Label;
+    protected box: PathShape;
+    protected leftPadding = this.paraview.store.settings.popup.leftPadding;
+    protected rightPadding = this.paraview.store.settings.popup.rightPadding;
+    protected downPadding = this.paraview.store.settings.popup.downPadding;
+    protected upPadding = this.paraview.store.settings.popup.upPadding;
+    protected horizShift = 0;
+    protected arrowPosition: "top" | "bottom" = "bottom";
+
+    constructor(paraview: ParaView, private popupLabelOptions: PopupLabelOptions, private popupShapeOptions: PopupShapeOptions) {
+        super(paraview);
+        if (this.popupLabelOptions.y) {
+            this.popupLabelOptions.y -= this.paraview.store.settings.popup.margin
+        }
+        if (!this.popupLabelOptions.wrapWidth) {
+            this.popupLabelOptions.wrapWidth = this.paraview.store.settings.popup.maxWidth
+        }
+        this.label = new Label(this.paraview, this.popupLabelOptions)
+        this.shiftLabel()
+        if (this.paraview.store.settings.popup.backgroundColor === "dark") {
+            this.label.styleInfo = {
+                stroke: 'none',
+                fill: this.paraview.store.colors.contrastValueAt(0)
+            };
+        }
+        if (this.paraview.store.settings.ui.isLowVisionModeEnabled) {
+            this.label.styleInfo = {
+                stroke: 'none',
+                fill: "black"
+            };
+        }
+
+        if (this.popupShapeOptions.fill && !this.paraview.store.settings.ui.isLowVisionModeEnabled) {
+            this.popupShapeOptions.fill = `${this.popupShapeOptions.fill.slice(0, -1)}, ${this.paraview.store.settings.popup.opacity})`
+        }
+        if (!this.popupShapeOptions.shape) {
+            this.popupShapeOptions.shape = this.paraview.store.settings.popup.shape
+        }
+        this.box = this.generateBox(popupShapeOptions)
+
+        this.append(this.box)
+        this.append(this.label)
+        if (popupLabelOptions.id) {
+            this.id = popupLabelOptions.id;
+        }
+    }
+
+    shiftLabel() {
+        if (this.label.right + this.rightPadding > this.paraview.documentView!.chartLayers.width) {
+            this.popupLabelOptions.x = this.label.x - (this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5)
+            this.horizShift = Math.min((this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5), this.label.width / 2 - 5)
+            this.label = new Label(this.paraview, this.popupLabelOptions)
+        }
+        if (this.label.left - this.leftPadding < 0) {
+            this.popupLabelOptions.x = this.label.x + (this.leftPadding - this.label.left + 5)
+            this.horizShift = - Math.min((this.leftPadding - this.label.left + 5), this.label.width / 2 - 5)
+            this.label = new Label(this.paraview, this.popupLabelOptions)
+        }
+        //Note shifting the label up away from the datapoint in the event of text wrap
+        //has lower priority than shifting it down from the top of the screen
+        if (this.label.y - this.label.bottom < 0) {
+            this.label.y += (this.label.y - this.label.bottom)
+        }
+        if (this.label.top < 0) {
+            this.label.y += (2 * this.paraview.store.settings.popup.margin + this.label.height)
+            this.arrowPosition = "top"
+        }
+    }
+
+    generateBox(options: PopupShapeOptions) {
+        let boxType = options.shape ?? "box"
+        let label = this.label
+        let y = label.bottom
+        let x = label.x
+        let width = label.width
+        let height = label.height
+        if (boxType === "boxWithArrow") {
+            if (this.arrowPosition == "bottom") {
+                let shape = new PopupPathShape(this.paraview, {
+                    points: [new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding),
+                    new Vec2(x - width / 2 - this.leftPadding, y + this.downPadding),
+
+                    new Vec2(x - Math.min(width / 4, 15) + this.horizShift, y + this.downPadding),
+                    new Vec2(x + this.horizShift, y + this.downPadding + 10),
+                    new Vec2(x + Math.min(width / 4, 15) + this.horizShift, y + this.downPadding),
+
+                    new Vec2(x + width / 2 + this.rightPadding, y + this.downPadding),
+                    new Vec2(x + width / 2 + this.rightPadding, y - height - this.upPadding),
+                    new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding)],
+                    fill: options.fill,
+                    stroke: options.stroke,
+                    shape: "boxWithArrow",
+                    arrowPosition: "down"
+                })
+                return shape
+            }
+            else {
+                let shape = new PopupPathShape(this.paraview, {
+                    points: [new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding),
+                    new Vec2(x - width / 2 - this.leftPadding, y + this.downPadding),
+                    new Vec2(x + width / 2 + this.rightPadding, y + this.downPadding),
+                    new Vec2(x + width / 2 + this.rightPadding, y - height - this.upPadding),
+
+                    new Vec2(x + Math.min(width / 4, 15) + this.horizShift, y - height - this.upPadding),
+                    new Vec2(x + this.horizShift, y - height - this.upPadding - 10),
+                    new Vec2(x - Math.min(width / 4, 15) + this.horizShift, y - height - this.upPadding),
+
+                    new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding)],
+                    fill: options.fill,
+                    stroke: options.stroke,
+                    shape: "boxWithArrow",
+                    arrowPosition: "up"
+                })
+                return shape
+            }
+        }
+        else {
+            let shape = new PopupPathShape(this.paraview, {
+                points: [new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding),
+                new Vec2(x - width / 2 - this.leftPadding, y + this.downPadding),
+                new Vec2(x + width / 2 + this.rightPadding, y + this.downPadding),
+                new Vec2(x + width / 2 + this.rightPadding, y - height - this.upPadding),
+                new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding)],
+                fill: options.fill,
+                stroke: options.stroke,
+                shape: "box"
+            })
+            return shape
+        }
+    }
+
+}
+
+/**
+ * @public
+ */
+@customElement('para-popup-settings-dialog')
+export class PopupSettingsDialog extends logging(ParaComponent) {
+
+    protected _dialogRef = createRef<Dialog>();
+
+    /**
+     * Close button text.
+     */
+    @property() btnText = 'Okay';
+
+    static styles = css`
+    #controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+  `;
+
+    connectedCallback() {
+        super.connectedCallback();
+        this._store.settingControls.add({
+            type: 'dropdown',
+            key: 'popup.shape',
+            label: 'Shape',
+            options: { options: ["box", "boxWithArrow"] },
+            parentView: 'controlPanel.tabs.chart.dialog.popups'
+        });
+        this._store.settingControls.add({
+            type: 'dropdown',
+            key: 'popup.activation',
+            label: 'Activate popups on',
+            options: { options: ["onHover", "onFocus", "onSelect"] },
+            parentView: 'controlPanel.tabs.chart.dialog.popups'
+        });
+        this._store.settingControls.add({
+            type: 'slider',
+            key: 'popup.opacity',
+            label: 'Opacity',
+            options: {
+                min: 0,
+                max: 1,
+                //highBound: this._store.settings.sonification.hertzUpper - 1,
+                step: .1
+            },
+            parentView: 'controlPanel.tabs.chart.dialog.popups'
+        });
+        this._store.settingControls.add({
+            type: 'textfield',
+            key: 'popup.maxWidth',
+            label: 'Max width',
+            options: {
+                inputType: 'number',
+                min: 0,
+                max: 300
+            },
+            parentView: 'controlPanel.tabs.chart.dialog.popups',
+        });
+        this._store.settingControls.add({
+            type: 'textfield',
+            key: 'popup.leftPadding',
+            label: 'Left padding',
+            options: {
+                inputType: 'number',
+                min: 0,
+                max: 100
+            },
+            parentView: 'controlPanel.tabs.chart.dialog.popups',
+        });
+        this._store.settingControls.add({
+            type: 'textfield',
+            key: 'popup.rightPadding',
+            label: 'Right padding',
+            options: {
+                inputType: 'number',
+                min: 0,
+                max: 100
+            },
+            parentView: 'controlPanel.tabs.chart.dialog.popups',
+        });
+        this._store.settingControls.add({
+            type: 'textfield',
+            key: 'popup.upPadding',
+            label: 'Up padding',
+            options: {
+                inputType: 'number',
+                min: 0,
+                max: 100
+            },
+            parentView: 'controlPanel.tabs.chart.dialog.popups',
+        });
+        this._store.settingControls.add({
+            type: 'textfield',
+            key: 'popup.downPadding',
+            label: 'Down padding',
+            options: {
+                inputType: 'number',
+                min: 0,
+                max: 100
+            },
+            parentView: 'controlPanel.tabs.chart.dialog.popups',
+        });
+        this._store.settingControls.add({
+            type: 'textfield',
+            key: 'popup.margin',
+            label: 'Vertical margin',
+            options: {
+                inputType: 'number',
+                min: 0,
+                max: 100
+            },
+            parentView: 'controlPanel.tabs.chart.dialog.popups',
+        });
+        this._store.settingControls.add({
+            type: 'textfield',
+            key: 'popup.borderRadius',
+            label: 'Border radius',
+            options: {
+                inputType: 'number',
+                min: 0,
+                max: 20
+            },
+            parentView: 'controlPanel.tabs.chart.dialog.popups',
+        });
+        this._store.settingControls.add({
+            type: 'dropdown',
+            key: 'popup.backgroundColor',
+            label: 'Color mode',
+            options: {
+                options: ["dark", "light"]
+            },
+            parentView: 'controlPanel.tabs.chart.dialog.popups',
+        });
+
+    }
+
+    render() {
+        return html`
+      <fizz-dialog
+        ${ref(this._dialogRef)}
+        title="Popup Settings"
+        .buttons=${[{ tag: 'cancel', text: this.btnText }]}
+      >
+        <div id="controls">
+          <div id="popup-settings"
+            class="popup-views"
+          >
+            ${this._store.settingControls.getContent('controlPanel.tabs.chart.dialog.popups')}
+          </div>
+        </div>
+      </fizz-dialog>
+    `;
+    }
+
+    /**
+     * Show the dialog
+     */
+    async show() {
+        await this._dialogRef.value!.show();
+    }
+}
+
+declare global {
+    interface HTMLElementTagNameMap {
+        'para-popup-settings-dialog': PopupSettingsDialog;
+    }
+}
+
+export interface PopupPathOptions extends PathOptions {
+    shape: ShapeTypes
+    arrowPosition?: "up" | "down"
+}
+export class PopupPathShape extends PathShape {
+    shape: ShapeTypes
+    constructor(paraview: ParaView, private options: PopupPathOptions) {
+        super(paraview, options);
+        this._points = options.points.map(p => p.clone());
+        this.shape = this.options.shape
+    }
+
+    //This defines which points on shapes are curved/border-radiused
+    //0 === hard corner, 1 === curve, the first and last numbers should match because they apply to the same point
+    protected curvePoints: { "boxWithArrow": number[], "boxWithDownArrow": number[], "boxWithUpArrow": number[], "box": number[] } = {
+        "boxWithArrow": [1, 1, 0, 0, 0, 1, 1, 1],
+        "boxWithDownArrow": [1, 1, 0, 0, 0, 1, 1, 1],
+        "boxWithUpArrow": [1, 1, 1, 1, 0, 0, 0, 1],
+        "box": [1, 1, 1, 1, 1]
+    }
+
+    protected get _pathD() {
+        const rad = this.paraview.store.settings.popup.borderRadius
+        let addCurve;
+        if (this.shape == "boxWithArrow" && this.options.arrowPosition === "up") {
+            addCurve = this.curvePoints["boxWithUpArrow"]
+        }
+        else if (this.shape == "boxWithArrow" && this.options.arrowPosition === "down") {
+            addCurve = this.curvePoints["boxWithDownArrow"]
+        }
+        else {
+            addCurve = this.curvePoints[this.shape]
+        }
+        const relPoints = this._points.map(p => p.add(this._loc));
+        let d = fixed``
+        if (!addCurve[0]) {
+            d += fixed`M${relPoints[0].x},${relPoints[0].y}`;
+        }
+        else {
+            let p = relPoints[0]
+            let nextP = relPoints[(0 + 1) % relPoints.length]
+            let diffX1 = Math.sign(p.x - nextP.x)
+            let diffY1 = Math.sign(p.y - nextP.y)
+            d += fixed`M${p.x - diffX1 * rad},${p.y - diffY1 * rad}`;
+        }
+        for (let i = 1; i < relPoints.length; i++) {
+            let p = relPoints[i % relPoints.length]
+            if (!addCurve[i % relPoints.length]) {
+                d += fixed`L${p.x},${p.y}`;
+            }
+            else {
+                let prevP = relPoints[(i - 1 + relPoints.length) % relPoints.length]
+                //This line looks like it does because ._points stores the same point twice
+                //and this is the easiest way to correct for it
+                let nextP = relPoints[(i + 1 + (i === relPoints.length - 1 ? 1 : 0)) % relPoints.length]
+                let diffX1 = Math.sign(p.x - prevP.x)
+                let diffY1 = Math.sign(p.y - prevP.y)
+                let diffX2 = Math.sign(nextP.x - p.x)
+                let diffY2 = Math.sign(nextP.y - p.y)
+                d += fixed`L${p.x - diffX1 * rad},${p.y - diffY1 * rad}`;
+                d += fixed`A ${rad}, ${rad}, 0, 0, 0, ${p.x + diffX2 * rad}, ${p.y + diffY2 * rad}`
+            }
+        }
+        return d;
+    }
+}

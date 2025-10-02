@@ -145,12 +145,29 @@ export abstract class DataLayer extends PlotLayer {
     this._layoutDatapoints();
   }
 
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if (['ui.isLowVisionModeEnabled'].includes(path)) {
+      if (!oldValue) {
+        this.paraview.store.updateSettings(draft => {
+          draft.popup.activation = 'onSelect'
+        });
+      }
+    }
+    if (['popup.activation'].includes(path)) {
+      if (oldValue === "onSelect" || oldValue === "onFocus") {
+        this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
+      }
+    }
+    super.settingDidChange(path, oldValue, newValue);
+  }
+
   /**
    * Stroke width for visited datapoints. Can be overridden.
    */
   get visitedStrokeWidth(): number {
     const visitedScale = this.paraview.store.settings.chart.strokeHighlightScale;
-    return this.paraview.store.settings.chart.strokeWidth*visitedScale;
+    return this.paraview.store.settings.chart.strokeWidth * visitedScale;
   }
 
   /**
@@ -224,7 +241,7 @@ export abstract class DataLayer extends PlotLayer {
     return null;
   }
 
-  handlePan(startX: number, startY: number, endX: number, endY: number){}
+  handlePan(startX: number, startY: number, endX: number, endY: number) { }
 
-  handleZoom(x: number, y: number){}
+  handleZoom(x: number, y: number) { }
 }

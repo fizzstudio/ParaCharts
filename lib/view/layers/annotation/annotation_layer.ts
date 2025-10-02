@@ -5,6 +5,9 @@ import { type ParaView } from '../../../paraview';
 import { RectShape } from '../../shape/rect';
 import { PathShape } from '../../shape/path';
 import { Vec2 } from '../../../common/vector';
+import { Label } from '../../label';
+import { PointAnnotation } from '../../../store';
+import { Popup } from '../../popup';
 import { datapointIdToCursor } from '../../../store';
 
 export type AnnotationType = 'foreground' | 'background';
@@ -63,7 +66,7 @@ export class AnnotationLayer extends PlotLayer {
             x: this._x,
             y: this._y,
             points: [new Vec2(startPx, startHeight), new Vec2(endPx, endHeight),],
-            fill : colorValue,
+            fill: colorValue,
             stroke: colorValue
           });
           trendLine.classInfo = { 'trend-line': true }
@@ -98,7 +101,7 @@ export class AnnotationLayer extends PlotLayer {
             x: this._x,
             y: this._y,
             points: [new Vec2(startPx, startHeight), new Vec2(endPx, endHeight),],
-            fill : colorValue,
+            fill: colorValue,
             stroke: colorValue
           });
           trendLine.classInfo = { 'user-trend-line': true }
@@ -111,6 +114,76 @@ export class AnnotationLayer extends PlotLayer {
         }
       }
 
+      if (this.paraview.store.annotations) {
+        this.addGroup('annotation-popups', true);
+        this.group('annotation-popups')!.clearChildren();
+        let annots = structuredClone(this.paraview.store.annotations.filter(a => a.type == 'datapoint' && a.isSelected == true) as unknown as PointAnnotation[]);
+        for (const annot of annots) {
+          const seriesKey = this.paraview.store.model!.series.filter(s => s[0].seriesKey == annot.seriesKey)[0].key
+          const datapoint = this.paraview.documentView?.chartLayers.dataLayer.datapointViews.filter(d => d.seriesKey == seriesKey && d.index == annot.index)[0]
+          if (!datapoint) {
+            break
+          }
+          let popup = new Popup(this.paraview,
+            {
+              text: annot.text,
+              x: datapoint.x,
+              y: datapoint.y,
+              textAnchor: "middle",
+              classList: ['annotationlabel'],
+              id: this.id
+            },
+            {
+              fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+                : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                  this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(datapoint.color), 6)
+                  : this.paraview.store.colors.colorValueAt(datapoint.color),
+              stroke: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+                : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                  this.paraview.store.colors.colorValueAt(datapoint.color)
+                  : "black",
+            })
+          popup.classInfo = { 'popup': true }
+          this.group('annotation-popups')!.append(popup);
+        }
+
+      }
+      else {
+        if (this._groups.has('annotation-popups')) {
+          this.removeGroup('annotation-popups', true);
+        }
+      }
+
+      if (this.paraview.store.popups) {
+        this.addGroup('datapoint-popups', true);
+        this.group('datapoint-popups')!.clearChildren();
+        if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onFocus"){
+          this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
+          for (let dp of this.paraview.store.visitedDatapoints){
+            const {seriesKey, index} = datapointIdToCursor(dp);
+            const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
+            datapointView.addPopup()
+          }
+        }
+        else if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onSelect"){
+          this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
+          for (let dp of this.paraview.store.selectedDatapoints){
+            const {seriesKey, index} = datapointIdToCursor(dp);
+            const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
+            datapointView.addPopup()
+          }
+        }
+        for (const popup of this.paraview.store.popups) {
+          popup.classInfo = { 'popup': true }
+          this.group('datapoint-popups')!.append(popup);
+        }
+
+      }
+      else {
+        if (this._groups.has('datapoint-popups')) {
+          this.removeGroup('datapoint-popups', true);
+        }
+      }
     }
     if (this.type === 'background') {
       if (this.paraview.store.rangeHighlights) {
