@@ -128,15 +128,20 @@ export class AnnotationLayer extends PlotLayer {
             {
               text: annot.text,
               x: datapoint.x,
-              y: datapoint.y - 40,
-              wrapWidth: 150,
+              y: datapoint.y,
               textAnchor: "middle",
-              classList: ['annotationlabel']
+              classList: ['annotationlabel'],
+              id: this.id
             },
             {
-              shape: "boxWithArrow",
-              fill: `hsla(0, 0%, 90%, 0.85)`,
-              stroke: "black",
+              fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+                : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                  this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(datapoint.color), 6)
+                  : this.paraview.store.colors.colorValueAt(datapoint.color),
+              stroke: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+                : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                  this.paraview.store.colors.colorValueAt(datapoint.color)
+                  : "black",
             })
           popup.classInfo = { 'popup': true }
           this.group('annotation-popups')!.append(popup);

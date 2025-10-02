@@ -153,7 +153,11 @@ export abstract class DataLayer extends PlotLayer {
           draft.popup.activation = 'onSelect'
         });
       }
-
+    }
+    if (['popup.activation'].includes(path)) {
+      if (oldValue === "onSelect" || oldValue === "onFocus") {
+        this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
+      }
     }
     super.settingDidChange(path, oldValue, newValue);
   }

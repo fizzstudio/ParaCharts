@@ -56,9 +56,6 @@ export class AnnotationPanel extends ControlPanelTabPanel {
               @dblclick=${(event: Event) => {
                 this._store.annotations = this._store.annotations.filter(p => !(p.id == item.id))
                 }}
-              @onkeydown=${(event: Event) => {
-                console.log("TEST")
-                }}  
             >${item.annotation}</li>
           `)
       }

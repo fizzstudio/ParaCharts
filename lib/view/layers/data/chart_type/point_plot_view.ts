@@ -34,7 +34,7 @@ import { strToId } from '@fizz/paramanifest';
 export abstract class PointPlotView extends PlanePlotView {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['axis.y.maxValue', 'axis.y.minValue', 'chart.showPopups'].includes(path)) {
+    if (['axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
       // this._axisInfo!.updateYRange();
       // for (const datapointView of this.datapointViews) {
       //   datapointView.computeLocation();
