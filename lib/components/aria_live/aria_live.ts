@@ -24,12 +24,12 @@ export class AriaLive extends ParaComponent {
     return this._voicing;
   }
 
-  // @simonvarey: I added this so that `Voicing` could recieve `store` for highlighting.
+  // @simonvarey: I added this so that `Voicing` could receive `store` and `shadowRoot` for highlighting.
   //   In theory, it should have been possible to add this to `_initAriaLiveRegion`, but that
   //   caused errors when I tried.
   connectedCallback(): void {
     super.connectedCallback();
-    this._voicing = new Voicing(this.store);
+    this._voicing = new Voicing(this.store, this.shadowRoot!);
   }
 
   protected _setHistory(history: readonly string[]) {

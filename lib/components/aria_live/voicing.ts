@@ -9,7 +9,7 @@ export class Voicing {
   private _volume: number = 1.0;
   private _pitch: number = 1.0;
   
-  constructor(private _store: ParaStore) {
+  constructor(private _store: ParaStore, private _shadowRoot: ShadowRoot) {
     this._voice = window.speechSynthesis;
     if (!this._voice) {
       console.warn('Speech Synthesis unsupported');
@@ -19,6 +19,7 @@ export class Voicing {
   speak(msg: string, highlights: Highlight[]) {
     if (this._voice) {
       this.shutUp();
+      console.log('sp', this._shadowRoot)
   
       const utterance = new SpeechSynthesisUtterance(msg);
       utterance.rate = this._rate;
@@ -28,23 +29,20 @@ export class Voicing {
 
       utterance.onboundary = (event: SpeechSynthesisEvent) => {
         const wordIndex = event.charIndex;
-        let anyHighlighted = false;
         for (const highlight of highlights) {
           if (wordIndex >= highlight.start && wordIndex < highlight.end) {
-            anyHighlighted = true;
             this._store.highlight(highlight.id);
+            const spans = this._shadowRoot.querySelectorAll('span');
+            console.log('s', spans)
+            for (const span of spans) {
+              if (span.dataset.navcode === `span-${highlight.id}`) {
+                span.setAttribute('background-color', 'blue');
+              } else {
+                span.removeAttribute('background-color');
+              }
+            }
             console.log('highlight point ', highlight.id, ' at ', wordIndex);
           }
-          /*const spans = document.getElementsByClassName(`span-${highlight.id}`);
-          const span = spans.item(0) as HTMLSpanElement;
-          if (wordIndex >= highlight.start && wordIndex >= highlight.end) {
-            span.setAttribute('background-color', 'blue');
-          } else {
-            span.removeAttribute('background-color');
-          }*/
-        }
-        if (!anyHighlighted) {
-          //this._store.highlight('');
         }
       }
   
