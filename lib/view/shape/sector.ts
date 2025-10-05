@@ -58,7 +58,7 @@ export class SectorShape extends Shape {
   protected _arcLarge!: number;
   protected _arcSweep = 1;
 
-  constructor(paraview: ParaView, options: SectorOptions) {
+  constructor(paraview: ParaView, private options: SectorOptions) {
     super(paraview, options);
     this._r = options.r;
     this._centralAngle = options.centralAngle;
@@ -342,6 +342,8 @@ export class SectorShape extends Shape {
                     translate(${-this._x},${-this._y})`
               : nothing}
             clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
+            @pointerenter=${this.options.pointerEnter ?? nothing}
+            @pointerleave=${this.options.pointerLeave ?? nothing}
           ></path>
         `;
     }
@@ -360,6 +362,8 @@ export class SectorShape extends Shape {
              translate(${-this._x},${-this._y})`
           : nothing}
         clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
+        @pointerenter=${this.options.pointerEnter ?? nothing}
+        @pointerleave=${this.options.pointerLeave ?? nothing}
       ></path>
     `;
     }

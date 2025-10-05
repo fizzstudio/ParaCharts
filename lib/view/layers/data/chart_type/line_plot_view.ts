@@ -327,15 +327,16 @@ export class LineSection extends PointDatapointView {
   }
 
 
-    addPopup() {
+    addPopup(text?: string) {
     let popup = new Popup(this.paraview,
       {
-        text: this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
+        text: text ?? this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
         x: this.x,
         y: this.y,
         textAnchor: "middle",
         classList: ['annotationlabel'],
-        id: this.id
+        id: this.id,
+        color: this.color
       },
       {
         fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)" 

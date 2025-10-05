@@ -131,7 +131,8 @@ export class AnnotationLayer extends PlotLayer {
               y: datapoint.y,
               textAnchor: "middle",
               classList: ['annotationlabel'],
-              id: this.id
+              id: this.id,
+              color: datapoint.color
             },
             {
               fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
@@ -159,10 +160,22 @@ export class AnnotationLayer extends PlotLayer {
         this.group('datapoint-popups')!.clearChildren();
         if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onFocus"){
           this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
-          for (let dp of this.paraview.store.visitedDatapoints){
-            const {seriesKey, index} = datapointIdToCursor(dp);
-            const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
-            datapointView.addPopup()
+          const cursor = this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.navMap!.cursor
+          if (cursor.type === 'chord') {
+            let text = ''
+            for (let dp of cursor.datapoints) {
+              text = text.concat(`${dp.seriesKey}: ${this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.summarizer.getDatapointSummary(dp, 'statusBar')}\n`)
+            }
+            let dp = cursor.datapoints[0]
+            let dpView = this.paraview.documentView!.chartLayers!.dataLayer.datapointView(dp.seriesKey, dp.datapointIndex)
+            dpView?.addPopup(text)
+          }
+          else {
+            for (let dp of this.paraview.store.visitedDatapoints) {
+              const { seriesKey, index } = datapointIdToCursor(dp);
+              const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
+              datapointView.addPopup()
+            }
           }
         }
         else if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onSelect"){

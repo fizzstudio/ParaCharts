@@ -251,8 +251,8 @@ export class PlotLayerManager extends View {
         ${this._backgroundAnnotationLayer.render()}
         ${this._dataLayers.map(layer => layer.render())}
         ${this._highlightsLayer.render()}
-        ${this._foregroundAnnotationLayer.render()}
         ${this._selectionLayer.render()}
+        ${this._foregroundAnnotationLayer.render()}
         ${this._focusLayer.render()}
       </g>
     `;

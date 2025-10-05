@@ -458,15 +458,16 @@ export class Bar extends PlaneDatapointView {
   }
 
   
-  addPopup() {
+  addPopup(text?: string) {
     let popup = new Popup(this.paraview,
       {
-        text: this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
+        text: text ?? this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
         x: this.x + this.width / 2,
         y: this.y,
         textAnchor: "middle",
         classList: ['annotationlabel'],
-        id: this.id
+        id: this.id,
+        color: this.color
       },
       {
         shape: "boxWithArrow",

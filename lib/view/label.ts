@@ -276,7 +276,12 @@ export class Label extends View {
         const tok = tokens.shift()!;
         if (tok.includes('\n')) {
           tspans.push(document.createElementNS(SVGNS, 'tspan'));
-          text.append(tspans.at(-1)!);
+          const tspan = tspans.at(-1)!;
+          text.append(tspan!);
+          tspan!.textContent = tok;
+          tspan!.setAttribute('x', '0');
+          const rect = tspans.at(-2)!.getBoundingClientRect();
+          tspan!.setAttribute('dy', `${rect.height + this._lineSpacing}px`);
           continue;
         }
         if (!tok.match(/\w/)) {
