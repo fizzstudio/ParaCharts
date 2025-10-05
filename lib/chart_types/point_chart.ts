@@ -34,7 +34,6 @@ export abstract class PointChartInfo extends PlaneChartInfo {
 
   protected _init(): void {
     super._init();
-    // XXX don't create if type === 'graph'
     this._axisInfo = new AxisInfo(this._store, {
       yValues: this._store.model!.allFacetValues('y')!.map((y) => y.value as number)
     });

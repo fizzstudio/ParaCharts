@@ -48,6 +48,7 @@ export const chartClasses = {
   gauge: BarPlotView, //GaugeChart,
   stepline: LinePlotView, //StepLineChart,
   lollipop: BarPlotView, //LollipopChart
+  graph: LinePlotView
 };
 
 export class PlotLayerManager extends View {

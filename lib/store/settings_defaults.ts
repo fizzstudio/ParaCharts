@@ -396,7 +396,6 @@ export const defaults: Settings = {
     isControlsTabVisible: true,
     isChartTabVisible: true,
     isAnnotationsTabVisible: true,
-    isGraphingTabVisible: false,
     isAnalysisTabVisible: true,
     isColorPaletteControlVisible: true,
     isCVDControlVisible: true,
