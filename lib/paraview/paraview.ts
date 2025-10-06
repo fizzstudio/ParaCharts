@@ -232,7 +232,9 @@ export class ParaView extends logging(ParaComponent) {
       .hidden {
         display: none;
       }
-
+      .invis {
+        opacity: 0;
+      }
       .control-column {
         display: flex;
         flex-direction: column;

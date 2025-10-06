@@ -60,6 +60,8 @@ export class RectShape extends Shape {
         y=${fixed`${this._y}`}
         width=${fixed`${this.width}`}
         height=${fixed`${this.height}`}
+        @pointerenter=${this.options.pointerEnter ?? nothing}
+        @pointerleave=${this.options.pointerLeave ?? nothing}
       ></rect>
     `;
     }
@@ -76,6 +78,8 @@ export class RectShape extends Shape {
         width=${fixed`${this.width}`}
         height=${fixed`${this.height}`}
         clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
+        @pointerenter=${this.options.pointerEnter ?? nothing}
+        @pointerleave=${this.options.pointerLeave ?? nothing}
       ></rect>
     `;
     }
