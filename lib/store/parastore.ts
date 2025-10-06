@@ -53,7 +53,6 @@ import { type ParaChart } from '../parachart/parachart';
 import { DatapointView } from '../view/data';
 import { Popup } from '../view/popup';
 import { type DatapointCursor } from '../view/layers/data/navigation';
-import { exp } from 'mathjs';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 

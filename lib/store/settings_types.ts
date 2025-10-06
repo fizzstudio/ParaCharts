@@ -83,7 +83,6 @@ export interface ControlPanelSettings extends SettingGroup {
   isControlsTabVisible: boolean;
   isChartTabVisible: boolean;
   isAnnotationsTabVisible: boolean;
-  isGraphingTabVisible: boolean;
   isMDRAnnotationsVisible: boolean;
   isAnalysisTabVisible: boolean;
   isSparkBrailleControlVisible: boolean;
@@ -371,15 +370,6 @@ export interface HistogramSettings extends PointSettings {
   relativeAxes: "Counts" | "Percentage";
 }
 
-export interface GraphSettings extends LineSettings{
-  equation: string;
-  preset: string;
-  renderPts: number;
-  resetAxes: boolean;
-  visitedSeries: number;
-}
-
-
 // export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
 export interface RadialOutsideLabelSettings extends SettingGroup {
@@ -426,7 +416,6 @@ export interface ChartTypeSettings extends SettingGroup {
   gauge: RadialSettings;
   stepline: StepLineSettings;
   lollipop: LollipopSettings;
-  graph: GraphSettings;
 }
 
 /** @public */
@@ -512,7 +501,6 @@ export const FORMAT_CONTEXT_SETTINGS = {
   horizTick: 'axis.horiz.tick.labelFormat',
   vertTick: 'axis.vert.tick.labelFormat',
   linePoint: 'type.line.pointLabelFormat',
-  graphPoint: 'type.graph.pointLabelFormat',
   scatterPoint: 'type.scatter.pointLabelFormat',
   histogramPoint: 'type.histogram.pointLabelFormat',
   heatmapPoint: 'type.histogram.pointLabelFormat',
