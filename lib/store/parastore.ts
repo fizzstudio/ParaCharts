@@ -34,7 +34,7 @@ import {
   PlaneModel,
   Datapoint
 } from '@fizz/paramodel';
-import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY, 
+import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY,
   HighlightedSummary, Highlight } from '@fizz/parasummary';
 
 import {
@@ -383,7 +383,7 @@ export class ParaStore extends State {
   }
 
   announce(
-    msg: string | string[] | HighlightedSummary, 
+    msg: string | string[] | HighlightedSummary,
     clearAriaLive = false
   ): void {
     /*
@@ -506,6 +506,10 @@ export class ParaStore extends State {
 
   highlight(selector: string) {
     this._highlightedSelector = selector;
+  }
+
+  clearHighlight() {
+    this._highlightedSelector = '';
   }
 
   get selectedDatapoints() {

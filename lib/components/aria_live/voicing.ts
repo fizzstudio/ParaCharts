@@ -8,7 +8,7 @@ export class Voicing {
   private _rate: number = 1.0;
   private _volume: number = 1.0;
   private _pitch: number = 1.0;
-  
+
   constructor(private _store: ParaStore) {
     this._voice = window.speechSynthesis;
     if (!this._voice) {
@@ -19,7 +19,7 @@ export class Voicing {
   speak(msg: string, highlights: Highlight[]) {
     if (this._voice) {
       this.shutUp();
-  
+
       const utterance = new SpeechSynthesisUtterance(msg);
       utterance.rate = this._rate;
       utterance.lang = this._lang;
@@ -31,19 +31,20 @@ export class Voicing {
         for (const highlight of highlights) {
           if (wordIndex >= highlight.start && wordIndex < highlight.end) {
             this._store.highlight(highlight.id);
-            /*const spans = this._shadowRoot.querySelectorAll('span');
+            const spans = this._store.paraChart.captionBox.getSpans();
             for (const span of spans) {
-              if (span.dataset.navcode === `span-${highlight.id}`) {
-                span.setAttribute('background-color', 'blue');
-              } else {
-                span.removeAttribute('background-color');
+              if (span.dataset.navcode === `${highlight.id}`) {
+                span.classList.add('highlight');
+                setTimeout(() => {
+                  span!.classList.remove('highlight');
+                  this._store.clearHighlight();
+                }, 1000);
               }
-            }*/
+            }
             console.log('highlight point ', highlight.id, ' at ', wordIndex);
           }
         }
-      }
-  
+      };
       this._voice.speak(utterance);
     }
   }
@@ -58,32 +59,32 @@ export class Voicing {
   get lang() {
     return this._lang;
   }
-  
+
   set lang(lang: string) {
     this._lang = lang;
   }
-  
+
   get rate() {
     return this._rate;
   }
-  
+
   set rate(rate: number) {
     this._rate = rate;
   }
-  
+
   get volume() {
     return this._volume;
   }
-  
+
   set volume(volume: number) {
     this._volume = volume;
   }
-  
+
   get pitch() {
     return this._pitch;
   }
-  
+
   set pitch(pitch: number) {
     this._pitch = pitch;
-  }  
+  }
 }
