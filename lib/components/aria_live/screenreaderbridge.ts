@@ -24,8 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { Highlight } from '@fizz/parasummary';
-
 /**
  * A class that will handle passing text to screen readers to speak.
  * When a user of this class passes in a "caption" element, the renderer will add a child element to the caption for
@@ -39,12 +37,11 @@ export class ScreenReaderBridge {
   private static readonly PADDING_CHARACTER = '\u00A0'; // no-break space
   private static readonly REMOVAL_DELAY = 25; // Wait 25 ms before removing hidden elements
   public static readonly ORIGINAL_TEXT_ATTRIBUTE = 'data-original-text';
-  public static readonly ORIGINAL_HIGHLIGHT_ATTRIBUTE = 'data-original-highlight';
 
   private readonly _element: HTMLElement;
   private readonly _maxNumPaddingCharacters = 3;
   private _numPaddingCharacters = 0;
-  private _lastCreatedElement: HTMLElement | null;
+  protected _lastCreatedElement: HTMLElement | null;
 
   /**
    * Add the required aria attributes to an element for screen readers to properly work.
@@ -97,7 +94,7 @@ export class ScreenReaderBridge {
    * Insert the provided text into the aria-live region.
    * @param text - the text to inserts
    */
-  public render(text: string, highlights: Highlight[]): void {
+  public render(text: string): void {
     // Pad the text with the padding character.
     const paddedText = this._createPaddedText(text);
     // Create the new element.
@@ -106,10 +103,6 @@ export class ScreenReaderBridge {
     divElement.setAttribute(
       ScreenReaderBridge.ORIGINAL_TEXT_ATTRIBUTE,
       text
-    );
-    divElement.setAttribute(
-      ScreenReaderBridge.ORIGINAL_HIGHLIGHT_ATTRIBUTE,
-      JSON.stringify(highlights)
     );
     divElement.setAttribute('data-created', Date.now().toString());
     // If there is a previous element, delete old elements and add it to the list to be deleted in the future.

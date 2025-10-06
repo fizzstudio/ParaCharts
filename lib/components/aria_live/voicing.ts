@@ -9,7 +9,7 @@ export class Voicing {
   private _volume: number = 1.0;
   private _pitch: number = 1.0;
   
-  constructor(private _store: ParaStore, private _shadowRoot: ShadowRoot) {
+  constructor(private _store: ParaStore) {
     this._voice = window.speechSynthesis;
     if (!this._voice) {
       console.warn('Speech Synthesis unsupported');
@@ -19,7 +19,6 @@ export class Voicing {
   speak(msg: string, highlights: Highlight[]) {
     if (this._voice) {
       this.shutUp();
-      console.log('sp', this._shadowRoot)
   
       const utterance = new SpeechSynthesisUtterance(msg);
       utterance.rate = this._rate;
@@ -32,15 +31,14 @@ export class Voicing {
         for (const highlight of highlights) {
           if (wordIndex >= highlight.start && wordIndex < highlight.end) {
             this._store.highlight(highlight.id);
-            const spans = this._shadowRoot.querySelectorAll('span');
-            console.log('s', spans)
+            /*const spans = this._shadowRoot.querySelectorAll('span');
             for (const span of spans) {
               if (span.dataset.navcode === `span-${highlight.id}`) {
                 span.setAttribute('background-color', 'blue');
               } else {
                 span.removeAttribute('background-color');
               }
-            }
+            }*/
             console.log('highlight point ', highlight.id, ' at ', wordIndex);
           }
         }
