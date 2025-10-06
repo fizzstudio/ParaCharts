@@ -45,6 +45,12 @@ export class ParaCaptionBox extends logging(ParaComponent) {
         align-items: center;
         justify-content: space-between;
       }
+      #caption span.highlight {
+        background-color: var(--theme-color-light);
+      }
+      #desc-footer span.highlight {
+        background-color: white;
+      }
     `
   ];
 
@@ -90,6 +96,10 @@ export class ParaCaptionBox extends logging(ParaComponent) {
         </ul>
       </article>
     `
+  }
+
+  getSpans() {
+    return Array.from(this.renderRoot.querySelectorAll('span'));
   }
 
   render() {
