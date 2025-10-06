@@ -376,27 +376,6 @@ export const defaults: Settings = {
       barGap: 0.25,
       clusterLabelFormat: 'raw',
       showPopups: false
-    },
-    graph: {
-      lineWidth: 5,
-      lineWidthMax: 25,
-      lowVisionLineWidth: 15,
-      lineHighlightScale: 1.5,
-      baseSymbolSize: 10,
-      seriesLabelPadding: 5,
-      pointLabelFormat: 'raw',
-      leaderLineLength: 30,
-      selectedPointMarkerSize: {
-        width: 20,
-        height: 20,
-      },
-      isDrawSymbols: false,
-      equation: '',
-      preset: '',
-      renderPts: 50,
-      resetAxes: false,
-      visitedSeries: -1,
-      showPopups: false
     }
   },
   grid: {
@@ -434,7 +413,6 @@ export const defaults: Settings = {
     isControlsTabVisible: true,
     isChartTabVisible: true,
     isAnnotationsTabVisible: true,
-    isGraphingTabVisible: true,
     isAnalysisTabVisible: true,
     isColorPaletteControlVisible: true,
     isCVDControlVisible: true,
