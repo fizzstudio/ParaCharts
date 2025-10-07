@@ -5,10 +5,14 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import { createRef, ref } from 'lit/directives/ref.js';
+import { PopupSettingsDialog } from '../../view/popup';
 
 
 @customElement('para-chart-panel')
 export class ChartPanel extends ControlPanelTabPanel {
+
+  protected _popupDialogRef = createRef<PopupSettingsDialog>();
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -40,6 +44,21 @@ export class ChartPanel extends ControlPanelTabPanel {
           </div>
         `)}
       </div>
+      <section id="advanced">
+          <button
+            @click=${() => {
+              this._popupDialogRef.value?.show()}}
+          >
+          Popup settings
+          </button>
+          <para-popup-settings-dialog
+            ${ref(this._popupDialogRef)}
+            id="popup-settings-dialog"
+            .store=${this._store}
+          >
+          </para-popup-settings-dialog>
+        </section>
+
     `;
   }
 

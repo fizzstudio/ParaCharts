@@ -5,7 +5,6 @@ import { formatBox } from '@fizz/parasummary';
 import Decimal from 'decimal.js';
 import { Facet } from '@fizz/paramanifest';
 import { AxisOrientation, type PlaneModel } from '@fizz/paramodel';
-import { number } from 'mathjs';
 
 export type Tier = string[];
 export interface ChildTierItem {
@@ -114,21 +113,29 @@ export class AxisInfo {
   }
 
   get horizFacet(): Facet {
-    return (this._store.model as PlaneModel).getAxisFacet('horiz')
-      ?? this._store.model!.getFacet(this._options.isXVertical ? 'y' : 'x')!;
+    // return (this._store.model as PlaneModel).getAxisFacet('horiz')
+    //   ?? this._store.model!.getFacet(this._options.isXVertical ? 'y' : 'x')!;
     // const facetKey = this._options.isXVertical
     //     ? this._store.model!.dependentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
     //     : this._store.model!.independentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
     // return this._store.model!.getFacet(facetKey)!
+    return (this._store.model as PlaneModel).getAxisFacet(this._options.isXVertical
+      ? 'vert'
+      : 'horiz'
+    )!;
   }
 
   get vertFacet(): Facet {
-    return (this._store.model as PlaneModel).getAxisFacet('vert')
-      ?? this._store.model!.getFacet(this._options.isXVertical ? 'x' : 'y')!;
+    // return (this._store.model as PlaneModel).getAxisFacet('vert')
+    //   ?? this._store.model!.getFacet(this._options.isXVertical ? 'x' : 'y')!;
     // const facetKey = this._options.isXVertical
     //     ? this._store.model!.independentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
     //     : this._store.model!.dependentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
     // return this._store.model!.getFacet(facetKey)!
+    return (this._store.model as PlaneModel).getAxisFacet(this._options.isXVertical
+      ? 'horiz'
+      : 'vert'
+    )!;
   }
 
   getFacetForOrientation(orientation: AxisOrientation) {
@@ -171,7 +178,7 @@ export class AxisInfo {
         Math.max(...this._options.xValues));
     } else {
       const labels = this._store.model!.series[0].datapoints.map(
-        (p) => formatBox(p.facetBox('x')!, this._store.getFormatType('xTick'))
+        (p) => formatBox(p.facetBox('x')!, this._store.getFormatType('horizTick'))
       );
       this._xLabelInfo = {
         labelTiers: [labels]

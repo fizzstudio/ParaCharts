@@ -16,7 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { View } from '../base_view';
 
-import { svg } from 'lit';
 import { ParaView } from '../../paraview';
 
 /**
@@ -54,17 +53,40 @@ export abstract class Layout extends View {
     super.y = y;
   }
 
-  setSize(width: number, height: number): void {
-    super.setSize(width, height);
-    this.layoutViews();
+  // setSize(width: number, height: number, isBubble = true) {
+  //   super.setSize(width, height, isBubble);
+  //   this.layoutViews();
+  // }
+
+  // constrainSize(maxWidth: number, maxHeight: number, isBubble = false) {
+  //   console.log('CONSTRAIN', this.id || this.constructor.name, maxWidth, maxHeight, isBubble);
+  //   this.setSize(Math.min(this._width, maxWidth), Math.min(this._height, maxHeight), isBubble);
+  //   this._children.forEach(kid => {
+  //     kid.constrainSize(this._width, this._height, false);
+  //   });
+  //   this._adjustToSizeConstraint();
+  // }
+
+  // protected _adjustToSizeConstraint() {
+  //   this.layoutViews();
+  // }
+
+  protected _didAddChildToList(kid: View) {
+    kid.isBubbleSizeChange = true;
+  }
+
+  protected _childDidResize(_kid: View) {
+    this.updateSize();
+  }
+
+  protected _didAddChild(_kid: View) {
+    //this.updateSize();
+  }
+
+  protected _didRemoveChild(_kid: View) {
+    this.updateSize();
   }
 
   abstract layoutViews(): void;
-
-  // render() {
-  //   return svg`
-  //     ${this._children.map(kid => kid.render())}
-  //   `;
-  // }
 
 }

@@ -28,15 +28,12 @@ import { SVGNS } from '../common/constants';
 import { fixed } from '../common/utils';
 import { HotkeyActions } from './hotkey_actions';
 
-import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer } from '@fizz/parasummary';
-
 import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Unsubscribe } from '@lit-app/state';
-import { PlaneModel } from '@fizz/paramodel';
 
 /**
  * Data provided for the on focus callback
@@ -74,13 +71,14 @@ export class ParaView extends logging(ParaComponent) {
   };
   protected _chartRefs: Map<string, Ref<any>> = new Map();
   protected _fileSavePlaceholderRef = createRef<HTMLElement>();
-  protected _summarizer!: Summarizer;
   protected _pointerEventManager: PointerEventManager | null = null;
   protected _hotkeyActions!: HotkeyActions;
   @state() protected _defs: { [key: string]: TemplateResult } = {};
 
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
+
+  protected _lowVisionModeSaved = new Map<string, any>();
 
   static styles = [
     //styles,
@@ -115,32 +113,45 @@ export class ParaView extends logging(ParaComponent) {
         opacity: 0.6;
         stroke-width: 2;
       }
-      .tick-horiz {
-        stroke: black;
+      .tick {
+        stroke: var(--label-color);
       }
-      .tick-vert {
-        stroke: black;
+      .chart-title {
+        font-size: calc(var(--chart-title-font-size)*var(--chart-font-scale));
+      }
+      .axis-title-horiz {
+        font-size: calc(var(--horiz-axis-title-font-size)*var(--chart-font-scale));
+      }
+      .axis-title-vert {
+        font-size: calc(var(--vert-axis-title-font-size)*var(--chart-font-scale));
+      }
+      .direct-label {
+        font-size: calc(var(--direct-label-font-size)*var(--chart-font-scale));
+      }
+      .legend-label {
+        font-size: calc(var(--legend-label-font-size)*var(--chart-font-scale));
       }
       .label {
         fill: var(--label-color);
         stroke: none;
       }
-      .tick-label {
-        font-size: 13px;
-        fill: var(--label-color);
+      .tick-label-horiz {
+        font-size: calc(var(--horiz-axis-tick-label-font-size)*var(--chart-font-scale));
+      }
+      .tick-label-vert {
+        font-size: calc(var(--vert-axis-tick-label-font-size)*var(--chart-font-scale));
       }
       .bar-label {
         font-size: 13px;
         fill: white;
       }
-      .radial-value-label {
-        fill: var(--label-color);
+      .pastry-inside-label {
       }
-      .radial-cat-label-leader {
+      .pastry-outside-label-leader {
         fill: none;
         stroke-width: 2;
       }
-      .radial-slice {
+      .pastry-slice {
         stroke: white;
         stroke-width: 2;
       }
@@ -162,8 +173,8 @@ export class ParaView extends logging(ParaComponent) {
       }
       rect#data-backdrop {
         stroke: none;
-        fill: none; // lightgray
-        opacity: 0.125;
+        fill: none; /*lightgoldenrodyellow;*/
+        /*opacity: 0.5;*/
         pointer-events: all;
       }
       .symbol {
@@ -180,9 +191,6 @@ export class ParaView extends logging(ParaComponent) {
         fill: none;
         /*stroke-width: 3px;*/
         stroke-linecap: round;
-      }
-      .chart-title {
-        font-size: 1.25rem;
       }
       .range-highlight {
         fill: silver;
@@ -208,9 +216,14 @@ export class ParaView extends logging(ParaComponent) {
         stroke-dasharray: 12 12;
         stroke-opacity: 0.8;
       }
-      .datapoint.visited {
+      .datapoint.visited:not(.highlighted) {
         stroke: var(--visited-color);
         fill: var(--visited-color);
+        stroke-width: var(--visited-stroke-width);
+      }
+      .datapoint.highlighted {
+        stroke: var(--highlighted-color);
+        fill: var(--highlighted-color);
         stroke-width: var(--visited-stroke-width);
       }
       .lowlight {
@@ -219,13 +232,21 @@ export class ParaView extends logging(ParaComponent) {
       .hidden {
         display: none;
       }
-
+      .invis {
+        opacity: 0;
+      }
       .control-column {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         align-items: flex-start;
         gap: 0.5em;
+      }
+      .debug-grid-territory {
+        fill: lightblue;
+        stroke: blue;
+        stroke-width: 2;
+        opacity: 0.5;
       }
     `
   ];
@@ -275,10 +296,6 @@ export class ParaView extends logging(ParaComponent) {
     return this._fileSavePlaceholderRef.value!;
   }
 
-  get summarizer() {
-    return this._summarizer;
-  }
-
   get defs() {
     return this._defs;
   }
@@ -294,7 +311,7 @@ export class ParaView extends logging(ParaComponent) {
       }
       await this._documentView?.storeDidChange(key, value);
     });
-    this._computeViewBox();
+    this.computeViewBox();
     this._hotkeyActions ??= new HotkeyActions(this);
     this._store.keymapManager.addEventListener('hotkeypress', this._hotkeyListener);
     if (!this._store.settings.chart.isStatic) {
@@ -311,9 +328,6 @@ export class ParaView extends logging(ParaComponent) {
   // Anything that needs to be done when data is updated, do here
   private dataUpdated(): void {
     this.createDocumentView();
-    this._summarizer = (this.store.type === 'pie' || this.store.type === 'donut')
-      ? new PastryChartSummarizer(this._store.model!)
-      : new PlaneChartSummarizer(this._store.model as PlaneModel);
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -323,7 +337,7 @@ export class ParaView extends logging(ParaComponent) {
       this.log(`- ${k.toString()}:`, v, '->', this[k]);
     }
     if (changedProperties.has('width')) {
-      this._computeViewBox();
+      this.computeViewBox();
     }
     if (changedProperties.has('chartTitle') && this.documentView) {
       this.documentView.setTitleText(this.chartTitle);
@@ -368,6 +382,16 @@ export class ParaView extends logging(ParaComponent) {
         this._store.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
+        if (newValue) {
+          this._lowVisionModeSaved.set('chart.fontScale', draft.chart.fontScale);
+          this._lowVisionModeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+          draft.chart.fontScale = 2;
+          draft.grid.isDrawVertLines = true;
+        } else {
+          draft.chart.fontScale = this._lowVisionModeSaved.get('chart.fontScale');
+          draft.grid.isDrawVertLines = this._lowVisionModeSaved.get('grid.isDrawVertLines');
+          this._lowVisionModeSaved.clear();
+        }
       });
     } else if (path === 'ui.isVoicingEnabled') {
       if (this._store.settings.ui.isVoicingEnabled) {
@@ -464,17 +488,17 @@ export class ParaView extends logging(ParaComponent) {
   createDocumentView() {
     this.log('creating document view', this.type);
     this._documentView = new DocumentView(this);
-    this._computeViewBox();
+    this.computeViewBox();
     // The style manager may get declaration values from chart objects
     this.paraChart.styleManager.update();
   }
 
-  protected _computeViewBox() {
+  computeViewBox() {
     this._viewBox = {
       x: 0,
       y: 0,
-      width: this._documentView?.paddedWidth ?? this._store.settings.chart.size.width!,
-      height: this._documentView?.paddedHeight ?? this._store.settings.chart.size.height!
+      width: this._store.settings.chart.size.width,
+      height: this._store.settings.chart.size.height
     };
     this.log('view box:', this._viewBox.width, 'x', this._viewBox.height);
   }
@@ -494,7 +518,7 @@ export class ParaView extends logging(ParaComponent) {
     const svg = this.root!.cloneNode(true) as SVGSVGElement;
     svg.id = 'para' + (window.crypto.randomUUID?.() ?? '');
 
-    const styles = this._extractStyles(svg.id);
+    const styles = this.paraChart.extractStyles(svg.id) + '\n' + this.extractStyles(svg.id);
     const styleEl = document.createElementNS(SVGNS, 'style');
     styleEl.textContent = styles;
     svg.prepend(styleEl);
@@ -522,19 +546,6 @@ export class ParaView extends logging(ParaComponent) {
       .split('\n')
       .filter(line => !line.match(/^\s*$/))
       .join('\n');
-  }
-
-  protected _extractStyles(id: string) {
-    const stylesheets = this.shadowRoot!.adoptedStyleSheets;
-    const out: string[] = [];
-    for (const stylesheet of stylesheets) {
-      const rules = stylesheet.cssRules;
-      for (let i = 0; i < rules.length; i++) {
-        const rule = rules.item(i) as CSSRule;
-        out.push(rule.cssText.replace(/^:host/, `#${id}`));
-      }
-    }
-    return out.join('\n');
   }
 
   downloadSVG() {
@@ -632,7 +643,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   navToDatapoint(seriesKey: string, index: number) {
-    this._documentView!.chartLayers.dataLayer.navToDatapoint(seriesKey, index);
+    this._documentView!.chartInfo.navToDatapoint(seriesKey, index);
   }
 
   render(): TemplateResult {
@@ -655,7 +666,7 @@ export class ParaView extends logging(ParaComponent) {
           if (!this._store.settings.chart.isStatic) {
             this.log('focus');
             //this.todo.deets?.onFocus();
-            this.documentView?.chartLayers.dataLayer.navMap?.visitDatapoints();
+            this.documentView?.chartInfo.navMap?.visitDatapoints();
           }
         }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}

@@ -5,7 +5,11 @@ This site contains information on how to get the most out of ParaCharts as an en
 
 ## User Guide
 
-- [Chart Types](chartTypes.md) — overview of chart types and guidance for choosing one.
-- [Control Panel & Settings](controlPanel.md) — quick guide to the control panel tabs and common settings.
-- [Shortcuts & Commands](shortcutsAndCommands.md) — full keyboard reference and flows.
-- [Accessibility Features](accessibility.md) — sonification, screen reader behavior, and AI summaries.
+- [Chart Types](chartTypes.md): overview of chart types.
+- [Control Panel & Settings](controlPanel.md): quick guide to the control panel tabs and common settings.
+- [Shortcuts & Commands](shortcutsAndCommands.md): full keyboard reference and flows.
+- [Accessibility Features](accessibility.md): sonification, screen reader behavior, and AI summaries.
+
+## Developer Guide
+
+- [Custom Elements](customElements.md): the `para-chart` and `para-chart-ai` elements.

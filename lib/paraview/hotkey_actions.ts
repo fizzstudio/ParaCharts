@@ -43,7 +43,7 @@ export class HotkeyActions {
     const store = paraView.store;
     // Always return the current data layer (i.e., don't let the
     // actions close over a value that might be removed)
-    const chart = () => paraView.documentView!.chartLayers.dataLayer;
+    const chart = () => paraView.documentView!.chartInfo;
     this.actions = {
       async moveRight() {
         chart().clearPlay();
@@ -150,7 +150,12 @@ export class HotkeyActions {
       },
       lowVisionModeToggle() {
         store.updateSettings(draft => {
-          draft.ui.isLowVisionModeEnabled = !draft.ui.isLowVisionModeEnabled;
+          if (draft.ui.isLowVisionModeEnabled) {
+            // Allow the exit from fullscreen to disable LV mode
+            draft.ui.isFullscreenEnabled = false;
+          } else {
+            draft.ui.isLowVisionModeEnabled = true;
+          }
         });
       },
       openHelp() {

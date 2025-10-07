@@ -1,13 +1,15 @@
 {
   "name": "@fizz/paracharts",
-  "version": "0.35.0",
+  "version": "0.36.0",
   "description": "Not quite Parable Charts",
   "contributors": [
     "Josh Fennell",
     "Simon Varey",
     "Julianna Langston",
     "Doug Schepers",
-    "Sam Reid"
+    "Sam Reid",
+    "Ryan McCleary",
+    "Charlotte McCleary"
   ],
   "license": "AGPL-3.0-or-later",
   "publishConfig": {
@@ -85,17 +87,16 @@
     "@fizz/chart-classifier-utils": "^0.16.0",
     "@fizz/clustering": "^0.15.3",
     "@fizz/dataframe": "^0.27.0",
-    "@fizz/paramanifest": "^0.5.8",
+    "@fizz/paramanifest": "^0.5.9",
     "@fizz/paramodel": "^0.6.0",
     "@fizz/parasummary": "^0.6.2",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.4.2",
-    "@fizz/ui-components": "^0.70.1",
+    "@fizz/ui-components": "^0.70.3",
     "@lit-app/state": "^1.0.1",
     "decimal.js": "^10.4.3",
     "immer": "^10.1.1",
     "lit": "^3.2.0",
-    "mathjs": "^14.5.3",
     "papaparse": "^5.5.3",
     "printf": "^0.6.1",
     "simple-statistics": "^7.8.8",

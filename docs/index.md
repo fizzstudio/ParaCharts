@@ -1,13 +1,15 @@
 # ParaCharts Documentation
 
-Welcome to the ParaCharts documentation. This repo contains two audiences:
+Welcome to the paracharts documentation.
+This site contains information on how to get the most out of ParaCharts as an end-user, as well as developer documentation.
 
-- User docs — how to interact with charts and the UI (keyboard, audio, export).
-- Developer docs — how to embed and configure ParaCharts in your app.
+## User Guide
 
-## Quick links — user docs
+- [Chart Types](chartTypes.md): overview of chart types.
+- [Control Panel & Settings](controlPanel.md): quick guide to the control panel tabs and common settings.
+- [Shortcuts & Commands](shortcutsAndCommands.md): full keyboard reference and flows.
+- [Accessibility Features](accessibility.md): sonification, screen reader behavior, and AI summaries.
 
-- [Shortcuts & Commands](shortcutsAndCommands.md) — full keyboard reference and flows.
-- [Accessibility Features](accessibility.md) — sonification, screen reader behavior, and AI summaries.
-- [Chart Types](chartTypes.md) — overview of chart types and guidance for choosing one.
-- [Control Panel & Settings](controlPanel.md) — quick guide to the control panel tabs and common settings.
+## Developer Guide
+
+- [Custom Elements](customElements.md): the `para-chart` and `para-chart-ai` elements.

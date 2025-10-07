@@ -3,6 +3,8 @@ import { Chart, type ChartProps } from '../Chart';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { expect } from 'storybook/test';
 
+import Runner from '../tests/steplineTests';
+
 type Story = StoryObj<ChartProps>;
 
 const meta = {
@@ -18,8 +20,8 @@ export const Chart20: Story = {
     filename: "manifests/autogen/line-single/line-single-manifest-1066.json",
     forcecharttype: "stepline",
   },
-  play: async ({ canvas, userEvent }) => {
-    const parachart = await canvas.findByTestId('para-chart');
-    await expect(parachart).toBeInTheDocument();
+  play: async ({canvas, userEvent}) => {
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/autogen/line-single/line-single-manifest-1066.json");
+    await runner.run();
   }
 }
