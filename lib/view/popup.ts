@@ -13,6 +13,7 @@ import { ref, createRef } from 'lit/directives/ref.js';
 
 export interface PopupLabelOptions extends LabelOptions {
     color?: number;
+    margin?: number;
 }
 
 export type ShapeTypes = "box" | "boxWithArrow";
@@ -32,17 +33,22 @@ export class Popup extends View {
     protected horizShift = 0;
     protected arrowPosition: "top" | "bottom" = "bottom";
 
-    get label(){
+    get label() {
         return this._label;
     }
 
-    get box(){
+    get box() {
         return this._box;
     }
+
+    get margin() {
+        return this.popupLabelOptions.margin ?? this.paraview.store.settings.popup.margin
+    }
+    
     constructor(paraview: ParaView, private popupLabelOptions: PopupLabelOptions, private popupShapeOptions: PopupShapeOptions) {
         super(paraview);
         if (this.popupLabelOptions.y) {
-            this.popupLabelOptions.y -= this.paraview.store.settings.popup.margin
+            this.popupLabelOptions.y -= this.margin
         }
         if (!this.popupLabelOptions.wrapWidth) {
             this.popupLabelOptions.wrapWidth = this.paraview.store.settings.popup.maxWidth
@@ -94,7 +100,7 @@ export class Popup extends View {
             this.label.y += (this.label.y - this.label.bottom)
         }
         if (this.label.top < 0) {
-            this.label.y += (2 * this.paraview.store.settings.popup.margin + this.label.height)
+            this.label.y += (2 * this.margin + this.label.height)
             this.arrowPosition = "top"
         }
     }
@@ -381,7 +387,7 @@ export class PopupPathShape extends PathShape {
         for (let i = 1; i < relPoints.length; i++) {
             let p = relPoints[i % relPoints.length]
             //console.log(((relPoints[i].x == relPoints[(i+1) % relPoints.length].x && relPoints[i].y == relPoints[(i+1) % relPoints.length].y) && i !== relPoints.length - 1))
-            if (!addCurve[i % relPoints.length] || ((relPoints[i].x == relPoints[(i+1) % relPoints.length].x && relPoints[i].y == relPoints[(i+1) % relPoints.length].y) && i !== relPoints.length - 1)) {
+            if (!addCurve[i % relPoints.length] || ((relPoints[i].x == relPoints[(i + 1) % relPoints.length].x && relPoints[i].y == relPoints[(i + 1) % relPoints.length].y) && i !== relPoints.length - 1)) {
                 d += fixed`L${p.x},${p.y}`;
             }
             else {

@@ -182,7 +182,7 @@ export const defaults: Settings = {
     upPadding: 10,
     downPadding: 10,
     margin: 40,
-    maxWidth: 150,
+    maxWidth: 175,
     shape: "boxWithArrow",
     activation: "onHover",
     borderRadius: 10,

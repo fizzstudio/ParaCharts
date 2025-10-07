@@ -9,6 +9,8 @@ import { Label } from '../../label';
 import { PointAnnotation } from '../../../store';
 import { Popup } from '../../popup';
 import { datapointIdToCursor } from '../../../store';
+import { formatBox } from '@fizz/parasummary';
+import { SequenceNavNodeOptions, SeriesNavNodeOptions } from '../data';
 
 export type AnnotationType = 'foreground' | 'background';
 
@@ -158,7 +160,7 @@ export class AnnotationLayer extends PlotLayer {
       if (this.paraview.store.popups) {
         this.addGroup('datapoint-popups', true);
         this.group('datapoint-popups')!.clearChildren();
-        if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onFocus"){
+        if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onFocus") {
           this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
           const cursor = this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.navMap!.cursor
           if (cursor.type === 'chord') {
@@ -166,9 +168,125 @@ export class AnnotationLayer extends PlotLayer {
             for (let dp of cursor.datapoints) {
               text = text.concat(`${dp.seriesKey}: ${this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.summarizer.getDatapointSummary(dp, 'statusBar')}\n`)
             }
-            let dp = cursor.datapoints[0]
-            let dpView = this.paraview.documentView!.chartLayers!.dataLayer.datapointView(dp.seriesKey, dp.datapointIndex)
+            const dp = cursor.datapoints[0]
+            const dpView = this.paraview.documentView!.chartLayers!.dataLayer.datapointView(dp.seriesKey, dp.datapointIndex)
             dpView?.addPopup(text)
+          }
+          else if (cursor.type === 'sequence') {
+            const firstDP = cursor.datapoints[0]
+            const firstDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(firstDP.seriesKey, firstDP.datapointIndex)!
+            const lastDP = cursor.datapoints[cursor.datapoints.length - 1]
+            const lastDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(lastDP.seriesKey, lastDP.datapointIndex)!
+            let x = (lastDPView.x + firstDPView.x) / 2;
+            let y = 0;
+            if (cursor.datapoints.length % 2 == 0) {
+              const leftDP = cursor.datapoints[(cursor.datapoints.length / 2) - 1]
+              const leftDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(leftDP.seriesKey, leftDP.datapointIndex)!
+              const rightDP = cursor.datapoints[(cursor.datapoints.length / 2)]
+              const rightDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(rightDP.seriesKey, rightDP.datapointIndex)!
+              y = (leftDPView.y + rightDPView.y) / 2;
+            }
+            else {
+              const leftDP = cursor.datapoints[(cursor.datapoints.length - 1) / 2]
+              const leftDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(leftDP.seriesKey, leftDP.datapointIndex)!
+              y = leftDPView.y;
+            }
+            const seriesAnalysis = this.paraview.store.seriesAnalyses[firstDPView.seriesKey]!
+            const index = seriesAnalysis.sequences.findIndex(s => s.start === (cursor.options as SequenceNavNodeOptions).start && s.end === (cursor.options as SequenceNavNodeOptions).end)
+            const labels = this.paraview.store.model!.series[0].datapoints.map(
+              (p) => formatBox(p.facetBox('x')!, this.paraview.store.getFormatType('horizTick'))
+            );
+            const points = this.paraview.store.model!.series[this.paraview.store.model!.seriesKeys.indexOf(firstDP.seriesKey)].datapoints
+            let text = ''
+
+            text = text.concat(`Trend: ${seriesAnalysis?.sequences[index].message}`)
+            text = text.concat(`\nChange: ${parseFloat((points[seriesAnalysis.sequences[index].end - 1].facetValueAsNumber("y")!
+              - points[seriesAnalysis.sequences[index].start].facetValueAsNumber("y")!).toFixed(4))}`)
+            text = text.concat(`\n${labels[seriesAnalysis.sequences[index].start]}-${labels[seriesAnalysis.sequences[index].end - 1]}`)
+            text = text.concat(`\n${seriesAnalysis.sequences[index].end - seriesAnalysis.sequences[index].start} records`)
+
+            const popup = new Popup(this.paraview,
+              {
+                text: text,
+                x: x,
+                y: y,
+                textAnchor: "middle",
+                classList: ['annotationlabel'],
+                id: this.id,
+                color: firstDPView.color,
+                margin: 60
+              },
+              {
+                fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+                  : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                    this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(firstDPView.color), 6)
+                    : this.paraview.store.colors.colorValueAt(firstDPView.color),
+                stroke: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+                  : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                    this.paraview.store.colors.colorValueAt(firstDPView.color)
+                    : "black",
+              })
+            popup.classInfo = { 'popup': true }
+            this.group('datapoint-popups')!.append(popup);
+          }
+          else if (cursor.type === 'series') {
+            const firstDP = cursor.datapoints[0]
+            const firstDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(firstDP.seriesKey, firstDP.datapointIndex)!
+            const lastDP = cursor.datapoints[cursor.datapoints.length - 1]
+            const lastDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(lastDP.seriesKey, lastDP.datapointIndex)!
+            let x = (lastDPView.x + firstDPView.x) / 2;
+            let y = 0;
+            if (cursor.datapoints.length % 2 == 0) {
+              const leftDP = cursor.datapoints[(cursor.datapoints.length / 2) - 1]
+              const leftDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(leftDP.seriesKey, leftDP.datapointIndex)!
+              const rightDP = cursor.datapoints[(cursor.datapoints.length / 2)]
+              const rightDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(rightDP.seriesKey, rightDP.datapointIndex)!
+              y = (leftDPView.y + rightDPView.y) / 2;
+            }
+            else {
+              const leftDP = cursor.datapoints[(cursor.datapoints.length - 1) / 2]
+              const leftDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(leftDP.seriesKey, leftDP.datapointIndex)!
+              y = leftDPView.y;
+            }
+            const seriesAnalysis = this.paraview.store.seriesAnalyses[firstDPView.seriesKey]!
+            const labels = this.paraview.store.model!.series[0].datapoints.map(
+              (p) => formatBox(p.facetBox('x')!, this.paraview.store.getFormatType('horizTick'))
+            );
+            const points = this.paraview.store.model!.series[cursor.index].datapoints
+            let text = ''
+
+            text = text.concat(`${(cursor.options as SeriesNavNodeOptions).seriesKey}`)
+            if (seriesAnalysis?.message) {
+              text = text.concat(`\nTrend: ${seriesAnalysis?.message}`)
+            }
+            text = text.concat(`\nChange: ${parseFloat((points[points.length - 1].facetValueAsNumber("y")!
+              - points[0].facetValueAsNumber("y")!).toFixed(4))}`)
+            text = text.concat(`\n${labels[0]}-${labels[points.length - 1]}`)
+            text = text.concat(`\n${points.length} records`)
+
+            const popup = new Popup(this.paraview,
+              {
+                text: text,
+                x: x,
+                y: y,
+                textAnchor: "middle",
+                classList: ['annotationlabel'],
+                id: this.id,
+                color: firstDPView.color,
+                margin: 60
+              },
+              {
+                fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+                  : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                    this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(firstDPView.color), 6)
+                    : this.paraview.store.colors.colorValueAt(firstDPView.color),
+                stroke: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+                  : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                    this.paraview.store.colors.colorValueAt(firstDPView.color)
+                    : "black",
+              })
+            popup.classInfo = { 'popup': true }
+            this.group('datapoint-popups')!.append(popup);
           }
           else {
             for (let dp of this.paraview.store.visitedDatapoints) {
@@ -178,10 +296,10 @@ export class AnnotationLayer extends PlotLayer {
             }
           }
         }
-        else if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onSelect"){
+        else if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onSelect") {
           this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
-          for (let dp of this.paraview.store.selectedDatapoints){
-            const {seriesKey, index} = datapointIdToCursor(dp);
+          for (let dp of this.paraview.store.selectedDatapoints) {
+            const { seriesKey, index } = datapointIdToCursor(dp);
             const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
             datapointView.addPopup()
           }
@@ -246,7 +364,7 @@ export class AnnotationLayer extends PlotLayer {
         this.addGroup('user-linebreaker-markers', true);
         this.group('user-linebreaker-markers')!.clearChildren();
         let lbs = structuredClone(this.paraview.store.userLineBreaks);
-        if (this.paraview.store.visitedDatapoints.size > 0){
+        if (this.paraview.store.visitedDatapoints.size > 0) {
           const cursor = datapointIdToCursor(this.paraview.store.visitedDatapoints.values().toArray()[0]);
           lbs = lbs.filter(a => a.seriesKey == cursor.seriesKey);
         }
