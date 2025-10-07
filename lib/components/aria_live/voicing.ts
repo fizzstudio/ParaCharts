@@ -8,6 +8,7 @@ export class Voicing {
   private _rate: number = 1.0;
   private _volume: number = 1.0;
   private _pitch: number = 1.0;
+  private _utterance: SpeechSynthesisUtterance | null = null;
 
   constructor(private _store: ParaStore) {
     this._voice = window.speechSynthesis;
@@ -20,13 +21,16 @@ export class Voicing {
     if (this._voice) {
       this.shutUp();
 
-      const utterance = new SpeechSynthesisUtterance(msg);
-      utterance.rate = this._rate;
-      utterance.lang = this._lang;
-      utterance.pitch = this._pitch;
-      utterance.volume = this._volume;
+      // Keep the utterance around until it finishes playing so it doesn't
+      // get GC'd
+      this._utterance = new SpeechSynthesisUtterance(msg);
+      this._utterance.rate = this._rate;
+      this._utterance.lang = this._lang;
+      this._utterance.pitch = this._pitch;
+      this._utterance.volume = this._volume;
 
-      utterance.onboundary = (event: SpeechSynthesisEvent) => {
+      const lastSpans = new Set<HTMLElement>();
+      this._utterance.onboundary = (event: SpeechSynthesisEvent) => {
         const wordIndex = event.charIndex;
         for (const highlight of highlights) {
           if (wordIndex >= highlight.start && wordIndex < highlight.end) {
@@ -35,22 +39,48 @@ export class Voicing {
             for (const span of spans) {
               if (span.dataset.navcode === `${highlight.id}`) {
                 span.classList.add('highlight');
-                setTimeout(() => {
-                  span!.classList.remove('highlight');
-                  this._store.clearHighlight();
-                }, 1000);
+                lastSpans.add(span);
+              } else {
+                span.classList.remove('highlight');
+                lastSpans.delete(span);
               }
             }
             console.log('highlight point ', highlight.id, ' at ', wordIndex);
           }
         }
       };
-      this._voice.speak(utterance);
+      this._utterance.onend = (event: SpeechSynthesisEvent) => {
+        for (const span of lastSpans) {
+          span.classList.remove('highlight');
+        }
+        this._store.clearHighlight();
+      };
+      this._voice.speak(this._utterance);
     }
   }
 
+  pause() {
+    this._voice?.pause();
+  }
+
+  resume() {
+    this._voice?.resume();
+  }
+
+  togglePaused() {
+    if (this.isPaused) {
+      this.resume();
+    } else {
+      this.pause();
+    }
+  }
+
+  get isPaused() {
+    return this._voice?.paused;
+  }
+
   shutUp() {
-    console.log('Shut Up!')
+    console.log('Shut Up!');
     if (this._voice && this._voice.speaking) {
       this._voice.cancel();
     }

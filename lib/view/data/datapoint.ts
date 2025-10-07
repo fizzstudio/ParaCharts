@@ -89,6 +89,10 @@ export class DatapointView extends DataView {
     return [...this._shapes];
   }
 
+  get symbol() {
+    return this._symbol;
+  }
+
   get classInfo(): ClassInfo {
     return {
       datapoint: true,
@@ -224,11 +228,13 @@ export class DatapointView extends DataView {
   }
 
   protected get _symbolScale() {
-    return (
-      this.paraview.store.isVisited(this.seriesKey, this.index)
-      || this.chart.chartInfo.isHighlighted(this.seriesKey, this.index))
-      ? this.paraview.store.settings.chart.symbolHighlightScale
-      : 1;
+    if (this.paraview.store.isVisited(this.seriesKey, this.index)) {
+      return this.paraview.store.settings.chart.symbolHighlightScale;
+    } else if (this.chart.chartInfo.isHighlighted(this.seriesKey, this.index)) {
+      return this.paraview.store.settings.chart.symbolHighlightScale;
+    } else {
+      return 1;
+    }
   }
 
   protected get _symbolColor() {

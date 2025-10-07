@@ -105,6 +105,10 @@ export abstract class BaseChartInfo extends Logger {
       : new PlaneChartSummarizer(this._store.model as PlaneModel);
   }
 
+  get summarizer() {
+    return this._summarizer;
+  }
+
   get managedSettingKeys() {
     return [`type.${this._type}`];
   }
