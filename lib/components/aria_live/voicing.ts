@@ -29,25 +29,25 @@ export class Voicing {
       this._utterance.pitch = this._pitch;
       this._utterance.volume = this._volume;
 
+      const getHighlight = (wordIndex: number) =>
+        highlights.find(hl => wordIndex >= hl.start && wordIndex < hl.end);
+
       const lastSpans = new Set<HTMLElement>();
+      const spans = this._store.paraChart.captionBox.getSpans();
       this._utterance.onboundary = (event: SpeechSynthesisEvent) => {
-        const wordIndex = event.charIndex;
-        for (const highlight of highlights) {
-          if (wordIndex >= highlight.start && wordIndex < highlight.end) {
-            this._store.highlight(highlight.id);
-            const spans = this._store.paraChart.captionBox.getSpans();
-            for (const span of spans) {
-              if (span.dataset.navcode === `${highlight.id}`) {
-                span.classList.add('highlight');
-                lastSpans.add(span);
-              } else {
-                span.classList.remove('highlight');
-                lastSpans.delete(span);
-              }
-            }
-            console.log('highlight point ', highlight.id, ' at ', wordIndex);
+        const highlight = getHighlight(event.charIndex);
+        if (!highlight) return;
+        this._store.highlight(highlight.id);
+        for (const span of spans) {
+          if (span.dataset.navcode === `${highlight.id}`) {
+            span.classList.add('highlight');
+            lastSpans.add(span);
+          } else {
+            span.classList.remove('highlight');
+            lastSpans.delete(span);
           }
         }
+        console.log('highlight point ', highlight.id, ' at ', event.charIndex);
       };
       this._utterance.onend = (event: SpeechSynthesisEvent) => {
         for (const span of lastSpans) {
