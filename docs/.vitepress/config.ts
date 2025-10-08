@@ -18,17 +18,20 @@ export default defineConfig({
           ]
         },
         {
-          text: 'Core Features',
+          text: 'User Guide',
           items: [
             { text: 'Chart Types', link: '/chartTypes' },
-            { text: 'Control Panel', link: '/controlPanel' }
+            { text: 'Control Panel', link: '/controlPanel' },
+             { text: 'Accessibility', link: '/accessibility' },
+            { text: 'Shortcuts & Commands', link: '/shortcutsAndCommands' }
           ]
         },
         {
-          text: 'User Experience',
+          text: 'Developer Guide',
           items: [
-            { text: 'Accessibility', link: '/accessibility' },
-            { text: 'Shortcuts & Commands', link: '/shortcutsAndCommands' }
+            { text: 'Custom Elements', link: '/customElements' },
+            { text: 'Manifest', link: '/manifest' },
+            { text: 'Settings Object', link: '/settingsObj' }
           ]
         }
       ]
