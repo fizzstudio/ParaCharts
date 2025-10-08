@@ -10,10 +10,17 @@ import '@fizz/ui-components';
 import { html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
+import { GridLayout } from "./layout";
+import { DataSymbol, DataSymbolType } from "./symbol";
+import { LegendItem } from "./legend";
 
 export interface PopupLabelOptions extends LabelOptions {
     color?: number;
     margin?: number;
+    type?: string;
+
+
+    items?: LegendItem[]
 }
 
 export type ShapeTypes = "box" | "boxWithArrow";
@@ -26,6 +33,7 @@ export interface PopupShapeOptions extends ShapeOptions {
 export class Popup extends View {
     protected _label: Label;
     protected _box: PathShape;
+    protected _grid: GridLayout;
     protected leftPadding = this.paraview.store.settings.popup.leftPadding;
     protected rightPadding = this.paraview.store.settings.popup.rightPadding;
     protected downPadding = this.paraview.store.settings.popup.downPadding;
@@ -44,7 +52,7 @@ export class Popup extends View {
     get margin() {
         return this.popupLabelOptions.margin ?? this.paraview.store.settings.popup.margin
     }
-    
+
     constructor(paraview: ParaView, private popupLabelOptions: PopupLabelOptions, private popupShapeOptions: PopupShapeOptions) {
         super(paraview);
         if (this.popupLabelOptions.y) {
@@ -58,7 +66,8 @@ export class Popup extends View {
         if (this.paraview.store.settings.popup.backgroundColor === "dark") {
             this._label.styleInfo = {
                 stroke: 'none',
-                fill: this.paraview.store.colors.contrastValueAt(this.popupLabelOptions.color!)
+                fill: this.popupLabelOptions.type == "chord" ? "black" : this.paraview.store.colors.contrastValueAt(this.popupLabelOptions.color!)
+                //fill: "black"
             };
         }
         if (this.paraview.store.settings.ui.isLowVisionModeEnabled) {
@@ -76,8 +85,73 @@ export class Popup extends View {
         }
         this._box = this.generateBox(popupShapeOptions)
 
+
+
+        let views = []
+        if (popupLabelOptions.type === "chord") {
+            this._grid = new GridLayout(this.paraview, {
+                numCols: 2,
+                colGaps: 10,
+                colAligns: ['center'],
+                isAutoWidth: true,
+                isAutoHeight: true
+            }, 'popup-grid');
+            this.popupLabelOptions.items!.forEach((item, i) => {
+                //console.log("item", item)
+                views.push(DataSymbol.fromType(
+                    this.paraview,
+                    this.paraview.store.settings.chart.isDrawSymbols
+                        ? (item.symbol ?? 'square.solid')
+                        : 'square.solid',
+                    {
+                        color: item.color,
+                        pointerEnter: (e) => {
+                            this.paraview.store.soloSeries = item.label;
+                        },
+                        pointerLeave: (e) => {
+                            this.paraview.store.soloSeries = '';
+                        }
+                    }
+                ));
+                const text = popupLabelOptions.text;
+                const lines = text.split(/\r?\n|\r/);
+                //console.log(lines);
+                views.push(new Label(this.paraview, {
+                    text: lines[i],
+                    x: 0,
+                    y: 0,
+                    textAnchor: 'start',
+                    classList: ['legend-label'],
+                    pointerEnter: (e) => {
+                        this.paraview.store.soloSeries = item.label;
+                    },
+                    pointerLeave: (e) => {
+                        this.paraview.store.soloSeries = '';
+                    }
+                }));
+            });
+
+        }
+        else {
+            this._grid = new GridLayout(this.paraview, {
+                numCols: 1,
+                colAligns: ['center'],
+                isAutoWidth: true,
+                isAutoHeight: true
+            }, 'popup-grid');
+            views.push(this._label)
+        }
+
+
+        const x = this._label.x
+        const y = this._label.y
+        const height = this.label.height
         this.append(this._box)
-        this.append(this._label)
+        //this._grid.append(this._label)
+        views.forEach(v => this._grid.append(v));
+        this.append(this._grid)
+        this._grid.y = y - 15
+        this._grid.x = x - this._label.width / 2
         if (popupLabelOptions.id) {
             this.id = popupLabelOptions.id;
         }

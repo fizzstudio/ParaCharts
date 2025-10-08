@@ -169,8 +169,30 @@ export class AnnotationLayer extends PlotLayer {
               text = text.concat(`${dp.seriesKey}: ${this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.summarizer.getDatapointSummary(dp, 'statusBar')}\n`)
             }
             const dp = cursor.datapoints[0]
-            const dpView = this.paraview.documentView!.chartLayers!.dataLayer.datapointView(dp.seriesKey, dp.datapointIndex)
-            dpView?.addPopup(text)
+            const dpView = this.paraview.documentView!.chartLayers!.dataLayer.datapointView(dp.seriesKey, dp.datapointIndex)!
+            //dpView?.addPopup(text)
+            const items = this.paraview.documentView?.chartLayers.dataLayer.chartInfo.popuplegend()!;
+            const popup = new Popup(this.paraview,
+              {
+                text: text,
+                x: dpView!.x,
+                y: dpView!.y,
+                textAnchor: "middle",
+                classList: ['annotationlabel'],
+                id: this.id,
+                color: dpView!.color,
+                //margin: 60,
+                type: "chord",
+                items: items
+              },
+              {
+                fill: "hsl(0, 0%, 100%)"
+                  ,
+                stroke: "hsl(0, 0%, 0%)"
+                  
+              })
+            popup.classInfo = { 'popup': true }
+            this.group('datapoint-popups')!.append(popup);
           }
           else if (cursor.type === 'sequence') {
             const firstDP = cursor.datapoints[0]

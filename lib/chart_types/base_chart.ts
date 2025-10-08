@@ -149,8 +149,19 @@ export abstract class BaseChartInfo extends Logger {
     return [];
   }
 
+  popuplegend() {
+    //const seriesKeys = [...this._store.model!.seriesKeys];
+    const seriesInNavOrder = this.seriesInNavOrder().map(s => s.key)
+    return seriesInNavOrder.map((key, i) => (
+      {
+        label: '',
+        color: this._store.seriesProperties!.properties(key).color,
+        symbol: this._store.seriesProperties!.properties(key).symbol,
+      }));
+  }
+
   navToDatapoint(seriesKey: string, index: number) {
-    this._navMap!.goTo(this.navDatapointType, {seriesKey, index});
+    this._navMap!.goTo(this.navDatapointType, { seriesKey, index });
   }
 
   async move(dir: Direction) {
@@ -166,9 +177,9 @@ export abstract class BaseChartInfo extends Logger {
     if (node.isNodeType('top') || node.isNodeType('chord')) {
       this.goChartMinMax(isMin);
     } else if (node.isNodeType(this.navDatapointType)
-        || node.isNodeType('series')
-        || node.isNodeType('sequence')
-        || node.isNodeType('cluster')) {
+      || node.isNodeType('series')
+      || node.isNodeType('sequence')
+      || node.isNodeType('cluster')) {
       let datapoint: Datapoint | null = null;
 
       const seriesKey = node.options.seriesKey;
@@ -219,7 +230,7 @@ export abstract class BaseChartInfo extends Logger {
     // This method assumes only a single point was visited when the select
     // command was issued (i.e., we know nothing about chord mode here)
     const seriesAndVal = (datapointId: string) => {
-      const {seriesKey, index} = datapointIdToCursor(datapointId);
+      const { seriesKey, index } = datapointIdToCursor(datapointId);
       const dp = this._store.model!.atKeyAndIndex(seriesKey, index)!;
       return `${seriesKey} (${formatBox(dp.facetBox('x')!, this._store.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this._store.getFormatType('statusBar'))})`;
     };
@@ -287,8 +298,8 @@ export abstract class BaseChartInfo extends Logger {
     }
     const announcement =
       this._navMap!.cursor.isNodeType('datapoint') ? this._composePointSelectionAnnouncement(extend) :
-      this._navMap!.cursor.isNodeType('series') ? this._composeSeriesSelectionAnnouncement() :
-      '';
+        this._navMap!.cursor.isNodeType('series') ? this._composeSeriesSelectionAnnouncement() :
+          '';
     if (announcement) {
       this._store.announce(announcement);
     }
@@ -473,7 +484,7 @@ export abstract class BaseChartInfo extends Logger {
     } else {
       throw new Error('axis must be of type number or date to take interval');
     }
-    return {start: Math.min(...xs), end: Math.max(...xs)};
+    return { start: Math.min(...xs), end: Math.max(...xs) };
   }
 
 
