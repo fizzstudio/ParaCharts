@@ -195,7 +195,10 @@ export class NarrativeHighlightHotkeyActions extends HotkeyActions {
     const chart = () => paraView.documentView!.chartInfo;
     this._actions = {
       async moveRight() {
-        console.log('RIGHT');
+        // paraView.paraChart.ariaLiveRegion.voicing.shutUp();
+        // store.announce(
+        //   store.announcement, undefined,
+        //   paraView.paraChart.ariaLiveRegion.voicing.highlightIndex + 1);
       },
       async moveLeft() {
       },

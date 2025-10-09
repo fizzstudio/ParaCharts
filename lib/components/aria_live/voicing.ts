@@ -9,6 +9,7 @@ export class Voicing {
   private _volume: number = 1.0;
   private _pitch: number = 1.0;
   private _utterance: SpeechSynthesisUtterance | null = null;
+  private _highlightIndex = 0;
 
   constructor(private _store: ParaStore) {
     this._voice = window.speechSynthesis;
@@ -17,9 +18,20 @@ export class Voicing {
     }
   }
 
-  speak(msg: string, highlights: Highlight[]) {
+  get highlightIndex(): number {
+    return this._highlightIndex;
+  }
+
+  speak(msg: string, highlights: Highlight[], startFrom = 0) {
     if (this._voice) {
       this.shutUp();
+
+      // const div = document.createElement('div');
+      // div.innerHTML = msg;
+      // console.log('DIV', div.children, startFrom);
+      // div.replaceChildren(...Array.from(div.children).slice(startFrom));
+      // msg = div.innerText;
+      // console.log('MSG', msg);
 
       // Keep the utterance around until it finishes playing so it doesn't
       // get GC'd
@@ -29,16 +41,35 @@ export class Voicing {
       this._utterance.pitch = this._pitch;
       this._utterance.volume = this._volume;
 
-      const getHighlight = (wordIndex: number) =>
-        highlights.find(hl => wordIndex >= hl.start && wordIndex < hl.end);
+      const getHighlightIndex = (wordIndex: number) =>
+        highlights.findIndex(hl => wordIndex >= hl.start && wordIndex < hl.end);
 
       const lastSpans = new Set<HTMLElement>();
       const spans = this._store.paraChart.captionBox.getSpans();
+      let prevNavcode = '';
       this._utterance.onboundary = (event: SpeechSynthesisEvent) => {
-        const highlight = getHighlight(event.charIndex);
-        if (!highlight) return;
-        if (highlight.navcode !== undefined) {
-          this._store.highlight(highlight.navcode);
+        this._highlightIndex = getHighlightIndex(event.charIndex);
+        if (this._highlightIndex === -1) return;
+        const highlight = highlights[this._highlightIndex];
+        if (highlight.navcode) {
+          if (highlight.navcode.startsWith('series')) {
+            const segments = highlight.navcode.split(/-/);
+            this._store.soloSeries = segments.slice(1).join('\t');
+          } else {
+            this._store.highlight(highlight.navcode);
+            if (prevNavcode) {
+              this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
+            }
+            this._store.paraChart.paraView.documentView!.chartInfo.didAddHighlight(highlight.navcode);
+          }
+          prevNavcode = highlight.navcode;
+        } else {
+          this._store.clearHighlight();
+          this._store.soloSeries = '';
+          if (prevNavcode) {
+            this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
+            prevNavcode = '';
+          }
         }
         for (const span of spans) {
           if (span.dataset.phrasecode === `${highlight.phrasecode}`) {
@@ -56,6 +87,11 @@ export class Voicing {
           span.classList.remove('highlight');
         }
         this._store.clearHighlight();
+        this._store.soloSeries = '';
+        if (prevNavcode) {
+          this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
+          prevNavcode = '';
+        }
       };
       this._voice.speak(this._utterance);
     }

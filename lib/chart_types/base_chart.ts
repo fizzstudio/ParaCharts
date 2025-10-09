@@ -145,6 +145,14 @@ export abstract class BaseChartInfo extends Logger {
     root.cursor = chartLandingNode;
   }
 
+  didAddHighlight(navcode: string) {
+    console.log('DID ADD HIGHLIGHT', navcode);
+  }
+
+  didRemoveHighlight(navcode: string) {
+    console.log('DID REMOVE HIGHLIGHT', navcode);
+  }
+
   legend(): LegendItem[] {
     return [];
   }

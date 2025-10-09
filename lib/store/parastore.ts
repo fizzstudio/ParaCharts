@@ -64,6 +64,7 @@ export interface Announcement {
   html: string;
   highlights: Highlight[];
   clear?: boolean;
+  startFrom: number;
 }
 
 export type SettingObserver = (oldValue?: Setting, newValue?: Setting) => void;
@@ -131,7 +132,7 @@ export class ParaStore extends State {
   @property() dataState: DataState = 'initial';
   @property() settings: Settings;
   @property() darkMode = false;
-  @property() announcement: Announcement = { text: '', html: '', highlights: [] };
+  @property() announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0 };
   @property() annotations: BaseAnnotation[] = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
@@ -384,7 +385,8 @@ export class ParaStore extends State {
 
   announce(
     msg: string | string[] | HighlightedSummary,
-    clearAriaLive = false
+    clearAriaLive = false,
+    startFrom = 0
   ): void {
     /*
     This sends an announcement to the Status Bar.
@@ -410,7 +412,7 @@ export class ParaStore extends State {
     }
 
     if (this.settings.ui.isAnnouncementEnabled) {
-      this.announcement = { text: announcement, html, highlights, clear: clearAriaLive };
+      this.announcement = { text: announcement, html, highlights, clear: clearAriaLive, startFrom };
       console.log('ANNOUNCE:', this.announcement.text);
     }
   }
