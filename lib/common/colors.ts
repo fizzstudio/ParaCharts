@@ -157,7 +157,7 @@ export class Colors {
             name: 'cyan'
           },
           {
-            value: 'hsl(100, 100%, 50%)',
+            value: 'hsl(234, 20.5%, 47.8%)',
             name: 'highlight'
           },
           {

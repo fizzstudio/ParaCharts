@@ -259,6 +259,7 @@ export interface DataSymbolOptions {
   strokeWidth: number;
   scale: number;
   color?: number;
+  opacity?: number;
   dashed: boolean;
   lighten?: boolean;
   pointerEnter?: (e: PointerEvent) => void;
@@ -307,6 +308,7 @@ export class DataSymbol extends View {
       strokeWidth: options?.strokeWidth ?? this.paraview.store.settings.chart.symbolStrokeWidth,
       scale: options?.scale ?? 1,
       color: options?.color,
+      opacity: options?.opacity,
       dashed: options?.dashed ?? false,
       lighten: options?.lighten ?? false,
       pointerEnter: options?.pointerEnter,
@@ -364,6 +366,15 @@ export class DataSymbol extends View {
     this._updateStyleInfo();
   }
 
+  get opacity() {
+    return this._options.opacity;
+  }
+
+  set opacity(opacity: number | undefined) {
+    this._options.opacity = opacity;
+    this._updateStyleInfo();
+  }
+
   get scale() {
     return this._options.scale;
   }
@@ -378,6 +389,13 @@ export class DataSymbol extends View {
 
   set role(role: string) {
     this._role = role;
+  }
+
+  clone(): DataSymbol {
+    const sym = DataSymbol.fromType(this.paraview, this.type, this._options);
+    sym.x = this._x;
+    sym.y = this._y;
+    return sym;
   }
 
   protected _updateStyleInfo() {
@@ -404,6 +422,9 @@ export class DataSymbol extends View {
       }
       else {
         this._styleInfo.fill = 'white';
+      }
+      if (this._options.opacity !== undefined) {
+        this._styleInfo.opacity = this._options.opacity;
       }
       this._styleInfo.stroke = this.paraview.store.colors.colorValueAt(
         this._options.color);

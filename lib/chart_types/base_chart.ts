@@ -105,6 +105,10 @@ export abstract class BaseChartInfo extends Logger {
       : new PlaneChartSummarizer(this._store.model as PlaneModel);
   }
 
+  get summarizer() {
+    return this._summarizer;
+  }
+
   get managedSettingKeys() {
     return [`type.${this._type}`];
   }
@@ -143,6 +147,14 @@ export abstract class BaseChartInfo extends Logger {
     const chartLandingNode = new NavNode(root, 'top', {}, this._store);
     root.registerNode(chartLandingNode);
     root.cursor = chartLandingNode;
+  }
+
+  didAddHighlight(navcode: string) {
+    console.log('DID ADD HIGHLIGHT', navcode);
+  }
+
+  didRemoveHighlight(navcode: string) {
+    console.log('DID REMOVE HIGHLIGHT', navcode);
   }
 
   legend(): LegendItem[] {
@@ -372,7 +384,7 @@ export abstract class BaseChartInfo extends Logger {
   async navRunDidEnd(cursor: NavNode) {
     //const seriesKey = cursor.options.seriesKey ?? '';
     if (cursor.isNodeType('top')) {
-      await this._store.asyncAnnounce(this._summarizer.getChartSummary());
+      this._store.announce(await this._summarizer.getChartSummary());
     } else if (cursor.isNodeType('series')) {
       this._store.announce(
         await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
@@ -389,7 +401,7 @@ export abstract class BaseChartInfo extends Logger {
         announcements[0] = `${cursor.options.seriesKey}: ${announcements[0]}`;
         if (!seriesPreviouslyVisited) {
           const seriesSummary = await this._summarizer.getSeriesSummary(cursor.options.seriesKey);
-          announcements.push(seriesSummary);
+          announcements.push(seriesSummary.text);
         }
       }
       this._store.announce(announcements);
