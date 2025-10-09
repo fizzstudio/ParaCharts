@@ -231,16 +231,16 @@ export class DatapointView extends DataView {
     if (this.paraview.store.isVisited(this.seriesKey, this.index)) {
       return this.paraview.store.settings.chart.symbolHighlightScale;
     } else if (this.chart.chartInfo.isHighlighted(this.seriesKey, this.index)) {
-      return this.paraview.store.settings.chart.symbolHighlightScale;
+      return 1; //this.paraview.store.settings.chart.symbolHighlightScale;
     } else {
       return 1;
     }
   }
 
   protected get _symbolColor() {
-    return this.chart.chartInfo.isHighlighted(this.seriesKey, this.index) ? -2 as number :
-           this.paraview.store.isVisited(this.seriesKey, this.index) ? -1 as number :
-           undefined;
+    //return this.chart.chartInfo.isHighlighted(this.seriesKey, this.index) ? -2 as number :
+    return this.paraview.store.isVisited(this.seriesKey, this.index) ? -1 as number :
+           this.color; //undefined; // set the color so the highlights layer can clone it
   }
 
   protected _contentUpdateShapes() {
