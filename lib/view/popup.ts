@@ -29,6 +29,7 @@ export interface PopupShapeOptions extends ShapeOptions {
     shape?: ShapeTypes
 }
 
+const BOX_ARROW_HEIGHT = 10
 
 export class Popup extends View {
     protected _label: Label;
@@ -56,14 +57,11 @@ export class Popup extends View {
     constructor(paraview: ParaView, private popupLabelOptions: PopupLabelOptions, private popupShapeOptions: PopupShapeOptions) {
         super(paraview);
         this.applyDefaults()
-
         this._label = new Label(this.paraview, this.popupLabelOptions)
-
         if (this.paraview.store.settings.popup.backgroundColor === "dark") {
             this._label.styleInfo = {
                 stroke: 'none',
                 fill: this.popupLabelOptions.type == "chord" ? "black" : this.paraview.store.colors.contrastValueAt(this.popupLabelOptions.color!)
-                //fill: "black"
             };
         }
         if (this.paraview.store.settings.ui.isLowVisionModeEnabled) {
@@ -75,13 +73,14 @@ export class Popup extends View {
 
         let views = []
         if (popupLabelOptions.type === "chord") {
+            
             let rowGaps = []
             for (let i = 0; i < this.popupLabelOptions.items!.length - 1; i++) {
-                rowGaps.push(5)
+                rowGaps.push(6)
             }
             this._grid = new GridLayout(this.paraview, {
                 numCols: 2,
-                colGaps: 10,
+                colGaps: [15],
                 rowGaps: rowGaps,
                 colAligns: ['center', "start"],
                 isAutoWidth: true,
@@ -121,7 +120,7 @@ export class Popup extends View {
         this.shiftLabel()
         //I'm not totally sure why, but you have to subtract the height of a single line of text at default font size
         //instead of any multiple lines that the label text may have
-        this._grid.y = this._label.y - new Label(this.paraview, {text:"text"}).height
+        this._grid.y = this._label.y - new Label(this.paraview, { text: "text" }).height
         this._grid.x = this._label.x - this._label.width / 2
         views.forEach(v => this._grid.append(v));
         this.append(this._grid)
@@ -192,24 +191,24 @@ export class Popup extends View {
 
     generateBox(options: PopupShapeOptions) {
         let boxType = options.shape ?? "box"
-        let label = this._grid
-        let y = label.bottom
-        let x = this._grid.x + this._label.width / 2
-        let width = label.width
-        let height = label.height
+        let grid = this._grid
+        let y = grid.bottom
+        let x = grid.x
+        let width = grid.width
+        let height = grid.height
         if (boxType === "boxWithArrow") {
             if (this.arrowPosition == "bottom") {
                 let shape = new PopupPathShape(this.paraview, {
-                    points: [new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding),
-                    new Vec2(x - width / 2 - this.leftPadding, y + this.downPadding),
+                    points: [new Vec2(x - this.leftPadding, y - height - this.upPadding),
+                    new Vec2(x - this.leftPadding, y + this.downPadding),
 
-                    new Vec2(x - Math.min(width / 4, 15) + this.horizShift, y + this.downPadding),
-                    new Vec2(x + this.horizShift, y + this.downPadding + 10),
-                    new Vec2(x + Math.min(width / 4, 15) + this.horizShift, y + this.downPadding),
+                    new Vec2(x + width / 2 - Math.min(width / 4, 15) + this.horizShift, y + this.downPadding),
+                    new Vec2(x + width / 2 + this.horizShift, y + this.downPadding + BOX_ARROW_HEIGHT),
+                    new Vec2(x + width / 2 + Math.min(width / 4, 15) + this.horizShift, y + this.downPadding),
 
-                    new Vec2(x + width / 2 + this.rightPadding, y + this.downPadding),
-                    new Vec2(x + width / 2 + this.rightPadding, y - height - this.upPadding),
-                    new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding)],
+                    new Vec2(x + width + this.rightPadding, y + this.downPadding),
+                    new Vec2(x + width + this.rightPadding, y - height - this.upPadding),
+                    new Vec2(x - this.leftPadding, y - height - this.upPadding)],
                     fill: options.fill,
                     stroke: options.stroke,
                     shape: "boxWithArrow",
@@ -219,16 +218,16 @@ export class Popup extends View {
             }
             else {
                 let shape = new PopupPathShape(this.paraview, {
-                    points: [new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding),
-                    new Vec2(x - width / 2 - this.leftPadding, y + this.downPadding),
-                    new Vec2(x + width / 2 + this.rightPadding, y + this.downPadding),
-                    new Vec2(x + width / 2 + this.rightPadding, y - height - this.upPadding),
+                    points: [new Vec2(x - this.leftPadding, y - height - this.upPadding),
+                    new Vec2(x - this.leftPadding, y + this.downPadding),
+                    new Vec2(x + width + this.rightPadding, y + this.downPadding),
+                    new Vec2(x + width + this.rightPadding, y - height - this.upPadding),
 
-                    new Vec2(x + Math.min(width / 4, 15) + this.horizShift, y - height - this.upPadding),
-                    new Vec2(x + this.horizShift, y - height - this.upPadding - 10),
-                    new Vec2(x - Math.min(width / 4, 15) + this.horizShift, y - height - this.upPadding),
+                    new Vec2(x + width / 2 + Math.min(width / 4, 15) + this.horizShift, y - height - this.upPadding),
+                    new Vec2(x + width / 2 + this.horizShift, y - height - this.upPadding - BOX_ARROW_HEIGHT),
+                    new Vec2(x + width / 2 + - Math.min(width / 4, 15) + this.horizShift, y - height - this.upPadding),
 
-                    new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding)],
+                    new Vec2(x - this.leftPadding, y - height - this.upPadding)],
                     fill: options.fill,
                     stroke: options.stroke,
                     shape: "boxWithArrow",
@@ -239,11 +238,11 @@ export class Popup extends View {
         }
         else {
             let shape = new PopupPathShape(this.paraview, {
-                points: [new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding),
-                new Vec2(x - width / 2 - this.leftPadding, y + this.downPadding),
-                new Vec2(x + width / 2 + this.rightPadding, y + this.downPadding),
-                new Vec2(x + width / 2 + this.rightPadding, y - height - this.upPadding),
-                new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding)],
+                points: [new Vec2(x - this.leftPadding, y - height - this.upPadding),
+                new Vec2(x - this.leftPadding, y + this.downPadding),
+                new Vec2(x + width + this.rightPadding, y + this.downPadding),
+                new Vec2(x + width + this.rightPadding, y - height - this.upPadding),
+                new Vec2(x - this.leftPadding, y - height - this.upPadding)],
                 fill: options.fill,
                 stroke: options.stroke,
                 shape: "box"
