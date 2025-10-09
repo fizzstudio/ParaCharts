@@ -13,6 +13,7 @@ export interface ShapeOptions {
   y?: number;
   fill?: string;
   stroke?: string; // black
+  opacity?: number;
   strokeWidth?: number; // 2,
   scale?: number;
   isPattern?: boolean;
@@ -42,6 +43,9 @@ export abstract class Shape extends View {
     if (options.fill) {
       this._styleInfo.fill = options.fill;
     }
+    if (options.opacity !== undefined) {
+      this._styleInfo.opacity = options.opacity;
+    }
     this._isClip = !!options.isClip;
   }
 
@@ -51,6 +55,7 @@ export abstract class Shape extends View {
       y: this._y,
       fill: this._styleInfo.fill as string | undefined,
       stroke: this._styleInfo.stroke as string | undefined,
+      opacity: this._styleInfo.opacity as number | undefined,
       strokeWidth: this._styleInfo.strokeWidth as number | undefined,
       scale: this._scale,
       isClip: this._isClip

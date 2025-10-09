@@ -60,9 +60,10 @@ export class PlotLayerManager extends View {
   protected _logicalHeight!: number;
 
   protected _orientation!: CardinalDirection;
+  protected _backgroundHighlightsLayer!: HighlightsLayer;
   protected _backgroundAnnotationLayer!: AnnotationLayer;
   protected _dataLayers!: DataLayer[];
-  protected _highlightsLayer!: HighlightsLayer;
+  protected _foregroundHighlightsLayer!: HighlightsLayer;
   protected _selectionLayer!: SelectionLayer;
   protected _foregroundAnnotationLayer!: AnnotationLayer;
   protected _focusLayer!: FocusLayer;
@@ -90,11 +91,13 @@ export class PlotLayerManager extends View {
   }
 
   createLayers() {
+    this._backgroundHighlightsLayer = new HighlightsLayer(this.paraview, this._width, this._height, 'background');
+    this.append(this._backgroundHighlightsLayer);
     this._backgroundAnnotationLayer = new AnnotationLayer(this.paraview, this._width, this._height, 'background');
     this.append(this._backgroundAnnotationLayer);
     this.createDataLayers();
-    this._highlightsLayer = new HighlightsLayer(this.paraview, this._width, this._height);
-    this.append(this._highlightsLayer);
+    this._foregroundHighlightsLayer = new HighlightsLayer(this.paraview, this._width, this._height, 'foreground');
+    this.append(this._foregroundHighlightsLayer);
     this._foregroundAnnotationLayer = new AnnotationLayer(this.paraview, this._width, this._height, 'foreground');
     this.append(this._foregroundAnnotationLayer);
     this._selectionLayer = new SelectionLayer(this.paraview, this._width, this._height);
@@ -165,6 +168,10 @@ export class PlotLayerManager extends View {
     return this._orientation;
   }
 
+  get backgroundHighlightsLayer() {
+    return this._backgroundHighlightsLayer;
+  }
+
   get backgroundAnnotationLayer() {
     return this._backgroundAnnotationLayer;
   }
@@ -173,8 +180,8 @@ export class PlotLayerManager extends View {
     return this._dataLayers[0];
   }
 
-  get highlightsLayer() {
-    return this._highlightsLayer;
+  get foregroundHighlightsLayer() {
+    return this._foregroundHighlightsLayer;
   }
 
   get foregroundAnnotationLayer() {
@@ -248,9 +255,10 @@ export class PlotLayerManager extends View {
           width=${this._logicalWidth}
           height=${this._logicalHeight}
         />
+        ${this._backgroundHighlightsLayer.render()}
         ${this._backgroundAnnotationLayer.render()}
         ${this._dataLayers.map(layer => layer.render())}
-        ${this._highlightsLayer.render()}
+        ${this._foregroundHighlightsLayer.render()}
         ${this._foregroundAnnotationLayer.render()}
         ${this._selectionLayer.render()}
         ${this._focusLayer.render()}

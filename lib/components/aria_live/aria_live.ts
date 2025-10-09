@@ -13,7 +13,7 @@ import { HighlightReaderBridge } from './highlightreaderbridge';
 @customElement('para-aria-live-region')
 export class AriaLive extends ParaComponent {
 
-  @property({type: Object}) announcement: Announcement = { text: '', html: '', highlights: [] };
+  @property({type: Object}) announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0 };
 
   protected _srb!: HighlightReaderBridge;
   protected _voicing!: Voicing;
@@ -75,7 +75,7 @@ export class AriaLive extends ParaComponent {
         if (msg
           && this._store.settings.ui.isVoicingEnabled
           && this._store.settings.ui.isAnnouncementEnabled) {
-          this._voicing.speak(msg, JSON.parse(highlights!));
+          this._voicing.speak(msg, JSON.parse(highlights!), this.announcement.startFrom);
         }
       })
     });
