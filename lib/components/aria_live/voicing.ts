@@ -37,9 +37,11 @@ export class Voicing {
       this._utterance.onboundary = (event: SpeechSynthesisEvent) => {
         const highlight = getHighlight(event.charIndex);
         if (!highlight) return;
-        this._store.highlight(highlight.id);
+        if (highlight.navcode !== undefined) {
+          this._store.highlight(highlight.navcode);
+        }
         for (const span of spans) {
-          if (span.dataset.navcode === `${highlight.id}`) {
+          if (span.dataset.phrasecode === `${highlight.phrasecode}`) {
             span.classList.add('highlight');
             lastSpans.add(span);
           } else {
@@ -47,7 +49,7 @@ export class Voicing {
             lastSpans.delete(span);
           }
         }
-        console.log('highlight point ', highlight.id, ' at ', event.charIndex);
+        console.log('highlight point ', highlight.phrasecode, ' at ', event.charIndex);
       };
       this._utterance.onend = (event: SpeechSynthesisEvent) => {
         for (const span of lastSpans) {
