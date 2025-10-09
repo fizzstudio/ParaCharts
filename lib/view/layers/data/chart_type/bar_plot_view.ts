@@ -459,9 +459,10 @@ export class Bar extends PlaneDatapointView {
 
   
   addPopup(text?: string) {
+    let datapointText = `${this.seriesKey} ${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
     let popup = new Popup(this.paraview,
       {
-        text: text ?? this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
+        text: text ?? datapointText,
         x: this.x + this.width / 2,
         y: this.y,
         textAnchor: "middle",
@@ -469,17 +470,7 @@ export class Bar extends PlaneDatapointView {
         id: this.id,
         color: this.color
       },
-      {
-        shape: "boxWithArrow",
-        fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)" 
-        : this.paraview.store.settings.popup.backgroundColor === "light" ? 
-        this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.color), 6)
-        : this.paraview.store.colors.colorValueAt(this.color), 
-        stroke: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)" 
-        : this.paraview.store.settings.popup.backgroundColor === "light" ? 
-        this.paraview.store.colors.colorValueAt(this.color)
-        : "black",  
-      })
+      {})
     this.paraview.store.popups.push(popup)
   }
 

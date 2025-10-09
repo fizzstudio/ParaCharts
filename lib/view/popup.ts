@@ -55,14 +55,10 @@ export class Popup extends View {
 
     constructor(paraview: ParaView, private popupLabelOptions: PopupLabelOptions, private popupShapeOptions: PopupShapeOptions) {
         super(paraview);
-        if (this.popupLabelOptions.y) {
-            this.popupLabelOptions.y -= this.margin
-        }
-        if (!this.popupLabelOptions.wrapWidth) {
-            this.popupLabelOptions.wrapWidth = this.paraview.store.settings.popup.maxWidth
-        }
+        this.applyDefaults()
+
         this._label = new Label(this.paraview, this.popupLabelOptions)
-        this.shiftLabel()
+
         if (this.paraview.store.settings.popup.backgroundColor === "dark") {
             this._label.styleInfo = {
                 stroke: 'none',
@@ -77,57 +73,38 @@ export class Popup extends View {
             };
         }
 
-        if (this.popupShapeOptions.fill && !this.paraview.store.settings.ui.isLowVisionModeEnabled) {
-            this.popupShapeOptions.fill = `${this.popupShapeOptions.fill.slice(0, -1)}, ${this.paraview.store.settings.popup.opacity})`
-        }
-        if (!this.popupShapeOptions.shape) {
-            this.popupShapeOptions.shape = this.paraview.store.settings.popup.shape
-        }
-        this._box = this.generateBox(popupShapeOptions)
-
-
-
         let views = []
         if (popupLabelOptions.type === "chord") {
+            let rowGaps = []
+            for (let i = 0; i < this.popupLabelOptions.items!.length - 1; i++) {
+                rowGaps.push(5)
+            }
             this._grid = new GridLayout(this.paraview, {
                 numCols: 2,
                 colGaps: 10,
-                colAligns: ['center'],
+                rowGaps: rowGaps,
+                colAligns: ['center', "start"],
                 isAutoWidth: true,
                 isAutoHeight: true
             }, 'popup-grid');
             this.popupLabelOptions.items!.forEach((item, i) => {
-                //console.log("item", item)
                 views.push(DataSymbol.fromType(
                     this.paraview,
                     this.paraview.store.settings.chart.isDrawSymbols
                         ? (item.symbol ?? 'square.solid')
                         : 'square.solid',
                     {
-                        color: item.color,
-                        pointerEnter: (e) => {
-                            this.paraview.store.soloSeries = item.label;
-                        },
-                        pointerLeave: (e) => {
-                            this.paraview.store.soloSeries = '';
-                        }
+                        color: item.color
                     }
                 ));
                 const text = popupLabelOptions.text;
                 const lines = text.split(/\r?\n|\r/);
-                //console.log(lines);
                 views.push(new Label(this.paraview, {
                     text: lines[i],
                     x: 0,
                     y: 0,
-                    textAnchor: 'start',
-                    classList: ['legend-label'],
-                    pointerEnter: (e) => {
-                        this.paraview.store.soloSeries = item.label;
-                    },
-                    pointerLeave: (e) => {
-                        this.paraview.store.soloSeries = '';
-                    }
+                    wrapWidth: this.popupLabelOptions.wrapWidth,
+                    textAnchor: 'start'
                 }));
             });
 
@@ -135,25 +112,59 @@ export class Popup extends View {
         else {
             this._grid = new GridLayout(this.paraview, {
                 numCols: 1,
-                colAligns: ['center'],
+                colAligns: ['start'],
                 isAutoWidth: true,
                 isAutoHeight: true
             }, 'popup-grid');
             views.push(this._label)
         }
-
-
-        const x = this._label.x
-        const y = this._label.y
-        const height = this.label.height
-        this.append(this._box)
-        //this._grid.append(this._label)
+        this.shiftLabel()
+        //I'm not totally sure why, but you have to subtract the height of a single line of text at default font size
+        //instead of any multiple lines that the label text may have
+        this._grid.y = this._label.y - new Label(this.paraview, {text:"text"}).height
+        this._grid.x = this._label.x - this._label.width / 2
         views.forEach(v => this._grid.append(v));
         this.append(this._grid)
-        this._grid.y = y - 15
-        this._grid.x = x - this._label.width / 2
+        this._box = this.generateBox(popupShapeOptions)
+        this.append(this._box)
+
+        //The box generation relies on the grid having set dimensions, which happens during append()
+        //but we also need the box to render behind the grid
+        this._children.unshift(this._box);
+        this._children.pop();
+
         if (popupLabelOptions.id) {
             this.id = popupLabelOptions.id;
+        }
+    }
+
+    applyDefaults() {
+        if (!this.popupLabelOptions.color) {
+            this.popupLabelOptions.color = 0
+        }
+        if (this.popupLabelOptions.y) {
+            this.popupLabelOptions.y -= this.margin
+        }
+        if (!this.popupLabelOptions.wrapWidth) {
+            this.popupLabelOptions.wrapWidth = this.paraview.store.settings.popup.maxWidth
+        }
+        if (!this.popupShapeOptions.fill) {
+            this.popupShapeOptions.fill = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+                : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                    this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color), 6)
+                    : this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color)
+        }
+        if (!this.popupShapeOptions.stroke) {
+            this.popupShapeOptions.stroke = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+                : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                    this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color)
+                    : "black"
+        }
+        if (!this.paraview.store.settings.ui.isLowVisionModeEnabled) {
+            this.popupShapeOptions.fill = `${this.popupShapeOptions.fill.slice(0, -1)}, ${this.paraview.store.settings.popup.opacity})`
+        }
+        if (!this.popupShapeOptions.shape) {
+            this.popupShapeOptions.shape = this.paraview.store.settings.popup.shape
         }
     }
 
@@ -181,9 +192,9 @@ export class Popup extends View {
 
     generateBox(options: PopupShapeOptions) {
         let boxType = options.shape ?? "box"
-        let label = this.label
+        let label = this._grid
         let y = label.bottom
-        let x = label.x
+        let x = this._grid.x + this._label.width / 2
         let width = label.width
         let height = label.height
         if (boxType === "boxWithArrow") {

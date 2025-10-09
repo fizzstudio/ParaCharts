@@ -97,16 +97,17 @@ export class PieSlice extends RadialSlice {
     });
   }
 
-  addPopup() {
+  addPopup(text?: string) {
     if (this.paraview.store.popups.some(p => p.id == this.id)){
       return
     }
     let angle = 2 * Math.PI - ((this._params.accum * 2 * Math.PI) + (this._params.percentage * Math.PI) - (this.chart.settings.orientationAngleOffset * 2 * Math.PI / 360))
     let x = this.x + this.chart.radius * (1 - this.chart.settings.annularThickness / 2) * Math.cos(angle)
     let y = this.y - this.chart.radius * (1 - this.chart.settings.annularThickness / 2) * Math.sin(angle)
+    let datapointText = `${this.seriesKey} ${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
     let popup = new Popup(this.paraview,
       {
-        text: this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
+        text: text ?? datapointText,
         x: x,
         y: y,
         textAnchor: "middle",

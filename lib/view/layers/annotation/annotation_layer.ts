@@ -13,6 +13,51 @@ import { formatBox } from '@fizz/parasummary';
 import { SequenceNavNodeOptions, SeriesNavNodeOptions } from '../data';
 
 export type AnnotationType = 'foreground' | 'background';
+export const trendTranslation = {
+  /** A single rising sequence */
+  "Rise": "Rising",
+  /** A single falling sequence */
+  "Fall": "Falling",
+  /** A single stable sequence */
+  "Stable": "Stable",
+  /** A single sequence that shows a large, rapid increase in value */
+  "BigJump": "Big Jump",
+  /** A single sequence that shows a large, rapid decrease in value */
+  "BigFall": "Big Fall",
+  /** A falling sequence followed by a rising sequence */
+  "ReversalToRise": "Reversal to Rising",
+  /** A rising sequence followed by a falling sequence */
+  "ReversalToFall": "Reversal to Falling",
+  /** A stable sequence followed by a rising sequence */
+  "EmergingRise": "Emerging Rising",
+  /** A stable sequence followed by a falling sequence */
+  "EmergingFall": "Emerging Falling",
+  /** A rising sequence followed by a stable sequence */
+  "RiseToStable": "Rising to Stable",
+  /** A falling sequence followed by a stable sequence */
+  "FallToStable": "Falling to Stable",
+  /** A rising sequence followed by a falling sequence and another rising sequence */
+  "Rebound": "Rebounding",
+  /** A falling sequence followed by a rising sequence and another falling sequence */
+  "TemporaryJump": "Temporary Jump",
+  /** A falling sequence followed by a short rising sequence at the end of the chart */
+  "PossibleReversalToRise": "Possible Reversal to Rising",
+  /** A rising sequence followed by a short falling sequence at the end of the chart */
+  "PossibleReversalToFall": "Possible Reversal to Falling",
+  /** A stable sequence followed by a short rising sequence at the end of the chart */
+  "PossibleEmergingRise": "Possible Emerging Rising",
+  /** A stable sequence followed by a short falling sequence at the end of the chart */
+  "PossibleEmergingFall": "Possible Emerging Falling",
+  /** A rising sequence followed by a short stable sequence at the end of the chart */
+  "PossibleRiseToStable": "Possible Rising to Stable",
+  /** A falling sequence followed by a short stable sequence at the end of the chart */
+  "PossibleFallToStable": "Possible Falling to Stable",
+  /** A rising sequence followed by a falling sequence and another short rising sequence at the end of the chart */
+  "PossibleRebound": "Possible Rebounding",
+  /** A falling sequence followed by a rising sequence and another short falling sequence at the end of the chart */
+  "PossibleTemporaryJump": "Possible Temporary Jump"
+}
+
 
 export class AnnotationLayer extends PlotLayer {
   protected _groups = new Map<string, DecorationGroup>();
@@ -187,9 +232,8 @@ export class AnnotationLayer extends PlotLayer {
               },
               {
                 fill: "hsl(0, 0%, 100%)"
-                  ,
+                ,
                 stroke: "hsl(0, 0%, 0%)"
-                  
               })
             popup.classInfo = { 'popup': true }
             this.group('datapoint-popups')!.append(popup);
@@ -218,12 +262,17 @@ export class AnnotationLayer extends PlotLayer {
             const labels = this.paraview.store.model!.series[0].datapoints.map(
               (p) => formatBox(p.facetBox('x')!, this.paraview.store.getFormatType('horizTick'))
             );
-            const points = this.paraview.store.model!.series[this.paraview.store.model!.seriesKeys.indexOf(firstDP.seriesKey)].datapoints
+            const points = this.paraview.store.model!.series.find(s => s.key === (cursor.options as SequenceNavNodeOptions).seriesKey)!.datapoints
             let text = ''
-
-            text = text.concat(`Trend: ${seriesAnalysis?.sequences[index].message}`)
-            text = text.concat(`\nChange: ${parseFloat((points[seriesAnalysis.sequences[index].end - 1].facetValueAsNumber("y")!
-              - points[seriesAnalysis.sequences[index].start].facetValueAsNumber("y")!).toFixed(4))}`)
+            if (seriesAnalysis.sequences[index].message == null) {
+              text = text.concat(`No trend detected`)
+            }
+            else {
+              text = text.concat(`${trendTranslation[seriesAnalysis.sequences[index].message!]} trend`)
+            }
+            const changeVal = parseFloat((points[seriesAnalysis.sequences[index].end - 1].facetValueAsNumber("y")!
+              - points[seriesAnalysis.sequences[index].start].facetValueAsNumber("y")!).toFixed(4))
+            text = text.concat(`\n${changeVal > 0 ? '+' : ''}${changeVal}`)
             text = text.concat(`\n${labels[seriesAnalysis.sequences[index].start]}-${labels[seriesAnalysis.sequences[index].end - 1]}`)
             text = text.concat(`\n${seriesAnalysis.sequences[index].end - seriesAnalysis.sequences[index].start} records`)
 
@@ -239,14 +288,6 @@ export class AnnotationLayer extends PlotLayer {
                 margin: 60
               },
               {
-                fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
-                  : this.paraview.store.settings.popup.backgroundColor === "light" ?
-                    this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(firstDPView.color), 6)
-                    : this.paraview.store.colors.colorValueAt(firstDPView.color),
-                stroke: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
-                  : this.paraview.store.settings.popup.backgroundColor === "light" ?
-                    this.paraview.store.colors.colorValueAt(firstDPView.color)
-                    : "black",
               })
             popup.classInfo = { 'popup': true }
             this.group('datapoint-popups')!.append(popup);
@@ -274,15 +315,19 @@ export class AnnotationLayer extends PlotLayer {
             const labels = this.paraview.store.model!.series[0].datapoints.map(
               (p) => formatBox(p.facetBox('x')!, this.paraview.store.getFormatType('horizTick'))
             );
-            const points = this.paraview.store.model!.series[cursor.index].datapoints
+            const points = this.paraview.store.model!.series.find(s => s.key === (cursor.options as SeriesNavNodeOptions).seriesKey)!.datapoints
             let text = ''
 
             text = text.concat(`${(cursor.options as SeriesNavNodeOptions).seriesKey}`)
-            if (seriesAnalysis?.message) {
-              text = text.concat(`\nTrend: ${seriesAnalysis?.message}`)
+            if (seriesAnalysis?.message == null) {
+              text = text.concat(`\nNo trend detected`)
             }
-            text = text.concat(`\nChange: ${parseFloat((points[points.length - 1].facetValueAsNumber("y")!
-              - points[0].facetValueAsNumber("y")!).toFixed(4))}`)
+            else {
+              text = text.concat(`\n${trendTranslation[seriesAnalysis?.message!]} trend`)
+            }
+            let changeVal = parseFloat((points[points.length - 1].facetValueAsNumber("y")!
+              - points[0].facetValueAsNumber("y")!).toFixed(4))
+            text = text.concat(`\n${changeVal > 0 ? '+' : ''}${changeVal}`)
             text = text.concat(`\n${labels[0]}-${labels[points.length - 1]}`)
             text = text.concat(`\n${points.length} records`)
 
@@ -297,16 +342,7 @@ export class AnnotationLayer extends PlotLayer {
                 color: firstDPView.color,
                 margin: 60
               },
-              {
-                fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
-                  : this.paraview.store.settings.popup.backgroundColor === "light" ?
-                    this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(firstDPView.color), 6)
-                    : this.paraview.store.colors.colorValueAt(firstDPView.color),
-                stroke: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
-                  : this.paraview.store.settings.popup.backgroundColor === "light" ?
-                    this.paraview.store.colors.colorValueAt(firstDPView.color)
-                    : "black",
-              })
+              {})
             popup.classInfo = { 'popup': true }
             this.group('datapoint-popups')!.append(popup);
           }
