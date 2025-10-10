@@ -34,7 +34,8 @@ import {
   PlaneModel,
   Datapoint
 } from '@fizz/paramodel';
-import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
+import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY,
+  HighlightedSummary, Highlight } from '@fizz/parasummary';
 
 import {
   DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
@@ -60,7 +61,10 @@ export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 // distinct, even if the text is the same
 export interface Announcement {
   text: string;
+  html: string;
+  highlights: Highlight[];
   clear?: boolean;
+  startFrom: number;
 }
 
 export type SettingObserver = (oldValue?: Setting, newValue?: Setting) => void;
@@ -132,7 +136,7 @@ export class ParaStore extends State {
   @property() dataState: DataState = 'initial';
   @property() settings: Settings;
   @property() darkMode = false;
-  @property() announcement: Announcement = { text: '' };
+  @property() announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0 };
   @property() annotations: BaseAnnotation[] = [];
   @property() popups: Popup[] = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
@@ -169,8 +173,6 @@ export class ParaStore extends State {
   protected _seriesProperties: SeriesPropertyManager | null = null;
   protected _colors: Colors;
   protected _keymapManager = new KeymapManager(keymap);
-  protected _prependAnnouncements: string[] = [];
-  protected _appendAnnouncements: string[] = [];
   protected _summarizer!: Summarizer;
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
@@ -387,52 +389,38 @@ export class ParaStore extends State {
     }
   }
 
-  prependAnnouncement(msg: string) {
-    this._prependAnnouncements.push(msg);
-  }
-
-  appendAnnouncement(msg: string) {
-    this._appendAnnouncements.push(msg);
-  }
-
-  announce(msg: string | string[], clearAriaLive = false) {
+  announce(
+    msg: string | string[] | HighlightedSummary,
+    clearAriaLive = false,
+    startFrom = 0
+  ): void {
     /*
     This sends an announcement to the Status Bar.
     If the `msg` argument is an array, it joins the strings together with a
     line-break, for clarity of reading.
-    Sometimes you may wish to prepend the next announcement with a message
-    (e.g. for navigation orientation); in this case, you call `prependAnnouncement`
-    with this message _before_ you call `announce`.
-    Sometimes you may also wish to append a message after the next announcement
-    (e.g. instructions on using the app); in this case, you call
-    `appendAnnouncement` with this message _before_ you call `announce`.
     */
 
     let announcement = '';
+    let html = '';
     const linebreak = '\r\n';  // TODO: add option-based flags to enable or disable?
+    let highlights: Highlight[] = [];
 
-    if (this._prependAnnouncements.length) {
-      const prependStr = this._joinStrArray(this._prependAnnouncements, linebreak);
-      announcement += prependStr ? `${prependStr} ${linebreak}` : '';
-      this._prependAnnouncements = [];
-    }
-
-    announcement += (typeof msg === 'string') ? msg : this._joinStrArray(msg, linebreak);
-    if (this._appendAnnouncements.length) {
-      const appendStr = this._joinStrArray(this._appendAnnouncements, linebreak);
-      announcement += appendStr ? `${linebreak} ${appendStr}` : '';
-      this._appendAnnouncements = [];
+    if (typeof msg === 'string') {
+      announcement = msg;
+      html = msg;
+    } else if (Array.isArray(msg)) {
+      announcement = this._joinStrArray(msg, linebreak);
+      html = announcement;
+    } else {
+      announcement = msg.text;
+      html = msg.html;
+      highlights = msg.highlights ?? [];
     }
 
     if (this.settings.ui.isAnnouncementEnabled) {
-      this.announcement = { text: announcement, clear: clearAriaLive };
+      this.announcement = { text: announcement, html, highlights, clear: clearAriaLive, startFrom };
       console.log('ANNOUNCE:', this.announcement.text);
     }
-  }
-
-  public async asyncAnnounce(msgPromise: Promise<string | string[]>): Promise<void> {
-    const msg = await msgPromise;
-    this.announce(msg);
   }
 
   protected _joinStrArray(strArray: string[], linebreak?: string) : string {
@@ -526,6 +514,10 @@ export class ParaStore extends State {
 
   highlight(selector: string) {
     this._highlightedSelector = selector;
+  }
+
+  clearHighlight() {
+    this._highlightedSelector = '';
   }
 
   get selectedDatapoints() {

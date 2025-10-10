@@ -32,19 +32,28 @@ export interface AvailableActions {
   shutUp(): void;
   repeatLastAnnouncement(): void;
   addAnnotation(): void;
+  narrativeHighlightModeStart(): void;
+  narrativeHighlightModeEnd(): void;
 }
 
+type ActionMap = { [Property in keyof AvailableActions]: (() => void | Promise<void>) };
 
-export class HotkeyActions {
+export abstract class HotkeyActions {
+  protected _actions!: Partial<ActionMap>;
 
-  public readonly actions: { [Property in keyof AvailableActions]: (() => void | Promise<void>) };
+  get actions() {
+    return this._actions;
+  }
+}
 
+export class NormalHotkeyActions extends HotkeyActions {
   constructor(paraView: ParaView) {
+    super();
     const store = paraView.store;
-    // Always return the current data layer (i.e., don't let the
+    // Always return the current chart info object (i.e., don't let the
     // actions close over a value that might be removed)
     const chart = () => paraView.documentView!.chartInfo;
-    this.actions = {
+    this._actions = {
       async moveRight() {
         chart().clearPlay();
         chart().move('right');
@@ -168,15 +177,81 @@ export class HotkeyActions {
         chart().navToChordLanding();
       },
       shutUp() {
-        // paraView.paraChart.controlPanel.descriptionPanel.ariaLiveRegion.voicing.shutUp();
         paraView.paraChart.ariaLiveRegion.voicing.shutUp();
       },
       repeatLastAnnouncement() {
-        // paraView.paraChart.controlPanel.descriptionPanel.ariaLiveRegion.replay();
         paraView.paraChart.ariaLiveRegion.replay();
       },
       addAnnotation() {
         store.addAnnotation();
+      },
+      narrativeHighlightModeStart() {
+        paraView.startNarrativeHighlightMode();
+      },
+    };
+  }
+
+}
+
+export class NarrativeHighlightHotkeyActions extends HotkeyActions {
+  constructor(paraView: ParaView) {
+    super();
+    const store = paraView.store;
+    const chart = () => paraView.documentView!.chartInfo;
+    this._actions = {
+      async moveRight() {
+        // paraView.paraChart.ariaLiveRegion.voicing.shutUp();
+        // store.announce(
+        //   store.announcement, undefined,
+        //   paraView.paraChart.ariaLiveRegion.voicing.highlightIndex + 1);
+      },
+      async moveLeft() {
+      },
+      async moveUp() {
+      },
+      async moveDown() {
+      },
+      goFirst() {
+      },
+      goLast() {
+      },
+      voicingModeToggle() {
+        if (store.settings.ui.isVoicingEnabled) {
+          store.updateSettings(draft => {
+            draft.ui.isVoicingEnabled = false;
+          });
+        } else {
+          store.updateSettings(draft => {
+            draft.ui.isVoicingEnabled = true;
+          });
+        }
+      },
+      darkModeToggle() {
+        store.updateSettings(draft => {
+          draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
+          store.announce(
+            `Dark mode ${draft.color.isDarkModeEnabled ? 'enabled' : 'disabled'}`);
+        });
+      },
+      lowVisionModeToggle() {
+        store.updateSettings(draft => {
+          draft.ui.isLowVisionModeEnabled = !draft.ui.isLowVisionModeEnabled;
+        });
+      },
+      openHelp() {
+        paraView.paraChart.controlPanel.showHelpDialog();
+      },
+      shutUp() {
+        paraView.paraChart.ariaLiveRegion.voicing.shutUp();
+      },
+      repeatLastAnnouncement() {
+        paraView.paraChart.ariaLiveRegion.replay();
+      },
+      narrativeHighlightModeStart() {
+        paraView.paraChart.ariaLiveRegion.voicing.togglePaused();
+      },
+      narrativeHighlightModeEnd() {
+        paraView.endNarrativeHighlightMode();
       }
     };
   }
