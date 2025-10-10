@@ -105,6 +105,10 @@ export abstract class BaseChartInfo extends Logger {
       : new PlaneChartSummarizer(this._store.model as PlaneModel);
   }
 
+  get summarizer() {
+    return this._summarizer;
+  }
+
   get managedSettingKeys() {
     return [`type.${this._type}`];
   }
@@ -126,10 +130,6 @@ export abstract class BaseChartInfo extends Logger {
     return this._axisInfo;
   }
 
-  get summarizer() {
-    return this._summarizer
-  }
-
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
   }
 
@@ -145,12 +145,31 @@ export abstract class BaseChartInfo extends Logger {
     root.cursor = chartLandingNode;
   }
 
+  didAddHighlight(navcode: string) {
+    console.log('DID ADD HIGHLIGHT', navcode);
+  }
+
+  didRemoveHighlight(navcode: string) {
+    console.log('DID REMOVE HIGHLIGHT', navcode);
+  }
+
   legend(): LegendItem[] {
     return [];
   }
 
+  popuplegend() {
+    //const seriesKeys = [...this._store.model!.seriesKeys];
+    const seriesInNavOrder = this.seriesInNavOrder().map(s => s.key)
+    return seriesInNavOrder.map((key, i) => (
+      {
+        label: '',
+        color: this._store.seriesProperties!.properties(key).color,
+        symbol: this._store.seriesProperties!.properties(key).symbol,
+      }));
+  }
+
   navToDatapoint(seriesKey: string, index: number) {
-    this._navMap!.goTo(this.navDatapointType, {seriesKey, index});
+    this._navMap!.goTo(this.navDatapointType, { seriesKey, index });
   }
 
   async move(dir: Direction) {
@@ -166,9 +185,9 @@ export abstract class BaseChartInfo extends Logger {
     if (node.isNodeType('top') || node.isNodeType('chord')) {
       this.goChartMinMax(isMin);
     } else if (node.isNodeType(this.navDatapointType)
-        || node.isNodeType('series')
-        || node.isNodeType('sequence')
-        || node.isNodeType('cluster')) {
+      || node.isNodeType('series')
+      || node.isNodeType('sequence')
+      || node.isNodeType('cluster')) {
       let datapoint: Datapoint | null = null;
 
       const seriesKey = node.options.seriesKey;
@@ -219,7 +238,7 @@ export abstract class BaseChartInfo extends Logger {
     // This method assumes only a single point was visited when the select
     // command was issued (i.e., we know nothing about chord mode here)
     const seriesAndVal = (datapointId: string) => {
-      const {seriesKey, index} = datapointIdToCursor(datapointId);
+      const { seriesKey, index } = datapointIdToCursor(datapointId);
       const dp = this._store.model!.atKeyAndIndex(seriesKey, index)!;
       return `${seriesKey} (${formatBox(dp.facetBox('x')!, this._store.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this._store.getFormatType('statusBar'))})`;
     };
@@ -287,8 +306,8 @@ export abstract class BaseChartInfo extends Logger {
     }
     const announcement =
       this._navMap!.cursor.isNodeType('datapoint') ? this._composePointSelectionAnnouncement(extend) :
-      this._navMap!.cursor.isNodeType('series') ? this._composeSeriesSelectionAnnouncement() :
-      '';
+        this._navMap!.cursor.isNodeType('series') ? this._composeSeriesSelectionAnnouncement() :
+          '';
     if (announcement) {
       this._store.announce(announcement);
     }
@@ -361,7 +380,7 @@ export abstract class BaseChartInfo extends Logger {
   async navRunDidEnd(cursor: NavNode) {
     //const seriesKey = cursor.options.seriesKey ?? '';
     if (cursor.isNodeType('top')) {
-      await this._store.asyncAnnounce(this._summarizer.getChartSummary());
+      this._store.announce(await this._summarizer.getChartSummary());
     } else if (cursor.isNodeType('series')) {
       this._store.announce(
         await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
@@ -378,7 +397,7 @@ export abstract class BaseChartInfo extends Logger {
         announcements[0] = `${cursor.options.seriesKey}: ${announcements[0]}`;
         if (!seriesPreviouslyVisited) {
           const seriesSummary = await this._summarizer.getSeriesSummary(cursor.options.seriesKey);
-          announcements.push(seriesSummary);
+          announcements.push(seriesSummary.text);
         }
       }
       this._store.announce(announcements);
@@ -473,7 +492,7 @@ export abstract class BaseChartInfo extends Logger {
     } else {
       throw new Error('axis must be of type number or date to take interval');
     }
-    return {start: Math.min(...xs), end: Math.max(...xs)};
+    return { start: Math.min(...xs), end: Math.max(...xs) };
   }
 
 

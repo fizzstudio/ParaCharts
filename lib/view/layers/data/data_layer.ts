@@ -159,6 +159,9 @@ export abstract class DataLayer extends PlotLayer {
         this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
       }
     }
+    if (['chart.showPopups'].includes(path)) {
+      this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
+    }
     super.settingDidChange(path, oldValue, newValue);
   }
 

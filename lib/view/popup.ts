@@ -10,8 +10,17 @@ import '@fizz/ui-components';
 import { html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
+import { GridLayout } from "./layout";
+import { DataSymbol, DataSymbolType } from "./symbol";
+import { LegendItem } from "./legend";
 
 export interface PopupLabelOptions extends LabelOptions {
+    color?: number;
+    margin?: number;
+    type?: string;
+
+
+    items?: LegendItem[]
 }
 
 export type ShapeTypes = "box" | "boxWithArrow";
@@ -20,10 +29,12 @@ export interface PopupShapeOptions extends ShapeOptions {
     shape?: ShapeTypes
 }
 
+const BOX_ARROW_HEIGHT = 10
 
 export class Popup extends View {
-    protected label: Label;
-    protected box: PathShape;
+    protected _label: Label;
+    protected _box: PathShape;
+    protected _grid: GridLayout;
     protected leftPadding = this.paraview.store.settings.popup.leftPadding;
     protected rightPadding = this.paraview.store.settings.popup.rightPadding;
     protected downPadding = this.paraview.store.settings.popup.downPadding;
@@ -31,41 +42,128 @@ export class Popup extends View {
     protected horizShift = 0;
     protected arrowPosition: "top" | "bottom" = "bottom";
 
+    get label() {
+        return this._label;
+    }
+
+    get box() {
+        return this._box;
+    }
+
+    get margin() {
+        return this.popupLabelOptions.margin ?? this.paraview.store.settings.popup.margin
+    }
+
     constructor(paraview: ParaView, private popupLabelOptions: PopupLabelOptions, private popupShapeOptions: PopupShapeOptions) {
         super(paraview);
-        if (this.popupLabelOptions.y) {
-            this.popupLabelOptions.y -= this.paraview.store.settings.popup.margin
-        }
-        if (!this.popupLabelOptions.wrapWidth) {
-            this.popupLabelOptions.wrapWidth = this.paraview.store.settings.popup.maxWidth
-        }
-        this.label = new Label(this.paraview, this.popupLabelOptions)
-        this.shiftLabel()
+        this.applyDefaults()
+        this._label = new Label(this.paraview, this.popupLabelOptions)
         if (this.paraview.store.settings.popup.backgroundColor === "dark") {
-            this.label.styleInfo = {
+            this._label.styleInfo = {
                 stroke: 'none',
-                fill: this.paraview.store.colors.contrastValueAt(0)
+                fill: this.popupLabelOptions.type == "chord" ? "black" : this.paraview.store.colors.contrastValueAt(this.popupLabelOptions.color!)
             };
         }
         if (this.paraview.store.settings.ui.isLowVisionModeEnabled) {
-            this.label.styleInfo = {
+            this._label.styleInfo = {
                 stroke: 'none',
                 fill: "black"
             };
         }
 
-        if (this.popupShapeOptions.fill && !this.paraview.store.settings.ui.isLowVisionModeEnabled) {
+        let views = []
+        if (popupLabelOptions.type === "chord") {
+            
+            let rowGaps = []
+            for (let i = 0; i < this.popupLabelOptions.items!.length - 1; i++) {
+                rowGaps.push(6)
+            }
+            this._grid = new GridLayout(this.paraview, {
+                numCols: 2,
+                colGaps: [15],
+                rowGaps: rowGaps,
+                colAligns: ['center', "start"],
+                isAutoWidth: true,
+                isAutoHeight: true
+            }, 'popup-grid');
+            this.popupLabelOptions.items!.forEach((item, i) => {
+                views.push(DataSymbol.fromType(
+                    this.paraview,
+                    this.paraview.store.settings.chart.isDrawSymbols
+                        ? (item.symbol ?? 'square.solid')
+                        : 'square.solid',
+                    {
+                        color: item.color
+                    }
+                ));
+                const text = popupLabelOptions.text;
+                const lines = text.split(/\r?\n|\r/);
+                views.push(new Label(this.paraview, {
+                    text: lines[i],
+                    x: 0,
+                    y: 0,
+                    wrapWidth: this.popupLabelOptions.wrapWidth,
+                    textAnchor: 'start'
+                }));
+            });
+
+        }
+        else {
+            this._grid = new GridLayout(this.paraview, {
+                numCols: 1,
+                colAligns: ['start'],
+                isAutoWidth: true,
+                isAutoHeight: true
+            }, 'popup-grid');
+            views.push(this._label)
+        }
+        this.shiftLabel()
+        //I'm not totally sure why, but you have to subtract the height of a single line of text at default font size
+        //instead of any multiple lines that the label text may have
+        this._grid.y = this._label.y - new Label(this.paraview, { text: "text" }).height
+        this._grid.x = this._label.x - this._label.width / 2
+        views.forEach(v => this._grid.append(v));
+        this.append(this._grid)
+        this._box = this.generateBox(popupShapeOptions)
+        this.append(this._box)
+
+        //The box generation relies on the grid having set dimensions, which happens during append()
+        //but we also need the box to render behind the grid
+        this._children.unshift(this._box);
+        this._children.pop();
+
+        if (popupLabelOptions.id) {
+            this.id = popupLabelOptions.id;
+        }
+    }
+
+    applyDefaults() {
+        if (!this.popupLabelOptions.color) {
+            this.popupLabelOptions.color = 0
+        }
+        if (this.popupLabelOptions.y) {
+            this.popupLabelOptions.y -= this.margin
+        }
+        if (!this.popupLabelOptions.wrapWidth) {
+            this.popupLabelOptions.wrapWidth = this.paraview.store.settings.popup.maxWidth
+        }
+        if (!this.popupShapeOptions.fill) {
+            this.popupShapeOptions.fill = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+                : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                    this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color), 6)
+                    : this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color)
+        }
+        if (!this.popupShapeOptions.stroke) {
+            this.popupShapeOptions.stroke = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+                : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                    this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color)
+                    : "black"
+        }
+        if (!this.paraview.store.settings.ui.isLowVisionModeEnabled) {
             this.popupShapeOptions.fill = `${this.popupShapeOptions.fill.slice(0, -1)}, ${this.paraview.store.settings.popup.opacity})`
         }
         if (!this.popupShapeOptions.shape) {
             this.popupShapeOptions.shape = this.paraview.store.settings.popup.shape
-        }
-        this.box = this.generateBox(popupShapeOptions)
-
-        this.append(this.box)
-        this.append(this.label)
-        if (popupLabelOptions.id) {
-            this.id = popupLabelOptions.id;
         }
     }
 
@@ -73,12 +171,12 @@ export class Popup extends View {
         if (this.label.right + this.rightPadding > this.paraview.documentView!.chartLayers.width) {
             this.popupLabelOptions.x = this.label.x - (this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5)
             this.horizShift = Math.min((this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5), this.label.width / 2 - 5)
-            this.label = new Label(this.paraview, this.popupLabelOptions)
+            this._label = new Label(this.paraview, this.popupLabelOptions)
         }
         if (this.label.left - this.leftPadding < 0) {
             this.popupLabelOptions.x = this.label.x + (this.leftPadding - this.label.left + 5)
             this.horizShift = - Math.min((this.leftPadding - this.label.left + 5), this.label.width / 2 - 5)
-            this.label = new Label(this.paraview, this.popupLabelOptions)
+            this._label = new Label(this.paraview, this.popupLabelOptions)
         }
         //Note shifting the label up away from the datapoint in the event of text wrap
         //has lower priority than shifting it down from the top of the screen
@@ -86,31 +184,31 @@ export class Popup extends View {
             this.label.y += (this.label.y - this.label.bottom)
         }
         if (this.label.top < 0) {
-            this.label.y += (2 * this.paraview.store.settings.popup.margin + this.label.height)
+            this.label.y += (2 * this.margin + this.label.height)
             this.arrowPosition = "top"
         }
     }
 
     generateBox(options: PopupShapeOptions) {
         let boxType = options.shape ?? "box"
-        let label = this.label
-        let y = label.bottom
-        let x = label.x
-        let width = label.width
-        let height = label.height
+        let grid = this._grid
+        let y = grid.bottom
+        let x = grid.x
+        let width = grid.width
+        let height = grid.height
         if (boxType === "boxWithArrow") {
             if (this.arrowPosition == "bottom") {
                 let shape = new PopupPathShape(this.paraview, {
-                    points: [new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding),
-                    new Vec2(x - width / 2 - this.leftPadding, y + this.downPadding),
+                    points: [new Vec2(x - this.leftPadding, y - height - this.upPadding),
+                    new Vec2(x - this.leftPadding, y + this.downPadding),
 
-                    new Vec2(x - Math.min(width / 4, 15) + this.horizShift, y + this.downPadding),
-                    new Vec2(x + this.horizShift, y + this.downPadding + 10),
-                    new Vec2(x + Math.min(width / 4, 15) + this.horizShift, y + this.downPadding),
+                    new Vec2(x + width / 2 - Math.min(width / 4, 15) + this.horizShift, y + this.downPadding),
+                    new Vec2(x + width / 2 + this.horizShift, y + this.downPadding + BOX_ARROW_HEIGHT),
+                    new Vec2(x + width / 2 + Math.min(width / 4, 15) + this.horizShift, y + this.downPadding),
 
-                    new Vec2(x + width / 2 + this.rightPadding, y + this.downPadding),
-                    new Vec2(x + width / 2 + this.rightPadding, y - height - this.upPadding),
-                    new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding)],
+                    new Vec2(x + width + this.rightPadding, y + this.downPadding),
+                    new Vec2(x + width + this.rightPadding, y - height - this.upPadding),
+                    new Vec2(x - this.leftPadding, y - height - this.upPadding)],
                     fill: options.fill,
                     stroke: options.stroke,
                     shape: "boxWithArrow",
@@ -120,16 +218,16 @@ export class Popup extends View {
             }
             else {
                 let shape = new PopupPathShape(this.paraview, {
-                    points: [new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding),
-                    new Vec2(x - width / 2 - this.leftPadding, y + this.downPadding),
-                    new Vec2(x + width / 2 + this.rightPadding, y + this.downPadding),
-                    new Vec2(x + width / 2 + this.rightPadding, y - height - this.upPadding),
+                    points: [new Vec2(x - this.leftPadding, y - height - this.upPadding),
+                    new Vec2(x - this.leftPadding, y + this.downPadding),
+                    new Vec2(x + width + this.rightPadding, y + this.downPadding),
+                    new Vec2(x + width + this.rightPadding, y - height - this.upPadding),
 
-                    new Vec2(x + Math.min(width / 4, 15) + this.horizShift, y - height - this.upPadding),
-                    new Vec2(x + this.horizShift, y - height - this.upPadding - 10),
-                    new Vec2(x - Math.min(width / 4, 15) + this.horizShift, y - height - this.upPadding),
+                    new Vec2(x + width / 2 + Math.min(width / 4, 15) + this.horizShift, y - height - this.upPadding),
+                    new Vec2(x + width / 2 + this.horizShift, y - height - this.upPadding - BOX_ARROW_HEIGHT),
+                    new Vec2(x + width / 2 + - Math.min(width / 4, 15) + this.horizShift, y - height - this.upPadding),
 
-                    new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding)],
+                    new Vec2(x - this.leftPadding, y - height - this.upPadding)],
                     fill: options.fill,
                     stroke: options.stroke,
                     shape: "boxWithArrow",
@@ -140,11 +238,11 @@ export class Popup extends View {
         }
         else {
             let shape = new PopupPathShape(this.paraview, {
-                points: [new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding),
-                new Vec2(x - width / 2 - this.leftPadding, y + this.downPadding),
-                new Vec2(x + width / 2 + this.rightPadding, y + this.downPadding),
-                new Vec2(x + width / 2 + this.rightPadding, y - height - this.upPadding),
-                new Vec2(x - width / 2 - this.leftPadding, y - height - this.upPadding)],
+                points: [new Vec2(x - this.leftPadding, y - height - this.upPadding),
+                new Vec2(x - this.leftPadding, y + this.downPadding),
+                new Vec2(x + width + this.rightPadding, y + this.downPadding),
+                new Vec2(x + width + this.rightPadding, y - height - this.upPadding),
+                new Vec2(x - this.leftPadding, y - height - this.upPadding)],
                 fill: options.fill,
                 stroke: options.stroke,
                 shape: "box"
@@ -360,7 +458,7 @@ export class PopupPathShape extends PathShape {
         }
         const relPoints = this._points.map(p => p.add(this._loc));
         let d = fixed``
-        if (!addCurve[0]) {
+        if (!addCurve[0] || relPoints[0] == relPoints[1]) {
             d += fixed`M${relPoints[0].x},${relPoints[0].y}`;
         }
         else {
@@ -372,7 +470,8 @@ export class PopupPathShape extends PathShape {
         }
         for (let i = 1; i < relPoints.length; i++) {
             let p = relPoints[i % relPoints.length]
-            if (!addCurve[i % relPoints.length]) {
+            //console.log(((relPoints[i].x == relPoints[(i+1) % relPoints.length].x && relPoints[i].y == relPoints[(i+1) % relPoints.length].y) && i !== relPoints.length - 1))
+            if (!addCurve[i % relPoints.length] || ((relPoints[i].x == relPoints[(i + 1) % relPoints.length].x && relPoints[i].y == relPoints[(i + 1) % relPoints.length].y) && i !== relPoints.length - 1)) {
                 d += fixed`L${p.x},${p.y}`;
             }
             else {

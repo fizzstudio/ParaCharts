@@ -1,18 +1,23 @@
 {
-  "v": {
-    "label": "Toggle self-voicing mode",
+  "a": {
+    "label": "Add an annotation",
     "caseSensitive": false,
-    "action": "voicingModeToggle"
+    "action": "addAnnotation"
   },
   "b": {
     "label": "Toggle screen reader announcements",
     "caseSensitive": false,
     "action": "announcementModeToggle"
   },
-  "s": {
-    "label": "Toggle sonification mode",
+  "c": {
+    "label": "Jump to chord landing",
     "caseSensitive": false,
-    "action": "sonificationModeToggle"
+    "action": "jumpToChordLanding"
+  },
+  "h": {
+    "label": "Show the help dialog",
+    "caseSensitive": false,
+    "action": "openHelp"
   },
   "k": {
     "label": "Toggle dark mode",
@@ -24,10 +29,30 @@
     "caseSensitive": false,
     "action": "lowVisionModeToggle"
   },
-  "h": {
-    "label": "Show the help dialog",
+  "n": {
+    "label": "Activate / pause narrative highlight mode",
     "caseSensitive": false,
-    "action": "openHelp"
+    "action": "narrativeHighlightModeStart"
+  },
+  "q": {
+    "label": "Query data",
+    "caseSensitive": false,
+    "action": "queryData"
+  },
+  "s": {
+    "label": "Toggle sonification mode",
+    "caseSensitive": false,
+    "action": "sonificationModeToggle"
+  },
+  "u": {
+    "label": "Clear the datapoint selection",
+    "caseSensitive": false,
+    "action": "selectClear"
+  },
+  "v": {
+    "label": "Toggle self-voicing mode",
+    "caseSensitive": false,
+    "action": "voicingModeToggle"
   },
   "ArrowRight": {
     "label": "Move right",
@@ -93,16 +118,6 @@
     "label": "Extend the datapoint selection",
     "action": "selectExtend"
   },
-  "u": {
-    "label": "Clear the datapoint selection",
-    "caseSensitive": false,
-    "action": "selectClear"
-  },
-  "a": {
-    "label": "Add an annotation",
-    "caseSensitive": false,
-    "action": "addAnnotation"
-  },
   "[": {
     "label": "Go to the series minimum",
     "action": "goMinimum"
@@ -119,19 +134,13 @@
     "label": "Go to the chart maximum",
     "action": "goTotalMaximum"
   },
-  "q": {
-    "label": "Query data",
-    "caseSensitive": false,
-    "action": "queryData"
-  },
-  "c": {
-    "label": "Jump to chord landing",
-    "caseSensitive": false,
-    "action": "jumpToChordLanding"
-  },
   "Ctrl+Shift+V": {
     "label": "Announce version info",
     "action": "announceVersionInfo"
+  },
+  "Shift+N": {
+    "label": "End narrative highlight mode",
+    "action": "narrativeHighlightModeEnd"
   },
   "Ctrl": {
     "label": "Stop speaking (self-voicing mode)",

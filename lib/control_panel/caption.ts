@@ -3,25 +3,30 @@ import { ParaComponent } from '../components';
 import { logging } from '../common/logger';
 
 //import { styles } from '../../styles';
-import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer } from '@fizz/parasummary';
+import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer, HighlightedSummary } from '@fizz/parasummary';
 
-import { html, css } from 'lit';
+import { html, css, TemplateResult, PropertyValues } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { type Unsubscribe } from '@lit-app/state';
 import { PlaneModel } from '@fizz/paramodel';
 import { ParaChart } from '../parachart/parachart';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { NarrativeHighlightHotkeyActions } from '../paraview/hotkey_actions';
+
+type HoverListener = (event: PointerEvent) => void;
 
 @customElement('para-caption-box')
 export class ParaCaptionBox extends logging(ParaComponent) {
 
   @property({attribute: false}) parachart!: ParaChart;
 
-  @state() protected _caption = '';
+  @state() protected _caption: HighlightedSummary = { text: '', html: '' };
 
   private _summarizer?: Summarizer;
   protected _storeChangeUnsub!: Unsubscribe;
+  protected _spans: HTMLSpanElement[] = [];
 
   static styles = [
     css`
@@ -44,6 +49,12 @@ export class ParaCaptionBox extends logging(ParaComponent) {
         align-items: center;
         justify-content: space-between;
       }
+      #caption span.highlight {
+        background-color: var(--theme-color-light);
+      }
+      #desc-footer span.highlight {
+        background-color: white;
+      }
     `
   ];
 
@@ -56,6 +67,48 @@ export class ParaCaptionBox extends logging(ParaComponent) {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this._storeChangeUnsub();
+  }
+
+  protected updated(_changedProperties: PropertyValues): void {
+    if (this._store.paraChart.paraView.hotkeyActions instanceof NarrativeHighlightHotkeyActions)
+      return;
+    const spans = this.getSpans();
+    this._spans = this._spans.filter(span => spans.includes(span));
+    let prevNavcode = '';
+    for (const span of spans) {
+      // Only add the listeners once
+      if (!this._spans.includes(span)) {
+        this._spans.push(span);
+        span.addEventListener('pointerenter', (e: PointerEvent) => {
+          if (this._store.paraChart.paraView.hotkeyActions instanceof NarrativeHighlightHotkeyActions)
+            return;
+          if (span.dataset.navcode) {
+            if (span.dataset.navcode.startsWith('series')) {
+              const segments = span.dataset.navcode.split(/-/);
+              this._store.soloSeries = segments.slice(1).join('\t');
+            } else {
+              this._store.highlight(span.dataset.navcode);
+              if (prevNavcode) {
+                this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
+              }
+              this._store.paraChart.paraView.documentView!.chartInfo.didAddHighlight(span.dataset.navcode);
+            }
+            prevNavcode = span.dataset.navcode;
+          }
+          span.classList.add('highlight');
+        });
+        span.addEventListener('pointerleave', (e: PointerEvent) => {
+          if (this._store.paraChart.paraView.hotkeyActions instanceof NarrativeHighlightHotkeyActions)
+            return;
+          this._store.soloSeries = '';
+          this._store.clearHighlight();
+          span.classList.remove('highlight');
+          if (prevNavcode) {
+            this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
+          }
+        });
+      }
+    }
   }
 
   clearStatusBar() {
@@ -75,6 +128,21 @@ export class ParaCaptionBox extends logging(ParaComponent) {
     }
   }
 
+  renderSummary(summary: HighlightedSummary | string, idPrefix: string): TemplateResult {
+    if (typeof summary === 'string') {
+      summary = { text: summary, html: summary };
+    }
+    return html`
+      <article>
+        ${unsafeHTML(summary.html)}
+      </article>
+    `
+  }
+
+  getSpans() {
+    return Array.from(this.renderRoot.querySelectorAll('span'));
+  }
+
   render() {
     return html`
       <figcaption class=${this.parachart.isControlPanelOpen ? '' : 'external'}>
@@ -83,7 +151,7 @@ export class ParaCaptionBox extends logging(ParaComponent) {
             id="caption"
             ?hidden=${!this._store.settings.controlPanel.isCaptionVisible}
           >
-            ${this._caption}
+            ${this.renderSummary(this._caption, 'caption')}
           </div>
           <div
             id="desc-footer"
@@ -93,7 +161,7 @@ export class ParaCaptionBox extends logging(ParaComponent) {
               <div id="statusbar"
                 aria-hidden="true"
               >
-                ${this._store.announcement.text}
+                ${this.renderSummary(this._store.announcement, 'statusbar')}
               </div>
             </div>
             ${!this._store.settings.controlPanel.caption.isCaptionExternalWhenControlPanelClosed

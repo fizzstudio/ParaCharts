@@ -89,6 +89,10 @@ export class DatapointView extends DataView {
     return [...this._shapes];
   }
 
+  get symbol() {
+    return this._symbol;
+  }
+
   get classInfo(): ClassInfo {
     return {
       datapoint: true,
@@ -224,17 +228,19 @@ export class DatapointView extends DataView {
   }
 
   protected get _symbolScale() {
-    return (
-      this.paraview.store.isVisited(this.seriesKey, this.index)
-      || this.chart.chartInfo.isHighlighted(this.seriesKey, this.index))
-      ? this.paraview.store.settings.chart.symbolHighlightScale
-      : 1;
+    if (this.paraview.store.isVisited(this.seriesKey, this.index)) {
+      return this.paraview.store.settings.chart.symbolHighlightScale;
+    } else if (this.chart.chartInfo.isHighlighted(this.seriesKey, this.index)) {
+      return 1; //this.paraview.store.settings.chart.symbolHighlightScale;
+    } else {
+      return 1;
+    }
   }
 
   protected get _symbolColor() {
-    return this.chart.chartInfo.isHighlighted(this.seriesKey, this.index) ? -2 as number :
-           this.paraview.store.isVisited(this.seriesKey, this.index) ? -1 as number :
-           undefined;
+    //return this.chart.chartInfo.isHighlighted(this.seriesKey, this.index) ? -2 as number :
+    return this.paraview.store.isVisited(this.seriesKey, this.index) ? -1 as number :
+           this.color; //undefined; // set the color so the highlights layer can clone it
   }
 
   protected _contentUpdateShapes() {
@@ -278,7 +284,7 @@ export class DatapointView extends DataView {
     return this.datapoint.seriesKey === other.datapoint.seriesKey && this.datapoint.datapointIndex === other.datapoint.datapointIndex;
   }
 
-  addPopup(){}
+  addPopup(text?: string){}
 
   removePopup(id: string){}
 

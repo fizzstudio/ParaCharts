@@ -194,7 +194,8 @@ export class NavMap {
     } else if (nodeType === 'series') {
       node = layer.get('series', {seriesKey: fields[1]});
     } else {
-      throw new Error(`selectors are undefined for type '${nodeType}'`);
+      //throw new Error(`selectors are undefined for type '${nodeType}'`);
+      return [];
     }
     if (!node) {
       return [];

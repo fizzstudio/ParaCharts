@@ -43,7 +43,8 @@ export class SeriesView extends Container(DataView) {
   get classInfo(): ClassInfo {
     return {
       series: true,
-      lowlight: !!(this.paraview.store.soloSeries && (this.paraview.store.soloSeries !== this._series.key)),
+      lowlight: (this.paraview.store.soloSeries
+        && !this.paraview.store.soloSeries.split('\t').includes(this._series.key)),
       hidden: this.paraview.store.hiddenSeriesList.includes(this._series.key)
     };
   }
