@@ -517,6 +517,7 @@ export class ParaStore extends State {
   }
 
   clearHighlight() {
+    this.popups.splice(0, this.popups.length)
     this._highlightedSelector = '';
   }
 
@@ -618,7 +619,7 @@ export class ParaStore extends State {
         let seriesAnalysis;
         let seriesKey: string;
         if (this.visitedDatapoints.size > 0) {
-          seriesKey = this.visitedDatapoints.keys()!.toArray()[0];
+          seriesKey = datapointIdToCursor(this.visitedDatapoints.keys()!.toArray()[0]).seriesKey;
           seriesAnalysis = this.model
             ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
             : undefined;
@@ -677,7 +678,7 @@ export class ParaStore extends State {
     if (this.type !== 'line') {
       // No MDR annotations need to be removed
     } else if (visitedDatapoints.size > 0) {
-      seriesKey = this.visitedDatapoints.keys()!.toArray()[0];
+      seriesKey = datapointIdToCursor(this.visitedDatapoints.keys()!.toArray()[0]).seriesKey;
       seriesAnalysis = this.model
         ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
         : null;

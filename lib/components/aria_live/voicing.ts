@@ -56,6 +56,7 @@ export class Voicing {
             const segments = highlight.navcode.split(/-/);
             this._store.soloSeries = segments.slice(1).join('\t');
           } else {
+            this._store.clearHighlight();
             this._store.highlight(highlight.navcode);
             if (prevNavcode) {
               this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);

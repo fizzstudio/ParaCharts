@@ -72,39 +72,48 @@ export class Colors {
         colors: [
           {
             value: 'hsl(225, 30%, 52%)',
-            name: 'blue'
+            name: 'blue',
+            contrastValue: `hsl(0, 0%, 100%)`
           },
           {
             value: 'hsl(12, 69%, 35%)',
-            name: 'red'
+            name: 'red',
+            contrastValue: `hsl(0, 0%, 100%)`
           },
           {
             value: 'hsl(75, 43%, 45%)',
-            name: 'green'
+            name: 'green',
+            contrastValue: `hsl(0, 0%, 100%)`
           },
           {
             value: 'hsl(40, 98%, 69%)',
-            name: 'yellow'
+            name: 'yellow',
+            contrastValue: `hsl(0, 0%, 0%)`
           },
           {
             value: 'hsl(215, 37%, 66%)',
-            name: 'light blue'
+            name: 'light blue',
+            contrastValue: `hsl(0, 0%, 100%)`
           },
           {
             value: 'hsl(63, 100%, 23%)',
-            name: 'olive green'
+            name: 'olive green',
+            contrastValue: `hsl(0, 0%, 100%)`
           },
           {
             value: 'hsl(34, 57%, 46%)',
-            name: 'caramel'
+            name: 'caramel',
+            contrastValue: `hsl(0, 0%, 100%)`
           },
           {
             value: 'hsl(51, 56%, 64%)',
-            name: 'tan'
+            name: 'tan',
+            contrastValue: `hsl(0, 0%, 0%)`
           },
           {
             value: 'hsl(253, 26%, 43%)',
-            name: 'purple'
+            name: 'purple',
+            contrastValue: `hsl(0, 0%, 100%)`
           },
           {
             value: 'hsl(85, 65%, 36%)',
@@ -128,7 +137,8 @@ export class Colors {
           },
           {
             value: 'hsl(39, 100%, 50%)',
-            name: 'orange'
+            name: 'orange',
+            contrastValue: `hsl(0, 0%, 0%)`
           },
           {
             value: 'hsl(300, 100%, 25%)',

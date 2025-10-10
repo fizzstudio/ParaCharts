@@ -299,6 +299,10 @@ export class ParaView extends logging(ParaComponent) {
   get defs() {
     return this._defs;
   }
+  
+  get pointerEventManager() {
+    return this._pointerEventManager;
+  }
 
   get hotkeyActions() {
     return this._hotkeyActions;
