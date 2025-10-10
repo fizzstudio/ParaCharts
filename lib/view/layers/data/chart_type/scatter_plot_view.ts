@@ -136,7 +136,11 @@ class ScatterPointView extends PointDatapointView {
   protected _createShape(): void {
   }
 
-  protected get _symbolColor() {
+  protected get _symbolColor(): number {
+    // @simonvarey: I added the symbolColor assignment to fix a build error. It may be incorrect
+    if (this.symbolColor === undefined) {
+      this.symbolColor = this.seriesProps.color;
+    }
     return this.paraview.store.isVisited(this.seriesKey, this.index)
       ? -1
       : this.symbolColor;

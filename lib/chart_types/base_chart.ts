@@ -130,10 +130,6 @@ export abstract class BaseChartInfo extends Logger {
     return this._axisInfo;
   }
 
-  get summarizer() {
-    return this._summarizer
-  }
-
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
   }
 
