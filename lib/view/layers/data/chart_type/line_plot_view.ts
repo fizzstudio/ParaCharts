@@ -21,6 +21,8 @@ import { Vec2 } from '../../../../common/vector';
 import { bboxOfBboxes } from '../../../../common/utils';
 
 import { type StyleInfo } from 'lit/directives/style-map.js';
+import { RectShape } from '../../../shape';
+import { Popup } from '../../../popup';
 
 /**
  * Class for drawing line charts.
@@ -225,6 +227,28 @@ export class LineSection extends PointDatapointView {
       shape.remove();
     });
     const points = this._points;
+        let cousins = this.withCousins.map((c, i) => [c, i]).toSorted((a: this[], b: this[]) => a[0].y - b[0].y) as [this, number][]
+    let y = 0;
+    let height = 0;
+    if (cousins.length === 1) {
+      y = 0;
+      height = this.chart.height;
+    }
+    else {
+      if (cousins[0][1] === this.parent.index) {
+        y = 0;
+        height = (cousins[1][0].y - this.y) / 2 + this.y
+      }
+      else if (cousins[cousins.length - 1][1] === this.parent.index) {
+        y = (this.y - cousins[cousins.length - 2][0].y) / 2 + cousins[cousins.length - 2][0].y
+        height = this.chart.height - ((this.y - cousins[cousins.length - 2][0].y) / 2 + cousins[cousins.length - 2][0].y)
+      }
+      else {
+        let index = cousins.findIndex(c => c[1] === this.parent.index)!
+        y = (this.y - cousins[index - 1][0].y) / 2 + cousins[index - 1][0].y
+        height = (cousins[index + 1][0].y - this.y) / 2 + this.y - ((this.y - cousins[index - 1][0].y) / 2 + cousins[index - 1][0].y)
+      }
+    }
     if (points.length === 3) {
       const slices = [points.slice(0, -1), points.slice(1)];
       // XXX We can't do this until the series analysis completes!
@@ -249,8 +273,24 @@ export class LineSection extends PointDatapointView {
           isClip: true
         })
       );
+      let invis = new RectShape(this.paraview, {
+        x: this._x + slices[0][0].x,
+        y: y,
+        width: slices[1][1].x - slices[0][0].x,
+        height: height,
+        stroke: "white",
+        fill: "white",
+        pointerEnter: (e) => {
+          this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onHover" ? this.addPopup() : undefined;
+        },
+        pointerLeave: (e) => {
+          this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onHover" ? this.removePopup(this.id) : undefined;
+        }
+      })
       this._shapes[0].classInfo = {'leg-left': true};
       this._shapes[1].classInfo = {'leg-right': true};
+      invis.classInfo = { 'invis': true };
+      this.append(invis)
     } else if (points.length === 2) {
       this._shapes.push(
         new PathShape(this.paraview, {
@@ -260,9 +300,25 @@ export class LineSection extends PointDatapointView {
           isClip: true
         })
       );
+      let invis = new RectShape(this.paraview, {
+        x: points[0].x == 0 ? this._x : this._x + points[0].x,
+        y: y,
+        width: points[0].x == 0 ? points[1].x : this.x,
+        height: height,
+        stroke: "white",
+        fill: "white",
+        pointerEnter: (e) => {
+          this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined;
+        },
+        pointerLeave: (e) => {
+          this.paraview.store.settings.chart.showPopups ? this.removePopup(this.id) : undefined;
+        }
+      })
       this._shapes[0].classInfo = this._prevMidY !== undefined
         ? {'leg-left': true}
         : { 'leg-right': true};
+              invis.classInfo = { 'invis': true };
+      this.append(invis)
     }
     this._shapes.forEach(shape => {
       (shape as PathShape).isClip = this.shouldClip;
@@ -270,5 +326,32 @@ export class LineSection extends PointDatapointView {
     super._createShapes();
   }
 
+
+    addPopup() {
+    let popup = new Popup(this.paraview,
+      {
+        text: this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
+        x: this.x,
+        y: this.y,
+        textAnchor: "middle",
+        classList: ['annotationlabel'],
+        id: this.id
+      },
+      {
+        fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)" 
+        : this.paraview.store.settings.popup.backgroundColor === "light" ? 
+        this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.color), 6)
+        : this.paraview.store.colors.colorValueAt(this.color), 
+        stroke: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)" 
+        : this.paraview.store.settings.popup.backgroundColor === "light" ? 
+        this.paraview.store.colors.colorValueAt(this.color)
+        : "black", 
+      })
+    this.paraview.store.popups.push(popup)
+  }
+
+  removePopup(id: string) {
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1) 
+  }
 }
 

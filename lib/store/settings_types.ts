@@ -83,7 +83,6 @@ export interface ControlPanelSettings extends SettingGroup {
   isControlsTabVisible: boolean;
   isChartTabVisible: boolean;
   isAnnotationsTabVisible: boolean;
-  isGraphingTabVisible: boolean;
   isMDRAnnotationsVisible: boolean;
   isAnalysisTabVisible: boolean;
   isSparkBrailleControlVisible: boolean;
@@ -275,6 +274,20 @@ export interface PlotAreaSettings extends SettingGroup {
   size: Size2d;
 }
 
+export interface PopupSettings extends SettingGroup {
+  opacity: number;
+  leftPadding: number;
+  rightPadding: number;
+  upPadding: number;
+  downPadding: number;
+  margin: number;
+  maxWidth: number;
+  shape: "box" | "boxWithArrow";
+  activation: "onHover" | "onFocus" | "onSelect";
+  borderRadius: number;
+  backgroundColor: "dark" | "light"
+}
+
 /** @public */
 export interface PlotSettings extends SettingGroup {
 }
@@ -300,6 +313,7 @@ export interface BarSettings extends PlotSettings {
   isAbbrevSeries: boolean;
   clusterLabelFormat: LabelFormat;
   lineWidth: number;
+  showPopups: boolean;
 }
 
 /** @public */
@@ -325,6 +339,7 @@ export interface LineSettings extends PointSettings {
   seriesLabelPadding: number; // also used after leader lines
   leaderLineLength: number;
   isAlwaysShowSeriesLabel?: boolean;
+  showPopups: boolean;
 }
 
 /** @public */
@@ -354,15 +369,6 @@ export interface HistogramSettings extends PointSettings {
   groupingAxis: string;
   relativeAxes: "Counts" | "Percentage";
 }
-
-export interface GraphSettings extends LineSettings{
-  equation: string;
-  preset: string;
-  renderPts: number;
-  resetAxes: boolean;
-  visitedSeries: number;
-}
-
 
 // export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
@@ -410,7 +416,6 @@ export interface ChartTypeSettings extends SettingGroup {
   gauge: RadialSettings;
   stepline: StepLineSettings;
   lollipop: LollipopSettings;
-  graph: GraphSettings;
 }
 
 /** @public */
@@ -468,6 +473,7 @@ export interface Settings extends SettingGroup {
   chart: ChartSettings;
   axis: AxesSettings;
   legend: LegendSettings;
+  popup: PopupSettings;
   plotArea: PlotAreaSettings;
   type: ChartTypeSettings;
   grid: GridSettings;
@@ -495,7 +501,6 @@ export const FORMAT_CONTEXT_SETTINGS = {
   horizTick: 'axis.horiz.tick.labelFormat',
   vertTick: 'axis.vert.tick.labelFormat',
   linePoint: 'type.line.pointLabelFormat',
-  graphPoint: 'type.graph.pointLabelFormat',
   scatterPoint: 'type.scatter.pointLabelFormat',
   histogramPoint: 'type.histogram.pointLabelFormat',
   heatmapPoint: 'type.histogram.pointLabelFormat',

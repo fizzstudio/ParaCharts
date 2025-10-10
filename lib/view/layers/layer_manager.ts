@@ -33,7 +33,6 @@ import { type Interval } from '@fizz/chart-classifier-utils';
 import { svg } from 'lit';
 import { HeatMapPlotView } from './data/chart_type';
 import { Histogram } from './data/chart_type/histogram';
-import { GraphingCalculator } from './data/chart_type/calculator_plot_view';
 
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
@@ -49,7 +48,7 @@ export const chartClasses = {
   gauge: BarPlotView, //GaugeChart,
   stepline: LinePlotView, //StepLineChart,
   lollipop: BarPlotView, //LollipopChart
-  graph: GraphingCalculator
+  graph: LinePlotView
 };
 
 export class PlotLayerManager extends View {

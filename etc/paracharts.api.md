@@ -6,6 +6,7 @@
 
 import { AllSeriesData } from '@fizz/paramanifest';
 import { AxisOrientation as AxisOrientation_2 } from '@fizz/paramodel';
+import { Box as AxisOrientation_2 } from '@fizz/paramodel';
 import { Box } from '@fizz/paramodel';
 import { ButtonDescriptor } from '@fizz/ui-components';
 import { ChartType as ChartType_2 } from '@fizz/paramanifest';

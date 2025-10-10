@@ -263,6 +263,8 @@ export interface DataSymbolOptions {
   opacity?: number;
   dashed: boolean;
   lighten?: boolean;
+  pointerEnter?: (e: PointerEvent) => void;
+  pointerLeave?: (e: PointerEvent) => void;
 }
 
 /**
@@ -307,7 +309,9 @@ export class DataSymbol extends View {
       color: options?.color,
       opacity: options?.opacity,
       dashed: options?.dashed ?? false,
-      lighten: options?.lighten ?? false
+      lighten: options?.lighten ?? false,
+      pointerEnter: options?.pointerEnter,
+      pointerLeave: options?.pointerLeave
     };
     this.type = `${shape}.${fill}`;
     this._locOffset.x = this.width/2;
@@ -467,6 +471,8 @@ export class DataSymbol extends View {
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         transform=${transform}
+        @pointerenter=${this._options.pointerEnter ?? nothing}
+        @pointerleave=${this._options.pointerLeave ?? nothing}
       />
     `;
   }

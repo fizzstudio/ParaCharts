@@ -50,7 +50,7 @@ export class DirectLabelStrip extends Container(View) {
         text: ep.series.label,
         left: directLabelPadding,
         y: ep.y,
-        classList: ['serieslabel'],
+        classList: ['direct-label'],
         pointerEnter: (e) => {
           this.paraview.store.soloSeries = ep.seriesKey;
         },

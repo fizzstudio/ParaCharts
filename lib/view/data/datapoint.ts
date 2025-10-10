@@ -284,4 +284,8 @@ export class DatapointView extends DataView {
     return this.datapoint.seriesKey === other.datapoint.seriesKey && this.datapoint.datapointIndex === other.datapoint.datapointIndex;
   }
 
+  addPopup(){}
+
+  removePopup(id: string){}
+
 }

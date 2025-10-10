@@ -130,6 +130,10 @@ export abstract class BaseChartInfo extends Logger {
     return this._axisInfo;
   }
 
+  get summarizer() {
+    return this._summarizer
+  }
+
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
   }
 
@@ -414,6 +418,11 @@ export abstract class BaseChartInfo extends Logger {
       //   `sequence-${cursor.options.seriesKey}-${cursor.options.start}-${cursor.options.end}`);
 
     }
+  }
+
+  /** Can be overridden by subclasses. */
+  seriesInNavOrder() {
+    return this._store.model!.series;
   }
 
   /** Nav map layer from which to interpret selectors */

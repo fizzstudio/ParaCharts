@@ -78,6 +78,8 @@ export class ParaView extends logging(ParaComponent) {
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
 
+  protected _lowVisionModeSaved = new Map<string, any>();
+
   static styles = [
     //styles,
     css`
@@ -111,22 +113,19 @@ export class ParaView extends logging(ParaComponent) {
         opacity: 0.6;
         stroke-width: 2;
       }
-      .tick-horiz {
-        stroke: black;
-      }
-      .tick-vert {
-        stroke: black;
+      .tick {
+        stroke: var(--label-color);
       }
       .chart-title {
         font-size: calc(var(--chart-title-font-size)*var(--chart-font-scale));
       }
-      .axis-title.horiz {
+      .axis-title-horiz {
         font-size: calc(var(--horiz-axis-title-font-size)*var(--chart-font-scale));
       }
-      .axis-title.vert {
+      .axis-title-vert {
         font-size: calc(var(--vert-axis-title-font-size)*var(--chart-font-scale));
       }
-      .serieslabel {
+      .direct-label {
         font-size: calc(var(--direct-label-font-size)*var(--chart-font-scale));
       }
       .legend-label {
@@ -136,26 +135,23 @@ export class ParaView extends logging(ParaComponent) {
         fill: var(--label-color);
         stroke: none;
       }
-      .tick-label.horiz {
+      .tick-label-horiz {
         font-size: calc(var(--horiz-axis-tick-label-font-size)*var(--chart-font-scale));
-        fill: var(--label-color);
       }
-      .tick-label.vert {
+      .tick-label-vert {
         font-size: calc(var(--vert-axis-tick-label-font-size)*var(--chart-font-scale));
-        fill: var(--label-color);
       }
       .bar-label {
         font-size: 13px;
         fill: white;
       }
-      .radial-value-label {
-        fill: var(--label-color);
+      .pastry-inside-label {
       }
-      .radial-cat-label-leader {
+      .pastry-outside-label-leader {
         fill: none;
         stroke-width: 2;
       }
-      .radial-slice {
+      .pastry-slice {
         stroke: white;
         stroke-width: 2;
       }
@@ -236,7 +232,9 @@ export class ParaView extends logging(ParaComponent) {
       .hidden {
         display: none;
       }
-
+      .invis {
+        opacity: 0;
+      }
       .control-column {
         display: flex;
         flex-direction: column;
@@ -393,10 +391,14 @@ export class ParaView extends logging(ParaComponent) {
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
         if (newValue) {
+          this._lowVisionModeSaved.set('chart.fontScale', draft.chart.fontScale);
+          this._lowVisionModeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
           draft.chart.fontScale = 2;
+          draft.grid.isDrawVertLines = true;
         } else {
-          // XXX ideally, we save and restore
-          draft.chart.fontScale = 1;
+          draft.chart.fontScale = this._lowVisionModeSaved.get('chart.fontScale');
+          draft.grid.isDrawVertLines = this._lowVisionModeSaved.get('grid.isDrawVertLines');
+          this._lowVisionModeSaved.clear();
         }
       });
     } else if (path === 'ui.isVoicingEnabled') {
@@ -694,9 +696,9 @@ export class ParaView extends logging(ParaComponent) {
         @fullscreenchange=${() => this._onFullscreenChange()}
         @focus=${() => {
           if (!this._store.settings.chart.isStatic) {
-            this.log('focus');
+            //this.log('focus');
             //this.todo.deets?.onFocus();
-            this.documentView?.chartInfo.navMap?.visitDatapoints();
+            //this.documentView?.chartInfo.navMap?.visitDatapoints();
           }
         }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}

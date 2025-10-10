@@ -119,6 +119,10 @@ export class NavMap {
     return this._layers.get('root')!;
   }
 
+  get chartInfo() {
+    return this._chart;
+  }
+
   layer(layer: string) {
     return this._layers.get(layer);
   }
@@ -336,7 +340,7 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
         datapoints.push(this._store.model!.atKeyAndIndex(this._options.seriesKey, i)!);
       }
     } else if (this.isNodeType('chord')) {
-      datapoints.push(...this._store.model!.series.map(series =>
+      datapoints.push(...this._layer.map.chartInfo.seriesInNavOrder().map(series =>
         series.datapoints[this._options.index]));
     } else if (this.isNodeType('sequence')) {
       for (let i = this._options.start; i < this._options.end; i++) {

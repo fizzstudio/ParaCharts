@@ -56,7 +56,6 @@ export class Histogram extends PlanePlotView {
     const targetFacetNumbers = targetFacetBoxes.map((b) => b.asNumber()!);
     if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined) {
       if (this.settings.relativeAxes == "Counts") {
-        console.log("in here")
         this._axisInfo = new AxisInfo(this.paraview.store, {
           xValues: targetFacetNumbers,
           yValues: this.grid,

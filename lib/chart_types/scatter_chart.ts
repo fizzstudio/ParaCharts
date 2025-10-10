@@ -96,7 +96,7 @@ export class ScatterChartInfo extends PointChartInfo {
     return 'scatterpoint';
   }
 
-  protected _seriesInNavOrder() {
+  seriesInNavOrder() {
     // point chart sorts by height onscreen
     return this._store.model!.series;
   }

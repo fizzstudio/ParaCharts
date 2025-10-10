@@ -29,6 +29,9 @@ export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}
     'axis.horiz.tick.isDrawEnabled': true,
     'axis.y.line.isDrawOverhangEnabled': false,
     'grid.isDrawVertLines': false,
+  },
+  line: {
+    'grid.isDrawVertLines': false
   }
 };
 
@@ -172,6 +175,19 @@ export const defaults: Settings = {
       height: 250
     }
   },
+  popup :{
+    opacity: .9,
+    leftPadding: 10,
+    rightPadding: 10,
+    upPadding: 10,
+    downPadding: 10,
+    margin: 40,
+    maxWidth: 150,
+    shape: "boxWithArrow",
+    activation: "onHover",
+    borderRadius: 10,
+    backgroundColor: "dark"
+  },
   type: {
     bar: {
       barWidth: 20,
@@ -190,6 +206,7 @@ export const defaults: Settings = {
       barGap: 10,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
+      showPopups: false
     },
     column: {
       barWidth: 10,
@@ -208,6 +225,7 @@ export const defaults: Settings = {
       barGap: 10,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
+      showPopups: false
     },
     line: {
       lineWidth: 5,
@@ -222,7 +240,8 @@ export const defaults: Settings = {
         width: 20,
         height: 20,
       },
-      isDrawSymbols: true
+      isDrawSymbols: true,
+      showPopups: false
     },
     scatter: {
       isDrawTrendLine: false,
@@ -356,26 +375,7 @@ export const defaults: Settings = {
       orderBy: undefined,
       barGap: 0.25,
       clusterLabelFormat: 'raw',
-    },
-    graph: {
-      lineWidth: 5,
-      lineWidthMax: 25,
-      lowVisionLineWidth: 15,
-      lineHighlightScale: 1.5,
-      baseSymbolSize: 10,
-      seriesLabelPadding: 5,
-      pointLabelFormat: 'raw',
-      leaderLineLength: 30,
-      selectedPointMarkerSize: {
-        width: 20,
-        height: 20,
-      },
-      isDrawSymbols: false,
-      equation: '',
-      preset: '',
-      renderPts: 50,
-      resetAxes: false,
-      visitedSeries: -1
+      showPopups: false
     }
   },
   grid: {
@@ -413,7 +413,6 @@ export const defaults: Settings = {
     isControlsTabVisible: true,
     isChartTabVisible: true,
     isAnnotationsTabVisible: true,
-    isGraphingTabVisible: true,
     isAnalysisTabVisible: true,
     isColorPaletteControlVisible: true,
     isCVDControlVisible: true,
