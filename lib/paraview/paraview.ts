@@ -512,11 +512,17 @@ export class ParaView extends logging(ParaComponent) {
     this._store.updateSettings(draft => {
       draft.ui.isVoicingEnabled = true;
     });
+    this._store.updateSettings(draft => {
+      draft.chart.showPopups = true;
+    });
   }
 
   endNarrativeHighlightMode() {
     this._store.updateSettings(draft => {
       draft.ui.isVoicingEnabled = false;
+    });
+    this._store.updateSettings(draft => {
+      draft.chart.showPopups = false;
     });
     this._hotkeyActions = new NormalHotkeyActions(this);
   }
