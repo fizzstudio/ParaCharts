@@ -134,12 +134,7 @@ export class ParaCaptionBox extends logging(ParaComponent) {
     }
     return html`
       <article>
-        ${unsafeHTML(summary.html.replaceAll('$summary$', idPrefix))}
-        <ul>
-          ${(summary.highlights ?? []).map((highlight) => {
-            return html`<li>${highlight.phrasecode}</li>`;
-          })}
-        </ul>
+        ${unsafeHTML(summary.html)}
       </article>
     `
   }

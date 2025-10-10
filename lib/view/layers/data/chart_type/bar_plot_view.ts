@@ -351,7 +351,7 @@ export class Bar extends PlaneDatapointView {
       - (chartInfo.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!);
 
     const idealWidth = this.chart.barWidth;
-    this._width = Math.max(this.chart.barWidth, chartInfo.settings.barWidth);
+    this._width = this.chart.barWidth
     // @ts-ignore
     this._height = Math.abs((this.datapoint.data.y.value as number)*pxPerYUnit);
     //this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;

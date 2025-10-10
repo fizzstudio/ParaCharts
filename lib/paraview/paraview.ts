@@ -700,9 +700,9 @@ export class ParaView extends logging(ParaComponent) {
         @fullscreenchange=${() => this._onFullscreenChange()}
         @focus=${() => {
           if (!this._store.settings.chart.isStatic) {
-            this.log('focus');
+            //this.log('focus');
             //this.todo.deets?.onFocus();
-            this.documentView?.chartInfo.navMap?.visitDatapoints();
+            //this.documentView?.chartInfo.navMap?.visitDatapoints();
           }
         }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}

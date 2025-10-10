@@ -125,6 +125,7 @@ export class HighlightsLayer extends PlotLayer {
       overlaySyms.forEach(sym => {
         sym.scale *= 3;
         sym.opacity = 0.5;
+        sym.fill = 'empty';
       });
     }
     return svg`
