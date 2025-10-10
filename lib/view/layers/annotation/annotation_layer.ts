@@ -369,57 +369,6 @@ export class AnnotationLayer extends PlotLayer {
           const datapoints = this.paraview.documentView!.chartInfo.datapointsForSelector(selector);
           let datapointViews = datapoints.map(datapoint =>
             this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!);
-          if (selector.startsWith('datapoint')) {
-            datapointViews[0].addPopup()
-          } else if (selector.startsWith('sequence')) {
-            const firstDPView = datapointViews[0]
-            const lastDPView = datapointViews[datapointViews.length - 1]
-            let x = (lastDPView.x + firstDPView.x) / 2;
-            let y = 0;
-            if (datapointViews.length % 2 == 0) {
-              const leftDPView = datapointViews[(datapointViews.length / 2) - 1]
-              const rightDPView = datapointViews[(datapointViews.length / 2)]
-              y = (leftDPView.y + rightDPView.y) / 2;
-            }
-            else {
-              const leftDPView = datapointViews[(datapointViews.length - 1) / 2]
-              y = leftDPView.y;
-            }
-            const seriesAnalysis = this.paraview.store.seriesAnalyses[firstDPView.seriesKey]!
-            const index = seriesAnalysis.sequences.findIndex(s => s.start === datapointViews[0].index && s.end === datapointViews[datapointViews.length - 1].index)
-            const labels = this.paraview.store.model!.series[0].datapoints.map(
-              (p) => formatBox(p.facetBox('x')!, this.paraview.store.getFormatType('horizTick'))
-            );
-            const points = this.paraview.store.model!.series.find(s => s.key === datapointViews[0].seriesKey)!.datapoints
-            let text = ''
-            if (seriesAnalysis.sequences[index].message == null) {
-              text = text.concat(`No trend detected`)
-            }
-            else {
-              text = text.concat(`${trendTranslation[seriesAnalysis.sequences[index].message!]} trend`)
-            }
-            const changeVal = parseFloat((points[seriesAnalysis.sequences[index].end - 1].facetValueAsNumber("y")!
-              - points[seriesAnalysis.sequences[index].start].facetValueAsNumber("y")!).toFixed(4))
-            text = text.concat(`\n${changeVal > 0 ? '+' : ''}${changeVal}`)
-            text = text.concat(`\n${labels[seriesAnalysis.sequences[index].start]}-${labels[seriesAnalysis.sequences[index].end - 1]}`)
-            text = text.concat(`\n${seriesAnalysis.sequences[index].end - seriesAnalysis.sequences[index].start} records`)
-
-            const popup = new Popup(this.paraview,
-              {
-                text: text,
-                x: x,
-                y: y,
-                textAnchor: "middle",
-                classList: ['annotationlabel'],
-                id: this.id,
-                color: firstDPView.color,
-                margin: 60
-              },
-              {
-              })
-            popup.classInfo = { 'popup': true }
-            this.group('datapoint-popups')!.append(popup);
-          }
         }
 
         for (const popup of this.paraview.store.popups) {

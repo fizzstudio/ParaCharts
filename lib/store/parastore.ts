@@ -517,6 +517,7 @@ export class ParaStore extends State {
   }
 
   clearHighlight() {
+    this.popups.splice(0, this.popups.length)
     this._highlightedSelector = '';
   }
 
