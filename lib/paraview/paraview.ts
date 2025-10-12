@@ -427,6 +427,17 @@ export class ParaView extends logging(ParaComponent) {
         // Voicing is disabled at this point, so manually push this message through
         this.paraChart.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
       }
+    } else if (path === 'ui.isNarrativeHighlightsEnabled') {
+      if (this._store.settings.ui.isNarrativeHighlightsEnabled) {
+        this.startNarrativeHighlightMode();
+        const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+        const msg = ['Narrative Highlight Mode enabled.'];
+        if (lastAnnouncement) msg.push(lastAnnouncement);
+       this._store.announce(msg);
+       } else {
+           this.endNarrativeHighlightMode();
+           this._store.announce(['Narrative Highlight Mode disabled.']);
+      }
     }
   }
 
