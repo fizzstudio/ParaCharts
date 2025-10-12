@@ -433,7 +433,10 @@ export class ParaView extends logging(ParaComponent) {
         const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
         const msg = ['Narrative Highlight Mode enabled.'];
         if (lastAnnouncement) msg.push(lastAnnouncement);
-       this._store.announce(msg);
+        this._store.announce(msg);
+		(async () => {
+            this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+          })();
        } else {
            this.endNarrativeHighlightMode();
            this._store.announce(['Narrative Highlight Mode disabled.']);
