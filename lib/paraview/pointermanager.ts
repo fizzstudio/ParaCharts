@@ -50,6 +50,9 @@ export class PointerEventManager {
     this._dataRect = null;
   }
 
+  get coords() {
+    return this._coords
+  }
   /**
    * Records pointer event info.
    * @param event - The event on the element.

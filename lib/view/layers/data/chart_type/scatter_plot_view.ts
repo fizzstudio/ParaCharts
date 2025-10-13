@@ -10,6 +10,7 @@ import { strToId } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { ScatterChartInfo } from '../../../../chart_types';
 import { fixed } from '../../../../common/utils';
+import { Popup } from '../../../popup';
 
 
 export class ScatterPlotView extends PointPlotView {
@@ -136,7 +137,11 @@ class ScatterPointView extends PointDatapointView {
   protected _createShape(): void {
   }
 
-  protected get _symbolColor() {
+  protected get _symbolColor(): number {
+    // @simonvarey: I added the symbolColor assignment to fix a build error. It may be incorrect
+    if (this.symbolColor === undefined) {
+      this.symbolColor = this.seriesProps.color;
+    }
     return this.paraview.store.isVisited(this.seriesKey, this.index)
       ? -1
       : this.symbolColor;
@@ -163,7 +168,13 @@ class ScatterPointView extends PointDatapointView {
     }
     this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
       strokeWidth: this.paraview.store.settings.chart.symbolStrokeWidth,
-      lighten: true
+      lighten: true,
+      pointerEnter: (e) => {
+        this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined
+      },
+      pointerLeave: (e) => {
+        this.paraview.store.settings.chart.showPopups ? this.removePopup(this.id) : undefined
+      },
     });
     this._symbol.role = 'datapoint'
     this._symbol.id = `${this._id}-sym`;
@@ -177,6 +188,43 @@ class ScatterPointView extends PointDatapointView {
       [`cluster-${this.clusterID}`]: this.clusterID !== undefined,
       ...super.classInfo
     };
+  }
+
+  get color() {
+    if (this.chart.chartInfo.clustering) {
+      return this.clusterID!
+    }
+    return super.color
+  }
+
+  addPopup() {
+    let popup = new Popup(this.paraview,
+      {
+        text: this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
+        x: this.x,
+        y: this.y,
+        textAnchor: "middle",
+        classList: ['annotationlabel'],
+        id: this.id,
+        color: this.color
+      },
+      {
+        shape: "boxWithArrow",
+        fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+          : this.paraview.store.settings.popup.backgroundColor === "light" ?
+            this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.color), 6)
+            : this.paraview.store.colors.colorValueAt(this.color),
+        stroke: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+          : this.paraview.store.settings.popup.backgroundColor === "light" ?
+            this.paraview.store.colors.colorValueAt(this.color)
+            : "black",
+      })
+    this.paraview.store.popups.push(popup)
+  }
+
+  removePopup(id: string) {
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
+    this.paraview.requestUpdate()
   }
 }
 

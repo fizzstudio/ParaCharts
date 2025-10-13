@@ -54,7 +54,7 @@ export const defaults: Settings = {
       position: 'top',
     },
     orientation: 'north',
-    padding: '8 10',
+    padding: '8 20',
     //chartType: 'line'
     fontFamily: 'Helvetica, sans-serif',
     fontWeight: '300',
@@ -182,7 +182,7 @@ export const defaults: Settings = {
     upPadding: 10,
     downPadding: 10,
     margin: 40,
-    maxWidth: 150,
+    maxWidth: 175,
     shape: "boxWithArrow",
     activation: "onHover",
     borderRadius: 10,
