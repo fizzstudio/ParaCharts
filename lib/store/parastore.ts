@@ -803,7 +803,7 @@ export class ParaStore extends State {
         //throw new Error('range already highlighted');
       }
       else {
-        this._userLineBreaks = [...this._userLineBreaks, { startPortion: startPortion, seriesKey: seriesKey, index: index   }];
+        this._userLineBreaks.push({ startPortion: startPortion, seriesKey: seriesKey, index: index   }) 
       }
     }
   }

@@ -40,7 +40,7 @@ export class Popup extends View {
     protected downPadding = this.paraview.store.settings.popup.downPadding;
     protected upPadding = this.paraview.store.settings.popup.upPadding;
     protected horizShift = 0;
-    protected arrowPosition: "top" | "bottom" = "bottom";
+    protected arrowPosition: "up" | "bottom" | "left" | "right" = "bottom";
 
     get label() {
         return this._label;
@@ -73,7 +73,9 @@ export class Popup extends View {
 
         let views = []
         if (popupLabelOptions.type === "chord") {
-            
+            this.arrowPosition = "left"
+            this._label.x += this._label.width / 2 + BOX_ARROW_HEIGHT + this.leftPadding
+            //this._label.y = this.paraview.documentView?.chartLayers.dataLayer.height! / 2
             let rowGaps = []
             for (let i = 0; i < this.popupLabelOptions.items!.length - 1; i++) {
                 rowGaps.push(6)
@@ -106,7 +108,9 @@ export class Popup extends View {
                     textAnchor: 'start'
                 }));
             });
-
+            //console.log(this.popupLabelOptions.items)
+            //console.log(this.paraview.documentView?.chartLayers.dataLayer.chartInfo.navMap!.cursor)
+            
         }
         else {
             this._grid = new GridLayout(this.paraview, {
@@ -169,9 +173,20 @@ export class Popup extends View {
 
     shiftLabel() {
         if (this.label.right + this.rightPadding > this.paraview.documentView!.chartLayers.width) {
-            this.popupLabelOptions.x = this.label.x - (this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5)
-            this.horizShift = Math.min((this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5), this.label.width / 2 - 5)
-            this._label = new Label(this.paraview, this.popupLabelOptions)
+            if (this.popupLabelOptions.type === "chord") {
+                this.arrowPosition = "right"
+                //this.popupLabelOptions.x = this.label.x - (this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5)
+                //console.log(JSON.parse(JSON.stringify(this._label.width)))
+                //this.popupLabelOptions.x = this.popupLabelOptions.x! - this._label.width - BOX_ARROW_HEIGHT - this.leftPadding + this.rightPadding + 50
+                this.popupLabelOptions.x = this.label.x - BOX_ARROW_HEIGHT - this.leftPadding - this.label.width / 2 - 112
+                this.horizShift = Math.min((this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5), this.label.width / 2 - 5)
+                this._label = new Label(this.paraview, this.popupLabelOptions)
+            }
+            else {
+                this.popupLabelOptions.x = this.label.x - (this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5)
+                this.horizShift = Math.min((this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5), this.label.width / 2 - 5)
+                this._label = new Label(this.paraview, this.popupLabelOptions)
+            }
         }
         if (this.label.left - this.leftPadding < 0) {
             this.popupLabelOptions.x = this.label.x + (this.leftPadding - this.label.left + 5)
@@ -185,7 +200,10 @@ export class Popup extends View {
         }
         if (this.label.top < 0) {
             this.label.y += (2 * this.margin + this.label.height)
-            this.arrowPosition = "top"
+            if (this.popupLabelOptions.type !== "chord") {
+                this.arrowPosition = "up"
+            }
+
         }
     }
 
@@ -213,6 +231,48 @@ export class Popup extends View {
                     stroke: options.stroke,
                     shape: "boxWithArrow",
                     arrowPosition: "down"
+                })
+                return shape
+            }
+            else if (this.arrowPosition == "right") {
+                let shape = new PopupPathShape(this.paraview, {
+                    points:
+                        [new Vec2(x - this.leftPadding, y - height - this.upPadding),
+                        new Vec2(x - this.leftPadding, y + this.downPadding),
+                        new Vec2(x + width + this.rightPadding, y + this.downPadding),
+
+                        new Vec2(x + width + this.rightPadding, y - height / 2 + Math.min(height / 4, 15)),
+                        new Vec2(x + width + this.rightPadding + BOX_ARROW_HEIGHT, y - height / 2),
+                        new Vec2(x + width + this.rightPadding, y - height / 2 - Math.min(height / 4, 15)),
+
+
+                        new Vec2(x + width + this.rightPadding, y - height - this.upPadding),
+                        new Vec2(x - this.leftPadding, y - height - this.upPadding)],
+                    fill: options.fill,
+                    stroke: options.stroke,
+                    shape: "boxWithArrow",
+                    arrowPosition: "right"
+                })
+                return shape
+            }
+            else if (this.arrowPosition == "left") {
+                let shape = new PopupPathShape(this.paraview, {
+                    points:
+                        [new Vec2(x - this.leftPadding, y - height - this.upPadding),
+
+
+                        new Vec2(x - this.leftPadding, y - height / 2 - Math.min(height / 4, 15)),
+                        new Vec2(x - this.leftPadding - BOX_ARROW_HEIGHT, y - height / 2),
+                        new Vec2(x - this.leftPadding, y - height / 2 + Math.min(height / 4, 15)),
+
+                        new Vec2(x - this.leftPadding, y + this.downPadding),
+                        new Vec2(x + width + this.rightPadding, y + this.downPadding),
+                        new Vec2(x + width + this.rightPadding, y - height - this.upPadding),
+                        new Vec2(x - this.leftPadding, y - height - this.upPadding)],
+                    fill: options.fill,
+                    stroke: options.stroke,
+                    shape: "boxWithArrow",
+                    arrowPosition: "left"
                 })
                 return shape
             }
@@ -425,7 +485,7 @@ declare global {
 
 export interface PopupPathOptions extends PathOptions {
     shape: ShapeTypes
-    arrowPosition?: "up" | "down"
+    arrowPosition?: "up" | "down" | "right" | "left"
 }
 export class PopupPathShape extends PathShape {
     shape: ShapeTypes
@@ -437,12 +497,21 @@ export class PopupPathShape extends PathShape {
 
     //This defines which points on shapes are curved/border-radiused
     //0 === hard corner, 1 === curve, the first and last numbers should match because they apply to the same point
-    protected curvePoints: { "boxWithArrow": number[], "boxWithDownArrow": number[], "boxWithUpArrow": number[], "box": number[] } = {
-        "boxWithArrow": [1, 1, 0, 0, 0, 1, 1, 1],
-        "boxWithDownArrow": [1, 1, 0, 0, 0, 1, 1, 1],
-        "boxWithUpArrow": [1, 1, 1, 1, 0, 0, 0, 1],
-        "box": [1, 1, 1, 1, 1]
-    }
+    protected curvePoints: {
+        "boxWithArrow": number[],
+        "boxWithDownArrow": number[],
+        "boxWithUpArrow": number[],
+        "boxWithRightArrow": number[],
+        "boxWithLeftArrow": number[],
+        "box": number[]
+    } = {
+            "boxWithArrow": [1, 1, 0, 0, 0, 1, 1, 1],
+            "boxWithDownArrow": [1, 1, 0, 0, 0, 1, 1, 1],
+            "boxWithUpArrow": [1, 1, 1, 1, 0, 0, 0, 1],
+            "boxWithRightArrow": [1, 1, 1, 0, 0, 0, 1, 1],
+            "boxWithLeftArrow": [1, 0, 0, 0, 1, 1, 1, 1],
+            "box": [1, 1, 1, 1, 1]
+        }
 
     protected get _pathD() {
         const rad = this.paraview.store.settings.popup.borderRadius
@@ -452,6 +521,12 @@ export class PopupPathShape extends PathShape {
         }
         else if (this.shape == "boxWithArrow" && this.options.arrowPosition === "down") {
             addCurve = this.curvePoints["boxWithDownArrow"]
+        }
+        else if (this.shape == "boxWithArrow" && this.options.arrowPosition === "right") {
+            addCurve = this.curvePoints["boxWithRightArrow"]
+        }
+        else if (this.shape == "boxWithArrow" && this.options.arrowPosition === "left") {
+            addCurve = this.curvePoints["boxWithLeftArrow"]
         }
         else {
             addCurve = this.curvePoints[this.shape]

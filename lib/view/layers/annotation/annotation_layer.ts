@@ -237,6 +237,9 @@ export class AnnotationLayer extends PlotLayer {
               })
             popup.classInfo = { 'popup': true }
             this.group('datapoint-popups')!.append(popup);
+
+            this.paraview.store.userLineBreaks.shift();
+            this.paraview.store.addLineBreak(this.paraview.documentView?.chartLayers.dataLayer.chartInfo.navMap!.cursor.index! / (this.paraview.store.model!.series[0].datapoints.length - 1), items![0].datapointIndex!, "Agriculture", false)
           }
           else if (cursor.type === 'sequence') {
             const firstDP = cursor.datapoints[0]
@@ -426,8 +429,12 @@ export class AnnotationLayer extends PlotLayer {
           this.removeGroup('linebreaks', true);
         }
       }
-
-      if (this.paraview.store.userLineBreaks) {
+      //console.log(this.paraview.store.userLineBreaks)
+      if (this.paraview.store.userLineBreaks.length > 4) {
+        throw new Error("stop")
+      }
+      if (this.paraview.store.userLineBreaks.length > 0) {
+        //console.log("has length")
         this.addGroup('user-linebreaker-markers', true);
         this.group('user-linebreaker-markers')!.clearChildren();
         let lbs = structuredClone(this.paraview.store.userLineBreaks);
