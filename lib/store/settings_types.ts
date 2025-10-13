@@ -53,6 +53,7 @@ export type BoxStyle = {
 /** @public */
 export interface UISettings extends SettingGroup {
   isVoicingEnabled: boolean;
+  isNarrativeHighlightsEnabled: boolean;
   isAnnouncementEnabled: boolean;
   speechRate: number;
   isFullscreenEnabled: boolean;

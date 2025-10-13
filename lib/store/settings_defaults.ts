@@ -386,6 +386,7 @@ export const defaults: Settings = {
   },
   ui: {
     isVoicingEnabled: false,
+	isNarrativeHighlightsEnabled: false,
     isAnnouncementEnabled: true,
     speechRate: 1.25,
     isFullscreenEnabled: false,
