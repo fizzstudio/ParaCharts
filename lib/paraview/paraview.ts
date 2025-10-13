@@ -429,17 +429,38 @@ export class ParaView extends logging(ParaComponent) {
       }
     } else if (path === 'ui.isNarrativeHighlightsEnabled') {
       if (this._store.settings.ui.isNarrativeHighlightsEnabled) {
-        this.startNarrativeHighlightMode();
-        const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
-        const msg = ['Narrative Highlight Mode enabled.'];
-        if (lastAnnouncement) msg.push(lastAnnouncement);
-        this._store.announce(msg);
-		(async () => {
+        if (this._store.settings.ui.isVoicingEnabled) {
+          this.startNarrativeHighlightMode();
+          const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+          const msg = ['Narrative Highlights Mode enabled.'];
+          if (lastAnnouncement) msg.push(lastAnnouncement);
+          this._store.announce(msg);
+          (async () => {
             this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
           })();
-       } else {
-           this.endNarrativeHighlightMode();
-           this._store.announce(['Narrative Highlight Mode disabled.']);
+        } else {
+          this._store.updateSettings(draft => {
+            draft.ui.isVoicingEnabled = true;
+          });
+          this.startNarrativeHighlightMode();
+          const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+          const msg = ['Narrative Highlights Mode enabled.'];
+          if (lastAnnouncement) msg.push(lastAnnouncement);
+          this._store.announce(msg);
+          (async () => {
+            this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+          })();
+        }
+      } else {
+        // Narrative highlights turned OFF
+        this.endNarrativeHighlightMode();
+  
+        // Disable self-voicing as well
+        this._store.updateSettings(draft => {
+          draft.ui.isVoicingEnabled = false;
+        });
+ 
+        this._store.announce(['Narrative Highlight Mode disabled.']);
       }
     }
   }
