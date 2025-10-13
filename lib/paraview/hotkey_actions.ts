@@ -186,7 +186,16 @@ export class NormalHotkeyActions extends HotkeyActions {
         store.addAnnotation();
       },
       narrativeHighlightModeStart() {
-        paraView.startNarrativeHighlightMode();
+        //paraView.startNarrativeHighlightMode();
+		if (store.settings.ui.isNarrativeHighlightsEnabled) {
+          store.updateSettings(draft => {
+            draft.ui.isNarrativeHighlightsEnabled = false;
+          });
+        } else {
+          store.updateSettings(draft => {
+            draft.ui.isNarrativeHighlightsEnabled = true;
+          });
+        }
       },
     };
   }

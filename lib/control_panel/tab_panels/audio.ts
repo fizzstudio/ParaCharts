@@ -43,6 +43,12 @@ export class AudioPanel extends ControlPanelTabPanel {
       label: 'Narrative Highlights mode',
       parentView: 'controlPanel.tabs.audio.voicing',
     });
+	this._store.settingControls.add({
+      type: 'button',
+      key: 'ui.isNarrativeHighlightsPaused',
+      label: 'Play NH',
+      parentView: 'controlPanel.tabs.audio.voicing',
+    });
     this._store.settingControls.add({
       type: 'slider',
       key: 'ui.speechRate',
