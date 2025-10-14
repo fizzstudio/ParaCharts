@@ -3,8 +3,8 @@
 interface BaseKeyDetails {
   /**
    * String representing a key to be struck, possibly with modifiers held down.
-   * The key itself is the same string returned in the `key` property of 
-   * a `KeyboardEvent`. Supported modifiers are `Alt`, `Ctrl`, and `Shift`. 
+   * The key itself is the same string returned in the `key` property of
+   * a `KeyboardEvent`. Supported modifiers are `Alt`, `Ctrl`, and `Shift`.
    * If any of the modifiers are to be pressed, they must appear before the
    * string specifying the key, followed by a `+`, in the above order. E.g.,
    *   Alt+Shift+ArrowRight
@@ -115,8 +115,8 @@ export class KeymapManager extends EventTarget {
         action,
         //keyDescription
       };
-      if (!caseSensitive) {
-        this.keyDetails[`Shift+${keyId.toLocaleUpperCase()}`] = {
+      if (keyId.length === 1 && keyId.toLocaleUpperCase() !== keyId) {
+        this.keyDetails[`Shift+${keyId}`] = {
           key: keyId,
           //title: this.todo.controller.translator.translate(titleId),
           //description,
