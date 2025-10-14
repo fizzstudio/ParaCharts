@@ -386,10 +386,10 @@ export const defaults: Settings = {
   },
   ui: {
     isVoicingEnabled: false,
-	isNarrativeHighlightEnabled: false,
-	isNarrativeHighlightPaused: false,
+  	isNarrativeHighlightEnabled: false,
+	  isNarrativeHighlightPaused: false,
     isAnnouncementEnabled: true,
-    speechRate: 1.25,
+    speechRate: 1,
     isFullscreenEnabled: false,
     isLowVisionModeEnabled: false,
     isFocusRingEnabled: false,
