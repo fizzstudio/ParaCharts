@@ -390,6 +390,14 @@ export class ParaView extends logging(ParaComponent) {
         }
       }
     } else if (path === 'ui.isLowVisionModeEnabled') {
+      if (newValue) {
+        this._store.colors.selectPaletteWithKey("low-vision")
+      }
+      else {
+        if (this._store.colors.prevSelectedColor.length > 0) {
+          this._store.colors.selectPaletteWithKey(this._store.colors.prevSelectedColor);
+        }
+      }
       this._store.updateSettings(draft => {
         this._store.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
         draft.color.isDarkModeEnabled = !!newValue;
