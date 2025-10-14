@@ -207,51 +207,55 @@ export class NarrativeHighlightHotkeyActions extends HotkeyActions {
     super();
     const store = paraView.store;
     const chart = () => paraView.documentView!.chartInfo;
-    let lastIdx = 0;
+    let prevIdx = 0;
     const voicing = paraView.paraChart.ariaLiveRegion.voicing;
     const getMsg = (idx: number) => {
         const div = document.createElement('div');
         div.innerHTML = store.announcement.html;
         return (div.children[idx] as HTMLElement).innerText;
     };
-    const highlightSpan = (idx: number) => {
-      voicing.manualOverride = true;
-      idx = Math.min(store.announcement.highlights.length - 1, Math.max(0, idx));
-      lastIdx = idx;
+    const highlightSpan = (idxDelta: number) => {
+      const spans = store.paraChart.captionBox.getSpans();
+      let idx = prevIdx;
+      store.clearHighlight();
+      store.soloSeries = '';
+      spans.forEach(span => {
+        span.classList.remove('highlight');
+      });
+      if (!voicing.manualOverride) {
+        idx = voicing.highlightIndex!;
+        voicing.manualOverride = true;
+      }
+      idx = Math.min(store.announcement.highlights.length - 1, Math.max(0, idx + idxDelta));
+
+      prevIdx = idx;
       const msg = getMsg(idx);
       const highlight = store.announcement.highlights[idx];
       const prevHighlight = store.announcement.highlights[Math.max(0, idx - 1)];
       let prevNavcode = prevHighlight.navcode ?? '';
-      const spans = store.paraChart.captionBox.getSpans();
       const span = spans[idx];
+
       span.classList.add('highlight');
       voicing.shutUp();
-      const utterance = voicing.speakText(msg);
+      voicing.speakText(msg);
       prevNavcode = voicing.doHighlight(highlight, prevNavcode);
-      utterance.onend = (event: SpeechSynthesisEvent) => {
-        span.classList.remove('highlight');
-        if (idx === lastIdx) {
-          store.clearHighlight();
-          store.soloSeries = '';
-        }
-        if (prevNavcode) {
-          chart().didRemoveHighlight(prevNavcode);
-          prevNavcode = '';
-        }
-      };
+      if (prevNavcode) {
+        chart().didRemoveHighlight(prevNavcode);
+        prevNavcode = '';
+      }
     };
     this._actions = {
       async moveRight() {
-        highlightSpan((voicing.highlightIndex ?? lastIdx) + 1);
+        highlightSpan(1);
       },
       async moveLeft() {
-        highlightSpan((voicing.highlightIndex ?? lastIdx) - 1);
+        highlightSpan(-1);
       },
       async moveUp() {
-        highlightSpan((voicing.highlightIndex ?? lastIdx) - 1);
+        highlightSpan(-1);
       },
       async moveDown() {
-        highlightSpan((voicing.highlightIndex ?? lastIdx) + 1);
+        highlightSpan(1);
       },
       goFirst() {
       },
