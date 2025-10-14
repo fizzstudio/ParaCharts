@@ -427,11 +427,9 @@ export class ParaView extends logging(ParaComponent) {
         // Voicing is disabled at this point, so manually push this message through
         this.paraChart.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
       }
-    } else if (path === 'ui.isNarrativeHighlightsEnabled') {
-      console.log("\n\n At least ..... \n \n");	
-      if (this._store.settings.ui.isNarrativeHighlightsEnabled) {
+    } else if (path === 'ui.isNarrativeHighlightEnabled') {
+      if (this._store.settings.ui.isNarrativeHighlightEnabled) {
         if (this._store.settings.ui.isVoicingEnabled) {
-          console.log("We just turned on NH, and SV is already on");
 		  this.startNarrativeHighlightMode();
           const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
           const msg = ['Narrative Highlights Mode enabled.'];
@@ -441,7 +439,6 @@ export class ParaView extends logging(ParaComponent) {
             this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
           })();
         } else {
-          console.log("We just turned on NH, and SV is NOT already on");
 		  this._store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = true;
           });
@@ -465,7 +462,9 @@ export class ParaView extends logging(ParaComponent) {
  
         this._store.announce(['Narrative Highlight Mode disabled.']);
       }
-    }
+    } else if(path === 'ui.isNarrativeHighlightPaused') {
+	    this.paraChart.ariaLiveRegion.voicing.togglePaused();
+	}	
   }
 
   protected _onFullscreenChange() {

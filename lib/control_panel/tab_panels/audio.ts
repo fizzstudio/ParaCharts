@@ -39,14 +39,14 @@ export class AudioPanel extends ControlPanelTabPanel {
     });
 	this._store.settingControls.add({
       type: 'checkbox',
-      key: 'ui.isNarrativeHighlightsEnabled',
+      key: 'ui.isNarrativeHighlightEnabled',
       label: 'Narrative Highlights mode',
       parentView: 'controlPanel.tabs.audio.voicing',
     });
 	this._store.settingControls.add({
       type: 'button',
-      key: 'ui.isNarrativeHighlightsPaused',
-      label: 'Play NH',
+      key: 'ui.isNarrativeHighlightPaused',
+      label: 'Play/Pause Narrative Highlights',
       parentView: 'controlPanel.tabs.audio.voicing',
     });
     this._store.settingControls.add({
