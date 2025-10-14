@@ -32,8 +32,8 @@ export interface AvailableActions {
   shutUp(): void;
   repeatLastAnnouncement(): void;
   addAnnotation(): void;
-  narrativeHighlightModeStart(): void;
-  narrativeHighlightModeEnd(): void;
+  narrativeHighlightModeToggle(): void;
+  mediaPlayPause(): void;
 }
 
 type ActionMap = { [Property in keyof AvailableActions]: (() => void | Promise<void>) };
@@ -185,9 +185,9 @@ export class NormalHotkeyActions extends HotkeyActions {
       addAnnotation() {
         store.addAnnotation();
       },
-      narrativeHighlightModeStart() {
+      narrativeHighlightModeToggle() {
         paraView.startNarrativeHighlightMode();
-		if (store.settings.ui.isNarrativeHighlightsEnabled) {
+		    if (store.settings.ui.isNarrativeHighlightsEnabled) {
           store.updateSettings(draft => {
             draft.ui.isNarrativeHighlightEnabled = false;
           });
@@ -196,6 +196,9 @@ export class NormalHotkeyActions extends HotkeyActions {
             draft.ui.isNarrativeHighlightEnabled = true;
           });
         }
+      },
+      mediaPlayPause() {
+
       },
     };
   }
@@ -291,12 +294,8 @@ export class NarrativeHighlightHotkeyActions extends HotkeyActions {
         voicing.shutUp();
       },
       repeatLastAnnouncement() {
-        paraView.paraChart.ariaLiveRegion.replay();
       },
-      narrativeHighlightModeStart() {
-        voicing.togglePaused();
-      },
-      narrativeHighlightModeEnd() {
+      narrativeHighlightModeToggle() {
         if (voicing.manualOverride) {
           voicing.manualOverride = false;
           (async () => {
@@ -314,6 +313,9 @@ export class NarrativeHighlightHotkeyActions extends HotkeyActions {
             });
           }
         }
+      },
+      mediaPlayPause() {
+        voicing.togglePaused();
       }
     };
   }
