@@ -9,7 +9,8 @@ export class Voicing {
   private _volume: number = 1.0;
   private _pitch: number = 1.0;
   private _utterance: SpeechSynthesisUtterance | null = null;
-  private _highlightIndex = 0;
+  private _highlightIndex: number | null = null;
+  private _manualOverride = false;
 
   constructor(private _store: ParaStore) {
     this._voice = window.speechSynthesis;
@@ -18,28 +19,23 @@ export class Voicing {
     }
   }
 
-  get highlightIndex(): number {
+  get highlightIndex(): number | null {
     return this._highlightIndex;
+  }
+
+  get manualOverride(): boolean {
+    return this._manualOverride;
+  }
+
+  set manualOverride(manualOverride: boolean) {
+    this._manualOverride = manualOverride;
   }
 
   speak(msg: string, highlights: Highlight[], startFrom = 0) {
     if (this._voice) {
       this.shutUp();
 
-      // const div = document.createElement('div');
-      // div.innerHTML = msg;
-      // console.log('DIV', div.children, startFrom);
-      // div.replaceChildren(...Array.from(div.children).slice(startFrom));
-      // msg = div.innerText;
-      // console.log('MSG', msg);
-
-      // Keep the utterance around until it finishes playing so it doesn't
-      // get GC'd
-      this._utterance = new SpeechSynthesisUtterance(msg);
-      this._utterance.rate = this._rate;
-      this._utterance.lang = this._lang;
-      this._utterance.pitch = this._pitch;
-      this._utterance.volume = this._volume;
+      this._utterance = this.speakText(msg);
 
       const getHighlightIndex = (wordIndex: number) =>
         highlights.findIndex(hl => wordIndex >= hl.start && wordIndex < hl.end);
@@ -48,30 +44,14 @@ export class Voicing {
       const spans = this._store.paraChart.captionBox.getSpans();
       let prevNavcode = '';
       this._utterance.onboundary = (event: SpeechSynthesisEvent) => {
-        this._highlightIndex = getHighlightIndex(event.charIndex);
-        if (this._highlightIndex === -1) return;
-        const highlight = highlights[this._highlightIndex];
-        if (highlight.navcode) {
-          if (highlight.navcode.startsWith('series')) {
-            const segments = highlight.navcode.split(/-/);
-            this._store.soloSeries = segments.slice(1).join('\t');
-          } else {
-            this._store.clearHighlight();
-            this._store.highlight(highlight.navcode);
-            if (prevNavcode) {
-              this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
-            }
-            this._store.paraChart.paraView.documentView!.chartInfo.didAddHighlight(highlight.navcode);
-          }
-          prevNavcode = highlight.navcode;
-        } else {
-          this._store.clearHighlight();
-          this._store.soloSeries = '';
-          if (prevNavcode) {
-            this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
-            prevNavcode = '';
-          }
+        const highlightIndex = getHighlightIndex(event.charIndex);
+        if (highlightIndex === -1) {
+          this._highlightIndex = null;
+          return;
         }
+        this._highlightIndex = highlightIndex;
+        const highlight = highlights[this._highlightIndex];
+        prevNavcode = this.doHighlight(highlight, prevNavcode);
         for (const span of spans) {
           if (span.dataset.phrasecode === `${highlight.phrasecode}`) {
             span.classList.add('highlight');
@@ -87,15 +67,56 @@ export class Voicing {
         for (const span of lastSpans) {
           span.classList.remove('highlight');
         }
-        this._store.clearHighlight();
-        this._store.soloSeries = '';
+        // So that on the initial transition from auto-narration to manual
+        // span navigation, we don't remove any highlights added in manual mode
+        if (!this._manualOverride) {
+          this._store.clearHighlight();
+          this._store.soloSeries = '';
+        }
+        this._highlightIndex = null;
         if (prevNavcode) {
           this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
           prevNavcode = '';
         }
       };
-      this._voice.speak(this._utterance);
     }
+  }
+
+  speakText(text: string): SpeechSynthesisUtterance {
+    // Keep the utterance around until it finishes playing so it doesn't
+    // get GC'd
+    this._utterance = new SpeechSynthesisUtterance(text);
+    this._utterance.rate = this._rate;
+    this._utterance.lang = this._lang;
+    this._utterance.pitch = this._pitch;
+    this._utterance.volume = this._volume;
+    this._voice!.speak(this._utterance);
+    return this._utterance;
+  }
+
+  doHighlight(highlight: Highlight, prevNavcode: string) {
+    if (highlight.navcode) {
+      if (highlight.navcode.startsWith('series')) {
+        const segments = highlight.navcode.split(/-/);
+        this._store.soloSeries = segments.slice(1).join('\t');
+      } else {
+        this._store.clearHighlight();
+        this._store.highlight(highlight.navcode);
+        if (prevNavcode) {
+          this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
+        }
+        this._store.paraChart.paraView.documentView!.chartInfo.didAddHighlight(highlight.navcode);
+      }
+      prevNavcode = highlight.navcode;
+    } else {
+      this._store.clearHighlight();
+      this._store.soloSeries = '';
+      if (prevNavcode) {
+        this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
+        prevNavcode = '';
+      }
+    }
+    return prevNavcode;
   }
 
   pause() {
@@ -122,6 +143,7 @@ export class Voicing {
     console.log('Shut Up!');
     if (this._voice && this._voice.speaking) {
       this._voice.cancel();
+      this._highlightIndex = null;
     }
   }
 
