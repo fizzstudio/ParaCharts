@@ -30,14 +30,18 @@
     "action": "lowVisionModeToggle"
   },
   "n": {
-    "label": "Activate / pause narrative highlight mode",
+    "label": "Toggle narrative highlight mode",
     "caseSensitive": false,
-    "action": "narrativeHighlightModeStart"
+    "action": "narrativeHighlightModeToggle"
   },
   "q": {
     "label": "Query data",
     "caseSensitive": false,
     "action": "queryData"
+  },
+  "r": {
+    "label": "Repeat last message",
+    "action": "repeatLastAnnouncement"
   },
   "s": {
     "label": "Toggle sonification mode",
@@ -107,8 +111,8 @@
     "action": "goLast"
   },
   " ": {
-    "label": "Repeat last message",
-    "action": "repeatLastAnnouncement"
+    "label": "Play or pause audio",
+    "action": "mediaPlayPause"
   },
   "enter": {
     "label": "Select a datapoint",
@@ -137,10 +141,6 @@
   "Ctrl+Shift+v": {
     "label": "Announce version info",
     "action": "announceVersionInfo"
-  },
-  "Shift+n": {
-    "label": "End narrative highlight mode",
-    "action": "narrativeHighlightModeEnd"
   },
   "Ctrl": {
     "label": "Stop speaking (self-voicing mode)",
