@@ -187,6 +187,15 @@ export class NormalHotkeyActions extends HotkeyActions {
       },
       narrativeHighlightModeStart() {
         paraView.startNarrativeHighlightMode();
+		if (store.settings.ui.isNarrativeHighlightsEnabled) {
+          store.updateSettings(draft => {
+            draft.ui.isNarrativeHighlightEnabled = false;
+          });
+        } else {
+          store.updateSettings(draft => {
+            draft.ui.isNarrativeHighlightEnabled = true;
+          });
+        }
       },
     };
   }
@@ -291,6 +300,15 @@ export class NarrativeHighlightHotkeyActions extends HotkeyActions {
           })();
         } else {
           paraView.endNarrativeHighlightMode();
+      		if (store.settings.ui.isNarrativeHighlightEnabled) {
+            store.updateSettings(draft => {
+              draft.ui.isNarrativeHighlightEnabled = false;
+            });
+          } else {
+            store.updateSettings(draft => {
+              draft.ui.isNarrativeHighlightEnabled = true;
+            });
+          }
         }
       }
     };

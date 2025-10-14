@@ -37,6 +37,18 @@ export class AudioPanel extends ControlPanelTabPanel {
       label: 'Self-voicing mode',
       parentView: 'controlPanel.tabs.audio.voicing',
     });
+	this._store.settingControls.add({
+      type: 'checkbox',
+      key: 'ui.isNarrativeHighlightEnabled',
+      label: 'Narrative Highlights mode',
+      parentView: 'controlPanel.tabs.audio.voicing',
+    });
+	this._store.settingControls.add({
+      type: 'button',
+      key: 'ui.isNarrativeHighlightPaused',
+      label: 'Play/Pause Narrative Highlights',
+      parentView: 'controlPanel.tabs.audio.voicing',
+    });
     this._store.settingControls.add({
       type: 'slider',
       key: 'ui.speechRate',
