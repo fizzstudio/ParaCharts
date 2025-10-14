@@ -207,18 +207,51 @@ export class NarrativeHighlightHotkeyActions extends HotkeyActions {
     super();
     const store = paraView.store;
     const chart = () => paraView.documentView!.chartInfo;
+    let lastIdx = 0;
+    const voicing = paraView.paraChart.ariaLiveRegion.voicing;
+    const getMsg = (idx: number) => {
+        const div = document.createElement('div');
+        div.innerHTML = store.announcement.html;
+        return (div.children[idx] as HTMLElement).innerText;
+    };
+    const highlightSpan = (idx: number) => {
+      voicing.manualOverride = true;
+      idx = Math.min(store.announcement.highlights.length - 1, Math.max(0, idx));
+      lastIdx = idx;
+      const msg = getMsg(idx);
+      const highlight = store.announcement.highlights[idx];
+      const prevHighlight = store.announcement.highlights[Math.max(0, idx - 1)];
+      let prevNavcode = prevHighlight.navcode ?? '';
+      const spans = store.paraChart.captionBox.getSpans();
+      const span = spans[idx];
+      span.classList.add('highlight');
+      voicing.shutUp();
+      const utterance = voicing.speakText(msg);
+      prevNavcode = voicing.doHighlight(highlight, prevNavcode);
+      utterance.onend = (event: SpeechSynthesisEvent) => {
+        span.classList.remove('highlight');
+        if (idx === lastIdx) {
+          store.clearHighlight();
+          store.soloSeries = '';
+        }
+        if (prevNavcode) {
+          chart().didRemoveHighlight(prevNavcode);
+          prevNavcode = '';
+        }
+      };
+    };
     this._actions = {
       async moveRight() {
-        // paraView.paraChart.ariaLiveRegion.voicing.shutUp();
-        // store.announce(
-        //   store.announcement, undefined,
-        //   paraView.paraChart.ariaLiveRegion.voicing.highlightIndex + 1);
+        highlightSpan((voicing.highlightIndex ?? lastIdx) + 1);
       },
       async moveLeft() {
+        highlightSpan((voicing.highlightIndex ?? lastIdx) - 1);
       },
       async moveUp() {
+        highlightSpan((voicing.highlightIndex ?? lastIdx) - 1);
       },
       async moveDown() {
+        highlightSpan((voicing.highlightIndex ?? lastIdx) + 1);
       },
       goFirst() {
       },
@@ -251,24 +284,31 @@ export class NarrativeHighlightHotkeyActions extends HotkeyActions {
         paraView.paraChart.controlPanel.showHelpDialog();
       },
       shutUp() {
-        paraView.paraChart.ariaLiveRegion.voicing.shutUp();
+        voicing.shutUp();
       },
       repeatLastAnnouncement() {
         paraView.paraChart.ariaLiveRegion.replay();
       },
       narrativeHighlightModeStart() {
-        paraView.paraChart.ariaLiveRegion.voicing.togglePaused();
+        voicing.togglePaused();
       },
       narrativeHighlightModeEnd() {
-        paraView.endNarrativeHighlightMode();
-		if (store.settings.ui.isNarrativeHighlightEnabled) {
-          store.updateSettings(draft => {
-            draft.ui.isNarrativeHighlightEnabled = false;
-          });
+        if (voicing.manualOverride) {
+          voicing.manualOverride = false;
+          (async () => {
+            store.announce(await chart().summarizer.getChartSummary());
+          })();
         } else {
-          store.updateSettings(draft => {
-            draft.ui.isNarrativeHighlightEnabled = true;
-          });
+          paraView.endNarrativeHighlightMode();
+      		if (store.settings.ui.isNarrativeHighlightEnabled) {
+            store.updateSettings(draft => {
+              draft.ui.isNarrativeHighlightEnabled = false;
+            });
+          } else {
+            store.updateSettings(draft => {
+              draft.ui.isNarrativeHighlightEnabled = true;
+            });
+          }
         }
       }
     };
