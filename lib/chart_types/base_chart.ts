@@ -136,6 +136,10 @@ export abstract class BaseChartInfo extends Logger {
   async storeDidChange(key: string, value: any) {
   }
 
+  noticePosted(key: string, value: any) {
+
+  }
+
   protected _createNavMap() {
     this._navMap = new NavMap(this._store, this);
     const root = this._navMap.layer('root')!;

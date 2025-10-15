@@ -51,6 +51,7 @@ export class DocumentView extends Container(View) {
   constructor(paraview: ParaView) {
     super(paraview);
     this._store = paraview.store;
+    this.observeNotices();
 
     this.type = this._store.type;
     // @ts-ignore
@@ -131,12 +132,6 @@ export class DocumentView extends Container(View) {
   }
 
   protected _populateGrid() {
-
-    const shouldAddDirectLabelStrip = this._store.settings.chart.hasDirectLabels
-      && this.type === 'line'
-      && /*this._chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
-        this._store.model!.multi;
-
     if (this._store.settings.chart.title.isDrawTitle && this._store.title) {
       this.createTitle();
     }
@@ -224,9 +219,17 @@ export class DocumentView extends Container(View) {
     // At this point, we're fully connected to the root of the view tree,
     // so we can safely observe
     this._chartLayers.dataLayer.observeStore();
+    this._chartLayers.dataLayer.observeNotices();
 
-
+    const shouldAddDirectLabelStrip = this._store.settings.chart.hasDirectLabels
+      && this.type === 'line'
+      && /*this._chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
+        this._store.model!.multi;
     if (shouldAddDirectLabelStrip) {
+      const horizAxisPos = this._store.settings.axis.horiz.position;
+      const plotRow = (this._chartInfo.axisInfo && horizAxisPos === 'north'
+        ? 1
+        : 0) + (this._titleLabel ? 1 : 0);
       this._directLabelStrip = new DirectLabelStrip(this._chartLayers.dataLayer as LinePlotView);
       this._grid.append(this._directLabelStrip, {
         x: 2,
@@ -266,6 +269,34 @@ export class DocumentView extends Container(View) {
     await super.storeDidChange(key, value);
     return this._chartInfo.storeDidChange(key, value);
   }
+
+  postNotice(key: string, value: any) {
+    this.noticePosted(key, value);
+    this._chartInfo.noticePosted(key, value);
+  }
+
+  // noticePosted(key: string, value: any): void {
+  //   console.log('NOTICE', key);
+  //   if (key === 'animRevealEnd') {
+  //     const shouldAddDirectLabelStrip = this._store.settings.chart.hasDirectLabels
+  //       && this.type === 'line'
+  //       && /*this._chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
+  //         this._store.model!.multi;
+  //     if (shouldAddDirectLabelStrip) {
+  //       const horizAxisPos = this._store.settings.axis.horiz.position;
+  //       const plotRow = (this._chartInfo.axisInfo && horizAxisPos === 'north'
+  //         ? 1
+  //         : 0) + (this._titleLabel ? 1 : 0);
+  //       console.log('PLOT ROW', plotRow);
+  //       // this._directLabelStrip = new DirectLabelStrip(this._chartLayers.dataLayer as LinePlotView);
+  //       // this._grid.append(this._directLabelStrip, {
+  //       //   x: 2,
+  //       //   y: plotRow,
+  //       //   height: 1
+  //       // });
+  //     }
+  //   }
+  // }
 
   get chartInfo() {
     return this._chartInfo;

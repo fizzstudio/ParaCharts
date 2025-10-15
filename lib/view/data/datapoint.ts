@@ -12,6 +12,11 @@ import { formatBox } from '@fizz/parasummary';
 import { Datapoint } from '@fizz/paramodel';
 
 /**
+ * Mapping of datapoint properties to values.
+ */
+export type AnimState = Record<string, any>;
+
+/**
  * Abstract base class for views representing datapoint values
  * (e.g., bar chart bars, pie slices, etc.).
  * @public
@@ -22,6 +27,7 @@ export class DatapointView extends DataView {
 
   protected _shapes: Shape[] = [];
   protected _symbol: DataSymbol | null = null;
+  protected _animEndState: AnimState = {};
 
   constructor(seriesView: SeriesView) {
     super(seriesView.chart, seriesView.series.key);
@@ -196,6 +202,16 @@ export class DatapointView extends DataView {
       });
     }
     this.layoutSymbol();
+  }
+
+  /**
+   *
+   * @param t - Value between 0 and 1
+   */
+  animStep(t: number) {
+    this.completeLayout();
+    // this.layoutSymbol();
+    // this._createShapes();
   }
 
   /**
