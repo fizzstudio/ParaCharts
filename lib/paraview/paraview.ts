@@ -390,6 +390,14 @@ export class ParaView extends logging(ParaComponent) {
         }
       }
     } else if (path === 'ui.isLowVisionModeEnabled') {
+      if (newValue) {
+        this._store.colors.selectPaletteWithKey("low-vision")
+      }
+      else {
+        if (this._store.colors.prevSelectedColor.length > 0) {
+          this._store.colors.selectPaletteWithKey(this._store.colors.prevSelectedColor);
+        }
+      }
       this._store.updateSettings(draft => {
         this._store.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
         draft.color.isDarkModeEnabled = !!newValue;
@@ -427,7 +435,44 @@ export class ParaView extends logging(ParaComponent) {
         // Voicing is disabled at this point, so manually push this message through
         this.paraChart.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
       }
-    }
+    } else if (path === 'ui.isNarrativeHighlightEnabled') {
+      if (this._store.settings.ui.isNarrativeHighlightEnabled) {
+        if (this._store.settings.ui.isVoicingEnabled) {
+		  this.startNarrativeHighlightMode();
+          const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+          const msg = ['Narrative Highlights Mode enabled.'];
+          if (lastAnnouncement) msg.push(lastAnnouncement);
+          this._store.announce(msg);
+          (async () => {
+            this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+          })();
+        } else {
+		  this._store.updateSettings(draft => {
+            draft.ui.isVoicingEnabled = true;
+          });
+          this.startNarrativeHighlightMode();
+          const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+          const msg = ['Narrative Highlights Mode enabled.'];
+          if (lastAnnouncement) msg.push(lastAnnouncement);
+          this._store.announce(msg);
+          (async () => {
+            this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+          })();
+        }
+      } else {
+        // Narrative highlights turned OFF
+        this.endNarrativeHighlightMode();
+  
+        // Disable self-voicing as well
+        this._store.updateSettings(draft => {
+          draft.ui.isVoicingEnabled = false;
+        });
+ 
+        this._store.announce(['Narrative Highlight Mode disabled.']);
+      }
+    } else if(path === 'ui.isNarrativeHighlightPaused') {
+	    this.paraChart.ariaLiveRegion.voicing.togglePaused();
+	}	
   }
 
   protected _onFullscreenChange() {

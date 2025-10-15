@@ -63,6 +63,7 @@ export class Colors {
   private primary = 'hsl(270, 50%, 50%)';
   private accent = 'hsl(270, 50%, 25%)';
   private active = 'hsl(270, 50%, 65%)';
+  protected _prevSelectedColor: string = ''
 
   constructor(protected _store: ParaStore) {
     this.palettes = [
@@ -71,18 +72,28 @@ export class Colors {
         title: 'diva (color-blind safe)',
         colors: [
           {
-            value: 'hsl(225, 30%, 52%)',
-            name: 'blue',
+            value: 'hsl(227, 26%, 52%)',
+            name: 'blue-1',
             contrastValue: `hsl(0, 0%, 100%)`
           },
           {
-            value: 'hsl(12, 69%, 35%)',
-            name: 'red',
+            value: 'hsl(13, 58%, 35%)',
+            name: 'red-1',
             contrastValue: `hsl(0, 0%, 100%)`
           },
           {
-            value: 'hsl(75, 43%, 45%)',
-            name: 'green',
+            value: 'hsl(109, 93%, 24%)',
+            name: 'green-1',
+            contrastValue: `hsl(0, 0%, 100%)`
+          },
+          {
+            value: 'hsl(300, 50%, 50%)',
+            name: 'purple-1',
+            contrastValue: `hsl(0, 0%, 100%)`
+          },
+          {
+            value: 'hsl(180, 100%, 25%)',
+            name: 'blue-green-1',
             contrastValue: `hsl(0, 0%, 100%)`
           },
           {
@@ -109,11 +120,6 @@ export class Colors {
             value: 'hsl(51, 56%, 64%)',
             name: 'tan',
             contrastValue: `hsl(0, 0%, 0%)`
-          },
-          {
-            value: 'hsl(253, 26%, 43%)',
-            name: 'purple',
-            contrastValue: `hsl(0, 0%, 100%)`
           },
           {
             value: 'hsl(85, 65%, 36%)',
@@ -397,32 +403,32 @@ export class Colors {
             name: ''
           },
           {
-             value: 'hsl(329, 100%, 49%)',
-             name: ''
+            value: 'hsl(329, 100%, 49%)',
+            name: ''
           },
           {
-             value: 'hsl(300, 100%, 35%)',
-             name: ''
+            value: 'hsl(300, 100%, 35%)',
+            name: ''
           },
           {
-             value: 'hsl(210, 43%, 47%)',
-             name: ''
+            value: 'hsl(210, 43%, 47%)',
+            name: ''
           },
           {
-             value: 'hsl(353, 80%, 67%)',
-             name: ''
+            value: 'hsl(353, 80%, 67%)',
+            name: ''
           },
           {
-             value: 'hsl(130, 60%, 33%)',
-             name: ''
+            value: 'hsl(130, 60%, 33%)',
+            name: ''
           },
           {
-             value: 'hsl(52, 57%, 53%)',
-             name: ''
+            value: 'hsl(52, 57%, 53%)',
+            name: ''
           },
           {
-             value: 'hsl(195, 80%, 67%)',
-             name: ''
+            value: 'hsl(195, 80%, 67%)',
+            name: ''
           },
           {
             value: 'hsl(326, 54%, 43%)',
@@ -628,7 +634,7 @@ export class Colors {
         title: 'pattern',
         isPattern: true,
         colors: [
-            {
+          {
             value: 'hsl(225, 30%, 52%)',
             name: 'blue'
           },
@@ -719,7 +725,7 @@ export class Colors {
                 <line class="pattern" x1="0" y="0" x2="0" y2="10" stroke='hsl(225, 30%, 52%)' stroke-width="5" />
               </pattern>
               `,
-              contrastValue: "hsl(0, 0%, 0%)",
+            contrastValue: "hsl(0, 0%, 0%)",
             name: 'diagonal_lines'
           },
           {
@@ -728,7 +734,7 @@ export class Colors {
                 <circle cx="5" cy="5" r="2" fill='hsl(12, 69%, 35%)' />
               </pattern>
               `,
-              contrastValue: "hsl(0, 0%, 0%)",
+            contrastValue: "hsl(0, 0%, 0%)",
             name: 'dots'
           },
           {
@@ -737,7 +743,7 @@ export class Colors {
                 <path d="M 10 0 L 0 0 0 10" fill="none" stroke='hsl(75, 43%, 45%)' stroke-width="5"/>
               </pattern>
               `,
-              contrastValue: "hsl(0, 0%, 0%)",
+            contrastValue: "hsl(0, 0%, 0%)",
             name: 'grid'
           },
           {
@@ -746,7 +752,7 @@ export class Colors {
                 <path d="M 0 0 L 10 10 M 10 0 L 0 10" stroke='hsl(40, 98%, 69%)' stroke-width="3"/>
               </pattern>
                `,
-               contrastValue: "hsl(0, 0%, 0%)",
+            contrastValue: "hsl(0, 0%, 0%)",
             name: 'crosshatch'
           },
           {
@@ -755,7 +761,7 @@ export class Colors {
                 <path d="M 0 5 Q 5 0, 10 5 T 20 5" fill="none" stroke='hsl(215, 37%, 66%)' stroke-width="3"/>
               </pattern>
               `,
-              contrastValue: "hsl(0, 0%, 0%)",
+            contrastValue: "hsl(0, 0%, 0%)",
             name: 'waves'
           },
           {
@@ -763,7 +769,7 @@ export class Colors {
               <pattern id="Pattern5" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(135)">
                 <line x1="0" y="0" x2="0" y2="10" stroke='hsl(63, 100%, 23%)' stroke-width="5" />
               </pattern>`,
-              contrastValue: "hsl(0, 0%, 0%)",
+            contrastValue: "hsl(0, 0%, 0%)",
             name: 'diagonal_lines2'
           },
           {
@@ -771,11 +777,116 @@ export class Colors {
               <pattern id="Pattern6" class="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
               <circle cx="10" cy="10" r="10" fill='hsl(34, 57%, 46%)'" />
               </pattern>`,
-              contrastValue: "hsl(0, 0%, 0%)",
+            contrastValue: "hsl(0, 0%, 0%)",
             name: ''
           },
           {
             value: svg`hsl(0, 100%, 50%)`,
+            name: 'visit'
+          }
+        ]
+      },
+      {
+        key: 'low-vision',
+        title: 'low-vision',
+        colors: [
+          {
+            value: 'hsl(240, 100%, 60%)',
+            name: 'blue-2',
+            contrastValue: `hsl(0, 0%, 100%)`
+          },
+          {
+            value: 'hsl(13, 58%, 35%)',
+            name: 'red-1',
+            contrastValue: `hsl(0, 0%, 100%)`
+          },
+          {
+            value: 'hsl(120, 100%, 33%)',
+            name: 'green-2',
+            contrastValue: `hsl(0, 0%, 100%)`
+          },
+          {
+            value: 'hsl(300, 77%, 54%)',
+            name: 'magenta-1',
+            contrastValue: `hsl(0, 0%, 100%)`
+          },
+          {
+            value: 'hsl(39, 100%, 31%)',
+            name: 'brown-1',
+            contrastValue: `hsl(0, 0%, 100%)`
+          },
+          {
+            value: 'hsl(40, 98%, 69%)',
+            name: 'yellow',
+            contrastValue: `hsl(0, 0%, 0%)`
+          },
+          {
+            value: 'hsl(215, 37%, 66%)',
+            name: 'light blue',
+            contrastValue: `hsl(0, 0%, 100%)`
+          },
+          {
+            value: 'hsl(63, 100%, 23%)',
+            name: 'olive green',
+            contrastValue: `hsl(0, 0%, 100%)`
+          },
+          {
+            value: 'hsl(34, 57%, 46%)',
+            name: 'caramel',
+            contrastValue: `hsl(0, 0%, 100%)`
+          },
+          {
+            value: 'hsl(51, 56%, 64%)',
+            name: 'tan',
+            contrastValue: `hsl(0, 0%, 0%)`
+          },
+          {
+            value: 'hsl(85, 65%, 36%)',
+            name: 'forest green'
+          },
+          {
+            value: 'hsl(12, 56%, 51%)',
+            name: 'red-orange'
+          },
+          {
+            value: 'hsl(30, 42%, 35%)',
+            name: 'brown'
+          },
+          {
+            value: 'hsl(240, 100%, 50%)',
+            name: 'bright blue'
+          },
+          {
+            value: 'hsl(120, 100%, 50%)',
+            name: 'lime green'
+          },
+          {
+            value: 'hsl(39, 100%, 50%)',
+            name: 'orange',
+            contrastValue: `hsl(0, 0%, 0%)`
+          },
+          {
+            value: 'hsl(300, 100%, 25%)',
+            name: 'royal purple'
+          },
+          {
+            value: 'hsl(51, 100%, 50%)',
+            name: 'lemon yellow'
+          },
+          {
+            value: 'hsl(328, 100%, 54%)',
+            name: 'fuschia'
+          },
+          {
+            value: 'hsl(177, 70%, 41%)',
+            name: 'cyan'
+          },
+          {
+            value: 'hsl(234, 20.5%, 47.8%)',
+            name: 'highlight'
+          },
+          {
+            value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
         ]
@@ -798,6 +909,10 @@ export class Colors {
       return palette;
     }
     throw new Error(`no palette named '${this.paletteKey}'`);
+  }
+
+  get prevSelectedColor() {
+    return this._prevSelectedColor
   }
 
   setColorMap(...colors: string[]) {
@@ -895,8 +1010,8 @@ export class Colors {
     const colors = this.palette.isPattern
       ? this.palette.patterns!
       : this._colorMap
-      ? this._colorMap.map(i => this.palette.colors[i])
-      : this.palette.colors;
+        ? this._colorMap.map(i => this.palette.colors[i])
+        : this.palette.colors;
     if (index === -1) {
       // highlight
       return colors.at(-1)!.contrastValue;
@@ -935,6 +1050,7 @@ export class Colors {
   // }
 
   selectPaletteWithKey(key: string) {
+    this._prevSelectedColor = this.paletteKey
     this._store.updateSettings(draft => {
       draft.color.colorPalette = key;
     });

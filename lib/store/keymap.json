@@ -30,14 +30,18 @@
     "action": "lowVisionModeToggle"
   },
   "n": {
-    "label": "Activate / pause narrative highlight mode",
+    "label": "Toggle narrative highlight mode",
     "caseSensitive": false,
-    "action": "narrativeHighlightModeStart"
+    "action": "narrativeHighlightModeToggle"
   },
   "q": {
     "label": "Query data",
     "caseSensitive": false,
     "action": "queryData"
+  },
+  "r": {
+    "label": "Repeat last message",
+    "action": "repeatLastAnnouncement"
   },
   "s": {
     "label": "Toggle sonification mode",
@@ -54,47 +58,47 @@
     "caseSensitive": false,
     "action": "voicingModeToggle"
   },
-  "ArrowRight": {
+  "arrowright": {
     "label": "Move right",
     "action": "moveRight"
   },
-  "ArrowLeft": {
+  "arrowleft": {
     "label": "Move left",
     "action": "moveLeft"
   },
-  "ArrowUp": {
+  "arrowup": {
     "label": "Move up",
     "action": "moveUp"
   },
-  "ArrowDown": {
+  "arrowdown": {
     "label": "Move down",
     "action": "moveDown"
   },
-  "Shift+ArrowUp": {
+  "Shift+arrowup": {
     "label": "Move out",
     "action": "moveOut"
   },
-  "Shift+ArrowDown": {
+  "Shift+arrowdown": {
     "label": "Move in",
     "action": "moveIn"
   },
-  "Shift+End": {
+  "Shift+end": {
     "label": "Play datapoints to the right",
     "action": "playRight"
   },
-  "Shift+Home": {
+  "Shift+home": {
     "label": "Play datapoints to the left",
     "action": "playLeft"
   },
-  "Ctrl+Control": {
+  "Ctrl+control": {
     "label": "Stop playing",
     "action": "stopPlay"
   },
-  "Home": {
+  "home": {
     "label": "Go to first point in series",
     "action": "goFirst"
   },
-  "End": {
+  "end": {
     "label": "Go to last point in series",
     "action": "goLast"
   },
@@ -107,14 +111,14 @@
     "action": "goLast"
   },
   " ": {
-    "label": "Repeat last message",
-    "action": "repeatLastAnnouncement"
+    "label": "Play or pause audio",
+    "action": "mediaPlayPause"
   },
-  "Enter": {
+  "enter": {
     "label": "Select a datapoint",
     "action": "select"
   },
-  "Shift+Enter": {
+  "Shift+enter": {
     "label": "Extend the datapoint selection",
     "action": "selectExtend"
   },
@@ -134,19 +138,15 @@
     "label": "Go to the chart maximum",
     "action": "goTotalMaximum"
   },
-  "Ctrl+Shift+V": {
+  "Ctrl+Shift+v": {
     "label": "Announce version info",
     "action": "announceVersionInfo"
-  },
-  "Shift+N": {
-    "label": "End narrative highlight mode",
-    "action": "narrativeHighlightModeEnd"
   },
   "Ctrl": {
     "label": "Stop speaking (self-voicing mode)",
     "action": "shutUp"
   },
-  "Escape": {
+  "escape": {
     "label": "Stop speaking (self-voicing mode)",
     "action": "shutUp"
   }

@@ -16,7 +16,7 @@ export class ParaViewController extends Logger {
     if (this._store.settings.chart.isStatic) {
       return;
     }
-    let key = event.key === 'Control' ? 'Ctrl' : event.key;
+    let key = event.key === 'Control' ? 'Ctrl' : event.key.toLocaleLowerCase();
     let mods = [
       event.altKey ? 'Alt' : '',
       event.ctrlKey ? 'Ctrl' : '',
