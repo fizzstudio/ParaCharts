@@ -29,7 +29,12 @@ export interface PopupShapeOptions extends ShapeOptions {
     shape?: ShapeTypes
 }
 
+//NB: this refers to how far the arrow sticks out of the box
+//even when it's on the side and width might be a more accurate word
 const BOX_ARROW_HEIGHT = 10
+//Similarly, this always refers to the distance between the point of the arrow and where it 
+//meets the box along whatever primary axis is being used
+const BOX_ARROW_WIDTH = 15
 
 export class Popup extends View {
     protected _label: Label;
@@ -108,9 +113,6 @@ export class Popup extends View {
                     textAnchor: 'start'
                 }));
             });
-            //console.log(this.popupLabelOptions.items)
-            //console.log(this.paraview.documentView?.chartLayers.dataLayer.chartInfo.navMap!.cursor)
-            
         }
         else {
             this._grid = new GridLayout(this.paraview, {
@@ -172,25 +174,27 @@ export class Popup extends View {
     }
 
     shiftLabel() {
-        if (this.label.right + this.rightPadding > this.paraview.documentView!.chartLayers.width) {
+        const chartWidth = parseFloat(this.paraview.documentView!.chartLayers.width.toFixed(5))
+        if (this.label.right + this.rightPadding > chartWidth) {
             if (this.popupLabelOptions.type === "chord") {
                 this.arrowPosition = "right"
                 //this.popupLabelOptions.x = this.label.x - (this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5)
                 //console.log(JSON.parse(JSON.stringify(this._label.width)))
                 //this.popupLabelOptions.x = this.popupLabelOptions.x! - this._label.width - BOX_ARROW_HEIGHT - this.leftPadding + this.rightPadding + 50
                 this.popupLabelOptions.x = this.label.x - BOX_ARROW_HEIGHT - this.leftPadding - this.label.width / 2 - 112
-                this.horizShift = Math.min((this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5), this.label.width / 2 - 5)
+                //this.horizShift = Math.min((this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width), this.label.width / 2 - 5)
+                this.horizShift = this.label.right + this.rightPadding - chartWidth
                 this._label = new Label(this.paraview, this.popupLabelOptions)
             }
             else {
-                this.popupLabelOptions.x = this.label.x - (this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5)
-                this.horizShift = Math.min((this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5), this.label.width / 2 - 5)
+                this.popupLabelOptions.x = this.label.x - (this.label.right + this.rightPadding - chartWidth)
+                this.horizShift = this.label.right + this.rightPadding - chartWidth
                 this._label = new Label(this.paraview, this.popupLabelOptions)
             }
         }
         if (this.label.left - this.leftPadding < 0) {
-            this.popupLabelOptions.x = this.label.x + (this.leftPadding - this.label.left + 5)
-            this.horizShift = - Math.min((this.leftPadding - this.label.left + 5), this.label.width / 2 - 5)
+            this.popupLabelOptions.x = this.label.x + (this.leftPadding - this.label.left)
+            this.horizShift = - (this.leftPadding - this.label.left)
             this._label = new Label(this.paraview, this.popupLabelOptions)
         }
         //Note shifting the label up away from the datapoint in the event of text wrap
@@ -208,25 +212,30 @@ export class Popup extends View {
     }
 
     generateBox(options: PopupShapeOptions) {
-        let boxType = options.shape ?? "box"
-        let grid = this._grid
-        let y = grid.bottom
-        let x = grid.x
-        let width = grid.width
-        let height = grid.height
+        const boxType = options.shape ?? "box";
+        const grid = this._grid;
+        const y = grid.bottom;
+        const x = grid.x;
+        const width = grid.width, height = grid.height;
+        const lPad = this.leftPadding, rPad = this.rightPadding, uPad = this.upPadding, dPad = this.downPadding;
+        const hShift = this.horizShift;
         if (boxType === "boxWithArrow") {
             if (this.arrowPosition == "bottom") {
-                let shape = new PopupPathShape(this.paraview, {
-                    points: [new Vec2(x - this.leftPadding, y - height - this.upPadding),
-                    new Vec2(x - this.leftPadding, y + this.downPadding),
+                const shape = new PopupPathShape(this.paraview, {
+                    points: [new Vec2(x - lPad, y - height - uPad),
+                    new Vec2(x - lPad, y + dPad),
 
-                    new Vec2(x + width / 2 - Math.min(width / 4, 15) + this.horizShift, y + this.downPadding),
-                    new Vec2(x + width / 2 + this.horizShift, y + this.downPadding + BOX_ARROW_HEIGHT),
-                    new Vec2(x + width / 2 + Math.min(width / 4, 15) + this.horizShift, y + this.downPadding),
+                    new Vec2(Math.max(x + width / 2 - Math.min(width / 2, BOX_ARROW_WIDTH) + hShift, x - lPad), y + dPad),
+                    //This is manually correcting for what I'm pretty sure are floating-point errors
+                    new Vec2(Math.abs(x + width / 2 + hShift - (x + width + rPad)) < .5
+                        ? x + width + rPad :
+                        Math.abs(x + width / 2 + hShift - (x - lPad)) < .5 ? x - lPad
+                            : x + width / 2 + hShift, y + dPad + BOX_ARROW_HEIGHT),
+                    new Vec2(Math.min(x + width / 2 + Math.min(width / 2, BOX_ARROW_WIDTH) + hShift, x + width + rPad), y + dPad),
 
-                    new Vec2(x + width + this.rightPadding, y + this.downPadding),
-                    new Vec2(x + width + this.rightPadding, y - height - this.upPadding),
-                    new Vec2(x - this.leftPadding, y - height - this.upPadding)],
+                    new Vec2(x + width + rPad, y + dPad),
+                    new Vec2(x + width + rPad, y - height - uPad),
+                    new Vec2(x - lPad, y - height - uPad)],
                     fill: options.fill,
                     stroke: options.stroke,
                     shape: "boxWithArrow",
@@ -237,17 +246,16 @@ export class Popup extends View {
             else if (this.arrowPosition == "right") {
                 let shape = new PopupPathShape(this.paraview, {
                     points:
-                        [new Vec2(x - this.leftPadding, y - height - this.upPadding),
-                        new Vec2(x - this.leftPadding, y + this.downPadding),
-                        new Vec2(x + width + this.rightPadding, y + this.downPadding),
+                        [new Vec2(x - lPad, y - height - uPad),
+                        new Vec2(x - lPad, y + dPad),
+                        new Vec2(x + width + rPad, y + dPad),
 
-                        new Vec2(x + width + this.rightPadding, y - height / 2 + Math.min(height / 4, 15)),
-                        new Vec2(x + width + this.rightPadding + BOX_ARROW_HEIGHT, y - height / 2),
-                        new Vec2(x + width + this.rightPadding, y - height / 2 - Math.min(height / 4, 15)),
+                        new Vec2(x + width + rPad, y - height / 2 + Math.min(height / 4, 15)),
+                        new Vec2(x + width + rPad + BOX_ARROW_HEIGHT, y - height / 2),
+                        new Vec2(x + width + rPad, y - height / 2 - Math.min(height / 4, 15)),
 
-
-                        new Vec2(x + width + this.rightPadding, y - height - this.upPadding),
-                        new Vec2(x - this.leftPadding, y - height - this.upPadding)],
+                        new Vec2(x + width + rPad, y - height - uPad),
+                        new Vec2(x - lPad, y - height - uPad)],
                     fill: options.fill,
                     stroke: options.stroke,
                     shape: "boxWithArrow",
@@ -258,17 +266,16 @@ export class Popup extends View {
             else if (this.arrowPosition == "left") {
                 let shape = new PopupPathShape(this.paraview, {
                     points:
-                        [new Vec2(x - this.leftPadding, y - height - this.upPadding),
+                        [new Vec2(x - lPad, y - height - uPad),
 
+                        new Vec2(x - lPad, y - height / 2 - Math.min(height / 4, 15)),
+                        new Vec2(x - lPad - BOX_ARROW_HEIGHT, y - height / 2),
+                        new Vec2(x - lPad, y - height / 2 + Math.min(height / 4, 15)),
 
-                        new Vec2(x - this.leftPadding, y - height / 2 - Math.min(height / 4, 15)),
-                        new Vec2(x - this.leftPadding - BOX_ARROW_HEIGHT, y - height / 2),
-                        new Vec2(x - this.leftPadding, y - height / 2 + Math.min(height / 4, 15)),
-
-                        new Vec2(x - this.leftPadding, y + this.downPadding),
-                        new Vec2(x + width + this.rightPadding, y + this.downPadding),
-                        new Vec2(x + width + this.rightPadding, y - height - this.upPadding),
-                        new Vec2(x - this.leftPadding, y - height - this.upPadding)],
+                        new Vec2(x - lPad, y + dPad),
+                        new Vec2(x + width + rPad, y + dPad),
+                        new Vec2(x + width + rPad, y - height - uPad),
+                        new Vec2(x - lPad, y - height - uPad)],
                     fill: options.fill,
                     stroke: options.stroke,
                     shape: "boxWithArrow",
@@ -278,16 +285,20 @@ export class Popup extends View {
             }
             else {
                 let shape = new PopupPathShape(this.paraview, {
-                    points: [new Vec2(x - this.leftPadding, y - height - this.upPadding),
-                    new Vec2(x - this.leftPadding, y + this.downPadding),
-                    new Vec2(x + width + this.rightPadding, y + this.downPadding),
-                    new Vec2(x + width + this.rightPadding, y - height - this.upPadding),
+                    points: [new Vec2(x - lPad, y - height - uPad),
+                    new Vec2(x - lPad, y + dPad),
+                    new Vec2(x + width + rPad, y + dPad),
+                    new Vec2(x + width + rPad, y - height - uPad),
 
-                    new Vec2(x + width / 2 + Math.min(width / 4, 15) + this.horizShift, y - height - this.upPadding),
-                    new Vec2(x + width / 2 + this.horizShift, y - height - this.upPadding - BOX_ARROW_HEIGHT),
-                    new Vec2(x + width / 2 + - Math.min(width / 4, 15) + this.horizShift, y - height - this.upPadding),
+                    new Vec2(Math.min(x + width / 2 + Math.min(width / 4, 15) + hShift, x + width + rPad), y - height - uPad),
+                    //This is manually correcting for what I'm pretty sure are floating-point errors
+                    new Vec2(Math.abs(x + width / 2 + hShift - (x + width + rPad)) < .5
+                        ? x + width + rPad :
+                        Math.abs(x + width / 2 + hShift - (x - lPad)) < .5 ? x - lPad
+                            : x + width / 2 + hShift, y - height - uPad - BOX_ARROW_HEIGHT),
+                    new Vec2(Math.max(x + width / 2 + - Math.min(width / 4, 15) + hShift, x - lPad), y - height - uPad),
 
-                    new Vec2(x - this.leftPadding, y - height - this.upPadding)],
+                    new Vec2(x - lPad, y - height - uPad)],
                     fill: options.fill,
                     stroke: options.stroke,
                     shape: "boxWithArrow",
@@ -298,11 +309,11 @@ export class Popup extends View {
         }
         else {
             let shape = new PopupPathShape(this.paraview, {
-                points: [new Vec2(x - this.leftPadding, y - height - this.upPadding),
-                new Vec2(x - this.leftPadding, y + this.downPadding),
-                new Vec2(x + width + this.rightPadding, y + this.downPadding),
-                new Vec2(x + width + this.rightPadding, y - height - this.upPadding),
-                new Vec2(x - this.leftPadding, y - height - this.upPadding)],
+                points: [new Vec2(x - lPad, y - height - uPad),
+                new Vec2(x - lPad, y + dPad),
+                new Vec2(x + width + rPad, y + dPad),
+                new Vec2(x + width + rPad, y - height - uPad),
+                new Vec2(x - lPad, y - height - uPad)],
                 fill: options.fill,
                 stroke: options.stroke,
                 shape: "box"
@@ -533,27 +544,30 @@ export class PopupPathShape extends PathShape {
         }
         const relPoints = this._points.map(p => p.add(this._loc));
         let d = fixed``
-        if (!addCurve[0] || relPoints[0] == relPoints[1]) {
+        let length = relPoints.length
+        if (!addCurve[0]
+            || ((Math.abs(relPoints[0].x - relPoints[length - 2].x) < rad / 2 && Math.abs(relPoints[0].y - relPoints[length - 2].y) < rad / 2))) {
             d += fixed`M${relPoints[0].x},${relPoints[0].y}`;
         }
         else {
             let p = relPoints[0]
-            let nextP = relPoints[(0 + 1) % relPoints.length]
+            let nextP = relPoints[(0 + 1) % length]
             let diffX1 = Math.sign(p.x - nextP.x)
             let diffY1 = Math.sign(p.y - nextP.y)
             d += fixed`M${p.x - diffX1 * rad},${p.y - diffY1 * rad}`;
         }
-        for (let i = 1; i < relPoints.length; i++) {
-            let p = relPoints[i % relPoints.length]
-            //console.log(((relPoints[i].x == relPoints[(i+1) % relPoints.length].x && relPoints[i].y == relPoints[(i+1) % relPoints.length].y) && i !== relPoints.length - 1))
-            if (!addCurve[i % relPoints.length] || ((relPoints[i].x == relPoints[(i + 1) % relPoints.length].x && relPoints[i].y == relPoints[(i + 1) % relPoints.length].y) && i !== relPoints.length - 1)) {
+        for (let i = 1; i < length; i++) {
+            let p = relPoints[i % length]
+            let prevP = relPoints[(i - 1 + length) % length]
+            //NB: This line looks like it does because the first and last point of _points are the same
+            //and this is the easiest way to correct for it
+            let nextP = relPoints[(i + 1 + (i === length - 1 ? 1 : 0)) % length]
+            if (!addCurve[i % length]
+                || ((Math.abs(p.x - prevP.x) < rad / 2 && Math.abs(p.y - prevP.y) < rad / 2))
+                || ((Math.abs(p.x - nextP.x) < rad / 2 && Math.abs(p.y - nextP.y) < rad / 2) && i !== length - 1)) {
                 d += fixed`L${p.x},${p.y}`;
             }
             else {
-                let prevP = relPoints[(i - 1 + relPoints.length) % relPoints.length]
-                //This line looks like it does because ._points stores the same point twice
-                //and this is the easiest way to correct for it
-                let nextP = relPoints[(i + 1 + (i === relPoints.length - 1 ? 1 : 0)) % relPoints.length]
                 let diffX1 = Math.sign(p.x - prevP.x)
                 let diffY1 = Math.sign(p.y - prevP.y)
                 let diffX2 = Math.sign(nextP.x - p.x)
