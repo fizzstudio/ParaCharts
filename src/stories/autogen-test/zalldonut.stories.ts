@@ -1,0 +1,30 @@
+import { Chart, type ChartProps } from '../Chart';
+import { familyManifestPathsMap } from '../chartSelectorHelper';
+import type { Meta, StoryObj } from "@storybook/web-components-vite";
+
+type Story = StoryObj<ChartProps>;
+
+const titleToFilenameMap = familyManifestPathsMap('pastry', false);
+
+const meta = {
+  title: "Basic Charts/Pastry Charts/Donut Charts",
+  render: (args) => Chart(args),
+  argTypes: {
+    filename: {
+      description: 'Chart Title',
+      control: {type: 'select'},
+      options: Object.keys(titleToFilenameMap),
+      mapping: titleToFilenameMap
+    }
+  },
+} satisfies Meta<ChartProps>;
+
+export default meta;
+
+export const AllDonutCharts: Story = {
+  name: 'All Donut Charts',
+  args: {
+    filename: '',
+    forcecharttype: "donut",
+  }
+};
