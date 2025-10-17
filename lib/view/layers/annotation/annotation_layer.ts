@@ -154,12 +154,10 @@ export class AnnotationLayer extends PlotLayer {
     const dp = cursor.datapoints[0]
     const dpView = this.paraview.documentView!.chartLayers!.dataLayer.datapointView(dp.seriesKey, dp.datapointIndex)!
     const items = this.paraview.documentView?.chartLayers.dataLayer.chartInfo.popuplegend()!;
-    if (this.type === "background"){
-      
+    if (this.type === "background") {
       this.paraview.store.addLineBreak(this.paraview.documentView?.chartLayers.dataLayer.chartInfo.navMap!.cursor.index! / (this.paraview.store.model!.series[0].datapoints.length - 1),
-      cursor.index!, cursor.datapoints[0].seriesKey, false)
+        cursor.index!, cursor.datapoints[0].seriesKey, false)
     }
-    
     const popup = new Popup(this.paraview,
       {
         text: text,

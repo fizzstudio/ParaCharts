@@ -71,7 +71,7 @@ export class HighlightsLayer extends PlotLayer {
         y: y,
         textAnchor: "middle",
         classList: ['annotationlabel'],
-        id: this.id,
+        id: `sequence-highlight-popup-${index}`,
         color: firstDPView.color,
         margin: 60
       },
@@ -94,7 +94,7 @@ export class HighlightsLayer extends PlotLayer {
         this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!);
       if (selector.startsWith('datapoint')) {
         overlaySyms.push(datapointViews[0].symbol!.clone());
-        if (this.paraview.store.settings.chart.showPopups) {
+        if (this.paraview.store.settings.chart.showPopups && this.type == "foreground") {
           datapointViews[0].addPopup()
         }
       } else if (selector.startsWith('sequence')) {
@@ -118,7 +118,7 @@ export class HighlightsLayer extends PlotLayer {
             opacity: 0.25
           });
         }
-        if (this.paraview.store.settings.chart.showPopups) {
+        if (this.paraview.store.settings.chart.showPopups && this.type == "foreground") {
           this.sequencePopup(datapointViews)
         }
       }
