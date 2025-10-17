@@ -42,7 +42,11 @@
     "test-storybook": "test-storybook --url http://localhost:5180/ --maxWorkers=2",
     "pubpatch": "npm version patch && npm publish",
     "pubminor": "npm version minor && npm publish",
-    "pubmajor": "npm version major && npm publish"
+    "pubmajor": "npm version major && npm publish",
+        "docs:generate": "node ./docs/scripts/buildDocs.ts",
+    "docs:dev": "npm run docs:generate && vitepress dev docs",
+    "docs:build": "npm run docs:generate && vitepress build docs",
+    "docs:serve": "vitepress preview docs"
   },
   "files": [
     "dist"
