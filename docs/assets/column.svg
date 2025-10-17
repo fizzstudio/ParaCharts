@@ -1,0 +1,472 @@
+<svg tabindex="0" aria-label="Spotify's premium subscribers 2015 to 2019, accessible chart" xmlns="http://www.w3.org/2000/svg" data-charttype="bar" class="  " viewBox="0 0 701.30 580.87" style="font-family:Helvetica, sans-serif;font-weight:300;--axis-line-color:hsl(0, 0%, 0%);--label-color:hsl(0, 0%, 0%);" id="para6fdbc885-076a-4c7a-861d-a02a523508df"><style>#para6fdbc885-076a-4c7a-861d-a02a523508df { --axis-line-color: hsl(0, 0%, 0%); --label-color: hsl(0, 0%, 0%); --tick-grid-color: hsl(270, 50%, 50%); --background-color: white; --theme-color: var(--fizz-theme-color, purple); --theme-color-light: var(--fizz-theme-color-light, hsl(275.4, 100%, 88%)); --theme-contrast-color: white; --fizz-theme-color: var(--paracharts-theme-color, navy); --fizz-theme-color-light: var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%)); --visited-color: hsl(0, 100%, 50%); --visited-stroke-width: 6; --selected-color: var(--label-color); --datapoint-centroid: 50% 50%; --focus-animation: all 0.5s ease-in-out; --chart-cursor: pointer; --data-cursor: cell; --focus-shadow-color: gray; --focus-shadow: drop-shadow(0px 0px 4px var(--focus-shadow-color)); display: block; font-family: "Trebuchet MS", Helvetica, sans-serif; font-size: var(--chart-view-font-size, 1rem); }
+#frame { fill: var(--background-color); stroke: none; }
+#frame.pending { fill: lightgray; }
+.darkmode { --axis-line-color: ghostwhite; --label-color: ghostwhite; --background-color: black; }
+#loading-message { fill: black; }
+#loading-message text { fill: white; }
+.grid-horiz { stroke: var(--axis-line-color); opacity: 0.2; }
+.grid-vert { stroke: var(--axis-line-color); opacity: 0.2; }
+#grid-zero { opacity: 0.6; stroke-width: 2; }
+.tick-horiz { stroke: black; }
+.tick-vert { stroke: black; }
+.label { fill: var(--label-color); stroke: none; }
+.tick-label { font-size: 13px; fill: var(--label-color); }
+.bar-label { font-size: 13px; fill: white; }
+.radial-value-label { fill: var(--label-color); }
+.radial-cat-label-leader { fill: none; stroke-width: 2; }
+.radial-slice { stroke: white; stroke-width: 2; }
+.label-leader { stroke-width: 2; }
+#vert-axis-line { fill: none; stroke: var(--axis-line-color); stroke-width: 2px; stroke-linecap: round; }
+#horiz-axis-line { fill: none; stroke: var(--axis-line-color); opacity: 1; stroke-width: 2px; stroke-linecap: round; }
+rect#data-backdrop { stroke: none; fill: none; pointer-events: all; }
+.symbol { stroke-linejoin: round; }
+.symbol.outline { fill: white; }
+use.visited-mark { pointer-events: none; }
+.data-line { fill: none; stroke-linecap: round; }
+.chart-title { font-size: 1.25rem; }
+.range-highlight { fill: silver; opacity: 0.5; }
+.linebreaker-marker { fill: rgb(112, 79, 79); }
+.user-linebreaker-marker { fill: rgb(229, 16, 16); }
+.trend-line { display: inline; stroke-width: 8px; stroke-linecap: butt; stroke-dasharray: 12, 12; stroke-opacity: 0.8; }
+.user-trend-line { display: inline; stroke-width: 8px; stroke-linecap: butt; stroke-dasharray: 12, 12; stroke-opacity: 0.8; }
+.datapoint.visited { stroke: var(--visited-color); fill: var(--visited-color); stroke-width: var(--visited-stroke-width); }
+.control-column { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 0.5em; }</style>
+        <defs>
+            <clipPath id="clip-path">
+              <rect x="0" y="0" width="610" height="450">
+              </rect>
+            </clipPath>
+        </defs>
+        <metadata data-type="text/jim+json">
+          {
+  "dataset": {
+    "title": "Spotify's premium subscribers 2015 to 2019",
+    "facets": {
+      "x": {
+        "label": "Quarter",
+        "variableType": "independent",
+        "measure": "interval",
+        "datatype": "date",
+        "units": "quarter",
+        "displayType": {
+          "type": "axis"
+        }
+      },
+      "y": {
+        "label": "Premium Subscribers",
+        "variableType": "dependent",
+        "measure": "ratio",
+        "datatype": "number",
+        "multiplier": 1000000,
+        "displayType": {
+          "type": "axis"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "Paying subscribers in millions",
+        "type": "column",
+        "records": [
+          {
+            "x": "Q1 2015",
+            "y": "18"
+          },
+          {
+            "x": "Q2 2015",
+            "y": "22"
+          },
+          {
+            "x": "Q3 2015",
+            "y": "24"
+          },
+          {
+            "x": "Q4 2015",
+            "y": "28"
+          },
+          {
+            "x": "Q1 2016",
+            "y": "30"
+          },
+          {
+            "x": "Q2 2016",
+            "y": "36"
+          },
+          {
+            "x": "Q3 2016",
+            "y": "40"
+          },
+          {
+            "x": "Q4 2016",
+            "y": "48"
+          },
+          {
+            "x": "Q1 2017",
+            "y": "52"
+          },
+          {
+            "x": "Q2 2017",
+            "y": "59"
+          },
+          {
+            "x": "Q3 2017",
+            "y": "62"
+          },
+          {
+            "x": "Q4 2017",
+            "y": "71"
+          },
+          {
+            "x": "Q1 2018",
+            "y": "75"
+          },
+          {
+            "x": "Q2 2018",
+            "y": "83"
+          },
+          {
+            "x": "Q3 2018",
+            "y": "87"
+          },
+          {
+            "x": "Q4 2018",
+            "y": "96"
+          },
+          {
+            "x": "Q1 2019",
+            "y": "100"
+          },
+          {
+            "x": "Q2 2019",
+            "y": "108"
+          },
+          {
+            "x": "Q3 2019",
+            "y": "113"
+          },
+          {
+            "x": "Q4 2019",
+            "y": "124"
+          }
+        ]
+      }
+    ]
+  },
+  "selectors": {
+    "chartTitle": {
+      "dom": "#chart-title",
+      "json": "$.datasets[0].title"
+    },
+    "datapoint1": {
+      "dom": "#datapoint-q1_2015_18_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[0].*"
+      ]
+    },
+    "datapoint2": {
+      "dom": "#datapoint-q2_2015_22_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[1].*"
+      ]
+    },
+    "datapoint3": {
+      "dom": "#datapoint-q3_2015_24_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[2].*"
+      ]
+    },
+    "datapoint4": {
+      "dom": "#datapoint-q4_2015_28_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[3].*"
+      ]
+    },
+    "datapoint5": {
+      "dom": "#datapoint-q1_2016_30_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[4].*"
+      ]
+    },
+    "datapoint6": {
+      "dom": "#datapoint-q2_2016_36_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[5].*"
+      ]
+    },
+    "datapoint7": {
+      "dom": "#datapoint-q3_2016_40_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[6].*"
+      ]
+    },
+    "datapoint8": {
+      "dom": "#datapoint-q4_2016_48_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[7].*"
+      ]
+    },
+    "datapoint9": {
+      "dom": "#datapoint-q1_2017_52_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[8].*"
+      ]
+    },
+    "datapoint10": {
+      "dom": "#datapoint-q2_2017_59_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[9].*"
+      ]
+    },
+    "datapoint11": {
+      "dom": "#datapoint-q3_2017_62_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[10].*"
+      ]
+    },
+    "datapoint12": {
+      "dom": "#datapoint-q4_2017_71_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[11].*"
+      ]
+    },
+    "datapoint13": {
+      "dom": "#datapoint-q1_2018_75_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[12].*"
+      ]
+    },
+    "datapoint14": {
+      "dom": "#datapoint-q2_2018_83_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[13].*"
+      ]
+    },
+    "datapoint15": {
+      "dom": "#datapoint-q3_2018_87_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[14].*"
+      ]
+    },
+    "datapoint16": {
+      "dom": "#datapoint-q4_2018_96_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[15].*"
+      ]
+    },
+    "datapoint17": {
+      "dom": "#datapoint-q1_2019_100_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[16].*"
+      ]
+    },
+    "datapoint18": {
+      "dom": "#datapoint-q2_2019_108_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[17].*"
+      ]
+    },
+    "datapoint19": {
+      "dom": "#datapoint-q3_2019_113_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[18].*"
+      ]
+    },
+    "datapoint20": {
+      "dom": "#datapoint-q4_2019_124_Paying subscribers in millions",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[19].*"
+      ]
+    }
+  }
+}
+        </metadata>
+        <rect id="frame" pointer-events="all" x="0" y="0" width="100%" height="100%">
+        </rect>
+        <g role="graphics-document" aria-roledescription="column chart" transform="translate(25.60,8)">
+      <text class=" chart-title label " role="heading" x="166.47" y="18" text-anchor="start" id="chart-title">
+        Spotify's premium subscribers 2015 to 2019
+      </text>
+        <g id="horiz-axis" role="graphics-object" aria-roledescription="x-axis" transform="translate(55.70,512)">
+      <path id="horiz-axis-line" d="M-10,0 h620"/>
+        <g id="horiz-axis-tick-strip" transform="translate(0,-1)">
+        </g>
+        <g id="tick-label-tier-horiz-0" transform="translate(15.25,15)">
+      <text class=" tick-label horiz south label " role="axislabel" x="8.49" y="8.49" text-anchor="end" transform="&#10;        translate(8.49,8.49)&#10;        rotate(-45)&#10;        translate(-8.49,-8.49)" id="tick-label-horiz-0">
+        Q1 2015
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="69.49" y="8.49" text-anchor="end" transform="&#10;        translate(69.49,8.49)&#10;        rotate(-45)&#10;        translate(-69.49,-8.49)" id="tick-label-horiz-2">
+        Q3 2015
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="130.49" y="8.49" text-anchor="end" transform="&#10;        translate(130.49,8.49)&#10;        rotate(-45)&#10;        translate(-130.49,-8.49)" id="tick-label-horiz-4">
+        Q1 2016
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="191.49" y="8.49" text-anchor="end" transform="&#10;        translate(191.49,8.49)&#10;        rotate(-45)&#10;        translate(-191.49,-8.49)" id="tick-label-horiz-6">
+        Q3 2016
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="252.49" y="8.49" text-anchor="end" transform="&#10;        translate(252.49,8.49)&#10;        rotate(-45)&#10;        translate(-252.49,-8.49)" id="tick-label-horiz-8">
+        Q1 2017
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="313.49" y="8.49" text-anchor="end" transform="&#10;        translate(313.49,8.49)&#10;        rotate(-45)&#10;        translate(-313.49,-8.49)" id="tick-label-horiz-10">
+        Q3 2017
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="374.49" y="8.49" text-anchor="end" transform="&#10;        translate(374.49,8.49)&#10;        rotate(-45)&#10;        translate(-374.49,-8.49)" id="tick-label-horiz-12">
+        Q1 2018
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="435.49" y="8.49" text-anchor="end" transform="&#10;        translate(435.49,8.49)&#10;        rotate(-45)&#10;        translate(-435.49,-8.49)" id="tick-label-horiz-14">
+        Q3 2018
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="496.49" y="8.49" text-anchor="end" transform="&#10;        translate(496.49,8.49)&#10;        rotate(-45)&#10;        translate(-496.49,-8.49)" id="tick-label-horiz-16">
+        Q1 2019
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="557.49" y="8.49" text-anchor="end" transform="&#10;        translate(557.49,8.49)&#10;        rotate(-45)&#10;        translate(-557.49,-8.49)" id="tick-label-horiz-18">
+        Q3 2019
+      </text>
+        </g>
+        </g>
+        <g id="vert-axis" role="graphics-object" aria-roledescription="y-axis" transform="translate(0,62)">
+      <text class=" axis-title label " role="heading" x="14" y="225" text-anchor="middle" transform="&#10;        translate(14,225)&#10;        rotate(-90)&#10;        translate(-14,-225)" id="axis-title-vert">
+        Premium Subscribers
+      </text>
+        <g id="tick-label-tier-vert-0" transform="translate(25,0)">
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="455" text-anchor="end" id="tick-label-vert-0">
+        0
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="420.38" text-anchor="end" id="tick-label-vert-1">
+        10
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="385.77" text-anchor="end" id="tick-label-vert-2">
+        20
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="351.15" text-anchor="end" id="tick-label-vert-3">
+        30
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="316.54" text-anchor="end" id="tick-label-vert-4">
+        40
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="281.92" text-anchor="end" id="tick-label-vert-5">
+        50
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="247.31" text-anchor="end" id="tick-label-vert-6">
+        60
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="212.69" text-anchor="end" id="tick-label-vert-7">
+        70
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="178.08" text-anchor="end" id="tick-label-vert-8">
+        80
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="143.46" text-anchor="end" id="tick-label-vert-9">
+        90
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="108.85" text-anchor="end" id="tick-label-vert-10">
+        100
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="74.23" text-anchor="end" id="tick-label-vert-11">
+        110
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="39.62" text-anchor="end" id="tick-label-vert-12">
+        120
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="5" text-anchor="end" id="tick-label-vert-13">
+        130
+      </text>
+        </g>
+        <g id="vert-axis-tick-strip" transform="translate(46.70,0)">
+      <path id="" class="tick-vert" d="M10,0 h-10"/>
+      <path id="" class="grid-vert" d="M10,0 h610"/>
+      <path id="" class="tick-vert" d="M10,34.62 h-10"/>
+      <path id="" class="grid-vert" d="M10,34.62 h610"/>
+      <path id="" class="tick-vert" d="M10,69.23 h-10"/>
+      <path id="" class="grid-vert" d="M10,69.23 h610"/>
+      <path id="" class="tick-vert" d="M10,103.85 h-10"/>
+      <path id="" class="grid-vert" d="M10,103.85 h610"/>
+      <path id="" class="tick-vert" d="M10,138.46 h-10"/>
+      <path id="" class="grid-vert" d="M10,138.46 h610"/>
+      <path id="" class="tick-vert" d="M10,173.08 h-10"/>
+      <path id="" class="grid-vert" d="M10,173.08 h610"/>
+      <path id="" class="tick-vert" d="M10,207.69 h-10"/>
+      <path id="" class="grid-vert" d="M10,207.69 h610"/>
+      <path id="" class="tick-vert" d="M10,242.31 h-10"/>
+      <path id="" class="grid-vert" d="M10,242.31 h610"/>
+      <path id="" class="tick-vert" d="M10,276.92 h-10"/>
+      <path id="" class="grid-vert" d="M10,276.92 h610"/>
+      <path id="" class="tick-vert" d="M10,311.54 h-10"/>
+      <path id="" class="grid-vert" d="M10,311.54 h610"/>
+      <path id="" class="tick-vert" d="M10,346.15 h-10"/>
+      <path id="" class="grid-vert" d="M10,346.15 h610"/>
+      <path id="" class="tick-vert" d="M10,380.77 h-10"/>
+      <path id="" class="grid-vert" d="M10,380.77 h610"/>
+      <path id="" class="tick-vert" d="M10,415.38 h-10"/>
+      <path id="" class="grid-vert" d="M10,415.38 h610"/>
+        </g>
+      <path transform="translate(56.70,0)" id="vert-axis-line" d="M0,0 v450"/>
+        </g>
+      <g id="chart-layers" transform="translate(55.70,62)">
+        <rect id="data-backdrop" width="610" height="450"/>
+        <g id="background-annotation-layer">
+        <g>
+        </g>
+        <g>
+        </g>
+        <g>
+        </g>
+        </g>
+        <g id="data-layer" role="dataset">
+        <g id="series-paying_subscribers_in_millions" style="fill:hsl(225, 30%, 52%);stroke:hsl(225, 30%, 52%);stroke-width:4;">
+      <rect id="datapoint-q1_2015_18_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="5" y="387.69" width="20.50" height="62.31"/>
+      <rect id="datapoint-q2_2015_22_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="35.50" y="373.85" width="20.50" height="76.15"/>
+      <rect id="datapoint-q3_2015_24_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="66" y="366.92" width="20.50" height="83.08"/>
+      <rect id="datapoint-q4_2015_28_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="96.50" y="353.08" width="20.50" height="96.92"/>
+      <rect id="datapoint-q1_2016_30_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="127" y="346.15" width="20.50" height="103.85"/>
+      <rect id="datapoint-q2_2016_36_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="157.50" y="325.38" width="20.50" height="124.62"/>
+      <rect id="datapoint-q3_2016_40_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="188" y="311.54" width="20.50" height="138.46"/>
+      <rect id="datapoint-q4_2016_48_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="218.50" y="283.85" width="20.50" height="166.15"/>
+      <rect id="datapoint-q1_2017_52_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="249" y="270" width="20.50" height="180"/>
+      <rect id="datapoint-q2_2017_59_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="279.50" y="245.77" width="20.50" height="204.23"/>
+      <rect id="datapoint-q3_2017_62_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="310" y="235.38" width="20.50" height="214.62"/>
+      <rect id="datapoint-q4_2017_71_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="340.50" y="204.23" width="20.50" height="245.77"/>
+      <rect id="datapoint-q1_2018_75_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="371" y="190.38" width="20.50" height="259.62"/>
+      <rect id="datapoint-q2_2018_83_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="401.50" y="162.69" width="20.50" height="287.31"/>
+      <rect id="datapoint-q3_2018_87_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="432" y="148.85" width="20.50" height="301.15"/>
+      <rect id="datapoint-q4_2018_96_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="462.50" y="117.69" width="20.50" height="332.31"/>
+      <rect id="datapoint-q1_2019_100_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="493" y="103.85" width="20.50" height="346.15"/>
+      <rect id="datapoint-q2_2019_108_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="523.50" y="76.15" width="20.50" height="373.85"/>
+      <rect id="datapoint-q3_2019_113_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="554" y="58.85" width="20.50" height="391.15"/>
+      <rect id="datapoint-q4_2019_124_Paying subscribers in millions" style="stroke-width:0;" class=" datapoint " role="datapoint" x="584.50" y="20.77" width="20.50" height="429.23"/>
+        </g>
+        </g>
+        <g id="highlights-layer">
+        </g>
+        <g id="foreground-annotation-layer">
+        <g>
+        </g>
+        <g>
+        </g>
+        </g>
+        <g id="selection-layer">
+        </g>
+        <g id="focus-layer">
+        </g>
+      </g>
+        </g>
+      </svg>

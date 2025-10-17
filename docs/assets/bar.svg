@@ -1,0 +1,636 @@
+<svg tabindex="0" aria-label="Real GDP growth in the United States, by quarter 2011 to 2019, accessible chart" xmlns="http://www.w3.org/2000/svg" data-charttype="bar" class="  " viewBox="0 0 681.16 1182.95" style="font-family:Helvetica, sans-serif;font-weight:300;--axis-line-color:hsl(0, 0%, 0%);--label-color:hsl(0, 0%, 0%);" id="parab2f369a3-9637-4caf-ae1e-4f3acdd275d2"><style>#parab2f369a3-9637-4caf-ae1e-4f3acdd275d2 { --axis-line-color: hsl(0, 0%, 0%); --label-color: hsl(0, 0%, 0%); --tick-grid-color: hsl(270, 50%, 50%); --background-color: white; --theme-color: var(--fizz-theme-color, purple); --theme-color-light: var(--fizz-theme-color-light, hsl(275.4, 100%, 88%)); --theme-contrast-color: white; --fizz-theme-color: var(--paracharts-theme-color, navy); --fizz-theme-color-light: var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%)); --visited-color: hsl(0, 100%, 50%); --visited-stroke-width: 6; --selected-color: var(--label-color); --datapoint-centroid: 50% 50%; --focus-animation: all 0.5s ease-in-out; --chart-cursor: pointer; --data-cursor: cell; --focus-shadow-color: gray; --focus-shadow: drop-shadow(0px 0px 4px var(--focus-shadow-color)); display: block; font-family: "Trebuchet MS", Helvetica, sans-serif; font-size: var(--chart-view-font-size, 1rem); }
+#frame { fill: var(--background-color); stroke: none; }
+#frame.pending { fill: lightgray; }
+.darkmode { --axis-line-color: ghostwhite; --label-color: ghostwhite; --background-color: black; }
+#loading-message { fill: black; }
+#loading-message text { fill: white; }
+.grid-horiz { stroke: var(--axis-line-color); opacity: 0.2; }
+.grid-vert { stroke: var(--axis-line-color); opacity: 0.2; }
+#grid-zero { opacity: 0.6; stroke-width: 2; }
+.tick-horiz { stroke: black; }
+.tick-vert { stroke: black; }
+.label { fill: var(--label-color); stroke: none; }
+.tick-label { font-size: 13px; fill: var(--label-color); }
+.bar-label { font-size: 13px; fill: white; }
+.radial-value-label { fill: var(--label-color); }
+.radial-cat-label-leader { fill: none; stroke-width: 2; }
+.radial-slice { stroke: white; stroke-width: 2; }
+.label-leader { stroke-width: 2; }
+#vert-axis-line { fill: none; stroke: var(--axis-line-color); stroke-width: 2px; stroke-linecap: round; }
+#horiz-axis-line { fill: none; stroke: var(--axis-line-color); opacity: 1; stroke-width: 2px; stroke-linecap: round; }
+rect#data-backdrop { stroke: none; fill: none; pointer-events: all; }
+.symbol { stroke-linejoin: round; }
+.symbol.outline { fill: white; }
+use.visited-mark { pointer-events: none; }
+.data-line { fill: none; stroke-linecap: round; }
+.chart-title { font-size: 1.25rem; }
+.range-highlight { fill: silver; opacity: 0.5; }
+.linebreaker-marker { fill: rgb(112, 79, 79); }
+.user-linebreaker-marker { fill: rgb(229, 16, 16); }
+.trend-line { display: inline; stroke-width: 8px; stroke-linecap: butt; stroke-dasharray: 12, 12; stroke-opacity: 0.8; }
+.user-trend-line { display: inline; stroke-width: 8px; stroke-linecap: butt; stroke-dasharray: 12, 12; stroke-opacity: 0.8; }
+.datapoint.visited { stroke: var(--visited-color); fill: var(--visited-color); stroke-width: var(--visited-stroke-width); }
+.control-column { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 0.5em; }</style>
+        <defs>
+            <clipPath id="clip-path">
+              <rect x="0" y="0" width="600" height="1050">
+              </rect>
+            </clipPath>
+        </defs>
+        <metadata data-type="text/jim+json">
+          {
+  "dataset": {
+    "title": "Real GDP growth in the United States, by quarter 2011 to 2019",
+    "facets": {
+      "x": {
+        "label": "Quarter",
+        "variableType": "independent",
+        "measure": "interval",
+        "datatype": "date",
+        "units": "quarter",
+        "displayType": {
+          "type": "axis"
+        }
+      },
+      "y": {
+        "label": "Growth rate",
+        "variableType": "dependent",
+        "measure": "ratio",
+        "datatype": "number",
+        "multiplier": 0.01,
+        "displayType": {
+          "type": "axis"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "Percent change from preceding period",
+        "type": "column",
+        "records": [
+          {
+            "x": "Q1 '11",
+            "y": "-1"
+          },
+          {
+            "x": "Q2 '11",
+            "y": "2.9"
+          },
+          {
+            "x": "Q3 '11",
+            "y": "-0.1"
+          },
+          {
+            "x": "Q4 '11",
+            "y": "4.7"
+          },
+          {
+            "x": "Q1 '12",
+            "y": "3.2"
+          },
+          {
+            "x": "Q2 '12",
+            "y": "1.7"
+          },
+          {
+            "x": "Q3 '12",
+            "y": "0.5"
+          },
+          {
+            "x": "Q4 '12",
+            "y": "0.5"
+          },
+          {
+            "x": "Q1 '13",
+            "y": "3.6"
+          },
+          {
+            "x": "Q2 '13",
+            "y": "0.5"
+          },
+          {
+            "x": "Q3 '13",
+            "y": "3.2"
+          },
+          {
+            "x": "Q4 '13",
+            "y": "3.2"
+          },
+          {
+            "x": "Q1 '14",
+            "y": "-1.1"
+          },
+          {
+            "x": "Q2 '14",
+            "y": "5.5"
+          },
+          {
+            "x": "Q3 '14",
+            "y": "5"
+          },
+          {
+            "x": "Q4 '14",
+            "y": "2.3"
+          },
+          {
+            "x": "Q1 '15",
+            "y": "3.2"
+          },
+          {
+            "x": "Q2 '15",
+            "y": "3"
+          },
+          {
+            "x": "Q3 '15",
+            "y": "1.3"
+          },
+          {
+            "x": "Q4 '15",
+            "y": "0.1"
+          },
+          {
+            "x": "Q1 '16",
+            "y": "2"
+          },
+          {
+            "x": "Q2 '16",
+            "y": "1.9"
+          },
+          {
+            "x": "Q3 '16",
+            "y": "2.2"
+          },
+          {
+            "x": "Q4 '16",
+            "y": "2"
+          },
+          {
+            "x": "Q1 '17",
+            "y": "2.3"
+          },
+          {
+            "x": "Q2 '17",
+            "y": "2.2"
+          },
+          {
+            "x": "Q3 '17",
+            "y": "3.2"
+          },
+          {
+            "x": "Q4 '17",
+            "y": "3.5"
+          },
+          {
+            "x": "Q1 '18",
+            "y": "2.5"
+          },
+          {
+            "x": "Q2 '18",
+            "y": "3.5"
+          },
+          {
+            "x": "Q3 '18",
+            "y": "2.9"
+          },
+          {
+            "x": "Q4 '18",
+            "y": "1.1"
+          },
+          {
+            "x": "Q1 '19",
+            "y": "3.1"
+          },
+          {
+            "x": "Q2 '19",
+            "y": "2"
+          },
+          {
+            "x": "Q3 '19",
+            "y": "2.1"
+          }
+        ]
+      }
+    ]
+  },
+  "selectors": {
+    "chartTitle": {
+      "dom": "#chart-title",
+      "json": "$.datasets[0].title"
+    },
+    "datapoint1": {
+      "dom": "#datapoint-q1__11_-1_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[0].*"
+      ]
+    },
+    "datapoint2": {
+      "dom": "#datapoint-q2__11_2_9_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[1].*"
+      ]
+    },
+    "datapoint3": {
+      "dom": "#datapoint-q3__11_-0_1_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[2].*"
+      ]
+    },
+    "datapoint4": {
+      "dom": "#datapoint-q4__11_4_7_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[3].*"
+      ]
+    },
+    "datapoint5": {
+      "dom": "#datapoint-q1__12_3_2_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[4].*"
+      ]
+    },
+    "datapoint6": {
+      "dom": "#datapoint-q2__12_1_7_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[5].*"
+      ]
+    },
+    "datapoint7": {
+      "dom": "#datapoint-q3__12_0_5_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[6].*"
+      ]
+    },
+    "datapoint8": {
+      "dom": "#datapoint-q4__12_0_5_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[7].*"
+      ]
+    },
+    "datapoint9": {
+      "dom": "#datapoint-q1__13_3_6_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[8].*"
+      ]
+    },
+    "datapoint10": {
+      "dom": "#datapoint-q2__13_0_5_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[9].*"
+      ]
+    },
+    "datapoint11": {
+      "dom": "#datapoint-q3__13_3_2_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[10].*"
+      ]
+    },
+    "datapoint12": {
+      "dom": "#datapoint-q4__13_3_2_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[11].*"
+      ]
+    },
+    "datapoint13": {
+      "dom": "#datapoint-q1__14_-1_1_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[12].*"
+      ]
+    },
+    "datapoint14": {
+      "dom": "#datapoint-q2__14_5_5_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[13].*"
+      ]
+    },
+    "datapoint15": {
+      "dom": "#datapoint-q3__14_5_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[14].*"
+      ]
+    },
+    "datapoint16": {
+      "dom": "#datapoint-q4__14_2_3_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[15].*"
+      ]
+    },
+    "datapoint17": {
+      "dom": "#datapoint-q1__15_3_2_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[16].*"
+      ]
+    },
+    "datapoint18": {
+      "dom": "#datapoint-q2__15_3_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[17].*"
+      ]
+    },
+    "datapoint19": {
+      "dom": "#datapoint-q3__15_1_3_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[18].*"
+      ]
+    },
+    "datapoint20": {
+      "dom": "#datapoint-q4__15_0_1_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[19].*"
+      ]
+    },
+    "datapoint21": {
+      "dom": "#datapoint-q1__16_2_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[20].*"
+      ]
+    },
+    "datapoint22": {
+      "dom": "#datapoint-q2__16_1_9_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[21].*"
+      ]
+    },
+    "datapoint23": {
+      "dom": "#datapoint-q3__16_2_2_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[22].*"
+      ]
+    },
+    "datapoint24": {
+      "dom": "#datapoint-q4__16_2_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[23].*"
+      ]
+    },
+    "datapoint25": {
+      "dom": "#datapoint-q1__17_2_3_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[24].*"
+      ]
+    },
+    "datapoint26": {
+      "dom": "#datapoint-q2__17_2_2_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[25].*"
+      ]
+    },
+    "datapoint27": {
+      "dom": "#datapoint-q3__17_3_2_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[26].*"
+      ]
+    },
+    "datapoint28": {
+      "dom": "#datapoint-q4__17_3_5_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[27].*"
+      ]
+    },
+    "datapoint29": {
+      "dom": "#datapoint-q1__18_2_5_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[28].*"
+      ]
+    },
+    "datapoint30": {
+      "dom": "#datapoint-q2__18_3_5_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[29].*"
+      ]
+    },
+    "datapoint31": {
+      "dom": "#datapoint-q3__18_2_9_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[30].*"
+      ]
+    },
+    "datapoint32": {
+      "dom": "#datapoint-q4__18_1_1_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[31].*"
+      ]
+    },
+    "datapoint33": {
+      "dom": "#datapoint-q1__19_3_1_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[32].*"
+      ]
+    },
+    "datapoint34": {
+      "dom": "#datapoint-q2__19_2_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[33].*"
+      ]
+    },
+    "datapoint35": {
+      "dom": "#datapoint-q3__19_2_1_Percent change from preceding period",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[34].*"
+      ]
+    }
+  }
+}
+        </metadata>
+        <rect id="frame" pointer-events="all" x="0" y="0" width="100%" height="100%">
+        </rect>
+        <g role="graphics-document" aria-roledescription="bar chart" transform="translate(25.60,8)">
+      <text class=" chart-title label " role="heading" x="66.88" y="18" text-anchor="start" id="chart-title">
+        Real GDP growth in the United States, by quarter 2011 to 2019
+      </text>
+        <g id="horiz-axis" role="graphics-object" aria-roledescription="x-axis" transform="translate(45.56,1112)">
+      <path id="horiz-axis-line" d="M-10,0 h610"/>
+        <g id="horiz-axis-tick-strip" transform="translate(0,-1)">
+      <path id="" class="grid-horiz" d="M51.43,0 v-1050"/>
+      <path id="" class="grid-horiz" d="M102.86,0 v-1050"/>
+      <path id="" class="grid-horiz" d="M154.29,0 v-1050"/>
+      <path id="" class="grid-horiz" d="M205.71,0 v-1050"/>
+      <path id="" class="grid-horiz" d="M257.14,0 v-1050"/>
+      <path id="" class="grid-horiz" d="M308.57,0 v-1050"/>
+      <path id="" class="grid-horiz" d="M360,0 v-1050"/>
+      <path id="" class="grid-horiz" d="M411.43,0 v-1050"/>
+      <path id="" class="grid-horiz" d="M462.86,0 v-1050"/>
+      <path id="" class="grid-horiz" d="M514.29,0 v-1050"/>
+      <path id="" class="grid-horiz" d="M565.71,0 v-1050"/>
+        </g>
+        <g id="tick-label-tier-horiz-0" transform="translate(8.57,25)">
+      <text class=" tick-label horiz south label " role="axislabel" x="8.49" y="8.49" text-anchor="end" transform="&#10;        translate(8.49,8.49)&#10;        rotate(-45)&#10;        translate(-8.49,-8.49)" id="tick-label-horiz-0">
+        Q1 '11
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="59.91" y="8.49" text-anchor="end" transform="&#10;        translate(59.91,8.49)&#10;        rotate(-45)&#10;        translate(-59.91,-8.49)" id="tick-label-horiz-3">
+        Q4 '11
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="111.34" y="8.49" text-anchor="end" transform="&#10;        translate(111.34,8.49)&#10;        rotate(-45)&#10;        translate(-111.34,-8.49)" id="tick-label-horiz-6">
+        Q3 '12
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="162.77" y="8.49" text-anchor="end" transform="&#10;        translate(162.77,8.49)&#10;        rotate(-45)&#10;        translate(-162.77,-8.49)" id="tick-label-horiz-9">
+        Q2 '13
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="214.20" y="8.49" text-anchor="end" transform="&#10;        translate(214.20,8.49)&#10;        rotate(-45)&#10;        translate(-214.20,-8.49)" id="tick-label-horiz-12">
+        Q1 '14
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="265.63" y="8.49" text-anchor="end" transform="&#10;        translate(265.63,8.49)&#10;        rotate(-45)&#10;        translate(-265.63,-8.49)" id="tick-label-horiz-15">
+        Q4 '14
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="317.06" y="8.49" text-anchor="end" transform="&#10;        translate(317.06,8.49)&#10;        rotate(-45)&#10;        translate(-317.06,-8.49)" id="tick-label-horiz-18">
+        Q3 '15
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="368.49" y="8.49" text-anchor="end" transform="&#10;        translate(368.49,8.49)&#10;        rotate(-45)&#10;        translate(-368.49,-8.49)" id="tick-label-horiz-21">
+        Q2 '16
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="419.91" y="8.49" text-anchor="end" transform="&#10;        translate(419.91,8.49)&#10;        rotate(-45)&#10;        translate(-419.91,-8.49)" id="tick-label-horiz-24">
+        Q1 '17
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="471.34" y="8.49" text-anchor="end" transform="&#10;        translate(471.34,8.49)&#10;        rotate(-45)&#10;        translate(-471.34,-8.49)" id="tick-label-horiz-27">
+        Q4 '17
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="522.77" y="8.49" text-anchor="end" transform="&#10;        translate(522.77,8.49)&#10;        rotate(-45)&#10;        translate(-522.77,-8.49)" id="tick-label-horiz-30">
+        Q3 '18
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="574.20" y="8.49" text-anchor="end" transform="&#10;        translate(574.20,8.49)&#10;        rotate(-45)&#10;        translate(-574.20,-8.49)" id="tick-label-horiz-33">
+        Q2 '19
+      </text>
+        </g>
+        </g>
+        <g id="vert-axis" role="graphics-object" aria-roledescription="y-axis" transform="translate(0,62)">
+      <text class=" axis-title label " role="heading" x="14" y="525.05" text-anchor="middle" transform="&#10;        translate(14,525.05)&#10;        rotate(-90)&#10;        translate(-14,-525.05)" id="axis-title-vert">
+        Growth rate
+      </text>
+        <g id="tick-label-tier-vert-0" transform="translate(25,0)">
+      <text class=" tick-label vert west label " role="axislabel" x="11.56" y="70.63" text-anchor="end" id="tick-label-vert-0">
+        -2
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="11.56" y="201.88" text-anchor="end" id="tick-label-vert-1">
+        -1
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="11.56" y="333.13" text-anchor="end" id="tick-label-vert-2">
+        0
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="11.56" y="464.38" text-anchor="end" id="tick-label-vert-3">
+        1
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="11.56" y="595.63" text-anchor="end" id="tick-label-vert-4">
+        2
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="11.56" y="726.88" text-anchor="end" id="tick-label-vert-5">
+        3
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="11.56" y="858.13" text-anchor="end" id="tick-label-vert-6">
+        4
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="11.56" y="989.38" text-anchor="end" id="tick-label-vert-7">
+        5
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="11.56" y="1120.63" text-anchor="end" id="tick-label-vert-8">
+        6
+      </text>
+        </g>
+        <g id="vert-axis-tick-strip" transform="translate(36.56,0)">
+      <path id="" class="tick-vert" d="M10,0 h-10"/>
+      <path id="" class="tick-vert" d="M10,131.25 h-10"/>
+      <path id="" class="tick-vert" d="M10,262.50 h-10"/>
+      <path id="" class="tick-vert" d="M10,393.75 h-10"/>
+      <path id="" class="tick-vert" d="M10,525 h-10"/>
+      <path id="" class="tick-vert" d="M10,656.25 h-10"/>
+      <path id="" class="tick-vert" d="M10,787.50 h-10"/>
+      <path id="" class="tick-vert" d="M10,918.75 h-10"/>
+        </g>
+      <path transform="translate(46.56,0)" id="vert-axis-line" d="M0,0 v1060"/>
+        </g>
+      <g id="chart-layers" transform="translate(45.56,62)&#10;        translate(600,0)&#10;        rotate(90)&#10;      ">
+        <rect id="data-backdrop" width="600" height="1050"/>
+        <g id="background-annotation-layer">
+        <g>
+        </g>
+        <g>
+        </g>
+        <g>
+        </g>
+        </g>
+        <g id="data-layer" role="dataset">
+        <g id="series-percent_change_from_preceding_period" style="fill:hsl(225, 30%, 52%);stroke:hsl(225, 30%, 52%);stroke-width:4;">
+      <rect id="datapoint-q1__11_-1_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="5" y="450" width="20" height="75"/>
+      <rect id="datapoint-q2__11_2_9_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="35" y="232.50" width="20" height="217.50"/>
+      <rect id="datapoint-q3__11_-0_1_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="65" y="450" width="20" height="7.50"/>
+      <rect id="datapoint-q4__11_4_7_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="95" y="97.50" width="20" height="352.50"/>
+      <rect id="datapoint-q1__12_3_2_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="125" y="210" width="20" height="240"/>
+      <rect id="datapoint-q2__12_1_7_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="155" y="322.50" width="20" height="127.50"/>
+      <rect id="datapoint-q3__12_0_5_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="185" y="412.50" width="20" height="37.50"/>
+      <rect id="datapoint-q4__12_0_5_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="215" y="412.50" width="20" height="37.50"/>
+      <rect id="datapoint-q1__13_3_6_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="245" y="180" width="20" height="270"/>
+      <rect id="datapoint-q2__13_0_5_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="275" y="412.50" width="20" height="37.50"/>
+      <rect id="datapoint-q3__13_3_2_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="305" y="210" width="20" height="240"/>
+      <rect id="datapoint-q4__13_3_2_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="335" y="210" width="20" height="240"/>
+      <rect id="datapoint-q1__14_-1_1_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="365" y="450" width="20" height="82.50"/>
+      <rect id="datapoint-q2__14_5_5_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="395" y="37.50" width="20" height="412.50"/>
+      <rect id="datapoint-q3__14_5_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="425" y="75" width="20" height="375"/>
+      <rect id="datapoint-q4__14_2_3_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="455" y="277.50" width="20" height="172.50"/>
+      <rect id="datapoint-q1__15_3_2_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="485" y="210" width="20" height="240"/>
+      <rect id="datapoint-q2__15_3_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="515" y="225" width="20" height="225"/>
+      <rect id="datapoint-q3__15_1_3_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="545" y="352.50" width="20" height="97.50"/>
+      <rect id="datapoint-q4__15_0_1_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="575" y="442.50" width="20" height="7.50"/>
+      <rect id="datapoint-q1__16_2_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="605" y="300" width="20" height="150"/>
+      <rect id="datapoint-q2__16_1_9_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="635" y="307.50" width="20" height="142.50"/>
+      <rect id="datapoint-q3__16_2_2_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="665" y="285" width="20" height="165"/>
+      <rect id="datapoint-q4__16_2_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="695" y="300" width="20" height="150"/>
+      <rect id="datapoint-q1__17_2_3_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="725" y="277.50" width="20" height="172.50"/>
+      <rect id="datapoint-q2__17_2_2_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="755" y="285" width="20" height="165"/>
+      <rect id="datapoint-q3__17_3_2_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="785" y="210" width="20" height="240"/>
+      <rect id="datapoint-q4__17_3_5_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="815" y="187.50" width="20" height="262.50"/>
+      <rect id="datapoint-q1__18_2_5_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="845" y="262.50" width="20" height="187.50"/>
+      <rect id="datapoint-q2__18_3_5_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="875" y="187.50" width="20" height="262.50"/>
+      <rect id="datapoint-q3__18_2_9_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="905" y="232.50" width="20" height="217.50"/>
+      <rect id="datapoint-q4__18_1_1_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="935" y="367.50" width="20" height="82.50"/>
+      <rect id="datapoint-q1__19_3_1_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="965" y="217.50" width="20" height="232.50"/>
+      <rect id="datapoint-q2__19_2_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="995" y="300" width="20" height="150"/>
+      <rect id="datapoint-q3__19_2_1_Percent change from preceding period" style="stroke-width:0;" class=" datapoint " role="datapoint" x="1025" y="292.50" width="20" height="157.50"/>
+        </g>
+        </g>
+        <g id="highlights-layer">
+        </g>
+        <g id="foreground-annotation-layer">
+        <g>
+        </g>
+        <g>
+        </g>
+        </g>
+        <g id="selection-layer">
+        </g>
+        <g id="focus-layer">
+        </g>
+      </g>
+        </g>
+      </svg>
