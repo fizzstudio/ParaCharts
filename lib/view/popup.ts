@@ -35,6 +35,7 @@ const BOX_ARROW_HEIGHT = 10
 //Similarly, this always refers to the distance between the point of the arrow and where it 
 //meets the box along whatever primary axis is being used
 const BOX_ARROW_WIDTH = 15
+const DEFAULT_CHORD_POPUP_LINE_WIDTH = 6
 
 export class Popup extends View {
     protected _label: Label;
@@ -46,6 +47,11 @@ export class Popup extends View {
     protected upPadding = this.paraview.store.settings.popup.upPadding;
     protected horizShift = 0;
     protected arrowPosition: "up" | "bottom" | "left" | "right" = "bottom";
+    protected _wrapWidth: number = this.paraview.store.settings.popup.maxWidth;
+
+    get grid() {
+        return this._grid;
+    }
 
     get label() {
         return this._label;
@@ -56,12 +62,20 @@ export class Popup extends View {
     }
 
     get margin() {
-        return this.popupLabelOptions.margin ?? this.paraview.store.settings.popup.margin
+        return this.popupLabelOptions.margin ?? this.paraview.store.settings.popup.margin;
+    }
+
+    get wrapWidth() {
+        return this._wrapWidth
+    }
+
+    set wrapWidth(num: number) {
+        this._wrapWidth = num;
     }
 
     constructor(paraview: ParaView, private popupLabelOptions: PopupLabelOptions, private popupShapeOptions: PopupShapeOptions) {
         super(paraview);
-        this.applyDefaults()
+        this.applyDefaults();
         this._label = new Label(this.paraview, this.popupLabelOptions)
         if (this.paraview.store.settings.popup.backgroundColor === "dark") {
             this._label.styleInfo = {
@@ -76,14 +90,102 @@ export class Popup extends View {
             };
         }
 
-        let views = []
-        if (popupLabelOptions.type === "chord") {
-            this.arrowPosition = "left"
-            this._label.x += this._label.width / 2 + BOX_ARROW_HEIGHT + this.leftPadding
-            //this._label.y = this.paraview.documentView?.chartLayers.dataLayer.height! / 2
-            let rowGaps = []
+        this._grid = this.generateGrid();
+
+
+        this.shiftGrid();
+
+        this.append(this._grid);
+        this._box = this.generateBox(popupShapeOptions);
+        this.append(this._box);
+
+        //The box generation relies on the grid having set dimensions, which happens during append()
+        //but we also need the box to render behind the grid
+        this._children.unshift(this._box);
+        this._children.pop();
+
+        if (popupLabelOptions.id) {
+            this.id = popupLabelOptions.id;
+        }
+    }
+
+    applyDefaults() {
+        if (!this.popupLabelOptions.color) {
+            this.popupLabelOptions.color = 0;
+        }
+        if (!this.popupLabelOptions.wrapWidth) {
+            this.popupLabelOptions.wrapWidth = this.wrapWidth;
+        }
+        if (this.popupLabelOptions.y) {
+            this.popupLabelOptions.y -= this.margin;
+        }
+        if (!this.popupShapeOptions.fill) {
+            this.popupShapeOptions.fill = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+                : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                    this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color), 6)
+                    : this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color);
+        }
+        if (!this.popupShapeOptions.stroke) {
+            this.popupShapeOptions.stroke = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+                : this.paraview.store.settings.popup.backgroundColor === "light" ?
+                    this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color)
+                    : "black";
+        }
+        if (!this.paraview.store.settings.ui.isLowVisionModeEnabled) {
+            this.popupShapeOptions.fill = `${this.popupShapeOptions.fill.slice(0, -1)}, ${this.paraview.store.settings.popup.opacity})`;
+        }
+        if (!this.popupShapeOptions.shape) {
+            this.popupShapeOptions.shape = this.paraview.store.settings.popup.shape;
+        }
+    }
+
+    shiftGrid() {
+        const chartWidth = parseFloat(this.paraview.documentView!.chartLayers.width.toFixed(5));
+        if (this.grid.right + this.rightPadding > chartWidth) {
+            if (this.popupLabelOptions.type === "chord") {
+                this.arrowPosition = "right";
+                //this.horizShift = this.grid.width + 2 * BOX_ARROW_HEIGHT + this.rightPadding + this.leftPadding;
+                this.grid.x += -(this.grid.width + 2 * BOX_ARROW_HEIGHT + this.rightPadding + this.leftPadding);
+            }
+            else {
+                this.horizShift = this.grid.right + this.rightPadding - chartWidth
+                this.grid.x -= this.horizShift;
+            }
+        }
+        if (this.grid.left - this.leftPadding < 0) {
+            this.horizShift = - (this.leftPadding - this.grid.left);
+            this.grid.x -= this.horizShift;;
+        }
+        //Note shifting the label up away from the datapoint in the event of text wrap
+        //has lower priority than shifting it down from the top of the screen
+        if (this.grid.y - this.grid.bottom < 0 && this.popupLabelOptions.type !== "chord") {
+            this.grid.y += (this.grid.y - this.grid.bottom);
+        }
+        if (this.grid.top < 0) {
+            if (this.popupLabelOptions.type !== "chord") {
+                this.arrowPosition = "up";
+                this.grid.y += (2 * this.margin + this.grid.height);
+            }
+            else {
+                if (this.grid.height > this.paraview.documentView?.chartLayers.dataLayer.height!
+                    && this.wrapWidth! + 50 < this.paraview.documentView?.chartLayers.dataLayer.width!) {
+                    this.wrapWidth! += 50;
+                    this.generateGrid();
+                    this.shiftGrid();
+                }
+            }
+
+        }
+    }
+
+    generateGrid() {
+        if (this.popupLabelOptions.type === "chord") {
+            let views: (DataSymbol | Label)[] = [];
+            this.leftPadding += 10;
+            this.arrowPosition = "left";
+            let rowGaps = [];
             for (let i = 0; i < this.popupLabelOptions.items!.length - 1; i++) {
-                rowGaps.push(6)
+                rowGaps.push(DEFAULT_CHORD_POPUP_LINE_WIDTH);
             }
             this._grid = new GridLayout(this.paraview, {
                 numCols: 2,
@@ -103,112 +205,34 @@ export class Popup extends View {
                         color: item.color
                     }
                 ));
-                const text = popupLabelOptions.text;
+                const text = this.popupLabelOptions.text;
                 const lines = text.split(/\r?\n|\r/);
                 views.push(new Label(this.paraview, {
                     text: lines[i],
                     x: 0,
                     y: 0,
-                    wrapWidth: this.popupLabelOptions.wrapWidth,
+                    wrapWidth: this.wrapWidth,
                     textAnchor: 'start'
                 }));
             });
+            views.forEach(v => this._grid.append(v));
+            this._grid.y = this.paraview.documentView!.chartLayers.height / 2 - this._grid.height / 2;
+            this._grid.x = this.popupLabelOptions.x! + BOX_ARROW_HEIGHT + this.leftPadding + this.horizShift;
         }
         else {
+            let views: (DataSymbol | Label)[] = [];
             this._grid = new GridLayout(this.paraview, {
                 numCols: 1,
                 colAligns: ['start'],
                 isAutoWidth: true,
                 isAutoHeight: true
             }, 'popup-grid');
-            views.push(this._label)
+            views.push(this._label);
+            views.forEach(v => this._grid.append(v));
+            this._grid.y = this.popupLabelOptions.y!;
+            this._grid.x = this.popupLabelOptions.x! - this._grid.width / 2;
         }
-        this.shiftLabel()
-        //I'm not totally sure why, but you have to subtract the height of a single line of text at default font size
-        //instead of any multiple lines that the label text may have
-        this._grid.y = this._label.y - new Label(this.paraview, { text: "text" }).height
-        this._grid.x = this._label.x - this._label.width / 2
-        views.forEach(v => this._grid.append(v));
-        this.append(this._grid)
-        this._box = this.generateBox(popupShapeOptions)
-        this.append(this._box)
-
-        //The box generation relies on the grid having set dimensions, which happens during append()
-        //but we also need the box to render behind the grid
-        this._children.unshift(this._box);
-        this._children.pop();
-
-        if (popupLabelOptions.id) {
-            this.id = popupLabelOptions.id;
-        }
-    }
-
-    applyDefaults() {
-        if (!this.popupLabelOptions.color) {
-            this.popupLabelOptions.color = 0
-        }
-        if (this.popupLabelOptions.y) {
-            this.popupLabelOptions.y -= this.margin
-        }
-        if (!this.popupLabelOptions.wrapWidth) {
-            this.popupLabelOptions.wrapWidth = this.paraview.store.settings.popup.maxWidth
-        }
-        if (!this.popupShapeOptions.fill) {
-            this.popupShapeOptions.fill = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
-                : this.paraview.store.settings.popup.backgroundColor === "light" ?
-                    this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color), 6)
-                    : this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color)
-        }
-        if (!this.popupShapeOptions.stroke) {
-            this.popupShapeOptions.stroke = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
-                : this.paraview.store.settings.popup.backgroundColor === "light" ?
-                    this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color)
-                    : "black"
-        }
-        if (!this.paraview.store.settings.ui.isLowVisionModeEnabled) {
-            this.popupShapeOptions.fill = `${this.popupShapeOptions.fill.slice(0, -1)}, ${this.paraview.store.settings.popup.opacity})`
-        }
-        if (!this.popupShapeOptions.shape) {
-            this.popupShapeOptions.shape = this.paraview.store.settings.popup.shape
-        }
-    }
-
-    shiftLabel() {
-        const chartWidth = parseFloat(this.paraview.documentView!.chartLayers.width.toFixed(5))
-        if (this.label.right + this.rightPadding > chartWidth) {
-            if (this.popupLabelOptions.type === "chord") {
-                this.arrowPosition = "right"
-                //this.popupLabelOptions.x = this.label.x - (this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width + 5)
-                //console.log(JSON.parse(JSON.stringify(this._label.width)))
-                //this.popupLabelOptions.x = this.popupLabelOptions.x! - this._label.width - BOX_ARROW_HEIGHT - this.leftPadding + this.rightPadding + 50
-                this.popupLabelOptions.x = this.label.x - BOX_ARROW_HEIGHT - this.leftPadding - this.label.width / 2 - 112
-                //this.horizShift = Math.min((this.label.right + this.rightPadding - this.paraview.documentView!.chartLayers.width), this.label.width / 2 - 5)
-                this.horizShift = this.label.right + this.rightPadding - chartWidth
-                this._label = new Label(this.paraview, this.popupLabelOptions)
-            }
-            else {
-                this.popupLabelOptions.x = this.label.x - (this.label.right + this.rightPadding - chartWidth)
-                this.horizShift = this.label.right + this.rightPadding - chartWidth
-                this._label = new Label(this.paraview, this.popupLabelOptions)
-            }
-        }
-        if (this.label.left - this.leftPadding < 0) {
-            this.popupLabelOptions.x = this.label.x + (this.leftPadding - this.label.left)
-            this.horizShift = - (this.leftPadding - this.label.left)
-            this._label = new Label(this.paraview, this.popupLabelOptions)
-        }
-        //Note shifting the label up away from the datapoint in the event of text wrap
-        //has lower priority than shifting it down from the top of the screen
-        if (this.label.y - this.label.bottom < 0) {
-            this.label.y += (this.label.y - this.label.bottom)
-        }
-        if (this.label.top < 0) {
-            this.label.y += (2 * this.margin + this.label.height)
-            if (this.popupLabelOptions.type !== "chord") {
-                this.arrowPosition = "up"
-            }
-
-        }
+        return this._grid;
     }
 
     generateBox(options: PopupShapeOptions) {
@@ -240,8 +264,8 @@ export class Popup extends View {
                     stroke: options.stroke,
                     shape: "boxWithArrow",
                     arrowPosition: "down"
-                })
-                return shape
+                });
+                return shape;
             }
             else if (this.arrowPosition == "right") {
                 let shape = new PopupPathShape(this.paraview, {
@@ -260,8 +284,8 @@ export class Popup extends View {
                     stroke: options.stroke,
                     shape: "boxWithArrow",
                     arrowPosition: "right"
-                })
-                return shape
+                });
+                return shape;
             }
             else if (this.arrowPosition == "left") {
                 let shape = new PopupPathShape(this.paraview, {
@@ -280,8 +304,8 @@ export class Popup extends View {
                     stroke: options.stroke,
                     shape: "boxWithArrow",
                     arrowPosition: "left"
-                })
-                return shape
+                });
+                return shape;
             }
             else {
                 let shape = new PopupPathShape(this.paraview, {
@@ -303,8 +327,8 @@ export class Popup extends View {
                     stroke: options.stroke,
                     shape: "boxWithArrow",
                     arrowPosition: "up"
-                })
-                return shape
+                });
+                return shape;
             }
         }
         else {
@@ -317,8 +341,8 @@ export class Popup extends View {
                 fill: options.fill,
                 stroke: options.stroke,
                 shape: "box"
-            })
-            return shape
+            });
+            return shape;
         }
     }
 
@@ -495,15 +519,15 @@ declare global {
 }
 
 export interface PopupPathOptions extends PathOptions {
-    shape: ShapeTypes
-    arrowPosition?: "up" | "down" | "right" | "left"
+    shape: ShapeTypes;
+    arrowPosition?: "up" | "down" | "right" | "left";
 }
 export class PopupPathShape extends PathShape {
-    shape: ShapeTypes
+    shape: ShapeTypes;
     constructor(paraview: ParaView, private options: PopupPathOptions) {
         super(paraview, options);
         this._points = options.points.map(p => p.clone());
-        this.shape = this.options.shape
+        this.shape = this.options.shape;
     }
 
     //This defines which points on shapes are curved/border-radiused
@@ -525,53 +549,53 @@ export class PopupPathShape extends PathShape {
         }
 
     protected get _pathD() {
-        const rad = this.paraview.store.settings.popup.borderRadius
+        const rad = this.paraview.store.settings.popup.borderRadius;
         let addCurve;
         if (this.shape == "boxWithArrow" && this.options.arrowPosition === "up") {
-            addCurve = this.curvePoints["boxWithUpArrow"]
+            addCurve = this.curvePoints["boxWithUpArrow"];
         }
         else if (this.shape == "boxWithArrow" && this.options.arrowPosition === "down") {
-            addCurve = this.curvePoints["boxWithDownArrow"]
+            addCurve = this.curvePoints["boxWithDownArrow"];
         }
         else if (this.shape == "boxWithArrow" && this.options.arrowPosition === "right") {
-            addCurve = this.curvePoints["boxWithRightArrow"]
+            addCurve = this.curvePoints["boxWithRightArrow"];
         }
         else if (this.shape == "boxWithArrow" && this.options.arrowPosition === "left") {
-            addCurve = this.curvePoints["boxWithLeftArrow"]
+            addCurve = this.curvePoints["boxWithLeftArrow"];
         }
         else {
-            addCurve = this.curvePoints[this.shape]
+            addCurve = this.curvePoints[this.shape];
         }
         const relPoints = this._points.map(p => p.add(this._loc));
-        let d = fixed``
-        let length = relPoints.length
+        let d = fixed``;
+        let length = relPoints.length;
         if (!addCurve[0]
             || ((Math.abs(relPoints[0].x - relPoints[length - 2].x) < rad / 2 && Math.abs(relPoints[0].y - relPoints[length - 2].y) < rad / 2))) {
             d += fixed`M${relPoints[0].x},${relPoints[0].y}`;
         }
         else {
-            let p = relPoints[0]
-            let nextP = relPoints[(0 + 1) % length]
-            let diffX1 = Math.sign(p.x - nextP.x)
-            let diffY1 = Math.sign(p.y - nextP.y)
+            let p = relPoints[0];
+            let nextP = relPoints[(0 + 1) % length];
+            const diffX1 = Math.sign(p.x - nextP.x);
+            const diffY1 = Math.sign(p.y - nextP.y);
             d += fixed`M${p.x - diffX1 * rad},${p.y - diffY1 * rad}`;
         }
         for (let i = 1; i < length; i++) {
-            let p = relPoints[i % length]
-            let prevP = relPoints[(i - 1 + length) % length]
+            let p = relPoints[i % length];
+            let prevP = relPoints[(i - 1 + length) % length];
             //NB: This line looks like it does because the first and last point of _points are the same
             //and this is the easiest way to correct for it
-            let nextP = relPoints[(i + 1 + (i === length - 1 ? 1 : 0)) % length]
+            let nextP = relPoints[(i + 1 + (i === length - 1 ? 1 : 0)) % length];
             if (!addCurve[i % length]
                 || ((Math.abs(p.x - prevP.x) < rad / 2 && Math.abs(p.y - prevP.y) < rad / 2))
                 || ((Math.abs(p.x - nextP.x) < rad / 2 && Math.abs(p.y - nextP.y) < rad / 2) && i !== length - 1)) {
                 d += fixed`L${p.x},${p.y}`;
             }
             else {
-                let diffX1 = Math.sign(p.x - prevP.x)
-                let diffY1 = Math.sign(p.y - prevP.y)
-                let diffX2 = Math.sign(nextP.x - p.x)
-                let diffY2 = Math.sign(nextP.y - p.y)
+                const diffX1 = Math.sign(p.x - prevP.x);
+                const diffY1 = Math.sign(p.y - prevP.y);
+                const diffX2 = Math.sign(nextP.x - p.x);
+                const diffY2 = Math.sign(nextP.y - p.y);
                 d += fixed`L${p.x - diffX1 * rad},${p.y - diffY1 * rad}`;
                 d += fixed`A ${rad}, ${rad}, 0, 0, 0, ${p.x + diffX2 * rad}, ${p.y + diffY2 * rad}`
             }

@@ -98,6 +98,7 @@ export class AnnotationLayer extends PlotLayer {
   addPopups() {
     this.addGroup('datapoint-popups', true);
     this.group('datapoint-popups')!.clearChildren();
+    this.paraview.store.userLineBreaks.splice(0, this.paraview.store.userLineBreaks.length)
     if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onFocus") {
       this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
       const cursor = this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.navMap!.cursor
@@ -120,14 +121,7 @@ export class AnnotationLayer extends PlotLayer {
       }
 
       for (let popup of popups) {
-        if (this.type === 'foreground') {
-          this.group('datapoint-popups')!.append(popup);
-        }
-        else {
-          if (this._groups.has('datapoint-popups')) {
-            this.removeGroup('datapoint-popups', true);
-          }
-        }
+        this.paraview.store.popups.push(popup)
       }
     }
     else if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onSelect") {
@@ -159,12 +153,13 @@ export class AnnotationLayer extends PlotLayer {
     }
     const dp = cursor.datapoints[0]
     const dpView = this.paraview.documentView!.chartLayers!.dataLayer.datapointView(dp.seriesKey, dp.datapointIndex)!
-    //dpView?.addPopup(text)
     const items = this.paraview.documentView?.chartLayers.dataLayer.chartInfo.popuplegend()!;
-    this.paraview.store.userLineBreaks.shift();
-    //console.log("BEFORE addLineBreak call")
-    this.paraview.store.addLineBreak(this.paraview.documentView?.chartLayers.dataLayer.chartInfo.navMap!.cursor.index! / (this.paraview.store.model!.series[0].datapoints.length - 1), items![0].datapointIndex!, "Agriculture", false)
-    //console.log("BEFORE new popup")
+    if (this.type === "background"){
+      
+      this.paraview.store.addLineBreak(this.paraview.documentView?.chartLayers.dataLayer.chartInfo.navMap!.cursor.index! / (this.paraview.store.model!.series[0].datapoints.length - 1),
+      cursor.index!, cursor.datapoints[0].seriesKey, false)
+    }
+    
     const popup = new Popup(this.paraview,
       {
         text: text,
@@ -449,11 +444,11 @@ export class AnnotationLayer extends PlotLayer {
         }
       }
       else {
-        if (this._groups.has('linebreaks')) {
-          this.removeGroup('linebreaks', true);
+        if (this._groups.has('linebreaker-markers')) {
+          this.removeGroup('linebreaker-markers', true);
         }
       }
-      if (this.paraview.store.userLineBreaks.length > 0) {
+      if (this.paraview.store.userLineBreaks) {
         this.addGroup('user-linebreaker-markers', true);
         this.group('user-linebreaker-markers')!.clearChildren();
         let lbs = structuredClone(this.paraview.store.userLineBreaks);
