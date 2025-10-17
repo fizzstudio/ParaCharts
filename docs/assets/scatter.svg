@@ -1,0 +1,3479 @@
+<svg tabindex="0" aria-label="Old Faithful Geyser Eruptions, accessible chart" xmlns="http://www.w3.org/2000/svg" data-charttype="bar" class="  " viewBox="0 0 691.30 568.39" style="font-family:Helvetica, sans-serif;font-weight:300;--axis-line-color:hsl(0, 0%, 0%);--label-color:hsl(0, 0%, 0%);" id="paraeb96dd49-2877-41b5-9190-7e29c37d7afb"><style>#paraeb96dd49-2877-41b5-9190-7e29c37d7afb { --axis-line-color: hsl(0, 0%, 0%); --label-color: hsl(0, 0%, 0%); --tick-grid-color: hsl(270, 50%, 50%); --background-color: white; --theme-color: var(--fizz-theme-color, purple); --theme-color-light: var(--fizz-theme-color-light, hsl(275.4, 100%, 88%)); --theme-contrast-color: white; --fizz-theme-color: var(--paracharts-theme-color, navy); --fizz-theme-color-light: var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%)); --visited-color: hsl(0, 100%, 50%); --visited-stroke-width: 6; --selected-color: var(--label-color); --datapoint-centroid: 50% 50%; --focus-animation: all 0.5s ease-in-out; --chart-cursor: pointer; --data-cursor: cell; --focus-shadow-color: gray; --focus-shadow: drop-shadow(0px 0px 4px var(--focus-shadow-color)); display: block; font-family: "Trebuchet MS", Helvetica, sans-serif; font-size: var(--chart-view-font-size, 1rem); }
+#frame { fill: var(--background-color); stroke: none; }
+#frame.pending { fill: lightgray; }
+.darkmode { --axis-line-color: ghostwhite; --label-color: ghostwhite; --background-color: black; }
+#loading-message { fill: black; }
+#loading-message text { fill: white; }
+.grid-horiz { stroke: var(--axis-line-color); opacity: 0.2; }
+.grid-vert { stroke: var(--axis-line-color); opacity: 0.2; }
+#grid-zero { opacity: 0.6; stroke-width: 2; }
+.tick-horiz { stroke: black; }
+.tick-vert { stroke: black; }
+.label { fill: var(--label-color); stroke: none; }
+.tick-label { font-size: 13px; fill: var(--label-color); }
+.bar-label { font-size: 13px; fill: white; }
+.radial-value-label { fill: var(--label-color); }
+.radial-cat-label-leader { fill: none; stroke-width: 2; }
+.radial-slice { stroke: white; stroke-width: 2; }
+.label-leader { stroke-width: 2; }
+#vert-axis-line { fill: none; stroke: var(--axis-line-color); stroke-width: 2px; stroke-linecap: round; }
+#horiz-axis-line { fill: none; stroke: var(--axis-line-color); opacity: 1; stroke-width: 2px; stroke-linecap: round; }
+rect#data-backdrop { stroke: none; fill: none; pointer-events: all; }
+.symbol { stroke-linejoin: round; }
+.symbol.outline { fill: white; }
+use.visited-mark { pointer-events: none; }
+.data-line { fill: none; stroke-linecap: round; }
+.chart-title { font-size: 1.25rem; }
+.range-highlight { fill: silver; opacity: 0.5; }
+.linebreaker-marker { fill: rgb(112, 79, 79); }
+.user-linebreaker-marker { fill: rgb(229, 16, 16); }
+.trend-line { display: inline; stroke-width: 8px; stroke-linecap: butt; stroke-dasharray: 12, 12; stroke-opacity: 0.8; }
+.user-trend-line { display: inline; stroke-width: 8px; stroke-linecap: butt; stroke-dasharray: 12, 12; stroke-opacity: 0.8; }
+.datapoint.visited { stroke: var(--visited-color); fill: var(--visited-color); stroke-width: var(--visited-stroke-width); }
+.control-column { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; gap: 0.5em; }</style>
+        <defs>
+        <path id="sym-circle-outline" d="m0,-5.64 a5.64,5.64 0 1,1 0,11.28 a5.64,5.64 0 1,1 0,-11.28"/>
+        <path id="sym-square-outline" d="m-5,-5 h10 v10 h-10 z"/>
+        <path id="sym-triangle_up-outline" d="m-7.60,5.26 h15.20 l-7.60,-13.16 z"/>
+            <clipPath id="clip-path">
+              <rect x="0" y="0" width="600" height="450">
+              </rect>
+            </clipPath>
+        </defs>
+        <metadata data-type="text/jim+json">
+          {
+  "dataset": {
+    "title": "Old Faithful Geyser Eruptions",
+    "facets": {
+      "x": {
+        "label": "Eruption duration time in minutes",
+        "variableType": "independent",
+        "measure": "ratio",
+        "datatype": "number",
+        "units": "minute",
+        "displayType": {
+          "type": "axis",
+          "orientation": "horizontal"
+        }
+      },
+      "y": {
+        "label": "Time since last eruption in minutes",
+        "variableType": "dependent",
+        "measure": "ratio",
+        "datatype": "number",
+        "units": "minute",
+        "displayType": {
+          "type": "axis",
+          "orientation": "vertical"
+        }
+      }
+    },
+    "series": [
+      {
+        "name": "Eruptions of Old Faithful",
+        "type": "other",
+        "records": [
+          {
+            "x": "3.6",
+            "y": "79"
+          },
+          {
+            "x": "1.8",
+            "y": "54"
+          },
+          {
+            "x": "3.333",
+            "y": "74"
+          },
+          {
+            "x": "2.283",
+            "y": "62"
+          },
+          {
+            "x": "4.533",
+            "y": "85"
+          },
+          {
+            "x": "2.883",
+            "y": "55"
+          },
+          {
+            "x": "4.7",
+            "y": "88"
+          },
+          {
+            "x": "3.6",
+            "y": "85"
+          },
+          {
+            "x": "1.95",
+            "y": "51"
+          },
+          {
+            "x": "4.35",
+            "y": "85"
+          },
+          {
+            "x": "1.833",
+            "y": "54"
+          },
+          {
+            "x": "3.917",
+            "y": "84"
+          },
+          {
+            "x": "4.2",
+            "y": "78"
+          },
+          {
+            "x": "1.75",
+            "y": "47"
+          },
+          {
+            "x": "4.7",
+            "y": "83"
+          },
+          {
+            "x": "2.167",
+            "y": "52"
+          },
+          {
+            "x": "1.75",
+            "y": "62"
+          },
+          {
+            "x": "4.8",
+            "y": "84"
+          },
+          {
+            "x": "1.6",
+            "y": "52"
+          },
+          {
+            "x": "4.25",
+            "y": "79"
+          },
+          {
+            "x": "1.8",
+            "y": "51"
+          },
+          {
+            "x": "1.75",
+            "y": "47"
+          },
+          {
+            "x": "3.45",
+            "y": "78"
+          },
+          {
+            "x": "3.067",
+            "y": "69"
+          },
+          {
+            "x": "4.533",
+            "y": "74"
+          },
+          {
+            "x": "3.6",
+            "y": "83"
+          },
+          {
+            "x": "1.967",
+            "y": "55"
+          },
+          {
+            "x": "4.083",
+            "y": "76"
+          },
+          {
+            "x": "3.85",
+            "y": "78"
+          },
+          {
+            "x": "4.433",
+            "y": "79"
+          },
+          {
+            "x": "4.3",
+            "y": "73"
+          },
+          {
+            "x": "4.467",
+            "y": "77"
+          },
+          {
+            "x": "3.367",
+            "y": "66"
+          },
+          {
+            "x": "4.033",
+            "y": "80"
+          },
+          {
+            "x": "3.833",
+            "y": "74"
+          },
+          {
+            "x": "2.017",
+            "y": "52"
+          },
+          {
+            "x": "1.867",
+            "y": "48"
+          },
+          {
+            "x": "4.833",
+            "y": "80"
+          },
+          {
+            "x": "1.833",
+            "y": "59"
+          },
+          {
+            "x": "4.783",
+            "y": "90"
+          },
+          {
+            "x": "4.35",
+            "y": "80"
+          },
+          {
+            "x": "1.883",
+            "y": "58"
+          },
+          {
+            "x": "4.567",
+            "y": "84"
+          },
+          {
+            "x": "1.75",
+            "y": "58"
+          },
+          {
+            "x": "4.533",
+            "y": "73"
+          },
+          {
+            "x": "3.317",
+            "y": "83"
+          },
+          {
+            "x": "3.833",
+            "y": "64"
+          },
+          {
+            "x": "2.1",
+            "y": "53"
+          },
+          {
+            "x": "4.633",
+            "y": "82"
+          },
+          {
+            "x": "2.0",
+            "y": "59"
+          },
+          {
+            "x": "4.8",
+            "y": "75"
+          },
+          {
+            "x": "4.716",
+            "y": "90"
+          },
+          {
+            "x": "1.833",
+            "y": "54"
+          },
+          {
+            "x": "4.833",
+            "y": "80"
+          },
+          {
+            "x": "1.733",
+            "y": "54"
+          },
+          {
+            "x": "4.883",
+            "y": "83"
+          },
+          {
+            "x": "3.717",
+            "y": "71"
+          },
+          {
+            "x": "1.667",
+            "y": "64"
+          },
+          {
+            "x": "4.567",
+            "y": "77"
+          },
+          {
+            "x": "4.317",
+            "y": "81"
+          },
+          {
+            "x": "2.233",
+            "y": "59"
+          },
+          {
+            "x": "4.5",
+            "y": "84"
+          },
+          {
+            "x": "1.75",
+            "y": "48"
+          },
+          {
+            "x": "4.8",
+            "y": "82"
+          },
+          {
+            "x": "1.817",
+            "y": "60"
+          },
+          {
+            "x": "4.4",
+            "y": "92"
+          },
+          {
+            "x": "4.167",
+            "y": "78"
+          },
+          {
+            "x": "4.7",
+            "y": "78"
+          },
+          {
+            "x": "2.067",
+            "y": "65"
+          },
+          {
+            "x": "4.7",
+            "y": "73"
+          },
+          {
+            "x": "4.033",
+            "y": "82"
+          },
+          {
+            "x": "1.967",
+            "y": "56"
+          },
+          {
+            "x": "4.5",
+            "y": "79"
+          },
+          {
+            "x": "4.0",
+            "y": "71"
+          },
+          {
+            "x": "1.983",
+            "y": "62"
+          },
+          {
+            "x": "5.067",
+            "y": "76"
+          },
+          {
+            "x": "2.017",
+            "y": "60"
+          },
+          {
+            "x": "4.567",
+            "y": "78"
+          },
+          {
+            "x": "3.883",
+            "y": "76"
+          },
+          {
+            "x": "3.6",
+            "y": "83"
+          },
+          {
+            "x": "4.133",
+            "y": "75"
+          },
+          {
+            "x": "4.333",
+            "y": "82"
+          },
+          {
+            "x": "4.1",
+            "y": "70"
+          },
+          {
+            "x": "2.633",
+            "y": "65"
+          },
+          {
+            "x": "4.067",
+            "y": "73"
+          },
+          {
+            "x": "4.933",
+            "y": "88"
+          },
+          {
+            "x": "3.95",
+            "y": "76"
+          },
+          {
+            "x": "4.517",
+            "y": "80"
+          },
+          {
+            "x": "2.167",
+            "y": "48"
+          },
+          {
+            "x": "4.0",
+            "y": "86"
+          },
+          {
+            "x": "2.2",
+            "y": "60"
+          },
+          {
+            "x": "4.333",
+            "y": "90"
+          },
+          {
+            "x": "1.867",
+            "y": "50"
+          },
+          {
+            "x": "4.817",
+            "y": "78"
+          },
+          {
+            "x": "1.833",
+            "y": "63"
+          },
+          {
+            "x": "4.3",
+            "y": "72"
+          },
+          {
+            "x": "4.667",
+            "y": "84"
+          },
+          {
+            "x": "3.75",
+            "y": "75"
+          },
+          {
+            "x": "1.867",
+            "y": "51"
+          },
+          {
+            "x": "4.9",
+            "y": "82"
+          },
+          {
+            "x": "2.483",
+            "y": "62"
+          },
+          {
+            "x": "4.367",
+            "y": "88"
+          },
+          {
+            "x": "2.1",
+            "y": "49"
+          },
+          {
+            "x": "4.5",
+            "y": "83"
+          },
+          {
+            "x": "4.05",
+            "y": "81"
+          },
+          {
+            "x": "1.867",
+            "y": "47"
+          },
+          {
+            "x": "4.7",
+            "y": "84"
+          },
+          {
+            "x": "1.783",
+            "y": "52"
+          },
+          {
+            "x": "4.85",
+            "y": "86"
+          },
+          {
+            "x": "3.683",
+            "y": "81"
+          },
+          {
+            "x": "4.733",
+            "y": "75"
+          },
+          {
+            "x": "2.3",
+            "y": "59"
+          },
+          {
+            "x": "4.9",
+            "y": "89"
+          },
+          {
+            "x": "4.417",
+            "y": "79"
+          },
+          {
+            "x": "1.7",
+            "y": "59"
+          },
+          {
+            "x": "4.633",
+            "y": "81"
+          },
+          {
+            "x": "2.317",
+            "y": "50"
+          },
+          {
+            "x": "4.6",
+            "y": "85"
+          },
+          {
+            "x": "1.817",
+            "y": "59"
+          },
+          {
+            "x": "4.417",
+            "y": "87"
+          },
+          {
+            "x": "2.617",
+            "y": "53"
+          },
+          {
+            "x": "4.067",
+            "y": "69"
+          },
+          {
+            "x": "4.25",
+            "y": "77"
+          },
+          {
+            "x": "1.967",
+            "y": "56"
+          },
+          {
+            "x": "4.6",
+            "y": "88"
+          },
+          {
+            "x": "3.767",
+            "y": "81"
+          },
+          {
+            "x": "1.917",
+            "y": "45"
+          },
+          {
+            "x": "4.5",
+            "y": "82"
+          },
+          {
+            "x": "2.267",
+            "y": "55"
+          },
+          {
+            "x": "4.65",
+            "y": "90"
+          },
+          {
+            "x": "1.867",
+            "y": "45"
+          },
+          {
+            "x": "4.167",
+            "y": "83"
+          },
+          {
+            "x": "2.8",
+            "y": "56"
+          },
+          {
+            "x": "4.333",
+            "y": "89"
+          },
+          {
+            "x": "1.833",
+            "y": "46"
+          },
+          {
+            "x": "4.383",
+            "y": "82"
+          },
+          {
+            "x": "1.883",
+            "y": "51"
+          },
+          {
+            "x": "4.933",
+            "y": "86"
+          },
+          {
+            "x": "2.033",
+            "y": "53"
+          },
+          {
+            "x": "3.733",
+            "y": "79"
+          },
+          {
+            "x": "4.233",
+            "y": "81"
+          },
+          {
+            "x": "2.233",
+            "y": "60"
+          },
+          {
+            "x": "4.533",
+            "y": "82"
+          },
+          {
+            "x": "4.817",
+            "y": "77"
+          },
+          {
+            "x": "4.333",
+            "y": "76"
+          },
+          {
+            "x": "1.983",
+            "y": "59"
+          },
+          {
+            "x": "4.633",
+            "y": "80"
+          },
+          {
+            "x": "2.017",
+            "y": "49"
+          },
+          {
+            "x": "5.1",
+            "y": "96"
+          },
+          {
+            "x": "1.8",
+            "y": "53"
+          },
+          {
+            "x": "5.033",
+            "y": "77"
+          },
+          {
+            "x": "4.0",
+            "y": "77"
+          },
+          {
+            "x": "2.4",
+            "y": "65"
+          },
+          {
+            "x": "4.6",
+            "y": "81"
+          },
+          {
+            "x": "3.567",
+            "y": "71"
+          },
+          {
+            "x": "4.0",
+            "y": "70"
+          },
+          {
+            "x": "4.5",
+            "y": "81"
+          },
+          {
+            "x": "4.083",
+            "y": "93"
+          },
+          {
+            "x": "1.8",
+            "y": "53"
+          },
+          {
+            "x": "3.967",
+            "y": "89"
+          },
+          {
+            "x": "2.2",
+            "y": "45"
+          },
+          {
+            "x": "4.15",
+            "y": "86"
+          },
+          {
+            "x": "2.0",
+            "y": "58"
+          },
+          {
+            "x": "3.833",
+            "y": "78"
+          },
+          {
+            "x": "3.5",
+            "y": "66"
+          },
+          {
+            "x": "4.583",
+            "y": "76"
+          },
+          {
+            "x": "2.367",
+            "y": "63"
+          },
+          {
+            "x": "5.0",
+            "y": "88"
+          },
+          {
+            "x": "1.933",
+            "y": "52"
+          },
+          {
+            "x": "4.617",
+            "y": "93"
+          },
+          {
+            "x": "1.917",
+            "y": "49"
+          },
+          {
+            "x": "2.083",
+            "y": "57"
+          },
+          {
+            "x": "4.583",
+            "y": "77"
+          },
+          {
+            "x": "3.333",
+            "y": "68"
+          },
+          {
+            "x": "4.167",
+            "y": "81"
+          },
+          {
+            "x": "4.333",
+            "y": "81"
+          },
+          {
+            "x": "4.5",
+            "y": "73"
+          },
+          {
+            "x": "2.417",
+            "y": "50"
+          },
+          {
+            "x": "4.0",
+            "y": "85"
+          },
+          {
+            "x": "4.167",
+            "y": "74"
+          },
+          {
+            "x": "1.883",
+            "y": "55"
+          },
+          {
+            "x": "4.583",
+            "y": "77"
+          },
+          {
+            "x": "4.25",
+            "y": "83"
+          },
+          {
+            "x": "3.767",
+            "y": "83"
+          },
+          {
+            "x": "2.033",
+            "y": "51"
+          },
+          {
+            "x": "4.433",
+            "y": "78"
+          },
+          {
+            "x": "4.083",
+            "y": "84"
+          },
+          {
+            "x": "1.833",
+            "y": "46"
+          },
+          {
+            "x": "4.417",
+            "y": "83"
+          },
+          {
+            "x": "2.183",
+            "y": "55"
+          },
+          {
+            "x": "4.8",
+            "y": "81"
+          },
+          {
+            "x": "1.833",
+            "y": "57"
+          },
+          {
+            "x": "4.8",
+            "y": "76"
+          },
+          {
+            "x": "4.1",
+            "y": "84"
+          },
+          {
+            "x": "3.966",
+            "y": "77"
+          },
+          {
+            "x": "4.233",
+            "y": "81"
+          },
+          {
+            "x": "3.5",
+            "y": "87"
+          },
+          {
+            "x": "4.366",
+            "y": "77"
+          },
+          {
+            "x": "2.25",
+            "y": "51"
+          },
+          {
+            "x": "4.667",
+            "y": "78"
+          },
+          {
+            "x": "2.1",
+            "y": "60"
+          },
+          {
+            "x": "4.35",
+            "y": "82"
+          },
+          {
+            "x": "4.133",
+            "y": "91"
+          },
+          {
+            "x": "1.867",
+            "y": "53"
+          },
+          {
+            "x": "4.6",
+            "y": "78"
+          },
+          {
+            "x": "1.783",
+            "y": "46"
+          },
+          {
+            "x": "4.367",
+            "y": "77"
+          },
+          {
+            "x": "3.85",
+            "y": "84"
+          },
+          {
+            "x": "1.933",
+            "y": "49"
+          },
+          {
+            "x": "4.5",
+            "y": "83"
+          },
+          {
+            "x": "2.383",
+            "y": "71"
+          },
+          {
+            "x": "4.7",
+            "y": "80"
+          },
+          {
+            "x": "1.867",
+            "y": "49"
+          },
+          {
+            "x": "3.833",
+            "y": "75"
+          },
+          {
+            "x": "3.417",
+            "y": "64"
+          },
+          {
+            "x": "4.233",
+            "y": "76"
+          },
+          {
+            "x": "2.4",
+            "y": "53"
+          },
+          {
+            "x": "4.8",
+            "y": "94"
+          },
+          {
+            "x": "2.0",
+            "y": "55"
+          },
+          {
+            "x": "4.15",
+            "y": "76"
+          },
+          {
+            "x": "1.867",
+            "y": "50"
+          },
+          {
+            "x": "4.267",
+            "y": "82"
+          },
+          {
+            "x": "1.75",
+            "y": "54"
+          },
+          {
+            "x": "4.483",
+            "y": "75"
+          },
+          {
+            "x": "4.0",
+            "y": "78"
+          },
+          {
+            "x": "4.117",
+            "y": "79"
+          },
+          {
+            "x": "4.083",
+            "y": "78"
+          },
+          {
+            "x": "4.267",
+            "y": "78"
+          },
+          {
+            "x": "3.917",
+            "y": "70"
+          },
+          {
+            "x": "4.55",
+            "y": "79"
+          },
+          {
+            "x": "4.083",
+            "y": "70"
+          },
+          {
+            "x": "2.417",
+            "y": "54"
+          },
+          {
+            "x": "4.183",
+            "y": "86"
+          },
+          {
+            "x": "2.217",
+            "y": "50"
+          },
+          {
+            "x": "4.45",
+            "y": "90"
+          },
+          {
+            "x": "1.883",
+            "y": "54"
+          },
+          {
+            "x": "1.85",
+            "y": "54"
+          },
+          {
+            "x": "4.283",
+            "y": "77"
+          },
+          {
+            "x": "3.95",
+            "y": "79"
+          },
+          {
+            "x": "2.333",
+            "y": "64"
+          },
+          {
+            "x": "4.15",
+            "y": "75"
+          },
+          {
+            "x": "2.35",
+            "y": "47"
+          },
+          {
+            "x": "4.933",
+            "y": "86"
+          },
+          {
+            "x": "2.9",
+            "y": "63"
+          },
+          {
+            "x": "4.583",
+            "y": "85"
+          },
+          {
+            "x": "3.833",
+            "y": "82"
+          },
+          {
+            "x": "2.083",
+            "y": "57"
+          },
+          {
+            "x": "4.367",
+            "y": "82"
+          },
+          {
+            "x": "2.133",
+            "y": "67"
+          },
+          {
+            "x": "4.35",
+            "y": "74"
+          },
+          {
+            "x": "2.2",
+            "y": "54"
+          },
+          {
+            "x": "4.45",
+            "y": "83"
+          },
+          {
+            "x": "3.567",
+            "y": "73"
+          },
+          {
+            "x": "4.5",
+            "y": "73"
+          },
+          {
+            "x": "4.15",
+            "y": "88"
+          },
+          {
+            "x": "3.817",
+            "y": "80"
+          },
+          {
+            "x": "3.917",
+            "y": "71"
+          },
+          {
+            "x": "4.45",
+            "y": "83"
+          },
+          {
+            "x": "2.0",
+            "y": "56"
+          },
+          {
+            "x": "4.283",
+            "y": "79"
+          },
+          {
+            "x": "4.767",
+            "y": "78"
+          },
+          {
+            "x": "4.533",
+            "y": "84"
+          },
+          {
+            "x": "1.85",
+            "y": "58"
+          },
+          {
+            "x": "4.25",
+            "y": "83"
+          },
+          {
+            "x": "1.983",
+            "y": "43"
+          },
+          {
+            "x": "2.25",
+            "y": "60"
+          },
+          {
+            "x": "4.75",
+            "y": "75"
+          },
+          {
+            "x": "4.117",
+            "y": "81"
+          },
+          {
+            "x": "2.15",
+            "y": "46"
+          },
+          {
+            "x": "4.417",
+            "y": "90"
+          },
+          {
+            "x": "1.817",
+            "y": "46"
+          },
+          {
+            "x": "4.467",
+            "y": "74"
+          }
+        ]
+      }
+    ]
+  },
+  "selectors": {
+    "chartTitle": {
+      "dom": "#chart-title",
+      "json": "$.datasets[0].title"
+    },
+    "datapoint1": {
+      "dom": "#datapoint-3_6_79_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[0].*"
+      ]
+    },
+    "datapoint2": {
+      "dom": "#datapoint-1_8_54_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[1].*"
+      ]
+    },
+    "datapoint3": {
+      "dom": "#datapoint-3_333_74_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[2].*"
+      ]
+    },
+    "datapoint4": {
+      "dom": "#datapoint-2_283_62_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[3].*"
+      ]
+    },
+    "datapoint5": {
+      "dom": "#datapoint-4_533_85_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[4].*"
+      ]
+    },
+    "datapoint6": {
+      "dom": "#datapoint-2_883_55_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[5].*"
+      ]
+    },
+    "datapoint7": {
+      "dom": "#datapoint-4_7_88_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[6].*"
+      ]
+    },
+    "datapoint8": {
+      "dom": "#datapoint-3_6_85_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[7].*"
+      ]
+    },
+    "datapoint9": {
+      "dom": "#datapoint-1_95_51_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[8].*"
+      ]
+    },
+    "datapoint10": {
+      "dom": "#datapoint-4_35_85_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[9].*"
+      ]
+    },
+    "datapoint11": {
+      "dom": "#datapoint-1_833_54_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[10].*"
+      ]
+    },
+    "datapoint12": {
+      "dom": "#datapoint-3_917_84_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[11].*"
+      ]
+    },
+    "datapoint13": {
+      "dom": "#datapoint-4_2_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[12].*"
+      ]
+    },
+    "datapoint14": {
+      "dom": "#datapoint-1_75_47_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[13].*"
+      ]
+    },
+    "datapoint15": {
+      "dom": "#datapoint-4_7_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[14].*"
+      ]
+    },
+    "datapoint16": {
+      "dom": "#datapoint-2_167_52_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[15].*"
+      ]
+    },
+    "datapoint17": {
+      "dom": "#datapoint-1_75_62_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[16].*"
+      ]
+    },
+    "datapoint18": {
+      "dom": "#datapoint-4_8_84_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[17].*"
+      ]
+    },
+    "datapoint19": {
+      "dom": "#datapoint-1_6_52_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[18].*"
+      ]
+    },
+    "datapoint20": {
+      "dom": "#datapoint-4_25_79_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[19].*"
+      ]
+    },
+    "datapoint21": {
+      "dom": "#datapoint-1_8_51_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[20].*"
+      ]
+    },
+    "datapoint22": {
+      "dom": "#datapoint-1_75_47_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[21].*"
+      ]
+    },
+    "datapoint23": {
+      "dom": "#datapoint-3_45_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[22].*"
+      ]
+    },
+    "datapoint24": {
+      "dom": "#datapoint-3_067_69_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[23].*"
+      ]
+    },
+    "datapoint25": {
+      "dom": "#datapoint-4_533_74_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[24].*"
+      ]
+    },
+    "datapoint26": {
+      "dom": "#datapoint-3_6_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[25].*"
+      ]
+    },
+    "datapoint27": {
+      "dom": "#datapoint-1_967_55_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[26].*"
+      ]
+    },
+    "datapoint28": {
+      "dom": "#datapoint-4_083_76_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[27].*"
+      ]
+    },
+    "datapoint29": {
+      "dom": "#datapoint-3_85_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[28].*"
+      ]
+    },
+    "datapoint30": {
+      "dom": "#datapoint-4_433_79_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[29].*"
+      ]
+    },
+    "datapoint31": {
+      "dom": "#datapoint-4_3_73_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[30].*"
+      ]
+    },
+    "datapoint32": {
+      "dom": "#datapoint-4_467_77_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[31].*"
+      ]
+    },
+    "datapoint33": {
+      "dom": "#datapoint-3_367_66_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[32].*"
+      ]
+    },
+    "datapoint34": {
+      "dom": "#datapoint-4_033_80_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[33].*"
+      ]
+    },
+    "datapoint35": {
+      "dom": "#datapoint-3_833_74_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[34].*"
+      ]
+    },
+    "datapoint36": {
+      "dom": "#datapoint-2_017_52_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[35].*"
+      ]
+    },
+    "datapoint37": {
+      "dom": "#datapoint-1_867_48_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[36].*"
+      ]
+    },
+    "datapoint38": {
+      "dom": "#datapoint-4_833_80_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[37].*"
+      ]
+    },
+    "datapoint39": {
+      "dom": "#datapoint-1_833_59_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[38].*"
+      ]
+    },
+    "datapoint40": {
+      "dom": "#datapoint-4_783_90_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[39].*"
+      ]
+    },
+    "datapoint41": {
+      "dom": "#datapoint-4_35_80_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[40].*"
+      ]
+    },
+    "datapoint42": {
+      "dom": "#datapoint-1_883_58_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[41].*"
+      ]
+    },
+    "datapoint43": {
+      "dom": "#datapoint-4_567_84_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[42].*"
+      ]
+    },
+    "datapoint44": {
+      "dom": "#datapoint-1_75_58_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[43].*"
+      ]
+    },
+    "datapoint45": {
+      "dom": "#datapoint-4_533_73_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[44].*"
+      ]
+    },
+    "datapoint46": {
+      "dom": "#datapoint-3_317_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[45].*"
+      ]
+    },
+    "datapoint47": {
+      "dom": "#datapoint-3_833_64_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[46].*"
+      ]
+    },
+    "datapoint48": {
+      "dom": "#datapoint-2_1_53_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[47].*"
+      ]
+    },
+    "datapoint49": {
+      "dom": "#datapoint-4_633_82_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[48].*"
+      ]
+    },
+    "datapoint50": {
+      "dom": "#datapoint-2_0_59_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[49].*"
+      ]
+    },
+    "datapoint51": {
+      "dom": "#datapoint-4_8_75_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[50].*"
+      ]
+    },
+    "datapoint52": {
+      "dom": "#datapoint-4_716_90_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[51].*"
+      ]
+    },
+    "datapoint53": {
+      "dom": "#datapoint-1_833_54_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[52].*"
+      ]
+    },
+    "datapoint54": {
+      "dom": "#datapoint-4_833_80_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[53].*"
+      ]
+    },
+    "datapoint55": {
+      "dom": "#datapoint-1_733_54_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[54].*"
+      ]
+    },
+    "datapoint56": {
+      "dom": "#datapoint-4_883_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[55].*"
+      ]
+    },
+    "datapoint57": {
+      "dom": "#datapoint-3_717_71_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[56].*"
+      ]
+    },
+    "datapoint58": {
+      "dom": "#datapoint-1_667_64_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[57].*"
+      ]
+    },
+    "datapoint59": {
+      "dom": "#datapoint-4_567_77_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[58].*"
+      ]
+    },
+    "datapoint60": {
+      "dom": "#datapoint-4_317_81_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[59].*"
+      ]
+    },
+    "datapoint61": {
+      "dom": "#datapoint-2_233_59_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[60].*"
+      ]
+    },
+    "datapoint62": {
+      "dom": "#datapoint-4_5_84_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[61].*"
+      ]
+    },
+    "datapoint63": {
+      "dom": "#datapoint-1_75_48_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[62].*"
+      ]
+    },
+    "datapoint64": {
+      "dom": "#datapoint-4_8_82_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[63].*"
+      ]
+    },
+    "datapoint65": {
+      "dom": "#datapoint-1_817_60_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[64].*"
+      ]
+    },
+    "datapoint66": {
+      "dom": "#datapoint-4_4_92_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[65].*"
+      ]
+    },
+    "datapoint67": {
+      "dom": "#datapoint-4_167_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[66].*"
+      ]
+    },
+    "datapoint68": {
+      "dom": "#datapoint-4_7_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[67].*"
+      ]
+    },
+    "datapoint69": {
+      "dom": "#datapoint-2_067_65_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[68].*"
+      ]
+    },
+    "datapoint70": {
+      "dom": "#datapoint-4_7_73_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[69].*"
+      ]
+    },
+    "datapoint71": {
+      "dom": "#datapoint-4_033_82_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[70].*"
+      ]
+    },
+    "datapoint72": {
+      "dom": "#datapoint-1_967_56_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[71].*"
+      ]
+    },
+    "datapoint73": {
+      "dom": "#datapoint-4_5_79_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[72].*"
+      ]
+    },
+    "datapoint74": {
+      "dom": "#datapoint-4_0_71_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[73].*"
+      ]
+    },
+    "datapoint75": {
+      "dom": "#datapoint-1_983_62_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[74].*"
+      ]
+    },
+    "datapoint76": {
+      "dom": "#datapoint-5_067_76_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[75].*"
+      ]
+    },
+    "datapoint77": {
+      "dom": "#datapoint-2_017_60_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[76].*"
+      ]
+    },
+    "datapoint78": {
+      "dom": "#datapoint-4_567_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[77].*"
+      ]
+    },
+    "datapoint79": {
+      "dom": "#datapoint-3_883_76_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[78].*"
+      ]
+    },
+    "datapoint80": {
+      "dom": "#datapoint-3_6_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[79].*"
+      ]
+    },
+    "datapoint81": {
+      "dom": "#datapoint-4_133_75_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[80].*"
+      ]
+    },
+    "datapoint82": {
+      "dom": "#datapoint-4_333_82_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[81].*"
+      ]
+    },
+    "datapoint83": {
+      "dom": "#datapoint-4_1_70_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[82].*"
+      ]
+    },
+    "datapoint84": {
+      "dom": "#datapoint-2_633_65_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[83].*"
+      ]
+    },
+    "datapoint85": {
+      "dom": "#datapoint-4_067_73_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[84].*"
+      ]
+    },
+    "datapoint86": {
+      "dom": "#datapoint-4_933_88_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[85].*"
+      ]
+    },
+    "datapoint87": {
+      "dom": "#datapoint-3_95_76_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[86].*"
+      ]
+    },
+    "datapoint88": {
+      "dom": "#datapoint-4_517_80_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[87].*"
+      ]
+    },
+    "datapoint89": {
+      "dom": "#datapoint-2_167_48_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[88].*"
+      ]
+    },
+    "datapoint90": {
+      "dom": "#datapoint-4_0_86_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[89].*"
+      ]
+    },
+    "datapoint91": {
+      "dom": "#datapoint-2_2_60_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[90].*"
+      ]
+    },
+    "datapoint92": {
+      "dom": "#datapoint-4_333_90_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[91].*"
+      ]
+    },
+    "datapoint93": {
+      "dom": "#datapoint-1_867_50_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[92].*"
+      ]
+    },
+    "datapoint94": {
+      "dom": "#datapoint-4_817_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[93].*"
+      ]
+    },
+    "datapoint95": {
+      "dom": "#datapoint-1_833_63_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[94].*"
+      ]
+    },
+    "datapoint96": {
+      "dom": "#datapoint-4_3_72_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[95].*"
+      ]
+    },
+    "datapoint97": {
+      "dom": "#datapoint-4_667_84_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[96].*"
+      ]
+    },
+    "datapoint98": {
+      "dom": "#datapoint-3_75_75_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[97].*"
+      ]
+    },
+    "datapoint99": {
+      "dom": "#datapoint-1_867_51_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[98].*"
+      ]
+    },
+    "datapoint100": {
+      "dom": "#datapoint-4_9_82_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[99].*"
+      ]
+    },
+    "datapoint101": {
+      "dom": "#datapoint-2_483_62_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[100].*"
+      ]
+    },
+    "datapoint102": {
+      "dom": "#datapoint-4_367_88_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[101].*"
+      ]
+    },
+    "datapoint103": {
+      "dom": "#datapoint-2_1_49_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[102].*"
+      ]
+    },
+    "datapoint104": {
+      "dom": "#datapoint-4_5_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[103].*"
+      ]
+    },
+    "datapoint105": {
+      "dom": "#datapoint-4_05_81_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[104].*"
+      ]
+    },
+    "datapoint106": {
+      "dom": "#datapoint-1_867_47_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[105].*"
+      ]
+    },
+    "datapoint107": {
+      "dom": "#datapoint-4_7_84_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[106].*"
+      ]
+    },
+    "datapoint108": {
+      "dom": "#datapoint-1_783_52_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[107].*"
+      ]
+    },
+    "datapoint109": {
+      "dom": "#datapoint-4_85_86_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[108].*"
+      ]
+    },
+    "datapoint110": {
+      "dom": "#datapoint-3_683_81_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[109].*"
+      ]
+    },
+    "datapoint111": {
+      "dom": "#datapoint-4_733_75_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[110].*"
+      ]
+    },
+    "datapoint112": {
+      "dom": "#datapoint-2_3_59_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[111].*"
+      ]
+    },
+    "datapoint113": {
+      "dom": "#datapoint-4_9_89_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[112].*"
+      ]
+    },
+    "datapoint114": {
+      "dom": "#datapoint-4_417_79_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[113].*"
+      ]
+    },
+    "datapoint115": {
+      "dom": "#datapoint-1_7_59_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[114].*"
+      ]
+    },
+    "datapoint116": {
+      "dom": "#datapoint-4_633_81_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[115].*"
+      ]
+    },
+    "datapoint117": {
+      "dom": "#datapoint-2_317_50_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[116].*"
+      ]
+    },
+    "datapoint118": {
+      "dom": "#datapoint-4_6_85_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[117].*"
+      ]
+    },
+    "datapoint119": {
+      "dom": "#datapoint-1_817_59_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[118].*"
+      ]
+    },
+    "datapoint120": {
+      "dom": "#datapoint-4_417_87_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[119].*"
+      ]
+    },
+    "datapoint121": {
+      "dom": "#datapoint-2_617_53_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[120].*"
+      ]
+    },
+    "datapoint122": {
+      "dom": "#datapoint-4_067_69_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[121].*"
+      ]
+    },
+    "datapoint123": {
+      "dom": "#datapoint-4_25_77_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[122].*"
+      ]
+    },
+    "datapoint124": {
+      "dom": "#datapoint-1_967_56_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[123].*"
+      ]
+    },
+    "datapoint125": {
+      "dom": "#datapoint-4_6_88_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[124].*"
+      ]
+    },
+    "datapoint126": {
+      "dom": "#datapoint-3_767_81_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[125].*"
+      ]
+    },
+    "datapoint127": {
+      "dom": "#datapoint-1_917_45_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[126].*"
+      ]
+    },
+    "datapoint128": {
+      "dom": "#datapoint-4_5_82_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[127].*"
+      ]
+    },
+    "datapoint129": {
+      "dom": "#datapoint-2_267_55_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[128].*"
+      ]
+    },
+    "datapoint130": {
+      "dom": "#datapoint-4_65_90_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[129].*"
+      ]
+    },
+    "datapoint131": {
+      "dom": "#datapoint-1_867_45_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[130].*"
+      ]
+    },
+    "datapoint132": {
+      "dom": "#datapoint-4_167_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[131].*"
+      ]
+    },
+    "datapoint133": {
+      "dom": "#datapoint-2_8_56_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[132].*"
+      ]
+    },
+    "datapoint134": {
+      "dom": "#datapoint-4_333_89_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[133].*"
+      ]
+    },
+    "datapoint135": {
+      "dom": "#datapoint-1_833_46_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[134].*"
+      ]
+    },
+    "datapoint136": {
+      "dom": "#datapoint-4_383_82_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[135].*"
+      ]
+    },
+    "datapoint137": {
+      "dom": "#datapoint-1_883_51_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[136].*"
+      ]
+    },
+    "datapoint138": {
+      "dom": "#datapoint-4_933_86_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[137].*"
+      ]
+    },
+    "datapoint139": {
+      "dom": "#datapoint-2_033_53_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[138].*"
+      ]
+    },
+    "datapoint140": {
+      "dom": "#datapoint-3_733_79_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[139].*"
+      ]
+    },
+    "datapoint141": {
+      "dom": "#datapoint-4_233_81_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[140].*"
+      ]
+    },
+    "datapoint142": {
+      "dom": "#datapoint-2_233_60_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[141].*"
+      ]
+    },
+    "datapoint143": {
+      "dom": "#datapoint-4_533_82_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[142].*"
+      ]
+    },
+    "datapoint144": {
+      "dom": "#datapoint-4_817_77_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[143].*"
+      ]
+    },
+    "datapoint145": {
+      "dom": "#datapoint-4_333_76_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[144].*"
+      ]
+    },
+    "datapoint146": {
+      "dom": "#datapoint-1_983_59_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[145].*"
+      ]
+    },
+    "datapoint147": {
+      "dom": "#datapoint-4_633_80_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[146].*"
+      ]
+    },
+    "datapoint148": {
+      "dom": "#datapoint-2_017_49_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[147].*"
+      ]
+    },
+    "datapoint149": {
+      "dom": "#datapoint-5_1_96_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[148].*"
+      ]
+    },
+    "datapoint150": {
+      "dom": "#datapoint-1_8_53_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[149].*"
+      ]
+    },
+    "datapoint151": {
+      "dom": "#datapoint-5_033_77_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[150].*"
+      ]
+    },
+    "datapoint152": {
+      "dom": "#datapoint-4_0_77_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[151].*"
+      ]
+    },
+    "datapoint153": {
+      "dom": "#datapoint-2_4_65_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[152].*"
+      ]
+    },
+    "datapoint154": {
+      "dom": "#datapoint-4_6_81_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[153].*"
+      ]
+    },
+    "datapoint155": {
+      "dom": "#datapoint-3_567_71_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[154].*"
+      ]
+    },
+    "datapoint156": {
+      "dom": "#datapoint-4_0_70_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[155].*"
+      ]
+    },
+    "datapoint157": {
+      "dom": "#datapoint-4_5_81_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[156].*"
+      ]
+    },
+    "datapoint158": {
+      "dom": "#datapoint-4_083_93_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[157].*"
+      ]
+    },
+    "datapoint159": {
+      "dom": "#datapoint-1_8_53_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[158].*"
+      ]
+    },
+    "datapoint160": {
+      "dom": "#datapoint-3_967_89_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[159].*"
+      ]
+    },
+    "datapoint161": {
+      "dom": "#datapoint-2_2_45_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[160].*"
+      ]
+    },
+    "datapoint162": {
+      "dom": "#datapoint-4_15_86_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[161].*"
+      ]
+    },
+    "datapoint163": {
+      "dom": "#datapoint-2_0_58_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[162].*"
+      ]
+    },
+    "datapoint164": {
+      "dom": "#datapoint-3_833_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[163].*"
+      ]
+    },
+    "datapoint165": {
+      "dom": "#datapoint-3_5_66_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[164].*"
+      ]
+    },
+    "datapoint166": {
+      "dom": "#datapoint-4_583_76_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[165].*"
+      ]
+    },
+    "datapoint167": {
+      "dom": "#datapoint-2_367_63_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[166].*"
+      ]
+    },
+    "datapoint168": {
+      "dom": "#datapoint-5_0_88_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[167].*"
+      ]
+    },
+    "datapoint169": {
+      "dom": "#datapoint-1_933_52_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[168].*"
+      ]
+    },
+    "datapoint170": {
+      "dom": "#datapoint-4_617_93_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[169].*"
+      ]
+    },
+    "datapoint171": {
+      "dom": "#datapoint-1_917_49_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[170].*"
+      ]
+    },
+    "datapoint172": {
+      "dom": "#datapoint-2_083_57_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[171].*"
+      ]
+    },
+    "datapoint173": {
+      "dom": "#datapoint-4_583_77_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[172].*"
+      ]
+    },
+    "datapoint174": {
+      "dom": "#datapoint-3_333_68_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[173].*"
+      ]
+    },
+    "datapoint175": {
+      "dom": "#datapoint-4_167_81_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[174].*"
+      ]
+    },
+    "datapoint176": {
+      "dom": "#datapoint-4_333_81_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[175].*"
+      ]
+    },
+    "datapoint177": {
+      "dom": "#datapoint-4_5_73_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[176].*"
+      ]
+    },
+    "datapoint178": {
+      "dom": "#datapoint-2_417_50_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[177].*"
+      ]
+    },
+    "datapoint179": {
+      "dom": "#datapoint-4_0_85_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[178].*"
+      ]
+    },
+    "datapoint180": {
+      "dom": "#datapoint-4_167_74_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[179].*"
+      ]
+    },
+    "datapoint181": {
+      "dom": "#datapoint-1_883_55_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[180].*"
+      ]
+    },
+    "datapoint182": {
+      "dom": "#datapoint-4_583_77_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[181].*"
+      ]
+    },
+    "datapoint183": {
+      "dom": "#datapoint-4_25_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[182].*"
+      ]
+    },
+    "datapoint184": {
+      "dom": "#datapoint-3_767_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[183].*"
+      ]
+    },
+    "datapoint185": {
+      "dom": "#datapoint-2_033_51_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[184].*"
+      ]
+    },
+    "datapoint186": {
+      "dom": "#datapoint-4_433_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[185].*"
+      ]
+    },
+    "datapoint187": {
+      "dom": "#datapoint-4_083_84_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[186].*"
+      ]
+    },
+    "datapoint188": {
+      "dom": "#datapoint-1_833_46_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[187].*"
+      ]
+    },
+    "datapoint189": {
+      "dom": "#datapoint-4_417_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[188].*"
+      ]
+    },
+    "datapoint190": {
+      "dom": "#datapoint-2_183_55_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[189].*"
+      ]
+    },
+    "datapoint191": {
+      "dom": "#datapoint-4_8_81_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[190].*"
+      ]
+    },
+    "datapoint192": {
+      "dom": "#datapoint-1_833_57_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[191].*"
+      ]
+    },
+    "datapoint193": {
+      "dom": "#datapoint-4_8_76_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[192].*"
+      ]
+    },
+    "datapoint194": {
+      "dom": "#datapoint-4_1_84_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[193].*"
+      ]
+    },
+    "datapoint195": {
+      "dom": "#datapoint-3_966_77_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[194].*"
+      ]
+    },
+    "datapoint196": {
+      "dom": "#datapoint-4_233_81_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[195].*"
+      ]
+    },
+    "datapoint197": {
+      "dom": "#datapoint-3_5_87_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[196].*"
+      ]
+    },
+    "datapoint198": {
+      "dom": "#datapoint-4_366_77_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[197].*"
+      ]
+    },
+    "datapoint199": {
+      "dom": "#datapoint-2_25_51_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[198].*"
+      ]
+    },
+    "datapoint200": {
+      "dom": "#datapoint-4_667_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[199].*"
+      ]
+    },
+    "datapoint201": {
+      "dom": "#datapoint-2_1_60_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[200].*"
+      ]
+    },
+    "datapoint202": {
+      "dom": "#datapoint-4_35_82_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[201].*"
+      ]
+    },
+    "datapoint203": {
+      "dom": "#datapoint-4_133_91_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[202].*"
+      ]
+    },
+    "datapoint204": {
+      "dom": "#datapoint-1_867_53_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[203].*"
+      ]
+    },
+    "datapoint205": {
+      "dom": "#datapoint-4_6_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[204].*"
+      ]
+    },
+    "datapoint206": {
+      "dom": "#datapoint-1_783_46_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[205].*"
+      ]
+    },
+    "datapoint207": {
+      "dom": "#datapoint-4_367_77_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[206].*"
+      ]
+    },
+    "datapoint208": {
+      "dom": "#datapoint-3_85_84_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[207].*"
+      ]
+    },
+    "datapoint209": {
+      "dom": "#datapoint-1_933_49_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[208].*"
+      ]
+    },
+    "datapoint210": {
+      "dom": "#datapoint-4_5_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[209].*"
+      ]
+    },
+    "datapoint211": {
+      "dom": "#datapoint-2_383_71_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[210].*"
+      ]
+    },
+    "datapoint212": {
+      "dom": "#datapoint-4_7_80_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[211].*"
+      ]
+    },
+    "datapoint213": {
+      "dom": "#datapoint-1_867_49_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[212].*"
+      ]
+    },
+    "datapoint214": {
+      "dom": "#datapoint-3_833_75_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[213].*"
+      ]
+    },
+    "datapoint215": {
+      "dom": "#datapoint-3_417_64_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[214].*"
+      ]
+    },
+    "datapoint216": {
+      "dom": "#datapoint-4_233_76_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[215].*"
+      ]
+    },
+    "datapoint217": {
+      "dom": "#datapoint-2_4_53_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[216].*"
+      ]
+    },
+    "datapoint218": {
+      "dom": "#datapoint-4_8_94_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[217].*"
+      ]
+    },
+    "datapoint219": {
+      "dom": "#datapoint-2_0_55_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[218].*"
+      ]
+    },
+    "datapoint220": {
+      "dom": "#datapoint-4_15_76_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[219].*"
+      ]
+    },
+    "datapoint221": {
+      "dom": "#datapoint-1_867_50_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[220].*"
+      ]
+    },
+    "datapoint222": {
+      "dom": "#datapoint-4_267_82_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[221].*"
+      ]
+    },
+    "datapoint223": {
+      "dom": "#datapoint-1_75_54_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[222].*"
+      ]
+    },
+    "datapoint224": {
+      "dom": "#datapoint-4_483_75_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[223].*"
+      ]
+    },
+    "datapoint225": {
+      "dom": "#datapoint-4_0_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[224].*"
+      ]
+    },
+    "datapoint226": {
+      "dom": "#datapoint-4_117_79_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[225].*"
+      ]
+    },
+    "datapoint227": {
+      "dom": "#datapoint-4_083_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[226].*"
+      ]
+    },
+    "datapoint228": {
+      "dom": "#datapoint-4_267_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[227].*"
+      ]
+    },
+    "datapoint229": {
+      "dom": "#datapoint-3_917_70_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[228].*"
+      ]
+    },
+    "datapoint230": {
+      "dom": "#datapoint-4_55_79_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[229].*"
+      ]
+    },
+    "datapoint231": {
+      "dom": "#datapoint-4_083_70_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[230].*"
+      ]
+    },
+    "datapoint232": {
+      "dom": "#datapoint-2_417_54_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[231].*"
+      ]
+    },
+    "datapoint233": {
+      "dom": "#datapoint-4_183_86_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[232].*"
+      ]
+    },
+    "datapoint234": {
+      "dom": "#datapoint-2_217_50_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[233].*"
+      ]
+    },
+    "datapoint235": {
+      "dom": "#datapoint-4_45_90_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[234].*"
+      ]
+    },
+    "datapoint236": {
+      "dom": "#datapoint-1_883_54_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[235].*"
+      ]
+    },
+    "datapoint237": {
+      "dom": "#datapoint-1_85_54_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[236].*"
+      ]
+    },
+    "datapoint238": {
+      "dom": "#datapoint-4_283_77_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[237].*"
+      ]
+    },
+    "datapoint239": {
+      "dom": "#datapoint-3_95_79_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[238].*"
+      ]
+    },
+    "datapoint240": {
+      "dom": "#datapoint-2_333_64_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[239].*"
+      ]
+    },
+    "datapoint241": {
+      "dom": "#datapoint-4_15_75_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[240].*"
+      ]
+    },
+    "datapoint242": {
+      "dom": "#datapoint-2_35_47_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[241].*"
+      ]
+    },
+    "datapoint243": {
+      "dom": "#datapoint-4_933_86_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[242].*"
+      ]
+    },
+    "datapoint244": {
+      "dom": "#datapoint-2_9_63_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[243].*"
+      ]
+    },
+    "datapoint245": {
+      "dom": "#datapoint-4_583_85_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[244].*"
+      ]
+    },
+    "datapoint246": {
+      "dom": "#datapoint-3_833_82_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[245].*"
+      ]
+    },
+    "datapoint247": {
+      "dom": "#datapoint-2_083_57_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[246].*"
+      ]
+    },
+    "datapoint248": {
+      "dom": "#datapoint-4_367_82_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[247].*"
+      ]
+    },
+    "datapoint249": {
+      "dom": "#datapoint-2_133_67_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[248].*"
+      ]
+    },
+    "datapoint250": {
+      "dom": "#datapoint-4_35_74_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[249].*"
+      ]
+    },
+    "datapoint251": {
+      "dom": "#datapoint-2_2_54_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[250].*"
+      ]
+    },
+    "datapoint252": {
+      "dom": "#datapoint-4_45_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[251].*"
+      ]
+    },
+    "datapoint253": {
+      "dom": "#datapoint-3_567_73_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[252].*"
+      ]
+    },
+    "datapoint254": {
+      "dom": "#datapoint-4_5_73_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[253].*"
+      ]
+    },
+    "datapoint255": {
+      "dom": "#datapoint-4_15_88_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[254].*"
+      ]
+    },
+    "datapoint256": {
+      "dom": "#datapoint-3_817_80_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[255].*"
+      ]
+    },
+    "datapoint257": {
+      "dom": "#datapoint-3_917_71_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[256].*"
+      ]
+    },
+    "datapoint258": {
+      "dom": "#datapoint-4_45_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[257].*"
+      ]
+    },
+    "datapoint259": {
+      "dom": "#datapoint-2_0_56_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[258].*"
+      ]
+    },
+    "datapoint260": {
+      "dom": "#datapoint-4_283_79_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[259].*"
+      ]
+    },
+    "datapoint261": {
+      "dom": "#datapoint-4_767_78_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[260].*"
+      ]
+    },
+    "datapoint262": {
+      "dom": "#datapoint-4_533_84_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[261].*"
+      ]
+    },
+    "datapoint263": {
+      "dom": "#datapoint-1_85_58_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[262].*"
+      ]
+    },
+    "datapoint264": {
+      "dom": "#datapoint-4_25_83_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[263].*"
+      ]
+    },
+    "datapoint265": {
+      "dom": "#datapoint-1_983_43_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[264].*"
+      ]
+    },
+    "datapoint266": {
+      "dom": "#datapoint-2_25_60_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[265].*"
+      ]
+    },
+    "datapoint267": {
+      "dom": "#datapoint-4_75_75_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[266].*"
+      ]
+    },
+    "datapoint268": {
+      "dom": "#datapoint-4_117_81_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[267].*"
+      ]
+    },
+    "datapoint269": {
+      "dom": "#datapoint-2_15_46_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[268].*"
+      ]
+    },
+    "datapoint270": {
+      "dom": "#datapoint-4_417_90_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[269].*"
+      ]
+    },
+    "datapoint271": {
+      "dom": "#datapoint-1_817_46_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[270].*"
+      ]
+    },
+    "datapoint272": {
+      "dom": "#datapoint-4_467_74_Eruptions of Old Faithful",
+      "json": [
+        "$.datasets[0].series[0].name",
+        "$.datasets[0].series[0].records[271].*"
+      ]
+    }
+  }
+}
+        </metadata>
+        <rect id="frame" pointer-events="all" x="0" y="0" width="100%" height="100%">
+        </rect>
+        <g role="graphics-document" aria-roledescription="scatter chart" transform="translate(25.60,8)">
+      <text class=" chart-title label " role="heading" x="224.53" y="18" text-anchor="start" id="chart-title">
+        Old Faithful Geyser Eruptions
+      </text>
+        <g id="horiz-axis" role="graphics-object" aria-roledescription="x-axis" transform="translate(55.70,512)">
+      <path id="horiz-axis-line" d="M-10,0 h610"/>
+        <g id="horiz-axis-tick-strip" transform="translate(0,-1)">
+      <path id="" class="tick-horiz" d="M75,0 v10"/>
+      <path id="" class="grid-horiz" d="M75,0 v-450"/>
+      <path id="" class="tick-horiz" d="M150,0 v10"/>
+      <path id="" class="grid-horiz" d="M150,0 v-450"/>
+      <path id="" class="tick-horiz" d="M225,0 v10"/>
+      <path id="" class="grid-horiz" d="M225,0 v-450"/>
+      <path id="" class="tick-horiz" d="M300,0 v10"/>
+      <path id="" class="grid-horiz" d="M300,0 v-450"/>
+      <path id="" class="tick-horiz" d="M375,0 v10"/>
+      <path id="" class="grid-horiz" d="M375,0 v-450"/>
+      <path id="" class="tick-horiz" d="M450,0 v10"/>
+      <path id="" class="grid-horiz" d="M450,0 v-450"/>
+      <path id="" class="tick-horiz" d="M525,0 v10"/>
+      <path id="" class="grid-horiz" d="M525,0 v-450"/>
+      <path id="" class="tick-horiz" d="M600,0 v10"/>
+      <path id="" class="grid-horiz" d="M600,0 v-450"/>
+        </g>
+        <g id="tick-label-tier-horiz-0" transform="translate(0,25)">
+      <text class=" tick-label horiz south label " role="axislabel" x="8.49" y="8.49" text-anchor="end" transform="&#10;        translate(8.49,8.49)&#10;        rotate(-45)&#10;        translate(-8.49,-8.49)" id="tick-label-horiz-0">
+        1.5
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="83.49" y="8.49" text-anchor="end" transform="&#10;        translate(83.49,8.49)&#10;        rotate(-45)&#10;        translate(-83.49,-8.49)" id="tick-label-horiz-1">
+        2
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="158.49" y="8.49" text-anchor="end" transform="&#10;        translate(158.49,8.49)&#10;        rotate(-45)&#10;        translate(-158.49,-8.49)" id="tick-label-horiz-2">
+        2.5
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="233.49" y="8.49" text-anchor="end" transform="&#10;        translate(233.49,8.49)&#10;        rotate(-45)&#10;        translate(-233.49,-8.49)" id="tick-label-horiz-3">
+        3
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="308.49" y="8.49" text-anchor="end" transform="&#10;        translate(308.49,8.49)&#10;        rotate(-45)&#10;        translate(-308.49,-8.49)" id="tick-label-horiz-4">
+        3.5
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="383.49" y="8.49" text-anchor="end" transform="&#10;        translate(383.49,8.49)&#10;        rotate(-45)&#10;        translate(-383.49,-8.49)" id="tick-label-horiz-5">
+        4
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="458.49" y="8.49" text-anchor="end" transform="&#10;        translate(458.49,8.49)&#10;        rotate(-45)&#10;        translate(-458.49,-8.49)" id="tick-label-horiz-6">
+        4.5
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="533.49" y="8.49" text-anchor="end" transform="&#10;        translate(533.49,8.49)&#10;        rotate(-45)&#10;        translate(-533.49,-8.49)" id="tick-label-horiz-7">
+        5
+      </text>
+      <text class=" tick-label horiz south label " role="axislabel" x="608.49" y="8.49" text-anchor="end" transform="&#10;        translate(608.49,8.49)&#10;        rotate(-45)&#10;        translate(-608.49,-8.49)" id="tick-label-horiz-8">
+        5.5
+      </text>
+        </g>
+        </g>
+        <g id="vert-axis" role="graphics-object" aria-roledescription="y-axis" transform="translate(0,62)">
+      <text class=" axis-title label " role="heading" x="14" y="225" text-anchor="middle" transform="&#10;        translate(14,225)&#10;        rotate(-90)&#10;        translate(-14,-225)" id="axis-title-vert">
+        Time since last eruption in minutes
+      </text>
+        <g id="tick-label-tier-vert-0" transform="translate(25,0)">
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="455" text-anchor="end" id="tick-label-vert-0">
+        40
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="380" text-anchor="end" id="tick-label-vert-1">
+        50
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="305" text-anchor="end" id="tick-label-vert-2">
+        60
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="230" text-anchor="end" id="tick-label-vert-3">
+        70
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="155" text-anchor="end" id="tick-label-vert-4">
+        80
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="80" text-anchor="end" id="tick-label-vert-5">
+        90
+      </text>
+      <text class=" tick-label vert west label " role="axislabel" x="21.70" y="5" text-anchor="end" id="tick-label-vert-6">
+        100
+      </text>
+        </g>
+        <g id="vert-axis-tick-strip" transform="translate(46.70,0)">
+      <path id="" class="tick-vert" d="M10,0 h-10"/>
+      <path id="" class="grid-vert" d="M10,0 h600"/>
+      <path id="" class="tick-vert" d="M10,75 h-10"/>
+      <path id="" class="grid-vert" d="M10,75 h600"/>
+      <path id="" class="tick-vert" d="M10,150 h-10"/>
+      <path id="" class="grid-vert" d="M10,150 h600"/>
+      <path id="" class="tick-vert" d="M10,225 h-10"/>
+      <path id="" class="grid-vert" d="M10,225 h600"/>
+      <path id="" class="tick-vert" d="M10,300 h-10"/>
+      <path id="" class="grid-vert" d="M10,300 h600"/>
+      <path id="" class="tick-vert" d="M10,375 h-10"/>
+      <path id="" class="grid-vert" d="M10,375 h600"/>
+        </g>
+      <path transform="translate(56.70,0)" id="vert-axis-line" d="M0,0 v460"/>
+        </g>
+      <g id="chart-layers" transform="translate(55.70,62)">
+        <rect id="data-backdrop" width="600" height="450"/>
+        <g id="background-annotation-layer">
+        <g>
+        </g>
+        <g>
+        </g>
+        <g>
+        </g>
+        </g>
+        <g id="data-layer" role="dataset">
+        <g id="series-eruptions_of_old_faithful" style="fill:hsl(225, 30%, 52%);stroke:hsl(225, 30%, 52%);stroke-width:4;">
+      <use href="#sym-circle-outline" id="datapoint-3_6_79_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(315,157.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_8_54_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(45.00,345)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_333_74_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(274.95,195)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-2_283_62_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(117.45,285)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_533_85_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(454.95,112.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_883_55_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(207.45,337.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_7_88_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(480,90)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_6_85_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(315,112.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_95_51_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(67.50,367.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_35_85_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(427.50,112.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_833_54_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(49.95,345)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_917_84_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(362.55,120)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_2_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(405,165)"/>
+      <use href="#sym-square-outline" id="datapoint-1_75_47_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(37.50,397.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_7_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(480,127.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_167_52_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(100.05,360)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-1_75_62_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(37.50,285)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_8_84_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(495,120)"/>
+      <use href="#sym-square-outline" id="datapoint-1_6_52_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(15.00,360)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_25_79_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(412.50,157.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_8_51_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(45.00,367.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_75_47_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(37.50,397.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_45_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(292.50,165)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_067_69_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(235.05,232.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_533_74_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(454.95,195)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_6_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(315,127.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_967_55_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(70.05,337.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_083_76_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(387.45,180)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_85_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(352.50,165)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_433_79_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(439.95,157.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_3_73_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(420,202.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_467_77_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(445.05,172.50)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-3_367_66_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(280.05,255)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_033_80_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(379.95,150)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_833_74_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(349.95,195)"/>
+      <use href="#sym-square-outline" id="datapoint-2_017_52_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(77.55,360)"/>
+      <use href="#sym-square-outline" id="datapoint-1_867_48_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(55.05,390)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_833_80_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(499.95,150)"/>
+      <use href="#sym-square-outline" id="datapoint-1_833_59_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(49.95,307.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_783_90_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(492.45,75)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_35_80_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(427.50,150)"/>
+      <use href="#sym-square-outline" id="datapoint-1_883_58_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(57.45,315)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_567_84_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(460.05,120)"/>
+      <use href="#sym-square-outline" id="datapoint-1_75_58_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(37.50,315)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_533_73_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(454.95,202.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_317_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(272.55,127.50)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-3_833_64_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(349.95,270)"/>
+      <use href="#sym-square-outline" id="datapoint-2_1_53_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(90.00,352.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_633_82_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(469.95,135)"/>
+      <use href="#sym-square-outline" id="datapoint-2_0_59_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(75,307.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_8_75_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(495,187.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_716_90_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(482.40,75)"/>
+      <use href="#sym-square-outline" id="datapoint-1_833_54_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(49.95,345)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_833_80_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(499.95,150)"/>
+      <use href="#sym-square-outline" id="datapoint-1_733_54_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(34.95,345)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_883_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(507.45,127.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_717_71_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(332.55,217.50)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-1_667_64_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(25.05,270)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_567_77_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(460.05,172.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_317_81_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(422.55,142.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_233_59_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(109.95,307.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_5_84_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(450,120)"/>
+      <use href="#sym-square-outline" id="datapoint-1_75_48_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(37.50,390)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_8_82_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(495,135)"/>
+      <use href="#sym-square-outline" id="datapoint-1_817_60_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(47.55,300)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_4_92_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(435.00,60)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_167_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(400.05,165)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_7_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(480,165)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-2_067_65_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(85.05,262.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_7_73_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(480,202.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_033_82_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(379.95,135)"/>
+      <use href="#sym-square-outline" id="datapoint-1_967_56_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(70.05,330)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_5_79_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(450,157.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_0_71_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(375,217.50)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-1_983_62_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(72.45,285)"/>
+      <use href="#sym-circle-outline" id="datapoint-5_067_76_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(535.05,180)"/>
+      <use href="#sym-square-outline" id="datapoint-2_017_60_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(77.55,300)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_567_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(460.05,165)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_883_76_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(357.45,180)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_6_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(315,127.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_133_75_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(394.95,187.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_333_82_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(424.95,135)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_1_70_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(390.00,225)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-2_633_65_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(169.95,262.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_067_73_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(385.05,202.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_933_88_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(514.95,90)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_95_76_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(367.50,180)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_517_80_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(452.55,150)"/>
+      <use href="#sym-square-outline" id="datapoint-2_167_48_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(100.05,390)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_0_86_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(375,105)"/>
+      <use href="#sym-square-outline" id="datapoint-2_2_60_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(105.00,300)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_333_90_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(424.95,75)"/>
+      <use href="#sym-square-outline" id="datapoint-1_867_50_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(55.05,375)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_817_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(497.55,165)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-1_833_63_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(49.95,277.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_3_72_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(420,210)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_667_84_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(475.05,120)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_75_75_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(337.50,187.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_867_51_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(55.05,367.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_9_82_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(510.00,135)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-2_483_62_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(147.45,285)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_367_88_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(430.05,90)"/>
+      <use href="#sym-square-outline" id="datapoint-2_1_49_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(90.00,382.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_5_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(450,127.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_05_81_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(382.50,142.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_867_47_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(55.05,397.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_7_84_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(480,120)"/>
+      <use href="#sym-square-outline" id="datapoint-1_783_52_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(42.45,360)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_85_86_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(502.50,105)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_683_81_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(327.45,142.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_733_75_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(484.95,187.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_3_59_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(120.00,307.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_9_89_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(510.00,82.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_417_79_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(437.55,157.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_7_59_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(30.00,307.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_633_81_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(469.95,142.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_317_50_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(122.55,375)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_6_85_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(465.00,112.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_817_59_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(47.55,307.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_417_87_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(437.55,97.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_617_53_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(167.55,352.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_067_69_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(385.05,232.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_25_77_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(412.50,172.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_967_56_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(70.05,330)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_6_88_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(465.00,90)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_767_81_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(340.05,142.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_917_45_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(62.55,412.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_5_82_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(450,135)"/>
+      <use href="#sym-square-outline" id="datapoint-2_267_55_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(115.05,337.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_65_90_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(472.50,75)"/>
+      <use href="#sym-square-outline" id="datapoint-1_867_45_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(55.05,412.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_167_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(400.05,127.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_8_56_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(195.00,330)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_333_89_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(424.95,82.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_833_46_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(49.95,405)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_383_82_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(432.45,135)"/>
+      <use href="#sym-square-outline" id="datapoint-1_883_51_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(57.45,367.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_933_86_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(514.95,105)"/>
+      <use href="#sym-square-outline" id="datapoint-2_033_53_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(79.95,352.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_733_79_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(334.95,157.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_233_81_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(409.95,142.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_233_60_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(109.95,300)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_533_82_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(454.95,135)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_817_77_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(497.55,172.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_333_76_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(424.95,180)"/>
+      <use href="#sym-square-outline" id="datapoint-1_983_59_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(72.45,307.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_633_80_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(469.95,150)"/>
+      <use href="#sym-square-outline" id="datapoint-2_017_49_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(77.55,382.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-5_1_96_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(540,30)"/>
+      <use href="#sym-square-outline" id="datapoint-1_8_53_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(45.00,352.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-5_033_77_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(529.95,172.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_0_77_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(375,172.50)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-2_4_65_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(135,262.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_6_81_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(465.00,142.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_567_71_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(310.05,217.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_0_70_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(375,225)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_5_81_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(450,142.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_083_93_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(387.45,52.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_8_53_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(45.00,352.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_967_89_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(370.05,82.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_2_45_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(105.00,412.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_15_86_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(397.50,105)"/>
+      <use href="#sym-square-outline" id="datapoint-2_0_58_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(75,315)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_833_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(349.95,165)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-3_5_66_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(300,255)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_583_76_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(462.45,180)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-2_367_63_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(130.05,277.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-5_0_88_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(525,90)"/>
+      <use href="#sym-square-outline" id="datapoint-1_933_52_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(64.95,360)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_617_93_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(467.55,52.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_917_49_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(62.55,382.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_083_57_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(87.45,322.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_583_77_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(462.45,172.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_333_68_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(274.95,240)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_167_81_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(400.05,142.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_333_81_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(424.95,142.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_5_73_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(450,202.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_417_50_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(137.55,375)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_0_85_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(375,112.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_167_74_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(400.05,195)"/>
+      <use href="#sym-square-outline" id="datapoint-1_883_55_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(57.45,337.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_583_77_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(462.45,172.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_25_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(412.50,127.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_767_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(340.05,127.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_033_51_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(79.95,367.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_433_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(439.95,165)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_083_84_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(387.45,120)"/>
+      <use href="#sym-square-outline" id="datapoint-1_833_46_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(49.95,405)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_417_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(437.55,127.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_183_55_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(102.45,337.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_8_81_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(495,142.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_833_57_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(49.95,322.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_8_76_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(495,180)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_1_84_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(390.00,120)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_966_77_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(369.90,172.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_233_81_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(409.95,142.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_5_87_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(300,97.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_366_77_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(429.90,172.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_25_51_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(112.50,367.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_667_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(475.05,165)"/>
+      <use href="#sym-square-outline" id="datapoint-2_1_60_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(90.00,300)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_35_82_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(427.50,135)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_133_91_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(394.95,67.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_867_53_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(55.05,352.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_6_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(465.00,165)"/>
+      <use href="#sym-square-outline" id="datapoint-1_783_46_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(42.45,405)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_367_77_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(430.05,172.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_85_84_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(352.50,120)"/>
+      <use href="#sym-square-outline" id="datapoint-1_933_49_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(64.95,382.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_5_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(450,127.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-2_383_71_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(132.45,217.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_7_80_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(480,150)"/>
+      <use href="#sym-square-outline" id="datapoint-1_867_49_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(55.05,382.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_833_75_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(349.95,187.50)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-3_417_64_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(287.55,270)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_233_76_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(409.95,180)"/>
+      <use href="#sym-square-outline" id="datapoint-2_4_53_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(135,352.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_8_94_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(495,45)"/>
+      <use href="#sym-square-outline" id="datapoint-2_0_55_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(75,337.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_15_76_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(397.50,180)"/>
+      <use href="#sym-square-outline" id="datapoint-1_867_50_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(55.05,375)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_267_82_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(415.05,135)"/>
+      <use href="#sym-square-outline" id="datapoint-1_75_54_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(37.50,345)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_483_75_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(447.45,187.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_0_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(375,165)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_117_79_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(392.55,157.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_083_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(387.45,165)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_267_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(415.05,165)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_917_70_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(362.55,225)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_55_79_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(457.50,157.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_083_70_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(387.45,225)"/>
+      <use href="#sym-square-outline" id="datapoint-2_417_54_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(137.55,345)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_183_86_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(402.45,105)"/>
+      <use href="#sym-square-outline" id="datapoint-2_217_50_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(107.55,375)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_45_90_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(442.50,75)"/>
+      <use href="#sym-square-outline" id="datapoint-1_883_54_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(57.45,345)"/>
+      <use href="#sym-square-outline" id="datapoint-1_85_54_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(52.50,345)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_283_77_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(417.45,172.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_95_79_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(367.50,157.50)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-2_333_64_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(124.95,270)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_15_75_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(397.50,187.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_35_47_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(127.50,397.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_933_86_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(514.95,105)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-2_9_63_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(210,277.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_583_85_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(462.45,112.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_833_82_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(349.95,135)"/>
+      <use href="#sym-square-outline" id="datapoint-2_083_57_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(87.45,322.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_367_82_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(430.05,135)"/>
+      <use href="#sym-triangle_up-outline" id="datapoint-2_133_67_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(75, 43%, 45%);" class=" cluster-2 datapoint " transform="translate(94.95,247.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_35_74_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(427.50,195)"/>
+      <use href="#sym-square-outline" id="datapoint-2_2_54_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(105.00,345)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_45_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(442.50,127.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_567_73_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(310.05,202.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_5_73_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(450,202.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_15_88_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(397.50,90)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_817_80_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(347.55,150)"/>
+      <use href="#sym-circle-outline" id="datapoint-3_917_71_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(362.55,217.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_45_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(442.50,127.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_0_56_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(75,330)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_283_79_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(417.45,157.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_767_78_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(490.05,165)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_533_84_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(454.95,120)"/>
+      <use href="#sym-square-outline" id="datapoint-1_85_58_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(52.50,315)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_25_83_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(412.50,127.50)"/>
+      <use href="#sym-square-outline" id="datapoint-1_983_43_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(72.45,427.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_25_60_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(112.50,300)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_75_75_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(487.50,187.50)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_117_81_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(392.55,142.50)"/>
+      <use href="#sym-square-outline" id="datapoint-2_15_46_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(97.50,405)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_417_90_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(437.55,75)"/>
+      <use href="#sym-square-outline" id="datapoint-1_817_46_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(12, 69%, 35%);" class=" cluster-1 datapoint " transform="translate(47.55,405)"/>
+      <use href="#sym-circle-outline" id="datapoint-4_467_74_Eruptions of Old Faithful" role="datapoint" style="stroke-width:2;fill:white;stroke:hsl(225, 30%, 52%);" class=" cluster-0 datapoint " transform="translate(445.05,195)"/>
+        </g>
+        </g>
+        <g id="highlights-layer">
+        </g>
+        <g id="foreground-annotation-layer">
+        <g>
+        </g>
+        <g>
+        </g>
+        </g>
+        <g id="selection-layer">
+        </g>
+        <g id="focus-layer">
+        </g>
+      </g>
+        </g>
+      </svg>
