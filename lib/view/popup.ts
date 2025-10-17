@@ -73,6 +73,11 @@ export class Popup extends View {
         this._wrapWidth = num;
     }
 
+    get text() {
+        return this.popupLabelOptions.text;
+    }
+
+
     constructor(paraview: ParaView, private popupLabelOptions: PopupLabelOptions, private popupShapeOptions: PopupShapeOptions) {
         super(paraview);
         this.applyDefaults();
@@ -154,7 +159,7 @@ export class Popup extends View {
         }
         if (this.grid.left - this.leftPadding < 0) {
             this.horizShift = - (this.leftPadding - this.grid.left);
-            this.grid.x -= this.horizShift;;
+            this.grid.x -= this.horizShift;
         }
         //Note shifting the label up away from the datapoint in the event of text wrap
         //has lower priority than shifting it down from the top of the screen
