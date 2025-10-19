@@ -1,5 +1,5 @@
 
-import { PlotLayer, trendTranslation } from '.';
+import { PlotLayer} from '.';
 import { type ParaView } from '../../paraview';
 import { svg } from 'lit';
 import { datapointIdToCursor } from '../../store';
@@ -8,6 +8,7 @@ import { type DatapointView } from '../data';
 import { PathShape, RectShape } from '../shape';
 import { formatBox } from '@fizz/parasummary';
 import { Popup } from '../popup';
+import { trendTranslation } from './popup_layer';
 
 export type HighlightsType = 'foreground' | 'background';
 
@@ -127,6 +128,7 @@ export class HighlightsLayer extends PlotLayer {
         sym.opacity = 0.5;
         sym.fill = 'empty';
       });
+      this.paraview.documentView?.chartLayers.popupLayer.addPopups();
     }
     return svg`
       ${this.paraview.store.visitedDatapoints.values().map(datapointId => {
