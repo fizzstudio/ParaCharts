@@ -3,8 +3,8 @@ import { ParaView } from "../../paraview";
 import { datapointIdToCursor, PointAnnotation } from "../../store";
 import { Container, View } from "../base_view";
 import { Popup } from "../popup";
-import { NavNode, SequenceNavNodeOptions, SeriesNavNodeOptions } from "./data";
 import { PlotLayer } from "./layer";
+import { DatapointView } from "../data";
 
 export type AnnotationType = 'foreground' | 'background';
 export const trendTranslation = {
@@ -97,26 +97,29 @@ export class PopupLayer extends PlotLayer {
         if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onFocus") {
             this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
             const cursor = this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.navMap!.cursor
+            const datapoints = cursor.datapoints;
+            const datapointViews = datapoints.map(datapoint =>
+                this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!);
             let popups: Popup[] = []
             if (cursor.type === 'chord') {
-                popups.push(...this.addChordPopups(cursor));
+                popups.push(...this.addChordPopups(datapointViews));
             }
             else if (cursor.type === 'sequence') {
-                popups.push(...this.addSequencePopups(cursor));
+                popups.push(...this.addSequencePopups(datapointViews));
             }
             else if (cursor.type === 'series') {
-                popups.push(...this.addSeriesPopups(cursor));
+                popups.push(...this.addSeriesPopups(datapointViews));
             }
             else {
                 for (let dp of this.paraview.store.visitedDatapoints) {
                     const { seriesKey, index } = datapointIdToCursor(dp);
                     const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
-                    datapointView.addPopup()
+                    datapointView.addPopup();
                 }
             }
 
             for (let popup of popups) {
-                this.paraview.store.popups.push(popup)
+                this.paraview.store.popups.push(popup);
             }
         }
         else if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onSelect") {
@@ -124,7 +127,7 @@ export class PopupLayer extends PlotLayer {
             for (let dp of this.paraview.store.selectedDatapoints) {
                 const { seriesKey, index } = datapointIdToCursor(dp);
                 const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
-                datapointView.addPopup()
+                datapointView.addPopup();
             }
         }
 
@@ -141,17 +144,16 @@ export class PopupLayer extends PlotLayer {
         }
     }
 
-    addChordPopups(cursor: NavNode): Popup[] {
-        let text = ''
-        for (let dp of cursor.datapoints) {
-            text = text.concat(`${dp.seriesKey}: ${this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.summarizer.getDatapointSummary(dp, 'statusBar')}\n`)
+    addChordPopups(datapointViews: DatapointView[]): Popup[] {
+        let text = '';
+        for (let dpView of datapointViews) {
+            text = text.concat(`${dpView.seriesKey}: ${this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.summarizer.getDatapointSummary(dpView.datapoint, 'statusBar')}\n`);
         }
-        const dp = cursor.datapoints[0]
-        const dpView = this.paraview.documentView!.chartLayers!.dataLayer.datapointView(dp.seriesKey, dp.datapointIndex)!
+        const dpView = datapointViews[0];
         const items = this.paraview.documentView?.chartLayers.dataLayer.chartInfo.popuplegend()!;
         this.paraview.store.addLineBreak(this.paraview.documentView?.chartLayers.dataLayer.chartInfo.navMap!.cursor.index! / (this.paraview.store.model!.series[0].datapoints.length - 1),
-            cursor.index!, cursor.datapoints[0].seriesKey, false)
-        this.paraview.documentView?.chartLayers.backgroundAnnotationLayer.render()!
+            dpView.index!, dpView.seriesKey, false);
+        this.paraview.documentView?.chartLayers.backgroundAnnotationLayer.render()!;
         const popup = new Popup(this.paraview,
             {
                 text: text,
@@ -169,48 +171,52 @@ export class PopupLayer extends PlotLayer {
                 fill: "hsl(0, 0%, 100%)"
                 ,
                 stroke: "hsl(0, 0%, 0%)"
-            })
-        popup.classInfo = { 'popup': true }
-        return [popup]
+            });
+        popup.classInfo = { 'popup': true };
+        return [popup];
     }
 
-    addSequencePopups(cursor: NavNode): Popup[] {
-        const firstDP = cursor.datapoints[0]
-        const firstDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(firstDP.seriesKey, firstDP.datapointIndex)!
-        const lastDP = cursor.datapoints[cursor.datapoints.length - 1]
-        const lastDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(lastDP.seriesKey, lastDP.datapointIndex)!
+    addSequencePopups(datapointViews: DatapointView[]): Popup[] {
+        const firstDPView = datapointViews[0];
+        const lastDPView = datapointViews[datapointViews.length - 1];
         let x = (lastDPView.x + firstDPView.x) / 2;
         let y = 0;
-        if (cursor.datapoints.length % 2 == 0) {
-            const leftDP = cursor.datapoints[(cursor.datapoints.length / 2) - 1]
-            const leftDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(leftDP.seriesKey, leftDP.datapointIndex)!
-            const rightDP = cursor.datapoints[(cursor.datapoints.length / 2)]
-            const rightDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(rightDP.seriesKey, rightDP.datapointIndex)!
+        if (datapointViews.length % 2 == 0) {
+            const leftDPView = datapointViews[(datapointViews.length / 2) - 1];
+            const rightDPView = datapointViews[(datapointViews.length / 2)];
             y = (leftDPView.y + rightDPView.y) / 2;
         }
         else {
-            const leftDP = cursor.datapoints[(cursor.datapoints.length - 1) / 2]
-            const leftDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(leftDP.seriesKey, leftDP.datapointIndex)!
+            const leftDPView = datapointViews[(datapointViews.length - 1) / 2];
             y = leftDPView.y;
         }
-        const seriesAnalysis = this.paraview.store.seriesAnalyses[firstDPView.seriesKey]!
-        const index = seriesAnalysis.sequences.findIndex(s => s.start === (cursor.options as SequenceNavNodeOptions).start && s.end === (cursor.options as SequenceNavNodeOptions).end)
+        const seriesAnalysis = this.paraview.store.seriesAnalyses[firstDPView.seriesKey]!;
+        const index = seriesAnalysis.sequences.findIndex(s => s.start === datapointViews[0].index && s.end - 1 === datapointViews[datapointViews.length - 1].index);
         const labels = this.paraview.store.model!.series[0].datapoints.map(
             (p) => formatBox(p.facetBox('x')!, this.paraview.store.getFormatType('horizTick'))
         );
-        const points = this.paraview.store.model!.series.find(s => s.key === (cursor.options as SequenceNavNodeOptions).seriesKey)!.datapoints
-        let text = ''
+        const points = this.paraview.store.model!.series.find(s => s.key === datapointViews[0].seriesKey)!.datapoints;
+        let text = '';
         if (seriesAnalysis.sequences[index].message == null) {
-            text = text.concat(`No trend detected`)
+            let sequence = seriesAnalysis.sequences[index]
+            if (datapointViews[datapointViews.length - 1].y - datapointViews[0].y > 0 && Math.abs(sequence.slopeInfo.slope) > .2) {
+                text = text.concat(`Falling trend`)
+            }
+            else if (datapointViews[datapointViews.length - 1].y - datapointViews[0].y <= 0 && Math.abs(sequence.slopeInfo.slope) > .2) {
+                text = text.concat(`Rising trend`)
+            }
+            else {
+                text = text.concat(`Stable trend`)
+            }
         }
         else {
             text = text.concat(`${trendTranslation[seriesAnalysis.sequences[index].message!]} trend`)
         }
         const changeVal = parseFloat((points[seriesAnalysis.sequences[index].end - 1].facetValueAsNumber("y")!
-            - points[seriesAnalysis.sequences[index].start].facetValueAsNumber("y")!).toFixed(4))
-        text = text.concat(`\n${changeVal > 0 ? '+' : ''}${changeVal}`)
-        text = text.concat(`\n${labels[seriesAnalysis.sequences[index].start]}-${labels[seriesAnalysis.sequences[index].end - 1]}`)
-        text = text.concat(`\n${seriesAnalysis.sequences[index].end - seriesAnalysis.sequences[index].start} records`)
+            - points[seriesAnalysis.sequences[index].start].facetValueAsNumber("y")!).toFixed(4));
+        text = text.concat(`\n${changeVal > 0 ? '+' : ''}${changeVal}`);
+        text = text.concat(`\n${labels[seriesAnalysis.sequences[index].start]}-${labels[seriesAnalysis.sequences[index].end - 1]}`);
+        text = text.concat(`\n${seriesAnalysis.sequences[index].end - seriesAnalysis.sequences[index].start} records`);
 
         const popup = new Popup(this.paraview,
             {
@@ -223,50 +229,44 @@ export class PopupLayer extends PlotLayer {
                 color: firstDPView.color,
                 margin: 60
             },
-            {
-            })
-        popup.classInfo = { 'popup': true }
-        return [popup]
+            {});
+        popup.classInfo = { 'popup': true };
+        return [popup];
     }
 
-    addSeriesPopups(cursor: NavNode): Popup[] {
-        const firstDP = cursor.datapoints[0]
-        const firstDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(firstDP.seriesKey, firstDP.datapointIndex)!
-        const lastDP = cursor.datapoints[cursor.datapoints.length - 1]
-        const lastDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(lastDP.seriesKey, lastDP.datapointIndex)!
+    addSeriesPopups(datapointViews: DatapointView[]): Popup[] {
+        const firstDPView = datapointViews[0];
+        const lastDPView = datapointViews[datapointViews.length - 1];
         let x = (lastDPView.x + firstDPView.x) / 2;
         let y = 0;
-        if (cursor.datapoints.length % 2 == 0) {
-            const leftDP = cursor.datapoints[(cursor.datapoints.length / 2) - 1]
-            const leftDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(leftDP.seriesKey, leftDP.datapointIndex)!
-            const rightDP = cursor.datapoints[(cursor.datapoints.length / 2)]
-            const rightDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(rightDP.seriesKey, rightDP.datapointIndex)!
+        if (datapointViews.length % 2 == 0) {
+            const leftDPView = datapointViews[(datapointViews.length / 2) - 1];
+            const rightDPView = datapointViews[(datapointViews.length / 2)];
             y = (leftDPView.y + rightDPView.y) / 2;
         }
         else {
-            const leftDP = cursor.datapoints[(cursor.datapoints.length - 1) / 2]
-            const leftDPView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(leftDP.seriesKey, leftDP.datapointIndex)!
+            const leftDPView = datapointViews[(datapointViews.length - 1) / 2];
             y = leftDPView.y;
         }
-        const seriesAnalysis = this.paraview.store.seriesAnalyses[firstDPView.seriesKey]!
+        const seriesAnalysis = this.paraview.store.seriesAnalyses[firstDPView.seriesKey]!;
         const labels = this.paraview.store.model!.series[0].datapoints.map(
             (p) => formatBox(p.facetBox('x')!, this.paraview.store.getFormatType('horizTick'))
         );
-        const points = this.paraview.store.model!.series.find(s => s.key === (cursor.options as SeriesNavNodeOptions).seriesKey)!.datapoints
-        let text = ''
+        const points = this.paraview.store.model!.series.find(s => s.key === datapointViews[0].seriesKey)!.datapoints;
+        let text = '';
 
-        text = text.concat(`${(cursor.options as SeriesNavNodeOptions).seriesKey}`)
+        text = text.concat(`${(datapointViews[0].seriesKey)}`);
         if (seriesAnalysis?.message == null) {
-            text = text.concat(`\nNo trend detected`)
+            text = text.concat(`\nNo trend detected`);
         }
         else {
-            text = text.concat(`\n${trendTranslation[seriesAnalysis?.message!]} trend`)
+            text = text.concat(`\n${trendTranslation[seriesAnalysis?.message!]} trend`);
         }
         let changeVal = parseFloat((points[points.length - 1].facetValueAsNumber("y")!
-            - points[0].facetValueAsNumber("y")!).toFixed(4))
-        text = text.concat(`\n${changeVal > 0 ? '+' : ''}${changeVal}`)
-        text = text.concat(`\n${labels[0]}-${labels[points.length - 1]}`)
-        text = text.concat(`\n${points.length} records`)
+            - points[0].facetValueAsNumber("y")!).toFixed(4));
+        text = text.concat(`\n${changeVal > 0 ? '+' : ''}${changeVal}`);
+        text = text.concat(`\n${labels[0]}-${labels[points.length - 1]}`);
+        text = text.concat(`\n${points.length} records`);
 
         const popup = new Popup(this.paraview,
             {
@@ -279,9 +279,9 @@ export class PopupLayer extends PlotLayer {
                 color: firstDPView.color,
                 margin: 60
             },
-            {})
-        popup.classInfo = { 'popup': true }
-        return [popup]
+            {});
+        popup.classInfo = { 'popup': true };
+        return [popup];
     }
 
     renderChildren() {

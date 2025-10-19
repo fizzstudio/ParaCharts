@@ -235,9 +235,7 @@ export class PlotLayerManager extends View {
   }
 
   render() {
-    console.log("before addPopups call")
     this.popupLayer.addPopups()
-    
     let transform = fixed`translate(${this._x + this._padding.left},${this._y + this._padding.top})`;
     if (this._orientation === 'east') {
       transform += fixed`
