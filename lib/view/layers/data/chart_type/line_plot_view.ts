@@ -18,11 +18,12 @@ import { PlaneSeriesView, PointPlotView, PointDatapointView } from '.';
 import { type LineSettings, type DeepReadonly } from '../../../../store/settings_types';
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
-import { bboxOfBboxes } from '../../../../common/utils';
+import { bboxOfBboxes, isPointerInbounds } from '../../../../common/utils';
 
 import { type StyleInfo } from 'lit/directives/style-map.js';
 import { RectShape } from '../../../shape';
 import { Popup } from '../../../popup';
+import { DataSymbol } from '../../../symbol';
 
 /**
  * Class for drawing line charts.
@@ -126,6 +127,21 @@ export class LineSection extends PointDatapointView {
     super.completeLayout();
   }
 
+  protected _createSymbol() {
+    const series = this.seriesProps;
+    let symbolType = series.symbol;
+    // If datapoints are laid out again after the initial layout,
+    // we need to replace the original shape and symbol
+    this._symbol?.remove();
+    this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
+        pointerLeave: (e) => {
+          if (!isPointerInbounds(this.paraview, e)) {
+            this.paraview.requestUpdate()
+          }
+        }});
+    this.append(this._symbol);
+  }
+
   protected _computePrev() {
     this._prevMidX = -this.width / 2; // - 0.1;
     this._prevMidY = (this._prev!.y - this.y) / 2;
@@ -227,7 +243,7 @@ export class LineSection extends PointDatapointView {
       shape.remove();
     });
     const points = this._points;
-        let cousins = this.withCousins.map((c, i) => [c, i]).toSorted((a: this[], b: this[]) => a[0].y - b[0].y) as [this, number][]
+    let cousins = this.withCousins.map((c, i) => [c, i]).toSorted((a: this[], b: this[]) => a[0].y - b[0].y) as [this, number][]
     let y = 0;
     let height = 0;
     if (cousins.length === 1) {
@@ -285,10 +301,13 @@ export class LineSection extends PointDatapointView {
         },
         pointerLeave: (e) => {
           this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onHover" ? this.removePopup(this.id) : undefined;
+          if (!isPointerInbounds(this.paraview, e)) {
+            this.paraview.requestUpdate()
+          }
         }
       })
-      this._shapes[0].classInfo = {'leg-left': true};
-      this._shapes[1].classInfo = {'leg-right': true};
+      this._shapes[0].classInfo = { 'leg-left': true };
+      this._shapes[1].classInfo = { 'leg-right': true };
       invis.classInfo = { 'invis': true };
       this.append(invis)
     } else if (points.length === 2) {
@@ -311,13 +330,16 @@ export class LineSection extends PointDatapointView {
           this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined;
         },
         pointerLeave: (e) => {
-          this.paraview.store.settings.chart.showPopups ? this.removePopup(this.id) : undefined;
+          this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onHover" ? this.removePopup(this.id) : undefined;
+          if (!isPointerInbounds(this.paraview, e)) {
+            this.paraview.requestUpdate()
+          }
         }
       })
       this._shapes[0].classInfo = this._prevMidY !== undefined
-        ? {'leg-left': true}
-        : { 'leg-right': true};
-              invis.classInfo = { 'invis': true };
+        ? { 'leg-left': true }
+        : { 'leg-right': true };
+      invis.classInfo = { 'invis': true };
       this.append(invis)
     }
     this._shapes.forEach(shape => {
@@ -327,7 +349,7 @@ export class LineSection extends PointDatapointView {
   }
 
 
-    addPopup(text?: string) {
+  addPopup(text?: string) {
     let datapointText = `${this.seriesKey} ${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
     let popup = new Popup(this.paraview,
       {
@@ -344,7 +366,7 @@ export class LineSection extends PointDatapointView {
   }
 
   removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1) 
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
   }
 }
 
