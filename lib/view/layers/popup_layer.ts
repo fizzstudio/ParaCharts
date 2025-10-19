@@ -93,8 +93,8 @@ export class PopupLayer extends PlotLayer {
     addPopups() {
         this.addGroup('datapoint-popups', true);
         this.group('datapoint-popups')!.clearChildren();
-        this.paraview.store.userLineBreaks.splice(0, this.paraview.store.userLineBreaks.length)
         if (this.paraview.store.settings.chart.showPopups && this.paraview.store.settings.popup.activation === "onFocus") {
+            this.paraview.store.userLineBreaks.splice(0, this.paraview.store.userLineBreaks.length)
             this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
             const cursor = this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.navMap!.cursor
             const datapoints = cursor.datapoints;
