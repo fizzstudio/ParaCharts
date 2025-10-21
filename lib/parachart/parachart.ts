@@ -201,10 +201,13 @@ export class ParaChart extends logging(ParaComponent) {
       '--caption-border': () => this._store.settings.controlPanel.caption.hasBorder
         ? 'solid 2px var(--theme-color)'
         : 'none',
-      '--caption-grid-template-columns': () => this._store.settings.controlPanel.caption.isExplorationBarBeside
-        ? 'auto auto'
-        : '1fr',
-      '--exploration-bar-display': () => this._store.settings.controlPanel.isStatusBarVisible
+      '--caption-grid-template-columns': () =>
+        this._store.settings.controlPanel.isExplorationBarVisible
+        && this._store.settings.controlPanel.isCaptionVisible
+        && this._store.settings.controlPanel.caption.isExplorationBarBeside
+          ? '2fr 1fr' //'auto auto'
+          : '1fr',
+      '--exploration-bar-display': () => this._store.settings.controlPanel.isExplorationBarVisible
         ? 'flex'
         : 'none',
       '--chart-font-scale': () => this._store.settings.chart.fontScale,

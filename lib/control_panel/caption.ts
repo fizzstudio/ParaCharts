@@ -40,7 +40,7 @@ export class ParaCaptionBox extends logging(ParaComponent) {
       #caption {
         padding: 0.25rem;
       }
-      #desc-footer {
+      #exploration-bar {
         background-color: var(--theme-color-light);
         padding: 0.2rem;
         display: var(--exploration-bar-display);
@@ -49,10 +49,13 @@ export class ParaCaptionBox extends logging(ParaComponent) {
         align-items: center;
         justify-content: space-between;
       }
+      #exploration-bar-text {
+        align-self: flex-start;
+      }
       #caption span.highlight {
         background-color: var(--theme-color-light);
       }
-      #desc-footer span.highlight {
+      #exploration-bar span.highlight {
         background-color: white;
       }
     `
@@ -154,15 +157,16 @@ export class ParaCaptionBox extends logging(ParaComponent) {
             ${this.renderSummary(this._caption, 'caption')}
           </div>
           <div
-            id="desc-footer"
-            ?hidden=${!this._store.settings.controlPanel.isStatusBarVisible}
+            id="exploration-bar"
+            ?hidden=${!this._store.settings.controlPanel.isExplorationBarVisible}
           >
-            <div id="status_split">
-              <div id="statusbar"
-                aria-hidden="true"
-              >
-                ${this.renderSummary(this._store.announcement, 'statusbar')}
-              </div>
+            <div
+              id="exploration-bar-text"
+              aria-hidden="true"
+            >
+              ${this._store.announcement.text === this._caption.text
+                ? ''
+                :  this.renderSummary(this._store.announcement, 'statusbar')}
             </div>
             ${!this._store.settings.controlPanel.caption.isCaptionExternalWhenControlPanelClosed
               || this.parachart.isControlPanelOpen

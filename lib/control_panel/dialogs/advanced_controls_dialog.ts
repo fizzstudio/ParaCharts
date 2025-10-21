@@ -60,7 +60,7 @@ export class AdvancedControlSettingsDialog extends logging(ParaComponent) {
     });
     this._store.settingControls.add({
       type: 'checkbox',
-      key: 'controlPanel.isStatusBarVisible',
+      key: 'controlPanel.isExplorationBarVisible',
       label: 'Exploration bar visible',
       parentView: 'controlPanel.tabs.controls.dialog.settings',
     });
