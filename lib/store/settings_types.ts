@@ -295,35 +295,36 @@ export interface PlotSettings extends SettingGroup {
 }
 
 export type BarClusterMode = 'facet';
+export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
 
 /** @public */
 export interface BarSettings extends PlotSettings {
+  stacking: 'none' | 'standard'; // | '100%';
   barWidth: number;
   // minBarWidth: number;
   colorByDatapoint: boolean;
-  isDrawStackLabels: boolean;
-  isStackLabelInsideBar: boolean;
+  isDrawTotalLabels: boolean;
+  //isStackLabelInsideBar: boolean;
   stackLabelGap: number;
   isDrawRecordLabels: boolean;
-  isDrawValueLabels: boolean;
+  /** Per-bar data value labels */
+  isDrawDataLabels: boolean;
+  dataLabelPosition: BarDataLabelPosition;
   clusterBy?: BarClusterMode;
-  stackContent: StackContentOptions;
-  stackCount: number;
   orderBy?: string;
   clusterGap: number;
   barGap: number;
+  //stackInsideGap: number;
   isAbbrevSeries: boolean;
   clusterLabelFormat: LabelFormat;
   lineWidth: number;
   showPopups: boolean;
+  labelFontSize: string;
 }
 
 /** @public */
 export interface LollipopSettings extends BarSettings {
 }
-
-/** @public */
-export type StackContentOptions = 'all' | 'count';
 
 /** @public */
 export interface PointSettings extends PlotSettings {

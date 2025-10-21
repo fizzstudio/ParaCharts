@@ -35,7 +35,11 @@ import { Vec2 } from '../common/vector';
 export type SnapLocation = 'start' | 'end' | 'center';
 
 export type BboxAnchorSide = 'top' | 'bottom' | 'left' | 'right';
-export type BboxAnchorCorner = 'topLeft' | 'topRight' | 'bottomRight' | 'bottomLeft';
+export type BboxAnchorCorner =
+  | 'topLeft'
+  | 'topRight'
+  | 'bottomRight'
+  | 'bottomLeft';
 export type BboxAnchor = BboxAnchorSide | BboxAnchorCorner;
 
 export interface PaddingInput {

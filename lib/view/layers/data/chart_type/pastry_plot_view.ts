@@ -618,7 +618,7 @@ export abstract class RadialSlice extends DatapointView {
     }
     this._insideLabel = new Label(this.paraview, {
       text: this._labelContents(this.chart.settings.insideLabels.contents),
-      id: this.id + '-vlb',
+      id: this.id + '-ilb',
       classList: ['pastry-inside-label'],
       role: 'datapoint',
       [bboxOppositeAnchor(bboxAnchor)]: sector.loc.add(

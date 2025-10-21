@@ -142,8 +142,18 @@ export class ParaView extends logging(ParaComponent) {
         font-size: calc(var(--vert-axis-tick-label-font-size)*var(--chart-font-scale));
       }
       .bar-label {
-        font-size: 13px;
+        font-size: calc(var(--bar-label-font-size)*var(--chart-font-scale));
         fill: white;
+      }
+      .bar-total-label {
+        font-size: calc(var(--bar-label-font-size)*var(--chart-font-scale));
+      }
+      .column-label {
+        font-size: calc(var(--column-label-font-size)*var(--chart-font-scale));
+        fill: white;
+      }
+      .column-total-label {
+        font-size: calc(var(--column-label-font-size)*var(--chart-font-scale));
       }
       .pastry-inside-label {
       }
@@ -299,7 +309,7 @@ export class ParaView extends logging(ParaComponent) {
   get defs() {
     return this._defs;
   }
-  
+
   get pointerEventManager() {
     return this._pointerEventManager;
   }
@@ -462,17 +472,17 @@ export class ParaView extends logging(ParaComponent) {
       } else {
         // Narrative highlights turned OFF
         this.endNarrativeHighlightMode();
-  
+
         // Disable self-voicing as well
         this._store.updateSettings(draft => {
           draft.ui.isVoicingEnabled = false;
         });
- 
+
         this._store.announce(['Narrative Highlight Mode disabled.']);
       }
     } else if(path === 'ui.isNarrativeHighlightPaused') {
 	    this.paraChart.ariaLiveRegion.voicing.togglePaused();
-	}	
+	}
   }
 
   protected _onFullscreenChange() {

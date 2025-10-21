@@ -292,7 +292,9 @@ export class Label extends View {
         const oldContent = tspan.textContent;
         if (wrapMode) {
           tspan.textContent += ' ' + tok;
-          const rect = this.paraview.store.settings.ui.isFullscreenEnabled ? tspan.getBBox() : tspan.getBoundingClientRect()
+          const rect = this.paraview.store.settings.ui.isFullscreenEnabled
+            ? tspan.getBBox()
+            : tspan.getBoundingClientRect();
           if (rect.width >= this.options.wrapWidth!) {
             tspan.textContent = oldContent;
             tspans.push(document.createElementNS(SVGNS, 'tspan'));
@@ -312,7 +314,9 @@ export class Label extends View {
         }
       }
 
-      const clientRect = this.paraview.store.settings.ui.isFullscreenEnabled ? text.getBBox() : text.getBoundingClientRect()
+      const clientRect = this.paraview.store.settings.ui.isFullscreenEnabled
+        ? text.getBBox()
+        : text.getBoundingClientRect();
       width = clientRect.width;
       height = clientRect.height;
 
