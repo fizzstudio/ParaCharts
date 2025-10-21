@@ -76,7 +76,7 @@ export interface ControlPanelSettings extends SettingGroup {
   isControlPanelDefaultOpen: boolean;
   tabLabelStyle: TabLabelStyle;
   isCaptionVisible: boolean;
-  isStatusBarVisible: boolean;
+  isExplorationBarVisible: boolean;
   caption: CaptionBoxSettings;
   isSparkBrailleVisible: boolean;
   isDataTabVisible: boolean;

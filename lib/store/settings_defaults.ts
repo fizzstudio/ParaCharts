@@ -400,7 +400,7 @@ export const defaults: Settings = {
     isControlPanelDefaultOpen: true,
     tabLabelStyle: 'label',
     isCaptionVisible: true,
-    isStatusBarVisible: true,
+    isExplorationBarVisible: true,
     caption: {
       isCaptionExternalWhenControlPanelClosed: true,
       hasBorder: false,
