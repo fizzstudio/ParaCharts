@@ -47,9 +47,6 @@ export abstract class AxisLine<T extends AxisOrientation> extends View {
   protected abstract getLineD(): string;
 
   render() {
-    if (!this.axis.settings.line.isDrawAxisLine) {
-      return svg``;
-    }
     const transform = fixed`translate(${this._x},${this._y})`;
     return svg`
       <path
@@ -84,8 +81,8 @@ export class HorizAxisLine extends AxisLine<'horiz'> {
   }
 
   protected getLineD() {
-    if (this.axis.settings.line.isDrawOverhang) {
-      const tickLength = this.paraview.store.settings.axis.vert.tick.length;
+    if (this.axis.orientationSettings.line.isDrawOverhang) {
+      const tickLength = this.paraview.store.settings.axis.vert.ticks.length;
       const x = this.paraview.store.settings.axis.vert.position === 'west' ?
         -tickLength : 0;
       return fixed`M${x},0 h${this.width + tickLength}`;
@@ -117,8 +114,8 @@ export class VertAxisLine extends AxisLine<'vert'> {
   }
 
   protected getLineD() {
-    if (this.axis.settings.line.isDrawOverhang) {
-      const tickLength = this.paraview.store.settings.axis.horiz.tick.length;
+    if (this.axis.orientationSettings.line.isDrawOverhang) {
+      const tickLength = this.paraview.store.settings.axis.horiz.ticks.length;
       const y = this.paraview.store.settings.axis.horiz.position === 'north' ?
         -tickLength : 0;
       return fixed`M0,${y} v${this.height + tickLength}`;
