@@ -145,8 +145,8 @@ export class HorizTickStrip extends TickStrip {
     return [
       this._options.length,
       // NB! The grid lines DON'T COUNT toward the height!
-      (this._axisSettings.tick.isDrawEnabled || this._options.isDrawOverhang)
-        ? this._axisSettings.tick.length
+      (this._axisSettings.ticks.isDrawTicks || this._options.isDrawOverhang)
+        ? this._axisSettings.ticks.length
         : 0
     ] as [number, number];
   }
@@ -168,11 +168,11 @@ export class HorizTickStrip extends TickStrip {
 
   protected _createTicks() {
     const isOrthoEast = this._options.orthoAxisPosition === 'east';
-    let tickLength = this._axisSettings.tick.length;
+    let tickLength = this._axisSettings.ticks.length;
     this._ruleY = 0;
     if (this._axisSettings.position === 'north') {
-      this._ruleY = (this._axisSettings.tick.isDrawEnabled || this._options.isDrawOverhang)
-        ? tickLength + this._axisSettings.tick.padding
+      this._ruleY = (this._axisSettings.ticks.isDrawTicks || this._options.isDrawOverhang)
+        ? tickLength + this._axisSettings.ticks.padding
         : 0;
     }
     this._indices = mapn(this._count + (this._options.isInterval ? 1 : 0), i => i)
@@ -193,7 +193,7 @@ export class HorizTickStrip extends TickStrip {
         this.paraview, idx % this._majorModulus === 0, tickLength));
       this._children.at(-1)!.x = this._ruleXs[i];
       this._children.at(-1)!.y = this._ruleY;
-      this._children.at(-1)!.hidden = !this._axisSettings.tick.isDrawEnabled;
+      //this._children.at(-1)!.hidden = !this._axisSettings.ticks.isDrawTicks;
     });
   }
 
@@ -229,8 +229,8 @@ export class VertTickStrip extends TickStrip {
   computeSize() {
     return [
       // NB! The grid lines DON'T COUNT toward the width!
-      (this._axisSettings.tick.isDrawEnabled || this._options.isDrawOverhang)
-        ? this._axisSettings.tick.length
+      (this._axisSettings.ticks.isDrawTicks || this._options.isDrawOverhang)
+        ? this._axisSettings.ticks.length
         : 0,
       this._options.length
     ] as [number, number];
@@ -253,7 +253,7 @@ export class VertTickStrip extends TickStrip {
 
   protected _createTicks() {
     const isNorth = this._options.orthoAxisPosition === 'north';
-    const tickLength = this._axisSettings.tick.length;
+    const tickLength = this._axisSettings.ticks.length;
     this._ruleX = tickLength;
     this._indices = mapn(this._count, i => i);
     if (!this.paraview.store.settings.grid.isDrawHorizAxisOppositeLine) {
@@ -273,7 +273,7 @@ export class VertTickStrip extends TickStrip {
         this.paraview, i % this._majorModulus === 0, tickLength));
       this._children.at(-1)!.x = this._ruleX;
       this._children.at(-1)!.y = this._ruleYs[i];
-      this._children.at(-1)!.hidden = !this._axisSettings.tick.isDrawEnabled;
+      //this._children.at(-1)!.hidden = !this._axisSettings.ticks.isDrawTicks;
     });
   }
 

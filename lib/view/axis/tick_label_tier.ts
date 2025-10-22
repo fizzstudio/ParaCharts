@@ -44,7 +44,6 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
     paraview: ParaView
   ) {
     super(paraview);
-    this._hidden = !this.axis.orientationSettings.tick.tickLabel.isDrawEnabled;
     this._updateSizeFromLength(length);
     this.createTickLabels();
   }
@@ -153,7 +152,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   ) {
     super(axis, tickLabels, tierIndex, length, tickStep, paraview);
     this._canWidthFlex = true;
-    this.padding = {top: this.axis.orientationSettings.tick.tickLabel.offsetGap};
+    this.padding = {top: this.axis.orientationSettings.ticks.labels.offsetGap};
   }
 
   protected _updateSizeFromLength(length: number) {
@@ -165,7 +164,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   }
 
   protected get _labelTextAnchor(): LabelTextAnchor {
-    return this.axis.orientationSettings.tick.tickLabel.angle ? 'end' : 'middle';
+    return this.axis.orientationSettings.ticks.labels.angle ? 'end' : 'middle';
   }
 
   protected get _labelWrapWidth() {
@@ -209,8 +208,8 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   createTickLabels(checkLabels = true) {
     super.createTickLabels();
     this._children.forEach((kid, i) => {
-      if (this.paraview.store.settings.axis.horiz.tick.tickLabel.angle) {
-        kid.angle = this.axis.orientationSettings.tick.tickLabel.angle;
+      if (this.paraview.store.settings.axis.horiz.ticks.labels.angle) {
+        kid.angle = this.axis.orientationSettings.ticks.labels.angle;
       }
       if (kid.angle === 0) {
         kid.top = this._tickLabelY(i);
@@ -241,7 +240,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
       // console.log('MINGAP', minGap, 'TICKSTEP', tickStep, 'WIDTH', width,
       //   `(WANTED: ${this.axis.orientationSettings.tick.tickLabel.gap})`
       // );
-      if (Math.round(minGap) < this.axis.orientationSettings.tick.tickLabel.gap) {
+      if (Math.round(minGap) < this.axis.orientationSettings.ticks.labels.gap) {
         // if (width > 800 && this.axis.datatype !== 'string') {
         tickStep++;
         bboxes = origBboxes.filter((bbox, i) => i % tickStep === 0);
@@ -275,7 +274,7 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
   ) {
     super(axis, tickLabels, tierIndex, length, tickStep, paraview);
     this._canHeightFlex = true;
-    this.padding = {right: this.axis.orientationSettings.tick.tickLabel.offsetGap};
+    this.padding = {right: this.axis.orientationSettings.ticks.labels.offsetGap};
   }
 
   protected _updateSizeFromLength(length: number) {

@@ -144,8 +144,32 @@ export class DocumentView extends Container(View) {
     const horizAxisPos = this._store.settings.axis.horiz.position;
 
     if (this._chartInfo.axisInfo) {
-      this._vertAxis = new VertAxis(this);
-      this._horizAxis = new HorizAxis(this);
+      if (this._store.settings.axis.horiz.isDrawAxis) {
+        this._horizAxis = new HorizAxis(this);
+        const horizAxisFacet = this._chartInfo.axisInfo.horizFacet;
+        this._horizAxis.setAxisLabelText(horizAxisFacet.label);
+        this._horizAxis.createComponents();
+        this._horizAxis.layoutComponents();
+        this._grid.append(this._horizAxis, {
+          x: 1,
+          y: (horizAxisPos === 'north' ? 0 : 1) + (this._titleLabel ? 1 : 0),
+          width: 1,
+          rowAlign: 'end'
+        });
+      }
+      if (this._store.settings.axis.vert.isDrawAxis) {
+        this._vertAxis = new VertAxis(this);
+        const vertAxisFacet = this._chartInfo.axisInfo.vertFacet;
+        this._vertAxis.setAxisLabelText(vertAxisFacet.label);
+        this._vertAxis.createComponents();
+        this._vertAxis.layoutComponents();
+        this._grid.append(this._vertAxis, {
+          x: 0,
+          y: this._titleLabel ? 1 : 0, // XXX title might be at bottom
+          height: 1,
+          rowAlign: horizAxisPos === 'north' ? 'end' : 'start'
+        });
+      }
       //this._vertAxis.orthoAxis = this._horizAxis;
       //this._horizAxis.orthoAxis = this._vertAxis;
       ////////////////////////////////////////////
@@ -153,29 +177,9 @@ export class DocumentView extends Container(View) {
       //   have two axes
       // const horizAxisFacet = this._store.model!.getAxisFacet('horiz') ?? this._store.model!.facetMap['x']!;
       // const vertAxisFacet = this._store.model!.getAxisFacet('vert') ?? this._store.model!.facetMap['y']!;
-      const horizAxisFacet = this._chartInfo.axisInfo.horizFacet;
-      const vertAxisFacet = this._chartInfo.axisInfo.vertFacet;
 
       ////////////////////////////////////////////
       // XXX Change this method to set axis.titleText
-      this._horizAxis.setAxisLabelText(horizAxisFacet.label);
-      this._vertAxis.setAxisLabelText(vertAxisFacet.label);
-      this._horizAxis.createComponents();
-      this._vertAxis.createComponents();
-      this._horizAxis.layoutComponents();
-      this._vertAxis.layoutComponents();
-      this._grid.append(this._vertAxis, {
-        x: 0,
-        y: this._titleLabel ? 1 : 0, // XXX title might be at bottom
-        height: 1,
-        rowAlign: horizAxisPos === 'north' ? 'end' : 'start'
-      });
-      this._grid.append(this._horizAxis, {
-        x: 1,
-        y: (horizAxisPos === 'north' ? 0 : 1) + (this._titleLabel ? 1 : 0),
-        width: 1,
-        rowAlign: 'end'
-      });
 
       // this._chartLayers.dataLayer.init();
       // if (this._horizAxis.width < this._chartLayers.width || this._vertAxis.height < this._chartLayers.height) {

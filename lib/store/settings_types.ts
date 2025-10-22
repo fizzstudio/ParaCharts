@@ -183,7 +183,7 @@ export type LabelFormat = 'raw' | string;
 
 /** @public */
 export interface TickLabelSettings extends SettingGroup {
-  isDrawEnabled: boolean;
+  isDrawTickLabels: boolean;
   fontSize: string;
   angle: number;
   offsetGap: number;
@@ -192,14 +192,14 @@ export interface TickLabelSettings extends SettingGroup {
 
 /** @public */
 export interface TickSettings extends SettingGroup {
-  isDrawEnabled?: boolean;
+  isDrawTicks?: boolean;
   padding: number;
   opacity: number;
   strokeWidth: number;
   strokeLinecap: string;
   length: number;
   labelFormat: LabelFormat;
-  tickLabel: TickLabelSettings;
+  labels: TickLabelSettings;
   step: number;
 }
 
@@ -213,7 +213,6 @@ export interface AxisLineSettings extends SettingGroup {
 
 /** @public */
 export interface AxisSettings extends SettingGroup {
-  line: AxisLineSettings;
   minValue: number | 'unset';
   maxValue: number | 'unset';
   interval: number | 'unset';
@@ -231,10 +230,16 @@ export interface AxisTitleSettings extends SettingGroup {
 
 /** @public */
 export interface OrientedAxisSettings<T extends AxisOrientation> extends SettingGroup {
-  position: T extends 'horiz' ? VertCardinalDirection : HorizCardinalDirection;
+  isDrawAxis: boolean;
+  position: T extends 'horiz'
+    ? VertCardinalDirection
+    : HorizCardinalDirection;
   title: AxisTitleSettings;
-  tick: TickSettings;
-  labelOrder: T extends 'horiz' ? 'westToEast' | 'eastToWest' : 'southToNorth' | 'northToSouth';
+  ticks: TickSettings;
+  line: AxisLineSettings;
+  labelOrder: T extends 'horiz'
+    ? 'westToEast' | 'eastToWest'
+    : 'southToNorth' | 'northToSouth';
 }
 
 /** @public */
@@ -501,8 +506,8 @@ export type DeepReadonly<T> = {
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
 // Settings that control the format for each context
 export const FORMAT_CONTEXT_SETTINGS = {
-  horizTick: 'axis.horiz.tick.labelFormat',
-  vertTick: 'axis.vert.tick.labelFormat',
+  horizTick: 'axis.horiz.ticks.labelFormat',
+  vertTick: 'axis.vert.ticks.labelFormat',
   linePoint: 'type.line.pointLabelFormat',
   scatterPoint: 'type.scatter.pointLabelFormat',
   histogramPoint: 'type.histogram.pointLabelFormat',

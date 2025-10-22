@@ -100,7 +100,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     this.orientationSettings = SettingsManager.getGroupLink<OrientedAxisSettings<T>>(
       `axis.${orientation}`, this._store.settings
     );
-    this._tickStep = this.orientationSettings.tick.step;
+    this._tickStep = this.orientationSettings.ticks.step;
 
     this._labelInfo = this.coord === 'x'
       ? docView.chartInfo.axisInfo!.xLabelInfo
@@ -228,34 +228,19 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       this._createAxisTitle();
       this._appendTitle();
     }
-    // let tiersOk = false;
-    // while (!tiersOk) {
-    //   try {
-    //     this._tickLabelTiers = this._createTickLabelTiers();
-    //     tiersOk = true;
-    //   } catch (e) {
-    //     if (e instanceof ChartTooDenseError) {
-    //       console.log('chart too dense; preferred width:', e.preferredWidth);
-    //       this.chartLayers.width = e.preferredWidth;
-    //     } else if (e instanceof ChartTooWideError) {
-    //       console.log('chart too wide; preferred tick step:', e.preferredTickStep);
-    //       this._tickStep = e.preferredTickStep;
-    //     } else {
-    //       throw e;
-    //     }
-    //   }
-    // }
-    this._tickLabelTiers = this._createTickLabelTiers();
-    // if (this.orientation === 'horiz') {
-    //   // this.chartLayers.width = this._tickLabelTiers[0].width;
-    // }
-    this._appendTickLabelTiers();
-    this._tickStrip = this._createTickStrip();
-    this._appendTickStrip();
-    this._createAxisLine();
-    this._appendAxisLine();
+    if (this.orientationSettings.ticks.labels.isDrawTickLabels) {
+      this._tickLabelTiers = this._createTickLabelTiers();
+      this._appendTickLabelTiers();
+    }
+    if (this.orientationSettings.ticks.isDrawTicks) {
+      this._tickStrip = this._createTickStrip();
+      this._appendTickStrip();
+    }
+    if (this.orientationSettings.line.isDrawAxisLine) {
+      this._createAxisLine();
+      this._appendAxisLine();
+    }
   }
-
 
   layoutComponents() {
 //    this._layout.layoutViews();
@@ -362,7 +347,7 @@ export class HorizAxis extends Axis<'horiz'> {
       plotHeight: this._layout.height,
       tickCount: this._labelInfo.labelTiers[0].length,
       isInterval: this._isInterval,
-      isDrawOverhang: this.paraview.store.settings.axis.y.line.isDrawOverhang,
+      isDrawOverhang: this.paraview.store.settings.axis.vert.line.isDrawOverhang,
       tickStep: this._tickStep,
       orthoAxisPosition: this.paraview.store.settings.axis.vert.position,
       zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0') - 1
@@ -502,7 +487,7 @@ export class VertAxis extends Axis<'vert'> {
       plotHeight: this.docView.height,
       tickCount: this._labelInfo.labelTiers[0].length,
       isInterval: this._isInterval,
-      isDrawOverhang: this.paraview.store.settings.axis.x.line.isDrawOverhang,
+      isDrawOverhang: this.paraview.store.settings.axis.horiz.line.isDrawOverhang,
       tickStep: this._tickStep,
       orthoAxisPosition: this.paraview.store.settings.axis.horiz.position,
       // XXX could be '0.0' or have a unit, etc.
