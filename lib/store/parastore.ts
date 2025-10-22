@@ -914,7 +914,7 @@ export class ParaStore extends State {
     else {
       breaks.push({ start: 0, end: this.model!.series[0].length })
     }
-    const axisInfo = this._paraChart.paraView.documentView!.chartLayers.dataLayer.axisInfo!
+    const axisInfo = this.paraChart.paraView.documentView!.chartLayers.dataLayer.chartInfo.axisInfo!
     let { candidates, slopeInfo } = genCandidates(new Line(this.model!.allPoints.map(p => { return { x: p.facetValueAsNumber("x")!, y: p.facetValueAsNumber("y")! } })),
       breaks, undefined, undefined, { start: axisInfo.yLabelInfo.min!, end: axisInfo.yLabelInfo.max! }, true)
     candidates = candidates.filter(c => !['Poss', 'Big'].some(pfx => c.category.toString().startsWith(pfx)))
@@ -922,7 +922,7 @@ export class ParaStore extends State {
   }
 
   submitTrend(cand: Candidate, supp1: string, supp2: string) {
-    const axisInfo = this._paraChart.paraView.documentView!.chartLayers.dataLayer.axisInfo!
+    const axisInfo = this.paraChart.paraView.documentView!.chartLayers.dataLayer.chartInfo.axisInfo!
     const points = this.model!.allPoints
     let trainDatum = {
       chart: this._manifest!.datasets[0].title,
