@@ -15,9 +15,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Container, Padding, PaddingInput, View } from '../base_view';
-import { ColumnLayout, RowLayout, type Layout } from '../layout';
+import { GridLayout, type Layout } from '../layout';
+import { type GridTerritoryInput } from '../layout';
 import { type DocumentView } from '../document_view';
-import { type ChartLayerManager } from '../layers';
+import { type PlotLayerManager } from '../layers';
 import {
   type AxisSettings,
   type OrientedAxisSettings,
@@ -63,11 +64,11 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   readonly datatype: Datatype;
 
-  readonly chartLayers: ChartLayerManager;
+  readonly chartLayers: PlotLayerManager;
 
   protected _facet: Facet;
   protected _labelInfo: AxisLabelInfo;
-  protected _layout!: Layout;
+  protected _layout!: GridLayout;
   protected _titleText: string;
   protected _orthoAxis!: Axis<OrthoAxis<T>>;
   protected _axisTitle?: Label;
@@ -82,7 +83,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   constructor(
     public readonly docView: DocumentView,
     public readonly orientation: T,
-    // readonly coord: AxisCoord,
   ) {
     super(docView.paraview);
     this._store = this.paraview.store;
@@ -90,26 +90,26 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
     //   have two axes
-    this._facet = this.chartLayers.dataLayer.axisInfo!.getFacetForOrientation(this.orientation);
+    this._facet = docView.chartInfo.axisInfo!.getFacetForOrientation(this.orientation);
     //  ?? this._store.model!.getFacet(coord)!;
     this.datatype = this._facet.datatype;
 
     this.settings = SettingsManager.getGroupLink<AxisSettings>(
       this.managedSettingKeys[0], this._store.settings
     );
-    this._tickStep = this.settings.tick.step;
     this.orientationSettings = SettingsManager.getGroupLink<OrientedAxisSettings<T>>(
       `axis.${orientation}`, this._store.settings
     );
+    this._tickStep = this.orientationSettings.tick.step;
 
     this._labelInfo = this.coord === 'x'
-      ? this.chartLayers.dataLayer.axisInfo!.xLabelInfo
-      : this.chartLayers.dataLayer.axisInfo!.yLabelInfo;
+      ? docView.chartInfo.axisInfo!.xLabelInfo
+      : docView.chartInfo.axisInfo!.yLabelInfo;
     this._isInterval = this.coord === 'x'
-      ? !!this.chartLayers.dataLayer.axisInfo!.options.isXInterval
-      : !!this.chartLayers.dataLayer.axisInfo!.options.isYInterval;
+      ? !!docView.chartInfo.axisInfo!.options.isXInterval
+      : !!docView.chartInfo.axisInfo!.options.isYInterval;
 
-    this._titleText = this.settings.title.text ?? '';
+    this._titleText = this.orientationSettings.title.text ?? '';
   }
 
   get coord() {
@@ -192,9 +192,9 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     return this._titleText;
   }
 
-  get range() {
-    return this.chartLayers.getAxisInterval(this.coord);
-  }
+  // get range() {
+  //   return this.chartLayers.getAxisInterval(this.coord);
+  // }
 
   get orthoAxis() {
     return this._orthoAxis;
@@ -202,6 +202,17 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   set orthoAxis(orthoAxis: Axis<OrthoAxis<T>>) {
     this._orthoAxis = orthoAxis;
+  }
+
+  resize(width: number, height: number) {
+    this._layout.resize(width, height);
+    super.resize(width, height);
+  }
+
+  abstract get length(): number;
+
+  protected _childDidResize(_kid: View) {
+    this.updateSize();
   }
 
   // settingDidChange(path: string, _oldValue?: Setting, _newValue?: Setting): void {
@@ -213,49 +224,61 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   // }
 
   createComponents() {
-    if (this.settings.title.isDrawTitle && this._titleText) {
+    if (this.orientationSettings.title.isDrawTitle && this._titleText) {
       this._createAxisTitle();
+      this._appendTitle();
     }
-    let tiersOk = false;
-    while (!tiersOk) {
-      try {
-        this._tickLabelTiers = this._createTickLabelTiers();
-        tiersOk = true;
-      } catch (e) {
-        if (e instanceof ChartTooDenseError) {
-          console.log('chart too dense; preferred width:', e.preferredWidth);
-          this.chartLayers.width = e.preferredWidth;
-        } else if (e instanceof ChartTooWideError) {
-          console.log('chart too wide; preferred tick step:', e.preferredTickStep);
-          this._tickStep = e.preferredTickStep;
-        } else {
-          throw e;
-        }
-      }
-    }
-    this._tickLabelTiers.forEach(tier => this._layout.append(tier));
+    // let tiersOk = false;
+    // while (!tiersOk) {
+    //   try {
+    //     this._tickLabelTiers = this._createTickLabelTiers();
+    //     tiersOk = true;
+    //   } catch (e) {
+    //     if (e instanceof ChartTooDenseError) {
+    //       console.log('chart too dense; preferred width:', e.preferredWidth);
+    //       this.chartLayers.width = e.preferredWidth;
+    //     } else if (e instanceof ChartTooWideError) {
+    //       console.log('chart too wide; preferred tick step:', e.preferredTickStep);
+    //       this._tickStep = e.preferredTickStep;
+    //     } else {
+    //       throw e;
+    //     }
+    //   }
+    // }
+    this._tickLabelTiers = this._createTickLabelTiers();
+    // if (this.orientation === 'horiz') {
+    //   // this.chartLayers.width = this._tickLabelTiers[0].width;
+    // }
+    this._appendTickLabelTiers();
     this._tickStrip = this._createTickStrip();
-    this._layout.append(this._tickStrip);
+    this._appendTickStrip();
     this._createAxisLine();
+    this._appendAxisLine();
   }
 
-  abstract resize(width: number, height: number): void;
 
   layoutComponents() {
-    this._layout.layoutViews();
+//    this._layout.layoutViews();
   }
 
+  protected _createAxisTitle() {
+    this._axisTitle = new Label(this.paraview, {
+      id: `axis-title-${this.orientation}`,
+      text: this.titleText,
+      classList: [`axis-title-${this.orientation}`],
+      role: 'heading',
+      angle: this._getAxisTitleAngle()
+    });
+    this._axisTitle.padding = this._getAxisTitlePadding();
+  }
+
+  protected abstract _appendTitle(): void;
   protected abstract _createTickLabelTiers(): TickLabelTier<T>[];
-
-  protected abstract _createTickStrip(): TickStrip<T>;
-
+  protected abstract _appendTickLabelTiers(): void;
+  protected abstract _createTickStrip(): TickStrip;
+  protected abstract _appendTickStrip(): void;
   protected abstract _createAxisLine(): void;
-
-  // protected _createTickLabels() {
-  //   for (const tier of this._tickLabelTiers) {
-  //     tier.createTickLabels();
-  //   }
-  // }
+  protected abstract _appendAxisLine(): void;
 
   updateTickLabelIds() {
     for (const tier of this._tickLabelTiers) {
@@ -264,28 +287,20 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   }
 
   setAxisLabelText(text?: string) {
-    this._titleText = text ?? this.settings.title.text ?? '';
+    this._titleText = text ?? this.orientationSettings.title.text ?? '';
     if (this._axisTitle) {
       this._axisTitle.text = this._titleText;
     }
-  }
-
-  protected _createAxisTitle() {
-    this._axisTitle = new Label(this.paraview, {
-      id: `axis-title-${this.orientation}`,
-      text: this.titleText,
-      classList: ['axis-title'],
-      role: 'heading',
-      angle: this._getAxisTitleAngle()
-    });
-    this._axisTitle.padding = this._getAxisTitlePadding();
-    this._layout.append(this._axisTitle);
   }
 
   protected abstract _getAxisTitlePadding(): PaddingInput;
 
   protected _getAxisTitleAngle() {
     return 0;
+  }
+
+  addGridRules(length: number) {
+    this._tickStrip?.addRules(length);
   }
 
 }
@@ -298,56 +313,86 @@ export class HorizAxis extends Axis<'horiz'> {
 
   constructor(docView: DocumentView) {
     super(docView, 'horiz');
-    this._layout = new ColumnLayout(this.paraview, 0, 'center', 'horiz-axis-group');
+    this._canWidthFlex = true;
+    this._layout = new GridLayout(this.paraview, {
+      numCols: 1,
+      rowAligns: 'end',
+      colAligns: 'center',
+      canWidthFlex: true,
+      width: this.docView.width,
+      isAutoHeight: true
+    }, 'horiz-axis-layout');
+    this._layout.isBubbleSizeChange = true;
     this.append(this._layout);
+  }
+
+  get length() {
+    return this._width;
   }
 
   computeSize(): [number, number] {
     return [
-      this.chartLayers.width,
+      this._layout.width,
       this._layout.height
     ];
   }
 
-  // settingDidChange(key: string, value: any) {
-  //   //todo().controller.clearSettingManagers();
-  //   this.paraview.createDocumentView();
-  //   this.paraview.requestUpdate();
-  //   return true;
-  // }
+  protected _appendTitle(): void {
+    this._layout.append(this._axisTitle!);
+  }
 
   protected _createTickLabelTiers() {
     return this._labelInfo.labelTiers.map((tier, i) =>
       new HorizTickLabelTier(
-        this, tier as string[], i, this.chartLayers.width, this.paraview));
+        this, tier as string[], i, this.docView.width, this._tickStep, this.paraview));
+  }
+
+  protected _appendTickLabelTiers() {
+    this._tickLabelTiers.forEach((tier, i) => {
+      this._layout.splitRowTop(0, 'end');
+      this._layout.append(tier);
+    });
   }
 
   protected _createTickStrip() {
-    return new HorizTickStrip(
-      this, this._tickLabelTiers[0].tickInterval/this.tickStep, 1,
-      this.chartLayers.width, this.chartLayers.height);
+    return new HorizTickStrip(this.paraview, this.orientationSettings, 1, {
+      orientation: this.orientation,
+      length: this.docView.width,
+      plotWidth: this.docView.width,
+      plotHeight: this._layout.height,
+      tickCount: this._labelInfo.labelTiers[0].length,
+      isInterval: this._isInterval,
+      isDrawOverhang: this.paraview.store.settings.axis.y.line.isDrawOverhang,
+      tickStep: this._tickStep,
+      orthoAxisPosition: this.paraview.store.settings.axis.vert.position,
+      zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0') - 1
+    });
+  }
+
+  protected _appendTickStrip() {
+    this._layout.splitRowTop(0, 'end');
+    this._layout.append(this._tickStrip!);
   }
 
   protected _createAxisLine() {
-    this._axisLine = new HorizAxisLine(this, this.chartLayers.width);
+    this._axisLine = new HorizAxisLine(this, this.docView.width);
+  }
+
+  protected _appendAxisLine() {
+    this._layout.splitRowTop(0, 'end');
     this._layout.append(this._axisLine);
   }
 
   protected _getAxisTitlePadding(): PaddingInput {
     return this.orientationSettings.position === 'south'
-      ? { top: this.settings.title.gap }
-      : { bottom: this.settings.title.gap };
-  }
-
-  resize(width: number, height: number) {
-    this._tickLabelTiers.forEach(tier => tier.setLength(width));
-    this._tickStrip!.resize(width, height, this._tickLabelTiers[0].tickInterval/this.tickStep);
-    this._axisLine.length = width;
+      ? { top: this.orientationSettings.title.gap }
+      : { bottom: this.orientationSettings.title.gap };
   }
 
   layoutComponents() {
     if (this.orientationSettings.position === 'south') {
       this._layout.reverseChildren();
+      this._layout.layoutViews();
     }
     super.layoutComponents();
   }
@@ -362,22 +407,39 @@ export class VertAxis extends Axis<'vert'> {
 
   constructor(docView: DocumentView) {
     super(docView, 'vert');
-    this._layout = new RowLayout(this.paraview, 0, 'center', 'vert-axis-group');
+    this._canHeightFlex = true;
+    this._layout = new GridLayout(this.paraview, {
+      numCols: 1, // new cols will get added as needed
+      rowAligns: 'center',
+      colAligns: 'start',
+      canHeightFlex: true,
+      height: this.docView.height,
+      isAutoWidth: true,
+    }, 'vert-axis-layout');
+    this._layout.isBubbleSizeChange = true;
     this.append(this._layout);
+  }
+
+  get length() {
+    return this._height;
   }
 
   protected _addedToParent() {
     super._addedToParent();
-    const range = this.chartLayers.getYAxisInterval();
+    //const range = this.chartLayers.getYAxisInterval();
+    const min = this._labelInfo.min!;
+    const max = this._labelInfo.max!;
     this.paraview.store.settingControls.add({
       type: 'textfield',
       key: 'axis.y.minValue',
       label: 'Min y-value',
       options: { inputType: 'number' },
-      value: this.settings.minValue === 'unset' ? range.start : this.settings.minValue,
+      value: this.settings.minValue === 'unset'
+        ? min
+        : this.settings.minValue,
       validator: value => {
-        const min = this.paraview.store.settings.axis.y.maxValue == "unset"
-          ? Math.max(...this.chartLayers.dataLayer.axisInfo!.options.yValues)
+        const min = this.paraview.store.settings.axis.y.maxValue === 'unset'
+          ? Math.max(...this.docView.chartInfo.axisInfo!.options.yValues)
           : this.paraview.store.settings.axis.y.maxValue as number
         // NB: If the new value is successfully validated, the inner chart
         // gets recreated, and `max` may change, due to re-quantization of
@@ -392,10 +454,12 @@ export class VertAxis extends Axis<'vert'> {
       key: 'axis.y.maxValue',
       label: 'Max y-value',
       options: { inputType: 'number' },
-      value: this.settings.maxValue == "unset" ? range?.end : this.settings.maxValue,
+      value: this.settings.maxValue === 'unset'
+        ? max
+        : this.settings.maxValue,
       validator: value => {
         const max = this.paraview.store.settings.axis.y.minValue == "unset"
-          ? Math.min(...this.chartLayers.dataLayer.axisInfo!.options.yValues)
+          ? Math.min(...this.docView.chartInfo.axisInfo!.options.yValues)
           : this.paraview.store.settings.axis.y.minValue as number
         return value as number <= max ?
           { err: `Max y-value (${value}) must be greater than (${max})`} : {};
@@ -407,53 +471,73 @@ export class VertAxis extends Axis<'vert'> {
   computeSize(): [number, number] {
     return [
       this._layout.width,
-      this.chartLayers.height
+      this._layout.height
     ];
   }
 
-  // settingDidChange(key: string, value: any) {
-  //   //todo().controller.clearSettingManagers();
-  //   this.paraview.createDocumentView();
-  //   this.paraview.requestUpdate();
-  //   // Changing one axis bound may cause the other to change due to
-  //   // quantization, and this needs to get reflected in the UI.
-  //   //todo().deets!.requestUpdate();
-  //   return true;
-  // }
+  protected _appendTitle(): void {
+    this._layout.append(this._axisTitle!);
+  }
 
   protected _createTickLabelTiers() {
     return this._labelInfo.labelTiers.map((tier, i) =>
       new VertTickLabelTier(
-        this, tier as string[], i, this.chartLayers.height, this.paraview));
+        this, tier as string[], i, this.docView.height, this._tickStep, this.paraview));
+  }
+
+  protected _appendTickLabelTiers() {
+    this._tickLabelTiers.forEach((tier, i) => {
+      this._layout.splitColumnRight(i, 0, 'start');
+      this._layout.append(tier, {
+        x: i + 1,
+      });
+    });
   }
 
   protected _createTickStrip() {
-    return new VertTickStrip(
-      this, this._tickLabelTiers[0].tickInterval/this.tickStep, 1,
-      this.chartLayers.width, this.chartLayers.height);
+    return new VertTickStrip(this.paraview, this.orientationSettings, 1, {
+      orientation: this.orientation,
+      length: this.docView.height,
+      plotWidth: this.docView.width,
+      plotHeight: this.docView.height,
+      tickCount: this._labelInfo.labelTiers[0].length,
+      isInterval: this._isInterval,
+      isDrawOverhang: this.paraview.store.settings.axis.x.line.isDrawOverhang,
+      tickStep: this._tickStep,
+      orthoAxisPosition: this.paraview.store.settings.axis.horiz.position,
+      // XXX could be '0.0' or have a unit, etc.
+      zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0')
+    });
+  }
+
+  protected _appendTickStrip() {
+    this._layout.splitColumnRight(this._tickLabelTiers.length, 0, 'start');
+    this._layout.append(this._tickStrip!, {
+      x: this._layout.numCols - 1,
+    });
   }
 
   protected _createAxisLine() {
-    this._axisLine = new VertAxisLine(this, this.chartLayers.height);
-    this._layout.append(this._axisLine);
+    this._axisLine = new VertAxisLine(this, this.docView.height);
+  }
+
+  protected _appendAxisLine() {
+    this._layout.splitColumnRight(this._tickLabelTiers.length + 1, 0, 'start');
+    this._layout.append(this._axisLine, {
+      x: this._layout.numCols - 1,
+    });
   }
 
   protected _getAxisTitlePadding(): PaddingInput {
     return this.orientationSettings.position === 'west'
-      ? { right: this.settings.title.gap }
-      : { left: this.settings.title.gap };
+      ? { right: this.orientationSettings.title.gap }
+      : { left: this.orientationSettings.title.gap };
   }
 
   tickLabelTotalWidth() {
     return this._tickLabelTiers
       .map(tier => tier.width)
       .reduce((a, b) => a + b, 0);
-  }
-
-  resize(width: number, height: number) {
-    this._tickLabelTiers.forEach(tier => tier.setLength(height));
-    this._tickStrip!.resize(width, height, this._tickLabelTiers[0].tickInterval/this.tickStep);
-    this._axisLine.length = height;
   }
 
   layoutComponents() {

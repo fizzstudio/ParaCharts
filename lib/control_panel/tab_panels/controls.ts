@@ -3,7 +3,7 @@ import { ControlPanelTabPanel } from './tab_panel';
 import { AdvancedControlSettingsDialog } from '../dialogs';
 import { keymap } from '../../store/keymap';
 
-import { 
+import {
   html, css,
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
@@ -28,6 +28,18 @@ export class ControlsPanel extends ControlPanelTabPanel {
       key: 'ui.isFullscreenEnabled',
       label: 'Fullscreen',
       parentView: 'controlPanel.tabs.controls.fullscreen',
+    });
+    this._store.settingControls.add({
+      type: 'slider',
+      key: 'chart.fontScale',
+      label: 'Font scale',
+      options: {
+        min: 0.5,
+        max: 3,
+        step: 0.1,
+        showValue: true
+      },
+      parentView: 'controlPanel.tabs.controls',
     });
   }
 
@@ -62,6 +74,8 @@ export class ControlsPanel extends ControlPanelTabPanel {
       </ul>
 
       <p>Explore the collapsible Control Panel to find many more accessibility features, including options for color blindness, dark mode with fine-grained contrast, self-voicing, SparkBraille tactile support, and more.</p>
+      
+      <p>For more details, visit the <a href="https://fizzstudio.github.io/paracharts" target="_blank">ParaCharts Documentation</a>.</p>
     `;
   }
 
@@ -104,9 +118,9 @@ export class ControlsPanel extends ControlPanelTabPanel {
             Fullscreen
           </button>
         </div>
-        
+        ${this._store.settingControls.getContent('controlPanel.tabs.controls')}
         <section id="advanced">
-          <button 
+          <button
             @click=${() => this.showHelpDialog()}
           >
             Help

@@ -8,20 +8,29 @@ import { type Announcement } from '../../store';
 import { html, css, type PropertyValues } from 'lit';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { property, customElement } from 'lit/decorators.js';
+import { HighlightReaderBridge } from './highlightreaderbridge';
 
 @customElement('para-aria-live-region')
 export class AriaLive extends ParaComponent {
 
-  @property({type: Object}) announcement: Announcement = { text: '' };
+  @property({type: Object}) announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0 };
 
-  protected _srb!: ScreenReaderBridge;
-  protected _voicing = new Voicing();
+  protected _srb!: HighlightReaderBridge;
+  protected _voicing!: Voicing;
   protected _ariaLiveRef = createRef<HTMLElement>();
   protected _history: readonly string[] = [];
   protected _historyDialogRef = createRef<AriaLiveHistoryDialog>();
 
   get voicing() {
     return this._voicing;
+  }
+
+  // @simonvarey: I added this so that `Voicing` could receive `store` and `shadowRoot` for highlighting.
+  //   In theory, it should have been possible to add this to `_initAriaLiveRegion`, but that
+  //   caused errors when I tried.
+  connectedCallback(): void {
+    super.connectedCallback();
+    this._voicing = new Voicing(this.store);
   }
 
   protected _setHistory(history: readonly string[]) {
@@ -34,7 +43,7 @@ export class AriaLive extends ParaComponent {
       if (this.announcement.clear) {
         this._srb.clear();
       }
-      this._srb.render(this.announcement.text);
+      this._srb.renderHighlights(this.announcement.text, this.announcement.highlights);
     }
   }
 
@@ -46,7 +55,7 @@ export class AriaLive extends ParaComponent {
   protected _initAriaLiveRegion(element: HTMLElement) {
     ScreenReaderBridge.addAriaAttributes(element);
     element.setAttribute('lang', 'en');
-    this._srb = new ScreenReaderBridge(element);
+    this._srb = new HighlightReaderBridge(element);
 
     const observer = new MutationObserver((mutationList) => {
       mutationList.forEach((mutation) => {
@@ -55,7 +64,8 @@ export class AriaLive extends ParaComponent {
         }
         const addCC = mutation.addedNodes[0] as HTMLDivElement;
 
-        const msg = addCC.getAttribute('data-original-text');
+        const msg = addCC.getAttribute(ScreenReaderBridge.ORIGINAL_TEXT_ATTRIBUTE);
+        const highlights = addCC.getAttribute(HighlightReaderBridge.ORIGINAL_HIGHLIGHT_ATTRIBUTE);
 
         // const timestamp = addCC.getAttribute("data-created")
         // Create a new array rather than mutating it so the assignment can
@@ -65,7 +75,7 @@ export class AriaLive extends ParaComponent {
         if (msg
           && this._store.settings.ui.isVoicingEnabled
           && this._store.settings.ui.isAnnouncementEnabled) {
-          this._voicing.speak(msg);
+          this._voicing.speak(msg, JSON.parse(highlights!), this.announcement.startFrom);
         }
       })
     });
@@ -109,6 +119,7 @@ export class AriaLive extends ParaComponent {
       <div
         ${ref(this._ariaLiveRef)}
         class="sr-only"
+        data-testid="sr-status"
       ></div>
       <para-aria-live-history-dialog
         ${ref(this._historyDialogRef)}

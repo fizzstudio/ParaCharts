@@ -7,4 +7,3 @@ export * from './colors';
 export * from './controls';
 export * from './data';
 export * from './description';
-export * from './graphing';

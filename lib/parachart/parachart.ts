@@ -42,6 +42,7 @@ import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { SlotLoader } from '../loader/slotloader';
 import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
+import { initParaSummary } from '@fizz/parasummary';
 
 @customElement('para-chart')
 export class ParaChart extends logging(ParaComponent) {
@@ -99,6 +100,7 @@ export class ParaChart extends logging(ParaComponent) {
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
         resolve();
+        await initParaSummary();
         // It's now safe to load a manifest
         if (this.manifest) {
           if (this.data) {
@@ -130,42 +132,7 @@ export class ParaChart extends logging(ParaComponent) {
         }
           else {
             console.log("No datatable in slot")
-            if (this.getAttribute("type") === 'graph') {
-              const tempTable = document.createElement("table")
-              //Using a temporary, very sparse table to load the canvas, as the model isn't configured to load with literally no data
-              //The numbers here don't matter as long as they're outside the default graphing calc viewport
-              tempTable.innerHTML = `<table>
-                          <caption>No graph data present</caption>
-                          <thead>
-                              <tr>
-                                  <th>X</th>
-                                  <th>Y</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              <tr>
-                                  <td>100</td>
-                                  <td>100</td>
-                              </tr>
-                              <tr>
-                                  <td>101</td>
-                                  <td>101</td>
-                              </tr>
-                          </tbody>
-                      </table>`
-              const loadresult = await this._slotLoader.findManifest([tempTable], "some-manifest")
-              this.log('loaded manifest')
-              if (loadresult.result === 'success') {
-                this.store.setManifest(loadresult.manifest!);
-                this._store.dataState = 'complete';
-              } else {
-                //console.error(loadresult.error);
-                this._store.dataState = 'error';
-              }
-            }
-            else {
-              this._store.dataState = 'error'
-            }
+            this._store.dataState = 'error'
           }
       });
     });
@@ -221,7 +188,8 @@ export class ParaChart extends logging(ParaComponent) {
       '--theme-contrast-color': 'white',
       '--fizz-theme-color': 'var(--paracharts-theme-color, navy)',
       '--fizz-theme-color-light': 'var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%))',
-      '--visited-color': () => this._store.colors.colorValue('highlight'),
+      '--visited-color': () => this._store.colors.colorValue('visit'),
+      '--highlighted-color': () => this._store.colors.colorValue('highlight'),
       '--visited-stroke-width': () =>
         this._paraViewRef.value?.documentView?.chartLayers.dataLayer.visitedStrokeWidth ?? 0,
       '--selected-color': 'var(--label-color)',
@@ -234,12 +202,25 @@ export class ParaChart extends logging(ParaComponent) {
       '--caption-border': () => this._store.settings.controlPanel.caption.hasBorder
         ? 'solid 2px var(--theme-color)'
         : 'none',
-      '--caption-grid-template-columns': () => this._store.settings.controlPanel.caption.isExplorationBarBeside
-        ? 'auto auto'
-        : '1fr',
-      '--exploration-bar-display': () => this._store.settings.controlPanel.isStatusBarVisible
+      '--caption-grid-template-columns': () =>
+        this._store.settings.controlPanel.isExplorationBarVisible
+        && this._store.settings.controlPanel.isCaptionVisible
+        && this._store.settings.controlPanel.caption.isExplorationBarBeside
+          ? '2fr 1fr' //'auto auto'
+          : '1fr',
+      '--exploration-bar-display': () => this._store.settings.controlPanel.isExplorationBarVisible
         ? 'flex'
         : 'none',
+      '--chart-font-scale': () => this._store.settings.chart.fontScale,
+      '--chart-title-font-size': () => this._store.settings.chart.title.fontSize,
+      '--horiz-axis-title-font-size': () => this._store.settings.axis.horiz.title.fontSize,
+      '--vert-axis-title-font-size': () => this._store.settings.axis.vert.title.fontSize,
+      '--horiz-axis-tick-label-font-size': () => this._store.settings.axis.horiz.tick.tickLabel.fontSize,
+      '--vert-axis-tick-label-font-size': () => this._store.settings.axis.vert.tick.tickLabel.fontSize,
+      '--direct-label-font-size': () => this._store.settings.chart.directLabelFontSize,
+      '--legend-label-font-size': () => this._store.settings.legend.fontSize,
+      '--bar-label-font-size': () => this._store.settings.type.bar.labelFontSize,
+      '--column-label-font-size': () => this._store.settings.type.column.labelFontSize,
       'display': 'block',
       'font-family': '"Trebuchet MS", Helvetica, sans-serif',
       'font-size': 'var(--chart-view-font-size, 1rem)'
@@ -308,7 +289,11 @@ export class ParaChart extends logging(ParaComponent) {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
     this.log('setting did change:', path, '=', newValue, `(was ${oldValue})`);
+    // Update the style manager before the paraview so, e.g., any font scale
+    // change can take effect ...
+    this._styleManager.update();
     this._paraViewRef.value?.settingDidChange(path, oldValue, newValue);
+    // ... then update it again to pick up any changed values from the view tree
     this._styleManager.update();
   }
 

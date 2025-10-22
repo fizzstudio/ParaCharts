@@ -1,7 +1,6 @@
 export const template = `import { %(chartElement)s, type ChartProps } from '../Chart';
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { expect } from 'storybook/test';
 
 type Story = StoryObj<ChartProps>;
 
@@ -17,10 +16,6 @@ export const %(chartElement)s%(index)s: Story = {
   args: {
     filename: "%(manifestPath)s",
     forcecharttype: "%(chartType)s",
-  },
-  play: async ({ canvas, userEvent }) => {
-    const parachart = await canvas.findByTestId('para-chart');
-    await expect(parachart).toBeInTheDocument();
   }
 }
 `

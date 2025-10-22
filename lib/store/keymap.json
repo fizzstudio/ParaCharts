@@ -1,0 +1,153 @@
+{
+  "a": {
+    "label": "Add an annotation",
+    "caseSensitive": false,
+    "action": "addAnnotation"
+  },
+  "b": {
+    "label": "Toggle screen reader announcements",
+    "caseSensitive": false,
+    "action": "announcementModeToggle"
+  },
+  "c": {
+    "label": "Jump to chord landing",
+    "caseSensitive": false,
+    "action": "jumpToChordLanding"
+  },
+  "h": {
+    "label": "Show the help dialog",
+    "caseSensitive": false,
+    "action": "openHelp"
+  },
+  "k": {
+    "label": "Toggle dark mode",
+    "caseSensitive": false,
+    "action": "darkModeToggle"
+  },
+  "l": {
+    "label": "Toggle low-vision mode",
+    "caseSensitive": false,
+    "action": "lowVisionModeToggle"
+  },
+  "n": {
+    "label": "Toggle narrative highlight mode",
+    "caseSensitive": false,
+    "action": "narrativeHighlightModeToggle"
+  },
+  "q": {
+    "label": "Query data",
+    "caseSensitive": false,
+    "action": "queryData"
+  },
+  "r": {
+    "label": "Repeat last message",
+    "action": "repeatLastAnnouncement"
+  },
+  "s": {
+    "label": "Toggle sonification mode",
+    "caseSensitive": false,
+    "action": "sonificationModeToggle"
+  },
+  "u": {
+    "label": "Clear the datapoint selection",
+    "caseSensitive": false,
+    "action": "selectClear"
+  },
+  "v": {
+    "label": "Toggle self-voicing mode",
+    "caseSensitive": false,
+    "action": "voicingModeToggle"
+  },
+  "arrowright": {
+    "label": "Move right",
+    "action": "moveRight"
+  },
+  "arrowleft": {
+    "label": "Move left",
+    "action": "moveLeft"
+  },
+  "arrowup": {
+    "label": "Move up",
+    "action": "moveUp"
+  },
+  "arrowdown": {
+    "label": "Move down",
+    "action": "moveDown"
+  },
+  "Shift+arrowup": {
+    "label": "Move out",
+    "action": "moveOut"
+  },
+  "Shift+arrowdown": {
+    "label": "Move in",
+    "action": "moveIn"
+  },
+  "Shift+end": {
+    "label": "Play datapoints to the right",
+    "action": "playRight"
+  },
+  "Shift+home": {
+    "label": "Play datapoints to the left",
+    "action": "playLeft"
+  },
+  "Ctrl+control": {
+    "label": "Stop playing",
+    "action": "stopPlay"
+  },
+  "home": {
+    "label": "Go to first point in series",
+    "action": "goFirst"
+  },
+  "end": {
+    "label": "Go to last point in series",
+    "action": "goLast"
+  },
+  ";": {
+    "label": "Go to first point in series",
+    "action": "goFirst"
+  },
+  "'": {
+    "label": "Go to last point in series",
+    "action": "goLast"
+  },
+  " ": {
+    "label": "Play or pause audio",
+    "action": "mediaPlayPause"
+  },
+  "enter": {
+    "label": "Select a datapoint",
+    "action": "select"
+  },
+  "Shift+enter": {
+    "label": "Extend the datapoint selection",
+    "action": "selectExtend"
+  },
+  "[": {
+    "label": "Go to the series minimum",
+    "action": "goMinimum"
+  },
+  "]": {
+    "label": "Go to the series maximum",
+    "action": "goMaximum"
+  },
+  "Shift+{": {
+    "label": "Go to the chart minimum",
+    "action": "goTotalMinimum"
+  },
+  "Shift+}": {
+    "label": "Go to the chart maximum",
+    "action": "goTotalMaximum"
+  },
+  "Ctrl+Shift+v": {
+    "label": "Announce version info",
+    "action": "announceVersionInfo"
+  },
+  "Ctrl": {
+    "label": "Stop speaking (self-voicing mode)",
+    "action": "shutUp"
+  },
+  "escape": {
+    "label": "Stop speaking (self-voicing mode)",
+    "action": "shutUp"
+  }
+}

@@ -11,7 +11,7 @@ import {
 import { SettingsManager } from '../store/settings_manager';
 import {
   DescriptionPanel, DataPanel, ColorsPanel, ChartPanel,
-  AnnotationPanel, GraphingPanel, ControlsPanel
+  AnnotationPanel, ControlsPanel
 } from '.';
 import '.';
 
@@ -53,7 +53,6 @@ export class ParaControlPanel extends logging(ParaComponent) {
   protected _colorsPanelRef = createRef<ColorsPanel>();
   protected _chartPanelRef = createRef<ChartPanel>();
   protected _annotationPanelRef = createRef<AnnotationPanel>();
-  protected _graphingPanelRef = createRef<GraphingPanel>();
   protected _controlsPanelRef = createRef<ControlsPanel>();
   protected _dialogRef = createRef<ParaDialog>();
   protected _msgDialogRef = createRef<MessageDialog>();
@@ -130,10 +129,6 @@ export class ParaControlPanel extends logging(ParaComponent) {
     return this._annotationPanelRef.value!;
   }
 
-  get graphingPanel() {
-    return this._graphingPanelRef.value!;
-  }
-
   // get statusBar() {
   //   return this._descriptionPanelRef.value!.statusBar;
   // }
@@ -177,7 +172,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
     ) {
       this.requestUpdate();
     } else if (shortKey === 'isCaptionVisible'
-      || shortKey === 'isStatusBarVisible') {
+      || shortKey === 'isExplorationBarVisible') {
         this._descriptionPanelRef.value!.requestUpdate();
     } else if (shortKey === 'isSparkBrailleVisible') {
       this._dataPanelRef.value!.isSparkBrailleVisible = value;
@@ -356,17 +351,6 @@ export class ParaControlPanel extends logging(ParaComponent) {
               ${ref(this._annotationPanelRef)}
               .controlPanel=${this}
             ></para-annotation-panel>
-          </fizz-tab-panel>
-
-          <fizz-tab-panel
-            tablabel="Graphing"
-            icon=${tabAnalysisIcon}
-            ?hidden=${!this.settings.isGraphingTabVisible}
-          >
-            <para-graphing-panel
-              ${ref(this._graphingPanelRef)}
-              .controlPanel=${this}
-            ></para-graphing-panel>
           </fizz-tab-panel>
 
           <!--<fizz-tab-panel

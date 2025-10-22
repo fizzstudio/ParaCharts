@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { View, type SnapLocation } from '../base_view';
 import { ParaView } from '../../paraview';
 import { Layout } from './layout';
+import { fixed } from '../../common/utils';
 
 /**
  * Abstract base class for flexbox-style row and column layouts.
@@ -26,7 +27,6 @@ export abstract class FlexLayout extends Layout {
   constructor(paraview: ParaView, public readonly gap: number, public readonly alignViews: SnapLocation, id?: string) {
     super(paraview, id);
   }
-
 }
 
 /**
@@ -42,7 +42,9 @@ export class RowLayout extends FlexLayout {
     return [
       this._children.reduce((sum, kid) => sum + kid.paddedWidth, 0)
         + this.gap*(this._children.length - 1),
-      Math.max(...this._children.map(kid => kid.paddedHeight))
+      this._children.length
+        ? Math.max(...this._children.map(kid => kid.paddedHeight))
+        : 0
     ];
   }
 
@@ -51,6 +53,7 @@ export class RowLayout extends FlexLayout {
   }
 
   layoutViews() {
+    console.log('LAYOUT ROW', this.id);
     if (!this._children.length) {
       return;
     }
@@ -61,6 +64,7 @@ export class RowLayout extends FlexLayout {
       kid.paddedLeft = this._children[kid.index - 1].paddedRight + this.gap;
       this._snapChildY(kid);
     });
+    console.log('LOCS', this._children.map(kid => fixed`(${kid.x},${kid.y})`).join(' '));
   }
 
 }
@@ -76,7 +80,9 @@ export class ColumnLayout extends FlexLayout {
 
   computeSize(): [number, number] {
     return [
-      Math.max(...this._children.map(kid => kid.paddedWidth)),
+      this._children.length
+        ? Math.max(...this._children.map(kid => kid.paddedWidth))
+        : 0,
       this._children.reduce((sum, kid) => sum + kid.paddedHeight, 0)
         + this.gap*(this._children.length - 1)
     ];
@@ -87,6 +93,7 @@ export class ColumnLayout extends FlexLayout {
   }
 
   layoutViews() {
+    console.log('LAYOUT COL', this.id);
     if (!this._children.length) {
       return;
     }
@@ -97,6 +104,7 @@ export class ColumnLayout extends FlexLayout {
       this._snapChildX(kid);
       kid.paddedTop = this._children[kid.index - 1].paddedBottom + this.gap;
     });
+    console.log('LOCS', this._children.map(kid => fixed`(${kid.x},${kid.y}) ${kid.width}`).join(' '));
   }
 
 }

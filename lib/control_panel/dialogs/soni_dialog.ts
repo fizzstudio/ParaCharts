@@ -2,7 +2,7 @@
 import { SettingControlContainer } from '../setting_control_container';
 import { logging } from '../../common/logger';
 import { HERTZ } from '../../common/constants';
-import { SONI_RIFF_SPEEDS } from '../../view/layers/data/data_layer';
+import { SONI_RIFF_SPEEDS } from '../../chart_types';
 
 import * as ui from '@fizz/ui-components';
 
@@ -76,13 +76,12 @@ export class SoniSettingsDialog extends SettingControlContainer {
       key: 'sonification.riffSpeedIndex',
       label: 'Riff speed',
       options: {
-      min: 0,
-      max: SONI_RIFF_SPEEDS.length - 1,
-      step: 1,
-    },
-    parentView: 'controlPanel.tabs.audio.sonification.dialog',
-  });
-
+        min: 0,
+        max: SONI_RIFF_SPEEDS.length - 1,
+        step: 1,
+      },
+      parentView: 'controlPanel.tabs.audio.sonification.dialog',
+    });
   }
 
   render() {
@@ -101,7 +100,7 @@ export class SoniSettingsDialog extends SettingControlContainer {
    * Show the dialog
    */
   async show() {
-    await this._dialogRef.value!.show(() => this._dialogRef.value!.button('cancel')!.focus());
+    await this._dialogRef.value!.show();
   }
 }
 

@@ -2,16 +2,17 @@ import { ParaView } from '../paraview';
 import { capitalize, join, interpolate} from '@fizz/templum';
 import { ComparisonRelationship, ComparisonResult } from '@fizz/dataframe';
 import { DatapointView } from '../view/data';
+import { type Model } from '@fizz/paramodel';
 import Decimal from 'decimal.js';
 import { formatXYDatapoint } from '@fizz/parasummary';
 
 export function describeSelections(
-  visitedDatapoint: DatapointView, 
+  visitedDatapoint: DatapointView,
   selectedDatapoints: DatapointView[]
 ): string[] {
   const msgArray: string[] = [];
 
-  // if there are selected datapoints other than the focused datapoint (which may or may not be 
+  // if there are selected datapoints other than the focused datapoint (which may or may not be
   // selected), compare the current datapoint against each of those
   const selfSelected = selectedDatapoints.some((point) => point.equals(visitedDatapoint));
   const othersSelected = selectedDatapoints.length >= (selfSelected ? 2 : 1);
@@ -37,17 +38,17 @@ export function describeSelections(
   return msgArray;
 }
 
-export function getDatapointMinMax(paraview: ParaView, value: number, seriesKey: string): string[] {
+export function getDatapointMinMax(model: Model, value: number, seriesKey: string): string[] {
     const msgArray: string[] = [];
 
     //const metadata = await this.getMetadata();
-    const targetSeries = paraview.store.model!.series.filter(series => series.key === seriesKey)[0];
+    const targetSeries = model.series.filter(series => series.key === seriesKey)[0];
     let seriesData = [];
     let chartData = [];
     for (let point of targetSeries.rawData) {
         seriesData.push(Number(point.y))
     }
-    for (let series of paraview.store.model!.series) {
+    for (let series of model.series) {
         for (let point of series.rawData) {
             chartData.push(Number(point.y))
         }
@@ -71,20 +72,20 @@ export function getDatapointMinMax(paraview: ParaView, value: number, seriesKey:
     return msgArray;
 }
 
-export function /*for tests*/ describeAdjacentDatapoints(paraview: ParaView, targetView: DatapointView): string {
+export function /*for tests*/ describeAdjacentDatapoints(model: Model, targetView: DatapointView): string {
     const comparisons: string[] = [];
     let comparisonPrev, comparisonNext;
-    if (comparisonPrev = describeAdjacentDatapointComparison(paraview, targetView, 'prev')) {
+    if (comparisonPrev = describeAdjacentDatapointComparison(model, targetView, 'prev')) {
         comparisons.push(comparisonPrev);
     }
-    if (comparisonNext = describeAdjacentDatapointComparison(paraview, targetView, 'next')) {
+    if (comparisonNext = describeAdjacentDatapointComparison(model, targetView, 'next')) {
         comparisons.push(comparisonNext);
     }
     return join(comparisons, true);
 }
 
 export function /*for tests*/ describeAdjacentDatapointComparison(
-    paraview: ParaView,
+    model: Model,
     self: DatapointView, direction: 'prev' | 'next'
 ): string | null {
     const other = self[direction];
@@ -92,14 +93,14 @@ export function /*for tests*/ describeAdjacentDatapointComparison(
         return null;
     }
     //const otherLabel = other.datapoint.formatX('statusBar');
-    const otherLabel = `${other.series[other.index].facetBox("x")!.raw}, ${other.series[other.index].facetBox("y")!.raw}`
+    const otherLabel = `${other.series[other.index].facetBox("x")!.raw}, ${other.series[other.index].facetBox("y")!.raw}`;
     //console.log(self.index)
-    const selfSeries = paraview.store.model!.series.filter(series => series.key == self.seriesKey)[0]
-    const otherSeries = paraview.store.model!.series.filter(series => series.key == other.seriesKey)[0]
+    const selfSeries = model.series.filter(series => series.key == self.seriesKey)[0];
+    const otherSeries = model.series.filter(series => series.key == other.seriesKey)[0];
     //console.log(selfSeries)
     //console.log(selfSeries[self.index].facetBox("y")!.raw)
     //console.log(otherSeries[other.index].facetBox("y")!.raw)
-    
+
     //console.log(paraview.store.model!)
     //console.log(paraview.store.model!.allPoints[self.index].datapointIndex)
     //console.log(paraview.store.model!.allPoints[self.index].entries())
@@ -107,10 +108,10 @@ export function /*for tests*/ describeAdjacentDatapointComparison(
     //console.log(paraview.store.model!.allPoints[self.index].facetBox("x")!.raw)
     //Series key below
     //console.log(paraview.store.model!.allPoints[self.index].seriesKey)
-    const selfValue = selfSeries[self.index].facetBox("y")!.raw as unknown as number
-    const otherValue = otherSeries[other.index].facetBox("y")!.raw as unknown as number
+    const selfValue = selfSeries[self.index].facetBox("y")!.raw as unknown as number;
+    const otherValue = otherSeries[other.index].facetBox("y")!.raw as unknown as number;
     const result = compare(selfValue, otherValue);
-    console.log(result)
+    console.log(result);
     const comparator = comparisonMsgs[result.relationship][direction];
     const percent = direction === 'prev' ? result.percentagePrev! : result.percentageNext!;
     if (result.diff! === 0) {
@@ -229,10 +230,10 @@ export function compare(value1: number, value2: number): ComparisonResult {
       const startVal = new Decimal(value1);
       const endVal = new Decimal(value2);
       if (startVal) {
-        result.percentageNext = endVal.sub(startVal).dividedBy(startVal).times(100).toNumber();  
-      } 
+        result.percentageNext = endVal.sub(startVal).dividedBy(startVal).times(100).toNumber();
+      }
       if (endVal) {
-        result.percentagePrev = startVal.sub(endVal).dividedBy(endVal).times(100).toNumber();  
+        result.percentagePrev = startVal.sub(endVal).dividedBy(endVal).times(100).toNumber();
       }
     }
     return result as ComparisonResult;

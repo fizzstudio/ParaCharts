@@ -32,19 +32,28 @@ export interface AvailableActions {
   shutUp(): void;
   repeatLastAnnouncement(): void;
   addAnnotation(): void;
+  narrativeHighlightModeToggle(): void;
+  mediaPlayPause(): void;
 }
 
+type ActionMap = { [Property in keyof AvailableActions]: (() => void | Promise<void>) };
 
-export class HotkeyActions {
+export abstract class HotkeyActions {
+  protected _actions!: Partial<ActionMap>;
 
-  public readonly actions: { [Property in keyof AvailableActions]: (() => void | Promise<void>) };
+  get actions() {
+    return this._actions;
+  }
+}
 
+export class NormalHotkeyActions extends HotkeyActions {
   constructor(paraView: ParaView) {
+    super();
     const store = paraView.store;
-    // Always return the current data layer (i.e., don't let the
+    // Always return the current chart info object (i.e., don't let the
     // actions close over a value that might be removed)
-    const chart = () => paraView.documentView!.chartLayers.dataLayer;
-    this.actions = {
+    const chart = () => paraView.documentView!.chartInfo;
+    this._actions = {
       async moveRight() {
         chart().clearPlay();
         chart().move('right');
@@ -150,7 +159,12 @@ export class HotkeyActions {
       },
       lowVisionModeToggle() {
         store.updateSettings(draft => {
-          draft.ui.isLowVisionModeEnabled = !draft.ui.isLowVisionModeEnabled;
+          if (draft.ui.isLowVisionModeEnabled) {
+            // Allow the exit from fullscreen to disable LV mode
+            draft.ui.isFullscreenEnabled = false;
+          } else {
+            draft.ui.isLowVisionModeEnabled = true;
+          }
         });
       },
       openHelp() {
@@ -163,15 +177,145 @@ export class HotkeyActions {
         chart().navToChordLanding();
       },
       shutUp() {
-        // paraView.paraChart.controlPanel.descriptionPanel.ariaLiveRegion.voicing.shutUp();
         paraView.paraChart.ariaLiveRegion.voicing.shutUp();
       },
       repeatLastAnnouncement() {
-        // paraView.paraChart.controlPanel.descriptionPanel.ariaLiveRegion.replay();
         paraView.paraChart.ariaLiveRegion.replay();
       },
       addAnnotation() {
         store.addAnnotation();
+      },
+      narrativeHighlightModeToggle() {
+        paraView.startNarrativeHighlightMode();
+		    if (store.settings.ui.isNarrativeHighlightsEnabled) {
+          store.updateSettings(draft => {
+            draft.ui.isNarrativeHighlightEnabled = false;
+          });
+        } else {
+          store.updateSettings(draft => {
+            draft.ui.isNarrativeHighlightEnabled = true;
+          });
+        }
+      },
+      mediaPlayPause() {
+
+      },
+    };
+  }
+
+}
+
+export class NarrativeHighlightHotkeyActions extends HotkeyActions {
+  constructor(paraView: ParaView) {
+    super();
+    const store = paraView.store;
+    const chart = () => paraView.documentView!.chartInfo;
+    let prevIdx = 0;
+    const voicing = paraView.paraChart.ariaLiveRegion.voicing;
+    const getMsg = (idx: number) => {
+        const div = document.createElement('div');
+        div.innerHTML = store.announcement.html;
+        return (div.children[idx] as HTMLElement).innerText;
+    };
+    const highlightSpan = (idxDelta: number) => {
+      const spans = store.paraChart.captionBox.getSpans();
+      let idx = prevIdx;
+      store.clearHighlight();
+      store.soloSeries = '';
+      spans.forEach(span => {
+        span.classList.remove('highlight');
+      });
+      if (!voicing.manualOverride) {
+        idx = voicing.highlightIndex!;
+        voicing.manualOverride = true;
+      }
+      idx = Math.min(store.announcement.highlights.length - 1, Math.max(0, idx + idxDelta));
+
+      prevIdx = idx;
+      const msg = getMsg(idx);
+      const highlight = store.announcement.highlights[idx];
+      const prevHighlight = store.announcement.highlights[Math.max(0, idx - 1)];
+      let prevNavcode = prevHighlight.navcode ?? '';
+      const span = spans[idx];
+
+      span.classList.add('highlight');
+      voicing.shutUp();
+      voicing.speakText(msg);
+      prevNavcode = voicing.doHighlight(highlight, prevNavcode);
+      if (prevNavcode) {
+        chart().didRemoveHighlight(prevNavcode);
+        prevNavcode = '';
+      }
+    };
+    this._actions = {
+      async moveRight() {
+        highlightSpan(1);
+      },
+      async moveLeft() {
+        highlightSpan(-1);
+      },
+      async moveUp() {
+        highlightSpan(-1);
+      },
+      async moveDown() {
+        highlightSpan(1);
+      },
+      goFirst() {
+      },
+      goLast() {
+      },
+      voicingModeToggle() {
+        if (store.settings.ui.isVoicingEnabled) {
+          store.updateSettings(draft => {
+            draft.ui.isVoicingEnabled = false;
+          });
+        } else {
+          store.updateSettings(draft => {
+            draft.ui.isVoicingEnabled = true;
+          });
+        }
+      },
+      darkModeToggle() {
+        store.updateSettings(draft => {
+          draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
+          store.announce(
+            `Dark mode ${draft.color.isDarkModeEnabled ? 'enabled' : 'disabled'}`);
+        });
+      },
+      lowVisionModeToggle() {
+        store.updateSettings(draft => {
+          draft.ui.isLowVisionModeEnabled = !draft.ui.isLowVisionModeEnabled;
+        });
+      },
+      openHelp() {
+        paraView.paraChart.controlPanel.showHelpDialog();
+      },
+      shutUp() {
+        voicing.shutUp();
+      },
+      repeatLastAnnouncement() {
+      },
+      narrativeHighlightModeToggle() {
+        if (voicing.manualOverride) {
+          voicing.manualOverride = false;
+          (async () => {
+            store.announce(await chart().summarizer.getChartSummary());
+          })();
+        } else {
+          paraView.endNarrativeHighlightMode();
+      		if (store.settings.ui.isNarrativeHighlightEnabled) {
+            store.updateSettings(draft => {
+              draft.ui.isNarrativeHighlightEnabled = false;
+            });
+          } else {
+            store.updateSettings(draft => {
+              draft.ui.isNarrativeHighlightEnabled = true;
+            });
+          }
+        }
+      },
+      mediaPlayPause() {
+        voicing.togglePaused();
       }
     };
   }
