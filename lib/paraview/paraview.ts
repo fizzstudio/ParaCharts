@@ -135,6 +135,9 @@ export class ParaView extends logging(ParaComponent) {
         fill: var(--label-color);
         stroke: none;
       }
+      .label-bg {
+        fill: lightgray;
+      }
       .tick-label-horiz {
         font-size: calc(var(--horiz-axis-tick-label-font-size)*var(--chart-font-scale));
       }
@@ -154,6 +157,7 @@ export class ParaView extends logging(ParaComponent) {
       }
       .column-total-label {
         font-size: calc(var(--column-label-font-size)*var(--chart-font-scale));
+                background-color: red;
       }
       .pastry-inside-label {
       }
