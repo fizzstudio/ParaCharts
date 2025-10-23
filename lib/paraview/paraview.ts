@@ -201,6 +201,9 @@ export class ParaView extends logging(ParaComponent) {
       use.visited-mark {
        pointer-events: none;
       }
+      .bar {
+        stroke-width: 0;
+      }
       .data-line {
         fill: none;
         /*stroke-width: 3px;*/

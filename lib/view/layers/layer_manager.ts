@@ -251,8 +251,8 @@ export class PlotLayerManager extends View {
       >
         <rect
           id="data-backdrop"
-          width=${this._logicalWidth}
-          height=${this._logicalHeight}
+          width=${fixed`${this._logicalWidth}`}
+          height=${fixed`${this._logicalHeight}`}
         />
         ${this._backgroundHighlightsLayer.render()}
         ${this._backgroundAnnotationLayer.render()}

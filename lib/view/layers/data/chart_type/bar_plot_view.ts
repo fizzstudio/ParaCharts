@@ -359,13 +359,13 @@ export class Bar extends PlaneDatapointView {
     return this._y;
   }
 
-  get styleInfo(): StyleInfo {
-    const style = super.styleInfo;
-    if (!this.paraview.store.isVisited(this.seriesKey, this.index)) {
-      style.strokeWidth = 0;
-    }
-    return style;
-  }
+  // get styleInfo(): StyleInfo {
+  //   const style = super.styleInfo;
+  //   if (!this.paraview.store.isVisited(this.seriesKey, this.index)) {
+  //     style.strokeWidth = 0;
+  //   }
+  //   return style;
+  // }
 
   computeLocation() {
     const chartInfo = this.chart.chartInfo as BarChartInfo;

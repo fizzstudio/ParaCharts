@@ -29,7 +29,7 @@ export abstract class AxisLine<T extends AxisOrientation> extends View {
   constructor(public readonly axis: Axis<T>, length: number) {
     super(axis.paraview);
     this.length = length;
-    this._classInfo = {'axis-line': true, [`axis-line-${axis.orientation}`]: true};
+    this._classInfo = {'axis-line': true};
   }
 
   get length() {
