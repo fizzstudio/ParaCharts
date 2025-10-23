@@ -351,6 +351,7 @@ export class ParaChart extends logging(ParaComponent) {
           .announcement=${this._store.announcement}
         ></para-aria-live-region>
         <slot
+          hidden
           @slotchange=${(e: Event) => {
             //this._signalManager.signal('slotChange');
           }}

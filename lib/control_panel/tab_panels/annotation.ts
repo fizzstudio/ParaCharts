@@ -68,7 +68,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
   showCandidates() {
     return html`
         <div>
-        ${this._store.userCandidates.map(item => html`
+        ${this._store.userCandidates.sort().map(item => html`
           <div
            @mouseover=${(event: Event) => {
               let length = this.store.model!.series[0].length - 1;
@@ -77,6 +77,9 @@ export class AnnotationPanel extends ControlPanelTabPanel {
             @mouseleave=${(event: Event) => {
               let length = this.store.model!.series[0].length - 1;
               this.store.unhighlightRange(item.params[0] / length, (item.params[item.params.length - 1]! - 1) / length )
+            }}
+           @click=${(event: Event) => {
+              this._controlPanel.requestUpdate();
             }}>
             <input type="radio" name="cand" id="${item.toString()}" value="${item}"/>
             <label for="${item.toString()}">${item.category}</label>
