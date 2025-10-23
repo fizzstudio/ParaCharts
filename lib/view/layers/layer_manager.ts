@@ -269,8 +269,8 @@ export class PlotLayerManager extends View {
         ${this._foregroundHighlightsLayer.render()}
         ${this._selectionLayer.render()}
         ${this._foregroundAnnotationLayer.render()}
-        ${this.popupLayer.render()}
         ${this._focusLayer.render()}
+        ${this.popupLayer.render()}
       </g>
     `;
   }

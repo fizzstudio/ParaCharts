@@ -157,6 +157,7 @@ export abstract class DataLayer extends PlotLayer {
     if (['popup.activation'].includes(path)) {
       if (oldValue === "onSelect" || oldValue === "onFocus") {
         this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
+        this.paraview.store.userLineBreaks.splice(0, this.paraview.store.userLineBreaks.length)
       }
     }
     if (['chart.showPopups'].includes(path)) {
