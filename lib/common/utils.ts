@@ -19,6 +19,7 @@ import { BboxAnchor, type View } from '../view/base_view';
 import { Box } from "@fizz/paramodel";
 import { Datatype } from "@fizz/paramanifest";
 import { DatapointView } from "../view/data";
+import { ParaView } from "../paraview";
 
 const bboxOppositeAnchors: Record<BboxAnchor, BboxAnchor> = {
   top: 'bottom',
@@ -164,3 +165,16 @@ export function mergeUniqueBy<T>(
   }
   return res;
 }*/
+
+export function isPointerInbounds(paraview: ParaView, e: PointerEvent | MouseEvent) {
+  if (e.offsetX - paraview.documentView!.padding.left - paraview.documentView!.chartLayers.x < 0
+    || e.offsetX - paraview.documentView!.padding.left - paraview.documentView!.chartLayers.x > paraview.documentView!.chartLayers.width
+    || e.offsetY - paraview.documentView!.padding.top - paraview.documentView!.chartLayers.y < 0
+    || e.offsetY - paraview.documentView!.padding.top - paraview.documentView!.chartLayers.y > paraview.documentView!.chartLayers.height
+  ) {
+    return false
+  }
+  else {
+    return true
+  }
+}

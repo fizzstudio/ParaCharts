@@ -33,6 +33,7 @@ import { type Interval } from '@fizz/chart-classifier-utils';
 import { svg } from 'lit';
 import { HeatMapPlotView } from './data/chart_type';
 import { Histogram } from './data/chart_type/histogram';
+import { PopupLayer } from './popup_layer';
 
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
@@ -65,6 +66,7 @@ export class PlotLayerManager extends View {
   protected _foregroundHighlightsLayer!: HighlightsLayer;
   protected _selectionLayer!: SelectionLayer;
   protected _foregroundAnnotationLayer!: AnnotationLayer;
+  protected _popupLayer!: PopupLayer;
   protected _focusLayer!: FocusLayer;
 
   constructor(public readonly docView: DocumentView, width: number, height: number) {
@@ -103,6 +105,8 @@ export class PlotLayerManager extends View {
     this.append(this._selectionLayer);
     this._focusLayer = new FocusLayer(this.paraview, this._width, this._height);
     this.append(this._focusLayer);
+    this._popupLayer = new PopupLayer(this.paraview, this._width, this._height, "foreground");
+    this.append(this._popupLayer);
   }
 
   /** Physical width of the chart; i.e., width onscreen after any rotation. */
@@ -191,6 +195,10 @@ export class PlotLayerManager extends View {
     return this._selectionLayer;
   }
 
+  get popupLayer() {
+    return this._popupLayer;
+  }
+
   protected _resizeLayers() {
     this._children.forEach(kid => {
       kid.resize(this._logicalWidth, this._logicalHeight);
@@ -227,6 +235,7 @@ export class PlotLayerManager extends View {
   }
 
   render() {
+    this.popupLayer.addPopups()
     let transform = fixed`translate(${this._x + this._padding.left},${this._y + this._padding.top})`;
     if (this._orientation === 'east') {
       transform += fixed`
@@ -261,6 +270,7 @@ export class PlotLayerManager extends View {
         ${this._selectionLayer.render()}
         ${this._foregroundAnnotationLayer.render()}
         ${this._focusLayer.render()}
+        ${this.popupLayer.render()}
       </g>
     `;
   }
