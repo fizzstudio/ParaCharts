@@ -417,7 +417,7 @@ export class Label extends View {
         role=${this.options.role ?? nothing}
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}
-        text-anchor=${this._textAnchor}
+        text-anchor=${this._textAnchor !== 'start' ? this._textAnchor : nothing}
         transform=${this._makeTransform() ?? nothing}
         id=${this.id}
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
