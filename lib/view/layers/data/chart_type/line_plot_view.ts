@@ -133,12 +133,7 @@ export class LineSection extends PointDatapointView {
     // If datapoints are laid out again after the initial layout,
     // we need to replace the original shape and symbol
     this._symbol?.remove();
-    this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
-        pointerLeave: (e) => {
-          if (!isPointerInbounds(this.paraview, e)) {
-            this.paraview.requestUpdate()
-          }
-        }});
+    this._symbol = DataSymbol.fromType(this.paraview, symbolType);
     this.append(this._symbol);
   }
 
@@ -305,9 +300,6 @@ export class LineSection extends PointDatapointView {
           this.paraview.store.settings.chart.showPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
-          if (!isPointerInbounds(this.paraview, e)) {
-            this.paraview.requestUpdate()
-          }
         }
       })
       this._shapes[0].classInfo = { 'leg-left': true };
@@ -339,9 +331,6 @@ export class LineSection extends PointDatapointView {
           this.paraview.store.settings.chart.showPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
-          if (!isPointerInbounds(this.paraview, e)) {
-            this.paraview.requestUpdate()
-          }
         }
       })
       this._shapes[0].classInfo = this._prevMidY !== undefined

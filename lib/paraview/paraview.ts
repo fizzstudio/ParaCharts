@@ -25,7 +25,7 @@ import { View } from '../view/base_view';
 import { DocumentView } from '../view/document_view';
 //import { styles } from './styles';
 import { SVGNS } from '../common/constants';
-import { fixed } from '../common/utils';
+import { fixed, isPointerInbounds } from '../common/utils';
 import { HotkeyActions, NarrativeHighlightHotkeyActions, NormalHotkeyActions } from './hotkey_actions';
 
 import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
@@ -761,6 +761,7 @@ export class ParaView extends logging(ParaComponent) {
         @pointerup=${(ev: PointerEvent) => this._pointerEventManager?.handleEnd(ev)}
         @pointercancel=${(ev: PointerEvent) => this._pointerEventManager?.handleCancel(ev)}
         @pointermove=${(ev: PointerEvent) => this._pointerEventManager?.handleMove(ev)}
+        @pointerleave=${(ev: PointerEvent) => !isPointerInbounds(this, ev) ? this.requestUpdate() : undefined}
         @click=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleClick(ev)}
         @dblclick=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleDoubleClick(ev)}
       >
