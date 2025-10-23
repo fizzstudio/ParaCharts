@@ -166,7 +166,7 @@ export class Popup extends View {
         if (this.grid.y - this.grid.bottom < 0 && this.popupLabelOptions.type !== "chord") {
             this.grid.y += (this.grid.y - this.grid.bottom);
         }
-        if (this.grid.top < 0) {
+        if (this.grid.top - this.upPadding < 0) {
             if (this.popupLabelOptions.type !== "chord") {
                 this.arrowPosition = "up";
                 this.grid.y += (2 * this.margin + this.grid.height);
