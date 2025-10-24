@@ -62,6 +62,7 @@ export interface UISettings extends SettingGroup {
   isFocusRingEnabled: boolean;
   focusRingGap: number;
   navRunTimeoutMs: number;
+  animateRevealTimeMs: number;
 }
 
 /** @public */

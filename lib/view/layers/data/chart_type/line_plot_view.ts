@@ -237,6 +237,7 @@ export class LineSection extends PointDatapointView {
     this._shapes.forEach(shape => {
       shape.remove();
     });
+    this._shapes = [];
     const points = this._points;
     let cousins = this.withCousins.map((c, i) => [c, i]).toSorted((a: this[], b: this[]) => a[0].y - b[0].y) as [this, number][]
     let y = 0;

@@ -401,7 +401,8 @@ export const defaults: Settings = {
     isLowVisionModeEnabled: false,
     isFocusRingEnabled: false,
     focusRingGap: 10,
-    navRunTimeoutMs: 125
+    navRunTimeoutMs: 125,
+    animateRevealTimeMs: 500,
   },
   controlPanel: {
     isControlPanelDefaultOpen: true,

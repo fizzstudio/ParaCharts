@@ -360,7 +360,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    this.log('will update');
+    //this.log('will update');
     for (const [k, v] of changedProperties.entries()) {
       // @ts-ignore
       this.log(`- ${k.toString()}:`, v, '->', this[k]);

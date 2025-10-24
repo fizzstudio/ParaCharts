@@ -153,6 +153,11 @@ export abstract class PastryPlotView extends DataLayer {
     this._createLabels();
   }
 
+  protected _animStep(t: number): void {
+    super._animStep(t);
+    this._createLabels();
+  }
+
   init() {
     super.init();
     this._resizeToFitLabels();
@@ -398,6 +403,7 @@ export abstract class RadialSlice extends DatapointView {
   protected _insideLabel: Label | null = null;
   protected _leader: PathShape | null = null;
   protected _focusRingShape: SectorShape | null = null;
+  protected _centralAngle = 0;
 
   constructor(parent: SeriesView, protected _params: RadialDatapointParams) {
     super(parent);
@@ -562,6 +568,7 @@ export abstract class RadialSlice extends DatapointView {
     } else {
       bboxAnchor = textAnchor === 'start' ? 'bottomLeft' : 'bottomRight';
     }
+    this._outsideLabel?.remove();
     this._outsideLabel = new Label(this.paraview, {
       text: this._labelContents(contents || this.chart.settings.outsideLabels.contents),
       id: this.id + '-rlb',
@@ -571,6 +578,7 @@ export abstract class RadialSlice extends DatapointView {
       textAnchor: textAnchor,
     });
     this._outsideLabel.padding = { left: leftPad, right: rightPad };
+    this._leader?.remove();
     this._leader = this._createOutsideLabelLeader();
     this.append(this._leader);
     this.append(this._outsideLabel);
@@ -616,6 +624,7 @@ export abstract class RadialSlice extends DatapointView {
     } else {
       bboxAnchor = this.isPositionRight ? 'bottomLeft' : 'bottomRight';
     }
+    this._insideLabel?.remove();
     this._insideLabel = new Label(this.paraview, {
       text: this._labelContents(this.chart.settings.insideLabels.contents),
       id: this.id + '-ilb',

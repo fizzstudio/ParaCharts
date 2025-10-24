@@ -36,13 +36,28 @@ export class PieSlice extends RadialSlice {
     return 0;
   }
 
+  computeLocation(): void {
+    this._centralAngle = this.chart.animateRevealComplete
+      ? this._params.percentage*360
+      : 0;
+  }
+
+  animStep(t: number): void {
+    this._centralAngle = this._params.percentage*360*t;
+    super.animStep(t);
+  }
+
   protected _createShapes() {
     const isPattern = this.paraview.store.colors.palette.isPattern;
+    this._shapes.forEach(shape => {
+      shape.remove();
+    });
+    this._shapes = [];
     const slice = new SectorShape(this.paraview, {
       x: this._x,
       y: this._y,
       r: this.chart.radius,
-      centralAngle: this._params.percentage*360,
+      centralAngle: this._centralAngle,
       orientationAngle: this._params.accum*360,
       orientationAngleOffset: this.chart.settings.orientationAngleOffset,
       annularThickness: this.chart.settings.annularThickness,

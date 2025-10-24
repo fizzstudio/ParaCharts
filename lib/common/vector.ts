@@ -38,7 +38,7 @@ export class Vec2 {
   setY(y: number) {
     return new Vec2(this._x, y);
   }
-  
+
   add(other: Vec2) {
     return new Vec2(
       this._x + other._x,
@@ -73,7 +73,7 @@ export class Vec2 {
       this._y - other._y,
     );
   }
-  
+
   subtractScalar(scalar: number) {
     return new Vec2(
       this._x - scalar,
@@ -101,21 +101,21 @@ export class Vec2 {
       this._y * other._y,
     );
   }
-  
+
   multiplyScalar(scalar: number) {
     return new Vec2(
       this._x * scalar,
       this._y * scalar,
     );
   }
-  
+
   divide(other: Vec2) {
     return new Vec2(
       this._x / other._x,
       this._y / other._y,
     );
   }
-  
+
   divideScalar(scalar: number) {
     return new Vec2(
       this._x / scalar,
@@ -126,15 +126,15 @@ export class Vec2 {
   dot(other: Vec2) {
     return this._x*other._x + this._y*other._y;
   }
-  
+
   length() {
     return Math.sqrt(this.dot(this));
   }
-  
+
   normalize() {
     return this.divideScalar(this.length());
   }
-  
+
   project(other: Vec2) {
     return other.multiplyScalar(this.dot(other) / other.dot(other));
   }
@@ -151,6 +151,13 @@ export class Vec2 {
     return new Vec2(
       this._x*m00 + this._y*m01,
       this._x*m10 + this._y*m11
+    );
+  }
+
+  lerp(other: Vec2, t: number): Vec2 {
+    return new Vec2(
+      this._x*(1 - t) + other._x*t,
+      this._y*(1 - t) + other._y*t
     );
   }
 

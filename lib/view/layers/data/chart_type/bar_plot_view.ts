@@ -59,7 +59,6 @@ export class BarPlotView extends PlanePlotView {
 
   protected _addedToParent() {
     super._addedToParent();
-
     /*todo().controller.settingViews.add(this, {
       type: 'dropdown',
       key: 'type.bar.stackContent',
@@ -234,6 +233,12 @@ export class BarPlotView extends PlanePlotView {
     }
   }
 
+  noticePosted(key: string, value: any): void {
+    if (['animRevealStep', 'animRevealEnd'].includes(key)) {
+      this._completeDatapointLayout();
+    }
+  }
+
   // protected _resizeToFitLabels() {
   //   const labels = Object.values(this.bars).flatMap(cluster =>
   //     Object.values(cluster.stacks)).map(stack => stack.label!);
@@ -369,34 +374,49 @@ export class Bar extends PlaneDatapointView {
 
   computeLocation() {
     const chartInfo = this.chart.chartInfo as BarChartInfo;
-    const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
-    const pxPerYUnit = this.chart.parent.logicalHeight/chartInfo.axisInfo!.yLabelInfo.range!;
-    const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
-      // .map(bar => bar.value.value*pxPerYUnit + chartInfo.settings.stackInsideGap)
-      .map(bar => bar.value.value*pxPerYUnit)
-      .reduce((a, b) => a + b, 0);
-    const zeroHeight = this.chart.parent.logicalHeight
-      - (chartInfo.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!);
 
     const idealWidth = this.chart.stackWidth;
     this._width = this.chart.stackWidth;
     // @ts-ignore
-    this._height = Math.abs((this.datapoint.data.y.value as number)*pxPerYUnit);
+    this._height = 0; //Math.abs((this.datapoint.data.y.value as number)*pxPerYUnit);
     //this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
 
     // const clusterGap = Math.min(chartInfo.settings.clusterGap, this.chart.stackGap);
-    // const barGap = Math.min(chartInfo.settings.barGap, this.chart.availSpace/this.chart.numStacks);
+    // const barGap = Math.min(chartInfo.settings.barGap, this.chart.availSpace/this.chart.numBars);
+    // this._x = barGap/2
+    //   + idealWidth*this._stack.cluster.index
+    //   //+ clusterGap*this._stack.cluster.index
+    //   //+ idealWidth*this._stack.index
+    //   + barGap*this._stack.cluster.index;
+
     const barGap = this.chart.availSpace/this.chart.numStacks;
     const clusterGap = chartInfo.settings.clusterGap;
-    // XXX this seems slightly off
     this._x = clusterGap/2 + barGap/2
       + idealWidth*(chartInfo.stacksPerCluster*this._stack.cluster.index + this._stack.index)
       + clusterGap*this._stack.cluster.index
       + barGap*(chartInfo.stacksPerCluster*this._stack.cluster.index + this._stack.index);
+
+    this._y = 0;
+  }
+
+  animStep(t: number): void {
+    const chartInfo = this.chart.chartInfo as BarChartInfo;
+    const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
+    const pxPerYUnit = this.chart.parent.logicalHeight/chartInfo.axisInfo!.yLabelInfo.range!;
+    const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
+      .map(bar => bar.value.value*pxPerYUnit)
+      .reduce((a, b) => a + b, 0);
+    const zeroHeight = this.chart.parent.logicalHeight
+      - (chartInfo.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!);
     // @ts-ignore
-    this._y = this.datapoint.data.y.value as number < 0
-      ? this.chart.height - distFromXAxis - zeroHeight
-      : this.chart.height - this.height - distFromXAxis - zeroHeight;
+    this._height = Math.abs((this.datapoint.data.y.value as number)*pxPerYUnit*t);
+    // @ts-ignore
+    if (this.datapoint.data.y.value as number < 0) {
+      this._y = this.chart.height - distFromXAxis*t - zeroHeight;
+    } else {
+      this._y = this.chart.height - this.height - distFromXAxis*t - zeroHeight;
+    }
+    super.animStep(t);
   }
 
   completeLayout() {
@@ -470,6 +490,10 @@ export class Bar extends PlaneDatapointView {
 
   protected _createShapes() {
     const isPattern = this.paraview.store.colors.palette.isPattern;
+    this._shapes.forEach(shape => {
+      shape.remove();
+    });
+    this._shapes = [];
     this._shapes.push(new RectShape(this.paraview, {
       x: this._x,
       y: this._y,
