@@ -23,7 +23,7 @@ export interface BarStackItem {
  * Contains clustered bar stack data.
  */
 export class BarCluster {
-  stacks: {[key: string]: BarStack} = {}
+  stacks: {[key: string]: BarStack} = {};
   readonly id: string;
   readonly labelId: string;
 
@@ -35,14 +35,12 @@ export class BarCluster {
   get index() {
     return Object.keys(this.chartInfo.clusteredData).indexOf(this.key);
   }
-
 }
 
 /**
  * Contains data for bars contained in a stack.
  */
 export class BarStack {
-
   bars: {[key: string]: BarStackItem} = {};
 
   readonly id: string;
@@ -84,9 +82,14 @@ export class BarChartInfo extends PlaneChartInfo {
     super._init();
     this._clusteredData = this._clusterData();
     const yValues = Object.values(this._clusteredData).flatMap(c =>
-      Object.values(c.stacks).map(s => Object.values(s.bars)
-          .map(item => item.value.value)
-          .reduce((a, b) => a + b, 0)))
+      Object.values(c.stacks).map(s =>
+        Object.values(s.bars).map(item => item.value.value).reduce((a, b) => a + b, 0)
+//        + Object.values(s.bars).length*this.settings.stackInsideGap
+      ));
+    //const idxMax = yValues.indexOf(Math.max(...yValues));
+    //const numBars = Object.values(Object.values(Object.values(this._clusteredData)[0].stacks)[0].bars).length;
+    // XXX needs to be y units, not pixels
+    //yValues[idxMax] += numBars*this.settings.stackInsideGap;
     this._axisInfo = new AxisInfo(this._store, {
       // xTiers: [this.paraview.store.model!.allFacetValues('x')!.map(x =>
       //   formatBox(x, 'barCluster', this.paraview.store))],
@@ -98,10 +101,10 @@ export class BarChartInfo extends PlaneChartInfo {
       isXVertical: this._store.type === 'bar'
     });
     const numSeries = this._store.model!.numSeries;
-    if (this.settings.stackContent === 'all') {
+    if (this.settings.stacking === 'standard') {
       this._stacksPerCluster = 1;
-    } else if (this.settings.stackContent === 'count') {
-      const seriesPerStack = this.settings.stackCount;
+    } else if (this.settings.stacking === 'none') {
+      const seriesPerStack = 1;
       this._stacksPerCluster = Math.ceil(numSeries/seriesPerStack);
     }
   }
@@ -119,6 +122,7 @@ export class BarChartInfo extends PlaneChartInfo {
   }
 
   protected _clusterData() {
+    const settings = this._store.settings.type[this._type] as BarSettings;
     const clusterMap: BarClusterMap = {};
     const xs = this._store.model!.series[0].datapoints.map(dp => dp.facetBox('x')!);
 
@@ -152,32 +156,35 @@ export class BarChartInfo extends PlaneChartInfo {
     }
 
     const allSeries = [...this._store.model!.series];
-    if (this._store.type === 'column') {
+    if (this._store.type === 'column' && settings.stacking === 'standard') {
       // Place the series into stacks in the reverse order to how they appear in the
-      // model (i.e., first series will be topmost onscreen in 'all' mode)
+      // model (i.e., first series will be topmost onscreen in 'standard' mode)
       allSeries.reverse();
     }
     for (const [series, i] of enumerate(allSeries)) {
       for (const [value, j] of enumerate(series.datapoints.map(dp => dp.facetBox('y')))) {
         let stack: BarStack;
         let stackKey: string;
-        if (this._store.settings.type.bar.stackContent === 'all') {
+        if (settings.stacking === 'standard') {
           stackKey = 'stack';
           stack = clusters[j].stacks[stackKey];
           if (!stack) {
             stack = new BarStack(clusters[j], stackKey);
             clusters[j].stacks[stackKey] = stack;
           }
-        } else if (this._store.settings.type.bar.stackContent === 'count') {
-          const seriesPerStack = this._store.settings.type.bar.stackCount;
-          stackKey = seriesPerStack === 1 ? series.key : `stack${Math.floor(i/seriesPerStack)}`;
+        } else if (settings.stacking === 'none') {
+          const seriesPerStack = 1;
+          stackKey = series.key;
           stack = clusters[j].stacks[stackKey];
           if (!stack) {
             stack = new BarStack(clusters[j], stackKey);
             clusters[j].stacks[stackKey] = stack;
           }
         }
-        stack!.bars[series.key] = {series: series.key, value: series.datapoints[j].facetBox('y') as Box<'number'>};
+        stack!.bars[series.key] = {
+          series: series.key,
+          value: series.datapoints[j].facetBox('y') as Box<'number'>
+        };
       }
     }
     return clusterMap;

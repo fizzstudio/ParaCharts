@@ -52,6 +52,7 @@ export interface LabelOptions {
   justify?: SnapLocation;
   wrapWidth?: number;
   lineSpacing?: number;
+  hasBackground?: boolean;
   pointerEnter?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
   click?: (e: MouseEvent) => void;
@@ -292,7 +293,9 @@ export class Label extends View {
         const oldContent = tspan.textContent;
         if (wrapMode) {
           tspan.textContent += ' ' + tok;
-          const rect = this.paraview.store.settings.ui.isFullscreenEnabled ? tspan.getBBox() : tspan.getBoundingClientRect()
+          const rect = this.paraview.store.settings.ui.isFullscreenEnabled
+            ? tspan.getBBox()
+            : tspan.getBoundingClientRect();
           if (rect.width >= this.options.wrapWidth!) {
             tspan.textContent = oldContent;
             tspans.push(document.createElementNS(SVGNS, 'tspan'));
@@ -312,7 +315,9 @@ export class Label extends View {
         }
       }
 
-      const clientRect = this.paraview.store.settings.ui.isFullscreenEnabled ? text.getBBox() : text.getBoundingClientRect()
+      const clientRect = this.paraview.store.settings.ui.isFullscreenEnabled
+        ? text.getBBox()
+        : text.getBoundingClientRect();
       width = clientRect.width;
       height = clientRect.height;
 
@@ -390,13 +395,29 @@ export class Label extends View {
     // TODO: figure out why `this._y` is larger here than for single line titles
     // HACK: divide `this._y` by 2 for `y` attribute value
     return svg`
+      ${this.options.hasBackground
+        ? svg`
+          <path
+            class="label-bg"
+            d="
+              M${this.topLeft.x},${this.topLeft.y}
+              L${this.topRight.x},${this.topRight.y}
+              L${this.bottomRight.x},${this.bottomRight.y}
+              L${this.bottomLeft.x},${this.bottomLeft.y}
+              Z"
+            width=${this._width}
+            height=${this._height}
+          ></path>
+        `
+        : ''
+      }
       <text
         ${ref(this._elRef)}
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         role=${this.options.role ?? nothing}
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}
-        text-anchor=${this._textAnchor}
+        text-anchor=${this._textAnchor !== 'start' ? this._textAnchor : nothing}
         transform=${this._makeTransform() ?? nothing}
         id=${this.id}
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}

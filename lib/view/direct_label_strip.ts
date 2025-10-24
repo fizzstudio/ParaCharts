@@ -29,21 +29,29 @@ import { ClassInfo, classMap } from 'lit/directives/class-map.js';
  */
 export class DirectLabelStrip extends Container(View) {
 
-  protected seriesLabels: Label[] = [];
-  protected leaders: LineLabelLeader[] = [];
+  protected seriesLabels!: Label[];
+  protected leaders!: LineLabelLeader[];
 
   constructor(private _chart: LinePlotView) {
     super(_chart.paraview);
     this._id = 'direct-label-strip';
+    this._createLabels();
+  }
+
+  protected _createLabels() {
     const directLabelPadding = this.paraview.store.settings.chart.isDrawSymbols
       ? this._chart.settings.seriesLabelPadding*2
       : this._chart.settings.seriesLabelPadding;
     // Sort points from highest to lowest onscreen
     const endpoints = this._chart.datapointViews.
       filter(datapoint =>
-        datapoint.index === this._chart.paraview.store.model!.series[0].length - 1
+        datapoint.index === this.paraview.store.model!.series[0].length - 1
       );
     endpoints.sort((a, b) => a.y - b.y);
+    this.seriesLabels?.forEach(label => {
+      label.remove();
+    });
+    this.seriesLabels = [];
     // Create labels
     endpoints.forEach((ep, i) => {
       this.seriesLabels.push(new Label(this.paraview, {
@@ -80,6 +88,16 @@ export class DirectLabelStrip extends Container(View) {
     this.resolveSeriesLabelCollisions(endpoints);
   }
 
+  protected _addedToParent(): void {
+    this.observeNotices();
+  }
+
+  noticePosted(key: string, value: any): void {
+    if (['animRevealStep', 'animRevealEnd'].includes(key)) {
+      this._createLabels();
+    }
+  }
+
   computeSize(): [number, number] {
     // XXX also need to support label strip on left, top, bottom
     return [
@@ -102,6 +120,11 @@ export class DirectLabelStrip extends Container(View) {
         colliders.push({label: this.seriesLabels[i], endpoint: endpoints[i]});
       }
     }
+    this.leaders?.forEach(leader => {
+      leader.remove();
+    });
+    this.leaders = [];
+
     if (colliders.length) {
       const leaderLabelOffset = this.paraview.store.settings.chart.isDrawSymbols
         ? -this._chart.settings.seriesLabelPadding

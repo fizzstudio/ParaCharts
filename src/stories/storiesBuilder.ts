@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import { type CatalogListing } from '@fizz/chart-data';
 
 import { template } from './storyTemplate.ts';
+import { template as testTemplate } from './testStoriesTemplate.ts';
 import { familyCatalogMap, familyCatalogMapMulti } from './chartSelectorHelper.ts';
 import { allTemplate } from './allStoriesTemplate.ts';
 import { CHART_FAMILY_MEMBERS, type ChartTypeFamily, type ChartType } from '@fizz/paramanifest';
@@ -17,7 +18,8 @@ function capitalize(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
-const AUTOGEN_PATH = './src/stories/autogen/'
+const AUTOGEN_PATH = './src/stories/autogen/';
+const AUTOGEN_TEST_PATH = './src/stories/autogen-test/';
 
 const CHART_TYPE_FOLDERS_SINGLE: Record<ChartType, string> = {
   'line': 'Line Charts/Single Line Charts',
@@ -55,11 +57,12 @@ function generateCode(
   manifestTitle: string, 
   chartType: ChartType, 
   manifestPath: string, 
-  index: number
+  index: number,
+  templateToUse: string
 ): string {
   const topFolder = ai ? 'AI-enhanced Charts' : 'Basic Charts';
   const chartElement = ai ? 'AiChart' : 'Chart';
-  return printf(template, 
+  return printf(templateToUse, 
     { manifestTitle, typeFolder, topFolder, manifestPath, index, chartType, chartElement }
   );
 }
@@ -72,10 +75,16 @@ function generateStory(
   index: number
 ): void {
   const typeFolder = CHART_TYPE_FOLDERS_SINGLE[chartType];
-  const code = generateCode(
-    ai, typeFolder, manifestTitle, chartType, manifestPath, index
+  
+  const demoCode = generateCode(
+    ai, typeFolder, manifestTitle, chartType, manifestPath, index, template
   );
-  fs.writeFileSync(`${AUTOGEN_PATH}${ai ? 'AI' : ''}${chartType}${index}.stories.ts`, code, 'utf8');
+  fs.writeFileSync(`${AUTOGEN_PATH}${ai ? 'AI' : ''}${chartType}${index}.stories.ts`, demoCode, 'utf8');
+  
+  const testCode = generateCode(
+    ai, typeFolder, manifestTitle, chartType, manifestPath, index, testTemplate
+  );
+  fs.writeFileSync(`${AUTOGEN_TEST_PATH}${ai ? 'AI' : ''}${chartType}${index}.stories.ts`, testCode, 'utf8');
 }
 
 function generateStoryMulti(
@@ -88,10 +97,16 @@ function generateStoryMulti(
 ): void {
   const multiText = multi ? 'Multi' : 'Single';
   const typeFolder = multi ? CHART_TYPE_FOLDERS_MULTI[chartType] : CHART_TYPE_FOLDERS_SINGLE[chartType];
-  const code = generateCode(
-    ai, typeFolder, manifestTitle, chartType, manifestPath, index
+  
+  const demoCode = generateCode(
+    ai, typeFolder, manifestTitle, chartType, manifestPath, index, template
   );
-  fs.writeFileSync(`${AUTOGEN_PATH}${ai ? 'AI' : ''}${chartType}${multiText}${index}.stories.ts`, code, 'utf8');
+  fs.writeFileSync(`${AUTOGEN_PATH}${ai ? 'AI' : ''}${chartType}${multiText}${index}.stories.ts`, demoCode, 'utf8');
+  
+  const testCode = generateCode(
+    ai, typeFolder, manifestTitle, chartType, manifestPath, index, testTemplate
+  );
+  fs.writeFileSync(`${AUTOGEN_TEST_PATH}${ai ? 'AI' : ''}${chartType}${multiText}${index}.stories.ts`, testCode, 'utf8');
 }
 
 function generateTypeStories(
@@ -151,7 +166,9 @@ function generateAllStory(
   const code = printf(allTemplate, 
     { topFolder, typeFolder, typePath, storyName, family, multi: 'false', chartType, chartElement }
   );
+  
   fs.writeFileSync(`${AUTOGEN_PATH}z${ai ? 'AI' : ''}all${chartType}.stories.ts`, code, 'utf8');
+  fs.writeFileSync(`${AUTOGEN_TEST_PATH}z${ai ? 'AI' : ''}all${chartType}.stories.ts`, code, 'utf8');
 }
 
 function generateAllStoryMulti(
@@ -169,7 +186,9 @@ function generateAllStoryMulti(
   const code = printf(allTemplate, 
     { topFolder, typeFolder, typePath, storyName, family, multi: 'true', chartType, chartElement }
   );
+  
   fs.writeFileSync(`${AUTOGEN_PATH}z${ai ? 'AI' : ''}all${multiText}${chartType}.stories.ts`, code, 'utf8');
+  fs.writeFileSync(`${AUTOGEN_TEST_PATH}z${ai ? 'AI' : ''}all${multiText}${chartType}.stories.ts`, code, 'utf8');
 }
 
 function generateFamilyAllStory(family: ChartTypeFamily, ai: boolean, multi?: boolean): void {
@@ -188,11 +207,13 @@ function generateFamilyAllStory(family: ChartTypeFamily, ai: boolean, multi?: bo
 
 // Runtime
 
-// Removes existing `autogen` folder. 'force: true' means that this is ignored if `autogen` doesn't
+// Removes existing `autogen` and `autogen-test` folders. 'force: true' means that this is ignored if they don't
 //   exist because the stories have never been built before
 fs.rmSync(AUTOGEN_PATH, { force: true, recursive: true })
+fs.rmSync(AUTOGEN_TEST_PATH, { force: true, recursive: true })
 
 fs.mkdirSync(AUTOGEN_PATH);
+fs.mkdirSync(AUTOGEN_TEST_PATH);
 
 const MULTIABLE_FAMILIES: ChartTypeFamily[] = ['line', 'bar'];
 const NON_MULTIABLE_FAMILIES: ChartTypeFamily[] = ['scatter', 'pastry', 'histogram'];

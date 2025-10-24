@@ -62,6 +62,7 @@ export interface UISettings extends SettingGroup {
   isFocusRingEnabled: boolean;
   focusRingGap: number;
   navRunTimeoutMs: number;
+  animateRevealTimeMs: number;
 }
 
 /** @public */
@@ -76,7 +77,7 @@ export interface ControlPanelSettings extends SettingGroup {
   isControlPanelDefaultOpen: boolean;
   tabLabelStyle: TabLabelStyle;
   isCaptionVisible: boolean;
-  isStatusBarVisible: boolean;
+  isExplorationBarVisible: boolean;
   caption: CaptionBoxSettings;
   isSparkBrailleVisible: boolean;
   isDataTabVisible: boolean;
@@ -183,7 +184,7 @@ export type LabelFormat = 'raw' | string;
 
 /** @public */
 export interface TickLabelSettings extends SettingGroup {
-  isDrawEnabled: boolean;
+  isDrawTickLabels: boolean;
   fontSize: string;
   angle: number;
   offsetGap: number;
@@ -192,14 +193,14 @@ export interface TickLabelSettings extends SettingGroup {
 
 /** @public */
 export interface TickSettings extends SettingGroup {
-  isDrawEnabled?: boolean;
+  isDrawTicks?: boolean;
   padding: number;
   opacity: number;
   strokeWidth: number;
   strokeLinecap: string;
   length: number;
   labelFormat: LabelFormat;
-  tickLabel: TickLabelSettings;
+  labels: TickLabelSettings;
   step: number;
 }
 
@@ -213,7 +214,6 @@ export interface AxisLineSettings extends SettingGroup {
 
 /** @public */
 export interface AxisSettings extends SettingGroup {
-  line: AxisLineSettings;
   minValue: number | 'unset';
   maxValue: number | 'unset';
   interval: number | 'unset';
@@ -231,10 +231,16 @@ export interface AxisTitleSettings extends SettingGroup {
 
 /** @public */
 export interface OrientedAxisSettings<T extends AxisOrientation> extends SettingGroup {
-  position: T extends 'horiz' ? VertCardinalDirection : HorizCardinalDirection;
+  isDrawAxis: boolean;
+  position: T extends 'horiz'
+    ? VertCardinalDirection
+    : HorizCardinalDirection;
   title: AxisTitleSettings;
-  tick: TickSettings;
-  labelOrder: T extends 'horiz' ? 'westToEast' | 'eastToWest' : 'southToNorth' | 'northToSouth';
+  ticks: TickSettings;
+  line: AxisLineSettings;
+  labelOrder: T extends 'horiz'
+    ? 'westToEast' | 'eastToWest'
+    : 'southToNorth' | 'northToSouth';
 }
 
 /** @public */
@@ -295,35 +301,36 @@ export interface PlotSettings extends SettingGroup {
 }
 
 export type BarClusterMode = 'facet';
+export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
 
 /** @public */
 export interface BarSettings extends PlotSettings {
+  stacking: 'none' | 'standard'; // | '100%';
   barWidth: number;
   // minBarWidth: number;
   colorByDatapoint: boolean;
-  isDrawStackLabels: boolean;
-  isStackLabelInsideBar: boolean;
+  isDrawTotalLabels: boolean;
+  //isStackLabelInsideBar: boolean;
   stackLabelGap: number;
   isDrawRecordLabels: boolean;
-  isDrawValueLabels: boolean;
+  /** Per-bar data value labels */
+  isDrawDataLabels: boolean;
+  dataLabelPosition: BarDataLabelPosition;
   clusterBy?: BarClusterMode;
-  stackContent: StackContentOptions;
-  stackCount: number;
   orderBy?: string;
   clusterGap: number;
   barGap: number;
+  //stackInsideGap: number;
   isAbbrevSeries: boolean;
   clusterLabelFormat: LabelFormat;
   lineWidth: number;
   showPopups: boolean;
+  labelFontSize: string;
 }
 
 /** @public */
 export interface LollipopSettings extends BarSettings {
 }
-
-/** @public */
-export type StackContentOptions = 'all' | 'count';
 
 /** @public */
 export interface PointSettings extends PlotSettings {
@@ -500,8 +507,8 @@ export type DeepReadonly<T> = {
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
 // Settings that control the format for each context
 export const FORMAT_CONTEXT_SETTINGS = {
-  horizTick: 'axis.horiz.tick.labelFormat',
-  vertTick: 'axis.vert.tick.labelFormat',
+  horizTick: 'axis.horiz.ticks.labelFormat',
+  vertTick: 'axis.vert.ticks.labelFormat',
   linePoint: 'type.line.pointLabelFormat',
   scatterPoint: 'type.scatter.pointLabelFormat',
   histogramPoint: 'type.histogram.pointLabelFormat',

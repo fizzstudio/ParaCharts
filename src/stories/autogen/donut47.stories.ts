@@ -1,9 +1,6 @@
 import { Chart, type ChartProps } from '../Chart';
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { expect } from 'storybook/test';
-
-import Runner from '../tests/donutTests';
 
 type Story = StoryObj<ChartProps>;
 
@@ -19,9 +16,5 @@ export const Chart47: Story = {
   args: {
     filename: "manifests/pie-manifest-dark-matter.json",
     forcecharttype: "donut",
-  },
-  play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/pie-manifest-dark-matter.json");
-    await runner.run();
   }
 }

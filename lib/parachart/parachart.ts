@@ -201,20 +201,25 @@ export class ParaChart extends logging(ParaComponent) {
       '--caption-border': () => this._store.settings.controlPanel.caption.hasBorder
         ? 'solid 2px var(--theme-color)'
         : 'none',
-      '--caption-grid-template-columns': () => this._store.settings.controlPanel.caption.isExplorationBarBeside
-        ? 'auto auto'
-        : '1fr',
-      '--exploration-bar-display': () => this._store.settings.controlPanel.isStatusBarVisible
+      '--caption-grid-template-columns': () =>
+        this._store.settings.controlPanel.isExplorationBarVisible
+        && this._store.settings.controlPanel.isCaptionVisible
+        && this._store.settings.controlPanel.caption.isExplorationBarBeside
+          ? '2fr 1fr' //'auto auto'
+          : '1fr',
+      '--exploration-bar-display': () => this._store.settings.controlPanel.isExplorationBarVisible
         ? 'flex'
         : 'none',
       '--chart-font-scale': () => this._store.settings.chart.fontScale,
       '--chart-title-font-size': () => this._store.settings.chart.title.fontSize,
       '--horiz-axis-title-font-size': () => this._store.settings.axis.horiz.title.fontSize,
       '--vert-axis-title-font-size': () => this._store.settings.axis.vert.title.fontSize,
-      '--horiz-axis-tick-label-font-size': () => this._store.settings.axis.horiz.tick.tickLabel.fontSize,
-      '--vert-axis-tick-label-font-size': () => this._store.settings.axis.vert.tick.tickLabel.fontSize,
+      '--horiz-axis-tick-label-font-size': () => this._store.settings.axis.horiz.ticks.labels.fontSize,
+      '--vert-axis-tick-label-font-size': () => this._store.settings.axis.vert.ticks.labels.fontSize,
       '--direct-label-font-size': () => this._store.settings.chart.directLabelFontSize,
       '--legend-label-font-size': () => this._store.settings.legend.fontSize,
+      '--bar-label-font-size': () => this._store.settings.type.bar.labelFontSize,
+      '--column-label-font-size': () => this._store.settings.type.column.labelFontSize,
       'display': 'block',
       'font-family': '"Trebuchet MS", Helvetica, sans-serif',
       'font-size': 'var(--chart-view-font-size, 1rem)'

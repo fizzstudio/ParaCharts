@@ -74,6 +74,8 @@ export class ControlsPanel extends ControlPanelTabPanel {
       </ul>
 
       <p>Explore the collapsible Control Panel to find many more accessibility features, including options for color blindness, dark mode with fine-grained contrast, self-voicing, SparkBraille tactile support, and more.</p>
+      
+      <p>For more details, visit the <a href="https://fizzstudio.github.io/paracharts" target="_blank">ParaCharts Documentation</a>.</p>
     `;
   }
 

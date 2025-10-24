@@ -172,7 +172,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
     ) {
       this.requestUpdate();
     } else if (shortKey === 'isCaptionVisible'
-      || shortKey === 'isStatusBarVisible') {
+      || shortKey === 'isExplorationBarVisible') {
         this._descriptionPanelRef.value!.requestUpdate();
     } else if (shortKey === 'isSparkBrailleVisible') {
       this._dataPanelRef.value!.isSparkBrailleVisible = value;

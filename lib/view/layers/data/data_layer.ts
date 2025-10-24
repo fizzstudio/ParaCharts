@@ -19,11 +19,6 @@ import { ref } from 'lit/directives/ref.js';
 import { PlotLayer } from '..';
 import { type PlotLayerManager } from '..';
 import { type PlotSettings, type DeepReadonly, type Direction, HorizDirection, Setting } from '../../../store/settings_types';
-//import { type Model, type DatapointReference } from '../data/model';
-//import { type ActionRegistration } from '../input';
-//import { keymaps } from '../input';
-//import { hotkeyActions, type TodoEventType } from '../input/defaultactions';
-//import { type Actions } from '../input/actions';
 import { ParaView } from '../../../paraview';
 import { SettingsManager } from '../../../store/settings_manager';
 import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../../data';
@@ -31,6 +26,7 @@ import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../.
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { bboxOfBboxes } from '../../../common/utils';
 import { BaseChartInfo } from '../../../chart_types';
+import { Bezier } from '../../../common';
 
 /**
  * @public
@@ -53,6 +49,7 @@ export abstract class DataLayer extends PlotLayer {
   //protected _soniRiffSpeedRateIndex = 1;
   /** DatapointId to DOM ID */
   protected _datapointDomIds = new Map<string, string>();
+  protected _animateRevealComplete = false;
 
   constructor(
     paraview: ParaView,
@@ -141,10 +138,14 @@ export abstract class DataLayer extends PlotLayer {
     return ref(this.paraview.ref<SVGGElement>(`dataset${this.index}`));
   }
 
-  init() {
-    this._layoutDatapoints();
+  get animateRevealComplete(): boolean {
+    return this._animateRevealComplete;
   }
 
+  init() {
+    this._layoutDatapoints();
+    this._animateReveal();
+  }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['ui.isLowVisionModeEnabled'].includes(path)) {
@@ -157,6 +158,7 @@ export abstract class DataLayer extends PlotLayer {
     if (['popup.activation'].includes(path)) {
       if (oldValue === "onSelect" || oldValue === "onFocus") {
         this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
+        this.paraview.store.userLineBreaks.splice(0, this.paraview.store.userLineBreaks.length)
       }
     }
     if (['chart.showPopups'].includes(path)) {
@@ -210,6 +212,38 @@ export abstract class DataLayer extends PlotLayer {
   //   }
   //   //this._layoutSymbols();
   // }
+
+  protected _animateReveal() {
+    let start = -1;
+    const bez = new Bezier(0.2, 0.9, 0.5, 1, 10);
+    const step = (timestamp: number) => {
+      if (start === -1) {
+        start = timestamp;
+      }
+      const elapsed = timestamp - start;
+      // We can't really disable the animation, but setting the reveal time to 0
+      // will result in an imperceptibly short animation duration
+      const revealTime = Math.max(1, this.paraview.store.settings.ui.animateRevealTimeMs);
+      const t = Math.min(elapsed/revealTime, 1);
+      const bezT = bez.eval(t)!;
+      this._animStep(bezT);
+      this._parent.docView.postNotice('animRevealStep', bezT);
+      this.paraview.requestUpdate();
+      if (elapsed < revealTime) {
+        requestAnimationFrame(step);
+      } else {
+        this._parent.docView.postNotice('animRevealEnd', null);
+        this._animateRevealComplete = true;
+      }
+    };
+    requestAnimationFrame(step);
+  }
+
+  protected _animStep(t: number) {
+    for (const datapointView of this.datapointViews) {
+      datapointView.animStep(t);
+    }
+  }
 
   protected _newDatapointView(seriesView: SeriesView, ..._rest: any[]): DatapointView {
     return new DatapointView(seriesView);

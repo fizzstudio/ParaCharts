@@ -187,11 +187,11 @@ export abstract class PlaneDatapointView extends DatapointView {
     return super.datapoint as PlaneDatapoint;
   }
 
-  get styleInfo() {
-    const styles = super.styleInfo;
-    styles['--datapoint-centroid'] = this.centroid;
-    return styles;
-  }
+  // get styleInfo() {
+  //   const styles = super.styleInfo;
+  //   styles['--datapoint-centroid'] = this.centroid;
+  //   return styles;
+  // }
 
   /*protected get _eventActions(): Actions<this> {
     return {
