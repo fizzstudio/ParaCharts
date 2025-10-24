@@ -2263,6 +2263,14 @@ export class ParaChart extends ParaChart_base {
     readonly captionBox: ParaCaptionBox;
     // (undocumented)
     clearAriaLive(): void;
+    // Warning: (ae-forgotten-export) The symbol "AvailableCommands" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    command(name: keyof AvailableCommands, args: any[]): any;
+    // Warning: (ae-forgotten-export) The symbol "Commander" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _commander: Commander;
     // (undocumented)
     accessor config: SettingsInput;
     // (undocumented)
@@ -2299,6 +2307,10 @@ export class ParaChart extends ParaChart_base {
     protected _loader: ParaLoader;
     // (undocumented)
     protected _loaderPromise: Promise<void> | null;
+    // (undocumented)
+    protected _loaderRejector: (() => void) | null;
+    // (undocumented)
+    protected _loaderResolver: (() => void) | null;
     // (undocumented)
     accessor manifest: string;
     // (undocumented)

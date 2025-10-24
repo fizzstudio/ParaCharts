@@ -22,6 +22,7 @@ import { type HorizDirection } from '../store';
 
 import { ChartType } from '@fizz/paramanifest';
 import { Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
+import { DocumentView } from '../view/document_view';
 
 // Soni Constants
 export const SONI_PLAY_SPEEDS = [1000, 250, 100, 50, 25];
@@ -35,8 +36,8 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   protected _soniNoteIndex = 0;
   protected _soniSpeedRateIndex = 1;
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, store: ParaStore, docView: DocumentView) {
+    super(type, store, docView);
   }
 
   protected _createNavMap() {

@@ -11,6 +11,7 @@ import { ChartType, strToId } from '@fizz/paramanifest';
 import { enumerate, Box } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
+import { DocumentView } from '../view/document_view';
 
 type BarClusterMap = {[key: string]: BarCluster};
 
@@ -74,8 +75,8 @@ export class BarChartInfo extends PlaneChartInfo {
   protected _clusteredData!: BarClusterMap;
   protected _stacksPerCluster!: number;
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, store: ParaStore, docView: DocumentView) {
+    super(type, store, docView);
   }
 
   protected _init(): void {

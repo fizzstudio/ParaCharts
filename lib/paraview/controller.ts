@@ -26,7 +26,7 @@ export class ParaViewController extends Logger {
       key = '';
     }
     const keyId = (key ? [...mods, key] : mods).join('+');
-    if (this._store.keymapManager.onKeydown(keyId)) {
+    if (this._store.paraChart.command('key', [keyId])) {
       event.stopPropagation();
       event.preventDefault();
     }

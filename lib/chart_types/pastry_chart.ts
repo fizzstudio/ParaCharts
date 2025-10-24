@@ -26,13 +26,14 @@ import {
 import { type PlaneDatapoint } from '@fizz/paramodel';
 
 import { ChartType } from '@fizz/paramanifest';
+import { DocumentView } from '../view/document_view';
 
 export type ArcType = 'circle' | 'semicircle';
 
 export class PastryChartInfo extends BaseChartInfo {
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, store: ParaStore, docView: DocumentView) {
+    super(type, store, docView);
   }
 
   protected _addSettingControls(): void {
