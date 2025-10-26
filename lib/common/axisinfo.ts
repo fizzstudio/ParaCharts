@@ -5,7 +5,6 @@ import { formatBox } from '@fizz/parasummary';
 import Decimal from 'decimal.js';
 import { Facet } from '@fizz/paramanifest';
 import { AxisOrientation, type PlaneModel } from '@fizz/paramodel';
-import { number } from 'mathjs';
 
 export type Tier = string[];
 export interface ChildTierItem {
@@ -179,7 +178,7 @@ export class AxisInfo {
         Math.max(...this._options.xValues));
     } else {
       const labels = this._store.model!.series[0].datapoints.map(
-        (p) => formatBox(p.facetBox('x')!, this._store.getFormatType('xTick'))
+        (p) => formatBox(p.facetBox('x')!, this._store.getFormatType('horizTick'))
       );
       this._xLabelInfo = {
         labelTiers: [labels]

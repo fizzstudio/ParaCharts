@@ -18,17 +18,21 @@ import { type SettingsInput, type Settings } from './settings_types';
 import { HERTZ } from '../common/constants';
 import { ChartType } from '@fizz/paramanifest';
 
+// Per-chart-type default settings outside of the chart's own setting group
 export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}> = {
   bar: {
     'chart.orientation': 'east',
     'axis.vert.labelOrder': 'northToSouth',
-    'axis.x.tick.isDrawEnabled': false,
+    'axis.horiz.ticks.isDrawTicks': false,
     'grid.isDrawHorizLines': false,
   },
   column: {
-    'axis.x.tick.isDrawEnabled': false,
-    'axis.y.line.isDrawOverhangEnabled': false,
+    'axis.horiz.ticks.isDrawTicks': true,
+    'axis.vert.line.isDrawOverhang': true,
     'grid.isDrawVertLines': false,
+  },
+  line: {
+    'grid.isDrawVertLines': false
   }
 };
 
@@ -46,99 +50,105 @@ export const defaults: Settings = {
     title: {
       isDrawTitle: true,
       margin: 40,
-      fontSize: 22,
+      fontSize: '12pt',
       align: 'center',
       position: 'top',
     },
     orientation: 'north',
-    padding: '8 10',
+    padding: '8 20',
     //chartType: 'line'
     fontFamily: 'Helvetica, sans-serif',
     fontWeight: '300',
+    fontScale: 1,
     stroke: 'purple',
     strokeWidth: 4,
     strokeHighlightScale: 1.5,
     symbolStrokeWidth: 2,
     symbolHighlightScale: 1.5,
     hasDirectLabels: true,
+    directLabelFontSize: '10pt',
     hasLegendWithDirectLabels: false,
     isDrawSymbols: true,
     isStatic: false,
-    isShowVisitedDatapointsOnly: false
+    isShowVisitedDatapointsOnly: false,
+    showPopups: false
   },
   axis: {
     minInterval: 25,
     datapointMargin: 3,
     horiz: {
+      isDrawAxis: true,
       position: 'south',
-      labelOrder: 'westToEast'
-    },
-    vert: {
-      position: 'west',
-      labelOrder: 'southToNorth'
-    },
-    x: {
       title: {
         isDrawTitle: false,
         gap: 8,
-        fontSize: 15
+        fontSize: '12pt'
       },
-      line: {
-        isDrawEnabled: true,
-        isDrawOverhangEnabled: true,
-        strokeWidth: 2,
-        strokeLinecap: 'round',
-      },
-      tick: {
-        isDrawEnabled: true,
+      ticks: {
+        isDrawTicks: false,
         padding: 3,
-        fontSize: 13,
         opacity: 1,
         strokeWidth: 2,
         strokeLinecap: 'round',
         length: 10,
         labelFormat: 'raw',
-        tickLabel: {
-          isDrawEnabled: true,
+        labels: {
+          isDrawTickLabels: true,
+          fontSize: '10pt',
           angle: -45,
-          offsetGap: 8,
+          offsetGap: 4,
           gap: 0
         },
         step: 1
       },
-      minValue: 'unset',
-      maxValue: 'unset',
-      interval: 'unset',
-    },
-    y: {
-      title: {
-        isDrawTitle: true,
-        gap: 8,
-        fontSize: 15
-      },
       line: {
-        isDrawEnabled: true,
-        isDrawOverhangEnabled: true,
+        isDrawAxisLine: true,
+        isDrawOverhang: true,
         strokeWidth: 2,
         strokeLinecap: 'round',
       },
-      tick: {
-        isDrawEnabled: true,
+      labelOrder: 'westToEast',
+      interval: 'unset',
+    },
+    vert: {
+      isDrawAxis: true,
+      position: 'west',
+      title: {
+        isDrawTitle: true,
+        gap: 8,
+        fontSize: '12pt'
+      },
+      ticks: {
+        isDrawTicks: true,
         padding: 3,
-        fontSize: 13,
         opacity: 1,
         strokeWidth: 2,
         strokeLinecap: 'round',
         length: 10,
         labelFormat: 'raw',
-        tickLabel: {
-          isDrawEnabled: true,
+        labels: {
+          isDrawTickLabels: true,
+          fontSize: '10pt',
           angle: 0,
           offsetGap: 0,
           gap: 0
         },
         step: 1,
       },
+      line: {
+        isDrawAxisLine: true,
+        isDrawOverhang: true,
+        strokeWidth: 2,
+        strokeLinecap: 'round',
+      },
+      labelOrder: 'southToNorth'
+    },
+    x: {
+      minValue: 'unset',
+      maxValue: 'unset',
+      interval: 'unset'
+    },
+    y: {
       minValue: 'unset',
       maxValue: 'unset',
       interval: 'unset'
@@ -150,56 +160,78 @@ export const defaults: Settings = {
     isAlwaysDrawLegend: false,
     boxStyle: {
       outline: 'none',
-      // outline: 'gray',
+      //outline: 'gray',
       outlineWidth: 1,
       fill: 'none',
-      // fill: 'aliceblue',
+      //fill: 'aliceblue',
     },
     padding: 10,
     symbolLabelGap: 5,
     pairGap: 30,
     position: 'east',
     margin: 20,
-    itemOrder: 'series'
+    itemOrder: 'series',
+    fontSize: '10pt'
+  },
+  plotArea: {
+    size: {
+      width: 600,
+      height: 250
+    }
+  },
+  popup :{
+    opacity: .9,
+    leftPadding: 10,
+    rightPadding: 10,
+    upPadding: 10,
+    downPadding: 10,
+    margin: 40,
+    maxWidth: 175,
+    shape: "boxWithArrow",
+    activation: "onHover",
+    borderRadius: 10,
+    backgroundColor: "dark"
   },
   type: {
     bar: {
+      stacking: 'standard',
       barWidth: 20,
-      minBarWidth: 20,
       colorByDatapoint: false,
-      isDrawStackLabels: false,
-      isStackLabelInsideBar: true,
+      isDrawTotalLabels: true,
       stackLabelGap: 10,
       isDrawRecordLabels: false,
-      isDrawValueLabels: false,
+      isDrawDataLabels: false,
+      dataLabelPosition: 'center',
       clusterBy: undefined,
-      clusterGap: 10,
-      stackContent: 'all',
-      stackCount: 1,
+      clusterGap: 0,
       isAbbrevSeries: true,
       orderBy: undefined,
-      barGap: 0.25,
+      barGap: 2,
+      //stackInsideGap: 4,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
+      showPopups: false,
+      labelFontSize: '8pt'
     },
     column: {
+      stacking: 'standard',
       barWidth: 10,
-      minBarWidth: 20,
       colorByDatapoint: false,
-      isDrawStackLabels: false,
-      isStackLabelInsideBar: true,
+      isDrawTotalLabels: true,
       isDrawRecordLabels: false,
-      isDrawValueLabels: true,
+      isDrawDataLabels: false,
+      dataLabelPosition: 'center',
       stackLabelGap: 10,
       clusterBy: undefined,
-      clusterGap: 10,
-      stackContent: 'all',
-      stackCount: 1,
+      clusterGap: 2,
       isAbbrevSeries: true,
       orderBy: undefined,
-      barGap: 0.25,
+      barGap: 20,
+      //stackInsideGap: 0,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
+      showPopups: false,
+      labelFontSize: '8pt'
     },
     line: {
       lineWidth: 5,
@@ -214,7 +246,8 @@ export const defaults: Settings = {
         width: 20,
         height: 20,
       },
-      isDrawSymbols: true
+      isDrawSymbols: true,
+      showPopups: false
     },
     scatter: {
       isDrawTrendLine: false,
@@ -331,43 +364,25 @@ export const defaults: Settings = {
       }
     },
     lollipop: {
+      stacking: 'standard',
       barWidth: 10,
       minBarWidth: 6,
       colorByDatapoint: false,
-      isDrawStackLabels: false,
-      isStackLabelInsideBar: true,
+      isDrawTotalLabels: false,
       stackLabelGap: 10,
       isDrawRecordLabels: false,
-      isDrawValueLabels: true,
+      isDrawDataLabels: false,
+      dataLabelPosition: 'end',
       lineWidth: 5,
       clusterBy: undefined,
       clusterGap: 5,
-      stackContent: 'all',
-      stackCount: 1,
       isAbbrevSeries: true,
       orderBy: undefined,
       barGap: 0.25,
+      //stackInsideGap: 4,
       clusterLabelFormat: 'raw',
-    },
-    graph: {
-      lineWidth: 5,
-      lineWidthMax: 25,
-      lowVisionLineWidth: 15,
-      lineHighlightScale: 1.5,
-      baseSymbolSize: 10,
-      seriesLabelPadding: 5,
-      pointLabelFormat: 'raw',
-      leaderLineLength: 30,
-      selectedPointMarkerSize: {
-        width: 20,
-        height: 20,
-      },
-      isDrawSymbols: false,
-      equation: '',
-      preset: '',
-      renderPts: 50,
-      resetAxes: false,
-      visitedSeries: -1
+      showPopups: false,
+      labelFontSize: '8pt'
     }
   },
   grid: {
@@ -378,19 +393,22 @@ export const defaults: Settings = {
   },
   ui: {
     isVoicingEnabled: false,
+  	isNarrativeHighlightEnabled: false,
+	  isNarrativeHighlightPaused: false,
     isAnnouncementEnabled: true,
-    speechRate: 1.25,
+    speechRate: 1,
     isFullscreenEnabled: false,
     isLowVisionModeEnabled: false,
     isFocusRingEnabled: false,
     focusRingGap: 10,
-    navRunTimeoutMs: 125
+    navRunTimeoutMs: 125,
+    animateRevealTimeMs: 500,
   },
   controlPanel: {
     isControlPanelDefaultOpen: true,
     tabLabelStyle: 'label',
     isCaptionVisible: true,
-    isStatusBarVisible: true,
+    isExplorationBarVisible: true,
     caption: {
       isCaptionExternalWhenControlPanelClosed: true,
       hasBorder: false,
@@ -405,7 +423,6 @@ export const defaults: Settings = {
     isControlsTabVisible: true,
     isChartTabVisible: true,
     isAnnotationsTabVisible: true,
-    isGraphingTabVisible: true,
     isAnalysisTabVisible: true,
     isColorPaletteControlVisible: true,
     isCVDControlVisible: true,
@@ -434,10 +451,11 @@ export const defaults: Settings = {
     hertzUpper: HERTZ.length - 12,
     soniPlaySpeed: 3,
     riffSpeed: 'medium',
-	riffSpeedIndex: 2,
+	  riffSpeedIndex: 2,
     isArpeggiateChords: true
   },
   dev: {
-    isDebug: false
+    isDebug: false,
+    isShowGridTerritories: false
   }
 };

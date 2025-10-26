@@ -53,6 +53,8 @@ export type BoxStyle = {
 /** @public */
 export interface UISettings extends SettingGroup {
   isVoicingEnabled: boolean;
+  isNarrativeHighlightEnabled: boolean;
+  isNarrativeHighlightPaused: boolean;
   isAnnouncementEnabled: boolean;
   speechRate: number;
   isFullscreenEnabled: boolean;
@@ -60,6 +62,7 @@ export interface UISettings extends SettingGroup {
   isFocusRingEnabled: boolean;
   focusRingGap: number;
   navRunTimeoutMs: number;
+  animateRevealTimeMs: number;
 }
 
 /** @public */
@@ -74,7 +77,7 @@ export interface ControlPanelSettings extends SettingGroup {
   isControlPanelDefaultOpen: boolean;
   tabLabelStyle: TabLabelStyle;
   isCaptionVisible: boolean;
-  isStatusBarVisible: boolean;
+  isExplorationBarVisible: boolean;
   caption: CaptionBoxSettings;
   isSparkBrailleVisible: boolean;
   isDataTabVisible: boolean;
@@ -83,7 +86,6 @@ export interface ControlPanelSettings extends SettingGroup {
   isControlsTabVisible: boolean;
   isChartTabVisible: boolean;
   isAnnotationsTabVisible: boolean;
-  isGraphingTabVisible: boolean;
   isMDRAnnotationsVisible: boolean;
   isAnalysisTabVisible: boolean;
   isSparkBrailleControlVisible: boolean;
@@ -106,7 +108,7 @@ export interface TitleSettings extends SettingGroup {
   isDrawTitle: boolean;
   text?: string;
   margin: number;
-  fontSize: number;
+  fontSize: string;
   //fontColor: string;
   align?: SnapLocation;
   position?: 'top' | 'bottom';
@@ -151,18 +153,20 @@ export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
 /** @public */
 export interface ChartSettings extends SettingGroup {
   type: ChartType;
-  size: Partial<Size2d>;
+  size: Size2d;
   title: TitleSettings;
   orientation: CardinalDirection;
   padding: string;
   fontFamily: string;
   fontWeight: string;
+  fontScale: number;
   stroke: string;
   strokeWidth: number;
   strokeHighlightScale: number;
   symbolStrokeWidth: number;
   symbolHighlightScale: number;
   hasDirectLabels: boolean;
+  directLabelFontSize: string;
   hasLegendWithDirectLabels: boolean;
   isDrawSymbols: boolean;
   isStatic: boolean;
@@ -172,6 +176,7 @@ export interface ChartSettings extends SettingGroup {
 /** @public */
 export interface DevSettings extends SettingGroup {
   isDebug: boolean;
+  isShowGridTerritories: boolean;
 }
 
 /** @public */
@@ -179,7 +184,8 @@ export type LabelFormat = 'raw' | string;
 
 /** @public */
 export interface TickLabelSettings extends SettingGroup {
-  isDrawEnabled: boolean;
+  isDrawTickLabels: boolean;
+  fontSize: string;
   angle: number;
   offsetGap: number;
   gap: number;
@@ -187,31 +193,27 @@ export interface TickLabelSettings extends SettingGroup {
 
 /** @public */
 export interface TickSettings extends SettingGroup {
-  isDrawEnabled?: boolean;
+  isDrawTicks?: boolean;
   padding: number;
-  fontSize: number;
   opacity: number;
   strokeWidth: number;
   strokeLinecap: string;
   length: number;
   labelFormat: LabelFormat;
-  tickLabel: TickLabelSettings;
+  labels: TickLabelSettings;
   step: number;
 }
 
 /** @public */
 export interface AxisLineSettings extends SettingGroup {
-  isDrawEnabled?: boolean;
-  isDrawOverhangEnabled?: boolean;
+  isDrawAxisLine: boolean;
+  isDrawOverhang: boolean;
   strokeWidth: number;
   strokeLinecap: string;
 }
 
 /** @public */
 export interface AxisSettings extends SettingGroup {
-  title: AxisTitleSettings;
-  line: AxisLineSettings;
-  tick: TickSettings;
   minValue: number | 'unset';
   maxValue: number | 'unset';
   interval: number | 'unset';
@@ -222,15 +224,23 @@ export interface AxisTitleSettings extends SettingGroup {
   isDrawTitle?: boolean;
   text?: string;
   gap: number;
-  fontSize: number;
+  fontSize: string;
   align?: 'start' | 'middle' | 'end';
   position?: 'top' | 'bottom';
 }
 
 /** @public */
 export interface OrientedAxisSettings<T extends AxisOrientation> extends SettingGroup {
-  position: T extends 'horiz' ? VertCardinalDirection : HorizCardinalDirection;
-  labelOrder: T extends 'horiz' ? 'westToEast' | 'eastToWest' : 'southToNorth' | 'northToSouth';
+  isDrawAxis: boolean;
+  position: T extends 'horiz'
+    ? VertCardinalDirection
+    : HorizCardinalDirection;
+  title: AxisTitleSettings;
+  ticks: TickSettings;
+  line: AxisLineSettings;
+  labelOrder: T extends 'horiz'
+    ? 'westToEast' | 'eastToWest'
+    : 'southToNorth' | 'northToSouth';
 }
 
 /** @public */
@@ -265,6 +275,25 @@ export interface LegendSettings extends SettingGroup {
   position: CardinalDirection;
   margin: number;
   itemOrder: LegendItemOrder;
+  fontSize: string;
+}
+
+export interface PlotAreaSettings extends SettingGroup {
+  size: Size2d;
+}
+
+export interface PopupSettings extends SettingGroup {
+  opacity: number;
+  leftPadding: number;
+  rightPadding: number;
+  upPadding: number;
+  downPadding: number;
+  margin: number;
+  maxWidth: number;
+  shape: "box" | "boxWithArrow";
+  activation: "onHover" | "onFocus" | "onSelect";
+  borderRadius: number;
+  backgroundColor: "dark" | "light"
 }
 
 /** @public */
@@ -272,34 +301,36 @@ export interface PlotSettings extends SettingGroup {
 }
 
 export type BarClusterMode = 'facet';
+export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
 
 /** @public */
 export interface BarSettings extends PlotSettings {
+  stacking: 'none' | 'standard'; // | '100%';
   barWidth: number;
-  minBarWidth: number;
+  // minBarWidth: number;
   colorByDatapoint: boolean;
-  isDrawStackLabels: boolean;
-  isStackLabelInsideBar: boolean;
+  isDrawTotalLabels: boolean;
+  //isStackLabelInsideBar: boolean;
   stackLabelGap: number;
   isDrawRecordLabels: boolean;
-  isDrawValueLabels: boolean;
+  /** Per-bar data value labels */
+  isDrawDataLabels: boolean;
+  dataLabelPosition: BarDataLabelPosition;
   clusterBy?: BarClusterMode;
-  stackContent: StackContentOptions;
-  stackCount: number;
   orderBy?: string;
   clusterGap: number;
   barGap: number;
+  //stackInsideGap: number;
   isAbbrevSeries: boolean;
   clusterLabelFormat: LabelFormat;
   lineWidth: number;
+  showPopups: boolean;
+  labelFontSize: string;
 }
 
 /** @public */
 export interface LollipopSettings extends BarSettings {
 }
-
-/** @public */
-export type StackContentOptions = 'all' | 'count';
 
 /** @public */
 export interface PointSettings extends PlotSettings {
@@ -317,6 +348,7 @@ export interface LineSettings extends PointSettings {
   seriesLabelPadding: number; // also used after leader lines
   leaderLineLength: number;
   isAlwaysShowSeriesLabel?: boolean;
+  showPopups: boolean;
 }
 
 /** @public */
@@ -346,15 +378,6 @@ export interface HistogramSettings extends PointSettings {
   groupingAxis: string;
   relativeAxes: "Counts" | "Percentage";
 }
-
-export interface GraphSettings extends LineSettings{
-  equation: string;
-  preset: string;
-  renderPts: number;
-  resetAxes: boolean;
-  visitedSeries: number;
-}
-
 
 // export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
@@ -402,7 +425,6 @@ export interface ChartTypeSettings extends SettingGroup {
   gauge: RadialSettings;
   stepline: StepLineSettings;
   lollipop: LollipopSettings;
-  graph: GraphSettings;
 }
 
 /** @public */
@@ -460,6 +482,8 @@ export interface Settings extends SettingGroup {
   chart: ChartSettings;
   axis: AxesSettings;
   legend: LegendSettings;
+  popup: PopupSettings;
+  plotArea: PlotAreaSettings;
   type: ChartTypeSettings;
   grid: GridSettings;
   ui: UISettings;
@@ -483,10 +507,9 @@ export type DeepReadonly<T> = {
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
 // Settings that control the format for each context
 export const FORMAT_CONTEXT_SETTINGS = {
-  xTick: 'axis.x.tick.labelFormat',
-  yTick: 'axis.y.tick.labelFormat',
+  horizTick: 'axis.horiz.ticks.labelFormat',
+  vertTick: 'axis.vert.ticks.labelFormat',
   linePoint: 'type.line.pointLabelFormat',
-  graphPoint: 'type.graph.pointLabelFormat',
   scatterPoint: 'type.scatter.pointLabelFormat',
   histogramPoint: 'type.histogram.pointLabelFormat',
   heatmapPoint: 'type.histogram.pointLabelFormat',

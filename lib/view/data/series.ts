@@ -8,6 +8,7 @@ import { ref } from 'lit/directives/ref.js';
 import { type StyleInfo } from 'lit/directives/style-map.js';
 import { type ClassInfo } from 'lit/directives/class-map.js';
 import { TemplateResult } from 'lit';
+import { datapointIdToCursor } from '../../store';
 
 /**
  * Abstract base class for a view representing an entire series.
@@ -42,7 +43,8 @@ export class SeriesView extends Container(DataView) {
   get classInfo(): ClassInfo {
     return {
       series: true,
-      lowlight: !!(this.paraview.store.soloSeries && (this.paraview.store.soloSeries !== this._series.key)),
+      lowlight: (this.paraview.store.soloSeries
+        && !this.paraview.store.soloSeries.split('\t').includes(this._series.key)),
       hidden: this.paraview.store.hiddenSeriesList.includes(this._series.key)
     };
   }
@@ -77,35 +79,6 @@ export class SeriesView extends Container(DataView) {
 
   prevSeriesLanding() {
     return this._prev;
-  }
-
-  protected _composeSelectionAnnouncement() {
-    // This method assumes only a single series was visited when the select
-    // command was issued (i.e., we know nothing about chord mode here)
-    const newTotalSelected = this.paraview.store.selectedDatapoints.length;
-    const oldTotalSelected = this.paraview.store.prevSelectedDatapoints.length;
-    const justSelected = this.paraview.store.selectedDatapoints.filter(dc =>
-      !this.paraview.store.wasSelected(dc.seriesKey, dc.index));
-
-    let s = newTotalSelected === 1 ? '' : 's';
-    const newTotSelText = `${newTotalSelected} point${s} selected.`;
-    s = justSelected.length === 1 ? '' : 's';
-    const justSelText = `Selected ${justSelected.length} point${s}.`;
-
-    if (oldTotalSelected === 0) {
-      return justSelText;
-    } else {
-      return `${justSelText} ${newTotSelText}`;
-    }
-  }
-
-  select(isExtend: boolean) {
-    if (isExtend) {
-      this.paraview.store.extendSelection(this.paraview.store.visitedDatapoints);
-    } else {
-      this.paraview.store.select(this.paraview.store.visitedDatapoints);
-    }
-    this.paraview.store.announce(this._composeSelectionAnnouncement());
   }
 
 }

@@ -27,7 +27,8 @@ import { DatapointView } from './data';
 export type DataSymbolShape =
 'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
 
-export type DataSymbolFill = 'outline' | 'solid';
+// empty == no fill at all
+export type DataSymbolFill = 'outline' | 'solid' | 'empty';
 export type DataSymbolType = `${DataSymbolShape}.${DataSymbolFill}` | 'default';
 
 interface ShapeInfo {
@@ -259,8 +260,11 @@ export interface DataSymbolOptions {
   strokeWidth: number;
   scale: number;
   color?: number;
+  opacity?: number;
   dashed: boolean;
   lighten?: boolean;
+  pointerEnter?: (e: PointerEvent) => void;
+  pointerLeave?: (e: PointerEvent) => void;
 }
 
 /**
@@ -270,10 +274,9 @@ export interface DataSymbolOptions {
  */
 export class DataSymbol extends View {
 
-  public readonly type: DataSymbolType;
-
+  protected _type!: DataSymbolType;
   protected _options: DataSymbolOptions;
-  protected _defsKey: string;
+  protected _defsKey!: string;
   protected _role = '';
 
   static fromType(
@@ -300,14 +303,33 @@ export class DataSymbol extends View {
     options?: Partial<DataSymbolOptions>,
   ) {
     super(paraview);
-    this.type = `${shape}.${fill}`;
     this._options = {
       strokeWidth: options?.strokeWidth ?? this.paraview.store.settings.chart.symbolStrokeWidth,
       scale: options?.scale ?? 1,
       color: options?.color,
+      opacity: options?.opacity,
       dashed: options?.dashed ?? false,
-      lighten: options?.lighten ?? false
+      lighten: options?.lighten ?? false,
+      pointerEnter: options?.pointerEnter,
+      pointerLeave: options?.pointerLeave
     };
+    this.type = `${shape}.${fill}`;
+    this._locOffset.x = this.width/2;
+    this._locOffset.y = this.height/2;
+    this._updateStyleInfo();
+    this._classInfo = {
+      symbol: true,
+      [fill]: true
+    };
+  }
+
+  get type(): DataSymbolType {
+    return this._type;
+  }
+
+  set type(type: DataSymbolType) {
+    this._type = type;
+    const [shape, fill] = type.split('.');
     this._defsKey = `sym-${shape}-${fill}`;
     if (!this.paraview.defs[this._defsKey]) {
       this.paraview.addDef(this._defsKey, svg`
@@ -317,13 +339,7 @@ export class DataSymbol extends View {
         />
       `);
     }
-    this._locOffset.x = this.width/2;
-    this._locOffset.y = this.height/2;
     this._updateStyleInfo();
-    this._classInfo = {
-      symbol: true,
-      [fill]: true
-    };
   }
 
   get width() {
@@ -344,11 +360,20 @@ export class DataSymbol extends View {
   }
 
   get shape() {
-    return this.type.split('.')[0] as DataSymbolShape;
+    return this._type.split('.')[0] as DataSymbolShape;
+  }
+
+  set shape(shape: DataSymbolShape) {
+    this.type = (shape + '.' + this._type.split('.')[1]) as DataSymbolType;
   }
 
   get fill() {
-    return this.type.split('.')[1] as DataSymbolFill;
+    return this._type.split('.')[1] as DataSymbolFill;
+  }
+
+  set fill(fill: DataSymbolFill) {
+    this.type = (this._type.split('.')[0] + '.' + fill) as DataSymbolType;
+    this._updateStyleInfo();
   }
 
   get color() {
@@ -357,6 +382,15 @@ export class DataSymbol extends View {
 
   set color(color: number | undefined) {
     this._options.color = color;
+    this._updateStyleInfo();
+  }
+
+  get opacity() {
+    return this._options.opacity;
+  }
+
+  set opacity(opacity: number | undefined) {
+    this._options.opacity = opacity;
     this._updateStyleInfo();
   }
 
@@ -374,6 +408,13 @@ export class DataSymbol extends View {
 
   set role(role: string) {
     this._role = role;
+  }
+
+  clone(): DataSymbol {
+    const sym = DataSymbol.fromType(this.paraview, this._type, this._options);
+    sym.x = this._x;
+    sym.y = this._y;
+    return sym;
   }
 
   protected _updateStyleInfo() {
@@ -398,8 +439,13 @@ export class DataSymbol extends View {
             this._options.color);
         }
       }
-      else {
+      else if (this.fill === 'outline') {
         this._styleInfo.fill = 'white';
+      } else {
+        this._styleInfo.fill = 'none';
+      }
+      if (this._options.opacity !== undefined) {
+        this._styleInfo.opacity = this._options.opacity;
       }
       this._styleInfo.stroke = this.paraview.store.colors.colorValueAt(
         this._options.color);
@@ -425,6 +471,8 @@ export class DataSymbol extends View {
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         transform=${transform}
+        @pointerenter=${this._options.pointerEnter ?? nothing}
+        @pointerleave=${this._options.pointerLeave ?? nothing}
       />
     `;
   }

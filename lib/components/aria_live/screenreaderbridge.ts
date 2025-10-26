@@ -41,7 +41,7 @@ export class ScreenReaderBridge {
   private readonly _element: HTMLElement;
   private readonly _maxNumPaddingCharacters = 3;
   private _numPaddingCharacters = 0;
-  private _lastCreatedElement: HTMLElement | null;
+  protected _lastCreatedElement: HTMLElement | null;
 
   /**
    * Add the required aria attributes to an element for screen readers to properly work.

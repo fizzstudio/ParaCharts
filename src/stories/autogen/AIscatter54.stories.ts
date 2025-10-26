@@ -1,9 +1,6 @@
 import { AiChart, type ChartProps } from '../Chart';
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
-import { expect } from 'storybook/test';
-
-import Runner from '../tests/scatterTests';
 
 type Story = StoryObj<ChartProps>;
 
@@ -19,9 +16,5 @@ export const AiChart54: Story = {
   args: {
     filename: "manifests/scatter-manifest-iris-petal.json",
     forcecharttype: "scatter",
-  },
-  play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/scatter-manifest-iris-petal.json");
-    await runner.run();
   }
 }

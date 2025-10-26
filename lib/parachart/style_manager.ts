@@ -51,9 +51,11 @@ export class StyleManager {
         cssRule.cssText.match(regex));
     }).filter(idx => idx !== -1).toArray();
     matchIndices.sort().reverse().forEach(idx => {
+      console.log('DEL', idx);
       this._stylesheet.deleteRule(idx);
     });
     this._rules.values().forEach(rule => {
+      console.log('INS', rule);
       this._stylesheet.insertRule(rule.toString());
     });
   }

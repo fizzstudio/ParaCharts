@@ -50,6 +50,9 @@ export class PointerEventManager {
     this._dataRect = null;
   }
 
+  get coords() {
+    return this._coords
+  }
   /**
    * Records pointer event info.
    * @param event - The event on the element.
@@ -81,14 +84,6 @@ export class PointerEventManager {
    * @param event - The event on the element.
    */
   handleEnd(event: PointerEvent) {
-    if (this._paraView.store.type === 'graph'){
-      let start = this._touchArray[0]
-      const startRelativeX = start.offsetX - this._paraView.documentView!.padding.left - this._paraView.documentView!.chartLayers.x
-      const startRelativeY = start.offsetY - this._paraView.documentView!.padding.top - this._paraView.documentView!.chartLayers.y
-      const endRelativeX = event.offsetX - this._paraView.documentView!.padding.left - this._paraView.documentView!.chartLayers.x
-      const endRelativeY = event.offsetY - this._paraView.documentView!.padding.top - this._paraView.documentView!.chartLayers.y
-      this._paraView.documentView!.chartLayers.dataLayer.handlePan(startRelativeX, startRelativeY, endRelativeX, endRelativeY)
-    }
     // Note: `handleEnd` is not currently used, but will be when we add marquee dragging
     this.handleCancel(event);
   }
@@ -184,11 +179,6 @@ export class PointerEventManager {
    */
   handleDoubleClick(event: PointerEvent | MouseEvent) {
     const target = event.target as SVGGraphicsElement;
-    if (this._paraView.store.type === 'graph') {
-      const endRelativeX = event.offsetX - this._paraView.documentView!.padding.left - this._paraView.documentView!.chartLayers.x
-      const endRelativeY = event.offsetY - this._paraView.documentView!.padding.top - this._paraView.documentView!.chartLayers.y
-      this._paraView.documentView!.chartLayers.dataLayer.handleZoom(endRelativeX, endRelativeY)
-    }
     event.preventDefault();
     if (target === this._paraView.root || target === this._dataRoot) {
       // this._selectElement(target);
@@ -216,15 +206,17 @@ export class PointerEventManager {
         // const index = +datapointEl.dataset.index!;
         const id = (datapointEl.id.endsWith('-sym')
           || datapointEl.id.endsWith('-rlb')
-          || datapointEl.id.endsWith('-vlb'))
+          || datapointEl.id.endsWith('-blb')   // bar label
+          || datapointEl.id.endsWith('-ilb'))  // slice inside label
           ? datapointEl.id.slice(0, -4)
           : datapointEl.id;
         const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointViewForId(id)!;
-        this._paraView.documentView!.chartLayers.dataLayer.navMap!.goTo('datapoint', {
+        const chartInfo = this._paraView.documentView!.chartInfo;
+        chartInfo.navMap!.goTo(chartInfo.navDatapointType, {
           seriesKey: datapointView.seriesKey,
           index: datapointView.index
         });
-        this._paraView.documentView!.chartLayers.dataLayer.selectCurrent(!!isAdd);
+        this._paraView.documentView!.chartInfo.selectCurrent(!!isAdd);
 
         // TODO: remove all element selection code, since it's extraneous to chart datapoint selection
         this._selectedElement = target;

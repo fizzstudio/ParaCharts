@@ -58,7 +58,7 @@ export class SectorShape extends Shape {
   protected _arcLarge!: number;
   protected _arcSweep = 1;
 
-  constructor(paraview: ParaView, options: SectorOptions) {
+  constructor(paraview: ParaView, private options: SectorOptions) {
     super(paraview, options);
     this._r = options.r;
     this._centralAngle = options.centralAngle;
@@ -312,7 +312,7 @@ export class SectorShape extends Shape {
       this._styleInfo.fill = `url(#Pattern${index})`
       //I can't figure out why the visited styles don't auto-apply, so I'm doing it manually here
       if (this.paraview.store.isVisited(parent.seriesKey, index)) {
-        this._styleInfo.stroke = this.paraview.store.colors.colorValue('highlight');
+        this._styleInfo.stroke = this.paraview.store.colors.colorValue('visit');
         this._styleInfo.strokeWidth = 6
       }
       return svg`
@@ -342,6 +342,8 @@ export class SectorShape extends Shape {
                     translate(${-this._x},${-this._y})`
               : nothing}
             clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
+            @pointerenter=${this.options.pointerEnter ?? nothing}
+            @pointerleave=${this.options.pointerLeave ?? nothing}
           ></path>
         `;
     }
@@ -360,6 +362,8 @@ export class SectorShape extends Shape {
              translate(${-this._x},${-this._y})`
           : nothing}
         clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
+        @pointerenter=${this.options.pointerEnter ?? nothing}
+        @pointerleave=${this.options.pointerLeave ?? nothing}
       ></path>
     `;
     }

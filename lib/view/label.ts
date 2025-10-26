@@ -25,6 +25,7 @@ import { generateUniqueId, fixed } from '../common/utils';
 import { ParaView } from '../paraview';
 import { SVGNS } from '../common/constants';
 import { Vec2 } from '../common/vector';
+import { Setting } from '../store';
 
 export type LabelTextAnchor = 'start' | 'middle' | 'end';
 
@@ -51,6 +52,7 @@ export interface LabelOptions {
   justify?: SnapLocation;
   wrapWidth?: number;
   lineSpacing?: number;
+  hasBackground?: boolean;
   pointerEnter?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
   click?: (e: MouseEvent) => void;
@@ -77,6 +79,8 @@ export class Label extends View {
 
   constructor(paraview: ParaView, private options: LabelOptions) {
     super(paraview);
+    this._canWidthFlex = true;
+    this._canHeightFlex = true;
     if (options.classList) {
       if (!options.classList.includes('label')) {
         options.classList.push('label');
@@ -174,9 +178,9 @@ export class Label extends View {
     this.updateSize();
   }
 
-  get bbox() {
-    return this._elRef.value!.getBBox();
-  }
+  // get bbox() {
+  //   return this._elRef.value!.getBBox();
+  // }
 
   get topLeft() {
     return this._loc.add(this._textCornerOffsets.topLeft);
@@ -217,6 +221,10 @@ export class Label extends View {
       bottomRight: this.bottomRight,
       bottomLeft: this.bottomLeft
     };
+  }
+
+  resize(width: number, height: number): void {
+    // pretend to resize for grid layout
   }
 
   computeSize() {
@@ -269,7 +277,12 @@ export class Label extends View {
         const tok = tokens.shift()!;
         if (tok.includes('\n')) {
           tspans.push(document.createElementNS(SVGNS, 'tspan'));
-          text.append(tspans.at(-1)!);
+          const tspan = tspans.at(-1)!;
+          text.append(tspan!);
+          tspan!.textContent = tok;
+          tspan!.setAttribute('x', '0');
+          const rect = tspans.at(-2)!.getBoundingClientRect();
+          tspan!.setAttribute('dy', `${rect.height + this._lineSpacing}px`);
           continue;
         }
         if (!tok.match(/\w/)) {
@@ -280,7 +293,9 @@ export class Label extends View {
         const oldContent = tspan.textContent;
         if (wrapMode) {
           tspan.textContent += ' ' + tok;
-          const rect = tspan.getBoundingClientRect();
+          const rect = this.paraview.store.settings.ui.isFullscreenEnabled
+            ? tspan.getBBox()
+            : tspan.getBoundingClientRect();
           if (rect.width >= this.options.wrapWidth!) {
             tspan.textContent = oldContent;
             tspans.push(document.createElementNS(SVGNS, 'tspan'));
@@ -300,7 +315,9 @@ export class Label extends View {
         }
       }
 
-      const clientRect = text.getBoundingClientRect();
+      const clientRect = this.paraview.store.settings.ui.isFullscreenEnabled
+        ? text.getBBox()
+        : text.getBoundingClientRect();
       width = clientRect.width;
       height = clientRect.height;
 
@@ -369,17 +386,38 @@ export class Label extends View {
     return t;
   }
 
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+    this.updateSize();
+    super.settingDidChange(path, oldValue, newValue);
+  }
+
   render() {
     // TODO: figure out why `this._y` is larger here than for single line titles
     // HACK: divide `this._y` by 2 for `y` attribute value
     return svg`
+      ${this.options.hasBackground
+        ? svg`
+          <path
+            class="label-bg"
+            d="
+              M${this.topLeft.x},${this.topLeft.y}
+              L${this.topRight.x},${this.topRight.y}
+              L${this.bottomRight.x},${this.bottomRight.y}
+              L${this.bottomLeft.x},${this.bottomLeft.y}
+              Z"
+            width=${this._width}
+            height=${this._height}
+          ></path>
+        `
+        : ''
+      }
       <text
         ${ref(this._elRef)}
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         role=${this.options.role ?? nothing}
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}
-        text-anchor=${this._textAnchor}
+        text-anchor=${this._textAnchor !== 'start' ? this._textAnchor : nothing}
         transform=${this._makeTransform() ?? nothing}
         id=${this.id}
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
