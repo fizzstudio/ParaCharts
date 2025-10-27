@@ -21,6 +21,7 @@ export class ParaViewController extends Logger {
       event.altKey ? 'Alt' : '',
       event.ctrlKey ? 'Ctrl' : '',
       event.shiftKey ? 'Shift' : '',
+      event.metaKey ? 'Meta' : '',
     ].filter(mod => mod);
     if (mods.includes(key)) {
       key = '';
