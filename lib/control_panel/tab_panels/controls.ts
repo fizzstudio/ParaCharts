@@ -31,18 +31,6 @@ export class ControlsPanel extends ControlPanelTabPanel {
       label: 'Fullscreen',
       parentView: 'controlPanel.tabs.controls.fullscreen',
     });
-    // this._store.settingControls.add({
-    //   type: 'slider',
-    //   key: 'chart.fontScale',
-    //   label: 'Font scale',
-    //   options: {
-    //     min: 0.5,
-    //     max: 3,
-    //     step: 0.1,
-    //     showValue: true
-    //   },
-    //   parentView: 'controlPanel.tabs.controls',
-    // });
     this._store.settingControls.add({
       type: 'checkbox',
       key: 'animation.isAnimationEnabled',

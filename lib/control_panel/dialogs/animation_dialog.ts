@@ -23,7 +23,7 @@ export class AnimationDialog extends logging(ParaComponent) {
   @property() btnText = 'Okay';
 
   static styles = css`
-    #controls {
+    #animation-controls {
       display: flex;
       flex-direction: column;
       gap: 1rem;
@@ -32,68 +32,97 @@ export class AnimationDialog extends logging(ParaComponent) {
 
   connectedCallback() {
     super.connectedCallback();
+
+  // isAnimationEnabled: boolean;
+  // animateRevealTimeMs: number;
+  // animationType: AnimationType;
+  // animationOrigin: AnimationOrigin;
+  // animationOriginValue: number;
+
+    // this._store.settingControls.add({
+    //   type: 'checkbox',
+    //   key: 'animation.isAnimationEnabled',
+    //   label: 'Animation enabled',
+    //   parentView: 'controlPanel.tabs.controls.dialog.animation',
+    // });
+
+    this._store.settingControls.add({
+      type: 'textfield',
+      key: 'animation.animateRevealTimeMs',
+      label: 'Animation rate',
+      options: {
+        inputType: 'number',
+        min: 0,
+        max: 10000
+      },
+      parentView: 'controlPanel.tabs.controls.dialog.animation',
+    });
+ 
     this._store.settingControls.add({
       type: 'radio',
-      key: 'controlPanel.tabLabelStyle',
-      label: 'Tab label style',
+      key: 'animation.animationType',
+      label: 'Animation type',
       options: {
         buttons: {
-          icon: {
-            label: 'Icon only'
+          uniform: {
+            label: 'Uniform'
           },
-          iconLabel: {
-            label: 'Icon and label'
+          progressive: {
+            label: 'Progressive'
           },
-          label: {
-            label: 'Label only'
-          }
         },
         layout: 'horiz'
       },
-      parentView: 'controlPanel.tabs.controls.dialog.tabLabels'
+      parentView: 'controlPanel.tabs.controls.dialog.animation'
     });
+   
     this._store.settingControls.add({
-      type: 'checkbox',
-      key: 'controlPanel.isCaptionVisible',
-      label: 'Caption visible',
-      parentView: 'controlPanel.tabs.controls.dialog.settings',
+      type: 'radio',
+      key: 'animation.animationOrigin',
+      label: 'Animation origin',
+      options: {
+        buttons: {
+          baseline: {
+            label: 'Bottom'
+          },
+          top: {
+            label: 'Top'
+          },
+          initialValue: {
+            label: 'Initial Value'
+          },
+          custom: {
+            label: 'Custom'
+          },
+        },
+        layout: 'horiz'
+      },
+      parentView: 'controlPanel.tabs.controls.dialog.animation'
     });
+
     this._store.settingControls.add({
-      type: 'checkbox',
-      key: 'controlPanel.isExplorationBarVisible',
-      label: 'Exploration bar visible',
-      parentView: 'controlPanel.tabs.controls.dialog.settings',
+      type: 'textfield',
+      key: 'animation.animationOriginValue',
+      label: 'Animation origin value',
+      options: {
+        inputType: 'number',
+        min: 0,
+        max: 10000
+      },
+      parentView: 'controlPanel.tabs.controls.dialog.animation',
     });
-    this._store.settingControls.add({
-      type: 'checkbox',
-      key: 'controlPanel.caption.isCaptionExternalWhenControlPanelClosed',
-      label: 'Caption external when control panel closed',
-      parentView: 'controlPanel.tabs.controls.dialog.settings',
-    });
-    this._store.settingControls.add({
-      type: 'checkbox',
-      key: 'controlPanel.caption.isExplorationBarBeside',
-      label: 'Exploration bar is beside caption',
-      parentView: 'controlPanel.tabs.controls.dialog.settings',
-    });
+
   }
 
   render() {
     return html`
       <fizz-dialog
         ${ref(this._dialogRef)}
-        title="Advanced Settings"
+        title="Animation Settings"
         .buttons=${[{tag: 'cancel', text: this.btnText}]}
       >
-        <div id="controls">
-          <div id="advanced"
-            class="advanced-views"
-          >
-            ${this._store.settingControls.getContent('controlPanel.tabs.controls.dialog.settings')}
-          </div>
-          <div>
-            ${this._store.settingControls.getContent('controlPanel.tabs.controls.dialog.tabLabels')}
-          </div>
+        <div id="animation-controls">
+          ${this._store.settingControls.getContent('controlPanel.tabs.controls.dialog.animation')}
         </div>
       </fizz-dialog>
     `;
