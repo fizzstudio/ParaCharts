@@ -223,6 +223,7 @@ export class View extends BaseView {
   protected _styleInfo: StyleInfo = {};
   protected _classInfo: ClassInfo = {};
   protected _isObserveStore = false;
+  protected _isObserveNotices = false;
 
   constructor(public readonly paraview: ParaView) {
     super();
@@ -894,6 +895,28 @@ export class View extends BaseView {
     this._children.forEach(kid => {
       if (kid.isObserveStore) {
         kid.storeDidChange(key, value);
+      }
+    });
+  }
+
+  get isObserveNotices() {
+    return this._isObserveNotices;
+  }
+
+  observeNotices() {
+    this._isObserveNotices = true;
+    if (this._parent) {
+      this._parent.observeNotices();
+    }
+  }
+
+  noticePosted(key: string, value: any) {
+    if (!this._isObserveNotices) {
+      return;
+    }
+    this._children.forEach(kid => {
+      if (kid.isObserveNotices) {
+        kid.noticePosted(key, value);
       }
     });
   }

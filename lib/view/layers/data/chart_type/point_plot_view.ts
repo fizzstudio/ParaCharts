@@ -179,8 +179,14 @@ export class PointDatapointView extends PlaneDatapointView {
   }
 
   computeLocation() {
+    this._animEndState.y = this._computeY();
     this._x = this._computeX();
-    this._y = this._computeY();
+    this._y = this.chart.height;
+  }
+
+  animStep(t: number): void {
+    this._y = this.chart.height*(1 - t) + this._animEndState.y*t;
+    super.animStep(t);
   }
 
 }

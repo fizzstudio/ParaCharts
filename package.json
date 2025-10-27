@@ -1,6 +1,6 @@
 {
   "name": "@fizz/paracharts",
-  "version": "0.36.0",
+  "version": "0.37.0",
   "description": "Not quite Parable Charts",
   "contributors": [
     "Josh Fennell",
@@ -43,7 +43,7 @@
     "pubpatch": "npm version patch && npm publish",
     "pubminor": "npm version minor && npm publish",
     "pubmajor": "npm version major && npm publish",
-        "docs:generate": "node ./docs/scripts/buildDocs.ts",
+    "docs:generate": "node ./docs/scripts/buildDocs.ts",
     "docs:dev": "npm run docs:generate && vitepress dev docs",
     "docs:build": "npm run docs:generate && vitepress build docs",
     "docs:serve": "vitepress preview docs"

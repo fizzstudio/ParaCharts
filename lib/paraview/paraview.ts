@@ -25,7 +25,7 @@ import { View } from '../view/base_view';
 import { DocumentView } from '../view/document_view';
 //import { styles } from './styles';
 import { SVGNS } from '../common/constants';
-import { fixed } from '../common/utils';
+import { fixed, isPointerInbounds } from '../common/utils';
 import { HotkeyActions, NarrativeHighlightHotkeyActions, NormalHotkeyActions } from './hotkey_actions';
 
 import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
@@ -135,6 +135,9 @@ export class ParaView extends logging(ParaComponent) {
         fill: var(--label-color);
         stroke: none;
       }
+      .label-bg {
+        fill: lightgray;
+      }
       .tick-label-horiz {
         font-size: calc(var(--horiz-axis-tick-label-font-size)*var(--chart-font-scale));
       }
@@ -154,6 +157,7 @@ export class ParaView extends logging(ParaComponent) {
       }
       .column-total-label {
         font-size: calc(var(--column-label-font-size)*var(--chart-font-scale));
+                background-color: red;
       }
       .pastry-inside-label {
       }
@@ -196,6 +200,9 @@ export class ParaView extends logging(ParaComponent) {
       }
       use.visited-mark {
        pointer-events: none;
+      }
+      .bar {
+        stroke-width: 0;
       }
       .data-line {
         fill: none;
@@ -353,7 +360,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    this.log('will update');
+    //this.log('will update');
     for (const [k, v] of changedProperties.entries()) {
       // @ts-ignore
       this.log(`- ${k.toString()}:`, v, '->', this[k]);
@@ -771,6 +778,7 @@ export class ParaView extends logging(ParaComponent) {
         @pointerup=${(ev: PointerEvent) => this._pointerEventManager?.handleEnd(ev)}
         @pointercancel=${(ev: PointerEvent) => this._pointerEventManager?.handleCancel(ev)}
         @pointermove=${(ev: PointerEvent) => this._pointerEventManager?.handleMove(ev)}
+        @pointerleave=${(ev: PointerEvent) => !isPointerInbounds(this, ev) ? this.requestUpdate() : undefined}
         @click=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleClick(ev)}
         @dblclick=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleDoubleClick(ev)}
       >

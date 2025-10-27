@@ -194,9 +194,9 @@ export const styles = css`
     font-size: 2rem;
     text-anchor: middle;
   }
-  g.datapoint {
+  /*g.datapoint {
     transform-origin: var(--datapoint-centroid);
-  }
+  }*/
   g.datapoint g.datapoint_popup rect {
     fill: hsl(0, 0%, 25%);
   }
