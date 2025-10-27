@@ -168,24 +168,33 @@ export class PointDatapointView extends PlaneDatapointView {
     return this._y - this.height/2;
   }
 
-  protected _computeX() {
+  computeX() {
     return this.width * this.index;
   }
 
-  protected _computeY() {
+  computeY() {
     const yLabelInfo = this.chart.parent.docView.chartInfo.axisInfo!.yLabelInfo;
     const pxPerYUnit = this.chart.height / yLabelInfo.range!;
     return this.chart.height - (this.datapoint.facetValueNumericized('y')! - yLabelInfo.min!) * pxPerYUnit;
   }
 
   computeLocation() {
-    this._animEndState.y = this._computeY();
-    this._x = this._computeX();
-    this._y = this.chart.height;
+    if (this.paraview.store.settings.animation.animationOrigin === 'initialValue') {
+      this._animStartState.y = (this._parent.children[0] as PointDatapointView).computeY();
+    } else if (this.paraview.store.settings.animation.animationOrigin === 'baseline') {
+      this._animStartState.y = this.chart.height;
+    } else if (this.paraview.store.settings.animation.animationOrigin === 'top') {
+      this._animStartState.y = 0;
+    } else {
+      this._animStartState.y = this.paraview.store.settings.animation.animationOriginValue;;
+    }
+    this._animEndState.y = this.computeY();
+    this._x = this.computeX();
+    this._y = this._animStartState.y;;
   }
 
   animStep(t: number): void {
-    this._y = this.chart.height*(1 - t) + this._animEndState.y*t;
+    this._y = this._animStartState.y*(1 - t) + this._animEndState.y*t;
     super.animStep(t);
   }
 

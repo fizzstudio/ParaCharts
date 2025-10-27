@@ -116,7 +116,7 @@ class ScatterPointView extends PointDatapointView {
   clusterID?: number;
   isOutlier: boolean = false;
 
-  protected _computeX() {
+  computeX() {
     const axisInfo = this.chart.chartInfo.axisInfo!;
     // Scales points in proportion to the data range
     const xTemp = (this.datapoint.facetValueNumericized('x')! - axisInfo.xLabelInfo.min!)

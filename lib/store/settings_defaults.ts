@@ -407,7 +407,7 @@ export const defaults: Settings = {
     isAnimationEnabled: true,
     animateRevealTimeMs: 2500,
     animationType: 'uniform',
-    animationOrigin: 'baseline',
+    animationOrigin: 'initialValue',
     animationOriginValue: 0,
   },
   controlPanel: {
