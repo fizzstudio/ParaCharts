@@ -71,7 +71,7 @@ export abstract class BaseChartInfo extends Logger {
         min: 1,
         max: 1000
       },
-      parentView: 'controlPanel.tabs.chart.general',
+      parentView: 'controlPanel.tabs.chart.general.dimensions',
     });
     this._store.settingControls.add({
       type: 'textfield',
@@ -82,7 +82,7 @@ export abstract class BaseChartInfo extends Logger {
         min: 1,
         max: 1000
       },
-      parentView: 'controlPanel.tabs.chart.general',
+      parentView: 'controlPanel.tabs.chart.general.dimensions',
     });
   }
 

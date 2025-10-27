@@ -402,7 +402,13 @@ export const defaults: Settings = {
     isFocusRingEnabled: false,
     focusRingGap: 10,
     navRunTimeoutMs: 125,
-    animateRevealTimeMs: 500,
+  },
+  animation: {
+    isAnimationEnabled: true,
+    animateRevealTimeMs: 2500,
+    animationType: 'uniform',
+    animationOrigin: 'baseline',
+    animationOriginValue: 0,
   },
   controlPanel: {
     isControlPanelDefaultOpen: true,

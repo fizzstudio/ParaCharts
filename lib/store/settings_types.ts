@@ -42,6 +42,10 @@ export type SettingsInput = {[path: string]: Setting};
 export type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
 /** @public */
 export type TabLabelStyle = 'icon' | 'iconLabel' | 'label';
+/** @public */
+export type AnimationType = 'uniform' | 'progressive' | 'none';
+/** @public */
+export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
 
 /** @public */
 export type BoxStyle = {
@@ -62,7 +66,15 @@ export interface UISettings extends SettingGroup {
   isFocusRingEnabled: boolean;
   focusRingGap: number;
   navRunTimeoutMs: number;
+}
+
+/** @public */
+export interface AnimationSettings extends SettingGroup {
+  isAnimationEnabled: boolean;
   animateRevealTimeMs: number;
+  animationType: AnimationType;
+  animationOrigin: AnimationOrigin;
+  animationOriginValue: number;
 }
 
 /** @public */
@@ -487,6 +499,7 @@ export interface Settings extends SettingGroup {
   type: ChartTypeSettings;
   grid: GridSettings;
   ui: UISettings;
+  animation: AnimationSettings;
   controlPanel: ControlPanelSettings;
   color: ColorSettings;
   jim: JimSettings;
