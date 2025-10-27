@@ -41,11 +41,11 @@ export class ScatterChartInfo extends PointChartInfo {
       label: 'Show outliers',
       parentView: 'controlPanel.tabs.chart.chart',
     });
-        this._store.settingControls.add({
+    this._store.settingControls.add({
       type: 'checkbox',
       key: 'chart.showPopups',
       label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.chart',
+      parentView: 'controlPanel.tabs.chart.popups',
     });
   }
 

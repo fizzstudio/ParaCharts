@@ -60,7 +60,7 @@ export class LineChartInfo extends PointChartInfo {
       type: 'checkbox',
       key: 'chart.showPopups',
       label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.chart',
+      parentView: 'controlPanel.tabs.chart.popups',
     });
   }
 

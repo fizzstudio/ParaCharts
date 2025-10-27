@@ -144,6 +144,11 @@ export abstract class DataLayer extends PlotLayer {
 
   init() {
     this._layoutDatapoints();
+    // if (!this.paraview.store.settings.animation.isAnimationEnabled) {
+    //   this.paraview.store.updateSettings(draft => {
+    //     draft.animation.animateRevealTimeMs = 0;
+    //   });
+    // }
     this._animateReveal();
   }
 
@@ -223,7 +228,7 @@ export abstract class DataLayer extends PlotLayer {
       const elapsed = timestamp - start;
       // We can't really disable the animation, but setting the reveal time to 0
       // will result in an imperceptibly short animation duration
-      const revealTime = Math.max(1, this.paraview.store.settings.ui.animateRevealTimeMs);
+      const revealTime = Math.max(1, this.paraview.store.settings.animation.animateRevealTimeMs);
       const t = Math.min(elapsed/revealTime, 1);
       const bezT = bez.eval(t)!;
       this._animStep(bezT);
