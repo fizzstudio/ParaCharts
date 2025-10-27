@@ -33,6 +33,7 @@ import { styles } from '../view/styles';
 import { type AriaLive } from '../components';
 import '../components/aria_live';
 import { StyleManager } from './style_manager';
+import { AvailableCommands, Commander } from './commander';
 
 import { Manifest } from '@fizz/paramanifest';
 
@@ -69,8 +70,11 @@ export class ParaChart extends logging(ParaComponent) {
   protected _suppleteSettingsWith?: DeepReadonly<Settings>;
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
+  protected _loaderResolver: (() => void) | null = null;
+  protected _loaderRejector: (() => void) | null = null;
   protected _api: ParaApi;
   protected _styleManager!: StyleManager;
+  protected _commander!: Commander;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -96,6 +100,10 @@ export class ParaChart extends logging(ParaComponent) {
     customPropLoader.registerSymbols();
     this._api = new ParaApi(this);
 
+    this._loaderPromise = new Promise((resolve, reject) => {
+      this._loaderResolver = resolve;
+      this._loaderRejector = reject;
+    })
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
         resolve();
@@ -105,7 +113,7 @@ export class ParaChart extends logging(ParaComponent) {
           if (this.data) {
             await this._loader.preloadData(this.data);
           }
-          this._loaderPromise = this._runLoader(this.manifest, this.manifestType).then(() => {
+          this._runLoader(this.manifest, this.manifestType).then(() => {
             this.log('ParaCharts will now commence the raising of the roof and/or the dead');
           });
         } else if (this.getElementsByTagName("table")[0]) {
@@ -236,6 +244,7 @@ export class ParaChart extends logging(ParaComponent) {
   }
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
+    this._commander = Commander.getInst(this._paraViewRef.value!);
   }
 
   willUpdate(changedProperties: PropertyValues<this>) {
@@ -280,9 +289,11 @@ export class ParaChart extends logging(ParaComponent) {
       this._manifest = loadresult.manifest;
       this._store.setManifest(loadresult.manifest, loadresult.data);
       this._store.dataState = 'complete';
+      this._loaderResolver!();
     } else {
       console.error(loadresult.error);
       this._store.dataState = 'error';
+      this._loaderRejector!();
     }
   }
 
@@ -314,6 +325,15 @@ export class ParaChart extends logging(ParaComponent) {
 
   downloadPNG() {
     this._api.downloadPNG();
+  }
+
+  command(name: keyof AvailableCommands, args: any[]): any {
+    const handler = this._commander.commands[name];
+    if (handler) {
+      return handler(...args);
+    } else {
+      console.warn(`no handler for command '${name}'`);
+    }
   }
 
   render(): TemplateResult {

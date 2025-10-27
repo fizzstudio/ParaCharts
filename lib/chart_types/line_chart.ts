@@ -25,6 +25,7 @@ import { interpolate } from '@fizz/templum';
 import { NavNode } from '../view/layers/data/navigation';
 import { formatXYDatapoint } from '@fizz/parasummary';
 import { type ChartType } from '@fizz/paramanifest';
+import { DocumentView } from '../view/document_view';
 
 /**
  * Business logic for line charts.
@@ -32,8 +33,8 @@ import { type ChartType } from '@fizz/paramanifest';
  */
 export class LineChartInfo extends PointChartInfo {
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, store: ParaStore, docView: DocumentView) {
+    super(type, store, docView);
   }
 
   protected _addSettingControls(): void {

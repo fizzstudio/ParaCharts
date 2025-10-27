@@ -2,14 +2,15 @@ import { PlaneChartInfo } from '.';
 import { type ParaStore, type DeepReadonly } from '../store';
 import { type ChartType } from "@fizz/paramanifest";
 import { AxisInfo, computeLabels } from '../common';
+import { DocumentView } from '../view/document_view';
 
 export class HistogramChartInfo extends PlaneChartInfo {
   protected _bins: number = 20;
   protected _data: Array<Array<number>> = [];
   protected _grid: Array<number> = [];
   protected _maxCount: number = 0;
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, store: ParaStore, docView: DocumentView) {
+    super(type, store, docView);
   }
 
   protected _init() {

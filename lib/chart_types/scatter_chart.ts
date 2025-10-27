@@ -6,6 +6,7 @@ import { AxisInfo } from '../common/axisinfo';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, ScatterPointNavNodeOptions } from '../view/layers/data/navigation';
 import { Datapoint } from '@fizz/paramodel';
 import { mapn } from '@fizz/chart-classifier-utils';
+import { DocumentView } from '../view/document_view';
 
 
 export class ScatterChartInfo extends PointChartInfo {
@@ -13,8 +14,8 @@ export class ScatterChartInfo extends PointChartInfo {
   protected _clustering?: clusterObject[];
   protected _currentCluster = -1;
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, store: ParaStore, docView: DocumentView) {
+    super(type, store, docView);
   }
 
   protected _init(): void {

@@ -20,6 +20,7 @@ import { type ParaStore } from '../store';
 
 import { type ChartType } from '@fizz/paramanifest';
 import { Series } from '@fizz/paramodel';
+import { DocumentView } from '../view/document_view';
 
 
 /**
@@ -28,8 +29,8 @@ import { Series } from '@fizz/paramodel';
  */
 export abstract class PointChartInfo extends PlaneChartInfo {
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, store: ParaStore, docView: DocumentView) {
+    super(type, store, docView);
   }
 
   protected _init(): void {
