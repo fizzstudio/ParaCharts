@@ -27,6 +27,7 @@ export class DatapointView extends DataView {
 
   protected _shapes: Shape[] = [];
   protected _symbol: DataSymbol | null = null;
+  protected _animStartState: AnimState = {};
   protected _animEndState: AnimState = {};
 
   constructor(seriesView: SeriesView) {

@@ -88,6 +88,42 @@ export class AnalysisPanel extends ControlPanelTabPanel {
     static styles: CSSResult[];
 }
 
+// Warning: (ae-forgotten-export) The symbol "AnimationDialog_base" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export class AnimationDialog extends AnimationDialog_base {
+    btnText: string;
+    // (undocumented)
+    connectedCallback(): void;
+    // (undocumented)
+    protected _dialogRef: Ref_2<Dialog>;
+    // (undocumented)
+    render(): TemplateResult_2<1>;
+    show(): Promise<void>;
+    // (undocumented)
+    static styles: CSSResult;
+}
+
+// @public (undocumented)
+export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
+
+// @public (undocumented)
+export interface AnimationSettings extends SettingGroup {
+    // (undocumented)
+    animateRevealTimeMs: number;
+    // (undocumented)
+    animationOrigin: AnimationOrigin;
+    // (undocumented)
+    animationOriginValue: number;
+    // (undocumented)
+    animationType: AnimationType;
+    // (undocumented)
+    isAnimationEnabled: boolean;
+}
+
+// @public (undocumented)
+export type AnimationType = 'uniform' | 'progressive' | 'none';
+
 // @public
 export type AnimState = Record<string, any>;
 
@@ -785,6 +821,8 @@ export class ChartLandingView extends View {
 
 // @public (undocumented)
 export class ChartPanel extends ControlPanelTabPanel {
+    // (undocumented)
+    connectedCallback(): void;
     // Warning: (ae-forgotten-export) The symbol "PopupSettingsDialog" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
@@ -1114,6 +1152,8 @@ export class ControlsPanel extends ControlPanelTabPanel {
     // (undocumented)
     protected _advancedControlDialogRef: Ref_2<AdvancedControlSettingsDialog>;
     // (undocumented)
+    protected _animationDialogRef: Ref_2<AnimationDialog>;
+    // (undocumented)
     connectedCallback(): void;
     // (undocumented)
     protected _getHelp(): TemplateResult_2<1>;
@@ -1265,6 +1305,8 @@ export class DatapointView extends DataView_2 {
     addPopup(text?: string): void;
     // (undocumented)
     protected _animEndState: AnimState;
+    // (undocumented)
+    protected _animStartState: AnimState;
     // (undocumented)
     animStep(t: number): void;
     // (undocumented)
@@ -3152,9 +3194,9 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     computeLocation(): void;
     // (undocumented)
-    protected _computeX(): number;
+    computeX(): number;
     // (undocumented)
-    protected _computeY(): number;
+    computeY(): number;
     // (undocumented)
     get height(): number;
     // (undocumented)
@@ -3756,6 +3798,8 @@ export type SettingObserver = (oldValue?: Setting, newValue?: Setting) => void;
 // @public (undocumented)
 export interface Settings extends SettingGroup {
     // (undocumented)
+    animation: AnimationSettings;
+    // (undocumented)
     axis: AxesSettings;
     // (undocumented)
     chart: ChartSettings;
@@ -4221,8 +4265,6 @@ export class TrendLineView extends View {
 // @public (undocumented)
 export interface UISettings extends SettingGroup {
     // (undocumented)
-    animateRevealTimeMs: number;
-    // (undocumented)
     focusRingGap: number;
     // (undocumented)
     isAnnouncementEnabled: boolean;
@@ -4461,7 +4503,7 @@ export interface YAxisSettings extends AxisSettings {
 // Warnings were encountered during analysis:
 //
 // types/store/settings_controls.d.ts:55:9 - (ae-incompatible-release-tags) The symbol "__index" is marked as @public, but its signature references "SettingControlInfo" which is marked as @internal
-// types/store/settings_types.d.ts:30:5 - (ae-forgotten-export) The symbol "Color_2" needs to be exported by the entry point index.d.ts
+// types/store/settings_types.d.ts:34:5 - (ae-forgotten-export) The symbol "Color_2" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 
