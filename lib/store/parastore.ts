@@ -803,7 +803,7 @@ export class ParaStore extends State {
         //throw new Error('range already highlighted');
       }
       else {
-        this._userLineBreaks.push({ startPortion: startPortion, seriesKey: seriesKey, index: index }) 
+        this._userLineBreaks.push({ startPortion: startPortion, seriesKey: seriesKey, index: index })
       }
     }
   }
@@ -822,6 +822,7 @@ export class ParaStore extends State {
         annotation: `${series.key}, ${series.rawData[index].x}: Added line break`,
         id: `line-break-${index}`
       })
+      this.paraChart.paraView.documentView!.postNotice('addLineBreak', {seriesKey, index});
     }
     if (this.userLineBreaks.length) {
       this.clearUserTrendLines();
@@ -884,8 +885,9 @@ export class ParaStore extends State {
   }
 
   clearUserLineBreaks() {
-    this._userLineBreaks = []
-    this.annotations = this.annotations.filter(a => !/line-break/.test(a.id))
+    this._userLineBreaks = [];
+    this.annotations = this.annotations.filter(a => !/line-break/.test(a.id));
+    this.paraChart.paraView.documentView!.postNotice('clearLineBreaks', null);
   }
 
   clearUserTrendLines() {

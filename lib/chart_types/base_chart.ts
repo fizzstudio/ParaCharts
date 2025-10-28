@@ -370,12 +370,14 @@ export abstract class BaseChartInfo extends Logger {
         const seriesKey = this._navMap!.cursor.options.seriesKey;
         this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
         this._chordPrevSeriesKey = seriesKey;
+        this._docView.postNotice('enterChordMode', {options: this._navMap!.cursor.options});
       } else if (this._navMap!.cursor.isNodeType('chord')) {
         this._navMap!.cursor.layer.goTo(
           this.navDatapointType, {
           seriesKey: this._chordPrevSeriesKey,
           index: this._navMap!.cursor.options.index
         });
+        this._docView.postNotice('exitChordMode', {options: this._navMap!.cursor.options});
       }
     }
     else {
