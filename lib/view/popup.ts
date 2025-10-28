@@ -529,10 +529,10 @@ export interface PopupPathOptions extends PathOptions {
 }
 export class PopupPathShape extends PathShape {
     shape: ShapeTypes;
-    constructor(paraview: ParaView, private options: PopupPathOptions) {
-        super(paraview, options);
-        this._points = options.points.map(p => p.clone());
-        this.shape = this.options.shape;
+    constructor(paraview: ParaView, private shapeOptions: PopupPathOptions) {
+        super(paraview, shapeOptions);
+        this._points = shapeOptions.points.map(p => p.clone());
+        this.shape = this.shapeOptions.shape;
     }
 
     //This defines which points on shapes are curved/border-radiused
@@ -556,16 +556,16 @@ export class PopupPathShape extends PathShape {
     protected get _pathD() {
         const rad = this.paraview.store.settings.popup.borderRadius;
         let addCurve;
-        if (this.shape == "boxWithArrow" && this.options.arrowPosition === "up") {
+        if (this.shape == "boxWithArrow" && this.shapeOptions.arrowPosition === "up") {
             addCurve = this.curvePoints["boxWithUpArrow"];
         }
-        else if (this.shape == "boxWithArrow" && this.options.arrowPosition === "down") {
+        else if (this.shape == "boxWithArrow" && this.shapeOptions.arrowPosition === "down") {
             addCurve = this.curvePoints["boxWithDownArrow"];
         }
-        else if (this.shape == "boxWithArrow" && this.options.arrowPosition === "right") {
+        else if (this.shape == "boxWithArrow" && this.shapeOptions.arrowPosition === "right") {
             addCurve = this.curvePoints["boxWithRightArrow"];
         }
-        else if (this.shape == "boxWithArrow" && this.options.arrowPosition === "left") {
+        else if (this.shape == "boxWithArrow" && this.shapeOptions.arrowPosition === "left") {
             addCurve = this.curvePoints["boxWithLeftArrow"];
         }
         else {

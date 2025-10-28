@@ -1990,6 +1990,8 @@ export class LinePlotView extends PointPlotView {
 // @public
 export class LineSection extends PointDatapointView {
     // (undocumented)
+    addHoverLineBreak(): void;
+    // (undocumented)
     addPopup(text?: string): void;
     // (undocumented)
     readonly chart: LinePlotView;
@@ -1997,6 +1999,8 @@ export class LineSection extends PointDatapointView {
     get classInfo(): {
         'data-line': boolean;
     };
+    // (undocumented)
+    clickAction(): void;
     // (undocumented)
     completeLayout(): void;
     // (undocumented)
@@ -2485,6 +2489,8 @@ export class ParaStore extends State {
     // (undocumented)
     addUserLineBreaks(): void;
     // (undocumented)
+    addUserTrendLines(): void;
+    // (undocumented)
     annotations: BaseAnnotation[];
     // (undocumented)
     protected annotID: number;
@@ -2616,6 +2622,8 @@ export class ParaStore extends State {
     get rangeHighlights(): RangeHighlight[];
     // (undocumented)
     protected _rangeHighlights: RangeHighlight[];
+    // (undocumented)
+    removeLineBreak(index: number, seriesKey: string, forModel: boolean): void;
     // (undocumented)
     removeMDRAnnotations(visitedDatapoints?: Set<string>): Promise<void>;
     // (undocumented)
@@ -3869,6 +3877,8 @@ export abstract class Shape extends View {
 
 // @public (undocumented)
 export interface ShapeOptions {
+    // (undocumented)
+    click?: (e: PointerEvent) => void;
     // (undocumented)
     fill?: string;
     // (undocumented)
