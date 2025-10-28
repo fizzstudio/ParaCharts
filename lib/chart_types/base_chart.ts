@@ -32,6 +32,7 @@ import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer, formatBox } fr
 import { Interval } from '@fizz/chart-classifier-utils';
 
 import { Unsubscribe } from '@lit-app/state';
+import { DocumentView } from '../view/document_view';
 
 
 /**
@@ -55,7 +56,7 @@ export abstract class BaseChartInfo extends Logger {
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
   protected _soniRiffInterval: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(protected _type: ChartType, protected _store: ParaStore) {
+  constructor(protected _type: ChartType, protected _store: ParaStore, protected _docView: DocumentView) {
     super();
     this._init();
     this._addSettingControls();
@@ -71,7 +72,7 @@ export abstract class BaseChartInfo extends Logger {
         min: 1,
         max: 1000
       },
-      parentView: 'controlPanel.tabs.chart.general',
+      parentView: 'controlPanel.tabs.chart.general.dimensions',
     });
     this._store.settingControls.add({
       type: 'textfield',
@@ -82,7 +83,7 @@ export abstract class BaseChartInfo extends Logger {
         min: 1,
         max: 1000
       },
-      parentView: 'controlPanel.tabs.chart.general',
+      parentView: 'controlPanel.tabs.chart.general.dimensions',
     });
   }
 
@@ -177,7 +178,8 @@ export abstract class BaseChartInfo extends Logger {
   }
 
   async move(dir: Direction) {
-    await this._navMap!.cursor!.move(dir);
+    await this._navMap!.cursor.move(dir);
+    this._docView.postNotice('move', {dir, options: this._navMap!.cursor.options});
   }
 
   /**
@@ -220,6 +222,7 @@ export abstract class BaseChartInfo extends Logger {
         seriesKey: seriesMatchArray[0].seriesKey,
         index: seriesMatchArray[0].datapointIndex
       });
+      this._docView.postNotice('goSeriesMinMax', {isMin, options: this._navMap!.cursor.options});
     }
   }
 
@@ -236,6 +239,7 @@ export abstract class BaseChartInfo extends Logger {
       seriesKey: matchDatapoint?.seriesKey,
       index: matchDatapoint?.datapointIndex
     });
+    this._docView.postNotice('goChartMinMax', {isMin, options: this._navMap!.cursor.options});
   }
 
   protected _composePointSelectionAnnouncement(isExtend: boolean) {
@@ -302,19 +306,20 @@ export abstract class BaseChartInfo extends Logger {
     }
   }
 
-  selectCurrent(extend = false) {
-    if (extend) {
+  selectCurrent(isExtend = false) {
+    if (isExtend) {
       this._store.extendSelection();
     } else {
       this._store.select();
     }
     const announcement =
-      this._navMap!.cursor.isNodeType('datapoint') ? this._composePointSelectionAnnouncement(extend) :
+      this._navMap!.cursor.isNodeType('datapoint') ? this._composePointSelectionAnnouncement(isExtend) :
         this._navMap!.cursor.isNodeType('series') ? this._composeSeriesSelectionAnnouncement() :
           '';
     if (announcement) {
       this._store.announce(announcement);
     }
+    this._docView.postNotice('select', {isExtend, options: this._navMap!.cursor.options});
   }
 
   clearDatapointSelection(quiet = false) {
@@ -322,6 +327,7 @@ export abstract class BaseChartInfo extends Logger {
     if (!quiet) {
       this._store.announce('No items selected.');
     }
+    this._docView.postNotice('clearSelection', null);
   }
 
   // NOTE: This should be overriden in subclasses
@@ -340,6 +346,7 @@ export abstract class BaseChartInfo extends Logger {
         series: 'up'
       };
       this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
+      this._docView.postNotice('goFirst', {options: this._navMap!.cursor.options});
     }
   }
 
@@ -352,6 +359,7 @@ export abstract class BaseChartInfo extends Logger {
         series: 'down'
       };
       this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
+      this._docView.postNotice('goLast', {options: this._navMap!.cursor.options});
     }
   }
 
@@ -362,12 +370,14 @@ export abstract class BaseChartInfo extends Logger {
         const seriesKey = this._navMap!.cursor.options.seriesKey;
         this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
         this._chordPrevSeriesKey = seriesKey;
+        this._docView.postNotice('enterChordMode', {options: this._navMap!.cursor.options});
       } else if (this._navMap!.cursor.isNodeType('chord')) {
         this._navMap!.cursor.layer.goTo(
           this.navDatapointType, {
           seriesKey: this._chordPrevSeriesKey,
           index: this._navMap!.cursor.options.index
         });
+        this._docView.postNotice('exitChordMode', {options: this._navMap!.cursor.options});
       }
     }
     else {

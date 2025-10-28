@@ -1,6 +1,7 @@
 //import { styles } from '../../styles';
 import { ControlPanelTabPanel } from './tab_panel';
 import { AdvancedControlSettingsDialog } from '../dialogs';
+import { AnimationDialog } from '../dialogs';
 import { keymap } from '../../store/keymap';
 
 import {
@@ -14,6 +15,7 @@ import { ref, createRef } from 'lit/directives/ref.js';
 export class ControlsPanel extends ControlPanelTabPanel {
 
   protected _advancedControlDialogRef = createRef<AdvancedControlSettingsDialog>();
+  protected _animationDialogRef = createRef<AnimationDialog>();
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -30,16 +32,10 @@ export class ControlsPanel extends ControlPanelTabPanel {
       parentView: 'controlPanel.tabs.controls.fullscreen',
     });
     this._store.settingControls.add({
-      type: 'slider',
-      key: 'chart.fontScale',
-      label: 'Font scale',
-      options: {
-        min: 0.5,
-        max: 3,
-        step: 0.1,
-        showValue: true
-      },
-      parentView: 'controlPanel.tabs.controls',
+      type: 'checkbox',
+      key: 'animation.isAnimationEnabled',
+      label: 'Animation enabled',
+      parentView: 'controlPanel.tabs.controls.animation',
     });
   }
 
@@ -87,15 +83,14 @@ export class ControlsPanel extends ControlPanelTabPanel {
     return html`
       <table>
         <tbody>
-          ${
-            Object.entries(keymap).map(([key, info]) => html`
+          ${Object.entries(keymap).map(([key, info]) => html`
               <tr>
                 <th scope="row">${info.label}</th>
                 <td>${key}</td>
                 <td><button disable>edit</button></td>
               </tr>
             `)
-          }
+      }
         </tbody>
       </table>
     `;
@@ -118,7 +113,28 @@ export class ControlsPanel extends ControlPanelTabPanel {
             Fullscreen
           </button>
         </div>
-        ${this._store.settingControls.getContent('controlPanel.tabs.controls')}
+
+        <div>
+          ${this._store.settingControls.getContent('controlPanel.tabs.controls')}
+        </div>
+        
+        <section id="animation">
+          ${this._store.settingControls.getContent('controlPanel.tabs.controls.animation')}
+          <button
+            @click=${() => {
+        this._animationDialogRef.value?.show()
+      }}
+          >
+            Animation settings
+          </button>
+          <para-animation-dialog
+            ${ref(this._animationDialogRef)}
+            id="animation-settings-dialog"
+            .store=${this._store}
+          >
+          </para-animation-dialog>
+        </section>
+
         <section id="advanced">
           <button
             @click=${() => this.showHelpDialog()}
@@ -131,7 +147,6 @@ export class ControlsPanel extends ControlPanelTabPanel {
           Advanced Controls
           </button>
         </section>
-
       </div>
       <div id="file-save-placeholder" style="display: none;">
       </div>

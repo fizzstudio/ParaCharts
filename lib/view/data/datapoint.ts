@@ -27,6 +27,7 @@ export class DatapointView extends DataView {
 
   protected _shapes: Shape[] = [];
   protected _symbol: DataSymbol | null = null;
+  protected _animStartState: AnimState = {};
   protected _animEndState: AnimState = {};
 
   constructor(seriesView: SeriesView) {
@@ -208,10 +209,15 @@ export class DatapointView extends DataView {
    *
    * @param t - Value between 0 and 1
    */
-  animStep(t: number) {
+  beginAnimStep(_t: number) {
+  }
+
+  /**
+   *
+   * @param t - Value between 0 and 1
+   */
+  endAnimStep(_t: number) {
     this.completeLayout();
-    // this.layoutSymbol();
-    // this._createShapes();
   }
 
   /**

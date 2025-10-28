@@ -112,7 +112,7 @@ export abstract class PastryPlotView extends DataLayer {
       type: 'checkbox',
       key: 'chart.showPopups',
       label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.chart',
+      parentView: 'controlPanel.tabs.chart.popups',
     });
   }
 

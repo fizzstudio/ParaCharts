@@ -252,7 +252,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           ?open=${this.settings.isControlPanelDefaultOpen}
           class=${deetsState}
           tablabelmode=${tabLabelModes[this.settings.tabLabelStyle]}
-          openbuttonarialabel="Open or close ParaCharts control panel"
+		  openbuttonarialabel="ParaCharts control panel"
           @open=${
             () => {
               this.paraChart.isControlPanelOpen = true;

@@ -275,6 +275,7 @@ export class ParaView extends logging(ParaComponent) {
       const handler = this._hotkeyActions.actions[e.action as keyof HotkeyActions['actions']];
       if (handler) {
         handler();
+        //this._documentView!.postNotice(e.action, null);
       } else {
         console.warn(`no handler for hotkey action '${e.action}'`);
       }

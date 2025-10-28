@@ -21,12 +21,13 @@ export class ParaViewController extends Logger {
       event.altKey ? 'Alt' : '',
       event.ctrlKey ? 'Ctrl' : '',
       event.shiftKey ? 'Shift' : '',
+      event.metaKey ? 'Meta' : '',
     ].filter(mod => mod);
     if (mods.includes(key)) {
       key = '';
     }
     const keyId = (key ? [...mods, key] : mods).join('+');
-    if (this._store.keymapManager.onKeydown(keyId)) {
+    if (this._store.paraChart.command('key', [keyId])) {
       event.stopPropagation();
       event.preventDefault();
     }

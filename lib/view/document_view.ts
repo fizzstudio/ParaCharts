@@ -55,7 +55,7 @@ export class DocumentView extends Container(View) {
 
     this.type = this._store.type;
     // @ts-ignore
-    this._chartInfo = new chartInfoClasses[this.type](this.type, this._store);
+    this._chartInfo = new chartInfoClasses[this.type](this.type, this._store, this);
 
     this.setTitleText(this._store.title);
 
@@ -273,6 +273,7 @@ export class DocumentView extends Container(View) {
   postNotice(key: string, value: any) {
     this.noticePosted(key, value);
     this._chartInfo.noticePosted(key, value);
+    this.paraview.dispatchEvent(new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));
   }
 
   // noticePosted(key: string, value: any): void {
