@@ -53,6 +53,7 @@ export class NormalHotkeyActions extends HotkeyActions {
     // Always return the current chart info object (i.e., don't let the
     // actions close over a value that might be removed)
     const chart = () => paraView.documentView!.chartInfo;
+    const docView = () => paraView.documentView!;
     this._actions = {
       async moveRight() {
         chart().clearPlay();
@@ -122,8 +123,9 @@ export class NormalHotkeyActions extends HotkeyActions {
       sonificationModeToggle() {
         store.updateSettings(draft => {
           draft.sonification.isSoniEnabled = !draft.sonification.isSoniEnabled;
-          store.announce(
-            `Sonification ${draft.sonification.isSoniEnabled ? 'enabled' : 'disabled'}`);
+          const endisable = draft.sonification.isSoniEnabled ? 'enable' : 'disable';
+          store.announce(`Sonification ${endisable + 'd'}`);
+          docView().postNotice(endisable + 'Sonification', null);
         });
       },
       announcementModeToggle() {
@@ -132,29 +134,28 @@ export class NormalHotkeyActions extends HotkeyActions {
           store.updateSettings(draft => {
             draft.ui.isAnnouncementEnabled = false;
           });
+          docView().postNotice('disableAnnouncements', null);
         } else {
           store.updateSettings(draft => {
             draft.ui.isAnnouncementEnabled = true;
           });
           store.announce('Announcements enabled');
+          docView().postNotice('enableAnnouncements', null);
         }
       },
       voicingModeToggle() {
-        if (store.settings.ui.isVoicingEnabled) {
-          store.updateSettings(draft => {
-            draft.ui.isVoicingEnabled = false;
-          });
-        } else {
-          store.updateSettings(draft => {
-            draft.ui.isVoicingEnabled = true;
-          });
-        }
+        store.updateSettings(draft => {
+          draft.ui.isVoicingEnabled = !draft.ui.isVoicingEnabled;
+          const endisable = draft.ui.isVoicingEnabled ? 'enable' : 'disable';
+          docView().postNotice(endisable + 'Voicing', null);
+        });
       },
       darkModeToggle() {
         store.updateSettings(draft => {
           draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
-          store.announce(
-            `Dark mode ${draft.color.isDarkModeEnabled ? 'enabled' : 'disabled'}`);
+          const endisable = draft.color.isDarkModeEnabled ? 'enable' : 'disable';
+          docView().postNotice(endisable + 'DarkMode', null);
+          store.announce(`Dark mode ${endisable + 'd'}`);
         });
       },
       lowVisionModeToggle() {
@@ -162,8 +163,10 @@ export class NormalHotkeyActions extends HotkeyActions {
           if (draft.ui.isLowVisionModeEnabled) {
             // Allow the exit from fullscreen to disable LV mode
             draft.ui.isFullscreenEnabled = false;
+            docView().postNotice('disableLowVisionMode', null);
           } else {
             draft.ui.isLowVisionModeEnabled = true;
+            docView().postNotice('enableLowVisionMode', null);
           }
         });
       },
@@ -187,15 +190,11 @@ export class NormalHotkeyActions extends HotkeyActions {
       },
       narrativeHighlightModeToggle() {
         paraView.startNarrativeHighlightMode();
-		    if (store.settings.ui.isNarrativeHighlightsEnabled) {
-          store.updateSettings(draft => {
-            draft.ui.isNarrativeHighlightEnabled = false;
-          });
-        } else {
-          store.updateSettings(draft => {
-            draft.ui.isNarrativeHighlightEnabled = true;
-          });
-        }
+        store.updateSettings(draft => {
+          draft.ui.isNarrativeHighlightEnabled = !draft.ui.isNarrativeHighlightEnabled;
+          const endisable = draft.ui.isNarrativeHighlightEnabled ? 'enable' : 'disable';
+          docView().postNotice(endisable + 'NarrativeHighlightMode', null);
+        });
       },
       mediaPlayPause() {
 
