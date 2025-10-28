@@ -209,10 +209,15 @@ export class DatapointView extends DataView {
    *
    * @param t - Value between 0 and 1
    */
-  animStep(t: number) {
+  beginAnimStep(_t: number) {
+  }
+
+  /**
+   *
+   * @param t - Value between 0 and 1
+   */
+  endAnimStep(_t: number) {
     this.completeLayout();
-    // this.layoutSymbol();
-    // this._createShapes();
   }
 
   /**

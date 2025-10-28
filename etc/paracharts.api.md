@@ -570,7 +570,7 @@ export class Bar extends PlaneDatapointView {
     // (undocumented)
     addPopup(text?: string): void;
     // (undocumented)
-    animStep(t: number): void;
+    beginAnimStep(t: number): void;
     // (undocumented)
     readonly chart: BarPlotView;
     // (undocumented)
@@ -1308,7 +1308,7 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     protected _animStartState: AnimState;
     // (undocumented)
-    animStep(t: number): void;
+    beginAnimStep(_t: number): void;
     // (undocumented)
     get classInfo(): ClassInfo;
     // (undocumented)
@@ -1333,6 +1333,8 @@ export class DatapointView extends DataView_2 {
     get datapointId(): string;
     // (undocumented)
     get el(): SVGElement;
+    // (undocumented)
+    endAnimStep(_t: number): void;
     // (undocumented)
     equals(other: DatapointView): boolean;
     // (undocumented)
@@ -3007,7 +3009,7 @@ export class PieSlice extends RadialSlice {
     // (undocumented)
     addPopup(text?: string): void;
     // (undocumented)
-    animStep(t: number): void;
+    beginAnimStep(t: number): void;
     // (undocumented)
     computeLocation(): void;
     // (undocumented)
@@ -3188,7 +3190,7 @@ export type PointChartType = 'line' | 'stepline' | 'scatter';
 export class PointDatapointView extends PlaneDatapointView {
     constructor(seriesView: SeriesView);
     // (undocumented)
-    animStep(t: number): void;
+    beginAnimStep(t: number): void;
     // (undocumented)
     readonly chart: PointPlotView;
     // (undocumented)
