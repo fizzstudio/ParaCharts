@@ -66,7 +66,6 @@ interface TextLine {
 export type LabelTextCorners = Record<BboxAnchorCorner, Vec2>;
 
 export class Label extends View {
-
   protected _elRef: Ref<SVGTextElement> = createRef();
   protected _angle: number;
   protected _textAnchor: LabelTextAnchor;
@@ -77,72 +76,72 @@ export class Label extends View {
   protected _textCornerOffsets!: LabelTextCorners;
   protected _textLines: TextLine[] = [];
 
-  constructor(paraview: ParaView, private options: LabelOptions) {
+  constructor(paraview: ParaView, protected _options: LabelOptions) {
     super(paraview);
     this._canWidthFlex = true;
     this._canHeightFlex = true;
-    if (options.classList) {
-      if (!options.classList.includes('label')) {
-        options.classList.push('label');
+    if (_options.classList) {
+      if (!_options.classList.includes('label')) {
+        _options.classList.push('label');
       }
-      this._classInfo = Object.fromEntries(options.classList.map(cls => [cls, true]));
+      this._classInfo = Object.fromEntries(_options.classList.map(cls => [cls, true]));
     } else {
       this._classInfo = {
         label: true
       };
     }
-    this._angle = this.options.angle ?? 0;
-    this._textAnchor = this.options.textAnchor ?? (options.wrapWidth ? 'start' : 'middle');
-    this._justify = this.options.justify ?? 'start';
-    this._lineSpacing = this.options.lineSpacing ?? 0;
-    this._text = this.options.text;
+    this._angle = this._options.angle ?? 0;
+    this._textAnchor = this._options.textAnchor ?? (_options.wrapWidth ? 'start' : 'middle');
+    this._justify = this._options.justify ?? 'start';
+    this._lineSpacing = this._options.lineSpacing ?? 0;
+    this._text = this._options.text;
     // It should be okay to go ahead and compute our size here, rather than
     // waiting to be parented
     this.updateSize();
 
-    if (this.options.loc) {
-      this._loc = this.options.loc;
+    if (this._options.loc) {
+      this._loc = this._options.loc;
     }
-    if (this.options.x) {
-      this._x = this.options.x;
+    if (this._options.x) {
+      this._x = this._options.x;
     }
-    if (this.options.y) {
-      this._y = this.options.y;
+    if (this._options.y) {
+      this._y = this._options.y;
     }
-    if (this.options.left) {
-      this.left = this.options.left;
+    if (this._options.left) {
+      this.left = this._options.left;
     }
-    if (this.options.right) {
-      this.right = this.options.right;
+    if (this._options.right) {
+      this.right = this._options.right;
     }
-    if (this.options.top) {
-      this.top = this.options.top;
+    if (this._options.top) {
+      this.top = this._options.top;
     }
-    if (this.options.bottom) {
-      this.bottom = this.options.bottom;
+    if (this._options.bottom) {
+      this.bottom = this._options.bottom;
     }
-    if (this.options.centerX) {
-      this.centerX = this.options.centerX;
+    if (this._options.centerX) {
+      this.centerX = this._options.centerX;
     }
-    if (this.options.centerY) {
-      this.centerY = this.options.centerY;
+    if (this._options.centerY) {
+      this.centerY = this._options.centerY;
     }
-    if (this.options.topLeft) {
-      this.topLeft = this.options.topLeft;
+    if (this._options.topLeft) {
+      this.topLeft = this._options.topLeft;
     }
-    if (this.options.topRight) {
-      this.topRight = this.options.topRight;
+    if (this._options.topRight) {
+      this.topRight = this._options.topRight;
     }
-    if (this.options.bottomRight) {
-      this.bottomRight = this.options.bottomRight;
+    if (this._options.bottomRight) {
+      this.bottomRight = this._options.bottomRight;
     }
-    if (this.options.bottomLeft) {
-      this.bottomLeft = this.options.bottomLeft;
+    if (this._options.bottomLeft) {
+      this.bottomLeft = this._options.bottomLeft;
     }
   }
 
   protected _createId() {
-    return this.options.id || generateUniqueId(this._text, this.paraview.store);
+    return this._options.id || generateUniqueId(this._text, this.paraview.store);
   }
 
   get el() {
@@ -231,8 +230,8 @@ export class Label extends View {
     // XXX Need to make sure the label gets rendered here with the
     // same font settings it will ultimately be displayed with
     const text = document.createElementNS(SVGNS, 'text');
-    if (this.options.classList) {
-      text.classList.add(...this.options.classList);
+    if (this._options.classList) {
+      text.classList.add(...this._options.classList);
     }
     text.setAttribute('text-anchor', this._textAnchor);
     text.style.visibility = 'hidden';
@@ -395,7 +394,7 @@ export class Label extends View {
     // TODO: figure out why `this._y` is larger here than for single line titles
     // HACK: divide `this._y` by 2 for `y` attribute value
     return svg`
-      ${this.options.hasBackground
+      ${this._options.hasBackground
         ? svg`
           <path
             class="label-bg"
@@ -414,16 +413,16 @@ export class Label extends View {
       <text
         ${ref(this._elRef)}
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
-        role=${this.options.role ?? nothing}
+        role=${this._options.role ?? nothing}
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}
         text-anchor=${this._textAnchor !== 'start' ? this._textAnchor : nothing}
         transform=${this._makeTransform() ?? nothing}
         id=${this.id}
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
-        @pointerenter=${this.options.pointerEnter ?? nothing}
-        @pointerleave=${this.options.pointerLeave ?? nothing}
-        @click=${this.options.click ?? nothing}
+        @pointerenter=${this._options.pointerEnter ?? nothing}
+        @pointerleave=${this._options.pointerLeave ?? nothing}
+        @click=${this._options.click ?? nothing}
       >
         ${this._textLines.length
           ? this._textLines.map((line, i) =>
