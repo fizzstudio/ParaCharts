@@ -16,7 +16,7 @@ export interface PathOptions extends ShapeOptions {
 export class PathShape extends Shape {
   protected _points: Vec2[];
 
-  constructor(paraview: ParaView, options: PathOptions) {
+  constructor(paraview: ParaView, private options: PathOptions) {
     super(paraview, options);
     this._points = options.points.map(p => p.clone());
   }
@@ -106,6 +106,7 @@ export class PathShape extends Shape {
         role=${this._role || nothing}
         d=${this._pathD}
         clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
+        @click=${this.options.click ?? nothing}
       ></path>
     `;
   }

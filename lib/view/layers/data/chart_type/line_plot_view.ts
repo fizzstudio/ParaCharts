@@ -296,17 +296,28 @@ export class LineSection extends PointDatapointView {
           this.paraview.store.settings.chart.showPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
+          if (this.paraview.paraChart.train) {
+            this.addHoverLineBreak();
+          }
         },
         pointerLeave: (e) => {
           this.paraview.store.settings.chart.showPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
+          if (this.paraview.paraChart.train) {
+            this._children = this.children.filter(c => c.classInfo['trend-line'] !== true);
+          }
+        },
+        click: (e) => {
+          this.clickAction();
         }
       })
       this._shapes[0].classInfo = { 'leg-left': true };
       this._shapes[1].classInfo = { 'leg-right': true };
       invis.classInfo = { 'invis': true };
-      this.append(invis)
+      if (!this.children.some(c => c.classInfo["invis"] == true)) {
+        this.append(invis)
+      }
     } else if (points.length === 2) {
       this._shapes.push(
         new PathShape(this.paraview, {
@@ -327,18 +338,29 @@ export class LineSection extends PointDatapointView {
           this.paraview.store.settings.chart.showPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
+          if (this.paraview.paraChart.train) {
+            this.addHoverLineBreak()
+          }
         },
         pointerLeave: (e) => {
           this.paraview.store.settings.chart.showPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
+          if (this.paraview.paraChart.train) {
+            this._children = this.children.filter(c => c.classInfo['trend-line'] !== true)
+          }
+        },
+        click: (e) => {
+          this.clickAction()
         }
       })
       this._shapes[0].classInfo = this._prevMidY !== undefined
         ? { 'leg-left': true }
         : { 'leg-right': true };
       invis.classInfo = { 'invis': true };
-      this.append(invis)
+      if (!this.children.some(c => c.classInfo["invis"] == true)) {
+        this.append(invis)
+      }
     }
     this._shapes.forEach(shape => {
       (shape as PathShape).isClip = this.shouldClip;
@@ -346,6 +368,30 @@ export class LineSection extends PointDatapointView {
     super._createShapes();
   }
 
+
+  clickAction() {
+    if (this.paraview.paraChart.train) {
+      !this.paraview.store.userLineBreaks.some(lb => lb.index === this.index && lb.seriesKey == this.seriesKey) ?
+        this.paraview.store.addLineBreak(this.index / (this.series.datapoints.length - 1), this.index, this.seriesKey, false) :
+        this.paraview.store.removeLineBreak(this.index, this.seriesKey, false)
+      this.paraview.store.clearUserTrendLines();
+      this.paraview.store.addUserTrendLines();
+    }
+  }
+
+  addHoverLineBreak() {
+    const color = this.paraview.store.colors.colorValueAt(this.color)
+    const startPx = this.chart.width * this.index / (this.series.datapoints.length - 1);
+    const linebreak = new PathShape(this.paraview, {
+      points: [new Vec2(startPx, 0), new Vec2(startPx, this.chart.height)],
+      stroke: color,
+      click: (e) => {
+        this.clickAction();
+      }
+    })
+    linebreak.classInfo = { 'trend-line': true }
+    this.append(linebreak)
+  }
 
   addPopup(text?: string) {
     let datapointText = `${this.seriesKey} ${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`

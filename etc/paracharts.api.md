@@ -8,6 +8,7 @@ import { AllSeriesData } from '@fizz/paramanifest';
 import { AxisOrientation as AxisOrientation_2 } from '@fizz/paramodel';
 import { Box } from '@fizz/paramodel';
 import { ButtonDescriptor } from '@fizz/ui-components';
+import { Candidate } from '@fizz/chart-message-candidates';
 import { ChartType as ChartType_2 } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { ClassInfo as ClassInfo_2 } from 'lit-html/directives/class-map.js';
@@ -116,6 +117,8 @@ export class AnnotationLayer extends PlotLayer {
 export class AnnotationPanel extends ControlPanelTabPanel {
     constructor();
     // (undocumented)
+    getSelectedCat(): Candidate | undefined;
+    // (undocumented)
     protected _highlightAnnotation(annotationEl: HTMLElement): void;
     // (undocumented)
     protected _navToAnnotation(seriesKey: string, index: number): void;
@@ -126,7 +129,15 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     // (undocumented)
     showAnnotations(): TemplateResult_2<1>;
     // (undocumented)
+    showCandidates(): TemplateResult_2<1>;
+    // (undocumented)
+    showSupplementalQuestions(cand: Candidate | undefined): TemplateResult_2<1> | undefined;
+    // (undocumented)
     static styles: CSSResult[];
+    // (undocumented)
+    supp1: string;
+    // (undocumented)
+    supp2: string;
 }
 
 // @public (undocumented)
@@ -2336,6 +2347,8 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _suppleteSettingsWith?: DeepReadonly<Settings>;
     // (undocumented)
+    train: boolean;
+    // (undocumented)
     type?: ChartType_2;
     // (undocumented)
     willUpdate(changedProperties: PropertyValues<this>): void;
@@ -2640,9 +2653,13 @@ export class ParaStore extends State {
     // (undocumented)
     showMDRAnnotations(): Promise<void>;
     // (undocumented)
+    showTrends(): void;
+    // (undocumented)
     soloSeries: string;
     // (undocumented)
     sparkBrailleInfo: SparkBrailleInfo | null;
+    // (undocumented)
+    submitTrend(cand: Candidate, supp1: string, supp2: string): void;
     // (undocumented)
     protected _summarizer: Summarizer;
     // Warning: (ae-forgotten-export) The symbol "DataSymbols" needs to be exported by the entry point index.d.ts
@@ -2663,6 +2680,10 @@ export class ParaStore extends State {
     unobserveSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void): void;
     // (undocumented)
     updateSettings(updater: (draft: Settings) => void, ignoreObservers?: boolean): void;
+    // (undocumented)
+    get userCandidates(): Candidate[];
+    // (undocumented)
+    protected _userCandidates: Candidate[];
     // (undocumented)
     get userLineBreaks(): LineBreak[];
     // (undocumented)

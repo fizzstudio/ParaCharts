@@ -182,7 +182,6 @@ export class AnnotationPanel extends ControlPanelTabPanel {
   }
 
   render() {
-    console.log("this._controlPanel.paraChart.train", this._controlPanel.paraChart.train)
     const isLine = this._store.type === 'line' ? true : false
     return html`
       <div id="annotation-tab" class="tab-content">

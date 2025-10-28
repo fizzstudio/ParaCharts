@@ -818,6 +818,27 @@ export class ParaStore extends State {
     }
   }
 
+  removeLineBreak(index: number, seriesKey: string, forModel: boolean) {
+    if (forModel) {
+      const spliceIndex = this.modelLineBreaks.findIndex(rhl =>
+        rhl.index === index && rhl.seriesKey === seriesKey);
+      if (spliceIndex === -1) {
+        console.log("No line break to remove")
+        return
+      }
+      this._modelLineBreaks.splice(spliceIndex, 1);
+    }
+    else {
+      const spliceIndex = this.userLineBreaks.findIndex(rhl =>
+        rhl.index === index && rhl.seriesKey === seriesKey);
+      if (spliceIndex === -1) { 
+        console.log("No line break to remove")
+        return
+      }
+      this._userLineBreaks.splice(spliceIndex, 1);
+    }
+  }
+
   addUserLineBreaks() {
     for (const datapointId of this.selectedDatapoints) {
       //const [seriesKey, index] = keyIdx.split('-');
@@ -835,19 +856,22 @@ export class ParaStore extends State {
     }
     if (this.userLineBreaks.length) {
       this.clearUserTrendLines();
-      for (let seriesKey of new Set(this.userLineBreaks.map(a => { return a.seriesKey }))) {
-        let lbs = this.userLineBreaks.filter(a => a.seriesKey === seriesKey).sort((a, b) => a.index - b.index)
-        this.addTrendLine(0, lbs[0].startPortion, 0, lbs[0].index + 1, seriesKey, false)
-        for (let i = 0; i < lbs.length - 1; i++) {
-          this.addTrendLine(lbs[i].startPortion, lbs[i + 1].startPortion, lbs[i].index, lbs[i + 1].index + 1, seriesKey, false)
-        }
-        const series = this.model!.series.filter(s => s[0].seriesKey == seriesKey)[0]
-        const length = series.length - 1
-        this.addTrendLine(lbs[lbs.length - 1].startPortion, 1, lbs[lbs.length - 1].index, length + 1, seriesKey, false)
-      }
+      this.addUserTrendLines();
     }
   }
 
+  addUserTrendLines() {
+    for (let seriesKey of new Set(this.userLineBreaks.map(a => { return a.seriesKey }))) {
+      let lbs = this.userLineBreaks.filter(a => a.seriesKey === seriesKey).sort((a, b) => a.index - b.index)
+      this.addTrendLine(0, lbs[0].startPortion, 0, lbs[0].index + 1, seriesKey, false)
+      for (let i = 0; i < lbs.length - 1; i++) {
+        this.addTrendLine(lbs[i].startPortion, lbs[i + 1].startPortion, lbs[i].index, lbs[i + 1].index + 1, seriesKey, false)
+      }
+      const series = this.model!.series.filter(s => s[0].seriesKey == seriesKey)[0]
+      const length = series.length - 1
+      this.addTrendLine(lbs[lbs.length - 1].startPortion, 1, lbs[lbs.length - 1].index, length + 1, seriesKey, false)
+    }
+  }
 
   addModelTrendLines(sequences: SequenceInfo[], seriesKey: string) {
     const series = this.model!.series.filter(s => s[0].seriesKey == seriesKey)[0]

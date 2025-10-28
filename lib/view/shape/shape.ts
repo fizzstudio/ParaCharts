@@ -20,6 +20,7 @@ export interface ShapeOptions {
   isClip?: boolean;
   pointerEnter?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
+  click?: (e: PointerEvent) => void;
 }
 
 export abstract class Shape extends View {
