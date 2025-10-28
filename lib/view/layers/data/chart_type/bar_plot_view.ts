@@ -377,29 +377,45 @@ export class Bar extends PlaneDatapointView {
 
     const idealWidth = this.chart.stackWidth;
     this._width = this.chart.stackWidth;
-    // @ts-ignore
-    this._height = 0; //Math.abs((this.datapoint.data.y.value as number)*pxPerYUnit);
-    //this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
+    if (this.paraview.store.settings.animation.isAnimationEnabled) {
+      this._height = 0;
+      //this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
 
-    // const clusterGap = Math.min(chartInfo.settings.clusterGap, this.chart.stackGap);
-    // const barGap = Math.min(chartInfo.settings.barGap, this.chart.availSpace/this.chart.numBars);
-    // this._x = barGap/2
-    //   + idealWidth*this._stack.cluster.index
-    //   //+ clusterGap*this._stack.cluster.index
-    //   //+ idealWidth*this._stack.index
-    //   + barGap*this._stack.cluster.index;
+      // const clusterGap = Math.min(chartInfo.settings.clusterGap, this.chart.stackGap);
+      // const barGap = Math.min(chartInfo.settings.barGap, this.chart.availSpace/this.chart.numBars);
+      // this._x = barGap/2
+      //   + idealWidth*this._stack.cluster.index
+      //   //+ clusterGap*this._stack.cluster.index
+      //   //+ idealWidth*this._stack.index
+      //   + barGap*this._stack.cluster.index;
 
+      this._y = 0;
+    } else {
+      const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
+      const pxPerYUnit = this.chart.parent.logicalHeight/chartInfo.axisInfo!.yLabelInfo.range!;
+      const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
+        .map(bar => bar.value.value*pxPerYUnit)
+        .reduce((a, b) => a + b, 0);
+      const zeroHeight = this.chart.parent.logicalHeight
+        - (chartInfo.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!);
+      // @ts-ignore
+      this._height = Math.abs((this.datapoint.data.y.value as number)*pxPerYUnit);
+      // @ts-ignore
+      if (this.datapoint.data.y.value as number < 0) {
+        this._y = this.chart.height - distFromXAxis - zeroHeight;
+      } else {
+        this._y = this.chart.height - this.height - distFromXAxis - zeroHeight;
+      }
+    }
     const barGap = this.chart.availSpace/this.chart.numStacks;
     const clusterGap = chartInfo.settings.clusterGap;
     this._x = clusterGap/2 + barGap/2
       + idealWidth*(chartInfo.stacksPerCluster*this._stack.cluster.index + this._stack.index)
       + clusterGap*this._stack.cluster.index
       + barGap*(chartInfo.stacksPerCluster*this._stack.cluster.index + this._stack.index);
-
-    this._y = 0;
   }
 
-  animStep(t: number): void {
+  beginAnimStep(t: number): void {
     const chartInfo = this.chart.chartInfo as BarChartInfo;
     const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
     const pxPerYUnit = this.chart.parent.logicalHeight/chartInfo.axisInfo!.yLabelInfo.range!;
@@ -416,7 +432,7 @@ export class Bar extends PlaneDatapointView {
     } else {
       this._y = this.chart.height - this.height - distFromXAxis*t - zeroHeight;
     }
-    super.animStep(t);
+    super.beginAnimStep(t);
   }
 
   completeLayout() {

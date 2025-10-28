@@ -179,23 +179,27 @@ export class PointDatapointView extends PlaneDatapointView {
   }
 
   computeLocation() {
-    if (this.paraview.store.settings.animation.animationOrigin === 'initialValue') {
-      this._animStartState.y = (this._parent.children[0] as PointDatapointView).computeY();
-    } else if (this.paraview.store.settings.animation.animationOrigin === 'baseline') {
-      this._animStartState.y = this.chart.height;
-    } else if (this.paraview.store.settings.animation.animationOrigin === 'top') {
-      this._animStartState.y = 0;
-    } else {
-      this._animStartState.y = this.paraview.store.settings.animation.animationOriginValue;;
-    }
-    this._animEndState.y = this.computeY();
     this._x = this.computeX();
-    this._y = this._animStartState.y;;
+    if (this.paraview.store.settings.animation.isAnimationEnabled) {
+      if (this.paraview.store.settings.animation.animationOrigin === 'initialValue') {
+        this._animStartState.y = (this._parent.children[0] as PointDatapointView).computeY();
+      } else if (this.paraview.store.settings.animation.animationOrigin === 'baseline') {
+        this._animStartState.y = this.chart.height;
+      } else if (this.paraview.store.settings.animation.animationOrigin === 'top') {
+        this._animStartState.y = 0;
+      } else {
+        this._animStartState.y = this.paraview.store.settings.animation.animationOriginValue;;
+      }
+      this._animEndState.y = this.computeY();
+      this._y = this._animStartState.y;
+    } else {
+      this._y = this.computeY();
+    }
   }
 
-  animStep(t: number): void {
+  beginAnimStep(t: number): void {
     this._y = this._animStartState.y*(1 - t) + this._animEndState.y*t;
-    super.animStep(t);
+    super.beginAnimStep(t);
   }
 
 }

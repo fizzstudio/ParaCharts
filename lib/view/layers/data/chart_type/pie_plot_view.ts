@@ -37,14 +37,18 @@ export class PieSlice extends RadialSlice {
   }
 
   computeLocation(): void {
-    this._centralAngle = this.chart.animateRevealComplete
-      ? this._params.percentage*360
-      : 0;
+    if (this.paraview.store.settings.animation.isAnimationEnabled) {
+      this._centralAngle = this.chart.animateRevealComplete
+        ? this._params.percentage*360
+        : 0;
+    } else {
+      this._centralAngle = this._params.percentage*360;
+    }
   }
 
-  animStep(t: number): void {
+  beginAnimStep(t: number): void {
     this._centralAngle = this._params.percentage*360*t;
-    super.animStep(t);
+    super.beginAnimStep(t);
   }
 
   protected _createShapes() {

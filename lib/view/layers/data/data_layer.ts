@@ -144,12 +144,9 @@ export abstract class DataLayer extends PlotLayer {
 
   init() {
     this._layoutDatapoints();
-    // if (!this.paraview.store.settings.animation.isAnimationEnabled) {
-    //   this.paraview.store.updateSettings(draft => {
-    //     draft.animation.animateRevealTimeMs = 0;
-    //   });
-    // }
-    this._animateReveal();
+    if (this.paraview.store.settings.animation.isAnimationEnabled) {
+      this._animateReveal();
+    }
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
@@ -246,7 +243,10 @@ export abstract class DataLayer extends PlotLayer {
 
   protected _animStep(t: number) {
     for (const datapointView of this.datapointViews) {
-      datapointView.animStep(t);
+      datapointView.beginAnimStep(t);
+    }
+    for (const datapointView of this.datapointViews) {
+      datapointView.endAnimStep(t);
     }
   }
 
