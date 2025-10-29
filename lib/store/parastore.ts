@@ -816,6 +816,7 @@ export class ParaStore extends State {
         this._userLineBreaks.push({ startPortion: startPortion, seriesKey: seriesKey, index: index })
       }
     }
+    this.paraChart.paraView.documentView!.postNotice('lineBreaksChanged', this._userLineBreaks);
   }
 
   removeLineBreak(index: number, seriesKey: string, forModel: boolean) {
@@ -837,6 +838,7 @@ export class ParaStore extends State {
       }
       this._userLineBreaks.splice(spliceIndex, 1);
     }
+    this.paraChart.paraView.documentView!.postNotice('lineBreaksChanged', this._userLineBreaks);
   }
 
   addUserLineBreaks() {
@@ -916,6 +918,10 @@ export class ParaStore extends State {
         this._modelTrendLines = this._modelTrendLines.toSpliced(index, 1);
       }
     }
+  }
+
+  clearRangeHighlights() {
+    this._rangeHighlights.splice(0, this._rangeHighlights.length)
   }
 
   clearUserLineBreaks() {

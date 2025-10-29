@@ -2557,6 +2557,8 @@ export class ParaStore extends State {
     // (undocumented)
     clearHighlight(): void;
     // (undocumented)
+    clearRangeHighlights(): void;
+    // (undocumented)
     clearSelected(): void;
     // (undocumented)
     clearUserLineBreaks(): void;
