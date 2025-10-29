@@ -27,18 +27,22 @@ export class ParaCaptionBox extends logging(ParaComponent) {
   private _summarizer?: Summarizer;
   protected _storeChangeUnsub!: Unsubscribe;
   protected _spans: HTMLSpanElement[] = [];
+  protected _isEBarVisible = false;
 
   static styles = [
     css`
       figcaption.external {
         border: var(--caption-border);
       }
-      #description {
+      #caption-box {
         display: grid;
         grid-template-columns: var(--caption-grid-template-columns);
       }
       #caption {
         padding: 0.25rem;
+      }
+      #caption.solo {
+        grid-column: 1 / 3
       }
       #exploration-bar {
         background-color: var(--theme-color-light);
@@ -57,6 +61,10 @@ export class ParaCaptionBox extends logging(ParaComponent) {
       }
       #exploration-bar span.highlight {
         background-color: white;
+      }
+      #exploration-bar.hidden {
+        /* Using this rather than 'hidden' attr to override flex display */
+        display: none;
       }
     `
   ];
@@ -147,18 +155,22 @@ export class ParaCaptionBox extends logging(ParaComponent) {
   }
 
   render() {
+    this._isEBarVisible = !!this.store.announcement.text
+      && this._store.announcement.text !== this._caption.text;
+    const isCaptionSolo = !this._isEBarVisible || !this._store.settings.controlPanel.isExplorationBarVisible;
     return html`
       <figcaption class=${this.parachart.isControlPanelOpen ? '' : 'external'}>
-        <div id="description">
+        <div id="caption-box">
           <div
             id="caption"
+            class=${isCaptionSolo ? 'solo' : ''}
             ?hidden=${!this._store.settings.controlPanel.isCaptionVisible}
           >
             ${this.renderSummary(this._caption, 'caption')}
           </div>
           <div
             id="exploration-bar"
-            ?hidden=${!this._store.settings.controlPanel.isExplorationBarVisible}
+            class=${isCaptionSolo ? 'hidden' : ''}
           >
             <div
               id="exploration-bar-text"
@@ -183,7 +195,6 @@ export class ParaCaptionBox extends logging(ParaComponent) {
       </figcaption>
     `;
   }
-
 }
 
 declare global {
