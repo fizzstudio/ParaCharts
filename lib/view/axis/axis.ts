@@ -432,7 +432,7 @@ export class VertAxis extends Axis<'vert'> {
         return value as number >= min ?
           { err: `Min y-value (${value}) must be less than (${min})`} : {};
       },
-      parentView: 'controlPanel.tabs.chart.general.range',
+      parentView: 'controlPanel.tabs.chart.general.minY',
     });
     this.paraview.store.settingControls.add({
       type: 'textfield',
@@ -449,7 +449,7 @@ export class VertAxis extends Axis<'vert'> {
         return value as number <= max ?
           { err: `Max y-value (${value}) must be greater than (${max})`} : {};
       },
-      parentView: 'controlPanel.tabs.chart.general.range',
+      parentView: 'controlPanel.tabs.chart.general.maxY',
     });
   }
 

@@ -34,6 +34,7 @@ export interface AvailableActions {
   addAnnotation(): void;
   narrativeHighlightModeToggle(): void;
   mediaPlayPause(): void;
+  reset(): void;
 }
 
 type ActionMap = { [Property in keyof AvailableActions]: (() => void | Promise<void>) };
@@ -199,6 +200,11 @@ export class NormalHotkeyActions extends HotkeyActions {
       mediaPlayPause() {
 
       },
+      reset() {
+        store.clearSelected();
+        chart().navMap!.root.goTo('top', {});
+        paraView.createDocumentView();
+      }
     };
   }
 

@@ -25,6 +25,22 @@ export class ChartPanel extends ControlPanelTabPanel {
         row-gap: 0.5rem;
         align-items: center;
       }
+      #width {
+        grid-row: 1;
+        grid-column: 1;
+      }
+      #height {
+        grid-row: 2;
+        grid-column: 1;
+      }
+      #min-y {
+        grid-row: 1;
+        grid-column: 2;
+      }
+      #max-y {
+        grid-row: 2;
+        grid-column: 2;
+      }
       #panel {
         display: flex;
         flex-direction: column;
@@ -51,24 +67,24 @@ export class ChartPanel extends ControlPanelTabPanel {
   }
 
   render() {
-    const dimensionContent = this._store.settingControls.getContent(`controlPanel.tabs.chart.general.dimensions`);
-    const rangeContent = this._store.settingControls.getContent(`controlPanel.tabs.chart.general.range`);
     const chartContent = this._store.settingControls.getContent(`controlPanel.tabs.chart.chart`);
     const popupsContent = this._store.settingControls.getContent(`controlPanel.tabs.chart.popups`);
     const fontsContent = this._store.settingControls.getContent(`controlPanel.tabs.chart.fonts`);
     return html`
       <section id="panel">
         <div id="columns">
-          ${dimensionContent.map(columnContent => html`
-            <div>
-              ${columnContent}
-            </div>
-          `)}
-          ${rangeContent.map(columnContent => html`
-            <div>
-              ${columnContent}
-            </div>
-          `)}
+          <div id="width">
+            ${this._store.settingControls.getContent(`controlPanel.tabs.chart.general.width`)}
+          </div>
+          <div id="height">
+            ${this._store.settingControls.getContent(`controlPanel.tabs.chart.general.height`)}
+          </div>
+          <div id="min-y">
+            ${this._store.settingControls.getContent(`controlPanel.tabs.chart.general.minY`)}
+          </div>
+          <div id="max-y">
+            ${this._store.settingControls.getContent(`controlPanel.tabs.chart.general.maxY`)}
+          </div>
           ${chartContent.map(columnContent => html`
             <div>
               ${columnContent}
@@ -79,7 +95,7 @@ export class ChartPanel extends ControlPanelTabPanel {
               ${columnContent}
             </div>
           `)}
-                
+
           <section id="popups">
             <button
               @click=${() => {

@@ -114,6 +114,10 @@
     "label": "Play or pause audio",
     "action": "mediaPlayPause"
   },
+  "Shift+ ": {
+    "label": "Reset the chart",
+    "action": "reset"
+  },
   "enter": {
     "label": "Select a datapoint",
     "action": "select"
