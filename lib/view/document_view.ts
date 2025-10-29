@@ -211,12 +211,14 @@ export class DocumentView extends Container(View) {
     const plotWidth = this._horizAxis ? this._grid.colWidth(1) : this._grid.width;
     const plotHeight = this._vertAxis ? this._grid.rowHeight(plotRow) : this._grid.height;
     this._chartLayers = new PlotLayerManager(this, plotWidth, plotHeight);
+    console.log('INIT');
     this._chartLayers.dataLayer.init();
+    console.log('APPEND');
     this._grid.append(this._chartLayers, {
       x: 1,
       y: plotRow
     });
-
+    console.log('DID APPEND');
     // At this point, we're fully connected to the root of the view tree,
     // so we can safely observe
     this._chartLayers.dataLayer.observeStore();

@@ -472,6 +472,6 @@ export const defaults: Settings = {
   },
   dev: {
     isDebug: false,
-    isShowGridTerritories: false
+    isShowGridTerritories: true
   }
 };

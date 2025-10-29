@@ -387,7 +387,7 @@ export class GridLayout extends Layout {
   protected _createTerritory(input: GridTerritoryInput): GridTerritory {
     const x = input.x ?? 0;
     const y = input.y ?? 0;
-    return {
+    const terr = {
       x,
       y,
       width: input.width ?? 1,
@@ -398,6 +398,7 @@ export class GridLayout extends Layout {
       //   ? this._expandPadding(input.margin, this._defaultMargin(x, y))
       //   : this._defaultMargin(x, y)
     };
+    return terr;
   }
 
   protected _claimTerritory(child: View, territoryInput?: GridTerritoryInput) {

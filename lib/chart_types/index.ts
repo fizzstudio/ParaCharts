@@ -4,6 +4,7 @@ import { BarChartInfo } from './bar_chart';
 import { PastryChartInfo } from './pastry_chart';
 import { ScatterChartInfo } from './scatter_chart';
 import { HeatMapInfo } from './heat_map';
+import { TableInfo } from './table';
 
 export * from './base_chart';
 export * from './plane_chart';
@@ -21,6 +22,7 @@ export const chartInfoClasses = {
   donut: PastryChartInfo,
   scatter: ScatterChartInfo,
   heatmap: HeatMapInfo,
+  table: TableInfo,
   // histogram: Histogram,
   // gauge: BarChart, //GaugeChart,
   // stepline: LineChart, //StepLineChart,

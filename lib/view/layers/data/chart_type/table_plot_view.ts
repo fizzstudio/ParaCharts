@@ -5,24 +5,26 @@ import { GridLayout } from '../../../layout';
 import { Label } from '../../../label';
 
 export class TablePlotView extends DataLayer {
-  protected _grid: GridLayout;
+  protected _grid: GridLayout | null = null;
 
   constructor(paraview: ParaView, width: number, height: number, dataLayerIndex: number, chartInfo: BaseChartInfo) {
     super(paraview, width, height, dataLayerIndex, chartInfo);
+  }
+
+  protected _createDatapoints(): void {
+    console.log('CREATING TABLE DATAPOINTS');
+    this._grid?.remove();
+    const model = this.paraview.store.model!;
     this._grid = new GridLayout(this.paraview, {
       width: this._width,
       height: this._height,
       canWidthFlex: false,
       canHeightFlex: false,
-      numCols: this.paraview.store.model!.facetKeys.length,
+      numCols: model.facetKeys.length,
       rowAligns: 'start',
       colAligns: 'start',
     }, 'table-grid');
     this.append(this._grid);
-  }
-
-  protected _createDatapoints(): void {
-    const model = this.paraview.store.model!;
     // TODO: Assumes exactly 1 indep facet
     const xHeading = model.getFacet(model.independentFacetKeys[0])!.label;
     const xLabel = new Label(this.paraview, {
@@ -37,17 +39,17 @@ export class TablePlotView extends DataLayer {
       const yLabel = new Label(this.paraview, {
         text: yHeading
       });
-      this._grid.append(yLabel, {
+      this._grid!.append(yLabel, {
         x: i + 1,
         y: 0
       });
     })
-    model.series[0].datapoints.forEach((dp, i) => {
+    model.series[0].datapoints.slice(0, 1).forEach((dp, i) => {
       const xValue = dp.facetValue(model.independentFacetKeys[0])!.toLocaleString();
       const xLabel = new Label(this.paraview, {
         text: xValue
       });
-      this._grid.append(xLabel, {
+      this._grid!.append(xLabel, {
         x: 0,
         y: i + 1
       });
@@ -56,7 +58,7 @@ export class TablePlotView extends DataLayer {
         const yLabel = new Label(this.paraview, {
           text: yValue
         });
-        this._grid.append(yLabel, {
+        this._grid!.append(yLabel, {
           x: j + 1,
           y: i + 1
         });
