@@ -63,7 +63,7 @@ export class ScreenReaderBridge {
   ): void {
     element.setAttribute('aria-live', ariaLive);
     element.setAttribute('role', 'status');
-    element.setAttribute('aria-atomic', 'true');
+    //element.setAttribute('aria-atomic', 'true');
     element.setAttribute('aria-relevant', 'additions text');
   }
 
