@@ -46,7 +46,8 @@ export class TablePlotView extends DataLayer {
     for (let i = 0; i < this._chartInfo.numRows; i++) {
       for (let j = 0; j < this._chartInfo.numCols; j++) {
         this._table[i][j] = new Label(this.paraview, {
-          text: this._chartInfo.contents[i][j]
+          text: this._chartInfo.contents[i][j],
+          classList: ['table-cell-label']
         });
       }
     }
@@ -106,7 +107,7 @@ export class TablePlotView extends DataLayer {
         y="0"
         width=${this._width}
         height=${this._height}
-        stroke="black"
+        stroke="darkgray"
         fill="none">
       </rect>
       ${this._table.slice(1).map((row, i) => svg`
@@ -115,7 +116,7 @@ export class TablePlotView extends DataLayer {
           y1=${(i + 1)*cellHeight}
           x2=${this._width}
           y2=${(i + 1)*cellHeight}
-          stroke="black"
+          stroke="darkgray"
         >
         </line>
       `)}
@@ -125,7 +126,7 @@ export class TablePlotView extends DataLayer {
           y1="0"
           x2=${(i + 1)*cellWidth}
           y2=${this._height}
-          stroke="black"
+          stroke="darkgray"
         >
         </line>
       `)}
@@ -136,7 +137,9 @@ export class TablePlotView extends DataLayer {
             y=${this._chartInfo.navMap!.cursor.options.row*cellHeight}
             width=${cellWidth}
             height=${cellHeight}
-            fill="red"
+            stroke="red"
+            stroke-width="10"
+            fill="none"
           >
           </rect>
         `

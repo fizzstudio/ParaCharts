@@ -239,6 +239,7 @@ export class ParaChart extends ParaComponent {
       '--legend-label-font-size': () => this._store.settings.legend.fontSize,
       '--bar-label-font-size': () => this._store.settings.type.bar.labelFontSize,
       '--column-label-font-size': () => this._store.settings.type.column.labelFontSize,
+      '--table-cell-label-font-size': () => this._store.settings.type.table.cellLabelFontSize,
       'display': 'block',
       'font-family': '"Trebuchet MS", Helvetica, sans-serif',
       'font-size': 'var(--chart-view-font-size, 1rem)'

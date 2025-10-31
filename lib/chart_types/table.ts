@@ -90,6 +90,34 @@ export class TableInfo extends BaseChartInfo {
     top.connect('right', nodes[0][0]);
   }
 
+  pageUp() {
+    if (this._navMap!.cursor.isNodeType('tableCell')) {
+      this._navMap!.cursor.allNodes('up', 'tableCell').at(-1)?.go();
+      this._docView.postNotice('goColumnTop', {options: this._navMap!.cursor.options});
+    }
+  }
+
+  pageDown() {
+    if (this._navMap!.cursor.isNodeType('tableCell')) {
+      this._navMap!.cursor.allNodes('down', 'tableCell').at(-1)?.go();
+      this._docView.postNotice('goColumnBottom', {options: this._navMap!.cursor.options});
+    }
+  }
+
+  navFirst() {
+    if (this._navMap!.cursor.isNodeType('tableCell')) {
+      this._navMap!.cursor.allNodes('left', 'tableCell').at(-1)?.go();
+      this._docView.postNotice('goRowLeftmost', {options: this._navMap!.cursor.options});
+    }
+  }
+
+  navLast() {
+    if (this._navMap!.cursor.isNodeType('tableCell')) {
+      this._navMap!.cursor.allNodes('right', 'tableCell').at(-1)?.go();
+      this._docView.postNotice('goRowRightmost', {options: this._navMap!.cursor.options});
+    }
+  }
+
   navCursorDidChange(cursor: NavNode): void {
   }
 

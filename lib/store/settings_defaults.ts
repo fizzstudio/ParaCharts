@@ -387,7 +387,8 @@ export const defaults: Settings = {
     },
     table: {
       rowAlign: 'center',
-      colAlign: 'center'
+      colAlign: 'center',
+      cellLabelFontSize: '12pt'
     }
   },
   grid: {

@@ -165,7 +165,10 @@ export class ParaView extends ParaComponent {
       }
       .column-total-label {
         font-size: calc(var(--column-label-font-size)*var(--chart-font-scale));
-                background-color: red;
+        background-color: red;
+      }
+      .table-cell-label {
+        font-size: calc(var(--table-cell-label-font-size)*var(--chart-font-scale));
       }
       .pastry-inside-label {
       }

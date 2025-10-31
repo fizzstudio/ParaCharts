@@ -186,6 +186,14 @@ export abstract class BaseChartInfo {
     this._store.paraChart.postNotice('move', {dir, options: this._navMap!.cursor.options});
   }
 
+  pageUp() {
+
+  }
+
+  pageDown() {
+
+  }
+
   /**
    * Navigate to the series minimum/maximum datapoint
    * @param isMin - If true, go the the minimum. Otherwise, go to the maximum

@@ -434,6 +434,7 @@ export interface RadialSettings extends SettingGroup {
 export interface TableSettings extends SettingGroup {
   rowAlign: SnapLocation;
   colAlign: SnapLocation;
+  cellLabelFontSize: string;
 }
 
 /** @public */
