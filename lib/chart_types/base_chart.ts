@@ -389,6 +389,10 @@ export abstract class BaseChartInfo {
     }
   }
 
+  navCursorDidChange(cursor: NavNode) {
+
+  }
+
   async navRunDidStart(cursor: NavNode) {
     if (cursor.isNodeType('series') || cursor.isNodeType(this.navDatapointType)) {
       this._store.frontSeries = cursor.options.seriesKey;

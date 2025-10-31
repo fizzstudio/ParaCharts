@@ -37,6 +37,9 @@ export interface GridOptionsInput {
   height?: number;
   isAutoWidth?: boolean;
   isAutoHeight?: boolean;
+  /** Whether rows/cols will maximally shrink when adding new items to the grid */
+  rowMaxShrink?: boolean;
+  colMaxShrink?: boolean;
 }
 
 export interface GridTerritoryInput {
@@ -79,17 +82,19 @@ function roundHundredths(n: number): number {
  */
 export class GridLayout extends Layout {
 
-  private _numCols: number;
-  private _rowGaps: number[];
-  private _colGaps: number[];
-  private _rowAligns: SnapLocation[];
-  private _colAligns: SnapLocation[];
-  private _rows: (View | null)[][] = [];
-  private _territories = new Map<View, GridTerritory>();
-  private _hRules: number[] = [];
-  private _vRules: number[] = [];
-  private _isAutoWidth: boolean;
-  private _isAutoHeight: boolean;
+  protected _numCols: number;
+  protected _rowGaps: number[];
+  protected _colGaps: number[];
+  protected _rowAligns: SnapLocation[];
+  protected _colAligns: SnapLocation[];
+  protected _rows: (View | null)[][] = [];
+  protected _territories = new Map<View, GridTerritory>();
+  protected _hRules: number[] = [];
+  protected _vRules: number[] = [];
+  protected _isAutoWidth: boolean;
+  protected _isAutoHeight: boolean;
+  protected _rowMaxShrink: boolean;
+  protected _colMaxShrink: boolean;
 
   constructor(paraview: ParaView, options: GridOptionsInput, id?: string) {
     super(paraview, id);
@@ -100,6 +105,8 @@ export class GridLayout extends Layout {
     this._height = options.height ?? this._height;
     this._isAutoWidth = !!options.isAutoWidth;
     this._isAutoHeight = !!options.isAutoHeight;
+    this._rowMaxShrink = !!options.rowMaxShrink;
+    this._colMaxShrink = !!options.colMaxShrink;
     this._numCols = options.numCols;
     this._rowGaps = options.rowGaps !== undefined
       ? this._expandRowGaps(options.rowGaps)
@@ -525,6 +532,7 @@ export class GridLayout extends Layout {
     return [this._rows.length, 0];
   }
 
+  /** Insert the child view into the `rows` data structure. */
   protected _arrangeChild(kid: View) {
     const territory = this._territories.get(kid);
     let rows: number[] = [];
@@ -711,198 +719,6 @@ export class GridLayout extends Layout {
   //   }
   // }
 
-  // canChildResize(kid: View, newWidth: number, newHeight: number): boolean {
-  //   const territory = this._territories.get(kid)!;
-  //   const hRuleStart = territory.y;
-  //   const hRuleEnd = hRuleStart + territory.height;
-  //   const vRuleStart = territory.x;
-  //   const vRuleEnd = vRuleStart + territory.width;
-
-  //   let rowShrinkage = new Map<number, number>();
-  //   let columnShrinkage = new Map<number, number>();
-  //   let kidWidthShrink = 0;
-  //   let kidHeightShrink = 0;
-  //   if (!this._canWidthFlex) {
-  //     const territoryPhysWidth = this._territoryPhysWidth(territory);
-  //     this.log.info('TPW', territoryPhysWidth, this._hRules, this._vRules);
-  //     const widthDiff = kid.paddedWidth - territoryPhysWidth;
-  //     this.log.info('WIDTH DIFF', widthDiff);
-  //     if (widthDiff > 0) {
-  //       let otherCols = this._rows[0].map((_, i) => i).filter(i =>
-  //         i < territory.x || i >= territory.x + territory.width);
-  //       let availShrink = otherCols.map(i => this._columnShrinkability(i));
-  //       otherCols = otherCols.filter((_rowIdx, i) => availShrink[i]);
-  //       availShrink = availShrink.filter(avail => avail).map(avail => avail);
-  //       this.log.info('AVAIL COL SHRINK', otherCols, availShrink);
-  //       // NB: otherCols may be empty
-  //       const availShrinkSum = availShrink.reduce((a, b) => a + b, 0);
-  //       if (availShrinkSum < widthDiff) {
-  //         // we can shrink as much as possible, but kid must be able to shrink
-  //         // XXX any view resizing should be queued and performed after all new sizes
-  //         // are determined, in case a view needs to resize in both width and height
-  //         if (availShrinkSum) {
-  //           columnShrinkage = this._apportionShrinkage(
-  //             availShrinkSum, availShrinkSum,
-  //             availShrink, otherCols);
-  //         }
-  //         kidWidthShrink = widthDiff - availShrinkSum;
-  //         this.log.info('KIDWIDTHSHRINK', kidWidthShrink, columnShrinkage);
-  //       } else {
-  //         // apportion space among shrinkable columns
-  //         columnShrinkage = this._apportionShrinkage(
-  //           widthDiff, availShrinkSum,
-  //           availShrink, otherCols);
-  //         this.log.info('COL SHRINK', columnShrinkage);
-  //       }
-  //     }
-  //   } else {
-  //     // All territories spanning the previous column that end on vRuleEnd
-  //     const prevColTerritories = this._rows
-  //       .map(row => row[vRuleEnd - 1])
-  //       .filter(view => view)
-  //       .map(view => this._territories.get(view!)!)
-  //       .filter(t => t.x + t.width === vRuleEnd);
-  //     const territoryDiffs = prevColTerritories.map(t => {
-  //       const vRuleStart = t.x;
-  //       const vRuleEnd = vRuleStart + t.width;
-  //       const vDiff = this._vRules[vRuleEnd] - this._vRules[vRuleStart];
-  //       const tView = this._rows[t.y][t.x];
-  //       return tView!.paddedWidth - vDiff;
-  //     });
-  //     const vShift = Math.max(...territoryDiffs);
-  //     if (vShift) {
-  //       this._vRules[vRuleEnd] += vShift;
-  //       this._vRules.slice(vRuleEnd + 1).forEach((vRule, i) => {
-  //         this._vRules[vRuleEnd + 1 + i] += vShift;
-  //       });
-  //     }
-  //   }
-
-  //   if (!this._canHeightFlex) {
-  //     const territoryPhysHeight = this._territoryPhysHeight(territory);
-  //     this.log.info('TPH', territoryPhysHeight, kid.paddedHeight);
-  //     const heightDiff = kid.paddedHeight - territoryPhysHeight;
-  //     this.log.info('HEIGHT DIFF', heightDiff);
-  //     if (heightDiff > 0) {
-  //       let otherRows = this._rows.map((_, i) => i).filter(i =>
-  //         i < territory.y || i >= territory.y + territory.height);
-  //       this.log.info('OTHER ROWS', otherRows);
-  //       let availShrink = otherRows.map(i => this._rowShrinkability(i));
-  //       this.log.info('AVAIL SHRINK', availShrink);
-  //       otherRows = otherRows.filter((_rowIdx, i) => availShrink[i]);
-  //       availShrink = availShrink.filter(avail => avail).map(avail => avail);
-  //       const availShrinkSum = availShrink.reduce((a, b) => a + b, 0);
-  //       if (availShrinkSum < heightDiff) {
-  //         if (availShrinkSum) {
-  //           rowShrinkage = this._apportionShrinkage(
-  //             availShrinkSum, availShrinkSum,
-  //             availShrink, otherRows);
-  //         }
-  //         kidHeightShrink = heightDiff - availShrinkSum;
-  //       } else {
-  //         rowShrinkage = this._apportionShrinkage(
-  //           heightDiff, availShrinkSum,
-  //           availShrink, otherRows);
-  //         this.log.info('ROW SHRINK', rowShrinkage);
-  //       }
-  //     }
-  //   } else {
-  //     // views in bottom-most row of territory that end on hRuleEnd
-  //     const prevRowTerritories = this._rows[hRuleEnd - 1]
-  //       .filter(view => view)
-  //       .map(view => this._territories.get(view!)!)
-  //       .filter(t => t.y + t.height === hRuleEnd);
-  //     const rowTerritoryDiffs = prevRowTerritories.map(t => {
-  //       const hRuleStart = t.y;
-  //       const hRuleEnd = hRuleStart + t.height;
-  //       const hDiff = this._hRules[hRuleEnd] - this._hRules[hRuleStart];
-  //       const tView = this._rows[t.y][t.x];
-  //       // XXX not all views here will necessarily start at hRuleStart!
-  //       return tView!.paddedHeight - hDiff;
-  //     });
-  //     const hShift = Math.max(...rowTerritoryDiffs);
-  //     if (hShift) {
-  //       this._hRules[hRuleEnd] += hShift;
-  //       this._hRules.slice(hRuleEnd + 1).forEach((hRule, i) => {
-  //         this._hRules[hRuleEnd + 1 + i] += hShift;
-  //       });
-  //     }
-  //   }
-
-  //   const toResize = new Map<View, {width: number, height: number}>();
-  //   if (rowShrinkage.size) {
-  //     this.log.info('ROWS WILL SHRINK');
-  //     rowShrinkage.entries().forEach(([idx, shrink]) => {
-  //       this._rows[idx].forEach(view => {
-  //         if (view) {
-  //           toResize.set(view, {width: view.width, height: view.height - shrink});
-  //         }
-  //       });
-  //     });
-  //     this.log.info('TO RESIZE', toResize);
-  //     const rowsAbove = new Map(rowShrinkage.entries().filter(([idx, shrink]) =>
-  //       idx < territory.y));
-  //     const rowsBelow = new Map(rowShrinkage.entries().filter(([idx, shrink]) =>
-  //       idx >= territory.y + territory.height));
-  //     this.log.info('ROWS ABOVE', rowsAbove, rowsBelow);
-  //     this.log.info('HRULES BEFORE', [...this._hRules]);
-  //     // Move hrules above territory up
-  //     rowsAbove.forEach((shrink, idx) => {
-  //       this._hRules.splice(idx + 1, rowsAbove.size,
-  //         ...this._hRules.slice(idx + 1, idx + 1 + rowsAbove.size).map(hr => hr - shrink));
-  //     });
-  //     // Move hrules below territory down
-  //     rowsBelow.forEach((shrink, idx) => {
-  //       this._hRules.splice(idx, rowsBelow.size,
-  //         ...this._hRules.slice(idx).map(hr => hr + shrink));
-  //     });
-  //     this.log.info('HRULES', this._hRules);
-  //   }
-  //   if (columnShrinkage.size) {
-  //     this.log.info('COLS WILL SHRINK');
-  //     columnShrinkage.entries().forEach(([idx, shrink]) => {
-  //       this._rows.map(row => row[idx]).forEach(view => {
-  //         if (view) {
-  //           toResize.set(view, {width: view.width - shrink, height: view.height});
-  //         }
-  //       });
-  //     });
-  //     this.log.info('TO RESIZE', toResize);
-  //     const colsLeft = columnShrinkage.entries().filter(([idx, shrink]) =>
-  //       idx < territory.x).toArray();
-  //     const colsRight = columnShrinkage.entries().filter(([idx, shrink]) =>
-  //       idx >= territory.x + territory.width).toArray().toReversed();
-  //     this.log.info('VRULES BEFORE', [...this._vRules]);
-  //     // Move vrules at territory left
-  //     colsLeft.forEach(([idx, shrink]) => {
-  //       this._vRules.splice(idx + 1, territory.x - (idx + 1),
-  //         ...this._vRules.slice(idx + 1, territory.x).map(vr => vr - shrink));
-  //     });
-  //     // Move vrules at territory right
-  //     colsRight.forEach(([idx, shrink]) => {
-  //       const start = territory.x + territory.width;
-  //       this._vRules.splice(start, idx + 1 - start,
-  //         ...this._vRules.slice(start, idx + 1).map(vr => vr + shrink)
-  //       );
-  //     });
-  //     this.log.info('VRULES', this._vRules);
-  //   }
-  //   toResize.forEach((newSize, view) => {
-  //     // Set the size without notifying the parent of the size change
-  //     this.log.info('RESIZING VIEWS', [...this._hRules]);
-  //     // view.constrainSize(newSize.width, newSize.height);
-  //     view.setSize(newSize.width, newSize.height, false);
-  //     .log('RESIZING VIEWS COMPLETE', [...this._hRules]);
-  //   });
-  //   if (kidWidthShrink || kidHeightShrink) {
-  //     this.log.info('KID CONSTRAIN', kid.width - kidWidthShrink, kid.height - kidHeightShrink);
-  //     // kid.constrainSize(kid.width - kidWidthShrink, kid.height - kidHeightShrink);
-  //     kid.setSize(kid.width - kidWidthShrink, kid.height - kidHeightShrink, false);
-  //   }
-  //   // XXX Don't forget to resize any other views in the kid's territory's row(s)/col(s),
-  //   // if necessary
-  // }
-
   protected _adjustRules(kid: View) {
     const territory = this._territories.get(kid)!;
     const hRuleStart = territory.y;
@@ -929,26 +745,42 @@ export class GridLayout extends Layout {
       if (widthDiff > 0) {
         let otherCols = this._rows[0].map((_, i) => i).filter(i =>
           i < territory.x || i >= territory.x + territory.width);
+        console.log('WIDTH DIFF', widthDiff, otherCols);
         let availShrink = otherCols.map(i => this._columnShrinkability(i));
+        console.log('H AVAIL SHRINK', availShrink);
         otherCols = otherCols.filter((_rowIdx, i) => availShrink[i]);
         availShrink = availShrink.filter(avail => avail).map(avail => avail);
         // NB: otherCols may be empty
         const availShrinkSum = availShrink.reduce((a, b) => a + b, 0);
-        if (availShrinkSum < widthDiff) {
-          // we can shrink as much as possible, but kid must be able to shrink
-          // XXX any view resizing should be queued and performed after all new sizes
-          // are determined, in case a view needs to resize in both width and height
-          if (availShrinkSum) {
+
+        if (this._colMaxShrink && otherCols.length === 1) {
+          if (availShrink[0] >= widthDiff) {
+            columnShrinkage = new Map([[otherCols[0], availShrink[0]]]);
+          } else {
+            if (availShrinkSum) {
+              columnShrinkage = this._apportionShrinkage(
+                availShrinkSum, availShrinkSum,
+                availShrink, otherCols);
+            }
+            kidWidthShrink = widthDiff - availShrinkSum;
+          }
+        } else {
+          if (availShrinkSum < widthDiff) {
+            // we can shrink as much as possible, but kid must be able to shrink
+            // XXX any view resizing should be queued and performed after all new sizes
+            // are determined, in case a view needs to resize in both width and height
+            if (availShrinkSum) {
+              columnShrinkage = this._apportionShrinkage(
+                availShrinkSum, availShrinkSum,
+                availShrink, otherCols);
+            }
+            kidWidthShrink = widthDiff - availShrinkSum;
+          } else {
+            // apportion space among shrinkable columns
             columnShrinkage = this._apportionShrinkage(
-              availShrinkSum, availShrinkSum,
+              widthDiff, availShrinkSum,
               availShrink, otherCols);
           }
-          kidWidthShrink = widthDiff - availShrinkSum;
-        } else {
-          // apportion space among shrinkable columns
-          columnShrinkage = this._apportionShrinkage(
-            widthDiff, availShrinkSum,
-            availShrink, otherCols);
         }
       }
     }
@@ -978,24 +810,41 @@ export class GridLayout extends Layout {
       const territoryPhysHeight = this._territoryPhysHeight(territory, false);
       const heightDiff = kid.paddedHeight - territoryPhysHeight;
       if (heightDiff > 0) {
+        console.log('HEIGHT DIFF', heightDiff);
         let otherRows = this._rows.map((_, i) => i).filter(i =>
           i < territory.y || i >= territory.y + territory.height);
         // shrinkability for each row in `otherRows`
         let availShrink = otherRows.map(i => this._rowShrinkability(i));
+        console.log('V AVAIL SHRINK', availShrink);
         otherRows = otherRows.filter((_rowIdx, i) => availShrink[i]);
         availShrink = availShrink.filter(avail => avail);
         const availShrinkSum = availShrink.reduce((a, b) => a + b, 0);
-        if (availShrinkSum < heightDiff) {
-          if (availShrinkSum) {
-            rowShrinkage = this._apportionShrinkage(
-              availShrinkSum, availShrinkSum,
-              availShrink, otherRows);
+
+        if (this._rowMaxShrink && otherRows.length === 1) {
+          if (availShrink[0] >= heightDiff) {
+            rowShrinkage = new Map([[otherRows[0], availShrink[0]]]);
+          } else {
+            if (availShrinkSum) {
+              rowShrinkage = this._apportionShrinkage(
+                availShrinkSum, availShrinkSum,
+                availShrink, otherRows);
+            }
+            kidHeightShrink = heightDiff - availShrinkSum;
           }
-          kidHeightShrink = heightDiff - availShrinkSum;
         } else {
-          rowShrinkage = this._apportionShrinkage(
-            heightDiff, availShrinkSum,
-            availShrink, otherRows);
+          if (availShrinkSum < heightDiff) {
+            if (availShrinkSum) {
+              rowShrinkage = this._apportionShrinkage(
+                availShrinkSum, availShrinkSum,
+                availShrink, otherRows);
+            }
+            kidHeightShrink = heightDiff - availShrinkSum;
+          } else {
+            rowShrinkage = this._apportionShrinkage(
+              heightDiff, availShrinkSum,
+              availShrink, otherRows);
+            console.log('ROWSHRINKAGE', rowShrinkage);
+          }
         }
       }
     }

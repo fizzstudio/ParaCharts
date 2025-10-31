@@ -431,6 +431,12 @@ export interface RadialSettings extends SettingGroup {
 }
 
 /** @public */
+export interface TableSettings extends SettingGroup {
+  rowAlign: SnapLocation;
+  colAlign: SnapLocation;
+}
+
+/** @public */
 export interface ChartTypeSettings extends SettingGroup {
   bar: BarSettings;
   column: BarSettings;
@@ -443,6 +449,7 @@ export interface ChartTypeSettings extends SettingGroup {
   gauge: RadialSettings;
   stepline: StepLineSettings;
   lollipop: LollipopSettings;
+  table: TableSettings;
 }
 
 /** @public */

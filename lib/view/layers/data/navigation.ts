@@ -16,8 +16,18 @@ const oppositeDirs: Record<Direction, Direction> = {
   out: 'in'
 };
 
-export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence' | 'cluster' | 'scatterpoint';
-export type DatapointNavNodeType = 'datapoint' | 'scatterpoint';
+export type NavNodeType =
+| 'top'
+| 'series'
+| 'datapoint'
+| 'chord'
+| 'sequence'
+| 'cluster'
+| 'scatterpoint'
+| 'tableCell';
+export type DatapointNavNodeType =
+| 'datapoint'
+| 'scatterpoint';
 
 
 export type NavNodeOptionsType<T extends NavNodeType> =
@@ -28,6 +38,7 @@ export type NavNodeOptionsType<T extends NavNodeType> =
   T extends 'sequence' ? SequenceNavNodeOptions :
   T extends 'cluster' ? ClusterNavNodeOptions :
   T extends 'scatterpoint' ? ScatterPointNavNodeOptions :
+  T extends 'tableCell' ? TableCellNavNodeOptions :
   never;
 
 export interface DatapointCursor {
@@ -55,13 +66,16 @@ export interface SequenceNavNodeOptions {
   start: number;
   end: number;
 }
-
 export interface ClusterNavNodeOptions {
   seriesKey: string;
   start: number;
   end: number;
   datapoints: number[];
-  clustering: clusterObject
+  clustering: clusterObject;
+}
+export interface TableCellNavNodeOptions {
+  row: number;
+  column: number;
 }
 
 function nodeOptionsEq<T extends NavNodeType>(
@@ -154,7 +168,7 @@ export class NavMap {
       this._runTimer = null;
       this._chart.navRunDidEnd(this.cursor);
     }, this._store.settings.ui.navRunTimeoutMs);
-    //this._chart.navCursorDidChange(this.cursor);
+    this._chart.navCursorDidChange(this.cursor);
   }
 
   node<T extends NavNodeType>(

@@ -384,6 +384,10 @@ export const defaults: Settings = {
       clusterLabelFormat: 'raw',
       isShowPopups: false,
       labelFontSize: '8pt'
+    },
+    table: {
+      rowAlign: 'center',
+      colAlign: 'center'
     }
   },
   grid: {
@@ -472,6 +476,6 @@ export const defaults: Settings = {
   },
   dev: {
     isDebug: false,
-    isShowGridTerritories: true
+    isShowGridTerritories: false
   }
 };

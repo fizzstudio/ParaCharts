@@ -78,8 +78,6 @@ export class Label extends View {
 
   constructor(paraview: ParaView, protected _options: LabelOptions) {
     super(paraview);
-    this._canWidthFlex = true;
-    this._canHeightFlex = true;
     if (_options.classList) {
       if (!_options.classList.includes('label')) {
         _options.classList.push('label');
@@ -91,6 +89,18 @@ export class Label extends View {
       };
     }
     this._angle = this._options.angle ?? 0;
+    if (this._angle % 180 === 0) {
+      // text is horizontal (possibly upside-down)
+      this._canWidthFlex = true;
+      this._canHeightFlex = false;
+    } else if (this._angle % 90 === 0) {
+      // text is vertical
+      this._canWidthFlex = false;
+      this._canHeightFlex = true;
+    } else {
+      this._canWidthFlex = true;
+      this._canHeightFlex = true;
+    }
     this._textAnchor = this._options.textAnchor ?? (_options.wrapWidth ? 'start' : 'middle');
     this._justify = this._options.justify ?? 'start';
     this._lineSpacing = this._options.lineSpacing ?? 0;
