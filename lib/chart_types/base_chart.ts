@@ -433,6 +433,13 @@ export abstract class BaseChartInfo extends Logger {
         }
       }
     } else if (cursor.isNodeType('sequence')) {
+      this._store.announce(
+        await this._summarizer.getSequenceSummary({
+          seriesKey: cursor.options.seriesKey,
+          start: cursor.options.start,
+          end:cursor.options.end
+        })
+      );
       this._playRiff();
 
       // this._store.highlight(
