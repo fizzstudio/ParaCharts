@@ -21,10 +21,10 @@ enablePatches();
 
 import {
   dataFromManifest, type AllSeriesData, type ChartType, type Manifest,
-  Jimerator,
   isLineType,
   isPastryType
 } from '@fizz/paramanifest';
+import { Jimerator } from '@fizz/jimerator';
 import {
   facetsFromDataset, Model, modelFromExternalData, modelFromInlineData,
   FacetSignature, SeriesAnalyzerConstructor, PairAnalyzerConstructor,
