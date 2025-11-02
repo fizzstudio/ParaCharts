@@ -2034,7 +2034,7 @@ export class LinePlotView extends PointPlotView {
 // @public
 export class LineSection extends PointDatapointView {
     // (undocumented)
-    addHoverLineBreak(): void;
+    addHoverLineBreak(color?: string): void;
     // (undocumented)
     addPopup(text?: string): void;
     // (undocumented)
@@ -2407,7 +2407,7 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _suppleteSettingsWith?: DeepReadonly<Settings>;
     // (undocumented)
-    train: boolean;
+    train: "train" | "pretrain" | "normal";
     // (undocumented)
     type?: ChartType_2;
     // (undocumented)
@@ -2664,6 +2664,8 @@ export class ParaStore extends State {
     //
     // (undocumented)
     popups: Popup[];
+    // (undocumented)
+    _pretrainBreaks: number[];
     // (undocumented)
     get prevSelectedDatapoints(): Set<string>;
     // (undocumented)

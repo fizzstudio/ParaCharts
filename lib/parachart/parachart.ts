@@ -56,7 +56,7 @@ export class ParaChart extends logging(ParaComponent) {
   @property({type: Object}) accessor config: SettingsInput = {};
   @property() accessor forcecharttype: ChartType | undefined;
   @property() type?: ChartType;
-  @property() train: boolean = false;
+  @property() train: "train" | "pretrain" | "normal" = "normal";
   @property() accessor description: string | undefined;
   @property({type: Boolean, attribute: false}) isControlPanelOpen = false;
 

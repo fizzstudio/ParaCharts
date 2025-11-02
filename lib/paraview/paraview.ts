@@ -233,6 +233,13 @@ export class ParaView extends logging(ParaComponent) {
         stroke-dasharray: 12 12;
         stroke-opacity: 0.8;
       }
+      .hover-break{
+        display: inline;
+        stroke-width: 8px;
+        stroke-linecap: butt;
+        stroke-dasharray: 12 12;
+        stroke-opacity: 0.8;
+      }
       .datapoint.visited:not(.highlighted) {
         stroke: var(--visited-color);
         fill: var(--visited-color);

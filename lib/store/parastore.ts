@@ -163,6 +163,7 @@ export class ParaStore extends State {
   @property() protected _modelTrendLines: TrendLine[] = [];
   @property() protected _userTrendLines: TrendLine[] = [];
   @property() protected _userCandidates: Candidate[] = [];
+  @property() protected _pretrainBreaks: number[] = [];
 
   protected _settingControls = new SettingControlManager(this);
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
@@ -254,6 +255,10 @@ export class ParaStore extends State {
 
   get userCandidates() {
     return this._userCandidates;
+  }
+
+  get pretrainBreaks() {
+    return this._pretrainBreaks;
   }
 
   get hiddenSeriesList(): readonly string[] {

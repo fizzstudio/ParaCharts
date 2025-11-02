@@ -296,7 +296,7 @@ export class LineSection extends PointDatapointView {
           this.paraview.store.settings.chart.showPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
-          if (this.paraview.paraChart.train) {
+          if (this.paraview.paraChart.train === 'train') {
             this.addHoverLineBreak();
           }
         },
@@ -304,8 +304,8 @@ export class LineSection extends PointDatapointView {
           this.paraview.store.settings.chart.showPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
-          if (this.paraview.paraChart.train) {
-            this._children = this.children.filter(c => c.classInfo['trend-line'] !== true);
+          if (this.paraview.paraChart.train === 'train') {
+            this._children = this.children.filter(c => c.classInfo['hover-break'] !== true);
           }
         },
         click: (e) => {
@@ -338,7 +338,7 @@ export class LineSection extends PointDatapointView {
           this.paraview.store.settings.chart.showPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
-          if (this.paraview.paraChart.train) {
+          if (this.paraview.paraChart.train === 'train') {
             this.addHoverLineBreak()
           }
         },
@@ -346,8 +346,8 @@ export class LineSection extends PointDatapointView {
           this.paraview.store.settings.chart.showPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
-          if (this.paraview.paraChart.train) {
-            this._children = this.children.filter(c => c.classInfo['trend-line'] !== true)
+          if (this.paraview.paraChart.train === 'train') {
+            this._children = this.children.filter(c => c.classInfo['hover-break'] !== true)
           }
         },
         click: (e) => {
@@ -362,6 +362,9 @@ export class LineSection extends PointDatapointView {
         this.append(invis)
       }
     }
+    if (this.index === Math.min(...this.paraview.store.pretrainBreaks)) {
+      this.addHoverLineBreak("red")
+    }
     this._shapes.forEach(shape => {
       (shape as PathShape).isClip = this.shouldClip;
     })
@@ -370,26 +373,38 @@ export class LineSection extends PointDatapointView {
 
 
   clickAction() {
-    if (this.paraview.paraChart.train) {
+    if (this.paraview.paraChart.train === 'train') {
       !this.paraview.store.userLineBreaks.some(lb => lb.index === this.index && lb.seriesKey == this.seriesKey) ?
         this.paraview.store.addLineBreak(this.index / (this.series.datapoints.length - 1), this.index, this.seriesKey, false) :
         this.paraview.store.removeLineBreak(this.index, this.seriesKey, false)
       this.paraview.store.clearUserTrendLines();
       this.paraview.store.addUserTrendLines();
     }
+    else if (this.paraview.paraChart.train === 'pretrain') {
+      if (this.index === Math.min(...this.paraview.store.pretrainBreaks)) {
+        !this.paraview.store.userLineBreaks.some(lb => lb.index === this.index && lb.seriesKey == this.seriesKey) ?
+          this.paraview.store.addLineBreak(this.index / (this.series.datapoints.length - 1), this.index, this.seriesKey, false) :
+          this.paraview.store.removeLineBreak(this.index, this.seriesKey, false)
+        this.paraview.store.clearUserTrendLines();
+        this.paraview.store.addUserTrendLines();
+        this._children = this.children.filter(c => c.classInfo['hover-break'] !== true)
+        this.paraview.store.pretrainBreaks.shift();
+        this.paraview.createDocumentView();
+      }
+    }
   }
 
-  addHoverLineBreak() {
-    const color = this.paraview.store.colors.colorValueAt(this.color)
+  addHoverLineBreak(color?: string) {
+    const strokeColor = color ?? this.paraview.store.colors.colorValueAt(this.color)
     const startPx = this.chart.width * this.index / (this.series.datapoints.length - 1);
     const linebreak = new PathShape(this.paraview, {
       points: [new Vec2(startPx, 0), new Vec2(startPx, this.chart.height)],
-      stroke: color,
+      stroke: strokeColor,
       click: (e) => {
         this.clickAction();
       }
     })
-    linebreak.classInfo = { 'trend-line': true }
+    linebreak.classInfo = { 'hover-break': true }
     this.append(linebreak)
   }
 
