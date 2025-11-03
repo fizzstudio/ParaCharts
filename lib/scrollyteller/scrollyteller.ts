@@ -1,23 +1,104 @@
+/*
+ * MIT License
+ *
+ * Copyright (c) 2022 Russell Samora
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 import { ParaChart } from '../parachart/parachart';
 
-export default class Scrollyteller {
-  parachart: ParaChart;
-  steps!: NodeListOf<HTMLElement>;
+export type DecimalType = 0 | 0.1 | 0.2 | 0.3 | 0.4 | 0.5 | 0.6 | 0.7 | 0.8 | 0.9 | 1;
 
-  constructor(chartID: string | null | undefined) {
-    const element = chartID ?
+export interface ParsedOffset {
+  format: 'pixels' | 'percent';
+  value: number;
+}
+
+export interface CallbackResponse {
+  element: Element;
+  index: number;
+  direction?: 'up' | 'down';
+  progress?: number;
+  action?: Record<string, string>;
+}
+
+export interface Callbacks {
+  stepEnter: (response: CallbackResponse) => void;
+  stepExit: (response: CallbackResponse) => void;
+  stepProgress: (response: CallbackResponse) => void;
+}
+
+export interface ScrollyStep {
+  index: number;
+  direction?: 'up' | 'down';
+  height: number;
+  node: Element;
+  observers: {
+    resize?: ResizeObserver;
+    step?: IntersectionObserver;
+    progress?: IntersectionObserver;
+  };
+  offset: ParsedOffset | null;
+  action: Record<string, string>;
+  top: number;
+  progress: number;
+  state?: 'enter' | 'exit';
+}
+
+export type DebugInfo = {
+  id: string;
+  step: ScrollyStep;
+  marginTop: number;
+  marginBottom?: number;
+};
+
+export type ScrollyOptions = {
+  step: NodeList | HTMLElement[] | string;
+  parent?: Document | Element;
+  progress?: boolean;
+  offset?: DecimalType;
+  threshold?: 1 | 2 | 3 | 4;
+  once?: boolean;
+  debug?: boolean;
+  container?: HTMLElement;
+  root?: Element | Document | null;
+  initialIndex?: number;
+};
+
+export default class Scrollyteller {
+  parachart: ParaChart | null;
+  steps!: NodeListOf<Element>;
+
+  constructor(chartID?: string) {
+    this.parachart = chartID ?
       document.getElementById(chartID) as ParaChart | null
       : document.querySelector('para-chart-ai') as ParaChart | null;
 
-    if (!element) {
-      throw new Error(`ParaChart element not found${chartID ? ` with ID: ${chartID}` : ' (para-chart-ai)'}`);
-    }
+    // console.warn('this.parachart', this.parachart)
 
-    this.parachart = element;
-    this.init();
+    if (this.parachart) {
+      this.init();
+    }
   }
 
-  init() {
+  init(): void {
     this.steps = document.querySelectorAll('[data-para-step]');
     // console.warn('this.steps', this.steps)
 
@@ -33,14 +114,15 @@ export default class Scrollyteller {
 
     scroller.onStepEnter(response => {
       const element = response.element;
-      const stepIndex = parseInt(element.dataset.paraStep);
+      const stepIndex = parseInt((element as HTMLElement).dataset.paraStep || '0');
       console.warn('SCROLLER:', response, stepIndex)
       this.activateNextStep(element);
-      if (response.action.activate) {
+      
+      if (this.parachart && response.action?.activate) {
         this.parachart.store.soloSeries = response.action.activate;
       }
 
-      if (response.action.highlight) {
+      if (this.parachart && response.action?.highlight) {
         const highlights = response.action.highlight.replace(/[\[\]']+/g, '').split(',');
         console.warn('response.action.highlight', response.action.highlight)
         console.warn('response.action.highlight highlights', highlights)
@@ -52,13 +134,29 @@ export default class Scrollyteller {
     // this.parachart.store.soloSeries = seriesKeys[0];
   }
 
-  activateNextStep(nextStep) {
+  activateNextStep(nextStep: Element): void {
     this.steps.forEach(step => step.classList.remove('para-active'));
     nextStep.classList.add('para-active');
   }
 }
 
 export class Scrollytelling {
+
+  steps: ScrollyStep[];
+  cb: Callbacks;
+  globalOffset?: ParsedOffset | null;
+  containerElement?: HTMLElement;
+  rootElement: Element | Document | null;
+  progressThreshold: number; 
+  isEnabled: boolean;
+  isProgress: boolean;
+  isDebug: boolean;
+  isTriggerOnce: boolean;
+  exclude: boolean[];
+  currentScrollY: number;
+  comparisonScrollY: number;
+  direction?: 'up' | 'down';
+
   constructor() {
     // callbacks
     this.cb = {
@@ -68,7 +166,6 @@ export class Scrollytelling {
     };
 
     // state
-    this.id = this.generateId();
     this.steps = [];
     this.globalOffset = undefined;
     this.containerElement = undefined;
@@ -98,7 +195,10 @@ export class Scrollytelling {
 
   // internal helpers
 
-  selectAll(selector, parent = document) {
+  selectAll(
+    selector: string | Element | NodeList | Element[],
+    parent: Document | Element = document
+  ): Element[] {
     if (typeof selector === 'string') {
       const selectees = Array.from(parent.querySelectorAll(selector));
       // console.warn('selectees', selectees)
@@ -107,44 +207,47 @@ export class Scrollytelling {
 
     }
     if (selector instanceof Element) return [selector];
-    if (selector instanceof NodeList) return Array.from(selector);
+    if (selector instanceof NodeList) return Array.from(selector) as Element[];
     if (Array.isArray(selector)) return selector;
     return [];
   }
 
-  getIndex(node) {
-    return +node.getAttribute('data-scrollytelling-index');
+  getIndex(node: Element): number {
+    const attr = node.getAttribute('data-scrollytelling-index');
+    return attr ? +attr : 0;
   }
 
-  indexSteps(steps) {
+  indexSteps(steps: ScrollyStep[]): void {
     steps.forEach((step) =>
-      step.node.setAttribute('data-scrollytelling-index', step.index)
+      step.node.setAttribute('data-scrollytelling-index', step.index.toString())
     );
   }
 
-  getOffsetTop(node) {
+  getOffsetTop(node: Element): number {
     const { top } = node.getBoundingClientRect();
     const scrollTop = window.pageYOffset;
     const clientTop = document.body.clientTop || 0;
     return top + scrollTop - clientTop;
   }
 
-  parseOffset(x) {
+  parseOffset(x: string | number | null | undefined): ParsedOffset | null {
     if (typeof x === 'string' && x.indexOf('px') > 0) {
       const v = +x.replace('px', '');
       if (!isNaN(v)) return { format: 'pixels', value: v };
       this.err('offset value must be in "px" format. Fallback to 0.5.');
       return { format: 'percent', value: 0.5 };
-    } else if (typeof x === 'number' || !isNaN(+x)) {
-      if (x > 1) this.err('offset value is greater than 1. Fallback to 1.');
-      if (x < 0) this.err('offset value is lower than 0. Fallback to 0.');
-      return { format: 'percent', value: Math.min(Math.max(0, x), 1) };
+    } else if (typeof x === 'number' || (x != null && !isNaN(+x))) {
+      const numValue = typeof x === 'number' ? x : +x;
+      if (numValue > 1) this.err('offset value is greater than 1. Fallback to 1.');
+      if (numValue < 0) this.err('offset value is lower than 0. Fallback to 0.');
+      return { format: 'percent', value: Math.min(Math.max(0, numValue), 1) };
     }
     return null;
   }
 
-  parseAction(action) {
-    const actions = {};
+  parseAction(action: string | undefined): Record<string, string> {
+    if (!action) return {};
+    const actions: Record<string, string> = {};
     const actionArray = action.split(')');
     actionArray.forEach(actionItem => {
       actionItem = actionItem.trim();
@@ -158,23 +261,11 @@ export class Scrollytelling {
     return actions;
   }
 
-  // TODO: remove, unless we really need an ID once Scrollyteller is part of ParaCharts
-  generateId() {
-    const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-    const date = Date.now();
-    const result = [];
-    for (let i = 0; i < 6; i += 1) {
-      const char = alphabet[Math.floor(Math.random() * alphabet.length)];
-      result.push(char);
-    }
-    return `${result.join('')}${date}`;
+  err(msg: string): void {
+    console.error(`scrollytelling: ${msg}`);
   }
 
-  err(msg) {
-    console.error(`scrollytelling error: ${msg}`);
-  }
-
-  createProgressThreshold(height, threshold) {
+  createProgressThreshold(height: number, threshold: number): number[] {
     const count = Math.ceil(height / threshold);
     const t = [];
     const ratio = 1 / count;
@@ -184,25 +275,27 @@ export class Scrollytelling {
 
 
   // ————— helpers —————
-  _resetCallbacksAndExclusions() {
+  _resetCallbacksAndExclusions(): void {
     this.cb = { stepEnter: () => { }, stepExit: () => { }, stepProgress: () => { } };
     this.exclude = [];
   }
 
-  _disconnectObserver({ observers }) {
+  _disconnectObserver(
+    observers: Record<string, { disconnect(): void }>
+  ): void {
     Object.keys(observers).forEach((name) => observers[name].disconnect());
   }
-  _disconnectObservers() {
-    this.steps.forEach((s) => this._disconnectObserver(s));
+  _disconnectObservers(): void {
+    this.steps.forEach((s) => this._disconnectObserver(s.observers));
   }
 
-  _handleEnable(shouldEnable) {
+  _handleEnable(shouldEnable: boolean): void {
     if (shouldEnable && !this.isEnabled) this._updateObservers();
     if (!shouldEnable && this.isEnabled) this._disconnectObservers();
     this.isEnabled = shouldEnable;
   }
 
-  _notifyProgress(element, progress) {
+  _notifyProgress(element: Element, progress?: number): void {
     const index = this.getIndex(element);
     const step = this.steps[index];
     if (progress !== undefined) step.progress = progress;
@@ -210,7 +303,7 @@ export class Scrollytelling {
     if (step.state === 'enter') this.cb.stepProgress(response);
   }
 
-  _notifyStepEnter(element) {
+  _notifyStepEnter(element: Element): void {
     const index = this.getIndex(element);
     const step = this.steps[index];
     const response = { element, index, direction: this.direction, action: step.action };
@@ -222,7 +315,7 @@ export class Scrollytelling {
     if (this.isTriggerOnce) this.exclude[index] = true;
   }
 
-  _notifyStepExit(element) {
+  _notifyStepExit(element: Element): boolean {
     const index = this.getIndex(element);
     const step = this.steps[index];
     if (!step.state) return false;
@@ -241,7 +334,7 @@ export class Scrollytelling {
   }
 
   // ———— scroll tracking ————
-  _handleScroll() {
+  _handleScroll(): void {
     // window.innerHeight: the height of the visible content
     // document.body.scrollHeight: the total height of the entire content, including both the visible and hidden content
     // window.scrollY: the current vertical scroll position
@@ -285,34 +378,40 @@ export class Scrollytelling {
     }
   }
 
-  _setupScrollListener() {
+  _setupScrollListener(): void {
     // Use a single listener on document; adjust direction per event
     document.removeEventListener('scroll', this._handleScroll);
     document.addEventListener('scroll', this._handleScroll, { passive: true });
   }
 
   // ———— Observer callbacks ————
-  _resizeStep([entry]) {
+  _resizeStep(entries: ResizeObserverEntry[]): void {
+    if (entries.length === 0) return;
+    const entry = entries[0];
     const index = this.getIndex(entry.target);
     const step = this.steps[index];
-    const h = entry.target.offsetHeight;
+    const h = (entry.target as HTMLElement).offsetHeight;
     if (h !== step.height) {
       step.height = h;
-      this._disconnectObserver(step);
+      this._disconnectObserver(step.observers);
       this._updateResizeObserver(step);
       this._updateStepObserver(step);
       if (this.isProgress) this._updateProgressObserver(step);
     }
   }
 
-  _intersectStep([entry]) {
+  _intersectStep(entries: IntersectionObserverEntry[]): void {
+    if (entries.length === 0) return;
+    const entry = entries[0];
     this._handleScroll(); // update direction
     const { isIntersecting, target } = entry;
     if (isIntersecting) this._notifyStepEnter(target);
     else this._notifyStepExit(target);
   }
 
-  _intersectProgress([entry]) {
+  _intersectProgress(entries: IntersectionObserverEntry[]): void {
+    if (entries.length === 0) return;
+    const entry = entries[0];
     const index = this.getIndex(entry.target);
     const step = this.steps[index];
     const { isIntersecting, intersectionRatio, target } = entry;
@@ -322,20 +421,20 @@ export class Scrollytelling {
   }
 
   // ———— Observer setup ————
-  _updateResizeObserver(step) {
+  _updateResizeObserver(step: ScrollyStep): void {
     const observer = new ResizeObserver(this._resizeStep);
     observer.observe(step.node);
     step.observers.resize = observer;
   }
-  _updateResizeObservers() {
+  _updateResizeObservers(): void {
     this.steps.forEach((s) => this._updateResizeObserver(s));
   }
 
-  _updateStepObserver(step) {
+  _updateStepObserver(step: ScrollyStep): void {
     const h = window.innerHeight;
     const off = step.offset || this.globalOffset;
-    const factor = off.format === 'pixels' ? 1 : h;
-    const offset = off.value * factor;
+    const factor = off!.format === 'pixels' ? 1 : h;
+    const offset = off!.value * factor;
     const marginTop = step.height / 2 - offset;
     const marginBottom = step.height / 2 - (h - offset);
     const rootMargin = `${marginTop}px 0px ${marginBottom}px 0px`;
@@ -348,17 +447,18 @@ export class Scrollytelling {
     observer.observe(step.node);
     step.observers.step = observer;
 
-    if (this.isDebug) this.updateDebug({ id: this.id, step, marginTop, marginBottom });
+    if (this.isDebug) this.updateDebug({ id: 'id', step, marginTop, marginBottom });
   }
-  _updateStepObservers() {
+
+  _updateStepObservers(): void {
     this.steps.forEach((s) => this._updateStepObserver(s));
   }
 
-  _updateProgressObserver(step) {
+  _updateProgressObserver(step: ScrollyStep): void {
     const h = window.innerHeight;
     const off = step.offset || this.globalOffset;
-    const factor = off.format === 'pixels' ? 1 : h;
-    const offset = off.value * factor;
+    const factor = off!.format === 'pixels' ? 1 : h;
+    const offset = off!.value * factor;
     const marginTop = -offset + step.height;
     const marginBottom = offset - h;
     const rootMargin = `${marginTop}px 0px ${marginBottom}px 0px`;
@@ -370,11 +470,11 @@ export class Scrollytelling {
     observer.observe(step.node);
     step.observers.progress = observer;
   }
-  _updateProgressObservers() {
+  _updateProgressObservers(): void {
     this.steps.forEach((s) => this._updateProgressObserver(s));
   }
 
-  _updateObservers() {
+  _updateObservers(): void {
     this._disconnectObservers();
     this._updateResizeObservers();
     this._updateStepObservers();
@@ -393,17 +493,17 @@ export class Scrollytelling {
     container = undefined,
     root = null,
     initialIndex,
-  }) {
+  }: ScrollyOptions): Scrollytelling {
     this._setupScrollListener();
 
     this.steps = this.selectAll(step, parent).map((node, index) => ({
       index,
       direction: undefined,
-      height: node.offsetHeight,
+      height: (node as HTMLElement).offsetHeight,
       node,
       observers: {},
-      offset: this.parseOffset(node.dataset.offset),
-      action: this.parseAction(node.dataset.paraAction),
+      offset: this.parseOffset((node as HTMLElement).dataset.offset),
+      action: this.parseAction((node as HTMLElement).dataset.paraAction),
       top: this.getOffsetTop(node),
       progress: 0,
       state: undefined,
@@ -430,41 +530,41 @@ export class Scrollytelling {
     return this;
   }
 
-  enable() {
+  enable(): Scrollytelling {
     this._handleEnable(true);
     return this;
   }
-  disable() {
+  disable(): Scrollytelling {
     this._handleEnable(false);
     return this;
   }
-  destroy() {
+  destroy(): Scrollytelling {
     this._handleEnable(false);
     this._resetCallbacksAndExclusions();
     document.removeEventListener('scroll', this._handleScroll);
     return this;
   }
-  resize() {
+  resize(): Scrollytelling {
     this._updateObservers();
     return this;
   }
-  offset(x) {
-    if (x === null || x === undefined) return this.globalOffset?.value;
+  offset(x?: string | number): number | this {
+    if (x === null || x === undefined) return this.globalOffset?.value ?? 0;
     this.globalOffset = this.parseOffset(x);
     this._updateObservers();
     return this;
   }
-  onStepEnter(f) {
+  onStepEnter(f: (response: CallbackResponse) => void): Scrollytelling {
     if (typeof f === 'function') this.cb.stepEnter = f;
     else this.err('onStepEnter requires a function');
     return this;
   }
-  onStepExit(f) {
+  onStepExit(f: (response: CallbackResponse) => void): Scrollytelling {
     if (typeof f === 'function') this.cb.stepExit = f;
     else this.err('onStepExit requires a function');
     return this;
   }
-  onStepProgress(f) {
+  onStepProgress(f: (response: CallbackResponse) => void): Scrollytelling {
     if (typeof f === 'function') this.cb.stepProgress = f;
     else this.err('onStepProgress requires a function');
     return this;
@@ -472,18 +572,18 @@ export class Scrollytelling {
 
   // --- Debug helpers (no-op unless `debug: true`) ---
 
-  updateDebug({ id, step, marginTop }) {
+  updateDebug({ id, step, marginTop, marginBottom }: DebugInfo): void {
     const { index, height } = step;
     const className = `scrollytelling__debug-step--${id}-${index}`;
     let el = document.querySelector(`.${className}`);
     if (!el) el = this.createDebugEl(className);
 
-    el.style.top = `${marginTop * -1}px`;
-    el.style.height = `${height}px`;
-    el.querySelector('p').style.top = `${height / 2}px`;
+    (el as HTMLElement).style.top = `${marginTop * -1}px`;
+    (el as HTMLElement).style.height = `${height}px`;
+    (el.querySelector('p') as HTMLElement).style.top = `${height / 2}px`;
   }
 
-  createDebugEl(className) {
+  createDebugEl(className: string): HTMLElement {
     const el = document.createElement('div');
     el.className = `scrollytelling__debug-step ${className}`;
     el.style.position = 'fixed';
