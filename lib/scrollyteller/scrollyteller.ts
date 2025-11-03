@@ -1,14 +1,20 @@
+import { ParaChart } from '../parachart/parachart';
+
 export default class Scrollyteller {
-  constructor(chartID) {
-    this.parachart = chartID ?
-      document.getElementById(chartID)
-      : document.querySelector('para-chart-ai');
+  parachart: ParaChart;
+  steps!: NodeListOf<HTMLElement>;
 
-    // console.warn('this.parachart', this.parachart)
+  constructor(chartID: string | null | undefined) {
+    const element = chartID ?
+      document.getElementById(chartID) as ParaChart | null
+      : document.querySelector('para-chart-ai') as ParaChart | null;
 
-    if (this.parachart) {
-      this.init();
+    if (!element) {
+      throw new Error(`ParaChart element not found${chartID ? ` with ID: ${chartID}` : ' (para-chart-ai)'}`);
     }
+
+    this.parachart = element;
+    this.init();
   }
 
   init() {
