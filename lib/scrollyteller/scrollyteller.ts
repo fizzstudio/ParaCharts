@@ -39,11 +39,7 @@ export interface CallbackResponse {
   action?: Record<string, string>;
 }
 
-export interface Callbacks {
-  stepEnter: (response: CallbackResponse) => void;
-  stepExit: (response: CallbackResponse) => void;
-  stepProgress: (response: CallbackResponse) => void;
-}
+export type ScrollyEvent = 'stepEnter' | 'stepExit' | 'stepProgress';
 
 export interface ScrollyStep {
   index: number;
@@ -82,7 +78,7 @@ export type ScrollyOptions = {
   initialIndex?: number;
 };
 
-export default class Scrollyteller {
+export class Scrollyteller {
   parachart: ParaChart | null;
   steps!: NodeListOf<Element>;
 
@@ -90,9 +86,6 @@ export default class Scrollyteller {
     this.parachart = chartID ?
       document.getElementById(chartID) as ParaChart | null
       : document.querySelector('para-chart-ai') as ParaChart | null;
-
-    // console.warn('this.parachart', this.parachart)
-
     if (this.parachart) {
       this.init();
     }
@@ -100,8 +93,6 @@ export default class Scrollyteller {
 
   init(): void {
     this.steps = document.querySelectorAll('[data-para-step]');
-    // console.warn('this.steps', this.steps)
-
     const scroller = new Scrollytelling();
 
     scroller.setup({
@@ -112,10 +103,10 @@ export default class Scrollyteller {
       debug: false,
     });
 
-    scroller.onStepEnter(response => {
+    scroller.on('stepEnter', (response: CallbackResponse) => {
       const element = response.element;
       const stepIndex = parseInt((element as HTMLElement).dataset.paraStep || '0');
-      console.warn('SCROLLER:', response, stepIndex)
+      console.warn('SCROLLER:', response, stepIndex);
       this.activateNextStep(element);
       
       if (this.parachart && response.action?.activate) {
@@ -143,7 +134,7 @@ export default class Scrollyteller {
 export class Scrollytelling {
 
   steps: ScrollyStep[];
-  cb: Callbacks;
+  private _events: Map<ScrollyEvent, Array<(response: CallbackResponse) => void>>;
   globalOffset?: ParsedOffset | null;
   containerElement?: HTMLElement;
   rootElement: Element | Document | null;
@@ -158,12 +149,8 @@ export class Scrollytelling {
   direction?: 'up' | 'down';
 
   constructor() {
-    // callbacks
-    this.cb = {
-      stepEnter: () => { },
-      stepExit: () => { },
-      stepProgress: () => { },
-    };
+    // events
+    this._events = new Map();
 
     // state
     this.steps = [];
@@ -276,8 +263,47 @@ export class Scrollytelling {
 
   // ————— helpers —————
   _resetCallbacksAndExclusions(): void {
-    this.cb = { stepEnter: () => { }, stepExit: () => { }, stepProgress: () => { } };
+    this._events.clear();
     this.exclude = [];
+  }
+
+  // ————— Event Emitter ————— 
+  on(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this {
+    if (!this._events.has(event)) {
+      this._events.set(event, []);
+    }
+    this._events.get(event)!.push(callback);
+    return this;
+  }
+
+  once(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this {
+    const wrapper = (response: CallbackResponse) => {
+      callback(response);
+      this.off(event, wrapper);
+    };
+    return this.on(event, wrapper);
+  }
+
+  off(event?: ScrollyEvent, callback?: (response: CallbackResponse) => void): this {
+    if (!event) {
+      this._events.clear();
+    } else if (!callback) {
+      this._events.delete(event);
+    } else {
+      const listeners = this._events.get(event);
+      if (listeners) {
+        const index = listeners.indexOf(callback);
+        if (index > -1) listeners.splice(index, 1);
+      }
+    }
+    return this;
+  }
+
+  private emit(event: ScrollyEvent, response: CallbackResponse): void {
+    const listeners = this._events.get(event);
+    if (listeners) {
+      listeners.slice().forEach(callback => callback(response));
+    }
   }
 
   _disconnectObserver(
@@ -300,7 +326,7 @@ export class Scrollytelling {
     const step = this.steps[index];
     if (progress !== undefined) step.progress = progress;
     const response = { element, index, progress, direction: this.direction };
-    if (step.state === 'enter') this.cb.stepProgress(response);
+    if (step.state === 'enter') this.emit('stepProgress', response);
   }
 
   _notifyStepEnter(element: Element): void {
@@ -311,7 +337,7 @@ export class Scrollytelling {
     step.direction = this.direction;
     step.state = 'enter';
 
-    if (!this.exclude[index]) this.cb.stepEnter(response);
+    if (!this.exclude[index]) this.emit('stepEnter', response);
     if (this.isTriggerOnce) this.exclude[index] = true;
   }
 
@@ -329,7 +355,7 @@ export class Scrollytelling {
 
     step.direction = this.direction;
     step.state = 'exit';
-    this.cb.stepExit(response);
+    this.emit('stepExit', response);
     return true;
   }
 
@@ -552,21 +578,6 @@ export class Scrollytelling {
     if (x === null || x === undefined) return this.globalOffset?.value ?? 0;
     this.globalOffset = this.parseOffset(x);
     this._updateObservers();
-    return this;
-  }
-  onStepEnter(f: (response: CallbackResponse) => void): Scrollytelling {
-    if (typeof f === 'function') this.cb.stepEnter = f;
-    else this.err('onStepEnter requires a function');
-    return this;
-  }
-  onStepExit(f: (response: CallbackResponse) => void): Scrollytelling {
-    if (typeof f === 'function') this.cb.stepExit = f;
-    else this.err('onStepExit requires a function');
-    return this;
-  }
-  onStepProgress(f: (response: CallbackResponse) => void): Scrollytelling {
-    if (typeof f === 'function') this.cb.stepProgress = f;
-    else this.err('onStepProgress requires a function');
     return this;
   }
 
