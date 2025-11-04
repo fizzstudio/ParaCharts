@@ -78,10 +78,11 @@ export class Legend extends Container(View) {
         {
           color: item.color,
           pointerEnter: (e) => {
-            this.paraview.store.soloSeries = item.label;
+            // XXX should use key
+            this.paraview.store.lowlightOtherSeries(item.label);
           },
           pointerLeave: (e) => {
-            this.paraview.store.soloSeries = '';
+            this.paraview.store.clearAllSeriesLowlights();
           }
         }
       ));
@@ -92,10 +93,10 @@ export class Legend extends Container(View) {
         textAnchor: 'start',
         classList: ['legend-label'],
         pointerEnter: (e) => {
-          this.paraview.store.soloSeries = item.label;
+          this.paraview.store.lowlightOtherSeries(item.label);
         },
         pointerLeave: (e) => {
-          this.paraview.store.soloSeries = '';
+          this.paraview.store.clearAllSeriesLowlights();
         }
       }));
     });

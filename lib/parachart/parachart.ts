@@ -34,6 +34,7 @@ import { type AriaLive } from '../components';
 import '../components/aria_live';
 import { StyleManager } from './style_manager';
 import { AvailableCommands, Commander } from './commander';
+import { ParaPerformer } from '../paraperformer/paraperformer';
 
 import { Manifest } from '@fizz/paramanifest';
 
@@ -75,6 +76,7 @@ export class ParaChart extends logging(ParaComponent) {
   protected _api: ParaApi;
   protected _styleManager!: StyleManager;
   protected _commander!: Commander;
+  protected _performer!: ParaPerformer;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -115,6 +117,7 @@ export class ParaChart extends logging(ParaComponent) {
           }
           this._runLoader(this.manifest, this.manifestType).then(() => {
             this.log('ParaCharts will now commence the raising of the roof and/or the dead');
+            this._performer = ParaPerformer.getInst(this);
           });
         } else if (this.getElementsByTagName("table")[0]) {
           this.log(`loading from slot`);
@@ -178,6 +181,10 @@ export class ParaChart extends logging(ParaComponent) {
 
   get styleManager() {
     return this._styleManager;
+  }
+
+  get performer() {
+    return this._performer;
   }
 
   connectedCallback() {

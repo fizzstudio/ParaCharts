@@ -2382,6 +2382,12 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _paraViewRef: Ref_2<ParaView>;
     // (undocumented)
+    get performer(): ParaPerformer;
+    // Warning: (ae-forgotten-export) The symbol "ParaPerformer" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _performer: ParaPerformer;
+    // (undocumented)
     get ready(): Promise<void>;
     // (undocumented)
     protected _readyPromise: Promise<void>;
@@ -2541,6 +2547,8 @@ export class ParaStore extends State {
     addTrendLine(startPortion: number, endPortion: number, startIndex: number, endIndex: number, seriesKey: string, forModel: boolean): void;
     // (undocumented)
     addUserLineBreaks(): void;
+    // (undocumented)
+    annotatePoint(seriesKey: string, index: number, text: string): void;
     // (undocumented)
     annotations: BaseAnnotation[];
     // (undocumented)

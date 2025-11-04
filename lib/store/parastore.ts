@@ -142,8 +142,8 @@ export class ParaStore extends State {
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() frontSeries = '';
-  @property() soloSeries = '';
 
+  @property() protected _lowlightSeries: string[] = [];
   @property() protected _hiddenSeriesList: string[] = [];
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
@@ -389,6 +389,30 @@ export class ParaStore extends State {
     }
   }
 
+  lowlightSeries(seriesKey: string) {
+    if (!this._lowlightSeries.includes(seriesKey)) {
+      this._lowlightSeries = [...this._lowlightSeries, seriesKey];
+    }
+  }
+
+  clearSeriesLowlight(seriesKey: string) {
+    if (this._lowlightSeries.includes(seriesKey)) {
+      this._lowlightSeries = this._lowlightSeries.filter(el => el !== seriesKey);
+    }
+  }
+
+  isSeriesLowlighted(seriesKey: string): boolean {
+    return this._lowlightSeries.includes(seriesKey);
+  }
+
+  lowlightOtherSeries(...seriesKeys: string[]) {
+    this._lowlightSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
+  }
+
+  clearAllSeriesLowlights() {
+    this._lowlightSeries = [];
+  }
+
   announce(
     msg: string | string[] | HighlightedSummary,
     clearAriaLive = false,
@@ -597,7 +621,7 @@ export class ParaStore extends State {
       const {seriesKey, index} = datapointIdToCursor(dpId);
       const recordLabel = formatXYDatapointX(
         this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
-      let annotationText = prompt('Annotation:') as string;
+      const annotationText = prompt('Annotation:') as string;
       if (annotationText) {
         newAnnotationList.push({
           type: "datapoint",
@@ -607,10 +631,28 @@ export class ParaStore extends State {
           text: annotationText,
           id: `${seriesKey}-${recordLabel}-${this.annotID}`
         });
-        this.annotID += 1
+        this.annotID += 1;
       }
     });
     this.annotations = [...this.annotations, ...newAnnotationList];
+  }
+
+  annotatePoint(seriesKey: string, index: number, text: string) {
+    if (this.annotations.find((annot: PointAnnotation) =>
+      annot.seriesKey === seriesKey && annot.index === index && annot.text === text)) {
+      return;
+    }
+    const recordLabel = formatXYDatapointX(
+      this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
+    this.annotations = [...this.annotations, {
+      type: 'datapoint',
+      seriesKey,
+      index,
+      annotation: `${seriesKey}, ${recordLabel}: ${text}`,
+      text,
+      id: `${seriesKey}-${recordLabel}-${this.annotID}`
+    } as PointAnnotation];
+    this.annotID++;
   }
 
   async showMDRAnnotations() {
