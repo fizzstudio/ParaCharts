@@ -410,6 +410,9 @@ export const defaults: Settings = {
     animationOrigin: 'initialValue',
     animationOriginValue: 0,
   },
+  scrollytelling: {
+    isScrollytellingEnabled: true,
+  },
   controlPanel: {
     isControlPanelDefaultOpen: true,
     tabLabelStyle: 'label',
