@@ -765,6 +765,20 @@ export type c2mCallbackType = {
 };
 
 // @public (undocumented)
+export interface CallbackResponse {
+    // (undocumented)
+    action?: Record<string, string>;
+    // (undocumented)
+    direction?: 'up' | 'down';
+    // (undocumented)
+    element: Element;
+    // (undocumented)
+    index: number;
+    // (undocumented)
+    progress?: number;
+}
+
+// @public (undocumented)
 export function capitalize(string: string): string;
 
 // @public (undocumented)
@@ -2885,6 +2899,14 @@ export class ParaViewController extends Logger {
 }
 
 // @public (undocumented)
+export interface ParsedOffset {
+    // (undocumented)
+    format: 'pixels' | 'percent';
+    // (undocumented)
+    value: number;
+}
+
+// @public (undocumented)
 export abstract class PastryPlotView extends DataLayer {
     constructor(paraview: ParaView, width: number, height: number, index: number, chartInfo: BaseChartInfo);
     // (undocumented)
@@ -3521,6 +3543,86 @@ export class ScreenReaderBridge {
     // (undocumented)
     static readonly ORIGINAL_TEXT_ATTRIBUTE = "data-original-text";
     render(text: string): void;
+}
+
+// @public (undocumented)
+export type ScrollyEvent = 'stepEnter' | 'stepExit' | 'stepProgress';
+
+// @public (undocumented)
+export interface ScrollyOptions {
+    // (undocumented)
+    container?: HTMLElement;
+    // (undocumented)
+    offset?: string | number;
+    // (undocumented)
+    once?: boolean;
+    // (undocumented)
+    parent?: string;
+    // (undocumented)
+    progress?: boolean;
+    // (undocumented)
+    root?: Element | Document | null;
+    // (undocumented)
+    step: string | Element | NodeList | Element[];
+    // (undocumented)
+    threshold?: number;
+}
+
+// @public (undocumented)
+export interface ScrollyStep {
+    // (undocumented)
+    action: Record<string, string>;
+    // (undocumented)
+    direction?: 'up' | 'down';
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    index: number;
+    // (undocumented)
+    node: Element;
+    // (undocumented)
+    observers: {
+        resize?: ResizeObserver;
+        step?: IntersectionObserver;
+        progress?: IntersectionObserver;
+    };
+    // (undocumented)
+    offset: ParsedOffset | null;
+    // (undocumented)
+    progress: number;
+    // (undocumented)
+    state?: 'enter' | 'exit';
+    // (undocumented)
+    top: number;
+}
+
+// @public (undocumented)
+export class Scrollyteller {
+    constructor(chartID?: string);
+}
+
+// @public (undocumented)
+export class ScrollytellerImpl {
+    constructor();
+    // (undocumented)
+    destroy(): ScrollytellerImpl;
+    // (undocumented)
+    disable(): ScrollytellerImpl;
+    // (undocumented)
+    enable(): ScrollytellerImpl;
+    // (undocumented)
+    off(event?: ScrollyEvent, callback?: (response: CallbackResponse) => void): this;
+    // (undocumented)
+    get offset(): number;
+    set offset(value: string | number);
+    // (undocumented)
+    on(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this;
+    // (undocumented)
+    once(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this;
+    // (undocumented)
+    resize(): ScrollytellerImpl;
+    // (undocumented)
+    setup({ step, parent, offset, threshold, progress, once, container, root, }: ScrollyOptions): ScrollytellerImpl;
 }
 
 // @public (undocumented)
