@@ -192,6 +192,7 @@ export class PointDatapointView extends PlaneDatapointView {
       }
       this._animEndState.y = this.computeY();
       this._y = this._animStartState.y;
+      //this._y = this.computeY();
     } else {
       this._y = this.computeY();
     }

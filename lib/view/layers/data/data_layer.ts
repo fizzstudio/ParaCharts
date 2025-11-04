@@ -229,6 +229,7 @@ export abstract class DataLayer extends PlotLayer {
       const t = Math.min(elapsed/revealTime, 1);
       const bezT = bez.eval(t)!;
       this._animStep(bezT);
+      this.paraview.clipWidth = bezT * this.paraview.documentView!.chartLayers.width;
       this._parent.docView.postNotice('animRevealStep', bezT);
       this.paraview.requestUpdate();
       if (elapsed < revealTime) {

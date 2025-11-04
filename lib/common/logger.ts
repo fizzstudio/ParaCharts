@@ -12,7 +12,7 @@ export function logging<TBase extends Loggable>(Base: TBase) {
 
     log(...data: any[]) {
       //if (todo().debug) {
-        console.log(`[${this.logName()}]`, ...data);
+        //console.log(`[${this.logName()}]`, ...data);
       //}
     }
 
