@@ -180,7 +180,7 @@ export const defaults: Settings = {
     }
   },
   popup :{
-    opacity: .9,
+    opacity: 1,
     leftPadding: 10,
     rightPadding: 10,
     upPadding: 10,

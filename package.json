@@ -3,13 +3,48 @@
   "version": "0.37.0",
   "description": "Not quite Parable Charts",
   "contributors": [
-    "Josh Fennell",
-    "Simon Varey",
-    "Julianna Langston",
-    "Doug Schepers",
-    "Sam Reid",
-    "Ryan McCleary",
-    "Charlotte McCleary"
+    {
+      "name": "Doug Schepers",
+      "email": "doug@fizz.studio",
+      "url": "https://schepers.cc",
+      "affiliation": "Fizz Studio"
+    },
+    {
+      "name": "Simon Varey",
+      "email": "simon@fizz.studio",
+      "url": "https://fizz.studio",
+      "affiliation": "Fizz Studio"
+    },
+    {
+      "name": "Josh Fennell",
+      "email": "josh@fizz.studio",
+      "url": "https://www.linkedin.com/in/linguist-jfennell/",
+      "affiliation": "Fizz Studio"
+    },
+    {
+      "name": "Samuel Reid",
+      "email": "sam@fizz.studio",
+      "url": "https://github.com/SamReid4321",
+      "affiliation": "Fizz Studio"
+    },
+    {
+      "name": "Charlotte McCleary",
+      "email": "charlotte@fizz.studio",
+      "url": "https://github.com/Charlotte-McCleary",
+      "affiliation": "Fizz Studio"
+    },
+    {
+      "name": "Ryan McCleary",
+      "email": "ryan@fizz.studio",
+      "url": "https://github.com/RyanMcCleary",
+      "affiliation": "Fizz Studio"
+    },
+    {
+      "name": "Julianna Langston",
+      "email": "julie.langston@gmail.com",
+      "url": "https://github.com/julianna-langston/chart2music",
+      "affiliation": "Chart2Music"
+    }
   ],
   "license": "AGPL-3.0-or-later",
   "publishConfig": {
@@ -86,6 +121,7 @@
     "@fizz/chart-classifier-utils": "^0.16.0",
     "@fizz/clustering": "^0.15.3",
     "@fizz/dataframe": "^0.27.0",
+    "@fizz/jimerator": "^0.3.0",
     "@fizz/paramanifest": "^0.5.9",
     "@fizz/paramodel": "^0.6.6",
     "@fizz/parasummary": "^0.9.1",
