@@ -7,7 +7,7 @@
   "b": {
     "label": "Toggle screen reader announcements",
     "caseSensitive": false,
-    "action": "announcementModeToggle"
+    "action": "toggleAnnouncementMode"
   },
   "c": {
     "label": "Jump to chord landing",
@@ -22,17 +22,17 @@
   "k": {
     "label": "Toggle dark mode",
     "caseSensitive": false,
-    "action": "darkModeToggle"
+    "action": "toggleDarkMode"
   },
   "l": {
     "label": "Toggle low-vision mode",
     "caseSensitive": false,
-    "action": "lowVisionModeToggle"
+    "action": "toggleLowVisionMode"
   },
   "n": {
     "label": "Toggle narrative highlight mode",
     "caseSensitive": false,
-    "action": "narrativeHighlightModeToggle"
+    "action": "toggleNarrativeHighlightMode"
   },
   "q": {
     "label": "Query data",
@@ -46,17 +46,17 @@
   "s": {
     "label": "Toggle sonification mode",
     "caseSensitive": false,
-    "action": "sonificationModeToggle"
+    "action": "toggleSonificationMode"
   },
   "u": {
     "label": "Clear the datapoint selection",
     "caseSensitive": false,
-    "action": "selectClear"
+    "action": "clearSelection"
   },
   "v": {
     "label": "Toggle self-voicing mode",
     "caseSensitive": false,
-    "action": "voicingModeToggle"
+    "action": "toggleVoicingMode"
   },
   "arrowright": {
     "label": "Move right",
@@ -112,7 +112,7 @@
   },
   " ": {
     "label": "Play or pause audio",
-    "action": "mediaPlayPause"
+    "action": "playPauseMedia"
   },
   "Shift+ ": {
     "label": "Reset the chart",
@@ -124,7 +124,7 @@
   },
   "Shift+enter": {
     "label": "Extend the datapoint selection",
-    "action": "selectExtend"
+    "action": "extendSelection"
   },
   "[": {
     "label": "Go to the series minimum",

@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { BaseChartInfo } from './base_chart';
+import { BaseChartInfo, RiffOrder } from './base_chart';
 import { type ParaStore, directions, type HorizDirection, datapointIdToCursor } from '../store';
 import { queryMessages, describeSelections, getDatapointMinMax } from '../store/query_utils';
 import { Datapoint, enumerate } from '@fizz/paramodel';
@@ -112,14 +112,14 @@ export class PastryChartInfo extends BaseChartInfo {
     }));
   }
 
-  protected _playDatapoints(datapoints: PlaneDatapoint[]): void {
+  playDatapoints(datapoints: PlaneDatapoint[]): void {
     this._sonifier.playDatapoints(datapoints, {invert: true, durationVariable: true});
   }
 
   playDir(dir: HorizDirection): void {
   }
 
-  protected _playRiff() {
+  playRiff(datapoints: Datapoint[], order?: RiffOrder) {
   }
 
   protected _sparkBrailleInfo() {

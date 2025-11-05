@@ -116,13 +116,14 @@ export class Scrollyteller {
     scroller.on('stepEnter', (response: CallbackResponse) => {
       const element = response.element;
       this.activateNextStep(element);
-      
+
       // TODO: remove previous series highlights
       // this.parachart.store.soloSeries = '';
       if (response.action?.highlightSeries) {
         // TODO: remove inserted tab when `soloSeries` takes comma/space delimiter
         const seriesList = response.action.highlightSeries.replace(/[\s,]/g, '\t');
-        this.parachart.store.soloSeries = seriesList;
+        //this.parachart.store.soloSeries = seriesList;
+        this.parachart.store.lowlightOtherSeries(...seriesList.split('\t'));
       }
 
       // TODO: remove previous datapoint highlights

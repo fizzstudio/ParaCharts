@@ -15,25 +15,25 @@ export interface AvailableActions {
   goTotalMinimum(): void;
   goTotalMaximum(): void;
   select(): void;
-  selectExtend(): void;
-  selectClear(): void;
+  extendSelection(): void;
+  clearSelection(): void;
   playRight(): void;
   playLeft(): void;
   stopPlay(): void;
   queryData(): void;
-  sonificationModeToggle(): void;
-  announcementModeToggle(): void;
-  voicingModeToggle(): void;
-  darkModeToggle(): void;
-  lowVisionModeToggle(): void;
+  toggleSonificationMode(): void;
+  toggleAnnouncementMode(): void;
+  toggleVoicingMode(): void;
+  toggleDarkMode(): void;
+  toggleLowVisionMode(): void;
   openHelp(): void;
   announceVersionInfo(): void;
   jumpToChordLanding(): void;
   shutUp(): void;
   repeatLastAnnouncement(): void;
   addAnnotation(): void;
-  narrativeHighlightModeToggle(): void;
-  mediaPlayPause(): void;
+  toggleNarrativeHighlightMode(): void;
+  playPauseMedia(): void;
   reset(): void;
 }
 
@@ -50,160 +50,105 @@ export abstract class HotkeyActions {
 export class NormalHotkeyActions extends HotkeyActions {
   constructor(paraView: ParaView) {
     super();
-    const store = paraView.store;
-    // Always return the current chart info object (i.e., don't let the
-    // actions close over a value that might be removed)
-    const chart = () => paraView.documentView!.chartInfo;
-    const docView = () => paraView.documentView!;
     this._actions = {
       async moveRight() {
-        chart().clearPlay();
-        chart().move('right');
+        paraView.paraChart.performer.move('right');
       },
       async moveLeft() {
-        chart().clearPlay();
-        chart().move('left');
+        paraView.paraChart.performer.move('left');
       },
       async moveUp() {
-        chart().clearPlay();
-        chart().move('up');
+        paraView.paraChart.performer.move('up');
       },
       async moveDown() {
-        chart().clearPlay();
-        chart().move('down');
+        paraView.paraChart.performer.move('down');
       },
       async moveIn() {
-        chart().clearPlay();
-        chart().move('in');
+        paraView.paraChart.performer.move('in');
       },
       async moveOut() {
-        chart().clearPlay();
-        chart().move('out');
+        paraView.paraChart.performer.move('out');
       },
       goFirst() {
-        chart().navFirst();
+        paraView.paraChart.performer.goFirst();
       },
       goLast() {
-        chart().navLast();
+        paraView.paraChart.performer.goLast();
       },
       goMinimum() {
-        chart().goSeriesMinMax(true);
+        paraView.paraChart.performer.goMinimum();
       },
       goMaximum() {
-        chart().goSeriesMinMax(false);
+        paraView.paraChart.performer.goMaximum();
       },
       goTotalMinimum() {
-        chart().goChartMinMax(true);
+        paraView.paraChart.performer.goTotalMinimum();
       },
       goTotalMaximum() {
-        chart().goChartMinMax(false);
+        paraView.paraChart.performer.goTotalMaximum();
       },
       select() {
-        chart().selectCurrent(false);
+        paraView.paraChart.performer.select();
       },
-      selectExtend() {
-        chart().selectCurrent(true);
+      extendSelection() {
+        paraView.paraChart.performer.extendSelection();
       },
-      selectClear() {
-        chart().clearDatapointSelection();
+      clearSelection() {
+        paraView.paraChart.performer.clearSelection();
       },
       playRight() {
-        chart().clearPlay();
-        chart().playDir('right');
+        paraView.paraChart.performer.playRight();
       },
       playLeft() {
-        chart().clearPlay();
-        chart().playDir('left');
+        paraView.paraChart.performer.playLeft();
       },
       stopPlay() {
-        chart().clearPlay();
+        paraView.paraChart.performer.stopPlay();
       },
       queryData() {
-        chart().queryData();
+        paraView.paraChart.performer.queryData();
       },
-      sonificationModeToggle() {
-        store.updateSettings(draft => {
-          draft.sonification.isSoniEnabled = !draft.sonification.isSoniEnabled;
-          const endisable = draft.sonification.isSoniEnabled ? 'enable' : 'disable';
-          store.announce(`Sonification ${endisable + 'd'}`);
-          docView().postNotice(endisable + 'Sonification', null);
-        });
+      toggleSonificationMode() {
+        paraView.paraChart.performer.toggleSonificationMode();
       },
-      announcementModeToggle() {
-        if (store.settings.ui.isAnnouncementEnabled) {
-          store.announce('Announcements disabled');
-          store.updateSettings(draft => {
-            draft.ui.isAnnouncementEnabled = false;
-          });
-          docView().postNotice('disableAnnouncements', null);
-        } else {
-          store.updateSettings(draft => {
-            draft.ui.isAnnouncementEnabled = true;
-          });
-          store.announce('Announcements enabled');
-          docView().postNotice('enableAnnouncements', null);
-        }
+      toggleAnnouncementMode() {
+        paraView.paraChart.performer.toggleAnnouncementMode();
       },
-      voicingModeToggle() {
-        store.updateSettings(draft => {
-          draft.ui.isVoicingEnabled = !draft.ui.isVoicingEnabled;
-          const endisable = draft.ui.isVoicingEnabled ? 'enable' : 'disable';
-          docView().postNotice(endisable + 'Voicing', null);
-        });
+      toggleVoicingMode() {
+        paraView.paraChart.performer.toggleVoicingMode();
       },
-      darkModeToggle() {
-        store.updateSettings(draft => {
-          draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
-          const endisable = draft.color.isDarkModeEnabled ? 'enable' : 'disable';
-          docView().postNotice(endisable + 'DarkMode', null);
-          store.announce(`Dark mode ${endisable + 'd'}`);
-        });
+      toggleDarkMode() {
+        paraView.paraChart.performer.toggleDarkMode();
       },
-      lowVisionModeToggle() {
-        store.updateSettings(draft => {
-          if (draft.ui.isLowVisionModeEnabled) {
-            // Allow the exit from fullscreen to disable LV mode
-            draft.ui.isFullscreenEnabled = false;
-            docView().postNotice('disableLowVisionMode', null);
-          } else {
-            draft.ui.isLowVisionModeEnabled = true;
-            docView().postNotice('enableLowVisionMode', null);
-          }
-        });
+      toggleLowVisionMode() {
+        paraView.paraChart.performer.toggleLowVisionMode();
       },
       openHelp() {
-        paraView.paraChart.controlPanel.showHelpDialog();
+        paraView.paraChart.performer.openHelp();
       },
       announceVersionInfo() {
-        store.announce(`Version ${__APP_VERSION__}; commit ${__COMMIT_HASH__}`);
+        paraView.paraChart.performer.announceVersionInfo();
       },
       jumpToChordLanding() {
-        chart().navToChordLanding();
+        paraView.paraChart.performer.jumpToChordLanding();
       },
       shutUp() {
-        paraView.paraChart.ariaLiveRegion.voicing.shutUp();
+        paraView.paraChart.performer.shutUp();
       },
       repeatLastAnnouncement() {
-        paraView.paraChart.ariaLiveRegion.replay();
+        paraView.paraChart.performer.repeatLastAnnouncement();
       },
       addAnnotation() {
-        store.addAnnotation();
+        paraView.paraChart.performer.addAnnotation();
       },
-      narrativeHighlightModeToggle() {
-        paraView.startNarrativeHighlightMode();
-        store.updateSettings(draft => {
-          draft.ui.isNarrativeHighlightEnabled = !draft.ui.isNarrativeHighlightEnabled;
-          const endisable = draft.ui.isNarrativeHighlightEnabled ? 'enable' : 'disable';
-          docView().postNotice(endisable + 'NarrativeHighlightMode', null);
-        });
+      toggleNarrativeHighlightMode() {
+        paraView.paraChart.performer.toggleNarrativeHighlightMode();
       },
-      mediaPlayPause() {
-
+      playPauseMedia() {
+        paraView.paraChart.performer.playPauseMedia();
       },
       reset() {
-        store.clearSelected();
-        chart().navMap!.root.goTo('top', {});
-        paraView.createDocumentView();
+        paraView.paraChart.performer.reset();
       }
     };
   }
@@ -226,7 +171,7 @@ export class NarrativeHighlightHotkeyActions extends HotkeyActions {
       const spans = store.paraChart.captionBox.getSpans();
       let idx = prevIdx;
       store.clearHighlight();
-      store.soloSeries = '';
+      store.clearAllSeriesLowlights();
       spans.forEach(span => {
         span.classList.remove('highlight');
       });
@@ -269,7 +214,7 @@ export class NarrativeHighlightHotkeyActions extends HotkeyActions {
       },
       goLast() {
       },
-      voicingModeToggle() {
+      toggleVoicingMode() {
         if (store.settings.ui.isVoicingEnabled) {
           store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = false;
@@ -280,27 +225,21 @@ export class NarrativeHighlightHotkeyActions extends HotkeyActions {
           });
         }
       },
-      darkModeToggle() {
-        store.updateSettings(draft => {
-          draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
-          store.announce(
-            `Dark mode ${draft.color.isDarkModeEnabled ? 'enabled' : 'disabled'}`);
-        });
+      toggleDarkMode() {
+        paraView.paraChart.performer.toggleDarkMode();
       },
-      lowVisionModeToggle() {
-        store.updateSettings(draft => {
-          draft.ui.isLowVisionModeEnabled = !draft.ui.isLowVisionModeEnabled;
-        });
+      toggleLowVisionMode() {
+        paraView.paraChart.performer.toggleLowVisionMode();
       },
       openHelp() {
-        paraView.paraChart.controlPanel.showHelpDialog();
+        paraView.paraChart.performer.openHelp();
       },
       shutUp() {
-        voicing.shutUp();
+        paraView.paraChart.performer.shutUp();
       },
       repeatLastAnnouncement() {
       },
-      narrativeHighlightModeToggle() {
+      toggleNarrativeHighlightMode() {
         if (voicing.manualOverride) {
           voicing.manualOverride = false;
           (async () => {
@@ -319,7 +258,7 @@ export class NarrativeHighlightHotkeyActions extends HotkeyActions {
           }
         }
       },
-      mediaPlayPause() {
+      playPauseMedia() {
         voicing.togglePaused();
       }
     };
