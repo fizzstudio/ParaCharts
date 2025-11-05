@@ -20,6 +20,7 @@ import { SeriesAnalyzer } from '@fizz/series-analyzer';
 import { AiSeriesPairMetadataAnalyzer } from '@fizz/paramodel';
 import { css, unsafeCSS } from 'lit';
 import { styles } from '../lib/view/styles';
+// @ts-ignore
 import cpanelIconAlt from '../lib/assets/info-icon-alt.svg';
 
 @customElement('para-chart-ai')
