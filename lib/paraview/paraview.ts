@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { type AriaLive } from '../components';
 import { PointerEventManager } from "./pointermanager";
 import { type ParaChart } from "../parachart/parachart";
 import { ParaViewController } from ".";
@@ -426,12 +427,15 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+    console.log("Refer to line 430");
     this._documentView?.settingDidChange(path, oldValue, newValue);
     if (path === "ui.isFullscreenEnabled") {
       if (newValue && !document.fullscreenElement) {
         try {
-          this._containerRef.value?.requestFullscreen();
+          console.log("Refer to line 434");
+		  this._containerRef.value?.requestFullscreen();
         } catch {
+		  console.log("Refer to line 434");
           console.error("failed to enter fullscreen");
           this._store.updateSettings((draft) => {
             draft.ui.isFullscreenEnabled = false;
@@ -439,9 +443,11 @@ export class ParaView extends logging(ParaComponent) {
         }
       } else if (!newValue && document.fullscreenElement) {
         try {
-          document.exitFullscreen();
+          console.log("Refer to line 446");
+		  document.exitFullscreen();
         } catch {
-          console.error("failed to exit fullscreen");
+          console.log("Refer to line 449");
+		  console.error("failed to exit fullscreen");
           this._store.updateSettings((draft) => {
             draft.ui.isFullscreenEnabled = true;
           }, true);
@@ -449,10 +455,12 @@ export class ParaView extends logging(ParaComponent) {
       }
     } else if (path === "ui.isLowVisionModeEnabled") {
       if (newValue) {
-        this._store.colors.selectPaletteWithKey("low-vision");
+        console.log("Refer to line 458");
+		this._store.colors.selectPaletteWithKey("low-vision");
       } else {
         if (this._store.colors.prevSelectedColor.length > 0) {
-          this._store.colors.selectPaletteWithKey(
+          console.log("Refer to line 462");
+		  this._store.colors.selectPaletteWithKey(
             this._store.colors.prevSelectedColor
           );
         }
@@ -464,7 +472,8 @@ export class ParaView extends logging(ParaComponent) {
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
         if (newValue) {
-          this._lowVisionModeSaved.set(
+          console.log("Refer to line 475");
+		  this._lowVisionModeSaved.set(
             "chart.fontScale",
             draft.chart.fontScale
           );
@@ -475,7 +484,8 @@ export class ParaView extends logging(ParaComponent) {
           draft.chart.fontScale = 2;
           draft.grid.isDrawVertLines = true;
         } else {
-          draft.chart.fontScale =
+          console.log("Refer to line 487");
+		  draft.chart.fontScale =
             this._lowVisionModeSaved.get("chart.fontScale");
           draft.grid.isDrawVertLines = this._lowVisionModeSaved.get(
             "grid.isDrawVertLines"

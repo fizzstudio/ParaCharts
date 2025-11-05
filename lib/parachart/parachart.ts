@@ -30,7 +30,6 @@ import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../store/custom_property_loader';
 import { ParaApi } from '../api/api';
 import { styles } from '../view/styles';
-import { type AriaLive } from '../components';
 import '../components/aria_live';
 import { StyleManager } from './style_manager';
 import { AvailableCommands, Commander } from './commander';
