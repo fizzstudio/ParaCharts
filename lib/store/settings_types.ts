@@ -488,6 +488,10 @@ export interface SonificationSettings extends SettingGroup {
   isArpeggiateChords: boolean;
 }
 
+/** @public */
+export interface ScrollytellingSettings extends SettingGroup {
+  isScrollytellingEnabled: boolean;
+}
 
 /** @public */
 export interface Settings extends SettingGroup {
@@ -500,6 +504,7 @@ export interface Settings extends SettingGroup {
   grid: GridSettings;
   ui: UISettings;
   animation: AnimationSettings;
+  scrollytelling: ScrollytellingSettings;
   controlPanel: ControlPanelSettings;
   color: ColorSettings;
   jim: JimSettings;

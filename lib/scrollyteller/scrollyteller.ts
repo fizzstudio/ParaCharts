@@ -23,6 +23,7 @@
  */
 
 import { ParaChart } from '../parachart/parachart';
+import { ParaView } from '../paraview';
 
 export interface ParsedOffset {
   format: 'pixels' | 'percent';
@@ -71,23 +72,34 @@ export class Scrollyteller {
   private parachart: ParaChart;
   private steps!: NodeListOf<Element>;
 
-  constructor(chartID?: string) {
-    const chart = chartID ?
-      document.getElementById(chartID) as ParaChart | null
-      : document.querySelector('para-chart-ai') as ParaChart | null;
-      
-    if (!chart) {
-      throw new Error(
-        `Scrollyteller requires a ParaChart element. ${
-          chartID 
-            ? `No element found with ID "${chartID}"` 
-            : 'No para-chart-ai element found on page'
-        }`
-      );
+
+  constructor(
+    parachart: ParaChart,
+    chartID?: string,
+  ) {
+    // HACK: needed to assign something to this.parachart
+    this.parachart = parachart;
+    this.paraview = paraview;
+    if (this.parachart.paraview.store.settings.scrollytelling.isScrollytellingEnabled) {
+
+      if (!this.parachart) {
+        this.parachart = chartID ?
+          document.getElementById(chartID) as ParaChart
+          : document.querySelector('para-chart, para-chart-ai') as ParaChart;
+
+        if (!this.parachart) {
+          throw new Error(
+            `Scrollyteller requires a ParaChart element. ${chartID
+              ? `No element found with ID "${chartID}"`
+              : 'No para-chart or para-chart-ai element found on page'
+            }`
+          );
+        }
+      }
+
+      this.init();
     }
-    
-    this.parachart = chart;
-    this.init();
+
   }
 
   private init(): void {
@@ -105,12 +117,18 @@ export class Scrollyteller {
       const element = response.element;
       this.activateNextStep(element);
       
-      if (response.action?.activate) {
-        this.parachart.store.soloSeries = response.action.activate;
+      // TODO: remove previous series highlights
+      // this.parachart.store.soloSeries = '';
+      if (response.action?.highlightSeries) {
+        // TODO: remove inserted tab when `soloSeries` takes comma/space delimiter
+        const seriesList = response.action.highlightSeries.replace(/[\s,]/g, '\t');
+        this.parachart.store.soloSeries = seriesList;
       }
 
-      if (response.action?.highlight) {
-        const highlights = response.action.highlight.replace(/[\[\]']+/g, '').split(',');
+      // TODO: remove previous datapoint highlights
+      // this.parachart.command('click', []);
+      if (response.action?.highlightDatapoint) {
+        const highlights = response.action.highlightDatapoint.replace(/[\[\]']+/g, '').split(',');
         this.parachart.command('click', [`${highlights[0]}`, +highlights[1]]);
       }
     });
@@ -131,7 +149,7 @@ export class ScrollytellerImpl {
   private globalOffset: ParsedOffset;
   private containerElement?: HTMLElement;
   private rootElement: Element | Document | null;
-  private progressThreshold: number; 
+  private progressThreshold: number;
   private isEnabled: boolean;
   private isProgress: boolean;
   private isTriggerOnce: boolean;
@@ -224,7 +242,7 @@ export class ScrollytellerImpl {
         const actionName = keyValueArray[0].trim();
         actions[actionName] = keyValueArray[1].trim();
       }
-    }); 
+    });
     return actions;
   }
 
@@ -461,10 +479,10 @@ export class ScrollytellerImpl {
   }: ScrollyOptions): ScrollytellerImpl {
     this._setupScrollListener();
 
-    const parentElement = (typeof step === 'string' && parent) 
-      ? document.querySelector(parent) || document 
+    const parentElement = (typeof step === 'string' && parent)
+      ? document.querySelector(parent) || document
       : document;
-    
+
     this.steps = this.selectAll(step, parentElement).map((node, index) => ({
       index,
       direction: undefined,
