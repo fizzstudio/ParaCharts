@@ -18,7 +18,6 @@ export class DescriptionPanel extends ControlPanelTabPanel {
 
   //protected _ariaLiveRegionRef = createRef<AriaLive>();
   protected _captionBoxWrapperRef = createRef<HTMLElement>();
-
   static styles = [
     ...ControlPanelTabPanel.styles,
     css`

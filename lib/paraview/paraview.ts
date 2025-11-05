@@ -14,26 +14,30 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { PointerEventManager } from './pointermanager';
-import { type ParaChart } from '../parachart/parachart';
-import { ParaViewController } from '.';
-import { logging } from '../common/logger';
-import { ParaComponent } from '../components';
-import { ChartType } from '@fizz/paramanifest';
-import { type ViewBox, type Setting, type HotkeyEvent } from '../store';
-import { View } from '../view/base_view';
-import { DocumentView } from '../view/document_view';
+import { PointerEventManager } from "./pointermanager";
+import { type ParaChart } from "../parachart/parachart";
+import { ParaViewController } from ".";
+import { logging } from "../common/logger";
+import { ParaComponent } from "../components";
+import { ChartType } from "@fizz/paramanifest";
+import { type ViewBox, type Setting, type HotkeyEvent } from "../store";
+import { View } from "../view/base_view";
+import { DocumentView } from "../view/document_view";
 //import { styles } from './styles';
-import { SVGNS } from '../common/constants';
-import { fixed, isPointerInbounds } from '../common/utils';
-import { HotkeyActions, NarrativeHighlightHotkeyActions, NormalHotkeyActions } from './hotkey_actions';
+import { SVGNS } from "../common/constants";
+import { fixed, isPointerInbounds } from "../common/utils";
+import {
+  HotkeyActions,
+  NarrativeHighlightHotkeyActions,
+  NormalHotkeyActions,
+} from "./hotkey_actions";
 
-import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-import { type Ref, ref, createRef } from 'lit/directives/ref.js';
-import { classMap } from 'lit/directives/class-map.js';
-import { styleMap } from 'lit/directives/style-map.js';
-import { Unsubscribe } from '@lit-app/state';
+import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
+import { type Ref, ref, createRef } from "lit/directives/ref.js";
+import { classMap } from "lit/directives/class-map.js";
+import { styleMap } from "lit/directives/style-map.js";
+import { Unsubscribe } from "@lit-app/state";
 
 /**
  * Data provided for the on focus callback
@@ -44,12 +48,11 @@ export type c2mCallbackType = {
   //point: SupportedDataPointType;
 };
 
-@customElement('para-view')
+@customElement("para-view")
 export class ParaView extends logging(ParaComponent) {
-
   paraChart!: ParaChart;
 
-  @property() type: ChartType = 'bar';
+  @property() typ: ChartType = "bar";
   @property() chartTitle?: string;
   @property() xAxisLabel?: string;
   @property() yAxisLabel?: string;
@@ -60,6 +63,7 @@ export class ParaView extends logging(ParaComponent) {
   protected _viewBox!: ViewBox;
   protected _prevFocusLeaf?: View;
   protected _rootRef = createRef<SVGSVGElement>();
+  protected _containerRef = createRef<HTMLDivElement>();
   protected _defsRef = createRef<SVGDefsElement>();
   protected _frameRef = createRef<SVGRectElement>();
   protected _dataspaceRef = createRef<SVGGElement>();
@@ -67,7 +71,7 @@ export class ParaView extends logging(ParaComponent) {
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
   @state() private loadingMessageStyles: { [key: string]: any } = {
-    display: 'none'
+    display: "none",
   };
   protected _chartRefs: Map<string, Ref<any>> = new Map();
   protected _fileSavePlaceholderRef = createRef<HTMLElement>();
@@ -117,19 +121,27 @@ export class ParaView extends logging(ParaComponent) {
         stroke: var(--label-color);
       }
       .chart-title {
-        font-size: calc(var(--chart-title-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--chart-title-font-size) * var(--chart-font-scale));
       }
       .axis-title-horiz {
-        font-size: calc(var(--horiz-axis-title-font-size)*var(--chart-font-scale));
+        font-size: calc(
+          var(--horiz-axis-title-font-size) * var(--chart-font-scale)
+        );
       }
       .axis-title-vert {
-        font-size: calc(var(--vert-axis-title-font-size)*var(--chart-font-scale));
+        font-size: calc(
+          var(--vert-axis-title-font-size) * var(--chart-font-scale)
+        );
       }
       .direct-label {
-        font-size: calc(var(--direct-label-font-size)*var(--chart-font-scale));
+        font-size: calc(
+          var(--direct-label-font-size) * var(--chart-font-scale)
+        );
       }
       .legend-label {
-        font-size: calc(var(--legend-label-font-size)*var(--chart-font-scale));
+        font-size: calc(
+          var(--legend-label-font-size) * var(--chart-font-scale)
+        );
       }
       .label {
         fill: var(--label-color);
@@ -139,25 +151,33 @@ export class ParaView extends logging(ParaComponent) {
         fill: lightgray;
       }
       .tick-label-horiz {
-        font-size: calc(var(--horiz-axis-tick-label-font-size)*var(--chart-font-scale));
+        font-size: calc(
+          var(--horiz-axis-tick-label-font-size) * var(--chart-font-scale)
+        );
       }
       .tick-label-vert {
-        font-size: calc(var(--vert-axis-tick-label-font-size)*var(--chart-font-scale));
+        font-size: calc(
+          var(--vert-axis-tick-label-font-size) * var(--chart-font-scale)
+        );
       }
       .bar-label {
-        font-size: calc(var(--bar-label-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--bar-label-font-size) * var(--chart-font-scale));
         fill: white;
       }
       .bar-total-label {
-        font-size: calc(var(--bar-label-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--bar-label-font-size) * var(--chart-font-scale));
       }
       .column-label {
-        font-size: calc(var(--column-label-font-size)*var(--chart-font-scale));
+        font-size: calc(
+          var(--column-label-font-size) * var(--chart-font-scale)
+        );
         fill: white;
       }
       .column-total-label {
-        font-size: calc(var(--column-label-font-size)*var(--chart-font-scale));
-                background-color: red;
+        font-size: calc(
+          var(--column-label-font-size) * var(--chart-font-scale)
+        );
+        background-color: red;
       }
       .pastry-inside-label {
       }
@@ -199,7 +219,7 @@ export class ParaView extends logging(ParaComponent) {
         fill: white;
       }
       use.visited-mark {
-       pointer-events: none;
+        pointer-events: none;
       }
       .bar {
         stroke-width: 0;
@@ -214,19 +234,19 @@ export class ParaView extends logging(ParaComponent) {
         opacity: 0.5;
       }
       .linebreaker-marker {
-        fill: hsl(0, 17.30%, 37.50%);
+        fill: hsl(0, 17.3%, 37.5%);
       }
       .user-linebreaker-marker {
         fill: hsl(0, 87%, 48%);
       }
-      .trend-line{
+      .trend-line {
         display: inline;
         stroke-width: 8px;
         stroke-linecap: butt;
         stroke-dasharray: 12 12;
         stroke-opacity: 0.8;
       }
-      .user-trend-line{
+      .user-trend-line {
         display: inline;
         stroke-width: 8px;
         stroke-linecap: butt;
@@ -239,12 +259,12 @@ export class ParaView extends logging(ParaComponent) {
         stroke-width: var(--visited-stroke-width);
       }
       .datapoint.highlighted {
-/*        stroke: var(--highlighted-color);
+        /*        stroke: var(--highlighted-color);
         fill: var(--highlighted-color);
         stroke-width: var(--visited-stroke-width); */
       }
       .lowlight {
-        opacity: 0.20;
+        opacity: 0.2;
       }
       .hidden {
         display: none;
@@ -265,14 +285,15 @@ export class ParaView extends logging(ParaComponent) {
         stroke-width: 2;
         opacity: 0.5;
       }
-    `
+    `,
   ];
 
   constructor() {
     super();
     // Create the listener here so it can be added and removed on connect/disconnect
     this._hotkeyListener = (e: HotkeyEvent) => {
-      const handler = this._hotkeyActions.actions[e.action as keyof HotkeyActions['actions']];
+      const handler =
+        this._hotkeyActions.actions[e.action as keyof HotkeyActions["actions"]];
       if (handler) {
         handler();
         //this._documentView!.postNotice(e.action, null);
@@ -336,14 +357,17 @@ export class ParaView extends logging(ParaComponent) {
     // while any data is loading
     this._controller ??= new ParaViewController(this._store);
     this._storeChangeUnsub = this._store.subscribe(async (key, value) => {
-      if (key === 'data') {
+      if (key === "data") {
         this.dataUpdated();
       }
       await this._documentView?.storeDidChange(key, value);
     });
     this.computeViewBox();
     this._hotkeyActions ??= new NormalHotkeyActions(this);
-    this._store.keymapManager.addEventListener('hotkeypress', this._hotkeyListener);
+    this._store.keymapManager.addEventListener(
+      "hotkeypress",
+      this._hotkeyListener
+    );
     if (!this._store.settings.chart.isStatic) {
       this._pointerEventManager = new PointerEventManager(this);
     }
@@ -352,7 +376,10 @@ export class ParaView extends logging(ParaComponent) {
   disconnectedCallback() {
     super.disconnectedCallback();
     this._storeChangeUnsub();
-    this._store.keymapManager.removeEventListener('hotkeyPress', this._hotkeyListener);
+    this._store.keymapManager.removeEventListener(
+      "hotkeyPress",
+      this._hotkeyListener
+    );
   }
 
   // Anything that needs to be done when data is updated, do here
@@ -360,40 +387,50 @@ export class ParaView extends logging(ParaComponent) {
     this.createDocumentView();
   }
 
-  protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+  protected willUpdate(
+    changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+  ) {
     //this.log('will update');
     for (const [k, v] of changedProperties.entries()) {
       // @ts-ignore
-      this.log(`- ${k.toString()}:`, v, '->', this[k]);
+      this.log(`- ${k.toString()}:`, v, "->", this[k]);
     }
-    if (changedProperties.has('width')) {
+    if (changedProperties.has("width")) {
       this.computeViewBox();
     }
-    if (changedProperties.has('chartTitle') && this.documentView) {
+    if (changedProperties.has("chartTitle") && this.documentView) {
       this.documentView.setTitleText(this.chartTitle);
     }
-    if (changedProperties.has('xAxisLabel') && this.documentView) {
+    if (changedProperties.has("xAxisLabel") && this.documentView) {
       this.documentView.xAxis!.setAxisLabelText(this.xAxisLabel);
     }
-    if (changedProperties.has('yAxisLabel') && this.documentView) {
+    if (changedProperties.has("yAxisLabel") && this.documentView) {
       this.documentView.yAxis!.setAxisLabelText(this.yAxisLabel);
     }
   }
 
-  protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    this.log('ready');
-    this.dispatchEvent(new CustomEvent('paraviewready', { bubbles: true, composed: true, cancelable: true }));
+  protected firstUpdated(
+    _changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>
+  ) {
+    this.log("ready");
+    this.dispatchEvent(
+      new CustomEvent("paraviewready", {
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      })
+    );
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
     this._documentView?.settingDidChange(path, oldValue, newValue);
-    if (path === 'ui.isFullscreenEnabled') {
+    if (path === "ui.isFullscreenEnabled") {
       if (newValue && !document.fullscreenElement) {
         try {
-          this.root!.requestFullscreen();
+          this._containerRef.value?.requestFullscreen();
         } catch {
-          console.error('failed to enter fullscreen');
-          this._store.updateSettings(draft => {
+          console.error("failed to enter fullscreen");
+          this._store.updateSettings((draft) => {
             draft.ui.isFullscreenEnabled = false;
           }, true);
         }
@@ -401,41 +438,54 @@ export class ParaView extends logging(ParaComponent) {
         try {
           document.exitFullscreen();
         } catch {
-          console.error('failed to exit fullscreen');
-          this._store.updateSettings(draft => {
+          console.error("failed to exit fullscreen");
+          this._store.updateSettings((draft) => {
             draft.ui.isFullscreenEnabled = true;
           }, true);
         }
       }
-    } else if (path === 'ui.isLowVisionModeEnabled') {
+    } else if (path === "ui.isLowVisionModeEnabled") {
       if (newValue) {
-        this._store.colors.selectPaletteWithKey("low-vision")
-      }
-      else {
+        this._store.colors.selectPaletteWithKey("low-vision");
+      } else {
         if (this._store.colors.prevSelectedColor.length > 0) {
-          this._store.colors.selectPaletteWithKey(this._store.colors.prevSelectedColor);
+          this._store.colors.selectPaletteWithKey(
+            this._store.colors.prevSelectedColor
+          );
         }
       }
-      this._store.updateSettings(draft => {
-        this._store.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
+      this._store.updateSettings((draft) => {
+        this._store.announce(
+          `Low vision mode ${newValue ? "enabled" : "disabled"}`
+        );
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
         if (newValue) {
-          this._lowVisionModeSaved.set('chart.fontScale', draft.chart.fontScale);
-          this._lowVisionModeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+          this._lowVisionModeSaved.set(
+            "chart.fontScale",
+            draft.chart.fontScale
+          );
+          this._lowVisionModeSaved.set(
+            "grid.isDrawVertLines",
+            draft.grid.isDrawVertLines
+          );
           draft.chart.fontScale = 2;
           draft.grid.isDrawVertLines = true;
         } else {
-          draft.chart.fontScale = this._lowVisionModeSaved.get('chart.fontScale');
-          draft.grid.isDrawVertLines = this._lowVisionModeSaved.get('grid.isDrawVertLines');
+          draft.chart.fontScale =
+            this._lowVisionModeSaved.get("chart.fontScale");
+          draft.grid.isDrawVertLines = this._lowVisionModeSaved.get(
+            "grid.isDrawVertLines"
+          );
           this._lowVisionModeSaved.clear();
         }
       });
-    } else if (path === 'ui.isVoicingEnabled') {
+    } else if (path === "ui.isVoicingEnabled") {
       if (this._store.settings.ui.isVoicingEnabled) {
         if (this._hotkeyActions instanceof NormalHotkeyActions) {
-          const msg = ['Self-voicing enabled.'];
-          const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+          const msg = ["Self-voicing enabled."];
+          const lastAnnouncement =
+            this.paraChart.ariaLiveRegion.lastAnnouncement;
           if (lastAnnouncement) {
             msg.push(lastAnnouncement);
           }
@@ -445,36 +495,47 @@ export class ParaView extends logging(ParaComponent) {
           // That would require being able to join a simple text announcement with
           // a HighlightedSummary
           (async () => {
-            this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+            this._store.announce(
+              await this._documentView!.chartInfo.summarizer.getChartSummary()
+            );
           })();
         }
       } else {
         this.paraChart.ariaLiveRegion.voicing.shutUp();
         // Voicing is disabled at this point, so manually push this message through
-        this.paraChart.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
+        this.paraChart.ariaLiveRegion.voicing.speak(
+          "Self-voicing disabled.",
+          []
+        );
       }
-    } else if (path === 'ui.isNarrativeHighlightEnabled') {
+    } else if (path === "ui.isNarrativeHighlightEnabled") {
       if (this._store.settings.ui.isNarrativeHighlightEnabled) {
         if (this._store.settings.ui.isVoicingEnabled) {
-		  this.startNarrativeHighlightMode();
-          const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
-          const msg = ['Narrative Highlights Mode enabled.'];
+          this.startNarrativeHighlightMode();
+          const lastAnnouncement =
+            this.paraChart.ariaLiveRegion.lastAnnouncement;
+          const msg = ["Narrative Highlights Mode enabled."];
           if (lastAnnouncement) msg.push(lastAnnouncement);
           this._store.announce(msg);
           (async () => {
-            this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+            this._store.announce(
+              await this._documentView!.chartInfo.summarizer.getChartSummary()
+            );
           })();
         } else {
-		  this._store.updateSettings(draft => {
+          this._store.updateSettings((draft) => {
             draft.ui.isVoicingEnabled = true;
           });
           this.startNarrativeHighlightMode();
-          const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
-          const msg = ['Narrative Highlights Mode enabled.'];
+          const lastAnnouncement =
+            this.paraChart.ariaLiveRegion.lastAnnouncement;
+          const msg = ["Narrative Highlights Mode enabled."];
           if (lastAnnouncement) msg.push(lastAnnouncement);
           this._store.announce(msg);
           (async () => {
-            this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+            this._store.announce(
+              await this._documentView!.chartInfo.summarizer.getChartSummary()
+            );
           })();
         }
       } else {
@@ -482,33 +543,33 @@ export class ParaView extends logging(ParaComponent) {
         this.endNarrativeHighlightMode();
 
         // Disable self-voicing as well
-        this._store.updateSettings(draft => {
+        this._store.updateSettings((draft) => {
           draft.ui.isVoicingEnabled = false;
         });
 
-        this._store.announce(['Narrative Highlight Mode disabled.']);
+        this._store.announce(["Narrative Highlight Mode disabled."]);
       }
-    } else if(path === 'ui.isNarrativeHighlightPaused') {
-	    this.paraChart.ariaLiveRegion.voicing.togglePaused();
-	}
+    } else if (path === "ui.isNarrativeHighlightPaused") {
+      this.paraChart.ariaLiveRegion.voicing.togglePaused();
+    }
   }
 
   protected _onFullscreenChange() {
     if (document.fullscreenElement) {
       if (!this._store.settings.ui.isFullscreenEnabled) {
         // fullscreen was entered manually
-        this._store.updateSettings(draft => {
+        this._store.updateSettings((draft) => {
           draft.ui.isFullscreenEnabled = true;
         }, true);
       }
     } else {
       if (this._store.settings.ui.isLowVisionModeEnabled) {
-        this._store.updateSettings(draft => {
+        this._store.updateSettings((draft) => {
           draft.ui.isLowVisionModeEnabled = false;
         });
       } else if (this._store.settings.ui.isFullscreenEnabled) {
         // fullscreen was exited manually
-        this._store.updateSettings(draft => {
+        this._store.updateSettings((draft) => {
           draft.ui.isFullscreenEnabled = false;
         }, true);
       }
@@ -555,7 +616,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   unref(key: string): void {
-    if (key.endsWith('*')) {
+    if (key.endsWith("*")) {
       // assume key looks like 'foo.*'
       const prefix = key.slice(0, -1);
       for (const refKey of this._chartRefs.keys()) {
@@ -572,26 +633,26 @@ export class ParaView extends logging(ParaComponent) {
 
   startNarrativeHighlightMode() {
     this._hotkeyActions = new NarrativeHighlightHotkeyActions(this);
-    this._store.updateSettings(draft => {
+    this._store.updateSettings((draft) => {
       draft.ui.isVoicingEnabled = true;
     });
-    this._store.updateSettings(draft => {
+    this._store.updateSettings((draft) => {
       draft.chart.showPopups = true;
     });
   }
 
   endNarrativeHighlightMode() {
-    this._store.updateSettings(draft => {
+    this._store.updateSettings((draft) => {
       draft.ui.isVoicingEnabled = false;
     });
-    this._store.updateSettings(draft => {
+    this._store.updateSettings((draft) => {
       draft.chart.showPopups = false;
     });
     this._hotkeyActions = new NormalHotkeyActions(this);
   }
 
   createDocumentView() {
-    this.log('creating document view', this.type);
+    this.log("creating document view", this.type);
     this._documentView = new DocumentView(this);
     this.computeViewBox();
     // The style manager may get declaration values from chart objects
@@ -603,9 +664,9 @@ export class ParaView extends logging(ParaComponent) {
       x: 0,
       y: 0,
       width: this._store.settings.chart.size.width,
-      height: this._store.settings.chart.size.height
+      height: this._store.settings.chart.size.height,
     };
-    this.log('view box:', this._viewBox.width, 'x', this._viewBox.height);
+    this.log("view box:", this._viewBox.width, "x", this._viewBox.height);
   }
 
   updateViewbox(x?: number, y?: number, width?: number, height?: number) {
@@ -621,10 +682,11 @@ export class ParaView extends logging(ParaComponent) {
 
   serialize() {
     const svg = this.root!.cloneNode(true) as SVGSVGElement;
-    svg.id = 'para' + (window.crypto.randomUUID?.() ?? '');
+    svg.id = "para" + (window.crypto.randomUUID?.() ?? "");
 
-    const styles = this.paraChart.extractStyles(svg.id) + '\n' + this.extractStyles(svg.id);
-    const styleEl = document.createElementNS(SVGNS, 'style');
+    const styles =
+      this.paraChart.extractStyles(svg.id) + "\n" + this.extractStyles(svg.id);
+    const styleEl = document.createElementNS(SVGNS, "style");
     styleEl.textContent = styles;
     svg.prepend(styleEl);
 
@@ -639,27 +701,28 @@ export class ParaView extends logging(ParaComponent) {
       }
     };
     pruneComments(svg.childNodes);
-    toPrune.forEach(c => c.remove());
+    toPrune.forEach((c) => c.remove());
 
-    svg.removeAttribute('width');
-    svg.removeAttribute('height');
-    svg.removeAttribute('role');
+    svg.removeAttribute("width");
+    svg.removeAttribute("height");
+    svg.removeAttribute("role");
 
     // XXX Also remove visited styling (not just the layer)
 
-    return new XMLSerializer().serializeToString(svg)
-      .split('\n')
-      .filter(line => !line.match(/^\s*$/))
-      .join('\n');
+    return new XMLSerializer()
+      .serializeToString(svg)
+      .split("\n")
+      .filter((line) => !line.match(/^\s*$/))
+      .join("\n");
   }
 
   downloadSVG() {
     const data = this.serialize();
     const svgBlob = new Blob([data], {
-      type: 'image/svg+xml;charset=utf-8'
+      type: "image/svg+xml;charset=utf-8",
     });
     const svgURL = URL.createObjectURL(svgBlob);
-    this.downloadContent(svgURL, 'svg');
+    this.downloadContent(svgURL, "svg");
     URL.revokeObjectURL(svgURL);
   }
 
@@ -667,25 +730,25 @@ export class ParaView extends logging(ParaComponent) {
     // hat tip: https://takuti.me/note/javascript-save-svg-as-image/
     const data = this.serialize();
     const svgBlob = new Blob([data], {
-      type: 'image/svg+xml;charset=utf-8'
+      type: "image/svg+xml;charset=utf-8",
     });
     const svgURL = URL.createObjectURL(svgBlob);
     const img = new Image();
-    img.addEventListener('load', () => {
+    img.addEventListener("load", () => {
       const bbox = this._rootRef.value!.getBBox();
-      const canvas = document.createElement('canvas');
+      const canvas = document.createElement("canvas");
       canvas.width = bbox.width;
       canvas.height = bbox.height;
-      const context = canvas.getContext('2d')!;
+      const context = canvas.getContext("2d")!;
       context.drawImage(img, 0, 0, bbox.width, bbox.height);
       URL.revokeObjectURL(svgURL);
-      canvas.toBlob(canvasBlob => {
+      canvas.toBlob((canvasBlob) => {
         if (canvasBlob) {
           const blobURL = URL.createObjectURL(canvasBlob);
-          this.downloadContent(blobURL, 'png');
+          this.downloadContent(blobURL, "png");
           URL.revokeObjectURL(blobURL);
         } else {
-          throw new Error('failed to create image download blob');
+          throw new Error("failed to create image download blob");
         }
       });
     });
@@ -693,10 +756,10 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   downloadContent(url: string, extension: string) {
-    const downloadLinkEl = document.createElement('a');
+    const downloadLinkEl = document.createElement("a");
     this.fileSavePlaceholder.appendChild(downloadLinkEl);
-    const title = this._documentView!.titleText || 'parachart';
-    downloadLinkEl.download = `${title.replace(/\W/g, '_')}.${extension}`;
+    const title = this._documentView!.titleText || "parachart";
+    downloadLinkEl.download = `${title.replace(/\W/g, "_")}.${extension}`;
     downloadLinkEl.href = url;
     downloadLinkEl.click();
     downloadLinkEl.remove();
@@ -704,9 +767,9 @@ export class ParaView extends logging(ParaComponent) {
 
   addDef(key: string, template: TemplateResult) {
     if (this._defs[key]) {
-      throw new Error('view already in defs');
+      throw new Error("view already in defs");
     }
-    console.log('ADDING DEF', key);
+    console.log("ADDING DEF", key);
     this._defs = { ...this._defs, [key]: template };
     this.requestUpdate();
   }
@@ -714,37 +777,38 @@ export class ParaView extends logging(ParaComponent) {
   protected _rootStyle() {
     const style: { [prop: string]: any } = {
       fontFamily: this._store.settings.chart.fontFamily,
-      fontWeight: this._store.settings.chart.fontWeight
+      fontWeight: this._store.settings.chart.fontWeight,
     };
     if (document.fullscreenElement === this.root) {
       const vbWidth = Math.round(this._viewBox.width);
       const vbHeight = Math.round(this._viewBox.height);
-      const vbRatio = (Math.min(vbWidth, vbHeight) / Math.max(vbWidth, vbHeight)) * 100;
+      const vbRatio =
+        (Math.min(vbWidth, vbHeight) / Math.max(vbWidth, vbHeight)) * 100;
       if (vbWidth > vbHeight) {
-        style.width = '100vw';
+        style.width = "100vw";
         style.height = `${vbRatio}vh`;
       } else {
         style.width = `${vbRatio}vw`;
-        style.height = '100vh';
+        style.height = "100vh";
       }
     }
 
     const contrast = this.store.settings.color.contrastLevel * 50;
     if (this._store.settings.color.isDarkModeEnabled) {
-      style['--axis-line-color'] = `hsl(0, 0%, ${50 + contrast}%)`;
-      style['--label-color'] = `hsl(0, 0%, ${50 + contrast}%)`;
-      style['--background-color'] = `hsl(0, 0%, ${((100 - contrast) / 5) - 10}%)`;
+      style["--axis-line-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
+      style["--label-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
+      style["--background-color"] = `hsl(0, 0%, ${(100 - contrast) / 5 - 10}%)`;
     } else {
-      style['--axis-line-color'] = `hsl(0, 0%, ${50 - contrast}%)`;
-      style['--label-color'] = `hsl(0, 0%, ${50 - contrast}%)`;
+      style["--axis-line-color"] = `hsl(0, 0%, ${50 - contrast}%)`;
+      style["--label-color"] = `hsl(0, 0%, ${50 - contrast}%)`;
     }
     return style;
   }
 
   protected _rootClasses() {
     return {
-      darkmode: this._store.settings.color.isDarkModeEnabled
-    }
+      darkmode: this._store.settings.color.isDarkModeEnabled,
+    };
   }
 
   navToDatapoint(seriesKey: string, index: number) {
@@ -752,80 +816,93 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   render(): TemplateResult {
-    this.log('render');
+    this.log("render");
     return html`
-      <svg
-        role="application"
-        tabindex=${this.disableFocus ? -1 : 0}
-        aria-label=${this._documentView ? `${this._documentView.titleText}, accessible chart` : 'loading...'}
-        ${ref(this._rootRef)}
-        xmlns=${SVGNS}
-        data-charttype=${this.paraChart.type ?? this.type}
-        width=${fixed`${this._viewBox.width}px`}
-        height=${fixed`${this._viewBox.height}px`}
-        class=${classMap(this._rootClasses())}
-        viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
-        style=${styleMap(this._rootStyle())}
-        @fullscreenchange=${() => this._onFullscreenChange()}
-        @focus=${() => {
-          if (!this._store.settings.chart.isStatic) {
-            //this.log('focus');
-            //this.todo.deets?.onFocus();
-            //this.documentView?.chartInfo.navMap?.visitDatapoints();
-          }
-        }}
-        @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
-        @pointerdown=${(ev: PointerEvent) => this._pointerEventManager?.handleStart(ev)}
-        @pointerup=${(ev: PointerEvent) => this._pointerEventManager?.handleEnd(ev)}
-        @pointercancel=${(ev: PointerEvent) => this._pointerEventManager?.handleCancel(ev)}
-        @pointermove=${(ev: PointerEvent) => this._pointerEventManager?.handleMove(ev)}
-        @pointerleave=${(ev: PointerEvent) => !isPointerInbounds(this, ev) ? this.requestUpdate() : undefined}
-        @click=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleClick(ev)}
-        @dblclick=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleDoubleClick(ev)}
-      >
-        <defs
-          ${ref(this._defsRef)}
+      <div ${ref(this._containerRef)}>
+        <svg
+          role="application"
+          tabindex=${this.disableFocus ? -1 : 0}
+          aria-label=${this._documentView
+        ? `${this._documentView.titleText}, accessible chart`
+        : "loading..."}
+          ${ref(this._rootRef)}
+          xmlns=${SVGNS}
+          data-charttype=${this.paraChart.type ?? this.type}
+          width=${fixed`${this._viewBox.width}px`}
+          height=${fixed`${this._viewBox.height}px`}
+          class=${classMap(this._rootClasses())}
+          viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
+          style=${styleMap(this._rootStyle())}
+          @fullscreenchange=${() => this._onFullscreenChange()}
+          @focus=${() => {
+        if (!this._store.settings.chart.isStatic) {
+          //this.log('focus');
+          //this.todo.deets?.onFocus();
+          //this.documentView?.chartInfo.navMap?.visitDatapoints();
+        }
+      }}
+          @keydown=${(event: KeyboardEvent) =>
+        this._controller.handleKeyEvent(event)}
+          @pointerdown=${(ev: PointerEvent) =>
+        this._pointerEventManager?.handleStart(ev)}
+          @pointerup=${(ev: PointerEvent) =>
+        this._pointerEventManager?.handleEnd(ev)}
+          @pointercancel=${(ev: PointerEvent) =>
+        this._pointerEventManager?.handleCancel(ev)}
+          @pointermove=${(ev: PointerEvent) =>
+        this._pointerEventManager?.handleMove(ev)}
+          @pointerleave=${(ev: PointerEvent) =>
+        !isPointerInbounds(this, ev) ? this.requestUpdate() : undefined}
+          @click=${(ev: PointerEvent | MouseEvent) =>
+        this._pointerEventManager?.handleClick(ev)}
+          @dblclick=${(ev: PointerEvent | MouseEvent) =>
+        this._pointerEventManager?.handleDoubleClick(ev)}
         >
-          ${Object.entries(this._defs).map(([key, template]) => template)}
-          ${this._documentView?.horizAxis ? svg`
-            <clipPath id="clip-path">
-              <rect
-                x=${0}
-                y=${0}
-                width=${this._documentView.chartLayers.width}
-                height=${this._documentView.chartLayers.height}>
-              </rect>
-            </clipPath>
-          ` : ''
-      }
-        </defs>
-        <metadata data-type="text/jim+json">
-          ${this._store.jimerator ? JSON.stringify(this._store.jimerator.jim, undefined, 2) : ''}
-        </metadata>
-        <rect
-          ${ref(this._frameRef)}
-          id="frame"
-          class=${nothing}
-          pointer-events="all"
-          x="0"
-          y="0"
-          width="100%"
-          height="100%"
-        >
-        </rect>
-        ${this._documentView?.render() ?? ''}
-      </svg>
-      <div
-        ${ref(this._fileSavePlaceholderRef)}
-        hidden
-      ></div>
+          <defs ${ref(this._defsRef)}>
+            ${Object.entries(this._defs).map(([key, template]) => template)}
+            ${this._documentView?.horizAxis
+        ? svg`
+              <clipPath id="clip-path">
+                <rect
+                  x=${0}
+                  y=${0}
+                  width=${this._documentView.chartLayers.width}
+                  height=${this._documentView.chartLayers.height}>
+                </rect>
+              </clipPath>
+            `
+        : ""}
+          </defs>
+          <metadata data-type="text/jim+json">
+            ${this._store.jimerator
+        ? JSON.stringify(this._store.jimerator.jim, undefined, 2)
+        : ""}
+          </metadata>
+          <rect
+            ${ref(this._frameRef)}
+            id="frame"
+            class=${nothing}
+            pointer-events="all"
+            x="0"
+            y="0"
+            width="100%"
+            height="100%"
+          ></rect>
+          ${this._documentView?.render() ?? ""}
+        </svg>
+        <div ${ref(this._fileSavePlaceholderRef)} hidden></div>
+      <para-aria-live-region
+          ${ref(this._ariaLiveRegionRef)}
+          .store=${this._store}
+          .announcement=${this._store.announcement}
+        ></para-aria-live-region>
+	  </div>
     `;
   }
-
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'para-view': ParaView;
+    "para-view": ParaView;
   }
 }
