@@ -23,7 +23,6 @@
  */
 
 import { ParaChart } from '../parachart/parachart';
-import { ParaView } from '../paraview';
 
 export interface ParsedOffset {
   format: 'pixels' | 'percent';
@@ -71,16 +70,17 @@ export interface ScrollyOptions {
 export class Scrollyteller {
   private parachart: ParaChart;
   private steps!: NodeListOf<Element>;
+  private settings!: any;
 
 
   constructor(
-    parachart: ParaChart,
+    parachart?: ParaChart,
     chartID?: string,
   ) {
     // HACK: needed to assign something to this.parachart
-    this.parachart = parachart;
-    this.paraview = paraview;
-    if (this.parachart.paraview.store.settings.scrollytelling.isScrollytellingEnabled) {
+    this.parachart = parachart as ParaChart;
+    this.settings = this.parachart.paraView.store.settings.scrollytelling;
+    if (this.settings.isScrollytellingEnabled) {
 
       if (!this.parachart) {
         this.parachart = chartID ?
@@ -91,7 +91,7 @@ export class Scrollyteller {
           throw new Error(
             `Scrollyteller requires a ParaChart element. ${chartID
               ? `No element found with ID "${chartID}"`
-              : 'No para-chart or para-chart-ai element found on page'
+              : 'No "para-chart" element found on page'
             }`
           );
         }
@@ -104,7 +104,7 @@ export class Scrollyteller {
 
   private init(): void {
     this.steps = document.querySelectorAll('[data-para-step]');
-    const scroller = new ScrollytellerImpl();
+    const scroller = new ScrollytellerEngine();
 
     scroller.setup({
       step: '[data-para-step]',
@@ -131,6 +131,16 @@ export class Scrollyteller {
         const highlights = response.action.highlightDatapoint.replace(/[\[\]']+/g, '').split(',');
         this.parachart.command('click', [`${highlights[0]}`, +highlights[1]]);
       }
+
+      // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
+      if (this.settings.isScrollyAnnouncementsEnabled) {
+        console.log('Add scrollytelling aria-live descriptions of highlights')
+      }
+
+      // TODO: add sonifications
+      if (this.settings.isScrollySoniEnabled) {
+        console.log('Add scrollytelling sonifications')
+      }
     });
 
     this.steps[0].classList.add('para-active');
@@ -142,7 +152,7 @@ export class Scrollyteller {
   }
 }
 
-export class ScrollytellerImpl {
+export class ScrollytellerEngine {
 
   private steps: ScrollyStep[];
   private _events: Map<ScrollyEvent, Array<(response: CallbackResponse) => void>>;
@@ -476,7 +486,7 @@ export class ScrollytellerImpl {
     once = false,
     container = undefined,
     root = null,
-  }: ScrollyOptions): ScrollytellerImpl {
+  }: ScrollyOptions): ScrollytellerEngine {
     this._setupScrollListener();
 
     const parentElement = (typeof step === 'string' && parent)
@@ -515,17 +525,17 @@ export class ScrollytellerImpl {
     return this;
   }
 
-  enable(): ScrollytellerImpl {
+  enable(): ScrollytellerEngine {
     this._handleEnable(true);
     return this;
   }
 
-  disable(): ScrollytellerImpl {
+  disable(): ScrollytellerEngine {
     this._handleEnable(false);
     return this;
   }
 
-  destroy(): ScrollytellerImpl {
+  destroy(): ScrollytellerEngine {
     this._handleEnable(false);
     this.off();
     this._resetExclusions();
@@ -533,7 +543,7 @@ export class ScrollytellerImpl {
     return this;
   }
 
-  resize(): ScrollytellerImpl {
+  resize(): ScrollytellerEngine {
     this._updateObservers();
     return this;
   }
