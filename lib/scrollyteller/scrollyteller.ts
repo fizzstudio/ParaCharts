@@ -81,7 +81,7 @@ export class Scrollyteller {
     // HACK: needed to assign something to this.parachart
     this.parachart = parachart;
     this.paraview = paraview;
-    if (this.paraview.store.settings.scrollytelling.isScrollytellingEnabled) {
+    if (this.parachart.paraview.store.settings.scrollytelling.isScrollytellingEnabled) {
 
       if (!this.parachart) {
         this.parachart = chartID ?
