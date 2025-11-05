@@ -23,7 +23,7 @@ import { styles } from '../lib/view/styles';
 // @ts-ignore
 import cpanelIconAlt from '../lib/assets/info-icon-alt.svg';
 
-@customElement('para-chart-ai')
+@customElement('para-chart')
 export class ParaChartAi extends ParaChart {
 
   static styles = [
@@ -49,6 +49,6 @@ export class ParaChartAi extends ParaChart {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'para-chart-ai': ParaChartAi;
+    'para-chart': ParaChartAi;
   }
 }
