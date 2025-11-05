@@ -75,7 +75,6 @@ export class Scrollyteller {
 
   constructor(
     parachart: ParaChart,
-    paraview: ParaView,
     chartID?: string,
   ) {
     // HACK: needed to assign something to this.parachart
