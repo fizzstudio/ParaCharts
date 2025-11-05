@@ -491,6 +491,8 @@ export interface SonificationSettings extends SettingGroup {
 /** @public */
 export interface ScrollytellingSettings extends SettingGroup {
   isScrollytellingEnabled: boolean;
+  isScrollyAnnouncementsEnabled: boolean;
+  isScrollySoniEnabled: boolean;
 }
 
 /** @public */
