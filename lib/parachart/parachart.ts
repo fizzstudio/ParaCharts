@@ -167,11 +167,6 @@ export class ParaChart extends logging(ParaComponent) {
   get loader() {
     return this._loader;
   }
-
-  get ariaLiveRegion() {
-    return this._ariaLiveRegionRef.value!;
-  }
-
   get slotted(){
     return this._slotted;
   }

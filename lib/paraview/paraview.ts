@@ -52,13 +52,14 @@ export type c2mCallbackType = {
 export class ParaView extends logging(ParaComponent) {
   paraChart!: ParaChart;
 
-  @property() typ: ChartType = "bar";
+  @property() type: ChartType = "bar";
   @property() chartTitle?: string;
   @property() xAxisLabel?: string;
   @property() yAxisLabel?: string;
   @property() contrastLevel: number = 1;
   @property({ type: Boolean }) disableFocus = false;
 
+  protected _ariaLiveRegionRef = createRef<AriaLive>();
   protected _controller!: ParaViewController;
   protected _viewBox!: ViewBox;
   protected _prevFocusLeaf?: View;
@@ -302,7 +303,9 @@ export class ParaView extends logging(ParaComponent) {
       }
     };
   }
-
+  get ariaLiveRegion() {
+    return this._ariaLiveRegionRef.value!;
+  }
   get viewBox() {
     return this._viewBox;
   }
@@ -485,7 +488,7 @@ export class ParaView extends logging(ParaComponent) {
         if (this._hotkeyActions instanceof NormalHotkeyActions) {
           const msg = ["Self-voicing enabled."];
           const lastAnnouncement =
-            this.paraChart.ariaLiveRegion.lastAnnouncement;
+            this.ariaLiveRegion.lastAnnouncement;
           if (lastAnnouncement) {
             msg.push(lastAnnouncement);
           }
@@ -501,9 +504,9 @@ export class ParaView extends logging(ParaComponent) {
           })();
         }
       } else {
-        this.paraChart.ariaLiveRegion.voicing.shutUp();
+        this.ariaLiveRegion.voicing.shutUp();
         // Voicing is disabled at this point, so manually push this message through
-        this.paraChart.ariaLiveRegion.voicing.speak(
+        this.ariaLiveRegion.voicing.speak(
           "Self-voicing disabled.",
           []
         );
@@ -513,7 +516,7 @@ export class ParaView extends logging(ParaComponent) {
         if (this._store.settings.ui.isVoicingEnabled) {
           this.startNarrativeHighlightMode();
           const lastAnnouncement =
-            this.paraChart.ariaLiveRegion.lastAnnouncement;
+            this.ariaLiveRegion.lastAnnouncement;
           const msg = ["Narrative Highlights Mode enabled."];
           if (lastAnnouncement) msg.push(lastAnnouncement);
           this._store.announce(msg);
@@ -528,7 +531,7 @@ export class ParaView extends logging(ParaComponent) {
           });
           this.startNarrativeHighlightMode();
           const lastAnnouncement =
-            this.paraChart.ariaLiveRegion.lastAnnouncement;
+            this.ariaLiveRegion.lastAnnouncement;
           const msg = ["Narrative Highlights Mode enabled."];
           if (lastAnnouncement) msg.push(lastAnnouncement);
           this._store.announce(msg);
@@ -550,7 +553,7 @@ export class ParaView extends logging(ParaComponent) {
         this._store.announce(["Narrative Highlight Mode disabled."]);
       }
     } else if (path === "ui.isNarrativeHighlightPaused") {
-      this.paraChart.ariaLiveRegion.voicing.togglePaused();
+      this.ariaLiveRegion.voicing.togglePaused();
     }
   }
 
