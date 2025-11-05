@@ -70,7 +70,6 @@ export interface ScrollyOptions {
 
 export class Scrollyteller {
   private parachart: ParaChart;
-  private paraview: ParaView;
   private steps!: NodeListOf<Element>;
 
 
