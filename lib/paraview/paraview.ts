@@ -304,21 +304,23 @@ export class ParaView extends logging(ParaComponent) {
       }
     };
   }
+  
   get ariaLiveRegion() {
     return this._ariaLiveRegionRef.value!;
   }
+  
   get viewBox() {
     return this._viewBox;
   }
-
+  
   get root() {
     return this._rootRef.value;
   }
-
+  
   get frame() {
     return this._frameRef.value;
   }
-
+  
   get dataspace() {
     return this._dataspaceRef.value;
   }
@@ -354,7 +356,13 @@ export class ParaView extends logging(ParaComponent) {
   set hotkeyActions(actions: HotkeyActions) {
     this._hotkeyActions = actions;
   }
-
+  
+  clearAriaLive() {
+    this._ariaLiveRegionRef.value!.clear();
+  }
+  showAriaLiveHistory() {
+    this._ariaLiveRegionRef.value!.showHistoryDialog();
+  }
   connectedCallback() {
     super.connectedCallback();
     // create a default view box so the SVG element can have a size
@@ -427,15 +435,15 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
-    console.log("Refer to line 430");
+    console.log("Refer to line 438");
     this._documentView?.settingDidChange(path, oldValue, newValue);
     if (path === "ui.isFullscreenEnabled") {
       if (newValue && !document.fullscreenElement) {
         try {
-          console.log("Refer to line 434");
+          console.log("Refer to line 443");
 		  this._containerRef.value?.requestFullscreen();
         } catch {
-		  console.log("Refer to line 434");
+          console.log("Refer to line 446");
           console.error("failed to enter fullscreen");
           this._store.updateSettings((draft) => {
             draft.ui.isFullscreenEnabled = false;
@@ -443,10 +451,11 @@ export class ParaView extends logging(ParaComponent) {
         }
       } else if (!newValue && document.fullscreenElement) {
         try {
-          console.log("Refer to line 446");
+          console.log("Refer to line 454");
 		  document.exitFullscreen();
+		  console.log("We exited");
         } catch {
-          console.log("Refer to line 449");
+          console.log("Refer to line 457");
 		  console.error("failed to exit fullscreen");
           this._store.updateSettings((draft) => {
             draft.ui.isFullscreenEnabled = true;
@@ -455,24 +464,30 @@ export class ParaView extends logging(ParaComponent) {
       }
     } else if (path === "ui.isLowVisionModeEnabled") {
       if (newValue) {
-        console.log("Refer to line 458");
+	    console.log("Enabling low vision mode");
+        console.log("Refer to line 466");
 		this._store.colors.selectPaletteWithKey("low-vision");
       } else {
-        if (this._store.colors.prevSelectedColor.length > 0) {
-          console.log("Refer to line 462");
+        console.log("Disabling low vision mode");
+		if (this._store.colors.prevSelectedColor.length > 0) {
+          console.log("Refer to line 470");
 		  this._store.colors.selectPaletteWithKey(
             this._store.colors.prevSelectedColor
           );
         }
       }
-      this._store.updateSettings((draft) => {
+      console.log("Refer to line 468: is LVM enabled or disabled?");
+	  this._store.updateSettings((draft) => {
         this._store.announce(
           `Low vision mode ${newValue ? "enabled" : "disabled"}`
         );
+		console.log("Refer to line 481");
         draft.color.isDarkModeEnabled = !!newValue;
-        draft.ui.isFullscreenEnabled = !!newValue;
+        console.log("Refer to line 483");
+	    draft.ui.isFullscreenEnabled = !!newValue;
+		console.log("Refer to line 485");
         if (newValue) {
-          console.log("Refer to line 475");
+          console.log("Refer to line 487");
 		  this._lowVisionModeSaved.set(
             "chart.fontScale",
             draft.chart.fontScale
@@ -484,7 +499,7 @@ export class ParaView extends logging(ParaComponent) {
           draft.chart.fontScale = 2;
           draft.grid.isDrawVertLines = true;
         } else {
-          console.log("Refer to line 487");
+          console.log("Refer to line 499");
 		  draft.chart.fontScale =
             this._lowVisionModeSaved.get("chart.fontScale");
           draft.grid.isDrawVertLines = this._lowVisionModeSaved.get(

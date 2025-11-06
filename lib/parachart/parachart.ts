@@ -300,15 +300,6 @@ export class ParaChart extends logging(ParaComponent) {
     // ... then update it again to pick up any changed values from the view tree
     this._styleManager.update();
   }
-
-  clearAriaLive() {
-    this._ariaLiveRegionRef.value!.clear();
-  }
-
-  showAriaLiveHistory() {
-    this._ariaLiveRegionRef.value!.showHistoryDialog();
-  }
-
   getChartSVG() {
     return this._api.serializeChart();
   }
