@@ -2089,6 +2089,8 @@ export interface LineSettings extends PointSettings {
     // (undocumented)
     isAlwaysShowSeriesLabel?: boolean;
     // (undocumented)
+    isTrendNavigationModeEnabled: boolean;
+    // (undocumented)
     leaderLineLength: number;
     // (undocumented)
     lineHighlightScale: number;
@@ -2403,6 +2405,10 @@ export class ParaChart extends ParaChart_base {
     render(): TemplateResult;
     // (undocumented)
     protected _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void>;
+    // (undocumented)
+    get scrollyteller(): Scrollyteller | undefined;
+    // (undocumented)
+    protected _scrollyteller?: Scrollyteller;
     // (undocumented)
     settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
     // (undocumented)
