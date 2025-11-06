@@ -28,7 +28,7 @@ export class ParaPerformer {
   protected _allSeries: ParaPerformerSeries[];
 
   static getInst(paraChart: ParaChart): ParaPerformer {
-    if (!ParaPerformer._inst) {
+    if (!ParaPerformer._inst || ParaPerformer._inst.paraChart.manifest !== paraChart.manifest) {
       ParaPerformer._inst = new ParaPerformer(paraChart);
     }
     return ParaPerformer._inst;
