@@ -405,7 +405,7 @@ export const defaults: Settings = {
     navRunTimeoutMs: 125,
   },
   animation: {
-    isAnimationEnabled: true,
+    isAnimationEnabled: false,
     animateRevealTimeMs: 2500,
     animationType: 'uniform',
     animationOrigin: 'initialValue',
