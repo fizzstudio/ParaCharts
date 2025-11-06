@@ -59,6 +59,7 @@ export class ParaView extends logging(ParaComponent) {
   @property() yAxisLabel?: string;
   @property() contrastLevel: number = 1;
   @property({ type: Boolean }) disableFocus = false;
+  @state() private _isFullscreen = false;
 
   protected _ariaLiveRegionRef = createRef<AriaLive>();
   protected _controller!: ParaViewController;
@@ -583,6 +584,7 @@ export class ParaView extends logging(ParaComponent) {
 
   protected _onFullscreenChange() {
 	if (document.fullscreenElement) {
+	  this._isFullscreen = true;
       if (!this._store.settings.ui.isFullscreenEnabled) {
         // fullscreen was entered manually
         this._store.updateSettings((draft) => {
@@ -590,6 +592,7 @@ export class ParaView extends logging(ParaComponent) {
         }, true);
       }
     } else {
+	  this._isFullscreen = false;
       if (this._store.settings.ui.isLowVisionModeEnabled) {
         this._store.updateSettings((draft) => {
           draft.ui.isLowVisionModeEnabled = false;
@@ -806,9 +809,7 @@ export class ParaView extends logging(ParaComponent) {
       fontFamily: this._store.settings.chart.fontFamily,
       fontWeight: this._store.settings.chart.fontWeight,
     };
-	console.log(this._containerRef.value);
-	console.log(document.fullscreenElement);
-    if (document.fullscreenElement?.isSameNode(this._containerRef.value)) {
+    if (this._isFullscreen) {
 	  const vbWidth = Math.round(this._viewBox.width);
       const vbHeight = Math.round(this._viewBox.height);
       const vbRatio =
