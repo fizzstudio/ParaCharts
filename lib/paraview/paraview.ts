@@ -441,7 +441,7 @@ export class ParaView extends logging(ParaComponent) {
       if (newValue && !document.fullscreenElement) {
         try {
           console.log("Refer to line 443");
-		  this._containerRef.value?.requestFullscreen();
+		  this._containerRef.value.requestFullscreen();
         } catch {
           console.log("Refer to line 446");
           console.error("failed to enter fullscreen");
@@ -465,7 +465,6 @@ export class ParaView extends logging(ParaComponent) {
     } else if (path === "ui.isLowVisionModeEnabled") {
       if (newValue) {
 	    console.log("Enabling low vision mode");
-        console.log("Refer to line 466");
 		this._store.colors.selectPaletteWithKey("low-vision");
       } else {
         console.log("Disabling low vision mode");
@@ -583,7 +582,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   protected _onFullscreenChange() {
-    if (document.fullscreenElement) {
+	if (document.fullscreenElement) {
       if (!this._store.settings.ui.isFullscreenEnabled) {
         // fullscreen was entered manually
         this._store.updateSettings((draft) => {
@@ -803,12 +802,14 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   protected _rootStyle() {
-    const style: { [prop: string]: any } = {
+	const style: { [prop: string]: any } = {
       fontFamily: this._store.settings.chart.fontFamily,
       fontWeight: this._store.settings.chart.fontWeight,
     };
-    if (document.fullscreenElement === this.root) {
-      const vbWidth = Math.round(this._viewBox.width);
+	console.log(this._containerRef.value);
+	console.log(document.fullscreenElement);
+    if (document.fullscreenElement?.isSameNode(this._containerRef.value)) {
+	  const vbWidth = Math.round(this._viewBox.width);
       const vbHeight = Math.round(this._viewBox.height);
       const vbRatio =
         (Math.min(vbWidth, vbHeight) / Math.max(vbWidth, vbHeight)) * 100;
@@ -846,7 +847,7 @@ export class ParaView extends logging(ParaComponent) {
   render(): TemplateResult {
     this.log("render");
     return html`
-      <div ${ref(this._containerRef)}>
+      <div ${ref(this._containerRef)} @fullscreenchange=${() => this._onFullscreenChange()}>
         <svg
           role="application"
           tabindex=${this.disableFocus ? -1 : 0}
@@ -861,7 +862,6 @@ export class ParaView extends logging(ParaComponent) {
           class=${classMap(this._rootClasses())}
           viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
           style=${styleMap(this._rootStyle())}
-          @fullscreenchange=${() => this._onFullscreenChange()}
           @focus=${() => {
         if (!this._store.settings.chart.isStatic) {
           //this.log('focus');
