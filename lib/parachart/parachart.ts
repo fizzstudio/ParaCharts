@@ -38,14 +38,14 @@ import { AvailableCommands, Commander } from './commander';
 import { Manifest } from '@fizz/paramanifest';
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
-import { customElement, property, queryAssignedElements } from 'lit/decorators.js';
+import { property, queryAssignedElements } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { SlotLoader } from '../loader/slotloader';
 import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { initParaSummary } from '@fizz/parasummary';
 
-@customElement('para-chart')
+// NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
 export class ParaChart extends logging(ParaComponent) {
 
   @property({ type: Boolean }) headless = false;
@@ -378,10 +378,4 @@ export class ParaChart extends logging(ParaComponent) {
     `;
   }
 
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'para-chart': ParaChart;
-  }
 }
