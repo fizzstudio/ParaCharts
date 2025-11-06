@@ -29,12 +29,17 @@ export interface ParsedOffset {
   value: number;
 }
 
+export interface Action {
+  action: string;
+  params: string[];
+}
+
 export interface CallbackResponse {
   element: Element;
   index: number;
   direction?: 'up' | 'down';
   progress?: number;
-  action?: Record<string, string>;
+  actions?: Action[];
 }
 
 export type ScrollyEvent = 'stepEnter' | 'stepExit' | 'stepProgress';
@@ -50,7 +55,7 @@ export interface ScrollyStep {
     progress?: IntersectionObserver;
   };
   offset: ParsedOffset | null;
-  action: Record<string, string>;
+  actions: Action[];
   top: number;
   progress: number;
   state?: 'enter' | 'exit';
@@ -137,21 +142,8 @@ export class Scrollyteller {
       const element = response.element;
       this.activateNextStep(element);
 
-      // TODO: remove previous series highlights
-      // this.parachart.store.soloSeries = '';
-      if (response.action?.highlightSeries) {
-        // TODO: remove inserted tab when `soloSeries` takes comma/space delimiter
-        const seriesList = response.action.highlightSeries.replace(/[\s,]/g, '\t');
-        //this.parachart.store.soloSeries = seriesList;
-        this.parachart.store.lowlightOtherSeries(...seriesList.split('\t'));
-      }
-
-      // TODO: remove previous datapoint highlights
-      // this.parachart.command('click', []);
-      if (response.action?.highlightDatapoint) {
-        const highlights = response.action.highlightDatapoint.replace(/[\[\]']+/g, '').split(',');
-        this.parachart.command('click', [`${highlights[0]}`, +highlights[1]]);
-      }
+      // TODO: Process actions from response.actions array
+      console.log('Actions for this step:', response.actions);
 
       // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
       if (this.settings.isScrollyAnnouncementsEnabled) {
@@ -233,30 +225,20 @@ export class Scrollyteller {
     return { format: 'percent', value: 0.5 };
   }
 
-  private getActions(element: HTMLElement): Record<string, string> {
-    let actions: Record<string, string> = {};
-    actions = this.parseAction((element as HTMLElement).dataset.paraAction)
+  private getActions(element: HTMLElement): Action[] {
+    let actions: Action[] = [];
+    const targetActions = this.parseActions(element.dataset.paraAction);
+    actions.push(...targetActions);
+    const childActionElements = element.querySelectorAll('[data-para-action]');
+    const validChildElements = Array.from(childActionElements).filter((childElement) => {
+      const chartId = (childElement as HTMLElement).dataset.paraChartid;
+      return !chartId || chartId === this.chartId;
+    });
+    validChildElements.forEach((childElement) => {
+      const childActions = this.parseActions((childElement as HTMLElement).dataset.paraAction);
+      actions.push(...childActions);
+    });
 
-
-    // this.parseAction(action: string | undefined);
-
-    // TODO: 
-    // 1. Search target element for `data-para-action` attributes
-    // 2. Search child elements for `data-para-action` attributes
-    // 3. Remove any child elements that have a `data-para-chartid` that doesn't match this chart
-    // 4. Parse the actions, and return a set of all the valid actions from the current target and 
-    //    all child elements
-
-    // NOTE: `data-para-action` is a comma/space-separated list of actions in the form 
-    //       `action(parameter), action(parameter) action(parameter)`, so any given scrolly step
-    //       can have multiple actions, as well as actions on child elements, all of which should 
-    //       be compiled together and executed in the order in which they are declared
-
-    // const childActionElements = element.querySelectorAll('[data-para-action]');
-    // const validActions = Array.from(childActionElements).filter((element) => {
-    //   const chartId = (element as HTMLElement).dataset.paraChartid;
-    //   return !chartId || chartId === this.chartId;
-    // });
     return actions;
   }
 
@@ -269,18 +251,26 @@ export class Scrollyteller {
   //   return b;
   // }
 
-  private parseAction(action: string | undefined): Record<string, string> {
-    if (!action) return {};
-    const actions: Record<string, string> = {};
-    const actionArray = action.split(')');
+  private parseActions(actionString: string | undefined): Action[] {
+    if (!actionString) return [];
+    
+    const actions: Action[] = [];
+    const actionArray = actionString.split(')');
+    
     actionArray.forEach(actionItem => {
       actionItem = actionItem.trim();
       if (actionItem) {
         const keyValueArray = actionItem.split('(');
         const actionName = keyValueArray[0].trim();
-        actions[actionName] = keyValueArray[1].trim();
+        const paramString = keyValueArray[1] ? keyValueArray[1].trim() : '';
+        const params = paramString ? paramString.split(',').map(p => p.trim()) : [];
+        actions.push({
+          action: actionName,
+          params: params
+        });
       }
     });
+    
     return actions;
   }
 
@@ -364,7 +354,7 @@ export class Scrollyteller {
   private _notifyStepEnter(element: Element): void {
     const index = this.getIndex(element);
     const step = this.steps[index];
-    const response = { element, index, direction: this.direction, action: step.action };
+    const response = { element, index, direction: this.direction, actions: step.actions };
 
     step.direction = this.direction;
     step.state = 'enter';
@@ -529,8 +519,7 @@ export class Scrollyteller {
       node,
       observers: {},
       offset: this.parseOffset((node as HTMLElement).dataset.offset),
-      // action: this.parseAction((node as HTMLElement).dataset.paraAction),
-      action: this.getActions(node as HTMLElement),
+      actions: this.getActions(node as HTMLElement),
       top: this.getOffsetTop(node),
       progress: 0,
       state: undefined,
