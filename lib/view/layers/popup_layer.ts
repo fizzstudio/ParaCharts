@@ -165,7 +165,8 @@ export class PopupLayer extends PlotLayer {
                 color: dpView!.color,
                 //margin: 60,
                 type: "chord",
-                items: items
+                items: items,
+                points: datapointViews
             },
             {
                 fill: "hsl(0, 0%, 100%)"
@@ -227,7 +228,9 @@ export class PopupLayer extends PlotLayer {
                 classList: ['annotationlabel'],
                 id: this.id,
                 color: firstDPView.color,
-                margin: 60
+                margin: 60,
+                type: "sequence",
+                points: datapointViews
             },
             {});
         popup.classInfo = { 'popup': true };
@@ -277,7 +280,8 @@ export class PopupLayer extends PlotLayer {
                 classList: ['annotationlabel'],
                 id: this.id,
                 color: firstDPView.color,
-                margin: 60
+                margin: 60,
+                points: datapointViews
             },
             {});
         popup.classInfo = { 'popup': true };

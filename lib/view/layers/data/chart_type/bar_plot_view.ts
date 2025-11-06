@@ -550,7 +550,8 @@ export class Bar extends PlaneDatapointView {
         textAnchor: "middle",
         classList: ['annotationlabel'],
         id: this.id,
-        color: this.color
+        color: this.color,
+        points: [this]
       },
       {})
     this.paraview.store.popups.push(popup)
