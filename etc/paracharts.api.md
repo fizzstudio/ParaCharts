@@ -1932,9 +1932,13 @@ export class HorizTickStrip extends TickStrip {
 
 // @public (undocumented)
 export class HotkeyEvent extends Event {
-    constructor(key: string, action: string);
+    constructor(key: string, action: string, args?: ActionArgumentMap | undefined);
     // (undocumented)
     readonly action: string;
+    // Warning: (ae-forgotten-export) The symbol "ActionArgumentMap" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    readonly args?: ActionArgumentMap | undefined;
     // (undocumented)
     readonly key: string;
 }
@@ -1960,28 +1964,17 @@ export interface KeyDetails extends BaseKeyDetails {
 //
 // @internal
 export class KeymapManager extends EventTarget {
-    constructor(registrations: KeyRegistrations);
+    // Warning: (ae-forgotten-export) The symbol "ActionMap" needs to be exported by the entry point index.d.ts
+    constructor(actionMap: ActionMap);
     // (undocumented)
-    actionForKey(key: string): string | undefined;
+    protected _keyDetails: {
+        [keyId: string]: KeyDetails;
+    };
     // (undocumented)
     onKeydown(key: string): boolean;
-    registerHotkey(keyId: string, { action, caseSensitive }: KeyRegistration): void;
-    registerHotkeys(keyRegistrations: KeyRegistrations): void;
-}
-
-// @public
-export interface KeyRegistration {
-    // Warning: (ae-forgotten-export) The symbol "HotkeyActions" needs to be exported by the entry point index.d.ts
-    action: keyof HotkeyActions['actions'];
-    caseSensitive?: boolean;
-    // (undocumented)
-    label: string;
-}
-
-// @public (undocumented)
-export interface KeyRegistrations {
-    // (undocumented)
-    [key: string]: KeyRegistration;
+    // Warning: (ae-forgotten-export) The symbol "HotkeyWithArgument" needs to be exported by the entry point index.d.ts
+    registerHotkey(keyInfo: string | HotkeyWithArgument, action: string): void;
+    registerHotkeys(actionMap: ActionMap): void;
 }
 
 // @public (undocumented)
@@ -2334,6 +2327,8 @@ export interface Palette {
 // @public (undocumented)
 export class ParaChart extends ParaChart_base {
     constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
+    // (undocumented)
+    get api(): ParaAPI;
     // Warning: (ae-forgotten-export) The symbol "ParaApi" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
@@ -2404,16 +2399,14 @@ export class ParaChart extends ParaChart_base {
     //
     // (undocumented)
     manifestType: SourceKind;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPI" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _paraAPI: ParaAPI;
     // (undocumented)
     get paraView(): ParaView;
     // (undocumented)
     protected _paraViewRef: Ref_2<ParaView>;
-    // (undocumented)
-    get performer(): ParaPerformer;
-    // Warning: (ae-forgotten-export) The symbol "ParaPerformer" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    protected _performer: ParaPerformer;
     // (undocumented)
     get ready(): Promise<void>;
     // (undocumented)
@@ -2868,11 +2861,6 @@ export class ParaView extends ParaView_base {
     get frame(): SVGRectElement | undefined;
     // (undocumented)
     protected _frameRef: Ref<SVGRectElement>;
-    // (undocumented)
-    get hotkeyActions(): HotkeyActions;
-    set hotkeyActions(actions: HotkeyActions);
-    // (undocumented)
-    protected _hotkeyActions: HotkeyActions;
     // (undocumented)
     protected _hotkeyListener: (e: HotkeyEvent) => void;
     // (undocumented)

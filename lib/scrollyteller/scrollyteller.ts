@@ -160,7 +160,7 @@ export class Scrollyteller {
           // console.warn('highlightDatapoint', params)
 
           if (params.length >= 2) {
-            this.parachart.performer.getSeries(params[0]).getPoint(+params[1]).click();
+            this.parachart.api.getSeries(params[0]).getPoint(+params[1]).select();
           }
         }
       }
@@ -187,10 +187,10 @@ export class Scrollyteller {
       else {
         console.warn('SCROLLY: exit up', response);
         console.warn('SCROLLY: reverse action!');
-        for (const {action, params} of response.actions) {  
+        for (const {action, params} of response.actions) {
           if (action === 'highlightDatapoint') {
             if (params.length >= 2) {
-              this.parachart.performer.getSeries(params[0]).getPoint(+params[1]).click();
+              this.parachart.api.getSeries(params[0]).getPoint(+params[1]).select();
             }
           }
         }
@@ -286,10 +286,10 @@ export class Scrollyteller {
 
   private parseActions(actionString: string | undefined): Action[] {
     if (!actionString) return [];
-    
+
     const actions: Action[] = [];
     const actionArray = actionString.split(')');
-    
+
     actionArray.forEach(actionItem => {
       actionItem = actionItem.trim();
       if (actionItem) {
@@ -303,7 +303,7 @@ export class Scrollyteller {
         });
       }
     });
-    
+
     return actions;
   }
 
