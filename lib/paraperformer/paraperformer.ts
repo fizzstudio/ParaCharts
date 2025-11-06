@@ -23,16 +23,7 @@ import { Direction } from '../store';
  * Perform various operations on a ParaChart.
  */
 export class ParaPerformer {
-  protected static _inst: ParaPerformer;
-
   protected _allSeries: ParaPerformerSeries[];
-
-  static getInst(paraChart: ParaChart): ParaPerformer {
-    if (!ParaPerformer._inst || ParaPerformer._inst.paraChart.manifest !== paraChart.manifest) {
-      ParaPerformer._inst = new ParaPerformer(paraChart);
-    }
-    return ParaPerformer._inst;
-  }
 
   constructor(protected _paraChart: ParaChart) {
     this._allSeries = _paraChart.store.model!.seriesKeys.map(key => new ParaPerformerSeries(key, this));
