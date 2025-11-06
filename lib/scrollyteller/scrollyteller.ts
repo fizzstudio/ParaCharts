@@ -92,9 +92,7 @@ export class Scrollyteller {
   private comparisonScrollY: number;
   private direction?: 'up' | 'down';
 
-  constructor(
-    parachart: ParaChart,
-  ) {
+  constructor(parachart: ParaChart) {
     // HACK: needed to assign something to this.parachart
     this.parachart = parachart;
     this.chartId = this.parachart.id;
@@ -142,8 +140,26 @@ export class Scrollyteller {
       const element = response.element;
       this.activateNextStep(element);
 
-      // TODO: Process actions from response.actions array
-      console.log('Actions for this step:', response.actions);
+      // Process actions from response.actions array
+      if (response.actions) {
+        response.actions.forEach(action => {
+          if (action.action === 'highlightSeries') {
+            // TODO: remove previous series highlights
+            // this.parachart.store.soloSeries = '';
+            if (action.params.length > 0) {
+              this.parachart.store.lowlightOtherSeries(...action.params);
+            }
+          }
+
+          if (action.action === 'highlightDatapoint') {
+            // TODO: remove previous datapoint highlights
+            // this.parachart.command('click', []);
+            if (action.params.length >= 2) {
+              this.parachart.command('click', [`${action.params[0]}`, +action.params[1]]);
+            }
+          }
+        });
+      }
 
       // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
       if (this.settings.isScrollyAnnouncementsEnabled) {
@@ -241,15 +257,6 @@ export class Scrollyteller {
 
     return actions;
   }
-
-  // parseAction(a) {
-  //   var b = {};
-  //   for (var i in a = a.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g)) {
-  //     var c = a[i].match(/[\w\.\-]+/g);
-  //     b[c.shift()] = c;
-  //   }
-  //   return b;
-  // }
 
   private parseActions(actionString: string | undefined): Action[] {
     if (!actionString) return [];

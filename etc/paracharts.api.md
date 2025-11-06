@@ -64,6 +64,14 @@ import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
 import { View as View_2 } from '../base_view';
 
+// @public (undocumented)
+export interface Action {
+    // (undocumented)
+    action: string;
+    // (undocumented)
+    params: string[];
+}
+
 // Warning: (ae-forgotten-export) The symbol "AdvancedControlSettingsDialog_base" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -767,7 +775,7 @@ export type c2mCallbackType = {
 // @public (undocumented)
 export interface CallbackResponse {
     // (undocumented)
-    action?: Record<string, string>;
+    actions?: Action[];
     // (undocumented)
     direction?: 'up' | 'down';
     // (undocumented)
@@ -2558,9 +2566,13 @@ export class ParaStore extends State {
     // (undocumented)
     announcement: Announcement;
     // (undocumented)
+    clearAllSeriesLowlights(): void;
+    // (undocumented)
     clearHighlight(): void;
     // (undocumented)
     clearSelected(): void;
+    // (undocumented)
+    clearSeriesLowlight(seriesKey: string): void;
     // (undocumented)
     clearUserLineBreaks(): void;
     // (undocumented)
@@ -2622,6 +2634,8 @@ export class ParaStore extends State {
     // (undocumented)
     isSelectedSeries(seriesKey: string): boolean;
     // (undocumented)
+    isSeriesLowlighted(seriesKey: string): boolean;
+    // (undocumented)
     isVisited(seriesKey: string, index: number): boolean;
     // (undocumented)
     isVisitedSeries(seriesKey: string): boolean;
@@ -2639,6 +2653,12 @@ export class ParaStore extends State {
     //
     // (undocumented)
     protected _keymapManager: KeymapManager;
+    // (undocumented)
+    lowlightOtherSeries(...seriesKeys: string[]): void;
+    // (undocumented)
+    lowlightSeries(seriesKey: string): void;
+    // (undocumented)
+    protected _lowlightSeries: string[];
     // (undocumented)
     protected _manifest: Manifest | null;
     // (undocumented)
@@ -2717,8 +2737,6 @@ export class ParaStore extends State {
     settings: Settings;
     // (undocumented)
     showMDRAnnotations(): Promise<void>;
-    // (undocumented)
-    soloSeries: string;
     // (undocumented)
     sparkBrailleInfo: SparkBrailleInfo | null;
     // (undocumented)
@@ -3579,7 +3597,7 @@ export interface ScrollyOptions {
 // @public (undocumented)
 export interface ScrollyStep {
     // (undocumented)
-    action: Record<string, string>;
+    actions: Action[];
     // (undocumented)
     direction?: 'up' | 'down';
     // (undocumented)
@@ -3606,18 +3624,13 @@ export interface ScrollyStep {
 
 // @public (undocumented)
 export class Scrollyteller {
-    constructor(chartID?: string);
-}
-
-// @public (undocumented)
-export class ScrollytellerImpl {
-    constructor();
+    constructor(parachart: ParaChart);
     // (undocumented)
-    destroy(): ScrollytellerImpl;
+    destroy(): Scrollyteller;
     // (undocumented)
-    disable(): ScrollytellerImpl;
+    disable(): Scrollyteller;
     // (undocumented)
-    enable(): ScrollytellerImpl;
+    enable(): Scrollyteller;
     // (undocumented)
     off(event?: ScrollyEvent, callback?: (response: CallbackResponse) => void): this;
     // (undocumented)
@@ -3628,9 +3641,19 @@ export class ScrollytellerImpl {
     // (undocumented)
     once(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this;
     // (undocumented)
-    resize(): ScrollytellerImpl;
+    resize(): Scrollyteller;
     // (undocumented)
-    setup({ step, parent, offset, threshold, progress, once, container, root, }: ScrollyOptions): ScrollytellerImpl;
+    setup({ step, parent, offset, threshold, progress, once, container, root, }: ScrollyOptions): Scrollyteller;
+}
+
+// @public (undocumented)
+export interface ScrollytellingSettings extends SettingGroup {
+    // (undocumented)
+    isScrollyAnnouncementsEnabled: boolean;
+    // (undocumented)
+    isScrollySoniEnabled: boolean;
+    // (undocumented)
+    isScrollytellingEnabled: boolean;
 }
 
 // @public (undocumented)
@@ -3933,6 +3956,8 @@ export interface Settings extends SettingGroup {
     plotArea: PlotAreaSettings;
     // (undocumented)
     popup: PopupSettings;
+    // (undocumented)
+    scrollytelling: ScrollytellingSettings;
     // (undocumented)
     sonification: SonificationSettings;
     // (undocumented)
