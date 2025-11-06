@@ -361,6 +361,7 @@ export interface LineSettings extends PointSettings {
   leaderLineLength: number;
   isAlwaysShowSeriesLabel?: boolean;
   showPopups: boolean;
+  isTrendNavigationModeEnabled: boolean;
 }
 
 /** @public */

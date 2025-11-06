@@ -92,7 +92,7 @@ export class LineChartInfo extends PointChartInfo {
   }
 
   protected _createSequenceNavNodes() {
-    if (!this._canCreateSequenceNavNodes()) return;
+    if (!this._canCreateSequenceNavNodes() || !this.settings.isTrendNavigationModeEnabled) return;
     const seriesSeqNodes: NavNode<'sequence'>[][] = [];
     this._navMap!.root.query('series').forEach(seriesNode => {
       if (seriesSeqNodes.length) {
