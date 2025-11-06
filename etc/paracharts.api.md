@@ -2396,6 +2396,10 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void>;
     // (undocumented)
+    get scrollyteller(): Scrollyteller | undefined;
+    // (undocumented)
+    protected _scrollyteller?: Scrollyteller;
+    // (undocumented)
     settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
     // (undocumented)
     showAriaLiveHistory(): void;
@@ -2558,9 +2562,13 @@ export class ParaStore extends State {
     // (undocumented)
     announcement: Announcement;
     // (undocumented)
+    clearAllSeriesLowlights(): void;
+    // (undocumented)
     clearHighlight(): void;
     // (undocumented)
     clearSelected(): void;
+    // (undocumented)
+    clearSeriesLowlight(seriesKey: string): void;
     // (undocumented)
     clearUserLineBreaks(): void;
     // (undocumented)
@@ -2622,6 +2630,8 @@ export class ParaStore extends State {
     // (undocumented)
     isSelectedSeries(seriesKey: string): boolean;
     // (undocumented)
+    isSeriesLowlighted(seriesKey: string): boolean;
+    // (undocumented)
     isVisited(seriesKey: string, index: number): boolean;
     // (undocumented)
     isVisitedSeries(seriesKey: string): boolean;
@@ -2639,6 +2649,12 @@ export class ParaStore extends State {
     //
     // (undocumented)
     protected _keymapManager: KeymapManager;
+    // (undocumented)
+    lowlightOtherSeries(...seriesKeys: string[]): void;
+    // (undocumented)
+    lowlightSeries(seriesKey: string): void;
+    // (undocumented)
+    protected _lowlightSeries: string[];
     // (undocumented)
     protected _manifest: Manifest | null;
     // (undocumented)
@@ -2717,8 +2733,6 @@ export class ParaStore extends State {
     settings: Settings;
     // (undocumented)
     showMDRAnnotations(): Promise<void>;
-    // (undocumented)
-    soloSeries: string;
     // (undocumented)
     sparkBrailleInfo: SparkBrailleInfo | null;
     // (undocumented)
@@ -3606,18 +3620,18 @@ export interface ScrollyStep {
 
 // @public (undocumented)
 export class Scrollyteller {
-    constructor(chartID?: string);
+    constructor(parachart?: ParaChart, chartID?: string);
 }
 
 // @public (undocumented)
-export class ScrollytellerImpl {
+export class ScrollytellerEngine {
     constructor();
     // (undocumented)
-    destroy(): ScrollytellerImpl;
+    destroy(): ScrollytellerEngine;
     // (undocumented)
-    disable(): ScrollytellerImpl;
+    disable(): ScrollytellerEngine;
     // (undocumented)
-    enable(): ScrollytellerImpl;
+    enable(): ScrollytellerEngine;
     // (undocumented)
     off(event?: ScrollyEvent, callback?: (response: CallbackResponse) => void): this;
     // (undocumented)
@@ -3628,9 +3642,19 @@ export class ScrollytellerImpl {
     // (undocumented)
     once(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this;
     // (undocumented)
-    resize(): ScrollytellerImpl;
+    resize(): ScrollytellerEngine;
     // (undocumented)
-    setup({ step, parent, offset, threshold, progress, once, container, root, }: ScrollyOptions): ScrollytellerImpl;
+    setup({ step, parent, offset, threshold, progress, once, container, root, }: ScrollyOptions): ScrollytellerEngine;
+}
+
+// @public (undocumented)
+export interface ScrollytellingSettings extends SettingGroup {
+    // (undocumented)
+    isScrollyAnnouncementsEnabled: boolean;
+    // (undocumented)
+    isScrollySoniEnabled: boolean;
+    // (undocumented)
+    isScrollytellingEnabled: boolean;
 }
 
 // @public (undocumented)
@@ -3933,6 +3957,8 @@ export interface Settings extends SettingGroup {
     plotArea: PlotAreaSettings;
     // (undocumented)
     popup: PopupSettings;
+    // (undocumented)
+    scrollytelling: ScrollytellingSettings;
     // (undocumented)
     sonification: SonificationSettings;
     // (undocumented)

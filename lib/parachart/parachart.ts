@@ -121,7 +121,7 @@ export class ParaChart extends logging(ParaComponent) {
           }
           this._runLoader(this.manifest, this.manifestType).then(() => {
             this.log('ParaCharts will now commence the raising of the roof and/or the dead');
-            this._performer = ParaPerformer.getInst(this);
+            this._performer = new ParaPerformer(this);
           });
         } else if (this.getElementsByTagName("table")[0]) {
           this.log(`loading from slot`);
