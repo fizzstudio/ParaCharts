@@ -69,28 +69,30 @@ export interface ScrollyOptions {
 
 export class Scrollyteller {
   private parachart: ParaChart;
+  private chartId: string;
   private steps!: NodeListOf<Element>;
   private settings!: any;
 
 
   constructor(
     parachart?: ParaChart,
-    chartID?: string,
+    chartId?: string,
   ) {
     // HACK: needed to assign something to this.parachart
     this.parachart = parachart as ParaChart;
+    this.chartId = chartId ? chartId : this.parachart.id;
     this.settings = this.parachart.paraView.store.settings.scrollytelling;
     if (this.settings.isScrollytellingEnabled) {
 
       if (!this.parachart) {
-        this.parachart = chartID ?
-          document.getElementById(chartID) as ParaChart
+        this.parachart = chartId ?
+          document.getElementById(chartId) as ParaChart
           : document.querySelector('para-chart, para-chart-ai') as ParaChart;
 
         if (!this.parachart) {
           throw new Error(
-            `Scrollyteller requires a ParaChart element. ${chartID
-              ? `No element found with ID "${chartID}"`
+            `Scrollyteller requires a ParaChart element. ${chartId
+              ? `No element found with ID "${chartId}"`
               : 'No "para-chart" element found on page'
             }`
           );
@@ -240,6 +242,14 @@ export class ScrollytellerEngine {
       return { format: 'percent', value: Math.min(Math.max(0, numValue), 1) };
     }
     return { format: 'percent', value: 0.5 };
+  }
+
+  private getActions(): Record<string, string> {
+    const actions: Record<string, string> = {};
+    // this.parseAction(action: string | undefined);
+
+    // this.chartId
+    return actions;
   }
 
   private parseAction(action: string | undefined): Record<string, string> {
