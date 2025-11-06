@@ -174,6 +174,19 @@ export class Scrollyteller {
 
   // internal helpers
 
+
+  private getChartSteps(
+    selector: string | Element | NodeList | Element[],
+    parent: Document | Element = document
+  ): Element[] {
+    const steps = this.selectAll(selector, parent).filter((element) => {
+      const chartId = (element as HTMLElement).dataset.paraChartid;
+      return !chartId || chartId === this.chartId;
+    });
+    return steps;
+  }
+
+
   private selectAll(
     selector: string | Element | NodeList | Element[],
     parent: Document | Element = document
@@ -220,13 +233,41 @@ export class Scrollyteller {
     return { format: 'percent', value: 0.5 };
   }
 
-  private getActions(): Record<string, string> {
-    const actions: Record<string, string> = {};
+  private getActions(element: HTMLElement): Record<string, string> {
+    let actions: Record<string, string> = {};
+    actions = this.parseAction((element as HTMLElement).dataset.paraAction)
+
+
     // this.parseAction(action: string | undefined);
 
-    // this.chartId
+    // TODO: 
+    // 1. Search target element for `data-para-action` attributes
+    // 2. Search child elements for `data-para-action` attributes
+    // 3. Remove any child elements that have a `data-para-chartid` that doesn't match this chart
+    // 4. Parse the actions, and return a set of all the valid actions from the current target and 
+    //    all child elements
+
+    // NOTE: `data-para-action` is a comma/space-separated list of actions in the form 
+    //       `action(parameter), action(parameter) action(parameter)`, so any given scrolly step
+    //       can have multiple actions, as well as actions on child elements, all of which should 
+    //       be compiled together and executed in the order in which they are declared
+
+    // const childActionElements = element.querySelectorAll('[data-para-action]');
+    // const validActions = Array.from(childActionElements).filter((element) => {
+    //   const chartId = (element as HTMLElement).dataset.paraChartid;
+    //   return !chartId || chartId === this.chartId;
+    // });
     return actions;
   }
+
+  // parseAction(a) {
+  //   var b = {};
+  //   for (var i in a = a.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g)) {
+  //     var c = a[i].match(/[\w\.\-]+/g);
+  //     b[c.shift()] = c;
+  //   }
+  //   return b;
+  // }
 
   private parseAction(action: string | undefined): Record<string, string> {
     if (!action) return {};
@@ -480,14 +521,16 @@ export class Scrollyteller {
       ? document.querySelector(parent) || document
       : document;
 
-    this.steps = this.selectAll(step, parentElement).map((node, index) => ({
+    // this.steps = this.selectAll(step, parentElement).map((node, index) => ({
+    this.steps = this.getChartSteps(step, parentElement).map((node, index) => ({
       index,
       direction: undefined,
       height: (node as HTMLElement).offsetHeight,
       node,
       observers: {},
       offset: this.parseOffset((node as HTMLElement).dataset.offset),
-      action: this.parseAction((node as HTMLElement).dataset.paraAction),
+      // action: this.parseAction((node as HTMLElement).dataset.paraAction),
+      action: this.getActions(node as HTMLElement),
       top: this.getOffsetTop(node),
       progress: 0,
       state: undefined,
