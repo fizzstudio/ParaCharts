@@ -801,13 +801,8 @@ export class ParaView extends logging(ParaComponent) {
       const vbHeight = Math.round(this._viewBox.height);
       const vbRatio =
         (Math.min(vbWidth, vbHeight) / Math.max(vbWidth, vbHeight)) * 100;
-      if (vbWidth > vbHeight) {
-        style.width = "100vw";
-        style.height = `${vbRatio}vh`;
-      } else {
-        style.width = `${vbRatio}vw`;
-        style.height = "100vh";
-      }
+      style.width = "100vw";
+	  style.height = "100vh";
     }
 
     const contrast = this.store.settings.color.contrastLevel * 50;
