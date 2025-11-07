@@ -39,10 +39,12 @@ export interface CallbackResponse {
   index: number;
   direction?: 'up' | 'down';
   progress?: number;
-  actions?: Action[];
+  actions: Action[];
 }
 
 export type ScrollyEvent = 'stepEnter' | 'stepExit' | 'stepProgress';
+
+export type Callback = (response: CallbackResponse) => void;
 
 export interface ScrollyStep {
   index: number;
@@ -79,7 +81,7 @@ export class Scrollyteller {
   private settings!: any;
 
   private steps: ScrollyStep[];
-  private _events: Map<ScrollyEvent, Array<(response: CallbackResponse) => void>>;
+  private _events: Map<ScrollyEvent, Array<Callback>>;
   private globalOffset: ParsedOffset;
   private containerElement?: HTMLElement;
   private rootElement: Element | Document | null;
@@ -93,6 +95,7 @@ export class Scrollyteller {
   private direction?: 'up' | 'down';
 
   constructor(parachart: ParaChart) {
+    console.log('scrolly constructor called!');
     // HACK: needed to assign something to this.parachart
     this.parachart = parachart;
     this.chartId = this.parachart.id;
@@ -127,6 +130,7 @@ export class Scrollyteller {
   }
 
   private init(): void {
+    console.log('scrolly init called!');
     this.stepElements = document.querySelectorAll('[data-para-step]');
 
     this.setup({
@@ -137,28 +141,26 @@ export class Scrollyteller {
     });
 
     this.on('stepEnter', (response: CallbackResponse) => {
+      console.log('scrolly stepEnter callback fired!');
       const element = response.element;
       this.activateNextStep(element);
 
-      // Process actions from response.actions array
-      if (response.actions) {
-        response.actions.forEach(action => {
-          if (action.action === 'highlightSeries') {
-            // TODO: remove previous series highlights
-            // this.parachart.store.soloSeries = '';
-            if (action.params.length > 0) {
-              this.parachart.store.lowlightOtherSeries(...action.params);
-            }
+      for (const {action, params} of response.actions) {
+        if (action === 'highlightSeries') {
+          // TODO: remove previous series highlights
+          // this.parachart.store.soloSeries = '';
+          if (params.length > 0) {
+            this.parachart.store.lowlightOtherSeries(...params);
           }
+        }
 
-          if (action.action === 'highlightDatapoint') {
-            // TODO: remove previous datapoint highlights
-            // this.parachart.command('click', []);
-            if (action.params.length >= 2) {
-              this.parachart.command('click', [`${action.params[0]}`, +action.params[1]]);
-            }
+        if (action === 'highlightDatapoint') {
+          // TODO: remove previous datapoint highlights
+          // this.parachart.command('click', []);
+          if (params.length >= 2) {
+            this.parachart.command('click', [`${params[0]}`, params[1]]);
           }
-        });
+        }
       }
 
       // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
@@ -297,7 +299,7 @@ export class Scrollyteller {
     this.exclude = [];
   }
 
-  on(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this {
+  on(event: ScrollyEvent, callback: Callback): this {
     if (!this._events.has(event)) {
       this._events.set(event, []);
     }
@@ -305,15 +307,15 @@ export class Scrollyteller {
     return this;
   }
 
-  once(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this {
-    const wrapper = (response: CallbackResponse) => {
+  once(event: ScrollyEvent, callback: Callback): this {
+    const wrapper: Callback = (response: CallbackResponse) => {
       callback(response);
       this.off(event, wrapper);
     };
     return this.on(event, wrapper);
   }
 
-  off(event?: ScrollyEvent, callback?: (response: CallbackResponse) => void): this {
+  off(event?: ScrollyEvent, callback?: Callback): this {
     if (!event) {
       this._events.clear();
     } else if (!callback) {
@@ -354,7 +356,7 @@ export class Scrollyteller {
     const index = this.getIndex(element);
     const step = this.steps[index];
     if (progress !== undefined) step.progress = progress;
-    const response = { element, index, progress, direction: this.direction };
+    const response = { element, index, progress, direction: this.direction, actions: step.actions };
     if (step.state === 'enter') this.emit('stepProgress', response);
   }
 
@@ -375,7 +377,7 @@ export class Scrollyteller {
     const step = this.steps[index];
     if (!step.state) return false;
 
-    const response = { element, index, direction: this.direction };
+    const response = { element, index, direction: this.direction, actions: step.actions };
 
     if (this.isProgress) {
       if (this.direction === 'down' && step.progress < 1) this._notifyProgress(element, 1);
@@ -425,7 +427,7 @@ export class Scrollyteller {
   private _intersectStep(entries: IntersectionObserverEntry[]): void {
     if (entries.length === 0) return;
     const entry = entries[0];
-    this._handleScroll(); // update direction
+    this._handleScroll();
     const { isIntersecting, target } = entry;
     if (isIntersecting) this._notifyStepEnter(target);
     else this._notifyStepExit(target);
@@ -544,7 +546,7 @@ export class Scrollyteller {
     this.containerElement = container;
     this.rootElement = root;
 
-    this.off(); // Clear all event listeners
+    this.off();
     this._resetExclusions();
     this.indexSteps(this.steps);
     this._handleEnable(true);
