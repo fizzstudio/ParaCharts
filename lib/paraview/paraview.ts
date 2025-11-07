@@ -795,8 +795,6 @@ export class ParaView extends logging(ParaComponent) {
       fontWeight: this._store.settings.chart.fontWeight,
     };
     if (this._isFullscreen) {
-      this._containerRef.value.style.width = "100vw";
-	  this._containerRef.value.style.height = "100vh";
 	  const vbWidth = Math.round(this._viewBox.width);
       const vbHeight = Math.round(this._viewBox.height);
       const vbRatio =
@@ -804,8 +802,7 @@ export class ParaView extends logging(ParaComponent) {
       style.width = "100vw";
 	  style.height = "100vh";
     }
-
-    const contrast = this.store.settings.color.contrastLevel * 50;
+	const contrast = this.store.settings.color.contrastLevel * 50;
     if (this._store.settings.color.isDarkModeEnabled) {
       style["--axis-line-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
       style["--label-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
