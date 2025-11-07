@@ -206,7 +206,8 @@ class ScatterPointView extends PointDatapointView {
         textAnchor: "middle",
         classList: ['annotationlabel'],
         id: this.id,
-        color: this.color
+        color: this.color,
+        points: [this]
       },
       {
         shape: "boxWithArrow",

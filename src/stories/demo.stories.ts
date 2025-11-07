@@ -58,6 +58,9 @@ export const DemoChart7: Story = {
   name: "7. Stacked bar (interactive legend)",
   args: {
     filename: 'manifests/autogen/bar-multi/bar-multi-manifest-48.json',
+    config: {
+      'type.column.isDrawTotalLabels': false
+    }
   }
 }
 
@@ -73,5 +76,8 @@ export const DemoChart9: Story = {
   name: "9. Narrative highlights",
   args: {
     filename: "manifests/autogen/line-single/line-single-manifest-172.json",
+    config: {
+      'type.line.isTrendNavigationModeEnabled': true
+    },
   }
 }

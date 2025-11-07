@@ -34,6 +34,8 @@ import { type AriaLive } from '../components';
 import '../components/aria_live';
 import { StyleManager } from './style_manager';
 import { AvailableCommands, Commander } from './commander';
+import { ParaPerformer } from '../paraperformer/paraperformer';
+import { Scrollyteller } from '../scrollyteller/scrollyteller';
 
 import { Manifest } from '@fizz/paramanifest';
 
@@ -75,6 +77,8 @@ export class ParaChart extends logging(ParaComponent) {
   protected _api: ParaApi;
   protected _styleManager!: StyleManager;
   protected _commander!: Commander;
+  protected _performer!: ParaPerformer;
+  protected _scrollyteller!: Scrollyteller;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -115,6 +119,8 @@ export class ParaChart extends logging(ParaComponent) {
           }
           this._runLoader(this.manifest, this.manifestType).then(() => {
             this.log('ParaCharts will now commence the raising of the roof and/or the dead');
+            this._performer = new ParaPerformer(this);
+            this._scrollyteller = new Scrollyteller(this);
           });
         } else if (this.getElementsByTagName("table")[0]) {
           this.log(`loading from slot`);
@@ -178,6 +184,14 @@ export class ParaChart extends logging(ParaComponent) {
 
   get styleManager() {
     return this._styleManager;
+  }
+
+  get performer() {
+    return this._performer;
+  }
+
+  get scrollyteller() {
+    return this._scrollyteller;
   }
 
   connectedCallback() {

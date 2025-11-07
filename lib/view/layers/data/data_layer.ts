@@ -49,6 +49,7 @@ export abstract class DataLayer extends PlotLayer {
   //protected _soniRiffSpeedRateIndex = 1;
   /** DatapointId to DOM ID */
   protected _datapointDomIds = new Map<string, string>();
+  protected _currentAnimationFrame: number | null = null;
   protected _animateRevealComplete = false;
 
   constructor(
@@ -232,13 +233,12 @@ export abstract class DataLayer extends PlotLayer {
       this._parent.docView.postNotice('animRevealStep', bezT);
       this.paraview.requestUpdate();
       if (elapsed < revealTime) {
-        requestAnimationFrame(step);
+        this._currentAnimationFrame = requestAnimationFrame(step);
       } else {
-        this._parent.docView.postNotice('animRevealEnd', null);
-        this._animateRevealComplete = true;
+        this._animEnd();
       }
     };
-    requestAnimationFrame(step);
+    this._currentAnimationFrame = requestAnimationFrame(step);
   }
 
   protected _animStep(t: number) {
@@ -247,6 +247,22 @@ export abstract class DataLayer extends PlotLayer {
     }
     for (const datapointView of this.datapointViews) {
       datapointView.endAnimStep(t);
+    }
+  }
+
+  protected _animEnd() {
+    this._parent.docView.postNotice('animRevealEnd', null);
+    this._currentAnimationFrame = null;
+    this._animateRevealComplete = true;
+  }
+
+  stopAnimation() {
+    if (this._currentAnimationFrame !== null) {
+      cancelAnimationFrame(this._currentAnimationFrame);
+      this._animStep(1);
+      this._parent.docView.postNotice('animRevealStep', 1);
+      this.paraview.requestUpdate();
+      this._animEnd();
     }
   }
 

@@ -361,6 +361,7 @@ export interface LineSettings extends PointSettings {
   leaderLineLength: number;
   isAlwaysShowSeriesLabel?: boolean;
   showPopups: boolean;
+  isTrendNavigationModeEnabled: boolean;
 }
 
 /** @public */
@@ -488,6 +489,12 @@ export interface SonificationSettings extends SettingGroup {
   isArpeggiateChords: boolean;
 }
 
+/** @public */
+export interface ScrollytellingSettings extends SettingGroup {
+  isScrollytellingEnabled: boolean;
+  isScrollyAnnouncementsEnabled: boolean;
+  isScrollySoniEnabled: boolean;
+}
 
 /** @public */
 export interface Settings extends SettingGroup {
@@ -500,6 +507,7 @@ export interface Settings extends SettingGroup {
   grid: GridSettings;
   ui: UISettings;
   animation: AnimationSettings;
+  scrollytelling: ScrollytellingSettings;
   controlPanel: ControlPanelSettings;
   color: ColorSettings;
   jim: JimSettings;

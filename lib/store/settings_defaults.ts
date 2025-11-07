@@ -247,7 +247,8 @@ export const defaults: Settings = {
         height: 20,
       },
       isDrawSymbols: true,
-      showPopups: false
+      showPopups: false,
+      isTrendNavigationModeEnabled: false
     },
     scatter: {
       isDrawTrendLine: false,
@@ -409,6 +410,11 @@ export const defaults: Settings = {
     animationType: 'uniform',
     animationOrigin: 'initialValue',
     animationOriginValue: 0,
+  },
+  scrollytelling: {
+    isScrollytellingEnabled: true,
+    isScrollyAnnouncementsEnabled: true,
+    isScrollySoniEnabled: true,
   },
   controlPanel: {
     isControlPanelDefaultOpen: true,
