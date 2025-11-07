@@ -161,8 +161,8 @@ export class DatapointView extends DataView {
 
   get shouldClip() {
     const obb = this.outerBbox;
-    return (obb.x < this.chart.x || obb.y < this.chart.y
-      || obb.right > this.chart.right || obb.bottom > this.chart.bottom);
+    return (obb.right < this.chart.x || obb.bottom < this.chart.y
+      || obb.left > this.chart.right || obb.top > this.chart.bottom);
   }
 
   protected _createId(..._args: any[]): string {
