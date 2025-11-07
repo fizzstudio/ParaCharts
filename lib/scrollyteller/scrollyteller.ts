@@ -173,8 +173,7 @@ export class Scrollyteller {
         console.log('Add scrollytelling sonifications')
       }
     });
-
-    this.stepElements[0].classList.add('para-active');
+    this.stepElements[0]?.classList.add('para-active');
   }
 
   private activateNextStep(nextStep: Element): void {
@@ -535,7 +534,7 @@ export class Scrollyteller {
     }));
 
     if (!this.steps.length) {
-      this.err('no step elements');
+      console.log('scrollytelling: no step elements found');
       return this;
     }
 
