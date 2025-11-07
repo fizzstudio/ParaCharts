@@ -71,7 +71,7 @@ export class Voicing {
         // span navigation, we don't remove any highlights added in manual mode
         if (!this._manualOverride) {
           this._store.clearHighlight();
-          this._store.soloSeries = '';
+          this._store.clearAllSeriesLowlights();
         }
         this._highlightIndex = null;
         if (prevNavcode) {
@@ -98,7 +98,7 @@ export class Voicing {
     if (highlight.navcode) {
       if (highlight.navcode.startsWith('series')) {
         const segments = highlight.navcode.split(/-/);
-        this._store.soloSeries = segments.slice(1).join('\t');
+        this._store.lowlightOtherSeries(...segments.slice(1));
       } else {
         this._store.clearHighlight();
         this._store.highlight(highlight.navcode);
@@ -110,7 +110,7 @@ export class Voicing {
       prevNavcode = highlight.navcode;
     } else {
       this._store.clearHighlight();
-      this._store.soloSeries = '';
+      this._store.clearAllSeriesLowlights();
       if (prevNavcode) {
         this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
         prevNavcode = '';

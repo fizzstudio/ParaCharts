@@ -96,7 +96,7 @@ export class ParaCaptionBox extends logging(ParaComponent) {
           if (span.dataset.navcode) {
             if (span.dataset.navcode.startsWith('series')) {
               const segments = span.dataset.navcode.split(/-/);
-              this._store.soloSeries = segments.slice(1).join('\t');
+              this._store.lowlightOtherSeries(...segments.slice(1));
             } else {
               this._store.highlight(span.dataset.navcode);
               if (prevNavcode) {
@@ -111,7 +111,7 @@ export class ParaCaptionBox extends logging(ParaComponent) {
         span.addEventListener('pointerleave', (e: PointerEvent) => {
           if (this._store.paraChart.paraView.hotkeyActions instanceof NarrativeHighlightHotkeyActions)
             return;
-          this._store.soloSeries = '';
+          this._store.clearAllSeriesLowlights();
           this._store.clearHighlight();
           span.classList.remove('highlight');
           if (prevNavcode) {

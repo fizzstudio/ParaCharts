@@ -58,6 +58,9 @@ export const DemoChart7: Story = {
   name: "7. Stacked bar (interactive legend)",
   args: {
     filename: 'manifests/autogen/bar-multi/bar-multi-manifest-48.json',
+    config: {
+      'type.column.isDrawTotalLabels': false
+    }
   }
 }
 

@@ -70,29 +70,41 @@ export interface ScrollyOptions {
 export class Scrollyteller {
   private parachart: ParaChart;
   private steps!: NodeListOf<Element>;
+  private settings!: any;
 
-  constructor(chartID?: string) {
-    const chart = chartID ?
-      document.getElementById(chartID) as ParaChart | null
-      : document.querySelector('para-chart-ai') as ParaChart | null;
-      
-    if (!chart) {
-      throw new Error(
-        `Scrollyteller requires a ParaChart element. ${
-          chartID 
-            ? `No element found with ID "${chartID}"` 
-            : 'No para-chart-ai element found on page'
-        }`
-      );
+
+  constructor(
+    parachart?: ParaChart,
+    chartID?: string,
+  ) {
+    // HACK: needed to assign something to this.parachart
+    this.parachart = parachart as ParaChart;
+    this.settings = this.parachart.paraView.store.settings.scrollytelling;
+    if (this.settings.isScrollytellingEnabled) {
+
+      if (!this.parachart) {
+        this.parachart = chartID ?
+          document.getElementById(chartID) as ParaChart
+          : document.querySelector('para-chart, para-chart-ai') as ParaChart;
+
+        if (!this.parachart) {
+          throw new Error(
+            `Scrollyteller requires a ParaChart element. ${chartID
+              ? `No element found with ID "${chartID}"`
+              : 'No "para-chart" element found on page'
+            }`
+          );
+        }
+      }
+
+      this.init();
     }
-    
-    this.parachart = chart;
-    this.init();
+
   }
 
   private init(): void {
     this.steps = document.querySelectorAll('[data-para-step]');
-    const scroller = new ScrollytellerImpl();
+    const scroller = new ScrollytellerEngine();
 
     scroller.setup({
       step: '[data-para-step]',
@@ -104,14 +116,31 @@ export class Scrollyteller {
     scroller.on('stepEnter', (response: CallbackResponse) => {
       const element = response.element;
       this.activateNextStep(element);
-      
-      if (response.action?.activate) {
-        this.parachart.store.soloSeries = response.action.activate;
+
+      // TODO: remove previous series highlights
+      // this.parachart.store.soloSeries = '';
+      if (response.action?.highlightSeries) {
+        // TODO: remove inserted tab when `soloSeries` takes comma/space delimiter
+        const seriesList = response.action.highlightSeries.replace(/[\s,]/g, '\t');
+        //this.parachart.store.soloSeries = seriesList;
+        this.parachart.store.lowlightOtherSeries(...seriesList.split('\t'));
       }
 
-      if (response.action?.highlight) {
-        const highlights = response.action.highlight.replace(/[\[\]']+/g, '').split(',');
+      // TODO: remove previous datapoint highlights
+      // this.parachart.command('click', []);
+      if (response.action?.highlightDatapoint) {
+        const highlights = response.action.highlightDatapoint.replace(/[\[\]']+/g, '').split(',');
         this.parachart.command('click', [`${highlights[0]}`, +highlights[1]]);
+      }
+
+      // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
+      if (this.settings.isScrollyAnnouncementsEnabled) {
+        console.log('Add scrollytelling aria-live descriptions of highlights')
+      }
+
+      // TODO: add sonifications
+      if (this.settings.isScrollySoniEnabled) {
+        console.log('Add scrollytelling sonifications')
       }
     });
 
@@ -124,14 +153,14 @@ export class Scrollyteller {
   }
 }
 
-export class ScrollytellerImpl {
+export class ScrollytellerEngine {
 
   private steps: ScrollyStep[];
   private _events: Map<ScrollyEvent, Array<(response: CallbackResponse) => void>>;
   private globalOffset: ParsedOffset;
   private containerElement?: HTMLElement;
   private rootElement: Element | Document | null;
-  private progressThreshold: number; 
+  private progressThreshold: number;
   private isEnabled: boolean;
   private isProgress: boolean;
   private isTriggerOnce: boolean;
@@ -224,7 +253,7 @@ export class ScrollytellerImpl {
         const actionName = keyValueArray[0].trim();
         actions[actionName] = keyValueArray[1].trim();
       }
-    }); 
+    });
     return actions;
   }
 
@@ -458,13 +487,13 @@ export class ScrollytellerImpl {
     once = false,
     container = undefined,
     root = null,
-  }: ScrollyOptions): ScrollytellerImpl {
+  }: ScrollyOptions): ScrollytellerEngine {
     this._setupScrollListener();
 
-    const parentElement = (typeof step === 'string' && parent) 
-      ? document.querySelector(parent) || document 
+    const parentElement = (typeof step === 'string' && parent)
+      ? document.querySelector(parent) || document
       : document;
-    
+
     this.steps = this.selectAll(step, parentElement).map((node, index) => ({
       index,
       direction: undefined,
@@ -497,17 +526,17 @@ export class ScrollytellerImpl {
     return this;
   }
 
-  enable(): ScrollytellerImpl {
+  enable(): ScrollytellerEngine {
     this._handleEnable(true);
     return this;
   }
 
-  disable(): ScrollytellerImpl {
+  disable(): ScrollytellerEngine {
     this._handleEnable(false);
     return this;
   }
 
-  destroy(): ScrollytellerImpl {
+  destroy(): ScrollytellerEngine {
     this._handleEnable(false);
     this.off();
     this._resetExclusions();
@@ -515,7 +544,7 @@ export class ScrollytellerImpl {
     return this;
   }
 
-  resize(): ScrollytellerImpl {
+  resize(): ScrollytellerEngine {
     this._updateObservers();
     return this;
   }

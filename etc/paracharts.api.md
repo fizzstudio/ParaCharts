@@ -765,6 +765,20 @@ export type c2mCallbackType = {
 };
 
 // @public (undocumented)
+export interface CallbackResponse {
+    // (undocumented)
+    action?: Record<string, string>;
+    // (undocumented)
+    direction?: 'up' | 'down';
+    // (undocumented)
+    element: Element;
+    // (undocumented)
+    index: number;
+    // (undocumented)
+    progress?: number;
+}
+
+// @public (undocumented)
 export function capitalize(string: string): string;
 
 // @public (undocumented)
@@ -2368,6 +2382,12 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _paraViewRef: Ref_2<ParaView>;
     // (undocumented)
+    get performer(): ParaPerformer;
+    // Warning: (ae-forgotten-export) The symbol "ParaPerformer" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _performer: ParaPerformer;
+    // (undocumented)
     get ready(): Promise<void>;
     // (undocumented)
     protected _readyPromise: Promise<void>;
@@ -2375,6 +2395,10 @@ export class ParaChart extends ParaChart_base {
     render(): TemplateResult;
     // (undocumented)
     protected _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void>;
+    // (undocumented)
+    get scrollyteller(): Scrollyteller | undefined;
+    // (undocumented)
+    protected _scrollyteller?: Scrollyteller;
     // (undocumented)
     settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
     // (undocumented)
@@ -2528,6 +2552,8 @@ export class ParaStore extends State {
     // (undocumented)
     addUserLineBreaks(): void;
     // (undocumented)
+    annotatePoint(seriesKey: string, index: number, text: string): void;
+    // (undocumented)
     annotations: BaseAnnotation[];
     // (undocumented)
     protected annotID: number;
@@ -2536,9 +2562,13 @@ export class ParaStore extends State {
     // (undocumented)
     announcement: Announcement;
     // (undocumented)
+    clearAllSeriesLowlights(): void;
+    // (undocumented)
     clearHighlight(): void;
     // (undocumented)
     clearSelected(): void;
+    // (undocumented)
+    clearSeriesLowlight(seriesKey: string): void;
     // (undocumented)
     clearUserLineBreaks(): void;
     // (undocumented)
@@ -2600,6 +2630,8 @@ export class ParaStore extends State {
     // (undocumented)
     isSelectedSeries(seriesKey: string): boolean;
     // (undocumented)
+    isSeriesLowlighted(seriesKey: string): boolean;
+    // (undocumented)
     isVisited(seriesKey: string, index: number): boolean;
     // (undocumented)
     isVisitedSeries(seriesKey: string): boolean;
@@ -2617,6 +2649,12 @@ export class ParaStore extends State {
     //
     // (undocumented)
     protected _keymapManager: KeymapManager;
+    // (undocumented)
+    lowlightOtherSeries(...seriesKeys: string[]): void;
+    // (undocumented)
+    lowlightSeries(seriesKey: string): void;
+    // (undocumented)
+    protected _lowlightSeries: string[];
     // (undocumented)
     protected _manifest: Manifest | null;
     // (undocumented)
@@ -2695,8 +2733,6 @@ export class ParaStore extends State {
     settings: Settings;
     // (undocumented)
     showMDRAnnotations(): Promise<void>;
-    // (undocumented)
-    soloSeries: string;
     // (undocumented)
     sparkBrailleInfo: SparkBrailleInfo | null;
     // (undocumented)
@@ -2882,6 +2918,14 @@ export class ParaViewController extends Logger {
     logName(): string;
     // (undocumented)
     protected _store: ParaStore;
+}
+
+// @public (undocumented)
+export interface ParsedOffset {
+    // (undocumented)
+    format: 'pixels' | 'percent';
+    // (undocumented)
+    value: number;
 }
 
 // @public (undocumented)
@@ -3524,6 +3568,96 @@ export class ScreenReaderBridge {
 }
 
 // @public (undocumented)
+export type ScrollyEvent = 'stepEnter' | 'stepExit' | 'stepProgress';
+
+// @public (undocumented)
+export interface ScrollyOptions {
+    // (undocumented)
+    container?: HTMLElement;
+    // (undocumented)
+    offset?: string | number;
+    // (undocumented)
+    once?: boolean;
+    // (undocumented)
+    parent?: string;
+    // (undocumented)
+    progress?: boolean;
+    // (undocumented)
+    root?: Element | Document | null;
+    // (undocumented)
+    step: string | Element | NodeList | Element[];
+    // (undocumented)
+    threshold?: number;
+}
+
+// @public (undocumented)
+export interface ScrollyStep {
+    // (undocumented)
+    action: Record<string, string>;
+    // (undocumented)
+    direction?: 'up' | 'down';
+    // (undocumented)
+    height: number;
+    // (undocumented)
+    index: number;
+    // (undocumented)
+    node: Element;
+    // (undocumented)
+    observers: {
+        resize?: ResizeObserver;
+        step?: IntersectionObserver;
+        progress?: IntersectionObserver;
+    };
+    // (undocumented)
+    offset: ParsedOffset | null;
+    // (undocumented)
+    progress: number;
+    // (undocumented)
+    state?: 'enter' | 'exit';
+    // (undocumented)
+    top: number;
+}
+
+// @public (undocumented)
+export class Scrollyteller {
+    constructor(parachart?: ParaChart, chartID?: string);
+}
+
+// @public (undocumented)
+export class ScrollytellerEngine {
+    constructor();
+    // (undocumented)
+    destroy(): ScrollytellerEngine;
+    // (undocumented)
+    disable(): ScrollytellerEngine;
+    // (undocumented)
+    enable(): ScrollytellerEngine;
+    // (undocumented)
+    off(event?: ScrollyEvent, callback?: (response: CallbackResponse) => void): this;
+    // (undocumented)
+    get offset(): number;
+    set offset(value: string | number);
+    // (undocumented)
+    on(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this;
+    // (undocumented)
+    once(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this;
+    // (undocumented)
+    resize(): ScrollytellerEngine;
+    // (undocumented)
+    setup({ step, parent, offset, threshold, progress, once, container, root, }: ScrollyOptions): ScrollytellerEngine;
+}
+
+// @public (undocumented)
+export interface ScrollytellingSettings extends SettingGroup {
+    // (undocumented)
+    isScrollyAnnouncementsEnabled: boolean;
+    // (undocumented)
+    isScrollySoniEnabled: boolean;
+    // (undocumented)
+    isScrollytellingEnabled: boolean;
+}
+
+// @public (undocumented)
 export interface SectorOptions extends ShapeOptions {
     annularThickness?: number;
     arcCenterIsOrientationAnchor?: boolean;
@@ -3823,6 +3957,8 @@ export interface Settings extends SettingGroup {
     plotArea: PlotAreaSettings;
     // (undocumented)
     popup: PopupSettings;
+    // (undocumented)
+    scrollytelling: ScrollytellingSettings;
     // (undocumented)
     sonification: SonificationSettings;
     // (undocumented)

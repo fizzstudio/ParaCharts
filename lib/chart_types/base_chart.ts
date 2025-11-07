@@ -398,7 +398,7 @@ export abstract class BaseChartInfo extends Logger {
     } else if (cursor.isNodeType('series')) {
       this._store.announce(
         await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
-      this._playRiff();
+      this._playCurrentRiff();
       this._store.sparkBrailleInfo = this._sparkBrailleInfo();
     } else if (cursor.isNodeType(this.navDatapointType)) {
       // NOTE: this needs to be done before the datapoint is visited, to check whether the series has
@@ -416,7 +416,7 @@ export abstract class BaseChartInfo extends Logger {
       }
       this._store.announce(announcements);
       if (this._store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
-        this._playDatapoints([datapoint]);
+        this.playDatapoints([datapoint]);
       }
       this._store.sparkBrailleInfo = this._sparkBrailleInfo();
 
@@ -425,15 +425,22 @@ export abstract class BaseChartInfo extends Logger {
     } else if (cursor.isNodeType('chord')) {
       if (this._store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
         if (this._store.settings.sonification.isArpeggiateChords) {
-          this._playRiff(this._chordRiffOrder());
+          this._playCurrentRiff(this._chordRiffOrder());
         } else {
           const datapoints = cursor.datapoints.map(dp =>
             this._store.model!.atKeyAndIndex(dp.seriesKey, dp.datapointIndex)!);
-          this._playDatapoints(datapoints);
+          this.playDatapoints(datapoints);
         }
       }
     } else if (cursor.isNodeType('sequence')) {
-      this._playRiff();
+      this._store.announce(
+        await this._summarizer.getSequenceSummary({
+          seriesKey: cursor.options.seriesKey,
+          start: cursor.options.start,
+          end:cursor.options.end
+        })
+      );
+      this._playCurrentRiff();
 
       // this._store.highlight(
       //   `sequence-${cursor.options.seriesKey}-${cursor.options.start}-${cursor.options.end}`);
@@ -472,13 +479,20 @@ export abstract class BaseChartInfo extends Logger {
   }
 
   /** Play a riff for the current nav node */
-  protected abstract _playRiff(order?: RiffOrder): void;
+  protected _playCurrentRiff(order?: RiffOrder) {
+    if (this._store.settings.sonification.isSoniEnabled
+      && this._store.settings.sonification.isRiffEnabled) {
+      this.playRiff(this._navMap!.cursor.datapoints, order);
+    }
+  }
+
+  abstract playRiff(datapoints: Datapoint[], order?: RiffOrder): void;
 
   protected _chordRiffOrder(): RiffOrder {
     return 'normal';
   }
 
-  protected abstract _playDatapoints(datapoints: Datapoint[]): void;
+  abstract playDatapoints(datapoints: Datapoint[]): void;
 
   /**
    * Play all datapoints in the given direction.

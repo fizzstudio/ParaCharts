@@ -116,37 +116,30 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     });
   }
 
-  protected _playRiff(order?: RiffOrder) {
-    if (this._store.settings.sonification.isSoniEnabled
-      && this._store.settings.sonification.isRiffEnabled) {
-      // const series = this._seriesInNavOrder();
-      // const datapoints = series.map(s => s.datapoints[this._navMap!.cursor.index]); // this._navMap!.cursor.datapoints;
-      const datapoints = this._navMap!.cursor.datapoints;
-      if (order === 'sorted') {
-        datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
-      } else if (order === 'reversed') {
-        datapoints.reverse();
+  playRiff(datapoints: Datapoint[], order?: RiffOrder) {
+    if (order === 'sorted') {
+      datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
+    } else if (order === 'reversed') {
+      datapoints.reverse();
+    }
+    if (datapoints.length) {
+      if (this._soniRiffInterval!) {
+        clearInterval(this._soniRiffInterval!);
       }
-      const noteCount = datapoints.length;
-      if (noteCount) {
-        if (this._soniRiffInterval!) {
+      this._soniSequenceIndex++;
+      this._soniRiffInterval = setInterval(() => {
+        const datapoint = datapoints.shift();
+        if (!datapoint) {
           clearInterval(this._soniRiffInterval!);
+        } else {
+          this._sonifier.playDatapoints([datapoint as PlaneDatapoint]);
+          this._soniNoteIndex++;
         }
-        this._soniSequenceIndex++;
-        this._soniRiffInterval = setInterval(() => {
-          const datapoint = datapoints.shift();
-          if (!datapoint) {
-            clearInterval(this._soniRiffInterval!);
-          } else {
-            this._sonifier.playDatapoints([datapoint as PlaneDatapoint]);
-            this._soniNoteIndex++;
-          }
-        }, SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex));
-      }
+      }, SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex));
     }
   }
 
-  protected _playDatapoints(datapoints: PlaneDatapoint[]): void {
+  playDatapoints(datapoints: PlaneDatapoint[]): void {
     this._sonifier.playDatapoints(datapoints);
   }
 
@@ -154,11 +147,12 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     if (this._navMap!.cursor.type !== this._datapointNavNodeType) {
       return;
     }
+    this.clearPlay();
     let cursor = this._navMap!.cursor;
     this._soniInterval = setInterval(() => {
       const next = cursor.peekNode(dir, 1);
       if (next && next.type === this._datapointNavNodeType) {
-        this._playDatapoints([next.datapoints[0] as PlaneDatapoint]);
+        this.playDatapoints([next.datapoints[0] as PlaneDatapoint]);
         cursor = next;
       } else {
         this.clearPlay();

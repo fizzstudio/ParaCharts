@@ -423,11 +423,16 @@ export class ParaView extends logging(ParaComponent) {
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
         if (newValue) {
+          this._lowVisionModeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
           this._lowVisionModeSaved.set('chart.fontScale', draft.chart.fontScale);
           this._lowVisionModeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+          // end any in-progress animation here
+          this._documentView!.chartLayers.dataLayer.stopAnimation();
+          draft.animation.isAnimationEnabled = false;
           draft.chart.fontScale = 2;
           draft.grid.isDrawVertLines = true;
         } else {
+          draft.animation.isAnimationEnabled = this._lowVisionModeSaved.get('animation.isAnimationEnabled');
           draft.chart.fontScale = this._lowVisionModeSaved.get('chart.fontScale');
           draft.grid.isDrawVertLines = this._lowVisionModeSaved.get('grid.isDrawVertLines');
           this._lowVisionModeSaved.clear();
