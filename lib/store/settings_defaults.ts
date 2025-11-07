@@ -248,7 +248,7 @@ export const defaults: Settings = {
       },
       isDrawSymbols: true,
       showPopups: false,
-      isTrendNavigationModeEnabled: true
+      isTrendNavigationModeEnabled: false
     },
     scatter: {
       isDrawTrendLine: false,
