@@ -6,7 +6,7 @@ it under the terms of the GNU Affero General Public License as published
 by the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
+This program is d istributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU Affero General Public License for more details.
@@ -305,23 +305,23 @@ export class ParaView extends logging(ParaComponent) {
       }
     };
   }
-  
+
   get ariaLiveRegion() {
     return this._ariaLiveRegionRef.value!;
   }
-  
+
   get viewBox() {
     return this._viewBox;
   }
-  
+
   get root() {
     return this._rootRef.value;
   }
-  
+
   get frame() {
     return this._frameRef.value;
   }
-  
+
   get dataspace() {
     return this._dataspaceRef.value;
   }
@@ -357,7 +357,7 @@ export class ParaView extends logging(ParaComponent) {
   set hotkeyActions(actions: HotkeyActions) {
     this._hotkeyActions = actions;
   }
-  
+
   clearAriaLive() {
     this._ariaLiveRegionRef.value!.clear();
   }
@@ -436,15 +436,12 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
-    console.log("Refer to line 438");
     this._documentView?.settingDidChange(path, oldValue, newValue);
     if (path === "ui.isFullscreenEnabled") {
       if (newValue && !document.fullscreenElement) {
         try {
-          console.log("Refer to line 443");
-		  this._containerRef.value.requestFullscreen();
+          this._containerRef.value.requestFullscreen();
         } catch {
-          console.log("Refer to line 446");
           console.error("failed to enter fullscreen");
           this._store.updateSettings((draft) => {
             draft.ui.isFullscreenEnabled = false;
@@ -452,12 +449,9 @@ export class ParaView extends logging(ParaComponent) {
         }
       } else if (!newValue && document.fullscreenElement) {
         try {
-          console.log("Refer to line 454");
-		  document.exitFullscreen();
-		  console.log("We exited");
+          document.exitFullscreen();
         } catch {
-          console.log("Refer to line 457");
-		  console.error("failed to exit fullscreen");
+          console.error("failed to exit fullscreen");
           this._store.updateSettings((draft) => {
             draft.ui.isFullscreenEnabled = true;
           }, true);
@@ -465,30 +459,22 @@ export class ParaView extends logging(ParaComponent) {
       }
     } else if (path === "ui.isLowVisionModeEnabled") {
       if (newValue) {
-	    console.log("Enabling low vision mode");
-		this._store.colors.selectPaletteWithKey("low-vision");
+        this._store.colors.selectPaletteWithKey("low-vision");
       } else {
-        console.log("Disabling low vision mode");
-		if (this._store.colors.prevSelectedColor.length > 0) {
-          console.log("Refer to line 470");
-		  this._store.colors.selectPaletteWithKey(
+        if (this._store.colors.prevSelectedColor.length > 0) {
+          this._store.colors.selectPaletteWithKey(
             this._store.colors.prevSelectedColor
           );
         }
       }
-      console.log("Refer to line 468: is LVM enabled or disabled?");
-	  this._store.updateSettings((draft) => {
+      this._store.updateSettings((draft) => {
         this._store.announce(
           `Low vision mode ${newValue ? "enabled" : "disabled"}`
         );
-		console.log("Refer to line 481");
         draft.color.isDarkModeEnabled = !!newValue;
-        console.log("Refer to line 483");
-	    draft.ui.isFullscreenEnabled = !!newValue;
-		console.log("Refer to line 485");
+        draft.ui.isFullscreenEnabled = !!newValue;
         if (newValue) {
-          console.log("Refer to line 487");
-		  this._lowVisionModeSaved.set(
+          this._lowVisionModeSaved.set(
             "chart.fontScale",
             draft.chart.fontScale
           );
@@ -499,8 +485,7 @@ export class ParaView extends logging(ParaComponent) {
           draft.chart.fontScale = 2;
           draft.grid.isDrawVertLines = true;
         } else {
-          console.log("Refer to line 499");
-		  draft.chart.fontScale =
+          draft.chart.fontScale =
             this._lowVisionModeSaved.get("chart.fontScale");
           draft.grid.isDrawVertLines = this._lowVisionModeSaved.get(
             "grid.isDrawVertLines"
@@ -583,8 +568,8 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   protected _onFullscreenChange() {
-	if (document.fullscreenElement) {
-	  this._isFullscreen = true;
+    if (document.fullscreenElement) {
+      this._isFullscreen = true;
       if (!this._store.settings.ui.isFullscreenEnabled) {
         // fullscreen was entered manually
         this._store.updateSettings((draft) => {
@@ -592,7 +577,7 @@ export class ParaView extends logging(ParaComponent) {
         }, true);
       }
     } else {
-	  this._isFullscreen = false;
+      this._isFullscreen = false;
       if (this._store.settings.ui.isLowVisionModeEnabled) {
         this._store.updateSettings((draft) => {
           draft.ui.isLowVisionModeEnabled = false;
@@ -805,11 +790,13 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   protected _rootStyle() {
-	const style: { [prop: string]: any } = {
+    const style: { [prop: string]: any } = {
       fontFamily: this._store.settings.chart.fontFamily,
       fontWeight: this._store.settings.chart.fontWeight,
     };
     if (this._isFullscreen) {
+      this._containerRef.value.style.width = "100vw";
+	  this._containerRef.value.style.height = "100vh";
 	  const vbWidth = Math.round(this._viewBox.width);
       const vbHeight = Math.round(this._viewBox.height);
       const vbRatio =
