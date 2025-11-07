@@ -76,5 +76,8 @@ export const DemoChart9: Story = {
   name: "9. Narrative highlights",
   args: {
     filename: "manifests/autogen/line-single/line-single-manifest-172.json",
+    config: {
+      'type.line.isTrendNavigationModeEnabled': true
+    },
   }
 }
