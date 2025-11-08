@@ -35,7 +35,7 @@
 		import { ParaHelper } from '/dist/paracharts.js';
 		const helper = new ParaHelper();
 		await helper.ready;
-    	await helper.loadManifest('/src/headless/line-multi-manifest-128.json');
+    	await helper.loadManifest('/src/demo-data/line-multi-manifest-128.json');
     	const content = helper.serializeChart();
     	const container = document.getElementById('content-container');
     	container.innerHTML = content;

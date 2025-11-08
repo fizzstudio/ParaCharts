@@ -22,7 +22,9 @@ export interface PopupLabelOptions extends LabelOptions {
 
 
     items?: LegendItem[]
-    points: DatapointView[]
+
+    // TDOD: Sam to fix this properly… can `points` really be optional?
+    points?: DatapointView[]
 }
 
 export type ShapeTypes = "box" | "boxWithArrow";
@@ -108,22 +110,26 @@ export class Popup extends View {
 
 
         const chartWidth = parseFloat(this.paraview.documentView!.chartLayers.width.toFixed(5));
-        if (this.popupLabelOptions.type === "sequence") {
-            console.log(this.popupLabelOptions.points.map(p => p.shapes.map(c => c.intersects(this.box))).flat())
-            if (this.popupLabelOptions.points.map(p => p.shapes.map(c => c.intersects(this.box))).flat().some(Boolean)) {
-                console.log("test 2")
-                if (chartWidth - this.popupLabelOptions.points[this.popupLabelOptions.points.length - 1].x > this.grid.width) {
-                    this.arrowPosition = "left";
-                    this.grid.x = this.popupLabelOptions.points[this.popupLabelOptions.points.length - 1].x + this.leftPadding + BOX_ARROW_HEIGHT
-                }
-                else if (this.popupLabelOptions.points[0].x > this.grid.width) {
-                    this.arrowPosition = "right";
-                    this.grid.x = this.popupLabelOptions.points[0].x - this.grid.width - this.leftPadding - BOX_ARROW_HEIGHT
-                }
-                this._children.pop();
-                this._box = this.generateBox(popupShapeOptions);
-                this.append(this._box);
-            }
+
+        // TDOD: Sam to fix this properly
+        if (this.popupLabelOptions.points) {
+          if (this.popupLabelOptions.type === "sequence") {
+              console.log(this.popupLabelOptions.points.map(p => p.shapes.map(c => c.intersects(this.box))).flat())
+              if (this.popupLabelOptions.points.map(p => p.shapes.map(c => c.intersects(this.box))).flat().some(Boolean)) {
+                  console.log("test 2")
+                  if (chartWidth - this.popupLabelOptions.points[this.popupLabelOptions.points.length - 1].x > this.grid.width) {
+                      this.arrowPosition = "left";
+                      this.grid.x = this.popupLabelOptions.points[this.popupLabelOptions.points.length - 1].x + this.leftPadding + BOX_ARROW_HEIGHT
+                  }
+                  else if (this.popupLabelOptions.points[0].x > this.grid.width) {
+                      this.arrowPosition = "right";
+                      this.grid.x = this.popupLabelOptions.points[0].x - this.grid.width - this.leftPadding - BOX_ARROW_HEIGHT
+                  }
+                  this._children.pop();
+                  this._box = this.generateBox(popupShapeOptions);
+                  this.append(this._box);
+              }
+          }
         }
 
 
