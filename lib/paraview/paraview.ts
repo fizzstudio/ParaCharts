@@ -358,7 +358,9 @@ export class ParaView extends logging(ParaComponent) {
   // Anything that needs to be done when data is updated, do here
   private dataUpdated(): void {
     this.createDocumentView();
-    this.addJIMSeriesSummaries();
+    if (this.paraChart.headless) {
+      this.addJIMSeriesSummaries();
+    }
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
