@@ -1,3 +1,4 @@
+import { ParaChart } from './parachart/parachart';
 export { ParaChart } from './parachart/parachart';
 export * from './headless/parahelper';
 export * from './scrollyteller/scrollyteller';
@@ -13,3 +14,11 @@ export * from './view/axis/index';
 export * from './view/data/index';
 export * from './view/layers/index';
 export * from './view/shape/index';
+
+customElements.define('para-chart', ParaChart);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'para-chart': ParaChart;
+  }
+}

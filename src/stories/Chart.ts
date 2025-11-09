@@ -3,9 +3,19 @@
 import { type SettingsInput } from '../../lib/store/settings_types';
 
 import { html, nothing, TemplateResult } from 'lit';
-import '/lib';
+import { ParaChart } from '../../lib/parachart/parachart';
+import { ParaChartAi } from '../../lib-ai/parachart-ai';
 import { ChartType } from '@fizz/paramanifest';
-import '/lib-ai/index-ai.ts';
+
+customElements.define('para-chart', ParaChart);
+customElements.define('para-chart-ai', ParaChartAi);
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'para-chart': ParaChart;
+    'para-chart-ai': ParaChartAi;
+  }
+}
 
 export interface ChartProps {
   filename: string;
