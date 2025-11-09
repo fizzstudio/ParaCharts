@@ -64,6 +64,14 @@ import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
 import { View as View_2 } from '../base_view';
 
+// @public (undocumented)
+export interface Action {
+    // (undocumented)
+    action: string;
+    // (undocumented)
+    params: string[];
+}
+
 // Warning: (ae-forgotten-export) The symbol "AdvancedControlSettingsDialog_base" needs to be exported by the entry point index-ai.d.ts
 //
 // @public (undocumented)
@@ -765,9 +773,12 @@ export type c2mCallbackType = {
 };
 
 // @public (undocumented)
+export type Callback = (response: CallbackResponse) => void;
+
+// @public (undocumented)
 export interface CallbackResponse {
     // (undocumented)
-    action?: Record<string, string>;
+    actions: Action[];
     // (undocumented)
     direction?: 'up' | 'down';
     // (undocumented)
@@ -1193,6 +1204,8 @@ export abstract class DataLayer extends PlotLayer {
     // (undocumented)
     protected _animateRevealComplete: boolean;
     // (undocumented)
+    protected _animEnd(): void;
+    // (undocumented)
     protected _animStep(t: number): void;
     // (undocumented)
     protected _beginDatapointLayout(): void;
@@ -1212,6 +1225,8 @@ export abstract class DataLayer extends PlotLayer {
     protected abstract _createDatapoints(): void;
     // (undocumented)
     protected _createId(): string;
+    // (undocumented)
+    protected _currentAnimationFrame: number | null;
     // (undocumented)
     readonly dataLayerIndex: number;
     // (undocumented)
@@ -1257,6 +1272,8 @@ export abstract class DataLayer extends PlotLayer {
     settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
     // (undocumented)
     get settings(): DeepReadonly<PlotSettings>;
+    // (undocumented)
+    stopAnimation(): void;
     // (undocumented)
     unregisterDatapoint(datapointView: DatapointView): void;
     updateSeriesStyle(_styleInfo: StyleInfo): void;
@@ -2081,6 +2098,8 @@ export interface LineSettings extends PointSettings {
     // (undocumented)
     isAlwaysShowSeriesLabel?: boolean;
     // (undocumented)
+    isTrendNavigationModeEnabled: boolean;
+    // (undocumented)
     leaderLineLength: number;
     // (undocumented)
     lineHighlightScale: number;
@@ -2446,6 +2465,8 @@ export class ParaStore extends State {
     // (undocumented)
     addUserLineBreaks(): void;
     // (undocumented)
+    annotatePoint(seriesKey: string, index: number, text: string): void;
+    // (undocumented)
     annotations: BaseAnnotation[];
     // (undocumented)
     protected annotID: number;
@@ -2454,9 +2475,13 @@ export class ParaStore extends State {
     // (undocumented)
     announcement: Announcement;
     // (undocumented)
+    clearAllSeriesLowlights(): void;
+    // (undocumented)
     clearHighlight(): void;
     // (undocumented)
     clearSelected(): void;
+    // (undocumented)
+    clearSeriesLowlight(seriesKey: string): void;
     // (undocumented)
     clearUserLineBreaks(): void;
     // (undocumented)
@@ -2518,6 +2543,8 @@ export class ParaStore extends State {
     // (undocumented)
     isSelectedSeries(seriesKey: string): boolean;
     // (undocumented)
+    isSeriesLowlighted(seriesKey: string): boolean;
+    // (undocumented)
     isVisited(seriesKey: string, index: number): boolean;
     // (undocumented)
     isVisitedSeries(seriesKey: string): boolean;
@@ -2535,6 +2562,12 @@ export class ParaStore extends State {
     //
     // (undocumented)
     protected _keymapManager: KeymapManager;
+    // (undocumented)
+    lowlightOtherSeries(...seriesKeys: string[]): void;
+    // (undocumented)
+    lowlightSeries(seriesKey: string): void;
+    // (undocumented)
+    protected _lowlightSeries: string[];
     // (undocumented)
     protected _manifest: Manifest | null;
     // (undocumented)
@@ -2613,8 +2646,6 @@ export class ParaStore extends State {
     settings: Settings;
     // (undocumented)
     showMDRAnnotations(): Promise<void>;
-    // (undocumented)
-    soloSeries: string;
     // (undocumented)
     sparkBrailleInfo: SparkBrailleInfo | null;
     // (undocumented)
@@ -3475,7 +3506,7 @@ export interface ScrollyOptions {
 // @public (undocumented)
 export interface ScrollyStep {
     // (undocumented)
-    action: Record<string, string>;
+    actions: Action[];
     // (undocumented)
     direction?: 'up' | 'down';
     // (undocumented)
@@ -3502,31 +3533,36 @@ export interface ScrollyStep {
 
 // @public (undocumented)
 export class Scrollyteller {
-    constructor(chartID?: string);
-}
-
-// @public (undocumented)
-export class ScrollytellerImpl {
-    constructor();
+    constructor(parachart: ParaChart);
     // (undocumented)
-    destroy(): ScrollytellerImpl;
+    destroy(): Scrollyteller;
     // (undocumented)
-    disable(): ScrollytellerImpl;
+    disable(): Scrollyteller;
     // (undocumented)
-    enable(): ScrollytellerImpl;
+    enable(): Scrollyteller;
     // (undocumented)
-    off(event?: ScrollyEvent, callback?: (response: CallbackResponse) => void): this;
+    off(event?: ScrollyEvent, callback?: Callback): this;
     // (undocumented)
     get offset(): number;
     set offset(value: string | number);
     // (undocumented)
-    on(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this;
+    on(event: ScrollyEvent, callback: Callback): this;
     // (undocumented)
-    once(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this;
+    once(event: ScrollyEvent, callback: Callback): this;
     // (undocumented)
-    resize(): ScrollytellerImpl;
+    resize(): Scrollyteller;
     // (undocumented)
-    setup({ step, parent, offset, threshold, progress, once, container, root, }: ScrollyOptions): ScrollytellerImpl;
+    setup({ step, parent, offset, threshold, progress, once, container, root, }: ScrollyOptions): Scrollyteller;
+}
+
+// @public (undocumented)
+export interface ScrollytellingSettings extends SettingGroup {
+    // (undocumented)
+    isScrollyAnnouncementsEnabled: boolean;
+    // (undocumented)
+    isScrollySoniEnabled: boolean;
+    // (undocumented)
+    isScrollytellingEnabled: boolean;
 }
 
 // @public (undocumented)
@@ -3829,6 +3865,8 @@ export interface Settings extends SettingGroup {
     plotArea: PlotAreaSettings;
     // (undocumented)
     popup: PopupSettings;
+    // (undocumented)
+    scrollytelling: ScrollytellingSettings;
     // (undocumented)
     sonification: SonificationSettings;
     // (undocumented)
