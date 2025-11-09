@@ -143,7 +143,7 @@ export class Scrollyteller {
     this.on('stepEnter', (response: CallbackResponse) => {
       // console.log('scrolly stepEnter callback fired!');
       const element = response.element;
-      this.activateNextStep(element);
+      this.highlightPageContent(element);
 
       for (const {action, params} of response.actions) {
         if (action === 'highlightSeries') {
@@ -175,10 +175,33 @@ export class Scrollyteller {
         console.log('TODO: Add scrollytelling sonifications')
       }
     });
+
+
+    this.on('stepExit', (response: CallbackResponse) => {
+      // console.warn('SCROLLY: stepExit callback fired!', response);
+      const element = response.element;
+
+      if (response.direction === 'down') {
+        console.warn('SCROLLY: exit down', response);
+      }
+      else {
+        console.warn('SCROLLY: exit up', response);
+        console.warn('SCROLLY: reverse action!');
+        for (const {action, params} of response.actions) {  
+          if (action === 'highlightDatapoint') {
+            if (params.length >= 2) {
+              this.parachart.performer.getSeries(params[0]).getPoint(+params[1]).click();
+            }
+          }
+        }
+      }
+
+    });
+
     this.stepElements[0]?.classList.add('para-active');
   }
 
-  private activateNextStep(nextStep: Element): void {
+  private highlightPageContent(nextStep: Element): void {
     this.stepElements.forEach(step => step.classList.remove('para-active'));
     nextStep.classList.add('para-active');
   }
