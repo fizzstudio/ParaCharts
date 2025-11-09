@@ -358,6 +358,9 @@ export class ParaView extends logging(ParaComponent) {
   // Anything that needs to be done when data is updated, do here
   private dataUpdated(): void {
     this.createDocumentView();
+    if (this.paraChart.headless) {
+      this.addJIMSeriesSummaries();
+    }
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -623,6 +626,16 @@ export class ParaView extends logging(ParaComponent) {
   // updateDefs(el: SVGLinearGradientElement) {
   //   this._defsRef.value!.appendChild(el);
   // }
+
+  async addJIMSeriesSummaries() {
+    const summarizer = this._documentView!.chartInfo.summarizer;
+    const seriesKeys = this._store.model?.seriesKeys || [];
+    for (const seriesKey of seriesKeys) {
+      const summary = await summarizer.getSeriesSummary(seriesKey);
+      const summaryText = typeof summary === 'string' ? summary : summary.text;
+      this._store.jimerator!.addSeriesSummary(seriesKey, summaryText);
+    }
+  }
 
   serialize() {
     const svg = this.root!.cloneNode(true) as SVGSVGElement;
