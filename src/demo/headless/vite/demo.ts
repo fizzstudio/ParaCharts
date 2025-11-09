@@ -21,7 +21,7 @@ class Demo {
     const manifest = this.populateManifest();
     await this.helper.loadManifest(JSON.stringify(manifest), 'content');
     //await this.helper.loadManifest('/src/demo/headless/paracharts-line.json');
-    //await this.helper.loadManifest('/src/headless/bar-multi-manifest-48.json')!;
+    //await this.helper.loadManifest('/src/demo-data/bar-multi-manifest-48.json')!;
     const content = this.helper.serializeChart();
     const container = document.getElementById('content-container');
     container!.innerHTML = content;

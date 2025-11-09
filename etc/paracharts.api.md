@@ -773,9 +773,12 @@ export type c2mCallbackType = {
 };
 
 // @public (undocumented)
+export type Callback = (response: CallbackResponse) => void;
+
+// @public (undocumented)
 export interface CallbackResponse {
     // (undocumented)
-    actions?: Action[];
+    actions: Action[];
     // (undocumented)
     direction?: 'up' | 'down';
     // (undocumented)
@@ -1201,6 +1204,8 @@ export abstract class DataLayer extends PlotLayer {
     // (undocumented)
     protected _animateRevealComplete: boolean;
     // (undocumented)
+    protected _animEnd(): void;
+    // (undocumented)
     protected _animStep(t: number): void;
     // (undocumented)
     protected _beginDatapointLayout(): void;
@@ -1220,6 +1225,8 @@ export abstract class DataLayer extends PlotLayer {
     protected abstract _createDatapoints(): void;
     // (undocumented)
     protected _createId(): string;
+    // (undocumented)
+    protected _currentAnimationFrame: number | null;
     // (undocumented)
     readonly dataLayerIndex: number;
     // (undocumented)
@@ -1265,6 +1272,8 @@ export abstract class DataLayer extends PlotLayer {
     settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
     // (undocumented)
     get settings(): DeepReadonly<PlotSettings>;
+    // (undocumented)
+    stopAnimation(): void;
     // (undocumented)
     unregisterDatapoint(datapointView: DatapointView): void;
     updateSeriesStyle(_styleInfo: StyleInfo): void;
@@ -2406,9 +2415,9 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void>;
     // (undocumented)
-    get scrollyteller(): Scrollyteller | undefined;
+    get scrollyteller(): Scrollyteller;
     // (undocumented)
-    protected _scrollyteller?: Scrollyteller;
+    protected _scrollyteller: Scrollyteller;
     // (undocumented)
     settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
     // (undocumented)
@@ -3638,14 +3647,14 @@ export class Scrollyteller {
     // (undocumented)
     enable(): Scrollyteller;
     // (undocumented)
-    off(event?: ScrollyEvent, callback?: (response: CallbackResponse) => void): this;
+    off(event?: ScrollyEvent, callback?: Callback): this;
     // (undocumented)
     get offset(): number;
     set offset(value: string | number);
     // (undocumented)
-    on(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this;
+    on(event: ScrollyEvent, callback: Callback): this;
     // (undocumented)
-    once(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this;
+    once(event: ScrollyEvent, callback: Callback): this;
     // (undocumented)
     resize(): Scrollyteller;
     // (undocumented)
