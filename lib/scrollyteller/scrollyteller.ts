@@ -95,7 +95,7 @@ export class Scrollyteller {
   private direction?: 'up' | 'down';
 
   constructor(parachart: ParaChart) {
-    console.log('scrolly constructor called!');
+    // console.log('scrolly constructor called!');
     // HACK: needed to assign something to this.parachart
     this.parachart = parachart;
     this.chartId = this.parachart.id;
@@ -130,7 +130,7 @@ export class Scrollyteller {
   }
 
   private init(): void {
-    console.log('scrolly init called!');
+    // console.log('scrolly init called!');
     this.stepElements = document.querySelectorAll('[data-para-step]');
 
     this.setup({
@@ -141,7 +141,7 @@ export class Scrollyteller {
     });
 
     this.on('stepEnter', (response: CallbackResponse) => {
-      console.log('scrolly stepEnter callback fired!');
+      // console.log('scrolly stepEnter callback fired!');
       const element = response.element;
       this.activateNextStep(element);
 
@@ -157,20 +157,22 @@ export class Scrollyteller {
         if (action === 'highlightDatapoint') {
           // TODO: remove previous datapoint highlights
           // this.parachart.command('click', []);
+          // console.warn('highlightDatapoint', params)
+
           if (params.length >= 2) {
-            this.parachart.command('click', [`${params[0]}`, params[1]]);
+            this.parachart.performer.getSeries(params[0]).getPoint(+params[1]).click();
           }
         }
       }
 
       // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
       if (this.settings.isScrollyAnnouncementsEnabled) {
-        console.log('Add scrollytelling aria-live descriptions of highlights')
+        console.log('TODO: Add scrollytelling aria-live descriptions of highlights')
       }
 
       // TODO: add sonifications
       if (this.settings.isScrollySoniEnabled) {
-        console.log('Add scrollytelling sonifications')
+        console.log('TODO: Add scrollytelling sonifications')
       }
     });
     this.stepElements[0]?.classList.add('para-active');
