@@ -466,15 +466,6 @@ export class DataSymbol extends View {
       }
     }
     return this.hidden ? svg`` : svg`
-                      <clipPath id="clip-path2">
-              <rect
-                x=${Number(this.x)}
-                y=${0}
-                width=${this.paraview.clipWidth ?? this.paraview.documentView!.chartLayers.width}
-                height=${this.paraview.documentView!.chartLayers.height}>
-              </rect>
-            </clipPath>
-          
       <use
         href="#${this._defsKey}"
         id=${this._id || nothing}
@@ -484,7 +475,7 @@ export class DataSymbol extends View {
         transform=${transform}
         @pointerenter=${this._options.pointerEnter ?? nothing}
         @pointerleave=${this._options.pointerLeave ?? nothing}
-        clip-path=${/*this._options.isClip ? 'url(#clip-path2)' : */nothing}
+        clip-path=${/*this._options.isClip ? 'url(#clip-path)' :*/ nothing}
       />
     `;
   }

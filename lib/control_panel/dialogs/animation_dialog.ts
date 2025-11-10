@@ -45,7 +45,12 @@ export class AnimationDialog extends logging(ParaComponent) {
     //   label: 'Animation enabled',
     //   parentView: 'controlPanel.tabs.controls.dialog.animation',
     // });
-
+    this._store.settingControls.add({
+      type: 'checkbox',
+      key: 'animation.expandPoints',
+      label: 'Expand points vertically?',
+      parentView: 'controlPanel.tabs.controls.dialog.animation',
+    });
     this._store.settingControls.add({
       type: 'textfield',
       key: 'animation.animateRevealTimeMs',
@@ -109,6 +114,18 @@ export class AnimationDialog extends logging(ParaComponent) {
         min: 0,
         max: 10000
       },
+      parentView: 'controlPanel.tabs.controls.dialog.animation',
+    });
+    this._store.settingControls.add({
+      type: 'checkbox',
+      key: 'animation.lineSnake',
+      label: 'Snake lines from left?',
+      parentView: 'controlPanel.tabs.controls.dialog.animation',
+    });
+    this._store.settingControls.add({
+      type: 'checkbox',
+      key: 'animation.symbolPopIn',
+      label: 'Pop in symbols?',
       parentView: 'controlPanel.tabs.controls.dialog.animation',
     });
 

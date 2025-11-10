@@ -118,7 +118,13 @@ export interface AnimationSettings extends SettingGroup {
     // (undocumented)
     animationType: AnimationType;
     // (undocumented)
+    expandPoints: boolean;
+    // (undocumented)
     isAnimationEnabled: boolean;
+    // (undocumented)
+    lineSnake: boolean;
+    // (undocumented)
+    symbolPopIn: boolean;
 }
 
 // @public (undocumented)
@@ -1193,6 +1199,8 @@ export abstract class DataLayer extends PlotLayer {
     // (undocumented)
     protected _animateRevealComplete: boolean;
     // (undocumented)
+    protected _animEnd(): void;
+    // (undocumented)
     protected _animStep(t: number): void;
     // (undocumented)
     protected _beginDatapointLayout(): void;
@@ -1212,6 +1220,8 @@ export abstract class DataLayer extends PlotLayer {
     protected abstract _createDatapoints(): void;
     // (undocumented)
     protected _createId(): string;
+    // (undocumented)
+    protected _currentAnimationFrame: number | null;
     // (undocumented)
     readonly dataLayerIndex: number;
     // (undocumented)
@@ -1257,6 +1267,8 @@ export abstract class DataLayer extends PlotLayer {
     settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
     // (undocumented)
     get settings(): DeepReadonly<PlotSettings>;
+    // (undocumented)
+    stopAnimation(): void;
     // (undocumented)
     unregisterDatapoint(datapointView: DatapointView): void;
     updateSeriesStyle(_styleInfo: StyleInfo): void;
@@ -1389,7 +1401,9 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     protected get _symbolColor(): number;
     // (undocumented)
-    protected get _symbolScale(): number;
+    protected get symbolScale(): number;
+    // (undocumented)
+    protected _symbolScale: number;
     // (undocumented)
     get withCousins(): this[];
     // (undocumented)
@@ -2080,6 +2094,8 @@ export interface LineSettings extends PointSettings {
     baseSymbolSize: number;
     // (undocumented)
     isAlwaysShowSeriesLabel?: boolean;
+    // (undocumented)
+    isTrendNavigationModeEnabled: boolean;
     // (undocumented)
     leaderLineLength: number;
     // (undocumented)
@@ -2790,6 +2806,8 @@ export class ParaView extends ParaView_base {
     // (undocumented)
     chartTitle?: string;
     // (undocumented)
+    clipWidth?: number;
+    // (undocumented)
     computeViewBox(): void;
     // (undocumented)
     connectedCallback(): void;
@@ -3234,6 +3252,10 @@ export type PointChartType = 'line' | 'stepline' | 'scatter';
 export class PointDatapointView extends PlaneDatapointView {
     constructor(seriesView: SeriesView);
     // (undocumented)
+    protected _animEnd(): void;
+    // (undocumented)
+    _animStep(bezT: number): void;
+    // (undocumented)
     beginAnimStep(t: number): void;
     // (undocumented)
     readonly chart: PointPlotView;
@@ -3244,7 +3266,13 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     computeY(): number;
     // (undocumented)
+    protected _currentAnimationFrame: number | null;
+    // (undocumented)
     get height(): number;
+    // (undocumented)
+    _isAnimating: boolean;
+    // (undocumented)
+    leftIndex: number;
     // (undocumented)
     get _selectedMarkerX(): number;
     // (undocumented)

@@ -27,6 +27,7 @@ export class DatapointView extends DataView {
 
   protected _shapes: Shape[] = [];
   protected _symbol: DataSymbol | null = null;
+  protected _baseSymbolScale: number = 1;
   protected _animStartState: AnimState = {};
   protected _animEndState: AnimState = {};
 
@@ -98,6 +99,10 @@ export class DatapointView extends DataView {
 
   get symbol() {
     return this._symbol;
+  }
+
+  set baseSymbolScale(scale: number) {
+    this._baseSymbolScale = scale;
   }
 
   get classInfo(): ClassInfo {
@@ -249,13 +254,13 @@ export class DatapointView extends DataView {
     }
   }
 
-  protected get _symbolScale() {
+  protected get symbolScale() {
     if (this.paraview.store.isVisited(this.seriesKey, this.index)) {
       return this.paraview.store.settings.chart.symbolHighlightScale;
     } else if (this.chart.chartInfo.isHighlighted(this.seriesKey, this.index)) {
       return 1; //this.paraview.store.settings.chart.symbolHighlightScale;
     } else {
-      return 1;
+      return this._baseSymbolScale;
     }
   }
 
@@ -274,7 +279,7 @@ export class DatapointView extends DataView {
 
   protected _contentUpdateSymbol() {
     if (this._symbol) {
-      this._symbol.scale = this._symbolScale;
+      this._symbol.scale = this.symbolScale;
       this._symbol.color = this._symbolColor;
       this._symbol.hidden = !this.paraview.store.settings.chart.isDrawSymbols;
     }
