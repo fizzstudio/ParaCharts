@@ -1,0 +1,253 @@
+
+.UI {
+  --para-is-voicing-enabled: boolean;
+  --para-speech-rate: number;
+  --para-is-full-screen-enabled: boolean;
+  --para-tab-label-style: TabLabelStyle;
+  --para-is-spark-braille-visible: boolean;
+  --para-is-caption-visible: boolean;
+  --para-is-status-bar-visible: boolean;
+}
+
+
+.Color {
+  --para-color-vision-mode: ColorVisionMode;
+  --para-is-dark-mode-enabled: boolean;
+  --para-contrast-level: number;
+  --para-color-palette: string;
+}
+
+
+.Title {
+  --para-text: string;
+  --para-margin: number;
+  --para-font-size: number;
+  --para-align: SnapLocation;
+  --para-position: 'top', 'bottom';
+}
+
+
+.Label {
+  --para-margin: number;
+  --para-font-size: number;
+}
+
+
+.ViewBox {
+  --para-x: number;
+  --para-y: number;
+  --para-width: number;
+  --para-height: number;
+}
+
+.Chart {
+  --para-type: ChartType;
+  --para-size: Partial<Size2d>;
+  --para-title: TitleSettings;
+  --para-orientation: ChartOrientation;
+  --para-padding: number;
+  --para-font-family: string;
+  --para-font-weight: string;
+  --para-is-summary-default-open: boolean;
+  --para-symbol-stroke-width: number;
+}
+
+
+.Dev {
+  --para-is-debug: boolean;
+}
+
+
+.TickLabel {
+  --para-angle: number;
+  --para-offset-padding: number;
+}
+
+
+.Tick {
+  --para-is-draw-enabled: boolean;
+  --para-padding: number;
+  --para-font-size: number;
+  --para-opacity: number;
+  --para-stroke-width: number;
+  --para-stroke-linecap: string;
+  --para-length: number;
+  --para-label-format: LabelFormat;
+  --para-tick-label: TickLabelSettings;
+  --para-step: number;
+}
+
+
+.AxisLine {
+  --para-is-draw-enabled: boolean;
+  --para-is-draw-overhang-enabled: boolean;
+  --para-stroke-width: number;
+  --para-stroke-linecap: string;
+}
+
+
+.Axis {
+  --para-label: AxisLabelSettings;
+  --para-line: AxisLineSettings;
+  --para-tick: TickSettings;
+  --para-min-value: number;
+  --para-max-value: number;
+}
+
+
+.AxisLabel {
+  --para-text: string;
+  --para-gap: number;
+  --para-font-size: number;
+  --para-align: 'start', 'middle', 'end';
+  --para-position: 'top', 'bottom';
+}
+
+
+
+.Axes {
+  --para-min-interval: number;
+  --para-datapoint-margin: number;
+  --para-x: XAxisSettings;
+  --para-y: YAxisSettings;
+  --para-horiz: OrientedAxisSettings<'horiz'>;
+  --para-vert: OrientedAxisSettings<'vert'>;
+}
+
+
+.Legend {
+  --para-is-draw: boolean;
+  --para-padding: number;
+  --para-column-gap: number;
+}
+
+
+.Plot {
+  --para-is-draw-symbols: boolean;
+}
+
+
+.Bar {
+  --para-bar-width-min: number;
+  --para-cluster-by: string;
+  --para-stack-content: StackContentOptions;
+  --para-stack-count: number;
+  --para-order-by: string;
+  --para-cluster-padding-px: number;
+  --para-bar-gap: number;
+  --para-is-abbrev-series: boolean;
+  --para-cluster-label-format: LabelFormat;
+  --para-highlight-scale: number;
+  --para-line-width: number;
+}
+
+
+
+
+
+.Point {
+  --para-point-label-format: LabelFormat;
+  --para-selected-point-marker-size: Size2d;
+}
+
+
+.Line {
+  --para-line-width: number;
+  --para-line-width-max: number;
+  --para-base-symbol-size: number;
+  --para-series-label-padding: number; 
+  --para-leader-line-length: number;
+  --para-is-always-show-series-label: boolean;
+  --para-highlight-scale: number;
+}
+
+
+.StepLine {
+  --para-line-width: number;
+  --para-line-width-max: number;
+  --para-base-symbol-size: number;
+  --para-series-label-padding: number; 
+  --para-leader-line-length: number;
+  --para-is-always-show-series-label: boolean;
+}
+
+
+.Radius {
+  --para-outer: number;
+  --para-inner: number;
+  --para-inner-percent: number;
+}
+
+
+.Radial {
+  --para-label: LabelSettings;
+  --para-is-render-center-label: boolean;
+  --para-radius: RadiusSettings;
+  --para-chunk-label-format: LabelFormat;
+}
+
+
+.ChartType {
+  --para-bar: BarSettings;
+  --para-line: LineSettings;
+  --para-scatter: ScatterSettings;
+  --para-pie: RadialSettings;
+  --para-donut: RadialSettings;
+  --para-gauge: RadialSettings;
+  --para-stepline: StepLineSettings;
+  --para-lollipop: LollipopSettings;
+}
+
+
+.Jim {
+  --para-x-value-format: LabelFormat;
+}
+
+
+.DataTable {
+  --para-x-value-format: LabelFormat;
+  --para-y-value-format: LabelFormat;
+}
+
+
+.Grid {
+  --para-is-draw-horiz-lines: boolean;
+  --para-is-draw-vert-lines: boolean;
+  --para-is-draw-horiz-axis-opposite-line: boolean;
+  --para-is-draw-vert-axis-opposite-line: boolean;
+}
+
+
+.StatusBar {
+  --para-value-format: LabelFormat;
+}
+
+
+
+
+.Sonification {
+  --para-is-enabled: boolean;
+  --para-is-riff-enabled: boolean;
+  --para-is-notification-enabled: boolean;
+  --para-is-chord-mode-enabled: boolean;
+  --para-hertz-lower: number;
+  --para-hertz-upper: number;
+  --para-soni-play-speed: number;
+  --para-riff-speed: riffSpeeds;
+}
+
+
+.all {
+  --para-chart: ChartSettings;
+  --para-axis: AxesSettings;
+  --para-legend: LegendSettings;
+  --para-type: ChartTypeSettings;
+  --para-grid: GridSettings;
+  --para-ui: UISettings;
+  --para-color: ColorSettings;
+  --para-jim: JimSettings;
+  --para-data-table: DataTableSettings;
+  --para-status-bar: StatusBarSettings;
+  --para-sonification: SonificationSettings;
+  --para-dev: DevSettings;
+}
