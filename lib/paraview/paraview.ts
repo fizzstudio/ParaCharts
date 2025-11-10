@@ -472,7 +472,7 @@ export class ParaView extends logging(ParaComponent) {
           `Low vision mode ${newValue ? "enabled" : "disabled"}`
         );
         draft.color.isDarkModeEnabled = !!newValue;
-        draft.ui.isFullscreenEnabled = !!newValue;
+        
         if (newValue) {
           this._lowVisionModeSaved.set(
             "chart.fontScale",
@@ -486,13 +486,16 @@ export class ParaView extends logging(ParaComponent) {
           draft.grid.isDrawVertLines = true;
         } else {
           draft.chart.fontScale =
-            this._lowVisionModeSaved.get("chart.fontScale");
+          this._lowVisionModeSaved.get("chart.fontScale");
           draft.grid.isDrawVertLines = this._lowVisionModeSaved.get(
-            "grid.isDrawVertLines"
+          "grid.isDrawVertLines"
           );
           this._lowVisionModeSaved.clear();
         }
       });
+	  this._store.updateSettings((draft) => {
+	    draft.ui.isFullscreenEnabled = !!newValue;
+	  })
     } else if (path === "ui.isVoicingEnabled") {
       if (this._store.settings.ui.isVoicingEnabled) {
         if (this._hotkeyActions instanceof NormalHotkeyActions) {
