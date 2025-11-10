@@ -203,6 +203,10 @@ export abstract class DataLayer extends PlotLayer {
   protected _layoutDatapoints() {
     this._chartLandingView.clearChildren();
     this._beginDatapointLayout();
+    if (this.paraview.store.settings.animation.isAnimationEnabled
+      && this.paraview.store.settings.animation.symbolPopIn) {
+      this.datapointViews.map(d => d.baseSymbolScale = 0)
+    }
     this._completeDatapointLayout();
   }
 
@@ -217,7 +221,7 @@ export abstract class DataLayer extends PlotLayer {
   // }
 
   protected _animateReveal() {
-    let start = -1;
+      let start = -1;
     const bez = new Bezier(0.2, 0.9, 0.5, 1, 10);
     const step = (timestamp: number) => {
       if (start === -1) {
@@ -239,9 +243,24 @@ export abstract class DataLayer extends PlotLayer {
       }
     };
     this._currentAnimationFrame = requestAnimationFrame(step);
+    const start2 = Date.now()
+    const loop = () => {
+      let timestamp = setTimeout(() => {
+        this.paraview.requestUpdate()
+        loop();
+      }, 50);
+      if (Date.now() - start2 > this.paraview.store.settings.animation.popInAnimateRevealTimeMs
+        + this.paraview.store.settings.animation.animateRevealTimeMs) {
+        clearTimeout(timestamp)
+      }
+    };
+    loop()
   }
 
   protected _animStep(t: number) {
+    if (this.paraview.store.settings.animation.lineSnake) {
+      this.paraview.clipWidth = t * this.paraview.documentView!.chartLayers.width;
+    }
     for (const datapointView of this.datapointViews) {
       datapointView.beginAnimStep(t);
     }

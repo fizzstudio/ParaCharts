@@ -72,9 +72,13 @@ export interface UISettings extends SettingGroup {
 export interface AnimationSettings extends SettingGroup {
   isAnimationEnabled: boolean;
   animateRevealTimeMs: number;
+  popInAnimateRevealTimeMs: number;
   animationType: AnimationType;
   animationOrigin: AnimationOrigin;
   animationOriginValue: number;
+  expandPoints: boolean;
+  lineSnake: boolean;
+  symbolPopIn: boolean;
 }
 
 /** @public */

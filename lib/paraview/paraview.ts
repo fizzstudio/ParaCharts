@@ -56,6 +56,8 @@ export class ParaView extends logging(ParaComponent) {
   @property() contrastLevel: number = 1;
   @property({ type: Boolean }) disableFocus = false;
 
+  @property() clipWidth?: number;
+
   protected _controller!: ParaViewController;
   protected _viewBox!: ViewBox;
   protected _prevFocusLeaf?: View;
@@ -828,7 +830,7 @@ export class ParaView extends logging(ParaComponent) {
               <rect
                 x=${0}
                 y=${0}
-                width=${this._documentView.chartLayers.width}
+                width=${this.clipWidth ?? this._documentView.chartLayers.width}
                 height=${this._documentView.chartLayers.height}>
               </rect>
             </clipPath>

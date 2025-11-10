@@ -407,9 +407,13 @@ export const defaults: Settings = {
   animation: {
     isAnimationEnabled: true,
     animateRevealTimeMs: 2500,
+    popInAnimateRevealTimeMs: 1500,
     animationType: 'uniform',
     animationOrigin: 'initialValue',
     animationOriginValue: 0,
+    expandPoints: true,
+    lineSnake: false,
+    symbolPopIn: false
   },
   scrollytelling: {
     isScrollytellingEnabled: true,
