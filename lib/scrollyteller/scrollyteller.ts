@@ -29,15 +29,22 @@ export interface ParsedOffset {
   value: number;
 }
 
+export interface Action {
+  action: string;
+  params: string[];
+}
+
 export interface CallbackResponse {
   element: Element;
   index: number;
   direction?: 'up' | 'down';
   progress?: number;
-  action?: Record<string, string>;
+  actions: Action[];
 }
 
 export type ScrollyEvent = 'stepEnter' | 'stepExit' | 'stepProgress';
+
+export type Callback = (response: CallbackResponse) => void;
 
 export interface ScrollyStep {
   index: number;
@@ -50,7 +57,7 @@ export interface ScrollyStep {
     progress?: IntersectionObserver;
   };
   offset: ParsedOffset | null;
-  action: Record<string, string>;
+  actions: Action[];
   top: number;
   progress: number;
   state?: 'enter' | 'exit';
@@ -69,94 +76,12 @@ export interface ScrollyOptions {
 
 export class Scrollyteller {
   private parachart: ParaChart;
-  private steps!: NodeListOf<Element>;
+  private chartId: string;
+  private stepElements!: NodeListOf<Element>;
   private settings!: any;
 
-
-  constructor(
-    parachart?: ParaChart,
-    chartID?: string,
-  ) {
-    // HACK: needed to assign something to this.parachart
-    this.parachart = parachart as ParaChart;
-    this.settings = this.parachart.paraView.store.settings.scrollytelling;
-    if (this.settings.isScrollytellingEnabled) {
-
-      if (!this.parachart) {
-        this.parachart = chartID ?
-          document.getElementById(chartID) as ParaChart
-          : document.querySelector('para-chart, para-chart-ai') as ParaChart;
-
-        if (!this.parachart) {
-          throw new Error(
-            `Scrollyteller requires a ParaChart element. ${chartID
-              ? `No element found with ID "${chartID}"`
-              : 'No "para-chart" element found on page'
-            }`
-          );
-        }
-      }
-
-      this.init();
-    }
-
-  }
-
-  private init(): void {
-    this.steps = document.querySelectorAll('[data-para-step]');
-    const scroller = new ScrollytellerEngine();
-
-    scroller.setup({
-      step: '[data-para-step]',
-      offset: 0.5,
-      progress: true,
-      once: false,
-    });
-
-    scroller.on('stepEnter', (response: CallbackResponse) => {
-      const element = response.element;
-      this.activateNextStep(element);
-
-      // TODO: remove previous series highlights
-      // this.parachart.store.soloSeries = '';
-      if (response.action?.highlightSeries) {
-        // TODO: remove inserted tab when `soloSeries` takes comma/space delimiter
-        const seriesList = response.action.highlightSeries.replace(/[\s,]/g, '\t');
-        //this.parachart.store.soloSeries = seriesList;
-        this.parachart.store.lowlightOtherSeries(...seriesList.split('\t'));
-      }
-
-      // TODO: remove previous datapoint highlights
-      // this.parachart.command('click', []);
-      if (response.action?.highlightDatapoint) {
-        const highlights = response.action.highlightDatapoint.replace(/[\[\]']+/g, '').split(',');
-        this.parachart.command('click', [`${highlights[0]}`, +highlights[1]]);
-      }
-
-      // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
-      if (this.settings.isScrollyAnnouncementsEnabled) {
-        console.log('Add scrollytelling aria-live descriptions of highlights')
-      }
-
-      // TODO: add sonifications
-      if (this.settings.isScrollySoniEnabled) {
-        console.log('Add scrollytelling sonifications')
-      }
-    });
-
-    this.steps[0].classList.add('para-active');
-  }
-
-  private activateNextStep(nextStep: Element): void {
-    this.steps.forEach(step => step.classList.remove('para-active'));
-    nextStep.classList.add('para-active');
-  }
-}
-
-export class ScrollytellerEngine {
-
   private steps: ScrollyStep[];
-  private _events: Map<ScrollyEvent, Array<(response: CallbackResponse) => void>>;
+  private _events: Map<ScrollyEvent, Array<Callback>>;
   private globalOffset: ParsedOffset;
   private containerElement?: HTMLElement;
   private rootElement: Element | Document | null;
@@ -169,7 +94,12 @@ export class ScrollytellerEngine {
   private comparisonScrollY: number;
   private direction?: 'up' | 'down';
 
-  constructor() {
+  constructor(parachart: ParaChart) {
+    // console.log('scrolly constructor called!');
+    // HACK: needed to assign something to this.parachart
+    this.parachart = parachart;
+    this.chartId = this.parachart.id;
+
     this._events = new Map();
     this.steps = [];
     this.globalOffset = { format: 'percent', value: 0.5 };
@@ -192,9 +122,104 @@ export class ScrollytellerEngine {
     this._resizeStep = this._resizeStep.bind(this);
     this._intersectStep = this._intersectStep.bind(this);
     this._intersectProgress = this._intersectProgress.bind(this);
+
+    this.settings = this.parachart.paraView.store.settings.scrollytelling;
+    if (this.settings.isScrollytellingEnabled) {
+      this.init();
+    }
+  }
+
+  private init(): void {
+    // console.log('scrolly init called!');
+    this.stepElements = document.querySelectorAll('[data-para-step]');
+
+    this.setup({
+      step: '[data-para-step]',
+      offset: 0.5,
+      progress: true,
+      once: false,
+    });
+
+    this.on('stepEnter', (response: CallbackResponse) => {
+      // console.log('scrolly stepEnter callback fired!');
+      const element = response.element;
+      this.highlightPageContent(element);
+
+      for (const {action, params} of response.actions) {
+        if (action === 'highlightSeries') {
+          // TODO: remove previous series highlights
+          // this.parachart.store.soloSeries = '';
+          if (params.length > 0) {
+            this.parachart.store.lowlightOtherSeries(...params);
+          }
+        }
+
+        if (action === 'highlightDatapoint') {
+          // TODO: remove previous datapoint highlights
+          // this.parachart.command('click', []);
+          // console.warn('highlightDatapoint', params)
+
+          if (params.length >= 2) {
+            this.parachart.performer.getSeries(params[0]).getPoint(+params[1]).click();
+          }
+        }
+      }
+
+      // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
+      if (this.settings.isScrollyAnnouncementsEnabled) {
+        console.log('TODO: Add scrollytelling aria-live descriptions of highlights')
+      }
+
+      // TODO: add sonifications
+      if (this.settings.isScrollySoniEnabled) {
+        console.log('TODO: Add scrollytelling sonifications')
+      }
+    });
+
+
+    this.on('stepExit', (response: CallbackResponse) => {
+      // console.warn('SCROLLY: stepExit callback fired!', response);
+      const element = response.element;
+
+      if (response.direction === 'down') {
+        console.warn('SCROLLY: exit down', response);
+      }
+      else {
+        console.warn('SCROLLY: exit up', response);
+        console.warn('SCROLLY: reverse action!');
+        for (const {action, params} of response.actions) {  
+          if (action === 'highlightDatapoint') {
+            if (params.length >= 2) {
+              this.parachart.performer.getSeries(params[0]).getPoint(+params[1]).click();
+            }
+          }
+        }
+      }
+
+    });
+
+    this.stepElements[0]?.classList.add('para-active');
+  }
+
+  private highlightPageContent(nextStep: Element): void {
+    this.stepElements.forEach(step => step.classList.remove('para-active'));
+    nextStep.classList.add('para-active');
   }
 
   // internal helpers
+
+
+  private getChartSteps(
+    selector: string | Element | NodeList | Element[],
+    parent: Document | Element = document
+  ): Element[] {
+    const steps = this.selectAll(selector, parent).filter((element) => {
+      const chartId = (element as HTMLElement).dataset.paraChartid;
+      return !chartId || chartId === this.chartId;
+    });
+    return steps;
+  }
+
 
   private selectAll(
     selector: string | Element | NodeList | Element[],
@@ -242,18 +267,43 @@ export class ScrollytellerEngine {
     return { format: 'percent', value: 0.5 };
   }
 
-  private parseAction(action: string | undefined): Record<string, string> {
-    if (!action) return {};
-    const actions: Record<string, string> = {};
-    const actionArray = action.split(')');
+  private getActions(element: HTMLElement): Action[] {
+    let actions: Action[] = [];
+    const targetActions = this.parseActions(element.dataset.paraAction);
+    actions.push(...targetActions);
+    const childActionElements = element.querySelectorAll('[data-para-action]');
+    const validChildElements = Array.from(childActionElements).filter((childElement) => {
+      const chartId = (childElement as HTMLElement).dataset.paraChartid;
+      return !chartId || chartId === this.chartId;
+    });
+    validChildElements.forEach((childElement) => {
+      const childActions = this.parseActions((childElement as HTMLElement).dataset.paraAction);
+      actions.push(...childActions);
+    });
+
+    return actions;
+  }
+
+  private parseActions(actionString: string | undefined): Action[] {
+    if (!actionString) return [];
+    
+    const actions: Action[] = [];
+    const actionArray = actionString.split(')');
+    
     actionArray.forEach(actionItem => {
       actionItem = actionItem.trim();
       if (actionItem) {
         const keyValueArray = actionItem.split('(');
         const actionName = keyValueArray[0].trim();
-        actions[actionName] = keyValueArray[1].trim();
+        const paramString = keyValueArray[1] ? keyValueArray[1].trim() : '';
+        const params = paramString ? paramString.split(',').map(p => p.trim()) : [];
+        actions.push({
+          action: actionName,
+          params: params
+        });
       }
     });
+    
     return actions;
   }
 
@@ -273,7 +323,7 @@ export class ScrollytellerEngine {
     this.exclude = [];
   }
 
-  on(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this {
+  on(event: ScrollyEvent, callback: Callback): this {
     if (!this._events.has(event)) {
       this._events.set(event, []);
     }
@@ -281,15 +331,15 @@ export class ScrollytellerEngine {
     return this;
   }
 
-  once(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this {
-    const wrapper = (response: CallbackResponse) => {
+  once(event: ScrollyEvent, callback: Callback): this {
+    const wrapper: Callback = (response: CallbackResponse) => {
       callback(response);
       this.off(event, wrapper);
     };
     return this.on(event, wrapper);
   }
 
-  off(event?: ScrollyEvent, callback?: (response: CallbackResponse) => void): this {
+  off(event?: ScrollyEvent, callback?: Callback): this {
     if (!event) {
       this._events.clear();
     } else if (!callback) {
@@ -330,14 +380,14 @@ export class ScrollytellerEngine {
     const index = this.getIndex(element);
     const step = this.steps[index];
     if (progress !== undefined) step.progress = progress;
-    const response = { element, index, progress, direction: this.direction };
+    const response = { element, index, progress, direction: this.direction, actions: step.actions };
     if (step.state === 'enter') this.emit('stepProgress', response);
   }
 
   private _notifyStepEnter(element: Element): void {
     const index = this.getIndex(element);
     const step = this.steps[index];
-    const response = { element, index, direction: this.direction, action: step.action };
+    const response = { element, index, direction: this.direction, actions: step.actions };
 
     step.direction = this.direction;
     step.state = 'enter';
@@ -351,7 +401,7 @@ export class ScrollytellerEngine {
     const step = this.steps[index];
     if (!step.state) return false;
 
-    const response = { element, index, direction: this.direction };
+    const response = { element, index, direction: this.direction, actions: step.actions };
 
     if (this.isProgress) {
       if (this.direction === 'down' && step.progress < 1) this._notifyProgress(element, 1);
@@ -401,7 +451,7 @@ export class ScrollytellerEngine {
   private _intersectStep(entries: IntersectionObserverEntry[]): void {
     if (entries.length === 0) return;
     const entry = entries[0];
-    this._handleScroll(); // update direction
+    this._handleScroll();
     const { isIntersecting, target } = entry;
     if (isIntersecting) this._notifyStepEnter(target);
     else this._notifyStepExit(target);
@@ -487,28 +537,29 @@ export class ScrollytellerEngine {
     once = false,
     container = undefined,
     root = null,
-  }: ScrollyOptions): ScrollytellerEngine {
+  }: ScrollyOptions): Scrollyteller {
     this._setupScrollListener();
 
     const parentElement = (typeof step === 'string' && parent)
       ? document.querySelector(parent) || document
       : document;
 
-    this.steps = this.selectAll(step, parentElement).map((node, index) => ({
+    // this.steps = this.selectAll(step, parentElement).map((node, index) => ({
+    this.steps = this.getChartSteps(step, parentElement).map((node, index) => ({
       index,
       direction: undefined,
       height: (node as HTMLElement).offsetHeight,
       node,
       observers: {},
       offset: this.parseOffset((node as HTMLElement).dataset.offset),
-      action: this.parseAction((node as HTMLElement).dataset.paraAction),
+      actions: this.getActions(node as HTMLElement),
       top: this.getOffsetTop(node),
       progress: 0,
       state: undefined,
     }));
 
     if (!this.steps.length) {
-      this.err('no step elements');
+      console.log('scrollytelling: no step elements found');
       return this;
     }
 
@@ -519,24 +570,24 @@ export class ScrollytellerEngine {
     this.containerElement = container;
     this.rootElement = root;
 
-    this.off(); // Clear all event listeners
+    this.off();
     this._resetExclusions();
     this.indexSteps(this.steps);
     this._handleEnable(true);
     return this;
   }
 
-  enable(): ScrollytellerEngine {
+  enable(): Scrollyteller {
     this._handleEnable(true);
     return this;
   }
 
-  disable(): ScrollytellerEngine {
+  disable(): Scrollyteller {
     this._handleEnable(false);
     return this;
   }
 
-  destroy(): ScrollytellerEngine {
+  destroy(): Scrollyteller {
     this._handleEnable(false);
     this.off();
     this._resetExclusions();
@@ -544,7 +595,7 @@ export class ScrollytellerEngine {
     return this;
   }
 
-  resize(): ScrollytellerEngine {
+  resize(): Scrollyteller {
     this._updateObservers();
     return this;
   }

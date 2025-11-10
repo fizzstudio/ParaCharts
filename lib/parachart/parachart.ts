@@ -40,14 +40,14 @@ import { Scrollyteller } from '../scrollyteller/scrollyteller';
 import { Manifest } from '@fizz/paramanifest';
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
-import { customElement, property, queryAssignedElements } from 'lit/decorators.js';
+import { property, queryAssignedElements } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { SlotLoader } from '../loader/slotloader';
 import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { initParaSummary } from '@fizz/parasummary';
 
-@customElement('para-chart')
+// NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
 export class ParaChart extends logging(ParaComponent) {
 
   @property({ type: Boolean }) headless = false;
@@ -78,7 +78,7 @@ export class ParaChart extends logging(ParaComponent) {
   protected _styleManager!: StyleManager;
   protected _commander!: Commander;
   protected _performer!: ParaPerformer;
-  protected _scrollyteller?: Scrollyteller;
+  protected _scrollyteller!: Scrollyteller;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -103,13 +103,11 @@ export class ParaChart extends logging(ParaComponent) {
     customPropLoader.registerColors();
     customPropLoader.registerSymbols();
     this._api = new ParaApi(this);
-    //Commenting this out temporarily because it breaks storybook
-    //this._scrollyteller = new Scrollyteller(this);
 
     this._loaderPromise = new Promise((resolve, reject) => {
       this._loaderResolver = resolve;
       this._loaderRejector = reject;
-    })
+    });
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
         resolve();
@@ -122,6 +120,7 @@ export class ParaChart extends logging(ParaComponent) {
           this._runLoader(this.manifest, this.manifestType).then(() => {
             this.log('ParaCharts will now commence the raising of the roof and/or the dead');
             this._performer = new ParaPerformer(this);
+            this._scrollyteller = new Scrollyteller(this);
           });
         } else if (this.getElementsByTagName("table")[0]) {
           this.log(`loading from slot`);
@@ -393,10 +392,4 @@ export class ParaChart extends logging(ParaComponent) {
     `;
   }
 
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'para-chart': ParaChart;
-  }
 }

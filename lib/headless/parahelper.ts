@@ -16,6 +16,9 @@ export class ParaHelper {
   constructor() {
     this._createParaChart();
     this._api = new ParaApi(this._paraChart);
+    this._paraChart.store.updateSettings(draft => {
+      draft.animation.isAnimationEnabled = false;
+    });
   }
 
   get ready() {
@@ -47,6 +50,10 @@ export class ParaHelper {
         resolve();
       }, {once: true});
     });
+  }
+
+  get jimReady() {
+    return this._paraChart.paraView.jimReady();
   }
 
   serializeChart() {

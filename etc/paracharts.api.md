@@ -64,6 +64,14 @@ import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
 import { View as View_2 } from '../base_view';
 
+// @public (undocumented)
+export interface Action {
+    // (undocumented)
+    action: string;
+    // (undocumented)
+    params: string[];
+}
+
 // Warning: (ae-forgotten-export) The symbol "AdvancedControlSettingsDialog_base" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -771,9 +779,12 @@ export type c2mCallbackType = {
 };
 
 // @public (undocumented)
+export type Callback = (response: CallbackResponse) => void;
+
+// @public (undocumented)
 export interface CallbackResponse {
     // (undocumented)
-    action?: Record<string, string>;
+    actions: Action[];
     // (undocumented)
     direction?: 'up' | 'down';
     // (undocumented)
@@ -2412,9 +2423,9 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     protected _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void>;
     // (undocumented)
-    get scrollyteller(): Scrollyteller | undefined;
+    get scrollyteller(): Scrollyteller;
     // (undocumented)
-    protected _scrollyteller?: Scrollyteller;
+    protected _scrollyteller: Scrollyteller;
     // (undocumented)
     settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
     // (undocumented)
@@ -3621,7 +3632,7 @@ export interface ScrollyOptions {
 // @public (undocumented)
 export interface ScrollyStep {
     // (undocumented)
-    action: Record<string, string>;
+    actions: Action[];
     // (undocumented)
     direction?: 'up' | 'down';
     // (undocumented)
@@ -3648,31 +3659,26 @@ export interface ScrollyStep {
 
 // @public (undocumented)
 export class Scrollyteller {
-    constructor(parachart?: ParaChart, chartID?: string);
-}
-
-// @public (undocumented)
-export class ScrollytellerEngine {
-    constructor();
+    constructor(parachart: ParaChart);
     // (undocumented)
-    destroy(): ScrollytellerEngine;
+    destroy(): Scrollyteller;
     // (undocumented)
-    disable(): ScrollytellerEngine;
+    disable(): Scrollyteller;
     // (undocumented)
-    enable(): ScrollytellerEngine;
+    enable(): Scrollyteller;
     // (undocumented)
-    off(event?: ScrollyEvent, callback?: (response: CallbackResponse) => void): this;
+    off(event?: ScrollyEvent, callback?: Callback): this;
     // (undocumented)
     get offset(): number;
     set offset(value: string | number);
     // (undocumented)
-    on(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this;
+    on(event: ScrollyEvent, callback: Callback): this;
     // (undocumented)
-    once(event: ScrollyEvent, callback: (response: CallbackResponse) => void): this;
+    once(event: ScrollyEvent, callback: Callback): this;
     // (undocumented)
-    resize(): ScrollytellerEngine;
+    resize(): Scrollyteller;
     // (undocumented)
-    setup({ step, parent, offset, threshold, progress, once, container, root, }: ScrollyOptions): ScrollytellerEngine;
+    setup({ step, parent, offset, threshold, progress, once, container, root, }: ScrollyOptions): Scrollyteller;
 }
 
 // @public (undocumented)
