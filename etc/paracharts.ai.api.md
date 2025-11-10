@@ -2436,6 +2436,8 @@ export class ParaHelper {
     // (undocumented)
     downloadPNG(): void;
     // (undocumented)
+    get jimReady(): Promise<void>;
+    // (undocumented)
     loadData(url: string): Promise<FieldInfo[]>;
     // Warning: (ae-forgotten-export) The symbol "SourceKind" needs to be exported by the entry point index-ai.d.ts
     //
@@ -2699,6 +2701,8 @@ export class ParaView extends ParaView_base {
     // (undocumented)
     addDef(key: string, template: TemplateResult): void;
     // (undocumented)
+    addJIMSeriesSummaries(): Promise<void>;
+    // (undocumented)
     protected _chartRefs: Map<string, Ref<any>>;
     // (undocumented)
     chartTitle?: string;
@@ -2759,6 +2763,16 @@ export class ParaView extends ParaView_base {
     protected _hotkeyActions: HotkeyActions;
     // (undocumented)
     protected _hotkeyListener: (e: HotkeyEvent) => void;
+    // (undocumented)
+    protected _jim: string;
+    // (undocumented)
+    jimReady(): Promise<void>;
+    // (undocumented)
+    protected _jimReadyPromise: Promise<void>;
+    // (undocumented)
+    protected _jimReadyRejector: (() => void);
+    // (undocumented)
+    protected _jimReadyResolver: (() => void);
     // (undocumented)
     protected _lowVisionModeSaved: Map<string, any>;
     // (undocumented)
