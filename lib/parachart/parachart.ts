@@ -107,7 +107,7 @@ export class ParaChart extends logging(ParaComponent) {
     this._loaderPromise = new Promise((resolve, reject) => {
       this._loaderResolver = resolve;
       this._loaderRejector = reject;
-    })
+    });
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
         resolve();

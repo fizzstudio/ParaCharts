@@ -74,11 +74,15 @@ export class ParaView extends logging(ParaComponent) {
   protected _pointerEventManager: PointerEventManager | null = null;
   protected _hotkeyActions!: HotkeyActions;
   @state() protected _defs: { [key: string]: TemplateResult } = {};
+  @state() protected _jim = '';
 
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
 
   protected _lowVisionModeSaved = new Map<string, any>();
+  protected _jimReadyPromise: Promise<void>;
+  protected _jimReadyResolver!: (() => void);
+  protected _jimReadyRejector!: (() => void);
 
   static styles = [
     //styles,
@@ -280,6 +284,10 @@ export class ParaView extends logging(ParaComponent) {
         console.warn(`no handler for hotkey action '${e.action}'`);
       }
     };
+    this._jimReadyPromise = new Promise((resolve, reject) => {
+      this._jimReadyResolver = resolve;
+      this._jimReadyRejector = reject;
+    });
   }
 
   get viewBox() {
@@ -318,6 +326,14 @@ export class ParaView extends logging(ParaComponent) {
     return this._defs;
   }
 
+  async jimReady() {
+    await this._jimReadyPromise;
+    this._jimReadyPromise = new Promise((resolve, reject) => {
+      this._jimReadyResolver = resolve;
+      this._jimReadyRejector = reject;
+    });
+  }
+
   get pointerEventManager() {
     return this._pointerEventManager;
   }
@@ -337,7 +353,7 @@ export class ParaView extends logging(ParaComponent) {
     this._controller ??= new ParaViewController(this._store);
     this._storeChangeUnsub = this._store.subscribe(async (key, value) => {
       if (key === 'data') {
-        this.dataUpdated();
+        await this.dataUpdated();
       }
       await this._documentView?.storeDidChange(key, value);
     });
@@ -356,19 +372,21 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   // Anything that needs to be done when data is updated, do here
-  private dataUpdated(): void {
+  private async dataUpdated(): Promise<void> {
     this.createDocumentView();
     if (this.paraChart.headless) {
-      this.addJIMSeriesSummaries();
+      await this.addJIMSeriesSummaries();
     }
+    this._jim = this._store.jimerator ? JSON.stringify(this._store.jimerator.jim, undefined, 2) : '';
+    this._jimReadyResolver();
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
     //this.log('will update');
-    for (const [k, v] of changedProperties.entries()) {
-      // @ts-ignore
-      this.log(`- ${k.toString()}:`, v, '->', this[k]);
-    }
+    // for (const [k, v] of changedProperties.entries()) {
+    //   // @ts-ignore
+    //   this.log(`- ${k.toString()}:`, v, '->', this[k]);
+    // }
     if (changedProperties.has('width')) {
       this.computeViewBox();
     }
@@ -818,7 +836,7 @@ export class ParaView extends logging(ParaComponent) {
       }
         </defs>
         <metadata data-type="text/jim+json">
-          ${this._store.jimerator ? JSON.stringify(this._store.jimerator.jim, undefined, 2) : ''}
+          ${this._jim}
         </metadata>
         <rect
           ${ref(this._frameRef)}
