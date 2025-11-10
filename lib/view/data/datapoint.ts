@@ -166,6 +166,11 @@ export class DatapointView extends DataView {
 
   get shouldClip() {
     const obb = this.outerBbox;
+    if (this.paraview.store.settings.animation.isAnimationEnabled
+      && this.paraview.store.settings.animation.lineSnake
+    ) {
+      return true;
+    }
     return (obb.right < this.chart.x || obb.bottom < this.chart.y
       || obb.left > this.chart.right || obb.top > this.chart.bottom);
   }

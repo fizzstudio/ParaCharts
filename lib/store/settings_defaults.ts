@@ -411,9 +411,9 @@ export const defaults: Settings = {
     animationType: 'uniform',
     animationOrigin: 'initialValue',
     animationOriginValue: 0,
-    expandPoints: false,
+    expandPoints: true,
     lineSnake: false,
-    symbolPopIn: true
+    symbolPopIn: false
   },
   scrollytelling: {
     isScrollytellingEnabled: true,

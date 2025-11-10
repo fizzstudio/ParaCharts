@@ -133,7 +133,7 @@ export class LineSection extends PointDatapointView {
     // If datapoints are laid out again after the initial layout,
     // we need to replace the original shape and symbol
     this._symbol?.remove();
-    this._symbol = DataSymbol.fromType(this.paraview, symbolType, {isClip: true});
+    this._symbol = DataSymbol.fromType(this.paraview, symbolType);
     this.append(this._symbol);
   }
 
@@ -341,7 +341,7 @@ export class LineSection extends PointDatapointView {
       this.append(invis)
     }
     this._shapes.forEach(shape => {
-      (shape as PathShape).isClip = true;
+      (shape as PathShape).isClip = this.shouldClip;
     })
     super._createShapes();
   }
