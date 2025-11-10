@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Custom Properties for ParaCharts</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22white%22/><text y=%22.9em%22 font-size=%2290%22>🍲</text></svg>">
+  <link rel="stylesheet" href="./style.css">
+  <!-- <link rel="stylesheet" href="./para-style.css"> -->
+  <link rel="stylesheet" href="./para-style-basic.css">
+
+
+  <style>
+    /* This approach works for internal style blocks too */
+    body {
+      --color-internal: #b42634;
+    }
+
+    textarea {
+      display: block;
+      width: 30rem;
+      height: 40rem;
+      background-color: hsl(0, 0%, 18%);
+      color: ghostwhite;
+
+      display: block;
+      width: 30rem;
+      height: 40rem;
+      background-color: hsl(0, 0%, 18%);
+      color: ghostwhite;
+
+            
+      /*
+      --para-test-40: foo;
+      --para-test-40: foo;
+      --para-test-409-number: bar;
+      --para-487-number: baz; 
+      */
+
+    }
+
+
+    .parachart {
+      background-color: blue;
+/* 
+      --para-color-series-0: hsl(38, 96%, 58%), "orange";
+      --para-color-series-1: hsl(82, 77%, 40%), "green";
+      --para-color-series-2: hsl(54, 81%, 73%), "yellow";
+      --para-color-series-3: hsl(22, 97%, 51%), "red";
+      --para-color-series-4: hsl(77, 98%, 25%), "forest green";
+       */
+    }
+/* 
+    .chart {
+      --para-test-40: foo;
+      --para-test-409-number: bar;
+      --para-487-number: baz;
+    }
+
+    .test1 {
+      --para-test-foo: foo;
+      --para-test-bar: bar;
+      --para-test-bar: baz;
+      --para-test-fizz: buzz;
+    }
+
+    .test1 {
+      --para-test-bar: freen;
+      --para-test-fizz: buzz;
+    }
+     */
+  </style>
+
+</head>
+
+<body>
+  <h1>Custom Props</h1>
+  <main>
+    <section class="chart-area">
+      <para-chart id="main-chart" manifest="/src/demo-data/china-gdp-line-1.manifest.json"></para-chart>
+    </section>
+
+    
+    <label for="output_text_area"><code>--para-</code> Custom Props on this page:</label>
+    <textarea id="output_text_area"></textarea>
+    <!-- 
+	<section id="content_container">
+		<para-props></para-props>
+	</section> 
+  -->
+
+  </main>
+
+  <script type="module" src="/dist-ai/paracharts.js"></script>
+</body>
+
+</html>

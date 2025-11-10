@@ -1,0 +1,66 @@
+/*You might need to refresh when you add a new custom property due to the codepen iframe*/
+html {
+  --color-accent: #00eb9b;
+  --color-accent-secondary: #9db4ff;
+  --color-accent-tertiary: #f2c0ea;
+  --color-text: #292929;
+  --color-divider: #d7d7d7;
+}
+
+.special {
+  --color-special: #9a1f74;
+}
+
+/* 
+  Demo styles:
+  These are only to display our color palette, they don't impact the process of reading custom properties.
+*/
+
+html {
+  color: var(--color-text);
+  font-family: sans-serif;
+}
+
+.colors {
+  display: grid;
+  grid-gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.color {
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  padding: 0.5rem;
+  transition: box-shadow 0.15s;
+}
+
+.color:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.color__swatch {
+  background-color: var(--color);
+  border-radius: 2px 2px 0 0;
+  display: block;
+  height: 11rem;
+}
+
+.color__details {
+  font-size: 1.375rem;
+  padding: 0.5rem;
+  text-align: right;
+}
+
+.color input {
+  border: 0;
+  display: block;
+  font-family: monospace;
+  font-size: inherit;
+  margin: 0;
+  padding: 0.2rem;
+  text-align: right;
+  width: 100%;
+}

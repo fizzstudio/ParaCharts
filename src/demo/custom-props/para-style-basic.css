@@ -1,0 +1,20 @@
+.chart {
+  --para-type: 'line';
+}
+
+
+.type .line {
+  --para-line-width: 5;
+  --para-line-width-max: 25;
+  --para-base-symbol-size: 10;
+  --para-series-label-padding: 5;
+  --para-point-label-format: 'raw';
+  --para-leader-line-length: 30;
+  --para-is-draw-symbols: true;
+  --para-highlight-scale: 1.6;
+}
+
+.type .line .selectedPointMarkerSize {
+  --para-w: 20;
+  --para-h: 20;
+}
