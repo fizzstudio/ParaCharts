@@ -2,7 +2,7 @@
 import { ControlPanelTabPanel } from './tab_panel';
 import { AdvancedControlSettingsDialog } from '../dialogs';
 import { AnimationDialog } from '../dialogs';
-import { keymap } from '../../store/keymap';
+import { actionMap } from '../../store/action_map';
 
 import {
   html, css,
@@ -70,7 +70,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
       </ul>
 
       <p>Explore the collapsible Control Panel to find many more accessibility features, including options for color blindness, dark mode with fine-grained contrast, self-voicing, SparkBraille tactile support, and more.</p>
-      
+
       <p>For more details, visit the <a href="https://fizzstudio.github.io/paracharts" target="_blank">ParaCharts Documentation</a>.</p>
     `;
   }
@@ -83,10 +83,10 @@ export class ControlsPanel extends ControlPanelTabPanel {
     return html`
       <table>
         <tbody>
-          ${Object.entries(keymap).map(([key, info]) => html`
+          ${Object.entries(actionMap).map(([action, info]) => html`
               <tr>
                 <th scope="row">${info.label}</th>
-                <td>${key}</td>
+                <td>${info.hotkeys}</td>
                 <td><button disable>edit</button></td>
               </tr>
             `)
@@ -117,7 +117,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
         <div>
           ${this._store.settingControls.getContent('controlPanel.tabs.controls')}
         </div>
-        
+
         <section id="animation">
           ${this._store.settingControls.getContent('controlPanel.tabs.controls.animation')}
           <button

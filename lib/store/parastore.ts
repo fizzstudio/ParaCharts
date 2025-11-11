@@ -47,7 +47,7 @@ import { defaults, chartTypeDefaults } from './settings_defaults';
 import { Colors } from '../common/colors';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
-import { keymap } from './keymap';
+import { actionMap } from './action_map';
 import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { type ParaChart } from '../parachart/parachart';
@@ -172,7 +172,7 @@ export class ParaStore extends State {
   protected _title = '';
   protected _seriesProperties: SeriesPropertyManager | null = null;
   protected _colors: Colors;
-  protected _keymapManager = new KeymapManager(keymap);
+  protected _keymapManager = new KeymapManager(actionMap);
   protected _summarizer!: Summarizer;
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;

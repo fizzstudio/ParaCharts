@@ -28,13 +28,12 @@ import { type ParaControlPanel } from '../control_panel';
 import { ParaStore } from '../store';
 import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../store/custom_property_loader';
-import { ParaApi } from '../api/api';
 import { styles } from '../view/styles';
 import { type AriaLive } from '../components';
 import '../components/aria_live';
 import { StyleManager } from './style_manager';
 import { AvailableCommands, Commander } from './commander';
-import { ParaPerformer } from '../paraperformer/paraperformer';
+import { ParaAPI } from '../paraapi/paraapi';
 import { Scrollyteller } from '../scrollyteller/scrollyteller';
 
 import { Manifest } from '@fizz/paramanifest';
@@ -74,10 +73,9 @@ export class ParaChart extends logging(ParaComponent) {
   protected _loaderPromise: Promise<void> | null = null;
   protected _loaderResolver: (() => void) | null = null;
   protected _loaderRejector: (() => void) | null = null;
-  protected _api: ParaApi;
   protected _styleManager!: StyleManager;
   protected _commander!: Commander;
-  protected _performer!: ParaPerformer;
+  protected _paraAPI!: ParaAPI;
   protected _scrollyteller!: Scrollyteller;
 
   constructor(
@@ -102,7 +100,6 @@ export class ParaChart extends logging(ParaComponent) {
     customPropLoader.store = this.store;
     customPropLoader.registerColors();
     customPropLoader.registerSymbols();
-    this._api = new ParaApi(this);
 
     this._loaderPromise = new Promise((resolve, reject) => {
       this._loaderResolver = resolve;
@@ -119,7 +116,7 @@ export class ParaChart extends logging(ParaComponent) {
           }
           this._runLoader(this.manifest, this.manifestType).then(() => {
             this.log('ParaCharts will now commence the raising of the roof and/or the dead');
-            this._performer = new ParaPerformer(this);
+            this._paraAPI = new ParaAPI(this);
             this._scrollyteller = new Scrollyteller(this);
           });
         } else if (this.getElementsByTagName("table")[0]) {
@@ -186,8 +183,8 @@ export class ParaChart extends logging(ParaComponent) {
     return this._styleManager;
   }
 
-  get performer() {
-    return this._performer;
+  get api() {
+    return this._paraAPI;
   }
 
   get scrollyteller() {
@@ -327,18 +324,6 @@ export class ParaChart extends logging(ParaComponent) {
 
   showAriaLiveHistory() {
     this._ariaLiveRegionRef.value!.showHistoryDialog();
-  }
-
-  getChartSVG() {
-    return this._api.serializeChart();
-  }
-
-  downloadSVG() {
-    this._api.downloadSVG();
-  }
-
-  downloadPNG() {
-    this._api.downloadPNG();
   }
 
   command(name: keyof AvailableCommands, args: any[]): any {

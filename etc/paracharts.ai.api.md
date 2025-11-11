@@ -39,6 +39,7 @@ import { PaddingInput as PaddingInput_3 } from '../base_view';
 import { PaddingInput as PaddingInput_4 } from '../../base_view';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';
 import papa from 'papaparse';
+import { ParaAPI as ParaAPI_2 } from '../paraapi/paraapi';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { PlaneDatapointView as PlaneDatapointView_2 } from './plane_plot_view';
 import { PropertyValueMap } from 'lit';
@@ -126,7 +127,15 @@ export interface AnimationSettings extends SettingGroup {
     // (undocumented)
     animationType: AnimationType;
     // (undocumented)
+    expandPoints: boolean;
+    // (undocumented)
     isAnimationEnabled: boolean;
+    // (undocumented)
+    lineSnake: boolean;
+    // (undocumented)
+    popInAnimateRevealTimeMs: number;
+    // (undocumented)
+    symbolPopIn: boolean;
 }
 
 // @public (undocumented)
@@ -1339,6 +1348,10 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     protected _animStartState: AnimState;
     // (undocumented)
+    set baseSymbolScale(scale: number);
+    // (undocumented)
+    protected _baseSymbolScale: number;
+    // (undocumented)
     beginAnimStep(_t: number): void;
     // (undocumented)
     get classInfo(): ClassInfo;
@@ -1406,7 +1419,7 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     protected get _symbolColor(): number;
     // (undocumented)
-    protected get _symbolScale(): number;
+    protected get symbolScale(): number;
     // (undocumented)
     get withCousins(): this[];
     // (undocumented)
@@ -1924,9 +1937,13 @@ export class HorizTickStrip extends TickStrip {
 
 // @public (undocumented)
 export class HotkeyEvent extends Event {
-    constructor(key: string, action: string);
+    constructor(key: string, action: string, args?: ActionArgumentMap | undefined);
     // (undocumented)
     readonly action: string;
+    // Warning: (ae-forgotten-export) The symbol "ActionArgumentMap" needs to be exported by the entry point index-ai.d.ts
+    //
+    // (undocumented)
+    readonly args?: ActionArgumentMap | undefined;
     // (undocumented)
     readonly key: string;
 }
@@ -1952,28 +1969,17 @@ export interface KeyDetails extends BaseKeyDetails {
 //
 // @internal
 export class KeymapManager extends EventTarget {
-    constructor(registrations: KeyRegistrations);
+    // Warning: (ae-forgotten-export) The symbol "ActionMap" needs to be exported by the entry point index-ai.d.ts
+    constructor(actionMap: ActionMap);
     // (undocumented)
-    actionForKey(key: string): string | undefined;
+    protected _keyDetails: {
+        [keyId: string]: KeyDetails;
+    };
     // (undocumented)
     onKeydown(key: string): boolean;
-    registerHotkey(keyId: string, { action, caseSensitive }: KeyRegistration): void;
-    registerHotkeys(keyRegistrations: KeyRegistrations): void;
-}
-
-// @public
-export interface KeyRegistration {
-    // Warning: (ae-forgotten-export) The symbol "HotkeyActions" needs to be exported by the entry point index-ai.d.ts
-    action: keyof HotkeyActions['actions'];
-    caseSensitive?: boolean;
-    // (undocumented)
-    label: string;
-}
-
-// @public (undocumented)
-export interface KeyRegistrations {
-    // (undocumented)
-    [key: string]: KeyRegistration;
+    // Warning: (ae-forgotten-export) The symbol "HotkeyWithArgument" needs to be exported by the entry point index-ai.d.ts
+    registerHotkey(keyInfo: string | HotkeyWithArgument, action: string): void;
+    registerHotkeys(actionMap: ActionMap): void;
 }
 
 // @public (undocumented)
@@ -2427,14 +2433,10 @@ export class ParaDialog extends ParaComponent {
 // @public (undocumented)
 export class ParaHelper {
     constructor();
-    // Warning: (ae-forgotten-export) The symbol "ParaApi" needs to be exported by the entry point index-ai.d.ts
-    //
     // (undocumented)
-    protected _api: ParaApi;
+    get api(): ParaAPI_2;
     // (undocumented)
     protected _createParaChart(): void;
-    // (undocumented)
-    downloadPNG(): void;
     // (undocumented)
     get jimReady(): Promise<void>;
     // (undocumented)
@@ -2447,8 +2449,6 @@ export class ParaHelper {
     protected _paraChart: ParaChart;
     // (undocumented)
     get ready(): Promise<void>;
-    // (undocumented)
-    serializeChart(): string;
 }
 
 // @public (undocumented)
@@ -2707,6 +2707,8 @@ export class ParaView extends ParaView_base {
     // (undocumented)
     chartTitle?: string;
     // (undocumented)
+    clipWidth?: number;
+    // (undocumented)
     computeViewBox(): void;
     // (undocumented)
     connectedCallback(): void;
@@ -2756,11 +2758,6 @@ export class ParaView extends ParaView_base {
     get frame(): SVGRectElement | undefined;
     // (undocumented)
     protected _frameRef: Ref<SVGRectElement>;
-    // (undocumented)
-    get hotkeyActions(): HotkeyActions;
-    set hotkeyActions(actions: HotkeyActions);
-    // (undocumented)
-    protected _hotkeyActions: HotkeyActions;
     // (undocumented)
     protected _hotkeyListener: (e: HotkeyEvent) => void;
     // (undocumented)
@@ -3161,6 +3158,8 @@ export type PointChartType = 'line' | 'stepline' | 'scatter';
 export class PointDatapointView extends PlaneDatapointView {
     constructor(seriesView: SeriesView);
     // (undocumented)
+    protected _animEnd(): void;
+    // (undocumented)
     beginAnimStep(t: number): void;
     // (undocumented)
     readonly chart: PointPlotView;
@@ -3171,7 +3170,17 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     computeY(): number;
     // (undocumented)
+    protected _currentAnimationFrame: number | null;
+    // (undocumented)
+    get hasAnimated(): boolean;
+    // (undocumented)
+    _hasAnimated: boolean;
+    // (undocumented)
     get height(): number;
+    // (undocumented)
+    _isAnimating: boolean;
+    // (undocumented)
+    popInAnimation(t: number): void;
     // (undocumented)
     get _selectedMarkerX(): number;
     // (undocumented)

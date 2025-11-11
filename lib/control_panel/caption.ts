@@ -13,7 +13,6 @@ import { type Unsubscribe } from '@lit-app/state';
 import { PlaneModel } from '@fizz/paramodel';
 import { ParaChart } from '../parachart/parachart';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import { NarrativeHighlightHotkeyActions } from '../paraview/hotkey_actions';
 
 type HoverListener = (event: PointerEvent) => void;
 
@@ -81,7 +80,7 @@ export class ParaCaptionBox extends logging(ParaComponent) {
   }
 
   protected updated(_changedProperties: PropertyValues): void {
-    if (this._store.paraChart.paraView.hotkeyActions instanceof NarrativeHighlightHotkeyActions)
+    if (this._store.settings.ui.isNarrativeHighlightEnabled)
       return;
     const spans = this.getSpans();
     this._spans = this._spans.filter(span => spans.includes(span));
@@ -91,7 +90,7 @@ export class ParaCaptionBox extends logging(ParaComponent) {
       if (!this._spans.includes(span)) {
         this._spans.push(span);
         span.addEventListener('pointerenter', (e: PointerEvent) => {
-          if (this._store.paraChart.paraView.hotkeyActions instanceof NarrativeHighlightHotkeyActions)
+          if (this._store.settings.ui.isNarrativeHighlightEnabled)
             return;
           if (span.dataset.navcode) {
             if (span.dataset.navcode.startsWith('series')) {
@@ -109,7 +108,7 @@ export class ParaCaptionBox extends logging(ParaComponent) {
           span.classList.add('highlight');
         });
         span.addEventListener('pointerleave', (e: PointerEvent) => {
-          if (this._store.paraChart.paraView.hotkeyActions instanceof NarrativeHighlightHotkeyActions)
+          if (this._store.settings.ui.isNarrativeHighlightEnabled)
             return;
           this._store.clearAllSeriesLowlights();
           this._store.clearHighlight();
