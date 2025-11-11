@@ -12,8 +12,8 @@ export class HeatMapInfo extends PlaneChartInfo {
   protected _grid!: Array<Array<number>>;
   protected _maxCount!: number;
 
-  constructor(type: ChartType, store: ParaStore, docView: DocumentView) {
-    super(type, store, docView);
+  constructor(type: ChartType, store: ParaStore) {
+    super(type, store);
   }
 
   protected _init() {

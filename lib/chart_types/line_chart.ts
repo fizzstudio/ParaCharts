@@ -26,15 +26,17 @@ import { NavNode } from '../view/layers/data/navigation';
 import { formatXYDatapoint } from '@fizz/parasummary';
 import { type ChartType } from '@fizz/paramanifest';
 import { DocumentView } from '../view/document_view';
+import { Highlight } from '@fizz/parasummary';
 
 /**
  * Business logic for line charts.
  * @public
  */
 export class LineChartInfo extends PointChartInfo {
+  protected _prevHighlightNavcode = '';
 
-  constructor(type: ChartType, store: ParaStore, docView: DocumentView) {
-    super(type, store, docView);
+  constructor(type: ChartType, store: ParaStore) {
+    super(type, store);
   }
 
   protected _addSettingControls(): void {
@@ -154,6 +156,53 @@ export class LineChartInfo extends PointChartInfo {
         node.connect('up', nodeAbove, false);
       });
     });
+  }
+
+  noticePosted(key: string, value: any) {
+    super.noticePosted(key, value);
+    if (this._store.settings.ui.isNarrativeHighlightEnabled) {
+      if (key === 'utteranceBoundary') {
+        const highlight: Highlight = value;
+        this._prevHighlightNavcode = this._doHighlight(highlight, this._prevHighlightNavcode);
+      } else if (key === 'utteranceEnd') {
+        // So that on the initial transition from auto-narration to manual
+        // span navigation, we don't remove any highlights added in manual mode
+        if (!this._store.paraChart.captionBox.highlightManualOverride) {
+          this._store.clearHighlight();
+          this._store.clearAllSeriesLowlights();
+        }
+        // this._highlightIndex = null;
+        if (this._prevHighlightNavcode) {
+          this.didRemoveHighlight(this._prevHighlightNavcode);
+          this._prevHighlightNavcode = '';
+        }
+      }
+    }
+  }
+
+  protected _doHighlight(highlight: Highlight, prevNavcode: string) {
+    if (highlight.navcode) {
+      if (highlight.navcode.startsWith('series')) {
+        const segments = highlight.navcode.split(/-/);
+        this._store.lowlightOtherSeries(...segments.slice(1));
+      } else {
+        this._store.clearHighlight();
+        this._store.highlight(highlight.navcode);
+        if (prevNavcode) {
+          this.didRemoveHighlight(prevNavcode);
+        }
+        this.didAddHighlight(highlight.navcode);
+      }
+      prevNavcode = highlight.navcode;
+    } else {
+      this._store.clearHighlight();
+      this._store.clearAllSeriesLowlights();
+      if (prevNavcode) {
+        this.didRemoveHighlight(prevNavcode);
+        prevNavcode = '';
+      }
+    }
+    return prevNavcode;
   }
 
   legend() {

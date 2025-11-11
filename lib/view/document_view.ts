@@ -270,12 +270,6 @@ export class DocumentView extends Container(View) {
     return this._chartInfo.storeDidChange(key, value);
   }
 
-  postNotice(key: string, value: any) {
-    this.noticePosted(key, value);
-    this._chartInfo.noticePosted(key, value);
-    this.paraview.dispatchEvent(new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));
-  }
-
   // noticePosted(key: string, value: any): void {
   //   console.log('NOTICE', key);
   //   if (key === 'animRevealEnd') {
