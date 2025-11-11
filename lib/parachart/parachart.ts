@@ -300,6 +300,7 @@ export class ParaChart extends logging(ParaComponent) {
       this._manifest = loadresult.manifest;
       this._store.setManifest(loadresult.manifest, loadresult.data);
       this._store.dataState = 'complete';
+      this._controlPanelRef.value!.descriptionPanel.positionCaptionBox();
       this._loaderResolver!();
     } else {
       console.error(loadresult.error);

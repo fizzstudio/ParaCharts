@@ -43,8 +43,9 @@ export class DescriptionPanel extends ControlPanelTabPanel {
   //   return this._ariaLiveRegionRef.value!;
   // }
 
-  protected firstUpdated(_changedProperties: PropertyValues): void {
-    if (this._controlPanel.settings.isControlPanelDefaultOpen || !this._controlPanel.settings.caption.isCaptionExternalWhenControlPanelClosed) {
+  positionCaptionBox() {
+    if (this._controlPanel.settings.isControlPanelDefaultOpen
+      || !this._controlPanel.settings.caption.isCaptionExternalWhenControlPanelClosed) {
       this.internalizeCaptionBox();
     } else {
       this._controlPanel.externalizeCaptionBox();
