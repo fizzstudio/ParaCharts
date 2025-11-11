@@ -1514,9 +1514,9 @@ export class DescriptionPanel extends ControlPanelTabPanel {
     // (undocumented)
     clearStatusBar(): void;
     // (undocumented)
-    protected firstUpdated(_changedProperties: PropertyValues): void;
-    // (undocumented)
     internalizeCaptionBox(): void;
+    // (undocumented)
+    positionCaptionBox(): void;
     // (undocumented)
     render(): TemplateResult_2<1>;
     // (undocumented)
