@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Outlier Demos -- ParaCharts</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22green%22/><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+  <style>
+    #chart {
+      width: 600px;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: #333;
+      font-weight: 300;
+    }
+
+    h1 {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      margin: 1rem;
+      font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+      font-style: italic;
+      font-weight: normal;
+      color: hsl(0, 0%, 40%);
+    }
+  </style>
+</head>
+
+<body>
+  <script type="module" src="/dist/paracharts.js"></script>
+  <script type="module">
+    const chart = document.getElementById('chart');
+    function runDemo() {
+
+    }
+    chart.addEventListener('paranotice', (e) => {
+      console.log('NOTICE', e.detail);
+      if (e.detail.key === 'animRevealEnd') {
+        runDemo();
+      }
+    });
+    //await chart.loaded;
+    //console.log('CHART HAS LOADED');
+  </script>
+  <h1>@fizz/paracharts Outlier Experiments</h1>
+  <main>
+    <section id="content-container">
+      <para-chart id="chart" manifest="/src/demo-data/fake-data-line-overlaps.json"></para-chart>
+    </section>
+  </main>
+</body>
+
+</html>

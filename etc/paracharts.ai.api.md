@@ -126,7 +126,15 @@ export interface AnimationSettings extends SettingGroup {
     // (undocumented)
     animationType: AnimationType;
     // (undocumented)
+    expandPoints: boolean;
+    // (undocumented)
     isAnimationEnabled: boolean;
+    // (undocumented)
+    lineSnake: boolean;
+    // (undocumented)
+    popInAnimateRevealTimeMs: number;
+    // (undocumented)
+    symbolPopIn: boolean;
 }
 
 // @public (undocumented)
@@ -1339,6 +1347,10 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     protected _animStartState: AnimState;
     // (undocumented)
+    set baseSymbolScale(scale: number);
+    // (undocumented)
+    protected _baseSymbolScale: number;
+    // (undocumented)
     beginAnimStep(_t: number): void;
     // (undocumented)
     get classInfo(): ClassInfo;
@@ -1406,7 +1418,7 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     protected get _symbolColor(): number;
     // (undocumented)
-    protected get _symbolScale(): number;
+    protected get symbolScale(): number;
     // (undocumented)
     get withCousins(): this[];
     // (undocumented)
@@ -2707,6 +2719,8 @@ export class ParaView extends ParaView_base {
     // (undocumented)
     chartTitle?: string;
     // (undocumented)
+    clipWidth?: number;
+    // (undocumented)
     computeViewBox(): void;
     // (undocumented)
     connectedCallback(): void;
@@ -3161,6 +3175,8 @@ export type PointChartType = 'line' | 'stepline' | 'scatter';
 export class PointDatapointView extends PlaneDatapointView {
     constructor(seriesView: SeriesView);
     // (undocumented)
+    protected _animEnd(): void;
+    // (undocumented)
     beginAnimStep(t: number): void;
     // (undocumented)
     readonly chart: PointPlotView;
@@ -3171,7 +3187,17 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     computeY(): number;
     // (undocumented)
+    protected _currentAnimationFrame: number | null;
+    // (undocumented)
+    get hasAnimated(): boolean;
+    // (undocumented)
+    _hasAnimated: boolean;
+    // (undocumented)
     get height(): number;
+    // (undocumented)
+    _isAnimating: boolean;
+    // (undocumented)
+    popInAnimation(t: number): void;
     // (undocumented)
     get _selectedMarkerX(): number;
     // (undocumented)

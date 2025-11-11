@@ -1,0 +1,204 @@
+{
+  "datasets": [
+    {
+      "type": "line",
+      "title": "Fake data with overlapping segments",
+      "chartTheme": {
+        "baseQuantity": "Change",
+        "baseKind": "rate",
+        "locale": "none"
+      },
+      "facets": {
+        "x": {
+          "label": "Year",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "date",
+          "units": "year",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Change",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "multiplier": 0.01,
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "Alpha",
+          "theme": {
+            "baseQuantity": "Change",
+            "baseKind": "rate",
+            "locale": "Alpha"
+          },
+          "records": [
+            {
+              "x": "2014",
+              "y": "5"
+            },
+            {
+              "x": "2015",
+              "y": "3.75"
+            },
+            {
+              "x": "2016",
+              "y": "3.75"
+            },
+            {
+              "x": "2017",
+              "y": "3.75"
+            },
+            {
+              "x": "2018",
+              "y": "3.75"
+            },
+            {
+              "x": "2019",
+              "y": "3.75"
+            },
+            {
+              "x": "2020",
+              "y": "3.75"
+            },
+            {
+              "x": "2021",
+              "y": "3.75"
+            },
+            {
+              "x": "2022",
+              "y": "3.75"
+            },
+            {
+              "x": "2023",
+              "y": "2.5"
+            },
+            {
+              "x": "2024",
+              "y": "2.5"
+            }
+          ]
+        },
+        {
+          "key": "Beta",
+          "theme": {
+            "baseQuantity": "Change",
+            "baseKind": "rate",
+            "locale": "Beta"
+          },
+          "records": [
+            {
+              "x": "2014",
+              "y": "3"
+            },
+            {
+              "x": "2015",
+              "y": "3.75"
+            },
+            {
+              "x": "2016",
+              "y": "3.75"
+            },
+            {
+              "x": "2017",
+              "y": "3.75"
+            },
+            {
+              "x": "2018",
+              "y": "3.75"
+            },
+            {
+              "x": "2019",
+              "y": "3.75"
+            },
+            {
+              "x": "2020",
+              "y": "3.75"
+            },
+            {
+              "x": "2021",
+              "y": "3.75"
+            },
+            {
+              "x": "2022",
+              "y": "4.25"
+            },
+            {
+              "x": "2023",
+              "y": "4.25"
+            },
+            {
+              "x": "2024",
+              "y": "4.25"
+            }
+          ]
+        },
+        {
+          "key": "Gamma",
+          "theme": {
+            "baseQuantity": "Change",
+            "baseKind": "rate",
+            "locale": "Gamma"
+          },
+          "records": [
+            {
+              "x": "2014",
+              "y": "1.41"
+            },
+            {
+              "x": "2015",
+              "y": "2.1"
+            },
+            {
+              "x": "2016",
+              "y": "3.4"
+            },
+            {
+              "x": "2017",
+              "y": "3.75"
+            },
+            {
+              "x": "2018",
+              "y": "3.75"
+            },
+            {
+              "x": "2019",
+              "y": "3.75"
+            },
+            {
+              "x": "2020",
+              "y": "3.75"
+            },
+            {
+              "x": "2021",
+              "y": "3.75"
+            },
+            {
+              "x": "2022",
+              "y": "3.75"
+            },
+            {
+              "x": "2023",
+              "y": "3.75"
+            },
+            {
+              "x": "2024",
+              "y": "3.75"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      }
+    }
+  ]
+}
