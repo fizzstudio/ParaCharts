@@ -47,6 +47,7 @@
 	<script type="module">
     	const chart = document.getElementById('chart');
 		const text = document.getElementById('text');
+		let demoDidStart = false;
         function runDemo() {
             const steps = [
                 () => {
@@ -64,6 +65,14 @@
                 () => {
 					text.innerHTML = 'Disable dark mode';
                     chart.api.setSetting('color.isDarkModeEnabled', false);
+                },
+                () => {
+					text.innerHTML = 'Disable direct labels';
+                    chart.api.setSetting('chart.hasDirectLabels', false);
+                },
+                () => {
+					text.innerHTML = 'Enable direct labels';
+                    chart.api.setSetting('chart.hasDirectLabels', true);
                 },
                 () => {
 					text.innerHTML = 'Visit point';
@@ -104,8 +113,9 @@
         }
 		chart.addEventListener('paranotice', (e) => {
 			console.log('NOTICE', e.detail);
-			if (e.detail.key === 'animRevealEnd') {
+			if (e.detail.key === 'animRevealEnd' && !demoDidStart) {
                 runDemo();
+				demoDidStart = true;
 			}
 		});
 		//await chart.loaded;
