@@ -90,7 +90,7 @@ export class ParaAPI {
           draft.sonification.isSoniEnabled = !draft.sonification.isSoniEnabled;
           const endisable = draft.sonification.isSoniEnabled ? 'enable' : 'disable';
           store.announce(`Sonification ${endisable + 'd'}`);
-          paraView.documentView!.postNotice(endisable + 'Sonification', null);
+          _paraChart.postNotice(endisable + 'Sonification', null);
         });
       },
       toggleAnnouncementMode() {
@@ -99,27 +99,27 @@ export class ParaAPI {
           store.updateSettings(draft => {
             draft.ui.isAnnouncementEnabled = false;
           });
-          paraView.documentView!.postNotice('disableAnnouncements', null);
+          _paraChart.postNotice('disableAnnouncements', null);
         } else {
           store.updateSettings(draft => {
             draft.ui.isAnnouncementEnabled = true;
           });
           store.announce('Announcements enabled');
-          paraView.documentView!.postNotice('enableAnnouncements', null);
+          _paraChart.postNotice('enableAnnouncements', null);
         }
       },
       toggleVoicingMode() {
         store.updateSettings(draft => {
           draft.ui.isVoicingEnabled = !draft.ui.isVoicingEnabled;
           const endisable = draft.ui.isVoicingEnabled ? 'enable' : 'disable';
-          paraView.documentView!.postNotice(endisable + 'Voicing', null);
+          _paraChart.postNotice(endisable + 'Voicing', null);
         });
       },
       toggleDarkMode() {
         store.updateSettings(draft => {
           draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
           const endisable = draft.color.isDarkModeEnabled ? 'enable' : 'disable';
-          paraView.documentView!.postNotice(endisable + 'DarkMode', null);
+          _paraChart.postNotice(endisable + 'DarkMode', null);
           store.announce(`Dark mode ${endisable + 'd'}`);
         });
       },
@@ -128,10 +128,10 @@ export class ParaAPI {
           if (draft.ui.isLowVisionModeEnabled) {
             // Allow the exit from fullscreen to disable LV mode
             draft.ui.isFullscreenEnabled = false;
-            paraView.documentView!.postNotice('disableLowVisionMode', null);
+            _paraChart.postNotice('disableLowVisionMode', null);
           } else {
             draft.ui.isLowVisionModeEnabled = true;
-            paraView.documentView!.postNotice('enableLowVisionMode', null);
+            _paraChart.postNotice('enableLowVisionMode', null);
           }
         });
       },
@@ -159,7 +159,7 @@ export class ParaAPI {
         store.updateSettings(draft => {
           draft.ui.isNarrativeHighlightEnabled = true; //!draft.ui.isNarrativeHighlightEnabled;
           //const endisable = draft.ui.isNarrativeHighlightEnabled ? 'enable' : 'disable';
-          paraView.documentView!.postNotice('enableNarrativeHighlightMode', null);
+          _paraChart.postNotice('enableNarrativeHighlightMode', null);
         });
       },
       playPauseMedia() {
@@ -174,68 +174,28 @@ export class ParaAPI {
     this._actions = this._standardActions;
 
     this._narrativeActions = Object.create(this._actions);
-    let prevIdx = 0;
     const voicing = paraView.paraChart.ariaLiveRegion.voicing;
-    const getMsg = (idx: number) => {
-        const div = document.createElement('div');
-        div.innerHTML = store.announcement.html;
-        return (div.children[idx] as HTMLElement).innerText;
-    };
-    const highlightSpan = (idxDelta: number) => {
-      const spans = store.paraChart.captionBox.getSpans();
-      let idx = prevIdx;
-      store.clearHighlight();
-      store.clearAllSeriesLowlights();
-      spans.forEach(span => {
-        span.classList.remove('highlight');
-      });
-      if (!voicing.manualOverride) {
-        idx = voicing.highlightIndex!;
-        voicing.manualOverride = true;
-      }
-      idx = Math.min(store.announcement.highlights.length - 1, Math.max(0, idx + idxDelta));
-
-      prevIdx = idx;
-      const msg = getMsg(idx);
-      const highlight = store.announcement.highlights[idx];
-      const prevHighlight = store.announcement.highlights[Math.max(0, idx - 1)];
-      let prevNavcode = prevHighlight.navcode ?? '';
-      const span = spans[idx];
-
-      span.classList.add('highlight');
-      voicing.shutUp();
-      voicing.speakText(msg);
-      prevNavcode = voicing.doHighlight(highlight, prevNavcode);
-      if (prevNavcode) {
-        chartInfo().didRemoveHighlight(prevNavcode);
-        prevNavcode = '';
-      }
-    };
 
     this._narrativeActions.move = async (args: ActionArgumentMap) => {
-      highlightSpan(args.direction === 'right' || args.direction === 'down' ? 1 : -1);
+      store.paraChart.captionBox.highlightSpan(args.direction === 'right' || args.direction === 'down');
     };
     this._narrativeActions.goFirst = () => {};
     this._narrativeActions.goLast = () => {};
     this._narrativeActions.repeatLastAnnouncement = () => {};
     this._narrativeActions.toggleNarrativeHighlightMode = () => {
-      if (voicing.manualOverride) {
-        voicing.manualOverride = false;
-        (async () => {
-          store.announce(await chartInfo().summarizer.getChartSummary());
-        })();
+      _paraChart.captionBox.clearSpanHighlights();
+      store.clearHighlight();
+      store.clearAllSeriesLowlights();
+      paraView.endNarrativeHighlightMode();
+      self._actions = this._standardActions;
+      if (store.settings.ui.isNarrativeHighlightEnabled) {
+        store.updateSettings(draft => {
+          draft.ui.isNarrativeHighlightEnabled = false;
+        });
       } else {
-        paraView.endNarrativeHighlightMode();
-        self._actions = this._standardActions;
-        if (store.settings.ui.isNarrativeHighlightEnabled) {
-          store.updateSettings(draft => {
-            draft.ui.isNarrativeHighlightEnabled = false;
-          });
-        } else {
-          store.updateSettings(draft => {
-            draft.ui.isNarrativeHighlightEnabled = true;
-          });
-        }
+        store.updateSettings(draft => {
+          draft.ui.isNarrativeHighlightEnabled = true;
+        });
       }
     };
     this._narrativeActions.playPauseMedia = () => {

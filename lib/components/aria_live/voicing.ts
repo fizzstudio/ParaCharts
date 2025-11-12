@@ -2,17 +2,16 @@ import { Highlight } from '@fizz/parasummary';
 import { ParaStore } from '../../store';
 
 export class Voicing {
-  private _voice: SpeechSynthesis | null = null;
-  private _lang: string = 'en-US';
-  // private _lang: string = 'en-AU';
-  private _rate: number = 1.0;
-  private _volume: number = 1.0;
-  private _pitch: number = 1.0;
-  private _utterance: SpeechSynthesisUtterance | null = null;
-  private _highlightIndex: number | null = null;
-  private _manualOverride = false;
+  protected _voice: SpeechSynthesis | null = null;
+  protected _lang: string = 'en-US';
+  protected _rate: number = 1.0;
+  protected _volume: number = 1.0;
+  protected _pitch: number = 1.0;
+  protected _utterance: SpeechSynthesisUtterance | null = null;
+  protected _highlightIndex: number | null = null;
+  protected _speakingCount = 0;
 
-  constructor(private _store: ParaStore) {
+  constructor(protected _store: ParaStore) {
     this._voice = window.speechSynthesis;
     if (!this._voice) {
       console.warn('Speech Synthesis unsupported');
@@ -23,12 +22,8 @@ export class Voicing {
     return this._highlightIndex;
   }
 
-  get manualOverride(): boolean {
-    return this._manualOverride;
-  }
-
-  set manualOverride(manualOverride: boolean) {
-    this._manualOverride = manualOverride;
+  get isSpeaking(): boolean {
+    return this._speakingCount > 0;
   }
 
   speak(msg: string, highlights: Highlight[], startFrom = 0) {
@@ -36,13 +31,11 @@ export class Voicing {
       this.shutUp();
 
       this._utterance = this.speakText(msg);
-
+      this._speakingCount++;
+      // Get the index of the highlight containing the word
       const getHighlightIndex = (wordIndex: number) =>
         highlights.findIndex(hl => wordIndex >= hl.start && wordIndex < hl.end);
 
-      const lastSpans = new Set<HTMLElement>();
-      const spans = this._store.paraChart.captionBox.getSpans();
-      let prevNavcode = '';
       this._utterance.onboundary = (event: SpeechSynthesisEvent) => {
         const highlightIndex = getHighlightIndex(event.charIndex);
         if (highlightIndex === -1) {
@@ -51,33 +44,12 @@ export class Voicing {
         }
         this._highlightIndex = highlightIndex;
         const highlight = highlights[this._highlightIndex];
-        prevNavcode = this.doHighlight(highlight, prevNavcode);
-        for (const span of spans) {
-          if (span.dataset.phrasecode === `${highlight.phrasecode}`) {
-            span.classList.add('highlight');
-            lastSpans.add(span);
-          } else {
-            span.classList.remove('highlight');
-            lastSpans.delete(span);
-          }
-        }
-        console.log('highlight point ', highlight.phrasecode, ' at ', event.charIndex);
+        this._store.paraChart.postNotice('utteranceBoundary', highlight);
       };
+
       this._utterance.onend = (event: SpeechSynthesisEvent) => {
-        for (const span of lastSpans) {
-          span.classList.remove('highlight');
-        }
-        // So that on the initial transition from auto-narration to manual
-        // span navigation, we don't remove any highlights added in manual mode
-        if (!this._manualOverride) {
-          this._store.clearHighlight();
-          this._store.clearAllSeriesLowlights();
-        }
-        this._highlightIndex = null;
-        if (prevNavcode) {
-          this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
-          prevNavcode = '';
-        }
+        this._store.paraChart.postNotice('utteranceEnd', null);
+        this._speakingCount--;
       };
     }
   }
@@ -92,31 +64,6 @@ export class Voicing {
     this._utterance.volume = this._volume;
     this._voice!.speak(this._utterance);
     return this._utterance;
-  }
-
-  doHighlight(highlight: Highlight, prevNavcode: string) {
-    if (highlight.navcode) {
-      if (highlight.navcode.startsWith('series')) {
-        const segments = highlight.navcode.split(/-/);
-        this._store.lowlightOtherSeries(...segments.slice(1));
-      } else {
-        this._store.clearHighlight();
-        this._store.highlight(highlight.navcode);
-        if (prevNavcode) {
-          this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
-        }
-        this._store.paraChart.paraView.documentView!.chartInfo.didAddHighlight(highlight.navcode);
-      }
-      prevNavcode = highlight.navcode;
-    } else {
-      this._store.clearHighlight();
-      this._store.clearAllSeriesLowlights();
-      if (prevNavcode) {
-        this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
-        prevNavcode = '';
-      }
-    }
-    return prevNavcode;
   }
 
   pause() {
@@ -140,7 +87,6 @@ export class Voicing {
   }
 
   shutUp() {
-    console.log('Shut Up!');
     if (this._voice && this._voice.speaking) {
       this._voice.cancel();
       this._highlightIndex = null;

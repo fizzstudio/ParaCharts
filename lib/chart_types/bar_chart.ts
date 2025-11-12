@@ -75,8 +75,8 @@ export class BarChartInfo extends PlaneChartInfo {
   protected _clusteredData!: BarClusterMap;
   protected _stacksPerCluster!: number;
 
-  constructor(type: ChartType, store: ParaStore, docView: DocumentView) {
-    super(type, store, docView);
+  constructor(type: ChartType, store: ParaStore) {
+    super(type, store);
   }
 
   protected _init(): void {

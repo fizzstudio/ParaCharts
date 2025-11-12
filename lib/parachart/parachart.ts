@@ -319,6 +319,14 @@ export class ParaChart extends logging(ParaComponent) {
     this._styleManager.update();
   }
 
+  postNotice(key: string, value: any) {
+    this.paraView.documentView!.noticePosted(key, value);
+    this.paraView.documentView!.chartInfo.noticePosted(key, value);
+    this.captionBox.noticePosted(key, value);
+    this.dispatchEvent(
+      new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));
+  }
+
   clearAriaLive() {
     this._ariaLiveRegionRef.value!.clear();
   }
@@ -337,7 +345,6 @@ export class ParaChart extends logging(ParaComponent) {
   }
 
   render(): TemplateResult {
-    this.log('render');
     // We can't truly hide the para-chart, or labels don't get a proper size,
     // so we fall back on sr-only
     const classes = {
