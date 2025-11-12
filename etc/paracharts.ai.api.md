@@ -2162,31 +2162,36 @@ export interface MDRAnnotation extends BaseAnnotation {
     annotation: string;
 }
 
-// @public (undocumented)
+// @public
 export class NavLayer {
-    constructor(_map: NavMap, _name: string);
+    constructor(_map: NavMap, _id: string);
+    // (undocumented)
+    clone(map: NavMap): NavLayer;
     // (undocumented)
     get cursor(): NavNode;
     set cursor(cursor: NavNode);
     // (undocumented)
-    protected _cursor: NavNode;
-    // (undocumented)
+    protected _cursor: string;
     get<T extends NavNodeType>(type: T, optionsOrIndex?: Readonly<NavNodeOptionsType<T>> | number): NavNode<NavNodeType> | undefined;
     // (undocumented)
     goTo<T extends NavNodeType>(type: T, optionsOrIndex: Readonly<NavNodeOptionsType<T>> | number): void;
     // (undocumented)
     goToNode(node: NavNode): void;
     // (undocumented)
+    get id(): string;
+    // (undocumented)
+    protected _id: string;
+    // (undocumented)
     get map(): NavMap;
     // (undocumented)
     protected _map: NavMap;
     // (undocumented)
-    get name(): string;
+    static nextId: number;
+    node(id: string): NavNode<any> | undefined;
     // (undocumented)
-    protected _name: string;
+    protected _nodes: Map<NavNodeType, string[]>;
     // (undocumented)
-    protected _nodes: Map<NavNodeType, NavNode[]>;
-    // (undocumented)
+    protected _nodesById: Map<string, NavNode<NavNodeType>>;
     query<T extends NavNodeType>(type: T, options?: Partial<NavNodeOptionsType<T>>): NavNode<T>[];
     // (undocumented)
     registerNode<T extends NavNodeType>(node: NavNode<T>): void;
@@ -2200,10 +2205,12 @@ export class NavMap {
     // (undocumented)
     get chartInfo(): BaseChartInfo;
     // (undocumented)
-    get currentLayer(): NavLayer;
-    set currentLayer(layer: NavLayer);
+    clone(): NavMap;
     // (undocumented)
-    protected _currentLayer: NavLayer;
+    get currentLayer(): string;
+    set currentLayer(layer: string);
+    // (undocumented)
+    protected _currentLayer: string;
     // (undocumented)
     get cursor(): NavNode<NavNodeType>;
     // (undocumented)
@@ -2228,11 +2235,13 @@ export class NavMap {
     visitDatapoints(): Promise<void>;
 }
 
-// @public (undocumented)
+// @public
 export class NavNode<T extends NavNodeType = NavNodeType> {
     constructor(_layer: NavLayer, _type: T, _options: NavNodeOptionsType<T>, _store: ParaStore);
     // (undocumented)
     allNodes(dir: Direction, type?: NavNodeType): NavNode<NavNodeType>[];
+    // (undocumented)
+    clone(layer: NavLayer): NavNode<T>;
     // (undocumented)
     connect(dir: Direction, to: NavLayer | NavNode, isReciprocal?: boolean): void;
     // (undocumented)
@@ -2240,9 +2249,13 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     // (undocumented)
     disconnect(dir: Direction, isReciprocal?: boolean): void;
     // (undocumented)
-    getLink(dir: Direction): NavLayer | NavNode<NavNodeType> | undefined;
+    getLink(dir: Direction): string | undefined;
     // (undocumented)
     go(): void;
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    protected _id: string;
     // (undocumented)
     get index(): number;
     set index(index: number);
@@ -2257,15 +2270,17 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     // (undocumented)
     protected _layer: NavLayer;
     // (undocumented)
-    protected _links: Map<Direction, NavLayer | NavNode>;
+    protected _links: Map<Direction, string>;
     // (undocumented)
     move(dir: Direction): Promise<void>;
+    // (undocumented)
+    static nextId: number;
     // (undocumented)
     get options(): Readonly<NavNodeOptionsType<T>>;
     // (undocumented)
     protected _options: NavNodeOptionsType<T>;
     // (undocumented)
-    peekNode(dir: Direction, count: number): NavNode<NavNodeType> | undefined;
+    peekNode(dir: Direction, count: number): NavNode<any> | undefined;
     // (undocumented)
     removeLink(dir: Direction): void;
     // (undocumented)
