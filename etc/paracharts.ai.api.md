@@ -2050,6 +2050,8 @@ export class LinePlotView extends PointPlotView {
     // (undocumented)
     protected _newDatapointView(seriesView: PlaneSeriesView): LineSection;
     // (undocumented)
+    settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
+    // (undocumented)
     get settings(): DeepReadonly<LineSettings>;
     // (undocumented)
     updateSeriesStyle(styleInfo: StyleInfo): void;
