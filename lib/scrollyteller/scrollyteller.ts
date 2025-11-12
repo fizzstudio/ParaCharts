@@ -145,7 +145,38 @@ export class Scrollyteller {
       const element = response.element;
       this.highlightPageContent(element);
 
-      for (const {action, params} of response.actions) {
+      for (const { action, params } of response.actions) {
+        console.warn('scrolly:', action, params);
+
+
+        // doAction('move', {direction: 'right'});
+        // doAction('move', {direction: 'right'});
+        // setSetting('color.isDarkModeEnabled', true);
+        // setSetting('color.isDarkModeEnabled', false);
+        // getSeries('EU').getPoint(6).visit();
+        // getSeries('EU').getPoint(6).select();
+        // getSeries('EU').getPoint(6).select();
+        // getSeries('EU').getPoint(6).play();
+        // getSeries('EU').getPoint(6).annotate('Foobar');
+        // getSeries('EU').lowlightOthers();
+        // clearAllSeriesLowlights();
+        // getSeries('Euro area').playRiff();
+
+        //  let result = this.parachart.api.getSeries('EU') as any;
+        //  result = result.getPoint(6) as any;
+        //  result = result.visit() as any;
+
+
+        // this.parachart.api[doAction]
+
+        if (action === 'directLabels') {
+          console.warn('scrolly: directLabels');
+          this.parachart.api.setSetting('chart.hasDirectLabels', false);
+          this.parachart.api.setSetting('color.isDarkModeEnabled', true);
+          this.parachart.api.setSetting('chart.isDrawSymbols', false);
+          this.parachart.api.setSetting('type.line.isDrawSymbols', false);
+        }
+
         if (action === 'highlightSeries') {
           // TODO: remove previous series highlights
           // this.parachart.store.soloSeries = '';
@@ -187,7 +218,7 @@ export class Scrollyteller {
       else {
         console.warn('SCROLLY: exit up', response);
         console.warn('SCROLLY: reverse action!');
-        for (const {action, params} of response.actions) {
+        for (const { action, params } of response.actions) {
           if (action === 'highlightDatapoint') {
             if (params.length >= 2) {
               this.parachart.api.getSeries(params[0]).getPoint(+params[1]).select();
