@@ -217,7 +217,7 @@ export const defaults: Settings = {
       stacking: 'standard',
       barWidth: 10,
       colorByDatapoint: false,
-      isDrawTotalLabels: true,
+      isDrawTotalLabels: false,
       isDrawRecordLabels: false,
       isDrawDataLabels: false,
       dataLabelPosition: 'center',
