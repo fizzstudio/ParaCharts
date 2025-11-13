@@ -36,6 +36,7 @@ import {
 } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
+import { Popup } from '../view/popup';
 
 
 @customElement('para-control-panel')
@@ -145,6 +146,31 @@ export class ParaControlPanel extends logging(ParaComponent) {
         this.dataUpdated();
       }
     });
+    this.addButtonListeners();
+  }
+
+  addButtonListeners() {
+    const loop = () => {
+      let timestamp = setTimeout(() => {
+        loop();
+      }, 100);
+      let toggleButton = this.shadowRoot?.getElementById("wrapper")?.children[0].shadowRoot?.children[0].getElementsByClassName("toggle")[0]
+      if (toggleButton) {
+        toggleButton.addEventListener("pointerenter", () => {
+          this.addPopup(this.paraChart.isControlPanelOpen ? true : false)
+        })
+        toggleButton.addEventListener("pointerleave", () => {
+          this.removePopup(this.id)
+        })
+        toggleButton.addEventListener("click", () => {
+          this.removePopup(this.id)
+          this.addButtonListeners()
+        })
+        clearTimeout(timestamp)
+      }
+    };
+    loop()
+
   }
 
   disconnectedCallback(): void {
@@ -214,6 +240,34 @@ export class ParaControlPanel extends logging(ParaComponent) {
 
   showHelpDialog(){
     return this._controlsPanelRef.value!.showHelpDialog();
+  }
+
+  addPopup(isOpen: boolean) {
+    let paraview = this.paraChart.paraView
+    let text = isOpen ? "Close control panel" : "Open control panel"
+    let popup = new Popup(paraview,
+      {
+        text: text ?? "",
+        x: 10,
+        y: paraview.documentView!.chartLayers.height! + this.paraChart.paraView.store.settings.popup.margin
+          + (isOpen ? 26.4 : 0),
+        textAnchor: "middle",
+        classList: ['annotationlabel'],
+        id: this.id,
+        type: "controlPanelIcon",
+        fill: "hsl(0, 0%, 0%)",
+        inbounds: false
+      },
+      {
+        fill: "hsl(0, 0%, 100%)",
+        shape: "box"
+      })
+    paraview.store.popups.push(popup)
+  }
+
+  removePopup(id: string) {
+    this.paraChart.paraView.store.popups.splice(this.paraChart.paraView.store.popups.findIndex(p => p.id === id), 1)
+    this.paraChart.paraView.requestUpdate()
   }
 
   render() {

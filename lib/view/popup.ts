@@ -19,8 +19,10 @@ export interface PopupLabelOptions extends LabelOptions {
     color?: number;
     margin?: number;
     type?: string;
-    items?: LegendItem[]
-    points?: DatapointView[]
+    items?: LegendItem[];
+    points?: DatapointView[];
+    inbounds?: boolean;
+    fill?: string;
 }
 
 export type ShapeTypes = "box" | "boxWithArrow";
@@ -85,7 +87,9 @@ export class Popup extends View {
         if (this.paraview.store.settings.popup.backgroundColor === "dark") {
             this._label.styleInfo = {
                 stroke: 'none',
-                fill: this.popupLabelOptions.type == "chord" ? "black" : this.paraview.store.colors.contrastValueAt(this.popupLabelOptions.color!)
+                fill: this.popupLabelOptions.fill ? this.popupLabelOptions.fill 
+                : this.popupLabelOptions.type == "chord" ? "black" 
+                : this.paraview.store.colors.contrastValueAt(this.popupLabelOptions.color!)
             };
         }
         if (this.paraview.store.settings.ui.isLowVisionModeEnabled) {
@@ -96,9 +100,9 @@ export class Popup extends View {
         }
 
         this._grid = this.generateGrid();
-
-
-        this.shiftGrid();
+        if (this.popupLabelOptions.inbounds) {
+            this.shiftGrid();
+        }
 
         this.append(this._grid);
         this._box = this.generateBox(popupShapeOptions);
@@ -146,6 +150,10 @@ export class Popup extends View {
         if (this.popupLabelOptions.y) {
             this.popupLabelOptions.y -= this.margin;
         }
+        
+        if (this.popupLabelOptions.inbounds == undefined) {
+            this.popupLabelOptions.inbounds = true;
+        }
         if (!this.popupShapeOptions.fill) {
             this.popupShapeOptions.fill = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
                 : this.paraview.store.settings.popup.backgroundColor === "light" ?
@@ -179,8 +187,9 @@ export class Popup extends View {
                 this.grid.x -= this.horizShift;
             }
         }
-        if (this.grid.left - this.leftPadding < 0) {
-            this.horizShift = - (this.leftPadding - this.grid.left);
+        const leftBorder = this.popupLabelOptions.type === 'vertAxis' ? 0 - this.paraview.documentView!.vertAxis!.layout.vRules[1] : 0;
+        if (this.grid.left - this.leftPadding < leftBorder) {
+            this.horizShift = - (this.leftPadding - this.grid.left + leftBorder);
             this.grid.x -= this.horizShift;
         }
         //Note shifting the label up away from the datapoint in the event of text wrap

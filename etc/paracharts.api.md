@@ -132,6 +132,8 @@ export interface AnimationSettings extends SettingGroup {
     // (undocumented)
     lineSnake: boolean;
     // (undocumented)
+    popInAnimateRevealTimeMs: number;
+    // (undocumented)
     symbolPopIn: boolean;
 }
 
@@ -1345,6 +1347,10 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     protected _animStartState: AnimState;
     // (undocumented)
+    set baseSymbolScale(scale: number);
+    // (undocumented)
+    protected _baseSymbolScale: number;
+    // (undocumented)
     beginAnimStep(_t: number): void;
     // (undocumented)
     get classInfo(): ClassInfo;
@@ -1413,8 +1419,6 @@ export class DatapointView extends DataView_2 {
     protected get _symbolColor(): number;
     // (undocumented)
     protected get symbolScale(): number;
-    // (undocumented)
-    protected _symbolScale: number;
     // (undocumented)
     get withCousins(): this[];
     // (undocumented)
@@ -2552,6 +2556,8 @@ export class ParaHelper {
     // (undocumented)
     downloadPNG(): void;
     // (undocumented)
+    get jimReady(): Promise<void>;
+    // (undocumented)
     loadData(url: string): Promise<FieldInfo[]>;
     // (undocumented)
     loadManifest(input: string, type?: SourceKind): Promise<void>;
@@ -2813,6 +2819,8 @@ export class ParaView extends ParaView_base {
     // (undocumented)
     addDef(key: string, template: TemplateResult): void;
     // (undocumented)
+    addJIMSeriesSummaries(): Promise<void>;
+    // (undocumented)
     protected _chartRefs: Map<string, Ref<any>>;
     // (undocumented)
     chartTitle?: string;
@@ -2875,6 +2883,16 @@ export class ParaView extends ParaView_base {
     protected _hotkeyActions: HotkeyActions;
     // (undocumented)
     protected _hotkeyListener: (e: HotkeyEvent) => void;
+    // (undocumented)
+    protected _jim: string;
+    // (undocumented)
+    jimReady(): Promise<void>;
+    // (undocumented)
+    protected _jimReadyPromise: Promise<void>;
+    // (undocumented)
+    protected _jimReadyRejector: (() => void);
+    // (undocumented)
+    protected _jimReadyResolver: (() => void);
     // (undocumented)
     protected _lowVisionModeSaved: Map<string, any>;
     // (undocumented)
@@ -3265,8 +3283,6 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     protected _animEnd(): void;
     // (undocumented)
-    _animStep(bezT: number): void;
-    // (undocumented)
     beginAnimStep(t: number): void;
     // (undocumented)
     readonly chart: PointPlotView;
@@ -3279,11 +3295,15 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     protected _currentAnimationFrame: number | null;
     // (undocumented)
+    get hasAnimated(): boolean;
+    // (undocumented)
+    _hasAnimated: boolean;
+    // (undocumented)
     get height(): number;
     // (undocumented)
     _isAnimating: boolean;
     // (undocumented)
-    leftIndex: number;
+    popInAnimation(t: number): void;
     // (undocumented)
     get _selectedMarkerX(): number;
     // (undocumented)
