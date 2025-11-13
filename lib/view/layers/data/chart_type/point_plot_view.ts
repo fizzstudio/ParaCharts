@@ -33,7 +33,6 @@ import { Logger, getLogger } from '../../../../common/logger';
  * (connected or not).
  */
 export abstract class PointPlotView extends PlanePlotView {
-  private log: Logger = getLogger("PointPlotView");
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
       // this._axisInfo!.updateYRange();

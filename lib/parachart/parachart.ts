@@ -67,7 +67,7 @@ export class ParaChart extends ParaComponent {
   protected _manifest?: Manifest;
   protected _loader = new ParaLoader();
   private _slotLoader = new SlotLoader();
-  private log: Logger = getLogger("ParaChart");
+  protected log: Logger = getLogger("ParaChart");
   
   protected _suppleteSettingsWith?: DeepReadonly<Settings>;
   protected _readyPromise: Promise<void>;

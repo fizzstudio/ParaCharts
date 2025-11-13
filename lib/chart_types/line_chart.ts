@@ -33,11 +33,11 @@ import { Highlight } from '@fizz/parasummary';
  */
 export class LineChartInfo extends PointChartInfo {
   protected _prevHighlightNavcode = '';
-  private log: Logger = getLogger("LineChartInfo");
   protected _altNavMap!: NavMap;
 
   constructor(type: ChartType, store: ParaStore) {
     super(type, store);
+    this.log = getLogger("LineChartInfo");
   }
 
   protected _addSettingControls(): void {

@@ -29,12 +29,12 @@ import { ClassInfo, classMap } from 'lit/directives/class-map.js';
  * @public
  */
 export class DirectLabelStrip extends Container(View) {
-  private log: Logger = getLogger("DirectLabelStrip");  
   protected seriesLabels!: Label[];
   protected leaders!: LineLabelLeader[];
 
   constructor(private _chart: LinePlotView) {
     super(_chart.paraview);
+    this.log = getLogger("DirectLabelStrip");
     this._id = 'direct-label-strip';
     this._createLabels();
   }

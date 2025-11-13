@@ -35,7 +35,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
 
   /** Distance between label centers (or starts or ends) */
   protected _labelDistance!: number;
-  
+
   constructor(
     public readonly axis: Axis<T>,
     public readonly tickLabels: string[],
@@ -142,7 +142,6 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
  * A horizontal tier of tick labels.
  */
 export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
-  private log: Logger = getLogger("HorizTickLabelTier");
   constructor(
     readonly axis: Axis<'horiz'>,
     readonly tickLabels: string[],
@@ -152,6 +151,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     paraview: ParaView
   ) {
     super(axis, tickLabels, tierIndex, length, tickStep, paraview);
+    this.log = getLogger("HorizTickLabelTier");
     this._canWidthFlex = true;
     this.padding = {top: this.axis.orientationSettings.ticks.labels.offsetGap};
   }

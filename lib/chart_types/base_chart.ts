@@ -46,7 +46,7 @@ export type RiffOrder = 'normal' | 'sorted' | 'reversed';
  * @public
  */
 export abstract class BaseChartInfo {
-  private log: Logger = getLogger("BaseChartInfo");  
+  protected log: Logger = getLogger("BaseChartInfo");
   protected _navMap: NavMap | null = null;
   protected _axisInfo: AxisInfo | null = null;
   protected _summarizer!: Summarizer;

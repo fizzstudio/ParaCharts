@@ -34,9 +34,9 @@ export abstract class FlexLayout extends Layout {
  * Horizontal row of views.
  */
 export class RowLayout extends FlexLayout {
-  private log: Logger = getLogger("RowLayout");
   constructor(paraview: ParaView, gap: number, alignViews: SnapLocation, id?: string) {
     super(paraview, gap, alignViews, id);
+    this.log = getLogger("RowLayout");
   }
 
   computeSize(): [number, number] {
@@ -74,9 +74,9 @@ export class RowLayout extends FlexLayout {
  * Vertical column of views.
  */
 export class ColumnLayout extends FlexLayout {
-  private log: Logger = getLogger("ColumnLayout");
   constructor(paraview: ParaView, gap: number, alignViews: SnapLocation, id?: string) {
     super(paraview, gap, alignViews, id);
+    this.log = getLogger("ColumnLayout");
   }
 
   computeSize(): [number, number] {

@@ -30,8 +30,8 @@ export interface SignalResults {
  * in a function and emitted elsewhere. 
  */
 export class SignalManager {
-  
-  private log: Logger = getLogger("SignalManager");
+
+  protected log: Logger = getLogger("SignalManager");
 
   private _signals: {[key: string]: Signal} = {};
 

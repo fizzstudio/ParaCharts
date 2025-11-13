@@ -21,7 +21,6 @@ import { NavNode } from "../navigation";
 export class HeatMapPlotView extends PlanePlotView {
   declare protected _settings: DeepReadonly<HeatmapSettings>;
   declare protected _chartInfo: HeatMapInfo;
-  private log: Logger = getLogger("HeatMapPlotView");  
   constructor(
     paraview: ParaView,
     width: number,
@@ -30,6 +29,7 @@ export class HeatMapPlotView extends PlanePlotView {
     chartInfo: BaseChartInfo
   ) {
     super(paraview, width, height, dataLayerIndex, chartInfo);
+    this.log = getLogger("HeatMapPlotView");
     this._settings = this.paraview.store.settings.type.heatmap;
   }
 

@@ -14,9 +14,9 @@ export class PiePlotView extends PastryPlotView {
 }
 
 export class PieSlice extends RadialSlice {
-  private log: Logger = getLogger("PieSlice");
   constructor(parent: SeriesView, params: RadialDatapointParams) {
     super(parent, params);
+    this.log = getLogger("PieSlice");
     this._x = this.chart.cx;
     this._y = this.chart.cy;
     // const {x, y, className} = this._computeLabelOptions();

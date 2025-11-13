@@ -381,7 +381,7 @@ export class Popup extends View {
  */
 @customElement('para-popup-settings-dialog')
 export class PopupSettingsDialog extends ParaComponent {
-    private log: Logger = getLogger("PopupSettingsDialog");
+    protected log: Logger = getLogger("PopupSettingsDialog");
     protected _dialogRef = createRef<Dialog>();
 
     /**

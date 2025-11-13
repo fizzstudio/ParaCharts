@@ -36,7 +36,6 @@ export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
 export class DocumentView extends Container(View) {
   
   readonly type: ChartType;
-  private log: Logger = getLogger("DocumentView");
   protected _chartInfo: BaseChartInfo;
   protected _chartLayers!: PlotLayerManager;
   protected _directLabelStrip: DirectLabelStrip | null = null;
@@ -51,6 +50,7 @@ export class DocumentView extends Container(View) {
 
   constructor(paraview: ParaView) {
     super(paraview);
+    this.log = getLogger("DocumentView");
     this._store = paraview.store;
     this.observeNotices();
 

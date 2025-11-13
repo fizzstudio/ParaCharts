@@ -90,10 +90,10 @@ export class GridLayout extends Layout {
   private _vRules: number[] = [];
   private _isAutoWidth: boolean;
   private _isAutoHeight: boolean;
-  private log: Logger = getLogger("GridLayout");
-  
+
   constructor(paraview: ParaView, options: GridOptionsInput, id?: string) {
     super(paraview, id);
+    this.log = getLogger("GridLayout ");
     this._canWidthFlex = !!options.canWidthFlex;
     this._canHeightFlex = !!options.canHeightFlex;
     this._width = options.width ?? this._width;
