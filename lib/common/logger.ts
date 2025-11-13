@@ -32,6 +32,6 @@ export class Logger {
   }
 }
 
-function getLogger(logName: string): Logger {
+export function getLogger(logName: string): Logger {
   return new Logger(logName, _debugLevel);
 }

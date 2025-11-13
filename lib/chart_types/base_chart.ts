@@ -57,7 +57,6 @@ export abstract class BaseChartInfo {
   protected _soniRiffInterval: ReturnType<typeof setTimeout> | null = null;
 
   constructor(protected _type: ChartType, protected _store: ParaStore) {
-    super();
     this._init();
     this._addSettingControls();
   }

@@ -1,4 +1,4 @@
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '../../../../common/logger';
 import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
 import {
   Setting, DeepReadonly, BarSettings
