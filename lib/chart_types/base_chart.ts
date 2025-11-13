@@ -19,7 +19,7 @@ import {
 } from '../store/settings_types';
 import { SettingsManager } from '../store/settings_manager';
 import { type AxisInfo } from '../common/axisinfo';
-import { type LegendItem } from '../view//legend';
+import { type LegendItem } from '../view/legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
 import { Logger } from '../common/logger';
 import { ParaStore, type SparkBrailleInfo, datapointIdToCursor } from '../store';

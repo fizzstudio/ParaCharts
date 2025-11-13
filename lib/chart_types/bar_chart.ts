@@ -198,12 +198,12 @@ export class BarChartInfo extends PlaneChartInfo {
       //   color: (view as SeriesView).color  // series color
       // }));
       return this._store.model!.series.map(series => ({
-        label: series.key,
+        label: series.getLabel(),
         color: this._store.seriesProperties!.properties(series.key).color
       }));
     } else {
       return this._store.model!.seriesKeys.toSorted().map(key => ({
-        label: key,
+        label: this._store.model!.atKey(key)!.getLabel(),
         color: this._store.seriesProperties!.properties(key).color
       }));
     }
