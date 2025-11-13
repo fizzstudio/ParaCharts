@@ -178,7 +178,7 @@ export class ParaStore extends State {
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected annotID: number = 0;
-  private log: Logger = getLogger("ParaStore");
+  protected log: Logger = getLogger("ParaStore");
 
   public idList: Record<string, boolean> = {};
 

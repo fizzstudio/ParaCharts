@@ -302,6 +302,8 @@ export abstract class Axis<T extends AxisOrientation> extends Axis_base {
     // (undocumented)
     addGridRules(length: number): void;
     // (undocumented)
+    addPopup(text?: string): void;
+    // (undocumented)
     protected abstract _appendAxisLine(): void;
     // (undocumented)
     protected abstract _appendTickLabelTiers(): void;
@@ -368,6 +370,8 @@ export abstract class Axis<T extends AxisOrientation> extends Axis_base {
     isVert(): this is Axis<'vert'>;
     // (undocumented)
     protected _labelInfo: AxisLabelInfo;
+    // (undocumented)
+    get layout(): GridLayout;
     // Warning: (ae-forgotten-export) The symbol "GridLayout" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
@@ -394,6 +398,8 @@ export abstract class Axis<T extends AxisOrientation> extends Axis_base {
     //
     // (undocumented)
     protected _parent: Layout;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     resize(width: number, height: number): void;
     // (undocumented)
@@ -1893,6 +1899,8 @@ export class HorizTick extends HorizRule {
 export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     constructor(axis: Axis<'horiz'>, tickLabels: string[], tierIndex: number, length: number, tickStep: number, paraview: ParaView);
     // (undocumented)
+    addPopup(text?: string, index?: number): void;
+    // (undocumented)
     readonly axis: Axis<'horiz'>;
     // (undocumented)
     computeSize(): [number, number];
@@ -1908,6 +1916,8 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     protected get _length(): number;
     // (undocumented)
     protected _optimizeLabelSpacing(): number;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     readonly tickLabels: string[];
     // (undocumented)
@@ -1977,6 +1987,8 @@ export class KeymapManager extends EventTarget {
     protected _keyDetails: {
         [keyId: string]: KeyDetails;
     };
+    // (undocumented)
+    protected log: Logger;
     // (undocumented)
     onKeydown(key: string): boolean;
     // Warning: (ae-forgotten-export) The symbol "HotkeyWithArgument" needs to be exported by the entry point index.d.ts
@@ -2466,6 +2478,10 @@ export class ParaComponent extends LitElement {
 // @public (undocumented)
 export class ParaControlPanel extends ParaComponent {
     // (undocumented)
+    addButtonListeners(): void;
+    // (undocumented)
+    addPopup(isOpen: boolean): void;
+    // (undocumented)
     get annotationPanel(): AnnotationPanel;
     // (undocumented)
     protected _annotationPanelRef: Ref<AnnotationPanel>;
@@ -2505,6 +2521,8 @@ export class ParaControlPanel extends ParaComponent {
     onFocus(): void;
     // (undocumented)
     paraChart: ParaChart;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     render(): TemplateResult_2<1>;
     // (undocumented)
@@ -2547,8 +2565,6 @@ export class ParaHelper {
     get api(): ParaAPI_2;
     // (undocumented)
     protected _createParaChart(): void;
-    // (undocumented)
-    get jimReady(): Promise<void>;
     // (undocumented)
     get jimReady(): Promise<void>;
     // (undocumented)
@@ -2674,6 +2690,8 @@ export class ParaStore extends State {
     //
     // (undocumented)
     protected _keymapManager: KeymapManager;
+    // (undocumented)
+    protected log: Logger;
     // (undocumented)
     lowlightOtherSeries(...seriesKeys: string[]): void;
     // (undocumented)
@@ -2879,6 +2897,8 @@ export class ParaView extends ParaComponent {
     // (undocumented)
     protected _jimReadyResolver: (() => void);
     // (undocumented)
+    protected log: Logger;
+    // (undocumented)
     protected _lowVisionModeSaved: Map<string, any>;
     // (undocumented)
     navToDatapoint(seriesKey: string, index: number): void;
@@ -2946,6 +2966,8 @@ export class ParaViewController {
     constructor(_store: ParaStore);
     // (undocumented)
     handleKeyEvent(event: KeyboardEvent): void;
+    // (undocumented)
+    protected log: Logger;
     // (undocumented)
     protected _store: ParaStore;
 }
@@ -3670,6 +3692,8 @@ export class Scrollyteller {
     // (undocumented)
     enable(): Scrollyteller;
     // (undocumented)
+    protected log: Logger;
+    // (undocumented)
     off(event?: ScrollyEvent, callback?: Callback): this;
     // (undocumented)
     get offset(): number;
@@ -3934,6 +3958,8 @@ export class SettingControlManager extends State {
     //
     // (undocumented)
     info(key: string): SettingControlInfo<SettingControlType>;
+    // (undocumented)
+    protected log: Logger;
     // (undocumented)
     protected _settingControlInfo: {
         [key: string]: SettingControlInfo;
@@ -4249,6 +4275,8 @@ export interface TickLabelSettings extends SettingGroup {
 export abstract class TickLabelTier<T extends AxisOrientation> extends TickLabelTier_base {
     constructor(axis: Axis<T>, tickLabels: string[], tierIndex: number, length: number, _tickStep: number, paraview: ParaView);
     // (undocumented)
+    addPopup(text: string, index: number): void;
+    // (undocumented)
     readonly axis: Axis<T>;
     // (undocumented)
     protected _children: Label[];
@@ -4274,6 +4302,8 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends TickLabel
     set parent(parent: Layout);
     // (undocumented)
     protected _parent: Layout;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     resize(width: number, height: number): void;
     // (undocumented)
@@ -4615,6 +4645,8 @@ export class VertTick extends VertRule {
 export class VertTickLabelTier extends TickLabelTier<'vert'> {
     constructor(axis: Axis<'vert'>, tickLabels: string[], tierIndex: number, length: number, tickStep: number, paraview: ParaView);
     // (undocumented)
+    addPopup(text?: string, index?: number): void;
+    // (undocumented)
     readonly axis: Axis<'vert'>;
     // (undocumented)
     computeSize(): [number, number];
@@ -4626,6 +4658,8 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
     protected get _labelWrapWidth(): undefined;
     // (undocumented)
     protected get _length(): number;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     readonly tickLabels: string[];
     // (undocumented)
@@ -4680,7 +4714,7 @@ export interface YAxisSettings extends AxisSettings {
 
 // Warnings were encountered during analysis:
 //
-// types/store/settings_controls.d.ts:56:9 - (ae-incompatible-release-tags) The symbol "__index" is marked as @public, but its signature references "SettingControlInfo" which is marked as @internal
+// types/store/settings_controls.d.ts:57:9 - (ae-incompatible-release-tags) The symbol "__index" is marked as @public, but its signature references "SettingControlInfo" which is marked as @internal
 // types/store/settings_types.d.ts:34:5 - (ae-forgotten-export) The symbol "Color_2" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)

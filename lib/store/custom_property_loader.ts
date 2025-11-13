@@ -14,7 +14,7 @@ export class CustomPropertyLoader {
 
   protected _store!: ParaStore;
 
-  private log: Logger = getLogger("CustomPropertyLoader");  
+  protected log: Logger = getLogger("CustomPropertyLoader");  
   
   get store() {
     return this._store;

@@ -81,7 +81,7 @@ export class Scrollyteller {
   private chartId: string;
   private stepElements!: NodeListOf<Element>;
   private settings!: any;
-  private log: Logger = getLogger("Scrollyteller");  
+  protected log: Logger = getLogger("Scrollyteller");  
   
   private steps: ScrollyStep[];
   private _events: Map<ScrollyEvent, Array<Callback>>;

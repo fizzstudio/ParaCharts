@@ -32,7 +32,7 @@ interface Point {
  * @internal
  */
 export class PointerEventManager {
-  private log: Logger = getLogger("PointerEventManager");
+  protected log: Logger = getLogger("PointerEventManager");
   private _dataRoot: SVGElement | null; // the group that contains all the datapoints
   private _dataRect: SVGGraphicsElement | null; // the backdrop element behind all the datapoints, needs to be implemented
 

@@ -2,7 +2,7 @@ import { Logger, getLogger } from '../common/logger';
 import { ParaStore } from '../store';
 
 export class ParaViewController {
-  private log: Logger = getLogger("ParaViewController");
+  protected log: Logger = getLogger("ParaViewController");
   constructor(protected _store: ParaStore) {}
   handleKeyEvent(event: KeyboardEvent) {
     if (this._store.settings.chart.isStatic) {

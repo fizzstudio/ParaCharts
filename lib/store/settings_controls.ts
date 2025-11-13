@@ -87,7 +87,7 @@ const inputTypeTags = {
  * Manages setting control information.
  */
 export class SettingControlManager extends State {
-  private log: Logger = getLogger("SettingControlManager");
+  protected log: Logger = getLogger("SettingControlManager");
   
   @property() protected _settingControlInfo: {[key: string]: SettingControlInfo} = {};
 

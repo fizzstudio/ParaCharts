@@ -28,7 +28,7 @@ export class BarCluster {
   stacks: {[key: string]: BarStack} = {};
   readonly id: string;
   readonly labelId: string;
-  private log: Logger = getLogger("BarCluster");
+  protected log: Logger = getLogger("BarCluster");
   constructor(public readonly chartInfo: BarChartInfo, public readonly key: string) {
     this.id = `barcluster-${strToId(this.key)}`;
     this.labelId = `tick-x-${this.id}`;

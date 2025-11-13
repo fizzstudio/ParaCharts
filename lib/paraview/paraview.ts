@@ -68,7 +68,7 @@ export class ParaView extends ParaComponent {
   protected _documentView?: DocumentView;
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
-  private log: Logger = getLogger("ParaView");
+  protected log: Logger = getLogger("ParaView");
   
   @state() private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
