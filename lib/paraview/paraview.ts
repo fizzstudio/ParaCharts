@@ -46,7 +46,7 @@ export type c2mCallbackType = {
 };
 
 @customElement('para-view')
-export class ParaView ParaComponent {
+export class ParaView extends ParaComponent {
 
   paraChart!: ParaChart;
 

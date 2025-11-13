@@ -14,7 +14,7 @@ export class Logger {
   constructor(name: string, debugLevel: DebugLevel) {
     this.name = name;
 	this.debugLevel = debugLevel;
-  {
+  }
   info(...data: any[]) {
     if (this.debugLevel === LOG_ALL) {
 	  console.log(`[${this.name}]`, ...data);

@@ -1,7 +1,7 @@
 import { Logger, getLogger } from '../common/logger';
 import { ParaStore } from '../store';
 
-export class ParaViewController {
+export class ParaViewController extends ParaView {
   private log: Logger = getLogger("ParaViewController");
   constructor(protected _store: ParaStore) {
     super();
