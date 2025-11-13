@@ -162,6 +162,14 @@ export class GridLayout extends Layout {
     this.layoutViews();
   }
 
+  get hRules() {
+    return this._hRules;
+  }
+
+  get vRules() {
+    return this._vRules;
+  }
+
   setRowGap(i: number, gap: number) {
     if (i >= this._rowGaps.length) {
       throw new Error(`row gap index '${i}' out of bounds`);

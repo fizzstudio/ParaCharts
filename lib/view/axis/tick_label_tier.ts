@@ -24,6 +24,7 @@ import { ParaView } from '../../paraview';
 import { type TemplateResult } from 'lit';
 import { Vec2 } from '../../common/vector';
 import { PlaneModel } from '@fizz/paramodel';
+import { Popup } from '../popup';
 
 /**
  * A single tier of tick labels.
@@ -117,10 +118,17 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
         wrapWidth: this._labelWrapWidth,
         x: 0,
         y: 0,
+      pointerEnter: (e) => {this.addPopup(labelText, i);
+      },
+      pointerLeave: (e) => {this.removePopup(this.id);
+      }
       });
       this.append(label);
     }
   }
+
+  addPopup(text: string, index: number): void{}
+  removePopup(id: string){}
 
   updateTickLabelIds() {
     // const xSeries = todo().controller.model!.indepVar;
@@ -258,6 +266,35 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     return tickStep;
   }
 
+  addPopup(text?: string, index?: number) {
+    let datapointText = `no text detected`
+    const regFactor = (this.tickLabels.length % this.children.length == 0)
+      ? this.children.length / this.tickLabels.length
+      : (this.children.length) / (this.tickLabels.length + 1)
+    let popup = new Popup(this.paraview,
+      {
+        text: text ?? datapointText,
+        x: this._tickLabelX(index ?? 0) * regFactor,
+        y: this.paraview.documentView?.chartLayers.height!,
+        textAnchor: "middle",
+        classList: ['annotationlabel'],
+        id: this.id,
+        type: "horizTick",
+        fill: "hsl(0, 0%, 0%)",
+        inbounds: false
+      },
+      {
+        fill: "hsl(0, 0%, 100%)",
+        shape: "box"
+      })
+    this.paraview.store.popups.push(popup)
+  }
+
+  removePopup(id: string) {
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
+    this.paraview.requestUpdate()
+  }
+
 }
 
 /**
@@ -322,6 +359,32 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
         kid.x = this._tickLabelX(i);
         kid.y = this._tickLabelY(i);
     });
+  }
+
+  addPopup(text?: string, index?: number) {
+    let datapointText = `no text detected`
+    let popup = new Popup(this.paraview,
+      {
+        text: text ?? datapointText,
+        x: this._tickLabelX(index ?? 0),
+        y: this._tickLabelY(index ?? 0) + this.paraview.store.settings.popup.margin - this.children[index ?? 0].height ,
+        textAnchor: "middle",
+        classList: ['annotationlabel'],
+        id: this.id,
+        type: "vertTick",
+        fill: "hsl(0, 0%, 0%)",
+        inbounds: false
+      },
+      {
+        fill: "hsl(0, 0%, 100%)",
+        shape: "box"
+      })
+    this.paraview.store.popups.push(popup)
+  }
+
+  removePopup(id: string) {
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
+    this.paraview.requestUpdate()
   }
 
 }
