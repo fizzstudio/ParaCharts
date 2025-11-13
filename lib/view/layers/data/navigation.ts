@@ -90,29 +90,31 @@ function nodeOptionsMatch<T extends NavNodeType>(
 }
 
 /**
+ * Navigation map
  * Manages the graph that controls datapoint focus and visitation during
  * keyboard navigation.
  */
 export class NavMap {
   protected _layers: Map<string, NavLayer> = new Map();
-  protected _currentLayer: NavLayer;
+  protected _currentLayer: string;
   protected _runTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(protected _store: ParaStore, protected _chart: BaseChartInfo) {
-    this._currentLayer = new NavLayer(this, 'root');
-    this._layers.set(this._currentLayer.name, this._currentLayer);
+    this._currentLayer = 'root';
+    const root = new NavLayer(this, this._currentLayer);
+    this._layers.set(this._currentLayer, root);
   }
 
   get currentLayer() {
     return this._currentLayer;
   }
 
-  set currentLayer(layer: NavLayer) {
+  set currentLayer(layer: string) {
     this._currentLayer = layer;
   }
 
   get cursor() {
-    return this._currentLayer.cursor;
+    return this.layer(this._currentLayer)!.cursor;
   }
 
   get root() {
@@ -123,15 +125,22 @@ export class NavMap {
     return this._chart;
   }
 
+  clone(): NavMap {
+    const c = new NavMap(this._store, this._chart);
+    c._layers = new Map(this._layers.entries().map(([id, layer]) => [id, layer.clone(c)]));
+    c._currentLayer = this._currentLayer;
+    return c;
+  }
+
   layer(layer: string) {
     return this._layers.get(layer);
   }
 
   registerLayer(layer: NavLayer) {
-    if (this._layers.has(layer.name)) {
+    if (this._layers.has(layer.id)) {
       return;
     }
-    this._layers.set(layer.name, layer);
+    this._layers.set(layer.id, layer);
   }
 
   async visitDatapoints() {
@@ -164,7 +173,7 @@ export class NavMap {
     const node = this.node(type, options);
     if (node) {
       node.layer.cursor = node;
-      this._currentLayer = node.layer;
+      this._currentLayer = node.layer.id;
       this.visitDatapoints();
     } else {
       throw new Error('nav node not found');
@@ -205,13 +214,20 @@ export class NavMap {
 
 }
 
+/**
+ * Navigation layer
+ */
 export class NavLayer {
-  protected _nodes: Map<NavNodeType, NavNode[]> = new Map();
+  static nextId = 0;
+
+  protected _nodes = new Map<NavNodeType, string[]>();
+  // node id -> node
+  protected _nodesById = new Map<string, NavNode>();
   // A NavLayer is basically only valid/useful if it has nodes, and
   // if it has nodes, the cursor will be set.
-  protected _cursor!: NavNode;
+  protected _cursor!: string;
 
-  constructor(protected _map: NavMap, protected _name: string) {
+  constructor(protected _map: NavMap, protected _id: string) {
     _map.registerLayer(this);
   }
 
@@ -219,60 +235,78 @@ export class NavLayer {
     return this._map;
   }
 
-  get name() {
-    return this._name;
+  get id() {
+    return this._id;
   }
 
   get cursor() {
-    return this._cursor;
+    return this._nodesById.get(this._cursor)!;
   }
 
   set cursor(cursor: NavNode) {
-    this._cursor = cursor;
+    this._cursor = cursor.id;
+  }
+
+  clone(map: NavMap): NavLayer {
+    const c = new NavLayer(map, this._id);
+    c._nodesById = new Map(this._nodesById.entries().map(([id, node]) => [id, node.clone(c)]));
+    c._nodes = new Map(this._nodes.entries().map(([type, ids]) => [type, [...ids]]));
+    c._cursor = this._cursor;
+    return c;
   }
 
   registerNode<T extends NavNodeType>(node: NavNode<T>) {
     if (node.index !== -1) {
       return;
     }
+    this._nodesById.set(node.id, node);
     let list = this._nodes.get(node.type);
     if (!list) {
       list = [];
       this._nodes.set(node.type, list);
     }
-    list.push(node);
+    list.push(node.id);
     node.index = list.length - 1;
     if (!this._cursor) {
-      this._cursor = node;
+      this._cursor = node.id;
     }
   }
 
+  /** Get a node from its ID. */
+  node(id: string): NavNode<any> | undefined {
+    return this._nodesById.get(id);
+  }
+
+  /** Get a node from its options or index. */
   get<T extends NavNodeType>(
     type: T,
     optionsOrIndex: Readonly<NavNodeOptionsType<T>> | number = 0
   ): NavNode<NavNodeType> | undefined {
     const list = this._nodes.get(type);
     if (list) {
-      return typeof optionsOrIndex === 'number'
+      return this._nodesById.get( (typeof optionsOrIndex === 'number')
         ? list[optionsOrIndex]
         // Every item in `optionsOrIndex` must have a corresponding item with
         // the same value in `node.options`, but the converse is not true;
         // i.e., node.options may have items lacking in `optionsOrIndex`
-        : list.find((node: NavNode<T>) => nodeOptionsEq(optionsOrIndex, node.options));
+        : list.find((id: string) => nodeOptionsEq(optionsOrIndex, this._nodesById.get(id)!.options))!);
     }
     return undefined;
   }
 
+  /** Get all nodes matching partial options. */
   query<T extends NavNodeType>(type: T, options: Partial<NavNodeOptionsType<T>> = {}): NavNode<T>[] {
-    const list = this._nodes.get(type) as NavNode<T>[];
+    const list = this._nodes.get(type);
     if (list) {
-      return list.filter(node => nodeOptionsMatch(options, node.options));
+      return list
+        .filter(id => nodeOptionsMatch(options, (this._nodesById.get(id) as NavNode<T>).options))
+        .map(id => this._nodesById.get(id) as NavNode<T>);
     }
     return [];
   }
 
   goToNode(node: NavNode) {
-    this._cursor = node;
+    this._cursor = node.id;
     this.map.visitDatapoints();
   }
 
@@ -289,12 +323,19 @@ export class NavLayer {
 
 }
 
+/**
+ * Navigation node
+ */
 export class NavNode<T extends NavNodeType = NavNodeType> {
-  protected _links: Map<Direction, NavLayer | NavNode> = new Map();
+  static nextId = 0;
+
+  // direction -> layer or node ID
+  protected _links: Map<Direction, string> = new Map();
   // protected _datapoints: DatapointCursor[] = [];
   // NB: This is the index of the nav node in the layer's list of nodes
   // of this type, NOT, e.g., the index of a datapoint in a series
   protected _index = -1;
+  protected _id: string;
 
   constructor(
     protected _layer: NavLayer,
@@ -302,12 +343,18 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     protected _options: NavNodeOptionsType<T>,
     protected _store: ParaStore
   ) {
+    // NB: Layer IDs are not allowed to start with a colon
+    this._id = `:${NavNode.nextId++}`;
     _layer.registerNode(this);
   }
 
   // get datapoints(): readonly DatapointCursor[] {
   //   return this._datapoints;
   // }
+
+  get id() {
+    return this._id;
+  }
 
   get type() {
     return this._type;
@@ -353,12 +400,20 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     return datapoints;
   }
 
+  clone(layer: NavLayer): NavNode<T> {
+    const c = new NavNode<T>(layer, this._type, this._options, this._store);
+    c._links = new Map(this._links);
+    c._index = this._index;
+    c._id = this._id;
+    return c;
+  }
+
   getLink(dir: Direction) {
     return this._links.get(dir);
   }
 
   setLink(dir: Direction, node: NavLayer | NavNode) {
-    this._links.set(dir, node);
+    this._links.set(dir, node.id);
   }
 
   removeLink(dir: Direction) {
@@ -376,19 +431,19 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     const linked = this._links.get(dir);
     if (linked) {
       this.removeLink(dir);
-      if (linked instanceof NavNode && isReciprocal) {
-        linked.removeLink(oppositeDirs[dir]);
+      if (linked[0] === ':' && isReciprocal) {
+        this._layer.node(linked)!.removeLink(oppositeDirs[dir]);
       }
     }
   }
 
-  peekNode(dir: Direction, count: number) {
-    let cursor: NavNode | undefined = this;
+  peekNode(dir: Direction, count: number): NavNode<any> | undefined {
+    let cursor: string | undefined = this._id;
     while (cursor && count--) {
-      const peeked = cursor.getLink(dir);
-      cursor = peeked instanceof NavLayer ? undefined : peeked;
+      const peeked = this._layer.node(cursor)!.getLink(dir);
+      cursor = (peeked && peeked[0] !== ':') ? undefined : peeked;
     }
-    return cursor;
+    return cursor ? this._layer.node(cursor) : undefined;
   }
 
   allNodes(dir: Direction, type?: NavNodeType) {
@@ -415,18 +470,16 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     if (!link) {
       return;
     }
-    if (link instanceof NavLayer) {
-      this._layer.map.currentLayer = link;
-    } else if (link instanceof NavNode) {
-      this._layer.cursor = link;
+    if (link[0] === ':') {
+      this.layer.cursor = this._layer.node(link)!;
     } else {
-      throw new Error('unknown nav link type');
+      this._layer.map.currentLayer = link;
     }
     this._layer.map.visitDatapoints();
   }
 
   go() {
-    this._layer.goToNode(this);
+    this.layer.goToNode(this);
   }
 
   isNodeType<N extends NavNodeType>(nodeType: N): this is NavNode<N> {

@@ -166,17 +166,32 @@ export class Scrollyteller {
             this.parachart.api.getSeries(params[0]).getPoint(+params[1]).select();
           }
         }
-      }
 
+        if (action === 'directLabels') {
+          console.warn('directLabels', params)
+          const isOn = params[0] === 'true' ? true : false;
+          this.parachart.api.setSetting('chart.hasDirectLabels', isOn);
+        }
+        
+        if (action === 'hasSymbols') {
+          console.warn('hasSymbols', params)
+          const isOn = params[0] === 'true' ? true : false;
+          this.parachart.api.setSetting('chart.isDrawSymbols', isOn);
+        }
+
+        if (action === 'setColorPalette') {
+          console.warn('setColorPalette', params)
+          this.parachart.api.setSetting('color.colorPalette', params[0]);
+        }
+
+        if (action === 'setManifest') {
+          console.warn('manifest', params)
+          console.warn('this.parachart', this.parachart)
+          this.parachart.setAttribute('manifest', params[0]);
+        }
+      }
       // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
-      if (this.settings.isScrollyAnnouncementsEnabled) {
-        this.log.info('TODO: Add scrollytelling aria-live descriptions of highlights')
-      }
-
       // TODO: add sonifications
-      if (this.settings.isScrollySoniEnabled) {
-        this.log.info('TODO: Add scrollytelling sonifications')
-      }
     });
 
 

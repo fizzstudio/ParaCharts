@@ -17,16 +17,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { Logger, getLogger } from '../common/logger';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaStore } from '../store';
-import { type LineSettings, type DeepReadonly } from '../store/settings_types';
+import { type LineSettings, type DeepReadonly, type Setting } from '../store/settings_types';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../store/query_utils';
-//import { SeriesView } from '../../../data';
 
 import { interpolate } from '@fizz/templum';
 
-import { NavNode } from '../view/layers/data/navigation';
+import { NavNode, type NavMap } from '../view/layers/data/navigation';
 import { formatXYDatapoint } from '@fizz/parasummary';
 import { type ChartType } from '@fizz/paramanifest';
-import { DocumentView } from '../view/document_view';
 import { Highlight } from '@fizz/parasummary';
 
 /**
@@ -36,6 +34,8 @@ import { Highlight } from '@fizz/parasummary';
 export class LineChartInfo extends PointChartInfo {
   protected _prevHighlightNavcode = '';
   private log: Logger = getLogger("LineChartInfo");
+  protected _altNavMap!: NavMap;
+
   constructor(type: ChartType, store: ParaStore) {
     super(type, store);
   }
@@ -72,6 +72,14 @@ export class LineChartInfo extends PointChartInfo {
     return super.settings as DeepReadonly<LineSettings>;
   }
 
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if (['type.line.isTrendNavigationModeEnabled'].includes(path)) {
+      [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
+      this._navMap!.root.goTo('top', {});
+    }
+    super.settingDidChange(path, oldValue, newValue);
+  }
+
   async storeDidChange(key: string, value: any) {
     await super.storeDidChange(key, value);
     if (key === 'seriesAnalyses') {
@@ -95,9 +103,10 @@ export class LineChartInfo extends PointChartInfo {
   }
 
   protected _createSequenceNavNodes() {
-    if (!this._canCreateSequenceNavNodes() || !this.settings.isTrendNavigationModeEnabled) return;
+    if (!this._canCreateSequenceNavNodes()) return;
     const seriesSeqNodes: NavNode<'sequence'>[][] = [];
-    this._navMap!.root.query('series').forEach(seriesNode => {
+    this._altNavMap = this._navMap!.clone();
+    this._altNavMap!.root.query('series').forEach(seriesNode => {
       if (seriesSeqNodes.length) {
         seriesNode.connect('left', seriesSeqNodes.at(-1)!.at(-1)!);
       }
