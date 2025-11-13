@@ -39,6 +39,7 @@ import { PaddingInput as PaddingInput_3 } from '../base_view';
 import { PaddingInput as PaddingInput_4 } from '../../base_view';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';
 import papa from 'papaparse';
+import { ParaAPI as ParaAPI_2 } from '../paraapi/paraapi';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { PlaneDatapointView as PlaneDatapointView_2 } from './plane_plot_view';
 import { PropertyValueMap } from 'lit';
@@ -131,6 +132,8 @@ export interface AnimationSettings extends SettingGroup {
     isAnimationEnabled: boolean;
     // (undocumented)
     lineSnake: boolean;
+    // (undocumented)
+    popInAnimateRevealTimeMs: number;
     // (undocumented)
     symbolPopIn: boolean;
 }
@@ -1345,6 +1348,10 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     protected _animStartState: AnimState;
     // (undocumented)
+    set baseSymbolScale(scale: number);
+    // (undocumented)
+    protected _baseSymbolScale: number;
+    // (undocumented)
     beginAnimStep(_t: number): void;
     // (undocumented)
     get classInfo(): ClassInfo;
@@ -1413,8 +1420,6 @@ export class DatapointView extends DataView_2 {
     protected get _symbolColor(): number;
     // (undocumented)
     protected get symbolScale(): number;
-    // (undocumented)
-    protected _symbolScale: number;
     // (undocumented)
     get withCousins(): this[];
     // (undocumented)
@@ -1509,9 +1514,9 @@ export class DescriptionPanel extends ControlPanelTabPanel {
     // (undocumented)
     clearStatusBar(): void;
     // (undocumented)
-    protected firstUpdated(_changedProperties: PropertyValues): void;
-    // (undocumented)
     internalizeCaptionBox(): void;
+    // (undocumented)
+    positionCaptionBox(): void;
     // (undocumented)
     render(): TemplateResult_2<1>;
     // (undocumented)
@@ -2045,6 +2050,8 @@ export class LinePlotView extends PointPlotView {
     // (undocumented)
     protected _newDatapointView(seriesView: PlaneSeriesView): LineSection;
     // (undocumented)
+    settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
+    // (undocumented)
     get settings(): DeepReadonly<LineSettings>;
     // (undocumented)
     updateSeriesStyle(styleInfo: StyleInfo): void;
@@ -2155,31 +2162,36 @@ export interface MDRAnnotation extends BaseAnnotation {
     annotation: string;
 }
 
-// @public (undocumented)
+// @public
 export class NavLayer {
-    constructor(_map: NavMap, _name: string);
+    constructor(_map: NavMap, _id: string);
+    // (undocumented)
+    clone(map: NavMap): NavLayer;
     // (undocumented)
     get cursor(): NavNode;
     set cursor(cursor: NavNode);
     // (undocumented)
-    protected _cursor: NavNode;
-    // (undocumented)
+    protected _cursor: string;
     get<T extends NavNodeType>(type: T, optionsOrIndex?: Readonly<NavNodeOptionsType<T>> | number): NavNode<NavNodeType> | undefined;
     // (undocumented)
     goTo<T extends NavNodeType>(type: T, optionsOrIndex: Readonly<NavNodeOptionsType<T>> | number): void;
     // (undocumented)
     goToNode(node: NavNode): void;
     // (undocumented)
+    get id(): string;
+    // (undocumented)
+    protected _id: string;
+    // (undocumented)
     get map(): NavMap;
     // (undocumented)
     protected _map: NavMap;
     // (undocumented)
-    get name(): string;
+    static nextId: number;
+    node(id: string): NavNode<any> | undefined;
     // (undocumented)
-    protected _name: string;
+    protected _nodes: Map<NavNodeType, string[]>;
     // (undocumented)
-    protected _nodes: Map<NavNodeType, NavNode[]>;
-    // (undocumented)
+    protected _nodesById: Map<string, NavNode<NavNodeType>>;
     query<T extends NavNodeType>(type: T, options?: Partial<NavNodeOptionsType<T>>): NavNode<T>[];
     // (undocumented)
     registerNode<T extends NavNodeType>(node: NavNode<T>): void;
@@ -2193,10 +2205,12 @@ export class NavMap {
     // (undocumented)
     get chartInfo(): BaseChartInfo;
     // (undocumented)
-    get currentLayer(): NavLayer;
-    set currentLayer(layer: NavLayer);
+    clone(): NavMap;
     // (undocumented)
-    protected _currentLayer: NavLayer;
+    get currentLayer(): string;
+    set currentLayer(layer: string);
+    // (undocumented)
+    protected _currentLayer: string;
     // (undocumented)
     get cursor(): NavNode<NavNodeType>;
     // (undocumented)
@@ -2221,11 +2235,13 @@ export class NavMap {
     visitDatapoints(): Promise<void>;
 }
 
-// @public (undocumented)
+// @public
 export class NavNode<T extends NavNodeType = NavNodeType> {
     constructor(_layer: NavLayer, _type: T, _options: NavNodeOptionsType<T>, _store: ParaStore);
     // (undocumented)
     allNodes(dir: Direction, type?: NavNodeType): NavNode<NavNodeType>[];
+    // (undocumented)
+    clone(layer: NavLayer): NavNode<T>;
     // (undocumented)
     connect(dir: Direction, to: NavLayer | NavNode, isReciprocal?: boolean): void;
     // (undocumented)
@@ -2233,9 +2249,13 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     // (undocumented)
     disconnect(dir: Direction, isReciprocal?: boolean): void;
     // (undocumented)
-    getLink(dir: Direction): NavLayer | NavNode<NavNodeType> | undefined;
+    getLink(dir: Direction): string | undefined;
     // (undocumented)
     go(): void;
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    protected _id: string;
     // (undocumented)
     get index(): number;
     set index(index: number);
@@ -2250,15 +2270,17 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     // (undocumented)
     protected _layer: NavLayer;
     // (undocumented)
-    protected _links: Map<Direction, NavLayer | NavNode>;
+    protected _links: Map<Direction, string>;
     // (undocumented)
     move(dir: Direction): Promise<void>;
+    // (undocumented)
+    static nextId: number;
     // (undocumented)
     get options(): Readonly<NavNodeOptionsType<T>>;
     // (undocumented)
     protected _options: NavNodeOptionsType<T>;
     // (undocumented)
-    peekNode(dir: Direction, count: number): NavNode<NavNodeType> | undefined;
+    peekNode(dir: Direction, count: number): NavNode<any> | undefined;
     // (undocumented)
     removeLink(dir: Direction): void;
     // (undocumented)
@@ -2329,10 +2351,6 @@ export class ParaChart extends ParaChart_base {
     constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
     // (undocumented)
     get api(): ParaAPI;
-    // Warning: (ae-forgotten-export) The symbol "ParaApi" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    protected _api: ParaApi;
     // (undocumented)
     get ariaLiveRegion(): AriaLive;
     // (undocumented)
@@ -2364,15 +2382,9 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     accessor description: string | undefined;
     // (undocumented)
-    downloadPNG(): void;
-    // (undocumented)
-    downloadSVG(): void;
-    // (undocumented)
     protected firstUpdated(_changedProperties: PropertyValues): void;
     // (undocumented)
     accessor forcecharttype: ChartType_2 | undefined;
-    // (undocumented)
-    getChartSVG(): string;
     // (undocumented)
     headless: boolean;
     // (undocumented)
@@ -2407,6 +2419,8 @@ export class ParaChart extends ParaChart_base {
     get paraView(): ParaView;
     // (undocumented)
     protected _paraViewRef: Ref_2<ParaView>;
+    // (undocumented)
+    postNotice(key: string, value: any): void;
     // (undocumented)
     get ready(): Promise<void>;
     // (undocumented)
@@ -2539,11 +2553,11 @@ export class ParaDialog extends ParaComponent {
 export class ParaHelper {
     constructor();
     // (undocumented)
-    protected _api: ParaApi;
+    get api(): ParaAPI_2;
     // (undocumented)
     protected _createParaChart(): void;
     // (undocumented)
-    downloadPNG(): void;
+    get jimReady(): Promise<void>;
     // (undocumented)
     loadData(url: string): Promise<FieldInfo[]>;
     // (undocumented)
@@ -2552,8 +2566,6 @@ export class ParaHelper {
     protected _paraChart: ParaChart;
     // (undocumented)
     get ready(): Promise<void>;
-    // (undocumented)
-    serializeChart(): string;
 }
 
 // @public (undocumented)
@@ -2806,6 +2818,8 @@ export class ParaView extends ParaView_base {
     // (undocumented)
     addDef(key: string, template: TemplateResult): void;
     // (undocumented)
+    addJIMSeriesSummaries(): Promise<void>;
+    // (undocumented)
     protected _chartRefs: Map<string, Ref<any>>;
     // (undocumented)
     chartTitle?: string;
@@ -2863,6 +2877,16 @@ export class ParaView extends ParaView_base {
     protected _frameRef: Ref<SVGRectElement>;
     // (undocumented)
     protected _hotkeyListener: (e: HotkeyEvent) => void;
+    // (undocumented)
+    protected _jim: string;
+    // (undocumented)
+    jimReady(): Promise<void>;
+    // (undocumented)
+    protected _jimReadyPromise: Promise<void>;
+    // (undocumented)
+    protected _jimReadyRejector: (() => void);
+    // (undocumented)
+    protected _jimReadyResolver: (() => void);
     // (undocumented)
     protected _lowVisionModeSaved: Map<string, any>;
     // (undocumented)
@@ -3253,8 +3277,6 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     protected _animEnd(): void;
     // (undocumented)
-    _animStep(bezT: number): void;
-    // (undocumented)
     beginAnimStep(t: number): void;
     // (undocumented)
     readonly chart: PointPlotView;
@@ -3267,11 +3289,15 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     protected _currentAnimationFrame: number | null;
     // (undocumented)
+    get hasAnimated(): boolean;
+    // (undocumented)
+    _hasAnimated: boolean;
+    // (undocumented)
     get height(): number;
     // (undocumented)
     _isAnimating: boolean;
     // (undocumented)
-    leftIndex: number;
+    popInAnimation(t: number): void;
     // (undocumented)
     get _selectedMarkerX(): number;
     // (undocumented)
