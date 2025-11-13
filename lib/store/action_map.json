@@ -1,0 +1,158 @@
+{
+  "addAnnotation": {
+    "label": "Add an annotation",
+    "hotkeys": ["a"]
+  },
+  "toggleAnnouncementMode": {
+    "label": "Toggle screen reader announcements",
+    "hotkeys": ["b"]
+  },
+  "jumpToChordLanding": {
+    "label": "Jump to chord landing",
+    "hotkeys": ["c"]
+  },
+  "openHelp": {
+    "label": "Show the help dialog",
+    "hotkeys": ["h"]
+  },
+  "toggleDarkMode": {
+    "label": "Toggle dark mode",
+    "hotkeys": ["k"]
+  },
+  "toggleLowVisionMode": {
+    "label": "Toggle low-vision mode",
+    "hotkeys": ["l"]
+  },
+  "toggleNarrativeHighlightMode": {
+    "label": "Toggle narrative highlight mode",
+    "hotkeys": ["n"]
+  },
+  "queryData": {
+    "label": "Query data",
+    "hotkeys": ["q"]
+  },
+  "repeatLastAnnouncement": {
+    "label": "Repeat last message",
+    "hotkeys": ["r"]
+  },
+  "toggleSonificationMode": {
+    "label": "Toggle sonification mode",
+    "hotkeys": ["s"]
+  },
+  "toggleTrendNavigationMode": {
+    "label": "Toggle trend navigation mode",
+    "hotkeys": ["t"]
+  },
+  "clearSelection": {
+    "label": "Clear the datapoint selection",
+    "hotkeys": ["u"]
+  },
+  "toggleVoicingMode": {
+    "label": "Toggle self-voicing mode",
+    "hotkeys": ["v"]
+  },
+  "move": {
+    "label": "Move the cursor",
+    "parameters": {
+      "direction": "string"
+    },
+    "hotkeys": [
+      {
+        "keyID": "arrowright",
+        "args": {
+          "direction": "right"
+        }
+      },
+      {
+        "keyID": "arrowleft",
+        "args": {
+          "direction": "left"
+        }
+      },
+      {
+        "keyID": "arrowup",
+        "args": {
+          "direction": "up"
+        }
+      },
+      {
+        "keyID": "arrowdown",
+        "args": {
+          "direction": "down"
+        }
+      },
+      {
+        "keyID": "Shift+arrowup",
+        "args": {
+          "direction": "out"
+        }
+      },
+      {
+        "keyID": "Shift+arrowdown",
+        "args": {
+          "direction": "in"
+        }
+      }
+    ]
+  },
+  "playRight": {
+    "label": "Play datapoints to the right",
+    "hotkeys": ["Shift+end"]
+  },
+  "playLeft": {
+    "label": "Play datapoints to the left",
+    "hotkeys": ["Shift+home"]
+  },
+  "stopPlay": {
+    "label": "Stop playing",
+    "hotkeys": ["Ctrl+control"]
+  },
+  "goFirst": {
+    "label": "Go to first point in series",
+    "hotkeys": ["home", ";"]
+  },
+  "goLast": {
+    "label": "Go to last point in series",
+    "hotkeys": ["end", "'"]
+  },
+  "playPauseMedia": {
+    "label": "Play or pause audio",
+    "hotkeys": [" "]
+  },
+  "reset": {
+    "label": "Reset the chart",
+    "hotkeys": ["Shift+ "]
+  },
+  "select": {
+    "label": "Select a datapoint",
+    "hotkeys": ["enter"]
+  },
+  "extendSelection": {
+    "label": "Extend the datapoint selection",
+    "hotkeys": ["Shift+enter"]
+  },
+  "goMinimum": {
+    "label": "Go to the series minimum",
+    "hotkeys": ["["]
+  },
+  "goMaximum": {
+    "label": "Go to the series maximum",
+    "hotkeys": ["]"]
+  },
+  "goTotalMinimum": {
+    "label": "Go to the chart minimum",
+    "hotkeys": ["Shift+{"]
+  },
+  "goTotalMaximum": {
+    "label": "Go to the chart maximum",
+    "hotkeys": ["Shift+}"]
+  },
+  "announceVersionInfo": {
+    "label": "Announce version info",
+    "hotkeys": ["Ctrl+Shift+v"]
+  },
+  "shutUp": {
+    "label": "Stop speaking (self-voicing mode)",
+    "hotkeys": ["Ctrl", "escape"]
+  }
+}

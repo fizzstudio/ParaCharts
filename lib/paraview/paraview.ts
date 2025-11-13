@@ -26,7 +26,6 @@ import { DocumentView } from '../view/document_view';
 //import { styles } from './styles';
 import { SVGNS } from '../common/constants';
 import { fixed, isPointerInbounds } from '../common/utils';
-import { HotkeyActions, NarrativeHighlightHotkeyActions, NormalHotkeyActions } from './hotkey_actions';
 
 import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -34,6 +33,7 @@ import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Unsubscribe } from '@lit-app/state';
+import { AvailableActions } from '../store/action_map';
 
 /**
  * Data provided for the on focus callback
@@ -74,7 +74,7 @@ export class ParaView extends logging(ParaComponent) {
   protected _chartRefs: Map<string, Ref<any>> = new Map();
   protected _fileSavePlaceholderRef = createRef<HTMLElement>();
   protected _pointerEventManager: PointerEventManager | null = null;
-  protected _hotkeyActions!: HotkeyActions;
+  // protected _hotkeyActions!: HotkeyActions;
   @state() protected _defs: { [key: string]: TemplateResult } = {};
   @state() protected _jim = '';
 
@@ -278,12 +278,12 @@ export class ParaView extends logging(ParaComponent) {
     super();
     // Create the listener here so it can be added and removed on connect/disconnect
     this._hotkeyListener = (e: HotkeyEvent) => {
-      const handler = this._hotkeyActions.actions[e.action as keyof HotkeyActions['actions']];
+      const handler = this.paraChart.api.actions[e.action as keyof AvailableActions];
       if (handler) {
-        handler();
+        handler(e.args);
         //this._documentView!.postNotice(e.action, null);
       } else {
-        console.warn(`no handler for hotkey action '${e.action}'`);
+        console.warn(`no handler for action '${e.action}'`);
       }
     };
     this._jimReadyPromise = new Promise((resolve, reject) => {
@@ -340,14 +340,6 @@ export class ParaView extends logging(ParaComponent) {
     return this._pointerEventManager;
   }
 
-  get hotkeyActions() {
-    return this._hotkeyActions;
-  }
-
-  set hotkeyActions(actions: HotkeyActions) {
-    this._hotkeyActions = actions;
-  }
-
   connectedCallback() {
     super.connectedCallback();
     // create a default view box so the SVG element can have a size
@@ -360,7 +352,7 @@ export class ParaView extends logging(ParaComponent) {
       await this._documentView?.storeDidChange(key, value);
     });
     this.computeViewBox();
-    this._hotkeyActions ??= new NormalHotkeyActions(this);
+    // this._hotkeyActions ??= new NormalHotkeyActions(this);
     this._store.keymapManager.addEventListener('hotkeypress', this._hotkeyListener);
     if (!this._store.settings.chart.isStatic) {
       this._pointerEventManager = new PointerEventManager(this);
@@ -461,7 +453,8 @@ export class ParaView extends logging(ParaComponent) {
       });
     } else if (path === 'ui.isVoicingEnabled') {
       if (this._store.settings.ui.isVoicingEnabled) {
-        if (this._hotkeyActions instanceof NormalHotkeyActions) {
+        //if (this._hotkeyActions instanceof NormalHotkeyActions) {
+        if (!this._store.settings.ui.isNarrativeHighlightEnabled) {
           const msg = ['Self-voicing enabled.'];
           const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
           if (lastAnnouncement) {
@@ -484,7 +477,7 @@ export class ParaView extends logging(ParaComponent) {
     } else if (path === 'ui.isNarrativeHighlightEnabled') {
       if (this._store.settings.ui.isNarrativeHighlightEnabled) {
         if (this._store.settings.ui.isVoicingEnabled) {
-		  this.startNarrativeHighlightMode();
+		      this.startNarrativeHighlightMode();
           const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
           const msg = ['Narrative Highlights Mode enabled.'];
           if (lastAnnouncement) msg.push(lastAnnouncement);
@@ -493,7 +486,7 @@ export class ParaView extends logging(ParaComponent) {
             this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
           })();
         } else {
-		  this._store.updateSettings(draft => {
+		      this._store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = true;
           });
           this.startNarrativeHighlightMode();
@@ -599,7 +592,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   startNarrativeHighlightMode() {
-    this._hotkeyActions = new NarrativeHighlightHotkeyActions(this);
+    //this._hotkeyActions = new NarrativeHighlightHotkeyActions(this);
     this._store.updateSettings(draft => {
       draft.ui.isVoicingEnabled = true;
     });
@@ -611,11 +604,8 @@ export class ParaView extends logging(ParaComponent) {
   endNarrativeHighlightMode() {
     this._store.updateSettings(draft => {
       draft.ui.isVoicingEnabled = false;
-    });
-    this._store.updateSettings(draft => {
       draft.chart.showPopups = false;
     });
-    this._hotkeyActions = new NormalHotkeyActions(this);
   }
 
   createDocumentView() {

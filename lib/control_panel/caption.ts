@@ -1,6 +1,7 @@
 
 import { ParaComponent } from '../components';
 import { logging } from '../common/logger';
+import { Highlight } from '@fizz/parasummary';
 
 //import { styles } from '../../styles';
 import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer, HighlightedSummary } from '@fizz/parasummary';
@@ -13,14 +14,16 @@ import { type Unsubscribe } from '@lit-app/state';
 import { PlaneModel } from '@fizz/paramodel';
 import { ParaChart } from '../parachart/parachart';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import { NarrativeHighlightHotkeyActions } from '../paraview/hotkey_actions';
 
 type HoverListener = (event: PointerEvent) => void;
 
 @customElement('para-caption-box')
 export class ParaCaptionBox extends logging(ParaComponent) {
+  protected _lastSpans = new Set<HTMLElement>();
+  protected _prevSpanIdx = 0;
+  protected _highlightManualOverride = false;
 
-  @property({attribute: false}) parachart!: ParaChart;
+  @property({ attribute: false }) parachart!: ParaChart;
 
   @state() protected _caption: HighlightedSummary = { text: '', html: '' };
 
@@ -69,6 +72,10 @@ export class ParaCaptionBox extends logging(ParaComponent) {
     `
   ];
 
+  get highlightManualOverride() {
+    return this._highlightManualOverride;
+  }
+
   connectedCallback(): void {
     super.connectedCallback();
     this.setCaption();
@@ -81,45 +88,26 @@ export class ParaCaptionBox extends logging(ParaComponent) {
   }
 
   protected updated(_changedProperties: PropertyValues): void {
-    if (this._store.paraChart.paraView.hotkeyActions instanceof NarrativeHighlightHotkeyActions)
-      return;
+    if (!this._store.settings.ui.isNarrativeHighlightEnabled) return;
     const spans = this.getSpans();
     this._spans = this._spans.filter(span => spans.includes(span));
-    let prevNavcode = '';
-    for (const span of spans) {
+    spans.forEach((span, i) => {
       // Only add the listeners once
       if (!this._spans.includes(span)) {
         this._spans.push(span);
         span.addEventListener('pointerenter', (e: PointerEvent) => {
-          if (this._store.paraChart.paraView.hotkeyActions instanceof NarrativeHighlightHotkeyActions)
-            return;
-          if (span.dataset.navcode) {
-            if (span.dataset.navcode.startsWith('series')) {
-              const segments = span.dataset.navcode.split(/-/);
-              this._store.lowlightOtherSeries(...segments.slice(1));
-            } else {
-              this._store.highlight(span.dataset.navcode);
-              if (prevNavcode) {
-                this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
-              }
-              this._store.paraChart.paraView.documentView!.chartInfo.didAddHighlight(span.dataset.navcode);
-            }
-            prevNavcode = span.dataset.navcode;
-          }
-          span.classList.add('highlight');
+          if (!this._store.settings.ui.isNarrativeHighlightEnabled
+            || this._store.paraChart.ariaLiveRegion.voicing.isSpeaking) return;
+          // NB: this requires there be an announcement, so it only works
+          // in NH mode
+          const highlight = this._store.announcement.highlights[i];
+          this._store.paraChart.postNotice('utteranceBoundary', highlight);
         });
-        span.addEventListener('pointerleave', (e: PointerEvent) => {
-          if (this._store.paraChart.paraView.hotkeyActions instanceof NarrativeHighlightHotkeyActions)
-            return;
-          this._store.clearAllSeriesLowlights();
-          this._store.clearHighlight();
-          span.classList.remove('highlight');
-          if (prevNavcode) {
-            this._store.paraChart.paraView.documentView!.chartInfo.didRemoveHighlight(prevNavcode);
-          }
-        });
+        // span.addEventListener('pointerleave', (e: PointerEvent) => {
+        //   if (!this._store.settings.ui.isNarrativeHighlightEnabled) return;
+        // });
       }
-    }
+    });
   }
 
   clearStatusBar() {
@@ -136,6 +124,61 @@ export class ParaCaptionBox extends logging(ParaComponent) {
         }
       }
       this._caption = await this._summarizer.getChartSummary();
+    }
+  }
+
+  noticePosted(key: string, value: any) {
+    if (this._store.settings.ui.isNarrativeHighlightEnabled) {
+      if (key === 'utteranceBoundary') {
+        const highlight: Highlight = value;
+        for (const span of this.getSpans()) {
+          if (span.dataset.phrasecode === `${highlight.phrasecode}`) {
+            span.classList.add('highlight');
+            this._lastSpans.add(span);
+          } else {
+            span.classList.remove('highlight');
+            this._lastSpans.delete(span);
+          }
+        }
+      } else if (key === 'utteranceEnd') {
+        if (!this._highlightManualOverride) {
+          for (const span of this._lastSpans) {
+            span.classList.remove('highlight');
+          }
+        }
+      }
+    }
+  }
+
+  highlightSpan(next = true) {
+    const getMsg = (idx: number) => {
+      const div = document.createElement('div');
+      div.innerHTML = this._store.announcement.html;
+      return (div.children[idx] as HTMLElement).innerText;
+    };
+
+    const voicing = this._store.paraChart.ariaLiveRegion.voicing;
+    let idx = this._prevSpanIdx;
+    if (!this._highlightManualOverride) {
+      idx = voicing.highlightIndex!;
+      this._highlightManualOverride = true;
+    }
+    idx = Math.min(
+      this._store.announcement.highlights.length - 1,
+      Math.max(0, idx + (next ? 1 : -1)));
+
+    this._prevSpanIdx = idx;
+
+    const msg = getMsg(idx);
+    const highlight = this._store.announcement.highlights[idx];
+    voicing.shutUp();
+    voicing.speakText(msg);
+    this._store.paraChart.postNotice('utteranceBoundary', highlight);
+  }
+
+  clearSpanHighlights() {
+    for (const span of this.getSpans()) {
+      span.classList.remove('highlight');
     }
   }
 
@@ -178,7 +221,7 @@ export class ParaCaptionBox extends logging(ParaComponent) {
             >
               ${this._store.announcement.text === this._caption.text
                 ? ''
-                :  this.renderSummary(this._store.announcement, 'statusbar')}
+                : this.renderSummary(this._store.announcement, 'statusbar')}
             </div>
             ${!this._store.settings.controlPanel.caption.isCaptionExternalWhenControlPanelClosed
               || this.parachart.isControlPanelOpen

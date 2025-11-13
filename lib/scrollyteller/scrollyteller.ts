@@ -160,20 +160,43 @@ export class Scrollyteller {
           // console.warn('highlightDatapoint', params)
 
           if (params.length >= 2) {
-            this.parachart.performer.getSeries(params[0]).getPoint(+params[1]).click();
+            this.parachart.api.getSeries(params[0]).getPoint(+params[1]).select();
           }
+        }
+
+        if (action === 'directLabels') {
+          console.warn('directLabels', params)
+          const isOn = params[0] === 'true' ? true : false;
+          this.parachart.api.setSetting('chart.hasDirectLabels', isOn);
+        }
+        
+        if (action === 'hasSymbols') {
+          console.warn('hasSymbols', params)
+          const isOn = params[0] === 'true' ? true : false;
+          this.parachart.api.setSetting('chart.isDrawSymbols', isOn);
+        }
+
+        if (action === 'setColorPalette') {
+          console.warn('setColorPalette', params)
+          this.parachart.api.setSetting('color.colorPalette', params[0]);
+        }
+
+        if (action === 'setManifest') {
+          console.warn('manifest', params)
+          console.warn('this.parachart', this.parachart)
+          this.parachart.setAttribute('manifest', params[0]);
         }
       }
 
-      // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
-      if (this.settings.isScrollyAnnouncementsEnabled) {
-        console.log('TODO: Add scrollytelling aria-live descriptions of highlights')
-      }
+      // // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
+      // if (this.settings.isScrollyAnnouncementsEnabled) {
+      //   console.log('TODO: Add scrollytelling aria-live descriptions of highlights')
+      // }
 
-      // TODO: add sonifications
-      if (this.settings.isScrollySoniEnabled) {
-        console.log('TODO: Add scrollytelling sonifications')
-      }
+      // // TODO: add sonifications
+      // if (this.settings.isScrollySoniEnabled) {
+      //   console.log('TODO: Add scrollytelling sonifications')
+      // }
     });
 
 
@@ -187,10 +210,10 @@ export class Scrollyteller {
       else {
         console.warn('SCROLLY: exit up', response);
         console.warn('SCROLLY: reverse action!');
-        for (const {action, params} of response.actions) {  
+        for (const {action, params} of response.actions) {
           if (action === 'highlightDatapoint') {
             if (params.length >= 2) {
-              this.parachart.performer.getSeries(params[0]).getPoint(+params[1]).click();
+              this.parachart.api.getSeries(params[0]).getPoint(+params[1]).select();
             }
           }
         }
@@ -286,10 +309,10 @@ export class Scrollyteller {
 
   private parseActions(actionString: string | undefined): Action[] {
     if (!actionString) return [];
-    
+
     const actions: Action[] = [];
     const actionArray = actionString.split(')');
-    
+
     actionArray.forEach(actionItem => {
       actionItem = actionItem.trim();
       if (actionItem) {
@@ -303,7 +326,7 @@ export class Scrollyteller {
         });
       }
     });
-    
+
     return actions;
   }
 

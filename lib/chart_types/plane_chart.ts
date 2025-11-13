@@ -36,8 +36,8 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   protected _soniNoteIndex = 0;
   protected _soniSpeedRateIndex = 1;
 
-  constructor(type: ChartType, store: ParaStore, docView: DocumentView) {
-    super(type, store, docView);
+  constructor(type: ChartType, store: ParaStore) {
+    super(type, store);
   }
 
   protected _createNavMap() {

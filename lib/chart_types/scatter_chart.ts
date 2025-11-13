@@ -14,8 +14,8 @@ export class ScatterChartInfo extends PointChartInfo {
   protected _clustering?: clusterObject[];
   protected _currentCluster = -1;
 
-  constructor(type: ChartType, store: ParaStore, docView: DocumentView) {
-    super(type, store, docView);
+  constructor(type: ChartType, store: ParaStore) {
+    super(type, store);
   }
 
   protected _init(): void {

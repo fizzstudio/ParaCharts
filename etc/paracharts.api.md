@@ -39,6 +39,7 @@ import { PaddingInput as PaddingInput_3 } from '../base_view';
 import { PaddingInput as PaddingInput_4 } from '../../base_view';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';
 import papa from 'papaparse';
+import { ParaAPI as ParaAPI_2 } from '../paraapi/paraapi';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { PlaneDatapointView as PlaneDatapointView_2 } from './plane_plot_view';
 import { PropertyValueMap } from 'lit';
@@ -1513,9 +1514,9 @@ export class DescriptionPanel extends ControlPanelTabPanel {
     // (undocumented)
     clearStatusBar(): void;
     // (undocumented)
-    protected firstUpdated(_changedProperties: PropertyValues): void;
-    // (undocumented)
     internalizeCaptionBox(): void;
+    // (undocumented)
+    positionCaptionBox(): void;
     // (undocumented)
     render(): TemplateResult_2<1>;
     // (undocumented)
@@ -1936,9 +1937,13 @@ export class HorizTickStrip extends TickStrip {
 
 // @public (undocumented)
 export class HotkeyEvent extends Event {
-    constructor(key: string, action: string);
+    constructor(key: string, action: string, args?: ActionArgumentMap | undefined);
     // (undocumented)
     readonly action: string;
+    // Warning: (ae-forgotten-export) The symbol "ActionArgumentMap" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    readonly args?: ActionArgumentMap | undefined;
     // (undocumented)
     readonly key: string;
 }
@@ -1964,28 +1969,17 @@ export interface KeyDetails extends BaseKeyDetails {
 //
 // @internal
 export class KeymapManager extends EventTarget {
-    constructor(registrations: KeyRegistrations);
+    // Warning: (ae-forgotten-export) The symbol "ActionMap" needs to be exported by the entry point index.d.ts
+    constructor(actionMap: ActionMap);
     // (undocumented)
-    actionForKey(key: string): string | undefined;
+    protected _keyDetails: {
+        [keyId: string]: KeyDetails;
+    };
     // (undocumented)
     onKeydown(key: string): boolean;
-    registerHotkey(keyId: string, { action, caseSensitive }: KeyRegistration): void;
-    registerHotkeys(keyRegistrations: KeyRegistrations): void;
-}
-
-// @public
-export interface KeyRegistration {
-    // Warning: (ae-forgotten-export) The symbol "HotkeyActions" needs to be exported by the entry point index.d.ts
-    action: keyof HotkeyActions['actions'];
-    caseSensitive?: boolean;
-    // (undocumented)
-    label: string;
-}
-
-// @public (undocumented)
-export interface KeyRegistrations {
-    // (undocumented)
-    [key: string]: KeyRegistration;
+    // Warning: (ae-forgotten-export) The symbol "HotkeyWithArgument" needs to be exported by the entry point index.d.ts
+    registerHotkey(keyInfo: string | HotkeyWithArgument, action: string): void;
+    registerHotkeys(actionMap: ActionMap): void;
 }
 
 // @public (undocumented)
@@ -2055,6 +2049,8 @@ export class LinePlotView extends PointPlotView {
     get effectiveVisitedScale(): number;
     // (undocumented)
     protected _newDatapointView(seriesView: PlaneSeriesView): LineSection;
+    // (undocumented)
+    settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
     // (undocumented)
     get settings(): DeepReadonly<LineSettings>;
     // (undocumented)
@@ -2166,31 +2162,36 @@ export interface MDRAnnotation extends BaseAnnotation {
     annotation: string;
 }
 
-// @public (undocumented)
+// @public
 export class NavLayer {
-    constructor(_map: NavMap, _name: string);
+    constructor(_map: NavMap, _id: string);
+    // (undocumented)
+    clone(map: NavMap): NavLayer;
     // (undocumented)
     get cursor(): NavNode;
     set cursor(cursor: NavNode);
     // (undocumented)
-    protected _cursor: NavNode;
-    // (undocumented)
+    protected _cursor: string;
     get<T extends NavNodeType>(type: T, optionsOrIndex?: Readonly<NavNodeOptionsType<T>> | number): NavNode<NavNodeType> | undefined;
     // (undocumented)
     goTo<T extends NavNodeType>(type: T, optionsOrIndex: Readonly<NavNodeOptionsType<T>> | number): void;
     // (undocumented)
     goToNode(node: NavNode): void;
     // (undocumented)
+    get id(): string;
+    // (undocumented)
+    protected _id: string;
+    // (undocumented)
     get map(): NavMap;
     // (undocumented)
     protected _map: NavMap;
     // (undocumented)
-    get name(): string;
+    static nextId: number;
+    node(id: string): NavNode<any> | undefined;
     // (undocumented)
-    protected _name: string;
+    protected _nodes: Map<NavNodeType, string[]>;
     // (undocumented)
-    protected _nodes: Map<NavNodeType, NavNode[]>;
-    // (undocumented)
+    protected _nodesById: Map<string, NavNode<NavNodeType>>;
     query<T extends NavNodeType>(type: T, options?: Partial<NavNodeOptionsType<T>>): NavNode<T>[];
     // (undocumented)
     registerNode<T extends NavNodeType>(node: NavNode<T>): void;
@@ -2204,10 +2205,12 @@ export class NavMap {
     // (undocumented)
     get chartInfo(): BaseChartInfo;
     // (undocumented)
-    get currentLayer(): NavLayer;
-    set currentLayer(layer: NavLayer);
+    clone(): NavMap;
     // (undocumented)
-    protected _currentLayer: NavLayer;
+    get currentLayer(): string;
+    set currentLayer(layer: string);
+    // (undocumented)
+    protected _currentLayer: string;
     // (undocumented)
     get cursor(): NavNode<NavNodeType>;
     // (undocumented)
@@ -2232,11 +2235,13 @@ export class NavMap {
     visitDatapoints(): Promise<void>;
 }
 
-// @public (undocumented)
+// @public
 export class NavNode<T extends NavNodeType = NavNodeType> {
     constructor(_layer: NavLayer, _type: T, _options: NavNodeOptionsType<T>, _store: ParaStore);
     // (undocumented)
     allNodes(dir: Direction, type?: NavNodeType): NavNode<NavNodeType>[];
+    // (undocumented)
+    clone(layer: NavLayer): NavNode<T>;
     // (undocumented)
     connect(dir: Direction, to: NavLayer | NavNode, isReciprocal?: boolean): void;
     // (undocumented)
@@ -2244,9 +2249,13 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     // (undocumented)
     disconnect(dir: Direction, isReciprocal?: boolean): void;
     // (undocumented)
-    getLink(dir: Direction): NavLayer | NavNode<NavNodeType> | undefined;
+    getLink(dir: Direction): string | undefined;
     // (undocumented)
     go(): void;
+    // (undocumented)
+    get id(): string;
+    // (undocumented)
+    protected _id: string;
     // (undocumented)
     get index(): number;
     set index(index: number);
@@ -2261,15 +2270,17 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     // (undocumented)
     protected _layer: NavLayer;
     // (undocumented)
-    protected _links: Map<Direction, NavLayer | NavNode>;
+    protected _links: Map<Direction, string>;
     // (undocumented)
     move(dir: Direction): Promise<void>;
+    // (undocumented)
+    static nextId: number;
     // (undocumented)
     get options(): Readonly<NavNodeOptionsType<T>>;
     // (undocumented)
     protected _options: NavNodeOptionsType<T>;
     // (undocumented)
-    peekNode(dir: Direction, count: number): NavNode<NavNodeType> | undefined;
+    peekNode(dir: Direction, count: number): NavNode<any> | undefined;
     // (undocumented)
     removeLink(dir: Direction): void;
     // (undocumented)
@@ -2338,10 +2349,8 @@ export interface Palette {
 // @public (undocumented)
 export class ParaChart extends ParaChart_base {
     constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
-    // Warning: (ae-forgotten-export) The symbol "ParaApi" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
-    protected _api: ParaApi;
+    get api(): ParaAPI;
     // (undocumented)
     get ariaLiveRegion(): AriaLive;
     // (undocumented)
@@ -2373,15 +2382,9 @@ export class ParaChart extends ParaChart_base {
     // (undocumented)
     accessor description: string | undefined;
     // (undocumented)
-    downloadPNG(): void;
-    // (undocumented)
-    downloadSVG(): void;
-    // (undocumented)
     protected firstUpdated(_changedProperties: PropertyValues): void;
     // (undocumented)
     accessor forcecharttype: ChartType_2 | undefined;
-    // (undocumented)
-    getChartSVG(): string;
     // (undocumented)
     headless: boolean;
     // (undocumented)
@@ -2408,16 +2411,16 @@ export class ParaChart extends ParaChart_base {
     //
     // (undocumented)
     manifestType: SourceKind;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPI" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _paraAPI: ParaAPI;
     // (undocumented)
     get paraView(): ParaView;
     // (undocumented)
     protected _paraViewRef: Ref_2<ParaView>;
     // (undocumented)
-    get performer(): ParaPerformer;
-    // Warning: (ae-forgotten-export) The symbol "ParaPerformer" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    protected _performer: ParaPerformer;
+    postNotice(key: string, value: any): void;
     // (undocumented)
     get ready(): Promise<void>;
     // (undocumented)
@@ -2550,11 +2553,11 @@ export class ParaDialog extends ParaComponent {
 export class ParaHelper {
     constructor();
     // (undocumented)
-    protected _api: ParaApi;
+    get api(): ParaAPI_2;
     // (undocumented)
     protected _createParaChart(): void;
     // (undocumented)
-    downloadPNG(): void;
+    get jimReady(): Promise<void>;
     // (undocumented)
     get jimReady(): Promise<void>;
     // (undocumented)
@@ -2565,8 +2568,6 @@ export class ParaHelper {
     protected _paraChart: ParaChart;
     // (undocumented)
     get ready(): Promise<void>;
-    // (undocumented)
-    serializeChart(): string;
 }
 
 // @public (undocumented)
@@ -2876,11 +2877,6 @@ export class ParaView extends ParaView_base {
     get frame(): SVGRectElement | undefined;
     // (undocumented)
     protected _frameRef: Ref<SVGRectElement>;
-    // (undocumented)
-    get hotkeyActions(): HotkeyActions;
-    set hotkeyActions(actions: HotkeyActions);
-    // (undocumented)
-    protected _hotkeyActions: HotkeyActions;
     // (undocumented)
     protected _hotkeyListener: (e: HotkeyEvent) => void;
     // (undocumented)

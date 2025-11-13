@@ -47,7 +47,7 @@ import { defaults, chartTypeDefaults } from './settings_defaults';
 import { Colors } from '../common/colors';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
-import { keymap } from './keymap';
+import { actionMap } from './action_map';
 import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { type ParaChart } from '../parachart/parachart';
@@ -172,7 +172,7 @@ export class ParaStore extends State {
   protected _title = '';
   protected _seriesProperties: SeriesPropertyManager | null = null;
   protected _colors: Colors;
-  protected _keymapManager = new KeymapManager(keymap);
+  protected _keymapManager = new KeymapManager(actionMap);
   protected _summarizer!: Summarizer;
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
@@ -864,7 +864,7 @@ export class ParaStore extends State {
         annotation: `${series.key}, ${series.rawData[index].x}: Added line break`,
         id: `line-break-${index}`
       })
-      this.paraChart.paraView.documentView!.postNotice('addLineBreak', {seriesKey, index});
+      this.paraChart.postNotice('addLineBreak', {seriesKey, index});
     }
     if (this.userLineBreaks.length) {
       this.clearUserTrendLines();
@@ -929,7 +929,7 @@ export class ParaStore extends State {
   clearUserLineBreaks() {
     this._userLineBreaks = [];
     this.annotations = this.annotations.filter(a => !/line-break/.test(a.id));
-    this.paraChart.paraView.documentView!.postNotice('clearLineBreaks', null);
+    this.paraChart.postNotice('clearLineBreaks', null);
   }
 
   clearUserTrendLines() {

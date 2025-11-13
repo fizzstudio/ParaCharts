@@ -1,5 +1,7 @@
 //import type { translateEvaluators } from './translations';
 
+import { ActionMap, ActionArgumentMap, HotkeyWithArgument } from './action_map';
+
 interface BaseKeyDetails {
   /**
    * String representing a key to be struck, possibly with modifiers held down.
@@ -20,6 +22,7 @@ interface BaseKeyDetails {
   description?: string;
   /** ID of action to associate with this hotkey. */
   action: string;
+  args?: ActionArgumentMap;
 }
 
 /**
@@ -31,7 +34,11 @@ export interface KeyDetails extends BaseKeyDetails {
 }
 
 export class HotkeyEvent extends Event {
-  constructor(public readonly key: string, public readonly action: string) {
+  constructor(
+    public readonly key: string,
+    public readonly action: string,
+    public readonly args?: ActionArgumentMap
+  ) {
     super('hotkeypress', {bubbles: true, cancelable: true, composed: true});
   }
 }
@@ -48,22 +55,6 @@ export class HotkeyEvent extends Event {
 //   caseSensitive?: boolean;
 // }
 
-import { type HotkeyActions } from '../paraview/hotkey_actions';
-
-/**
- * Associates a key event with an action.
- */
-export interface KeyRegistration {
-  label: string;
-  /** ID of action to associate with this hotkey. */
-  action: keyof HotkeyActions['actions'];
-  /** If the hotkey should be case sensitive. Default true. */
-  caseSensitive?: boolean;
-}
-
-export interface KeyRegistrations {
-  [key: string]: KeyRegistration;
-}
 
 /**
  * Keyboard event manager enables:
@@ -72,13 +63,13 @@ export interface KeyRegistrations {
  * @internal
  */
 export class KeymapManager extends EventTarget {
-  private keyDetails: {
+  protected _keyDetails: {
     [keyId: string]: KeyDetails;
   } = {};
 
-  constructor(registrations: KeyRegistrations) {
+  constructor(actionMap: ActionMap) {
     super();
-    this.registerHotkeys(registrations);
+    this.registerHotkeys(actionMap);
   }
 
   /**
@@ -95,28 +86,24 @@ export class KeymapManager extends EventTarget {
 
   /**
    * Register a hotkey.
-   * @param keyId - the key ID string
-   * @param details - the details of the key event
-   * @param details.action - the action to perform if the key is pressed
-   * @param details.caseSensitive - should the keypress be case sensitive?
+   * @param keyInfo - the key ID string or key with args object
+   * @param action - the action to perform if the key is pressed
    */
-  registerHotkey(keyId: string, {
-    action,
-    caseSensitive = true
-  }: KeyRegistration) {
-    if (keyId in this.keyDetails) {
-      console.log('overriding key binding for', keyId);
-    }
+  registerHotkey(keyInfo: string | HotkeyWithArgument, action: string) {
+    const keyId = typeof keyInfo === 'string' ? keyInfo : keyInfo.keyID;
     try {
-      this.keyDetails[keyId] = {
+      this._keyDetails[keyId] = {
         key: keyId,
         //title: this.todo.controller.translator.translate(titleId),
         //description,
         action,
         //keyDescription
       };
+      if (typeof keyInfo !== 'string') {
+        this._keyDetails[keyId].args = keyInfo.args;
+      }
       if (keyId.length === 1 && keyId.toLocaleUpperCase() !== keyId) {
-        this.keyDetails[`Shift+${keyId}`] = {
+        this._keyDetails[`Shift+${keyId}`] = {
           key: keyId,
           //title: this.todo.controller.translator.translate(titleId),
           //description,
@@ -136,20 +123,18 @@ export class KeymapManager extends EventTarget {
    * Effectively a shortcut to calling `.registerHotkey()` multiple times
    * @param keyRegistrations - hotkey registration info
    */
-  registerHotkeys(keyRegistrations: KeyRegistrations) {
-    for (const [key, reg] of Object.entries(keyRegistrations)) {
-      this.registerHotkey(key, reg);
+  registerHotkeys(actionMap: ActionMap) {
+    for (const [action, info] of Object.entries(actionMap)) {
+      for (const hotkeyInfo of info.hotkeys) {
+        this.registerHotkey(hotkeyInfo, action);
+      }
     }
   }
 
-  actionForKey(key: string): string | undefined {
-    return this.keyDetails[key]?.action;
-  }
-
   onKeydown(key: string) {
-    const action = this.actionForKey(key);
-    if (action) {
-      this.dispatchEvent(new HotkeyEvent(key, action));
+    const details = this._keyDetails[key];
+    if (details) {
+      this.dispatchEvent(new HotkeyEvent(key, details.action, details.args));
       return true;
     }
     return false;

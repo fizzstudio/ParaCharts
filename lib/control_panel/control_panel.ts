@@ -271,7 +271,6 @@ export class ParaControlPanel extends logging(ParaComponent) {
   }
 
   render() {
-    this.log('render');
     let deetsState = this.paraChart.isControlPanelOpen ? 'expanded' : 'collapsed';
 //    deetsState += this.todo.darkMode ? ' darkmode' : '';
 
