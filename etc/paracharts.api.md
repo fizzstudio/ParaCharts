@@ -2559,6 +2559,8 @@ export class ParaHelper {
     // (undocumented)
     get jimReady(): Promise<void>;
     // (undocumented)
+    get jimReady(): Promise<void>;
+    // (undocumented)
     loadData(url: string): Promise<FieldInfo[]>;
     // (undocumented)
     loadManifest(input: string, type?: SourceKind): Promise<void>;
