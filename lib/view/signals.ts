@@ -32,8 +32,8 @@ export interface SignalResults {
 export class SignalManager {
   
   private log: Logger = getLogger("SignalManager");
-  
-  rivate _signals: {[key: string]: Signal} = {};
+
+  private _signals: {[key: string]: Signal} = {};
 
   private addSignal(name: string) {
     const signal: Partial<Signal> = {};

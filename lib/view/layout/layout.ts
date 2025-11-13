@@ -23,7 +23,6 @@ import { ParaView } from '../../paraview';
  * otherwise create no DOM themselves.
  */
 export abstract class Layout extends View {
-  private log: Logger = getLogger("Layout");  
   constructor(paraview: ParaView, id?: string) {
     super(paraview);
     if (id) {

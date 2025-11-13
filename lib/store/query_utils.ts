@@ -70,7 +70,7 @@ export function getDatapointMinMax(model: Model, value: number, seriesKey: strin
     } else if (value == seriesMax) {
         msgArray.push(queryMessages.seriesMax);
     }
-    this.log.info(msgArray)
+    log.info(msgArray)
     return msgArray;
 }
 
@@ -90,31 +90,31 @@ export function /*for tests*/ describeAdjacentDatapointComparison(
     model: Model,
     self: DatapointView, direction: 'prev' | 'next'
 ): string | null {
-    let log: Logger = getLogger("describeAdjacentDatapointComparison");    
+    let log: Logger = getLogger("describeAdjacentDatapointComparison");
 	const other = self[direction];
     if (!other) {
         return null;
     }
     //const otherLabel = other.datapoint.formatX('statusBar');
     const otherLabel = `${other.series[other.index].facetBox("x")!.raw}, ${other.series[other.index].facetBox("y")!.raw}`;
-    this.log.info(self.index)
+    log.info(self.index)
     const selfSeries = model.series.filter(series => series.key == self.seriesKey)[0];
     const otherSeries = model.series.filter(series => series.key == other.seriesKey)[0];
-    //this.log.info(selfSeries)
-    //this.log.info(selfSeries[self.index].facetBox("y")!.raw)
-    //this.log.info(otherSeries[other.index].facetBox("y")!.raw)
+    //log.info(selfSeries)
+    //log.info(selfSeries[self.index].facetBox("y")!.raw)
+    //log.info(otherSeries[other.index].facetBox("y")!.raw)
 
-    //this.log.info(paraview.store.model!)
-    //this.log.info(paraview.store.model!.allPoints[self.index].datapointIndex)
-    //this.log.info(paraview.store.model!.allPoints[self.index].entries())
-    //this.log.info(paraview.store.model!.allPoints[self.index].facetAsNumber("x"))
-    //this.log.info(paraview.store.model!.allPoints[self.index].facetBox("x")!.raw)
+    //log.info(paraview.store.model!)
+    //log.info(paraview.store.model!.allPoints[self.index].datapointIndex)
+    //log.info(paraview.store.model!.allPoints[self.index].entries())
+    //log.info(paraview.store.model!.allPoints[self.index].facetAsNumber("x"))
+    //log.info(paraview.store.model!.allPoints[self.index].facetBox("x")!.raw)
     //Series key below
-    this.log.info(paraview.store.model!.allPoints[self.index].seriesKey)
+    //log.info(ParaView.store.model!.allPoints[self.index].seriesKey)
     const selfValue = selfSeries[self.index].facetBox("y")!.raw as unknown as number;
     const otherValue = otherSeries[other.index].facetBox("y")!.raw as unknown as number;
     const result = compare(selfValue, otherValue);
-    this.log.info(result);
+    log.info(result);
     const comparator = comparisonMsgs[result.relationship][direction];
     const percent = direction === 'prev' ? result.percentagePrev! : result.percentageNext!;
     if (result.diff! === 0) {
@@ -213,8 +213,8 @@ export interface ComparisonMsgs {
 }
 
 export function compare(value1: number, value2: number): ComparisonResult {
-    let log: Logger = getLogger("compare");    
-    this.log.info(value2)
+    let log: Logger = getLogger("compare");
+    log.info(value2)
     /*
     if (!value2.isNumber()) {
       throw new Error('must compare number with number');

@@ -1,6 +1,5 @@
 
 import { SettingControlContainer } from '../setting_control_container';
-import { logging } from '../../common/logger';
 import { HERTZ } from '../../common/constants';
 import { SONI_RIFF_SPEEDS } from '../../chart_types';
 

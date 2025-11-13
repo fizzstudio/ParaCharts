@@ -18,7 +18,6 @@ import { Logger, getLogger } from '../common/logger';
 import { PointerEventManager } from './pointermanager';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaViewController } from '.';
-import { logging } from '../common/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest';
 import { type ViewBox, type Setting, type HotkeyEvent } from '../store';
