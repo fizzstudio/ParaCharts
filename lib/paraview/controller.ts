@@ -3,6 +3,7 @@ import { ParaStore } from '../store';
 
 export class ParaViewController {
   private log: Logger = getLogger("ParaViewController");
+  constructor(protected _store: ParaStore) {}
   handleKeyEvent(event: KeyboardEvent) {
     if (this._store.settings.chart.isStatic) {
       return;
