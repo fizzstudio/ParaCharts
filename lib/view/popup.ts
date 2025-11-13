@@ -7,7 +7,7 @@ import { ParaComponent } from "../components";
 import { fixed, logging } from "../common";
 import { Dialog } from '@fizz/ui-components';
 import '@fizz/ui-components';
-import { html, css } from 'lit';
+import { html, css, svg } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { GridLayout } from "./layout";
@@ -23,6 +23,7 @@ export interface PopupLabelOptions extends LabelOptions {
     points?: DatapointView[];
     inbounds?: boolean;
     fill?: string;
+    rotationExempt?: boolean
 }
 
 export type ShapeTypes = "box" | "boxWithArrow";
@@ -87,9 +88,9 @@ export class Popup extends View {
         if (this.paraview.store.settings.popup.backgroundColor === "dark") {
             this._label.styleInfo = {
                 stroke: 'none',
-                fill: this.popupLabelOptions.fill ? this.popupLabelOptions.fill 
-                : this.popupLabelOptions.type == "chord" ? "black" 
-                : this.paraview.store.colors.contrastValueAt(this.popupLabelOptions.color!)
+                fill: this.popupLabelOptions.fill ? this.popupLabelOptions.fill
+                    : this.popupLabelOptions.type == "chord" ? "black"
+                        : this.paraview.store.colors.contrastValueAt(this.popupLabelOptions.color!)
             };
         }
         if (this.paraview.store.settings.ui.isLowVisionModeEnabled) {
@@ -150,9 +151,11 @@ export class Popup extends View {
         if (this.popupLabelOptions.y) {
             this.popupLabelOptions.y -= this.margin;
         }
-        
         if (this.popupLabelOptions.inbounds == undefined) {
             this.popupLabelOptions.inbounds = true;
+        }
+        if (this.popupLabelOptions.rotationExempt == undefined) {
+            this.popupLabelOptions.rotationExempt = true;
         }
         if (!this.popupShapeOptions.fill) {
             this.popupShapeOptions.fill = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
@@ -380,6 +383,37 @@ export class Popup extends View {
             });
             return shape;
         }
+    }
+
+    content() {
+        let transform = fixed``;
+        if (this.popupLabelOptions.rotationExempt) {
+            if (this.paraview.documentView?.chartLayers.orientation === 'east') {
+                transform += fixed`
+                 rotate(-90)
+                translate(${-this.paraview.documentView?.chartLayers.logicalHeight},${0})
+            `;
+            } else if (this.paraview.documentView?.chartLayers.orientation === 'west') {
+                transform += fixed`
+                rotate(90)
+              translate(0,${-this.paraview.documentView?.chartLayers.logicalHeight})
+            `;
+            } else if (this.paraview.documentView?.chartLayers.orientation === 'south') {
+                //NB: not entirely sure this works
+                transform += fixed`
+                scale(1,-1)
+              translate(0,${-this.paraview.documentView?.chartLayers.logicalHeight})
+            `;
+            }
+        }
+        return svg`
+              <g
+                id="popups"
+                transform=${transform}
+              >
+                ${super.content()}
+              </g>
+            `;
     }
 
 }
