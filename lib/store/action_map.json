@@ -39,6 +39,10 @@
     "label": "Toggle sonification mode",
     "hotkeys": ["s"]
   },
+  "toggleTrendNavigationMode": {
+    "label": "Toggle trend navigation mode",
+    "hotkeys": ["t"]
+  },
   "clearSelection": {
     "label": "Clear the datapoint selection",
     "hotkeys": ["u"]

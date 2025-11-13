@@ -93,6 +93,14 @@ export class ParaAPI {
           _paraChart.postNotice(endisable + 'Sonification', null);
         });
       },
+      toggleTrendNavigationMode() {
+        store.updateSettings(draft => {
+          draft.type.line.isTrendNavigationModeEnabled = !draft.type.line.isTrendNavigationModeEnabled;
+          const endisable = draft.type.line.isTrendNavigationModeEnabled ? 'enable' : 'disable';
+          store.announce(`Trend navigation ${endisable + 'd'}`);
+          _paraChart.postNotice(endisable + 'TrendNavigation', null);
+        });
+      },
       toggleAnnouncementMode() {
         if (store.settings.ui.isAnnouncementEnabled) {
           store.announce('Announcements disabled');

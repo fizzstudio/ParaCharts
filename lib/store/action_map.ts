@@ -16,6 +16,7 @@ export interface AvailableActions {
   stopPlay(): void;
   queryData(): void;
   toggleSonificationMode(): void;
+  toggleTrendNavigationMode(): void;
   toggleAnnouncementMode(): void;
   toggleVoicingMode(): void;
   toggleDarkMode(): void;
