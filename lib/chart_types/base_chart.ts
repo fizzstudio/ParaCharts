@@ -405,7 +405,7 @@ export abstract class BaseChartInfo {
       const announcements = [this._summarizer.getDatapointSummary(datapoint, 'statusBar')];
       const isSeriesChange = !this._store.wasVisitedSeries(cursor.options.seriesKey);
       if (isSeriesChange) {
-        announcements[0] = `${cursor.options.seriesKey}: ${announcements[0]}`;
+        announcements[0] = `${this._store.model!.atKey(cursor.options.seriesKey)!.getLabel()}: ${announcements[0]}`;
         if (!seriesPreviouslyVisited) {
           const seriesSummary = await this._summarizer.getSeriesSummary(cursor.options.seriesKey);
           announcements.push(seriesSummary.text);
