@@ -1,17 +1,11 @@
-
-import { Logger } from '../common/logger';
+import { Logger, getLogger } from '../common/logger';
 import { ParaStore } from '../store';
 
-export class ParaViewController extends Logger {
-
+export class ParaViewController {
+  private log: Logger = getLogger("ParaViewController");
   constructor(protected _store: ParaStore) {
     super();
   }
-
-  logName() {
-    return 'ParaViewController';
-  }
-
   handleKeyEvent(event: KeyboardEvent) {
     if (this._store.settings.chart.isStatic) {
       return;

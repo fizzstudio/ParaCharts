@@ -1,4 +1,4 @@
-
+import { Logger, getLogger } from '../common/logger';
 import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
 import {
   Setting, DeepReadonly, BarSettings
@@ -49,7 +49,7 @@ function abbreviateSeries(keys: readonly string[]) {
  */
 export class BarPlotView extends PlanePlotView {
   declare protected _chartInfo: BarChartInfo;
-
+  private log: Logger = getLogger("BarPlotView");  
   protected _abbrevs?: {[series: string]: string};
   protected _totalLabels: Label[] = [];
   protected _numStacks!: number;
@@ -160,7 +160,7 @@ export class BarPlotView extends PlanePlotView {
     // // Initial stack width based on current chart width
     // this._stackWidth = Math.max(0, //chartInfo.settings.minBarWidth,
     //   (this._width - totalClusterGapSpace - totalBarGapSpace)/(numClusters*this._chartInfo.stacksPerCluster));
-    // console.log('computed bar stack width:', this._stackWidth, 'plot width:', this._width, totalClusterGapSpace, totalBarGapSpace);
+    // this.log.info('computed bar stack width:', this._stackWidth, 'plot width:', this._width, totalClusterGapSpace, totalBarGapSpace);
 
     // this._clusterWidth = this._stackWidth*this._chartInfo.stacksPerCluster
     //   + (this._chartInfo.stacksPerCluster - 1)*this._chartInfo.settings.barGap;
@@ -245,7 +245,7 @@ export class BarPlotView extends PlanePlotView {
   //   const minX = Math.min(...labels.map(label => label.left));
   //   if (minX < 0) {
   //     this._parent.logicalWidth += -minX;
-  //     console.log('NEW WIDTH', this._width);
+  //     this.log.info('NEW WIDTH', this._width);
   //     this.datapointViews.forEach(dp => {
   //       dp.x += -minX;
   //     });
@@ -254,12 +254,12 @@ export class BarPlotView extends PlanePlotView {
   //   if (maxX > this._width) {
   //     const diff = maxX - this._width;
   //     this._parent.logicalWidth += diff;
-  //     console.log('NEW WIDTH', this._width);
+  //     this.log.info('NEW WIDTH', this._width);
   //   }
   //   const minY = Math.min(...labels.map(label => label.top));
   //   if (minY < 0) {
   //     this._parent.logicalHeight += -minY;
-  //     console.log('NEW HEIGHT', this._height);
+  //     this.log.info('NEW HEIGHT', this._height);
   //     this.datapointViews.forEach(dp => {
   //       dp.y += -minY;
   //     });
@@ -271,7 +271,7 @@ export class BarPlotView extends PlanePlotView {
   //   if (maxY > this._height) {
   //     const diff = maxY - this._height;
   //     this._parent.logicalHeight += diff;
-  //     console.log('NEW HEIGHT', this._height);
+  //     this.log.info('NEW HEIGHT', this._height);
   //   }
   //   //this._checkLabelSpacing();
   // }

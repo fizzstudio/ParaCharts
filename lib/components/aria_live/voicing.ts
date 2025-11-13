@@ -1,5 +1,6 @@
 import { Highlight } from '@fizz/parasummary';
 import { ParaStore } from '../../store';
+import { Logger, getLogger } from '../../common/logger';
 
 export class Voicing {
   protected _voice: SpeechSynthesis | null = null;
@@ -10,11 +11,12 @@ export class Voicing {
   protected _utterance: SpeechSynthesisUtterance | null = null;
   protected _highlightIndex: number | null = null;
   protected _speakingCount = 0;
+  private log: Logger = getLogger("Voicing");  
 
   constructor(protected _store: ParaStore) {
     this._voice = window.speechSynthesis;
     if (!this._voice) {
-      console.warn('Speech Synthesis unsupported');
+      this.log.warn('Speech Synthesis unsupported');
     }
   }
 

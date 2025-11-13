@@ -1,6 +1,6 @@
 
 import { ParaComponent } from '../../components';
-import { logging } from '../../common/logger';
+import { Logger, getLogger } from '../../common/logger';
 
 import { Dialog } from '@fizz/ui-components';
 import '@fizz/ui-components';
@@ -13,7 +13,7 @@ import { ref, createRef } from 'lit/directives/ref.js';
  * @public
  */
 @customElement('para-animation-dialog')
-export class AnimationDialog extends logging(ParaComponent) {
+export class AnimationDialog extends ParaComponent {
 
   protected _dialogRef = createRef<Dialog>();
 

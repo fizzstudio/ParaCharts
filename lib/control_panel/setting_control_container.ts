@@ -1,12 +1,11 @@
-
+import { Logger, getLogger } from '../common/logger';
 import { ParaComponent } from '../components';
-import { logging } from '../common/logger';
 import '../components';
 
 import { StateController } from '@lit-app/state';
 
-export abstract class SettingControlContainer extends logging(ParaComponent) {
-
+export abstract class SettingControlContainer extends ParaComponent {
+  private log: Logger = getLogger("SettingControlContainer");
   protected _controlsState!: StateController;
   
   connectedCallback() {

@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../common/logger';
 import { Label } from './label';
 import { fixed } from '../common/utils';
 import { View, Container } from './base_view';
@@ -28,7 +29,7 @@ import { ClassInfo, classMap } from 'lit/directives/class-map.js';
  * @public
  */
 export class DirectLabelStrip extends Container(View) {
-
+  private log: Logger = getLogger("DirectLabelStrip");  
   protected seriesLabels!: Label[];
   protected leaders!: LineLabelLeader[];
 
@@ -148,7 +149,7 @@ export class DirectLabelStrip extends Container(View) {
         if (gapDiff < 0) {
           nonColliderLabels.forEach(nc => nc.y -= gapDiff);
           if (nonColliderLabels.at(-1)!.y < 0) {
-            console.warn('unable to resolve series label collision');
+            this.log.warn('unable to resolve series label collision');
           }
         }
       }

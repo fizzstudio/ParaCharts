@@ -1,3 +1,4 @@
+import { Logger, getLogger } from '../../../../common/logger';
 import { enumerate } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
 import { nothing, svg } from "lit";
@@ -20,7 +21,7 @@ import { NavNode } from "../navigation";
 export class HeatMapPlotView extends PlanePlotView {
   declare protected _settings: DeepReadonly<HeatmapSettings>;
   declare protected _chartInfo: HeatMapInfo;
-
+  private log: Logger = getLogger("HeatMapPlotView");  
   constructor(
     paraview: ParaView,
     width: number,
@@ -53,7 +54,7 @@ export class HeatMapPlotView extends PlanePlotView {
   }
 
   protected _createDatapoints() {
-    console.log('CREATING DATAPOINTS');
+    this.log.info('CREATING DATAPOINTS');
     const xs: string[] = [];
     for (const [x, i] of enumerate(this.paraview.store.model!.allFacetValues('x')!)) {
       xs.push(formatBox(x, this.paraview.store.getFormatType(`${this.parent.docView.type as PointChartType}Point`)));

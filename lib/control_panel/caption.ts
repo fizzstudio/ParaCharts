@@ -1,6 +1,6 @@
 
 import { ParaComponent } from '../components';
-import { logging } from '../common/logger';
+import { Logger, getLogger } from '../common/logger';
 import { Highlight } from '@fizz/parasummary';
 
 //import { styles } from '../../styles';
@@ -18,7 +18,8 @@ import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 type HoverListener = (event: PointerEvent) => void;
 
 @customElement('para-caption-box')
-export class ParaCaptionBox extends logging(ParaComponent) {
+export class ParaCaptionBox extends ParaComponent {
+  private log: Logger = getLogger("ParaCaptionBox");
   protected _lastSpans = new Set<HTMLElement>();
   protected _prevSpanIdx = 0;
   protected _highlightManualOverride = false;

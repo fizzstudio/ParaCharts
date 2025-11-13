@@ -1,4 +1,5 @@
 
+import { Logger, getLogger } from '../../../../common/logger';
 import { PastryPlotView, RadialSlice, type RadialDatapointParams } from '.';
 import { type SeriesView } from '../../../data';
 import { Popup } from '../../../popup';
@@ -13,7 +14,7 @@ export class PiePlotView extends PastryPlotView {
 }
 
 export class PieSlice extends RadialSlice {
-
+  private log: Logger = getLogger("PieSlice");
   constructor(parent: SeriesView, params: RadialDatapointParams) {
     super(parent, params);
     this._x = this.chart.cx;
@@ -92,7 +93,7 @@ export class PieSlice extends RadialSlice {
   //   //   className = 'radial_label_left';
   //   // }
 
-  //   // console.log('LABEL OPTS', r, centerAngle, this.chart.cx, this.chart.cy, this._radians);
+  //   // this.log.info('LABEL OPTS', r, centerAngle, this.chart.cx, this.chart.cy, this._radians);
 
   //   return {
   //     x: this.chart.cx + r*Math.cos(centerAngle*Math.PI/180),

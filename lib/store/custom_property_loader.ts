@@ -1,3 +1,4 @@
+import { Logger, getLogger } from '../common/logger';
 import { type SettingsInput } from '../store/settings_types';
 import { Colors, Color, Palette } from '../common/colors';
 import { type DataSymbolType, type DataSymbolShape, type DataSymbolFill } from '../view/symbol';
@@ -13,6 +14,8 @@ export class CustomPropertyLoader {
 
   protected _store!: ParaStore;
 
+  private log: Logger = getLogger("CustomPropertyLoader");  
+  
   get store() {
     return this._store;
   }
@@ -29,16 +32,16 @@ export class CustomPropertyLoader {
     Object.keys(this._paraRules).forEach(selector => {
       const settingGroup = selector.replace(/\s+/g, '').substring(1);
       const props = this._paraRules[selector];
-      console.log(selector, props);
+      this.log.info(selector, props);
       Object.keys(props).forEach(prop => {
         const value = props[prop];
         const isColorProp = this._isColorProp(prop);
         const isSymbolProp = this._isSymbolProp(prop);
         if (!isColorProp && !isSymbolProp) {
-          console.log(prop, value);
+          this.log.info(prop, value);
           const settingProp = this._convertPropToSettingStr(prop);
           // const typedValue = JSON.parse(`{${prop}: ${value}}`);
-          // console.log('typedValue', typedValue);
+          // this.log.info('typedValue', typedValue);
           let typedValue: any = value;
           let numberValue = parseFloat(value);
           if (!Number.isNaN(numberValue)) {
@@ -99,7 +102,7 @@ export class CustomPropertyLoader {
           if (!this._paraRules[selector]) {
             this._paraRules[selector] = {};
           } else {
-            console.warn(`[ParaCharts] Duplicate selector '${selector}'; collecting all properties`);
+            this.log.warn(`[ParaCharts] Duplicate selector '${selector}'; collecting all properties`);
           }
           paraProps.forEach(prop => {
             Object.entries(prop).forEach(([key, value]) => {
@@ -109,7 +112,7 @@ export class CustomPropertyLoader {
                 const warningMsg = (oldValue === value)
                   ? `[ParaCharts] Duplicate value '${value}' for property '${key}' in selector '${selector}'`
                   : `[ParaCharts] Replaced value '${oldValue}' with value '${value}' for property '${key}' in selector '${selector}'`;
-                console.warn(warningMsg);
+                this.log.warn(warningMsg);
               }
               this._paraRules[selector][key] = value;
             });
@@ -184,7 +187,7 @@ export class CustomPropertyLoader {
     else {
       const seriesIndex = parseInt((propName.match(/\d+/g) as string[])[0]);
       const valueArray = propValue.split(/,\s+['"]/);
-      console.log('color valueArray', valueArray);
+      this.log.info('color valueArray', valueArray);
 
       this._colorPalette.colors[seriesIndex] = {
         value: valueArray[0],
@@ -192,7 +195,7 @@ export class CustomPropertyLoader {
       };
     }
 
-    // console.log('this._colorPalette', this._colorPalette);
+    // this.log.info('this._colorPalette', this._colorPalette);
   }
 
   registerColors() {
@@ -220,7 +223,7 @@ export class CustomPropertyLoader {
 
     this._symbolSet[seriesIndex] = `${dataSymbolShape}.${dataSymbolFill}`;
 
-    // console.log('this._symbolSet', this._symbolSet);
+    // this.log.info('this._symbolSet', this._symbolSet);
   }
 
   registerSymbols() {

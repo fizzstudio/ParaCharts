@@ -1,7 +1,6 @@
-
+import { Logger, getLogger } from '../common/logger';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaDialog, ParaComponent } from '../components';
-import { logging } from '../common/logger';
 //import { styles } from '../../styles';
 import {
   type DeepReadonly,
@@ -39,8 +38,8 @@ import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 
 
 @customElement('para-control-panel')
-export class ParaControlPanel extends logging(ParaComponent) {
-
+export class ParaControlPanel extends ParaComponent {
+  private log: Logger = getLogger("ParaControlPanel");
   @property() sparkBrailleData!: string;
 
   @state() dataState: 'initial' | 'pending' | 'complete' | 'error' = 'initial';
@@ -270,7 +269,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           }
           @invalidvalue=${(e: CustomEvent) => this._msgDialogRef.value!.show(e.detail)}
           @ready=${() => {
-            // this.log('fizz-tab-details ready; focusing data layer');
+            // this.log.info('fizz-tab-details ready; focusing data layer');
             // if (this.todo.canvas.documentView) {
             //   this.todo.canvas.documentView.chartLayers.dataLayer.focus();
             // }

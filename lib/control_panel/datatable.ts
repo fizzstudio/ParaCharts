@@ -1,6 +1,6 @@
 
 import { ParaComponent } from '../components';
-
+import { Logger, getLogger } from '../common/logger';
 import { PlaneDatapoint, type Model } from '@fizz/paramodel';
 import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 
@@ -16,7 +16,7 @@ import { styleMap } from 'lit/directives/style-map.js';
  */
 @customElement('para-datatable')
 export class DataTableView extends ParaComponent {
-
+  private log: Logger = getLogger("DataTableView");
   model!: Model;
 
   static styles = [
@@ -37,7 +37,7 @@ export class DataTableView extends ParaComponent {
   ];
 
   protected render() {
-    console.log('MODEL', this.model);
+    this.log.info('MODEL', this.model);
     return html`
       <div class="wrapper">
         <table>

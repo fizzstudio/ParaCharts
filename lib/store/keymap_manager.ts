@@ -1,5 +1,7 @@
 //import type { translateEvaluators } from './translations';
 
+import { Logger, getLogger } from '../common/logger';
+
 import { ActionMap, ActionArgumentMap, HotkeyWithArgument } from './action_map';
 
 interface BaseKeyDetails {
@@ -63,6 +65,7 @@ export class HotkeyEvent extends Event {
  * @internal
  */
 export class KeymapManager extends EventTarget {
+  private log: Logger = getLogger("KeymapManager");  
   protected _keyDetails: {
     [keyId: string]: KeyDetails;
   } = {};
@@ -113,7 +116,7 @@ export class KeymapManager extends EventTarget {
       }
     } catch (e) {
       if (e instanceof Error) {
-        console.warn(e.message);
+        this.log.warn(e.message);
       }
     }
   }

@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../common/logger';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaStore } from '../store';
 import { type LineSettings, type DeepReadonly } from '../store/settings_types';
@@ -34,7 +35,7 @@ import { Highlight } from '@fizz/parasummary';
  */
 export class LineChartInfo extends PointChartInfo {
   protected _prevHighlightNavcode = '';
-
+  private log: Logger = getLogger("LineChartInfo");
   constructor(type: ChartType, store: ParaStore) {
     super(type, store);
   }
@@ -229,9 +230,9 @@ export class LineChartInfo extends PointChartInfo {
     } else if (queriedNode.isNodeType('series')) {
       /*
       if (e.options!.isChordMode) {
-        // console.log('focusedDatapoint', focusedDatapoint)
+        // this.log.info('focusedDatapoint', focusedDatapoint)
         const visitedDatapoints = e.options!.visited as XYDatapointView[];
-        // console.log('visitedDatapoints', visitedDatapoints)
+        // this.log.info('visitedDatapoints', visitedDatapoints)
         msgArray = this.describeChord(visitedDatapoints);
       } */
       const seriesKey = queriedNode.options.seriesKey;
@@ -246,9 +247,9 @@ export class LineChartInfo extends PointChartInfo {
         // focused view: e.options!.focus
         // all visited datapoint views: e.options!.visited
         // const focusedDatapoint = e.targetView;
-        // console.log('focusedDatapoint', focusedDatapoint)
+        // this.log.info('focusedDatapoint', focusedDatapoint)
         const visitedDatapoints = e.options!.visited as XYDatapointView[];
-        // console.log('visitedDatapoints', visitedDatapoints)
+        // this.log.info('visitedDatapoints', visitedDatapoints)
         msgArray = this.describeChord(visitedDatapoints);
       }
         */

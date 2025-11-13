@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { View } from '../base_view';
-
+import { Logger, getLogger } from '../common/logger';
 import { ParaView } from '../../paraview';
 
 /**
@@ -23,7 +23,7 @@ import { ParaView } from '../../paraview';
  * otherwise create no DOM themselves.
  */
 export abstract class Layout extends View {
-
+  private log: Logger = getLogger("Layout");  
   constructor(paraview: ParaView, id?: string) {
     super(paraview);
     if (id) {
@@ -59,7 +59,7 @@ export abstract class Layout extends View {
   // }
 
   // constrainSize(maxWidth: number, maxHeight: number, isBubble = false) {
-  //   console.log('CONSTRAIN', this.id || this.constructor.name, maxWidth, maxHeight, isBubble);
+  //   this.log.info('CONSTRAIN', this.id || this.constructor.name, maxWidth, maxHeight, isBubble);
   //   this.setSize(Math.min(this._width, maxWidth), Math.min(this._height, maxHeight), isBubble);
   //   this._children.forEach(kid => {
   //     kid.constrainSize(this._width, this._height, false);

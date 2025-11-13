@@ -18,6 +18,7 @@ import { View, type SnapLocation } from '../base_view';
 import { ParaView } from '../../paraview';
 import { Layout } from './layout';
 import { fixed } from '../../common/utils';
+import { Logger, getLogger } from '../../common/logger';
 
 /**
  * Abstract base class for flexbox-style row and column layouts.
@@ -33,7 +34,7 @@ export abstract class FlexLayout extends Layout {
  * Horizontal row of views.
  */
 export class RowLayout extends FlexLayout {
-
+  private log: Logger = getLogger("RowLayout");
   constructor(paraview: ParaView, gap: number, alignViews: SnapLocation, id?: string) {
     super(paraview, gap, alignViews, id);
   }
@@ -53,7 +54,7 @@ export class RowLayout extends FlexLayout {
   }
 
   layoutViews() {
-    console.log('LAYOUT ROW', this.id);
+    this.log.info('LAYOUT ROW', this.id);
     if (!this._children.length) {
       return;
     }
@@ -64,7 +65,7 @@ export class RowLayout extends FlexLayout {
       kid.paddedLeft = this._children[kid.index - 1].paddedRight + this.gap;
       this._snapChildY(kid);
     });
-    console.log('LOCS', this._children.map(kid => fixed`(${kid.x},${kid.y})`).join(' '));
+    this.log.info('LOCS', this._children.map(kid => fixed`(${kid.x},${kid.y})`).join(' '));
   }
 
 }
@@ -73,7 +74,7 @@ export class RowLayout extends FlexLayout {
  * Vertical column of views.
  */
 export class ColumnLayout extends FlexLayout {
-
+  private log: Logger = getLogger("ColumnLayout");
   constructor(paraview: ParaView, gap: number, alignViews: SnapLocation, id?: string) {
     super(paraview, gap, alignViews, id);
   }
@@ -93,7 +94,7 @@ export class ColumnLayout extends FlexLayout {
   }
 
   layoutViews() {
-    console.log('LAYOUT COL', this.id);
+    this.log.info('LAYOUT COL', this.id);
     if (!this._children.length) {
       return;
     }
@@ -104,7 +105,7 @@ export class ColumnLayout extends FlexLayout {
       this._snapChildX(kid);
       kid.paddedTop = this._children[kid.index - 1].paddedBottom + this.gap;
     });
-    console.log('LOCS', this._children.map(kid => fixed`(${kid.x},${kid.y}) ${kid.width}`).join(' '));
+    this.log.info('LOCS', this._children.map(kid => fixed`(${kid.x},${kid.y}) ${kid.width}`).join(' '));
   }
 
 }
