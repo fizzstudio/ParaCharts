@@ -11,7 +11,7 @@ let _logLevel: LogLevel = LogLevel.MOST;
  * Set the global log level for all loggers.
  * @param level - The LogLevel to set (_NONE, SOME, MOST, ALL_)
  */
-export function setDebugLevel(level: LogLevel) {
+export function setLogLevel(level: LogLevel) {
   _logLevel = level;
 }
 
