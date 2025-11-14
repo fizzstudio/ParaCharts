@@ -79,13 +79,6 @@ export class BarPlotView extends PlanePlotView {
     if (this.paraview.store.settings.type.bar.isAbbrevSeries) {
       this._abbrevs = abbreviateSeries(this.paraview.store.model!.seriesKeys);
     }
-
-    this.paraview.store.settingControls.add({
-      type: 'checkbox',
-      key: 'chart.showPopups',
-      label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.popups',
-    });
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
@@ -551,7 +544,9 @@ export class Bar extends PlaneDatapointView {
         classList: ['annotationlabel'],
         id: this.id,
         color: this.color,
-        points: [this]
+        points: [this],
+        rotationExempt: false,
+        angle: -90
       },
       {})
     this.paraview.store.popups.push(popup)

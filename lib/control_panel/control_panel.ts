@@ -245,22 +245,23 @@ export class ParaControlPanel extends logging(ParaComponent) {
   addPopup(isOpen: boolean) {
     let paraview = this.paraChart.paraView
     let text = isOpen ? "Close control panel" : "Open control panel"
-    let y = paraview.documentView!.height! - 80
+    let y = paraview.documentView!.height! - 70
+    let x = 0 - this.paraChart.paraView.documentView!.chartLayers.x
     let popup = new Popup(paraview,
       {
         text: text ?? "",
-        x: 10,
+        x: x,
         y: y + (isOpen ? 26.4 : 0),
         textAnchor: "middle",
         classList: ['annotationlabel'],
         id: this.id,
         type: "controlPanelIcon",
         fill: "hsl(0, 0%, 0%)",
-        inbounds: false
+        inbounds: true
       },
       {
         fill: "hsl(0, 0%, 100%)",
-        shape: "box"
+        shape: "boxWithArrow"
       })
     paraview.store.popups.push(popup)
   }

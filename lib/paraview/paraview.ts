@@ -258,6 +258,9 @@ export class ParaView extends logging(ParaComponent) {
       .invis {
         opacity: 0;
       }
+      .drop-shadow {
+        filter: drop-shadow(3px 3px 5px #333);
+      }
       .control-column {
         display: flex;
         flex-direction: column;

@@ -284,7 +284,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
       },
       {
         fill: "hsl(0, 0%, 100%)",
-        shape: "box"
+        shape: "boxWithArrow"
       })
     this.paraview.store.popups.push(popup)
   }
@@ -365,7 +365,7 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
     let popup = new Popup(this.paraview,
       {
         text: text ?? datapointText,
-        x: this._tickLabelX(index ?? 0),
+        x: this._tickLabelX(index ?? 0) + 15,
         y: this._tickLabelY(index ?? 0) + this.paraview.store.settings.popup.margin - this.children[index ?? 0].height ,
         textAnchor: "middle",
         classList: ['annotationlabel'],
@@ -376,7 +376,7 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
       },
       {
         fill: "hsl(0, 0%, 100%)",
-        shape: "box"
+        shape: "boxWithArrow"
       })
     this.paraview.store.popups.push(popup)
   }

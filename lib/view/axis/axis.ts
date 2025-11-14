@@ -288,7 +288,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
         fill: "hsl(0, 0%, 0%)"
       },
       {fill: "hsl(0, 0%, 100%)",
-        shape: "box"
+        shape: "boxWithArrow"
       })
     this.paraview.store.popups.push(popup)
   }

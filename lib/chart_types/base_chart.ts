@@ -85,6 +85,12 @@ export abstract class BaseChartInfo extends Logger {
       },
       parentView: 'controlPanel.tabs.chart.general.height',
     });
+    this._store.settingControls.add({
+      type: 'checkbox',
+      key: 'chart.showPopups',
+      label: 'Show popups',
+      parentView: 'controlPanel.tabs.chart.popups',
+    });
   }
 
   protected _init() {
