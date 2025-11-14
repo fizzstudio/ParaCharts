@@ -321,6 +321,11 @@ export class View extends BaseView {
     return this._parent?._children.indexOf(this) ?? -1;
   }
 
+  get isLast() {
+    if (!this._parent) throw new Error('view has no parent');
+    return this.index === this._parent._children.length - 1;
+  }
+
   get isFocused() {
     return this._parent!.currFocus === this;
   }

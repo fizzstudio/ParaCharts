@@ -315,6 +315,35 @@ export class Colors {
         ]
       },
       {
+        key: 'semantic',
+        title: 'semantic colors',
+        colors: [
+          {
+            value: 'hsl(109, 93%, 24%)',
+            name: 'positive',
+            contrastValue: `hsl(0, 0%, 100%)`
+          },
+          {
+            value: 'hsl(13, 58%, 35%)',
+            name: 'negative',
+            contrastValue: `hsl(0, 0%, 100%)`
+          },
+          {
+            value: 'hsl(227, 26%, 52%)',
+            name: 'neutral',
+            contrastValue: `hsl(0, 0%, 100%)`
+          },
+          {
+            value: 'cyan',
+            name: 'highlight'
+          },
+          {
+            value: 'hsl(0, 100%, 50%)',
+            name: 'visit'
+          },
+        ]
+      },
+      {
         key: 'ffb',
         title: 'FFB',
         colors: [
