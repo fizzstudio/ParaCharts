@@ -2,6 +2,8 @@ import { ChartType, Manifest, type Datatype, type AllSeriesData } from '@fizz/pa
 
 import papa from 'papaparse';
 
+import { Logger, getLogger } from '../common/logger';
+
 export type SourceKind = 'fizz-chart-data' | 'url' | 'content';
 
 type LoadSuccess = {
@@ -26,6 +28,8 @@ const CHART_DATA_MODULE_PREFIX = './node_modules/@fizz/chart-data/data/';
 
 export class ParaLoader {
 
+  private log: Logger = getLogger("ParaLoader");
+  
   protected _csvParseResult: papa.ParseResult<unknown> | null = null;
 
   async load(
@@ -43,7 +47,7 @@ export class ParaLoader {
         filePath = CHART_DATA_MODULE_PREFIX;
       }
       filePath += manifestInput;
-      console.log(`loading manifest from ${filePath}`)
+      this.log.info(`loading manifest from ${filePath}`)
       const manifestRaw = await fetch(filePath);
       manifest = await manifestRaw.json() as Manifest;
     }
@@ -78,14 +82,14 @@ export class ParaLoader {
       });
     }
 
-    console.log('manifest loaded');
+    this.log.info('manifest loaded');
     if (chartType) {
       manifest.datasets[0].type = chartType;
-      console.log('manifest chart type changed')
+      this.log.info('manifest chart type changed')
     }
     if (description) {
       manifest.datasets[0].description = description;
-      console.log('manifest description changed');
+      this.log.info('manifest description changed');
     }
     // XXX include `data` here for proper external data loading
     return { result: 'success', manifest };
@@ -116,5 +120,4 @@ export class ParaLoader {
         : 'number'
     }));
   }
-
 }

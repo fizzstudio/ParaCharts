@@ -14,10 +14,10 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../common/logger';
 import { PointerEventManager } from './pointermanager';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaViewController } from '.';
-import { logging } from '../common/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest';
 import { type ViewBox, type Setting, type HotkeyEvent } from '../store';
@@ -45,7 +45,7 @@ export type c2mCallbackType = {
 };
 
 @customElement('para-view')
-export class ParaView extends logging(ParaComponent) {
+export class ParaView extends ParaComponent {
 
   paraChart!: ParaChart;
 
@@ -68,6 +68,8 @@ export class ParaView extends logging(ParaComponent) {
   protected _documentView?: DocumentView;
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
+  protected log: Logger = getLogger("ParaView");
+  
   @state() private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
   };
@@ -283,7 +285,7 @@ export class ParaView extends logging(ParaComponent) {
         handler(e.args);
         //this._documentView!.postNotice(e.action, null);
       } else {
-        console.warn(`no handler for action '${e.action}'`);
+        this.log.warn(`no handler for action '${e.action}'`);
       }
     };
     this._jimReadyPromise = new Promise((resolve, reject) => {
@@ -376,10 +378,10 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    //this.log('will update');
+    //this.log.info('will update');
     // for (const [k, v] of changedProperties.entries()) {
     //   // @ts-ignore
-    //   this.log(`- ${k.toString()}:`, v, '->', this[k]);
+    //   this.log.info(`- ${k.toString()}:`, v, '->', this[k]);
     // }
     if (changedProperties.has('width')) {
       this.computeViewBox();
@@ -396,7 +398,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    this.log('ready');
+    this.log.info('ready');
     this.dispatchEvent(new CustomEvent('paraviewready', { bubbles: true, composed: true, cancelable: true }));
   }
 
@@ -407,7 +409,7 @@ export class ParaView extends logging(ParaComponent) {
         try {
           this.root!.requestFullscreen();
         } catch {
-          console.error('failed to enter fullscreen');
+          this.log.error('failed to enter fullscreen');
           this._store.updateSettings(draft => {
             draft.ui.isFullscreenEnabled = false;
           }, true);
@@ -416,7 +418,7 @@ export class ParaView extends logging(ParaComponent) {
         try {
           document.exitFullscreen();
         } catch {
-          console.error('failed to exit fullscreen');
+          this.log.error('failed to exit fullscreen');
           this._store.updateSettings(draft => {
             draft.ui.isFullscreenEnabled = true;
           }, true);
@@ -537,7 +539,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   /*protected updated(changedProperties: PropertyValues) {
-    this.log('canvas updated');
+    this.log.info('canvas updated');
     if (changedProperties.has('dataState')) {
       if (this.dataState === 'pending') {
         const bbox = this._rootRef.value!.getBoundingClientRect();
@@ -609,7 +611,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   createDocumentView() {
-    this.log('creating document view', this.type);
+    this.log.info('creating document view', this.type);
     this._documentView = new DocumentView(this);
     this.computeViewBox();
     // The style manager may get declaration values from chart objects
@@ -623,7 +625,7 @@ export class ParaView extends logging(ParaComponent) {
       width: this._store.settings.chart.size.width,
       height: this._store.settings.chart.size.height
     };
-    this.log('view box:', this._viewBox.width, 'x', this._viewBox.height);
+    this.log.info('view box:', this._viewBox.width, 'x', this._viewBox.height);
   }
 
   updateViewbox(x?: number, y?: number, width?: number, height?: number) {
@@ -734,7 +736,7 @@ export class ParaView extends logging(ParaComponent) {
     if (this._defs[key]) {
       throw new Error('view already in defs');
     }
-    console.log('ADDING DEF', key);
+    this.log.info('ADDING DEF', key);
     this._defs = { ...this._defs, [key]: template };
     this.requestUpdate();
   }
@@ -780,7 +782,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   render(): TemplateResult {
-    this.log('render');
+    this.log.info('render');
     return html`
       <svg
         role="application"
@@ -797,7 +799,7 @@ export class ParaView extends logging(ParaComponent) {
         @fullscreenchange=${() => this._onFullscreenChange()}
         @focus=${() => {
           if (!this._store.settings.chart.isStatic) {
-            //this.log('focus');
+            //this.log.info('focus');
             //this.todo.deets?.onFocus();
             //this.documentView?.chartInfo.navMap?.visitDatapoints();
           }

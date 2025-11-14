@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../common/logger';
 import papa from 'papaparse';
 import { State, property } from '@lit-app/state';
 import { produceWithPatches, enablePatches } from 'immer';
@@ -132,7 +133,7 @@ export function datapointIdToCursor(id: string): DatapointCursor {
 export class ParaStore extends State {
 
   readonly symbols = new DataSymbols();
-
+  
   @property() dataState: DataState = 'initial';
   @property() settings: Settings;
   @property() darkMode = false;
@@ -177,6 +178,7 @@ export class ParaStore extends State {
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected annotID: number = 0;
+  protected log: Logger = getLogger("ParaStore");
 
   public idList: Record<string, boolean> = {};
 
@@ -339,14 +341,14 @@ export class ParaStore extends State {
     const observed: { [path: string]: Partial<{oldValue: Setting, newValue: Setting}> } = {};
     for (const patch of patches) {
       if (patch.op !== 'replace') {
-        console.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
         continue;
       }
       observed[patch.path.join('.')] = {newValue: patch.value};
     }
     for (const patch of inversePatches) {
       if (patch.op !== 'replace') {
-        console.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
         continue;
       }
       observed[patch.path.join('.')].oldValue = patch.value;
@@ -443,7 +445,7 @@ export class ParaStore extends State {
 
     if (this.settings.ui.isAnnouncementEnabled) {
       this.announcement = { text: announcement, html, highlights, clear: clearAriaLive, startFrom };
-      console.log('ANNOUNCE:', this.announcement.text);
+      this.log.info('ANNOUNCE:', this.announcement.text);
     }
   }
 
@@ -672,7 +674,7 @@ export class ParaStore extends State {
             : undefined;
         };
         if (!seriesAnalysis) {
-          console.log("This chart does not support AI trend annotations")
+          this.log.info("This chart does not support AI trend annotations")
           this.updateSettings(draft => {
             draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
           });
@@ -704,7 +706,7 @@ export class ParaStore extends State {
         this.removeMDRAnnotations();
       }
     } else {
-      console.log("Trend annotations not currently supported for this chart type");
+      this.log.info("Trend annotations not currently supported for this chart type");
       this.updateSettings(draft => {
         draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
       });

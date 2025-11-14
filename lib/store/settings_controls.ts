@@ -1,6 +1,6 @@
 
 import { type Setting, SettingsManager } from '.';
-import { logging } from '../common/logger';
+import { Logger, getLogger } from '../common/logger';
 import { 
   type SettingControlType,
   type SettingControl,
@@ -87,7 +87,8 @@ const inputTypeTags = {
  * Manages setting control information.
  */
 export class SettingControlManager extends State {
-
+  protected log: Logger = getLogger("SettingControlManager");
+  
   @property() protected _settingControlInfo: {[key: string]: SettingControlInfo} = {};
 
   constructor(protected _store: ParaStore) {
@@ -161,7 +162,7 @@ export class SettingControlManager extends State {
   //       control.value = value;
   //     }
   //   } else {
-  //     this.log(`no setting control for key '${key}'`);
+  //     this.log.info(`no setting control for key '${key}'`);
   //   }
   // }
 
@@ -180,7 +181,7 @@ export class SettingControlManager extends State {
   //       control.requestUpdate();
   //     }
   //   } else {
-  //     this.log(`no setting control for key '${key}'`);
+  //     this.log.info(`no setting control for key '${key}'`);
   //   }
   // }
   

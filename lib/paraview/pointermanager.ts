@@ -1,3 +1,4 @@
+import { Logger, getLogger } from '../common/logger';
 
 import { type ParaView } from './paraview';
 
@@ -31,6 +32,7 @@ interface Point {
  * @internal
  */
 export class PointerEventManager {
+  protected log: Logger = getLogger("PointerEventManager");
   private _dataRoot: SVGElement | null; // the group that contains all the datapoints
   private _dataRect: SVGGraphicsElement | null; // the backdrop element behind all the datapoints, needs to be implemented
 
@@ -166,7 +168,7 @@ export class PointerEventManager {
     if (event.detail < 2) {
       // not a double click, so do normal behavior
       if (target === this._paraView.frame || target === this._dataRect) {
-        console.log('clicked backdrop!')
+        this.log.info('clicked backdrop!')
       } else {
         this._selectElement(target, event.shiftKey);
       }
@@ -227,7 +229,7 @@ export class PointerEventManager {
       } else {
         // might have clicked on an axis label, axis tick label or something else we can act on,
         //  but it's not a data point, so it can't be "selected"
-        console.log('not a datapoint!')
+        this.log.info('not a datapoint!')
       }
     }
   }
@@ -239,7 +241,7 @@ export class PointerEventManager {
   //  * @memberOf module:@fizz/touchUI
   //  */
   // _createSelectBox(target: SVGGraphicsElement) {
-  //   // console.log('_selectElement');
+  //   // this.log.info('_selectElement');
   //   if (target) {
   //     // highlight box
   //     const bbox = target.getBBox();
@@ -259,7 +261,7 @@ export class PointerEventManager {
   //       y += parseFloat(translate[1]);
   //       // const transformMatrix = target.transform.baseVal.consolidate().matrix;
 
-  //       // console.log('target.transform.baseVal.consolidate()', target.transform.baseVal.consolidate());
+  //       // this.log.info('target.transform.baseVal.consolidate()', target.transform.baseVal.consolidate());
   //     }
   //     const highlightBox = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
   //     highlightBox.classList.add('_highlight_box');

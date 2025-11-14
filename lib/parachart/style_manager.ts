@@ -1,3 +1,4 @@
+import { Logger, getLogger } from '../common/logger';
 
 export type StyleManagerDeclarationValue = string | number | (() => string | number);
 
@@ -31,7 +32,7 @@ ${
 
 export class StyleManager {
   protected _rules = new Map<string, StyleManagerRule>();
-
+  private log: Logger = getLogger("StyleManager");  
   constructor(protected _stylesheet: CSSStyleSheet) {}
 
   set(selector: string, keyValuePairs: Record<string, StyleManagerDeclarationValue>) {
@@ -51,11 +52,11 @@ export class StyleManager {
         cssRule.cssText.match(regex));
     }).filter(idx => idx !== -1).toArray();
     matchIndices.sort().reverse().forEach(idx => {
-      console.log('DEL', idx);
+      this.log.info('DEL', idx);
       this._stylesheet.deleteRule(idx);
     });
     this._rules.values().forEach(rule => {
-      console.log('INS', rule);
+      this.log.info('INS', rule);
       this._stylesheet.insertRule(rule.toString());
     });
   }

@@ -21,6 +21,7 @@ import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type Setting } from '../store';
 import { type Shape } from './shape/shape';
+import { Logger, getLogger } from '../common/logger';
 
 /*import {
   HotkeyActionManager, EventActionManager, type KeyRegistrations, KeymapManager,
@@ -103,12 +104,12 @@ export class Collision {
     };
   }
 
-  escapeVector(): {x: number, y: number} {
+  escapeVector(): { x: number, y: number } {
     const padding = 0.001;
     // these are both positive
     const hEscape = this._rSumX - Math.abs(this._centerDiffX);
     const vEscape = this._rSumY - Math.abs(this._centerDiffY);
-    const ev = {x: 0, y: 0};
+    const ev = { x: 0, y: 0 };
     if (hEscape < vEscape) {
       ev.x = this._centerDiffX > 0
         ? hEscape + padding
@@ -124,6 +125,7 @@ export class Collision {
 
 
 export class BaseView {
+  public log: Logger = getLogger("BaseView");
 
   readonly isContainer: boolean = false;
 
@@ -147,16 +149,16 @@ export class BaseView {
     return 0;
   }
 
-  set width(_newWidth: number) {}
+  set width(_newWidth: number) { }
 
-  set height(_newHeight: number) {}
+  set height(_newHeight: number) { }
 
   get children(): readonly View[] {
     return [];
   }
 
   get padding(): Padding {
-    return {top: 0, bottom: 0, left: 0, right: 0};
+    return { top: 0, bottom: 0, left: 0, right: 0 };
   }
 
   set padding(_padding: PaddingInput | number) {
@@ -166,7 +168,7 @@ export class BaseView {
     return false;
   }
 
-  set hidden(_hidden: boolean) {}
+  set hidden(_hidden: boolean) { }
 
   get el(): SVGElement | null {
     return null;
@@ -218,7 +220,7 @@ export class View extends BaseView {
   //protected _eventActionManager: EventActionManager<this> | null = null;
   //protected _hotkeyActionManager!: HotkeyActionManager<this>;
   //protected _keymapManager: KeymapManager | null = null;
-  protected _padding: Padding = {top: 0, bottom: 0, left: 0, right: 0};
+  protected _padding: Padding = { top: 0, bottom: 0, left: 0, right: 0 };
   protected _hidden = false;
   protected _styleInfo: StyleInfo = {};
   protected _classInfo: ClassInfo = {};
@@ -259,7 +261,7 @@ export class View extends BaseView {
         if (this._next) {
           this._next._prev = this._prev;
         }
-        this._prev =  null;
+        this._prev = null;
         this._next = null;
         this._removedFromParent();
         parent._didRemoveChild(this);
@@ -419,11 +421,11 @@ export class View extends BaseView {
 
   protected _expandPadding(padding: PaddingInput | number, defaults?: Padding): Padding {
     if (typeof padding === 'number') {
-      return {top: padding, bottom: padding, left: padding, right: padding};
+      return { top: padding, bottom: padding, left: padding, right: padding };
     } else {
       let out: Partial<Padding> = {};
       if (padding.all !== undefined) {
-        out = {top: padding.all, bottom: padding.all, left: padding.all, right: padding.all};
+        out = { top: padding.all, bottom: padding.all, left: padding.all, right: padding.all };
       }
       if (padding.horiz !== undefined) {
         out.left = padding.horiz;
@@ -523,11 +525,11 @@ export class View extends BaseView {
   }
 
   get centerX() {
-    return this.left + this.width/2;
+    return this.left + this.width / 2;
   }
 
   set centerX(centerX: number) {
-    this._x = centerX - this.width/2 + this._locOffset.x;
+    this._x = centerX - this.width / 2 + this._locOffset.x;
   }
 
   get top() {
@@ -563,11 +565,11 @@ export class View extends BaseView {
   }
 
   get centerY() {
-    return this.top + this.height/2;
+    return this.top + this.height / 2;
   }
 
   set centerY(centerY: number) {
-    this._y = centerY - this.height/2 + this._locOffset.y;
+    this._y = centerY - this.height / 2 + this._locOffset.y;
   }
 
   get bbox(): DOMRect {
@@ -648,19 +650,19 @@ export class View extends BaseView {
   }
 
   get styleInfo() {
-    return {...this._styleInfo};
+    return { ...this._styleInfo };
   }
 
   set styleInfo(styleInfo: StyleInfo) {
-    this._styleInfo = {...styleInfo};
+    this._styleInfo = { ...styleInfo };
   }
 
   get classInfo() {
-    return {...this._classInfo};
+    return { ...this._classInfo };
   }
 
   set classInfo(classInfo: ClassInfo) {
-    this._classInfo = {...classInfo};
+    this._classInfo = { ...classInfo };
   }
 
   get prev() {
@@ -757,14 +759,14 @@ export class View extends BaseView {
 
   intersects(other: View): Collision | null {
     const centerDiffX = this.centerX - other.centerX;
-    const rSumX = other.paddedWidth/2 + this.paddedWidth/2;
+    const rSumX = other.paddedWidth / 2 + this.paddedWidth / 2;
     if (Math.abs(centerDiffX) >= rSumX) {
-        return null;
+      return null;
     }
     const centerDiffY = this.centerY - other.centerY;
-    const rSumY = other.paddedHeight/2 + this.paddedHeight/2;
+    const rSumY = other.paddedHeight / 2 + this.paddedHeight / 2;
     if (Math.abs(centerDiffY) >= rSumY) {
-        return null;
+      return null;
     }
     return new Collision(centerDiffX, centerDiffY, rSumX, rSumY);
   }
@@ -811,7 +813,7 @@ export class View extends BaseView {
     return this._currFocus ? this._currFocus.focusLeaf : this;
   }
 
-  protected _didAddChildToList(_child: View) {}
+  protected _didAddChildToList(_child: View) { }
 
   append(child: View) {
     this._children.push(child);

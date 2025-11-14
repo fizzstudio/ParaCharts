@@ -1,5 +1,6 @@
 import { type Datatype } from '@fizz/dataframe';
 import { ChartType, DisplayType, Facet, Manifest, SeriesManifest } from '@fizz/paramanifest';
+import { Logger, getLogger } from '../common/logger';
 
 /*interface DataVar {
   name: string;
@@ -8,7 +9,7 @@ import { ChartType, DisplayType, Facet, Manifest, SeriesManifest } from '@fizz/p
 }*/
 
 export class SlotLoader {
-
+  private log: Logger = getLogger("SlotLoader");
   canLoadData(els: HTMLElement[]): boolean {
     return els.length !== 0 && els[0].tagName === 'TABLE';
   }
@@ -19,7 +20,7 @@ export class SlotLoader {
     description?: string
   ): Promise<{ result: string; manifest?: Manifest; }> {
     if (manifestID) {
-      console.log(`Loading from manifest ID: ${manifestID}`)
+      this.log.info(`Loading from manifest ID: ${manifestID}`)
       if (document.getElementById(manifestID)) {
         if (document.getElementById(manifestID)!.hasAttribute('src')) {
           const manifestRaw 
@@ -27,7 +28,7 @@ export class SlotLoader {
           const manifest = await manifestRaw.json() as Manifest;
           if (description) {
             manifest.datasets[0].description = description;
-            console.log('manifest description changed');
+            this.log.info('manifest description changed');
           }
           return { result: 'success', manifest: manifest };
         } else {
@@ -39,10 +40,10 @@ export class SlotLoader {
                 return { result: 'success', manifest: manifest}
             }
             else {
-                //console.log('Test')
-                //console.log(this.loadDataFromElement(els, manifest))
+                //this.log.info('Test')
+                //this.log.info(this.loadDataFromElement(els, manifest))
                 manifest.datasets[0].series[0].records = this.loadDataFromElement(els, manifest)
-                console.log(manifest)
+                this.log.info(manifest)
                 return {result: 'success', manifest: manifest};
             }
                 */
@@ -55,7 +56,7 @@ export class SlotLoader {
       let filledManifest = this.validateManifest(els, manifest, description).manifest;
       return { result: 'success', manifest: filledManifest };
     } else {
-      console.log('Manifest ID not found or not present, attempting manifest construction from data');
+      this.log.info('Manifest ID not found or not present, attempting manifest construction from data');
       let manifest: Manifest = {
         datasets: [{
           type: '' as 'line', 
@@ -147,14 +148,14 @@ export class SlotLoader {
     }
     if (description) {
       manifest.datasets[0].description = description;
-      console.log('manifest description changed');
+      this.log.info('manifest description changed');
     }
     return {result: 'success', manifest: manifest };
   }
 
   loadDataFromElement(els: HTMLElement[], manifest: Manifest, key?: string){
     if (!els.length || els[0].tagName !== 'TABLE') {
-      console.log(els);
+      this.log.info(els);
       throw new Error("'table' element must be provided");
     }
     const table = els[0] as HTMLTableElement;

@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { View, type SnapLocation, type PaddingInput, type Padding } from '../base_view';
 import { ParaView } from '../../paraview';
 import { Layout } from './layout';
-
+import { Logger, getLogger } from '../../common/logger';
 import { nothing, svg, TemplateResult } from 'lit';
 import { RectShape } from '../shape/rect';
 
@@ -93,6 +93,7 @@ export class GridLayout extends Layout {
 
   constructor(paraview: ParaView, options: GridOptionsInput, id?: string) {
     super(paraview, id);
+    this.log = getLogger("GridLayout ");
     this._canWidthFlex = !!options.canWidthFlex;
     this._canHeightFlex = !!options.canHeightFlex;
     this._width = options.width ?? this._width;
@@ -722,16 +723,16 @@ export class GridLayout extends Layout {
   //   let kidHeightShrink = 0;
   //   if (!this._canWidthFlex) {
   //     const territoryPhysWidth = this._territoryPhysWidth(territory);
-  //     console.log('TPW', territoryPhysWidth, this._hRules, this._vRules);
+  //     this.log.info('TPW', territoryPhysWidth, this._hRules, this._vRules);
   //     const widthDiff = kid.paddedWidth - territoryPhysWidth;
-  //     console.log('WIDTH DIFF', widthDiff);
+  //     this.log.info('WIDTH DIFF', widthDiff);
   //     if (widthDiff > 0) {
   //       let otherCols = this._rows[0].map((_, i) => i).filter(i =>
   //         i < territory.x || i >= territory.x + territory.width);
   //       let availShrink = otherCols.map(i => this._columnShrinkability(i));
   //       otherCols = otherCols.filter((_rowIdx, i) => availShrink[i]);
   //       availShrink = availShrink.filter(avail => avail).map(avail => avail);
-  //       console.log('AVAIL COL SHRINK', otherCols, availShrink);
+  //       this.log.info('AVAIL COL SHRINK', otherCols, availShrink);
   //       // NB: otherCols may be empty
   //       const availShrinkSum = availShrink.reduce((a, b) => a + b, 0);
   //       if (availShrinkSum < widthDiff) {
@@ -744,13 +745,13 @@ export class GridLayout extends Layout {
   //             availShrink, otherCols);
   //         }
   //         kidWidthShrink = widthDiff - availShrinkSum;
-  //         console.log('KIDWIDTHSHRINK', kidWidthShrink, columnShrinkage);
+  //         this.log.info('KIDWIDTHSHRINK', kidWidthShrink, columnShrinkage);
   //       } else {
   //         // apportion space among shrinkable columns
   //         columnShrinkage = this._apportionShrinkage(
   //           widthDiff, availShrinkSum,
   //           availShrink, otherCols);
-  //         console.log('COL SHRINK', columnShrinkage);
+  //         this.log.info('COL SHRINK', columnShrinkage);
   //       }
   //     }
   //   } else {
@@ -778,15 +779,15 @@ export class GridLayout extends Layout {
 
   //   if (!this._canHeightFlex) {
   //     const territoryPhysHeight = this._territoryPhysHeight(territory);
-  //     console.log('TPH', territoryPhysHeight, kid.paddedHeight);
+  //     this.log.info('TPH', territoryPhysHeight, kid.paddedHeight);
   //     const heightDiff = kid.paddedHeight - territoryPhysHeight;
-  //     console.log('HEIGHT DIFF', heightDiff);
+  //     this.log.info('HEIGHT DIFF', heightDiff);
   //     if (heightDiff > 0) {
   //       let otherRows = this._rows.map((_, i) => i).filter(i =>
   //         i < territory.y || i >= territory.y + territory.height);
-  //       console.log('OTHER ROWS', otherRows);
+  //       this.log.info('OTHER ROWS', otherRows);
   //       let availShrink = otherRows.map(i => this._rowShrinkability(i));
-  //       console.log('AVAIL SHRINK', availShrink);
+  //       this.log.info('AVAIL SHRINK', availShrink);
   //       otherRows = otherRows.filter((_rowIdx, i) => availShrink[i]);
   //       availShrink = availShrink.filter(avail => avail).map(avail => avail);
   //       const availShrinkSum = availShrink.reduce((a, b) => a + b, 0);
@@ -801,7 +802,7 @@ export class GridLayout extends Layout {
   //         rowShrinkage = this._apportionShrinkage(
   //           heightDiff, availShrinkSum,
   //           availShrink, otherRows);
-  //         console.log('ROW SHRINK', rowShrinkage);
+  //         this.log.info('ROW SHRINK', rowShrinkage);
   //       }
   //     }
   //   } else {
@@ -829,7 +830,7 @@ export class GridLayout extends Layout {
 
   //   const toResize = new Map<View, {width: number, height: number}>();
   //   if (rowShrinkage.size) {
-  //     console.log('ROWS WILL SHRINK');
+  //     this.log.info('ROWS WILL SHRINK');
   //     rowShrinkage.entries().forEach(([idx, shrink]) => {
   //       this._rows[idx].forEach(view => {
   //         if (view) {
@@ -837,13 +838,13 @@ export class GridLayout extends Layout {
   //         }
   //       });
   //     });
-  //     console.log('TO RESIZE', toResize);
+  //     this.log.info('TO RESIZE', toResize);
   //     const rowsAbove = new Map(rowShrinkage.entries().filter(([idx, shrink]) =>
   //       idx < territory.y));
   //     const rowsBelow = new Map(rowShrinkage.entries().filter(([idx, shrink]) =>
   //       idx >= territory.y + territory.height));
-  //     console.log('ROWS ABOVE', rowsAbove, rowsBelow);
-  //     console.log('HRULES BEFORE', [...this._hRules]);
+  //     this.log.info('ROWS ABOVE', rowsAbove, rowsBelow);
+  //     this.log.info('HRULES BEFORE', [...this._hRules]);
   //     // Move hrules above territory up
   //     rowsAbove.forEach((shrink, idx) => {
   //       this._hRules.splice(idx + 1, rowsAbove.size,
@@ -854,10 +855,10 @@ export class GridLayout extends Layout {
   //       this._hRules.splice(idx, rowsBelow.size,
   //         ...this._hRules.slice(idx).map(hr => hr + shrink));
   //     });
-  //     console.log('HRULES', this._hRules);
+  //     this.log.info('HRULES', this._hRules);
   //   }
   //   if (columnShrinkage.size) {
-  //     console.log('COLS WILL SHRINK');
+  //     this.log.info('COLS WILL SHRINK');
   //     columnShrinkage.entries().forEach(([idx, shrink]) => {
   //       this._rows.map(row => row[idx]).forEach(view => {
   //         if (view) {
@@ -865,12 +866,12 @@ export class GridLayout extends Layout {
   //         }
   //       });
   //     });
-  //     console.log('TO RESIZE', toResize);
+  //     this.log.info('TO RESIZE', toResize);
   //     const colsLeft = columnShrinkage.entries().filter(([idx, shrink]) =>
   //       idx < territory.x).toArray();
   //     const colsRight = columnShrinkage.entries().filter(([idx, shrink]) =>
   //       idx >= territory.x + territory.width).toArray().toReversed();
-  //     console.log('VRULES BEFORE', [...this._vRules]);
+  //     this.log.info('VRULES BEFORE', [...this._vRules]);
   //     // Move vrules at territory left
   //     colsLeft.forEach(([idx, shrink]) => {
   //       this._vRules.splice(idx + 1, territory.x - (idx + 1),
@@ -883,17 +884,17 @@ export class GridLayout extends Layout {
   //         ...this._vRules.slice(start, idx + 1).map(vr => vr + shrink)
   //       );
   //     });
-  //     console.log('VRULES', this._vRules);
+  //     this.log.info('VRULES', this._vRules);
   //   }
   //   toResize.forEach((newSize, view) => {
   //     // Set the size without notifying the parent of the size change
-  //     console.log('RESIZING VIEWS', [...this._hRules]);
+  //     this.log.info('RESIZING VIEWS', [...this._hRules]);
   //     // view.constrainSize(newSize.width, newSize.height);
   //     view.setSize(newSize.width, newSize.height, false);
-  //     console.log('RESIZING VIEWS COMPLETE', [...this._hRules]);
+  //     .log('RESIZING VIEWS COMPLETE', [...this._hRules]);
   //   });
   //   if (kidWidthShrink || kidHeightShrink) {
-  //     console.log('KID CONSTRAIN', kid.width - kidWidthShrink, kid.height - kidHeightShrink);
+  //     this.log.info('KID CONSTRAIN', kid.width - kidWidthShrink, kid.height - kidHeightShrink);
   //     // kid.constrainSize(kid.width - kidWidthShrink, kid.height - kidHeightShrink);
   //     kid.setSize(kid.width - kidWidthShrink, kid.height - kidHeightShrink, false);
   //   }

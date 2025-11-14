@@ -14,6 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../common/logger';
+
 export interface Signal {
   promise: Promise<any>;
   resolver: (arg: any) => void;
@@ -28,7 +30,9 @@ export interface SignalResults {
  * in a function and emitted elsewhere. 
  */
 export class SignalManager {
-  
+
+  protected log: Logger = getLogger("SignalManager");
+
   private _signals: {[key: string]: Signal} = {};
 
   private addSignal(name: string) {
@@ -41,7 +45,7 @@ export class SignalManager {
 
   protected async _pending(isAny: boolean, names: string[]): Promise<any> {
     const signal = 'signal' + (names.length > 1 ? 's' : '');
-    console.log(`waiting for ${isAny ? ' any of ' : ''}${signal}: '${names.join(', ')}'`);
+    this.log.info(`waiting for ${isAny ? ' any of ' : ''}${signal}: '${names.join(', ')}'`);
     names.forEach(name => {
       if (!this._signals[name]) {
         this.addSignal(name);
@@ -50,7 +54,7 @@ export class SignalManager {
     let f = isAny ? Promise.any : Promise.all;
     f = f.bind(Promise);
     const results = await f(names.map(name => this._signals[name].promise));
-    console.log(`got ${signal}: '${names.join(', ')}'`);
+    this.log.info(`got ${signal}: '${names.join(', ')}'`);
     this.clear(...names);
     return results.length === 1 ? results[0] : Object.fromEntries(names.map((n, i) => [n, results[i]]));
   }
@@ -71,12 +75,11 @@ export class SignalManager {
     if (!this._signals[name]) {
       this.addSignal(name);
     }
-    console.log(`fired signal '${name}'`);
+    this.log.info(`fired signal '${name}'`);
     this._signals[name].resolver(arg);
   }
 
   clear(...names: string[]) {
     names.forEach(name => delete this._signals[name]);
   }
-
 }
