@@ -1,0 +1,65 @@
+{
+  "datasets": [
+    {
+      "type": "donut",
+      "title": "Division of energy in the Universe",
+      "facets": {
+        "x": {
+          "label": "Kind of energy",
+          "variableType": "independent",
+          "measure": "nominal",
+          "datatype": "string",
+          "displayType": {
+            "type": "marking"
+          }
+        },
+        "y": {
+          "label": "Proportion of total energy in the Universe",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "multiplier": 0.01,
+          "displayType": {
+            "type": "angle"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "Proportion of total energy in the Universe",
+          "theme": {
+            "baseQuantity": "energy",
+            "baseKind": "proportion",
+            "entity": "the Universe",
+            "aggregate": "total"
+          },
+          "records": [
+            {
+              "x": "Dark Energy",
+              "y": "73"
+            },
+            {
+              "x": "Dark Matter",
+              "y": "23"
+            },
+            {
+              "x": "Nonluminous Matter",
+              "y": "3.6"
+            },
+            {
+              "x": "Luminous Matter",
+              "y": "0.4"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "controlPanel.isControlPanelDefaultOpen": false,
+        "controlPanel.caption.isCaptionExternalWhenControlPanelClosed": false
+      }
+    }
+  ]
+}
