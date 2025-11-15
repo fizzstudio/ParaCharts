@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../common/logger';
 import { type BaseChartInfo, chartInfoClasses } from '../chart_types';
 import { View, Container, Padding } from './base_view';
 import { Label } from './label';
@@ -33,9 +34,8 @@ export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
  * Root of the view hierarchy.
  */
 export class DocumentView extends Container(View) {
-
+  
   readonly type: ChartType;
-
   protected _chartInfo: BaseChartInfo;
   protected _chartLayers!: PlotLayerManager;
   protected _directLabelStrip: DirectLabelStrip | null = null;
@@ -50,12 +50,13 @@ export class DocumentView extends Container(View) {
 
   constructor(paraview: ParaView) {
     super(paraview);
+    this.log = getLogger("DocumentView");
     this._store = paraview.store;
     this.observeNotices();
 
     this.type = this._store.type;
     // @ts-ignore
-    this._chartInfo = new chartInfoClasses[this.type](this.type, this._store);
+    this._chartInfo = new chartInfoClasses[this.type](this.type, this._store, this);
 
     this.setTitleText(this._store.title);
 
@@ -178,7 +179,7 @@ export class DocumentView extends Container(View) {
 
       // this._chartLayers.dataLayer.init();
       // if (this._horizAxis.width < this._chartLayers.width || this._vertAxis.height < this._chartLayers.height) {
-      //   console.log('RESIZE to', this._chartLayers.width, this._chartLayers.height, this._horizAxis.width, this._vertAxis.height);
+      //   this.log.info('RESIZE to', this._chartLayers.width, this._chartLayers.height, this._horizAxis.width, this._vertAxis.height);
       //   this._horizAxis.resize(this._chartLayers.width, this._chartLayers.height);
       //   this._vertAxis.resize(this._chartLayers.width, this._chartLayers.height);
       // }
@@ -270,13 +271,8 @@ export class DocumentView extends Container(View) {
     return this._chartInfo.storeDidChange(key, value);
   }
 
-  postNotice(key: string, value: any) {
-    this.noticePosted(key, value);
-    this._chartInfo.noticePosted(key, value);
-  }
-
   // noticePosted(key: string, value: any): void {
-  //   console.log('NOTICE', key);
+  //   this.log.info('NOTICE', key);
   //   if (key === 'animRevealEnd') {
   //     const shouldAddDirectLabelStrip = this._store.settings.chart.hasDirectLabels
   //       && this.type === 'line'
@@ -287,7 +283,7 @@ export class DocumentView extends Container(View) {
   //       const plotRow = (this._chartInfo.axisInfo && horizAxisPos === 'north'
   //         ? 1
   //         : 0) + (this._titleLabel ? 1 : 0);
-  //       console.log('PLOT ROW', plotRow);
+  //       this.log.info('PLOT ROW', plotRow);
   //       // this._directLabelStrip = new DirectLabelStrip(this._chartLayers.dataLayer as LinePlotView);
   //       // this._grid.append(this._directLabelStrip, {
   //       //   x: 2,
@@ -353,7 +349,7 @@ export class DocumentView extends Container(View) {
     } else if (this._vertAxis?.coord === coord) {
       return this._vertAxis;
     }
-    console.log('no axis!', this._horizAxis, this._vertAxis, coord)
+    this.log.info('no axis!', this._horizAxis, this._vertAxis, coord)
     return undefined;
   }
 

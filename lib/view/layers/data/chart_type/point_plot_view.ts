@@ -25,14 +25,14 @@ import { svg } from 'lit';
 import { linearRegression } from 'simple-statistics';
 import { View } from '../../../base_view';
 import { strToId } from '@fizz/paramanifest';
-
+import { Bezier } from '../../../../common';
+import { Logger, getLogger } from '../../../../common/logger';
 
 /**
  * Abstract base class for charts that represent data values as points
  * (connected or not).
  */
 export abstract class PointPlotView extends PlanePlotView {
-
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
       // this._axisInfo!.updateYRange();
@@ -105,7 +105,7 @@ export abstract class PointPlotView extends PlanePlotView {
   }
 
   _raiseSeries(series: string) {
-    console.log('RAISING', series);
+    this.log.info('RAISING', series);
     const seriesG = this.seriesRef(series).value!;
     this.dataset.append(seriesG);
   }
@@ -139,6 +139,9 @@ export class PointSeriesView extends PlaneSeriesView {
 export class PointDatapointView extends PlaneDatapointView {
 
   declare readonly chart: PointPlotView;
+  protected _currentAnimationFrame: number | null = null;
+  _isAnimating: boolean = false;
+  _hasAnimated: boolean = false;
 
   static width: number;
 
@@ -153,7 +156,7 @@ export class PointDatapointView extends PlaneDatapointView {
 
   get width() {
     const axisDivisions = this.paraview.store.model!.series[0].length - 1;
-    return this.chart.width/axisDivisions;
+    return this.chart.width / axisDivisions;
   }
 
   get height() {
@@ -161,32 +164,90 @@ export class PointDatapointView extends PlaneDatapointView {
   }
 
   get _selectedMarkerX() {
-    return this._x - this.width/2;
+    return this._x - this.width / 2;
   }
 
   get _selectedMarkerY() {
-    return this._y - this.height/2;
+    return this._y - this.height / 2;
   }
 
-  protected _computeX() {
+  get hasAnimated() {
+    return this._hasAnimated
+  }
+
+  computeX() {
     return this.width * this.index;
   }
 
-  protected _computeY() {
+  computeY() {
     const yLabelInfo = this.chart.parent.docView.chartInfo.axisInfo!.yLabelInfo;
     const pxPerYUnit = this.chart.height / yLabelInfo.range!;
     return this.chart.height - (this.datapoint.facetValueNumericized('y')! - yLabelInfo.min!) * pxPerYUnit;
   }
 
   computeLocation() {
-    this._animEndState.y = this._computeY();
-    this._x = this._computeX();
-    this._y = this.chart.height;
+    this._x = this.computeX();
+    if (this.paraview.store.settings.animation.isAnimationEnabled && this.paraview.store.settings.animation.expandPoints) {
+      if (this.paraview.store.settings.animation.animationOrigin === 'initialValue') {
+        this._animStartState.y = (this._parent.children[0] as PointDatapointView).computeY();
+      } else if (this.paraview.store.settings.animation.animationOrigin === 'baseline') {
+        this._animStartState.y = this.chart.height;
+      } else if (this.paraview.store.settings.animation.animationOrigin === 'top') {
+        this._animStartState.y = 0;
+      } else {
+        this._animStartState.y = this.paraview.store.settings.animation.animationOriginValue;;
+      }
+      this._animEndState.y = this.computeY();
+      this._y = this._animStartState.y;
+    } else {
+      this._y = this.computeY();
+      this._animStartState.y = this._y;
+      this._animEndState.y = this._y;
+    }
   }
 
-  animStep(t: number): void {
-    this._y = this.chart.height*(1 - t) + this._animEndState.y*t;
-    super.animStep(t);
+  beginAnimStep(t: number): void {
+    if (this.paraview.store.settings.animation.symbolPopIn) {
+      if (t + .01 >= this.x / this.chart.width && !this._isAnimating && !this._hasAnimated) {
+        this.popInAnimation(t)
+      }
+    }
+    this._y = this._animStartState.y * (1 - t) + this._animEndState.y * t;
+    super.beginAnimStep(t);
+  }
+
+  protected _animEnd() {
+    //this._parent.docView.postNotice('animRevealEnd', null);
+    this._currentAnimationFrame = null;
+    this._isAnimating = false;
+    this._hasAnimated = true;
+    //this._animateRevealComplete = true;
+  }
+
+  popInAnimation(t: number) {
+    this._isAnimating = true
+    let start = -1;
+    this._baseSymbolScale = 0
+    const bez = new Bezier(.2, 6, 1, 1, 10)
+    const step = (timestamp: number) => {
+      if (start === -1) {
+        start = timestamp;
+      }
+      const elapsed = timestamp - start;
+      // We can't really disable the animation, but setting the reveal time to 0
+      // will result in an imperceptibly short animation duration
+      const revealTime = Math.max(1, this.paraview.store.settings.animation.popInAnimateRevealTimeMs);
+      const t = Math.min(elapsed / revealTime, 1);
+      const bezT = bez.eval(t)!;
+      this._baseSymbolScale = bezT * .25 + .75
+      this._contentUpdateSymbol()
+      if (elapsed < revealTime) {
+        this._currentAnimationFrame = requestAnimationFrame(step);
+      } else {
+        this._animEnd();
+      }
+    };
+    this._currentAnimationFrame = requestAnimationFrame(step);
   }
 
 }

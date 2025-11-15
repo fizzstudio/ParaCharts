@@ -6,6 +6,7 @@ import { AxisInfo } from '../common/axisinfo';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, ScatterPointNavNodeOptions } from '../view/layers/data/navigation';
 import { Datapoint } from '@fizz/paramodel';
 import { mapn } from '@fizz/chart-classifier-utils';
+import { DocumentView } from '../view/document_view';
 
 
 export class ScatterChartInfo extends PointChartInfo {
@@ -41,11 +42,11 @@ export class ScatterChartInfo extends PointChartInfo {
       label: 'Show outliers',
       parentView: 'controlPanel.tabs.chart.chart',
     });
-        this._store.settingControls.add({
+    this._store.settingControls.add({
       type: 'checkbox',
       key: 'chart.showPopups',
       label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.chart',
+      parentView: 'controlPanel.tabs.chart.popups',
     });
   }
 

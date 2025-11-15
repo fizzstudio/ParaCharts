@@ -28,21 +28,110 @@
 			font-weight: normal;
 			color: hsl(0, 0%, 40%);
 		}
+		#jim {
+			width: 90%;
+			height: 200px;
+		}
 	</style>
 </head>
 <body>
   	<script type="module">
-		import { ParaHelper } from '/dist/paracharts.js';
+		import { ParaHelper } from '/dist-ai/paracharts.js';
+
+    	const container = document.getElementById('content-container');
+		const jim = document.getElementById('jim');
+
+		let _dataFile;
+		let _svgName;
+		let _manifest;
+		let _svgText;
+		let _dataFieldInfo;
+
+		async function _selectData(event) {
+			event.stopPropagation();
+
+			const fileInput = event?.target;
+			const fileList = fileInput.files;
+			const file = fileList?.item(0);
+
+			if (!file) {
+				return;
+			}
+
+			_dataFile = file;
+
+			const ext = file.name.toLocaleLowerCase().match(/^.+(\.\w+)/)?.[1];
+			_svgName = ext
+				? (file.name.slice(0, -ext.length) + '.svg')
+				: (file.name + '.svg');
+
+			if ('application/json' === file.type) {
+				await _loadManifest(JSON.parse(await file.text()));
+			} else if ('text/csv' === file.type) {
+				await _loadCsv(file);
+			} else {
+				throw new Error(`data file type '${file.type}' not supported`);
+			}
+		}
+
+		async function _loadManifest(manifest) {
+			console.log('MANIFEST', manifest);
+			await helper.loadManifest(JSON.stringify(manifest), 'content');
+			await helper.jimReady;
+			_manifest = manifest;
+			_svgText = helper.serializeChart();
+			// _setPreviewSVG(this._svgText);
+			container.innerHTML = _svgText;
+			jim.innerHTML = document.getElementsByTagName('metadata')[0].innerHTML;
+		}
+
+		/*function _setPreviewSVG(svgContent) {
+			const el = document.createElement('div');
+			el.innerHTML = svgContent;
+			const svg = el.firstElementChild;
+			if (svg) {
+				svg.remove();
+				this._imageContainerRef.value.append(svg);
+				// this._imageContainerRef.value!.viewBox = svg.getAttribute('viewBox')!;
+			}
+		}*/
+
+		async function _loadCsv(blob) {
+			const url = URL.createObjectURL(blob);
+			_dataFieldInfo = await helper.loadData(url);
+			URL.revokeObjectURL(url);
+		}
+
 		const helper = new ParaHelper();
 		await helper.ready;
-    	await helper.loadManifest('/src/headless/line-multi-manifest-128.json');
-    	const content = helper.serializeChart();
-    	const container = document.getElementById('content-container');
-    	container.innerHTML = content;
+
+		const dataSelect = document.getElementById('data-select');
+		dataSelect.addEventListener('change', _selectData);
+
+    	// await helper.loadManifest('/src/demo-data/line-multi-manifest-128.json');
+		// await helper.jimReady;
+    	// const content = helper.serializeChart();
+    	// container.innerHTML = content;
 	</script>
 	<h1>@fizz/paracharts Live Server Headless Demo</h1>
   	<main>
+		<label
+            class="field-label"
+            for="data-select"
+        >
+            Select data file:
+        </label>
+        <input
+            id="data-select"
+            type="file"
+            required
+            aria-required="true"
+            accept=".csv,.json,text/csv,application/json"
+        >
     	<section id="content-container">
+		</section>
+		<section>
+			<textarea id="jim"></textarea>
 		</section>
   	</main>
 </body>

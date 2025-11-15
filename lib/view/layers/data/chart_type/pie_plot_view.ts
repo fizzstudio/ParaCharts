@@ -1,4 +1,5 @@
 
+import { Logger, getLogger } from '../../../../common/logger';
 import { PastryPlotView, RadialSlice, type RadialDatapointParams } from '.';
 import { type SeriesView } from '../../../data';
 import { Popup } from '../../../popup';
@@ -13,9 +14,9 @@ export class PiePlotView extends PastryPlotView {
 }
 
 export class PieSlice extends RadialSlice {
-
   constructor(parent: SeriesView, params: RadialDatapointParams) {
     super(parent, params);
+    this.log = getLogger("PieSlice");
     this._x = this.chart.cx;
     this._y = this.chart.cy;
     // const {x, y, className} = this._computeLabelOptions();
@@ -37,14 +38,18 @@ export class PieSlice extends RadialSlice {
   }
 
   computeLocation(): void {
-    this._centralAngle = this.chart.animateRevealComplete
-      ? this._params.percentage*360
-      : 0;
+    if (this.paraview.store.settings.animation.isAnimationEnabled) {
+      this._centralAngle = this.chart.animateRevealComplete
+        ? this._params.percentage*360
+        : 0;
+    } else {
+      this._centralAngle = this._params.percentage*360;
+    }
   }
 
-  animStep(t: number): void {
+  beginAnimStep(t: number): void {
     this._centralAngle = this._params.percentage*360*t;
-    super.animStep(t);
+    super.beginAnimStep(t);
   }
 
   protected _createShapes() {
@@ -88,7 +93,7 @@ export class PieSlice extends RadialSlice {
   //   //   className = 'radial_label_left';
   //   // }
 
-  //   // console.log('LABEL OPTS', r, centerAngle, this.chart.cx, this.chart.cy, this._radians);
+  //   // this.log.info('LABEL OPTS', r, centerAngle, this.chart.cx, this.chart.cy, this._radians);
 
   //   return {
   //     x: this.chart.cx + r*Math.cos(centerAngle*Math.PI/180),
@@ -128,7 +133,8 @@ export class PieSlice extends RadialSlice {
         textAnchor: "middle",
         classList: ['annotationlabel'],
         id: this.id,
-        color: this.color
+        color: this.color,
+        points: [this]
       },
       {
         shape: "boxWithArrow",

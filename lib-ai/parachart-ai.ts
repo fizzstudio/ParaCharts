@@ -14,15 +14,16 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { customElement } from 'lit/decorators.js';
-import { ParaChart } from '../lib/parachart/parachart';
+import { css, unsafeCSS } from 'lit';
 import { SeriesAnalyzer } from '@fizz/series-analyzer';
 import { AiSeriesPairMetadataAnalyzer } from '@fizz/paramodel';
-import { css, unsafeCSS } from 'lit';
+import { Logger, getLogger } from '../lib/common/logger';
+import { ParaChart } from '../lib/parachart/parachart';
 import { styles } from '../lib/view/styles';
+// @ts-ignore
 import cpanelIconAlt from '../lib/assets/info-icon-alt.svg';
 
-@customElement('para-chart-ai')
+// NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaCharts`
 export class ParaChartAi extends ParaChart {
 
   static styles = [
@@ -40,14 +41,9 @@ export class ParaChartAi extends ParaChart {
   ];
 
   constructor() {
-    console.log('AI-enhanced ParaChart created');
     super(SeriesAnalyzer, AiSeriesPairMetadataAnalyzer);
+    this.log = getLogger("ParaChartAi");
+    this.log.info('AI-enhanced ParaChart created');
   }
 
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'para-chart-ai': ParaChartAi;
-  }
 }

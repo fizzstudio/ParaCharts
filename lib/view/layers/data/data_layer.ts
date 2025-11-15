@@ -49,6 +49,7 @@ export abstract class DataLayer extends PlotLayer {
   //protected _soniRiffSpeedRateIndex = 1;
   /** DatapointId to DOM ID */
   protected _datapointDomIds = new Map<string, string>();
+  protected _currentAnimationFrame: number | null = null;
   protected _animateRevealComplete = false;
 
   constructor(
@@ -144,7 +145,9 @@ export abstract class DataLayer extends PlotLayer {
 
   init() {
     this._layoutDatapoints();
-    this._animateReveal();
+    if (this.paraview.store.settings.animation.isAnimationEnabled) {
+      this._animateReveal();
+    }
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
@@ -200,6 +203,10 @@ export abstract class DataLayer extends PlotLayer {
   protected _layoutDatapoints() {
     this._chartLandingView.clearChildren();
     this._beginDatapointLayout();
+    if (this.paraview.store.settings.animation.isAnimationEnabled
+      && this.paraview.store.settings.animation.symbolPopIn) {
+      this.datapointViews.map(d => d.baseSymbolScale = 0)
+    }
     this._completeDatapointLayout();
   }
 
@@ -214,7 +221,7 @@ export abstract class DataLayer extends PlotLayer {
   // }
 
   protected _animateReveal() {
-    let start = -1;
+      let start = -1;
     const bez = new Bezier(0.2, 0.9, 0.5, 1, 10);
     const step = (timestamp: number) => {
       if (start === -1) {
@@ -223,25 +230,58 @@ export abstract class DataLayer extends PlotLayer {
       const elapsed = timestamp - start;
       // We can't really disable the animation, but setting the reveal time to 0
       // will result in an imperceptibly short animation duration
-      const revealTime = Math.max(1, this.paraview.store.settings.ui.animateRevealTimeMs);
+      const revealTime = Math.max(1, this.paraview.store.settings.animation.animateRevealTimeMs);
       const t = Math.min(elapsed/revealTime, 1);
       const bezT = bez.eval(t)!;
       this._animStep(bezT);
-      this._parent.docView.postNotice('animRevealStep', bezT);
+      this.paraview.paraChart.postNotice('animRevealStep', bezT);
       this.paraview.requestUpdate();
       if (elapsed < revealTime) {
-        requestAnimationFrame(step);
+        this._currentAnimationFrame = requestAnimationFrame(step);
       } else {
-        this._parent.docView.postNotice('animRevealEnd', null);
-        this._animateRevealComplete = true;
+        this._animEnd();
       }
     };
-    requestAnimationFrame(step);
+    this._currentAnimationFrame = requestAnimationFrame(step);
+    const start2 = Date.now()
+    const loop = () => {
+      let timestamp = setTimeout(() => {
+        this.paraview.requestUpdate()
+        loop();
+      }, 50);
+      if (Date.now() - start2 > this.paraview.store.settings.animation.popInAnimateRevealTimeMs
+        + this.paraview.store.settings.animation.animateRevealTimeMs) {
+        clearTimeout(timestamp)
+      }
+    };
+    loop()
   }
 
   protected _animStep(t: number) {
+    if (this.paraview.store.settings.animation.lineSnake) {
+      this.paraview.clipWidth = t * this.paraview.documentView!.chartLayers.width;
+    }
     for (const datapointView of this.datapointViews) {
-      datapointView.animStep(t);
+      datapointView.beginAnimStep(t);
+    }
+    for (const datapointView of this.datapointViews) {
+      datapointView.endAnimStep(t);
+    }
+  }
+
+  protected _animEnd() {
+    this.paraview.paraChart.postNotice('animRevealEnd', null);
+    this._currentAnimationFrame = null;
+    this._animateRevealComplete = true;
+  }
+
+  stopAnimation() {
+    if (this._currentAnimationFrame !== null) {
+      cancelAnimationFrame(this._currentAnimationFrame);
+      this._animStep(1);
+      this.paraview.paraChart.postNotice('animRevealStep', 1);
+      this.paraview.requestUpdate();
+      this._animEnd();
     }
   }
 

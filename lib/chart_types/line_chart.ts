@@ -14,26 +14,30 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../common/logger';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaStore } from '../store';
-import { type LineSettings, type DeepReadonly } from '../store/settings_types';
+import { type LineSettings, type DeepReadonly, type Setting } from '../store/settings_types';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../store/query_utils';
-//import { SeriesView } from '../../../data';
 
 import { interpolate } from '@fizz/templum';
 
-import { NavNode } from '../view/layers/data/navigation';
+import { NavNode, type NavMap } from '../view/layers/data/navigation';
 import { formatXYDatapoint } from '@fizz/parasummary';
 import { type ChartType } from '@fizz/paramanifest';
+import { Highlight } from '@fizz/parasummary';
 
 /**
  * Business logic for line charts.
  * @public
  */
 export class LineChartInfo extends PointChartInfo {
+  protected _prevHighlightNavcode = '';
+  protected _altNavMap!: NavMap;
 
   constructor(type: ChartType, store: ParaStore) {
     super(type, store);
+    this.log = getLogger("LineChartInfo");
   }
 
   protected _addSettingControls(): void {
@@ -60,12 +64,20 @@ export class LineChartInfo extends PointChartInfo {
       type: 'checkbox',
       key: 'chart.showPopups',
       label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.chart',
+      parentView: 'controlPanel.tabs.chart.popups',
     });
   }
 
   get settings() {
     return super.settings as DeepReadonly<LineSettings>;
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if (['type.line.isTrendNavigationModeEnabled'].includes(path)) {
+      [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
+      this._navMap!.root.goTo('top', {});
+    }
+    super.settingDidChange(path, oldValue, newValue);
   }
 
   async storeDidChange(key: string, value: any) {
@@ -93,7 +105,8 @@ export class LineChartInfo extends PointChartInfo {
   protected _createSequenceNavNodes() {
     if (!this._canCreateSequenceNavNodes()) return;
     const seriesSeqNodes: NavNode<'sequence'>[][] = [];
-    this._navMap!.root.query('series').forEach(seriesNode => {
+    this._altNavMap = this._navMap!.clone();
+    this._altNavMap!.root.query('series').forEach(seriesNode => {
       if (seriesSeqNodes.length) {
         seriesNode.connect('left', seriesSeqNodes.at(-1)!.at(-1)!);
       }
@@ -155,6 +168,53 @@ export class LineChartInfo extends PointChartInfo {
     });
   }
 
+  noticePosted(key: string, value: any) {
+    super.noticePosted(key, value);
+    if (this._store.settings.ui.isNarrativeHighlightEnabled) {
+      if (key === 'utteranceBoundary') {
+        const highlight: Highlight = value;
+        this._prevHighlightNavcode = this._doHighlight(highlight, this._prevHighlightNavcode);
+      } else if (key === 'utteranceEnd') {
+        // So that on the initial transition from auto-narration to manual
+        // span navigation, we don't remove any highlights added in manual mode
+        if (!this._store.paraChart.captionBox.highlightManualOverride) {
+          this._store.clearHighlight();
+          this._store.clearAllSeriesLowlights();
+        }
+        // this._highlightIndex = null;
+        if (this._prevHighlightNavcode) {
+          this.didRemoveHighlight(this._prevHighlightNavcode);
+          this._prevHighlightNavcode = '';
+        }
+      }
+    }
+  }
+
+  protected _doHighlight(highlight: Highlight, prevNavcode: string) {
+    if (highlight.navcode) {
+      if (highlight.navcode.startsWith('series')) {
+        const segments = highlight.navcode.split(/-/);
+        this._store.lowlightOtherSeries(...segments.slice(1));
+      } else {
+        this._store.clearHighlight();
+        this._store.highlight(highlight.navcode);
+        if (prevNavcode) {
+          this.didRemoveHighlight(prevNavcode);
+        }
+        this.didAddHighlight(highlight.navcode);
+      }
+      prevNavcode = highlight.navcode;
+    } else {
+      this._store.clearHighlight();
+      this._store.clearAllSeriesLowlights();
+      if (prevNavcode) {
+        this.didRemoveHighlight(prevNavcode);
+        prevNavcode = '';
+      }
+    }
+    return prevNavcode;
+  }
+
   legend() {
     const seriesKeys = [...this._store.model!.seriesKeys];
     if (this._store.settings.legend.itemOrder === 'alphabetical') {
@@ -179,9 +239,9 @@ export class LineChartInfo extends PointChartInfo {
     } else if (queriedNode.isNodeType('series')) {
       /*
       if (e.options!.isChordMode) {
-        // console.log('focusedDatapoint', focusedDatapoint)
+        // this.log.info('focusedDatapoint', focusedDatapoint)
         const visitedDatapoints = e.options!.visited as XYDatapointView[];
-        // console.log('visitedDatapoints', visitedDatapoints)
+        // this.log.info('visitedDatapoints', visitedDatapoints)
         msgArray = this.describeChord(visitedDatapoints);
       } */
       const seriesKey = queriedNode.options.seriesKey;
@@ -196,9 +256,9 @@ export class LineChartInfo extends PointChartInfo {
         // focused view: e.options!.focus
         // all visited datapoint views: e.options!.visited
         // const focusedDatapoint = e.targetView;
-        // console.log('focusedDatapoint', focusedDatapoint)
+        // this.log.info('focusedDatapoint', focusedDatapoint)
         const visitedDatapoints = e.options!.visited as XYDatapointView[];
-        // console.log('visitedDatapoints', visitedDatapoints)
+        // this.log.info('visitedDatapoints', visitedDatapoints)
         msgArray = this.describeChord(visitedDatapoints);
       }
         */

@@ -2,6 +2,7 @@ import { PlaneChartInfo } from '.';
 import { type ParaStore, type DeepReadonly } from '../store';
 import { type ChartType } from "@fizz/paramanifest";
 import { AxisInfo, computeLabels } from '../common';
+import { DocumentView } from '../view/document_view';
 
 export class HistogramChartInfo extends PlaneChartInfo {
   protected _bins: number = 20;

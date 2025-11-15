@@ -112,7 +112,7 @@ export abstract class PastryPlotView extends DataLayer {
       type: 'checkbox',
       key: 'chart.showPopups',
       label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.chart',
+      parentView: 'controlPanel.tabs.chart.popups',
     });
   }
 
@@ -395,7 +395,6 @@ export interface RadialDatapointParams {
 }
 
 export abstract class RadialSlice extends DatapointView {
-
   declare readonly chart: PastryPlotView;
   declare protected _shapes: SectorShape[];
 

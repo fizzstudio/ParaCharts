@@ -38,6 +38,7 @@ import { type Facet } from '@fizz/paramanifest';
 import { type TemplateResult } from 'lit';
 import { literal } from 'lit/static-html.js';
 import { PlaneModel } from '@fizz/paramodel';
+import { Popup } from '../popup';
 
 export type AxisOrientation = 'horiz' | 'vert';
 export type AxisCoord = 'x' | 'y';
@@ -200,6 +201,10 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     return this._orthoAxis;
   }
 
+  get layout() {
+    return this._layout;
+  }
+
   set orthoAxis(orthoAxis: Axis<OrthoAxis<T>>) {
     this._orthoAxis = orthoAxis;
   }
@@ -252,9 +257,45 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       text: this.titleText,
       classList: [`axis-title-${this.orientation}`],
       role: 'heading',
-      angle: this._getAxisTitleAngle()
+      angle: this._getAxisTitleAngle(),
+      pointerEnter: (e) => {
+        /*
+        this.paraview.store.settings.chart.showPopups
+          && this.paraview.store.settings.popup.activation === "onHover"
+          && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? */this.addPopup();
+      },
+      pointerLeave: (e) => {
+        /*
+        this.paraview.store.settings.chart.showPopups
+          && this.paraview.store.settings.popup.activation === "onHover"
+          && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? */this.removePopup(this.id);
+      }
     });
     this._axisTitle.padding = this._getAxisTitlePadding();
+  }
+
+  addPopup(text?: string) {
+    let datapointText = `${this.titleText}`
+    let popup = new Popup(this.paraview,
+      {
+        text: text ?? datapointText,
+        x: this.x,
+        y: this.y,
+        textAnchor: "middle",
+        classList: ['annotationlabel'],
+        id: this.id,
+        type: "vertAxis",
+        fill: "hsl(0, 0%, 0%)"
+      },
+      {fill: "hsl(0, 0%, 100%)",
+        shape: "box"
+      })
+    this.paraview.store.popups.push(popup)
+  }
+
+  removePopup(id: string) {
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
+    this.paraview.requestUpdate()
   }
 
   protected abstract _appendTitle(): void;
@@ -432,7 +473,7 @@ export class VertAxis extends Axis<'vert'> {
         return value as number >= min ?
           { err: `Min y-value (${value}) must be less than (${min})`} : {};
       },
-      parentView: 'controlPanel.tabs.chart.general',
+      parentView: 'controlPanel.tabs.chart.general.minY',
     });
     this.paraview.store.settingControls.add({
       type: 'textfield',
@@ -449,7 +490,7 @@ export class VertAxis extends Axis<'vert'> {
         return value as number <= max ?
           { err: `Max y-value (${value}) must be greater than (${max})`} : {};
       },
-      parentView: 'controlPanel.tabs.chart.general',
+      parentView: 'controlPanel.tabs.chart.general.maxY',
     });
   }
 

@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { PlaneSeriesView, PointPlotView, PointDatapointView } from '.';
-import { type LineSettings, type DeepReadonly } from '../../../../store/settings_types';
+import { type LineSettings, type DeepReadonly, type Setting } from '../../../../store/settings_types';
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { bboxOfBboxes, isPointerInbounds } from '../../../../common/utils';
@@ -37,6 +37,14 @@ export class LinePlotView extends PointPlotView {
 
   get settings() {
     return super.settings as DeepReadonly<LineSettings>;
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if (['chart.hasDirectLabels'].includes(path)) {
+      this.paraview.createDocumentView();
+      this.paraview.requestUpdate();
+    }
+    super.settingDidChange(path, oldValue, newValue);
   }
 
   updateSeriesStyle(styleInfo: StyleInfo) {
@@ -357,7 +365,8 @@ export class LineSection extends PointDatapointView {
         textAnchor: "middle",
         classList: ['annotationlabel'],
         id: this.id,
-        color: this.color
+        color: this.color,
+        points: [this]
       },
       {})
     this.paraview.store.popups.push(popup)

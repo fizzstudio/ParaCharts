@@ -1,0 +1,276 @@
+.chart {
+  --para-type: 'bar';
+  --para-orientation: 'north';
+  --para-padding: 15;
+  --para-font-family: 'Helvetica, sans-serif';
+  --para-font-weight: '300';
+  --para-is-summary-default-open: true;
+  --para-symbol-stroke-width: 2;
+}
+
+
+.chart .size {
+  --para-w: 360;
+  --para-h: 360;
+}
+
+
+.chart .title {
+  --para-margin: 40;
+  --para-font-size: 22;
+  --para-align: 'center';
+  --para-position: 'top';
+}
+
+.axis {
+  --para-min-interval: 25;
+  --para-datapoint-margin: 3;
+}
+
+.axis .horiz {
+  --para-position: 'south';
+  --para-label-order: 'westToEast';
+}
+
+
+.axis .vert {
+  --para-position: 'west';
+  --para-label-order: 'southToNorth';
+}
+
+
+.axis .x .label {
+  --para-gap: 8;
+  --para-font-size: 15;
+}
+
+
+.axis .x .line {
+  --para-is-draw-enabled: true;
+  --para-is-draw-overhang-enabled: true;
+  --para-stroke-width: 2;
+  --para-stroke-linecap: 'round';
+}
+
+
+.axis .x .tick {
+  --para-is-draw-enabled: true;
+  --para-padding: 3;
+  --para-font-size: 13;
+  --para-opacity: 1;
+  --para-stroke-width: 2;
+  --para-stroke-linecap: 'round';
+  --para-length: 10;
+  --para-label-format: 'raw';
+
+  --para-step: 1;
+}
+
+.axis .x .tick .tickLabel {
+  --para-angle: -45;
+  --para-offset-padding: 8;
+}
+
+
+
+.axis .y .label {
+  --para-gap: 8;
+  --para-font-size: 15;
+}
+
+
+.axis .y .line {
+  --para-is-draw-enabled: true;
+  --para-is-draw-overhang-enabled: true;
+  --para-stroke-width: 2;
+  --para-stroke-linecap: 'round';
+}
+
+
+.axis .y .tick {
+  --para-is-draw-enabled: true;
+  --para-padding: 3;
+  --para-font-size: 13;
+  --para-opacity: 1;
+  --para-stroke-width: 2;
+  --para-stroke-linecap: 'round';
+  --para-length: 10;
+  --para-label-format: 'raw';
+  --para-step: 1;
+}
+
+.axis .y .tick .tickLabel {
+  --para-angle: 0;
+  --para-offset-padding: 0;
+}
+
+
+.legend {
+  --para-is-draw: true;
+  --para-padding: 10;
+  --para-column-gap: 10;
+}
+
+
+.type .bar {
+  --para-bar-width-min: 10;
+  --para-cluster-by: undefined;
+  --para-cluster-padding-px: 5;
+  --para-stack-content: 'all';
+  --para-stack-count: 1;
+  --para-is-abbrev-series: true;
+  --para-order-by: undefined;
+  --para-bar-gap: 0.25;
+  --para-cluster-label-format: 'raw';
+  --para-highlight-scale: 2;
+  --para-line-width: 5;
+}
+
+
+.type .line {
+  --para-line-width: 5;
+  --para-line-width-max: 25;
+  --para-base-symbol-size: 10;
+  --para-series-label-padding: 5;
+  --para-point-label-format: 'raw';
+  --para-leader-line-length: 30;
+  --para-is-draw-symbols: true;
+  --para-highlight-scale: 1.6;
+}
+
+.type .line .selectedPointMarkerSize {
+  --para-w: 20;
+  --para-h: 20;
+}
+
+.type .scatter {
+  --para-point-label-format: 'raw';
+  --para-symbol-stroke-width: 2;
+}
+
+.type .scatter .selectedPointMarkerSize {
+  --para-w: 20;
+  --para-h: 20;
+}
+
+.type .pie {
+  --para-is-render-center-label: true;
+  --para-chunk-label-format: 'raw';
+}
+
+.type .pie .label {
+  --para-margin: 3;
+  --para-font-size: 15;
+}
+
+.type .donut {
+  --para-is-render-center-label: true;
+  --para-chunk-label-format: 'raw';
+}
+
+.type .donut .label {
+  --para-margin: 3;
+  --para-font-size: 15;
+}
+
+.type .gauge {
+  --para-is-render-center-label: true;
+  --para-chunk-label-format: 'raw';
+}
+
+.type .gauge .label {
+  --para-margin: 3;
+  --para-font-size: 15;
+}
+
+.type .stepline {
+  --para-line-width: 5;
+  --para-line-width-max: 25;
+  --para-base-symbol-size: 10;
+  --para-series-label-padding: 5;
+  --para-point-label-format: 'raw';
+  --para-leader-line-length: 30;
+  --para-is-draw-symbols: false;
+  --para-symbol-stroke-width: 2;
+  --para-highlight-scale: 1.6;
+}
+
+.type .stepline .selectedPointMarkerSize {
+  --para-w: 20;
+  --para-h: 20;
+}
+
+.type .lollipop {
+  --para-bar-width-min: 10;
+  --para-line-width: 5;
+  --para-cluster-by: undefined;
+  --para-cluster-padding-px: 5;
+  --para-stack-content: 'all';
+  --para-stack-count: 1;
+  --para-is-abbrev-series: true;
+  --para-order-by: undefined;
+  --para-bar-gap: 0.25;
+  --para-cluster-label-format: 'raw';
+  --para-highlight-scale: 1.6;
+  --para-is-draw-symbols: true;
+}
+
+
+.grid {
+  --para-is-draw-horiz-lines: true;
+  --para-is-draw-vert-lines: true;
+  --para-is-draw-horiz-axis-opposite-line: true;
+  --para-is-draw-vert-axis-opposite-line: true;
+}
+
+
+.ui {
+  --para-is-voicing-enabled: false;
+  --para-speech-rate: 1;
+  --para-is-full-screen-enabled: false;
+  --para-tab-label-style: 'label';
+  --para-is-spark-braille-visible: false;
+  --para-is-caption-visible: true;
+  --para-is-status-bar-visible: true;
+}
+
+
+.color {
+  --para-color-vision-mode: 'normal';
+  --para-is-dark-mode-enabled: false;
+  --para-contrast-level: 1;
+  --para-color-palette: 'diva';
+}
+
+
+.jim {
+  --para-x-value-format: 'raw';
+}
+
+
+.dataTable {
+  --para-x-value-format: 'raw';
+  --para-y-value-format: 'raw';
+}
+
+
+.statusBar {
+  --para-value-format: 'raw';
+}
+
+
+.sonification {
+  --para-is-enabled: false;
+  --para-is-riff-enabled: true;
+  --para-is-notification-enabled: true;
+  --para-is-chord-mode-enabled: false;
+  --para-hertz-lower: 35;
+  --para-hertz-upper: HERTZ.length - 12;
+  --para-soni-play-speed: 3;
+  --para-riff-speed: 'medium';
+}
+
+
+.dev {
+  --para-is-debug: false;
+}

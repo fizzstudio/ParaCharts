@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { logging } from '../common/logger';
+import { Logger, getLogger } from '../common/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest'
 import { DeepReadonly, Settings, SettingsInput, type Setting } from '../store/settings_types';
@@ -28,24 +28,26 @@ import { type ParaControlPanel } from '../control_panel';
 import { ParaStore } from '../store';
 import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../store/custom_property_loader';
-import { ParaApi } from '../api/api';
 import { styles } from '../view/styles';
 import { type AriaLive } from '../components';
 import '../components/aria_live';
 import { StyleManager } from './style_manager';
+import { AvailableCommands, Commander } from './commander';
+import { ParaAPI } from '../paraapi/paraapi';
+import { Scrollyteller } from '../scrollyteller/scrollyteller';
 
 import { Manifest } from '@fizz/paramanifest';
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
-import { customElement, property, queryAssignedElements } from 'lit/decorators.js';
+import { property, queryAssignedElements } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { SlotLoader } from '../loader/slotloader';
 import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { initParaSummary } from '@fizz/parasummary';
 
-@customElement('para-chart')
-export class ParaChart extends logging(ParaComponent) {
+// NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
+export class ParaChart extends ParaComponent {
 
   @property({ type: Boolean }) headless = false;
   @property() accessor manifest = '';
@@ -65,12 +67,17 @@ export class ParaChart extends logging(ParaComponent) {
   protected _manifest?: Manifest;
   protected _loader = new ParaLoader();
   private _slotLoader = new SlotLoader();
+  protected log: Logger = getLogger("ParaChart");
 
   protected _suppleteSettingsWith?: DeepReadonly<Settings>;
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
-  protected _api: ParaApi;
+  protected _loaderResolver: (() => void) | null = null;
+  protected _loaderRejector: (() => void) | null = null;
   protected _styleManager!: StyleManager;
+  protected _commander!: Commander;
+  protected _paraAPI!: ParaAPI;
+  protected _scrollyteller!: Scrollyteller;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -94,8 +101,11 @@ export class ParaChart extends logging(ParaComponent) {
     customPropLoader.store = this.store;
     customPropLoader.registerColors();
     customPropLoader.registerSymbols();
-    this._api = new ParaApi(this);
 
+    this._loaderPromise = new Promise((resolve, reject) => {
+      this._loaderResolver = resolve;
+      this._loaderRejector = reject;
+    });
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
         resolve();
@@ -105,11 +115,12 @@ export class ParaChart extends logging(ParaComponent) {
           if (this.data) {
             await this._loader.preloadData(this.data);
           }
-          this._loaderPromise = this._runLoader(this.manifest, this.manifestType).then(() => {
-            this.log('ParaCharts will now commence the raising of the roof and/or the dead');
+          this._runLoader(this.manifest, this.manifestType).then(() => {
+            this.log.info('ParaCharts fully initialized');
+            this._scrollyteller = new Scrollyteller(this);
           });
         } else if (this.getElementsByTagName("table")[0]) {
-          this.log(`loading from slot`);
+          this.log.info(`loading from slot`);
           const table = this.getElementsByTagName("table")[0];
           const manifest = this.getElementsByClassName("manifest")[0] as HTMLElement;
           this._store.dataState = 'pending';
@@ -119,18 +130,18 @@ export class ParaChart extends logging(ParaComponent) {
               "some-manifest",
               this.description
             )
-            this.log('loaded manifest')
+            this.log.info('loaded manifest')
             if (loadresult.result === 'success') {
               this.store.setManifest(loadresult.manifest!);
               this._store.dataState = 'complete';
             } else {
-              //console.error(loadresult.error);
+              //this.log.error(loadresult.error);
               this._store.dataState = 'error';
             }
           }
         }
           else {
-            console.log("No datatable in slot")
+            this.log.info("No datatable in slot")
             this._store.dataState = 'error'
           }
       });
@@ -170,6 +181,14 @@ export class ParaChart extends logging(ParaComponent) {
 
   get styleManager() {
     return this._styleManager;
+  }
+
+  get api() {
+    return this._paraAPI;
+  }
+
+  get scrollyteller() {
+    return this._scrollyteller;
   }
 
   connectedCallback() {
@@ -236,12 +255,13 @@ export class ParaChart extends logging(ParaComponent) {
   }
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
+    this._commander = Commander.getInst(this._paraViewRef.value!);
   }
 
   willUpdate(changedProperties: PropertyValues<this>) {
     // Don't load a manifest before the paraview has rendered
     if (changedProperties.has('manifest') && this.manifest !== '' && this._paraViewRef.value) {
-      this.log(`manifest changed: '${this.manifestType === 'content' ? '<content>' : this.manifest}`);
+      this.log.info(`manifest changed: '${this.manifestType === 'content' ? '<content>' : this.manifest}`);
       this._loaderPromise = this._runLoader(this.manifest, this.manifestType);
       this.dispatchEvent(new CustomEvent('manifestchange', {bubbles: true, composed: true, cancelable: true}));
     }
@@ -267,7 +287,7 @@ export class ParaChart extends logging(ParaComponent) {
   ];
 
   protected async _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void> {
-    this.log(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
+    this.log.info(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
     this._store.dataState = 'pending';
     const loadresult = await this._loader.load(
       this.manifestType,
@@ -275,25 +295,38 @@ export class ParaChart extends logging(ParaComponent) {
       this.forcecharttype,
       this.description
     );
-    this.log('loaded manifest')
+    this.log.info('loaded manifest')
     if (loadresult.result === 'success') {
       this._manifest = loadresult.manifest;
       this._store.setManifest(loadresult.manifest, loadresult.data);
       this._store.dataState = 'complete';
+      // NB: cpanel doesn't exist in headless mode
+      this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
+      this._paraAPI = new ParaAPI(this);
+      this._loaderResolver!();
     } else {
-      console.error(loadresult.error);
+      this.log.error(loadresult.error);
       this._store.dataState = 'error';
+      this._loaderRejector!();
     }
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
-    this.log('setting did change:', path, '=', newValue, `(was ${oldValue})`);
+    this.log.info('setting did change:', path, '=', newValue, `(was ${oldValue})`);
     // Update the style manager before the paraview so, e.g., any font scale
     // change can take effect ...
     this._styleManager.update();
     this._paraViewRef.value?.settingDidChange(path, oldValue, newValue);
     // ... then update it again to pick up any changed values from the view tree
     this._styleManager.update();
+  }
+
+  postNotice(key: string, value: any) {
+    this.paraView.documentView!.noticePosted(key, value);
+    this.paraView.documentView!.chartInfo.noticePosted(key, value);
+    this.captionBox.noticePosted(key, value);
+    this.dispatchEvent(
+      new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));
   }
 
   clearAriaLive() {
@@ -304,20 +337,16 @@ export class ParaChart extends logging(ParaComponent) {
     this._ariaLiveRegionRef.value!.showHistoryDialog();
   }
 
-  getChartSVG() {
-    return this._api.serializeChart();
-  }
-
-  downloadSVG() {
-    this._api.downloadSVG();
-  }
-
-  downloadPNG() {
-    this._api.downloadPNG();
+  command(name: keyof AvailableCommands, args: any[]): any {
+    const handler = this._commander.commands[name];
+    if (handler) {
+      return handler(...args);
+    } else {
+      this.log.warn(`no handler for command '${name}'`);
+    }
   }
 
   render(): TemplateResult {
-    this.log('render');
     // We can't truly hide the para-chart, or labels don't get a proper size,
     // so we fall back on sr-only
     const classes = {
@@ -358,10 +387,4 @@ export class ParaChart extends logging(ParaComponent) {
     `;
   }
 
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'para-chart': ParaChart;
-  }
 }

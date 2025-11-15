@@ -19,9 +19,9 @@ import {
 } from '../store/settings_types';
 import { SettingsManager } from '../store/settings_manager';
 import { type AxisInfo } from '../common/axisinfo';
-import { type LegendItem } from '../view//legend';
+import { type LegendItem } from '../view/legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
-import { Logger } from '../common/logger';
+import { Logger, getLogger } from '../common/logger';
 import { ParaStore, type SparkBrailleInfo, datapointIdToCursor } from '../store';
 import { Sonifier } from '../audio/sonifier';
 import { type AxisCoord } from '../view/axis';
@@ -32,6 +32,7 @@ import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer, formatBox } fr
 import { Interval } from '@fizz/chart-classifier-utils';
 
 import { Unsubscribe } from '@lit-app/state';
+import { DocumentView } from '../view/document_view';
 
 
 /**
@@ -44,8 +45,8 @@ export type RiffOrder = 'normal' | 'sorted' | 'reversed';
  * Abstract base class for business logic pertaining to any type of chart.
  * @public
  */
-export abstract class BaseChartInfo extends Logger {
-
+export abstract class BaseChartInfo {
+  protected log: Logger = getLogger("BaseChartInfo");
   protected _navMap: NavMap | null = null;
   protected _axisInfo: AxisInfo | null = null;
   protected _summarizer!: Summarizer;
@@ -56,7 +57,6 @@ export abstract class BaseChartInfo extends Logger {
   protected _soniRiffInterval: ReturnType<typeof setTimeout> | null = null;
 
   constructor(protected _type: ChartType, protected _store: ParaStore) {
-    super();
     this._init();
     this._addSettingControls();
   }
@@ -71,7 +71,7 @@ export abstract class BaseChartInfo extends Logger {
         min: 1,
         max: 1000
       },
-      parentView: 'controlPanel.tabs.chart.general',
+      parentView: 'controlPanel.tabs.chart.general.width',
     });
     this._store.settingControls.add({
       type: 'textfield',
@@ -82,7 +82,7 @@ export abstract class BaseChartInfo extends Logger {
         min: 1,
         max: 1000
       },
-      parentView: 'controlPanel.tabs.chart.general',
+      parentView: 'controlPanel.tabs.chart.general.height',
     });
   }
 
@@ -150,11 +150,9 @@ export abstract class BaseChartInfo extends Logger {
   }
 
   didAddHighlight(navcode: string) {
-    console.log('DID ADD HIGHLIGHT', navcode);
   }
 
   didRemoveHighlight(navcode: string) {
-    console.log('DID REMOVE HIGHLIGHT', navcode);
   }
 
   legend(): LegendItem[] {
@@ -177,7 +175,8 @@ export abstract class BaseChartInfo extends Logger {
   }
 
   async move(dir: Direction) {
-    await this._navMap!.cursor!.move(dir);
+    await this._navMap!.cursor.move(dir);
+    this._store.paraChart.postNotice('move', {dir, options: this._navMap!.cursor.options});
   }
 
   /**
@@ -220,6 +219,7 @@ export abstract class BaseChartInfo extends Logger {
         seriesKey: seriesMatchArray[0].seriesKey,
         index: seriesMatchArray[0].datapointIndex
       });
+      this._store.paraChart.postNotice('goSeriesMinMax', {isMin, options: this._navMap!.cursor.options});
     }
   }
 
@@ -236,6 +236,7 @@ export abstract class BaseChartInfo extends Logger {
       seriesKey: matchDatapoint?.seriesKey,
       index: matchDatapoint?.datapointIndex
     });
+    this._store.paraChart.postNotice('goChartMinMax', {isMin, options: this._navMap!.cursor.options});
   }
 
   protected _composePointSelectionAnnouncement(isExtend: boolean) {
@@ -302,19 +303,20 @@ export abstract class BaseChartInfo extends Logger {
     }
   }
 
-  selectCurrent(extend = false) {
-    if (extend) {
+  selectCurrent(isExtend = false) {
+    if (isExtend) {
       this._store.extendSelection();
     } else {
       this._store.select();
     }
     const announcement =
-      this._navMap!.cursor.isNodeType('datapoint') ? this._composePointSelectionAnnouncement(extend) :
+      this._navMap!.cursor.isNodeType('datapoint') ? this._composePointSelectionAnnouncement(isExtend) :
         this._navMap!.cursor.isNodeType('series') ? this._composeSeriesSelectionAnnouncement() :
           '';
     if (announcement) {
       this._store.announce(announcement);
     }
+    this._store.paraChart.postNotice('select', {isExtend, options: this._navMap!.cursor.options});
   }
 
   clearDatapointSelection(quiet = false) {
@@ -322,6 +324,7 @@ export abstract class BaseChartInfo extends Logger {
     if (!quiet) {
       this._store.announce('No items selected.');
     }
+    this._store.paraChart.postNotice('clearSelection', null);
   }
 
   // NOTE: This should be overriden in subclasses
@@ -340,6 +343,7 @@ export abstract class BaseChartInfo extends Logger {
         series: 'up'
       };
       this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
+      this._store.paraChart.postNotice('goFirst', {options: this._navMap!.cursor.options});
     }
   }
 
@@ -352,6 +356,7 @@ export abstract class BaseChartInfo extends Logger {
         series: 'down'
       };
       this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
+      this._store.paraChart.postNotice('goLast', {options: this._navMap!.cursor.options});
     }
   }
 
@@ -362,16 +367,18 @@ export abstract class BaseChartInfo extends Logger {
         const seriesKey = this._navMap!.cursor.options.seriesKey;
         this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
         this._chordPrevSeriesKey = seriesKey;
+        this._store.paraChart.postNotice('enterChordMode', {options: this._navMap!.cursor.options});
       } else if (this._navMap!.cursor.isNodeType('chord')) {
         this._navMap!.cursor.layer.goTo(
           this.navDatapointType, {
           seriesKey: this._chordPrevSeriesKey,
           index: this._navMap!.cursor.options.index
         });
+        this._store.paraChart.postNotice('exitChordMode', {options: this._navMap!.cursor.options});
       }
     }
     else {
-      console.log('Chord mode not supported for this chart type');
+      this.log.info('Chord mode not supported for this chart type');
     }
   }
 
@@ -388,7 +395,7 @@ export abstract class BaseChartInfo extends Logger {
     } else if (cursor.isNodeType('series')) {
       this._store.announce(
         await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
-      this._playRiff();
+      this._playCurrentRiff();
       this._store.sparkBrailleInfo = this._sparkBrailleInfo();
     } else if (cursor.isNodeType(this.navDatapointType)) {
       // NOTE: this needs to be done before the datapoint is visited, to check whether the series has
@@ -398,7 +405,7 @@ export abstract class BaseChartInfo extends Logger {
       const announcements = [this._summarizer.getDatapointSummary(datapoint, 'statusBar')];
       const isSeriesChange = !this._store.wasVisitedSeries(cursor.options.seriesKey);
       if (isSeriesChange) {
-        announcements[0] = `${cursor.options.seriesKey}: ${announcements[0]}`;
+        announcements[0] = `${this._store.model!.atKey(cursor.options.seriesKey)!.getLabel()}: ${announcements[0]}`;
         if (!seriesPreviouslyVisited) {
           const seriesSummary = await this._summarizer.getSeriesSummary(cursor.options.seriesKey);
           announcements.push(seriesSummary.text);
@@ -406,7 +413,7 @@ export abstract class BaseChartInfo extends Logger {
       }
       this._store.announce(announcements);
       if (this._store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
-        this._playDatapoints([datapoint]);
+        this.playDatapoints([datapoint]);
       }
       this._store.sparkBrailleInfo = this._sparkBrailleInfo();
 
@@ -415,15 +422,22 @@ export abstract class BaseChartInfo extends Logger {
     } else if (cursor.isNodeType('chord')) {
       if (this._store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
         if (this._store.settings.sonification.isArpeggiateChords) {
-          this._playRiff(this._chordRiffOrder());
+          this._playCurrentRiff(this._chordRiffOrder());
         } else {
           const datapoints = cursor.datapoints.map(dp =>
             this._store.model!.atKeyAndIndex(dp.seriesKey, dp.datapointIndex)!);
-          this._playDatapoints(datapoints);
+          this.playDatapoints(datapoints);
         }
       }
     } else if (cursor.isNodeType('sequence')) {
-      this._playRiff();
+      this._store.announce(
+        await this._summarizer.getSequenceSummary({
+          seriesKey: cursor.options.seriesKey,
+          start: cursor.options.start,
+          end:cursor.options.end
+        })
+      );
+      this._playCurrentRiff();
 
       // this._store.highlight(
       //   `sequence-${cursor.options.seriesKey}-${cursor.options.start}-${cursor.options.end}`);
@@ -462,13 +476,20 @@ export abstract class BaseChartInfo extends Logger {
   }
 
   /** Play a riff for the current nav node */
-  protected abstract _playRiff(order?: RiffOrder): void;
+  protected _playCurrentRiff(order?: RiffOrder) {
+    if (this._store.settings.sonification.isSoniEnabled
+      && this._store.settings.sonification.isRiffEnabled) {
+      this.playRiff(this._navMap!.cursor.datapoints, order);
+    }
+  }
+
+  abstract playRiff(datapoints: Datapoint[], order?: RiffOrder): void;
 
   protected _chordRiffOrder(): RiffOrder {
     return 'normal';
   }
 
-  protected abstract _playDatapoints(datapoints: Datapoint[]): void;
+  abstract playDatapoints(datapoints: Datapoint[]): void;
 
   /**
    * Play all datapoints in the given direction.
@@ -517,5 +538,4 @@ export abstract class BaseChartInfo extends Logger {
       return this.getYAxisInterval();
     }
   }
-
 }

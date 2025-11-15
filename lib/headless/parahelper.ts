@@ -1,7 +1,6 @@
 
 import { ParaChart } from '../parachart/parachart';
 import '../parachart/parachart';
-import { ParaApi } from '../api/api';
 import { type SourceKind, type FieldInfo } from '../loader/paraloader';
 
 export { FieldInfo };
@@ -11,11 +10,12 @@ export { type Manifest } from '@fizz/paramanifest';
 export class ParaHelper {
 
   protected _paraChart!: ParaChart;
-  protected _api: ParaApi;
 
   constructor() {
     this._createParaChart();
-    this._api = new ParaApi(this._paraChart);
+    this._paraChart.store.updateSettings(draft => {
+      draft.animation.isAnimationEnabled = false;
+    });
   }
 
   get ready() {
@@ -49,12 +49,12 @@ export class ParaHelper {
     });
   }
 
-  serializeChart() {
-    return this._api.serializeChart();
+  get jimReady() {
+    return this._paraChart.paraView.jimReady();
   }
 
-  downloadPNG() {
-    this._api.downloadPNG();
+  get api() {
+    return this._paraChart.api;
   }
 
 }

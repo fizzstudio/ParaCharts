@@ -1,17 +1,9 @@
-
-import { Logger } from '../common/logger';
+import { Logger, getLogger } from '../common/logger';
 import { ParaStore } from '../store';
 
-export class ParaViewController extends Logger {
-
-  constructor(protected _store: ParaStore) {
-    super();
-  }
-
-  logName() {
-    return 'ParaViewController';
-  }
-
+export class ParaViewController {
+  protected log: Logger = getLogger("ParaViewController");
+  constructor(protected _store: ParaStore) {}
   handleKeyEvent(event: KeyboardEvent) {
     if (this._store.settings.chart.isStatic) {
       return;
@@ -21,11 +13,13 @@ export class ParaViewController extends Logger {
       event.altKey ? 'Alt' : '',
       event.ctrlKey ? 'Ctrl' : '',
       event.shiftKey ? 'Shift' : '',
+      event.metaKey ? 'Meta' : '',
     ].filter(mod => mod);
     if (mods.includes(key)) {
       key = '';
     }
     const keyId = (key ? [...mods, key] : mods).join('+');
+    // if (this._store.paraChart.command('key', [keyId])) {
     if (this._store.keymapManager.onKeydown(keyId)) {
       event.stopPropagation();
       event.preventDefault();

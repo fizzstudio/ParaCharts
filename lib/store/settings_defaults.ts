@@ -180,7 +180,7 @@ export const defaults: Settings = {
     }
   },
   popup :{
-    opacity: .9,
+    opacity: 1,
     leftPadding: 10,
     rightPadding: 10,
     upPadding: 10,
@@ -217,7 +217,7 @@ export const defaults: Settings = {
       stacking: 'standard',
       barWidth: 10,
       colorByDatapoint: false,
-      isDrawTotalLabels: true,
+      isDrawTotalLabels: false,
       isDrawRecordLabels: false,
       isDrawDataLabels: false,
       dataLabelPosition: 'center',
@@ -247,7 +247,8 @@ export const defaults: Settings = {
         height: 20,
       },
       isDrawSymbols: true,
-      showPopups: false
+      showPopups: false,
+      isTrendNavigationModeEnabled: false
     },
     scatter: {
       isDrawTrendLine: false,
@@ -402,7 +403,22 @@ export const defaults: Settings = {
     isFocusRingEnabled: false,
     focusRingGap: 10,
     navRunTimeoutMs: 125,
-    animateRevealTimeMs: 500,
+  },
+  animation: {
+    isAnimationEnabled: true,
+    animateRevealTimeMs: 2500,
+    popInAnimateRevealTimeMs: 1500,
+    animationType: 'uniform',
+    animationOrigin: 'initialValue',
+    animationOriginValue: 0,
+    expandPoints: true,
+    lineSnake: false,
+    symbolPopIn: false
+  },
+  scrollytelling: {
+    isScrollytellingEnabled: true,
+    isScrollyAnnouncementsEnabled: true,
+    isScrollySoniEnabled: true,
   },
   controlPanel: {
     isControlPanelDefaultOpen: true,

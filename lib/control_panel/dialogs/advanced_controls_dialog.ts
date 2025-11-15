@@ -1,6 +1,6 @@
 
 import { ParaComponent } from '../../components';
-import { logging } from '../../common/logger';
+import { Logger, getLogger } from '../../common/logger';
 
 import { Dialog } from '@fizz/ui-components';
 import '@fizz/ui-components';
@@ -13,8 +13,8 @@ import { ref, createRef } from 'lit/directives/ref.js';
  * @public
  */
 @customElement('para-advanced-control-settings-dialog')
-export class AdvancedControlSettingsDialog extends logging(ParaComponent) {
-
+export class AdvancedControlSettingsDialog extends ParaComponent {
+  private log: Logger = getLogger("AdvancedControlSettingsDialog");
   protected _dialogRef = createRef<Dialog>();
 
   /**

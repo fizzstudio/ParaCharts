@@ -42,6 +42,10 @@ export type SettingsInput = {[path: string]: Setting};
 export type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
 /** @public */
 export type TabLabelStyle = 'icon' | 'iconLabel' | 'label';
+/** @public */
+export type AnimationType = 'uniform' | 'progressive' | 'none';
+/** @public */
+export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
 
 /** @public */
 export type BoxStyle = {
@@ -62,7 +66,19 @@ export interface UISettings extends SettingGroup {
   isFocusRingEnabled: boolean;
   focusRingGap: number;
   navRunTimeoutMs: number;
+}
+
+/** @public */
+export interface AnimationSettings extends SettingGroup {
+  isAnimationEnabled: boolean;
   animateRevealTimeMs: number;
+  popInAnimateRevealTimeMs: number;
+  animationType: AnimationType;
+  animationOrigin: AnimationOrigin;
+  animationOriginValue: number;
+  expandPoints: boolean;
+  lineSnake: boolean;
+  symbolPopIn: boolean;
 }
 
 /** @public */
@@ -349,6 +365,7 @@ export interface LineSettings extends PointSettings {
   leaderLineLength: number;
   isAlwaysShowSeriesLabel?: boolean;
   showPopups: boolean;
+  isTrendNavigationModeEnabled: boolean;
 }
 
 /** @public */
@@ -476,6 +493,12 @@ export interface SonificationSettings extends SettingGroup {
   isArpeggiateChords: boolean;
 }
 
+/** @public */
+export interface ScrollytellingSettings extends SettingGroup {
+  isScrollytellingEnabled: boolean;
+  isScrollyAnnouncementsEnabled: boolean;
+  isScrollySoniEnabled: boolean;
+}
 
 /** @public */
 export interface Settings extends SettingGroup {
@@ -487,6 +510,8 @@ export interface Settings extends SettingGroup {
   type: ChartTypeSettings;
   grid: GridSettings;
   ui: UISettings;
+  animation: AnimationSettings;
+  scrollytelling: ScrollytellingSettings;
   controlPanel: ControlPanelSettings;
   color: ColorSettings;
   jim: JimSettings;

@@ -4,6 +4,7 @@ import { ChartType } from "@fizz/paramanifest";
 import { PlaneChartInfo } from './plane_chart';
 import { ParaStore } from '../store';
 import { type NavNode } from '../view/layers';
+import { DocumentView } from '../view/document_view';
 
 export class HeatMapInfo extends PlaneChartInfo {
   protected _resolution!: number;

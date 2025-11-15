@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../../common/logger';
 import { View, Container } from '../base_view';
 import { type Layout } from '../layout';
 import { type Axis, type AxisOrientation } from './axis';
@@ -23,6 +24,7 @@ import { ParaView } from '../../paraview';
 import { type TemplateResult } from 'lit';
 import { Vec2 } from '../../common/vector';
 import { PlaneModel } from '@fizz/paramodel';
+import { Popup } from '../popup';
 
 /**
  * A single tier of tick labels.
@@ -116,10 +118,17 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
         wrapWidth: this._labelWrapWidth,
         x: 0,
         y: 0,
+      pointerEnter: (e) => {this.addPopup(labelText, i);
+      },
+      pointerLeave: (e) => {this.removePopup(this.id);
+      }
       });
       this.append(label);
     }
   }
+
+  addPopup(text: string, index: number): void{}
+  removePopup(id: string){}
 
   updateTickLabelIds() {
     // const xSeries = todo().controller.model!.indepVar;
@@ -141,7 +150,6 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
  * A horizontal tier of tick labels.
  */
 export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
-
   constructor(
     readonly axis: Axis<'horiz'>,
     readonly tickLabels: string[],
@@ -151,6 +159,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     paraview: ParaView
   ) {
     super(axis, tickLabels, tierIndex, length, tickStep, paraview);
+    this.log = getLogger("HorizTickLabelTier");
     this._canWidthFlex = true;
     this.padding = {top: this.axis.orientationSettings.ticks.labels.offsetGap};
   }
@@ -237,7 +246,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     while (true) {
       const gaps = bboxes.slice(1).map((bbox, i) => bbox.left - bboxes[i].right);
       const minGap = Math.min(...gaps);
-      // console.log('MINGAP', minGap, 'TICKSTEP', tickStep, 'WIDTH', width,
+      // this.log.info('MINGAP', minGap, 'TICKSTEP', tickStep, 'WIDTH', width,
       //   `(WANTED: ${this.axis.orientationSettings.tick.tickLabel.gap})`
       // );
       if (Math.round(minGap) < this.axis.orientationSettings.ticks.labels.gap) {
@@ -255,6 +264,35 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
       break;
     }
     return tickStep;
+  }
+
+  addPopup(text?: string, index?: number) {
+    let datapointText = `no text detected`
+    const regFactor = (this.tickLabels.length % this.children.length == 0)
+      ? this.children.length / this.tickLabels.length
+      : (this.children.length) / (this.tickLabels.length + 1)
+    let popup = new Popup(this.paraview,
+      {
+        text: text ?? datapointText,
+        x: this._tickLabelX(index ?? 0) * regFactor,
+        y: this.paraview.documentView?.chartLayers.height!,
+        textAnchor: "middle",
+        classList: ['annotationlabel'],
+        id: this.id,
+        type: "horizTick",
+        fill: "hsl(0, 0%, 0%)",
+        inbounds: false
+      },
+      {
+        fill: "hsl(0, 0%, 100%)",
+        shape: "box"
+      })
+    this.paraview.store.popups.push(popup)
+  }
+
+  removePopup(id: string) {
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
+    this.paraview.requestUpdate()
   }
 
 }
@@ -321,6 +359,32 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
         kid.x = this._tickLabelX(i);
         kid.y = this._tickLabelY(i);
     });
+  }
+
+  addPopup(text?: string, index?: number) {
+    let datapointText = `no text detected`
+    let popup = new Popup(this.paraview,
+      {
+        text: text ?? datapointText,
+        x: this._tickLabelX(index ?? 0),
+        y: this._tickLabelY(index ?? 0) + this.paraview.store.settings.popup.margin - this.children[index ?? 0].height ,
+        textAnchor: "middle",
+        classList: ['annotationlabel'],
+        id: this.id,
+        type: "vertTick",
+        fill: "hsl(0, 0%, 0%)",
+        inbounds: false
+      },
+      {
+        fill: "hsl(0, 0%, 100%)",
+        shape: "box"
+      })
+    this.paraview.store.popups.push(popup)
+  }
+
+  removePopup(id: string) {
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
+    this.paraview.requestUpdate()
   }
 
 }

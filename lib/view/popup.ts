@@ -4,23 +4,27 @@ import { View } from "./base_view";
 import { Label, LabelOptions } from "./label";
 import { PathOptions, PathShape, ShapeOptions } from "./shape";
 import { ParaComponent } from "../components";
-import { fixed, logging } from "../common";
+import { fixed } from "../common";
+import { Logger, getLogger } from '../common/logger';
 import { Dialog } from '@fizz/ui-components';
 import '@fizz/ui-components';
-import { html, css } from 'lit';
+import { html, css, svg } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { GridLayout } from "./layout";
 import { DataSymbol, DataSymbolType } from "./symbol";
 import { LegendItem } from "./legend";
+import { DatapointView } from "./data";
 
 export interface PopupLabelOptions extends LabelOptions {
     color?: number;
     margin?: number;
     type?: string;
-
-
-    items?: LegendItem[]
+    items?: LegendItem[];
+    points?: DatapointView[];
+    inbounds?: boolean;
+    fill?: string;
+    rotationExempt?: boolean
 }
 
 export type ShapeTypes = "box" | "boxWithArrow";
@@ -85,7 +89,9 @@ export class Popup extends View {
         if (this.paraview.store.settings.popup.backgroundColor === "dark") {
             this._label.styleInfo = {
                 stroke: 'none',
-                fill: this.popupLabelOptions.type == "chord" ? "black" : this.paraview.store.colors.contrastValueAt(this.popupLabelOptions.color!)
+                fill: this.popupLabelOptions.fill ? this.popupLabelOptions.fill
+                    : this.popupLabelOptions.type == "chord" ? "black"
+                        : this.paraview.store.colors.contrastValueAt(this.popupLabelOptions.color!)
             };
         }
         if (this.paraview.store.settings.ui.isLowVisionModeEnabled) {
@@ -96,13 +102,35 @@ export class Popup extends View {
         }
 
         this._grid = this.generateGrid();
-
-
-        this.shiftGrid();
+        if (this.popupLabelOptions.inbounds) {
+            this.shiftGrid();
+        }
 
         this.append(this._grid);
         this._box = this.generateBox(popupShapeOptions);
         this.append(this._box);
+
+
+        const chartWidth = parseFloat(this.paraview.documentView!.chartLayers.width.toFixed(5));
+        if (this.popupLabelOptions.type === "sequence") {
+            const points = this.popupLabelOptions.points!
+            if (points.map(p => p.shapes.map(c => c.intersects(this.box))).flat().some(Boolean)) {
+                if (chartWidth - points[points.length - 1].x > this.grid.width) {
+                    this.arrowPosition = "left";
+                    this.grid.x = points[points.length - 1].x + this.leftPadding + BOX_ARROW_HEIGHT
+                }
+                else if (points[0].x > this.grid.width) {
+                    this.arrowPosition = "right";
+                    this.grid.x = points[0].x - this.grid.width - this.leftPadding - BOX_ARROW_HEIGHT
+                }
+                this._children.pop();
+                this._box = this.generateBox(popupShapeOptions);
+                this.append(this._box);
+            }
+        }
+
+
+
 
         //The box generation relies on the grid having set dimensions, which happens during append()
         //but we also need the box to render behind the grid
@@ -123,6 +151,12 @@ export class Popup extends View {
         }
         if (this.popupLabelOptions.y) {
             this.popupLabelOptions.y -= this.margin;
+        }
+        if (this.popupLabelOptions.inbounds == undefined) {
+            this.popupLabelOptions.inbounds = true;
+        }
+        if (this.popupLabelOptions.rotationExempt == undefined) {
+            this.popupLabelOptions.rotationExempt = true;
         }
         if (!this.popupShapeOptions.fill) {
             this.popupShapeOptions.fill = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
@@ -157,8 +191,9 @@ export class Popup extends View {
                 this.grid.x -= this.horizShift;
             }
         }
-        if (this.grid.left - this.leftPadding < 0) {
-            this.horizShift = - (this.leftPadding - this.grid.left);
+        const leftBorder = this.popupLabelOptions.type === 'vertAxis' ? 0 - this.paraview.documentView!.vertAxis!.layout.vRules[1] : 0;
+        if (this.grid.left - this.leftPadding < leftBorder) {
+            this.horizShift = - (this.leftPadding - this.grid.left + leftBorder);
             this.grid.x -= this.horizShift;
         }
         //Note shifting the label up away from the datapoint in the event of text wrap
@@ -179,8 +214,8 @@ export class Popup extends View {
                     this.shiftGrid();
                 }
             }
-
         }
+
     }
 
     generateGrid() {
@@ -351,14 +386,45 @@ export class Popup extends View {
         }
     }
 
+    content() {
+        let transform = fixed``;
+        if (this.popupLabelOptions.rotationExempt) {
+            if (this.paraview.documentView?.chartLayers.orientation === 'east') {
+                transform += fixed`
+                 rotate(-90)
+                translate(${-this.paraview.documentView?.chartLayers.logicalHeight},${0})
+            `;
+            } else if (this.paraview.documentView?.chartLayers.orientation === 'west') {
+                transform += fixed`
+                rotate(90)
+              translate(0,${-this.paraview.documentView?.chartLayers.logicalHeight})
+            `;
+            } else if (this.paraview.documentView?.chartLayers.orientation === 'south') {
+                //NB: not entirely sure this works
+                transform += fixed`
+                scale(1,-1)
+              translate(0,${-this.paraview.documentView?.chartLayers.logicalHeight})
+            `;
+            }
+        }
+        return svg`
+              <g
+                id="popups"
+                transform=${transform}
+              >
+                ${super.content()}
+              </g>
+            `;
+    }
+
 }
 
 /**
  * @public
  */
 @customElement('para-popup-settings-dialog')
-export class PopupSettingsDialog extends logging(ParaComponent) {
-
+export class PopupSettingsDialog extends ParaComponent {
+    protected log: Logger = getLogger("PopupSettingsDialog");
     protected _dialogRef = createRef<Dialog>();
 
     /**

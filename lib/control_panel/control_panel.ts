@@ -1,7 +1,6 @@
-
+import { Logger, getLogger } from '../common/logger';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaDialog, ParaComponent } from '../components';
-import { logging } from '../common/logger';
 //import { styles } from '../../styles';
 import {
   type DeepReadonly,
@@ -36,11 +35,12 @@ import {
 } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
+import { Popup } from '../view/popup';
 
 
 @customElement('para-control-panel')
-export class ParaControlPanel extends logging(ParaComponent) {
-
+export class ParaControlPanel extends ParaComponent {
+  private log: Logger = getLogger("ParaControlPanel");
   @property() sparkBrailleData!: string;
 
   @state() dataState: 'initial' | 'pending' | 'complete' | 'error' = 'initial';
@@ -145,6 +145,31 @@ export class ParaControlPanel extends logging(ParaComponent) {
         this.dataUpdated();
       }
     });
+    this.addButtonListeners();
+  }
+
+  addButtonListeners() {
+    const loop = () => {
+      let timestamp = setTimeout(() => {
+        loop();
+      }, 100);
+      let toggleButton = this.shadowRoot?.getElementById("wrapper")?.children[0].shadowRoot?.children[0].getElementsByClassName("toggle")[0]
+      if (toggleButton) {
+        toggleButton.addEventListener("pointerenter", () => {
+          this.addPopup(this.paraChart.isControlPanelOpen ? true : false)
+        })
+        toggleButton.addEventListener("pointerleave", () => {
+          this.removePopup(this.id)
+        })
+        toggleButton.addEventListener("click", () => {
+          this.removePopup(this.id)
+          this.addButtonListeners()
+        })
+        clearTimeout(timestamp)
+      }
+    };
+    loop()
+
   }
 
   disconnectedCallback(): void {
@@ -216,8 +241,35 @@ export class ParaControlPanel extends logging(ParaComponent) {
     return this._controlsPanelRef.value!.showHelpDialog();
   }
 
+  addPopup(isOpen: boolean) {
+    let paraview = this.paraChart.paraView
+    let text = isOpen ? "Close control panel" : "Open control panel"
+    let y = paraview.documentView!.height! - 80
+    let popup = new Popup(paraview,
+      {
+        text: text ?? "",
+        x: 10,
+        y: y + (isOpen ? 26.4 : 0),
+        textAnchor: "middle",
+        classList: ['annotationlabel'],
+        id: this.id,
+        type: "controlPanelIcon",
+        fill: "hsl(0, 0%, 0%)",
+        inbounds: false
+      },
+      {
+        fill: "hsl(0, 0%, 100%)",
+        shape: "box"
+      })
+    paraview.store.popups.push(popup)
+  }
+
+  removePopup(id: string) {
+    this.paraChart.paraView.store.popups.splice(this.paraChart.paraView.store.popups.findIndex(p => p.id === id), 1)
+    this.paraChart.paraView.requestUpdate()
+  }
+
   render() {
-    this.log('render');
     let deetsState = this.paraChart.isControlPanelOpen ? 'expanded' : 'collapsed';
 //    deetsState += this.todo.darkMode ? ' darkmode' : '';
 
@@ -252,7 +304,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           ?open=${this.settings.isControlPanelDefaultOpen}
           class=${deetsState}
           tablabelmode=${tabLabelModes[this.settings.tabLabelStyle]}
-          openbuttonarialabel="Open or close ParaCharts control panel"
+		  openbuttonarialabel="ParaCharts control panel"
           @open=${
             () => {
               this.paraChart.isControlPanelOpen = true;
@@ -271,7 +323,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           }
           @invalidvalue=${(e: CustomEvent) => this._msgDialogRef.value!.show(e.detail)}
           @ready=${() => {
-            // this.log('fizz-tab-details ready; focusing data layer');
+            // this.log.info('fizz-tab-details ready; focusing data layer');
             // if (this.todo.canvas.documentView) {
             //   this.todo.canvas.documentView.chartLayers.dataLayer.focus();
             // }

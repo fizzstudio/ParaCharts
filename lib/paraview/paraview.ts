@@ -14,10 +14,10 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../common/logger';
 import { PointerEventManager } from './pointermanager';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaViewController } from '.';
-import { logging } from '../common/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest';
 import { type ViewBox, type Setting, type HotkeyEvent } from '../store';
@@ -26,7 +26,6 @@ import { DocumentView } from '../view/document_view';
 //import { styles } from './styles';
 import { SVGNS } from '../common/constants';
 import { fixed, isPointerInbounds } from '../common/utils';
-import { HotkeyActions, NarrativeHighlightHotkeyActions, NormalHotkeyActions } from './hotkey_actions';
 
 import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -34,6 +33,7 @@ import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Unsubscribe } from '@lit-app/state';
+import { AvailableActions } from '../store/action_map';
 
 /**
  * Data provided for the on focus callback
@@ -45,7 +45,7 @@ export type c2mCallbackType = {
 };
 
 @customElement('para-view')
-export class ParaView extends logging(ParaComponent) {
+export class ParaView extends ParaComponent {
 
   paraChart!: ParaChart;
 
@@ -55,6 +55,8 @@ export class ParaView extends logging(ParaComponent) {
   @property() yAxisLabel?: string;
   @property() contrastLevel: number = 1;
   @property({ type: Boolean }) disableFocus = false;
+
+  @property() clipWidth?: number;
 
   protected _controller!: ParaViewController;
   protected _viewBox!: ViewBox;
@@ -66,19 +68,25 @@ export class ParaView extends logging(ParaComponent) {
   protected _documentView?: DocumentView;
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
+  protected log: Logger = getLogger("ParaView");
+  
   @state() private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
   };
   protected _chartRefs: Map<string, Ref<any>> = new Map();
   protected _fileSavePlaceholderRef = createRef<HTMLElement>();
   protected _pointerEventManager: PointerEventManager | null = null;
-  protected _hotkeyActions!: HotkeyActions;
+  // protected _hotkeyActions!: HotkeyActions;
   @state() protected _defs: { [key: string]: TemplateResult } = {};
+  @state() protected _jim = '';
 
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
 
   protected _lowVisionModeSaved = new Map<string, any>();
+  protected _jimReadyPromise: Promise<void>;
+  protected _jimReadyResolver!: (() => void);
+  protected _jimReadyRejector!: (() => void);
 
   static styles = [
     //styles,
@@ -272,13 +280,18 @@ export class ParaView extends logging(ParaComponent) {
     super();
     // Create the listener here so it can be added and removed on connect/disconnect
     this._hotkeyListener = (e: HotkeyEvent) => {
-      const handler = this._hotkeyActions.actions[e.action as keyof HotkeyActions['actions']];
+      const handler = this.paraChart.api.actions[e.action as keyof AvailableActions];
       if (handler) {
-        handler();
+        handler(e.args);
+        //this._documentView!.postNotice(e.action, null);
       } else {
-        console.warn(`no handler for hotkey action '${e.action}'`);
+        this.log.warn(`no handler for action '${e.action}'`);
       }
     };
+    this._jimReadyPromise = new Promise((resolve, reject) => {
+      this._jimReadyResolver = resolve;
+      this._jimReadyRejector = reject;
+    });
   }
 
   get viewBox() {
@@ -317,16 +330,16 @@ export class ParaView extends logging(ParaComponent) {
     return this._defs;
   }
 
+  async jimReady() {
+    await this._jimReadyPromise;
+    this._jimReadyPromise = new Promise((resolve, reject) => {
+      this._jimReadyResolver = resolve;
+      this._jimReadyRejector = reject;
+    });
+  }
+
   get pointerEventManager() {
     return this._pointerEventManager;
-  }
-
-  get hotkeyActions() {
-    return this._hotkeyActions;
-  }
-
-  set hotkeyActions(actions: HotkeyActions) {
-    this._hotkeyActions = actions;
   }
 
   connectedCallback() {
@@ -336,12 +349,12 @@ export class ParaView extends logging(ParaComponent) {
     this._controller ??= new ParaViewController(this._store);
     this._storeChangeUnsub = this._store.subscribe(async (key, value) => {
       if (key === 'data') {
-        this.dataUpdated();
+        await this.dataUpdated();
       }
       await this._documentView?.storeDidChange(key, value);
     });
     this.computeViewBox();
-    this._hotkeyActions ??= new NormalHotkeyActions(this);
+    // this._hotkeyActions ??= new NormalHotkeyActions(this);
     this._store.keymapManager.addEventListener('hotkeypress', this._hotkeyListener);
     if (!this._store.settings.chart.isStatic) {
       this._pointerEventManager = new PointerEventManager(this);
@@ -355,16 +368,21 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   // Anything that needs to be done when data is updated, do here
-  private dataUpdated(): void {
+  private async dataUpdated(): Promise<void> {
     this.createDocumentView();
+    if (this.paraChart.headless) {
+      await this.addJIMSeriesSummaries();
+    }
+    this._jim = this._store.jimerator ? JSON.stringify(this._store.jimerator.jim, undefined, 2) : '';
+    this._jimReadyResolver();
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    //this.log('will update');
-    for (const [k, v] of changedProperties.entries()) {
-      // @ts-ignore
-      this.log(`- ${k.toString()}:`, v, '->', this[k]);
-    }
+    //this.log.info('will update');
+    // for (const [k, v] of changedProperties.entries()) {
+    //   // @ts-ignore
+    //   this.log.info(`- ${k.toString()}:`, v, '->', this[k]);
+    // }
     if (changedProperties.has('width')) {
       this.computeViewBox();
     }
@@ -380,7 +398,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   protected firstUpdated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-    this.log('ready');
+    this.log.info('ready');
     this.dispatchEvent(new CustomEvent('paraviewready', { bubbles: true, composed: true, cancelable: true }));
   }
 
@@ -391,7 +409,7 @@ export class ParaView extends logging(ParaComponent) {
         try {
           this.root!.requestFullscreen();
         } catch {
-          console.error('failed to enter fullscreen');
+          this.log.error('failed to enter fullscreen');
           this._store.updateSettings(draft => {
             draft.ui.isFullscreenEnabled = false;
           }, true);
@@ -400,7 +418,7 @@ export class ParaView extends logging(ParaComponent) {
         try {
           document.exitFullscreen();
         } catch {
-          console.error('failed to exit fullscreen');
+          this.log.error('failed to exit fullscreen');
           this._store.updateSettings(draft => {
             draft.ui.isFullscreenEnabled = true;
           }, true);
@@ -420,11 +438,16 @@ export class ParaView extends logging(ParaComponent) {
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
         if (newValue) {
+          this._lowVisionModeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
           this._lowVisionModeSaved.set('chart.fontScale', draft.chart.fontScale);
           this._lowVisionModeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+          // end any in-progress animation here
+          this._documentView!.chartLayers.dataLayer.stopAnimation();
+          draft.animation.isAnimationEnabled = false;
           draft.chart.fontScale = 2;
           draft.grid.isDrawVertLines = true;
         } else {
+          draft.animation.isAnimationEnabled = this._lowVisionModeSaved.get('animation.isAnimationEnabled');
           draft.chart.fontScale = this._lowVisionModeSaved.get('chart.fontScale');
           draft.grid.isDrawVertLines = this._lowVisionModeSaved.get('grid.isDrawVertLines');
           this._lowVisionModeSaved.clear();
@@ -432,7 +455,8 @@ export class ParaView extends logging(ParaComponent) {
       });
     } else if (path === 'ui.isVoicingEnabled') {
       if (this._store.settings.ui.isVoicingEnabled) {
-        if (this._hotkeyActions instanceof NormalHotkeyActions) {
+        //if (this._hotkeyActions instanceof NormalHotkeyActions) {
+        if (!this._store.settings.ui.isNarrativeHighlightEnabled) {
           const msg = ['Self-voicing enabled.'];
           const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
           if (lastAnnouncement) {
@@ -455,7 +479,7 @@ export class ParaView extends logging(ParaComponent) {
     } else if (path === 'ui.isNarrativeHighlightEnabled') {
       if (this._store.settings.ui.isNarrativeHighlightEnabled) {
         if (this._store.settings.ui.isVoicingEnabled) {
-		  this.startNarrativeHighlightMode();
+		      this.startNarrativeHighlightMode();
           const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
           const msg = ['Narrative Highlights Mode enabled.'];
           if (lastAnnouncement) msg.push(lastAnnouncement);
@@ -464,7 +488,7 @@ export class ParaView extends logging(ParaComponent) {
             this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
           })();
         } else {
-		  this._store.updateSettings(draft => {
+		      this._store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = true;
           });
           this.startNarrativeHighlightMode();
@@ -515,7 +539,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   /*protected updated(changedProperties: PropertyValues) {
-    this.log('canvas updated');
+    this.log.info('canvas updated');
     if (changedProperties.has('dataState')) {
       if (this.dataState === 'pending') {
         const bbox = this._rootRef.value!.getBoundingClientRect();
@@ -570,7 +594,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   startNarrativeHighlightMode() {
-    this._hotkeyActions = new NarrativeHighlightHotkeyActions(this);
+    //this._hotkeyActions = new NarrativeHighlightHotkeyActions(this);
     this._store.updateSettings(draft => {
       draft.ui.isVoicingEnabled = true;
     });
@@ -582,15 +606,12 @@ export class ParaView extends logging(ParaComponent) {
   endNarrativeHighlightMode() {
     this._store.updateSettings(draft => {
       draft.ui.isVoicingEnabled = false;
-    });
-    this._store.updateSettings(draft => {
       draft.chart.showPopups = false;
     });
-    this._hotkeyActions = new NormalHotkeyActions(this);
   }
 
   createDocumentView() {
-    this.log('creating document view', this.type);
+    this.log.info('creating document view', this.type);
     this._documentView = new DocumentView(this);
     this.computeViewBox();
     // The style manager may get declaration values from chart objects
@@ -604,7 +625,7 @@ export class ParaView extends logging(ParaComponent) {
       width: this._store.settings.chart.size.width,
       height: this._store.settings.chart.size.height
     };
-    this.log('view box:', this._viewBox.width, 'x', this._viewBox.height);
+    this.log.info('view box:', this._viewBox.width, 'x', this._viewBox.height);
   }
 
   updateViewbox(x?: number, y?: number, width?: number, height?: number) {
@@ -617,6 +638,16 @@ export class ParaView extends logging(ParaComponent) {
   // updateDefs(el: SVGLinearGradientElement) {
   //   this._defsRef.value!.appendChild(el);
   // }
+
+  async addJIMSeriesSummaries() {
+    const summarizer = this._documentView!.chartInfo.summarizer;
+    const seriesKeys = this._store.model?.seriesKeys || [];
+    for (const seriesKey of seriesKeys) {
+      const summary = await summarizer.getSeriesSummary(seriesKey);
+      const summaryText = typeof summary === 'string' ? summary : summary.text;
+      this._store.jimerator!.addSeriesSummary(seriesKey, summaryText);
+    }
+  }
 
   serialize() {
     const svg = this.root!.cloneNode(true) as SVGSVGElement;
@@ -705,7 +736,7 @@ export class ParaView extends logging(ParaComponent) {
     if (this._defs[key]) {
       throw new Error('view already in defs');
     }
-    console.log('ADDING DEF', key);
+    this.log.info('ADDING DEF', key);
     this._defs = { ...this._defs, [key]: template };
     this.requestUpdate();
   }
@@ -751,7 +782,7 @@ export class ParaView extends logging(ParaComponent) {
   }
 
   render(): TemplateResult {
-    this.log('render');
+    this.log.info('render');
     return html`
       <svg
         role="application"
@@ -768,7 +799,7 @@ export class ParaView extends logging(ParaComponent) {
         @fullscreenchange=${() => this._onFullscreenChange()}
         @focus=${() => {
           if (!this._store.settings.chart.isStatic) {
-            //this.log('focus');
+            //this.log.info('focus');
             //this.todo.deets?.onFocus();
             //this.documentView?.chartInfo.navMap?.visitDatapoints();
           }
@@ -791,7 +822,7 @@ export class ParaView extends logging(ParaComponent) {
               <rect
                 x=${0}
                 y=${0}
-                width=${this._documentView.chartLayers.width}
+                width=${this.clipWidth ?? this._documentView.chartLayers.width}
                 height=${this._documentView.chartLayers.height}>
               </rect>
             </clipPath>
@@ -799,7 +830,7 @@ export class ParaView extends logging(ParaComponent) {
       }
         </defs>
         <metadata data-type="text/jim+json">
-          ${this._store.jimerator ? JSON.stringify(this._store.jimerator.jim, undefined, 2) : ''}
+          ${this._jim}
         </metadata>
         <rect
           ${ref(this._frameRef)}

@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../common/logger';
 import { Label } from './label';
 import { fixed } from '../common/utils';
 import { View, Container } from './base_view';
@@ -28,12 +29,12 @@ import { ClassInfo, classMap } from 'lit/directives/class-map.js';
  * @public
  */
 export class DirectLabelStrip extends Container(View) {
-
   protected seriesLabels!: Label[];
   protected leaders!: LineLabelLeader[];
 
   constructor(private _chart: LinePlotView) {
     super(_chart.paraview);
+    this.log = getLogger("DirectLabelStrip");
     this._id = 'direct-label-strip';
     this._createLabels();
   }
@@ -60,10 +61,10 @@ export class DirectLabelStrip extends Container(View) {
         y: ep.y,
         classList: ['direct-label'],
         pointerEnter: (e) => {
-          this.paraview.store.soloSeries = ep.seriesKey;
+          this.paraview.store.lowlightOtherSeries(ep.seriesKey);
         },
         pointerLeave: (e) => {
-          this.paraview.store.soloSeries = '';
+          this.paraview.store.clearAllSeriesLowlights();
         }
       }));
       this.append(this.seriesLabels.at(-1)!);
@@ -148,7 +149,7 @@ export class DirectLabelStrip extends Container(View) {
         if (gapDiff < 0) {
           nonColliderLabels.forEach(nc => nc.y -= gapDiff);
           if (nonColliderLabels.at(-1)!.y < 0) {
-            console.warn('unable to resolve series label collision');
+            this.log.warn('unable to resolve series label collision');
           }
         }
       }
@@ -194,7 +195,7 @@ class LineLabelLeader extends View {
   get classInfo(): ClassInfo {
     return {
       'label-leader': true,
-      'lowlight': !!(this.paraview.store.soloSeries && (this.paraview.store.soloSeries !== this._endpoint.seriesKey))
+      'lowlight': this.paraview.store.isSeriesLowlighted(this._endpoint.seriesKey)
     }
   }
 

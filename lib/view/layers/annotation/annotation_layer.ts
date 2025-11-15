@@ -121,28 +121,29 @@ export class AnnotationLayer extends PlotLayer {
         let annots = structuredClone(this.paraview.store.annotations.filter(a => a.type == 'datapoint' && a.isSelected == true) as unknown as PointAnnotation[]);
         for (const annot of annots) {
           const seriesKey = this.paraview.store.model!.series.filter(s => s[0].seriesKey == annot.seriesKey)[0].key
-          const datapoint = this.paraview.documentView?.chartLayers.dataLayer.datapointViews.filter(d => d.seriesKey == seriesKey && d.index == annot.index)[0]
-          if (!datapoint) {
+          const dpView = this.paraview.documentView?.chartLayers.dataLayer.datapointViews.filter(d => d.seriesKey == seriesKey && d.index == annot.index)[0]
+          if (!dpView) {
             break
           }
           let popup = new Popup(this.paraview,
             {
               text: annot.text,
-              x: datapoint.x,
-              y: datapoint.y,
+              x: dpView.x,
+              y: dpView.y,
               textAnchor: "middle",
               classList: ['annotationlabel'],
               id: this.id,
-              color: datapoint.color
+              color: dpView.color,
+              points: [dpView]
             },
             {
               fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
                 : this.paraview.store.settings.popup.backgroundColor === "light" ?
-                  this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(datapoint.color), 6)
-                  : this.paraview.store.colors.colorValueAt(datapoint.color),
+                  this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(dpView.color), 6)
+                  : this.paraview.store.colors.colorValueAt(dpView.color),
               stroke: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
                 : this.paraview.store.settings.popup.backgroundColor === "light" ?
-                  this.paraview.store.colors.colorValueAt(datapoint.color)
+                  this.paraview.store.colors.colorValueAt(dpView.color)
                   : "black",
             })
           popup.classInfo = { 'popup': true }

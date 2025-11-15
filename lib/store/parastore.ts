@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../common/logger';
 import papa from 'papaparse';
 import { State, property } from '@lit-app/state';
 import { produceWithPatches, enablePatches } from 'immer';
@@ -21,10 +22,10 @@ enablePatches();
 
 import {
   dataFromManifest, type AllSeriesData, type ChartType, type Manifest,
-  Jimerator,
   isLineType,
   isPastryType
 } from '@fizz/paramanifest';
+import { Jimerator } from '@fizz/jimerator';
 import {
   facetsFromDataset, Model, modelFromExternalData, modelFromInlineData,
   FacetSignature, SeriesAnalyzerConstructor, PairAnalyzerConstructor,
@@ -47,7 +48,7 @@ import { defaults, chartTypeDefaults } from './settings_defaults';
 import { Colors } from '../common/colors';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
-import { keymap } from './keymap';
+import { actionMap } from './action_map';
 import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { type ParaChart } from '../parachart/parachart';
@@ -132,7 +133,7 @@ export function datapointIdToCursor(id: string): DatapointCursor {
 export class ParaStore extends State {
 
   readonly symbols = new DataSymbols();
-
+  
   @property() dataState: DataState = 'initial';
   @property() settings: Settings;
   @property() darkMode = false;
@@ -142,8 +143,8 @@ export class ParaStore extends State {
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() frontSeries = '';
-  @property() soloSeries = '';
 
+  @property() protected _lowlightSeries: string[] = [];
   @property() protected _hiddenSeriesList: string[] = [];
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
@@ -172,11 +173,12 @@ export class ParaStore extends State {
   protected _title = '';
   protected _seriesProperties: SeriesPropertyManager | null = null;
   protected _colors: Colors;
-  protected _keymapManager = new KeymapManager(keymap);
+  protected _keymapManager = new KeymapManager(actionMap);
   protected _summarizer!: Summarizer;
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected annotID: number = 0;
+  protected log: Logger = getLogger("ParaStore");
 
   public idList: Record<string, boolean> = {};
 
@@ -339,14 +341,14 @@ export class ParaStore extends State {
     const observed: { [path: string]: Partial<{oldValue: Setting, newValue: Setting}> } = {};
     for (const patch of patches) {
       if (patch.op !== 'replace') {
-        console.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
         continue;
       }
       observed[patch.path.join('.')] = {newValue: patch.value};
     }
     for (const patch of inversePatches) {
       if (patch.op !== 'replace') {
-        console.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
         continue;
       }
       observed[patch.path.join('.')].oldValue = patch.value;
@@ -389,6 +391,30 @@ export class ParaStore extends State {
     }
   }
 
+  lowlightSeries(seriesKey: string) {
+    if (!this._lowlightSeries.includes(seriesKey)) {
+      this._lowlightSeries = [...this._lowlightSeries, seriesKey];
+    }
+  }
+
+  clearSeriesLowlight(seriesKey: string) {
+    if (this._lowlightSeries.includes(seriesKey)) {
+      this._lowlightSeries = this._lowlightSeries.filter(el => el !== seriesKey);
+    }
+  }
+
+  isSeriesLowlighted(seriesKey: string): boolean {
+    return this._lowlightSeries.includes(seriesKey);
+  }
+
+  lowlightOtherSeries(...seriesKeys: string[]) {
+    this._lowlightSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
+  }
+
+  clearAllSeriesLowlights() {
+    this._lowlightSeries = [];
+  }
+
   announce(
     msg: string | string[] | HighlightedSummary,
     clearAriaLive = false,
@@ -419,7 +445,7 @@ export class ParaStore extends State {
 
     if (this.settings.ui.isAnnouncementEnabled) {
       this.announcement = { text: announcement, html, highlights, clear: clearAriaLive, startFrom };
-      console.log('ANNOUNCE:', this.announcement.text);
+      this.log.info('ANNOUNCE:', this.announcement.text);
     }
   }
 
@@ -597,7 +623,7 @@ export class ParaStore extends State {
       const {seriesKey, index} = datapointIdToCursor(dpId);
       const recordLabel = formatXYDatapointX(
         this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
-      let annotationText = prompt('Annotation:') as string;
+      const annotationText = prompt('Annotation:') as string;
       if (annotationText) {
         newAnnotationList.push({
           type: "datapoint",
@@ -607,10 +633,28 @@ export class ParaStore extends State {
           text: annotationText,
           id: `${seriesKey}-${recordLabel}-${this.annotID}`
         });
-        this.annotID += 1
+        this.annotID += 1;
       }
     });
     this.annotations = [...this.annotations, ...newAnnotationList];
+  }
+
+  annotatePoint(seriesKey: string, index: number, text: string) {
+    if (this.annotations.find((annot: PointAnnotation) =>
+      annot.seriesKey === seriesKey && annot.index === index && annot.text === text)) {
+      return;
+    }
+    const recordLabel = formatXYDatapointX(
+      this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
+    this.annotations = [...this.annotations, {
+      type: 'datapoint',
+      seriesKey,
+      index,
+      annotation: `${seriesKey}, ${recordLabel}: ${text}`,
+      text,
+      id: `${seriesKey}-${recordLabel}-${this.annotID}`
+    } as PointAnnotation];
+    this.annotID++;
   }
 
   async showMDRAnnotations() {
@@ -630,7 +674,7 @@ export class ParaStore extends State {
             : undefined;
         };
         if (!seriesAnalysis) {
-          console.log("This chart does not support AI trend annotations")
+          this.log.info("This chart does not support AI trend annotations")
           this.updateSettings(draft => {
             draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
           });
@@ -662,7 +706,7 @@ export class ParaStore extends State {
         this.removeMDRAnnotations();
       }
     } else {
-      console.log("Trend annotations not currently supported for this chart type");
+      this.log.info("Trend annotations not currently supported for this chart type");
       this.updateSettings(draft => {
         draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
       });
@@ -803,7 +847,7 @@ export class ParaStore extends State {
         //throw new Error('range already highlighted');
       }
       else {
-        this._userLineBreaks.push({ startPortion: startPortion, seriesKey: seriesKey, index: index }) 
+        this._userLineBreaks.push({ startPortion: startPortion, seriesKey: seriesKey, index: index })
       }
     }
   }
@@ -822,6 +866,7 @@ export class ParaStore extends State {
         annotation: `${series.key}, ${series.rawData[index].x}: Added line break`,
         id: `line-break-${index}`
       })
+      this.paraChart.postNotice('addLineBreak', {seriesKey, index});
     }
     if (this.userLineBreaks.length) {
       this.clearUserTrendLines();
@@ -884,8 +929,9 @@ export class ParaStore extends State {
   }
 
   clearUserLineBreaks() {
-    this._userLineBreaks = []
-    this.annotations = this.annotations.filter(a => !/line-break/.test(a.id))
+    this._userLineBreaks = [];
+    this.annotations = this.annotations.filter(a => !/line-break/.test(a.id));
+    this.paraChart.postNotice('clearLineBreaks', null);
   }
 
   clearUserTrendLines() {

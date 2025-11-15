@@ -263,6 +263,7 @@ export interface DataSymbolOptions {
   opacity?: number;
   dashed: boolean;
   lighten?: boolean;
+  isClip?: boolean;
   pointerEnter?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
 }
@@ -310,6 +311,7 @@ export class DataSymbol extends View {
       opacity: options?.opacity,
       dashed: options?.dashed ?? false,
       lighten: options?.lighten ?? false,
+      isClip: options?.isClip ?? false,
       pointerEnter: options?.pointerEnter,
       pointerLeave: options?.pointerLeave
     };
@@ -473,6 +475,7 @@ export class DataSymbol extends View {
         transform=${transform}
         @pointerenter=${this._options.pointerEnter ?? nothing}
         @pointerleave=${this._options.pointerLeave ?? nothing}
+        clip-path=${/*this._options.isClip ? 'url(#clip-path)' :*/ nothing}
       />
     `;
   }

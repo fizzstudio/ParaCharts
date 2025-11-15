@@ -20,6 +20,7 @@ import { type ParaStore } from '../store';
 
 import { type ChartType } from '@fizz/paramanifest';
 import { Series } from '@fizz/paramodel';
+import { DocumentView } from '../view/document_view';
 
 
 /**

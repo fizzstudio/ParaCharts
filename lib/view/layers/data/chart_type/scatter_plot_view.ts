@@ -46,6 +46,7 @@ export class ScatterPlotView extends PointPlotView {
   protected _createDatapoints(): void {
     //Note: this is the same as the PointChart implementation at the time I copied it over, except it doesn't sort at the end
     const xs: string[] = [];
+    /*
     for (const [p, i] of enumerate(this.paraview.store.model!.series[0].datapoints)) {
       xs.push(formatBox(p.facetBox('x')!, this.paraview.store.getFormatType(`${this.parent.docView.type as PointChartType}Point`)));
       const xId = strToId(xs.at(-1)!);
@@ -54,6 +55,7 @@ export class ScatterPlotView extends PointPlotView {
       // }
       // this.selectors[i].push(`tick-x-${xId}`);
     }
+      */
     for (const [col, i] of enumerate(this.paraview.store.model!.series)) {
       const seriesView = this._newSeriesView(col.key);
       this._chartLandingView.append(seriesView);
@@ -116,7 +118,7 @@ class ScatterPointView extends PointDatapointView {
   clusterID?: number;
   isOutlier: boolean = false;
 
-  protected _computeX() {
+  computeX() {
     const axisInfo = this.chart.chartInfo.axisInfo!;
     // Scales points in proportion to the data range
     const xTemp = (this.datapoint.facetValueNumericized('x')! - axisInfo.xLabelInfo.min!)
@@ -179,7 +181,7 @@ class ScatterPointView extends PointDatapointView {
     this._symbol.role = 'datapoint'
     this._symbol.id = `${this._id}-sym`;
     this.symbolColor = color;
-    this._children = this.children.filter(c => c.id == this._symbol!.id)
+    this._children = this.children.filter(c => !(c instanceof DataSymbol))
     this.append(this._symbol);
   }
 
@@ -206,7 +208,8 @@ class ScatterPointView extends PointDatapointView {
         textAnchor: "middle",
         classList: ['annotationlabel'],
         id: this.id,
-        color: this.color
+        color: this.color,
+        points: [this]
       },
       {
         shape: "boxWithArrow",
@@ -228,9 +231,9 @@ class ScatterPointView extends PointDatapointView {
   }
 }
 
-export class ScatterTrendLineView extends TrendLineView{
+export class ScatterTrendLineView extends TrendLineView {
   render() {
-    if (!this.paraview.store.settings.type.scatter.isDrawTrendLine) { return svg``}
+    if (!this.paraview.store.settings.type.scatter.isDrawTrendLine) { return svg`` }
     return svg`
     <line x1=${this.x1} x2=${this.x2} y1=${this.y1} y2=${this.y2} style="stroke:red;stroke-width:3"/>
     `}

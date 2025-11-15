@@ -1,15 +1,50 @@
 {
   "name": "@fizz/paracharts",
-  "version": "0.36.0",
+  "version": "0.37.0",
   "description": "Not quite Parable Charts",
   "contributors": [
-    "Josh Fennell",
-    "Simon Varey",
-    "Julianna Langston",
-    "Doug Schepers",
-    "Sam Reid",
-    "Ryan McCleary",
-    "Charlotte McCleary"
+    {
+      "name": "Doug Schepers",
+      "email": "doug@fizz.studio",
+      "url": "https://schepers.cc",
+      "affiliation": "Fizz Studio"
+    },
+    {
+      "name": "Simon Varey",
+      "email": "simon@fizz.studio",
+      "url": "https://fizz.studio",
+      "affiliation": "Fizz Studio"
+    },
+    {
+      "name": "Josh Fennell",
+      "email": "josh@fizz.studio",
+      "url": "https://www.linkedin.com/in/linguist-jfennell/",
+      "affiliation": "Fizz Studio"
+    },
+    {
+      "name": "Samuel Reid",
+      "email": "sam@fizz.studio",
+      "url": "https://github.com/SamReid4321",
+      "affiliation": "Fizz Studio"
+    },
+    {
+      "name": "Charlotte McCleary",
+      "email": "charlotte@fizz.studio",
+      "url": "https://github.com/Charlotte-McCleary",
+      "affiliation": "Fizz Studio"
+    },
+    {
+      "name": "Ryan McCleary",
+      "email": "ryan@fizz.studio",
+      "url": "https://github.com/RyanMcCleary",
+      "affiliation": "Fizz Studio"
+    },
+    {
+      "name": "Julianna Langston",
+      "email": "julie.langston@gmail.com",
+      "url": "https://github.com/julianna-langston/chart2music",
+      "affiliation": "Chart2Music"
+    }
   ],
   "license": "AGPL-3.0-or-later",
   "publishConfig": {
@@ -32,8 +67,8 @@
     "demo:headless": "vite --port 5177 --open src/demo/headless/vite/headless.html",
     "demo:ai": "vite --port 5178 --open src/demo/ai/ai.html",
     "storybook": "storybook dev -p 5180",
-    "build": "rimraf dist && tsc && vite build && api-extractor run --local --verbose",
-    "build:ai": "rimraf dist-ai && tsc --project ai.tsconfig.json && vite build --config ai.vite.config.ts && api-extractor run --local --verbose --config ai.api-extractor.json",
+    "build": "rimraf dist && rimraf types && tsc && vite build && api-extractor run --local --verbose",
+    "build:ai": "rimraf dist-ai && rimraf types-ai && tsc --project ai.tsconfig.json && vite build --config ai.vite.config.ts && api-extractor run --local --verbose --config ai.api-extractor.json",
     "build:stories": "node src/stories/storiesBuilder.ts",
     "build-storybook": "storybook build",
     "doc": "api-documenter markdown --input-folder ./temp --output-folder ./docs",
@@ -43,7 +78,7 @@
     "pubpatch": "npm version patch && npm publish",
     "pubminor": "npm version minor && npm publish",
     "pubmajor": "npm version major && npm publish",
-        "docs:generate": "node ./docs/scripts/buildDocs.ts",
+    "docs:generate": "node ./docs/scripts/buildDocs.ts",
     "docs:dev": "npm run docs:generate && vitepress dev docs",
     "docs:build": "npm run docs:generate && vitepress build docs",
     "docs:serve": "vitepress preview docs"
@@ -86,12 +121,13 @@
     "@fizz/chart-classifier-utils": "^0.16.0",
     "@fizz/clustering": "^0.15.3",
     "@fizz/dataframe": "^0.27.0",
-    "@fizz/paramanifest": "^0.5.9",
-    "@fizz/paramodel": "^0.6.6",
-    "@fizz/parasummary": "^0.8.0",
+    "@fizz/jimerator": "^0.9.0",
+    "@fizz/paramanifest": "^0.6.2",
+    "@fizz/paramodel": "^0.6.7",
+    "@fizz/parasummary": "^0.9.2",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.4.2",
-    "@fizz/ui-components": "^0.70.3",
+    "@fizz/ui-components": "^0.70.4",
     "@lit-app/state": "^1.0.1",
     "decimal.js": "^10.4.3",
     "immer": "^10.1.1",
