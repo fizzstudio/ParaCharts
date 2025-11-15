@@ -5,11 +5,13 @@ import { Manifest } from '@fizz/paramanifest';
 export type ExpectFunction = typeof _expect;
 //
 export function Test(target: Object, propertyKey: string | symbol, descriptor?: PropertyDescriptor) {
-  console.log('add test', propertyKey)
   const ctor = target.constructor as any;
 
   if (!ctor.testMethods) {
     ctor.testMethods = [];
+  }
+  if (!Object.getOwnPropertyNames(ctor).includes('testMethods')) {
+    ctor.testMethods = [...ctor.testMethods];
   }
 
   ctor.testMethods.push(propertyKey);
