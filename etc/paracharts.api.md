@@ -3903,7 +3903,7 @@ export class SeriesView extends SeriesView_base {
 }
 
 // @public
-export function setDebugLevel(level: LogLevel): void;
+export function setLogLevel(level: LogLevel): void;
 
 // @public
 export type Setting = string | number | boolean;
