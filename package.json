@@ -123,7 +123,7 @@
     "@fizz/dataframe": "^0.27.0",
     "@fizz/jimerator": "^0.9.0",
     "@fizz/paramanifest": "^0.6.2",
-    "@fizz/paramodel": "^0.6.7",
+    "@fizz/paramodel": "^0.6.8",
     "@fizz/parasummary": "^0.9.2",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.4.2",

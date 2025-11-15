@@ -641,7 +641,7 @@ export class ParaView extends ParaComponent {
 
   async addJIMSeriesSummaries() {
     const summarizer = this._documentView!.chartInfo.summarizer;
-    const seriesKeys = this._store.model?.seriesKeys || [];
+    const seriesKeys = this._store.model?.originalSeriesKeys || [];
     for (const seriesKey of seriesKeys) {
       const summary = await summarizer.getSeriesSummary(seriesKey);
       const summaryText = typeof summary === 'string' ? summary : summary.text;
