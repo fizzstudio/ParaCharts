@@ -68,7 +68,7 @@ export class ParaChart extends ParaComponent {
   protected _loader = new ParaLoader();
   private _slotLoader = new SlotLoader();
   protected log: Logger = getLogger("ParaChart");
-  
+
   protected _suppleteSettingsWith?: DeepReadonly<Settings>;
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
@@ -117,7 +117,6 @@ export class ParaChart extends ParaComponent {
           }
           this._runLoader(this.manifest, this.manifestType).then(() => {
             this.log.info('ParaCharts fully initialized');
-            this._paraAPI = new ParaAPI(this);
             this._scrollyteller = new Scrollyteller(this);
           });
         } else if (this.getElementsByTagName("table")[0]) {
@@ -301,7 +300,9 @@ export class ParaChart extends ParaComponent {
       this._manifest = loadresult.manifest;
       this._store.setManifest(loadresult.manifest, loadresult.data);
       this._store.dataState = 'complete';
-      this._controlPanelRef.value!.descriptionPanel.positionCaptionBox();
+      // NB: cpanel doesn't exist in headless mode
+      this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
+      this._paraAPI = new ParaAPI(this);
       this._loaderResolver!();
     } else {
       this.log.error(loadresult.error);
