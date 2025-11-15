@@ -93,7 +93,7 @@
       await helper.loadManifest(JSON.stringify(manifest), 'content');
       await helper.jimReady;
       _manifest = manifest;
-      _svgText = helper.serializeChart();
+      _svgText = helper._paraChart.api.serializeChart();
       container.innerHTML = _svgText;
       jim.innerHTML = document.getElementsByTagName('metadata')[0].innerHTML;
     }
