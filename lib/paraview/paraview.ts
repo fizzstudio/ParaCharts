@@ -19,7 +19,7 @@ import { PointerEventManager } from './pointermanager';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaViewController } from '.';
 import { ParaComponent } from '../components';
-import { ChartType } from '@fizz/paramanifest';
+import { ChartType, strToId } from '@fizz/paramanifest';
 import { type ViewBox, type Setting, type HotkeyEvent } from '../store';
 import { View } from '../view/base_view';
 import { DocumentView } from '../view/document_view';
@@ -641,9 +641,9 @@ export class ParaView extends ParaComponent {
 
   async addJIMSeriesSummaries() {
     const summarizer = this._documentView!.chartInfo.summarizer;
-    const seriesKeys = this._store.model?.seriesKeys || [];
+    const seriesKeys = this._store.model?.originalSeriesKeys || [];
     for (const seriesKey of seriesKeys) {
-      const summary = await summarizer.getSeriesSummary(seriesKey);
+      const summary = await summarizer.getSeriesSummary(strToId(seriesKey));
       const summaryText = typeof summary === 'string' ? summary : summary.text;
       this._store.jimerator!.addSeriesSummary(seriesKey, summaryText);
     }
