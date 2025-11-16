@@ -46,9 +46,9 @@ export class PieSlice extends RadialSlice {
     }
   }
 
-  beginAnimStep(t: number): void {
-    this._centralAngle = this._params.percentage*360*t;
-    super.beginAnimStep(t);
+  beginAnimStep(bezT: number, linearT: number): void {
+    this._centralAngle = this._params.percentage*360*bezT;
+    super.beginAnimStep(bezT, linearT);
   }
 
   protected _createShapes() {

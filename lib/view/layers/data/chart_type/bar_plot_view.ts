@@ -408,7 +408,7 @@ export class Bar extends PlaneDatapointView {
       + barGap*(chartInfo.stacksPerCluster*this._stack.cluster.index + this._stack.index);
   }
 
-  beginAnimStep(t: number): void {
+  beginAnimStep(bezT: number, linearT: number): void {
     const chartInfo = this.chart.chartInfo as BarChartInfo;
     const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
     const pxPerYUnit = this.chart.parent.logicalHeight/chartInfo.axisInfo!.yLabelInfo.range!;
@@ -421,11 +421,11 @@ export class Bar extends PlaneDatapointView {
     this._height = Math.abs((this.datapoint.data.y.value as number)*pxPerYUnit*t);
     // @ts-ignore
     if (this.datapoint.data.y.value as number < 0) {
-      this._y = this.chart.height - distFromXAxis*t - zeroHeight;
+      this._y = this.chart.height - distFromXAxis*bezT - zeroHeight;
     } else {
-      this._y = this.chart.height - this.height - distFromXAxis*t - zeroHeight;
+      this._y = this.chart.height - this.height - distFromXAxis*bezT - zeroHeight;
     }
-    super.beginAnimStep(t);
+    super.beginAnimStep(bezT, linearT);
   }
 
   completeLayout() {

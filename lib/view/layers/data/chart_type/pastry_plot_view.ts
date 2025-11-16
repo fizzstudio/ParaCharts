@@ -146,8 +146,8 @@ export abstract class PastryPlotView extends DataLayer {
     this._createLabels();
   }
 
-  protected _animStep(t: number): void {
-    super._animStep(t);
+  protected _animStep(bezT: number, linearT: number): void {
+    super._animStep(bezT, linearT);
     this._createLabels();
   }
 

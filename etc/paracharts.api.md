@@ -303,6 +303,8 @@ export abstract class Axis<T extends AxisOrientation> extends Axis_base {
     // (undocumented)
     addGridRules(length: number): void;
     // (undocumented)
+    addPopup(text?: string): void;
+    // (undocumented)
     protected abstract _appendAxisLine(): void;
     // (undocumented)
     protected abstract _appendTickLabelTiers(): void;
@@ -369,6 +371,8 @@ export abstract class Axis<T extends AxisOrientation> extends Axis_base {
     isVert(): this is Axis<'vert'>;
     // (undocumented)
     protected _labelInfo: AxisLabelInfo;
+    // (undocumented)
+    get layout(): GridLayout;
     // Warning: (ae-forgotten-export) The symbol "GridLayout" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
@@ -395,6 +399,8 @@ export abstract class Axis<T extends AxisOrientation> extends Axis_base {
     //
     // (undocumented)
     protected _parent: Layout;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     resize(width: number, height: number): void;
     // (undocumented)
@@ -587,7 +593,7 @@ export class Bar extends PlaneDatapointView {
     // (undocumented)
     addPopup(text?: string): void;
     // (undocumented)
-    beginAnimStep(t: number): void;
+    beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     readonly chart: BarPlotView;
     // (undocumented)
@@ -1215,7 +1221,7 @@ export abstract class DataLayer extends PlotLayer {
     // (undocumented)
     protected _animEnd(): void;
     // (undocumented)
-    protected _animStep(t: number): void;
+    protected _animStep(bezT: number, linearT: number): void;
     // (undocumented)
     protected _beginDatapointLayout(): void;
     // (undocumented)
@@ -1352,7 +1358,7 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     protected _baseSymbolScale: number;
     // (undocumented)
-    beginAnimStep(_t: number): void;
+    beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     get classInfo(): ClassInfo;
     // (undocumented)
@@ -1378,7 +1384,7 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     get el(): SVGElement;
     // (undocumented)
-    endAnimStep(_t: number): void;
+    endAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     equals(other: DatapointView): boolean;
     // (undocumented)
@@ -1891,6 +1897,8 @@ export class HorizTick extends HorizRule {
 export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     constructor(axis: Axis<'horiz'>, tickLabels: string[], tierIndex: number, length: number, tickStep: number, paraview: ParaView);
     // (undocumented)
+    addPopup(text?: string, index?: number): void;
+    // (undocumented)
     readonly axis: Axis<'horiz'>;
     // (undocumented)
     computeSize(): [number, number];
@@ -1906,6 +1914,8 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     protected get _length(): number;
     // (undocumented)
     protected _optimizeLabelSpacing(): number;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     readonly tickLabels: string[];
     // (undocumented)
@@ -2475,6 +2485,10 @@ export class ParaComponent extends LitElement {
 // @public (undocumented)
 export class ParaControlPanel extends ParaControlPanel_base {
     // (undocumented)
+    addButtonListeners(): void;
+    // (undocumented)
+    addPopup(isOpen: boolean): void;
+    // (undocumented)
     get annotationPanel(): AnnotationPanel;
     // (undocumented)
     protected _annotationPanelRef: Ref<AnnotationPanel>;
@@ -2514,6 +2528,8 @@ export class ParaControlPanel extends ParaControlPanel_base {
     onFocus(): void;
     // (undocumented)
     paraChart: ParaChart;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     render(): TemplateResult_2<1>;
     // (undocumented)
@@ -2556,8 +2572,6 @@ export class ParaHelper {
     get api(): ParaAPI_2;
     // (undocumented)
     protected _createParaChart(): void;
-    // (undocumented)
-    get jimReady(): Promise<void>;
     // (undocumented)
     get jimReady(): Promise<void>;
     // (undocumented)
@@ -2977,7 +2991,7 @@ export abstract class PastryPlotView extends DataLayer {
     // (undocumented)
     protected _addedToParent(): void;
     // (undocumented)
-    protected _animStep(t: number): void;
+    protected _animStep(bezT: number, linearT: number): void;
     // (undocumented)
     protected _arc: number;
     // (undocumented)
@@ -3096,7 +3110,7 @@ export class PieSlice extends RadialSlice {
     // (undocumented)
     addPopup(text?: string): void;
     // (undocumented)
-    beginAnimStep(t: number): void;
+    beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     computeLocation(): void;
     // (undocumented)
@@ -3279,7 +3293,7 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     protected _animEnd(): void;
     // (undocumented)
-    beginAnimStep(t: number): void;
+    beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     readonly chart: PointPlotView;
     // (undocumented)
@@ -4259,6 +4273,8 @@ export interface TickLabelSettings extends SettingGroup {
 export abstract class TickLabelTier<T extends AxisOrientation> extends TickLabelTier_base {
     constructor(axis: Axis<T>, tickLabels: string[], tierIndex: number, length: number, _tickStep: number, paraview: ParaView);
     // (undocumented)
+    addPopup(text: string, index: number): void;
+    // (undocumented)
     readonly axis: Axis<T>;
     // (undocumented)
     protected _children: Label[];
@@ -4284,6 +4300,8 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends TickLabel
     set parent(parent: Layout);
     // (undocumented)
     protected _parent: Layout;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     resize(width: number, height: number): void;
     // (undocumented)
@@ -4625,6 +4643,8 @@ export class VertTick extends VertRule {
 export class VertTickLabelTier extends TickLabelTier<'vert'> {
     constructor(axis: Axis<'vert'>, tickLabels: string[], tierIndex: number, length: number, tickStep: number, paraview: ParaView);
     // (undocumented)
+    addPopup(text?: string, index?: number): void;
+    // (undocumented)
     readonly axis: Axis<'vert'>;
     // (undocumented)
     computeSize(): [number, number];
@@ -4636,6 +4656,8 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
     protected get _labelWrapWidth(): undefined;
     // (undocumented)
     protected get _length(): number;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     readonly tickLabels: string[];
     // (undocumented)
