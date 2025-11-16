@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../../common/logger';
 import { View, Container } from '../base_view';
 import { type Layout } from '../layout';
 import { type Axis, type AxisOrientation } from './axis';
@@ -149,7 +150,6 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
  * A horizontal tier of tick labels.
  */
 export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
-
   constructor(
     readonly axis: Axis<'horiz'>,
     readonly tickLabels: string[],
@@ -159,6 +159,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     paraview: ParaView
   ) {
     super(axis, tickLabels, tierIndex, length, tickStep, paraview);
+    this.log = getLogger("HorizTickLabelTier");
     this._canWidthFlex = true;
     this.padding = {top: this.axis.orientationSettings.ticks.labels.offsetGap};
   }
@@ -245,7 +246,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     while (true) {
       const gaps = bboxes.slice(1).map((bbox, i) => bbox.left - bboxes[i].right);
       const minGap = Math.min(...gaps);
-      // console.log('MINGAP', minGap, 'TICKSTEP', tickStep, 'WIDTH', width,
+      // this.log.info('MINGAP', minGap, 'TICKSTEP', tickStep, 'WIDTH', width,
       //   `(WANTED: ${this.axis.orientationSettings.tick.tickLabel.gap})`
       // );
       if (Math.round(minGap) < this.axis.orientationSettings.ticks.labels.gap) {

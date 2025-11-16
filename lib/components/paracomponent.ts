@@ -19,10 +19,6 @@ export class ParaComponent extends LitElement {
     this._storeState = new StateController(this, store);
   }
 
-  logName() {
-    return this.nodeName;
-  }
-
   extractStyles(id: string) {
     const stylesheets = this.shadowRoot!.adoptedStyleSheets;
     const out: string[] = [];

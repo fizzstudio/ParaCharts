@@ -388,7 +388,6 @@ export interface RadialDatapointParams {
 }
 
 export abstract class RadialSlice extends DatapointView {
-
   declare readonly chart: PastryPlotView;
   declare protected _shapes: SectorShape[];
 

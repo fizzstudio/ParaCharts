@@ -1,3 +1,4 @@
+import { Logger, getLogger } from '../common/logger';
 import { ParaStore } from '../store';
 import { PlaneChartInfo } from './plane_chart';
 import { AxisInfo } from '../common/axisinfo';
@@ -27,7 +28,7 @@ export class BarCluster {
   stacks: {[key: string]: BarStack} = {};
   readonly id: string;
   readonly labelId: string;
-
+  protected log: Logger = getLogger("BarCluster");
   constructor(public readonly chartInfo: BarChartInfo, public readonly key: string) {
     this.id = `barcluster-${strToId(this.key)}`;
     this.labelId = `tick-x-${this.id}`;
@@ -222,9 +223,9 @@ export class BarChartInfo extends PlaneChartInfo {
     } else if (queriedNode.isNodeType('series')) {
       /*
       if (e.options!.isChordMode) {
-        // console.log('focusedDatapoint', focusedDatapoint)
+        // this.log.info('focusedDatapoint', focusedDatapoint)
         const visitedDatapoints = e.options!.visited as XYDatapointView[];
-        // console.log('visitedDatapoints', visitedDatapoints)
+        // this.log.info('visitedDatapoints', visitedDatapoints)
         msgArray = this.describeChord(visitedDatapoints);
       } */
       const seriesKey = queriedNode.options.seriesKey;
@@ -239,9 +240,9 @@ export class BarChartInfo extends PlaneChartInfo {
         // focused view: e.options!.focus
         // all visited datapoint views: e.options!.visited
         // const focusedDatapoint = e.targetView;
-        // console.log('focusedDatapoint', focusedDatapoint)
+        // this.log.info('focusedDatapoint', focusedDatapoint)
         const visitedDatapoints = e.options!.visited as XYDatapointView[];
-        // console.log('visitedDatapoints', visitedDatapoints)
+        // this.log.info('visitedDatapoints', visitedDatapoints)
         msgArray = this.describeChord(visitedDatapoints);
       }
         */

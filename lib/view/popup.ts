@@ -4,7 +4,8 @@ import { View } from "./base_view";
 import { Label, LabelOptions } from "./label";
 import { PathOptions, PathShape, ShapeOptions } from "./shape";
 import { ParaComponent } from "../components";
-import { fixed, logging } from "../common";
+import { fixed } from "../common";
+import { Logger, getLogger } from '../common/logger';
 import { Dialog } from '@fizz/ui-components';
 import '@fizz/ui-components';
 import { html, css, svg } from 'lit';
@@ -431,8 +432,8 @@ export class Popup extends View {
  * @public
  */
 @customElement('para-popup-settings-dialog')
-export class PopupSettingsDialog extends logging(ParaComponent) {
-
+export class PopupSettingsDialog extends ParaComponent {
+    protected log: Logger = getLogger("PopupSettingsDialog");
     protected _dialogRef = createRef<Dialog>();
 
     /**

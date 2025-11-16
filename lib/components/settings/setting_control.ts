@@ -1,4 +1,4 @@
-
+import { Logger, getLogger } from '../../common/logger';
 import { ParaComponent } from '../../components';
 import { type SettingControlInfo, type Setting, SettingsManager } from '../../store';
 //import { styles } from '../styles';
@@ -21,7 +21,7 @@ export type SettingControlValueType<T extends SettingControlType> =
   never;
 
 export abstract class SettingControl<T extends SettingControlType> extends ParaComponent {
-
+  private log: Logger = getLogger("SettingControl");
   @state() label!: string;
 
   @state()
@@ -50,7 +50,7 @@ export abstract class SettingControl<T extends SettingControlType> extends ParaC
   }
 
   protected _validateInput(value: Setting, control: EventTarget) {
-    //this.log('validating', controlInfo.key, value);
+    //this.log.info('validating', controlInfo.key, value);
     if (this.info.validator) {
       const result = this.info.validator(value);
       if (result.err) {

@@ -21,7 +21,7 @@ import { SettingsManager } from '../store/settings_manager';
 import { type AxisInfo } from '../common/axisinfo';
 import { type LegendItem } from '../view/legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
-import { Logger } from '../common/logger';
+import { Logger, getLogger } from '../common/logger';
 import { ParaStore, type SparkBrailleInfo, datapointIdToCursor } from '../store';
 import { Sonifier } from '../audio/sonifier';
 import { type AxisCoord } from '../view/axis';
@@ -45,8 +45,8 @@ export type RiffOrder = 'normal' | 'sorted' | 'reversed';
  * Abstract base class for business logic pertaining to any type of chart.
  * @public
  */
-export abstract class BaseChartInfo extends Logger {
-
+export abstract class BaseChartInfo {
+  protected log: Logger = getLogger("BaseChartInfo");
   protected _navMap: NavMap | null = null;
   protected _axisInfo: AxisInfo | null = null;
   protected _summarizer!: Summarizer;
@@ -57,7 +57,6 @@ export abstract class BaseChartInfo extends Logger {
   protected _soniRiffInterval: ReturnType<typeof setTimeout> | null = null;
 
   constructor(protected _type: ChartType, protected _store: ParaStore) {
-    super();
     this._init();
     this._addSettingControls();
   }
@@ -385,7 +384,7 @@ export abstract class BaseChartInfo extends Logger {
       }
     }
     else {
-      console.log('Chord mode not supported for this chart type');
+      this.log.info('Chord mode not supported for this chart type');
     }
   }
 
@@ -545,5 +544,4 @@ export abstract class BaseChartInfo extends Logger {
       return this.getYAxisInterval();
     }
   }
-
 }
