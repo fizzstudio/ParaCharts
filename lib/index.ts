@@ -1,6 +1,6 @@
 import { ParaChart } from './parachart/parachart';
 export { ParaChart } from './parachart/parachart';
-export * from './headless/parahelper';
+export * from './headless/paraheadless';
 export * from './scrollyteller/scrollyteller';
 export * from './audio/index';
 export * from './common/index';

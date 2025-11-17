@@ -1,6 +1,6 @@
 import { ParaChartAi } from './parachart-ai';
 export { ParaChartAi } from './parachart-ai';
-export * from '../lib/headless/parahelper';
+export * from '../lib/headless/paraheadless';
 export * from '../lib/scrollyteller/scrollyteller';
 export * from '../lib/audio/index';
 export * from '../lib/common/index';
