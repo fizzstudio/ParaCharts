@@ -86,7 +86,7 @@ export abstract class BaseChartInfo {
     });
     this._store.settingControls.add({
       type: 'checkbox',
-      key: 'chart.showPopups',
+      key: 'chart.isShowPopups',
       label: 'Show popups',
       parentView: 'controlPanel.tabs.chart.popups',
     });

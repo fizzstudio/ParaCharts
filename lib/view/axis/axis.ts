@@ -260,13 +260,13 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       angle: this._getAxisTitleAngle(),
       pointerEnter: (e) => {
         /*
-        this.paraview.store.settings.chart.showPopups
+        this.paraview.store.settings.chart.isShowPopups
           && this.paraview.store.settings.popup.activation === "onHover"
           && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? */this.addPopup();
       },
       pointerLeave: (e) => {
         /*
-        this.paraview.store.settings.chart.showPopups
+        this.paraview.store.settings.chart.isShowPopups
           && this.paraview.store.settings.popup.activation === "onHover"
           && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? */this.removePopup(this.id);
       }

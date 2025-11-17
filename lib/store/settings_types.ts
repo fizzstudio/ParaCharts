@@ -187,6 +187,7 @@ export interface ChartSettings extends SettingGroup {
   isDrawSymbols: boolean;
   isStatic: boolean;
   isShowVisitedDatapointsOnly: boolean;
+  isShowPopups: boolean;
 }
 
 /** @public */
@@ -340,7 +341,7 @@ export interface BarSettings extends PlotSettings {
   isAbbrevSeries: boolean;
   clusterLabelFormat: LabelFormat;
   lineWidth: number;
-  showPopups: boolean;
+  isShowPopups: boolean;
   labelFontSize: string;
 }
 
@@ -364,7 +365,7 @@ export interface LineSettings extends PointSettings {
   seriesLabelPadding: number; // also used after leader lines
   leaderLineLength: number;
   isAlwaysShowSeriesLabel?: boolean;
-  showPopups: boolean;
+  isShowPopups: boolean;
   isTrendNavigationModeEnabled: boolean;
 }
 

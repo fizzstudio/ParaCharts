@@ -71,7 +71,7 @@ export const defaults: Settings = {
     isDrawSymbols: true,
     isStatic: false,
     isShowVisitedDatapointsOnly: false,
-    showPopups: false
+    isShowPopups: false
   },
   axis: {
     minInterval: 25,
@@ -210,7 +210,7 @@ export const defaults: Settings = {
       //stackInsideGap: 4,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
-      showPopups: false,
+      isShowPopups: false,
       labelFontSize: '8pt'
     },
     column: {
@@ -230,7 +230,7 @@ export const defaults: Settings = {
       //stackInsideGap: 0,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
-      showPopups: false,
+      isShowPopups: false,
       labelFontSize: '8pt'
     },
     line: {
@@ -247,7 +247,7 @@ export const defaults: Settings = {
         height: 20,
       },
       isDrawSymbols: true,
-      showPopups: false,
+      isShowPopups: false,
       isTrendNavigationModeEnabled: false
     },
     scatter: {
@@ -382,7 +382,7 @@ export const defaults: Settings = {
       barGap: 0.25,
       //stackInsideGap: 4,
       clusterLabelFormat: 'raw',
-      showPopups: false,
+      isShowPopups: false,
       labelFontSize: '8pt'
     }
   },

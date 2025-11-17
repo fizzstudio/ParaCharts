@@ -164,7 +164,7 @@ export abstract class DataLayer extends PlotLayer {
         this.paraview.store.userLineBreaks.splice(0, this.paraview.store.userLineBreaks.length)
       }
     }
-    if (['chart.showPopups'].includes(path)) {
+    if (['chart.isShowPopups'].includes(path)) {
       this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
     }
     super.settingDidChange(path, oldValue, newValue);

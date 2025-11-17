@@ -301,12 +301,12 @@ export class LineSection extends PointDatapointView {
         stroke: "white",
         fill: "white",
         pointerEnter: (e) => {
-          this.paraview.store.settings.chart.showPopups
+          this.paraview.store.settings.chart.isShowPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
         },
         pointerLeave: (e) => {
-          this.paraview.store.settings.chart.showPopups
+          this.paraview.store.settings.chart.isShowPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
         }
@@ -332,12 +332,12 @@ export class LineSection extends PointDatapointView {
         stroke: "white",
         fill: "white",
         pointerEnter: (e) => {
-          this.paraview.store.settings.chart.showPopups
+          this.paraview.store.settings.chart.isShowPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
         },
         pointerLeave: (e) => {
-          this.paraview.store.settings.chart.showPopups
+          this.paraview.store.settings.chart.isShowPopups
             && this.paraview.store.settings.popup.activation === "onHover"
             && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
         }

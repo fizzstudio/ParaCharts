@@ -90,7 +90,7 @@ export class BarPlotView extends PlanePlotView {
     this.log = getLogger("BarPlotView");
   }
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['color.colorPalette', 'color.colorVisionMode', 'chart.showPopups'].includes(path)) {
+    if (['color.colorPalette', 'color.colorVisionMode', 'chart.isShowPopups'].includes(path)) {
       if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
         || this.paraview.store.settings.color.colorPalette === 'pattern') {
         this.paraview.createDocumentView();
@@ -426,7 +426,7 @@ export class Bar extends PlaneDatapointView {
     const zeroHeight = this.chart.parent.logicalHeight
       - (chartInfo.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!);
     // @ts-ignore
-    this._height = Math.abs((this.datapoint.data.y.value as number) * pxPerYUnit * t);
+    this._height = Math.abs((this.datapoint.data.y.value as number) * pxPerYUnit * bezT);
     // @ts-ignore
     if (this.datapoint.data.y.value as number < 0) {
       this._y = this.chart.height - distFromXAxis * bezT - zeroHeight;
@@ -518,10 +518,10 @@ export class Bar extends PlaneDatapointView {
       height: this._height,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.addPopup() : undefined
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.removePopup(this.id) : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.removePopup(this.id) : undefined
       },
     }));
     super._createShapes();

@@ -172,10 +172,10 @@ class ScatterPointView extends PointDatapointView {
       strokeWidth: this.paraview.store.settings.chart.symbolStrokeWidth,
       lighten: true,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.addPopup() : undefined
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.removePopup(this.id) : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.removePopup(this.id) : undefined
       },
     });
     this._symbol.role = 'datapoint'
