@@ -549,7 +549,10 @@ export class Bar extends PlaneDatapointView {
 
 
   addPopup(text?: string) {
-    let datapointText = `${this.series.getLabel()} ${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
+    let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
+    if (this.paraview.store.model!.multi) {
+      datapointText = `${this.series.getLabel()} ${datapointText}`
+    }
     let popup = new Popup(this.paraview,
       {
         text: text ?? datapointText,
