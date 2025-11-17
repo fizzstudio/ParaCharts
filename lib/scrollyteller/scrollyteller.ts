@@ -189,9 +189,13 @@ export class Scrollyteller {
           console.warn('this.parachart', this.parachart)
           this.parachart.setAttribute('manifest', params[0]);
         }
+
+        // TODO: add sonifications
+        if (action === 'playSonification') {
+          this.parachart.api.getSeries(params[0]).playRiff();
+        }
       }
       // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
-      // TODO: add sonifications
     });
 
 
