@@ -407,7 +407,7 @@ export const defaults: Settings = {
   animation: {
     isAnimationEnabled: true,
     animateRevealTimeMs: 2500,
-    popInAnimateRevealTimeMs: 1500,
+    popInAnimateRevealTimeMs: 750,
     animationType: 'uniform',
     animationOrigin: 'initialValue',
     animationOriginValue: 0,

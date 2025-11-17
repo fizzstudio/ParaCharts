@@ -167,14 +167,31 @@ export function mergeUniqueBy<T>(
 }*/
 
 export function isPointerInbounds(paraview: ParaView, e: PointerEvent | MouseEvent) {
+  if (!paraview.documentView) {
+    return true;
+  }
   if (e.offsetX - paraview.documentView!.padding.left - paraview.documentView!.chartLayers.x < 0
     || e.offsetX - paraview.documentView!.padding.left - paraview.documentView!.chartLayers.x > paraview.documentView!.chartLayers.width
     || e.offsetY - paraview.documentView!.padding.top - paraview.documentView!.chartLayers.y < 0
     || e.offsetY - paraview.documentView!.padding.top - paraview.documentView!.chartLayers.y > paraview.documentView!.chartLayers.height
   ) {
-    return false
+    return false;
   }
   else {
-    return true
+    return true;
   }
+}
+
+export function loopParaviewRefresh(paraview: ParaView, duration: number, interval: number) {
+  const start = Date.now();
+  const loop = () => {
+    let timestamp = setTimeout(() => {
+      paraview.requestUpdate();
+      loop();
+    }, interval);
+    if (Date.now() - start > duration) {
+      clearTimeout(timestamp);
+    }
+  };
+  loop();
 }

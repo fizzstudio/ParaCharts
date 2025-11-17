@@ -209,7 +209,7 @@ export class PointDatapointView extends PlaneDatapointView {
   beginAnimStep(bezT: number, linearT: number): void {
     if (this.paraview.store.settings.animation.symbolPopIn) {
       if (linearT + .01 >= this.x / this.chart.width && !this._isAnimating && !this._hasAnimated) {
-        this.popInAnimation(linearT)
+        this.popInAnimation()
       }
     }
     this._y = this._animStartState.y * (1 - bezT) + this._animEndState.y * bezT;
@@ -224,10 +224,9 @@ export class PointDatapointView extends PlaneDatapointView {
     //this._animateRevealComplete = true;
   }
 
-  popInAnimation(t: number) {
+  popInAnimation() {
     this._isAnimating = true
     let start = -1;
-    this._baseSymbolScale = 0
     const bez = new Bezier(.2, 6, 1, 1, 10)
     const step = (timestamp: number) => {
       if (start === -1) {

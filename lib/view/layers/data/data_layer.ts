@@ -26,7 +26,7 @@ import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../.
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { bboxOfBboxes } from '../../../common/utils';
 import { BaseChartInfo } from '../../../chart_types';
-import { Bezier } from '../../../common';
+import { Bezier, loopParaviewRefresh } from '../../../common';
 
 /**
  * @public
@@ -245,18 +245,8 @@ export abstract class DataLayer extends PlotLayer {
       }
     };
     this._currentAnimationFrame = requestAnimationFrame(step);
-    const start2 = Date.now()
-    const loop = () => {
-      let timestamp = setTimeout(() => {
-        this.paraview.requestUpdate()
-        loop();
-      }, 50);
-      if (Date.now() - start2 > this.paraview.store.settings.animation.popInAnimateRevealTimeMs
-        + this.paraview.store.settings.animation.animateRevealTimeMs) {
-        clearTimeout(timestamp)
-      }
-    };
-    loop()
+    loopParaviewRefresh(this.paraview, 500 + this.paraview.store.settings.animation.popInAnimateRevealTimeMs
+        + this.paraview.store.settings.animation.animateRevealTimeMs, 50);
   }
 
   protected _animStep(bezT: number, linearT: number) {

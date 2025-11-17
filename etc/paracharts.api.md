@@ -2161,6 +2161,9 @@ export enum LogLevel {
 export interface LollipopSettings extends BarSettings {
 }
 
+// @public (undocumented)
+export function loopParaviewRefresh(paraview: ParaView, duration: number, interval: number): void;
+
 export { Manifest }
 
 // @public (undocumented)
@@ -2477,10 +2480,6 @@ export class ParaComponent extends LitElement {
 
 // @public (undocumented)
 export class ParaControlPanel extends ParaComponent {
-    // (undocumented)
-    addButtonListeners(): void;
-    // (undocumented)
-    addPopup(isOpen: boolean): void;
     // (undocumented)
     addButtonListeners(): void;
     // (undocumented)
@@ -3312,7 +3311,7 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     _isAnimating: boolean;
     // (undocumented)
-    popInAnimation(t: number): void;
+    popInAnimation(): void;
     // (undocumented)
     get _selectedMarkerX(): number;
     // (undocumented)
