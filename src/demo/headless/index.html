@@ -50,7 +50,7 @@
 
 <body>
   <script type="module">
-    import { ParaHelper } from '/dist-ai/paracharts.js';
+    import { ParaHeadless } from '/dist-ai/paracharts.js';
 
     const container = document.getElementById('content-container');
     const jim = document.getElementById('jim');
@@ -89,23 +89,22 @@
     }
 
     async function _loadManifest(manifest) {
-      console.log('MANIFEST', manifest);
-      await helper.loadManifest(JSON.stringify(manifest), 'content');
-      await helper.jimReady;
+      await headless.loadManifest(JSON.stringify(manifest), 'content');
+      await headless.jimReady;
       _manifest = manifest;
-      _svgText = helper._paraChart.api.serializeChart();
+      _svgText = headless.api.serializeChart();
       container.innerHTML = _svgText;
       jim.innerHTML = document.getElementsByTagName('metadata')[0].innerHTML;
     }
 
     async function _loadCsv(blob) {
       const url = URL.createObjectURL(blob);
-      _dataFieldInfo = await helper.loadData(url);
+      _dataFieldInfo = await headless.loadData(url);
       URL.revokeObjectURL(url);
     }
 
-    const helper = new ParaHelper();
-    await helper.ready;
+    const headless = new ParaHeadless();
+    await headless.ready;
 
     const dataSelect = document.getElementById('data-select');
     dataSelect.addEventListener('change', _selectData);

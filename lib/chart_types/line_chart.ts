@@ -210,12 +210,14 @@ export class LineChartInfo extends PointChartInfo {
   }
 
   legend() {
-    const seriesKeys = [...this._store.model!.seriesKeys];
+    const model = this._store.model!;
+    const seriesKeys = [...model.seriesKeys];
     if (this._store.settings.legend.itemOrder === 'alphabetical') {
       seriesKeys.sort();
     }
     return seriesKeys.map(key => ({
-      label: key,
+      label: model.atKey(key)!.getLabel(),
+      seriesKey: key,
       color: this._store.seriesProperties!.properties(key).color
     }));
   }
@@ -239,10 +241,12 @@ export class LineChartInfo extends PointChartInfo {
         msgArray = this.describeChord(visitedDatapoints);
       } */
       const seriesKey = queriedNode.options.seriesKey;
-      const datapointCount = this._store.model!.atKey(seriesKey)!.length;
+      const series = this._store.model!.atKey(seriesKey)!;
+      const datapointCount = series.length;
+      const seriesLabel = series.getLabel();
       msgArray.push(interpolate(
-        queryMessages.seriesKeyLength,
-        { seriesKey, datapointCount }
+        queryMessages.seriesLabelLength,
+        { seriesLabel, datapointCount }
       ));
     } else if (queriedNode.isNodeType('datapoint')) {
       /*
@@ -260,13 +264,15 @@ export class LineChartInfo extends PointChartInfo {
       //const visitedDatapoint = queriedNode.datapointViews[0];
       const seriesKey = queriedNode.options.seriesKey;
       const index = queriedNode.options.index;
-      const datapoint = this._store.model!.atKey(seriesKey)!.datapoints[index];
+      const series = this._store.model!.atKey(seriesKey)!;
+      const datapoint = series.datapoints[index];
+      const seriesLabel = series.getLabel();
       // XXX yuck
       const datapointView = this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
       msgArray.push(interpolate(
-        queryMessages.datapointKeyLength,
+        queryMessages.datapointLabelLength,
         {
-          seriesKey,
+          seriesLabel,
           datapointXY: formatXYDatapoint(datapoint, 'raw'),
           datapointIndex: queriedNode.options.index + 1,
           datapointCount: this._store.model!.atKey(seriesKey)!.length

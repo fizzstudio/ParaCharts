@@ -16,6 +16,7 @@ export type SeriesAttrs = {
 
 export interface LegendItem {
   label: string;
+  seriesKey: string;
   symbol?: DataSymbolType;
   color: number;
   datapointIndex?: number;
@@ -78,8 +79,7 @@ export class Legend extends Container(View) {
         {
           color: item.color,
           pointerEnter: (e) => {
-            // XXX should use key
-            this.paraview.store.lowlightOtherSeries(item.label);
+            this.paraview.store.lowlightOtherSeries(item.seriesKey);
           },
           pointerLeave: (e) => {
             this.paraview.store.clearAllSeriesLowlights();
@@ -93,7 +93,7 @@ export class Legend extends Container(View) {
         textAnchor: 'start',
         classList: ['legend-label'],
         pointerEnter: (e) => {
-          this.paraview.store.lowlightOtherSeries(item.label);
+          this.paraview.store.lowlightOtherSeries(item.seriesKey);
         },
         pointerLeave: (e) => {
           this.paraview.store.clearAllSeriesLowlights();

@@ -156,7 +156,7 @@ export class PopupLayer extends PlotLayer {
         this.paraview.documentView?.chartLayers.backgroundAnnotationLayer.render()!;
         const popup = new Popup(this.paraview,
             {
-                text: text,
+                text,
                 x: dpView!.x,
                 y: dpView!.y,
                 textAnchor: "middle",
@@ -165,7 +165,7 @@ export class PopupLayer extends PlotLayer {
                 color: dpView!.color,
                 //margin: 60,
                 type: "chord",
-                items: items,
+                items,
                 points: datapointViews
             },
             {

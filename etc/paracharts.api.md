@@ -2562,7 +2562,7 @@ export class ParaDialog extends ParaComponent {
 }
 
 // @public (undocumented)
-export class ParaHelper {
+export class ParaHeadless {
     constructor();
     // (undocumented)
     get api(): ParaAPI_2;

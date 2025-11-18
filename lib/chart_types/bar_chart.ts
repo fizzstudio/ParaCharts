@@ -193,18 +193,21 @@ export class BarChartInfo extends PlaneChartInfo {
   }
 
   legend() {
+    const model = this._store.model!;
     if (this._store.settings.legend.itemOrder === 'series') {
       // return this._chartLandingView.children.map(view => ({
       //   label: (view as SeriesView).seriesKey,
       //   color: (view as SeriesView).color  // series color
       // }));
-      return this._store.model!.series.map(series => ({
+      return model.series.map(series => ({
         label: series.getLabel(),
+        seriesKey: series.key,
         color: this._store.seriesProperties!.properties(series.key).color
       }));
     } else {
-      return this._store.model!.seriesKeys.toSorted().map(key => ({
-        label: this._store.model!.atKey(key)!.getLabel(),
+      return model.seriesKeys.toSorted().map(key => ({
+        label: model.atKey(key)!.getLabel(),
+        seriesKey: key,
         color: this._store.seriesProperties!.properties(key).color
       }));
     }
@@ -229,10 +232,12 @@ export class BarChartInfo extends PlaneChartInfo {
         msgArray = this.describeChord(visitedDatapoints);
       } */
       const seriesKey = queriedNode.options.seriesKey;
-      const datapointCount = this._store.model!.atKey(seriesKey)!.length;
+      const series = this._store.model!.atKey(seriesKey)!;
+      const datapointCount = series.length;
+      const seriesLabel = series.getLabel();
       msgArray.push(interpolate(
-        queryMessages.seriesKeyLength,
-        { seriesKey, datapointCount }
+        queryMessages.seriesLabelLength,
+        { seriesLabel, datapointCount }
       ));
     } else if (queriedNode.isNodeType('datapoint')) {
       /*
@@ -249,17 +254,19 @@ export class BarChartInfo extends PlaneChartInfo {
       const selectedDatapoints = this._store.selectedDatapoints;
       const seriesKey = queriedNode.options.seriesKey;
       const index = queriedNode.options.index;
-      const datapoint = this._store.model!.atKey(seriesKey)!.datapoints[index];
+      const series = this._store.model!.atKey(seriesKey)!;
+      const datapoint = series.datapoints[index];
+      const seriesLabel = series.getLabel();
       // XXX yuck
       const datapointView = this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
 
       msgArray.push(interpolate(
-        queryMessages.datapointKeyLength,
+        queryMessages.datapointLabelLength,
         {
-          seriesKey,
+          seriesLabel,
           datapointXY: formatXYDatapoint(datapoint, 'raw'),
           datapointIndex: queriedNode.options.index + 1,
-          datapointCount: this._store.model!.atKey(seriesKey)!.length
+          datapointCount: series.length
         }
       ));
 
