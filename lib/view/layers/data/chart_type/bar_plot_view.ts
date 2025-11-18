@@ -553,8 +553,8 @@ export class Bar extends PlaneDatapointView {
         id: this.id,
         color: this.color,
         points: [this],
-        rotationExempt: false,
-        angle: -90
+        rotationExempt: this.paraview.store.type == 'bar' ? false : true,
+        angle: this.paraview.store.type == 'bar' ? -90 : 0
       },
       {})
     this.paraview.store.popups.push(popup)
