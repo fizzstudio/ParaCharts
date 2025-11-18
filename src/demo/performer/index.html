@@ -63,8 +63,8 @@
                     chart.api.setSetting('color.isDarkModeEnabled', true);
                 },
                 () => {
-					text.innerHTML = 'Disable dark mode';
-                    chart.api.setSetting('color.isDarkModeEnabled', false);
+					text.innerHTML = 'Change manifest';
+					chart.setAttribute('manifest', '/src/demo-data/line-multi-manifest-67.json');
                 },
                 () => {
 					text.innerHTML = 'Disable direct labels';
@@ -76,27 +76,27 @@
                 },
                 () => {
 					text.innerHTML = 'Visit point';
-                    chart.api.getSeries('EU').getPoint(6).visit();
+                    chart.api.getSeries('China').getPoint(6).visit();
                 },
                 () => {
 					text.innerHTML = 'Select point';
-                    chart.api.getSeries('EU').getPoint(6).select();
+                    chart.api.getSeries('China').getPoint(6).select();
                 },
                 () => {
 					text.innerHTML = 'Deselect point';
-                    chart.api.getSeries('EU').getPoint(6).select();
+                    chart.api.getSeries('China').getPoint(6).select();
                 },
                 () => {
 					text.innerHTML = 'Play point sonification';
-                    chart.api.getSeries('EU').getPoint(6).play();
+                    chart.api.getSeries('China').getPoint(6).play();
                 },
                 () => {
 					text.innerHTML = 'Annotate point';
-                    chart.api.getSeries('EU').getPoint(6).annotate('Foobar');
+                    chart.api.getSeries('China').getPoint(6).annotate('Foobar');
                 },
                 () => {
-					text.innerHTML = 'Lowlight Euro area';
-                    chart.api.getSeries('EU').lowlightOthers();
+					text.innerHTML = 'Lowlight other series';
+                    chart.api.getSeries('China').lowlightOthers();
                 },
                 () => {
 					text.innerHTML = 'Clear all lowlights';
@@ -107,16 +107,16 @@
                     chart.api.hideAllSeries();
                 },
                 () => {
-					text.innerHTML = 'Unhide EU';
-                    chart.api.getSeries('EU').unhide();
+					text.innerHTML = 'Unhide China';
+                    chart.api.getSeries('China').unhide();
                 },
                 () => {
-					text.innerHTML = 'Unhide Euro area';
-                    chart.api.getSeries('Euro area').unhide();
+					text.innerHTML = 'Unhide Brazil';
+                    chart.api.getSeries('Brazil').unhide();
                 },
                 () => {
 					text.innerHTML = 'Play series riff';
-                    chart.api.getSeries('Euro area').playRiff();
+                    chart.api.getSeries('China').playRiff();
                 },
             ];
             steps.forEach((step, i) => {
