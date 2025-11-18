@@ -100,12 +100,14 @@ export class PastryChartInfo extends BaseChartInfo {
   }
 
   legend() {
-    const xs = this._store.model!.series[0].datapoints.map(dp =>
+    const series = this._store.model!.series[0];
+    const xs = series.datapoints.map(dp =>
       formatBox(dp.facetBox('x')!, this._store.getFormatType('pieSliceLabel')));
-    const ys = this._store.model!.series[0].datapoints.map(dp =>
+    const ys = series.datapoints.map(dp =>
       formatBox(dp.facetBox('y')!, this._store.getFormatType('pieSliceValue')));
     return xs.map((x, i) => ({
       label: `${x}: ${ys[i]}`,
+      seriesKey: series.key,
       color: i,
       datapointIndex: i
     }));

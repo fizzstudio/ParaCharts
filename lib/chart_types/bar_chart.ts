@@ -193,18 +193,21 @@ export class BarChartInfo extends PlaneChartInfo {
   }
 
   legend() {
+    const model = this._store.model!;
     if (this._store.settings.legend.itemOrder === 'series') {
       // return this._chartLandingView.children.map(view => ({
       //   label: (view as SeriesView).seriesKey,
       //   color: (view as SeriesView).color  // series color
       // }));
-      return this._store.model!.series.map(series => ({
+      return model.series.map(series => ({
         label: series.getLabel(),
+        seriesKey: series.key,
         color: this._store.seriesProperties!.properties(series.key).color
       }));
     } else {
-      return this._store.model!.seriesKeys.toSorted().map(key => ({
-        label: this._store.model!.atKey(key)!.getLabel(),
+      return model.seriesKeys.toSorted().map(key => ({
+        label: model.atKey(key)!.getLabel(),
+        seriesKey: key,
         color: this._store.seriesProperties!.properties(key).color
       }));
     }

@@ -216,12 +216,14 @@ export class LineChartInfo extends PointChartInfo {
   }
 
   legend() {
-    const seriesKeys = [...this._store.model!.seriesKeys];
+    const model = this._store.model!;
+    const seriesKeys = [...model.seriesKeys];
     if (this._store.settings.legend.itemOrder === 'alphabetical') {
       seriesKeys.sort();
     }
     return seriesKeys.map(key => ({
-      label: key,
+      label: model.atKey(key)!.getLabel(),
+      seriesKey: key,
       color: this._store.seriesProperties!.properties(key).color
     }));
   }
