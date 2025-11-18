@@ -69,7 +69,7 @@ export class ParaView extends ParaComponent {
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
   protected log: Logger = getLogger("ParaView");
-  
+
   @state() private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
   };

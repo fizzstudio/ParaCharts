@@ -2479,7 +2479,7 @@ export class ParaHeadless {
 
 // @public (undocumented)
 export class ParaStore extends State {
-    constructor(paraChart: ParaChart, inputSettings: SettingsInput, suppleteSettingsWith?: DeepReadonly<Settings>, seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
+    constructor(paraChart: ParaChart, _inputSettings: SettingsInput, seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
     // (undocumented)
     addAnnotation(): void;
     // (undocumented)
@@ -2520,6 +2520,8 @@ export class ParaStore extends State {
     get colors(): Colors;
     // (undocumented)
     protected _colors: Colors;
+    // (undocumented)
+    protected _createSettings(): void;
     // (undocumented)
     darkMode: boolean;
     // (undocumented)
@@ -2568,6 +2570,8 @@ export class ParaStore extends State {
     highlightRange(startPortion: number, endPortion: number): void;
     // (undocumented)
     idList: Record<string, boolean>;
+    // (undocumented)
+    protected _inputSettings: SettingsInput;
     // (undocumented)
     isSelected(seriesKey: string, index: number): boolean;
     // (undocumented)

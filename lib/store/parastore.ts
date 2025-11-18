@@ -134,8 +134,9 @@ export class ParaStore extends State {
 
   readonly symbols = new DataSymbols();
 
+
   @property() dataState: DataState = 'initial';
-  @property() settings: Settings;
+  @property() settings!: Settings;
   @property() darkMode = false;
   @property() announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0 };
   @property() annotations: BaseAnnotation[] = [];
@@ -184,15 +185,13 @@ export class ParaStore extends State {
 
   constructor(
     public paraChart: ParaChart,
-    inputSettings: SettingsInput,
-    suppleteSettingsWith?: DeepReadonly<Settings>,
+    protected _inputSettings: SettingsInput,
+    // suppleteSettingsWith?: DeepReadonly<Settings>,
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
     pairAnalyzerConstructor?: PairAnalyzerConstructor
   ) {
     super();
-    const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
-    SettingsManager.suppleteSettings(hydratedSettings, suppleteSettingsWith ?? defaults);
-    this.settings = hydratedSettings as Settings;
+    this._createSettings();
     this.subscribe((key, value) => this._propertyChanged(key, value));
     this._colors = new Colors(this);
     this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
@@ -252,9 +251,17 @@ export class ParaStore extends State {
     return this._userTrendLines;
   }
 
+  protected _createSettings() {
+    const hydratedSettings = SettingsManager.hydrateInput(this._inputSettings);
+    SettingsManager.suppleteSettings(hydratedSettings, defaults);
+    this.settings = hydratedSettings as Settings;
+  }
+
   setManifest(manifest: Manifest, data?: AllSeriesData) {
     this._manifest = manifest;
     const dataset = this._manifest.datasets[0];
+
+    this._createSettings();
 
     if (chartTypeDefaults[dataset.type]) {
       Object.entries(chartTypeDefaults[dataset.type]!).forEach(([path, value]) =>

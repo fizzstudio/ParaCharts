@@ -28,7 +28,6 @@ export class ParaCaptionBox extends ParaComponent {
 
   @state() protected _caption: HighlightedSummary = { text: '', html: '' };
 
-  private _summarizer?: Summarizer;
   protected _storeChangeUnsub!: Unsubscribe;
   protected _spans: HTMLSpanElement[] = [];
   protected _isEBarVisible = false;
@@ -117,14 +116,7 @@ export class ParaCaptionBox extends ParaComponent {
 
   private async setCaption(): Promise<void> {
     if (this._store.dataState === 'complete') {
-      if (!this._summarizer) {
-        if (this.store.model!.type === 'pie' || this.store.model!.type === 'donut') {
-          this._summarizer = new PastryChartSummarizer(this.store.model!);
-        } else {
-          this._summarizer = new PlaneChartSummarizer(this.store.model as PlaneModel);
-        }
-      }
-      this._caption = await this._summarizer.getChartSummary();
+      this._caption = await this._store.paraChart.paraView.documentView!.chartInfo.summarizer.getChartSummary();
     }
   }
 
