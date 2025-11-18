@@ -165,6 +165,7 @@ export abstract class BaseChartInfo {
     return seriesInNavOrder.map((key, i) => (
       {
         label: '',
+        seriesKey: key,
         color: this._store.seriesProperties!.properties(key).color,
         symbol: this._store.seriesProperties!.properties(key).symbol,
       }));
