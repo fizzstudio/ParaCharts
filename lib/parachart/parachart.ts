@@ -322,6 +322,9 @@ export class ParaChart extends ParaComponent {
   }
 
   postNotice(key: string, value: any) {
+    if (!this.paraView){
+      return
+    }
     this.paraView.documentView!.noticePosted(key, value);
     this.paraView.documentView!.chartInfo.noticePosted(key, value);
     this.captionBox.noticePosted(key, value);

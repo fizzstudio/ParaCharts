@@ -84,6 +84,12 @@ export abstract class BaseChartInfo {
       },
       parentView: 'controlPanel.tabs.chart.general.height',
     });
+    this._store.settingControls.add({
+      type: 'checkbox',
+      key: 'chart.isShowPopups',
+      label: 'Show popups',
+      parentView: 'controlPanel.tabs.chart.popups',
+    });
   }
 
   protected _init() {

@@ -592,7 +592,7 @@ export class Bar extends PlaneDatapointView {
     // (undocumented)
     addPopup(text?: string): void;
     // (undocumented)
-    beginAnimStep(t: number): void;
+    beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     readonly chart: BarPlotView;
     // (undocumented)
@@ -1222,7 +1222,7 @@ export abstract class DataLayer extends PlotLayer {
     // (undocumented)
     protected _animEnd(): void;
     // (undocumented)
-    protected _animStep(t: number): void;
+    protected _animStep(bezT: number, linearT: number): void;
     // (undocumented)
     protected _beginDatapointLayout(): void;
     // (undocumented)
@@ -1357,7 +1357,7 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     protected _baseSymbolScale: number;
     // (undocumented)
-    beginAnimStep(_t: number): void;
+    beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     get classInfo(): ClassInfo;
     // (undocumented)
@@ -1383,7 +1383,7 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     get el(): SVGElement;
     // (undocumented)
-    endAnimStep(_t: number): void;
+    endAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     equals(other: DatapointView): boolean;
     // (undocumented)
@@ -2160,6 +2160,9 @@ export enum LogLevel {
 // @public (undocumented)
 export interface LollipopSettings extends BarSettings {
 }
+
+// @public (undocumented)
+export function loopParaviewRefresh(paraview: ParaView, duration: number, interval: number): void;
 
 export { Manifest }
 
@@ -2986,7 +2989,7 @@ export abstract class PastryPlotView extends DataLayer {
     // (undocumented)
     protected _addedToParent(): void;
     // (undocumented)
-    protected _animStep(t: number): void;
+    protected _animStep(bezT: number, linearT: number): void;
     // (undocumented)
     protected _arc: number;
     // (undocumented)
@@ -3105,7 +3108,7 @@ export class PieSlice extends RadialSlice {
     // (undocumented)
     addPopup(text?: string): void;
     // (undocumented)
-    beginAnimStep(t: number): void;
+    beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     computeLocation(): void;
     // (undocumented)
@@ -3288,7 +3291,7 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     protected _animEnd(): void;
     // (undocumented)
-    beginAnimStep(t: number): void;
+    beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     readonly chart: PointPlotView;
     // (undocumented)
@@ -3308,7 +3311,7 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     _isAnimating: boolean;
     // (undocumented)
-    popInAnimation(t: number): void;
+    popInAnimation(): void;
     // (undocumented)
     get _selectedMarkerX(): number;
     // (undocumented)

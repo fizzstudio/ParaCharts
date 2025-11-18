@@ -107,13 +107,6 @@ export abstract class PastryPlotView extends DataLayer {
 
     //this.label_font_size = chart_obj.options.axis.r.tick.font_size;
     //this.label_margin = chart_obj.options.axis.r.tick.margin;
-
-    this.paraview.store.settingControls.add({
-      type: 'checkbox',
-      key: 'chart.showPopups',
-      label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.popups',
-    });
   }
 
   // get radius() {
@@ -153,8 +146,8 @@ export abstract class PastryPlotView extends DataLayer {
     this._createLabels();
   }
 
-  protected _animStep(t: number): void {
-    super._animStep(t);
+  protected _animStep(bezT: number, linearT: number): void {
+    super._animStep(bezT, linearT);
     this._createLabels();
   }
 

@@ -260,6 +260,13 @@ export class ParaView extends ParaComponent {
       .invis {
         opacity: 0;
       }
+      .popup-box {
+        filter: drop-shadow(3px 3px 5px #333);
+        pointer-events: none;
+      }
+      .popup-text {
+        pointer-events: none;
+      }
       .control-column {
         display: flex;
         flex-direction: column;
@@ -599,14 +606,14 @@ export class ParaView extends ParaComponent {
       draft.ui.isVoicingEnabled = true;
     });
     this._store.updateSettings(draft => {
-      draft.chart.showPopups = true;
+      draft.chart.isShowPopups = true;
     });
   }
 
   endNarrativeHighlightMode() {
     this._store.updateSettings(draft => {
       draft.ui.isVoicingEnabled = false;
-      draft.chart.showPopups = false;
+      draft.chart.isShowPopups = false;
     });
   }
 

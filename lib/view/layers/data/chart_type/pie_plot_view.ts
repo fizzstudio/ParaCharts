@@ -47,9 +47,9 @@ export class PieSlice extends RadialSlice {
     }
   }
 
-  beginAnimStep(t: number): void {
-    this._centralAngle = this._params.percentage*360*t;
-    super.beginAnimStep(t);
+  beginAnimStep(bezT: number, linearT: number): void {
+    this._centralAngle = this._params.percentage*360*bezT;
+    super.beginAnimStep(bezT, linearT);
   }
 
   protected _createShapes() {
@@ -68,10 +68,10 @@ export class PieSlice extends RadialSlice {
       annularThickness: this.chart.settings.annularThickness,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.addPopup() : undefined
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.removePopup(this.id) : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.removePopup(this.id) : undefined
       },
     });
     this._shapes.push(slice);
@@ -154,17 +154,7 @@ export class PieSlice extends RadialSlice {
   }
 
   removePopup(id: string) {
-    let coords = this.paraview.pointerEventManager!.coords!
-    let relativeX = coords.x - this.paraview.documentView!.padding.left - this.paraview.documentView!.chartLayers.x
-    let relativeY = coords.y - this.paraview.documentView!.padding.top - this.paraview.documentView!.chartLayers.y
-    let popup = this.paraview.store.popups.find(p => p.id === id)!
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    if (!popup){
-      return
-    }
-    if (relativeX <= popup.box.right && relativeX >= popup.box.left && relativeY >= popup.box.top && relativeY <= popup.box.bottom){
-      return
-    }
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1);
     this.paraview.requestUpdate()
   }
 }

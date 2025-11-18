@@ -32,7 +32,7 @@ export class HighlightsLayer extends PlotLayer {
         this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!);
       if (selector.startsWith('datapoint')) {
         overlaySyms.push(datapointViews[0].symbol!.clone());
-        if (this.paraview.store.settings.chart.showPopups && this.type == "foreground") {
+        if (this.paraview.store.settings.chart.isShowPopups && this.type == "foreground") {
           datapointViews[0].addPopup()
         }
       } else if (selector.startsWith('sequence')) {
@@ -56,7 +56,7 @@ export class HighlightsLayer extends PlotLayer {
             opacity: 0.25
           });
         }
-        if (this.paraview.store.settings.chart.showPopups && this.type == "foreground") {
+        if (this.paraview.store.settings.chart.isShowPopups && this.type == "foreground") {
           this.paraview.store.popups.push(...this.parent.popupLayer.addSequencePopups(datapointViews))
         }
       }

@@ -29,7 +29,7 @@ SOFTWARE.
 import { OscillatorAudioEngine, type AudioEngine } from '.';
 import { AudioNotificationType } from './AudioEngine';
 import { type Axis } from '../view/axis';
-import { type DataLayer } from '../view/layers';
+import { PointDatapointView, type DataLayer } from '../view/layers';
 import { type ParaStore } from '../store';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { BaseChartInfo } from '../chart_types';
@@ -175,6 +175,10 @@ export class Sonifier {
     const xNominal = this._store.model!.getFacet('x')!.datatype === 'string';
 
     datapoints.forEach((datapoint, i) => {
+      const dpView = this._store.paraChart.paraView.documentView?.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!;
+      if (dpView instanceof PointDatapointView) {
+        dpView.popInAnimation();
+      }
 
       // Pastry chart datapoints currently fake being plane datapoints,
       // and so don't have indep and dep keys
