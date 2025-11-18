@@ -30,8 +30,8 @@ export function describeSelections(
         const comparatorMsg = comparisonMsgs[result.relationship].msg;
         const diff = result.diff! !== 0 ? interpolate('${diff:number} ', { diff: result.diff! }) : undefined;
         msgArray.push(capitalize(interpolate(
-          '${diff:string?}${comparatorMsg:string} ${seriesName:string} ${datapointXY:string}',
-          { diff, comparatorMsg, seriesName: view.seriesKey, datapointXY: formatXYDatapoint(view.datapoint, 'raw') }
+          '${diff:string?}${comparatorMsg:string} ${seriesLabel:string} ${datapointXY:string}',
+          { diff, comparatorMsg, seriesLabel: view.series.getLabel(), datapointXY: formatXYDatapoint(view.datapoint, 'raw') }
         )));
       }
     };
@@ -157,8 +157,8 @@ export const queryMessages = {
     },
 
     'datapoint': 'Datapoint', //Not currently used
-    'firstDatapoint': 'First datapoint in ${seriesKey:string}',
-    'lastDatapoint': 'Last datapoint in ${seriesKey:string}',
+    'firstDatapoint': 'First datapoint in ${seriesLabel:string}',
+    'lastDatapoint': 'Last datapoint in ${seriesLabel:string}',
     'comparisonSelectedDatapoints': 'Comparison to${other:string?} selected datapoints',
     'other': ' other',
     'seriesMin': 'Series low',
@@ -166,12 +166,12 @@ export const queryMessages = {
     'seriesMax': 'Series high',
     'seriesChartMax': 'Series high and chart high',
     'chordDataContext': '${datapointCount:number} datapoints at ${xLabel:string}',
-    'chordHigh': 'High: ${yValue:number} in ${seriesKeys:string[]}.',
-    'chordLow': 'Low: ${yValue:number} in ${seriesKeys:string[]}',
+    'chordHigh': 'High: ${yValue:number} in ${seriesLabels:string[]}.',
+    'chordLow': 'Low: ${yValue:number} in ${seriesLabels:string[]}',
     'chordRange': 'Range: ${yRange:number#.2}.',
-    'seriesSummary': '${seriesKey:string} summary: ${seriesSummary:string}',
-    'seriesKeyLength': '${seriesKey:string}. ${datapointCount:number} datapoints',
-    'datapointKeyLength': '${seriesKey:string} ${datapointXY:string}. Datapoint ${datapointIndex:number} of ${datapointCount:number}.',
+    'seriesSummary': '${seriesLabel:string} summary: ${seriesSummary:string}',
+    'seriesLabelLength': '${seriesLabel:string}. ${datapointCount:number} datapoints',
+    'datapointLabelLength': '${seriesLabel:string} ${datapointXY:string}. Datapoint ${datapointIndex:number} of ${datapointCount:number}.',
     'greaterThan': 'more than', //Not currently used
     'lessThan': 'less than', //Not currently used
     'equalTo': 'equal to', //Not currently used
@@ -184,8 +184,8 @@ export const queryMessages = {
     'compareGreaterNext': 'will decrease by',
     'compareLessNext': 'will grow by',
     'compareEqualNext': 'will stay the same in',
-    'percentageOfSeries': '${datapointXY:string}% of total amount in series: ${seriesKey:string}. Datapoint ${datapointIndex:number} of ${datapointCount:number}.',
-    'percentageOfChart': '${datapointXY:string}% of total amount in chart: ${chartKey:string}. Datapoint ${datapointIndex:number} of ${datapointCount:number}.',
+    'percentageOfSeries': '${datapointX:string}% of total amount in series: ${seriesLabel:string}. Datapoint ${datapointIndex:number} of ${datapointCount:number}.',
+    'percentageOfChart': '${datapointX:string}% of total amount in chart. Datapoint ${datapointIndex:number} of ${datapointCount:number}.',
 } as const;
 
 export const comparisonMsgs: Record<ComparisonRelationship, ComparisonMsgs> = {

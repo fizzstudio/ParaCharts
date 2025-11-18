@@ -17,8 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { BaseChartInfo, RiffOrder } from './base_chart';
 import { type ParaStore, directions, type HorizDirection, datapointIdToCursor } from '../store';
 import { queryMessages, describeSelections, getDatapointMinMax } from '../store/query_utils';
-import { Datapoint, enumerate } from '@fizz/paramodel';
-import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
+import { Datapoint } from '@fizz/paramodel';
+import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 import {
   NavLayer, NavNode,
@@ -148,10 +148,12 @@ export class PastryChartInfo extends BaseChartInfo {
       msgArray.push(`Displaying Chart: ${this._store.title}`);
     } else if (queriedNode.isNodeType('series')) {
       const seriesKey = queriedNode.options.seriesKey;
-      const datapointCount = this._store.model!.atKey(seriesKey)!.length;
+      const series = this._store.model!.atKey(seriesKey)!;
+      const datapointCount = series.length;
+      const seriesLabel = series.getLabel();
       msgArray.push(interpolate(
-        queryMessages.seriesKeyLength,
-        { seriesKey, datapointCount }
+        queryMessages.seriesLabelLength,
+        { seriesLabel, datapointCount }
       ));
     } else if (queriedNode.isNodeType('datapoint')) {
 
@@ -187,23 +189,23 @@ export class PastryChartInfo extends BaseChartInfo {
         msgArray.push(...selectionMsgArray);
       } else {
         // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
+        const series = this._store.model!.atKey(seriesKey)!
         msgArray.push(interpolate(
           queryMessages.percentageOfChart,
           {
-            chartKey: seriesKey,
-            datapointXY: formatXYDatapoint(datapoint, 'raw'),
+            datapointX: formatXYDatapointX(datapoint, 'raw'),
             datapointIndex: queriedNode.options.index + 1,
-            datapointCount: this._store.model!.atKey(seriesKey)!.length
+            datapointCount: series.length
           }
         ));
         if (this._store.model!.multi) {
           msgArray.push(interpolate(
             queryMessages.percentageOfSeries,
             {
-              seriesKey,
-              datapointXY: formatXYDatapoint(datapoint, 'raw'),
+              seriesLabel: series.getLabel(),
+              datapointX: formatXYDatapointX(datapoint, 'raw'),
               datapointIndex: queriedNode.options.index + 1,
-              datapointCount: this._store.model!.atKey(seriesKey)!.length
+              datapointCount: series.length
             }
           ));
         }
