@@ -95,12 +95,24 @@
                     chart.api.getSeries('EU').getPoint(6).annotate('Foobar');
                 },
                 () => {
-					text.innerHTML = 'Lowlight other series';
+					text.innerHTML = 'Lowlight Euro area';
                     chart.api.getSeries('EU').lowlightOthers();
                 },
                 () => {
 					text.innerHTML = 'Clear all lowlights';
                     chart.api.clearAllSeriesLowlights();
+                },
+                () => {
+					text.innerHTML = 'Hide all series';
+                    chart.api.hideAllSeries();
+                },
+                () => {
+					text.innerHTML = 'Unhide EU';
+                    chart.api.getSeries('EU').unhide();
+                },
+                () => {
+					text.innerHTML = 'Unhide Euro area';
+                    chart.api.getSeries('Euro area').unhide();
                 },
                 () => {
 					text.innerHTML = 'Play series riff';
