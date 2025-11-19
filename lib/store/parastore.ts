@@ -283,6 +283,8 @@ export class ParaStore extends State {
     this._jimerator = new Jimerator(this._manifest, data);
     this._jimerator.render();
 
+    this.seriesAnalyses = {};
+
     this._type = dataset.type;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
