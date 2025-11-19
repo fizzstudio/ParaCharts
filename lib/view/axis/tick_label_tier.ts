@@ -118,10 +118,16 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
         wrapWidth: this._labelWrapWidth,
         x: 0,
         y: 0,
-      pointerEnter: (e) => {this.addPopup(labelText, i);
-      },
-      pointerLeave: (e) => {this.removePopup(this.id);
-      }
+        pointerEnter: (e) => {
+          this.paraview.store.settings.chart.isShowPopups
+            && this.paraview.store.settings.popup.activation === "onHover"
+            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(labelText, i) : undefined;
+        },
+        pointerLeave: (e) => {
+          this.paraview.store.settings.chart.isShowPopups
+            && this.paraview.store.settings.popup.activation === "onHover"
+            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
+        }
       });
       this.append(label);
     }
