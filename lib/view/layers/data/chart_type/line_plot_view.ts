@@ -249,7 +249,7 @@ export class LineSection extends PointDatapointView {
     const points = this._points;
     let y = 0;
     let height = 0;
-    if (this.chart.animateRevealComplete) {
+    if (!this.paraview.store.settings.animation.isAnimationEnabled || this.chart.animateRevealComplete) {
       let cousins = this.withCousins.map((c, i) => [c, i]).toSorted((a: this[], b: this[]) => a[0].y - b[0].y) as [this, number][]
       if (cousins.length === 1) {
         y = 0;
@@ -297,7 +297,7 @@ export class LineSection extends PointDatapointView {
       );
       this._shapes[0].classInfo = { 'leg-left': true };
       this._shapes[1].classInfo = { 'leg-right': true };
-      if (this.chart.animateRevealComplete) {
+      if (!this.paraview.store.settings.animation.isAnimationEnabled || this.chart.animateRevealComplete) {
         let invis = new RectShape(this.paraview, {
           x: this._x + slices[0][0].x,
           y: y,
@@ -331,7 +331,7 @@ export class LineSection extends PointDatapointView {
       this._shapes[0].classInfo = this._prevMidY !== undefined
         ? { 'leg-left': true }
         : { 'leg-right': true };
-      if (this.chart.animateRevealComplete) {
+      if (!this.paraview.store.settings.animation.isAnimationEnabled || this.chart.animateRevealComplete) {
         let invis = new RectShape(this.paraview, {
           x: points[0].x == 0 ? this._x : this._x + points[0].x,
           y: y,
