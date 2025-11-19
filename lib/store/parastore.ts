@@ -645,7 +645,8 @@ export class ParaStore extends State {
     const newAnnotationList: PointAnnotation[] = [];
 
     this._visitedDatapoints.forEach(dpId => {
-      const {seriesKey, index} = datapointIdToCursor(dpId);
+      const { seriesKey, index } = datapointIdToCursor(dpId);
+      const series = this.model!.atKey(seriesKey)!.getLabel();
       const recordLabel = formatXYDatapointX(
         this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
       const annotationText = prompt('Annotation:') as string;
@@ -654,9 +655,9 @@ export class ParaStore extends State {
           type: "datapoint",
           seriesKey,
           index,
-          annotation: `${seriesKey}, ${recordLabel}: ${annotationText}`,
+          annotation: `${series}, ${recordLabel}: ${annotationText}`,
           text: annotationText,
-          id: `${seriesKey}-${recordLabel}-${this.annotID}`
+          id: `${series}-${recordLabel}-${this.annotID}`
         });
         this.annotID += 1;
       }
