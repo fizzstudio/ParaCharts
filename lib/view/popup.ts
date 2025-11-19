@@ -107,6 +107,9 @@ export class Popup extends View {
         }
 
         this.append(this._grid);
+        if (this.popupLabelOptions.type == 'vertTick' || this.popupLabelOptions.type == 'vertAxis') {
+            this.arrowPosition = "left";
+        }
         this._box = this.generateBox(popupShapeOptions);
         this.append(this._box);
 
@@ -130,8 +133,8 @@ export class Popup extends View {
         }
 
 
-
-
+        this.box.classInfo = { 'popup-box': true };
+        this.label.classInfo = { 'popup-text': true };
         //The box generation relies on the grid having set dimensions, which happens during append()
         //but we also need the box to render behind the grid
         this._children.unshift(this._box);
@@ -191,7 +194,13 @@ export class Popup extends View {
                 this.grid.x -= this.horizShift;
             }
         }
-        const leftBorder = this.popupLabelOptions.type === 'vertAxis' ? 0 - this.paraview.documentView!.vertAxis!.layout.vRules[1] : 0;
+        let leftBorder = 0
+        if (this.popupLabelOptions.type === 'vertAxis') {
+            leftBorder = 0 - this.paraview.documentView!.vertAxis!.layout.vRules[1]
+        }
+        else if (this.popupLabelOptions.type === 'controlPanelIcon') {
+            leftBorder = 0 - this.paraview.documentView!.chartLayers.x
+        }
         if (this.grid.left - this.leftPadding < leftBorder) {
             this.horizShift = - (this.leftPadding - this.grid.left + leftBorder);
             this.grid.x -= this.horizShift;
@@ -409,7 +418,7 @@ export class Popup extends View {
         }
         return svg`
               <g
-                id="popups"
+                id=${this.id ?? "popup"}
                 transform=${transform}
               >
                 ${super.content()}

@@ -2479,7 +2479,7 @@ export class ParaHeadless {
 
 // @public (undocumented)
 export class ParaStore extends State {
-    constructor(paraChart: ParaChart, inputSettings: SettingsInput, suppleteSettingsWith?: DeepReadonly<Settings>, seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
+    constructor(paraChart: ParaChart, _inputSettings: SettingsInput, seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
     // (undocumented)
     addAnnotation(): void;
     // (undocumented)
@@ -2521,6 +2521,8 @@ export class ParaStore extends State {
     // (undocumented)
     protected _colors: Colors;
     // (undocumented)
+    protected _createSettings(): void;
+    // (undocumented)
     darkMode: boolean;
     // (undocumented)
     protected data: AllSeriesData | null;
@@ -2551,11 +2553,13 @@ export class ParaStore extends State {
     // (undocumented)
     protected _getUrlAnnotations(): void;
     // (undocumented)
-    get hiddenSeriesList(): readonly string[];
+    protected _hiddenSeries: string[];
     // (undocumented)
-    protected _hiddenSeriesList: string[];
+    hideAllSeries(): void;
     // (undocumented)
-    hide(seriesKey: string): void;
+    hideOtherSeries(...seriesKeys: string[]): void;
+    // (undocumented)
+    hideSeries(seriesKey: string): void;
     // (undocumented)
     highlight(selector: string): void;
     // (undocumented)
@@ -2567,9 +2571,13 @@ export class ParaStore extends State {
     // (undocumented)
     idList: Record<string, boolean>;
     // (undocumented)
+    protected _inputSettings: SettingsInput;
+    // (undocumented)
     isSelected(seriesKey: string, index: number): boolean;
     // (undocumented)
     isSelectedSeries(seriesKey: string): boolean;
+    // (undocumented)
+    isSeriesHidden(seriesKey: string): boolean;
     // (undocumented)
     isSeriesLowlighted(seriesKey: string): boolean;
     // (undocumented)
@@ -2593,11 +2601,11 @@ export class ParaStore extends State {
     // (undocumented)
     protected log: Logger;
     // (undocumented)
+    protected _lowlightedSeries: string[];
+    // (undocumented)
     lowlightOtherSeries(...seriesKeys: string[]): void;
     // (undocumented)
     lowlightSeries(seriesKey: string): void;
-    // (undocumented)
-    protected _lowlightSeries: string[];
     // (undocumented)
     protected _manifest: Manifest | null;
     // (undocumented)
@@ -2692,6 +2700,10 @@ export class ParaStore extends State {
     get type(): "bar" | "lollipop" | "line" | "stepline" | "scatter" | "pie" | "donut" | "column" | "histogram" | "heatmap" | "graph";
     // (undocumented)
     protected _type: ChartType_2;
+    // (undocumented)
+    unhideAllSeries(): void;
+    // (undocumented)
+    unhideSeries(seriesKey: string): void;
     // (undocumented)
     unhighlightRange(startPortion: number, endPortion: number): void;
     // (undocumented)

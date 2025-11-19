@@ -133,9 +133,10 @@ export function datapointIdToCursor(id: string): DatapointCursor {
 export class ParaStore extends State {
 
   readonly symbols = new DataSymbols();
-  
+
+
   @property() dataState: DataState = 'initial';
-  @property() settings: Settings;
+  @property() settings!: Settings;
   @property() darkMode = false;
   @property() announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0 };
   @property() annotations: BaseAnnotation[] = [];
@@ -144,8 +145,8 @@ export class ParaStore extends State {
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() frontSeries = '';
 
-  @property() protected _lowlightSeries: string[] = [];
-  @property() protected _hiddenSeriesList: string[] = [];
+  @property() protected _lowlightedSeries: string[] = [];
+  @property() protected _hiddenSeries: string[] = [];
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
   @property() protected selected = null;
@@ -184,15 +185,13 @@ export class ParaStore extends State {
 
   constructor(
     public paraChart: ParaChart,
-    inputSettings: SettingsInput,
-    suppleteSettingsWith?: DeepReadonly<Settings>,
+    protected _inputSettings: SettingsInput,
+    // suppleteSettingsWith?: DeepReadonly<Settings>,
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
     pairAnalyzerConstructor?: PairAnalyzerConstructor
   ) {
     super();
-    const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
-    SettingsManager.suppleteSettings(hydratedSettings, suppleteSettingsWith ?? defaults);
-    this.settings = hydratedSettings as Settings;
+    this._createSettings();
     this.subscribe((key, value) => this._propertyChanged(key, value));
     this._colors = new Colors(this);
     this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
@@ -252,13 +251,17 @@ export class ParaStore extends State {
     return this._userTrendLines;
   }
 
-  get hiddenSeriesList(): readonly string[] {
-    return this._hiddenSeriesList;
+  protected _createSettings() {
+    const hydratedSettings = SettingsManager.hydrateInput(this._inputSettings);
+    SettingsManager.suppleteSettings(hydratedSettings, defaults);
+    this.settings = hydratedSettings as Settings;
   }
 
   setManifest(manifest: Manifest, data?: AllSeriesData) {
     this._manifest = manifest;
     const dataset = this._manifest.datasets[0];
+
+    this._createSettings();
 
     if (chartTypeDefaults[dataset.type]) {
       Object.entries(chartTypeDefaults[dataset.type]!).forEach(([path, value]) =>
@@ -392,27 +395,54 @@ export class ParaStore extends State {
   }
 
   lowlightSeries(seriesKey: string) {
-    if (!this._lowlightSeries.includes(seriesKey)) {
-      this._lowlightSeries = [...this._lowlightSeries, seriesKey];
+    if (!this._lowlightedSeries.includes(seriesKey)) {
+      this._lowlightedSeries = [...this._lowlightedSeries, seriesKey];
     }
   }
 
   clearSeriesLowlight(seriesKey: string) {
-    if (this._lowlightSeries.includes(seriesKey)) {
-      this._lowlightSeries = this._lowlightSeries.filter(el => el !== seriesKey);
+    if (this._lowlightedSeries.includes(seriesKey)) {
+      this._lowlightedSeries = this._lowlightedSeries.filter(el => el !== seriesKey);
     }
   }
 
   isSeriesLowlighted(seriesKey: string): boolean {
-    return this._lowlightSeries.includes(seriesKey);
+    return this._lowlightedSeries.includes(seriesKey);
   }
 
   lowlightOtherSeries(...seriesKeys: string[]) {
-    this._lowlightSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
+    this._lowlightedSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
   }
 
   clearAllSeriesLowlights() {
-    this._lowlightSeries = [];
+    this._lowlightedSeries = [];
+  }
+
+  hideSeries(seriesKey: string) {
+    if (this._hiddenSeries.includes(seriesKey)) return;
+    this._hiddenSeries = [...this._hiddenSeries, seriesKey];
+  }
+
+  unhideSeries(seriesKey: string) {
+    if (this._hiddenSeries.includes(seriesKey)) {
+      this._hiddenSeries = this._hiddenSeries.filter(el => el !== seriesKey);
+    }
+  }
+
+  isSeriesHidden(seriesKey: string): boolean {
+    return this._hiddenSeries.includes(seriesKey);
+  }
+
+  hideOtherSeries(...seriesKeys: string[]) {
+    this._hiddenSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
+  }
+
+  hideAllSeries() {
+    this._hiddenSeries = [...this._model!.seriesKeys];
+  }
+
+  unhideAllSeries() {
+    this._hiddenSeries = [];
   }
 
   announce(
@@ -462,11 +492,6 @@ export class ParaStore extends State {
       });
     }
     return '';
-  }
-
-  hide(seriesKey: string) {
-    if (this._hiddenSeriesList.includes(seriesKey)) return;
-    this._hiddenSeriesList = [...this._hiddenSeriesList, seriesKey];
   }
 
   get visitedDatapoints() {

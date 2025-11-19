@@ -69,7 +69,7 @@ export class ParaChart extends ParaComponent {
   private _slotLoader = new SlotLoader();
   protected log: Logger = getLogger("ParaChart");
 
-  protected _suppleteSettingsWith?: DeepReadonly<Settings>;
+  // protected _suppleteSettingsWith?: DeepReadonly<Settings>;
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
   protected _loaderResolver: (() => void) | null = null;
@@ -91,7 +91,7 @@ export class ParaChart extends ParaComponent {
       this,
       // XXX config won't get set until connectedCallback()
       Object.assign(cssProps, this.config),
-      this._suppleteSettingsWith,
+      // this._suppleteSettingsWith,
       seriesAnalyzerConstructor,
       pairAnalyzerConstructor
     );
@@ -322,6 +322,9 @@ export class ParaChart extends ParaComponent {
   }
 
   postNotice(key: string, value: any) {
+    if (!this.paraView){
+      return
+    }
     this.paraView.documentView!.noticePosted(key, value);
     this.paraView.documentView!.chartInfo.noticePosted(key, value);
     this.captionBox.noticePosted(key, value);

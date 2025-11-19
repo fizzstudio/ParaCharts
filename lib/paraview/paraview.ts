@@ -69,7 +69,7 @@ export class ParaView extends ParaComponent {
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
   protected log: Logger = getLogger("ParaView");
-  
+
   @state() private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
   };
@@ -83,7 +83,7 @@ export class ParaView extends ParaComponent {
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
 
-  protected _lowVisionModeSaved = new Map<string, any>();
+  protected _modeSaved = new Map<string, any>();
   protected _jimReadyPromise: Promise<void>;
   protected _jimReadyResolver!: (() => void);
   protected _jimReadyRejector!: (() => void);
@@ -259,6 +259,13 @@ export class ParaView extends ParaComponent {
       }
       .invis {
         opacity: 0;
+      }
+      .popup-box {
+        filter: drop-shadow(3px 3px 5px #333);
+        pointer-events: none;
+      }
+      .popup-text {
+        pointer-events: none;
       }
       .control-column {
         display: flex;
@@ -438,19 +445,21 @@ export class ParaView extends ParaComponent {
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
         if (newValue) {
-          this._lowVisionModeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
-          this._lowVisionModeSaved.set('chart.fontScale', draft.chart.fontScale);
-          this._lowVisionModeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+          this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
+          this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
+          this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
           // end any in-progress animation here
           this._documentView!.chartLayers.dataLayer.stopAnimation();
           draft.animation.isAnimationEnabled = false;
           draft.chart.fontScale = 2;
           draft.grid.isDrawVertLines = true;
         } else {
-          draft.animation.isAnimationEnabled = this._lowVisionModeSaved.get('animation.isAnimationEnabled');
-          draft.chart.fontScale = this._lowVisionModeSaved.get('chart.fontScale');
-          draft.grid.isDrawVertLines = this._lowVisionModeSaved.get('grid.isDrawVertLines');
-          this._lowVisionModeSaved.clear();
+          draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
+          draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
+          draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
+          this._modeSaved.delete('animation.isAnimationEnabled');
+          this._modeSaved.delete('chart.fontScale');
+          this._modeSaved.delete('grid.isDrawVertLines');
         }
       });
     } else if (path === 'ui.isVoicingEnabled') {
@@ -500,6 +509,12 @@ export class ParaView extends ParaComponent {
             this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
           })();
         }
+        this._store.updateSettings(draft => {
+          this._modeSaved.set(
+            'type.line.isTrendNavigationModeEnabled',
+            draft.type.line.isTrendNavigationModeEnabled);
+          draft.type.line.isTrendNavigationModeEnabled = true;
+        });
       } else {
         // Narrative highlights turned OFF
         this.endNarrativeHighlightMode();
@@ -507,13 +522,15 @@ export class ParaView extends ParaComponent {
         // Disable self-voicing as well
         this._store.updateSettings(draft => {
           draft.ui.isVoicingEnabled = false;
+          draft.type.line.isTrendNavigationModeEnabled = this._modeSaved.get(
+            'type.line.isTrendNavigationModeEnabled');
+          this._modeSaved.delete('type.line.isTrendNavigationModeEnabled');
         });
-
         this._store.announce(['Narrative Highlight Mode disabled.']);
       }
     } else if(path === 'ui.isNarrativeHighlightPaused') {
 	    this.paraChart.ariaLiveRegion.voicing.togglePaused();
-	}
+	  }
   }
 
   protected _onFullscreenChange() {
@@ -599,14 +616,14 @@ export class ParaView extends ParaComponent {
       draft.ui.isVoicingEnabled = true;
     });
     this._store.updateSettings(draft => {
-      draft.chart.showPopups = true;
+      draft.chart.isShowPopups = true;
     });
   }
 
   endNarrativeHighlightMode() {
     this._store.updateSettings(draft => {
       draft.ui.isVoicingEnabled = false;
-      draft.chart.showPopups = false;
+      draft.chart.isShowPopups = false;
     });
   }
 

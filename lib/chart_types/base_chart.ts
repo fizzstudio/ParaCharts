@@ -84,6 +84,12 @@ export abstract class BaseChartInfo {
       },
       parentView: 'controlPanel.tabs.chart.general.height',
     });
+    this._store.settingControls.add({
+      type: 'checkbox',
+      key: 'chart.isShowPopups',
+      label: 'Show popups',
+      parentView: 'controlPanel.tabs.chart.popups',
+    });
   }
 
   protected _init() {
@@ -404,6 +410,13 @@ export abstract class BaseChartInfo {
       const seriesPreviouslyVisited = this._store.everVisitedSeries(cursor.options.seriesKey);
       const datapoint = this._store.model!.atKeyAndIndex(cursor.options.seriesKey, cursor.options.index)!;
       const announcements = [this._summarizer.getDatapointSummary(datapoint, 'statusBar')];
+      for (let annotation of this._store.annotations) {
+        if (datapoint.datapointIndex === annotation.index
+          && datapoint.seriesKey === annotation.seriesKey
+          && annotation.type === 'datapoint') {
+          announcements.push((annotation as PointAnnotation).text)
+        }
+      }
       const isSeriesChange = !this._store.wasVisitedSeries(cursor.options.seriesKey);
       if (isSeriesChange) {
         announcements[0] = `${this._store.model!.atKey(cursor.options.seriesKey)!.getLabel()}: ${announcements[0]}`;

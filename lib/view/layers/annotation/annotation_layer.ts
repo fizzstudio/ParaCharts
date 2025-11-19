@@ -119,6 +119,15 @@ export class AnnotationLayer extends PlotLayer {
         this.addGroup('annotation-popups', true);
         this.group('annotation-popups')!.clearChildren();
         let annots = structuredClone(this.paraview.store.annotations.filter(a => a.type == 'datapoint' && a.isSelected == true) as unknown as PointAnnotation[]);
+        for (let dp of this.paraview.store.visitedDatapoints){
+          let cursor = datapointIdToCursor(dp)
+          let dpView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(cursor.seriesKey, cursor.index)
+          for (let annot of this.paraview.store.annotations){
+            if (dpView!.seriesKey === annot.seriesKey && dpView!.index === annot.index && !annot.isSelected){
+              annots.push(annot as PointAnnotation)
+            }
+          }
+        }
         for (const annot of annots) {
           const seriesKey = this.paraview.store.model!.series.filter(s => s[0].seriesKey == annot.seriesKey)[0].key
           const dpView = this.paraview.documentView?.chartLayers.dataLayer.datapointViews.filter(d => d.seriesKey == seriesKey && d.index == annot.index)[0]

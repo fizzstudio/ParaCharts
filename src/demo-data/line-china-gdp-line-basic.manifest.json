@@ -202,7 +202,7 @@
       },
       "settings": {
         "controlPanel.isControlPanelDefaultOpen": false,
-        "chart.showPopups": true, 
+        "chart.isShowPopups": true, 
         "popup.activation": "onSelect",
         "controlPanel.caption.isCaptionExternalWhenControlPanelClosed": true,
         "chart.hasDirectLabels": false,

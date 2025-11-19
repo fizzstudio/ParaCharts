@@ -23,6 +23,7 @@ import { type HorizDirection } from '../store';
 import { ChartType } from '@fizz/paramanifest';
 import { Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
 import { DocumentView } from '../view/document_view';
+import { loopParaviewRefresh } from '../common';
 
 // Soni Constants
 export const SONI_PLAY_SPEEDS = [1000, 250, 100, 50, 25];
@@ -127,6 +128,10 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
         clearInterval(this._soniRiffInterval!);
       }
       this._soniSequenceIndex++;
+      const length = datapoints.length;
+      loopParaviewRefresh(this._store.paraChart.paraView,
+        this._store.paraChart.paraView.store.settings.animation.popInAnimateRevealTimeMs
+        + SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length, 50);
       this._soniRiffInterval = setInterval(() => {
         const datapoint = datapoints.shift();
         if (!datapoint) {
@@ -140,6 +145,10 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   }
 
   playDatapoints(datapoints: PlaneDatapoint[]): void {
+    const length = datapoints.length;
+    loopParaviewRefresh(this._store.paraChart.paraView,
+      this._store.paraChart.paraView.store.settings.animation.popInAnimateRevealTimeMs
+      + SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length, 50);
     this._sonifier.playDatapoints(datapoints);
   }
 

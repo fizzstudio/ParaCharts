@@ -219,14 +219,14 @@ export class DatapointView extends DataView {
    *
    * @param t - Value between 0 and 1
    */
-  beginAnimStep(_t: number) {
+  beginAnimStep(bezT: number, linearT: number) {
   }
 
   /**
    *
    * @param t - Value between 0 and 1
    */
-  endAnimStep(_t: number) {
+  endAnimStep(bezT: number, linearT: number) {
     this.completeLayout();
   }
 
@@ -261,7 +261,7 @@ export class DatapointView extends DataView {
 
   protected get symbolScale() {
     if (this.paraview.store.isVisited(this.seriesKey, this.index)) {
-      return this.paraview.store.settings.chart.symbolHighlightScale;
+      return this.paraview.store.settings.chart.symbolHighlightScale * this._baseSymbolScale;
     } else if (this.chart.chartInfo.isHighlighted(this.seriesKey, this.index)) {
       return 1; //this.paraview.store.settings.chart.symbolHighlightScale;
     } else {

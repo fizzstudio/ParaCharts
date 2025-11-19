@@ -60,12 +60,6 @@ export class LineChartInfo extends PointChartInfo {
       label: 'Show symbols',
       parentView: 'controlPanel.tabs.chart.chart',
     });
-    this._store.settingControls.add({
-      type: 'checkbox',
-      key: 'chart.showPopups',
-      label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.popups',
-    });
   }
 
   get settings() {
