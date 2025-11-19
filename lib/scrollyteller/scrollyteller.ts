@@ -81,8 +81,8 @@ export class Scrollyteller {
   private chartId: string;
   private stepElements!: NodeListOf<Element>;
   private settings!: any;
-  protected log: Logger = getLogger("Scrollyteller");  
-  
+  protected log: Logger = getLogger("Scrollyteller");
+
   private steps: ScrollyStep[];
   private _events: Map<ScrollyEvent, Array<Callback>>;
   private globalOffset: ParsedOffset;
@@ -148,7 +148,7 @@ export class Scrollyteller {
       const element = response.element;
       this.highlightPageContent(element);
 
-      for (const {action, params} of response.actions) {
+      for (const { action, params } of response.actions) {
         if (action === 'highlightSeries') {
           // TODO: remove previous series highlights
           // this.parachart.store.soloSeries = '';
@@ -172,7 +172,7 @@ export class Scrollyteller {
           const isOn = params[0] === 'true' ? true : false;
           this.parachart.api.setSetting('chart.hasDirectLabels', isOn);
         }
-        
+
         if (action === 'hasSymbols') {
           console.warn('hasSymbols', params)
           const isOn = params[0] === 'true' ? true : false;
@@ -194,6 +194,27 @@ export class Scrollyteller {
         if (action === 'playSonification') {
           this.parachart.api.getSeries(params[0]).playRiff();
         }
+
+        // Progressive revelation
+        if (action === 'setHiddenManifest') {
+          this.parachart.setAttribute('manifest', params[0]);
+          this.parachart.api.hideAllSeries();
+          // hideAllSeries(): void;
+          // hideOtherSeries(...seriesKeys: string[]): void;
+          // hideSeries(seriesKey: string): void;
+          // unhideAllSeries(): void;
+          // unhideSeries(seriesKey: string): void;
+        }
+
+        // Progressive revelation
+        if (action === 'unhideSeries') {
+          this.parachart.api.unhideSeries(params[0];
+          // hideAllSeries(): void;
+          // hideOtherSeries(...seriesKeys: string[]): void;
+          // hideSeries(seriesKey: string): void;
+          // unhideAllSeries(): void;
+          // unhideSeries(seriesKey: string): void;
+        }
       }
       // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
     });
@@ -209,7 +230,7 @@ export class Scrollyteller {
       else {
         this.log.warn('SCROLLY: exit up', response);
         this.log.warn('SCROLLY: reverse action!');
-        for (const {action, params} of response.actions) {
+        for (const { action, params } of response.actions) {
           if (action === 'highlightDatapoint') {
             if (params.length >= 2) {
               this.parachart.api.getSeries(params[0]).getPoint(+params[1]).select();
