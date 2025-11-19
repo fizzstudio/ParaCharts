@@ -22,7 +22,7 @@ import { type AxisInfo } from '../common/axisinfo';
 import { type LegendItem } from '../view/legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
 import { Logger, getLogger } from '../common/logger';
-import { ParaStore, type SparkBrailleInfo, datapointIdToCursor } from '../store';
+import { ParaStore, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor } from '../store';
 import { Sonifier } from '../audio/sonifier';
 import { type AxisCoord } from '../view/axis';
 
@@ -410,6 +410,13 @@ export abstract class BaseChartInfo {
       const seriesPreviouslyVisited = this._store.everVisitedSeries(cursor.options.seriesKey);
       const datapoint = this._store.model!.atKeyAndIndex(cursor.options.seriesKey, cursor.options.index)!;
       const announcements = [this._summarizer.getDatapointSummary(datapoint, 'statusBar')];
+      for (let annotation of this._store.annotations) {
+        if (datapoint.datapointIndex === annotation.index
+          && datapoint.seriesKey === annotation.seriesKey
+          && annotation.type === 'datapoint') {
+          announcements.push((annotation as PointAnnotation).text)
+        }
+      }
       const isSeriesChange = !this._store.wasVisitedSeries(cursor.options.seriesKey);
       if (isSeriesChange) {
         announcements[0] = `${this._store.model!.atKey(cursor.options.seriesKey)!.getLabel()}: ${announcements[0]}`;
