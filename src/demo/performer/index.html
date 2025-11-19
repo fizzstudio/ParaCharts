@@ -64,9 +64,13 @@
                 },
                 () => {
 					text.innerHTML = 'Change manifest';
-					chart.setAttribute('manifest', '/src/demo-data/line-multi-manifest-67.json');
+					chart.setAttribute('manifest', '/src/demo-data/line-single-manifest-128.json');
                 },
                 () => {
+					text.innerHTML = 'Enable narrative highlights';
+                    chart.api.setSetting('ui.isNarrativeHighlightEnabled', true);
+                },
+                /*() => {
 					text.innerHTML = 'Disable direct labels';
                     chart.api.setSetting('chart.hasDirectLabels', false);
                 },
@@ -117,14 +121,14 @@
                 () => {
 					text.innerHTML = 'Play series riff';
                     chart.api.getSeries('China').playRiff();
-                },
+                },*/
             ];
             steps.forEach((step, i) => {
                 setTimeout(step, (i + 1)*2000);
             })
         }
 		chart.addEventListener('paranotice', (e) => {
-			console.log('NOTICE', e.detail);
+			//console.log('NOTICE', e.detail);
 			if (e.detail.key === 'animRevealEnd' && !demoDidStart) {
                 runDemo();
 				demoDidStart = true;
