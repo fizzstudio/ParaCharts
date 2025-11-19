@@ -22,7 +22,7 @@ import { type AxisInfo } from '../common/axisinfo';
 import { type LegendItem } from '../view/legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
 import { Logger, getLogger } from '../common/logger';
-import { ParaStore, type SparkBrailleInfo, datapointIdToCursor } from '../store';
+import { ParaStore, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor } from '../store';
 import { Sonifier } from '../audio/sonifier';
 import { type AxisCoord } from '../view/axis';
 
@@ -411,6 +411,13 @@ export abstract class BaseChartInfo {
           const seriesSummary = await this._summarizer.getSeriesSummary(cursor.options.seriesKey);
           announcements.push(seriesSummary.text);
         }
+      }
+      const annots = this._store.annotations.filter(
+        (a) => a.type === 'datapoint' && a.seriesKey === datapoint.seriesKey && a.index === datapoint.datapointIndex
+      ) as PointAnnotation[];
+      if (annots.length > 0) {
+        const annotationsText = annots.map((a) => a.text).join(', ');
+        announcements.push(`Annotation${annots.length > 1 ? 's' : ''}: ${annotationsText}`);
       }
       this._store.announce(announcements);
       if (this._store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
