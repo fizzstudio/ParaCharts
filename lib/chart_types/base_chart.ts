@@ -410,12 +410,12 @@ export abstract class BaseChartInfo {
       const seriesPreviouslyVisited = this._store.everVisitedSeries(cursor.options.seriesKey);
       const datapoint = this._store.model!.atKeyAndIndex(cursor.options.seriesKey, cursor.options.index)!;
       const announcements = [this._summarizer.getDatapointSummary(datapoint, 'statusBar')];
-      for (let annotation of this._store.annotations) {
-        if (datapoint.datapointIndex === annotation.index
-          && datapoint.seriesKey === annotation.seriesKey
-          && annotation.type === 'datapoint') {
-          announcements.push((annotation as PointAnnotation).text)
-        }
+      const annotations = this._store.annotations.filter(
+        (a) => a.type === 'datapoint' && a.seriesKey === datapoint.seriesKey && a.index === datapoint.datapointIndex
+      ) as PointAnnotation[];
+      if (annotations.length > 0) {
+        const annotationsText = annotations.map((a) => a.text).join(', ');
+        announcements.push(`Annotation${annotations.length > 1 ? 's' : ''}: ${annotationsText}`);
       }
       const isSeriesChange = !this._store.wasVisitedSeries(cursor.options.seriesKey);
       if (isSeriesChange) {
@@ -425,13 +425,7 @@ export abstract class BaseChartInfo {
           announcements.push(seriesSummary.text);
         }
       }
-      const annots = this._store.annotations.filter(
-        (a) => a.type === 'datapoint' && a.seriesKey === datapoint.seriesKey && a.index === datapoint.datapointIndex
-      ) as PointAnnotation[];
-      if (annots.length > 0) {
-        const annotationsText = annots.map((a) => a.text).join(', ');
-        announcements.push(`Annotation${annots.length > 1 ? 's' : ''}: ${annotationsText}`);
-      }
+
       this._store.announce(announcements);
       if (this._store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
         this.playDatapoints([datapoint]);
