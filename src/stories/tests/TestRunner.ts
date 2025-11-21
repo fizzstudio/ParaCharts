@@ -90,8 +90,8 @@ export class TestRunner {
     const prefix = '/node_modules/@fizz/chart-data/data/';
     const response = await fetch(prefix + manifestPath);
     this.manifest = await response.json() as Manifest;
-    console.log('[manifest loaded]');
-    console.log(JSON.stringify(this.manifest, null, 2));
+    //console.log('[manifest loaded]');
+    //console.log(JSON.stringify(this.manifest, null, 2));
     return this;
   }
 
