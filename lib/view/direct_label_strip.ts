@@ -14,11 +14,12 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../common/logger';
 import { Label } from './label';
 import { fixed } from '../common/utils';
 import { View, Container } from './base_view';
 
-import { svg } from 'lit';
+import { svg, TemplateResult } from 'lit';
 import { styleMap, StyleInfo } from 'lit/directives/style-map.js';
 import { type LinePlotView, type LineSection } from './layers';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
@@ -28,12 +29,12 @@ import { ClassInfo, classMap } from 'lit/directives/class-map.js';
  * @public
  */
 export class DirectLabelStrip extends Container(View) {
-
-  protected seriesLabels!: Label[];
-  protected leaders!: LineLabelLeader[];
+  protected _seriesLabels!: Label[];
+  protected _leaders!: LineLabelLeader[];
 
   constructor(private _chart: LinePlotView) {
     super(_chart.paraview);
+    this.log = getLogger("DirectLabelStrip");
     this._id = 'direct-label-strip';
     this._createLabels();
   }
@@ -48,13 +49,13 @@ export class DirectLabelStrip extends Container(View) {
         datapoint.index === this.paraview.store.model!.series[0].length - 1
       );
     endpoints.sort((a, b) => a.y - b.y);
-    this.seriesLabels?.forEach(label => {
+    this._seriesLabels?.forEach(label => {
       label.remove();
     });
-    this.seriesLabels = [];
+    this._seriesLabels = [];
     // Create labels
     endpoints.forEach((ep, i) => {
-      this.seriesLabels.push(new Label(this.paraview, {
+      this._seriesLabels.push(new Label(this.paraview, {
         text: ep.series.label,
         left: directLabelPadding,
         y: ep.y,
@@ -66,21 +67,21 @@ export class DirectLabelStrip extends Container(View) {
           this.paraview.store.clearAllSeriesLowlights();
         }
       }));
-      this.append(this.seriesLabels.at(-1)!);
+      this.append(this._seriesLabels.at(-1)!);
     });
-    this.seriesLabels.forEach(label => {
+    this._seriesLabels.forEach(label => {
       // Roughly center each label on its series endpoint
         label.y += label.locOffset.y/2;
     });
     // If the highest label is offscreen at all, push it back onscreen
-    const topLabel = this.seriesLabels[0];
+    const topLabel = this._seriesLabels[0];
     // XXX This is rough: because when measured, labels may not get rendered with the
     // same font settings they will ultimately be displayed with.
     if (topLabel.y < 0) {
       topLabel.y = 0;
     }
     // // Same for the lowest label
-    const botLabel = this.seriesLabels.at(-1)!;
+    const botLabel = this._seriesLabels.at(-1)!;
     const diff = botLabel.bottom - this.height;
     // if (diff > 0) {
     //   botLabel.y -= diff;
@@ -101,7 +102,7 @@ export class DirectLabelStrip extends Container(View) {
   computeSize(): [number, number] {
     // XXX also need to support label strip on left, top, bottom
     return [
-      Math.max(...this.seriesLabels.map(label => label.right)),
+      Math.max(...this._seriesLabels.map(label => label.right)),
       this._chart.height
     ];
   }
@@ -112,18 +113,18 @@ export class DirectLabelStrip extends Container(View) {
     // NB: It looks like all labels will have the same bbox height, although
     // I don't know whether that will hold for all possible diacritics
     // (I suspect not).
-    for (let i = 1; i < this.seriesLabels.length; i++) {
-      if (this.seriesLabels[i].top < this.seriesLabels[i - 1].bottom) {
-        if (colliders.at(-1)?.label !== this.seriesLabels[i - 1]) {
-          colliders.push({label: this.seriesLabels[i - 1], endpoint: endpoints[i - 1]});
+    for (let i = 1; i < this._seriesLabels.length; i++) {
+      if (this._seriesLabels[i].top < this._seriesLabels[i - 1].bottom) {
+        if (colliders.at(-1)?.label !== this._seriesLabels[i - 1]) {
+          colliders.push({label: this._seriesLabels[i - 1], endpoint: endpoints[i - 1]});
         }
-        colliders.push({label: this.seriesLabels[i], endpoint: endpoints[i]});
+        colliders.push({label: this._seriesLabels[i], endpoint: endpoints[i]});
       }
     }
-    this.leaders?.forEach(leader => {
+    this._leaders?.forEach(leader => {
       leader.remove();
     });
-    this.leaders = [];
+    this._leaders = [];
 
     if (colliders.length) {
       const leaderLabelOffset = this.paraview.store.settings.chart.isDrawSymbols
@@ -139,7 +140,7 @@ export class DirectLabelStrip extends Container(View) {
       //If all collisions can't be resolved, switch to a different labeling approach.
 
       // Sort non-collider labels, if any, from lowest to highest onscreen
-      const nonColliderLabels = this.seriesLabels
+      const nonColliderLabels = this._seriesLabels
         .filter(label => !colliders.map(c => c.label).includes(label))
         .toReversed();
       if (nonColliderLabels.length) {
@@ -148,18 +149,26 @@ export class DirectLabelStrip extends Container(View) {
         if (gapDiff < 0) {
           nonColliderLabels.forEach(nc => nc.y -= gapDiff);
           if (nonColliderLabels.at(-1)!.y < 0) {
-            console.warn('unable to resolve series label collision');
+            this.log.warn('unable to resolve series label collision');
           }
         }
       }
       colliders.forEach(c => {
         // NB: this value already includes the series label padding
         c.label.x += (this._chart.settings.leaderLineLength + leaderLabelOffset);
-        this.leaders.push(new LineLabelLeader(c.endpoint, c.label, this._chart));
-        this.prepend(this.leaders.at(-1)!);
+        this._leaders.push(new LineLabelLeader(c.endpoint, c.label, this._chart));
+        this.prepend(this._leaders.at(-1)!);
       });
     }
   }
+
+  // content(): TemplateResult {
+  //   for (const label of this._seriesLabels) {
+  //     const classInfo = label.classInfo;
+
+  //   }
+  //   return super.content();
+  // }
 
 }
 

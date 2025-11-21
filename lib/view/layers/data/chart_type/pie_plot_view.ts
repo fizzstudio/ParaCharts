@@ -1,4 +1,5 @@
 
+import { Logger, getLogger } from '../../../../common/logger';
 import { PastryPlotView, RadialSlice, type RadialDatapointParams } from '.';
 import { type SeriesView } from '../../../data';
 import { Popup } from '../../../popup';
@@ -13,9 +14,9 @@ export class PiePlotView extends PastryPlotView {
 }
 
 export class PieSlice extends RadialSlice {
-
   constructor(parent: SeriesView, params: RadialDatapointParams) {
     super(parent, params);
+    this.log = getLogger("PieSlice");
     this._x = this.chart.cx;
     this._y = this.chart.cy;
     // const {x, y, className} = this._computeLabelOptions();
@@ -46,9 +47,9 @@ export class PieSlice extends RadialSlice {
     }
   }
 
-  beginAnimStep(t: number): void {
-    this._centralAngle = this._params.percentage*360*t;
-    super.beginAnimStep(t);
+  beginAnimStep(bezT: number, linearT: number): void {
+    this._centralAngle = this._params.percentage*360*bezT;
+    super.beginAnimStep(bezT, linearT);
   }
 
   protected _createShapes() {
@@ -67,10 +68,10 @@ export class PieSlice extends RadialSlice {
       annularThickness: this.chart.settings.annularThickness,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.addPopup() : undefined
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.removePopup(this.id) : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.removePopup(this.id) : undefined
       },
     });
     this._shapes.push(slice);
@@ -92,7 +93,7 @@ export class PieSlice extends RadialSlice {
   //   //   className = 'radial_label_left';
   //   // }
 
-  //   // console.log('LABEL OPTS', r, centerAngle, this.chart.cx, this.chart.cy, this._radians);
+  //   // this.log.info('LABEL OPTS', r, centerAngle, this.chart.cx, this.chart.cy, this._radians);
 
   //   return {
   //     x: this.chart.cx + r*Math.cos(centerAngle*Math.PI/180),
@@ -123,7 +124,10 @@ export class PieSlice extends RadialSlice {
     let angle = 2 * Math.PI - ((this._params.accum * 2 * Math.PI) + (this._params.percentage * Math.PI) - (this.chart.settings.orientationAngleOffset * 2 * Math.PI / 360))
     let x = this.x + this.chart.radius * (1 - this.chart.settings.annularThickness / 2) * Math.cos(angle)
     let y = this.y - this.chart.radius * (1 - this.chart.settings.annularThickness / 2) * Math.sin(angle)
-    let datapointText = `${this.seriesKey} ${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
+    let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
+    if (this.paraview.store.model!.multi) {
+      datapointText = `${this.series.getLabel()} ${datapointText}`
+    }
     let popup = new Popup(this.paraview,
       {
         text: text ?? datapointText,
@@ -150,17 +154,7 @@ export class PieSlice extends RadialSlice {
   }
 
   removePopup(id: string) {
-    let coords = this.paraview.pointerEventManager!.coords!
-    let relativeX = coords.x - this.paraview.documentView!.padding.left - this.paraview.documentView!.chartLayers.x
-    let relativeY = coords.y - this.paraview.documentView!.padding.top - this.paraview.documentView!.chartLayers.y
-    let popup = this.paraview.store.popups.find(p => p.id === id)!
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    if (!popup){
-      return
-    }
-    if (relativeX <= popup.box.right && relativeX >= popup.box.left && relativeY >= popup.box.top && relativeY <= popup.box.bottom){
-      return
-    }
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1);
     this.paraview.requestUpdate()
   }
 }

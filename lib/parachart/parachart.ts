@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { logging } from '../common/logger';
+import { Logger, getLogger } from '../common/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest'
 import { DeepReadonly, Settings, SettingsInput, type Setting } from '../store/settings_types';
@@ -47,7 +47,7 @@ import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramo
 import { initParaSummary } from '@fizz/parasummary';
 
 // NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
-export class ParaChart extends logging(ParaComponent) {
+export class ParaChart extends ParaComponent {
 
   @property({ type: Boolean }) headless = false;
   @property() accessor manifest = '';
@@ -67,8 +67,9 @@ export class ParaChart extends logging(ParaComponent) {
   protected _manifest?: Manifest;
   protected _loader = new ParaLoader();
   private _slotLoader = new SlotLoader();
+  protected log: Logger = getLogger("ParaChart");
 
-  protected _suppleteSettingsWith?: DeepReadonly<Settings>;
+  // protected _suppleteSettingsWith?: DeepReadonly<Settings>;
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
   protected _loaderResolver: (() => void) | null = null;
@@ -90,7 +91,7 @@ export class ParaChart extends logging(ParaComponent) {
       this,
       // XXX config won't get set until connectedCallback()
       Object.assign(cssProps, this.config),
-      this._suppleteSettingsWith,
+      // this._suppleteSettingsWith,
       seriesAnalyzerConstructor,
       pairAnalyzerConstructor
     );
@@ -115,12 +116,11 @@ export class ParaChart extends logging(ParaComponent) {
             await this._loader.preloadData(this.data);
           }
           this._runLoader(this.manifest, this.manifestType).then(() => {
-            this.log('ParaCharts will now commence the raising of the roof and/or the dead');
-            this._paraAPI = new ParaAPI(this);
+            this.log.info('ParaCharts fully initialized');
             this._scrollyteller = new Scrollyteller(this);
           });
         } else if (this.getElementsByTagName("table")[0]) {
-          this.log(`loading from slot`);
+          this.log.info(`loading from slot`);
           const table = this.getElementsByTagName("table")[0];
           const manifest = this.getElementsByClassName("manifest")[0] as HTMLElement;
           this._store.dataState = 'pending';
@@ -130,18 +130,18 @@ export class ParaChart extends logging(ParaComponent) {
               "some-manifest",
               this.description
             )
-            this.log('loaded manifest')
+            this.log.info('loaded manifest')
             if (loadresult.result === 'success') {
               this.store.setManifest(loadresult.manifest!);
               this._store.dataState = 'complete';
             } else {
-              //console.error(loadresult.error);
+              //this.log.error(loadresult.error);
               this._store.dataState = 'error';
             }
           }
         }
           else {
-            console.log("No datatable in slot")
+            this.log.info("No datatable in slot")
             this._store.dataState = 'error'
           }
       });
@@ -261,7 +261,7 @@ export class ParaChart extends logging(ParaComponent) {
   willUpdate(changedProperties: PropertyValues<this>) {
     // Don't load a manifest before the paraview has rendered
     if (changedProperties.has('manifest') && this.manifest !== '' && this._paraViewRef.value) {
-      this.log(`manifest changed: '${this.manifestType === 'content' ? '<content>' : this.manifest}`);
+      this.log.info(`manifest changed: '${this.manifestType === 'content' ? '<content>' : this.manifest}`);
       this._loaderPromise = this._runLoader(this.manifest, this.manifestType);
       this.dispatchEvent(new CustomEvent('manifestchange', {bubbles: true, composed: true, cancelable: true}));
     }
@@ -287,7 +287,7 @@ export class ParaChart extends logging(ParaComponent) {
   ];
 
   protected async _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void> {
-    this.log(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
+    this.log.info(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
     this._store.dataState = 'pending';
     const loadresult = await this._loader.load(
       this.manifestType,
@@ -295,22 +295,24 @@ export class ParaChart extends logging(ParaComponent) {
       this.forcecharttype,
       this.description
     );
-    this.log('loaded manifest')
+    this.log.info('loaded manifest')
     if (loadresult.result === 'success') {
       this._manifest = loadresult.manifest;
       this._store.setManifest(loadresult.manifest, loadresult.data);
       this._store.dataState = 'complete';
-      this._controlPanelRef.value!.descriptionPanel.positionCaptionBox();
+      // NB: cpanel doesn't exist in headless mode
+      this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
+      this._paraAPI = new ParaAPI(this);
       this._loaderResolver!();
     } else {
-      console.error(loadresult.error);
+      this.log.error(loadresult.error);
       this._store.dataState = 'error';
       this._loaderRejector!();
     }
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
-    this.log('setting did change:', path, '=', newValue, `(was ${oldValue})`);
+    this.log.info('setting did change:', path, '=', newValue, `(was ${oldValue})`);
     // Update the style manager before the paraview so, e.g., any font scale
     // change can take effect ...
     this._styleManager.update();
@@ -320,6 +322,9 @@ export class ParaChart extends logging(ParaComponent) {
   }
 
   postNotice(key: string, value: any) {
+    if (!this.paraView){
+      return
+    }
     this.paraView.documentView!.noticePosted(key, value);
     this.paraView.documentView!.chartInfo.noticePosted(key, value);
     this.captionBox.noticePosted(key, value);
@@ -340,7 +345,7 @@ export class ParaChart extends logging(ParaComponent) {
     if (handler) {
       return handler(...args);
     } else {
-      console.warn(`no handler for command '${name}'`);
+      this.log.warn(`no handler for command '${name}'`);
     }
   }
 

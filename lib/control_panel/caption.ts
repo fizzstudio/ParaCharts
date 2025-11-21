@@ -1,6 +1,6 @@
 
 import { ParaComponent } from '../components';
-import { logging } from '../common/logger';
+import { Logger, getLogger } from '../common/logger';
 import { Highlight } from '@fizz/parasummary';
 
 //import { styles } from '../../styles';
@@ -18,7 +18,8 @@ import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 type HoverListener = (event: PointerEvent) => void;
 
 @customElement('para-caption-box')
-export class ParaCaptionBox extends logging(ParaComponent) {
+export class ParaCaptionBox extends ParaComponent {
+  private log: Logger = getLogger("ParaCaptionBox");
   protected _lastSpans = new Set<HTMLElement>();
   protected _prevSpanIdx = 0;
   protected _highlightManualOverride = false;
@@ -27,7 +28,6 @@ export class ParaCaptionBox extends logging(ParaComponent) {
 
   @state() protected _caption: HighlightedSummary = { text: '', html: '' };
 
-  private _summarizer?: Summarizer;
   protected _storeChangeUnsub!: Unsubscribe;
   protected _spans: HTMLSpanElement[] = [];
   protected _isEBarVisible = false;
@@ -116,14 +116,7 @@ export class ParaCaptionBox extends logging(ParaComponent) {
 
   private async setCaption(): Promise<void> {
     if (this._store.dataState === 'complete') {
-      if (!this._summarizer) {
-        if (this.store.model!.type === 'pie' || this.store.model!.type === 'donut') {
-          this._summarizer = new PastryChartSummarizer(this.store.model!);
-        } else {
-          this._summarizer = new PlaneChartSummarizer(this.store.model as PlaneModel);
-        }
-      }
-      this._caption = await this._summarizer.getChartSummary();
+      this._caption = await this._store.paraChart.paraView.documentView!.chartInfo.summarizer.getChartSummary();
     }
   }
 

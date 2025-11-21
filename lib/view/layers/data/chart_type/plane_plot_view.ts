@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../../../../common/logger';
 import {
   DataLayer,
 } from '../data_layer';
@@ -35,7 +36,6 @@ export type DatapointViewType<T extends PlaneDatapointView> =
  * Abstract base class for charts with X and Y axes.
  */
 export abstract class PlanePlotView extends DataLayer {
-
   constructor(
     paraview: ParaView,
     width: number,
@@ -44,6 +44,7 @@ export abstract class PlanePlotView extends DataLayer {
     chartInfo: BaseChartInfo
   ) {
     super(paraview, width, height, dataLayerIndex, chartInfo);
+    this.log = getLogger("PlanePlotView");
   }
 
   get datapointViews() {

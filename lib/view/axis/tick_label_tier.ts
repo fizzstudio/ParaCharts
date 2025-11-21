@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../../common/logger';
 import { View, Container } from '../base_view';
 import { type Layout } from '../layout';
 import { type Axis, type AxisOrientation } from './axis';
@@ -117,10 +118,16 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
         wrapWidth: this._labelWrapWidth,
         x: 0,
         y: 0,
-      pointerEnter: (e) => {this.addPopup(labelText, i);
-      },
-      pointerLeave: (e) => {this.removePopup(this.id);
-      }
+        pointerEnter: (e) => {
+          this.paraview.store.settings.chart.isShowPopups
+            && this.paraview.store.settings.popup.activation === "onHover"
+            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(labelText, i) : undefined;
+        },
+        pointerLeave: (e) => {
+          this.paraview.store.settings.chart.isShowPopups
+            && this.paraview.store.settings.popup.activation === "onHover"
+            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
+        }
       });
       this.append(label);
     }
@@ -149,7 +156,6 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
  * A horizontal tier of tick labels.
  */
 export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
-
   constructor(
     readonly axis: Axis<'horiz'>,
     readonly tickLabels: string[],
@@ -159,6 +165,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     paraview: ParaView
   ) {
     super(axis, tickLabels, tierIndex, length, tickStep, paraview);
+    this.log = getLogger("HorizTickLabelTier");
     this._canWidthFlex = true;
     this.padding = {top: this.axis.orientationSettings.ticks.labels.offsetGap};
   }
@@ -245,7 +252,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     while (true) {
       const gaps = bboxes.slice(1).map((bbox, i) => bbox.left - bboxes[i].right);
       const minGap = Math.min(...gaps);
-      // console.log('MINGAP', minGap, 'TICKSTEP', tickStep, 'WIDTH', width,
+      // this.log.info('MINGAP', minGap, 'TICKSTEP', tickStep, 'WIDTH', width,
       //   `(WANTED: ${this.axis.orientationSettings.tick.tickLabel.gap})`
       // );
       if (Math.round(minGap) < this.axis.orientationSettings.ticks.labels.gap) {
@@ -284,7 +291,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
       },
       {
         fill: "hsl(0, 0%, 100%)",
-        shape: "box"
+        shape: "boxWithArrow"
       })
     this.paraview.store.popups.push(popup)
   }
@@ -365,7 +372,7 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
     let popup = new Popup(this.paraview,
       {
         text: text ?? datapointText,
-        x: this._tickLabelX(index ?? 0),
+        x: this._tickLabelX(index ?? 0) + 15,
         y: this._tickLabelY(index ?? 0) + this.paraview.store.settings.popup.margin - this.children[index ?? 0].height ,
         textAnchor: "middle",
         classList: ['annotationlabel'],
@@ -376,7 +383,7 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
       },
       {
         fill: "hsl(0, 0%, 100%)",
-        shape: "box"
+        shape: "boxWithArrow"
       })
     this.paraview.store.popups.push(popup)
   }

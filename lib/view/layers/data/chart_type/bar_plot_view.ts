@@ -1,4 +1,6 @@
-
+import { type BaseChartInfo } from '../../../../chart_types';
+import { ParaView } from '../../../../paraview/paraview';
+import { Logger, getLogger } from '../../../../common/logger';
 import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
 import {
   Setting, DeepReadonly, BarSettings
@@ -39,7 +41,7 @@ function abbreviateSeries(keys: readonly string[]) {
       abbrevs[i] = cand;
     }
   }
-  const abbrevMap: {[key: string]: string} = {};
+  const abbrevMap: { [key: string]: string } = {};
   keys.forEach((k, i) => abbrevMap![k] = abbrevs[i]);
   return abbrevMap;
 }
@@ -49,14 +51,12 @@ function abbreviateSeries(keys: readonly string[]) {
  */
 export class BarPlotView extends PlanePlotView {
   declare protected _chartInfo: BarChartInfo;
-
-  protected _abbrevs?: {[series: string]: string};
+  protected _abbrevs?: { [series: string]: string };
   protected _totalLabels: Label[] = [];
   protected _numStacks!: number;
   protected _stackWidth!: number;
   protected _clusterWidth!: number;
   protected _availSpace!: number;
-
   protected _addedToParent() {
     super._addedToParent();
     /*todo().controller.settingViews.add(this, {
@@ -79,19 +79,20 @@ export class BarPlotView extends PlanePlotView {
     if (this.paraview.store.settings.type.bar.isAbbrevSeries) {
       this._abbrevs = abbreviateSeries(this.paraview.store.model!.seriesKeys);
     }
-
-    this.paraview.store.settingControls.add({
-      type: 'checkbox',
-      key: 'chart.showPopups',
-      label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.popups',
-    });
   }
 
+  constructor(paraview: ParaView,
+    width: number,
+    height: number,
+    dataLayerIndex: number,
+    chartInfo: BaseChartInfo) {
+    super(paraview, width, height, dataLayerIndex, chartInfo);
+    this.log = getLogger("BarPlotView");
+  }
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['color.colorPalette', 'color.colorVisionMode', 'chart.showPopups'].includes(path)) {
+    if (['color.colorPalette', 'color.colorVisionMode', 'chart.isShowPopups'].includes(path)) {
       if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
-         || this.paraview.store.settings.color.colorPalette === 'pattern'){
+        || this.paraview.store.settings.color.colorPalette === 'pattern') {
         this.paraview.createDocumentView();
         this.paraview.requestUpdate();
       }
@@ -142,25 +143,25 @@ export class BarPlotView extends PlanePlotView {
     // cluster will have 1/2 `clusterGap` on its left, ditto for the last cluster
     // on its right, and each cluster is separated by `clusterGap`
 
-    this._numStacks = numClusters*this._chartInfo.stacksPerCluster;
-    let maxStackWidth = (this._width - numClusters*this._chartInfo.settings.clusterGap)/this._numStacks;
+    this._numStacks = numClusters * this._chartInfo.stacksPerCluster;
+    let maxStackWidth = (this._width - numClusters * this._chartInfo.settings.clusterGap) / this._numStacks;
     let gapWidth = 0;
     if (maxStackWidth >= MIN_STACK_WIDTH_FOR_GAPS) {
-      this._stackWidth = (1 - STACK_GAP_PERCENTAGE)*maxStackWidth;
-      gapWidth = STACK_GAP_PERCENTAGE*maxStackWidth;
+      this._stackWidth = (1 - STACK_GAP_PERCENTAGE) * maxStackWidth;
+      gapWidth = STACK_GAP_PERCENTAGE * maxStackWidth;
     } else {
       this._stackWidth = maxStackWidth;
     }
     // this._clusterWidth = this._stackWidth*this._chartInfo.stacksPerCluster
     //   + (this._chartInfo.stacksPerCluster - 1)*gapWidth;
-    this._availSpace = gapWidth*this._numStacks;
+    this._availSpace = gapWidth * this._numStacks;
 
     // const totalClusterGapSpace = numClusters*this._chartInfo.settings.clusterGap;
     // const totalBarGapSpace = (this._chartInfo.stacksPerCluster - 1)*this._chartInfo.settings.barGap*numClusters;
     // // Initial stack width based on current chart width
     // this._stackWidth = Math.max(0, //chartInfo.settings.minBarWidth,
     //   (this._width - totalClusterGapSpace - totalBarGapSpace)/(numClusters*this._chartInfo.stacksPerCluster));
-    // console.log('computed bar stack width:', this._stackWidth, 'plot width:', this._width, totalClusterGapSpace, totalBarGapSpace);
+    // this.log.info('computed bar stack width:', this._stackWidth, 'plot width:', this._width, totalClusterGapSpace, totalBarGapSpace);
 
     // this._clusterWidth = this._stackWidth*this._chartInfo.stacksPerCluster
     //   + (this._chartInfo.stacksPerCluster - 1)*this._chartInfo.settings.barGap;
@@ -170,8 +171,8 @@ export class BarPlotView extends PlanePlotView {
 
   protected _createDatapoints() {
     const chartInfo = this._parent.docView.chartInfo as BarChartInfo;
-    const seriesViews: {[key: string]: PlaneSeriesView} = {};
-    Object.entries(chartInfo.clusteredData).forEach( ([clusterKey, cluster], i) => {
+    const seriesViews: { [key: string]: PlaneSeriesView } = {};
+    Object.entries(chartInfo.clusteredData).forEach(([clusterKey, cluster], i) => {
       for (const [stackKey, stack] of Object.entries(cluster.stacks)) {
         for (const [colName, item] of Object.entries(stack.bars)) {
           if (!seriesViews[colName]) {
@@ -245,7 +246,7 @@ export class BarPlotView extends PlanePlotView {
   //   const minX = Math.min(...labels.map(label => label.left));
   //   if (minX < 0) {
   //     this._parent.logicalWidth += -minX;
-  //     console.log('NEW WIDTH', this._width);
+  //     this.log.info('NEW WIDTH', this._width);
   //     this.datapointViews.forEach(dp => {
   //       dp.x += -minX;
   //     });
@@ -254,12 +255,12 @@ export class BarPlotView extends PlanePlotView {
   //   if (maxX > this._width) {
   //     const diff = maxX - this._width;
   //     this._parent.logicalWidth += diff;
-  //     console.log('NEW WIDTH', this._width);
+  //     this.log.info('NEW WIDTH', this._width);
   //   }
   //   const minY = Math.min(...labels.map(label => label.top));
   //   if (minY < 0) {
   //     this._parent.logicalHeight += -minY;
-  //     console.log('NEW HEIGHT', this._height);
+  //     this.log.info('NEW HEIGHT', this._height);
   //     this.datapointViews.forEach(dp => {
   //       dp.y += -minY;
   //     });
@@ -271,7 +272,7 @@ export class BarPlotView extends PlanePlotView {
   //   if (maxY > this._height) {
   //     const diff = maxY - this._height;
   //     this._parent.logicalHeight += diff;
-  //     console.log('NEW HEIGHT', this._height);
+  //     this.log.info('NEW HEIGHT', this._height);
   //   }
   //   //this._checkLabelSpacing();
   // }
@@ -392,14 +393,14 @@ export class Bar extends PlaneDatapointView {
       this._y = 0;
     } else {
       const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
-      const pxPerYUnit = this.chart.parent.logicalHeight/chartInfo.axisInfo!.yLabelInfo.range!;
+      const pxPerYUnit = this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!;
       const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
-        .map(bar => bar.value.value*pxPerYUnit)
+        .map(bar => bar.value.value * pxPerYUnit)
         .reduce((a, b) => a + b, 0);
       const zeroHeight = this.chart.parent.logicalHeight
         - (chartInfo.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!);
       // @ts-ignore
-      this._height = Math.abs((this.datapoint.data.y.value as number)*pxPerYUnit);
+      this._height = Math.abs((this.datapoint.data.y.value as number) * pxPerYUnit);
       // @ts-ignore
       if (this.datapoint.data.y.value as number < 0) {
         this._y = this.chart.height - distFromXAxis - zeroHeight;
@@ -407,32 +408,32 @@ export class Bar extends PlaneDatapointView {
         this._y = this.chart.height - this.height - distFromXAxis - zeroHeight;
       }
     }
-    const barGap = this.chart.availSpace/this.chart.numStacks;
+    const barGap = this.chart.availSpace / this.chart.numStacks;
     const clusterGap = chartInfo.settings.clusterGap;
-    this._x = clusterGap/2 + barGap/2
-      + idealWidth*(chartInfo.stacksPerCluster*this._stack.cluster.index + this._stack.index)
-      + clusterGap*this._stack.cluster.index
-      + barGap*(chartInfo.stacksPerCluster*this._stack.cluster.index + this._stack.index);
+    this._x = clusterGap / 2 + barGap / 2
+      + idealWidth * (chartInfo.stacksPerCluster * this._stack.cluster.index + this._stack.index)
+      + clusterGap * this._stack.cluster.index
+      + barGap * (chartInfo.stacksPerCluster * this._stack.cluster.index + this._stack.index);
   }
 
-  beginAnimStep(t: number): void {
+  beginAnimStep(bezT: number, linearT: number): void {
     const chartInfo = this.chart.chartInfo as BarChartInfo;
     const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
-    const pxPerYUnit = this.chart.parent.logicalHeight/chartInfo.axisInfo!.yLabelInfo.range!;
+    const pxPerYUnit = this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!;
     const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
-      .map(bar => bar.value.value*pxPerYUnit)
+      .map(bar => bar.value.value * pxPerYUnit)
       .reduce((a, b) => a + b, 0);
     const zeroHeight = this.chart.parent.logicalHeight
       - (chartInfo.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!);
     // @ts-ignore
-    this._height = Math.abs((this.datapoint.data.y.value as number)*pxPerYUnit*t);
+    this._height = Math.abs((this.datapoint.data.y.value as number) * pxPerYUnit * bezT);
     // @ts-ignore
     if (this.datapoint.data.y.value as number < 0) {
-      this._y = this.chart.height - distFromXAxis*t - zeroHeight;
+      this._y = this.chart.height - distFromXAxis * bezT - zeroHeight;
     } else {
-      this._y = this.chart.height - this.height - distFromXAxis*t - zeroHeight;
+      this._y = this.chart.height - this.height - distFromXAxis * bezT - zeroHeight;
     }
-    super.beginAnimStep(t);
+    super.beginAnimStep(bezT, linearT);
   }
 
   completeLayout() {
@@ -517,10 +518,10 @@ export class Bar extends PlaneDatapointView {
       height: this._height,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.addPopup() : undefined
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.removePopup(this.id) : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.removePopup(this.id) : undefined
       },
     }));
     super._createShapes();
@@ -541,7 +542,10 @@ export class Bar extends PlaneDatapointView {
 
 
   addPopup(text?: string) {
-    let datapointText = `${this.seriesKey} ${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
+    let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
+    if (this.paraview.store.model!.multi) {
+      datapointText = `${this.series.getLabel()} ${datapointText}`
+    }
     let popup = new Popup(this.paraview,
       {
         text: text ?? datapointText,
@@ -551,15 +555,17 @@ export class Bar extends PlaneDatapointView {
         classList: ['annotationlabel'],
         id: this.id,
         color: this.color,
-        points: [this]
+        points: [this],
+        rotationExempt: this.paraview.store.type == 'bar' ? false : true,
+        angle: this.paraview.store.type == 'bar' ? -90 : 0
       },
       {})
     this.paraview.store.popups.push(popup)
   }
 
   removePopup(id: string) {
-   this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-   this.paraview.requestUpdate()
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
+    this.paraview.requestUpdate()
   }
 
 }

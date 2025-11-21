@@ -36,7 +36,7 @@ export class ParaAPI {
   constructor(protected _paraChart: ParaChart) {
     const store = _paraChart.store;
     const paraView = _paraChart.paraView;
-    this._allSeries = store.model!.seriesKeys.map(key => new ParaAPISeries(key, this));
+    this._allSeries = store.model!.series.map(series => new ParaAPISeries(series.label, this));
 
     // we use a function here bc the chartInfo object may get replaced
     const chartInfo = () => _paraChart.paraView.documentView!.chartInfo;
@@ -231,17 +231,23 @@ export class ParaAPI {
     this._actions[action](args);
   }
 
-  getSeries(seriesKey: string): ParaAPISeries {
-    return this.getAllSeries(seriesKey)[0];
+  // protected _labelToKey(seriesLabel: string): string {
+  //   const series = this._paraChart.store.model!.series.find(s => s.label === seriesLabel);
+  //   if (!series) throw new Error(`no series with label '${seriesLabel}'`);
+  //   return series.key;
+  // }
+
+  getSeries(seriesLabel: string): ParaAPISeries {
+    return this.getAllSeries(seriesLabel)[0];
   }
 
-  getAllSeries(...seriesKeys: string[]): ParaAPISeries[] {
+  getAllSeries(...seriesLabels: string[]): ParaAPISeries[] {
     // remove dups
-    const keys = Array.from(new Set(seriesKeys));
+    const labels = Array.from(new Set(seriesLabels));
     const series: ParaAPISeries[] = [];
-    for (const key of keys) {
-      const s = this._allSeries.find(pps => pps.key === key);
-      if (!s) throw new Error(`no series with key '${key}'`);
+    for (const label of labels) {
+      const s = this._allSeries.find(pps => pps.label === label);
+      if (!s) throw new Error(`no series with label '${label}'`);
       series.push(s);
     }
     return series;
@@ -273,6 +279,14 @@ export class ParaAPI {
     this._paraChart.store.clearAllSeriesLowlights();
   }
 
+  hideAllSeries() {
+    this._paraChart.store.hideAllSeries();
+  }
+
+  unhideAllSeries() {
+    this._paraChart.store.unhideAllSeries();
+  }
+
   enableNarrativeActions() {
     this._actions = this._narrativeActions;
   }
@@ -288,10 +302,17 @@ export class ParaAPI {
 export class ParaAPISeries {
   protected _allPoints: ParaAPIPoint[];
   protected _datapoints: Datapoint[];
+  protected _key: string;
 
-  constructor(protected _key: string, protected _api: ParaAPI) {
-    this._datapoints = [..._api.paraChart.store.model!.atKey(_key)!.datapoints];
+  constructor(protected _label: string, protected _api: ParaAPI) {
+    const series = _api.paraChart.store.model!.atLabel(_label)!;
+    this._key = series.key;
+    this._datapoints = [...series.datapoints];
     this._allPoints = this._datapoints.map(dp => new ParaAPIPoint(dp, this));
+  }
+
+  get label(): string {
+    return this._label;
   }
 
   get key(): string {
@@ -336,6 +357,22 @@ export class ParaAPISeries {
 
   lowlightOthers() {
     this._api.paraChart.store.lowlightOtherSeries(this._key);
+  }
+
+  hide() {
+    this._api.paraChart.store.hideSeries(this._key);
+  }
+
+  unhide() {
+    this._api.paraChart.store.unhideSeries(this._key);
+  }
+
+  isHidden(): boolean {
+    return this._api.paraChart.store.isSeriesHidden(this._key);
+  }
+
+  hideOthers() {
+    this._api.paraChart.store.hideOtherSeries(this._key);
   }
 
   playRiff() {

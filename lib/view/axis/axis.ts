@@ -259,16 +259,14 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       role: 'heading',
       angle: this._getAxisTitleAngle(),
       pointerEnter: (e) => {
-        /*
-        this.paraview.store.settings.chart.showPopups
+        this.paraview.store.settings.chart.isShowPopups
           && this.paraview.store.settings.popup.activation === "onHover"
-          && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? */this.addPopup();
+          && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
       },
       pointerLeave: (e) => {
-        /*
-        this.paraview.store.settings.chart.showPopups
+        this.paraview.store.settings.chart.isShowPopups
           && this.paraview.store.settings.popup.activation === "onHover"
-          && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? */this.removePopup(this.id);
+          && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
       }
     });
     this._axisTitle.padding = this._getAxisTitlePadding();
@@ -288,7 +286,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
         fill: "hsl(0, 0%, 0%)"
       },
       {fill: "hsl(0, 0%, 100%)",
-        shape: "box"
+        shape: "boxWithArrow"
       })
     this.paraview.store.popups.push(popup)
   }

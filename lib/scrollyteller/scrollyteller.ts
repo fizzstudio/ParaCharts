@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 
+import { Logger, getLogger } from '../common/logger';
+
 import { ParaChart } from '../parachart/parachart';
 
 export interface ParsedOffset {
@@ -79,7 +81,8 @@ export class Scrollyteller {
   private chartId: string;
   private stepElements!: NodeListOf<Element>;
   private settings!: any;
-
+  protected log: Logger = getLogger("Scrollyteller");  
+  
   private steps: ScrollyStep[];
   private _events: Map<ScrollyEvent, Array<Callback>>;
   private globalOffset: ParsedOffset;
@@ -95,7 +98,7 @@ export class Scrollyteller {
   private direction?: 'up' | 'down';
 
   constructor(parachart: ParaChart) {
-    // console.log('scrolly constructor called!');
+    // this.log.info('scrolly constructor called!');
     // HACK: needed to assign something to this.parachart
     this.parachart = parachart;
     this.chartId = this.parachart.id;
@@ -130,7 +133,7 @@ export class Scrollyteller {
   }
 
   private init(): void {
-    // console.log('scrolly init called!');
+    // this.log.info('scrolly init called!');
     this.stepElements = document.querySelectorAll('[data-para-step]');
 
     this.setup({
@@ -141,7 +144,7 @@ export class Scrollyteller {
     });
 
     this.on('stepEnter', (response: CallbackResponse) => {
-      // console.log('scrolly stepEnter callback fired!');
+      // this.log.info('scrolly stepEnter callback fired!');
       const element = response.element;
       this.highlightPageContent(element);
 
@@ -157,7 +160,7 @@ export class Scrollyteller {
         if (action === 'highlightDatapoint') {
           // TODO: remove previous datapoint highlights
           // this.parachart.command('click', []);
-          // console.warn('highlightDatapoint', params)
+          // this.log.warn('highlightDatapoint', params);
 
           if (params.length >= 2) {
             this.parachart.api.getSeries(params[0]).getPoint(+params[1]).select();
@@ -186,30 +189,26 @@ export class Scrollyteller {
           console.warn('this.parachart', this.parachart)
           this.parachart.setAttribute('manifest', params[0]);
         }
+
+        // TODO: add sonifications
+        if (action === 'playSonification') {
+          this.parachart.api.getSeries(params[0]).playRiff();
+        }
       }
-
-      // // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
-      // if (this.settings.isScrollyAnnouncementsEnabled) {
-      //   console.log('TODO: Add scrollytelling aria-live descriptions of highlights')
-      // }
-
-      // // TODO: add sonifications
-      // if (this.settings.isScrollySoniEnabled) {
-      //   console.log('TODO: Add scrollytelling sonifications')
-      // }
+      // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
     });
 
 
     this.on('stepExit', (response: CallbackResponse) => {
-      // console.warn('SCROLLY: stepExit callback fired!', response);
+      // this.log.warn('SCROLLY: stepExit callback fired!', response);
       const element = response.element;
 
       if (response.direction === 'down') {
-        console.warn('SCROLLY: exit down', response);
+        this.log.warn('SCROLLY: exit down', response);
       }
       else {
-        console.warn('SCROLLY: exit up', response);
-        console.warn('SCROLLY: reverse action!');
+        this.log.warn('SCROLLY: exit up', response);
+        this.log.warn('SCROLLY: reverse action!');
         for (const {action, params} of response.actions) {
           if (action === 'highlightDatapoint') {
             if (params.length >= 2) {
@@ -331,7 +330,7 @@ export class Scrollyteller {
   }
 
   private err(msg: string): void {
-    console.error(`scrollytelling: ${msg}`);
+    this.log.error(`scrollytelling: ${msg}`);
   }
 
   private createProgressThreshold(height: number, threshold: number): number[] {
@@ -582,7 +581,7 @@ export class Scrollyteller {
     }));
 
     if (!this.steps.length) {
-      console.log('scrollytelling: no step elements found');
+      this.log.info('scrollytelling: no step elements found');
       return this;
     }
 

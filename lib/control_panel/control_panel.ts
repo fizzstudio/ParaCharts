@@ -1,7 +1,6 @@
-
+import { Logger, getLogger } from '../common/logger';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaDialog, ParaComponent } from '../components';
-import { logging } from '../common/logger';
 //import { styles } from '../../styles';
 import {
   type DeepReadonly,
@@ -40,8 +39,8 @@ import { Popup } from '../view/popup';
 
 
 @customElement('para-control-panel')
-export class ParaControlPanel extends logging(ParaComponent) {
-
+export class ParaControlPanel extends ParaComponent {
+  private log: Logger = getLogger("ParaControlPanel");
   @property() sparkBrailleData!: string;
 
   @state() dataState: 'initial' | 'pending' | 'complete' | 'error' = 'initial';
@@ -157,7 +156,9 @@ export class ParaControlPanel extends logging(ParaComponent) {
       let toggleButton = this.shadowRoot?.getElementById("wrapper")?.children[0].shadowRoot?.children[0].getElementsByClassName("toggle")[0]
       if (toggleButton) {
         toggleButton.addEventListener("pointerenter", () => {
-          this.addPopup(this.paraChart.isControlPanelOpen ? true : false)
+          this.store.settings.chart.isShowPopups
+            && this.store.settings.popup.activation === "onHover"
+            && !this.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(this.paraChart.isControlPanelOpen ? true : false) : undefined
         })
         toggleButton.addEventListener("pointerleave", () => {
           this.removePopup(this.id)
@@ -244,23 +245,24 @@ export class ParaControlPanel extends logging(ParaComponent) {
 
   addPopup(isOpen: boolean) {
     let paraview = this.paraChart.paraView
-    let text = isOpen ? "Close control panel" : "Open control panel"
-    let y = paraview.documentView!.height! - 80
+    let text = isOpen ? "Close control panel" : "Customize settings"
+    let y = paraview.documentView!.height! - 70
+    let x = 0 - this.paraChart.paraView.documentView!.chartLayers.x
     let popup = new Popup(paraview,
       {
         text: text ?? "",
-        x: 10,
+        x: x,
         y: y + (isOpen ? 26.4 : 0),
         textAnchor: "middle",
         classList: ['annotationlabel'],
         id: this.id,
         type: "controlPanelIcon",
         fill: "hsl(0, 0%, 0%)",
-        inbounds: false
+        inbounds: true
       },
       {
         fill: "hsl(0, 0%, 100%)",
-        shape: "box"
+        shape: "boxWithArrow"
       })
     paraview.store.popups.push(popup)
   }
@@ -324,7 +326,7 @@ export class ParaControlPanel extends logging(ParaComponent) {
           }
           @invalidvalue=${(e: CustomEvent) => this._msgDialogRef.value!.show(e.detail)}
           @ready=${() => {
-            // this.log('fizz-tab-details ready; focusing data layer');
+            // this.log.info('fizz-tab-details ready; focusing data layer');
             // if (this.todo.canvas.documentView) {
             //   this.todo.canvas.documentView.chartLayers.dataLayer.focus();
             // }

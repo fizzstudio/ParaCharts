@@ -247,26 +247,28 @@ export class LineSection extends PointDatapointView {
     });
     this._shapes = [];
     const points = this._points;
-    let cousins = this.withCousins.map((c, i) => [c, i]).toSorted((a: this[], b: this[]) => a[0].y - b[0].y) as [this, number][]
     let y = 0;
     let height = 0;
-    if (cousins.length === 1) {
-      y = 0;
-      height = this.chart.height;
-    }
-    else {
-      if (cousins[0][1] === this.parent.index) {
+    if (!this.paraview.store.settings.animation.isAnimationEnabled || this.chart.animateRevealComplete) {
+      let cousins = this.withCousins.map((c, i) => [c, i]).toSorted((a: this[], b: this[]) => a[0].y - b[0].y) as [this, number][]
+      if (cousins.length === 1) {
         y = 0;
-        height = (cousins[1][0].y - this.y) / 2 + this.y
-      }
-      else if (cousins[cousins.length - 1][1] === this.parent.index) {
-        y = (this.y - cousins[cousins.length - 2][0].y) / 2 + cousins[cousins.length - 2][0].y
-        height = this.chart.height - ((this.y - cousins[cousins.length - 2][0].y) / 2 + cousins[cousins.length - 2][0].y)
+        height = this.chart.height;
       }
       else {
-        let index = cousins.findIndex(c => c[1] === this.parent.index)!
-        y = (this.y - cousins[index - 1][0].y) / 2 + cousins[index - 1][0].y
-        height = (cousins[index + 1][0].y - this.y) / 2 + this.y - ((this.y - cousins[index - 1][0].y) / 2 + cousins[index - 1][0].y)
+        if (cousins[0][1] === this.parent.index) {
+          y = 0;
+          height = (cousins[1][0].y - this.y) / 2 + this.y
+        }
+        else if (cousins[cousins.length - 1][1] === this.parent.index) {
+          y = (this.y - cousins[cousins.length - 2][0].y) / 2 + cousins[cousins.length - 2][0].y
+          height = this.chart.height - ((this.y - cousins[cousins.length - 2][0].y) / 2 + cousins[cousins.length - 2][0].y)
+        }
+        else {
+          let index = cousins.findIndex(c => c[1] === this.parent.index)!
+          y = (this.y - cousins[index - 1][0].y) / 2 + cousins[index - 1][0].y
+          height = (cousins[index + 1][0].y - this.y) / 2 + this.y - ((this.y - cousins[index - 1][0].y) / 2 + cousins[index - 1][0].y)
+        }
       }
     }
     if (points.length === 3) {
@@ -293,28 +295,30 @@ export class LineSection extends PointDatapointView {
           isClip: true
         })
       );
-      let invis = new RectShape(this.paraview, {
-        x: this._x + slices[0][0].x,
-        y: y,
-        width: slices[1][1].x - slices[0][0].x,
-        height: height,
-        stroke: "white",
-        fill: "white",
-        pointerEnter: (e) => {
-          this.paraview.store.settings.chart.showPopups
-            && this.paraview.store.settings.popup.activation === "onHover"
-            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
-        },
-        pointerLeave: (e) => {
-          this.paraview.store.settings.chart.showPopups
-            && this.paraview.store.settings.popup.activation === "onHover"
-            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
-        }
-      })
       this._shapes[0].classInfo = { 'leg-left': true };
       this._shapes[1].classInfo = { 'leg-right': true };
-      invis.classInfo = { 'invis': true };
-      this.append(invis)
+      if (!this.paraview.store.settings.animation.isAnimationEnabled || this.chart.animateRevealComplete) {
+        let invis = new RectShape(this.paraview, {
+          x: this._x + slices[0][0].x,
+          y: y,
+          width: slices[1][1].x - slices[0][0].x,
+          height: height,
+          stroke: "white",
+          fill: "white",
+          pointerEnter: (e) => {
+            this.paraview.store.settings.chart.isShowPopups
+              && this.paraview.store.settings.popup.activation === "onHover"
+              && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
+          },
+          pointerLeave: (e) => {
+            this.paraview.store.settings.chart.isShowPopups
+              && this.paraview.store.settings.popup.activation === "onHover"
+              && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
+          }
+        })
+        invis.classInfo = { 'invis': true };
+        this.append(invis)
+      }
     } else if (points.length === 2) {
       this._shapes.push(
         new PathShape(this.paraview, {
@@ -324,29 +328,31 @@ export class LineSection extends PointDatapointView {
           isClip: true
         })
       );
-      let invis = new RectShape(this.paraview, {
-        x: points[0].x == 0 ? this._x : this._x + points[0].x,
-        y: y,
-        width: points[0].x == 0 ? points[1].x : this.x,
-        height: height,
-        stroke: "white",
-        fill: "white",
-        pointerEnter: (e) => {
-          this.paraview.store.settings.chart.showPopups
-            && this.paraview.store.settings.popup.activation === "onHover"
-            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
-        },
-        pointerLeave: (e) => {
-          this.paraview.store.settings.chart.showPopups
-            && this.paraview.store.settings.popup.activation === "onHover"
-            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
-        }
-      })
       this._shapes[0].classInfo = this._prevMidY !== undefined
         ? { 'leg-left': true }
         : { 'leg-right': true };
-      invis.classInfo = { 'invis': true };
-      this.append(invis)
+      if (!this.paraview.store.settings.animation.isAnimationEnabled || this.chart.animateRevealComplete) {
+        let invis = new RectShape(this.paraview, {
+          x: points[0].x == 0 ? this._x : this._x + points[0].x,
+          y: y,
+          width: points[0].x == 0 ? points[1].x : this.x,
+          height: height,
+          stroke: "white",
+          fill: "white",
+          pointerEnter: (e) => {
+            this.paraview.store.settings.chart.isShowPopups
+              && this.paraview.store.settings.popup.activation === "onHover"
+              && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
+          },
+          pointerLeave: (e) => {
+            this.paraview.store.settings.chart.isShowPopups
+              && this.paraview.store.settings.popup.activation === "onHover"
+              && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
+          }
+        })
+        invis.classInfo = { 'invis': true };
+        this.append(invis)
+      }
     }
     this._shapes.forEach(shape => {
       (shape as PathShape).isClip = this.shouldClip;
@@ -356,7 +362,10 @@ export class LineSection extends PointDatapointView {
 
 
   addPopup(text?: string) {
-    let datapointText = `${this.seriesKey} ${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
+    let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
+    if (this.paraview.store.model!.multi) {
+      datapointText = `${this.series.getLabel()} ${datapointText}`
+    }
     let popup = new Popup(this.paraview,
       {
         text: text ?? datapointText,

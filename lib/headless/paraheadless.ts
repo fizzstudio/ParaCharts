@@ -7,7 +7,7 @@ export { FieldInfo };
 
 export { type Manifest } from '@fizz/paramanifest';
 
-export class ParaHelper {
+export class ParaHeadless {
 
   protected _paraChart!: ParaChart;
 

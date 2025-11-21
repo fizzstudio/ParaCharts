@@ -577,9 +577,6 @@
       ],
       "data": {
         "source": "inline"
-      },
-      "settings": {
-        "sonification.isEnabled": true
       }
     }
   ]

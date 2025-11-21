@@ -44,7 +44,7 @@ export class SeriesView extends Container(DataView) {
     return {
       series: true,
       lowlight: this.paraview.store.isSeriesLowlighted(this._series.key),
-      hidden: this.paraview.store.hiddenSeriesList.includes(this._series.key)
+      hidden: this.paraview.store.isSeriesHidden(this._series.key)
     };
   }
 

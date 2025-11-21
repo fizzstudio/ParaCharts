@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Logger, getLogger } from '../common/logger';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaStore } from '../store';
 import { type LineSettings, type DeepReadonly, type Setting } from '../store/settings_types';
@@ -36,6 +37,7 @@ export class LineChartInfo extends PointChartInfo {
 
   constructor(type: ChartType, store: ParaStore) {
     super(type, store);
+    this.log = getLogger("LineChartInfo");
   }
 
   protected _addSettingControls(): void {
@@ -57,12 +59,6 @@ export class LineChartInfo extends PointChartInfo {
       key: 'chart.isDrawSymbols',
       label: 'Show symbols',
       parentView: 'controlPanel.tabs.chart.chart',
-    });
-    this._store.settingControls.add({
-      type: 'checkbox',
-      key: 'chart.showPopups',
-      label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.popups',
     });
   }
 
@@ -214,12 +210,14 @@ export class LineChartInfo extends PointChartInfo {
   }
 
   legend() {
-    const seriesKeys = [...this._store.model!.seriesKeys];
+    const model = this._store.model!;
+    const seriesKeys = [...model.seriesKeys];
     if (this._store.settings.legend.itemOrder === 'alphabetical') {
       seriesKeys.sort();
     }
     return seriesKeys.map(key => ({
-      label: key,
+      label: model.atKey(key)!.getLabel(),
+      seriesKey: key,
       color: this._store.seriesProperties!.properties(key).color
     }));
   }
@@ -237,16 +235,18 @@ export class LineChartInfo extends PointChartInfo {
     } else if (queriedNode.isNodeType('series')) {
       /*
       if (e.options!.isChordMode) {
-        // console.log('focusedDatapoint', focusedDatapoint)
+        // this.log.info('focusedDatapoint', focusedDatapoint)
         const visitedDatapoints = e.options!.visited as XYDatapointView[];
-        // console.log('visitedDatapoints', visitedDatapoints)
+        // this.log.info('visitedDatapoints', visitedDatapoints)
         msgArray = this.describeChord(visitedDatapoints);
       } */
       const seriesKey = queriedNode.options.seriesKey;
-      const datapointCount = this._store.model!.atKey(seriesKey)!.length;
+      const series = this._store.model!.atKey(seriesKey)!;
+      const datapointCount = series.length;
+      const seriesLabel = series.getLabel();
       msgArray.push(interpolate(
-        queryMessages.seriesKeyLength,
-        { seriesKey, datapointCount }
+        queryMessages.seriesLabelLength,
+        { seriesLabel, datapointCount }
       ));
     } else if (queriedNode.isNodeType('datapoint')) {
       /*
@@ -254,9 +254,9 @@ export class LineChartInfo extends PointChartInfo {
         // focused view: e.options!.focus
         // all visited datapoint views: e.options!.visited
         // const focusedDatapoint = e.targetView;
-        // console.log('focusedDatapoint', focusedDatapoint)
+        // this.log.info('focusedDatapoint', focusedDatapoint)
         const visitedDatapoints = e.options!.visited as XYDatapointView[];
-        // console.log('visitedDatapoints', visitedDatapoints)
+        // this.log.info('visitedDatapoints', visitedDatapoints)
         msgArray = this.describeChord(visitedDatapoints);
       }
         */
@@ -264,13 +264,15 @@ export class LineChartInfo extends PointChartInfo {
       //const visitedDatapoint = queriedNode.datapointViews[0];
       const seriesKey = queriedNode.options.seriesKey;
       const index = queriedNode.options.index;
-      const datapoint = this._store.model!.atKey(seriesKey)!.datapoints[index];
+      const series = this._store.model!.atKey(seriesKey)!;
+      const datapoint = series.datapoints[index];
+      const seriesLabel = series.getLabel();
       // XXX yuck
       const datapointView = this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
       msgArray.push(interpolate(
-        queryMessages.datapointKeyLength,
+        queryMessages.datapointLabelLength,
         {
-          seriesKey,
+          seriesLabel,
           datapointXY: formatXYDatapoint(datapoint, 'raw'),
           datapointIndex: queriedNode.options.index + 1,
           datapointCount: this._store.model!.atKey(seriesKey)!.length

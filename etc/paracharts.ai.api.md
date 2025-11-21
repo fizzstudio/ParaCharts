@@ -28,6 +28,9 @@ import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
+import { Logger as Logger_2 } from '../..';
+import { Logger as Logger_3 } from '../../..';
+import { Logger as Logger_4 } from '..';
 import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';
 import { Model } from '@fizz/paramodel';
@@ -73,10 +76,8 @@ export interface Action {
     params: string[];
 }
 
-// Warning: (ae-forgotten-export) The symbol "AdvancedControlSettingsDialog_base" needs to be exported by the entry point index-ai.d.ts
-//
 // @public (undocumented)
-export class AdvancedControlSettingsDialog extends AdvancedControlSettingsDialog_base {
+export class AdvancedControlSettingsDialog extends ParaComponent {
     btnText: string;
     // (undocumented)
     connectedCallback(): void;
@@ -97,10 +98,8 @@ export class AnalysisPanel extends ControlPanelTabPanel {
     static styles: CSSResult[];
 }
 
-// Warning: (ae-forgotten-export) The symbol "AnimationDialog_base" needs to be exported by the entry point index-ai.d.ts
-//
 // @public (undocumented)
-export class AnimationDialog extends AnimationDialog_base {
+export class AnimationDialog extends ParaComponent {
     btnText: string;
     // (undocumented)
     connectedCallback(): void;
@@ -303,6 +302,8 @@ export abstract class Axis<T extends AxisOrientation> extends Axis_base {
     // (undocumented)
     addGridRules(length: number): void;
     // (undocumented)
+    addPopup(text?: string): void;
+    // (undocumented)
     protected abstract _appendAxisLine(): void;
     // (undocumented)
     protected abstract _appendTickLabelTiers(): void;
@@ -369,6 +370,8 @@ export abstract class Axis<T extends AxisOrientation> extends Axis_base {
     isVert(): this is Axis<'vert'>;
     // (undocumented)
     protected _labelInfo: AxisLabelInfo;
+    // (undocumented)
+    get layout(): GridLayout;
     // Warning: (ae-forgotten-export) The symbol "GridLayout" needs to be exported by the entry point index-ai.d.ts
     //
     // (undocumented)
@@ -395,6 +398,8 @@ export abstract class Axis<T extends AxisOrientation> extends Axis_base {
     //
     // (undocumented)
     protected _parent: Layout;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     resize(width: number, height: number): void;
     // (undocumented)
@@ -587,7 +592,7 @@ export class Bar extends PlaneDatapointView {
     // (undocumented)
     addPopup(text?: string): void;
     // (undocumented)
-    beginAnimStep(t: number): void;
+    beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     readonly chart: BarPlotView;
     // (undocumented)
@@ -642,6 +647,8 @@ export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
 
 // @public
 export class BarPlotView extends PlanePlotView {
+    // Warning: (ae-forgotten-export) The symbol "BaseChartInfo" needs to be exported by the entry point index-ai.d.ts
+    constructor(paraview: ParaView, width: number, height: number, dataLayerIndex: number, chartInfo: BaseChartInfo);
     // (undocumented)
     get abbrevs(): {
         [series: string]: string;
@@ -712,13 +719,13 @@ export interface BarSettings extends PlotSettings {
     // (undocumented)
     isDrawTotalLabels: boolean;
     // (undocumented)
+    isShowPopups: boolean;
+    // (undocumented)
     labelFontSize: string;
     // (undocumented)
     lineWidth: number;
     // (undocumented)
     orderBy?: string;
-    // (undocumented)
-    showPopups: boolean;
     // (undocumented)
     stacking: 'none' | 'standard';
     // (undocumented)
@@ -883,6 +890,8 @@ export interface ChartSettings extends SettingGroup {
     hasLegendWithDirectLabels: boolean;
     // (undocumented)
     isDrawSymbols: boolean;
+    // (undocumented)
+    isShowPopups: boolean;
     // (undocumented)
     isShowVisitedDatapointsOnly: boolean;
     // (undocumented)
@@ -1215,13 +1224,11 @@ export abstract class DataLayer extends PlotLayer {
     // (undocumented)
     protected _animEnd(): void;
     // (undocumented)
-    protected _animStep(t: number): void;
+    protected _animStep(bezT: number, linearT: number): void;
     // (undocumented)
     protected _beginDatapointLayout(): void;
     // (undocumented)
     get chartInfo(): BaseChartInfo;
-    // Warning: (ae-forgotten-export) The symbol "BaseChartInfo" needs to be exported by the entry point index-ai.d.ts
-    //
     // (undocumented)
     protected _chartInfo: BaseChartInfo;
     // (undocumented)
@@ -1352,7 +1359,7 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     protected _baseSymbolScale: number;
     // (undocumented)
-    beginAnimStep(_t: number): void;
+    beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     get classInfo(): ClassInfo;
     // (undocumented)
@@ -1378,7 +1385,7 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     get el(): SVGElement;
     // (undocumented)
-    endAnimStep(_t: number): void;
+    endAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     equals(other: DatapointView): boolean;
     // (undocumented)
@@ -1601,6 +1608,9 @@ export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
 
 // @public (undocumented)
 export function generateUniqueId(baseId: string, store: ParaStore): string;
+
+// @public
+export function getLogger(logName: string): Logger;
 
 // @public (undocumented)
 export interface GridSettings extends SettingGroup {
@@ -1891,6 +1901,8 @@ export class HorizTick extends HorizRule {
 export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     constructor(axis: Axis<'horiz'>, tickLabels: string[], tierIndex: number, length: number, tickStep: number, paraview: ParaView);
     // (undocumented)
+    addPopup(text?: string, index?: number): void;
+    // (undocumented)
     readonly axis: Axis<'horiz'>;
     // (undocumented)
     computeSize(): [number, number];
@@ -1906,6 +1918,8 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     protected get _length(): number;
     // (undocumented)
     protected _optimizeLabelSpacing(): number;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     readonly tickLabels: string[];
     // (undocumented)
@@ -1975,6 +1989,8 @@ export class KeymapManager extends EventTarget {
     protected _keyDetails: {
         [keyId: string]: KeyDetails;
     };
+    // (undocumented)
+    protected log: Logger;
     // (undocumented)
     onKeydown(key: string): boolean;
     // Warning: (ae-forgotten-export) The symbol "HotkeyWithArgument" needs to be exported by the entry point index-ai.d.ts
@@ -2106,6 +2122,8 @@ export interface LineSettings extends PointSettings {
     // (undocumented)
     isAlwaysShowSeriesLabel?: boolean;
     // (undocumented)
+    isShowPopups: boolean;
+    // (undocumented)
     isTrendNavigationModeEnabled: boolean;
     // (undocumented)
     leaderLineLength: number;
@@ -2119,40 +2137,34 @@ export interface LineSettings extends PointSettings {
     lowVisionLineWidth: number;
     // (undocumented)
     seriesLabelPadding: number;
-    // (undocumented)
-    showPopups: boolean;
 }
 
-// Warning: (ae-forgotten-export) The symbol "Constructor_2" needs to be exported by the entry point index-ai.d.ts
-//
-// @public (undocumented)
-export type Loggable = Constructor_2<{
-    logName(): string;
-}>;
+// @public
+export class Logger {
+    constructor(name: string, level: LogLevel);
+    error(...data: any[]): void;
+    info(...data: any[]): void;
+    warn(...data: any[]): void;
+}
 
 // @public (undocumented)
-export const Logger: {
-    new (...args: any[]): {
-        log(...data: any[]): void;
-        logName(): string;
-    };
-} & {
-    new (): {
-        logName(): string;
-    };
-};
-
-// @public (undocumented)
-export function logging<TBase extends Loggable>(Base: TBase): {
-    new (...args: any[]): {
-        log(...data: any[]): void;
-        logName(): string;
-    };
-} & TBase;
+export enum LogLevel {
+    // (undocumented)
+    ALL = 3,
+    // (undocumented)
+    MOST = 2,
+    // (undocumented)
+    NONE = 0,
+    // (undocumented)
+    SOME = 1
+}
 
 // @public (undocumented)
 export interface LollipopSettings extends BarSettings {
 }
+
+// @public (undocumented)
+export function loopParaviewRefresh(paraview: ParaView, duration: number, interval: number): void;
 
 export { Manifest }
 
@@ -2358,8 +2370,6 @@ export class ParaComponent extends LitElement {
     // (undocumented)
     extractStyles(id: string): string;
     // (undocumented)
-    logName(): string;
-    // (undocumented)
     get store(): ParaStore;
     set store(store: ParaStore);
     // (undocumented)
@@ -2368,10 +2378,12 @@ export class ParaComponent extends LitElement {
     protected _storeState: StateController<ParaStore>;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ParaControlPanel_base" needs to be exported by the entry point index-ai.d.ts
-//
 // @public (undocumented)
-export class ParaControlPanel extends ParaControlPanel_base {
+export class ParaControlPanel extends ParaComponent {
+    // (undocumented)
+    addButtonListeners(): void;
+    // (undocumented)
+    addPopup(isOpen: boolean): void;
     // (undocumented)
     get annotationPanel(): AnnotationPanel;
     // (undocumented)
@@ -2413,6 +2425,8 @@ export class ParaControlPanel extends ParaControlPanel_base {
     // (undocumented)
     paraChart: ParaChart;
     // (undocumented)
+    removePopup(id: string): void;
+    // (undocumented)
     render(): TemplateResult_2<1>;
     // (undocumented)
     settingDidChange(key: string, value: any): boolean;
@@ -2448,7 +2462,7 @@ export class ParaDialog extends ParaComponent {
 }
 
 // @public (undocumented)
-export class ParaHelper {
+export class ParaHeadless {
     constructor();
     // (undocumented)
     get api(): ParaAPI_2;
@@ -2470,7 +2484,7 @@ export class ParaHelper {
 
 // @public (undocumented)
 export class ParaStore extends State {
-    constructor(paraChart: ParaChart, inputSettings: SettingsInput, suppleteSettingsWith?: DeepReadonly<Settings>, seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
+    constructor(paraChart: ParaChart, _inputSettings: SettingsInput, seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
     // (undocumented)
     addAnnotation(): void;
     // (undocumented)
@@ -2512,6 +2526,8 @@ export class ParaStore extends State {
     // (undocumented)
     protected _colors: Colors;
     // (undocumented)
+    protected _createSettings(): void;
+    // (undocumented)
     darkMode: boolean;
     // (undocumented)
     protected data: AllSeriesData | null;
@@ -2542,11 +2558,13 @@ export class ParaStore extends State {
     // (undocumented)
     protected _getUrlAnnotations(): void;
     // (undocumented)
-    get hiddenSeriesList(): readonly string[];
+    protected _hiddenSeries: string[];
     // (undocumented)
-    protected _hiddenSeriesList: string[];
+    hideAllSeries(): void;
     // (undocumented)
-    hide(seriesKey: string): void;
+    hideOtherSeries(...seriesKeys: string[]): void;
+    // (undocumented)
+    hideSeries(seriesKey: string): void;
     // (undocumented)
     highlight(selector: string): void;
     // (undocumented)
@@ -2558,9 +2576,13 @@ export class ParaStore extends State {
     // (undocumented)
     idList: Record<string, boolean>;
     // (undocumented)
+    protected _inputSettings: SettingsInput;
+    // (undocumented)
     isSelected(seriesKey: string, index: number): boolean;
     // (undocumented)
     isSelectedSeries(seriesKey: string): boolean;
+    // (undocumented)
+    isSeriesHidden(seriesKey: string): boolean;
     // (undocumented)
     isSeriesLowlighted(seriesKey: string): boolean;
     // (undocumented)
@@ -2582,11 +2604,13 @@ export class ParaStore extends State {
     // (undocumented)
     protected _keymapManager: KeymapManager;
     // (undocumented)
+    protected log: Logger;
+    // (undocumented)
+    protected _lowlightedSeries: string[];
+    // (undocumented)
     lowlightOtherSeries(...seriesKeys: string[]): void;
     // (undocumented)
     lowlightSeries(seriesKey: string): void;
-    // (undocumented)
-    protected _lowlightSeries: string[];
     // (undocumented)
     protected _manifest: Manifest | null;
     // (undocumented)
@@ -2682,6 +2706,10 @@ export class ParaStore extends State {
     // (undocumented)
     protected _type: ChartType_2;
     // (undocumented)
+    unhideAllSeries(): void;
+    // (undocumented)
+    unhideSeries(seriesKey: string): void;
+    // (undocumented)
     unhighlightRange(startPortion: number, endPortion: number): void;
     // (undocumented)
     unobserveSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void): void;
@@ -2710,10 +2738,8 @@ export class ParaStore extends State {
     wasVisitedSeries(seriesKey: string): boolean;
 }
 
-// Warning: (ae-forgotten-export) The symbol "ParaView_base" needs to be exported by the entry point index-ai.d.ts
-//
 // @public (undocumented)
-export class ParaView extends ParaView_base {
+export class ParaView extends ParaComponent {
     constructor();
     // (undocumented)
     addDef(key: string, template: TemplateResult): void;
@@ -2788,7 +2814,9 @@ export class ParaView extends ParaView_base {
     // (undocumented)
     protected _jimReadyResolver: (() => void);
     // (undocumented)
-    protected _lowVisionModeSaved: Map<string, any>;
+    protected log: Logger;
+    // (undocumented)
+    protected _modeSaved: Map<string, any>;
     // (undocumented)
     navToDatapoint(seriesKey: string, index: number): void;
     // (undocumented)
@@ -2851,12 +2879,12 @@ export class ParaView extends ParaView_base {
 }
 
 // @public (undocumented)
-export class ParaViewController extends Logger {
+export class ParaViewController {
     constructor(_store: ParaStore);
     // (undocumented)
     handleKeyEvent(event: KeyboardEvent): void;
     // (undocumented)
-    logName(): string;
+    protected log: Logger;
     // (undocumented)
     protected _store: ParaStore;
 }
@@ -2875,7 +2903,7 @@ export abstract class PastryPlotView extends DataLayer {
     // (undocumented)
     protected _addedToParent(): void;
     // (undocumented)
-    protected _animStep(t: number): void;
+    protected _animStep(bezT: number, linearT: number): void;
     // (undocumented)
     protected _arc: number;
     // (undocumented)
@@ -2994,7 +3022,7 @@ export class PieSlice extends RadialSlice {
     // (undocumented)
     addPopup(text?: string): void;
     // (undocumented)
-    beginAnimStep(t: number): void;
+    beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     computeLocation(): void;
     // (undocumented)
@@ -3177,7 +3205,7 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     protected _animEnd(): void;
     // (undocumented)
-    beginAnimStep(t: number): void;
+    beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     readonly chart: PointPlotView;
     // (undocumented)
@@ -3197,7 +3225,7 @@ export class PointDatapointView extends PlaneDatapointView {
     // (undocumented)
     _isAnimating: boolean;
     // (undocumented)
-    popInAnimation(t: number): void;
+    popInAnimation(): void;
     // (undocumented)
     get _selectedMarkerX(): number;
     // (undocumented)
@@ -3581,6 +3609,8 @@ export class Scrollyteller {
     // (undocumented)
     enable(): Scrollyteller;
     // (undocumented)
+    protected log: Logger;
+    // (undocumented)
     off(event?: ScrollyEvent, callback?: Callback): this;
     // (undocumented)
     get offset(): number;
@@ -3790,6 +3820,9 @@ export class SeriesView extends SeriesView_base {
 }
 
 // @public
+export function setLogLevel(level: LogLevel): void;
+
+// @public
 export type Setting = string | number | boolean;
 
 // @public (undocumented)
@@ -3842,6 +3875,8 @@ export class SettingControlManager extends State {
     //
     // (undocumented)
     info(key: string): SettingControlInfo<SettingControlType>;
+    // (undocumented)
+    protected log: Logger;
     // (undocumented)
     protected _settingControlInfo: {
         [key: string]: SettingControlInfo;
@@ -4157,6 +4192,8 @@ export interface TickLabelSettings extends SettingGroup {
 export abstract class TickLabelTier<T extends AxisOrientation> extends TickLabelTier_base {
     constructor(axis: Axis<T>, tickLabels: string[], tierIndex: number, length: number, _tickStep: number, paraview: ParaView);
     // (undocumented)
+    addPopup(text: string, index: number): void;
+    // (undocumented)
     readonly axis: Axis<T>;
     // (undocumented)
     protected _children: Label[];
@@ -4182,6 +4219,8 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends TickLabel
     set parent(parent: Layout);
     // (undocumented)
     protected _parent: Layout;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     resize(width: number, height: number): void;
     // (undocumented)
@@ -4523,6 +4562,8 @@ export class VertTick extends VertRule {
 export class VertTickLabelTier extends TickLabelTier<'vert'> {
     constructor(axis: Axis<'vert'>, tickLabels: string[], tierIndex: number, length: number, tickStep: number, paraview: ParaView);
     // (undocumented)
+    addPopup(text?: string, index?: number): void;
+    // (undocumented)
     readonly axis: Axis<'vert'>;
     // (undocumented)
     computeSize(): [number, number];
@@ -4534,6 +4575,8 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
     protected get _labelWrapWidth(): undefined;
     // (undocumented)
     protected get _length(): number;
+    // (undocumented)
+    removePopup(id: string): void;
     // (undocumented)
     readonly tickLabels: string[];
     // (undocumented)
@@ -4588,7 +4631,7 @@ export interface YAxisSettings extends AxisSettings {
 
 // Warnings were encountered during analysis:
 //
-// types-ai/lib/store/settings_controls.d.ts:55:9 - (ae-incompatible-release-tags) The symbol "__index" is marked as @public, but its signature references "SettingControlInfo" which is marked as @internal
+// types-ai/lib/store/settings_controls.d.ts:57:9 - (ae-incompatible-release-tags) The symbol "__index" is marked as @public, but its signature references "SettingControlInfo" which is marked as @internal
 // types-ai/lib/store/settings_types.d.ts:34:5 - (ae-forgotten-export) The symbol "Color_2" needs to be exported by the entry point index-ai.d.ts
 
 // (No @packageDocumentation comment for this package)
