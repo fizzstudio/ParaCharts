@@ -274,7 +274,7 @@ export class Label extends View {
 
     let top = 0, bottom = 0, left = 0, right = 0;
 
-    const wrapMode = this.options.wrapWidth !== undefined && Math.max(width, height) > this.options.wrapWidth;
+    const wrapMode = this._options.wrapWidth !== undefined && Math.max(width, height) > this._options.wrapWidth;
     if (wrapMode || this._text.includes('\n')) {
       text.textContent = '';
       const tspans: SVGTSpanElement[] = [document.createElementNS(SVGNS, 'tspan')];
@@ -305,7 +305,7 @@ export class Label extends View {
           const rect = this.paraview.store.settings.ui.isFullscreenEnabled
             ? tspan.getBBox()
             : tspan.getBoundingClientRect();
-          if (Math.max(rect.height, rect.width) >= this.options.wrapWidth!) {
+          if (Math.max(rect.height, rect.width) >= this._options.wrapWidth!) {
             tspan.textContent = oldContent;
             tspans.push(document.createElementNS(SVGNS, 'tspan'));
             text.append(tspans.at(-1)!);
