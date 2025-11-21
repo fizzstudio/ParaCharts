@@ -518,8 +518,10 @@ export class Bar extends PlaneDatapointView {
       height: this._height,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
+        console.log("test1")
         this.paraview.store.settings.chart.isShowPopups ? this.addPopup() : undefined
       },
+
       pointerLeave: (e) => {
         this.paraview.store.settings.chart.isShowPopups ? this.removePopup(this.id) : undefined
       },
@@ -542,6 +544,7 @@ export class Bar extends PlaneDatapointView {
 
 
   addPopup(text?: string) {
+
     let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
     if (this.paraview.store.model!.multi) {
       datapointText = `${this.series.getLabel()} ${datapointText}`
@@ -561,6 +564,7 @@ export class Bar extends PlaneDatapointView {
       },
       {})
     this.paraview.store.popups.push(popup)
+        console.log("test2")
   }
 
   removePopup(id: string) {

@@ -965,4 +965,10 @@ export class ParaStore extends State {
   clearUserTrendLines() {
     this._userTrendLines = [];
   }
+
+  /*
+  clearPopups() {
+    this.popups.splice(0, this.popups.length)
+  }
+    */
 }

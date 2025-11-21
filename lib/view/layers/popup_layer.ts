@@ -91,6 +91,7 @@ export class PopupLayer extends PlotLayer {
     }
 
     addPopups() {
+        console.log("addPopups")
         this.addGroup('datapoint-popups', true);
         this.group('datapoint-popups')!.clearChildren();
         if (this.paraview.store.settings.chart.isShowPopups && this.paraview.store.settings.popup.activation === "onFocus") {
@@ -132,6 +133,7 @@ export class PopupLayer extends PlotLayer {
         }
 
         for (const popup of this.paraview.store.popups) {
+            console.log("popup", popup)
             popup.classInfo = { 'popup': true }
             if (this.type === 'foreground') {
                 this.group('datapoint-popups')!.append(popup);

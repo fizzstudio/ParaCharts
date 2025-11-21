@@ -1,4 +1,5 @@
 import { Logger, getLogger } from '../common/logger';
+import { Popup } from '../view/popup';
 
 import { type ParaView } from './paraview';
 
@@ -116,7 +117,22 @@ export class PointerEventManager {
     target.releasePointerCapture(event.pointerId);
 
     this._coords = this._localCoords(event);
-
+    //console.log(this._paraView.documentView?.paddedLeft)
+    //console.log(this._paraView.documentView?.chartLayers.paddedLeft)
+    /*
+    this._paraView.store.clearPopups()
+    let popup = new Popup(this._paraView,
+          {
+            text: "popup",
+            x: this._coords.x - this._paraView.documentView!.chartLayers.paddedLeft,
+            y: this._coords.y - this._paraView.documentView!.chartLayers.paddedTop,
+            textAnchor: "middle",
+            classList: ['annotationlabel'],
+            id: "sneed"
+          },
+          {})
+        this._paraView.store.popups.push(popup)
+        */
     if (target === this._paraView.root || target === this._dataRoot) {
       this._currentTarget = null;
     } else if (target === this._currentTarget) {
