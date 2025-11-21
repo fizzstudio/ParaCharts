@@ -23,6 +23,6 @@ export const chartInfoClasses = {
   heatmap: HeatMapInfo,
   // histogram: Histogram,
   // gauge: BarChart, //GaugeChart,
-  // stepline: LineChart, //StepLineChart,
-  // lollipop: BarChart, //LollipopChart
+  stepline: LineChartInfo, //StepLineChart,
+  lollipop: BarChartInfo, //LollipopChart
 };
