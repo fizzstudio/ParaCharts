@@ -55,6 +55,7 @@ import { type ParaChart } from '../parachart/parachart';
 import { DatapointView } from '../view/data';
 import { Popup } from '../view/popup';
 import { type DatapointCursor } from '../view/layers/data/navigation';
+import { Point } from '@fizz/chart-classifier-utils';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -144,6 +145,7 @@ export class ParaStore extends State {
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() frontSeries = '';
+  @property() pointerChords: Point = {x: 0, y: 0}
 
   @property() protected _lowlightedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];

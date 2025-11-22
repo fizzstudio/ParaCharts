@@ -305,6 +305,7 @@ export class Bar extends PlaneDatapointView {
 
   protected _recordLabel: Label | null = null;
   protected _dataLabel: Label | null = null;
+  protected popup?: Popup;
 
   constructor(
     seriesView: PlaneSeriesView,
@@ -518,10 +519,18 @@ export class Bar extends PlaneDatapointView {
       height: this._height,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        console.log("test1")
         this.paraview.store.settings.chart.isShowPopups ? this.addPopup() : undefined
       },
-
+      pointerMove: (e) => {
+        if (this.popup){
+          this.popup.grid.x = this.paraview.store.pointerChords.x
+          this.popup.grid.y = this.paraview.store.pointerChords.y - this.paraview.store.settings.popup.margin
+          this.popup.shiftGrid()
+          this.popup.box.x = this.popup.grid.x
+          this.popup.box.y = this.popup.grid.bottom
+          this.paraview.requestUpdate()
+        }
+      },
       pointerLeave: (e) => {
         this.paraview.store.settings.chart.isShowPopups ? this.removePopup(this.id) : undefined
       },
@@ -544,7 +553,6 @@ export class Bar extends PlaneDatapointView {
 
 
   addPopup(text?: string) {
-
     let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
     if (this.paraview.store.model!.multi) {
       datapointText = `${this.series.getLabel()} ${datapointText}`
@@ -562,9 +570,9 @@ export class Bar extends PlaneDatapointView {
         rotationExempt: this.paraview.store.type == 'bar' ? false : true,
         angle: this.paraview.store.type == 'bar' ? -90 : 0
       },
-      {})
+      {shape:"box"})
     this.paraview.store.popups.push(popup)
-        console.log("test2")
+    this.popup = popup;
   }
 
   removePopup(id: string) {
