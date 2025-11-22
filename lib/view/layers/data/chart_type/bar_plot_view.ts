@@ -305,7 +305,6 @@ export class Bar extends PlaneDatapointView {
 
   protected _recordLabel: Label | null = null;
   protected _dataLabel: Label | null = null;
-  protected popup?: Popup;
 
   constructor(
     seriesView: PlaneSeriesView,
@@ -522,12 +521,12 @@ export class Bar extends PlaneDatapointView {
         this.paraview.store.settings.chart.isShowPopups ? this.addPopup() : undefined
       },
       pointerMove: (e) => {
-        if (this.popup){
-          this.popup.grid.x = this.paraview.store.pointerChords.x
-          this.popup.grid.y = this.paraview.store.pointerChords.y - this.paraview.store.settings.popup.margin
-          this.popup.shiftGrid()
-          this.popup.box.x = this.popup.grid.x
-          this.popup.box.y = this.popup.grid.bottom
+        if (this._popup){
+          this._popup.grid.x = this.paraview.store.pointerChords.x
+          this._popup.grid.y = this.paraview.store.pointerChords.y - this.paraview.store.settings.popup.margin
+          this._popup.shiftGrid()
+          this._popup.box.x = this._popup.grid.x
+          this._popup.box.y = this._popup.grid.bottom
           this.paraview.requestUpdate()
         }
       },
@@ -572,7 +571,7 @@ export class Bar extends PlaneDatapointView {
       },
       {shape:"box"})
     this.paraview.store.popups.push(popup)
-    this.popup = popup;
+    this._popup = popup;
   }
 
   removePopup(id: string) {

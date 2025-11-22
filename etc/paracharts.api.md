@@ -45,6 +45,7 @@ import papa from 'papaparse';
 import { ParaAPI as ParaAPI_2 } from '../paraapi/paraapi';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { PlaneDatapointView as PlaneDatapointView_2 } from './plane_plot_view';
+import { Point as Point_2 } from '@fizz/chart-classifier-utils';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
 import { Ref } from 'lit/directives/ref.js';
@@ -614,6 +615,10 @@ export class Bar extends PlaneDatapointView {
     protected _dataLabel: Label | null;
     // (undocumented)
     protected _parent: PlaneSeriesView;
+    // Warning: (ae-forgotten-export) The symbol "Popup" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected popup?: Popup;
     // (undocumented)
     get recordLabel(): Label | null;
     set recordLabel(label: Label | null);
@@ -2731,8 +2736,8 @@ export class ParaStore extends State {
     protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
     // (undocumented)
     paraChart: ParaChart;
-    // Warning: (ae-forgotten-export) The symbol "Popup" needs to be exported by the entry point index.d.ts
-    //
+    // (undocumented)
+    pointerChords: Point_2;
     // (undocumented)
     popups: Popup[];
     // (undocumented)
@@ -4135,6 +4140,8 @@ export interface ShapeOptions {
     pointerEnter?: (e: PointerEvent) => void;
     // (undocumented)
     pointerLeave?: (e: PointerEvent) => void;
+    // (undocumented)
+    pointerMove?: (e: PointerEvent) => void;
     // (undocumented)
     scale?: number;
     // (undocumented)

@@ -70,6 +70,16 @@ export class PieSlice extends RadialSlice {
       pointerEnter: (e) => {
         this.paraview.store.settings.chart.isShowPopups ? this.addPopup() : undefined
       },
+      pointerMove: (e) => {
+        if (this._popup) {
+          this._popup.grid.x = this.paraview.store.pointerChords.x
+          this._popup.grid.y = this.paraview.store.pointerChords.y - this.paraview.store.settings.popup.margin
+          this._popup.shiftGrid()
+          this._popup.box.x = this._popup.grid.x
+          this._popup.box.y = this._popup.grid.bottom
+          this.paraview.requestUpdate()
+        }
+      },
       pointerLeave: (e) => {
         this.paraview.store.settings.chart.isShowPopups ? this.removePopup(this.id) : undefined
       },
@@ -140,17 +150,10 @@ export class PieSlice extends RadialSlice {
         points: [this]
       },
       {
-        shape: "boxWithArrow",
-        fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
-          : this.paraview.store.settings.popup.backgroundColor === "light" ?
-            this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.color), 6)
-            : this.paraview.store.colors.colorValueAt(this.color),
-        stroke: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
-          : this.paraview.store.settings.popup.backgroundColor === "light" ?
-            this.paraview.store.colors.colorValueAt(this.color)
-            : "black",
+        shape: "box"
       })
     this.paraview.store.popups.push(popup)
+    this._popup = popup;
   }
 
   removePopup(id: string) {
