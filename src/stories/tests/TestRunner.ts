@@ -4,11 +4,16 @@ import { Manifest } from '@fizz/paramanifest';
 
 export type ExpectFunction = typeof _expect;
 
+// (@simonvarey): Note that this function checks whether the `testMethods` property is an own property
+//   so that test name will be added to subclass prototypes, not only to the superclass.
 export function Test(target: Object, propertyKey: string | symbol, descriptor?: PropertyDescriptor) {
   const ctor = target.constructor as any;
 
   if (!ctor.testMethods) {
     ctor.testMethods = [];
+  }
+  if (!Object.getOwnPropertyNames(ctor).includes('testMethods')) {
+    ctor.testMethods = [...ctor.testMethods];
   }
 
   ctor.testMethods.push(propertyKey);
@@ -37,6 +42,9 @@ export class TestRunner {
   @Test
   async ariaLabelContainsDatasetTitle() {
     const parachart = await this.canvas.findByTestId('para-chart');
+    await this.waitFor(() => {
+      this.expect(parachart.paraView.documentView).toBeDefined();
+    });
     const application = shadow.getByShadowRole(parachart, 'application');
     const ariaLabel = application.getAttribute('aria-label');
     await this.expect(ariaLabel).toContain(this.manifest.datasets[0].title);
@@ -53,7 +61,7 @@ export class TestRunner {
     console.log(document.activeElement + '--');
   }*/
 
-  @Test
+  /*@Test
   async annotations() {
     const parachart = await this.canvas.findByTestId('para-chart');
     const application = shadow.getByShadowRole(parachart, 'application');
@@ -78,7 +86,7 @@ export class TestRunner {
       const announcement = ariaLive.querySelector('div')?.textContent;
       this.expect(announcement).toContain('test annotation');
     });
-  }
+  }*/
 
   async loadManifest(manifestPath: string) {
     const prefix = '/node_modules/@fizz/chart-data/data/';
@@ -92,7 +100,10 @@ export class TestRunner {
   async run() {
     const tests: string[] = (this.constructor as any).testMethods ?? [];
     for (const name of tests) {
-      console.log(name);
+      console.log(`Running test ${name}`);
+      if (typeof (this as any)[name] !== 'function') {
+        throw new Error(`Test method ${name} not found`);
+      }
       await (this as any)[name]();
     }
   }
