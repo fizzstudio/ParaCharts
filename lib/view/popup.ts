@@ -144,13 +144,13 @@ export class Popup extends View {
     }
 
     applyDefaults() {
-        if (!this.popupLabelOptions.color) {
+        if (this.popupLabelOptions.color == undefined) {
             this.popupLabelOptions.color = 0;
         }
-        if (!this.popupLabelOptions.wrapWidth) {
+        if (this.popupLabelOptions.wrapWidth == undefined) {
             this.popupLabelOptions.wrapWidth = this.wrapWidth;
         }
-        if (this.popupLabelOptions.y) {
+        if (this.popupLabelOptions.y !== undefined) {
             this.popupLabelOptions.y -= this.margin;
         }
         if (this.popupLabelOptions.inbounds == undefined) {
