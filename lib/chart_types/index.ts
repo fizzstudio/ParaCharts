@@ -13,6 +13,8 @@ export * from './pastry_chart';
 export * from './scatter_chart';
 export * from './heat_map';
 
+// (@simonvarey): stepline and lollipop should be replaced with dedicated SteplineChartInfo and 
+//   LollipopChartInfo classes. See #820
 export const chartInfoClasses = {
   bar: BarChartInfo,
   column: BarChartInfo,
