@@ -3,7 +3,9 @@ import * as shadow from 'shadow-dom-testing-library';
 import { Manifest } from '@fizz/paramanifest';
 
 export type ExpectFunction = typeof _expect;
-//
+
+// (@simonvarey): Note that this function checks whether the `testMethods` property is an own property
+//   so that test name will be added to subclass prototypes, not only to the superclass.
 export function Test(target: Object, propertyKey: string | symbol, descriptor?: PropertyDescriptor) {
   const ctor = target.constructor as any;
 
@@ -90,8 +92,8 @@ export class TestRunner {
     const prefix = '/node_modules/@fizz/chart-data/data/';
     const response = await fetch(prefix + manifestPath);
     this.manifest = await response.json() as Manifest;
-    //console.log('[manifest loaded]');
-    //console.log(JSON.stringify(this.manifest, null, 2));
+    console.log('[manifest loaded]');
+    console.log(JSON.stringify(this.manifest, null, 2));
     return this;
   }
 
