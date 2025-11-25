@@ -41,6 +41,7 @@ import { PaddingInput as PaddingInput_3 } from '../base_view';
 import { PaddingInput as PaddingInput_4 } from '../../base_view';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';
 import papa from 'papaparse';
+import { ParaAPI as ParaAPI_2 } from '../paraapi/paraapi';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
@@ -188,6 +189,27 @@ export class ParaChart extends ParaComponent {
     type?: ChartType_2;
     // (undocumented)
     willUpdate(changedProperties: PropertyValues<this>): void;
+}
+
+// @public (undocumented)
+export class ParaHeadless {
+    constructor();
+    // (undocumented)
+    get api(): ParaAPI_2;
+    // (undocumented)
+    protected _createParaChart(): void;
+    // (undocumented)
+    get jimReady(): Promise<void>;
+    // Warning: (ae-forgotten-export) The symbol "FieldInfo" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    loadData(url: string): Promise<FieldInfo[]>;
+    // (undocumented)
+    loadManifest(input: string, type?: SourceKind): Promise<void>;
+    // (undocumented)
+    protected _paraChart: ParaChart;
+    // (undocumented)
+    get ready(): Promise<void>;
 }
 
 // (No @packageDocumentation comment for this package)
