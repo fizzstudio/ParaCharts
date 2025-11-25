@@ -1,49 +1,58 @@
-import { ParaHelper } from '../../../../lib';
+import { Manifest, ParaHeadless } from '../../../../lib/headless/paraheadless';
 
-import templateLine from '../paracharts-line.json';
+const container = document.getElementById('content-container')!;
+const jim = document.getElementById('jim')!;
 
-import { type Manifest } from '../../../../lib';
+let _dataFile;
+let _svgName;
+let _manifest;
+let _svgText;
+let _dataFieldInfo;
 
-window.addEventListener('load', () => new Demo());
+async function _selectData(event: Event) {
+	event.stopPropagation();
 
-class Demo {
+	const fileInput = event.target as HTMLInputElement;
+	const fileList = fileInput.files;
+	const file = fileList?.item(0);
 
-  helper: ParaHelper;
-
-  constructor() {
-    this.helper = new ParaHelper();
-    this.init();
-  }
-
-  async init() {
-    await this.helper.ready;
-		await this.helper.loadData('/src/demo/headless/Inflation_rate_in_EU_and_Euro_area_2024.csv');
-    const manifest = this.populateManifest();
-    await this.helper.loadManifest(JSON.stringify(manifest), 'content');
-    //await this.helper.loadManifest('/src/demo/headless/paracharts-line.json');
-    //await this.helper.loadManifest('/src/demo-data/bar-multi-manifest-48.json')!;
-    const content = this.helper.serializeChart();
-    const container = document.getElementById('content-container');
-    container!.innerHTML = content;
-  }
-
-	populateManifest() {
-		const manifest = structuredClone(templateLine) as Manifest;
-		manifest.datasets[0].title = 'Foo Bar';
-		manifest.datasets[0].facets.x.label = 'Baz';
-		manifest.datasets[0].facets.y.label = 'Quux';
-		const indepKey = 'Year';
-		manifest.datasets[0].facets.x.datatype = 'date';
-		manifest.datasets[0].series = ['EU', 'Euro area'].map((name) => ({
-			key: name,
-			theme: {
-				baseQuantity: name,
-				baseKind: 'dimensioned',
-				entity: name,
-			},
-		}));
-    return manifest;
+	if (!file) {
+		return;
 	}
 
+	_dataFile = file;
+
+	const ext = file.name.toLocaleLowerCase().match(/^.+(\.\w+)/)?.[1];
+	_svgName = ext
+		? (file.name.slice(0, -ext.length) + '.svg')
+		: (file.name + '.svg');
+
+	if ('application/json' === file.type) {
+		await _loadManifest(JSON.parse(await file.text()));
+	} else if ('text/csv' === file.type) {
+		await _loadCsv(file);
+	} else {
+		throw new Error(`data file type '${file.type}' not supported`);
+	}
 }
 
+async function _loadManifest(manifest: Manifest) {
+	await headless.loadManifest(JSON.stringify(manifest), 'content');
+	await headless.jimReady;
+	_manifest = manifest;
+	_svgText = headless.api.serializeChart();
+	container.innerHTML = _svgText;
+	jim.innerHTML = document.getElementsByTagName('metadata')[0].innerHTML;
+}
+
+async function _loadCsv(blob: Blob) {
+	const url = URL.createObjectURL(blob);
+	_dataFieldInfo = await headless.loadData(url);
+	URL.revokeObjectURL(url);
+}
+
+const headless = new ParaHeadless();
+await headless.ready;
+
+const dataSelect = document.getElementById('data-select')!;
+dataSelect.addEventListener('change', _selectData);
