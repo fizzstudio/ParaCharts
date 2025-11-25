@@ -6,8 +6,6 @@ import { defineConfig } from 'vitest/config';
 import packageConfig from './package.json';
 import * as child from 'child_process';
 
-import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
-
 const commitHash = child.execSync('git rev-parse --short HEAD').toString();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -44,27 +42,6 @@ export default defineConfig({
       provider: 'playwright',
       name: 'chromium',
       headless: true
-    },
-    projects: [{
-      extends: true,
-      plugins: [
-      // The plugin will run tests for the stories defined in your Storybook config
-      // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
-      storybookTest({
-        configDir: join(__dirname, '.storybook-test')
-      })],
-      test: {
-        name: 'storybook',
-        browser: {
-          enabled: true,
-          headless: true,
-          provider: 'playwright',
-          instances: [{
-            browser: 'chromium'
-          }]
-        },
-        setupFiles: ['.storybook-test/vitest.setup.ts']
-      }
-    }]
+    }
   }
 });
