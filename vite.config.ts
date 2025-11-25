@@ -37,6 +37,7 @@ export default defineConfig({
     port: 5180
   },
   test: {
+    include: ['src/tests/**/*.test.ts'],
     browser: {
       enabled: true,
       provider: 'playwright',
