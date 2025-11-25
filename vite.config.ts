@@ -34,7 +34,10 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5180
+    port: 5180,
+    fs: {
+      allow: ['..']
+    }
   },
   test: {
     include: ['src/tests/**/*.test.ts'],
@@ -44,5 +47,30 @@ export default defineConfig({
       name: 'chromium',
       headless: true
     }
+  },
+  optimizeDeps: {
+    include: [
+      'lit',
+      'lit/decorators.js',
+      'lit/directives/ref.js',
+      'lit/directives/class-map.js',
+      'lit/directives/unsafe-html.js',
+      'lit/directives/style-map.js',
+      'lit/static-html.js',
+      '@lit-app/state',
+      'immer',
+      '@fizz/paramanifest',
+      '@fizz/parasummary',
+      '@fizz/chart-classifier-utils',
+      '@fizz/ui-components',
+      '@fizz/jimerator',
+      '@fizz/paramodel',
+      '@fizz/sparkbraille-component',
+      '@fizz/clustering',
+      '@fizz/templum',
+      'decimal.js',
+      'papaparse',
+      'simple-statistics'
+    ]
   }
 });
