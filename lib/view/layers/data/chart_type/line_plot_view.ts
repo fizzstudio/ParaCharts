@@ -371,18 +371,12 @@ export class LineSection extends PointDatapointView {
         text: text ?? datapointText,
         x: this.x,
         y: this.y,
-        textAnchor: "middle",
-        classList: ['annotationlabel'],
         id: this.id,
         color: this.color,
         points: [this]
       },
       {})
     this.paraview.store.popups.push(popup)
-  }
-
-  removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
   }
 }
 

@@ -143,8 +143,6 @@ export class PieSlice extends RadialSlice {
         text: text ?? datapointText,
         x: x,
         y: y,
-        textAnchor: "middle",
-        classList: ['annotationlabel'],
         id: this.id,
         color: this.color,
         points: [this]
@@ -154,10 +152,5 @@ export class PieSlice extends RadialSlice {
       })
     this.paraview.store.popups.push(popup)
     this._popup = popup;
-  }
-
-  removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1);
-    this.paraview.requestUpdate()
   }
 }

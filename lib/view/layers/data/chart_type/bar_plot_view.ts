@@ -521,22 +521,22 @@ export class Bar extends PlaneDatapointView {
         this.paraview.store.settings.chart.isShowPopups ? this.addPopup() : undefined
       },
       pointerMove: (e) => {
-        if (this._popup){
-          if (this.paraview.store.type == 'column'){
-          this._popup.grid.x = this.paraview.store.pointerChords.x
-          this._popup.grid.y = this.paraview.store.pointerChords.y - this.paraview.store.settings.popup.margin
-          this._popup.shiftGrid()
-          this._popup.box.x = this._popup.grid.x
-          this._popup.box.y = this._popup.grid.bottom
-          this.paraview.requestUpdate()
+        if (this._popup) {
+          if (this.paraview.store.type == 'column') {
+            this._popup.grid.x = this.paraview.store.pointerChords.x
+            this._popup.grid.y = this.paraview.store.pointerChords.y - this.paraview.store.settings.popup.margin
+            this._popup.shiftGrid()
+            this._popup.box.x = this._popup.grid.x
+            this._popup.box.y = this._popup.grid.bottom
+            this.paraview.requestUpdate()
           }
-          else if (this.paraview.store.type == 'bar'){
-          this._popup.grid.x = this.paraview.store.pointerChords.y  
-          this._popup.grid.y = this.chart.width - this.paraview.store.pointerChords.x
-          this._popup.shiftGrid()
-          this._popup.box.x = this._popup.grid.x
-          this._popup.box.y = this._popup.grid.bottom
-          this.paraview.requestUpdate()
+          else if (this.paraview.store.type == 'bar') {
+            this._popup.grid.x = this.paraview.store.pointerChords.y
+            this._popup.grid.y = this.chart.height - this.paraview.store.pointerChords.x;
+            this._popup.shiftGrid()
+            this._popup.box.x = this._popup.grid.x
+            this._popup.box.y = this._popup.grid.bottom
+            this.paraview.requestUpdate()
           }
         }
       },
@@ -571,8 +571,6 @@ export class Bar extends PlaneDatapointView {
         text: text ?? datapointText,
         x: this.x + this.width / 2,
         y: this.y,
-        textAnchor: "middle",
-        classList: ['annotationlabel'],
         id: this.id,
         color: this.color,
         points: [this],
@@ -582,11 +580,6 @@ export class Bar extends PlaneDatapointView {
       {shape:"box"})
     this.paraview.store.popups.push(popup)
     this._popup = popup;
-  }
-
-  removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    this.paraview.requestUpdate()
   }
 
 }

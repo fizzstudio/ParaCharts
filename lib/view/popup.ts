@@ -147,6 +147,9 @@ export class Popup extends View {
         if (this.popupLabelOptions.color == undefined) {
             this.popupLabelOptions.color = 0;
         }
+        if (this.popupLabelOptions.textAnchor == undefined) {
+            this.popupLabelOptions.textAnchor == "middle"
+        }
         if (this.popupLabelOptions.wrapWidth == undefined) {
             this.popupLabelOptions.wrapWidth = this.wrapWidth;
         }

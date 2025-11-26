@@ -134,7 +134,10 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   }
 
   addPopup(text: string, index: number): void{}
-  removePopup(id: string){}
+  removePopup(id: string) {
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
+    this.paraview.requestUpdate()
+  }
 
   updateTickLabelIds() {
     // const xSeries = todo().controller.model!.indepVar;
@@ -282,8 +285,6 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
         text: text ?? datapointText,
         x: this._tickLabelX(index ?? 0) * regFactor,
         y: this.paraview.documentView?.chartLayers.height!,
-        textAnchor: "middle",
-        classList: ['annotationlabel'],
         id: this.id,
         type: "horizTick",
         fill: "hsl(0, 0%, 0%)",
@@ -296,10 +297,6 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     this.paraview.store.popups.push(popup)
   }
 
-  removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    this.paraview.requestUpdate()
-  }
 
 }
 
@@ -374,8 +371,6 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
         text: text ?? datapointText,
         x: this._tickLabelX(index ?? 0) + 15,
         y: this._tickLabelY(index ?? 0) + this.paraview.store.settings.popup.margin - this.children[index ?? 0].height ,
-        textAnchor: "middle",
-        classList: ['annotationlabel'],
         id: this.id,
         type: "vertTick",
         fill: "hsl(0, 0%, 0%)",
@@ -388,9 +383,5 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
     this.paraview.store.popups.push(popup)
   }
 
-  removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    this.paraview.requestUpdate()
-  }
 
 }

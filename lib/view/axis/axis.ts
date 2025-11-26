@@ -289,8 +289,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
         text: text ?? datapointText,
         x: this.x,
         y: this.y,
-        textAnchor: "middle",
-        classList: ['annotationlabel'],
         id: this.id,
         type: "vertAxis",
         fill: "hsl(0, 0%, 0%)"

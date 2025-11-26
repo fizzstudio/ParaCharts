@@ -591,8 +591,6 @@ export interface AxisTitleSettings extends SettingGroup {
 export class Bar extends PlaneDatapointView {
     constructor(seriesView: PlaneSeriesView, _stack: BarStack);
     // (undocumented)
-    addPopup(text?: string): void;
-    // (undocumented)
     beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     readonly chart: BarPlotView;
@@ -614,18 +612,14 @@ export class Bar extends PlaneDatapointView {
     // (undocumented)
     protected _dataLabel: Label | null;
     // (undocumented)
-    protected _parent: PlaneSeriesView;
-    // Warning: (ae-forgotten-export) The symbol "Popup" needs to be exported by the entry point index.d.ts
-    //
+    get defaultPopupLabelOptions(): any;
     // (undocumented)
-    protected popup?: Popup;
+    protected _parent: PlaneSeriesView;
     // (undocumented)
     get recordLabel(): Label | null;
     set recordLabel(label: Label | null);
     // (undocumented)
     protected _recordLabel: Label | null;
-    // (undocumented)
-    removePopup(id: string): void;
     // (undocumented)
     get selectedMarker(): RectShape;
     // (undocumented)
@@ -1353,8 +1347,10 @@ export class DatapointView extends DataView_2 {
     constructor(seriesView: SeriesView);
     // (undocumented)
     protected _addedToParent(): void;
+    // Warning: (ae-forgotten-export) The symbol "PopupShapeOptions" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
-    addPopup(text?: string): void;
+    addPopup(popupLabelOptions: PopupLabelOptions, popupShapeOptions: PopupShapeOptions): void;
     // (undocumented)
     protected _animEndState: AnimState;
     // (undocumented)
@@ -1387,6 +1383,10 @@ export class DatapointView extends DataView_2 {
     // (undocumented)
     get datapoint(): Datapoint;
     get datapointId(): string;
+    // Warning: (ae-forgotten-export) The symbol "PopupLabelOptions" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    get defaultPopupLabelOptions(): PopupLabelOptions;
     // (undocumented)
     get el(): SVGElement;
     // (undocumented)
@@ -1924,8 +1924,6 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     // (undocumented)
     protected _optimizeLabelSpacing(): number;
     // (undocumented)
-    removePopup(id: string): void;
-    // (undocumented)
     readonly tickLabels: string[];
     // (undocumented)
     protected _tickLabelX(index: number): number;
@@ -2083,8 +2081,6 @@ export class LinePlotView extends PointPlotView {
 // @public
 export class LineSection extends PointDatapointView {
     // (undocumented)
-    addPopup(text?: string): void;
-    // (undocumented)
     readonly chart: LinePlotView;
     // (undocumented)
     get classInfo(): {
@@ -2114,8 +2110,6 @@ export class LineSection extends PointDatapointView {
     protected _prevMidX?: number;
     // (undocumented)
     protected _prevMidY?: number;
-    // (undocumented)
-    removePopup(id: string): void;
     // (undocumented)
     protected _shapeStyleInfo(shapeIndex: number): StyleInfo;
 }
@@ -2738,6 +2732,8 @@ export class ParaStore extends State {
     paraChart: ParaChart;
     // (undocumented)
     pointerChords: Point_2;
+    // Warning: (ae-forgotten-export) The symbol "Popup" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     popups: Popup[];
     // (undocumented)
@@ -3123,17 +3119,15 @@ export class PiePlotView extends PastryPlotView {
 export class PieSlice extends RadialSlice {
     constructor(parent: SeriesView, params: RadialDatapointParams);
     // (undocumented)
-    addPopup(text?: string): void;
-    // (undocumented)
     beginAnimStep(bezT: number, linearT: number): void;
     // (undocumented)
     computeLocation(): void;
     // (undocumented)
     protected _createShapes(): void;
     // (undocumented)
-    get height(): number;
+    get defaultPopupLabelOptions(): any;
     // (undocumented)
-    removePopup(id: string): void;
+    get height(): number;
     // (undocumented)
     get selectedMarker(): SectorShape;
     // (undocumented)
@@ -4680,8 +4674,6 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
     protected get _labelWrapWidth(): undefined;
     // (undocumented)
     protected get _length(): number;
-    // (undocumented)
-    removePopup(id: string): void;
     // (undocumented)
     readonly tickLabels: string[];
     // (undocumented)

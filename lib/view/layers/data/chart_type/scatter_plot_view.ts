@@ -205,8 +205,6 @@ class ScatterPointView extends PointDatapointView {
         text: this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
         x: this.x,
         y: this.y,
-        textAnchor: "middle",
-        classList: ['annotationlabel'],
         id: this.id,
         color: this.color,
         points: [this]
@@ -215,11 +213,6 @@ class ScatterPointView extends PointDatapointView {
         shape: "boxWithArrow"
       })
     this.paraview.store.popups.push(popup)
-  }
-
-  removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    this.paraview.requestUpdate()
   }
 }
 
