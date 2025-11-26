@@ -5,8 +5,7 @@
 ```ts
 
 import { AllSeriesData } from '@fizz/paramanifest';
-import { AxisOrientation as AxisOrientation_2 } from '@fizz/paramodel';
-import { Box } from '@fizz/paramodel';
+import { AxisOrientation } from '@fizz/paramodel';
 import { ButtonDescriptor } from '@fizz/ui-components';
 import { ChartType as ChartType_2 } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
@@ -28,9 +27,9 @@ import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
-import { Logger as Logger_2 } from '../..';
-import { Logger as Logger_3 } from '../../..';
-import { Logger as Logger_4 } from '..';
+import { Logger as Logger_2 } from '../../common';
+import { Logger as Logger_3 } from '../../../common';
+import { Logger as Logger_4 } from '../common';
 import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';
 import { Model } from '@fizz/paramodel';
@@ -44,8 +43,6 @@ import { PairAnalyzerConstructor } from '@fizz/paramodel';
 import papa from 'papaparse';
 import { ParaAPI as ParaAPI_2 } from '../paraapi/paraapi';
 import { PlaneDatapoint } from '@fizz/paramodel';
-import { PlaneDatapointView as PlaneDatapointView_2 } from './plane_plot_view';
-import { Point as Point_2 } from '@fizz/chart-classifier-utils';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
 import { Ref } from 'lit/directives/ref.js';
@@ -2362,6 +2359,8 @@ export class ParaChart extends ParaComponent {
     get api(): ParaAPI;
     // (undocumented)
     get ariaLiveRegion(): AriaLive;
+    // Warning: (ae-forgotten-export) The symbol "AriaLive" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     protected _ariaLiveRegionRef: Ref_2<AriaLive>;
     // Warning: (ae-forgotten-export) The symbol "ParaCaptionBox" needs to be exported by the entry point index.d.ts
@@ -2378,12 +2377,16 @@ export class ParaChart extends ParaComponent {
     //
     // (undocumented)
     protected _commander: Commander;
+    // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     accessor config: SettingsInput;
     // (undocumented)
     connectedCallback(): void;
     // (undocumented)
     get controlPanel(): ParaControlPanel;
+    // Warning: (ae-forgotten-export) The symbol "ParaControlPanel" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     protected _controlPanelRef: Ref_2<ParaControlPanel>;
     // (undocumented)
@@ -2412,6 +2415,8 @@ export class ParaChart extends ParaComponent {
     protected _loaderRejector: (() => void) | null;
     // (undocumented)
     protected _loaderResolver: (() => void) | null;
+    // Warning: (ae-forgotten-export) The symbol "Logger" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     protected log: Logger;
     // (undocumented)
@@ -2428,6 +2433,8 @@ export class ParaChart extends ParaComponent {
     protected _paraAPI: ParaAPI;
     // (undocumented)
     get paraView(): ParaView;
+    // Warning: (ae-forgotten-export) The symbol "ParaView" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     protected _paraViewRef: Ref_2<ParaView>;
     // (undocumented)
@@ -2442,8 +2449,12 @@ export class ParaChart extends ParaComponent {
     protected _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void>;
     // (undocumented)
     get scrollyteller(): Scrollyteller;
+    // Warning: (ae-forgotten-export) The symbol "Scrollyteller" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     protected _scrollyteller: Scrollyteller;
+    // Warning: (ae-forgotten-export) The symbol "Setting" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
     // (undocumented)
@@ -2465,102 +2476,6 @@ export class ParaChart extends ParaComponent {
 }
 
 // @public (undocumented)
-export class ParaComponent extends LitElement {
-    // (undocumented)
-    extractStyles(id: string): string;
-    // (undocumented)
-    get store(): ParaStore;
-    set store(store: ParaStore);
-    // (undocumented)
-    protected _store: ParaStore;
-    // (undocumented)
-    protected _storeState: StateController<ParaStore>;
-}
-
-// @public (undocumented)
-export class ParaControlPanel extends ParaComponent {
-    // (undocumented)
-    addButtonListeners(): void;
-    // (undocumented)
-    addPopup(isOpen: boolean): void;
-    // (undocumented)
-    get annotationPanel(): AnnotationPanel;
-    // (undocumented)
-    protected _annotationPanelRef: Ref<AnnotationPanel>;
-    // (undocumented)
-    get chartPanel(): ChartPanel;
-    // (undocumented)
-    protected _chartPanelRef: Ref<ChartPanel>;
-    // (undocumented)
-    protected _colorsPanelRef: Ref<ColorsPanel>;
-    // (undocumented)
-    connectedCallback(): void;
-    // (undocumented)
-    protected _controlsPanelRef: Ref<ControlsPanel>;
-    // (undocumented)
-    dataError?: unknown;
-    // (undocumented)
-    protected _dataPanelRef: Ref<DataPanel>;
-    // (undocumented)
-    dataState: 'initial' | 'pending' | 'complete' | 'error';
-    // (undocumented)
-    get descriptionPanel(): DescriptionPanel;
-    // (undocumented)
-    protected _descriptionPanelRef: Ref<DescriptionPanel>;
-    // (undocumented)
-    get dialog(): ParaDialog;
-    // (undocumented)
-    protected _dialogRef: Ref<ParaDialog>;
-    // (undocumented)
-    disconnectedCallback(): void;
-    // (undocumented)
-    externalizeCaptionBox(): void;
-    // (undocumented)
-    get managedSettingKeys(): string[];
-    // (undocumented)
-    protected _msgDialogRef: Ref<MessageDialog>;
-    // (undocumented)
-    onFocus(): void;
-    // (undocumented)
-    paraChart: ParaChart;
-    // (undocumented)
-    removePopup(id: string): void;
-    // (undocumented)
-    render(): TemplateResult_2<1>;
-    // (undocumented)
-    settingDidChange(key: string, value: any): boolean;
-    // (undocumented)
-    get settings(): DeepReadonly<ControlPanelSettings>;
-    // (undocumented)
-    showHelpDialog(): void;
-    // (undocumented)
-    sparkBrailleData: string;
-    // (undocumented)
-    protected _storeChangeUnsub: Unsubscribe;
-    // (undocumented)
-    static styles: CSSResult[];
-    // (undocumented)
-    protected _tabsRef: Ref<FizzTabs>;
-    // (undocumented)
-    protected updated(changedProperties: PropertyValues): void;
-}
-
-// @public
-export class ParaDialog extends ParaComponent {
-    btnText: string;
-    protected _content: TemplateResult;
-    contentArray: string[];
-    // (undocumented)
-    protected _dialogRef: Ref<Dialog>;
-    // (undocumented)
-    render(): TemplateResult<1>;
-    show(title: string, content?: TemplateResult): Promise<void>;
-    // (undocumented)
-    static styles: CSSResult;
-    title: string;
-}
-
-// @public (undocumented)
 export class ParaHeadless {
     constructor();
     // (undocumented)
@@ -2569,6 +2484,8 @@ export class ParaHeadless {
     protected _createParaChart(): void;
     // (undocumented)
     get jimReady(): Promise<void>;
+    // Warning: (ae-forgotten-export) The symbol "FieldInfo" needs to be exported by the entry point index.d.ts
+    //
     // (undocumented)
     loadData(url: string): Promise<FieldInfo[]>;
     // (undocumented)
