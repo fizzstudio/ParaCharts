@@ -66,6 +66,12 @@ import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
 import { View as View_2 } from '../base_view';
 
+// @public (undocumented)
+export type FieldInfo = {
+    name: string;
+    type: Datatype_2;
+};
+
 // Warning: (ae-forgotten-export) The symbol "ParaComponent" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -200,8 +206,6 @@ export class ParaHeadless {
     protected _createParaChart(): void;
     // (undocumented)
     get jimReady(): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "FieldInfo" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     loadData(url: string): Promise<FieldInfo[]>;
     // (undocumented)
