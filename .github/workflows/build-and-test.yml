@@ -23,7 +23,7 @@ jobs:
         run: echo "${{ secrets.NPM_AUTH_TOKEN }}" >> .npmrc
       
       - name: Install dependencies
-        run: npm i
+        run: npm i --loglevel verbose
       
       - name: Build
         run: npm run build
