@@ -26,7 +26,11 @@ jobs:
         run: npm i --loglevel verbose
       
       - name: Build
-        run: npm run build
+        run: |
+          ls node_modules/@fizz
+          ls node_modules/@fizz/paramanifest
+          ls node_modules/@fizz/paramanifest/node_modules/dist
+          npm run build
       
       - name: Run tests
         run: npm run test
