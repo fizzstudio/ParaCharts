@@ -30,7 +30,8 @@ jobs:
           ls node_modules/@fizz
           ls node_modules/@fizz/paramanifest
           ls node_modules/@fizz/paramanifest/dist
+          cat node_modules/@fizz/paramanifest/package.json
           npm run build
-      
+
       - name: Run tests
         run: npm run test
