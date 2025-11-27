@@ -23,15 +23,13 @@ jobs:
         run: echo "//npm.fizz.studio/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" >> .npmrc
 
       - name: Install dependencies
-        run: npm i --loglevel verbose
+        run: npm i
 
       - name: Build
         run: |
-          ls node_modules/@fizz
-          ls node_modules/@fizz/paramanifest
-          ls node_modules/@fizz/paramanifest/dist
-          cat node_modules/@fizz/paramanifest/package.json
           npm run build
 
       - name: Run tests
-        run: npm run test
+        run: |
+          npx playwright install
+          npm run test
