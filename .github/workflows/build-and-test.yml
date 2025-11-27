@@ -20,7 +20,7 @@ jobs:
           node-version: '22'
       
       - name: Setup npm auth
-        run: echo "${{ secrets.NPM_AUTH_TOKEN }}" >> .npmrc
+        run: echo "${{ secrets.NPM_AUTH_TOKEN }}" >> ~/.npmrc
       
       - name: Install dependencies
         run: npm i --loglevel verbose
