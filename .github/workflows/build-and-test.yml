@@ -9,27 +9,27 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      
+
       - name: Setup npm auth
         run: echo "//npm.fizz.studio/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" >> .npmrc
-      
+
       - name: Install dependencies
         run: npm i --loglevel verbose
-      
+
       - name: Build
         run: |
           ls node_modules/@fizz
           ls node_modules/@fizz/paramanifest
-          ls node_modules/@fizz/paramanifest/node_modules/dist
+          ls node_modules/@fizz/paramanifest/dist
           npm run build
       
       - name: Run tests
