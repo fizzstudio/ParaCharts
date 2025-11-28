@@ -495,9 +495,44 @@ export interface SonificationSettings extends SettingGroup {
 
 /** @public */
 export interface ScrollytellingSettings extends SettingGroup {
+  /** Master switch for scrollytelling behavior */
   isScrollytellingEnabled: boolean;
-  isScrollyAnnouncementsEnabled: boolean;
-  isScrollySoniEnabled: boolean;
+
+  /**
+   * Global offset for step triggers.
+   * - number: 0.0-1.0 → fraction of viewport height (0 = top, 1 = bottom)
+   * - string with "px": e.g. "200px" → fixed pixel offset
+   */
+  offset?: number | string;
+
+  /**
+   * Pixel granularity used to derive IntersectionObserver thresholds
+   * for progress events. Higher = fewer progress callbacks.
+   * Default: 4
+   */
+  threshold?: number;
+
+  /**
+   * Enable stepProgress events.
+   * If false, only stepEnter/stepExit fire.
+   */
+  isProgress?: boolean;
+
+  /**
+   * If true, stepEnter fires at most once per step.
+   * stepExit still fires when leaving.
+   */
+  isTriggerOnce?: boolean;
+
+  /**
+   * Enable extra announcements (e.g. aria-live narrations).
+   */
+  isScrollyAnnouncementsEnabled?: boolean;
+
+  /**
+   * Enable scrollytelling-triggered sonification.
+   */
+  isScrollySoniEnabled?: boolean;
 }
 
 /** @public */

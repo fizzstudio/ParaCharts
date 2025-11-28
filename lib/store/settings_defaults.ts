@@ -419,6 +419,9 @@ export const defaults: Settings = {
     isScrollytellingEnabled: true,
     isScrollyAnnouncementsEnabled: true,
     isScrollySoniEnabled: true,
+    offset: 0.5,
+    isProgress: true,
+    isTriggerOnce: false,
   },
   controlPanel: {
     isControlPanelDefaultOpen: true,

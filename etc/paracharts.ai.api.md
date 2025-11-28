@@ -3507,35 +3507,21 @@ export class ScreenReaderBridge {
 export type ScrollyEvent = 'stepEnter' | 'stepExit' | 'stepProgress';
 
 // @public (undocumented)
-export interface ScrollyOptions {
-    // (undocumented)
-    container?: HTMLElement;
-    // (undocumented)
-    offset?: string | number;
-    // (undocumented)
-    once?: boolean;
-    // (undocumented)
-    parent?: string;
-    // (undocumented)
-    progress?: boolean;
-    // (undocumented)
-    root?: Element | Document | null;
-    // (undocumented)
-    step: string | Element | NodeList | Element[];
-    // (undocumented)
-    threshold?: number;
-}
-
-// @public (undocumented)
 export interface ScrollyStep {
     // (undocumented)
-    actions: Action[];
+    actions: StepActions;
     // (undocumented)
     direction?: 'up' | 'down';
     // (undocumented)
+    eventType: 'enter' | 'exit' | 'progress';
+    // (undocumented)
     height: number;
     // (undocumented)
+    id: string;
+    // (undocumented)
     index: number;
+    // (undocumented)
+    isExcluded?: boolean;
     // (undocumented)
     node: Element;
     // (undocumented)
@@ -3563,6 +3549,7 @@ export class Scrollyteller {
     disable(): Scrollyteller;
     // (undocumented)
     enable(): Scrollyteller;
+    enableDebugThreshold(): void;
     // (undocumented)
     off(event?: ScrollyEvent, callback?: Callback): this;
     // (undocumented)
@@ -3572,20 +3559,21 @@ export class Scrollyteller {
     on(event: ScrollyEvent, callback: Callback): this;
     // (undocumented)
     once(event: ScrollyEvent, callback: Callback): this;
+    reloadFromSettings(): void;
     // (undocumented)
     resize(): Scrollyteller;
-    // (undocumented)
-    setup({ step, parent, offset, threshold, progress, once, container, root, }: ScrollyOptions): Scrollyteller;
+    updateDebugThresholdPosition(): void;
 }
 
 // @public (undocumented)
 export interface ScrollytellingSettings extends SettingGroup {
-    // (undocumented)
-    isScrollyAnnouncementsEnabled: boolean;
-    // (undocumented)
-    isScrollySoniEnabled: boolean;
-    // (undocumented)
+    isProgress?: boolean;
+    isScrollyAnnouncementsEnabled?: boolean;
+    isScrollySoniEnabled?: boolean;
     isScrollytellingEnabled: boolean;
+    isTriggerOnce?: boolean;
+    offset?: number | string;
+    threshold?: number;
 }
 
 // @public (undocumented)
@@ -4078,6 +4066,16 @@ export interface SparkBrailleInfo {
 export interface StatusBarSettings extends SettingGroup {
     // (undocumented)
     valueFormat: LabelFormat;
+}
+
+// @public (undocumented)
+export interface StepActions {
+    // (undocumented)
+    enter: Action[];
+    // (undocumented)
+    exit: Action[];
+    // (undocumented)
+    progress: Action[];
 }
 
 // @public (undocumented)
