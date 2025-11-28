@@ -145,7 +145,7 @@ export class ParaStore extends State {
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() frontSeries = '';
-  @property() pointerChords: Point = {x: 0, y: 0}
+  @property() pointerCoords: Point = {x: 0, y: 0}
 
   @property() protected _lowlightedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
@@ -968,9 +968,9 @@ export class ParaStore extends State {
     this._userTrendLines = [];
   }
 
-  /*
+  
   clearPopups() {
     this.popups.splice(0, this.popups.length)
   }
-    */
+    
 }

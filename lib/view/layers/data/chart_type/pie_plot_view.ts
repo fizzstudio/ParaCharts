@@ -72,8 +72,8 @@ export class PieSlice extends RadialSlice {
       },
       pointerMove: (e) => {
         if (this._popup) {
-          this._popup.grid.x = this.paraview.store.pointerChords.x
-          this._popup.grid.y = this.paraview.store.pointerChords.y - this.paraview.store.settings.popup.margin
+          this._popup.grid.x = this.paraview.store.pointerCoords.x
+          this._popup.grid.y = this.paraview.store.pointerCoords.y - this.paraview.store.settings.popup.margin
           this._popup.shiftGrid()
           this._popup.box.x = this._popup.grid.x
           this._popup.box.y = this._popup.grid.bottom

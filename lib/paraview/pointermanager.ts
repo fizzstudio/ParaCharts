@@ -117,12 +117,11 @@ export class PointerEventManager {
     target.releasePointerCapture(event.pointerId);
 
     this._coords = this._localCoords(event);
-    //console.log(this._paraView.documentView?.paddedLeft)
-    //console.log(this._paraView.documentView?.chartLayers.paddedLeft)
-    //this._paraView.store.pointerChords = {x :this._coords.x - this._paraView.documentView?.chartLayers.paddedLeft!, 
-    //  y: this._coords.y - this._paraView.documentView?.chartLayers.paddedTop!}
-    this._paraView.store.pointerChords.x = this._coords.x - this._paraView.documentView?.chartLayers.paddedLeft!
-    this._paraView.store.pointerChords.y =  this._coords.y - this._paraView.documentView?.chartLayers.paddedTop!
+    if (this._paraView.documentView) {
+      this._paraView.store.pointerCoords.x = this._coords.x - this._paraView.documentView!.padding.left - this._paraView.documentView!.chartLayers.x
+      this._paraView.store.pointerCoords.y = this._coords.y - this._paraView.documentView!.padding.top - this._paraView.documentView!.chartLayers.y
+      this._paraView.documentView?.pointerMove();
+    }
     if (target === this._paraView.root || target === this._dataRoot) {
       this._currentTarget = null;
     } else if (target === this._currentTarget) {

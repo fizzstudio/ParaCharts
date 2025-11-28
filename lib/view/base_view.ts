@@ -933,6 +933,10 @@ export class View extends BaseView {
     return null;
   }
 
+  pointerMove(){
+    this.children.forEach(c => c.pointerMove())
+  }
+
 }
 
 export interface ContainableI {
