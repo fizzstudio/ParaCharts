@@ -371,6 +371,17 @@ export class Scrollyteller {
     // return true;
   }
 
+  /**
+   * Convert the global offset to pixels, matching Scrollama's offsetMargin.
+   */
+  private get offsetMarginPx(): number {
+    if (this.globalOffset.format === 'pixels') {
+      return this.globalOffset.value;
+    }
+    return this.globalOffset.value * window.innerHeight;
+  }
+
+
   private getOffsetTop(node: Element): number {
     const { top } = node.getBoundingClientRect();
     const scrollTop = window.pageYOffset;
@@ -407,18 +418,18 @@ export class Scrollyteller {
       // simplest: just get a start and end callback
       return [0, 1];
     }
-  
+
     const count = Math.max(1, Math.ceil(height / threshold));
     const t: number[] = [];
     const ratio = 1 / count;
-  
+
     for (let i = 0; i <= count; i += 1) {
       t.push(i * ratio);
     }
-  
+
     return t;
   }
-  
+
 
   // --- Event subscription ---------------------------------------------------
 
@@ -484,13 +495,13 @@ export class Scrollyteller {
   private _notifyProgress(element: Element, progress?: number): void {
     const step = this.stepMap.get(element);
     if (!step) return;
-  
+
     // no progress actions = no progress events
     if (!this.hasProgress(step)) return;
-  
+
     if (progress !== undefined) step.progress = progress;
     const { index } = step;
-  
+
     const response: CallbackResponse = {
       element,
       index,
@@ -498,11 +509,11 @@ export class Scrollyteller {
       direction: this.direction,
       actions: step.actions.progress,
     };
-  
+
     // ← previously: if (step.state === 'enter') this.emit(...)
     this.emit('stepProgress', response);
   }
-  
+
 
   private _notifyStepEnter(element: Element): void {
     const step = this.stepMap.get(element);
@@ -621,12 +632,12 @@ export class Scrollyteller {
   // private _intersectProgress(entries: IntersectionObserverEntry[]): void {
   //   if (entries.length === 0) return;
   //   const entry = entries[0];
-  
+
   //   const step = this.stepMap.get(entry.target as Element);
   //   if (!step) return;
-  
+
   //   const { isIntersecting, intersectionRatio, target } = entry;
-  
+
   //   console.log(
   //     'scrolly: _intersectProgress for step',
   //     step.index,
@@ -637,7 +648,7 @@ export class Scrollyteller {
   //     'state =',
   //     step.state
   //   );
-  
+
   //   if (isIntersecting && step.state === 'enter') {
   //     console.warn('isIntersecting', step.state)
 
@@ -650,18 +661,67 @@ export class Scrollyteller {
   //   }
   // }
 
+  // private _intersectProgress(entries: IntersectionObserverEntry[]): void {
+  //   if (entries.length === 0) return;
+  //   const entry = entries[0];
+
+  //   const step = this.stepMap.get(entry.target as Element);
+  //   if (!step) return;
+
+  //   const { isIntersecting, intersectionRatio, target } = entry;
+
+  //   if (!isIntersecting) return;
+
+  //   this._notifyProgress(target, intersectionRatio);
+  // }
+
+  // private _intersectProgress(entries: IntersectionObserverEntry[]): void {
+  //   if (entries.length === 0) return;
+  //   const entry = entries[0];
+  
+  //   const step = this.stepMap.get(entry.target as Element);
+  //   if (!step) return;
+  
+  //   const { isIntersecting, intersectionRatio, target } = entry;
+  
+  //   // Only steps with progress actions should ever generate progress events
+  //   if (!this.hasProgress(step)) return;
+  
+  //   // Mirror Scrollama: progress is only meaningful while the step is "active"
+  //   if (!isIntersecting) return;
+  //   if (step.state !== 'enter') return;
+  
+  //   this._notifyProgress(target, intersectionRatio);
+  // }
+
   private _intersectProgress(entries: IntersectionObserverEntry[]): void {
-    if (entries.length === 0) return;
-    const entry = entries[0];
+    if (!entries.length) return;
   
-    const step = this.stepMap.get(entry.target as Element);
-    if (!step) return;
+    for (const entry of entries) {
+      const step = this.stepMap.get(entry.target as Element);
+      if (!step) continue;
   
-    const { isIntersecting, intersectionRatio, target } = entry;
+      const { isIntersecting, intersectionRatio, target } = entry;
   
-    if (!isIntersecting) return;
+      console.log(
+        'scrolly: _intersectProgress',
+        'step', step.index,
+        'isIntersecting =', isIntersecting,
+        'intersectionRatio =', intersectionRatio,
+        'state =', step.state
+      );
   
-    this._notifyProgress(target, intersectionRatio);
+      // Only while the element is actually intersecting
+      if (!isIntersecting) continue;
+  
+      // Only steps that we consider "progress steps"
+      if (!this.hasProgress(step)) continue;
+  
+      // Only while the step is "active" (between enter and exit)
+      if (step.state !== 'enter') continue;
+  
+      this._notifyProgress(target, intersectionRatio);
+    }
   }
   
   
@@ -714,21 +774,100 @@ export class Scrollyteller {
   // private _updateProgressObserver(step: ScrollyStep): void {
   //   // gate by global flag AND per-step actions
   //   if (!this.isProgress || !this.hasProgress(step)) return;
-  
+
   //   const threshold = this.createProgressThreshold(step.height, this.progressThreshold);
-  
+
   //   const observer = new IntersectionObserver(this._intersectProgress, {
   //     root: this.rootElement === document ? null : (this.rootElement as Element),
   //     threshold,
   //     // NOTE: no rootMargin here; we let intersectionRatio be based on the viewport.
   //   });
-  
+
   //   observer.observe(step.node);
   //   step.observers.progress = observer;
   // }  
 
+  // private _updateProgressObserver(step: ScrollyStep): void {
+  //   // gate by global flag AND per-step actions
+  //   if (!this.isProgress || !this.hasProgress(step)) {
+  //     console.log(
+  //       'scrolly: skipping progress observer for step',
+  //       step.index,
+  //       'isProgress =',
+  //       this.isProgress,
+  //       'hasProgress =',
+  //       this.hasProgress(step)
+  //     );
+  //     return;
+  //   }
+
+  //   console.log(
+  //     'scrolly: creating progress observer for step',
+  //     step.index,
+  //     'height =',
+  //     step.height,
+  //     'progressThreshold =',
+  //     this.progressThreshold
+  //   );
+
+  //   const threshold = this.createProgressThreshold(
+  //     step.height,
+  //     this.progressThreshold
+  //   );
+
+  //   console.log('scrolly: thresholds for step', step.index, threshold);
+
+  //   const observer = new IntersectionObserver(this._intersectProgress, {
+  //     root: this.rootElement === document ? null : (this.rootElement as Element),
+  //     threshold,
+  //   });
+
+  //   observer.observe(step.node);
+  //   step.observers.progress = observer;
+  // }
+
+  // private _updateProgressObserver(step: ScrollyStep): void {
+  //   // gate by global flag AND per-step actions
+  //   if (!this.isProgress || !this.hasProgress(step)) {
+  //     // Optional debug:
+  //     // console.log(
+  //     //   'scrolly: skipping progress observer for step',
+  //     //   step.index,
+  //     //   'isProgress =', this.isProgress,
+  //     //   'hasProgress =', this.hasProgress(step)
+  //     // );
+  //     return;
+  //   }
+  
+  //   // Scrollama-style threshold array, based on step height
+  //   const threshold = this.createProgressThreshold(
+  //     step.height,
+  //     this.progressThreshold
+  //   );
+  
+  //   // Scrollama-style rootMargin:
+  //   // - marginTop moves the top of the IO box down so we only care
+  //   //   about the region from the offset line down to the bottom
+  //   // - marginBottom cuts off below the viewport bottom minus offset
+  //   const offsetMargin = this.offsetMarginPx;
+  //   const viewH = window.innerHeight;
+  
+  //   const marginTop = step.height - offsetMargin;
+  //   const marginBottom = -viewH + offsetMargin;
+  //   const rootMargin = `${marginTop}px 0px ${marginBottom}px 0px`;
+  
+  //   const observer = new IntersectionObserver(this._intersectProgress, {
+  //     root: this.rootElement === document ? null : (this.rootElement as Element),
+  //     rootMargin,
+  //     threshold,
+  //   });
+  
+  //   observer.observe(step.node);
+  //   step.observers.progress = observer;
+  // }
+  
   private _updateProgressObserver(step: ScrollyStep): void {
-    // gate by global flag AND per-step actions
+    // gate by global flag AND per-step actions/attribute
     if (!this.isProgress || !this.hasProgress(step)) {
       console.log(
         'scrolly: skipping progress observer for step',
@@ -741,23 +880,25 @@ export class Scrollyteller {
       return;
     }
   
+    const threshold = this.createProgressThreshold(
+      step.height,
+      this.progressThreshold
+    );
+  
     console.log(
       'scrolly: creating progress observer for step',
       step.index,
       'height =',
       step.height,
       'progressThreshold =',
-      this.progressThreshold
+      this.progressThreshold,
+      'thresholds =',
+      threshold
     );
   
-    const threshold = this.createProgressThreshold(
-      step.height,
-      this.progressThreshold
-    );
-  
-    console.log('scrolly: thresholds for step', step.index, threshold);
-  
-    const observer = new IntersectionObserver(this._intersectProgress, {
+    const observer = new IntersectionObserver((entries) => {
+      this._intersectProgress(entries);
+    }, {
       root: this.rootElement === document ? null : (this.rootElement as Element),
       threshold,
     });
