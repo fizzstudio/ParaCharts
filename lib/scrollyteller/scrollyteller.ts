@@ -6,8 +6,8 @@ export type ScrollDirection = 'up' | 'down';
 export type ScrollyEvent = 'stepEnter' | 'stepExit' | 'stepProgress';
 
 export interface ScrollytellingSettings {
-  offset?: number | string; // 0–1 or 'NNNpx' or >1 px
-  debug?: boolean;
+  offset?: number | string; // 0-1 or 'NNNpx' or >1 px
+  isDebug?: boolean;
 }
 
 // Host interface: ParaCharts will implement this shape.
@@ -44,7 +44,7 @@ export interface ActionMap {
 
 export interface ScrollytellerOptions {
   offset?: number | string;
-  debug?: boolean;
+  isDebug?: boolean;
   rootMarginExtra?: number; // px
 }
 
@@ -52,7 +52,7 @@ interface StepEntry {
   element: HTMLElement;
   index: number;
   isActive: boolean;
-  progress: number; // 0–1
+  progress: number; // 0-1
   direction: ScrollDirection | null;
 
   hasEnter: boolean;
@@ -108,6 +108,9 @@ export class Scrollyteller {
       ...defaultActions,
       ...extraActions,
     };
+
+    console.warn('Scrolly: constructor')
+    this.init();
   }
 
   // ───────────────────────────────────────────────────────────────────────────────
@@ -115,6 +118,8 @@ export class Scrollyteller {
   // ───────────────────────────────────────────────────────────────────────────────
 
   public init(): void {
+    console.warn('Scrolly: init')
+
     if (typeof window === 'undefined' || typeof document === 'undefined') {
       return;
     }
@@ -218,7 +223,7 @@ export class Scrollyteller {
       ...this.options,
     };
 
-    this.debugEnabled = !!combined.debug;
+    this.debugEnabled = !!combined.isDebug;
     this.offsetPx = this.computeOffsetFromSetting(combined.offset);
   }
 
@@ -651,7 +656,7 @@ export class Scrollyteller {
     label.style.background = 'rgba(255, 255, 255, 0.9)';
     label.style.padding = '2px 4px';
     label.style.borderRadius = '2px';
-    label.textContent = 'Scrolly offset (global)';
+    label.textContent = `Scrolly offset (global): ${this.offsetPx}px`;
     el.appendChild(label);
 
     document.body.appendChild(el);

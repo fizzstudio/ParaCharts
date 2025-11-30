@@ -40,6 +40,7 @@ import {
   type ActionContext,
   type ScrollytellerOptions,
 } from '../scrollyteller/scrollyteller';
+import { scrollyActions } from '../scrollyteller/scrollyactions';
 
 import { Manifest } from '@fizz/paramanifest';
 
@@ -158,25 +159,7 @@ export class ParaChart extends ParaComponent {
       });
     });
 
-    this.scrollyActions = {
-      highlightDatapoint: ({ chartId, datasetId, progress }: ActionContext) => {
-        if (!chartId || !datasetId) return;
-        // this.highlightDataset(chartId, datasetId, progress);
-        console.warn('[ParaCharts] highlightDatapoint', { chartId, datasetId, progress });
-      },
-  
-      resetHighlight: ({ chartId, datasetId }: ActionContext) => {
-        if (!chartId || !datasetId) return;
-        // this.resetHighlight(chartId, datasetId);
-        console.warn('[ParaCharts] resetHighlight', { chartId, datasetId });
-
-      },
-  
-      logStep: ({ index, direction }: ActionContext) => {
-        // eslint-disable-next-line no-console
-        console.log('[ParaCharts] logStep', { index, direction });
-      },
-    };
+    this.scrollyActions = scrollyActions;
   }
 
 
