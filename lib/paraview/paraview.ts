@@ -82,7 +82,7 @@ export class ParaView extends ParaComponent {
   // protected _hotkeyActions!: HotkeyActions;
   @state() protected _defs: { [key: string]: TemplateResult } = {};
   @state() protected _jim = '';
-
+  @state() protected _isFullscreen = false;
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
 
@@ -549,6 +549,7 @@ export class ParaView extends ParaComponent {
 
   protected _onFullscreenChange() {
     if (document.fullscreenElement) {
+      this._isFullscreen = true;
       if (!this._store.settings.ui.isFullscreenEnabled) {
         // fullscreen was entered manually
         this._store.updateSettings(draft => {
@@ -556,6 +557,7 @@ export class ParaView extends ParaComponent {
         }, true);
       }
     } else {
+      this._isFullscreen = false;
       if (this._store.settings.ui.isLowVisionModeEnabled) {
         this._store.updateSettings(draft => {
           draft.ui.isLowVisionModeEnabled = false;
@@ -790,7 +792,7 @@ export class ParaView extends ParaComponent {
     if (fs && fs.tagName.toLowerCase() === 'para-chart-ai') {
       console.log("Fullscreen wrapper is para-chart-ai");
     }
-    if (fs && fs.tagName.toLowerCase() === 'para-chart-ai') {
+    if (this._isFullscreen) {
       const vbWidth = Math.round(this._viewBox.width);
       const vbHeight = Math.round(this._viewBox.height);
       const vbRatio =
