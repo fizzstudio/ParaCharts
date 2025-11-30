@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { type AriaLive } from '../components';
 import { Logger, getLogger } from '../common/logger';
 import { PointerEventManager } from './pointermanager';
 import { type ParaChart } from '../parachart/parachart';
@@ -58,6 +59,7 @@ export class ParaView extends ParaComponent {
 
   @property() clipWidth?: number;
 
+  protected _ariaLiveRegionRef = createRef<AriaLive>();
   protected _controller!: ParaViewController;
   protected _viewBox!: ViewBox;
   protected _prevFocusLeaf?: View;
@@ -66,6 +68,7 @@ export class ParaView extends ParaComponent {
   protected _frameRef = createRef<SVGRectElement>();
   protected _dataspaceRef = createRef<SVGGElement>();
   protected _documentView?: DocumentView;
+  protected _containerRef = createRef<HTMLDivElement>();
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
   protected log: Logger = getLogger("ParaView");
@@ -301,6 +304,18 @@ export class ParaView extends ParaComponent {
     });
   }
 
+  get ariaLiveRegion() {
+    return this._ariaLiveRegionRef.value!;
+  }
+
+  clearAriaLive() {
+    this._ariaLiveRegionRef.value!.clear();
+  }
+
+  showAriaLiveHistory() {
+    this._ariaLiveRegionRef.value!.showHistoryDialog();
+  }
+
   get viewBox() {
     return this._viewBox;
   }
@@ -308,7 +323,6 @@ export class ParaView extends ParaComponent {
   get root() {
     return this._rootRef.value;
   }
-
   get frame() {
     return this._frameRef.value;
   }
@@ -414,7 +428,7 @@ export class ParaView extends ParaComponent {
     if (path === 'ui.isFullscreenEnabled') {
       if (newValue && !document.fullscreenElement) {
         try {
-          this.root!.requestFullscreen();
+          this._containerRef.value!.requestFullscreen();
         } catch {
           this.log.error('failed to enter fullscreen');
           this._store.updateSettings(draft => {
@@ -488,7 +502,7 @@ export class ParaView extends ParaComponent {
     } else if (path === 'ui.isNarrativeHighlightEnabled') {
       if (this._store.settings.ui.isNarrativeHighlightEnabled) {
         if (this._store.settings.ui.isVoicingEnabled) {
-		      this.startNarrativeHighlightMode();
+          this.startNarrativeHighlightMode();
           const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
           const msg = ['Narrative Highlights Mode enabled.'];
           if (lastAnnouncement) msg.push(lastAnnouncement);
@@ -497,7 +511,7 @@ export class ParaView extends ParaComponent {
             this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
           })();
         } else {
-		      this._store.updateSettings(draft => {
+          this._store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = true;
           });
           this.startNarrativeHighlightMode();
@@ -528,9 +542,9 @@ export class ParaView extends ParaComponent {
         });
         this._store.announce(['Narrative Highlight Mode disabled.']);
       }
-    } else if(path === 'ui.isNarrativeHighlightPaused') {
-	    this.paraChart.ariaLiveRegion.voicing.togglePaused();
-	  }
+    } else if (path === 'ui.isNarrativeHighlightPaused') {
+      this.paraChart.ariaLiveRegion.voicing.togglePaused();
+    }
   }
 
   protected _onFullscreenChange() {
@@ -758,32 +772,28 @@ export class ParaView extends ParaComponent {
     this.requestUpdate();
   }
 
+
   protected _rootStyle() {
     const style: { [prop: string]: any } = {
       fontFamily: this._store.settings.chart.fontFamily,
       fontWeight: this._store.settings.chart.fontWeight
     };
-    if (document.fullscreenElement === this.root) {
-      const vbWidth = Math.round(this._viewBox.width);
+    if (document.fullscreenElement === this) {
+    const vbWidth = Math.round(this._viewBox.width);
       const vbHeight = Math.round(this._viewBox.height);
-      const vbRatio = (Math.min(vbWidth, vbHeight) / Math.max(vbWidth, vbHeight)) * 100;
-      if (vbWidth > vbHeight) {
-        style.width = '100vw';
-        style.height = `${vbRatio}vh`;
-      } else {
-        style.width = `${vbRatio}vw`;
-        style.height = '100vh';
-      }
+      const vbRatio =
+        (Math.min(vbWidth, vbHeight) / Math.max(vbWidth, vbHeight)) * 100;
+      style.width = "100vw";
+      style.height = "100vh";
     }
-
     const contrast = this.store.settings.color.contrastLevel * 50;
     if (this._store.settings.color.isDarkModeEnabled) {
-      style['--axis-line-color'] = `hsl(0, 0%, ${50 + contrast}%)`;
-      style['--label-color'] = `hsl(0, 0%, ${50 + contrast}%)`;
-      style['--background-color'] = `hsl(0, 0%, ${((100 - contrast) / 5) - 10}%)`;
+      style["--axis-line-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
+      style["--label-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
+      style["--background-color"] = `hsl(0, 0%, ${(100 - contrast) / 5 - 10}%)`;
     } else {
-      style['--axis-line-color'] = `hsl(0, 0%, ${50 - contrast}%)`;
-      style['--label-color'] = `hsl(0, 0%, ${50 - contrast}%)`;
+      style["--axis-line-color"] = `hsl(0, 0%, ${50 - contrast}%)`;
+      style["--label-color"] = `hsl(0, 0%, ${50 - contrast}%)`;
     }
     return style;
   }
@@ -801,7 +811,8 @@ export class ParaView extends ParaComponent {
   render(): TemplateResult {
     this.log.info('render');
     return html`
-      <svg
+    <div ${ref(this._containerRef)} @fullscreenchange=${() => this._onFullscreenChange()}>
+    <svg
         role="application"
         tabindex=${this.disableFocus ? -1 : 0}
         aria-label=${this._documentView ? `${this._documentView.titleText}, accessible chart` : 'loading...'}
@@ -813,14 +824,13 @@ export class ParaView extends ParaComponent {
         class=${classMap(this._rootClasses())}
         viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
         style=${styleMap(this._rootStyle())}
-        @fullscreenchange=${() => this._onFullscreenChange()}
         @focus=${() => {
-          if (!this._store.settings.chart.isStatic) {
-            //this.log.info('focus');
-            //this.todo.deets?.onFocus();
-            //this.documentView?.chartInfo.navMap?.visitDatapoints();
-          }
-        }}
+        if (!this._store.settings.chart.isStatic) {
+          //this.log.info('focus');
+          //this.todo.deets?.onFocus();
+          //this.documentView?.chartInfo.navMap?.visitDatapoints();
+        }
+      }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
         @pointerdown=${(ev: PointerEvent) => this._pointerEventManager?.handleStart(ev)}
         @pointerup=${(ev: PointerEvent) => this._pointerEventManager?.handleEnd(ev)}
@@ -871,6 +881,7 @@ export class ParaView extends ParaComponent {
         ${ref(this._fileSavePlaceholderRef)}
         hidden
       ></div>
+      </div>
     `;
   }
 
