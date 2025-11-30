@@ -1,74 +1,66 @@
 // Scrollyteller.ts
-// Scrollytelling engine integrated with ParaCharts settings and chart IDs.
+// Minimal scrollytelling engine integrated with ParaCharts settings.
 //
-// Conventions:
+// Assumptions / conventions:
 // - Steps are any elements that have at least one of:
 //   data-para-enter, data-para-exit, data-para-progress
-// - Optional metadata:
-//   data-para-chartid     → chart identifier
 // - Offset comes from this.parachart.paraView.store.settings.scrollytelling.offset
-//   or from the Scrollyteller options.
-// - data-para-* attributes hold a comma- or space-separated list of action names.
-
-import { ParaChart } from '../parachart/parachart';
+//   and can be a number (0-1 = percent of viewport height) or a string like '200px'.
+// - Only elements with data-para-progress fire progress callbacks.
+// - You will plug in actual handlers to run for enter/exit/progress actions.
 
 type ScrollDirection = 'up' | 'down';
 
 interface ScrollytellingSettings {
-  offset?: number | string;   // 0-1 or 'px'
+  offset?: number | string;   // 0-1 or 'px' string
   debug?: boolean;
 }
 
-interface StepEntry {
+interface ParaViewStore {
+  settings?: {
+    scrollytelling?: ScrollytellingSettings;
+  };
+}
+
+interface ParaView {
+  store?: ParaViewStore;
+}
+
+interface ParaChartLike {
+  paraView?: ParaView;
+  // Add anything else you need from your ParaCharts root object
+}
+
+interface StepState {
   element: HTMLElement;
   index: number;
   isActive: boolean;
   progress: number;      // 0-1
   direction: ScrollDirection | null;
-
   hasEnter: boolean;
   hasExit: boolean;
   hasProgress: boolean;
-
-  enterActions: string[];
-  exitActions: string[];
-  progressActions: string[];
-
-  chartId: string | null;
 }
 
 interface ScrollytellerOptions {
+  // Optional manual override if you don't want to pull directly from ParaCharts
   offset?: number | string;
   debug?: boolean;
-  rootMarginExtra?: number; // px
+  rootMarginExtra?: number; // Extra padding around viewport for IO, in px
 }
 
-type StepCallback = (info: ActionContext) => void;
-
-export interface ActionContext {
+type StepCallback = (info: {
   element: HTMLElement;
   index: number;
   direction: ScrollDirection;
   progress?: number;
-
-  chartId?: string | null;
-
-  parachart: ParaChart;
-}
-
-export type ActionHandler = (ctx: ActionContext) => void;
-
-export interface ActionMap {
-  [actionName: string]: ActionHandler;
-}
+}) => void;
 
 export class Scrollyteller {
-  private parachart: ParaChart;
+  private parachart: ParaChartLike;
   private options: ScrollytellerOptions;
-  private actions: ActionMap;
-  private stepMap: WeakMap<Element, StepEntry>;
 
-  private steps: StepEntry[] = [];
+  private steps: StepState[] = [];
   private observer: IntersectionObserver | null = null;
 
   private offsetPx: number = 0;
@@ -78,24 +70,26 @@ export class Scrollyteller {
   private debugEnabled: boolean = false;
   private debugLineEl: HTMLDivElement | null = null;
 
-  // Optional external hooks (in addition to `data-para-*` dispatch)
+  // External hooks you can wire into ParaCharts
   public onStepEnter?: StepCallback;
   public onStepExit?: StepCallback;
   public onStepProgress?: StepCallback;
 
-  constructor(
-    parachart: ParaChart,
-    options: ScrollytellerOptions = {},
-    actions: ActionMap = {}
-  ) {
+  constructor(parachart: ParaChartLike, options: ScrollytellerOptions = {}) {
     this.parachart = parachart;
     this.options = options;
-    this.actions = actions;
-    this.stepMap = new WeakMap();
   }
 
+  /**
+   * Initialize scrollytelling:
+   * - resolve settings (offset, debug)
+   * - find step elements
+   * - compute offset in px
+   * - create IO and observe steps
+   */
   public init(): void {
     if (typeof window === 'undefined' || typeof document === 'undefined') {
+      // SSR / non-DOM guard
       return;
     }
 
@@ -103,11 +97,12 @@ export class Scrollyteller {
     this.collectSteps();
     if (this.steps.length === 0) return;
 
-    this.createDebugLine();
+    this.showTriggerLine();
     this.setupObserver();
     this.updateDebugLinePosition();
 
-    this.lastScrollY = window.scrollY || 0;
+    // Initial evaluation (in case initial scroll position is not top)
+    this.lastScrollY = window.pageYOffset || 0;
   }
 
   public destroy(): void {
@@ -124,6 +119,9 @@ export class Scrollyteller {
     }
   }
 
+  /**
+   * Call this on resize (or let your layout system trigger it)
+   */
   public resize(): void {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
     this.computeOffsetPx();
@@ -132,17 +130,20 @@ export class Scrollyteller {
   }
 
   // ────────────────────────────────────────────────────────────────────────────────
-  // Settings & step collection
+  // Configuration & setup
   // ────────────────────────────────────────────────────────────────────────────────
 
   private resolveSettings(): void {
-    const storeSettings = this.parachart?.paraView?.store?.settings?.scrollytelling ?? {};
+    const storeSettings =
+      this.parachart?.paraView?.store?.settings?.scrollytelling ?? {};
     const combined: ScrollytellingSettings = {
       ...storeSettings,
       ...this.options,
     };
 
     this.debugEnabled = !!combined.debug;
+
+    // Resolve offset -> this.offsetPx
     this.offsetPx = this.computeOffsetFromSetting(combined.offset);
   }
 
@@ -151,14 +152,16 @@ export class Scrollyteller {
       typeof window !== 'undefined' ? window.innerHeight || 0 : 0;
 
     if (offset == null) {
+      // default: middle of viewport
       return viewH * 0.5;
     }
 
     if (typeof offset === 'number') {
+      // treat as percent if 0-1, or as px if >= 1
       if (offset >= 0 && offset <= 1) {
         return viewH * offset;
       }
-      return offset;
+      return offset; // already pixels
     }
 
     if (typeof offset === 'string' && offset.endsWith('px')) {
@@ -166,6 +169,7 @@ export class Scrollyteller {
       return isNaN(value) ? viewH * 0.5 : value;
     }
 
+    // Fallback: middle of viewport
     return viewH * 0.5;
   }
 
@@ -180,25 +184,16 @@ export class Scrollyteller {
   }
 
   private collectSteps(): void {
-    const selector = '[data-para-enter], [data-para-exit], [data-para-progress]';
+    const selector =
+      '[data-para-enter], [data-para-exit], [data-para-progress]';
 
     const nodeList = document.querySelectorAll<HTMLElement>(selector);
-    const elements: HTMLElement[] = Array.from(new Set(nodeList));
+    const elements: HTMLElement[] = Array.from(new Set(nodeList)); // de-dup elements
 
     this.steps = elements.map((el, index) => {
-      const enterAttr = el.dataset.paraEnter as string;
-      const exitAttr = el.dataset.paraExit as string;
-      const progressAttr = el.dataset.paraProgress as string;
-
-      const enterActions = this.parseActionList(enterAttr);
-      const exitActions = this.parseActionList(exitAttr);
-      const progressActions = this.parseActionList(progressAttr);
-
-      const hasEnter = enterActions.length > 0;
-      const hasExit = exitActions.length > 0;
-      const hasProgress = progressActions.length > 0;
-
-      const chartId = el.dataset.paraChartid as string;
+      const hasEnter = el.hasAttribute('data-para-enter');
+      const hasExit = el.hasAttribute('data-para-exit');
+      const hasProgress = el.hasAttribute('data-para-progress');
 
       el.setAttribute('data-para-step-index', String(index));
 
@@ -211,20 +206,8 @@ export class Scrollyteller {
         hasEnter,
         hasExit,
         hasProgress,
-        enterActions,
-        exitActions,
-        progressActions,
-        chartId,
       };
     });
-  }
-
-  private parseActionList(attr: string | null): string[] {
-    if (!attr) return [];
-    return attr
-      .split(/[, ]+/)
-      .map(s => s.trim())
-      .filter(Boolean);
   }
 
   // ────────────────────────────────────────────────────────────────────────────────
@@ -256,6 +239,11 @@ export class Scrollyteller {
     const viewH =
       typeof window !== 'undefined' ? window.innerHeight || 0 : 0;
 
+    // We want a vertical band around the trigger line.
+    // We'll center the IO viewport so that the trigger line is at this.offsetPx.
+    //
+    // Top of IO viewport is shifted up by offsetPx.
+    // Bottom is shifted down so that total height stays equal to real viewport.
     const topMargin = -this.offsetPx;
     const bottomMargin = this.offsetPx - viewH;
 
@@ -267,6 +255,8 @@ export class Scrollyteller {
   }
 
   private computeThresholds(): number[] {
+    // A few thresholds give us smoother progress without going crazy.
+    // We’ll still compute progress manually, but thresholds make sure IO fires often.
     const steps = 10;
     const out: number[] = [];
     for (let i = 0; i <= steps; i++) {
@@ -277,7 +267,7 @@ export class Scrollyteller {
 
   private updateObserverRootMargin(): void {
     if (!this.observer) return;
-    this.setupObserver();
+    this.setupObserver(); // simplest: recreate with new margins
   }
 
   // ────────────────────────────────────────────────────────────────────────────────
@@ -287,7 +277,7 @@ export class Scrollyteller {
   private handleIntersections(entries: IntersectionObserverEntry[]): void {
     if (typeof window === 'undefined') return;
 
-    const currentY = window.scrollY || 0;
+    const currentY = window.pageYOffset || 0;
     this.direction = currentY > this.lastScrollY ? 'down' : 'up';
     this.lastScrollY = currentY;
 
@@ -305,8 +295,19 @@ export class Scrollyteller {
     }
   }
 
+  /**
+   * Core geometry:
+   * - offsetPx defines the trigger line (from top of viewport).
+   * - topAdjusted   = top - offsetPx
+   * - bottomAdjusted= bottom - offsetPx
+   *
+   * Cases:
+   * - topAdj > 0 && bottomAdj > 0  → step is BEFORE trigger line (above viewport)
+   * - topAdj <= 0 && bottomAdj >= 0 → trigger line INSIDE step → ACTIVE
+   * - topAdj < 0 && bottomAdj < 0 → step is AFTER trigger line (scrolled past)
+   */
   private updateStepStateFromGeometry(
-    step: StepEntry,
+    step: StepState,
     rect: DOMRectReadOnly
   ): void {
     const { top, bottom, height } = rect;
@@ -316,12 +317,17 @@ export class Scrollyteller {
     const wasActive = step.isActive;
     const prevProgress = step.progress;
 
+    // Determine new state and progress
     let isActive = false;
     let progress = step.progress;
 
     if (topAdjusted <= 0 && bottomAdjusted >= 0) {
+      // Trigger line is inside the element
       isActive = true;
 
+      // Progress: 0 when trigger hits top, 1 when trigger hits bottom.
+      // At top: topAdj = 0, bottomAdj = height
+      // At bottom: bottomAdj = 0
       if (height > 0) {
         const raw = 1 - bottomAdjusted / height;
         progress = Math.min(1, Math.max(0, raw));
@@ -329,9 +335,11 @@ export class Scrollyteller {
         progress = 0;
       }
     } else if (bottomAdjusted < 0) {
+      // Trigger line is below the element → fully 'after'
       isActive = false;
       progress = 1;
     } else if (topAdjusted > 0) {
+      // Trigger line is above the element → fully 'before'
       isActive = false;
       progress = 0;
     }
@@ -340,95 +348,57 @@ export class Scrollyteller {
     step.progress = progress;
     step.direction = this.direction;
 
+    // Fire callbacks based on transitions
     if (!wasActive && isActive) {
       this.handleEnter(step);
     } else if (wasActive && !isActive) {
       this.handleExit(step);
     }
 
+    // Only send progress if:
+    // - step is active
+    // - it actually has progress hooks
+    // - progress changed meaningfully
     if (
       isActive &&
       step.hasProgress &&
+      this.onStepProgress &&
       Math.abs(progress - prevProgress) > 0.001
     ) {
-      this.handleProgress(step);
+      this.onStepProgress({
+        element: step.element,
+        index: step.index,
+        direction: this.direction,
+        progress,
+      });
     }
   }
 
-  private handleEnter(step: StepEntry): void {
-    const ctx: ActionContext = {
+  private handleEnter(step: StepState): void {
+    if (!step.hasEnter || !this.onStepEnter) return;
+
+    this.onStepEnter({
       element: step.element,
       index: step.index,
       direction: this.direction,
-      chartId: step.chartId,
-      parachart: this.parachart,
-    };
-
-    if (this.onStepEnter) {
-      this.onStepEnter(ctx);
-    }
-
-    if (step.hasEnter) {
-      this.runActions(step.enterActions, ctx);
-    }
+    });
 
     if (this.debugEnabled) {
       step.element.setAttribute('data-para-debug-state', 'enter');
     }
   }
 
-  private handleExit(step: StepEntry): void {
-    const ctx: ActionContext = {
+  private handleExit(step: StepState): void {
+    if (!step.hasExit || !this.onStepExit) return;
+
+    this.onStepExit({
       element: step.element,
       index: step.index,
       direction: this.direction,
-      chartId: step.chartId,
-      parachart: this.parachart,
-    };
-
-    if (this.onStepExit) {
-      this.onStepExit(ctx);
-    }
-
-    if (step.hasExit) {
-      this.runActions(step.exitActions, ctx);
-    }
+    });
 
     if (this.debugEnabled) {
       step.element.setAttribute('data-para-debug-state', 'exit');
-    }
-  }
-
-  private handleProgress(step: StepEntry): void {
-    const ctx: ActionContext = {
-      element: step.element,
-      index: step.index,
-      direction: this.direction,
-      progress: step.progress,
-      chartId: step.chartId,
-      parachart: this.parachart,
-    };
-
-    if (this.onStepProgress) {
-      this.onStepProgress(ctx);
-    }
-
-    if (step.hasProgress) {
-      this.runActions(step.progressActions, ctx);
-    }
-  }
-
-  private runActions(actionNames: string[], ctx: ActionContext): void {
-    for (const name of actionNames) {
-      const handler = this.actions[name];
-      if (typeof handler === 'function') {
-        handler(ctx);
-      } else if (this.debugEnabled) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          `[Scrollyteller] No handler registered for action '${name}'.`
-        );
-      }
     }
   }
 
@@ -436,7 +406,7 @@ export class Scrollyteller {
   // Debug trigger line
   // ────────────────────────────────────────────────────────────────────────────────
 
-  private createDebugLine(): void {
+  private showTriggerLine(): void {
     if (!this.debugEnabled) return;
     if (this.debugLineEl) return;
 
@@ -459,7 +429,7 @@ export class Scrollyteller {
     label.style.background = 'rgba(255, 255, 255, 0.9)';
     label.style.padding = '2px 4px';
     label.style.borderRadius = '2px';
-    label.textContent = `Scrolly offset`;
+    label.textContent = `Scrolly trigger: ${this.offsetPx}px`;
     el.appendChild(label);
 
     document.body.appendChild(el);
