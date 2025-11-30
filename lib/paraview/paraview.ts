@@ -481,7 +481,7 @@ export class ParaView extends ParaComponent {
         //if (this._hotkeyActions instanceof NormalHotkeyActions) {
         if (!this._store.settings.ui.isNarrativeHighlightEnabled) {
           const msg = ['Self-voicing enabled.'];
-          const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+          const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
           if (lastAnnouncement) {
             msg.push(lastAnnouncement);
           }
@@ -495,15 +495,15 @@ export class ParaView extends ParaComponent {
           })();
         }
       } else {
-        this.paraChart.ariaLiveRegion.voicing.shutUp();
+        this.ariaLiveRegion.voicing.shutUp();
         // Voicing is disabled at this point, so manually push this message through
-        this.paraChart.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
+        this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
       }
     } else if (path === 'ui.isNarrativeHighlightEnabled') {
       if (this._store.settings.ui.isNarrativeHighlightEnabled) {
         if (this._store.settings.ui.isVoicingEnabled) {
           this.startNarrativeHighlightMode();
-          const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+          const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
           const msg = ['Narrative Highlights Mode enabled.'];
           if (lastAnnouncement) msg.push(lastAnnouncement);
           this._store.announce(msg);
@@ -515,7 +515,7 @@ export class ParaView extends ParaComponent {
             draft.ui.isVoicingEnabled = true;
           });
           this.startNarrativeHighlightMode();
-          const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+          const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
           const msg = ['Narrative Highlights Mode enabled.'];
           if (lastAnnouncement) msg.push(lastAnnouncement);
           this._store.announce(msg);
@@ -543,7 +543,7 @@ export class ParaView extends ParaComponent {
         this._store.announce(['Narrative Highlight Mode disabled.']);
       }
     } else if (path === 'ui.isNarrativeHighlightPaused') {
-      this.paraChart.ariaLiveRegion.voicing.togglePaused();
+      this.ariaLiveRegion.voicing.togglePaused();
     }
   }
 
