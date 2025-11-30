@@ -862,6 +862,11 @@ export class ParaView extends ParaComponent {
         </rect>
         ${this._documentView?.render() ?? ''}
       </svg>
+      <para-aria-live-region
+        ${ref(this._ariaLiveRegionRef)}
+        .store=${this._store}
+        .announcement=${this._store.announcement}
+      ></para-aria-live-region>
       <div
         ${ref(this._fileSavePlaceholderRef)}
         hidden
