@@ -245,8 +245,10 @@ export abstract class DataLayer extends PlotLayer {
       }
     };
     this._currentAnimationFrame = requestAnimationFrame(step);
-    loopParaviewRefresh(this.paraview, 500 + this.paraview.store.settings.animation.popInAnimateRevealTimeMs
+    if (this.paraview.store.settings.animation.symbolPopIn){
+          loopParaviewRefresh(this.paraview, 500 + this.paraview.store.settings.animation.popInAnimateRevealTimeMs
         + this.paraview.store.settings.animation.animateRevealTimeMs, 50);
+    }
   }
 
   protected _animStep(bezT: number, linearT: number) {

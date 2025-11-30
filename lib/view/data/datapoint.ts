@@ -318,6 +318,9 @@ export class DatapointView extends DataView {
 
   addPopup(text?: string){}
 
-  removePopup(id: string){}
+  removePopup(id: string) {
+    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
+    this.paraview.requestUpdate()
+  }
 
 }
