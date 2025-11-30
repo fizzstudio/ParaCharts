@@ -499,6 +499,8 @@ export interface ScrollytellingSettings extends SettingGroup {
   isScrollytellingEnabled: boolean;
   isScrollyAnnouncementsEnabled: boolean;
   isScrollySoniEnabled: boolean;
+  offset?: number | string; // 0–1 or 'NNNpx' or >1 px
+  isDebug?: boolean;
 }
 
 /** @public */

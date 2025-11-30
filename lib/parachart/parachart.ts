@@ -34,7 +34,12 @@ import '../components/aria_live';
 import { StyleManager } from './style_manager';
 import { AvailableCommands, Commander } from './commander';
 import { ParaAPI } from '../paraapi/paraapi';
-import { Scrollyteller } from '../scrollyteller/scrollyteller';
+import {
+  Scrollyteller,
+  type ActionMap,
+  type ActionContext,
+  type ScrollytellerOptions,
+} from '../scrollyteller/scrollyteller';
 
 import { Manifest } from '@fizz/paramanifest';
 
@@ -77,7 +82,13 @@ export class ParaChart extends ParaComponent {
   protected _styleManager!: StyleManager;
   protected _commander!: Commander;
   protected _paraAPI!: ParaAPI;
-  protected _scrollyteller!: Scrollyteller;
+  // protected _scrollyteller!: Scrollyteller;
+
+  // 🔹 new: default scrolly actions
+  public scrollyActions: ActionMap = {};
+
+  // 🔹 new: internal engine instance
+  protected _scrollyteller?: Scrollyteller;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -146,7 +157,29 @@ export class ParaChart extends ParaComponent {
           }
       });
     });
+
+    this.scrollyActions = {
+      highlightDatapoint: ({ chartId, datasetId, progress }: ActionContext) => {
+        if (!chartId || !datasetId) return;
+        // this.highlightDataset(chartId, datasetId, progress);
+        console.warn('[ParaCharts] highlightDatapoint', { chartId, datasetId, progress });
+      },
+  
+      resetHighlight: ({ chartId, datasetId }: ActionContext) => {
+        if (!chartId || !datasetId) return;
+        // this.resetHighlight(chartId, datasetId);
+        console.warn('[ParaCharts] resetHighlight', { chartId, datasetId });
+
+      },
+  
+      logStep: ({ index, direction }: ActionContext) => {
+        // eslint-disable-next-line no-console
+        console.log('[ParaCharts] logStep', { index, direction });
+      },
+    };
   }
+
+
 
   @queryAssignedElements({flatten: true})
   private _slotted!: HTMLElement[];
@@ -190,6 +223,8 @@ export class ParaChart extends ParaComponent {
   get scrollyteller() {
     return this._scrollyteller;
   }
+
+  
 
   connectedCallback() {
     super.connectedCallback();
@@ -389,5 +424,29 @@ export class ParaChart extends ParaComponent {
       </figure>
     `;
   }
+
+  enableScrollytelling(
+    options: ScrollytellerOptions = {},
+    extraActions: ActionMap = {}
+  ): void {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+  
+    this._scrollyteller?.destroy();
+  
+    this._scrollyteller = new Scrollyteller(this, options, extraActions);
+    this._scrollyteller.init();
+  }
+  
+  resizeScrollytelling(): void {
+    this._scrollyteller?.resize();
+  }
+  
+  disableScrollytelling(): void {
+    this._scrollyteller?.destroy();
+    this._scrollyteller = undefined;
+  }
+  
 
 }
