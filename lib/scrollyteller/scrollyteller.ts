@@ -1,13 +1,6 @@
-// src/Scrollyteller.ts
+// lib/scrollyteller/scrollyteller.ts
 // IntersectionObserver-based scrollytelling engine that uses the paraActions DSL
 // for data-para-enter / data-para-exit / data-para-progress attributes.
-//
-// Design:
-//  - Two IntersectionObservers per step:
-//      * stepObserver: enter/exit detection at a configurable offset
-//      * progressObserver: Scrollama-style progress using intersectionRatio
-//  - Declarative actions are parsed via paraActions.ts and executed against
-//    the ParaCharts host (or compatible ScrollyHost).
 
 import {
   parseParaActionList,
@@ -25,7 +18,7 @@ export interface ScrollytellingSettings {
   isDebug?: boolean;
 }
 
-// Host interface: ParaCharts (or similar) will match this shape structurally.
+// Host interface: ParaChart (or similar) will match this shape structurally.
 export interface ScrollyHost {
   paraView?: {
     store?: {
@@ -111,7 +104,7 @@ export class Scrollyteller {
 
   private events: Map<ScrollyEvent, StepCallback[]> = new Map();
 
-  private progressThresholdPx = 4; // default px granularity like Scrollama
+  private progressThresholdPx = 4; // default px granularity
 
   public onStepEnter?: StepCallback;
   public onStepExit?: StepCallback;
@@ -268,13 +261,9 @@ export class Scrollyteller {
       ...this.options,
     };
 
-    // Accept both isDebug and (legacy) debug if present; prefer isDebug.
-    const rawIsDebug =
-      (combined as any).isDebug ??
-      (combined as any).debug ??
-      this.options.isDebug;
+    const isDebug = (combined as any).isDebug ?? this.options.isDebug;
 
-    this.isDebugEnabled = !!rawIsDebug;
+    this.isDebugEnabled = !!isDebug;
     this.offsetPx = this.computeOffsetFromSetting(combined.offset);
 
     this.progressThresholdPx =
@@ -501,7 +490,7 @@ export class Scrollyteller {
     const vh = window.innerHeight || 0;
     const offsetPx = this.computeStepOffsetPx(step.offsetRaw);
 
-    // Scrollama-style progress rootMargin:
+    // Progress rootMargin:
     //   marginTop = -offset + step.height
     //   marginBottom = offset - viewportHeight
     const marginTop = -offsetPx + step.height;
@@ -547,7 +536,6 @@ export class Scrollyteller {
   }
 
   private createProgressThresholds(height: number): number[] {
-    // Similar idea to Scrollama's createProgressThreshold:
     // choose a count so that each threshold ≈ progressThresholdPx in scroll.
     const h = height > 0 ? height : 1;
     const px = this.progressThresholdPx > 0 ? this.progressThresholdPx : 50;
@@ -606,8 +594,6 @@ export class Scrollyteller {
     if (topAdjusted <= 0 && bottomAdjusted >= 0) {
       isActive = true;
 
-      // Coarse geometry-based progress; fine-grained updates come from
-      // the progress observer using intersectionRatio.
       if (height > 0) {
         const raw = 1 - bottomAdjusted / height;
         progress = Math.min(1, Math.max(0, raw));
@@ -633,9 +619,6 @@ export class Scrollyteller {
     } else if (wasActive && !isActive) {
       this.handleExit(step);
     }
-
-    // NOTE: we deliberately do NOT call handleProgress here;
-    // progress updates come from the progress observers.
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -747,6 +730,9 @@ export class Scrollyteller {
       parachart: this.parachart,
     };
 
+    // Mark this step as visually active in the DOM
+    step.element.classList.add('para-active');
+
     this.emit('stepEnter', ctx);
 
     if (this.onStepEnter) {
@@ -763,13 +749,6 @@ export class Scrollyteller {
   }
 
   private handleExit(step: StepEntry): void {
-    // Optional: enforce final progress on exit if you want
-    // if (this.direction === 'down') {
-    //   step.progress = 1;
-    // } else {
-    //   step.progress = 0;
-    // }
-
     const ctx: ActionContext = {
       element: step.element,
       index: step.index,
@@ -778,6 +757,9 @@ export class Scrollyteller {
       datasetId: step.datasetId,
       parachart: this.parachart,
     };
+
+    // Remove the visual active marker from the DOM
+    step.element.classList.remove('para-active');
 
     this.emit('stepExit', ctx);
 

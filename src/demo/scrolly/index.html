@@ -10,7 +10,6 @@
   <style>
     body {
       margin: 2em;
-      padding-bottom: 8em;
       font-family: Verdana, Geneva, Tahoma, sans-serif;
       font-size: 1.2em;
     }
@@ -29,12 +28,12 @@
 
     [data-para-enter] {
       border: none;
-      padding: 2em 1em;
-      margin: 20px 0;
-      min-height: 20em;
+      padding: 1em;
+      /* margin: 1em 0; */
+      /* min-height: 15em; */
     }
 
-    [data-para-enter].para-active {
+    .para-active {
       background-color: hsl(0, 0%, 93%);
       color: black;
     }
@@ -45,15 +44,6 @@
       width: 550px;
       height: 420px;
       flex-shrink: 0;
-    }
-
-    [data-para-step="0"] {
-      margin-bottom: 5em;
-    }
-
-    [data-para-step="5"] {
-      margin-top: 5em;
-      margin-bottom: 12em;
     }
 
     #progress {

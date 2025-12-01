@@ -1,28 +1,8 @@
-// src/paraActions.ts
+// lib/paraactions/paraactions.ts
 // Small DSL parser + executor for declarative ParaCharts actions,
 // with support for braced `when(...) { ... }` blocks and nesting.
 //
-// Supports:
-//   - Named actions:
-//       highlightSeries(series='revenue', emphasis=2)
-//       logStep(tag='intro')
-//   - Multiple actions separated by whitespace:
-//       highlightSeries(...) logStep(...)
-//   - Chained calls (usually into host.api):
-//       api.getChart('main').getSeries('revenue').select()
-//   - Arguments:
-//       positional:  highlightSeries('revenue', 2, true)
-//       named:       highlightSeries(series='revenue', emphasis=2)
-//   - Guarded blocks:
-//       when(direction='down') {
-//         highlightSeries(series='revenue')
-//         logStep(tag='down')
-//       }
-//
-// The top-level parse returns a flat list of ParaAction, which can be:
-//   - namedAction
-//   - chain
-//   - guardedBlock (with nested actions)
+// See previous comments in this file header for full language description.
 
 export type ParaValueKind =
   | 'string'
@@ -93,16 +73,6 @@ export type ParaActionHandlerMap<C> = Record<string, ParaActionHandler<C>>;
 
 /**
  * Parse an attribute string into a list of ParaAction AST nodes.
- *
- * Examples:
- *   "highlightSeries(series='revenue') logStep(tag='intro')"
- *
- *   "when(direction='down') {
- *      highlightSeries(series='revenue')
- *      logStep(tag='down')
- *    }
- *
- *    resetHighlight()"
  */
 export function parseParaActionList(input: string | null): ParaAction[] {
   if (!input) return [];
@@ -174,14 +144,6 @@ function startsWithIdentifier(source: string, index: number, ident: string): boo
 
 /**
  * Parse a when-block starting at the current index.
- *
- *   when(direction='down') {
- *     highlightSeries(...)
- *     logStep(...)
- *   }
- *
- * Returns null if parsing fails, in which case caller may
- * treat it as a normal action or error.
  */
 function parseWhenBlockAt(
   source: string,
@@ -210,7 +172,7 @@ function parseWhenBlockAt(
   while (i < len && depth > 0) {
     const ch = source[i];
 
-    if (ch === "'" && !inDouble) {
+    if (ch === '\'' && !inDouble) {
       inSingle = !inSingle;
       i++;
       continue;
@@ -261,7 +223,7 @@ function parseWhenBlockAt(
   while (i < len && braceDepth > 0) {
     const ch = source[i];
 
-    if (ch === "'" && !inDouble) {
+    if (ch === '\'' && !inDouble) {
       inSingle = !inSingle;
       i++;
       continue;
@@ -325,7 +287,7 @@ function parseSimpleActionAt(
   while (i < len) {
     const ch = source[i];
 
-    if (ch === "'" && !inDouble) {
+    if (ch === '\'' && !inDouble) {
       inSingle = !inSingle;
       i++;
       continue;
@@ -371,10 +333,6 @@ function parseSimpleActionAt(
 
 /**
  * Parse a single action string into either a NamedAction or a ChainAction.
- *
- * Examples:
- *   "highlightSeries(series='revenue')"
- *   "api.getChart('main').getSeries('rev').select()"
  */
 function parseSingleAction(input: string): ParaAction | null {
   if (!input) return null;
@@ -434,7 +392,7 @@ function parseChainAction(input: string): ChainAction | null {
   for (let i = 0; i < input.length; i++) {
     const ch = input[i];
 
-    if (ch === "'" && !inDouble) {
+    if (ch === '\'' && !inDouble) {
       inSingle = !inSingle;
       current += ch;
       continue;
@@ -501,9 +459,7 @@ function parseChainSegment(segment: string): ChainSegment | null {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Parse a comma-separated argument list:
- *
- *   series='revenue', emphasis=2, true, null
+ * Parse a comma-separated argument list.
  */
 function parseArgs(input: string): ParaActionArg[] {
   const out: ParaActionArg[] = [];
@@ -550,7 +506,7 @@ function splitArgs(input: string): string[] {
   for (let i = 0; i < input.length; i++) {
     const ch = input[i];
 
-    if (ch === "'" && !inDouble) {
+    if (ch === '\'' && !inDouble) {
       inSingle = !inSingle;
       current += ch;
       continue;
@@ -591,18 +547,13 @@ function splitArgs(input: string): string[] {
 
 /**
  * Parse a scalar value:
- *   'foo' / "foo"
- *   123 / 3.14
- *   true / false
- *   null
- *   identifier (e.g. series1)
  */
 function parseValue(input: string): ParaValue {
   const trimmed = input.trim();
 
   // quoted string
   if (
-    (trimmed.startsWith("'") && trimmed.endsWith("'")) ||
+    (trimmed.startsWith('\'') && trimmed.endsWith('\'')) ||
     (trimmed.startsWith('"') && trimmed.endsWith('"'))
   ) {
     const inner = trimmed.slice(1, -1);
@@ -640,7 +591,6 @@ function parseValue(input: string): ParaValue {
 
 /**
  * Parse the contents of when(...), e.g.:
- *
  *   "direction='down'"
  *   "direction='down', progressMin=0.3, progressMax=0.7"
  *   "'down'"   // shorthand for direction='down'
@@ -707,10 +657,7 @@ function makeGuardFn<C>(condition: GuardCondition): GuardFn<C> {
 }
 
 /**
- * Execute a list of ParaActions:
- *   - named actions: via actionMap[name](ctx, ...args)
- *   - chained actions: starting from host.api (if present) or host
- *   - guardedBlock: conditionally executes its nested actions
+ * Execute a list of ParaActions.
  */
 export function executeParaActions<Ctx>(
   host: unknown,
@@ -784,8 +731,6 @@ export function executeParaActions<Ctx>(
 /**
  * Execute a chained action like:
  *   api.getChart('main').getSeries('revenue').select()
- *
- * Starting from host.api if available, otherwise host.
  */
 function executeChainAction(
   host: unknown,

@@ -60,11 +60,11 @@ export class ParaChart extends ParaComponent {
   @property() manifestType: SourceKind = 'url';
   // `data` must be a URL, if set
   @property() data = '';
-  @property({type: Object}) accessor config: SettingsInput = {};
+  @property({ type: Object }) accessor config: SettingsInput = {};
   @property() accessor forcecharttype: ChartType | undefined;
   @property() type?: ChartType;
   @property() accessor description: string | undefined;
-  @property({type: Boolean, attribute: false}) isControlPanelOpen = false;
+  @property({ type: Boolean, attribute: false }) isControlPanelOpen = false;
 
   readonly captionBox: ParaCaptionBox;
   protected _paraViewRef = createRef<ParaView>();
@@ -83,12 +83,11 @@ export class ParaChart extends ParaComponent {
   protected _styleManager!: StyleManager;
   protected _commander!: Commander;
   protected _paraAPI!: ParaAPI;
-  // protected _scrollyteller!: Scrollyteller;
 
-  // 🔹 new: default scrolly actions
+  // new: default scrolly actions
   public scrollyActions: ActionMap = {};
 
-  // 🔹 new: internal engine instance
+  // new: internal engine instance
   protected _scrollyteller?: Scrollyteller;
 
   constructor(
@@ -152,10 +151,10 @@ export class ParaChart extends ParaComponent {
             }
           }
         }
-          else {
-            this.log.info("No datatable in slot")
-            this._store.dataState = 'error'
-          }
+        else {
+          this.log.info("No datatable in slot")
+          this._store.dataState = 'error'
+        }
       });
     });
 
@@ -164,7 +163,7 @@ export class ParaChart extends ParaComponent {
 
 
 
-  @queryAssignedElements({flatten: true})
+  @queryAssignedElements({ flatten: true })
   private _slotted!: HTMLElement[];
 
   get paraView() {
@@ -191,7 +190,7 @@ export class ParaChart extends ParaComponent {
     return this._ariaLiveRegionRef.value!;
   }
 
-  get slotted(){
+  get slotted() {
     return this._slotted;
   }
 
@@ -207,7 +206,7 @@ export class ParaChart extends ParaComponent {
     return this._scrollyteller;
   }
 
-  
+
 
   connectedCallback() {
     super.connectedCallback();
@@ -240,8 +239,8 @@ export class ParaChart extends ParaComponent {
         : 'none',
       '--caption-grid-template-columns': () =>
         this._store.settings.controlPanel.isExplorationBarVisible
-        && this._store.settings.controlPanel.isCaptionVisible
-        && this._store.settings.controlPanel.caption.isExplorationBarBeside
+          && this._store.settings.controlPanel.isCaptionVisible
+          && this._store.settings.controlPanel.caption.isExplorationBarBeside
           ? '2fr 1fr' //'auto auto'
           : '1fr',
       '--exploration-bar-display': () => this._store.settings.controlPanel.isExplorationBarVisible
@@ -284,7 +283,7 @@ export class ParaChart extends ParaComponent {
     if (changedProperties.has('manifest') && this.manifest !== '' && this._paraViewRef.value) {
       this.log.info(`manifest changed: '${this.manifestType === 'content' ? '<content>' : this.manifest}`);
       this._loaderPromise = this._runLoader(this.manifest, this.manifestType);
-      this.dispatchEvent(new CustomEvent('manifestchange', {bubbles: true, composed: true, cancelable: true}));
+      this.dispatchEvent(new CustomEvent('manifestchange', { bubbles: true, composed: true, cancelable: true }));
     }
     if (changedProperties.has('config')) {
       Object.entries(this.config).forEach(([path, value]) =>
@@ -343,14 +342,14 @@ export class ParaChart extends ParaComponent {
   }
 
   postNotice(key: string, value: any) {
-    if (!this.paraView){
+    if (!this.paraView) {
       return
     }
     this.paraView.documentView!.noticePosted(key, value);
     this.paraView.documentView!.chartInfo.noticePosted(key, value);
     this.captionBox.noticePosted(key, value);
     this.dispatchEvent(
-      new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));
+      new CustomEvent('paranotice', { detail: { key, value }, bubbles: true, composed: true }));
   }
 
   clearAriaLive() {
@@ -389,14 +388,14 @@ export class ParaChart extends ParaComponent {
           ?disableFocus=${this.headless}
         ></para-view>
         ${!(this.headless || this._store.settings.chart.isStatic)
-          ? html`
+        ? html`
             <para-control-panel
               ${ref(this._controlPanelRef)}
               .paraChart=${this}
               .store=${this._store}
             ></para-control-panel>`
-          : ''
-        }
+        : ''
+      }
         <para-aria-live-region
           ${ref(this._ariaLiveRegionRef)}
           .store=${this._store}
@@ -404,8 +403,8 @@ export class ParaChart extends ParaComponent {
         ></para-aria-live-region>
         <slot
           @slotchange=${(e: Event) => {
-            //this._signalManager.signal('slotChange');
-          }}
+        //this._signalManager.signal('slotChange');
+      }}
         ></slot>
       </figure>
     `;
@@ -415,31 +414,41 @@ export class ParaChart extends ParaComponent {
   // Scrollytelling functionality
   */
 
+
+  /**
+   * Enable scrollytelling with the given options and any extra actions.
+   * This should be called after charts and scrolly DOM are rendered.
+   */
   enableScrollytelling(
-    options: ScrollytellerOptions = {},
+    options: ScrollytellerOptions = {}, 
     extraActions: ActionMap = {}
   ): void {
-    if (typeof window === 'undefined' || typeof document === 'undefined') {
-      return;
-    }
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
     if (this._store.settings.scrollytelling.isScrollytellingEnabled) {
       this._scrollyteller?.destroy();
-    
-      this._scrollyteller = new Scrollyteller(this, options, extraActions);
+      this._scrollyteller = new Scrollyteller(this, options, {
+        ...this.scrollyActions,
+        ...extraActions,
+      });
       this._scrollyteller.init();
     }
-  
   }
-  
+
+  /**
+   * Should be called when layout changes (e.g., resize, data updates)
+   * so scrollyteller can recompute offsets, heights, and observer geometry.
+   */
   resizeScrollytelling(): void {
     this._scrollyteller?.resize();
   }
-  
+
+  /**
+   * Disable scrollytelling and clean up observers.
+   */
   disableScrollytelling(): void {
     this._scrollyteller?.destroy();
     this._scrollyteller = undefined;
   }
-  
 
 }

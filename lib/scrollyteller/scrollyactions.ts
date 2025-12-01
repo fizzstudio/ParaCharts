@@ -1,14 +1,5 @@
-// src/scrollyactions.ts
+// lib/scrollyteller/scrollyactions.ts
 // Starter ActionMap for Scrollyteller → ParaCharts integration.
-//
-// These actions are invoked from attributes like:
-//
-//   data-para-enter="highlightSeries(series='revenue')"
-//   data-para-exit="resetHighlight(series='revenue')"
-//   data-para-progress="progressFade(series='revenue', in=0.2, out=0.8)"
-//
-// All arguments are parsed by paraActions.ts as ParaActionArg, which can be
-// positional or named, and have typed values (string/number/boolean/null/identifier).
 
 import type { ActionMap, ActionContext } from './scrollyteller';
 import type {
@@ -16,9 +7,26 @@ import type {
   ParaNamedArg,
 } from '../paraactions/paraactions';
 
-// ───────────────────────────────────────────────────────────────────────────────
+// Rough structural type for your ParaCharts API.
+// Adjust/extend as your real API evolves.
+export interface ParaChartsSeriesApi {
+  setOpacity(value: number): void;
+}
+
+export interface ParaChartsChartApi {
+  getSeries(id: string): ParaChartsSeriesApi;
+  highlightSeries(seriesIds: string[], options?: { emphasis?: number; dimOthers?: boolean }): void;
+  resetHighlight?(seriesIds?: string[]): void;
+  resetAllHighlights?(): void;
+}
+
+export interface ParaChartsApi {
+  getChart(id: string): ParaChartsChartApi;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Helpers for dealing with ParaActionArg[]
-// ───────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getNamedArgs(args: ParaActionArg[]): Record<string, unknown> {
   const namedEntries = args
@@ -34,7 +42,6 @@ function getPositionalArgs(args: ParaActionArg[]): unknown[] {
     .map(a => a.value);
 }
 
-// Convenience helpers for common patterns
 function asString(value: unknown, fallback: string | null = null): string | null {
   if (value == null) return fallback;
   return String(value);
@@ -53,55 +60,25 @@ function asBoolean(value: unknown, fallback: boolean): boolean {
   return fallback;
 }
 
-// ───────────────────────────────────────────────────────────────────────────────
+// Optional helper to fetch your real chart API. Adjust to your actual structure.
+function getApiFromContext(ctx: ActionContext): ParaChartsApi | null {
+  const parachartAny = ctx.parachart as any;
+  const api = parachartAny?.api;
+
+  if (!api || typeof api.getChart !== 'function') {
+    // eslint-disable-next-line no-console
+    console.warn('[scrollyActions] ctx.parachart.api missing or invalid');
+    return null;
+  }
+
+  return api as ParaChartsApi;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Default scrollyActions
-// ───────────────────────────────────────────────────────────────────────────────
-//
-// NOTE: This is a starter set. You can replace the console.log calls with your
-// real ParaCharts APIs (e.g., ctx.parachart.api.getSeries(...).setOpacity(...)).
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const scrollyActions: ActionMap = {
-
-  /**
-   * Reset highlight for a series or entire chart.
-   *
-   * Examples:
-   *   data-para-exit="resetHighlight(series='revenue')"
-   *   data-para-exit="resetHighlight()"
-   */
-  reset: (ctx: ActionContext, ...args: ParaActionArg[]) => {
-    const named = getNamedArgs(args);
-    const positional = getPositionalArgs(args);
-
-    const primarySeries = asString(named.series);
-    const seriesIds: string[] = [];
-
-    if (primarySeries) {
-      seriesIds.push(primarySeries);
-    }
-    for (const value of positional) {
-      const id = asString(value);
-      if (id) seriesIds.push(id);
-    }
-
-    // Replace with your real chart API:
-    // if (ctx.chartId) {
-    //   const chart = ctx.parachart.api.getChart(ctx.chartId);
-    //   if (seriesIds.length > 0) {
-    //     chart.resetHighlight(seriesIds);
-    //   } else {
-    //     chart.resetAllHighlights();
-    //   }
-    // }
-
-    // eslint-disable-next-line no-console
-    console.log('[reset]', {
-      chartId: ctx.chartId,
-      seriesIds,
-    });
-  },
-
-
   /**
    * Highlight one or more series on the chart.
    *
@@ -110,13 +87,11 @@ export const scrollyActions: ActionMap = {
    *   data-para-enter="highlightSeries(revenue, expenses)"
    */
   highlightSeries: (ctx: ActionContext, ...args: ParaActionArg[]) => {
-
-    console.warn('scrollyactions:', 'highlightSeries', ctx, args)
+    // console.warn('[scrollyActions.highlightSeries]', ctx, args);
 
     const named = getNamedArgs(args);
     const positional = getPositionalArgs(args);
 
-    // series can be provided either as named or positional
     const primarySeries = asString(named.series);
     const seriesIds: string[] = [];
 
@@ -130,14 +105,18 @@ export const scrollyActions: ActionMap = {
 
     if (!ctx.chartId || seriesIds.length === 0) return;
 
-    // Optional: knobs for how strong the highlight is, whether to dim others, etc.
     const emphasis = asNumber(named.emphasis, 1);
     const dimOthers = asBoolean(named.dimOthers, true);
 
-    // Replace with your real chart API:
-    // ctx.parachart.api
-    //   .getChart(ctx.chartId)
-    //   .highlightSeries(seriesIds, { emphasis, dimOthers });
+    const api = getApiFromContext(ctx);
+    if (!api) {
+      // eslint-disable-next-line no-console
+      console.warn('[scrollyActions.highlightSeries] no api on parachart');
+      return;
+    }
+
+    const chart = api.getChart(ctx.chartId);
+    chart.highlightSeries(seriesIds, { emphasis, dimOthers });
 
     // eslint-disable-next-line no-console
     console.log('[highlightSeries]', {
@@ -150,10 +129,6 @@ export const scrollyActions: ActionMap = {
 
   /**
    * Reset highlight for a series or entire chart.
-   *
-   * Examples:
-   *   data-para-exit="resetHighlight(series='revenue')"
-   *   data-para-exit="resetHighlight()"
    */
   resetHighlight: (ctx: ActionContext, ...args: ParaActionArg[]) => {
     const named = getNamedArgs(args);
@@ -170,15 +145,20 @@ export const scrollyActions: ActionMap = {
       if (id) seriesIds.push(id);
     }
 
-    // Replace with your real chart API:
-    // if (ctx.chartId) {
-    //   const chart = ctx.parachart.api.getChart(ctx.chartId);
-    //   if (seriesIds.length > 0) {
-    //     chart.resetHighlight(seriesIds);
-    //   } else {
-    //     chart.resetAllHighlights();
-    //   }
-    // }
+    const api = getApiFromContext(ctx);
+    if (!api || !ctx.chartId) {
+      // eslint-disable-next-line no-console
+      console.warn('[scrollyActions.resetHighlight] no api or chartId');
+      return;
+    }
+
+    const chart = api.getChart(ctx.chartId);
+
+    if (seriesIds.length > 0 && chart.resetHighlight) {
+      chart.resetHighlight(seriesIds);
+    } else if (chart.resetAllHighlights) {
+      chart.resetAllHighlights();
+    }
 
     // eslint-disable-next-line no-console
     console.log('[resetHighlight]', {
@@ -192,27 +172,21 @@ export const scrollyActions: ActionMap = {
    *
    * Example:
    *   data-para-progress="progressFade(series='revenue', in=0.2, out=0.8)"
-   *
-   * This will:
-   *   - log the raw progress as provided by Scrollyteller
-   *   - map progress from [in, out] range to [0, 1] as t
-   *   - log the final t value (used as e.g. opacity)
    */
   progressFade: (ctx: ActionContext, ...args: ParaActionArg[]) => {
     const named = getNamedArgs(args);
     const series = asString(named.series);
     const p = ctx.progress ?? 0;
 
-    // ⬅️ explicit log of raw progress
+    // explicit log of raw progress
     // eslint-disable-next-line no-console
     console.log('[progressFade] raw progress =', p);
 
     const fadeIn = asNumber(named.in, 0);
     const fadeOut = asNumber(named.out, 1);
 
-    if (!series) return;
+    if (!series || !ctx.chartId) return;
 
-    // Normalize to [0, 1] within fadeIn → fadeOut window
     const tRaw = (p - fadeIn) / (fadeOut - fadeIn);
     const t = Math.min(1, Math.max(0, tRaw));
 
@@ -225,18 +199,16 @@ export const scrollyActions: ActionMap = {
       t,
     });
 
-    // Real chart API might look like:
-    // ctx.parachart.api
-    //   .getSeries(series)
-    //   .setOpacity(t);
+    const api = getApiFromContext(ctx);
+    if (!api) return;
+
+    const chart = api.getChart(ctx.chartId);
+    const seriesApi = chart.getSeries(series);
+    seriesApi.setOpacity(t);
   },
 
   /**
    * Show a textual callout or annotation at a step.
-   *
-   * Example:
-   *   data-para-enter="showCallout(id='q4-dip', text='Notice the Q4 drawdown')"
-   *   data-para-exit="hideCallout(id='q4-dip')"
    */
   showCallout: (ctx: ActionContext, ...args: ParaActionArg[]) => {
     const named = getNamedArgs(args);
@@ -245,17 +217,18 @@ export const scrollyActions: ActionMap = {
 
     if (!ctx.chartId || !id) return;
 
+    const api = getApiFromContext(ctx);
+    if (!api) return;
+
+    // Real chart API:
+    // api.getChart(ctx.chartId).showCallout({ id, text, stepIndex: ctx.index });
+
     // eslint-disable-next-line no-console
     console.log('[showCallout]', {
       chartId: ctx.chartId,
       id,
       text,
     });
-
-    // Real chart API:
-    // ctx.parachart.api
-    //   .getChart(ctx.chartId)
-    //   .showCallout({ id, text, stepIndex: ctx.index });
   },
 
   hideCallout: (ctx: ActionContext, ...args: ParaActionArg[]) => {
@@ -264,23 +237,21 @@ export const scrollyActions: ActionMap = {
 
     if (!ctx.chartId || !id) return;
 
+    const api = getApiFromContext(ctx);
+    if (!api) return;
+
+    // Real chart API:
+    // api.getChart(ctx.chartId).hideCallout(id);
+
     // eslint-disable-next-line no-console
     console.log('[hideCallout]', {
       chartId: ctx.chartId,
       id,
     });
-
-    // Real chart API:
-    // ctx.parachart.api
-    //   .getChart(ctx.chartId)
-    //   .hideCallout(id);
   },
 
   /**
    * Simple debugging helper: log the scrollytelling context and any arguments.
-   *
-   * Example:
-   *   data-para-enter="logStep(tag='intro')"
    */
   logStep: (ctx: ActionContext, ...args: ParaActionArg[]) => {
     const named = getNamedArgs(args);
@@ -300,9 +271,6 @@ export const scrollyActions: ActionMap = {
 
   /**
    * Ultra-verbose debugging helper: dump the entire ActionContext.
-   *
-   * Example:
-   *   data-para-enter="debugContext()"
    */
   debugContext: (ctx: ActionContext) => {
     // eslint-disable-next-line no-console
