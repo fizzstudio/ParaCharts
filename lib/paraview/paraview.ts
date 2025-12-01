@@ -83,6 +83,7 @@ export class ParaView extends ParaComponent {
   @state() protected _defs: { [key: string]: TemplateResult } = {};
   @state() protected _jim = '';
   @state() protected _isFullscreen = false;
+  protected _exitingLowVisionMode = false;
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
 
@@ -468,14 +469,22 @@ export class ParaView extends ParaComponent {
           draft.chart.fontScale = 2;
           draft.grid.isDrawVertLines = true;
         } else {
+          this._exitingLowVisionMode = true;
           draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
-          draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
           draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
           this._modeSaved.delete('animation.isAnimationEnabled');
           this._modeSaved.delete('chart.fontScale');
           this._modeSaved.delete('grid.isDrawVertLines');
         }
       });
+      if (this._exitingLowVisionMode) {
+        queueMicrotask(() => {
+          this._store.updateSettings(draft => {
+            draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
+          });
+          this._exitingLowVisionMode = false;
+        });
+      }
     } else if (path === 'ui.isVoicingEnabled') {
       if (this._store.settings.ui.isVoicingEnabled) {
         //if (this._hotkeyActions instanceof NormalHotkeyActions) {
@@ -776,8 +785,8 @@ export class ParaView extends ParaComponent {
 
 
   protected _rootStyle() {
-    if(document.fullscreenElement) {
-	  console.log("fullscreenElement constructor:", document.fullscreenElement?.constructor?.name);
+    if (document.fullscreenElement) {
+      console.log("fullscreenElement constructor:", document.fullscreenElement?.constructor?.name);
       console.log("fullscreenElement tag:", document.fullscreenElement?.tagName);
       console.log("this constructor:", this.constructor.name);
     }
@@ -785,10 +794,10 @@ export class ParaView extends ParaComponent {
       fontFamily: this._store.settings.chart.fontFamily,
       fontWeight: this._store.settings.chart.fontWeight
     };
-	if (document.fullscreenElement?.contains(this)) {
+    if (document.fullscreenElement?.contains(this)) {
       console.log("I am inside the fullscreen wrapper");
     }
-	const fs = document.fullscreenElement;
+    const fs = document.fullscreenElement;
     if (fs && fs.tagName.toLowerCase() === 'para-chart-ai') {
       console.log("Fullscreen wrapper is para-chart-ai");
     }
