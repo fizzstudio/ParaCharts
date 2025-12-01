@@ -263,6 +263,16 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
           && this.paraview.store.settings.popup.activation === "onHover"
           && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
       },
+      pointerMove: (e) => {
+        if (this._popup) {
+          this._popup.grid.x = this.paraview.store.pointerCoords.x;
+          this._popup.grid.y = this.paraview.store.pointerCoords.y;
+          this._popup.shiftGrid();
+          this._popup.box.x = this._popup.grid.x;
+          this._popup.box.y = this._popup.grid.bottom;
+          this.paraview.requestUpdate();
+        }
+      },
       pointerLeave: (e) => {
         this.paraview.store.settings.chart.isShowPopups
           && this.paraview.store.settings.popup.activation === "onHover"
@@ -279,8 +289,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
         text: text ?? datapointText,
         x: this.x,
         y: this.y,
-        textAnchor: "middle",
-        classList: ['annotationlabel'],
         id: this.id,
         type: "vertAxis",
         fill: "hsl(0, 0%, 0%)"
@@ -289,6 +297,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
         shape: "boxWithArrow"
       })
     this.paraview.store.popups.push(popup)
+    this._popup = popup;
   }
 
   removePopup(id: string) {

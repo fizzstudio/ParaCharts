@@ -253,8 +253,6 @@ export class ParaControlPanel extends ParaComponent {
         text: text ?? "",
         x: x,
         y: y + (isOpen ? 26.4 : 0),
-        textAnchor: "middle",
-        classList: ['annotationlabel'],
         id: this.id,
         type: "controlPanelIcon",
         fill: "hsl(0, 0%, 0%)",

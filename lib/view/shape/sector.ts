@@ -344,6 +344,7 @@ export class SectorShape extends Shape {
             clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
             @pointerenter=${this.options.pointerEnter ?? nothing}
             @pointerleave=${this.options.pointerLeave ?? nothing}
+            @pointermove=${this.options.pointerMove ?? nothing}
           ></path>
         `;
     }
@@ -364,6 +365,7 @@ export class SectorShape extends Shape {
         clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
         @pointerenter=${this.options.pointerEnter ?? nothing}
         @pointerleave=${this.options.pointerLeave ?? nothing}
+        @pointermove=${this.options.pointerMove ?? nothing}
       ></path>
     `;
     }

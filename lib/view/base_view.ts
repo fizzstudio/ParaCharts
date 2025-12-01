@@ -32,6 +32,7 @@ import { type HotkeyInfo } from '../input/defaultactions';*/
 import { fixed } from '../common/utils';
 import { ParaView } from '../paraview';
 import { Vec2 } from '../common/vector';
+import { Popup } from './popup';
 
 export type SnapLocation = 'start' | 'end' | 'center';
 
@@ -226,6 +227,7 @@ export class View extends BaseView {
   protected _classInfo: ClassInfo = {};
   protected _isObserveStore = false;
   protected _isObserveNotices = false;
+  protected _popup?: Popup;
 
   constructor(public readonly paraview: ParaView) {
     super();
@@ -929,6 +931,10 @@ export class View extends BaseView {
 
   focusRingBbox(): DOMRect | null {
     return null;
+  }
+
+  pointerMove(){
+    this.children.forEach(c => c.pointerMove())
   }
 
 }
