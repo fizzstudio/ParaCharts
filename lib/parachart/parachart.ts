@@ -274,6 +274,9 @@ export class ParaChart extends ParaComponent {
 
   protected firstUpdated(_changedProperties: PropertyValues): void {
     this._commander = Commander.getInst(this._paraViewRef.value!);
+
+    // TODO: this should be called after chart is rendered, as final step
+    this.enableScrollytelling();
   }
 
   willUpdate(changedProperties: PropertyValues<this>) {
@@ -408,6 +411,10 @@ export class ParaChart extends ParaComponent {
     `;
   }
 
+  /*
+  // Scrollytelling functionality
+  */
+
   enableScrollytelling(
     options: ScrollytellerOptions = {},
     extraActions: ActionMap = {}
@@ -415,11 +422,14 @@ export class ParaChart extends ParaComponent {
     if (typeof window === 'undefined' || typeof document === 'undefined') {
       return;
     }
+
+    if (this._store.settings.scrollytelling.isScrollytellingEnabled) {
+      this._scrollyteller?.destroy();
+    
+      this._scrollyteller = new Scrollyteller(this, options, extraActions);
+      this._scrollyteller.init();
+    }
   
-    this._scrollyteller?.destroy();
-  
-    this._scrollyteller = new Scrollyteller(this, options, extraActions);
-    this._scrollyteller.init();
   }
   
   resizeScrollytelling(): void {

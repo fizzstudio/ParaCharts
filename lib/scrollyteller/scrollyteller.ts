@@ -1,6 +1,21 @@
 // src/Scrollyteller.ts
-// Scrollytelling engine using IntersectionObserver, designed to be hosted by
-// something like ParaCharts that implements ScrollyHost.
+// IntersectionObserver-based scrollytelling engine that uses the paraActions DSL
+// for data-para-enter / data-para-exit / data-para-progress attributes.
+//
+// Design:
+//  - Two IntersectionObservers per step:
+//      * stepObserver: enter/exit detection at a configurable offset
+//      * progressObserver: Scrollama-style progress using intersectionRatio
+//  - Declarative actions are parsed via paraActions.ts and executed against
+//    the ParaCharts host (or compatible ScrollyHost).
+
+import {
+  parseParaActionList,
+  executeParaActions,
+  type ParaAction,
+  type ParaActionHandler,
+  type ParaActionHandlerMap,
+} from '../paraactions/paraactions';
 
 export type ScrollDirection = 'up' | 'down';
 export type ScrollyEvent = 'stepEnter' | 'stepExit' | 'stepProgress';
@@ -10,7 +25,7 @@ export interface ScrollytellingSettings {
   isDebug?: boolean;
 }
 
-// Host interface: ParaCharts will implement this shape.
+// Host interface: ParaCharts (or similar) will match this shape structurally.
 export interface ScrollyHost {
   paraView?: {
     store?: {
@@ -36,16 +51,15 @@ export interface ActionContext {
   parachart: ScrollyHost;
 }
 
-export type ActionHandler = (ctx: ActionContext) => void;
-
-export interface ActionMap {
-  [actionName: string]: ActionHandler;
-}
+// Specialisations of the generic paraActions types for scrollytelling.
+export type ActionHandler = ParaActionHandler<ActionContext>;
+export type ActionMap = ParaActionHandlerMap<ActionContext>;
 
 export interface ScrollytellerOptions {
   offset?: number | string;
   isDebug?: boolean;
-  rootMarginExtra?: number; // px
+  rootMarginExtra?: number;      // extra px to expand rootMargin for stepObserver
+  progressThresholdPx?: number;  // px granularity for progress IO (default ~4px)
 }
 
 interface StepEntry {
@@ -59,15 +73,23 @@ interface StepEntry {
   hasExit: boolean;
   hasProgress: boolean;
 
-  enterActions: string[];
-  exitActions: string[];
-  progressActions: string[];
+  enterActions: ParaAction[];
+  exitActions: ParaAction[];
+  progressActions: ParaAction[];
 
   chartId: string | null;
   datasetId: string | null;
 
   offsetRaw: string | null; // data-para-offset per-step override
-  debugLineEl?: HTMLDivElement | null;
+
+  // Geometry for progress observer
+  height: number;
+
+  // Per-step observers
+  stepObserver?: IntersectionObserver | null;
+  progressObserver?: IntersectionObserver | null;
+
+  debugLineElement?: HTMLDivElement | null;
 }
 
 type StepCallback = (info: ActionContext) => void;
@@ -80,16 +102,16 @@ export class Scrollyteller {
   private steps: StepEntry[] = [];
   private stepMap: WeakMap<Element, StepEntry> = new WeakMap();
 
-  private observer: IntersectionObserver | null = null;
-
   private offsetPx = 0; // global offset in px
   private lastScrollY = 0;
   private direction: ScrollDirection = 'down';
 
-  private debugEnabled = false;
-  private debugLineEl: HTMLDivElement | null = null; // global debug line
+  private isDebugEnabled = false;
+  private debugLineElement: HTMLDivElement | null = null; // global debug line
 
   private events: Map<ScrollyEvent, StepCallback[]> = new Map();
+
+  private progressThresholdPx = 4; // default px granularity like Scrollama
 
   public onStepEnter?: StepCallback;
   public onStepExit?: StepCallback;
@@ -108,18 +130,13 @@ export class Scrollyteller {
       ...defaultActions,
       ...extraActions,
     };
-
-    console.warn('Scrolly: constructor')
-    this.init();
   }
 
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
   // Public API
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
 
   public init(): void {
-    console.warn('Scrolly: init')
-
     if (typeof window === 'undefined' || typeof document === 'undefined') {
       return;
     }
@@ -129,43 +146,70 @@ export class Scrollyteller {
     if (this.steps.length === 0) return;
 
     this.createDebugLine();
-    this.setupObserver();
+    this.setupObserversForAllSteps();
     this.updateDebugLinePosition();
 
     this.lastScrollY = window.pageYOffset || 0;
   }
 
   public destroy(): void {
-    if (this.observer) {
-      this.steps.forEach(step => this.observer?.unobserve(step.element));
-      this.observer.disconnect();
-      this.observer = null;
-    }
-
-    // Clean per-step debug lines
+    // Disconnect per-step observers
     this.steps.forEach(step => {
-      if (step.debugLineEl && step.debugLineEl.parentNode) {
-        step.debugLineEl.parentNode.removeChild(step.debugLineEl);
+      if (step.stepObserver) {
+        step.stepObserver.unobserve(step.element);
+        step.stepObserver.disconnect();
+        step.stepObserver = null;
       }
-      step.debugLineEl = null;
+      if (step.progressObserver) {
+        step.progressObserver.unobserve(step.element);
+        step.progressObserver.disconnect();
+        step.progressObserver = null;
+      }
+
+      if (step.debugLineElement && step.debugLineElement.parentNode) {
+        step.debugLineElement.parentNode.removeChild(step.debugLineElement);
+      }
+      step.debugLineElement = null;
     });
 
     this.steps = [];
     this.stepMap = new WeakMap();
     this.events.clear();
 
-    // Clean global debug line
-    if (this.debugLineEl && this.debugLineEl.parentNode) {
-      this.debugLineEl.parentNode.removeChild(this.debugLineEl);
-      this.debugLineEl = null;
+    if (this.debugLineElement && this.debugLineElement.parentNode) {
+      this.debugLineElement.parentNode.removeChild(this.debugLineElement);
+      this.debugLineElement = null;
     }
   }
 
   public resize(): void {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+    // Recompute global offset
     this.computeOffsetPx();
-    this.updateObserverRootMargin();
     this.updateDebugLinePosition();
+
+    // Recompute step heights and re-create observers
+    this.steps.forEach(step => {
+      const rect = step.element.getBoundingClientRect();
+      step.height = rect.height || step.element.offsetHeight || 0;
+
+      if (step.stepObserver) {
+        step.stepObserver.unobserve(step.element);
+        step.stepObserver.disconnect();
+        step.stepObserver = null;
+      }
+      if (step.progressObserver) {
+        step.progressObserver.unobserve(step.element);
+        step.progressObserver.disconnect();
+        step.progressObserver = null;
+      }
+
+      this.setupStepObserver(step);
+      if (step.hasProgress) {
+        this.setupProgressObserver(step);
+      }
+    });
   }
 
   public on(event: ScrollyEvent, callback: StepCallback): void {
@@ -211,20 +255,32 @@ export class Scrollyteller {
     }
   }
 
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
   // Settings & step collection
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
 
   private resolveSettings(): void {
     const storeSettings =
       this.parachart?.paraView?.store?.settings?.scrollytelling ?? {};
+
     const combined: ScrollytellingSettings = {
       ...storeSettings,
       ...this.options,
     };
 
-    this.debugEnabled = !!combined.isDebug;
+    // Accept both isDebug and (legacy) debug if present; prefer isDebug.
+    const rawIsDebug =
+      (combined as any).isDebug ??
+      (combined as any).debug ??
+      this.options.isDebug;
+
+    this.isDebugEnabled = !!rawIsDebug;
     this.offsetPx = this.computeOffsetFromSetting(combined.offset);
+
+    this.progressThresholdPx =
+      this.options.progressThresholdPx && this.options.progressThresholdPx > 0
+        ? this.options.progressThresholdPx
+        : 4;
   }
 
   private computeOffsetFromSetting(offset: number | string | undefined): number {
@@ -244,12 +300,11 @@ export class Scrollyteller {
 
     if (typeof offset === 'string' && offset.endsWith('px')) {
       const value = Number(offset.replace('px', ''));
-      return isNaN(value) ? viewH * 0.5 : value;
+      return Number.isNaN(value) ? viewH * 0.5 : value;
     }
 
-    // If string but not 'px', treat as fraction or fallback to 0.5vh
     const num = Number(offset);
-    if (!isNaN(num) && num >= 0 && num <= 1) {
+    if (!Number.isNaN(num) && num >= 0 && num <= 1) {
       return viewH * num;
     }
 
@@ -281,9 +336,9 @@ export class Scrollyteller {
       const exitAttr = el.dataset.paraExit ?? null;
       const progressAttr = el.dataset.paraProgress ?? null;
 
-      const enterActions = this.parseActionList(enterAttr);
-      const exitActions = this.parseActionList(exitAttr);
-      const progressActions = this.parseActionList(progressAttr);
+      const enterActions = parseParaActionList(enterAttr);
+      const exitActions = parseParaActionList(exitAttr);
+      const progressActions = parseParaActionList(progressAttr);
 
       const hasEnter = enterActions.length > 0;
       const hasExit = exitActions.length > 0;
@@ -292,6 +347,9 @@ export class Scrollyteller {
       const chartId = el.dataset.paraChartid ?? null;
       const datasetId = el.dataset.paraDatasetid ?? null;
       const offsetRaw = el.dataset.paraOffset ?? null;
+
+      const rect = el.getBoundingClientRect();
+      const height = rect.height || el.offsetHeight || 0;
 
       const step: StepEntry = {
         element: el,
@@ -308,7 +366,10 @@ export class Scrollyteller {
         chartId,
         datasetId,
         offsetRaw,
-        debugLineEl: null,
+        height,
+        stepObserver: null,
+        progressObserver: null,
+        debugLineElement: null,
       };
 
       this.steps.push(step);
@@ -316,70 +377,9 @@ export class Scrollyteller {
     });
   }
 
-  private parseActionList(attr: string | null): string[] {
-    if (!attr) return [];
-    return attr
-      .split(/[, ]+/)
-      .map(s => s.trim())
-      .filter(Boolean);
-  }
-
-  // ───────────────────────────────────────────────────────────────────────────────
-  // IntersectionObserver setup
-  // ───────────────────────────────────────────────────────────────────────────────
-
-  private setupObserver(): void {
-    const rootMargin = this.computeRootMargin();
-    const thresholds = this.computeThresholds();
-
-    if (this.observer) {
-      this.steps.forEach(step => this.observer?.unobserve(step.element));
-      this.observer.disconnect();
-    }
-
-    this.observer = new IntersectionObserver(
-      entries => this.handleIntersections(entries),
-      {
-        root: null,
-        rootMargin,
-        threshold: thresholds,
-      }
-    );
-
-    this.steps.forEach(step => this.observer!.observe(step.element));
-  }
-
-  private computeRootMargin(): string {
-    const viewH =
-      typeof window !== 'undefined' ? window.innerHeight || 0 : 0;
-
-    const topMargin = -this.offsetPx;
-    const bottomMargin = this.offsetPx - viewH;
-
-    const extra = this.options.rootMarginExtra ?? 0;
-    const top = topMargin - extra;
-    const bottom = bottomMargin - extra;
-
-    return `${top}px 0px ${bottom}px 0px`;
-  }
-
-  private computeThresholds(): number[] {
-    const steps = 10;
-    const out: number[] = [];
-    for (let i = 0; i <= steps; i++) {
-      out.push(i / steps);
-    }
-    return out;
-  }
-
-  private updateObserverRootMargin(): void {
-    if (!this.observer) return;
-    this.setupObserver();
-  }
-
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
   // Per-step offset helper
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
 
   private computeStepOffsetPx(offsetRaw: string | null): number {
     if (typeof window === 'undefined') return this.offsetPx;
@@ -391,11 +391,11 @@ export class Scrollyteller {
 
     if (trimmed.endsWith('px')) {
       const value = Number(trimmed.replace('px', ''));
-      return isNaN(value) ? this.offsetPx : value;
+      return Number.isNaN(value) ? this.offsetPx : value;
     }
 
     const num = Number(trimmed);
-    if (isNaN(num)) return this.offsetPx;
+    if (Number.isNaN(num)) return this.offsetPx;
 
     if (num >= 0 && num <= 1) {
       return viewH * num;
@@ -407,13 +407,13 @@ export class Scrollyteller {
     return this.offsetPx;
   }
 
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
   // Per-step debug line helpers
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
 
   private ensureStepDebugLine(step: StepEntry): void {
-    if (!this.debugEnabled) return;
-    if (step.debugLineEl) return;
+    if (!this.isDebugEnabled) return;
+    if (step.debugLineElement) return;
 
     const line = document.createElement('div');
     line.className = 'paracharts-scrolly-step-debug-line';
@@ -445,7 +445,7 @@ export class Scrollyteller {
     }
 
     step.element.appendChild(line);
-    step.debugLineEl = line;
+    step.debugLineElement = line;
   }
 
   private updateStepDebugLine(
@@ -453,21 +453,121 @@ export class Scrollyteller {
     rect: DOMRectReadOnly,
     offsetPx: number
   ): void {
-    if (!this.debugEnabled) return;
+    if (!this.isDebugEnabled) return;
     this.ensureStepDebugLine(step);
-    if (!step.debugLineEl) return;
+    if (!step.debugLineElement) return;
 
     const localY = offsetPx - rect.top;
     const clamped = Math.min(Math.max(localY, 0), rect.height);
 
-    step.debugLineEl.style.top = `${clamped}px`;
+    step.debugLineElement.style.top = `${clamped}px`;
   }
 
-  // ───────────────────────────────────────────────────────────────────────────────
-  // Intersection handling
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Observer setup (step + progress)
+  // ─────────────────────────────────────────────────────────────────────────────
 
-  private handleIntersections(entries: IntersectionObserverEntry[]): void {
+  private setupObserversForAllSteps(): void {
+    this.steps.forEach(step => {
+      this.setupStepObserver(step);
+      if (step.hasProgress) {
+        this.setupProgressObserver(step);
+      }
+    });
+  }
+
+  private setupStepObserver(step: StepEntry): void {
+    if (typeof window === 'undefined') return;
+
+    const rootMargin = this.computeRootMargin();
+    const thresholds = this.computeThresholds();
+
+    const observer = new IntersectionObserver(
+      entries => this.handleStepIntersections(entries),
+      {
+        root: null,
+        rootMargin,
+        threshold: thresholds,
+      }
+    );
+
+    observer.observe(step.element);
+    step.stepObserver = observer;
+  }
+
+  private setupProgressObserver(step: StepEntry): void {
+    if (typeof window === 'undefined') return;
+
+    const vh = window.innerHeight || 0;
+    const offsetPx = this.computeStepOffsetPx(step.offsetRaw);
+
+    // Scrollama-style progress rootMargin:
+    //   marginTop = -offset + step.height
+    //   marginBottom = offset - viewportHeight
+    const marginTop = -offsetPx + step.height;
+    const marginBottom = offsetPx - vh;
+    const rootMargin = `${marginTop}px 0px ${marginBottom}px 0px`;
+
+    const thresholds = this.createProgressThresholds(step.height);
+
+    const observer = new IntersectionObserver(
+      entries => this.handleProgressIntersections(entries),
+      {
+        root: null,
+        rootMargin,
+        threshold: thresholds,
+      }
+    );
+
+    observer.observe(step.element);
+    step.progressObserver = observer;
+  }
+
+  private computeRootMargin(): string {
+    const viewH =
+      typeof window !== 'undefined' ? window.innerHeight || 0 : 0;
+
+    const topMargin = -this.offsetPx;
+    const bottomMargin = this.offsetPx - viewH;
+
+    const extra = this.options.rootMarginExtra ?? 0;
+    const top = topMargin - extra;
+    const bottom = bottomMargin - extra;
+
+    return `${top}px 0px ${bottom}px 0px`;
+  }
+
+  private computeThresholds(): number[] {
+    const steps = 2; // coarse thresholds for enter/exit; geometry does the real work
+    const out: number[] = [];
+    for (let i = 0; i <= steps; i++) {
+      out.push(i / steps);
+    }
+    return out;
+  }
+
+  private createProgressThresholds(height: number): number[] {
+    // Similar idea to Scrollama's createProgressThreshold:
+    // choose a count so that each threshold ≈ progressThresholdPx in scroll.
+    const h = height > 0 ? height : 1;
+    const px = this.progressThresholdPx > 0 ? this.progressThresholdPx : 50;
+
+    const count = Math.max(1, Math.ceil(h / px));
+    const ratio = 1 / count;
+    const out: number[] = [];
+    for (let i = 0; i <= count; i++) {
+      out.push(i * ratio);
+    }
+    return out;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Intersection handling (step enter/exit) via step observers
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  private handleStepIntersections(
+    entries: IntersectionObserverEntry[]
+  ): void {
     if (typeof window === 'undefined') return;
 
     const currentY = window.pageYOffset || 0;
@@ -482,6 +582,9 @@ export class Scrollyteller {
       const rect = entry.boundingClientRect;
       this.updateStepStateFromGeometry(step, rect);
     }
+
+    // Enforce boundary behavior: top → first step, bottom → last step
+    this.enforceBoundaryActivation(currentY);
   }
 
   private updateStepStateFromGeometry(
@@ -496,7 +599,6 @@ export class Scrollyteller {
     const bottomAdjusted = bottom - offsetPx;
 
     const wasActive = step.isActive;
-    const prevProgress = step.progress;
 
     let isActive = false;
     let progress = step.progress;
@@ -504,6 +606,8 @@ export class Scrollyteller {
     if (topAdjusted <= 0 && bottomAdjusted >= 0) {
       isActive = true;
 
+      // Coarse geometry-based progress; fine-grained updates come from
+      // the progress observer using intersectionRatio.
       if (height > 0) {
         const raw = 1 - bottomAdjusted / height;
         progress = Math.min(1, Math.max(0, raw));
@@ -530,18 +634,108 @@ export class Scrollyteller {
       this.handleExit(step);
     }
 
-    if (
-      isActive &&
-      step.hasProgress &&
-      Math.abs(progress - prevProgress) > 0.001
-    ) {
+    // NOTE: we deliberately do NOT call handleProgress here;
+    // progress updates come from the progress observers.
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Boundary behavior: first step at top, last step at bottom
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  private enforceBoundaryActivation(scrollY: number): void {
+    if (this.steps.length === 0) return;
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+    const viewportHeight = window.innerHeight || 0;
+    const docEl = document.documentElement;
+    const docHeight = docEl ? docEl.scrollHeight : viewportHeight;
+
+    const epsilon = 2; // px tolerance
+
+    // Top of page: force first step active
+    if (scrollY <= epsilon) {
+      const first = this.steps[0];
+      if (!first) return;
+
+      for (const step of this.steps) {
+        if (step !== first && step.isActive) {
+          step.isActive = false;
+          this.handleExit(step);
+        }
+      }
+
+      if (!first.isActive) {
+        first.isActive = true;
+        first.progress = 0;
+        this.handleEnter(first);
+      }
+
+      return;
+    }
+
+    // Bottom of page: force last step active
+    const bottomY = scrollY + viewportHeight;
+    if (bottomY >= docHeight - epsilon) {
+      const last = this.steps[this.steps.length - 1];
+      if (!last) return;
+
+      for (const step of this.steps) {
+        if (step !== last && step.isActive) {
+          step.isActive = false;
+          this.handleExit(step);
+        }
+      }
+
+      if (!last.isActive) {
+        last.isActive = true;
+        last.progress = 1;
+        this.handleEnter(last);
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Intersection handling (progress) via progress observers
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  private handleProgressIntersections(
+    entries: IntersectionObserverEntry[]
+  ): void {
+    for (const entry of entries) {
+      const target = entry.target as HTMLElement;
+      const step = this.stepMap.get(target);
+      if (!step) continue;
+
+      if (!entry.isIntersecting) continue;
+      if (!step.hasProgress) continue;
+      if (!step.isActive) continue;
+
+      const rawRatio = entry.intersectionRatio;
+      const prev = step.progress;
+      let next = rawRatio;
+
+      // Make progress monotonic per scroll direction:
+      //  - scrolling down: progress should not decrease
+      //  - scrolling up:   progress should not increase
+      if (this.direction === 'down' && next < prev) {
+        next = prev;
+      } else if (this.direction === 'up' && next > prev) {
+        next = prev;
+      }
+
+      // Clamp to [0, 1]
+      next = Math.min(1, Math.max(0, next));
+
+      if (Math.abs(next - prev) <= 0.001) continue;
+
+      step.progress = next;
       this.handleProgress(step);
     }
   }
 
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
   // Event + actions dispatch
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
 
   private handleEnter(step: StepEntry): void {
     const ctx: ActionContext = {
@@ -563,12 +757,19 @@ export class Scrollyteller {
       this.runActions(step.enterActions, ctx);
     }
 
-    if (this.debugEnabled) {
+    if (this.isDebugEnabled) {
       step.element.setAttribute('data-para-debug-state', 'enter');
     }
   }
 
   private handleExit(step: StepEntry): void {
+    // Optional: enforce final progress on exit if you want
+    // if (this.direction === 'down') {
+    //   step.progress = 1;
+    // } else {
+    //   step.progress = 0;
+    // }
+
     const ctx: ActionContext = {
       element: step.element,
       index: step.index,
@@ -588,7 +789,7 @@ export class Scrollyteller {
       this.runActions(step.exitActions, ctx);
     }
 
-    if (this.debugEnabled) {
+    if (this.isDebugEnabled) {
       step.element.setAttribute('data-para-debug-state', 'exit');
     }
   }
@@ -615,27 +816,23 @@ export class Scrollyteller {
     }
   }
 
-  private runActions(actionNames: string[], ctx: ActionContext): void {
-    for (const name of actionNames) {
-      const handler = this.actions[name];
-      if (typeof handler === 'function') {
-        handler(ctx);
-      } else if (this.debugEnabled) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          `[Scrollyteller] No handler registered for action '${name}'.`
-        );
-      }
-    }
+  private runActions(actions: ParaAction[], ctx: ActionContext): void {
+    executeParaActions(
+      this.parachart,      // host for method chaining
+      actions,             // parsed AST
+      ctx,                 // scrolly context
+      this.actions,        // ActionMap overrides
+      this.isDebugEnabled  // debug logs
+    );
   }
 
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
   // Global debug trigger line
-  // ───────────────────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────────
 
   private createDebugLine(): void {
-    if (!this.debugEnabled) return;
-    if (this.debugLineEl) return;
+    if (!this.isDebugEnabled) return;
+    if (this.debugLineElement) return;
 
     const el = document.createElement('div');
     el.className = 'paracharts-scrolly-debug-line';
@@ -656,15 +853,15 @@ export class Scrollyteller {
     label.style.background = 'rgba(255, 255, 255, 0.9)';
     label.style.padding = '2px 4px';
     label.style.borderRadius = '2px';
-    label.textContent = `Scrolly offset (global): ${this.offsetPx}px`;
+    label.textContent = 'Scrolly offset (global)';
     el.appendChild(label);
 
     document.body.appendChild(el);
-    this.debugLineEl = el;
+    this.debugLineElement = el;
   }
 
   private updateDebugLinePosition(): void {
-    if (!this.debugEnabled || !this.debugLineEl) return;
-    this.debugLineEl.style.top = `${this.offsetPx}px`;
+    if (!this.isDebugEnabled || !this.debugLineElement) return;
+    this.debugLineElement.style.top = `${this.offsetPx}px`;
   }
 }
