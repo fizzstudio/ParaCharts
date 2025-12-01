@@ -267,9 +267,6 @@ export abstract class DataLayer extends PlotLayer {
     this.paraview.paraChart.postNotice('animRevealEnd', null);
     this._currentAnimationFrame = null;
     this._animateRevealComplete = true;
-    for (const datapointView of this.datapointViews) {
-      datapointView.endAnimStep(1, 1);
-    }
   }
 
   stopAnimation() {
