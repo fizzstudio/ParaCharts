@@ -785,22 +785,10 @@ export class ParaView extends ParaComponent {
 
 
   protected _rootStyle() {
-    if (document.fullscreenElement) {
-      console.log("fullscreenElement constructor:", document.fullscreenElement?.constructor?.name);
-      console.log("fullscreenElement tag:", document.fullscreenElement?.tagName);
-      console.log("this constructor:", this.constructor.name);
-    }
     const style: { [prop: string]: any } = {
       fontFamily: this._store.settings.chart.fontFamily,
       fontWeight: this._store.settings.chart.fontWeight
     };
-    if (document.fullscreenElement?.contains(this)) {
-      console.log("I am inside the fullscreen wrapper");
-    }
-    const fs = document.fullscreenElement;
-    if (fs && fs.tagName.toLowerCase() === 'para-chart-ai') {
-      console.log("Fullscreen wrapper is para-chart-ai");
-    }
     if (this._isFullscreen) {
       const vbWidth = Math.round(this._viewBox.width);
       const vbHeight = Math.round(this._viewBox.height);
