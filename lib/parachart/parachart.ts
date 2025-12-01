@@ -29,7 +29,6 @@ import { ParaStore } from '../store';
 import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../store/custom_property_loader';
 import { styles } from '../view/styles';
-import { type AriaLive } from '../components';
 import '../components/aria_live';
 import { StyleManager } from './style_manager';
 import { AvailableCommands, Commander } from './commander';
@@ -63,7 +62,6 @@ export class ParaChart extends ParaComponent {
   readonly captionBox: ParaCaptionBox;
   protected _paraViewRef = createRef<ParaView>();
   protected _controlPanelRef = createRef<ParaControlPanel>();
-  protected _ariaLiveRegionRef = createRef<AriaLive>();
   protected _manifest?: Manifest;
   protected _loader = new ParaLoader();
   private _slotLoader = new SlotLoader();
@@ -170,11 +168,6 @@ export class ParaChart extends ParaComponent {
   get loader() {
     return this._loader;
   }
-
-  get ariaLiveRegion() {
-    return this._ariaLiveRegionRef.value!;
-  }
-
   get slotted(){
     return this._slotted;
   }
@@ -191,6 +184,14 @@ export class ParaChart extends ParaComponent {
     return this._scrollyteller;
   }
 
+  clearAriaLive() {
+    this.paraView.clearAriaLive;
+  }
+  
+  showAriaLiveHistory() {
+    this.paraView.showAriaLiveHistory;
+  }
+  
   connectedCallback() {
     super.connectedCallback();
     this.isControlPanelOpen = this._store.settings.controlPanel.isControlPanelDefaultOpen;
@@ -331,15 +332,6 @@ export class ParaChart extends ParaComponent {
     this.dispatchEvent(
       new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));
   }
-
-  clearAriaLive() {
-    this._ariaLiveRegionRef.value!.clear();
-  }
-
-  showAriaLiveHistory() {
-    this._ariaLiveRegionRef.value!.showHistoryDialog();
-  }
-
   command(name: keyof AvailableCommands, args: any[]): any {
     const handler = this._commander.commands[name];
     if (handler) {
@@ -376,11 +368,6 @@ export class ParaChart extends ParaComponent {
             ></para-control-panel>`
           : ''
         }
-        <para-aria-live-region
-          ${ref(this._ariaLiveRegionRef)}
-          .store=${this._store}
-          .announcement=${this._store.announcement}
-        ></para-aria-live-region>
         <slot
           @slotchange=${(e: Event) => {
             //this._signalManager.signal('slotChange');
