@@ -43,6 +43,7 @@ import { PairAnalyzerConstructor } from '@fizz/paramodel';
 import papa from 'papaparse';
 import { ParaAPI as ParaAPI_2 } from '../paraapi/paraapi';
 import { PlaneDatapoint } from '@fizz/paramodel';
+import { Point as Point_2 } from '@fizz/chart-classifier-utils';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
 import { Ref } from 'lit/directives/ref.js';
@@ -66,6 +67,12 @@ import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
 import { View as View_2 } from '../base_view';
 
+// @public (undocumented)
+export type FieldInfo = {
+    name: string;
+    type: Datatype_2;
+};
+
 // Warning: (ae-forgotten-export) The symbol "ParaComponent" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -73,12 +80,6 @@ export class ParaChart extends ParaComponent {
     constructor(seriesAnalyzerConstructor?: SeriesAnalyzerConstructor, pairAnalyzerConstructor?: PairAnalyzerConstructor);
     // (undocumented)
     get api(): ParaAPI;
-    // (undocumented)
-    get ariaLiveRegion(): AriaLive;
-    // Warning: (ae-forgotten-export) The symbol "AriaLive" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    protected _ariaLiveRegionRef: Ref_2<AriaLive>;
     // Warning: (ae-forgotten-export) The symbol "ParaCaptionBox" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
@@ -200,8 +201,6 @@ export class ParaHeadless {
     protected _createParaChart(): void;
     // (undocumented)
     get jimReady(): Promise<void>;
-    // Warning: (ae-forgotten-export) The symbol "FieldInfo" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     loadData(url: string): Promise<FieldInfo[]>;
     // (undocumented)

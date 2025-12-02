@@ -55,6 +55,7 @@ export interface LabelOptions {
   hasBackground?: boolean;
   pointerEnter?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
+  pointerMove?: (e: PointerEvent) => void;
   click?: (e: MouseEvent) => void;
 }
 
@@ -423,6 +424,7 @@ export class Label extends View {
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
         @pointerenter=${this.options.pointerEnter ?? nothing}
         @pointerleave=${this.options.pointerLeave ?? nothing}
+        @pointermove=${this.options.pointerMove ?? nothing}
         @click=${this.options.click ?? nothing}
       >
         ${this._textLines.length

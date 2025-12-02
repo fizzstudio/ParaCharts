@@ -139,8 +139,6 @@ export class AnnotationLayer extends PlotLayer {
               text: annot.text,
               x: dpView.x,
               y: dpView.y,
-              textAnchor: "middle",
-              classList: ['annotationlabel'],
               id: this.id,
               color: dpView.color,
               points: [dpView]

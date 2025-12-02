@@ -41,7 +41,9 @@ import { PaddingInput as PaddingInput_3 } from '../base_view';
 import { PaddingInput as PaddingInput_4 } from '../../base_view';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';
 import papa from 'papaparse';
+import { ParaAPI as ParaAPI_2 } from '../paraapi/paraapi';
 import { PlaneDatapoint } from '@fizz/paramodel';
+import { Point as Point_2 } from '@fizz/chart-classifier-utils';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
 import { Ref } from 'lit/directives/ref.js';
@@ -65,6 +67,12 @@ import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
 import { View as View_2 } from '../base_view';
 
+// @public (undocumented)
+export type FieldInfo = {
+    name: string;
+    type: Datatype_2;
+};
+
 // Warning: (ae-forgotten-export) The symbol "ParaChart" needs to be exported by the entry point index-ai.d.ts
 //
 // @public (undocumented)
@@ -72,6 +80,27 @@ export class ParaChartAi extends ParaChart {
     constructor();
     // (undocumented)
     static styles: CSSResult[];
+}
+
+// @public (undocumented)
+export class ParaHeadless {
+    constructor();
+    // (undocumented)
+    get api(): ParaAPI_2;
+    // (undocumented)
+    protected _createParaChart(): void;
+    // (undocumented)
+    get jimReady(): Promise<void>;
+    // (undocumented)
+    loadData(url: string): Promise<FieldInfo[]>;
+    // Warning: (ae-forgotten-export) The symbol "SourceKind" needs to be exported by the entry point index-ai.d.ts
+    //
+    // (undocumented)
+    loadManifest(input: string, type?: SourceKind): Promise<void>;
+    // (undocumented)
+    protected _paraChart: ParaChart;
+    // (undocumented)
+    get ready(): Promise<void>;
 }
 
 // (No @packageDocumentation comment for this package)
