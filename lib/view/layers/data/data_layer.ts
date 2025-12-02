@@ -245,8 +245,10 @@ export abstract class DataLayer extends PlotLayer {
       }
     };
     this._currentAnimationFrame = requestAnimationFrame(step);
-    loopParaviewRefresh(this.paraview, 500 + this.paraview.store.settings.animation.popInAnimateRevealTimeMs
+    if (this.paraview.store.settings.animation.symbolPopIn){
+          loopParaviewRefresh(this.paraview, 500 + this.paraview.store.settings.animation.popInAnimateRevealTimeMs
         + this.paraview.store.settings.animation.animateRevealTimeMs, 50);
+    }
   }
 
   protected _animStep(bezT: number, linearT: number) {
@@ -265,9 +267,6 @@ export abstract class DataLayer extends PlotLayer {
     this.paraview.paraChart.postNotice('animRevealEnd', null);
     this._currentAnimationFrame = null;
     this._animateRevealComplete = true;
-    for (const datapointView of this.datapointViews) {
-      datapointView.endAnimStep(1, 1);
-    }
   }
 
   stopAnimation() {

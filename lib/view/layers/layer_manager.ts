@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { View } from '../base_view';
-import { fixed } from '../../common/utils';
+import { fixed, isPointerInbounds } from '../../common/utils';
 import { type Layout } from '../layout';
 import { type DocumentView } from '../document_view';
 import { type CardinalDirection } from '../../store/settings_types';
@@ -262,6 +262,7 @@ export class PlotLayerManager extends View {
           id="data-backdrop"
           width=${fixed`${this._logicalWidth}`}
           height=${fixed`${this._logicalHeight}`}
+          @pointerleave=${(ev: PointerEvent) => !isPointerInbounds(this.paraview, ev) ? this.paraview.store.clearPopups() : undefined}
         />
         ${this._backgroundHighlightsLayer.render()}
         ${this._backgroundAnnotationLayer.render()}

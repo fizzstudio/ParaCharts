@@ -153,10 +153,10 @@ export class ParaAPI {
         chartInfo().navToChordLanding();
       },
       shutUp() {
-        _paraChart.ariaLiveRegion.voicing.shutUp();
+        paraView.ariaLiveRegion.voicing.shutUp();
       },
       repeatLastAnnouncement() {
-        _paraChart.ariaLiveRegion.replay();
+        paraView.ariaLiveRegion.replay();
       },
       addAnnotation() {
         store.addAnnotation();
@@ -182,7 +182,7 @@ export class ParaAPI {
     this._actions = this._standardActions;
 
     this._narrativeActions = Object.create(this._actions);
-    const voicing = paraView.paraChart.ariaLiveRegion.voicing;
+    const voicing = paraView.ariaLiveRegion.voicing;
 
     this._narrativeActions.move = async (args: ActionArgumentMap) => {
       store.paraChart.captionBox.highlightSpan(args.direction === 'right' || args.direction === 'down');

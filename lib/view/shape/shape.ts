@@ -19,6 +19,7 @@ export interface ShapeOptions {
   isPattern?: boolean;
   isClip?: boolean;
   pointerEnter?: (e: PointerEvent) => void;
+  pointerMove?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
 }
 
