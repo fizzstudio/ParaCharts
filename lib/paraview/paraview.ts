@@ -171,6 +171,9 @@ export class ParaView extends ParaComponent {
         font-size: calc(var(--column-label-font-size)*var(--chart-font-scale));
                 background-color: red;
       }
+      .waterfall-label {
+        font-size: calc(var(--waterfall-label-font-size)*var(--chart-font-scale));
+      }
       .pastry-inside-label {
       }
       .pastry-outside-label-leader {

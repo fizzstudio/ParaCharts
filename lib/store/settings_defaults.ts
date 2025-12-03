@@ -384,6 +384,16 @@ export const defaults: Settings = {
       clusterLabelFormat: 'raw',
       isShowPopups: false,
       labelFontSize: '8pt'
+    },
+    waterfall: {
+      barWidth: 10,
+      colorByDatapoint: false,
+      isDrawLabels: true,
+      labelPosition: 'outside',
+      barLabelGap: 10,
+      barGap: 10,
+      showPopups: false,
+      labelFontSize: '10pt'
     }
   },
   grid: {
