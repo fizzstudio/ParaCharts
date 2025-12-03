@@ -350,6 +350,18 @@ export interface LollipopSettings extends BarSettings {
 }
 
 /** @public */
+export interface WaterfallSettings extends PlotSettings {
+  barWidth: number;
+  colorByDatapoint: boolean;
+  isDrawLabels: boolean;
+  labelPosition: BarDataLabelPosition;
+  barLabelGap: number;
+  barGap: number;
+  showPopups: boolean;
+  labelFontSize: string;
+}
+
+/** @public */
 export interface PointSettings extends PlotSettings {
   pointLabelFormat: LabelFormat;
   selectedPointMarkerSize: Size2d;
@@ -443,6 +455,7 @@ export interface ChartTypeSettings extends SettingGroup {
   gauge: RadialSettings;
   stepline: StepLineSettings;
   lollipop: LollipopSettings;
+  waterfall: WaterfallSettings;
 }
 
 /** @public */

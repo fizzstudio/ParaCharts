@@ -20,7 +20,7 @@ import { type Layout } from '../layout';
 import { type DocumentView } from '../document_view';
 import { type CardinalDirection } from '../../store/settings_types';
 import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, FocusLayer } from '.';
-import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, Bar } from './data/chart_type';
+import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, Bar, WaterfallPlotView } from './data/chart_type';
 import { type AxisCoord } from '../axis';
 //import { StepLineChart } from './stepline';
 //import { LollipopChart } from './lollipop';
@@ -49,7 +49,8 @@ export const chartClasses = {
   gauge: BarPlotView, //GaugeChart,
   stepline: LinePlotView, //StepLineChart,
   lollipop: BarPlotView, //LollipopChart
-  graph: LinePlotView
+  graph: LinePlotView,
+  waterfall: WaterfallPlotView
 };
 
 export class PlotLayerManager extends View {

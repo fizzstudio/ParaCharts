@@ -7,3 +7,4 @@ export * from './pie_plot_view';
 export * from './scatter_plot_view';
 export * from './heat_map_plot_view';
 export * from './histogram';
+export * from './waterfall_plot_view';

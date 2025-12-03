@@ -4,6 +4,7 @@ import { BarChartInfo } from './bar_chart';
 import { PastryChartInfo } from './pastry_chart';
 import { ScatterChartInfo } from './scatter_chart';
 import { HeatMapInfo } from './heat_map';
+import { WaterfallChartInfo } from './waterfall_chart';
 
 export * from './base_chart';
 export * from './plane_chart';
@@ -12,6 +13,7 @@ export * from './line_chart';
 export * from './pastry_chart';
 export * from './scatter_chart';
 export * from './heat_map';
+export * from './waterfall_chart';
 
 // (@simonvarey): stepline and lollipop should be replaced with dedicated SteplineChartInfo and 
 //   LollipopChartInfo classes. See #820
@@ -23,6 +25,7 @@ export const chartInfoClasses = {
   donut: PastryChartInfo,
   scatter: ScatterChartInfo,
   heatmap: HeatMapInfo,
+  waterfall: WaterfallChartInfo,
   // histogram: Histogram,
   // gauge: BarChart, //GaugeChart,
   stepline: LineChartInfo, //StepLineChart,
