@@ -19,7 +19,8 @@ export class ChartPanel extends ControlPanelTabPanel {
     css`
       #columns {
         display: grid;
-        grid-template-columns: repeat(4, 9rem);
+        grid-template-columns: 9rem minmax(0, 11rem) 9.5rem 8rem;
+        grid-template-rows: 2.5rem 2.5rem;
         padding: 0.25rem;
         column-gap: 0.5rem;
         row-gap: 0.5rem;
@@ -28,18 +29,36 @@ export class ChartPanel extends ControlPanelTabPanel {
       #width {
         grid-row: 1;
         grid-column: 1;
+        justify-self: end;
       }
       #height {
         grid-row: 2;
         grid-column: 1;
+        justify-self: end;
       }
       #min-y {
         grid-row: 1;
         grid-column: 2;
+        justify-self: end;
       }
       #max-y {
         grid-row: 2;
         grid-column: 2;
+        justify-self: end;
+      }
+      #chart-content {
+        grid-column: 3;
+        justify-self: center;
+      }
+      #popup-content {
+        grid-row: 1;
+        grid-column: 4;
+        justify-self: center;
+      }
+      #popups {
+        grid-row: 2;
+        grid-column: 4;
+        justify-self: center;
       }
       #panel {
         display: flex;
@@ -86,12 +105,12 @@ export class ChartPanel extends ControlPanelTabPanel {
             ${this._store.settingControls.getContent(`controlPanel.tabs.chart.general.maxY`)}
           </div>
           ${chartContent.map(columnContent => html`
-            <div>
+            <div id="chart-content">
               ${columnContent}
             </div>
           `)}
           ${popupsContent.map(columnContent => html`
-            <div>
+            <div id="popup-content">
               ${columnContent}
             </div>
           `)}
