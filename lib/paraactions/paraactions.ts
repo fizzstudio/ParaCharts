@@ -1,8 +1,12 @@
-// lib/paraactions/paraactions.ts
-// Small DSL parser + executor for declarative ParaCharts actions,
-// with support for braced `when(...) { ... }` blocks and nesting.
+// paraActions.ts
+// Minimal ParaActions AST + parser + executor.
 //
-// See previous comments in this file header for full language description.
+// - Single actions and chained actions share one type (ParaAction).
+// - Arguments are positional only (no named args).
+// - Executor uses `ctx` for chaining and throws on unknown actions,
+//   so the host (Scrollyteller, etc.) can catch and report errors.
+
+// ---------- AST TYPES ----------
 
 export type ParaValueKind =
   | 'string'
@@ -12,441 +16,208 @@ export type ParaValueKind =
   | 'identifier';
 
 export interface ParaValue {
-  valueKind: ParaValueKind;
+  kind: ParaValueKind;
   value: string | number | boolean | null;
 }
 
-// Arguments
-export interface ParaPositionalArg extends ParaValue {
-  kind: 'positional';
-}
-
-export interface ParaNamedArg extends ParaValue {
-  kind: 'named';
-  name: string;
-}
-
-export type ParaActionArg = ParaPositionalArg | ParaNamedArg;
-
-// AST for simple actions
-export interface NamedAction {
-  kind: 'namedAction';
-  name: string;
-  args: ParaActionArg[];
-}
-
-// One segment of a chain: methodName(args...)
-export interface ChainSegment {
+export interface CallSegment {
   methodName: string;
-  args: ParaActionArg[];
+  args: ParaValue[];
 }
 
-export interface ChainAction {
-  kind: 'chain';
-  segments: ChainSegment[];
+/**
+ * Unified action:
+ * - Single action: segments.length === 1
+ * - Chain: segments.length > 1
+ */
+export interface ParaAction {
+  kind: 'action';
+  segments: CallSegment[]; // must have at least 1
+  raw?: string;
 }
 
-// Guard conditions for when-blocks
-export interface GuardCondition {
-  direction?: 'up' | 'down';
-  progressMin?: number;
-  progressMax?: number;
-}
-
-// Guarded block: when(condition) { actions... }
-export interface GuardedBlock {
-  kind: 'guardedBlock';
-  condition: GuardCondition;
+export interface ParaActionList {
   actions: ParaAction[];
+  errors: ParseError[];
 }
 
-// Union
-export type ParaAction = NamedAction | ChainAction | GuardedBlock;
-
-// Generic handler types (host-specific type C is context object)
-export type ParaActionHandler<C> = (ctx: C, ...args: ParaActionArg[]) => unknown;
-export type ParaActionHandlerMap<C> = Record<string, ParaActionHandler<C>>;
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Public entry point
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Parse an attribute string into a list of ParaAction AST nodes.
- */
-export function parseParaActionList(input: string | null): ParaAction[] {
-  if (!input) return [];
-
-  const trimmed = input.trim();
-  if (!trimmed) return [];
-
-  return parseActionListTop(trimmed);
+export interface ParseError {
+  message: string;
+  line: number;
+  column: number;
+  raw: string;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Top-level recursive parser with when { ... } support
-// ─────────────────────────────────────────────────────────────────────────────
+// ---------- PUBLIC PARSING API ----------
 
 /**
- * Parse a sequence of actions and when-blocks at the current "block level".
- * This function is recursive: it is used for the top-level and for the
- * contents of each `when { ... }` block.
+ * Parse a full action list from a multi-line string.
+ *
+ * Each non-empty line is parsed as a single ParaAction:
+ *
+ *   highlightSeries(revenue)
+ *   api.getChart('main').highlightSeries(revenue)
+ *
  */
-function parseActionListTop(input: string): ParaAction[] {
+export function parseActionList(source: string): ParaActionList {
   const actions: ParaAction[] = [];
-  const len = input.length;
-  let i = 0;
+  const errors: ParseError[] = [];
 
-  const skipWs = () => {
-    while (i < len && /\s/.test(input[i] ?? '')) i++;
-  };
+  const lines = source.split(/\r?\n/);
 
-  while (i < len) {
-    skipWs();
-    if (i >= len) break;
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i];
+    const lineNo = i + 1;
+    const trimmed = rawLine.trim();
 
-    // Detect when(...) { ... } at this position
-    if (startsWithIdentifier(input, i, 'when')) {
-      const block = parseWhenBlockAt(input, () => i);
-      if (block) {
-        actions.push(block.action);
-        i = block.nextIndex;
-        continue;
-      }
-      // If it looked like when but failed to parse as a block,
-      // fall through and try to parse as a normal action.
+    if (!trimmed) continue;
+
+    try {
+      const action = parseSingleAction(trimmed);
+      if (action) actions.push(action);
+    } catch (err) {
+      errors.push({
+        message:
+          err instanceof Error ? err.message : 'Unknown parse error in action line.',
+        line: lineNo,
+        column: 1,
+        raw: rawLine,
+      });
     }
-
-    // Parse a single "simple" action expression (named or chain),
-    // up to the next top-level whitespace.
-    const { action, nextIndex } = parseSimpleActionAt(input, i);
-    if (action) {
-      actions.push(action);
-    }
-    i = nextIndex;
   }
 
-  return actions;
+  return { actions, errors };
 }
 
 /**
- * Test whether the string at index i starts with the given identifier
- * and is followed by either whitespace or '('.
+ * Parse a single action string into a ParaAction.
+ * Throws on syntax errors.
  */
-function startsWithIdentifier(source: string, index: number, ident: string): boolean {
-  if (!source.startsWith(ident, index)) return false;
-  const end = index + ident.length;
-  const nextCh = source[end];
-  if (nextCh == null) return true;
-  if (nextCh === '(' || /\s/.test(nextCh)) return true;
-  return false;
+export function parseAction(source: string): ParaAction | null {
+  const trimmed = source.trim();
+  if (!trimmed) {
+    throw new Error('Cannot parse empty action string.');
+  }
+  return parseSingleAction(trimmed);
 }
+
+// ---------- INTERNAL PARSING ----------
 
 /**
- * Parse a when-block starting at the current index.
+ * Parse any action expression:
+ * - "highlightSeries(revenue)"
+ * - "resetHighlight"
+ * - "api.getChart('main').highlightSeries(revenue)"
+ *
+ * Chain detection is implicit: we always split into chain segments first,
+ * then parse each into a CallSegment.
  */
-function parseWhenBlockAt(
-  source: string,
-  getIndex: () => number
-): { action: GuardedBlock; nextIndex: number } | null {
-  let i = getIndex();
-  const len = source.length;
+function parseSingleAction(line: string): ParaAction | null {
+  if (!line) return null;
 
-  // Consume "when"
-  if (!startsWithIdentifier(source, i, 'when')) return null;
-  i += 'when'.length;
-
-  // Skip whitespace
-  while (i < len && /\s/.test(source[i] ?? '')) i++;
-
-  // Expect '('
-  if (source[i] !== '(') return null;
-  i++;
-
-  // Extract condition text up to matching ')'
-  const condStart = i;
-  let depth = 1;
-  let inSingle = false;
-  let inDouble = false;
-
-  while (i < len && depth > 0) {
-    const ch = source[i];
-
-    if (ch === '\'' && !inDouble) {
-      inSingle = !inSingle;
-      i++;
-      continue;
-    }
-    if (ch === '"' && !inSingle) {
-      inDouble = !inDouble;
-      i++;
-      continue;
-    }
-
-    if (!inSingle && !inDouble) {
-      if (ch === '(') {
-        depth++;
-      } else if (ch === ')') {
-        depth--;
-        if (depth === 0) {
-          break;
-        }
-      }
-    }
-
-    i++;
+  const rawSegments = splitChainSegments(line);
+  if (rawSegments.length === 0) {
+    throw new Error('Empty action expression.');
   }
 
-  if (depth !== 0 || source[i] !== ')') {
-    return null;
-  }
-
-  const condEnd = i;
-  const conditionText = source.slice(condStart, condEnd);
-  i++; // skip ')'
-
-  // Skip whitespace
-  while (i < len && /\s/.test(source[i] ?? '')) i++;
-
-  // Expect '{'
-  if (source[i] !== '{') {
-    return null;
-  }
-  i++; // skip '{'
-
-  // Extract block contents up to matching '}'
-  const blockStart = i;
-  let braceDepth = 1;
-  inSingle = false;
-  inDouble = false;
-
-  while (i < len && braceDepth > 0) {
-    const ch = source[i];
-
-    if (ch === '\'' && !inDouble) {
-      inSingle = !inSingle;
-      i++;
-      continue;
-    }
-    if (ch === '"' && !inSingle) {
-      inDouble = !inDouble;
-      i++;
-      continue;
-    }
-
-    if (!inSingle && !inDouble) {
-      if (ch === '{') {
-        braceDepth++;
-      } else if (ch === '}') {
-        braceDepth--;
-        if (braceDepth === 0) {
-          break;
-        }
-      }
-    }
-
-    i++;
-  }
-
-  if (braceDepth !== 0 || source[i] !== '}') {
-    return null;
-  }
-
-  const blockEnd = i;
-  const blockText = source.slice(blockStart, blockEnd);
-  i++; // skip '}'
-
-  const condition = parseWhenCondition(conditionText);
-  const innerActions = parseActionListTop(blockText);
-
-  const guarded: GuardedBlock = {
-    kind: 'guardedBlock',
-    condition,
-    actions: innerActions,
-  };
-
-  return { action: guarded, nextIndex: i };
-}
-
-/**
- * Parse a single "simple" action (named or chain) starting at index i,
- * up to the next top-level whitespace.
- */
-function parseSimpleActionAt(
-  source: string,
-  startIndex: number
-): { action: ParaAction | null; nextIndex: number } {
-  const len = source.length;
-  let i = startIndex;
-
-  let depthParens = 0;
-  let depthBraces = 0;
-  let inSingle = false;
-  let inDouble = false;
-
-  while (i < len) {
-    const ch = source[i];
-
-    if (ch === '\'' && !inDouble) {
-      inSingle = !inSingle;
-      i++;
-      continue;
-    }
-    if (ch === '"' && !inSingle) {
-      inDouble = !inDouble;
-      i++;
-      continue;
-    }
-
-    if (!inSingle && !inDouble) {
-      if (ch === '(') {
-        depthParens++;
-      } else if (ch === ')') {
-        depthParens = Math.max(0, depthParens - 1);
-      } else if (ch === '{') {
-        depthBraces++;
-      } else if (ch === '}') {
-        depthBraces = Math.max(0, depthBraces - 1);
-      }
-
-      // Top-level whitespace separates actions
-      if (/\s/.test(ch) && depthParens === 0 && depthBraces === 0) {
-        break;
-      }
-    }
-
-    i++;
-  }
-
-  const raw = source.slice(startIndex, i).trim();
-  if (!raw) {
-    return { action: null, nextIndex: i };
-  }
-
-  const action = parseSingleAction(raw);
-  return { action, nextIndex: i };
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Parsing of Named / Chain actions (re-used inside blocks)
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Parse a single action string into either a NamedAction or a ChainAction.
- */
-function parseSingleAction(input: string): ParaAction | null {
-  if (!input) return null;
-
-  const trimmed = input.trim();
-  if (!trimmed) return null;
-
-  // Chain call if there's a dot BEFORE the first '(' (e.g., api.getChart(...))
-  const firstParen = trimmed.indexOf('(');
-  const firstDot = trimmed.indexOf('.');
-  const isChain = firstDot !== -1 && (firstParen === -1 || firstDot < firstParen);
-
-  if (isChain) {
-    return parseChainAction(trimmed);
-  }
-
-  return parseNamedAction(trimmed);
-}
-
-function parseNamedAction(input: string): NamedAction | null {
-  const nameMatch = /^([a-zA-Z_][\w]*)/.exec(input);
-  if (!nameMatch) return null;
-
-  const name = nameMatch[1];
-  const rest = input.slice(name.length).trim();
-
-  let args: ParaActionArg[] = [];
-  if (rest.startsWith('(') && rest.endsWith(')')) {
-    const inner = rest.slice(1, -1);
-    args = parseArgs(inner);
-  }
+  const segments: CallSegment[] = rawSegments.map(parseMethodCallSegment);
 
   return {
-    kind: 'namedAction',
-    name,
-    args,
+    kind: 'action',
+    segments,
+    raw: line,
   };
 }
 
-function parseChainAction(input: string): ChainAction | null {
-  // Split by '.' but keep parentheses content together.
-  const segments: ChainSegment[] = [];
+// ---------- CHAIN PARSING ----------
+
+/**
+ * Split `api.getChart('main').highlightSeries(revenue, industry)` into:
+ * ["api", "getChart('main')", "highlightSeries(revenue, industry)"].
+ *
+ * If there are no top-level dots, you just get a single segment:
+ * ["highlightSeries(revenue)"].
+ */
+function splitChainSegments(source: string): string[] {
+  const segments: string[] = [];
   let current = '';
   let depth = 0;
-  let inSingle = false;
-  let inDouble = false;
+  let inString: "'" | '"' | null = null;
 
-  const flush = () => {
-    const trimmed = current.trim();
-    if (trimmed) {
-      const seg = parseChainSegment(trimmed);
-      if (seg) segments.push(seg);
-    }
-    current = '';
-  };
+  for (let i = 0; i < source.length; i++) {
+    const ch = source[i];
 
-  for (let i = 0; i < input.length; i++) {
-    const ch = input[i];
-
-    if (ch === '\'' && !inDouble) {
-      inSingle = !inSingle;
+    if (inString) {
       current += ch;
+      if (ch === inString) {
+        inString = null;
+      } else if (ch === '\\' && i + 1 < source.length) {
+        current += source[++i];
+      }
       continue;
     }
-    if (ch === '"' && !inSingle) {
-      inDouble = !inDouble;
+
+    if (ch === "'" || ch === '"') {
+      inString = ch;
       current += ch;
       continue;
     }
 
-    if (!inSingle && !inDouble) {
-      if (ch === '(') {
-        depth++;
-        current += ch;
-        continue;
-      }
-      if (ch === ')') {
-        depth = Math.max(0, depth - 1);
-        current += ch;
-        continue;
-      }
-      if (ch === '.' && depth === 0) {
-        flush();
-        continue;
-      }
+    if (ch === '(') {
+      depth++;
+      current += ch;
+      continue;
+    }
+
+    if (ch === ')') {
+      depth = Math.max(0, depth - 1);
+      current += ch;
+      continue;
+    }
+
+    // Top-level dot (not in parens or string) splits the chain
+    if (ch === '.' && depth === 0) {
+      if (current.trim()) segments.push(current.trim());
+      current = '';
+      continue;
     }
 
     current += ch;
   }
 
-  flush();
-
-  if (segments.length === 0) {
-    return null;
-  }
-
-  return {
-    kind: 'chain',
-    segments,
-  };
+  if (current.trim()) segments.push(current.trim());
+  return segments;
 }
 
-function parseChainSegment(segment: string): ChainSegment | null {
-  const nameMatch = /^([a-zA-Z_][\w]*)/.exec(segment);
-  if (!nameMatch) return null;
+/**
+ * Parse "getChart('main')" or "highlightSeries(revenue, industry)" or just "resetHighlight".
+ */
+function parseMethodCallSegment(segment: string): CallSegment {
+  const open = segment.indexOf('(');
 
-  const methodName = nameMatch[1];
-  const rest = segment.slice(methodName.length).trim();
-
-  let args: ParaActionArg[] = [];
-  if (rest.startsWith('(') && rest.endsWith(')')) {
-    const inner = rest.slice(1, -1);
-    args = parseArgs(inner);
+  if (open === -1) {
+    const methodName = segment.trim();
+    if (!methodName) {
+      throw new Error('Empty method name in segment: ' + segment);
+    }
+    return {
+      methodName,
+      args: [],
+    };
   }
+
+  const close = segment.lastIndexOf(')');
+  if (close === -1 || close < open) {
+    throw new Error('Unclosed parentheses in segment: ' + segment);
+  }
+
+  const methodName = segment.slice(0, open).trim();
+  if (!methodName) {
+    throw new Error('Missing method name before "(": ' + segment);
+  }
+
+  const argsSrc = segment.slice(open + 1, close).trim();
+  const args = argsSrc ? parseArgsList(argsSrc) : [];
 
   return {
     methodName,
@@ -454,337 +225,171 @@ function parseChainSegment(segment: string): ChainSegment | null {
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Arg/value parsing (re-used for when conditions)
-// ─────────────────────────────────────────────────────────────────────────────
+// ---------- ARGUMENT PARSING (positional only) ----------
 
-/**
- * Parse a comma-separated argument list.
- */
-function parseArgs(input: string): ParaActionArg[] {
-  const out: ParaActionArg[] = [];
-  const parts = splitArgs(input);
+function parseArgsList(source: string): ParaValue[] {
+  const parts = splitArgs(source);
+  const result: ParaValue[] = [];
 
   for (const part of parts) {
     const trimmed = part.trim();
     if (!trimmed) continue;
-
-    const eqIndex = trimmed.indexOf('=');
-    if (eqIndex > 0) {
-      const name = trimmed.slice(0, eqIndex).trim();
-      const valueStr = trimmed.slice(eqIndex + 1).trim();
-      const value = parseValue(valueStr);
-      out.push({
-        kind: 'named',
-        name,
-        valueKind: value.valueKind,
-        value: value.value,
-      });
-    } else {
-      const value = parseValue(trimmed);
-      out.push({
-        kind: 'positional',
-        valueKind: value.valueKind,
-        value: value.value,
-      });
-    }
+    const value = parseValue(trimmed);
+    result.push(value);
   }
 
-  return out;
+  return result;
 }
 
 /**
- * Split arguments on commas, respecting parentheses/quotes.
+ * Split "revenue, industry, 2, 'Q4 peak'" into pieces,
+ * respecting quoted strings.
  */
-function splitArgs(input: string): string[] {
+function splitArgs(source: string): string[] {
   const parts: string[] = [];
   let current = '';
-  let depth = 0;
-  let inSingle = false;
-  let inDouble = false;
+  let inString: "'" | '"' | null = null;
 
-  for (let i = 0; i < input.length; i++) {
-    const ch = input[i];
+  for (let i = 0; i < source.length; i++) {
+    const ch = source[i];
 
-    if (ch === '\'' && !inDouble) {
-      inSingle = !inSingle;
+    if (inString) {
       current += ch;
-      continue;
-    }
-    if (ch === '"' && !inSingle) {
-      inDouble = !inDouble;
-      current += ch;
+      if (ch === inString) {
+        inString = null;
+      } else if (ch === '\\' && i + 1 < source.length) {
+        current += source[++i];
+      }
       continue;
     }
 
-    if (!inSingle && !inDouble) {
-      if (ch === '(') {
-        depth++;
-        current += ch;
-        continue;
-      }
-      if (ch === ')') {
-        depth = Math.max(0, depth - 1);
-        current += ch;
-        continue;
-      }
-      if (ch === ',' && depth === 0) {
-        parts.push(current);
-        current = '';
-        continue;
-      }
+    if (ch === "'" || ch === '"') {
+      inString = ch;
+      current += ch;
+      continue;
+    }
+
+    if (ch === ',') {
+      parts.push(current);
+      current = '';
+      continue;
     }
 
     current += ch;
   }
 
-  if (current) {
-    parts.push(current);
-  }
-
+  if (current) parts.push(current);
   return parts;
 }
 
-/**
- * Parse a scalar value:
- */
-function parseValue(input: string): ParaValue {
-  const trimmed = input.trim();
+// ---------- VALUE PARSING ----------
 
-  // quoted string
-  if (
-    (trimmed.startsWith('\'') && trimmed.endsWith('\'')) ||
-    (trimmed.startsWith('"') && trimmed.endsWith('"'))
-  ) {
-    const inner = trimmed.slice(1, -1);
-    return {
-      valueKind: 'string',
-      value: inner,
-    };
+function parseValue(source: string): ParaValue {
+  const trimmed = source.trim();
+
+  if (!trimmed) {
+    return { kind: 'identifier', value: '' };
   }
 
+  const firstChar = trimmed[0];
+
+  // String literal
+  if (firstChar === "'" || firstChar === '"') {
+    return parseStringValue(trimmed);
+  }
+
+  // Boolean
   if (trimmed === 'true') {
-    return { valueKind: 'boolean', value: true };
+    return { kind: 'boolean', value: true };
   }
   if (trimmed === 'false') {
-    return { valueKind: 'boolean', value: false };
-  }
-  if (trimmed === 'null') {
-    return { valueKind: 'null', value: null };
+    return { kind: 'boolean', value: false };
   }
 
+  // null
+  if (trimmed === 'null') {
+    return { kind: 'null', value: null };
+  }
+
+  // Number
   const num = Number(trimmed);
   if (!Number.isNaN(num)) {
-    return { valueKind: 'number', value: num };
+    return { kind: 'number', value: num };
   }
 
-  // identifier
+  // Fallback: identifier (e.g., series names)
+  return { kind: 'identifier', value: trimmed };
+}
+
+function parseStringValue(source: string): ParaValue {
+  const quote = source[0];
+  if (quote !== "'" && quote !== '"') {
+    throw new Error('parseStringValue on non-string: ' + source);
+  }
+
+  if (source.length < 2 || source[source.length - 1] !== quote) {
+    throw new Error('Unterminated string literal: ' + source);
+  }
+
+  const inner = source.slice(1, -1);
   return {
-    valueKind: 'identifier',
-    value: trimmed,
+    kind: 'string',
+    value: inner,
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// When condition parsing
-// ─────────────────────────────────────────────────────────────────────────────
+// ---------- EXECUTOR (WITH CTX, ERRORS BUBBLE TO HOST) ----------
 
-/**
- * Parse the contents of when(...), e.g.:
- *   "direction='down'"
- *   "direction='down', progressMin=0.3, progressMax=0.7"
- *   "'down'"   // shorthand for direction='down'
- */
-function parseWhenCondition(conditionText: string): GuardCondition {
-  const args = parseArgs(conditionText);
-  const named = args.filter((a): a is ParaNamedArg => a.kind === 'named');
-  const positional = args.filter(a => a.kind === 'positional');
-
-  const cond: GuardCondition = {};
-
-  // Named direction
-  const dirNamed = named.find(a => a.name === 'direction');
-  // Positional shorthand: when('down')
-  const firstPos = positional[0];
-
-  const rawDirection = dirNamed?.value ?? firstPos?.value;
-  if (rawDirection != null) {
-    const dirStr = String(rawDirection);
-    if (dirStr === 'up' || dirStr === 'down') {
-      cond.direction = dirStr;
-    }
-  }
-
-  const progMin = named.find(a => a.name === 'progressMin');
-  const progMax = named.find(a => a.name === 'progressMax');
-
-  if (progMin) {
-    const n = Number(progMin.value);
-    if (!Number.isNaN(n)) cond.progressMin = n;
-  }
-  if (progMax) {
-    const n = Number(progMax.value);
-    if (!Number.isNaN(n)) cond.progressMax = n;
-  }
-
-  return cond;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Execution
-// ─────────────────────────────────────────────────────────────────────────────
-
-type GuardFn<C> = (ctx: C) => boolean;
-
-function makeGuardFn<C>(condition: GuardCondition): GuardFn<C> {
-  return (ctx: any) => {
-    // direction check
-    if (condition.direction) {
-      if (ctx.direction !== condition.direction) return false;
-    }
-
-    const progress = typeof ctx.progress === 'number' ? ctx.progress : 0;
-
-    if (typeof condition.progressMin === 'number') {
-      if (progress < condition.progressMin) return false;
-    }
-    if (typeof condition.progressMax === 'number') {
-      if (progress > condition.progressMax) return false;
-    }
-
-    return true;
-  };
-}
-
-/**
- * Execute a list of ParaActions.
- */
-export function executeParaActions<Ctx>(
-  host: unknown,
-  actions: ParaAction[],
+export type ActionHandler<Ctx = unknown> = (
   ctx: Ctx,
-  actionMap: ParaActionHandlerMap<Ctx>,
-  isDebug: boolean
-): void {
-  for (const action of actions) {
-    switch (action.kind) {
-      case 'namedAction': {
-        const handler = actionMap[action.name];
-        if (!handler) {
-          if (isDebug) {
-            // eslint-disable-next-line no-console
-            console.warn(
-              '[paraActions] unknown named action:',
-              action.name,
-              action
-            );
-          }
-          continue;
-        }
-        try {
-          handler(ctx, ...action.args);
-        } catch (err) {
-          if (isDebug) {
-            // eslint-disable-next-line no-console
-            console.error(
-              '[paraActions] error in named action:',
-              action.name,
-              err
-            );
-          }
-        }
-        break;
-      }
+  args: ParaValue[]
+) => Ctx | void;
 
-      case 'chain': {
-        executeChainAction(host, action, isDebug);
-        break;
-      }
-
-      case 'guardedBlock': {
-        const guardFn = makeGuardFn<Ctx>(action.condition);
-        if (!guardFn(ctx)) {
-          if (isDebug) {
-            // eslint-disable-next-line no-console
-            console.log('[paraActions] guarded block skipped', action.condition);
-          }
-          break;
-        }
-
-        if (isDebug) {
-          // eslint-disable-next-line no-console
-          console.log('[paraActions] guarded block entered', action.condition);
-        }
-
-        executeParaActions(host, action.actions, ctx, actionMap, isDebug);
-        break;
-      }
-
-      default:
-        // Exhaustive guard
-        // eslint-disable-next-line no-unused-expressions
-        (action satisfies never);
-    }
-  }
-}
+export type ActionRegistry<Ctx = unknown> = Record<string, ActionHandler<Ctx>>;
 
 /**
- * Execute a chained action like:
- *   api.getChart('main').getSeries('revenue').select()
+ * Execute a single ParaAction (single or chained) against a registry of handlers.
+ *
+ * - `initialContext` is whatever the host wants: chart instance, scrollyteller state, etc.
+ * - Each segment handler receives the current `ctx` and its parsed args.
+ * - A handler may return a new context; if it does, that becomes the `ctx` for the next segment.
+ * - If a handler is not found for a segment, this function throws.
+ * - This function does NOT catch errors; they bubble to the host.
  */
-function executeChainAction(
-  host: unknown,
-  action: ChainAction,
-  isDebug: boolean
-): void {
-  if (!action.segments.length) return;
-
-  let target: any = (host as any)?.api ?? host;
+export function executeParaAction<Ctx>(
+  action: ParaAction,
+  initialContext: Ctx,
+  registry: ActionRegistry<Ctx>
+): Ctx {
+  let ctx = initialContext;
 
   for (const segment of action.segments) {
-    if (!target) {
-      if (isDebug) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          '[paraActions] chain target became null before',
-          segment.methodName
-        );
-      }
-      return;
+    const handler = registry[segment.methodName];
+    if (!handler) {
+      throw new Error(`Unknown action method: ${segment.methodName}`);
     }
 
-    const fn = (target as any)[segment.methodName];
-    if (typeof fn !== 'function') {
-      if (isDebug) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          '[paraActions] method not found on chain target:',
-          segment.methodName,
-          target
-        );
-      }
-      return;
-    }
-
-    // Convert ParaActionArg[] to raw JS values
-    const jsArgs = segment.args.map(arg => arg.value);
-
-    try {
-      const result = fn.apply(target, jsArgs);
-      // If the method returns something, chain continues on that; otherwise stay on current target
-      if (result !== undefined && result !== null) {
-        target = result;
-      }
-    } catch (err) {
-      if (isDebug) {
-        // eslint-disable-next-line no-console
-        console.error(
-          '[paraActions] error in chain segment:',
-          segment.methodName,
-          err
-        );
-      }
-      return;
+    const result = handler(ctx, segment.args);
+    if (typeof result !== 'undefined') {
+      ctx = result;
     }
   }
+
+  return ctx;
+}
+
+/**
+ * Convenience: execute a list of actions in sequence.
+ * Errors still bubble to the host.
+ */
+export function executeParaActionList<Ctx>(
+  actions: ParaAction[],
+  initialContext: Ctx,
+  registry: ActionRegistry<Ctx>
+): Ctx {
+  let ctx = initialContext;
+  for (const action of actions) {
+    ctx = executeParaAction(action, ctx, registry);
+  }
+  return ctx;
 }

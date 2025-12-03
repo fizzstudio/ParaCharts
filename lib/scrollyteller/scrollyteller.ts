@@ -1,13 +1,12 @@
-// lib/scrollyteller/scrollyteller.ts
 // IntersectionObserver-based scrollytelling engine that uses the paraActions DSL
 // for data-para-enter / data-para-exit / data-para-progress attributes.
 
 import {
-  parseParaActionList,
-  executeParaActions,
+  parseActionList,
+  executeParaActionList,
   type ParaAction,
-  type ParaActionHandler,
-  type ParaActionHandlerMap,
+  type ActionHandler as ParaActionHandler,
+  type ActionRegistry as ParaActionHandlerMap,
 } from '../paraactions/paraactions';
 
 export type ScrollDirection = 'up' | 'down';
@@ -325,9 +324,14 @@ export class Scrollyteller {
       const exitAttr = el.dataset.paraExit ?? null;
       const progressAttr = el.dataset.paraProgress ?? null;
 
-      const enterActions = parseParaActionList(enterAttr);
-      const exitActions = parseParaActionList(exitAttr);
-      const progressActions = parseParaActionList(progressAttr);
+      // === PARA: CHANGED — purpose: use parseActionList (actions, errors) instead of parseParaActionList ===
+      const { actions: enterActions, errors: enterErrors } =
+        parseActionList(enterAttr ?? '');
+      const { actions: exitActions, errors: exitErrors } =
+        parseActionList(exitAttr ?? '');
+      const { actions: progressActions, errors: progressErrors } =
+        parseActionList(progressAttr ?? '');
+      // === PARA: END CHANGED ===
 
       const hasEnter = enterActions.length > 0;
       const hasExit = exitActions.length > 0;
@@ -423,9 +427,8 @@ export class Scrollyteller {
     label.style.background = 'rgba(0, 0, 255, 0.1)';
     label.style.padding = '0 2px';
     label.style.borderRadius = '2px';
-    label.textContent = `step ${step.index}${
-      step.offsetRaw ? ` @ ${step.offsetRaw}` : ''
-    }`;
+    label.textContent = `step ${step.index}${step.offsetRaw ? ` @ ${step.offsetRaw}` : ''
+      }`;
     line.appendChild(label);
 
     const style = window.getComputedStyle(step.element);
@@ -739,10 +742,10 @@ export class Scrollyteller {
       this.onStepEnter(ctx);
     }
 
+    // route enter actions through error-handling wrapper
     if (step.hasEnter) {
-      this.runActions(step.enterActions, ctx);
+      this.runActionsForStep(step, step.enterActions, ctx);
     }
-
     if (this.isDebugEnabled) {
       step.element.setAttribute('data-para-debug-state', 'enter');
     }
@@ -767,15 +770,16 @@ export class Scrollyteller {
       this.onStepExit(ctx);
     }
 
+    // route exit actions through error-handling wrapper ===
+
     if (step.hasExit) {
-      this.runActions(step.exitActions, ctx);
+      this.runActionsForStep(step, step.exitActions, ctx);
     }
 
     if (this.isDebugEnabled) {
       step.element.setAttribute('data-para-debug-state', 'exit');
     }
   }
-
   private handleProgress(step: StepEntry): void {
     const ctx: ActionContext = {
       element: step.element,
@@ -793,18 +797,53 @@ export class Scrollyteller {
       this.onStepProgress(ctx);
     }
 
+    // route progress actions through error-handling wrapper
+
     if (step.hasProgress) {
-      this.runActions(step.progressActions, ctx);
+      this.runActionsForStep(step, step.progressActions, ctx);
+    }
+  }
+  // call new executeParaActionList(actions, ctx, registry) API
+  private runActions(actions: ParaAction[], ctx: ActionContext): void {
+    executeParaActionList(
+      actions,             // parsed AST
+      ctx,                 // host for method chaining
+      this.actions,        // ActionMap overrides
+    );
+  }
+  // wrap action execution with per-step error handling
+  private runActionsForStep(
+    step: StepEntry,
+    actions: ParaAction[],
+    ctx: ActionContext
+  ): void {
+    try {
+      this.runActions(actions, ctx);
+    } catch (error) {
+      this.markStepAsError(step, error);
     }
   }
 
-  private runActions(actions: ParaAction[], ctx: ActionContext): void {
-    executeParaActions(
-      this.parachart,      // host for method chaining
-      actions,             // parsed AST
-      ctx,                 // scrolly context
-      this.actions,        // ActionMap overrides
-      this.isDebugEnabled  // debug logs
+  private markStepAsError(step: StepEntry, error: unknown): void {
+    const el = step.element;
+
+    // 1. Mark the element so CSS/debug UI can react
+    el.classList.add('para-error');
+    el.setAttribute('data-para-error', 'true');
+
+    // 2. Debug visibility
+    if (this.isDebugEnabled) {
+      el.setAttribute('data-para-error-message', String(error));
+    }
+
+    // 3. Print a clear, informative console error
+    // eslint-disable-next-line no-console
+    console.error(
+      '%cParaActions Error%c in step %o\nError: %o',
+      'background:#B00020;color:white;padding:2px 4px;border-radius:3px;',
+      '',
+      el,
+      error
     );
   }
 
