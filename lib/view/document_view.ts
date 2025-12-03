@@ -232,7 +232,7 @@ export class DocumentView extends Container(View) {
         ? 1
         : 0) + (this._titleLabel ? 1 : 0);
       this._directLabelStrip = new DirectLabelStrip(this._chartLayers.dataLayer as LinePlotView);
-      this._grid.append(this._directLabelStrip, {
+      this._grid.insert(this._directLabelStrip, 3, {
         x: 2,
         y: plotRow,
         height: 1

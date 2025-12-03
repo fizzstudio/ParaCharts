@@ -487,9 +487,14 @@ export class GridLayout extends Layout {
     super.append(child);
   }
 
-  prepend(child: View, territory?: GridTerritory) {
+  prepend(child: View, territory?: GridTerritoryInput) {
     this._claimTerritory(child, territory);
     super.prepend(child);
+  }
+
+  insert(child: View, i: number, territory?: GridTerritoryInput) {
+    this._claimTerritory(child, territory);
+    super.insert(child, i);
   }
 
   protected _didAddChild(kid: View) {
