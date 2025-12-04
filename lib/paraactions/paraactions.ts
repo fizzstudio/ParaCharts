@@ -49,6 +49,20 @@ export interface ParseError {
 
 // ---------- PUBLIC PARSING API ----------
 
+// Allow multiple ParaActions per line separated by whitespace or semicolons
+// Use shared top-level splitter for whitespace/semicolon-separated actions
+function splitActionsOnLine(line: string): string[] {
+  const raw = splitTopLevel(line, (ch) => ch === ' ' || ch === '\t' || ch === ';');
+  const actions: string[] = [];
+
+  for (const part of raw) {
+    const trimmed = part.trim();
+    if (trimmed) actions.push(trimmed);
+  }
+
+  return actions;
+}
+
 /**
  * Parse a full action list from a multi-line string.
  * Each non-empty line is parsed as a single ParaAction:
@@ -57,6 +71,7 @@ export interface ParseError {
  *   api.getChart('main').highlightSeries(revenue)
  *
  */
+// support multiple top-level actions per line (space or semicolon separated) ===
 export function parseActionList(source: string): ParaActionList {
   const actions: ParaAction[] = [];
   const errors: ParseError[] = [];
@@ -70,17 +85,24 @@ export function parseActionList(source: string): ParaActionList {
 
     if (!trimmed) continue;
 
-    try {
-      const action = parseSingleAction(trimmed);
-      if (action) actions.push(action);
-    } catch (err) {
-      errors.push({
-        message:
-          err instanceof Error ? err.message : 'Unknown parse error in action line.',
-        line: lineNo,
-        column: 1,
-        raw: rawLine,
-      });
+    // Allow multiple action expressions on the same line, separated by
+    // top-level whitespace or semicolons (not inside strings or parentheses).
+    const expressions = splitActionsOnLine(trimmed);
+    for (const expr of expressions) {
+      try {
+        const action = parseSingleAction(expr);
+        if (action) actions.push(action);
+      } catch (err) {
+        errors.push({
+          message:
+            err instanceof Error
+              ? err.message
+              : 'Unknown parse error in action expression.',
+          line: lineNo,
+          column: 1,
+          raw: expr,
+        });
+      }
     }
   }
 
@@ -129,6 +151,20 @@ function parseSingleAction(line: string): ParaAction | null {
 
 // ---------- CHAIN PARSING ----------
 
+function splitChainSegments(source: string): string[] {
+  const rawSegments = splitTopLevel(source, (ch) => ch === '.');
+  const segments: string[] = [];
+
+  for (const part of rawSegments) {
+    const trimmed = part.trim();
+    if (trimmed) segments.push(trimmed);
+  }
+
+  return segments;
+}
+
+// ---------- SHARED PARSING ----------
+
 /**
  * Split `api.getChart('main').highlightSeries(revenue, industry)` into:
  * ["api", "getChart('main')", "highlightSeries(revenue, industry)"].
@@ -136,8 +172,13 @@ function parseSingleAction(line: string): ParaAction | null {
  * If there are no top-level dots, you just get a single segment:
  * ["highlightSeries(revenue)"].
  */
-function splitChainSegments(source: string): string[] {
-  const segments: string[] = [];
+
+// Share top-level splitting logic (strings + parens) across DSL helpers ===
+function splitTopLevel(
+  source: string,
+  isSeparator: (ch: string) => boolean
+): string[] {
+  const parts: string[] = [];
   let current = '';
   let depth = 0;
   let inString: "'" | '"' | null = null;
@@ -145,6 +186,8 @@ function splitChainSegments(source: string): string[] {
   for (let i = 0; i < source.length; i++) {
     const ch = source[i];
 
+    // If we're inside a quoted string, only leave on matching quote,
+    // treating escapes consistently with other parsers here.
     if (inString) {
       current += ch;
       if (ch === inString) {
@@ -155,36 +198,43 @@ function splitChainSegments(source: string): string[] {
       continue;
     }
 
+    // Enter string
     if (ch === "'" || ch === '"') {
       inString = ch;
       current += ch;
       continue;
     }
 
+    // Track parentheses depth so we don't split inside argument lists.
     if (ch === '(') {
       depth++;
       current += ch;
       continue;
     }
-
     if (ch === ')') {
       depth = Math.max(0, depth - 1);
       current += ch;
       continue;
     }
 
-    // Top-level dot (not in parens or string) splits the chain
-    if (ch === '.' && depth === 0) {
-      if (current.trim()) segments.push(current.trim());
-      current = '';
+    // At top level (not in string or parens), allow the caller to define
+    // which characters act as separators.
+    if (depth === 0 && isSeparator(ch)) {
+      if (current) {
+        parts.push(current);
+        current = '';
+      }
       continue;
     }
 
     current += ch;
   }
 
-  if (current.trim()) segments.push(current.trim());
-  return segments;
+  if (current) {
+    parts.push(current);
+  }
+
+  return parts;
 }
 
 /**
@@ -244,41 +294,12 @@ function parseArgsList(source: string): ParaValue[] {
  * respecting quoted strings.
  */
 function splitArgs(source: string): string[] {
-  const parts: string[] = [];
-  let current = '';
-  let inString: "'" | '"' | null = null;
-
-  for (let i = 0; i < source.length; i++) {
-    const ch = source[i];
-
-    if (inString) {
-      current += ch;
-      if (ch === inString) {
-        inString = null;
-      } else if (ch === '\\' && i + 1 < source.length) {
-        current += source[++i];
-      }
-      continue;
-    }
-
-    if (ch === "'" || ch === '"') {
-      inString = ch;
-      current += ch;
-      continue;
-    }
-
-    if (ch === ',') {
-      parts.push(current);
-      current = '';
-      continue;
-    }
-
-    current += ch;
-  }
-
-  if (current) parts.push(current);
-  return parts;
+  // Use shared top-level splitter for comma-separated arguments
+  // Note: we intentionally do not trim here; parseArgsList is responsible
+  //      for trimming and skipping empty/whitespace-only entries.
+  return splitTopLevel(source, (ch) => ch === ',');
 }
+
 
 // ---------- VALUE PARSING ----------
 
@@ -338,13 +359,6 @@ function parseStringValue(source: string): ParaValue {
 
 // ---------- EXECUTOR (WITH CTX, ERRORS BUBBLE TO HOST) ----------
 
-export type ActionHandler<Ctx = unknown> = (
-  ctx: Ctx,
-  args: ParaValue[]
-) => Ctx | void;
-
-export type ActionRegistry<Ctx = unknown> = Record<string, ActionHandler<Ctx>>;
-
 // execute actions by calling methods directly on the initial context (e.g., parachart.api) ===
 function paraValuesToJsArgs(args: ParaValue[]): unknown[] {
   return args.map(arg => arg.value);
@@ -394,7 +408,10 @@ export function executeParaActionList<Ctx>(
 ): Ctx {
   let ctx = initialContext;
   for (const action of actions) {
-    ctx = executeParaAction(action, ctx);
+    // Each ParaAction represents a full chain (e.g., getSeries(...).getPoint(...).play()).
+    // Top-level actions on the same step should not feed their result into each other;
+    // they should each start from the same root API context.
+    ctx = executeParaAction(action, initialContext);
   }
   return ctx;
 }
