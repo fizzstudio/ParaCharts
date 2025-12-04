@@ -6,7 +6,6 @@ import {
   parseActionList,
   executeParaActionList,
   type ParaAction,
-  type ActionHandler as ParaActionHandler,
 } from '../paraactions/paraactions';
 // use ParaAPI type so ScrollyHost.api matches ParaChart API shape
 import type { ParaAPI } from '../paraapi/paraapi';
@@ -53,9 +52,6 @@ export interface ActionContext {
 
   parachart: ScrollyHost;
 }
-
-// Specialisations of the generic paraActions types for scrollytelling.
-export type ActionHandler = ParaActionHandler<ActionContext>;
 
 export interface ScrollytellerOptions {
   offset?: number | string;
@@ -255,13 +251,7 @@ export class Scrollyteller {
   // ─────────────────────────────────────────────────────────────────────────────
 
   private resolveSettings(): void {
-    const storeSettings =
-      this.parachart?.paraView?.store?.settings?.scrollytelling ?? {};
-
-    const combined: ScrollytellingSettings = {
-      ...storeSettings,
-      ...this.options,
-    };
+    const combined = this.combineSettings();
 
     const isDebug = (combined as any).isDebug ?? this.options.isDebug;
 
@@ -303,13 +293,18 @@ export class Scrollyteller {
   }
 
   private computeOffsetPx(): void {
+    const combined = this.combineSettings();
+    this.offsetPx = this.computeOffsetFromSetting(combined.offset);
+  }
+
+  private combineSettings(): ScrollytellingSettings {
     const storeSettings =
       this.parachart?.paraView?.store?.settings?.scrollytelling ?? {};
     const combined: ScrollytellingSettings = {
       ...storeSettings,
       ...this.options,
     };
-    this.offsetPx = this.computeOffsetFromSetting(combined.offset);
+    return combined;
   }
 
   private collectSteps(): void {
@@ -327,14 +322,13 @@ export class Scrollyteller {
       const exitAttr = el.dataset.paraExit ?? null;
       const progressAttr = el.dataset.paraProgress ?? null;
 
-      // === PARA: CHANGED — purpose: use parseActionList (actions, errors) instead of parseParaActionList ===
+      // use parseActionList (actions, errors) instead of parseParaActionList
       const { actions: enterActions, errors: enterErrors } =
         parseActionList(enterAttr ?? '');
       const { actions: exitActions, errors: exitErrors } =
         parseActionList(exitAttr ?? '');
       const { actions: progressActions, errors: progressErrors } =
         parseActionList(progressAttr ?? '');
-      // === PARA: END CHANGED ===
 
       const hasEnter = enterActions.length > 0;
       const hasExit = exitActions.length > 0;
@@ -370,6 +364,34 @@ export class Scrollyteller {
 
       this.steps.push(step);
       this.stepMap.set(el, step);
+
+      // surface ParaActions parse errors on steps for easier debugging
+      const hasParseErrors =
+        (enterErrors && enterErrors.length > 0) ||
+        (exitErrors && exitErrors.length > 0) ||
+        (progressErrors && progressErrors.length > 0);
+
+      if (hasParseErrors) {
+        const messages: string[] = [];
+
+        const pushErrors = (
+          prefix: string,
+          errs: { message: string; line: number; column: number; raw: string }[] | undefined | null
+        ): void => {
+          if (!errs || errs.length === 0) return;
+          for (const e of errs) {
+            messages.push(
+              `${prefix} line ${e.line}: ${e.message} [${e.raw.trim()}]`
+            );
+          }
+        };
+
+        pushErrors('enter', enterErrors);
+        pushErrors('exit', exitErrors);
+        pushErrors('progress', progressErrors);
+
+        this.markStepAsError(step, messages.join(' | '));
+      }
     });
   }
 
