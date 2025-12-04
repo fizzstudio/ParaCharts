@@ -47,6 +47,7 @@ export interface ParseError {
   raw: string;
 }
 
+
 // ---------- PUBLIC PARSING API ----------
 
 // Allow multiple ParaActions per line separated by whitespace or semicolons
@@ -232,6 +233,14 @@ function splitTopLevel(
 
   if (current) {
     parts.push(current);
+  }
+
+  // Minimal diagnostics: warn if we finished with unmatched parens or an open string.
+  // If we finish with non-zero depth, unmatched parens, or an open string, the DSL source is malformed.
+  if (depth !== 0 || inString !== null) {
+    // Non-throwing on purpose: this is just a hint for authors / debugging.
+    // Callers that care can still treat this as a signal via console inspection.
+    throw new Error(`ParaActions.splitTopLevel: possible unmatched parentheses or unterminated string in DSL source:\n"${source}"`);
   }
 
   return parts;
