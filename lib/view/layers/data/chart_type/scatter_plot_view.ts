@@ -198,22 +198,6 @@ class ScatterPointView extends PointDatapointView {
     }
     return super.color
   }
-
-  addPopup() {
-    let popup = new Popup(this.paraview,
-      {
-        text: this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
-        x: this.x,
-        y: this.y,
-        id: this.id,
-        color: this.color,
-        points: [this]
-      },
-      {
-        shape: "boxWithArrow"
-      })
-    this.paraview.store.popups.push(popup)
-  }
 }
 
 export class ScatterTrendLineView extends TrendLineView {

@@ -575,27 +575,4 @@ export class Bar extends PlaneDatapointView {
       isClip: this.shouldClip
     });
   }
-
-
-  addPopup(text?: string) {
-    let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
-    if (this.paraview.store.model!.multi) {
-      datapointText = `${this.series.getLabel()} ${datapointText}`
-    }
-    let popup = new Popup(this.paraview,
-      {
-        text: text ?? datapointText,
-        x: this.x + this.width / 2,
-        y: this.y,
-        id: this.id,
-        color: this.color,
-        points: [this],
-        rotationExempt: this.paraview.store.type == 'bar' ? false : true,
-        angle: this.paraview.store.type == 'bar' ? -90 : 0
-      },
-      {shape:"box"})
-    this.paraview.store.popups.push(popup)
-    this._popup = popup;
-  }
-
 }
