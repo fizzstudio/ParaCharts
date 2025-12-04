@@ -10,6 +10,7 @@ import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { svg, nothing, TemplateResult } from 'lit';
 import { formatBox } from '@fizz/parasummary';
 import { Datapoint } from '@fizz/paramodel';
+import { Label } from '../label';
 
 /**
  * Mapping of datapoint properties to values.
@@ -27,6 +28,7 @@ export class DatapointView extends DataView {
 
   protected _shapes: Shape[] = [];
   protected _symbol: DataSymbol | null = null;
+  protected _labels: Label[] = [];
   protected _baseSymbolScale: number = 1;
   protected _animStartState: AnimState = {};
   protected _animEndState: AnimState = {};
@@ -101,6 +103,10 @@ export class DatapointView extends DataView {
     return this._symbol;
   }
 
+  get labels() {
+    return [...this._labels];
+  }
+
   set baseSymbolScale(scale: number) {
     this._baseSymbolScale = scale;
   }
@@ -147,6 +153,9 @@ export class DatapointView extends DataView {
     if (this._symbol) {
       this._symbol.x += x - this._x;
     }
+    this._labels.forEach(label => {
+      label.x += x - this._x;
+    });
     super.x = x;
   }
 
@@ -161,6 +170,9 @@ export class DatapointView extends DataView {
     if (this._symbol) {
       this._symbol.y += y - this._y;
     }
+    this._labels.forEach(label => {
+      label.y += y - this._y;
+    });
     super.y = y;
   }
 
@@ -198,6 +210,7 @@ export class DatapointView extends DataView {
   completeLayout() {
     this._createShapes();
     this._createSymbol();
+    this._createLabels();
     if (this._children.length === 1) {
       // We won't be using a group
       const kid = this._children[0] as (Shape | DataSymbol);
@@ -252,6 +265,12 @@ export class DatapointView extends DataView {
     this.append(this._symbol);
   }
 
+  protected _createLabels() {
+    this.labels.forEach(label => {
+      this.append(label);
+    })
+  }
+
   layoutSymbol() {
     if (this._symbol) {
       this._symbol.x = this._x;
@@ -290,11 +309,15 @@ export class DatapointView extends DataView {
     }
   }
 
+  protected _contentUpdateLabels() {
+  }
+
   content(): TemplateResult {
     // on g: aria-labelledby="${this.params.labelId}"
     // originally came from: xAxis.tickLabelIds[j]
     this._contentUpdateShapes();
     this._contentUpdateSymbol();
+    this._contentUpdateLabels();
     if (this._children.length === 1) {
       // classInfo may change, so needs to get reassigned here
       const kid = this._children[0] as (Shape | DataSymbol);

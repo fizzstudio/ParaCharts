@@ -14,15 +14,14 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { View, type SnapLocation, type PaddingInput, type Padding } from '../base_view';
-import { ParaView } from '../../paraview';
+import { type View, type SnapLocation, type PaddingInput, type Padding } from '../base_view';
+import { type ParaView } from '../../paraview';
 import { Layout } from './layout';
 import { Logger, getLogger } from '../../common/logger';
 import { nothing, svg, TemplateResult } from 'lit';
 import { RectShape } from '../shape/rect';
 
 import { mapn } from '@fizz/chart-classifier-utils';
-import { HorizAxis } from '../axis';
 import { Label } from '../label';
 
 export interface GridOptionsInput {
@@ -56,12 +55,6 @@ export interface GridTerritory extends GridTerritoryInput {
   height: number;
   // margin: Padding;
 }
-
-// interface ChildResizeInfo {
-//   viewToResize: Map<View, {width: number, height: number}>;
-//   rowShrinkage: Map<number, number>;
-//   columnShrinkage: Map<number, number>;
-// }
 
 /**
  * Attempt to round a number to the nearest hundredth, whether or not
@@ -1250,10 +1243,6 @@ export class GridLayout extends Layout {
       this._vRules.at(-1)! + colGapSum,
       this._hRules.at(-1)! + rowGapSum
     ];
-  }
-
-  protected _adjustToSizeConstraint() {
-
   }
 
   resize(width: number, height: number) {

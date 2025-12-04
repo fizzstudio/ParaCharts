@@ -617,6 +617,7 @@ export abstract class RadialSlice extends DatapointView {
       bboxAnchor = this.isPositionRight ? 'bottomLeft' : 'bottomRight';
     }
     this._insideLabel?.remove();
+    // console.log('LABEL', this._labelContents(this.chart.settings.insideLabels.contents));
     this._insideLabel = new Label(this.paraview, {
       text: this._labelContents(this.chart.settings.insideLabels.contents),
       id: this.id + '-ilb',
