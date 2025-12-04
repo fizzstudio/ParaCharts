@@ -1,633 +1,893 @@
-/*
- * MIT License
- *
- * Copyright (c) 2022 Russell Samora
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+// IntersectionObserver-based scrollytelling engine that uses the paraActions DSL
+// for data-para-enter / data-para-exit / data-para-progress attributes.
 
-import { Logger, getLogger } from '../common/logger';
 
-import { ParaChart } from '../parachart/parachart';
+import {
+  parseActionList,
+  executeParaActionList,
+  type ParaAction,
+  type ActionHandler as ParaActionHandler,
+} from '../paraactions/paraactions';
+// use ParaAPI type so ScrollyHost.api matches ParaChart API shape
+import type { ParaAPI } from '../paraapi/paraapi';
 
-export interface ParsedOffset {
-  format: 'pixels' | 'percent';
-  value: number;
-}
-
-export interface Action {
-  action: string;
-  params: string[];
-}
-
-export interface CallbackResponse {
-  element: Element;
-  index: number;
-  direction?: 'up' | 'down';
-  progress?: number;
-  actions: Action[];
-}
-
+export type ScrollDirection = 'up' | 'down';
 export type ScrollyEvent = 'stepEnter' | 'stepExit' | 'stepProgress';
 
-export type Callback = (response: CallbackResponse) => void;
-
-export interface ScrollyStep {
-  index: number;
-  direction?: 'up' | 'down';
-  height: number;
-  node: Element;
-  observers: {
-    resize?: ResizeObserver;
-    step?: IntersectionObserver;
-    progress?: IntersectionObserver;
-  };
-  offset: ParsedOffset | null;
-  actions: Action[];
-  top: number;
-  progress: number;
-  state?: 'enter' | 'exit';
+export interface ScrollytellingSettings {
+  offset?: number | string; // 0-1 or 'NNNpx' or >1 px
+  isDebug?: boolean;
 }
 
-export interface ScrollyOptions {
-  step: string | Element | NodeList | Element[];
-  parent?: string;
-  offset?: string | number;
-  threshold?: number;
-  progress?: boolean;
-  once?: boolean;
-  container?: HTMLElement;
-  root?: Element | Document | null;
-};
+// Host interface: ParaChart (or similar) will match this shape structurally.
+export interface ScrollyHost {
+  paraView?: {
+    store?: {
+      settings?: {
+        // Use a broad type here so any ParaChart-specific scrollytelling settings shape is assignable.
+        scrollytelling?: any;
+      };
+    };
+  };
+
+  // // expose the ParaCharts API surface used by the DSL executor
+  // api: {
+  //   // Methods invoked via DSL, e.g. highlightSeries, resetHighlight, showCallout, etc.
+  //   // [methodName: string]: (...args: unknown[]) => unknown;
+  //   api: ParaAPI;
+  // };
+
+  // expose the ParaCharts API surface used by the DSL executor
+  api: ParaAPI;
+}
+
+
+export interface ActionContext {
+  element: HTMLElement;
+  index: number;
+  direction: ScrollDirection;
+  progress?: number;
+
+  chartId?: string | null;
+  datasetId?: string | null;
+
+  parachart: ScrollyHost;
+}
+
+// Specialisations of the generic paraActions types for scrollytelling.
+export type ActionHandler = ParaActionHandler<ActionContext>;
+
+export interface ScrollytellerOptions {
+  offset?: number | string;
+  isDebug?: boolean;
+  rootMarginExtra?: number;      // extra px to expand rootMargin for stepObserver
+  progressThresholdPx?: number;  // px granularity for progress IO (default ~4px)
+}
+
+interface StepEntry {
+  element: HTMLElement;
+  index: number;
+  isActive: boolean;
+  progress: number; // 0-1
+  direction: ScrollDirection | null;
+
+  hasEnter: boolean;
+  hasExit: boolean;
+  hasProgress: boolean;
+
+  enterActions: ParaAction[];
+  exitActions: ParaAction[];
+  progressActions: ParaAction[];
+
+  chartId: string | null;
+  datasetId: string | null;
+
+  offsetRaw: string | null; // data-para-offset per-step override
+
+  // Geometry for progress observer
+  height: number;
+
+  // Per-step observers
+  stepObserver?: IntersectionObserver | null;
+  progressObserver?: IntersectionObserver | null;
+
+  debugLineElement?: HTMLDivElement | null;
+}
+
+type StepCallback = (info: ActionContext) => void;
 
 export class Scrollyteller {
-  private parachart: ParaChart;
-  private chartId: string;
-  private stepElements!: NodeListOf<Element>;
-  private settings!: any;
-  protected log: Logger = getLogger("Scrollyteller");  
-  
-  private steps: ScrollyStep[];
-  private _events: Map<ScrollyEvent, Array<Callback>>;
-  private globalOffset: ParsedOffset;
-  private containerElement?: HTMLElement;
-  private rootElement: Element | Document | null;
-  private progressThreshold: number;
-  private isEnabled: boolean;
-  private isProgress: boolean;
-  private isTriggerOnce: boolean;
-  private exclude: boolean[];
-  private currentScrollY: number;
-  private comparisonScrollY: number;
-  private direction?: 'up' | 'down';
+  private parachart: ScrollyHost;
+  private options: ScrollytellerOptions;
 
-  constructor(parachart: ParaChart) {
-    // this.log.info('scrolly constructor called!');
-    // HACK: needed to assign something to this.parachart
+  private steps: StepEntry[] = [];
+  private stepMap: WeakMap<Element, StepEntry> = new WeakMap();
+
+  private offsetPx = 0; // global offset in px
+  private lastScrollY = 0;
+  private direction: ScrollDirection = 'down';
+
+  private isDebugEnabled = false;
+  private debugLineElement: HTMLDivElement | null = null; // global debug line
+
+  private events: Map<ScrollyEvent, StepCallback[]> = new Map();
+
+  private progressThresholdPx = 4; // default px granularity
+
+  public onStepEnter?: StepCallback;
+  public onStepExit?: StepCallback;
+  public onStepProgress?: StepCallback;
+
+  constructor(
+    parachart: ScrollyHost,
+    options: ScrollytellerOptions = {}
+  ) {
     this.parachart = parachart;
-    this.chartId = this.parachart.id;
+    this.options = options;
+  }
 
-    this._events = new Map();
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Public API
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  public init(): void {
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
+
+    this.resolveSettings();
+    this.collectSteps();
+    if (this.steps.length === 0) return;
+
+    this.createDebugLine();
+    this.setupObserversForAllSteps();
+    this.updateDebugLinePosition();
+
+    this.lastScrollY = window.pageYOffset || 0;
+  }
+
+  public destroy(): void {
+    // Disconnect per-step observers
+    this.steps.forEach(step => {
+      if (step.stepObserver) {
+        step.stepObserver.unobserve(step.element);
+        step.stepObserver.disconnect();
+        step.stepObserver = null;
+      }
+      if (step.progressObserver) {
+        step.progressObserver.unobserve(step.element);
+        step.progressObserver.disconnect();
+        step.progressObserver = null;
+      }
+
+      if (step.debugLineElement && step.debugLineElement.parentNode) {
+        step.debugLineElement.parentNode.removeChild(step.debugLineElement);
+      }
+      step.debugLineElement = null;
+    });
+
     this.steps = [];
-    this.globalOffset = { format: 'percent', value: 0.5 };
-    this.containerElement = undefined;
-    this.rootElement = null;
+    this.stepMap = new WeakMap();
+    this.events.clear();
 
-    this.progressThreshold = 0;
-
-    this.isEnabled = false;
-    this.isProgress = false;
-    this.isTriggerOnce = false;
-
-    this.exclude = [];
-
-    this.currentScrollY = 0;
-    this.comparisonScrollY = 0;
-    this.direction = undefined;
-
-    this._handleScroll = this._handleScroll.bind(this);
-    this._resizeStep = this._resizeStep.bind(this);
-    this._intersectStep = this._intersectStep.bind(this);
-    this._intersectProgress = this._intersectProgress.bind(this);
-
-    this.settings = this.parachart.paraView.store.settings.scrollytelling;
-    if (this.settings.isScrollytellingEnabled) {
-      this.init();
+    if (this.debugLineElement && this.debugLineElement.parentNode) {
+      this.debugLineElement.parentNode.removeChild(this.debugLineElement);
+      this.debugLineElement = null;
     }
   }
 
-  private init(): void {
-    // this.log.info('scrolly init called!');
-    this.stepElements = document.querySelectorAll('[data-para-step]');
+  public resize(): void {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-    this.setup({
-      step: '[data-para-step]',
-      offset: 0.5,
-      progress: true,
-      once: false,
-    });
+    // Recompute global offset
+    this.computeOffsetPx();
+    this.updateDebugLinePosition();
 
-    this.on('stepEnter', (response: CallbackResponse) => {
-      // this.log.info('scrolly stepEnter callback fired!');
-      const element = response.element;
-      this.highlightPageContent(element);
+    // Recompute step heights and re-create observers
+    this.steps.forEach(step => {
+      const rect = step.element.getBoundingClientRect();
+      step.height = rect.height || step.element.offsetHeight || 0;
 
-      for (const {action, params} of response.actions) {
-        if (action === 'highlightSeries') {
-          // TODO: remove previous series highlights
-          // this.parachart.store.soloSeries = '';
-          if (params.length > 0) {
-            this.parachart.store.lowlightOtherSeries(...params);
-          }
-        }
-
-        if (action === 'highlightDatapoint') {
-          // TODO: remove previous datapoint highlights
-          // this.parachart.command('click', []);
-          // this.log.warn('highlightDatapoint', params);
-
-          if (params.length >= 2) {
-            this.parachart.api.getSeries(params[0]).getPoint(+params[1]).select();
-          }
-        }
-
-        if (action === 'directLabels') {
-          console.warn('directLabels', params)
-          const isOn = params[0] === 'true' ? true : false;
-          this.parachart.api.setSetting('chart.hasDirectLabels', isOn);
-        }
-        
-        if (action === 'hasSymbols') {
-          console.warn('hasSymbols', params)
-          const isOn = params[0] === 'true' ? true : false;
-          this.parachart.api.setSetting('chart.isDrawSymbols', isOn);
-        }
-
-        if (action === 'setColorPalette') {
-          console.warn('setColorPalette', params)
-          this.parachart.api.setSetting('color.colorPalette', params[0]);
-        }
-
-        if (action === 'setManifest') {
-          console.warn('manifest', params)
-          console.warn('this.parachart', this.parachart)
-          this.parachart.setAttribute('manifest', params[0]);
-        }
-
-        // TODO: add sonifications
-        if (action === 'playSonification') {
-          this.parachart.api.getSeries(params[0]).playRiff();
-        }
+      if (step.stepObserver) {
+        step.stepObserver.unobserve(step.element);
+        step.stepObserver.disconnect();
+        step.stepObserver = null;
       }
-      // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints
-    });
-
-
-    this.on('stepExit', (response: CallbackResponse) => {
-      // this.log.warn('SCROLLY: stepExit callback fired!', response);
-      const element = response.element;
-
-      if (response.direction === 'down') {
-        this.log.warn('SCROLLY: exit down', response);
-      }
-      else {
-        this.log.warn('SCROLLY: exit up', response);
-        this.log.warn('SCROLLY: reverse action!');
-        for (const {action, params} of response.actions) {
-          if (action === 'highlightDatapoint') {
-            if (params.length >= 2) {
-              this.parachart.api.getSeries(params[0]).getPoint(+params[1]).select();
-            }
-          }
-        }
+      if (step.progressObserver) {
+        step.progressObserver.unobserve(step.element);
+        step.progressObserver.disconnect();
+        step.progressObserver = null;
       }
 
+      this.setupStepObserver(step);
+      if (step.hasProgress) {
+        this.setupProgressObserver(step);
+      }
     });
-
-    this.stepElements[0]?.classList.add('para-active');
   }
 
-  private highlightPageContent(nextStep: Element): void {
-    this.stepElements.forEach(step => step.classList.remove('para-active'));
-    nextStep.classList.add('para-active');
+  public on(event: ScrollyEvent, callback: StepCallback): void {
+    const arr = this.events.get(event) ?? [];
+    arr.push(callback);
+    this.events.set(event, arr);
   }
 
-  // internal helpers
-
-
-  private getChartSteps(
-    selector: string | Element | NodeList | Element[],
-    parent: Document | Element = document
-  ): Element[] {
-    const steps = this.selectAll(selector, parent).filter((element) => {
-      const chartId = (element as HTMLElement).dataset.paraChartid;
-      return !chartId || chartId === this.chartId;
-    });
-    return steps;
+  public once(event: ScrollyEvent, callback: StepCallback): void {
+    const wrapper: StepCallback = (ctx: ActionContext) => {
+      this.off(event, wrapper);
+      callback(ctx);
+    };
+    this.on(event, wrapper);
   }
 
-
-  private selectAll(
-    selector: string | Element | NodeList | Element[],
-    parent: Document | Element = document
-  ): Element[] {
-    if (typeof selector === 'string') {
-      return Array.from(parent.querySelectorAll(selector));
+  public off(event?: ScrollyEvent, callback?: StepCallback): void {
+    if (!event) {
+      this.events.clear();
+      return;
     }
-    if (selector instanceof Element) return [selector];
-    if (selector instanceof NodeList) return Array.from(selector) as Element[];
-    if (Array.isArray(selector)) return selector;
-    return [];
+
+    if (!callback) {
+      this.events.delete(event);
+      return;
+    }
+
+    const arr = this.events.get(event);
+    if (!arr) return;
+    const next = arr.filter(cb => cb !== callback);
+    if (next.length === 0) {
+      this.events.delete(event);
+    } else {
+      this.events.set(event, next);
+    }
   }
 
-  private getIndex(node: Element): number {
-    const attr = node.getAttribute('data-scrollytelling-index');
-    return attr ? +attr : 0;
+  private emit(event: ScrollyEvent, ctx: ActionContext): void {
+    const arr = this.events.get(event);
+    if (!arr || arr.length === 0) return;
+    for (const cb of arr) {
+      cb(ctx);
+    }
   }
 
-  private indexSteps(steps: ScrollyStep[]): void {
-    steps.forEach((step) =>
-      step.node.setAttribute('data-scrollytelling-index', step.index.toString())
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Settings & step collection
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  private resolveSettings(): void {
+    const storeSettings =
+      this.parachart?.paraView?.store?.settings?.scrollytelling ?? {};
+
+    const combined: ScrollytellingSettings = {
+      ...storeSettings,
+      ...this.options,
+    };
+
+    const isDebug = (combined as any).isDebug ?? this.options.isDebug;
+
+    this.isDebugEnabled = !!isDebug;
+    this.offsetPx = this.computeOffsetFromSetting(combined.offset);
+
+    this.progressThresholdPx =
+      this.options.progressThresholdPx && this.options.progressThresholdPx > 0
+        ? this.options.progressThresholdPx
+        : 4;
+  }
+
+  private computeOffsetFromSetting(offset: number | string | undefined): number {
+    const viewH =
+      typeof window !== 'undefined' ? window.innerHeight || 0 : 0;
+
+    if (offset == null) {
+      return viewH * 0.5;
+    }
+
+    if (typeof offset === 'number') {
+      if (offset >= 0 && offset <= 1) {
+        return viewH * offset;
+      }
+      return offset;
+    }
+
+    if (typeof offset === 'string' && offset.endsWith('px')) {
+      const value = Number(offset.replace('px', ''));
+      return Number.isNaN(value) ? viewH * 0.5 : value;
+    }
+
+    const num = Number(offset);
+    if (!Number.isNaN(num) && num >= 0 && num <= 1) {
+      return viewH * num;
+    }
+
+    return viewH * 0.5;
+  }
+
+  private computeOffsetPx(): void {
+    const storeSettings =
+      this.parachart?.paraView?.store?.settings?.scrollytelling ?? {};
+    const combined: ScrollytellingSettings = {
+      ...storeSettings,
+      ...this.options,
+    };
+    this.offsetPx = this.computeOffsetFromSetting(combined.offset);
+  }
+
+  private collectSteps(): void {
+    const selector =
+      '[data-para-enter], [data-para-exit], [data-para-progress]';
+
+    const nodeList = document.querySelectorAll<HTMLElement>(selector);
+    const elements: HTMLElement[] = Array.from(new Set(nodeList));
+
+    this.steps = [];
+    this.stepMap = new WeakMap();
+
+    elements.forEach((el, index) => {
+      const enterAttr = el.dataset.paraEnter ?? null;
+      const exitAttr = el.dataset.paraExit ?? null;
+      const progressAttr = el.dataset.paraProgress ?? null;
+
+      // === PARA: CHANGED — purpose: use parseActionList (actions, errors) instead of parseParaActionList ===
+      const { actions: enterActions, errors: enterErrors } =
+        parseActionList(enterAttr ?? '');
+      const { actions: exitActions, errors: exitErrors } =
+        parseActionList(exitAttr ?? '');
+      const { actions: progressActions, errors: progressErrors } =
+        parseActionList(progressAttr ?? '');
+      // === PARA: END CHANGED ===
+
+      const hasEnter = enterActions.length > 0;
+      const hasExit = exitActions.length > 0;
+      const hasProgress = progressActions.length > 0;
+
+      const chartId = el.dataset.paraChartid ?? null;
+      const datasetId = el.dataset.paraDatasetid ?? null;
+      const offsetRaw = el.dataset.paraOffset ?? null;
+
+      const rect = el.getBoundingClientRect();
+      const height = rect.height || el.offsetHeight || 0;
+
+      const step: StepEntry = {
+        element: el,
+        index,
+        isActive: false,
+        progress: 0,
+        direction: null,
+        hasEnter,
+        hasExit,
+        hasProgress,
+        enterActions,
+        exitActions,
+        progressActions,
+        chartId,
+        datasetId,
+        offsetRaw,
+        height,
+        stepObserver: null,
+        progressObserver: null,
+        debugLineElement: null,
+      };
+
+      this.steps.push(step);
+      this.stepMap.set(el, step);
+    });
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Per-step offset helper
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  private computeStepOffsetPx(offsetRaw: string | null): number {
+    if (typeof window === 'undefined') return this.offsetPx;
+    if (!offsetRaw) return this.offsetPx;
+
+    const viewH = window.innerHeight || 0;
+    const trimmed = offsetRaw.trim();
+    if (!trimmed) return this.offsetPx;
+
+    if (trimmed.endsWith('px')) {
+      const value = Number(trimmed.replace('px', ''));
+      return Number.isNaN(value) ? this.offsetPx : value;
+    }
+
+    const num = Number(trimmed);
+    if (Number.isNaN(num)) return this.offsetPx;
+
+    if (num >= 0 && num <= 1) {
+      return viewH * num;
+    }
+    if (num > 1) {
+      return num;
+    }
+
+    return this.offsetPx;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Per-step debug line helpers
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  private ensureStepDebugLine(step: StepEntry): void {
+    if (!this.isDebugEnabled) return;
+    if (step.debugLineElement) return;
+
+    const line = document.createElement('div');
+    line.className = 'paracharts-scrolly-step-debug-line';
+    line.style.position = 'absolute';
+    line.style.left = '0';
+    line.style.right = '0';
+    line.style.height = '0';
+    line.style.borderTop = '1px dotted rgba(0, 0, 255, 0.6)';
+    line.style.pointerEvents = 'none';
+    line.style.zIndex = '1';
+
+    const label = document.createElement('span');
+    label.style.position = 'absolute';
+    label.style.left = '0';
+    label.style.top = '-0.75em';
+    label.style.fontFamily = 'monospace';
+    label.style.fontSize = '10px';
+    label.style.background = 'rgba(0, 0, 255, 0.1)';
+    label.style.padding = '0 2px';
+    label.style.borderRadius = '2px';
+    label.textContent = `step ${step.index}${step.offsetRaw ? ` @ ${step.offsetRaw}` : ''
+      }`;
+    line.appendChild(label);
+
+    const style = window.getComputedStyle(step.element);
+    if (style.position === 'static') {
+      step.element.style.position = 'relative';
+    }
+
+    step.element.appendChild(line);
+    step.debugLineElement = line;
+  }
+
+  private updateStepDebugLine(
+    step: StepEntry,
+    rect: DOMRectReadOnly,
+    offsetPx: number
+  ): void {
+    if (!this.isDebugEnabled) return;
+    this.ensureStepDebugLine(step);
+    if (!step.debugLineElement) return;
+
+    const localY = offsetPx - rect.top;
+    const clamped = Math.min(Math.max(localY, 0), rect.height);
+
+    step.debugLineElement.style.top = `${clamped}px`;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Observer setup (step + progress)
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  private setupObserversForAllSteps(): void {
+    this.steps.forEach(step => {
+      this.setupStepObserver(step);
+      if (step.hasProgress) {
+        this.setupProgressObserver(step);
+      }
+    });
+  }
+
+  private setupStepObserver(step: StepEntry): void {
+    if (typeof window === 'undefined') return;
+
+    const rootMargin = this.computeRootMargin();
+    const thresholds = this.computeThresholds();
+
+    const observer = new IntersectionObserver(
+      entries => this.handleStepIntersections(entries),
+      {
+        root: null,
+        rootMargin,
+        threshold: thresholds,
+      }
+    );
+
+    observer.observe(step.element);
+    step.stepObserver = observer;
+  }
+
+  private setupProgressObserver(step: StepEntry): void {
+    if (typeof window === 'undefined') return;
+
+    const vh = window.innerHeight || 0;
+    const offsetPx = this.computeStepOffsetPx(step.offsetRaw);
+
+    // Progress rootMargin:
+    //   marginTop = -offset + step.height
+    //   marginBottom = offset - viewportHeight
+    const marginTop = -offsetPx + step.height;
+    const marginBottom = offsetPx - vh;
+    const rootMargin = `${marginTop}px 0px ${marginBottom}px 0px`;
+
+    const thresholds = this.createProgressThresholds(step.height);
+
+    const observer = new IntersectionObserver(
+      entries => this.handleProgressIntersections(entries),
+      {
+        root: null,
+        rootMargin,
+        threshold: thresholds,
+      }
+    );
+
+    observer.observe(step.element);
+    step.progressObserver = observer;
+  }
+
+  private computeRootMargin(): string {
+    const viewH =
+      typeof window !== 'undefined' ? window.innerHeight || 0 : 0;
+
+    const topMargin = -this.offsetPx;
+    const bottomMargin = this.offsetPx - viewH;
+
+    const extra = this.options.rootMarginExtra ?? 0;
+    const top = topMargin - extra;
+    const bottom = bottomMargin - extra;
+
+    return `${top}px 0px ${bottom}px 0px`;
+  }
+
+  private computeThresholds(): number[] {
+    const steps = 2; // coarse thresholds for enter/exit; geometry does the real work
+    const out: number[] = [];
+    for (let i = 0; i <= steps; i++) {
+      out.push(i / steps);
+    }
+    return out;
+  }
+
+  private createProgressThresholds(height: number): number[] {
+    // choose a count so that each threshold ≈ progressThresholdPx in scroll.
+    const h = height > 0 ? height : 1;
+    const px = this.progressThresholdPx > 0 ? this.progressThresholdPx : 50;
+
+    const count = Math.max(1, Math.ceil(h / px));
+    const ratio = 1 / count;
+    const out: number[] = [];
+    for (let i = 0; i <= count; i++) {
+      out.push(i * ratio);
+    }
+    return out;
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Intersection handling (step enter/exit) via step observers
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  private handleStepIntersections(
+    entries: IntersectionObserverEntry[]
+  ): void {
+    if (typeof window === 'undefined') return;
+
+    const currentY = window.pageYOffset || 0;
+    this.direction = currentY > this.lastScrollY ? 'down' : 'up';
+    this.lastScrollY = currentY;
+
+    for (const entry of entries) {
+      const target = entry.target as HTMLElement;
+      const step = this.stepMap.get(target);
+      if (!step) continue;
+
+      const rect = entry.boundingClientRect;
+      this.updateStepStateFromGeometry(step, rect);
+    }
+
+    // Enforce boundary behavior: top → first step, bottom → last step
+    this.enforceBoundaryActivation(currentY);
+  }
+
+  private updateStepStateFromGeometry(
+    step: StepEntry,
+    rect: DOMRectReadOnly
+  ): void {
+    const { top, bottom, height } = rect;
+
+    const offsetPx = this.computeStepOffsetPx(step.offsetRaw);
+
+    const topAdjusted = top - offsetPx;
+    const bottomAdjusted = bottom - offsetPx;
+
+    const wasActive = step.isActive;
+
+    let isActive = false;
+    let progress = step.progress;
+
+    if (topAdjusted <= 0 && bottomAdjusted >= 0) {
+      isActive = true;
+
+      if (height > 0) {
+        const raw = 1 - bottomAdjusted / height;
+        progress = Math.min(1, Math.max(0, raw));
+      } else {
+        progress = 0;
+      }
+    } else if (bottomAdjusted < 0) {
+      isActive = false;
+      progress = 1;
+    } else if (topAdjusted > 0) {
+      isActive = false;
+      progress = 0;
+    }
+
+    step.isActive = isActive;
+    step.progress = progress;
+    step.direction = this.direction;
+
+    this.updateStepDebugLine(step, rect, offsetPx);
+
+    if (!wasActive && isActive) {
+      this.handleEnter(step);
+    } else if (wasActive && !isActive) {
+      this.handleExit(step);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Boundary behavior: first step at top, last step at bottom
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  private enforceBoundaryActivation(scrollY: number): void {
+    if (this.steps.length === 0) return;
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+    const viewportHeight = window.innerHeight || 0;
+    const docEl = document.documentElement;
+    const docHeight = docEl ? docEl.scrollHeight : viewportHeight;
+
+    const epsilon = 2; // px tolerance
+
+    // Top of page: force first step active
+    if (scrollY <= epsilon) {
+      const first = this.steps[0];
+      if (!first) return;
+
+      for (const step of this.steps) {
+        if (step !== first && step.isActive) {
+          step.isActive = false;
+          this.handleExit(step);
+        }
+      }
+
+      if (!first.isActive) {
+        first.isActive = true;
+        first.progress = 0;
+        this.handleEnter(first);
+      }
+
+      return;
+    }
+
+    // Bottom of page: force last step active
+    const bottomY = scrollY + viewportHeight;
+    if (bottomY >= docHeight - epsilon) {
+      const last = this.steps[this.steps.length - 1];
+      if (!last) return;
+
+      for (const step of this.steps) {
+        if (step !== last && step.isActive) {
+          step.isActive = false;
+          this.handleExit(step);
+        }
+      }
+
+      if (!last.isActive) {
+        last.isActive = true;
+        last.progress = 1;
+        this.handleEnter(last);
+      }
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Intersection handling (progress) via progress observers
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  private handleProgressIntersections(
+    entries: IntersectionObserverEntry[]
+  ): void {
+    for (const entry of entries) {
+      const target = entry.target as HTMLElement;
+      const step = this.stepMap.get(target);
+      if (!step) continue;
+
+      if (!entry.isIntersecting) continue;
+      if (!step.hasProgress) continue;
+      if (!step.isActive) continue;
+
+      const rawRatio = entry.intersectionRatio;
+      const prev = step.progress;
+      let next = rawRatio;
+
+      // Make progress monotonic per scroll direction:
+      //  - scrolling down: progress should not decrease
+      //  - scrolling up:   progress should not increase
+      if (this.direction === 'down' && next < prev) {
+        next = prev;
+      } else if (this.direction === 'up' && next > prev) {
+        next = prev;
+      }
+
+      // Clamp to [0, 1]
+      next = Math.min(1, Math.max(0, next));
+
+      if (Math.abs(next - prev) <= 0.001) continue;
+
+      step.progress = next;
+      this.handleProgress(step);
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Event + actions dispatch
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  private handleEnter(step: StepEntry): void {
+    const ctx: ActionContext = {
+      element: step.element,
+      index: step.index,
+      direction: this.direction,
+      chartId: step.chartId,
+      datasetId: step.datasetId,
+      parachart: this.parachart,
+    };
+
+    // Mark this step as visually active in the DOM
+    step.element.classList.add('para-active');
+
+    this.emit('stepEnter', ctx);
+
+    if (this.onStepEnter) {
+      this.onStepEnter(ctx);
+    }
+
+    // route enter actions through error-handling wrapper
+    if (step.hasEnter) {
+      this.runActionsForStep(step, step.enterActions, ctx);
+    }
+    if (this.isDebugEnabled) {
+      step.element.setAttribute('data-para-debug-state', 'enter');
+    }
+  }
+
+  private handleExit(step: StepEntry): void {
+    const ctx: ActionContext = {
+      element: step.element,
+      index: step.index,
+      direction: this.direction,
+      chartId: step.chartId,
+      datasetId: step.datasetId,
+      parachart: this.parachart,
+    };
+
+    // Remove the visual active marker from the DOM
+    step.element.classList.remove('para-active');
+
+    this.emit('stepExit', ctx);
+
+    if (this.onStepExit) {
+      this.onStepExit(ctx);
+    }
+
+    // route exit actions through error-handling wrapper ===
+
+    if (step.hasExit) {
+      this.runActionsForStep(step, step.exitActions, ctx);
+    }
+
+    if (this.isDebugEnabled) {
+      step.element.setAttribute('data-para-debug-state', 'exit');
+    }
+  }
+
+  private handleProgress(step: StepEntry): void {
+    const ctx: ActionContext = {
+      element: step.element,
+      index: step.index,
+      direction: this.direction,
+      progress: step.progress,
+      chartId: step.chartId,
+      datasetId: step.datasetId,
+      parachart: this.parachart,
+    };
+
+    this.emit('stepProgress', ctx);
+
+    if (this.onStepProgress) {
+      this.onStepProgress(ctx);
+    }
+
+    // route progress actions through error-handling wrapper
+
+    if (step.hasProgress) {
+      this.runActionsForStep(step, step.progressActions, ctx);
+    }
+  }
+  // use direct parachart.api method chaining instead of a registry
+
+  private runActions(actions: ParaAction[], ctx: ActionContext): void {
+    executeParaActionList(
+      actions,           // parsed AST
+      ctx.parachart.api  // root API object for method chaining
     );
   }
 
-  private getOffsetTop(node: Element): number {
-    const { top } = node.getBoundingClientRect();
-    const scrollTop = window.pageYOffset;
-    const clientTop = document.body.clientTop || 0;
-    return top + scrollTop - clientTop;
-  }
-
-  private parseOffset(x?: string | number): ParsedOffset {
-    if (typeof x === 'string' && x.indexOf('px') > 0) {
-      const v = +x.replace('px', '');
-      if (!isNaN(v)) return { format: 'pixels', value: v };
-      this.err('offset value must be in "px" format. Fallback to 0.5.');
-      return { format: 'percent', value: 0.5 };
-    } else if (typeof x === 'number' || (x != null && !isNaN(+x))) {
-      const numValue = typeof x === 'number' ? x : +x;
-      if (numValue > 1) this.err('offset value is greater than 1. Fallback to 1.');
-      if (numValue < 0) this.err('offset value is lower than 0. Fallback to 0.');
-      return { format: 'percent', value: Math.min(Math.max(0, numValue), 1) };
-    }
-    return { format: 'percent', value: 0.5 };
-  }
-
-  private getActions(element: HTMLElement): Action[] {
-    let actions: Action[] = [];
-    const targetActions = this.parseActions(element.dataset.paraAction);
-    actions.push(...targetActions);
-    const childActionElements = element.querySelectorAll('[data-para-action]');
-    const validChildElements = Array.from(childActionElements).filter((childElement) => {
-      const chartId = (childElement as HTMLElement).dataset.paraChartid;
-      return !chartId || chartId === this.chartId;
-    });
-    validChildElements.forEach((childElement) => {
-      const childActions = this.parseActions((childElement as HTMLElement).dataset.paraAction);
-      actions.push(...childActions);
-    });
-
-    return actions;
-  }
-
-  private parseActions(actionString: string | undefined): Action[] {
-    if (!actionString) return [];
-
-    const actions: Action[] = [];
-    const actionArray = actionString.split(')');
-
-    actionArray.forEach(actionItem => {
-      actionItem = actionItem.trim();
-      if (actionItem) {
-        const keyValueArray = actionItem.split('(');
-        const actionName = keyValueArray[0].trim();
-        const paramString = keyValueArray[1] ? keyValueArray[1].trim() : '';
-        const params = paramString ? paramString.split(',').map(p => p.trim()) : [];
-        actions.push({
-          action: actionName,
-          params: params
-        });
-      }
-    });
-
-    return actions;
-  }
-
-  private err(msg: string): void {
-    this.log.error(`scrollytelling: ${msg}`);
-  }
-
-  private createProgressThreshold(height: number, threshold: number): number[] {
-    const count = Math.ceil(height / threshold);
-    const t = [];
-    const ratio = 1 / count;
-    for (let i = 0; i < count + 1; i += 1) t.push(i * ratio);
-    return t;
-  }
-
-  private _resetExclusions(): void {
-    this.exclude = [];
-  }
-
-  on(event: ScrollyEvent, callback: Callback): this {
-    if (!this._events.has(event)) {
-      this._events.set(event, []);
-    }
-    this._events.get(event)!.push(callback);
-    return this;
-  }
-
-  once(event: ScrollyEvent, callback: Callback): this {
-    const wrapper: Callback = (response: CallbackResponse) => {
-      callback(response);
-      this.off(event, wrapper);
-    };
-    return this.on(event, wrapper);
-  }
-
-  off(event?: ScrollyEvent, callback?: Callback): this {
-    if (!event) {
-      this._events.clear();
-    } else if (!callback) {
-      this._events.delete(event);
-    } else {
-      const listeners = this._events.get(event);
-      if (listeners) {
-        const index = listeners.indexOf(callback);
-        if (index > -1) listeners.splice(index, 1);
-      }
-    }
-    return this;
-  }
-
-  private emit(event: ScrollyEvent, response: CallbackResponse): void {
-    const listeners = this._events.get(event);
-    if (listeners) {
-      listeners.forEach(callback => callback(response));
-    }
-  }
-
-  private _disconnectObserver(
-    observers: Record<string, { disconnect(): void }>
+  // wrap action execution with per-step error handling
+  private runActionsForStep(
+    step: StepEntry,
+    actions: ParaAction[],
+    ctx: ActionContext
   ): void {
-    Object.keys(observers).forEach((name) => observers[name].disconnect());
-  }
-  private _disconnectObservers(): void {
-    this.steps.forEach((s) => this._disconnectObserver(s.observers));
-  }
-
-  private _handleEnable(shouldEnable: boolean): void {
-    if (shouldEnable && !this.isEnabled) this._updateObservers();
-    if (!shouldEnable && this.isEnabled) this._disconnectObservers();
-    this.isEnabled = shouldEnable;
-  }
-
-  private _notifyProgress(element: Element, progress?: number): void {
-    const index = this.getIndex(element);
-    const step = this.steps[index];
-    if (progress !== undefined) step.progress = progress;
-    const response = { element, index, progress, direction: this.direction, actions: step.actions };
-    if (step.state === 'enter') this.emit('stepProgress', response);
-  }
-
-  private _notifyStepEnter(element: Element): void {
-    const index = this.getIndex(element);
-    const step = this.steps[index];
-    const response = { element, index, direction: this.direction, actions: step.actions };
-
-    step.direction = this.direction;
-    step.state = 'enter';
-
-    if (!this.exclude[index]) this.emit('stepEnter', response);
-    if (this.isTriggerOnce) this.exclude[index] = true;
-  }
-
-  private _notifyStepExit(element: Element): boolean {
-    const index = this.getIndex(element);
-    const step = this.steps[index];
-    if (!step.state) return false;
-
-    const response = { element, index, direction: this.direction, actions: step.actions };
-
-    if (this.isProgress) {
-      if (this.direction === 'down' && step.progress < 1) this._notifyProgress(element, 1);
-      else if (this.direction === 'up' && step.progress > 0) this._notifyProgress(element, 0);
-    }
-
-    step.direction = this.direction;
-    step.state = 'exit';
-    this.emit('stepExit', response);
-    return true;
-  }
-
-  private _handleScroll(): void {
-    const scrollTop = this.containerElement ? this.containerElement.scrollTop : window.pageYOffset;
-    if (this.currentScrollY !== scrollTop) {
-      this.currentScrollY = scrollTop;
-      if (this.currentScrollY > this.comparisonScrollY) {
-        this.direction = 'down';
-      }
-      else if (this.currentScrollY < this.comparisonScrollY) {
-        this.direction = 'up';
-      }
-      this.comparisonScrollY = this.currentScrollY;
+    try {
+      this.runActions(actions, ctx);
+    } catch (error) {
+      this.markStepAsError(step, error);
     }
   }
 
-  private _setupScrollListener(): void {
-    document.removeEventListener('scroll', this._handleScroll);
-    document.addEventListener('scroll', this._handleScroll, { passive: true });
-  }
+  private markStepAsError(step: StepEntry, error: unknown): void {
+    const el = step.element;
 
-  private _resizeStep(entries: ResizeObserverEntry[]): void {
-    if (entries.length === 0) return;
-    const entry = entries[0];
-    const index = this.getIndex(entry.target);
-    const step = this.steps[index];
-    const h = (entry.target as HTMLElement).offsetHeight;
-    if (h !== step.height) {
-      step.height = h;
-      this._disconnectObserver(step.observers);
-      this._updateResizeObserver(step);
-      this._updateStepObserver(step);
-      if (this.isProgress) this._updateProgressObserver(step);
-    }
-  }
+    // 1. Mark the element so CSS/debug UI can react
+    el.classList.add('para-error');
+    el.setAttribute('data-para-error', 'true');
 
-  private _intersectStep(entries: IntersectionObserverEntry[]): void {
-    if (entries.length === 0) return;
-    const entry = entries[0];
-    this._handleScroll();
-    const { isIntersecting, target } = entry;
-    if (isIntersecting) this._notifyStepEnter(target);
-    else this._notifyStepExit(target);
-  }
-
-  private _intersectProgress(entries: IntersectionObserverEntry[]): void {
-    if (entries.length === 0) return;
-    const entry = entries[0];
-    const index = this.getIndex(entry.target);
-    const step = this.steps[index];
-    const { isIntersecting, intersectionRatio, target } = entry;
-    if (isIntersecting && step.state === 'enter') {
-      this._notifyProgress(target, intersectionRatio);
-    }
-  }
-
-  private _updateResizeObserver(step: ScrollyStep): void {
-    const observer = new ResizeObserver(this._resizeStep);
-    observer.observe(step.node);
-    step.observers.resize = observer;
-  }
-
-  private _updateResizeObservers(): void {
-    this.steps.forEach((s) => this._updateResizeObserver(s));
-  }
-
-  private _updateStepObserver(step: ScrollyStep): void {
-    const h = window.innerHeight;
-    const off = step.offset || this.globalOffset;
-    const factor = off.format === 'pixels' ? 1 : h;
-    const offset = off.value * factor;
-    const marginTop = step.height / 2 - offset;
-    const marginBottom = step.height / 2 - (h - offset);
-    const rootMargin = `${marginTop}px 0px ${marginBottom}px 0px`;
-    const root = this.rootElement;
-
-    const threshold = 0.5;
-    const options = { rootMargin, threshold, root };
-    const observer = new IntersectionObserver(this._intersectStep, options);
-
-    observer.observe(step.node);
-    step.observers.step = observer;
-  }
-
-  private _updateStepObservers(): void {
-    this.steps.forEach((s) => this._updateStepObserver(s));
-  }
-
-  private _updateProgressObserver(step: ScrollyStep): void {
-    const h = window.innerHeight;
-    const off = step.offset || this.globalOffset;
-    const factor = off.format === 'pixels' ? 1 : h;
-    const offset = off.value * factor;
-    const marginTop = -offset + step.height;
-    const marginBottom = offset - h;
-    const rootMargin = `${marginTop}px 0px ${marginBottom}px 0px`;
-
-    const threshold = this.createProgressThreshold(step.height, this.progressThreshold);
-    const options = { rootMargin, threshold };
-    const observer = new IntersectionObserver(this._intersectProgress, options);
-
-    observer.observe(step.node);
-    step.observers.progress = observer;
-  }
-
-  private _updateProgressObservers(): void {
-    this.steps.forEach((s) => this._updateProgressObserver(s));
-  }
-
-  private _updateObservers(): void {
-    this._disconnectObservers();
-    this._updateResizeObservers();
-    this._updateStepObservers();
-    if (this.isProgress) this._updateProgressObservers();
-  }
-
-  setup({
-    step,
-    parent,
-    offset = 0.5,
-    threshold = 4,
-    progress = false,
-    once = false,
-    container = undefined,
-    root = null,
-  }: ScrollyOptions): Scrollyteller {
-    this._setupScrollListener();
-
-    const parentElement = (typeof step === 'string' && parent)
-      ? document.querySelector(parent) || document
-      : document;
-
-    // this.steps = this.selectAll(step, parentElement).map((node, index) => ({
-    this.steps = this.getChartSteps(step, parentElement).map((node, index) => ({
-      index,
-      direction: undefined,
-      height: (node as HTMLElement).offsetHeight,
-      node,
-      observers: {},
-      offset: this.parseOffset((node as HTMLElement).dataset.offset),
-      actions: this.getActions(node as HTMLElement),
-      top: this.getOffsetTop(node),
-      progress: 0,
-      state: undefined,
-    }));
-
-    if (!this.steps.length) {
-      this.log.info('scrollytelling: no step elements found');
-      return this;
+    // 2. Debug visibility
+    if (this.isDebugEnabled) {
+      el.setAttribute('data-para-error-message', String(error));
     }
 
-    this.isProgress = progress;
-    this.isTriggerOnce = once;
-    this.progressThreshold = Math.max(1, +threshold);
-    this.globalOffset = this.parseOffset(offset);
-    this.containerElement = container;
-    this.rootElement = root;
-
-    this.off();
-    this._resetExclusions();
-    this.indexSteps(this.steps);
-    this._handleEnable(true);
-    return this;
+    // 3. Print a clear, informative console error
+    // eslint-disable-next-line no-console
+    console.error(
+      '%cParaActions Error%c in step %o\nError: %o',
+      'background:#B00020;color:white;padding:2px 4px;border-radius:3px;',
+      '',
+      el,
+      error
+    );
   }
 
-  enable(): Scrollyteller {
-    this._handleEnable(true);
-    return this;
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Global debug trigger line
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  private createDebugLine(): void {
+    if (!this.isDebugEnabled) return;
+    if (this.debugLineElement) return;
+
+    const el = document.createElement('div');
+    el.className = 'paracharts-scrolly-debug-line';
+    el.style.position = 'fixed';
+    el.style.left = '0';
+    el.style.width = '100%';
+    el.style.height = '0';
+    el.style.borderTop = '2px dashed rgba(255, 0, 0, 0.8)';
+    el.style.zIndex = '9999';
+    el.style.pointerEvents = 'none';
+
+    const label = document.createElement('span');
+    label.style.position = 'absolute';
+    label.style.left = '4px';
+    label.style.top = '4px';
+    label.style.fontFamily = 'monospace';
+    label.style.fontSize = '11px';
+    label.style.background = 'rgba(255, 255, 255, 0.9)';
+    label.style.padding = '2px 4px';
+    label.style.borderRadius = '2px';
+    label.textContent = 'Scrolly offset (global)';
+    el.appendChild(label);
+
+    document.body.appendChild(el);
+    this.debugLineElement = el;
   }
 
-  disable(): Scrollyteller {
-    this._handleEnable(false);
-    return this;
-  }
-
-  destroy(): Scrollyteller {
-    this._handleEnable(false);
-    this.off();
-    this._resetExclusions();
-    document.removeEventListener('scroll', this._handleScroll);
-    return this;
-  }
-
-  resize(): Scrollyteller {
-    this._updateObservers();
-    return this;
-  }
-
-  get offset(): number {
-    return this.globalOffset.value;
-  }
-
-  set offset(value: string | number) {
-    this.globalOffset = this.parseOffset(value);
-    this._updateObservers();
+  private updateDebugLinePosition(): void {
+    if (!this.isDebugEnabled || !this.debugLineElement) return;
+    this.debugLineElement.style.top = `${this.offsetPx}px`;
   }
 }
