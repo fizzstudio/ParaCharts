@@ -24,7 +24,7 @@ export function familyCatalogMapMulti(family: ChartTypeFamily, multi: boolean): 
     return CHART_FAMILY_MEMBERS[family].includes(listing.type as ChartType) 
       && listing.multi === multi && checkExternal(listing);
   });
-  const map = {};
+  const map: Record<string, CatalogListing> = {};
   for (const listing of catalog) {
     map[listing.selectorTitle] = listing;
   }
@@ -35,7 +35,7 @@ export function familyCatalogMap(family: ChartTypeFamily): Record<string, Catalo
   const catalog = CHART_CATALOG.filter((listing) => {
     return CHART_FAMILY_MEMBERS[family].includes(listing.type as ChartType) && checkExternal(listing);
   });
-  const map = {};
+  const map: Record<string, CatalogListing> = {};
   for (const listing of catalog) {
     map[listing.selectorTitle] = listing;
   }
@@ -46,7 +46,7 @@ export function familyManifestPathsMap(family: ChartTypeFamily, multi?: boolean)
   const catalogMap = multi === undefined
     ? familyCatalogMap(family)
     : familyCatalogMapMulti(family, multi);
-  const map = {};
+  const map: Record<string, string> = {};
   for (const selectorTitle in catalogMap) {
     map[selectorTitle] = catalogMap[selectorTitle].path;
   }
