@@ -353,9 +353,6 @@ export class Label extends View {
     } else {
       this._textLines = [];
       const numChars = text.getNumberOfChars();
-      if (text.getNumberOfChars() == 0){
-        return [0, 0] as [number, number];
-      }
       
       top = text.getExtentOfChar(0).y;
       bottom = text.getExtentOfChar(0).y + text.getExtentOfChar(0).height;
