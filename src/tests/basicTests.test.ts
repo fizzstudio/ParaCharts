@@ -1,4 +1,4 @@
-import { test, expect, describe } from 'vitest';
+import { test, expect, describe, afterEach } from 'vitest';
 import { getParachart, getChartApplication, getAriaLive } from './helpers';
 import { userEvent } from '@vitest/browser/context';
 import { waitFor } from '@testing-library/dom';
@@ -14,6 +14,11 @@ const chartTypes = [
 ];
 
 describe('Chart Rendering', () => {
+
+  afterEach(async () => {
+    document.body.innerHTML = '';
+    await new Promise(resolve => setTimeout(resolve, 100));
+  });
 
   chartTypes.forEach(({ type, manifest }) => {
     const testFn = (type === 'histogram' || type === 'pie') ? test.skip : test;
