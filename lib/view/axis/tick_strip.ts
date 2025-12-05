@@ -31,11 +31,13 @@ export interface TickStripOptions {
   orientation: AxisOrientation;
   length: number;
   tickCount: number;
-  isInterval: boolean;
+  // isInterval: boolean;
   isDrawOverhang: boolean; // the axis line draws the overhang, not us
   tickStep: number;
   orthoAxisPosition: VertCardinalDirection | HorizCardinalDirection;
   zeroIndex: number;
+  isChartIntertick: boolean;
+  isFacetIndep: boolean;
 }
 
 /**
@@ -45,7 +47,6 @@ export abstract class TickStrip extends Container(View) {
 
   declare protected _parent: Layout;
 
-  protected _count: number;
   protected _interval!: number;
   protected _indices: number[] = [];
 
@@ -57,11 +58,6 @@ export abstract class TickStrip extends Container(View) {
     super(paraview);
     // XXX this results in creating the rules twice, which is harmless, but stupid
     this._updateSizeFromLength(this._options.length);
-    //this._computeCount();
-    this._count = this._options.tickCount;
-    if (this._options.isInterval) {
-      //this._count++;
-    }
     this._computeInterval();
   }
 
@@ -72,19 +68,8 @@ export abstract class TickStrip extends Container(View) {
     this._createTicks();
   }
 
-  // protected _computeCount() {
-  //   // XXX CIRCULAR DEPENDENCY between this and computeInterval()
-  //   const intervalCount = this._length / this._interval;
-  //   this._count = Math.round(intervalCount);
-  //   if (this._options.isInterval) {
-  //     this._count++;
-  //   }
-  // }
-
   protected _computeInterval() {
-    const n = this._options.isInterval
-      ? this._count
-      : this._count - 1;
+    const n = this._options.tickCount - 1;
     this._interval = this._length/(n/this._options.tickStep);
   }
 
@@ -133,10 +118,17 @@ export class HorizTickStrip extends TickStrip {
   constructor(paraview: ParaView,
     _axisSettings: OrientedAxisSettings<AxisOrientation>,
     _majorModulus: number,
-    _options: TickStripOptions
+    _options: TickStripOptions,
   ) {
     super(paraview, _axisSettings, _majorModulus, _options);
     this._canWidthFlex = true;
+  }
+
+  protected _computeInterval() {
+    const n = (this._options.isChartIntertick && this._options.isFacetIndep)
+      ? this._options.tickCount
+      : this._options.tickCount - 1;
+    this._interval = this._length/(n/this._options.tickStep);
   }
 
   computeSize() {
@@ -173,7 +165,8 @@ export class HorizTickStrip extends TickStrip {
         ? tickLength + this._axisSettings.ticks.padding
         : 0;
     }
-    this._indices = mapn(this._count + (this._options.isInterval ? 1 : 0), i => i)
+    const isXIntertick = this._options.isChartIntertick && this._options.isFacetIndep;
+    this._indices = mapn(this._options.tickCount + (isXIntertick ? 1 : 0), i => i)
       .filter(i => i % this._options.tickStep === 0);
     if (!this.paraview.store.settings.grid.isDrawVertAxisOppositeLine) {
       this._indices = isOrthoEast
@@ -182,9 +175,12 @@ export class HorizTickStrip extends TickStrip {
     }
     // skip axis line tick
     this._indices = this._indices.slice(1);
+    const xOffset = (this._axisSettings.ticks.isOnDatapoint && isXIntertick)
+      ? this._interval/2
+      : 0;
     this._ruleXs = this._indices.map(i => isOrthoEast
       ? this.width - i*this._interval
-      : i*this._interval);
+      : i*this._interval - xOffset);
     this._indices.forEach((idx, i) => {
       this.append(new HorizTick(
         this._axisSettings.position as VertCardinalDirection,
@@ -224,6 +220,13 @@ export class VertTickStrip extends TickStrip {
     this._canHeightFlex = true;
   }
 
+  protected _computeInterval() {
+    const n = (this._options.isChartIntertick && this._options.isFacetIndep)
+      ? this._options.tickCount
+      : this._options.tickCount - 1;
+    this._interval = this._length/(n/this._options.tickStep);
+  }
+
   computeSize() {
     return [
       // NB! The grid lines DON'T COUNT toward the width!
@@ -253,7 +256,8 @@ export class VertTickStrip extends TickStrip {
     const isNorth = this._options.orthoAxisPosition === 'north';
     const tickLength = this._axisSettings.ticks.length;
     this._ruleX = tickLength;
-    this._indices = mapn(this._count, i => i);
+    const isXIntertick = this._options.isChartIntertick && this._options.isFacetIndep;
+    this._indices = mapn(this._options.tickCount, i => i);
     if (!this.paraview.store.settings.grid.isDrawHorizAxisOppositeLine) {
       this._indices = isNorth
         ? this._indices.slice(1)
@@ -262,9 +266,12 @@ export class VertTickStrip extends TickStrip {
     if (this._axisSettings.position === 'east') {
       this._ruleX = 0;
     }
+    const yOffset = (this._axisSettings.ticks.isOnDatapoint && isXIntertick)
+      ? this._interval/2
+      : 0;
     this._ruleYs = this._indices.map(i => isNorth
       ? this.height - i*this._interval
-      : i*this._interval);
+      : i*this._interval + yOffset);
     this._indices.forEach(i => {
       this.append(new VertTick(
         this._axisSettings.position as HorizCardinalDirection,

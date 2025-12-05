@@ -35,7 +35,7 @@ export interface AxisLabelInfo {
 }
 
 export function computeLabels(
-  start: number, end: number, isPercent: boolean, isGrouping = true
+  start: number, end: number, isPercent: boolean, isGrouping = true, stagger = false
 ): AxisLabelInfo {
   const minDec = new Decimal(start);
   const maxDec = new Decimal(end);
@@ -56,11 +56,17 @@ export function computeLabels(
   const labels = new Array(quantizedMax.sub(quantizedMin).div(quantizedInterval).toNumber() + 1)
     .fill(0)
     .map((_, i) => fmt.format(+quantizedMin.add(quantizedInterval.mul(i))) + (isPercent ? '%' : ''));
+  const labelTiers = stagger
+    ? [
+        labels.map((label, i) => i % 2 === 0 ? label : ''),
+        labels.map((label, i) => i % 2 === 1 ? label : '')
+      ]
+    : [labels];
   return {
     min: quantizedMin.toNumber(),
     max: quantizedMax.toNumber(),
     range: quantizedMax.sub(quantizedMin).toNumber(),
-    labelTiers: [labels],
+    labelTiers,
   };
 }
 

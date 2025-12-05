@@ -23,10 +23,14 @@ import { NavNode } from '../view/layers';
 import { ChartType } from '@fizz/paramanifest';
 import { PlaneChartInfo, SONI_RIFF_SPEEDS } from './plane_chart';
 import { AxisInfo, loopParaviewRefresh } from '../common';
-import { Datapoint, PlaneDatapoint } from '@fizz/paramodel';
+import { computeAxisRange } from './plane_chart';
+
+import { Datapoint, PlaneDatapoint, Box } from '@fizz/paramodel';
 
 import { formatXYDatapointX } from '@fizz/parasummary';
 import { SoniPoint } from '../audio/soni_point';
+import { Datatype } from '@fizz/paramanifest';
+import { Interval } from '@fizz/chart-classifier-utils';
 
 export class WaterfallChartInfo extends PlaneChartInfo {
   protected _cumulativeTotals!: number[];
@@ -45,12 +49,13 @@ export class WaterfallChartInfo extends PlaneChartInfo {
   }
 
   protected _init(): void {
-    super._init();
+    // XXX HACK Cumulative totals must be computed before calling _init()
     // Assume the final point is a total column
     this._cumulativeTotals = this._store.model!.series[0].datapoints.slice(0, -1).map(dp =>
       this._cumulativeTotalForDatapoint(dp));
     this._cumulativeTotals.push(this._cumulativeTotals.at(-1)!);
-    const xValues = this._store.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'value'));
+    super._init();
+    const xValues = this._store.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'raw'));
     const yValues: number[] = [...this._cumulativeTotals];
     // this._store.model!.series[0].datapoints.forEach((dp, i) => {
     //   yValues.push(i === 0
@@ -59,12 +64,28 @@ export class WaterfallChartInfo extends PlaneChartInfo {
     //   );
     // });
     yValues.push(0);
-    this._axisInfo = new AxisInfo(this._store, {
-      xTiers: [xValues],
-      yValues: yValues,
-      yMin: Math.min(0, Math.min(...yValues)),
-      isXInterval: true,
-    });
+    // this._axisInfo = new AxisInfo(this._store, {
+    //   xTiers: [xValues],
+    //   yValues: yValues,
+    //   yMin: Math.min(0, Math.min(...yValues)),
+    //   isXInterval: true,
+    // });
+  }
+
+  protected _facetTickLabelValues(facetKey: string): string[] {
+    if (facetKey === 'x') {
+      return this._store.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'raw'));
+    } else if (facetKey === 'y') {
+      return [...this._cumulativeTotals.map(ct => ct.toString())];
+    } else {
+      throw new Error("facet key must be 'x' or 'y'");
+    }
+  }
+
+  protected _numericYAxisRange(facetKey: string): Interval {
+    return facetKey === 'x'
+      ? super._numericYAxisRange(facetKey)
+      : computeAxisRange(0, Math.max(...this._cumulativeTotals))
   }
 
   navCursorDidChange(cursor: NavNode): void {

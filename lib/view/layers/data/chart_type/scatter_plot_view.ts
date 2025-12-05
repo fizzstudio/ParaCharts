@@ -8,7 +8,7 @@ import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 import { strToId } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
-import { ScatterChartInfo } from '../../../../chart_types';
+import { PlaneChartInfo, ScatterChartInfo } from '../../../../chart_types';
 import { fixed } from '../../../../common/utils';
 import { Popup } from '../../../popup';
 
@@ -127,10 +127,10 @@ class ScatterPointView extends PointDatapointView {
   isOutlier: boolean = false;
 
   computeX() {
-    const axisInfo = this.chart.chartInfo.axisInfo!;
+    const xInterval = (this.chart.chartInfo as PlaneChartInfo).xInterval!;
     // Scales points in proportion to the data range
-    const xTemp = (this.datapoint.facetValueNumericized('x')! - axisInfo.xLabelInfo.min!)
-      / axisInfo.xLabelInfo.range!;
+    const xTemp = (this.datapoint.facetValueNumericized('x')! - xInterval.start)
+      / (xInterval.end - xInterval.start);
     const parentWidth: number = this.chart.parent.width;
     return parentWidth * xTemp;
   }

@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
-import { type BaseChartInfo, chartInfoClasses } from '../chart_types';
+import { type BaseChartInfo, chartInfoClasses, PlaneChartInfo } from '../chart_types';
 import { View, Container, Padding } from './base_view';
 import { Label } from './label';
 import { type CardinalDirection, ParaStore, Setting } from '../store';
@@ -119,17 +119,19 @@ export class DocumentView extends Container(View) {
 
     // const horizAxisPos = this._store.settings.axis.horiz.position;
 
-    const horizFacet = this.chartInfo.axisInfo?.getFacetForOrientation('horiz');
-    const vertFacet = this.chartInfo.axisInfo?.getFacetForOrientation('vert');
-    const axisInfo = this._chartInfo.axisInfo;
+    const horizFacet = this.chartInfo.getFacetForOrientation('horiz');
+    const vertFacet = this.chartInfo.getFacetForOrientation('vert');
+    //const axisInfo = this._chartInfo.axisInfo;
 
     // Initially create axes to compute the size of each axis
     // along the shorter dimension
-    if (this._store.settings.axis.horiz.isDrawAxis && axisInfo) {
-      this._createHorizAxis(horizFacet!, axisInfo!, this._width);
+    if (this._store.settings.axis.horiz.isDrawAxis && horizFacet) {
+      this._createHorizAxis(horizFacet!, this._chartInfo as PlaneChartInfo, this._width);
+      // console.log('H-AXIS HEIGHT', this._horizAxis!.height);
     }
-    if (this._store.settings.axis.vert.isDrawAxis && axisInfo) {
-      this._createVertAxis(vertFacet!, axisInfo!, this._height);
+    if (this._store.settings.axis.vert.isDrawAxis && vertFacet) {
+      this._createVertAxis(vertFacet!, this._chartInfo as PlaneChartInfo, this._height);
+      // console.log('V-AXIS WIDTH', this._vertAxis!.width);
     }
 
     // Create any west legend bc it affects the position of the vert axis
@@ -142,8 +144,8 @@ export class DocumentView extends Container(View) {
     }
 
     // Recreate the axes using the size info computed above
-    if (this._store.settings.axis.vert.isDrawAxis && axisInfo) {
-      this._createVertAxis(vertFacet!, axisInfo!, this._height
+    if (this._store.settings.axis.vert.isDrawAxis && vertFacet) {
+      this._createVertAxis(vertFacet!, this._chartInfo as PlaneChartInfo, this._height
         - (this._titleLabel?.paddedHeight || 0)
         - (this._horizAxis?.height || 0));
       this.append(this._vertAxis!);
@@ -173,8 +175,8 @@ export class DocumentView extends Container(View) {
       this.createLegend('east');
     }
 
-    if (this._store.settings.axis.horiz.isDrawAxis && axisInfo) {
-      this._createHorizAxis(horizFacet!, axisInfo!, this._width
+    if (this._store.settings.axis.horiz.isDrawAxis && horizFacet) {
+      this._createHorizAxis(horizFacet!, this._chartInfo as PlaneChartInfo, this._width
         - (this._vertAxis?.width ?? 0)
         - (this._directLabelStrip?.width ?? 0)
         - (this._legends.east?.width ?? this._legends.west?.width ?? 0));
@@ -251,20 +253,20 @@ export class DocumentView extends Container(View) {
 
   }
 
-  protected _createHorizAxis(facet: Facet, axisInfo: AxisInfo, length: number) {
+  protected _createHorizAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
     this._horizAxis?.remove();
-    this._horizAxis = new HorizAxis(this.paraview, facet, axisInfo, length);
-    const horizAxisFacet = this._chartInfo.axisInfo!.horizFacet;
+    this._horizAxis = new HorizAxis(this.paraview, facet, chartInfo, length);
+    const horizAxisFacet = this._chartInfo.horizFacet!;
     this._horizAxis.setAxisLabelText(horizAxisFacet.label);
     this._horizAxis.createComponents();
     this._horizAxis.layoutComponents();
     this._horizAxis.updateSize();
   }
 
-  protected _createVertAxis(facet: Facet, axisInfo: AxisInfo, length: number) {
+  protected _createVertAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
     this._vertAxis?.remove();
-    this._vertAxis = new VertAxis(this.paraview, facet, axisInfo, length);
-    const vertAxisFacet = this._chartInfo.axisInfo!.vertFacet;
+    this._vertAxis = new VertAxis(this.paraview, facet, chartInfo, length);
+    const vertAxisFacet = this._chartInfo.vertFacet!;
     this._vertAxis.setAxisLabelText(vertAxisFacet.label);
     this._vertAxis.createComponents();
     this._vertAxis.layoutComponents();
