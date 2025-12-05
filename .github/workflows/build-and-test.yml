@@ -20,10 +20,11 @@ jobs:
           node-version: '22'
 
       - name: Setup npm auth
-        run: echo "//npm.fizz.studio/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" >> .npmrc
+        run: |
+          echo "//npm.fizz.studio/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" >> .npmrc
 
       - name: Install dependencies
-        run: npm i
+        run: npm ci
 
       - name: Build
         run: |
