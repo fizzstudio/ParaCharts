@@ -126,7 +126,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
         pointerLeave: (e) => {
           this.paraview.store.settings.chart.isShowPopups
             && this.paraview.store.settings.popup.activation === "onHover"
-            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
+            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.paraview.store.removePopup(this.id) : undefined;
         }
       });
       this.append(label);
@@ -134,10 +134,6 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   }
 
   addPopup(text: string, index: number): void{}
-  removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    this.paraview.requestUpdate()
-  }
 
   updateTickLabelIds() {
     // const xSeries = todo().controller.model!.indepVar;

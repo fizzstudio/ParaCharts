@@ -161,13 +161,13 @@ export class ParaControlPanel extends ParaComponent {
             && !this.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(this.paraChart.isControlPanelOpen ? true : false) : undefined
         })
         toggleButton.addEventListener("pointerleave", () => {
-          this.removePopup(this.id)
+          this.paraChart.paraView.store.removePopup(this.id);
         })
         toggleButton.addEventListener("click", () => {
-          this.removePopup(this.id)
-          this.addButtonListeners()
+          this.paraChart.paraView.store.removePopup(this.id);
+          this.addButtonListeners();
         })
-        clearTimeout(timestamp)
+        clearTimeout(timestamp);
       }
     };
     loop()
@@ -250,7 +250,7 @@ export class ParaControlPanel extends ParaComponent {
     let x = 0 - this.paraChart.paraView.documentView!.chartLayers.x
     let popup = new Popup(paraview,
       {
-        text: text ?? "",
+        text: text,
         x: x,
         y: y + (isOpen ? 26.4 : 0),
         id: this.id,
@@ -263,11 +263,6 @@ export class ParaControlPanel extends ParaComponent {
         shape: "boxWithArrow"
       })
     paraview.store.popups.push(popup)
-  }
-
-  removePopup(id: string) {
-    this.paraChart.paraView.store.popups.splice(this.paraChart.paraView.store.popups.findIndex(p => p.id === id), 1)
-    this.paraChart.paraView.requestUpdate()
   }
 
   render() {

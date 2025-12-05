@@ -172,10 +172,10 @@ class ScatterPointView extends PointDatapointView {
       strokeWidth: this.paraview.store.settings.chart.symbolStrokeWidth,
       lighten: true,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.addPopup() : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.removePopup(this.id) : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.paraview.store.removePopup(this.id) : undefined
       },
     });
     this._symbol.role = 'datapoint'
@@ -197,22 +197,6 @@ class ScatterPointView extends PointDatapointView {
       return this.clusterID!
     }
     return super.color
-  }
-
-  addPopup() {
-    let popup = new Popup(this.paraview,
-      {
-        text: this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar'),
-        x: this.x,
-        y: this.y,
-        id: this.id,
-        color: this.color,
-        points: [this]
-      },
-      {
-        shape: "boxWithArrow"
-      })
-    this.paraview.store.popups.push(popup)
   }
 }
 

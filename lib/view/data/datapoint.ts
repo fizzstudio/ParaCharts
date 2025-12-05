@@ -11,6 +11,8 @@ import { svg, nothing, TemplateResult } from 'lit';
 import { formatBox } from '@fizz/parasummary';
 import { Datapoint } from '@fizz/paramodel';
 import { Label } from '../label';
+import { Popup, ShapeTypes } from '../popup';
+import { PastryPlotView, RadialDatapointParams } from '../layers';
 
 /**
  * Mapping of datapoint properties to values.
@@ -84,10 +86,10 @@ export class DatapointView extends DataView {
 
   get selectedMarker(): Shape {
     return new RectShape(this.paraview, {
-      width: this._width/2,
-      height: this._width/2,
-      x: this._x - this._width/4,
-      y: this._y - this._width/4,
+      width: this._width / 2,
+      height: this._width / 2,
+      x: this._x - this._width / 4,
+      y: this._y - this._width / 4,
       fill: 'none',
       stroke: 'black',
       strokeWidth: 2,
@@ -188,7 +190,7 @@ export class DatapointView extends DataView {
   }
 
   protected _createId(..._args: any[]): string {
-    const jimIndex = this._parent.modelIndex*this._series.length + this.index + 1;
+    const jimIndex = this._parent.modelIndex * this._series.length + this.index + 1;
     const id = this.paraview.store.jimerator!.jim.selectors[`datapoint${jimIndex}`].dom as string;
     // don't include the '#' from JIM
     return id.slice(1);
@@ -204,7 +206,7 @@ export class DatapointView extends DataView {
   }
 
   /** Compute and set `x` and `y` */
-  computeLocation() {}
+  computeLocation() { }
 
   /** Do any other layout (which may depend on the location being set) */
   completeLayout() {
@@ -291,7 +293,7 @@ export class DatapointView extends DataView {
   protected get _symbolColor() {
     //return this.chart.chartInfo.isHighlighted(this.seriesKey, this.index) ? -2 as number :
     return this.paraview.store.isVisited(this.seriesKey, this.index) ? -1 as number :
-           this.color; //undefined; // set the color so the highlights layer can clone it
+      this.color; //undefined; // set the color so the highlights layer can clone it
   }
 
   protected _contentUpdateShapes() {
@@ -339,11 +341,43 @@ export class DatapointView extends DataView {
     return this.datapoint.seriesKey === other.datapoint.seriesKey && this.datapoint.datapointIndex === other.datapoint.datapointIndex;
   }
 
-  addPopup(text?: string){}
-
-  removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    this.paraview.requestUpdate()
+  addDatapointPopup(text?: string) {
+    let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
+    if (this.paraview.store.model!.multi) {
+      datapointText = `${this.series.getLabel()} ${datapointText}`
+    }
+    let x = this.x
+    let y = this.y
+    let shape = "boxWithArrow"
+    if (this.paraview.store.type == 'bar' || this.paraview.store.type == 'column') {
+      x = this.x + this.width / 2
+      shape = this.paraview.store.settings.popup.activation === 'onHover' ? "box" : "boxWithArrow"
+    }
+    if (this.paraview.store.type == 'pie' || this.paraview.store.type == 'donut') {
+      let chart = this.chart as PastryPlotView
+      //@ts-ignore
+      let params = this._params as RadialDatapointParams;
+      let angle = 2 * Math.PI - ((params.accum * 2 * Math.PI) + (params.percentage * Math.PI) - (chart.settings.orientationAngleOffset * 2 * Math.PI / 360))
+      x = this.x + chart.radius * (1 - chart.settings.annularThickness / 2) * Math.cos(angle)
+      y = this.y - chart.radius * (1 - chart.settings.annularThickness / 2) * Math.sin(angle)
+      shape = "box"
+    }
+    let popup = new Popup(this.paraview,
+      {
+        text: text ?? datapointText,
+        x: x,
+        y: this.y,
+        id: this.id,
+        color: this.color,
+        points: [this],
+        rotationExempt: this.paraview.store.type == 'bar' ? false : true,
+        angle: this.paraview.store.type == 'bar' ? -90 : 0
+      },
+      { shape: shape as ShapeTypes })
+    this.paraview.store.popups.push(popup)
+    this._popup = popup;
   }
+
+
 
 }
