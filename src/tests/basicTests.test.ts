@@ -1,28 +1,18 @@
-import { test, expect } from 'vitest';
-// import { getParachart, getChartApplication, getAriaLive } from './helpers';
-// import { userEvent } from '@vitest/browser/context';
-// import { waitFor } from '@testing-library/dom';
+import { test, expect, describe } from 'vitest';
+import { getParachart, getChartApplication, getAriaLive } from './helpers';
+import { userEvent } from '@vitest/browser/context';
+import { waitFor } from '@testing-library/dom';
 
-// const testFileUrl = new URL(import.meta.url);
-// const projectRoot = testFileUrl.pathname.split('/src/tests/')[0];
-// const manifestBase = `${projectRoot}/node_modules/@fizz/chart-data/data/manifests`;
+const chartTypes = [
+  { type: 'bar', manifest: '/node_modules/@fizz/chart-data/data/manifests/autogen/bar-multi/bar-multi-manifest-149.json' },
+  { type: 'line', manifest: '/node_modules/@fizz/chart-data/data/manifests/autogen/line-multi/line-multi-manifest-16.json' },
+  { type: 'scatter', manifest: '/node_modules/@fizz/chart-data/data/manifests/scatter-manifest-iris-petal.json' },
+  { type: 'pie', manifest: '/node_modules/@fizz/chart-data/data/manifests/pie-manifest-dark-matter.json' },
+  { type: 'column', manifest: '/node_modules/@fizz/chart-data/data/manifests/autogen/bar-multi/bar-multi-manifest-14.json' },
+  { type: 'lollipop', manifest: '/node_modules/@fizz/chart-data/data/manifests/autogen/bar-multi/bar-multi-manifest-14.json' },
+  { type: 'stepline', manifest: '/node_modules/@fizz/chart-data/data/manifests/autogen/line-multi/line-multi-manifest-16.json' },
+];
 
-// const chartTypes = [
-//   { type: 'bar', manifest: `${manifestBase}/autogen/bar-multi/bar-multi-manifest-149.json` },
-//   { type: 'line', manifest: `${manifestBase}/autogen/line-multi/line-multi-manifest-16.json` },
-//   { type: 'scatter', manifest: `${manifestBase}/scatter-manifest-iris-petal.json` },
-//   { type: 'pie', manifest: `${manifestBase}/pie-manifest-dark-matter.json` },
-//   { type: 'column', manifest: `${manifestBase}/autogen/bar-multi/bar-multi-manifest-14.json` },
-//   { type: 'lollipop', manifest: `${manifestBase}/autogen/bar-multi/bar-multi-manifest-14.json` },
-//   { type: 'stepline', manifest: `${manifestBase}/autogen/line-multi/line-multi-manifest-16.json` },
-// ];
-
-// Placeholder test to verify CI pipeline is working
-test('placeholder test; always passes', () => {
-  expect(true).toBe(true);
-});
-
-/*
 describe('Chart Rendering', () => {
 
   chartTypes.forEach(({ type, manifest }) => {
@@ -45,7 +35,6 @@ describe('Chart Rendering', () => {
     });
   });
 });
-*/
 
 /*
 describe('ARIA Label', () => {
