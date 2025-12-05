@@ -534,7 +534,7 @@ export class Bar extends PlaneDatapointView {
       height: this._height,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.addPopup() : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
       },
       pointerMove: (e) => {
         if (this._popup) {
@@ -557,7 +557,7 @@ export class Bar extends PlaneDatapointView {
         }
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.removePopup(this.id) : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.paraview.store.removePopup(this.id) : undefined
       },
     }));
     super._createShapes();

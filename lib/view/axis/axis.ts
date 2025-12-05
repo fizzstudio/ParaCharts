@@ -267,7 +267,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       pointerLeave: (e) => {
         this.paraview.store.settings.chart.isShowPopups
           && this.paraview.store.settings.popup.activation === "onHover"
-          && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.removePopup(this.id) : undefined;
+          && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.paraview.store.removePopup(this.id) : undefined;
       }
     });
     this._axisTitle.padding = this._getAxisTitlePadding();
@@ -289,11 +289,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       })
     this.paraview.store.popups.push(popup)
     this._popup = popup;
-  }
-
-  removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    this.paraview.requestUpdate()
   }
 
   protected abstract _appendTitle(): void;

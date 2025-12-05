@@ -86,7 +86,7 @@ export class LinePlotView extends PointPlotView {
           nearestPoint = nearestPoint.withCousins.sort((a, b) => Math.abs(a.y - coords.y) - Math.abs(b.y - coords.y))[0]
         }
         this.paraview.store.clearPopups()
-        nearestPoint.addPopup()
+        nearestPoint.addDatapointPopup()
       }
 
     }

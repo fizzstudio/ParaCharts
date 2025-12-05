@@ -341,7 +341,7 @@ export class DatapointView extends DataView {
     return this.datapoint.seriesKey === other.datapoint.seriesKey && this.datapoint.datapointIndex === other.datapoint.datapointIndex;
   }
 
-  addPopup(text?: string) {
+  addDatapointPopup(text?: string) {
     let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
     if (this.paraview.store.model!.multi) {
       datapointText = `${this.series.getLabel()} ${datapointText}`
@@ -378,9 +378,6 @@ export class DatapointView extends DataView {
     this._popup = popup;
   }
 
-  removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    this.paraview.requestUpdate()
-  }
+
 
 }
