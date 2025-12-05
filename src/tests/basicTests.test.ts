@@ -16,8 +16,11 @@ const chartTypes = [
 describe('Chart Rendering', () => {
 
   afterEach(async () => {
+    const parachart = document.querySelector('para-chart') as any;
+    if (parachart?.ready) {
+      await parachart.ready.catch(() => {});
+    }
     document.body.innerHTML = '';
-    await new Promise(resolve => setTimeout(resolve, 100));
   });
 
   chartTypes.forEach(({ type, manifest }) => {
