@@ -187,7 +187,7 @@ export class PointDatapointView extends PlaneDatapointView {
 
   computeLocation() {
     this._x = this.computeX();
-    if (this.paraview.store.settings.animation.isAnimationEnabled && this.paraview.store.settings.animation.expandPoints) {
+    if (this.paraview.store.settings.animation.isAnimationEnabled && this.paraview.store.settings.animation.animationType == 'yAxis') {
       if (this.paraview.store.settings.animation.animationOrigin === 'initialValue') {
         this._animStartState.y = (this._parent.children[0] as PointDatapointView).computeY();
       } else if (this.paraview.store.settings.animation.animationOrigin === 'baseline') {
@@ -207,7 +207,7 @@ export class PointDatapointView extends PlaneDatapointView {
   }
 
   beginAnimStep(bezT: number, linearT: number): void {
-    if (this.paraview.store.settings.animation.symbolPopIn) {
+    if (this.paraview.store.settings.animation.animationType == 'xAxis') {
       if (linearT + .01 >= this.x / this.chart.width && !this._isAnimating && !this._hasAnimated) {
         this.popInAnimation()
       }

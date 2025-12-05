@@ -23,7 +23,7 @@ import { type HorizDirection } from '../store';
 import { ChartType } from '@fizz/paramanifest';
 import { Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
 import { DocumentView } from '../view/document_view';
-import { loopParaviewRefresh } from '../common';
+import { Bezier, loopParaviewRefresh } from '../common';
 
 // Soni Constants
 export const SONI_PLAY_SPEEDS = [1000, 250, 100, 50, 25];
@@ -118,6 +118,10 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   }
 
   playRiff(datapoints: Datapoint[], order?: RiffOrder) {
+    let datapointsClone = [...datapoints]
+    datapointsClone.forEach(d => this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(d.seriesKey, d.datapointIndex)!.alwaysClip = true)
+    let paraview = this._store.paraChart.paraView
+    paraview.documentView!.chartLayers.dataLayer.datapointViews.map(d => d.completeLayout())
     if (order === 'sorted') {
       datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
     } else if (order === 'reversed') {
@@ -129,8 +133,29 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       }
       this._soniSequenceIndex++;
       const length = datapoints.length;
-      loopParaviewRefresh(this._store.paraChart.paraView,
-        this._store.paraChart.paraView.store.settings.animation.popInAnimateRevealTimeMs
+      let start = -1;
+      const linear = new Bezier(0, 0, 1, 1, 10);
+      const step = (timestamp: number) => {
+        if (start === -1) {
+          start = timestamp;
+        }
+        const elapsed = timestamp - start;
+        // We can't really disable the animation, but setting the reveal time to 0
+        // will result in an imperceptibly short animation duration
+        const revealTime = SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length
+        const t = Math.min(elapsed / revealTime, 1);
+        const linearT = linear.eval(t)!;
+        paraview.clipWidth = linearT * paraview.documentView!.chartLayers.width;
+        paraview.requestUpdate();
+        if (elapsed < revealTime) {
+          requestAnimationFrame(step);
+        } else {
+          //this._animEnd();
+        }
+      };
+      requestAnimationFrame(step);
+      loopParaviewRefresh(paraview,
+        paraview.store.settings.animation.popInAnimateRevealTimeMs
         + SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length, 50);
       this._soniRiffInterval = setInterval(() => {
         const datapoint = datapoints.shift();
@@ -142,6 +167,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
         }
       }, SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex));
     }
+    datapoints.forEach(d => this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(d.seriesKey, d.datapointIndex)!.alwaysClip = false)
   }
 
   playDatapoints(datapoints: PlaneDatapoint[]): void {

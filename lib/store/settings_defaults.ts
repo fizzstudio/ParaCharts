@@ -418,7 +418,7 @@ export const defaults: Settings = {
     isAnimationEnabled: true,
     animateRevealTimeMs: 2500,
     popInAnimateRevealTimeMs: 750,
-    animationType: 'uniform',
+    animationType: 'yAxis',
     animationOrigin: 'initialValue',
     animationOriginValue: 0,
     expandPoints: true,

@@ -204,7 +204,7 @@ export abstract class DataLayer extends PlotLayer {
     this._chartLandingView.clearChildren();
     this._beginDatapointLayout();
     if (this.paraview.store.settings.animation.isAnimationEnabled
-      && this.paraview.store.settings.animation.symbolPopIn) {
+      && this.paraview.store.settings.animation.animationType == 'xAxis') {
       this.datapointViews.map(d => d.baseSymbolScale = 0)
     }
     this._completeDatapointLayout();
@@ -245,14 +245,14 @@ export abstract class DataLayer extends PlotLayer {
       }
     };
     this._currentAnimationFrame = requestAnimationFrame(step);
-    if (this.paraview.store.settings.animation.symbolPopIn){
+    if (this.paraview.store.settings.animation.animationType == 'xAxis'){
           loopParaviewRefresh(this.paraview, 500 + this.paraview.store.settings.animation.popInAnimateRevealTimeMs
         + this.paraview.store.settings.animation.animateRevealTimeMs, 50);
     }
   }
 
   protected _animStep(bezT: number, linearT: number) {
-    if (this.paraview.store.settings.animation.lineSnake) {
+    if (this.paraview.store.settings.animation.animationType == 'xAxis') {
       this.paraview.clipWidth = linearT * this.paraview.documentView!.chartLayers.width;
     }
     for (const datapointView of this.datapointViews) {
