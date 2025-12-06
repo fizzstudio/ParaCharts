@@ -4,7 +4,7 @@
 
 import {
   parseActionList,
-  executeParaActionList,
+  executeParaActions,
   type ParaAction,
 } from '../paraactions/paraactions';
 // use ParaAPI type so ScrollyHost.api matches ParaChart API shape
@@ -832,7 +832,7 @@ export class Scrollyteller {
   // use direct parachart.api method chaining instead of a registry
 
   private runActions(actions: ParaAction[], ctx: ActionContext): void {
-    executeParaActionList(
+    executeParaActions(
       actions,           // parsed AST
       ctx.parachart.api  // root API object for method chaining
     );

@@ -373,8 +373,9 @@ function paraValuesToJsArgs(args: ParaValue[]): unknown[] {
   return args.map(arg => arg.value);
 }
 
+
 /**
- * Execute a single ParaAction (single or chained) by treating each segment
+ * Execute a single or array of ParaActions (single or chained) by treating each segment
  * as a method call on the current context object.
  *
  * - `initialContext` is typically a root API object such as `parachart.api`.
@@ -383,44 +384,30 @@ function paraValuesToJsArgs(args: ParaValue[]): unknown[] {
  * - If a method is not found on the current context, this function throws.
  * - This function does NOT catch errors; they bubble to the host.
  */
-export function executeParaAction<Ctx>(
-  action: ParaAction,
+export function executeParaActions<Ctx>(
+  actions: ParaAction | ParaAction[],
   initialContext: Ctx
-): Ctx {
-  let ctx: any = initialContext;
-  // console.warn('executeParaAction', ctx)
-  for (const segment of action.segments) {
-    // console.log('ctx', ctx)
-    const method = ctx?.[segment.methodName];
-    if (typeof method !== 'function') {
-      throw new Error(
-        `Unknown action method on context: ${segment.methodName}`
-      );
-    }
+): void {
+  const actionList = Array.isArray(actions) ? actions : [actions];
 
-    const jsArgs = paraValuesToJsArgs(segment.args);
-    const result = method.apply(ctx, jsArgs);
-    if (typeof result !== 'undefined') {
-      ctx = result;
+  for (const action of actionList) {
+    // Each ParaAction is a full chain; all start from the root API context.
+    let ctx: any = initialContext;
+    // console.warn('executeParaActions', ctx)
+    for (const segment of action.segments) {
+      // console.log('ctx', ctx)
+      const method = ctx?.[segment.methodName];
+      if (typeof method !== 'function') {
+        throw new Error(
+          `Unknown action method on context: ${segment.methodName}`
+        );
+      }
+  
+      const jsArgs = paraValuesToJsArgs(segment.args);
+      const result = method.apply(ctx, jsArgs);
+      if (typeof result !== 'undefined') {
+        ctx = result;
+      }
     }
   }
-  return ctx as Ctx;
-}
-
-/**
- * Convenience: execute a list of actions in sequence.
- * Errors still bubble to the host.
- */
-export function executeParaActionList<Ctx>(
-  actions: ParaAction[],
-  initialContext: Ctx
-): Ctx {
-  let ctx = initialContext;
-  for (const action of actions) {
-    // Each ParaAction represents a full chain (e.g., getSeries(...).getPoint(...).play()).
-    // Top-level actions on the same step should not feed their result into each other;
-    // they should each start from the same root API context.
-    ctx = executeParaAction(action, initialContext);
-  }
-  return ctx;
 }
