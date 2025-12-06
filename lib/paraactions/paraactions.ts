@@ -30,7 +30,6 @@ export interface CallSegment {
  * - Chain: segments.length > 1
  */
 export interface ParaAction {
-  kind: 'action';
   segments: CallSegment[]; // must have at least 1
   raw?: string;
 }
@@ -133,7 +132,7 @@ export function parseAction(source: string): ParaAction | null {
  * Chain detection is implicit: we always split into chain segments first,
  * then parse each into a CallSegment.
  */
-function parseSingleAction(line: string): ParaAction | null {
+function  parseSingleAction(line: string): ParaAction | null {
   if (!line) return null;
 
   const rawSegments = splitChainSegments(line);
@@ -144,7 +143,6 @@ function parseSingleAction(line: string): ParaAction | null {
   const segments: CallSegment[] = rawSegments.map(parseMethodCallSegment);
 
   return {
-    kind: 'action',
     segments,
     raw: line,
   };
