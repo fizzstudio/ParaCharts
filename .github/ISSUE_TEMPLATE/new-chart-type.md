@@ -1,13 +1,32 @@
 ---
 name: New chart type
 about: Describe features of a new chart type
-title: 'Add new chart type: chart_type_name'
+title: '[Add new chart type]: chart_type_name'
 labels: chart type
 assignees: ''
 
 ---
 
-Add new chart type: chart type name- [ ] Keyboard navigation
+## General description
+
+
+### Uses
+
+
+### Other names
+
+- 
+
+### Visual examples
+
+
+## Data shapes
+
+
+## Feature support
+### Feature checklist
+
+- [ ] Keyboard navigation
 - [ ] Text descriptions
   - [ ] Overall chart description
   - [ ] Individual section descriptions
@@ -23,32 +42,32 @@ Add new chart type: chart type name- [ ] Keyboard navigation
 - [ ] Color palette type
 - [ ] API methods
 
-## Keyboard navigation
+### Keyboard navigation
 
-## Text descriptions
+### Text descriptions
 
-### Overall chart description
+#### Overall chart description
 
-### Individual section descriptions
+#### Individual section descriptions
 
-## Highlights
+### Highlights
 
-## Narrative tours
+### Narrative tours
 
-### Current dataset
+#### Current dataset
 
-### Chart type explainer
+#### Chart type explainer
 
-## Sonification
+### Sonification
 
-### Chord mode
+#### Chord mode
 
-## Popups / callouts
+### Popups / callouts
 
-## Annotations
+### Annotations
 
-## Animation
+### Animation
 
-## Color palette type
+### Color palette type
 
-## API methods
+### API methods
