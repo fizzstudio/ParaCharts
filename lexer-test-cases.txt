@@ -1,0 +1,443 @@
+# ParaActions Lexer Test Cases
+# Format: Input → Expected Tokens
+# Note: Only testing the lexer (lexParaActions function), not the parser
+
+## BASIC TOKEN RECOGNITION
+
+### Identifiers
+Input: "foo"
+Expected: [identifier('foo'), eof]
+
+Input: "getSeries"
+Expected: [identifier('getSeries'), eof]
+
+Input: "_private"
+Expected: [identifier('_private'), eof]
+
+Input: "var123"
+Expected: [identifier('var123'), eof]
+
+Input: "camelCase"
+Expected: [identifier('camelCase'), eof]
+
+### Keywords (boolean/null)
+Input: "true"
+Expected: [boolean(true), eof]
+
+Input: "false"
+Expected: [boolean(false), eof]
+
+Input: "null"
+Expected: [null(null), eof]
+
+### Numbers
+Input: "0"
+Expected: [number(0), eof]
+
+Input: "123"
+Expected: [number(123), eof]
+
+Input: "-42"
+Expected: [number(-42), eof]
+
+Input: "3.14"
+Expected: [number(3.14), eof]
+
+Input: "-99.5"
+Expected: [number(-99.5), eof]
+
+Input: "0.5"
+Expected: [number(0.5), eof]
+
+### String Literals (double quotes)
+Input: "\"hello\""
+Expected: [string('hello'), eof]
+
+Input: "\"Revenue\""
+Expected: [string('Revenue'), eof]
+
+Input: "\"\""
+Expected: [string(''), eof]
+
+Input: "\"with spaces\""
+Expected: [string('with spaces'), eof]
+
+Input: "\"with (parens)\""
+Expected: [string('with (parens)'), eof]
+
+Input: "\"with, commas\""
+Expected: [string('with, commas'), eof]
+
+Input: "\"with.dots\""
+Expected: [string('with.dots'), eof]
+
+Input: "\"with;semicolons\""
+Expected: [string('with;semicolons'), eof]
+
+### String Literals (single quotes)
+Input: "'hello'"
+Expected: [string('hello'), eof]
+
+Input: "'Revenue'"
+Expected: [string('Revenue'), eof]
+
+Input: "''"
+Expected: [string(''), eof]
+
+### Punctuation
+Input: "."
+Expected: [dot, eof]
+
+Input: "("
+Expected: [lparen, eof]
+
+Input: ")"
+Expected: [rparen, eof]
+
+Input: ","
+Expected: [comma, eof]
+
+Input: "::"
+Expected: [doubleColon, eof]
+
+Input: ";"
+Expected: [actionSep, eof]
+
+
+## WHITESPACE HANDLING
+
+### Whitespace within expressions (should NOT create actionSep)
+Input: "foo ()"
+Expected: [identifier('foo'), lparen, rparen, eof]
+
+Input: "foo( )"
+Expected: [identifier('foo'), lparen, rparen, eof]
+
+Input: "foo () "
+Expected: [identifier('foo'), lparen, rparen, eof]
+
+Input: "foo() .bar()"
+Expected: [identifier('foo'), lparen, rparen, dot, identifier('bar'), lparen, rparen, eof]
+
+Input: "foo(). bar()"
+Expected: [identifier('foo'), lparen, rparen, dot, identifier('bar'), lparen, rparen, eof]
+
+Input: "foo() . bar()"
+Expected: [identifier('foo'), lparen, rparen, dot, identifier('bar'), lparen, rparen, eof]
+
+### Whitespace between expressions (SHOULD create actionSep)
+Input: "foo() bar()"
+Expected: [identifier('foo'), lparen, rparen, actionSep, identifier('bar'), lparen, rparen, eof]
+
+Input: "foo()  bar()"
+Expected: [identifier('foo'), lparen, rparen, actionSep, identifier('bar'), lparen, rparen, eof]
+
+Input: "foo()\tbar()"
+Expected: [identifier('foo'), lparen, rparen, actionSep, identifier('bar'), lparen, rparen, eof]
+
+### Newlines
+Input: "foo()\nbar()"
+Expected: [identifier('foo'), lparen, rparen, actionSep, identifier('bar'), lparen, rparen, eof]
+
+Input: "foo()\n\nbar()"
+Expected: [identifier('foo'), lparen, rparen, actionSep, identifier('bar'), lparen, rparen, eof]
+
+Input: "foo()\r\nbar()"
+Expected: [identifier('foo'), lparen, rparen, actionSep, identifier('bar'), lparen, rparen, eof]
+
+### Leading/trailing whitespace
+Input: "  foo()"
+Expected: [identifier('foo'), lparen, rparen, eof]
+
+Input: "foo()  "
+Expected: [identifier('foo'), lparen, rparen, eof]
+
+Input: "  foo()  "
+Expected: [identifier('foo'), lparen, rparen, eof]
+
+### Semicolons (always actionSep)
+Input: "foo();bar()"
+Expected: [identifier('foo'), lparen, rparen, actionSep, identifier('bar'), lparen, rparen, eof]
+
+Input: "foo(); bar()"
+Expected: [identifier('foo'), lparen, rparen, actionSep, identifier('bar'), lparen, rparen, eof]
+
+Input: "foo() ; bar()"
+Expected: [identifier('foo'), lparen, rparen, actionSep, identifier('bar'), lparen, rparen, eof]
+
+
+## COMPLEX EXPRESSIONS
+
+### Method calls
+Input: "reset()"
+Expected: [identifier('reset'), lparen, rparen, eof]
+
+Input: "getSeries(\"Revenue\")"
+Expected: [identifier('getSeries'), lparen, string('Revenue'), rparen, eof]
+
+Input: "setRange(0,100)"
+Expected: [identifier('setRange'), lparen, number(0), comma, number(100), rparen, eof]
+
+Input: "setRange(0, 100)"
+Expected: [identifier('setRange'), lparen, number(0), comma, number(100), rparen, eof]
+
+Input: "foo(1,2,3)"
+Expected: [identifier('foo'), lparen, number(1), comma, number(2), comma, number(3), rparen, eof]
+
+Input: "foo(true, false, null)"
+Expected: [identifier('foo'), lparen, boolean(true), comma, boolean(false), comma, null(null), rparen, eof]
+
+Input: "foo(bar, baz)"
+Expected: [identifier('foo'), lparen, identifier('bar'), comma, identifier('baz'), rparen, eof]
+
+### Chained method calls
+Input: "getSeries().highlight()"
+Expected: [identifier('getSeries'), lparen, rparen, dot, identifier('highlight'), lparen, rparen, eof]
+
+Input: "getSeries(\"Revenue\").highlight()"
+Expected: [identifier('getSeries'), lparen, string('Revenue'), rparen, dot, identifier('highlight'), lparen, rparen, eof]
+
+Input: "a().b().c()"
+Expected: [identifier('a'), lparen, rparen, dot, identifier('b'), lparen, rparen, dot, identifier('c'), lparen, rparen, eof]
+
+Input: "a(1).b(2).c(3)"
+Expected: [identifier('a'), lparen, number(1), rparen, dot, identifier('b'), lparen, number(2), rparen, dot, identifier('c'), lparen, number(3), rparen, eof]
+
+### URL-safe syntax (::)
+Input: "foo::bar"
+Expected: [identifier('foo'), doubleColon, identifier('bar'), eof]
+
+Input: "foo::\"Revenue\""
+Expected: [identifier('foo'), doubleColon, string('Revenue'), eof]
+
+Input: "foo::1,2,3"
+Expected: [identifier('foo'), doubleColon, number(1), comma, number(2), comma, number(3), eof]
+
+Input: "foo::bar,baz"
+Expected: [identifier('foo'), doubleColon, identifier('bar'), comma, identifier('baz'), eof]
+
+### Multiple actions on one line
+Input: "reset() clear()"
+Expected: [identifier('reset'), lparen, rparen, actionSep, identifier('clear'), lparen, rparen, eof]
+
+Input: "reset(); clear()"
+Expected: [identifier('reset'), lparen, rparen, actionSep, identifier('clear'), lparen, rparen, eof]
+
+Input: "reset() clear() refresh()"
+Expected: [identifier('reset'), lparen, rparen, actionSep, identifier('clear'), lparen, rparen, actionSep, identifier('refresh'), lparen, rparen, eof]
+
+
+## EDGE CASES FROM PR REVIEW
+
+### PR Comment: Whitespace around dots should not break chains
+# Ryan: "foo() .bar()" becomes ["foo()", ".bar()"]
+Input: "foo() .bar()"
+Expected: [identifier('foo'), lparen, rparen, dot, identifier('bar'), lparen, rparen, eof]
+
+Input: "foo(). bar()"
+Expected: [identifier('foo'), lparen, rparen, dot, identifier('bar'), lparen, rparen, eof]
+
+Input: "foo() . bar()"
+Expected: [identifier('foo'), lparen, rparen, dot, identifier('bar'), lparen, rparen, eof]
+
+### PR Comment: Whitespace after method names should not break
+# Ryan: "foo ()" becomes ["foo", "()"]
+Input: "foo ()"
+Expected: [identifier('foo'), lparen, rparen, eof]
+
+Input: "foo  ()"
+Expected: [identifier('foo'), lparen, rparen, eof]
+
+Input: "foo\t()"
+Expected: [identifier('foo'), lparen, rparen, eof]
+
+### PR Comment: Commands without whitespace should parse
+# Ryan: 'command1("x")command2("y")' should be unambiguous
+Input: "foo()bar()"
+Expected: [identifier('foo'), lparen, rparen, actionSep, identifier('bar'), lparen, rparen, eof]
+
+### PR Comment: Strings with special chars
+Input: "\"US (except trucks) sales\""
+Expected: [string('US (except trucks) sales'), eof]
+
+Input: "\"Last Name, First Name\""
+Expected: [string('Last Name, First Name'), eof]
+
+Input: "\"api.method.chain\""
+Expected: [string('api.method.chain'), eof]
+
+### Multiline strings (allowed in current lexer)
+Input: "\"line1\nline2\""
+Expected: [string('line1\nline2'), eof]
+
+
+## ERROR CASES - SHOULD THROW ParseError
+
+### Unterminated strings
+Input: "\"unclosed"
+Error: ParseError with message "Unterminated string literal."
+Line: 1, Column: 1
+
+Input: "'unclosed"
+Error: ParseError with message "Unterminated string literal."
+Line: 1, Column: 1
+
+Input: "foo(\"unclosed)"
+Error: ParseError with message "Unterminated string literal."
+Line: 1, Column: 5
+
+Input: "getSeries(\"Revenue"
+Error: ParseError with message "Unterminated string literal."
+Line: 1, Column: 11
+
+### Mismatched quotes (also unterminated)
+Input: "\"mixed'"
+Error: ParseError with message "Unterminated string literal."
+Line: 1, Column: 1
+
+Input: "'mixed\""
+Error: ParseError with message "Unterminated string literal."
+Line: 1, Column: 1
+
+### Single colon (should suggest ::)
+Input: ":"
+Error: ParseError with message "Unexpected ':' (did you mean '::' for URL-safe syntax?)"
+Line: 1, Column: 1
+
+Input: "foo:bar"
+Error: ParseError with message "Unexpected ':' (did you mean '::' for URL-safe syntax?)"
+Line: 1, Column: 4
+
+Input: "getSeries(revenue):highlight()"
+Error: ParseError with message "Unexpected ':' (did you mean '::' for URL-safe syntax?)"
+Line: 1, Column: 18
+
+### Invalid characters
+Input: "@"
+Error: ParseError with message "Unexpected character '@' in ParaActions DSL."
+Line: 1, Column: 1
+
+Input: "#"
+Error: ParseError with message "Unexpected character '#' in ParaActions DSL."
+Line: 1, Column: 1
+
+Input: "$"
+Error: ParseError with message "Unexpected character '$' in ParaActions DSL."
+Line: 1, Column: 1
+
+Input: "%"
+Error: ParseError with message "Unexpected character '%' in ParaActions DSL."
+Line: 1, Column: 1
+
+Input: "&"
+Error: ParseError with message "Unexpected character '&' in ParaActions DSL."
+Line: 1, Column: 1
+
+Input: "*"
+Error: ParseError with message "Unexpected character '*' in ParaActions DSL."
+Line: 1, Column: 1
+
+Input: "foo@bar"
+Error: ParseError with message "Unexpected character '@' in ParaActions DSL."
+Line: 1, Column: 4
+
+Input: "getSeries()@highlight()"
+Error: ParseError with message "Unexpected character '@' in ParaActions DSL."
+Line: 1, Column: 12
+
+### Invalid numbers
+Input: "-"
+Error: ParseError with message "Invalid number literal: -"
+Line: 1, Column: 1
+
+Input: "--5"
+Error: ParseError with message "Invalid number literal: --"
+Line: 1, Column: 1
+
+Input: "-.5"
+Error: ParseError with message "Invalid number literal: -."
+Line: 1, Column: 1
+
+Input: "foo(--5)"
+Error: ParseError with message "Invalid number literal: --"
+Line: 1, Column: 5
+
+### Unterminated strings with newlines
+Input: "\"line1\nline2"
+Error: ParseError with message "Unterminated string literal."
+Line: 1, Column: 1
+
+Input: "'start\n\nend"
+Error: ParseError with message "Unterminated string literal."
+Line: 1, Column: 1
+
+### Error position tracking on multi-line input
+Input: "foo()\nbar()\n@"
+Error: ParseError with message "Unexpected character '@' in ParaActions DSL."
+Line: 3, Column: 1
+
+Input: "getSeries()\n  .getPoint(@)"
+Error: ParseError with message "Unexpected character '@' in ParaActions DSL."
+Line: 2, Column: 13
+
+Input: "foo()\nbar(\"unclosed)"
+Error: ParseError with message "Unterminated string literal."
+Line: 2, Column: 5
+
+
+## LINE/COLUMN TRACKING
+
+### Single line
+Input: "foo()"
+Expected: All tokens on line 1
+
+### Multiple lines
+Input: "foo()\nbar()"
+Expected: foo/lparen/rparen on line 1, bar/lparen/rparen on line 2
+
+Input: "foo(\n)"
+Expected: foo/lparen on line 1, rparen on line 2
+
+### Error position tracking
+Input: "foo() @"
+Expected: ParseError with line=1, column=7
+
+Input: "foo()\nbar()\n@"
+Expected: ParseError with line=3, column=1
+
+Input: "foo(\"unclosed"
+Expected: ParseError with line=1, column=5 (at opening quote)
+
+
+## EMPTY/WHITESPACE INPUT
+
+### Empty input
+Input: ""
+Expected: [eof]
+
+### Whitespace-only
+Input: "   "
+Expected: [eof]
+
+Input: "\n\n"
+Expected: [eof]
+
+Input: "\t\t\t"
+Expected: [eof]
+
+Input: "  \n  \t  \n  "
+Expected: [eof]
+
+
+## NOTES ON ESCAPE SEQUENCES
+# Current implementation does NOT interpret escape sequences
+# This matches the comment in the lexer: "Backslash escapes are not interpreted"
+# These are NOT test cases since behavior is documented, but worth noting:
+
+# Input: "\"foo\\nbar\""
+# Current: [string('foo\\nbar'), eof]  (backslash included literally)
+# If we add escape handling: [string('foo\nbar'), eof]
+
+# Input: "\"say \\\"hello\\\"\""
+# Current: [string('say \\\"hello\\\"'), eof]  (backslashes included)
+# If we add escape handling: [string('say "hello"'), eof]
