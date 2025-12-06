@@ -33,7 +33,7 @@ export class HighlightsLayer extends PlotLayer {
       if (selector.startsWith('datapoint')) {
         overlaySyms.push(datapointViews[0].symbol!.clone());
         if (this.paraview.store.settings.chart.isShowPopups && this.type == "foreground") {
-          datapointViews[0].addPopup()
+          datapointViews[0].addDatapointPopup()
         }
       } else if (selector.startsWith('sequence')) {
         overlaySyms.push(datapointViews[0].symbol!.clone());

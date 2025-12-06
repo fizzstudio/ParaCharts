@@ -86,7 +86,7 @@ export class LinePlotView extends PointPlotView {
           nearestPoint = nearestPoint.withCousins.sort((a, b) => Math.abs(a.y - coords.y) - Math.abs(b.y - coords.y))[0]
         }
         this.paraview.store.clearPopups()
-        nearestPoint.addPopup()
+        nearestPoint.addDatapointPopup()
       }
 
     }
@@ -310,25 +310,6 @@ export class LineSection extends PointDatapointView {
       (shape as PathShape).isClip = this.shouldClip;
     })
     super._createShapes();
-  }
-
-
-  addPopup(text?: string) {
-    let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
-    if (this.paraview.store.model!.multi) {
-      datapointText = `${this.series.getLabel()} ${datapointText}`
-    }
-    let popup = new Popup(this.paraview,
-      {
-        text: text ?? datapointText,
-        x: this.x,
-        y: this.y,
-        id: this.id,
-        color: this.color,
-        points: [this]
-      },
-      {})
-    this.paraview.store.popups.push(popup)
   }
 }
 
