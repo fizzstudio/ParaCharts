@@ -20,9 +20,9 @@ export class StyleManagerRule {
   toString() {
     return `${this._selector} {
 ${
-  this._declarations.entries()
+  // [PARACHARTS_CHANGE] Wrap Map entries in Array.from, drop .toArray().
+  Array.from(this._declarations.entries())
     .map(([key, value]) => `  ${key}: ${typeof value === 'function' ? value() : value.toString()};`)
-    .toArray()
     .join('\n')
 }
 }`;
@@ -32,8 +32,12 @@ ${
 
 export class StyleManager {
   protected _rules = new Map<string, StyleManagerRule>();
-  private log: Logger = getLogger("StyleManager");  
-  constructor(protected _stylesheet: CSSStyleSheet) {}
+
+  protected log: Logger;
+
+  constructor(protected _stylesheet: CSSStyleSheet) {
+    this.log = getLogger('styles');
+  }
 
   set(selector: string, keyValuePairs: Record<string, StyleManagerDeclarationValue>) {
     let rule = this._rules.get(selector);
@@ -45,17 +49,21 @@ export class StyleManager {
   }
 
   update() {
-    const matchIndices = this._rules.values().map(rule => {
+    // [PARACHARTS_CHANGE] Wrap Map values in Array.from so we can use .map/.filter.
+    const matchIndices = Array.from(this._rules.values()).map(rule => {
       const selParts = rule.selector.split(' ');
       const regex = new RegExp(['^', ...selParts, '\\{'].join('\\s*'));
       return Array.from(this._stylesheet.cssRules).findIndex(cssRule =>
         cssRule.cssText.match(regex));
-    }).filter(idx => idx !== -1).toArray();
+    }).filter(idx => idx !== -1); // [PARACHARTS_CHANGE] Remove bogus .toArray().
+
     matchIndices.sort().reverse().forEach(idx => {
       this.log.info('DEL', idx);
       this._stylesheet.deleteRule(idx);
     });
-    this._rules.values().forEach(rule => {
+
+    // [PARACHARTS_CHANGE] Wrap Map values in Array.from before forEach.
+    Array.from(this._rules.values()).forEach(rule => {
       this.log.info('INS', rule);
       this._stylesheet.insertRule(rule.toString());
     });
