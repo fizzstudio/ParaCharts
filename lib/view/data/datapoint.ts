@@ -352,12 +352,26 @@ export class DatapointView extends DataView {
     }
     let x = this.x
     let y = this.y
+    let color = this.color
+    let fill = undefined;
     let shape = "boxWithArrow"
-    if (this.paraview.store.type == 'bar' || this.paraview.store.type == 'column') {
+    if (['bar', 'column', 'waterfall'].includes(this.paraview.store.type)) {
       x = this.x + this.width / 2
       shape = this.paraview.store.settings.popup.activation === 'onHover' ? "box" : "boxWithArrow"
     }
-    if (this.paraview.store.type == 'pie' || this.paraview.store.type == 'donut') {
+    if (['waterfall'].includes(this.paraview.store.type)) {
+      const palIdx = this.paraview.store.colors.indexOfPalette('semantic');
+      const pal = this.paraview.store.colors.palettes[palIdx];
+      if (this.index && !this.isLast) {
+        fill = this.datapoint.facetValueAsNumber('y')! >= 0
+          ? pal.colors[0].value
+          : pal.colors[1].value;
+      } else {
+        fill = pal.colors[2].value;
+      }
+      color = 0;
+    }
+    if (['pie', 'donut'].includes(this.paraview.store.type)) {
       let chart = this.chart as PastryPlotView
       //@ts-ignore
       let params = this._params as RadialDatapointParams;
@@ -370,14 +384,17 @@ export class DatapointView extends DataView {
       {
         text: text ?? datapointText,
         x: x,
-        y: this.y,
+        y: y,
         id: this.id,
-        color: this.color,
+        color: color,
         points: [this],
         rotationExempt: this.paraview.store.type == 'bar' ? false : true,
         angle: this.paraview.store.type == 'bar' ? -90 : 0
       },
-      { shape: shape as ShapeTypes })
+      {
+        shape: shape as ShapeTypes,
+        fill: fill
+      })
     this.paraview.store.popups.push(popup)
     this._popup = popup;
   }

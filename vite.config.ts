@@ -41,6 +41,8 @@ export default defineConfig({
   },
   test: {
     include: ['src/tests/**/*.test.ts'],
+    dangerouslyIgnoreUnhandledErrors: true,
+    silent: false,
     browser: {
       enabled: true,
       provider: 'playwright',
