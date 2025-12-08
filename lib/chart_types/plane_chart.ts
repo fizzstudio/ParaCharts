@@ -118,8 +118,12 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   }
 
   playRiff(datapoints: Datapoint[], order?: RiffOrder) {
-    let datapointsClone = [...datapoints]
-    datapointsClone.forEach(d => this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(d.seriesKey, d.datapointIndex)!.alwaysClip = true)
+    const datapointsClone = [...datapoints];
+    datapointsClone.forEach(d => {
+      const dpView = this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(d.seriesKey, d.datapointIndex)!;
+      dpView.alwaysClip = true;
+      dpView.baseSymbolScale = 0;
+    })
     let paraview = this._store.paraChart.paraView
     paraview.documentView!.chartLayers.dataLayer.datapointViews.map(d => d.completeLayout())
     if (order === 'sorted') {
