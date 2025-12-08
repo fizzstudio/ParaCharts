@@ -114,7 +114,7 @@ export class PopupLayer extends PlotLayer {
                 for (let dp of this.paraview.store.visitedDatapoints) {
                     const { seriesKey, index } = datapointIdToCursor(dp);
                     const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
-                    datapointView.addPopup();
+                    datapointView.addDatapointPopup();
                 }
             }
 
@@ -127,7 +127,7 @@ export class PopupLayer extends PlotLayer {
             for (let dp of this.paraview.store.selectedDatapoints) {
                 const { seriesKey, index } = datapointIdToCursor(dp);
                 const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
-                datapointView.addPopup();
+                datapointView.addDatapointPopup();
             }
         }
 

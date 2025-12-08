@@ -968,7 +968,11 @@ export class ParaStore extends State {
     this._userTrendLines = [];
   }
 
-  
+  removePopup(id: string) {
+    this.popups.splice(this.popups.findIndex(p => p.id === id), 1)
+    this.paraChart.paraView.requestUpdate()
+  }
+
   clearPopups() {
     this.popups.splice(0, this.popups.length)
   }
