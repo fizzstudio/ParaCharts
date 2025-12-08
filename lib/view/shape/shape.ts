@@ -121,6 +121,14 @@ export abstract class Shape extends View {
     this._styleInfo.fill = fill;
   }
 
+  get opacity() {
+    return this._styleInfo.opacity as number | undefined;
+  }
+
+  set opacity(opacity: number | undefined) {
+    this._styleInfo.opacity = opacity;
+  }
+
   get outerBbox() {
     return new DOMRect(
       this.left - this.effectiveStrokeWidth/2,
