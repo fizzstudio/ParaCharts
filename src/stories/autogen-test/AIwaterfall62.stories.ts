@@ -1,4 +1,4 @@
-import { Chart, type ChartProps } from '../Chart';
+import { AiChart, type ChartProps } from '../Chart';
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { expect } from 'storybook/test';
@@ -8,20 +8,20 @@ import Runner from '../tests/waterfallTests';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Waterfall Charts",
-  render: (args) => Chart(args),
+  title: "AI-enhanced Charts/Waterfall Charts",
+  render: (args) => AiChart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
-export const Chart59: Story = {
-  name: "Sample data (59)",
+export const AiChart62: Story = {
+  name: "Sample data (62)",
   args: {
-    filename: "manifests/waterfall-manifest-001.json",
+    filename: "manifests/waterfall-manifest-004.json",
     forcecharttype: "waterfall",
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/waterfall-manifest-001.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/waterfall-manifest-004.json");
     await runner.run();
   }
 }
