@@ -20,15 +20,20 @@ import {
 import { NavNode } from '../view/layers';
 
 import { ChartType } from '@fizz/paramanifest';
-import { PlaneChartInfo } from './plane_chart';
-import { AxisInfo } from '../common';
+import { PlaneChartInfo, SONI_RIFF_SPEEDS } from './plane_chart';
+import { AxisInfo, loopParaviewRefresh } from '../common';
+import { Datapoint, PlaneDatapoint } from '@fizz/paramodel';
 
 import { formatXYDatapointX } from '@fizz/parasummary';
+import { SoniPoint } from '../audio/soni_point';
 
 export class WaterfallChartInfo extends PlaneChartInfo {
+  protected _cumulativeTotals: number[];
 
   constructor(type: ChartType, store: ParaStore) {
     super(type, store);
+    this._cumulativeTotals = store.model!.series[0].datapoints.map(dp =>
+      this._cumulativeTotalForDatapoint(dp));
   }
 
   get settings() {
@@ -63,5 +68,50 @@ export class WaterfallChartInfo extends PlaneChartInfo {
   //     this._store.announce(this._contents[cursor.options.row][cursor.options.column]);
   //   }
   // }
+
+  protected _cumulativeTotalForDatapoint(datapoint: Datapoint): number {
+    const series = this._store.model!.atKey(datapoint.seriesKey)!;
+    return series.datapoints
+      .slice(0, datapoint.datapointIndex + 1)
+      .reduce((accum, dp) => accum + dp.facetValueAsNumber('y')!, 0);
+  }
+
+  // playDatapoints(datapoints: PlaneDatapoint[]): void {
+  //   new PlaneDatapoint()
+  //   super.playDatapoints(datapoints);
+  // }
+
+  playDatapoints(datapoints: PlaneDatapoint[]): void {
+    const length = datapoints.length;
+    loopParaviewRefresh(this._store.paraChart.paraView,
+      this._store.paraChart.paraView.store.settings.animation.popInAnimateRevealTimeMs
+      + SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length, 50);
+    // We can't make the sonipoint directly from the model datapoint; we need to
+    // take the sonipoint y-min/max from the cumulative totals for each datapoint
+    const soniPoints = [new SoniPoint(
+      datapoints[0].datapointIndex,
+      this._cumulativeTotals[datapoints[0].datapointIndex],
+      0, this._store.model!.series[0].length - 1,
+      Math.min(...this._cumulativeTotals), Math.max(...this._cumulativeTotals)
+    )];
+    if (datapoints[0].datapointIndex
+      && datapoints[0].datapointIndex < this._store.model!.series[0].length - 1) {
+      soniPoints.unshift(new SoniPoint(
+        datapoints[0].datapointIndex - 1,
+        this._cumulativeTotals[datapoints[0].datapointIndex - 1],
+        0, this._store.model!.series[0].length - 1,
+        Math.min(...this._cumulativeTotals), Math.max(...this._cumulativeTotals)
+      ));
+    }
+    // const total = this._cumulativeTotalForDatapoint(datapoints[0]);
+    // console.log('TOTAL', total);
+    // soniPoint.y = total;
+    this._sonifier.playSoniPoints([soniPoints[0]]);
+    if (soniPoints.length > 1) {
+      setTimeout(() => {
+        this._sonifier.playSoniPoints([soniPoints[1]]);
+      }, SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex));
+    }
+  }
 
 }
