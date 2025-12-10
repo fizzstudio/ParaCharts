@@ -44,7 +44,6 @@ export class WaterfallChartInfo extends PlaneChartInfo {
     this._cumulativeTotals = this._store.model!.series[0].datapoints.slice(0, -1).map(dp =>
       this._cumulativeTotalForDatapoint(dp));
     this._cumulativeTotals.push(this._cumulativeTotals.at(-1)!);
-    console.log('CUMUL', this._cumulativeTotals);
     const xValues = this._store.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'raw'));
     const yValues: number[] = [...this._cumulativeTotals];
     // this._store.model!.series[0].datapoints.forEach((dp, i) => {
