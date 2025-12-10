@@ -14,14 +14,14 @@ const meta = {
 
 export default meta;
 
-export const Chart59: Story = {
-  name: "Sample data (59)",
+export const Chart60: Story = {
+  name: "Sample data (60)",
   args: {
-    filename: "manifests/waterfall-manifest-001.json",
+    filename: "manifests/waterfall-manifest-002.json",
     forcecharttype: "waterfall",
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/waterfall-manifest-001.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/waterfall-manifest-002.json");
     await runner.run();
   }
 }

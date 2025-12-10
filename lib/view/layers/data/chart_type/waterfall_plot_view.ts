@@ -283,10 +283,20 @@ export class WaterfallBarView extends PlaneDatapointView {
       height: this._height,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.addDatapointPopup() : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
+      },
+      pointerMove: (e) => {
+        if (this._popup) {
+            this._popup.grid.x = this.paraview.store.pointerCoords.x
+            this._popup.grid.y = this.paraview.store.pointerCoords.y - this.paraview.store.settings.popup.margin
+            this._popup.shiftGrid()
+            this._popup.box.x = this._popup.grid.x
+            this._popup.box.y = this._popup.grid.bottom
+            this.paraview.requestUpdate()
+        }
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.paraview.store.removePopup(this.id) : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.paraview.store.removePopup(this.id) : undefined
       },
     }));
     if (this.index) {
