@@ -149,7 +149,10 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
         const revealTime = SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length
         const t = Math.min(elapsed / revealTime, 1);
         const linearT = linear.eval(t)!;
-        paraview.clipWidth = linearT * paraview.documentView!.chartLayers.width;
+        datapoints.forEach(d => this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(d.seriesKey, d.datapointIndex)!.alwaysClip = true)
+        this._store.updateSettings(draft => {
+          draft.chart.clipWidth = linearT;
+        })
         paraview.requestUpdate();
         if (elapsed < revealTime) {
           requestAnimationFrame(step);

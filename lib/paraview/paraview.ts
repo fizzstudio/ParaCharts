@@ -56,9 +56,6 @@ export class ParaView extends ParaComponent {
   @property() yAxisLabel?: string;
   @property() contrastLevel: number = 1;
   @property({ type: Boolean }) disableFocus = false;
-
-  @property() clipWidth?: number;
-
   protected _ariaLiveRegionRef = createRef<AriaLive>();
   protected _controller!: ParaViewController;
   protected _viewBox!: ViewBox;
@@ -824,6 +821,7 @@ export class ParaView extends ParaComponent {
   }
 
   render(): TemplateResult {
+    console.log(this.store.settings.chart.clipWidth)
     this.log.info('render');
     return html`
     <div ${ref(this._containerRef)} @fullscreenchange=${() => this._onFullscreenChange()}>
@@ -864,7 +862,7 @@ export class ParaView extends ParaComponent {
               <rect
                 x=${0}
                 y=${0}
-                width=${this.clipWidth ?? this._documentView.chartLayers.width}
+                width=${this.store.settings.chart.clipWidth * this._documentView.chartLayers.width}
                 height=${this._documentView.chartLayers.height}>
               </rect>
             </clipPath>

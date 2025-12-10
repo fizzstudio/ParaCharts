@@ -249,6 +249,8 @@ export class DatapointView extends DataView {
     this.completeLayout();
   }
 
+  popInAnimation(){}
+
   /**
    * Subclasses should override this;
    * If there will be shapes, add them to `this._shapes` first,

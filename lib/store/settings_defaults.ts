@@ -71,7 +71,8 @@ export const defaults: Settings = {
     isDrawSymbols: true,
     isStatic: false,
     isShowVisitedDatapointsOnly: false,
-    isShowPopups: false
+    isShowPopups: false,
+    clipWidth: 1
   },
   axis: {
     minInterval: 25,

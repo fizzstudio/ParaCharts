@@ -23,8 +23,10 @@
  */
 
 import { Logger, getLogger } from '../common/logger';
+import { loopParaviewRefresh } from '../common/utils';
 
 import { ParaChart } from '../parachart/parachart';
+import { PlaneDatapointView, PointDatapointView } from '../view/layers';
 
 export interface ParsedOffset {
   format: 'pixels' | 'percent';
@@ -193,6 +195,29 @@ export class Scrollyteller {
         // TODO: add sonifications
         if (action === 'playSonification') {
           this.parachart.api.getSeries(params[0]).playRiff();
+        }
+        if (action === 'clipWidth') {
+          let oldWidth = this.parachart.paraView.store.settings.chart.clipWidth;
+          this.parachart.api.setSetting('chart.clipWidth', Number(params[0]));
+          for (let dpView of this.parachart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
+            let planeDpView = dpView as PointDatapointView
+            planeDpView.alwaysClip = true;
+            //planeDpView._hasAnimated = false;
+
+            if (planeDpView.x - 1 <= Number(params[0]) * this.parachart.paraView.documentView!.chartLayers.width
+              && planeDpView.x - 1 > oldWidth * this.parachart.paraView.documentView!.chartLayers.width
+            ) {
+              planeDpView.popInAnimation()
+              //planeDpView._hasAnimated = true;
+            }
+            else if (planeDpView.x - 1 > Number(params[0]) * this.parachart.paraView.documentView!.chartLayers.width) {
+              //planeDpView._hasAnimated = false;
+              planeDpView.baseSymbolScale = 0;
+            }
+            loopParaviewRefresh(this.parachart.paraView,
+              this.parachart.paraView.store.settings.animation.popInAnimateRevealTimeMs
+              , 50);
+          }
         }
       }
       // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints

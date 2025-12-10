@@ -253,7 +253,9 @@ export abstract class DataLayer extends PlotLayer {
 
   protected _animStep(bezT: number, linearT: number) {
     if (this.paraview.store.settings.animation.animationType == 'xAxis') {
-      this.paraview.clipWidth = linearT * this.paraview.documentView!.chartLayers.width;
+      this.paraview.store.updateSettings(draft => {
+        draft.chart.clipWidth = linearT * this.paraview.documentView!.chartLayers.width;
+      })
     }
     for (const datapointView of this.datapointViews) {
       datapointView.beginAnimStep(bezT, linearT);

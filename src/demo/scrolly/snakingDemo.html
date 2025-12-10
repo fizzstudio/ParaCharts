@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>ScrollyTeller Demo -- ParaCharts</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22green%22/><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+  <style>
+     body {
+      margin: 2em;
+      padding-bottom: 8em;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      font-size: 1.2em;
+    }
+
+    .container {
+      display: flex;
+      align-items: flex-start;
+      margin: 20px;
+      padding-right: 60px;
+    }
+
+    .steps {
+      flex: 1;
+      margin-right: 40px;
+    }
+
+    [data-para-step] {
+      border: none;
+      padding: 2em 1em;
+      margin: 20px 0;
+    }
+
+    [data-para-step].para-active {
+      background-color: hsl(0, 0%, 93%);
+      color: black;
+    }
+
+    .chart-area {
+      position: sticky;
+      top: 20px;
+      width: 550px;
+      height: 420px;
+      flex-shrink: 0;
+    }
+
+    [data-para-step] {
+      display: block;
+      min-height: 30em;
+    }
+
+    [data-para-step="0"] {
+      margin-bottom: 5em;
+    }
+
+    [data-para-step="5"] {
+      margin-top: 5em;
+      margin-bottom: 12em;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>GDP Data</h1>
+
+  <main class="container">
+    <div class="steps">
+      <div data-para-step="0" data-para-action="clipWidth(0)"></div>
+      <div data-para-step="1" data-para-action="clipWidth(.1)"></div>
+      <div data-para-step="2" data-para-action="clipWidth(.2)"></div>
+      <div data-para-step="3" data-para-action="clipWidth(.3)"></div>
+      <div data-para-step="4" data-para-action="clipWidth(.4)"></div>
+      <div data-para-step="5" data-para-action="clipWidth(.5)"></div>
+      <div data-para-step="6" data-para-action="clipWidth(.6)"></div>
+      <div data-para-step="7" data-para-action="clipWidth(.7)"></div>
+      <div data-para-step="8" data-para-action="clipWidth(.8)"></div>
+      <div data-para-step="9" data-para-action="clipWidth(.9)"></div>
+      <div data-para-step="10" data-para-action="clipWidth(1)"></div>
+      <!--
+        <div data-para-step="11" data-para-action="clipWidth(110)"></div>
+      <div data-para-step="12" data-para-action="clipWidth(120)"></div>
+      <div data-para-step="13" data-para-action="clipWidth(130)"></div>
+      <div data-para-step="14" data-para-action="clipWidth(140)"></div>
+      <div data-para-step="15" data-para-action="clipWidth(150)"></div>
+      <div data-para-step="16" data-para-action="clipWidth(160)"></div>
+      <div data-para-step="17" data-para-action="clipWidth(170)"></div>
+      <div data-para-step="18" data-para-action="clipWidth(180)"></div>
+      <div data-para-step="19" data-para-action="clipWidth(190)"></div>
+      <div data-para-step="20" data-para-action="clipWidth(200)"></div>
+      <div data-para-step="21" data-para-action="clipWidth(210)"></div>
+      <div data-para-step="22" data-para-action="clipWidth(220)"></div>
+      <div data-para-step="23" data-para-action="clipWidth(230)"></div>
+      <div data-para-step="24" data-para-action="clipWidth(240)"></div>
+      <div data-para-step="25" data-para-action="clipWidth(250)"></div>
+      <div data-para-step="26" data-para-action="clipWidth(260)"></div>
+      <div data-para-step="27" data-para-action="clipWidth(270)"></div>
+      <div data-para-step="28" data-para-action="clipWidth(280)"></div>
+      <div data-para-step="29" data-para-action="clipWidth(290)"></div>
+      <div data-para-step="30" data-para-action="clipWidth(300)"></div>
+      <div data-para-step="31" data-para-action="clipWidth(310)"></div>
+      <div data-para-step="32" data-para-action="clipWidth(320)"></div>
+      <div data-para-step="33" data-para-action="clipWidth(330)"></div>
+      <div data-para-step="34" data-para-action="clipWidth(340)"></div>
+      <div data-para-step="35" data-para-action="clipWidth(350)"></div>
+      <div data-para-step="36" data-para-action="clipWidth(360)"></div>
+      <div data-para-step="37" data-para-action="clipWidth(370)"></div>
+      <div data-para-step="38" data-para-action="clipWidth(380)"></div>
+      <div data-para-step="39" data-para-action="clipWidth(390)"></div>
+      <div data-para-step="40" data-para-action="clipWidth(400)"></div>
+      <div data-para-step="41" data-para-action="clipWidth(410)"></div>
+      -->
+      
+    </div>
+
+    <section class="chart-area">
+      <para-chart id="main-chart"  manifest="/src/demo-data/line-china-gdp-line-symbols.manifest.json"></para-chart>
+
+    </section>
+  </main>
+
+  <script type="module" src="/dist/paracharts.js"></script>
+
+</body>
+
+</html>
