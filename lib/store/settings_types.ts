@@ -362,6 +362,20 @@ export interface WaterfallSettings extends PlotSettings {
 }
 
 /** @public */
+export interface VennSettings extends SettingGroup {
+  orientationAngleOffset: number;
+  insideLabels: {
+    contents: string;
+  };
+  outsideLabels: {
+    contents: string;
+  };
+  explode: string;
+}
+
+
+
+/** @public */
 export interface PointSettings extends PlotSettings {
   pointLabelFormat: LabelFormat;
   selectedPointMarkerSize: Size2d;
@@ -456,6 +470,7 @@ export interface ChartTypeSettings extends SettingGroup {
   stepline: StepLineSettings;
   lollipop: LollipopSettings;
   waterfall: WaterfallSettings;
+  venn: VennSettings
 }
 
 /** @public */

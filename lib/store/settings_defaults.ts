@@ -394,6 +394,12 @@ export const defaults: Settings = {
       barGap: 10,
       showPopups: false,
       labelFontSize: '10pt'
+    },
+	venn: {
+      orientationAngleOffset: 0,
+      insideLabels: { contents: '' },
+      outsideLabels: { contents: '' },
+      explode: ''
     }
   },
   grid: {
