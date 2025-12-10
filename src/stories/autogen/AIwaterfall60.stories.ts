@@ -11,10 +11,10 @@ const meta = {
 
 export default meta;
 
-export const AiChart59: Story = {
-  name: "Sample data (59)",
+export const AiChart60: Story = {
+  name: "Sample data (60)",
   args: {
-    filename: "manifests/waterfall-manifest-001.json",
+    filename: "manifests/waterfall-manifest-002.json",
     forcecharttype: "waterfall",
   }
 }
