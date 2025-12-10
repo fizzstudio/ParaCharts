@@ -28,12 +28,10 @@ import { formatXYDatapointX } from '@fizz/parasummary';
 import { SoniPoint } from '../audio/soni_point';
 
 export class WaterfallChartInfo extends PlaneChartInfo {
-  protected _cumulativeTotals: number[];
+  protected _cumulativeTotals!: number[];
 
   constructor(type: ChartType, store: ParaStore) {
     super(type, store);
-    this._cumulativeTotals = store.model!.series[0].datapoints.map(dp =>
-      this._cumulativeTotalForDatapoint(dp));
   }
 
   get settings() {
@@ -42,14 +40,19 @@ export class WaterfallChartInfo extends PlaneChartInfo {
 
   protected _init(): void {
     super._init();
+    // Assume the final point is a total column
+    this._cumulativeTotals = this._store.model!.series[0].datapoints.slice(0, -1).map(dp =>
+      this._cumulativeTotalForDatapoint(dp));
+    this._cumulativeTotals.push(this._cumulativeTotals.at(-1)!);
+    console.log('CUMUL', this._cumulativeTotals);
     const xValues = this._store.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'raw'));
-    const yValues: number[] = [];
-    this._store.model!.series[0].datapoints.forEach((dp, i) => {
-      yValues.push(i === 0
-        ? dp.facetValueAsNumber('y')!
-        : yValues[i - 1] + dp.facetValueAsNumber('y')!
-      );
-    });
+    const yValues: number[] = [...this._cumulativeTotals];
+    // this._store.model!.series[0].datapoints.forEach((dp, i) => {
+    //   yValues.push(i === 0
+    //     ? dp.facetValueAsNumber('y')!
+    //     : yValues[i - 1] + dp.facetValueAsNumber('y')!
+    //   );
+    // });
     yValues.push(0);
     this._axisInfo = new AxisInfo(this._store, {
       xTiers: [xValues],
