@@ -129,6 +129,10 @@ export class BarChartInfo extends PlaneChartInfo {
     }
   }
 
+  get isIntertick(): boolean {
+    return true;
+  }
+
   get settings() {
     return super.settings as DeepReadonly<BarSettings>;
   }

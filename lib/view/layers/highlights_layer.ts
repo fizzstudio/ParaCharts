@@ -7,6 +7,7 @@ import { DataSymbol } from '../symbol';
 import { type DatapointView } from '../data';
 import { PathShape, RectShape, Shape } from '../shape';
 import { type View } from '../base_view';
+import { PlaneChartInfo } from '../../chart_types';
 
 export type HighlightsType = 'foreground' | 'background';
 
@@ -28,7 +29,9 @@ export class HighlightsLayer extends PlotLayer {
     let overlayLine: PathShape | null = null;
     let datapointViews: DatapointView[] = [];
     if (selector) {
-      const datapoints = this.paraview.documentView!.chartInfo.datapointsForSelector(selector);
+      // XXX Ultimately, we need to support pastry and other non-plane chart types here
+      const chartInfo = this.paraview.documentView!.chartInfo as PlaneChartInfo;
+      const datapoints = chartInfo.datapointsForSelector(selector);
       datapointViews = datapoints.map(datapoint =>
         this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!);
       if (selector.startsWith('datapoint')) {
@@ -43,7 +46,7 @@ export class HighlightsLayer extends PlotLayer {
           ? this.paraview.store.colors.colorValueAt(overlays[0].color!)
           : overlays[0].stroke;
         overlayLine = new PathShape(this.paraview, {
-          x: 0,
+          x: overlays[0].width/2,
           y: 0,
           points: [overlays[0].loc, overlays[1].loc],
           stroke: lineStroke,
@@ -52,12 +55,12 @@ export class HighlightsLayer extends PlotLayer {
         });
         if (this.type === 'background') {
           const rectFill = overlays[0] instanceof DataSymbol
-          ? this.paraview.store.colors.colorValueAt(overlays[0].color!)
-          : overlays[0].fill;
+            ? this.paraview.store.colors.colorValueAt(overlays[0].color!)
+            : overlays[0].fill;
           underlayRect = new RectShape(this.paraview, {
             x: overlays[0].x,
             y: 0,
-            width: overlays[1].x - overlays[0].x,
+            width: overlays[1].x - overlays[0].x + (chartInfo.isIntertick ? overlays[0].width : 0),
             height: this._height,
             fill: rectFill,
             opacity: 0.25

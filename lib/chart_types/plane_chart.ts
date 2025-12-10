@@ -42,6 +42,13 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     super(type, store);
   }
 
+  /**
+   * Whether the chart's datapoints fall on a tick (default) or between them.
+   */
+  get isIntertick(): boolean {
+    return false;
+  }
+
   protected _createNavMap() {
     super._createNavMap();
     this._createPrimaryNavNodes();
