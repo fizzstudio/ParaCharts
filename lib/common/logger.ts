@@ -5,7 +5,7 @@ export enum LogLevel {
   ALL = 3
 }
 
-let _logLevel: LogLevel = LogLevel.MOST;
+let _logLevel: LogLevel = LogLevel.ALL;
 
 /**
  * Set the global log level for all loggers.

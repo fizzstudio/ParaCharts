@@ -64,29 +64,51 @@ export class VennPlotView extends DataLayer {
     return super.datapointViews as RadialSlice[];
   }
 
+  getIntersections(circle1: Circle, circle2: Circle): Point[] {
+    const EPSILON = 1e-6;
+    const dx = circle2.center.x - circle1.center.x;
+    const dy = circle2.center.y - circle1.center.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (
+      circle1.radius + circle2.radius < distance ||
+      distance < Math.abs(circle1.radius - circle2.radius)
+    ) {
+      return [];
+    }
+    const a =
+      (circle1.radius ** 2 - circle2.radius ** 2) / (2 * distance) +
+      distance / 2;
+    const h = Math.sqrt(circle1.radius ** 2 - a ** 2);
+    const x_p =
+      circle1.center.x + (a * (circle2.center.x - circle1.center.x)) / distance;
+    const y_p =
+      circle1.center.y + (a * (circle2.center.y - circle1.center.y)) / distance;
+    const x_pair1 =
+      x_p + (h / distance) * (circle2.center.y - circle1.center.y);
+    const x_pair2 =
+      x_p - (h / distance) * (circle2.center.y - circle1.center.y);
+    const y_pair1 =
+      y_p - (h / distance) * (circle2.center.x - circle1.center.x);
+    const y_pair2 =
+      y_p + (h / distance) * (circle2.center.x - circle1.center.x);
+    if (
+      Math.abs(x_pair1 - x_pair2) < EPSILON &&
+      Math.abs(y_pair1 - y_pair2) < EPSILON
+    ) {
+      return [{ x: x_pair1, y: y_pair1 }];
+    }
+    return [
+      { x: x_pair1, y: y_pair1 },
+      { x: x_pair2, y: y_pair2 },
+    ];
+  }
+
   protected _completeDatapointLayout(): void {
     super._completeDatapointLayout();
     this._createLabels();
   }
   init() {
     super.init();
-    this._resizeToFitLabels();
-    if (this.settings.centerLabel === 'title') {
-      this.paraview.store.updateSettings(draft => {
-        draft.chart.title.isDrawTitle = false;
-      });
-      this._centerLabel = new Label(this.paraview, {
-        text: this.paraview.store.title,
-        centerX: this._cx,
-        centerY: this._cy,
-        textAnchor: 'middle',
-        wrapWidth: 2 * (this.radius - this.settings.annularThickness * this.radius)
-          - this.settings.centerLabelPadding * 2,
-        id: 'chart-title',
-        classList: ['chart-title']
-      });
-      this.append(this._centerLabel);
-    }
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
@@ -103,12 +125,6 @@ export class VennPlotView extends DataLayer {
       this._resetRadius();
       this._chartLandingView.clearChildren();
       this._layoutDatapoints();
-      // Needed to replace existing node datapoint views
-      // this._createNavMap();
-      // XXX `_resizeToFitLabels()` will recreate the datapoints, which may
-      // cause inside labels to move outside, potentially requiring a second
-      // resize. We don't currently do that...
-      this._resizeToFitLabels();
       this.paraview.requestUpdate();
     }
 
@@ -122,36 +138,6 @@ export class VennPlotView extends DataLayer {
   }
 
   protected _createDatapoints() {
-    const xs = this.paraview.store.model!.series[0].datapoints.map(dp =>
-      formatBox(dp.facetBox('x')!, this.paraview.store.getFormatType('pieSliceLabel'))
-    );
-    const ys = this.paraview.store.model!.series[0].datapoints.map(dp =>
-      dp.facetValueNumericized('y')!);
-
-    const totalValue = ys.reduce((a, b) => a + b, 0);
-    const seriesView = new SeriesView(this, this.paraview.store.model!.seriesKeys[0], false);
-    this._chartLandingView.append(seriesView);
-
-    let accum = 0;
-    for (const [category, i] of enumerate(xs)) {
-      const value = ys.at(i)!;
-
-      // modify percentage by arc degree, for circle fragments
-      const percentage = this._arc * value / totalValue;
-      // if (i) {
-      //   accum += percentage;
-      // }
-      const datapointView = this._createSlice(seriesView, {
-        value,
-        category,
-        seriesIdx: i,
-        percentage,
-        accum,
-        numDatapoints: xs.length
-      });
-      seriesView.append(datapointView);
-      accum += percentage;
-    }
   }
 
   protected _createLabels() {
@@ -216,7 +202,7 @@ export interface RadialDatapointParams {
   numDatapoints: number;
 }
 
-export abstract class RadialSlice extends DatapointView {
+export class VennRegionView extends DatapointView {
   declare readonly chart: VennPlotView;
   declare protected _shapes: SectorShape[];
 
@@ -324,7 +310,7 @@ export abstract class RadialSlice extends DatapointView {
     const gap = this.paraview.store.settings.ui.focusRingGap;
     const oldCentralAngle = shape.centralAngle;
     shape.centralAngle += 2 * gap * 360 / (2 * Math.PI * shape.r);
-    shape.orientationAngle -= (shape.centralAngle - oldCentralAngle)/2;
+    shape.orientationAngle -= (shape.centralAngle - oldCentralAngle) / 2;
     if (shape.annularThickness! < 1) {
       shape.r += gap;
       // a0/r0 = A
