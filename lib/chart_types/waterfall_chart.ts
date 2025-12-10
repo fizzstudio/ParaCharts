@@ -24,11 +24,13 @@ import { PlaneChartInfo, SONI_RIFF_SPEEDS } from './plane_chart';
 import { AxisInfo, loopParaviewRefresh } from '../common';
 import { Datapoint, PlaneDatapoint } from '@fizz/paramodel';
 
+import { Highlight } from '@fizz/parasummary';
 import { formatXYDatapointX } from '@fizz/parasummary';
 import { SoniPoint } from '../audio/soni_point';
 
 export class WaterfallChartInfo extends PlaneChartInfo {
   protected _cumulativeTotals!: number[];
+  protected _prevHighlightNavcode = '';
 
   constructor(type: ChartType, store: ParaStore) {
     super(type, store);
@@ -70,6 +72,53 @@ export class WaterfallChartInfo extends PlaneChartInfo {
   //     this._store.announce(this._contents[cursor.options.row][cursor.options.column]);
   //   }
   // }
+
+  noticePosted(key: string, value: any) {
+    super.noticePosted(key, value);
+    if (this._store.settings.ui.isNarrativeHighlightEnabled) {
+      if (key === 'utteranceBoundary') {
+        const highlight: Highlight = value;
+        this._prevHighlightNavcode = this._doHighlight(highlight, this._prevHighlightNavcode);
+      } else if (key === 'utteranceEnd') {
+        // So that on the initial transition from auto-narration to manual
+        // span navigation, we don't remove any highlights added in manual mode
+        if (!this._store.paraChart.captionBox.highlightManualOverride) {
+          this._store.clearHighlight();
+          this._store.clearAllSeriesLowlights();
+        }
+        // this._highlightIndex = null;
+        if (this._prevHighlightNavcode) {
+          this.didRemoveHighlight(this._prevHighlightNavcode);
+          this._prevHighlightNavcode = '';
+        }
+      }
+    }
+  }
+
+  protected _doHighlight(highlight: Highlight, prevNavcode: string) {
+    if (highlight.navcode) {
+      if (highlight.navcode.startsWith('series')) {
+        const segments = highlight.navcode.split(/-/);
+        this._store.lowlightOtherSeries(...segments.slice(1));
+      } else {
+        this._store.clearHighlight();
+        this._store.highlight(highlight.navcode);
+        if (prevNavcode) {
+          this.didRemoveHighlight(prevNavcode);
+        }
+        this.didAddHighlight(highlight.navcode);
+      }
+      prevNavcode = highlight.navcode;
+    } else {
+      this._store.clearHighlight();
+      this._store.clearAllSeriesLowlights();
+      if (prevNavcode) {
+        this.didRemoveHighlight(prevNavcode);
+        prevNavcode = '';
+      }
+    }
+    return prevNavcode;
+  }
 
   protected _cumulativeTotalForDatapoint(datapoint: Datapoint): number {
     const series = this._store.model!.atKey(datapoint.seriesKey)!;
