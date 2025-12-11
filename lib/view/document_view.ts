@@ -52,14 +52,12 @@ export class DocumentView extends Container(View) {
     this.log = getLogger('DocumentView');
     this._store = paraview.store;
     this.observeNotices();
-
     this.type = this._store.type;
   }
 
   init() {
     // @ts-ignore
-    this._chartInfo = new chartInfoClasses[this.type](this.type, this._store);
-
+	this._chartInfo = new chartInfoClasses[this.type](this.type, this._store);
     this.setTitleText(this._store.title);
 
     const expandedPadding = this._parsePadding(this._store.settings.chart.padding);

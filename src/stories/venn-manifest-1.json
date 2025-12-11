@@ -9,15 +9,15 @@
           "measure": "nominal",
           "datatype": "string",
           "displayType": {
-            "type": "marking"
+            "type": "text"
           }
         },
-        "includes": {
+        "membership": {
           "variableType": "dependent",
           "measure": "nominal",
           "datatype": "string",
           "displayType": {
-            "type": "marking"
+            "type": "area"
           }
         }
       },
@@ -25,59 +25,21 @@
         {
           "key": "Flying Animals",
           "records": [
-            {
-              "item": "Eagle",
-              "includes": true
-            },
-            {
-              "item": "Flying Fish",
-              "includes": true
-            },
-            {
-              "item": "Butterfly",
-              "includes": true
-            },
-            {
-              "item": "Dolphin",
-              "includes": false
-            },
-            {
-              "item": "Shark",
-              "includes": false
-            },
-            {
-              "item": "Duck",
-              "includes": true
-            }
+            { "item": "Eagle", "membership": "included" },
+            { "item": "Butterfly", "membership": "included" },
+            { "item": "Dolphin", "membership": "excluded" },
+            { "item": "Shark", "membership": "excluded" },
+            { "item": "Flying Fish", "membership": "included" }
           ]
         },
         {
           "key": "Aquatic Animals",
           "records": [
-            {
-              "item": "Eagle",
-              "includes": false
-            },
-            {
-              "item": "Flying Fish",
-              "includes": true
-            },
-            {
-              "item": "Butterfly",
-              "includes": false
-            },
-            {
-              "item": "Dolphin",
-              "includes": true
-            },
-            {
-              "item": "Shark",
-              "includes": true
-            },
-            {
-              "item": "Duck",
-              "includes": true
-            }
+            { "item": "Eagle", "membership": "excluded" },
+            { "item": "Butterfly", "membership": "excluded" },
+            { "item": "Dolphin", "membership": "included" },
+            { "item": "Shark", "membership": "included" },
+            { "item": "Flying Fish", "membership": "included" }
           ]
         }
       ],

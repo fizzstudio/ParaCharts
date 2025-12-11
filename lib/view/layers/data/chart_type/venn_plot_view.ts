@@ -3,8 +3,8 @@ import { DataLayer } from '..';
 import { type BaseChartInfo } from '../../../../chart_types';
 import { DatapointView, SeriesView } from '../../../data';
 import {
-  type RadialSettings,
-  type RadialChartType, type DeepReadonly,
+  type VennSettings,
+  type DeepReadonly,
   Setting,
 } from '../../../../store';
 import { Label, type LabelTextAnchor } from '../../../label';
@@ -27,8 +27,6 @@ export class VennPlotView extends DataLayer {
   protected _cx!: number;
   protected _cy!: number;
   protected _radius!: number;
-  // TODO: calculate radius_divisor based on longest label, for pie and donut
-  protected _radiusDivisor = 2.3;
 
   constructor(
     paraview: ParaView,
@@ -40,12 +38,13 @@ export class VennPlotView extends DataLayer {
     super(paraview, width, height, index, chartInfo);
   }
 
+
   protected _addedToParent() {
     this._resetRadius();
   }
 
   get settings() {
-    return super.settings as DeepReadonly<RadialSettings>;
+    return super.settings as DeepReadonly<VennSettings>;
   }
 
   get cx() {
@@ -61,7 +60,7 @@ export class VennPlotView extends DataLayer {
   }
 
   get datapointViews() {
-    return super.datapointViews as RadialSlice[];
+    return super.datapointViews as VennRegionView[];
   }
 
   getIntersections(circle1: Circle, circle2: Circle): Point[] {
@@ -104,32 +103,19 @@ export class VennPlotView extends DataLayer {
   }
 
   protected _completeDatapointLayout(): void {
-    super._completeDatapointLayout();
-    this._createLabels();
+      super._completeDatapointLayout();
+      // optionally do any Venn-specific layout here
   }
+
   init() {
-    super.init();
+      super.init();
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['color.colorPalette', 'color.colorVisionMode'].includes(path)) {
-      if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
-        || this.paraview.store.settings.color.colorPalette === 'pattern') {
-        this.paraview.createDocumentView();
-        this.paraview.requestUpdate();
-      }
-    }
-
-    const settings = ['explode', 'orientationAngleOffset', 'insideLabels.contents', 'outsideLabels.contents'];
-    if (settings.map(s => `type.${this.paraview.store.type}.${s}`).includes(path)) {
-      this._resetRadius();
-      this._chartLandingView.clearChildren();
-      this._layoutDatapoints();
-      this.paraview.requestUpdate();
-    }
-
-    super.settingDidChange(path, oldValue, newValue);
+      // for now, just call super
+      super.settingDidChange(path, oldValue, newValue);
   }
+
 
   protected _resetRadius() {
     this._radius = Math.min(this._height, this._width) / 3;
@@ -138,74 +124,13 @@ export class VennPlotView extends DataLayer {
   }
 
   protected _createDatapoints() {
-    // Create exactly one datapoint view so something renders
-    console.log("Creating.....");
-    console.warn("Creating.....");
-    console.error("Creating.....");
-    console.log("Creating.....");
-    console.warn("Creating.....");
-    console.error("Creating.....");
-    console.log("Creating.....");
-    console.warn("Creating.....");
-    console.error("Creating.....");
-    console.log("Creating.....");
-    console.warn("Creating.....");
-    console.error("Creating.....");
-    const seriesView = this.seriesViews[0];
-    const dummyParams = {
-      category: 'A',
-      value: 1,
-      seriesIdx: 0,
-      percentage: 1,
-      accum: 0,
-      numDatapoints: 1
-    };
-    const dp = new VennRegionView(seriesView, dummyParams);
-    seriesView.append(dp);
   }
 
 
   protected _createLabels() {
-    const xs = this.paraview.store.model!.series[0].datapoints.map(dp =>
-      formatBox(dp.facetBox('x')!, this.paraview.store.getFormatType('pieSliceLabel'))
-    );
-    const ys = this.paraview.store.model!.series[0].datapoints.map(dp =>
-      formatBox(dp.facetBox('y')!, this.paraview.store.getFormatType('pieSliceLabel'))
-    );
-    for (const [x, i] of enumerate(xs)) {
-      const slice = this._chartLandingView.children[0].children[i] as RadialSlice;
-      if (this.settings.outsideLabels.contents) {
-        slice.createOutsidelabel();
-      }
-      if (this.settings.insideLabels.contents) {
-        slice.createInsideLabel();
-      }
-      // Labels draw as children of the slice so the highlights layer can `use` them
-    }
-    // NB: There may be outside labels even if they are disabled if
-    // one or more inside labels was moved to the outside for space
-    const outsideLabels = this.datapointViews
-      .map(dp => dp.outsideLabel)
-      .filter(label => label) as Label[];
-    if (!outsideLabels.length) return;
-    this._resolveOutsideLabelCollisions();
   }
 
   protected _resolveOutsideLabelCollisions() {
-    // Only slices that have outside labels
-    const slices = this.datapointViews.filter(slice => slice.outsideLabel);
-    // Sort slices according to label vertical location onscreen from lowest to highest
-    slices.sort((a, b) => b.outsideLabel!.y - a.outsideLabel!.y);
-
-    slices.slice(1).forEach((s, i) => {
-      // Move each label up out of collision with the one onscreen below it.
-      if (s.outsideLabel!.intersects(slices[i].outsideLabel!)) {
-        const oldY = s.outsideLabel!.y;
-        s.outsideLabel!.bottom = slices[i].outsideLabel!.top - this.settings.outsideLabels.vertGap; // - s.categoryLabel!.height;
-        const diff = s.outsideLabel!.y - oldY;
-        s.adjustLeader(diff);
-      }
-    });
   }
 
   focusRingShape(): Shape | null {
@@ -218,6 +143,7 @@ export class VennPlotView extends DataLayer {
   }
 }
 
+/*
 export interface RadialDatapointParams {
   category: string;
   value: number;
@@ -226,32 +152,14 @@ export interface RadialDatapointParams {
   accum: number;
   numDatapoints: number;
 }
-
+*/
 export class VennRegionView extends DatapointView {
   declare readonly chart: VennPlotView;
-  declare protected _shapes: SectorShape[];
+  declare protected _shapes: PathShape[];
 
-  protected _outsideLabel: Label | null = null;
-  protected _insideLabel: Label | null = null;
-  protected _leader: PathShape | null = null;
-  protected _focusRingShape: SectorShape | null = null;
-  protected _centralAngle = 0;
-
-  constructor(parent: SeriesView, protected _params: RadialDatapointParams) {
+  constructor(parent: SeriesView) {
     super(parent);
     this._isStyleEnabled = true;
-  }
-
-  get percentage() {
-    return this._params.percentage;
-  }
-
-  get outsideLabel() {
-    return this._outsideLabel;
-  }
-
-  get insideLabel() {
-    return this._insideLabel;
   }
 
   get shapes() {
@@ -266,6 +174,7 @@ export class VennRegionView extends DatapointView {
     return 'datapoint';
   }
 
+  /*
   get classInfo() {
     const classInfo: ClassInfo = {
       ...super.classInfo,
@@ -277,7 +186,7 @@ export class VennRegionView extends DatapointView {
     };
     return classInfo;
   }
-
+  */
   get styleInfo() {
     const style = super.styleInfo;
     delete style.strokeWidth;
@@ -289,34 +198,8 @@ export class VennRegionView extends DatapointView {
     return super.x;
   }
 
-  set x(x: number) {
-    if (this._outsideLabel) {
-      this._outsideLabel.x += x - this._x;
-    }
-    if (this._insideLabel) {
-      this._insideLabel.x += x - this._x;
-    }
-    if (this._leader) {
-      this._leader.x += x - this._x;
-    }
-    super.x = x;
-  }
-
   get y() {
     return super.y;
-  }
-
-  set y(y: number) {
-    if (this._outsideLabel) {
-      this._outsideLabel.y += y - this._y;
-    }
-    if (this._insideLabel) {
-      this._insideLabel.y += y - this._y;
-    }
-    if (this._leader) {
-      this._leader.y += y - this._y;
-    }
-    super.y = y;
   }
 
   protected _createSymbol() {
@@ -327,11 +210,11 @@ export class VennRegionView extends DatapointView {
 
     const shape = new PathShape(this.paraview, {
       points: [
-        { x: cx + r, y: cy },
-        { x: cx, y: cy + r },
-        { x: cx - r, y: cy },
-        { x: cx, y: cy - r },
-        { x: cx + r, y: cy }
+        new Vec2(cx + r, cy),
+        new Vec2(cx, cy + r),
+        new Vec2(cx - r, cy ),
+        new Vec2(cx, cy - r),
+        new Vec2(cx + r, cy)
       ],
       stroke: 'black',
       fill: 'none'
@@ -341,136 +224,13 @@ export class VennRegionView extends DatapointView {
     this.append(shape);
   }
 
-
-  get isPositionRight() {
-    return this.shapes[0].arcCenter.x > this.chart.cx;
-  }
-
-  get isPositionBottom() {
-    return this.shapes[0].arcCenter.y > this.chart.cy;
-  }
-
-
   protected _createShapes() {
     // For the simple test: just call _createSymbol
     this._createSymbol();
   }
-
-
-  createOutsidelabel(contents = '') {
-    const sector = this.shapes[0];
-    // Distance of label from chart circumference
-    const arcDistVec = sector.orientationVector.multiplyScalar(
-      this.chart.settings.outsideLabels.arcGap);
-    let textAnchor: LabelTextAnchor = 'end';
-    let bboxAnchor: BboxAnchorCorner = 'topLeft';
-    let leftPad = 0;
-    let rightPad = 0;
-    const loc = sector.arcCenter.add(arcDistVec);
-    if (this.isPositionRight) {
-      loc.x += this.chart.settings.outsideLabels.horizShift;
-      leftPad = this.chart.settings.outsideLabels.horizPadding;
-      textAnchor = 'start';
-    } else {
-      loc.x -= this.chart.settings.outsideLabels.horizShift;
-      rightPad = this.chart.settings.outsideLabels.horizPadding;
-    }
-    if (this.isPositionBottom) {
-      bboxAnchor = textAnchor === 'start' ? 'topLeft' : 'topRight';
-    } else {
-      bboxAnchor = textAnchor === 'start' ? 'bottomLeft' : 'bottomRight';
-    }
-    this._outsideLabel?.remove();
-    this._outsideLabel = new Label(this.paraview, {
-      text: this._labelContents(contents || this.chart.settings.outsideLabels.contents),
-      id: this.id + '-rlb',
-      classList: ['pastry-outside-label'],
-      role: 'datapoint',
-      [bboxAnchor]: loc,
-      textAnchor: textAnchor,
-    });
-    this._outsideLabel.padding = { left: leftPad, right: rightPad };
-    this._leader?.remove();
-    this._leader = this._createOutsideLabelLeader();
-    this.append(this._leader);
-    this.append(this._outsideLabel);
-  }
-
-  protected _createOutsideLabelLeader() {
-    const underlineStart = new Vec2(
-      (this.isPositionRight
-        ? this._outsideLabel!.paddedLeft
-        : this._outsideLabel!.paddedRight),
-      this.chart.settings.outsideLabels.leaderStyle === 'direct'
-        ? this._outsideLabel!.centerY
-        : this._outsideLabel!.bottom
-    ).addY(this.chart.settings.outsideLabels.leaderStyle === 'underline'
-      ? this.chart.settings.outsideLabels.underlineGap
-      : 0
-    );
-    const underlineSize = this.chart.settings.outsideLabels.leaderStyle === 'direct'
-      ? this.chart.settings.outsideLabels.horizPadding
-      : this._outsideLabel!.paddedWidth;
-    const path = new PathShape(this.paraview, {
-      points: [this.shapes[0].arcCenter, underlineStart, underlineStart.x > this._outsideLabel!.centerX
-        ? underlineStart.subtractX(underlineSize)
-        : underlineStart.addX(underlineSize)],
-      stroke: this.paraview.store.colors.colorValueAt(this.color),
-    });
-    path.classInfo = { 'pastry-outside-label-leader': true };
-    return path;
-  }
-
-  adjustLeader(diff: number) {
-    this._leader!.points = [
-      this._leader!.points[0],
-      this._leader!.points[1].addY(diff),
-      this._leader!.points[2].addY(diff)];
-  }
-
-  createInsideLabel() {
-    const sector = this.shapes[0];
-    let bboxAnchor: BboxAnchorCorner = 'topLeft';
-    if (this.isPositionBottom) {
-      bboxAnchor = this.isPositionRight ? 'topLeft' : 'topRight';
-    } else {
-      bboxAnchor = this.isPositionRight ? 'bottomLeft' : 'bottomRight';
-    }
-    this._insideLabel?.remove();
-    // console.log('LABEL', this._labelContents(this.chart.settings.insideLabels.contents));
-    this._insideLabel = new Label(this.paraview, {
-      text: this._labelContents(this.chart.settings.insideLabels.contents),
-      id: this.id + '-ilb',
-      classList: ['pastry-inside-label'],
-      role: 'datapoint',
-      [bboxOppositeAnchor(bboxAnchor)]: sector.loc.add(
-        sector.orientationVector.multiplyScalar(
-          this.chart.radius * this.chart.settings.insideLabels.position)),
-    });
-    if (!Object.values(this._insideLabel.textCorners).every(point => sector.containsPoint(point))) {
-      if (this._outsideLabel) {
-        this._outsideLabel.text += `\n${this._insideLabel.text}`;
-        // the old leader is still appended to the datapoint!
-        const oldLeader = this._leader!;
-        this._leader = this._createOutsideLabelLeader();
-        this.replaceChild(oldLeader, this._leader);
-      } else {
-        this.createOutsidelabel(
-          this.chart.settings.insideLabels.contents
-          + (this.chart.settings.outsideLabels.contents
-            ? ':' + this.chart.settings.outsideLabels.contents
-            : ''));
-      }
-      this._insideLabel = null;
-    } else {
-      this._insideLabel.styleInfo = {
-        fill: this.paraview.store.colors.contrastValueAt(this.color)
-      };
-      this.append(this._insideLabel);
-    }
-  }
-
+  /*
   focusRingShape() {
     return this._focusRingShape;
   }
+  */
 }

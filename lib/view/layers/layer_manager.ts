@@ -220,15 +220,6 @@ export class PlotLayerManager extends View {
   }
 
   private createDataLayers() {
-    console.log("Creating data layer");
-	console.error("Creating data layer");
-	console.warn("Creating data layer");
-	console.log("Creating data layer");
-	console.error("Creating data layer");
-	console.warn("Creating data layer");
-	console.log("Creating data layer");
-	console.error("Creating data layer");
-	console.warn("Creating data layer");
     const ctor = chartClasses[this.paraview.store.type];
     let dataLayer: DataLayer;
     if (ctor) {

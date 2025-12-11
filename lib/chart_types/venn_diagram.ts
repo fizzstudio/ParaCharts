@@ -27,8 +27,6 @@ import { type PlaneDatapoint } from '@fizz/paramodel';
 
 import { ChartType } from '@fizz/paramanifest';
 
-export type ArcType = 'circle' | 'semicircle';
-
 export class VennDiagramInfo extends BaseChartInfo {
 
   constructor(type: ChartType, store: ParaStore) {
