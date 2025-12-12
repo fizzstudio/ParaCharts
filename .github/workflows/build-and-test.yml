@@ -23,8 +23,7 @@ jobs:
         run: echo "//npm.fizz.studio/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" >> .npmrc
 
       - name: Install dependencies
-        run: npm i
-        timeout-minutes: 10
+        run: npm install --timeout=600000
 
       - name: Build
         run: |
