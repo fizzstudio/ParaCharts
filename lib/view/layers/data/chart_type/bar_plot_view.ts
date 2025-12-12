@@ -538,22 +538,7 @@ export class Bar extends PlaneDatapointView {
       },
       pointerMove: (e) => {
         if (this._popup) {
-          if (this.paraview.store.type == 'column') {
-            this._popup.grid.x = this.paraview.store.pointerCoords.x
-            this._popup.grid.y = this.paraview.store.pointerCoords.y - this.paraview.store.settings.popup.margin
-            this._popup.shiftGrid()
-            this._popup.box.x = this._popup.grid.x
-            this._popup.box.y = this._popup.grid.bottom
-            this.paraview.requestUpdate()
-          }
-          else if (this.paraview.store.type == 'bar') {
-            this._popup.grid.x = this.paraview.store.pointerCoords.y
-            this._popup.grid.y = this.chart.height - this.paraview.store.pointerCoords.x - this.paraview.store.settings.popup.margin;
-            this._popup.shiftGrid()
-            this._popup.box.x = this._popup.grid.x
-            this._popup.box.y = this._popup.grid.bottom
-            this.paraview.requestUpdate()
-          }
+          this.movePopupAction();
         }
       },
       pointerLeave: (e) => {

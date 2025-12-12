@@ -25,6 +25,7 @@ export interface PopupLabelOptions extends LabelOptions {
     inbounds?: boolean;
     fill?: string;
     rotationExempt?: boolean
+    pointerControlled?: boolean
 }
 
 export type ShapeTypes = "box" | "boxWithArrow";
@@ -49,9 +50,10 @@ export class Popup extends View {
     protected rightPadding = this.paraview.store.settings.popup.rightPadding;
     protected downPadding = this.paraview.store.settings.popup.downPadding;
     protected upPadding = this.paraview.store.settings.popup.upPadding;
-    protected horizShift = 0;
+    protected _horizShift = 0;
     protected arrowPosition: "up" | "bottom" | "left" | "right" = "bottom";
     protected _wrapWidth: number = this.paraview.store.settings.popup.maxWidth;
+    protected pointerControlled = false;
 
     get grid() {
         return this._grid;
@@ -65,12 +67,16 @@ export class Popup extends View {
         return this._box;
     }
 
+    set box(box: PathShape) {
+        this._box = box;
+    }
+
     get margin() {
         return this.popupLabelOptions.margin ?? this.paraview.store.settings.popup.margin;
     }
 
     get wrapWidth() {
-        return this._wrapWidth
+        return this._wrapWidth;
     }
 
     set wrapWidth(num: number) {
@@ -81,6 +87,17 @@ export class Popup extends View {
         return this.popupLabelOptions.text;
     }
 
+    get horizShift() {
+        return this._horizShift;
+    }
+
+    set horizShift(n: number) {
+        this._horizShift = n;
+    }
+
+    get _popupShapeOptions() {
+        return this.popupShapeOptions;
+    }
 
     constructor(paraview: ParaView, private popupLabelOptions: PopupLabelOptions, private popupShapeOptions: PopupShapeOptions) {
         super(paraview);
@@ -165,6 +182,9 @@ export class Popup extends View {
         if (this.popupLabelOptions.id) {
             this.id = this.popupLabelOptions.id;
         }
+        if (this.popupLabelOptions.pointerControlled) {
+            this.pointerControlled = this.popupLabelOptions.pointerControlled;
+        }
         if (!this.popupShapeOptions.fill) {
             this.popupShapeOptions.fill = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
                 : this.paraview.store.settings.popup.backgroundColor === "light" ?
@@ -194,8 +214,8 @@ export class Popup extends View {
                 this.grid.x += -(this.grid.width + 2 * BOX_ARROW_HEIGHT + this.rightPadding + this.leftPadding);
             }
             else {
-                this.horizShift = this.grid.right + this.rightPadding - chartWidth
-                this.grid.x -= this.horizShift;
+                this._horizShift = this.grid.right + this.rightPadding - chartWidth;
+                this.grid.x -= this._horizShift;
             }
         }
         let leftBorder = 0
@@ -206,8 +226,8 @@ export class Popup extends View {
             leftBorder = 0 - this.paraview.documentView!.chartLayers.x
         }
         if (this.grid.left - this.leftPadding < leftBorder) {
-            this.horizShift = - (this.leftPadding - this.grid.left + leftBorder);
-            this.grid.x -= this.horizShift;
+            this._horizShift = - (this.leftPadding - this.grid.left + leftBorder);
+            this.grid.x -= this._horizShift;
         }
         //Note shifting the label up away from the datapoint in the event of text wrap
         //has lower priority than shifting it down from the top of the screen
@@ -228,7 +248,9 @@ export class Popup extends View {
                 }
             }
         }
-
+        else {
+            this.arrowPosition = "bottom";
+        }
     }
 
     generateGrid() {
@@ -270,7 +292,7 @@ export class Popup extends View {
             });
             views.forEach(v => this._grid.append(v));
             this._grid.y = this.paraview.documentView!.chartLayers.height / 2 - this._grid.height / 2;
-            this._grid.x = this.popupLabelOptions.x! + BOX_ARROW_HEIGHT + this.leftPadding + this.horizShift;
+            this._grid.x = this.popupLabelOptions.x! + BOX_ARROW_HEIGHT + this.leftPadding + this._horizShift;
         }
         else {
             let views: (DataSymbol | Label)[] = [];
@@ -295,7 +317,7 @@ export class Popup extends View {
         const x = 0;
         const width = grid.width, height = grid.height;
         const lPad = this.leftPadding, rPad = this.rightPadding, uPad = this.upPadding, dPad = this.downPadding;
-        const hShift = this.horizShift;
+        const hShift = this._horizShift;
         if (boxType === "boxWithArrow") {
             if (this.arrowPosition == "bottom") {
                 const shape = new PopupPathShape(this.paraview, {
