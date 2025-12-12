@@ -85,7 +85,6 @@ export const DemoChart9: Story = {
 export const DemoChart10: Story = {
   name: "10. Venn Diagram",
   args: {
-    filename: "src/stories/venn-manifest-1.json",
-    manifestType: 'url'
+    filename: "manifests/venn-manifest-1.json",
   }
 }
