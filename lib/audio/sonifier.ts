@@ -29,11 +29,12 @@ SOFTWARE.
 import { OscillatorAudioEngine, type AudioEngine } from '.';
 import { AudioNotificationType } from './AudioEngine';
 import { type Axis } from '../view/axis';
-import { type DataLayer } from '../view/layers';
+import { PointDatapointView, type DataLayer } from '../view/layers';
 import { type ParaStore } from '../store';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { BaseChartInfo } from '../chart_types';
 import { AxisLabelInfo } from '../common/axisinfo';
+import { SoniPoint } from './soni_point';
 
 export const HERTZ = [
   16.3516, 17.32391, 18.35405, 19.44544, 20.60172, 21.82676, 23.12465, 24.49971, 25.95654, 27.5, 29.13524, 30.86771, // octave 0
@@ -152,10 +153,32 @@ export class Sonifier {
   }
 
   /**
-   * Play a given data point
-   * @param datapoint - the data point to play
+   * Play model datapoints
    */
   playDatapoints(datapoints: PlaneDatapoint[], {
+    cont = false,
+    invert = false,
+    durationVariable = false
+  }: {
+    cont?: boolean,
+    invert?: boolean,
+    durationVariable?: boolean
+  } = {}) {
+    datapoints.forEach((datapoint, i) => {
+      const dpView = this._store.paraChart.paraView.documentView?.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!;
+      if (dpView instanceof PointDatapointView) {
+        dpView.popInAnimation();
+      }
+    });
+    this.playSoniPoints(datapoints.map(dp => SoniPoint.fromModelDatapoint(dp, this._store.model!)), {
+      cont, invert, durationVariable
+    });
+  }
+
+  /**
+   * Play sonifiable datapoints.
+   */
+  playSoniPoints(soniPoints: SoniPoint[], {
     cont = false,
     invert = false,
     durationVariable = false
@@ -172,24 +195,7 @@ export class Sonifier {
 
     const hertzes = this._getHertzRange();
 
-    const xNominal = this._store.model!.getFacet('x')!.datatype === 'string';
-
-    datapoints.forEach((datapoint, i) => {
-
-      // Pastry chart datapoints currently fake being plane datapoints,
-      // and so don't have indep and dep keys
-      const x = datapoint.facetValueNumericized(datapoint.indepKey ?? 'x')!;
-      let y = datapoint.facetValueNumericized(datapoint.depKey ?? 'y')!;
-      // if (isUnplayable(x, this.chart.parent.docView.xAxis!)) {
-      //   return;
-      // }
-
-      const xDiff = xNominal
-        ? i
-        : (x - this._chartInfo.axisInfo!.xLabelInfo.min!);
-      const xRange = xNominal
-        ? (datapoints.length - 1)
-        : (this._chartInfo.axisInfo!.xLabelInfo.range!);
+    soniPoints.forEach((soniPoint, i) => {
       const xPan =
         /*this._xAxis.type === 'log10'
           ? calcPan(
@@ -198,9 +204,7 @@ export class Sonifier {
             (Math.log10(this._xAxis.maximum) -
               Math.log10(this._xAxis.minimum))
           )
-          :*/ calcPan(
-            xDiff / xRange
-          );
+          :*/ calcPan(soniPoint.xPan);
 
       /*if (current.type === 'annotation') {
         this._audioEngine.playNotification(
@@ -210,38 +214,30 @@ export class Sonifier {
         return;
       }*/
 
-      let yMin: number, yMax: number;
-      if (this._chartInfo.axisInfo) {
-        yMin = this._chartInfo.axisInfo.yLabelInfo.min!;
-        yMax = this._chartInfo.axisInfo.yLabelInfo.max!;
-      } else {
-        const yInt = this._store.model!.getFacetInterval('y')!;
-        yMin = yInt.start;
-        yMax = yInt.end;
-      }
+      let y = soniPoint.y;
       const origY = y;
       if (invert) {
-        y = yMax - (y - yMin);
+        y = soniPoint.yMax - (y - soniPoint.yMin);
       }
-      if (isUnplayable(y, yMin, yMax)) return;
+      if (isUnplayable(y, soniPoint.yMin, soniPoint.yMax)) return;
       if (cont) {
         let hertzMin = Math.min(...hertzes)
-        const pct = (y - yMin) / (yMax - yMin);
-        const hz = hertzMin * (1.05946 ** (pct * hertzes.length))
-        let pan = calcPan((x - this._chartInfo.axisInfo!.xLabelInfo.min!)
-          / this._chartInfo.axisInfo!.xLabelInfo.range!)
-        this._audioEngine!.playDataPoint(hz, pan, NOTE_LENGTH);
+        const pct = (y - soniPoint.yMin) / soniPoint.yRange;
+        const hz = hertzMin * (1.05946 ** (pct * hertzes.length));
+        // let pan = calcPan((x - this._chartInfo.axisInfo!.xLabelInfo.min!)
+        //   / this._chartInfo.axisInfo!.xLabelInfo.range!);
+        this._audioEngine!.playDataPoint(hz, xPan, NOTE_LENGTH);
       }
       else {
         const yBin = interpolateBin({
           point: y,
-          min: yMin,
-          max: yMax,
+          min: soniPoint.yMin,
+          max: soniPoint.yMax,
           bins: hertzes.length - 1,
           scale: 'linear'
         });
         const duration = durationVariable
-          ? (0.1 + (origY - yMin)/(yMax - yMin))
+          ? (0.1 + (origY - soniPoint.yMin)/soniPoint.yRange)
           : NOTE_LENGTH;
         this._audioEngine!.playDataPoint(hertzes[yBin], xPan, duration);
       }

@@ -55,6 +55,7 @@ export interface LabelOptions {
   hasBackground?: boolean;
   pointerEnter?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
+  pointerMove?: (e: PointerEvent) => void;
   click?: (e: MouseEvent) => void;
 }
 
@@ -265,7 +266,7 @@ export class Label extends View {
 
     let top = 0, bottom = 0, left = 0, right = 0;
 
-    const wrapMode = this.options.wrapWidth !== undefined && width > this.options.wrapWidth;
+    const wrapMode = this.options.wrapWidth !== undefined && Math.max(width, height) > this.options.wrapWidth;
     if (wrapMode || this._text.includes('\n')) {
       text.textContent = '';
       const tspans: SVGTSpanElement[] = [document.createElementNS(SVGNS, 'tspan')];
@@ -296,13 +297,13 @@ export class Label extends View {
           const rect = this.paraview.store.settings.ui.isFullscreenEnabled
             ? tspan.getBBox()
             : tspan.getBoundingClientRect();
-          if (rect.width >= this.options.wrapWidth!) {
+          if (Math.max(rect.height, rect.width) >= this.options.wrapWidth!) {
             tspan.textContent = oldContent;
             tspans.push(document.createElementNS(SVGNS, 'tspan'));
             text.append(tspans.at(-1)!);
             tspans.at(-1)!.textContent = tok;
             tspans.at(-1)!.setAttribute('x', '0');
-            tspans.at(-1)!.setAttribute('dy', `${rect.height + this._lineSpacing}px`);
+            tspans.at(-1)!.setAttribute('dy', `${Math.min(rect.height, rect.width) + this._lineSpacing}px`);
           }
         } else {
           tspan.textContent = tok;
@@ -331,7 +332,7 @@ export class Label extends View {
           const spanRect = tspan.getBoundingClientRect();
           let x = width - spanRect.width;
           if (this._justify === 'center') {
-            x = x/2;
+            x = x / 2;
           }
           this._textLines[i].offset = x;
         });
@@ -352,6 +353,7 @@ export class Label extends View {
     } else {
       this._textLines = [];
       const numChars = text.getNumberOfChars();
+      
       top = text.getExtentOfChar(0).y;
       bottom = text.getExtentOfChar(0).y + text.getExtentOfChar(0).height;
       left = text.getExtentOfChar(0).x;
@@ -423,6 +425,7 @@ export class Label extends View {
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
         @pointerenter=${this.options.pointerEnter ?? nothing}
         @pointerleave=${this.options.pointerLeave ?? nothing}
+        @pointermove=${this.options.pointerMove ?? nothing}
         @click=${this.options.click ?? nothing}
       >
         ${this._textLines.length

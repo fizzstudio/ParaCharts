@@ -118,17 +118,22 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
         wrapWidth: this._labelWrapWidth,
         x: 0,
         y: 0,
-      pointerEnter: (e) => {this.addPopup(labelText, i);
-      },
-      pointerLeave: (e) => {this.removePopup(this.id);
-      }
+        pointerEnter: (e) => {
+          this.paraview.store.settings.chart.isShowPopups
+            && this.paraview.store.settings.popup.activation === "onHover"
+            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(labelText, i) : undefined;
+        },
+        pointerLeave: (e) => {
+          this.paraview.store.settings.chart.isShowPopups
+            && this.paraview.store.settings.popup.activation === "onHover"
+            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.paraview.store.removePopup(this.id) : undefined;
+        }
       });
       this.append(label);
     }
   }
 
   addPopup(text: string, index: number): void{}
-  removePopup(id: string){}
 
   updateTickLabelIds() {
     // const xSeries = todo().controller.model!.indepVar;
@@ -276,8 +281,6 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
         text: text ?? datapointText,
         x: this._tickLabelX(index ?? 0) * regFactor,
         y: this.paraview.documentView?.chartLayers.height!,
-        textAnchor: "middle",
-        classList: ['annotationlabel'],
         id: this.id,
         type: "horizTick",
         fill: "hsl(0, 0%, 0%)",
@@ -285,15 +288,11 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
       },
       {
         fill: "hsl(0, 0%, 100%)",
-        shape: "box"
+        shape: "boxWithArrow"
       })
     this.paraview.store.popups.push(popup)
   }
 
-  removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    this.paraview.requestUpdate()
-  }
 
 }
 
@@ -366,10 +365,8 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
     let popup = new Popup(this.paraview,
       {
         text: text ?? datapointText,
-        x: this._tickLabelX(index ?? 0),
+        x: this._tickLabelX(index ?? 0) + 15,
         y: this._tickLabelY(index ?? 0) + this.paraview.store.settings.popup.margin - this.children[index ?? 0].height ,
-        textAnchor: "middle",
-        classList: ['annotationlabel'],
         id: this.id,
         type: "vertTick",
         fill: "hsl(0, 0%, 0%)",
@@ -377,14 +374,10 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
       },
       {
         fill: "hsl(0, 0%, 100%)",
-        shape: "box"
+        shape: "boxWithArrow"
       })
     this.paraview.store.popups.push(popup)
   }
 
-  removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    this.paraview.requestUpdate()
-  }
 
 }

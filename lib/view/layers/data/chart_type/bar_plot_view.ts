@@ -1,3 +1,19 @@
+/* ParaCharts: Bar Chart Plot Views
+Copyright (C) 2025 Fizz Studios
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
+
 import { type BaseChartInfo } from '../../../../chart_types';
 import { ParaView } from '../../../../paraview/paraview';
 import { Logger, getLogger } from '../../../../common/logger';
@@ -79,13 +95,6 @@ export class BarPlotView extends PlanePlotView {
     if (this.paraview.store.settings.type.bar.isAbbrevSeries) {
       this._abbrevs = abbreviateSeries(this.paraview.store.model!.seriesKeys);
     }
-
-    this.paraview.store.settingControls.add({
-      type: 'checkbox',
-      key: 'chart.showPopups',
-      label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.popups',
-    });
   }
 
   constructor(paraview: ParaView,
@@ -97,7 +106,7 @@ export class BarPlotView extends PlanePlotView {
     this.log = getLogger("BarPlotView");
   }
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['color.colorPalette', 'color.colorVisionMode', 'chart.showPopups'].includes(path)) {
+    if (['color.colorPalette', 'color.colorVisionMode', 'chart.isShowPopups'].includes(path)) {
       if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
         || this.paraview.store.settings.color.colorPalette === 'pattern') {
         this.paraview.createDocumentView();
@@ -412,7 +421,7 @@ export class Bar extends PlaneDatapointView {
       if (this.datapoint.data.y.value as number < 0) {
         this._y = this.chart.height - distFromXAxis - zeroHeight;
       } else {
-        this._y = this.chart.height - this.height - distFromXAxis - zeroHeight;
+        this._y = this.chart.height - this.height - distFromXAxis - zeroHeight - orderIdx*chartInfo.settings.stackInsideGap;
       }
     }
     const barGap = this.chart.availSpace / this.chart.numStacks;
@@ -423,7 +432,7 @@ export class Bar extends PlaneDatapointView {
       + barGap * (chartInfo.stacksPerCluster * this._stack.cluster.index + this._stack.index);
   }
 
-  beginAnimStep(t: number): void {
+  beginAnimStep(bezT: number, linearT: number): void {
     const chartInfo = this.chart.chartInfo as BarChartInfo;
     const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
     const pxPerYUnit = this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!;
@@ -433,14 +442,14 @@ export class Bar extends PlaneDatapointView {
     const zeroHeight = this.chart.parent.logicalHeight
       - (chartInfo.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!);
     // @ts-ignore
-    this._height = Math.abs((this.datapoint.data.y.value as number) * pxPerYUnit * t);
+    this._height = Math.abs((this.datapoint.data.y.value as number) * pxPerYUnit * bezT);
     // @ts-ignore
     if (this.datapoint.data.y.value as number < 0) {
-      this._y = this.chart.height - distFromXAxis * t - zeroHeight;
+      this._y = this.chart.height - distFromXAxis * bezT - zeroHeight;
     } else {
-      this._y = this.chart.height - this.height - distFromXAxis * t - zeroHeight;
+      this._y = this.chart.height - this.height - distFromXAxis * bezT - zeroHeight - orderIdx*chartInfo.settings.stackInsideGap;
     }
-    super.beginAnimStep(t);
+    super.beginAnimStep(bezT, linearT);
   }
 
   completeLayout() {
@@ -525,10 +534,30 @@ export class Bar extends PlaneDatapointView {
       height: this._height,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
+      },
+      pointerMove: (e) => {
+        if (this._popup) {
+          if (this.paraview.store.type == 'column') {
+            this._popup.grid.x = this.paraview.store.pointerCoords.x
+            this._popup.grid.y = this.paraview.store.pointerCoords.y - this.paraview.store.settings.popup.margin
+            this._popup.shiftGrid()
+            this._popup.box.x = this._popup.grid.x
+            this._popup.box.y = this._popup.grid.bottom
+            this.paraview.requestUpdate()
+          }
+          else if (this.paraview.store.type == 'bar') {
+            this._popup.grid.x = this.paraview.store.pointerCoords.y
+            this._popup.grid.y = this.chart.height - this.paraview.store.pointerCoords.x - this.paraview.store.settings.popup.margin;
+            this._popup.shiftGrid()
+            this._popup.box.x = this._popup.grid.x
+            this._popup.box.y = this._popup.grid.bottom
+            this.paraview.requestUpdate()
+          }
+        }
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.removePopup(this.id) : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.paraview.store.removePopup(this.id) : undefined
       },
     }));
     super._createShapes();
@@ -546,28 +575,4 @@ export class Bar extends PlaneDatapointView {
       isClip: this.shouldClip
     });
   }
-
-
-  addPopup(text?: string) {
-    let datapointText = `${this.seriesKey} ${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
-    let popup = new Popup(this.paraview,
-      {
-        text: text ?? datapointText,
-        x: this.x + this.width / 2,
-        y: this.y,
-        textAnchor: "middle",
-        classList: ['annotationlabel'],
-        id: this.id,
-        color: this.color,
-        points: [this]
-      },
-      {})
-    this.paraview.store.popups.push(popup)
-  }
-
-  removePopup(id: string) {
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    this.paraview.requestUpdate()
-  }
-
 }

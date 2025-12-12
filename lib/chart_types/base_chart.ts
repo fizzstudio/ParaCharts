@@ -22,7 +22,7 @@ import { type AxisInfo } from '../common/axisinfo';
 import { type LegendItem } from '../view/legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
 import { Logger, getLogger } from '../common/logger';
-import { ParaStore, type SparkBrailleInfo, datapointIdToCursor } from '../store';
+import { ParaStore, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor } from '../store';
 import { Sonifier } from '../audio/sonifier';
 import { type AxisCoord } from '../view/axis';
 
@@ -83,6 +83,12 @@ export abstract class BaseChartInfo {
         max: 1000
       },
       parentView: 'controlPanel.tabs.chart.general.height',
+    });
+    this._store.settingControls.add({
+      type: 'checkbox',
+      key: 'chart.isShowPopups',
+      label: 'Show popups',
+      parentView: 'controlPanel.tabs.chart.popups',
     });
   }
 
@@ -165,6 +171,7 @@ export abstract class BaseChartInfo {
     return seriesInNavOrder.map((key, i) => (
       {
         label: '',
+        seriesKey: key,
         color: this._store.seriesProperties!.properties(key).color,
         symbol: this._store.seriesProperties!.properties(key).symbol,
       }));
@@ -403,6 +410,13 @@ export abstract class BaseChartInfo {
       const seriesPreviouslyVisited = this._store.everVisitedSeries(cursor.options.seriesKey);
       const datapoint = this._store.model!.atKeyAndIndex(cursor.options.seriesKey, cursor.options.index)!;
       const announcements = [this._summarizer.getDatapointSummary(datapoint, 'statusBar')];
+      const annotations = this._store.annotations.filter(
+        (a) => a.type === 'datapoint' && a.seriesKey === datapoint.seriesKey && a.index === datapoint.datapointIndex
+      ) as PointAnnotation[];
+      if (annotations.length > 0) {
+        const annotationsText = annotations.map((a) => a.text).join(', ');
+        announcements.push(`Annotation${annotations.length > 1 ? 's' : ''}: ${annotationsText}`);
+      }
       const isSeriesChange = !this._store.wasVisitedSeries(cursor.options.seriesKey);
       if (isSeriesChange) {
         announcements[0] = `${this._store.model!.atKey(cursor.options.seriesKey)!.getLabel()}: ${announcements[0]}`;
@@ -411,6 +425,7 @@ export abstract class BaseChartInfo {
           announcements.push(seriesSummary.text);
         }
       }
+
       this._store.announce(announcements);
       if (this._store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
         this.playDatapoints([datapoint]);

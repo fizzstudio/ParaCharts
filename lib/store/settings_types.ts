@@ -187,6 +187,7 @@ export interface ChartSettings extends SettingGroup {
   isDrawSymbols: boolean;
   isStatic: boolean;
   isShowVisitedDatapointsOnly: boolean;
+  isShowPopups: boolean;
 }
 
 /** @public */
@@ -336,16 +337,28 @@ export interface BarSettings extends PlotSettings {
   orderBy?: string;
   clusterGap: number;
   barGap: number;
-  //stackInsideGap: number;
+  stackInsideGap: number;
   isAbbrevSeries: boolean;
   clusterLabelFormat: LabelFormat;
   lineWidth: number;
-  showPopups: boolean;
+  isShowPopups: boolean;
   labelFontSize: string;
 }
 
 /** @public */
 export interface LollipopSettings extends BarSettings {
+}
+
+/** @public */
+export interface WaterfallSettings extends PlotSettings {
+  barWidth: number;
+  colorByDatapoint: boolean;
+  isDrawLabels: boolean;
+  labelPosition: BarDataLabelPosition;
+  barLabelGap: number;
+  barGap: number;
+  showPopups: boolean;
+  labelFontSize: string;
 }
 
 /** @public */
@@ -364,7 +377,7 @@ export interface LineSettings extends PointSettings {
   seriesLabelPadding: number; // also used after leader lines
   leaderLineLength: number;
   isAlwaysShowSeriesLabel?: boolean;
-  showPopups: boolean;
+  isShowPopups: boolean;
   isTrendNavigationModeEnabled: boolean;
 }
 
@@ -442,6 +455,7 @@ export interface ChartTypeSettings extends SettingGroup {
   gauge: RadialSettings;
   stepline: StepLineSettings;
   lollipop: LollipopSettings;
+  waterfall: WaterfallSettings;
 }
 
 /** @public */

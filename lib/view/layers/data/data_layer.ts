@@ -26,7 +26,7 @@ import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../.
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { bboxOfBboxes } from '../../../common/utils';
 import { BaseChartInfo } from '../../../chart_types';
-import { Bezier } from '../../../common';
+import { Bezier, loopParaviewRefresh } from '../../../common';
 
 /**
  * @public
@@ -164,7 +164,7 @@ export abstract class DataLayer extends PlotLayer {
         this.paraview.store.userLineBreaks.splice(0, this.paraview.store.userLineBreaks.length)
       }
     }
-    if (['chart.showPopups'].includes(path)) {
+    if (['chart.isShowPopups'].includes(path)) {
       this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
     }
     super.settingDidChange(path, oldValue, newValue);
@@ -221,8 +221,9 @@ export abstract class DataLayer extends PlotLayer {
   // }
 
   protected _animateReveal() {
-      let start = -1;
+    let start = -1;
     const bez = new Bezier(0.2, 0.9, 0.5, 1, 10);
+    const linear = new Bezier(0, 0, 1, 1, 10);
     const step = (timestamp: number) => {
       if (start === -1) {
         start = timestamp;
@@ -233,7 +234,8 @@ export abstract class DataLayer extends PlotLayer {
       const revealTime = Math.max(1, this.paraview.store.settings.animation.animateRevealTimeMs);
       const t = Math.min(elapsed/revealTime, 1);
       const bezT = bez.eval(t)!;
-      this._animStep(bezT);
+      const linearT = linear.eval(t)!;
+      this._animStep(bezT, linearT);
       this.paraview.paraChart.postNotice('animRevealStep', bezT);
       this.paraview.requestUpdate();
       if (elapsed < revealTime) {
@@ -243,29 +245,21 @@ export abstract class DataLayer extends PlotLayer {
       }
     };
     this._currentAnimationFrame = requestAnimationFrame(step);
-    const start2 = Date.now()
-    const loop = () => {
-      let timestamp = setTimeout(() => {
-        this.paraview.requestUpdate()
-        loop();
-      }, 50);
-      if (Date.now() - start2 > this.paraview.store.settings.animation.popInAnimateRevealTimeMs
-        + this.paraview.store.settings.animation.animateRevealTimeMs) {
-        clearTimeout(timestamp)
-      }
-    };
-    loop()
+    if (this.paraview.store.settings.animation.symbolPopIn){
+          loopParaviewRefresh(this.paraview, 500 + this.paraview.store.settings.animation.popInAnimateRevealTimeMs
+        + this.paraview.store.settings.animation.animateRevealTimeMs, 50);
+    }
   }
 
-  protected _animStep(t: number) {
+  protected _animStep(bezT: number, linearT: number) {
     if (this.paraview.store.settings.animation.lineSnake) {
-      this.paraview.clipWidth = t * this.paraview.documentView!.chartLayers.width;
+      this.paraview.clipWidth = linearT * this.paraview.documentView!.chartLayers.width;
     }
     for (const datapointView of this.datapointViews) {
-      datapointView.beginAnimStep(t);
+      datapointView.beginAnimStep(bezT, linearT);
     }
     for (const datapointView of this.datapointViews) {
-      datapointView.endAnimStep(t);
+      datapointView.endAnimStep(bezT, linearT);
     }
   }
 
@@ -278,7 +272,7 @@ export abstract class DataLayer extends PlotLayer {
   stopAnimation() {
     if (this._currentAnimationFrame !== null) {
       cancelAnimationFrame(this._currentAnimationFrame);
-      this._animStep(1);
+      this._animStep(1, 1);
       this.paraview.paraChart.postNotice('animRevealStep', 1);
       this.paraview.requestUpdate();
       this._animEnd();

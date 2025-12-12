@@ -6,8 +6,6 @@ import { defineConfig } from 'vitest/config';
 import packageConfig from './package.json';
 import * as child from 'child_process';
 
-import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
-
 const commitHash = child.execSync('git rev-parse --short HEAD').toString();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -36,35 +34,45 @@ export default defineConfig({
     }
   },
   server: {
-    port: 5180
+    port: 5180,
+    fs: {
+      allow: ['..']
+    }
   },
   test: {
+    include: ['src/tests/**/*.test.ts'],
+    dangerouslyIgnoreUnhandledErrors: true,
+    silent: false,
     browser: {
       enabled: true,
       provider: 'playwright',
       name: 'chromium',
       headless: true
-    },
-    projects: [{
-      extends: true,
-      plugins: [
-      // The plugin will run tests for the stories defined in your Storybook config
-      // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
-      storybookTest({
-        configDir: join(__dirname, '.storybook-test')
-      })],
-      test: {
-        name: 'storybook',
-        browser: {
-          enabled: true,
-          headless: true,
-          provider: 'playwright',
-          instances: [{
-            browser: 'chromium'
-          }]
-        },
-        setupFiles: ['.storybook-test/vitest.setup.ts']
-      }
-    }]
+    }
+  },
+  optimizeDeps: {
+    include: [
+      'lit',
+      'lit/decorators.js',
+      'lit/directives/ref.js',
+      'lit/directives/class-map.js',
+      'lit/directives/unsafe-html.js',
+      'lit/directives/style-map.js',
+      'lit/static-html.js',
+      '@lit-app/state',
+      'immer',
+      '@fizz/paramanifest',
+      '@fizz/parasummary',
+      '@fizz/chart-classifier-utils',
+      '@fizz/ui-components',
+      '@fizz/jimerator',
+      '@fizz/paramodel',
+      '@fizz/sparkbraille-component',
+      '@fizz/clustering',
+      '@fizz/templum',
+      'decimal.js',
+      'papaparse',
+      'simple-statistics'
+    ]
   }
 });

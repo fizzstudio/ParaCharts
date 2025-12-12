@@ -107,6 +107,9 @@ export class Popup extends View {
         }
 
         this.append(this._grid);
+        if (this.popupLabelOptions.type == 'vertTick' || this.popupLabelOptions.type == 'vertAxis') {
+            this.arrowPosition = "left";
+        }
         this._box = this.generateBox(popupShapeOptions);
         this.append(this._box);
 
@@ -130,26 +133,27 @@ export class Popup extends View {
         }
 
 
-
-
+        this.box.classInfo = { 'popup-box': true };
+        this.label.classInfo = { 'popup-text': true };
         //The box generation relies on the grid having set dimensions, which happens during append()
         //but we also need the box to render behind the grid
-        this._children.unshift(this._box);
-        this._children.pop();
-
-        if (popupLabelOptions.id) {
-            this.id = popupLabelOptions.id;
-        }
+        this._children[0] = this.box;
+        this._children[1] = this.grid;
+        this._box.x = this._grid.x
+        this._box.y = this._grid.bottom
     }
 
     applyDefaults() {
-        if (!this.popupLabelOptions.color) {
+        if (this.popupLabelOptions.color == undefined) {
             this.popupLabelOptions.color = 0;
         }
-        if (!this.popupLabelOptions.wrapWidth) {
+        if (this.popupLabelOptions.textAnchor == undefined) {
+            this.popupLabelOptions.textAnchor == "middle"
+        }
+        if (this.popupLabelOptions.wrapWidth == undefined) {
             this.popupLabelOptions.wrapWidth = this.wrapWidth;
         }
-        if (this.popupLabelOptions.y) {
+        if (this.popupLabelOptions.y !== undefined) {
             this.popupLabelOptions.y -= this.margin;
         }
         if (this.popupLabelOptions.inbounds == undefined) {
@@ -157,6 +161,9 @@ export class Popup extends View {
         }
         if (this.popupLabelOptions.rotationExempt == undefined) {
             this.popupLabelOptions.rotationExempt = true;
+        }
+        if (this.popupLabelOptions.id) {
+            this.id = this.popupLabelOptions.id;
         }
         if (!this.popupShapeOptions.fill) {
             this.popupShapeOptions.fill = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
@@ -191,7 +198,13 @@ export class Popup extends View {
                 this.grid.x -= this.horizShift;
             }
         }
-        const leftBorder = this.popupLabelOptions.type === 'vertAxis' ? 0 - this.paraview.documentView!.vertAxis!.layout.vRules[1] : 0;
+        let leftBorder = 0
+        if (this.popupLabelOptions.type === 'vertAxis') {
+            leftBorder = 0 - this.paraview.documentView!.vertAxis!.layout.vRules[1]
+        }
+        else if (this.popupLabelOptions.type === 'controlPanelIcon') {
+            leftBorder = 0 - this.paraview.documentView!.chartLayers.x
+        }
         if (this.grid.left - this.leftPadding < leftBorder) {
             this.horizShift = - (this.leftPadding - this.grid.left + leftBorder);
             this.grid.x -= this.horizShift;
@@ -278,8 +291,8 @@ export class Popup extends View {
     generateBox(options: PopupShapeOptions) {
         const boxType = options.shape ?? "box";
         const grid = this._grid;
-        const y = grid.bottom;
-        const x = grid.x;
+        const y = 0;
+        const x = 0;
         const width = grid.width, height = grid.height;
         const lPad = this.leftPadding, rPad = this.rightPadding, uPad = this.upPadding, dPad = this.downPadding;
         const hShift = this.horizShift;
@@ -409,7 +422,7 @@ export class Popup extends View {
         }
         return svg`
               <g
-                id="popups"
+                id=${this.id ?? "popup"}
                 transform=${transform}
               >
                 ${super.content()}

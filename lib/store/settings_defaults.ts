@@ -71,7 +71,7 @@ export const defaults: Settings = {
     isDrawSymbols: true,
     isStatic: false,
     isShowVisitedDatapointsOnly: false,
-    showPopups: false
+    isShowPopups: false
   },
   axis: {
     minInterval: 25,
@@ -207,10 +207,10 @@ export const defaults: Settings = {
       isAbbrevSeries: true,
       orderBy: undefined,
       barGap: 2,
-      //stackInsideGap: 4,
+      stackInsideGap: 2,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
-      showPopups: false,
+      isShowPopups: false,
       labelFontSize: '8pt'
     },
     column: {
@@ -227,10 +227,10 @@ export const defaults: Settings = {
       isAbbrevSeries: true,
       orderBy: undefined,
       barGap: 20,
-      //stackInsideGap: 0,
+      stackInsideGap: 2,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
-      showPopups: false,
+      isShowPopups: false,
       labelFontSize: '8pt'
     },
     line: {
@@ -247,7 +247,7 @@ export const defaults: Settings = {
         height: 20,
       },
       isDrawSymbols: true,
-      showPopups: false,
+      isShowPopups: false,
       isTrendNavigationModeEnabled: false
     },
     scatter: {
@@ -380,10 +380,20 @@ export const defaults: Settings = {
       isAbbrevSeries: true,
       orderBy: undefined,
       barGap: 0.25,
-      //stackInsideGap: 4,
+      stackInsideGap: 4,
       clusterLabelFormat: 'raw',
-      showPopups: false,
+      isShowPopups: false,
       labelFontSize: '8pt'
+    },
+    waterfall: {
+      barWidth: 10,
+      colorByDatapoint: false,
+      isDrawLabels: true,
+      labelPosition: 'outside',
+      barLabelGap: 10,
+      barGap: 10,
+      showPopups: false,
+      labelFontSize: '10pt'
     }
   },
   grid: {
@@ -407,7 +417,7 @@ export const defaults: Settings = {
   animation: {
     isAnimationEnabled: true,
     animateRevealTimeMs: 2500,
-    popInAnimateRevealTimeMs: 1500,
+    popInAnimateRevealTimeMs: 750,
     animationType: 'uniform',
     animationOrigin: 'initialValue',
     animationOriginValue: 0,

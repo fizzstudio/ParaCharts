@@ -19,6 +19,7 @@ export interface ShapeOptions {
   isPattern?: boolean;
   isClip?: boolean;
   pointerEnter?: (e: PointerEvent) => void;
+  pointerMove?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
 }
 
@@ -118,6 +119,14 @@ export abstract class Shape extends View {
 
   set fill(fill: string | undefined) {
     this._styleInfo.fill = fill;
+  }
+
+  get opacity() {
+    return this._styleInfo.opacity as number | undefined;
+  }
+
+  set opacity(opacity: number | undefined) {
+    this._styleInfo.opacity = opacity;
   }
 
   get outerBbox() {

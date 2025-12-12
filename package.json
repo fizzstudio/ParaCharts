@@ -1,6 +1,6 @@
 {
   "name": "@fizz/paracharts",
-  "version": "0.37.0",
+  "version": "0.38.0",
   "description": "Not quite Parable Charts",
   "contributors": [
     {
@@ -62,7 +62,6 @@
   "type": "module",
   "scripts": {
     "dev": "storybook dev --no-open -p 5180",
-    "dev:test": "storybook dev --no-open -p 5180 -c .storybook-test",
     "go": "npm i && storybook dev --no-open -p 5180",
     "demo:headless": "vite --port 5177 --open src/demo/headless/vite/headless.html",
     "demo:ai": "vite --port 5178 --open src/demo/ai/ai.html",
@@ -72,9 +71,8 @@
     "build:stories": "node src/stories/storiesBuilder.ts",
     "build-storybook": "storybook build",
     "doc": "api-documenter markdown --input-folder ./temp --output-folder ./docs",
-    "pretest": "npm run build",
-    "test": "npx vitest run --project=storybook --poolOptions.threads.maxThreads 2",
-    "test-storybook": "test-storybook --url http://localhost:5180/ --maxWorkers=2",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
     "pubpatch": "npm version patch && npm publish",
     "pubminor": "npm version minor && npm publish",
     "pubmajor": "npm version major && npm publish",
@@ -92,7 +90,7 @@
   },
   "types": "./dist/paracharts.d.ts",
   "devDependencies": {
-    "@fizz/chart-data": "^2.2.5",
+    "@fizz/chart-data": "^2.2.11",
     "@fizz/test-utils": "^0.2.0",
     "@microsoft/api-documenter": "^7.25.11",
     "@microsoft/api-extractor": "^7.47.6",
@@ -119,14 +117,14 @@
   },
   "dependencies": {
     "@fizz/chart-classifier-utils": "^0.16.0",
-    "@fizz/clustering": "^0.15.3",
+    "@fizz/clustering": "^0.16.0",
     "@fizz/dataframe": "^0.27.0",
-    "@fizz/jimerator": "^0.9.0",
-    "@fizz/paramanifest": "^0.6.2",
-    "@fizz/paramodel": "^0.6.7",
-    "@fizz/parasummary": "^0.9.2",
+    "@fizz/jimerator": "^0.10.1",
+    "@fizz/paramanifest": "^0.8.0",
+    "@fizz/paramodel": "^0.6.13",
+    "@fizz/parasummary": "^0.9.7",
     "@fizz/sparkbraille-component": "^0.5.0",
-    "@fizz/templum": "^0.4.2",
+    "@fizz/templum": "^0.4.4",
     "@fizz/ui-components": "^0.70.4",
     "@lit-app/state": "^1.0.1",
     "decimal.js": "^10.4.3",

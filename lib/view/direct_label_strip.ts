@@ -19,46 +19,56 @@ import { Label } from './label';
 import { fixed } from '../common/utils';
 import { View, Container } from './base_view';
 
-import { svg } from 'lit';
+import { svg, TemplateResult } from 'lit';
 import { styleMap, StyleInfo } from 'lit/directives/style-map.js';
 import { type LinePlotView, type LineSection } from './layers';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
+import { ParaView } from '../paraview';
+import { Datapoint } from '@fizz/paramodel';
 
 /**
  * Strip of series labels and leader lines.
  * @public
  */
 export class DirectLabelStrip extends Container(View) {
-  protected seriesLabels!: Label[];
-  protected leaders!: LineLabelLeader[];
+  protected _seriesLabels!: Label[];
+  protected _leaders!: LineLabelLeader[];
 
-  constructor(private _chart: LinePlotView) {
-    super(_chart.paraview);
-    this.log = getLogger("DirectLabelStrip");
+  constructor(paraview: ParaView, height: number) {
+    super(paraview);
+    this.log = getLogger('DirectLabelStrip');
     this._id = 'direct-label-strip';
+    this._height = height;
+    this._hidden = true;
     this._createLabels();
   }
 
   protected _createLabels() {
     const directLabelPadding = this.paraview.store.settings.chart.isDrawSymbols
-      ? this._chart.settings.seriesLabelPadding*2
-      : this._chart.settings.seriesLabelPadding;
+      ? this.paraview.store.settings.type.line.seriesLabelPadding*2
+      : this.paraview.store.settings.type.line.seriesLabelPadding;
     // Sort points from highest to lowest onscreen
-    const endpoints = this._chart.datapointViews.
-      filter(datapoint =>
-        datapoint.index === this.paraview.store.model!.series[0].length - 1
-      );
-    endpoints.sort((a, b) => a.y - b.y);
-    this.seriesLabels?.forEach(label => {
+    const endpoints = this.paraview.store.model!.series.map(series => series.datapoints.at(-1)!);
+    // const endpoints = this._chart.datapointViews.
+    //   filter(datapoint =>
+    //     datapoint.index === this.paraview.store.model!.series[0].length - 1
+    //   );
+    endpoints.sort((a, b) => b.facetValueAsNumber('y')! - a.facetValueAsNumber('y')!);
+    this._seriesLabels?.forEach(label => {
       label.remove();
     });
-    this.seriesLabels = [];
+    this._seriesLabels = [];
+    const endpointYs: number[] = [];
     // Create labels
     endpoints.forEach((ep, i) => {
-      this.seriesLabels.push(new Label(this.paraview, {
-        text: ep.series.label,
+      const yLabelInfo = this.paraview.documentView!.chartInfo.axisInfo!.yLabelInfo;
+      const pxPerYUnit = this._height / yLabelInfo.range!;
+      const labelY = this._height - (ep.facetValueNumericized('y')! - yLabelInfo.min!) * pxPerYUnit;
+      endpointYs.push(labelY);
+      this._seriesLabels.push(new Label(this.paraview, {
+        text: this.paraview.store.model!.atKey(ep.seriesKey)!.getLabel(),
         left: directLabelPadding,
-        y: ep.y,
+        y: labelY,
         classList: ['direct-label'],
         pointerEnter: (e) => {
           this.paraview.store.lowlightOtherSeries(ep.seriesKey);
@@ -67,26 +77,24 @@ export class DirectLabelStrip extends Container(View) {
           this.paraview.store.clearAllSeriesLowlights();
         }
       }));
-      this.append(this.seriesLabels.at(-1)!);
+      this.append(this._seriesLabels.at(-1)!);
     });
-    this.seriesLabels.forEach(label => {
+    this._seriesLabels.forEach(label => {
       // Roughly center each label on its series endpoint
         label.y += label.locOffset.y/2;
     });
     // If the highest label is offscreen at all, push it back onscreen
-    const topLabel = this.seriesLabels[0];
-    // XXX This is rough: because when measured, labels may not get rendered with the
-    // same font settings they will ultimately be displayed with.
-    if (topLabel.y < 0) {
-      topLabel.y = 0;
+    const topLabel = this._seriesLabels[0];
+    if (topLabel.top < 0) {
+      topLabel.top = 0;
     }
     // // Same for the lowest label
-    const botLabel = this.seriesLabels.at(-1)!;
+    const botLabel = this._seriesLabels.at(-1)!;
     const diff = botLabel.bottom - this.height;
-    // if (diff > 0) {
-    //   botLabel.y -= diff;
-    // }
-    this.resolveSeriesLabelCollisions(endpoints);
+    if (diff > 0) {
+      botLabel.y -= diff;
+    }
+    this._resolveSeriesLabelCollisions(endpoints.map(e => e.seriesKey), endpointYs);
   }
 
   protected _addedToParent(): void {
@@ -96,39 +104,51 @@ export class DirectLabelStrip extends Container(View) {
   noticePosted(key: string, value: any): void {
     if (['animRevealStep', 'animRevealEnd'].includes(key)) {
       this._createLabels();
+      if (key === 'animRevealEnd') {
+        this._hidden = false;
+      }
     }
   }
 
   computeSize(): [number, number] {
     // XXX also need to support label strip on left, top, bottom
     return [
-      Math.max(...this.seriesLabels.map(label => label.right)),
-      this._chart.height
+      Math.max(...this._seriesLabels.map(label => label.right)),
+      this._height
     ];
   }
 
   // XXX I don't think this method will get the job done in all cases
-  private resolveSeriesLabelCollisions(endpoints: LineSection[]) {
-    const colliders: {label: Label, endpoint: LineSection}[] = [];
+  protected _resolveSeriesLabelCollisions(seriesKeys: string[], endpointYs: number[]) {
+    const colliders: {label: Label, seriesKey: string, endpointY: number}[] = [];
     // NB: It looks like all labels will have the same bbox height, although
     // I don't know whether that will hold for all possible diacritics
     // (I suspect not).
-    for (let i = 1; i < this.seriesLabels.length; i++) {
-      if (this.seriesLabels[i].top < this.seriesLabels[i - 1].bottom) {
-        if (colliders.at(-1)?.label !== this.seriesLabels[i - 1]) {
-          colliders.push({label: this.seriesLabels[i - 1], endpoint: endpoints[i - 1]});
+    for (let i = 1; i < this._seriesLabels.length; i++) {
+      if (this._seriesLabels[i].top < this._seriesLabels[i - 1].bottom) {
+        if (colliders.at(-1)?.label !== this._seriesLabels[i - 1]) {
+          colliders.push({
+            label: this._seriesLabels[i - 1],
+            seriesKey: seriesKeys[i - 1],
+            // endpoint screen y value
+            endpointY: endpointYs[i - 1]
+          });
         }
-        colliders.push({label: this.seriesLabels[i], endpoint: endpoints[i]});
+        colliders.push({
+          label: this._seriesLabels[i],
+          seriesKey: seriesKeys[i],
+          endpointY: endpointYs[i]
+        });
       }
     }
-    this.leaders?.forEach(leader => {
+    this._leaders?.forEach(leader => {
       leader.remove();
     });
-    this.leaders = [];
+    this._leaders = [];
 
     if (colliders.length) {
       const leaderLabelOffset = this.paraview.store.settings.chart.isDrawSymbols
-        ? -this._chart.settings.seriesLabelPadding
+        ? -this.paraview.store.settings.type.line.seriesLabelPadding
         : 0;
 
       // Re-sort colliders from lowest to highest onscreen.
@@ -140,7 +160,7 @@ export class DirectLabelStrip extends Container(View) {
       //If all collisions can't be resolved, switch to a different labeling approach.
 
       // Sort non-collider labels, if any, from lowest to highest onscreen
-      const nonColliderLabels = this.seriesLabels
+      const nonColliderLabels = this._seriesLabels
         .filter(label => !colliders.map(c => c.label).includes(label))
         .toReversed();
       if (nonColliderLabels.length) {
@@ -155,12 +175,20 @@ export class DirectLabelStrip extends Container(View) {
       }
       colliders.forEach(c => {
         // NB: this value already includes the series label padding
-        c.label.x += (this._chart.settings.leaderLineLength + leaderLabelOffset);
-        this.leaders.push(new LineLabelLeader(c.endpoint, c.label, this._chart));
-        this.prepend(this.leaders.at(-1)!);
+        c.label.x += (this.paraview.store.settings.type.line.leaderLineLength + leaderLabelOffset);
+        this._leaders.push(new LineLabelLeader(this.paraview, c.seriesKey, c.label, c.endpointY));
+        this.prepend(this._leaders.at(-1)!);
       });
     }
   }
+
+  // content(): TemplateResult {
+  //   for (const label of this._seriesLabels) {
+  //     const classInfo = label.classInfo;
+
+  //   }
+  //   return super.content();
+  // }
 
 }
 
@@ -168,17 +196,16 @@ export class DirectLabelStrip extends Container(View) {
  * Leader lines drawn from the endpoint of a series to its label.
  */
 class LineLabelLeader extends View {
-
   protected _lineD: string;
   protected _endX: number;
   protected _endY: number;
 
-  constructor(protected _endpoint: LineSection, label: Label, protected _chart: LinePlotView) {
-    super(_chart.paraview);
-    this._endX = this._chart.paraview.store.settings.type.line.leaderLineLength;
+  constructor(paraview: ParaView, protected _seriesKey: string, label: Label, pointY: number) {
+    super(paraview);
+    this._endX = this.paraview.store.settings.type.line.leaderLineLength;
     this._endY = label.y - label.locOffset.y/2;
     this._lineD = fixed`
-      M${0},${_endpoint.y}
+      M${0},${pointY}
       L${this._endX},${this._endY}`;
   }
 
@@ -186,7 +213,8 @@ class LineLabelLeader extends View {
     const styles: StyleInfo = {};
     // const colorValue = this._controller.colors.colorValue(
     //   this._controller.seriesManager.series(this.endpoint.seriesKey).color);
-    let colorValue = this._chart.paraview.store.colors.colorValueAt(this._endpoint.seriesProps.color);
+    let colorValue = this.paraview.store.colors.colorValueAt(
+      this.paraview.store.seriesProperties!.properties(this._seriesKey).color);
     styles.fill = colorValue;
     styles.stroke = colorValue;
     return styles;
@@ -195,7 +223,7 @@ class LineLabelLeader extends View {
   get classInfo(): ClassInfo {
     return {
       'label-leader': true,
-      'lowlight': this.paraview.store.isSeriesLowlighted(this._endpoint.seriesKey)
+      'lowlight': this.paraview.store.isSeriesLowlighted(this._seriesKey)
     }
   }
 
@@ -209,8 +237,8 @@ class LineLabelLeader extends View {
           d=${this._lineD}
           />
         <circle
-          cx=${this._endX}
-          cy=${this._endY}
+          cx=${fixed`${this._endX}`}
+          cy=${fixed`${this._endY}`}
           r="1.8"
         />
       </g>

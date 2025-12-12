@@ -1,12 +1,29 @@
+/* ParaCharts: Bar Charts
+Copyright (C) 2025 Fizz Studios
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
+
 import { Logger, getLogger } from '../common/logger';
 import { ParaStore } from '../store';
 import { PlaneChartInfo } from './plane_chart';
 import { AxisInfo } from '../common/axisinfo';
-import { DeepReadonly, BarSettings, datapointIdToCursor } from '../store';
+import { DeepReadonly, BarSettings, datapointIdToCursor, Setting } from '../store';
 import {
   queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax
 } from '../store/query_utils';
 import { type Label } from '../view/label';
+import { Highlight } from '@fizz/parasummary';
 
 import { ChartType, strToId } from '@fizz/paramanifest';
 import { enumerate, Box } from '@fizz/paramodel';
@@ -75,6 +92,7 @@ export class BarStack {
 export class BarChartInfo extends PlaneChartInfo {
   protected _clusteredData!: BarClusterMap;
   protected _stacksPerCluster!: number;
+  protected _prevHighlightNavcode = '';
 
   constructor(type: ChartType, store: ParaStore) {
     super(type, store);
@@ -91,6 +109,7 @@ export class BarChartInfo extends PlaneChartInfo {
     //const idxMax = yValues.indexOf(Math.max(...yValues));
     //const numBars = Object.values(Object.values(Object.values(this._clusteredData)[0].stacks)[0].bars).length;
     // XXX needs to be y units, not pixels
+    // At this point, there is no view object to get that information from
     //yValues[idxMax] += numBars*this.settings.stackInsideGap;
     this._axisInfo = new AxisInfo(this._store, {
       // xTiers: [this.paraview.store.model!.allFacetValues('x')!.map(x =>
@@ -109,6 +128,10 @@ export class BarChartInfo extends PlaneChartInfo {
       const seriesPerStack = 1;
       this._stacksPerCluster = Math.ceil(numSeries/seriesPerStack);
     }
+  }
+
+  get isIntertick(): boolean {
+    return true;
   }
 
   get settings() {
@@ -192,19 +215,94 @@ export class BarChartInfo extends PlaneChartInfo {
     return clusterMap;
   }
 
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if (['type.line.isTrendNavigationModeEnabled'].includes(path)) {
+      [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
+      this._navMap!.root.goTo('top', {});
+    }
+    super.settingDidChange(path, oldValue, newValue);
+  }
+
+  async storeDidChange(key: string, value: any) {
+    await super.storeDidChange(key, value);
+    if (key === 'seriesAnalyses') {
+      // This gets called each time a series analysis completes after a
+      // new manifest is loaded in AI mode. The following call will only
+      // do anything once analyses have been generated for all series.
+      this._createSequenceNavNodes();
+    }
+  }
+
+  protected _createNavMap() {
+    super._createNavMap();
+    // In AI mode, the following call will only do anything when the doc view
+    // has been recreated (so the series analyses already exist)
+    this._createSequenceNavNodes();
+  }
+
+  noticePosted(key: string, value: any) {
+    super.noticePosted(key, value);
+    if (this._store.settings.ui.isNarrativeHighlightEnabled) {
+      if (key === 'utteranceBoundary') {
+        const highlight: Highlight = value;
+        this._prevHighlightNavcode = this._doHighlight(highlight, this._prevHighlightNavcode);
+      } else if (key === 'utteranceEnd') {
+        // So that on the initial transition from auto-narration to manual
+        // span navigation, we don't remove any highlights added in manual mode
+        if (!this._store.paraChart.captionBox.highlightManualOverride) {
+          this._store.clearHighlight();
+          this._store.clearAllSeriesLowlights();
+        }
+        // this._highlightIndex = null;
+        if (this._prevHighlightNavcode) {
+          this.didRemoveHighlight(this._prevHighlightNavcode);
+          this._prevHighlightNavcode = '';
+        }
+      }
+    }
+  }
+
+  protected _doHighlight(highlight: Highlight, prevNavcode: string) {
+    if (highlight.navcode) {
+      if (highlight.navcode.startsWith('series')) {
+        const segments = highlight.navcode.split(/-/);
+        this._store.lowlightOtherSeries(...segments.slice(1));
+      } else {
+        this._store.clearHighlight();
+        this._store.highlight(highlight.navcode);
+        if (prevNavcode) {
+          this.didRemoveHighlight(prevNavcode);
+        }
+        this.didAddHighlight(highlight.navcode);
+      }
+      prevNavcode = highlight.navcode;
+    } else {
+      this._store.clearHighlight();
+      this._store.clearAllSeriesLowlights();
+      if (prevNavcode) {
+        this.didRemoveHighlight(prevNavcode);
+        prevNavcode = '';
+      }
+    }
+    return prevNavcode;
+  }
+
   legend() {
+    const model = this._store.model!;
     if (this._store.settings.legend.itemOrder === 'series') {
       // return this._chartLandingView.children.map(view => ({
       //   label: (view as SeriesView).seriesKey,
       //   color: (view as SeriesView).color  // series color
       // }));
-      return this._store.model!.series.map(series => ({
+      return model.series.map(series => ({
         label: series.getLabel(),
+        seriesKey: series.key,
         color: this._store.seriesProperties!.properties(series.key).color
       }));
     } else {
-      return this._store.model!.seriesKeys.toSorted().map(key => ({
-        label: this._store.model!.atKey(key)!.getLabel(),
+      return model.seriesKeys.toSorted().map(key => ({
+        label: model.atKey(key)!.getLabel(),
+        seriesKey: key,
         color: this._store.seriesProperties!.properties(key).color
       }));
     }
@@ -229,10 +327,12 @@ export class BarChartInfo extends PlaneChartInfo {
         msgArray = this.describeChord(visitedDatapoints);
       } */
       const seriesKey = queriedNode.options.seriesKey;
-      const datapointCount = this._store.model!.atKey(seriesKey)!.length;
+      const series = this._store.model!.atKey(seriesKey)!;
+      const datapointCount = series.length;
+      const seriesLabel = series.getLabel();
       msgArray.push(interpolate(
-        queryMessages.seriesKeyLength,
-        { seriesKey, datapointCount }
+        queryMessages.seriesLabelLength,
+        { seriesLabel, datapointCount }
       ));
     } else if (queriedNode.isNodeType('datapoint')) {
       /*
@@ -249,17 +349,19 @@ export class BarChartInfo extends PlaneChartInfo {
       const selectedDatapoints = this._store.selectedDatapoints;
       const seriesKey = queriedNode.options.seriesKey;
       const index = queriedNode.options.index;
-      const datapoint = this._store.model!.atKey(seriesKey)!.datapoints[index];
+      const series = this._store.model!.atKey(seriesKey)!;
+      const datapoint = series.datapoints[index];
+      const seriesLabel = series.getLabel();
       // XXX yuck
       const datapointView = this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
 
       msgArray.push(interpolate(
-        queryMessages.datapointKeyLength,
+        queryMessages.datapointLabelLength,
         {
-          seriesKey,
+          seriesLabel,
           datapointXY: formatXYDatapoint(datapoint, 'raw'),
           datapointIndex: queriedNode.options.index + 1,
-          datapointCount: this._store.model!.atKey(seriesKey)!.length
+          datapointCount: series.length
         }
       ));
 

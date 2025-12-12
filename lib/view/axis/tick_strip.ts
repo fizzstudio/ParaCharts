@@ -30,8 +30,6 @@ import { HorizCardinalDirection, OrientedAxisSettings, VertCardinalDirection } f
 export interface TickStripOptions {
   orientation: AxisOrientation;
   length: number;
-  plotWidth: number;
-  plotHeight: number;
   tickCount: number;
   isInterval: boolean;
   isDrawOverhang: boolean; // the axis line draws the overhang, not us

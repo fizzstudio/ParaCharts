@@ -28,7 +28,6 @@ export class ParaCaptionBox extends ParaComponent {
 
   @state() protected _caption: HighlightedSummary = { text: '', html: '' };
 
-  private _summarizer?: Summarizer;
   protected _storeChangeUnsub!: Unsubscribe;
   protected _spans: HTMLSpanElement[] = [];
   protected _isEBarVisible = false;
@@ -98,7 +97,7 @@ export class ParaCaptionBox extends ParaComponent {
         this._spans.push(span);
         span.addEventListener('pointerenter', (e: PointerEvent) => {
           if (!this._store.settings.ui.isNarrativeHighlightEnabled
-            || this._store.paraChart.ariaLiveRegion.voicing.isSpeaking) return;
+            || this._store.paraChart.paraView.ariaLiveRegion.voicing.isSpeaking) return;
           // NB: this requires there be an announcement, so it only works
           // in NH mode
           const highlight = this._store.announcement.highlights[i];
@@ -117,14 +116,7 @@ export class ParaCaptionBox extends ParaComponent {
 
   private async setCaption(): Promise<void> {
     if (this._store.dataState === 'complete') {
-      if (!this._summarizer) {
-        if (this.store.model!.type === 'pie' || this.store.model!.type === 'donut') {
-          this._summarizer = new PastryChartSummarizer(this.store.model!);
-        } else {
-          this._summarizer = new PlaneChartSummarizer(this.store.model as PlaneModel);
-        }
-      }
-      this._caption = await this._summarizer.getChartSummary();
+      this._caption = await this._store.paraChart.paraView.documentView!.chartInfo.summarizer.getChartSummary();
     }
   }
 
@@ -158,7 +150,7 @@ export class ParaCaptionBox extends ParaComponent {
       return (div.children[idx] as HTMLElement).innerText;
     };
 
-    const voicing = this._store.paraChart.ariaLiveRegion.voicing;
+    const voicing = this._store.paraChart.paraView.ariaLiveRegion.voicing;
     let idx = this._prevSpanIdx;
     if (!this._highlightManualOverride) {
       idx = voicing.highlightIndex!;

@@ -14,12 +14,13 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { type AriaLive } from '../components';
 import { Logger, getLogger } from '../common/logger';
 import { PointerEventManager } from './pointermanager';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaViewController } from '.';
 import { ParaComponent } from '../components';
-import { ChartType } from '@fizz/paramanifest';
+import { ChartType, strToId } from '@fizz/paramanifest';
 import { type ViewBox, type Setting, type HotkeyEvent } from '../store';
 import { View } from '../view/base_view';
 import { DocumentView } from '../view/document_view';
@@ -58,6 +59,7 @@ export class ParaView extends ParaComponent {
 
   @property() clipWidth?: number;
 
+  protected _ariaLiveRegionRef = createRef<AriaLive>();
   protected _controller!: ParaViewController;
   protected _viewBox!: ViewBox;
   protected _prevFocusLeaf?: View;
@@ -66,10 +68,11 @@ export class ParaView extends ParaComponent {
   protected _frameRef = createRef<SVGRectElement>();
   protected _dataspaceRef = createRef<SVGGElement>();
   protected _documentView?: DocumentView;
+  protected _containerRef = createRef<HTMLDivElement>();
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
   protected log: Logger = getLogger("ParaView");
-  
+
   @state() private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
   };
@@ -79,11 +82,12 @@ export class ParaView extends ParaComponent {
   // protected _hotkeyActions!: HotkeyActions;
   @state() protected _defs: { [key: string]: TemplateResult } = {};
   @state() protected _jim = '';
-
+  @state() protected _isFullscreen = false;
+  protected _exitingLowVisionMode = false;
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
 
-  protected _lowVisionModeSaved = new Map<string, any>();
+  protected _modeSaved = new Map<string, any>();
   protected _jimReadyPromise: Promise<void>;
   protected _jimReadyResolver!: (() => void);
   protected _jimReadyRejector!: (() => void);
@@ -166,6 +170,9 @@ export class ParaView extends ParaComponent {
       .column-total-label {
         font-size: calc(var(--column-label-font-size)*var(--chart-font-scale));
                 background-color: red;
+      }
+      .waterfall-label {
+        font-size: calc(var(--waterfall-label-font-size)*var(--chart-font-scale));
       }
       .pastry-inside-label {
       }
@@ -260,6 +267,13 @@ export class ParaView extends ParaComponent {
       .invis {
         opacity: 0;
       }
+      .popup-box {
+        filter: drop-shadow(3px 3px 5px #333);
+        pointer-events: none;
+      }
+      .popup-text {
+        pointer-events: none;
+      }
       .control-column {
         display: flex;
         flex-direction: column;
@@ -294,6 +308,18 @@ export class ParaView extends ParaComponent {
     });
   }
 
+  get ariaLiveRegion() {
+    return this._ariaLiveRegionRef.value!;
+  }
+
+  clearAriaLive() {
+    this._ariaLiveRegionRef.value!.clear();
+  }
+
+  showAriaLiveHistory() {
+    this._ariaLiveRegionRef.value!.showHistoryDialog();
+  }
+
   get viewBox() {
     return this._viewBox;
   }
@@ -301,7 +327,6 @@ export class ParaView extends ParaComponent {
   get root() {
     return this._rootRef.value;
   }
-
   get frame() {
     return this._frameRef.value;
   }
@@ -407,7 +432,7 @@ export class ParaView extends ParaComponent {
     if (path === 'ui.isFullscreenEnabled') {
       if (newValue && !document.fullscreenElement) {
         try {
-          this.root!.requestFullscreen();
+          this._containerRef.value!.requestFullscreen();
         } catch {
           this.log.error('failed to enter fullscreen');
           this._store.updateSettings(draft => {
@@ -438,27 +463,37 @@ export class ParaView extends ParaComponent {
         draft.color.isDarkModeEnabled = !!newValue;
         draft.ui.isFullscreenEnabled = !!newValue;
         if (newValue) {
-          this._lowVisionModeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
-          this._lowVisionModeSaved.set('chart.fontScale', draft.chart.fontScale);
-          this._lowVisionModeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+          this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
+          this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
+          this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
           // end any in-progress animation here
           this._documentView!.chartLayers.dataLayer.stopAnimation();
           draft.animation.isAnimationEnabled = false;
           draft.chart.fontScale = 2;
           draft.grid.isDrawVertLines = true;
         } else {
-          draft.animation.isAnimationEnabled = this._lowVisionModeSaved.get('animation.isAnimationEnabled');
-          draft.chart.fontScale = this._lowVisionModeSaved.get('chart.fontScale');
-          draft.grid.isDrawVertLines = this._lowVisionModeSaved.get('grid.isDrawVertLines');
-          this._lowVisionModeSaved.clear();
+          this._exitingLowVisionMode = true;
+          draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
+          draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
+          this._modeSaved.delete('animation.isAnimationEnabled');
+          this._modeSaved.delete('chart.fontScale');
+          this._modeSaved.delete('grid.isDrawVertLines');
         }
       });
+      if (this._exitingLowVisionMode) {
+        queueMicrotask(() => {
+          this._store.updateSettings(draft => {
+            draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
+          });
+          this._exitingLowVisionMode = false;
+        });
+      }
     } else if (path === 'ui.isVoicingEnabled') {
       if (this._store.settings.ui.isVoicingEnabled) {
         //if (this._hotkeyActions instanceof NormalHotkeyActions) {
         if (!this._store.settings.ui.isNarrativeHighlightEnabled) {
           const msg = ['Self-voicing enabled.'];
-          const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+          const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
           if (lastAnnouncement) {
             msg.push(lastAnnouncement);
           }
@@ -472,15 +507,15 @@ export class ParaView extends ParaComponent {
           })();
         }
       } else {
-        this.paraChart.ariaLiveRegion.voicing.shutUp();
+        this.ariaLiveRegion.voicing.shutUp();
         // Voicing is disabled at this point, so manually push this message through
-        this.paraChart.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
+        this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
       }
     } else if (path === 'ui.isNarrativeHighlightEnabled') {
       if (this._store.settings.ui.isNarrativeHighlightEnabled) {
         if (this._store.settings.ui.isVoicingEnabled) {
-		      this.startNarrativeHighlightMode();
-          const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+          this.startNarrativeHighlightMode();
+          const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
           const msg = ['Narrative Highlights Mode enabled.'];
           if (lastAnnouncement) msg.push(lastAnnouncement);
           this._store.announce(msg);
@@ -488,11 +523,11 @@ export class ParaView extends ParaComponent {
             this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
           })();
         } else {
-		      this._store.updateSettings(draft => {
+          this._store.updateSettings(draft => {
             draft.ui.isVoicingEnabled = true;
           });
           this.startNarrativeHighlightMode();
-          const lastAnnouncement = this.paraChart.ariaLiveRegion.lastAnnouncement;
+          const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
           const msg = ['Narrative Highlights Mode enabled.'];
           if (lastAnnouncement) msg.push(lastAnnouncement);
           this._store.announce(msg);
@@ -500,6 +535,12 @@ export class ParaView extends ParaComponent {
             this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
           })();
         }
+        this._store.updateSettings(draft => {
+          this._modeSaved.set(
+            'type.line.isTrendNavigationModeEnabled',
+            draft.type.line.isTrendNavigationModeEnabled);
+          draft.type.line.isTrendNavigationModeEnabled = true;
+        });
       } else {
         // Narrative highlights turned OFF
         this.endNarrativeHighlightMode();
@@ -507,17 +548,20 @@ export class ParaView extends ParaComponent {
         // Disable self-voicing as well
         this._store.updateSettings(draft => {
           draft.ui.isVoicingEnabled = false;
+          draft.type.line.isTrendNavigationModeEnabled = this._modeSaved.get(
+            'type.line.isTrendNavigationModeEnabled');
+          this._modeSaved.delete('type.line.isTrendNavigationModeEnabled');
         });
-
         this._store.announce(['Narrative Highlight Mode disabled.']);
       }
-    } else if(path === 'ui.isNarrativeHighlightPaused') {
-	    this.paraChart.ariaLiveRegion.voicing.togglePaused();
-	}
+    } else if (path === 'ui.isNarrativeHighlightPaused') {
+      this.ariaLiveRegion.voicing.togglePaused();
+    }
   }
 
   protected _onFullscreenChange() {
     if (document.fullscreenElement) {
+      this._isFullscreen = true;
       if (!this._store.settings.ui.isFullscreenEnabled) {
         // fullscreen was entered manually
         this._store.updateSettings(draft => {
@@ -525,6 +569,7 @@ export class ParaView extends ParaComponent {
         }, true);
       }
     } else {
+      this._isFullscreen = false;
       if (this._store.settings.ui.isLowVisionModeEnabled) {
         this._store.updateSettings(draft => {
           draft.ui.isLowVisionModeEnabled = false;
@@ -599,20 +644,21 @@ export class ParaView extends ParaComponent {
       draft.ui.isVoicingEnabled = true;
     });
     this._store.updateSettings(draft => {
-      draft.chart.showPopups = true;
+      draft.chart.isShowPopups = true;
     });
   }
 
   endNarrativeHighlightMode() {
     this._store.updateSettings(draft => {
       draft.ui.isVoicingEnabled = false;
-      draft.chart.showPopups = false;
+      draft.chart.isShowPopups = false;
     });
   }
 
   createDocumentView() {
     this.log.info('creating document view', this.type);
     this._documentView = new DocumentView(this);
+    this._documentView.init();
     this.computeViewBox();
     // The style manager may get declaration values from chart objects
     this.paraChart.styleManager.update();
@@ -641,9 +687,9 @@ export class ParaView extends ParaComponent {
 
   async addJIMSeriesSummaries() {
     const summarizer = this._documentView!.chartInfo.summarizer;
-    const seriesKeys = this._store.model?.seriesKeys || [];
+    const seriesKeys = this._store.model?.originalSeriesKeys || [];
     for (const seriesKey of seriesKeys) {
-      const summary = await summarizer.getSeriesSummary(seriesKey);
+      const summary = await summarizer.getSeriesSummary(strToId(seriesKey));
       const summaryText = typeof summary === 'string' ? summary : summary.text;
       this._store.jimerator!.addSeriesSummary(seriesKey, summaryText);
     }
@@ -741,32 +787,28 @@ export class ParaView extends ParaComponent {
     this.requestUpdate();
   }
 
+
   protected _rootStyle() {
     const style: { [prop: string]: any } = {
       fontFamily: this._store.settings.chart.fontFamily,
       fontWeight: this._store.settings.chart.fontWeight
     };
-    if (document.fullscreenElement === this.root) {
+    if (this._isFullscreen) {
       const vbWidth = Math.round(this._viewBox.width);
       const vbHeight = Math.round(this._viewBox.height);
-      const vbRatio = (Math.min(vbWidth, vbHeight) / Math.max(vbWidth, vbHeight)) * 100;
-      if (vbWidth > vbHeight) {
-        style.width = '100vw';
-        style.height = `${vbRatio}vh`;
-      } else {
-        style.width = `${vbRatio}vw`;
-        style.height = '100vh';
-      }
+      const vbRatio =
+        (Math.min(vbWidth, vbHeight) / Math.max(vbWidth, vbHeight)) * 100;
+      style.width = "100vw";
+      style.height = "100vh";
     }
-
     const contrast = this.store.settings.color.contrastLevel * 50;
     if (this._store.settings.color.isDarkModeEnabled) {
-      style['--axis-line-color'] = `hsl(0, 0%, ${50 + contrast}%)`;
-      style['--label-color'] = `hsl(0, 0%, ${50 + contrast}%)`;
-      style['--background-color'] = `hsl(0, 0%, ${((100 - contrast) / 5) - 10}%)`;
+      style["--axis-line-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
+      style["--label-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
+      style["--background-color"] = `hsl(0, 0%, ${(100 - contrast) / 5 - 10}%)`;
     } else {
-      style['--axis-line-color'] = `hsl(0, 0%, ${50 - contrast}%)`;
-      style['--label-color'] = `hsl(0, 0%, ${50 - contrast}%)`;
+      style["--axis-line-color"] = `hsl(0, 0%, ${50 - contrast}%)`;
+      style["--label-color"] = `hsl(0, 0%, ${50 - contrast}%)`;
     }
     return style;
   }
@@ -784,7 +826,8 @@ export class ParaView extends ParaComponent {
   render(): TemplateResult {
     this.log.info('render');
     return html`
-      <svg
+    <div ${ref(this._containerRef)} @fullscreenchange=${() => this._onFullscreenChange()}>
+    <svg
         role="application"
         tabindex=${this.disableFocus ? -1 : 0}
         aria-label=${this._documentView ? `${this._documentView.titleText}, accessible chart` : 'loading...'}
@@ -796,14 +839,13 @@ export class ParaView extends ParaComponent {
         class=${classMap(this._rootClasses())}
         viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
         style=${styleMap(this._rootStyle())}
-        @fullscreenchange=${() => this._onFullscreenChange()}
         @focus=${() => {
-          if (!this._store.settings.chart.isStatic) {
-            //this.log.info('focus');
-            //this.todo.deets?.onFocus();
-            //this.documentView?.chartInfo.navMap?.visitDatapoints();
-          }
-        }}
+        if (!this._store.settings.chart.isStatic) {
+          //this.log.info('focus');
+          //this.todo.deets?.onFocus();
+          //this.documentView?.chartInfo.navMap?.visitDatapoints();
+        }
+      }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
         @pointerdown=${(ev: PointerEvent) => this._pointerEventManager?.handleStart(ev)}
         @pointerup=${(ev: PointerEvent) => this._pointerEventManager?.handleEnd(ev)}
@@ -845,10 +887,16 @@ export class ParaView extends ParaComponent {
         </rect>
         ${this._documentView?.render() ?? ''}
       </svg>
+      <para-aria-live-region
+        ${ref(this._ariaLiveRegionRef)}
+        .store=${this._store}
+        .announcement=${this._store.announcement}
+      ></para-aria-live-region>
       <div
         ${ref(this._fileSavePlaceholderRef)}
         hidden
       ></div>
+      </div>
     `;
   }
 

@@ -47,9 +47,9 @@ export class PieSlice extends RadialSlice {
     }
   }
 
-  beginAnimStep(t: number): void {
-    this._centralAngle = this._params.percentage*360*t;
-    super.beginAnimStep(t);
+  beginAnimStep(bezT: number, linearT: number): void {
+    this._centralAngle = this._params.percentage*360*bezT;
+    super.beginAnimStep(bezT, linearT);
   }
 
   protected _createShapes() {
@@ -68,10 +68,20 @@ export class PieSlice extends RadialSlice {
       annularThickness: this.chart.settings.annularThickness,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.addPopup() : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
+      },
+      pointerMove: (e) => {
+        if (this._popup) {
+          this._popup.grid.x = this.paraview.store.pointerCoords.x
+          this._popup.grid.y = this.paraview.store.pointerCoords.y - this.paraview.store.settings.popup.margin
+          this._popup.shiftGrid()
+          this._popup.box.x = this._popup.grid.x
+          this._popup.box.y = this._popup.grid.bottom
+          this.paraview.requestUpdate()
+        }
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.showPopups ? this.removePopup(this.id) : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.paraview.store.removePopup(this.id) : undefined
       },
     });
     this._shapes.push(slice);
@@ -115,53 +125,5 @@ export class PieSlice extends RadialSlice {
       stroke: 'black',
       strokeWidth: 2
     });
-  }
-
-  addPopup(text?: string) {
-    if (this.paraview.store.popups.some(p => p.id == this.id)){
-      return
-    }
-    let angle = 2 * Math.PI - ((this._params.accum * 2 * Math.PI) + (this._params.percentage * Math.PI) - (this.chart.settings.orientationAngleOffset * 2 * Math.PI / 360))
-    let x = this.x + this.chart.radius * (1 - this.chart.settings.annularThickness / 2) * Math.cos(angle)
-    let y = this.y - this.chart.radius * (1 - this.chart.settings.annularThickness / 2) * Math.sin(angle)
-    let datapointText = `${this.seriesKey} ${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
-    let popup = new Popup(this.paraview,
-      {
-        text: text ?? datapointText,
-        x: x,
-        y: y,
-        textAnchor: "middle",
-        classList: ['annotationlabel'],
-        id: this.id,
-        color: this.color,
-        points: [this]
-      },
-      {
-        shape: "boxWithArrow",
-        fill: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
-          : this.paraview.store.settings.popup.backgroundColor === "light" ?
-            this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.color), 6)
-            : this.paraview.store.colors.colorValueAt(this.color),
-        stroke: this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
-          : this.paraview.store.settings.popup.backgroundColor === "light" ?
-            this.paraview.store.colors.colorValueAt(this.color)
-            : "black",
-      })
-    this.paraview.store.popups.push(popup)
-  }
-
-  removePopup(id: string) {
-    let coords = this.paraview.pointerEventManager!.coords!
-    let relativeX = coords.x - this.paraview.documentView!.padding.left - this.paraview.documentView!.chartLayers.x
-    let relativeY = coords.y - this.paraview.documentView!.padding.top - this.paraview.documentView!.chartLayers.y
-    let popup = this.paraview.store.popups.find(p => p.id === id)!
-    this.paraview.store.popups.splice(this.paraview.store.popups.findIndex(p => p.id === id), 1)
-    if (!popup){
-      return
-    }
-    if (relativeX <= popup.box.right && relativeX >= popup.box.left && relativeY >= popup.box.top && relativeY <= popup.box.bottom){
-      return
-    }
-    this.paraview.requestUpdate()
   }
 }
