@@ -150,8 +150,6 @@ export class Popup extends View {
         //but we also need the box to render behind the grid
         this._children[0] = this.box;
         this._children[1] = this.grid;
-        this._box.x = this._grid.x
-        this._box.y = this._grid.bottom
     }
 
     applyDefaults() {
@@ -417,6 +415,8 @@ export class Popup extends View {
         this._box = box;
         this.prepend(this._box);
         this.box.classInfo = { 'popup-box': true };
+        this._box.x = this._grid.x
+        this._box.y = this._grid.bottom
     }
 
     content() {
