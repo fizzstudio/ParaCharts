@@ -2,7 +2,7 @@ name: Build and Test
 
 on:
   push:
-    branches: [ main, develop, ryan-ci, workflow-fix ]
+    branches: [ main, develop ]
   pull_request:
     branches: [ main ]
 
