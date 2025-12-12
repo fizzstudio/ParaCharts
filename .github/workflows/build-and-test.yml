@@ -1,9 +1,10 @@
 name: Build and Test
 
 on:
+  push:
+    branches: [ main, develop ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
   build-and-test:
@@ -17,12 +18,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          registry-url: 'https://npm.fizz.studio'
+
+      - name: Setup npm auth
+        run: echo "//npm.fizz.studio/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" >> .npmrc
 
       - name: Install dependencies
-        run: npm ci
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        run: npm install --timeout=600000
 
       - name: Build
         run: |
