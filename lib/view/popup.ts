@@ -44,7 +44,7 @@ const DEFAULT_CHORD_POPUP_LINE_WIDTH = 6
 
 export class Popup extends View {
     protected _label: Label;
-    protected _box: PathShape;
+    protected _box!: PathShape;
     protected _grid: GridLayout;
     protected leftPadding = this.paraview.store.settings.popup.leftPadding;
     protected rightPadding = this.paraview.store.settings.popup.rightPadding;
@@ -127,9 +127,7 @@ export class Popup extends View {
         if (this.popupLabelOptions.type == 'vertTick' || this.popupLabelOptions.type == 'vertAxis') {
             this.arrowPosition = "left";
         }
-        this._box = this.generateBox(popupShapeOptions);
-        this.append(this._box);
-
+        this.generateBox(popupShapeOptions);
 
         const chartWidth = parseFloat(this.paraview.documentView!.chartLayers.width.toFixed(5));
         if (this.popupLabelOptions.type === "sequence") {
@@ -144,13 +142,9 @@ export class Popup extends View {
                     this.grid.x = points[0].x - this.grid.width - this.leftPadding - BOX_ARROW_HEIGHT
                 }
                 this._children.pop();
-                this._box = this.generateBox(popupShapeOptions);
-                this.append(this._box);
+                this.generateBox(popupShapeOptions)
             }
         }
-
-
-        this.box.classInfo = { 'popup-box': true };
         this.label.classInfo = { 'popup-text': true };
         //The box generation relies on the grid having set dimensions, which happens during append()
         //but we also need the box to render behind the grid
@@ -318,6 +312,7 @@ export class Popup extends View {
         const width = grid.width, height = grid.height;
         const lPad = this.leftPadding, rPad = this.rightPadding, uPad = this.upPadding, dPad = this.downPadding;
         const hShift = this._horizShift;
+        let box;
         if (boxType === "boxWithArrow") {
             if (this.arrowPosition == "bottom") {
                 const shape = new PopupPathShape(this.paraview, {
@@ -340,7 +335,7 @@ export class Popup extends View {
                     shape: "boxWithArrow",
                     arrowPosition: "down"
                 });
-                return shape;
+                box = shape;
             }
             else if (this.arrowPosition == "right") {
                 let shape = new PopupPathShape(this.paraview, {
@@ -360,7 +355,7 @@ export class Popup extends View {
                     shape: "boxWithArrow",
                     arrowPosition: "right"
                 });
-                return shape;
+                box = shape;
             }
             else if (this.arrowPosition == "left") {
                 let shape = new PopupPathShape(this.paraview, {
@@ -380,7 +375,7 @@ export class Popup extends View {
                     shape: "boxWithArrow",
                     arrowPosition: "left"
                 });
-                return shape;
+                box = shape;
             }
             else {
                 let shape = new PopupPathShape(this.paraview, {
@@ -403,7 +398,7 @@ export class Popup extends View {
                     shape: "boxWithArrow",
                     arrowPosition: "up"
                 });
-                return shape;
+                box = shape;
             }
         }
         else {
@@ -417,8 +412,11 @@ export class Popup extends View {
                 stroke: options.stroke,
                 shape: "box"
             });
-            return shape;
+            box = shape;
         }
+        this._box = box;
+        this.prepend(this._box);
+        this.box.classInfo = { 'popup-box': true };
     }
 
     content() {

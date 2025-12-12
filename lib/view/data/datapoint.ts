@@ -417,8 +417,7 @@ export class DatapointView extends DataView {
       }
       let options = this._popup._popupShapeOptions
       this._popup.box.remove()
-      this._popup.box = this._popup.generateBox(options);
-      this._popup.prepend(this._popup.box)
+      this._popup.generateBox(options);
       this._popup.box.x = this._popup.grid.x
       this._popup.box.y = this._popup.grid.bottom
       this.paraview.requestUpdate()
