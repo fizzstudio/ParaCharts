@@ -69,6 +69,7 @@ export class ParaView extends ParaComponent {
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
   protected log: Logger = getLogger("ParaView");
+  clipWidth: number = 1
 
   @state() private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
@@ -821,7 +822,6 @@ export class ParaView extends ParaComponent {
   }
 
   render(): TemplateResult {
-    console.log(this.store.settings.chart.clipWidth)
     this.log.info('render');
     return html`
     <div ${ref(this._containerRef)} @fullscreenchange=${() => this._onFullscreenChange()}>
@@ -862,7 +862,7 @@ export class ParaView extends ParaComponent {
               <rect
                 x=${0}
                 y=${0}
-                width=${this.store.settings.chart.clipWidth * this._documentView.chartLayers.width}
+                width=${this.clipWidth * this._documentView.chartLayers.width}
                 height=${this._documentView.chartLayers.height}>
               </rect>
             </clipPath>

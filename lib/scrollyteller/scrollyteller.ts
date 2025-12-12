@@ -196,21 +196,22 @@ export class Scrollyteller {
         if (action === 'playSonification') {
           this.parachart.api.getSeries(params[0]).playRiff();
         }
-        if (action === 'clipWidth') {
-          let oldWidth = this.parachart.paraView.store.settings.chart.clipWidth;
-          this.parachart.api.setSetting('chart.clipWidth', Number(params[0]));
+        if (action === 'clipTo') {
+          let fraction = this.parachart.paraView.documentView!.chartLayers.dataLayer.datapointView(params[0].toLowerCase(), Number(params[1]))!.x / this.parachart.paraView.documentView!.chartLayers.width
+          let oldWidth = this.parachart.paraView.clipWidth;
+          this.parachart.paraView.clipWidth = Number(fraction)
           for (let dpView of this.parachart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
             let planeDpView = dpView as PointDatapointView
             planeDpView.alwaysClip = true;
             //planeDpView._hasAnimated = false;
 
-            if (planeDpView.x - 1 <= Number(params[0]) * this.parachart.paraView.documentView!.chartLayers.width
+            if (planeDpView.x - 1 <= Number(fraction) * this.parachart.paraView.documentView!.chartLayers.width
               && planeDpView.x - 1 > oldWidth * this.parachart.paraView.documentView!.chartLayers.width
             ) {
               planeDpView.popInAnimation()
               //planeDpView._hasAnimated = true;
             }
-            else if (planeDpView.x - 1 > Number(params[0]) * this.parachart.paraView.documentView!.chartLayers.width) {
+            else if (planeDpView.x - 1 > Number(fraction) * this.parachart.paraView.documentView!.chartLayers.width) {
               //planeDpView._hasAnimated = false;
               planeDpView.baseSymbolScale = 0;
             }

@@ -124,6 +124,12 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       dpView.alwaysClip = true;
       dpView.baseSymbolScale = 0;
     })
+    for (let dpView of this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews){
+      if (datapointsClone.filter(dp => dp.seriesKey == dpView.seriesKey && dp.datapointIndex == dpView.index).length == 0){
+        dpView.alwaysClip = false;
+      dpView.baseSymbolScale = 1;
+      }
+    }
     let paraview = this._store.paraChart.paraView
     paraview.documentView!.chartLayers.dataLayer.datapointViews.map(d => d.completeLayout())
     if (order === 'sorted') {
@@ -149,11 +155,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
         const revealTime = SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length
         const t = Math.min(elapsed / revealTime, 1);
         const linearT = linear.eval(t)!;
-        datapoints.forEach(d => this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(d.seriesKey, d.datapointIndex)!.alwaysClip = true)
-        this._store.updateSettings(draft => {
-          draft.chart.clipWidth = linearT;
-        })
-        paraview.requestUpdate();
+        this._store.paraChart.paraView.clipWidth = linearT;
         if (elapsed < revealTime) {
           requestAnimationFrame(step);
         } else {
@@ -174,7 +176,6 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
         }
       }, SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex));
     }
-    datapoints.forEach(d => this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(d.seriesKey, d.datapointIndex)!.alwaysClip = false)
   }
 
   playDatapoints(datapoints: PlaneDatapoint[]): void {
