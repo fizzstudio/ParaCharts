@@ -337,7 +337,7 @@ export interface BarSettings extends PlotSettings {
   orderBy?: string;
   clusterGap: number;
   barGap: number;
-  //stackInsideGap: number;
+  stackInsideGap: number;
   isAbbrevSeries: boolean;
   clusterLabelFormat: LabelFormat;
   lineWidth: number;

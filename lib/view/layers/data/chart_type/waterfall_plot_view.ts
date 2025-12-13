@@ -66,15 +66,15 @@ export class WaterfallPlotView extends PlanePlotView {
     // bar will have 1/2 `barGap` on its left, ditto for the last bar
     // on its right, and each bar is separated by `barGap`
     this._numBars = this.paraview.store.model!.series[0].length;
-    let maxBarWidth = this._width/this._numBars;
+    let maxBarWidth = this._width / this._numBars;
     let gapWidth = 0;
     if (maxBarWidth >= MIN_BAR_WIDTH_FOR_GAPS) {
-      this._barWidth = (1 - BAR_GAP_PERCENTAGE)*maxBarWidth;
-      gapWidth = BAR_GAP_PERCENTAGE*maxBarWidth;
+      this._barWidth = (1 - BAR_GAP_PERCENTAGE) * maxBarWidth;
+      gapWidth = BAR_GAP_PERCENTAGE * maxBarWidth;
     } else {
       this._barWidth = maxBarWidth;
     }
-    this._availSpace = gapWidth*this._numBars;
+    this._availSpace = gapWidth * this._numBars;
 
     super._beginDatapointLayout();
   }
@@ -170,22 +170,22 @@ export class WaterfallBarView extends PlaneDatapointView {
     } else {
       this.beginAnimStep(1, 1);
     }
-    const barGap = this.chart.availSpace/this.chart.numBars;
-    this._x = barGap/2 + idealWidth*this._index + barGap*this._index;
+    const barGap = this.chart.availSpace / this.chart.numBars;
+    this._x = barGap / 2 + idealWidth * this._index + barGap * this._index;
   }
 
   beginAnimStep(bezT: number, linearT: number): void {
-    const pxPerYUnit = this.chart.parent.logicalHeight/this.chart.chartInfo.axisInfo!.yLabelInfo.range!;
+    const pxPerYUnit = this.chart.parent.logicalHeight / this.chart.chartInfo.axisInfo!.yLabelInfo.range!;
     const zeroHeight = this.chart.parent.logicalHeight
       - (this.chart.chartInfo.axisInfo!.yLabelInfo.max! * pxPerYUnit);
-    this._height = Math.abs(this.datapoint.facetValueAsNumber('y')!*pxPerYUnit*bezT);
+    this._height = Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit * bezT);
 
     if (this.index) {
       if (this.isLast) {
         const total = this._parent.children.slice(0, -1)
           .map(view => view.datapoint.facetValueAsNumber('y')!)
           .reduce((a, b) => a + b);
-        this._height = Math.abs(total*bezT * pxPerYUnit);
+        this._height = Math.abs(total * bezT * pxPerYUnit);
         this._y = total >= 0
           ? this.chart.height - this._height - zeroHeight
           : this.chart.height - zeroHeight;
@@ -286,21 +286,14 @@ export class WaterfallBarView extends PlaneDatapointView {
         this.paraview.store.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
       },
       pointerMove: (e) => {
-        if (this._popup) {
-            this._popup.grid.x = this.paraview.store.pointerCoords.x
-            this._popup.grid.y = this.paraview.store.pointerCoords.y - this.paraview.store.settings.popup.margin
-            this._popup.shiftGrid()
-            this._popup.box.x = this._popup.grid.x
-            this._popup.box.y = this._popup.grid.bottom
-            this.paraview.requestUpdate()
-        }
+        this.movePopupAction()
       },
       pointerLeave: (e) => {
         this.paraview.store.settings.chart.isShowPopups ? this.paraview.store.removePopup(this.id) : undefined
       },
     }));
     if (this.index) {
-      const barGap = this.chart.availSpace/this.chart.numBars;
+      const barGap = this.chart.availSpace / this.chart.numBars;
       const tailY = this.datapoint.facetValueAsNumber('y')! >= 0 && !this.isLast
         ? this._height
         : 0;

@@ -36,6 +36,10 @@ export class WaterfallChartInfo extends PlaneChartInfo {
     super(type, store);
   }
 
+  get isIntertick(): boolean {
+    return true;
+  }
+
   get settings() {
     return super.settings as DeepReadonly<WaterfallSettings>;
   }

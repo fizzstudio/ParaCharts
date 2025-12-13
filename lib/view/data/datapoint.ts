@@ -351,9 +351,12 @@ export class DatapointView extends DataView {
     let color = this.color
     let fill = undefined;
     let shape = "boxWithArrow"
+    let pointerControlled = false;
     if (['bar', 'column', 'waterfall'].includes(this.paraview.store.type)) {
       x = this.x + this.width / 2
-      shape = this.paraview.store.settings.popup.activation === 'onHover' ? "box" : "boxWithArrow"
+      if (this.paraview.store.settings.popup.activation == "onHover") {
+        pointerControlled = true;
+      }
     }
     if (['waterfall'].includes(this.paraview.store.type)) {
       const palIdx = this.paraview.store.colors.indexOfPalette('semantic');
@@ -374,7 +377,9 @@ export class DatapointView extends DataView {
       let angle = 2 * Math.PI - ((params.accum * 2 * Math.PI) + (params.percentage * Math.PI) - (chart.settings.orientationAngleOffset * 2 * Math.PI / 360))
       x = this.x + chart.radius * (1 - chart.settings.annularThickness / 2) * Math.cos(angle)
       y = this.y - chart.radius * (1 - chart.settings.annularThickness / 2) * Math.sin(angle)
-      shape = "box"
+      if (this.paraview.store.settings.popup.activation == "onHover") {
+        pointerControlled = true;
+      }
     }
     let popup = new Popup(this.paraview,
       {
@@ -385,7 +390,8 @@ export class DatapointView extends DataView {
         color: color,
         points: [this],
         rotationExempt: this.paraview.store.type == 'bar' ? false : true,
-        angle: this.paraview.store.type == 'bar' ? -90 : 0
+        angle: this.paraview.store.type == 'bar' ? -90 : 0,
+        pointerControlled
       },
       {
         shape: shape as ShapeTypes,
@@ -395,6 +401,27 @@ export class DatapointView extends DataView {
     this._popup = popup;
   }
 
-
+  movePopupAction() {
+    if (this._popup) {
+      this._popup.horizShift = 0
+      if (['column', 'waterfall', 'pie', 'donut'].includes(this.paraview.store.type)) {
+        this._popup.grid.x = this.paraview.store.pointerCoords.x
+        this._popup.grid.y = this.paraview.store.pointerCoords.y - this.paraview.store.settings.popup.margin
+        this._popup.shiftGrid()
+        this._popup.horizShift += - 1 * this._popup.grid.width / 2
+      }
+      else if (this.paraview.store.type == 'bar') {
+        this._popup.grid.x = this.paraview.store.pointerCoords.y
+        this._popup.grid.y = this.chart.height - this.paraview.store.pointerCoords.x - this.paraview.store.settings.popup.margin;
+        this._popup.shiftGrid()
+      }
+      let options = this._popup._popupShapeOptions
+      this._popup.box.remove()
+      this._popup.generateBox(options);
+      this._popup.box.x = this._popup.grid.x
+      this._popup.box.y = this._popup.grid.bottom
+      this.paraview.requestUpdate()
+    }
+  }
 
 }

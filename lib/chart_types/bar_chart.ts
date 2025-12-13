@@ -109,6 +109,7 @@ export class BarChartInfo extends PlaneChartInfo {
     //const idxMax = yValues.indexOf(Math.max(...yValues));
     //const numBars = Object.values(Object.values(Object.values(this._clusteredData)[0].stacks)[0].bars).length;
     // XXX needs to be y units, not pixels
+    // At this point, there is no view object to get that information from
     //yValues[idxMax] += numBars*this.settings.stackInsideGap;
     this._axisInfo = new AxisInfo(this._store, {
       // xTiers: [this.paraview.store.model!.allFacetValues('x')!.map(x =>
@@ -127,6 +128,10 @@ export class BarChartInfo extends PlaneChartInfo {
       const seriesPerStack = 1;
       this._stacksPerCluster = Math.ceil(numSeries/seriesPerStack);
     }
+  }
+
+  get isIntertick(): boolean {
+    return true;
   }
 
   get settings() {
