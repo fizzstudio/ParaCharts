@@ -1,0 +1,212 @@
+{
+  "datasets": [
+    {
+      "type": "line",
+      "title": "Distribution of GDP across economic sectors in China 2008 to 2018",
+      "chartTheme": {
+        "baseQuantity": "GDP",
+        "baseKind": "proportion",
+        "locale": "China",
+        "entity": "economic sector"
+      },
+      "facets": {
+        "x": {
+          "label": "Year",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "date",
+          "units": "year",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Percentage of GDP",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "multiplier": 0.01,
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "Agriculture",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "proportion",
+            "entity": "agriculture"
+          },
+          "records": [
+            {
+              "x": "2008",
+              "y": "10.73"
+            },
+            {
+              "x": "2009",
+              "y": "10.33"
+            },
+            {
+              "x": "2010",
+              "y": "10.1"
+            },
+            {
+              "x": "2011",
+              "y": "9.25"
+            },
+            {
+              "x": "2012",
+              "y": "9.4"
+            },
+            {
+              "x": "2013",
+              "y": "9.3"
+            },
+            {
+              "x": "2014",
+              "y": "8.7"
+            },
+            {
+              "x": "2015",
+              "y": "8.4"
+            },
+            {
+              "x": "2016",
+              "y": "8.1"
+            },
+            {
+              "x": "2017",
+              "y": "7.6"
+            },
+            {
+              "x": "2018",
+              "y": "7.2"
+            }
+          ]
+        },
+        {
+          "key": "Industry",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "proportion",
+            "entity": "industry"
+          },
+          "records": [
+            {
+              "x": "2008",
+              "y": "47.45"
+            },
+            {
+              "x": "2009",
+              "y": "46.24"
+            },
+            {
+              "x": "2010",
+              "y": "46.72"
+            },
+            {
+              "x": "2011",
+              "y": "44.37"
+            },
+            {
+              "x": "2012",
+              "y": "45.3"
+            },
+            {
+              "x": "2013",
+              "y": "44"
+            },
+            {
+              "x": "2014",
+              "y": "43.3"
+            },
+            {
+              "x": "2015",
+              "y": "41.1"
+            },
+            {
+              "x": "2016",
+              "y": "40.1"
+            },
+            {
+              "x": "2017",
+              "y": "40.5"
+            },
+            {
+              "x": "2018",
+              "y": "40.7"
+            }
+          ]
+        },
+        {
+          "key": "Services",
+          "theme": {
+            "baseQuantity": "GDP",
+            "baseKind": "proportion",
+            "entity": "services"
+          },
+          "records": [
+            {
+              "x": "2008",
+              "y": "41.82"
+            },
+            {
+              "x": "2009",
+              "y": "43.43"
+            },
+            {
+              "x": "2010",
+              "y": "43.19"
+            },
+            {
+              "x": "2011",
+              "y": "46.38"
+            },
+            {
+              "x": "2012",
+              "y": "45.3"
+            },
+            {
+              "x": "2013",
+              "y": "46.7"
+            },
+            {
+              "x": "2014",
+              "y": "48"
+            },
+            {
+              "x": "2015",
+              "y": "50.5"
+            },
+            {
+              "x": "2016",
+              "y": "51.8"
+            },
+            {
+              "x": "2017",
+              "y": "51.9"
+            },
+            {
+              "x": "2018",
+              "y": "52.2"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "controlPanel.isControlPanelDefaultOpen": false,
+        "controlPanel.caption.isCaptionExternalWhenControlPanelClosed": true,
+        "chart.showPopups": true, 
+        "popup.activation": "onSelect",
+        "animation.isAnimationEnabled": true
+      }
+    }
+  ]
+}

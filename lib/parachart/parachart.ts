@@ -33,7 +33,10 @@ import '../components/aria_live';
 import { StyleManager } from './style_manager';
 import { AvailableCommands, Commander } from './commander';
 import { ParaAPI } from '../paraapi/paraapi';
-import { Scrollyteller } from '../scrollyteller/scrollyteller';
+import {
+  Scrollyteller,
+  type ScrollytellerOptions,
+} from '../scrollyteller/scrollyteller';
 
 import { Manifest } from '@fizz/paramanifest';
 
@@ -75,7 +78,8 @@ export class ParaChart extends ParaComponent {
   protected _styleManager!: StyleManager;
   protected _commander!: Commander;
   protected _paraAPI!: ParaAPI;
-  protected _scrollyteller!: Scrollyteller;
+  // allow _scrollyteller to be cleared with undefined after destroy() ===
+  protected _scrollyteller: Scrollyteller | undefined;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -311,6 +315,11 @@ export class ParaChart extends ParaComponent {
       this._store.dataState = 'error';
       this._loaderRejector!();
     }
+
+    if (this.api) {
+      // this should be called after chart is rendered, as final step
+      this.enableScrollytelling();
+    }
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
@@ -376,6 +385,43 @@ export class ParaChart extends ParaComponent {
         ></slot>
       </figure>
     `;
+  }
+
+  /*
+  // Scrollytelling functionality
+  */
+
+
+  /**
+   * Enable scrollytelling with the given options
+   * This should be called after charts and scrolly DOM are rendered.
+   */
+  enableScrollytelling(
+    options: ScrollytellerOptions = {}
+  ): void {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+    if (this._store.settings.scrollytelling.isScrollytellingEnabled) {
+      this._scrollyteller?.destroy();
+      this._scrollyteller = new Scrollyteller(this, options);
+      this._scrollyteller.init();
+    }
+  }
+
+  /**
+   * Should be called when layout changes (e.g., resize, data updates)
+   * so scrollyteller can recompute offsets, heights, and observer geometry.
+   */
+  resizeScrollytelling(): void {
+    this._scrollyteller?.resize();
+  }
+
+  /**
+   * Disable scrollytelling and clean up observers.
+   */
+  disableScrollytelling(): void {
+    this._scrollyteller?.destroy();
+    this._scrollyteller = undefined;
   }
 
 }
