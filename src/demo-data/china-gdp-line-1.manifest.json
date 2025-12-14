@@ -203,9 +203,9 @@
       "settings": {
         "controlPanel.isControlPanelDefaultOpen": false,
         "controlPanel.caption.isCaptionExternalWhenControlPanelClosed": true,
-        "chart.showPopups": true, 
+        "chart.showPopups": true,
         "popup.activation": "onSelect",
-        "animation.isAnimationEnabled": true
+        "animation.isAnimationEnabled": false
       }
     }
   ]

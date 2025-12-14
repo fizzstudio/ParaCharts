@@ -13,13 +13,14 @@ export class ParaHeadless {
 
   constructor() {
     this._createParaChart();
-    this._paraChart.store.updateSettings(draft => {
-      draft.animation.isAnimationEnabled = false;
-    });
   }
 
-  get ready() {
-    return this._paraChart.ready;
+  async ready() {
+    await this._paraChart.ready;
+    this._paraChart.store.updateSettings(draft => {
+      // XXX something is overriding this ...
+      draft.animation.isAnimationEnabled = false;
+    });
   }
 
   protected _createParaChart() {
