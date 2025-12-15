@@ -100,7 +100,7 @@ export class ParaHeadless {
     // (undocumented)
     protected _paraChart: ParaChart;
     // (undocumented)
-    get ready(): Promise<void>;
+    ready(): Promise<void>;
 }
 
 // (No @packageDocumentation comment for this package)
