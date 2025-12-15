@@ -197,28 +197,7 @@ export class Scrollyteller {
           this.parachart.api.getSeries(params[0]).playRiff();
         }
         if (action === 'clipTo') {
-          let fraction = this.parachart.paraView.documentView!.chartLayers.dataLayer.datapointView(params[0].toLowerCase(), Number(params[1]))!.x / this.parachart.paraView.documentView!.chartLayers.width
-          let oldWidth = this.parachart.paraView.clipWidth;
-          this.parachart.paraView.clipWidth = Number(fraction)
-          for (let dpView of this.parachart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
-            let planeDpView = dpView as PointDatapointView
-            planeDpView.alwaysClip = true;
-            //planeDpView._hasAnimated = false;
-
-            if (planeDpView.x - 1 <= Number(fraction) * this.parachart.paraView.documentView!.chartLayers.width
-              && planeDpView.x - 1 > oldWidth * this.parachart.paraView.documentView!.chartLayers.width
-            ) {
-              planeDpView.popInAnimation()
-              //planeDpView._hasAnimated = true;
-            }
-            else if (planeDpView.x - 1 > Number(fraction) * this.parachart.paraView.documentView!.chartLayers.width) {
-              //planeDpView._hasAnimated = false;
-              planeDpView.baseSymbolScale = 0;
-            }
-            loopParaviewRefresh(this.parachart.paraView,
-              this.parachart.paraView.store.settings.animation.popInAnimateRevealTimeMs
-              , 50);
-          }
+          this.parachart.paraView.store.clipTo(params[0], Number(params[1]))
         }
       }
       // TODO: add appropriate aria-live descriptions of highlighted series, groups, and datapoints

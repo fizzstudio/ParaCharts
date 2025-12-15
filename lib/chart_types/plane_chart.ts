@@ -117,11 +117,13 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     });
   }
 
-  playRiff(datapoints: Datapoint[], order?: RiffOrder) {
+  playRiff(datapoints: Datapoint[], order?: RiffOrder, isChord?: boolean) {
     const datapointsClone = [...datapoints];
     datapointsClone.forEach(d => {
       const dpView = this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(d.seriesKey, d.datapointIndex)!;
-      dpView.alwaysClip = true;
+      if (!isChord) {
+        dpView.alwaysClip = true;
+      }
       dpView.baseSymbolScale = 0;
     })
     for (let dpView of this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews){
