@@ -1,4 +1,3 @@
-
 import { ParaComponent } from '../components';
 import { Logger, getLogger } from '../common/logger';
 import { Highlight } from '@fizz/parasummary';
@@ -115,7 +114,8 @@ export class ParaCaptionBox extends ParaComponent {
   }
 
   private async setCaption(): Promise<void> {
-    if (this._store.dataState === 'complete') {
+    //FIXME: Add default summaries for Venn diagrams
+    if (this._store.dataState === 'complete' && this._store.type !== 'venn') {
       this._caption = await this._store.paraChart.paraView.documentView!.chartInfo.summarizer.getChartSummary();
     }
   }
