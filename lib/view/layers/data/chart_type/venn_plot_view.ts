@@ -9,7 +9,7 @@ import {
 } from '../../../../store';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type ParaView } from '../../../../paraview';
-import { type Shape, SectorShape, PathShape } from '../../../shape';
+import { type Shape, CircleShape } from '../../../shape';
 import { Datapoint, enumerate } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { Vec2 } from '../../../../common/vector';
@@ -102,10 +102,296 @@ export class VennPlotView extends DataLayer {
       { x: x_pair2, y: y_pair2 },
     ];
   }
-
+  /*
+  describeAOnlyPath(
+    tripleIntersectionPoints: IntersectionPoint[],
+    nonTriplePoints: IntersectionPoint[],
+    circleToFill: Circle
+  ): SVGTemplateResult {
+    const AB = nonTriplePoints.find(
+      (p) =>
+        (p.circles[0]!.name === "A" && p.circles[1]!.name === "B") ||
+        (p.circles[0]!.name === "B" && p.circles[1]!.name === "A")
+    )!;
+    const AC = nonTriplePoints.find(
+      (p) =>
+        (p.circles[0]!.name === "A" && p.circles[1]!.name === "C") ||
+        (p.circles[0]!.name === "C" && p.circles[1]!.name === "A")
+    )!;
+    const BC = tripleIntersectionPoints.find(
+      (p) =>
+        (p.circles[0]!.name === "B" && p.circles[1]!.name === "C") ||
+        (p.circles[0]!.name === "C" && p.circles[1]!.name === "B")
+    )!;
+    const A = AB.circles.find((c) => c.name === "A")!;
+    const C = AC.circles.find((c) => c.name === "C")!;
+    const B = BC.circles.find((c) => c.name === "B")!;
+    const pathData = [
+      `M ${AB.x},${AB.y}`,
+      `A ${A.radius},${A.radius} 0 1 1 ${AC.x},${AC.y}`,
+      `A ${C.radius},${C.radius} 0 0 0 ${BC.x},${BC.y}`,
+      `A ${B.radius},${B.radius} 0 0 0 ${AB.x},${AB.y}`,
+      "Z",
+    ].join(" ");
+    return svg`<path d="${pathData}" fill="blue" stroke="none"></path>`;
+  }
+  */
+  /*
+   describeBOnlyPath(
+     tripleIntersectionPoints: IntersectionPoint[],
+     nonTriplePoints: IntersectionPoint[],
+     circleToFill: Circle
+   ): SVGTemplateResult {
+     const BC = nonTriplePoints.find(
+       (p) =>
+         (p.circles[0]!.name === "B" && p.circles[1]!.name === "C") ||
+         (p.circles[0]!.name === "C" && p.circles[1]!.name === "B")
+     )!;
+     const BA = nonTriplePoints.find(
+       (p) =>
+         (p.circles[0]!.name === "B" && p.circles[1]!.name === "A") ||
+         (p.circles[0]!.name === "A" && p.circles[1]!.name === "B")
+     )!;
+     const AC = tripleIntersectionPoints.find(
+       (p) =>
+         (p.circles[0]!.name === "A" && p.circles[1]!.name === "C") ||
+         (p.circles[0]!.name === "C" && p.circles[1]!.name === "A")
+     )!;
+     const B = BC.circles.find((c) => c.name === "B")!;
+     const A = BA.circles.find((c) => c.name === "A")!;
+     const C = AC.circles.find((c) => c.name === "C")!;
+     const pathData = [
+       `M ${BC.x},${BC.y}`,
+       `A ${B.radius},${B.radius} 0 1 1 ${BA.x},${BA.y}`,
+       `A ${A.radius},${A.radius} 0 0 0 ${AC.x},${AC.y}`,
+       `A ${C.radius},${C.radius} 0 0 0 ${BC.x},${BC.y}`,
+       "Z",
+     ].join(" ");
+     return svg`<path d="${pathData}" fill="red" stroke="none"></path>`;
+   }
+  */
+  /*
+   describeCOnlyPath(
+    tripleIntersectionPoints: IntersectionPoint[],
+    nonTriplePoints: IntersectionPoint[],
+    circleToFill: Circle
+  ): SVGTemplateResult {
+    const AC = nonTriplePoints.find(
+      (p) =>
+        (p.circles[0]!.name === "A" && p.circles[1]!.name === "C") ||
+        (p.circles[0]!.name === "C" && p.circles[1]!.name === "A")
+    )!;
+    const BC = nonTriplePoints.find(
+      (p) =>
+        (p.circles[0]!.name === "B" && p.circles[1]!.name === "C") ||
+        (p.circles[0]!.name === "C" && p.circles[1]!.name === "B")
+    )!;
+    const AB = tripleIntersectionPoints.find(
+      (p) =>
+        (p.circles[0]!.name === "A" && p.circles[1]!.name === "B") ||
+        (p.circles[0]!.name === "B" && p.circles[1]!.name === "A")
+    )!;
+    const C = BC.circles.find((c) => c.name === "C")!;
+    const B = AB.circles.find((c) => c.name === "B")!;
+    const A = AC.circles.find((c) => c.name === "A")!;
+    const pathData = [
+      `M ${AC.x},${AC.y}`,
+      `A ${C.radius},${C.radius} 0 1 1 ${BC.x},${BC.y}`,
+      `A ${B.radius},${B.radius} 0 0 0 ${AB.x},${AB.y}`,
+      `A ${A.radius},${A.radius} 0 0 0 ${AC.x},${AC.y}`,
+      "Z",
+    ].join(" ");
+    return svg`<path d="${pathData}" fill="deeppink" stroke="none"></path>`;
+  }
+  */
+  /*
+   describeCOnlyPath(
+     tripleIntersectionPoints: IntersectionPoint[],
+     nonTriplePoints: IntersectionPoint[],
+     circleToFill: Circle
+   ): SVGTemplateResult {
+     const AC = nonTriplePoints.find(
+       (p) =>
+         (p.circles[0]!.name === "A" && p.circles[1]!.name === "C") ||
+         (p.circles[0]!.name === "C" && p.circles[1]!.name === "A")
+     )!;
+     const BC = nonTriplePoints.find(
+       (p) =>
+         (p.circles[0]!.name === "B" && p.circles[1]!.name === "C") ||
+         (p.circles[0]!.name === "C" && p.circles[1]!.name === "B")
+     )!;
+     const AB = tripleIntersectionPoints.find(
+       (p) =>
+         (p.circles[0]!.name === "A" && p.circles[1]!.name === "B") ||
+         (p.circles[0]!.name === "B" && p.circles[1]!.name === "A")
+     )!;
+     const C = BC.circles.find((c) => c.name === "C")!;
+     const B = AB.circles.find((c) => c.name === "B")!;
+     const A = AC.circles.find((c) => c.name === "A")!;
+     const pathData = [
+       `M ${AC.x},${AC.y}`,
+       `A ${C.radius},${C.radius} 0 1 1 ${BC.x},${BC.y}`,
+       `A ${B.radius},${B.radius} 0 0 0 ${AB.x},${AB.y}`,
+       `A ${A.radius},${A.radius} 0 0 0 ${AC.x},${AC.y}`,
+       "Z",
+     ].join(" ");
+     return svg`<path d="${pathData}" fill="deeppink" stroke="none"></path>`;
+   }
+   */
+  /*
+  describeABPath(
+    tripleIntersectionPoints: IntersectionPoint[],
+    nonTriplePoints: IntersectionPoint[],
+    circleToFill: Circle
+  ): SVGTemplateResult {
+    const AC = tripleIntersectionPoints.find(
+      (p) =>
+        (p.circles[0]!.name === "A" && p.circles[1]!.name === "C") ||
+        (p.circles[0]!.name === "C" && p.circles[1]!.name === "A")
+    )!;
+    const AB = nonTriplePoints.find(
+      (p) =>
+        (p.circles[0]!.name === "A" && p.circles[1]!.name === "B") ||
+        (p.circles[0]!.name === "B" && p.circles[1]!.name === "A")
+    )!;
+    const BC = tripleIntersectionPoints.find(
+      (p) =>
+        (p.circles[0]!.name === "B" && p.circles[1]!.name === "C") ||
+        (p.circles[0]!.name === "C" && p.circles[1]!.name === "B")
+    )!;
+    const A = AB.circles.find((c) => c.name === "A")!;
+    const C = AC.circles.find((c) => c.name === "C")!;
+    const B = BC.circles.find((c) => c.name === "B")!;
+    const pathData = [
+      `M ${AC.x},${AC.y}`,
+      `A ${A.radius},${A.radius} 0 0 1 ${AB.x},${AB.y}`,
+      `A ${B.radius},${B.radius} 0 0 1 ${BC.x},${BC.y}`,
+      `A ${C.radius},${C.radius} 0 0 0 ${AC.x},${AC.y}`,
+      "Z",
+    ].join(" ");
+    return svg`<path d="${pathData}" fill="yellow" stroke="none"></path>`;
+  }
+  */
+  /*
+   describeACPath(
+     tripleIntersectionPoints: IntersectionPoint[],
+     nonTriplePoints: IntersectionPoint[],
+     circleToFill: Circle
+   ): SVGTemplateResult {
+     const AC = nonTriplePoints.find(
+       (p) =>
+         (p.circles[0]!.name === "A" && p.circles[1]!.name === "C") ||
+         (p.circles[0]!.name === "C" && p.circles[1]!.name === "A")
+     )!;
+     const AB = tripleIntersectionPoints.find(
+       (p) =>
+         (p.circles[0]!.name === "A" && p.circles[1]!.name === "B") ||
+         (p.circles[0]!.name === "B" && p.circles[1]!.name === "A")
+     )!;
+     const BC = tripleIntersectionPoints.find(
+       (p) =>
+         (p.circles[0]!.name === "B" && p.circles[1]!.name === "C") ||
+         (p.circles[0]!.name === "C" && p.circles[1]!.name === "B")
+     )!;
+     const A = AB.circles.find((c) => c.name === "A")!;
+     const C = AC.circles.find((c) => c.name === "C")!;
+     const B = BC.circles.find((c) => c.name === "B")!;
+     const pathData = [
+       `M ${AC.x},${AC.y}`,
+       `A ${A.radius},${A.radius} 0 0 1 ${AB.x},${AB.y}`,
+       `A ${B.radius},${B.radius} 0 0 0 ${BC.x},${BC.y}`,
+       `A ${C.radius},${C.radius} 0 0 1 ${AC.x},${AC.y}`,
+       "Z",
+     ].join(" ");
+     return svg`<path d="${pathData}" fill="green" stroke="none"></path>`;
+   }
+  */
+  /*
+   describeBCPath(
+     tripleIntersectionPoints: IntersectionPoint[],
+     nonTriplePoints: IntersectionPoint[],
+     circleToFill: Circle
+   ): SVGTemplateResult {
+     const AB = tripleIntersectionPoints.find(
+       (p) =>
+         (p.circles[0]!.name === "A" && p.circles[1]!.name === "B") ||
+         (p.circles[0]!.name === "B" && p.circles[1]!.name === "A")
+     )!;
+     const BC = nonTriplePoints.find(
+       (p) =>
+         (p.circles[0]!.name === "B" && p.circles[1]!.name === "C") ||
+         (p.circles[0]!.name === "C" && p.circles[1]!.name === "B")
+     )!;
+     const AC = tripleIntersectionPoints.find(
+       (p) =>
+         (p.circles[0]!.name === "A" && p.circles[1]!.name === "C") ||
+         (p.circles[0]!.name === "C" && p.circles[1]!.name === "A")
+     )!;
+     const A = AB.circles.find((c) => c.name === "A")!;
+     const C = AC.circles.find((c) => c.name === "C")!;
+     const B = BC.circles.find((c) => c.name === "B")!;
+     const pathData = [
+       `M ${AB.x},${AB.y}`,
+       `A ${B.radius},${B.radius} 0 0 1 ${BC.x},${BC.y}`,
+       `A ${C.radius},${C.radius} 0 0 1 ${AC.x},${AC.y}`,
+       `A ${A.radius},${A.radius} 0 0 0 ${AB.x},${AB.y}`,
+       "Z",
+     ].join(" ");
+     return svg`<path d="${pathData}" fill="yellow" stroke="none"></path>`;
+   }
+   */
+  /*
+   drawPath(d: string, fill: string = "green", stroke: string = "black"): void {
+     const path = document.createElementNS(svgNS, "path");
+     path.setAttribute("d", d);
+     path.setAttribute("fill", fill);
+     path.setAttribute("stroke", stroke);
+     path.setAttribute("fill-opacity", "1");
+     svg.appendChild(path);
+   }
+   */
+  /*
+   sortPointsByAngle(points: IntersectionPoint[]): IntersectionPoint[] {
+     const center = averagePoints(points);
+     return points.slice().sort((a, b) => {
+       const angleA = Math.atan2(a.y - center.y, a.x - center.x);
+       const angleB = Math.atan2(b.y - center.y, b.x - center.x);
+       return angleA - angleB;
+     });
+   }
+   */
+  /*
+   findTripleIntersectionPoints(
+     circle1: Circle,
+     circle2: Circle,
+     circle3: Circle,
+     points: IntersectionPoint[]
+   ): IntersectionPoint[] {
+     return points.filter(
+       (p) =>
+         this.isInsideCircle(circle1, p) &&
+         this.isInsideCircle(circle2, p) &&
+         this.isInsideCircle(circle3, p)
+     );
+   }
+   */
+  /*
+   drawCircle(
+     circle: Circle,
+     fill: string = "none",
+     stroke: string = "black"
+   ): void {
+     const c = document.createElementNS(svgNS, "circle");
+     c.setAttribute("cx", circle.center.x.toString());
+     c.setAttribute("cy", circle.center.y.toString());
+     c.setAttribute("r", circle.radius.toString());
+     c.setAttribute("fill", fill);
+     c.setAttribute("stroke", stroke);
+     svg.appendChild(c);
+   }
+ */
   protected _completeDatapointLayout(): void {
     super._completeDatapointLayout();
-    // optionally do any Venn-specific layout here
   }
 
   init() {
@@ -113,7 +399,6 @@ export class VennPlotView extends DataLayer {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    // for now, just call super
     super.settingDidChange(path, oldValue, newValue);
   }
 
@@ -126,6 +411,7 @@ export class VennPlotView extends DataLayer {
 
   protected _createDatapoints() {
     const seriesKey = this.paraview.store.model!.seriesKeys[0];
+    console.error("This is it: ", seriesKey);
     const seriesView = new SeriesView(this, seriesKey);
     this._chartLandingView.append(seriesView);
     const region = new VennRegionView(seriesView);
@@ -210,26 +496,31 @@ export class VennRegionView extends DatapointView {
   }
 
   protected _createSymbol() {
-    // Draw a small circle at the chart center
     const cx = this.chart.cx;
     const cy = this.chart.cy;
     const r = 30;
 
-    const shape = new PathShape(this.paraview, {
-      points: [
-        new Vec2(cx + r, cy),
-        new Vec2(cx, cy + r),
-        new Vec2(cx - r, cy),
-        new Vec2(cx, cy - r),
-        new Vec2(cx + r, cy)
-      ],
+    const circle1 = new CircleShape(this.paraview, {
+      x: cx - r,   // position of first circle
+      y: cy,
+      r: r,
       stroke: 'black',
       fill: 'none'
     });
 
-    this._shapes = [shape];
-    this.append(shape);
+    const circle2 = new CircleShape(this.paraview, {
+      x: cx + r,   // position of second circle
+      y: cy,
+      r: r,
+      stroke: 'black',
+      fill: 'none'
+    });
+
+    this._shapes = [circle1, circle2];
+    this.append(circle1);
+    this.append(circle2);
   }
+
 
   protected _createShapes() {
     // For the simple test: just call _createSymbol
