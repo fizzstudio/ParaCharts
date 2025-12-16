@@ -33,11 +33,11 @@ export class AnimationDialog extends ParaComponent {
   connectedCallback() {
     super.connectedCallback();
 
-  // isAnimationEnabled: boolean;
-  // animateRevealTimeMs: number;
-  // animationType: AnimationType;
-  // animationOrigin: AnimationOrigin;
-  // animationOriginValue: number;
+    // isAnimationEnabled: boolean;
+    // animateRevealTimeMs: number;
+    // animationType: AnimationType;
+    // animationOrigin: AnimationOrigin;
+    // animationOriginValue: number;
 
     // this._store.settingControls.add({
     //   type: 'checkbox',
@@ -46,10 +46,21 @@ export class AnimationDialog extends ParaComponent {
     //   parentView: 'controlPanel.tabs.controls.dialog.animation',
     // });
     this._store.settingControls.add({
-      type: 'checkbox',
-      key: 'animation.expandPoints',
-      label: 'Expand points vertically?',
-      parentView: 'controlPanel.tabs.controls.dialog.animation',
+      type: 'radio',
+      key: 'animation.animationType',
+      label: 'Animation type',
+      options: {
+        buttons: {
+          yAxis: {
+            label: 'Y-axis'
+          },
+          xAxis: {
+            label: 'X-axis'
+          },
+        },
+        layout: 'horiz'
+      },
+      parentView: 'controlPanel.tabs.controls.dialog.animation'
     });
     this._store.settingControls.add({
       type: 'textfield',
@@ -62,25 +73,6 @@ export class AnimationDialog extends ParaComponent {
       },
       parentView: 'controlPanel.tabs.controls.dialog.animation',
     });
- 
-    this._store.settingControls.add({
-      type: 'radio',
-      key: 'animation.animationType',
-      label: 'Animation type',
-      options: {
-        buttons: {
-          uniform: {
-            label: 'Uniform'
-          },
-          progressive: {
-            label: 'Progressive'
-          },
-        },
-        layout: 'horiz'
-      },
-      parentView: 'controlPanel.tabs.controls.dialog.animation'
-    });
-   
     this._store.settingControls.add({
       type: 'radio',
       key: 'animation.animationOrigin',
@@ -116,19 +108,6 @@ export class AnimationDialog extends ParaComponent {
       },
       parentView: 'controlPanel.tabs.controls.dialog.animation',
     });
-    this._store.settingControls.add({
-      type: 'checkbox',
-      key: 'animation.lineSnake',
-      label: 'Snake lines from left?',
-      parentView: 'controlPanel.tabs.controls.dialog.animation',
-    });
-    this._store.settingControls.add({
-      type: 'checkbox',
-      key: 'animation.symbolPopIn',
-      label: 'Pop in symbols?',
-      parentView: 'controlPanel.tabs.controls.dialog.animation',
-    });
-
   }
 
   render() {
@@ -136,7 +115,7 @@ export class AnimationDialog extends ParaComponent {
       <fizz-dialog
         ${ref(this._dialogRef)}
         title="Animation Settings"
-        .buttons=${[{tag: 'cancel', text: this.btnText}]}
+        .buttons=${[{ tag: 'cancel', text: this.btnText }]}
       >
         <div id="animation-controls">
           ${this._store.settingControls.getContent('controlPanel.tabs.controls.dialog.animation')}

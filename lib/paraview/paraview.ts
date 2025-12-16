@@ -56,9 +56,6 @@ export class ParaView extends ParaComponent {
   @property() yAxisLabel?: string;
   @property() contrastLevel: number = 1;
   @property({ type: Boolean }) disableFocus = false;
-
-  @property() clipWidth?: number;
-
   protected _ariaLiveRegionRef = createRef<AriaLive>();
   protected _controller!: ParaViewController;
   protected _viewBox!: ViewBox;
@@ -72,6 +69,7 @@ export class ParaView extends ParaComponent {
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
   protected log: Logger = getLogger("ParaView");
+  clipWidth: number = 1
 
   @state() private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
@@ -864,7 +862,7 @@ export class ParaView extends ParaComponent {
               <rect
                 x=${0}
                 y=${0}
-                width=${this.clipWidth ?? this._documentView.chartLayers.width}
+                width=${this.clipWidth * this._documentView.chartLayers.width}
                 height=${this._documentView.chartLayers.height}>
               </rect>
             </clipPath>

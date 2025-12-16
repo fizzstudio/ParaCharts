@@ -43,7 +43,7 @@ export type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grays
 /** @public */
 export type TabLabelStyle = 'icon' | 'iconLabel' | 'label';
 /** @public */
-export type AnimationType = 'uniform' | 'progressive' | 'none';
+export type AnimationType = 'yAxis' | 'xAxis' | 'none';
 /** @public */
 export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
 

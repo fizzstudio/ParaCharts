@@ -34,6 +34,7 @@ export class DatapointView extends DataView {
   protected _baseSymbolScale: number = 1;
   protected _animStartState: AnimState = {};
   protected _animEndState: AnimState = {};
+  alwaysClip: boolean = false;
 
   constructor(seriesView: SeriesView) {
     super(seriesView.chart, seriesView.series.key);
@@ -178,10 +179,13 @@ export class DatapointView extends DataView {
     super.y = y;
   }
 
-  get shouldClip() {
+  get shouldClip() {    
+    if (this.alwaysClip) {
+      return true;
+    }
     const obb = this.outerBbox;
     if (this.paraview.store.settings.animation.isAnimationEnabled
-      && this.paraview.store.settings.animation.lineSnake
+      && this.paraview.store.settings.animation.animationType == 'xAxis'
     ) {
       return true;
     }
@@ -244,6 +248,8 @@ export class DatapointView extends DataView {
   endAnimStep(bezT: number, linearT: number) {
     this.completeLayout();
   }
+
+  popInAnimation(){}
 
   /**
    * Subclasses should override this;
