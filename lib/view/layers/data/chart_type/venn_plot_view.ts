@@ -9,7 +9,7 @@ import {
 } from '../../../../store';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type ParaView } from '../../../../paraview';
-import { type Shape, CircleShape } from '../../../shape';
+import { type Shape, CircleShape, ArcShape } from '../../../shape';
 import { Datapoint, enumerate } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { Vec2 } from '../../../../common/vector';
@@ -36,7 +36,7 @@ export class VennPlotView extends DataLayer {
     chartInfo: BaseChartInfo
   ) {
     super(paraview, width, height, index, chartInfo);
-	this._resetRadius();
+    this._resetRadius();
   }
 
 
@@ -411,15 +411,37 @@ export class VennPlotView extends DataLayer {
 
   protected _createDatapoints() {
     const seriesKeys = this.paraview.store.model!.seriesKeys;
-	let mult: number = -1;
+    let mult: number = -1;
+	const colArr = ["blue", "yellow"];
+	let i: number = 0;
     seriesKeys.forEach(seriesKey => {
-        const seriesView = new SeriesView(this, seriesKey);
-        this._chartLandingView.append(seriesView);
-        const region = new VennRegionView(seriesView, mult*0.5*this._radius, 0);
-        seriesView.append(region);
-		mult = 1;
+      const seriesView = new SeriesView(this, seriesKey);
+      this._chartLandingView.append(seriesView);
+      const region = new VennRegionView(seriesView, mult * 0.5 * this._radius, 0, colArr[i]);
+      seriesView.append(region);
+      mult = 1;
+	  i += 1;
     });
-}
+    const intersections = this.getIntersections(
+      { center: { x: this._cx - 0.5 * this._radius, y:  this._cy}, radius: this._radius, name: 'A' },
+      { center: { x: this._cx + 0.5 * this._radius, y: this._cy }, radius: this._radius, name: 'B' }
+    );
+    if (intersections.length === 2) {
+      const [p1, p2] = intersections;
+      const arc = new ArcShape(this.paraview, {
+        r: this._radius,
+        points: [
+          new Vec2(p1.x, p1.y),
+          new Vec2(p2.x, p2.y),
+          new Vec2(p2.x, p2.y),
+          new Vec2(p1.x, p1.y)
+        ],
+		fill: "red"
+      });
+
+      this.append(arc);
+    }
+  }
 
   protected _createLabels() {
   }
@@ -452,11 +474,13 @@ export class VennRegionView extends DatapointView {
   declare protected _shapes: PathShape[];
   protected _xOff: number;
   protected _yOff: number;
-  constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0) {
+  protected _color: string;
+  constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0, color = "red") {
     super(parent);
-	this._xOff = x_offset;
-	this._yOff = y_offset;
+    this._xOff = x_offset;
+    this._yOff = y_offset;
     this._isStyleEnabled = true;
+	this._color = color;
   }
 
   get shapes() {
@@ -485,7 +509,7 @@ export class VennRegionView extends DatapointView {
   }
   */
   get styleInfo() {
-    return { fill: 'red', stroke: 'black', strokeWidth: 1 };
+    return { fill: 'none', stroke: 'black', strokeWidth: 1 };
     //const style = super.styleInfo;
     //delete style.strokeWidth;
     //delete style.stroke;
@@ -510,7 +534,7 @@ export class VennRegionView extends DatapointView {
       y: cy + this._yOff,
       r: r,
       stroke: 'black',
-      fill: 'red'
+      fill: this._color
     });
     this._shapes = [circle];
     this.append(circle);
