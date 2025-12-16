@@ -261,6 +261,11 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
 
   playDatapoints(datapoints: PlaneDatapoint[]): void {
     const length = datapoints.length;
+    for (let dpView of this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
+      dpView.alwaysClip = false;
+      dpView.baseSymbolScale = 1;
+      dpView.completeLayout();
+    }
     loopParaviewRefresh(this._store.paraChart.paraView,
       this._store.paraChart.paraView.store.settings.animation.popInAnimateRevealTimeMs
       + SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length, 50);

@@ -987,6 +987,7 @@ export class ParaStore extends State {
     this.paraChart.paraView.clipWidth = Number(fraction)
     for (let dpView of this.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
       const pointDpView = dpView as PointDatapointView
+      dpView.completeLayout();
       pointDpView.stopAnimation()
     }
     for (let dpView of this.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
