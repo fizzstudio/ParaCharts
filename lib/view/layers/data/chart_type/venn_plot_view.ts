@@ -36,12 +36,12 @@ export class VennPlotView extends DataLayer {
     chartInfo: BaseChartInfo
   ) {
     super(paraview, width, height, index, chartInfo);
+	this._resetRadius();
   }
 
 
   protected _addedToParent() {
     super._addedToParent();
-    this._resetRadius();
   }
 
   get settings() {
@@ -498,7 +498,7 @@ export class VennRegionView extends DatapointView {
   protected _createSymbol() {
     const cx = this.chart.cx;
     const cy = this.chart.cy;
-    const r = 30;
+    const r = this.chart._radius;
 
     const circle1 = new CircleShape(this.paraview, {
       x: cx - r,   // position of first circle
