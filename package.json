@@ -1,6 +1,6 @@
 {
   "name": "@fizz/paracharts",
-  "version": "0.38.0",
+  "version": "0.39.0",
   "description": "Not quite Parable Charts",
   "contributors": [
     {
@@ -71,7 +71,8 @@
     "build:stories": "node src/stories/storiesBuilder.ts",
     "build-storybook": "storybook build",
     "doc": "api-documenter markdown --input-folder ./temp --output-folder ./docs",
-    "test": "vitest run",
+    "test:unit": "vitest run --project=unit",
+    "test:browser": "vitest run --project=browser",
     "test:watch": "vitest watch",
     "pubpatch": "npm version patch && npm publish",
     "pubminor": "npm version minor && npm publish",
@@ -90,7 +91,7 @@
   },
   "types": "./dist/paracharts.d.ts",
   "devDependencies": {
-    "@fizz/chart-data": "^2.2.7",
+    "@fizz/chart-data": "^2.2.11",
     "@fizz/test-utils": "^0.2.0",
     "@microsoft/api-documenter": "^7.25.11",
     "@microsoft/api-extractor": "^7.47.6",
@@ -121,10 +122,10 @@
     "@fizz/dataframe": "^0.27.0",
     "@fizz/jimerator": "^0.10.1",
     "@fizz/paramanifest": "^0.8.0",
-    "@fizz/paramodel": "^0.6.12",
-    "@fizz/parasummary": "^0.9.4",
+    "@fizz/paramodel": "^0.6.13",
+    "@fizz/parasummary": "^0.9.7",
     "@fizz/sparkbraille-component": "^0.5.0",
-    "@fizz/templum": "^0.4.2",
+    "@fizz/templum": "^0.4.4",
     "@fizz/ui-components": "^0.70.4",
     "@lit-app/state": "^1.0.1",
     "decimal.js": "^10.4.3",

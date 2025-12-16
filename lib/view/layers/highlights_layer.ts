@@ -5,7 +5,9 @@ import { svg } from 'lit';
 import { datapointIdToCursor } from '../../store';
 import { DataSymbol } from '../symbol';
 import { type DatapointView } from '../data';
-import { PathShape, RectShape } from '../shape';
+import { PathShape, RectShape, Shape } from '../shape';
+import { type View } from '../base_view';
+import { PlaneChartInfo } from '../../chart_types';
 
 export type HighlightsType = 'foreground' | 'background';
 
@@ -23,36 +25,44 @@ export class HighlightsLayer extends PlotLayer {
   content() {
     const selector = this.paraview.store.highlightedSelector;
     let underlayRect: RectShape | null = null;
-    let overlaySyms: DataSymbol[] = [];
+    let overlays: (DataSymbol | Shape)[] = [];
     let overlayLine: PathShape | null = null;
     let datapointViews: DatapointView[] = [];
     if (selector) {
-      const datapoints = this.paraview.documentView!.chartInfo.datapointsForSelector(selector);
+      // XXX Ultimately, we need to support pastry and other non-plane chart types here
+      const chartInfo = this.paraview.documentView!.chartInfo as PlaneChartInfo;
+      const datapoints = chartInfo.datapointsForSelector(selector);
       datapointViews = datapoints.map(datapoint =>
         this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!);
       if (selector.startsWith('datapoint')) {
-        overlaySyms.push(datapointViews[0].symbol!.clone());
+        overlays.push((datapointViews[0].symbol ?? datapointViews[0].shapes[0]).clone());
         if (this.paraview.store.settings.chart.isShowPopups && this.type == "foreground") {
           datapointViews[0].addDatapointPopup()
         }
       } else if (selector.startsWith('sequence')) {
-        overlaySyms.push(datapointViews[0].symbol!.clone());
-        overlaySyms.push(datapointViews.at(-1)!.symbol!.clone());
+        overlays.push((datapointViews[0].symbol ?? datapointViews[0].shapes[0]).clone());
+        overlays.push((datapointViews.at(-1)!.symbol ?? datapointViews.at(-1)!.shapes[0]).clone());
+        const lineStroke = overlays[0] instanceof DataSymbol
+          ? this.paraview.store.colors.colorValueAt(overlays[0].color!)
+          : overlays[0].stroke;
         overlayLine = new PathShape(this.paraview, {
-          x: 0,
+          x: overlays[0].width/2,
           y: 0,
-          points: [overlaySyms[0].loc, overlaySyms[1].loc],
-          stroke: this.paraview.store.colors.colorValueAt(overlaySyms[0].color!),
+          points: [overlays[0].loc, overlays[1].loc],
+          stroke: lineStroke,
           opacity: 0.5,
           strokeWidth: 20
         });
         if (this.type === 'background') {
+          const rectFill = overlays[0] instanceof DataSymbol
+            ? this.paraview.store.colors.colorValueAt(overlays[0].color!)
+            : overlays[0].fill;
           underlayRect = new RectShape(this.paraview, {
-            x: overlaySyms[0].x,
+            x: overlays[0].x,
             y: 0,
-            width: overlaySyms[1].x - overlaySyms[0].x,
+            width: overlays[1].x - overlays[0].x + (chartInfo.isIntertick ? overlays[0].width : 0),
             height: this._height,
-            fill: this.paraview.store.colors.colorValueAt(overlaySyms[0].color!),
+            fill: rectFill,
             opacity: 0.25
           });
         }
@@ -60,7 +70,7 @@ export class HighlightsLayer extends PlotLayer {
           this.paraview.store.popups.push(...this.parent.popupLayer.addSequencePopups(datapointViews))
         }
       }
-      overlaySyms.forEach(sym => {
+      overlays.forEach(sym => {
         sym.scale *= 3;
         sym.opacity = 0.5;
         sym.fill = 'empty';
@@ -69,16 +79,15 @@ export class HighlightsLayer extends PlotLayer {
     }
     return svg`
       ${this.paraview.store.visitedDatapoints.values().map(datapointId => {
-      const { seriesKey, index } = datapointIdToCursor(datapointId);
-      return svg`
-            <use
-              id="visited-mark-${seriesKey}-${index}"
-              class="visited-mark"
-              href="#${this._parent.dataLayer.datapointDomIds.get(datapointId)}"
-            />
-          `;
-    })
-      }
+        const { seriesKey, index } = datapointIdToCursor(datapointId);
+        return svg`
+          <use
+            id="visited-mark-${seriesKey}-${index}"
+            class="visited-mark"
+            href="#${this._parent.dataLayer.datapointDomIds.get(datapointId)}"
+          />
+        `;
+      })}
       ${this.type === 'background' && underlayRect ? underlayRect.render() : ''
       }
       ${
@@ -95,7 +104,7 @@ export class HighlightsLayer extends PlotLayer {
         : ''*/
       this.type === 'foreground' && overlayLine ? overlayLine.render() : ''
       }
-      ${this.type === 'foreground' && overlaySyms.length ? overlaySyms.map(sym => sym.render()) : ''
+      ${this.type === 'foreground' && overlays.length ? overlays.map(sym => sym.render()) : ''
       }
     `;
   }

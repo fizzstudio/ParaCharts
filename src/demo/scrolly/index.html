@@ -66,7 +66,7 @@
         <p>This is an example of scrollytelling, where the chart stays fixed in place and is updated as the page is
           scrolled. Each paragraph highlights a different aspect of the chart.</p>
       </div>
-      <div data-para-step="1" data-para-action="highlightSeries(Industry)">
+      <div data-para-step="1" data-para-enter="getSeries(Industry).lowlightOthers()">
         <p>Industry remained a major part of China’s economy during this period but also saw a gradual decline in its
           share of GDP. In 2008, industry contributed nearly half of total output, driven by China’s role as the world’s
           main manufacturing hub. Over the decade, however, the share dropped to about 40 percent. Rising labor costs,
@@ -74,7 +74,7 @@
           government began encouraging innovation and advanced manufacturing, but overall, the relative dominance of
           heavy industry and export-driven production started to ease.</p>
       </div>
-      <div data-para-step="2" data-para-action="highlightSeries(Services)">
+      <div data-para-step="2" data-para-enter="getSeries(Services).lowlightOthers()">
         <p>
           Services expanded relatively quickly and became the largest part of China’s economy by 2018. Starting at
           around 43 percent of GDP in 2008, the sector grew to over half within a decade. This growth came from booming
@@ -84,7 +84,13 @@
           focused on urban lifestyles, digital innovation, and internal demand.
         </p>
       </div>
-      <div data-para-step="3" data-para-action="highlightSeries(Agriculture)">
+      <div data-para-step="2.5" 
+        data-para-enter="getSeries(Services, Industry).lowlightOthers() getSeries(Services).getPoint(4).annotate('Service overtakes Industry going forward') getSeries(Services).getPoint(4).play()">
+        <p>
+          Services finally overtook Industry in 2012, and continued growing from there. 
+        </p>
+      </div>
+      <div data-para-step="3" data-para-enter="getSeries(Agriculture).lowlightOthers()">
         <p>
           Agriculture's share of China's GDP gradually declined between 2008 and 2018 as the country continued to
           urbanize and modernize. In 2008, agriculture still made up about a tenth of the economy, but by 2018 it had
@@ -93,7 +99,7 @@
           increasingly mechanized and productive, even as it accounted for a smaller slice of total output.
         </p>
       </div>
-      <div data-para-step="4" data-para-action="highlightSeries(Services, Industry)">
+      <div data-para-step="4" data-para-enter="getSeries(Services, Industry).lowlightOthers()">
         <p>
           In the decade from 2008 to 2018, China completed its transformation from a largely industrial and maufacturing
           exporter to a internal economy focused on services for its own population. This is reflected in the
@@ -101,7 +107,8 @@
           surpassing industry in 2012, and continuing to widen the gap for the next 6 years.
         </p>
       </div>
-      <div data-para-step="5" data-para-action="highlightDatapoint(Services, 10)">
+      <div data-para-step="5" 
+        data-para-enter="getSeries(Services).getPoint(5).play() getSeries(Agriculture).getPoint(7).visit()">
         <p>
           In 2018, services peaked at 52.2% of China's GDP, 11.5% higher than industry and 45% higher than agriculture.
         </p>

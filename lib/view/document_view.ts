@@ -58,7 +58,7 @@ export class DocumentView extends Container(View) {
 
   init() {
     // @ts-ignore
-    this._chartInfo = new chartInfoClasses[this.type](this.type, this._store, this);
+    this._chartInfo = new chartInfoClasses[this.type](this.type, this._store);
 
     this.setTitleText(this._store.title);
 

@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const Chart59: Story = {
-  name: "Nonsense data (59)",
+  name: "Sample data (59)",
   args: {
-    filename: "manifests/waterfall-manifest-128.json",
+    filename: "manifests/waterfall-manifest-001.json",
     forcecharttype: "waterfall",
   }
 }

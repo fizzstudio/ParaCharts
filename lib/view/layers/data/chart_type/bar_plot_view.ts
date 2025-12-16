@@ -421,7 +421,7 @@ export class Bar extends PlaneDatapointView {
       if (this.datapoint.data.y.value as number < 0) {
         this._y = this.chart.height - distFromXAxis - zeroHeight;
       } else {
-        this._y = this.chart.height - this.height - distFromXAxis - zeroHeight;
+        this._y = this.chart.height - this.height - distFromXAxis - zeroHeight - orderIdx*chartInfo.settings.stackInsideGap;
       }
     }
     const barGap = this.chart.availSpace / this.chart.numStacks;
@@ -447,7 +447,7 @@ export class Bar extends PlaneDatapointView {
     if (this.datapoint.data.y.value as number < 0) {
       this._y = this.chart.height - distFromXAxis * bezT - zeroHeight;
     } else {
-      this._y = this.chart.height - this.height - distFromXAxis * bezT - zeroHeight;
+      this._y = this.chart.height - this.height - distFromXAxis * bezT - zeroHeight - orderIdx*chartInfo.settings.stackInsideGap;
     }
     super.beginAnimStep(bezT, linearT);
   }
@@ -538,22 +538,7 @@ export class Bar extends PlaneDatapointView {
       },
       pointerMove: (e) => {
         if (this._popup) {
-          if (this.paraview.store.type == 'column') {
-            this._popup.grid.x = this.paraview.store.pointerCoords.x
-            this._popup.grid.y = this.paraview.store.pointerCoords.y - this.paraview.store.settings.popup.margin
-            this._popup.shiftGrid()
-            this._popup.box.x = this._popup.grid.x
-            this._popup.box.y = this._popup.grid.bottom
-            this.paraview.requestUpdate()
-          }
-          else if (this.paraview.store.type == 'bar') {
-            this._popup.grid.x = this.paraview.store.pointerCoords.y
-            this._popup.grid.y = this.chart.height - this.paraview.store.pointerCoords.x - this.paraview.store.settings.popup.margin;
-            this._popup.shiftGrid()
-            this._popup.box.x = this._popup.grid.x
-            this._popup.box.y = this._popup.grid.bottom
-            this.paraview.requestUpdate()
-          }
+          this.movePopupAction();
         }
       },
       pointerLeave: (e) => {
