@@ -139,11 +139,11 @@ export class DocumentView extends Container(View) {
     }
 
     // Create any west legend bc it affects the position of the vert axis
-    if (this._shouldAddLegend && this._store.settings.legend.position === 'west') {
+    if (this._shouldAddLegend && this._store.settings.legend.position === 'west' && this._store.type !== 'venn') {
       this.createLegend('west');
     }
 
-    if (this._shouldAddLegend && this._store.settings.legend.position === 'south') {
+    if (this._shouldAddLegend && this._store.settings.legend.position === 'south' && this._store.type !== 'venn') {
       this.createLegend('south');
     }
 
@@ -170,7 +170,7 @@ export class DocumentView extends Container(View) {
       this._directLabelStrip.updateSize();
     }
 
-    if (this._shouldAddLegend && this._store.settings.legend.position === 'east') {
+    if (this._shouldAddLegend && this._store.settings.legend.position === 'east' && this._store.type !== 'venn') {
       this.createLegend('east');
     }
 

@@ -40,6 +40,7 @@ export class VennPlotView extends DataLayer {
 
 
   protected _addedToParent() {
+    super._addedToParent();
     this._resetRadius();
   }
 
@@ -103,17 +104,17 @@ export class VennPlotView extends DataLayer {
   }
 
   protected _completeDatapointLayout(): void {
-      super._completeDatapointLayout();
-      // optionally do any Venn-specific layout here
+    super._completeDatapointLayout();
+    // optionally do any Venn-specific layout here
   }
 
   init() {
-      super.init();
+    super.init();
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-      // for now, just call super
-      super.settingDidChange(path, oldValue, newValue);
+    // for now, just call super
+    super.settingDidChange(path, oldValue, newValue);
   }
 
 
@@ -124,7 +125,13 @@ export class VennPlotView extends DataLayer {
   }
 
   protected _createDatapoints() {
+    const seriesKey = this.paraview.store.model!.seriesKeys[0];
+    const seriesView = new SeriesView(this, seriesKey);
+    this._chartLandingView.append(seriesView);
+    const region = new VennRegionView(seriesView);
+    seriesView.append(region);
   }
+
 
 
   protected _createLabels() {
@@ -212,7 +219,7 @@ export class VennRegionView extends DatapointView {
       points: [
         new Vec2(cx + r, cy),
         new Vec2(cx, cy + r),
-        new Vec2(cx - r, cy ),
+        new Vec2(cx - r, cy),
         new Vec2(cx, cy - r),
         new Vec2(cx + r, cy)
       ],
