@@ -187,7 +187,7 @@ export class PointDatapointView extends PlaneDatapointView {
 
   computeLocation() {
     this._x = this.computeX();
-    if (this.paraview.store.settings.animation.isAnimationEnabled && this.paraview.store.settings.animation.expandPoints) {
+    if (this.paraview.store.settings.animation.isAnimationEnabled && this.paraview.store.settings.animation.animationType == 'yAxis') {
       if (this.paraview.store.settings.animation.animationOrigin === 'initialValue') {
         this._animStartState.y = (this._parent.children[0] as PointDatapointView).computeY();
       } else if (this.paraview.store.settings.animation.animationOrigin === 'baseline') {
@@ -207,7 +207,7 @@ export class PointDatapointView extends PlaneDatapointView {
   }
 
   beginAnimStep(bezT: number, linearT: number): void {
-    if (this.paraview.store.settings.animation.symbolPopIn) {
+    if (this.paraview.store.settings.animation.animationType == 'xAxis') {
       if (linearT + .01 >= this.x / this.chart.width && !this._isAnimating && !this._hasAnimated) {
         this.popInAnimation()
       }
@@ -233,14 +233,12 @@ export class PointDatapointView extends PlaneDatapointView {
         start = timestamp;
       }
       const elapsed = timestamp - start;
-      // We can't really disable the animation, but setting the reveal time to 0
-      // will result in an imperceptibly short animation duration
       const revealTime = Math.max(1, this.paraview.store.settings.animation.popInAnimateRevealTimeMs);
       const t = Math.min(elapsed / revealTime, 1);
       const bezT = bez.eval(t)!;
       this._baseSymbolScale = bezT * .25 + .75
       this._contentUpdateSymbol()
-      if (elapsed < revealTime) {
+      if (elapsed < revealTime && this._isAnimating) {
         this._currentAnimationFrame = requestAnimationFrame(step);
       } else {
         this._animEnd();
@@ -249,6 +247,13 @@ export class PointDatapointView extends PlaneDatapointView {
     this._currentAnimationFrame = requestAnimationFrame(step);
   }
 
+  stopAnimation() {
+    if (this._currentAnimationFrame !== null) {
+      cancelAnimationFrame(this._currentAnimationFrame);
+      this.paraview.requestUpdate();
+      this._animEnd();
+    }
+  }
 }
 
 export class TrendLineView extends View {

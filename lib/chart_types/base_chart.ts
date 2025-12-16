@@ -439,7 +439,7 @@ export abstract class BaseChartInfo {
     } else if (cursor.isNodeType('chord')) {
       if (this._store.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
         if (this._store.settings.sonification.isArpeggiateChords) {
-          this._playCurrentRiff(this._chordRiffOrder());
+          this._playCurrentRiff(this._chordRiffOrder(), true);
         } else {
           const datapoints = cursor.datapoints.map(dp =>
             this._store.model!.atKeyAndIndex(dp.seriesKey, dp.datapointIndex)!);
@@ -493,14 +493,14 @@ export abstract class BaseChartInfo {
   }
 
   /** Play a riff for the current nav node */
-  protected _playCurrentRiff(order?: RiffOrder) {
+  protected _playCurrentRiff(order?: RiffOrder, isChord = false) {
     if (this._store.settings.sonification.isSoniEnabled
       && this._store.settings.sonification.isRiffEnabled) {
-      this.playRiff(this._navMap!.cursor.datapoints, order);
+      this.playRiff(this._navMap!.cursor.datapoints, order, isChord);
     }
   }
 
-  abstract playRiff(datapoints: Datapoint[], order?: RiffOrder): void;
+  abstract playRiff(datapoints: Datapoint[], order?: RiffOrder, isChord?: boolean): void;
 
   protected _chordRiffOrder(): RiffOrder {
     return 'normal';
