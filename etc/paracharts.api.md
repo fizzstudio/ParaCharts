@@ -98,6 +98,9 @@ export class ParaChart extends ParaComponent {
     data: string;
     // (undocumented)
     accessor description: string | undefined;
+    disableScrollytelling(): void;
+    // Warning: (ae-forgotten-export) The symbol "ScrollytellerOptions" needs to be exported by the entry point index.d.ts
+    enableScrollytelling(options?: ScrollytellerOptions): void;
     // (undocumented)
     protected firstUpdated(_changedProperties: PropertyValues): void;
     // (undocumented)
@@ -150,14 +153,15 @@ export class ParaChart extends ParaComponent {
     protected _readyPromise: Promise<void>;
     // (undocumented)
     render(): TemplateResult;
+    resizeScrollytelling(): void;
     // (undocumented)
     protected _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void>;
     // (undocumented)
-    get scrollyteller(): Scrollyteller;
+    get scrollyteller(): Scrollyteller | undefined;
     // Warning: (ae-forgotten-export) The symbol "Scrollyteller" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
-    protected _scrollyteller: Scrollyteller;
+    protected _scrollyteller: Scrollyteller | undefined;
     // Warning: (ae-forgotten-export) The symbol "Setting" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
@@ -196,7 +200,7 @@ export class ParaHeadless {
     // (undocumented)
     protected _paraChart: ParaChart;
     // (undocumented)
-    get ready(): Promise<void>;
+    ready(): Promise<void>;
 }
 
 // (No @packageDocumentation comment for this package)
