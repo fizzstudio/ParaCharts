@@ -410,15 +410,16 @@ export class VennPlotView extends DataLayer {
   }
 
   protected _createDatapoints() {
-    const seriesKey = this.paraview.store.model!.seriesKeys[0];
-    console.error("This is it: ", seriesKey);
-    const seriesView = new SeriesView(this, seriesKey);
-    this._chartLandingView.append(seriesView);
-    const region = new VennRegionView(seriesView);
-    seriesView.append(region);
-  }
-
-
+    const seriesKeys = this.paraview.store.model!.seriesKeys;
+	let mult: number = -1;
+    seriesKeys.forEach(seriesKey => {
+        const seriesView = new SeriesView(this, seriesKey);
+        this._chartLandingView.append(seriesView);
+        const region = new VennRegionView(seriesView, mult*0.5*this._radius, 0);
+        seriesView.append(region);
+		mult = 1;
+    });
+}
 
   protected _createLabels() {
   }
@@ -449,9 +450,12 @@ export interface RadialDatapointParams {
 export class VennRegionView extends DatapointView {
   declare readonly chart: VennPlotView;
   declare protected _shapes: PathShape[];
-
-  constructor(parent: SeriesView) {
+  protected _xOff: number;
+  protected _yOff: number;
+  constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0) {
     super(parent);
+	this._xOff = x_offset;
+	this._yOff = y_offset;
     this._isStyleEnabled = true;
   }
 
@@ -481,10 +485,11 @@ export class VennRegionView extends DatapointView {
   }
   */
   get styleInfo() {
-    const style = super.styleInfo;
-    delete style.strokeWidth;
-    delete style.stroke;
-    return style;
+    return { fill: 'red', stroke: 'black', strokeWidth: 1 };
+    //const style = super.styleInfo;
+    //delete style.strokeWidth;
+    //delete style.stroke;
+    //return style;
   }
 
   get x() {
@@ -500,30 +505,19 @@ export class VennRegionView extends DatapointView {
     const cy = this.chart.cy;
     const r = this.chart._radius;
 
-    const circle1 = new CircleShape(this.paraview, {
-      x: cx - r,   // position of first circle
-      y: cy,
+    const circle = new CircleShape(this.paraview, {
+      x: cx + this._xOff,
+      y: cy + this._yOff,
       r: r,
       stroke: 'black',
-      fill: 'none'
+      fill: 'red'
     });
-
-    const circle2 = new CircleShape(this.paraview, {
-      x: cx + r,   // position of second circle
-      y: cy,
-      r: r,
-      stroke: 'black',
-      fill: 'none'
-    });
-
-    this._shapes = [circle1, circle2];
-    this.append(circle1);
-    this.append(circle2);
+    this._shapes = [circle];
+    this.append(circle);
   }
 
 
   protected _createShapes() {
-    // For the simple test: just call _createSymbol
     this._createSymbol();
   }
   /*
