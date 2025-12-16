@@ -25,6 +25,7 @@ export class TextfieldSettingControl extends SettingControl<'textfield'> {
           min=${opts?.inputType === 'number' ? opts.min : nothing}
           max=${opts?.inputType === 'number' ? opts.max : nothing}
           size=${opts?.size ?? '8'}
+          style="max-width: 60px;"
           @change=${(e: Event) => {
             const input = e.target as HTMLInputElement;
             const value = opts?.inputType === 'number' ? parseFloat(input.value) : input.value;

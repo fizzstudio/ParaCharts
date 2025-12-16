@@ -204,7 +204,7 @@ export abstract class DataLayer extends PlotLayer {
     this._chartLandingView.clearChildren();
     this._beginDatapointLayout();
     if (this.paraview.store.settings.animation.isAnimationEnabled
-      && this.paraview.store.settings.animation.symbolPopIn) {
+      && this.paraview.store.settings.animation.animationType == 'xAxis') {
       this.datapointViews.map(d => d.baseSymbolScale = 0)
     }
     this._completeDatapointLayout();
@@ -221,7 +221,7 @@ export abstract class DataLayer extends PlotLayer {
   // }
 
   protected _animateReveal() {
-      let start = -1;
+    let start = -1;
     const bez = new Bezier(0.2, 0.9, 0.5, 1, 10);
     const linear = new Bezier(0, 0, 1, 1, 10);
     const step = (timestamp: number) => {
@@ -245,15 +245,15 @@ export abstract class DataLayer extends PlotLayer {
       }
     };
     this._currentAnimationFrame = requestAnimationFrame(step);
-    if (this.paraview.store.settings.animation.symbolPopIn){
+    if (this.paraview.store.settings.animation.animationType == 'xAxis'){
           loopParaviewRefresh(this.paraview, 500 + this.paraview.store.settings.animation.popInAnimateRevealTimeMs
         + this.paraview.store.settings.animation.animateRevealTimeMs, 50);
     }
   }
 
   protected _animStep(bezT: number, linearT: number) {
-    if (this.paraview.store.settings.animation.lineSnake) {
-      this.paraview.clipWidth = linearT * this.paraview.documentView!.chartLayers.width;
+    if (this.paraview.store.settings.animation.animationType == 'xAxis') {
+      this.paraview.clipWidth = linearT
     }
     for (const datapointView of this.datapointViews) {
       datapointView.beginAnimStep(bezT, linearT);

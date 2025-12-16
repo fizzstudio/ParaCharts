@@ -1,3 +1,19 @@
+/* ParaCharts: Bar Chart Plot Views
+Copyright (C) 2025 Fizz Studios
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
+
 import { type BaseChartInfo } from '../../../../chart_types';
 import { ParaView } from '../../../../paraview/paraview';
 import { Logger, getLogger } from '../../../../common/logger';
@@ -405,7 +421,7 @@ export class Bar extends PlaneDatapointView {
       if (this.datapoint.data.y.value as number < 0) {
         this._y = this.chart.height - distFromXAxis - zeroHeight;
       } else {
-        this._y = this.chart.height - this.height - distFromXAxis - zeroHeight;
+        this._y = this.chart.height - this.height - distFromXAxis - zeroHeight - orderIdx*chartInfo.settings.stackInsideGap;
       }
     }
     const barGap = this.chart.availSpace / this.chart.numStacks;
@@ -431,7 +447,7 @@ export class Bar extends PlaneDatapointView {
     if (this.datapoint.data.y.value as number < 0) {
       this._y = this.chart.height - distFromXAxis * bezT - zeroHeight;
     } else {
-      this._y = this.chart.height - this.height - distFromXAxis * bezT - zeroHeight;
+      this._y = this.chart.height - this.height - distFromXAxis * bezT - zeroHeight - orderIdx*chartInfo.settings.stackInsideGap;
     }
     super.beginAnimStep(bezT, linearT);
   }
@@ -518,30 +534,15 @@ export class Bar extends PlaneDatapointView {
       height: this._height,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.addPopup() : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
       },
       pointerMove: (e) => {
         if (this._popup) {
-          if (this.paraview.store.type == 'column') {
-            this._popup.grid.x = this.paraview.store.pointerCoords.x
-            this._popup.grid.y = this.paraview.store.pointerCoords.y - this.paraview.store.settings.popup.margin
-            this._popup.shiftGrid()
-            this._popup.box.x = this._popup.grid.x
-            this._popup.box.y = this._popup.grid.bottom
-            this.paraview.requestUpdate()
-          }
-          else if (this.paraview.store.type == 'bar') {
-            this._popup.grid.x = this.paraview.store.pointerCoords.y
-            this._popup.grid.y = this.chart.height - this.paraview.store.pointerCoords.x - this.paraview.store.settings.popup.margin;
-            this._popup.shiftGrid()
-            this._popup.box.x = this._popup.grid.x
-            this._popup.box.y = this._popup.grid.bottom
-            this.paraview.requestUpdate()
-          }
+          this.movePopupAction();
         }
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.removePopup(this.id) : undefined
+        this.paraview.store.settings.chart.isShowPopups ? this.paraview.store.removePopup(this.id) : undefined
       },
     }));
     super._createShapes();
@@ -559,27 +560,4 @@ export class Bar extends PlaneDatapointView {
       isClip: this.shouldClip
     });
   }
-
-
-  addPopup(text?: string) {
-    let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
-    if (this.paraview.store.model!.multi) {
-      datapointText = `${this.series.getLabel()} ${datapointText}`
-    }
-    let popup = new Popup(this.paraview,
-      {
-        text: text ?? datapointText,
-        x: this.x + this.width / 2,
-        y: this.y,
-        id: this.id,
-        color: this.color,
-        points: [this],
-        rotationExempt: this.paraview.store.type == 'bar' ? false : true,
-        angle: this.paraview.store.type == 'bar' ? -90 : 0
-      },
-      {shape:"box"})
-    this.paraview.store.popups.push(popup)
-    this._popup = popup;
-  }
-
 }

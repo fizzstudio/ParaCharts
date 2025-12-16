@@ -187,9 +187,9 @@ export class ParaAPI {
     this._narrativeActions.move = async (args: ActionArgumentMap) => {
       store.paraChart.captionBox.highlightSpan(args.direction === 'right' || args.direction === 'down');
     };
-    this._narrativeActions.goFirst = () => {};
-    this._narrativeActions.goLast = () => {};
-    this._narrativeActions.repeatLastAnnouncement = () => {};
+    this._narrativeActions.goFirst = () => { };
+    this._narrativeActions.goLast = () => { };
+    this._narrativeActions.repeatLastAnnouncement = () => { };
     this._narrativeActions.toggleNarrativeHighlightMode = () => {
       _paraChart.captionBox.clearSpanHighlights();
       store.clearHighlight();
@@ -416,4 +416,9 @@ export class ParaAPIPoint {
     this._apiSeries.api.paraChart.store.annotatePoint(
       this._apiSeries.key, this._datapoint.datapointIndex, text);
   }
+
+  clipTo() {
+  this._apiSeries.api.paraChart.store.clipTo(this._datapoint.seriesKey, Number(this._datapoint.datapointIndex))
+  }
+
 }

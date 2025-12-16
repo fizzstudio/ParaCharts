@@ -71,7 +71,7 @@ export const defaults: Settings = {
     isDrawSymbols: true,
     isStatic: false,
     isShowVisitedDatapointsOnly: false,
-    isShowPopups: false
+    isShowPopups: false,
   },
   axis: {
     minInterval: 25,
@@ -207,7 +207,7 @@ export const defaults: Settings = {
       isAbbrevSeries: true,
       orderBy: undefined,
       barGap: 2,
-      //stackInsideGap: 4,
+      stackInsideGap: 2,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
       isShowPopups: false,
@@ -227,7 +227,7 @@ export const defaults: Settings = {
       isAbbrevSeries: true,
       orderBy: undefined,
       barGap: 20,
-      //stackInsideGap: 0,
+      stackInsideGap: 2,
       clusterLabelFormat: 'raw',
       lineWidth: 5,
       isShowPopups: false,
@@ -380,10 +380,20 @@ export const defaults: Settings = {
       isAbbrevSeries: true,
       orderBy: undefined,
       barGap: 0.25,
-      //stackInsideGap: 4,
+      stackInsideGap: 4,
       clusterLabelFormat: 'raw',
       isShowPopups: false,
       labelFontSize: '8pt'
+    },
+    waterfall: {
+      barWidth: 10,
+      colorByDatapoint: false,
+      isDrawLabels: true,
+      labelPosition: 'outside',
+      barLabelGap: 10,
+      barGap: 10,
+      showPopups: false,
+      labelFontSize: '10pt'
     }
   },
   grid: {
@@ -408,7 +418,7 @@ export const defaults: Settings = {
     isAnimationEnabled: true,
     animateRevealTimeMs: 2500,
     popInAnimateRevealTimeMs: 750,
-    animationType: 'uniform',
+    animationType: 'yAxis',
     animationOrigin: 'initialValue',
     animationOriginValue: 0,
     expandPoints: true,

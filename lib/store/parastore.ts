@@ -35,8 +35,10 @@ import {
   PlaneModel,
   Datapoint
 } from '@fizz/paramodel';
-import { Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY,
-  HighlightedSummary, Highlight } from '@fizz/parasummary';
+import {
+  Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY,
+  HighlightedSummary, Highlight
+} from '@fizz/parasummary';
 
 import {
   DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
@@ -56,6 +58,8 @@ import { DatapointView } from '../view/data';
 import { Popup } from '../view/popup';
 import { type DatapointCursor } from '../view/layers/data/navigation';
 import { Point } from '@fizz/chart-classifier-utils';
+import { loopParaviewRefresh } from '../common';
+import { PointDatapointView } from '../view/layers';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -89,7 +93,7 @@ export interface PointAnnotation extends BaseAnnotation {
   timestamp?: Date;
 }
 
-export interface MDRAnnotation extends BaseAnnotation{
+export interface MDRAnnotation extends BaseAnnotation {
   annotation: string;
 }
 
@@ -145,7 +149,7 @@ export class ParaStore extends State {
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() frontSeries = '';
-  @property() pointerCoords: Point = {x: 0, y: 0}
+  @property() pointerCoords: Point = { x: 0, y: 0 }
 
   @property() protected _lowlightedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
@@ -345,13 +349,13 @@ export class ParaStore extends State {
     if (ignoreObservers) {
       return;
     }
-    const observed: { [path: string]: Partial<{oldValue: Setting, newValue: Setting}> } = {};
+    const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
     for (const patch of patches) {
       if (patch.op !== 'replace') {
         this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
         continue;
       }
-      observed[patch.path.join('.')] = {newValue: patch.value};
+      observed[patch.path.join('.')] = { newValue: patch.value };
     }
     for (const patch of inversePatches) {
       if (patch.op !== 'replace') {
@@ -378,8 +382,8 @@ export class ParaStore extends State {
     this._settingObservers[path].push(observer);
   }
 
-  observeSettings(paths: string[], observer: (oldValue: Setting, newValue: Setting) => void){
-    for (let path of paths){
+  observeSettings(paths: string[], observer: (oldValue: Setting, newValue: Setting) => void) {
+    for (let path of paths) {
       this.observeSetting(path, observer);
     }
   }
@@ -483,7 +487,7 @@ export class ParaStore extends State {
     }
   }
 
-  protected _joinStrArray(strArray: string[], linebreak?: string) : string {
+  protected _joinStrArray(strArray: string[], linebreak?: string): string {
     strArray = strArray.filter(line => /\S/.test(line));
     // if the string array only contains blank strings, ignore it
     if (strArray.length) {
@@ -588,14 +592,14 @@ export class ParaStore extends State {
     let newSelection = new Set<string>();
     if (this._visitedDatapoints.size === 1) {
       const datapointId = [...this._visitedDatapoints.values()][0];
-      const {seriesKey, index} = datapointIdToCursor(datapointId);
+      const { seriesKey, index } = datapointIdToCursor(datapointId);
       if (!this.isSelected(seriesKey, index)
         || this._selectedDatapoints.size > 1) {
         newSelection.add(datapointId);
       }
     } else {
       for (const datapointId of this._visitedDatapoints) {
-        const {seriesKey, index} = datapointIdToCursor(datapointId);
+        const { seriesKey, index } = datapointIdToCursor(datapointId);
         if (!this.isSelected(seriesKey, index)) {
           newSelection.add(datapointId);
         }
@@ -608,7 +612,7 @@ export class ParaStore extends State {
   extendSelection() {
     const newSelection = new Set(this._selectedDatapoints);
     for (const datapointId of this._visitedDatapoints) {
-      const {seriesKey, index} = datapointIdToCursor(datapointId);
+      const { seriesKey, index } = datapointIdToCursor(datapointId);
       if (this.isSelected(seriesKey, index)) {
         newSelection.delete(datapointId);
       } else {
@@ -871,7 +875,7 @@ export class ParaStore extends State {
         this._modelLineBreaks = [...this._modelLineBreaks, { startPortion: startPortion, seriesKey: seriesKey, index: index }];
       }
     }
-    else{
+    else {
       if (this._userLineBreaks.find(lb =>
         lb.startPortion === startPortion && lb.seriesKey === seriesKey)) {
         //throw new Error('range already highlighted');
@@ -885,7 +889,7 @@ export class ParaStore extends State {
   addUserLineBreaks() {
     for (const datapointId of this.selectedDatapoints) {
       //const [seriesKey, index] = keyIdx.split('-');
-      const {seriesKey, index} = datapointIdToCursor(datapointId);
+      const { seriesKey, index } = datapointIdToCursor(datapointId);
       const series = this.model!.series.filter(s => s[0].seriesKey === seriesKey)[0];
       const length = series.length - 1;
       this.addLineBreak(index / length, index, seriesKey, false)
@@ -896,7 +900,7 @@ export class ParaStore extends State {
         annotation: `${series.key}, ${series.rawData[index].x}: Added line break`,
         id: `line-break-${index}`
       })
-      this.paraChart.postNotice('addLineBreak', {seriesKey, index});
+      this.paraChart.postNotice('addLineBreak', { seriesKey, index });
     }
     if (this.userLineBreaks.length) {
       this.clearUserTrendLines();
@@ -968,9 +972,39 @@ export class ParaStore extends State {
     this._userTrendLines = [];
   }
 
-  
+  removePopup(id: string) {
+    this.popups.splice(this.popups.findIndex(p => p.id === id), 1)
+    this.paraChart.paraView.requestUpdate()
+  }
+
   clearPopups() {
     this.popups.splice(0, this.popups.length)
   }
-    
+
+  clipTo(seriesKey: string, index: number) {
+    const fraction = this.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey.toLowerCase(), index)!.x / this.paraChart.paraView.documentView!.chartLayers.width
+    const oldWidth = this.paraChart.paraView.clipWidth;
+    this.paraChart.paraView.clipWidth = Number(fraction)
+    for (let dpView of this.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
+      const pointDpView = dpView as PointDatapointView
+      dpView.completeLayout();
+      pointDpView.stopAnimation()
+    }
+    for (let dpView of this.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
+      const pointDpView = dpView as PointDatapointView
+      pointDpView.alwaysClip = true;
+      if (pointDpView.x - 1 <= Number(fraction) * this.paraChart.paraView.documentView!.chartLayers.width
+        && pointDpView.x - 1 > oldWidth * this.paraChart.paraView.documentView!.chartLayers.width
+      ) {
+        pointDpView.popInAnimation()
+      }
+      else if (pointDpView.x - 1 > Number(fraction) * this.paraChart.paraView.documentView!.chartLayers.width) {
+        pointDpView.baseSymbolScale = 0;
+      }
+      loopParaviewRefresh(this.paraChart.paraView,
+        this.paraChart.paraView.store.settings.animation.popInAnimateRevealTimeMs
+        , 50);
+    }
+  }
+
 }

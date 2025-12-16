@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { BaseChartInfo } from './base_chart';
-import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType } from '../view/layers/data/navigation';
+import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, type NavMap } from '../view/layers/data/navigation';
 import { ParaStore } from '../store';
 import { type RiffOrder } from './base_chart';
 import { type HorizDirection } from '../store';
@@ -23,7 +23,7 @@ import { type HorizDirection } from '../store';
 import { ChartType } from '@fizz/paramanifest';
 import { Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
 import { DocumentView } from '../view/document_view';
-import { loopParaviewRefresh } from '../common';
+import { Bezier, loopParaviewRefresh } from '../common';
 
 // Soni Constants
 export const SONI_PLAY_SPEEDS = [1000, 250, 100, 50, 25];
@@ -33,12 +33,20 @@ export const SONI_RIFF_SPEEDS = [450, 300, 150, 100, 75];
  * Abstract base class for business logic for charts drawn in a 2-D Cartesian coordinate system.
  */
 export abstract class PlaneChartInfo extends BaseChartInfo {
+  protected _altNavMap!: NavMap;
   protected _soniSequenceIndex = 0;
   protected _soniNoteIndex = 0;
   protected _soniSpeedRateIndex = 1;
 
   constructor(type: ChartType, store: ParaStore) {
     super(type, store);
+  }
+
+  /**
+   * Whether the chart's datapoints fall on a tick (default) or between them.
+   */
+  get isIntertick(): boolean {
+    return false;
   }
 
   protected _createNavMap() {
@@ -106,7 +114,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       seriesKey: this.seriesInNavOrder()[0].key
     }).forEach(node => {
       const chordNode = new NavNode(
-        this._navMap!.root, 'chord', {index: node.options.index}, this._store);
+        this._navMap!.root, 'chord', { index: node.options.index }, this._store);
       // [node, ...node.allNodes('down', 'datapoint')].forEach(node => {
       //   chordNode.addDatapointView(node.at(0)!);
       // });
@@ -117,7 +125,94 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     });
   }
 
-  playRiff(datapoints: Datapoint[], order?: RiffOrder) {
+  protected _canCreateSequenceNavNodes(): boolean {
+    return !!this._navMap && Object.keys(this._store.seriesAnalyses).length === this._store.model!.seriesKeys.length
+      && !!this._store.seriesAnalyses[this._store.model!.seriesKeys[0]];
+  }
+
+  protected _createSequenceNavNodes() {
+    if (!this._canCreateSequenceNavNodes()) return;
+    const seriesSeqNodes: NavNode<'sequence'>[][] = [];
+    this._altNavMap = this._navMap!.clone();
+    this._altNavMap!.root.query('series').forEach(seriesNode => {
+      if (seriesSeqNodes.length) {
+        seriesNode.connect('left', seriesSeqNodes.at(-1)!.at(-1)!);
+      }
+      const analysis = this._store.seriesAnalyses[seriesNode.options.seriesKey]!;
+      const datapointNodes = seriesNode.allNodes('right', 'datapoint');
+      const seqNodes: NavNode<'sequence'>[] = [];
+      analysis.sequences.forEach(seq => {
+        const seqNode = new NavNode(seriesNode.layer, 'sequence', {
+          seriesKey: seriesNode.options.seriesKey,
+          start: seq.start,
+          end: seq.end
+        }, this._store);
+        seqNodes.push(seqNode);
+        // seriesNode.datapointViews.slice(seq.start, seq.end).forEach(view => {
+        //   seqNode.addDatapointView(view);
+        // });
+      });
+      seriesSeqNodes.push(seqNodes);
+      seqNodes.slice(0, -1).forEach((seqNode, i) => {
+        seqNode.connect('right', seqNodes[i + 1]);
+      });
+      // Replace series link to datapoints with link to sequences
+      seriesNode.connect('right', seqNodes[0]);
+      // Breaks first and last datapoint links with series landings
+      datapointNodes[0].disconnect('left', false);
+      datapointNodes.at(-1)!.disconnect('right');
+      seqNodes.forEach(seqNode => {
+        // Unless the first datapoint of the sequence already has an
+        // 'out' link set (i.e., it's a boundary node), make a reciprocal
+        // link to it
+        seqNode.connect('in', datapointNodes[seqNode.options.start],
+          !datapointNodes[seqNode.options.start].getLink('out'));
+        for (let i = seqNode.options.start + 1; i < seqNode.options.end; i++) {
+          // non-reciprocal 'out' links from remaining datapoints to sequence
+          datapointNodes[i].connect('out', seqNode, false);
+        }
+        if (seqNode.peekNode('right', 1)) {
+          // We aren't on the last sequence, so the final datapoint is a boundary point.
+          // Make a non-reciprocal 'in' link to the next sequence
+          datapointNodes[seqNode.options.end - 1].connect('in', seqNode.peekNode('right', 1)!, false);
+        }
+      });
+    });
+    // Make sequence node 'down' links
+    seriesSeqNodes.slice(0, -1).forEach((seqNodes, i) => {
+      seqNodes.forEach(node => {
+        const nodeBelow = seriesSeqNodes[i + 1].find(otherNode =>
+          otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
+        node.connect('down', nodeBelow, false);
+      });
+    });
+    // Make sequence node 'up' links
+    seriesSeqNodes.slice(1).forEach((seqNodes, i) => {
+      seqNodes.forEach((node, j) => {
+        const nodeAbove = seriesSeqNodes[i].find(otherNode =>
+          otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
+        node.connect('up', nodeAbove, false);
+      });
+    });
+  }
+
+  playRiff(datapoints: Datapoint[], order?: RiffOrder, isChord?: boolean) {
+    const datapointsClone = [...datapoints];
+    datapointsClone.forEach(d => {
+      const dpView = this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(d.seriesKey, d.datapointIndex)!;
+      if (!isChord) {
+        dpView.alwaysClip = true;
+      }
+      dpView.baseSymbolScale = 0;
+    })
+    for (let dpView of this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
+      if (datapointsClone.filter(dp => dp.seriesKey == dpView.seriesKey && dp.datapointIndex == dpView.index).length == 0) {
+        dpView.alwaysClip = false;
+        dpView.baseSymbolScale = 1;
+      }
+    }
+    let paraview = this._store.paraChart.paraView
+    paraview.documentView!.chartLayers.dataLayer.datapointViews.map(d => d.completeLayout())
     if (order === 'sorted') {
       datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
     } else if (order === 'reversed') {
@@ -129,8 +224,28 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       }
       this._soniSequenceIndex++;
       const length = datapoints.length;
-      loopParaviewRefresh(this._store.paraChart.paraView,
-        this._store.paraChart.paraView.store.settings.animation.popInAnimateRevealTimeMs
+      let start = -1;
+      const linear = new Bezier(0, 0, 1, 1, 10);
+      const step = (timestamp: number) => {
+        if (start === -1) {
+          start = timestamp;
+        }
+        const elapsed = timestamp - start;
+        // We can't really disable the animation, but setting the reveal time to 0
+        // will result in an imperceptibly short animation duration
+        const revealTime = SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length
+        const t = Math.min(elapsed / revealTime, 1);
+        const linearT = linear.eval(t)!;
+        this._store.paraChart.paraView.clipWidth = linearT;
+        if (elapsed < revealTime) {
+          requestAnimationFrame(step);
+        } else {
+          //this._animEnd();
+        }
+      };
+      requestAnimationFrame(step);
+      loopParaviewRefresh(paraview,
+        paraview.store.settings.animation.popInAnimateRevealTimeMs
         + SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length, 50);
       this._soniRiffInterval = setInterval(() => {
         const datapoint = datapoints.shift();
@@ -146,6 +261,11 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
 
   playDatapoints(datapoints: PlaneDatapoint[]): void {
     const length = datapoints.length;
+    for (let dpView of this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
+      dpView.alwaysClip = false;
+      dpView.baseSymbolScale = 1;
+      dpView.completeLayout();
+    }
     loopParaviewRefresh(this._store.paraChart.paraView,
       this._store.paraChart.paraView.store.settings.animation.popInAnimateRevealTimeMs
       + SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length, 50);
@@ -170,7 +290,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   }
 
   protected _sparkBrailleInfo() {
-    return  {
+    return {
       data: (this._navMap!.cursor.isNodeType(this._datapointNavNodeType)
         || this._navMap!.cursor.isNodeType('series')
         || this._navMap!.cursor.isNodeType('sequence'))

@@ -321,6 +321,11 @@ export class View extends BaseView {
     return this._parent?._children.indexOf(this) ?? -1;
   }
 
+  get isLast() {
+    if (!this._parent) throw new Error('view has no parent');
+    return this.index === this._parent._children.length - 1;
+  }
+
   get isFocused() {
     return this._parent!.currFocus === this;
   }
@@ -375,11 +380,11 @@ export class View extends BaseView {
   }
 
   get width() {
-    return this._hidden ? 0 : this._width;
+    return /*this._hidden ? 0 :*/ this._width;
   }
 
   get height() {
-    return this._hidden ? 0 : this._height;
+    return /*this._hidden ? 0 :*/ this._height;
   }
 
   set width(newWidth: number) {
@@ -399,11 +404,11 @@ export class View extends BaseView {
   }
 
   get paddedWidth() {
-    return this._hidden ? 0 : this.width + this._padding.left + this._padding.right;
+    return /*this._hidden ? 0 :*/ this.width + this._padding.left + this._padding.right;
   }
 
   get paddedHeight() {
-    return this._hidden ? 0 : this.height + this._padding.top + this._padding.bottom;
+    return /*this._hidden ? 0 :*/ this.height + this._padding.top + this._padding.bottom;
   }
 
   get padding(): Padding {
@@ -486,20 +491,20 @@ export class View extends BaseView {
   }
 
   set hidden(hidden: boolean) {
-    const oldBoundWidth = this.paddedWidth;
-    const oldBoundHeight = this.paddedHeight;
+    // const oldBoundWidth = this.paddedWidth;
+    // const oldBoundHeight = this.paddedHeight;
     this._hidden = hidden;
-    if (oldBoundWidth || oldBoundHeight) {
-      this._boundingSizeDidChange(oldBoundWidth, oldBoundHeight);
-    }
+    // if (oldBoundWidth || oldBoundHeight) {
+    //   this._boundingSizeDidChange(oldBoundWidth, oldBoundHeight);
+    // }
   }
 
   get left() {
-    return this._x - this._locOffset.x;
+    return this.x - this._locOffset.x;
   }
 
   set left(left: number) {
-    this._x = left + this._locOffset.x;
+    this.x = left + this._locOffset.x;
   }
 
   get paddedLeft() {
@@ -507,7 +512,7 @@ export class View extends BaseView {
   }
 
   set paddedLeft(paddedLeft: number) {
-    this._x = paddedLeft + this._padding.left + this._locOffset.x;
+    this.x = paddedLeft + this._padding.left + this._locOffset.x;
   }
 
   get right() {
@@ -515,7 +520,7 @@ export class View extends BaseView {
   }
 
   set right(right: number) {
-    this._x = right - this.width + this._locOffset.x;
+    this.x = right - this.width + this._locOffset.x;
   }
 
   get paddedRight() {
@@ -523,7 +528,7 @@ export class View extends BaseView {
   }
 
   set paddedRight(paddedRight: number) {
-    this._x = paddedRight - this._padding.right - this.width + this._locOffset.x;
+    this.x = paddedRight - this._padding.right - this.width + this._locOffset.x;
   }
 
   get centerX() {
@@ -531,15 +536,15 @@ export class View extends BaseView {
   }
 
   set centerX(centerX: number) {
-    this._x = centerX - this.width / 2 + this._locOffset.x;
+    this.x = centerX - this.width / 2 + this._locOffset.x;
   }
 
   get top() {
-    return this._y - this._locOffset.y;
+    return this.y - this._locOffset.y;
   }
 
   set top(top: number) {
-    this._y = top + this._locOffset.y;
+    this.y = top + this._locOffset.y;
   }
 
   get paddedTop() {
@@ -547,7 +552,7 @@ export class View extends BaseView {
   }
 
   set paddedTop(paddedTop: number) {
-    this._y = paddedTop + this._padding.top + this._locOffset.y;
+    this.y = paddedTop + this._padding.top + this._locOffset.y;
   }
 
   get bottom() {
@@ -555,7 +560,7 @@ export class View extends BaseView {
   }
 
   set bottom(bottom: number) {
-    this._y = bottom - this.height + this._locOffset.y;
+    this.y = bottom - this.height + this._locOffset.y;
   }
 
   get paddedBottom() {
@@ -563,7 +568,7 @@ export class View extends BaseView {
   }
 
   set paddedBottom(paddedBottom: number) {
-    this._y = paddedBottom - this._padding.bottom - this.height + this._locOffset.y;
+    this.y = paddedBottom - this._padding.bottom - this.height + this._locOffset.y;
   }
 
   get centerY() {
@@ -571,7 +576,7 @@ export class View extends BaseView {
   }
 
   set centerY(centerY: number) {
-    this._y = centerY - this.height / 2 + this._locOffset.y;
+    this.y = centerY - this.height / 2 + this._locOffset.y;
   }
 
   get bbox(): DOMRect {

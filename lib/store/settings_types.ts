@@ -43,7 +43,7 @@ export type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grays
 /** @public */
 export type TabLabelStyle = 'icon' | 'iconLabel' | 'label';
 /** @public */
-export type AnimationType = 'uniform' | 'progressive' | 'none';
+export type AnimationType = 'yAxis' | 'xAxis' | 'none';
 /** @public */
 export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
 
@@ -337,7 +337,7 @@ export interface BarSettings extends PlotSettings {
   orderBy?: string;
   clusterGap: number;
   barGap: number;
-  //stackInsideGap: number;
+  stackInsideGap: number;
   isAbbrevSeries: boolean;
   clusterLabelFormat: LabelFormat;
   lineWidth: number;
@@ -347,6 +347,18 @@ export interface BarSettings extends PlotSettings {
 
 /** @public */
 export interface LollipopSettings extends BarSettings {
+}
+
+/** @public */
+export interface WaterfallSettings extends PlotSettings {
+  barWidth: number;
+  colorByDatapoint: boolean;
+  isDrawLabels: boolean;
+  labelPosition: BarDataLabelPosition;
+  barLabelGap: number;
+  barGap: number;
+  showPopups: boolean;
+  labelFontSize: string;
 }
 
 /** @public */
@@ -443,6 +455,7 @@ export interface ChartTypeSettings extends SettingGroup {
   gauge: RadialSettings;
   stepline: StepLineSettings;
   lollipop: LollipopSettings;
+  waterfall: WaterfallSettings;
 }
 
 /** @public */
