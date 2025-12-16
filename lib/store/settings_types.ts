@@ -188,7 +188,6 @@ export interface ChartSettings extends SettingGroup {
   isStatic: boolean;
   isShowVisitedDatapointsOnly: boolean;
   isShowPopups: boolean;
-  clipWidth: number;
 }
 
 /** @public */
