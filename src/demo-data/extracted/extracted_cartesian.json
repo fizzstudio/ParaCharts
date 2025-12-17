@@ -1,0 +1,46 @@
+{
+  "version": {
+    "jim": "0.3.2",
+    "document": "0.3.2"
+  },
+  "datasets": {
+    "title": "Title",
+    "description": "A line chart showing a line going from the top left to the bottom right.",
+    "representation": "line",
+    "facets": {
+      "x": {
+        "label": "x",
+        "variableType": "independent",
+        "labelType": "x axis",
+        "measure": "interval"
+      },
+      "y": {
+        "label": "y",
+        "variableType": "dependent",
+        "labelType": "y axis",
+        "measure": "ratio"
+      }
+    },
+    "series": [
+      {
+        "name": "line",
+        "records": [
+          {
+            "x": "-5",
+            "y": "5"
+          },
+          {
+            "x": "1",
+            "y": "-2"
+          }
+        ]
+      }
+    ],
+    "yAxis": {
+      "tick_-4": "-4",
+      "tick_-2": "-2",
+      "tick_2": "2",
+      "tick_4": "4"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "version": {
+    "jim": "0.3.2",
+    "document": "0.3.2"
+  },
+  "datasets": {
+    "title": "Public Wary of U.S. Involvement in Iraq",
+    "description": "The pie chart shows the public opinion on whether the U.S. has a responsibility to do something about the violence in Iraq.",
+    "representation": "pie",
+    "facets": {},
+    "series": [
+      {
+        "name": "U.S. has responsibility",
+        "value": 39.0
+      },
+      {
+        "name": "U.S. doesn't have responsibility",
+        "value": 55.0
+      },
+      {
+        "name": "Don't know",
+        "value": 6.0
+      }
+    ],
+    "yAxis": {}
+  }
+}

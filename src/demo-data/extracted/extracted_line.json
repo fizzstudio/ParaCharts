@@ -1,0 +1,183 @@
+{
+  "version": {
+    "jim": "0.3.2",
+    "document": "0.3.2"
+  },
+  "datasets": {
+    "title": "Outdoor air pollution death rate, 2005 to 2012",
+    "description": "The chart shows the outdoor air pollution death rate from 2005 to 2012 for Myanmar, Zambia, Eastern Sub-Saharan Africa, and New Zealand.",
+    "representation": "line",
+    "facets": {
+      "x": {
+        "label": "X",
+        "variableType": "independent",
+        "labelType": "x axis",
+        "measure": "interval"
+      },
+      "y": {
+        "label": "The number of deaths attributed to outdoor ozone and particulate matter pollution per 100,000.",
+        "variableType": "dependent",
+        "labelType": "y axis",
+        "measure": "ratio"
+      }
+    },
+    "series": [
+      {
+        "name": "Myanmar",
+        "records": [
+          {
+            "x": "2005",
+            "y": 59.0
+          },
+          {
+            "x": "2006",
+            "y": 58.5
+          },
+          {
+            "x": "2007",
+            "y": 58.0
+          },
+          {
+            "x": "2008",
+            "y": 57.5
+          },
+          {
+            "x": "2009",
+            "y": 57.0
+          },
+          {
+            "x": "2010",
+            "y": 56.0
+          },
+          {
+            "x": "2011",
+            "y": 55.5
+          },
+          {
+            "x": "2012",
+            "y": 54.5
+          }
+        ]
+      },
+      {
+        "name": "Zambia",
+        "records": [
+          {
+            "x": "2005",
+            "y": 27.5
+          },
+          {
+            "x": "2006",
+            "y": 27.5
+          },
+          {
+            "x": "2007",
+            "y": 27.0
+          },
+          {
+            "x": "2008",
+            "y": 27.0
+          },
+          {
+            "x": "2009",
+            "y": 26.5
+          },
+          {
+            "x": "2010",
+            "y": 26.5
+          },
+          {
+            "x": "2011",
+            "y": 26.5
+          },
+          {
+            "x": "2012",
+            "y": 26.5
+          }
+        ]
+      },
+      {
+        "name": "Eastern Sub-Saharan Africa",
+        "records": [
+          {
+            "x": "2005",
+            "y": 20.0
+          },
+          {
+            "x": "2006",
+            "y": 20.0
+          },
+          {
+            "x": "2007",
+            "y": 20.0
+          },
+          {
+            "x": "2008",
+            "y": 20.0
+          },
+          {
+            "x": "2009",
+            "y": 20.0
+          },
+          {
+            "x": "2010",
+            "y": 20.0
+          },
+          {
+            "x": "2011",
+            "y": 20.0
+          },
+          {
+            "x": "2012",
+            "y": 20.5
+          }
+        ]
+      },
+      {
+        "name": "New Zealand",
+        "records": [
+          {
+            "x": "2005",
+            "y": 14.0
+          },
+          {
+            "x": "2006",
+            "y": 13.5
+          },
+          {
+            "x": "2007",
+            "y": 13.5
+          },
+          {
+            "x": "2008",
+            "y": 13.0
+          },
+          {
+            "x": "2009",
+            "y": 12.5
+          },
+          {
+            "x": "2010",
+            "y": 12.5
+          },
+          {
+            "x": "2011",
+            "y": 11.5
+          },
+          {
+            "x": "2012",
+            "y": 11.0
+          }
+        ]
+      }
+    ],
+    "yAxis": {
+      "tick_0": "0",
+      "tick_10": "10",
+      "tick_20": "20",
+      "tick_30": "30",
+      "tick_40": "40",
+      "tick_50": "50"
+    }
+  }
+}
