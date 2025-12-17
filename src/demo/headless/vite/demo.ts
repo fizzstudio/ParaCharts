@@ -10,6 +10,7 @@ let _svgText;
 let _dataFieldInfo;
 
 async function _selectData(event: Event) {
+	console.log('select start')
 	event.stopPropagation();
 
 	const fileInput = event.target as HTMLInputElement;
@@ -19,7 +20,7 @@ async function _selectData(event: Event) {
 	if (!file) {
 		return;
 	}
-
+console.log('got file')
 	_dataFile = file;
 
 	const ext = file.name.toLocaleLowerCase().match(/^.+(\.\w+)/)?.[1];
@@ -28,6 +29,7 @@ async function _selectData(event: Event) {
 		: (file.name + '.svg');
 
 	if ('application/json' === file.type) {
+		console.log('got json')
 		await _loadManifest(JSON.parse(await file.text()));
 	} else if ('text/csv' === file.type) {
 		await _loadCsv(file);
@@ -37,8 +39,11 @@ async function _selectData(event: Event) {
 }
 
 async function _loadManifest(manifest: Manifest) {
+	console.log('load manifest start', headless)
 	await headless.loadManifest(JSON.stringify(manifest), 'content');
+	console.log('load manifest 1')
 	await headless.jimReady;
+		console.log('got manifest')
 	_manifest = manifest;
 	_svgText = headless.api.serializeChart();
 	container.innerHTML = _svgText;

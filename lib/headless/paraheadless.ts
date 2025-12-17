@@ -41,10 +41,14 @@ export class ParaHeadless {
   ): Promise<void> {
     this._paraChart.manifest = input;
     this._paraChart.manifestType = type;
+    console.log('hl lm')
     return new Promise<void>((resolve) => {
       this._paraChart.addEventListener('manifestchange', async () => {
         // Once the filename has been set, we can wait for the load to complete
-        await this._paraChart.loaded;
+        const l = this._paraChart.loaded
+        console.log('promise', l)
+        await l;
+        console.log('promise loaded')
         resolve();
       }, {once: true});
     });
