@@ -1,0 +1,42 @@
+{
+  "datasets": [
+    {
+      "type": "pie",
+      "title": "",
+      "facets": {
+        "x": {
+          "label": "",
+          "variableType": "independent",
+          "measure": "nominal",
+          "datatype": "string",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Proportion of total energy in the Universe",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "multiplier": 0.01,
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+      ],
+      "data": {
+        "source": "external",
+        "path": "para:preload"
+      },
+      "settings": {
+        "chart.orientation": "north",
+        "chart.size.width": 360,
+        "legend.isDrawLegend": false
+      }
+    }
+  ]
+}
