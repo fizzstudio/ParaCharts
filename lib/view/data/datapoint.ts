@@ -356,7 +356,6 @@ export class DatapointView extends DataView {
     let y = this.y
     let color = this.color
     let fill = undefined;
-    let margin = undefined;
     let shape = "boxWithArrow"
     let pointerControlled = false;
     if (['bar', 'column', 'waterfall'].includes(this.paraview.store.type)) {
@@ -376,7 +375,6 @@ export class DatapointView extends DataView {
         fill = pal.colors[2].value;
       }
       color = 0;
-      margin = 50;
     }
     if (['pie', 'donut'].includes(this.paraview.store.type)) {
       let chart = this.chart as PastryPlotView
@@ -397,7 +395,6 @@ export class DatapointView extends DataView {
         id: this.id,
         color: color,
         points: [this],
-        margin: margin,
         rotationExempt: this.paraview.store.type == 'bar' ? false : true,
         angle: this.paraview.store.type == 'bar' ? -90 : 0,
         pointerControlled
