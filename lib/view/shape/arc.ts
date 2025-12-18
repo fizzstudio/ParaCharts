@@ -1,4 +1,3 @@
-
 import { fixed } from '../../common/utils';
 import { type ParaView } from '../../paraview';
 import { type ShapeOptions, Shape } from './shape';
@@ -44,7 +43,7 @@ export class ArcShape extends Shape {
   }
 
   protected get _pathD() {
-    const relPoints = this._points.map(p => p.add(this._loc));
+    const relPoints = this._points;
     if (!relPoints.length) {
       return '';
     }

@@ -417,7 +417,7 @@ export class VennPlotView extends DataLayer {
     seriesKeys.forEach(seriesKey => {
       const seriesView = new SeriesView(this, seriesKey);
       this._chartLandingView.append(seriesView);
-      const region = new VennRegionView(seriesView, mult * 0.5 * this._radius, 0, colArr[i]);
+      const region = new VennRegionView(seriesView, mult * 0.5 * this._radius, 0, this._radius,colArr[i]);
       seriesView.append(region);
       mult = 1;
 	  i += 1;
@@ -436,7 +436,9 @@ export class VennPlotView extends DataLayer {
           new Vec2(p2.x, p2.y),
           new Vec2(p1.x, p1.y)
         ],
-		fill: "red"
+		fill: "red",
+		stroke: "black",
+		strokeWidth: 1
       });
 
       this.append(arc);
@@ -471,14 +473,16 @@ export interface RadialDatapointParams {
 */
 export class VennRegionView extends DatapointView {
   declare readonly chart: VennPlotView;
-  declare protected _shapes: PathShape[];
+  declare protected _shape: CircleShape;
   protected _xOff: number;
   protected _yOff: number;
   protected _color: string;
-  constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0, color = "red") {
+  protected _r: number;
+  constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0, r: number = 0, color = "red") {
     super(parent);
     this._xOff = x_offset;
     this._yOff = y_offset;
+	this._r = r;
     this._isStyleEnabled = true;
 	this._color = color;
   }
@@ -527,7 +531,7 @@ export class VennRegionView extends DatapointView {
   protected _createSymbol() {
     const cx = this.chart.cx;
     const cy = this.chart.cy;
-    const r = this.chart._radius;
+    const r = this._r;
 
     const circle = new CircleShape(this.paraview, {
       x: cx + this._xOff,

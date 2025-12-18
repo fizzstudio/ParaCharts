@@ -96,10 +96,10 @@ export class VennDiagramInfo extends BaseChartInfo {
     });
     nodes.at(-1)!.connect('right', nodes[0]);
   }
-
+  /*
   legend() {
   }
-
+*/
   playDatapoints(datapoints: PlaneDatapoint[]): void {
     this._sonifier.playDatapoints(datapoints, {invert: true, durationVariable: true});
   }
