@@ -5,7 +5,7 @@ import { type ParaView } from '../../../paraview';
 import { RectShape } from '../../shape/rect';
 import { PathShape } from '../../shape/path';
 import { Vec2 } from '../../../common/vector';
-import { PointAnnotation } from '../../../store';
+import { PointAnnotation, Setting } from '../../../store';
 import { Popup } from '../../popup';
 import { datapointIdToCursor } from '../../../store';
 
@@ -45,6 +45,16 @@ export class AnnotationLayer extends PlotLayer {
     }
     else {
       throw new Error(`group '${name}' does not exist`);
+    }
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if (['ui.isLowVisionModeEnabled'].includes(path)) {
+      if (!oldValue) {
+        for (let annot of this.paraview.store.annotations) {
+          annot.isSelected = false;
+        }
+      }
     }
   }
 
@@ -119,6 +129,7 @@ export class AnnotationLayer extends PlotLayer {
         this.addGroup('annotation-popups', true);
         this.group('annotation-popups')!.clearChildren();
         let annots = structuredClone(this.paraview.store.annotations.filter(a => a.type == 'datapoint' && a.isSelected == true) as unknown as PointAnnotation[]);
+        /*
         for (let dp of this.paraview.store.visitedDatapoints){
           let cursor = datapointIdToCursor(dp)
           let dpView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(cursor.seriesKey, cursor.index)
@@ -128,6 +139,7 @@ export class AnnotationLayer extends PlotLayer {
             }
           }
         }
+          */
         for (const annot of annots) {
           const seriesKey = this.paraview.store.model!.series.filter(s => s[0].seriesKey == annot.seriesKey)[0].key
           const dpView = this.paraview.documentView?.chartLayers.dataLayer.datapointViews.filter(d => d.seriesKey == seriesKey && d.index == annot.index)[0]

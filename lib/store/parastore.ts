@@ -665,7 +665,8 @@ export class ParaStore extends State {
           index,
           annotation: `${series}, ${recordLabel}: ${annotationText}`,
           text: annotationText,
-          id: `${series}-${recordLabel}-${this.annotID}`
+          id: `${series}-${recordLabel}-${this.annotID}`,
+          isSelected: this.settings.ui.isLowVisionModeEnabled ? false : true,
         });
         this.annotID += 1;
       }
