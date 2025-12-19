@@ -17,6 +17,11 @@ import { ClassInfo } from 'lit/directives/class-map.js';
 import { datapointMatchKeyAndIndex, bboxOppositeAnchor } from '../../../../common/utils';
 import { type BboxAnchorCorner } from '../../../base_view';
 
+type ItemEntry = {
+  inA: boolean;
+  inB: boolean;
+  datapoints: Datapoint[];
+};
 type Rectangle = [number, number]; // [width, height]
 type Position = [number, number];  // [x, y]
 type Point = { x: number; y: number };
@@ -109,7 +114,7 @@ export class VennPlotView extends DataLayer {
     let d = a + (b - a) / phi;
 
     function fAlpha(alpha: number) {
-        return f(x.map((xi, idx) => xi + alpha * dir[idx]));
+      return f(x.map((xi, idx) => xi + alpha * dir[idx]));
     }
 
     let fc = fAlpha(c);
@@ -117,28 +122,28 @@ export class VennPlotView extends DataLayer {
     let iter = 0;
 
     while (Math.abs(b - a) > tol && iter < maxIter) {
-		// console.log(`Iteration ${iter}: a=${a}, b=${b}, c=${c}, d=${d}`);
-        if (fc < fd) {
-            b = d;
-            d = c;
-            fd = fc;
-            c = b - (b - a) / phi;
-            fc = fAlpha(c);
-        } else {
-            a = c;
-            c = d;
-            fc = fd;
-            d = a + (b - a) / phi;
-            fd = fAlpha(d);
-        }
-        iter++;
+      // console.log(`Iteration ${iter}: a=${a}, b=${b}, c=${c}, d=${d}`);
+      if (fc < fd) {
+        b = d;
+        d = c;
+        fd = fc;
+        c = b - (b - a) / phi;
+        fc = fAlpha(c);
+      } else {
+        a = c;
+        c = d;
+        fc = fd;
+        d = a + (b - a) / phi;
+        fd = fAlpha(d);
+      }
+      iter++;
     }
 
     const alphaMin = (b + a) / 2;
     return { alpha: alphaMin, fval: fAlpha(alphaMin) };
   }
 
-  protected minimize(f: (x: number []) => number, x0: number [], tol: number = 1e-6, maxIter: number = 200) {
+  protected minimize(f: (x: number[]) => number, x0: number[], tol: number = 1e-6, maxIter: number = 200) {
     const n = x0.length;
     let x = x0.slice();
     let dirs = [];
@@ -148,34 +153,34 @@ export class VennPlotView extends DataLayer {
     let iter = 0;
 
     while (iter < maxIter) {
-        iter++;
-        let xStart = x.slice();
-        let fxStart = fx;
-        let biggestDecrease = 0;
-        let biggestDirIdx = -1;
+      iter++;
+      let xStart = x.slice();
+      let fxStart = fx;
+      let biggestDecrease = 0;
+      let biggestDirIdx = -1;
 
-        for (let i = 0; i < n; i++) {
-            let { alpha, fval } = this.lineMinimization(f, x, dirs[i]);
-            x = x.map((xi, idx) => xi + alpha * dirs[i][idx]);
-            let decrease = fx - fval;
-            if (decrease > biggestDecrease) {
-                biggestDecrease = decrease;
-                biggestDirIdx = i;
-            }
-            fx = fval;
+      for (let i = 0; i < n; i++) {
+        let { alpha, fval } = this.lineMinimization(f, x, dirs[i]);
+        x = x.map((xi, idx) => xi + alpha * dirs[i][idx]);
+        let decrease = fx - fval;
+        if (decrease > biggestDecrease) {
+          biggestDecrease = decrease;
+          biggestDirIdx = i;
         }
+        fx = fval;
+      }
 
-        if (2 * Math.abs(fxStart - fx) <= tol * (Math.abs(fxStart) + Math.abs(fx)) + 1e-10) {
-            break;
-        }
+      if (2 * Math.abs(fxStart - fx) <= tol * (Math.abs(fxStart) + Math.abs(fx)) + 1e-10) {
+        break;
+      }
 
-        let newDir = x.map((xi, idx) => xi - xStart[idx]);
-        let { alpha: alphaNew, fval: fxNew } = this.lineMinimization(f, x, newDir);
-        x = x.map((xi, idx) => xi + alphaNew * newDir[idx]);
-        fx = fxNew;
+      let newDir = x.map((xi, idx) => xi - xStart[idx]);
+      let { alpha: alphaNew, fval: fxNew } = this.lineMinimization(f, x, newDir);
+      x = x.map((xi, idx) => xi + alphaNew * newDir[idx]);
+      fx = fxNew;
 
-        if (biggestDirIdx >= 0) dirs[biggestDirIdx] = this.normalize(newDir);
-    } 
+      if (biggestDirIdx >= 0) dirs[biggestDirIdx] = this.normalize(newDir);
+    }
     return { argument: x, fncvalue: fx };
   }
   protected normalize(v: number[]): number[] {
@@ -654,59 +659,96 @@ export class VennPlotView extends DataLayer {
     const pointsB: Datapoint[] = [];
     const pointsAB: Datapoint[] = [];
 
-    //console.log('length of datapointViews:', this.datapointViews.length);
-
     const allDatapoints: Datapoint[] = [];
     for (const series of this.paraview.store.model!.series) {
       allDatapoints.push(...series.datapoints);
     }
 
-    allDatapoints.forEach((dp) => {
-      //console.log(JSON.stringify(dp, null, 2));
-      let inA: boolean = false;
-      let inB: boolean = false;
-      if (dp.seriesKey === "flying_animals" && dp.facetValue('membership') == 'included') {
-        inA = true;
-      }
-      if (dp.seriesKey === "aquatic_animals" && dp.facetValue('membership') == 'included') {
-        inB = true;
-      }
-      const w = 10;
-      const h = 10;
+    const itemMap = new Map<string, ItemEntry>();
 
-      //console.log('[inA, inB]', inA, inB);
+    for (const dp of allDatapoints) {
+      const item = String(dp.facetValue("item") ?? "");
 
-      if (inA && !inB) {
+      let entry = itemMap.get(item);
+      if (!entry) {
+        entry = { inA: false, inB: false, datapoints: [] };
+        itemMap.set(item, entry);
+      }
+
+      entry.datapoints.push(dp);
+
+      if (
+        dp.seriesKey === "flying_animals" &&
+        dp.facetValue("membership") === "included"
+      ) {
+        entry.inA = true;
+      }
+
+      if (
+        dp.seriesKey === "aquatic_animals" &&
+        dp.facetValue("membership") === "included"
+      ) {
+        entry.inB = true;
+      }
+    }
+
+    // ---- THIS REPLACES THE OLD allDatapoints.forEach ----
+
+    const w = 10;
+    const h = 10;
+
+    for (const entry of itemMap.values()) {
+      // choose a representative datapoint for the label text
+      const dp = entry.datapoints[0];
+
+      if (entry.inA && !entry.inB) {
         rectanglesA.push([w, h]);
         pointsA.push(dp);
-      } else if (!inA && inB) {
+      } else if (!entry.inA && entry.inB) {
         rectanglesB.push([w, h]);
         pointsB.push(dp);
-      } else if (inA && inB) {
+      } else if (entry.inA && entry.inB) {
         rectanglesAB.push([w, h]);
         pointsAB.push(dp);
       }
-    });
+    }
 
-    const circle1: [number, number] = [this._cx - 0.5 * this._radius, this._cy];
-    const circle2: [number, number] = [this._cx + 0.5 * this._radius, this._cy];
+    const circle1: [number, number] = [
+      this._cx - 0.5 * this._radius,
+      this._cy,
+    ];
+    const circle2: [number, number] = [
+      this._cx + 0.5 * this._radius,
+      this._cy,
+    ];
 
-    const placeLabels = (rects: [number, number][], points: Datapoint[], mask: [boolean, boolean]) => {
+    const placeLabels = (
+      rects: [number, number][],
+      points: Datapoint[],
+      mask: [boolean, boolean]
+    ) => {
       const initialPositions = Array(rects.length * 2).fill(200);
-      const layout = this.computeLayout2(rects, initialPositions, circle1, circle2, this._radius, mask);
-      console.log('HEY LOOK computeLayout2 returned', layout);
-      //console.log('args:', {rects, initialPositions, circle1, circle2, _radius: this._radius, mask});
+      const layout = this.computeLayout2(
+        rects,
+        initialPositions,
+        circle1,
+        circle2,
+        this._radius,
+        mask
+      );
+
       points.forEach((dp, i) => {
         const x = layout[2 * i];
         const y = layout[2 * i + 1];
         const label = new Label(this.paraview, {
-          text: String(dp.facetValue('item') ?? ''),
+          text: String(dp.facetValue("item") ?? ""),
           x,
           y,
         });
         this.append(label);
       });
     };
+
     placeLabels(rectanglesA, pointsA, [true, false]);
     placeLabels(rectanglesB, pointsB, [false, true]);
     placeLabels(rectanglesAB, pointsAB, [true, true]);
