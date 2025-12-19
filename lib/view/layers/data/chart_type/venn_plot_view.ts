@@ -122,7 +122,6 @@ export class VennPlotView extends DataLayer {
     let iter = 0;
 
     while (Math.abs(b - a) > tol && iter < maxIter) {
-      // console.log(`Iteration ${iter}: a=${a}, b=${b}, c=${c}, d=${d}`);
       if (fc < fd) {
         b = d;
         d = c;
@@ -607,7 +606,6 @@ export class VennPlotView extends DataLayer {
 
       for (let dpIdx = 0; dpIdx < series.datapoints.length; dpIdx++) {
         const dp = series.datapoints[dpIdx];
-        //console.log(`Series "${seriesKeys[idx]}" datapoint:`, dp.facetValue('item'));
       }
     }
     let mult: number = -1;
@@ -692,13 +690,10 @@ export class VennPlotView extends DataLayer {
       }
     }
 
-    // ---- THIS REPLACES THE OLD allDatapoints.forEach ----
-
-    const w = 10;
+    const w = 80;
     const h = 10;
 
     for (const entry of itemMap.values()) {
-      // choose a representative datapoint for the label text
       const dp = entry.datapoints[0];
 
       if (entry.inA && !entry.inB) {
