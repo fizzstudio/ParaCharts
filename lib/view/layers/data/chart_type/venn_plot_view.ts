@@ -93,7 +93,7 @@ export class VennPlotView extends DataLayer {
         circleRadius,
         circleBools
       ),
-      Array.from(positions, () => 0)
+      Array.from(positions, () => 200)
     );
     return solution.argument;
   }
@@ -667,12 +667,19 @@ export class VennPlotView extends DataLayer {
     const rectanglesA: [number, number][] = [];
     const rectanglesB: [number, number][] = [];
     const rectanglesAB: [number, number][] = [];
-    const viewsA: typeof this.datapointViews = [];
-    const viewsB: typeof this.datapointViews = [];
-    const viewsAB: typeof this.datapointViews = [];
+    const pointsA: Datapoint[] = [];
+    const pointsB: Datapoint[] = [];
+    const pointsAB: Datapoint[] = [];
 
-    this.datapointViews.forEach((region) => {
-      const dp = region.datapoint;
+    console.log('length of datapointViews:', this.datapointViews.length);
+
+    const allDatapoints: Datapoint[] = [];
+    for (const series of this.paraview.store.model!.series) {
+      allDatapoints.push(...series.datapoints);
+    }
+
+    allDatapoints.forEach((dp) => {
+      console.log(JSON.stringify(dp, null, 2));
       let inA: boolean = false;
       let inB: boolean = false;
       if (dp.seriesKey === "flying_animals" && dp.facetValue('membership') == 'included') {
@@ -684,38 +691,42 @@ export class VennPlotView extends DataLayer {
       const w = 60;
       const h = 20;
 
+      console.log('[inA, inB]', inA, inB);
+
       if (inA && !inB) {
         rectanglesA.push([w, h]);
-        viewsA.push(region);
+        pointsA.push(dp);
       } else if (!inA && inB) {
         rectanglesB.push([w, h]);
-        viewsB.push(region);
+        pointsB.push(dp);
       } else if (inA && inB) {
         rectanglesAB.push([w, h]);
-        viewsAB.push(region);
+        pointsAB.push(dp);
       }
     });
 
     const circle1: [number, number] = [this._cx - 0.5 * this._radius, this._cy];
     const circle2: [number, number] = [this._cx + 0.5 * this._radius, this._cy];
 
-    const placeLabels = (rects: [number, number][], views: typeof this.datapointViews, mask: [boolean, boolean]) => {
-      const initialPositions = Array(rects.length * 2).fill(0);
+    const placeLabels = (rects: [number, number][], points: Datapoint[], mask: [boolean, boolean]) => {
+      const initialPositions = Array(rects.length * 2).fill(200);
       const layout = this.computeLayout2(rects, initialPositions, circle1, circle2, this._radius, mask);
-      views.forEach((region, i) => {
+      console.log('computeLayout2 returned', layout);
+      console.log('args:', {rects, initialPositions, circle1, circle2, _radius: this._radius, mask});
+      points.forEach((dp, i) => {
         const x = layout[2 * i];
         const y = layout[2 * i + 1];
         const label = new Label(this.paraview, {
-          text: String(region.datapoint.facetValue('item') ?? ''),
+          text: String(dp.facetValue('item') ?? ''),
           x,
           y,
         });
-        region.append(label);
+        this.append(label);
       });
     };
-    placeLabels(rectanglesA, viewsA, [true, false]);
-    placeLabels(rectanglesB, viewsB, [false, true]);
-    placeLabels(rectanglesAB, viewsAB, [true, true]);
+    placeLabels(rectanglesA, pointsA, [true, false]);
+    placeLabels(rectanglesB, pointsB, [false, true]);
+    placeLabels(rectanglesAB, pointsAB, [true, true]);
   }
 
   protected _resolveOutsideLabelCollisions() {
