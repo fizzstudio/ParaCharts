@@ -93,67 +93,52 @@ export class VennPlotView extends DataLayer {
         circleRadius,
         circleBools
       ),
-      Array.from(positions, () => 200)
+      Array.from(positions, () => 0)
     );
     return solution.argument;
   }
-  protected unitVector(n: number, idx: number): number[] {
+  protected unitVector(n: number, idx: number) {
     let v = Array(n).fill(0);
     v[idx] = 1;
     return v;
   }
-  protected lineMinimization(
-    f: (x: number[]) => number,
-    x: number[],
-    dir: number[],
-    tol?: number,
-    maxIter?: number
-  ): { alpha: number; fval: number } {
-
+  protected lineMinimization(f: (x: number[]) => number, x: number[], dir: number[], tol: number = 1e-5, maxIter: number = 50) {
     const phi = (1 + Math.sqrt(5)) / 2;
     let a = -1000, b = 1000;
     let c = b - (b - a) / phi;
     let d = a + (b - a) / phi;
 
-    function fAlpha(alpha: number): number {
-      return f(x.map((xi, idx) => xi + alpha * dir[idx]));
+    function fAlpha(alpha: number) {
+        return f(x.map((xi, idx) => xi + alpha * dir[idx]));
     }
 
     let fc = fAlpha(c);
     let fd = fAlpha(d);
     let iter = 0;
 
-    while (Math.abs(b - a) > tol! && iter < maxIter!) {
-      // console.log(`Iteration ${iter}: a=${a}, b=${b}, c=${c}, d=${d}`);
-      if (fc < fd) {
-        b = d;
-        d = c;
-        fd = fc;
-        c = b - (b - a) / phi;
-        fc = fAlpha(c);
-      } else {
-        a = c;
-        c = d;
-        fc = fd;
-        d = a + (b - a) / phi;
-        fd = fAlpha(d);
-      }
-      iter++;
+    while (Math.abs(b - a) > tol && iter < maxIter) {
+		// console.log(`Iteration ${iter}: a=${a}, b=${b}, c=${c}, d=${d}`);
+        if (fc < fd) {
+            b = d;
+            d = c;
+            fd = fc;
+            c = b - (b - a) / phi;
+            fc = fAlpha(c);
+        } else {
+            a = c;
+            c = d;
+            fc = fd;
+            d = a + (b - a) / phi;
+            fd = fAlpha(d);
+        }
+        iter++;
     }
 
     const alphaMin = (b + a) / 2;
     return { alpha: alphaMin, fval: fAlpha(alphaMin) };
   }
-  protected normalize(v: number[]): number[] {
-    const norm = Math.sqrt(v.reduce((s, vi) => s + vi * vi, 0));
-    return norm > 0 ? v.map(vi => vi / norm) : v;
-  }
-  protected minimize(
-    f: (x: number[]) => number,
-    x0: number[],
-    tol: number = 1e-6,
-    maxIter: number = 200
-  ): { argument: number[]; fncvalue: number } {
+
+  protected minimize(f: (x: number []) => number, x0: number [], tol: number = 1e-6, maxIter: number = 200) {
     const n = x0.length;
     let x = x0.slice();
     let dirs = [];
@@ -163,36 +148,39 @@ export class VennPlotView extends DataLayer {
     let iter = 0;
 
     while (iter < maxIter) {
-      iter++;
-      let xStart = x.slice();
-      let fxStart = fx;
-      let biggestDecrease = 0;
-      let biggestDirIdx = -1;
+        iter++;
+        let xStart = x.slice();
+        let fxStart = fx;
+        let biggestDecrease = 0;
+        let biggestDirIdx = -1;
 
-      for (let i = 0; i < n; i++) {
-        let { alpha, fval } = this.lineMinimization(f, x, dirs[i]);
-        x = x.map((xi, idx) => xi + alpha * dirs[i][idx]);
-        let decrease = fx - fval;
-        if (decrease > biggestDecrease) {
-          biggestDecrease = decrease;
-          biggestDirIdx = i;
+        for (let i = 0; i < n; i++) {
+            let { alpha, fval } = this.lineMinimization(f, x, dirs[i]);
+            x = x.map((xi, idx) => xi + alpha * dirs[i][idx]);
+            let decrease = fx - fval;
+            if (decrease > biggestDecrease) {
+                biggestDecrease = decrease;
+                biggestDirIdx = i;
+            }
+            fx = fval;
         }
-        fx = fval;
-      }
 
-      if (2 * Math.abs(fxStart - fx) <= tol * (Math.abs(fxStart) + Math.abs(fx)) + 1e-10) {
-        break;
-      }
+        if (2 * Math.abs(fxStart - fx) <= tol * (Math.abs(fxStart) + Math.abs(fx)) + 1e-10) {
+            break;
+        }
 
-      let newDir = x.map((xi, idx) => xi - xStart[idx]);
-      let { alpha: alphaNew, fval: fxNew } = this.lineMinimization(f, x, newDir);
-      x = x.map((xi, idx) => xi + alphaNew * newDir[idx]);
-      fx = fxNew;
+        let newDir = x.map((xi, idx) => xi - xStart[idx]);
+        let { alpha: alphaNew, fval: fxNew } = this.lineMinimization(f, x, newDir);
+        x = x.map((xi, idx) => xi + alphaNew * newDir[idx]);
+        fx = fxNew;
 
-      if (biggestDirIdx >= 0) dirs[biggestDirIdx] = this.normalize(newDir);
-    }
-
+        if (biggestDirIdx >= 0) dirs[biggestDirIdx] = this.normalize(newDir);
+    } 
     return { argument: x, fncvalue: fx };
+  }
+  protected normalize(v: number[]): number[] {
+    const norm = Math.sqrt(v.reduce((s, vi) => s + vi * vi, 0));
+    return norm > 0 ? v.map(vi => vi / norm) : v;
   }
   protected cost2(
     rectangles: Rectangle[],
@@ -207,26 +195,21 @@ export class VennPlotView extends DataLayer {
     for (let i = 0; i < nRects; i++) {
       reshapedPositions.push([positions[2 * i], positions[2 * i + 1]]);
     }
-
     let costVal = 0;
-
     for (let k = 0; k < nRects; k++) {
       const [w, h] = rectangles[k];
       const [x, y] = reshapedPositions[k];
-
       const corners: Position[] = [
         [x - w / 2, y - h / 2],
         [x + w / 2, y - h / 2],
         [x - w / 2, y + h / 2],
         [x + w / 2, y + h / 2],
       ];
-
       for (const [cx, cy] of corners) {
         const dists = [0, 0];
         const dx1 = cx - circleCenter1[0];
         const dy1 = cy - circleCenter1[1];
         dists[0] = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-
         const dx2 = cx - circleCenter2[0];
         const dy2 = cy - circleCenter2[1];
         dists[1] = Math.sqrt(dx2 * dx2 + dy2 * dy2);
@@ -619,7 +602,7 @@ export class VennPlotView extends DataLayer {
 
       for (let dpIdx = 0; dpIdx < series.datapoints.length; dpIdx++) {
         const dp = series.datapoints[dpIdx];
-        console.log(`Series "${seriesKeys[idx]}" datapoint:`, dp.facetValue('item'));
+        //console.log(`Series "${seriesKeys[idx]}" datapoint:`, dp.facetValue('item'));
       }
     }
     let mult: number = -1;
@@ -671,7 +654,7 @@ export class VennPlotView extends DataLayer {
     const pointsB: Datapoint[] = [];
     const pointsAB: Datapoint[] = [];
 
-    console.log('length of datapointViews:', this.datapointViews.length);
+    //console.log('length of datapointViews:', this.datapointViews.length);
 
     const allDatapoints: Datapoint[] = [];
     for (const series of this.paraview.store.model!.series) {
@@ -679,7 +662,7 @@ export class VennPlotView extends DataLayer {
     }
 
     allDatapoints.forEach((dp) => {
-      console.log(JSON.stringify(dp, null, 2));
+      //console.log(JSON.stringify(dp, null, 2));
       let inA: boolean = false;
       let inB: boolean = false;
       if (dp.seriesKey === "flying_animals" && dp.facetValue('membership') == 'included') {
@@ -688,10 +671,10 @@ export class VennPlotView extends DataLayer {
       if (dp.seriesKey === "aquatic_animals" && dp.facetValue('membership') == 'included') {
         inB = true;
       }
-      const w = 60;
-      const h = 20;
+      const w = 10;
+      const h = 10;
 
-      console.log('[inA, inB]', inA, inB);
+      //console.log('[inA, inB]', inA, inB);
 
       if (inA && !inB) {
         rectanglesA.push([w, h]);
@@ -711,8 +694,8 @@ export class VennPlotView extends DataLayer {
     const placeLabels = (rects: [number, number][], points: Datapoint[], mask: [boolean, boolean]) => {
       const initialPositions = Array(rects.length * 2).fill(200);
       const layout = this.computeLayout2(rects, initialPositions, circle1, circle2, this._radius, mask);
-      console.log('computeLayout2 returned', layout);
-      console.log('args:', {rects, initialPositions, circle1, circle2, _radius: this._radius, mask});
+      console.log('HEY LOOK computeLayout2 returned', layout);
+      //console.log('args:', {rects, initialPositions, circle1, circle2, _radius: this._radius, mask});
       points.forEach((dp, i) => {
         const x = layout[2 * i];
         const y = layout[2 * i + 1];
