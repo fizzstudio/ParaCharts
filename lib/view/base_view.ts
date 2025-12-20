@@ -426,6 +426,10 @@ export class View extends BaseView {
     }
   }
 
+  get popup() {
+    return this._popup
+  }
+
   protected _expandPadding(padding: PaddingInput | number, defaults?: Padding): Padding {
     if (typeof padding === 'number') {
       return { top: padding, bottom: padding, left: padding, right: padding };

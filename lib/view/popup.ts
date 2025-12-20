@@ -15,6 +15,7 @@ import { GridLayout } from "./layout";
 import { DataSymbol, DataSymbolType } from "./symbol";
 import { LegendItem } from "./legend";
 import { DatapointView } from "./data";
+import { WaterfallBarView } from "./layers";
 
 export interface PopupLabelOptions extends LabelOptions {
     color?: number;
@@ -144,6 +145,20 @@ export class Popup extends View {
                 this._children.pop();
                 this.generateBox(popupShapeOptions)
             }
+        }
+        if (this.paraview.store.type == "waterfall") {
+            if (this.popupLabelOptions.points!) {
+                const dpView = this.popupLabelOptions.points![0] as WaterfallBarView;
+                if (dpView.datapoint.facetValueAsNumber('y')! >= 0 && this.box.intersects(dpView.label!)) {
+                    this.grid.y -= 10;
+                    this.box.y -= 10;
+                }
+                else if (dpView.datapoint.facetValueAsNumber('y')! <= 0 && this.box.intersects(dpView.label!)) {
+                    this.grid.y += dpView.height + 10;
+                    this.box.y += dpView.height + 10;
+                }
+            }
+
         }
         this.label.classInfo = { 'popup-text': true };
         //The box generation relies on the grid having set dimensions, which happens during append()
