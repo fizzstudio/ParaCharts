@@ -243,10 +243,10 @@ export class BarChartInfo extends PlaneChartInfo {
   noticePosted(key: string, value: any) {
     super.noticePosted(key, value);
     if (this._store.settings.ui.isNarrativeHighlightEnabled) {
-      if (key === 'utteranceBoundary') {
+      if (key === 'landmarkStart') {
         const highlight: Highlight = value;
         this._prevHighlightNavcode = this._doHighlight(highlight, this._prevHighlightNavcode);
-      } else if (key === 'utteranceEnd') {
+      } else if (key === 'landmarkEnd') {
         // So that on the initial transition from auto-narration to manual
         // span navigation, we don't remove any highlights added in manual mode
         if (!this._store.paraChart.captionBox.highlightManualOverride) {

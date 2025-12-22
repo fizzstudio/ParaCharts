@@ -46,11 +46,11 @@ export class Voicing {
         }
         this._highlightIndex = highlightIndex;
         const highlight = highlights[this._highlightIndex];
-        this._store.paraChart.postNotice('utteranceBoundary', highlight);
+        this._store.paraChart.postNotice('landmarkStart', highlight);
       };
 
       this._utterance.onend = (event: SpeechSynthesisEvent) => {
-        this._store.paraChart.postNotice('utteranceEnd', null);
+        this._store.paraChart.postNotice('landmarkEnd', null);
         this._speakingCount--;
       };
     }
@@ -67,6 +67,28 @@ export class Voicing {
     this._voice!.speak(this._utterance);
     return this._utterance;
   }
+
+  
+
+  // pause(event: SpeechSynthesisEvent) : void {
+  //   this._utterance.onboundary = (event: SpeechSynthesisEvent) => {
+  //     const highlightIndex = getHighlightIndex(event.charIndex);
+  //     if (highlightIndex === -1) {
+  //       this._highlightIndex = null;
+  //       return;
+  //     }
+  //     this._highlightIndex = highlightIndex;
+  //     const highlight = highlights[this._highlightIndex];
+  //     this._store.paraChart.postNotice('landmarkStart', highlight);
+  //   };
+
+  //   this._utterance.onend = (event: SpeechSynthesisEvent) => {
+  //     this._store.paraChart.postNotice('landmarkEnd', null);
+  //     this._speakingCount--;
+  //   };
+  // }
+
+
 
   pause() {
     this._voice?.pause();
