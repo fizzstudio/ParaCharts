@@ -427,135 +427,56 @@ export class ParaView extends ParaComponent {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
     this._documentView?.settingDidChange(path, oldValue, newValue);
-    if (path === 'ui.isFullscreenEnabled') {
-      if (newValue && !document.fullscreenElement) {
-        try {
-          this._containerRef.value!.requestFullscreen();
-        } catch {
-          this.log.error('failed to enter fullscreen');
-          this._store.updateSettings(draft => {
-            draft.ui.isFullscreenEnabled = false;
-          }, true);
-        }
-      } else if (!newValue && document.fullscreenElement) {
-        try {
-          document.exitFullscreen();
-        } catch {
-          this.log.error('failed to exit fullscreen');
-          this._store.updateSettings(draft => {
-            draft.ui.isFullscreenEnabled = true;
-          }, true);
-        }
-      }
-    } else if (path === 'ui.isLowVisionModeEnabled') {
-      if (newValue) {
-        this._store.colors.selectPaletteWithKey("low-vision")
-      }
-      else {
-        if (this._store.colors.prevSelectedColor.length > 0) {
-          this._store.colors.selectPaletteWithKey(this._store.colors.prevSelectedColor);
-        }
-      }
-      this._store.updateSettings(draft => {
-        this._store.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
-        draft.color.isDarkModeEnabled = !!newValue;
-        draft.ui.isFullscreenEnabled = !!newValue;
-        if (newValue) {
-          this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
-          this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
-          this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
-          // end any in-progress animation here
-          this._documentView!.chartLayers.dataLayer.stopAnimation();
-          draft.animation.isAnimationEnabled = false;
-          draft.chart.fontScale = 2;
-          draft.grid.isDrawVertLines = true;
-        } else {
-          this._exitingLowVisionMode = true;
-          draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
-          draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
-          this._modeSaved.delete('animation.isAnimationEnabled');
-          this._modeSaved.delete('chart.fontScale');
-          this._modeSaved.delete('grid.isDrawVertLines');
-        }
-      });
-      if (this._exitingLowVisionMode) {
-        queueMicrotask(() => {
-          this._store.updateSettings(draft => {
-            draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
-          });
-          this._exitingLowVisionMode = false;
-        });
-      }
-    } else if (path === 'ui.isVoicingEnabled') {
-      if (this._store.settings.ui.isVoicingEnabled) {
-        //if (this._hotkeyActions instanceof NormalHotkeyActions) {
-        if (!this._store.settings.ui.isNarrativeHighlightEnabled) {
-          const msg = ['Self-voicing enabled.'];
-          const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
-          if (lastAnnouncement) {
-            msg.push(lastAnnouncement);
-          }
-          this._store.announce(msg);
-        } else {
-          // XXX Would be nice to prefix this with "Narrative Highlight Mode enabled".
-          // That would require being able to join a simple text announcement with
-          // a HighlightedSummary
-          (async () => {
-            this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
-          })();
-        }
-      } else {
-        this.ariaLiveRegion.voicing.shutUp();
-        // Voicing is disabled at this point, so manually push this message through
-        this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
-      }
-    } else if (path === 'ui.isNarrativeHighlightEnabled') {
-      if (this._store.settings.ui.isNarrativeHighlightEnabled) {
-        if (this._store.settings.ui.isVoicingEnabled) {
-          this.startNarrativeHighlightMode();
-          const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
-          const msg = ['Narrative Highlights Mode enabled.'];
-          if (lastAnnouncement) msg.push(lastAnnouncement);
-          this._store.announce(msg);
-          (async () => {
-            this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
-          })();
-        } else {
-          this._store.updateSettings(draft => {
-            draft.ui.isVoicingEnabled = true;
-          });
-          this.startNarrativeHighlightMode();
-          const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
-          const msg = ['Narrative Highlights Mode enabled.'];
-          if (lastAnnouncement) msg.push(lastAnnouncement);
-          this._store.announce(msg);
-          (async () => {
-            this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
-          })();
-        }
-        this._store.updateSettings(draft => {
-          this._modeSaved.set(
-            'type.line.isTrendNavigationModeEnabled',
-            draft.type.line.isTrendNavigationModeEnabled);
-          draft.type.line.isTrendNavigationModeEnabled = true;
-        });
-      } else {
-        // Narrative highlights turned OFF
-        this.endNarrativeHighlightMode();
 
-        // Disable self-voicing as well
-        this._store.updateSettings(draft => {
-          draft.ui.isVoicingEnabled = false;
-          draft.type.line.isTrendNavigationModeEnabled = this._modeSaved.get(
-            'type.line.isTrendNavigationModeEnabled');
-          this._modeSaved.delete('type.line.isTrendNavigationModeEnabled');
-        });
-        this._store.announce(['Narrative Highlight Mode disabled.']);
-      }
-    } else if (path === 'ui.isNarrativeHighlightPaused') {
-      this.ariaLiveRegion.voicing.togglePaused();
+    switch (path) {
+      case 'ui.isFullscreenEnabled':
+        this._handleFullscreen(newValue);
+        break;
+
+      case 'ui.isLowVisionModeEnabled':
+        this._handleLowVisionMode(newValue);
+        break;
+
+      case 'ui.isVoicingEnabled':
+        this._handleVoicing();
+        break;
+
+      case 'ui.isNarrativeHighlightEnabled':
+        this._handleNarrativeHighlight();
+        break;
+
+      case 'ui.isNarrativeHighlightPaused':
+        this._handleNarrativeHighlightPaused();
+        break;
+
+      default:
+        break;
     }
   }
+
+
+  protected _handleFullscreen(newValue?: Setting) {
+    if (newValue && !document.fullscreenElement) {
+      try {
+        this._containerRef.value!.requestFullscreen();
+      } catch {
+        this.log.error('failed to enter fullscreen');
+        this._store.updateSettings(draft => {
+          draft.ui.isFullscreenEnabled = false;
+        }, true);
+      }
+    } else if (!newValue && document.fullscreenElement) {
+      try {
+        document.exitFullscreen();
+      } catch {
+        this.log.error('failed to exit fullscreen');
+        this._store.updateSettings(draft => {
+          draft.ui.isFullscreenEnabled = true;
+        }, true);
+      }
+    }
+  }
+
 
   protected _onFullscreenChange() {
     if (document.fullscreenElement) {
@@ -579,6 +500,141 @@ export class ParaView extends ParaComponent {
         }, true);
       }
     }
+  }
+
+  protected _handleLowVisionMode(newValue?: Setting) {
+    if (newValue) {
+      this._store.colors.selectPaletteWithKey("low-vision")
+    }
+    else {
+      if (this._store.colors.prevSelectedColor.length > 0) {
+        this._store.colors.selectPaletteWithKey(this._store.colors.prevSelectedColor);
+      }
+    }
+    this._store.updateSettings(draft => {
+      this._store.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
+      draft.color.isDarkModeEnabled = !!newValue;
+      draft.ui.isFullscreenEnabled = !!newValue;
+      if (newValue) {
+        this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
+        this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
+        this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+        // end any in-progress animation here
+        this._documentView!.chartLayers.dataLayer.stopAnimation();
+        draft.animation.isAnimationEnabled = false;
+        draft.chart.fontScale = 2;
+        draft.grid.isDrawVertLines = true;
+      } else {
+        this._exitingLowVisionMode = true;
+        draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
+        draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
+        this._modeSaved.delete('animation.isAnimationEnabled');
+        this._modeSaved.delete('chart.fontScale');
+        this._modeSaved.delete('grid.isDrawVertLines');
+      }
+    });
+    if (this._exitingLowVisionMode) {
+      queueMicrotask(() => {
+        this._store.updateSettings(draft => {
+          draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
+        });
+        this._exitingLowVisionMode = false;
+      });
+    }
+  }
+
+  protected _handleVoicing() {
+    if (this._store.settings.ui.isVoicingEnabled) {
+      //if (this._hotkeyActions instanceof NormalHotkeyActions) {
+      if (!this._store.settings.ui.isNarrativeHighlightEnabled) {
+        const msg = ['Self-voicing enabled.'];
+        const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
+        if (lastAnnouncement) {
+          msg.push(lastAnnouncement);
+        }
+        this._store.announce(msg);
+      } else {
+        // XXX Would be nice to prefix this with "Narrative Highlight Mode enabled".
+        // That would require being able to join a simple text announcement with
+        // a HighlightedSummary
+        (async () => {
+          this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+        })();
+      }
+    } else {
+      this.ariaLiveRegion.voicing.shutUp();
+      // Voicing is disabled at this point, so manually push this message through
+      this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
+    }
+  }
+
+  /*
+  * TourGuide methods
+  */
+  protected _handleNarrativeHighlight() {
+    if (this._store.settings.ui.isNarrativeHighlightEnabled) {
+      if (this._store.settings.ui.isVoicingEnabled) {
+        this.startNarrativeHighlightMode();
+        const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
+        const msg = ['Narrative Highlights Mode enabled.'];
+        if (lastAnnouncement) msg.push(lastAnnouncement);
+        this._store.announce(msg);
+        (async () => {
+          this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+        })();
+      } else {
+        this._store.updateSettings(draft => {
+          draft.ui.isVoicingEnabled = true;
+        });
+        this.startNarrativeHighlightMode();
+        const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
+        const msg = ['Narrative Highlights Mode enabled.'];
+        if (lastAnnouncement) msg.push(lastAnnouncement);
+        this._store.announce(msg);
+        (async () => {
+          this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+        })();
+      }
+      this._store.updateSettings(draft => {
+        this._modeSaved.set(
+          'type.line.isTrendNavigationModeEnabled',
+          draft.type.line.isTrendNavigationModeEnabled);
+        draft.type.line.isTrendNavigationModeEnabled = true;
+      });
+    } else {
+      // Narrative highlights turned OFF
+      this.endNarrativeHighlightMode();
+
+      // Disable self-voicing as well
+      this._store.updateSettings(draft => {
+        draft.ui.isVoicingEnabled = false;
+        draft.type.line.isTrendNavigationModeEnabled = this._modeSaved.get(
+          'type.line.isTrendNavigationModeEnabled');
+        this._modeSaved.delete('type.line.isTrendNavigationModeEnabled');
+      });
+      this._store.announce(['Narrative Highlight Mode disabled.']);
+    }
+  }
+
+  protected _handleNarrativeHighlightPaused() {
+    this.ariaLiveRegion.voicing.togglePaused();
+  }
+
+  startNarrativeHighlightMode() {
+    //this._hotkeyActions = new NarrativeHighlightHotkeyActions(this);
+    this._store.updateSettings(draft => {
+      draft.ui.isVoicingEnabled = true;
+    });
+    this._store.updateSettings(draft => {
+      draft.chart.isShowPopups = true;
+    });
+  }
+
+  endNarrativeHighlightMode() {
+    this._store.updateSettings(draft => {
+      draft.ui.isVoicingEnabled = false;
+      draft.chart.isShowPopups = false;
+    });
   }
 
   /*protected updated(changedProperties: PropertyValues) {
@@ -634,23 +690,6 @@ export class ParaView extends ParaComponent {
     } else {
       this._chartRefs.delete(key);
     }
-  }
-
-  startNarrativeHighlightMode() {
-    //this._hotkeyActions = new NarrativeHighlightHotkeyActions(this);
-    this._store.updateSettings(draft => {
-      draft.ui.isVoicingEnabled = true;
-    });
-    this._store.updateSettings(draft => {
-      draft.chart.isShowPopups = true;
-    });
-  }
-
-  endNarrativeHighlightMode() {
-    this._store.updateSettings(draft => {
-      draft.ui.isVoicingEnabled = false;
-      draft.chart.isShowPopups = false;
-    });
   }
 
   createDocumentView() {
