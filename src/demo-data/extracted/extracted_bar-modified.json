@@ -1,0 +1,101 @@
+{
+  "version": {
+    "jim": "0.3.2",
+    "document": "0.3.2"
+  },
+  "datasets": {
+    "title": "Title",
+    "description": "The bar chart shows the temperature in degrees Celsius for the years 1998 to 2003.",
+    "representation": "bar",
+    "type": "bar",
+    "chartTheme": {
+      "baseQuantity": "Temperature",
+      "baseKind": "dimensioned",
+      "locale": "World"
+    },
+    "facets": {
+      "x": {
+        "label": "X",
+        "variableType": "independent",
+        "labelType": "x axis",
+        "measure": "interval",
+        "datatype": "date",
+        "units": "year",
+        "displayType": {
+          "type": "axis",
+          "orientation": "horizontal"
+        }
+      },
+      "y": {
+        "label": "Degrees Celsius",
+        "variableType": "dependent",
+        "labelType": "y axis",
+        "measure": "ratio",
+        "datatype": "number",
+        "units": "degrees",
+        "multiplier": 1,
+        "displayType": {
+          "type": "axis",
+          "orientation": "vertical"
+        }
+      }
+    },
+    "series": [
+      {
+        "key": "Temperature",
+        "chartTheme": {
+          "baseQuantity": "Temperature",
+          "baseKind": "dimensioned",
+          "locale": "World"
+        },
+        "records": [
+          {
+            "x": "1998",
+            "y": 19.0
+          },
+          {
+            "x": "1999",
+            "y": 11.0
+          },
+          {
+            "x": "2000",
+            "y": 8.0
+          },
+          {
+            "x": "2001",
+            "y": -6.0
+          },
+          {
+            "x": "2002",
+            "y": -1.0
+          },
+          {
+            "x": "2003",
+            "y": 3.0
+          }
+        ],      
+        "data": {
+          "source": "inline"
+        }
+      }
+    ],
+    "yAxis": {
+      "tick_-10": "-10",
+      "tick_-5": "-5",
+      "tick_0": "0",
+      "tick_5": "5",
+      "tick_10": "10",
+      "tick_15": "15",
+      "tick_20": "20",
+      "tick_25": "25",
+      "tick_30": "30"
+    }
+  },
+  "settings": {
+    "controlPanel.isControlPanelDefaultOpen": false,
+    "controlPanel.caption.isCaptionExternalWhenControlPanelClosed": true,
+    "chart.showPopups": true,
+    "popup.activation": "onSelect",
+    "animation.isAnimationEnabled": false
+  }
+}
