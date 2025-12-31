@@ -31,11 +31,14 @@ import { type Unsubscribe } from '@lit-app/state';
 
 import {
   html, css, PropertyValues,
-  unsafeCSS
+  unsafeCSS,
+  TemplateResult
 } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { Popup } from '../view/popup';
+import { Dialog } from '@fizz/ui-components';
+import { datapointIdToCursor } from '../store';
 
 
 @customElement('para-control-panel')
@@ -55,6 +58,7 @@ export class ParaControlPanel extends ParaComponent {
   protected _annotationPanelRef = createRef<AnnotationPanel>();
   protected _controlsPanelRef = createRef<ControlsPanel>();
   protected _dialogRef = createRef<ParaDialog>();
+  protected _annotationDialogRef = createRef<AnnotationDialog>();
   protected _msgDialogRef = createRef<MessageDialog>();
   protected _storeChangeUnsub!: Unsubscribe;
 
@@ -129,6 +133,10 @@ export class ParaControlPanel extends ParaComponent {
     return this._annotationPanelRef.value!;
   }
 
+  get controlsPanel() {
+    return this._controlsPanelRef.value!;
+  }
+
   // get statusBar() {
   //   return this._descriptionPanelRef.value!.statusBar;
   // }
@@ -136,6 +144,11 @@ export class ParaControlPanel extends ParaComponent {
   get dialog() {
     return this._dialogRef.value!;
   }
+
+  get annotationDialog() {
+    return this._annotationDialogRef.value!;
+  }
+
 
   connectedCallback() {
     super.connectedCallback();
@@ -242,6 +255,24 @@ export class ParaControlPanel extends ParaComponent {
   showHelpDialog(){
     return this._controlsPanelRef.value!.showHelpDialog();
   }
+
+  async showAnnotDialog(dpId: string) {
+    return await this.annotationDialog.show('Add Annotation', this._getAnnot(dpId));
+  }
+
+  protected _getAnnot(dpId: string) {
+    const { seriesKey, index } = datapointIdToCursor(dpId);
+    const series = this._store.model!.atKey(seriesKey)!.getLabel();
+    return html`
+        <div id="annotDialog">
+          <div>Datapoint: ${series}, ${index}</div><br>
+          <label for="annot">Text:</label><br>
+          <input type="text" id="annot" name="annot" @change=${(e: Event) => this.paraChart.paraView.store.annotationText = (e.target as HTMLInputElement).value}>
+          <br><br>
+        </div>
+      `;
+  }
+
 
   addPopup(isOpen: boolean) {
     let paraview = this.paraChart.paraView
@@ -413,6 +444,7 @@ export class ParaControlPanel extends ParaComponent {
         </fizz-tabs>
       </div>
       ${this.renderDialog()}
+      ${this.renderAnnotationDialog()}
     `;
   }
 
@@ -425,6 +457,15 @@ export class ParaControlPanel extends ParaComponent {
       <fizz-msg-dialog
         ${ref(this._msgDialogRef)}
       ></fizz-msg-dialog>
+    `;
+  }
+
+  private renderAnnotationDialog() {
+    return html`
+      <para-annotation-dialog
+        ${ref(this._annotationDialogRef)}
+        id="generic-annotation-dialog"
+      ></para-annotation-dialog>
     `;
   }
 
@@ -458,5 +499,70 @@ export class ParaControlPanel extends ParaComponent {
 declare global {
   interface HTMLElementTagNameMap {
     'para-control-panel': ParaControlPanel;
+  }
+}
+
+/**
+ * @public
+ */
+@customElement('para-annotation-dialog')
+export class AnnotationDialog extends ParaDialog {
+  /**
+   * Title text.
+   */
+  @property() title = 'Add annotation';
+
+    /**
+   * Add button text.
+   */
+  @property() addBtnText = 'Annotate';
+
+  /**
+   * Close button text.
+   */
+  @property() cancelBtnText = 'Cancel';
+
+  /**
+   * Generic dialog.
+   */
+  @property({type: Array}) contentArray: string[] = [];
+
+  /**
+   * Content text.
+   */
+  @state() protected _content!: TemplateResult;
+
+  protected _dialogRef: Ref<Dialog> = createRef();
+
+  render() {
+    const buttons = [{tag: 'add', text: this.addBtnText}, {tag: 'cancel', text: this.cancelBtnText}];
+    return html`
+      <fizz-dialog
+        ${ref(this._dialogRef)}
+        title="${this.title}"
+        .buttons=${buttons}
+      >
+        ${this._content}
+      </fizz-dialog>
+    `;
+  }
+
+  /**
+   * Show the dialog
+   * @param contentArray - status bar display contentArray.
+   */
+  // async show(title: string, contentArray: string[]) {
+  async show(title: string, content: TemplateResult = html``) {
+    this.title = title;
+    this._content = content;
+    let result = await this._dialogRef.value!.show(() => this._dialogRef.value!.button('cancel')!.focus());
+    this._dialogRef.value!.getElementsByTagName("input").namedItem("annot")!.value = ''
+    return result
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'para-annotation-dialog': AnnotationDialog;
   }
 }

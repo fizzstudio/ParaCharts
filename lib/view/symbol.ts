@@ -279,6 +279,7 @@ export class DataSymbol extends View {
   protected _options: DataSymbolOptions;
   protected _defsKey!: string;
   protected _role = '';
+  protected _fill?: DataSymbolFill;
 
   static fromType(
     paraview: ParaView,
@@ -331,6 +332,7 @@ export class DataSymbol extends View {
 
   set type(type: DataSymbolType) {
     this._type = type;
+    this._fill = this._type.split('.')[1] as DataSymbolFill;
     const [shape, fill] = type.split('.');
     this._defsKey = `sym-${shape}-${fill}`;
     if (!this.paraview.defs[this._defsKey]) {
@@ -370,7 +372,12 @@ export class DataSymbol extends View {
   }
 
   get fill() {
-    return this._type.split('.')[1] as DataSymbolFill;
+    if (this._fill) {
+      return this._fill
+    }
+    else {
+      return this._type.split('.')[1] as DataSymbolFill;
+    }
   }
 
   set fill(fill: DataSymbolFill) {

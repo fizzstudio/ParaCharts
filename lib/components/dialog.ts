@@ -102,7 +102,7 @@ export class ParaDialog extends ParaComponent {
    * @param contentArray - status bar display contentArray.
    */
   // async show(title: string, contentArray: string[]) {
-  async show(title: string, content: TemplateResult = html``) {
+  async show(title: string, content: TemplateResult = html``): Promise<string | void> {
     this.title = title;
     this._content = content;
     await this._dialogRef.value!.show(() => this._dialogRef.value!.button('cancel')!.focus());
