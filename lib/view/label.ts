@@ -255,7 +255,9 @@ export class Label extends View {
     this.paraview.root!.append(text);
 
     const canvasRect = this.paraview.root?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0);
-    const clientRect = text.getBoundingClientRect();
+    const clientRect = this.paraview.store.settings.ui.isFullscreenEnabled
+        ? text.getBBox()
+        : text.getBoundingClientRect();
     let width = clientRect.width;
     let height = clientRect.height;
     // E.g., suppose text-anchor is middle. The text baseline center will be
