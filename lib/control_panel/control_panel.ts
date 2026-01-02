@@ -31,13 +31,11 @@ import { type Unsubscribe } from '@lit-app/state';
 
 import {
   html, css, PropertyValues,
-  unsafeCSS,
-  TemplateResult
+  unsafeCSS
 } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { Popup } from '../view/popup';
-import { Dialog } from '@fizz/ui-components';
 import { datapointIdToCursor } from '../store';
 import { AnnotationDialog } from './dialogs/annotation_dialog';
 
@@ -149,7 +147,6 @@ export class ParaControlPanel extends ParaComponent {
   get annotationDialog() {
     return this._annotationDialogRef.value!;
   }
-
 
   connectedCallback() {
     super.connectedCallback();
@@ -268,7 +265,7 @@ export class ParaControlPanel extends ParaComponent {
         <div id="annotDialog">
           <div>Datapoint: ${series}, ${index}</div><br>
           <label for="annot">Text:</label><br>
-          <input type="text" id="annot" name="annot" @change=${(e: Event) => this.paraChart.paraView.store.annotationText = (e.target as HTMLInputElement).value}>
+          <input type="text" id="annot" name="annot">
           <br><br>
         </div>
       `;

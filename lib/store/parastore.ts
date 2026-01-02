@@ -657,10 +657,10 @@ export class ParaStore extends State {
       const recordLabel = formatXYDatapointX(
       this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
       let result = await this.paraChart.controlPanel.showAnnotDialog(dpId)
-      if (result == 'cancel'){
+      if (result[0] == 'cancel'){
         continue
       }
-      const annotationText = this.annotationText
+      const annotationText = result[1]
       if (annotationText) {
       newAnnotationList.push({
         type: "datapoint",
@@ -675,10 +675,7 @@ export class ParaStore extends State {
       }
     }
     this.annotations = [...this.annotations, ...newAnnotationList];
-
-    this.annotationText = ``
   }
-  annotationText = ``
 
   annotatePoint(seriesKey: string, index: number, text: string) {
     if (this.annotations.find((annot: PointAnnotation) =>
