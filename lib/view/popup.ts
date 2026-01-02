@@ -256,7 +256,9 @@ export class Popup extends View {
             }
         }
         else {
-            this.arrowPosition = "bottom";
+            if (this.popupLabelOptions.type !== "chord") {
+                this.arrowPosition = "bottom";
+            }
         }
     }
 
