@@ -1,0 +1,155 @@
+{
+  "datasets": [
+    {
+      "type": "line",
+      "title": "US Student Home Internet Access, 2015 to 2025",
+      "chartTheme": {
+        "baseQuantity": "Internet access",
+        "baseKind": "proportion",
+        "locale": "US",
+        "entity": "types of student Internet access"
+      },
+      "facets": {
+        "x": {
+          "label": "Year",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "date",
+          "units": "year",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Percentage of Internet access",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "multiplier": 0.01,
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "Computer",
+          "theme": {
+            "baseQuantity": "Internet access",
+            "baseKind": "proportion",
+            "entity": "computer"
+          },
+          "records": [
+            {
+              "x": "2015",
+              "y": "76.1"
+            },
+            {
+              "x": "2016",
+              "y": "78.4"
+            },
+            {
+              "x": "2017",
+              "y": "80.6"
+            },
+            {
+              "x": "2018",
+              "y": "82.1"
+            },
+            {
+              "x": "2019",
+              "y": "83.6"
+            },
+            {
+              "x": "2020",
+              "y": "86.2"
+            },
+            {
+              "x": "2021",
+              "y": "92.6"
+            },
+            {
+              "x": "2022",
+              "y": "93.4"
+            },
+            {
+              "x": "2023",
+              "y": "94.1"
+            },
+            {
+              "x": "2024",
+              "y": "94.8"
+            },
+            {
+              "x": "2025",
+              "y": "95.2"
+            }
+          ]
+        },
+        {
+          "key": "Smartphone only",
+          "theme": {
+            "baseQuantity": "Internet access",
+            "baseKind": "proportion",
+            "entity": "smartphone only"
+          },
+          "records": [
+            {
+              "x": "2015",
+              "y": "7.1"
+            },
+            {
+              "x": "2016",
+              "y": "6.7"
+            },
+            {
+              "x": "2017",
+              "y": "6.6"
+            },
+            {
+              "x": "2018",
+              "y": "6.4"
+            },
+            {
+              "x": "2019",
+              "y": "11.1"
+            },
+            {
+              "x": "2020",
+              "y": "9.6"
+            },
+            {
+              "x": "2021",
+              "y": "4.6"
+            },
+            {
+              "x": "2022",
+              "y": "4.1"
+            },
+            {
+              "x": "2023",
+              "y": "3.8"
+            },
+            {
+              "x": "2024",
+              "y": "3.4"
+            },
+            {
+              "x": "2025",
+              "y": "3.3"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "controlPanel.isControlPanelDefaultOpen": false,
+        "controlPanel.caption.isCaptionExternalWhenControlPanelClosed": true
+      }
+    }
+  ]
+}
