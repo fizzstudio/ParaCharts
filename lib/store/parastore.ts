@@ -650,28 +650,31 @@ export class ParaStore extends State {
       : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.settings) as FormatType;
   }
 
-  addAnnotation() {
+  async addAnnotation() {
     const newAnnotationList: PointAnnotation[] = [];
-
-    this._visitedDatapoints.forEach(dpId => {
+    for (const dpId of this._visitedDatapoints) {
       const { seriesKey, index } = datapointIdToCursor(dpId);
       const series = this.model!.atKey(seriesKey)!.getLabel();
       const recordLabel = formatXYDatapointX(
-        this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
-      const annotationText = prompt('Annotation:') as string;
-      if (annotationText) {
-        newAnnotationList.push({
-          type: "datapoint",
-          seriesKey,
-          index,
-          annotation: `${series}, ${recordLabel}: ${annotationText}`,
-          text: annotationText,
-          id: `${series}-${recordLabel}-${this.annotID}`,
-          isSelected: this.settings.ui.isLowVisionModeEnabled ? false : true,
-        });
-        this.annotID += 1;
+      this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
+      let result = await this.paraChart.controlPanel.showAnnotDialog(dpId)
+      if (result[0] == 'cancel'){
+        continue
       }
-    });
+      const annotationText = result[1]
+      if (annotationText) {
+      newAnnotationList.push({
+        type: "datapoint",
+        seriesKey,
+        index,
+        annotation: `${series}, ${recordLabel}: ${annotationText}`,
+        text: annotationText,
+        id: `${series}-${recordLabel}-${this.annotID}`,
+        isSelected: this.settings.ui.isLowVisionModeEnabled ? false : true,
+      });
+      this.annotID += 1;
+      }
+    }
     this.annotations = [...this.annotations, ...newAnnotationList];
   }
 

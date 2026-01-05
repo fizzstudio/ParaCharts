@@ -115,11 +115,12 @@ export class DatapointView extends DataView {
   }
 
   get classInfo(): ClassInfo {
+    let index = this.index;
     return {
       datapoint: true,
-      visited: this.paraview.store.isVisited(this.seriesKey, this.index),
-      selected: this.paraview.store.isSelected(this.seriesKey, this.index),
-      highlighted: this.chart.chartInfo.isHighlighted(this.seriesKey, this.index)
+      visited: this.paraview.store.isVisited(this.seriesKey, index),
+      selected: this.paraview.store.isSelected(this.seriesKey, index),
+      highlighted: this.chart.chartInfo.isHighlighted(this.seriesKey, index)
     };
   }
 

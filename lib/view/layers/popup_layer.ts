@@ -147,7 +147,7 @@ export class PopupLayer extends PlotLayer {
     addChordPopups(datapointViews: DatapointView[]): Popup[] {
         let text = '';
         for (let dpView of datapointViews) {
-            text = text.concat(`${dpView.seriesKey}: ${this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.summarizer.getDatapointSummary(dpView.datapoint, 'statusBar')}\n`);
+            text = text.concat(`${dpView.series.getLabel()}: ${this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.summarizer.getDatapointSummary(dpView.datapoint, 'statusBar')}\n`);
         }
         const dpView = datapointViews[0];
         const items = this.paraview.documentView?.chartLayers.dataLayer.chartInfo.popuplegend()!;
@@ -253,7 +253,7 @@ export class PopupLayer extends PlotLayer {
         const points = this.paraview.store.model!.series.find(s => s.key === datapointViews[0].seriesKey)!.datapoints;
         let text = '';
 
-        text = text.concat(`${(datapointViews[0].seriesKey)}`);
+        text = text.concat(`${(datapointViews[0].series.getLabel())}`);
         if (seriesAnalysis?.message == null) {
             text = text.concat(`\nNo trend detected`);
         }
