@@ -29,7 +29,7 @@ const CHART_DATA_MODULE_PREFIX = './node_modules/@fizz/chart-data/data/';
 export class ParaLoader {
 
   private log: Logger = getLogger("ParaLoader");
-  
+
   protected _csvParseResult: papa.ParseResult<unknown> | null = null;
 
   async load(
@@ -49,6 +49,7 @@ export class ParaLoader {
       filePath += manifestInput;
       this.log.info(`loading manifest from ${filePath}`)
       const manifestRaw = await fetch(filePath);
+      this.log.warn(manifestRaw);
       manifest = await manifestRaw.json() as Manifest;
     }
 
@@ -92,6 +93,7 @@ export class ParaLoader {
       this.log.info('manifest description changed');
     }
     // XXX include `data` here for proper external data loading
+    this.log.error(manifest);
     return { result: 'success', manifest };
   }
 

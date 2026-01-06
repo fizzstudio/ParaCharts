@@ -23,7 +23,8 @@ enablePatches();
 import {
   dataFromManifest, type AllSeriesData, type ChartType, type Manifest,
   isLineType,
-  isPastryType
+  isPastryType,
+  isVennType
 } from '@fizz/paramanifest';
 import { Jimerator } from '@fizz/jimerator';
 import {
@@ -295,7 +296,7 @@ export class ParaStore extends State {
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
     if (dataset.data.source === 'inline') {
-      if (isPastryType(dataset.type)) {
+      if (isPastryType(dataset.type) || isVennType(dataset.type)) {
         this._model = modelFromInlineData(manifest);
       } else {
         this._model = planeModelFromInlineData(
@@ -310,7 +311,7 @@ export class ParaStore extends State {
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = dataFromManifest(manifest);
     } else if (data) {
-      if (isPastryType(dataset.type)) {
+      if (isPastryType(dataset.type) || isVennType(dataset.type)) {
         this._model = modelFromExternalData(data, manifest);
       } else {
         this._model = planeModelFromExternalData(

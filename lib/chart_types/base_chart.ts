@@ -97,13 +97,15 @@ export abstract class BaseChartInfo {
     this._createNavMap();
     this._sonifier = new Sonifier(this, this._store);
     this._storeChangeUnsub = this._store.subscribe(async (key, value) => {
-      if (key === 'data') {
+      if (key === 'data' && this._store.type !== 'venn') {
         this._createSummarizer();
       }
     });
     // We initially get created after the data has loaded, so the above
     // callback won't run
-    this._createSummarizer();
+	if(this._store.type !== 'venn') {
+      this._createSummarizer();
+	}	
   }
 
   protected _createSummarizer() {

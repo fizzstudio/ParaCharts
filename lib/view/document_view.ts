@@ -52,14 +52,12 @@ export class DocumentView extends Container(View) {
     this.log = getLogger('DocumentView');
     this._store = paraview.store;
     this.observeNotices();
-
     this.type = this._store.type;
   }
 
   init() {
     // @ts-ignore
-    this._chartInfo = new chartInfoClasses[this.type](this.type, this._store);
-
+	this._chartInfo = new chartInfoClasses[this.type](this.type, this._store);
     this.setTitleText(this._store.title);
 
     const expandedPadding = this._parsePadding(this._store.settings.chart.padding);
@@ -141,11 +139,11 @@ export class DocumentView extends Container(View) {
     }
 
     // Create any west legend bc it affects the position of the vert axis
-    if (this._shouldAddLegend && this._store.settings.legend.position === 'west') {
+    if (this._shouldAddLegend && this._store.settings.legend.position === 'west' && this._store.type !== 'venn') {
       this.createLegend('west');
     }
 
-    if (this._shouldAddLegend && this._store.settings.legend.position === 'south') {
+    if (this._shouldAddLegend && this._store.settings.legend.position === 'south' && this._store.type !== 'venn') {
       this.createLegend('south');
     }
 
@@ -172,7 +170,7 @@ export class DocumentView extends Container(View) {
       this._directLabelStrip.updateSize();
     }
 
-    if (this._shouldAddLegend && this._store.settings.legend.position === 'east') {
+    if (this._shouldAddLegend && this._store.settings.legend.position === 'east' && this._store.type !== 'venn') {
       this.createLegend('east');
     }
 
