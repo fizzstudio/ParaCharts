@@ -3,7 +3,7 @@ import { SettingsManager } from '../../../../lib/store/settings_manager';
 import type { SettingGroup, SettingsInput } from '../../../../lib/store/settings_types';
 
 describe('SettingsManager', () => {
-  // Core usage: hydrateInput -> suppleteSettings
+
   describe('hydrate and supplement flow', () => {
     it('should convert flat paths to nested structure', () => {
       const input: SettingsInput = {
@@ -48,7 +48,6 @@ describe('SettingsManager', () => {
     });
   });
 
-  // Core usage: get/set for reading and updating settings
   describe('get and set', () => {
     const settings: SettingGroup = {
       display: { width: 800, height: 600 },
@@ -78,7 +77,6 @@ describe('SettingsManager', () => {
     });
   });
 
-  // Core usage: getGroupLink for readonly views
   describe('getGroup and getGroupLink', () => {
     const settings: SettingGroup = {
       legend: { position: 'right', visible: true },
@@ -108,7 +106,6 @@ describe('SettingsManager', () => {
     });
   });
 
-  // Core usage: cloneSettings for creating independent copies
   describe('cloneSettings', () => {
     it('should deep clone settings', () => {
       const original: SettingGroup = {
@@ -143,7 +140,6 @@ describe('SettingsManager', () => {
     });
   });
 
-  // Edge cases
   describe('edge cases', () => {
     it('should handle single-segment paths in getGroupForSetting', () => {
       expect(() => SettingsManager.getGroupForSetting('single', {})).toThrow('setting path must have at least two elements');
