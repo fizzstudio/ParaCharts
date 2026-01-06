@@ -44,7 +44,7 @@ export class DataTableView extends ParaComponent {
           <thead>
             <tr>
               <th>
-                ${this.model.getFacet(this.model.independentFacetKeys[0])!.label} // TODO: Assumes exactly 1 indep facet
+                ${this.model.getFacet(this.model.independentFacetKeys[0])!.label} <!-- TODO: Assumes exactly 1 indep facet -->
               </th>
               ${this.model.series.map(s => html`
                 <th scope="col">

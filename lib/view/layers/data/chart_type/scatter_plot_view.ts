@@ -15,7 +15,7 @@ import { Popup } from '../../../popup';
 
 export class ScatterPlotView extends PointPlotView {
   declare protected _chartInfo: ScatterChartInfo;
-
+  protected _types = new DataSymbols().types;
   datapointViewsStatic?: ScatterPointView[];
 
   protected _clusterShellView: ClusterShellView | null = null;
@@ -30,6 +30,10 @@ export class ScatterPlotView extends PointPlotView {
 
   get datapointViews() {
     return super.datapointViews as ScatterPointView[];
+  }
+  
+  get types(){
+    return this._types
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
@@ -153,7 +157,7 @@ class ScatterPointView extends PointDatapointView {
     const series = this.seriesProps;
     let symbolType = series.symbol;
     let color: number = series.color;
-    const types = new DataSymbols().types;
+    const types = this.chart.types;
     if (this.chart.chartInfo.clustering) {
       if (this.clusterID !== undefined) {
         color = Number(this.clusterID)
@@ -197,6 +201,10 @@ class ScatterPointView extends PointDatapointView {
       return this.clusterID!
     }
     return super.color
+  }
+    endAnimStep(bezT: number, linearT: number) {
+    //this.completeLayout();
+    this._symbol!.y = this.y
   }
 }
 

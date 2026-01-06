@@ -23,7 +23,8 @@ enablePatches();
 import {
   dataFromManifest, type AllSeriesData, type ChartType, type Manifest,
   isLineType,
-  isPastryType
+  isPastryType,
+  isVennType
 } from '@fizz/paramanifest';
 import { Jimerator } from '@fizz/jimerator';
 import {
@@ -295,7 +296,7 @@ export class ParaStore extends State {
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
     if (dataset.data.source === 'inline') {
-      if (isPastryType(dataset.type)) {
+      if (isPastryType(dataset.type) || isVennType(dataset.type)) {
         this._model = modelFromInlineData(manifest);
       } else {
         this._model = planeModelFromInlineData(
@@ -310,7 +311,7 @@ export class ParaStore extends State {
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = dataFromManifest(manifest);
     } else if (data) {
-      if (isPastryType(dataset.type)) {
+      if (isPastryType(dataset.type) || isVennType(dataset.type)) {
         this._model = modelFromExternalData(data, manifest);
       } else {
         this._model = planeModelFromExternalData(
@@ -649,28 +650,31 @@ export class ParaStore extends State {
       : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.settings) as FormatType;
   }
 
-  addAnnotation() {
+  async addAnnotation() {
     const newAnnotationList: PointAnnotation[] = [];
-
-    this._visitedDatapoints.forEach(dpId => {
+    for (const dpId of this._visitedDatapoints) {
       const { seriesKey, index } = datapointIdToCursor(dpId);
       const series = this.model!.atKey(seriesKey)!.getLabel();
       const recordLabel = formatXYDatapointX(
-        this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
-      const annotationText = prompt('Annotation:') as string;
-      if (annotationText) {
-        newAnnotationList.push({
-          type: "datapoint",
-          seriesKey,
-          index,
-          annotation: `${series}, ${recordLabel}: ${annotationText}`,
-          text: annotationText,
-          id: `${series}-${recordLabel}-${this.annotID}`,
-          isSelected: this.settings.ui.isLowVisionModeEnabled ? false : true,
-        });
-        this.annotID += 1;
+      this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
+      let result = await this.paraChart.controlPanel.showAnnotDialog(dpId)
+      if (result[0] == 'cancel'){
+        continue
       }
-    });
+      const annotationText = result[1]
+      if (annotationText) {
+      newAnnotationList.push({
+        type: "datapoint",
+        seriesKey,
+        index,
+        annotation: `${series}, ${recordLabel}: ${annotationText}`,
+        text: annotationText,
+        id: `${series}-${recordLabel}-${this.annotID}`,
+        isSelected: this.settings.ui.isLowVisionModeEnabled ? false : true,
+      });
+      this.annotID += 1;
+      }
+    }
     this.annotations = [...this.annotations, ...newAnnotationList];
   }
 

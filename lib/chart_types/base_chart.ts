@@ -28,7 +28,7 @@ import { type AxisCoord } from '../view/axis';
 
 import { Datapoint, type PlaneModel } from '@fizz/paramodel';
 import { ChartType } from '@fizz/paramanifest';
-import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer, formatBox } from '@fizz/parasummary';
+import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer, formatBox, Highlight } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
 
 import { Unsubscribe } from '@lit-app/state';
@@ -55,6 +55,7 @@ export abstract class BaseChartInfo {
   protected _sonifier!: Sonifier;
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
   protected _soniRiffInterval: ReturnType<typeof setTimeout> | null = null;
+  protected _prevHighlightNavcode = '';
 
   constructor(protected _type: ChartType, protected _store: ParaStore) {
     this._init();
@@ -96,13 +97,15 @@ export abstract class BaseChartInfo {
     this._createNavMap();
     this._sonifier = new Sonifier(this, this._store);
     this._storeChangeUnsub = this._store.subscribe(async (key, value) => {
-      if (key === 'data') {
+      if (key === 'data' && this._store.type !== 'venn') {
         this._createSummarizer();
       }
     });
     // We initially get created after the data has loaded, so the above
     // callback won't run
-    this._createSummarizer();
+	if(this._store.type !== 'venn') {
+      this._createSummarizer();
+	}	
   }
 
   protected _createSummarizer() {
@@ -143,7 +146,49 @@ export abstract class BaseChartInfo {
   }
 
   noticePosted(key: string, value: any) {
+    if (this._store.settings.ui.isNarrativeHighlightEnabled) {
+      if (key === 'utteranceBoundary') {
+        const highlight: Highlight = value;
+        this._prevHighlightNavcode = this._doHighlight(highlight, this._prevHighlightNavcode);
+      } else if (key === 'utteranceEnd') {
+        // So that on the initial transition from auto-narration to manual
+        // span navigation, we don't remove any highlights added in manual mode
+        if (!this._store.paraChart.captionBox.highlightManualOverride) {
+          this._store.clearHighlight();
+          this._store.clearAllSeriesLowlights();
+        }
+        // this._highlightIndex = null;
+        if (this._prevHighlightNavcode) {
+          this.didRemoveHighlight(this._prevHighlightNavcode);
+          this._prevHighlightNavcode = '';
+        }
+      }
+    }
+  }
 
+  protected _doHighlight(highlight: Highlight, prevNavcode: string) {
+    if (highlight.navcode) {
+      if (highlight.navcode.startsWith('series')) {
+        const segments = highlight.navcode.split(/-/);
+        this._store.lowlightOtherSeries(...segments.slice(1));
+      } else {
+        this._store.clearHighlight();
+        this._store.highlight(highlight.navcode);
+        if (prevNavcode) {
+          this.didRemoveHighlight(prevNavcode);
+        }
+        this.didAddHighlight(highlight.navcode);
+      }
+      prevNavcode = highlight.navcode;
+    } else {
+      this._store.clearHighlight();
+      this._store.clearAllSeriesLowlights();
+      if (prevNavcode) {
+        this.didRemoveHighlight(prevNavcode);
+        prevNavcode = '';
+      }
+    }
+    return prevNavcode;
   }
 
   protected _createNavMap() {
