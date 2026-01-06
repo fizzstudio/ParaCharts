@@ -370,6 +370,13 @@ export class VennPlotView extends DataLayer {
   }
   
   protected _createLabels() {
+    const seriesKeys = this.paraview.store.model!.series.map(s => s.key);
+    if (seriesKeys.length !== 2) {
+      throw new Error("Expected exactly two series");
+    }
+
+    const [seriesAKey, seriesBKey] = seriesKeys;
+
     const rectanglesA: [number, number][] = [];
     const rectanglesB: [number, number][] = [];
     const rectanglesAB: [number, number][] = [];
@@ -396,14 +403,14 @@ export class VennPlotView extends DataLayer {
       entry.datapoints.push(dp);
 
       if (
-        dp.seriesKey === "flying_animals" &&
+        dp.seriesKey === seriesAKey &&
         dp.facetValue("membership") === "included"
       ) {
         entry.inA = true;
       }
 
       if (
-        dp.seriesKey === "aquatic_animals" &&
+        dp.seriesKey === seriesBKey &&
         dp.facetValue("membership") === "included"
       ) {
         entry.inB = true;
@@ -469,6 +476,7 @@ export class VennPlotView extends DataLayer {
     placeLabels(rectanglesAB, pointsAB, [true, true]);
   }
 
+  
   protected _resolveOutsideLabelCollisions() {
   }
 
