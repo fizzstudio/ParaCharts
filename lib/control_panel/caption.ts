@@ -3,14 +3,13 @@ import { Logger, getLogger } from '../common/logger';
 import { Highlight } from '@fizz/parasummary';
 
 //import { styles } from '../../styles';
-import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer, HighlightedSummary } from '@fizz/parasummary';
+import { HighlightedSummary } from '@fizz/parasummary';
 
 import { html, css, TemplateResult, PropertyValues } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { type Unsubscribe } from '@lit-app/state';
-import { PlaneModel } from '@fizz/paramodel';
 import { ParaChart } from '../parachart/parachart';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 

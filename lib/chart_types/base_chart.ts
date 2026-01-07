@@ -26,9 +26,9 @@ import { ParaStore, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor 
 import { Sonifier } from '../audio/sonifier';
 import { type AxisCoord } from '../view/axis';
 
-import { Datapoint, type PlaneModel } from '@fizz/paramodel';
+import { Datapoint } from '@fizz/paramodel';
 import { ChartType } from '@fizz/paramanifest';
-import { Summarizer, PlaneChartSummarizer, PastryChartSummarizer, formatBox, Highlight } from '@fizz/parasummary';
+import { Summarizer, formatBox, Highlight, summarizerFromModel } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
 
 import { Unsubscribe } from '@lit-app/state';
@@ -108,13 +108,11 @@ export abstract class BaseChartInfo {
 	}	
   }
 
-  protected _createSummarizer() {
-    this._summarizer = (this._type === 'pie' || this._type === 'donut')
-      ? new PastryChartSummarizer(this._store.model!)
-      : new PlaneChartSummarizer(this._store.model as PlaneModel);
+  protected _createSummarizer(): void {
+    this._summarizer = summarizerFromModel(this._store.model!);
   }
 
-  get summarizer() {
+  get summarizer(): Summarizer {
     return this._summarizer;
   }
 
