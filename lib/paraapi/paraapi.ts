@@ -192,7 +192,8 @@ export class ParaAPI {
     this._narrativeActions.repeatLastAnnouncement = () => { };
     this._narrativeActions.toggleNarrativeHighlightMode = () => {
       _paraChart.captionBox.clearSpanHighlights();
-      store.clearHighlight();
+      store.clearAllHighlights();
+      store.clearAllSequenceHighlights();
       store.clearAllSeriesLowlights();
       paraView.endNarrativeHighlightMode();
       self._actions = this._standardActions;
@@ -273,6 +274,14 @@ export class ParaAPI {
     this._paraChart.store.updateSettings(draft => {
       SettingsManager.set(settingPath, value, draft);
     });
+  }
+
+  clearAllHighlights() {
+    this._paraChart.store.clearAllHighlights();
+  }
+
+  clearAllSequenceHighlights() {
+    this._paraChart.store.clearAllSequenceHighlights();
   }
 
   clearAllSeriesLowlights() {
@@ -401,11 +410,13 @@ export class ParaAPIPoint {
   }
 
   highlight() {
-
+    this._apiSeries.api.paraChart.store.highlight(
+      this._datapoint.seriesKey, this._datapoint.datapointIndex);
   }
 
   clearHighlight() {
-
+    this._apiSeries.api.paraChart.store.clearHighlight(
+      this._datapoint.seriesKey, this._datapoint.datapointIndex);
   }
 
   play() {

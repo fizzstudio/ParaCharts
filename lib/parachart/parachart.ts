@@ -191,11 +191,11 @@ export class ParaChart extends ParaComponent {
   clearAriaLive() {
     this.paraView.clearAriaLive;
   }
-  
+
   showAriaLiveHistory() {
     this.paraView.showAriaLiveHistory;
   }
-  
+
   connectedCallback() {
     super.connectedCallback();
     this.isControlPanelOpen = this._store.settings.controlPanel.isControlPanelDefaultOpen;
@@ -304,6 +304,12 @@ export class ParaChart extends ParaComponent {
     this.log.info('loaded manifest')
     if (loadresult.result === 'success') {
       this._manifest = loadresult.manifest;
+      this._store.clearVisited();
+      this._store.clearSelected();
+      this._store.clearAllHighlights();
+      this._store.clearAllSequenceHighlights();
+      this._store.clearAllSeriesLowlights();
+      this._store.clearPopups();
       this._store.setManifest(loadresult.manifest, loadresult.data);
       this._store.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode

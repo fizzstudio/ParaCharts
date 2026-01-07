@@ -100,7 +100,7 @@ export class ParaCaptionBox extends ParaComponent {
           // NB: this requires there be an announcement, so it only works
           // in NH mode
           const highlight = this._store.announcement.highlights[i];
-          this._store.paraChart.postNotice('utteranceBoundary', highlight);
+          this._store.paraChart.postNotice('landmarkStart', highlight);
         });
         // span.addEventListener('pointerleave', (e: PointerEvent) => {
         //   if (!this._store.settings.ui.isNarrativeHighlightEnabled) return;
@@ -122,7 +122,7 @@ export class ParaCaptionBox extends ParaComponent {
 
   noticePosted(key: string, value: any) {
     if (this._store.settings.ui.isNarrativeHighlightEnabled) {
-      if (key === 'utteranceBoundary') {
+      if (key === 'landmarkStart') {
         const highlight: Highlight = value;
         for (const span of this.getSpans()) {
           if (span.dataset.phrasecode === `${highlight.phrasecode}`) {
@@ -133,7 +133,7 @@ export class ParaCaptionBox extends ParaComponent {
             this._lastSpans.delete(span);
           }
         }
-      } else if (key === 'utteranceEnd') {
+      } else if (key === 'landmarkEnd') {
         if (!this._highlightManualOverride) {
           for (const span of this._lastSpans) {
             span.classList.remove('highlight');
@@ -166,7 +166,7 @@ export class ParaCaptionBox extends ParaComponent {
     const highlight = this._store.announcement.highlights[idx];
     voicing.shutUp();
     voicing.speakText(msg);
-    this._store.paraChart.postNotice('utteranceBoundary', highlight);
+    this._store.paraChart.postNotice('landmarkStart', highlight);
   }
 
   clearSpanHighlights() {
