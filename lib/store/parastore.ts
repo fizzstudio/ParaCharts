@@ -136,6 +136,27 @@ export function datapointIdToCursor(id: string): DatapointCursor {
   };
 }
 
+/**
+ * Make a datapoint ID string.
+ * @param seriesKey - Series key
+ * @param index - Datapoint index
+ * @returns Datapoint ID string
+ */
+export function makeDatapointId(seriesKey: string, index: number): string {
+  return `${seriesKey}-${index}`;
+}
+
+/**
+ * Make a sequence ID string.
+ * @param seriesKey - Series key
+ * @param index1 - Index of first sequence point.
+ * @param index2 - Index of second sequence point (not included in sequence).
+ * @returns Sequence ID string
+ */
+export function makeSequenceId(seriesKey: string, index1: number, index2: number): string {
+  return `${seriesKey}-${index1}-${index2}`;
+}
+
 export class ParaStore extends State {
 
   readonly symbols = new DataSymbols();
@@ -162,9 +183,11 @@ export class ParaStore extends State {
   protected _visitedDatapoints = new Set<string>();
   protected _prevVisitedDatapoints = new Set<string>();
   protected _everVisitedDatapoints = new Set<string>();
-  @property() protected _highlightedSelector = '';
+  @property() protected _highlightedDatapoints = new Set<string>();
   @property() protected _selectedDatapoints = new Set<string>();
   @property() protected _prevSelectedDatapoints = new Set<string>();
+  /** `${seriesKey}-${index1}-${index2}` */
+  @property() protected _highlightedSequences = new Set<string>();
   @property() protected _rangeHighlights: RangeHighlight[] = [];
   @property() protected _modelLineBreaks: LineBreak[] = [];
   @property() protected _userLineBreaks: LineBreak[] = [];
@@ -503,6 +526,13 @@ export class ParaStore extends State {
     return '';
   }
 
+  getDatapoint(datapointId: string): Datapoint {
+    const cursor = datapointIdToCursor(datapointId);
+    const datapoint = this._model!.atKeyAndIndex(cursor.seriesKey, cursor.index);
+    if (!datapoint) throw new Error(`no datapoint with ID '${datapointId}'`);
+    return datapoint;
+  }
+
   get visitedDatapoints() {
     return this._visitedDatapoints;
   }
@@ -568,17 +598,48 @@ export class ParaStore extends State {
     this._visitedDatapoints = new Set();
   }
 
-  get highlightedSelector() {
-    return this._highlightedSelector;
+  get highlightedDatapoints() {
+    return this._highlightedDatapoints;
   }
 
-  highlight(selector: string) {
-    this._highlightedSelector = selector;
+  highlight(seriesKey: string, index: number) {
+    this._highlightedDatapoints.add(makeDatapointId(seriesKey, index));
+    this.paraChart.paraView.requestUpdate();
   }
 
-  clearHighlight() {
+  clearHighlight(seriesKey: string, index: number) {
+    this._highlightedDatapoints.delete(makeDatapointId(seriesKey, index));
+    this.paraChart.paraView.requestUpdate();
+  }
+
+  isHighlighted(seriesKey: string, index: number): boolean {
+    return this._highlightedDatapoints.has(makeDatapointId(seriesKey, index));
+  }
+
+  clearAllHighlights() {
     this.popups.splice(0, this.popups.length)
-    this._highlightedSelector = '';
+    this._highlightedDatapoints.clear();
+    this.paraChart.paraView.requestUpdate();
+  }
+
+  get highlightedSequences() {
+    return this._highlightedSequences;
+  }
+
+  highlightSequence(seriesKey: string, index1: number, index2: number) {
+    this._highlightedSequences.add(makeSequenceId(seriesKey, index1, index2));
+    this.paraChart.paraView.requestUpdate();
+  }
+
+  highlightSequenceHighlight(seriesKey: string, index1: number, index2: number) {
+    this._highlightedSequences.delete(makeSequenceId(seriesKey, index1, index2));
+    this.paraChart.paraView.requestUpdate();
+  }
+
+  clearAllSequenceHighlights() {
+    this.popups.splice(0, this.popups.length)
+    this._highlightedSequences.clear();
+    this.paraChart.paraView.requestUpdate();
   }
 
   get selectedDatapoints() {
