@@ -549,10 +549,10 @@ export class ParaStore extends State {
     this._prevVisitedDatapoints = this._visitedDatapoints;
     this._visitedDatapoints = new Set();
     datapoints.forEach(datapoint => {
-      this._visitedDatapoints.add(`${datapoint.seriesKey}-${datapoint.datapointIndex}`);
+      this._visitedDatapoints.add(makeDatapointId(datapoint.seriesKey, datapoint.datapointIndex));
     });
     for (const datapoint of datapoints) {
-      this._everVisitedDatapoints.add(`${datapoint.seriesKey}-${datapoint.datapointIndex}`);
+      this._everVisitedDatapoints.add(makeDatapointId(datapoint.seriesKey, datapoint.datapointIndex));
     }
     if (this.settings.controlPanel.isMDRAnnotationsVisible) {
       this.removeMDRAnnotations(this._prevVisitedDatapoints);

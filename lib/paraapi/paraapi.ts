@@ -27,8 +27,6 @@ type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMa
  * Perform various operations on a ParaChart.
  */
 export class ParaAPI {
-
-  protected _allSeries: ParaAPISeries[];
   protected _actions: Actions;
   protected _standardActions: Actions;
   protected _narrativeActions: Actions;
@@ -36,7 +34,6 @@ export class ParaAPI {
   constructor(protected _paraChart: ParaChart) {
     const store = _paraChart.store;
     const paraView = _paraChart.paraView;
-    this._allSeries = store.model!.series.map(series => new ParaAPISeries(series.label, this));
 
     // we use a function here bc the chartInfo object may get replaced
     const chartInfo = () => _paraChart.paraView.documentView!.chartInfo;
@@ -220,10 +217,6 @@ export class ParaAPI {
     return this._paraChart.paraView.documentView!.chartInfo;
   }
 
-  get allSeries(): readonly ParaAPISeries[] {
-    return this._allSeries;
-  }
-
   get actions(): Actions {
     return this._actions;
   }
@@ -238,20 +231,14 @@ export class ParaAPI {
   //   return series.key;
   // }
 
-  getSeries(seriesLabel: string): ParaAPISeries {
-    return this.getAllSeries(seriesLabel)[0];
-  }
+  // getSeries(seriesLabel: string): ParaAPISeries {
+  //   return this.getAllSeries(seriesLabel)[0];
+  // }
 
-  getAllSeries(...seriesLabels: string[]): ParaAPISeries[] {
+  getSeries(...seriesLabels: string[]): ParaAPISeriesGroup {
     // remove dups
     const labels = Array.from(new Set(seriesLabels));
-    const series: ParaAPISeries[] = [];
-    for (const label of labels) {
-      const s = this._allSeries.find(pps => pps.label === label);
-      if (!s) throw new Error(`no series with label '${label}'`);
-      series.push(s);
-    }
-    return series;
+    return new ParaAPISeriesGroup(labels, this);
   }
 
   // sendKey(keyId: string) {
@@ -306,130 +293,147 @@ export class ParaAPI {
 }
 
 /**
- * Perform operations on a ParaChart series.
+ * Perform operations on one or more ParaChart series.
  */
-export class ParaAPISeries {
-  protected _allPoints: ParaAPIPoint[];
-  protected _datapoints: Datapoint[];
-  protected _key: string;
+export class ParaAPISeriesGroup {
+  protected _datapoints: Map<string, Datapoint[]>;
+  protected _keys: string[];
 
-  constructor(protected _label: string, protected _api: ParaAPI) {
-    const series = _api.paraChart.store.model!.atLabel(_label)!;
-    this._key = series.key;
-    this._datapoints = [...series.datapoints];
-    this._allPoints = this._datapoints.map(dp => new ParaAPIPoint(dp, this));
+  constructor(protected _labels: string[], protected _api: ParaAPI) {
+    const allSeries = _labels.map(label => {
+      const series = _api.paraChart.store.model!.atLabel(label);
+      if (!series) throw new Error(`no series with label '${label}'`);
+      return series;
+    });
+    this._keys = allSeries.map(series => series.key);
+    this._datapoints = new Map();
+    allSeries.forEach(series => {
+      this._datapoints.set(series.key, [...series.datapoints]);
+    });
   }
 
-  get label(): string {
-    return this._label;
+  get labels(): string[] {
+    return this._labels;
   }
 
-  get key(): string {
-    return this._key;
+  get keys(): string[] {
+    return this._keys;
   }
 
   get api(): ParaAPI {
     return this._api;
   }
 
-  get allPoints(): readonly ParaAPIPoint[] {
-    return this._allPoints;
-  }
+  // getPoint(index: number): ParaAPIPoint {
+  //   return this.getPoints(index)[0];
+  // }
 
-  getPoint(index: number): ParaAPIPoint {
-    return this.getPoints(index)[0];
-  }
-
-  getPoints(...indices: number[]): ParaAPIPoint[] {
+  getPoints(...indices: number[]): ParaAPIPointGroup {
     // remove dups
     const idxs = Array.from(new Set(indices));
-    const points: ParaAPIPoint[] = [];
-    for (const idx of idxs) {
-      const p = this._allPoints[idx];
-      if (!p) throw new Error(`invalid index '${idx}'`);
-      points.push(p);
-    }
-    return points;
+    const datapoints = this._keys.flatMap(key => idxs.map(idx => {
+      const datapoint = this._datapoints.get(key)![idx];
+      if (!datapoint) throw new Error(`series '${key}' has no datapoint at index ${idx}`);
+      return datapoint;
+    }));
+    return new ParaAPIPointGroup(datapoints, this);
   }
 
   lowlight() {
-    this._api.paraChart.store.lowlightSeries(this._key);
+    this._keys.forEach(key => {
+      this._api.paraChart.store.lowlightSeries(key);
+    });
   }
 
   clearLowlight() {
-    this._api.paraChart.store.clearSeriesLowlight(this._key);
+    this._keys.forEach(key => {
+      this._api.paraChart.store.clearSeriesLowlight(key);
+    });
   }
 
-  isLowlighted(): boolean {
-    return this._api.paraChart.store.isSeriesLowlighted(this._key);
-  }
+  // isLowlighted(): boolean {
+  //   return this._api.paraChart.store.isSeriesLowlighted(this._key);
+  // }
 
   lowlightOthers() {
-    this._api.paraChart.store.lowlightOtherSeries(this._key);
+    this._api.paraChart.store.lowlightOtherSeries(...this._keys);
   }
 
   hide() {
-    this._api.paraChart.store.hideSeries(this._key);
+    this._keys.forEach(key => {
+      this._api.paraChart.store.hideSeries(key);
+    });
   }
 
   unhide() {
-    this._api.paraChart.store.unhideSeries(this._key);
+    this._keys.forEach(key => {
+      this._api.paraChart.store.unhideSeries(key);
+    });
   }
 
-  isHidden(): boolean {
-    return this._api.paraChart.store.isSeriesHidden(this._key);
-  }
+  // isHidden(): boolean {
+  //   return this._api.paraChart.store.isSeriesHidden(this._key);
+  // }
 
   hideOthers() {
-    this._api.paraChart.store.hideOtherSeries(this._key);
+    this._api.paraChart.store.hideOtherSeries(...this._keys);
   }
 
   playRiff() {
-    this._api.chartInfo.playRiff(this._datapoints);
+    this._keys.forEach(key => {
+      this._api.chartInfo.playRiff(this._datapoints.get(key)!);
+    });
   }
 }
 
 /**
- * Perform operations on a ParaChart datapoint.
+ * Perform operations on one or more ParaChart datapoints.
  */
-export class ParaAPIPoint {
-  constructor(protected _datapoint: Datapoint, protected _apiSeries: ParaAPISeries) {
+export class ParaAPIPointGroup {
+  constructor(protected _datapoints: Datapoint[], protected _apiSeriesGroup: ParaAPISeriesGroup) {
 
   }
 
   visit() {
-    this._apiSeries.api.chartInfo.navMap!.goTo(this._apiSeries.api.chartInfo.navDatapointType, {
-      seriesKey: this._datapoint.seriesKey,
-      index: this._datapoint.datapointIndex
-    });
+    this._apiSeriesGroup.api.paraChart.store.visit(this._datapoints);
   }
 
   select(isExtend = false) {
     this.visit();
-    this._apiSeries.api.chartInfo.selectCurrent(isExtend);
+    this._apiSeriesGroup.api.chartInfo.selectCurrent(isExtend);
   }
 
   highlight() {
-    this._apiSeries.api.paraChart.store.highlight(
-      this._datapoint.seriesKey, this._datapoint.datapointIndex);
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.store.highlight(
+        datapoint.seriesKey, datapoint.datapointIndex);
+    });
   }
 
   clearHighlight() {
-    this._apiSeries.api.paraChart.store.clearHighlight(
-      this._datapoint.seriesKey, this._datapoint.datapointIndex);
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.store.clearHighlight(
+        datapoint.seriesKey, datapoint.datapointIndex);
+    });
   }
 
   play() {
-    this._apiSeries.api.chartInfo.playDatapoints([this._datapoint]);
+    this._apiSeriesGroup.api.chartInfo.playDatapoints(this._datapoints);
   }
 
   annotate(text: string) {
-    this._apiSeries.api.paraChart.store.annotatePoint(
-      this._apiSeries.key, this._datapoint.datapointIndex, text);
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.store.annotatePoint(
+        datapoint.seriesKey, datapoint.datapointIndex, text);
+    });
   }
 
   clipTo() {
-  this._apiSeries.api.paraChart.store.clipTo(this._datapoint.seriesKey, Number(this._datapoint.datapointIndex))
+    // XXX not sure clipping to multiple points makes sense
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.store.clipTo(
+        datapoint.seriesKey, Number(datapoint.datapointIndex));
+    });
   }
 
 }

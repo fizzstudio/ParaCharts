@@ -13,7 +13,6 @@ import { ClassInfo as ClassInfo_2 } from 'lit-html/directives/class-map.js';
 import { clusterObject } from '@fizz/clustering';
 import { CSSResult } from 'lit';
 import { Datapoint } from '@fizz/paramodel';
-import { DataSymbolType as DataSymbolType_2 } from '../view/symbol';
 import { Datatype } from '@fizz/dataframe';
 import { Datatype as Datatype_2 } from '@fizz/paramanifest';
 import { Dialog } from '@fizz/ui-components';
@@ -27,21 +26,11 @@ import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
-import { Logger as Logger_2 } from '../../common';
-import { Logger as Logger_3 } from '../../../common';
-import { Logger as Logger_4 } from '../common';
 import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';
 import { Model } from '@fizz/paramodel';
-import { Padding as Padding_2 } from '../base_view';
-import { Padding as Padding_3 } from '../../base_view';
-import { Padding as Padding_4 } from './base_view';
-import { PaddingInput as PaddingInput_2 } from './base_view';
-import { PaddingInput as PaddingInput_3 } from '../base_view';
-import { PaddingInput as PaddingInput_4 } from '../../base_view';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';
 import papa from 'papaparse';
-import { ParaAPI as ParaAPI_2 } from '../paraapi/paraapi';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { Point as Point_2 } from '@fizz/chart-classifier-utils';
 import { PropertyValueMap } from 'lit';
@@ -66,7 +55,6 @@ import { TemplateResult } from 'lit';
 import { TemplateResult as TemplateResult_2 } from 'lit-html';
 import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
-import { View as View_2 } from '../base_view';
 
 // @public (undocumented)
 export type FieldInfo = {
@@ -86,8 +74,10 @@ export class ParaChartAi extends ParaChart {
 // @public (undocumented)
 export class ParaHeadless {
     constructor();
+    // Warning: (ae-forgotten-export) The symbol "ParaAPI" needs to be exported by the entry point index-ai.d.ts
+    //
     // (undocumented)
-    get api(): ParaAPI_2;
+    get api(): ParaAPI;
     // (undocumented)
     protected _createParaChart(): void;
     // (undocumented)

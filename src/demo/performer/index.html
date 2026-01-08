@@ -68,12 +68,11 @@
                 },*/
                 () => {
 					text.innerHTML = 'Highlight points';
-                    chart.api.getSeries('Euro area').getPoint(4).highlight();
-                    chart.api.getSeries('Euro area').getPoint(6).highlight();
+                    chart.api.getSeries('Euro area').getPoints(4, 6).highlight();
                 },
                 () => {
 					text.innerHTML = 'Clear highlight';
-                    chart.api.getSeries('Euro area').getPoint(4).clearHighlight();
+                    chart.api.getSeries('Euro area').getPoints(4).clearHighlight();
                 },
                 /*() => {
 					text.innerHTML = 'Enable narrative highlights';
@@ -86,20 +85,20 @@
                 () => {
 					text.innerHTML = 'Enable direct labels';
                     chart.api.setSetting('chart.hasDirectLabels', true);
-                },
+                },*/
                 () => {
 					text.innerHTML = 'Visit point';
-                    chart.api.getSeries('China').getPoint(6).visit();
+                    chart.api.getSeries('EU').getPoints(6).visit();
                 },
                 () => {
 					text.innerHTML = 'Select point';
-                    chart.api.getSeries('China').getPoint(6).select();
+                    chart.api.getSeries('EU').getPoints(6).select();
                 },
                 () => {
 					text.innerHTML = 'Deselect point';
-                    chart.api.getSeries('China').getPoint(6).select();
+                    chart.api.getSeries('EU').getPoints(6).select();
                 },
-                () => {
+                /*() => {
 					text.innerHTML = 'Play point sonification';
                     chart.api.getSeries('China').getPoint(6).play();
                 },
