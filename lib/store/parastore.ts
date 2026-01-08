@@ -38,7 +38,8 @@ import {
 } from '@fizz/paramodel';
 import {
   Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY,
-  HighlightedSummary, Highlight
+  HighlightedSummary, Highlight,
+  formatBox
 } from '@fizz/parasummary';
 
 import {
@@ -791,8 +792,11 @@ export class ParaStore extends State {
 
         let message = `Detected trend: ${seriesAnalysis?.message}, consisting of ${seriesAnalysis?.messageSeqs.length} datapoint sequences from`;
         for (let seq of relevantSequences!) {
-          message += ` ${this.model!.allPoints[seq.start].facetValueNumericized("x")} to ${this.model!.allPoints[seq.end - 1].facetValueNumericized("x")} (${seq.message}),`;
+          const start = formatBox(this.model!.allPoints[seq.start].facetBox("x")!, this.getFormatType('horizTick'));
+          const end = formatBox(this.model!.allPoints[seq.end - 1].facetBox("x")!, this.getFormatType('horizTick'));
+          message += ` ${start} to ${end} (${seq.message}),`;
         }
+        message = message.slice(0, -1) + ".";
         if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
           const index = this.annotations.findIndex(a => a.id == "trend-analysis-annotation");
           this.annotations.splice(index, 1);
