@@ -22,7 +22,6 @@ enablePatches();
 
 import {
   dataFromManifest, type AllSeriesData, type ChartType, type Manifest,
-  isLineType,
   isPastryType,
   isVennType
 } from '@fizz/paramanifest';
@@ -656,7 +655,7 @@ export class ParaStore extends State {
       const { seriesKey, index } = datapointIdToCursor(dpId);
       const series = this.model!.atKey(seriesKey)!.getLabel();
       const recordLabel = formatXYDatapointX(
-      this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
+        this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
       let result = await this.paraChart.controlPanel.showAnnotDialog(dpId)
       if (result[0] == 'cancel'){
         continue

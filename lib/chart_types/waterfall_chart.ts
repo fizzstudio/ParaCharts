@@ -24,7 +24,6 @@ import { PlaneChartInfo, SONI_RIFF_SPEEDS } from './plane_chart';
 import { AxisInfo, loopParaviewRefresh } from '../common';
 import { Datapoint, PlaneDatapoint } from '@fizz/paramodel';
 
-import { Highlight } from '@fizz/parasummary';
 import { formatXYDatapointX } from '@fizz/parasummary';
 import { SoniPoint } from '../audio/soni_point';
 
@@ -50,7 +49,7 @@ export class WaterfallChartInfo extends PlaneChartInfo {
     this._cumulativeTotals = this._store.model!.series[0].datapoints.slice(0, -1).map(dp =>
       this._cumulativeTotalForDatapoint(dp));
     this._cumulativeTotals.push(this._cumulativeTotals.at(-1)!);
-    const xValues = this._store.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'raw'));
+    const xValues = this._store.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'value'));
     const yValues: number[] = [...this._cumulativeTotals];
     // this._store.model!.series[0].datapoints.forEach((dp, i) => {
     //   yValues.push(i === 0
