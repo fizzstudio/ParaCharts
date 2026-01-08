@@ -29,9 +29,7 @@ export class HighlightsLayer extends PlotLayer {
     const datapoint = this.paraview.store.getDatapoint(datapointId);
     let datapointView = this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!;
     overlays.push((datapointView.symbol ?? datapointView.shapes[0]).clone());
-    if (this.paraview.store.settings.chart.isShowPopups
-      && this.type === 'foreground'
-      && !datapointView.popup) {
+    if (this.type === 'foreground') {
       datapointView.addDatapointPopup();
     }
     overlays.forEach(sym => {
@@ -75,16 +73,18 @@ export class HighlightsLayer extends PlotLayer {
       const rectFill = overlays[0] instanceof DataSymbol
         ? this.paraview.store.colors.colorValueAt(overlays[0].color!)
         : overlays[0].fill;
-      underlayRects.push(new RectShape(this.paraview, {
+      const rect = new RectShape(this.paraview, {
         x: overlays[0].x,
         y: 0,
         width: overlays[1].x - overlays[0].x + (chartInfo.isIntertick ? overlays[0].width : 0),
         height: this._height,
         fill: rectFill,
         opacity: 0.25
-      }));
+      })
+      underlayRects.push(rect);
+      rect.classInfo = { 'underlay-rect': true };
     }
-    if (this.paraview.store.settings.chart.isShowPopups && this.type == "foreground") {
+    if (this.type == "foreground") {
       this.paraview.store.popups.push(...this.parent.popupLayer.addSequencePopups(datapointViews))
     }
 

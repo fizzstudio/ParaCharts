@@ -272,6 +272,9 @@ export class ParaView extends ParaComponent {
       .popup-text {
         pointer-events: none;
       }
+      .underlay-rect {
+        pointer-events: none;
+      }
       .control-column {
         display: flex;
         flex-direction: column;
@@ -613,15 +616,11 @@ export class ParaView extends ParaComponent {
     this._store.updateSettings(draft => {
       draft.ui.isVoicingEnabled = true;
     });
-    this._store.updateSettings(draft => {
-      draft.chart.isShowPopups = true;
-    });
   }
 
   endNarrativeHighlightMode() {
     this._store.updateSettings(draft => {
       draft.ui.isVoicingEnabled = false;
-      draft.chart.isShowPopups = false;
     });
   }
 
@@ -911,6 +910,7 @@ export class ParaView extends ParaComponent {
           y="0"
           width="100%"
           height="100%"
+          @pointerleave=${(ev: PointerEvent) => this.store.clearPopups()}
         >
         </rect>
         ${this._documentView?.render() ?? ''}
