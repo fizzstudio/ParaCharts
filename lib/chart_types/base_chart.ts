@@ -21,7 +21,7 @@ import { SettingsManager } from '../store/settings_manager';
 import { type AxisInfo } from '../common/axisinfo';
 import { type LegendItem } from '../view/legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { ParaStore, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor } from '../store';
 import { Sonifier } from '../audio/sonifier';
 import { type AxisCoord } from '../view/axis';

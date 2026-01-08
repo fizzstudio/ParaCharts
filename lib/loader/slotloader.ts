@@ -1,6 +1,6 @@
 import { type Datatype } from '@fizz/dataframe';
 import { ChartType, DisplayType, Facet, Manifest, SeriesManifest } from '@fizz/paramanifest';
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 
 /*interface DataVar {
   name: string;

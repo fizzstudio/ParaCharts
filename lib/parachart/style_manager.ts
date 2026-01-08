@@ -1,4 +1,4 @@
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 
 export type StyleManagerDeclarationValue = string | number | (() => string | number);
 

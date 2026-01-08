@@ -26,6 +26,7 @@ import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
+import { Logger } from '@fizz/logger';
 import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';
 import { Model } from '@fizz/paramodel';
@@ -124,8 +125,6 @@ export class ParaChart extends ParaComponent {
     protected _loaderRejector: (() => void) | null;
     // (undocumented)
     protected _loaderResolver: (() => void) | null;
-    // Warning: (ae-forgotten-export) The symbol "Logger" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     protected log: Logger;
     // (undocumented)

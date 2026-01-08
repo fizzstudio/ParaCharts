@@ -26,7 +26,7 @@ import { linearRegression } from 'simple-statistics';
 import { View } from '../../../base_view';
 import { strToId } from '@fizz/paramanifest';
 import { Bezier } from '../../../../common';
-import { Logger, getLogger } from '../../../../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 
 /**
  * Abstract base class for charts that represent data values as points

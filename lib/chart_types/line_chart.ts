@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaStore } from '../store';
 import { type LineSettings, type DeepReadonly, type Setting } from '../store/settings_types';

@@ -1,5 +1,5 @@
 import { ParaComponent } from '../components';
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { Highlight } from '@fizz/parasummary';
 
 //import { styles } from '../../styles';

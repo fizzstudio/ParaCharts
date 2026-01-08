@@ -2,7 +2,7 @@ import { ChartType, Manifest, type Datatype, type AllSeriesData } from '@fizz/pa
 
 import papa from 'papaparse';
 
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 
 export type SourceKind = 'fizz-chart-data' | 'url' | 'content';
 

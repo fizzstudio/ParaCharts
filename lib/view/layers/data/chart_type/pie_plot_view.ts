@@ -1,5 +1,5 @@
 
-import { Logger, getLogger } from '../../../../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { PastryPlotView, RadialSlice, type RadialDatapointParams } from '.';
 import { type SeriesView } from '../../../data';
 import { Popup } from '../../../popup';
