@@ -50,6 +50,7 @@ import { StaticValue } from 'lit-html/static.js';
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { StyleInfo as StyleInfo_2 } from 'lit-html/directives/style-map.js';
 import { Summarizer } from '@fizz/parasummary';
+import { SVGTemplateResult } from 'lit';
 import { TemplateResult } from 'lit';
 import { TemplateResult as TemplateResult_2 } from 'lit-html';
 import * as ui from '@fizz/ui-components';

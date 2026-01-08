@@ -136,6 +136,9 @@ export class ParaChart extends ParaComponent {
             if (loadresult.result === 'success') {
               this.store.setManifest(loadresult.manifest!);
               this._store.dataState = 'complete';
+              this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
+              this._paraAPI = new ParaAPI(this);
+              this._loaderResolver!();
             } else {
               //this.log.error(loadresult.error);
               this._store.dataState = 'error';
@@ -384,11 +387,6 @@ export class ParaChart extends ParaComponent {
             ></para-control-panel>`
           : ''
         }
-        <slot
-          @slotchange=${(e: Event) => {
-            //this._signalManager.signal('slotChange');
-          }}
-        ></slot>
       </figure>
     `;
   }
