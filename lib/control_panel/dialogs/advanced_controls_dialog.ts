@@ -1,6 +1,6 @@
 
 import { ParaComponent } from '../../components';
-import { Logger, getLogger } from '../../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 
 import { Dialog } from '@fizz/ui-components';
 import '@fizz/ui-components';

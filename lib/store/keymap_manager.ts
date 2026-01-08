@@ -1,6 +1,6 @@
 //import type { translateEvaluators } from './translations';
 
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 
 import { ActionMap, ActionArgumentMap, HotkeyWithArgument } from './action_map';
 

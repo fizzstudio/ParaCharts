@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { type BaseChartInfo, chartInfoClasses } from '../chart_types';
 import { View, Container, Padding } from './base_view';
 import { Label } from './label';

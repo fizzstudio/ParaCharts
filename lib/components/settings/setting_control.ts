@@ -1,4 +1,4 @@
-import { Logger, getLogger } from '../../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { ParaComponent } from '../../components';
 import { type SettingControlInfo, type Setting, SettingsManager } from '../../store';
 //import { styles } from '../styles';

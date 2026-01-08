@@ -1,4 +1,4 @@
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaDialog, ParaComponent } from '../components';
 //import { styles } from '../../styles';

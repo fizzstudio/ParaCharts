@@ -21,7 +21,7 @@ import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type Setting } from '../store';
 import { type Shape } from './shape/shape';
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 
 /*import {
   HotkeyActionManager, EventActionManager, type KeyRegistrations, KeymapManager,
