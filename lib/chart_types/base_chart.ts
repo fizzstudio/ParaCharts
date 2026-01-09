@@ -240,7 +240,7 @@ export abstract class BaseChartInfo {
 
   async move(dir: Direction) {
     await this._navMap!.cursor.move(dir);
-    this._store.paraChart.postNotice('move', {dir, options: this._navMap!.cursor.options});
+    this._store.postNotice('move', {dir, options: this._navMap!.cursor.options});
   }
 
   /**
@@ -283,7 +283,7 @@ export abstract class BaseChartInfo {
         seriesKey: seriesMatchArray[0].seriesKey,
         index: seriesMatchArray[0].datapointIndex
       });
-      this._store.paraChart.postNotice('goSeriesMinMax', {isMin, options: this._navMap!.cursor.options});
+      this._store.postNotice('goSeriesMinMax', {isMin, options: this._navMap!.cursor.options});
     }
   }
 
@@ -300,7 +300,7 @@ export abstract class BaseChartInfo {
       seriesKey: matchDatapoint?.seriesKey,
       index: matchDatapoint?.datapointIndex
     });
-    this._store.paraChart.postNotice('goChartMinMax', {isMin, options: this._navMap!.cursor.options});
+    this._store.postNotice('goChartMinMax', {isMin, options: this._navMap!.cursor.options});
   }
 
   protected _composePointSelectionAnnouncement(isExtend: boolean) {
@@ -380,7 +380,7 @@ export abstract class BaseChartInfo {
     if (announcement) {
       this._store.announce(announcement);
     }
-    this._store.paraChart.postNotice('select', {isExtend, options: this._navMap!.cursor.options});
+    this._store.postNotice('select', {isExtend, options: this._navMap!.cursor.options});
   }
 
   clearDatapointSelection(quiet = false) {
@@ -388,7 +388,7 @@ export abstract class BaseChartInfo {
     if (!quiet) {
       this._store.announce('No items selected.');
     }
-    this._store.paraChart.postNotice('clearSelection', null);
+    this._store.postNotice('clearSelection', null);
   }
 
   // NOTE: This should be overriden in subclasses
@@ -407,7 +407,7 @@ export abstract class BaseChartInfo {
         series: 'up'
       };
       this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
-      this._store.paraChart.postNotice('goFirst', {options: this._navMap!.cursor.options});
+      this._store.postNotice('goFirst', {options: this._navMap!.cursor.options});
     }
   }
 
@@ -420,7 +420,7 @@ export abstract class BaseChartInfo {
         series: 'down'
       };
       this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
-      this._store.paraChart.postNotice('goLast', {options: this._navMap!.cursor.options});
+      this._store.postNotice('goLast', {options: this._navMap!.cursor.options});
     }
   }
 
@@ -431,14 +431,14 @@ export abstract class BaseChartInfo {
         const seriesKey = this._navMap!.cursor.options.seriesKey;
         this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
         this._chordPrevSeriesKey = seriesKey;
-        this._store.paraChart.postNotice('enterChordMode', {options: this._navMap!.cursor.options});
+        this._store.postNotice('enterChordMode', {options: this._navMap!.cursor.options});
       } else if (this._navMap!.cursor.isNodeType('chord')) {
         this._navMap!.cursor.layer.goTo(
           this.navDatapointType, {
           seriesKey: this._chordPrevSeriesKey,
           index: this._navMap!.cursor.options.index
         });
-        this._store.paraChart.postNotice('exitChordMode', {options: this._navMap!.cursor.options});
+        this._store.postNotice('exitChordMode', {options: this._navMap!.cursor.options});
       }
     }
     else {

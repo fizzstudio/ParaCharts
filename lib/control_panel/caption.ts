@@ -99,7 +99,7 @@ export class ParaCaptionBox extends ParaComponent {
           // NB: this requires there be an announcement, so it only works
           // in NH mode
           const highlight = this._store.announcement.highlights[i];
-          this._store.paraChart.postNotice('landmarkStart', highlight);
+          this._store.postNotice('landmarkStart', highlight);
         });
         // span.addEventListener('pointerleave', (e: PointerEvent) => {
         //   if (!this._store.settings.ui.isNarrativeHighlightEnabled) return;
@@ -165,7 +165,7 @@ export class ParaCaptionBox extends ParaComponent {
     const highlight = this._store.announcement.highlights[idx];
     voicing.shutUp();
     voicing.speakText(msg);
-    this._store.paraChart.postNotice('landmarkStart', highlight);
+    this._store.postNotice('landmarkStart', highlight);
   }
 
   clearSpanHighlights() {
