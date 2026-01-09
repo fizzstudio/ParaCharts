@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { Label } from './label';
 import { fixed } from '../common/utils';
 import { View, Container } from './base_view';
@@ -39,7 +39,7 @@ export class DirectLabelStrip extends Container(View) {
     this.log = getLogger('DirectLabelStrip');
     this._id = 'direct-label-strip';
     this._height = height;
-    this._hidden = !paraview.store.paraChart.headless;
+    this._hidden = !(paraview.store.paraChart.headless || paraview.store.settings.ui.isLowVisionModeEnabled);
     this._createLabels();
   }
 

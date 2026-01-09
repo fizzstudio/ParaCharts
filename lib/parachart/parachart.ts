@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest'
 import { DeepReadonly, Settings, SettingsInput, type Setting } from '../store/settings_types';
@@ -136,6 +136,9 @@ export class ParaChart extends ParaComponent {
             if (loadresult.result === 'success') {
               this.store.setManifest(loadresult.manifest!);
               this._store.dataState = 'complete';
+              this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
+              this._paraAPI = new ParaAPI(this);
+              this._loaderResolver!();
             } else {
               //this.log.error(loadresult.error);
               this._store.dataState = 'error';
@@ -191,11 +194,11 @@ export class ParaChart extends ParaComponent {
   clearAriaLive() {
     this.paraView.clearAriaLive;
   }
-  
+
   showAriaLiveHistory() {
     this.paraView.showAriaLiveHistory;
   }
-  
+
   connectedCallback() {
     super.connectedCallback();
     this.isControlPanelOpen = this._store.settings.controlPanel.isControlPanelDefaultOpen;
@@ -304,6 +307,12 @@ export class ParaChart extends ParaComponent {
     this.log.info('loaded manifest')
     if (loadresult.result === 'success') {
       this._manifest = loadresult.manifest;
+      this._store.clearVisited();
+      this._store.clearSelected();
+      this._store.clearAllHighlights();
+      this._store.clearAllSequenceHighlights();
+      this._store.clearAllSeriesLowlights();
+      this._store.clearPopups();
       this._store.setManifest(loadresult.manifest, loadresult.data);
       this._store.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode
@@ -378,11 +387,6 @@ export class ParaChart extends ParaComponent {
             ></para-control-panel>`
           : ''
         }
-        <slot
-          @slotchange=${(e: Event) => {
-            //this._signalManager.signal('slotChange');
-          }}
-        ></slot>
       </figure>
     `;
   }

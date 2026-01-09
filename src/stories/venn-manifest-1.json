@@ -1,0 +1,51 @@
+{
+  "datasets": [
+    {
+      "type": "venn",
+      "title": "Animals by habitat",
+      "facets": {
+        "item": {
+          "variableType": "independent",
+          "measure": "nominal",
+          "datatype": "string",
+          "displayType": {
+            "type": "text"
+          }
+        },
+        "membership": {
+          "variableType": "dependent",
+          "measure": "nominal",
+          "datatype": "string",
+          "displayType": {
+            "type": "area"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "Flying Animals",
+          "records": [
+            { "item": "Eagle", "membership": "included" },
+            { "item": "Butterfly", "membership": "included" },
+            { "item": "Dolphin", "membership": "excluded" },
+            { "item": "Shark", "membership": "excluded" },
+            { "item": "Flying Fish", "membership": "included" }
+          ]
+        },
+        {
+          "key": "Aquatic Animals",
+          "records": [
+            { "item": "Eagle", "membership": "excluded" },
+            { "item": "Butterfly", "membership": "excluded" },
+            { "item": "Dolphin", "membership": "included" },
+            { "item": "Shark", "membership": "included" },
+            { "item": "Flying Fish", "membership": "included" }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      }
+    }
+  ]
+}

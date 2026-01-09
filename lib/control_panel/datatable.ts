@@ -1,6 +1,6 @@
 
 import { ParaComponent } from '../components';
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { PlaneDatapoint, type Model } from '@fizz/paramodel';
 import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 
@@ -44,7 +44,7 @@ export class DataTableView extends ParaComponent {
           <thead>
             <tr>
               <th>
-                ${this.model.getFacet(this.model.independentFacetKeys[0])!.label} // TODO: Assumes exactly 1 indep facet
+                ${this.model.getFacet(this.model.independentFacetKeys[0])!.label} <!-- TODO: Assumes exactly 1 indep facet -->
               </th>
               ${this.model.series.map(s => html`
                 <th scope="col">

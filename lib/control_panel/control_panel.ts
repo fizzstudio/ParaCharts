@@ -1,4 +1,4 @@
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaDialog, ParaComponent } from '../components';
 //import { styles } from '../../styles';
@@ -36,6 +36,8 @@ import {
 import { property, state, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { Popup } from '../view/popup';
+import { datapointIdToCursor } from '../store';
+import { AnnotationDialog } from './dialogs/annotation_dialog';
 
 
 @customElement('para-control-panel')
@@ -55,6 +57,7 @@ export class ParaControlPanel extends ParaComponent {
   protected _annotationPanelRef = createRef<AnnotationPanel>();
   protected _controlsPanelRef = createRef<ControlsPanel>();
   protected _dialogRef = createRef<ParaDialog>();
+  protected _annotationDialogRef = createRef<AnnotationDialog>();
   protected _msgDialogRef = createRef<MessageDialog>();
   protected _storeChangeUnsub!: Unsubscribe;
 
@@ -129,12 +132,20 @@ export class ParaControlPanel extends ParaComponent {
     return this._annotationPanelRef.value!;
   }
 
+  get controlsPanel() {
+    return this._controlsPanelRef.value!;
+  }
+
   // get statusBar() {
   //   return this._descriptionPanelRef.value!.statusBar;
   // }
 
   get dialog() {
     return this._dialogRef.value!;
+  }
+
+  get annotationDialog() {
+    return this._annotationDialogRef.value!;
   }
 
   connectedCallback() {
@@ -242,6 +253,24 @@ export class ParaControlPanel extends ParaComponent {
   showHelpDialog(){
     return this._controlsPanelRef.value!.showHelpDialog();
   }
+
+  async showAnnotDialog(dpId: string) {
+    return await this.annotationDialog.show('Add Annotation', this._getAnnot(dpId));
+  }
+
+  protected _getAnnot(dpId: string) {
+    const { seriesKey, index } = datapointIdToCursor(dpId);
+    const series = this._store.model!.atKey(seriesKey)!.getLabel();
+    return html`
+        <div id="annotDialog">
+          <div>Datapoint: ${series}, ${index}</div><br>
+          <label for="annot">Text:</label><br>
+          <input type="text" id="annot" name="annot">
+          <br><br>
+        </div>
+      `;
+  }
+
 
   addPopup(isOpen: boolean) {
     let paraview = this.paraChart.paraView
@@ -413,6 +442,7 @@ export class ParaControlPanel extends ParaComponent {
         </fizz-tabs>
       </div>
       ${this.renderDialog()}
+      ${this.renderAnnotationDialog()}
     `;
   }
 
@@ -425,6 +455,15 @@ export class ParaControlPanel extends ParaComponent {
       <fizz-msg-dialog
         ${ref(this._msgDialogRef)}
       ></fizz-msg-dialog>
+    `;
+  }
+
+  private renderAnnotationDialog() {
+    return html`
+      <para-annotation-dialog
+        ${ref(this._annotationDialogRef)}
+        id="generic-annotation-dialog"
+      ></para-annotation-dialog>
     `;
   }
 

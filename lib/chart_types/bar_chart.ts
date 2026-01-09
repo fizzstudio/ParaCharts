@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { ParaStore } from '../store';
 import { PlaneChartInfo } from './plane_chart';
 import { AxisInfo } from '../common/axisinfo';
@@ -238,53 +238,6 @@ export class BarChartInfo extends PlaneChartInfo {
     // In AI mode, the following call will only do anything when the doc view
     // has been recreated (so the series analyses already exist)
     this._createSequenceNavNodes();
-  }
-
-  noticePosted(key: string, value: any) {
-    super.noticePosted(key, value);
-    if (this._store.settings.ui.isNarrativeHighlightEnabled) {
-      if (key === 'utteranceBoundary') {
-        const highlight: Highlight = value;
-        this._prevHighlightNavcode = this._doHighlight(highlight, this._prevHighlightNavcode);
-      } else if (key === 'utteranceEnd') {
-        // So that on the initial transition from auto-narration to manual
-        // span navigation, we don't remove any highlights added in manual mode
-        if (!this._store.paraChart.captionBox.highlightManualOverride) {
-          this._store.clearHighlight();
-          this._store.clearAllSeriesLowlights();
-        }
-        // this._highlightIndex = null;
-        if (this._prevHighlightNavcode) {
-          this.didRemoveHighlight(this._prevHighlightNavcode);
-          this._prevHighlightNavcode = '';
-        }
-      }
-    }
-  }
-
-  protected _doHighlight(highlight: Highlight, prevNavcode: string) {
-    if (highlight.navcode) {
-      if (highlight.navcode.startsWith('series')) {
-        const segments = highlight.navcode.split(/-/);
-        this._store.lowlightOtherSeries(...segments.slice(1));
-      } else {
-        this._store.clearHighlight();
-        this._store.highlight(highlight.navcode);
-        if (prevNavcode) {
-          this.didRemoveHighlight(prevNavcode);
-        }
-        this.didAddHighlight(highlight.navcode);
-      }
-      prevNavcode = highlight.navcode;
-    } else {
-      this._store.clearHighlight();
-      this._store.clearAllSeriesLowlights();
-      if (prevNavcode) {
-        this.didRemoveHighlight(prevNavcode);
-        prevNavcode = '';
-      }
-    }
-    return prevNavcode;
   }
 
   legend() {

@@ -1,4 +1,4 @@
-import { Logger, getLogger } from '../../../../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { enumerate } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
 import { nothing, svg } from "lit";
