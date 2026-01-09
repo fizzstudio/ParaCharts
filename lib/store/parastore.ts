@@ -49,6 +49,7 @@ import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
 import { defaults, chartTypeDefaults } from './settings_defaults';
 import { Colors } from '../common/colors';
+import { joinStrArray } from '../common/utils';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { actionMap } from './action_map';
@@ -497,7 +498,7 @@ export class ParaStore extends State {
       announcement = msg;
       html = msg;
     } else if (Array.isArray(msg)) {
-      announcement = this._joinStrArray(msg, linebreak);
+      announcement = joinStrArray(msg, linebreak);
       html = announcement;
     } else {
       announcement = msg.text;
@@ -509,21 +510,6 @@ export class ParaStore extends State {
       this.announcement = { text: announcement, html, highlights, clear: clearAriaLive, startFrom };
       this.log.info('ANNOUNCE:', this.announcement.text);
     }
-  }
-
-  protected _joinStrArray(strArray: string[], linebreak?: string): string {
-    strArray = strArray.filter(line => /\S/.test(line));
-    // if the string array only contains blank strings, ignore it
-    if (strArray.length) {
-      const strArrayLen = strArray.length - 1;
-      return strArray.reduce((acc, line, i) => {
-        const lineEnd = (i === strArrayLen) ? '.' : '';
-        const linebreakstr = (acc) ? ` ${linebreak}` : '';
-        const accStr = acc.match(/[.,?:;]$/) ? acc : `${acc}.`;
-        return `${accStr} ${linebreakstr}${line}${lineEnd}`;
-      });
-    }
-    return '';
   }
 
   getDatapoint(datapointId: string): Datapoint {
