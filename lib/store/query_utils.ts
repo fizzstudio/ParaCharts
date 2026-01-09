@@ -1,4 +1,4 @@
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { ParaView } from '../paraview';
 import { capitalize, join, interpolate} from '@fizz/templum';
 import { ComparisonRelationship, ComparisonResult } from '@fizz/dataframe';

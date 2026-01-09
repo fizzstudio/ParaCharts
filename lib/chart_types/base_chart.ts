@@ -21,7 +21,7 @@ import { SettingsManager } from '../store/settings_manager';
 import { type AxisInfo } from '../common/axisinfo';
 import { type LegendItem } from '../view/legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { ParaStore, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor } from '../store';
 import { Sonifier } from '../audio/sonifier';
 import { type AxisCoord } from '../view/axis';
@@ -145,14 +145,15 @@ export abstract class BaseChartInfo {
 
   noticePosted(key: string, value: any) {
     if (this._store.settings.ui.isNarrativeHighlightEnabled) {
-      if (key === 'utteranceBoundary') {
+      if (key === 'landmarkStart') {
         const highlight: Highlight = value;
         this._prevHighlightNavcode = this._doHighlight(highlight, this._prevHighlightNavcode);
-      } else if (key === 'utteranceEnd') {
+      } else if (key === 'landmarkEnd') {
         // So that on the initial transition from auto-narration to manual
         // span navigation, we don't remove any highlights added in manual mode
         if (!this._store.paraChart.captionBox.highlightManualOverride) {
-          this._store.clearHighlight();
+          this._store.clearAllHighlights();
+          this._store.clearAllSequenceHighlights();
           this._store.clearAllSeriesLowlights();
         }
         // this._highlightIndex = null;
@@ -166,20 +167,33 @@ export abstract class BaseChartInfo {
 
   protected _doHighlight(highlight: Highlight, prevNavcode: string) {
     if (highlight.navcode) {
+      const segments = highlight.navcode.split(/-/);
       if (highlight.navcode.startsWith('series')) {
-        const segments = highlight.navcode.split(/-/);
         this._store.lowlightOtherSeries(...segments.slice(1));
-      } else {
-        this._store.clearHighlight();
-        this._store.highlight(highlight.navcode);
+      } else if (highlight.navcode.startsWith('sequence')) {
+        this._store.clearAllHighlights();
+        this._store.clearAllSequenceHighlights();
+        this._store.highlightSequence(segments[1], parseInt(segments[2]), parseInt(segments[3]));
         if (prevNavcode) {
           this.didRemoveHighlight(prevNavcode);
         }
         this.didAddHighlight(highlight.navcode);
+      } else if (segments[0] === 'datapoint') {
+        this._store.clearAllHighlights();
+        this._store.clearAllSequenceHighlights();
+        segments.slice(2).forEach(index => {
+          this._store.highlight(segments[1], parseInt(index));
+        });
+        if (prevNavcode) {
+          this.didRemoveHighlight(prevNavcode);
+        }
+        this.didAddHighlight(highlight.navcode);
+      } else {
+        throw new Error(`invalid navcode type '${segments[0]}'`);
       }
       prevNavcode = highlight.navcode;
     } else {
-      this._store.clearHighlight();
+      this._store.clearAllHighlights();
       this._store.clearAllSeriesLowlights();
       if (prevNavcode) {
         this.didRemoveHighlight(prevNavcode);
@@ -515,18 +529,6 @@ export abstract class BaseChartInfo {
 
   datapointsForSelector(selector: string): readonly Datapoint[] {
     return this._navMap!.datapointsForSelector(this.selectorLayer, selector);
-  }
-
-  isHighlighted(seriesKey: string, index: number): boolean {
-    if (this._store.highlightedSelector) {
-      const datapoints = this.datapointsForSelector(this._store.highlightedSelector);
-      for (const datapoint of datapoints) {
-        if (datapoint.seriesKey === seriesKey && datapoint.datapointIndex === index) {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   get shouldDrawFocusRing() {

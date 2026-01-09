@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { type BaseChartInfo } from '../../../../chart_types';
 import { ParaView } from '../../../../paraview/paraview';
-import { Logger, getLogger } from '../../../../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
 import {
   Setting, DeepReadonly, BarSettings

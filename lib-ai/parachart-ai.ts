@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { css, unsafeCSS } from 'lit';
 import { SeriesAnalyzer } from '@fizz/series-analyzer';
 import { AiSeriesPairMetadataAnalyzer } from '@fizz/paramodel';
-import { getLogger } from '../lib/common/logger';
+import { getLogger } from '@fizz/logger';
 import { ParaChart } from '../lib/parachart/parachart';
 import { styles } from '../lib/view/styles';
 // @ts-ignore

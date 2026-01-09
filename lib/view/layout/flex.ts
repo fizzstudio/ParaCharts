@@ -18,7 +18,7 @@ import { View, type SnapLocation } from '../base_view';
 import { ParaView } from '../../paraview';
 import { Layout } from './layout';
 import { fixed } from '../../common/utils';
-import { Logger, getLogger } from '../../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 
 /**
  * Abstract base class for flexbox-style row and column layouts.

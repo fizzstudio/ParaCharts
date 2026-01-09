@@ -122,6 +122,7 @@
     "@fizz/dataframe": "^0.27.0",
     "@fizz/jimerator": "^0.12.1",
     "@fizz/paramanifest": "^0.10.0",
+    "@fizz/logger": "^0.1.0",
     "@fizz/paramodel": "^0.6.18",
     "@fizz/parasummary": "^0.10.0",
     "@fizz/sparkbraille-component": "^0.5.0",

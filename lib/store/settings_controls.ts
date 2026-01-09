@@ -1,6 +1,6 @@
 
 import { type Setting, SettingsManager } from '.';
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { 
   type SettingControlType,
   type SettingControl,

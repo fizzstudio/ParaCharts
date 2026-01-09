@@ -58,39 +58,47 @@
 					text.innerHTML = 'Move right again';
                     chart.api.doAction('move', {direction: 'right'});
                 },
-                () => {
+                /*() => {
 					text.innerHTML = 'Enable dark mode';
                     chart.api.setSetting('color.isDarkModeEnabled', true);
-                },
-                () => {
+                },*/
+                /*() => {
 					text.innerHTML = 'Change manifest';
 					chart.setAttribute('manifest', '/src/demo-data/line-single-manifest-128.json');
+                },*/
+                () => {
+					text.innerHTML = 'Highlight points';
+                    chart.api.getSeries('Euro area').getPoints(4, 6).highlight();
                 },
                 () => {
+					text.innerHTML = 'Clear highlight';
+                    chart.api.getSeries('Euro area').getPoints(4).clearHighlight();
+                },
+                /*() => {
 					text.innerHTML = 'Enable narrative highlights';
                     chart.api.setSetting('ui.isNarrativeHighlightEnabled', true);
                 },
-                /*() => {
+                () => {
 					text.innerHTML = 'Disable direct labels';
                     chart.api.setSetting('chart.hasDirectLabels', false);
                 },
                 () => {
 					text.innerHTML = 'Enable direct labels';
                     chart.api.setSetting('chart.hasDirectLabels', true);
-                },
+                },*/
                 () => {
 					text.innerHTML = 'Visit point';
-                    chart.api.getSeries('China').getPoint(6).visit();
+                    chart.api.getSeries('EU').getPoints(6).visit();
                 },
                 () => {
 					text.innerHTML = 'Select point';
-                    chart.api.getSeries('China').getPoint(6).select();
+                    chart.api.getSeries('EU').getPoints(6).select();
                 },
                 () => {
 					text.innerHTML = 'Deselect point';
-                    chart.api.getSeries('China').getPoint(6).select();
+                    chart.api.getSeries('EU').getPoints(6).select();
                 },
-                () => {
+                /*() => {
 					text.innerHTML = 'Play point sonification';
                     chart.api.getSeries('China').getPoint(6).play();
                 },
@@ -128,14 +136,16 @@
             })
         }
 		chart.addEventListener('paranotice', (e) => {
-			//console.log('NOTICE', e.detail);
+			// XXX this won't work if animation is disabled
+			console.log('NOTICE', e.detail);
 			if (e.detail.key === 'animRevealEnd' && !demoDidStart) {
                 runDemo();
 				demoDidStart = true;
 			}
 		});
-		//await chart.loaded;
-		//console.log('CHART HAS LOADED');
+		await chart.loaded;
+		console.log('CHART HAS LOADED');
+		runDemo();
 	</script>
 	<h1>@fizz/paracharts ParaPerformer Demo</h1>
   	<main>

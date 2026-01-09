@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { type AriaLive } from '../components';
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { PointerEventManager } from './pointermanager';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaViewController } from '.';
@@ -28,7 +28,7 @@ import { DocumentView } from '../view/document_view';
 import { SVGNS } from '../common/constants';
 import { fixed, isPointerInbounds } from '../common/utils';
 
-import { PropertyValueMap, TemplateResult, css, html, nothing, svg } from 'lit';
+import { PropertyValueMap, SVGTemplateResult, TemplateResult, css, html, nothing, render, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -61,7 +61,7 @@ export class ParaView extends ParaComponent {
   protected _viewBox!: ViewBox;
   protected _prevFocusLeaf?: View;
   protected _rootRef = createRef<SVGSVGElement>();
-  protected _defsRef = createRef<SVGDefsElement>();
+  protected _defsRef = createRef<SVGGElement>();
   protected _frameRef = createRef<SVGRectElement>();
   protected _dataspaceRef = createRef<SVGGElement>();
   protected _documentView?: DocumentView;
@@ -272,6 +272,9 @@ export class ParaView extends ParaComponent {
       .popup-text {
         pointer-events: none;
       }
+      .underlay-rect {
+        pointer-events: none;
+      }
       .control-column {
         display: flex;
         flex-direction: column;
@@ -427,133 +430,46 @@ export class ParaView extends ParaComponent {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
     this._documentView?.settingDidChange(path, oldValue, newValue);
-    if (path === 'ui.isFullscreenEnabled') {
-      if (newValue && !document.fullscreenElement) {
-        try {
-          this._containerRef.value!.requestFullscreen();
-        } catch {
-          this.log.error('failed to enter fullscreen');
-          this._store.updateSettings(draft => {
-            draft.ui.isFullscreenEnabled = false;
-          }, true);
-        }
-      } else if (!newValue && document.fullscreenElement) {
-        try {
-          document.exitFullscreen();
-        } catch {
-          this.log.error('failed to exit fullscreen');
-          this._store.updateSettings(draft => {
-            draft.ui.isFullscreenEnabled = true;
-          }, true);
-        }
-      }
-    } else if (path === 'ui.isLowVisionModeEnabled') {
-      if (newValue) {
-        this._store.colors.selectPaletteWithKey("low-vision")
-      }
-      else {
-        if (this._store.colors.prevSelectedColor.length > 0) {
-          this._store.colors.selectPaletteWithKey(this._store.colors.prevSelectedColor);
-        }
-      }
-      this._store.updateSettings(draft => {
-        this._store.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
-        draft.color.isDarkModeEnabled = !!newValue;
-        draft.ui.isFullscreenEnabled = !!newValue;
-        if (newValue) {
-          this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
-          this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
-          this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
-          // end any in-progress animation here
-          this._documentView!.chartLayers.dataLayer.stopAnimation();
-          draft.animation.isAnimationEnabled = false;
-          draft.chart.fontScale = 2;
-          draft.grid.isDrawVertLines = true;
-        } else {
-          this._exitingLowVisionMode = true;
-          draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
-          draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
-          this._modeSaved.delete('animation.isAnimationEnabled');
-          this._modeSaved.delete('chart.fontScale');
-          this._modeSaved.delete('grid.isDrawVertLines');
-        }
-      });
-      if (this._exitingLowVisionMode) {
-        queueMicrotask(() => {
-          this._store.updateSettings(draft => {
-            draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
-          });
-          this._exitingLowVisionMode = false;
-        });
-      }
-    } else if (path === 'ui.isVoicingEnabled') {
-      if (this._store.settings.ui.isVoicingEnabled) {
-        //if (this._hotkeyActions instanceof NormalHotkeyActions) {
-        if (!this._store.settings.ui.isNarrativeHighlightEnabled) {
-          const msg = ['Self-voicing enabled.'];
-          const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
-          if (lastAnnouncement) {
-            msg.push(lastAnnouncement);
-          }
-          this._store.announce(msg);
-        } else {
-          // XXX Would be nice to prefix this with "Narrative Highlight Mode enabled".
-          // That would require being able to join a simple text announcement with
-          // a HighlightedSummary
-          (async () => {
-            this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
-          })();
-        }
-      } else {
-        this.ariaLiveRegion.voicing.shutUp();
-        // Voicing is disabled at this point, so manually push this message through
-        this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
-      }
-    } else if (path === 'ui.isNarrativeHighlightEnabled') {
-      if (this._store.settings.ui.isNarrativeHighlightEnabled) {
-        if (this._store.settings.ui.isVoicingEnabled) {
-          this.startNarrativeHighlightMode();
-          const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
-          const msg = ['Narrative Highlights Mode enabled.'];
-          if (lastAnnouncement) msg.push(lastAnnouncement);
-          this._store.announce(msg);
-          (async () => {
-            this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
-          })();
-        } else {
-          this._store.updateSettings(draft => {
-            draft.ui.isVoicingEnabled = true;
-          });
-          this.startNarrativeHighlightMode();
-          const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
-          const msg = ['Narrative Highlights Mode enabled.'];
-          if (lastAnnouncement) msg.push(lastAnnouncement);
-          this._store.announce(msg);
-          (async () => {
-            this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
-          })();
-        }
-        this._store.updateSettings(draft => {
-          this._modeSaved.set(
-            'type.line.isTrendNavigationModeEnabled',
-            draft.type.line.isTrendNavigationModeEnabled);
-          draft.type.line.isTrendNavigationModeEnabled = true;
-        });
-      } else {
-        // Narrative highlights turned OFF
-        this.endNarrativeHighlightMode();
+    switch (path) {
+      case 'ui.isFullscreenEnabled':
+        this._handleFullscreen(newValue);
+        break;
+      case 'ui.isLowVisionModeEnabled':
+        this._handleLowVisionMode(newValue);
+        break;
+      case 'ui.isVoicingEnabled':
+        this._handleVoicing();
+        break;
+      case 'ui.isNarrativeHighlightEnabled':
+        this._handleNarrativeHighlight();
+        break;
+      case 'ui.isNarrativeHighlightPaused':
+        this._handleNarrativeHighlightPaused();
+        break;
+      default:
+        break;
+    }
+  }
 
-        // Disable self-voicing as well
+  protected _handleFullscreen(newValue?: Setting) {
+    if (newValue && !document.fullscreenElement) {
+      try {
+        this._containerRef.value!.requestFullscreen();
+      } catch {
+        this.log.error('failed to enter fullscreen');
         this._store.updateSettings(draft => {
-          draft.ui.isVoicingEnabled = false;
-          draft.type.line.isTrendNavigationModeEnabled = this._modeSaved.get(
-            'type.line.isTrendNavigationModeEnabled');
-          this._modeSaved.delete('type.line.isTrendNavigationModeEnabled');
-        });
-        this._store.announce(['Narrative Highlight Mode disabled.']);
+          draft.ui.isFullscreenEnabled = false;
+        }, true);
       }
-    } else if (path === 'ui.isNarrativeHighlightPaused') {
-      this.ariaLiveRegion.voicing.togglePaused();
+    } else if (!newValue && document.fullscreenElement) {
+      try {
+        document.exitFullscreen();
+      } catch {
+        this.log.error('failed to exit fullscreen');
+        this._store.updateSettings(draft => {
+          draft.ui.isFullscreenEnabled = true;
+        }, true);
+      }
     }
   }
 
@@ -580,6 +496,134 @@ export class ParaView extends ParaComponent {
       }
     }
   }
+
+  protected _handleLowVisionMode(newValue?: Setting) {
+    if (newValue) {
+      this._store.colors.selectPaletteWithKey("low-vision")
+    } else {
+      if (this._store.colors.prevSelectedColor.length > 0) {
+        this._store.colors.selectPaletteWithKey(this._store.colors.prevSelectedColor);
+      }
+    }
+    this._store.updateSettings(draft => {
+      this._store.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
+      draft.color.isDarkModeEnabled = !!newValue;
+      draft.ui.isFullscreenEnabled = !!newValue;
+      if (newValue) {
+        this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
+        this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
+        this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+        // end any in-progress animation here
+        this._documentView!.chartLayers.dataLayer.stopAnimation();
+        draft.animation.isAnimationEnabled = false;
+        draft.chart.fontScale = 2;
+        draft.grid.isDrawVertLines = true;
+      } else {
+        this._exitingLowVisionMode = true;
+        draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
+        draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
+        this._modeSaved.delete('animation.isAnimationEnabled');
+        this._modeSaved.delete('chart.fontScale');
+        this._modeSaved.delete('grid.isDrawVertLines');
+      }
+    });
+    if (this._exitingLowVisionMode) {
+      queueMicrotask(() => {
+        this._store.updateSettings(draft => {
+          draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
+        });
+        this._exitingLowVisionMode = false;
+      });
+    }
+  }
+
+  protected _handleVoicing() {
+    if (this._store.settings.ui.isVoicingEnabled) {
+      //if (this._hotkeyActions instanceof NormalHotkeyActions) {
+      if (!this._store.settings.ui.isNarrativeHighlightEnabled) {
+        const msg = ['Self-voicing enabled.'];
+        const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
+        if (lastAnnouncement) {
+          msg.push(lastAnnouncement);
+        }
+        this._store.announce(msg);
+      } else {
+        // XXX Would be nice to prefix this with "Narrative Highlight Mode enabled".
+        // That would require being able to join a simple text announcement with
+        // a HighlightedSummary
+        (async () => {
+          this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+        })();
+      }
+    } else {
+      this.ariaLiveRegion.voicing.shutUp();
+      // Voicing is disabled at this point, so manually push this message through
+      this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
+    }
+  }
+
+  protected _handleNarrativeHighlight() {
+    if (this._store.settings.ui.isNarrativeHighlightEnabled) {
+      if (this._store.settings.ui.isVoicingEnabled) {
+        this.startNarrativeHighlightMode();
+        const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
+        const msg = ['Narrative Highlights Mode enabled.'];
+        if (lastAnnouncement) msg.push(lastAnnouncement);
+        this._store.announce(msg);
+        (async () => {
+          this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+        })();
+      } else {
+        this._store.updateSettings(draft => {
+          draft.ui.isVoicingEnabled = true;
+        });
+        this.startNarrativeHighlightMode();
+        const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
+        const msg = ['Narrative Highlights Mode enabled.'];
+        if (lastAnnouncement) msg.push(lastAnnouncement);
+        this._store.announce(msg);
+        (async () => {
+          this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+        })();
+      }
+      this._store.updateSettings(draft => {
+        this._modeSaved.set(
+          'type.line.isTrendNavigationModeEnabled',
+          draft.type.line.isTrendNavigationModeEnabled);
+        draft.type.line.isTrendNavigationModeEnabled = true;
+      });
+    } else {
+      // Narrative highlights turned OFF
+      this.endNarrativeHighlightMode();
+
+      // Disable self-voicing as well
+      this._store.updateSettings(draft => {
+        draft.ui.isVoicingEnabled = false;
+        draft.type.line.isTrendNavigationModeEnabled = this._modeSaved.get(
+          'type.line.isTrendNavigationModeEnabled');
+        this._modeSaved.delete('type.line.isTrendNavigationModeEnabled');
+      });
+      this._store.announce(['Narrative Highlight Mode disabled.']);
+    }
+  }
+
+  protected _handleNarrativeHighlightPaused() {
+    this.ariaLiveRegion.voicing.togglePaused();
+  }
+
+  startNarrativeHighlightMode() {
+    //this._hotkeyActions = new NarrativeHighlightHotkeyActions(this);
+    this._store.updateSettings(draft => {
+      draft.ui.isVoicingEnabled = true;
+    });
+  }
+
+  endNarrativeHighlightMode() {
+    this._store.updateSettings(draft => {
+      draft.ui.isVoicingEnabled = false;
+    });
+  }
+
 
   /*protected updated(changedProperties: PropertyValues) {
     this.log.info('canvas updated');
@@ -634,23 +678,6 @@ export class ParaView extends ParaComponent {
     } else {
       this._chartRefs.delete(key);
     }
-  }
-
-  startNarrativeHighlightMode() {
-    //this._hotkeyActions = new NarrativeHighlightHotkeyActions(this);
-    this._store.updateSettings(draft => {
-      draft.ui.isVoicingEnabled = true;
-    });
-    this._store.updateSettings(draft => {
-      draft.chart.isShowPopups = true;
-    });
-  }
-
-  endNarrativeHighlightMode() {
-    this._store.updateSettings(draft => {
-      draft.ui.isVoicingEnabled = false;
-      draft.chart.isShowPopups = false;
-    });
   }
 
   createDocumentView() {
@@ -776,13 +803,16 @@ export class ParaView extends ParaComponent {
     downloadLinkEl.remove();
   }
 
-  addDef(key: string, template: TemplateResult) {
+  addDef(key: string, template: SVGTemplateResult) {
     if (this._defs[key]) {
       throw new Error('view already in defs');
     }
     this.log.info('ADDING DEF', key);
     this._defs = { ...this._defs, [key]: template };
-    this.requestUpdate();
+    // this.requestUpdate();
+    render(template, this._defsRef.value as unknown as HTMLElement, {
+      renderBefore: this._defsRef.value!.firstChild
+    });
   }
 
 
@@ -853,10 +883,9 @@ export class ParaView extends ParaComponent {
         @click=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleClick(ev)}
         @dblclick=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleDoubleClick(ev)}
       >
-        <defs
-          ${ref(this._defsRef)}
-        >
-          ${Object.entries(this._defs).map(([key, template]) => template)}
+        <defs>
+          <g ${ref(this._defsRef)}>
+          </g>
           ${this._documentView?.horizAxis ? svg`
             <clipPath id="clip-path">
               <rect
@@ -881,6 +910,7 @@ export class ParaView extends ParaComponent {
           y="0"
           width="100%"
           height="100%"
+          @pointerleave=${(ev: PointerEvent) => this.store.clearPopups()}
         >
         </rect>
         ${this._documentView?.render() ?? ''}

@@ -264,7 +264,6 @@ export class PlotLayerManager extends View {
           id="data-backdrop"
           width=${fixed`${this._logicalWidth}`}
           height=${fixed`${this._logicalHeight}`}
-          @pointerleave=${(ev: PointerEvent) => !isPointerInbounds(this.paraview, ev) ? this.paraview.store.clearPopups() : undefined}
         />
         ${this._backgroundHighlightsLayer.render()}
         ${this._backgroundAnnotationLayer.render()}

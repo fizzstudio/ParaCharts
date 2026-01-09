@@ -1,6 +1,6 @@
 
 import { ParaComponent } from '../components';
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { PlaneDatapoint, type Model } from '@fizz/paramodel';
 import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 
