@@ -91,7 +91,7 @@ export class VennPlotView extends DataLayer {
     circleBools: [boolean, boolean]
   ): number[] {
     const solution = this.minimize(
-      (positions: number[]) => this.cost2(
+      (positions: number[]) => this.cost(
         rectangles.map(([w, h]) => [w + 50, h + 50]),
         positions,
         circleCenter1,
@@ -191,7 +191,7 @@ export class VennPlotView extends DataLayer {
     return norm > 0 ? v.map(vi => vi / norm) : v;
   }
   
-  protected cost2(
+  protected cost(
     rectangles: Rectangle[],
     positions: number[],
     circleCenter1: [number, number],
@@ -328,7 +328,6 @@ export class VennPlotView extends DataLayer {
       }
     }
     let mult: number = -1;
-    const colArr = ["blue", "yellow"];
     let regionIdx: number = 0;
     seriesKeys.forEach(seriesKey => {
       const seriesView = new SeriesView(this, seriesKey);
@@ -337,8 +336,7 @@ export class VennPlotView extends DataLayer {
         seriesView,
         mult * 0.5 * this._radius,
         0,
-        this._radius,
-        colArr[regionIdx]
+        this._radius
       );
       seriesView.append(region);
       mult = 1;
@@ -360,7 +358,6 @@ export class VennPlotView extends DataLayer {
           new Vec2(p2.x, p2.y),
           new Vec2(p1.x, p1.y)
         ],
-        fill: "red",
         stroke: "black",
         strokeWidth: 1
       });
@@ -495,15 +492,13 @@ export class VennRegionView extends DatapointView {
   declare protected _shape: CircleShape;
   protected _xOff: number;
   protected _yOff: number;
-  protected _color: string;
   protected _r: number;
-  constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0, r: number = 0, color = "red") {
+  constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0, r: number = 0) {
     super(parent);
     this._xOff = x_offset;
     this._yOff = y_offset;
     this._r = r;
     this._isStyleEnabled = true;
-    this._color = color;
   }
 
   get shapes() {
@@ -544,7 +539,6 @@ export class VennRegionView extends DatapointView {
       y: cy + this._yOff,
       r: r,
       stroke: 'black',
-      fill: this._color
     });
     this._shapes = [circle];
     this.append(circle);
