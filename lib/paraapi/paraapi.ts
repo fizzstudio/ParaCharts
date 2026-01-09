@@ -156,7 +156,7 @@ export class ParaAPI {
         paraView.ariaLiveRegion.replay();
       },
       addAnnotation() {
-        store.addAnnotation();
+        _paraChart.controlPanel.annotationPanel.addAnnotation();
       },
       toggleNarrativeHighlightMode() {
         paraView.startNarrativeHighlightMode();

@@ -209,7 +209,7 @@ export class ParaStore extends State {
   protected _summarizer!: Summarizer;
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
-  protected annotID: number = 0;
+  protected _annotID: number = 0;
   protected log: Logger = getLogger("ParaStore");
 
   public idList: Record<string, boolean> = {};
@@ -280,6 +280,14 @@ export class ParaStore extends State {
 
   get userTrendLines() {
     return this._userTrendLines;
+  }
+
+  get annotID() {
+    return this._annotID;
+  }
+
+  incrementAnnotID() {
+    this._annotID++;
   }
 
   protected _createSettings() {
@@ -697,34 +705,6 @@ export class ParaStore extends State {
       : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.settings) as FormatType;
   }
 
-  async addAnnotation() {
-    const newAnnotationList: PointAnnotation[] = [];
-    for (const dpId of this._visitedDatapoints) {
-      const { seriesKey, index } = datapointIdToCursor(dpId);
-      const series = this.model!.atKey(seriesKey)!.getLabel();
-      const recordLabel = formatXYDatapointX(
-        this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
-      let result = await this.paraChart.controlPanel.showAnnotDialog(dpId)
-      if (result[0] == 'cancel'){
-        continue
-      }
-      const annotationText = result[1]
-      if (annotationText) {
-      newAnnotationList.push({
-        type: "datapoint",
-        seriesKey,
-        index,
-        annotation: `${series}, ${recordLabel}: ${annotationText}`,
-        text: annotationText,
-        id: `${series}-${recordLabel}-${this.annotID}`,
-        isSelected: this.settings.ui.isLowVisionModeEnabled ? false : true,
-      });
-      this.annotID += 1;
-      }
-    }
-    this.annotations = [...this.annotations, ...newAnnotationList];
-  }
-
   annotatePoint(seriesKey: string, index: number, text: string) {
     if (this.annotations.find((annot: PointAnnotation) =>
       annot.seriesKey === seriesKey && annot.index === index && annot.text === text)) {
@@ -738,9 +718,9 @@ export class ParaStore extends State {
       index,
       annotation: `${seriesKey}, ${recordLabel}: ${text}`,
       text,
-      id: `${seriesKey}-${recordLabel}-${this.annotID}`
+      id: `${seriesKey}-${recordLabel}-${this._annotID}`
     } as PointAnnotation];
-    this.annotID++;
+    this._annotID++;
   }
 
   async showMDRAnnotations() {
