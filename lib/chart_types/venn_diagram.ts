@@ -18,7 +18,7 @@ import { BaseChartInfo, RiffOrder } from './base_chart';
 import { type ParaStore, directions, type HorizDirection, datapointIdToCursor } from '../store';
 import { queryMessages, describeSelections, getDatapointMinMax } from '../store/query_utils';
 import { Datapoint } from '@fizz/paramodel';
-import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasummary';
+import { formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 import {
   NavLayer, NavNode,
