@@ -124,6 +124,12 @@ export interface SparkBrailleInfo {
   isBar?: boolean;
 }
 
+export interface StoreCallbacks {
+  onUpdate?: () => void;
+  onNotice?: (type: string, data: any) => void;
+  onSettingChange?: (path: string, oldValue?: Setting, newValue?: Setting) => void;
+}
+
 /**
  * Convert a datapoint ID string of format `${seriesKey}-${index}` into a DatapointCursor.
  * @param id - The ID
@@ -211,11 +217,11 @@ export class ParaStore extends State {
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected _annotID: number = 0;
   protected log: Logger = getLogger("ParaStore");
+  protected callbacks: StoreCallbacks = {};
 
   public idList: Record<string, boolean> = {};
 
   constructor(
-    public paraChart: ParaChart,
     protected _inputSettings: SettingsInput,
     // suppleteSettingsWith?: DeepReadonly<Settings>,
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -294,6 +300,22 @@ export class ParaStore extends State {
     const hydratedSettings = SettingsManager.hydrateInput(this._inputSettings);
     SettingsManager.suppleteSettings(hydratedSettings, defaults);
     this.settings = hydratedSettings as Settings;
+  }
+
+  registerCallbacks(callbacks: StoreCallbacks) {
+    this.callbacks = { ...this.callbacks, ...callbacks };
+  }
+
+  requestUpdate() {
+    this.callbacks.onUpdate?.();
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+    this.callbacks.onSettingChange?.(path, oldValue, newValue);
+  }
+
+  postNotice(key: string, value: any) {
+    this.callbacks.onNotice?.(key, value);
   }
 
   setManifest(manifest: Manifest, data?: AllSeriesData) {
@@ -401,7 +423,7 @@ export class ParaStore extends State {
       this._settingObservers[path]?.forEach(observer =>
         observer(values.oldValue, values.newValue)
       );
-      this.paraChart.settingDidChange(path, values.oldValue, values.newValue);
+      this.settingDidChange(path, values.oldValue, values.newValue);
     }
   }
 
@@ -554,7 +576,7 @@ export class ParaStore extends State {
     }
     // NB: Making _visitedDatapoints a lit-app/state property proved
     // problematic for performance
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
   protected _datapointSetHas(
@@ -598,12 +620,12 @@ export class ParaStore extends State {
 
   highlight(seriesKey: string, index: number) {
     this._highlightedDatapoints.add(makeDatapointId(seriesKey, index));
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
   clearHighlight(seriesKey: string, index: number) {
     this._highlightedDatapoints.delete(makeDatapointId(seriesKey, index));
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
   isHighlighted(seriesKey: string, index: number): boolean {
@@ -613,7 +635,7 @@ export class ParaStore extends State {
   clearAllHighlights() {
     this.popups.splice(0, this.popups.length)
     this._highlightedDatapoints.clear();
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
   get highlightedSequences() {
@@ -622,18 +644,18 @@ export class ParaStore extends State {
 
   highlightSequence(seriesKey: string, index1: number, index2: number) {
     this._highlightedSequences.add(makeSequenceId(seriesKey, index1, index2));
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
   highlightSequenceHighlight(seriesKey: string, index1: number, index2: number) {
     this._highlightedSequences.delete(makeSequenceId(seriesKey, index1, index2));
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
   clearAllSequenceHighlights() {
     this.popups.splice(0, this.popups.length)
     this._highlightedSequences.clear();
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
   get selectedDatapoints() {
@@ -935,7 +957,7 @@ export class ParaStore extends State {
         annotation: `${series.key}, ${series.rawData[index].x}: Added line break`,
         id: `line-break-${index}`
       })
-      this.paraChart.postNotice('addLineBreak', { seriesKey, index });
+      this.postNotice('addLineBreak', { seriesKey, index });
     }
     if (this.userLineBreaks.length) {
       this.clearUserTrendLines();
@@ -1000,7 +1022,7 @@ export class ParaStore extends State {
   clearUserLineBreaks() {
     this._userLineBreaks = [];
     this.annotations = this.annotations.filter(a => !/line-break/.test(a.id));
-    this.paraChart.postNotice('clearLineBreaks', null);
+    this.postNotice('clearLineBreaks', null);
   }
 
   clearUserTrendLines() {
@@ -1009,7 +1031,7 @@ export class ParaStore extends State {
 
   removePopup(id: string) {
     this.popups.splice(this.popups.findIndex(p => p.id === id), 1)
-    this.paraChart.paraView.requestUpdate()
+    this.requestUpdate()
   }
 
   clearPopups() {
