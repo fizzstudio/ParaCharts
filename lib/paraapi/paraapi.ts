@@ -431,7 +431,7 @@ export class ParaAPIPointGroup {
   clipTo() {
     // XXX not sure clipping to multiple points makes sense
     this._datapoints.forEach(datapoint => {
-      this._apiSeriesGroup.api.paraChart.store.clipTo(
+      this._apiSeriesGroup.api.paraChart.paraView.clipTo(
         datapoint.seriesKey, Number(datapoint.datapointIndex));
     });
   }

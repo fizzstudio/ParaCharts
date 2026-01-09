@@ -24,9 +24,11 @@ import { ChartType, strToId } from '@fizz/paramanifest';
 import { type ViewBox, type Setting, type HotkeyEvent } from '../store';
 import { View } from '../view/base_view';
 import { DocumentView } from '../view/document_view';
+import { PointDatapointView } from '../view/layers';
 //import { styles } from './styles';
 import { SVGNS } from '../common/constants';
 import { fixed, isPointerInbounds } from '../common/utils';
+import { loopParaviewRefresh } from '../common';
 
 import { PropertyValueMap, SVGTemplateResult, TemplateResult, css, html, nothing, render, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
@@ -849,6 +851,35 @@ export class ParaView extends ParaComponent {
 
   navToDatapoint(seriesKey: string, index: number) {
     this._documentView!.chartInfo.navToDatapoint(seriesKey, index);
+  }
+
+
+  clipTo(seriesKey: string, index: number) {
+    const fraction = this.documentView!.chartLayers.dataLayer.datapointView(seriesKey.toLowerCase(), index)!.x / this.documentView!.chartLayers.width;
+    const oldWidth = this.clipWidth;
+    this.clipWidth = Number(fraction);
+    for (let dpView of this.documentView!.chartLayers.dataLayer.datapointViews) {
+      const pointDpView = dpView as PointDatapointView;
+      dpView.completeLayout();
+      pointDpView.stopAnimation();
+    }
+    for (let dpView of this.documentView!.chartLayers.dataLayer.datapointViews) {
+      const pointDpView = dpView as PointDatapointView;
+      pointDpView.alwaysClip = true;
+      if (pointDpView.x - 1 <= Number(fraction) * this.documentView!.chartLayers.width
+        && pointDpView.x - 1 > oldWidth * this.documentView!.chartLayers.width
+      ) {
+        pointDpView.popInAnimation()
+      }
+      else if (pointDpView.x - 1 > Number(fraction) * this.documentView!.chartLayers.width) {
+        pointDpView.baseSymbolScale = 0;
+      }
+      loopParaviewRefresh(
+        this,
+        this.store.settings.animation.popInAnimateRevealTimeMs,
+        50
+      );
+    }
   }
 
   render(): TemplateResult {

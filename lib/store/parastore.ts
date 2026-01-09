@@ -1036,30 +1036,4 @@ export class ParaStore extends State {
     this.popups.splice(0, this.popups.length)
   }
 
-  clipTo(seriesKey: string, index: number) {
-    const fraction = this.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey.toLowerCase(), index)!.x / this.paraChart.paraView.documentView!.chartLayers.width
-    const oldWidth = this.paraChart.paraView.clipWidth;
-    this.paraChart.paraView.clipWidth = Number(fraction)
-    for (let dpView of this.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
-      const pointDpView = dpView as PointDatapointView
-      dpView.completeLayout();
-      pointDpView.stopAnimation()
-    }
-    for (let dpView of this.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
-      const pointDpView = dpView as PointDatapointView
-      pointDpView.alwaysClip = true;
-      if (pointDpView.x - 1 <= Number(fraction) * this.paraChart.paraView.documentView!.chartLayers.width
-        && pointDpView.x - 1 > oldWidth * this.paraChart.paraView.documentView!.chartLayers.width
-      ) {
-        pointDpView.popInAnimation()
-      }
-      else if (pointDpView.x - 1 > Number(fraction) * this.paraChart.paraView.documentView!.chartLayers.width) {
-        pointDpView.baseSymbolScale = 0;
-      }
-      loopParaviewRefresh(this.paraChart.paraView,
-        this.paraChart.paraView.store.settings.animation.popInAnimateRevealTimeMs
-        , 50);
-    }
-  }
-
 }
