@@ -95,7 +95,7 @@ export class ParaCaptionBox extends ParaComponent {
         this._spans.push(span);
         span.addEventListener('pointerenter', (e: PointerEvent) => {
           if (!this._store.settings.ui.isNarrativeHighlightEnabled
-            || this._store.paraChart.paraView.ariaLiveRegion.voicing.isSpeaking) return;
+            || this.parachart.paraView.ariaLiveRegion.voicing.isSpeaking) return;
           // NB: this requires there be an announcement, so it only works
           // in NH mode
           const highlight = this._store.announcement.highlights[i];
@@ -115,7 +115,7 @@ export class ParaCaptionBox extends ParaComponent {
   private async setCaption(): Promise<void> {
     //FIXME: Add default summaries for Venn diagrams
     if (this._store.dataState === 'complete' && this._store.type !== 'venn') {
-      this._caption = await this._store.paraChart.paraView.documentView!.chartInfo.summarizer.getChartSummary();
+      this._caption = await this.parachart.paraView.documentView!.chartInfo.summarizer.getChartSummary();
     }
   }
 
@@ -149,7 +149,7 @@ export class ParaCaptionBox extends ParaComponent {
       return (div.children[idx] as HTMLElement).innerText;
     };
 
-    const voicing = this._store.paraChart.paraView.ariaLiveRegion.voicing;
+    const voicing = this.parachart.paraView.ariaLiveRegion.voicing;
     let idx = this._prevSpanIdx;
     if (!this._highlightManualOverride) {
       idx = voicing.highlightIndex!;
