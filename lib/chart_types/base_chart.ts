@@ -98,7 +98,7 @@ export abstract class BaseChartInfo {
   protected _init() {
     this._store = this._paraView.store;
     this._createNavMap();
-    this._sonifier = new Sonifier(this, this._store);
+    this._sonifier = new Sonifier(this, this._store, this._paraView);
     this._storeChangeUnsub = this._store.subscribe(async (key, value) => {
       if (key === 'data' && this._store.type !== 'venn') {
         this._createSummarizer();
