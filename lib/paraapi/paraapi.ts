@@ -182,7 +182,7 @@ export class ParaAPI {
     const voicing = paraView.ariaLiveRegion.voicing;
 
     this._narrativeActions.move = async (args: ActionArgumentMap) => {
-      store.paraChart.captionBox.highlightSpan(args.direction === 'right' || args.direction === 'down');
+      paraView.paraChart.captionBox.highlightSpan(args.direction === 'right' || args.direction === 'down');
     };
     this._narrativeActions.goFirst = () => { };
     this._narrativeActions.goLast = () => { };

@@ -236,7 +236,7 @@ export abstract class DataLayer extends PlotLayer {
       const bezT = bez.eval(t)!;
       const linearT = linear.eval(t)!;
       this._animStep(bezT, linearT);
-      this.paraview.postNotice('animRevealStep', bezT);
+      this.paraview.paraChart.postNotice('animRevealStep', bezT);
       this.paraview.requestUpdate();
       if (elapsed < revealTime) {
         this._currentAnimationFrame = requestAnimationFrame(step);
@@ -264,7 +264,7 @@ export abstract class DataLayer extends PlotLayer {
   }
 
   protected _animEnd() {
-    this.paraview.postNotice('animRevealEnd', null);
+    this.paraview.paraChart.postNotice('animRevealEnd', null);
     this._currentAnimationFrame = null;
     this._animateRevealComplete = true;
   }
@@ -273,7 +273,7 @@ export abstract class DataLayer extends PlotLayer {
     if (this._currentAnimationFrame !== null) {
       cancelAnimationFrame(this._currentAnimationFrame);
       this._animStep(1, 1);
-      this.paraview.postNotice('animRevealStep', 1);
+      this.paraview.paraChart.postNotice('animRevealStep', 1);
       this.paraview.requestUpdate();
       this._animEnd();
     }
