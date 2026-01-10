@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { PlaneChartInfo } from './plane_chart';
 import { AxisInfo } from '../common/axisinfo';
 import { type ParaStore } from '../store';
+import { type ParaView } from '../paraview';
 
 import { type ChartType } from '@fizz/paramanifest';
 import { Series } from '@fizz/paramodel';
@@ -29,8 +30,8 @@ import { DocumentView } from '../view/document_view';
  */
 export abstract class PointChartInfo extends PlaneChartInfo {
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, paraView: ParaView) {
+    super(type, paraView);
   }
 
   protected _init(): void {

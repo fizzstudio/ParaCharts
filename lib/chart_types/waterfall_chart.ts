@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import {
   DeepReadonly, WaterfallSettings, type ParaStore
 } from '../store';
+import { type ParaView } from '../paraview';
 import { NavNode } from '../view/layers';
 
 import { ChartType } from '@fizz/paramanifest';
@@ -31,8 +32,8 @@ export class WaterfallChartInfo extends PlaneChartInfo {
   protected _cumulativeTotals!: number[];
   protected _prevHighlightNavcode = '';
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, paraView: ParaView) {
+    super(type, paraView);
   }
 
   get isIntertick(): boolean {
@@ -90,8 +91,8 @@ export class WaterfallChartInfo extends PlaneChartInfo {
 
   playDatapoints(datapoints: PlaneDatapoint[]): void {
     const length = datapoints.length;
-    loopParaviewRefresh(this._store.paraChart.paraView,
-      this._store.paraChart.paraView.store.settings.animation.popInAnimateRevealTimeMs
+    loopParaviewRefresh(this._paraView,
+      this._paraView.store.settings.animation.popInAnimateRevealTimeMs
       + SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length, 50);
     // We can't make the sonipoint directly from the model datapoint; we need to
     // take the sonipoint y-min/max from the cumulative totals for each datapoint

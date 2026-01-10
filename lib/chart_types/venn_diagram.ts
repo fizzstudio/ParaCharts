@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { BaseChartInfo, RiffOrder } from './base_chart';
 import { type ParaStore, directions, type HorizDirection, datapointIdToCursor } from '../store';
+import { type ParaView } from '../paraview';
 import { queryMessages, describeSelections, getDatapointMinMax } from '../store/query_utils';
 import { Datapoint } from '@fizz/paramodel';
 import { formatXYDatapointX } from '@fizz/parasummary';
@@ -29,8 +30,8 @@ import { ChartType } from '@fizz/paramanifest';
 
 export class VennDiagramInfo extends BaseChartInfo {
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, paraView: ParaView) {
+    super(type, paraView);
   }
 
   protected _addSettingControls(): void {
@@ -151,7 +152,7 @@ export class VennDiagramInfo extends BaseChartInfo {
       const seriesKey = queriedNode.options.seriesKey;
       const index = queriedNode.options.index;
       const datapoint = this._store.model!.atKey(seriesKey)!.datapoints[index];
-      const datapointView = this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
+      const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
       /*
       msgArray.push(replace(
         queryMessages.datapointKeyLength,
@@ -168,8 +169,7 @@ export class VennDiagramInfo extends BaseChartInfo {
         // const selectedDatapointViews = selectedDatapoints.map((cursor) => cursor.datapointView);
         const selectedDatapointViews = selectedDatapoints.values().map((id) => {
           const cursor = datapointIdToCursor(id);
-          // XXX also yuck
-          return this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(cursor.seriesKey, cursor.index)!;
+          return this._paraView.documentView!.chartLayers.dataLayer.datapointView(cursor.seriesKey, cursor.index)!;
         }).toArray();
         const selectionMsgArray = describeSelections(
           datapointView,

@@ -18,6 +18,7 @@ import {
   type PlotSettings, type DeepReadonly, type Direction, HorizDirection, Setting
 } from '../store/settings_types';
 import { SettingsManager } from '../store/settings_manager';
+import { ParaView } from '../paraview/paraview';
 import { type AxisInfo } from '../common/axisinfo';
 import { type LegendItem } from '../view/legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
@@ -56,8 +57,9 @@ export abstract class BaseChartInfo {
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
   protected _soniRiffInterval: ReturnType<typeof setTimeout> | null = null;
   protected _prevHighlightNavcode = '';
+  protected _store!: ParaStore;
 
-  constructor(protected _type: ChartType, protected _store: ParaStore) {
+  constructor(protected _type: ChartType, protected _paraView: ParaView) {
     this._init();
     this._addSettingControls();
   }
@@ -94,6 +96,7 @@ export abstract class BaseChartInfo {
   }
 
   protected _init() {
+    this._store = this._paraView.store;
     this._createNavMap();
     this._sonifier = new Sonifier(this, this._store);
     this._storeChangeUnsub = this._store.subscribe(async (key, value) => {
@@ -103,9 +106,9 @@ export abstract class BaseChartInfo {
     });
     // We initially get created after the data has loaded, so the above
     // callback won't run
-	if(this._store.type !== 'venn') {
+  	if(this._store.type !== 'venn') {
       this._createSummarizer();
-	}	
+	  }	
   }
 
   protected _createSummarizer(): void {
@@ -151,7 +154,7 @@ export abstract class BaseChartInfo {
       } else if (key === 'landmarkEnd') {
         // So that on the initial transition from auto-narration to manual
         // span navigation, we don't remove any highlights added in manual mode
-        if (!this._store.paraChart.captionBox.highlightManualOverride) {
+        if (!this._paraView.paraChart.captionBox.highlightManualOverride) {
           this._store.clearAllHighlights();
           this._store.clearAllSequenceHighlights();
           this._store.clearAllSeriesLowlights();

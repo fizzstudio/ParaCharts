@@ -2,6 +2,7 @@ import { PointChartInfo } from '.';
 import { clusterObject, coord, generateClusterAnalysis } from '@fizz/clustering';
 import { strToId, ChartType } from '@fizz/paramanifest';
 import { type ParaStore } from '../store';
+import { type ParaView } from '../paraview';
 import { AxisInfo } from '../common/axisinfo';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, ScatterPointNavNodeOptions } from '../view/layers/data/navigation';
 import { Datapoint } from '@fizz/paramodel';
@@ -14,8 +15,8 @@ export class ScatterChartInfo extends PointChartInfo {
   protected _clustering?: clusterObject[];
   protected _currentCluster = -1;
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, paraView: ParaView) {
+    super(type, paraView);
   }
 
   protected _init(): void {
@@ -183,7 +184,7 @@ export class ScatterChartInfo extends PointChartInfo {
       this._currentCluster = -1;
     }
     // the nav run timeout may end AFTER the latest render
-    this._store.paraChart.paraView.requestUpdate();
+    this._paraView.requestUpdate();
     super.navRunDidEnd(cursor)
   }
 }
