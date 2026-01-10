@@ -869,7 +869,7 @@ export class ParaView extends ParaComponent {
       if (pointDpView.x - 1 <= Number(fraction) * this.documentView!.chartLayers.width
         && pointDpView.x - 1 > oldWidth * this.documentView!.chartLayers.width
       ) {
-        pointDpView.popInAnimation()
+        pointDpView.popInAnimation();
       }
       else if (pointDpView.x - 1 > Number(fraction) * this.documentView!.chartLayers.width) {
         pointDpView.baseSymbolScale = 0;
