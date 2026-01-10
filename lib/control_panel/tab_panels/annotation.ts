@@ -101,9 +101,9 @@ export class AnnotationPanel extends ControlPanelTabPanel {
       );
       let result = await this.controlPanel.showAnnotDialog(dpId);
       if (result[0] == 'cancel'){
-        continue
+        continue;
       }
-      const annotationText = result[1]
+      const annotationText = result[1];
       if (annotationText) {
       newAnnotationList.push({
         type: "datapoint",
