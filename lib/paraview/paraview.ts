@@ -874,12 +874,12 @@ export class ParaView extends ParaComponent {
       else if (pointDpView.x - 1 > Number(fraction) * this.documentView!.chartLayers.width) {
         pointDpView.baseSymbolScale = 0;
       }
-      loopParaviewRefresh(
-        this,
-        this.store.settings.animation.popInAnimateRevealTimeMs,
-        50
-      );
     }
+    loopParaviewRefresh(
+      this,
+      this.store.settings.animation.popInAnimateRevealTimeMs,
+      50
+    );
   }
 
   render(): TemplateResult {
