@@ -359,7 +359,7 @@ export class VennPlotView extends DataLayer {
           new Vec2(p2.x, p2.y),
           new Vec2(p1.x, p1.y)
         ],
-        stroke: "none",
+        fill: "red",
       });
       this.append(arc);
       this._createLabels();
@@ -494,7 +494,7 @@ export class VennRegionView extends DatapointView {
   protected _xOff: number;
   protected _yOff: number;
   protected _r: number;
-  
+
   constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0, r: number = 0) {
     super(parent);
     this._xOff = x_offset;
@@ -516,12 +516,16 @@ export class VennRegionView extends DatapointView {
   }
 
   get styleInfo() {
-    return { fill: 'none', stroke: 'black', strokeWidth: '1.5'};
-    //const style = super.styleInfo;
-    //delete style.strokeWidth;
-    //delete style.stroke;
-    //return style;
+    // use the SeriesView's styleInfo as the base
+    const parentStyle = this._parent.styleInfo;
+
+    return {
+      fill: parentStyle.fill,
+      stroke: parentStyle.stroke || 'black',
+      strokeWidth: parentStyle.strokeWidth || 1.5
+    };
   }
+
 
   get x() {
     return super.x;
