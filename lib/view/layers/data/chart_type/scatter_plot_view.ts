@@ -90,8 +90,6 @@ export class ScatterPlotView extends PointPlotView {
         child.remove();
       }
     }
-    let trendLine = new ScatterTrendLineView(this);
-    this.append(trendLine);
   }
 
   updateOutliers() {
@@ -112,6 +110,12 @@ export class ScatterPlotView extends PointPlotView {
       }
     }
     return super.content(...options);
+  }
+
+  protected _animEnd() {
+    super._animEnd()
+    const trendLine = new ScatterTrendLineView(this);
+    this.append(trendLine);
   }
 
 }
