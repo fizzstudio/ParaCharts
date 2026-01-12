@@ -22,15 +22,15 @@ type ItemEntry = {
   inB: boolean;
   datapoints: Datapoint[];
 };
-type Rectangle = [number, number]; // [width, height]
-type Position = [number, number];  // [x, y]
+type Rectangle = [number, number];
+type Position = [number, number]; 
 type Point = { x: number; y: number };
 type Circle = { center: Point; radius: number; name: string };
 type WordRect = { word: string; width: number; height: number };
 type IntersectionPoint = { x: number; y: number; circles: Circle[] };
 const alphaLSE = 1.0;
-export class VennPlotView extends DataLayer {
 
+export class VennPlotView extends DataLayer {
   protected _cx!: number;
   protected _cy!: number;
   protected _radius!: number;
@@ -299,6 +299,7 @@ export class VennPlotView extends DataLayer {
   
   protected _completeDatapointLayout(): void {
     super._completeDatapointLayout();
+    this._createLabels();
   }
 
   init() {
@@ -325,6 +326,9 @@ export class VennPlotView extends DataLayer {
 
       for (let dpIdx = 0; dpIdx < series.datapoints.length; dpIdx++) {
         const dp = series.datapoints[dpIdx];
+        //console.log(dp, " dp");
+        //console.log(series, " series");
+        //console.log(series.datapoints, " datapoints");
       }
     }
     let mult: number = -1;
@@ -358,8 +362,7 @@ export class VennPlotView extends DataLayer {
           new Vec2(p2.x, p2.y),
           new Vec2(p1.x, p1.y)
         ],
-        stroke: "black",
-        strokeWidth: 1
+        stroke: "none",
       });
       this.append(arc);
       this._createLabels();
@@ -499,6 +502,7 @@ export class VennRegionView extends DatapointView {
     this._yOff = y_offset;
     this._r = r;
     this._isStyleEnabled = true;
+    this._createSymbol();
   }
 
   get shapes() {
@@ -514,7 +518,7 @@ export class VennRegionView extends DatapointView {
   }
 
   get styleInfo() {
-    return { fill: 'none', stroke: 'black', strokeWidth: 1 };
+    return { fill: 'none', stroke: 'none' };
     //const style = super.styleInfo;
     //delete style.strokeWidth;
     //delete style.stroke;
@@ -538,13 +542,13 @@ export class VennRegionView extends DatapointView {
       x: cx + this._xOff,
       y: cy + this._yOff,
       r: r,
-      stroke: 'black',
+      stroke: 'none',
     });
     this._shapes = [circle];
     this.append(circle);
   }
 
   protected _createShapes() {
-    this._createSymbol();
+    //this._createSymbol();
   }
 }
