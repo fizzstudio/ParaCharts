@@ -23,7 +23,7 @@ type ItemEntry = {
   datapoints: Datapoint[];
 };
 type Rectangle = [number, number];
-type Position = [number, number]; 
+type Position = [number, number];
 type Point = { x: number; y: number };
 type Circle = { center: Point; radius: number; name: string };
 type WordRect = { word: string; width: number; height: number };
@@ -75,7 +75,7 @@ export class VennPlotView extends DataLayer {
       Math.exp(alphaLSE * x) + Math.exp(alphaLSE * y)
     );
   }
-  
+
   protected logSumExpMin(x: number, y: number): number {
     return (1.0 / alphaLSE) * Math.log(
       Math.exp(-alphaLSE * x) + Math.exp(-alphaLSE * y)
@@ -103,13 +103,13 @@ export class VennPlotView extends DataLayer {
     );
     return solution.argument;
   }
-  
+
   protected unitVector(n: number, idx: number) {
     let v = Array(n).fill(0);
     v[idx] = 1;
     return v;
   }
-  
+
   protected lineMinimization(f: (x: number[]) => number, x: number[], dir: number[], tol: number = 1e-5, maxIter: number = 50) {
     const phi = (1 + Math.sqrt(5)) / 2;
     let a = -1000, b = 1000;
@@ -185,12 +185,12 @@ export class VennPlotView extends DataLayer {
     }
     return { argument: x, fncvalue: fx };
   }
-  
+
   protected normalize(v: number[]): number[] {
     const norm = Math.sqrt(v.reduce((s, vi) => s + vi * vi, 0));
     return norm > 0 ? v.map(vi => vi / norm) : v;
   }
-  
+
   protected cost(
     rectangles: Rectangle[],
     positions: number[],
@@ -257,7 +257,7 @@ export class VennPlotView extends DataLayer {
 
     return costVal;
   }
-  
+
   getIntersections(circle1: Circle, circle2: Circle): Point[] {
     const EPSILON = 1e-6;
     const dx = circle2.center.x - circle1.center.x;
@@ -296,7 +296,7 @@ export class VennPlotView extends DataLayer {
       { x: x_pair2, y: y_pair2 },
     ];
   }
-  
+
   protected _completeDatapointLayout(): void {
     super._completeDatapointLayout();
     this._createLabels();
@@ -315,7 +315,7 @@ export class VennPlotView extends DataLayer {
     this._cx = this._width / 2;
     this._cy = this._height / 2;
   }
-  
+
   protected _createDatapoints() {
     const seriesKeys = this.paraview.store.model!.seriesKeys;
     for (let idx = 0; idx < seriesKeys.length; idx++) {
@@ -326,9 +326,6 @@ export class VennPlotView extends DataLayer {
 
       for (let dpIdx = 0; dpIdx < series.datapoints.length; dpIdx++) {
         const dp = series.datapoints[dpIdx];
-        //console.log(dp, " dp");
-        //console.log(series, " series");
-        //console.log(series.datapoints, " datapoints");
       }
     }
     let mult: number = -1;
@@ -368,7 +365,7 @@ export class VennPlotView extends DataLayer {
       this._createLabels();
     }
   }
-  
+
   protected _createLabels() {
     const seriesKeys = this.paraview.store.model!.series.map(s => s.key);
     if (seriesKeys.length !== 2) {
@@ -476,7 +473,7 @@ export class VennPlotView extends DataLayer {
     placeLabels(rectanglesAB, pointsAB, [true, true]);
   }
 
-  
+
   protected _resolveOutsideLabelCollisions() {
   }
 
@@ -492,17 +489,18 @@ export class VennPlotView extends DataLayer {
 
 export class VennRegionView extends DatapointView {
   declare readonly chart: VennPlotView;
+  protected _circle?: CircleShape;
   declare protected _shape: CircleShape;
   protected _xOff: number;
   protected _yOff: number;
   protected _r: number;
+  
   constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0, r: number = 0) {
     super(parent);
     this._xOff = x_offset;
     this._yOff = y_offset;
     this._r = r;
     this._isStyleEnabled = true;
-    this._createSymbol();
   }
 
   get shapes() {
@@ -518,7 +516,7 @@ export class VennRegionView extends DatapointView {
   }
 
   get styleInfo() {
-    return { fill: 'none', stroke: 'none' };
+    return { fill: 'none', stroke: 'black', strokeWidth: '1.5'};
     //const style = super.styleInfo;
     //delete style.strokeWidth;
     //delete style.stroke;
@@ -537,18 +535,19 @@ export class VennRegionView extends DatapointView {
     const cx = this.chart.cx;
     const cy = this.chart.cy;
     const r = this._r;
+    this._circle?.remove();
 
-    const circle = new CircleShape(this.paraview, {
+    this._circle = new CircleShape(this.paraview, {
       x: cx + this._xOff,
       y: cy + this._yOff,
-      r: r,
-      stroke: 'none',
+      r,
+      stroke: 'black',
     });
-    this._shapes = [circle];
-    this.append(circle);
-  }
+    this._shapes = [this._circle];
 
+    this.append(this._circle);
+  }
   protected _createShapes() {
-    //this._createSymbol();
+    this._createSymbol();
   }
 }
