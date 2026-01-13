@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaStore } from '../store';
+import { ParaView } from '../paraview';
 import { PlaneChartInfo } from './plane_chart';
 import { AxisInfo } from '../common/axisinfo';
 import { DeepReadonly, BarSettings, datapointIdToCursor, Setting } from '../store';
@@ -94,8 +95,8 @@ export class BarChartInfo extends PlaneChartInfo {
   protected _stacksPerCluster!: number;
   protected _prevHighlightNavcode = '';
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, paraView: ParaView) {
+    super(type, paraView);
   }
 
   protected _init(): void {
@@ -305,8 +306,7 @@ export class BarChartInfo extends PlaneChartInfo {
       const series = this._store.model!.atKey(seriesKey)!;
       const datapoint = series.datapoints[index];
       const seriesLabel = series.getLabel();
-      // XXX yuck
-      const datapointView = this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
+      const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
 
       msgArray.push(interpolate(
         queryMessages.datapointLabelLength,
@@ -322,8 +322,7 @@ export class BarChartInfo extends PlaneChartInfo {
         // if there are selected datapoints, compare the current datapoint against each of those
         const selectedDatapointViews = selectedDatapoints.values().map((id) => {
           const cursor = datapointIdToCursor(id);
-          // XXX also yuck
-          return this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(cursor.seriesKey, cursor.index)!;
+          return this._paraView.documentView!.chartLayers.dataLayer.datapointView(cursor.seriesKey, cursor.index)!;
         }).toArray();
         const selectionMsgArray = describeSelections(
           datapointView,

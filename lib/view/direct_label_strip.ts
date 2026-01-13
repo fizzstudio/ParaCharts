@@ -39,7 +39,10 @@ export class DirectLabelStrip extends Container(View) {
     this.log = getLogger('DirectLabelStrip');
     this._id = 'direct-label-strip';
     this._height = height;
-    this._hidden = !(paraview.store.paraChart.headless || paraview.store.settings.ui.isLowVisionModeEnabled);
+    this._hidden = !(
+      paraview.paraChart.headless ||
+      paraview.paraChart.store.settings.ui.isLowVisionModeEnabled
+    );
     this._createLabels();
   }
 

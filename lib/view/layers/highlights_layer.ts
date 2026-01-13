@@ -32,11 +32,11 @@ export class HighlightsLayer extends PlotLayer {
     if (this.type === 'foreground') {
       datapointView.addDatapointPopup();
     }
-    overlays.forEach(sym => {
-      sym.scale = 3;
-      sym.opacity = 0.5;
-      sym.fill = 'empty';
-    });
+    //overlays.forEach(sym => {
+    overlays.at(-1)!.scale = 3;
+    overlays.at(-1)!.opacity = 0.5;
+    overlays.at(-1)!.fill = 'empty';
+    //});
     this.paraview.documentView?.chartLayers.popupLayer.addPopups();
   }
 
@@ -58,25 +58,25 @@ export class HighlightsLayer extends PlotLayer {
     overlays.push((datapointViews[0].symbol ?? datapointViews[0].shapes[0]).clone());
     overlays.push((datapointViews.at(-1)!.symbol ?? datapointViews.at(-1)!.shapes[0]).clone());
 
-    const lineStroke = overlays[0] instanceof DataSymbol
-      ? this.paraview.store.colors.colorValueAt(overlays[0].color!)
-      : overlays[0].stroke;
+    const lineStroke = overlays.at(-2)! instanceof DataSymbol
+      ? this.paraview.store.colors.colorValueAt((overlays.at(-2) as DataSymbol).color!)
+      : (overlays.at(-2) as Shape).stroke;
     overlayLines.push(new PathShape(this.paraview, {
-      x: overlays[0].width/2,
+      x: 0,//overlays.at(-2)!.width/2,
       y: 0,
-      points: [overlays[0].loc, overlays[1].loc],
+      points: [overlays.at(-2)!.loc, overlays.at(-1)!.loc],
       stroke: lineStroke,
       opacity: 0.5,
       strokeWidth: 20
     }));
     if (this.type === 'background') {
-      const rectFill = overlays[0] instanceof DataSymbol
-        ? this.paraview.store.colors.colorValueAt(overlays[0].color!)
-        : overlays[0].fill;
+      const rectFill = overlays.at(-2)! instanceof DataSymbol
+        ? this.paraview.store.colors.colorValueAt((overlays.at(-2) as DataSymbol).color!)
+        : (overlays.at(-2) as Shape).fill;
       const rect = new RectShape(this.paraview, {
-        x: overlays[0].x,
+        x: overlays.at(-2)!.x,
         y: 0,
-        width: overlays[1].x - overlays[0].x + (chartInfo.isIntertick ? overlays[0].width : 0),
+        width: overlays.at(-1)!.x - overlays.at(-2)!.x + (chartInfo.isIntertick ? overlays.at(-2)!.width : 0),
         height: this._height,
         fill: rectFill,
         opacity: 0.25
@@ -84,11 +84,11 @@ export class HighlightsLayer extends PlotLayer {
       underlayRects.push(rect);
       rect.classInfo = { 'underlay-rect': true };
     }
-    if (this.type == "foreground") {
+    if (this.type === 'foreground') {
       this.paraview.store.popups.push(...this.parent.popupLayer.addSequencePopups(datapointViews))
     }
 
-    overlays.forEach(sym => {
+    overlays.slice(-2).forEach(sym => {
       sym.scale = 3;
       sym.opacity = 0.5;
       sym.fill = 'empty';
@@ -97,9 +97,9 @@ export class HighlightsLayer extends PlotLayer {
   }
 
   content() {
-    let underlayRects: RectShape[] = [];
-    let overlays: (DataSymbol | Shape)[] = [];
-    let overlayLines: PathShape[] = [];
+    const underlayRects: RectShape[] = [];
+    const overlays: (DataSymbol | Shape)[] = [];
+    const overlayLines: PathShape[] = [];
     this.paraview.store.highlightedDatapoints.forEach(datapointId => {
       this._processDatapoint(datapointId, overlays);
     });

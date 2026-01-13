@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { BaseChartInfo } from './base_chart';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, type NavMap } from '../view/layers/data/navigation';
 import { ParaStore } from '../store';
+import { ParaView } from '../paraview';
 import { type RiffOrder } from './base_chart';
 import { type HorizDirection } from '../store';
 
@@ -38,8 +39,8 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   protected _soniNoteIndex = 0;
   protected _soniSpeedRateIndex = 1;
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, paraView: ParaView) {
+    super(type, paraView);
   }
 
   /**
@@ -199,19 +200,19 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   playRiff(datapoints: Datapoint[], order?: RiffOrder, isChord?: boolean) {
     const datapointsClone = [...datapoints];
     datapointsClone.forEach(d => {
-      const dpView = this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(d.seriesKey, d.datapointIndex)!;
+      const dpView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(d.seriesKey, d.datapointIndex)!;
       if (!isChord) {
         dpView.alwaysClip = true;
       }
       dpView.baseSymbolScale = 0;
     })
-    for (let dpView of this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
+    for (let dpView of this._paraView.documentView!.chartLayers.dataLayer.datapointViews) {
       if (datapointsClone.filter(dp => dp.seriesKey == dpView.seriesKey && dp.datapointIndex == dpView.index).length == 0) {
         dpView.alwaysClip = false;
         dpView.baseSymbolScale = 1;
       }
     }
-    let paraview = this._store.paraChart.paraView
+    let paraview = this._paraView;
     paraview.documentView!.chartLayers.dataLayer.datapointViews.map(d => d.completeLayout())
     if (order === 'sorted') {
       datapoints.sort((a, b) => a.facetValueAsNumber('y')! - b.facetValueAsNumber('y')!);
@@ -236,7 +237,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
         const revealTime = SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length
         const t = Math.min(elapsed / revealTime, 1);
         const linearT = linear.eval(t)!;
-        this._store.paraChart.paraView.clipWidth = linearT;
+        this._paraView.clipWidth = linearT;
         if (elapsed < revealTime) {
           requestAnimationFrame(step);
         } else {
@@ -261,13 +262,13 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
 
   playDatapoints(datapoints: PlaneDatapoint[]): void {
     const length = datapoints.length;
-    for (let dpView of this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
+    for (let dpView of this._paraView.documentView!.chartLayers.dataLayer.datapointViews) {
       dpView.alwaysClip = false;
       dpView.baseSymbolScale = 1;
       dpView.completeLayout();
     }
-    loopParaviewRefresh(this._store.paraChart.paraView,
-      this._store.paraChart.paraView.store.settings.animation.popInAnimateRevealTimeMs
+    loopParaviewRefresh(this._paraView,
+      this._paraView.store.settings.animation.popInAnimateRevealTimeMs
       + SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length, 50);
     this._sonifier.playDatapoints(datapoints);
   }

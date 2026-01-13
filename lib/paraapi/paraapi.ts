@@ -156,7 +156,7 @@ export class ParaAPI {
         paraView.ariaLiveRegion.replay();
       },
       addAnnotation() {
-        store.addAnnotation();
+        _paraChart.controlPanel.annotationPanel.addAnnotation();
       },
       toggleNarrativeHighlightMode() {
         paraView.startNarrativeHighlightMode();
@@ -182,7 +182,7 @@ export class ParaAPI {
     const voicing = paraView.ariaLiveRegion.voicing;
 
     this._narrativeActions.move = async (args: ActionArgumentMap) => {
-      store.paraChart.captionBox.highlightSpan(args.direction === 'right' || args.direction === 'down');
+      paraView.paraChart.captionBox.highlightSpan(args.direction === 'right' || args.direction === 'down');
     };
     this._narrativeActions.goFirst = () => { };
     this._narrativeActions.goLast = () => { };
@@ -339,6 +339,25 @@ export class ParaAPISeriesGroup {
     return new ParaAPIPointGroup(datapoints, this);
   }
 
+  getSequences(...boundaryPairs: [number, number][]): ParaAPISequenceGroup {
+    const hasPair = (ary: [number, number][], p: [number, number]) =>
+      !!ary.find((val: [number, number]) => val[0] === p[0] && val[1] === p[1]);
+    // remove dups
+    const pairs: [number, number][] = [];
+    boundaryPairs.forEach(pair => {
+      if (pair[0] >= pair[1]) throw new Error('sequence index 1 must be < index 2');
+      if (!hasPair(pairs, pair)) {
+        pairs.push(pair);
+      }
+    });
+    const datapoints = this._keys.flatMap(key => pairs.flatMap(pair => {
+      const datapoints = this._datapoints.get(key)!.slice(pair[0], pair[1]);
+      if (datapoints.length < 2) throw new Error('sequences must have at least 2 points');
+      return datapoints;
+    }));
+    return new ParaAPISequenceGroup(datapoints, pairs, this);
+  }
+
   lowlight() {
     this._keys.forEach(key => {
       this._api.paraChart.store.lowlightSeries(key);
@@ -431,8 +450,54 @@ export class ParaAPIPointGroup {
   clipTo() {
     // XXX not sure clipping to multiple points makes sense
     this._datapoints.forEach(datapoint => {
-      this._apiSeriesGroup.api.paraChart.store.clipTo(
+      this._apiSeriesGroup.api.paraChart.paraView.clipTo(
         datapoint.seriesKey, Number(datapoint.datapointIndex));
+    });
+  }
+
+}
+
+/**
+ * Perform operations on one or more ParaChart sequences.
+ */
+export class ParaAPISequenceGroup {
+  constructor(protected _datapoints: Datapoint[], protected _boundaryPairs: [number, number][], protected _apiSeriesGroup: ParaAPISeriesGroup) {
+
+  }
+
+  visit() {
+    this._apiSeriesGroup.api.paraChart.store.visit(this._datapoints);
+  }
+
+  select(isExtend = false) {
+    this.visit();
+    this._apiSeriesGroup.api.chartInfo.selectCurrent(isExtend);
+  }
+
+  highlight() {
+    this._apiSeriesGroup.keys.forEach(key => {
+      this._boundaryPairs.forEach(pair => {
+        this._apiSeriesGroup.api.paraChart.store.highlightSequence(key, pair[0], pair[1]);
+      });
+    });
+  }
+
+  clearHighlight() {
+    this._apiSeriesGroup.keys.forEach(key => {
+      this._boundaryPairs.forEach(pair => {
+        this._apiSeriesGroup.api.paraChart.store.clearSequenceHighlight(key, pair[0], pair[1]);
+      });
+    });
+  }
+
+  play() {
+    this._apiSeriesGroup.api.chartInfo.playDatapoints(this._datapoints);
+  }
+
+  annotate(text: string) {
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.store.annotatePoint(
+        datapoint.seriesKey, datapoint.datapointIndex, text);
     });
   }
 

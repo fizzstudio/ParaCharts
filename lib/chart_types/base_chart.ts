@@ -18,6 +18,7 @@ import {
   type PlotSettings, type DeepReadonly, type Direction, HorizDirection, Setting
 } from '../store/settings_types';
 import { SettingsManager } from '../store/settings_manager';
+import { ParaView } from '../paraview/paraview';
 import { type AxisInfo } from '../common/axisinfo';
 import { type LegendItem } from '../view/legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
@@ -32,7 +33,6 @@ import { Summarizer, formatBox, Highlight, summarizerFromModel } from '@fizz/par
 import { Interval } from '@fizz/chart-classifier-utils';
 
 import { Unsubscribe } from '@lit-app/state';
-import { DocumentView } from '../view/document_view';
 
 
 /**
@@ -56,8 +56,9 @@ export abstract class BaseChartInfo {
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
   protected _soniRiffInterval: ReturnType<typeof setTimeout> | null = null;
   protected _prevHighlightNavcode = '';
+  protected _store!: ParaStore;
 
-  constructor(protected _type: ChartType, protected _store: ParaStore) {
+  constructor(protected _type: ChartType, protected _paraView: ParaView) {
     this._init();
     this._addSettingControls();
   }
@@ -94,8 +95,9 @@ export abstract class BaseChartInfo {
   }
 
   protected _init() {
+    this._store = this._paraView.store;
     this._createNavMap();
-    this._sonifier = new Sonifier(this, this._store);
+    this._sonifier = new Sonifier(this, this._store, this._paraView);
     this._storeChangeUnsub = this._store.subscribe(async (key, value) => {
       if (key === 'data' && this._store.type !== 'venn') {
         this._createSummarizer();
@@ -103,9 +105,9 @@ export abstract class BaseChartInfo {
     });
     // We initially get created after the data has loaded, so the above
     // callback won't run
-	if(this._store.type !== 'venn') {
+  	if(this._store.type !== 'venn') {
       this._createSummarizer();
-	}	
+	  }
   }
 
   protected _createSummarizer(): void {
@@ -151,7 +153,7 @@ export abstract class BaseChartInfo {
       } else if (key === 'landmarkEnd') {
         // So that on the initial transition from auto-narration to manual
         // span navigation, we don't remove any highlights added in manual mode
-        if (!this._store.paraChart.captionBox.highlightManualOverride) {
+        if (!this._paraView.paraChart.captionBox.highlightManualOverride) {
           this._store.clearAllHighlights();
           this._store.clearAllSequenceHighlights();
           this._store.clearAllSeriesLowlights();
@@ -240,7 +242,7 @@ export abstract class BaseChartInfo {
 
   async move(dir: Direction) {
     await this._navMap!.cursor.move(dir);
-    this._store.paraChart.postNotice('move', {dir, options: this._navMap!.cursor.options});
+    this._store.postNotice('move', {dir, options: this._navMap!.cursor.options});
   }
 
   /**
@@ -283,7 +285,7 @@ export abstract class BaseChartInfo {
         seriesKey: seriesMatchArray[0].seriesKey,
         index: seriesMatchArray[0].datapointIndex
       });
-      this._store.paraChart.postNotice('goSeriesMinMax', {isMin, options: this._navMap!.cursor.options});
+      this._store.postNotice('goSeriesMinMax', {isMin, options: this._navMap!.cursor.options});
     }
   }
 
@@ -300,7 +302,7 @@ export abstract class BaseChartInfo {
       seriesKey: matchDatapoint?.seriesKey,
       index: matchDatapoint?.datapointIndex
     });
-    this._store.paraChart.postNotice('goChartMinMax', {isMin, options: this._navMap!.cursor.options});
+    this._store.postNotice('goChartMinMax', {isMin, options: this._navMap!.cursor.options});
   }
 
   protected _composePointSelectionAnnouncement(isExtend: boolean) {
@@ -380,7 +382,7 @@ export abstract class BaseChartInfo {
     if (announcement) {
       this._store.announce(announcement);
     }
-    this._store.paraChart.postNotice('select', {isExtend, options: this._navMap!.cursor.options});
+    this._store.postNotice('select', {isExtend, options: this._navMap!.cursor.options});
   }
 
   clearDatapointSelection(quiet = false) {
@@ -388,7 +390,7 @@ export abstract class BaseChartInfo {
     if (!quiet) {
       this._store.announce('No items selected.');
     }
-    this._store.paraChart.postNotice('clearSelection', null);
+    this._store.postNotice('clearSelection', null);
   }
 
   // NOTE: This should be overriden in subclasses
@@ -407,7 +409,7 @@ export abstract class BaseChartInfo {
         series: 'up'
       };
       this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
-      this._store.paraChart.postNotice('goFirst', {options: this._navMap!.cursor.options});
+      this._store.postNotice('goFirst', {options: this._navMap!.cursor.options});
     }
   }
 
@@ -420,7 +422,7 @@ export abstract class BaseChartInfo {
         series: 'down'
       };
       this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
-      this._store.paraChart.postNotice('goLast', {options: this._navMap!.cursor.options});
+      this._store.postNotice('goLast', {options: this._navMap!.cursor.options});
     }
   }
 
@@ -431,14 +433,14 @@ export abstract class BaseChartInfo {
         const seriesKey = this._navMap!.cursor.options.seriesKey;
         this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
         this._chordPrevSeriesKey = seriesKey;
-        this._store.paraChart.postNotice('enterChordMode', {options: this._navMap!.cursor.options});
+        this._store.postNotice('enterChordMode', {options: this._navMap!.cursor.options});
       } else if (this._navMap!.cursor.isNodeType('chord')) {
         this._navMap!.cursor.layer.goTo(
           this.navDatapointType, {
           seriesKey: this._chordPrevSeriesKey,
           index: this._navMap!.cursor.options.index
         });
-        this._store.paraChart.postNotice('exitChordMode', {options: this._navMap!.cursor.options});
+        this._store.postNotice('exitChordMode', {options: this._navMap!.cursor.options});
       }
     }
     else {
