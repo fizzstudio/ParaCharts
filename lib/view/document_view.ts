@@ -57,7 +57,7 @@ export class DocumentView extends Container(View) {
 
   init() {
     // @ts-ignore
-	this._chartInfo = new chartInfoClasses[this.type](this.type, this._store);
+	this._chartInfo = new chartInfoClasses[this.type](this.type, this.paraview);
     this.setTitleText(this._store.title);
 
     const expandedPadding = this._parsePadding(this._store.settings.chart.padding);
