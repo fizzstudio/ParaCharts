@@ -359,6 +359,7 @@ export class VennPlotView extends DataLayer {
           new Vec2(p2.x, p2.y),
           new Vec2(p1.x, p1.y)
         ],
+        stroke: "none",
         fill: "red",
       });
       this.append(arc);
@@ -521,8 +522,7 @@ export class VennRegionView extends DatapointView {
 
     return {
       fill: parentStyle.fill,
-      stroke: parentStyle.stroke || 'black',
-      strokeWidth: parentStyle.strokeWidth || 1.5
+      stroke: "none"
     };
   }
 
