@@ -156,7 +156,7 @@ export class ParaAPI {
         paraView.ariaLiveRegion.replay();
       },
       addAnnotation() {
-        store.addAnnotation();
+        _paraChart.controlPanel.annotationPanel.addAnnotation();
       },
       toggleNarrativeHighlightMode() {
         paraView.startNarrativeHighlightMode();
@@ -182,7 +182,7 @@ export class ParaAPI {
     const voicing = paraView.ariaLiveRegion.voicing;
 
     this._narrativeActions.move = async (args: ActionArgumentMap) => {
-      store.paraChart.captionBox.highlightSpan(args.direction === 'right' || args.direction === 'down');
+      paraView.paraChart.captionBox.highlightSpan(args.direction === 'right' || args.direction === 'down');
     };
     this._narrativeActions.goFirst = () => { };
     this._narrativeActions.goLast = () => { };
@@ -431,7 +431,7 @@ export class ParaAPIPointGroup {
   clipTo() {
     // XXX not sure clipping to multiple points makes sense
     this._datapoints.forEach(datapoint => {
-      this._apiSeriesGroup.api.paraChart.store.clipTo(
+      this._apiSeriesGroup.api.paraChart.paraView.clipTo(
         datapoint.seriesKey, Number(datapoint.datapointIndex));
     });
   }

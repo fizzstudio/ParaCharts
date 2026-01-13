@@ -1,5 +1,6 @@
 import { PlaneChartInfo } from '.';
 import { type ParaStore, type DeepReadonly } from '../store';
+import { type ParaView } from '../paraview';
 import { type ChartType } from "@fizz/paramanifest";
 import { AxisInfo, computeLabels } from '../common';
 import { DocumentView } from '../view/document_view';
@@ -9,8 +10,9 @@ export class HistogramChartInfo extends PlaneChartInfo {
   protected _data: Array<Array<number>> = [];
   protected _grid: Array<number> = [];
   protected _maxCount: number = 0;
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+
+  constructor(type: ChartType, paraView: ParaView) {
+    super(type, paraView);
   }
 
   protected _init() {

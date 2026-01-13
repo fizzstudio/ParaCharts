@@ -4,7 +4,9 @@ import {
   html, css,
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
-
+import { datapointIdToCursor, type PointAnnotation } from '../../store/parastore';
+import { formatXYDatapointX } from '@fizz/parasummary';
+import { type PlaneDatapoint } from '@fizz/paramodel';
 
 @customElement('para-annotation-panel')
 export class AnnotationPanel extends ControlPanelTabPanel {
@@ -88,6 +90,35 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     this._controlPanel.paraChart.paraView.navToDatapoint(seriesKey, index);
   }
 
+  async addAnnotation() {
+    const newAnnotationList: PointAnnotation[] = [];
+    for (const dpId of this.store.visitedDatapoints) {
+      const { seriesKey, index } = datapointIdToCursor(dpId);
+      const series = this.store.model!.atKey(seriesKey)!.getLabel();
+      const recordLabel = formatXYDatapointX(
+        this.store.model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint,
+        'raw'
+      );
+      let result = await this.controlPanel.showAnnotDialog(dpId);
+      if (result[0] == 'cancel'){
+        continue;
+      }
+      const annotationText = result[1];
+      if (annotationText) {
+        newAnnotationList.push({
+          type: "datapoint",
+          seriesKey,
+          index,
+          annotation: `${series}, ${recordLabel}: ${annotationText}`,
+          text: annotationText,
+          id: `${series}-${recordLabel}-${this.store.nextAnnotID()}`,
+          isSelected: this.store.settings.ui.isLowVisionModeEnabled ? false : true,
+        });
+      }
+    }
+    this.store.annotations = [...this.store.annotations, ...newAnnotationList];
+  }
+
   render() {
     return html`
       <div id="annotation-tab" class="tab-content">
@@ -97,7 +128,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         <div>
           <button
             @click=${() => {
-              this._store.addAnnotation();
+              this.addAnnotation();
             }}
           >
             Add Annotation

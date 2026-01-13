@@ -90,13 +90,17 @@ export class ParaChart extends ParaComponent {
     const cssProps = customPropLoader.processProperties();
     // also creates the state controller
     this.store = new ParaStore(
-      this,
       // XXX config won't get set until connectedCallback()
       Object.assign(cssProps, this.config),
       // this._suppleteSettingsWith,
       seriesAnalyzerConstructor,
       pairAnalyzerConstructor
     );
+    this.store.registerCallbacks({
+      onUpdate: () => this._paraViewRef.value?.requestUpdate(),
+      onNotice: (key, value) => this.postNotice(key, value),
+      onSettingChange: (path, oldVal, newVal) => this.settingDidChange(path, oldVal, newVal)
+    });
     this.captionBox = document.createElement('para-caption-box');
     this.captionBox.store = this._store;
     this.captionBox.parachart = this;
