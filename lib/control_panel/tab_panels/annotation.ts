@@ -105,16 +105,15 @@ export class AnnotationPanel extends ControlPanelTabPanel {
       }
       const annotationText = result[1];
       if (annotationText) {
-      newAnnotationList.push({
-        type: "datapoint",
-        seriesKey,
-        index,
-        annotation: `${series}, ${recordLabel}: ${annotationText}`,
-        text: annotationText,
-        id: `${series}-${recordLabel}-${this.store.annotID}`,
-        isSelected: this.store.settings.ui.isLowVisionModeEnabled ? false : true,
-      });
-      this.store.incrementAnnotID();
+        newAnnotationList.push({
+          type: "datapoint",
+          seriesKey,
+          index,
+          annotation: `${series}, ${recordLabel}: ${annotationText}`,
+          text: annotationText,
+          id: `${series}-${recordLabel}-${this.store.nextAnnotID()}`,
+          isSelected: this.store.settings.ui.isLowVisionModeEnabled ? false : true,
+        });
       }
     }
     this.store.annotations = [...this.store.annotations, ...newAnnotationList];

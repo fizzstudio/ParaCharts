@@ -288,12 +288,8 @@ export class ParaStore extends State {
     return this._userTrendLines;
   }
 
-  get annotID() {
-    return this._annotID;
-  }
-
-  incrementAnnotID() {
-    this._annotID++;
+  nextAnnotID(): number {
+    return this._annotID++;
   }
 
   protected _createSettings() {
