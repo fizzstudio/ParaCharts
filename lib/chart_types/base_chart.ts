@@ -33,7 +33,6 @@ import { Summarizer, formatBox, Highlight, summarizerFromModel } from '@fizz/par
 import { Interval } from '@fizz/chart-classifier-utils';
 
 import { Unsubscribe } from '@lit-app/state';
-import { DocumentView } from '../view/document_view';
 
 
 /**
@@ -108,7 +107,7 @@ export abstract class BaseChartInfo {
     // callback won't run
   	if(this._store.type !== 'venn') {
       this._createSummarizer();
-	  }	
+	  }
   }
 
   protected _createSummarizer(): void {

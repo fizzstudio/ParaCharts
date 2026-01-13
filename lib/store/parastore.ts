@@ -643,7 +643,7 @@ export class ParaStore extends State {
     this.requestUpdate();
   }
 
-  highlightSequenceHighlight(seriesKey: string, index1: number, index2: number) {
+  clearSequenceHighlight(seriesKey: string, index1: number, index2: number) {
     this._highlightedSequences.delete(makeSequenceId(seriesKey, index1, index2));
     this.requestUpdate();
   }
