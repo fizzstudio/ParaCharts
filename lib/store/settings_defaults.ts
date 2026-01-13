@@ -392,7 +392,7 @@ export const defaults: Settings = {
       labelPosition: 'outside',
       barLabelGap: 10,
       barGap: 10,
-      showPopups: false,
+      isShowPopups: false,
       labelFontSize: '10pt'
     },
 	venn: {

@@ -357,7 +357,7 @@ export interface WaterfallSettings extends PlotSettings {
   labelPosition: BarDataLabelPosition;
   barLabelGap: number;
   barGap: number;
-  showPopups: boolean;
+  isShowPopups: boolean;
   labelFontSize: string;
 }
 

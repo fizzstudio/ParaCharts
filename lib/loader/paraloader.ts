@@ -93,7 +93,6 @@ export class ParaLoader {
       this.log.info('manifest description changed');
     }
     // XXX include `data` here for proper external data loading
-    this.log.error(manifest);
     return { result: 'success', manifest };
   }
 
