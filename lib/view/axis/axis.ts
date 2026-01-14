@@ -27,7 +27,6 @@ import { Label } from '../label';
 import { type AxisLine, HorizAxisLine, VertAxisLine } from './axis_line';
 import { type TickLabelTier, HorizTickLabelTier, VertTickLabelTier } from './tick_label_tier';
 import { type TickStrip, HorizTickStrip, VertTickStrip } from './tick_strip';
-import { type AxisInfo, type AxisLabelInfo, computeLabels } from '../../common/axisinfo';
 import { SettingsManager } from '../../store/settings_manager';
 import { type ParaStore } from '../../store/parastore';
 
@@ -65,7 +64,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   readonly datatype: Datatype;
 
-  // protected _labelInfo: AxisLabelInfo;
   // protected _layout!: FlexLayout;
   protected _layout!: GridLayout;
   protected _titleText: string;
@@ -75,7 +73,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   protected _axisLine!: AxisLine<T>;
   protected _tickLabelTierValues!: string[][];
   protected _tickStep: number;
-  // protected _isInterval: boolean;
 
   protected _store: ParaStore;
 
@@ -83,7 +80,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     paraview: ParaView,
     public readonly orientation: T,
     protected _facet: Facet,
-    // protected _axisInfo: AxisInfo,
     protected _chartInfo: PlaneChartInfo,
     _length: number
   ) {
@@ -106,13 +102,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
     this._tickLabelTierValues = _chartInfo.computeAxisLabelTiers(
       this.coord, this.orientationSettings.isStaggerLabels);
-
-    // this._labelInfo = this.coord === 'x'
-    //   ? this._axisInfo!.xLabelInfo
-    //   : this._axisInfo!.yLabelInfo;
-    // this._isInterval = this.coord === 'x'
-    //   ? !!this._axisInfo!.options.isXInterval
-    //   : !!this._axisInfo!.options.isYInterval;
 
     this._titleText = this.orientationSettings.title.text ?? '';
   }
@@ -164,10 +153,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     return this._tickStep;
   }
 
-  // get isInterval() {
-  //   return this._isInterval;
-  // }
-
   get tickLabelTiers(): readonly TickLabelTier[] {
     return this._tickLabelTiers;
   }
@@ -196,10 +181,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   get titleText() {
     return this._titleText;
   }
-
-  // get range() {
-  //   return this.chartLayers.getAxisInterval(this.coord);
-  // }
 
   get layout() {
     return this._layout;
@@ -327,7 +308,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   addGridRules(length: number) {
     this._tickStrip?.addRules(length);
   }
-
 }
 
 /**
@@ -372,7 +352,6 @@ export class HorizAxis extends Axis<'horiz'> {
   }
 
   protected _createTickLabelTiers() {
-    // return this._labelInfo.labelTiers.map((tier, i) =>
     return this._tickLabelTierValues.map((tier, i) =>
       new HorizTickLabelTier(
         this.paraview,
@@ -471,50 +450,6 @@ export class VertAxis extends Axis<'vert'> {
     return this._height;
   }
 
-  // protected _addedToParent() {
-  //   super._addedToParent();
-  //   const range = this.chartLayers.getYAxisInterval();
-  //   const min = this._labelInfo.min!;
-  //   const max = this._labelInfo.max!;
-  //   this.paraview.store.settingControls.add({
-  //     type: 'textfield',
-  //     key: 'axis.y.minValue',
-  //     label: 'Min y-value',
-  //     options: { inputType: 'number' },
-  //     value: this.settings.minValue === 'unset'
-  //       ? min
-  //       : this.settings.minValue,
-  //     validator: value => {
-  //       const min = this.paraview.store.settings.axis.y.maxValue === 'unset'
-  //         ? Math.max(...this._axisInfo.options.yValues)
-  //         : this.paraview.store.settings.axis.y.maxValue as number
-  //       // NB: If the new value is successfully validated, the inner chart
-  //       // gets recreated, and `max` may change, due to re-quantization of
-  //       // the tick values.
-  //       return value as number >= min ?
-  //         { err: `Min y-value (${value}) must be less than (${min})`} : {};
-  //     },
-  //     parentView: 'controlPanel.tabs.chart.general.minY',
-  //   });
-  //   this.paraview.store.settingControls.add({
-  //     type: 'textfield',
-  //     key: 'axis.y.maxValue',
-  //     label: 'Max y-value',
-  //     options: { inputType: 'number' },
-  //     value: this.settings.maxValue === 'unset'
-  //       ? max
-  //       : this.settings.maxValue,
-  //     validator: value => {
-  //       const max = this.paraview.store.settings.axis.y.minValue == "unset"
-  //         ? Math.min(...this._axisInfo.options.yValues)
-  //         : this.paraview.store.settings.axis.y.minValue as number
-  //       return value as number <= max ?
-  //         { err: `Max y-value (${value}) must be greater than (${max})`} : {};
-  //     },
-  //     parentView: 'controlPanel.tabs.chart.general.maxY',
-  //   });
-  // }
-
   computeSize(): [number, number] {
     return [
       this._layout.width,
@@ -528,7 +463,6 @@ export class VertAxis extends Axis<'vert'> {
   }
 
   protected _createTickLabelTiers() {
-    // return this._labelInfo.labelTiers.map((tier, i) =>
     return this._tickLabelTierValues.map((tier, i) =>
       new VertTickLabelTier(
         this.paraview,
@@ -613,5 +547,4 @@ export class VertAxis extends Axis<'vert'> {
   protected _getAxisTitleAngle() {
     return this.orientationSettings.position === 'east' ? 90 : -90;
   }
-
 }
