@@ -219,6 +219,8 @@ export interface TickSettings extends SettingGroup {
   labelFormat: LabelFormat;
   labels: TickLabelSettings;
   step: number;
+  /** Only applies to indep axis for non-point charts (e.g., bar charts) */
+  isOnDatapoint: boolean;
 }
 
 /** @public */
@@ -258,6 +260,8 @@ export interface OrientedAxisSettings<T extends AxisOrientation> extends Setting
   labelOrder: T extends 'horiz'
     ? 'westToEast' | 'eastToWest'
     : 'southToNorth' | 'northToSouth';
+  isStaggerLabels: boolean;
+  isWrapLabels: boolean;
 }
 
 /** @public */
@@ -317,11 +321,16 @@ export interface PopupSettings extends SettingGroup {
 export interface PlotSettings extends SettingGroup {
 }
 
+export interface PlaneChartSettings extends PlotSettings {
+  minYValue: number | 'unset';
+  maxYValue: number | 'unset';
+}
+
 export type BarClusterMode = 'facet';
 export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
 
 /** @public */
-export interface BarSettings extends PlotSettings {
+export interface BarSettings extends PlaneChartSettings {
   stacking: 'none' | 'standard'; // | '100%';
   barWidth: number;
   // minBarWidth: number;
@@ -350,7 +359,7 @@ export interface LollipopSettings extends BarSettings {
 }
 
 /** @public */
-export interface WaterfallSettings extends PlotSettings {
+export interface WaterfallSettings extends PlaneChartSettings {
   barWidth: number;
   colorByDatapoint: boolean;
   isDrawLabels: boolean;
@@ -376,7 +385,21 @@ export interface VennSettings extends SettingGroup {
 
 
 /** @public */
-export interface PointSettings extends PlotSettings {
+export interface VennSettings extends SettingGroup {
+  orientationAngleOffset: number;
+  insideLabels: {
+    contents: string;
+  };
+  outsideLabels: {
+    contents: string;
+  };
+  explode: string;
+}
+
+
+
+/** @public */
+export interface PointSettings extends PlaneChartSettings {
   pointLabelFormat: LabelFormat;
   selectedPointMarkerSize: Size2d;
 }

@@ -27,12 +27,19 @@ import { View } from '../../../base_view';
 import { strToId } from '@fizz/paramanifest';
 import { Bezier } from '../../../../common';
 import { Logger, getLogger } from '@fizz/logger';
+import { PointChartInfo } from '../../../../chart_types';
 
 /**
  * Abstract base class for charts that represent data values as points
  * (connected or not).
  */
 export abstract class PointPlotView extends PlanePlotView {
+  declare protected _chartInfo: PointChartInfo;
+
+  get chartInfo(): PointChartInfo {
+    return this._chartInfo;
+  }
+
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
       // this._axisInfo!.updateYRange();
@@ -180,9 +187,9 @@ export class PointDatapointView extends PlaneDatapointView {
   }
 
   computeY() {
-    const yLabelInfo = this.chart.parent.docView.chartInfo.axisInfo!.yLabelInfo;
-    const pxPerYUnit = this.chart.height / yLabelInfo.range!;
-    return this.chart.height - (this.datapoint.facetValueNumericized('y')! - yLabelInfo.min!) * pxPerYUnit;
+    const yInterval = this.chart.chartInfo.yInterval!;
+    const pxPerYUnit = this.chart.height / (yInterval.end - yInterval.start);
+    return this.chart.height - (this.datapoint.facetValueNumericized('y')! - yInterval.start) * pxPerYUnit;
   }
 
   computeLocation() {

@@ -16,19 +16,49 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { BaseChartInfo } from './base_chart';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, type NavMap } from '../view/layers/data/navigation';
-import { ParaStore } from '../store';
+import { DeepReadonly, ParaStore, PlaneChartSettings } from '../store';
 import { ParaView } from '../paraview';
 import { type RiffOrder } from './base_chart';
 import { type HorizDirection } from '../store';
 
-import { ChartType } from '@fizz/paramanifest';
+import { ChartType, Datatype, Facet } from '@fizz/paramanifest';
 import { Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
 import { DocumentView } from '../view/document_view';
 import { Bezier, loopParaviewRefresh } from '../common';
+import { computeLabels } from '../common';
+
+import { Box, PlaneModel } from '@fizz/paramodel';
+import { Interval } from '@fizz/chart-classifier-utils';
+
+import { Decimal } from 'decimal.js';
 
 // Soni Constants
 export const SONI_PLAY_SPEEDS = [1000, 250, 100, 50, 25];
 export const SONI_RIFF_SPEEDS = [450, 300, 150, 100, 75];
+
+
+export function computeAxisRange(start: number, end: number): Interval {
+  const minDec = new Decimal(start);
+  const maxDec = new Decimal(end);
+  const diff = maxDec.sub(minDec);
+  const interval = diff.div(10);
+  let quantizedInterval: Decimal, quantizedMin: Decimal, quantizedMax: Decimal;
+  quantizedInterval = new Decimal(10).pow(interval.log(10).ceil());
+  if (quantizedInterval.div(diff).gte(0.8)) {
+    quantizedInterval = quantizedInterval.div(10);
+  } else if (quantizedInterval.div(diff).gte(0.5)) {
+    quantizedInterval = quantizedInterval.div(4);
+  } else if (quantizedInterval.div(diff).gte(0.2)) {
+    quantizedInterval = quantizedInterval.div(2);
+  }
+  quantizedMin = minDec.div(quantizedInterval).floor().mul(quantizedInterval);
+  quantizedMax = maxDec.div(quantizedInterval).ceil().mul(quantizedInterval);
+  return {
+    start: quantizedMin.toNumber(),
+    end: quantizedMax.toNumber(),
+  };
+}
+
 
 /**
  * Abstract base class for business logic for charts drawn in a 2-D Cartesian coordinate system.
@@ -38,16 +68,203 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   protected _soniSequenceIndex = 0;
   protected _soniNoteIndex = 0;
   protected _soniSpeedRateIndex = 1;
+    /** X-axis interval, if axis is numeric */
+  protected _xInterval!: Interval | null;
+  /** Y-axis interval, if axis is numeric */
+  protected _yInterval!: Interval | null;
 
   constructor(type: ChartType, paraView: ParaView) {
     super(type, paraView);
   }
 
+  protected _init(): void {
+    super._init();
+    const indepFacetKey = this._store.model!.independentFacetKeys[0];
+    const indepFacet = this._store.model!.getFacet(indepFacetKey)!;
+    const depFacetKey = this._store.model!.dependentFacetKeys[0];
+    const depFacet = this._store.model!.getFacet(depFacetKey)!;
+    if (indepFacet.datatype === 'number') {
+      this._xInterval = this._numericXAxisRange(indepFacetKey);
+    } else {
+      this._xInterval = null;
+    }
+    if (depFacet.datatype === 'number') {
+      this._yInterval = this._numericYAxisRange(depFacetKey);
+    } else {
+      this._yInterval = null;
+    }
+  }
+
+  protected _addSettingControls() {
+    super._addSettingControls();
+    // Only add these controls if the y-axis is numeric
+    if (this._store.model!.getFacet('y')!.datatype !== 'number') return;
+    // const range = this.chartLayers.getYAxisInterval();
+    // XXX should be min/max label values as numbers, not min/max data values
+    const min = this._yInterval!.start; // this._labelInfo.min!;
+    const max = this._yInterval!.end; // this._labelInfo.max!;
+    this._store.settingControls.add({
+      type: 'textfield',
+      key: `type.${this._type}.minYValue`,
+      label: 'Min y-value',
+      options: { inputType: 'number' },
+      value: this.settings.minYValue === 'unset'
+        ? min
+        : this.settings.minYValue,
+      validator: value => {
+        const min = this.settings.maxYValue === 'unset'
+          ? max
+          : this.settings.maxYValue
+        // NB: If the new value is successfully validated, the inner chart
+        // gets recreated, and `max` may change, due to re-quantization of
+        // the tick values.
+        return value as number >= min ?
+          { err: `Min y-value (${value}) must be less than ${min}`} : {};
+      },
+      parentView: 'controlPanel.tabs.chart.general.minY',
+    });
+    this._store.settingControls.add({
+      type: 'textfield',
+      key: `type.${this._type}.maxYValue`,
+      label: 'Max y-value',
+      options: { inputType: 'number' },
+      value: this.settings.maxYValue === 'unset'
+        ? max
+        : this.settings.maxYValue,
+      validator: value => {
+        const max = this.settings.minYValue === 'unset'
+          ? min
+          : this.settings.minYValue
+        return value as number <= max ?
+          { err: `Max y-value (${value}) must be greater than ${max}`} : {};
+      },
+      parentView: 'controlPanel.tabs.chart.general.maxY',
+    });
+  }
+
   /**
-   * Whether the chart's datapoints fall on a tick (default) or between them.
+   * Whether the chart's datapoints fall on an x-axis tick (default) or between them.
    */
   get isIntertick(): boolean {
     return false;
+  }
+
+  get xInterval(): Interval | null {
+    return this._xInterval;
+  }
+
+  get yInterval(): Interval | null {
+    return this._yInterval;
+  }
+
+  get settings() {
+    return super.settings as DeepReadonly<PlaneChartSettings>;
+  }
+
+  get horizFacet(): Facet | null {
+    // return (this._store.model as PlaneModel).getAxisFacet('horiz')
+    //   ?? this._store.model!.getFacet(this._options.isXVertical ? 'y' : 'x')!;
+    // const facetKey = this._options.isXVertical
+    //     ? this._store.model!.dependentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
+    //     : this._store.model!.independentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
+    // return this._store.model!.getFacet(facetKey)!
+    return (this._store.model as PlaneModel).getAxisFacet(this._isXVertical
+      ? 'vert'
+      : 'horiz'
+    )!;
+  }
+
+  get vertFacet(): Facet | null {
+    // return (this._store.model as PlaneModel).getAxisFacet('vert')
+    //   ?? this._store.model!.getFacet(this._options.isXVertical ? 'x' : 'y')!;
+    // const facetKey = this._options.isXVertical
+    //     ? this._store.model!.independentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
+    //     : this._store.model!.dependentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
+    // return this._store.model!.getFacet(facetKey)!
+    return (this._store.model as PlaneModel).getAxisFacet(this._isXVertical
+      ? 'horiz'
+      : 'vert'
+    )!;
+  }
+
+  protected get _isXVertical(): boolean {
+    return false;
+  }
+
+  /**
+   * Called by `Axis` instances to obtain label tiers.
+   * @param facetKey - Axis facet key
+   * @param isStagger - Whether to stagger labels between two tiers
+   * @returns Array of tiers (each tier being an array of strings)
+   */
+  computeAxisLabelTiers(facetKey: string, isStagger: boolean): string[][] {
+    const rawVals = this._facetTickLabelValues(facetKey);
+    const facet = this._store.model!.getFacet(facetKey)!;
+    if (facet.datatype === 'date') {
+      // XXX HACK: should convert date values to standard string values
+      if (rawVals[0][0] === 'Q') {
+        return [
+          rawVals.map(raw => raw.split(' ')[0]),
+          Array.from(new Set(rawVals.map(raw => raw.split(' ')[1]))),
+        ];
+      } else {
+        return [rawVals];
+      }
+    } else if (facet.datatype === 'number') {
+      const interval = facet.variableType === 'independent'
+        ? this._numericXAxisRange(facetKey)
+        : this._numericYAxisRange(facetKey);
+      return computeLabels(
+        interval.start, interval.end,
+        false, true, isStagger).labelTiers as string[][];
+    } else {
+      return isStagger
+        ? [
+            rawVals.map((label, i) => i % 2 === 0 ? label : ''),
+            rawVals.map((label, i) => i % 2 === 1 ? label : '')
+          ]
+        : [rawVals];
+    }
+  }
+
+  /**
+   * Called by `computeAxisLabelTiers` to get string values to be displayed
+   * as axis tick labels for a given facet.
+   * @param facetKey - Facet key
+   * @returns Strings to display.
+   * @remarks
+   * May be overridden to return, e.g., computed stacked bar or waterfall totals
+   */
+  protected _facetTickLabelValues(facetKey: string): string[] {
+    return this._store.model!.allFacetValues(facetKey)!.map(box => box.raw);
+  }
+
+  /**
+   * Called by `computeAxisLabelTiers` to get the displayed range for a numeric x-axis.
+   * @param facetKey - Facet key
+   * @returns Displayed axis range as an Interval
+   */
+  protected _numericXAxisRange(facetKey: string): Interval {
+    const facetInterval = this._store.model!.getFacetInterval(facetKey)!;
+    return computeAxisRange(facetInterval.start, facetInterval.end);
+  }
+
+  /**
+   * Called by `computeAxisLabelTiers` to get the displayed range for a numeric y-axis.
+   * @param facetKey - Facet key
+   * @returns Displayed axis range as an Interval
+   * @remarks
+   * May be overridden to return, e.g., stacked bar or waterfall total intervals
+   */
+  protected _numericYAxisRange(facetKey: string): Interval {
+    const facetInterval = this._store.model!.getFacetInterval(facetKey)!;
+    return computeAxisRange(
+      this.settings.minYValue === 'unset'
+        ? facetInterval.start
+        : this.settings.minYValue,
+      this.settings.maxYValue === 'unset'
+        ? facetInterval.end
+        : this.settings.maxYValue);
   }
 
   protected _createNavMap() {

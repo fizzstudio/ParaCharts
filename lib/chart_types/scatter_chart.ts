@@ -23,10 +23,10 @@ export class ScatterChartInfo extends PointChartInfo {
     // perform clustering before the nav tree is created
     this._generateClustering();
     super._init();
-    this._axisInfo = new AxisInfo(this._store, {
-      xValues: this._store.model!.allFacetValues('x')!.map((x) => x.value as number),
-      yValues: this._store.model!.allFacetValues('y')!.map((x) => x.value as number),
-    });
+    // this._axisInfo = new AxisInfo(this._store, {
+    //   xValues: this._store.model!.allFacetValues('x')!.map((x) => x.value as number),
+    //   yValues: this._store.model!.allFacetValues('y')!.map((x) => x.value as number),
+    // });
   }
 
   protected _addSettingControls(): void {

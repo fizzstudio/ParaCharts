@@ -33,6 +33,10 @@ export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}
   },
   line: {
     'grid.isDrawVertLines': false
+  },
+  waterfall: {
+    //'axis.horiz.ticks.isDrawTicks': false,
+    'grid.isDrawVertLines': false
   }
 };
 
@@ -85,7 +89,7 @@ export const defaults: Settings = {
         fontSize: '12pt'
       },
       ticks: {
-        isDrawTicks: false,
+        isDrawTicks: true,
         padding: 3,
         opacity: 1,
         strokeWidth: 2,
@@ -95,11 +99,12 @@ export const defaults: Settings = {
         labels: {
           isDrawTickLabels: true,
           fontSize: '10pt',
-          angle: -45,
+          angle: 0, //-45,
           offsetGap: 4,
           gap: 0
         },
-        step: 1
+        step: 1,
+        isOnDatapoint: true
       },
       line: {
         isDrawAxisLine: true,
@@ -108,6 +113,8 @@ export const defaults: Settings = {
         strokeLinecap: 'round',
       },
       labelOrder: 'westToEast',
+      isStaggerLabels: false,
+      isWrapLabels: true,
       interval: 'unset',
     },
     vert: {
@@ -134,6 +141,7 @@ export const defaults: Settings = {
           gap: 0
         },
         step: 1,
+        isOnDatapoint: true
       },
       line: {
         isDrawAxisLine: true,
@@ -141,7 +149,9 @@ export const defaults: Settings = {
         strokeWidth: 2,
         strokeLinecap: 'round',
       },
-      labelOrder: 'southToNorth'
+      labelOrder: 'southToNorth',
+      isStaggerLabels: false,
+      isWrapLabels: false
     },
     x: {
       minValue: 'unset',
@@ -211,7 +221,9 @@ export const defaults: Settings = {
       clusterLabelFormat: 'raw',
       lineWidth: 5,
       isShowPopups: false,
-      labelFontSize: '8pt'
+      labelFontSize: '8pt',
+      minYValue: 'unset',
+      maxYValue: 'unset'
     },
     column: {
       stacking: 'standard',
@@ -231,7 +243,9 @@ export const defaults: Settings = {
       clusterLabelFormat: 'raw',
       lineWidth: 5,
       isShowPopups: false,
-      labelFontSize: '8pt'
+      labelFontSize: '8pt',
+      minYValue: 'unset',
+      maxYValue: 'unset'
     },
     line: {
       lineWidth: 5,
@@ -248,7 +262,9 @@ export const defaults: Settings = {
       },
       isDrawSymbols: true,
       isShowPopups: false,
-      isTrendNavigationModeEnabled: false
+      isTrendNavigationModeEnabled: false,
+      minYValue: 'unset',
+      maxYValue: 'unset'
     },
     scatter: {
       isDrawTrendLine: false,
@@ -258,7 +274,9 @@ export const defaults: Settings = {
       selectedPointMarkerSize: {
         width: 20,
         height: 20,
-      }
+      },
+      minYValue: 'unset',
+      maxYValue: 'unset'
     },
     histogram: {
       pointLabelFormat: 'raw',
@@ -269,7 +287,9 @@ export const defaults: Settings = {
         width: 20,
         height: 20,
       },
-      relativeAxes: "Counts"
+      relativeAxes: "Counts",
+      minYValue: 'unset',
+      maxYValue: 'unset'
     },
     heatmap: {
       pointLabelFormat: 'raw',
@@ -277,7 +297,9 @@ export const defaults: Settings = {
       selectedPointMarkerSize: {
         width: 20,
         height: 20,
-      }
+      },
+      minYValue: 'unset',
+      maxYValue: 'unset'
     },
     pie: {
       outsideLabels: {
@@ -362,7 +384,9 @@ export const defaults: Settings = {
       selectedPointMarkerSize: {
         width: 20,
         height: 20,
-      }
+      },
+      minYValue: 'unset',
+      maxYValue: 'unset'
     },
     lollipop: {
       stacking: 'standard',
@@ -383,7 +407,9 @@ export const defaults: Settings = {
       stackInsideGap: 4,
       clusterLabelFormat: 'raw',
       isShowPopups: false,
-      labelFontSize: '8pt'
+      labelFontSize: '8pt',
+      minYValue: 'unset',
+      maxYValue: 'unset'
     },
     waterfall: {
       barWidth: 10,
@@ -393,7 +419,9 @@ export const defaults: Settings = {
       barLabelGap: 10,
       barGap: 10,
       isShowPopups: false,
-      labelFontSize: '10pt'
+      labelFontSize: '10pt',
+      minYValue: 'unset',
+      maxYValue: 'unset'
     },
 	venn: {
       orientationAngleOffset: 0,
