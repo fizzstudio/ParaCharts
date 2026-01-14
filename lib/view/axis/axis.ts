@@ -27,7 +27,6 @@ import { Label } from '../label';
 import { type AxisLine, HorizAxisLine, VertAxisLine } from './axis_line';
 import { type TickLabelTier, HorizTickLabelTier, VertTickLabelTier } from './tick_label_tier';
 import { type TickStrip, HorizTickStrip, VertTickStrip } from './tick_strip';
-import { type AxisInfo, type AxisLabelInfo } from '../../common/axisinfo';
 import { SettingsManager } from '../../store/settings_manager';
 import { type ParaStore } from '../../store/parastore';
 
@@ -39,6 +38,7 @@ import { literal } from 'lit/static-html.js';
 import { PlaneModel } from '@fizz/paramodel';
 import { Popup } from '../popup';
 import { type ParaView } from '../../paraview';
+import { PlaneChartInfo } from '../../chart_types';
 
 export type AxisOrientation = 'horiz' | 'vert';
 export type AxisCoord = 'x' | 'y';
@@ -64,16 +64,15 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   readonly datatype: Datatype;
 
-  protected _labelInfo: AxisLabelInfo;
   // protected _layout!: FlexLayout;
   protected _layout!: GridLayout;
   protected _titleText: string;
   protected _axisTitle?: Label;
-  protected _tickLabelTiers: TickLabelTier<T>[] = [];
+  protected _tickLabelTiers: TickLabelTier[] = [];
   protected _tickStrip: TickStrip | null = null;
   protected _axisLine!: AxisLine<T>;
+  protected _tickLabelTierValues!: string[][];
   protected _tickStep: number;
-  protected _isInterval: boolean;
 
   protected _store: ParaStore;
 
@@ -81,7 +80,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     paraview: ParaView,
     public readonly orientation: T,
     protected _facet: Facet,
-    protected _axisInfo: AxisInfo,
+    protected _chartInfo: PlaneChartInfo,
     _length: number
   ) {
     super(paraview);
@@ -101,12 +100,8 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     );
     this._tickStep = this.orientationSettings.ticks.step;
 
-    this._labelInfo = this.coord === 'x'
-      ? this._axisInfo!.xLabelInfo
-      : this._axisInfo!.yLabelInfo;
-    this._isInterval = this.coord === 'x'
-      ? !!this._axisInfo!.options.isXInterval
-      : !!this._axisInfo!.options.isYInterval;
+    this._tickLabelTierValues = _chartInfo.computeAxisLabelTiers(
+      this.coord, this.orientationSettings.isStaggerLabels);
 
     this._titleText = this.orientationSettings.title.text ?? '';
   }
@@ -158,11 +153,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     return this._tickStep;
   }
 
-  get isInterval() {
-    return this._isInterval;
-  }
-
-  get tickLabelTiers(): readonly TickLabelTier<T>[] {
+  get tickLabelTiers(): readonly TickLabelTier[] {
     return this._tickLabelTiers;
   }
 
@@ -190,10 +181,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   get titleText() {
     return this._titleText;
   }
-
-  // get range() {
-  //   return this.chartLayers.getAxisInterval(this.coord);
-  // }
 
   get layout() {
     return this._layout;
@@ -292,7 +279,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   }
 
   protected abstract _appendTitle(): void;
-  protected abstract _createTickLabelTiers(): TickLabelTier<T>[];
+  protected abstract _createTickLabelTiers(): TickLabelTier[];
   protected abstract _appendTickLabelTiers(): void;
   protected abstract _createTickStrip(): TickStrip;
   protected abstract _appendTickStrip(): void;
@@ -321,7 +308,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   addGridRules(length: number) {
     this._tickStrip?.addRules(length);
   }
-
 }
 
 /**
@@ -330,8 +316,8 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
  */
 export class HorizAxis extends Axis<'horiz'> {
 
-  constructor(paraview: ParaView, facet: Facet, axisInfo: AxisInfo, length: number) {
-    super(paraview, 'horiz', facet, axisInfo, length);
+  constructor(paraview: ParaView, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
+    super(paraview, 'horiz', facet, chartInfo, length);
     this._width = length;
     this._canWidthFlex = true;
     this._layout = new GridLayout(this.paraview, {
@@ -366,13 +352,25 @@ export class HorizAxis extends Axis<'horiz'> {
   }
 
   protected _createTickLabelTiers() {
-    return this._labelInfo.labelTiers.map((tier, i) =>
+    return this._tickLabelTierValues.map((tier, i) =>
       new HorizTickLabelTier(
-        this, tier as string[], i, this._width, this._tickStep, this.paraview));
+        this.paraview,
+        this.orientationSettings, {
+          orientation: this.orientation,
+          labels: tier,
+          index: i,
+          length: this._width,
+          step: this._tickStep,
+          numTicks: this._tickLabelTierValues[0].length,
+          isChartIntertick: this._chartInfo.isIntertick,
+          datatype: this.datatype,
+          isFacetIndep: this._facet.variableType === 'independent'
+        }
+      ));
   }
 
   protected _appendTickLabelTiers() {
-    this._tickLabelTiers.forEach((tier, i) => {
+    this._tickLabelTiers.toReversed().forEach((tier, i) => {
       this._layout.splitRowTop(0, 'end');
       this._layout.append(tier);
     });
@@ -382,13 +380,16 @@ export class HorizAxis extends Axis<'horiz'> {
     return new HorizTickStrip(this.paraview, this.orientationSettings, 1, {
       orientation: this.orientation,
       length: this._width,
-      tickCount: this._labelInfo.labelTiers[0].length,
-      isInterval: this._isInterval,
+      // tickCount: this._labelInfo.labelTiers[0].length,
+      tickCount: this._tickLabelTierValues[0].length,
       isDrawOverhang: this.paraview.store.settings.axis.vert.line.isDrawOverhang,
       tickStep: this._tickStep,
       orthoAxisPosition: this.paraview.store.settings.axis.vert.position,
-      zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0') - 1
-    });
+      // zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0') - 1
+      zeroIndex: this._tickLabelTierValues[0].findIndex(label => label === '0') - 1,
+      isChartIntertick: this._chartInfo.isIntertick,
+      isFacetIndep: this._facet.variableType === 'independent'
+    },);
   }
 
   protected _appendTickStrip() {
@@ -427,8 +428,8 @@ export class HorizAxis extends Axis<'horiz'> {
  */
 export class VertAxis extends Axis<'vert'> {
 
-  constructor(paraview: ParaView, facet: Facet, axisInfo: AxisInfo, length: number) {
-    super(paraview, 'vert', facet, axisInfo, length);
+  constructor(paraview: ParaView, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
+    super(paraview, 'vert', facet, chartInfo, length);
     this._height = length;
     this._canHeightFlex = true;
     this._layout = new GridLayout(this.paraview, {
@@ -449,50 +450,6 @@ export class VertAxis extends Axis<'vert'> {
     return this._height;
   }
 
-  protected _addedToParent() {
-    super._addedToParent();
-    //const range = this.chartLayers.getYAxisInterval();
-    const min = this._labelInfo.min!;
-    const max = this._labelInfo.max!;
-    this.paraview.store.settingControls.add({
-      type: 'textfield',
-      key: 'axis.y.minValue',
-      label: 'Min y-value',
-      options: { inputType: 'number' },
-      value: this.settings.minValue === 'unset'
-        ? min
-        : this.settings.minValue,
-      validator: value => {
-        const min = this.paraview.store.settings.axis.y.maxValue === 'unset'
-          ? Math.max(...this._axisInfo.options.yValues)
-          : this.paraview.store.settings.axis.y.maxValue as number
-        // NB: If the new value is successfully validated, the inner chart
-        // gets recreated, and `max` may change, due to re-quantization of
-        // the tick values.
-        return value as number >= min ?
-          { err: `Min y-value (${value}) must be less than (${min})`} : {};
-      },
-      parentView: 'controlPanel.tabs.chart.general.minY',
-    });
-    this.paraview.store.settingControls.add({
-      type: 'textfield',
-      key: 'axis.y.maxValue',
-      label: 'Max y-value',
-      options: { inputType: 'number' },
-      value: this.settings.maxValue === 'unset'
-        ? max
-        : this.settings.maxValue,
-      validator: value => {
-        const max = this.paraview.store.settings.axis.y.minValue == "unset"
-          ? Math.min(...this._axisInfo.options.yValues)
-          : this.paraview.store.settings.axis.y.minValue as number
-        return value as number <= max ?
-          { err: `Max y-value (${value}) must be greater than (${max})`} : {};
-      },
-      parentView: 'controlPanel.tabs.chart.general.maxY',
-    });
-  }
-
   computeSize(): [number, number] {
     return [
       this._layout.width,
@@ -506,13 +463,25 @@ export class VertAxis extends Axis<'vert'> {
   }
 
   protected _createTickLabelTiers() {
-    return this._labelInfo.labelTiers.map((tier, i) =>
+    return this._tickLabelTierValues.map((tier, i) =>
       new VertTickLabelTier(
-        this, tier as string[], i, this._height, this._tickStep, this.paraview));
+        this.paraview,
+        this.orientationSettings, {
+          orientation: this.orientation,
+          labels: tier,
+          index: i,
+          length: this._height,
+          step: this._tickStep,
+          numTicks: this._tickLabelTierValues[0].length,
+          isChartIntertick: this._chartInfo.isIntertick,
+          datatype: this.datatype,
+          isFacetIndep: this._facet.variableType === 'independent'
+        }
+      ));
   }
 
   protected _appendTickLabelTiers() {
-    this._tickLabelTiers.forEach((tier, i) => {
+    this._tickLabelTiers.toReversed().forEach((tier, i) => {
       this._layout.splitColumnRight(i, 0, 'start');
       this._layout.append(tier, {
         x: i + 1,
@@ -524,13 +493,16 @@ export class VertAxis extends Axis<'vert'> {
     return new VertTickStrip(this.paraview, this.orientationSettings, 1, {
       orientation: this.orientation,
       length: this._height,
-      tickCount: this._labelInfo.labelTiers[0].length,
-      isInterval: this._isInterval,
+      // tickCount: this._labelInfo.labelTiers[0].length,
+      tickCount: this._tickLabelTierValues[0].length,
       isDrawOverhang: this.paraview.store.settings.axis.horiz.line.isDrawOverhang,
       tickStep: this._tickStep,
       orthoAxisPosition: this.paraview.store.settings.axis.horiz.position,
       // XXX could be '0.0' or have a unit, etc.
-      zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0')
+      // zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0')
+      zeroIndex: this._tickLabelTierValues[0].findIndex(label => label === '0'),
+      isChartIntertick: this._chartInfo.isIntertick,
+      isFacetIndep: this._facet.variableType === 'independent'
     });
   }
 
@@ -575,5 +547,4 @@ export class VertAxis extends Axis<'vert'> {
   protected _getAxisTitleAngle() {
     return this.orientationSettings.position === 'east' ? 90 : -90;
   }
-
 }
