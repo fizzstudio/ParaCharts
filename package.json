@@ -124,7 +124,7 @@
     "@fizz/logger": "^0.1.0",
     "@fizz/paramanifest": "^0.10.0",
     "@fizz/paramodel": "^0.6.18",
-    "@fizz/parasummary": "^0.10.1-alpha.4",
+    "@fizz/parasummary": "^0.10.1",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.4.4",
     "@fizz/ui-components": "^0.70.4",
