@@ -16,6 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaStore } from '../store';
+import { ParaView } from '../paraview';
 import { PlaneChartInfo } from './plane_chart';
 import { AxisInfo } from '../common/axisinfo';
 import { DeepReadonly, BarSettings, datapointIdToCursor, Setting } from '../store';
@@ -23,13 +24,16 @@ import {
   queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax
 } from '../store/query_utils';
 import { type Label } from '../view/label';
+import { computeAxisRange } from './plane_chart';
+
 import { Highlight } from '@fizz/parasummary';
 
 import { ChartType, strToId } from '@fizz/paramanifest';
 import { enumerate, Box } from '@fizz/paramodel';
-import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
+import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 import { DocumentView } from '../view/document_view';
+import { Interval } from '@fizz/chart-classifier-utils';
 
 type BarClusterMap = {[key: string]: BarCluster};
 
@@ -94,13 +98,14 @@ export class BarChartInfo extends PlaneChartInfo {
   protected _stacksPerCluster!: number;
   protected _prevHighlightNavcode = '';
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, paraView: ParaView) {
+    super(type, paraView);
   }
 
   protected _init(): void {
-    super._init();
+    // XXX HACK _clusterData() needs to get called before _init()
     this._clusteredData = this._clusterData();
+    super._init();
     const yValues = Object.values(this._clusteredData).flatMap(c =>
       Object.values(c.stacks).map(s =>
         Object.values(s.bars).map(item => item.value.value).reduce((a, b) => a + b, 0)
@@ -111,22 +116,54 @@ export class BarChartInfo extends PlaneChartInfo {
     // XXX needs to be y units, not pixels
     // At this point, there is no view object to get that information from
     //yValues[idxMax] += numBars*this.settings.stackInsideGap;
-    this._axisInfo = new AxisInfo(this._store, {
-      // xTiers: [this.paraview.store.model!.allFacetValues('x')!.map(x =>
-      //   formatBox(x, 'barCluster', this.paraview.store))],
-      xTiers: [Object.keys(this._clusteredData)],
-      yValues: yValues,
-      yMin: Math.min(0, Math.min(...yValues)),
-      isXInterval: true,
-      // manifest can override this
-      isXVertical: this._store.type === 'bar'
-    });
+    // this._axisInfo = new AxisInfo(this._store, {
+    //   // xTiers: [this.paraview.store.model!.allFacetValues('x')!.map(x =>
+    //   //   formatBox(x, 'barCluster', this.paraview.store))],
+    //   xTiers: [Object.keys(this._clusteredData)],
+    //   yValues: yValues,
+    //   yMin: Math.min(0, Math.min(...yValues)),
+    //   isXInterval: true,
+    //   // manifest can override this
+    //   isXVertical: this._store.type === 'bar'
+    // });
     const numSeries = this._store.model!.numSeries;
     if (this.settings.stacking === 'standard') {
       this._stacksPerCluster = 1;
     } else if (this.settings.stacking === 'none') {
       const seriesPerStack = 1;
       this._stacksPerCluster = Math.ceil(numSeries/seriesPerStack);
+    }
+  }
+
+  protected get _isXVertical(): boolean {
+    return this._store.type === 'bar';
+  }
+
+  protected _facetTickLabelValues(facetKey: string): string[] {
+    if (facetKey === 'x') {
+      return this._store.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'raw'));
+    } else if (facetKey === 'y') {
+      const yValues = Object.values(this._clusteredData).flatMap(c =>
+        Object.values(c.stacks).map(s =>
+          Object.values(s.bars).map(item => item.value.value).reduce((a, b) => a + b, 0)
+      ));
+      return [...yValues.map(ct => ct.toString())];
+    } else {
+      throw new Error("facet key must be 'x' or 'y'");
+    }
+  }
+
+  protected _numericYAxisRange(facetKey: string): Interval {
+    if (facetKey === 'x') {
+      return super._numericYAxisRange(facetKey);
+    } else if (facetKey === 'y') {
+      const yValues = Object.values(this._clusteredData).flatMap(c =>
+        Object.values(c.stacks).map(s =>
+          Object.values(s.bars).map(item => item.value.value).reduce((a, b) => a + b, 0)
+      ));
+      return computeAxisRange(Math.min(0, ...yValues), Math.max(...yValues));
+    } else {
+      throw new Error("facet key must be 'x' or 'y'");
     }
   }
 
@@ -305,8 +342,7 @@ export class BarChartInfo extends PlaneChartInfo {
       const series = this._store.model!.atKey(seriesKey)!;
       const datapoint = series.datapoints[index];
       const seriesLabel = series.getLabel();
-      // XXX yuck
-      const datapointView = this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
+      const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
 
       msgArray.push(interpolate(
         queryMessages.datapointLabelLength,
@@ -322,8 +358,7 @@ export class BarChartInfo extends PlaneChartInfo {
         // if there are selected datapoints, compare the current datapoint against each of those
         const selectedDatapointViews = selectedDatapoints.values().map((id) => {
           const cursor = datapointIdToCursor(id);
-          // XXX also yuck
-          return this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(cursor.seriesKey, cursor.index)!;
+          return this._paraView.documentView!.chartLayers.dataLayer.datapointView(cursor.seriesKey, cursor.index)!;
         }).toArray();
         const selectionMsgArray = describeSelections(
           datapointView,

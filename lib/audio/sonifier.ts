@@ -31,6 +31,7 @@ import { AudioNotificationType } from './AudioEngine';
 import { type Axis } from '../view/axis';
 import { PointDatapointView, type DataLayer } from '../view/layers';
 import { type ParaStore } from '../store';
+import { type ParaView } from '../paraview';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { BaseChartInfo } from '../chart_types';
 import { AxisLabelInfo } from '../common/axisinfo';
@@ -125,7 +126,11 @@ export class Sonifier {
 
   //private _playListContinuous: NodeJS.Timeout[] = [];
 
-  constructor(protected _chartInfo: BaseChartInfo, protected _store: ParaStore) {}
+  constructor(
+    protected _chartInfo: BaseChartInfo,
+    protected _store: ParaStore,
+    protected _paraView: ParaView
+  ) {}
 
   /**
    * Confirm the audio engine was initialized
@@ -165,7 +170,7 @@ export class Sonifier {
     durationVariable?: boolean
   } = {}) {
     datapoints.forEach((datapoint, i) => {
-      const dpView = this._store.paraChart.paraView.documentView?.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!;
+      const dpView = this._paraView.documentView?.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!;
       if (dpView instanceof PointDatapointView) {
         dpView.popInAnimation();
       }

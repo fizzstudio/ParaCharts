@@ -25,6 +25,7 @@ import { type LinePlotView, type LineSection } from './layers';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { ParaView } from '../paraview';
 import { Datapoint } from '@fizz/paramodel';
+import { PlaneChartInfo } from '../chart_types';
 
 /**
  * Strip of series labels and leader lines.
@@ -39,7 +40,10 @@ export class DirectLabelStrip extends Container(View) {
     this.log = getLogger('DirectLabelStrip');
     this._id = 'direct-label-strip';
     this._height = height;
-    this._hidden = !(paraview.store.paraChart.headless || paraview.store.settings.ui.isLowVisionModeEnabled);
+    this._hidden = !(
+      paraview.paraChart.headless ||
+      paraview.paraChart.store.settings.ui.isLowVisionModeEnabled
+    );
     this._createLabels();
   }
 
@@ -61,9 +65,9 @@ export class DirectLabelStrip extends Container(View) {
     const endpointYs: number[] = [];
     // Create labels
     endpoints.forEach((ep, i) => {
-      const yLabelInfo = this.paraview.documentView!.chartInfo.axisInfo!.yLabelInfo;
-      const pxPerYUnit = this._height / yLabelInfo.range!;
-      const labelY = this._height - (ep.facetValueNumericized('y')! - yLabelInfo.min!) * pxPerYUnit;
+      const yInterval = (this.paraview.documentView!.chartInfo as PlaneChartInfo).yInterval!;
+      const pxPerYUnit = this._height / (yInterval.end - yInterval.start);
+      const labelY = this._height - (ep.facetValueNumericized('y')! - yInterval.start) * pxPerYUnit;
       endpointYs.push(labelY);
       this._seriesLabels.push(new Label(this.paraview, {
         text: this.paraview.store.model!.atKey(ep.seriesKey)!.getLabel(),

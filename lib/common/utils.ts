@@ -71,6 +71,21 @@ export function capitalize(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+export function joinStrArray(strArray: string[], linebreak?: string): string {
+  strArray = strArray.filter(line => /\S/.test(line));
+  // if the string array only contains blank strings, ignore it
+  if (strArray.length) {
+    const strArrayLen = strArray.length - 1;
+    return strArray.reduce((acc, line, i) => {
+      const lineEnd = (i === strArrayLen) ? '.' : '';
+      const linebreakstr = (acc) ? ` ${linebreak}` : '';
+      const accStr = acc.match(/[.,?:;]$/) ? acc : `${acc}.`;
+      return `${accStr} ${linebreakstr}${line}${lineEnd}`;
+    });
+  }
+  return '';
+}
+
 // ID Generation
 
 export function generateUniqueId(baseId: string, store: ParaStore): string {

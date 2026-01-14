@@ -3,6 +3,7 @@ import { AxisInfo, computeLabels } from '../common/axisinfo';
 import { ChartType } from "@fizz/paramanifest";
 import { PlaneChartInfo } from './plane_chart';
 import { ParaStore } from '../store';
+import { type ParaView } from '../paraview';
 import { type NavNode } from '../view/layers';
 import { DocumentView } from '../view/document_view';
 
@@ -12,8 +13,8 @@ export class HeatMapInfo extends PlaneChartInfo {
   protected _grid!: Array<Array<number>>;
   protected _maxCount!: number;
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, paraView: ParaView) {
+    super(type, paraView);
   }
 
   protected _init() {
@@ -23,10 +24,10 @@ export class HeatMapInfo extends PlaneChartInfo {
     this._maxCount = Math.max(...values);
     //this._store.clearVisited();
     //this._store.clearSelected();
-    this._axisInfo = new AxisInfo(this._store, {
-      xValues: this._store.model!.allFacetValues('x')!.map((x) => x.value as number),
-      yValues: this._store.model!.allFacetValues('y')!.map((x) => x.value as number),
-    });
+    // this._axisInfo = new AxisInfo(this._store, {
+    //   xValues: this._store.model!.allFacetValues('x')!.map((x) => x.value as number),
+    //   yValues: this._store.model!.allFacetValues('y')!.map((x) => x.value as number),
+    // });
     // Generate the heat map before creating the nav nodes
     super._init();
   }
@@ -76,16 +77,17 @@ export class HeatMapInfo extends PlaneChartInfo {
   }
 
   protected _datapointSummary(index: number) {
-    const count = this._grid[index % this._resolution][Math.floor(index/this._resolution)];
-    const xInfo = this._axisInfo!.xLabelInfo!
-    const yInfo = this._axisInfo!.yLabelInfo!
-    const xSpan = xInfo.range! / this._resolution;
-    const ySpan = yInfo.range! / this._resolution;
-    const up = (yInfo.max! - ySpan * (Math.floor((index) / this._resolution))).toFixed(2);
-    const down = (yInfo.max! - ySpan * (Math.floor((index) / this._resolution) + 1)).toFixed(2);
-    const left = (xInfo.min! + xSpan * ((index) % this._resolution)).toFixed(2);
-    const right = (xInfo.min! + xSpan * ((index) % this._resolution + 1)).toFixed(2);
-    return `This block contains ${count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
+    // const count = this._grid[index % this._resolution][Math.floor(index/this._resolution)];
+    // const xInfo = this._axisInfo!.xLabelInfo!
+    // const yInfo = this._axisInfo!.yLabelInfo!
+    // const xSpan = xInfo.range! / this._resolution;
+    // const ySpan = yInfo.range! / this._resolution;
+    // const up = (yInfo.max! - ySpan * (Math.floor((index) / this._resolution))).toFixed(2);
+    // const down = (yInfo.max! - ySpan * (Math.floor((index) / this._resolution) + 1)).toFixed(2);
+    // const left = (xInfo.min! + xSpan * ((index) % this._resolution)).toFixed(2);
+    // const right = (xInfo.min! + xSpan * ((index) % this._resolution + 1)).toFixed(2);
+    // return `This block contains ${count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
+    return 'FIXME';
   }
 
   async navRunDidEnd(cursor: NavNode) {

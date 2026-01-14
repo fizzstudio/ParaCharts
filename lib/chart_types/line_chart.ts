@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { Logger, getLogger } from '@fizz/logger';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaStore } from '../store';
+import { type ParaView } from '../paraview';
 import { type LineSettings, type DeepReadonly, type Setting } from '../store/settings_types';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../store/query_utils';
 
@@ -32,8 +33,8 @@ import { Highlight } from '@fizz/parasummary';
  */
 export class LineChartInfo extends PointChartInfo {
 
-  constructor(type: ChartType, store: ParaStore) {
-    super(type, store);
+  constructor(type: ChartType, paraView: ParaView) {
+    super(type, paraView);
     this.log = getLogger("LineChartInfo");
   }
 
@@ -146,8 +147,7 @@ export class LineChartInfo extends PointChartInfo {
       const series = this._store.model!.atKey(seriesKey)!;
       const datapoint = series.datapoints[index];
       const seriesLabel = series.getLabel();
-      // XXX yuck
-      const datapointView = this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
+      const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
       msgArray.push(interpolate(
         queryMessages.datapointLabelLength,
         {
@@ -163,7 +163,7 @@ export class LineChartInfo extends PointChartInfo {
         const selectedDatapointViews = selectedDatapoints.values().map((id) => {
           const cursor = datapointIdToCursor(id);
           // XXX also yuck
-          return this._store.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(cursor.seriesKey, cursor.index)!;
+          return this._paraView.documentView!.chartLayers.dataLayer.datapointView(cursor.seriesKey, cursor.index)!;
         }).toArray();
         const selectionMsgArray = describeSelections(
           datapointView,

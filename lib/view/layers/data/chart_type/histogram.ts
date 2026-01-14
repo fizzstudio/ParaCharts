@@ -175,7 +175,7 @@ export class HistogramBinView extends DatapointView {
       this._y = this.chart.parent.height;
       this._width = this.chart.parent.width / info.bins;
       this._x = (this.index) % info.bins * this._width
-      this._height = (((info.grid[id] - info.axisInfo!.yLabelInfo!.min!) / info.axisInfo!.yLabelInfo!.max!) * this._y)
+      // this._height = (((info.grid[id] - info.axisInfo!.yLabelInfo!.min!) / info.axisInfo!.yLabelInfo!.max!) * this._y)
       if (this.chart.settings.relativeAxes == "Percentage"){
         this._height = this._height / info.grid.reduce((a, c) => a + c)
       }
@@ -192,7 +192,7 @@ export class HistogramBinView extends DatapointView {
       this._x = 0;
       this._height = this.chart.parent.height / info.bins;
       this._y = (info.grid.length - id - 1) % info.bins * this._height + (this._height)
-      this._width = (((info.grid[id] - info.axisInfo!.xLabelInfo!.min!) / info.axisInfo!.xLabelInfo!.max!) * this.chart.parent.width)
+      // this._width = (((info.grid[id] - info.axisInfo!.xLabelInfo!.min!) / info.axisInfo!.xLabelInfo!.max!) * this.chart.parent.width)
       if (this.chart.settings.relativeAxes == "Percentage"){
         this._width = this._width / info.grid.reduce((a, c) => a + c)
       }
@@ -209,18 +209,18 @@ export class HistogramBinView extends DatapointView {
   }
 
   summary() {
-    const length = this.paraview.store.model!.series.flat()[0].length
-    //const yInfo = this.chart.axisInfo!.yLabelInfo!
-    //const ySpan = yInfo.range! / this.chart.bins
-    //const up = (yInfo.max! - ySpan * (Math.floor((this.index - length) / this.chart.bins))).toFixed(2)
-    //const down = (yInfo.max! - ySpan * (Math.floor((this.index - length) / this.chart.bins) + 1)).toFixed(2)
-    const xInfo = this.chart.chartInfo.axisInfo!.xLabelInfo!
-    const xSpan = xInfo.range! / this.chart.chartInfo.bins;
-    const left = (xInfo.min! + xSpan * ((this.index) % this.chart.chartInfo.bins)).toFixed(2)
-    const right = (xInfo.min! + xSpan * ((this.index) % this.chart.chartInfo.bins + 1)).toFixed(2)
-    return `This bin contains ${this.count} datapoints, which is ${(100 * this.count / length).toFixed(2)}% of the overall data.
-        It spans x values from ${left} to ${right}}`
-
+    // const length = this.paraview.store.model!.series.flat()[0].length
+    // //const yInfo = this.chart.axisInfo!.yLabelInfo!
+    // //const ySpan = yInfo.range! / this.chart.bins
+    // //const up = (yInfo.max! - ySpan * (Math.floor((this.index - length) / this.chart.bins))).toFixed(2)
+    // //const down = (yInfo.max! - ySpan * (Math.floor((this.index - length) / this.chart.bins) + 1)).toFixed(2)
+    // const xInfo = this.chart.chartInfo.axisInfo!.xLabelInfo!
+    // const xSpan = xInfo.range! / this.chart.chartInfo.bins;
+    // const left = (xInfo.min! + xSpan * ((this.index) % this.chart.chartInfo.bins)).toFixed(2)
+    // const right = (xInfo.min! + xSpan * ((this.index) % this.chart.chartInfo.bins + 1)).toFixed(2)
+    // return `This bin contains ${this.count} datapoints, which is ${(100 * this.count / length).toFixed(2)}% of the overall data.
+    //     It spans x values from ${left} to ${right}}`
+    return 'FIXME';
   }
 
   //Note: I'm overriding this for now because at the time of writing JIM doesn't support visualizations with a
