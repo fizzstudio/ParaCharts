@@ -629,7 +629,6 @@ export class ParaStore extends State {
   }
 
   clearAllHighlights() {
-    this.popups.splice(0, this.popups.length)
     this._highlightedDatapoints.clear();
     this.requestUpdate();
   }
@@ -649,7 +648,6 @@ export class ParaStore extends State {
   }
 
   clearAllSequenceHighlights() {
-    this.popups.splice(0, this.popups.length)
     this._highlightedSequences.clear();
     this.requestUpdate();
   }

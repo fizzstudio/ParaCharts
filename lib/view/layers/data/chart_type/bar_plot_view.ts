@@ -409,12 +409,13 @@ export class Bar extends PlaneDatapointView {
       this._y = 0;
     } else {
       const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
-      const pxPerYUnit = this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!;
+      const yRange = chartInfo.yInterval!.end - chartInfo.yInterval!.start;
+      const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
       const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
         .map(bar => bar.value.value * pxPerYUnit)
         .reduce((a, b) => a + b, 0);
       const zeroHeight = this.chart.parent.logicalHeight
-        - (chartInfo.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!);
+        - (chartInfo.yInterval!.end * this.chart.parent.logicalHeight / yRange);
       // @ts-ignore
       this._height = Math.abs((this.datapoint.data.y.value as number) * pxPerYUnit);
       // @ts-ignore
@@ -435,12 +436,13 @@ export class Bar extends PlaneDatapointView {
   beginAnimStep(bezT: number, linearT: number): void {
     const chartInfo = this.chart.chartInfo as BarChartInfo;
     const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
-    const pxPerYUnit = this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!;
+    const yRange = chartInfo.yInterval!.end - chartInfo.yInterval!.start;
+    const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
     const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
       .map(bar => bar.value.value * pxPerYUnit)
       .reduce((a, b) => a + b, 0);
     const zeroHeight = this.chart.parent.logicalHeight
-      - (chartInfo.axisInfo!.yLabelInfo.max! * this.chart.parent.logicalHeight / chartInfo.axisInfo!.yLabelInfo.range!);
+      - (chartInfo.yInterval!.end * this.chart.parent.logicalHeight / yRange);
     // @ts-ignore
     this._height = Math.abs((this.datapoint.data.y.value as number) * pxPerYUnit * bezT);
     // @ts-ignore

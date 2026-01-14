@@ -26,6 +26,7 @@ import { DatapointView, SeriesView } from '../../../data';
 //import { type Actions, type Action } from '../input/actions';
 
 import { ParaView } from '../../../../paraview';
+import { Setting } from '../../../../store';
 
 import { PlaneDatapoint, Datapoint } from '@fizz/paramodel';
 
@@ -57,6 +58,14 @@ export abstract class PlanePlotView extends DataLayer {
 
   get selectedDatapointViews() {
     return super.selectedDatapointViews as PlaneDatapointView[];
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if ([`type.${this.paraview.store.type}.minYValue`, `type.${this.paraview.store.type}.maxYValue`].includes(path)) {
+      this.paraview.createDocumentView();
+      this.paraview.requestUpdate();
+    }
+    super.settingDidChange(path, oldValue, newValue);
   }
 
   /*

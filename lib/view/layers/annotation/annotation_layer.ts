@@ -8,6 +8,7 @@ import { Vec2 } from '../../../common/vector';
 import { PointAnnotation, Setting } from '../../../store';
 import { Popup } from '../../popup';
 import { datapointIdToCursor } from '../../../store';
+import { PlaneChartInfo } from '../../../chart_types';
 
 export type AnnotationType = 'foreground' | 'background';
 
@@ -19,7 +20,7 @@ export class AnnotationLayer extends PlotLayer {
   }
 
   protected _createId() {
-    return super._createId(`${this.type}-annotation`);  
+    return super._createId(`${this.type}-annotation`);
   }
 
   group(name: string) {
@@ -60,12 +61,12 @@ export class AnnotationLayer extends PlotLayer {
 
   renderChildren() {
     if (this.type === 'foreground') {
-      if (this.paraview.store.modelTrendLines) {
+      if (this.paraview.store.modelTrendLines && this.parent.docView.chartInfo instanceof PlaneChartInfo) {
         this.addGroup('trend-lines', true);
         this.group('trend-lines')!.clearChildren();
         for (const tl of this.paraview.store.modelTrendLines) {
-          const series = this.paraview.store.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
-          const range = this.parent.docView.chartInfo.getYAxisInterval();
+          const series = this.paraview.store.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0];
+          const range = this.parent.docView.chartInfo.yInterval!;
           const minValue = range.start ?? Number(this.paraview.store.settings.axis.y.minValue)
           const maxValue = range.end ?? Number(this.paraview.store.settings.axis.y.maxValue)
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
@@ -90,7 +91,7 @@ export class AnnotationLayer extends PlotLayer {
         }
       }
 
-      if (this.paraview.store.userTrendLines) {
+      if (this.paraview.store.userTrendLines && this.parent.docView.chartInfo instanceof PlaneChartInfo) {
         this.addGroup('user-trend-lines', true);
         this.group('user-trend-lines')!.clearChildren();
         let tls = structuredClone(this.paraview.store.userTrendLines);
@@ -100,7 +101,7 @@ export class AnnotationLayer extends PlotLayer {
         }
         for (const tl of tls) {
           const series = this.paraview.store.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
-          const range = this.parent.docView.chartInfo.getYAxisInterval();
+          const range = this.parent.docView.chartInfo.yInterval!;
           const minValue = range.start ?? Number(this.paraview.store.settings.axis.y.minValue)
           const maxValue = range.end ?? Number(this.paraview.store.settings.axis.y.maxValue)
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;

@@ -46,34 +46,34 @@ export class HistogramChartInfo extends PlaneChartInfo {
     const targetFacetNumbers = targetFacetBoxes.map((b) => b.asNumber()!);
     if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined) {
       if (this.settings.relativeAxes == "Counts") {
-        this._axisInfo = new AxisInfo(this._store, {
-          xValues: targetFacetNumbers,
-          yValues: this.grid,
-        });
+        // this._axisInfo = new AxisInfo(this._store, {
+        //   xValues: targetFacetNumbers,
+        //   yValues: this.grid,
+        // });
       }
       else {
         const sum = this.grid.reduce((a, c) => a + c)
         const pctGrid = this.grid.map(g => g / sum)
-        this._axisInfo = new AxisInfo(this._store, {
-          xValues: targetFacetNumbers,
-          yValues: pctGrid
-        });
+        // this._axisInfo = new AxisInfo(this._store, {
+        //   xValues: targetFacetNumbers,
+        //   yValues: pctGrid
+        // });
       }
     }
     else {
       if (this.settings.relativeAxes == "Counts") {
-        this._axisInfo = new AxisInfo(this._store, {
-          xValues: this.grid,
-          yValues: targetFacetNumbers,
-        });
+        // this._axisInfo = new AxisInfo(this._store, {
+        //   xValues: this.grid,
+        //   yValues: targetFacetNumbers,
+        // });
       }
       else {
         const sum = this.grid.reduce((a, c) => a + c)
         const pctGrid = this.grid.map(g => g / sum)
-        this._axisInfo = new AxisInfo(this._store, {
-          xValues: pctGrid,
-          yValues: targetFacetNumbers,
-        });
+        // this._axisInfo = new AxisInfo(this._store, {
+        //   xValues: pctGrid,
+        //   yValues: targetFacetNumbers,
+        // });
       }
     }
   }

@@ -19,18 +19,16 @@ import {
 } from '../store/settings_types';
 import { SettingsManager } from '../store/settings_manager';
 import { ParaView } from '../paraview/paraview';
-import { type AxisInfo } from '../common/axisinfo';
 import { type LegendItem } from '../view/legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaStore, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor } from '../store';
 import { Sonifier } from '../audio/sonifier';
-import { type AxisCoord } from '../view/axis';
+import { type AxisCoord, AxisOrientation } from '../view/axis';
 
 import { Datapoint } from '@fizz/paramodel';
-import { ChartType } from '@fizz/paramanifest';
+import { ChartType, Facet } from '@fizz/paramanifest';
 import { Summarizer, formatBox, Highlight, summarizerFromModel } from '@fizz/parasummary';
-import { Interval } from '@fizz/chart-classifier-utils';
 
 import { Unsubscribe } from '@lit-app/state';
 
@@ -48,7 +46,6 @@ export type RiffOrder = 'normal' | 'sorted' | 'reversed';
 export abstract class BaseChartInfo {
   protected log: Logger = getLogger("BaseChartInfo");
   protected _navMap: NavMap | null = null;
-  protected _axisInfo: AxisInfo | null = null;
   protected _summarizer!: Summarizer;
   protected _storeChangeUnsub!: Unsubscribe;
   protected _chordPrevSeriesKey = '';
@@ -59,6 +56,7 @@ export abstract class BaseChartInfo {
   protected _store!: ParaStore;
 
   constructor(protected _type: ChartType, protected _paraView: ParaView) {
+    this._store = this._paraView.store;
     this._init();
     this._addSettingControls();
   }
@@ -95,7 +93,6 @@ export abstract class BaseChartInfo {
   }
 
   protected _init() {
-    this._store = this._paraView.store;
     this._createNavMap();
     this._sonifier = new Sonifier(this, this._store, this._paraView);
     this._storeChangeUnsub = this._store.subscribe(async (key, value) => {
@@ -135,8 +132,16 @@ export abstract class BaseChartInfo {
     return 'datapoint';
   }
 
-  get axisInfo() {
-    return this._axisInfo;
+  get horizFacet(): Facet | null {
+    return null;
+  }
+
+  get vertFacet(): Facet | null {
+    return null;
+  }
+
+  getFacetForOrientation(orientation: AxisOrientation): Facet | null {
+    return orientation === 'horiz' ? this.horizFacet : this.vertFacet;
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
@@ -569,35 +574,4 @@ export abstract class BaseChartInfo {
   }
 
   protected abstract _sparkBrailleInfo(): SparkBrailleInfo | null;
-
-  getXAxisInterval(): Interval {
-    let xs: number[] = [];
-    if (this._store.model!.getFacet('x')!.datatype === 'number'
-      || this._store.model!.getFacet('x')!.datatype === 'date'
-    ) {
-      xs = this._store.model!.allFacetValues('x')!.map((box) => box.asNumber()!);
-    } else {
-      throw new Error('axis must be of type number or date to take interval');
-    }
-    return { start: Math.min(...xs), end: Math.max(...xs) };
-  }
-
-
-  getYAxisInterval(): Interval {
-    if (!this.axisInfo) {
-      throw new Error('chart is missing `axisInfo` object');
-    }
-    return {
-      start: this.axisInfo.yLabelInfo.min!,
-      end: this.axisInfo.yLabelInfo.max!
-    };
-  }
-
-  getAxisInterval(coord: AxisCoord): Interval | undefined {
-    if (coord === 'x') {
-      return this.getXAxisInterval();
-    } else {
-      return this.getYAxisInterval();
-    }
-  }
 }
