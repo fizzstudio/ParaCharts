@@ -366,7 +366,7 @@ export interface WaterfallSettings extends PlaneChartSettings {
   labelPosition: BarDataLabelPosition;
   barLabelGap: number;
   barGap: number;
-  showPopups: boolean;
+  isShowPopups: boolean;
   labelFontSize: string;
 }
 

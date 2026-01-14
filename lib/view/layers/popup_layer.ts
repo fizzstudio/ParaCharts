@@ -1,6 +1,6 @@
 import { formatBox } from "@fizz/parasummary";
 import { ParaView } from "../../paraview";
-import { datapointIdToCursor, PointAnnotation } from "../../store";
+import { datapointIdToCursor, makeSequenceId, PointAnnotation } from "../../store";
 import { Container, View } from "../base_view";
 import { Popup } from "../popup";
 import { PlotLayer } from "./layer";
@@ -95,7 +95,6 @@ export class PopupLayer extends PlotLayer {
         this.group('datapoint-popups')!.clearChildren();
         if (this.paraview.store.settings.chart.isShowPopups && this.paraview.store.settings.popup.activation === "onFocus") {
             this.paraview.store.userLineBreaks.splice(0, this.paraview.store.userLineBreaks.length)
-            this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
             const cursor = this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.navMap!.cursor
             const datapoints = cursor.datapoints;
             const datapointViews = datapoints.map(datapoint =>
@@ -123,7 +122,6 @@ export class PopupLayer extends PlotLayer {
             }
         }
         else if (this.paraview.store.settings.chart.isShowPopups && this.paraview.store.settings.popup.activation === "onSelect") {
-            this.paraview.store.popups.splice(0, this.paraview.store.popups.length)
             for (let dp of this.paraview.store.selectedDatapoints) {
                 const { seriesKey, index } = datapointIdToCursor(dp);
                 const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
@@ -142,6 +140,7 @@ export class PopupLayer extends PlotLayer {
                 }
             }
         }
+        this.paraview.store.clearPopups();
     }
 
     addChordPopups(datapointViews: DatapointView[]): Popup[] {
@@ -221,7 +220,7 @@ export class PopupLayer extends PlotLayer {
                 text: text,
                 x: x,
                 y: y,
-                id: this.id,
+                id: makeSequenceId(firstDPView.seriesKey, firstDPView.index, lastDPView.index + 1),
                 color: firstDPView.color,
                 margin: 60,
                 type: "sequence",
@@ -282,6 +281,7 @@ export class PopupLayer extends PlotLayer {
     }
 
     renderChildren() {
+        this.addPopups();
         return super.renderChildren();
     }
 

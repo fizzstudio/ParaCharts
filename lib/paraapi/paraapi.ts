@@ -18,7 +18,7 @@ import { type Datapoint } from '@fizz/paramodel';
 
 import { type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
-import { Direction, Setting, SettingsManager } from '../store';
+import { Direction, makeSequenceId, Setting, SettingsManager } from '../store';
 import { ActionArgumentMap, AvailableActions } from '../store/action_map';
 
 type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMap) => void | Promise<void>) };
@@ -427,13 +427,17 @@ export class ParaAPIPointGroup {
       this._apiSeriesGroup.api.paraChart.store.highlight(
         datapoint.seriesKey, datapoint.datapointIndex);
     });
+    this._apiSeriesGroup.api.paraChart.requestUpdate()
   }
 
   clearHighlight() {
     this._datapoints.forEach(datapoint => {
       this._apiSeriesGroup.api.paraChart.store.clearHighlight(
         datapoint.seriesKey, datapoint.datapointIndex);
-    });
+      this._apiSeriesGroup.api.paraChart.store.removePopup(this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '')
+    }
+    );
+    this._apiSeriesGroup.api.paraChart.requestUpdate()
   }
 
   play() {
@@ -480,14 +484,17 @@ export class ParaAPISequenceGroup {
         this._apiSeriesGroup.api.paraChart.store.highlightSequence(key, pair[0], pair[1]);
       });
     });
+    this._apiSeriesGroup.api.paraChart.requestUpdate()
   }
 
   clearHighlight() {
     this._apiSeriesGroup.keys.forEach(key => {
       this._boundaryPairs.forEach(pair => {
         this._apiSeriesGroup.api.paraChart.store.clearSequenceHighlight(key, pair[0], pair[1]);
+        this._apiSeriesGroup.api.paraChart.store.removePopup(makeSequenceId(key, pair[0], pair[1]))
       });
     });
+    this._apiSeriesGroup.api.paraChart.requestUpdate()
   }
 
   play() {

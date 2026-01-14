@@ -29,7 +29,7 @@ export class HighlightsLayer extends PlotLayer {
     const datapoint = this.paraview.store.getDatapoint(datapointId);
     let datapointView = this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!;
     overlays.push((datapointView.symbol ?? datapointView.shapes[0]).clone());
-    if (this.type === 'foreground') {
+    if (this.type === 'foreground' && !this.paraview.store.popups.some(p => p.id == datapointView.id)) {
       datapointView.addDatapointPopup();
     }
     //overlays.forEach(sym => {
@@ -37,7 +37,6 @@ export class HighlightsLayer extends PlotLayer {
     overlays.at(-1)!.opacity = 0.5;
     overlays.at(-1)!.fill = 'empty';
     //});
-    this.paraview.documentView?.chartLayers.popupLayer.addPopups();
   }
 
   protected _processSequence(
@@ -84,7 +83,7 @@ export class HighlightsLayer extends PlotLayer {
       underlayRects.push(rect);
       rect.classInfo = { 'underlay-rect': true };
     }
-    if (this.type === 'foreground') {
+    if (this.type === 'foreground' && !this.paraview.store.popups.some(p => p.id == sequenceId)) {
       this.paraview.store.popups.push(...this.parent.popupLayer.addSequencePopups(datapointViews))
     }
 
@@ -93,7 +92,6 @@ export class HighlightsLayer extends PlotLayer {
       sym.opacity = 0.5;
       sym.fill = 'empty';
     });
-    this.paraview.documentView?.chartLayers.popupLayer.addPopups();
   }
 
   content() {
