@@ -359,11 +359,11 @@ export class VennPlotView extends DataLayer {
           new Vec2(p2.x, p2.y),
           new Vec2(p1.x, p1.y)
         ],
-        stroke: "none",
+        stroke: "white",
         fill: "red",
+        strokeWidth: 5,
       });
       this.append(arc);
-      this._createLabels();
     }
   }
 
@@ -522,10 +522,10 @@ export class VennRegionView extends DatapointView {
 
     return {
       fill: parentStyle.fill,
-      stroke: "none"
+      stroke: "white",
+      strokeWidth: "5"
     };
   }
-
 
   get x() {
     return super.x;
@@ -545,7 +545,7 @@ export class VennRegionView extends DatapointView {
       x: cx + this._xOff,
       y: cy + this._yOff,
       r,
-      stroke: 'black',
+      stroke: 'white',
     });
     this._shapes = [this._circle];
 
