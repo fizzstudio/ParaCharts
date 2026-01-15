@@ -243,12 +243,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       },
       pointerMove: (e) => {
         if (this._popup) {
-          this._popup.grid.x = this.paraview.store.pointerCoords.x;
-          this._popup.grid.y = this.paraview.store.pointerCoords.y;
-          this._popup.shiftGrid();
-          this._popup.box.x = this._popup.grid.x;
-          this._popup.box.y = this._popup.grid.bottom;
-          this.paraview.requestUpdate();
+          this.addPopup(undefined, this.paraview.store.pointerCoords.x, this.paraview.store.pointerCoords.y + this.paraview.store.settings.popup.margin)
         }
       },
       pointerLeave: (e) => {
@@ -260,18 +255,19 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     this._axisTitle.padding = this._getAxisTitlePadding();
   }
 
-  addPopup(text?: string) {
+  addPopup(text?: string, x?: number, y?: number) {
     let datapointText = `${this.titleText}`
     let popup = new Popup(this.paraview,
       {
         text: text ?? datapointText,
-        x: this.x,
-        y: this.y,
+        x: x ?? this.x,
+        y: y ?? this.y,
         id: this.id,
         type: "vertAxis",
         fill: "hsl(0, 0%, 0%)"
       },
-      {fill: "hsl(0, 0%, 100%)",
+      {
+        fill: "hsl(0, 0%, 100%)",
         shape: "boxWithArrow"
       })
     this.paraview.store.popups.push(popup)
@@ -356,16 +352,16 @@ export class HorizAxis extends Axis<'horiz'> {
       new HorizTickLabelTier(
         this.paraview,
         this.orientationSettings, {
-          orientation: this.orientation,
-          labels: tier,
-          index: i,
-          length: this._width,
-          step: this._tickStep,
-          numTicks: this._tickLabelTierValues[0].length,
-          isChartIntertick: this._chartInfo.isIntertick,
-          datatype: this.datatype,
-          isFacetIndep: this._facet.variableType === 'independent'
-        }
+        orientation: this.orientation,
+        labels: tier,
+        index: i,
+        length: this._width,
+        step: this._tickStep,
+        numTicks: this._tickLabelTierValues[0].length,
+        isChartIntertick: this._chartInfo.isIntertick,
+        datatype: this.datatype,
+        isFacetIndep: this._facet.variableType === 'independent'
+      }
       ));
   }
 
@@ -467,16 +463,16 @@ export class VertAxis extends Axis<'vert'> {
       new VertTickLabelTier(
         this.paraview,
         this.orientationSettings, {
-          orientation: this.orientation,
-          labels: tier,
-          index: i,
-          length: this._height,
-          step: this._tickStep,
-          numTicks: this._tickLabelTierValues[0].length,
-          isChartIntertick: this._chartInfo.isIntertick,
-          datatype: this.datatype,
-          isFacetIndep: this._facet.variableType === 'independent'
-        }
+        orientation: this.orientation,
+        labels: tier,
+        index: i,
+        length: this._height,
+        step: this._tickStep,
+        numTicks: this._tickLabelTierValues[0].length,
+        isChartIntertick: this._chartInfo.isIntertick,
+        datatype: this.datatype,
+        isFacetIndep: this._facet.variableType === 'independent'
+      }
       ));
   }
 

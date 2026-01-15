@@ -250,7 +250,7 @@ export class DatapointView extends DataView {
     this.completeLayout();
   }
 
-  popInAnimation(){}
+  popInAnimation() { }
 
   /**
    * Subclasses should override this;
@@ -348,7 +348,7 @@ export class DatapointView extends DataView {
     return this.datapoint.seriesKey === other.datapoint.seriesKey && this.datapoint.datapointIndex === other.datapoint.datapointIndex;
   }
 
-  addDatapointPopup(text?: string) {
+  addDatapointPopup(text?: string, xInput?: number, yInput?: number) {
     let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
     if (this.paraview.store.model!.multi) {
       datapointText = `${this.series.getLabel()} ${datapointText}`
@@ -391,8 +391,8 @@ export class DatapointView extends DataView {
     let popup = new Popup(this.paraview,
       {
         text: text ?? datapointText,
-        x: x,
-        y: y,
+        x: xInput ?? x,
+        y: yInput ?? y,
         id: this.id,
         color: color,
         points: [this],
@@ -410,24 +410,13 @@ export class DatapointView extends DataView {
 
   movePopupAction() {
     if (this._popup) {
-      this._popup.horizShift = 0
       if (['column', 'waterfall', 'pie', 'donut'].includes(this.paraview.store.type)) {
-        this._popup.grid.x = this.paraview.store.pointerCoords.x
-        this._popup.grid.y = this.paraview.store.pointerCoords.y - this.paraview.store.settings.popup.margin
-        this._popup.shiftGrid()
-        this._popup.horizShift += - 1 * this._popup.grid.width / 2
+        this.addDatapointPopup(undefined, this.paraview.store.pointerCoords.x, this.paraview.store.pointerCoords.y)
+        this._popup.horizShift = this.paraview.store.pointerCoords.x - (this._popup.grid.x + this._popup.grid.width / 2)
       }
       else if (this.paraview.store.type == 'bar') {
-        this._popup.grid.x = this.paraview.store.pointerCoords.y
-        this._popup.grid.y = this.chart.height - this.paraview.store.pointerCoords.x - this.paraview.store.settings.popup.margin;
-        this._popup.shiftGrid()
+        this.addDatapointPopup(undefined, this.paraview.store.pointerCoords.y, this.chart.height - this.paraview.store.pointerCoords.x)
       }
-      let options = this._popup._popupShapeOptions
-      this._popup.box.remove()
-      this._popup.generateBox(options);
-      this._popup.box.x = this._popup.grid.x
-      this._popup.box.y = this._popup.grid.bottom
-      this.paraview.requestUpdate()
     }
   }
 
