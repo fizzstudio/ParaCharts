@@ -12,6 +12,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { type Unsubscribe } from '@lit-app/state';
 import { ParaChart } from '../parachart/parachart';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { Setting } from '../store';
 
 type HoverListener = (event: PointerEvent) => void;
 
@@ -116,6 +117,14 @@ export class ParaCaptionBox extends ParaComponent {
     //FIXME: Add default summaries for Venn diagrams
     if (this._store.dataState === 'complete' && this._store.type !== 'venn') {
       this._caption = await this.parachart.paraView.documentView!.chartInfo.summarizer.getChartSummary();
+    }
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+    if (path === 'ui.isNarrativeHighlightEnabled' && !newValue) {
+      this._prevSpanIdx = 0;
+      this._highlightManualOverride = false;
+      this._lastSpans.clear();
     }
   }
 
