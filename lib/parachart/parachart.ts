@@ -341,6 +341,7 @@ export class ParaChart extends ParaComponent {
     // change can take effect ...
     this._styleManager.update();
     this._paraViewRef.value?.settingDidChange(path, oldValue, newValue);
+    this.captionBox.settingDidChange(path, oldValue, newValue);
     // ... then update it again to pick up any changed values from the view tree
     this._styleManager.update();
   }
