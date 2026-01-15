@@ -31,6 +31,7 @@ import { ChartType, Facet } from '@fizz/paramanifest';
 import { Summarizer, formatBox, Highlight, summarizerFromModel } from '@fizz/parasummary';
 
 import { Unsubscribe } from '@lit-app/state';
+import { executeParaActions, parseAction } from '../paraactions/paraactions';
 
 
 /**
@@ -52,7 +53,6 @@ export abstract class BaseChartInfo {
   protected _sonifier!: Sonifier;
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
   protected _soniRiffInterval: ReturnType<typeof setTimeout> | null = null;
-  protected _prevHighlightNavcode = '';
   protected _store!: ParaStore;
 
   constructor(protected _type: ChartType, protected _paraView: ParaView) {
@@ -154,7 +154,11 @@ export abstract class BaseChartInfo {
     if (this._store.settings.ui.isNarrativeHighlightEnabled) {
       if (key === 'landmarkStart') {
         const highlight: Highlight = value;
-        this._prevHighlightNavcode = this._doHighlight(highlight, this._prevHighlightNavcode);
+        if (highlight.action) {
+          const parsed = parseAction(highlight.action);
+          if (!parsed) throw new Error(`error parsing action '${highlight.action}'`);
+          executeParaActions(parsed, this._paraView.paraChart.api);
+        }
       } else if (key === 'landmarkEnd') {
         // So that on the initial transition from auto-narration to manual
         // span navigation, we don't remove any highlights added in manual mode
@@ -163,51 +167,16 @@ export abstract class BaseChartInfo {
           this._store.clearAllSequenceHighlights();
           this._store.clearAllSeriesLowlights();
         }
-        // this._highlightIndex = null;
-        if (this._prevHighlightNavcode) {
-          this.didRemoveHighlight(this._prevHighlightNavcode);
-          this._prevHighlightNavcode = '';
-        }
       }
     }
   }
 
-  protected _doHighlight(highlight: Highlight, prevNavcode: string) {
-    if (highlight.navcode) {
-      const segments = highlight.navcode.split(/-/);
-      if (highlight.navcode.startsWith('series')) {
-        this._store.lowlightOtherSeries(...segments.slice(1));
-      } else if (highlight.navcode.startsWith('sequence')) {
-        this._store.clearAllHighlights();
-        this._store.clearAllSequenceHighlights();
-        this._store.highlightSequence(segments[1], parseInt(segments[2]), parseInt(segments[3]));
-        if (prevNavcode) {
-          this.didRemoveHighlight(prevNavcode);
-        }
-        this.didAddHighlight(highlight.navcode);
-      } else if (segments[0] === 'datapoint') {
-        this._store.clearAllHighlights();
-        this._store.clearAllSequenceHighlights();
-        segments.slice(2).forEach(index => {
-          this._store.highlight(segments[1], parseInt(index));
-        });
-        if (prevNavcode) {
-          this.didRemoveHighlight(prevNavcode);
-        }
-        this.didAddHighlight(highlight.navcode);
-      } else {
-        throw new Error(`invalid navcode type '${segments[0]}'`);
-      }
-      prevNavcode = highlight.navcode;
-    } else {
-      this._store.clearAllHighlights();
-      this._store.clearAllSeriesLowlights();
-      if (prevNavcode) {
-        this.didRemoveHighlight(prevNavcode);
-        prevNavcode = '';
-      }
+  protected _doHighlight(highlight: Highlight) {
+    if (highlight.action) {
+      const parsed = parseAction(highlight.action);
+      if (!parsed) throw new Error(`error parsing action '${highlight.action}'`);
+      executeParaActions(parsed, this._paraView.paraChart.api);
     }
-    return prevNavcode;
   }
 
   protected _createNavMap() {
@@ -217,12 +186,6 @@ export abstract class BaseChartInfo {
     const chartLandingNode = new NavNode(root, 'top', {}, this._store);
     root.registerNode(chartLandingNode);
     root.cursor = chartLandingNode;
-  }
-
-  didAddHighlight(navcode: string) {
-  }
-
-  didRemoveHighlight(navcode: string) {
   }
 
   legend(): LegendItem[] {

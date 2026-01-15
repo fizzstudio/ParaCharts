@@ -235,10 +235,10 @@ export class ParaAPI {
   //   return this.getAllSeries(seriesLabel)[0];
   // }
 
-  getSeries(...seriesLabels: string[]): ParaAPISeriesGroup {
+  getSeries(...seriesLabelsOrKeys: string[]): ParaAPISeriesGroup {
     // remove dups
-    const labels = Array.from(new Set(seriesLabels));
-    return new ParaAPISeriesGroup(labels, this);
+    const labelsOrKeys = Array.from(new Set(seriesLabelsOrKeys));
+    return new ParaAPISeriesGroup(labelsOrKeys, this);
   }
 
   // sendKey(keyId: string) {
@@ -298,14 +298,23 @@ export class ParaAPI {
 export class ParaAPISeriesGroup {
   protected _datapoints: Map<string, Datapoint[]>;
   protected _keys: string[];
+  protected _labels: string[];
 
-  constructor(protected _labels: string[], protected _api: ParaAPI) {
-    const allSeries = _labels.map(label => {
-      const series = _api.paraChart.store.model!.atLabel(label);
-      if (!series) throw new Error(`no series with label '${label}'`);
-      return series;
+  constructor(labelsOrKeys: string[], protected _api: ParaAPI) {
+    this._labels = [];
+    this._keys = [];
+    const allSeries = labelsOrKeys.map(labelOrKey => {
+      const seriesFromLabel = _api.paraChart.store.model!.atLabel(labelOrKey);
+      const seriesFromKey = _api.paraChart.store.model!.atKey(labelOrKey);
+      if (seriesFromLabel) {
+        this._labels.push(labelOrKey);
+      } else if (seriesFromKey) {
+        this._keys.push(labelOrKey);
+      } else {
+        throw new Error(`no series with label or key '${labelOrKey}'`);
+      }
+      return seriesFromLabel ?? seriesFromKey!;
     });
-    this._keys = allSeries.map(series => series.key);
     this._datapoints = new Map();
     allSeries.forEach(series => {
       this._datapoints.set(series.key, [...series.datapoints]);
@@ -324,9 +333,9 @@ export class ParaAPISeriesGroup {
     return this._api;
   }
 
-  // getPoint(index: number): ParaAPIPoint {
-  //   return this.getPoints(index)[0];
-  // }
+  getPoint(index: number): ParaAPIPointGroup {
+    return this.getPoints(index);
+  }
 
   getPoints(...indices: number[]): ParaAPIPointGroup {
     // remove dups
@@ -337,6 +346,10 @@ export class ParaAPISeriesGroup {
       return datapoint;
     }));
     return new ParaAPIPointGroup(datapoints, this);
+  }
+
+  getSequence(start: number, end: number): ParaAPISequenceGroup {
+    return this.getSequences([start, end]);
   }
 
   getSequences(...boundaryPairs: [number, number][]): ParaAPISequenceGroup {
@@ -423,11 +436,12 @@ export class ParaAPIPointGroup {
   }
 
   highlight() {
+    this._apiSeriesGroup.api.clearAllHighlights();
+    this._apiSeriesGroup.api.clearAllSequenceHighlights();
     this._datapoints.forEach(datapoint => {
       this._apiSeriesGroup.api.paraChart.store.highlight(
         datapoint.seriesKey, datapoint.datapointIndex);
     });
-    this._apiSeriesGroup.api.paraChart.requestUpdate()
   }
 
   clearHighlight() {
@@ -437,7 +451,6 @@ export class ParaAPIPointGroup {
       this._apiSeriesGroup.api.paraChart.store.removePopup(this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '')
     }
     );
-    this._apiSeriesGroup.api.paraChart.requestUpdate()
   }
 
   play() {
@@ -479,12 +492,13 @@ export class ParaAPISequenceGroup {
   }
 
   highlight() {
+    this._apiSeriesGroup.api.clearAllHighlights();
+    this._apiSeriesGroup.api.clearAllSequenceHighlights();
     this._apiSeriesGroup.keys.forEach(key => {
       this._boundaryPairs.forEach(pair => {
         this._apiSeriesGroup.api.paraChart.store.highlightSequence(key, pair[0], pair[1]);
       });
     });
-    this._apiSeriesGroup.api.paraChart.requestUpdate()
   }
 
   clearHighlight() {
@@ -494,7 +508,6 @@ export class ParaAPISequenceGroup {
         this._apiSeriesGroup.api.paraChart.store.removePopup(makeSequenceId(key, pair[0], pair[1]))
       });
     });
-    this._apiSeriesGroup.api.paraChart.requestUpdate()
   }
 
   play() {
