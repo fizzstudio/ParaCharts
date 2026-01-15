@@ -21,17 +21,24 @@ import { View, Container } from './base_view';
 
 import { svg, TemplateResult } from 'lit';
 import { styleMap, StyleInfo } from 'lit/directives/style-map.js';
-import { type LinePlotView, type LineSection } from './layers';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
-import { ParaView } from '../paraview';
-import { Datapoint } from '@fizz/paramodel';
-import { PlaneChartInfo } from '../chart_types';
+import { type ParaView } from '../paraview';
+import { type PlaneChartInfo } from '../chart_types';
+import { type DocumentView } from './document_view';
+
+interface CollisionRec {
+  label: Label,
+  seriesKey: string,
+  endpointY: number
+}
 
 /**
  * Strip of series labels and leader lines.
  * @public
  */
 export class DirectLabelStrip extends Container(View) {
+  declare protected _parent: DocumentView;
+
   protected _seriesLabels!: Label[];
   protected _leaders!: LineLabelLeader[];
 
@@ -40,24 +47,49 @@ export class DirectLabelStrip extends Container(View) {
     this.log = getLogger('DirectLabelStrip');
     this._id = 'direct-label-strip';
     this._height = height;
-    this._hidden = !(
-      paraview.paraChart.headless ||
-      paraview.paraChart.store.settings.ui.isLowVisionModeEnabled
-    );
-    this._createLabels();
+    // this._hidden = !(
+    //   paraview.paraChart.headless ||
+    //   paraview.paraChart.store.settings.ui.isLowVisionModeEnabled
+    // );
+    this._createInitialLabels();
   }
 
-  protected _createLabels() {
+  protected _createInitialLabels() {
     const directLabelPadding = this.paraview.store.settings.chart.isDrawSymbols
       ? this.paraview.store.settings.type.line.seriesLabelPadding*2
       : this.paraview.store.settings.type.line.seriesLabelPadding;
-    // Sort points from highest to lowest onscreen
     const endpoints = this.paraview.store.model!.series.map(series => series.datapoints.at(-1)!);
-    // const endpoints = this._chart.datapointViews.
-    //   filter(datapoint =>
-    //     datapoint.index === this.paraview.store.model!.series[0].length - 1
-    //   );
     endpoints.sort((a, b) => b.facetValueAsNumber('y')! - a.facetValueAsNumber('y')!);
+    this._seriesLabels?.forEach(label => {
+      label.remove();
+    });
+    this._seriesLabels = [];
+    // Create labels
+    endpoints.forEach((ep, i) => {
+      const yInterval = (this.paraview.documentView!.chartInfo as PlaneChartInfo).yInterval!;
+      const pxPerYUnit = this._height / (yInterval.end - yInterval.start);
+      const labelY = this._height - (ep.facetValueNumericized('y')! - yInterval.start) * pxPerYUnit;
+      this._seriesLabels.push(new Label(this.paraview, {
+        text: this.paraview.store.model!.atKey(ep.seriesKey)!.getLabel(),
+        left: directLabelPadding,
+        y: labelY,
+        classList: ['direct-label'],
+      }));
+      this.append(this._seriesLabels.at(-1)!);
+    });
+  }
+
+  createLabels() {
+    const directLabelPadding = this.paraview.store.settings.chart.isDrawSymbols
+      ? this.paraview.store.settings.type.line.seriesLabelPadding*2
+      : this.paraview.store.settings.type.line.seriesLabelPadding;
+    // const endpoints = this._parent.chartLayers.dataLayer.chartLandingView.children.map(seriesView => seriesView.children.at(-1)!);
+    const endpoints = this._parent.chartLayers.dataLayer.datapointViews
+      .filter(datapoint =>
+        datapoint.index === this.paraview.store.model!.series[0].length - 1
+      );
+    // Sort points from highest to lowest onscreen
+    endpoints.sort((a, b) => a.y - b.y);
     this._seriesLabels?.forEach(label => {
       label.remove();
     });
@@ -65,14 +97,11 @@ export class DirectLabelStrip extends Container(View) {
     const endpointYs: number[] = [];
     // Create labels
     endpoints.forEach((ep, i) => {
-      const yInterval = (this.paraview.documentView!.chartInfo as PlaneChartInfo).yInterval!;
-      const pxPerYUnit = this._height / (yInterval.end - yInterval.start);
-      const labelY = this._height - (ep.facetValueNumericized('y')! - yInterval.start) * pxPerYUnit;
-      endpointYs.push(labelY);
+      endpointYs.push(ep.y);
       this._seriesLabels.push(new Label(this.paraview, {
         text: this.paraview.store.model!.atKey(ep.seriesKey)!.getLabel(),
         left: directLabelPadding,
-        y: labelY,
+        y: ep.y, // labelY,
         classList: ['direct-label'],
         pointerEnter: (e) => {
           this.paraview.store.lowlightOtherSeries(ep.seriesKey);
@@ -92,13 +121,36 @@ export class DirectLabelStrip extends Container(View) {
     if (topLabel.top < 0) {
       topLabel.top = 0;
     }
-    // // Same for the lowest label
+    // Same for the lowest label
     const botLabel = this._seriesLabels.at(-1)!;
     const diff = botLabel.bottom - this.height;
     if (diff > 0) {
       botLabel.y -= diff;
     }
-    this._resolveSeriesLabelCollisions(endpoints.map(e => e.seriesKey), endpointYs);
+    // We only want to add a leader one time to each label involved in a collision.
+    // However, multiple CollisionRecs for the same label may get created, so
+    // we use labels as map keys (rather than storing CollisionRecs in a set)
+    const allColliders = new Map<Label, CollisionRec>();
+    while (true) {
+      const colliders = this._resolveSeriesLabelCollisions(endpoints.map(e => e.seriesKey), endpointYs);
+      if (!colliders.length) break;
+      colliders.forEach(c => {
+        allColliders.set(c.label, c);
+      })
+    }
+    const leaderLabelOffset = this.paraview.store.settings.chart.isDrawSymbols
+      ? -this.paraview.store.settings.type.line.seriesLabelPadding
+      : 0;
+    this._leaders?.forEach(leader => {
+      leader.remove();
+    });
+    this._leaders = [];
+    allColliders.forEach(c => {
+      // NB: this value already includes the series label padding
+      c.label.x += (this.paraview.store.settings.type.line.leaderLineLength + leaderLabelOffset);
+      this._leaders.push(new LineLabelLeader(this.paraview, c.seriesKey, c.label, c.endpointY));
+      this.prepend(this._leaders.at(-1)!);
+    });
   }
 
   protected _addedToParent(): void {
@@ -107,24 +159,24 @@ export class DirectLabelStrip extends Container(View) {
 
   noticePosted(key: string, value: any): void {
     if (['animRevealStep', 'animRevealEnd'].includes(key)) {
-      this._createLabels();
-      if (key === 'animRevealEnd') {
-        this._hidden = false;
-      }
+      this.createLabels();
+      // if (key === 'animRevealEnd') {
+      //   this._hidden = false;
+      // }
     }
   }
 
   computeSize(): [number, number] {
     // XXX also need to support label strip on left, top, bottom
     return [
-      Math.max(...this._seriesLabels.map(label => label.right)),
+      Math.max(...this._seriesLabels.map(label => label.right))
+        + this.paraview.store.settings.type.line.leaderLineLength,
       this._height
     ];
   }
 
-  // XXX I don't think this method will get the job done in all cases
   protected _resolveSeriesLabelCollisions(seriesKeys: string[], endpointYs: number[]) {
-    const colliders: {label: Label, seriesKey: string, endpointY: number}[] = [];
+    const colliders: CollisionRec[] = [];
     // NB: It looks like all labels will have the same bbox height, although
     // I don't know whether that will hold for all possible diacritics
     // (I suspect not).
@@ -145,45 +197,14 @@ export class DirectLabelStrip extends Container(View) {
         });
       }
     }
-    this._leaders?.forEach(leader => {
-      leader.remove();
-    });
-    this._leaders = [];
-
     if (colliders.length) {
-      const leaderLabelOffset = this.paraview.store.settings.chart.isDrawSymbols
-        ? -this.paraview.store.settings.type.line.seriesLabelPadding
-        : 0;
-
       // Re-sort colliders from lowest to highest onscreen.
       colliders.reverse().slice(1).forEach((c, i) => {
         // Move each label up out of collision with the one onscreen below it.
         c.label.bottom = colliders[i].label.top; // - c.label.height;
       });
-      // Test for collision with labels that weren't originally in collision.
-      //If all collisions can't be resolved, switch to a different labeling approach.
-
-      // Sort non-collider labels, if any, from lowest to highest onscreen
-      const nonColliderLabels = this._seriesLabels
-        .filter(label => !colliders.map(c => c.label).includes(label))
-        .toReversed();
-      if (nonColliderLabels.length) {
-        const topColliderLabel = colliders.at(-1)!.label;
-        const gapDiff = topColliderLabel.bottom - nonColliderLabels[0].y;
-        if (gapDiff < 0) {
-          nonColliderLabels.forEach(nc => nc.y -= gapDiff);
-          if (nonColliderLabels.at(-1)!.y < 0) {
-            this.log.warn('unable to resolve series label collision');
-          }
-        }
-      }
-      colliders.forEach(c => {
-        // NB: this value already includes the series label padding
-        c.label.x += (this.paraview.store.settings.type.line.leaderLineLength + leaderLabelOffset);
-        this._leaders.push(new LineLabelLeader(this.paraview, c.seriesKey, c.label, c.endpointY));
-        this.prepend(this._leaders.at(-1)!);
-      });
     }
+    return colliders;
   }
 
   // content(): TemplateResult {
