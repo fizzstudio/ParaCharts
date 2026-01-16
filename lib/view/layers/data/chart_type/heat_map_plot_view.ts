@@ -6,7 +6,7 @@ import { type BaseChartInfo } from '../../../../chart_types';
 import { type HeatMapInfo } from '../../../../chart_types/heat_map';
 import { fixed } from "../../../../common/utils";
 import { ParaView } from "../../../../paraview";
-import { DeepReadonly, HeatmapSettings, PointChartType, type Setting } from "../../../../store";
+import { DeepReadonly, HeatmapSettings, PointChartType, type Setting } from "../../../../state";
 import { DatapointView, SeriesView } from "../../../data";
 
 import { RectShape } from "../../../shape/rect";

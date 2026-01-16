@@ -1,6 +1,6 @@
 import { formatBox } from "@fizz/parasummary";
 import { ParaView } from "../../paraview";
-import { datapointIdToCursor, makeSequenceId, PointAnnotation } from "../../store";
+import { datapointIdToCursor, makeSequenceId, PointAnnotation } from "../../state";
 import { Container, View } from "../base_view";
 import { Popup } from "../popup";
 import { PlotLayer } from "./layer";

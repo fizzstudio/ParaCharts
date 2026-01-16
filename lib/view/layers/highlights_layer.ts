@@ -2,7 +2,7 @@
 import { PlotLayer} from '.';
 import { type ParaView } from '../../paraview';
 import { svg } from 'lit';
-import { datapointIdToCursor } from '../../store';
+import { datapointIdToCursor } from '../../state';
 import { DataSymbol } from '../symbol';
 import { type DatapointView } from '../data';
 import { PathShape, RectShape, Shape } from '../shape';

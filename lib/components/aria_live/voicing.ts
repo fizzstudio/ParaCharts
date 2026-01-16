@@ -1,5 +1,5 @@
 import { Highlight } from '@fizz/parasummary';
-import { ParaState } from '../../store';
+import { ParaState } from '../../state';
 import { Logger, getLogger } from '@fizz/logger';
 
 export class Voicing {

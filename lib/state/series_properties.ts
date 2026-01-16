@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { type DataSymbolType } from '../view/symbol';
-import { ParaState } from './parastore';
+import { ParaState } from './parastate';
 
 export class SeriesPropertyManager {
 

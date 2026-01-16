@@ -1,8 +1,8 @@
 import { Logger, getLogger } from '@fizz/logger';
-import { type SettingsInput } from '../store/settings_types';
+import { type SettingsInput } from './settings_types';
 import { Colors, Color, Palette } from '../common/colors';
 import { type DataSymbolType, type DataSymbolShape, type DataSymbolFill } from '../view/symbol';
-import { type ParaState } from './parastore';
+import { type ParaState } from './parastate';
 
 export class CustomPropertyLoader {
   _customPrefix = '--para-';

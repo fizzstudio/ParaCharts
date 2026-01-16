@@ -5,9 +5,9 @@ import { type ParaView } from '../../../paraview';
 import { RectShape } from '../../shape/rect';
 import { PathShape } from '../../shape/path';
 import { Vec2 } from '../../../common/vector';
-import { PointAnnotation, Setting } from '../../../store';
+import { PointAnnotation, Setting } from '../../../state';
 import { Popup } from '../../popup';
-import { datapointIdToCursor } from '../../../store';
+import { datapointIdToCursor } from '../../../state';
 import { PlaneChartInfo } from '../../../chart_types';
 
 export type AnnotationType = 'foreground' | 'background';

@@ -6,7 +6,7 @@ import {
   type VennSettings,
   type DeepReadonly,
   Setting,
-} from '../../../../store';
+} from '../../../../state';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type ParaView } from '../../../../paraview';
 import { type Shape, CircleShape, ArcShape } from '../../../shape';

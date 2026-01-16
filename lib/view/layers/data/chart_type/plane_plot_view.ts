@@ -26,7 +26,7 @@ import { DatapointView, SeriesView } from '../../../data';
 //import { type Actions, type Action } from '../input/actions';
 
 import { ParaView } from '../../../../paraview';
-import { Setting } from '../../../../store';
+import { Setting } from '../../../../state';
 
 import { PlaneDatapoint, Datapoint } from '@fizz/paramodel';
 

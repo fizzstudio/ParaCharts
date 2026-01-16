@@ -16,10 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
 import { PointChartInfo } from './point_chart';
-import { datapointIdToCursor, type ParaState } from '../store';
+import { datapointIdToCursor, type ParaState } from '../state';
 import { type ParaView } from '../paraview';
-import { type LineSettings, type DeepReadonly, type Setting } from '../store/settings_types';
-import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../store/query_utils';
+import { type LineSettings, type DeepReadonly, type Setting } from '../state/settings_types';
+import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state/query_utils';
 
 import { interpolate } from '@fizz/templum';
 

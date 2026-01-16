@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { PlaneSeriesView, PointPlotView, PointDatapointView } from '.';
-import { type LineSettings, type DeepReadonly, type Setting } from '../../../../store/settings_types';
+import { type LineSettings, type DeepReadonly, type Setting } from '../../../../state/settings_types';
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { bboxOfBboxes, isPointerInbounds } from '../../../../common/utils';

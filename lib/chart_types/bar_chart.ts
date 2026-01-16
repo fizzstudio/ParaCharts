@@ -15,14 +15,14 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
-import { ParaState } from '../store';
+import { ParaState } from '../state';
 import { ParaView } from '../paraview';
 import { PlaneChartInfo } from './plane_chart';
 import { AxisInfo } from '../common/axisinfo';
-import { DeepReadonly, BarSettings, datapointIdToCursor, Setting } from '../store';
+import { DeepReadonly, BarSettings, datapointIdToCursor, Setting } from '../state';
 import {
   queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax
-} from '../store/query_utils';
+} from '../state/query_utils';
 import { type Label } from '../view/label';
 import { computeAxisRange } from './plane_chart';
 

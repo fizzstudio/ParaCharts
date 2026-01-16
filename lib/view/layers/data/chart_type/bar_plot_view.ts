@@ -20,7 +20,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
 import {
   Setting, DeepReadonly, BarSettings
-} from '../../../../store/settings_types';
+} from '../../../../state/settings_types';
 import { RectShape } from '../../../shape/rect';
 import { Label, LabelTextAnchor } from '../../../label';
 import { BarStack } from '../../../../chart_types/bar_chart';

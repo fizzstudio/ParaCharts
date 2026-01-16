@@ -2,7 +2,7 @@
 import { ControlPanelTabPanel } from './tab_panel';
 import { AdvancedControlSettingsDialog } from '../dialogs';
 import { AnimationDialog } from '../dialogs';
-import { actionMap } from '../../store/action_map';
+import { actionMap } from '../../state/action_map';
 
 import {
   html, css,

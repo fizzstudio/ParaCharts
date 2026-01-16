@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import {
   DeepReadonly, WaterfallSettings, type ParaState
-} from '../store';
+} from '../state';
 import { type ParaView } from '../paraview';
 import { NavNode } from '../view/layers';
 

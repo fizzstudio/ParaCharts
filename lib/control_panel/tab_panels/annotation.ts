@@ -4,7 +4,7 @@ import {
   html, css,
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { datapointIdToCursor, type PointAnnotation } from '../../store/parastore';
+import { datapointIdToCursor, type PointAnnotation } from '../../state/parastate';
 import { formatXYDatapointX } from '@fizz/parasummary';
 import { type PlaneDatapoint } from '@fizz/paramodel';
 

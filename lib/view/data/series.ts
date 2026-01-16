@@ -8,7 +8,7 @@ import { ref } from 'lit/directives/ref.js';
 import { type StyleInfo } from 'lit/directives/style-map.js';
 import { type ClassInfo } from 'lit/directives/class-map.js';
 import { TemplateResult } from 'lit';
-import { datapointIdToCursor } from '../../store';
+import { datapointIdToCursor } from '../../state';
 
 /**
  * Abstract base class for a view representing an entire series.

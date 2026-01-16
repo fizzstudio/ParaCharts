@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { SeriesView } from '../../../data';
 import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
 import { AxisInfo } from '../../../../common/axisinfo';
-import { Setting, type PointChartType } from '../../../../store/settings_types';
+import { Setting, type PointChartType } from '../../../../state/settings_types';
 
 import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';

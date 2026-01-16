@@ -3,7 +3,7 @@ import { ParaComponent } from '../paracomponent';
 import { ScreenReaderBridge, type AriaLiveHistoryDialog } from '.';
 import { Voicing } from './voicing';
 import { styles } from '../../view/styles';
-import { type Announcement } from '../../store';
+import { type Announcement } from '../../state';
 
 import { html, css, type PropertyValues } from 'lit';
 import { ref, createRef } from 'lit/directives/ref.js';

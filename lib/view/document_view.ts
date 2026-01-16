@@ -18,7 +18,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { type BaseChartInfo, chartInfoClasses, PlaneChartInfo } from '../chart_types';
 import { View, Container, Padding } from './base_view';
 import { Label } from './label';
-import { type CardinalDirection, ParaState, Setting } from '../store';
+import { type CardinalDirection, ParaState, Setting } from '../state';
 import { Facet, type ChartType } from '@fizz/paramanifest';
 import { PlotLayerManager } from './layers';
 import { HorizAxis, VertAxis, type AxisCoord } from './axis';

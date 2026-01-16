@@ -1,7 +1,7 @@
 
 import { DataView, type SeriesView } from './';
 import { DataSymbol } from '../symbol';
-import { datapointIdToCursor } from '../../store';
+import { datapointIdToCursor } from '../../state';
 import { Shape } from '../shape/shape';
 import { RectShape } from '../shape/rect';
 

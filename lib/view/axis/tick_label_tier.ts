@@ -25,7 +25,7 @@ import { type TemplateResult } from 'lit';
 import { Vec2 } from '../../common/vector';
 import { PlaneModel } from '@fizz/paramodel';
 import { Popup } from '../popup';
-import { OrientedAxisSettings } from '../../store';
+import { OrientedAxisSettings } from '../../state';
 import { Datatype } from '@fizz/paramanifest';
 
 export interface TickLabelTierOptions {

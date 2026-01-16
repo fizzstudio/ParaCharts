@@ -18,9 +18,9 @@ import { ref } from 'lit/directives/ref.js';
 
 import { PlotLayer } from '..';
 import { type PlotLayerManager } from '..';
-import { type PlotSettings, type DeepReadonly, type Direction, HorizDirection, Setting } from '../../../store/settings_types';
+import { type PlotSettings, type DeepReadonly, type Direction, HorizDirection, Setting } from '../../../state/settings_types';
 import { ParaView } from '../../../paraview';
-import { SettingsManager } from '../../../store/settings_manager';
+import { SettingsManager } from '../../../state/settings_manager';
 import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../../data';
 
 import { StyleInfo } from 'lit/directives/style-map.js';

@@ -17,17 +17,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest'
-import { DeepReadonly, Settings, SettingsInput, type Setting } from '../store/settings_types';
-import { SettingsManager } from '../store';
+import { DeepReadonly, Settings, SettingsInput, type Setting } from '../state/settings_types';
+import { SettingsManager } from '../state';
 import '../paraview';
 import '../control_panel';
 import '../control_panel/caption';
 import { type ParaCaptionBox } from '../control_panel/caption';
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
-import { ParaState } from '../store';
+import { ParaState } from '../state';
 import { ParaLoader, type SourceKind } from '../loader/paraloader';
-import { CustomPropertyLoader } from '../store/custom_property_loader';
+import { CustomPropertyLoader } from '../state/custom_property_loader';
 import { styles } from '../view/styles';
 import '../components/aria_live';
 import { StyleManager } from './style_manager';

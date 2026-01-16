@@ -6,8 +6,8 @@ import {
   type DeepReadonly,
   type TabLabelStyle,
   type ControlPanelSettings
-} from '../store/settings_types';
-import { SettingsManager } from '../store/settings_manager';
+} from '../state/settings_types';
+import { SettingsManager } from '../state/settings_manager';
 import {
   DescriptionPanel, DataPanel, ColorsPanel, ChartPanel,
   AnnotationPanel, ControlsPanel
@@ -36,7 +36,7 @@ import {
 import { property, state, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { Popup } from '../view/popup';
-import { datapointIdToCursor } from '../store';
+import { datapointIdToCursor } from '../state';
 import { AnnotationDialog } from './dialogs/annotation_dialog';
 
 

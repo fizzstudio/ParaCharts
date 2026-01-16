@@ -21,7 +21,7 @@ import { type ParaChart } from '../parachart/parachart';
 import { ParaViewController } from '.';
 import { ParaComponent } from '../components';
 import { ChartType, strToId } from '@fizz/paramanifest';
-import { type ViewBox, type Setting, type HotkeyEvent } from '../store';
+import { type ViewBox, type Setting, type HotkeyEvent } from '../state';
 import { View } from '../view/base_view';
 import { DocumentView } from '../view/document_view';
 import { PointDatapointView } from '../view/layers';
@@ -36,7 +36,7 @@ import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Unsubscribe } from '@lit-app/state';
-import { AvailableActions } from '../store/action_map';
+import { AvailableActions } from '../state/action_map';
 
 /**
  * Data provided for the on focus callback

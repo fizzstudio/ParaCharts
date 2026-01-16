@@ -18,8 +18,8 @@ import { type Datapoint } from '@fizz/paramodel';
 
 import { type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
-import { Direction, makeSequenceId, Setting, SettingsManager } from '../store';
-import { ActionArgumentMap, AvailableActions } from '../store/action_map';
+import { Direction, makeSequenceId, Setting, SettingsManager } from '../state';
+import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 
 type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMap) => void | Promise<void>) };
 

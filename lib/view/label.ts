@@ -25,7 +25,7 @@ import { generateUniqueId, fixed } from '../common/utils';
 import { ParaView } from '../paraview';
 import { SVGNS } from '../common/constants';
 import { Vec2 } from '../common/vector';
-import { Setting } from '../store';
+import { Setting } from '../state';
 
 export type LabelTextAnchor = 'start' | 'middle' | 'end';
 

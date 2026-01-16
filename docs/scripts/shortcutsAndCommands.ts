@@ -1,4 +1,4 @@
-import keymap from '../../lib/store/keymap.json' with { type: 'json' };
+import keymap from '../../lib/state/keymap.json' with { type: 'json' };
 
 function keymapTable() {
     let table = [`| Key / Shortcut         | Description                                      |

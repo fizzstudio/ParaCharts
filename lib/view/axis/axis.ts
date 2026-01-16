@@ -22,13 +22,13 @@ import {
   type AxisSettings,
   type OrientedAxisSettings,
   type DeepReadonly
-} from '../../store/settings_types';
+} from '../../state/settings_types';
 import { Label } from '../label';
 import { type AxisLine, HorizAxisLine, VertAxisLine } from './axis_line';
 import { type TickLabelTier, HorizTickLabelTier, VertTickLabelTier } from './tick_label_tier';
 import { type TickStrip, HorizTickStrip, VertTickStrip } from './tick_strip';
-import { SettingsManager } from '../../store/settings_manager';
-import { type ParaState } from '../../store/parastore';
+import { SettingsManager } from '../../state/settings_manager';
+import { type ParaState } from '../../state/parastate';
 
 import { type Datatype, type Scalar } from '@fizz/dataframe';
 import { type Facet } from '@fizz/paramanifest';

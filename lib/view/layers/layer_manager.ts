@@ -18,7 +18,7 @@ import { View } from '../base_view';
 import { fixed, isPointerInbounds } from '../../common/utils';
 import { type Layout } from '../layout';
 import { type DocumentView } from '../document_view';
-import { type CardinalDirection } from '../../store/settings_types';
+import { type CardinalDirection } from '../../state/settings_types';
 import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, FocusLayer } from '.';
 import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, Bar, WaterfallPlotView, VennPlotView } from './data/chart_type';
 import { type AxisCoord } from '../axis';

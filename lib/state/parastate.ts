@@ -1,4 +1,4 @@
-/* ParaCharts: ParaStore Data Store
+/* ParaCharts: ParaState Data Store
 Copyright (C) 2025 Fizz Studios
 
 This program is free software: you can redistribute it and/or modify
@@ -216,7 +216,7 @@ export class ParaState extends State {
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected _annotID: number = 0;
-  protected log: Logger = getLogger("ParaStore");
+  protected log: Logger = getLogger("ParaState");
   protected callbacks: StoreCallbacks = {};
 
   public idList: Record<string, boolean> = {};

@@ -6,7 +6,7 @@ import {
   type RadialSettings,
   type RadialChartType, type DeepReadonly,
   Setting,
-} from '../../../../store';
+} from '../../../../state';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type ParaView } from '../../../../paraview';
 import { type Shape, SectorShape, PathShape } from '../../../shape';

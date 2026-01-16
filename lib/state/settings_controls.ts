@@ -12,7 +12,7 @@ import {
   type SliderSettingControlOptions,
   type ButtonSettingControlOptions,
 } from '../components/settings';
-import { ParaState } from './parastore';
+import { ParaState } from './parastate';
 
 import { type TemplateResult } from 'lit';
 import { html, literal } from 'lit/static-html.js';

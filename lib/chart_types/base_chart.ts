@@ -16,13 +16,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import {
   type PlotSettings, type DeepReadonly, type Direction, HorizDirection, Setting
-} from '../store/settings_types';
-import { SettingsManager } from '../store/settings_manager';
+} from '../state/settings_types';
+import { SettingsManager } from '../state/settings_manager';
 import { ParaView } from '../paraview/paraview';
 import { type LegendItem } from '../view/legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
 import { Logger, getLogger } from '@fizz/logger';
-import { ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor } from '../store';
+import { ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor } from '../state';
 import { Sonifier } from '../audio/sonifier';
 import { type AxisCoord, AxisOrientation } from '../view/axis';
 

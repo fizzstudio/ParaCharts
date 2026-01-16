@@ -30,7 +30,7 @@ import { OscillatorAudioEngine, type AudioEngine } from '.';
 import { AudioNotificationType } from './AudioEngine';
 import { type Axis } from '../view/axis';
 import { PointDatapointView, type DataLayer } from '../view/layers';
-import { type ParaState } from '../store';
+import { type ParaState } from '../state';
 import { type ParaView } from '../paraview';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { BaseChartInfo } from '../chart_types';

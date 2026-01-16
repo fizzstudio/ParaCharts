@@ -12,7 +12,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { type Unsubscribe } from '@lit-app/state';
 import { ParaChart } from '../parachart/parachart';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import { Setting } from '../store';
+import { Setting } from '../state';
 
 type HoverListener = (event: PointerEvent) => void;
 

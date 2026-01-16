@@ -1,5 +1,5 @@
 
-import { ParaState } from '../store/parastore';
+import { ParaState } from '../state/parastate';
 import { formatBox } from '@fizz/parasummary';
 
 import Decimal from 'decimal.js';

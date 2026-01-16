@@ -1,6 +1,6 @@
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaComponent } from '../../components';
-import { type SettingControlInfo, type Setting, SettingsManager } from '../../store';
+import { type SettingControlInfo, type Setting, SettingsManager } from '../../state';
 //import { styles } from '../styles';
 
 import '@fizz/ui-components';

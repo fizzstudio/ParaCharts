@@ -1,5 +1,5 @@
 import { type PlaneSeriesView, PointPlotView, PointDatapointView, PlaneDatapointView, TrendLineView } from '.';
-import { type ScatterSettings, Setting, type DeepReadonly, PointChartType } from '../../../../store/settings_types';
+import { type ScatterSettings, Setting, type DeepReadonly, PointChartType } from '../../../../state/settings_types';
 import { DataSymbol, DataSymbols } from '../../../symbol';
 import { svg, TemplateResult } from 'lit';
 import { View } from '../../../base_view';

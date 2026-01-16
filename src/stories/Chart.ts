@@ -1,6 +1,6 @@
 
 //import { KeymapsInput } from '../../lib';
-import { type SettingsInput } from '../../lib/store/settings_types';
+import { type SettingsInput } from '../../lib/state/settings_types';
 
 import { html, nothing, TemplateResult } from 'lit';
 import { ParaChart } from '../../lib/parachart/parachart';

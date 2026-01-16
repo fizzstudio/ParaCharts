@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { PlaneChartInfo } from './plane_chart';
 import { AxisInfo } from '../common/axisinfo';
-import { type ParaState } from '../store';
+import { type ParaState } from '../state';
 import { type ParaView } from '../paraview';
 
 import { type ChartType } from '@fizz/paramanifest';

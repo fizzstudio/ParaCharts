@@ -1,5 +1,5 @@
 import { Logger, getLogger } from '@fizz/logger';
-import { ParaState } from '../store';
+import { ParaState } from '../state';
 
 export class ParaViewController {
   protected log: Logger = getLogger("ParaViewController");

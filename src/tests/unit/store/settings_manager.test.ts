@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { SettingsManager } from '../../../../lib/store/settings_manager';
-import type { SettingGroup, SettingsInput } from '../../../../lib/store/settings_types';
+import { SettingsManager } from '../../../../lib/state/settings_manager';
+import type { SettingGroup, SettingsInput } from '../../../../lib/state/settings_types';
 
 describe('SettingsManager', () => {
 
