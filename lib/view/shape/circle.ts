@@ -66,13 +66,13 @@ export class CircleShape extends Shape {
       let parent = this.parent as DatapointView;
       this._styleInfo.fill = `url(#Pattern${index})`;
 
-      if (this.paraview.store.isVisited(parent.seriesKey, index)) {
-        this._styleInfo.stroke = this.paraview.store.colors.colorValue('visit');
+      if (this.paraview.paraState.isVisited(parent.seriesKey, index)) {
+        this._styleInfo.stroke = this.paraview.paraState.colors.colorValue('visit');
         this._styleInfo.strokeWidth = 6;
       }
 
       return svg`
-      <defs>${this.paraview.store.colors.patternValueAt(index)}</defs>
+      <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
       <circle
         cx=${this._x}
         cy=${this._y}

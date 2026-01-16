@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { View } from '../base_view';
 import { type TickStrip } from './tick_strip';
 import { fixed } from '../../common/utils';
-import { type VertCardinalDirection, type HorizCardinalDirection } from '../../store/settings_types';
+import { type VertCardinalDirection, type HorizCardinalDirection } from '../../state/settings_types';
 
 import { svg } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';

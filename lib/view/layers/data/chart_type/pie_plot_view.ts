@@ -38,7 +38,7 @@ export class PieSlice extends RadialSlice {
   }
 
   computeLocation(): void {
-    if (this.paraview.store.settings.animation.isAnimationEnabled) {
+    if (this.paraview.paraState.settings.animation.isAnimationEnabled) {
       this._centralAngle = this.chart.animateRevealComplete
         ? this._params.percentage*360
         : 0;
@@ -53,7 +53,7 @@ export class PieSlice extends RadialSlice {
   }
 
   protected _createShapes() {
-    const isPattern = this.paraview.store.colors.palette.isPattern;
+    const isPattern = this.paraview.paraState.colors.palette.isPattern;
     this._shapes.forEach(shape => {
       shape.remove();
     });
@@ -68,13 +68,13 @@ export class PieSlice extends RadialSlice {
       annularThickness: this.chart.settings.annularThickness,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
+        this.paraview.paraState.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
       },
       pointerMove: (e) => {
         this.movePopupAction();
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.paraview.store.removePopup(this.id) : undefined
+        this.paraview.paraState.settings.chart.isShowPopups ? this.paraview.paraState.removePopup(this.id) : undefined
       },
     });
     this._shapes.push(slice);

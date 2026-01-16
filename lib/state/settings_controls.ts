@@ -12,7 +12,7 @@ import {
   type SliderSettingControlOptions,
   type ButtonSettingControlOptions,
 } from '../components/settings';
-import { ParaStore } from './parastore';
+import { ParaState } from './parastate';
 
 import { type TemplateResult } from 'lit';
 import { html, literal } from 'lit/static-html.js';
@@ -91,7 +91,7 @@ export class SettingControlManager extends State {
   
   @property() protected _settingControlInfo: {[key: string]: SettingControlInfo} = {};
 
-  constructor(protected _store: ParaStore) {
+  constructor(protected _paraState: ParaState) {
     super();
   }
 
@@ -108,10 +108,10 @@ export class SettingControlManager extends State {
       controlInfo.validator = controlOptions.validator;
       controlInfo.render = () => html`
         <${tag}
-          .value=${controlOptions.value ?? SettingsManager.get(controlOptions.key, this._store.settings)}
+          .value=${controlOptions.value ?? SettingsManager.get(controlOptions.key, this._paraState.settings)}
           .label=${controlOptions.label}
           .info=${controlInfo}
-          .store=${this._store}
+          .paraState=${this._paraState}
           ?hidden=${controlOptions.hidden}
           id="setting-${strToId(controlOptions.key)}"
         ></${tag}>

@@ -1,22 +1,22 @@
 
-import { type ParaStore } from '../store';
+import { type ParaState } from '../state';
 
 import { LitElement } from 'lit';
 import { StateController } from '@lit-app/state';
 
 export class ParaComponent extends LitElement {
 
-  protected _store!: ParaStore;
-  protected _storeState!: StateController<ParaStore>;
+  protected _paraState!: ParaState;
+  protected _storeState!: StateController<ParaState>;
 
 
-  get store() {
-    return this._store;
+  get paraState() {
+    return this._paraState;
   }
 
-  set store(store: ParaStore) {
-    this._store = store;
-    this._storeState = new StateController(this, store);
+  set paraState(paraState: ParaState) {
+    this._paraState = paraState;
+    this._storeState = new StateController(this, paraState);
   }
 
   extractStyles(id: string) {

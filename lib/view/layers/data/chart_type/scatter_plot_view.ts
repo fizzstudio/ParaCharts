@@ -1,5 +1,5 @@
 import { type PlaneSeriesView, PointPlotView, PointDatapointView, PlaneDatapointView, TrendLineView } from '.';
-import { type ScatterSettings, Setting, type DeepReadonly, PointChartType } from '../../../../store/settings_types';
+import { type ScatterSettings, Setting, type DeepReadonly, PointChartType } from '../../../../state/settings_types';
 import { DataSymbol, DataSymbols } from '../../../symbol';
 import { svg, TemplateResult } from 'lit';
 import { View } from '../../../base_view';
@@ -8,7 +8,7 @@ import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 import { strToId } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
-import { ScatterChartInfo } from '../../../../chart_types';
+import { PlaneChartInfo, ScatterChartInfo } from '../../../../chart_types';
 import { fixed } from '../../../../common/utils';
 import { Popup } from '../../../popup';
 
@@ -51,8 +51,8 @@ export class ScatterPlotView extends PointPlotView {
     //Note: this is the same as the PointChart implementation at the time I copied it over, except it doesn't sort at the end
     const xs: string[] = [];
     /*
-    for (const [p, i] of enumerate(this.paraview.store.model!.series[0].datapoints)) {
-      xs.push(formatBox(p.facetBox('x')!, this.paraview.store.getFormatType(`${this.parent.docView.type as PointChartType}Point`)));
+    for (const [p, i] of enumerate(this.paraview.paraState.model!.series[0].datapoints)) {
+      xs.push(formatBox(p.facetBox('x')!, this.paraview.paraState.getFormatType(`${this.parent.docView.type as PointChartType}Point`)));
       const xId = strToId(xs.at(-1)!);
       // if (this.selectors[i] === undefined) {
       //   this.selectors[i] = [];
@@ -60,7 +60,7 @@ export class ScatterPlotView extends PointPlotView {
       // this.selectors[i].push(`tick-x-${xId}`);
     }
       */
-    for (const [col, i] of enumerate(this.paraview.store.model!.series)) {
+    for (const [col, i] of enumerate(this.paraview.paraState.model!.series)) {
       const seriesView = this._newSeriesView(col.key);
       this._chartLandingView.append(seriesView);
       for (const [value, j] of enumerate(col)) {
@@ -90,8 +90,6 @@ export class ScatterPlotView extends PointPlotView {
         child.remove();
       }
     }
-    let trendLine = new ScatterTrendLineView(this);
-    this.append(trendLine);
   }
 
   updateOutliers() {
@@ -114,6 +112,12 @@ export class ScatterPlotView extends PointPlotView {
     return super.content(...options);
   }
 
+  protected _animEnd() {
+    super._animEnd()
+    const trendLine = new ScatterTrendLineView(this);
+    this.append(trendLine);
+  }
+
 }
 
 class ScatterPointView extends PointDatapointView {
@@ -123,10 +127,10 @@ class ScatterPointView extends PointDatapointView {
   isOutlier: boolean = false;
 
   computeX() {
-    const axisInfo = this.chart.chartInfo.axisInfo!;
+    const xInterval = (this.chart.chartInfo as PlaneChartInfo).xInterval!;
     // Scales points in proportion to the data range
-    const xTemp = (this.datapoint.facetValueNumericized('x')! - axisInfo.xLabelInfo.min!)
-      / axisInfo.xLabelInfo.range!;
+    const xTemp = (this.datapoint.facetValueNumericized('x')! - xInterval.start)
+      / (xInterval.end - xInterval.start);
     const parentWidth: number = this.chart.parent.width;
     return parentWidth * xTemp;
   }
@@ -148,7 +152,7 @@ class ScatterPointView extends PointDatapointView {
     if (this.symbolColor === undefined) {
       this.symbolColor = this.seriesProps.color;
     }
-    return this.paraview.store.isVisited(this.seriesKey, this.index)
+    return this.paraview.paraState.isVisited(this.seriesKey, this.index)
       ? -1
       : this.symbolColor;
   }
@@ -166,20 +170,20 @@ class ScatterPointView extends PointDatapointView {
       else {
         symbolType = types[8]
       }
-      const isShowOutliers = this.paraview.store.settings.type.scatter.isShowOutliers
+      const isShowOutliers = this.paraview.paraState.settings.type.scatter.isShowOutliers
       if (isShowOutliers && this.isOutlier) {
         color = 0
         symbolType = types[8]
       }
     }
     this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
-      strokeWidth: this.paraview.store.settings.chart.symbolStrokeWidth,
+      strokeWidth: this.paraview.paraState.settings.chart.symbolStrokeWidth,
       lighten: true,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
+        this.paraview.paraState.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.paraview.store.removePopup(this.id) : undefined
+        this.paraview.paraState.settings.chart.isShowPopups ? this.paraview.paraState.removePopup(this.id) : undefined
       },
     });
     this._symbol.role = 'datapoint'
@@ -210,7 +214,7 @@ class ScatterPointView extends PointDatapointView {
 
 export class ScatterTrendLineView extends TrendLineView {
   render() {
-    if (!this.paraview.store.settings.type.scatter.isDrawTrendLine) { return svg`` }
+    if (!this.paraview.paraState.settings.type.scatter.isDrawTrendLine) { return svg`` }
     return svg`
     <line x1=${this.x1} x2=${this.x2} y1=${this.y1} y2=${this.y2} style="stroke:red;stroke-width:3"/>
     `}
@@ -290,7 +294,7 @@ export class ClusterShellView extends View {
   }
 
   render() {
-    let colors = new Colors(this.paraview.store);
+    let colors = new Colors(this.paraview.paraState);
     return svg`<g>
       <polygon points=${this.pointsString} style="stroke:black; fill:none; stroke-width:2"/>
       <circle

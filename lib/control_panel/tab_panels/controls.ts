@@ -2,7 +2,7 @@
 import { ControlPanelTabPanel } from './tab_panel';
 import { AdvancedControlSettingsDialog } from '../dialogs';
 import { AnimationDialog } from '../dialogs';
-import { actionMap } from '../../store/action_map';
+import { actionMap } from '../../state/action_map';
 
 import {
   html, css,
@@ -25,13 +25,13 @@ export class ControlsPanel extends ControlPanelTabPanel {
 
   connectedCallback() {
     super.connectedCallback();
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'button',
       key: 'ui.isFullscreenEnabled',
       label: 'Fullscreen',
       parentView: 'controlPanel.tabs.controls.fullscreen',
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'animation.isAnimationEnabled',
       label: 'Animation enabled',
@@ -106,7 +106,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
             Keyboard Controls
           </button>
           <button
-            @click=${() => this.store.updateSettings(draft => {
+            @click=${() => this.paraState.updateSettings(draft => {
               draft.ui.isFullscreenEnabled = true;
             })}
           >
@@ -115,11 +115,11 @@ export class ControlsPanel extends ControlPanelTabPanel {
         </div>
 
         <div>
-          ${this._store.settingControls.getContent('controlPanel.tabs.controls')}
+          ${this._paraState.settingControls.getContent('controlPanel.tabs.controls')}
         </div>
 
         <section id="animation">
-          ${this._store.settingControls.getContent('controlPanel.tabs.controls.animation')}
+          ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.animation')}
           <button
             @click=${() => {
         this._animationDialogRef.value?.show()
@@ -130,7 +130,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
           <para-animation-dialog
             ${ref(this._animationDialogRef)}
             id="animation-settings-dialog"
-            .store=${this._store}
+            .paraState=${this._paraState}
           >
           </para-animation-dialog>
         </section>
@@ -153,7 +153,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
       <para-advanced-control-settings-dialog
         ${ref(this._advancedControlDialogRef)}
         id="advanced-control-settings-dialog"
-        .store=${this._store}
+        .paraState=${this._paraState}
       ></para-advanced-control-settings-dialog>
     `;
   }

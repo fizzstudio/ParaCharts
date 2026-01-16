@@ -1,4 +1,4 @@
-/* ParaCharts: ParaStore Data Store
+/* ParaCharts: ParaState Data Store
 Copyright (C) 2025 Fizz Studios
 
 This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,6 @@ enablePatches();
 
 import {
   dataFromManifest, type AllSeriesData, type ChartType, type Manifest,
-  isLineType,
   isPastryType,
   isVennType
 } from '@fizz/paramanifest';
@@ -50,6 +49,7 @@ import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
 import { defaults, chartTypeDefaults } from './settings_defaults';
 import { Colors } from '../common/colors';
+import { joinStrArray } from '../common/utils';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { actionMap } from './action_map';
@@ -124,6 +124,12 @@ export interface SparkBrailleInfo {
   isBar?: boolean;
 }
 
+export interface ParaStateCallbacks {
+  onUpdate?: () => void;
+  onNotice?: (type: string, data: any) => void;
+  onSettingChange?: (path: string, oldValue?: Setting, newValue?: Setting) => void;
+}
+
 /**
  * Convert a datapoint ID string of format `${seriesKey}-${index}` into a DatapointCursor.
  * @param id - The ID
@@ -158,7 +164,7 @@ export function makeSequenceId(seriesKey: string, index1: number, index2: number
   return `${seriesKey}-${index1}-${index2}`;
 }
 
-export class ParaStore extends State {
+export class ParaState extends State {
 
   readonly symbols = new DataSymbols();
 
@@ -209,13 +215,13 @@ export class ParaStore extends State {
   protected _summarizer!: Summarizer;
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
-  protected annotID: number = 0;
-  protected log: Logger = getLogger("ParaStore");
+  protected _annotID: number = 0;
+  protected log: Logger = getLogger("ParaState");
+  protected callbacks: ParaStateCallbacks = {};
 
   public idList: Record<string, boolean> = {};
 
   constructor(
-    public paraChart: ParaChart,
     protected _inputSettings: SettingsInput,
     // suppleteSettingsWith?: DeepReadonly<Settings>,
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -282,10 +288,30 @@ export class ParaStore extends State {
     return this._userTrendLines;
   }
 
+  nextAnnotID(): number {
+    return this._annotID++;
+  }
+
   protected _createSettings() {
     const hydratedSettings = SettingsManager.hydrateInput(this._inputSettings);
     SettingsManager.suppleteSettings(hydratedSettings, defaults);
     this.settings = hydratedSettings as Settings;
+  }
+
+  registerCallbacks(callbacks: ParaStateCallbacks) {
+    this.callbacks = { ...this.callbacks, ...callbacks };
+  }
+
+  requestUpdate() {
+    this.callbacks.onUpdate?.();
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+    this.callbacks.onSettingChange?.(path, oldValue, newValue);
+  }
+
+  postNotice(key: string, value: any) {
+    this.callbacks.onNotice?.(key, value);
   }
 
   setManifest(manifest: Manifest, data?: AllSeriesData) {
@@ -393,7 +419,7 @@ export class ParaStore extends State {
       this._settingObservers[path]?.forEach(observer =>
         observer(values.oldValue, values.newValue)
       );
-      this.paraChart.settingDidChange(path, values.oldValue, values.newValue);
+      this.settingDidChange(path, values.oldValue, values.newValue);
     }
   }
 
@@ -498,7 +524,7 @@ export class ParaStore extends State {
       announcement = msg;
       html = msg;
     } else if (Array.isArray(msg)) {
-      announcement = this._joinStrArray(msg, linebreak);
+      announcement = joinStrArray(msg, linebreak);
       html = announcement;
     } else {
       announcement = msg.text;
@@ -510,21 +536,6 @@ export class ParaStore extends State {
       this.announcement = { text: announcement, html, highlights, clear: clearAriaLive, startFrom };
       this.log.info('ANNOUNCE:', this.announcement.text);
     }
-  }
-
-  protected _joinStrArray(strArray: string[], linebreak?: string): string {
-    strArray = strArray.filter(line => /\S/.test(line));
-    // if the string array only contains blank strings, ignore it
-    if (strArray.length) {
-      const strArrayLen = strArray.length - 1;
-      return strArray.reduce((acc, line, i) => {
-        const lineEnd = (i === strArrayLen) ? '.' : '';
-        const linebreakstr = (acc) ? ` ${linebreak}` : '';
-        const accStr = acc.match(/[.,?:;]$/) ? acc : `${acc}.`;
-        return `${accStr} ${linebreakstr}${line}${lineEnd}`;
-      });
-    }
-    return '';
   }
 
   getDatapoint(datapointId: string): Datapoint {
@@ -561,7 +572,7 @@ export class ParaStore extends State {
     }
     // NB: Making _visitedDatapoints a lit-app/state property proved
     // problematic for performance
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
   protected _datapointSetHas(
@@ -605,12 +616,12 @@ export class ParaStore extends State {
 
   highlight(seriesKey: string, index: number) {
     this._highlightedDatapoints.add(makeDatapointId(seriesKey, index));
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
   clearHighlight(seriesKey: string, index: number) {
     this._highlightedDatapoints.delete(makeDatapointId(seriesKey, index));
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
   isHighlighted(seriesKey: string, index: number): boolean {
@@ -618,9 +629,8 @@ export class ParaStore extends State {
   }
 
   clearAllHighlights() {
-    this.popups.splice(0, this.popups.length)
     this._highlightedDatapoints.clear();
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
   get highlightedSequences() {
@@ -629,18 +639,17 @@ export class ParaStore extends State {
 
   highlightSequence(seriesKey: string, index1: number, index2: number) {
     this._highlightedSequences.add(makeSequenceId(seriesKey, index1, index2));
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
-  highlightSequenceHighlight(seriesKey: string, index1: number, index2: number) {
+  clearSequenceHighlight(seriesKey: string, index1: number, index2: number) {
     this._highlightedSequences.delete(makeSequenceId(seriesKey, index1, index2));
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
   clearAllSequenceHighlights() {
-    this.popups.splice(0, this.popups.length)
     this._highlightedSequences.clear();
-    this.paraChart.paraView.requestUpdate();
+    this.requestUpdate();
   }
 
   get selectedDatapoints() {
@@ -712,34 +721,6 @@ export class ParaStore extends State {
       : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.settings) as FormatType;
   }
 
-  async addAnnotation() {
-    const newAnnotationList: PointAnnotation[] = [];
-    for (const dpId of this._visitedDatapoints) {
-      const { seriesKey, index } = datapointIdToCursor(dpId);
-      const series = this.model!.atKey(seriesKey)!.getLabel();
-      const recordLabel = formatXYDatapointX(
-      this._model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint, 'raw');
-      let result = await this.paraChart.controlPanel.showAnnotDialog(dpId)
-      if (result[0] == 'cancel'){
-        continue
-      }
-      const annotationText = result[1]
-      if (annotationText) {
-      newAnnotationList.push({
-        type: "datapoint",
-        seriesKey,
-        index,
-        annotation: `${series}, ${recordLabel}: ${annotationText}`,
-        text: annotationText,
-        id: `${series}-${recordLabel}-${this.annotID}`,
-        isSelected: this.settings.ui.isLowVisionModeEnabled ? false : true,
-      });
-      this.annotID += 1;
-      }
-    }
-    this.annotations = [...this.annotations, ...newAnnotationList];
-  }
-
   annotatePoint(seriesKey: string, index: number, text: string) {
     if (this.annotations.find((annot: PointAnnotation) =>
       annot.seriesKey === seriesKey && annot.index === index && annot.text === text)) {
@@ -753,9 +734,9 @@ export class ParaStore extends State {
       index,
       annotation: `${seriesKey}, ${recordLabel}: ${text}`,
       text,
-      id: `${seriesKey}-${recordLabel}-${this.annotID}`
+      id: `${seriesKey}-${recordLabel}-${this._annotID}`
     } as PointAnnotation];
-    this.annotID++;
+    this._annotID++;
   }
 
   async showMDRAnnotations() {
@@ -970,7 +951,7 @@ export class ParaStore extends State {
         annotation: `${series.key}, ${series.rawData[index].x}: Added line break`,
         id: `line-break-${index}`
       })
-      this.paraChart.postNotice('addLineBreak', { seriesKey, index });
+      this.postNotice('addLineBreak', { seriesKey, index });
     }
     if (this.userLineBreaks.length) {
       this.clearUserTrendLines();
@@ -1035,7 +1016,7 @@ export class ParaStore extends State {
   clearUserLineBreaks() {
     this._userLineBreaks = [];
     this.annotations = this.annotations.filter(a => !/line-break/.test(a.id));
-    this.paraChart.postNotice('clearLineBreaks', null);
+    this.postNotice('clearLineBreaks', null);
   }
 
   clearUserTrendLines() {
@@ -1044,37 +1025,11 @@ export class ParaStore extends State {
 
   removePopup(id: string) {
     this.popups.splice(this.popups.findIndex(p => p.id === id), 1)
-    this.paraChart.paraView.requestUpdate()
+    this.requestUpdate()
   }
 
   clearPopups() {
     this.popups.splice(0, this.popups.length)
-  }
-
-  clipTo(seriesKey: string, index: number) {
-    const fraction = this.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey.toLowerCase(), index)!.x / this.paraChart.paraView.documentView!.chartLayers.width
-    const oldWidth = this.paraChart.paraView.clipWidth;
-    this.paraChart.paraView.clipWidth = Number(fraction)
-    for (let dpView of this.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
-      const pointDpView = dpView as PointDatapointView
-      dpView.completeLayout();
-      pointDpView.stopAnimation()
-    }
-    for (let dpView of this.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointViews) {
-      const pointDpView = dpView as PointDatapointView
-      pointDpView.alwaysClip = true;
-      if (pointDpView.x - 1 <= Number(fraction) * this.paraChart.paraView.documentView!.chartLayers.width
-        && pointDpView.x - 1 > oldWidth * this.paraChart.paraView.documentView!.chartLayers.width
-      ) {
-        pointDpView.popInAnimation()
-      }
-      else if (pointDpView.x - 1 > Number(fraction) * this.paraChart.paraView.documentView!.chartLayers.width) {
-        pointDpView.baseSymbolScale = 0;
-      }
-      loopParaviewRefresh(this.paraChart.paraView,
-        this.paraChart.paraView.store.settings.animation.popInAnimateRevealTimeMs
-        , 50);
-    }
   }
 
 }

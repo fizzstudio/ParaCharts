@@ -28,49 +28,49 @@ export class SoniSettingsDialog extends SettingControlContainer {
 
   connectedCallback() {
     super.connectedCallback();
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'sonification.isNotificationEnabled',
       label: 'Notification sounds',
       parentView: 'controlPanel.tabs.audio.sonification.dialog',
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'slider',
       key: 'sonification.hertzLower',
       label: 'Lower hertz',
       options: {
         min: 0,
         max: HERTZ.length - 1,
-        highBound: this._store.settings.sonification.hertzUpper - 1,
+        highBound: this._paraState.settings.sonification.hertzUpper - 1,
         step: 1
       },
       parentView: 'controlPanel.tabs.audio.sonification.dialog'
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'slider',
       key: 'sonification.hertzUpper',
       label: 'Upper hertz',
       options: {
         min: 0,
         max: HERTZ.length - 1,
-        lowBound: this._store.settings.sonification.hertzLower + 1,
+        lowBound: this._paraState.settings.sonification.hertzLower + 1,
         step: 1,
       },
       parentView: 'controlPanel.tabs.audio.sonification.dialog'
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'sonification.isRiffEnabled',
       label: 'Series riff enabled',
       parentView: 'controlPanel.tabs.audio.sonification.dialog',
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'sonification.isArpeggiateChords',
       label: 'Chords are arpeggiated',
       parentView: 'controlPanel.tabs.audio.sonification.dialog',
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'slider',
       key: 'sonification.riffSpeedIndex',
       label: 'Riff speed',
@@ -90,7 +90,7 @@ export class SoniSettingsDialog extends SettingControlContainer {
         title="Sonification Settings"
         .buttons=${[{ tag: 'cancel', text: this.btnText }]}
       >
-        ${this._store.settingControls.getContent('controlPanel.tabs.audio.sonification.dialog')}
+        ${this._paraState.settingControls.getContent('controlPanel.tabs.audio.sonification.dialog')}
       </fizz-dialog>
     `;
   }

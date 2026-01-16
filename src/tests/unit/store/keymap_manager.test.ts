@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { KeymapManager, HotkeyEvent } from '../../../../lib/store/keymap_manager';
-import type { ActionMap } from '../../../../lib/store/action_map';
+import { KeymapManager, HotkeyEvent } from '../../../../lib/state/keymap_manager';
+import type { ActionMap } from '../../../../lib/state/action_map';
 
 describe('KeymapManager', () => {
   const createManager = (actionMap?: Partial<ActionMap>) => new KeymapManager((actionMap ?? {}) as ActionMap);

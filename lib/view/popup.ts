@@ -47,13 +47,13 @@ export class Popup extends View {
     protected _label: Label;
     protected _box!: PathShape;
     protected _grid: GridLayout;
-    protected leftPadding = this.paraview.store.settings.popup.leftPadding;
-    protected rightPadding = this.paraview.store.settings.popup.rightPadding;
-    protected downPadding = this.paraview.store.settings.popup.downPadding;
-    protected upPadding = this.paraview.store.settings.popup.upPadding;
+    protected leftPadding = this.paraview.paraState.settings.popup.leftPadding;
+    protected rightPadding = this.paraview.paraState.settings.popup.rightPadding;
+    protected downPadding = this.paraview.paraState.settings.popup.downPadding;
+    protected upPadding = this.paraview.paraState.settings.popup.upPadding;
     protected _horizShift = 0;
     protected arrowPosition: "up" | "bottom" | "left" | "right" = "bottom";
-    protected _wrapWidth: number = this.paraview.store.settings.popup.maxWidth;
+    protected _wrapWidth: number = this.paraview.paraState.settings.popup.maxWidth;
     protected pointerControlled = false;
 
     get grid() {
@@ -73,7 +73,7 @@ export class Popup extends View {
     }
 
     get margin() {
-        return this.popupLabelOptions.margin ?? this.paraview.store.settings.popup.margin;
+        return this.popupLabelOptions.margin ?? this.paraview.paraState.settings.popup.margin;
     }
 
     get wrapWidth() {
@@ -104,15 +104,15 @@ export class Popup extends View {
         super(paraview);
         this.applyDefaults();
         this._label = new Label(this.paraview, this.popupLabelOptions)
-        if (this.paraview.store.settings.popup.backgroundColor === "dark") {
+        if (this.paraview.paraState.settings.popup.backgroundColor === "dark") {
             this._label.styleInfo = {
                 stroke: 'none',
                 fill: this.popupLabelOptions.fill ? this.popupLabelOptions.fill
                     : this.popupLabelOptions.type == "chord" ? "black"
-                        : this.paraview.store.colors.contrastValueAt(this.popupLabelOptions.color!)
+                        : this.paraview.paraState.colors.contrastValueAt(this.popupLabelOptions.color!)
             };
         }
-        if (this.paraview.store.settings.ui.isLowVisionModeEnabled) {
+        if (this.paraview.paraState.settings.ui.isLowVisionModeEnabled) {
             this._label.styleInfo = {
                 stroke: 'none',
                 fill: "black"
@@ -146,7 +146,7 @@ export class Popup extends View {
                 this.generateBox(popupShapeOptions)
             }
         }
-        if (this.paraview.store.type == "waterfall") {
+        if (this.paraview.paraState.type == "waterfall") {
             if (this.popupLabelOptions.points!) {
                 const dpView = this.popupLabelOptions.points![0] as WaterfallBarView;
                 if (dpView.datapoint.facetValueAsNumber('y')! >= 0 && this.box.intersects(dpView.label!)) {
@@ -193,22 +193,22 @@ export class Popup extends View {
             this.pointerControlled = this.popupLabelOptions.pointerControlled;
         }
         if (!this.popupShapeOptions.fill) {
-            this.popupShapeOptions.fill = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
-                : this.paraview.store.settings.popup.backgroundColor === "light" ?
-                    this.paraview.store.colors.lighten(this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color), 6)
-                    : this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color);
+            this.popupShapeOptions.fill = this.paraview.paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+                : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
+                    this.paraview.paraState.colors.lighten(this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.color), 6)
+                    : this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.color);
         }
         if (!this.popupShapeOptions.stroke) {
-            this.popupShapeOptions.stroke = this.paraview.store.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
-                : this.paraview.store.settings.popup.backgroundColor === "light" ?
-                    this.paraview.store.colors.colorValueAt(this.popupLabelOptions.color)
+            this.popupShapeOptions.stroke = this.paraview.paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+                : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
+                    this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.color)
                     : "black";
         }
-        if (!this.paraview.store.settings.ui.isLowVisionModeEnabled) {
-            this.popupShapeOptions.fill = `${this.popupShapeOptions.fill.slice(0, -1)}, ${this.paraview.store.settings.popup.opacity})`;
+        if (!this.paraview.paraState.settings.ui.isLowVisionModeEnabled) {
+            this.popupShapeOptions.fill = `${this.popupShapeOptions.fill.slice(0, -1)}, ${this.paraview.paraState.settings.popup.opacity})`;
         }
         if (!this.popupShapeOptions.shape) {
-            this.popupShapeOptions.shape = this.paraview.store.settings.popup.shape;
+            this.popupShapeOptions.shape = this.paraview.paraState.settings.popup.shape;
         }
     }
 
@@ -282,7 +282,7 @@ export class Popup extends View {
             this.popupLabelOptions.items!.forEach((item, i) => {
                 views.push(DataSymbol.fromType(
                     this.paraview,
-                    this.paraview.store.settings.chart.isDrawSymbols
+                    this.paraview.paraState.settings.chart.isDrawSymbols
                         ? (item.symbol ?? 'square.solid')
                         : 'square.solid',
                     {
@@ -492,33 +492,33 @@ export class PopupSettingsDialog extends ParaComponent {
 
     connectedCallback() {
         super.connectedCallback();
-        this._store.settingControls.add({
+        this._paraState.settingControls.add({
             type: 'dropdown',
             key: 'popup.shape',
             label: 'Shape',
             options: { options: ["box", "boxWithArrow"] },
             parentView: 'controlPanel.tabs.chart.dialog.popups'
         });
-        this._store.settingControls.add({
+        this._paraState.settingControls.add({
             type: 'dropdown',
             key: 'popup.activation',
             label: 'Activate popups on',
             options: { options: ["onHover", "onFocus", "onSelect"] },
             parentView: 'controlPanel.tabs.chart.dialog.popups'
         });
-        this._store.settingControls.add({
+        this._paraState.settingControls.add({
             type: 'slider',
             key: 'popup.opacity',
             label: 'Opacity',
             options: {
                 min: 0,
                 max: 1,
-                //highBound: this._store.settings.sonification.hertzUpper - 1,
+                //highBound: this._paraState.settings.sonification.hertzUpper - 1,
                 step: .1
             },
             parentView: 'controlPanel.tabs.chart.dialog.popups'
         });
-        this._store.settingControls.add({
+        this._paraState.settingControls.add({
             type: 'textfield',
             key: 'popup.maxWidth',
             label: 'Max width',
@@ -529,7 +529,7 @@ export class PopupSettingsDialog extends ParaComponent {
             },
             parentView: 'controlPanel.tabs.chart.dialog.popups',
         });
-        this._store.settingControls.add({
+        this._paraState.settingControls.add({
             type: 'textfield',
             key: 'popup.leftPadding',
             label: 'Left padding',
@@ -540,7 +540,7 @@ export class PopupSettingsDialog extends ParaComponent {
             },
             parentView: 'controlPanel.tabs.chart.dialog.popups',
         });
-        this._store.settingControls.add({
+        this._paraState.settingControls.add({
             type: 'textfield',
             key: 'popup.rightPadding',
             label: 'Right padding',
@@ -551,7 +551,7 @@ export class PopupSettingsDialog extends ParaComponent {
             },
             parentView: 'controlPanel.tabs.chart.dialog.popups',
         });
-        this._store.settingControls.add({
+        this._paraState.settingControls.add({
             type: 'textfield',
             key: 'popup.upPadding',
             label: 'Up padding',
@@ -562,7 +562,7 @@ export class PopupSettingsDialog extends ParaComponent {
             },
             parentView: 'controlPanel.tabs.chart.dialog.popups',
         });
-        this._store.settingControls.add({
+        this._paraState.settingControls.add({
             type: 'textfield',
             key: 'popup.downPadding',
             label: 'Down padding',
@@ -573,7 +573,7 @@ export class PopupSettingsDialog extends ParaComponent {
             },
             parentView: 'controlPanel.tabs.chart.dialog.popups',
         });
-        this._store.settingControls.add({
+        this._paraState.settingControls.add({
             type: 'textfield',
             key: 'popup.margin',
             label: 'Vertical margin',
@@ -584,7 +584,7 @@ export class PopupSettingsDialog extends ParaComponent {
             },
             parentView: 'controlPanel.tabs.chart.dialog.popups',
         });
-        this._store.settingControls.add({
+        this._paraState.settingControls.add({
             type: 'textfield',
             key: 'popup.borderRadius',
             label: 'Border radius',
@@ -595,7 +595,7 @@ export class PopupSettingsDialog extends ParaComponent {
             },
             parentView: 'controlPanel.tabs.chart.dialog.popups',
         });
-        this._store.settingControls.add({
+        this._paraState.settingControls.add({
             type: 'dropdown',
             key: 'popup.backgroundColor',
             label: 'Color mode',
@@ -618,7 +618,7 @@ export class PopupSettingsDialog extends ParaComponent {
           <div id="popup-settings"
             class="popup-views"
           >
-            ${this._store.settingControls.getContent('controlPanel.tabs.chart.dialog.popups')}
+            ${this._paraState.settingControls.getContent('controlPanel.tabs.chart.dialog.popups')}
           </div>
         </div>
       </fizz-dialog>
@@ -670,7 +670,7 @@ export class PopupPathShape extends PathShape {
         }
 
     protected get _pathD() {
-        const rad = this.paraview.store.settings.popup.borderRadius;
+        const rad = this.paraview.paraState.settings.popup.borderRadius;
         let addCurve;
         if (this.shape == "boxWithArrow" && this.options.arrowPosition === "up") {
             addCurve = this.curvePoints["boxWithUpArrow"];

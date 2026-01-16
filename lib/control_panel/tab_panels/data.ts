@@ -30,7 +30,7 @@ export class DataPanel extends ControlPanelTabPanel {
   }
 
   protected _saveData() {
-    const csv = this._store.getModelCsv();
+    const csv = this._paraState.getModelCsv();
     const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'});
     const url = URL.createObjectURL(blob);
     this._controlPanel.paraChart.paraView.downloadContent(url, 'csv');
@@ -89,7 +89,7 @@ export class DataPanel extends ControlPanelTabPanel {
                 @click=${() => {
                   this.isSparkBrailleVisible = !this.isSparkBrailleVisible;
                   // XXX Does this work?
-                  paraView.store.updateSettings(draft => {
+                  paraView.paraState.updateSettings(draft => {
                     draft.controlPanel.isSparkBrailleVisible = this.isSparkBrailleVisible;
                   })
                   //this.controlPanel.requestUpdate();
@@ -108,7 +108,7 @@ export class DataPanel extends ControlPanelTabPanel {
                 html`
                   <pre>
                     <code>
-                      ${JSON.stringify(this._store.jimerator!.jim, undefined, 2)}
+                      ${JSON.stringify(this._paraState.jimerator!.jim, undefined, 2)}
                     </code>
                   </pre>`
               )}
@@ -125,7 +125,7 @@ export class DataPanel extends ControlPanelTabPanel {
             @click=${() => {
               this.controlPanel.dialog.show('Data table', html`
                 <para-datatable
-                  .model=${this._store.model}
+                  .model=${this._paraState.model}
                 >
                 </para-datatable>
               `);
@@ -158,13 +158,13 @@ export class DataPanel extends ControlPanelTabPanel {
         -->
         <fizz-sparkbraille
           ${ref(this._sparkBrailleRef)}
-          ?bar=${this._store.sparkBrailleInfo?.isBar}
-          ?isProp=${this._store.sparkBrailleInfo?.isProportional}
-          data=${this._store.sparkBrailleInfo?.isProportional
+          ?bar=${this._paraState.sparkBrailleInfo?.isBar}
+          ?isProp=${this._paraState.sparkBrailleInfo?.isProportional}
+          data=${this._paraState.sparkBrailleInfo?.isProportional
             ? ''
-            : this._store.sparkBrailleInfo?.data ?? ''}
-          labeledData=${this._store.sparkBrailleInfo?.isProportional
-            ? this._store.sparkBrailleInfo?.data ?? ''
+            : this._paraState.sparkBrailleInfo?.data ?? ''}
+          labeledData=${this._paraState.sparkBrailleInfo?.isProportional
+            ? this._paraState.sparkBrailleInfo?.data ?? ''
             : ''}
           @select=${(e: CustomEvent) => {
             const index = e.detail*2;

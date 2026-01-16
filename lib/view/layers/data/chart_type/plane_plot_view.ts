@@ -26,6 +26,7 @@ import { DatapointView, SeriesView } from '../../../data';
 //import { type Actions, type Action } from '../input/actions';
 
 import { ParaView } from '../../../../paraview';
+import { Setting } from '../../../../state';
 
 import { PlaneDatapoint, Datapoint } from '@fizz/paramodel';
 
@@ -57,6 +58,14 @@ export abstract class PlanePlotView extends DataLayer {
 
   get selectedDatapointViews() {
     return super.selectedDatapointViews as PlaneDatapointView[];
+  }
+
+  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+    if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`].includes(path)) {
+      this.paraview.createDocumentView();
+      this.paraview.requestUpdate();
+    }
+    super.settingDidChange(path, oldValue, newValue);
   }
 
   /*
@@ -174,7 +183,7 @@ export abstract class PlaneDatapointView extends DatapointView {
     //   {
     //     attr: literal`data-label`,
     //     value:
-    //     formatXYDatapointX(this.datapoint, this.paraview.store.getFormatType('domId')),
+    //     formatXYDatapointX(this.datapoint, this.paraview.paraState.getFormatType('domId')),
     //   },
     //   {
     //     attr: literal`data-centroid`,
@@ -230,11 +239,11 @@ export abstract class PlaneDatapointView extends DatapointView {
     // for (let point of this.series.rawData){
     //   data.push(point.y)
     // }
-    // if (this.paraview.store.type == "bar" || this.paraview.store.type == "column"){
-    //   this.paraview.store.updateSettings(draft => {
+    // if (this.paraview.paraState.type == "bar" || this.paraview.paraState.type == "column"){
+    //   this.paraview.paraState.updateSettings(draft => {
     //   draft.controlPanel.isSparkBrailleBar = true
     // })};
-    // this.paraview.store.sparkBrailleData = data.join(' ');
+    // this.paraview.paraState.sparkBrailleData = data.join(' ');
     /*todo().deets!.sparkBrailleData = this.series.data.join(' ');
     if (todo().controller.settingStore.settings.sonification.isSoniEnabled) {
       this.chart.sonifier.playDatapoints(...visited.map(v => v.datapoint));

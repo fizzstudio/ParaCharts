@@ -65,7 +65,7 @@ export class WaterfallPlotView extends PlanePlotView {
     // Each bar is surrounded by 1/2 `barGap` on each side; so the first
     // bar will have 1/2 `barGap` on its left, ditto for the last bar
     // on its right, and each bar is separated by `barGap`
-    this._numBars = this.paraview.store.model!.series[0].length;
+    this._numBars = this.paraview.paraState.model!.series[0].length;
     let maxBarWidth = this._width / this._numBars;
     let gapWidth = 0;
     if (maxBarWidth >= MIN_BAR_WIDTH_FOR_GAPS) {
@@ -80,9 +80,9 @@ export class WaterfallPlotView extends PlanePlotView {
   }
 
   protected _createDatapoints() {
-    const seriesView: PlaneSeriesView = new PlaneSeriesView(this, this.paraview.store.model!.seriesKeys[0]);
+    const seriesView: PlaneSeriesView = new PlaneSeriesView(this, this.paraview.paraState.model!.seriesKeys[0]);
     this._chartLandingView.append(seriesView);
-    this.paraview.store.model!.series[0].datapoints.forEach((_dp, i) => {
+    this.paraview.paraState.model!.series[0].datapoints.forEach((_dp, i) => {
       seriesView.append(new WaterfallBarView(seriesView, i));
     });
   }
@@ -146,8 +146,8 @@ export class WaterfallBarView extends PlaneDatapointView {
 
   protected _updateStyleInfo(styleInfo: StyleInfo) {
     let colorValue: string;
-    const palIdx = this.paraview.store.colors.indexOfPalette('semantic');
-    const pal = this.paraview.store.colors.palettes[palIdx];
+    const palIdx = this.paraview.paraState.colors.indexOfPalette('semantic');
+    const pal = this.paraview.paraState.colors.palettes[palIdx];
     if (this.index && !this.isLast) {
       colorValue = this.datapoint.facetValueAsNumber('y')! >= 0
         ? pal.colors[0].value
@@ -155,16 +155,16 @@ export class WaterfallBarView extends PlaneDatapointView {
     } else {
       colorValue = pal.colors[2].value;
     }
-    // let colorValue = this.chart.paraview.store.colors.colorValueAt(this.color);
+    // let colorValue = this.chart.paraview.paraState.colors.colorValueAt(this.color);
     styleInfo.fill = colorValue;
     //styleInfo.stroke = colorValue;
-    //styleInfo.strokeWidth = this.paraview.store.settings.chart.strokeWidth;
+    //styleInfo.strokeWidth = this.paraview.paraState.settings.chart.strokeWidth;
   }
 
   computeLocation() {
     const idealWidth = this.chart.barWidth;
     this._width = this.chart.barWidth;
-    if (this.paraview.store.settings.animation.isAnimationEnabled) {
+    if (this.paraview.paraState.settings.animation.isAnimationEnabled) {
       this._height = 0;
       this._y = 0;
     } else {
@@ -175,9 +175,10 @@ export class WaterfallBarView extends PlaneDatapointView {
   }
 
   beginAnimStep(bezT: number, linearT: number): void {
-    const pxPerYUnit = this.chart.parent.logicalHeight / this.chart.chartInfo.axisInfo!.yLabelInfo.range!;
+    const yRange = this.chart.chartInfo.yInterval!.end - this.chart.chartInfo.yInterval!.start;
+    const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
     const zeroHeight = this.chart.parent.logicalHeight
-      - (this.chart.chartInfo.axisInfo!.yLabelInfo.max! * pxPerYUnit);
+      - (this.chart.chartInfo.yInterval!.end * pxPerYUnit);
     this._height = Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit * bezT);
 
     if (this.index) {
@@ -230,7 +231,7 @@ export class WaterfallBarView extends PlaneDatapointView {
       this._label = new Label(this.paraview, {
         text,
         id: this._id + '-blb',
-        classList: [`${this.paraview.store.type}-label`],
+        classList: [`${this.paraview.paraState.type}-label`],
         role: 'datapoint',
       });
       this.append(this._label);
@@ -255,8 +256,8 @@ export class WaterfallBarView extends PlaneDatapointView {
         this._label.top = this.bottom + this.chart.chartInfo.settings.barLabelGap;
       }
       if (this.chart.chartInfo.settings.labelPosition !== 'outside') {
-        const palIdx = this.paraview.store.colors.indexOfPalette('semantic');
-        const pal = this.paraview.store.colors.palettes[palIdx];
+        const palIdx = this.paraview.paraState.colors.indexOfPalette('semantic');
+        const pal = this.paraview.paraState.colors.palettes[palIdx];
 
         this._label.styleInfo = {
           stroke: 'none',
@@ -271,7 +272,7 @@ export class WaterfallBarView extends PlaneDatapointView {
   }
 
   protected _createShapes() {
-    const isPattern = this.paraview.store.colors.palette.isPattern;
+    const isPattern = this.paraview.paraState.colors.palette.isPattern;
     this._shapes.forEach(shape => {
       shape.remove();
     });
@@ -283,13 +284,13 @@ export class WaterfallBarView extends PlaneDatapointView {
       height: this._height,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
+        this.paraview.paraState.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
       },
       pointerMove: (e) => {
         this.movePopupAction()
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.paraview.store.removePopup(this.id) : undefined
+        this.paraview.paraState.settings.chart.isShowPopups ? this.paraview.paraState.removePopup(this.id) : undefined
       },
     }));
     if (this.index) {
