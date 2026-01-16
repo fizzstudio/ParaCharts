@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -33,7 +33,11 @@ jobs:
           timeout_minutes: 15
           max_attempts: 3
           retry_wait_seconds: 30
-          command: npm ci
+          command: npm ci --verbose
+
+      - name: Show npm log tail on failure
+        if: failure()
+        run: tail -200 /home/runner/.npm/_logs/*.log || true
 
       - name: Build
         run: npm run build
