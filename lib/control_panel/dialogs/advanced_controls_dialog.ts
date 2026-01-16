@@ -32,7 +32,7 @@ export class AdvancedControlSettingsDialog extends ParaComponent {
 
   connectedCallback() {
     super.connectedCallback();
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'radio',
       key: 'controlPanel.tabLabelStyle',
       label: 'Tab label style',
@@ -52,25 +52,25 @@ export class AdvancedControlSettingsDialog extends ParaComponent {
       },
       parentView: 'controlPanel.tabs.controls.dialog.tabLabels'
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'controlPanel.isCaptionVisible',
       label: 'Caption visible',
       parentView: 'controlPanel.tabs.controls.dialog.settings',
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'controlPanel.isExplorationBarVisible',
       label: 'Exploration bar visible',
       parentView: 'controlPanel.tabs.controls.dialog.settings',
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'controlPanel.caption.isCaptionExternalWhenControlPanelClosed',
       label: 'Caption external when control panel closed',
       parentView: 'controlPanel.tabs.controls.dialog.settings',
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'controlPanel.caption.isExplorationBarBeside',
       label: 'Exploration bar is beside caption',
@@ -89,10 +89,10 @@ export class AdvancedControlSettingsDialog extends ParaComponent {
           <div id="advanced"
             class="advanced-views"
           >
-            ${this._store.settingControls.getContent('controlPanel.tabs.controls.dialog.settings')}
+            ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.settings')}
           </div>
           <div>
-            ${this._store.settingControls.getContent('controlPanel.tabs.controls.dialog.tabLabels')}
+            ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.tabLabels')}
           </div>
         </div>
       </fizz-dialog>

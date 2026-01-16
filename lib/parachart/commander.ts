@@ -17,14 +17,14 @@ export class Commander {
   protected _commands!: Partial<CommandMap>;
 
   protected constructor(paraView: ParaView) {
-    const store = paraView.store;
+    const paraState = paraView.paraState;
     // Always return the current chart info object (i.e., don't let the
     // commands close over a value that might be removed)
     const chartInfo = () => paraView.documentView!.chartInfo;
     const chartView = () => paraView.documentView!.chartLayers.dataLayer;
     this._commands = {
       key(keyId: string): boolean {
-        return store.keymapManager.onKeydown(keyId);
+        return paraState.keymapManager.onKeydown(keyId);
       },
       click(seriesKey: string, index: number, isAdd = false): boolean {
         const datapointView = chartView().datapointView(seriesKey, index);

@@ -93,7 +93,7 @@ export class AxisInfo {
   protected _xLabelInfo!: AxisLabelInfo;
   protected _yLabelInfo!: AxisLabelInfo;
 
-  constructor(protected _store: ParaState, protected _options: AxisOptions) {
+  constructor(protected _paraState: ParaState, protected _options: AxisOptions) {
     if (_options.xTiers) {
       this._xLabelInfo = {labelTiers: _options.xTiers};
     } else {
@@ -119,26 +119,26 @@ export class AxisInfo {
   }
 
   get horizFacet(): Facet {
-    // return (this._store.model as PlaneModel).getAxisFacet('horiz')
-    //   ?? this._store.model!.getFacet(this._options.isXVertical ? 'y' : 'x')!;
+    // return (this._paraState.model as PlaneModel).getAxisFacet('horiz')
+    //   ?? this._paraState.model!.getFacet(this._options.isXVertical ? 'y' : 'x')!;
     // const facetKey = this._options.isXVertical
-    //     ? this._store.model!.dependentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
-    //     : this._store.model!.independentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
-    // return this._store.model!.getFacet(facetKey)!
-    return (this._store.model as PlaneModel).getAxisFacet(this._options.isXVertical
+    //     ? this._paraState.model!.dependentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
+    //     : this._paraState.model!.independentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
+    // return this._paraState.model!.getFacet(facetKey)!
+    return (this._paraState.model as PlaneModel).getAxisFacet(this._options.isXVertical
       ? 'vert'
       : 'horiz'
     )!;
   }
 
   get vertFacet(): Facet {
-    // return (this._store.model as PlaneModel).getAxisFacet('vert')
-    //   ?? this._store.model!.getFacet(this._options.isXVertical ? 'x' : 'y')!;
+    // return (this._paraState.model as PlaneModel).getAxisFacet('vert')
+    //   ?? this._paraState.model!.getFacet(this._options.isXVertical ? 'x' : 'y')!;
     // const facetKey = this._options.isXVertical
-    //     ? this._store.model!.independentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
-    //     : this._store.model!.dependentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
-    // return this._store.model!.getFacet(facetKey)!
-    return (this._store.model as PlaneModel).getAxisFacet(this._options.isXVertical
+    //     ? this._paraState.model!.independentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
+    //     : this._paraState.model!.dependentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
+    // return this._paraState.model!.getFacet(facetKey)!
+    return (this._paraState.model as PlaneModel).getAxisFacet(this._options.isXVertical
       ? 'horiz'
       : 'vert'
     )!;
@@ -160,18 +160,18 @@ export class AxisInfo {
 
   protected _computeXLabels(xMin: number, xMax: number) {
     return computeLabels(
-      this._store.settings.axis.x.minValue === 'unset'
+      this._paraState.settings.axis.x.minValue === 'unset'
         ? xMin
-        : this._store.settings.axis.x.minValue as number,
-      this._store.settings.axis.x.maxValue === 'unset'
+        : this._paraState.settings.axis.x.minValue as number,
+      this._paraState.settings.axis.x.maxValue === 'unset'
         ? xMax
-        : this._store.settings.axis.x.maxValue as number,
+        : this._paraState.settings.axis.x.maxValue as number,
       false);
   }
 
   protected _computeYLabels(yMin: number, yMax: number) {
-    if (this._store.settings.axis.y.interval !== 'unset') {
-      return computeLabelsFromInterval(yMin, yMax, this._store.settings.axis.y.interval, false);
+    if (this._paraState.settings.axis.y.interval !== 'unset') {
+      return computeLabelsFromInterval(yMin, yMax, this._paraState.settings.axis.y.interval, false);
     } else {
       return computeLabels(yMin, yMax, false); //this._model.depFormat === 'percent');
     }
@@ -183,8 +183,8 @@ export class AxisInfo {
         Math.min(...this._options.xValues),
         Math.max(...this._options.xValues));
     } else {
-      const labels = this._store.model!.series[0].datapoints.map(
-        (p) => formatBox(p.facetBox('x')!, this._store.getFormatType('horizTick'))
+      const labels = this._paraState.model!.series[0].datapoints.map(
+        (p) => formatBox(p.facetBox('x')!, this._paraState.getFormatType('horizTick'))
       );
       this._xLabelInfo = {
         labelTiers: [labels]
@@ -193,12 +193,12 @@ export class AxisInfo {
   }
 
   protected _computeYLabelInfo() {
-    const yMin = this._store.settings.axis.y.minValue === 'unset'
+    const yMin = this._paraState.settings.axis.y.minValue === 'unset'
       ? this._options.yMin ?? Math.min(...this._options.yValues)
-      : this._store.settings.axis.y.minValue;
-    const yMax = this._store.settings.axis.y.maxValue === 'unset'
+      : this._paraState.settings.axis.y.minValue;
+    const yMax = this._paraState.settings.axis.y.maxValue === 'unset'
       ? this._options.yMax ?? Math.max(...this._options.yValues)
-      : this._store.settings.axis.y.maxValue;
+      : this._paraState.settings.axis.y.maxValue;
     this._yLabelInfo = this._computeYLabels(yMin, yMax);
   }
 

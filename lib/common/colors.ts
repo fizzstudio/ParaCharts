@@ -65,7 +65,7 @@ export class Colors {
   private active = 'hsl(270, 50%, 65%)';
   protected _prevSelectedColor: string = ''
 
-  constructor(protected _store: ParaState) {
+  constructor(protected _paraState: ParaState) {
     this.palettes = [
       {
         key: 'diva',
@@ -921,15 +921,15 @@ export class Colors {
         ]
       },
     ];
-    if (_store.settings.color.colorMap) {
-      this.setColorMap(..._store.settings.color.colorMap.split(',').map(c => c.trim()));
+    if (_paraState.settings.color.colorMap) {
+      this.setColorMap(..._paraState.settings.color.colorMap.split(',').map(c => c.trim()));
     }
   }
 
   get paletteKey() {
-    return this._store.settings.color.colorVisionMode === 'normal'
-      ? this._store.settings.color.colorPalette
-      : this._store.settings.color.colorVisionMode;
+    return this._paraState.settings.color.colorVisionMode === 'normal'
+      ? this._paraState.settings.color.colorPalette
+      : this._paraState.settings.color.colorVisionMode;
   }
 
   get palette() {
@@ -1080,7 +1080,7 @@ export class Colors {
 
   selectPaletteWithKey(key: string) {
     this._prevSelectedColor = this.paletteKey
-    this._store.updateSettings(draft => {
+    this._paraState.updateSettings(draft => {
       draft.color.colorPalette = key;
     });
   }

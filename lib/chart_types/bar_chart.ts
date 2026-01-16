@@ -116,17 +116,17 @@ export class BarChartInfo extends PlaneChartInfo {
     // XXX needs to be y units, not pixels
     // At this point, there is no view object to get that information from
     //yValues[idxMax] += numBars*this.settings.stackInsideGap;
-    // this._axisInfo = new AxisInfo(this._store, {
-    //   // xTiers: [this.paraview.store.model!.allFacetValues('x')!.map(x =>
-    //   //   formatBox(x, 'barCluster', this.paraview.store))],
+    // this._axisInfo = new AxisInfo(this._paraState, {
+    //   // xTiers: [this.paraview.paraState.model!.allFacetValues('x')!.map(x =>
+    //   //   formatBox(x, 'barCluster', this.paraview.paraState))],
     //   xTiers: [Object.keys(this._clusteredData)],
     //   yValues: yValues,
     //   yMin: Math.min(0, Math.min(...yValues)),
     //   isXInterval: true,
     //   // manifest can override this
-    //   isXVertical: this._store.type === 'bar'
+    //   isXVertical: this._paraState.type === 'bar'
     // });
-    const numSeries = this._store.model!.numSeries;
+    const numSeries = this._paraState.model!.numSeries;
     if (this.settings.stacking === 'standard') {
       this._stacksPerCluster = 1;
     } else if (this.settings.stacking === 'none') {
@@ -136,12 +136,12 @@ export class BarChartInfo extends PlaneChartInfo {
   }
 
   protected get _isXVertical(): boolean {
-    return this._store.type === 'bar';
+    return this._paraState.type === 'bar';
   }
 
   protected _facetTickLabelValues(facetKey: string): string[] {
     if (facetKey === 'x') {
-      return this._store.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'raw'));
+      return this._paraState.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'raw'));
     } else if (facetKey === 'y') {
       const yValues = Object.values(this._clusteredData).flatMap(c =>
         Object.values(c.stacks).map(s =>
@@ -184,17 +184,17 @@ export class BarChartInfo extends PlaneChartInfo {
   }
 
   protected _clusterData() {
-    const settings = this._store.settings.type[this._type] as BarSettings;
+    const settings = this._paraState.settings.type[this._type] as BarSettings;
     const clusterMap: BarClusterMap = {};
-    const xs = this._store.model!.series[0].datapoints.map(dp => dp.facetBox('x')!);
+    const xs = this._paraState.model!.series[0].datapoints.map(dp => dp.facetBox('x')!);
 
     const clusters: BarCluster[] = [];
 
-    // if (this.paraview.store.settings.type.bar.clusterBy === 'facet') {
-    //   for (const facet of this.paraview.store.model!.facets) {
+    // if (this.paraview.paraState.settings.type.bar.clusterBy === 'facet') {
+    //   for (const facet of this.paraview.paraState.model!.facets) {
     //     const cluster: Cluster = {};
     //     clusterMap[facet.key] = cluster;
-    //     for (const series of this.paraview.store.model!.series) {
+    //     for (const series of this.paraview.paraState.model!.series) {
     //       const item: StackItem = {
     //         series: series.key,
     //         value: series.facet(facet.key)![0] as Box<'number'>
@@ -208,7 +208,7 @@ export class BarChartInfo extends PlaneChartInfo {
 
     for (const [x, i] of enumerate(xs)) {
       //const clusterKey = this._model.format(xSeries.atBoxed(i), 'barCluster');
-      const clusterKey = formatBox(x, this._store.getFormatType('barCluster'));
+      const clusterKey = formatBox(x, this._paraState.getFormatType('barCluster'));
       let cluster = clusterMap[clusterKey];
       if (!cluster) {
         cluster = new BarCluster(this, clusterKey);
@@ -217,8 +217,8 @@ export class BarChartInfo extends PlaneChartInfo {
       }
     }
 
-    const allSeries = [...this._store.model!.series];
-    if (this._store.type === 'column' && settings.stacking === 'standard') {
+    const allSeries = [...this._paraState.model!.series];
+    if (this._paraState.type === 'column' && settings.stacking === 'standard') {
       // Place the series into stacks in the reverse order to how they appear in the
       // model (i.e., first series will be topmost onscreen in 'standard' mode)
       allSeries.reverse();
@@ -278,8 +278,8 @@ export class BarChartInfo extends PlaneChartInfo {
   }
 
   legend() {
-    const model = this._store.model!;
-    if (this._store.settings.legend.itemOrder === 'series') {
+    const model = this._paraState.model!;
+    if (this._paraState.settings.legend.itemOrder === 'series') {
       // return this._chartLandingView.children.map(view => ({
       //   label: (view as SeriesView).seriesKey,
       //   color: (view as SeriesView).color  // series color
@@ -287,13 +287,13 @@ export class BarChartInfo extends PlaneChartInfo {
       return model.series.map(series => ({
         label: series.getLabel(),
         seriesKey: series.key,
-        color: this._store.seriesProperties!.properties(series.key).color
+        color: this._paraState.seriesProperties!.properties(series.key).color
       }));
     } else {
       return model.seriesKeys.toSorted().map(key => ({
         label: model.atKey(key)!.getLabel(),
         seriesKey: key,
-        color: this._store.seriesProperties!.properties(key).color
+        color: this._paraState.seriesProperties!.properties(key).color
       }));
     }
   }
@@ -307,7 +307,7 @@ export class BarChartInfo extends PlaneChartInfo {
     const queriedNode = this._navMap!.cursor;
 
     if (queriedNode.isNodeType('top')) {
-      msgArray.push(`Displaying Chart: ${this._store.title}`);
+      msgArray.push(`Displaying Chart: ${this._paraState.title}`);
     } else if (queriedNode.isNodeType('series')) {
       /*
       if (e.options!.isChordMode) {
@@ -317,7 +317,7 @@ export class BarChartInfo extends PlaneChartInfo {
         msgArray = this.describeChord(visitedDatapoints);
       } */
       const seriesKey = queriedNode.options.seriesKey;
-      const series = this._store.model!.atKey(seriesKey)!;
+      const series = this._paraState.model!.atKey(seriesKey)!;
       const datapointCount = series.length;
       const seriesLabel = series.getLabel();
       msgArray.push(interpolate(
@@ -336,10 +336,10 @@ export class BarChartInfo extends PlaneChartInfo {
         msgArray = this.describeChord(visitedDatapoints);
       }
         */
-      const selectedDatapoints = this._store.selectedDatapoints;
+      const selectedDatapoints = this._paraState.selectedDatapoints;
       const seriesKey = queriedNode.options.seriesKey;
       const index = queriedNode.options.index;
-      const series = this._store.model!.atKey(seriesKey)!;
+      const series = this._paraState.model!.atKey(seriesKey)!;
       const datapoint = series.datapoints[index];
       const seriesLabel = series.getLabel();
       const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
@@ -367,19 +367,19 @@ export class BarChartInfo extends PlaneChartInfo {
         msgArray.push(...selectionMsgArray);
       } else {
         // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
-        const datapointMsg = describeAdjacentDatapoints(this._store.model!, datapointView);
+        const datapointMsg = describeAdjacentDatapoints(this._paraState.model!, datapointView);
         msgArray.push(datapointMsg);
       }
 
       // also add the high or low indicators
       const minMaxMsgArray = getDatapointMinMax(
-        this._store.model!,
+        this._paraState.model!,
         datapoint.facetValueAsNumber('y')!,
         seriesKey
       );
       msgArray.push(...minMaxMsgArray);
     }
-    this._store.announce(msgArray);
+    this._paraState.announce(msgArray);
   }
 
 }

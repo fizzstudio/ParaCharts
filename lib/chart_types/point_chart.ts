@@ -36,15 +36,15 @@ export abstract class PointChartInfo extends PlaneChartInfo {
 
   protected _init(): void {
     super._init();
-    // this._axisInfo = new AxisInfo(this._store, {
-    //   yValues: this._store.model!.allFacetValues('y')!.map((y) => y.value as number)
+    // this._axisInfo = new AxisInfo(this._paraState, {
+    //   yValues: this._paraState.model!.allFacetValues('y')!.map((y) => y.value as number)
     // });
   }
 
   seriesInNavOrder(): Series[] {
-    const depFacet = this._store.model!.dependentFacetKeys[0];
+    const depFacet = this._paraState.model!.dependentFacetKeys[0];
     // Sort by value of first datapoint from greatest to least
-    return this._store.model!.series.toSorted((a, b) =>
+    return this._paraState.model!.series.toSorted((a, b) =>
       b.datapoints[0].facetValueNumericized(depFacet)! -
       a.datapoints[0].facetValueNumericized(depFacet)!);
   }

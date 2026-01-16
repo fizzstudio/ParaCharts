@@ -10,7 +10,7 @@ export abstract class SettingControlContainer extends ParaComponent {
   
   connectedCallback() {
     super.connectedCallback();
-    this._controlsState = new StateController(this, this._store.settingControls);
+    this._controlsState = new StateController(this, this._paraState.settingControls);
   }
 
 }

@@ -93,10 +93,10 @@ export function generateUniqueId(baseId: string, store: ParaState): string {
   baseId = baseId.replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
   let i = 0;
   let uid = baseId;
-  while (store.idList[uid]) {
+  while (paraState.idList[uid]) {
     uid = baseId + '-' + ++i;
   }
-  store.idList[uid] = true;
+  paraState.idList[uid] = true;
   return uid;
 }
 

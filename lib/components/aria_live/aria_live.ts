@@ -30,7 +30,7 @@ export class AriaLive extends ParaComponent {
   //   caused errors when I tried.
   connectedCallback(): void {
     super.connectedCallback();
-    this._voicing = new Voicing(this.store);
+    this._voicing = new Voicing(this.paraState);
   }
 
   protected _setHistory(history: readonly string[]) {
@@ -73,8 +73,8 @@ export class AriaLive extends ParaComponent {
         this._setHistory([...this._history, msg ?? '']);
 
         if (msg
-          && this._store.settings.ui.isVoicingEnabled
-          && this._store.settings.ui.isAnnouncementEnabled) {
+          && this._paraState.settings.ui.isVoicingEnabled
+          && this._paraState.settings.ui.isAnnouncementEnabled) {
           this._voicing.speak(msg, JSON.parse(highlights!), this.announcement.startFrom);
         }
       })
@@ -99,7 +99,7 @@ export class AriaLive extends ParaComponent {
   replay() {
     const msg = this.lastAnnouncement;
     if (msg) {
-      this._store.announce(msg);
+      this._paraState.announce(msg);
     }
   }
 
@@ -114,7 +114,7 @@ export class AriaLive extends ParaComponent {
 
   render() {
     // XXX hack
-    this._voicing.rate = this._store.settings.ui.speechRate;
+    this._voicing.rate = this._paraState.settings.ui.speechRate;
     return html`
       <div
         ${ref(this._ariaLiveRef)}

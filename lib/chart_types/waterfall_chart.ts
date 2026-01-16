@@ -51,20 +51,20 @@ export class WaterfallChartInfo extends PlaneChartInfo {
   protected _init(): void {
     // XXX HACK Cumulative totals must be computed before calling _init()
     // Assume the final point is a total column
-    this._cumulativeTotals = this._store.model!.series[0].datapoints.slice(0, -1).map(dp =>
+    this._cumulativeTotals = this._paraState.model!.series[0].datapoints.slice(0, -1).map(dp =>
       this._cumulativeTotalForDatapoint(dp));
     this._cumulativeTotals.push(this._cumulativeTotals.at(-1)!);
     super._init();
-    const xValues = this._store.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'raw'));
+    const xValues = this._paraState.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'raw'));
     const yValues: number[] = [...this._cumulativeTotals];
-    // this._store.model!.series[0].datapoints.forEach((dp, i) => {
+    // this._paraState.model!.series[0].datapoints.forEach((dp, i) => {
     //   yValues.push(i === 0
     //     ? dp.facetValueAsNumber('y')!
     //     : yValues[i - 1] + dp.facetValueAsNumber('y')!
     //   );
     // });
     yValues.push(0);
-    // this._axisInfo = new AxisInfo(this._store, {
+    // this._axisInfo = new AxisInfo(this._paraState, {
     //   xTiers: [xValues],
     //   yValues: yValues,
     //   yMin: Math.min(0, Math.min(...yValues)),
@@ -74,7 +74,7 @@ export class WaterfallChartInfo extends PlaneChartInfo {
 
   protected _facetTickLabelValues(facetKey: string): string[] {
     if (facetKey === 'x') {
-      return this._store.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'raw'));
+      return this._paraState.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'raw'));
     } else if (facetKey === 'y') {
       return [...this._cumulativeTotals.map(ct => ct.toString())];
     } else {
@@ -94,12 +94,12 @@ export class WaterfallChartInfo extends PlaneChartInfo {
   // async navRunDidEnd(cursor: NavNode) {
   //   super.navRunDidEnd(cursor);
   //   if (cursor.isNodeType('tableCell')) {
-  //     this._store.announce(this._contents[cursor.options.row][cursor.options.column]);
+  //     this._paraState.announce(this._contents[cursor.options.row][cursor.options.column]);
   //   }
   // }
 
   protected _cumulativeTotalForDatapoint(datapoint: Datapoint): number {
-    const series = this._store.model!.atKey(datapoint.seriesKey)!;
+    const series = this._paraState.model!.atKey(datapoint.seriesKey)!;
     return series.datapoints
       .slice(0, datapoint.datapointIndex + 1)
       .reduce((accum, dp) => accum + dp.facetValueAsNumber('y')!, 0);
@@ -113,22 +113,22 @@ export class WaterfallChartInfo extends PlaneChartInfo {
   playDatapoints(datapoints: PlaneDatapoint[]): void {
     const length = datapoints.length;
     loopParaviewRefresh(this._paraView,
-      this._paraView.store.settings.animation.popInAnimateRevealTimeMs
-      + SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex)! * length, 50);
+      this._paraView.paraState.settings.animation.popInAnimateRevealTimeMs
+      + SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex)! * length, 50);
     // We can't make the sonipoint directly from the model datapoint; we need to
     // take the sonipoint y-min/max from the cumulative totals for each datapoint
     const soniPoints = [new SoniPoint(
       datapoints[0].datapointIndex,
       this._cumulativeTotals[datapoints[0].datapointIndex],
-      0, this._store.model!.series[0].length - 1,
+      0, this._paraState.model!.series[0].length - 1,
       Math.min(...this._cumulativeTotals), Math.max(...this._cumulativeTotals)
     )];
     if (datapoints[0].datapointIndex
-      && datapoints[0].datapointIndex < this._store.model!.series[0].length - 1) {
+      && datapoints[0].datapointIndex < this._paraState.model!.series[0].length - 1) {
       soniPoints.unshift(new SoniPoint(
         datapoints[0].datapointIndex - 1,
         this._cumulativeTotals[datapoints[0].datapointIndex - 1],
-        0, this._store.model!.series[0].length - 1,
+        0, this._paraState.model!.series[0].length - 1,
         Math.min(...this._cumulativeTotals), Math.max(...this._cumulativeTotals)
       ));
     }
@@ -139,7 +139,7 @@ export class WaterfallChartInfo extends PlaneChartInfo {
     if (soniPoints.length > 1) {
       setTimeout(() => {
         this._sonifier.playSoniPoints([soniPoints[1]]);
-      }, SONI_RIFF_SPEEDS.at(this._store.settings.sonification.riffSpeedIndex));
+      }, SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex));
     }
   }
 

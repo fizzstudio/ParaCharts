@@ -131,15 +131,15 @@ export abstract class TickLabelTier extends Container(View) {
         y: 0,
         pointerEnter: (e) => {
           if (!labelText) return;
-          this.paraview.store.settings.chart.isShowPopups
-            && this.paraview.store.settings.popup.activation === "onHover"
-            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(labelText, i) : undefined;
+          this.paraview.paraState.settings.chart.isShowPopups
+            && this.paraview.paraState.settings.popup.activation === "onHover"
+            && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(labelText, i) : undefined;
         },
         pointerLeave: (e) => {
           if (!labelText) return;
-          this.paraview.store.settings.chart.isShowPopups
-            && this.paraview.store.settings.popup.activation === "onHover"
-            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.paraview.store.removePopup(this.id) : undefined;
+          this.paraview.paraState.settings.chart.isShowPopups
+            && this.paraview.paraState.settings.popup.activation === "onHover"
+            && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled ? this.paraview.paraState.removePopup(this.id) : undefined;
         }
       });
       this.append(label);
@@ -223,11 +223,11 @@ export class HorizTickLabelTier extends TickLabelTier {
   protected _tickLabelY(index: number) {
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
     //   have two axes
-    const facet = (this.paraview.store.model as PlaneModel).getAxisFacet(this._options.orientation)
-       ?? this.paraview.store.model!.getFacet(this._options.orientation === 'horiz' ? 'x' : 'y')!;
+    const facet = (this.paraview.paraState.model as PlaneModel).getAxisFacet(this._options.orientation)
+       ?? this.paraview.paraState.model!.getFacet(this._options.orientation === 'horiz' ? 'x' : 'y')!;
     // const tickLen = facet!.variableType === 'independent'
-    //   ? this.paraview.store.settings.axis.x.tick.length
-    //   : this.paraview.store.settings.axis.y.tick.length;
+    //   ? this.paraview.paraState.settings.axis.x.tick.length
+    //   : this.paraview.paraState.settings.axis.y.tick.length;
     // Right-justify if west, left-justify if east;
     return this._axisSettings.position === 'north'
     ? this.height // - this._children[index].height
@@ -237,7 +237,7 @@ export class HorizTickLabelTier extends TickLabelTier {
   createTickLabels(checkLabels = true) {
     super.createTickLabels();
     this._children.forEach((kid, i) => {
-      if (this.paraview.store.settings.axis.horiz.ticks.labels.angle) {
+      if (this.paraview.paraState.settings.axis.horiz.ticks.labels.angle) {
         kid.angle = this._axisSettings.ticks.labels.angle;
       }
       if (kid.angle === 0) {
@@ -305,7 +305,7 @@ export class HorizTickLabelTier extends TickLabelTier {
         fill: "hsl(0, 0%, 100%)",
         shape: "boxWithArrow"
       })
-    this.paraview.store.popups.push(popup)
+    this.paraview.paraState.popups.push(popup)
   }
 }
 
@@ -396,7 +396,7 @@ export class VertTickLabelTier extends TickLabelTier {
       {
         text: text ?? datapointText,
         x: this._tickLabelX(index ?? 0) + 15,
-        y: this._tickLabelY(index ?? 0) + this.paraview.store.settings.popup.margin - this.children[index ?? 0].height ,
+        y: this._tickLabelY(index ?? 0) + this.paraview.paraState.settings.popup.margin - this.children[index ?? 0].height ,
         id: this.id,
         type: "vertTick",
         fill: "hsl(0, 0%, 0%)",
@@ -406,7 +406,7 @@ export class VertTickLabelTier extends TickLabelTier {
         fill: "hsl(0, 0%, 100%)",
         shape: "boxWithArrow"
       })
-    this.paraview.store.popups.push(popup)
+    this.paraview.paraState.popups.push(popup)
   }
 
 

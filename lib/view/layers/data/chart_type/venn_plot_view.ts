@@ -316,9 +316,9 @@ export class VennPlotView extends DataLayer {
   }
   
   protected _createDatapoints() {
-    const seriesKeys = this.paraview.store.model!.seriesKeys;
+    const seriesKeys = this.paraview.paraState.model!.seriesKeys;
     for (let idx = 0; idx < seriesKeys.length; idx++) {
-      const series = this.paraview.store.model!.series.find(
+      const series = this.paraview.paraState.model!.series.find(
         s => s.key === seriesKeys[idx]
       );
       if (!series) continue;
@@ -370,7 +370,7 @@ export class VennPlotView extends DataLayer {
   }
   
   protected _createLabels() {
-    const seriesKeys = this.paraview.store.model!.series.map(s => s.key);
+    const seriesKeys = this.paraview.paraState.model!.series.map(s => s.key);
     if (seriesKeys.length !== 2) {
       throw new Error("Expected exactly two series");
     }
@@ -385,7 +385,7 @@ export class VennPlotView extends DataLayer {
     const pointsAB: Datapoint[] = [];
 
     const allDatapoints: Datapoint[] = [];
-    for (const series of this.paraview.store.model!.series) {
+    for (const series of this.paraview.paraState.model!.series) {
       allDatapoints.push(...series.datapoints);
     }
 

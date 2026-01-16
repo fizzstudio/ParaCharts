@@ -73,7 +73,7 @@ export class PlotLayerManager extends View {
 
   constructor(public readonly docView: DocumentView, width: number, height: number) {
     super(docView.paraview);
-    this._orientation = this.paraview.store.settings.chart.orientation;
+    this._orientation = this.paraview.paraState.settings.chart.orientation;
     this.width = width;
     this.height = height;
     this._canWidthFlex = true;
@@ -220,14 +220,14 @@ export class PlotLayerManager extends View {
   }
 
   private createDataLayers() {
-    const ctor = chartClasses[this.paraview.store.type];
+    const ctor = chartClasses[this.paraview.paraState.type];
     let dataLayer: DataLayer;
     if (ctor) {
       dataLayer = new ctor(this.paraview, this._width, this._height, 0, this.docView.chartInfo);
       this.append(dataLayer);
     } else {
       // TODO: Is this error possible?
-      throw new Error(`no class found for chart type '${this.paraview.store.type}'`);
+      throw new Error(`no class found for chart type '${this.paraview.paraState.type}'`);
     }
     this._dataLayers = [dataLayer];
   }

@@ -99,7 +99,7 @@ export class NavMap {
   protected _currentLayer: string;
   protected _runTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(protected _store: ParaState, protected _chart: BaseChartInfo) {
+  constructor(protected _paraState: ParaState, protected _chart: BaseChartInfo) {
     this._currentLayer = 'root';
     const root = new NavLayer(this, this._currentLayer);
     this._layers.set(this._currentLayer, root);
@@ -126,7 +126,7 @@ export class NavMap {
   }
 
   clone(): NavMap {
-    const c = new NavMap(this._store, this._chart);
+    const c = new NavMap(this._paraState, this._chart);
     c._layers = new Map(this._layers.entries().map(([id, layer]) => [id, layer.clone(c)]));
     c._currentLayer = this._currentLayer;
     return c;
@@ -144,7 +144,7 @@ export class NavMap {
   }
 
   async visitDatapoints() {
-    this._store.visit(this.cursor.datapoints);
+    this._paraState.visit(this.cursor.datapoints);
     if (this._runTimer) {
       clearTimeout(this._runTimer);
     } else {
@@ -153,7 +153,7 @@ export class NavMap {
     this._runTimer = setTimeout(() => {
       this._runTimer = null;
       this._chart.navRunDidEnd(this.cursor);
-    }, this._store.settings.ui.navRunTimeoutMs);
+    }, this._paraState.settings.ui.navRunTimeoutMs);
     //this._chart.navCursorDidChange(this.cursor);
   }
 
@@ -341,7 +341,7 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     protected _layer: NavLayer,
     protected _type: T,
     protected _options: NavNodeOptionsType<T>,
-    protected _store: ParaState
+    protected _paraState: ParaState
   ) {
     // NB: Layer IDs are not allowed to start with a colon
     this._id = `:${NavNode.nextId++}`;
@@ -380,28 +380,28 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     const datapoints: Datapoint[] = [];
     if (this.isNodeType('datapoint') || this.isNodeType('scatterpoint')) {
       // @ts-ignore
-      datapoints.push(this._store.model!.atKeyAndIndex(this._options.seriesKey, this._options.index)!);
+      datapoints.push(this._paraState.model!.atKeyAndIndex(this._options.seriesKey, this._options.index)!);
     } else if (this.isNodeType('series')) {
-      const seriesLength = this._store.model!.atKey(this._options.seriesKey)!.length;
+      const seriesLength = this._paraState.model!.atKey(this._options.seriesKey)!.length;
       for (let i = 0; i < seriesLength; i++) {
-        datapoints.push(this._store.model!.atKeyAndIndex(this._options.seriesKey, i)!);
+        datapoints.push(this._paraState.model!.atKeyAndIndex(this._options.seriesKey, i)!);
       }
     } else if (this.isNodeType('chord')) {
       datapoints.push(...this._layer.map.chartInfo.seriesInNavOrder().map(series =>
         series.datapoints[this._options.index]));
     } else if (this.isNodeType('sequence')) {
       for (let i = this._options.start; i < this._options.end; i++) {
-        datapoints.push(this._store.model!.atKeyAndIndex(this._options.seriesKey, i)!);
+        datapoints.push(this._paraState.model!.atKeyAndIndex(this._options.seriesKey, i)!);
       }
     } else if (this.isNodeType('cluster')) {
-      datapoints.push(...this._store.model!.atKey(this._options.seriesKey)!.datapoints.filter(dp =>
+      datapoints.push(...this._paraState.model!.atKey(this._options.seriesKey)!.datapoints.filter(dp =>
         this._options.datapoints.includes(dp.datapointIndex)));
     }
     return datapoints;
   }
 
   clone(layer: NavLayer): NavNode<T> {
-    const c = new NavNode<T>(layer, this._type, this._options, this._store);
+    const c = new NavNode<T>(layer, this._type, this._options, this._paraState);
     c._links = new Map(this._links);
     c._index = this._index;
     c._id = this._id;

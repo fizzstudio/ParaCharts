@@ -43,8 +43,8 @@ export class SeriesView extends Container(DataView) {
   get classInfo(): ClassInfo {
     return {
       series: true,
-      lowlight: this.paraview.store.isSeriesLowlighted(this._series.key),
-      hidden: this.paraview.store.isSeriesHidden(this._series.key)
+      lowlight: this.paraview.paraState.isSeriesLowlighted(this._series.key),
+      hidden: this.paraview.paraState.isSeriesHidden(this._series.key)
     };
   }
 
@@ -64,7 +64,7 @@ export class SeriesView extends Container(DataView) {
   get modelIndex() {
     // This is used by datapoint views to extract the correct ID from the JIM
     // (series views may reorder their children)
-    return this.paraview.store.model!.seriesKeys.indexOf(this.seriesKey);
+    return this.paraview.paraState.model!.seriesKeys.indexOf(this.seriesKey);
   }
 
   protected _updateStyleInfo(styleInfo: StyleInfo): void {

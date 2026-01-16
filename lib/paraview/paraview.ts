@@ -374,8 +374,8 @@ export class ParaView extends ParaComponent {
     super.connectedCallback();
     // create a default view box so the SVG element can have a size
     // while any data is loading
-    this._controller ??= new ParaViewController(this._store);
-    this._storeChangeUnsub = this._store.subscribe(async (key, value) => {
+    this._controller ??= new ParaViewController(this._paraState);
+    this._storeChangeUnsub = this._paraState.subscribe(async (key, value) => {
 	  if (key === 'data') {
         await this.dataUpdated();
       }
@@ -383,8 +383,8 @@ export class ParaView extends ParaComponent {
     });
     this.computeViewBox();
     // this._hotkeyActions ??= new NormalHotkeyActions(this);
-	this._store.keymapManager.addEventListener('hotkeypress', this._hotkeyListener);
-    if (!this._store.settings.chart.isStatic) {
+	this._paraState.keymapManager.addEventListener('hotkeypress', this._hotkeyListener);
+    if (!this._paraState.settings.chart.isStatic) {
       this._pointerEventManager = new PointerEventManager(this);
     }
   }
@@ -392,7 +392,7 @@ export class ParaView extends ParaComponent {
   disconnectedCallback() {
     super.disconnectedCallback();
     this._storeChangeUnsub();
-    this._store.keymapManager.removeEventListener('hotkeyPress', this._hotkeyListener);
+    this._paraState.keymapManager.removeEventListener('hotkeyPress', this._hotkeyListener);
   }
 
   // Anything that needs to be done when data is updated, do here
@@ -401,7 +401,7 @@ export class ParaView extends ParaComponent {
     if (this.paraChart.headless) {
       await this.addJIMSeriesSummaries();
     }
-    this._jim = this._store.jimerator ? JSON.stringify(this._store.jimerator.jim, undefined, 2) : '';
+    this._jim = this._paraState.jimerator ? JSON.stringify(this._paraState.jimerator.jim, undefined, 2) : '';
     this._jimReadyResolver();
   }
 
@@ -459,7 +459,7 @@ export class ParaView extends ParaComponent {
         this._containerRef.value!.requestFullscreen();
       } catch {
         this.log.error('failed to enter fullscreen');
-        this._store.updateSettings(draft => {
+        this._paraState.updateSettings(draft => {
           draft.ui.isFullscreenEnabled = false;
         }, true);
       }
@@ -468,7 +468,7 @@ export class ParaView extends ParaComponent {
         document.exitFullscreen();
       } catch {
         this.log.error('failed to exit fullscreen');
-        this._store.updateSettings(draft => {
+        this._paraState.updateSettings(draft => {
           draft.ui.isFullscreenEnabled = true;
         }, true);
       }
@@ -478,21 +478,21 @@ export class ParaView extends ParaComponent {
   protected _onFullscreenChange() {
     if (document.fullscreenElement) {
       this._isFullscreen = true;
-      if (!this._store.settings.ui.isFullscreenEnabled) {
+      if (!this._paraState.settings.ui.isFullscreenEnabled) {
         // fullscreen was entered manually
-        this._store.updateSettings(draft => {
+        this._paraState.updateSettings(draft => {
           draft.ui.isFullscreenEnabled = true;
         }, true);
       }
     } else {
       this._isFullscreen = false;
-      if (this._store.settings.ui.isLowVisionModeEnabled) {
-        this._store.updateSettings(draft => {
+      if (this._paraState.settings.ui.isLowVisionModeEnabled) {
+        this._paraState.updateSettings(draft => {
           draft.ui.isLowVisionModeEnabled = false;
         });
-      } else if (this._store.settings.ui.isFullscreenEnabled) {
+      } else if (this._paraState.settings.ui.isFullscreenEnabled) {
         // fullscreen was exited manually
-        this._store.updateSettings(draft => {
+        this._paraState.updateSettings(draft => {
           draft.ui.isFullscreenEnabled = false;
         }, true);
       }
@@ -501,14 +501,14 @@ export class ParaView extends ParaComponent {
 
   protected _handleLowVisionMode(newValue?: Setting) {
     if (newValue) {
-      this._store.colors.selectPaletteWithKey("low-vision")
+      this._paraState.colors.selectPaletteWithKey("low-vision")
     } else {
-      if (this._store.colors.prevSelectedColor.length > 0) {
-        this._store.colors.selectPaletteWithKey(this._store.colors.prevSelectedColor);
+      if (this._paraState.colors.prevSelectedColor.length > 0) {
+        this._paraState.colors.selectPaletteWithKey(this._paraState.colors.prevSelectedColor);
       }
     }
-    this._store.updateSettings(draft => {
-      this._store.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
+    this._paraState.updateSettings(draft => {
+      this._paraState.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
       draft.color.isDarkModeEnabled = !!newValue;
       draft.ui.isFullscreenEnabled = !!newValue;
       if (newValue) {
@@ -531,7 +531,7 @@ export class ParaView extends ParaComponent {
     });
     if (this._exitingLowVisionMode) {
       queueMicrotask(() => {
-        this._store.updateSettings(draft => {
+        this._paraState.updateSettings(draft => {
           draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
         });
         this._exitingLowVisionMode = false;
@@ -540,21 +540,21 @@ export class ParaView extends ParaComponent {
   }
 
   protected _handleVoicing() {
-    if (this._store.settings.ui.isVoicingEnabled) {
+    if (this._paraState.settings.ui.isVoicingEnabled) {
       //if (this._hotkeyActions instanceof NormalHotkeyActions) {
-      if (!this._store.settings.ui.isNarrativeHighlightEnabled) {
+      if (!this._paraState.settings.ui.isNarrativeHighlightEnabled) {
         const msg = ['Self-voicing enabled.'];
         const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
         if (lastAnnouncement) {
           msg.push(lastAnnouncement);
         }
-        this._store.announce(msg);
+        this._paraState.announce(msg);
       } else {
         // XXX Would be nice to prefix this with "Narrative Highlight Mode enabled".
         // That would require being able to join a simple text announcement with
         // a HighlightedSummary
         (async () => {
-          this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+          this._paraState.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
         })();
       }
     } else {
@@ -565,30 +565,30 @@ export class ParaView extends ParaComponent {
   }
 
   protected _handleNarrativeHighlight() {
-    if (this._store.settings.ui.isNarrativeHighlightEnabled) {
-      if (this._store.settings.ui.isVoicingEnabled) {
+    if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
+      if (this._paraState.settings.ui.isVoicingEnabled) {
         this.startNarrativeHighlightMode();
         const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
         const msg = ['Narrative Highlights Mode enabled.'];
         if (lastAnnouncement) msg.push(lastAnnouncement);
-        this._store.announce(msg);
+        this._paraState.announce(msg);
         (async () => {
-          this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+          this._paraState.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
         })();
       } else {
-        this._store.updateSettings(draft => {
+        this._paraState.updateSettings(draft => {
           draft.ui.isVoicingEnabled = true;
         });
         this.startNarrativeHighlightMode();
         const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
         const msg = ['Narrative Highlights Mode enabled.'];
         if (lastAnnouncement) msg.push(lastAnnouncement);
-        this._store.announce(msg);
+        this._paraState.announce(msg);
         (async () => {
-          this._store.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+          this._paraState.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
         })();
       }
-      this._store.updateSettings(draft => {
+      this._paraState.updateSettings(draft => {
         this._modeSaved.set(
           'type.line.isTrendNavigationModeEnabled',
           draft.type.line.isTrendNavigationModeEnabled);
@@ -599,13 +599,13 @@ export class ParaView extends ParaComponent {
       this.endNarrativeHighlightMode();
 
       // Disable self-voicing as well
-      this._store.updateSettings(draft => {
+      this._paraState.updateSettings(draft => {
         draft.ui.isVoicingEnabled = false;
         draft.type.line.isTrendNavigationModeEnabled = this._modeSaved.get(
           'type.line.isTrendNavigationModeEnabled');
         this._modeSaved.delete('type.line.isTrendNavigationModeEnabled');
       });
-      this._store.announce(['Narrative Highlight Mode disabled.']);
+      this._paraState.announce(['Narrative Highlight Mode disabled.']);
     }
   }
 
@@ -615,13 +615,13 @@ export class ParaView extends ParaComponent {
 
   startNarrativeHighlightMode() {
     //this._hotkeyActions = new NarrativeHighlightHotkeyActions(this);
-    this._store.updateSettings(draft => {
+    this._paraState.updateSettings(draft => {
       draft.ui.isVoicingEnabled = true;
     });
   }
 
   endNarrativeHighlightMode() {
-    this._store.updateSettings(draft => {
+    this._paraState.updateSettings(draft => {
       draft.ui.isVoicingEnabled = false;
     });
   }
@@ -695,8 +695,8 @@ export class ParaView extends ParaComponent {
     this._viewBox = {
       x: 0,
       y: 0,
-      width: this._store.settings.chart.size.width,
-      height: this._store.settings.chart.size.height
+      width: this._paraState.settings.chart.size.width,
+      height: this._paraState.settings.chart.size.height
     };
     this.log.info('view box:', this._viewBox.width, 'x', this._viewBox.height);
   }
@@ -714,11 +714,11 @@ export class ParaView extends ParaComponent {
 
   async addJIMSeriesSummaries() {
     const summarizer = this._documentView!.chartInfo.summarizer;
-    const seriesKeys = this._store.model?.originalSeriesKeys || [];
+    const seriesKeys = this._paraState.model?.originalSeriesKeys || [];
     for (const seriesKey of seriesKeys) {
       const summary = await summarizer.getSeriesSummary(strToId(seriesKey));
       const summaryText = typeof summary === 'string' ? summary : summary.text;
-      this._store.jimerator!.addSeriesSummary(seriesKey, summaryText);
+      this._paraState.jimerator!.addSeriesSummary(seriesKey, summaryText);
     }
   }
 
@@ -820,8 +820,8 @@ export class ParaView extends ParaComponent {
 
   protected _rootStyle() {
     const style: { [prop: string]: any } = {
-      fontFamily: this._store.settings.chart.fontFamily,
-      fontWeight: this._store.settings.chart.fontWeight
+      fontFamily: this._paraState.settings.chart.fontFamily,
+      fontWeight: this._paraState.settings.chart.fontWeight
     };
     if (this._isFullscreen) {
       const vbWidth = Math.round(this._viewBox.width);
@@ -831,8 +831,8 @@ export class ParaView extends ParaComponent {
       style.width = "100vw";
       style.height = "100vh";
     }
-    const contrast = this.store.settings.color.contrastLevel * 50;
-    if (this._store.settings.color.isDarkModeEnabled) {
+    const contrast = this.paraState.settings.color.contrastLevel * 50;
+    if (this._paraState.settings.color.isDarkModeEnabled) {
       style["--axis-line-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
       style["--label-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
       style["--background-color"] = `hsl(0, 0%, ${(100 - contrast) / 5 - 10}%)`;
@@ -845,7 +845,7 @@ export class ParaView extends ParaComponent {
 
   protected _rootClasses() {
     return {
-      darkmode: this._store.settings.color.isDarkModeEnabled
+      darkmode: this._paraState.settings.color.isDarkModeEnabled
     }
   }
 
@@ -877,7 +877,7 @@ export class ParaView extends ParaComponent {
     }
     loopParaviewRefresh(
       this,
-      this.store.settings.animation.popInAnimateRevealTimeMs,
+      this.paraState.settings.animation.popInAnimateRevealTimeMs,
       50
     );
   }
@@ -899,7 +899,7 @@ export class ParaView extends ParaComponent {
         viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
         style=${styleMap(this._rootStyle())}
         @focus=${() => {
-        if (!this._store.settings.chart.isStatic) {
+        if (!this._paraState.settings.chart.isStatic) {
           //this.log.info('focus');
           //this.todo.deets?.onFocus();
           //this.documentView?.chartInfo.navMap?.visitDatapoints();
@@ -941,15 +941,15 @@ export class ParaView extends ParaComponent {
           y="0"
           width="100%"
           height="100%"
-          @pointerleave=${(ev: PointerEvent) => this.store.clearPopups()}
+          @pointerleave=${(ev: PointerEvent) => this.paraState.clearPopups()}
         >
         </rect>
         ${this._documentView?.render() ?? ''}
       </svg>
       <para-aria-live-region
         ${ref(this._ariaLiveRegionRef)}
-        .store=${this._store}
-        .announcement=${this._store.announcement}
+        .paraState=${this._paraState}
+        .announcement=${this._paraState.announcement}
       ></para-aria-live-region>
       <div
         ${ref(this._fileSavePlaceholderRef)}

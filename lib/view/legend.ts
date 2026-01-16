@@ -56,7 +56,7 @@ export class Legend extends Container(View) {
   }
 
   get settings() {
-    return SettingsManager.getGroupLink<LegendSettings>('legend', this.paraview.store.settings);
+    return SettingsManager.getGroupLink<LegendSettings>('legend', this.paraview.paraState.settings);
   }
 
   get classInfo() {
@@ -73,16 +73,16 @@ export class Legend extends Container(View) {
       views.push(this._markers.at(-1)!);
       views.push(DataSymbol.fromType(
         this.paraview,
-        this.paraview.store.settings.chart.isDrawSymbols
+        this.paraview.paraState.settings.chart.isDrawSymbols
           ? (item.symbol ?? 'square.solid')
           : 'square.solid',
         {
           color: item.color,
           pointerEnter: (e) => {
-            this.paraview.store.lowlightOtherSeries(item.seriesKey);
+            this.paraview.paraState.lowlightOtherSeries(item.seriesKey);
           },
           pointerLeave: (e) => {
-            this.paraview.store.clearAllSeriesLowlights();
+            this.paraview.paraState.clearAllSeriesLowlights();
           }
         }
       ));
@@ -93,15 +93,15 @@ export class Legend extends Container(View) {
         textAnchor: 'start',
         classList: ['legend-label'],
         pointerEnter: (e) => {
-          this.paraview.store.lowlightOtherSeries(item.seriesKey);
+          this.paraview.paraState.lowlightOtherSeries(item.seriesKey);
         },
         pointerLeave: (e) => {
-          this.paraview.store.clearAllSeriesLowlights();
+          this.paraview.paraState.clearAllSeriesLowlights();
         }
       }));
     });
-    const symLabelGap = this.paraview.store.settings.legend.symbolLabelGap;
-    const pairGap = this.paraview.store.settings.legend.pairGap;
+    const symLabelGap = this.paraview.paraState.settings.legend.symbolLabelGap;
+    const pairGap = this.paraview.paraState.settings.legend.pairGap;
     if (this._options.orientation === 'vert') {
       this._grid = new GridLayout(this.paraview, {
         numCols: 3,
@@ -110,7 +110,7 @@ export class Legend extends Container(View) {
         isAutoWidth: true,
         isAutoHeight: true
       }, 'legend-grid');
-      this._grid.padding = hasLegendBox ? this.paraview.store.settings.legend.padding : 0;
+      this._grid.padding = hasLegendBox ? this.paraview.paraState.settings.legend.padding : 0;
       views.forEach(v => this._grid.append(v));
     } else {
       let labelsPerRow = views.length/3;
@@ -123,7 +123,7 @@ export class Legend extends Container(View) {
           numCols: labelsPerRow*3,
           colGaps: colGaps,
         }, 'legend-grid');
-        this._grid.padding = hasLegendBox ? this.paraview.store.settings.legend.padding : 0;
+        this._grid.padding = hasLegendBox ? this.paraview.paraState.settings.legend.padding : 0;
         views.forEach(v => this._grid.append(v));
         if (this._options.wrapWidth === undefined ||
             this._grid.paddedWidth <= this._options.wrapWidth ||
@@ -162,11 +162,11 @@ export class Legend extends Container(View) {
     this._items.forEach((item, i) => {
       const style = this._markers[i].styleInfo;
       const visited = item.datapointIndex !== undefined
-        ? this.paraview.store.isVisited(
-          this.paraview.store.model!.seriesKeys[0], item.datapointIndex)
-        : this.paraview.store.isVisitedSeries(item.label);
+        ? this.paraview.paraState.isVisited(
+          this.paraview.paraState.model!.seriesKeys[0], item.datapointIndex)
+        : this.paraview.paraState.isVisitedSeries(item.label);
       if (visited) {
-        style.fill = this.paraview.store.colors.colorValueAt(-1);
+        style.fill = this.paraview.paraState.colors.colorValueAt(-1);
       } else {
         style.fill = 'none';
       }

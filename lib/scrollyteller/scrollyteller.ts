@@ -299,7 +299,7 @@ export class Scrollyteller {
 
   private combineSettings(): ScrollytellingSettings {
     const storeSettings =
-      this.parachart?.paraView?.store?.settings?.scrollytelling ?? {};
+      this.parachart?.paraView?.paraState?.settings?.scrollytelling ?? {};
     const combined: ScrollytellingSettings = {
       ...storeSettings,
       ...this.options,

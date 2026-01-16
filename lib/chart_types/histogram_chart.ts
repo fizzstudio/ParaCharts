@@ -17,19 +17,19 @@ export class HistogramChartInfo extends PlaneChartInfo {
 
   protected _init() {
     super._init();
-    this._bins = this._store.settings.type.histogram.bins ?? 20;
+    this._bins = this._paraState.settings.type.histogram.bins ?? 20;
     this._generateBins();
     const values = this._grid.flat();
     this._maxCount = Math.max(...values);
-    this._store.clearVisited();
-    this._store.clearSelected();
+    this._paraState.clearVisited();
+    this._paraState.clearSelected();
 
     const targetAxis = this.settings.groupingAxis as DeepReadonly<string> == '' ?
-      this._store.model?.facetSignatures.map((facet) => this._store.model?.getFacet(facet.key)?.label)[0]
+      this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label)[0]
       : this.settings.groupingAxis;
     let targetFacet;
-    for (let facet of this._store.model!.facetSignatures) {
-      if (this._store.model!.getFacet(facet.key as string)!.label == targetAxis) {
+    for (let facet of this._paraState.model!.facetSignatures) {
+      if (this._paraState.model!.getFacet(facet.key as string)!.label == targetAxis) {
         targetFacet = facet.key;
       }
     }
@@ -42,11 +42,11 @@ export class HistogramChartInfo extends PlaneChartInfo {
       nonTargetFacet = "y";
     }
 
-    const targetFacetBoxes = this._store.model!.allFacetValues(targetFacet!)!;
+    const targetFacetBoxes = this._paraState.model!.allFacetValues(targetFacet!)!;
     const targetFacetNumbers = targetFacetBoxes.map((b) => b.asNumber()!);
     if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined) {
       if (this.settings.relativeAxes == "Counts") {
-        // this._axisInfo = new AxisInfo(this._store, {
+        // this._axisInfo = new AxisInfo(this._paraState, {
         //   xValues: targetFacetNumbers,
         //   yValues: this.grid,
         // });
@@ -54,7 +54,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
       else {
         const sum = this.grid.reduce((a, c) => a + c)
         const pctGrid = this.grid.map(g => g / sum)
-        // this._axisInfo = new AxisInfo(this._store, {
+        // this._axisInfo = new AxisInfo(this._paraState, {
         //   xValues: targetFacetNumbers,
         //   yValues: pctGrid
         // });
@@ -62,7 +62,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
     }
     else {
       if (this.settings.relativeAxes == "Counts") {
-        // this._axisInfo = new AxisInfo(this._store, {
+        // this._axisInfo = new AxisInfo(this._paraState, {
         //   xValues: this.grid,
         //   yValues: targetFacetNumbers,
         // });
@@ -70,7 +70,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
       else {
         const sum = this.grid.reduce((a, c) => a + c)
         const pctGrid = this.grid.map(g => g / sum)
-        // this._axisInfo = new AxisInfo(this._store, {
+        // this._axisInfo = new AxisInfo(this._paraState, {
         //   xValues: pctGrid,
         //   yValues: targetFacetNumbers,
         // });
@@ -80,7 +80,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
 
   protected _addSettingControls(): void {
     super._addSettingControls();
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'textfield',
       key: 'type.histogram.bins',
       label: 'Bins',
@@ -91,22 +91,22 @@ export class HistogramChartInfo extends PlaneChartInfo {
       },
       parentView: 'controlPanel.tabs.chart.chart',
     });
-    const variables = this._store.model?.facetSignatures.map((facet) => this._store.model?.getFacet(facet.key)?.label);
-    this._store.settingControls.add({
+    const variables = this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label);
+    this._paraState.settingControls.add({
       type: 'dropdown',
       key: 'type.histogram.groupingAxis',
       label: 'Axis to group:',
       options: { options: variables as string[] },
       parentView: 'controlPanel.tabs.chart.chart'
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'dropdown',
       key: 'type.histogram.displayAxis',
       label: 'Axis to display histogram:',
       options: { options: ["x", "y"] },
       parentView: 'controlPanel.tabs.chart.chart'
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'dropdown',
       key: 'type.histogram.relativeAxes',
       label: 'Show counts vs percentages:',
@@ -125,11 +125,11 @@ export class HistogramChartInfo extends PlaneChartInfo {
 
   protected _generateBins(): Array<number> {
     const targetAxis = this.settings.groupingAxis as DeepReadonly<string | undefined>
-      ?? this._store.model?.facetSignatures.map((facet) => this._store.model?.getFacet(facet.key)?.label)[0];
+      ?? this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label)[0];
 
     let targetFacet;
-    for (let facet of this._store.model!.facetSignatures) {
-      if (this._store.model!.getFacet(facet.key as string)!.label == targetAxis) {
+    for (let facet of this._paraState.model!.facetSignatures) {
+      if (this._paraState.model!.getFacet(facet.key as string)!.label == targetAxis) {
         targetFacet = facet.key;
       }
     }
@@ -145,20 +145,20 @@ export class HistogramChartInfo extends PlaneChartInfo {
     if (targetFacet) {
       const yValues = []
       const xValues = []
-      for (let datapoint of this._store.model!.series[0]) {
+      for (let datapoint of this._paraState.model!.series[0]) {
         xValues.push(datapoint.facetValueNumericized(targetFacet)!)
       }
-      for (let datapoint of this._store.model!.series[0]) {
+      for (let datapoint of this._paraState.model!.series[0]) {
         yValues.push(datapoint.facetValueNumericized(nonTargetFacet)!)
       }
       workingLabels = computeLabels(Math.min(...xValues), Math.max(...xValues), false)
     }
     else {
-      const xBoxes = this._store.model!.allFacetValues('x')!;
+      const xBoxes = this._paraState.model!.allFacetValues('x')!;
       const xNumbers = xBoxes.map((x) => x.asNumber()!);
       workingLabels = computeLabels(Math.min(...xNumbers), Math.max(...xNumbers), false);
     }
-    const seriesList = this._store.model!.series
+    const seriesList = this._paraState.model!.series
     this._data = [];
     for (let series of seriesList) {
       for (let i = 0; i < series.length; i++) {
