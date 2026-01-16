@@ -360,7 +360,7 @@ export class VennPlotView extends DataLayer {
           new Vec2(p1.x, p1.y)
         ],
         stroke: "white",
-        fill: "red",
+        fill: "mediumseagreen",
         strokeWidth: 5,
       });
       this.append(arc);
