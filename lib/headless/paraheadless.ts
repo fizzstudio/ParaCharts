@@ -17,7 +17,7 @@ export class ParaHeadless {
 
   async ready() {
     await this._paraChart.ready;
-    this._paraChart.store.updateSettings(draft => {
+    this._paraChart.paraState.updateSettings(draft => {
       // XXX something is overriding this ...
       draft.animation.isAnimationEnabled = false;
     });

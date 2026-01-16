@@ -1,7 +1,7 @@
 
 import { DataView, type SeriesView } from './';
 import { DataSymbol } from '../symbol';
-import { datapointIdToCursor } from '../../store';
+import { datapointIdToCursor } from '../../state';
 import { Shape } from '../shape/shape';
 import { RectShape } from '../shape/rect';
 
@@ -118,9 +118,9 @@ export class DatapointView extends DataView {
     let index = this.index;
     return {
       datapoint: true,
-      visited: this.paraview.store.isVisited(this.seriesKey, index),
-      selected: this.paraview.store.isSelected(this.seriesKey, index),
-      highlighted: this.paraview.store.isHighlighted(this.seriesKey, index)
+      visited: this.paraview.paraState.isVisited(this.seriesKey, index),
+      selected: this.paraview.paraState.isSelected(this.seriesKey, index),
+      highlighted: this.paraview.paraState.isHighlighted(this.seriesKey, index)
     };
   }
 
@@ -185,8 +185,8 @@ export class DatapointView extends DataView {
       return true;
     }
     const obb = this.outerBbox;
-    if (this.paraview.store.settings.animation.isAnimationEnabled
-      && this.paraview.store.settings.animation.animationType == 'xAxis'
+    if (this.paraview.paraState.settings.animation.isAnimationEnabled
+      && this.paraview.paraState.settings.animation.animationType == 'xAxis'
     ) {
       return true;
     }
@@ -196,7 +196,7 @@ export class DatapointView extends DataView {
 
   protected _createId(..._args: any[]): string {
     const jimIndex = this._parent.modelIndex * this._series.length + this.index + 1;
-    const id = this.paraview.store.jimerator!.jim.selectors[`datapoint${jimIndex}`].dom as string;
+    const id = this.paraview.paraState.jimerator!.jim.selectors[`datapoint${jimIndex}`].dom as string;
     // don't include the '#' from JIM
     return id.slice(1);
   }
@@ -288,10 +288,10 @@ export class DatapointView extends DataView {
   }
 
   protected get symbolScale() {
-    if (this.paraview.store.isVisited(this.seriesKey, this.index)) {
-      return this.paraview.store.settings.chart.symbolHighlightScale * this._baseSymbolScale;
-    } else if (this.paraview.store.isHighlighted(this.seriesKey, this.index)) {
-      return 1; //this.paraview.store.settings.chart.symbolHighlightScale;
+    if (this.paraview.paraState.isVisited(this.seriesKey, this.index)) {
+      return this.paraview.paraState.settings.chart.symbolHighlightScale * this._baseSymbolScale;
+    } else if (this.paraview.paraState.isHighlighted(this.seriesKey, this.index)) {
+      return 1; //this.paraview.paraState.settings.chart.symbolHighlightScale;
     } else {
       return this._baseSymbolScale;
     }
@@ -299,7 +299,7 @@ export class DatapointView extends DataView {
 
   protected get _symbolColor() {
     //return this.chart.chartInfo.isHighlighted(this.seriesKey, this.index) ? -2 as number :
-    return this.paraview.store.isVisited(this.seriesKey, this.index) ? -1 as number :
+    return this.paraview.paraState.isVisited(this.seriesKey, this.index) ? -1 as number :
       this.color; //undefined; // set the color so the highlights layer can clone it
   }
 
@@ -314,7 +314,7 @@ export class DatapointView extends DataView {
     if (this._symbol) {
       this._symbol.scale = this.symbolScale;
       this._symbol.color = this._symbolColor;
-      this._symbol.hidden = !this.paraview.store.settings.chart.isDrawSymbols;
+      this._symbol.hidden = !this.paraview.paraState.settings.chart.isDrawSymbols;
     }
   }
 
@@ -350,7 +350,7 @@ export class DatapointView extends DataView {
 
   addDatapointPopup(text?: string, xInput?: number, yInput?: number) {
     let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
-    if (this.paraview.store.model!.multi) {
+    if (this.paraview.paraState.model!.multi) {
       datapointText = `${this.series.getLabel()} ${datapointText}`
     }
     let x = this.x
@@ -359,15 +359,15 @@ export class DatapointView extends DataView {
     let fill = undefined;
     let shape = "boxWithArrow"
     let pointerControlled = false;
-    if (['bar', 'column', 'waterfall'].includes(this.paraview.store.type)) {
+    if (['bar', 'column', 'waterfall'].includes(this.paraview.paraState.type)) {
       x = this.x + this.width / 2
-      if (this.paraview.store.settings.popup.activation == "onHover") {
+      if (this.paraview.paraState.settings.popup.activation == "onHover") {
         pointerControlled = true;
       }
     }
-    if (['waterfall'].includes(this.paraview.store.type)) {
-      const palIdx = this.paraview.store.colors.indexOfPalette('semantic');
-      const pal = this.paraview.store.colors.palettes[palIdx];
+    if (['waterfall'].includes(this.paraview.paraState.type)) {
+      const palIdx = this.paraview.paraState.colors.indexOfPalette('semantic');
+      const pal = this.paraview.paraState.colors.palettes[palIdx];
       if (this.index && !this.isLast) {
         fill = this.datapoint.facetValueAsNumber('y')! >= 0
           ? pal.colors[0].value
@@ -377,14 +377,14 @@ export class DatapointView extends DataView {
       }
       color = 0;
     }
-    if (['pie', 'donut'].includes(this.paraview.store.type)) {
+    if (['pie', 'donut'].includes(this.paraview.paraState.type)) {
       let chart = this.chart as PastryPlotView
       //@ts-ignore
       let params = this._params as RadialDatapointParams;
       let angle = 2 * Math.PI - ((params.accum * 2 * Math.PI) + (params.percentage * Math.PI) - (chart.settings.orientationAngleOffset * 2 * Math.PI / 360))
       x = this.x + chart.radius * (1 - chart.settings.annularThickness / 2) * Math.cos(angle)
       y = this.y - chart.radius * (1 - chart.settings.annularThickness / 2) * Math.sin(angle)
-      if (this.paraview.store.settings.popup.activation == "onHover") {
+      if (this.paraview.paraState.settings.popup.activation == "onHover") {
         pointerControlled = true;
       }
     }
@@ -396,26 +396,26 @@ export class DatapointView extends DataView {
         id: this.id,
         color: color,
         points: [this],
-        rotationExempt: this.paraview.store.type == 'bar' ? false : true,
-        angle: this.paraview.store.type == 'bar' ? -90 : 0,
+        rotationExempt: this.paraview.paraState.type == 'bar' ? false : true,
+        angle: this.paraview.paraState.type == 'bar' ? -90 : 0,
         pointerControlled
       },
       {
         shape: shape as ShapeTypes,
         fill: fill
       })
-    this.paraview.store.popups.push(popup)
+    this.paraview.paraState.popups.push(popup)
     this._popup = popup;
   }
 
   movePopupAction() {
     if (this._popup) {
-      if (['column', 'waterfall', 'pie', 'donut'].includes(this.paraview.store.type)) {
-        this.addDatapointPopup(undefined, this.paraview.store.pointerCoords.x, this.paraview.store.pointerCoords.y)
-        this._popup.horizShift = this.paraview.store.pointerCoords.x - (this._popup.grid.x + this._popup.grid.width / 2)
+      if (['column', 'waterfall', 'pie', 'donut'].includes(this.paraview.paraState.type)) {
+        this.addDatapointPopup(undefined, this.paraview.paraState.pointerCoords.x, this.paraview.paraState.pointerCoords.y)
+        this._popup.horizShift = this.paraview.paraState.pointerCoords.x - (this._popup.grid.x + this._popup.grid.width / 2)
       }
-      else if (this.paraview.store.type == 'bar') {
-        this.addDatapointPopup(undefined, this.paraview.store.pointerCoords.y, this.chart.height - this.paraview.store.pointerCoords.x)
+      else if (this.paraview.paraState.type == 'bar') {
+        this.addDatapointPopup(undefined, this.paraview.paraState.pointerCoords.y, this.chart.height - this.paraview.paraState.pointerCoords.x)
       }
     }
   }

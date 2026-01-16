@@ -17,7 +17,7 @@ export class SelectionLayer extends PlotLayer {
     const dataLayer = this._parent.dataLayer;
     return svg`
       ${
-        this.paraview.store.selectedDatapoints.values().map(datapointId => {
+        this.paraview.paraState.selectedDatapoints.values().map(datapointId => {
           // NB: Line datapoint height = 0
           return dataLayer.datapointViewForId(dataLayer.datapointDomIds.get(datapointId)!)!.selectedMarker.render();
           //return cursor.datapointView.selectedMarker.render();

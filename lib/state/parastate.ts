@@ -1,4 +1,4 @@
-/* ParaCharts: ParaStore Data Store
+/* ParaCharts: ParaState Data Store
 Copyright (C) 2025 Fizz Studios
 
 This program is free software: you can redistribute it and/or modify
@@ -124,7 +124,7 @@ export interface SparkBrailleInfo {
   isBar?: boolean;
 }
 
-export interface StoreCallbacks {
+export interface ParaStateCallbacks {
   onUpdate?: () => void;
   onNotice?: (type: string, data: any) => void;
   onSettingChange?: (path: string, oldValue?: Setting, newValue?: Setting) => void;
@@ -164,7 +164,7 @@ export function makeSequenceId(seriesKey: string, index1: number, index2: number
   return `${seriesKey}-${index1}-${index2}`;
 }
 
-export class ParaStore extends State {
+export class ParaState extends State {
 
   readonly symbols = new DataSymbols();
 
@@ -216,8 +216,8 @@ export class ParaStore extends State {
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected _annotID: number = 0;
-  protected log: Logger = getLogger("ParaStore");
-  protected callbacks: StoreCallbacks = {};
+  protected log: Logger = getLogger("ParaState");
+  protected callbacks: ParaStateCallbacks = {};
 
   public idList: Record<string, boolean> = {};
 
@@ -298,7 +298,7 @@ export class ParaStore extends State {
     this.settings = hydratedSettings as Settings;
   }
 
-  registerCallbacks(callbacks: StoreCallbacks) {
+  registerCallbacks(callbacks: ParaStateCallbacks) {
     this.callbacks = { ...this.callbacks, ...callbacks };
   }
 

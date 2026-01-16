@@ -33,13 +33,13 @@ export class AudioPanel extends ControlPanelTabPanel {
 
   connectedCallback() {
     super.connectedCallback();
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'ui.isVoicingEnabled',
       label: 'Self-voicing mode',
       parentView: 'controlPanel.tabs.audio.voicing',
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'slider',
       key: 'ui.speechRate',
       label: 'Speech rate',
@@ -51,27 +51,27 @@ export class AudioPanel extends ControlPanelTabPanel {
       },
       parentView: 'controlPanel.tabs.audio.voicing'
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'ui.isAnnouncementEnabled',
       label: 'Announce to screen reader',
       parentView: 'controlPanel.tabs.audio.voicing',
     });
 
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'sonification.isSoniEnabled',
       label: 'Sonification mode',
       parentView: 'controlPanel.tabs.audio.sonification',
     });
 
-        this._store.settingControls.add({
+        this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'ui.isNarrativeHighlightEnabled',
       label: 'Narrative Highlights mode',
       parentView: 'controlPanel.tabs.audio.narrative',
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'button',
       key: 'ui.isNarrativeHighlightPaused',
       label: 'Play/Pause Narrative Highlights',
@@ -83,13 +83,13 @@ export class AudioPanel extends ControlPanelTabPanel {
     return html`   
       <div class="tab-content">
         <section id="voicing">
-          ${this._store.settingControls.getContent('controlPanel.tabs.audio.voicing')}
+          ${this._paraState.settingControls.getContent('controlPanel.tabs.audio.voicing')}
         </section>
         <section id="narrative">
-          ${this._store.settingControls.getContent('controlPanel.tabs.audio.narrative')}
+          ${this._paraState.settingControls.getContent('controlPanel.tabs.audio.narrative')}
         </section>
         <section id="sonification">
-          ${this._store.settingControls.getContent('controlPanel.tabs.audio.sonification')}
+          ${this._paraState.settingControls.getContent('controlPanel.tabs.audio.sonification')}
           <button
             @click=${() => this._soniDialogRef.value?.show()}
           >
@@ -100,7 +100,7 @@ export class AudioPanel extends ControlPanelTabPanel {
       <para-soni-settings-dialog
         ${ref(this._soniDialogRef)}
         id="sonification-settings-dialog"
-        .store=${this._store}
+        .paraState=${this._paraState}
       ></para-soni-settings-dialog>
     `;
   }

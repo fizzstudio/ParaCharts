@@ -104,13 +104,13 @@ export function /*for tests*/ describeAdjacentDatapointComparison(
     //log.info(selfSeries[self.index].facetBox("y")!.raw)
     //log.info(otherSeries[other.index].facetBox("y")!.raw)
 
-    //log.info(paraview.store.model!)
-    //log.info(paraview.store.model!.allPoints[self.index].datapointIndex)
-    //log.info(paraview.store.model!.allPoints[self.index].entries())
-    //log.info(paraview.store.model!.allPoints[self.index].facetAsNumber("x"))
-    //log.info(paraview.store.model!.allPoints[self.index].facetBox("x")!.raw)
+    //log.info(paraview.paraState.model!)
+    //log.info(paraview.paraState.model!.allPoints[self.index].datapointIndex)
+    //log.info(paraview.paraState.model!.allPoints[self.index].entries())
+    //log.info(paraview.paraState.model!.allPoints[self.index].facetAsNumber("x"))
+    //log.info(paraview.paraState.model!.allPoints[self.index].facetBox("x")!.raw)
     //Series key below
-    //log.info(ParaView.store.model!.allPoints[self.index].seriesKey)
+    //log.info(ParaView.paraState.model!.allPoints[self.index].seriesKey)
     const selfValue = selfSeries[self.index].facetBox("y")!.raw as unknown as number;
     const otherValue = otherSeries[other.index].facetBox("y")!.raw as unknown as number;
     const result = compare(selfValue, otherValue);

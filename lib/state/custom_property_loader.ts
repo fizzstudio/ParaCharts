@@ -1,8 +1,8 @@
 import { Logger, getLogger } from '@fizz/logger';
-import { type SettingsInput } from '../store/settings_types';
+import { type SettingsInput } from './settings_types';
 import { Colors, Color, Palette } from '../common/colors';
 import { type DataSymbolType, type DataSymbolShape, type DataSymbolFill } from '../view/symbol';
-import { type ParaStore } from './parastore';
+import { type ParaState } from './parastate';
 
 export class CustomPropertyLoader {
   _customPrefix = '--para-';
@@ -12,16 +12,16 @@ export class CustomPropertyLoader {
   _colorPalette: Palette | null = null;
   _symbolSet: DataSymbolType[] | null = null;
 
-  protected _store!: ParaStore;
+  protected _paraState!: ParaState;
 
   protected log: Logger = getLogger("CustomPropertyLoader");  
   
-  get store() {
-    return this._store;
+  get paraState() {
+    return this._paraState;
   }
 
-  set store(store: ParaStore) {
-    this._store = store;
+  set paraState(paraState: ParaState) {
+    this._paraState = paraState;
   }
 
   // Convert `paraRules` to object of key-value pairs of type SettingInput
@@ -200,8 +200,8 @@ export class CustomPropertyLoader {
 
   registerColors() {
     if (this._colorPalette) {
-      this._store.colors.addPalette(this._colorPalette);
-      this._store.colors.selectPaletteWithKey(this._colorPalette.key);
+      this._paraState.colors.addPalette(this._colorPalette);
+      this._paraState.colors.selectPaletteWithKey(this._colorPalette.key);
     }
   }
 
@@ -229,7 +229,7 @@ export class CustomPropertyLoader {
   registerSymbols() {
     if (this._symbolSet) {
       // register proper symbol for each series
-      this._store.symbols.types = this._symbolSet;
+      this._paraState.symbols.types = this._symbolSet;
     }
   }
 }

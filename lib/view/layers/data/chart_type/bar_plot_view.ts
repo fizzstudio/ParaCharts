@@ -20,7 +20,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
 import {
   Setting, DeepReadonly, BarSettings
-} from '../../../../store/settings_types';
+} from '../../../../state/settings_types';
 import { RectShape } from '../../../shape/rect';
 import { Label, LabelTextAnchor } from '../../../label';
 import { BarStack } from '../../../../chart_types/bar_chart';
@@ -92,8 +92,8 @@ export class BarPlotView extends PlanePlotView {
       parentView: 'chartDetails.tabs.chart.chart',
     });
     todo().deets!.chartPanel.requestUpdate();*/
-    if (this.paraview.store.settings.type.bar.isAbbrevSeries) {
-      this._abbrevs = abbreviateSeries(this.paraview.store.model!.seriesKeys);
+    if (this.paraview.paraState.settings.type.bar.isAbbrevSeries) {
+      this._abbrevs = abbreviateSeries(this.paraview.paraState.model!.seriesKeys);
     }
   }
 
@@ -108,7 +108,7 @@ export class BarPlotView extends PlanePlotView {
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['color.colorPalette', 'color.colorVisionMode', 'chart.isShowPopups'].includes(path)) {
       if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
-        || this.paraview.store.settings.color.colorPalette === 'pattern') {
+        || this.paraview.paraState.settings.color.colorPalette === 'pattern') {
         this.paraview.createDocumentView();
         this.paraview.requestUpdate();
       }
@@ -199,7 +199,7 @@ export class BarPlotView extends PlanePlotView {
         }
       }
     });
-    if (this.paraview.store.type === 'column') {
+    if (this.paraview.paraState.type === 'column') {
       // First child of chart landing is bottom-most series, so we reverse them
       // so that navigation starts at the top
       this._chartLandingView.reverseChildren();
@@ -236,7 +236,7 @@ export class BarPlotView extends PlanePlotView {
             // XXX hack
             text: sum.toFixed(2),
             id: this._id + '-slb',
-            classList: [`${this.paraview.store.type}-total-label`],
+            classList: [`${this.paraview.paraState.type}-total-label`],
             role: 'datapoint',
             // textAnchor,
             angle
@@ -327,8 +327,8 @@ export class Bar extends PlaneDatapointView {
     protected _stack: BarStack
   ) {
     super(seriesView);
-    //this._width = 45; //BarStack.width; // this.paraview.store.settings.type.bar.barWidth;
-    this._isStyleEnabled = this.paraview.store.settings.type.bar.colorByDatapoint;
+    //this._width = 45; //BarStack.width; // this.paraview.paraState.settings.type.bar.barWidth;
+    this._isStyleEnabled = this.paraview.paraState.settings.type.bar.colorByDatapoint;
   }
 
   get classInfo() {
@@ -383,7 +383,7 @@ export class Bar extends PlaneDatapointView {
 
   // get styleInfo(): StyleInfo {
   //   const style = super.styleInfo;
-  //   if (!this.paraview.store.isVisited(this.seriesKey, this.index)) {
+  //   if (!this.paraview.paraState.isVisited(this.seriesKey, this.index)) {
   //     style.strokeWidth = 0;
   //   }
   //   return style;
@@ -394,7 +394,7 @@ export class Bar extends PlaneDatapointView {
 
     const idealWidth = this.chart.stackWidth;
     this._width = this.chart.stackWidth;
-    if (this.paraview.store.settings.animation.isAnimationEnabled) {
+    if (this.paraview.paraState.settings.animation.isAnimationEnabled) {
       this._height = 0;
       //this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
 
@@ -466,9 +466,9 @@ export class Bar extends PlaneDatapointView {
     if (chartInfo.settings.isDrawRecordLabels) {
       this._recordLabel = new Label(this.paraview, {
         // @ts-ignore
-        text: formatBox(this.datapoint.data.x, this.paraview.store.getFormatType('pieSliceValue')),
+        text: formatBox(this.datapoint.data.x, this.paraview.paraState.getFormatType('pieSliceValue')),
         id: this._id + '-rlb',
-        classList: [`${this.paraview.store.type}-label`],
+        classList: [`${this.paraview.paraState.type}-label`],
         role: 'datapoint',
         textAnchor,
         angle
@@ -476,7 +476,7 @@ export class Bar extends PlaneDatapointView {
       this.append(this._recordLabel);
       this._recordLabel.styleInfo = {
         stroke: 'none',
-        fill: this.paraview.store.colors.contrastValueAt(this._isStyleEnabled ? this.index : this.parent.index)
+        fill: this.paraview.paraState.colors.contrastValueAt(this._isStyleEnabled ? this.index : this.parent.index)
       };
       this._recordLabel.centerX = this.centerX;
       this._recordLabel.y = this.chart.height - this._recordLabel.height - chartInfo.settings.stackLabelGap;
@@ -484,9 +484,9 @@ export class Bar extends PlaneDatapointView {
     if (chartInfo.settings.isDrawDataLabels) {
       this._dataLabel = new Label(this.paraview, {
         // @ts-ignore
-        text: formatBox(this.datapoint.data.y, this.paraview.store.getFormatType('pieSliceValue')),
+        text: formatBox(this.datapoint.data.y, this.paraview.paraState.getFormatType('pieSliceValue')),
         id: this._id + '-blb',
-        classList: [`${this.paraview.store.type}-label`],
+        classList: [`${this.paraview.paraState.type}-label`],
         role: 'datapoint',
         textAnchor,
         angle
@@ -494,7 +494,7 @@ export class Bar extends PlaneDatapointView {
       this.append(this._dataLabel);
       this._dataLabel.styleInfo = {
         stroke: 'none',
-        fill: this.paraview.store.colors.contrastValueAt(this._isStyleEnabled
+        fill: this.paraview.paraState.colors.contrastValueAt(this._isStyleEnabled
           ? this.index
           : this.parent.index)
       };
@@ -524,7 +524,7 @@ export class Bar extends PlaneDatapointView {
   // }
 
   protected _createShapes() {
-    const isPattern = this.paraview.store.colors.palette.isPattern;
+    const isPattern = this.paraview.paraState.colors.palette.isPattern;
     this._shapes.forEach(shape => {
       shape.remove();
     });
@@ -536,13 +536,13 @@ export class Bar extends PlaneDatapointView {
       height: this._height,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
+        this.paraview.paraState.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
       },
       pointerMove: (e) => {
         this.movePopupAction();
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.isShowPopups ? this.paraview.store.removePopup(this.id) : undefined
+        this.paraview.paraState.settings.chart.isShowPopups ? this.paraview.paraState.removePopup(this.id) : undefined
       },
     }));
     super._createShapes();

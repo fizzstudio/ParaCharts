@@ -25,7 +25,7 @@ import { mapn } from '@fizz/chart-classifier-utils';
 import { svg, type TemplateResult } from 'lit';
 import { HorizGridLine, HorizTick, VertGridLine, VertTick } from './rule';
 import { ParaView } from '../../paraview';
-import { HorizCardinalDirection, OrientedAxisSettings, VertCardinalDirection } from '../../store';
+import { HorizCardinalDirection, OrientedAxisSettings, VertCardinalDirection } from '../../state';
 
 export interface TickStripOptions {
   orientation: AxisOrientation;
@@ -168,7 +168,7 @@ export class HorizTickStrip extends TickStrip {
     const isXIntertick = this._options.isChartIntertick && this._options.isFacetIndep;
     this._indices = mapn(this._options.tickCount + (isXIntertick ? 1 : 0), i => i)
       .filter(i => i % this._options.tickStep === 0);
-    if (!this.paraview.store.settings.grid.isDrawVertAxisOppositeLine) {
+    if (!this.paraview.paraState.settings.grid.isDrawVertAxisOppositeLine) {
       this._indices = isOrthoEast
         ? this._indices.slice(0, -1)
         : this._indices.slice(1);
@@ -198,7 +198,7 @@ export class HorizTickStrip extends TickStrip {
         this.paraview, undefined, length, i === this._options.zeroIndex));
       this._children.at(-1)!.x = this._ruleXs[i];
       this._children.at(-1)!.y = this._ruleY;
-      this._children.at(-1)!.hidden = !this.paraview.store.settings.grid.isDrawVertLines;
+      this._children.at(-1)!.hidden = !this.paraview.paraState.settings.grid.isDrawVertLines;
     });
   }
 }
@@ -258,7 +258,7 @@ export class VertTickStrip extends TickStrip {
     this._ruleX = tickLength;
     const isXIntertick = this._options.isChartIntertick && this._options.isFacetIndep;
     this._indices = mapn(this._options.tickCount, i => i);
-    if (!this.paraview.store.settings.grid.isDrawHorizAxisOppositeLine) {
+    if (!this.paraview.paraState.settings.grid.isDrawHorizAxisOppositeLine) {
       this._indices = isNorth
         ? this._indices.slice(1)
         : this._indices.slice(0, -1);
@@ -291,7 +291,7 @@ export class VertTickStrip extends TickStrip {
         this._indices.length - i - 1 === this._options.zeroIndex));
       this._children.at(-1)!.x = this._ruleX;
       this._children.at(-1)!.y = this._ruleYs[i];
-      this._children.at(-1)!.hidden = !this.paraview.store.settings.grid.isDrawHorizLines;
+      this._children.at(-1)!.hidden = !this.paraview.paraState.settings.grid.isDrawHorizLines;
     });
   }
 }

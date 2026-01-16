@@ -6,8 +6,8 @@ import {
   type DeepReadonly,
   type TabLabelStyle,
   type ControlPanelSettings
-} from '../store/settings_types';
-import { SettingsManager } from '../store/settings_manager';
+} from '../state/settings_types';
+import { SettingsManager } from '../state/settings_manager';
 import {
   DescriptionPanel, DataPanel, ColorsPanel, ChartPanel,
   AnnotationPanel, ControlsPanel
@@ -36,7 +36,7 @@ import {
 import { property, state, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { Popup } from '../view/popup';
-import { datapointIdToCursor } from '../store';
+import { datapointIdToCursor } from '../state';
 import { AnnotationDialog } from './dialogs/annotation_dialog';
 
 
@@ -113,7 +113,7 @@ export class ParaControlPanel extends ParaComponent {
 
   get settings() {
     return SettingsManager.getGroupLink<ControlPanelSettings>(
-      this.managedSettingKeys[0], this._store.settings);
+      this.managedSettingKeys[0], this._paraState.settings);
   }
 
   get managedSettingKeys() {
@@ -151,7 +151,7 @@ export class ParaControlPanel extends ParaComponent {
   connectedCallback() {
     super.connectedCallback();
     //this._isOpen = this.settings.isControlPanelDefaultOpen;
-    this._storeChangeUnsub = this._store.subscribe((key, value) => {
+    this._storeChangeUnsub = this._paraState.subscribe((key, value) => {
       if (key === 'data') {
         this.dataUpdated();
       }
@@ -167,15 +167,15 @@ export class ParaControlPanel extends ParaComponent {
       let toggleButton = this.shadowRoot?.getElementById("wrapper")?.children[0].shadowRoot?.children[0].getElementsByClassName("toggle")[0]
       if (toggleButton) {
         toggleButton.addEventListener("pointerenter", () => {
-          this.store.settings.chart.isShowPopups
-            && this.store.settings.popup.activation === "onHover"
-            && !this.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(this.paraChart.isControlPanelOpen ? true : false) : undefined
+          this.paraState.settings.chart.isShowPopups
+            && this.paraState.settings.popup.activation === "onHover"
+            && !this.paraState.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(this.paraChart.isControlPanelOpen ? true : false) : undefined
         })
         toggleButton.addEventListener("pointerleave", () => {
-          this.paraChart.paraView.store.removePopup(this.id);
+          this.paraChart.paraView.paraState.removePopup(this.id);
         })
         toggleButton.addEventListener("click", () => {
-          this.paraChart.paraView.store.removePopup(this.id);
+          this.paraChart.paraView.paraState.removePopup(this.id);
           this.addButtonListeners();
         })
         clearTimeout(timestamp);
@@ -260,7 +260,7 @@ export class ParaControlPanel extends ParaComponent {
 
   protected _getAnnot(dpId: string) {
     const { seriesKey, index } = datapointIdToCursor(dpId);
-    const series = this._store.model!.atKey(seriesKey)!.getLabel();
+    const series = this._paraState.model!.atKey(seriesKey)!.getLabel();
     return html`
         <div id="annotDialog">
           <div>Datapoint: ${series}, ${index}</div><br>
@@ -291,7 +291,7 @@ export class ParaControlPanel extends ParaComponent {
         fill: "hsl(0, 0%, 100%)",
         shape: "boxWithArrow"
       })
-    paraview.store.popups.push(popup)
+    paraview.paraState.popups.push(popup)
   }
 
   render() {

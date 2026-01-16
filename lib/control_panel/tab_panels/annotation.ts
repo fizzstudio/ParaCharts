@@ -4,7 +4,7 @@ import {
   html, css,
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
-import { datapointIdToCursor, type PointAnnotation } from '../../store/parastore';
+import { datapointIdToCursor, type PointAnnotation } from '../../state/parastate';
 import { formatXYDatapointX } from '@fizz/parasummary';
 import { type PlaneDatapoint } from '@fizz/paramodel';
 
@@ -47,7 +47,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
   showAnnotations() {
     return html`
       <ol class="annotations">
-        ${this._store.annotations.map(item => html`
+        ${this._paraState.annotations.map(item => html`
             <li
               data-series="${item.seriesKey}"
               data-index="${item.index}"
@@ -56,7 +56,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
                 this._selectAnnotation(event);
                 }}
               @dblclick=${(event: Event) => {
-                this._store.annotations = this._store.annotations.filter(p => !(p.id == item.id))
+                this._paraState.annotations = this._paraState.annotations.filter(p => !(p.id == item.id))
                 }}
             >${item.annotation}</li>
           `)
@@ -92,11 +92,11 @@ export class AnnotationPanel extends ControlPanelTabPanel {
 
   async addAnnotation() {
     const newAnnotationList: PointAnnotation[] = [];
-    for (const dpId of this.store.visitedDatapoints) {
+    for (const dpId of this.paraState.visitedDatapoints) {
       const { seriesKey, index } = datapointIdToCursor(dpId);
-      const series = this.store.model!.atKey(seriesKey)!.getLabel();
+      const series = this.paraState.model!.atKey(seriesKey)!.getLabel();
       const recordLabel = formatXYDatapointX(
-        this.store.model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint,
+        this.paraState.model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint,
         'raw'
       );
       let result = await this.controlPanel.showAnnotDialog(dpId);
@@ -111,12 +111,12 @@ export class AnnotationPanel extends ControlPanelTabPanel {
           index,
           annotation: `${series}, ${recordLabel}: ${annotationText}`,
           text: annotationText,
-          id: `${series}-${recordLabel}-${this.store.nextAnnotID()}`,
-          isSelected: this.store.settings.ui.isLowVisionModeEnabled ? false : true,
+          id: `${series}-${recordLabel}-${this.paraState.nextAnnotID()}`,
+          isSelected: this.paraState.settings.ui.isLowVisionModeEnabled ? false : true,
         });
       }
     }
-    this.store.annotations = [...this.store.annotations, ...newAnnotationList];
+    this.paraState.annotations = [...this.paraState.annotations, ...newAnnotationList];
   }
 
   render() {
@@ -138,7 +138,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
           <button
             @click=${
               () => {
-                this._store.addUserLineBreaks()
+                this._paraState.addUserLineBreaks()
               }
             }
           >
@@ -149,8 +149,8 @@ export class AnnotationPanel extends ControlPanelTabPanel {
           <button
             @click=${
               () => {
-                this._store.clearUserLineBreaks()
-                this._store.clearUserTrendLines()
+                this._paraState.clearUserLineBreaks()
+                this._paraState.clearUserTrendLines()
               }
             }
           >
@@ -161,10 +161,10 @@ export class AnnotationPanel extends ControlPanelTabPanel {
           <button
             @click=${
               () => {
-                this._store.updateSettings(draft => {
-                  draft.controlPanel.isMDRAnnotationsVisible = !this._store.settings.controlPanel.isMDRAnnotationsVisible;
+                this._paraState.updateSettings(draft => {
+                  draft.controlPanel.isMDRAnnotationsVisible = !this._paraState.settings.controlPanel.isMDRAnnotationsVisible;
                 });
-                this._store.showMDRAnnotations()
+                this._paraState.showMDRAnnotations()
               }
             }
           >

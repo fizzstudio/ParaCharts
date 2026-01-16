@@ -1438,7 +1438,7 @@ export class GridLayout extends Layout {
     });
     return svg`
       ${super.content()}
-      ${this.paraview.store.settings.dev.isShowGridTerritories
+      ${this.paraview.paraState.settings.dev.isShowGridTerritories
         ? rects.map(r => r.render())
         : ''
       }

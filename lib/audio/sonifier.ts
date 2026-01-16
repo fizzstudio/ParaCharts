@@ -30,7 +30,7 @@ import { OscillatorAudioEngine, type AudioEngine } from '.';
 import { AudioNotificationType } from './AudioEngine';
 import { type Axis } from '../view/axis';
 import { PointDatapointView, type DataLayer } from '../view/layers';
-import { type ParaStore } from '../store';
+import { type ParaState } from '../state';
 import { type ParaView } from '../paraview';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { BaseChartInfo } from '../chart_types';
@@ -128,7 +128,7 @@ export class Sonifier {
 
   constructor(
     protected _chartInfo: BaseChartInfo,
-    protected _store: ParaStore,
+    protected _paraState: ParaState,
     protected _paraView: ParaView
   ) {}
 
@@ -152,8 +152,8 @@ export class Sonifier {
    */
   private _getHertzRange() {
     return HERTZ.slice(
-      this._store.settings.sonification.hertzLower,
-      this._store.settings.sonification.hertzUpper
+      this._paraState.settings.sonification.hertzLower,
+      this._paraState.settings.sonification.hertzUpper
     );
   }
 
@@ -175,7 +175,7 @@ export class Sonifier {
         dpView.popInAnimation();
       }
     });
-    this.playSoniPoints(datapoints.map(dp => SoniPoint.fromModelDatapoint(dp, this._store.model!)), {
+    this.playSoniPoints(datapoints.map(dp => SoniPoint.fromModelDatapoint(dp, this._paraState.model!)), {
       cont, invert, durationVariable
     });
   }
@@ -254,7 +254,7 @@ export class Sonifier {
    * @param earcon - the type of notification to play
    */
   playNotification(earcon?: string) {
-    if (this._store.settings.sonification.isNotificationEnabled  ) {
+    if (this._paraState.settings.sonification.isNotificationEnabled  ) {
       this._checkAudioEngine();
 
       /* istanbul ignore next */

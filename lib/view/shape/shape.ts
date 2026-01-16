@@ -84,7 +84,7 @@ export abstract class Shape extends View {
       }
       cursor = cursor.parent;
     }
-    return this.paraview.store.settings.chart.stroke;
+    return this.paraview.paraState.settings.chart.stroke;
   }
 
   set stroke(stroke: string) {
@@ -102,7 +102,7 @@ export abstract class Shape extends View {
       }
       cursor = cursor.parent;
     }
-    return this.paraview.store.settings.chart.strokeWidth;
+    return this.paraview.paraState.settings.chart.strokeWidth;
   }
 
   set strokeWidth(strokeWidth: number) {

@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { ParaStore } from "../store/parastore";
+import { ParaState } from "../state/parastate";
 import { BboxAnchor, type View } from '../view/base_view';
 import { Box } from "@fizz/paramodel";
 import { Datatype } from "@fizz/paramanifest";
@@ -88,15 +88,15 @@ export function joinStrArray(strArray: string[], linebreak?: string): string {
 
 // ID Generation
 
-export function generateUniqueId(baseId: string, store: ParaStore): string {
+export function generateUniqueId(baseId: string, paraState: ParaState): string {
   // remove non-word characters and replace spaces
   baseId = baseId.replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
   let i = 0;
   let uid = baseId;
-  while (store.idList[uid]) {
+  while (paraState.idList[uid]) {
     uid = baseId + '-' + ++i;
   }
-  store.idList[uid] = true;
+  paraState.idList[uid] = true;
   return uid;
 }
 
