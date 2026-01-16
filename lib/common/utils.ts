@@ -88,7 +88,7 @@ export function joinStrArray(strArray: string[], linebreak?: string): string {
 
 // ID Generation
 
-export function generateUniqueId(baseId: string, store: ParaState): string {
+export function generateUniqueId(baseId: string, paraState: ParaState): string {
   // remove non-word characters and replace spaces
   baseId = baseId.replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
   let i = 0;
