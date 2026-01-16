@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { BaseChartInfo } from './base_chart';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, type NavMap } from '../view/layers/data/navigation';
-import { DeepReadonly, ParaStore, PlaneChartSettings } from '../store';
+import { DeepReadonly, ParaState, PlaneChartSettings } from '../store';
 import { ParaView } from '../paraview';
 import { type RiffOrder } from './base_chart';
 import { type HorizDirection } from '../store';

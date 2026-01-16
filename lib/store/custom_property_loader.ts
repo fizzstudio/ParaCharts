@@ -2,7 +2,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { type SettingsInput } from '../store/settings_types';
 import { Colors, Color, Palette } from '../common/colors';
 import { type DataSymbolType, type DataSymbolShape, type DataSymbolFill } from '../view/symbol';
-import { type ParaStore } from './parastore';
+import { type ParaState } from './parastore';
 
 export class CustomPropertyLoader {
   _customPrefix = '--para-';
@@ -12,7 +12,7 @@ export class CustomPropertyLoader {
   _colorPalette: Palette | null = null;
   _symbolSet: DataSymbolType[] | null = null;
 
-  protected _store!: ParaStore;
+  protected _store!: ParaState;
 
   protected log: Logger = getLogger("CustomPropertyLoader");  
   
@@ -20,7 +20,7 @@ export class CustomPropertyLoader {
     return this._store;
   }
 
-  set store(store: ParaStore) {
+  set store(store: ParaState) {
     this._store = store;
   }
 

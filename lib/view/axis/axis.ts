@@ -28,7 +28,7 @@ import { type AxisLine, HorizAxisLine, VertAxisLine } from './axis_line';
 import { type TickLabelTier, HorizTickLabelTier, VertTickLabelTier } from './tick_label_tier';
 import { type TickStrip, HorizTickStrip, VertTickStrip } from './tick_strip';
 import { SettingsManager } from '../../store/settings_manager';
-import { type ParaStore } from '../../store/parastore';
+import { type ParaState } from '../../store/parastore';
 
 import { type Datatype, type Scalar } from '@fizz/dataframe';
 import { type Facet } from '@fizz/paramanifest';
@@ -74,7 +74,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   protected _tickLabelTierValues!: string[][];
   protected _tickStep: number;
 
-  protected _store: ParaStore;
+  protected _store: ParaState;
 
   constructor(
     paraview: ParaView,

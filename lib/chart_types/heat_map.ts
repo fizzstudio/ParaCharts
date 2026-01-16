@@ -2,7 +2,7 @@ import { AxisInfo, computeLabels } from '../common/axisinfo';
 
 import { ChartType } from "@fizz/paramanifest";
 import { PlaneChartInfo } from './plane_chart';
-import { ParaStore } from '../store';
+import { ParaState } from '../store';
 import { type ParaView } from '../paraview';
 import { type NavNode } from '../view/layers';
 import { DocumentView } from '../view/document_view';

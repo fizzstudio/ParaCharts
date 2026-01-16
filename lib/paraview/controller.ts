@@ -1,9 +1,9 @@
 import { Logger, getLogger } from '@fizz/logger';
-import { ParaStore } from '../store';
+import { ParaState } from '../store';
 
 export class ParaViewController {
   protected log: Logger = getLogger("ParaViewController");
-  constructor(protected _store: ParaStore) {}
+  constructor(protected _store: ParaState) {}
   handleKeyEvent(event: KeyboardEvent) {
     if (this._store.settings.chart.isStatic) {
       return;

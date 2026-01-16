@@ -25,7 +25,7 @@ import '../control_panel/caption';
 import { type ParaCaptionBox } from '../control_panel/caption';
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
-import { ParaStore } from '../store';
+import { ParaState } from '../store';
 import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../store/custom_property_loader';
 import { styles } from '../view/styles';
@@ -89,7 +89,7 @@ export class ParaChart extends ParaComponent {
     const customPropLoader = new CustomPropertyLoader();
     const cssProps = customPropLoader.processProperties();
     // also creates the state controller
-    this.store = new ParaStore(
+    this.store = new ParaState(
       // XXX config won't get set until connectedCallback()
       Object.assign(cssProps, this.config),
       // this._suppleteSettingsWith,

@@ -164,7 +164,7 @@ export function makeSequenceId(seriesKey: string, index1: number, index2: number
   return `${seriesKey}-${index1}-${index2}`;
 }
 
-export class ParaStore extends State {
+export class ParaState extends State {
 
   readonly symbols = new DataSymbols();
 

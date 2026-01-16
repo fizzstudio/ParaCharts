@@ -1,5 +1,5 @@
 import { PlaneChartInfo } from '.';
-import { type ParaStore, type DeepReadonly } from '../store';
+import { type ParaState, type DeepReadonly } from '../store';
 import { type ParaView } from '../paraview';
 import { type ChartType } from "@fizz/paramanifest";
 import { AxisInfo, computeLabels } from '../common';

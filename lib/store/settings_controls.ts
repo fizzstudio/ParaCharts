@@ -12,7 +12,7 @@ import {
   type SliderSettingControlOptions,
   type ButtonSettingControlOptions,
 } from '../components/settings';
-import { ParaStore } from './parastore';
+import { ParaState } from './parastore';
 
 import { type TemplateResult } from 'lit';
 import { html, literal } from 'lit/static-html.js';
@@ -91,7 +91,7 @@ export class SettingControlManager extends State {
   
   @property() protected _settingControlInfo: {[key: string]: SettingControlInfo} = {};
 
-  constructor(protected _store: ParaStore) {
+  constructor(protected _store: ParaState) {
     super();
   }
 

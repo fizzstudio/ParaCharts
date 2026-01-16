@@ -1,5 +1,5 @@
 
-import { ParaStore } from '../store/parastore';
+import { ParaState } from '../store/parastore';
 import { formatBox } from '@fizz/parasummary';
 
 import Decimal from 'decimal.js';
@@ -93,7 +93,7 @@ export class AxisInfo {
   protected _xLabelInfo!: AxisLabelInfo;
   protected _yLabelInfo!: AxisLabelInfo;
 
-  constructor(protected _store: ParaStore, protected _options: AxisOptions) {
+  constructor(protected _store: ParaState, protected _options: AxisOptions) {
     if (_options.xTiers) {
       this._xLabelInfo = {labelTiers: _options.xTiers};
     } else {

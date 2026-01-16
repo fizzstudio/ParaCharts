@@ -1,6 +1,6 @@
 
 import { DatapointView } from '../../data';
-import { type ParaStore } from '../../../store';
+import { type ParaState } from '../../../store';
 import { type Direction } from '../../../store';
 import { DataLayer } from './data_layer';
 import { clusterObject } from '@fizz/clustering';
@@ -99,7 +99,7 @@ export class NavMap {
   protected _currentLayer: string;
   protected _runTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(protected _store: ParaStore, protected _chart: BaseChartInfo) {
+  constructor(protected _store: ParaState, protected _chart: BaseChartInfo) {
     this._currentLayer = 'root';
     const root = new NavLayer(this, this._currentLayer);
     this._layers.set(this._currentLayer, root);
@@ -341,7 +341,7 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     protected _layer: NavLayer,
     protected _type: T,
     protected _options: NavNodeOptionsType<T>,
-    protected _store: ParaStore
+    protected _store: ParaState
   ) {
     // NB: Layer IDs are not allowed to start with a colon
     this._id = `:${NavNode.nextId++}`;

@@ -18,7 +18,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { type BaseChartInfo, chartInfoClasses, PlaneChartInfo } from '../chart_types';
 import { View, Container, Padding } from './base_view';
 import { Label } from './label';
-import { type CardinalDirection, ParaStore, Setting } from '../store';
+import { type CardinalDirection, ParaState, Setting } from '../store';
 import { Facet, type ChartType } from '@fizz/paramanifest';
 import { PlotLayerManager } from './layers';
 import { HorizAxis, VertAxis, type AxisCoord } from './axis';
@@ -45,7 +45,7 @@ export class DocumentView extends Container(View) {
   protected _titleText!: string;
   protected _legends: Legends = {};
 
-  protected _store: ParaStore;
+  protected _store: ParaState;
 
   constructor(paraview: ParaView) {
     super(paraview);

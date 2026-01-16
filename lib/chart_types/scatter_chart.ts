@@ -1,7 +1,7 @@
 import { PointChartInfo } from '.';
 import { clusterObject, coord, generateClusterAnalysis } from '@fizz/clustering';
 import { strToId, ChartType } from '@fizz/paramanifest';
-import { type ParaStore } from '../store';
+import { type ParaState } from '../store';
 import { type ParaView } from '../paraview';
 import { AxisInfo } from '../common/axisinfo';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, ScatterPointNavNodeOptions } from '../view/layers/data/navigation';

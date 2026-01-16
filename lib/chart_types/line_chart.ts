@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
 import { PointChartInfo } from './point_chart';
-import { datapointIdToCursor, type ParaStore } from '../store';
+import { datapointIdToCursor, type ParaState } from '../store';
 import { type ParaView } from '../paraview';
 import { type LineSettings, type DeepReadonly, type Setting } from '../store/settings_types';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../store/query_utils';

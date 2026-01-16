@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { svg, TemplateResult } from 'lit';
-import { type ParaStore } from '../store';
+import { type ParaState } from '../store';
 
 export interface Palette {
   key: string;
@@ -65,7 +65,7 @@ export class Colors {
   private active = 'hsl(270, 50%, 65%)';
   protected _prevSelectedColor: string = ''
 
-  constructor(protected _store: ParaStore) {
+  constructor(protected _store: ParaState) {
     this.palettes = [
       {
         key: 'diva',

@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
-import { ParaStore } from '../store';
+import { ParaState } from '../store';
 import { ParaView } from '../paraview';
 import { PlaneChartInfo } from './plane_chart';
 import { AxisInfo } from '../common/axisinfo';
