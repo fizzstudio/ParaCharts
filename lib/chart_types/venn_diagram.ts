@@ -178,7 +178,7 @@ export class VennDiagramInfo extends BaseChartInfo {
         msgArray.push(...selectionMsgArray);
       } else {
         // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
-        const series = this._paraState.model!.atKey(seriesKey)!
+        const series = this._paraState.model!.atKey(seriesKey)!;
         msgArray.push(interpolate(
           queryMessages.percentageOfChart,
           {
