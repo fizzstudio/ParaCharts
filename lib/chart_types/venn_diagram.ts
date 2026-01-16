@@ -74,35 +74,47 @@ export class VennDiagramInfo extends BaseChartInfo {
       parentView: 'controlPanel.tabs.chart.chart',
     });
   }
-
   protected _createNavMap() {
     super._createNavMap();
-    const layer = new NavLayer(this._navMap!, 'slices');
+    const layer = new NavLayer(this._navMap!, 'circles');
     directions.forEach(dir => {
       this._navMap!.node('top', {})!.connect(dir, layer);
     });
-    const nodes = this._store.model!.series[0].datapoints.map((datapoint, i) => {
-    //const nodes = this._chartLandingView.children[0].children.map((datapointView, i) => {
-      const node = new NavNode(layer, 'datapoint', {
-        seriesKey: datapoint.seriesKey,
-        index: datapoint.datapointIndex
-      }, this._store);
-      //node.addDatapointView(datapointView);
-      node.connect('out', this._navMap!.root);
-      node.connect('up', this._navMap!.root);
-      return node;
-    });
-    nodes.slice(0, -1).forEach((node, i) => {
-      node.connect('right', layer.get('datapoint', i + 1)!);
-    });
-    nodes.at(-1)!.connect('right', nodes[0]);
+    const seriesList = this._store.model!.series.slice(0, 2); // left and right sets
+
+    if (seriesList.length !== 2) {
+      throw new Error('Venn diagram must have exactly two series for two sets');
+    }
+    const leftCircle = new NavNode(
+      layer,
+      'series',
+      { seriesKey: seriesList[0].key },
+      this._store
+    );
+
+    const rightCircle = new NavNode(
+      layer,
+      'series',
+      { seriesKey: seriesList[1].key },
+      this._store
+    );
+    leftCircle.connect('right', rightCircle);
+    rightCircle.connect('left', leftCircle);
+
+    // Vertical / exit navigation goes back to the top/root
+    leftCircle.connect('up', this._navMap!.root);
+    leftCircle.connect('out', this._navMap!.root);
+
+    rightCircle.connect('up', this._navMap!.root);
+    rightCircle.connect('out', this._navMap!.root);
   }
+
   /*
   legend() {
   }
 */
   playDatapoints(datapoints: PlaneDatapoint[]): void {
-    this._sonifier.playDatapoints(datapoints, {invert: true, durationVariable: true});
+    this._sonifier.playDatapoints(datapoints, { invert: true, durationVariable: true });
   }
 
   playDir(dir: HorizDirection): void {
