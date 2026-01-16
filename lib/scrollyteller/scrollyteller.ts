@@ -21,7 +21,7 @@ export interface ScrollytellingSettings {
 // Host interface: ParaChart (or similar) will match this shape structurally.
 export interface ScrollyHost {
   paraView?: {
-    store?: {
+    paraState?: {
       settings?: {
         // Use a broad type here so any ParaChart-specific scrollytelling settings shape is assignable.
         scrollytelling?: any;

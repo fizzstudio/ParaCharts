@@ -124,7 +124,7 @@ export interface SparkBrailleInfo {
   isBar?: boolean;
 }
 
-export interface StoreCallbacks {
+export interface ParaStateCallbacks {
   onUpdate?: () => void;
   onNotice?: (type: string, data: any) => void;
   onSettingChange?: (path: string, oldValue?: Setting, newValue?: Setting) => void;
@@ -217,7 +217,7 @@ export class ParaState extends State {
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected _annotID: number = 0;
   protected log: Logger = getLogger("ParaState");
-  protected callbacks: StoreCallbacks = {};
+  protected callbacks: ParaStateCallbacks = {};
 
   public idList: Record<string, boolean> = {};
 
@@ -298,7 +298,7 @@ export class ParaState extends State {
     this.settings = hydratedSettings as Settings;
   }
 
-  registerCallbacks(callbacks: StoreCallbacks) {
+  registerCallbacks(callbacks: ParaStateCallbacks) {
     this.callbacks = { ...this.callbacks, ...callbacks };
   }
 
