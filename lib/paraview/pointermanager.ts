@@ -200,6 +200,7 @@ export class PointerEventManager {
    * @param target - The element to be selected; deselects if absent or `null`.
    */
   protected async _selectElement(target: SVGGraphicsElement, isAdd?: boolean) {
+    if (this._paraView.store.settings.ui.isNarrativeHighlightEnabled) return;
     if (!target) {
       this._clearSelectedElements();
     } else {
