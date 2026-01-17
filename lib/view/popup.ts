@@ -3,7 +3,7 @@ import { ParaView } from "../paraview";
 import { View } from "./base_view";
 import { Label, LabelOptions } from "./label";
 import { PathOptions, PathShape, ShapeOptions } from "./shape";
-import { ParaComponent } from "../components";
+import { ParaComponent } from "../components/paracomponent";
 import { fixed } from "../common";
 import { Logger, getLogger } from '@fizz/logger';
 import { Dialog } from '@fizz/ui-components';
