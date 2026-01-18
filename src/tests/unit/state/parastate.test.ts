@@ -296,7 +296,7 @@ describe('ParaState', () => {
       const summary = {
         text: 'Summary text',
         html: '<span>Summary</span>',
-        highlights: [{ start: 0, end: 7 }]
+        highlights: [{ start: 0, end: 7, phrasecode: '0' }]
       };
       state.announce(summary);
       expect(state.announcement.text).toBe('Summary text');
