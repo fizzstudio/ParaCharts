@@ -386,14 +386,6 @@ export class ParaState extends State {
     }
   }
 
-  protected _propertyChanged(key: string, value: any) {
-    if (key === 'dataState') {
-      if (value === 'pending') {
-
-      }
-    }
-  }
-
   updateSettings(updater: (draft: Settings) => void, ignoreObservers = false) {
     const [newSettings, patches, inversePatches] = produceWithPatches(this.settings, updater);
     this.settings = newSettings;
