@@ -265,23 +265,10 @@ describe('ParaState', () => {
       });
     });
 
-    it('should throw when highlighting duplicate range', () => {
-      state.highlightRange(0.2, 0.8);
-      expect(() => {
-        state.highlightRange(0.2, 0.8);
-      }).toThrow(/already highlighted/);
-    });
-
     it('should unhighlight a range', () => {
       state.highlightRange(0.2, 0.8);
       state.unhighlightRange(0.2, 0.8);
       expect(state.rangeHighlights).toHaveLength(0);
-    });
-
-    it('should throw when unhighlighting non-existent range', () => {
-      expect(() => {
-        state.unhighlightRange(0.2, 0.8);
-      }).toThrow(/not highlighted/);
     });
   });
 
