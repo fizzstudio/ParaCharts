@@ -229,7 +229,6 @@ export class ParaState extends State {
   ) {
     super();
     this._createSettings();
-    this.subscribe((key, value) => this._propertyChanged(key, value));
     this._colors = new Colors(this);
     this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
     this._pairAnalyzerConstructor = pairAnalyzerConstructor;
@@ -852,7 +851,8 @@ export class ParaState extends State {
   highlightRange(startPortion: number, endPortion: number) {
     if (this._rangeHighlights.find(rhl =>
       rhl.startPortion === startPortion && rhl.endPortion === endPortion)) {
-      throw new Error('range already highlighted');
+      this.log.warn(`attempting to highlight already highlighted range: ${[startPortion, endPortion]}`);
+      return;
     }
     this._rangeHighlights = [...this._rangeHighlights, { startPortion, endPortion }];
   }
@@ -861,7 +861,8 @@ export class ParaState extends State {
     const index = this._rangeHighlights.findIndex(rhl =>
       rhl.startPortion === startPortion && rhl.endPortion === endPortion);
     if (index === -1) {
-      throw new Error('range not highlighted');
+      this.log.warn(`attempting to unhighlight unhighlighted already range: ${[startPortion, endPortion]}`);
+      return;
     }
     this._rangeHighlights = this._rangeHighlights.toSpliced(index, 1);
   }
