@@ -113,6 +113,12 @@ export class ParaView extends ParaComponent {
       #loading-message text {
         fill: white;
       }
+      [role="graphics-document"] {
+        cursor: var(--chart-cursor);
+      }
+      #chart-layers {
+        cursor: var(--data-cursor);
+      }
       .grid-horiz {
         stroke: var(--axis-line-color);
         opacity: 0.2;

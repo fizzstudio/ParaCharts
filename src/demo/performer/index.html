@@ -50,23 +50,23 @@
 		let demoDidStart = false;
         function runDemo() {
             const steps = [
-                /*() => {
+                () => {
 					text.innerHTML = 'Move right';
                     chart.api.doAction('move', {direction: 'right'});
                 },
                 () => {
 					text.innerHTML = 'Move right again';
                     chart.api.doAction('move', {direction: 'right'});
-                },*/
+                },
                 /*() => {
 					text.innerHTML = 'Enable dark mode';
                     chart.api.setSetting('color.isDarkModeEnabled', true);
                 },*/
-                /*() => {
+                () => {
 					text.innerHTML = 'Change manifest';
 					chart.setAttribute('manifest', '/src/demo-data/line-single-manifest-128.json');
-                },*/
-                () => {
+                },
+                /*() => {
 					text.innerHTML = 'Highlight points';
                     chart.api.getSeries('Euro area').getPoints(4, 6).highlight();
                 },
@@ -77,15 +77,15 @@
                 () => {
 					text.innerHTML = 'Highlight sequences';
                     chart.api.getSeries('EU').getSequences([0, 2], [5, 11]).highlight();
-                },
+                },*/
                 /*() => {
 					text.innerHTML = 'Play sequences soni';
                     chart.api.getSeries('EU').getSequences([0, 2], [5, 11]).play();
                 },*/
-                () => {
+                /*() => {
 					text.innerHTML = 'Clear sequence highlight';
                     chart.api.getSeries('EU').getSequences([0, 2]).clearHighlight();
-                },
+                },*/
                 /*() => {
 					text.innerHTML = 'Enable narrative highlights';
                     chart.api.setSetting('ui.isNarrativeHighlightEnabled', true);
