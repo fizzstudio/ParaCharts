@@ -18,14 +18,15 @@ import { View } from '../base_view';
 
 import { svg } from 'lit';
 import { ParaView } from '../../paraview';
+import { type ParaState } from '../../state';
 
 /**
  * Invisible spacer that creates space between views.
  */
 export class Spacer extends View {
 
-  constructor(public readonly size: number, paraview: ParaView) {
-    super(paraview);
+  constructor(paraState: ParaState, public readonly size: number, paraview: ParaView) {
+    super(paraState, paraview);
   }
 
   computeSize(): [number, number] {

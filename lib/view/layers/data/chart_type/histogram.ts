@@ -4,7 +4,7 @@ import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
 import { fixed } from "../../../../common/utils";
 import { ParaView } from "../../../../paraview";
-import { datapointIdToCursor, DeepReadonly, HistogramSettings, PointChartType, type Setting } from "../../../../state";
+import { datapointIdToCursor, DeepReadonly, HistogramSettings, PointChartType, type Setting, type ParaState } from "../../../../state";
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { PlanePlotView, PlaneSeriesView } from ".";
@@ -23,10 +23,10 @@ export class Histogram extends PlanePlotView {
     } else if (path === 'type.histogram.bins') {
         this.paraview.createDocumentView();
         this.paraview.requestUpdate();
-        this.paraview.paraState.updateSettings(draft => {
+        this._paraState.updateSettings(draft => {
           draft.axis.y.maxValue = 'unset'
         });
-        this.paraview.paraState.updateSettings(draft => {
+        this._paraState.updateSettings(draft => {
           draft.axis.y.minValue = 'unset'
         });
     }
@@ -46,29 +46,29 @@ export class Histogram extends PlanePlotView {
   }
 
   protected _newDatapointView(seriesView: PlaneSeriesView) {
-    return new HistogramBinView(this, seriesView);
+    return new HistogramBinView(this._paraState, this, seriesView);
   }
 
   protected _createDatapoints() {
     const xs: string[] = [];
-    for (const [p, i] of enumerate(this.paraview.paraState.model!.series[0].datapoints)) {
-      xs.push(formatBox(p.facetBox('x')!, this.paraview.paraState.getFormatType(`${this.parent.parent.type as PointChartType}Point`)));
+    for (const [p, i] of enumerate(this._paraState.model!.series[0].datapoints)) {
+      xs.push(formatBox(p.facetBox('x')!, this._paraState.getFormatType(`${this.parent.parent.type as PointChartType}Point`)));
       const xId = strToId(xs.at(-1)!);
       // if (this.selectors[i] === undefined) {
       //   this.selectors[i] = [];
       // }
       // this.selectors[i].push(`tick-x-${xId}`);
     }
-    const seriesView = new PlaneSeriesView(this, this.paraview.paraState.model!.series[0].key);
+    const seriesView = new PlaneSeriesView(this._paraState, this, this._paraState.model!.series[0].key);
     this._chartLandingView.append(seriesView);
     for (let i = 0; i < this.chartInfo.bins; i++) {
-        const bin = new HistogramBinView(this, seriesView);
+        const bin = new HistogramBinView(this._paraState, this, seriesView);
         seriesView.append(bin)
       }
     //Note from Sam: I will add multi-series stacked support eventually, for now it makes more sense to have the values from each series
     //added together in the same bin
     /*
-    for (const [col, i] of enumerate(this.paraview.paraState.model!.series)) {
+    for (const [col, i] of enumerate(this._paraState.model!.series)) {
 
 
       for (const [value, j] of enumerate(col)) {
@@ -108,7 +108,6 @@ export class Histogram extends PlanePlotView {
 }
 
 export class HistogramBinView extends DatapointView {
-
   declare readonly chart: Histogram;
   declare protected _parent: PlaneSeriesView;
 
@@ -116,11 +115,12 @@ export class HistogramBinView extends DatapointView {
   protected _width!: number;
   protected _count: number = 0;
   constructor(
+    paraState: ParaState,
     chart: Histogram,
     series: SeriesView
   ) {
 
-    super(series);
+    super(paraState, series);
   }
 
   get width() {
@@ -144,7 +144,7 @@ export class HistogramBinView extends DatapointView {
   }
 
   get selectedMarker(): Shape {
-    return new RectShape(this.paraview, {
+    return new RectShape(this._paraState, this.paraview, {
       width: this._width,
       height: this._height,
       x: this._x,
@@ -209,7 +209,7 @@ export class HistogramBinView extends DatapointView {
   }
 
   summary() {
-    // const length = this.paraview.paraState.model!.series.flat()[0].length
+    // const length = this._paraState.model!.series.flat()[0].length
     // //const yInfo = this.chart.axisInfo!.yLabelInfo!
     // //const ySpan = yInfo.range! / this.chart.bins
     // //const up = (yInfo.max! - ySpan * (Math.floor((this.index - length) / this.chart.bins))).toFixed(2)
@@ -228,7 +228,7 @@ export class HistogramBinView extends DatapointView {
 
   protected _createId(..._args: any[]): string {
     //const jimIndex = this._parent.modelIndex*this._series.length + this.index + 1;
-    //const id = this.paraview.paraState.jimerator!.jim.selectors[`datapoint${jimIndex}`].dom as string;
+    //const id = this._paraState.jimerator!.jim.selectors[`datapoint${jimIndex}`].dom as string;
     const id = `datapoint-${this.index}`
     // don't include the '#' from JIM
     return id;
@@ -246,8 +246,8 @@ export class HistogramBinView extends DatapointView {
 
   render() {
     let stroke = `hsl(0, 0%, 0%)`
-    let fill = this.paraview.paraState.colors.colorValueAt(0)
-    if (this.paraview.paraState.visitedDatapoints.values().some(item => {
+    let fill = this._paraState.colors.colorValueAt(0)
+    if (this._paraState.visitedDatapoints.values().some(item => {
       const cursor = datapointIdToCursor(item);
       return cursor.index === this.index;
     })) {

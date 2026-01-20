@@ -3,7 +3,7 @@ import { View, Container } from './base_view';
 import { GridLayout, type Layout } from './layout';
 import { type DataSymbolType, DataSymbol } from './symbol';
 import { Label } from './label';
-import { type LegendSettings, type DeepReadonly, SettingsManager } from '../state';
+import { type LegendSettings, type DeepReadonly, SettingsManager, type ParaState } from '../state';
 import { RectShape } from './shape/rect';
 import { type ParaView } from '../paraview';
 import { TemplateResult } from 'lit';
@@ -48,15 +48,17 @@ export class Legend extends Container(View) {
   protected _grid!: GridLayout;
   protected _markers: RectShape[] = [];
 
-  constructor(paraview: ParaView,
+  constructor(
+    paraState: ParaState,
+    paraview: ParaView,
     protected _items: LegendItem[],
     protected _options: Partial<LegendOptions> = {orientation: 'vert'}
   ) {
-    super(paraview);
+    super(paraState, paraview);
   }
 
   get settings() {
-    return SettingsManager.getGroupLink<LegendSettings>('legend', this.paraview.paraState.settings);
+    return SettingsManager.getGroupLink<LegendSettings>('legend', this._paraState.settings);
   }
 
   get classInfo() {
@@ -69,48 +71,49 @@ export class Legend extends Container(View) {
     const hasLegendBox = this.settings.boxStyle.outline !== 'none' || this.settings.boxStyle.fill !== 'none';
 
     this._items.forEach(item => {
-      this._markers.push(new RectShape(this.paraview, {width: 12, height: 6}));
+      this._markers.push(new RectShape(this._paraState, this.paraview, {width: 12, height: 6}));
       views.push(this._markers.at(-1)!);
       views.push(DataSymbol.fromType(
+        this._paraState,
         this.paraview,
-        this.paraview.paraState.settings.chart.isDrawSymbols
+        this._paraState.settings.chart.isDrawSymbols
           ? (item.symbol ?? 'square.solid')
           : 'square.solid',
         {
           color: item.color,
           pointerEnter: (e) => {
-            this.paraview.paraState.lowlightOtherSeries(item.seriesKey);
+            this._paraState.lowlightOtherSeries(item.seriesKey);
           },
           pointerLeave: (e) => {
-            this.paraview.paraState.clearAllSeriesLowlights();
+            this._paraState.clearAllSeriesLowlights();
           }
         }
       ));
-      views.push(new Label(this.paraview, {
+      views.push(new Label(this._paraState, this.paraview, {
         text: item.label,
         x: 0,
         y: 0,
         textAnchor: 'start',
         classList: ['legend-label'],
         pointerEnter: (e) => {
-          this.paraview.paraState.lowlightOtherSeries(item.seriesKey);
+          this._paraState.lowlightOtherSeries(item.seriesKey);
         },
         pointerLeave: (e) => {
-          this.paraview.paraState.clearAllSeriesLowlights();
+          this._paraState.clearAllSeriesLowlights();
         }
       }));
     });
-    const symLabelGap = this.paraview.paraState.settings.legend.symbolLabelGap;
-    const pairGap = this.paraview.paraState.settings.legend.pairGap;
+    const symLabelGap = this._paraState.settings.legend.symbolLabelGap;
+    const pairGap = this._paraState.settings.legend.pairGap;
     if (this._options.orientation === 'vert') {
-      this._grid = new GridLayout(this.paraview, {
+      this._grid = new GridLayout(this._paraState, this.paraview, {
         numCols: 3,
         colGaps: symLabelGap,
         colAligns: ['center', 'center', 'start'],
         isAutoWidth: true,
         isAutoHeight: true
       }, 'legend-grid');
-      this._grid.padding = hasLegendBox ? this.paraview.paraState.settings.legend.padding : 0;
+      this._grid.padding = hasLegendBox ? this._paraState.settings.legend.padding : 0;
       views.forEach(v => this._grid.append(v));
     } else {
       let labelsPerRow = views.length/3;
@@ -119,11 +122,11 @@ export class Legend extends Container(View) {
           new Array(labelsPerRow).fill(0),
           new Array(labelsPerRow).fill(symLabelGap),
           new Array(labelsPerRow - 1).fill(pairGap));
-        this._grid = new GridLayout(this.paraview, {
+        this._grid = new GridLayout(this._paraState, this.paraview, {
           numCols: labelsPerRow*3,
           colGaps: colGaps,
         }, 'legend-grid');
-        this._grid.padding = hasLegendBox ? this.paraview.paraState.settings.legend.padding : 0;
+        this._grid.padding = hasLegendBox ? this._paraState.settings.legend.padding : 0;
         views.forEach(v => this._grid.append(v));
         if (this._options.wrapWidth === undefined ||
             this._grid.paddedWidth <= this._options.wrapWidth ||
@@ -143,7 +146,7 @@ export class Legend extends Container(View) {
     // this.prepend(new Rect(this._width, this._height, 'white'));
 
     if (hasLegendBox) {
-      this.prepend(new RectShape(this.paraview, {
+      this.prepend(new RectShape(this._paraState, this.paraview, {
         width: this._grid.width,
         height: this._grid.height,
         fill: this.settings.boxStyle.fill,
@@ -162,11 +165,11 @@ export class Legend extends Container(View) {
     this._items.forEach((item, i) => {
       const style = this._markers[i].styleInfo;
       const visited = item.datapointIndex !== undefined
-        ? this.paraview.paraState.isVisited(
-          this.paraview.paraState.model!.seriesKeys[0], item.datapointIndex)
-        : this.paraview.paraState.isVisitedSeries(item.label);
+        ? this._paraState.isVisited(
+          this._paraState.model!.seriesKeys[0], item.datapointIndex)
+        : this._paraState.isVisitedSeries(item.label);
       if (visited) {
-        style.fill = this.paraview.paraState.colors.colorValueAt(-1);
+        style.fill = this._paraState.colors.colorValueAt(-1);
       } else {
         style.fill = 'none';
       }

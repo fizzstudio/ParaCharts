@@ -74,17 +74,15 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   protected _tickLabelTierValues!: string[][];
   protected _tickStep: number;
 
-  protected _paraState: ParaState;
-
   constructor(
+    paraState: ParaState,
     paraview: ParaView,
     public readonly orientation: T,
     protected _facet: Facet,
     protected _chartInfo: PlaneChartInfo,
     _length: number
   ) {
-    super(paraview);
-    this._paraState = this.paraview.paraState;
+    super(paraState, paraview);
 
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
     //   have two axes
@@ -230,26 +228,26 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   }
 
   protected _createAxisTitle() {
-    this._axisTitle = new Label(this.paraview, {
+    this._axisTitle = new Label(this._paraState, this.paraview, {
       id: `axis-title-${this.orientation}`,
       text: this.titleText,
       classList: [`axis-title-${this.orientation}`],
       role: 'heading',
       angle: this._getAxisTitleAngle(),
       pointerEnter: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups
-          && this.paraview.paraState.settings.popup.activation === "onHover"
-          && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
+        this._paraState.settings.chart.isShowPopups
+          && this._paraState.settings.popup.activation === "onHover"
+          && !this._paraState.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
       },
       pointerMove: (e) => {
         if (this._popup) {
-          this.addPopup(undefined, this.paraview.paraState.pointerCoords.x, this.paraview.paraState.pointerCoords.y + this.paraview.paraState.settings.popup.margin)
+          this.addPopup(undefined, this._paraState.pointerCoords.x, this._paraState.pointerCoords.y + this._paraState.settings.popup.margin)
         }
       },
       pointerLeave: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups
-          && this.paraview.paraState.settings.popup.activation === "onHover"
-          && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled ? this.paraview.paraState.removePopup(this.id) : undefined;
+        this._paraState.settings.chart.isShowPopups
+          && this._paraState.settings.popup.activation === "onHover"
+          && !this._paraState.settings.ui.isNarrativeHighlightEnabled ? this._paraState.removePopup(this.id) : undefined;
       }
     });
     this._axisTitle.padding = this._getAxisTitlePadding();
@@ -257,7 +255,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   addPopup(text?: string, x?: number, y?: number) {
     let datapointText = `${this.titleText}`
-    let popup = new Popup(this.paraview,
+    let popup = new Popup(this._paraState, this.paraview,
       {
         text: text ?? datapointText,
         x: x ?? this.x,
@@ -270,7 +268,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
         fill: "hsl(0, 0%, 100%)",
         shape: "boxWithArrow"
       })
-    this.paraview.paraState.popups.push(popup)
+    this._paraState.popups.push(popup)
     this._popup = popup;
   }
 
@@ -312,11 +310,11 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
  */
 export class HorizAxis extends Axis<'horiz'> {
 
-  constructor(paraview: ParaView, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
-    super(paraview, 'horiz', facet, chartInfo, length);
+  constructor(paraState: ParaState, paraview: ParaView, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
+    super(paraState, paraview, 'horiz', facet, chartInfo, length);
     this._width = length;
     this._canWidthFlex = true;
-    this._layout = new GridLayout(this.paraview, {
+    this._layout = new GridLayout(this._paraState, this.paraview, {
       numCols: 1,
       rowAligns: 'end',
       colAligns: 'center',
@@ -350,6 +348,7 @@ export class HorizAxis extends Axis<'horiz'> {
   protected _createTickLabelTiers() {
     return this._tickLabelTierValues.map((tier, i) =>
       new HorizTickLabelTier(
+        this._paraState,
         this.paraview,
         this.orientationSettings, {
         orientation: this.orientation,
@@ -373,14 +372,14 @@ export class HorizAxis extends Axis<'horiz'> {
   }
 
   protected _createTickStrip() {
-    return new HorizTickStrip(this.paraview, this.orientationSettings, 1, {
+    return new HorizTickStrip(this._paraState, this.paraview, this.orientationSettings, 1, {
       orientation: this.orientation,
       length: this._width,
       // tickCount: this._labelInfo.labelTiers[0].length,
       tickCount: this._tickLabelTierValues[0].length,
-      isDrawOverhang: this.paraview.paraState.settings.axis.vert.line.isDrawOverhang,
+      isDrawOverhang: this._paraState.settings.axis.vert.line.isDrawOverhang,
       tickStep: this._tickStep,
-      orthoAxisPosition: this.paraview.paraState.settings.axis.vert.position,
+      orthoAxisPosition: this._paraState.settings.axis.vert.position,
       // zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0') - 1
       zeroIndex: this._tickLabelTierValues[0].findIndex(label => label === '0') - 1,
       isChartIntertick: this._chartInfo.isIntertick,
@@ -394,7 +393,7 @@ export class HorizAxis extends Axis<'horiz'> {
   }
 
   protected _createAxisLine() {
-    this._axisLine = new HorizAxisLine(this, this._width);
+    this._axisLine = new HorizAxisLine(this._paraState, this, this._width);
   }
 
   protected _appendAxisLine() {
@@ -424,11 +423,11 @@ export class HorizAxis extends Axis<'horiz'> {
  */
 export class VertAxis extends Axis<'vert'> {
 
-  constructor(paraview: ParaView, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
-    super(paraview, 'vert', facet, chartInfo, length);
+  constructor(paraState: ParaState, paraview: ParaView, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
+    super(paraState, paraview, 'vert', facet, chartInfo, length);
     this._height = length;
     this._canHeightFlex = true;
-    this._layout = new GridLayout(this.paraview, {
+    this._layout = new GridLayout(this._paraState, this.paraview, {
       numCols: 1, // new cols will get added as needed
       rowAligns: 'center',
       colAligns: 'start',
@@ -461,6 +460,7 @@ export class VertAxis extends Axis<'vert'> {
   protected _createTickLabelTiers() {
     return this._tickLabelTierValues.map((tier, i) =>
       new VertTickLabelTier(
+        this._paraState,
         this.paraview,
         this.orientationSettings, {
         orientation: this.orientation,
@@ -486,14 +486,14 @@ export class VertAxis extends Axis<'vert'> {
   }
 
   protected _createTickStrip() {
-    return new VertTickStrip(this.paraview, this.orientationSettings, 1, {
+    return new VertTickStrip(this._paraState, this.paraview, this.orientationSettings, 1, {
       orientation: this.orientation,
       length: this._height,
       // tickCount: this._labelInfo.labelTiers[0].length,
       tickCount: this._tickLabelTierValues[0].length,
-      isDrawOverhang: this.paraview.paraState.settings.axis.horiz.line.isDrawOverhang,
+      isDrawOverhang: this._paraState.settings.axis.horiz.line.isDrawOverhang,
       tickStep: this._tickStep,
-      orthoAxisPosition: this.paraview.paraState.settings.axis.horiz.position,
+      orthoAxisPosition: this._paraState.settings.axis.horiz.position,
       // XXX could be '0.0' or have a unit, etc.
       // zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0')
       zeroIndex: this._tickLabelTierValues[0].findIndex(label => label === '0'),
@@ -510,7 +510,7 @@ export class VertAxis extends Axis<'vert'> {
   }
 
   protected _createAxisLine() {
-    this._axisLine = new VertAxisLine(this, this._height);
+    this._axisLine = new VertAxisLine(this._paraState, this, this._height);
   }
 
   protected _appendAxisLine() {

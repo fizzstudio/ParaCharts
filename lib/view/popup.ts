@@ -16,6 +16,7 @@ import { DataSymbol, DataSymbolType } from "./symbol";
 import { LegendItem } from "./legend";
 import { DatapointView } from "./data";
 import { WaterfallBarView } from "./layers";
+import { type ParaState } from '../state';
 
 export interface PopupLabelOptions extends LabelOptions {
     color?: number;
@@ -38,7 +39,7 @@ export interface PopupShapeOptions extends ShapeOptions {
 //NB: this refers to how far the arrow sticks out of the box
 //even when it's on the side and width might be a more accurate word
 const BOX_ARROW_HEIGHT = 10
-//Similarly, this always refers to the distance between the point of the arrow and where it 
+//Similarly, this always refers to the distance between the point of the arrow and where it
 //meets the box along whatever primary axis is being used
 const BOX_ARROW_WIDTH = 15
 const DEFAULT_CHORD_POPUP_LINE_WIDTH = 6
@@ -47,13 +48,13 @@ export class Popup extends View {
     protected _label: Label;
     protected _box!: PathShape;
     protected _grid: GridLayout;
-    protected leftPadding = this.paraview.paraState.settings.popup.leftPadding;
-    protected rightPadding = this.paraview.paraState.settings.popup.rightPadding;
-    protected downPadding = this.paraview.paraState.settings.popup.downPadding;
-    protected upPadding = this.paraview.paraState.settings.popup.upPadding;
+    protected leftPadding = this._paraState.settings.popup.leftPadding;
+    protected rightPadding = this._paraState.settings.popup.rightPadding;
+    protected downPadding = this._paraState.settings.popup.downPadding;
+    protected upPadding = this._paraState.settings.popup.upPadding;
     protected _horizShift = 0;
     protected arrowPosition: "up" | "bottom" | "left" | "right" = "bottom";
-    protected _wrapWidth: number = this.paraview.paraState.settings.popup.maxWidth;
+    protected _wrapWidth: number = this._paraState.settings.popup.maxWidth;
     protected pointerControlled = false;
 
     get grid() {
@@ -73,7 +74,7 @@ export class Popup extends View {
     }
 
     get margin() {
-        return this.popupLabelOptions.margin ?? this.paraview.paraState.settings.popup.margin;
+        return this.popupLabelOptions.margin ?? this._paraState.settings.popup.margin;
     }
 
     get wrapWidth() {
@@ -100,19 +101,19 @@ export class Popup extends View {
         return this.popupShapeOptions;
     }
 
-    constructor(paraview: ParaView, private popupLabelOptions: PopupLabelOptions, private popupShapeOptions: PopupShapeOptions) {
-        super(paraview);
+    constructor(paraState: ParaState, paraview: ParaView, private popupLabelOptions: PopupLabelOptions, private popupShapeOptions: PopupShapeOptions) {
+        super(paraState, paraview);
         this.applyDefaults();
-        this._label = new Label(this.paraview, this.popupLabelOptions)
-        if (this.paraview.paraState.settings.popup.backgroundColor === "dark") {
+        this._label = new Label(this._paraState, this.paraview, this.popupLabelOptions)
+        if (this._paraState.settings.popup.backgroundColor === "dark") {
             this._label.styleInfo = {
                 stroke: 'none',
                 fill: this.popupLabelOptions.fill ? this.popupLabelOptions.fill
                     : this.popupLabelOptions.type == "chord" ? "black"
-                        : this.paraview.paraState.colors.contrastValueAt(this.popupLabelOptions.color!)
+                        : this._paraState.colors.contrastValueAt(this.popupLabelOptions.color!)
             };
         }
-        if (this.paraview.paraState.settings.ui.isLowVisionModeEnabled) {
+        if (this._paraState.settings.ui.isLowVisionModeEnabled) {
             this._label.styleInfo = {
                 stroke: 'none',
                 fill: "black"
@@ -146,7 +147,7 @@ export class Popup extends View {
                 this.generateBox(popupShapeOptions)
             }
         }
-        if (this.paraview.paraState.type == "waterfall") {
+        if (this._paraState.type == "waterfall") {
             if (this.popupLabelOptions.points!) {
                 const dpView = this.popupLabelOptions.points![0] as WaterfallBarView;
                 if (dpView.datapoint.facetValueAsNumber('y')! >= 0 && this.box.intersects(dpView.label!)) {
@@ -193,22 +194,22 @@ export class Popup extends View {
             this.pointerControlled = this.popupLabelOptions.pointerControlled;
         }
         if (!this.popupShapeOptions.fill) {
-            this.popupShapeOptions.fill = this.paraview.paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
-                : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
-                    this.paraview.paraState.colors.lighten(this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.color), 6)
-                    : this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.color);
+            this.popupShapeOptions.fill = this._paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+                : this._paraState.settings.popup.backgroundColor === "light" ?
+                    this._paraState.colors.lighten(this._paraState.colors.colorValueAt(this.popupLabelOptions.color), 6)
+                    : this._paraState.colors.colorValueAt(this.popupLabelOptions.color);
         }
         if (!this.popupShapeOptions.stroke) {
-            this.popupShapeOptions.stroke = this.paraview.paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
-                : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
-                    this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.color)
+            this.popupShapeOptions.stroke = this._paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+                : this._paraState.settings.popup.backgroundColor === "light" ?
+                    this._paraState.colors.colorValueAt(this.popupLabelOptions.color)
                     : "black";
         }
-        if (!this.paraview.paraState.settings.ui.isLowVisionModeEnabled) {
-            this.popupShapeOptions.fill = `${this.popupShapeOptions.fill.slice(0, -1)}, ${this.paraview.paraState.settings.popup.opacity})`;
+        if (!this._paraState.settings.ui.isLowVisionModeEnabled) {
+            this.popupShapeOptions.fill = `${this.popupShapeOptions.fill.slice(0, -1)}, ${this._paraState.settings.popup.opacity})`;
         }
         if (!this.popupShapeOptions.shape) {
-            this.popupShapeOptions.shape = this.paraview.paraState.settings.popup.shape;
+            this.popupShapeOptions.shape = this._paraState.settings.popup.shape;
         }
     }
 
@@ -271,7 +272,7 @@ export class Popup extends View {
             for (let i = 0; i < this.popupLabelOptions.items!.length - 1; i++) {
                 rowGaps.push(DEFAULT_CHORD_POPUP_LINE_WIDTH);
             }
-            this._grid = new GridLayout(this.paraview, {
+            this._grid = new GridLayout(this._paraState, this.paraview, {
                 numCols: 2,
                 colGaps: [15],
                 rowGaps: rowGaps,
@@ -281,8 +282,9 @@ export class Popup extends View {
             }, 'popup-grid');
             this.popupLabelOptions.items!.forEach((item, i) => {
                 views.push(DataSymbol.fromType(
+                    this._paraState,
                     this.paraview,
-                    this.paraview.paraState.settings.chart.isDrawSymbols
+                    this._paraState.settings.chart.isDrawSymbols
                         ? (item.symbol ?? 'square.solid')
                         : 'square.solid',
                     {
@@ -291,7 +293,7 @@ export class Popup extends View {
                 ));
                 const text = this.popupLabelOptions.text;
                 const lines = text.split(/\r?\n|\r/);
-                views.push(new Label(this.paraview, {
+                views.push(new Label(this._paraState, this.paraview, {
                     text: lines[i],
                     x: 0,
                     y: 0,
@@ -305,7 +307,7 @@ export class Popup extends View {
         }
         else {
             let views: (DataSymbol | Label)[] = [];
-            this._grid = new GridLayout(this.paraview, {
+            this._grid = new GridLayout(this._paraState, this.paraview, {
                 numCols: 1,
                 colAligns: ['start'],
                 isAutoWidth: true,
@@ -330,7 +332,7 @@ export class Popup extends View {
         let box;
         if (boxType === "boxWithArrow") {
             if (this.arrowPosition == "bottom") {
-                const shape = new PopupPathShape(this.paraview, {
+                const shape = new PopupPathShape(this._paraState, this.paraview, {
                     points: [new Vec2(x - lPad, y - height - uPad),
                     new Vec2(x - lPad, y + dPad),
 
@@ -353,7 +355,7 @@ export class Popup extends View {
                 box = shape;
             }
             else if (this.arrowPosition == "right") {
-                let shape = new PopupPathShape(this.paraview, {
+                let shape = new PopupPathShape(this._paraState, this.paraview, {
                     points:
                         [new Vec2(x - lPad, y - height - uPad),
                         new Vec2(x - lPad, y + dPad),
@@ -373,7 +375,7 @@ export class Popup extends View {
                 box = shape;
             }
             else if (this.arrowPosition == "left") {
-                let shape = new PopupPathShape(this.paraview, {
+                let shape = new PopupPathShape(this._paraState, this.paraview, {
                     points:
                         [new Vec2(x - lPad, y - height - uPad),
 
@@ -393,7 +395,7 @@ export class Popup extends View {
                 box = shape;
             }
             else {
-                let shape = new PopupPathShape(this.paraview, {
+                let shape = new PopupPathShape(this._paraState, this.paraview, {
                     points: [new Vec2(x - lPad, y - height - uPad),
                     new Vec2(x - lPad, y + dPad),
                     new Vec2(x + width + rPad, y + dPad),
@@ -417,7 +419,7 @@ export class Popup extends View {
             }
         }
         else {
-            let shape = new PopupPathShape(this.paraview, {
+            let shape = new PopupPathShape(this._paraState, this.paraview, {
                 points: [new Vec2(x - lPad, y - height - uPad),
                 new Vec2(x - lPad, y + dPad),
                 new Vec2(x + width + rPad, y + dPad),
@@ -645,8 +647,8 @@ export interface PopupPathOptions extends PathOptions {
 }
 export class PopupPathShape extends PathShape {
     shape: ShapeTypes;
-    constructor(paraview: ParaView, private options: PopupPathOptions) {
-        super(paraview, options);
+    constructor(paraState: ParaState, paraview: ParaView, private options: PopupPathOptions) {
+        super(paraState, paraview, options);
         this._points = options.points.map(p => p.clone());
         this.shape = this.options.shape;
     }
@@ -670,7 +672,7 @@ export class PopupPathShape extends PathShape {
         }
 
     protected get _pathD() {
-        const rad = this.paraview.paraState.settings.popup.borderRadius;
+        const rad = this._paraState.settings.popup.borderRadius;
         let addCurve;
         if (this.shape == "boxWithArrow" && this.options.arrowPosition === "up") {
             addCurve = this.curvePoints["boxWithUpArrow"];

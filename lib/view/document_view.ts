@@ -47,8 +47,8 @@ export class DocumentView extends Container(View) {
 
   protected _paraState: ParaState;
 
-  constructor(paraview: ParaView) {
-    super(paraview);
+  constructor(paraState: ParaState, paraview: ParaView) {
+    super(paraState, paraview);
     this.log = getLogger('DocumentView');
     this._paraState = paraview.paraState;
     this.observeNotices();
@@ -167,7 +167,7 @@ export class DocumentView extends Container(View) {
     if (shouldAddDirectLabelStrip) {
       this._directLabelStrip?.remove();
       this._directLabelStrip = new DirectLabelStrip(
-        this.paraview, this._vertAxis?.height ?? this._height);
+        this._paraState, this.paraview, this._vertAxis?.height ?? this._height);
       this._directLabelStrip.updateSize();
     }
 
@@ -214,7 +214,7 @@ export class DocumentView extends Container(View) {
       - (this._titleLabel?.paddedHeight ?? 0)
       - (this._legends.south?.paddedHeight ?? 0);
     this._chartLayers?.remove();
-    this._chartLayers = new PlotLayerManager(this.paraview, plotWidth, plotHeight);
+    this._chartLayers = new PlotLayerManager(this._paraState, this.paraview, plotWidth, plotHeight);
     this.append(this._chartLayers);
     this._chartLayers.createLayers();
     this._chartLayers.dataLayer.init();
@@ -256,7 +256,7 @@ export class DocumentView extends Container(View) {
 
   protected _createHorizAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
     this._horizAxis?.remove();
-    this._horizAxis = new HorizAxis(this.paraview, facet, chartInfo, length);
+    this._horizAxis = new HorizAxis(this._paraState, this.paraview, facet, chartInfo, length);
     const horizAxisFacet = this._chartInfo.horizFacet!;
     this._horizAxis.setAxisLabelText(horizAxisFacet.label);
     this._horizAxis.createComponents();
@@ -266,7 +266,7 @@ export class DocumentView extends Container(View) {
 
   protected _createVertAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
     this._vertAxis?.remove();
-    this._vertAxis = new VertAxis(this.paraview, facet, chartInfo, length);
+    this._vertAxis = new VertAxis(this._paraState, this.paraview, facet, chartInfo, length);
     const vertAxisFacet = this._chartInfo.vertFacet!;
     this._vertAxis.setAxisLabelText(vertAxisFacet.label);
     this._vertAxis.createComponents();
@@ -390,7 +390,7 @@ export class DocumentView extends Container(View) {
   private createTitle() {
     const align = this._paraState.settings.chart.title.align ?? 'center';
     this._titleLabel?.remove();
-    this._titleLabel = new Label(this.paraview, {
+    this._titleLabel = new Label(this._paraState, this.paraview, {
       id: 'chart-title',
       role: 'heading',
       classList: ['chart-title'],
@@ -445,7 +445,7 @@ export class DocumentView extends Container(View) {
     const margin = this._paraState.settings.legend.margin;
     if (position === 'east') {
       this._legends.east?.remove();
-      this._legends.east = new Legend(this.paraview, items);
+      this._legends.east = new Legend(this._paraState, this.paraview, items);
       this._legends.east.padding = {
         top: 0,
         right: 0,
@@ -457,7 +457,7 @@ export class DocumentView extends Container(View) {
       // this._grid.setColGap(this._directLabelStrip ? 2 : 1, margin);
     } else if (position === 'west') {
       this._legends.west?.remove();
-      this._legends.west = new Legend(this.paraview, items);
+      this._legends.west = new Legend(this._paraState, this.paraview, items);
       this._legends.west.padding = {
         top: 0,
         right: margin,
@@ -468,7 +468,7 @@ export class DocumentView extends Container(View) {
       // this._grid.addColumnLeft();
     } else if (position === 'south') {
       this._legends.south?.remove();
-      this._legends.south = new Legend(this.paraview, items, {
+      this._legends.south = new Legend(this._paraState, this.paraview, items, {
         orientation: 'horiz',
         wrapWidth: 300 // this._chartLayers.paddedWidth
       });
@@ -481,7 +481,7 @@ export class DocumentView extends Container(View) {
       this.append(this._legends.south);
     } else if (position === 'north') {
       this._legends.north?.remove();
-      this._legends.north = new Legend(this.paraview, items, {
+      this._legends.north = new Legend(this._paraState, this.paraview, items, {
         orientation: 'horiz',
         wrapWidth: this._chartLayers.paddedWidth
       });

@@ -19,14 +19,21 @@ import { ParaView } from '../../paraview';
 import { Layout } from './layout';
 import { fixed } from '../../common/utils';
 import { Logger, getLogger } from '@fizz/logger';
+import { type ParaState } from '../../state';
 
 /**
  * Abstract base class for flexbox-style row and column layouts.
  */
 export abstract class FlexLayout extends Layout {
 
-  constructor(paraview: ParaView, public readonly gap: number, public readonly alignViews: SnapLocation, id?: string) {
-    super(paraview, id);
+  constructor(
+    paraState: ParaState,
+    paraview: ParaView,
+    public readonly gap: number,
+    public readonly alignViews: SnapLocation,
+    id?: string
+  ) {
+    super(paraState, paraview, id);
   }
 
   protected _didAddChild(_kid: View) {
@@ -39,8 +46,8 @@ export abstract class FlexLayout extends Layout {
  * Horizontal row of views.
  */
 export class RowLayout extends FlexLayout {
-  constructor(paraview: ParaView, gap: number, alignViews: SnapLocation, id?: string) {
-    super(paraview, gap, alignViews, id);
+  constructor(paraState: ParaState, paraview: ParaView, gap: number, alignViews: SnapLocation, id?: string) {
+    super(paraState, paraview, gap, alignViews, id);
     this.log = getLogger("RowLayout");
   }
 
@@ -80,8 +87,8 @@ export class RowLayout extends FlexLayout {
  * Vertical column of views.
  */
 export class ColumnLayout extends FlexLayout {
-  constructor(paraview: ParaView, gap: number, alignViews: SnapLocation, id?: string) {
-    super(paraview, gap, alignViews, id);
+  constructor(paraState: ParaState, paraview: ParaView, gap: number, alignViews: SnapLocation, id?: string) {
+    super(paraState, paraview, gap, alignViews, id);
     this.log = getLogger("ColumnLayout");
   }
 

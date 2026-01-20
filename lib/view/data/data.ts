@@ -1,7 +1,7 @@
 
 import { View } from '../base_view';
 import { type DataLayer } from '../layers';
-import { type SeriesProperties } from '../../state';
+import { type ParaState, type SeriesProperties } from '../../state';
 
 import { type StyleInfo } from 'lit/directives/style-map.js';
 import { Series } from '@fizz/paramodel';
@@ -20,10 +20,11 @@ export class DataView extends View {
   protected _isStyleEnabled = false;
 
   constructor(
+    paraState: ParaState,
     public readonly chart: DataLayer,
     public readonly seriesKey: string,
   ) {
-    super(chart.paraview);
+    super(paraState, chart.paraview);
     this._series = this.chart.paraview.paraState.model!.atKey(seriesKey)!;
   }
 
@@ -86,7 +87,7 @@ export class DataView extends View {
     // }
     styleInfo.fill = colorValue;
     styleInfo.stroke = colorValue;
-    styleInfo.strokeWidth = this.paraview.paraState.settings.chart.strokeWidth;
+    styleInfo.strokeWidth = this._paraState.settings.chart.strokeWidth;
   }
 
   async onFocus(_isNewComponentFocus = false) {

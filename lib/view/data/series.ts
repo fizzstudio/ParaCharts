@@ -8,19 +8,18 @@ import { ref } from 'lit/directives/ref.js';
 import { type StyleInfo } from 'lit/directives/style-map.js';
 import { type ClassInfo } from 'lit/directives/class-map.js';
 import { TemplateResult } from 'lit';
-import { datapointIdToCursor } from '../../state';
+import { datapointIdToCursor, type ParaState } from '../../state';
 
 /**
  * Abstract base class for a view representing an entire series.
  * @public
  */
 export class SeriesView extends Container(DataView) {
-
   declare protected _parent: ChartLandingView;
   declare protected _children: DatapointView[];
 
-  constructor(chart: DataLayer, seriesKey: string, isStyleEnabled?: boolean) {
-    super(chart, seriesKey);
+  constructor(paraState: ParaState, chart: DataLayer, seriesKey: string, isStyleEnabled?: boolean) {
+    super(paraState, chart, seriesKey);
     this._isStyleEnabled = isStyleEnabled ?? true;
   }
 
@@ -43,8 +42,8 @@ export class SeriesView extends Container(DataView) {
   get classInfo(): ClassInfo {
     return {
       series: true,
-      lowlight: this.paraview.paraState.isSeriesLowlighted(this._series.key),
-      hidden: this.paraview.paraState.isSeriesHidden(this._series.key)
+      lowlight: this._paraState.isSeriesLowlighted(this._series.key),
+      hidden: this._paraState.isSeriesHidden(this._series.key)
     };
   }
 
@@ -64,7 +63,7 @@ export class SeriesView extends Container(DataView) {
   get modelIndex() {
     // This is used by datapoint views to extract the correct ID from the JIM
     // (series views may reorder their children)
-    return this.paraview.paraState.model!.seriesKeys.indexOf(this.seriesKey);
+    return this._paraState.model!.seriesKeys.indexOf(this.seriesKey);
   }
 
   protected _updateStyleInfo(styleInfo: StyleInfo): void {

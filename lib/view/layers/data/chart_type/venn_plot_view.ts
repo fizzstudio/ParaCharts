@@ -6,6 +6,7 @@ import {
   type VennSettings,
   type DeepReadonly,
   Setting,
+  type ParaState
 } from '../../../../state';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type ParaView } from '../../../../paraview';
@@ -36,13 +37,14 @@ export class VennPlotView extends DataLayer {
   protected _radius!: number;
 
   constructor(
+    paraState: ParaState,
     paraview: ParaView,
     width: number,
     height: number,
     index: number,
     chartInfo: BaseChartInfo
   ) {
-    super(paraview, width, height, index, chartInfo);
+    super(paraState, paraview, width, height, index, chartInfo);
     this._resetRadius();
   }
 
@@ -316,9 +318,9 @@ export class VennPlotView extends DataLayer {
   }
 
   protected _createDatapoints() {
-    const seriesKeys = this.paraview.paraState.model!.seriesKeys;
+    const seriesKeys = this._paraState.model!.seriesKeys;
     for (let idx = 0; idx < seriesKeys.length; idx++) {
-      const series = this.paraview.paraState.model!.series.find(
+      const series = this._paraState.model!.series.find(
         s => s.key === seriesKeys[idx]
       );
       if (!series) continue;
@@ -331,9 +333,10 @@ export class VennPlotView extends DataLayer {
     const colArr = ["blue", "yellow"];
     let regionIdx: number = 0;
     seriesKeys.forEach(seriesKey => {
-      const seriesView = new SeriesView(this, seriesKey);
+      const seriesView = new SeriesView(this._paraState, this, seriesKey);
       this._chartLandingView.append(seriesView);
       const region = new VennRegionView(
+        this._paraState,
         seriesView,
         mult * 0.5 * this._radius,
         0,
@@ -352,7 +355,7 @@ export class VennPlotView extends DataLayer {
 
     if (intersections.length === 2) {
       const [p1, p2] = intersections;
-      const arc = new ArcShape(this.paraview, {
+      const arc = new ArcShape(this._paraState, this.paraview, {
         r: this._radius,
         points: [
           new Vec2(p1.x, p1.y),
@@ -370,7 +373,7 @@ export class VennPlotView extends DataLayer {
   }
 
   protected _createLabels() {
-    const seriesKeys = this.paraview.paraState.model!.series.map(s => s.key);
+    const seriesKeys = this._paraState.model!.series.map(s => s.key);
     if (seriesKeys.length !== 2) {
       throw new Error("Expected exactly two series");
     }
@@ -385,7 +388,7 @@ export class VennPlotView extends DataLayer {
     const pointsAB: Datapoint[] = [];
 
     const allDatapoints: Datapoint[] = [];
-    for (const series of this.paraview.paraState.model!.series) {
+    for (const series of this._paraState.model!.series) {
       allDatapoints.push(...series.datapoints);
     }
 
@@ -462,7 +465,7 @@ export class VennPlotView extends DataLayer {
       points.forEach((dp, i) => {
         const x = layout[2 * i];
         const y = layout[2 * i + 1];
-        const label = new Label(this.paraview, {
+        const label = new Label(this._paraState, this.paraview, {
           text: String(dp.facetValue("item") ?? ""),
           x,
           y,
@@ -497,8 +500,8 @@ export class VennRegionView extends DatapointView {
   protected _yOff: number;
   protected _color: string;
   protected _r: number;
-  constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0, r: number = 0, color = "red") {
-    super(parent);
+  constructor(paraState: ParaState, parent: SeriesView, x_offset: number = 0, y_offset: number = 0, r: number = 0, color = "red") {
+    super(paraState, parent);
     this._xOff = x_offset;
     this._yOff = y_offset;
     this._r = r;
@@ -539,7 +542,7 @@ export class VennRegionView extends DatapointView {
     const cy = this.chart.cy;
     const r = this._r;
 
-    const circle = new CircleShape(this.paraview, {
+    const circle = new CircleShape(this._paraState, this.paraview, {
       x: cx + this._xOff,
       y: cy + this._yOff,
       r: r,

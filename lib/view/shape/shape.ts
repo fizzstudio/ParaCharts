@@ -2,6 +2,7 @@
 import { View } from '../base_view';
 import { fixed } from '../../common/utils';
 import { type ParaView } from '../../paraview';
+import { type ParaState } from '../../state';
 
 import { svg, css } from 'lit';
 import { styleMap, type StyleInfo } from 'lit/directives/style-map.js';
@@ -30,8 +31,8 @@ export abstract class Shape extends View {
   protected _isPattern: boolean = false;
   protected _isClip: boolean;
 
-  constructor(paraview: ParaView, options: ShapeOptions) {
-    super(paraview);
+  constructor(paraState: ParaState, paraview: ParaView, options: ShapeOptions) {
+    super(paraState, paraview);
     this._x = options.x ?? this._x;
     this._y = options.y ?? this._y;
     this._scale = options.scale ?? 1;
@@ -84,7 +85,7 @@ export abstract class Shape extends View {
       }
       cursor = cursor.parent;
     }
-    return this.paraview.paraState.settings.chart.stroke;
+    return this._paraState.settings.chart.stroke;
   }
 
   set stroke(stroke: string) {
@@ -102,7 +103,7 @@ export abstract class Shape extends View {
       }
       cursor = cursor.parent;
     }
-    return this.paraview.paraState.settings.chart.strokeWidth;
+    return this._paraState.settings.chart.strokeWidth;
   }
 
   set strokeWidth(strokeWidth: number) {

@@ -3,6 +3,7 @@ import { fixed } from '../../common/utils';
 import { type ParaView } from '../../paraview';
 import { type ShapeOptions, Shape } from './shape';
 import { Vec2 } from '../../common/vector';
+import { type ParaState } from '../../state';
 
 import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -58,8 +59,8 @@ export class SectorShape extends Shape {
   protected _arcLarge!: number;
   protected _arcSweep = 1;
 
-  constructor(paraview: ParaView, private options: SectorOptions) {
-    super(paraview, options);
+  constructor(paraState: ParaState, paraview: ParaView, private options: SectorOptions) {
+    super(paraState, paraview, options);
     this._r = options.r;
     this._centralAngle = options.centralAngle;
     this._orientationAngle = options.orientationAngle;
@@ -93,7 +94,7 @@ export class SectorShape extends Shape {
   }
 
   clone(): SectorShape {
-    return new SectorShape(this.paraview, this._options);
+    return new SectorShape(this._paraState, this.paraview, this._options);
   }
 
   get x() {
@@ -311,12 +312,12 @@ export class SectorShape extends Shape {
       let parent = this.parent! as DatapointView
       this._styleInfo.fill = `url(#Pattern${index})`
       //I can't figure out why the visited styles don't auto-apply, so I'm doing it manually here
-      if (this.paraview.paraState.isVisited(parent.seriesKey, index)) {
-        this._styleInfo.stroke = this.paraview.paraState.colors.colorValue('visit');
+      if (this._paraState.isVisited(parent.seriesKey, index)) {
+        this._styleInfo.stroke = this._paraState.colors.colorValue('visit');
         this._styleInfo.strokeWidth = 6
       }
       return svg`
-          <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
+          <defs>${this._paraState.colors.patternValueAt(index)}</defs>
           <path
             d=${this._pathD}
             transform=${this._scale !== 1

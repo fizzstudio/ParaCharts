@@ -2,6 +2,7 @@ import { type ParaView } from '../../../paraview';
 import { View, Container } from '../../base_view';
 import { RectShape } from '../../shape/rect';
 import { type Shape } from '../../shape/shape';
+import { type ParaState } from '../../../state';
 
 import { type TemplateResult, svg } from 'lit';
 
@@ -10,9 +11,9 @@ const strokeWidthInner = 2;
 
 export class FocusRing extends Container(View) {
 
-  constructor(paraview: ParaView, focusView: View) {
-    super(paraview);
-    const gap = paraview.paraState.settings.ui.focusRingGap;
+  constructor(paraState: ParaState, paraview: ParaView, focusView: View) {
+    super(paraState, paraview);
+    const gap = paraState.settings.ui.focusRingGap;
     let shape = focusView.focusRingShape();
     if (shape) {
       // `shape` may have been the child of a previous focus ring
@@ -32,7 +33,7 @@ export class FocusRing extends Container(View) {
       const y = bbox.top - strokeWidthOuter/2 - gap;
       const width = bbox.width + strokeWidthOuter + gap*2;
       const height = bbox.height + strokeWidthOuter + gap*2;
-      this.append(new RectShape(paraview, {
+      this.append(new RectShape(this._paraState, paraview, {
         x,
         y,
         width,
@@ -41,7 +42,7 @@ export class FocusRing extends Container(View) {
         strokeWidth: strokeWidthOuter,
         fill: 'none'
       }));
-      this.append(new RectShape(paraview, {
+      this.append(new RectShape(this._paraState, paraview, {
         x,
         y,
         width,

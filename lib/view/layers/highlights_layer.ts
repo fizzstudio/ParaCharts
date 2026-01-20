@@ -2,7 +2,7 @@
 import { PlotLayer} from '.';
 import { type ParaView } from '../../paraview';
 import { svg } from 'lit';
-import { datapointIdToCursor } from '../../state';
+import { datapointIdToCursor, type ParaState } from '../../state';
 import { DataSymbol } from '../symbol';
 import { type DatapointView } from '../data';
 import { PathShape, RectShape, Shape } from '../shape';
@@ -14,8 +14,14 @@ export type HighlightsType = 'foreground' | 'background';
 
 export class HighlightsLayer extends PlotLayer {
 
-  constructor(paraview: ParaView, width: number, height: number, public readonly type: HighlightsType) {
-    super(paraview, width, height);
+  constructor(
+    paraState: ParaState,
+    paraview: ParaView,
+    width: number,
+    height: number,
+    public readonly type: HighlightsType
+  ) {
+    super(paraState, paraview, width, height);
   }
 
   protected _createId() {
@@ -26,10 +32,10 @@ export class HighlightsLayer extends PlotLayer {
     datapointId: string,
     overlays: (DataSymbol | Shape)[],
   ) {
-    const datapoint = this.paraview.paraState.getDatapoint(datapointId);
+    const datapoint = this._paraState.getDatapoint(datapointId);
     let datapointView = this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!;
     overlays.push((datapointView.symbol ?? datapointView.shapes[0]).clone());
-    if (this.type === 'foreground' && !this.paraview.paraState.popups.some(p => p.id == datapointView.id)) {
+    if (this.type === 'foreground' && !this._paraState.popups.some(p => p.id == datapointView.id)) {
       datapointView.addDatapointPopup();
     }
     //overlays.forEach(sym => {
@@ -49,8 +55,8 @@ export class HighlightsLayer extends PlotLayer {
     const chartInfo = this.paraview.documentView!.chartInfo as PlaneChartInfo;
     const fields = sequenceId.split(/-/);
     const datapoints = [
-      this.paraview.paraState.getDatapoint(`${fields[0]}-${fields[1]}`),
-      this.paraview.paraState.getDatapoint(`${fields[0]}-${parseInt(fields[2]) - 1}`),
+      this._paraState.getDatapoint(`${fields[0]}-${fields[1]}`),
+      this._paraState.getDatapoint(`${fields[0]}-${parseInt(fields[2]) - 1}`),
     ];
     let datapointViews: DatapointView[] = datapoints.map(datapoint =>
       this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!);
@@ -58,9 +64,9 @@ export class HighlightsLayer extends PlotLayer {
     overlays.push((datapointViews.at(-1)!.symbol ?? datapointViews.at(-1)!.shapes[0]).clone());
 
     const lineStroke = overlays.at(-2)! instanceof DataSymbol
-      ? this.paraview.paraState.colors.colorValueAt((overlays.at(-2) as DataSymbol).color!)
+      ? this._paraState.colors.colorValueAt((overlays.at(-2) as DataSymbol).color!)
       : (overlays.at(-2) as Shape).stroke;
-    overlayLines.push(new PathShape(this.paraview, {
+    overlayLines.push(new PathShape(this._paraState, this.paraview, {
       x: 0,//overlays.at(-2)!.width/2,
       y: 0,
       points: [overlays.at(-2)!.loc, overlays.at(-1)!.loc],
@@ -70,9 +76,9 @@ export class HighlightsLayer extends PlotLayer {
     }));
     if (this.type === 'background') {
       const rectFill = overlays.at(-2)! instanceof DataSymbol
-        ? this.paraview.paraState.colors.colorValueAt((overlays.at(-2) as DataSymbol).color!)
+        ? this._paraState.colors.colorValueAt((overlays.at(-2) as DataSymbol).color!)
         : (overlays.at(-2) as Shape).fill;
-      const rect = new RectShape(this.paraview, {
+      const rect = new RectShape(this._paraState, this.paraview, {
         x: overlays.at(-2)!.x,
         y: 0,
         width: overlays.at(-1)!.x - overlays.at(-2)!.x + (chartInfo.isIntertick ? overlays.at(-2)!.width : 0),
@@ -83,8 +89,8 @@ export class HighlightsLayer extends PlotLayer {
       underlayRects.push(rect);
       rect.classInfo = { 'underlay-rect': true };
     }
-    if (this.type === 'foreground' && !this.paraview.paraState.popups.some(p => p.id == sequenceId)) {
-      this.paraview.paraState.popups.push(...this.parent.popupLayer.addSequencePopups(datapointViews))
+    if (this.type === 'foreground' && !this._paraState.popups.some(p => p.id == sequenceId)) {
+      this._paraState.popups.push(...this.parent.popupLayer.addSequencePopups(datapointViews))
     }
 
     overlays.slice(-2).forEach(sym => {
@@ -98,14 +104,14 @@ export class HighlightsLayer extends PlotLayer {
     const underlayRects: RectShape[] = [];
     const overlays: (DataSymbol | Shape)[] = [];
     const overlayLines: PathShape[] = [];
-    this.paraview.paraState.highlightedDatapoints.forEach(datapointId => {
+    this._paraState.highlightedDatapoints.forEach(datapointId => {
       this._processDatapoint(datapointId, overlays);
     });
-    this.paraview.paraState.highlightedSequences.forEach(sequenceId => {
+    this._paraState.highlightedSequences.forEach(sequenceId => {
       this._processSequence(sequenceId, overlays, overlayLines, underlayRects);
     });
     return svg`
-      ${this.paraview.paraState.visitedDatapoints.values().map(datapointId => {
+      ${this._paraState.visitedDatapoints.values().map(datapointId => {
         const { seriesKey, index } = datapointIdToCursor(datapointId);
         return svg`
           <use

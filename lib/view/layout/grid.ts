@@ -20,6 +20,7 @@ import { Layout } from './layout';
 import { Logger, getLogger } from '@fizz/logger';
 import { nothing, svg, TemplateResult } from 'lit';
 import { RectShape } from '../shape/rect';
+import { type ParaState } from '../../state';
 
 import { mapn } from '@fizz/chart-classifier-utils';
 import { Label } from '../label';
@@ -71,7 +72,6 @@ function roundHundredths(n: number): number {
  * Grid layout for views.
  */
 export class GridLayout extends Layout {
-
   private _numCols: number;
   private _rowGaps: number[];
   private _colGaps: number[];
@@ -84,8 +84,8 @@ export class GridLayout extends Layout {
   private _isAutoWidth: boolean;
   private _isAutoHeight: boolean;
 
-  constructor(paraview: ParaView, options: GridOptionsInput, id?: string) {
-    super(paraview, id);
+  constructor(paraState: ParaState, paraview: ParaView, options: GridOptionsInput, id?: string) {
+    super(paraState, paraview, id);
     this.log = getLogger("GridLayout ");
     this._canWidthFlex = !!options.canWidthFlex;
     this._canHeightFlex = !!options.canHeightFlex;
@@ -1427,7 +1427,7 @@ export class GridLayout extends Layout {
   content(..._options: any[]) {
     const rects = this._territories.values().map(t => {
       const bbox = this._territoryBbox(t);
-      const rect = new RectShape(this.paraview, {
+      const rect = new RectShape(this._paraState, this.paraview, {
         x: bbox.x,
         y: bbox.y,
         width: bbox.width,
@@ -1438,7 +1438,7 @@ export class GridLayout extends Layout {
     });
     return svg`
       ${super.content()}
-      ${this.paraview.paraState.settings.dev.isShowGridTerritories
+      ${this._paraState.settings.dev.isShowGridTerritories
         ? rects.map(r => r.render())
         : ''
       }

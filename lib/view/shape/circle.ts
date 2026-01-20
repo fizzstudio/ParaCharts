@@ -3,6 +3,7 @@ import { fixed } from '../../common/utils';
 import { type ParaView } from '../../paraview';
 import { type ShapeOptions, Shape } from './shape';
 import { Vec2 } from '../../common/vector';
+import { type ParaState } from '../../state';
 
 import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -17,8 +18,8 @@ export interface CircleOptions extends ShapeOptions {
 export class CircleShape extends Shape {
   protected _r: number;
 
-  constructor(paraview: ParaView, private options: CircleOptions) {
-    super(paraview, options);
+  constructor(paraState: ParaState, paraview: ParaView, private options: CircleOptions) {
+    super(paraState, paraview, options);
     this._r = options.r;
   }
 
@@ -29,7 +30,7 @@ export class CircleShape extends Shape {
   }
 
   clone(): CircleShape {
-    return new CircleShape(this.paraview, this._options);
+    return new CircleShape(this._paraState, this.paraview, this._options);
   }
 
   get x() {
@@ -66,13 +67,13 @@ export class CircleShape extends Shape {
       let parent = this.parent as DatapointView;
       this._styleInfo.fill = `url(#Pattern${index})`;
 
-      if (this.paraview.paraState.isVisited(parent.seriesKey, index)) {
-        this._styleInfo.stroke = this.paraview.paraState.colors.colorValue('visit');
+      if (this._paraState.isVisited(parent.seriesKey, index)) {
+        this._styleInfo.stroke = this._paraState.colors.colorValue('visit');
         this._styleInfo.strokeWidth = 6;
       }
 
       return svg`
-      <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
+      <defs>${this._paraState.colors.patternValueAt(index)}</defs>
       <circle
         cx=${this._x}
         cy=${this._y}

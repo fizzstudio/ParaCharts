@@ -19,6 +19,7 @@ import { type LineSettings, type DeepReadonly, type Setting } from '../../../../
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { bboxOfBboxes, isPointerInbounds } from '../../../../common/utils';
+import { type ParaState } from '../../../../state';
 
 import { type StyleInfo } from 'lit/directives/style-map.js';
 import { RectShape } from '../../../shape';
@@ -53,15 +54,15 @@ export class LinePlotView extends PointPlotView {
   }
 
   get effectiveLineWidth() {
-    return this.paraview.paraState.settings.ui.isLowVisionModeEnabled
-      ? this.paraview.paraState.settings.type.line.lowVisionLineWidth
-      : this.paraview.paraState.settings.type.line.lineWidth;
+    return this._paraState.settings.ui.isLowVisionModeEnabled
+      ? this._paraState.settings.type.line.lowVisionLineWidth
+      : this._paraState.settings.type.line.lineWidth;
   }
 
   get effectiveVisitedScale() {
-    return this.paraview.paraState.settings.ui.isLowVisionModeEnabled
+    return this._paraState.settings.ui.isLowVisionModeEnabled
       ? 1
-      : this.paraview.paraState.settings.type.line.lineHighlightScale;
+      : this._paraState.settings.type.line.lineHighlightScale;
   }
 
   get visitedStrokeWidth(): number {
@@ -69,15 +70,15 @@ export class LinePlotView extends PointPlotView {
   }
 
   protected _newDatapointView(seriesView: PlaneSeriesView) {
-    return new LineSection(seriesView);
+    return new LineSection(this._paraState, seriesView);
   }
 
   pointerMove(): void {
-    if (this.paraview.paraState.settings.chart.isShowPopups
-      && this.paraview.paraState.settings.popup.activation === "onHover"
-      && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled
+    if (this._paraState.settings.chart.isShowPopups
+      && this._paraState.settings.popup.activation === "onHover"
+      && !this._paraState.settings.ui.isNarrativeHighlightEnabled
     ) {
-      let coords = this.paraview.paraState.pointerCoords
+      let coords = this._paraState.pointerCoords
       if (coords.x > 0 && coords.x < this.width && coords.y > 0 && coords.y < this.height) {
         let points = this.datapointViews
         let distances = points.map((dp, i) => [Number(Math.abs((dp.x - coords.x) ** 2)), i]).sort((a, b) => a[0] - b[0])
@@ -85,7 +86,7 @@ export class LinePlotView extends PointPlotView {
         if (nearestPoint.cousins.length > 0) {
           nearestPoint = nearestPoint.withCousins.sort((a, b) => Math.abs(a.y - coords.y) - Math.abs(b.y - coords.y))[0]
         }
-        this.paraview.paraState.clearPopups()
+        this._paraState.clearPopups()
         nearestPoint.addDatapointPopup()
       }
 
@@ -161,7 +162,7 @@ export class LineSection extends PointDatapointView {
     // If datapoints are laid out again after the initial layout,
     // we need to replace the original shape and symbol
     this._symbol?.remove();
-    this._symbol = DataSymbol.fromType(this.paraview, symbolType);
+    this._symbol = DataSymbol.fromType(this._paraState, this.paraview, symbolType);
     this.append(this._symbol);
   }
 
@@ -270,7 +271,7 @@ export class LineSection extends PointDatapointView {
     if (points.length === 3) {
       const slices = [points.slice(0, -1), points.slice(1)];
       // XXX We can't do this until the series analysis completes!
-      // const seq = this.paraview.paraState.seriesAnalyses[this.seriesKey]?.sequences?.find(seqInfo =>
+      // const seq = this._paraState.seriesAnalyses[this.seriesKey]?.sequences?.find(seqInfo =>
       //   seqInfo.start <= this.index && this.index < seqInfo.end);
       // if (seq) {
       //   if (this.index === seq.start) {
@@ -278,13 +279,13 @@ export class LineSection extends PointDatapointView {
       //   }
       // }
       this._shapes.push(
-        new PathShape(this.paraview, {
+        new PathShape(this._paraState, this.paraview, {
           x: this._x,
           y: this._y,
           points: slices[0],
           isClip: true
         }),
-        new PathShape(this.paraview, {
+        new PathShape(this._paraState, this.paraview, {
           x: this._x,
           y: this._y,
           points: slices[1],
@@ -295,7 +296,7 @@ export class LineSection extends PointDatapointView {
       this._shapes[1].classInfo = { 'leg-right': true };
     } else if (points.length === 2) {
       this._shapes.push(
-        new PathShape(this.paraview, {
+        new PathShape(this._paraState, this.paraview, {
           x: this._x,
           y: this._y,
           points: points,

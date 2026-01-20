@@ -6,6 +6,7 @@ import {
   type RadialSettings,
   type RadialChartType, type DeepReadonly,
   Setting,
+  type ParaState
 } from '../../../../state';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type ParaView } from '../../../../paraview';
@@ -20,7 +21,6 @@ import { type BboxAnchorCorner } from '../../../base_view';
 export type ArcType = 'circle' | 'semicircle';
 
 export abstract class PastryPlotView extends DataLayer {
-
   protected _cx!: number;
   protected _cy!: number;
   protected _radius!: number;
@@ -35,13 +35,14 @@ export abstract class PastryPlotView extends DataLayer {
   protected _centerLabel: Label | null = null;
 
   constructor(
+    paraState: ParaState,
     paraview: ParaView,
     width: number,
     height: number,
     index: number,
     chartInfo: BaseChartInfo
   ) {
-    super(paraview, width, height, index, chartInfo);
+    super(paraState, paraview, width, height, index, chartInfo);
   }
 
   protected _addedToParent() {
@@ -155,11 +156,11 @@ export abstract class PastryPlotView extends DataLayer {
     super.init();
     this._resizeToFitLabels();
     if (this.settings.centerLabel === 'title') {
-      this.paraview.paraState.updateSettings(draft => {
+      this._paraState.updateSettings(draft => {
         draft.chart.title.isDrawTitle = false;
       });
-      this._centerLabel = new Label(this.paraview, {
-        text: this.paraview.paraState.title,
+      this._centerLabel = new Label(this._paraState, this.paraview, {
+        text: this._paraState.title,
         centerX: this._cx,
         centerY: this._cy,
         textAnchor: 'middle',
@@ -186,14 +187,14 @@ export abstract class PastryPlotView extends DataLayer {
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['color.colorPalette', 'color.colorVisionMode'].includes(path)) {
       if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
-        || this.paraview.paraState.settings.color.colorPalette === 'pattern') {
+        || this._paraState.settings.color.colorPalette === 'pattern') {
         this.paraview.createDocumentView();
         this.paraview.requestUpdate();
       }
     }
 
     const settings = ['explode', 'orientationAngleOffset', 'insideLabels.contents', 'outsideLabels.contents'];
-    if (settings.map(s => `type.${this.paraview.paraState.type}.${s}`).includes(path)) {
+    if (settings.map(s => `type.${this._paraState.type}.${s}`).includes(path)) {
       this._resetRadius();
       this._chartLandingView.clearChildren();
       this._layoutDatapoints();
@@ -279,14 +280,14 @@ export abstract class PastryPlotView extends DataLayer {
   }
 
   protected _createDatapoints() {
-    const xs = this.paraview.paraState.model!.series[0].datapoints.map(dp =>
-      formatBox(dp.facetBox('x')!, this.paraview.paraState.getFormatType('pieSliceLabel'))
+    const xs = this._paraState.model!.series[0].datapoints.map(dp =>
+      formatBox(dp.facetBox('x')!, this._paraState.getFormatType('pieSliceLabel'))
     );
-    const ys = this.paraview.paraState.model!.series[0].datapoints.map(dp =>
+    const ys = this._paraState.model!.series[0].datapoints.map(dp =>
       dp.facetValueNumericized('y')!);
 
     const totalValue = ys.reduce((a, b) => a + b, 0);
-    const seriesView = new SeriesView(this, this.paraview.paraState.model!.seriesKeys[0], false);
+    const seriesView = new SeriesView(this._paraState, this, this._paraState.model!.seriesKeys[0], false);
     this._chartLandingView.append(seriesView);
 
     let accum = 0;
@@ -312,11 +313,11 @@ export abstract class PastryPlotView extends DataLayer {
   }
 
   protected _createLabels() {
-    const xs = this.paraview.paraState.model!.series[0].datapoints.map(dp =>
-      formatBox(dp.facetBox('x')!, this.paraview.paraState.getFormatType('pieSliceLabel'))
+    const xs = this._paraState.model!.series[0].datapoints.map(dp =>
+      formatBox(dp.facetBox('x')!, this._paraState.getFormatType('pieSliceLabel'))
     );
-    const ys = this.paraview.paraState.model!.series[0].datapoints.map(dp =>
-      formatBox(dp.facetBox('y')!, this.paraview.paraState.getFormatType('pieSliceLabel'))
+    const ys = this._paraState.model!.series[0].datapoints.map(dp =>
+      formatBox(dp.facetBox('y')!, this._paraState.getFormatType('pieSliceLabel'))
     );
     for (const [x, i] of enumerate(xs)) {
       const slice = this._chartLandingView.children[0].children[i] as RadialSlice;
@@ -343,7 +344,7 @@ export abstract class PastryPlotView extends DataLayer {
     // Sort slices according to label vertical location onscreen from lowest to highest
     slices.sort((a, b) => b.outsideLabel!.y - a.outsideLabel!.y);
 
-    // const leaderLabelOffset = this.paraview.paraState.settings.chart.isDrawSymbols
+    // const leaderLabelOffset = this._paraState.settings.chart.isDrawSymbols
     //   ? -this._chart.settings.seriesLabelPadding
     //   : 0;
 
@@ -397,8 +398,8 @@ export abstract class RadialSlice extends DatapointView {
   protected _focusRingShape: SectorShape | null = null;
   protected _centralAngle = 0;
 
-  constructor(parent: SeriesView, protected _params: RadialDatapointParams) {
-    super(parent);
+  constructor(paraState: ParaState, parent: SeriesView, protected _params: RadialDatapointParams) {
+    super(paraState, parent);
     this._isStyleEnabled = true;
   }
 
@@ -432,8 +433,8 @@ export abstract class RadialSlice extends DatapointView {
       'pastry-slice': true,
       // bad workaround for the problem that, when a visited datapoint is recreated,
       // the store data cursor now has a ref to the old instance
-      // visited: this.paraview.paraState.isVisited(this.seriesKey, this.index),
-      // selected: this.paraview.paraState.isSelected(this.seriesKey, this.index)
+      // visited: this._paraState.isVisited(this.seriesKey, this.index),
+      // selected: this._paraState.isSelected(this.seriesKey, this.index)
     };
     return classInfo;
   }
@@ -492,7 +493,7 @@ export abstract class RadialSlice extends DatapointView {
 
   protected _createShapes(): void {
     const shape = this._shapes[0].clone();
-    const gap = this.paraview.paraState.settings.ui.focusRingGap;
+    const gap = this._paraState.settings.ui.focusRingGap;
     const oldCentralAngle = shape.centralAngle;
     shape.centralAngle += 2 * gap * 360 / (2 * Math.PI * shape.r);
     shape.orientationAngle -= (shape.centralAngle - oldCentralAngle)/2;
@@ -561,7 +562,7 @@ export abstract class RadialSlice extends DatapointView {
       bboxAnchor = textAnchor === 'start' ? 'bottomLeft' : 'bottomRight';
     }
     this._outsideLabel?.remove();
-    this._outsideLabel = new Label(this.paraview, {
+    this._outsideLabel = new Label(this._paraState, this.paraview, {
       text: this._labelContents(contents || this.chart.settings.outsideLabels.contents),
       id: this.id + '-rlb',
       classList: ['pastry-outside-label'],
@@ -591,11 +592,11 @@ export abstract class RadialSlice extends DatapointView {
     const underlineSize = this.chart.settings.outsideLabels.leaderStyle === 'direct'
       ? this.chart.settings.outsideLabels.horizPadding
       : this._outsideLabel!.paddedWidth;
-    const path = new PathShape(this.paraview, {
+    const path = new PathShape(this._paraState, this.paraview, {
       points: [this.shapes[0].arcCenter, underlineStart, underlineStart.x > this._outsideLabel!.centerX
         ? underlineStart.subtractX(underlineSize)
         : underlineStart.addX(underlineSize)],
-      stroke: this.paraview.paraState.colors.colorValueAt(this.color),
+      stroke: this._paraState.colors.colorValueAt(this.color),
     });
     path.classInfo = { 'pastry-outside-label-leader': true };
     return path;
@@ -618,7 +619,7 @@ export abstract class RadialSlice extends DatapointView {
     }
     this._insideLabel?.remove();
     // console.log('LABEL', this._labelContents(this.chart.settings.insideLabels.contents));
-    this._insideLabel = new Label(this.paraview, {
+    this._insideLabel = new Label(this._paraState, this.paraview, {
       text: this._labelContents(this.chart.settings.insideLabels.contents),
       id: this.id + '-ilb',
       classList: ['pastry-inside-label'],
@@ -644,7 +645,7 @@ export abstract class RadialSlice extends DatapointView {
       this._insideLabel = null;
     } else {
       this._insideLabel.styleInfo = {
-        fill: this.paraview.paraState.colors.contrastValueAt(this.color)
+        fill: this._paraState.colors.contrastValueAt(this.color)
       };
       this.append(this._insideLabel);
     }

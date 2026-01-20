@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { View } from '../base_view';
 import { type Axis, type AxisOrientation } from './axis';
 import { fixed } from '../../common/utils';
+import { type ParaState } from '../../state';
 
 import { svg, nothing } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
@@ -26,8 +27,8 @@ import { classMap } from 'lit/directives/class-map.js';
  */
 export abstract class AxisLine<T extends AxisOrientation> extends View {
 
-  constructor(public readonly axis: Axis<T>, length: number) {
-    super(axis.paraview);
+  constructor(paraState: ParaState, public readonly axis: Axis<T>, length: number) {
+    super(paraState, axis.paraview);
     this.length = length;
     this._classInfo = {'axis-line': true};
   }
@@ -65,8 +66,8 @@ export abstract class AxisLine<T extends AxisOrientation> extends View {
  */
 export class HorizAxisLine extends AxisLine<'horiz'> {
 
-  constructor(axis: Axis<'horiz'>, length: number) {
-    super(axis, length);
+  constructor(paraState: ParaState, axis: Axis<'horiz'>, length: number) {
+    super(paraState, axis, length);
     this._height = 0;
     this._canWidthFlex = true;
   }
@@ -82,8 +83,8 @@ export class HorizAxisLine extends AxisLine<'horiz'> {
 
   protected getLineD() {
     if (this.axis.orientationSettings.line.isDrawOverhang) {
-      const tickLength = this.paraview.paraState.settings.axis.vert.ticks.length;
-      const x = this.paraview.paraState.settings.axis.vert.position === 'west' ?
+      const tickLength = this._paraState.settings.axis.vert.ticks.length;
+      const x = this._paraState.settings.axis.vert.position === 'west' ?
         -tickLength : 0;
       return fixed`M${x},0 h${this.width + tickLength}`;
     } else {
@@ -98,8 +99,8 @@ export class HorizAxisLine extends AxisLine<'horiz'> {
  */
 export class VertAxisLine extends AxisLine<'vert'> {
 
-  constructor(axis: Axis<'vert'>, length: number) {
-    super(axis, length);
+  constructor(paraState: ParaState, axis: Axis<'vert'>, length: number) {
+    super(paraState, axis, length);
     this._width = 0;
     this._canHeightFlex = true;
   }
@@ -115,8 +116,8 @@ export class VertAxisLine extends AxisLine<'vert'> {
 
   protected getLineD() {
     if (this.axis.orientationSettings.line.isDrawOverhang) {
-      const tickLength = this.paraview.paraState.settings.axis.horiz.ticks.length;
-      const y = this.paraview.paraState.settings.axis.horiz.position === 'north' ?
+      const tickLength = this._paraState.settings.axis.horiz.ticks.length;
+      const y = this._paraState.settings.axis.horiz.position === 'north' ?
         -tickLength : 0;
       return fixed`M0,${y} v${this.height + tickLength}`;
     } else {

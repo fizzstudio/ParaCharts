@@ -22,6 +22,7 @@ import { type PlotSettings, type DeepReadonly, type Direction, HorizDirection, S
 import { ParaView } from '../../../paraview';
 import { SettingsManager } from '../../../state/settings_manager';
 import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../../data';
+import { type ParaState } from '../../../state';
 
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { bboxOfBboxes } from '../../../common/utils';
@@ -39,7 +40,6 @@ export type LandingView = ChartLandingView | DataView;
  * @public
  */
 export abstract class DataLayer extends PlotLayer {
-
   declare protected _parent: PlotLayerManager;
 
   protected visibleSeries!: string[];
@@ -53,13 +53,14 @@ export abstract class DataLayer extends PlotLayer {
   protected _animateRevealComplete = false;
 
   constructor(
+    paraState: ParaState,
     paraview: ParaView,
     width: number,
     height: number,
     public readonly dataLayerIndex: number,
     protected _chartInfo: BaseChartInfo
   ) {
-    super(paraview, width, height);
+    super(paraState, paraview, width, height);
   }
 
   protected _createId() {
@@ -69,7 +70,7 @@ export abstract class DataLayer extends PlotLayer {
   protected _addedToParent() {
     super._addedToParent();
     //this.visibleSeries = Array.from(this._model.depVars);
-    this._chartLandingView = new ChartLandingView(this.paraview);
+    this._chartLandingView = new ChartLandingView(this._paraState, this.paraview);
     this.append(this._chartLandingView);
   }
 
@@ -78,7 +79,7 @@ export abstract class DataLayer extends PlotLayer {
   }
 
   get settings(): DeepReadonly<PlotSettings> {
-    return SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.paraState.settings);
+    return SettingsManager.getGroupLink(this.managedSettingKeys[0], this._paraState.settings);
   }
 
   get chartInfo(): BaseChartInfo {
@@ -104,13 +105,13 @@ export abstract class DataLayer extends PlotLayer {
 
   get visitedDatapointViews() {
     return this.datapointViews.filter(v =>
-      this.paraview.paraState.isVisited(v.seriesKey, v.index)
+      this._paraState.isVisited(v.seriesKey, v.index)
     );
   }
 
   get selectedDatapointViews() {
     return this.datapointViews.filter(v =>
-      this.paraview.paraState.isSelected(v.seriesKey, v.index)
+      this._paraState.isSelected(v.seriesKey, v.index)
     );
   }
 
@@ -145,7 +146,7 @@ export abstract class DataLayer extends PlotLayer {
 
   init() {
     this._layoutDatapoints();
-    if (this.paraview.paraState.settings.animation.isAnimationEnabled) {
+    if (this._paraState.settings.animation.isAnimationEnabled) {
       this._animateReveal();
     }
   }
@@ -153,19 +154,19 @@ export abstract class DataLayer extends PlotLayer {
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['ui.isLowVisionModeEnabled'].includes(path)) {
       if (!oldValue) {
-        this.paraview.paraState.updateSettings(draft => {
+        this._paraState.updateSettings(draft => {
           draft.popup.activation = 'onSelect'
         });
       }
     }
     if (['popup.activation'].includes(path)) {
       if (oldValue === "onSelect" || oldValue === "onFocus") {
-        this.paraview.paraState.popups.splice(0, this.paraview.paraState.popups.length)
-        this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length)
+        this._paraState.popups.splice(0, this._paraState.popups.length)
+        this._paraState.userLineBreaks.splice(0, this._paraState.userLineBreaks.length)
       }
     }
     if (['chart.isShowPopups'].includes(path)) {
-      this.paraview.paraState.popups.splice(0, this.paraview.paraState.popups.length)
+      this._paraState.popups.splice(0, this._paraState.popups.length)
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -174,8 +175,8 @@ export abstract class DataLayer extends PlotLayer {
    * Stroke width for visited datapoints. Can be overridden.
    */
   get visitedStrokeWidth(): number {
-    const visitedScale = this.paraview.paraState.settings.chart.strokeHighlightScale;
-    return this.paraview.paraState.settings.chart.strokeWidth * visitedScale;
+    const visitedScale = this._paraState.settings.chart.strokeHighlightScale;
+    return this._paraState.settings.chart.strokeWidth * visitedScale;
   }
 
   /**
@@ -203,8 +204,8 @@ export abstract class DataLayer extends PlotLayer {
   protected _layoutDatapoints() {
     this._chartLandingView.clearChildren();
     this._beginDatapointLayout();
-    if (this.paraview.paraState.settings.animation.isAnimationEnabled
-      && this.paraview.paraState.settings.animation.animationType == 'xAxis') {
+    if (this._paraState.settings.animation.isAnimationEnabled
+      && this._paraState.settings.animation.animationType == 'xAxis') {
       this.datapointViews.map(d => d.baseSymbolScale = 0)
     }
     this._completeDatapointLayout();
@@ -231,7 +232,7 @@ export abstract class DataLayer extends PlotLayer {
       const elapsed = timestamp - start;
       // We can't really disable the animation, but setting the reveal time to 0
       // will result in an imperceptibly short animation duration
-      const revealTime = Math.max(1, this.paraview.paraState.settings.animation.animateRevealTimeMs);
+      const revealTime = Math.max(1, this._paraState.settings.animation.animateRevealTimeMs);
       const t = Math.min(elapsed/revealTime, 1);
       const bezT = bez.eval(t)!;
       const linearT = linear.eval(t)!;
@@ -245,14 +246,14 @@ export abstract class DataLayer extends PlotLayer {
       }
     };
     this._currentAnimationFrame = requestAnimationFrame(step);
-    if (this.paraview.paraState.settings.animation.animationType == 'xAxis'){
-          loopParaviewRefresh(this.paraview, 500 + this.paraview.paraState.settings.animation.popInAnimateRevealTimeMs
-        + this.paraview.paraState.settings.animation.animateRevealTimeMs, 50);
+    if (this._paraState.settings.animation.animationType == 'xAxis'){
+          loopParaviewRefresh(this.paraview, 500 + this._paraState.settings.animation.popInAnimateRevealTimeMs
+        + this._paraState.settings.animation.animateRevealTimeMs, 50);
     }
   }
 
   protected _animStep(bezT: number, linearT: number) {
-    if (this.paraview.paraState.settings.animation.animationType == 'xAxis') {
+    if (this._paraState.settings.animation.animationType == 'xAxis') {
       this.paraview.clipWidth = linearT
     }
     for (const datapointView of this.datapointViews) {
@@ -280,11 +281,11 @@ export abstract class DataLayer extends PlotLayer {
   }
 
   protected _newDatapointView(seriesView: SeriesView, ..._rest: any[]): DatapointView {
-    return new DatapointView(seriesView);
+    return new DatapointView(this._paraState, seriesView);
   }
 
   protected _newSeriesView(seriesKey: string, isStyleEnabled?: boolean, ..._rest: any[]): SeriesView {
-    return new SeriesView(this, seriesKey, isStyleEnabled);
+    return new SeriesView(this._paraState, this, seriesKey, isStyleEnabled);
   }
 
   datapointView(seriesKey: string, index: number) {

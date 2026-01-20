@@ -23,6 +23,7 @@ import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { DatapointView } from './data';
+import { type ParaState } from '../state';
 
 export type DataSymbolShape =
 'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
@@ -283,6 +284,7 @@ export class DataSymbol extends View {
   protected _shape?: DataSymbolShape;
 
   static fromType(
+    paraState: ParaState,
     paraview: ParaView,
     type: DataSymbolType,
     options?: Partial<DataSymbolOptions>,
@@ -296,18 +298,19 @@ export class DataSymbol extends View {
     } else {
       [shape, fill] = type.split('.') as [DataSymbolShape, DataSymbolFill];
     }
-    return new DataSymbol(paraview, shape, fill, options);
+    return new DataSymbol(paraState, paraview, shape, fill, options);
   }
 
   constructor(
+    paraState: ParaState,
     paraview: ParaView,
     shape: DataSymbolShape,
     fill: DataSymbolFill,
     options?: Partial<DataSymbolOptions>,
   ) {
-    super(paraview);
+    super(paraState, paraview);
     this._options = {
-      strokeWidth: options?.strokeWidth ?? this.paraview.paraState.settings.chart.symbolStrokeWidth,
+      strokeWidth: options?.strokeWidth ?? this._paraState.settings.chart.symbolStrokeWidth,
       scale: options?.scale ?? 1,
       color: options?.color,
       opacity: options?.opacity,
@@ -427,7 +430,7 @@ export class DataSymbol extends View {
   }
 
   clone(): DataSymbol {
-    const sym = DataSymbol.fromType(this.paraview, this._type, this._options);
+    const sym = DataSymbol.fromType(this._paraState, this.paraview, this._type, this._options);
     sym.x = this._x;
     sym.y = this._y;
     return sym;
@@ -443,7 +446,7 @@ export class DataSymbol extends View {
     if (this._options.color !== undefined) {
       if (this.fill === 'solid') {
         if (this._options.lighten) {
-          const col = this.paraview.paraState.colors.colorValueAt(
+          const col = this._paraState.colors.colorValueAt(
             this._options.color).match(/\d+/g)!.map(Number);
           //10 and 25 are magic numbers
           col[1] -= Math.min(10, col[1]);
@@ -451,7 +454,7 @@ export class DataSymbol extends View {
           this._styleInfo.fill = `hsl(${col[0]}, ${col[1]}%, ${col[2]}%)`;
         }
         else {
-          this._styleInfo.fill = this.paraview.paraState.colors.colorValueAt(
+          this._styleInfo.fill = this._paraState.colors.colorValueAt(
             this._options.color);
         }
       }
@@ -463,7 +466,7 @@ export class DataSymbol extends View {
       if (this._options.opacity !== undefined) {
         this._styleInfo.opacity = this._options.opacity;
       }
-      this._styleInfo.stroke = this.paraview.paraState.colors.colorValueAt(
+      this._styleInfo.stroke = this._paraState.colors.colorValueAt(
         this._options.color);
     }
   }
@@ -476,7 +479,7 @@ export class DataSymbol extends View {
       transform = fixed`translate(${this._x},${this._y})`;
       transform += fixed` scale(${this._options.scale})`;
     }
-    let type = this.paraview.paraState.type
+    let type = this._paraState.type
     if (this.parent instanceof DatapointView){
       if (this._y < 0 || this._y > this.parent.chart.parent.logicalHeight){
         this.hidden = true;

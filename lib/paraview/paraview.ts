@@ -690,7 +690,7 @@ export class ParaView extends ParaComponent {
 
   createDocumentView() {
     this.log.info('creating document view', this.type);
-    this._documentView = new DocumentView(this);
+    this._documentView = new DocumentView(this._paraState, this);
 	this._documentView.init();
     this.computeViewBox();
     // The style manager may get declaration values from chart objects

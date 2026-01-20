@@ -27,6 +27,7 @@ import { type AxisCoord } from '../axis';
 //import { DonutChart } from './donut';
 //import { GaugeChart } from './gauge';
 //import { type Model } from '../data/model';
+import { type ParaState } from '../../state';
 
 import { type Interval } from '@fizz/chart-classifier-utils';
 
@@ -71,9 +72,9 @@ export class PlotLayerManager extends View {
   protected _popupLayer!: PopupLayer;
   protected _focusLayer!: FocusLayer;
 
-  constructor(paraview: ParaView, width: number, height: number) {
-    super(paraview);
-    this._orientation = this.paraview.paraState.settings.chart.orientation;
+  constructor(paraState: ParaState, paraview: ParaView, width: number, height: number) {
+    super(paraState, paraview);
+    this._orientation = this._paraState.settings.chart.orientation;
     this.width = width;
     this.height = height;
     this._canWidthFlex = true;
@@ -93,20 +94,20 @@ export class PlotLayerManager extends View {
   }
 
   createLayers() {
-    this._backgroundHighlightsLayer = new HighlightsLayer(this.paraview, this._width, this._height, 'background');
+    this._backgroundHighlightsLayer = new HighlightsLayer(this._paraState, this.paraview, this._width, this._height, 'background');
     this.append(this._backgroundHighlightsLayer);
-    this._backgroundAnnotationLayer = new AnnotationLayer(this.paraview, this._width, this._height, 'background');
+    this._backgroundAnnotationLayer = new AnnotationLayer(this._paraState, this.paraview, this._width, this._height, 'background');
     this.append(this._backgroundAnnotationLayer);
     this.createDataLayers();
-    this._foregroundHighlightsLayer = new HighlightsLayer(this.paraview, this._width, this._height, 'foreground');
+    this._foregroundHighlightsLayer = new HighlightsLayer(this._paraState, this.paraview, this._width, this._height, 'foreground');
     this.append(this._foregroundHighlightsLayer);
-    this._foregroundAnnotationLayer = new AnnotationLayer(this.paraview, this._width, this._height, 'foreground');
+    this._foregroundAnnotationLayer = new AnnotationLayer(this._paraState, this.paraview, this._width, this._height, 'foreground');
     this.append(this._foregroundAnnotationLayer);
-    this._selectionLayer = new SelectionLayer(this.paraview, this._width, this._height);
+    this._selectionLayer = new SelectionLayer(this._paraState, this.paraview, this._width, this._height);
     this.append(this._selectionLayer);
-    this._focusLayer = new FocusLayer(this.paraview, this._width, this._height);
+    this._focusLayer = new FocusLayer(this._paraState, this.paraview, this._width, this._height);
     this.append(this._focusLayer);
-    this._popupLayer = new PopupLayer(this.paraview, this._width, this._height, "foreground");
+    this._popupLayer = new PopupLayer(this._paraState, this.paraview, this._width, this._height, "foreground");
     this.append(this._popupLayer);
   }
 
@@ -219,14 +220,14 @@ export class PlotLayerManager extends View {
   }
 
   private createDataLayers() {
-    const ctor = chartClasses[this.paraview.paraState.type];
+    const ctor = chartClasses[this._paraState.type];
     let dataLayer: DataLayer;
     if (ctor) {
-      dataLayer = new ctor(this.paraview, this._width, this._height, 0, this._parent.chartInfo);
+      dataLayer = new ctor(this._paraState, this.paraview, this._width, this._height, 0, this._parent.chartInfo);
       this.append(dataLayer);
     } else {
       // TODO: Is this error possible?
-      throw new Error(`no class found for chart type '${this.paraview.paraState.type}'`);
+      throw new Error(`no class found for chart type '${this._paraState.type}'`);
     }
     this._dataLayers = [dataLayer];
   }

@@ -25,6 +25,7 @@ import { RectShape, PathShape } from '../../../shape';
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { formatXYDatapointY } from '@fizz/parasummary';
 import { Vec2 } from '../../../../common';
+import { type ParaState } from '../../../../state';
 
 const MIN_BAR_WIDTH_FOR_GAPS = 8;
 const BAR_GAP_PERCENTAGE = 0.25;
@@ -35,15 +36,6 @@ export class WaterfallPlotView extends PlanePlotView {
   protected _numBars!: number;
   protected _barWidth!: number;
   protected _availSpace!: number;
-
-  constructor(
-    paraview: ParaView,
-    width: number, height: number,
-    dataLayerIndex: number,
-    chartInfo: BaseChartInfo
-  ) {
-    super(paraview, width, height, dataLayerIndex, chartInfo);
-  }
 
   get chartInfo() {
     return this._chartInfo;
@@ -65,7 +57,7 @@ export class WaterfallPlotView extends PlanePlotView {
     // Each bar is surrounded by 1/2 `barGap` on each side; so the first
     // bar will have 1/2 `barGap` on its left, ditto for the last bar
     // on its right, and each bar is separated by `barGap`
-    this._numBars = this.paraview.paraState.model!.series[0].length;
+    this._numBars = this._paraState.model!.series[0].length;
     let maxBarWidth = this._width / this._numBars;
     let gapWidth = 0;
     if (maxBarWidth >= MIN_BAR_WIDTH_FOR_GAPS) {
@@ -80,10 +72,10 @@ export class WaterfallPlotView extends PlanePlotView {
   }
 
   protected _createDatapoints() {
-    const seriesView: PlaneSeriesView = new PlaneSeriesView(this, this.paraview.paraState.model!.seriesKeys[0]);
+    const seriesView: PlaneSeriesView = new PlaneSeriesView(this._paraState, this, this._paraState.model!.seriesKeys[0]);
     this._chartLandingView.append(seriesView);
-    this.paraview.paraState.model!.series[0].datapoints.forEach((_dp, i) => {
-      seriesView.append(new WaterfallBarView(seriesView, i));
+    this._paraState.model!.series[0].datapoints.forEach((_dp, i) => {
+      seriesView.append(new WaterfallBarView(this._paraState, seriesView, i));
     });
   }
 }
@@ -97,8 +89,8 @@ export class WaterfallBarView extends PlaneDatapointView {
 
   protected _label: Label | null = null;
 
-  constructor(seriesView: PlaneSeriesView, protected _index: number) {
-    super(seriesView);
+  constructor(paraState: ParaState, seriesView: PlaneSeriesView, protected _index: number) {
+    super(paraState, seriesView);
     this._isStyleEnabled = true;
   }
 
@@ -146,8 +138,8 @@ export class WaterfallBarView extends PlaneDatapointView {
 
   protected _updateStyleInfo(styleInfo: StyleInfo) {
     let colorValue: string;
-    const palIdx = this.paraview.paraState.colors.indexOfPalette('semantic');
-    const pal = this.paraview.paraState.colors.palettes[palIdx];
+    const palIdx = this._paraState.colors.indexOfPalette('semantic');
+    const pal = this._paraState.colors.palettes[palIdx];
     if (this.index && !this.isLast) {
       colorValue = this.datapoint.facetValueAsNumber('y')! >= 0
         ? pal.colors[0].value
@@ -158,13 +150,13 @@ export class WaterfallBarView extends PlaneDatapointView {
     // let colorValue = this.chart.paraview.paraState.colors.colorValueAt(this.color);
     styleInfo.fill = colorValue;
     //styleInfo.stroke = colorValue;
-    //styleInfo.strokeWidth = this.paraview.paraState.settings.chart.strokeWidth;
+    //styleInfo.strokeWidth = this._paraState.settings.chart.strokeWidth;
   }
 
   computeLocation() {
     const idealWidth = this.chart.barWidth;
     this._width = this.chart.barWidth;
-    if (this.paraview.paraState.settings.animation.isAnimationEnabled) {
+    if (this._paraState.settings.animation.isAnimationEnabled) {
       this._height = 0;
       this._y = 0;
     } else {
@@ -228,10 +220,10 @@ export class WaterfallBarView extends PlaneDatapointView {
       : formatXYDatapointY(this.datapoint, 'raw');
     if (this.chart.chartInfo.settings.isDrawLabels) {
       this._label?.remove();
-      this._label = new Label(this.paraview, {
+      this._label = new Label(this._paraState, this.paraview, {
         text,
         id: this._id + '-blb',
-        classList: [`${this.paraview.paraState.type}-label`],
+        classList: [`${this._paraState.type}-label`],
         role: 'datapoint',
       });
       this.append(this._label);
@@ -256,8 +248,8 @@ export class WaterfallBarView extends PlaneDatapointView {
         this._label.top = this.bottom + this.chart.chartInfo.settings.barLabelGap;
       }
       if (this.chart.chartInfo.settings.labelPosition !== 'outside') {
-        const palIdx = this.paraview.paraState.colors.indexOfPalette('semantic');
-        const pal = this.paraview.paraState.colors.palettes[palIdx];
+        const palIdx = this._paraState.colors.indexOfPalette('semantic');
+        const pal = this._paraState.colors.palettes[palIdx];
 
         this._label.styleInfo = {
           stroke: 'none',
@@ -272,25 +264,25 @@ export class WaterfallBarView extends PlaneDatapointView {
   }
 
   protected _createShapes() {
-    const isPattern = this.paraview.paraState.colors.palette.isPattern;
+    const isPattern = this._paraState.colors.palette.isPattern;
     this._shapes.forEach(shape => {
       shape.remove();
     });
     this._shapes = [];
-    this._shapes.push(new RectShape(this.paraview, {
+    this._shapes.push(new RectShape(this._paraState, this.paraview, {
       x: this._x,
       y: this._y,
       width: this._width,
       height: this._height,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
+        this._paraState.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
       },
       pointerMove: (e) => {
         this.movePopupAction()
       },
       pointerLeave: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups ? this.paraview.paraState.removePopup(this.id) : undefined
+        this._paraState.settings.chart.isShowPopups ? this._paraState.removePopup(this.id) : undefined
       },
     }));
     if (this.index) {
@@ -298,7 +290,7 @@ export class WaterfallBarView extends PlaneDatapointView {
       const tailY = this.datapoint.facetValueAsNumber('y')! >= 0 && !this.isLast
         ? this._height
         : 0;
-      this._shapes.push(new PathShape(this.paraview, {
+      this._shapes.push(new PathShape(this._paraState, this.paraview, {
         x: this._x,
         y: this._y,
         points: [new Vec2(0, tailY), new Vec2(-barGap, tailY)],
@@ -320,7 +312,7 @@ export class WaterfallBarView extends PlaneDatapointView {
   }
 
   get selectedMarker() {
-    return new RectShape(this.paraview, {
+    return new RectShape(this._paraState, this.paraview, {
       width: this._width + 4,
       height: this._height + 4,
       x: this._x - 2,

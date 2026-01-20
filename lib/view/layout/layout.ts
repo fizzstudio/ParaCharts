@@ -17,14 +17,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { View } from '../base_view';
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaView } from '../../paraview';
+import { type ParaState } from '../../state';
 
 /**
  * Abstract base class for views that lay out multiple views but
  * otherwise create no DOM themselves.
  */
 export abstract class Layout extends View {
-  constructor(paraview: ParaView, id?: string) {
-    super(paraview);
+  constructor(paraState: ParaState, paraview: ParaView, id?: string) {
+    super(paraState, paraview);
     if (id) {
       this._id = id;
     }

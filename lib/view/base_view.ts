@@ -31,6 +31,7 @@ import { TodoEvent, type Actions } from '../input/actions';
 import { type HotkeyInfo } from '../input/defaultactions';*/
 import { fixed } from '../common/utils';
 import { ParaView } from '../paraview';
+import { ParaState } from '../state';
 import { Vec2 } from '../common/vector';
 import { Popup } from './popup';
 
@@ -229,7 +230,7 @@ export class View extends BaseView {
   protected _isObserveNotices = false;
   protected _popup?: Popup;
 
-  constructor(public readonly paraview: ParaView) {
+  constructor(protected _paraState: ParaState, public readonly paraview: ParaView) {
     super();
     //this._setActions();
     //this.updateKeymap();

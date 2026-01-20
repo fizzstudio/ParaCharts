@@ -26,7 +26,7 @@ import { DatapointView, SeriesView } from '../../../data';
 //import { type Actions, type Action } from '../input/actions';
 
 import { ParaView } from '../../../../paraview';
-import { Setting } from '../../../../state';
+import { Setting, type ParaState } from '../../../../state';
 
 import { PlaneDatapoint, Datapoint } from '@fizz/paramodel';
 
@@ -38,13 +38,14 @@ export type DatapointViewType<T extends PlaneDatapointView> =
  */
 export abstract class PlanePlotView extends DataLayer {
   constructor(
+    paraState: ParaState,
     paraview: ParaView,
     width: number,
     height: number,
     dataLayerIndex: number,
     chartInfo: BaseChartInfo
   ) {
-    super(paraview, width, height, dataLayerIndex, chartInfo);
+    super(paraState, paraview, width, height, dataLayerIndex, chartInfo);
     this.log = getLogger("PlanePlotView");
   }
 
@@ -61,7 +62,7 @@ export abstract class PlanePlotView extends DataLayer {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`].includes(path)) {
+    if ([`type.${this._paraState.type}.minYValue`, `type.${this._paraState.type}.maxYValue`].includes(path)) {
       this.paraview.createDocumentView();
       this.paraview.requestUpdate();
     }
@@ -159,14 +160,13 @@ export class PlaneSeriesView extends SeriesView {
  * @public
  */
 export abstract class PlaneDatapointView extends DatapointView {
-
   declare readonly chart: PlanePlotView;
   declare _datapoint: PlaneDatapoint;
 
   protected centroid?: string;
 
-  constructor(seriesView: SeriesView) {
-    super(seriesView);
+  constructor(paraState: ParaState, seriesView: SeriesView) {
+    super(paraState, seriesView);
   }
 
   protected _addedToParent() {
@@ -183,7 +183,7 @@ export abstract class PlaneDatapointView extends DatapointView {
     //   {
     //     attr: literal`data-label`,
     //     value:
-    //     formatXYDatapointX(this.datapoint, this.paraview.paraState.getFormatType('domId')),
+    //     formatXYDatapointX(this.datapoint, this._paraState.getFormatType('domId')),
     //   },
     //   {
     //     attr: literal`data-centroid`,
@@ -239,11 +239,11 @@ export abstract class PlaneDatapointView extends DatapointView {
     // for (let point of this.series.rawData){
     //   data.push(point.y)
     // }
-    // if (this.paraview.paraState.type == "bar" || this.paraview.paraState.type == "column"){
-    //   this.paraview.paraState.updateSettings(draft => {
+    // if (this._paraState.type == "bar" || this._paraState.type == "column"){
+    //   this._paraState.updateSettings(draft => {
     //   draft.controlPanel.isSparkBrailleBar = true
     // })};
-    // this.paraview.paraState.sparkBrailleData = data.join(' ');
+    // this._paraState.sparkBrailleData = data.join(' ');
     /*todo().deets!.sparkBrailleData = this.series.data.join(' ');
     if (todo().controller.settingStore.settings.sonification.isSoniEnabled) {
       this.chart.sonifier.playDatapoints(...visited.map(v => v.datapoint));

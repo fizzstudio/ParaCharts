@@ -277,7 +277,7 @@ export class ParaControlPanel extends ParaComponent {
     let text = isOpen ? "Close control panel" : "Customize settings"
     let y = paraview.documentView!.height! - 70
     let x = 0 - this.paraChart.paraView.documentView!.chartLayers.x
-    let popup = new Popup(paraview,
+    let popup = new Popup(this._paraState, paraview,
       {
         text: text,
         x: x,

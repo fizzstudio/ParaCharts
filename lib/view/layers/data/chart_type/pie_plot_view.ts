@@ -4,18 +4,18 @@ import { PastryPlotView, RadialSlice, type RadialDatapointParams } from '.';
 import { type SeriesView } from '../../../data';
 import { Popup } from '../../../popup';
 import { SectorShape } from '../../../shape/sector';
+import { type ParaState } from '../../../../state';
 
 export class PiePlotView extends PastryPlotView {
 
   protected _createSlice(seriesView: SeriesView, params: RadialDatapointParams): RadialSlice {
-    return new PieSlice(seriesView, params);
+    return new PieSlice(this._paraState, seriesView, params);
   }
-
 }
 
 export class PieSlice extends RadialSlice {
-  constructor(parent: SeriesView, params: RadialDatapointParams) {
-    super(parent, params);
+  constructor(paraState: ParaState, parent: SeriesView, params: RadialDatapointParams) {
+    super(paraState, parent, params);
     this.log = getLogger("PieSlice");
     this._x = this.chart.cx;
     this._y = this.chart.cy;
@@ -38,7 +38,7 @@ export class PieSlice extends RadialSlice {
   }
 
   computeLocation(): void {
-    if (this.paraview.paraState.settings.animation.isAnimationEnabled) {
+    if (this._paraState.settings.animation.isAnimationEnabled) {
       this._centralAngle = this.chart.animateRevealComplete
         ? this._params.percentage*360
         : 0;
@@ -53,12 +53,12 @@ export class PieSlice extends RadialSlice {
   }
 
   protected _createShapes() {
-    const isPattern = this.paraview.paraState.colors.palette.isPattern;
+    const isPattern = this._paraState.colors.palette.isPattern;
     this._shapes.forEach(shape => {
       shape.remove();
     });
     this._shapes = [];
-    const slice = new SectorShape(this.paraview, {
+    const slice = new SectorShape(this._paraState, this.paraview, {
       x: this._x,
       y: this._y,
       r: this.chart.radius,
@@ -68,13 +68,13 @@ export class PieSlice extends RadialSlice {
       annularThickness: this.chart.settings.annularThickness,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
+        this._paraState.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
       },
       pointerMove: (e) => {
         this.movePopupAction();
       },
       pointerLeave: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups ? this.paraview.paraState.removePopup(this.id) : undefined
+        this._paraState.settings.chart.isShowPopups ? this._paraState.removePopup(this.id) : undefined
       },
     });
     this._shapes.push(slice);
@@ -106,7 +106,7 @@ export class PieSlice extends RadialSlice {
   // }
 
   get selectedMarker() {
-    return new SectorShape(this.paraview, {
+    return new SectorShape(this._paraState, this.paraview, {
       x: this._x,
       y: this._y,
       r: this.chart.radius,

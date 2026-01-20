@@ -18,6 +18,7 @@ import { View } from '../base_view';
 import { type TickStrip } from './tick_strip';
 import { fixed } from '../../common/utils';
 import { type VertCardinalDirection, type HorizCardinalDirection } from '../../state/settings_types';
+import { type ParaState } from '../../state';
 
 import { svg } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
@@ -29,17 +30,17 @@ type RuleOrientation = 'h' | 'v';
  * An axis rule line.
  */
 export abstract class AxisRule extends View {
-
   declare protected _parent: TickStrip;
 
   constructor(
+    paraState: ParaState,
     paraview: ParaView,
     protected _major = true,
     length: number,
     protected _orientation: RuleOrientation,
     private darken: boolean = false
   ) {
-    super(paraview);
+    super(paraState, paraview);
     this.length = length;
   }
 
@@ -90,8 +91,8 @@ export abstract class HorizRule extends AxisRule {
    * @param _pointsTo - The tick starts on the axis and points in this direction.
    * @param major
    */
-  constructor(protected _pointsTo: VertCardinalDirection, paraview: ParaView, major = true, length: number, darken: boolean = false) {
-    super(paraview, major, length, 'v', darken);
+  constructor(paraState: ParaState, protected _pointsTo: VertCardinalDirection, paraview: ParaView, major = true, length: number, darken: boolean = false) {
+    super(paraState, paraview, major, length, 'v', darken);
   }
 
   get length() {
@@ -122,8 +123,8 @@ export abstract class VertRule extends AxisRule {
    * @param _pointsTo - The tick starts on the axis and points in this direction.
    * @param major
    */
-  constructor(protected _pointsTo: HorizCardinalDirection, paraview: ParaView, major = true, length: number, darken: boolean = false) {
-    super(paraview, major, length, 'h', darken);
+  constructor(paraState: ParaState, protected _pointsTo: HorizCardinalDirection, paraview: ParaView, major = true, length: number, darken: boolean = false) {
+    super(paraState, paraview, major, length, 'h', darken);
   }
 
   get length() {

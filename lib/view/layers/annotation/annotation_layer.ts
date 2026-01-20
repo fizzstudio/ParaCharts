@@ -5,7 +5,7 @@ import { type ParaView } from '../../../paraview';
 import { RectShape } from '../../shape/rect';
 import { PathShape } from '../../shape/path';
 import { Vec2 } from '../../../common/vector';
-import { PointAnnotation, Setting } from '../../../state';
+import { PointAnnotation, Setting, type ParaState } from '../../../state';
 import { Popup } from '../../popup';
 import { datapointIdToCursor } from '../../../state';
 import { PlaneChartInfo } from '../../../chart_types';
@@ -15,8 +15,8 @@ export type AnnotationType = 'foreground' | 'background';
 export class AnnotationLayer extends PlotLayer {
   protected _groups = new Map<string, DecorationGroup>();
 
-  constructor(paraview: ParaView, width: number, height: number, public readonly type: AnnotationType) {
-    super(paraview, width, height);
+  constructor(paraState: ParaState, paraview: ParaView, width: number, height: number, public readonly type: AnnotationType) {
+    super(paraState, paraview, width, height);
   }
 
   protected _createId() {
@@ -34,7 +34,7 @@ export class AnnotationLayer extends PlotLayer {
       }
       throw new Error(`group '${name}' already exists`);
     }
-    this._groups.set(name, new DecorationGroup(this.paraview, name));
+    this._groups.set(name, new DecorationGroup(this._paraState, this.paraview, name));
     this.append(this._groups.get(name)!);
   }
 
@@ -52,7 +52,7 @@ export class AnnotationLayer extends PlotLayer {
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['ui.isLowVisionModeEnabled'].includes(path)) {
       if (!oldValue) {
-        for (let annot of this.paraview.paraState.annotations) {
+        for (let annot of this._paraState.annotations) {
           annot.isSelected = false;
         }
       }
@@ -61,20 +61,20 @@ export class AnnotationLayer extends PlotLayer {
 
   renderChildren() {
     if (this.type === 'foreground') {
-      if (this.paraview.paraState.modelTrendLines && this.parent.parent.chartInfo instanceof PlaneChartInfo) {
+      if (this._paraState.modelTrendLines && this.parent.parent.chartInfo instanceof PlaneChartInfo) {
         this.addGroup('trend-lines', true);
         this.group('trend-lines')!.clearChildren();
-        for (const tl of this.paraview.paraState.modelTrendLines) {
-          const series = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0];
+        for (const tl of this._paraState.modelTrendLines) {
+          const series = this._paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0];
           const range = this.parent.parent.chartInfo.yInterval!;
-          const minValue = range.start ?? Number(this.paraview.paraState.settings.axis.y.minValue)
-          const maxValue = range.end ?? Number(this.paraview.paraState.settings.axis.y.maxValue)
+          const minValue = range.start ?? Number(this._paraState.settings.axis.y.minValue)
+          const maxValue = range.end ?? Number(this._paraState.settings.axis.y.maxValue)
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
           const endPx = this.width * tl.endPortion;
-          const colorValue = this.paraview.paraState.colors.colorValue('visit');
-          const trendLine = new PathShape(this.paraview, {
+          const colorValue = this._paraState.colors.colorValue('visit');
+          const trendLine = new PathShape(this._paraState, this.paraview, {
             x: this._x,
             y: this._y,
             points: [new Vec2(startPx, startHeight), new Vec2(endPx, endHeight),],
@@ -91,25 +91,25 @@ export class AnnotationLayer extends PlotLayer {
         }
       }
 
-      if (this.paraview.paraState.userTrendLines && this.parent.parent.chartInfo instanceof PlaneChartInfo) {
+      if (this._paraState.userTrendLines && this.parent.parent.chartInfo instanceof PlaneChartInfo) {
         this.addGroup('user-trend-lines', true);
         this.group('user-trend-lines')!.clearChildren();
-        let tls = structuredClone(this.paraview.paraState.userTrendLines);
-        if (this.paraview.paraState.visitedDatapoints.size > 0) {
-          const cursor = datapointIdToCursor(this.paraview.paraState.visitedDatapoints.values().toArray()[0]);
+        let tls = structuredClone(this._paraState.userTrendLines);
+        if (this._paraState.visitedDatapoints.size > 0) {
+          const cursor = datapointIdToCursor(this._paraState.visitedDatapoints.values().toArray()[0]);
           tls = tls.filter(a => a.seriesKey == cursor.seriesKey)
         }
         for (const tl of tls) {
-          const series = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
+          const series = this._paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
           const range = this.parent.parent.chartInfo.yInterval!;
-          const minValue = range.start ?? Number(this.paraview.paraState.settings.axis.y.minValue)
-          const maxValue = range.end ?? Number(this.paraview.paraState.settings.axis.y.maxValue)
+          const minValue = range.start ?? Number(this._paraState.settings.axis.y.minValue)
+          const maxValue = range.end ?? Number(this._paraState.settings.axis.y.maxValue)
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
           const endPx = this.width * tl.endPortion;
-          const colorValue = this.paraview.paraState.colors.colorValue('highlight');
-          const trendLine = new PathShape(this.paraview, {
+          const colorValue = this._paraState.colors.colorValue('highlight');
+          const trendLine = new PathShape(this._paraState, this.paraview, {
             x: this._x,
             y: this._y,
             points: [new Vec2(startPx, startHeight), new Vec2(endPx, endHeight),],
@@ -126,15 +126,15 @@ export class AnnotationLayer extends PlotLayer {
         }
       }
 
-      if (this.paraview.paraState.annotations) {
+      if (this._paraState.annotations) {
         this.addGroup('annotation-popups', true);
         this.group('annotation-popups')!.clearChildren();
-        let annots = structuredClone(this.paraview.paraState.annotations.filter(a => a.type == 'datapoint' && a.isSelected == true) as unknown as PointAnnotation[]);
+        let annots = structuredClone(this._paraState.annotations.filter(a => a.type == 'datapoint' && a.isSelected == true) as unknown as PointAnnotation[]);
         /*
-        for (let dp of this.paraview.paraState.visitedDatapoints){
+        for (let dp of this._paraState.visitedDatapoints){
           let cursor = datapointIdToCursor(dp)
           let dpView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(cursor.seriesKey, cursor.index)
-          for (let annot of this.paraview.paraState.annotations){
+          for (let annot of this._paraState.annotations){
             if (dpView!.seriesKey === annot.seriesKey && dpView!.index === annot.index && !annot.isSelected){
               annots.push(annot as PointAnnotation)
             }
@@ -142,12 +142,12 @@ export class AnnotationLayer extends PlotLayer {
         }
           */
         for (const annot of annots) {
-          const seriesKey = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == annot.seriesKey)[0].key
+          const seriesKey = this._paraState.model!.series.filter(s => s[0].seriesKey == annot.seriesKey)[0].key
           const dpView = this.paraview.documentView?.chartLayers.dataLayer.datapointViews.filter(d => d.seriesKey == seriesKey && d.index == annot.index)[0]
           if (!dpView) {
             break
           }
-          let popup = new Popup(this.paraview,
+          let popup = new Popup(this._paraState, this.paraview,
             {
               text: annot.text,
               x: dpView.x,
@@ -157,13 +157,13 @@ export class AnnotationLayer extends PlotLayer {
               points: [dpView]
             },
             {
-              fill: this.paraview.paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
-                : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
-                  this.paraview.paraState.colors.lighten(this.paraview.paraState.colors.colorValueAt(dpView.color), 6)
-                  : this.paraview.paraState.colors.colorValueAt(dpView.color),
-              stroke: this.paraview.paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
-                : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
-                  this.paraview.paraState.colors.colorValueAt(dpView.color)
+              fill: this._paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+                : this._paraState.settings.popup.backgroundColor === "light" ?
+                  this._paraState.colors.lighten(this._paraState.colors.colorValueAt(dpView.color), 6)
+                  : this._paraState.colors.colorValueAt(dpView.color),
+              stroke: this._paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+                : this._paraState.settings.popup.backgroundColor === "light" ?
+                  this._paraState.colors.colorValueAt(dpView.color)
                   : "black",
             })
           popup.classInfo = { 'popup': true }
@@ -180,13 +180,13 @@ export class AnnotationLayer extends PlotLayer {
 
     }
     if (this.type === 'background') {
-      if (this.paraview.paraState.rangeHighlights) {
+      if (this._paraState.rangeHighlights) {
         this.addGroup('range-highlights', true);
         this.group('range-highlights')!.clearChildren();
-        for (const rhl of this.paraview.paraState.rangeHighlights) {
+        for (const rhl of this._paraState.rangeHighlights) {
           const startPx = this.width * rhl.startPortion;
           const endPx = this.width * rhl.endPortion;
-          const rect = new RectShape(this.paraview, {
+          const rect = new RectShape(this._paraState, this.paraview, {
             x: startPx,
             y: 0,
             width: endPx - startPx,
@@ -202,12 +202,12 @@ export class AnnotationLayer extends PlotLayer {
         }
       }
 
-      if (this.paraview.paraState.modelLineBreaks) {
+      if (this._paraState.modelLineBreaks) {
         this.addGroup('linebreaker-markers', true);
         this.group('linebreaker-markers')!.clearChildren();
-        for (const lb of this.paraview.paraState.modelLineBreaks) {
+        for (const lb of this._paraState.modelLineBreaks) {
           const startPx = this.width * lb.startPortion;
-          const linebreak = new RectShape(this.paraview, {
+          const linebreak = new RectShape(this._paraState, this.paraview, {
             x: startPx - 1.5,
             y: 0,
             width: 3,
@@ -222,19 +222,19 @@ export class AnnotationLayer extends PlotLayer {
           this.removeGroup('linebreaker-markers', true);
         }
       }
-      if (this.paraview.paraState.userLineBreaks) {
+      if (this._paraState.userLineBreaks) {
         this.addGroup('user-linebreaker-markers', true);
         this.group('user-linebreaker-markers')!.clearChildren();
-        let lbs = structuredClone(this.paraview.paraState.userLineBreaks);
-        if (this.paraview.paraState.visitedDatapoints.size > 0) {
-          const cursor = datapointIdToCursor(this.paraview.paraState.visitedDatapoints.values().toArray()[0]);
+        let lbs = structuredClone(this._paraState.userLineBreaks);
+        if (this._paraState.visitedDatapoints.size > 0) {
+          const cursor = datapointIdToCursor(this._paraState.visitedDatapoints.values().toArray()[0]);
           lbs = lbs.filter(a => a.seriesKey == cursor.seriesKey);
         }
         for (const lb of lbs) {
-          const index = this.paraview.paraState.model!.series.findIndex(a => a.key == lb.seriesKey);
-          const color = this.paraview.paraState.colors.colorValueAt(index)
+          const index = this._paraState.model!.series.findIndex(a => a.key == lb.seriesKey);
+          const color = this._paraState.colors.colorValueAt(index)
           const startPx = this.width * lb.startPortion;
-          const linebreak = new RectShape(this.paraview, {
+          const linebreak = new RectShape(this._paraState, this.paraview, {
             x: startPx - 1.5,
             y: 0,
             width: 3,
@@ -259,8 +259,8 @@ export class AnnotationLayer extends PlotLayer {
 
 class DecorationGroup extends Container(View) {
 
-  constructor(paraview: ParaView, protected _name: string) {
-    super(paraview);
+  constructor(paraState: ParaState, paraview: ParaView, protected _name: string) {
+    super(paraState, paraview);
   }
 
   get name() {

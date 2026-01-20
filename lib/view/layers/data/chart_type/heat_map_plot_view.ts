@@ -6,7 +6,7 @@ import { type BaseChartInfo } from '../../../../chart_types';
 import { type HeatMapInfo } from '../../../../chart_types/heat_map';
 import { fixed } from "../../../../common/utils";
 import { ParaView } from "../../../../paraview";
-import { DeepReadonly, HeatmapSettings, PointChartType, type Setting } from "../../../../state";
+import { DeepReadonly, HeatmapSettings, PointChartType, type Setting, type ParaState } from "../../../../state";
 import { DatapointView, SeriesView } from "../../../data";
 
 import { RectShape } from "../../../shape/rect";
@@ -22,15 +22,16 @@ export class HeatMapPlotView extends PlanePlotView {
   declare protected _settings: DeepReadonly<HeatmapSettings>;
   declare protected _chartInfo: HeatMapInfo;
   constructor(
+    paraState: ParaState,
     paraview: ParaView,
     width: number,
     height: number,
     dataLayerIndex: number,
     chartInfo: BaseChartInfo
   ) {
-    super(paraview, width, height, dataLayerIndex, chartInfo);
+    super(paraState, paraview, width, height, dataLayerIndex, chartInfo);
     this.log = getLogger("HeatMapPlotView");
-    this._settings = this.paraview.paraState.settings.type.heatmap;
+    this._settings = this._paraState.settings.type.heatmap;
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
@@ -50,25 +51,25 @@ export class HeatMapPlotView extends PlanePlotView {
   }
 
   protected _newDatapointView(seriesView: PlaneSeriesView) {
-    return new HeatmapTileView(this, seriesView);
+    return new HeatmapTileView(this._paraState, this, seriesView);
   }
 
   protected _createDatapoints() {
     this.log.info('CREATING DATAPOINTS');
     const xs: string[] = [];
-    for (const [x, i] of enumerate(this.paraview.paraState.model!.allFacetValues('x')!)) {
-      xs.push(formatBox(x, this.paraview.paraState.getFormatType(`${this.parent.parent.type as PointChartType}Point`)));
+    for (const [x, i] of enumerate(this._paraState.model!.allFacetValues('x')!)) {
+      xs.push(formatBox(x, this._paraState.getFormatType(`${this.parent.parent.type as PointChartType}Point`)));
       const xId = strToId(xs.at(-1)!);
       // if (this.selectors[i] === undefined) {
       //   this.selectors[i] = [];
       // }
       // this.selectors[i].push(`tick-x-${xId}`);
     }
-    for (const [col, i] of enumerate(this.paraview.paraState.model!.series)) {
-      const seriesView = new PlaneSeriesView(this, col.key);
+    for (const [col, i] of enumerate(this._paraState.model!.series)) {
+      const seriesView = new PlaneSeriesView(this._paraState, this, col.key);
       this._chartLandingView.append(seriesView);
       for (let i = 0; i < this._chartInfo.resolution ** 2; i++) {
-        const heatmapTile = new HeatmapTileView(this, seriesView);
+        const heatmapTile = new HeatmapTileView(this._paraState, this, seriesView);
         seriesView.append(heatmapTile)
       }
     }
@@ -101,7 +102,6 @@ export class HeatMapPlotView extends PlanePlotView {
 }
 
 export class HeatmapTileView extends DatapointView {
-
   declare readonly chart: HeatMapPlotView;
   declare protected _parent: PlaneSeriesView;
 
@@ -110,10 +110,11 @@ export class HeatmapTileView extends DatapointView {
   protected _count: number = 0;
 
   constructor(
+    paraState: ParaState,
     chart: HeatMapPlotView,
     series: SeriesView
   ) {
-    super(series);
+    super(paraState, series);
   }
 
   get width() {
@@ -145,7 +146,7 @@ export class HeatmapTileView extends DatapointView {
   }
 
   get selectedMarker(): Shape {
-    return new RectShape(this.paraview, {
+    return new RectShape(this._paraState, this.paraview, {
       width: this._width + 4,
       height: this._height + 4,
       x: this._x - 2,
@@ -158,7 +159,7 @@ export class HeatmapTileView extends DatapointView {
 
   protected _createId(..._args: any[]): string {
     //const facets = [...this.datapoint.entries()].map(([key, box]) =>
-    // `${key}_${formatBox(box, this.paraview.paraState.getFormatType('domId'))}`).join('-');
+    // `${key}_${formatBox(box, this._paraState.getFormatType('domId'))}`).join('-');
     return [
       'datapoint',
       strToId(this.series.key),
@@ -189,7 +190,7 @@ export class HeatmapTileView extends DatapointView {
   layoutSymbol() { }
 
   protected _createShapes() {
-    const shape = new HeatmapTile(this.paraview, {
+    const shape = new HeatmapTile(this._paraState, this.paraview, {
       x: this._x,
       y: this._y,
       width: this._width,
@@ -222,7 +223,7 @@ export class HeatmapTile extends RectShape {
     return parent.index;
   }
   render() {
-    this._styleInfo.stroke = this.paraview.paraState.visitedDatapoints.values().some(item =>
+    this._styleInfo.stroke = this._paraState.visitedDatapoints.values().some(item =>
       item === (this.parent as HeatmapTileView).datapointId)
         ? 'hsl(0, 100.00%, 50.00%)'
         : this.options.stroke ?? this._options.stroke;

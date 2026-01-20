@@ -3,6 +3,7 @@ import { fixed } from '../../common/utils';
 import { type ParaView } from '../../paraview';
 import { Shape, type ShapeOptions } from './shape';
 import { Vec2 } from '../../common/vector';
+import { type ParaState } from '../../state';
 
 import { svg, nothing } from 'lit';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
@@ -16,8 +17,8 @@ export interface PathOptions extends ShapeOptions {
 export class PathShape extends Shape {
   protected _points: Vec2[];
 
-  constructor(paraview: ParaView, options: PathOptions) {
-    super(paraview, options);
+  constructor(paraState: ParaState, paraview: ParaView, options: PathOptions) {
+    super(paraState, paraview, options);
     this._points = options.points.map(p => p.clone());
   }
 
@@ -28,7 +29,7 @@ export class PathShape extends Shape {
   }
 
   clone(): PathShape {
-    return new PathShape(this.paraview, this._options);
+    return new PathShape(this._paraState, this.paraview, this._options);
   }
 
   get points() {

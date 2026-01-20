@@ -2,6 +2,7 @@
 import { Shape, type ShapeOptions } from './shape';
 import { type ParaView } from '../../paraview';
 import { fixed } from '../../common/utils';
+import { type ParaState } from '../../state';
 
 import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -15,8 +16,8 @@ export interface RectOptions extends ShapeOptions {
 
 export class RectShape extends Shape {
 
-  constructor(paraview: ParaView, public options: RectOptions) {
-    super(paraview, options);
+  constructor(paraState: ParaState, paraview: ParaView, public options: RectOptions) {
+    super(paraState, paraview, options);
     this._width = options.width;
     this._height = options.height;
     if (options.isPattern){
@@ -33,7 +34,7 @@ export class RectShape extends Shape {
   }
 
   clone(): RectShape {
-    return new RectShape(this.paraview, this._options);
+    return new RectShape(this._paraState, this.paraview, this._options);
   }
 
   render() {
@@ -41,7 +42,7 @@ export class RectShape extends Shape {
       let index = this.parent!.parent!.index
       this._styleInfo.fill = `url(#Pattern${index})`
       return svg`
-      <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
+      <defs>${this._paraState.colors.patternValueAt(index)}</defs>
       <rect
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}

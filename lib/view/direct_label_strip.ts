@@ -25,6 +25,7 @@ import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type ParaView } from '../paraview';
 import { type PlaneChartInfo } from '../chart_types';
 import { type DocumentView } from './document_view';
+import { ParaState } from '../state';
 
 interface CollisionRec {
   label: Label,
@@ -42,8 +43,8 @@ export class DirectLabelStrip extends Container(View) {
   protected _seriesLabels!: Label[];
   protected _leaders!: LineLabelLeader[];
 
-  constructor(paraview: ParaView, height: number) {
-    super(paraview);
+  constructor(paraState: ParaState, paraview: ParaView, height: number) {
+    super(paraState, paraview);
     this.log = getLogger('DirectLabelStrip');
     this._id = 'direct-label-strip';
     this._height = height;
@@ -55,10 +56,10 @@ export class DirectLabelStrip extends Container(View) {
   }
 
   protected _createInitialLabels() {
-    const directLabelPadding = this.paraview.paraState.settings.chart.isDrawSymbols
-      ? this.paraview.paraState.settings.type.line.seriesLabelPadding*2
-      : this.paraview.paraState.settings.type.line.seriesLabelPadding;
-    const endpoints = this.paraview.paraState.model!.series.map(series => series.datapoints.at(-1)!);
+    const directLabelPadding = this._paraState.settings.chart.isDrawSymbols
+      ? this._paraState.settings.type.line.seriesLabelPadding*2
+      : this._paraState.settings.type.line.seriesLabelPadding;
+    const endpoints = this._paraState.model!.series.map(series => series.datapoints.at(-1)!);
     endpoints.sort((a, b) => b.facetValueAsNumber('y')! - a.facetValueAsNumber('y')!);
     this._seriesLabels?.forEach(label => {
       label.remove();
@@ -69,8 +70,8 @@ export class DirectLabelStrip extends Container(View) {
       const yInterval = (this.paraview.documentView!.chartInfo as PlaneChartInfo).yInterval!;
       const pxPerYUnit = this._height / (yInterval.end - yInterval.start);
       const labelY = this._height - (ep.facetValueNumericized('y')! - yInterval.start) * pxPerYUnit;
-      this._seriesLabels.push(new Label(this.paraview, {
-        text: this.paraview.paraState.model!.atKey(ep.seriesKey)!.getLabel(),
+      this._seriesLabels.push(new Label(this._paraState, this.paraview, {
+        text: this._paraState.model!.atKey(ep.seriesKey)!.getLabel(),
         left: directLabelPadding,
         y: labelY,
         classList: ['direct-label'],
@@ -80,13 +81,13 @@ export class DirectLabelStrip extends Container(View) {
   }
 
   createLabels() {
-    const directLabelPadding = this.paraview.paraState.settings.chart.isDrawSymbols
-      ? this.paraview.paraState.settings.type.line.seriesLabelPadding*2
-      : this.paraview.paraState.settings.type.line.seriesLabelPadding;
+    const directLabelPadding = this._paraState.settings.chart.isDrawSymbols
+      ? this._paraState.settings.type.line.seriesLabelPadding*2
+      : this._paraState.settings.type.line.seriesLabelPadding;
     // const endpoints = this._parent.chartLayers.dataLayer.chartLandingView.children.map(seriesView => seriesView.children.at(-1)!);
     const endpoints = this._parent.chartLayers.dataLayer.datapointViews
       .filter(datapoint =>
-        datapoint.index === this.paraview.paraState.model!.series[0].length - 1
+        datapoint.index === this._paraState.model!.series[0].length - 1
       );
     // Sort points from highest to lowest onscreen
     endpoints.sort((a, b) => a.y - b.y);
@@ -98,16 +99,16 @@ export class DirectLabelStrip extends Container(View) {
     // Create labels
     endpoints.forEach((ep, i) => {
       endpointYs.push(ep.y);
-      this._seriesLabels.push(new Label(this.paraview, {
-        text: this.paraview.paraState.model!.atKey(ep.seriesKey)!.getLabel(),
+      this._seriesLabels.push(new Label(this._paraState, this.paraview, {
+        text: this._paraState.model!.atKey(ep.seriesKey)!.getLabel(),
         left: directLabelPadding,
         y: ep.y, // labelY,
         classList: ['direct-label'],
         pointerEnter: (e) => {
-          this.paraview.paraState.lowlightOtherSeries(ep.seriesKey);
+          this._paraState.lowlightOtherSeries(ep.seriesKey);
         },
         pointerLeave: (e) => {
-          this.paraview.paraState.clearAllSeriesLowlights();
+          this._paraState.clearAllSeriesLowlights();
         }
       }));
       this.append(this._seriesLabels.at(-1)!);
@@ -138,8 +139,8 @@ export class DirectLabelStrip extends Container(View) {
         allColliders.set(c.label, c);
       })
     }
-    const leaderLabelOffset = this.paraview.paraState.settings.chart.isDrawSymbols
-      ? -this.paraview.paraState.settings.type.line.seriesLabelPadding
+    const leaderLabelOffset = this._paraState.settings.chart.isDrawSymbols
+      ? -this._paraState.settings.type.line.seriesLabelPadding
       : 0;
     this._leaders?.forEach(leader => {
       leader.remove();
@@ -147,8 +148,8 @@ export class DirectLabelStrip extends Container(View) {
     this._leaders = [];
     allColliders.forEach(c => {
       // NB: this value already includes the series label padding
-      c.label.x += (this.paraview.paraState.settings.type.line.leaderLineLength + leaderLabelOffset);
-      this._leaders.push(new LineLabelLeader(this.paraview, c.seriesKey, c.label, c.endpointY));
+      c.label.x += (this._paraState.settings.type.line.leaderLineLength + leaderLabelOffset);
+      this._leaders.push(new LineLabelLeader(this._paraState, this.paraview, c.seriesKey, c.label, c.endpointY));
       this.prepend(this._leaders.at(-1)!);
     });
   }
@@ -170,7 +171,7 @@ export class DirectLabelStrip extends Container(View) {
     // XXX also need to support label strip on left, top, bottom
     return [
       Math.max(...this._seriesLabels.map(label => label.right))
-        + this.paraview.paraState.settings.type.line.leaderLineLength,
+        + this._paraState.settings.type.line.leaderLineLength,
       this._height
     ];
   }
@@ -225,9 +226,9 @@ class LineLabelLeader extends View {
   protected _endX: number;
   protected _endY: number;
 
-  constructor(paraview: ParaView, protected _seriesKey: string, label: Label, pointY: number) {
-    super(paraview);
-    this._endX = this.paraview.paraState.settings.type.line.leaderLineLength;
+  constructor(paraState: ParaState, paraview: ParaView, protected _seriesKey: string, label: Label, pointY: number) {
+    super(paraState, paraview);
+    this._endX = this._paraState.settings.type.line.leaderLineLength;
     this._endY = label.y - label.locOffset.y/2;
     this._lineD = fixed`
       M${0},${pointY}
@@ -238,8 +239,8 @@ class LineLabelLeader extends View {
     const styles: StyleInfo = {};
     // const colorValue = this._controller.colors.colorValue(
     //   this._controller.seriesManager.series(this.endpoint.seriesKey).color);
-    let colorValue = this.paraview.paraState.colors.colorValueAt(
-      this.paraview.paraState.seriesProperties!.properties(this._seriesKey).color);
+    let colorValue = this._paraState.colors.colorValueAt(
+      this._paraState.seriesProperties!.properties(this._seriesKey).color);
     styles.fill = colorValue;
     styles.stroke = colorValue;
     return styles;
@@ -248,7 +249,7 @@ class LineLabelLeader extends View {
   get classInfo(): ClassInfo {
     return {
       'label-leader': true,
-      'lowlight': this.paraview.paraState.isSeriesLowlighted(this._seriesKey)
+      'lowlight': this._paraState.isSeriesLowlighted(this._seriesKey)
     }
   }
 

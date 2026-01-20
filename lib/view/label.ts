@@ -25,7 +25,7 @@ import { generateUniqueId, fixed } from '../common/utils';
 import { ParaView } from '../paraview';
 import { SVGNS } from '../common/constants';
 import { Vec2 } from '../common/vector';
-import { Setting } from '../state';
+import { Setting, ParaState } from '../state';
 
 export type LabelTextAnchor = 'start' | 'middle' | 'end';
 
@@ -78,8 +78,8 @@ export class Label extends View {
   protected _textCornerOffsets!: LabelTextCorners;
   protected _textLines: TextLine[] = [];
 
-  constructor(paraview: ParaView, private options: LabelOptions) {
-    super(paraview);
+  constructor(paraState: ParaState, paraview: ParaView, private options: LabelOptions) {
+    super(paraState, paraview);
     this._canWidthFlex = true;
     this._canHeightFlex = true;
     if (options.classList) {
@@ -143,7 +143,7 @@ export class Label extends View {
   }
 
   protected _createId() {
-    return this.options.id || generateUniqueId(this._text, this.paraview.paraState);
+    return this.options.id || generateUniqueId(this._text, this._paraState);
   }
 
   get el() {
@@ -255,7 +255,7 @@ export class Label extends View {
     this.paraview.root!.append(text);
 
     const canvasRect = this.paraview.root?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0);
-    const clientRect = this._angle || !this.paraview.paraState.settings.ui.isFullscreenEnabled ?
+    const clientRect = this._angle || !this._paraState.settings.ui.isFullscreenEnabled ?
       text.getBoundingClientRect() :
       text.getBBox()
 
@@ -297,7 +297,7 @@ export class Label extends View {
         const oldContent = tspan.textContent;
         if (wrapMode) {
           tspan.textContent += ' ' + tok;
-          const rect = this.paraview.paraState.settings.ui.isFullscreenEnabled
+          const rect = this._paraState.settings.ui.isFullscreenEnabled
             ? tspan.getBBox()
             : tspan.getBoundingClientRect();
           if (Math.max(rect.height, rect.width) >= this.options.wrapWidth!) {
@@ -319,7 +319,7 @@ export class Label extends View {
         }
       }
 
-      const clientRect = this.paraview.paraState.settings.ui.isFullscreenEnabled
+      const clientRect = this._paraState.settings.ui.isFullscreenEnabled
         ? text.getBBox()
         : text.getBoundingClientRect();
       width = clientRect.width;
@@ -356,7 +356,7 @@ export class Label extends View {
     } else {
       this._textLines = [];
       const numChars = text.getNumberOfChars();
-      
+
       top = text.getExtentOfChar(0).y;
       bottom = text.getExtentOfChar(0).y + text.getExtentOfChar(0).height;
       left = text.getExtentOfChar(0).x;

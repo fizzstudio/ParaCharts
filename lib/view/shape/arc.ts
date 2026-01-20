@@ -2,6 +2,7 @@ import { fixed } from '../../common/utils';
 import { type ParaView } from '../../paraview';
 import { type ShapeOptions, Shape } from './shape';
 import { Vec2 } from '../../common/vector';
+import { type ParaState } from '../../state';
 
 import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -18,8 +19,8 @@ export class ArcShape extends Shape {
   protected _r: number;
   protected _points: Vec2[];
 
-  constructor(paraview: ParaView, private options: ArcOptions) {
-    super(paraview, options);
+  constructor(paraState: ParaState, paraview: ParaView, private options: ArcOptions) {
+    super(paraState, paraview, options);
     this._points = options.points.map(p => p.clone());
     this._r = options.r;
   }
@@ -31,7 +32,7 @@ export class ArcShape extends Shape {
     return options;
   }
   clone(): ArcShape {
-    return new ArcShape(this.paraview, this._options);
+    return new ArcShape(this._paraState, this.paraview, this._options);
   }
 
   get r() {
@@ -62,13 +63,13 @@ export class ArcShape extends Shape {
       let parent = this.parent as DatapointView;
       this._styleInfo.fill = `url(#Pattern${index})`;
 
-      if (this.paraview.paraState.isVisited(parent.seriesKey, index)) {
-        this._styleInfo.stroke = this.paraview.paraState.colors.colorValue('visit');
+      if (this._paraState.isVisited(parent.seriesKey, index)) {
+        this._styleInfo.stroke = this._paraState.colors.colorValue('visit');
         this._styleInfo.strokeWidth = 6;
       }
 
       return svg`
-      <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
+      <defs>${this._paraState.colors.patternValueAt(index)}</defs>
       <path
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}

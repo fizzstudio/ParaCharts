@@ -1,6 +1,6 @@
 import { formatBox } from "@fizz/parasummary";
 import { ParaView } from "../../paraview";
-import { datapointIdToCursor, makeSequenceId, PointAnnotation } from "../../state";
+import { datapointIdToCursor, makeSequenceId, PointAnnotation, type ParaState } from "../../state";
 import { Container, View } from "../base_view";
 import { Popup } from "../popup";
 import { PlotLayer } from "./layer";
@@ -56,8 +56,8 @@ export const trendTranslation = {
 export class PopupLayer extends PlotLayer {
     protected _groups = new Map<string, DecorationGroup>();
 
-    constructor(paraview: ParaView, width: number, height: number, public readonly type: AnnotationType) {
-        super(paraview, width, height);
+    constructor(paraState: ParaState, paraview: ParaView, width: number, height: number, public readonly type: AnnotationType) {
+        super(paraState, paraview, width, height);
     }
 
     protected _createId() {
@@ -75,7 +75,7 @@ export class PopupLayer extends PlotLayer {
             }
             throw new Error(`group '${name}' already exists`);
         }
-        this._groups.set(name, new DecorationGroup(this.paraview, name));
+        this._groups.set(name, new DecorationGroup(this._paraState, this.paraview, name));
         this.append(this._groups.get(name)!);
     }
 
@@ -93,8 +93,8 @@ export class PopupLayer extends PlotLayer {
     addPopups() {
         this.addGroup('datapoint-popups', true);
         this.group('datapoint-popups')!.clearChildren();
-        if (this.paraview.paraState.settings.chart.isShowPopups && this.paraview.paraState.settings.popup.activation === "onFocus") {
-            this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length)
+        if (this._paraState.settings.chart.isShowPopups && this._paraState.settings.popup.activation === "onFocus") {
+            this._paraState.userLineBreaks.splice(0, this._paraState.userLineBreaks.length)
             const cursor = this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.navMap!.cursor
             const datapoints = cursor.datapoints;
             const datapointViews = datapoints.map(datapoint =>
@@ -110,7 +110,7 @@ export class PopupLayer extends PlotLayer {
                 popups.push(...this.addSeriesPopups(datapointViews));
             }
             else {
-                for (let dp of this.paraview.paraState.visitedDatapoints) {
+                for (let dp of this._paraState.visitedDatapoints) {
                     const { seriesKey, index } = datapointIdToCursor(dp);
                     const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
                     datapointView.addDatapointPopup();
@@ -118,18 +118,18 @@ export class PopupLayer extends PlotLayer {
             }
 
             for (let popup of popups) {
-                this.paraview.paraState.popups.push(popup);
+                this._paraState.popups.push(popup);
             }
         }
-        else if (this.paraview.paraState.settings.chart.isShowPopups && this.paraview.paraState.settings.popup.activation === "onSelect") {
-            for (let dp of this.paraview.paraState.selectedDatapoints) {
+        else if (this._paraState.settings.chart.isShowPopups && this._paraState.settings.popup.activation === "onSelect") {
+            for (let dp of this._paraState.selectedDatapoints) {
                 const { seriesKey, index } = datapointIdToCursor(dp);
                 const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
                 datapointView.addDatapointPopup();
             }
         }
 
-        for (const popup of this.paraview.paraState.popups) {
+        for (const popup of this._paraState.popups) {
             popup.classInfo = { 'popup': true }
             if (this.type === 'foreground') {
                 this.group('datapoint-popups')!.append(popup);
@@ -140,7 +140,7 @@ export class PopupLayer extends PlotLayer {
                 }
             }
         }
-        this.paraview.paraState.clearPopups();
+        this._paraState.clearPopups();
     }
 
     addChordPopups(datapointViews: DatapointView[]): Popup[] {
@@ -150,10 +150,10 @@ export class PopupLayer extends PlotLayer {
         }
         const dpView = datapointViews[0];
         const items = this.paraview.documentView?.chartLayers.dataLayer.chartInfo.popuplegend()!;
-        this.paraview.paraState.addLineBreak(this.paraview.documentView?.chartLayers.dataLayer.chartInfo.navMap!.cursor.index! / (this.paraview.paraState.model!.series[0].datapoints.length - 1),
+        this._paraState.addLineBreak(this.paraview.documentView?.chartLayers.dataLayer.chartInfo.navMap!.cursor.index! / (this._paraState.model!.series[0].datapoints.length - 1),
             dpView.index!, dpView.seriesKey, false);
         this.paraview.documentView?.chartLayers.backgroundAnnotationLayer.render()!;
-        const popup = new Popup(this.paraview,
+        const popup = new Popup(this._paraState, this.paraview,
             {
                 text,
                 x: dpView!.x,
@@ -187,12 +187,12 @@ export class PopupLayer extends PlotLayer {
             const leftDPView = datapointViews[(datapointViews.length - 1) / 2];
             y = leftDPView.y;
         }
-        const seriesAnalysis = this.paraview.paraState.seriesAnalyses[firstDPView.seriesKey]!;
+        const seriesAnalysis = this._paraState.seriesAnalyses[firstDPView.seriesKey]!;
         const index = seriesAnalysis.sequences.findIndex(s => s.start === datapointViews[0].index && s.end - 1 === datapointViews[datapointViews.length - 1].index);
-        const labels = this.paraview.paraState.model!.series[0].datapoints.map(
-            (p) => formatBox(p.facetBox('x')!, this.paraview.paraState.getFormatType('horizTick'))
+        const labels = this._paraState.model!.series[0].datapoints.map(
+            (p) => formatBox(p.facetBox('x')!, this._paraState.getFormatType('horizTick'))
         );
-        const points = this.paraview.paraState.model!.series.find(s => s.key === datapointViews[0].seriesKey)!.datapoints;
+        const points = this._paraState.model!.series.find(s => s.key === datapointViews[0].seriesKey)!.datapoints;
         let text = '';
         if (seriesAnalysis.sequences[index].message == null) {
             let sequence = seriesAnalysis.sequences[index]
@@ -215,7 +215,7 @@ export class PopupLayer extends PlotLayer {
         text = text.concat(`\n${labels[seriesAnalysis.sequences[index].start]}-${labels[seriesAnalysis.sequences[index].end - 1]}`);
         text = text.concat(`\n${seriesAnalysis.sequences[index].end - seriesAnalysis.sequences[index].start} records`);
 
-        const popup = new Popup(this.paraview,
+        const popup = new Popup(this._paraState, this.paraview,
             {
                 text: text,
                 x: x,
@@ -245,11 +245,11 @@ export class PopupLayer extends PlotLayer {
             const leftDPView = datapointViews[(datapointViews.length - 1) / 2];
             y = leftDPView.y;
         }
-        const seriesAnalysis = this.paraview.paraState.seriesAnalyses[firstDPView.seriesKey]!;
-        const labels = this.paraview.paraState.model!.series[0].datapoints.map(
-            (p) => formatBox(p.facetBox('x')!, this.paraview.paraState.getFormatType('horizTick'))
+        const seriesAnalysis = this._paraState.seriesAnalyses[firstDPView.seriesKey]!;
+        const labels = this._paraState.model!.series[0].datapoints.map(
+            (p) => formatBox(p.facetBox('x')!, this._paraState.getFormatType('horizTick'))
         );
-        const points = this.paraview.paraState.model!.series.find(s => s.key === datapointViews[0].seriesKey)!.datapoints;
+        const points = this._paraState.model!.series.find(s => s.key === datapointViews[0].seriesKey)!.datapoints;
         let text = '';
 
         text = text.concat(`${(datapointViews[0].series.getLabel())}`);
@@ -265,7 +265,7 @@ export class PopupLayer extends PlotLayer {
         text = text.concat(`\n${labels[0]}-${labels[points.length - 1]}`);
         text = text.concat(`\n${points.length} records`);
 
-        const popup = new Popup(this.paraview,
+        const popup = new Popup(this._paraState, this.paraview,
             {
                 text: text,
                 x: x,
@@ -289,8 +289,8 @@ export class PopupLayer extends PlotLayer {
 
 class DecorationGroup extends Container(View) {
 
-    constructor(paraview: ParaView, protected _name: string) {
-        super(paraview);
+    constructor(paraState: ParaState, paraview: ParaView, protected _name: string) {
+        super(paraState, paraview);
     }
 
     get name() {
