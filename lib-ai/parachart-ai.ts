@@ -34,7 +34,8 @@ export class ParaChartAi extends ParaChart {
         --summary-marker-size: 1.1rem;
       }
       figure {
-        display: inline-block;
+        display: inline-flex;
+        flex-direction: column;
         margin: 0;
       }
     `

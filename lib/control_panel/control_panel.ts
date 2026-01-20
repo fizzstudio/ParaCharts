@@ -79,8 +79,8 @@ export class ParaControlPanel extends ParaComponent {
         --control-panel-icon-size: 1.1rem;
         --contents-margin: 2px 0 0 0;
         width: 1;
-        min-width: 40rem;
-        max-width: 50%;
+        /*min-width: 40rem;*/
+        /*max-width: 50%;*/
       }
       fizz-tabs.collapsed {
         /*width: rem;*/
