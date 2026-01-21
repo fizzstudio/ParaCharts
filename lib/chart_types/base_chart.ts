@@ -156,6 +156,8 @@ export abstract class BaseChartInfo {
           const parsed = parseAction(highlight.action);
           if (!parsed) throw new Error(`error parsing action '${highlight.action}'`);
           executeParaActions(parsed, this._paraView.paraChart.api);
+        } else {
+          this._paraState.clearAllHighlights();
         }
       } else if (key === 'landmarkEnd') {
         // So that on the initial transition from auto-narration to manual
@@ -166,14 +168,6 @@ export abstract class BaseChartInfo {
           this._paraState.clearAllSeriesLowlights();
         }
       }
-    }
-  }
-
-  protected _doHighlight(highlight: Highlight) {
-    if (highlight.action) {
-      const parsed = parseAction(highlight.action);
-      if (!parsed) throw new Error(`error parsing action '${highlight.action}'`);
-      executeParaActions(parsed, this._paraView.paraChart.api);
     }
   }
 
