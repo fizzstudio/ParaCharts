@@ -114,8 +114,7 @@ export class ParaCaptionBox extends ParaComponent {
   }
 
   private async setCaption(): Promise<void> {
-    //FIXME: Add default summaries for Venn diagrams
-    if (this._paraState.dataState === 'complete' && this._paraState.type !== 'venn') {
+    if (this._paraState.dataState === 'complete') {
       this._caption = await this.parachart.paraView.documentView!.chartInfo.summarizer.getChartSummary();
     }
   }
