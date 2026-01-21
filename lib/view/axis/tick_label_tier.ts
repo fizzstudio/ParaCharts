@@ -115,6 +115,7 @@ export abstract class TickLabelTier extends Container(View) {
       : this._options.content.labels.length - 1;
     this._labelDistance = this._length/(n/this._options.step);
     this.clearChildren();
+    const tiers = this.paraview.paraState.model!.allFacetValues("x")!.map(box => box.raw);
     for (const [i, labelText] of this._options.content.labels.entries()) {
       if (i % this._options.step) {
         continue;
@@ -140,7 +141,7 @@ export abstract class TickLabelTier extends Container(View) {
           if (this.paraview.paraState.settings.chart.isShowPopups
             && this.paraview.paraState.settings.popup.activation === "onHover"
             && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
-              this.addPopup(labelText, i);
+              this.addPopup(labelText[0] == "Q" ? tiers[i] : labelText, i);
           }
         },
         pointerLeave: (e) => {
