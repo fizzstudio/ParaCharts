@@ -213,9 +213,9 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
           const year = raw.split(' ')[1];
           if (!tier2.includes(year)) {
             tier2.push(year);
-            tier2Intervals.push({start: i/(rawVals.length - 1), end: 0});
+            tier2Intervals.push({start: i/(rawVals.length - (this.isIntertick ? 0 : 1) ), end: 0});
           } else {
-            tier2Intervals.at(-1)!.end = i/(rawVals.length - 1);
+            tier2Intervals.at(-1)!.end = this.isIntertick ? (i/rawVals.length + 1/rawVals.length) : (i/(rawVals.length - 1));
           }
         });
         return [
