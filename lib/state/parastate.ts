@@ -605,23 +605,25 @@ export class ParaState extends State {
     return this._highlightedDatapoints;
   }
 
-  highlight(seriesKey: string, index: number) {
-    this._highlightedDatapoints.add(makeDatapointId(seriesKey, index));
-    this.requestUpdate();
+  highlightDatapoint(seriesKey: string, index: number) {
+    this._highlightedDatapoints = new Set([
+      ...this._highlightedDatapoints.values(),
+      makeDatapointId(seriesKey, index)
+    ]);
   }
 
-  clearHighlight(seriesKey: string, index: number) {
-    this._highlightedDatapoints.delete(makeDatapointId(seriesKey, index));
-    this.requestUpdate();
+  clearDatapointHighlight(seriesKey: string, index: number) {
+    this._highlightedDatapoints = new Set([
+      ...this._highlightedDatapoints.values().filter(id => id !== makeDatapointId(seriesKey, index))
+    ]);
   }
 
-  isHighlighted(seriesKey: string, index: number): boolean {
+  isDatapointHighlighted(seriesKey: string, index: number): boolean {
     return this._highlightedDatapoints.has(makeDatapointId(seriesKey, index));
   }
 
-  clearAllHighlights() {
-    this._highlightedDatapoints.clear();
-    this.requestUpdate();
+  clearAllDatapointHighlights() {
+    this._highlightedDatapoints = new Set();
   }
 
   get highlightedSequences() {
@@ -629,18 +631,27 @@ export class ParaState extends State {
   }
 
   highlightSequence(seriesKey: string, index1: number, index2: number) {
-    this._highlightedSequences.add(makeSequenceId(seriesKey, index1, index2));
-    this.requestUpdate();
+    this._highlightedSequences = new Set([
+      ...this._highlightedSequences.values(),
+      makeSequenceId(seriesKey, index1, index2)
+    ]);
   }
 
   clearSequenceHighlight(seriesKey: string, index1: number, index2: number) {
-    this._highlightedSequences.delete(makeSequenceId(seriesKey, index1, index2));
-    this.requestUpdate();
+    this._highlightedSequences = new Set([
+      ...this._highlightedSequences.values().filter(id => id !== makeSequenceId(seriesKey, index1, index2))
+    ]);
   }
 
   clearAllSequenceHighlights() {
-    this._highlightedSequences.clear();
-    this.requestUpdate();
+    this._highlightedSequences = new Set();
+  }
+
+  clearAllHighlights() {
+    this.clearAllDatapointHighlights();
+    this.clearAllSequenceHighlights();
+    this.clearAllRangeHighlights();
+    this.clearAllSeriesLowlights();
   }
 
   get selectedDatapoints() {
@@ -811,7 +822,7 @@ export class ParaState extends State {
     const length = this.model!.series[0].length - 1;
     let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i]);
     for (let sequence of relevantSequences!) {
-      this.unhighlightRange(sequence.start / length, (sequence.end - 1) / length);
+      this.clearRangeHighlight(sequence.start / length, (sequence.end - 1) / length);
     }
 
     if (seriesKey !== null) {
@@ -857,7 +868,7 @@ export class ParaState extends State {
     this._rangeHighlights = [...this._rangeHighlights, { startPortion, endPortion }];
   }
 
-  unhighlightRange(startPortion: number, endPortion: number) {
+  clearRangeHighlight(startPortion: number, endPortion: number) {
     const index = this._rangeHighlights.findIndex(rhl =>
       rhl.startPortion === startPortion && rhl.endPortion === endPortion);
     if (index === -1) {
@@ -865,6 +876,10 @@ export class ParaState extends State {
       return;
     }
     this._rangeHighlights = this._rangeHighlights.toSpliced(index, 1);
+  }
+
+  clearAllRangeHighlights() {
+    this._rangeHighlights = [];
   }
 
   getModelCsv() {

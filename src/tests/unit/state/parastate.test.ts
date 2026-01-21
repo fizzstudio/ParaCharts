@@ -41,7 +41,7 @@ describe('ParaState', () => {
       const onNotice = vi.fn();
 
       state.registerCallbacks({ onUpdate, onNotice });
-      
+
       state.requestUpdate();
       expect(onUpdate).toHaveBeenCalledOnce();
 
@@ -59,7 +59,7 @@ describe('ParaState', () => {
 
     it('should update settings using valid path', () => {
       const originalWidth = state.settings.chart?.size?.width;
-      
+
       state.updateSettings(draft => {
         draft.chart!.size!.width = 2048;
       });
@@ -194,27 +194,27 @@ describe('ParaState', () => {
     });
 
     it('should highlight a datapoint', () => {
-      state.highlight('series1', 0);
-      expect(state.isHighlighted('series1', 0)).toBe(true);
+      state.highlightDatapoint('series1', 0);
+      expect(state.isDatapointHighlighted('series1', 0)).toBe(true);
     });
 
     it('should clear a highlight', () => {
-      state.highlight('series1', 0);
-      state.clearHighlight('series1', 0);
-      expect(state.isHighlighted('series1', 0)).toBe(false);
+      state.highlightDatapoint('series1', 0);
+      state.clearDatapointHighlight('series1', 0);
+      expect(state.isDatapointHighlighted('series1', 0)).toBe(false);
     });
 
     it('should clear all highlights', () => {
-      state.highlight('series1', 0);
-      state.highlight('series2', 1);
-      state.clearAllHighlights();
-      expect(state.isHighlighted('series1', 0)).toBe(false);
-      expect(state.isHighlighted('series2', 1)).toBe(false);
+      state.highlightDatapoint('series1', 0);
+      state.highlightDatapoint('series2', 1);
+      state.clearAllDatapointHighlights();
+      expect(state.isDatapointHighlighted('series1', 0)).toBe(false);
+      expect(state.isDatapointHighlighted('series2', 1)).toBe(false);
     });
 
     it('should get highlighted datapoints set', () => {
-      state.highlight('series1', 0);
-      state.highlight('series1', 1);
+      state.highlightDatapoint('series1', 0);
+      state.highlightDatapoint('series1', 1);
       const highlighted = state.highlightedDatapoints;
       expect(highlighted.size).toBe(2);
       expect(highlighted.has('series1-0')).toBe(true);
@@ -267,7 +267,7 @@ describe('ParaState', () => {
 
     it('should unhighlight a range', () => {
       state.highlightRange(0.2, 0.8);
-      state.unhighlightRange(0.2, 0.8);
+      state.clearRangeHighlight(0.2, 0.8);
       expect(state.rangeHighlights).toHaveLength(0);
     });
   });
@@ -318,7 +318,7 @@ describe('ParaState', () => {
       state.updateSettings(draft => {
         draft.ui!.isAnnouncementEnabled = false;
       });
-      
+
       state.announce('Test');
       // When announcements are disabled, the text should not be updated
       expect(state.announcement.text).toBe('');
@@ -337,7 +337,7 @@ describe('ParaState', () => {
         { id: 'popup1', text: 'Test 1' } as any,
         { id: 'popup2', text: 'Test 2' } as any
       ];
-      
+
       state.removePopup('popup1');
       expect(state.popups).toHaveLength(1);
       expect(state.popups[0].id).toBe('popup2');
@@ -348,7 +348,7 @@ describe('ParaState', () => {
         { id: 'popup1', text: 'Test 1' } as any,
         { id: 'popup2', text: 'Test 2' } as any
       ];
-      
+
       state.clearPopups();
       expect(state.popups).toHaveLength(0);
     });

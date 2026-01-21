@@ -27,10 +27,11 @@ import { PlaneModel } from '@fizz/paramodel';
 import { Popup } from '../popup';
 import { OrientedAxisSettings } from '../../state';
 import { Datatype } from '@fizz/paramanifest';
+import { AxisLabelTier } from '../../chart_types';
 
 export interface TickLabelTierOptions {
   orientation: AxisOrientation;
-  labels: readonly string[];
+  content: AxisLabelTier;
   index: number;
   length: number;
   step: number;
@@ -110,11 +111,11 @@ export abstract class TickLabelTier extends Container(View) {
 
   createTickLabels(_checkLabels = true) {
     const n = (this._options.isChartIntertick && this._options.isFacetIndep)
-      ? this._options.labels.length
-      : this._options.labels.length - 1;
+      ? this._options.content.labels.length
+      : this._options.content.labels.length - 1;
     this._labelDistance = this._length/(n/this._options.step);
     this.clearChildren();
-    for (const [i, labelText] of this._options.labels.entries()) {
+    for (const [i, labelText] of this._options.content.labels.entries()) {
       if (i % this._options.step) {
         continue;
       }
@@ -131,15 +132,29 @@ export abstract class TickLabelTier extends Container(View) {
         y: 0,
         pointerEnter: (e) => {
           if (!labelText) return;
-          this.paraview.paraState.settings.chart.isShowPopups
+          if (this._options.content.intervals) {
+            this.paraview.paraState.highlightRange(
+              this._options.content.intervals[i].start,
+              this._options.content.intervals[i].end);
+          }
+          if (this.paraview.paraState.settings.chart.isShowPopups
             && this.paraview.paraState.settings.popup.activation === "onHover"
-            && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(labelText, i) : undefined;
+            && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
+              this.addPopup(labelText, i);
+          }
         },
         pointerLeave: (e) => {
           if (!labelText) return;
-          this.paraview.paraState.settings.chart.isShowPopups
+          if (this._options.content.intervals) {
+            this.paraview.paraState.clearRangeHighlight(
+              this._options.content.intervals[i].start,
+              this._options.content.intervals[i].end);
+          }
+          if (this.paraview.paraState.settings.chart.isShowPopups
             && this.paraview.paraState.settings.popup.activation === "onHover"
-            && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled ? this.paraview.paraState.removePopup(this.id) : undefined;
+            && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
+              this.paraview.paraState.removePopup(this.id);
+          }
         }
       });
       this.append(label);
@@ -273,7 +288,7 @@ export class HorizTickLabelTier extends TickLabelTier {
         // if (width > 800 && this.axis.datatype !== 'string') {
         tickStep++;
         bboxes = origBboxes.filter((bbox, i) => i % tickStep === 0);
-        const newLabelCount = Math.floor(this._options.labels.length/tickStep) + this._options.labels.length % tickStep;
+        const newLabelCount = Math.floor(this._options.content.labels.length/tickStep) + this._options.content.labels.length % tickStep;
         if (!newLabelCount) {
           throw new Error('tick labels will always overlap');
         }
@@ -288,9 +303,9 @@ export class HorizTickLabelTier extends TickLabelTier {
 
   addPopup(text?: string, index?: number) {
     let datapointText = `no text detected`
-    const regFactor = (this._options.labels.length % this.children.length == 0)
-      ? this.children.length / this._options.labels.length
-      : (this.children.length) / (this._options.labels.length + 1)
+    const regFactor = (this._options.content.labels.length % this.children.length == 0)
+      ? this.children.length / this._options.content.labels.length
+      : (this.children.length) / (this._options.content.labels.length + 1)
     let popup = new Popup(this.paraview,
       {
         text: text ?? datapointText,

@@ -316,8 +316,6 @@ export class ParaChart extends ParaComponent {
       this._paraState.clearVisited();
       this._paraState.clearSelected();
       this._paraState.clearAllHighlights();
-      this._paraState.clearAllSequenceHighlights();
-      this._paraState.clearAllSeriesLowlights();
       this._paraState.clearPopups();
       this._paraState.setManifest(loadresult.manifest, loadresult.data);
       this._paraState.dataState = 'complete';

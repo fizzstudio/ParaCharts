@@ -64,7 +64,19 @@
                 },*/
                 () => {
 					text.innerHTML = 'Change manifest';
-					chart.setAttribute('manifest', '/src/demo-data/line-single-manifest-128.json');
+					chart.api.setManifest('/src/demo-data/line-single-manifest-128.json');
+                },
+                () => {
+					text.innerHTML = 'Highlight chart range';
+                    chart.api.highlightRange(0.2, 0.6);
+                },
+                () => {
+					text.innerHTML = 'Highlight chart range again';
+                    chart.api.highlightRange(0.2, 0.6);
+                },
+                () => {
+					text.innerHTML = 'Clear range highlight';
+                    chart.api.clearRangeHighlight(0.2, 0.6);
                 },
                 /*() => {
 					text.innerHTML = 'Highlight points';
