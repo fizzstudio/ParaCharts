@@ -547,14 +547,8 @@ export class ParaView extends ParaComponent {
 
   protected _handleVoicing() {
     if (this._paraState.settings.ui.isVoicingEnabled) {
-      //if (this._hotkeyActions instanceof NormalHotkeyActions) {
       if (!this._paraState.settings.ui.isNarrativeHighlightEnabled) {
-        const msg = ['Self-voicing enabled.'];
-        const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
-        if (lastAnnouncement) {
-          msg.push(lastAnnouncement);
-        }
-        this._paraState.announce(msg);
+        this.ariaLiveRegion.voicing.speak('Self-voicing enabled.', []);
       } else {
         // XXX Would be nice to prefix this with "Narrative Highlight Mode enabled".
         // That would require being able to join a simple text announcement with
@@ -822,7 +816,6 @@ export class ParaView extends ParaComponent {
       renderBefore: this._defsRef.value!.firstChild
     });
   }
-
 
   protected _rootStyle() {
     const style: { [prop: string]: any } = {
