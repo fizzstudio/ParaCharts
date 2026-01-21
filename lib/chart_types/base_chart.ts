@@ -163,7 +163,7 @@ export abstract class BaseChartInfo {
         // So that on the initial transition from auto-narration to manual
         // span navigation, we don't remove any highlights added in manual mode
         if (!this._paraView.paraChart.captionBox.highlightManualOverride) {
-          this._paraState.clearAllHighlights();
+          this._paraState.clearAllDatapointHighlights();
           this._paraState.clearAllSequenceHighlights();
           this._paraState.clearAllSeriesLowlights();
         }

@@ -38,7 +38,7 @@ import { literal } from 'lit/static-html.js';
 import { PlaneModel } from '@fizz/paramodel';
 import { Popup } from '../popup';
 import { type ParaView } from '../../paraview';
-import { PlaneChartInfo } from '../../chart_types';
+import { AxisLabelTier, PlaneChartInfo } from '../../chart_types';
 
 export type AxisOrientation = 'horiz' | 'vert';
 export type AxisCoord = 'x' | 'y';
@@ -71,7 +71,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   protected _tickLabelTiers: TickLabelTier[] = [];
   protected _tickStrip: TickStrip | null = null;
   protected _axisLine!: AxisLine<T>;
-  protected _tickLabelTierValues!: string[][];
+  protected _tickLabelTierValues!: AxisLabelTier[];
   protected _tickStep: number;
 
   protected _paraState: ParaState;
@@ -353,11 +353,11 @@ export class HorizAxis extends Axis<'horiz'> {
         this.paraview,
         this.orientationSettings, {
         orientation: this.orientation,
-        labels: tier,
+        content: tier,
         index: i,
         length: this._width,
         step: this._tickStep,
-        numTicks: this._tickLabelTierValues[0].length,
+        numTicks: this._tickLabelTierValues[0].labels.length,
         isChartIntertick: this._chartInfo.isIntertick,
         datatype: this.datatype,
         isFacetIndep: this._facet.variableType === 'independent'
@@ -377,12 +377,12 @@ export class HorizAxis extends Axis<'horiz'> {
       orientation: this.orientation,
       length: this._width,
       // tickCount: this._labelInfo.labelTiers[0].length,
-      tickCount: this._tickLabelTierValues[0].length,
+      tickCount: this._tickLabelTierValues[0].labels.length,
       isDrawOverhang: this.paraview.paraState.settings.axis.vert.line.isDrawOverhang,
       tickStep: this._tickStep,
       orthoAxisPosition: this.paraview.paraState.settings.axis.vert.position,
       // zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0') - 1
-      zeroIndex: this._tickLabelTierValues[0].findIndex(label => label === '0') - 1,
+      zeroIndex: this._tickLabelTierValues[0].labels.findIndex(label => label === '0') - 1,
       isChartIntertick: this._chartInfo.isIntertick,
       isFacetIndep: this._facet.variableType === 'independent'
     },);
@@ -464,11 +464,11 @@ export class VertAxis extends Axis<'vert'> {
         this.paraview,
         this.orientationSettings, {
         orientation: this.orientation,
-        labels: tier,
+        content: tier,
         index: i,
         length: this._height,
         step: this._tickStep,
-        numTicks: this._tickLabelTierValues[0].length,
+        numTicks: this._tickLabelTierValues[0].labels.length,
         isChartIntertick: this._chartInfo.isIntertick,
         datatype: this.datatype,
         isFacetIndep: this._facet.variableType === 'independent'
@@ -490,13 +490,13 @@ export class VertAxis extends Axis<'vert'> {
       orientation: this.orientation,
       length: this._height,
       // tickCount: this._labelInfo.labelTiers[0].length,
-      tickCount: this._tickLabelTierValues[0].length,
+      tickCount: this._tickLabelTierValues[0].labels.length,
       isDrawOverhang: this.paraview.paraState.settings.axis.horiz.line.isDrawOverhang,
       tickStep: this._tickStep,
       orthoAxisPosition: this.paraview.paraState.settings.axis.horiz.position,
       // XXX could be '0.0' or have a unit, etc.
       // zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0')
-      zeroIndex: this._tickLabelTierValues[0].findIndex(label => label === '0'),
+      zeroIndex: this._tickLabelTierValues[0].labels.findIndex(label => label === '0'),
       isChartIntertick: this._chartInfo.isIntertick,
       isFacetIndep: this._facet.variableType === 'independent'
     });
