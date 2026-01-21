@@ -120,7 +120,7 @@
         "path": "para:preload"
       },
       "settings": {
-        "sonification.isEnabled": true
+        "sonification.isSoniEnabled": true
       }
     }
   ]
