@@ -1,5 +1,5 @@
 /* ParaCharts: Plane Charts
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -59,6 +59,10 @@ export function computeAxisRange(start: number, end: number): Interval {
   };
 }
 
+export interface AxisLabelTier {
+  labels: string[];
+  intervals?: Interval[];
+}
 
 /**
  * Abstract base class for business logic for charts drawn in a 2-D Cartesian coordinate system.
@@ -68,7 +72,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   protected _soniSequenceIndex = 0;
   protected _soniNoteIndex = 0;
   protected _soniSpeedRateIndex = 1;
-    /** X-axis interval, if axis is numeric */
+  /** X-axis interval, if axis is numeric */
   protected _xInterval!: Interval | null;
   /** Y-axis interval, if axis is numeric */
   protected _yInterval!: Interval | null;
@@ -197,33 +201,50 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
    * @param isStagger - Whether to stagger labels between two tiers
    * @returns Array of tiers (each tier being an array of strings)
    */
-  computeAxisLabelTiers(facetKey: string, isStagger: boolean): string[][] {
+  computeAxisLabelTiers(facetKey: string, isStagger: boolean): AxisLabelTier[] {
     const rawVals = this._facetTickLabelValues(facetKey);
     const facet = this._paraState.model!.getFacet(facetKey)!;
     if (facet.datatype === 'date') {
       // XXX HACK: should convert date values to standard string values
       if (rawVals[0][0] === 'Q') {
+        const tier2: string[] = [];
+        const tier2Intervals: Interval[] = [];
+        rawVals.forEach((raw, i) => {
+          const year = raw.split(' ')[1];
+          if (!tier2.includes(year)) {
+            tier2.push(year);
+            tier2Intervals.push({start: i/(rawVals.length - 1), end: 0});
+          } else {
+            tier2Intervals.at(-1)!.end = i/(rawVals.length - 1);
+          }
+        });
         return [
-          rawVals.map(raw => raw.split(' ')[0]),
-          Array.from(new Set(rawVals.map(raw => raw.split(' ')[1]))),
+          { labels: rawVals.map(raw => raw.split(' ')[0]) },
+          { labels: tier2, intervals: tier2Intervals }
         ];
       } else {
-        return [rawVals];
+        return [{ labels: rawVals }];
       }
     } else if (facet.datatype === 'number') {
       const interval = facet.variableType === 'independent'
         ? this._numericXAxisRange(facetKey)
         : this._numericYAxisRange(facetKey);
-      return computeLabels(
+      const computed = computeLabels(
         interval.start, interval.end,
         false, true, isStagger).labelTiers as string[][];
+      const ret: AxisLabelTier[] = [];
+      ret.push({ labels: computed[0] });
+      if (isStagger) {
+        ret.push({ labels: computed[1] });
+      }
+      return ret;
     } else {
       return isStagger
         ? [
-            rawVals.map((label, i) => i % 2 === 0 ? label : ''),
-            rawVals.map((label, i) => i % 2 === 1 ? label : '')
+            { labels: rawVals.map((label, i) => i % 2 === 0 ? label : '') },
+            { labels: rawVals.map((label, i) => i % 2 === 1 ? label : '') }
           ]
-        : [rawVals];
+        : [{ labels: rawVals }];
     }
   }
 

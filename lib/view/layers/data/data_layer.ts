@@ -1,5 +1,5 @@
 /* ParaCharts: Data Layers
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -74,7 +74,7 @@ export abstract class DataLayer extends PlotLayer {
   }
 
   get managedSettingKeys() {
-    return [`type.${this._parent.docView.type}`];
+    return [`type.${this._parent.parent.type}`];
   }
 
   get settings(): DeepReadonly<PlotSettings> {
@@ -303,7 +303,7 @@ export abstract class DataLayer extends PlotLayer {
   // }
 
   focusRingBbox() {
-    const chartInfo = this._parent.docView.chartInfo;
+    const chartInfo = this._parent.parent.chartInfo;
     const cursor = chartInfo.navMap!.cursor;
     if (['series', 'chord', 'datapoint', 'sequence'].includes(cursor.type)) {
       return bboxOfBboxes(...cursor.datapoints.map(dp =>

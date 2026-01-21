@@ -61,12 +61,12 @@ export class AnnotationLayer extends PlotLayer {
 
   renderChildren() {
     if (this.type === 'foreground') {
-      if (this.paraview.paraState.modelTrendLines && this.parent.docView.chartInfo instanceof PlaneChartInfo) {
+      if (this.paraview.paraState.modelTrendLines && this.parent.parent.chartInfo instanceof PlaneChartInfo) {
         this.addGroup('trend-lines', true);
         this.group('trend-lines')!.clearChildren();
         for (const tl of this.paraview.paraState.modelTrendLines) {
           const series = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0];
-          const range = this.parent.docView.chartInfo.yInterval!;
+          const range = this.parent.parent.chartInfo.yInterval!;
           const minValue = range.start ?? Number(this.paraview.paraState.settings.axis.y.minValue)
           const maxValue = range.end ?? Number(this.paraview.paraState.settings.axis.y.maxValue)
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
@@ -91,7 +91,7 @@ export class AnnotationLayer extends PlotLayer {
         }
       }
 
-      if (this.paraview.paraState.userTrendLines && this.parent.docView.chartInfo instanceof PlaneChartInfo) {
+      if (this.paraview.paraState.userTrendLines && this.parent.parent.chartInfo instanceof PlaneChartInfo) {
         this.addGroup('user-trend-lines', true);
         this.group('user-trend-lines')!.clearChildren();
         let tls = structuredClone(this.paraview.paraState.userTrendLines);
@@ -101,7 +101,7 @@ export class AnnotationLayer extends PlotLayer {
         }
         for (const tl of tls) {
           const series = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
-          const range = this.parent.docView.chartInfo.yInterval!;
+          const range = this.parent.parent.chartInfo.yInterval!;
           const minValue = range.start ?? Number(this.paraview.paraState.settings.axis.y.minValue)
           const maxValue = range.end ?? Number(this.paraview.paraState.settings.axis.y.maxValue)
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;

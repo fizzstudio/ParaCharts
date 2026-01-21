@@ -1,5 +1,5 @@
 /* ParaCharts: The Document View
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -214,9 +214,10 @@ export class DocumentView extends Container(View) {
       - (this._titleLabel?.paddedHeight ?? 0)
       - (this._legends.south?.paddedHeight ?? 0);
     this._chartLayers?.remove();
-    this._chartLayers = new PlotLayerManager(this, plotWidth, plotHeight);
-    this._chartLayers.dataLayer.init();
+    this._chartLayers = new PlotLayerManager(this.paraview, plotWidth, plotHeight);
     this.append(this._chartLayers);
+    this._chartLayers.createLayers();
+    this._chartLayers.dataLayer.init();
     this._chartLayers.left = this._vertAxis?.right ?? this._legends.west?.right ?? 0;
     this._chartLayers.bottom = this._horizAxis?.top ?? this._height;
 

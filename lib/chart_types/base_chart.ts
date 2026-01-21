@@ -1,5 +1,5 @@
 /* ParaCharts: Base Chart Info
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -161,7 +161,7 @@ export abstract class BaseChartInfo {
         // So that on the initial transition from auto-narration to manual
         // span navigation, we don't remove any highlights added in manual mode
         if (!this._paraView.paraChart.captionBox.highlightManualOverride) {
-          this._paraState.clearAllHighlights();
+          this._paraState.clearAllDatapointHighlights();
           this._paraState.clearAllSequenceHighlights();
           this._paraState.clearAllSeriesLowlights();
         }

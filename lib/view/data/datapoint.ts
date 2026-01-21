@@ -120,7 +120,7 @@ export class DatapointView extends DataView {
       datapoint: true,
       visited: this.paraview.paraState.isVisited(this.seriesKey, index),
       selected: this.paraview.paraState.isSelected(this.seriesKey, index),
-      highlighted: this.paraview.paraState.isHighlighted(this.seriesKey, index)
+      highlighted: this.paraview.paraState.isDatapointHighlighted(this.seriesKey, index)
     };
   }
 
@@ -290,7 +290,7 @@ export class DatapointView extends DataView {
   protected get symbolScale() {
     if (this.paraview.paraState.isVisited(this.seriesKey, this.index)) {
       return this.paraview.paraState.settings.chart.symbolHighlightScale * this._baseSymbolScale;
-    } else if (this.paraview.paraState.isHighlighted(this.seriesKey, this.index)) {
+    } else if (this.paraview.paraState.isDatapointHighlighted(this.seriesKey, this.index)) {
       return 1; //this.paraview.paraState.settings.chart.symbolHighlightScale;
     } else {
       return this._baseSymbolScale;

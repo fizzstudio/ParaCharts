@@ -75,7 +75,7 @@ export class VennPlotView extends DataLayer {
       Math.exp(alphaLSE * x) + Math.exp(alphaLSE * y)
     );
   }
-  
+
   protected logSumExpMin(x: number, y: number): number {
     return (1.0 / alphaLSE) * Math.log(
       Math.exp(-alphaLSE * x) + Math.exp(-alphaLSE * y)
@@ -103,13 +103,13 @@ export class VennPlotView extends DataLayer {
     );
     return solution.argument;
   }
-  
+
   protected unitVector(n: number, idx: number) {
     let v = Array(n).fill(0);
     v[idx] = 1;
     return v;
   }
-  
+
   protected lineMinimization(f: (x: number[]) => number, x: number[], dir: number[], tol: number = 1e-5, maxIter: number = 50) {
     const phi = (1 + Math.sqrt(5)) / 2;
     let a = -1000, b = 1000;
@@ -185,12 +185,12 @@ export class VennPlotView extends DataLayer {
     }
     return { argument: x, fncvalue: fx };
   }
-  
+
   protected normalize(v: number[]): number[] {
     const norm = Math.sqrt(v.reduce((s, vi) => s + vi * vi, 0));
     return norm > 0 ? v.map(vi => vi / norm) : v;
   }
-  
+
   protected cost2(
     rectangles: Rectangle[],
     positions: number[],
@@ -257,7 +257,7 @@ export class VennPlotView extends DataLayer {
 
     return costVal;
   }
-  
+
   getIntersections(circle1: Circle, circle2: Circle): Point[] {
     const EPSILON = 1e-6;
     const dx = circle2.center.x - circle1.center.x;
@@ -296,7 +296,7 @@ export class VennPlotView extends DataLayer {
       { x: x_pair2, y: y_pair2 },
     ];
   }
-  
+
   protected _completeDatapointLayout(): void {
     super._completeDatapointLayout();
   }
@@ -314,7 +314,7 @@ export class VennPlotView extends DataLayer {
     this._cx = this._width / 2;
     this._cy = this._height / 2;
   }
-  
+
   protected _createDatapoints() {
     const seriesKeys = this.paraview.paraState.model!.seriesKeys;
     for (let idx = 0; idx < seriesKeys.length; idx++) {
@@ -368,7 +368,7 @@ export class VennPlotView extends DataLayer {
       this._createLabels();
     }
   }
-  
+
   protected _createLabels() {
     const seriesKeys = this.paraview.paraState.model!.series.map(s => s.key);
     if (seriesKeys.length !== 2) {
@@ -476,12 +476,12 @@ export class VennPlotView extends DataLayer {
     placeLabels(rectanglesAB, pointsAB, [true, true]);
   }
 
-  
+
   protected _resolveOutsideLabelCollisions() {
   }
 
   focusRingShape(): Shape | null {
-    const chartInfo = this._parent.docView.chartInfo;
+    const chartInfo = this._parent.parent.chartInfo;
     const cursor = chartInfo.navMap!.cursor;
     if (cursor.isNodeType('datapoint')) {
       return this.datapointView(cursor.options.seriesKey, cursor.options.index)!.focusRingShape();

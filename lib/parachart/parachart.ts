@@ -1,5 +1,5 @@
 /* ParaCharts: Accessible Charts
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -44,6 +44,7 @@ import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { SlotLoader } from '../loader/slotloader';
 import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { initParaSummary } from '@fizz/parasummary';
@@ -293,7 +294,8 @@ export class ParaChart extends ParaComponent {
         --summary-marker-size: 1.1rem;
       }
       figure {
-        display: inline grid;
+        display: inline flex;
+        flex-direction: column;
         margin: 0;
       }
     `
@@ -314,8 +316,6 @@ export class ParaChart extends ParaComponent {
       this._paraState.clearVisited();
       this._paraState.clearSelected();
       this._paraState.clearAllHighlights();
-      this._paraState.clearAllSequenceHighlights();
-      this._paraState.clearAllSeriesLowlights();
       this._paraState.clearPopups();
       this._paraState.setManifest(loadresult.manifest, loadresult.data);
       this._paraState.dataState = 'complete';
@@ -371,6 +371,9 @@ export class ParaChart extends ParaComponent {
     const classes = {
       'sr-only': this.headless
     };
+    const cpanelStyles = {
+      'width': `${this._paraState.settings.chart.size.width}px`
+    };
     return html`
       <figure
         class=${classMap(classes)}
@@ -387,6 +390,7 @@ export class ParaChart extends ParaComponent {
           ? html`
             <para-control-panel
               ${ref(this._controlPanelRef)}
+              style=${styleMap(cpanelStyles)}
               .paraChart=${this}
               .paraState=${this._paraState}
             ></para-control-panel>`

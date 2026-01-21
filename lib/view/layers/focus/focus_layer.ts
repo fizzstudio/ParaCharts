@@ -12,7 +12,7 @@ export class FocusLayer extends PlotLayer {
 
   content() {
     const leaf = this._parent.dataLayer.focusLeaf;
-    const ring = this._parent.docView.chartInfo.shouldDrawFocusRing
+    const ring = this._parent.parent.chartInfo.shouldDrawFocusRing
       && (this.paraview.paraState.settings.ui.isLowVisionModeEnabled
         || this.paraview.paraState.settings.ui.isFocusRingEnabled)
       ? new FocusRing(this.paraview, leaf)

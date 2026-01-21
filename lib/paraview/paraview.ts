@@ -1,5 +1,5 @@
 /* ParaCharts: ParaView Chart Views
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -112,6 +112,12 @@ export class ParaView extends ParaComponent {
       }
       #loading-message text {
         fill: white;
+      }
+      [role="graphics-document"] {
+        cursor: var(--chart-cursor);
+      }
+      #chart-layers {
+        cursor: var(--data-cursor);
       }
       .grid-horiz {
         stroke: var(--axis-line-color);
