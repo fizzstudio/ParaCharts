@@ -417,7 +417,7 @@ export abstract class BaseChartInfo {
   async navRunDidEnd(cursor: NavNode) {
     //const seriesKey = cursor.options.seriesKey ?? '';
     if (cursor.isNodeType('top')) {
-      this._paraState.announce(await this._summarizer.getChartSummary());
+      this._paraState.announce(await this._summarizer.getChartSummary(true));
     } else if (cursor.isNodeType('series')) {
       this._paraState.announce(
         await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
