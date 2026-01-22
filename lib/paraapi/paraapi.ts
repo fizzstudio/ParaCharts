@@ -159,7 +159,7 @@ export class ParaAPI {
         _paraChart.controlPanel.annotationPanel.addAnnotation();
       },
       toggleNarrativeHighlightMode() {
-        paraView.startNarrativeHighlightMode();
+        //paraView.startNarrativeHighlightMode();
         self._actions = self._narrativeActions;
         paraState.updateSettings(draft => {
           draft.ui.isNarrativeHighlightEnabled = true; //!draft.ui.isNarrativeHighlightEnabled;

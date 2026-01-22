@@ -70,6 +70,7 @@ export class ParaView extends ParaComponent {
   protected _containerRef = createRef<HTMLDivElement>();
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
+  private _isVoicingAutoEnabled: boolean = false;
   protected log: Logger = getLogger("ParaView");
   clipWidth: number = 1
 
@@ -550,43 +551,34 @@ export class ParaView extends ParaComponent {
       if (!this._paraState.settings.ui.isNarrativeHighlightEnabled) {
         this.ariaLiveRegion.voicing.speak('Self-voicing enabled.', []);
       } else {
-        // XXX Would be nice to prefix this with "Narrative Highlight Mode enabled".
-        // That would require being able to join a simple text announcement with
-        // a HighlightedSummary
+        if (this._isVoicingAutoEnabled) {
+          this.ariaLiveRegion.voicing.speak('Tour Guide enabled.', []);
+          //this._isVoicingAutoEnabled = false;
+        }
         (async () => {
-          this._paraState.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
-        })();
+          const summary = await this._documentView!.chartInfo.summarizer.getChartSummary();
+          setTimeout(() => {
+            this._paraState.announce(summary);
+          }, 10000); 
+        })();  
       }
     } else {
       this.ariaLiveRegion.voicing.shutUp();
-      // Voicing is disabled at this point, so manually push this message through
-      this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
+      if(this._isVoicingAutoEnabled) {
+        this.ariaLiveRegion.voicing.speak('Tour Guide disabled.', []);
+        //this._isVoicingAutoEnabled = false;
+      }
+      else {
+        this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
+      }
     }
   }
 
   protected _handleNarrativeHighlight() {
     if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
-      if (this._paraState.settings.ui.isVoicingEnabled) {
+      if (!this._paraState.settings.ui.isVoicingEnabled) {
+        this._isVoicingAutoEnabled = true;
         this.startNarrativeHighlightMode();
-        const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
-        const msg = ['Narrative Highlights Mode enabled.'];
-        if (lastAnnouncement) msg.push(lastAnnouncement);
-        this._paraState.announce(msg);
-        (async () => {
-          this._paraState.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
-        })();
-      } else {
-        this._paraState.updateSettings(draft => {
-          draft.ui.isVoicingEnabled = true;
-        });
-        this.startNarrativeHighlightMode();
-        const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
-        const msg = ['Narrative Highlights Mode enabled.'];
-        if (lastAnnouncement) msg.push(lastAnnouncement);
-        this._paraState.announce(msg);
-        (async () => {
-          this._paraState.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
-        })();
       }
       this._paraState.updateSettings(draft => {
         this._modeSaved.set(
@@ -596,16 +588,13 @@ export class ParaView extends ParaComponent {
       });
     } else {
       // Narrative highlights turned OFF
+      this._isVoicingAutoEnabled = true;
       this.endNarrativeHighlightMode();
-
-      // Disable self-voicing as well
       this._paraState.updateSettings(draft => {
-        draft.ui.isVoicingEnabled = false;
         draft.type.line.isTrendNavigationModeEnabled = this._modeSaved.get(
           'type.line.isTrendNavigationModeEnabled');
         this._modeSaved.delete('type.line.isTrendNavigationModeEnabled');
       });
-      this._paraState.announce(['Narrative Highlight Mode disabled.']);
     }
   }
 
@@ -614,7 +603,6 @@ export class ParaView extends ParaComponent {
   }
 
   startNarrativeHighlightMode() {
-    //this._hotkeyActions = new NarrativeHighlightHotkeyActions(this);
     this._paraState.updateSettings(draft => {
       draft.ui.isVoicingEnabled = true;
     });
@@ -625,7 +613,6 @@ export class ParaView extends ParaComponent {
       draft.ui.isVoicingEnabled = false;
     });
   }
-
 
   /*protected updated(changedProperties: PropertyValues) {
     this.log.info('canvas updated');
