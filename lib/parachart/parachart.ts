@@ -201,7 +201,7 @@ export class ParaChart extends ParaComponent {
   }
 
   showAriaLiveHistory() {
-    this.paraView.showAriaLiveHistory;
+    this.paraView.showAriaLiveHistory();
   }
 
   connectedCallback() {
