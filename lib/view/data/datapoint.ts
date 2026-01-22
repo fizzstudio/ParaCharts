@@ -14,6 +14,8 @@ import { Label } from '../label';
 import { Popup, ShapeTypes } from '../popup';
 import { PastryPlotView, RadialDatapointParams } from '../layers';
 
+const SELECTION_MARKER_SIZE = 40;
+
 /**
  * Mapping of datapoint properties to values.
  */
@@ -86,11 +88,12 @@ export class DatapointView extends DataView {
   }
 
   get selectedMarker(): Shape {
+    const w = SELECTION_MARKER_SIZE;
     return new RectShape(this.paraview, {
-      width: this._width / 2,
-      height: this._width / 2,
-      x: this._x - this._width / 4,
-      y: this._y - this._width / 4,
+      width: w / 2,
+      height: w / 2,
+      x: this._x - w / 4,
+      y: this._y - w / 4,
       fill: 'none',
       stroke: 'black',
       strokeWidth: 2,
