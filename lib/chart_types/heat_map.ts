@@ -89,9 +89,11 @@ export class HeatMapInfo extends PlaneChartInfo {
     return 'FIXME';
   }
 
-  async navRunDidEnd(cursor: NavNode) {
+  async navRunDidEnd(cursor: NavNode, quiet = false) {
     if (cursor.isNodeType('datapoint')) {
-      this._paraState.announce(this._datapointSummary(cursor.options.index));
+      if (!quiet) {
+        this._paraState.announce(this._datapointSummary(cursor.options.index));
+      }
     }
     //Sam: Most stuff here (summaries, sparkbraille, sonification) is not implemented yet for heatmaps,
     // I'm overriding to prevent errors, uncomment this as they get added

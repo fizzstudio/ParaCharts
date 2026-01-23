@@ -143,7 +143,7 @@ export class NavMap {
     this._layers.set(layer.id, layer);
   }
 
-  async visitDatapoints() {
+  async visitDatapoints(quiet = false) {
     this._paraState.visit(this.cursor.datapoints);
     if (this._runTimer) {
       clearTimeout(this._runTimer);
@@ -152,7 +152,7 @@ export class NavMap {
     }
     this._runTimer = setTimeout(() => {
       this._runTimer = null;
-      this._chart.navRunDidEnd(this.cursor);
+      this._chart.navRunDidEnd(this.cursor, quiet);
     }, this._paraState.settings.ui.navRunTimeoutMs);
     //this._chart.navCursorDidChange(this.cursor);
   }
@@ -169,12 +169,12 @@ export class NavMap {
     return undefined;
   }
 
-  goTo<T extends NavNodeType>(type: T, options: Readonly<NavNodeOptionsType<T>>) {
+  goTo<T extends NavNodeType>(type: T, options: Readonly<NavNodeOptionsType<T>>, quiet = false) {
     const node = this.node(type, options);
     if (node) {
       node.layer.cursor = node;
       this._currentLayer = node.layer.id;
-      this.visitDatapoints();
+      this.visitDatapoints(quiet);
     } else {
       throw new Error('nav node not found');
     }
