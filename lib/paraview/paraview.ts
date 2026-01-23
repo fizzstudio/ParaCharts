@@ -68,6 +68,7 @@ export class ParaView extends ParaComponent {
   protected _dataspaceRef = createRef<SVGGElement>();
   protected _documentView?: DocumentView;
   protected _containerRef = createRef<HTMLDivElement>();
+  private _isVoicingAutoEnabled: boolean = false;
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
   private _currentVoicingOwner: VoicingOwner = 'none';
