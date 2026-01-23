@@ -70,7 +70,7 @@ export class ParaView extends ParaComponent {
   protected _containerRef = createRef<HTMLDivElement>();
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
-  private _isVoicingAutoEnabled: boolean = false;
+  private _currentVoicingOwner: VoicingOwner = 'none';
   protected log: Logger = getLogger("ParaView");
   clipWidth: number = 1
 
@@ -551,19 +551,13 @@ export class ParaView extends ParaComponent {
       if (!this._paraState.settings.ui.isNarrativeHighlightEnabled) {
         this.ariaLiveRegion.voicing.speak('Self-voicing enabled.', []);
       } else {
-        if (this._isVoicingAutoEnabled) {
-          this.ariaLiveRegion.voicing.speak('Tour Guide enabled.', []);
-          //this._isVoicingAutoEnabled = false;
-        }
         (async () => {
-          const summary = await this._documentView!.chartInfo.summarizer.getChartSummary();
-          setTimeout(() => {
-            this._paraState.announce(summary);
-          }, 10000); 
-        })();  
+          this._paraState.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
+        })();
       }
     } else {
       this.ariaLiveRegion.voicing.shutUp();
+      console.log("What is it: ", this._isVoicingAutoEnabled);
       if(this._isVoicingAutoEnabled) {
         this.ariaLiveRegion.voicing.speak('Tour Guide disabled.', []);
         //this._isVoicingAutoEnabled = false;
@@ -577,7 +571,6 @@ export class ParaView extends ParaComponent {
   protected _handleNarrativeHighlight() {
     if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
       if (!this._paraState.settings.ui.isVoicingEnabled) {
-        this._isVoicingAutoEnabled = true;
         this.startNarrativeHighlightMode();
       }
       this._paraState.updateSettings(draft => {
