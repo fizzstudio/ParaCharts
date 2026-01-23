@@ -174,7 +174,7 @@ export class ScatterChartInfo extends PointChartInfo {
     return this._clustering!.findIndex(cluster => cluster.dataPointIDs.includes(datapointIndex));
   }
 
-  async navRunDidEnd(cursor: NavNode): Promise<void> {
+  async navRunDidEnd(cursor: NavNode, quiet = false): Promise<void> {
     if (!this._clustering) return;
     if (cursor.isNodeType('cluster')) {
       this._currentCluster = cursor.options.clustering.id;
@@ -185,6 +185,6 @@ export class ScatterChartInfo extends PointChartInfo {
     }
     // the nav run timeout may end AFTER the latest render
     this._paraView.requestUpdate();
-    super.navRunDidEnd(cursor)
+    super.navRunDidEnd(cursor, quiet)
   }
 }

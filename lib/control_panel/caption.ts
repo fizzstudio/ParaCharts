@@ -228,7 +228,9 @@ export class ParaCaptionBox extends ParaComponent {
               || this.parachart.isControlPanelOpen
               ? html`
                 <button
-                  @click=${() => this.parachart.showAriaLiveHistory()}
+                  @click=${() => {
+                    this.parachart.showAriaLiveHistory();
+                  }}
                 >
                   History
                 </button>`

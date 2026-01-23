@@ -221,10 +221,12 @@ export class PointerEventManager {
         const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointViewForId(id)!;
         // this._paraView.paraChart.command('click', [datapointView.seriesKey, datapointView.index]);
         const chartInfo = this._paraView.documentView!.chartInfo;
+        // Set quiet = true so that the visit announcement doesn't overwrite
+        // the selection announcement
         chartInfo.navMap!.goTo(chartInfo.navDatapointType, {
           seriesKey: datapointView.seriesKey,
           index: datapointView.index
-        });
+        }, true);
         this._paraView.documentView!.chartInfo.selectCurrent(!!isAdd);
 
         // TODO: remove all element selection code, since it's extraneous to chart datapoint selection
