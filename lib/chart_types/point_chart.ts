@@ -1,5 +1,5 @@
 /* ParaCharts: Point Chart Info
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { PlaneChartInfo } from './plane_chart';
 import { AxisInfo } from '../common/axisinfo';
-import { type ParaStore } from '../store';
+import { type ParaState } from '../state';
 import { type ParaView } from '../paraview';
 
 import { type ChartType } from '@fizz/paramanifest';
@@ -36,15 +36,15 @@ export abstract class PointChartInfo extends PlaneChartInfo {
 
   protected _init(): void {
     super._init();
-    // this._axisInfo = new AxisInfo(this._store, {
-    //   yValues: this._store.model!.allFacetValues('y')!.map((y) => y.value as number)
+    // this._axisInfo = new AxisInfo(this._paraState, {
+    //   yValues: this._paraState.model!.allFacetValues('y')!.map((y) => y.value as number)
     // });
   }
 
   seriesInNavOrder(): Series[] {
-    const depFacet = this._store.model!.dependentFacetKeys[0];
+    const depFacet = this._paraState.model!.dependentFacetKeys[0];
     // Sort by value of first datapoint from greatest to least
-    return this._store.model!.series.toSorted((a, b) =>
+    return this._paraState.model!.series.toSorted((a, b) =>
       b.datapoints[0].facetValueNumericized(depFacet)! -
       a.datapoints[0].facetValueNumericized(depFacet)!);
   }

@@ -1,5 +1,5 @@
-/* ParaCharts: ParaStore Data Store
-Copyright (C) 2025 Fizz Studios
+/* ParaCharts: ParaState Data Store
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -124,7 +124,7 @@ export interface SparkBrailleInfo {
   isBar?: boolean;
 }
 
-export interface StoreCallbacks {
+export interface ParaStateCallbacks {
   onUpdate?: () => void;
   onNotice?: (type: string, data: any) => void;
   onSettingChange?: (path: string, oldValue?: Setting, newValue?: Setting) => void;
@@ -164,7 +164,7 @@ export function makeSequenceId(seriesKey: string, index1: number, index2: number
   return `${seriesKey}-${index1}-${index2}`;
 }
 
-export class ParaStore extends State {
+export class ParaState extends State {
 
   readonly symbols = new DataSymbols();
 
@@ -216,8 +216,8 @@ export class ParaStore extends State {
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected _annotID: number = 0;
-  protected log: Logger = getLogger("ParaStore");
-  protected callbacks: StoreCallbacks = {};
+  protected log: Logger = getLogger("ParaState");
+  protected callbacks: ParaStateCallbacks = {};
 
   public idList: Record<string, boolean> = {};
 
@@ -229,7 +229,6 @@ export class ParaStore extends State {
   ) {
     super();
     this._createSettings();
-    this.subscribe((key, value) => this._propertyChanged(key, value));
     this._colors = new Colors(this);
     this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
     this._pairAnalyzerConstructor = pairAnalyzerConstructor;
@@ -298,7 +297,7 @@ export class ParaStore extends State {
     this.settings = hydratedSettings as Settings;
   }
 
-  registerCallbacks(callbacks: StoreCallbacks) {
+  registerCallbacks(callbacks: ParaStateCallbacks) {
     this.callbacks = { ...this.callbacks, ...callbacks };
   }
 
@@ -383,14 +382,6 @@ export class ParaStore extends State {
           ...this.seriesAnalyses
         };
       });
-    }
-  }
-
-  protected _propertyChanged(key: string, value: any) {
-    if (key === 'dataState') {
-      if (value === 'pending') {
-
-      }
     }
   }
 
@@ -614,23 +605,25 @@ export class ParaStore extends State {
     return this._highlightedDatapoints;
   }
 
-  highlight(seriesKey: string, index: number) {
-    this._highlightedDatapoints.add(makeDatapointId(seriesKey, index));
-    this.requestUpdate();
+  highlightDatapoint(seriesKey: string, index: number) {
+    this._highlightedDatapoints = new Set([
+      ...this._highlightedDatapoints.values(),
+      makeDatapointId(seriesKey, index)
+    ]);
   }
 
-  clearHighlight(seriesKey: string, index: number) {
-    this._highlightedDatapoints.delete(makeDatapointId(seriesKey, index));
-    this.requestUpdate();
+  clearDatapointHighlight(seriesKey: string, index: number) {
+    this._highlightedDatapoints = new Set([
+      ...this._highlightedDatapoints.values().filter(id => id !== makeDatapointId(seriesKey, index))
+    ]);
   }
 
-  isHighlighted(seriesKey: string, index: number): boolean {
+  isDatapointHighlighted(seriesKey: string, index: number): boolean {
     return this._highlightedDatapoints.has(makeDatapointId(seriesKey, index));
   }
 
-  clearAllHighlights() {
-    this._highlightedDatapoints.clear();
-    this.requestUpdate();
+  clearAllDatapointHighlights() {
+    this._highlightedDatapoints = new Set();
   }
 
   get highlightedSequences() {
@@ -638,18 +631,27 @@ export class ParaStore extends State {
   }
 
   highlightSequence(seriesKey: string, index1: number, index2: number) {
-    this._highlightedSequences.add(makeSequenceId(seriesKey, index1, index2));
-    this.requestUpdate();
+    this._highlightedSequences = new Set([
+      ...this._highlightedSequences.values(),
+      makeSequenceId(seriesKey, index1, index2)
+    ]);
   }
 
   clearSequenceHighlight(seriesKey: string, index1: number, index2: number) {
-    this._highlightedSequences.delete(makeSequenceId(seriesKey, index1, index2));
-    this.requestUpdate();
+    this._highlightedSequences = new Set([
+      ...this._highlightedSequences.values().filter(id => id !== makeSequenceId(seriesKey, index1, index2))
+    ]);
   }
 
   clearAllSequenceHighlights() {
-    this._highlightedSequences.clear();
-    this.requestUpdate();
+    this._highlightedSequences = new Set();
+  }
+
+  clearAllHighlights() {
+    this.clearAllDatapointHighlights();
+    this.clearAllSequenceHighlights();
+    this.clearAllRangeHighlights();
+    this.clearAllSeriesLowlights();
   }
 
   get selectedDatapoints() {
@@ -820,7 +822,7 @@ export class ParaStore extends State {
     const length = this.model!.series[0].length - 1;
     let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i]);
     for (let sequence of relevantSequences!) {
-      this.unhighlightRange(sequence.start / length, (sequence.end - 1) / length);
+      this.clearRangeHighlight(sequence.start / length, (sequence.end - 1) / length);
     }
 
     if (seriesKey !== null) {
@@ -860,18 +862,24 @@ export class ParaStore extends State {
   highlightRange(startPortion: number, endPortion: number) {
     if (this._rangeHighlights.find(rhl =>
       rhl.startPortion === startPortion && rhl.endPortion === endPortion)) {
-      throw new Error('range already highlighted');
+      this.log.warn(`attempting to highlight already highlighted range: ${[startPortion, endPortion]}`);
+      return;
     }
     this._rangeHighlights = [...this._rangeHighlights, { startPortion, endPortion }];
   }
 
-  unhighlightRange(startPortion: number, endPortion: number) {
+  clearRangeHighlight(startPortion: number, endPortion: number) {
     const index = this._rangeHighlights.findIndex(rhl =>
       rhl.startPortion === startPortion && rhl.endPortion === endPortion);
     if (index === -1) {
-      throw new Error('range not highlighted');
+      this.log.warn(`attempting to unhighlight unhighlighted already range: ${[startPortion, endPortion]}`);
+      return;
     }
     this._rangeHighlights = this._rangeHighlights.toSpliced(index, 1);
+  }
+
+  clearAllRangeHighlights() {
+    this._rangeHighlights = [];
   }
 
   getModelCsv() {

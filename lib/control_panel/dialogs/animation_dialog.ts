@@ -39,13 +39,13 @@ export class AnimationDialog extends ParaComponent {
     // animationOrigin: AnimationOrigin;
     // animationOriginValue: number;
 
-    // this._store.settingControls.add({
+    // this._paraState.settingControls.add({
     //   type: 'checkbox',
     //   key: 'animation.isAnimationEnabled',
     //   label: 'Animation enabled',
     //   parentView: 'controlPanel.tabs.controls.dialog.animation',
     // });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'radio',
       key: 'animation.animationType',
       label: 'Animation type',
@@ -62,7 +62,7 @@ export class AnimationDialog extends ParaComponent {
       },
       parentView: 'controlPanel.tabs.controls.dialog.animation'
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'textfield',
       key: 'animation.animateRevealTimeMs',
       label: 'Animation rate',
@@ -73,7 +73,7 @@ export class AnimationDialog extends ParaComponent {
       },
       parentView: 'controlPanel.tabs.controls.dialog.animation',
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'radio',
       key: 'animation.animationOrigin',
       label: 'Animation origin',
@@ -97,7 +97,7 @@ export class AnimationDialog extends ParaComponent {
       parentView: 'controlPanel.tabs.controls.dialog.animation'
     });
 
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'textfield',
       key: 'animation.animationOriginValue',
       label: 'Animation origin value',
@@ -118,7 +118,7 @@ export class AnimationDialog extends ParaComponent {
         .buttons=${[{ tag: 'cancel', text: this.btnText }]}
       >
         <div id="animation-controls">
-          ${this._store.settingControls.getContent('controlPanel.tabs.controls.dialog.animation')}
+          ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.animation')}
         </div>
       </fizz-dialog>
     `;

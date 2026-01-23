@@ -1,5 +1,5 @@
 /* ParaCharts: Line Chart Info
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -16,10 +16,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
 import { PointChartInfo } from './point_chart';
-import { datapointIdToCursor, type ParaStore } from '../store';
+import { datapointIdToCursor, type ParaState } from '../state';
 import { type ParaView } from '../paraview';
-import { type LineSettings, type DeepReadonly, type Setting } from '../store/settings_types';
-import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../store/query_utils';
+import { type LineSettings, type DeepReadonly, type Setting } from '../state/settings_types';
+import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state/query_utils';
 
 import { interpolate } from '@fizz/templum';
 
@@ -41,18 +41,18 @@ export class LineChartInfo extends PointChartInfo {
   protected _addSettingControls(): void {
     super._addSettingControls();
     // XXX only do this if type === 'line'
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'textfield',
       key: 'type.line.lineWidth',
       label: 'Line width',
       options: {
         inputType: 'number',
         min: 1,
-        max: this._store.settings.type.line.lineWidthMax as number
+        max: this._paraState.settings.type.line.lineWidthMax as number
       },
       parentView: 'controlPanel.tabs.chart.chart',
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'chart.isDrawSymbols',
       label: 'Show symbols',
@@ -90,15 +90,15 @@ export class LineChartInfo extends PointChartInfo {
   }
 
   legend() {
-    const model = this._store.model!;
+    const model = this._paraState.model!;
     const seriesKeys = [...model.seriesKeys];
-    if (this._store.settings.legend.itemOrder === 'alphabetical') {
+    if (this._paraState.settings.legend.itemOrder === 'alphabetical') {
       seriesKeys.sort();
     }
     return seriesKeys.map(key => ({
       label: model.atKey(key)!.getLabel(),
       seriesKey: key,
-      color: this._store.seriesProperties!.properties(key).color
+      color: this._paraState.seriesProperties!.properties(key).color
     }));
   }
 
@@ -111,7 +111,7 @@ export class LineChartInfo extends PointChartInfo {
     const queriedNode = this._navMap!.cursor;
 
     if (queriedNode.isNodeType('top')) {
-      msgArray.push(`Displaying Chart: ${this._store.title}`);
+      msgArray.push(`Displaying Chart: ${this._paraState.title}`);
     } else if (queriedNode.isNodeType('series')) {
       /*
       if (e.options!.isChordMode) {
@@ -121,7 +121,7 @@ export class LineChartInfo extends PointChartInfo {
         msgArray = this.describeChord(visitedDatapoints);
       } */
       const seriesKey = queriedNode.options.seriesKey;
-      const series = this._store.model!.atKey(seriesKey)!;
+      const series = this._paraState.model!.atKey(seriesKey)!;
       const datapointCount = series.length;
       const seriesLabel = series.getLabel();
       msgArray.push(interpolate(
@@ -140,11 +140,11 @@ export class LineChartInfo extends PointChartInfo {
         msgArray = this.describeChord(visitedDatapoints);
       }
         */
-      const selectedDatapoints = this._store.selectedDatapoints;
+      const selectedDatapoints = this._paraState.selectedDatapoints;
       //const visitedDatapoint = queriedNode.datapointViews[0];
       const seriesKey = queriedNode.options.seriesKey;
       const index = queriedNode.options.index;
-      const series = this._store.model!.atKey(seriesKey)!;
+      const series = this._paraState.model!.atKey(seriesKey)!;
       const datapoint = series.datapoints[index];
       const seriesLabel = series.getLabel();
       const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
@@ -154,7 +154,7 @@ export class LineChartInfo extends PointChartInfo {
           seriesLabel,
           datapointXY: formatXYDatapoint(datapoint, 'raw'),
           datapointIndex: queriedNode.options.index + 1,
-          datapointCount: this._store.model!.atKey(seriesKey)!.length
+          datapointCount: this._paraState.model!.atKey(seriesKey)!.length
         }
       ));
 
@@ -172,19 +172,19 @@ export class LineChartInfo extends PointChartInfo {
         msgArray.push(...selectionMsgArray);
       } else {
         // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
-        const datapointMsg = describeAdjacentDatapoints(this._store.model!, datapointView);
+        const datapointMsg = describeAdjacentDatapoints(this._paraState.model!, datapointView);
         msgArray.push(datapointMsg);
       }
 
       // also add the high or low indicators
       const minMaxMsgArray = getDatapointMinMax(
-        this._store.model!,
+        this._paraState.model!,
         datapoint.facetValueAsNumber('y')!,
         seriesKey
       );
       msgArray.push(...minMaxMsgArray);
     }
-    this._store.announce(msgArray);
+    this._paraState.announce(msgArray);
   }
 
 }

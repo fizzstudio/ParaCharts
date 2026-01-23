@@ -1,5 +1,5 @@
 /* ParaCharts: Labels
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -25,7 +25,7 @@ import { generateUniqueId, fixed } from '../common/utils';
 import { ParaView } from '../paraview';
 import { SVGNS } from '../common/constants';
 import { Vec2 } from '../common/vector';
-import { Setting } from '../store';
+import { Setting } from '../state';
 
 export type LabelTextAnchor = 'start' | 'middle' | 'end';
 
@@ -143,7 +143,7 @@ export class Label extends View {
   }
 
   protected _createId() {
-    return this.options.id || generateUniqueId(this._text, this.paraview.store);
+    return this.options.id || generateUniqueId(this._text, this.paraview.paraState);
   }
 
   get el() {
@@ -255,7 +255,7 @@ export class Label extends View {
     this.paraview.root!.append(text);
 
     const canvasRect = this.paraview.root?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0);
-    const clientRect = this._angle || !this.paraview.store.settings.ui.isFullscreenEnabled ?
+    const clientRect = this._angle || !this.paraview.paraState.settings.ui.isFullscreenEnabled ?
       text.getBoundingClientRect() :
       text.getBBox()
 
@@ -297,7 +297,7 @@ export class Label extends View {
         const oldContent = tspan.textContent;
         if (wrapMode) {
           tspan.textContent += ' ' + tok;
-          const rect = this.paraview.store.settings.ui.isFullscreenEnabled
+          const rect = this.paraview.paraState.settings.ui.isFullscreenEnabled
             ? tspan.getBBox()
             : tspan.getBoundingClientRect();
           if (Math.max(rect.height, rect.width) >= this.options.wrapWidth!) {
@@ -319,7 +319,7 @@ export class Label extends View {
         }
       }
 
-      const clientRect = this.paraview.store.settings.ui.isFullscreenEnabled
+      const clientRect = this.paraview.paraState.settings.ui.isFullscreenEnabled
         ? text.getBBox()
         : text.getBoundingClientRect();
       width = clientRect.width;

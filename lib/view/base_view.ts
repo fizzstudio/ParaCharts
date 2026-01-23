@@ -1,5 +1,5 @@
 /* ParaCharts: Base Views
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -19,7 +19,7 @@ import { svg as staticSvg, StaticValue } from 'lit/static-html.js';
 import { ref } from 'lit/directives/ref.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
-import { type Setting } from '../store';
+import { type Setting } from '../state';
 import { type Shape } from './shape/shape';
 import { Logger, getLogger } from '@fizz/logger';
 

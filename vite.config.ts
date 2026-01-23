@@ -48,7 +48,7 @@ export default defineConfig({
         test: {
           name: 'unit',
           include: ['src/tests/unit/**/*.test.ts'],
-          environment: 'node'
+          environment: 'happy-dom'
         }
       },
 

@@ -6,7 +6,7 @@ import {
   type VennSettings,
   type DeepReadonly,
   Setting,
-} from '../../../../store';
+} from '../../../../state';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type ParaView } from '../../../../paraview';
 import { type Shape, CircleShape, ArcShape } from '../../../shape';
@@ -317,9 +317,9 @@ export class VennPlotView extends DataLayer {
   }
 
   protected _createDatapoints() {
-    const seriesKeys = this.paraview.store.model!.seriesKeys;
+    const seriesKeys = this.paraview.paraState.model!.seriesKeys;
     for (let idx = 0; idx < seriesKeys.length; idx++) {
-      const series = this.paraview.store.model!.series.find(
+      const series = this.paraview.paraState.model!.series.find(
         s => s.key === seriesKeys[idx]
       );
       if (!series) continue;
@@ -368,7 +368,7 @@ export class VennPlotView extends DataLayer {
   }
 
   protected _createLabels() {
-    const seriesKeys = this.paraview.store.model!.series.map(s => s.key);
+    const seriesKeys = this.paraview.paraState.model!.series.map(s => s.key);
     if (seriesKeys.length !== 2) {
       throw new Error("Expected exactly two series");
     }
@@ -383,7 +383,7 @@ export class VennPlotView extends DataLayer {
     const pointsAB: Datapoint[] = [];
 
     const allDatapoints: Datapoint[] = [];
-    for (const series of this.paraview.store.model!.series) {
+    for (const series of this.paraview.paraState.model!.series) {
       allDatapoints.push(...series.datapoints);
     }
 
@@ -479,7 +479,7 @@ export class VennPlotView extends DataLayer {
   }
 
   focusRingShape(): Shape | null {
-    const chartInfo = this._parent.docView.chartInfo;
+    const chartInfo = this._parent.parent.chartInfo;
     const cursor = chartInfo.navMap!.cursor;
     if (cursor.isNodeType('datapoint')) {
       return this.datapointView(cursor.options.seriesKey, cursor.options.index)!.focusRingShape();

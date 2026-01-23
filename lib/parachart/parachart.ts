@@ -1,5 +1,5 @@
 /* ParaCharts: Accessible Charts
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -17,17 +17,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest'
-import { DeepReadonly, Settings, SettingsInput, type Setting } from '../store/settings_types';
-import { SettingsManager } from '../store';
+import { DeepReadonly, Settings, SettingsInput, type Setting } from '../state/settings_types';
+import { SettingsManager } from '../state';
 import '../paraview';
 import '../control_panel';
 import '../control_panel/caption';
 import { type ParaCaptionBox } from '../control_panel/caption';
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
-import { ParaStore } from '../store';
+import { ParaState } from '../state';
 import { ParaLoader, type SourceKind } from '../loader/paraloader';
-import { CustomPropertyLoader } from '../store/custom_property_loader';
+import { CustomPropertyLoader } from '../state/custom_property_loader';
 import { styles } from '../view/styles';
 import '../components/aria_live';
 import { StyleManager } from './style_manager';
@@ -44,6 +44,7 @@ import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { SlotLoader } from '../loader/slotloader';
 import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { initParaSummary } from '@fizz/parasummary';
@@ -89,22 +90,22 @@ export class ParaChart extends ParaComponent {
     const customPropLoader = new CustomPropertyLoader();
     const cssProps = customPropLoader.processProperties();
     // also creates the state controller
-    this.store = new ParaStore(
+    this.paraState = new ParaState(
       // XXX config won't get set until connectedCallback()
       Object.assign(cssProps, this.config),
       // this._suppleteSettingsWith,
       seriesAnalyzerConstructor,
       pairAnalyzerConstructor
     );
-    this.store.registerCallbacks({
+    this.paraState.registerCallbacks({
       onUpdate: () => this._paraViewRef.value?.requestUpdate(),
       onNotice: (key, value) => this.postNotice(key, value),
       onSettingChange: (path, oldVal, newVal) => this.settingDidChange(path, oldVal, newVal)
     });
     this.captionBox = document.createElement('para-caption-box');
-    this.captionBox.store = this._store;
+    this.captionBox.paraState = this._paraState;
     this.captionBox.parachart = this;
-    customPropLoader.store = this.store;
+    customPropLoader.paraState = this.paraState;
     customPropLoader.registerColors();
     customPropLoader.registerSymbols();
 
@@ -129,7 +130,7 @@ export class ParaChart extends ParaComponent {
           this.log.info(`loading from slot`);
           const table = this.getElementsByTagName("table")[0];
           const manifest = this.getElementsByClassName("manifest")[0] as HTMLElement;
-          this._store.dataState = 'pending';
+          this._paraState.dataState = 'pending';
           if (table) {
             const loadresult = await this._slotLoader.findManifest(
               [table, manifest],
@@ -138,20 +139,20 @@ export class ParaChart extends ParaComponent {
             )
             this.log.info('loaded manifest')
             if (loadresult.result === 'success') {
-              this.store.setManifest(loadresult.manifest!);
-              this._store.dataState = 'complete';
+              this.paraState.setManifest(loadresult.manifest!);
+              this._paraState.dataState = 'complete';
               this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
               this._paraAPI = new ParaAPI(this);
               this._loaderResolver!();
             } else {
               //this.log.error(loadresult.error);
-              this._store.dataState = 'error';
+              this._paraState.dataState = 'error';
             }
           }
         }
           else {
             this.log.info("No datatable in slot")
-            this._store.dataState = 'error'
+            this._paraState.dataState = 'error'
           }
       });
     });
@@ -200,12 +201,12 @@ export class ParaChart extends ParaComponent {
   }
 
   showAriaLiveHistory() {
-    this.paraView.showAriaLiveHistory;
+    this.paraView.showAriaLiveHistory();
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this.isControlPanelOpen = this._store.settings.controlPanel.isControlPanelDefaultOpen;
+    this.isControlPanelOpen = this._paraState.settings.controlPanel.isControlPanelDefaultOpen;
 
     this._styleManager = new StyleManager(this.shadowRoot!.adoptedStyleSheets[0]);
     this._styleManager.set(':host', {
@@ -218,8 +219,8 @@ export class ParaChart extends ParaComponent {
       '--theme-contrast-color': 'white',
       '--fizz-theme-color': 'var(--paracharts-theme-color, navy)',
       '--fizz-theme-color-light': 'var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%))',
-      '--visited-color': () => this._store.colors.colorValue('visit'),
-      '--highlighted-color': () => this._store.colors.colorValue('highlight'),
+      '--visited-color': () => this._paraState.colors.colorValue('visit'),
+      '--highlighted-color': () => this._paraState.colors.colorValue('highlight'),
       '--visited-stroke-width': () =>
         this._paraViewRef.value?.documentView?.chartLayers.dataLayer.visitedStrokeWidth ?? 0,
       '--selected-color': 'var(--label-color)',
@@ -229,34 +230,34 @@ export class ParaChart extends ParaComponent {
       '--data-cursor': 'cell',
       '--focus-shadow-color': 'gray',
       '--focus-shadow': 'drop-shadow(0px 0px 4px var(--focus-shadow-color))',
-      '--caption-border': () => this._store.settings.controlPanel.caption.hasBorder
+      '--caption-border': () => this._paraState.settings.controlPanel.caption.hasBorder
         ? 'solid 2px var(--theme-color)'
         : 'none',
       '--caption-grid-template-columns': () =>
-        this._store.settings.controlPanel.isExplorationBarVisible
-        && this._store.settings.controlPanel.isCaptionVisible
-        && this._store.settings.controlPanel.caption.isExplorationBarBeside
+        this._paraState.settings.controlPanel.isExplorationBarVisible
+        && this._paraState.settings.controlPanel.isCaptionVisible
+        && this._paraState.settings.controlPanel.caption.isExplorationBarBeside
           ? '2fr 1fr' //'auto auto'
           : '1fr',
-      '--exploration-bar-display': () => this._store.settings.controlPanel.isExplorationBarVisible
+      '--exploration-bar-display': () => this._paraState.settings.controlPanel.isExplorationBarVisible
         ? 'flex'
         : 'none',
-      '--chart-font-scale': () => this._store.settings.chart.fontScale,
-      '--chart-title-font-size': () => this._store.settings.chart.title.fontSize,
-      '--horiz-axis-title-font-size': () => this._store.settings.axis.horiz.title.fontSize,
-      '--vert-axis-title-font-size': () => this._store.settings.axis.vert.title.fontSize,
-      '--horiz-axis-tick-label-font-size': () => this._store.settings.axis.horiz.ticks.labels.fontSize,
-      '--vert-axis-tick-label-font-size': () => this._store.settings.axis.vert.ticks.labels.fontSize,
-      '--direct-label-font-size': () => this._store.settings.chart.directLabelFontSize,
-      '--legend-label-font-size': () => this._store.settings.legend.fontSize,
-      '--bar-label-font-size': () => this._store.settings.type.bar.labelFontSize,
-      '--column-label-font-size': () => this._store.settings.type.column.labelFontSize,
-      '--waterfall-label-font-size': () => this._store.settings.type.waterfall.labelFontSize,
+      '--chart-font-scale': () => this._paraState.settings.chart.fontScale,
+      '--chart-title-font-size': () => this._paraState.settings.chart.title.fontSize,
+      '--horiz-axis-title-font-size': () => this._paraState.settings.axis.horiz.title.fontSize,
+      '--vert-axis-title-font-size': () => this._paraState.settings.axis.vert.title.fontSize,
+      '--horiz-axis-tick-label-font-size': () => this._paraState.settings.axis.horiz.ticks.labels.fontSize,
+      '--vert-axis-tick-label-font-size': () => this._paraState.settings.axis.vert.ticks.labels.fontSize,
+      '--direct-label-font-size': () => this._paraState.settings.chart.directLabelFontSize,
+      '--legend-label-font-size': () => this._paraState.settings.legend.fontSize,
+      '--bar-label-font-size': () => this._paraState.settings.type.bar.labelFontSize,
+      '--column-label-font-size': () => this._paraState.settings.type.column.labelFontSize,
+      '--waterfall-label-font-size': () => this._paraState.settings.type.waterfall.labelFontSize,
       'display': 'block',
       'font-family': '"Trebuchet MS", Helvetica, sans-serif',
       'font-size': 'var(--chart-view-font-size, 1rem)'
     });
-    if (this._store.settings.chart.isShowVisitedDatapointsOnly) {
+    if (this._paraState.settings.chart.isShowVisitedDatapointsOnly) {
       this._styleManager.set('.datapoint:not(.visited)', {
         'display': 'none'
       });
@@ -280,7 +281,7 @@ export class ParaChart extends ParaComponent {
     }
     if (changedProperties.has('config')) {
       Object.entries(this.config).forEach(([path, value]) =>
-        this._store.updateSettings(draft => {
+        this._paraState.updateSettings(draft => {
           SettingsManager.set(path, value, draft);
         }));
     }
@@ -293,7 +294,8 @@ export class ParaChart extends ParaComponent {
         --summary-marker-size: 1.1rem;
       }
       figure {
-        display: inline grid;
+        display: inline flex;
+        flex-direction: column;
         margin: 0;
       }
     `
@@ -301,7 +303,7 @@ export class ParaChart extends ParaComponent {
 
   protected async _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void> {
     this.log.info(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
-    this._store.dataState = 'pending';
+    this._paraState.dataState = 'pending';
     const loadresult = await this._loader.load(
       this.manifestType,
       manifestInput,
@@ -311,21 +313,19 @@ export class ParaChart extends ParaComponent {
     this.log.info('loaded manifest')
     if (loadresult.result === 'success') {
       this._manifest = loadresult.manifest;
-      this._store.clearVisited();
-      this._store.clearSelected();
-      this._store.clearAllHighlights();
-      this._store.clearAllSequenceHighlights();
-      this._store.clearAllSeriesLowlights();
-      this._store.clearPopups();
-      this._store.setManifest(loadresult.manifest, loadresult.data);
-      this._store.dataState = 'complete';
+      this._paraState.clearVisited();
+      this._paraState.clearSelected();
+      this._paraState.clearAllHighlights();
+      this._paraState.clearPopups();
+      this._paraState.setManifest(loadresult.manifest, loadresult.data);
+      this._paraState.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode
       this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
       this._paraAPI = new ParaAPI(this);
       this._loaderResolver!();
     } else {
       this.log.error(loadresult.error);
-      this._store.dataState = 'error';
+      this._paraState.dataState = 'error';
       this._loaderRejector!();
     }
 
@@ -341,6 +341,7 @@ export class ParaChart extends ParaComponent {
     // change can take effect ...
     this._styleManager.update();
     this._paraViewRef.value?.settingDidChange(path, oldValue, newValue);
+    this.captionBox.settingDidChange(path, oldValue, newValue);
     // ... then update it again to pick up any changed values from the view tree
     this._styleManager.update();
   }
@@ -370,6 +371,9 @@ export class ParaChart extends ParaComponent {
     const classes = {
       'sr-only': this.headless
     };
+    const cpanelStyles = {
+      'width': `${this._paraState.settings.chart.size.width}px`
+    };
     return html`
       <figure
         class=${classMap(classes)}
@@ -378,16 +382,17 @@ export class ParaChart extends ParaComponent {
         <para-view
           ${ref(this._paraViewRef)}
           .paraChart=${this}
-          .store=${this._store}
-          colormode=${this._store?.settings.color.colorVisionMode ?? nothing}
+          .paraState=${this._paraState}
+          colormode=${this._paraState?.settings.color.colorVisionMode ?? nothing}
           ?disableFocus=${this.headless}
         ></para-view>
-        ${!(this.headless || this._store.settings.chart.isStatic)
+        ${!(this.headless || this._paraState.settings.chart.isStatic)
           ? html`
             <para-control-panel
               ${ref(this._controlPanelRef)}
+              style=${styleMap(cpanelStyles)}
               .paraChart=${this}
-              .store=${this._store}
+              .paraState=${this._paraState}
             ></para-control-panel>`
           : ''
         }
@@ -409,7 +414,7 @@ export class ParaChart extends ParaComponent {
   ): void {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-    if (this._store.settings.scrollytelling.isScrollytellingEnabled) {
+    if (this._paraState.settings.scrollytelling.isScrollytellingEnabled) {
       this._scrollyteller?.destroy();
       this._scrollyteller = new Scrollyteller(this, options);
       this._scrollyteller.init();

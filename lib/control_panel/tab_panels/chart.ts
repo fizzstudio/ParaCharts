@@ -71,7 +71,7 @@ export class ChartPanel extends ControlPanelTabPanel {
 
   connectedCallback() {
     super.connectedCallback();
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'slider',
       key: 'chart.fontScale',
       label: 'Font scale',
@@ -86,23 +86,23 @@ export class ChartPanel extends ControlPanelTabPanel {
   }
 
   render() {
-    const chartContent = this._store.settingControls.getContent(`controlPanel.tabs.chart.chart`);
-    const popupsContent = this._store.settingControls.getContent(`controlPanel.tabs.chart.popups`);
-    const fontsContent = this._store.settingControls.getContent(`controlPanel.tabs.chart.fonts`);
+    const chartContent = this._paraState.settingControls.getContent(`controlPanel.tabs.chart.chart`);
+    const popupsContent = this._paraState.settingControls.getContent(`controlPanel.tabs.chart.popups`);
+    const fontsContent = this._paraState.settingControls.getContent(`controlPanel.tabs.chart.fonts`);
     return html`
       <section id="panel">
         <div id="columns">
           <div id="width">
-            ${this._store.settingControls.getContent(`controlPanel.tabs.chart.general.width`)}
+            ${this._paraState.settingControls.getContent(`controlPanel.tabs.chart.general.width`)}
           </div>
           <div id="height">
-            ${this._store.settingControls.getContent(`controlPanel.tabs.chart.general.height`)}
+            ${this._paraState.settingControls.getContent(`controlPanel.tabs.chart.general.height`)}
           </div>
           <div id="min-y">
-            ${this._store.settingControls.getContent(`controlPanel.tabs.chart.general.minY`)}
+            ${this._paraState.settingControls.getContent(`controlPanel.tabs.chart.general.minY`)}
           </div>
           <div id="max-y">
-            ${this._store.settingControls.getContent(`controlPanel.tabs.chart.general.maxY`)}
+            ${this._paraState.settingControls.getContent(`controlPanel.tabs.chart.general.maxY`)}
           </div>
           ${chartContent.map(columnContent => html`
             <div id="chart-content">
@@ -125,7 +125,7 @@ export class ChartPanel extends ControlPanelTabPanel {
             <para-popup-settings-dialog
               ${ref(this._popupDialogRef)}
               id="popup-settings-dialog"
-              .store=${this._store}
+              .paraState=${this._paraState}
             >
             </para-popup-settings-dialog>
           </section>

@@ -118,8 +118,8 @@ export class PointerEventManager {
 
     this._coords = this._localCoords(event);
     if (this._paraView.documentView) {
-      this._paraView.store.pointerCoords.x = this._coords.x - this._paraView.documentView!.padding.left - this._paraView.documentView!.chartLayers.x
-      this._paraView.store.pointerCoords.y = this._coords.y - this._paraView.documentView!.padding.top - this._paraView.documentView!.chartLayers.y
+      this._paraView.paraState.pointerCoords.x = this._coords.x - this._paraView.documentView!.padding.left - this._paraView.documentView!.chartLayers.x
+      this._paraView.paraState.pointerCoords.y = this._coords.y - this._paraView.documentView!.padding.top - this._paraView.documentView!.chartLayers.y
       this._paraView.documentView?.pointerMove();
     }
     if (target === this._paraView.root || target === this._dataRoot) {
@@ -200,6 +200,7 @@ export class PointerEventManager {
    * @param target - The element to be selected; deselects if absent or `null`.
    */
   protected async _selectElement(target: SVGGraphicsElement, isAdd?: boolean) {
+    if (this._paraView.paraState.settings.ui.isNarrativeHighlightEnabled) return;
     if (!target) {
       this._clearSelectedElements();
     } else {
@@ -220,10 +221,12 @@ export class PointerEventManager {
         const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointViewForId(id)!;
         // this._paraView.paraChart.command('click', [datapointView.seriesKey, datapointView.index]);
         const chartInfo = this._paraView.documentView!.chartInfo;
+        // Set quiet = true so that the visit announcement doesn't overwrite
+        // the selection announcement
         chartInfo.navMap!.goTo(chartInfo.navDatapointType, {
           seriesKey: datapointView.seriesKey,
           index: datapointView.index
-        });
+        }, true);
         this._paraView.documentView!.chartInfo.selectCurrent(!!isAdd);
 
         // TODO: remove all element selection code, since it's extraneous to chart datapoint selection

@@ -1,5 +1,5 @@
 /* ParaCharts: Series Properties
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -15,15 +15,15 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { type DataSymbolType } from '../view/symbol';
-import { ParaStore } from './parastore';
+import { ParaState } from './parastate';
 
 export class SeriesPropertyManager {
 
   private seriesList: SeriesProperties[];
 
-  constructor(private store: ParaStore) {
-    this.seriesList = store.model!.series.map((series, i) => 
-      new SeriesProperties(series.key, store.colors.wrapColorIndex(i), store.symbols.symbolAt(i)));
+  constructor(private paraState: ParaState) {
+    this.seriesList = paraState.model!.series.map((series, i) => 
+      new SeriesProperties(series.key, paraState.colors.wrapColorIndex(i), paraState.symbols.symbolAt(i)));
   }
 
   properties(key: string): SeriesProperties {

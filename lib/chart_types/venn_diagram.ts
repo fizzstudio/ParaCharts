@@ -1,5 +1,5 @@
 /* ParaCharts: Pastry Charts
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -15,9 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { BaseChartInfo, RiffOrder } from './base_chart';
-import { type ParaStore, directions, type HorizDirection, datapointIdToCursor } from '../store';
+import { type ParaState, directions, type HorizDirection, datapointIdToCursor } from '../state';
 import { type ParaView } from '../paraview';
-import { queryMessages, describeSelections, getDatapointMinMax } from '../store/query_utils';
+import { queryMessages, describeSelections, getDatapointMinMax } from '../state/query_utils';
 import { Datapoint } from '@fizz/paramodel';
 import { formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
@@ -36,7 +36,7 @@ export class VennDiagramInfo extends BaseChartInfo {
 
   protected _addSettingControls(): void {
     super._addSettingControls();
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'slider',
       key: `type.${this._type}.orientationAngleOffset`,
       label: 'Orientation',
@@ -50,21 +50,21 @@ export class VennDiagramInfo extends BaseChartInfo {
       parentView: 'controlPanel.tabs.chart.chart'
     });
     const labelContents = ['', 'category', 'percentage:(value)'];
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'dropdown',
       key: `type.${this._type}.insideLabels.contents`,
       label: 'Inside labels:',
       options: { options: labelContents },
       parentView: 'controlPanel.tabs.chart.chart'
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'dropdown',
       key: `type.${this._type}.outsideLabels.contents`,
       label: 'Outside labels:',
       options: { options: labelContents },
       parentView: 'controlPanel.tabs.chart.chart'
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'textfield',
       key: `type.${this._type}.explode`,
       label: 'Explode',
@@ -80,33 +80,21 @@ export class VennDiagramInfo extends BaseChartInfo {
     directions.forEach(dir => {
       this._navMap!.node('top', {})!.connect(dir, layer);
     });
-    const seriesList = this._store.model!.series.slice(0, 2); // left and right sets
-
-    if (seriesList.length !== 2) {
-      throw new Error('Venn diagram must have exactly two series for two sets');
-    }
-    const leftCircle = new NavNode(
-      layer,
-      'series',
-      { seriesKey: seriesList[0].key },
-      this._store
-    );
-
-    const rightCircle = new NavNode(
-      layer,
-      'series',
-      { seriesKey: seriesList[1].key },
-      this._store
-    );
-    leftCircle.connect('right', rightCircle);
-    rightCircle.connect('left', leftCircle);
-
-    // Vertical / exit navigation goes back to the top/root
-    leftCircle.connect('up', this._navMap!.root);
-    leftCircle.connect('out', this._navMap!.root);
-
-    rightCircle.connect('up', this._navMap!.root);
-    rightCircle.connect('out', this._navMap!.root);
+    const nodes = this._paraState.model!.series[0].datapoints.map((datapoint, i) => {
+    //const nodes = this._chartLandingView.children[0].children.map((datapointView, i) => {
+      const node = new NavNode(layer, 'datapoint', {
+        seriesKey: datapoint.seriesKey,
+        index: datapoint.datapointIndex
+      }, this._paraState);
+      //node.addDatapointView(datapointView);
+      node.connect('out', this._navMap!.root);
+      node.connect('up', this._navMap!.root);
+      return node;
+    });
+    nodes.slice(0, -1).forEach((node, i) => {
+      node.connect('right', layer.get('datapoint', i + 1)!);
+    });
+    nodes.at(-1)!.connect('right', nodes[0]);
   }
 
   /*
@@ -127,7 +115,7 @@ export class VennDiagramInfo extends BaseChartInfo {
     return {
       data: (this._navMap!.cursor.isNodeType('datapoint')
         || this._navMap!.cursor.isNodeType('series'))
-        ? JSON.stringify(this._store.model!.atKey(
+        ? JSON.stringify(this._paraState.model!.atKey(
           this._navMap!.cursor.options.seriesKey)!.datapoints.map(dp => ({
             // XXX shouldn't assume x is string (or that we have an 'x' facet, for that matter)
             label: dp.facetValue('x') as string,
@@ -147,10 +135,10 @@ export class VennDiagramInfo extends BaseChartInfo {
     const queriedNode = this._navMap!.cursor;
 
     if (queriedNode.isNodeType('top')) {
-      msgArray.push(`Displaying Chart: ${this._store.title}`);
+      msgArray.push(`Displaying Chart: ${this._paraState.title}`);
     } else if (queriedNode.isNodeType('series')) {
       const seriesKey = queriedNode.options.seriesKey;
-      const series = this._store.model!.atKey(seriesKey)!;
+      const series = this._paraState.model!.atKey(seriesKey)!;
       const datapointCount = series.length;
       const seriesLabel = series.getLabel();
       msgArray.push(interpolate(
@@ -159,11 +147,11 @@ export class VennDiagramInfo extends BaseChartInfo {
       ));
     } else if (queriedNode.isNodeType('datapoint')) {
 
-      const selectedDatapoints = this._store.selectedDatapoints;
+      const selectedDatapoints = this._paraState.selectedDatapoints;
       //const visitedDatapoint = queriedNode.datapointViews[0];
       const seriesKey = queriedNode.options.seriesKey;
       const index = queriedNode.options.index;
-      const datapoint = this._store.model!.atKey(seriesKey)!.datapoints[index];
+      const datapoint = this._paraState.model!.atKey(seriesKey)!.datapoints[index];
       const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
       /*
       msgArray.push(replace(
@@ -190,7 +178,7 @@ export class VennDiagramInfo extends BaseChartInfo {
         msgArray.push(...selectionMsgArray);
       } else {
         // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
-        const series = this._store.model!.atKey(seriesKey)!
+        const series = this._paraState.model!.atKey(seriesKey)!;
         msgArray.push(interpolate(
           queryMessages.percentageOfChart,
           {
@@ -199,7 +187,7 @@ export class VennDiagramInfo extends BaseChartInfo {
             datapointCount: series.length
           }
         ));
-        if (this._store.model!.multi) {
+        if (this._paraState.model!.multi) {
           msgArray.push(interpolate(
             queryMessages.percentageOfSeries,
             {
@@ -213,13 +201,13 @@ export class VennDiagramInfo extends BaseChartInfo {
       }
       // also add the high or low indicators
       const minMaxMsgArray = getDatapointMinMax(
-        this._store.model!,
+        this._paraState.model!,
         datapoint.facetValueAsNumber('y')!,
         seriesKey
       );
       msgArray.push(...minMaxMsgArray);
     }
-    this._store.announce(msgArray);
+    this._paraState.announce(msgArray);
   }
 
 }

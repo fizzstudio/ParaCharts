@@ -1,5 +1,5 @@
 /* ParaCharts: Axes
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -22,13 +22,13 @@ import {
   type AxisSettings,
   type OrientedAxisSettings,
   type DeepReadonly
-} from '../../store/settings_types';
+} from '../../state/settings_types';
 import { Label } from '../label';
 import { type AxisLine, HorizAxisLine, VertAxisLine } from './axis_line';
 import { type TickLabelTier, HorizTickLabelTier, VertTickLabelTier } from './tick_label_tier';
 import { type TickStrip, HorizTickStrip, VertTickStrip } from './tick_strip';
-import { SettingsManager } from '../../store/settings_manager';
-import { type ParaStore } from '../../store/parastore';
+import { SettingsManager } from '../../state/settings_manager';
+import { type ParaState } from '../../state/parastate';
 
 import { type Datatype, type Scalar } from '@fizz/dataframe';
 import { type Facet } from '@fizz/paramanifest';
@@ -38,7 +38,7 @@ import { literal } from 'lit/static-html.js';
 import { PlaneModel } from '@fizz/paramodel';
 import { Popup } from '../popup';
 import { type ParaView } from '../../paraview';
-import { PlaneChartInfo } from '../../chart_types';
+import { AxisLabelTier, PlaneChartInfo } from '../../chart_types';
 
 export type AxisOrientation = 'horiz' | 'vert';
 export type AxisCoord = 'x' | 'y';
@@ -71,10 +71,10 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   protected _tickLabelTiers: TickLabelTier[] = [];
   protected _tickStrip: TickStrip | null = null;
   protected _axisLine!: AxisLine<T>;
-  protected _tickLabelTierValues!: string[][];
+  protected _tickLabelTierValues!: AxisLabelTier[];
   protected _tickStep: number;
 
-  protected _store: ParaStore;
+  protected _paraState: ParaState;
 
   constructor(
     paraview: ParaView,
@@ -84,19 +84,19 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     _length: number
   ) {
     super(paraview);
-    this._store = this.paraview.store;
+    this._paraState = this.paraview.paraState;
 
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
     //   have two axes
     // this._facet = docView.chartInfo.axisInfo!.getFacetForOrientation(this.orientation);
-    //  ?? this._store.model!.getFacet(coord)!;
+    //  ?? this._paraState.model!.getFacet(coord)!;
     this.datatype = this._facet.datatype;
 
     this.settings = SettingsManager.getGroupLink<AxisSettings>(
-      this.managedSettingKeys[0], this._store.settings
+      this.managedSettingKeys[0], this._paraState.settings
     );
     this.orientationSettings = SettingsManager.getGroupLink<OrientedAxisSettings<T>>(
-      `axis.${orientation}`, this._store.settings
+      `axis.${orientation}`, this._paraState.settings
     );
     this._tickStep = this.orientationSettings.ticks.step;
 
@@ -107,8 +107,8 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   }
 
   get coord() {
-    return this._store.model!.facetKeys.find(key =>
-      this._store.model!.getFacet(key) === this._facet) as AxisCoord;
+    return this._paraState.model!.facetKeys.find(key =>
+      this._paraState.model!.getFacet(key) === this._facet) as AxisCoord;
   }
 
   protected _createId() {
@@ -237,19 +237,19 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       role: 'heading',
       angle: this._getAxisTitleAngle(),
       pointerEnter: (e) => {
-        this.paraview.store.settings.chart.isShowPopups
-          && this.paraview.store.settings.popup.activation === "onHover"
-          && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
+        this.paraview.paraState.settings.chart.isShowPopups
+          && this.paraview.paraState.settings.popup.activation === "onHover"
+          && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
       },
       pointerMove: (e) => {
         if (this._popup) {
-          this.addPopup(undefined, this.paraview.store.pointerCoords.x, this.paraview.store.pointerCoords.y + this.paraview.store.settings.popup.margin)
+          this.addPopup(undefined, this.paraview.paraState.pointerCoords.x, this.paraview.paraState.pointerCoords.y + this.paraview.paraState.settings.popup.margin)
         }
       },
       pointerLeave: (e) => {
-        this.paraview.store.settings.chart.isShowPopups
-          && this.paraview.store.settings.popup.activation === "onHover"
-          && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.paraview.store.removePopup(this.id) : undefined;
+        this.paraview.paraState.settings.chart.isShowPopups
+          && this.paraview.paraState.settings.popup.activation === "onHover"
+          && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled ? this.paraview.paraState.removePopup(this.id) : undefined;
       }
     });
     this._axisTitle.padding = this._getAxisTitlePadding();
@@ -270,7 +270,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
         fill: "hsl(0, 0%, 100%)",
         shape: "boxWithArrow"
       })
-    this.paraview.store.popups.push(popup)
+    this.paraview.paraState.popups.push(popup)
     this._popup = popup;
   }
 
@@ -353,11 +353,11 @@ export class HorizAxis extends Axis<'horiz'> {
         this.paraview,
         this.orientationSettings, {
         orientation: this.orientation,
-        labels: tier,
+        content: tier,
         index: i,
         length: this._width,
         step: this._tickStep,
-        numTicks: this._tickLabelTierValues[0].length,
+        numTicks: this._tickLabelTierValues[0].labels.length,
         isChartIntertick: this._chartInfo.isIntertick,
         datatype: this.datatype,
         isFacetIndep: this._facet.variableType === 'independent'
@@ -377,12 +377,12 @@ export class HorizAxis extends Axis<'horiz'> {
       orientation: this.orientation,
       length: this._width,
       // tickCount: this._labelInfo.labelTiers[0].length,
-      tickCount: this._tickLabelTierValues[0].length,
-      isDrawOverhang: this.paraview.store.settings.axis.vert.line.isDrawOverhang,
+      tickCount: this._tickLabelTierValues[0].labels.length,
+      isDrawOverhang: this.paraview.paraState.settings.axis.vert.line.isDrawOverhang,
       tickStep: this._tickStep,
-      orthoAxisPosition: this.paraview.store.settings.axis.vert.position,
+      orthoAxisPosition: this.paraview.paraState.settings.axis.vert.position,
       // zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0') - 1
-      zeroIndex: this._tickLabelTierValues[0].findIndex(label => label === '0') - 1,
+      zeroIndex: this._tickLabelTierValues[0].labels.findIndex(label => label === '0') - 1,
       isChartIntertick: this._chartInfo.isIntertick,
       isFacetIndep: this._facet.variableType === 'independent'
     },);
@@ -464,11 +464,11 @@ export class VertAxis extends Axis<'vert'> {
         this.paraview,
         this.orientationSettings, {
         orientation: this.orientation,
-        labels: tier,
+        content: tier,
         index: i,
         length: this._height,
         step: this._tickStep,
-        numTicks: this._tickLabelTierValues[0].length,
+        numTicks: this._tickLabelTierValues[0].labels.length,
         isChartIntertick: this._chartInfo.isIntertick,
         datatype: this.datatype,
         isFacetIndep: this._facet.variableType === 'independent'
@@ -490,13 +490,13 @@ export class VertAxis extends Axis<'vert'> {
       orientation: this.orientation,
       length: this._height,
       // tickCount: this._labelInfo.labelTiers[0].length,
-      tickCount: this._tickLabelTierValues[0].length,
-      isDrawOverhang: this.paraview.store.settings.axis.horiz.line.isDrawOverhang,
+      tickCount: this._tickLabelTierValues[0].labels.length,
+      isDrawOverhang: this.paraview.paraState.settings.axis.horiz.line.isDrawOverhang,
       tickStep: this._tickStep,
-      orthoAxisPosition: this.paraview.store.settings.axis.horiz.position,
+      orthoAxisPosition: this.paraview.paraState.settings.axis.horiz.position,
       // XXX could be '0.0' or have a unit, etc.
       // zeroIndex: this._labelInfo.labelTiers[0].findIndex(label => label === '0')
-      zeroIndex: this._tickLabelTierValues[0].findIndex(label => label === '0'),
+      zeroIndex: this._tickLabelTierValues[0].labels.findIndex(label => label === '0'),
       isChartIntertick: this._chartInfo.isIntertick,
       isFacetIndep: this._facet.variableType === 'independent'
     });
