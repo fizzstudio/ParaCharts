@@ -296,6 +296,9 @@ export class ParaView extends ParaComponent {
         stroke-width: 2;
         opacity: 0.5;
       }
+      .crosshair {
+      stroke-dasharray: 12 12;
+      }
     `
   ];
 

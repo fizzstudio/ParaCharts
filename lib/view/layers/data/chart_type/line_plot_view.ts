@@ -24,12 +24,16 @@ import { type StyleInfo } from 'lit/directives/style-map.js';
 import { RectShape } from '../../../shape';
 import { Popup } from '../../../popup';
 import { DataSymbol } from '../../../symbol';
+import { Label } from '../../../label';
 
 /**
  * Class for drawing line charts.
  * @public
  */
 export class LinePlotView extends PointPlotView {
+
+  protected _crossHair?: PathShape[];
+  protected _crosshairLabels?: Popup[];
 
   get datapointViews() {
     return super.datapointViews as LineSection[];
@@ -73,11 +77,11 @@ export class LinePlotView extends PointPlotView {
   }
 
   pointerMove(): void {
+    const coords = this.paraview.paraState.pointerCoords;
     if (this.paraview.paraState.settings.chart.isShowPopups
       && this.paraview.paraState.settings.popup.activation === "onHover"
       && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled
     ) {
-      let coords = this.paraview.paraState.pointerCoords
       if (coords.x > 0 && coords.x < this.width && coords.y > 0 && coords.y < this.height) {
         let points = this.datapointViews
         let distances = points.map((dp, i) => [Number(Math.abs((dp.x - coords.x) ** 2)), i]).sort((a, b) => a[0] - b[0])
@@ -87,10 +91,92 @@ export class LinePlotView extends PointPlotView {
         }
         this.paraview.paraState.clearPopups()
         nearestPoint.addDatapointPopup()
-      }
+        /*
+        const vert = new PathShape(this.paraview, {
+          points: [new Vec2(coords.x, 0),
 
+          new Vec2(coords.x, this.height),],
+          fill: "black",
+          stroke: "black"
+        });
+        let horiz = new PathShape(this.paraview, {
+          points: [
+            new Vec2(0, coords.y),
+            new Vec2(this.width, coords.y),
+          ],
+          fill: "black",
+          stroke: "black"
+        });
+        horiz.classInfo = { 'crosshair': true };
+        vert.classInfo = { 'crosshair': true };
+        this.crossHair = [vert, horiz];
+        let vertLabel = new Label(this.paraview, {
+          text: String(nearestPoint.datapoint.facetBox("x")!.raw),
+          x: coords.x,
+          y: this.height
+        })
+
+        let horizLabel = new Label(this.paraview, {
+          text: String(nearestPoint.datapoint.facetBox("y")!.raw),
+          x: 0, 
+          y: coords.y
+        })
+
+        this.crossHairLabels = [vertLabel, horizLabel]
+*/
+        const vert = new PathShape(this.paraview, {
+          points: [new Vec2(nearestPoint.x, 0),
+
+          new Vec2(nearestPoint.x, this.height),],
+          fill: "black",
+          stroke: "black"
+        });
+        let horiz = new PathShape(this.paraview, {
+          points: [
+            new Vec2(0, nearestPoint.y),
+            new Vec2(this.width, nearestPoint.y),
+          ],
+          fill: "black",
+          stroke: "black"
+        });
+        horiz.classInfo = { 'crosshair': true };
+        vert.classInfo = { 'crosshair': true };
+        this.crossHair = [vert, horiz];
+        let vertLabel = new Popup(this.paraview, {
+          text: String(nearestPoint.datapoint.facetBox("x")!.raw),
+          x: nearestPoint.x,
+          y: this.height + 30,
+          margin: 0,
+          fill: "black"
+        }, {shape: "box",fill:"hsl(0, 0%, 100%)"})
+
+        let horizLabel = new Popup(this.paraview, {
+          text: String(nearestPoint.datapoint.facetBox("y")!.raw),
+          x: 0 - 20,
+          y: nearestPoint.y - 10,
+          margin: 0,
+          inbounds: false,
+          fill: "black"
+        }, {shape: "box",fill:"hsl(0, 0%, 100%)"})
+
+        this.crossHairLabels = [vertLabel, horizLabel]
+
+
+      }
     }
     super.pointerMove()
+  }
+
+  set crossHair(crossHair: PathShape[]) {
+    this._crossHair?.map(s => s.remove())
+    this._crossHair = crossHair
+    this._crossHair.forEach(p => this.append(p))
+  }
+
+  set crossHairLabels(labels: Popup[]) {
+    this._crosshairLabels?.map(s => s.remove())
+    this._crosshairLabels = labels
+    this._crosshairLabels.forEach(p => this.append(p))
   }
 }
 
