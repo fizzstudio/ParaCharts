@@ -56,15 +56,25 @@ export type BoxStyle = {
 
 /** @public */
 export interface UISettings extends SettingGroup {
+  /** Enable voice output for screen reader users */
   isVoicingEnabled: boolean;
+  /** Enable visual highlighting when narrative elements are announced */
   isNarrativeHighlightEnabled: boolean;
+  /** Pause narrative highlighting temporarily */
   isNarrativeHighlightPaused: boolean;
+  /** Enable aria-live announcements */
   isAnnouncementEnabled: boolean;
+  /** Voice output speech rate. Range: 0.1 to 10 */
   speechRate: number;
+  /** Enable fullscreen mode */
   isFullscreenEnabled: boolean;
+  /** Enable low vision accessibility enhancements */
   isLowVisionModeEnabled: boolean;
+  /** Show focus ring around active elements */
   isFocusRingEnabled: boolean;
+  /** Gap size around focus ring in pixels */
   focusRingGap: number;
+  /** Timeout in milliseconds for navigation runs */
   navRunTimeoutMs: number;
 }
 
@@ -111,22 +121,31 @@ export interface ControlPanelSettings extends SettingGroup {
 
 /** @public */
 export interface ColorSettings extends SettingGroup {
+  /** Color vision deficiency simulation mode */
   colorVisionMode: ColorVisionMode;
+  /** Enable dark color scheme */
   isDarkModeEnabled: boolean;
+  /** Contrast adjustment level (0-2) */
   contrastLevel: number;
+  /** Name of the color palette to use */
   colorPalette: string;
-  /** comma-separated list of color names */
+  /** Comma-separated list of custom color names */
   colorMap?: string;
 }
 
 /** @public */
 export interface TitleSettings extends SettingGroup {
+  /** Whether to draw the chart title */
   isDrawTitle: boolean;
+  /** The text of the chart's title. */
   text?: string;
+  /** Space between the chart title and content (in SVG units). */
   margin: number;
+  /** The font size of the chart title, as a CSS font size string. */
   fontSize: string;
   //fontColor: string;
   align?: SnapLocation;
+  /** The position of the chart title (either 'top' or 'bottom'). */
   position?: 'top' | 'bottom';
   //textTransform: string;
   //valueLabel: string;
@@ -168,25 +187,45 @@ export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
 
 /** @public */
 export interface ChartSettings extends SettingGroup {
+  /** The type of chart to display */
   type: ChartType;
+  /** Chart dimensions in pixels */
   size: Size2d;
+  /** Chart title configuration */
   title: TitleSettings;
+  /** Which direction is "up" on the chart */
   orientation: CardinalDirection;
+  /** Padding around chart content (CSS format) */
   padding: string;
+  /** Font family for all chart text */
   fontFamily: string;
+  /** Font weight for chart text */
   fontWeight: string;
+  /** Global font size multiplier */
   fontScale: number;
+  /** Stroke color for lines and shapes */
   stroke: string;
+  /** Stroke width in pixels */
   strokeWidth: number;
+  /** Scale factor for highlighted strokes */
   strokeHighlightScale: number;
+  /** Stroke width for symbols in pixels */
   symbolStrokeWidth: number;
+  /** Scale factor for highlighted symbols */
   symbolHighlightScale: number;
+  /** Show direct labels on data points */
   hasDirectLabels: boolean;
+  /** Font size for direct labels */
   directLabelFontSize: string;
+  /** Show legend when direct labels are present */
   hasLegendWithDirectLabels: boolean;
+  /** Draw symbols at data points */
   isDrawSymbols: boolean;
+  /** Disable all interactivity */
   isStatic: boolean;
+  /** Only show data points that have been visited */
   isShowVisitedDatapointsOnly: boolean;
+  /** Show popups on hover or focus */
   isShowPopups: boolean;
 }
 

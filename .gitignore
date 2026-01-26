@@ -18,6 +18,9 @@ temp/
 dist-ai/
 # TS types for the AI-enhanced build process
 types-ai/
+# Artifacts from docs generation script
+docs/scripts/lib/
+docs/scripts/docs/
 
 # Env files      
 ## A good safeguard against accidentally publishing
