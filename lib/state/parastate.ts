@@ -55,13 +55,9 @@ import { SeriesPropertyManager } from './series_properties';
 import { actionMap } from './action_map';
 import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
-import { type ParaChart } from '../parachart/parachart';
-import { DatapointView } from '../view/data';
 import { Popup } from '../view/popup';
 import { type DatapointCursor } from '../view/layers/data/navigation';
 import { Point } from '@fizz/chart-classifier-utils';
-import { loopParaviewRefresh } from '../common';
-import { PointDatapointView } from '../view/layers';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 

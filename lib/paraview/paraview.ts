@@ -303,7 +303,7 @@ export class ParaView extends ParaComponent {
   ];
 
   constructor() {
-	super();
+    super();
     // Create the listener here so it can be added and removed on connect/disconnect
     this._hotkeyListener = (e: HotkeyEvent) => {
       const handler = this.paraChart.api.actions[e.action as keyof AvailableActions];
@@ -385,14 +385,14 @@ export class ParaView extends ParaComponent {
     // while any data is loading
     this._controller ??= new ParaViewController(this._paraState);
     this._storeChangeUnsub = this._paraState.subscribe(async (key, value) => {
-	  if (key === 'data') {
+      if (key === 'data') {
         await this.dataUpdated();
       }
       await this._documentView?.storeDidChange(key, value);
     });
     this.computeViewBox();
     // this._hotkeyActions ??= new NormalHotkeyActions(this);
-	this._paraState.keymapManager.addEventListener('hotkeypress', this._hotkeyListener);
+    this._paraState.keymapManager.addEventListener('hotkeypress', this._hotkeyListener);
     if (!this._paraState.settings.chart.isStatic) {
       this._pointerEventManager = new PointerEventManager(this);
     }
@@ -420,7 +420,7 @@ export class ParaView extends ParaComponent {
     //   // @ts-ignore
     //   this.log.info(`- ${k.toString()}:`, v, '->', this[k]);
     // }
-	if (changedProperties.has('width')) {
+    if (changedProperties.has('width')) {
       this.computeViewBox();
     }
     if (changedProperties.has('chartTitle') && this.documentView) {
@@ -688,7 +688,7 @@ export class ParaView extends ParaComponent {
   createDocumentView() {
     this.log.info('creating document view', this.type);
     this._documentView = new DocumentView(this);
-	this._documentView.init();
+    this._documentView.init();
     this.computeViewBox();
     // The style manager may get declaration values from chart objects
     this.paraChart.styleManager.update();
@@ -943,7 +943,10 @@ export class ParaView extends ParaComponent {
           y="0"
           width="100%"
           height="100%"
-          @pointerleave=${(ev: PointerEvent) => this.paraState.clearPopups()}
+          @pointerleave=${(ev: PointerEvent) => {
+            this.documentView?.chartLayers.dataLayer.clearCrosshair()
+            this.paraState.clearPopups()
+          }}
         >
         </rect>
         ${this._documentView?.render() ?? ''}

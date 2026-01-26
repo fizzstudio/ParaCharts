@@ -315,4 +315,6 @@ export abstract class DataLayer extends PlotLayer {
   handlePan(startX: number, startY: number, endX: number, endY: number) { }
 
   handleZoom(x: number, y: number) { }
+
+  clearCrosshair() { }
 }
