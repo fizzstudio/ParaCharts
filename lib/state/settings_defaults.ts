@@ -200,7 +200,8 @@ export const defaults: Settings = {
     shape: "boxWithArrow",
     activation: "onHover",
     borderRadius: 10,
-    backgroundColor: "dark"
+    backgroundColor: "dark",
+    isShowCrosshair: true
   },
   type: {
     bar: {
