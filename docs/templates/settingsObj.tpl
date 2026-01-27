@@ -2,20 +2,6 @@
 
 Customize chart appearance, behavior, and accessibility using the hierarchical settings object. Pass settings when creating charts to override defaults.
 
-## Usage Example
-
-```javascript
-const chart = new ParaChart({
-  data: myData,
-  settings: {
-    'chart.type': 'line',
-    'chart.size.width': 800,
-    'ui.isVoicingEnabled': true,
-    'color.isDarkModeEnabled': true
-  }
-});
-```
-
 ## Settings
 
 {{#categories}}
