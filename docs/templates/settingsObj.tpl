@@ -1,24 +1,33 @@
 # Settings Object
 
-Customize chart appearance, behavior, and accessibility using the hierarchical settings object. Settings are organized by category and can be passed to override defaults.
+Customize chart appearance, behavior, and accessibility using the hierarchical settings object. Pass settings when creating charts to override defaults.
 
-## Common Settings
+## Usage Example
 
-| Setting Path | Description | Default | Type |
-|---|---|---|---|
-{{#commonSettings}}
-| `{{path}}` | {{description}} | `{{defaultValue}}` | `{{type}}` |
-{{/commonSettings}}
+```javascript
+const chart = new ParaChart({
+  data: myData,
+  settings: {
+    'chart.type': 'line',
+    'chart.size.width': 800,
+    'ui.isVoicingEnabled': true,
+    'color.isDarkModeEnabled': true
+  }
+});
+```
 
-## All Settings
+## Settings
 
 {{#categories}}
 ### {{name}}
 
+{{#description}}{{description}}
+
+{{/description}}
 | Setting Path | Description | Default | Type |
 |---|---|---|---|
 {{#settings}}
-| `{{path}}` | {{description}} | `{{defaultValue}}` | `{{type}}` |
+| `{{path}}` | {{#description}}{{description}}{{/description}}{{^description}}{{#path}}{{#isBoolean}}Enable/disable {{simpleName}}{{/isBoolean}}{{^isBoolean}}Set {{simpleName}}{{/isBoolean}}{{/path}}{{/description}} | {{#defaultValue}}{{defaultValue}}{{/defaultValue}}{{^defaultValue}}*none*{{/defaultValue}} | `{{simpleType}}` |
 {{/settings}}
 
 {{/categories}}

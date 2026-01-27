@@ -1,4 +1,4 @@
-// .gitignore
+# .gitignore
 _ignore/
 # Cache files  
 .eslintcache
@@ -10,6 +10,8 @@ _ignore/
 dist/
 ## The original reason we're here!
 node_modules/
+# VitePress build cache
+docs/.vitepress/cache/
 # TS types
 types/
 # api-extractor

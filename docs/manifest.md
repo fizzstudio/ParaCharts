@@ -25,14 +25,14 @@ sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-| `type` | `enum(line,stepline,bar,column,lollipop,histogram,scatter,heatmap,pie,donut,graph)` | Yes | The type of the chart, such as &#39;line&#39; or &#39;column&#39;. |
+| `type` | `enum(line,stepline,bar,column,lollipop,histogram,waterfall,scatter,heatmap,pie,donut,graph,venn)` | Yes | The type of the chart, such as 'line' or 'column'. |
 | `title` | `string` | Yes | The name of something, as a non-empty string. |
 | `subtitle` | `string` | No | The name of something, as a non-empty string. |
 | `description` | `string` | No | The name of something, as a non-empty string. |
 | `chartTheme` | `object` | No | The topic of a series or chart. |
 | `facets` | `object` | Yes | Metadata describing each facet of the chart which represents some dimension of the data. |
 | `series` | `array` | Yes | Metadata, and possibly inline data, describing the series of the chart. |
-| `seriesRelations` | `enum(stacked,grouped)` | No | How series are related to each other in multi-series bar family charts. Defaults to &#39;stacked&#39;. |
+| `seriesRelations` | `enum(stacked,grouped)` | No | How series are related to each other in multi-series bar family charts. Defaults to 'stacked'. |
 | `data` | `object` | Yes | The source for the data of a dataset. |
 | `settings` | `object` | No | The settings needed to present a chart in ParaCharts. |
 
@@ -44,14 +44,14 @@ sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-| `type` | `enum(line,stepline,bar,column,lollipop,histogram,scatter,heatmap,pie,donut,graph)` | Yes | The type of the chart, such as &#39;line&#39; or &#39;column&#39;. |
+| `type` | `enum(line,stepline,bar,column,lollipop,histogram,waterfall,scatter,heatmap,pie,donut,graph,venn)` | Yes | The type of the chart, such as 'line' or 'column'. |
 | `title` | `string` | Yes | The name of something, as a non-empty string. |
 | `subtitle` | `string` | No | The name of something, as a non-empty string. |
 | `description` | `string` | No | The name of something, as a non-empty string. |
 | `chartTheme` | `object` | No | The topic of a series or chart. |
 | `facets` | `object` | Yes | Metadata describing each facet of the chart which represents some dimension of the data. |
 | `series` | `array` | Yes | Metadata, and possibly inline data, describing the series of the chart. |
-| `seriesRelations` | `enum(stacked,grouped)` | No | How series are related to each other in multi-series bar family charts. Defaults to &#39;stacked&#39;. |
+| `seriesRelations` | `enum(stacked,grouped)` | No | How series are related to each other in multi-series bar family charts. Defaults to 'stacked'. |
 | `data` | `object` | Yes | The source for the data of a dataset. |
 | `settings` | `object` | No | The settings needed to present a chart in ParaCharts. |
 
@@ -63,14 +63,14 @@ sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-| `type` | `enum(line,stepline,bar,column,lollipop,histogram,scatter,heatmap,pie,donut,graph)` | Yes | The type of the chart, such as &#39;line&#39; or &#39;column&#39;. |
+| `type` | `enum(line,stepline,bar,column,lollipop,histogram,waterfall,scatter,heatmap,pie,donut,graph,venn)` | Yes | The type of the chart, such as 'line' or 'column'. |
 | `title` | `string` | Yes | The name of something, as a non-empty string. |
 | `subtitle` | `string` | No | The name of something, as a non-empty string. |
 | `description` | `string` | No | The name of something, as a non-empty string. |
 | `chartTheme` | `object` | No | The topic of a series or chart. |
 | `facets` | `object` | Yes | Metadata describing each facet of the chart which represents some dimension of the data. |
 | `series` | `array` | Yes | Metadata, and possibly inline data, describing the series of the chart. |
-| `seriesRelations` | `enum(stacked,grouped)` | No | How series are related to each other in multi-series bar family charts. Defaults to &#39;stacked&#39;. |
+| `seriesRelations` | `enum(stacked,grouped)` | No | How series are related to each other in multi-series bar family charts. Defaults to 'stacked'. |
 | `data` | `object` | Yes | The source for the data of a dataset. |
 | `settings` | `object` | No | The settings needed to present a chart in ParaCharts. |
 
@@ -82,14 +82,14 @@ sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-| `type` | `enum(line,stepline,bar,column,lollipop,histogram,scatter,heatmap,pie,donut,graph)` | Yes | The type of the chart, such as &#39;line&#39; or &#39;column&#39;. |
+| `type` | `enum(line,stepline,bar,column,lollipop,histogram,waterfall,scatter,heatmap,pie,donut,graph,venn)` | Yes | The type of the chart, such as 'line' or 'column'. |
 | `title` | `string` | Yes | The name of something, as a non-empty string. |
 | `subtitle` | `string` | No | The name of something, as a non-empty string. |
 | `description` | `string` | No | The name of something, as a non-empty string. |
 | `chartTheme` | `object` | No | The topic of a series or chart. |
 | `facets` | `object` | Yes | Metadata describing each facet of the chart which represents some dimension of the data. |
 | `series` | `array` | Yes | Metadata, and possibly inline data, describing the series of the chart. |
-| `seriesRelations` | `enum(stacked,grouped)` | No | How series are related to each other in multi-series bar family charts. Defaults to &#39;stacked&#39;. |
+| `seriesRelations` | `enum(stacked,grouped)` | No | How series are related to each other in multi-series bar family charts. Defaults to 'stacked'. |
 | `data` | `object` | Yes | The source for the data of a dataset. |
 | `settings` | `object` | No | The settings needed to present a chart in ParaCharts. |
 
@@ -116,14 +116,14 @@ sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-| `type` | `enum(line,stepline,bar,column,lollipop,histogram,scatter,heatmap,pie,donut,graph)` | Yes | The type of the chart, such as &#39;line&#39; or &#39;column&#39;. |
+| `type` | `enum(line,stepline,bar,column,lollipop,histogram,waterfall,scatter,heatmap,pie,donut,graph,venn)` | Yes | The type of the chart, such as 'line' or 'column'. |
 | `title` | `string` | Yes | The name of something, as a non-empty string. |
 | `subtitle` | `string` | No | The name of something, as a non-empty string. |
 | `description` | `string` | No | The name of something, as a non-empty string. |
 | `chartTheme` | `object` | No | The topic of a series or chart. |
 | `facets` | `object` | Yes | Metadata describing each facet of the chart which represents some dimension of the data. |
 | `series` | `array` | Yes | Metadata, and possibly inline data, describing the series of the chart. |
-| `seriesRelations` | `enum(stacked,grouped)` | No | How series are related to each other in multi-series bar family charts. Defaults to &#39;stacked&#39;. |
+| `seriesRelations` | `enum(stacked,grouped)` | No | How series are related to each other in multi-series bar family charts. Defaults to 'stacked'. |
 | `data` | `object` | Yes | The source for the data of a dataset. |
 | `settings` | `object` | No | The settings needed to present a chart in ParaCharts. |
 
@@ -135,8 +135,8 @@ sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-| `key` | `ref:#&#x2F;$defs&#x2F;name` | Yes | The name of a series, as a non-empty string. This is identical to &#x60;name&#x60;, but specified for semantic reasons |
-| `label` | `ref:#&#x2F;$defs&#x2F;name` | No | The name of a series, as a non-empty string. This is identical to &#x60;name&#x60;, but specified for semantic reasons |
+| `key` | `ref:#/$defs/name` | Yes | The name of a series, as a non-empty string. This is identical to `name`, but specified for semantic reasons |
+| `label` | `ref:#/$defs/name` | No | The name of a series, as a non-empty string. This is identical to `name`, but specified for semantic reasons |
 | `theme` | `object` | No | The topic of a series or chart. |
 | `records` | `array` | No | The datapoints of this series represented inline. |
 
@@ -148,14 +148,14 @@ sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-| `type` | `enum(line,stepline,bar,column,lollipop,histogram,scatter,heatmap,pie,donut,graph)` | Yes | The type of the chart, such as &#39;line&#39; or &#39;column&#39;. |
+| `type` | `enum(line,stepline,bar,column,lollipop,histogram,waterfall,scatter,heatmap,pie,donut,graph,venn)` | Yes | The type of the chart, such as 'line' or 'column'. |
 | `title` | `string` | Yes | The name of something, as a non-empty string. |
 | `subtitle` | `string` | No | The name of something, as a non-empty string. |
 | `description` | `string` | No | The name of something, as a non-empty string. |
 | `chartTheme` | `object` | No | The topic of a series or chart. |
 | `facets` | `object` | Yes | Metadata describing each facet of the chart which represents some dimension of the data. |
 | `series` | `array` | Yes | Metadata, and possibly inline data, describing the series of the chart. |
-| `seriesRelations` | `enum(stacked,grouped)` | No | How series are related to each other in multi-series bar family charts. Defaults to &#39;stacked&#39;. |
+| `seriesRelations` | `enum(stacked,grouped)` | No | How series are related to each other in multi-series bar family charts. Defaults to 'stacked'. |
 | `data` | `object` | Yes | The source for the data of a dataset. |
 | `settings` | `object` | No | The settings needed to present a chart in ParaCharts. |
 
@@ -178,6 +178,6 @@ sub-properties:
 | Property | Type | Required | Description |
 |---|---|:---:|---|
 | `sonification` | `object` | No | Sonification Settings |
-| `aspectRatio` | `number` | No | The ratio of the height to the width of the chart on the screen (i.e. x-axis size &#x2F; y-axis size). Defaults to 1 (i.e. a square chart). |
+| `aspectRatio` | `number` | No | The ratio of the height to the width of the chart on the screen (i.e. x-axis size / y-axis size). Defaults to 1 (i.e. a square chart). |
 | `axis` | `object` | No | Settings for each Axis |
 
