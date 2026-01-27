@@ -19,3 +19,4 @@ export * from './grid';
 export * from './flex';
 export * from './spacer';
 export * from './frame';
+export * from './simple_grid';
