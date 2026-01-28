@@ -33,6 +33,11 @@ import { Summarizer, formatBox, Highlight, summarizerFromModel } from '@fizz/par
 import { Unsubscribe } from '@lit-app/state';
 import { executeParaActions, parseAction } from '../paraactions/paraactions';
 
+const ORIENTATION_SENTENCES = [
+  '$.datasets[0].axes.dependent',
+  '$.datasets[0].axes.independent',
+  '$.datasets[0].labels'
+]
 
 /**
  * @public
@@ -417,7 +422,9 @@ export abstract class BaseChartInfo {
   async navRunDidEnd(cursor: NavNode) {
     //const seriesKey = cursor.options.seriesKey ?? '';
     if (cursor.isNodeType('top')) {
-      this._paraState.announce(await this._summarizer.getChartSummary(true));
+      //this._paraState.announce(await this._summarizer.getChartSummary());
+      const orientationSentences = await this._summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
+      this._paraState.announce(orientationSentences);
     } else if (cursor.isNodeType('series')) {
       this._paraState.announce(
         await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
