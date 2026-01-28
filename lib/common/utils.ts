@@ -1,5 +1,5 @@
 /* ParaCharts: Utility Functions
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { ParaStore } from "../store/parastore";
+import { ParaState } from "../state/parastate";
 import { BboxAnchor, type View } from '../view/base_view';
 import { Box } from "@fizz/paramodel";
 import { Datatype } from "@fizz/paramanifest";
@@ -71,17 +71,32 @@ export function capitalize(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+export function joinStrArray(strArray: string[], linebreak?: string): string {
+  strArray = strArray.filter(line => /\S/.test(line));
+  // if the string array only contains blank strings, ignore it
+  if (strArray.length) {
+    const strArrayLen = strArray.length - 1;
+    return strArray.reduce((acc, line, i) => {
+      const lineEnd = (i === strArrayLen) ? '.' : '';
+      const linebreakstr = (acc) ? ` ${linebreak}` : '';
+      const accStr = acc.match(/[.,?:;]$/) ? acc : `${acc}.`;
+      return `${accStr} ${linebreakstr}${line}${lineEnd}`;
+    });
+  }
+  return '';
+}
+
 // ID Generation
 
-export function generateUniqueId(baseId: string, store: ParaStore): string {
+export function generateUniqueId(baseId: string, paraState: ParaState): string {
   // remove non-word characters and replace spaces
   baseId = baseId.replace(/\s+/g, '_').replace(/[^\w-]+/g, '');
   let i = 0;
   let uid = baseId;
-  while (store.idList[uid]) {
+  while (paraState.idList[uid]) {
     uid = baseId + '-' + ++i;
   }
-  store.idList[uid] = true;
+  paraState.idList[uid] = true;
   return uid;
 }
 

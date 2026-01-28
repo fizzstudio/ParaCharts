@@ -1,5 +1,5 @@
 /* ParaCharts: Grid Layout
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { type View, type SnapLocation, type PaddingInput, type Padding } from '../base_view';
 import { type ParaView } from '../../paraview';
 import { Layout } from './layout';
-import { Logger, getLogger } from '../../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { nothing, svg, TemplateResult } from 'lit';
 import { RectShape } from '../shape/rect';
 
@@ -1438,7 +1438,7 @@ export class GridLayout extends Layout {
     });
     return svg`
       ${super.content()}
-      ${this.paraview.store.settings.dev.isShowGridTerritories
+      ${this.paraview.paraState.settings.dev.isShowGridTerritories
         ? rects.map(r => r.render())
         : ''
       }

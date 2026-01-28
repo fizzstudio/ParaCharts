@@ -129,7 +129,7 @@ describe('Accessibility and keyboard tests', () => {
     
     const api = parachart.api;
     const firstSeries = api.allSeries[0];
-    const firstPoint = firstSeries.getPoint(0);
+    const firstPoint = firstSeries.getPoints(0);
     firstPoint.annotate('test annotation');
 
     await application.focus();

@@ -1,6 +1,6 @@
-import { Logger, getLogger } from '../../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { ParaComponent } from '../../components';
-import { type SettingControlInfo, type Setting, SettingsManager } from '../../store';
+import { type SettingControlInfo, type Setting, SettingsManager } from '../../state';
 //import { styles } from '../styles';
 
 import '@fizz/ui-components';
@@ -46,7 +46,7 @@ export abstract class SettingControl<T extends SettingControlType> extends ParaC
   ];
 
   protected _updateSetting(key: string, value: SettingControlValueType<SettingControlType>) {
-    this._store.updateSettings(draft => SettingsManager.set(key, value, draft));
+    this._paraState.updateSettings(draft => SettingsManager.set(key, value, draft));
   }
 
   protected _validateInput(value: Setting, control: EventTarget) {

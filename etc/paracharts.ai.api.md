@@ -26,6 +26,7 @@ import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
+import { Logger } from '@fizz/logger';
 import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';
 import { Model } from '@fizz/paramodel';
@@ -50,6 +51,7 @@ import { StaticValue } from 'lit-html/static.js';
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { StyleInfo as StyleInfo_2 } from 'lit-html/directives/style-map.js';
 import { Summarizer } from '@fizz/parasummary';
+import { SVGTemplateResult } from 'lit';
 import { TemplateResult } from 'lit';
 import { TemplateResult as TemplateResult_2 } from 'lit-html';
 import * as ui from '@fizz/ui-components';
@@ -90,7 +92,7 @@ export class ParaHeadless {
     // (undocumented)
     protected _paraChart: ParaChart;
     // (undocumented)
-    get ready(): Promise<void>;
+    ready(): Promise<void>;
 }
 
 // (No @packageDocumentation comment for this package)

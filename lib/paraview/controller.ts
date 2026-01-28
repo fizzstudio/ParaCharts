@@ -1,11 +1,11 @@
-import { Logger, getLogger } from '../common/logger';
-import { ParaStore } from '../store';
+import { Logger, getLogger } from '@fizz/logger';
+import { ParaState } from '../state';
 
 export class ParaViewController {
   protected log: Logger = getLogger("ParaViewController");
-  constructor(protected _store: ParaStore) {}
+  constructor(protected _paraState: ParaState) {}
   handleKeyEvent(event: KeyboardEvent) {
-    if (this._store.settings.chart.isStatic) {
+    if (this._paraState.settings.chart.isStatic) {
       return;
     }
     let key = event.key === 'Control' ? 'Ctrl' : event.key.toLocaleLowerCase();
@@ -19,8 +19,8 @@ export class ParaViewController {
       key = '';
     }
     const keyId = (key ? [...mods, key] : mods).join('+');
-    // if (this._store.paraChart.command('key', [keyId])) {
-    if (this._store.keymapManager.onKeydown(keyId)) {
+    // if (this._paraState.paraChart.command('key', [keyId])) {
+    if (this._paraState.keymapManager.onKeydown(keyId)) {
       event.stopPropagation();
       event.preventDefault();
     }

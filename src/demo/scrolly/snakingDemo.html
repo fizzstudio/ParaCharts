@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>ScrollyTeller Demo -- ParaCharts</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22green%22/><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+  <style>
+    body {
+      margin: 2em;
+      padding-bottom: 8em;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      font-size: 1.2em;
+    }
+
+    .container {
+      display: flex;
+      align-items: flex-start;
+      margin: 20px;
+      padding-right: 60px;
+    }
+
+    .steps {
+      flex: 1;
+      margin-right: 40px;
+    }
+
+    [data-para-step] {
+      border: none;
+      padding: 2em 1em;
+      margin: 20px 0;
+    }
+
+    [data-para-step].para-active {
+      background-color: hsl(0, 0%, 93%);
+      color: black;
+    }
+
+    .chart-area {
+      position: sticky;
+      top: 20px;
+      width: 550px;
+      height: 420px;
+      flex-shrink: 0;
+    }
+
+    [data-para-step="0"] {
+      margin-bottom: 5em;
+    }
+
+    [data-para-enter] {
+      min-height: 20em;
+    }
+  </style>
+</head>
+<!--
+    <div class="steps">
+      <div data-para-action="clipTo(Agriculture, 0)"></div>
+      <div data-para-action="clipTo(Agriculture, 1)"></div>
+      <div data-para-action="clipTo(Agriculture, 2)"></div>
+      <div data-para-action="clipTo(Agriculture, 4)"></div>
+      <div data-para-action="clipTo(Agriculture, 5)"></div>
+      <div data-para-action="clipTo(Agriculture, 2)"></div>
+      <div data-para-action="clipTo(Agriculture, 6)"></div>
+      <div data-para-action="clipTo(Agriculture, 10)"></div>
+    </div>-->
+<body>
+  <h1>GDP Data</h1>
+
+  <main class="container">
+    <div class="steps">
+      <div data-para-enter="getSeries(Services).getPoints(0).clipTo()">
+        <p>This is an example of scrollytelling, where the chart stays fixed in place and is updated as the page is
+          scrolled. Each paragraph highlights a different aspect of the chart.</p>
+      </div>
+      <div data-para-enter="getSeries(Services).getPoints(0).clipTo()">
+        <p>This is an example of scrollytelling, where the chart stays fixed in place and is updated as the page is
+          scrolled. Each paragraph highlights a different aspect of the chart.</p>
+      </div>
+      <div data-para-enter="getSeries(Services).getPoints(1).clipTo()">
+        <p>Industry remained a major part of China’s economy during this period but also saw a gradual decline in its
+          share of GDP. In 2008, industry contributed nearly half of total output, driven by China’s role as the world’s
+          main manufacturing hub. Over the decade, however, the share dropped to about 40 percent. Rising labor costs,
+          stricter environmental regulations, and efforts to move up the value chain all played a role. China’s
+          government began encouraging innovation and advanced manufacturing, but overall, the relative dominance of
+          heavy industry and export-driven production started to ease.</p>
+      </div>
+      <div data-para-enter="getSeries(Services).getPoints(2).clipTo()">
+        <p>
+          Services expanded relatively quickly and became the largest part of China’s economy by 2018. Starting at
+          around 43 percent of GDP in 2008, the sector grew to over half within a decade. This growth came from booming
+          industries such as finance, technology, logistics, retail, and tourism. As household incomes rose and cities
+          developed, domestic consumption and service-based business activity increased sharply. The shift toward
+          services reflects China’s broader economic transformation—less reliant on factories and exports, and more
+          focused on urban lifestyles, digital innovation, and internal demand.
+        </p>
+      </div>
+      <div data-para-enter="getSeries(Services).getPoints(3).clipTo()">
+        <p>
+          Services finally overtook Industry in 2012, and continued growing from there.
+        </p>
+      </div>
+      <div  data-para-enter="getSeries(Services).getPoints(4).clipTo()">
+        <p>
+          Services finally overtook Industry in 2012, and continued growing from there.
+        </p>
+      </div>
+      <div data-para-enter="getSeries(Services).getPoints(5).clipTo()">
+        <p>
+          Agriculture's share of China's GDP gradually declined between 2008 and 2018 as the country continued to
+          urbanize and modernize. In 2008, agriculture still made up about a tenth of the economy, but by 2018 it had
+          fallen to around seven percent. This reflected rising efficiency in farming, widespread migration from rural
+          to urban areas, and the shift of labor and investment toward more profitable sectors. Farming became
+          increasingly mechanized and productive, even as it accounted for a smaller slice of total output.
+        </p>
+      </div>
+      <div data-para-enter="getSeries(Services).getPoints(6).clipTo()">
+        <p>
+          In the decade from 2008 to 2018, China completed its transformation from a largely industrial and maufacturing
+          exporter to a internal economy focused on services for its own population. This is reflected in the
+          fluctuations between industry and services, as relative percentages of the economy, with services finally
+          surpassing industry in 2012, and continuing to widen the gap for the next 6 years.
+        </p>
+      </div>
+      <div
+        data-para-enter="getSeries(Services).getPoints(10).clipTo()">
+        <p>
+          In 2018, services peaked at 52.2% of China's GDP, 11.5% higher than industry and 45% higher than agriculture.
+        </p>
+      </div>
+    </div>
+
+    <section class="chart-area">
+      <para-chart id="main-chart"  manifest="/src/demo-data/china-gdp-line-1.manifest.json"></para-chart>
+
+    </section>
+  </main>
+
+  <script type="module" src="/dist-ai/paracharts.js"></script>
+
+</body>
+
+</html>

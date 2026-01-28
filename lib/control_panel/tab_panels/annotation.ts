@@ -4,7 +4,9 @@ import {
   html, css,
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
-
+import { datapointIdToCursor, type PointAnnotation } from '../../state/parastate';
+import { formatXYDatapointX } from '@fizz/parasummary';
+import { type PlaneDatapoint } from '@fizz/paramodel';
 
 @customElement('para-annotation-panel')
 export class AnnotationPanel extends ControlPanelTabPanel {
@@ -45,7 +47,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
   showAnnotations() {
     return html`
       <ol class="annotations">
-        ${this._store.annotations.map(item => html`
+        ${this._paraState.annotations.map(item => html`
             <li
               data-series="${item.seriesKey}"
               data-index="${item.index}"
@@ -54,7 +56,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
                 this._selectAnnotation(event);
                 }}
               @dblclick=${(event: Event) => {
-                this._store.annotations = this._store.annotations.filter(p => !(p.id == item.id))
+                this._paraState.annotations = this._paraState.annotations.filter(p => !(p.id == item.id))
                 }}
             >${item.annotation}</li>
           `)
@@ -88,6 +90,35 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     this._controlPanel.paraChart.paraView.navToDatapoint(seriesKey, index);
   }
 
+  async addAnnotation() {
+    const newAnnotationList: PointAnnotation[] = [];
+    for (const dpId of this.paraState.visitedDatapoints) {
+      const { seriesKey, index } = datapointIdToCursor(dpId);
+      const series = this.paraState.model!.atKey(seriesKey)!.getLabel();
+      const recordLabel = formatXYDatapointX(
+        this.paraState.model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint,
+        'raw'
+      );
+      let result = await this.controlPanel.showAnnotDialog(dpId);
+      if (result[0] == 'cancel'){
+        continue;
+      }
+      const annotationText = result[1];
+      if (annotationText) {
+        newAnnotationList.push({
+          type: "datapoint",
+          seriesKey,
+          index,
+          annotation: `${series}, ${recordLabel}: ${annotationText}`,
+          text: annotationText,
+          id: `${series}-${recordLabel}-${this.paraState.nextAnnotID()}`,
+          isSelected: this.paraState.settings.ui.isLowVisionModeEnabled ? false : true,
+        });
+      }
+    }
+    this.paraState.annotations = [...this.paraState.annotations, ...newAnnotationList];
+  }
+
   render() {
     return html`
       <div id="annotation-tab" class="tab-content">
@@ -97,7 +128,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         <div>
           <button
             @click=${() => {
-              this._store.addAnnotation();
+              this.addAnnotation();
             }}
           >
             Add Annotation
@@ -107,7 +138,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
           <button
             @click=${
               () => {
-                this._store.addUserLineBreaks()
+                this._paraState.addUserLineBreaks()
               }
             }
           >
@@ -118,8 +149,8 @@ export class AnnotationPanel extends ControlPanelTabPanel {
           <button
             @click=${
               () => {
-                this._store.clearUserLineBreaks()
-                this._store.clearUserTrendLines()
+                this._paraState.clearUserLineBreaks()
+                this._paraState.clearUserTrendLines()
               }
             }
           >
@@ -130,10 +161,10 @@ export class AnnotationPanel extends ControlPanelTabPanel {
           <button
             @click=${
               () => {
-                this._store.updateSettings(draft => {
-                  draft.controlPanel.isMDRAnnotationsVisible = !this._store.settings.controlPanel.isMDRAnnotationsVisible;
+                this._paraState.updateSettings(draft => {
+                  draft.controlPanel.isMDRAnnotationsVisible = !this._paraState.settings.controlPanel.isMDRAnnotationsVisible;
                 });
-                this._store.showMDRAnnotations()
+                this._paraState.showMDRAnnotations()
               }
             }
           >

@@ -1,14 +1,26 @@
-import keymap from '../../lib/store/keymap.json' with { type: 'json' };
+import keymap from '../../lib/state/action_map.json' with { type: 'json' };
 
 function keymapTable() {
-    let table = [`| Key / Shortcut         | Description                                      |
-|------------------------|--------------------------------------------------|`];
+    let table = [`| Key / Shortcut | Description |
+|---|---|`];
 
     for (const key of Object.keys(keymap) as Array<keyof typeof keymap>) {
         if (keymap.hasOwnProperty(key)) {
-            table.push(
-                `| ${key.padEnd(22)} | ${(keymap[key].label || '').padEnd(50)} |`
-            );
+            const action = keymap[key];
+            const hotkeys = Array.isArray(action.hotkeys) ? action.hotkeys.map(hotkey => {
+                if (typeof hotkey === 'string') {
+                    return hotkey;
+                } else if (hotkey && typeof hotkey === 'object' && 'keyID' in hotkey) {
+                    return hotkey.keyID;
+                } else {
+                    return '';
+                }
+            }).filter(h => h).join(', ') : '';
+            if (hotkeys.trim()) {
+                table.push(
+                    `| **${hotkeys}** | ${action.label || ''} |`
+                );
+            }
         }
     }
     return table.join('\n');

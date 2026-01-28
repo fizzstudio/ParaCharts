@@ -58,7 +58,8 @@
       },
       "settings": {
         "controlPanel.isControlPanelDefaultOpen": false,
-        "controlPanel.caption.isCaptionExternalWhenControlPanelClosed": false
+        "controlPanel.caption.isCaptionExternalWhenControlPanelClosed": false,
+        "animation.isAnimationEnabled": false
       }
     }
   ]

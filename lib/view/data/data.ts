@@ -1,7 +1,7 @@
 
 import { View } from '../base_view';
 import { type DataLayer } from '../layers';
-import { type SeriesProperties } from '../../store';
+import { type SeriesProperties } from '../../state';
 
 import { type StyleInfo } from 'lit/directives/style-map.js';
 import { Series } from '@fizz/paramodel';
@@ -24,7 +24,7 @@ export class DataView extends View {
     public readonly seriesKey: string,
   ) {
     super(chart.paraview);
-    this._series = this.chart.paraview.store.model!.atKey(seriesKey)!;
+    this._series = this.chart.paraview.paraState.model!.atKey(seriesKey)!;
   }
 
   get series() {
@@ -32,7 +32,7 @@ export class DataView extends View {
   }
 
   get seriesProps(): SeriesProperties {
-    return this.chart.paraview.store.seriesProperties!.properties(this.seriesKey);
+    return this.chart.paraview.paraState.seriesProperties!.properties(this.seriesKey);
   }
 
   get siblings(): readonly this[] {
@@ -80,17 +80,17 @@ export class DataView extends View {
   }
 
   protected _updateStyleInfo(styleInfo: StyleInfo) {
-    let colorValue = this.chart.paraview.store.colors.colorValueAt(this.color);
-    // if (this.paraview.store.isVisitedSeries(this.seriesKey)) {
-    //   colorValue = this.chart.paraview.store.colors.colorValue('highlight');
+    let colorValue = this.chart.paraview.paraState.colors.colorValueAt(this.color);
+    // if (this.paraview.paraState.isVisitedSeries(this.seriesKey)) {
+    //   colorValue = this.chart.paraview.paraState.colors.colorValue('highlight');
     // }
     styleInfo.fill = colorValue;
     styleInfo.stroke = colorValue;
-    styleInfo.strokeWidth = this.paraview.store.settings.chart.strokeWidth;
+    styleInfo.strokeWidth = this.paraview.paraState.settings.chart.strokeWidth;
   }
 
   async onFocus(_isNewComponentFocus = false) {
-    //this.paraview.store.clearVisited();
+    //this.paraview.paraState.clearVisited();
   }
 
   select(_extend: boolean) {}

@@ -1,0 +1,52 @@
+{
+  "datasets": [
+    {
+      "type": "line",
+      "title": "",
+      "chartTheme": {
+        "baseQuantity": "",
+        "baseKind": "dimensioned"
+      },
+      "facets": {
+        "x": {
+          "label": "X-TITLE",
+          "variableType": "independent",
+          "measure": "",
+          "datatype": "",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Y-TITLE",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+      ],
+      "data": {
+        "source": "external",
+        "path": "para:preload"
+      },
+      "settings": {
+        "chart.orientation": "north",
+        "chart.size.width": 360,
+        "axis.vert.labelOrder": "southToNorth",
+        "axis.y.tick.step": 1,
+        "axis.x.tick.tickLabel.isDrawEnabled": true,
+        "axis.y.line.isDrawEnabled": true,
+        "axis.x.tick.isDrawEnabled": true,
+        "axis.y.tick.isDrawEnabled": true,
+        "grid.isDrawHorizLines": true,
+        "legend.isDrawLegend": true
+      }
+    }
+  ]
+}

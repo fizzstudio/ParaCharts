@@ -1,5 +1,5 @@
 /* ParaCharts: Accessible Charts
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { css, unsafeCSS } from 'lit';
 import { SeriesAnalyzer } from '@fizz/series-analyzer';
 import { AiSeriesPairMetadataAnalyzer } from '@fizz/paramodel';
-import { getLogger } from '../lib/common/logger';
+import { getLogger } from '@fizz/logger';
 import { ParaChart } from '../lib/parachart/parachart';
 import { styles } from '../lib/view/styles';
 // @ts-ignore
@@ -34,7 +34,8 @@ export class ParaChartAi extends ParaChart {
         --summary-marker-size: 1.1rem;
       }
       figure {
-        display: inline-block;
+        display: inline-flex;
+        flex-direction: column;
         margin: 0;
       }
     `

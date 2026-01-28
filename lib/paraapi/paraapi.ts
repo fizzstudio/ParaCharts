@@ -1,5 +1,5 @@
 /* ParaCharts: ParaAPI
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -18,8 +18,8 @@ import { type Datapoint } from '@fizz/paramodel';
 
 import { type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
-import { Direction, Setting, SettingsManager } from '../store';
-import { ActionArgumentMap, AvailableActions } from '../store/action_map';
+import { Direction, makeSequenceId, Setting, SettingsManager } from '../state';
+import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 
 type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMap) => void | Promise<void>) };
 
@@ -27,16 +27,13 @@ type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMa
  * Perform various operations on a ParaChart.
  */
 export class ParaAPI {
-
-  protected _allSeries: ParaAPISeries[];
   protected _actions: Actions;
   protected _standardActions: Actions;
   protected _narrativeActions: Actions;
 
   constructor(protected _paraChart: ParaChart) {
-    const store = _paraChart.store;
+    const paraState = _paraChart.paraState;
     const paraView = _paraChart.paraView;
-    this._allSeries = store.model!.series.map(series => new ParaAPISeries(series.label, this));
 
     // we use a function here bc the chartInfo object may get replaced
     const chartInfo = () => _paraChart.paraView.documentView!.chartInfo;
@@ -86,53 +83,53 @@ export class ParaAPI {
         chartInfo().queryData();
       },
       toggleSonificationMode() {
-        store.updateSettings(draft => {
+        paraState.updateSettings(draft => {
           draft.sonification.isSoniEnabled = !draft.sonification.isSoniEnabled;
           const endisable = draft.sonification.isSoniEnabled ? 'enable' : 'disable';
-          store.announce(`Sonification ${endisable + 'd'}`);
+          paraState.announce(`Sonification ${endisable + 'd'}`);
           _paraChart.postNotice(endisable + 'Sonification', null);
         });
       },
       toggleTrendNavigationMode() {
-        store.updateSettings(draft => {
+        paraState.updateSettings(draft => {
           draft.type.line.isTrendNavigationModeEnabled = !draft.type.line.isTrendNavigationModeEnabled;
           const endisable = draft.type.line.isTrendNavigationModeEnabled ? 'enable' : 'disable';
-          store.announce(`Trend navigation ${endisable + 'd'}`);
+          paraState.announce(`Trend navigation ${endisable + 'd'}`);
           _paraChart.postNotice(endisable + 'TrendNavigation', null);
         });
       },
       toggleAnnouncementMode() {
-        if (store.settings.ui.isAnnouncementEnabled) {
-          store.announce('Announcements disabled');
-          store.updateSettings(draft => {
+        if (paraState.settings.ui.isAnnouncementEnabled) {
+          paraState.announce('Announcements disabled');
+          paraState.updateSettings(draft => {
             draft.ui.isAnnouncementEnabled = false;
           });
           _paraChart.postNotice('disableAnnouncements', null);
         } else {
-          store.updateSettings(draft => {
+          paraState.updateSettings(draft => {
             draft.ui.isAnnouncementEnabled = true;
           });
-          store.announce('Announcements enabled');
+          paraState.announce('Announcements enabled');
           _paraChart.postNotice('enableAnnouncements', null);
         }
       },
       toggleVoicingMode() {
-        store.updateSettings(draft => {
+        paraState.updateSettings(draft => {
           draft.ui.isVoicingEnabled = !draft.ui.isVoicingEnabled;
           const endisable = draft.ui.isVoicingEnabled ? 'enable' : 'disable';
           _paraChart.postNotice(endisable + 'Voicing', null);
         });
       },
       toggleDarkMode() {
-        store.updateSettings(draft => {
+        paraState.updateSettings(draft => {
           draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
           const endisable = draft.color.isDarkModeEnabled ? 'enable' : 'disable';
           _paraChart.postNotice(endisable + 'DarkMode', null);
-          store.announce(`Dark mode ${endisable + 'd'}`);
+          paraState.announce(`Dark mode ${endisable + 'd'}`);
         });
       },
       toggleLowVisionMode() {
-        store.updateSettings(draft => {
+        paraState.updateSettings(draft => {
           if (draft.ui.isLowVisionModeEnabled) {
             // Allow the exit from fullscreen to disable LV mode
             draft.ui.isFullscreenEnabled = false;
@@ -147,7 +144,7 @@ export class ParaAPI {
         _paraChart.controlPanel.showHelpDialog();
       },
       announceVersionInfo() {
-        store.announce(`Version ${__APP_VERSION__}; commit ${__COMMIT_HASH__}`);
+        paraState.announce(`Version ${__APP_VERSION__}; commit ${__COMMIT_HASH__}`);
       },
       jumpToChordLanding() {
         chartInfo().navToChordLanding();
@@ -159,12 +156,12 @@ export class ParaAPI {
         paraView.ariaLiveRegion.replay();
       },
       addAnnotation() {
-        store.addAnnotation();
+        _paraChart.controlPanel.annotationPanel.addAnnotation();
       },
       toggleNarrativeHighlightMode() {
         paraView.startNarrativeHighlightMode();
         self._actions = self._narrativeActions;
-        store.updateSettings(draft => {
+        paraState.updateSettings(draft => {
           draft.ui.isNarrativeHighlightEnabled = true; //!draft.ui.isNarrativeHighlightEnabled;
           //const endisable = draft.ui.isNarrativeHighlightEnabled ? 'enable' : 'disable';
           _paraChart.postNotice('enableNarrativeHighlightMode', null);
@@ -174,7 +171,7 @@ export class ParaAPI {
 
       },
       reset() {
-        store.clearSelected();
+        paraState.clearSelected();
         chartInfo().navMap!.root.goTo('top', {});
         paraView.createDocumentView();
       }
@@ -185,23 +182,24 @@ export class ParaAPI {
     const voicing = paraView.ariaLiveRegion.voicing;
 
     this._narrativeActions.move = async (args: ActionArgumentMap) => {
-      store.paraChart.captionBox.highlightSpan(args.direction === 'right' || args.direction === 'down');
+      paraView.paraChart.captionBox.highlightSpan(args.direction === 'right' || args.direction === 'down');
     };
-    this._narrativeActions.goFirst = () => {};
-    this._narrativeActions.goLast = () => {};
-    this._narrativeActions.repeatLastAnnouncement = () => {};
+    this._narrativeActions.goFirst = () => { };
+    this._narrativeActions.goLast = () => { };
+    this._narrativeActions.repeatLastAnnouncement = () => { };
     this._narrativeActions.toggleNarrativeHighlightMode = () => {
       _paraChart.captionBox.clearSpanHighlights();
-      store.clearHighlight();
-      store.clearAllSeriesLowlights();
+      paraState.clearAllDatapointHighlights();
+      paraState.clearAllSequenceHighlights();
+      paraState.clearAllSeriesLowlights();
       paraView.endNarrativeHighlightMode();
       self._actions = this._standardActions;
-      if (store.settings.ui.isNarrativeHighlightEnabled) {
-        store.updateSettings(draft => {
+      if (paraState.settings.ui.isNarrativeHighlightEnabled) {
+        paraState.updateSettings(draft => {
           draft.ui.isNarrativeHighlightEnabled = false;
         });
       } else {
-        store.updateSettings(draft => {
+        paraState.updateSettings(draft => {
           draft.ui.isNarrativeHighlightEnabled = true;
         });
       }
@@ -219,10 +217,6 @@ export class ParaAPI {
     return this._paraChart.paraView.documentView!.chartInfo;
   }
 
-  get allSeries(): readonly ParaAPISeries[] {
-    return this._allSeries;
-  }
-
   get actions(): Actions {
     return this._actions;
   }
@@ -231,26 +225,24 @@ export class ParaAPI {
     this._actions[action](args);
   }
 
+  setManifest(manifestUrl: string) {
+    this._paraChart.setAttribute('manifest', manifestUrl);
+  }
+
   // protected _labelToKey(seriesLabel: string): string {
-  //   const series = this._paraChart.store.model!.series.find(s => s.label === seriesLabel);
+  //   const series = this._paraChart.paraState.model!.series.find(s => s.label === seriesLabel);
   //   if (!series) throw new Error(`no series with label '${seriesLabel}'`);
   //   return series.key;
   // }
 
-  getSeries(seriesLabel: string): ParaAPISeries {
-    return this.getAllSeries(seriesLabel)[0];
-  }
+  // getSeries(seriesLabel: string): ParaAPISeries {
+  //   return this.getAllSeries(seriesLabel)[0];
+  // }
 
-  getAllSeries(...seriesLabels: string[]): ParaAPISeries[] {
+  getSeries(...seriesLabelsOrKeys: string[]): ParaAPISeriesGroup {
     // remove dups
-    const labels = Array.from(new Set(seriesLabels));
-    const series: ParaAPISeries[] = [];
-    for (const label of labels) {
-      const s = this._allSeries.find(pps => pps.label === label);
-      if (!s) throw new Error(`no series with label '${label}'`);
-      series.push(s);
-    }
-    return series;
+    const labelsOrKeys = Array.from(new Set(seriesLabelsOrKeys));
+    return new ParaAPISeriesGroup(labelsOrKeys, this);
   }
 
   // sendKey(keyId: string) {
@@ -270,21 +262,45 @@ export class ParaAPI {
   }
 
   setSetting(settingPath: string, value: Setting) {
-    this._paraChart.store.updateSettings(draft => {
+    this._paraChart.paraState.updateSettings(draft => {
       SettingsManager.set(settingPath, value, draft);
     });
   }
 
+  highlightRange(startPortion: number, endPortion: number) {
+    this._paraChart.paraState.highlightRange(startPortion, endPortion);
+  }
+
+  clearRangeHighlight(startPortion: number, endPortion: number) {
+    this._paraChart.paraState.clearRangeHighlight(startPortion, endPortion);
+  }
+
+  clearAllRangeHighlights() {
+    this._paraChart.paraState.clearAllRangeHighlights();
+  }
+
+  clearAllDatapointHighlights() {
+    this._paraChart.paraState.clearAllDatapointHighlights();
+  }
+
+  clearAllSequenceHighlights() {
+    this._paraChart.paraState.clearAllSequenceHighlights();
+  }
+
   clearAllSeriesLowlights() {
-    this._paraChart.store.clearAllSeriesLowlights();
+    this._paraChart.paraState.clearAllSeriesLowlights();
+  }
+
+  clearAllHighlights() {
+    this._paraChart.paraState.clearAllHighlights();
   }
 
   hideAllSeries() {
-    this._paraChart.store.hideAllSeries();
+    this._paraChart.paraState.hideAllSeries();
   }
 
   unhideAllSeries() {
-    this._paraChart.store.unhideAllSeries();
+    this._paraChart.paraState.unhideAllSeries();
   }
 
   enableNarrativeActions() {
@@ -297,123 +313,223 @@ export class ParaAPI {
 }
 
 /**
- * Perform operations on a ParaChart series.
+ * Perform operations on one or more ParaChart series.
  */
-export class ParaAPISeries {
-  protected _allPoints: ParaAPIPoint[];
-  protected _datapoints: Datapoint[];
-  protected _key: string;
+export class ParaAPISeriesGroup {
+  protected _datapoints: Map<string, Datapoint[]>;
+  protected _keys: string[];
 
-  constructor(protected _label: string, protected _api: ParaAPI) {
-    const series = _api.paraChart.store.model!.atLabel(_label)!;
-    this._key = series.key;
-    this._datapoints = [...series.datapoints];
-    this._allPoints = this._datapoints.map(dp => new ParaAPIPoint(dp, this));
+  constructor(labelsOrKeys: string[], protected _api: ParaAPI) {
+    this._keys = [];
+    const allSeries = labelsOrKeys.map(labelOrKey => {
+      const seriesFromLabel = _api.paraChart.paraState.model!.atLabel(labelOrKey);
+      const seriesFromKey = _api.paraChart.paraState.model!.atKey(labelOrKey);
+      if (!seriesFromLabel && !seriesFromKey) {
+        throw new Error(`no series with label or key '${labelOrKey}'`);
+      }
+      return seriesFromLabel ?? seriesFromKey!;
+    });
+    this._datapoints = new Map();
+    allSeries.forEach(series => {
+      this._datapoints.set(series.key, [...series.datapoints]);
+      this._keys.push(series.key);
+    });
   }
 
-  get label(): string {
-    return this._label;
-  }
-
-  get key(): string {
-    return this._key;
+  get keys(): string[] {
+    return this._keys;
   }
 
   get api(): ParaAPI {
     return this._api;
   }
 
-  get allPoints(): readonly ParaAPIPoint[] {
-    return this._allPoints;
+  getPoint(index: number): ParaAPIPointGroup {
+    return this.getPoints(index);
   }
 
-  getPoint(index: number): ParaAPIPoint {
-    return this.getPoints(index)[0];
-  }
-
-  getPoints(...indices: number[]): ParaAPIPoint[] {
+  getPoints(...indices: number[]): ParaAPIPointGroup {
     // remove dups
     const idxs = Array.from(new Set(indices));
-    const points: ParaAPIPoint[] = [];
-    for (const idx of idxs) {
-      const p = this._allPoints[idx];
-      if (!p) throw new Error(`invalid index '${idx}'`);
-      points.push(p);
-    }
-    return points;
+    const datapoints = this._keys.flatMap(key => idxs.map(idx => {
+      const datapoint = this._datapoints.get(key)![idx];
+      if (!datapoint) throw new Error(`series '${key}' has no datapoint at index ${idx}`);
+      return datapoint;
+    }));
+    return new ParaAPIPointGroup(datapoints, this);
+  }
+
+  getSequence(start: number, end: number): ParaAPISequenceGroup {
+    return this.getSequences([start, end]);
+  }
+
+  getSequences(...boundaryPairs: [number, number][]): ParaAPISequenceGroup {
+    const hasPair = (ary: [number, number][], p: [number, number]) =>
+      !!ary.find((val: [number, number]) => val[0] === p[0] && val[1] === p[1]);
+    // remove dups
+    const pairs: [number, number][] = [];
+    boundaryPairs.forEach(pair => {
+      if (pair[0] >= pair[1]) throw new Error('sequence index 1 must be < index 2');
+      if (!hasPair(pairs, pair)) {
+        pairs.push(pair);
+      }
+    });
+    const datapoints = this._keys.flatMap(key => pairs.flatMap(pair => {
+      const datapoints = this._datapoints.get(key)!.slice(pair[0], pair[1]);
+      if (datapoints.length < 2) throw new Error('sequences must have at least 2 points');
+      return datapoints;
+    }));
+    return new ParaAPISequenceGroup(datapoints, pairs, this);
   }
 
   lowlight() {
-    this._api.paraChart.store.lowlightSeries(this._key);
+    this._keys.forEach(key => {
+      this._api.paraChart.paraState.lowlightSeries(key);
+    });
   }
 
   clearLowlight() {
-    this._api.paraChart.store.clearSeriesLowlight(this._key);
+    this._keys.forEach(key => {
+      this._api.paraChart.paraState.clearSeriesLowlight(key);
+    });
   }
 
-  isLowlighted(): boolean {
-    return this._api.paraChart.store.isSeriesLowlighted(this._key);
-  }
+  // isLowlighted(): boolean {
+  //   return this._api.paraChart.paraState.isSeriesLowlighted(this._key);
+  // }
 
   lowlightOthers() {
-    this._api.paraChart.store.lowlightOtherSeries(this._key);
+    this._api.paraChart.paraState.lowlightOtherSeries(...this._keys);
   }
 
   hide() {
-    this._api.paraChart.store.hideSeries(this._key);
+    this._keys.forEach(key => {
+      this._api.paraChart.paraState.hideSeries(key);
+    });
   }
 
   unhide() {
-    this._api.paraChart.store.unhideSeries(this._key);
+    this._keys.forEach(key => {
+      this._api.paraChart.paraState.unhideSeries(key);
+    });
   }
 
-  isHidden(): boolean {
-    return this._api.paraChart.store.isSeriesHidden(this._key);
-  }
+  // isHidden(): boolean {
+  //   return this._api.paraChart.paraState.isSeriesHidden(this._key);
+  // }
 
   hideOthers() {
-    this._api.paraChart.store.hideOtherSeries(this._key);
+    this._api.paraChart.paraState.hideOtherSeries(...this._keys);
   }
 
   playRiff() {
-    this._api.chartInfo.playRiff(this._datapoints);
+    this._keys.forEach(key => {
+      this._api.chartInfo.playRiff(this._datapoints.get(key)!);
+    });
   }
 }
 
 /**
- * Perform operations on a ParaChart datapoint.
+ * Perform operations on one or more ParaChart datapoints.
  */
-export class ParaAPIPoint {
-  constructor(protected _datapoint: Datapoint, protected _apiSeries: ParaAPISeries) {
+export class ParaAPIPointGroup {
+  constructor(protected _datapoints: Datapoint[], protected _apiSeriesGroup: ParaAPISeriesGroup) {
 
   }
 
   visit() {
-    this._apiSeries.api.chartInfo.navMap!.goTo(this._apiSeries.api.chartInfo.navDatapointType, {
-      seriesKey: this._datapoint.seriesKey,
-      index: this._datapoint.datapointIndex
-    });
+    this._apiSeriesGroup.api.paraChart.paraState.visit(this._datapoints);
   }
 
   select(isExtend = false) {
     this.visit();
-    this._apiSeries.api.chartInfo.selectCurrent(isExtend);
+    this._apiSeriesGroup.api.chartInfo.selectCurrent(isExtend);
   }
 
   highlight() {
-
+    this._apiSeriesGroup.api.clearAllDatapointHighlights();
+    this._apiSeriesGroup.api.clearAllSequenceHighlights();
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.paraState.highlightDatapoint(
+        datapoint.seriesKey, datapoint.datapointIndex);
+    });
   }
 
   clearHighlight() {
-
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.paraState.clearDatapointHighlight(
+        datapoint.seriesKey, datapoint.datapointIndex);
+      this._apiSeriesGroup.api.paraChart.paraState.removePopup(this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '')
+    }
+    );
   }
 
   play() {
-    this._apiSeries.api.chartInfo.playDatapoints([this._datapoint]);
+    this._apiSeriesGroup.api.chartInfo.playDatapoints(this._datapoints);
   }
 
   annotate(text: string) {
-    this._apiSeries.api.paraChart.store.annotatePoint(
-      this._apiSeries.key, this._datapoint.datapointIndex, text);
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.paraState.annotatePoint(
+        datapoint.seriesKey, datapoint.datapointIndex, text);
+    });
   }
+
+  clipTo() {
+    // XXX not sure clipping to multiple points makes sense
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.paraView.clipTo(
+        datapoint.seriesKey, Number(datapoint.datapointIndex));
+    });
+  }
+
+}
+
+/**
+ * Perform operations on one or more ParaChart sequences.
+ */
+export class ParaAPISequenceGroup {
+  constructor(protected _datapoints: Datapoint[], protected _boundaryPairs: [number, number][], protected _apiSeriesGroup: ParaAPISeriesGroup) {
+
+  }
+
+  visit() {
+    this._apiSeriesGroup.api.paraChart.paraState.visit(this._datapoints);
+  }
+
+  select(isExtend = false) {
+    this.visit();
+    this._apiSeriesGroup.api.chartInfo.selectCurrent(isExtend);
+  }
+
+  highlight() {
+    this._apiSeriesGroup.api.clearAllDatapointHighlights();
+    this._apiSeriesGroup.api.clearAllSequenceHighlights();
+    this._apiSeriesGroup.keys.forEach(key => {
+      this._boundaryPairs.forEach(pair => {
+        this._apiSeriesGroup.api.paraChart.paraState.highlightSequence(key, pair[0], pair[1]);
+      });
+    });
+  }
+
+  clearHighlight() {
+    this._apiSeriesGroup.keys.forEach(key => {
+      this._boundaryPairs.forEach(pair => {
+        this._apiSeriesGroup.api.paraChart.paraState.clearSequenceHighlight(key, pair[0], pair[1]);
+        this._apiSeriesGroup.api.paraChart.paraState.removePopup(makeSequenceId(key, pair[0], pair[1]))
+      });
+    });
+  }
+
+  play() {
+    this._apiSeriesGroup.api.chartInfo.playDatapoints(this._datapoints);
+  }
+
+  annotate(text: string) {
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.paraState.annotatePoint(
+        datapoint.seriesKey, datapoint.datapointIndex, text);
+    });
+  }
+
 }

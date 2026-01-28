@@ -1,6 +1,6 @@
 import { type Datatype } from '@fizz/dataframe';
 import { ChartType, DisplayType, Facet, Manifest, SeriesManifest } from '@fizz/paramanifest';
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 
 /*interface DataVar {
   name: string;
@@ -121,7 +121,7 @@ export class SlotLoader {
       dataset.data = { source: 'inline' };
     }
     if (!dataset.settings) {
-      dataset.settings = { 'sonification.isEnabled': true };
+      dataset.settings = { 'sonification.isSoniEnabled': true };
     }
 
     const cols = vars.map(v => [] as string[]);

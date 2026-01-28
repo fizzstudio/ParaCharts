@@ -1,4 +1,4 @@
-// .gitignore
+# .gitignore
 _ignore/
 # Cache files  
 .eslintcache
@@ -10,6 +10,8 @@ _ignore/
 dist/
 ## The original reason we're here!
 node_modules/
+# VitePress build cache
+docs/.vitepress/cache/
 # TS types
 types/
 # api-extractor
@@ -18,6 +20,9 @@ temp/
 dist-ai/
 # TS types for the AI-enhanced build process
 types-ai/
+# Artifacts from docs generation script
+docs/scripts/lib/
+docs/scripts/docs/
 
 # Env files      
 ## A good safeguard against accidentally publishing

@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
 
 export default defineConfig({
+  base: '/paracharts-docs/',
   title: 'ParaCharts',
   description: 'ParaCharts user and developer documentation',
   themeConfig: {

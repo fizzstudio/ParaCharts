@@ -1,5 +1,5 @@
 /* ParaCharts: Line Charts
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { PlaneSeriesView, PointPlotView, PointDatapointView } from '.';
-import { type LineSettings, type DeepReadonly, type Setting } from '../../../../store/settings_types';
+import { type LineSettings, type DeepReadonly, type Setting } from '../../../../state/settings_types';
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { bboxOfBboxes, isPointerInbounds } from '../../../../common/utils';
@@ -53,15 +53,15 @@ export class LinePlotView extends PointPlotView {
   }
 
   get effectiveLineWidth() {
-    return this.paraview.store.settings.ui.isLowVisionModeEnabled
-      ? this.paraview.store.settings.type.line.lowVisionLineWidth
-      : this.paraview.store.settings.type.line.lineWidth;
+    return this.paraview.paraState.settings.ui.isLowVisionModeEnabled
+      ? this.paraview.paraState.settings.type.line.lowVisionLineWidth
+      : this.paraview.paraState.settings.type.line.lineWidth;
   }
 
   get effectiveVisitedScale() {
-    return this.paraview.store.settings.ui.isLowVisionModeEnabled
+    return this.paraview.paraState.settings.ui.isLowVisionModeEnabled
       ? 1
-      : this.paraview.store.settings.type.line.lineHighlightScale;
+      : this.paraview.paraState.settings.type.line.lineHighlightScale;
   }
 
   get visitedStrokeWidth(): number {
@@ -73,11 +73,11 @@ export class LinePlotView extends PointPlotView {
   }
 
   pointerMove(): void {
-    if (this.paraview.store.settings.chart.isShowPopups
-      && this.paraview.store.settings.popup.activation === "onHover"
-      && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled
+    if (this.paraview.paraState.settings.chart.isShowPopups
+      && this.paraview.paraState.settings.popup.activation === "onHover"
+      && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled
     ) {
-      let coords = this.paraview.store.pointerCoords
+      let coords = this.paraview.paraState.pointerCoords
       if (coords.x > 0 && coords.x < this.width && coords.y > 0 && coords.y < this.height) {
         let points = this.datapointViews
         let distances = points.map((dp, i) => [Number(Math.abs((dp.x - coords.x) ** 2)), i]).sort((a, b) => a[0] - b[0])
@@ -85,7 +85,7 @@ export class LinePlotView extends PointPlotView {
         if (nearestPoint.cousins.length > 0) {
           nearestPoint = nearestPoint.withCousins.sort((a, b) => Math.abs(a.y - coords.y) - Math.abs(b.y - coords.y))[0]
         }
-        this.paraview.store.clearPopups()
+        this.paraview.paraState.clearPopups()
         nearestPoint.addDatapointPopup()
       }
 
@@ -144,7 +144,7 @@ export class LineSection extends PointDatapointView {
     }
 
     // find midpoint between values for this and next
-    if (this.index < this.chart.paraview.store.model!.series[0].length - 1) {
+    if (this.index < this.chart.paraview.paraState.model!.series[0].length - 1) {
       this._computeNext();
     }
 
@@ -270,7 +270,7 @@ export class LineSection extends PointDatapointView {
     if (points.length === 3) {
       const slices = [points.slice(0, -1), points.slice(1)];
       // XXX We can't do this until the series analysis completes!
-      // const seq = this.paraview.store.seriesAnalyses[this.seriesKey]?.sequences?.find(seqInfo =>
+      // const seq = this.paraview.paraState.seriesAnalyses[this.seriesKey]?.sequences?.find(seqInfo =>
       //   seqInfo.start <= this.index && this.index < seqInfo.end);
       // if (seq) {
       //   if (this.index === seq.start) {

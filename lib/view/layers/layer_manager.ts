@@ -1,5 +1,5 @@
 /* ParaCharts: Chart Layer Manager
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -18,9 +18,9 @@ import { View } from '../base_view';
 import { fixed, isPointerInbounds } from '../../common/utils';
 import { type Layout } from '../layout';
 import { type DocumentView } from '../document_view';
-import { type CardinalDirection } from '../../store/settings_types';
+import { type CardinalDirection } from '../../state/settings_types';
 import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, FocusLayer } from '.';
-import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, Bar, WaterfallPlotView } from './data/chart_type';
+import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, Bar, WaterfallPlotView, VennPlotView } from './data/chart_type';
 import { type AxisCoord } from '../axis';
 //import { StepLineChart } from './stepline';
 //import { LollipopChart } from './lollipop';
@@ -34,6 +34,7 @@ import { svg } from 'lit';
 import { HeatMapPlotView } from './data/chart_type';
 import { Histogram } from './data/chart_type/histogram';
 import { PopupLayer } from './popup_layer';
+import { ParaView } from '../../paraview';
 
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
@@ -50,12 +51,12 @@ export const chartClasses = {
   stepline: LinePlotView, //StepLineChart,
   lollipop: BarPlotView, //LollipopChart
   graph: LinePlotView,
-  waterfall: WaterfallPlotView
+  waterfall: WaterfallPlotView,
+  venn: VennPlotView
 };
 
 export class PlotLayerManager extends View {
-
-  declare protected _parent: Layout;
+  declare protected _parent: DocumentView;
 
   protected _logicalWidth!: number;
   protected _logicalHeight!: number;
@@ -70,14 +71,13 @@ export class PlotLayerManager extends View {
   protected _popupLayer!: PopupLayer;
   protected _focusLayer!: FocusLayer;
 
-  constructor(public readonly docView: DocumentView, width: number, height: number) {
-    super(docView.paraview);
-    this._orientation = this.paraview.store.settings.chart.orientation;
+  constructor(paraview: ParaView, width: number, height: number) {
+    super(paraview);
+    this._orientation = this.paraview.paraState.settings.chart.orientation;
     this.width = width;
     this.height = height;
     this._canWidthFlex = true;
     this._canHeightFlex = true;
-    this.createLayers();
   }
 
   protected _createId() {
@@ -88,7 +88,7 @@ export class PlotLayerManager extends View {
     return this._parent;
   }
 
-  set parent(parent: Layout) {
+  set parent(parent: DocumentView) {
     super.parent = parent;
   }
 
@@ -219,14 +219,14 @@ export class PlotLayerManager extends View {
   }
 
   private createDataLayers() {
-    const ctor = chartClasses[this.paraview.store.type];
+    const ctor = chartClasses[this.paraview.paraState.type];
     let dataLayer: DataLayer;
     if (ctor) {
-      dataLayer = new ctor(this.paraview, this._width, this._height, 0, this.docView.chartInfo);
+      dataLayer = new ctor(this.paraview, this._width, this._height, 0, this._parent.chartInfo);
       this.append(dataLayer);
     } else {
       // TODO: Is this error possible?
-      throw new Error(`no class found for chart type '${this.paraview.store.type}'`);
+      throw new Error(`no class found for chart type '${this.paraview.paraState.type}'`);
     }
     this._dataLayers = [dataLayer];
   }
@@ -236,7 +236,6 @@ export class PlotLayerManager extends View {
   }
 
   render() {
-    this.popupLayer.addPopups()
     let transform = fixed`translate(${this._x + this._padding.left},${this._y + this._padding.top})`;
     if (this._orientation === 'east') {
       transform += fixed`
@@ -263,7 +262,6 @@ export class PlotLayerManager extends View {
           id="data-backdrop"
           width=${fixed`${this._logicalWidth}`}
           height=${fixed`${this._logicalHeight}`}
-          @pointerleave=${(ev: PointerEvent) => !isPointerInbounds(this.paraview, ev) ? this.paraview.store.clearPopups() : undefined}
         />
         ${this._backgroundHighlightsLayer.render()}
         ${this._backgroundAnnotationLayer.render()}

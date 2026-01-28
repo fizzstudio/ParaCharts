@@ -1,5 +1,5 @@
 /* ParaCharts: Datapoint Symbols
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -279,6 +279,8 @@ export class DataSymbol extends View {
   protected _options: DataSymbolOptions;
   protected _defsKey!: string;
   protected _role = '';
+  protected _fill?: DataSymbolFill;
+  protected _shape?: DataSymbolShape;
 
   static fromType(
     paraview: ParaView,
@@ -305,7 +307,7 @@ export class DataSymbol extends View {
   ) {
     super(paraview);
     this._options = {
-      strokeWidth: options?.strokeWidth ?? this.paraview.store.settings.chart.symbolStrokeWidth,
+      strokeWidth: options?.strokeWidth ?? this.paraview.paraState.settings.chart.symbolStrokeWidth,
       scale: options?.scale ?? 1,
       color: options?.color,
       opacity: options?.opacity,
@@ -332,6 +334,8 @@ export class DataSymbol extends View {
   set type(type: DataSymbolType) {
     this._type = type;
     const [shape, fill] = type.split('.');
+    this._shape = shape as DataSymbolShape;
+    this._fill = fill as DataSymbolFill;
     this._defsKey = `sym-${shape}-${fill}`;
     if (!this.paraview.defs[this._defsKey]) {
       this.paraview.addDef(this._defsKey, svg`
@@ -362,7 +366,12 @@ export class DataSymbol extends View {
   }
 
   get shape() {
-    return this._type.split('.')[0] as DataSymbolShape;
+    if (this._shape){
+      return this._shape;
+    }
+    else{
+      return this._type.split('.')[0] as DataSymbolShape;
+    }
   }
 
   set shape(shape: DataSymbolShape) {
@@ -370,7 +379,12 @@ export class DataSymbol extends View {
   }
 
   get fill() {
-    return this._type.split('.')[1] as DataSymbolFill;
+    if (this._fill) {
+      return this._fill
+    }
+    else {
+      return this._type.split('.')[1] as DataSymbolFill;
+    }
   }
 
   set fill(fill: DataSymbolFill) {
@@ -429,7 +443,7 @@ export class DataSymbol extends View {
     if (this._options.color !== undefined) {
       if (this.fill === 'solid') {
         if (this._options.lighten) {
-          const col = this.paraview.store.colors.colorValueAt(
+          const col = this.paraview.paraState.colors.colorValueAt(
             this._options.color).match(/\d+/g)!.map(Number);
           //10 and 25 are magic numbers
           col[1] -= Math.min(10, col[1]);
@@ -437,7 +451,7 @@ export class DataSymbol extends View {
           this._styleInfo.fill = `hsl(${col[0]}, ${col[1]}%, ${col[2]}%)`;
         }
         else {
-          this._styleInfo.fill = this.paraview.store.colors.colorValueAt(
+          this._styleInfo.fill = this.paraview.paraState.colors.colorValueAt(
             this._options.color);
         }
       }
@@ -449,17 +463,20 @@ export class DataSymbol extends View {
       if (this._options.opacity !== undefined) {
         this._styleInfo.opacity = this._options.opacity;
       }
-      this._styleInfo.stroke = this.paraview.store.colors.colorValueAt(
+      this._styleInfo.stroke = this.paraview.paraState.colors.colorValueAt(
         this._options.color);
     }
   }
 
   content() {
-    let transform = fixed`translate(${this._x},${this._y})`;
+    let transform;
+    let shouldTransform = false;
     if (this._options.scale !== 1) {
+      shouldTransform = true;
+      transform = fixed`translate(${this._x},${this._y})`;
       transform += fixed` scale(${this._options.scale})`;
     }
-    let type = this.paraview.store.type
+    let type = this.paraview.paraState.type
     if (this.parent instanceof DatapointView){
       if (this._y < 0 || this._y > this.parent.chart.parent.logicalHeight){
         this.hidden = true;
@@ -472,7 +489,9 @@ export class DataSymbol extends View {
         role=${this._role || nothing}
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
-        transform=${transform}
+        transform=${shouldTransform  ? transform : nothing}
+        x=${shouldTransform ? nothing : this._x}
+        y=${shouldTransform ? nothing : this._y}
         @pointerenter=${this._options.pointerEnter ?? nothing}
         @pointerleave=${this._options.pointerLeave ?? nothing}
         clip-path=${/*this._options.isClip ? 'url(#clip-path)' :*/ nothing}

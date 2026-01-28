@@ -58,45 +58,89 @@
 					text.innerHTML = 'Move right again';
                     chart.api.doAction('move', {direction: 'right'});
                 },
-                () => {
+                /*() => {
 					text.innerHTML = 'Enable dark mode';
                     chart.api.setSetting('color.isDarkModeEnabled', true);
-                },
+                },*/
                 () => {
 					text.innerHTML = 'Change manifest';
-					chart.setAttribute('manifest', '/src/demo-data/line-single-manifest-128.json');
+					chart.api.setManifest('/src/demo-data/line-single-manifest-128.json');
                 },
                 () => {
+					text.innerHTML = 'Highlight chart range';
+                    chart.api.highlightRange(0.2, 0.6);
+                },
+                () => {
+					text.innerHTML = 'Highlight chart range again';
+                    chart.api.highlightRange(0.2, 0.6);
+                },
+                () => {
+					text.innerHTML = 'Clear range highlight';
+                    chart.api.clearRangeHighlight(0.2, 0.6);
+                },
+                /*() => {
+					text.innerHTML = 'Highlight points';
+                    chart.api.getSeries('Euro area').getPoints(4, 6).highlight();
+                },
+                () => {
+					text.innerHTML = 'Clear highlight';
+                    chart.api.getSeries('Euro area').getPoints(4).clearHighlight();
+                },
+                () => {
+					text.innerHTML = 'Highlight sequences';
+                    chart.api.getSeries('EU').getSequences([0, 2], [5, 11]).highlight();
+                },*/
+                /*() => {
+					text.innerHTML = 'Play sequences soni';
+                    chart.api.getSeries('EU').getSequences([0, 2], [5, 11]).play();
+                },*/
+                /*() => {
+					text.innerHTML = 'Clear sequence highlight';
+                    chart.api.getSeries('EU').getSequences([0, 2]).clearHighlight();
+                },*/
+                /*() => {
 					text.innerHTML = 'Enable narrative highlights';
                     chart.api.setSetting('ui.isNarrativeHighlightEnabled', true);
                 },
-                /*() => {
+                () => {
 					text.innerHTML = 'Disable direct labels';
                     chart.api.setSetting('chart.hasDirectLabels', false);
                 },
                 () => {
 					text.innerHTML = 'Enable direct labels';
                     chart.api.setSetting('chart.hasDirectLabels', true);
-                },
-                () => {
+                },*/
+                /*() => {
 					text.innerHTML = 'Visit point';
-                    chart.api.getSeries('China').getPoint(6).visit();
+                    chart.api.getSeries('EU').getPoints(6).visit();
                 },
                 () => {
 					text.innerHTML = 'Select point';
-                    chart.api.getSeries('China').getPoint(6).select();
+                    chart.api.getSeries('EU').getPoints(6).select();
                 },
                 () => {
 					text.innerHTML = 'Deselect point';
-                    chart.api.getSeries('China').getPoint(6).select();
+                    chart.api.getSeries('EU').getPoints(6).select();
+                },*/
+                /*() => {
+					text.innerHTML = 'Visit sequence';
+                    chart.api.getSeries('Euro area').getSequences([2, 5]).visit();
                 },
                 () => {
+					text.innerHTML = 'Select sequence';
+                    chart.api.getSeries('Euro area').getSequences([2, 5]).select();
+                },
+                () => {
+					text.innerHTML = 'Deselect sequence';
+                    chart.api.getSeries('Euro area').getSequences([2, 5]).select();
+                },*/
+                /*() => {
 					text.innerHTML = 'Play point sonification';
-                    chart.api.getSeries('China').getPoint(6).play();
+                    chart.api.getSeries('China').getPoints(6).play();
                 },
                 () => {
 					text.innerHTML = 'Annotate point';
-                    chart.api.getSeries('China').getPoint(6).annotate('Foobar');
+                    chart.api.getSeries('China').getPoints(6).annotate('Foobar');
                 },
                 () => {
 					text.innerHTML = 'Lowlight other series';
@@ -128,14 +172,17 @@
             })
         }
 		chart.addEventListener('paranotice', (e) => {
-			//console.log('NOTICE', e.detail);
+			// XXX this won't work if animation is disabled
+			console.log('NOTICE', e.detail);
 			if (e.detail.key === 'animRevealEnd' && !demoDidStart) {
                 runDemo();
 				demoDidStart = true;
 			}
 		});
-		//await chart.loaded;
-		//console.log('CHART HAS LOADED');
+		await chart.loaded;
+		console.log('CHART HAS LOADED');
+		//chart.api.setSetting('chart.isShowPopups', true);
+		runDemo();
 	</script>
 	<h1>@fizz/paracharts ParaPerformer Demo</h1>
   	<main>

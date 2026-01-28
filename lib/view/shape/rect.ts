@@ -41,7 +41,7 @@ export class RectShape extends Shape {
       let index = this.parent!.parent!.index
       this._styleInfo.fill = `url(#Pattern${index})`
       return svg`
-      <defs>${this.paraview.store.colors.patternValueAt(index)}</defs>
+      <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
       <rect
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}

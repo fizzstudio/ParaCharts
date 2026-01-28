@@ -29,17 +29,17 @@ export class ColorsPanel extends ControlPanelTabPanel {
 
   connectedCallback() {
     super.connectedCallback();
-    const colorPalettes = this._store.colors.palettes
+    const colorPalettes = this._paraState.colors.palettes
       .filter(palette => !palette.cvd)
       .map(palette => palette.key);
 
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'color.isDarkModeEnabled',
       label: 'Dark mode',
       parentView: 'controlPanel.tabs.color.colorContrast',
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'slider',
       key: 'color.contrastLevel',
       label: 'Contrast',
@@ -52,7 +52,7 @@ export class ColorsPanel extends ControlPanelTabPanel {
       },
       parentView: 'controlPanel.tabs.color.colorContrast'
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'radio',
       key: 'color.colorVisionMode',
       label: 'Chart colors for CVD (color blindness)',
@@ -87,31 +87,31 @@ export class ColorsPanel extends ControlPanelTabPanel {
       },
       parentView: 'controlPanel.tabs.color.colorVision'
     });
-    this._store.settingControls.add({
+    this._paraState.settingControls.add({
       type: 'dropdown',
       key: 'color.colorPalette',
       label: 'Color palette:',
       options: {options: colorPalettes},
       parentView: 'controlPanel.tabs.color.colorPalette'
     });
-    this._state = new StateController(this, this._store.settingControls);
+    this._state = new StateController(this, this._paraState.settingControls);
   }
 
   render() {
     return html`
       <div class="tab-content">
         <div class="control-column">
-          ${this._store.settingControls.getContent('controlPanel.tabs.color.colorContrast')}
+          ${this._paraState.settingControls.getContent('controlPanel.tabs.color.colorContrast')}
 
           ${this.controlPanel.settings.isColorPaletteControlVisible
-            ? this._store.settingControls.getContent('controlPanel.tabs.color.colorPalette')
+            ? this._paraState.settingControls.getContent('controlPanel.tabs.color.colorPalette')
             : nothing
           }
         </div>
         ${this.controlPanel.settings.isCVDControlVisible
           ? html`
             <div>
-              ${this._store.settingControls.getContent('controlPanel.tabs.color.colorVision')}
+              ${this._paraState.settingControls.getContent('controlPanel.tabs.color.colorVision')}
             </div>
           `
           : nothing

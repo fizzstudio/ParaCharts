@@ -1,6 +1,6 @@
 import { Highlight } from '@fizz/parasummary';
-import { ParaStore } from '../../store';
-import { Logger, getLogger } from '../../common/logger';
+import { ParaState } from '../../state';
+import { Logger, getLogger } from '@fizz/logger';
 
 export class Voicing {
   protected _voice: SpeechSynthesis | null = null;
@@ -11,9 +11,9 @@ export class Voicing {
   protected _utterance: SpeechSynthesisUtterance | null = null;
   protected _highlightIndex: number | null = null;
   protected _speakingCount = 0;
-  private log: Logger = getLogger("Voicing");  
+  private log: Logger = getLogger("Voicing");
 
-  constructor(protected _store: ParaStore) {
+  constructor(protected _paraState: ParaState) {
     this._voice = window.speechSynthesis;
     if (!this._voice) {
       this.log.warn('Speech Synthesis unsupported');
@@ -46,11 +46,11 @@ export class Voicing {
         }
         this._highlightIndex = highlightIndex;
         const highlight = highlights[this._highlightIndex];
-        this._store.paraChart.postNotice('utteranceBoundary', highlight);
+        this._paraState.postNotice('landmarkStart', highlight);
       };
 
       this._utterance.onend = (event: SpeechSynthesisEvent) => {
-        this._store.paraChart.postNotice('utteranceEnd', null);
+        this._paraState.postNotice('landmarkEnd', null);
         this._speakingCount--;
       };
     }

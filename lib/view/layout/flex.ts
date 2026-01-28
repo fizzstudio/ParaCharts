@@ -1,5 +1,5 @@
 /* ParaCharts: Flex Layout
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -18,7 +18,7 @@ import { View, type SnapLocation } from '../base_view';
 import { ParaView } from '../../paraview';
 import { Layout } from './layout';
 import { fixed } from '../../common/utils';
-import { Logger, getLogger } from '../../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 
 /**
  * Abstract base class for flexbox-style row and column layouts.

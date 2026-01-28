@@ -3,3 +3,5 @@
 
 export { type FieldInfo } from './loader/paraloader'; // Needed for ParaHeadless
 export { ParaHeadless } from './headless/paraheadless';
+
+export type * from './state/settings_types';

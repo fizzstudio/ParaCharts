@@ -1,5 +1,5 @@
 /* ParaCharts: Tick Label Tier
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Logger, getLogger } from '../../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { View, Container } from '../base_view';
 import { type Layout } from '../layout';
 import { type Axis, type AxisOrientation } from './axis';
@@ -25,12 +25,27 @@ import { type TemplateResult } from 'lit';
 import { Vec2 } from '../../common/vector';
 import { PlaneModel } from '@fizz/paramodel';
 import { Popup } from '../popup';
+import { OrientedAxisSettings } from '../../state';
+import { Datatype } from '@fizz/paramanifest';
+import { AxisLabelTier } from '../../chart_types';
+
+export interface TickLabelTierOptions {
+  orientation: AxisOrientation;
+  content: AxisLabelTier;
+  index: number;
+  length: number;
+  step: number;
+  // mainStep: number;
+  numTicks: number;
+  isChartIntertick: boolean;
+  datatype: Datatype;
+  isFacetIndep: boolean;
+}
 
 /**
  * A single tier of tick labels.
  */
-export abstract class TickLabelTier<T extends AxisOrientation> extends Container(View) {
-
+export abstract class TickLabelTier extends Container(View) {
   declare protected _parent: Layout;
   declare protected _children: Label[];
 
@@ -38,15 +53,12 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   protected _labelDistance!: number;
 
   constructor(
-    public readonly axis: Axis<T>,
-    public readonly tickLabels: string[],
-    public readonly tierIndex: number,
-    length: number,
-    protected _tickStep: number,
-    paraview: ParaView
+    paraview: ParaView,
+    protected _axisSettings: OrientedAxisSettings<AxisOrientation>,
+    protected _options: TickLabelTierOptions
   ) {
     super(paraview);
-    this._updateSizeFromLength(length);
+    this._updateSizeFromLength(this._options.length);
     this.createTickLabels();
   }
 
@@ -76,7 +88,7 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   }
 
   protected _createId(..._args: any[]): string {
-    return `tick-label-tier-${this.axis.orientation}-${this.tierIndex}`;
+    return `tick-label-tier-${this._options.orientation}-${this._options.index}`;
   }
 
   protected _maxLabelWidth() {
@@ -98,20 +110,21 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
   protected abstract get _labelWrapWidth(): number | undefined;
 
   createTickLabels(_checkLabels = true) {
-    const n = this.axis.isInterval
-      ? this.tickLabels.length
-      : this.tickLabels.length - 1;
-    this._labelDistance = this._length/(n/this._tickStep);
+    const n = (this._options.isChartIntertick && this._options.isFacetIndep)
+      ? this._options.content.labels.length
+      : this._options.content.labels.length - 1;
+    this._labelDistance = this._length/(n/this._options.step);
     this.clearChildren();
-    for (const [i, labelText] of this.tickLabels.entries()) {
-      if (i % this._tickStep) {
+    const tiers = this.paraview.paraState.model!.allFacetValues("x")!.map(box => box.raw);
+    for (const [i, labelText] of this._options.content.labels.entries()) {
+      if (i % this._options.step) {
         continue;
       }
       const label = new Label(this.paraview, {
-        id: `tick-label-${this.axis.orientation}-${i}`,
+        id: `tick-label-${this._options.orientation}-${i}`,
         classList: [
-          'tick-label', `tick-label-${this.axis.orientation}`,
-          this.axis.orientationSettings.position as string],
+          'tick-label', `tick-label-${this._options.orientation}`,
+          this._axisSettings.position as string],
         role: 'axislabel',
         text: labelText,
         textAnchor: this._labelTextAnchor,
@@ -119,14 +132,30 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
         x: 0,
         y: 0,
         pointerEnter: (e) => {
-          this.paraview.store.settings.chart.isShowPopups
-            && this.paraview.store.settings.popup.activation === "onHover"
-            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(labelText, i) : undefined;
+          if (!labelText) return;
+          if (this._options.content.intervals) {
+            this.paraview.paraState.highlightRange(
+              this._options.content.intervals[i].start,
+              this._options.content.intervals[i].end);
+          }
+          if (this.paraview.paraState.settings.chart.isShowPopups
+            && this.paraview.paraState.settings.popup.activation === "onHover"
+            && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
+              this.addPopup(labelText[0] == "Q" ? tiers[i] : labelText, i);
+          }
         },
         pointerLeave: (e) => {
-          this.paraview.store.settings.chart.isShowPopups
-            && this.paraview.store.settings.popup.activation === "onHover"
-            && !this.paraview.store.settings.ui.isNarrativeHighlightEnabled ? this.paraview.store.removePopup(this.id) : undefined;
+          if (!labelText) return;
+          if (this._options.content.intervals) {
+            this.paraview.paraState.clearRangeHighlight(
+              this._options.content.intervals[i].start,
+              this._options.content.intervals[i].end);
+          }
+          if (this.paraview.paraState.settings.chart.isShowPopups
+            && this.paraview.paraState.settings.popup.activation === "onHover"
+            && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
+              this.paraview.paraState.removePopup(this.id);
+          }
         }
       });
       this.append(label);
@@ -154,19 +183,16 @@ export abstract class TickLabelTier<T extends AxisOrientation> extends Container
 /**
  * A horizontal tier of tick labels.
  */
-export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
+export class HorizTickLabelTier extends TickLabelTier {
   constructor(
-    readonly axis: Axis<'horiz'>,
-    readonly tickLabels: string[],
-    tierIndex: number,
-    length: number,
-    tickStep: number,
-    paraview: ParaView
+    paraview: ParaView,
+    axisSettings: OrientedAxisSettings<AxisOrientation>,
+    options: TickLabelTierOptions,
   ) {
-    super(axis, tickLabels, tierIndex, length, tickStep, paraview);
-    this.log = getLogger("HorizTickLabelTier");
+    super(paraview, axisSettings, options);
+    this.log = getLogger('HorizTickLabelTier');
     this._canWidthFlex = true;
-    this.padding = {top: this.axis.orientationSettings.ticks.labels.offsetGap};
+    this.padding = {top: this._axisSettings.ticks.labels.offsetGap};
   }
 
   protected _updateSizeFromLength(length: number) {
@@ -178,11 +204,11 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   }
 
   protected get _labelTextAnchor(): LabelTextAnchor {
-    return this.axis.orientationSettings.ticks.labels.angle ? 'end' : 'middle';
+    return this._axisSettings.ticks.labels.angle ? 'end' : 'middle';
   }
 
   protected get _labelWrapWidth() {
-    return this._labelDistance;
+    return this._axisSettings.isWrapLabels ? this._labelDistance : undefined;
   }
 
   computeSize(): [number, number] {
@@ -195,11 +221,16 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     // hang off the start and end boundaries of the tier.
     // These "hanging off" bits won't contribute to the size of
     // the tier, to make it easier to align.
-    let pos = this._labelDistance*index;
-    if (this.axis.isInterval) {
-      pos += (this._labelDistance/this._tickStep)/2;
+    const isXIntertick = this._options.isChartIntertick && this._options.isFacetIndep;
+    const tickDelta = this._length/(this._options.numTicks - (isXIntertick ? 0 : 1));
+    const offset = isXIntertick ? 2 : 1.5;
+    let pos = (this._options.index && this._options.datatype === 'date')
+      ? 4*tickDelta*index + offset*tickDelta
+      : this._labelDistance*index; // + this._labelDistance/2;
+    if (isXIntertick && (!this._options.index || this._options.datatype !== 'date')) {
+      pos += (this._labelDistance/this._options.step)/2;
     }
-    return (this.axis.orientationSettings.labelOrder === 'westToEast'
+    return (this._axisSettings.labelOrder === 'westToEast'
       ? pos
       : this._width - pos
     );
@@ -208,13 +239,13 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   protected _tickLabelY(index: number) {
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
     //   have two axes
-    const facet = (this.paraview.store.model as PlaneModel).getAxisFacet(this.axis.orientation)
-       ?? this.paraview.store.model!.getFacet(this.axis.orientation === 'horiz' ? 'x' : 'y')!;
+    const facet = (this.paraview.paraState.model as PlaneModel).getAxisFacet(this._options.orientation)
+       ?? this.paraview.paraState.model!.getFacet(this._options.orientation === 'horiz' ? 'x' : 'y')!;
     // const tickLen = facet!.variableType === 'independent'
-    //   ? this.paraview.store.settings.axis.x.tick.length
-    //   : this.paraview.store.settings.axis.y.tick.length;
+    //   ? this.paraview.paraState.settings.axis.x.tick.length
+    //   : this.paraview.paraState.settings.axis.y.tick.length;
     // Right-justify if west, left-justify if east;
-    return this.axis.orientationSettings.position === 'north'
+    return this._axisSettings.position === 'north'
     ? this.height // - this._children[index].height
     : 0; //tickLen;
   }
@@ -222,8 +253,8 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
   createTickLabels(checkLabels = true) {
     super.createTickLabels();
     this._children.forEach((kid, i) => {
-      if (this.paraview.store.settings.axis.horiz.ticks.labels.angle) {
-        kid.angle = this.axis.orientationSettings.ticks.labels.angle;
+      if (this.paraview.paraState.settings.axis.horiz.ticks.labels.angle) {
+        kid.angle = this._axisSettings.ticks.labels.angle;
       }
       if (kid.angle === 0) {
         kid.top = this._tickLabelY(i);
@@ -235,8 +266,8 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
       }
     });
     this.updateSize();
-    if (checkLabels) {
-      this._tickStep = this._optimizeLabelSpacing();
+    if (checkLabels && this._options.datatype !== 'string') {
+      this._options.step = this._optimizeLabelSpacing();
       this.createTickLabels(false);
     }
   }
@@ -246,7 +277,7 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
     let bboxes = [...origBboxes];
     const anchorOffsets = this._children.map(kid => kid.locOffset.x);
 
-    let tickStep = this._tickStep;
+    let tickStep = this._options.step;
     let width = this._width;
     while (true) {
       const gaps = bboxes.slice(1).map((bbox, i) => bbox.left - bboxes[i].right);
@@ -254,11 +285,11 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
       // this.log.info('MINGAP', minGap, 'TICKSTEP', tickStep, 'WIDTH', width,
       //   `(WANTED: ${this.axis.orientationSettings.tick.tickLabel.gap})`
       // );
-      if (Math.round(minGap) < this.axis.orientationSettings.ticks.labels.gap) {
+      if (Math.round(minGap) < this._axisSettings.ticks.labels.gap) {
         // if (width > 800 && this.axis.datatype !== 'string') {
         tickStep++;
         bboxes = origBboxes.filter((bbox, i) => i % tickStep === 0);
-        const newLabelCount = Math.floor(this.tickLabels.length/tickStep) + this.tickLabels.length % tickStep;
+        const newLabelCount = Math.floor(this._options.content.labels.length/tickStep) + this._options.content.labels.length % tickStep;
         if (!newLabelCount) {
           throw new Error('tick labels will always overlap');
         }
@@ -273,9 +304,9 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
 
   addPopup(text?: string, index?: number) {
     let datapointText = `no text detected`
-    const regFactor = (this.tickLabels.length % this.children.length == 0)
-      ? this.children.length / this.tickLabels.length
-      : (this.children.length) / (this.tickLabels.length + 1)
+    const regFactor = (this._options.content.labels.length % this.children.length == 0)
+      ? this.children.length / this._options.content.labels.length
+      : (this.children.length) / (this._options.content.labels.length + 1)
     let popup = new Popup(this.paraview,
       {
         text: text ?? datapointText,
@@ -290,28 +321,23 @@ export class HorizTickLabelTier extends TickLabelTier<'horiz'> {
         fill: "hsl(0, 0%, 100%)",
         shape: "boxWithArrow"
       })
-    this.paraview.store.popups.push(popup)
+    this.paraview.paraState.popups.push(popup)
   }
-
-
 }
 
 /**
  * A vertical tier of tick labels.
  */
-export class VertTickLabelTier extends TickLabelTier<'vert'> {
+export class VertTickLabelTier extends TickLabelTier {
 
   constructor(
-    readonly axis: Axis<'vert'>,
-    readonly tickLabels: string[],
-    tierIndex: number,
-    length: number,
-    tickStep: number,
-    paraview: ParaView
+    paraview: ParaView,
+    axisSettings: OrientedAxisSettings<AxisOrientation>,
+    options: TickLabelTierOptions
   ) {
-    super(axis, tickLabels, tierIndex, length, tickStep, paraview);
+    super(paraview, axisSettings, options);
     this._canHeightFlex = true;
-    this.padding = {right: this.axis.orientationSettings.ticks.labels.offsetGap};
+    this.padding = {right: this._axisSettings.ticks.labels.offsetGap};
   }
 
   protected _updateSizeFromLength(length: number) {
@@ -336,18 +362,38 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
 
   protected _tickLabelX(index: number) {
     // Right-justify if west, left-justify if east;
-    return this.axis.orientationSettings.position === 'west'
+    return this._axisSettings.position === 'west'
       ? this.width //- this._children[index].width
       : 0;
   }
 
   protected _tickLabelY(index: number) {
-    const pos = this._labelDistance*index;
-    const y = (this.axis.orientationSettings.labelOrder === 'northToSouth'
+    const tickDelta = this._length/(this._options.numTicks - (this._options.isChartIntertick ? 0 : 1));
+    const offset = this._options.isChartIntertick ? 2 : 1.5;
+    let pos = /*this.tierIndex
+      ? 4*tickDelta*index + offset*tickDelta
+      :*/ this._labelDistance*index; // + this._labelDistance/2;
+    const y = (this._axisSettings.labelOrder === 'northToSouth'
         ? pos + this._labelDistance/2 + this._children[index].height/3
         : this.height - pos + this._children[index].height/3);
     return y;
   }
+
+  // protected _tickLabelX(index: number) {
+  //   const tickDelta = this._length/(this._numTicks - (this.axis.isInterval ? 0 : 1));
+  //   const offset = this.axis.isInterval ? 2 : 1.5;
+  //   let pos = this.tierIndex
+  //     ? 4*tickDelta*index + offset*tickDelta
+  //     : this._labelDistance*index; // + this._labelDistance/2;
+  //   if (this.axis.isInterval && !this.tierIndex) {
+  //     pos += (this._labelDistance/this._tickStep)/2;
+  //   }
+  //   return (this.axis.orientationSettings.labelOrder === 'westToEast'
+  //     ? pos
+  //     : this._width - pos
+  //   );
+  // }
+
 
   createTickLabels() {
     super.createTickLabels();
@@ -366,7 +412,7 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
       {
         text: text ?? datapointText,
         x: this._tickLabelX(index ?? 0) + 15,
-        y: this._tickLabelY(index ?? 0) + this.paraview.store.settings.popup.margin - this.children[index ?? 0].height ,
+        y: this._tickLabelY(index ?? 0) + this.paraview.paraState.settings.popup.margin - this.children[index ?? 0].height ,
         id: this.id,
         type: "vertTick",
         fill: "hsl(0, 0%, 0%)",
@@ -376,7 +422,7 @@ export class VertTickLabelTier extends TickLabelTier<'vert'> {
         fill: "hsl(0, 0%, 100%)",
         shape: "boxWithArrow"
       })
-    this.paraview.store.popups.push(popup)
+    this.paraview.paraState.popups.push(popup)
   }
 
 

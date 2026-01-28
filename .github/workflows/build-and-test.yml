@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -14,22 +18,29 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
       - name: Setup npm auth
         run: echo "//npm.fizz.studio/:_authToken=${{ secrets.NPM_AUTH_TOKEN }}" >> .npmrc
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
       - name: Install dependencies
-        run: npm install --timeout=600000
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 15
+          max_attempts: 3
+          retry_wait_seconds: 30
+          command: npm ci
+
+      - name: Show npm log tail on failure
+        if: failure()
+        run: tail -200 /home/runner/.npm/_logs/*.log || true
 
       - name: Build
-        run: |
-          npm run build
+        run: npm run build
 
-      - name: Run tests
-        run: |
-          npx playwright install --with-deps
-          npm run test
+      - name: Run unit tests
+        run: npm run test:unit

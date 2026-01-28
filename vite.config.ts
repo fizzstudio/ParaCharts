@@ -1,5 +1,5 @@
 /// <reference types="vitest/config" />
-import { dirname, resolve, join } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
 
@@ -7,7 +7,6 @@ import packageConfig from './package.json';
 import * as child from 'child_process';
 
 const commitHash = child.execSync('git rev-parse --short HEAD').toString();
-
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
@@ -15,6 +14,7 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(packageConfig.version),
     __COMMIT_HASH__: JSON.stringify(commitHash),
   },
+
   build: {
     lib: {
       entry: resolve(__dirname, 'lib/index.ts'),
@@ -24,7 +24,6 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        // WORKAROUND for immer.js esm (see https://github.com/immerjs/immer/issues/557)
         intro: `window.process = {
           env: {
             NODE_ENV: "production"
@@ -33,23 +32,41 @@ export default defineConfig({
       }
     }
   },
+
   server: {
     port: 5180,
     fs: {
       allow: ['..']
     }
   },
+
   test: {
-    include: ['src/tests/**/*.test.ts'],
     dangerouslyIgnoreUnhandledErrors: true,
-    silent: false,
-    browser: {
-      enabled: true,
-      provider: 'playwright',
-      name: 'chromium',
-      headless: true
-    }
+
+    projects: [
+      {
+        test: {
+          name: 'unit',
+          include: ['src/tests/unit/**/*.test.ts'],
+          environment: 'happy-dom'
+        }
+      },
+
+      {
+        test: {
+          name: 'browser',
+          include: ['src/tests/browser/**/*.test.ts'],
+          browser: {
+            enabled: true,
+            provider: 'playwright',
+            name: 'chromium',
+            headless: true
+          }
+        }
+      }
+    ]
   },
+
   optimizeDeps: {
     include: [
       'lit',

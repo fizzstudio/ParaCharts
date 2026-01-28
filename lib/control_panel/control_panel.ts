@@ -1,4 +1,4 @@
-import { Logger, getLogger } from '../common/logger';
+import { Logger, getLogger } from '@fizz/logger';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaDialog, ParaComponent } from '../components';
 //import { styles } from '../../styles';
@@ -6,8 +6,8 @@ import {
   type DeepReadonly,
   type TabLabelStyle,
   type ControlPanelSettings
-} from '../store/settings_types';
-import { SettingsManager } from '../store/settings_manager';
+} from '../state/settings_types';
+import { SettingsManager } from '../state/settings_manager';
 import {
   DescriptionPanel, DataPanel, ColorsPanel, ChartPanel,
   AnnotationPanel, ControlsPanel
@@ -36,6 +36,8 @@ import {
 import { property, state, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { Popup } from '../view/popup';
+import { datapointIdToCursor } from '../state';
+import { AnnotationDialog } from './dialogs/annotation_dialog';
 
 
 @customElement('para-control-panel')
@@ -55,6 +57,7 @@ export class ParaControlPanel extends ParaComponent {
   protected _annotationPanelRef = createRef<AnnotationPanel>();
   protected _controlsPanelRef = createRef<ControlsPanel>();
   protected _dialogRef = createRef<ParaDialog>();
+  protected _annotationDialogRef = createRef<AnnotationDialog>();
   protected _msgDialogRef = createRef<MessageDialog>();
   protected _storeChangeUnsub!: Unsubscribe;
 
@@ -76,8 +79,8 @@ export class ParaControlPanel extends ParaComponent {
         --control-panel-icon-size: 1.1rem;
         --contents-margin: 2px 0 0 0;
         width: 1;
-        min-width: 40rem;
-        max-width: 50%;
+        /*min-width: 40rem;*/
+        /*max-width: 50%;*/
       }
       fizz-tabs.collapsed {
         /*width: rem;*/
@@ -110,7 +113,7 @@ export class ParaControlPanel extends ParaComponent {
 
   get settings() {
     return SettingsManager.getGroupLink<ControlPanelSettings>(
-      this.managedSettingKeys[0], this._store.settings);
+      this.managedSettingKeys[0], this._paraState.settings);
   }
 
   get managedSettingKeys() {
@@ -129,6 +132,10 @@ export class ParaControlPanel extends ParaComponent {
     return this._annotationPanelRef.value!;
   }
 
+  get controlsPanel() {
+    return this._controlsPanelRef.value!;
+  }
+
   // get statusBar() {
   //   return this._descriptionPanelRef.value!.statusBar;
   // }
@@ -137,10 +144,14 @@ export class ParaControlPanel extends ParaComponent {
     return this._dialogRef.value!;
   }
 
+  get annotationDialog() {
+    return this._annotationDialogRef.value!;
+  }
+
   connectedCallback() {
     super.connectedCallback();
     //this._isOpen = this.settings.isControlPanelDefaultOpen;
-    this._storeChangeUnsub = this._store.subscribe((key, value) => {
+    this._storeChangeUnsub = this._paraState.subscribe((key, value) => {
       if (key === 'data') {
         this.dataUpdated();
       }
@@ -156,15 +167,15 @@ export class ParaControlPanel extends ParaComponent {
       let toggleButton = this.shadowRoot?.getElementById("wrapper")?.children[0].shadowRoot?.children[0].getElementsByClassName("toggle")[0]
       if (toggleButton) {
         toggleButton.addEventListener("pointerenter", () => {
-          this.store.settings.chart.isShowPopups
-            && this.store.settings.popup.activation === "onHover"
-            && !this.store.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(this.paraChart.isControlPanelOpen ? true : false) : undefined
+          this.paraState.settings.chart.isShowPopups
+            && this.paraState.settings.popup.activation === "onHover"
+            && !this.paraState.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(this.paraChart.isControlPanelOpen ? true : false) : undefined
         })
         toggleButton.addEventListener("pointerleave", () => {
-          this.paraChart.paraView.store.removePopup(this.id);
+          this.paraChart.paraView.paraState.removePopup(this.id);
         })
         toggleButton.addEventListener("click", () => {
-          this.paraChart.paraView.store.removePopup(this.id);
+          this.paraChart.paraView.paraState.removePopup(this.id);
           this.addButtonListeners();
         })
         clearTimeout(timestamp);
@@ -243,6 +254,24 @@ export class ParaControlPanel extends ParaComponent {
     return this._controlsPanelRef.value!.showHelpDialog();
   }
 
+  async showAnnotDialog(dpId: string) {
+    return await this.annotationDialog.show('Add Annotation', this._getAnnot(dpId));
+  }
+
+  protected _getAnnot(dpId: string) {
+    const { seriesKey, index } = datapointIdToCursor(dpId);
+    const series = this._paraState.model!.atKey(seriesKey)!.getLabel();
+    return html`
+        <div id="annotDialog">
+          <div>Datapoint: ${series}, ${index}</div><br>
+          <label for="annot">Text:</label><br>
+          <input type="text" id="annot" name="annot">
+          <br><br>
+        </div>
+      `;
+  }
+
+
   addPopup(isOpen: boolean) {
     let paraview = this.paraChart.paraView
     let text = isOpen ? "Close control panel" : "Customize settings"
@@ -262,7 +291,7 @@ export class ParaControlPanel extends ParaComponent {
         fill: "hsl(0, 0%, 100%)",
         shape: "boxWithArrow"
       })
-    paraview.store.popups.push(popup)
+    paraview.paraState.popups.push(popup)
   }
 
   render() {
@@ -413,6 +442,7 @@ export class ParaControlPanel extends ParaComponent {
         </fizz-tabs>
       </div>
       ${this.renderDialog()}
+      ${this.renderAnnotationDialog()}
     `;
   }
 
@@ -425,6 +455,15 @@ export class ParaControlPanel extends ParaComponent {
       <fizz-msg-dialog
         ${ref(this._msgDialogRef)}
       ></fizz-msg-dialog>
+    `;
+  }
+
+  private renderAnnotationDialog() {
+    return html`
+      <para-annotation-dialog
+        ${ref(this._annotationDialogRef)}
+        id="generic-annotation-dialog"
+      ></para-annotation-dialog>
     `;
   }
 
