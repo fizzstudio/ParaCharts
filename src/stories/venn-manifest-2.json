@@ -1,0 +1,137 @@
+{
+    "datasets": [
+        {
+            "type": "venn",
+            "title": "Student Enrollment Across Algebra, History, and Chemistry",
+            "facets": {
+                "item": {
+                    "variableType": "independent",
+                    "measure": "nominal",
+                    "datatype": "string",
+                    "displayType": {
+                        "type": "text"
+                    }
+                },
+                "membership": {
+                    "variableType": "dependent",
+                    "measure": "nominal",
+                    "datatype": "string",
+                    "displayType": {
+                        "type": "area"
+                    }
+                }
+            },
+            "series": [
+                {
+                    "key": "Algebra",
+                    "records": [
+                        {
+                            "item": "Mary",
+                            "membership": "included"
+                        },
+                        {
+                            "item": "John",
+                            "membership": "included"
+                        },
+                        {
+                            "item": "Helen",
+                            "membership": "included"
+                        },
+                        {
+                            "item": "William",
+                            "membership": "included"
+                        },
+                        {
+                            "item": "Anna",
+                            "membership": "excluded"
+                        },
+                        {
+                            "item": "James",
+                            "membership": "excluded"
+                        },
+                        {
+                            "item": "Margaret",
+                            "membership": "excluded"
+                        },
+                        {
+                            "item": "George",
+                            "membership": "excluded"
+                        },
+                        {
+                            "item": "Ruth",
+                            "membership": "excluded"
+                        },
+                        {
+                            "item": "Charles",
+                            "membership": "excluded"
+                        },
+                        {
+                            "item": "Elizabeth",
+                            "membership": "excluded"
+                        },
+                        {
+                            "item": "Robert",
+                            "membership": "excluded"
+                        },
+                        {
+                            "item": "Florence",
+                            "membership": "included"
+                        },
+                        {
+                            "item": "Joseph",
+                            "membership": "included"
+                        },
+                        {
+                            "item": "Ethel",
+                            "membership": "included"
+                        },
+                        {
+                            "item": "Frank",
+                            "membership": "included"
+                        },
+                        {
+                            "item": "Marie",
+                            "membership": "excluded"
+                        },
+                        {
+                            "item": "Edward",
+                            "membership": "excluded"
+                        },
+                        {
+                            "item": "Lillian",
+                            "membership": "included"
+                        }
+                    ]
+                },
+                {
+                    "key": "Aquatic Animals",
+                    "records": [
+                        {
+                            "item": "Eagle",
+                            "membership": "excluded"
+                        },
+                        {
+                            "item": "Butterfly",
+                            "membership": "excluded"
+                        },
+                        {
+                            "item": "Dolphin",
+                            "membership": "included"
+                        },
+                        {
+                            "item": "Shark",
+                            "membership": "included"
+                        },
+                        {
+                            "item": "Flying Fish",
+                            "membership": "included"
+                        }
+                    ]
+                }
+            ],
+            "data": {
+                "source": "inline"
+            }
+        }
+    ]
+}
