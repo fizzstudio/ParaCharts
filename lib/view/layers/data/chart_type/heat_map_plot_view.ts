@@ -57,7 +57,7 @@ export class HeatMapPlotView extends PlanePlotView {
     this.log.info('CREATING DATAPOINTS');
     const xs: string[] = [];
     for (const [x, i] of enumerate(this.paraview.paraState.model!.allFacetValues('x')!)) {
-      xs.push(formatBox(x, this.paraview.paraState.getFormatType(`${this.parent.docView.type as PointChartType}Point`)));
+      xs.push(formatBox(x, this.paraview.paraState.getFormatType(`${this.parent.parent.type as PointChartType}Point`)));
       const xId = strToId(xs.at(-1)!);
       // if (this.selectors[i] === undefined) {
       //   this.selectors[i] = [];

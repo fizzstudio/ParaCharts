@@ -58,7 +58,6 @@ export class DataPanel extends ControlPanelTabPanel {
         align-items: center;
         align-content: center;
         flex-wrap: wrap;
-        width: 30rem;
       }
 
       #data-buttons button {

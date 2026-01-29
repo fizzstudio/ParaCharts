@@ -1,5 +1,5 @@
 /* ParaCharts: Base Chart Info
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -96,15 +96,13 @@ export abstract class BaseChartInfo {
     this._createNavMap();
     this._sonifier = new Sonifier(this, this._paraState, this._paraView);
     this._storeChangeUnsub = this._paraState.subscribe(async (key, value) => {
-      if (key === 'data' && this._paraState.type !== 'venn') {
+      if (key === 'data') {
         this._createSummarizer();
       }
     });
     // We initially get created after the data has loaded, so the above
     // callback won't run
-  	if(this._paraState.type !== 'venn') {
-      this._createSummarizer();
-	  }
+    this._createSummarizer();
   }
 
   protected _createSummarizer(): void {
@@ -158,24 +156,18 @@ export abstract class BaseChartInfo {
           const parsed = parseAction(highlight.action);
           if (!parsed) throw new Error(`error parsing action '${highlight.action}'`);
           executeParaActions(parsed, this._paraView.paraChart.api);
+        } else {
+          this._paraState.clearAllHighlights();
         }
       } else if (key === 'landmarkEnd') {
         // So that on the initial transition from auto-narration to manual
         // span navigation, we don't remove any highlights added in manual mode
         if (!this._paraView.paraChart.captionBox.highlightManualOverride) {
-          this._paraState.clearAllHighlights();
+          this._paraState.clearAllDatapointHighlights();
           this._paraState.clearAllSequenceHighlights();
           this._paraState.clearAllSeriesLowlights();
         }
       }
-    }
-  }
-
-  protected _doHighlight(highlight: Highlight) {
-    if (highlight.action) {
-      const parsed = parseAction(highlight.action);
-      if (!parsed) throw new Error(`error parsing action '${highlight.action}'`);
-      executeParaActions(parsed, this._paraView.paraChart.api);
     }
   }
 
@@ -422,13 +414,17 @@ export abstract class BaseChartInfo {
     }
   }
 
-  async navRunDidEnd(cursor: NavNode) {
+  async navRunDidEnd(cursor: NavNode, quiet = false) {
     //const seriesKey = cursor.options.seriesKey ?? '';
     if (cursor.isNodeType('top')) {
-      this._paraState.announce(await this._summarizer.getChartSummary());
+      if (!quiet) {
+        this._paraState.announce(await this._summarizer.getChartSummary());
+      }
     } else if (cursor.isNodeType('series')) {
-      this._paraState.announce(
-        await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
+      if (!quiet) {
+        this._paraState.announce(
+          await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
+      }
       this._playCurrentRiff();
       this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
     } else if (cursor.isNodeType(this.navDatapointType)) {
@@ -452,8 +448,9 @@ export abstract class BaseChartInfo {
           announcements.push(seriesSummary.text);
         }
       }
-
-      this._paraState.announce(announcements);
+      if (!quiet) {
+        this._paraState.announce(announcements);
+      }
       if (this._paraState.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
         this.playDatapoints([datapoint]);
       }
@@ -472,13 +469,15 @@ export abstract class BaseChartInfo {
         }
       }
     } else if (cursor.isNodeType('sequence')) {
-      this._paraState.announce(
-        await this._summarizer.getSequenceSummary({
-          seriesKey: cursor.options.seriesKey,
-          start: cursor.options.start,
-          end:cursor.options.end
-        })
-      );
+      if (!quiet) {
+        this._paraState.announce(
+          await this._summarizer.getSequenceSummary({
+            seriesKey: cursor.options.seriesKey,
+            start: cursor.options.start,
+            end:cursor.options.end
+          })
+        );
+      }
       this._playCurrentRiff();
 
       // this._paraState.highlight(

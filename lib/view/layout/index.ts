@@ -1,5 +1,5 @@
 /* ParaCharts: Layouts
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -19,3 +19,4 @@ export * from './grid';
 export * from './flex';
 export * from './spacer';
 export * from './frame';
+export * from './simple_grid';

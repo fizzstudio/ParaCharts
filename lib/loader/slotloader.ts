@@ -121,7 +121,7 @@ export class SlotLoader {
       dataset.data = { source: 'inline' };
     }
     if (!dataset.settings) {
-      dataset.settings = { 'sonification.isEnabled': true };
+      dataset.settings = { 'sonification.isSoniEnabled': true };
     }
 
     const cols = vars.map(v => [] as string[]);

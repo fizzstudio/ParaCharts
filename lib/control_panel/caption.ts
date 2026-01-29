@@ -114,8 +114,7 @@ export class ParaCaptionBox extends ParaComponent {
   }
 
   private async setCaption(): Promise<void> {
-    //FIXME: Add default summaries for Venn diagrams
-    if (this._paraState.dataState === 'complete' && this._paraState.type !== 'venn') {
+    if (this._paraState.dataState === 'complete') {
       this._caption = await this.parachart.paraView.documentView!.chartInfo.summarizer.getChartSummary();
     }
   }
@@ -199,6 +198,7 @@ export class ParaCaptionBox extends ParaComponent {
   }
 
   render() {
+    this.style.maxWidth = `${this.paraState.settings.chart.size.width}px`;
     this._isEBarVisible = !!this.paraState.announcement.text
       && this._paraState.announcement.text !== this._caption.text;
     const isCaptionSolo = !this._isEBarVisible || !this._paraState.settings.controlPanel.isExplorationBarVisible;
@@ -228,7 +228,9 @@ export class ParaCaptionBox extends ParaComponent {
               || this.parachart.isControlPanelOpen
               ? html`
                 <button
-                  @click=${() => this.parachart.showAriaLiveHistory()}
+                  @click=${() => {
+                    this.parachart.showAriaLiveHistory();
+                  }}
                 >
                   History
                 </button>`

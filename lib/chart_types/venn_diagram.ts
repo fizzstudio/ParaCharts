@@ -1,5 +1,5 @@
 /* ParaCharts: Pastry Charts
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -74,10 +74,9 @@ export class VennDiagramInfo extends BaseChartInfo {
       parentView: 'controlPanel.tabs.chart.chart',
     });
   }
-
   protected _createNavMap() {
     super._createNavMap();
-    const layer = new NavLayer(this._navMap!, 'slices');
+    const layer = new NavLayer(this._navMap!, 'circles');
     directions.forEach(dir => {
       this._navMap!.node('top', {})!.connect(dir, layer);
     });
@@ -97,12 +96,13 @@ export class VennDiagramInfo extends BaseChartInfo {
     });
     nodes.at(-1)!.connect('right', nodes[0]);
   }
+
   /*
   legend() {
   }
 */
   playDatapoints(datapoints: PlaneDatapoint[]): void {
-    this._sonifier.playDatapoints(datapoints, {invert: true, durationVariable: true});
+    this._sonifier.playDatapoints(datapoints, { invert: true, durationVariable: true });
   }
 
   playDir(dir: HorizDirection): void {

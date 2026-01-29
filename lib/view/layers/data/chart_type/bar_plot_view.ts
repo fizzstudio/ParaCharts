@@ -1,5 +1,5 @@
 /* ParaCharts: Bar Chart Plot Views
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -186,7 +186,7 @@ export class BarPlotView extends PlanePlotView {
   }
 
   protected _createDatapoints() {
-    const chartInfo = this._parent.docView.chartInfo as BarChartInfo;
+    const chartInfo = this._parent.parent.chartInfo as BarChartInfo;
     const seriesViews: { [key: string]: PlaneSeriesView } = {};
     Object.entries(chartInfo.clusteredData).forEach(([clusterKey, cluster], i) => {
       for (const [stackKey, stack] of Object.entries(cluster.stacks)) {

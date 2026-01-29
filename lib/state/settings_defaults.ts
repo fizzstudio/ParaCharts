@@ -1,5 +1,5 @@
 /* ParaCharts: Default Settings
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -101,7 +101,7 @@ export const defaults: Settings = {
           fontSize: '10pt',
           angle: 0, //-45,
           offsetGap: 4,
-          gap: 0
+          gap: 10
         },
         step: 1,
         isOnDatapoint: true
@@ -176,8 +176,8 @@ export const defaults: Settings = {
       //fill: 'aliceblue',
     },
     padding: 10,
-    symbolLabelGap: 5,
-    pairGap: 30,
+    symbolLabelGap: 4,
+    pairGap: 10,
     position: 'east',
     margin: 20,
     itemOrder: 'series',

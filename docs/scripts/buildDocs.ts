@@ -34,13 +34,10 @@ async function buildDocs() {
             }
 
             const tpl = fs.readFileSync(tplPath, 'utf8');
-            const rendered = mustache.render(tpl, context);
-
-            // Avoid overwriting dotfiles or the .vitepress directory
-            if (name.startsWith('.') || name === '.vitepress') {
-                console.log(`Skipping reserved name ${name}`);
-                continue;
-            }
+            const rendered = mustache.render(tpl, context, {}, {
+                // we don't want to apply HTML escaping, so just return the string unchanged
+                escape: (text: string) => text
+            });
 
             const outPath = path.join(outDir, `${name}.md`);
             fs.writeFileSync(outPath, rendered, 'utf8');

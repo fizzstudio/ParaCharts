@@ -1,5 +1,5 @@
 /* ParaCharts: ParaAPI
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -189,7 +189,7 @@ export class ParaAPI {
     this._narrativeActions.repeatLastAnnouncement = () => { };
     this._narrativeActions.toggleNarrativeHighlightMode = () => {
       _paraChart.captionBox.clearSpanHighlights();
-      paraState.clearAllHighlights();
+      paraState.clearAllDatapointHighlights();
       paraState.clearAllSequenceHighlights();
       paraState.clearAllSeriesLowlights();
       paraView.endNarrativeHighlightMode();
@@ -223,6 +223,10 @@ export class ParaAPI {
 
   doAction(action: keyof AvailableActions, args?: ActionArgumentMap) {
     this._actions[action](args);
+  }
+
+  setManifest(manifestUrl: string) {
+    this._paraChart.setAttribute('manifest', manifestUrl);
   }
 
   // protected _labelToKey(seriesLabel: string): string {
@@ -263,8 +267,20 @@ export class ParaAPI {
     });
   }
 
-  clearAllHighlights() {
-    this._paraChart.paraState.clearAllHighlights();
+  highlightRange(startPortion: number, endPortion: number) {
+    this._paraChart.paraState.highlightRange(startPortion, endPortion);
+  }
+
+  clearRangeHighlight(startPortion: number, endPortion: number) {
+    this._paraChart.paraState.clearRangeHighlight(startPortion, endPortion);
+  }
+
+  clearAllRangeHighlights() {
+    this._paraChart.paraState.clearAllRangeHighlights();
+  }
+
+  clearAllDatapointHighlights() {
+    this._paraChart.paraState.clearAllDatapointHighlights();
   }
 
   clearAllSequenceHighlights() {
@@ -273,6 +289,10 @@ export class ParaAPI {
 
   clearAllSeriesLowlights() {
     this._paraChart.paraState.clearAllSeriesLowlights();
+  }
+
+  clearAllHighlights() {
+    this._paraChart.paraState.clearAllHighlights();
   }
 
   hideAllSeries() {
@@ -298,19 +318,13 @@ export class ParaAPI {
 export class ParaAPISeriesGroup {
   protected _datapoints: Map<string, Datapoint[]>;
   protected _keys: string[];
-  protected _labels: string[];
 
   constructor(labelsOrKeys: string[], protected _api: ParaAPI) {
-    this._labels = [];
     this._keys = [];
     const allSeries = labelsOrKeys.map(labelOrKey => {
       const seriesFromLabel = _api.paraChart.paraState.model!.atLabel(labelOrKey);
       const seriesFromKey = _api.paraChart.paraState.model!.atKey(labelOrKey);
-      if (seriesFromLabel) {
-        this._labels.push(labelOrKey);
-      } else if (seriesFromKey) {
-        this._keys.push(labelOrKey);
-      } else {
+      if (!seriesFromLabel && !seriesFromKey) {
         throw new Error(`no series with label or key '${labelOrKey}'`);
       }
       return seriesFromLabel ?? seriesFromKey!;
@@ -318,11 +332,8 @@ export class ParaAPISeriesGroup {
     this._datapoints = new Map();
     allSeries.forEach(series => {
       this._datapoints.set(series.key, [...series.datapoints]);
+      this._keys.push(series.key);
     });
-  }
-
-  get labels(): string[] {
-    return this._labels;
   }
 
   get keys(): string[] {
@@ -436,17 +447,17 @@ export class ParaAPIPointGroup {
   }
 
   highlight() {
-    this._apiSeriesGroup.api.clearAllHighlights();
+    this._apiSeriesGroup.api.clearAllDatapointHighlights();
     this._apiSeriesGroup.api.clearAllSequenceHighlights();
     this._datapoints.forEach(datapoint => {
-      this._apiSeriesGroup.api.paraChart.paraState.highlight(
+      this._apiSeriesGroup.api.paraChart.paraState.highlightDatapoint(
         datapoint.seriesKey, datapoint.datapointIndex);
     });
   }
 
   clearHighlight() {
     this._datapoints.forEach(datapoint => {
-      this._apiSeriesGroup.api.paraChart.paraState.clearHighlight(
+      this._apiSeriesGroup.api.paraChart.paraState.clearDatapointHighlight(
         datapoint.seriesKey, datapoint.datapointIndex);
       this._apiSeriesGroup.api.paraChart.paraState.removePopup(this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '')
     }
@@ -492,7 +503,7 @@ export class ParaAPISequenceGroup {
   }
 
   highlight() {
-    this._apiSeriesGroup.api.clearAllHighlights();
+    this._apiSeriesGroup.api.clearAllDatapointHighlights();
     this._apiSeriesGroup.api.clearAllSequenceHighlights();
     this._apiSeriesGroup.keys.forEach(key => {
       this._boundaryPairs.forEach(pair => {

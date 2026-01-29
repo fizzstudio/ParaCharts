@@ -1,5 +1,5 @@
 /* ParaCharts: Waterfall Charts
-Copyright (C) 2025 Fizz Studios
+Copyright (C) 2025 Fizz Studio
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published
@@ -74,7 +74,7 @@ export class WaterfallChartInfo extends PlaneChartInfo {
 
   protected _facetTickLabelValues(facetKey: string): string[] {
     if (facetKey === 'x') {
-      return this._paraState.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'raw'));
+      return this._paraState.model!.series[0].datapoints.map(dp => formatXYDatapointX(dp, 'value'));
     } else if (facetKey === 'y') {
       return [...this._cumulativeTotals.map(ct => ct.toString())];
     } else {

@@ -141,7 +141,7 @@ export const FromSlot: Story = {
         "source": "inline"
       },
       "settings": {
-        "sonification.isEnabled": true
+        "sonification.isSoniEnabled": true
       }
     }
   ]

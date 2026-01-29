@@ -31,7 +31,7 @@ export class ScatterPlotView extends PointPlotView {
   get datapointViews() {
     return super.datapointViews as ScatterPointView[];
   }
-  
+
   get types(){
     return this._types
   }
@@ -101,7 +101,7 @@ export class ScatterPlotView extends PointPlotView {
   }
 
   content(...options: any[]) {
-    const chartInfo = this.parent.docView.chartInfo as ScatterChartInfo;
+    const chartInfo = this.parent.parent.chartInfo as ScatterChartInfo;
     if (chartInfo.clustering) {
       this._clusterShellView?.remove();
       if (chartInfo.currentCluster !== -1) {
@@ -250,7 +250,7 @@ export class ClusterShellView extends View {
       this._points = points;
     } else if (this.clusterID !== undefined) {
       const datapointViews = this.chart.datapointViewsStatic!
-      const chartInfo = this.chart.parent.docView.chartInfo as ScatterChartInfo;
+      const chartInfo = this.chart.parent.parent.chartInfo as ScatterChartInfo;
       const clustering = chartInfo.clustering!;
       const shellIDsList = clustering[this.clusterID].hullIDs;
       const points = [];
