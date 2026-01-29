@@ -492,6 +492,8 @@ export interface BarSettings extends PlaneChartSettings {
   colorByDatapoint: boolean;
   /** Show total value labels on stacked bars */
   isDrawTotalLabels: boolean;
+  /** Gap between total value labels and stacks */
+  totalLabelGap: number;
   /** Gap between stack labels and bars */
   stackLabelGap: number;
   /** Show record name labels */

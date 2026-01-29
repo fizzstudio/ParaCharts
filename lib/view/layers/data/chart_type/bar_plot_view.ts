@@ -243,7 +243,7 @@ export class BarPlotView extends PlanePlotView {
           }));
           this.append(this._totalLabels.at(-1)!);
           this._totalLabels.at(-1)!.centerX = barView.centerX;
-          this._totalLabels.at(-1)!.bottom = barView.top;
+          this._totalLabels.at(-1)!.bottom = barView.top - this._chartInfo.settings.totalLabelGap;
         }
       }
       // this._resizeToFitLabels();
