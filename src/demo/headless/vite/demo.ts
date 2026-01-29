@@ -55,7 +55,7 @@ async function _loadCsv(blob: Blob) {
 }
 
 const headless = new ParaHeadless();
-await headless.ready;
+await headless.ready();
 
 const dataSelect = document.getElementById('data-select')!;
 dataSelect.addEventListener('change', _selectData);
