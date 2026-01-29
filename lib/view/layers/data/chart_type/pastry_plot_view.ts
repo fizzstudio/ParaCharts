@@ -375,7 +375,6 @@ export abstract class PastryPlotView extends DataLayer {
     }
     return null;
   }
-
 }
 
 export interface RadialDatapointParams {

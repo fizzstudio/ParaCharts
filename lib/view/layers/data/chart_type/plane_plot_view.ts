@@ -150,7 +150,6 @@ export class PlaneSeriesView extends SeriesView {
   get siblings(): readonly this[] {
     return super.siblings as this[];
   }
-
 }
 
 /**

@@ -88,7 +88,6 @@ export class LinePlotView extends PointPlotView {
         this.paraview.paraState.clearPopups()
         nearestPoint.addDatapointPopup()
       }
-
     }
     super.pointerMove()
   }

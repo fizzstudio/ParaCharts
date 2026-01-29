@@ -88,3 +88,10 @@ export const DemoChart10: Story = {
     filename: "manifests/venn-manifest-1.json",
   }
 }
+
+export const DemoChart11: Story = {
+  name: "11. Venn Diagram - 3 Circles",
+  args: {
+      filename: "manifests/venn-manifest-2.json",
+  }
+}
