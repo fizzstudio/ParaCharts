@@ -1,4 +1,4 @@
-import { Manifest, ParaHeadless } from '../../../../lib/headless/paraheadless';
+import { ParaHeadless, type Manifest } from '../../../../lib';
 
 const container = document.getElementById('content-container')!;
 const jim = document.getElementById('jim')!;
@@ -10,7 +10,6 @@ let _svgText;
 let _dataFieldInfo;
 
 async function _selectData(event: Event) {
-	console.log('select start')
 	event.stopPropagation();
 
 	const fileInput = event.target as HTMLInputElement;
@@ -20,7 +19,7 @@ async function _selectData(event: Event) {
 	if (!file) {
 		return;
 	}
-console.log('got file')
+
 	_dataFile = file;
 
 	const ext = file.name.toLocaleLowerCase().match(/^.+(\.\w+)/)?.[1];
@@ -29,7 +28,6 @@ console.log('got file')
 		: (file.name + '.svg');
 
 	if ('application/json' === file.type) {
-		console.log('got json')
 		await _loadManifest(JSON.parse(await file.text()));
 	} else if ('text/csv' === file.type) {
 		await _loadCsv(file);
@@ -39,15 +37,15 @@ console.log('got file')
 }
 
 async function _loadManifest(manifest: Manifest) {
-	console.log('load manifest start', headless)
 	await headless.loadManifest(JSON.stringify(manifest), 'content');
-	console.log('load manifest 1')
 	await headless.jimReady;
-		console.log('got manifest')
 	_manifest = manifest;
 	_svgText = headless.api.serializeChart();
 	container.innerHTML = _svgText;
-	jim.innerHTML = document.getElementsByTagName('metadata')[0].innerHTML;
+	const metadataEl = container.querySelector('metadata');
+	if (metadataEl) {
+		jim.value = metadataEl.innerHTML;
+	}
 }
 
 async function _loadCsv(blob: Blob) {

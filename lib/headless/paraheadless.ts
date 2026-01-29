@@ -1,6 +1,5 @@
 
 import { ParaChart } from '../parachart/parachart';
-import '../parachart/parachart';
 import { type SourceKind, type FieldInfo } from '../loader/paraloader';
 
 export { FieldInfo };
@@ -33,25 +32,15 @@ export class ParaHeadless {
     return this._paraChart.loader.preloadData(url);
   }
 
-  loadManifest(
+  async loadManifest(
     input: string,
     type: SourceKind = 'url',
-    // format: SourceFormat = 'manifest',
-    // templateOptions?: TemplateOptions
   ): Promise<void> {
-    this._paraChart.manifest = input;
+    await this._paraChart.ready;
     this._paraChart.manifestType = type;
-    console.log('hl lm')
-    return new Promise<void>((resolve) => {
-      this._paraChart.addEventListener('manifestchange', async () => {
-        // Once the filename has been set, we can wait for the load to complete
-        const l = this._paraChart.loaded
-        console.log('promise', l)
-        await l;
-        console.log('promise loaded')
-        resolve();
-      }, {once: true});
-    });
+    await new Promise(resolve => setTimeout(resolve, 0));
+    this._paraChart.manifest = input;
+    await this._paraChart.loaded;
   }
 
   get jimReady() {
