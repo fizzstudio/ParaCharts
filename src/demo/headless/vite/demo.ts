@@ -1,7 +1,7 @@
 import { ParaHeadless, type Manifest } from '../../../../lib';
 
 const container = document.getElementById('content-container')!;
-const jim = document.getElementById('jim')!;
+const jim = document.getElementById('jim')! as HTMLTextAreaElement;
 
 let _dataFile;
 let _svgName;
