@@ -105,6 +105,10 @@ export function lexParaActions(source: string): Token[] {
   // Last non-separator token kind (used to decide if whitespace is between expressions).
   let lastNonSepKind: TokenKind | null = null;
 
+  // Enable positional opaque args like loadData(/path) and loadData(https://...)
+  let argParenDepth = 0;
+  let expectArgValue = false;
+
   const pushToken = (
     kind: TokenKind,
     value: string | number | boolean | null | undefined,
@@ -115,12 +119,62 @@ export function lexParaActions(source: string): Token[] {
     if (kind !== 'actionSep' && kind !== 'eof') {
       lastNonSepKind = kind;
     }
+
+
+    // mark argument value consumption within (...)
+    if (
+      argParenDepth > 0 &&
+      (kind === 'identifier' || kind === 'number' || kind === 'string' || kind === 'boolean' || kind === 'null')
+    ) {
+      expectArgValue = false;
+    }
   };
 
   const isWhitespace = (ch: string) =>
     ch === ' ' || ch === '\t' || ch === '\r' || ch === '\n';
 
   const isDigit = (ch: string) => ch >= '0' && ch <= '9';
+
+
+  // Detect and read positional opaque args inside (...)
+  const startsWithUrlScheme = (idx: number): boolean => {
+    // Matches: scheme:// where scheme = ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+    let j = idx;
+    if (j >= length) return false;
+    const first = source[j];
+    if (!first || !/[A-Za-z]/.test(first)) return false;
+    j += 1;
+
+    while (j < length) {
+      const c = source[j];
+      if (/[A-Za-z0-9+.-]/.test(c)) {
+        j += 1;
+        continue;
+      }
+      break;
+    }
+
+    return source[j] === ':' && source[j + 1] === '/' && source[j + 2] === '/';
+  };
+
+  const readRawArgUntilTerminator = (): string => {
+    const start = i;
+    while (i < length) {
+      const c = source[i];
+      if (c === ',' || c === ')') {
+        break;
+      }
+      if (c === '\n') {
+        line += 1;
+        column = 1;
+        i += 1;
+        continue;
+      }
+      i += 1;
+      column += 1;
+    }
+    return source.slice(start, i).trim();
+  };
 
   const canStartExpressionChar = (ch: string | undefined): boolean => {
     if (!ch) return false;
@@ -181,6 +235,29 @@ export function lexParaActions(source: string): Token[] {
       continue;
     }
 
+
+    // Positional opaque args inside (...) like loadData(/path) and loadData(https://...)
+    if (argParenDepth > 0 && expectArgValue) {
+      // Skip leading whitespace within the argument.
+      while (i < length && (source[i] === ' ' || source[i] === '\t' || source[i] === '\r')) {
+        i += 1;
+        column += 1;
+      }
+
+      const nextCh = source[i];
+      // Trigger raw mode for URL schemes like https://, or leading '/', './', and '../' (relative paths)
+      const isDotSlash =
+        nextCh === '.' && (source[i + 1] === '/' || (source[i + 1] === '.' && source[i + 2] === '/'));
+      if (nextCh === '/' || isDotSlash || startsWithUrlScheme(i)) {
+        const tokenLine = line;
+        const tokenColumn = column;
+        const raw = readRawArgUntilTerminator();
+        pushToken('string', raw, tokenLine, tokenColumn);
+        // Do not consume ',' or ')' here; let the main loop handle punctuation.
+        continue;
+      }
+    }
+
     // Semicolon: always a separator between actions.
     if (ch === ';') {
       pushToken('actionSep', undefined, line, column);
@@ -234,21 +311,18 @@ export function lexParaActions(source: string): Token[] {
       continue;
     }
 
-    // Parentheses
-    // if (ch === '(') {
-    //   pushToken('lparen', undefined, line, column);
-    //   i += 1;
-    //   column += 1;
-    //   continue;
-    // }
-    // if (ch === ')') {
-    //   pushToken('rparen', undefined, line, column);
-    //   i += 1;
-    //   column += 1;
-    //   continue;
-    // }
     if (ch === '(' || ch === ')') {
       const tokenName = (ch === '(') ? 'lparen' : 'rparen';
+
+      // Track argument parsing context for positional opaque args
+      if (tokenName === 'lparen') {
+        argParenDepth += 1;
+        expectArgValue = true;
+      } else {
+        if (argParenDepth > 0) argParenDepth -= 1;
+        expectArgValue = false;
+      }
+
       pushToken(tokenName, undefined, line, column);
       i += 1;
       column += 1;
@@ -273,20 +347,14 @@ export function lexParaActions(source: string): Token[] {
     }
 
     // Punctuation
-    // if (ch === '.') {
-    //   pushToken('dot', undefined, line, column);
-    //   i += 1;
-    //   column += 1;
-    //   continue;
-    // }
-    // if (ch === ',') {
-    //   pushToken('comma', undefined, line, column);
-    //   i += 1;
-    //   column += 1;
-    //   continue;
-    // }
     if (ch === '.' || ch === ',') {
       const tokenName = (ch === '.') ? 'dot' : 'comma';
+
+      // After ',' within (...), next token begins a value
+      if (tokenName === 'comma' && argParenDepth > 0) {
+        expectArgValue = true;
+      }
+
       pushToken(tokenName, undefined, line, column);
       i += 1;
       column += 1;
