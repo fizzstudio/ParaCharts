@@ -394,7 +394,7 @@ export class VennPlotView extends DataLayer {
 
   protected _createDatapoints3Circles() {
     const seriesKeys = this.paraview.paraState.model!.seriesKeys;
-    const radius = this._radius * 0.8;
+    const radius = this._radius * 0.9;
     const cx = this._cx;
     const cy = this._cy;
 
@@ -402,14 +402,14 @@ export class VennPlotView extends DataLayer {
     const offsetY = radius * 0.6;
 
     const centers: { x: number; y: number }[] = [
-      { x: cx - offsetX, y: cy + offsetY },
-      { x: cx + offsetX, y: cy + offsetY },
-      { x: cx, y: cy - offsetY },
+      { x: cx - offsetX * 0.7, y: cy + offsetY },
+      { x: cx + offsetX * 0.7, y: cy + offsetY },
+      { x: cx, y: cy - offsetY * 0.7},
     ];
 
-    const circle1 = { center: { x: cx - offsetX, y: cy + offsetY }, radius: radius, name: "A" };
-    const circle2 = { center: { x: cx + offsetX, y: cy + offsetY }, radius: radius, name: "B" };
-    const circle3 = { center: { x: cx, y: cy - offsetY }, radius: radius, name: "C" };
+    const circle1 = { center: { x: cx - offsetX * 0.7, y: cy + offsetY }, radius: radius, name: "A" };
+    const circle2 = { center: { x: cx + offsetX * 0.7, y: cy + offsetY }, radius: radius, name: "B" };
+    const circle3 = { center: { x: cx, y: cy - offsetY * 0.7}, radius: radius, name: "C" };
 
     seriesKeys.forEach((seriesKey, i) => {
       const seriesView = new SeriesView(this, seriesKey);
@@ -428,18 +428,18 @@ export class VennPlotView extends DataLayer {
     });
 
     const [p1, p2] = this.getIntersections(
-      { center: { x: cx - offsetX, y: cy + offsetY }, radius: this._radius * 0.8, name: 'A' },
-      { center: { x: cx + offsetX, y: cy + offsetY }, radius: this._radius * 0.8, name: 'B' }
+      { center: { x: cx - offsetX * 0.7, y: cy + offsetY }, radius: radius, name: 'A' },
+      { center: { x: cx + offsetX * 0.7, y: cy + offsetY }, radius: radius, name: 'B' }
     );
 
     const [p3, p4] = this.getIntersections(
-      { center: { x: cx - offsetX, y: cy + offsetY }, radius: this._radius * 0.8, name: 'A' },
-      { center: { x: cx, y: cy - offsetY }, radius: this._radius * 0.8, name: 'C' }
+      { center: { x: cx - offsetX * 0.7, y: cy + offsetY }, radius: radius, name: 'A' },
+      { center: { x: cx, y: cy - offsetY * 0.7}, radius: radius, name: 'C' }
     );
 
     const [p5, p6] = this.getIntersections(
-      { center: { x: cx + offsetX, y: cy + offsetY }, radius: this._radius * 0.8, name: 'B' },
-      { center: { x: cx, y: cy - offsetY }, radius: this._radius * 0.8, name: 'C' }
+      { center: { x: cx + offsetX * 0.7, y: cy + offsetY }, radius: radius, name: 'B' },
+      { center: { x: cx, y: cy - offsetY * 0.7}, radius: radius, name: 'C' }
     );
 
     if (p1 && p2 && p3 && p4 && p5 && p6) {
