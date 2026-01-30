@@ -91,7 +91,7 @@
   },
   "types": "./dist/paracharts.d.ts",
   "devDependencies": {
-    "@fizz/chart-data": "^2.3.8",
+    "@fizz/chart-data": "^2.4.0",
     "@fizz/test-utils": "^0.2.0",
     "@microsoft/api-documenter": "^7.25.11",
     "@microsoft/api-extractor": "^7.47.6",

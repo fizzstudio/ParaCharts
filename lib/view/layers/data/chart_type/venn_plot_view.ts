@@ -297,6 +297,22 @@ export class VennPlotView extends DataLayer {
     ];
   }
 
+  protected findTripleIntersectionPoints(circle1: Circle, circle2: Circle, circle3: Circle, points: IntersectionPoint[]): IntersectionPoint[] {
+    return points.filter(p =>
+      this.isInsideCircle(circle1, p) &&
+      this.isInsideCircle(circle2, p) &&
+      this.isInsideCircle(circle3, p)
+    );
+  }
+
+  protected isInsideCircle(circle: Circle, p: Point): boolean {
+    const dx = p.x - circle.center.x;
+    const dy = p.y - circle.center.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const epsilon = 1e-6;
+    return distance <= circle.radius + epsilon;
+  }
+
   protected _completeDatapointLayout(): void {
     super._completeDatapointLayout();
     this._createLabels();
@@ -316,7 +332,7 @@ export class VennPlotView extends DataLayer {
     this._cy = this._height / 2;
   }
 
-  protected _createDatapoints() {
+  protected _createDatapoints2Circles() {
     const seriesKeys = this.paraview.paraState.model!.seriesKeys;
     for (let idx = 0; idx < seriesKeys.length; idx++) {
       const series = this.paraview.paraState.model!.series.find(
@@ -348,22 +364,164 @@ export class VennPlotView extends DataLayer {
       { center: { x: this._cx - 0.5 * this._radius, y: this._cy }, radius: this._radius, name: 'A' },
       { center: { x: this._cx + 0.5 * this._radius, y: this._cy }, radius: this._radius, name: 'B' }
     );
-
     if (intersections.length === 2) {
       const [p1, p2] = intersections;
+
       const arc = new ArcShape(this.paraview, {
         r: this._radius,
-        points: [
-          new Vec2(p1.x, p1.y),
-          new Vec2(p2.x, p2.y),
-          new Vec2(p2.x, p2.y),
-          new Vec2(p1.x, p1.y)
+        segments: [
+          {
+            start: new Vec2(p1.x, p1.y),
+            end: new Vec2(p2.x, p2.y),
+            largeArc: 0,
+            sweep: 0
+          },
+          {
+            start: new Vec2(p2.x, p2.y),
+            end: new Vec2(p1.x, p1.y),
+            largeArc: 0,
+            sweep: 0
+          }
         ],
         stroke: "white",
         fill: "mediumseagreen",
         strokeWidth: 5,
       });
+
       this.append(arc);
+    }
+  }
+
+  protected _createDatapoints3Circles() {
+    const seriesKeys = this.paraview.paraState.model!.seriesKeys;
+    const radius = this._radius * 0.8;
+    const cx = this._cx;
+    const cy = this._cy;
+
+    const offsetX = radius * 0.7;
+    const offsetY = radius * 0.6;
+
+    const centers: { x: number; y: number }[] = [
+      { x: cx - offsetX, y: cy + offsetY },
+      { x: cx + offsetX, y: cy + offsetY },
+      { x: cx, y: cy - offsetY },
+    ];
+
+    const circle1 = { center: { x: cx - offsetX, y: cy + offsetY }, radius: radius, name: "A" };
+    const circle2 = { center: { x: cx + offsetX, y: cy + offsetY }, radius: radius, name: "B" };
+    const circle3 = { center: { x: cx, y: cy - offsetY }, radius: radius, name: "C" };
+
+    seriesKeys.forEach((seriesKey, i) => {
+      const seriesView = new SeriesView(this, seriesKey);
+      this._chartLandingView.append(seriesView);
+
+      const center = centers[i];
+
+      const region = new VennRegionView(
+        seriesView,
+        center.x - cx,
+        center.y - cy,
+        radius
+      );
+
+      seriesView.append(region);
+    });
+
+    const [p1, p2] = this.getIntersections(
+      { center: { x: cx - offsetX, y: cy + offsetY }, radius: this._radius * 0.8, name: 'A' },
+      { center: { x: cx + offsetX, y: cy + offsetY }, radius: this._radius * 0.8, name: 'B' }
+    );
+
+    const [p3, p4] = this.getIntersections(
+      { center: { x: cx - offsetX, y: cy + offsetY }, radius: this._radius * 0.8, name: 'A' },
+      { center: { x: cx, y: cy - offsetY }, radius: this._radius * 0.8, name: 'C' }
+    );
+
+    const [p5, p6] = this.getIntersections(
+      { center: { x: cx + offsetX, y: cy + offsetY }, radius: this._radius * 0.8, name: 'B' },
+      { center: { x: cx, y: cy - offsetY }, radius: this._radius * 0.8, name: 'C' }
+    );
+
+    if (p1 && p2 && p3 && p4 && p5 && p6) {
+      const points: IntersectionPoint[] = [
+        { x: p1.x, y: p1.y, circles: [circle1, circle2] },
+        { x: p2.x, y: p2.y, circles: [circle1, circle2] },
+        { x: p3.x, y: p3.y, circles: [circle1, circle3] },
+        { x: p4.x, y: p4.y, circles: [circle1, circle3] },
+        { x: p5.x, y: p5.y, circles: [circle2, circle3] },
+        { x: p6.x, y: p6.y, circles: [circle2, circle3] },
+      ];
+      const tripleIntersectionPoints = this.findTripleIntersectionPoints(circle1, circle2, circle3, points);
+      const keep = tripleIntersectionPoints;
+      const sortedPoints = this.sortPointsByAngle(tripleIntersectionPoints);
+      const [sp1, sp2, sp3] = sortedPoints;
+      console.log("extreme ", sortedPoints);
+      const tripleArc = new ArcShape(this.paraview, {
+        r: radius,
+        segments: [
+          {
+            start: new Vec2(sp1.x, sp1.y),
+            end: new Vec2(sp2.x, sp2.y),
+            largeArc: 0,
+            sweep: 1
+          },
+          {
+            start: new Vec2(sp2.x, sp2.y),
+            end: new Vec2(sp3.x, sp3.y),
+            largeArc: 0,
+            sweep: 1
+          },
+          {
+            start: new Vec2(sp3.x, sp3.y),
+            end: new Vec2(sp1.x, sp1.y),
+            largeArc: 0,
+            sweep: 1
+          }
+        ],
+        stroke: "white",
+        fill: "red",
+        strokeWidth: 5,
+      });
+      this.append(tripleArc);
+    }
+  }
+
+  protected averagePoints(points: Point[]): Point {
+    const result: Point = { x: 0, y: 0 };
+    for (const point of points) {
+      result.x += point.x;
+      result.y += point.y;
+    }
+    result.x /= points.length;
+    result.y /= points.length;
+    return result;
+  }
+
+  protected sortPointsByAngle(points: IntersectionPoint[]): IntersectionPoint[] {
+    const center = this.averagePoints(points);
+
+    return points.slice().sort((a, b) => {
+      const angleA = Math.atan2(a.y - center.y, a.x - center.x);
+      const angleB = Math.atan2(b.y - center.y, b.x - center.x);
+      return angleA - angleB;
+    });
+  }
+  protected _createDatapoints() {
+    const seriesKeys = this.paraview.paraState.model!.seriesKeys;
+
+    switch (seriesKeys.length) {
+      case 2:
+        this._createDatapoints2Circles();
+        break;
+
+      case 3:
+        this._createDatapoints3Circles();
+        break;
+
+      default:
+        throw new Error(
+          `VennPlotView supports only 2 or 3 series, got ${seriesKeys.length}`
+        );
     }
   }
 
@@ -472,10 +630,6 @@ export class VennPlotView extends DataLayer {
     placeLabels(rectanglesA, pointsA, [true, false]);
     placeLabels(rectanglesB, pointsB, [false, true]);
     placeLabels(rectanglesAB, pointsAB, [true, true]);
-  }
-
-
-  protected _resolveOutsideLabelCollisions() {
   }
 
   focusRingShape(): Shape | null {
