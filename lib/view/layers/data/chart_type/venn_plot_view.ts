@@ -673,7 +673,7 @@ export class VennPlotView extends DataLayer {
   protected _createLabels() {
     const seriesKeys = this.paraview.paraState.model!.series.map(s => s.key);
     if (seriesKeys.length !== 2) {
-      throw new Error("Expected exactly two series");
+      return;
     }
 
     const [seriesAKey, seriesBKey] = seriesKeys;
