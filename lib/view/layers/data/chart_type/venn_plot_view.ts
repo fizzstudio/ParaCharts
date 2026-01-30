@@ -463,7 +463,7 @@ export class VennPlotView extends DataLayer {
             start: new Vec2(sp1.x, sp1.y),
             end: new Vec2(sp2.x, sp2.y),
             largeArc: 0,
-            sweep: 1
+            sweep: 0
           },
           {
             start: new Vec2(sp2.x, sp2.y),
@@ -475,7 +475,7 @@ export class VennPlotView extends DataLayer {
             start: new Vec2(sp3.x, sp3.y),
             end: new Vec2(sp1.x, sp1.y),
             largeArc: 0,
-            sweep: 1
+            sweep: 0
           }
         ],
         stroke: "white",
@@ -483,6 +483,151 @@ export class VennPlotView extends DataLayer {
         strokeWidth: 5,
       });
       this.append(tripleArc);
+
+      const nonTriplePoints = points.filter(
+        p => !keep.some(tp => tp.x === p.x && tp.y === p.y)
+      );
+
+      // AB non-triple intersection (outside C)
+      const AB = nonTriplePoints.find(
+        p =>
+          (p.circles[0]!.name === "A" && p.circles[1]!.name === "B") ||
+          (p.circles[0]!.name === "B" && p.circles[1]!.name === "A")
+      )!;
+
+      // Triple intersections involving A and C, B and C
+      const AC = tripleIntersectionPoints.find(
+        p =>
+          (p.circles[0]!.name === "A" && p.circles[1]!.name === "C") ||
+          (p.circles[0]!.name === "C" && p.circles[1]!.name === "A")
+      )!;
+
+      const BC = tripleIntersectionPoints.find(
+        p =>
+          (p.circles[0]!.name === "B" && p.circles[1]!.name === "C") ||
+          (p.circles[0]!.name === "C" && p.circles[1]!.name === "B")
+      )!;
+
+      // Build AB lens arc (matches describeABPath semantics)
+      const abArc = new ArcShape(this.paraview, {
+        r: radius,
+        segments: [
+          {
+            start: new Vec2(AC.x, AC.y),
+            end: new Vec2(AB.x, AB.y),
+            largeArc: 0,
+            sweep: 1
+          },
+          {
+            start: new Vec2(AB.x, AB.y),
+            end: new Vec2(BC.x, BC.y),
+            largeArc: 0,
+            sweep: 1
+          },
+          {
+            start: new Vec2(BC.x, BC.y),
+            end: new Vec2(AC.x, AC.y),
+            largeArc: 0,
+            sweep: 0
+          }
+        ],
+        stroke: "white",
+        fill: "blue",
+        strokeWidth: 5
+      });
+
+      this.append(abArc);
+
+      // AC non-triple intersection (outside B)
+      const AC_nonTriple = nonTriplePoints.find(
+        p =>
+          (p.circles[0]!.name === "A" && p.circles[1]!.name === "C") ||
+          (p.circles[0]!.name === "C" && p.circles[1]!.name === "A")
+      )!;
+
+      // Triple intersections involving A+B and B+C
+      const AB_triple = tripleIntersectionPoints.find(
+        p =>
+          (p.circles[0]!.name === "A" && p.circles[1]!.name === "B") ||
+          (p.circles[0]!.name === "B" && p.circles[1]!.name === "A")
+      )!;
+
+      const BC_triple = tripleIntersectionPoints.find(
+        p =>
+          (p.circles[0]!.name === "B" && p.circles[1]!.name === "C") ||
+          (p.circles[0]!.name === "C" && p.circles[1]!.name === "B")
+      )!;
+
+      const acArc = new ArcShape(this.paraview, {
+        r: radius,
+        segments: [
+          {
+            start: new Vec2(AB_triple.x, AB_triple.y),
+            end: new Vec2(AC_nonTriple.x, AC_nonTriple.y),
+            largeArc: 0,
+            sweep: 0
+          },
+          {
+            start: new Vec2(AC_nonTriple.x, AC_nonTriple.y),
+            end: new Vec2(BC_triple.x, BC_triple.y),
+            largeArc: 0,
+            sweep: 0
+          },
+          {
+            start: new Vec2(BC_triple.x, BC_triple.y),
+            end: new Vec2(AB_triple.x, AB_triple.y),
+            largeArc: 0,
+            sweep: 0
+          }
+        ],
+        stroke: "white",
+        fill: "hotpink",
+        strokeWidth: 5
+      });
+
+      this.append(acArc);
+
+      // BC non-triple intersection (outside A)
+      const BC_nonTriple = nonTriplePoints.find(
+        p =>
+          (p.circles[0]!.name === "B" && p.circles[1]!.name === "C") ||
+          (p.circles[0]!.name === "C" && p.circles[1]!.name === "B")
+      )!;
+      const AC_triple = tripleIntersectionPoints.find(
+        p =>
+          (p.circles[0]!.name === "A" && p.circles[1]!.name === "C") ||
+          (p.circles[0]!.name === "C" && p.circles[1]!.name === "A")
+      )!;
+
+      const bcArc = new ArcShape(this.paraview, {
+        r: radius,
+        segments: [
+          {
+            start: new Vec2(AC_triple.x, AC_triple.y),
+            end: new Vec2(BC_nonTriple.x, BC_nonTriple.y),
+            largeArc: 0,
+            sweep: 0
+          },
+          {
+            start: new Vec2(BC_nonTriple.x, BC_nonTriple.y),
+            end: new Vec2(AB_triple.x, AB_triple.y),
+            largeArc: 0,
+            sweep: 0
+          },
+          {
+            start: new Vec2(AB_triple.x, AB_triple.y),
+            end: new Vec2(AC_triple.x, AC_triple.y),
+            largeArc: 0,
+            sweep: 0
+          }
+        ],
+        stroke: "white",
+        fill: "gold",
+        strokeWidth: 5
+      });
+
+      this.append(bcArc);
+
     }
   }
 
