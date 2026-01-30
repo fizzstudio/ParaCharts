@@ -1,0 +1,180 @@
+{
+  "datasets": [
+    {
+      "type": "bar",
+      "title": "Number of Classes by Year and Term",
+      "chartTheme": {
+        "baseQuantity": "enrollment",
+        "baseKind": "dimensioned",
+        "locale": "US"
+      },
+      "facets": {
+        "x": {
+          "label": "Year",
+          "variableType": "independent",
+          "measure": "interval",
+          "datatype": "date",
+          "units": "year",
+          "displayType": {
+            "type": "axis",
+            "orientation": "horizontal"
+          }
+        },
+        "y": {
+          "label": "Term",
+          "variableType": "dependent",
+          "measure": "ratio",
+          "datatype": "number",
+          "units": "students",
+          "multiplier": 1,
+          "displayType": {
+            "type": "axis",
+            "orientation": "vertical"
+          }
+        }
+      },
+      "series": [
+        {
+          "key": "Fall",
+          "theme": {
+            "baseQuantity": "enrollment",
+            "baseKind": "dimensioned",
+            "locale": "USA"
+          },
+          "records": [
+            {
+              "x": "2022",
+              "y": "17"
+            },
+            {
+              "x": "2023",
+              "y": "26"
+            },
+            {
+              "x": "2024",
+              "y": "25"
+            },
+            {
+              "x": "2025",
+              "y": "61"
+            },
+            {
+              "x": "2026",
+              "y": "32"
+            }
+          ]
+        },
+        {
+          "key": "Spring",
+          "theme": {
+            "baseQuantity": "enrollment",
+            "baseKind": "dimensioned",
+            "locale": "USA"
+          },
+          "records": [
+            {
+              "x": "2022",
+              "y": "9"
+            },
+            {
+              "x": "2023",
+              "y": "21"
+            },
+            {
+              "x": "2024",
+              "y": "24"
+            },
+            {
+              "x": "2025",
+              "y": "55"
+            },
+            {
+              "x": "2026",
+              "y": "0"
+            }
+
+          ]
+        },
+
+        {
+          "key": "Summer",
+          "theme": {
+            "baseQuantity": "enrollment",
+            "baseKind": "dimensioned",
+            "locale": "USA"
+          },
+          "records": [
+            {
+              "x": "2022",
+              "y": "10"
+            },
+            {
+              "x": "2023",
+              "y": "20"
+            },
+            {
+              "x": "2024",
+              "y": "23"
+            },
+            {
+              "x": "2025",
+              "y": "30"
+            },
+            {
+              "x": "2026",
+              "y": "0"
+            }
+          ]
+        },
+        {
+          "key": "Winter",
+          "theme": {
+            "baseQuantity": "enrollment",
+            "baseKind": "dimensioned",
+            "locale": "USA"
+          },
+          "records": [
+            {
+              "x": "2022",
+              "y": "11"
+            },
+            {
+              "x": "2023",
+              "y": "16"
+            },
+            {
+              "x": "2024",
+              "y": "23"
+            },
+            {
+              "x": "2025",
+              "y": "37"
+            },
+            {
+              "x": "2026",
+              "y": "0"
+            }
+          ]
+        }
+      ],
+      "data": {
+        "source": "inline"
+      },
+      "settings": {
+        "controlPanel.isControlPanelDefaultOpen": false,
+        "controlPanel.caption.isCaptionExternalWhenControlPanelClosed": true,
+        "chart.size.height": 300,
+        "chart.isShowPopups": true,
+        "chart.title.margin": 10,
+        "chart.title.align": "start",
+        "popup.activation": "onSelect",
+        "animation.isAnimationEnabled": false,
+        "legend.position": "north",
+        "axis.horiz.line.isDrawAxisLine": false,
+        "axis.vert.line.isDrawAxisLine": false,
+        "axis.vert.ticks.isDrawTicks": false,
+        "type.bar.isDrawDataLabels": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>ParaCharts Demo</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22green%22/><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+  <style>
+    body {
+      margin: 2em;
+      padding-bottom: 8em;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      font-size: 1.2em;
+    }
+
+    .container {
+      display: flex;
+      align-items: flex-start;
+      margin: 20px;
+      padding-right: 60px;
+    }
+
+    .steps {
+      flex: 1;
+      margin-right: 40px;
+    }
+
+    [data-para-step] {
+      border: none;
+      padding: 2em 1em;
+      margin: 20px 0;
+    }
+
+    [data-para-step].para-active {
+      background-color: hsl(0, 0%, 93%);
+      color: black;
+    }
+
+    .chart-area {
+      position: sticky;
+      top: 20px;
+      width: 550px;
+      height: 420px;
+      flex-shrink: 0;
+    }
+
+    [data-para-step="0"] {
+      margin-bottom: 5em;
+    }
+
+    [data-para-step="6"] {
+      margin-top: 5em;
+      margin-bottom: 12em;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>ParaCharts Demo</h1>
+
+  <main class="">
+
+    <section class="chart-area">
+      <para-chart id="main-chart"  manifest="/src/demo-data/enrollment-data.json"></para-chart>
+
+    </section>
+  </main>
+
+  <script type="module" src="/dist-ai/paracharts.js"></script>
+
+</body>
+
+</html>
