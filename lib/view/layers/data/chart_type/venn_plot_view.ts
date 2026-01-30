@@ -463,7 +463,7 @@ export class VennPlotView extends DataLayer {
             start: new Vec2(sp1.x, sp1.y),
             end: new Vec2(sp2.x, sp2.y),
             largeArc: 0,
-            sweep: 0
+            sweep: 1
           },
           {
             start: new Vec2(sp2.x, sp2.y),
@@ -475,12 +475,12 @@ export class VennPlotView extends DataLayer {
             start: new Vec2(sp3.x, sp3.y),
             end: new Vec2(sp1.x, sp1.y),
             largeArc: 0,
-            sweep: 0
+            sweep: 1
           }
         ],
         stroke: "white",
         fill: "red",
-        strokeWidth: 5,
+        strokeWidth: 5
       });
       this.append(tripleArc);
 
@@ -577,7 +577,7 @@ export class VennPlotView extends DataLayer {
             start: new Vec2(BC_triple.x, BC_triple.y),
             end: new Vec2(AB_triple.x, AB_triple.y),
             largeArc: 0,
-            sweep: 0
+            sweep: 1
           }
         ],
         stroke: "white",
@@ -618,7 +618,7 @@ export class VennPlotView extends DataLayer {
             start: new Vec2(AB_triple.x, AB_triple.y),
             end: new Vec2(AC_triple.x, AC_triple.y),
             largeArc: 0,
-            sweep: 0
+            sweep: 1
           }
         ],
         stroke: "white",
