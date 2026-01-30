@@ -30,6 +30,7 @@ import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { BarChartInfo } from '../../../../chart_types/bar_chart';
 import { Popup } from '../../../popup';
+import { formatDatapointValue, formatDataValue } from '../../../../common';
 
 const MIN_STACK_WIDTH_FOR_GAPS = 8;
 const STACK_GAP_PERCENTAGE = 0.125;
@@ -231,13 +232,11 @@ export class BarPlotView extends PlanePlotView {
             const seriesView = seriesViews.find(sv => sv.seriesKey === barStackItem.series)!;
             return seriesView.children[i - 1].datapoint;
           }).reduce((a, b) => a + b.facetValueAsNumber('y')!, 0);
-
+          const range = this._chartInfo.yInterval!.end - this._chartInfo.yInterval!.start;
+          const total = formatDataValue(sum, range);
           this._totalLabels.push(new Label(this.paraview, {
-            // XXX hack
-            text: sum.toFixed(2),
-            id: this._id + '-slb',
+            text: total,
             classList: [`${this.paraview.paraState.type}-total-label`],
-            role: 'datapoint',
             // textAnchor,
             angle
           }));
@@ -464,12 +463,10 @@ export class Bar extends PlaneDatapointView {
       angle = -90;
     }
     if (chartInfo.settings.isDrawRecordLabels) {
+      this._recordLabel?.remove();
       this._recordLabel = new Label(this.paraview, {
-        // @ts-ignore
-        text: formatBox(this.datapoint.data.x, this.paraview.paraState.getFormatType('pieSliceValue')),
-        id: this._id + '-rlb',
+        text: formatBox(this.datapoint.facetBox('x')!, this.paraview.paraState.getFormatType('pieSliceValue')),
         classList: [`${this.paraview.paraState.type}-label`],
-        role: 'datapoint',
         textAnchor,
         angle
       });
@@ -482,12 +479,11 @@ export class Bar extends PlaneDatapointView {
       this._recordLabel.y = this.chart.height - this._recordLabel.height - chartInfo.settings.stackLabelGap;
     }
     if (chartInfo.settings.isDrawDataLabels) {
+      this._dataLabel?.remove();
       this._dataLabel = new Label(this.paraview, {
-        // @ts-ignore
-        text: formatBox(this.datapoint.data.y, this.paraview.paraState.getFormatType('pieSliceValue')),
-        id: this._id + '-blb',
+        text: formatDatapointValue(this.datapoint, chartInfo.yInterval!.end - chartInfo.yInterval!.start, this.paraview.paraState.model!),
+        //text: formatDataValue(this.datapoint.facetValueAsNumber('y')!, chartInfo.yInterval!.end - chartInfo.yInterval!.start),
         classList: [`${this.paraview.paraState.type}-label`],
-        role: 'datapoint',
         textAnchor,
         angle
       });
