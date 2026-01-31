@@ -179,7 +179,7 @@ export abstract class PlanePlotView extends DataLayer {
       });
       horizLines.push(horiz);
       const vertLabel = new Popup(this.paraview, {
-        text: String(chartInfo._facetTickLabelValues("x")[nearestPoint.index]),
+        text: String(chartInfo.facetTickLabelValues("x")[nearestPoint.index]),
         x: nearestPoint.x,
         y: this.height,
         margin: 0,
