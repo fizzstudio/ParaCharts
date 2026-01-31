@@ -1,6 +1,6 @@
 
 import { View, Container } from './base_view';
-import { GridLayout, type Layout } from './layout';
+import { SimpleGridLayout, type Layout } from './layout';
 import { type DataSymbolType, DataSymbol } from './symbol';
 import { Label } from './label';
 import { type LegendSettings, type DeepReadonly, SettingsManager } from '../state';
@@ -45,7 +45,7 @@ export class Legend extends Container(View) {
 
   declare protected _parent: Layout;
 
-  protected _grid!: GridLayout;
+  protected _grid!: SimpleGridLayout;
   protected _markers: RectShape[] = [];
 
   constructor(paraview: ParaView,
@@ -103,12 +103,10 @@ export class Legend extends Container(View) {
     const symLabelGap = this.paraview.paraState.settings.legend.symbolLabelGap;
     const pairGap = this.paraview.paraState.settings.legend.pairGap;
     if (this._options.orientation === 'vert') {
-      this._grid = new GridLayout(this.paraview, {
+      this._grid = new SimpleGridLayout(this.paraview, {
         numCols: 3,
         colGaps: symLabelGap,
         colAligns: ['center', 'center', 'start'],
-        isAutoWidth: true,
-        isAutoHeight: true
       }, 'legend-grid');
       this._grid.padding = hasLegendBox ? this.paraview.paraState.settings.legend.padding : 0;
       views.forEach(v => this._grid.append(v));
@@ -119,7 +117,7 @@ export class Legend extends Container(View) {
           new Array(labelsPerRow).fill(0),
           new Array(labelsPerRow).fill(symLabelGap),
           new Array(labelsPerRow - 1).fill(pairGap));
-        this._grid = new GridLayout(this.paraview, {
+        this._grid = new SimpleGridLayout(this.paraview, {
           numCols: labelsPerRow*3,
           colGaps: colGaps,
         }, 'legend-grid');
@@ -139,6 +137,7 @@ export class Legend extends Container(View) {
         new Array(labelsPerRow).fill('center'),
         new Array(labelsPerRow).fill('start'));
     }
+    this._grid.layoutViews();
     this.append(this._grid);
     // this.prepend(new Rect(this._width, this._height, 'white'));
 

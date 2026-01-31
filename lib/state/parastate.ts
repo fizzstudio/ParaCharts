@@ -609,9 +609,9 @@ export class ParaState extends State {
   }
 
   clearDatapointHighlight(seriesKey: string, index: number) {
-    this._highlightedDatapoints = new Set([
-      ...this._highlightedDatapoints.values().filter(id => id !== makeDatapointId(seriesKey, index))
-    ]);
+    this._highlightedDatapoints = new Set(
+      [...this._highlightedDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
+    );
   }
 
   isDatapointHighlighted(seriesKey: string, index: number): boolean {
@@ -634,9 +634,9 @@ export class ParaState extends State {
   }
 
   clearSequenceHighlight(seriesKey: string, index1: number, index2: number) {
-    this._highlightedSequences = new Set([
-      ...this._highlightedSequences.values().filter(id => id !== makeSequenceId(seriesKey, index1, index2))
-    ]);
+    this._highlightedSequences = new Set(
+      [...this._highlightedSequences.values()].filter(id => id !== makeSequenceId(seriesKey, index1, index2))
+    );
   }
 
   clearAllSequenceHighlights() {

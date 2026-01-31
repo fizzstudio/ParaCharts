@@ -63,7 +63,7 @@
   "scripts": {
     "dev": "storybook dev --no-open -p 5180",
     "go": "npm i && storybook dev --no-open -p 5180",
-    "demo:headless": "vite --port 5177 --open src/demo/headless/vite/headless.html",
+    "demo:headless": "vite src/demo/headless/vite --port 5177",
     "demo:ai": "vite --port 5178 --open src/demo/ai/ai.html",
     "storybook": "storybook dev -p 5180",
     "build": "rimraf dist && rimraf types && tsc && vite build && api-extractor run --local --verbose",
@@ -77,7 +77,7 @@
     "pubpatch": "npm version patch && npm publish",
     "pubminor": "npm version minor && npm publish",
     "pubmajor": "npm version major && npm publish",
-    "docs:generate": "node ./docs/scripts/buildDocs.ts",
+    "docs:generate": "tsc && api-extractor run --local --verbose && tsx ./docs/scripts/buildDocs.ts",
     "docs:dev": "npm run docs:generate && vitepress dev docs",
     "docs:build": "npm run docs:generate && vitepress build docs",
     "docs:serve": "vitepress preview docs"
@@ -112,6 +112,7 @@
     "rimraf": "^6.0.1",
     "shadow-dom-testing-library": "^1.12.0",
     "storybook": "^9.0.13",
+    "tsx": "^4.21.0",
     "typescript": "^5.8.3",
     "vite": "^5.4.0",
     "vitepress": "^1.6.4",

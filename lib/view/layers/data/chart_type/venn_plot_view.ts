@@ -22,15 +22,15 @@ type ItemEntry = {
   inB: boolean;
   datapoints: Datapoint[];
 };
-type Rectangle = [number, number]; // [width, height]
-type Position = [number, number];  // [x, y]
+type Rectangle = [number, number];
+type Position = [number, number];
 type Point = { x: number; y: number };
 type Circle = { center: Point; radius: number; name: string };
 type WordRect = { word: string; width: number; height: number };
 type IntersectionPoint = { x: number; y: number; circles: Circle[] };
 const alphaLSE = 1.0;
-export class VennPlotView extends DataLayer {
 
+export class VennPlotView extends DataLayer {
   protected _cx!: number;
   protected _cy!: number;
   protected _radius!: number;
@@ -91,7 +91,7 @@ export class VennPlotView extends DataLayer {
     circleBools: [boolean, boolean]
   ): number[] {
     const solution = this.minimize(
-      (positions: number[]) => this.cost2(
+      (positions: number[]) => this.cost(
         rectangles.map(([w, h]) => [w + 50, h + 50]),
         positions,
         circleCenter1,
@@ -191,7 +191,7 @@ export class VennPlotView extends DataLayer {
     return norm > 0 ? v.map(vi => vi / norm) : v;
   }
 
-  protected cost2(
+  protected cost(
     rectangles: Rectangle[],
     positions: number[],
     circleCenter1: [number, number],
@@ -299,6 +299,7 @@ export class VennPlotView extends DataLayer {
 
   protected _completeDatapointLayout(): void {
     super._completeDatapointLayout();
+    this._createLabels();
   }
 
   init() {
@@ -328,7 +329,6 @@ export class VennPlotView extends DataLayer {
       }
     }
     let mult: number = -1;
-    const colArr = ["blue", "yellow"];
     let regionIdx: number = 0;
     seriesKeys.forEach(seriesKey => {
       const seriesView = new SeriesView(this, seriesKey);
@@ -337,8 +337,7 @@ export class VennPlotView extends DataLayer {
         seriesView,
         mult * 0.5 * this._radius,
         0,
-        this._radius,
-        colArr[regionIdx]
+        this._radius
       );
       seriesView.append(region);
       mult = 1;
@@ -360,12 +359,11 @@ export class VennPlotView extends DataLayer {
           new Vec2(p2.x, p2.y),
           new Vec2(p1.x, p1.y)
         ],
-        fill: "red",
-        stroke: "black",
-        strokeWidth: 1
+        stroke: "white",
+        fill: "mediumseagreen",
+        strokeWidth: 5,
       });
       this.append(arc);
-      this._createLabels();
     }
   }
 
@@ -492,18 +490,18 @@ export class VennPlotView extends DataLayer {
 
 export class VennRegionView extends DatapointView {
   declare readonly chart: VennPlotView;
+  protected _circle?: CircleShape;
   declare protected _shape: CircleShape;
   protected _xOff: number;
   protected _yOff: number;
-  protected _color: string;
   protected _r: number;
-  constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0, r: number = 0, color = "red") {
+
+  constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0, r: number = 0) {
     super(parent);
     this._xOff = x_offset;
     this._yOff = y_offset;
     this._r = r;
     this._isStyleEnabled = true;
-    this._color = color;
   }
 
   get shapes() {
@@ -519,11 +517,14 @@ export class VennRegionView extends DatapointView {
   }
 
   get styleInfo() {
-    return { fill: 'none', stroke: 'black', strokeWidth: 1 };
-    //const style = super.styleInfo;
-    //delete style.strokeWidth;
-    //delete style.stroke;
-    //return style;
+    // use the SeriesView's styleInfo as the base
+    const parentStyle = this._parent.styleInfo;
+
+    return {
+      fill: parentStyle.fill,
+      stroke: "white",
+      strokeWidth: "5"
+    };
   }
 
   get x() {
@@ -538,18 +539,18 @@ export class VennRegionView extends DatapointView {
     const cx = this.chart.cx;
     const cy = this.chart.cy;
     const r = this._r;
+    this._circle?.remove();
 
-    const circle = new CircleShape(this.paraview, {
+    this._circle = new CircleShape(this.paraview, {
       x: cx + this._xOff,
       y: cy + this._yOff,
-      r: r,
-      stroke: 'black',
-      fill: this._color
+      r,
+      stroke: 'white',
     });
-    this._shapes = [circle];
-    this.append(circle);
-  }
+    this._shapes = [this._circle];
 
+    this.append(this._circle);
+  }
   protected _createShapes() {
     this._createSymbol();
   }

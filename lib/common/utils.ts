@@ -16,6 +16,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { ParaState } from "../state/parastate";
 import { BboxAnchor, type View } from '../view/base_view';
+import { Box, Datapoint, Model } from "@fizz/paramodel";
+import { Datatype } from "@fizz/paramanifest";
 import { DatapointView } from "../view/data";
 import { ParaView } from "../paraview";
 import { Popup } from "../view/popup";
@@ -65,6 +67,51 @@ export function fixed(strings: TemplateStringsArray, ...exprs: (number | string)
   out.push(strings.at(-1)!);
   return out.join('');
 }
+
+/**
+ * Compute the number of places after the decimal for a displayed data value
+ * based on the dependent axis range.
+ * @param range - Axis range.
+ */
+export function precisionFromAxisRange(range: number): number {
+  const logRange = Math.log10(range);
+  let digits = 0;
+  if (logRange <= 1) {
+    digits = Math.ceil(Math.abs(logRange));
+  } else if (logRange < 3) {
+    digits = 1;
+  }
+  return digits;
+}
+
+/**
+ * Format the numeric (first) dependent value of a datapoint for display.
+ * @param datapoint - Datapoint.
+ * @param axisRange - Dependent axis display range.
+ * @param model - Model.
+ * @returns Formatted value.
+ */
+export function formatDatapointValue(datapoint: Datapoint, axisRange: number, model: Model): string {
+  return formatDataValue(
+    datapoint.facetValueAsNumber(model.dependentFacetKeys[0])!,
+    axisRange);
+}
+
+/**
+ * Format a numeric data value for display.
+ * @param value - Value.
+ * @param axisRange - Dependent axis display range.
+ * @returns Formatted value.
+ */
+export function formatDataValue(value: number, axisRange: number): string {
+  const digits = precisionFromAxisRange(axisRange);
+  let formatted = value.toFixed(digits);
+  if (formatted.endsWith('.' + '0'.repeat(digits))) {
+    formatted = formatted.slice(0, -(digits + 1));
+  }
+  return formatted;
+}
+
 
 export function capitalize(string: string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
