@@ -199,9 +199,10 @@ export const defaults: Settings = {
     maxWidth: 175,
     shape: "boxWithArrow",
     activation: "onHover",
-    borderRadius: 10,
+    borderRadius: 5,
     backgroundColor: "dark",
-    isShowCrosshair: true
+    isShowCrosshair: true,
+    isCrosshairLocked: true,
   },
   type: {
     bar: {

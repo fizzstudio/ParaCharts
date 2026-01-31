@@ -543,6 +543,7 @@ export class Bar extends PlaneDatapointView {
       },
       pointerLeave: (e) => {
         this.paraview.paraState.settings.chart.isShowPopups ? this.paraview.paraState.removePopup(this.id) : undefined
+        this.popup?.remove();
       },
     }));
     super._createShapes();

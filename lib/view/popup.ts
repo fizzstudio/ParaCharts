@@ -610,6 +610,12 @@ export class PopupSettingsDialog extends ParaComponent {
             label: 'Show Crosshair?',
             parentView: 'controlPanel.tabs.chart.dialog.popups',
         });
+        this._paraState.settingControls.add({
+            type: 'checkbox',
+            key: 'popup.isCrosshairLocked',
+            label: 'Lock Crosshair?',
+            parentView: 'controlPanel.tabs.chart.dialog.popups',
+        });
 
     }
 

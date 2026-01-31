@@ -406,8 +406,8 @@ export class DatapointView extends DataView {
       {
         shape: shape as ShapeTypes,
         fill: fill
-      })
-    this.paraview.paraState.popups.push(popup)
+      });
+    this.paraview.paraState.popups.push(popup);
     this._popup = popup;
   }
 

@@ -256,7 +256,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
    * @remarks
    * May be overridden to return, e.g., computed stacked bar or waterfall totals
    */
-  protected _facetTickLabelValues(facetKey: string): string[] {
+  _facetTickLabelValues(facetKey: string): string[] {
     return this._paraState.model!.allFacetValues(facetKey)!.map(box => box.raw);
   }
 
