@@ -49,10 +49,15 @@
 </head>
 
 <body>
-  <script type="module" src="./demo.ts"></script>
+  <script type="module" src="/src/demo/headless/vite/demo.ts"></script>
   <h1>ParaCharts Headless</h1>
   <main>
     <header>
+      <label class="field-label" for="title-input">
+        Chart title:
+      </label>
+      <input id="title-input" type="text" placeholder="Enter chart title" value="My Chart">
+      <br><br>
       <label class="field-label" for="data-select">
         Select data file:
       </label>
