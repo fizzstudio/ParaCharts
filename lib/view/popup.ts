@@ -604,19 +604,24 @@ export class PopupSettingsDialog extends ParaComponent {
             },
             parentView: 'controlPanel.tabs.chart.dialog.popups',
         });
-        this._paraState.settingControls.add({
-            type: 'checkbox',
-            key: 'popup.isShowCrosshair',
-            label: 'Show Crosshair?',
-            parentView: 'controlPanel.tabs.chart.dialog.popups',
+        document.addEventListener('paranotice', (e: CustomEvent<any>) => {
+            if (e.detail.value?.key == 'manifestSet') {
+                if (['bar', 'column', 'line', 'watefall', 'scatter'].includes(this.paraState.type)) {
+                    this._paraState.settingControls.add({
+                        type: 'checkbox',
+                        key: 'popup.isShowCrosshair',
+                        label: 'Show Crosshair?',
+                        parentView: 'controlPanel.tabs.chart.dialog.popups',
+                    });
+                    this._paraState.settingControls.add({
+                        type: 'checkbox',
+                        key: 'popup.isCrosshairFollowPointer',
+                        label: 'Track Crosshair to pointer?',
+                        parentView: 'controlPanel.tabs.chart.dialog.popups',
+                    });
+                }
+            }
         });
-        this._paraState.settingControls.add({
-            type: 'checkbox',
-            key: 'popup.isCrosshairLocked',
-            label: 'Lock Crosshair?',
-            parentView: 'controlPanel.tabs.chart.dialog.popups',
-        });
-
     }
 
     render() {

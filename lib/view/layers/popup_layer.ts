@@ -94,6 +94,7 @@ export class PopupLayer extends PlotLayer {
         this.addGroup('datapoint-popups', true);
         this.group('datapoint-popups')!.clearChildren();
         if (this.paraview.paraState.settings.chart.isShowPopups && this.paraview.paraState.settings.popup.activation === "onFocus") {
+            this.paraview.paraState.focusPopups.splice(0, this.paraview.paraState.focusPopups.length)
             this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length)
             const cursor = this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.navMap!.cursor
             const datapoints = cursor.datapoints;
@@ -113,23 +114,24 @@ export class PopupLayer extends PlotLayer {
                 for (let dp of this.paraview.paraState.visitedDatapoints) {
                     const { seriesKey, index } = datapointIdToCursor(dp);
                     const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
-                    datapointView.addDatapointPopup();
+                    datapointView.addDatapointPopup({ focus: true });
                 }
             }
 
             for (let popup of popups) {
-                this.paraview.paraState.popups.push(popup);
+                this.paraview.paraState.focusPopups.push(popup);
             }
         }
         else if (this.paraview.paraState.settings.chart.isShowPopups && this.paraview.paraState.settings.popup.activation === "onSelect") {
+            this.paraview.paraState.selectPopups.splice(0, this.paraview.paraState.selectPopups.length)
             for (let dp of this.paraview.paraState.selectedDatapoints) {
                 const { seriesKey, index } = datapointIdToCursor(dp);
                 const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
-                datapointView.addDatapointPopup();
+                datapointView.addDatapointPopup({ select: true });
             }
         }
 
-        for (const popup of this.paraview.paraState.popups) {
+        for (const popup of [...this.paraview.paraState.popups, ...this.paraview.paraState.focusPopups, ...this.paraview.paraState.selectPopups]) {
             popup.classInfo = { 'popup': true }
             if (this.type === 'foreground') {
                 this.group('datapoint-popups')!.append(popup);
@@ -140,7 +142,7 @@ export class PopupLayer extends PlotLayer {
                 }
             }
         }
-        this.paraview.paraState.clearPopups();
+        //this.paraview.paraState.clearPopups();
     }
 
     addChordPopups(datapointViews: DatapointView[]): Popup[] {

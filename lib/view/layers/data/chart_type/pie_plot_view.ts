@@ -68,13 +68,13 @@ export class PieSlice extends RadialSlice {
       annularThickness: this.chart.settings.annularThickness,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
+        this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined;
       },
       pointerMove: (e) => {
-        this.movePopupAction();
+        this.shouldAddHoverPopup() ? this.movePopupAction() : undefined;
       },
       pointerLeave: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups ? this.paraview.paraState.removePopup(this.id) : undefined
+        this.paraview.paraState.removePopup(this.id);
       },
     });
     this._shapes.push(slice);

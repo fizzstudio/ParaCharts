@@ -202,7 +202,7 @@ export const defaults: Settings = {
     borderRadius: 5,
     backgroundColor: "dark",
     isShowCrosshair: true,
-    isCrosshairLocked: true,
+    isCrosshairFollowPointer: false,
   },
   type: {
     bar: {

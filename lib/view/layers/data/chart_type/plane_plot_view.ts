@@ -86,8 +86,11 @@ export abstract class PlanePlotView extends DataLayer {
       if (coords.x > 0 && coords.x < this.width && coords.y > 0 && coords.y < this.height) {
         let points = this.datapointViews
         let distances;
-        if (['line', 'column', 'waterfall'].includes(this.paraview.paraState.type)) {
+        if (['line'].includes(this.paraview.paraState.type)) {
           distances = points.map((dp, i) => Number(Math.abs((dp.x - coords.x) ** 2)))
+        }
+        else if (['column', 'waterfall'].includes(this.paraview.paraState.type)) {
+          distances = points.map((dp, i) => Number(Math.abs((dp.x + dp.width / 2 - coords.x) ** 2)))
         }
         else if (['bar'].includes(this.paraview.paraState.type)) {
           distances = points.map((dp, i) => Number(Math.abs((dp.x - coords.y) ** 2)))
@@ -101,7 +104,10 @@ export abstract class PlanePlotView extends DataLayer {
         }
 
         if (this.paraview.paraState.settings.popup.isShowCrosshair) {
-          if (this.paraview.paraState.settings.popup.isCrosshairLocked) {
+
+          if (!this.paraview.paraState.settings.popup.isCrosshairFollowPointer) {
+            nearestPoint.popup?.remove()
+            this.removeDatapointPopup(nearestPoint)
             this.makeCrosshairsLocked(nearestPoint)
           }
           else {
@@ -114,7 +120,6 @@ export abstract class PlanePlotView extends DataLayer {
 
   makeCrosshairsLocked(nearestPoint: DatapointView) {
     const chartInfo = this.chartInfo as PlaneChartInfo;
-    this.paraview.paraState.clearPopups();
     if (this.paraview.paraState.type == 'line' && this.paraview.paraState.model!.series.length > 1) {
       this.addChordPopup(nearestPoint);
     }
@@ -132,6 +137,14 @@ export abstract class PlanePlotView extends DataLayer {
       fill: "black",
       stroke: "black"
     });
+    if (['bar', 'waterfall', 'column'].includes(this.paraview.paraState.type)) {
+      vert = new PathShape(this.paraview, {
+        points: [new Vec2(nearestPoint.x + nearestPoint.width / 2, 0),
+        new Vec2(nearestPoint.x + nearestPoint.width / 2, this.height),],
+        fill: "black",
+        stroke: "black"
+      });
+    }
     let horiz = new PathShape(this.paraview, {
       points: [
         new Vec2(0, nearestPoint.y),
@@ -197,24 +210,27 @@ export abstract class PlanePlotView extends DataLayer {
       horizLabels.push(horizLabel);
     }
     else {
-      if (this.paraview.paraState.type == 'line' && this.paraview.paraState.model!.series.length > 1) {
-        const vertLabel = new Popup(this.paraview, {
-          text: String(nearestPoint.datapoint.facetBox("x")!.raw),
-          x: nearestPoint.x,
-          y: this.height,
-          margin: 0,
-          fill: "black"
-        }, { shape: "box", fill: "hsl(0, 0%, 100%)" });
-        const horizLabel = new Popup(this.paraview, {
-          text: String(nearestPoint.datapoint.facetBox("y")!.raw),
-          x: 0,
-          y: nearestPoint.y,
-          margin: 0,
-          inbounds: false,
-          fill: "black"
-        }, { shape: "box", fill: "hsl(0, 0%, 100%)" });
-        vertLabels.push(vertLabel);
-        horizLabels.push(horizLabel);
+      const isMultiSeriesLine = this.paraview.paraState.type == 'line' && this.paraview.paraState.model!.series.length > 1;
+      const vertLabelText = String(nearestPoint.datapoint.facetBox("x")!.raw);
+      const horizLabelText = String(nearestPoint.datapoint.facetBox("y")!.raw);
+      const vertLabel = new Popup(this.paraview, {
+        text: vertLabelText,
+        x: nearestPoint.x,
+        y: this.height,
+        margin: 0,
+        fill: "black"
+      }, { shape: "box", fill: "hsl(0, 0%, 100%)" });
+      const horizLabel = new Popup(this.paraview, {
+        text: horizLabelText,
+        x: 0,
+        y: nearestPoint.y,
+        margin: 0,
+        inbounds: false,
+        fill: "black"
+      }, { shape: "box", fill: "hsl(0, 0%, 100%)" });
+      vertLabels.push(vertLabel);
+      horizLabels.push(horizLabel);
+      if (isMultiSeriesLine) {
         for (let cousin of nearestPoint.cousins) {
           const horizLabelCousin = new Popup(this.paraview, {
             text: String(cousin.datapoint.facetBox("y")!.raw),
@@ -235,25 +251,6 @@ export abstract class PlanePlotView extends DataLayer {
           horizLines.push(horizCousin);
           horizLabels.push(horizLabelCousin);
         }
-      }
-      else {
-        const vertLabel = new Popup(this.paraview, {
-          text: String(nearestPoint.datapoint.facetBox("x")!.raw),
-          x: nearestPoint.x,
-          y: this.height,
-          margin: 0,
-          fill: "black"
-        }, { shape: "box", fill: "hsl(0, 0%, 100%)" });
-        const horizLabel = new Popup(this.paraview, {
-          text: String(nearestPoint.datapoint.facetBox("y")!.raw),
-          x: 0,
-          y: nearestPoint.y,
-          margin: 0,
-          inbounds: false,
-          fill: "black"
-        }, { shape: "box", fill: "hsl(0, 0%, 100%)" });
-        vertLabels.push(vertLabel);
-        horizLabels.push(horizLabel);
       }
     }
     vertLabels.forEach(l => vertAdjust(l));

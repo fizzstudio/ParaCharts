@@ -160,8 +160,8 @@ export abstract class DataLayer extends PlotLayer {
     }
     if (['popup.activation'].includes(path)) {
       if (oldValue === "onSelect" || oldValue === "onFocus") {
-        this.paraview.paraState.popups.splice(0, this.paraview.paraState.popups.length)
-        this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length)
+        this.paraview.paraState.clearPopups();
+        this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length);
       }
     }
     if (['chart.isShowPopups'].includes(path)) {
@@ -232,7 +232,7 @@ export abstract class DataLayer extends PlotLayer {
       // We can't really disable the animation, but setting the reveal time to 0
       // will result in an imperceptibly short animation duration
       const revealTime = Math.max(1, this.paraview.paraState.settings.animation.animateRevealTimeMs);
-      const t = Math.min(elapsed/revealTime, 1);
+      const t = Math.min(elapsed / revealTime, 1);
       const bezT = bez.eval(t)!;
       const linearT = linear.eval(t)!;
       this._animStep(bezT, linearT);
@@ -245,8 +245,8 @@ export abstract class DataLayer extends PlotLayer {
       }
     };
     this._currentAnimationFrame = requestAnimationFrame(step);
-    if (this.paraview.paraState.settings.animation.animationType == 'xAxis'){
-          loopParaviewRefresh(this.paraview, 500 + this.paraview.paraState.settings.animation.popInAnimateRevealTimeMs
+    if (this.paraview.paraState.settings.animation.animationType == 'xAxis') {
+      loopParaviewRefresh(this.paraview, 500 + this.paraview.paraState.settings.animation.popInAnimateRevealTimeMs
         + this.paraview.paraState.settings.animation.animateRevealTimeMs, 50);
     }
   }
@@ -317,4 +317,12 @@ export abstract class DataLayer extends PlotLayer {
   handleZoom(x: number, y: number) { }
 
   clearCrosshair() { }
+
+  removeDatapointPopup(dpView: DatapointView) {
+    this.paraview.paraState.popups.splice(this.paraview.paraState.popups.findIndex(p => p.id === dpView.id), 1)
+    this.paraview.paraState.focusPopups.splice(this.paraview.paraState.focusPopups.findIndex(p => p.id === dpView.id), 1)
+    this.paraview.paraState.selectPopups.splice(this.paraview.paraState.selectPopups.findIndex(p => p.id === dpView.id), 1)
+    dpView.popup?.remove();
+    this.paraview.requestUpdate()
+  }
 }
