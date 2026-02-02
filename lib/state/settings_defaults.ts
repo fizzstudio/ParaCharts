@@ -452,7 +452,7 @@ export const defaults: Settings = {
     navRunTimeoutMs: 125,
   },
   animation: {
-    isAnimationEnabled: true,
+    isAnimationEnabled: false,
     animateRevealTimeMs: 2500,
     popInAnimateRevealTimeMs: 750,
     animationType: 'yAxis',
