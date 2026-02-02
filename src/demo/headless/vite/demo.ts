@@ -223,7 +223,7 @@ async function createManifest(input: ParachartsInput): Promise<Manifest> {
   // Map chartType to manifest type
   const manifestTypeMap = {
     'horizontal_bar': 'bar',
-    'vertical_bar': 'bar',
+    'vertical_bar': 'column',
     'line': 'line',
     'pie': 'pie',
     'donut': 'donut'
