@@ -214,10 +214,8 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       this._tickLabelTiers = this._createTickLabelTiers();
       this._appendTickLabelTiers();
     }
-    if (this.orientationSettings.ticks.isDrawTicks) {
-      this._tickStrip = this._createTickStrip();
-      this._appendTickStrip();
-    }
+    this._tickStrip = this._createTickStrip();
+    this._appendTickStrip();
     if (this.orientationSettings.line.isDrawAxisLine) {
       this._createAxisLine();
       this._appendAxisLine();

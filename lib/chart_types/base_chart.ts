@@ -419,15 +419,18 @@ export abstract class BaseChartInfo {
     }
   }
 
-  async navRunDidEnd(cursor: NavNode) {
+  async navRunDidEnd(cursor: NavNode, quiet = false) {
     //const seriesKey = cursor.options.seriesKey ?? '';
     if (cursor.isNodeType('top')) {
-      //this._paraState.announce(await this._summarizer.getChartSummary());
-      const orientationSentences = await this._summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
-      this._paraState.announce(orientationSentences);
+      if (!quiet) {
+        const orientationSentences = await this._summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
+        this._paraState.announce(orientationSentences);
+      }
     } else if (cursor.isNodeType('series')) {
-      this._paraState.announce(
-        await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
+      if (!quiet) {
+        this._paraState.announce(
+          await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
+      }
       this._playCurrentRiff();
       this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
     } else if (cursor.isNodeType(this.navDatapointType)) {
@@ -451,8 +454,9 @@ export abstract class BaseChartInfo {
           announcements.push(seriesSummary.text);
         }
       }
-
-      this._paraState.announce(announcements);
+      if (!quiet) {
+        this._paraState.announce(announcements);
+      }
       if (this._paraState.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
         this.playDatapoints([datapoint]);
       }
@@ -471,13 +475,15 @@ export abstract class BaseChartInfo {
         }
       }
     } else if (cursor.isNodeType('sequence')) {
-      this._paraState.announce(
-        await this._summarizer.getSequenceSummary({
-          seriesKey: cursor.options.seriesKey,
-          start: cursor.options.start,
-          end:cursor.options.end
-        })
-      );
+      if (!quiet) {
+        this._paraState.announce(
+          await this._summarizer.getSequenceSummary({
+            seriesKey: cursor.options.seriesKey,
+            start: cursor.options.start,
+            end:cursor.options.end
+          })
+        );
+      }
       this._playCurrentRiff();
 
       // this._paraState.highlight(
