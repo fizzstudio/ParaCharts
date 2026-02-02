@@ -44,7 +44,6 @@ export interface TickStripOptions {
  * A strip of tick marks.
  */
 export abstract class TickStrip extends Container(View) {
-
   declare protected _parent: Layout;
 
   protected _interval!: number;
@@ -111,7 +110,6 @@ export abstract class TickStrip extends Container(View) {
  * A horizontal strip of tick marks.
  */
 export class HorizTickStrip extends TickStrip {
-
   protected _ruleXs: number[] = [];
   protected _ruleY = 0;
 
@@ -135,9 +133,7 @@ export class HorizTickStrip extends TickStrip {
     return [
       this._options.length,
       // NB! The grid lines DON'T COUNT toward the height!
-      (this._axisSettings.ticks.isDrawTicks || this._options.isDrawOverhang)
-        ? this._axisSettings.ticks.length
-        : 0
+      this._axisSettings.ticks.length
     ] as [number, number];
   }
 
@@ -157,6 +153,7 @@ export class HorizTickStrip extends TickStrip {
   // }
 
   protected _createTicks() {
+    if (!this._axisSettings.ticks.isDrawTicks) return;
     const isOrthoEast = this._options.orthoAxisPosition === 'east';
     let tickLength = this._axisSettings.ticks.length;
     this._ruleY = 0;
@@ -230,9 +227,7 @@ export class VertTickStrip extends TickStrip {
   computeSize() {
     return [
       // NB! The grid lines DON'T COUNT toward the width!
-      (this._axisSettings.ticks.isDrawTicks || this._options.isDrawOverhang)
-        ? this._axisSettings.ticks.length
-        : 0,
+      this._axisSettings.ticks.length,
       this._options.length
     ] as [number, number];
   }
@@ -253,6 +248,7 @@ export class VertTickStrip extends TickStrip {
   // }
 
   protected _createTicks() {
+    if (!this._axisSettings.ticks.isDrawTicks) return;
     const isNorth = this._options.orthoAxisPosition === 'north';
     const tickLength = this._axisSettings.ticks.length;
     this._ruleX = tickLength;
