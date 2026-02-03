@@ -749,6 +749,9 @@ export class ParaView extends ParaComponent {
     pruneComments(svg.childNodes);
     toPrune.forEach(c => c.remove());
 
+    // Remove the selection layer
+    svg.lastElementChild!.lastElementChild!.children[5].remove();
+
     svg.removeAttribute('width');
     svg.removeAttribute('height');
     svg.removeAttribute('role');
