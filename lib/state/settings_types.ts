@@ -465,7 +465,7 @@ export interface PopupSettings extends SettingGroup {
   backgroundColor: "dark" | "light"
   /** Show crosshair */
   isShowCrosshair: boolean;
-  /** Lock crosshair to nearest datapoint */
+  /** Make crosshair follow pointer */
   isCrosshairFollowPointer: boolean;
 
 }

@@ -92,7 +92,6 @@ export class LinePlotView extends PointPlotView {
     }
     super.pointerMove()
   }
-
 }
 
 /**

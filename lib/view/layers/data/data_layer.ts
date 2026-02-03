@@ -316,8 +316,6 @@ export abstract class DataLayer extends PlotLayer {
 
   handleZoom(x: number, y: number) { }
 
-  clearCrosshair() { }
-
   removeDatapointPopup(dpView: DatapointView) {
     this.paraview.paraState.popups.splice(this.paraview.paraState.popups.findIndex(p => p.id === dpView.id), 1)
     this.paraview.paraState.focusPopups.splice(this.paraview.paraState.focusPopups.findIndex(p => p.id === dpView.id), 1)

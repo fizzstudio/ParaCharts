@@ -51,10 +51,6 @@ export abstract class PlanePlotView extends DataLayer {
     this.log = getLogger("PlanePlotView");
   }
 
-
-
-
-
   get datapointViews() {
     return super.datapointViews as PlaneDatapointView[];
   }
