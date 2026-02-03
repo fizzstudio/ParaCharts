@@ -1,4 +1,4 @@
-import { ParaHeadless } from '/lib';
+import { ParaHeadless } from '../../../../lib';
 import { type Manifest } from '@fizz/paramanifest';
 
 const container = document.getElementById('content-container')!;
