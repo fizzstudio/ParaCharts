@@ -722,6 +722,17 @@ export class View extends BaseView {
     this._currFocus = view;
   }
 
+  shouldAddHoverPopup() {
+    if (this.paraview.paraState.settings.chart.isShowPopups
+      && this.paraview.paraState.settings.popup.activation === "onHover"
+      && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
+      return true
+    }
+    else {
+      return false
+    }
+  }
+
   /*get eventActionManager() {
     return this._eventActionManager;
   }
@@ -942,7 +953,7 @@ export class View extends BaseView {
     return null;
   }
 
-  pointerMove(){
+  pointerMove() {
     this.children.forEach(c => c.pointerMove())
   }
 

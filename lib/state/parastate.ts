@@ -55,13 +55,10 @@ import { SeriesPropertyManager } from './series_properties';
 import { actionMap } from './action_map';
 import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
-import { type ParaChart } from '../parachart/parachart';
-import { DatapointView } from '../view/data';
 import { Popup } from '../view/popup';
 import { type DatapointCursor } from '../view/layers/data/navigation';
 import { Point } from '@fizz/chart-classifier-utils';
-import { loopParaviewRefresh } from '../common';
-import { PointDatapointView } from '../view/layers';
+import { PathShape } from '../view/shape';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -175,6 +172,10 @@ export class ParaState extends State {
   @property() announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0 };
   @property() annotations: BaseAnnotation[] = [];
   @property() popups: Popup[] = [];
+  @property() focusPopups: Popup[] = [];
+  @property() selectPopups: Popup[] = [];
+  @property() crossHairLabels: Popup[] = [];
+  @property() crossHair: PathShape[] = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() frontSeries = '';
@@ -383,6 +384,7 @@ export class ParaState extends State {
         };
       });
     }
+    this.postNotice('paranotice', {key: 'manifestSet'});
   }
 
   updateSettings(updater: (draft: Settings) => void, ignoreObservers = false) {
@@ -1032,12 +1034,16 @@ export class ParaState extends State {
   }
 
   removePopup(id: string) {
-    this.popups.splice(this.popups.findIndex(p => p.id === id), 1)
-    this.requestUpdate()
+    this.popups.splice(this.popups.findIndex(p => p.id === id), 1);
+    this.requestUpdate();
   }
 
   clearPopups() {
-    this.popups.splice(0, this.popups.length)
+    this.popups.splice(0, this.popups.length);
+    this.focusPopups.splice(0, this.focusPopups.length);
+    this.selectPopups.splice(0, this.selectPopups.length);
+    this.crossHair.splice(0, this.crossHair.length);
+    this.crossHairLabels.splice(0, this.crossHairLabels.length);
   }
 
 }

@@ -260,6 +260,10 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     return this._paraState.model!.allFacetValues(facetKey)!.map(box => box.raw);
   }
 
+  facetTickLabelValues(facetKey: string): string[] {
+    return this._facetTickLabelValues(facetKey);
+  }
+
   /**
    * Called by `computeAxisLabelTiers` to get the displayed range for a numeric x-axis.
    * @param facetKey - Facet key

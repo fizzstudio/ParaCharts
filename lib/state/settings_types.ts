@@ -463,6 +463,11 @@ export interface PopupSettings extends SettingGroup {
   borderRadius: number;
   /** Background color scheme */
   backgroundColor: "dark" | "light"
+  /** Show crosshair */
+  isShowCrosshair: boolean;
+  /** Make crosshair follow pointer */
+  isCrosshairFollowPointer: boolean;
+
 }
 
 /** Base settings for plot-based charts */
