@@ -928,7 +928,7 @@ export class ParaView extends ParaComponent {
           ` : ''
       }
         </defs>
-        <metadata data-type="text/jim+json">
+        <metadata data-type="application/jim+json">
           ${this._jim}
         </metadata>
         <rect
