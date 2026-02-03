@@ -448,7 +448,7 @@ export interface PopupSettings extends SettingGroup {
     backgroundColor: "dark" | "light";
     borderRadius: number;
     downPadding: number;
-    isCrosshairLocked: boolean;
+    isCrosshairFollowPointer: boolean;
     isShowCrosshair: boolean;
     leftPadding: number;
     margin: number;

@@ -58,6 +58,7 @@ import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { Popup } from '../view/popup';
 import { type DatapointCursor } from '../view/layers/data/navigation';
 import { Point } from '@fizz/chart-classifier-utils';
+import { PathShape } from '../view/shape';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -173,6 +174,8 @@ export class ParaState extends State {
   @property() popups: Popup[] = [];
   @property() focusPopups: Popup[] = [];
   @property() selectPopups: Popup[] = [];
+  @property() crossHairLabels: Popup[] = [];
+  @property() crossHair: PathShape[] = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() frontSeries = '';
@@ -1031,14 +1034,16 @@ export class ParaState extends State {
   }
 
   removePopup(id: string) {
-    this.popups.splice(this.popups.findIndex(p => p.id === id), 1)
-    this.requestUpdate()
+    this.popups.splice(this.popups.findIndex(p => p.id === id), 1);
+    this.requestUpdate();
   }
 
   clearPopups() {
-    this.popups.splice(0, this.popups.length)
-    this.focusPopups.splice(0, this.focusPopups.length)
-    this.selectPopups.splice(0, this.selectPopups.length)
+    this.popups.splice(0, this.popups.length);
+    this.focusPopups.splice(0, this.focusPopups.length);
+    this.selectPopups.splice(0, this.selectPopups.length);
+    this.crossHair.splice(0, this.crossHair.length);
+    this.crossHairLabels.splice(0, this.crossHairLabels.length);
   }
 
 }
