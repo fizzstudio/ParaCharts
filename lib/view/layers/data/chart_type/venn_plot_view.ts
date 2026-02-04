@@ -1,5 +1,6 @@
 
 import { DataLayer } from '..';
+import { View } from '../../../base_view';
 import { type BaseChartInfo } from '../../../../chart_types';
 import { DatapointView, SeriesView } from '../../../data';
 import {
@@ -67,7 +68,7 @@ export class VennPlotView extends DataLayer {
   }
 
   get datapointViews() {
-    return super.datapointViews as VennRegionView[];
+    return super.datapointViews;
   }
 
   protected logSumExpMax(x: number, y: number): number {
@@ -339,7 +340,6 @@ export class VennPlotView extends DataLayer {
         s => s.key === seriesKeys[idx]
       );
       if (!series) continue;
-
       for (let dpIdx = 0; dpIdx < series.datapoints.length; dpIdx++) {
         const dp = series.datapoints[dpIdx];
       }
@@ -349,13 +349,16 @@ export class VennPlotView extends DataLayer {
     seriesKeys.forEach(seriesKey => {
       const seriesView = new SeriesView(this, seriesKey);
       this._chartLandingView.append(seriesView);
-      const region = new VennRegionView(
-        seriesView,
-        mult * 0.5 * this._radius,
-        0,
-        this._radius
-      );
-      seriesView.append(region);
+      console.log("x: ", this.cx);
+      console.log("y: ", this.cy);
+      const cir = new CircleShape(this.paraview, {
+        x: this.cx + this.radius * 0.5 * mult,
+        y: this.cy,
+        r: this._radius,
+        stroke: 'white',
+        fill: 'blue'
+      });
+      seriesView.append(cir);
       mult = 1;
       regionIdx += 1;
     });
@@ -418,7 +421,7 @@ export class VennPlotView extends DataLayer {
       const center = centers[i];
 
       const region = new VennRegionView(
-        seriesView,
+        this,
         center.x - cx,
         center.y - cy,
         radius
@@ -651,6 +654,7 @@ export class VennPlotView extends DataLayer {
       return angleA - angleB;
     });
   }
+
   protected _createDatapoints() {
     const seriesKeys = this.paraview.paraState.model!.seriesKeys;
 
@@ -787,43 +791,23 @@ export class VennPlotView extends DataLayer {
   }
 }
 
-export class VennRegionView extends DatapointView {
+export class VennRegionView extends View {
   declare readonly chart: VennPlotView;
   protected _circle?: CircleShape;
-  declare protected _shape: CircleShape;
+  declare protected _shapes: ArcShape;
   protected _xOff: number;
   protected _yOff: number;
   protected _r: number;
 
-  constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0, r: number = 0) {
-    super(parent);
+  constructor(chart: VennPlotView, x_offset: number = 0, y_offset: number = 0, r: number = 0) {
+    super(chart.paraview);
     this._xOff = x_offset;
     this._yOff = y_offset;
     this._r = r;
-    this._isStyleEnabled = true;
   }
 
   get shapes() {
     return this._shapes;
-  }
-
-  get role() {
-    return 'graphics-symbol';
-  }
-
-  get roleDescription() {
-    return 'datapoint';
-  }
-
-  get styleInfo() {
-    // use the SeriesView's styleInfo as the base
-    const parentStyle = this._parent.styleInfo;
-
-    return {
-      fill: parentStyle.fill,
-      stroke: "white",
-      strokeWidth: "5"
-    };
   }
 
   get x() {
@@ -839,16 +823,6 @@ export class VennRegionView extends DatapointView {
     const cy = this.chart.cy;
     const r = this._r;
     this._circle?.remove();
-
-    this._circle = new CircleShape(this.paraview, {
-      x: cx + this._xOff,
-      y: cy + this._yOff,
-      r,
-      stroke: 'white',
-    });
-    this._shapes = [this._circle];
-
-    this.append(this._circle);
   }
   protected _createShapes() {
     this._createSymbol();

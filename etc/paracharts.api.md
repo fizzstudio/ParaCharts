@@ -137,6 +137,7 @@ export interface BarSettings extends PlaneChartSettings {
     stacking: 'none' | 'standard';
     stackInsideGap: number;
     stackLabelGap: number;
+    totalLabelGap: number;
 }
 
 // @public
