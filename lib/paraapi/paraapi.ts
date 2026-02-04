@@ -254,12 +254,14 @@ export class ParaAPI {
     return this._paraChart.paraView.serialize();
   }
 
-  async getDescription() {
-    return this._paraChart.paraView.documentView?.chartInfo.summarizer.getChartSummary();
+  async getDescription(): Promise<string | undefined> {
+    const summary = await this._paraChart.paraView.documentView?.chartInfo.summarizer.getChartSummary();
+    return summary?.text;
   }
 
-  async getAltText() {
-    return this.paraChart.captionBox.renderSummary(await this.paraChart.paraView.documentView!.chartInfo.summarizer.getRequestedSummaries(ORIENTATION_SENTENCES), 'statusbar');
+  async getAltText(): Promise<string | undefined> {
+    const summary = await this.paraChart.paraView.documentView!.chartInfo.summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
+    return summary?.text;
   }
 
   getJIM(): Jim | undefined {
