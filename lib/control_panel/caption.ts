@@ -7,8 +7,6 @@ import { HighlightedSummary } from '@fizz/parasummary';
 
 import { html, css, TemplateResult, PropertyValues } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
-import { ref, createRef } from 'lit/directives/ref.js';
-import { styleMap } from 'lit/directives/style-map.js';
 import { type Unsubscribe } from '@lit-app/state';
 import { ParaChart } from '../parachart/parachart';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
@@ -73,6 +71,10 @@ export class ParaCaptionBox extends ParaComponent {
 
   get highlightManualOverride() {
     return this._highlightManualOverride;
+  }
+
+  get caption() {
+    return this._caption;
   }
 
   connectedCallback(): void {

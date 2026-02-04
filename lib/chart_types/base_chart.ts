@@ -33,7 +33,7 @@ import { Summarizer, formatBox, Highlight, summarizerFromModel } from '@fizz/par
 import { Unsubscribe } from '@lit-app/state';
 import { executeParaActions, parseAction } from '../paraactions/paraactions';
 
-const ORIENTATION_SENTENCES = [
+export const ORIENTATION_SENTENCES = [
   '$.datasets[0].axes.dependent',
   '$.datasets[0].axes.independent',
   '$.datasets[0].labels'
