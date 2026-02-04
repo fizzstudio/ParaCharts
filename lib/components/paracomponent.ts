@@ -15,8 +15,11 @@ export class ParaComponent extends LitElement {
   }
 
   set paraState(paraState: ParaState) {
-    this._paraState = paraState;
-    this._storeState = new StateController(this, paraState);
+    if (!this._paraState) {
+      console.log('CREATING STATE CONTROLLER', this.id || this.constructor.name);
+      this._paraState = paraState;
+      this._storeState = new StateController(this, paraState);
+    }
   }
 
   extractStyles(id: string) {
