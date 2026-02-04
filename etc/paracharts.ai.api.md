@@ -24,6 +24,7 @@ import { FormatType } from '@fizz/parasummary';
 import { Highlight as Highlight_2 } from '@fizz/parasummary';
 import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
+import type { Jim } from '@fizz/jimerator';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
 import { Logger } from '@fizz/logger';
@@ -448,6 +449,8 @@ export interface PopupSettings extends SettingGroup {
     backgroundColor: "dark" | "light";
     borderRadius: number;
     downPadding: number;
+    isCrosshairFollowPointer: boolean;
+    isShowCrosshair: boolean;
     leftPadding: number;
     margin: number;
     maxWidth: number;

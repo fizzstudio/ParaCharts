@@ -421,7 +421,7 @@ export class Bar extends PlaneDatapointView {
       if (this.datapoint.data.y.value as number < 0) {
         this._y = this.chart.height - distFromXAxis - zeroHeight;
       } else {
-        this._y = this.chart.height - this.height - distFromXAxis - zeroHeight - orderIdx*chartInfo.settings.stackInsideGap;
+        this._y = this.chart.height - this.height - distFromXAxis - zeroHeight - orderIdx * chartInfo.settings.stackInsideGap;
       }
     }
     const barGap = this.chart.availSpace / this.chart.numStacks;
@@ -448,7 +448,7 @@ export class Bar extends PlaneDatapointView {
     if (this.datapoint.data.y.value as number < 0) {
       this._y = this.chart.height - distFromXAxis * bezT - zeroHeight;
     } else {
-      this._y = this.chart.height - this.height - distFromXAxis * bezT - zeroHeight - orderIdx*chartInfo.settings.stackInsideGap;
+      this._y = this.chart.height - this.height - distFromXAxis * bezT - zeroHeight - orderIdx * chartInfo.settings.stackInsideGap;
     }
     super.beginAnimStep(bezT, linearT);
   }
@@ -532,13 +532,13 @@ export class Bar extends PlaneDatapointView {
       height: this._height,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
+        this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined;
       },
       pointerMove: (e) => {
-        this.movePopupAction();
+        this.shouldAddHoverPopup() ? this.movePopupAction() : undefined;
       },
       pointerLeave: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups ? this.paraview.paraState.removePopup(this.id) : undefined
+        this.chart.removeDatapointPopup(this);
       },
     }));
     super._createShapes();

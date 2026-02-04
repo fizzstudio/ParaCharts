@@ -20,6 +20,7 @@ import { Box, Datapoint, Model } from "@fizz/paramodel";
 import { Datatype } from "@fizz/paramanifest";
 import { DatapointView } from "../view/data";
 import { ParaView } from "../paraview";
+import { Popup } from "../view/popup";
 
 const bboxOppositeAnchors: Record<BboxAnchor, BboxAnchor> = {
   top: 'bottom',
@@ -255,3 +256,14 @@ export function loopParaviewRefresh(paraview: ParaView, duration: number, interv
   };
   loop();
 }
+
+export function vertAdjust(label: Popup) {
+  label.grid.y += (label.grid.height) + 11;
+  label.box.y += (label.grid.height) + 11;
+};
+export function horizAdjust(label: Popup) {
+  label.grid.x -= (label.grid.width / 2) + 11;
+  label.box.x -= (label.grid.width / 2) + 11;
+  label.grid.y -= (label.grid.height / 2);
+  label.box.y -= (label.grid.height / 2);
+};

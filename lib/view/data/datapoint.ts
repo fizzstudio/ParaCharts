@@ -21,6 +21,14 @@ const SELECTION_MARKER_SIZE = 40;
  */
 export type AnimState = Record<string, any>;
 
+interface DatapointPopupOptions {
+  text?: string;
+  xInput?: number;
+  yInput?: number;
+  focus?: boolean;
+  select?: boolean;
+}
+
 /**
  * Abstract base class for views representing datapoint values
  * (e.g., bar chart bars, pie slices, etc.).
@@ -351,7 +359,9 @@ export class DatapointView extends DataView {
     return this.datapoint.seriesKey === other.datapoint.seriesKey && this.datapoint.datapointIndex === other.datapoint.datapointIndex;
   }
 
-  addDatapointPopup(text?: string, xInput?: number, yInput?: number) {
+
+  addDatapointPopup(options: DatapointPopupOptions = {}) {
+    const { text, xInput, yInput, focus, select } = options;
     let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
     if (this.paraview.paraState.model!.multi) {
       datapointText = `${this.series.getLabel()} ${datapointText}`
@@ -375,6 +385,9 @@ export class DatapointView extends DataView {
         fill = this.datapoint.facetValueAsNumber('y')! >= 0
           ? pal.colors[0].value
           : pal.colors[1].value;
+        y = this.datapoint.facetValueAsNumber('y')! >= 0
+          ? y
+          : y + this.height;
       } else {
         fill = pal.colors[2].value;
       }
@@ -406,19 +419,50 @@ export class DatapointView extends DataView {
       {
         shape: shape as ShapeTypes,
         fill: fill
-      })
-    this.paraview.paraState.popups.push(popup)
+      });
+    focus ? this.paraview.paraState.focusPopups.push(popup) :
+      select ? this.paraview.paraState.selectPopups.push(popup) :
+        this.paraview.paraState.popups.push(popup);
     this._popup = popup;
+  }
+
+  shouldAddHoverPopup(): boolean {
+    if (['bar', 'column', 'scatter', 'waterfall'].includes(this.paraview.paraState.type)) {
+      if (this.paraview.paraState.settings.chart.isShowPopups
+        && this.paraview.paraState.settings.popup.activation == 'onHover'
+        && (!this.paraview.paraState.settings.popup.isShowCrosshair
+          || (this.paraview.paraState.settings.popup.isShowCrosshair
+            && this.paraview.paraState.settings.popup.isCrosshairFollowPointer))) {
+        return true
+      }
+      else {
+        return false
+      }
+    }
+    else if (['pie', 'donut'].includes(this.paraview.paraState.type)) {
+      if (this.paraview.paraState.settings.chart.isShowPopups
+        && this.paraview.paraState.settings.popup.activation == 'onHover') {
+        return true
+      }
+      else {
+        return false;
+      }
+    }
+    else {
+      return true
+    }
   }
 
   movePopupAction() {
     if (this._popup) {
+      this._popup.remove()
+      this.chart.removeDatapointPopup(this)
       if (['column', 'waterfall', 'pie', 'donut'].includes(this.paraview.paraState.type)) {
-        this.addDatapointPopup(undefined, this.paraview.paraState.pointerCoords.x, this.paraview.paraState.pointerCoords.y)
+        this.addDatapointPopup({ xInput: this.paraview.paraState.pointerCoords.x, yInput: this.paraview.paraState.pointerCoords.y })
         this._popup.horizShift = this.paraview.paraState.pointerCoords.x - (this._popup.grid.x + this._popup.grid.width / 2)
       }
       else if (this.paraview.paraState.type == 'bar') {
-        this.addDatapointPopup(undefined, this.paraview.paraState.pointerCoords.y, this.chart.height - this.paraview.paraState.pointerCoords.x)
+        this.addDatapointPopup({ xInput: this.paraview.paraState.pointerCoords.y, yInput: this.chart.height - this.paraview.paraState.pointerCoords.x })
       }
     }
   }

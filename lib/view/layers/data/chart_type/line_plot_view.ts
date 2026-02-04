@@ -24,6 +24,7 @@ import { type StyleInfo } from 'lit/directives/style-map.js';
 import { RectShape } from '../../../shape';
 import { Popup } from '../../../popup';
 import { DataSymbol } from '../../../symbol';
+import { Label } from '../../../label';
 
 /**
  * Class for drawing line charts.
@@ -73,11 +74,11 @@ export class LinePlotView extends PointPlotView {
   }
 
   pointerMove(): void {
+    const coords = this.paraview.paraState.pointerCoords;
     if (this.paraview.paraState.settings.chart.isShowPopups
       && this.paraview.paraState.settings.popup.activation === "onHover"
       && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled
     ) {
-      let coords = this.paraview.paraState.pointerCoords
       if (coords.x > 0 && coords.x < this.width && coords.y > 0 && coords.y < this.height) {
         let points = this.datapointViews
         let distances = points.map((dp, i) => [Number(Math.abs((dp.x - coords.x) ** 2)), i]).sort((a, b) => a[0] - b[0])
@@ -88,7 +89,6 @@ export class LinePlotView extends PointPlotView {
         this.paraview.paraState.clearPopups()
         nearestPoint.addDatapointPopup()
       }
-
     }
     super.pointerMove()
   }
