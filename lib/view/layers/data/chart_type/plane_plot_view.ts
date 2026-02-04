@@ -205,11 +205,12 @@ export abstract class PlanePlotView extends DataLayer {
       horizLabels.push(horizLabel);
     }
     else {
+      const isColumn = this.paraview.paraState.type === 'column';
       const vertLabelText = String(nearestPoint.datapoint.facetBox("x")!.raw);
       const horizLabelText = String(nearestPoint.datapoint.facetBox("y")!.raw);
       const vertLabel = new Popup(this.paraview, {
         text: vertLabelText,
-        x: nearestPoint.x,
+        x: isColumn ? nearestPoint.x + nearestPoint.width / 2 : nearestPoint.x,
         y: this.height,
         margin: 0,
         fill: "black"

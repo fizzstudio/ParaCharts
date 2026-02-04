@@ -385,6 +385,9 @@ export class DatapointView extends DataView {
         fill = this.datapoint.facetValueAsNumber('y')! >= 0
           ? pal.colors[0].value
           : pal.colors[1].value;
+        y = this.datapoint.facetValueAsNumber('y')! >= 0
+          ? y
+          : y + this.height;
       } else {
         fill = pal.colors[2].value;
       }

@@ -16,10 +16,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { type Datapoint } from '@fizz/paramodel';
 
-import { type BaseChartInfo } from '../chart_types';
+import { ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
 import { Direction, makeSequenceId, Setting, SettingsManager } from '../state';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
+import type { Jim } from '@fizz/jimerator'
 
 type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMap) => void | Promise<void>) };
 
@@ -251,6 +252,18 @@ export class ParaAPI {
 
   serializeChart() {
     return this._paraChart.paraView.serialize();
+  }
+
+  async getDescription() {
+    return this._paraChart.paraView.documentView?.chartInfo.summarizer.getChartSummary();
+  }
+
+  async getAltText() {
+    return this.paraChart.captionBox.renderSummary(await this.paraChart.paraView.documentView!.chartInfo.summarizer.getRequestedSummaries(ORIENTATION_SENTENCES), 'statusbar');
+  }
+
+  getJIM(): Jim | undefined {
+    return this.paraChart.paraState.jimerator?.jim
   }
 
   downloadSVG() {
