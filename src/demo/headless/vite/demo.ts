@@ -46,6 +46,12 @@ async function _selectData(event: Event) {
 async function _loadManifest(manifest: Manifest) {
 	await headless.loadManifest(JSON.stringify(manifest), 'content');
 	await headless.jimReady;
+	
+	// Log the new API metadata methods
+	console.log('Description:', await headless.api.getDescription());
+	console.log('Alt Text:', await headless.api.getAltText());
+	console.log('JIM:', headless.api.getJIM());
+	
 	container.innerHTML = headless.api.serializeChart();
 	const metadataEl = container.querySelector('metadata');
 	if (metadataEl) {
