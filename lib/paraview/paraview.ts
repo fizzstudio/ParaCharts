@@ -890,7 +890,7 @@ export class ParaView extends ParaComponent {
   }
 
   render(): TemplateResult {
-    this.log.info('render');
+    console.log('RENDER');
     return html`
     <div ${ref(this._containerRef)} @fullscreenchange=${() => this._onFullscreenChange()}>
     <svg
