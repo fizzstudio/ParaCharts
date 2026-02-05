@@ -521,8 +521,12 @@ export class ParaState extends State {
       html = announcement;
     } else {
       announcement = msg.text;
+      /* @simonvarey: Use these assignments if we want to turn narrative highlights on for the explorer bar
       html = msg.html;
       highlights = msg.highlights ?? [];
+      */
+      html = msg.text;
+      highlights = [];
     }
 
     if (this.settings.ui.isAnnouncementEnabled) {
