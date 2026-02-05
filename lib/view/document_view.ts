@@ -113,6 +113,7 @@ export class DocumentView extends Container(View) {
   }
 
   protected _populate() {
+    //console.log("docView populate")
     if (this._paraState.settings.chart.title.isDrawTitle && this._paraState.title) {
       this.createTitle();
     }
@@ -302,6 +303,17 @@ export class DocumentView extends Container(View) {
       this._populate();
       //this.paraview.requestUpdate();
     }
+    //console.log(path)
+    if (path == 'ui.isFullscreenEnabled'){
+      const delayedUpdate = () => {
+        setTimeout(() => {
+          //console.log("running")
+          this.updateSize();
+          this._populate();
+        }, 40);
+      };
+      delayedUpdate();
+    }
     super.settingDidChange(path, oldValue, newValue);
   }
 
@@ -435,6 +447,10 @@ export class DocumentView extends Container(View) {
     } else {
       this._titleLabel.centerX = this.centerX;
     }
+  }
+
+  removeTitle() {
+    this._titleLabel?.remove();
   }
 
   protected _childDidResize(_kid: View) {

@@ -423,8 +423,12 @@ export abstract class BaseChartInfo {
     //const seriesKey = cursor.options.seriesKey ?? '';
     if (cursor.isNodeType('top')) {
       if (!quiet) {
-        const orientationSentences = await this._summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
-        this._paraState.announce(orientationSentences);
+        //This currently throws an error when resetting pastry charts.
+        //Remove this check when you have orientation sentences that don't rely on axes
+        if (!['pie', 'donut'].includes(this._paraState.type)) {
+          const orientationSentences = await this._summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
+          this._paraState.announce(orientationSentences);
+        }
       }
     } else if (cursor.isNodeType('series')) {
       if (!quiet) {

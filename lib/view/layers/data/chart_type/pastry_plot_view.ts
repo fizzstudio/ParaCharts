@@ -155,9 +155,19 @@ export abstract class PastryPlotView extends DataLayer {
     super.init();
     this._resizeToFitLabels();
     if (this.settings.centerLabel === 'title') {
-      this.paraview.paraState.updateSettings(draft => {
-        draft.chart.title.isDrawTitle = false;
-      });
+      if (this.paraview.paraState.settings.chart.title.isDrawTitle) {
+        this.paraview.paraState.updateSettings(draft => {
+          draft.chart.title.isDrawTitle = false;
+        });
+        this.paraview.documentView!.removeTitle();
+        this.paraview.createDocumentView()
+      }
+
+      //console.log("cx", this._cx)
+      //console.log("cy", this._cy)
+
+      //this._resetRadius();
+      //this._resizeToFitLabels();
       this._centerLabel = new Label(this.paraview, {
         text: this.paraview.paraState.title,
         centerX: this._cx,
@@ -165,8 +175,7 @@ export abstract class PastryPlotView extends DataLayer {
         textAnchor: 'middle',
         wrapWidth: 2 * (this.radius - this.settings.annularThickness * this.radius)
           - this.settings.centerLabelPadding * 2,
-        id: 'chart-title',
-        classList: ['chart-title']
+        id: 'center-label'
       });
       this.append(this._centerLabel);
     }
@@ -185,6 +194,12 @@ export abstract class PastryPlotView extends DataLayer {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['color.colorPalette', 'color.colorVisionMode'].includes(path)) {
+      ///console.log("path", path)
+      //this._resetRadius();
+      //this._chartLandingView.clearChildren();
+      //this._layoutDatapoints();
+      //this._resizeToFitLabels();
+      //this.paraview.requestUpdate();
       if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
         || this.paraview.paraState.settings.color.colorPalette === 'pattern') {
         this.paraview.createDocumentView();
@@ -210,18 +225,22 @@ export abstract class PastryPlotView extends DataLayer {
   }
 
   protected _resetRadius() {
+    //console.log("resetRadius")
     this._radius = Math.min(this._height, this._width) / 2;
     this._cx = this._width / 2;
     this._cy = this._height / 2;
   }
 
   protected _resizeToFitLabels() {
+    console.log("resizeToFitLabels")
+    //console.trace();
     while (true) {
       // NB: There may be outside labels even if they are disabled if
       // one or more inside labels was moved to the outside for space
       const labels = this.datapointViews
         .map(dp => dp.outsideLabel)
         .filter(label => label) as Label[];
+        console.log(labels)
       if (!labels.length) return;
 
       let minScale = 1;
@@ -312,6 +331,8 @@ export abstract class PastryPlotView extends DataLayer {
   }
 
   protected _createLabels() {
+    console.log("createLabels")
+    //console.trace();
     const xs = this.paraview.paraState.model!.series[0].datapoints.map(dp =>
       formatBox(dp.facetBox('x')!, this.paraview.paraState.getFormatType('pieSliceLabel'))
     );
@@ -495,7 +516,7 @@ export abstract class RadialSlice extends DatapointView {
     const gap = this.paraview.paraState.settings.ui.focusRingGap;
     const oldCentralAngle = shape.centralAngle;
     shape.centralAngle += 2 * gap * 360 / (2 * Math.PI * shape.r);
-    shape.orientationAngle -= (shape.centralAngle - oldCentralAngle)/2;
+    shape.orientationAngle -= (shape.centralAngle - oldCentralAngle) / 2;
     if (shape.annularThickness! < 1) {
       shape.r += gap;
       // a0/r0 = A
@@ -547,6 +568,8 @@ export abstract class RadialSlice extends DatapointView {
     let leftPad = 0;
     let rightPad = 0;
     const loc = sector.arcCenter.add(arcDistVec);
+    console.log("sector arcCenter", sector.arcCenter)
+    console.log("first loc", loc)
     if (this.isPositionRight) {
       loc.x += this.chart.settings.outsideLabels.horizShift;
       leftPad = this.chart.settings.outsideLabels.horizPadding;
@@ -561,6 +584,7 @@ export abstract class RadialSlice extends DatapointView {
       bboxAnchor = textAnchor === 'start' ? 'bottomLeft' : 'bottomRight';
     }
     this._outsideLabel?.remove();
+    //console.log("loc", loc)
     this._outsideLabel = new Label(this.paraview, {
       text: this._labelContents(contents || this.chart.settings.outsideLabels.contents),
       id: this.id + '-rlb',
