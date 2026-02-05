@@ -39,6 +39,10 @@ export const ORIENTATION_SENTENCES = [
   '$.datasets[0].labels'
 ]
 
+export const PASTRY_ORIENTATION_SENTENCES = [
+  '$.datasets[0].labels',
+]
+
 /**
  * @public
  */
@@ -207,7 +211,7 @@ export abstract class BaseChartInfo {
 
   async move(dir: Direction) {
     await this._navMap!.cursor.move(dir);
-    this._paraState.postNotice('move', {dir, options: this._navMap!.cursor.options});
+    this._paraState.postNotice('move', { dir, options: this._navMap!.cursor.options });
   }
 
   /**
@@ -250,7 +254,7 @@ export abstract class BaseChartInfo {
         seriesKey: seriesMatchArray[0].seriesKey,
         index: seriesMatchArray[0].datapointIndex
       });
-      this._paraState.postNotice('goSeriesMinMax', {isMin, options: this._navMap!.cursor.options});
+      this._paraState.postNotice('goSeriesMinMax', { isMin, options: this._navMap!.cursor.options });
     }
   }
 
@@ -267,7 +271,7 @@ export abstract class BaseChartInfo {
       seriesKey: matchDatapoint?.seriesKey,
       index: matchDatapoint?.datapointIndex
     });
-    this._paraState.postNotice('goChartMinMax', {isMin, options: this._navMap!.cursor.options});
+    this._paraState.postNotice('goChartMinMax', { isMin, options: this._navMap!.cursor.options });
   }
 
   protected _composePointSelectionAnnouncement(isExtend: boolean) {
@@ -347,7 +351,7 @@ export abstract class BaseChartInfo {
     if (announcement) {
       this._paraState.announce(announcement);
     }
-    this._paraState.postNotice('select', {isExtend, options: this._navMap!.cursor.options});
+    this._paraState.postNotice('select', { isExtend, options: this._navMap!.cursor.options });
   }
 
   clearDatapointSelection(quiet = false) {
@@ -374,7 +378,7 @@ export abstract class BaseChartInfo {
         series: 'up'
       };
       this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
-      this._paraState.postNotice('goFirst', {options: this._navMap!.cursor.options});
+      this._paraState.postNotice('goFirst', { options: this._navMap!.cursor.options });
     }
   }
 
@@ -387,7 +391,7 @@ export abstract class BaseChartInfo {
         series: 'down'
       };
       this._navMap!.cursor.allNodes(dir[type]!, type).at(-1)?.go();
-      this._paraState.postNotice('goLast', {options: this._navMap!.cursor.options});
+      this._paraState.postNotice('goLast', { options: this._navMap!.cursor.options });
     }
   }
 
@@ -398,14 +402,14 @@ export abstract class BaseChartInfo {
         const seriesKey = this._navMap!.cursor.options.seriesKey;
         this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
         this._chordPrevSeriesKey = seriesKey;
-        this._paraState.postNotice('enterChordMode', {options: this._navMap!.cursor.options});
+        this._paraState.postNotice('enterChordMode', { options: this._navMap!.cursor.options });
       } else if (this._navMap!.cursor.isNodeType('chord')) {
         this._navMap!.cursor.layer.goTo(
           this.navDatapointType, {
           seriesKey: this._chordPrevSeriesKey,
           index: this._navMap!.cursor.options.index
         });
-        this._paraState.postNotice('exitChordMode', {options: this._navMap!.cursor.options});
+        this._paraState.postNotice('exitChordMode', { options: this._navMap!.cursor.options });
       }
     }
     else {
@@ -423,7 +427,13 @@ export abstract class BaseChartInfo {
     //const seriesKey = cursor.options.seriesKey ?? '';
     if (cursor.isNodeType('top')) {
       if (!quiet) {
-        const orientationSentences = await this._summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
+        let orientationSentences
+        if (['pie', 'donut', 'gauge'].includes(this._paraState.type)) {
+          orientationSentences = await this._summarizer.getRequestedSummaries(PASTRY_ORIENTATION_SENTENCES);
+        }
+        else {
+          orientationSentences = await this._summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
+        }
         this._paraState.announce(orientationSentences);
       }
     } else if (cursor.isNodeType('series')) {
@@ -480,7 +490,7 @@ export abstract class BaseChartInfo {
           await this._summarizer.getSequenceSummary({
             seriesKey: cursor.options.seriesKey,
             start: cursor.options.start,
-            end:cursor.options.end
+            end: cursor.options.end
           })
         );
       }
