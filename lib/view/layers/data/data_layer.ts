@@ -99,8 +99,6 @@ export abstract class DataLayer extends PlotLayer {
   }
 
   get datapointViews() {
-    console.log("hopefully", this._chartLandingView.datapointViews);
-    console.error("it will", this._chartLandingView.datapointViews);
     return this._chartLandingView.datapointViews;
   }
 
