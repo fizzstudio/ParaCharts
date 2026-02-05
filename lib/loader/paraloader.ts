@@ -60,7 +60,7 @@ export class ParaLoader {
       manifest.datasets[0].data.source = 'inline';
       data = {};
       if (manifest.datasets[0].data.path !== 'para:preload') {
-        this.preloadData(manifest.datasets[0].data.path!);
+        await this.preloadData(manifest.datasets[0].data.path!);
       }
       const seriesKeys = manifest.datasets[0].series.map(series => series.key);
       const indepKey = this._csvParseResult!.meta.fields!.filter(field => !seriesKeys.includes(field))[0];
