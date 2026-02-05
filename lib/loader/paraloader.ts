@@ -85,7 +85,10 @@ export class ParaLoader {
 
     this.log.info('manifest loaded');
     if (chartType) {
-      manifest.datasets[0].type = chartType;
+      manifest.datasets[0].representation = { 
+        type: 'chart',
+        subtype: chartType
+      };
       this.log.info('manifest chart type changed')
     }
     if (description) {

@@ -1,7 +1,6 @@
 import * as shadow from 'shadow-dom-testing-library';
-import { Manifest } from '@fizz/paramanifest';
 import { waitFor } from '@testing-library/dom';
-import '../../lib/index';
+import '../../../lib/index';
 
 export function getParachart(): HTMLElement {
   const chart = document.querySelector('[data-testid="para-chart"]');
