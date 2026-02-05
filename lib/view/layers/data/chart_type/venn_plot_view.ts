@@ -352,9 +352,9 @@ export class VennPlotView extends DataLayer {
       const cir = new VennSetView(this, 
         this.radius * 0.5 * mult,
         0,
-        this._radius,
+        this._radius
       );
-      cir._createShapes();
+      cir.createShapes();
       seriesView.append(cir);
       mult = 1;
       regionIdx += 1;
@@ -366,14 +366,31 @@ export class VennPlotView extends DataLayer {
     );
     if (intersections.length === 2) {
       const [p1, p2] = intersections;
-      const segments: ArcSegment[] = [
+      const segmentsAB: ArcSegment[] = [
         { start: new Vec2(p1.x, p1.y), end: new Vec2(p2.x, p2.y), largeArc: 0 as 0, sweep: 0 as 0 },
         { start: new Vec2(p2.x, p2.y), end: new Vec2(p1.x, p1.y), largeArc: 0 as 0, sweep: 0 as 0 }
       ];
+      const segmentsA: ArcSegment[] = [
+        { start: new Vec2(p1.x, p1.y), end: new Vec2(p2.x, p2.y), largeArc: 1 as 1, sweep: 0 as 0 },
+        { start: new Vec2(p2.x, p2.y), end: new Vec2(p1.x, p1.y), largeArc: 0 as 0, sweep: 1 as 1 }
+      ];
+      const segmentsB: ArcSegment[] = [
+        { start: new Vec2(p1.x, p1.y), end: new Vec2(p2.x, p2.y), largeArc: 1 as 1, sweep: 1 as 1 },
+        { start: new Vec2(p2.x, p2.y), end: new Vec2(p1.x, p1.y), largeArc: 0 as 0, sweep: 0 as 0 }
+      ];
+      const color = 'rgba(200, 180, 255, 0.3)';
+      const regionAB = new VennRegionView(this, this._radius, segmentsAB, color);
+      regionAB.createShapes();
+      this.append(regionAB);
 
-      const region = new VennRegionView(this, this._radius, segments);
-      region._createShapes();
-      this.append(region);
+      const colors = ['#FFB3B3', '#B3D1FF'];
+      const regionA = new VennRegionView(this, this._radius, segmentsA, colors[0]);
+      regionA.createShapes();
+      this.append(regionA);
+      
+      const regionB = new VennRegionView(this, this._radius, segmentsB, colors[1]);
+      regionB.createShapes();
+      this.append(regionB);
     }
   }
 
@@ -801,15 +818,15 @@ export class VennSetView extends View {
       x: cx,
       y: cy,
       r,
-      stroke: 'white',
-      fill: 'blue', // or any default fill
+      stroke: 'black',
+      fill: "none",
       strokeWidth: 5
     });
 
     this.append(this._circle);
   }
 
-  public _createShapes() {
+  public createShapes() {
     this._createSymbol();
   }
 
@@ -837,15 +854,17 @@ export class VennRegionView extends View {
   protected _arc?: ArcShape;
   protected _segments: ArcSegment[];
   protected _r: number;
+  protected _color: string;
 
-  constructor(chart: VennPlotView, r: number, segments: ArcSegment[]) {
+  constructor(chart: VennPlotView, r: number, segments: ArcSegment[], color: string) {
     super(chart.paraview);
     this.chart = chart;
     this._r = r;
     this._segments = segments;
+    this._color = color;
   }
 
-  public _createShapes(): void {
+  public createShapes(): void {
     this._arc?.remove();
 
     this._arc = new ArcShape(this.paraview, {
@@ -856,9 +875,9 @@ export class VennRegionView extends View {
         largeArc: seg.largeArc as 0 | 1,
         sweep: seg.sweep as 0 | 1
       })),
-      stroke: 'white',
+      stroke: 'black',
       strokeWidth: 5,
-      fill: 'yellow'
+      fill: this._color
     });
 
     this.append(this._arc);
@@ -866,7 +885,7 @@ export class VennRegionView extends View {
 
   computeLocation(): void {
     // Just recreate shapes each time
-    this._createShapes();
+    this.createShapes();
   }
 
   completeLayout() { }
