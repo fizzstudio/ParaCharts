@@ -117,8 +117,11 @@ export class SlotLoader {
         dataset.series[i].records = this.loadDataFromElement(els, manifest, vars[i].label);
       }
     }
-    if (!dataset.representation.subtype) {
-      dataset.representation.subtype = this.findManifestType(els, manifest);
+    if (!dataset.representation) {
+      dataset.representation = {
+        type: 'chart',
+        subtype: this.findManifestType(els, manifest)
+      };
     }
     if (!dataset.data) {
       dataset.data = { source: 'inline' };
