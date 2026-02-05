@@ -122,7 +122,7 @@
     "@fizz/chart-classifier-utils": "^0.16.0",
     "@fizz/clustering": "^0.16.0",
     "@fizz/dataframe": "^0.27.0",
-    "@fizz/jimerator": "^0.12.1",
+    "@fizz/jimerator": "^0.13.0",
     "@fizz/logger": "^0.1.0",
     "@fizz/paramanifest": "^0.10.0",
     "@fizz/paramodel": "^0.6.18",
