@@ -59,7 +59,10 @@ export class SlotLoader {
       this.log.info('Manifest ID not found or not present, attempting manifest construction from data');
       let manifest: Manifest = {
         datasets: [{
-          type: '' as 'line', 
+          representation: {
+            type: 'chart',
+            subtype: '' as 'line'
+          }, 
           //chartTheme: {baseQuantity: 'Y unit', baseKind: 'number'}, 
           title: '', 
           facets: {}, 
@@ -114,8 +117,8 @@ export class SlotLoader {
         dataset.series[i].records = this.loadDataFromElement(els, manifest, vars[i].label);
       }
     }
-    if (!dataset.type) {
-      dataset.type = this.findManifestType(els, manifest);
+    if (!dataset.representation.subtype) {
+      dataset.representation.subtype = this.findManifestType(els, manifest);
     }
     if (!dataset.data) {
       dataset.data = { source: 'inline' };

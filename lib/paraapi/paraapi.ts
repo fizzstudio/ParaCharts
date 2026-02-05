@@ -20,7 +20,7 @@ import { ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
 import { Direction, makeSequenceId, Setting, SettingsManager } from '../state';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
-import type { Jim } from '@fizz/jimerator'
+import type { JIM } from '@fizz/jimerator'
 
 type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMap) => void | Promise<void>) };
 
@@ -262,7 +262,7 @@ export class ParaAPI {
     return this.paraChart.captionBox.renderSummary(await this.paraChart.paraView.documentView!.chartInfo.summarizer.getRequestedSummaries(ORIENTATION_SENTENCES), 'statusbar');
   }
 
-  getJIM(): Jim | undefined {
+  getJIM(): JIM | undefined {
     return this.paraChart.paraState.jimerator?.jim
   }
 

@@ -320,8 +320,8 @@ export class ParaState extends State {
 
     this._createSettings();
 
-    if (chartTypeDefaults[dataset.type]) {
-      Object.entries(chartTypeDefaults[dataset.type]!).forEach(([path, value]) =>
+    if (chartTypeDefaults[dataset.representation.subtype]) {
+      Object.entries(chartTypeDefaults[dataset.representation.subtype]!).forEach(([path, value]) =>
         this.updateSettings(draft => {
           SettingsManager.set(path, value, draft);
         }));
@@ -342,11 +342,11 @@ export class ParaState extends State {
 
     this.seriesAnalyses = {};
 
-    this._type = dataset.type;
+    this._type = dataset.representation.subtype;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
     if (dataset.data.source === 'inline') {
-      if (isPastryType(dataset.type) || isVennType(dataset.type)) {
+      if (isPastryType(this._type) || isVennType(this._type)) {
         this._model = modelFromInlineData(manifest);
       } else {
         this._model = planeModelFromInlineData(
@@ -361,7 +361,7 @@ export class ParaState extends State {
       this._seriesProperties = new SeriesPropertyManager(this);
       this.data = dataFromManifest(manifest);
     } else if (data) {
-      if (isPastryType(dataset.type) || isVennType(dataset.type)) {
+      if (isPastryType(this._type) || isVennType(this._type)) {
         this._model = modelFromExternalData(data, manifest);
       } else {
         this._model = planeModelFromExternalData(

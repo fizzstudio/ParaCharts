@@ -24,7 +24,7 @@ import { FormatType } from '@fizz/parasummary';
 import { Highlight as Highlight_2 } from '@fizz/parasummary';
 import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
-import type { Jim } from '@fizz/jimerator';
+import type { JIM } from '@fizz/jimerator';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
 import { Logger } from '@fizz/logger';
