@@ -350,10 +350,11 @@ export class VennPlotView extends DataLayer {
       const seriesView = new SeriesView(this, seriesKey);
       this._chartLandingView.append(seriesView);
       const cir = new VennSetView(this, 
-        this.cx + this.radius * 0.5 * mult,
-        this.cy,
+        this.radius * 0.5 * mult,
+        0,
         this._radius,
       );
+      cir._createShapes();
       seriesView.append(cir);
       mult = 1;
       regionIdx += 1;
@@ -371,7 +372,7 @@ export class VennPlotView extends DataLayer {
       ];
 
       const region = new VennRegionView(this, this._radius, segments);
-
+      region._createShapes();
       this.append(region);
     }
   }
@@ -777,37 +778,57 @@ export class VennSetView extends View {
   readonly chart: VennPlotView;
 
   protected _circle?: CircleShape;
-  protected _offsetX: number;
-  protected _offsetY: number;
+  protected _xOff: number;
+  protected _yOff: number;
   protected _r: number;
 
-  constructor(chart: VennPlotView, offsetX: number, offsetY: number, r: number) {
+  constructor(chart: VennPlotView, xOff: number, yOff: number, r: number) {
     super(chart.paraview);
-    this.chart = chart; // <- assign it here
-    this._offsetX = offsetX;
-    this._offsetY = offsetY;
+    this.chart = chart;
+    this._xOff = xOff;
+    this._yOff = yOff;
     this._r = r;
   }
 
+  protected _createSymbol() {
+    const cx = this.chart.cx + this._xOff;
+    const cy = this.chart.cy + this._yOff;
+    const r = this._r;
+
+    this._circle?.remove();
+
+    this._circle = new CircleShape(this.paraview, {
+      x: cx,
+      y: cy,
+      r,
+      stroke: 'white',
+      fill: 'blue', // or any default fill
+      strokeWidth: 5
+    });
+
+    this.append(this._circle);
+  }
+
+  public _createShapes() {
+    this._createSymbol();
+  }
+
   computeLocation(): void {
-    const cx = this.chart.cx + this._offsetX;
-    const cy = this.chart.cy + this._offsetY;
+    if (!this._circle) return;
 
-    if (this._circle) {
-      this._circle.x = cx;
-      this._circle.y = cy;
-      this._circle.r = this._r;
-    }
-  }
-  completeLayout() {
+    const cx = this.chart.cx + this._xOff;
+    const cy = this.chart.cy + this._yOff;
 
+    this._circle.x = cx;
+    this._circle.y = cy;
+    this._circle.r = this._r;
   }
-  beginAnimStep() {
 
-  }
-  endAnimStep() {
+  completeLayout() { }
 
-  }
+  beginAnimStep() { }
+
+  endAnimStep() { }
 }
 
 export class VennRegionView extends View {
@@ -819,11 +840,12 @@ export class VennRegionView extends View {
 
   constructor(chart: VennPlotView, r: number, segments: ArcSegment[]) {
     super(chart.paraview);
+    this.chart = chart;
     this._r = r;
     this._segments = segments;
   }
 
-  protected _createShapes(): void {
+  public _createShapes(): void {
     this._arc?.remove();
 
     this._arc = new ArcShape(this.paraview, {
@@ -835,23 +857,19 @@ export class VennRegionView extends View {
         sweep: seg.sweep as 0 | 1
       })),
       stroke: 'white',
-      fill: 'blue'
+      strokeWidth: 5,
+      fill: 'yellow'
     });
 
     this.append(this._arc);
   }
 
   computeLocation(): void {
-    // For now, just recreate shapes each time
+    // Just recreate shapes each time
     this._createShapes();
   }
-  completeLayout() {
 
-  }
-  beginAnimStep() {
-
-  }
-  endAnimStep() {
-
-  }    
+  completeLayout() { }
+  beginAnimStep() { }
+  endAnimStep() { }
 }
