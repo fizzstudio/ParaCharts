@@ -1,10 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ParaLoader } from '../../../lib/loader/paraloader.js';
+import { ParaLoader } from '../../../../lib/loader/paraloader';
 
 // Test data factories
 const createTestManifest = (overrides = {}) => ({
   datasets: [{
-    type: 'bar',
+    representation: {
+      type: 'chart',
+      subtype: 'bar'
+    },
     description: 'Test Chart',
     series: [
       { key: 'sales', records: [] },
@@ -59,7 +62,7 @@ describe('ParaLoader Browser Tests', () => {
 
       expect(result.result).toBe('success');
       if (result.result === 'success') {
-        expect(result.manifest.datasets[0].type).toBe('bar');
+        expect(result.manifest.datasets[0].representation.subtype).toBe('bar');
         expect(result.manifest.datasets[0].description).toBe('Test Chart');
         expect(result.manifest.datasets[0].series).toHaveLength(2);
       }
@@ -70,7 +73,7 @@ describe('ParaLoader Browser Tests', () => {
 
       expect(result.result).toBe('success');
       if (result.result === 'success') {
-        expect(result.manifest.datasets[0].type).toBe('line');
+        expect(result.manifest.datasets[0].representation.subtype).toBe('line');
       }
     });
 

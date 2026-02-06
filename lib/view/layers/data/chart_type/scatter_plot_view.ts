@@ -32,7 +32,7 @@ export class ScatterPlotView extends PointPlotView {
     return super.datapointViews as ScatterPointView[];
   }
 
-  get types(){
+  get types() {
     return this._types
   }
 
@@ -180,10 +180,10 @@ class ScatterPointView extends PointDatapointView {
       strokeWidth: this.paraview.paraState.settings.chart.symbolStrokeWidth,
       lighten: true,
       pointerEnter: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
+        this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined
       },
       pointerLeave: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups ? this.paraview.paraState.removePopup(this.id) : undefined
+        this.paraview.paraState.removePopup(this.id);
       },
     });
     this._symbol.role = 'datapoint'
@@ -206,7 +206,7 @@ class ScatterPointView extends PointDatapointView {
     }
     return super.color
   }
-    endAnimStep(bezT: number, linearT: number) {
+  endAnimStep(bezT: number, linearT: number) {
     //this.completeLayout();
     this._symbol!.y = this.y
   }

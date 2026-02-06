@@ -214,10 +214,8 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       this._tickLabelTiers = this._createTickLabelTiers();
       this._appendTickLabelTiers();
     }
-    if (this.orientationSettings.ticks.isDrawTicks) {
-      this._tickStrip = this._createTickStrip();
-      this._appendTickStrip();
-    }
+    this._tickStrip = this._createTickStrip();
+    this._appendTickStrip();
     if (this.orientationSettings.line.isDrawAxisLine) {
       this._createAxisLine();
       this._appendAxisLine();
@@ -237,25 +235,22 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       role: 'heading',
       angle: this._getAxisTitleAngle(),
       pointerEnter: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups
-          && this.paraview.paraState.settings.popup.activation === "onHover"
-          && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled ? this.addPopup() : undefined;
+        this.shouldAddHoverPopup() ? this.addPopup() : undefined;
       },
       pointerMove: (e) => {
-        if (this._popup) {
+        this.shouldAddHoverPopup() ?
           this.addPopup(undefined, this.paraview.paraState.pointerCoords.x, this.paraview.paraState.pointerCoords.y + this.paraview.paraState.settings.popup.margin)
-        }
+          : undefined;
       },
       pointerLeave: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups
-          && this.paraview.paraState.settings.popup.activation === "onHover"
-          && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled ? this.paraview.paraState.removePopup(this.id) : undefined;
+        this.paraview.paraState.removePopup(this.id);
       }
     });
     this._axisTitle.padding = this._getAxisTitlePadding();
   }
 
   addPopup(text?: string, x?: number, y?: number) {
+    this.paraview.paraState.removePopup(this.id);
     let datapointText = `${this.titleText}`
     let popup = new Popup(this.paraview,
       {

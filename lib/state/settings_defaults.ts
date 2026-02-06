@@ -199,8 +199,10 @@ export const defaults: Settings = {
     maxWidth: 175,
     shape: "boxWithArrow",
     activation: "onHover",
-    borderRadius: 10,
-    backgroundColor: "dark"
+    borderRadius: 5,
+    backgroundColor: "dark",
+    isShowCrosshair: true,
+    isCrosshairFollowPointer: false,
   },
   type: {
     bar: {
@@ -452,7 +454,7 @@ export const defaults: Settings = {
     navRunTimeoutMs: 125,
   },
   animation: {
-    isAnimationEnabled: true,
+    isAnimationEnabled: false,
     animateRevealTimeMs: 2500,
     popInAnimateRevealTimeMs: 750,
     animationType: 'yAxis',

@@ -63,7 +63,7 @@
   "scripts": {
     "dev": "storybook dev --no-open -p 5180",
     "go": "npm i && storybook dev --no-open -p 5180",
-    "demo:headless": "vite src/demo/headless/vite --port 5177",
+    "demo:headless": "vite --port 5177",
     "demo:ai": "vite --port 5178 --open src/demo/ai/ai.html",
     "storybook": "storybook dev -p 5180",
     "build": "rimraf dist && rimraf types && tsc && vite build && api-extractor run --local --verbose",
@@ -91,7 +91,7 @@
   },
   "types": "./dist/paracharts.d.ts",
   "devDependencies": {
-    "@fizz/chart-data": "^2.3.8",
+    "@fizz/chart-data": "^2.4.1-alpha.1",
     "@fizz/test-utils": "^0.2.0",
     "@microsoft/api-documenter": "^7.25.11",
     "@microsoft/api-extractor": "^7.47.6",
@@ -122,11 +122,11 @@
     "@fizz/chart-classifier-utils": "^0.16.0",
     "@fizz/clustering": "^0.16.0",
     "@fizz/dataframe": "^0.27.0",
-    "@fizz/jimerator": "^0.12.1",
+    "@fizz/jimerator": "^0.13.0",
     "@fizz/logger": "^0.1.0",
-    "@fizz/paramanifest": "^0.10.0",
-    "@fizz/paramodel": "^0.6.18",
-    "@fizz/parasummary": "^0.11.1",
+    "@fizz/paramanifest": "^0.10.2",
+    "@fizz/paramodel": "^0.6.22",
+    "@fizz/parasummary": "^0.11.3",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.4.4",
     "@fizz/ui-components": "^0.70.5",
@@ -138,9 +138,6 @@
     "printf": "^0.6.1",
     "simple-statistics": "^7.8.8",
     "typescript-memoize": "^1.1.1"
-  },
-  "optionalDependencies": {
-    "@fizz/series-analyzer": "^0.13.8"
   },
   "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b"
 }

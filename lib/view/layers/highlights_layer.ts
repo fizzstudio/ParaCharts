@@ -26,6 +26,7 @@ export class HighlightsLayer extends PlotLayer {
     datapointId: string,
     overlays: (DataSymbol | Shape)[],
   ) {
+    this.paraview.paraState.clearPopups();
     const datapoint = this.paraview.paraState.getDatapoint(datapointId);
     let datapointView = this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!;
     overlays.push((datapointView.symbol ?? datapointView.shapes[0]).clone());
@@ -46,6 +47,7 @@ export class HighlightsLayer extends PlotLayer {
     underlayRects: RectShape[]
   ) {
     // XXX Ultimately, we need to support pastry and other non-plane chart types here
+    this.paraview.paraState.clearPopups();
     const chartInfo = this.paraview.documentView!.chartInfo as PlaneChartInfo;
     const fields = sequenceId.split(/-/);
     const datapoints = [
