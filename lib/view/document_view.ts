@@ -307,10 +307,9 @@ export class DocumentView extends Container(View) {
     if (path == 'ui.isFullscreenEnabled'){
       const delayedUpdate = () => {
         setTimeout(() => {
-          //console.log("running")
           this.updateSize();
           this._populate();
-        }, 40);
+        }, 60);
       };
       delayedUpdate();
     }
