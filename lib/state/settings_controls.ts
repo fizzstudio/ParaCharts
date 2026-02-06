@@ -1,7 +1,7 @@
 
 import { type Setting, SettingsManager } from '.';
 import { Logger, getLogger } from '@fizz/logger';
-import { 
+import {
   type SettingControlType,
   type SettingControl,
   type SettingControlValueType,
@@ -21,8 +21,8 @@ import { produce } from 'immer';
 import { strToId } from '@fizz/paramanifest';
 
 
-export type SettingControlOptionsType<T extends SettingControlType> = 
-  T extends 'textfield' ? TextfieldSettingControlOptions : 
+export type SettingControlOptionsType<T extends SettingControlType> =
+  T extends 'textfield' ? TextfieldSettingControlOptions :
   T extends 'dropdown' ? DropdownSettingControlOptions :
   T extends 'checkbox' ? CheckboxSettingControlOptions :
   T extends 'radio' ? RadioSettingControlOptions :
@@ -31,7 +31,7 @@ export type SettingControlOptionsType<T extends SettingControlType> =
   never;
 
 type SettingValidationResult = {err?: string};
- 
+
 /**
  * Options supplied when creating a setting control.
  * @public
@@ -88,7 +88,7 @@ const inputTypeTags = {
  */
 export class SettingControlManager extends State {
   protected log: Logger = getLogger("SettingControlManager");
-  
+
   @property() protected _settingControlInfo: {[key: string]: SettingControlInfo} = {};
 
   constructor(protected _paraState: ParaState) {
@@ -111,12 +111,12 @@ export class SettingControlManager extends State {
           .value=${controlOptions.value ?? SettingsManager.get(controlOptions.key, this._paraState.settings)}
           .label=${controlOptions.label}
           .info=${controlInfo}
-          .paraState=${this._paraState}
+          .globalState=${this._paraState.globalState}
           ?hidden=${controlOptions.hidden}
           id="setting-${strToId(controlOptions.key)}"
         ></${tag}>
       `;
-      draft[controlOptions.key] = controlInfo as SettingControlInfo;  
+      draft[controlOptions.key] = controlInfo as SettingControlInfo;
     });
   }
 
@@ -146,7 +146,7 @@ export class SettingControlManager extends State {
 
   getContent(parentView: string) {
     return Object.values(this._settingControlInfo)
-      .filter(settingInfo => settingInfo.parentView === parentView) 
+      .filter(settingInfo => settingInfo.parentView === parentView)
       .map(settingInfo => settingInfo.render());
   }
 
@@ -184,5 +184,5 @@ export class SettingControlManager extends State {
   //     this.log.info(`no setting control for key '${key}'`);
   //   }
   // }
-  
+
 }

@@ -38,7 +38,7 @@ export interface PopupShapeOptions extends ShapeOptions {
 //NB: this refers to how far the arrow sticks out of the box
 //even when it's on the side and width might be a more accurate word
 const BOX_ARROW_HEIGHT = 10
-//Similarly, this always refers to the distance between the point of the arrow and where it 
+//Similarly, this always refers to the distance between the point of the arrow and where it
 //meets the box along whatever primary axis is being used
 const BOX_ARROW_WIDTH = 15
 const DEFAULT_CHORD_POPUP_LINE_WIDTH = 6
@@ -606,7 +606,7 @@ export class PopupSettingsDialog extends ParaComponent {
         });
         document.addEventListener('paranotice', (e: CustomEvent<any>) => {
             if (e.detail.value?.key == 'manifestSet') {
-                if (['bar', 'column', 'line', 'waterfall', 'scatter'].includes(this.paraState.type)) {
+                if (['bar', 'column', 'line', 'waterfall', 'scatter'].includes(this._paraState.type)) {
                     this._paraState.settingControls.add({
                         type: 'checkbox',
                         key: 'popup.isShowCrosshair',

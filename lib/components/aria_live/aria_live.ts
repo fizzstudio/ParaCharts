@@ -30,7 +30,7 @@ export class AriaLive extends ParaComponent {
   //   caused errors when I tried.
   connectedCallback(): void {
     super.connectedCallback();
-    this._voicing = new Voicing(this.paraState);
+    this._voicing = new Voicing(this._paraState);
   }
 
   protected _setHistory(history: readonly string[]) {

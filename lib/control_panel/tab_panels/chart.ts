@@ -125,7 +125,7 @@ export class ChartPanel extends ControlPanelTabPanel {
             <para-popup-settings-dialog
               ${ref(this._popupDialogRef)}
               id="popup-settings-dialog"
-              .paraState=${this._paraState}
+              .globalState=${this._globalState}
             >
             </para-popup-settings-dialog>
           </section>

@@ -15,9 +15,9 @@ export abstract class ControlPanelTabPanel extends SettingControlContainer {
   set controlPanel(controlPanel: ParaControlPanel) {
     this._controlPanel = controlPanel;
     // also creates the state controller
-    this.paraState = controlPanel.paraState;
+    this.globalState = controlPanel.globalState;
   }
-  
+
   static styles = [
     css`
       .tab-content {

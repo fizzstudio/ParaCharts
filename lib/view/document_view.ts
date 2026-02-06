@@ -50,7 +50,7 @@ export class DocumentView extends Container(View) {
   constructor(paraview: ParaView) {
     super(paraview);
     this.log = getLogger('DocumentView');
-    this._paraState = paraview.paraState;
+    this._paraState = paraview.globalState.paraState;
     this.observeNotices();
     this.type = this._paraState.type;
   }
