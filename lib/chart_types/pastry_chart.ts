@@ -223,5 +223,4 @@ export class PastryChartInfo extends BaseChartInfo {
     }
     this._paraState.announce(msgArray);
   }
-
 }
