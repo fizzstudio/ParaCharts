@@ -20,6 +20,7 @@ import { ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
 import { Direction, makeSequenceId, Setting, SettingsManager } from '../state';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
+import explainers from '../explainers';
 import type { JIM } from '@fizz/jimerator';
 
 type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMap) => void | Promise<void>) };
@@ -33,7 +34,7 @@ export class ParaAPI {
   protected _narrativeActions: Actions;
 
   constructor(protected _paraChart: ParaChart) {
-    const paraState = _paraChart.paraState;
+    const paraState = _paraChart._paraState;
     const paraView = _paraChart.paraView;
 
     // we use a function here bc the chartInfo object may get replaced
@@ -143,6 +144,30 @@ export class ParaAPI {
       },
       openHelp() {
         _paraChart.controlPanel.showHelpDialog();
+      },
+      openExplainer() {
+        if (_paraChart.globalState.paraState === _paraChart.globalState.paraStates[1]) {
+          // Open the explainer
+          _paraChart.globalState.enableParaState(_paraChart.globalState.paraStates[0]);
+          if (!_paraChart.globalState.paraState.model) {
+            _paraChart.runLoader(
+              JSON.stringify(explainers[paraView.documentView!.type]!.manifest),
+              'content',
+              false,
+              explainers[paraView.documentView!.type]!.summary
+            ).then(() => {
+              paraView.createDocumentView();
+            });
+          } else {
+            paraView.createDocumentView();
+            _paraChart.captionBox.setCaption();
+          }
+        } else {
+          // Close the explainer
+          _paraChart.globalState.enableParaState(_paraChart.globalState.paraStates[1]);
+          paraView.createDocumentView();
+          _paraChart.captionBox.setCaption();
+        }
       },
       announceVersionInfo() {
         paraState.announce(`Version ${__APP_VERSION__}; commit ${__COMMIT_HASH__}`);

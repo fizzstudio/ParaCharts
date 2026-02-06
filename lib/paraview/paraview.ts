@@ -381,6 +381,10 @@ export class ParaView extends ParaComponent {
     return this._pointerEventManager;
   }
 
+  get paraState() {
+    return this._paraState;
+  }
+
   connectedCallback() {
     super.connectedCallback();
     // create a default view box so the SVG element can have a size
@@ -688,7 +692,6 @@ export class ParaView extends ParaComponent {
   }
 
   createDocumentView() {
-    this.log.info('creating document view', this.type);
     this._documentView = new DocumentView(this);
     this._documentView.init();
     this.computeViewBox();
@@ -838,7 +841,7 @@ export class ParaView extends ParaComponent {
       style.width = "100vw";
       style.height = "100vh";
     }
-    const contrast = this.paraState.settings.color.contrastLevel * 50;
+    const contrast = this._paraState.settings.color.contrastLevel * 50;
     if (this._paraState.settings.color.isDarkModeEnabled) {
       style["--axis-line-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
       style["--label-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
@@ -884,7 +887,7 @@ export class ParaView extends ParaComponent {
     }
     loopParaviewRefresh(
       this,
-      this.paraState.settings.animation.popInAnimateRevealTimeMs,
+      this._paraState.settings.animation.popInAnimateRevealTimeMs,
       50
     );
   }
@@ -955,7 +958,7 @@ export class ParaView extends ParaComponent {
       </svg>
       <para-aria-live-region
         ${ref(this._ariaLiveRegionRef)}
-        .paraState=${this._paraState}
+        .globalState=${this._globalState}
         .announcement=${this._paraState.announcement}
       ></para-aria-live-region>
       <div

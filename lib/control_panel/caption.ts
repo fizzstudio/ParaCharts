@@ -115,7 +115,7 @@ export class ParaCaptionBox extends ParaComponent {
     this.parachart.clearAriaLive();
   }
 
-  private async setCaption(): Promise<void> {
+  async setCaption(): Promise<void> {
     if (this._paraState.dataState === 'complete') {
       this._caption = await this.parachart.paraView.documentView!.chartInfo.summarizer.getChartSummary();
     }
@@ -200,8 +200,8 @@ export class ParaCaptionBox extends ParaComponent {
   }
 
   render() {
-    this.style.maxWidth = `${this.paraState.settings.chart.size.width}px`;
-    this._isEBarVisible = !!this.paraState.announcement.text
+    this.style.maxWidth = `${this._paraState.settings.chart.size.width}px`;
+    this._isEBarVisible = !!this._paraState.announcement.text
       && this._paraState.announcement.text !== this._caption.text;
     const isCaptionSolo = !this._isEBarVisible || !this._paraState.settings.controlPanel.isExplorationBarVisible;
     return html`
