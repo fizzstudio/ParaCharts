@@ -155,6 +155,7 @@ export class DirectLabelStrip extends Container(View) {
 
   protected _addedToParent(): void {
     this.observeNotices();
+    this.createLabels();
   }
 
   noticePosted(key: string, value: any): void {
