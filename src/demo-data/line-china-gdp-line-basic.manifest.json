@@ -1,7 +1,10 @@
 {
   "datasets": [
     {
-      "type": "line",
+      "representation": {
+        "type": "chart",
+        "subtype": "line"
+      },
       "title": "Distribution of GDP across economic sectors in China 2008 to 2018",
       "chartTheme": {
         "baseQuantity": "GDP",

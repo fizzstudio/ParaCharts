@@ -1,7 +1,10 @@
 {
   "datasets": [
     {
-      "type": "line",
+      "representation": {
+        "type": "chart",
+        "subtype": "line"
+      },
       "title": "Gross domestic product (GDP) growth in EU and Euro area 2024",
       "chartTheme": {
         "baseQuantity": "GDP growth",
