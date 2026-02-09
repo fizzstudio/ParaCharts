@@ -19,11 +19,20 @@ import { ParaState } from './parastate';
 
 export class SeriesPropertyManager {
 
-  private seriesList: SeriesProperties[];
+  private _seriesList!: SeriesProperties[];
 
-  constructor(private paraState: ParaState) {
-    this.seriesList = paraState.model!.series.map((series, i) => 
-      new SeriesProperties(series.key, paraState.colors.wrapColorIndex(i), paraState.symbols.symbolAt(i)));
+  constructor(private _paraState: ParaState) {
+  }
+
+  private get seriesList() {
+    if (!this._seriesList) {
+      this._seriesList = this._paraState.model!.series.map((series, i) =>
+        new SeriesProperties(
+          series.key,
+          this._paraState.colors.wrapColorIndex(i),
+          this._paraState.symbols.symbolAt(i)));
+    }
+    return this._seriesList;
   }
 
   properties(key: string): SeriesProperties {

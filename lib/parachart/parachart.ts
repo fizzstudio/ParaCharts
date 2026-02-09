@@ -101,15 +101,27 @@ export class ParaChart extends ParaComponent {
     // also creates the state controller
     this.globalState = globalState;
     this.globalState.registerCallbacks({
-      onUpdate: () => this._paraViewRef.value?.requestUpdate(),
-      onNotice: (key, value) => this.postNotice(key, value),
-      onSettingChange: (path, oldVal, newVal) => this.settingDidChange(path, oldVal, newVal)
+      onUpdate: () => {
+        this._paraViewRef.value?.requestUpdate();
+      },
+      onNotice: (key, value) => {
+        this.postNotice(key, value);
+      },
+      onSettingChange: (path, oldVal, newVal) => {
+        this.settingDidChange(path, oldVal, newVal);
+      }
     });
     for (let i = 0; i < 2; i++) {
       this.globalState.paraStates[i].registerCallbacks({
-        onUpdate: () => this._paraViewRef.value?.requestUpdate(),
-        onNotice: (key, value) => this.postNotice(key, value),
-        onSettingChange: (path, oldVal, newVal) => this.settingDidChange(path, oldVal, newVal)
+        onUpdate: () => {
+          this._paraViewRef.value?.requestUpdate();
+        },
+        onNotice: (key, value) => {
+          this.postNotice(key, value);
+        },
+        onSettingChange: (path, oldVal, newVal) => {
+          this.settingDidChange(path, oldVal, newVal);
+        }
       });
     }
     this.captionBox = document.createElement('para-caption-box');
@@ -334,10 +346,12 @@ export class ParaChart extends ParaComponent {
     );
     if (loadresult.result === 'success') {
       this._manifest = loadresult.manifest;
-      this._paraState.clearVisited();
-      this._paraState.clearSelected();
-      this._paraState.clearAllHighlights();
-      this._paraState.clearPopups();
+      if (forceType) {
+        this._paraState.clearVisited();
+        this._paraState.clearSelected();
+        this._paraState.clearAllHighlights();
+        this._paraState.clearPopups();
+      }
       this._paraState.setManifest(loadresult.manifest, loadresult.data);
       this._paraState.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode
@@ -371,12 +385,13 @@ export class ParaChart extends ParaComponent {
     if (!this.paraView){
       return
     }
-    this.paraView.documentView!.noticePosted(key, value);
-    this.paraView.documentView!.chartInfo.noticePosted(key, value);
+    this.paraView.documentView?.noticePosted(key, value);
+    this.paraView.documentView?.chartInfo.noticePosted(key, value);
     this.captionBox.noticePosted(key, value);
     this.dispatchEvent(
       new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));
   }
+
   command(name: keyof AvailableCommands, args: any[]): any {
     const handler = this._commander.commands[name];
     if (handler) {

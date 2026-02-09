@@ -202,7 +202,7 @@ export class ParaState extends BaseState {
   protected _facets: FacetSignature[] | null = null;
   protected _type: ChartType = 'line';
   protected _title = '';
-  protected _seriesProperties: SeriesPropertyManager | null = null;
+  protected _seriesProperties: SeriesPropertyManager;
   protected _colors: Colors;
   protected _keymapManager = new KeymapManager(actionMap);
   protected _summarizer!: Summarizer;
@@ -223,6 +223,7 @@ export class ParaState extends BaseState {
     super();
     this._createSettings(_inputSettings);
     this._colors = new Colors(this);
+    this._seriesProperties = new SeriesPropertyManager(this);
     this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
     this._pairAnalyzerConstructor = pairAnalyzerConstructor;
     this._getUrlAnnotations();
@@ -288,6 +289,10 @@ export class ParaState extends BaseState {
     return this._annotID++;
   }
 
+  get index(): number {
+    return this._globalState.paraStates.indexOf(this);
+  }
+
   setManifest(manifest: Manifest, data?: AllSeriesData) {
     this._manifest = manifest;
     const dataset = this._manifest.datasets[0];
@@ -333,7 +338,7 @@ export class ParaState extends BaseState {
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
-      this._seriesProperties = new SeriesPropertyManager(this);
+      //this._seriesProperties = new SeriesPropertyManager(this);
       this.data = dataFromManifest(manifest);
     } else if (data) {
       if (isPastryType(this._type) || isVennType(this._type)) {
@@ -346,7 +351,7 @@ export class ParaState extends BaseState {
           this._pairAnalyzerConstructor
         );
       }
-      this._seriesProperties = new SeriesPropertyManager(this);
+      //this._seriesProperties = new SeriesPropertyManager(this);
       this.data = data;
     } else {
       throw new Error('store lacks external or inline chart data');

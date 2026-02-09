@@ -117,7 +117,8 @@ export class ParaCaptionBox extends ParaComponent {
 
   async setCaption(): Promise<void> {
     if (this._paraState.dataState === 'complete') {
-      this._caption = await this.parachart.paraView.documentView!.chartInfo.summarizer.getChartSummary();
+      this._caption =
+        await this.parachart.paraView.documentView?.chartInfo.summarizer.getChartSummary() ?? {text: '', html: ''};
     }
   }
 

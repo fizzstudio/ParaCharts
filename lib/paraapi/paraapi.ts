@@ -148,13 +148,15 @@ export class ParaAPI {
       openExplainer() {
         if (_paraChart.globalState.paraState === _paraChart.globalState.paraStates[1]) {
           // Open the explainer
+          const type = paraView.documentView!.type;
+          paraView.destroyDocumentView();
           _paraChart.globalState.enableParaState(_paraChart.globalState.paraStates[0]);
           if (!_paraChart.globalState.paraState.model) {
             _paraChart.runLoader(
-              JSON.stringify(explainers[paraView.documentView!.type]!.manifest),
+              JSON.stringify(explainers[type]!.manifest),
               'content',
               false,
-              explainers[paraView.documentView!.type]!.summary
+              explainers[type]!.summary
             ).then(() => {
               paraView.createDocumentView();
             });

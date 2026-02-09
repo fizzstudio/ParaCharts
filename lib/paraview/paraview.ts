@@ -699,6 +699,10 @@ export class ParaView extends ParaComponent {
     this.paraChart.styleManager.update();
   }
 
+  destroyDocumentView() {
+    this._documentView = undefined;
+  }
+
   computeViewBox() {
     this._viewBox = {
       x: 0,
@@ -893,7 +897,6 @@ export class ParaView extends ParaComponent {
   }
 
   render(): TemplateResult {
-    console.log('RENDER');
     return html`
     <div ${ref(this._containerRef)} @fullscreenchange=${() => this._onFullscreenChange()}>
     <svg
@@ -954,7 +957,7 @@ export class ParaView extends ParaComponent {
           @pointerleave=${(ev: PointerEvent) => {this.paraState.clearPopups()}}
         >
         </rect>
-        ${this._documentView?.render() ?? ''}
+        ${this._paraState.model ? (this._documentView?.render() ?? '') : ''}
       </svg>
       <para-aria-live-region
         ${ref(this._ariaLiveRegionRef)}

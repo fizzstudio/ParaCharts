@@ -8,7 +8,7 @@ export class ParaComponent extends LitElement {
   protected _globalState!: GlobalState;
   protected _globalStateController!: StateController<GlobalState>;
   protected _paraStateController!: StateController<ParaState>;
-
+  protected _explainerStateController!: StateController<ParaState>;
 
   get globalState() {
     return this._globalState;
@@ -19,6 +19,7 @@ export class ParaComponent extends LitElement {
       this._globalState = globalState;
       this._globalStateController = new StateController(this, globalState);
       this._paraStateController = new StateController(this, globalState.paraState);
+      this._explainerStateController = new StateController(this, globalState.paraStates[0]);
     }
   }
 
