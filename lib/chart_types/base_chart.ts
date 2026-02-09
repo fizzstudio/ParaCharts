@@ -36,11 +36,11 @@ import { executeParaActions, parseAction } from '../paraactions/paraactions';
 export const ORIENTATION_SENTENCES = [
   '$.datasets[0].axes.dependent',
   '$.datasets[0].axes.independent',
-  '$.datasets[0].labels'
+  '$.datasets[0].recordCount'
 ]
 
 export const PASTRY_ORIENTATION_SENTENCES = [
-  '$.datasets[0].labels',
+  '$.datasets[0].recordCount',
 ]
 
 /**
