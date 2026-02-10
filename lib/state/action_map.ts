@@ -22,6 +22,7 @@ export interface AvailableActions {
   toggleDarkMode(): void;
   toggleLowVisionMode(): void;
   openHelp(): void;
+  openExplainer(): void;
   announceVersionInfo(): void;
   jumpToChordLanding(): void;
   shutUp(): void;

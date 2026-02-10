@@ -65,7 +65,7 @@ export abstract class BaseChartInfo {
   protected _paraState!: ParaState;
 
   constructor(protected _type: ChartType, protected _paraView: ParaView) {
-    this._paraState = this._paraView.paraState;
+    this._paraState = this._paraView.globalState.paraState;
     this._init();
     this._addSettingControls();
   }

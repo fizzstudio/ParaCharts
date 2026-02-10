@@ -1,22 +1,30 @@
 
-import { type ParaState } from '../state';
+import { type ParaState, type GlobalState } from '../state';
 
 import { LitElement } from 'lit';
-import { StateController } from '@lit-app/state';
+import { State, StateController } from '@lit-app/state';
 
 export class ParaComponent extends LitElement {
+  protected _globalState!: GlobalState;
+  protected _globalStateController!: StateController<GlobalState>;
+  protected _paraStateController!: StateController<ParaState>;
+  protected _explainerStateController!: StateController<ParaState>;
 
-  protected _paraState!: ParaState;
-  protected _storeState!: StateController<ParaState>;
-
-
-  get paraState() {
-    return this._paraState;
+  get globalState() {
+    return this._globalState;
   }
 
-  set paraState(paraState: ParaState) {
-    this._paraState = paraState;
-    this._storeState = new StateController(this, paraState);
+  set globalState(globalState: GlobalState) {
+    if (!this._globalState) {
+      this._globalState = globalState;
+      this._globalStateController = new StateController(this, globalState);
+      this._paraStateController = new StateController(this, globalState.paraState);
+      this._explainerStateController = new StateController(this, globalState.paraStates[0]);
+    }
+  }
+
+  get _paraState(): ParaState {
+    return this._globalState.paraState;
   }
 
   extractStyles(id: string) {

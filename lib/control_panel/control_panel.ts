@@ -327,13 +327,14 @@ export class ParaControlPanel extends ParaComponent {
           ?open=${this.settings.isControlPanelDefaultOpen}
           class=${deetsState}
           tablabelmode=${tabLabelModes[this.settings.tabLabelStyle]}
-		  openbuttonarialabel="ParaCharts control panel"
+		      openbuttonarialabel="ParaCharts control panel"
           @open=${
             () => {
               this.paraChart.isControlPanelOpen = true;
               if (this.settings.caption.isCaptionExternalWhenControlPanelClosed) {
                 this._descriptionPanelRef.value!.internalizeCaptionBox();
               }
+              this.requestUpdate();
             }
           }
           @close=${
@@ -342,6 +343,7 @@ export class ParaControlPanel extends ParaComponent {
               if (this.settings.caption.isCaptionExternalWhenControlPanelClosed) {
                 this.externalizeCaptionBox();
               }
+              this.requestUpdate();
             }
           }
           @invalidvalue=${(e: CustomEvent) => this._msgDialogRef.value!.show(e.detail)}

@@ -25,7 +25,7 @@ import '../control_panel/caption';
 import { type ParaCaptionBox } from '../control_panel/caption';
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
-import { ParaState } from '../state';
+import { GlobalState } from '../state';
 import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../state/custom_property_loader';
 import { styles } from '../view/styles';
@@ -51,7 +51,6 @@ import { initParaSummary } from '@fizz/parasummary';
 
 // NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
 export class ParaChart extends ParaComponent {
-
   @property({ type: Boolean }) headless = false;
   @property() accessor manifest = '';
   @property() manifestType: SourceKind = 'url';
@@ -89,21 +88,44 @@ export class ParaChart extends ParaComponent {
     super();
     const customPropLoader = new CustomPropertyLoader();
     const cssProps = customPropLoader.processProperties();
-    // also creates the state controller
-    this.paraState = new ParaState(
+    const globalState = new GlobalState(
       // XXX config won't get set until connectedCallback()
       Object.assign(cssProps, this.config),
       // this._suppleteSettingsWith,
       seriesAnalyzerConstructor,
       pairAnalyzerConstructor
     );
-    this.paraState.registerCallbacks({
-      onUpdate: () => this._paraViewRef.value?.requestUpdate(),
-      onNotice: (key, value) => this.postNotice(key, value),
-      onSettingChange: (path, oldVal, newVal) => this.settingDidChange(path, oldVal, newVal)
+    // Create 2 ParaStates: one for the main chart, one for the explainer
+    globalState.createParaState();
+    globalState.createParaState();
+    // also creates the state controller
+    this.globalState = globalState;
+    this.globalState.registerCallbacks({
+      onUpdate: () => {
+        this._paraViewRef.value?.requestUpdate();
+      },
+      onNotice: (key, value) => {
+        this.postNotice(key, value);
+      },
+      onSettingChange: (path, oldVal, newVal) => {
+        this.settingDidChange(path, oldVal, newVal);
+      }
     });
+    for (let i = 0; i < 2; i++) {
+      this.globalState.paraStates[i].registerCallbacks({
+        onUpdate: () => {
+          this._paraViewRef.value?.requestUpdate();
+        },
+        onNotice: (key, value) => {
+          this.postNotice(key, value);
+        },
+        onSettingChange: (path, oldVal, newVal) => {
+          this.settingDidChange(path, oldVal, newVal);
+        }
+      });
+    }
     this.captionBox = document.createElement('para-caption-box');
-    this.captionBox.paraState = this._paraState;
+    this.captionBox.globalState = this._globalState;
     this.captionBox.parachart = this;
     customPropLoader.paraState = this.paraState;
     customPropLoader.registerColors();
@@ -122,7 +144,7 @@ export class ParaChart extends ParaComponent {
           if (this.data) {
             await this._loader.preloadData(this.data);
           }
-          this._runLoader(this.manifest, this.manifestType).then(() => {
+          this.runLoader(this.manifest, this.manifestType).then(() => {
             this.log.info('ParaCharts fully initialized');
             this._scrollyteller = new Scrollyteller(this);
           });
@@ -194,6 +216,10 @@ export class ParaChart extends ParaComponent {
 
   get scrollyteller() {
     return this._scrollyteller;
+  }
+
+  get paraState() {
+    return this._paraState;
   }
 
   clearAriaLive() {
@@ -275,8 +301,12 @@ export class ParaChart extends ParaComponent {
   willUpdate(changedProperties: PropertyValues<this>) {
     // Don't load a manifest before the paraview has rendered
     if (changedProperties.has('manifest') && this.manifest !== '' && this._paraViewRef.value) {
-      this.log.info(`manifest changed: '${this.manifestType === 'content' ? '<content>' : this.manifest}`);
-      this._loaderPromise = this._runLoader(this.manifest, this.manifestType);
+      console.log(`manifest changed: ${this.manifest}`);
+      this._loaderPromise = new Promise((resolve, reject) => {
+        this._loaderResolver = resolve;
+        this._loaderRejector = reject;
+      });
+      this.runLoader(this.manifest, this.manifestType);
       this.dispatchEvent(new CustomEvent('manifestchange', {bubbles: true, composed: true, cancelable: true}));
     }
     if (changedProperties.has('config')) {
@@ -301,22 +331,27 @@ export class ParaChart extends ParaComponent {
     `
   ];
 
-  protected async _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void> {
-    this.log.info(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
+  async runLoader(
+    manifestInput: string,
+    manifestType: SourceKind,
+    forceType = true,
+    description?: string
+  ): Promise<void> {
     this._paraState.dataState = 'pending';
     const loadresult = await this._loader.load(
-      this.manifestType,
+      manifestType,
       manifestInput,
-      this.forcecharttype,
-      this.description
+      forceType ? this.forcecharttype : undefined,
+      description ?? this.description
     );
-    this.log.info('loaded manifest')
     if (loadresult.result === 'success') {
       this._manifest = loadresult.manifest;
-      this._paraState.clearVisited();
-      this._paraState.clearSelected();
-      this._paraState.clearAllHighlights();
-      this._paraState.clearPopups();
+      if (forceType) {
+        this._paraState.clearVisited();
+        this._paraState.clearSelected();
+        this._paraState.clearAllHighlights();
+        this._paraState.clearPopups();
+      }
       this._paraState.setManifest(loadresult.manifest, loadresult.data);
       this._paraState.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode
@@ -350,12 +385,13 @@ export class ParaChart extends ParaComponent {
     if (!this.paraView){
       return
     }
-    this.paraView.documentView!.noticePosted(key, value);
-    this.paraView.documentView!.chartInfo.noticePosted(key, value);
+    this.paraView.documentView?.noticePosted(key, value);
+    this.paraView.documentView?.chartInfo.noticePosted(key, value);
     this.captionBox.noticePosted(key, value);
     this.dispatchEvent(
       new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));
   }
+
   command(name: keyof AvailableCommands, args: any[]): any {
     const handler = this._commander.commands[name];
     if (handler) {
@@ -382,7 +418,7 @@ export class ParaChart extends ParaComponent {
         <para-view
           ${ref(this._paraViewRef)}
           .paraChart=${this}
-          .paraState=${this._paraState}
+          .globalState=${this._globalState}
           colormode=${this._paraState?.settings.color.colorVisionMode ?? nothing}
           ?disableFocus=${this.headless}
         ></para-view>
@@ -392,7 +428,7 @@ export class ParaChart extends ParaComponent {
               ${ref(this._controlPanelRef)}
               style=${styleMap(cpanelStyles)}
               .paraChart=${this}
-              .paraState=${this._paraState}
+              .globalState=${this._globalState}
             ></para-control-panel>`
           : ''
         }
