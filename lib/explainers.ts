@@ -11,11 +11,10 @@ export type Explainers = {
 
 const explainers: Partial<Explainers> = {
   column: {
-    summary: 'This is a column chart.',
+    summary: '<span data-phrasecode="0">This is a column chart.</span>',
     manifest: {
       "datasets": [
         {
-          "type": "column",
           "title": "Unemployment rate in Greece 1999-2019",
           "chartTheme": {
             "baseQuantity": "employment",
@@ -140,6 +139,10 @@ const explainers: Partial<Explainers> = {
               ]
             }
           ],
+          "representation": {
+            "type": "chart",
+            "subtype": "column"
+          },
           "data": {
             "source": "inline"
           }

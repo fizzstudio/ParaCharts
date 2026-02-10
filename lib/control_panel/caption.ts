@@ -11,6 +11,7 @@ import { type Unsubscribe } from '@lit-app/state';
 import { ParaChart } from '../parachart/parachart';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { Setting } from '../state';
+import { createRef, ref } from 'lit/directives/ref.js';
 
 type HoverListener = (event: PointerEvent) => void;
 
@@ -28,6 +29,7 @@ export class ParaCaptionBox extends ParaComponent {
   protected _storeChangeUnsub!: Unsubscribe;
   protected _spans: HTMLSpanElement[] = [];
   protected _isEBarVisible = false;
+  protected _captionRef = createRef<HTMLElement>();
 
   static styles = [
     css`
@@ -185,6 +187,29 @@ export class ParaCaptionBox extends ParaComponent {
     }
   }
 
+  getHighlightedSummary(): HighlightedSummary {
+    const highlights: Highlight[] = [];
+    const article = this._captionRef.value!.firstElementChild!;
+    let total = 0;
+    for (const span of article.children) {
+      const text = span.textContent;
+      highlights.push({
+        start: total,
+        end: total + text.length,
+        phrasecode: (span as HTMLElement).dataset.phrasecode!
+      });
+      if ((span as HTMLElement).dataset.action) {
+        highlights.at(-1)!.action = (span as HTMLElement).dataset.action;
+      }
+      total += text.length;
+    }
+    return {
+      text: article.textContent.trim(),
+      html: article.innerHTML,
+      highlights
+    }
+  }
+
   renderSummary(summary: HighlightedSummary | string, idPrefix: string): TemplateResult {
     if (typeof summary === 'string') {
       summary = { text: summary, html: summary };
@@ -209,6 +234,7 @@ export class ParaCaptionBox extends ParaComponent {
       <figcaption class=${this.parachart.isControlPanelOpen ? '' : 'external'}>
         <div id="caption-box">
           <div
+            ${ref(this._captionRef)}
             id="caption"
             class=${isCaptionSolo ? 'solo' : ''}
             ?hidden=${!this._paraState.settings.controlPanel.isCaptionVisible}

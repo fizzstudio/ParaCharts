@@ -38,7 +38,7 @@ import {
 } from '@fizz/paramodel';
 import {
   Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY,
-  HighlightedSummary, Highlight,
+  HighlightedSummary, type Highlight,
   formatBox
 } from '@fizz/parasummary';
 
@@ -226,7 +226,7 @@ export class ParaState extends BaseState {
     this._seriesProperties = new SeriesPropertyManager(this);
     this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
     this._pairAnalyzerConstructor = pairAnalyzerConstructor;
-    this._getUrlAnnotations();
+    //this._getUrlAnnotations();
   }
 
   get globalState() {
@@ -300,7 +300,7 @@ export class ParaState extends BaseState {
     this._createSettings(this._inputSettings);
 
     if (chartTypeDefaults[dataset.representation.subtype]) {
-      Object.entries(chartTypeDefaults[dataset.representation.subtype]!).forEach(([path, value]) =>
+      Object.entries(chartTypeDefaults[dataset.representation.subtype]!).forEach(([path, value]) => {
         this.updateSettings(draft => {
           SettingsManager.set(path, value, draft);
         }, true);
@@ -448,7 +448,6 @@ export class ParaState extends BaseState {
 
     if (this.settings.ui.isAnnouncementEnabled) {
       this.announcement = { text: announcement, html, highlights, clear: clearAriaLive, startFrom };
-      this.log.info('ANNOUNCE:', this.announcement.text);
     }
   }
 
