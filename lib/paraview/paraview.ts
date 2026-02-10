@@ -103,6 +103,11 @@ export class ParaView extends ParaComponent {
       #frame.pending {
         fill: lightgray;
       }
+      #frame.explainer {
+        fill: floralwhite;
+        stroke: burlywood;
+        stroke-width: 2;
+      }
       .darkmode {
         --axis-line-color: ghostwhite;
         --label-color: ghostwhite;
@@ -931,7 +936,7 @@ export class ParaView extends ParaComponent {
         <rect
           ${ref(this._frameRef)}
           id="frame"
-          class=${nothing}
+          class=${this._paraState.index === 0 ? 'explainer' : nothing}
           pointer-events="all"
           x="0"
           y="0"
