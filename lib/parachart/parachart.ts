@@ -26,7 +26,7 @@ import { type ParaCaptionBox } from '../control_panel/caption';
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
 import { ParaState } from '../state';
-import { ParaLoader, type SourceKind } from '../loader/paraloader';
+import { ParaLoader, load, LoadError, LoadErrorCode, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../state/custom_property_loader';
 import { styles } from '../view/styles';
 import '../components/aria_live';
@@ -75,7 +75,7 @@ export class ParaChart extends ParaComponent {
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
   protected _loaderResolver: (() => void) | null = null;
-  protected _loaderRejector: (() => void) | null = null;
+  protected _loaderRejector: ((error?: Error) => void) | null = null;
   protected _styleManager!: StyleManager;
   protected _commander!: Commander;
   protected _paraAPI!: ParaAPI;
@@ -304,29 +304,30 @@ export class ParaChart extends ParaComponent {
   protected async _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void> {
     this.log.info(`loading manifest: '${manifestType === 'content' ? '<content>' : manifestInput}'`);
     this._paraState.dataState = 'pending';
-    const loadresult = await this._loader.load(
-      this.manifestType,
-      manifestInput,
-      this.forcecharttype,
-      this.description
-    );
-    this.log.info('loaded manifest')
-    if (loadresult.result === 'success') {
-      this._manifest = loadresult.manifest;
+    
+    try {
+      const { manifest, data } = await load(
+        this.manifestType,
+        manifestInput,
+        this.forcecharttype,
+        this.description
+      );
+      this.log.info('loaded manifest');
+      this._manifest = manifest;
       this._paraState.clearVisited();
       this._paraState.clearSelected();
       this._paraState.clearAllHighlights();
       this._paraState.clearPopups();
-      this._paraState.setManifest(loadresult.manifest, loadresult.data);
+      this._paraState.setManifest(manifest, data);
       this._paraState.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode
       this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
       this._paraAPI = new ParaAPI(this);
       this._loaderResolver!();
-    } else {
-      this.log.error(loadresult.error);
+    } catch (error) {
+      this.log.error(error instanceof Error ? error.message : String(error));
       this._paraState.dataState = 'error';
-      this._loaderRejector!();
+      this._loaderRejector!(error instanceof Error ? error : new LoadError(LoadErrorCode.UNKNOWN, String(error)));
     }
 
     if (this.api) {

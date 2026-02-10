@@ -1,10 +1,22 @@
 
 import { ParaChart } from '../parachart/parachart';
-import { type SourceKind, type FieldInfo } from '../loader/paraloader';
+import { type SourceKind, type FieldInfo, LoadError, LoadErrorCode } from '../loader/paraloader';
 
-export { FieldInfo };
+export { FieldInfo, LoadError, LoadErrorCode };
 
 export { type Manifest } from '@fizz/paramanifest';
+
+export type LoadManifestSuccess = {
+  success: true;
+};
+
+export type LoadManifestFailure = {
+  success: false;
+  errorCode: LoadErrorCode;
+  message: string;
+};
+
+export type LoadManifestResult = LoadManifestSuccess | LoadManifestFailure;
 
 export class ParaHeadless {
 
@@ -35,12 +47,29 @@ export class ParaHeadless {
   async loadManifest(
     input: string,
     type: SourceKind = 'url',
-  ): Promise<void> {
+  ): Promise<LoadManifestResult> {
     await this._paraChart.ready;
     this._paraChart.manifestType = type;
     await new Promise(resolve => setTimeout(resolve, 0));
     this._paraChart.manifest = input;
-    await this._paraChart.loaded;
+    
+    try {
+      await this._paraChart.loaded;
+      return { success: true };
+    } catch (error) {
+      if (error instanceof LoadError) {
+        return {
+          success: false,
+          errorCode: error.code,
+          message: error.message,
+        };
+      }
+      return {
+        success: false,
+        errorCode: LoadErrorCode.UNKNOWN,
+        message: error instanceof Error ? error.message : String(error),
+      };
+    }
   }
 
   get jimReady() {
