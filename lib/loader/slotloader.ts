@@ -1,6 +1,7 @@
 import { type Datatype } from '@fizz/dataframe';
 import { ChartType, DisplayType, Facet, Manifest, SeriesManifest } from '@fizz/paramanifest';
 import { Logger, getLogger } from '@fizz/logger';
+import { concatenateSeriesLabels } from './common';
 
 /*interface DataVar {
   name: string;
@@ -257,15 +258,8 @@ export class SlotLoader {
     if (indepFacet === undefined) {
       indepFacet = vars[0];
     }
-    let depFacetName = '';
-    for (let facet of vars.toSpliced(vars.indexOf(indepFacet), 1)) {
-      //Truncate generated facet name if it's too long
-      if (depFacetName.concat(facet.label, ' ').length > 50) {
-        depFacetName = depFacetName.concat('...')
-        break;
-      }
-      depFacetName = depFacetName.concat(facet.label, ', ')
-    }
+    const depVars = vars.toSpliced(vars.indexOf(indepFacet), 1);
+    const depFacetName = concatenateSeriesLabels(depVars.map(f => f.label));
     let facets = {x: vars[0], y: vars[1]};
     facets['x'].variableType = 'independent';
     facets['y'].label = depFacetName;

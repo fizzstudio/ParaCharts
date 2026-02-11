@@ -190,10 +190,10 @@ describe('paraloader', () => {
         expect(result.yAxis.title).toBe('Revenue');
       });
 
-      it('should set yAxis title to empty string when more than two columns', () => {
+      it('should concatenate all series labels when more than two columns', () => {
         const csv = 'Year,Sales,Profit,Tax\n2020,100,50,10';
         const result = inferDefaultsFromCsvText(csv);
-        expect(result.yAxis.title).toBe('');
+        expect(result.yAxis.title).toBe('Sales, Profit, Tax');
       });
     });
 

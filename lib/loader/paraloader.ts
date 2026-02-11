@@ -3,6 +3,7 @@ import { ChartType, Manifest, type Datatype, type AllSeriesData } from '@fizz/pa
 import papa from 'papaparse';
 
 import { getLogger } from '@fizz/logger';
+import { concatenateSeriesLabels } from './common';
 
 export type SourceKind = 'fizz-chart-data' | 'url' | 'content';
 
@@ -370,6 +371,9 @@ export function inferDefaultsFromCsvText(csvText: string, fileName?: string): Cs
   const xValues = dataRows.map(row => row[0] || '');
   const yValues = dataRows.map(row => row[1] || '');
 
+  // Build y-axis title by concatenating all series headers (excluding x-axis)
+  const yAxisTitle = concatenateSeriesLabels(headers.slice(1));
+
   return {
     chartTitle: generateTitleFromFileName(fileName || ''),
     xAxis: {
@@ -377,7 +381,7 @@ export function inferDefaultsFromCsvText(csvText: string, fileName?: string): Cs
       dataType: inferColumnDataType(xValues, headers[0]),
     },
     yAxis: {
-      title: headers.length === 2 ? headers[1] : '',
+      title: yAxisTitle,
       dataType: inferColumnDataType(yValues, headers[1] || ''),
     },
   };
