@@ -26,13 +26,17 @@ export class SeriesPropertyManager {
 
   private get seriesList() {
     if (!this._seriesList) {
-      this._seriesList = this._paraState.model!.series.map((series, i) =>
-        new SeriesProperties(
-          series.key,
-          this._paraState.colors.wrapColorIndex(i),
-          this._paraState.symbols.symbolAt(i)));
+      this.reset();
     }
     return this._seriesList;
+  }
+
+  reset() {
+    this._seriesList = this._paraState.model!.series.map((series, i) =>
+      new SeriesProperties(
+        series.key,
+        this._paraState.colors.wrapColorIndex(i),
+        this._paraState.symbols.symbolAt(i)));
   }
 
   properties(key: string): SeriesProperties {

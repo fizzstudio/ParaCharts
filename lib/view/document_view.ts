@@ -36,10 +36,10 @@ export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
 export class DocumentView extends Container(View) {
 
   readonly type: ChartType;
+  protected _titleLabel?: Label;
   protected _chartInfo!: BaseChartInfo;
   protected _chartLayers!: PlotLayerManager;
   protected _directLabelStrip: DirectLabelStrip | null = null;
-  protected _titleLabel?: Label;
   protected _horizAxis?: HorizAxis;
   protected _vertAxis?: VertAxis;
   protected _titleText!: string;
@@ -307,6 +307,15 @@ export class DocumentView extends Container(View) {
 
   async storeDidChange(key: string, value: any): Promise<void> {
     await super.storeDidChange(key, value);
+    if (key === 'isTitleHighlighted') {
+      if (value) {
+        this._titleLabel!.highlight();
+        // XXX not sure why this is needed
+        this.paraview.requestUpdate();
+      } else {
+        this._titleLabel!.clearHighlight();
+      }
+    }
     return this._chartInfo.storeDidChange(key, value);
   }
 

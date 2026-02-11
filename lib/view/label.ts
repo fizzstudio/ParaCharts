@@ -77,6 +77,7 @@ export class Label extends View {
   protected _text: string;
   protected _textCornerOffsets!: LabelTextCorners;
   protected _textLines: TextLine[] = [];
+  protected _isHighlighted = false;
 
   constructor(paraview: ParaView, private options: LabelOptions) {
     super(paraview);
@@ -224,6 +225,46 @@ export class Label extends View {
     };
   }
 
+  get topNormal(): Vec2 {
+    return new Vec2(0, 1).rotate(this._angle*Math.PI/180);
+  }
+
+  get bottomNormal(): Vec2 {
+    return new Vec2(0, -1).rotate(this._angle*Math.PI/180);
+  }
+
+  get leftNormal(): Vec2 {
+    return new Vec2(-1, 0).rotate(this._angle*Math.PI/180);
+  }
+
+  get rightNormal(): Vec2 {
+    return new Vec2(1, 0).rotate(this._angle*Math.PI/180);
+  }
+
+  get topLeftNormal(): Vec2 {
+    return this.topNormal.add(this.leftNormal).normalize();
+  }
+
+  get topRightNormal(): Vec2 {
+    return this.topNormal.add(this.rightNormal).normalize();
+  }
+
+  get bottomRightNormal(): Vec2 {
+    return this.bottomNormal.add(this.rightNormal).normalize();
+  }
+
+  get bottomLeftNormal(): Vec2 {
+    return this.bottomNormal.add(this.leftNormal).normalize();
+  }
+
+  highlight() {
+    this._isHighlighted = true;
+  }
+
+  clearHighlight() {
+    this._isHighlighted = false;
+  }
+
   resize(width: number, height: number): void {
     // pretend to resize for grid layout
   }
@@ -356,7 +397,7 @@ export class Label extends View {
     } else {
       this._textLines = [];
       const numChars = text.getNumberOfChars();
-      
+
       top = text.getExtentOfChar(0).y;
       bottom = text.getExtentOfChar(0).y + text.getExtentOfChar(0).height;
       left = text.getExtentOfChar(0).x;
@@ -396,19 +437,21 @@ export class Label extends View {
     super.settingDidChange(path, oldValue, newValue);
   }
 
-  render() {
-    // TODO: figure out why `this._y` is larger here than for single line titles
-    // HACK: divide `this._y` by 2 for `y` attribute value
+  protected _renderRect(flag: boolean, cls: string) {
+    const tln = this.topLeftNormal.multiplyScalar(4);
+    const trn = this.topRightNormal.multiplyScalar(4);
+    const brn = this.bottomRightNormal.multiplyScalar(4);
+    const bln = this.bottomLeftNormal.multiplyScalar(4);
     return svg`
-      ${this.options.hasBackground
+      ${flag
         ? svg`
           <path
-            class="label-bg"
+            class=${cls}
             d="
-              M${this.topLeft.x},${this.topLeft.y}
-              L${this.topRight.x},${this.topRight.y}
-              L${this.bottomRight.x},${this.bottomRight.y}
-              L${this.bottomLeft.x},${this.bottomLeft.y}
+              M${this.topLeft.x + tln.x},${this.topLeft.y - tln.y}
+              L${this.topRight.x + trn.x},${this.topRight.y - trn.y}
+              L${this.bottomRight.x + brn.x},${this.bottomRight.y - brn.y}
+              L${this.bottomLeft.x + bln.x},${this.bottomLeft.y - bln.y}
               Z"
             width=${this._width}
             height=${this._height}
@@ -416,6 +459,15 @@ export class Label extends View {
         `
         : ''
       }
+    `;
+  }
+
+  render() {
+    // TODO: figure out why `this._y` is larger here than for single line titles
+    // HACK: divide `this._y` by 2 for `y` attribute value
+    return svg`
+      ${this._renderRect(!!this.options.hasBackground, 'label-bg')}
+      ${this._renderRect(this._isHighlighted, 'label-highlight')}
       <text
         ${ref(this._elRef)}
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}

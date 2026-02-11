@@ -66,7 +66,11 @@
 					text.innerHTML = 'Change manifest';
 					chart.api.setManifest('/src/demo-data/line-single-manifest-128.json');
                 },
-                () => {
+				() => {
+					text.innerHTML = 'Highlight title';
+					chart.api.highlightTitle();
+				},
+                /*() => {
 					text.innerHTML = 'Highlight chart range';
                     chart.api.highlightRange(0.2, 0.6);
                 },
@@ -77,7 +81,7 @@
                 () => {
 					text.innerHTML = 'Clear range highlight';
                     chart.api.clearRangeHighlight(0.2, 0.6);
-                },
+                },*/
                 /*() => {
 					text.innerHTML = 'Highlight points';
                     chart.api.getSeries('Euro area').getPoints(4, 6).highlight();
