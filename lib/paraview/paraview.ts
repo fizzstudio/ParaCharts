@@ -67,6 +67,7 @@ export class ParaView extends ParaComponent {
   protected _frameRef = createRef<SVGRectElement>();
   protected _dataspaceRef = createRef<SVGGElement>();
   protected _documentView?: DocumentView;
+  protected _pushedDocumentview: DocumentView | null = null;
   protected _containerRef = createRef<HTMLDivElement>();
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
@@ -101,6 +102,11 @@ export class ParaView extends ParaComponent {
       }
       #frame.pending {
         fill: lightgray;
+      }
+      #frame.explainer {
+        fill: floralwhite;
+        stroke: burlywood;
+        stroke-width: 2;
       }
       .darkmode {
         --axis-line-color: ghostwhite;
@@ -381,6 +387,10 @@ export class ParaView extends ParaComponent {
     return this._pointerEventManager;
   }
 
+  get paraState() {
+    return this._paraState;
+  }
+
   connectedCallback() {
     super.connectedCallback();
     // create a default view box so the SVG element can have a size
@@ -552,65 +562,35 @@ export class ParaView extends ParaComponent {
 
   protected _handleVoicing() {
     if (this._paraState.settings.ui.isVoicingEnabled) {
-      if (!this._paraState.settings.ui.isNarrativeHighlightEnabled) {
-        this.ariaLiveRegion.voicing.speak('Self-voicing enabled.', []);
-      } else {
-        // XXX Would be nice to prefix this with "Narrative Highlight Mode enabled".
-        // That would require being able to join a simple text announcement with
-        // a HighlightedSummary
-        (async () => {
-          this._paraState.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
-        })();
-      }
+      this.ariaLiveRegion.voicing.speak('Self-voicing enabled.', []);
     } else {
-      this.ariaLiveRegion.voicing.shutUp();
-      // Voicing is disabled at this point, so manually push this message through
       this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
+      //this.ariaLiveRegion.voicing.shutUp();
+      if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
+        this._paraState.updateSettings(draft => {
+          draft.ui.isNarrativeHighlightEnabled = false;
+        });
+      }
     }
   }
 
   protected _handleNarrativeHighlight() {
     if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
-      if (this._paraState.settings.ui.isVoicingEnabled) {
-        this.startNarrativeHighlightMode();
-        const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
-        const msg = ['Narrative Highlights Mode enabled.'];
-        if (lastAnnouncement) msg.push(lastAnnouncement);
-        this._paraState.announce(msg);
-        (async () => {
-          this._paraState.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
-        })();
-      } else {
+      this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
+      if (!this._paraState.settings.ui.isVoicingEnabled) {
         this._paraState.updateSettings(draft => {
           draft.ui.isVoicingEnabled = true;
         });
-        this.startNarrativeHighlightMode();
-        const lastAnnouncement = this.ariaLiveRegion.lastAnnouncement;
-        const msg = ['Narrative Highlights Mode enabled.'];
-        if (lastAnnouncement) msg.push(lastAnnouncement);
-        this._paraState.announce(msg);
-        (async () => {
-          this._paraState.announce(await this._documentView!.chartInfo.summarizer.getChartSummary());
-        })();
       }
-      this._paraState.updateSettings(draft => {
-        this._modeSaved.set(
-          'type.line.isTrendNavigationModeEnabled',
-          draft.type.line.isTrendNavigationModeEnabled);
-        draft.type.line.isTrendNavigationModeEnabled = true;
-      });
+      this._paraState.announce(this.paraChart.captionBox.getHighlightedSummary());
     } else {
-      // Narrative highlights turned OFF
-      this.endNarrativeHighlightMode();
-
-      // Disable self-voicing as well
+      this.ariaLiveRegion.voicing.speak('Tour guide disabled.', []);
+      this.paraChart.captionBox.clearSpanHighlights();
+      this._paraState.clearAllHighlights();
+      this._paraState.clearPopups();
       this._paraState.updateSettings(draft => {
         draft.ui.isVoicingEnabled = false;
-        draft.type.line.isTrendNavigationModeEnabled = this._modeSaved.get(
-          'type.line.isTrendNavigationModeEnabled');
-        this._modeSaved.delete('type.line.isTrendNavigationModeEnabled');
       });
-      this._paraState.announce(['Narrative Highlight Mode disabled.']);
     }
   }
 
@@ -619,15 +599,14 @@ export class ParaView extends ParaComponent {
   }
 
   startNarrativeHighlightMode() {
-    //this._hotkeyActions = new NarrativeHighlightHotkeyActions(this);
     this._paraState.updateSettings(draft => {
-      draft.ui.isVoicingEnabled = true;
+      draft.ui.isNarrativeHighlightEnabled = true;
     });
   }
 
   endNarrativeHighlightMode() {
     this._paraState.updateSettings(draft => {
-      draft.ui.isVoicingEnabled = false;
+      draft.ui.isNarrativeHighlightEnabled = false;
     });
   }
 
@@ -688,12 +667,28 @@ export class ParaView extends ParaComponent {
   }
 
   createDocumentView() {
-    this.log.info('creating document view', this.type);
     this._documentView = new DocumentView(this);
     this._documentView.init();
     this.computeViewBox();
     // The style manager may get declaration values from chart objects
     this.paraChart.styleManager.update();
+  }
+
+  destroyDocumentView() {
+    this._documentView = undefined;
+  }
+
+  pushDocumentView() {
+    if (this._pushedDocumentview) throw new Error('doc view already pushed');
+    this._pushedDocumentview = this._documentView!;
+    this._documentView = undefined;
+  }
+
+  popDocumentView() {
+    if (!this._pushedDocumentview) throw new Error('no doc view pushed');
+    this._documentView = this._pushedDocumentview;
+    this._pushedDocumentview = null;
+    this.requestUpdate();
   }
 
   computeViewBox() {
@@ -838,7 +833,7 @@ export class ParaView extends ParaComponent {
       style.width = "100vw";
       style.height = "100vh";
     }
-    const contrast = this.paraState.settings.color.contrastLevel * 50;
+    const contrast = this._paraState.settings.color.contrastLevel * 50;
     if (this._paraState.settings.color.isDarkModeEnabled) {
       style["--axis-line-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
       style["--label-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
@@ -884,13 +879,12 @@ export class ParaView extends ParaComponent {
     }
     loopParaviewRefresh(
       this,
-      this.paraState.settings.animation.popInAnimateRevealTimeMs,
+      this._paraState.settings.animation.popInAnimateRevealTimeMs,
       50
     );
   }
 
   render(): TemplateResult {
-    this.log.info('render');
     return html`
     <div ${ref(this._containerRef)} @fullscreenchange=${() => this._onFullscreenChange()}>
     <svg
@@ -942,7 +936,7 @@ export class ParaView extends ParaComponent {
         <rect
           ${ref(this._frameRef)}
           id="frame"
-          class=${nothing}
+          class=${this._paraState.index === 0 ? 'explainer' : nothing}
           pointer-events="all"
           x="0"
           y="0"
@@ -951,11 +945,11 @@ export class ParaView extends ParaComponent {
           @pointerleave=${(ev: PointerEvent) => {this.paraState.clearPopups()}}
         >
         </rect>
-        ${this._documentView?.render() ?? ''}
+        ${this._paraState.model ? (this._documentView?.render() ?? '') : ''}
       </svg>
       <para-aria-live-region
         ${ref(this._ariaLiveRegionRef)}
-        .paraState=${this._paraState}
+        .globalState=${this._globalState}
         .announcement=${this._paraState.announcement}
       ></para-aria-live-region>
       <div

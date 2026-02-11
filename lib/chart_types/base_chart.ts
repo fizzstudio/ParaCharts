@@ -36,11 +36,11 @@ import { executeParaActions, parseAction } from '../paraactions/paraactions';
 export const ORIENTATION_SENTENCES = [
   '$.datasets[0].axes.dependent',
   '$.datasets[0].axes.independent',
-  '$.datasets[0].labels'
+  '$.datasets[0].recordCount'
 ]
 
 export const PASTRY_ORIENTATION_SENTENCES = [
-  '$.datasets[0].labels',
+  '$.datasets[0].recordCount',
 ]
 
 /**
@@ -65,7 +65,7 @@ export abstract class BaseChartInfo {
   protected _paraState!: ParaState;
 
   constructor(protected _type: ChartType, protected _paraView: ParaView) {
-    this._paraState = this._paraView.paraState;
+    this._paraState = this._paraView.globalState.paraState;
     this._init();
     this._addSettingControls();
   }

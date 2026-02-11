@@ -17,7 +17,7 @@ export class AudioPanel extends ControlPanelTabPanel {
   static styles = [
     ...ControlPanelTabPanel.styles,
     css`
-      #voicing, 
+      #voicing,
       #sonification,
       #narrative,
       .control-column {
@@ -80,7 +80,7 @@ export class AudioPanel extends ControlPanelTabPanel {
   }
 
   render() {
-    return html`   
+    return html`
       <div class="tab-content">
         <section id="voicing">
           ${this._paraState.settingControls.getContent('controlPanel.tabs.audio.voicing')}
@@ -100,7 +100,7 @@ export class AudioPanel extends ControlPanelTabPanel {
       <para-soni-settings-dialog
         ${ref(this._soniDialogRef)}
         id="sonification-settings-dialog"
-        .paraState=${this._paraState}
+        .globalState=${this._globalState}
       ></para-soni-settings-dialog>
     `;
   }
