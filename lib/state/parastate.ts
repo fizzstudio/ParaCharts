@@ -172,6 +172,7 @@ export class ParaState extends BaseState {
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() frontSeries = '';
   @property() pointerCoords: Point = { x: 0, y: 0 }
+  @property() isTitleHighlighted = false;
 
   @property() protected _lowlightedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
@@ -339,6 +340,7 @@ export class ParaState extends BaseState {
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
       //this._seriesProperties = new SeriesPropertyManager(this);
+      this._seriesProperties.reset();
       this.data = dataFromManifest(manifest);
     } else if (data) {
       if (isPastryType(this._type) || isVennType(this._type)) {
@@ -352,6 +354,7 @@ export class ParaState extends BaseState {
         );
       }
       //this._seriesProperties = new SeriesPropertyManager(this);
+      this._seriesProperties.reset();
       this.data = data;
     } else {
       throw new Error('store lacks external or inline chart data');

@@ -298,6 +298,14 @@ export class ParaAPI {
     });
   }
 
+  highlightTitle() {
+    this._paraChart.paraState.isTitleHighlighted = true;
+  }
+
+  clearTitleHighlight() {
+    this._paraChart.paraState.isTitleHighlighted = false;
+  }
+
   highlightRange(startPortion: number, endPortion: number) {
     this._paraChart.paraState.highlightRange(startPortion, endPortion);
   }
