@@ -21,17 +21,11 @@ export type CSVParseResult = {
  * Error codes for loader errors.
  */
 export enum LoadErrorCode {
-  /** Network request failed (fetch error, non-2xx response) */
   NETWORK_ERROR = 'NETWORK_ERROR',
-  /** CSV parsing failed (malformed CSV) */
   CSV_PARSE_ERROR = 'CSV_PARSE_ERROR',
-  /** CSV has no data rows */
   CSV_EMPTY = 'CSV_EMPTY',
-  /** CSV structure invalid (insufficient rows/columns, missing independent variable) */
   CSV_INVALID_FORMAT = 'CSV_INVALID_FORMAT',
-  /** Manifest parsing or validation failed */
   MANIFEST_PARSE_ERROR = 'MANIFEST_PARSE_ERROR',
-  /** Unknown or unexpected error */
   UNKNOWN = 'UNKNOWN',
 }
 
@@ -60,10 +54,12 @@ export function parseCSV(csvText: string): CSVParseResult {
     skipEmptyLines: true,
   });
   
-  // Filter out warnings like "auto-detect delimiter" that aren't fatal
   const fatalErrors = result.errors.filter(e => e.type !== 'Delimiter');
   if (fatalErrors.length > 0) {
-    throw new LoadError(LoadErrorCode.CSV_PARSE_ERROR, `Failed to parse CSV: ${fatalErrors[0].message}`);
+    throw new LoadError(
+      LoadErrorCode.CSV_PARSE_ERROR,
+      `Failed to parse CSV: ${fatalErrors[0].message}`
+    );
   }
   
   if (result.data.length === 0) {
@@ -74,21 +70,6 @@ export function parseCSV(csvText: string): CSVParseResult {
     data: result.data,
     fields: extractFieldInfo(result.data)
   };
-}
-
-/**
- * Fetch and parse a CSV.
- * @param url - CSV URL
- * @returns Parsed CSV data and field info
- * @throws {LoadError} If fetch fails or CSV parsing fails
- */
-async function preloadData(url: string): Promise<CSVParseResult> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new LoadError(LoadErrorCode.NETWORK_ERROR, `Failed to fetch CSV from ${url}: ${response.status} ${response.statusText}`);
-  }
-  const csvText = await response.text();
-  return parseCSV(csvText);
 }
 
 /**
@@ -131,12 +112,18 @@ function buildSeriesDataFromCSV(
 async function processExternalData(
   manifest: Manifest
 ): Promise<AllSeriesData> {
-  let csvData: Record<string, string>[] = [];
-  
-  if (manifest.datasets[0].data.path !== 'para:preload') {
-    const parseResult = await preloadData(manifest.datasets[0].data.path!);
-    csvData = parseResult.data;
+  if (!manifest.datasets[0].data.path) {
+    throw new LoadError(LoadErrorCode.CSV_INVALID_FORMAT, 'External data source requires a path');
   }
+  
+  const url = manifest.datasets[0].data.path;
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new LoadError(LoadErrorCode.NETWORK_ERROR, `Failed to fetch CSV from ${url}: ${response.status} ${response.statusText}`);
+  }
+  const csvText = await response.text();
+  const parseResult = parseCSV(csvText);
+  const csvData = parseResult.data;
   
   if (csvData.length === 0) {
     return {};
@@ -385,76 +372,4 @@ export function inferDefaultsFromCsvText(csvText: string, fileName?: string): Cs
       dataType: inferColumnDataType(yValues, headers[1] || ''),
     },
   };
-}
-
-// ============================================================================
-// Backward compatibility: Result types and ParaLoader class wrapper
-// ============================================================================
-
-type LoadSuccess = {
-  result: 'success';
-  manifest: Manifest;
-  data?: AllSeriesData;
-};
-
-type LoadFailure = {
-  result: 'failure';
-  error: string;
-};
-
-export type LoadResult = LoadSuccess | LoadFailure;
-
-/**
- * Class-based loader wrapper for backward compatibility.
- * Wraps the functional API with Result-based error handling.
- */
-export class ParaLoader {
-  private _log = getLogger('ParaLoader');
-  private _csvParseResult: CSVParseResult | null = null;
-
-  /**
-   * Load and process a chart manifest.
-   * @param kind - Source type for manifest
-   * @param manifestInput - Manifest content or path
-   * @param chartType - Optional chart type override
-   * @param description - Optional description override
-   * @returns Result object with success/failure status
-   */
-  async load(
-    kind: SourceKind,
-    manifestInput: string,
-    chartType?: ChartType,
-    description?: string
-  ): Promise<LoadResult> {
-    try {
-      const result = await load(kind, manifestInput, chartType, description);
-      return {
-        result: 'success',
-        manifest: result.manifest,
-        data: result.data,
-      };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this._log.error(message);
-      return {
-        result: 'failure',
-        error: message,
-      };
-    }
-  }
-
-  /**
-   * Fetch and parse a CSV, storing the parse results.
-   * @param url - CSV URL
-   * @returns List of FieldInfo records
-   */
-  async preloadData(url: string): Promise<FieldInfo[]> {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new LoadError(LoadErrorCode.NETWORK_ERROR, `Failed to fetch CSV from ${url}: ${response.status} ${response.statusText}`);
-    }
-    const csvText = await response.text();
-    this._csvParseResult = parseCSV(csvText);
-    return this._csvParseResult.fields;
-  }
 }

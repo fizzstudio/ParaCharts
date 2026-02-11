@@ -26,7 +26,7 @@ import { type ParaCaptionBox } from '../control_panel/caption';
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
 import { ParaState } from '../state';
-import { ParaLoader, load, LoadError, LoadErrorCode, type SourceKind } from '../loader/paraloader';
+import { load, LoadError, LoadErrorCode, type SourceKind } from '../loader/paraloader';
 import { GlobalState } from '../state';
 import { CustomPropertyLoader } from '../state/custom_property_loader';
 import { styles } from '../view/styles';
@@ -67,7 +67,6 @@ export class ParaChart extends ParaComponent {
   protected _paraViewRef = createRef<ParaView>();
   protected _controlPanelRef = createRef<ParaControlPanel>();
   protected _manifest?: Manifest;
-  protected _loader = new ParaLoader();
   private _slotLoader = new SlotLoader();
   protected log: Logger = getLogger("ParaChart");
 
@@ -142,9 +141,6 @@ export class ParaChart extends ParaComponent {
         await initParaSummary();
         // It's now safe to load a manifest
         if (this.manifest) {
-          if (this.data) {
-            await this._loader.preloadData(this.data);
-          }
           this.runLoader(this.manifest, this.manifestType).then(() => {
             this.log.info('ParaCharts fully initialized');
             this._scrollyteller = new Scrollyteller(this);
@@ -200,9 +196,6 @@ export class ParaChart extends ParaComponent {
     return this._loaderPromise;
   }
 
-  get loader() {
-    return this._loader;
-  }
   get slotted(){
     return this._slotted;
   }

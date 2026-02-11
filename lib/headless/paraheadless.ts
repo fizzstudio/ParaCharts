@@ -1,8 +1,7 @@
-
 import { ParaChart } from '../parachart/parachart';
-import { type SourceKind, type FieldInfo, LoadError, LoadErrorCode } from '../loader/paraloader';
+import { type SourceKind, type FieldInfo, LoadError, LoadErrorCode, parseCSV, type CsvDataType } from '../loader/paraloader';
 
-export { FieldInfo, LoadError, LoadErrorCode };
+export { FieldInfo, LoadError, LoadErrorCode, CsvDataType };
 
 export { type Manifest } from '@fizz/paramanifest';
 
@@ -40,8 +39,23 @@ export class ParaHeadless {
     document.body.append(this._paraChart);
   }
 
-  loadData(url: string): Promise<FieldInfo[]> {
-    return this._paraChart.loader.preloadData(url);
+  /**
+   * Fetch and parse CSV data from a URL.
+   * Returns the field information (column names and types).
+   * @param url - CSV file URL
+   * @returns Field information from the CSV
+   */
+  async loadData(url: string): Promise<FieldInfo[]> {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new LoadError(
+        LoadErrorCode.NETWORK_ERROR,
+        `Failed to fetch CSV from ${url}: ${response.status} ${response.statusText}`
+      );
+    }
+    const csvText = await response.text();
+    const result = parseCSV(csvText);
+    return result.fields;
   }
 
   async loadManifest(
@@ -78,6 +92,28 @@ export class ParaHeadless {
 
   get api() {
     return this._paraChart.api;
+  }
+
+  /**
+   * Generate chart and return SVG with accessibility metadata.
+   * Must be called after loadManifest() completes successfully.
+   * @returns Object containing SVG string, description, alt text, and JIM metadata
+   */
+  async getChartOutput(): Promise<{
+    svg: string;
+    description: string;
+    altText: string;
+    jim: string;
+  }> {
+    await this.jimReady;
+    
+    const svg = this.api.serializeChart();
+    const description = await this.api.getDescription() ?? '';
+    const altText = await this.api.getAltText() ?? '';
+    const jimObj = this.api.getJIM();
+    const jim = jimObj ? JSON.stringify(jimObj) : '';
+
+    return { svg, description, altText, jim };
   }
 
 }
