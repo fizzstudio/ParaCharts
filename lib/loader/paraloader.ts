@@ -373,3 +373,149 @@ export function inferDefaultsFromCsvText(csvText: string, fileName?: string): Cs
     },
   };
 }
+
+export type ChartTypeInput = 'line' | 'horizontal_bar' | 'vertical_bar' | 'pie' | 'donut';
+
+export interface ManifestBuilderInput {
+  csvText: string;
+  chartType: ChartTypeInput;
+  chartTitle: string;
+  xAxis?: {
+    variable: string;
+    variableType: CsvDataType;
+    title: string;
+  };
+  yAxis?: {
+    title: string;
+  };
+}
+
+/**
+ * Build a Paracharts manifest from CSV text and chart configuration.
+ * 
+ * @param input - Chart configuration including CSV text, type, and axis settings
+ * @returns A Manifest object ready to be loaded by ParaHeadless
+ */
+export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
+  const { csvText, chartType, chartTitle, xAxis, yAxis } = input;
+  
+  const { data: rows, fields } = parseCSV(csvText);
+  const headers = fields.map(f => f.name);
+  
+  // First column is the independent variable (x), rest are series keys
+  const indepKey = headers[0];
+  const seriesKeys = headers.slice(1).filter(h => h.length > 0);
+
+  const isPastryChart = chartType === 'pie' || chartType === 'donut';
+  const isHorizontalBar = chartType === 'horizontal_bar';
+
+  // For bar/line charts, axis config is required
+  if (!isPastryChart && (!xAxis || !yAxis)) {
+    throw new LoadError(
+      LoadErrorCode.CSV_INVALID_FORMAT,
+      `xAxis and yAxis parameters are required for ${chartType} charts`
+    );
+  }
+
+  // Map xAxis.variableType to manifest measure/datatype
+  const variableTypeMap: Record<CsvDataType, { measure: 'nominal' | 'interval'; datatype: Datatype }> = {
+    'string': { measure: 'nominal', datatype: 'string' },
+    'number': { measure: 'interval', datatype: 'date' },
+    'date': { measure: 'interval', datatype: 'date' }
+  };
+
+  // Map chartType to manifest type
+  const manifestTypeMap: Record<ChartTypeInput, ChartType> = {
+    'horizontal_bar': 'bar',
+    'vertical_bar': 'column',
+    'line': 'line',
+    'pie': 'pie',
+    'donut': 'donut'
+  };
+
+  // Build facets based on chart type
+  let facets: Manifest['datasets'][0]['facets'];
+
+  if (isPastryChart) {
+    // Pie/donut charts: derive facets from series keys
+    facets = {
+      x: {
+        label: 'Category',
+        variableType: 'independent',
+        measure: 'nominal',
+        datatype: 'string',
+        displayType: {
+          type: 'marking'
+        }
+      },
+      y: {
+        label: 'Value',
+        variableType: 'dependent',
+        measure: 'ratio',
+        datatype: 'number',
+        displayType: {
+          type: 'angle'
+        }
+      }
+    };
+  } else {
+    // Bar/line charts: use provided axis config
+    const xTypeConfig = variableTypeMap[xAxis!.variableType];
+    
+    facets = {
+      x: {
+        label: xAxis!.title,
+        variableType: 'independent',
+        measure: xTypeConfig.measure,
+        datatype: xTypeConfig.datatype,
+        displayType: {
+          type: 'axis',
+          orientation: isHorizontalBar ? 'vertical' : 'horizontal'
+        }
+      },
+      y: {
+        label: yAxis!.title,
+        variableType: 'dependent',
+        measure: 'ratio',
+        datatype: 'number',
+        displayType: {
+          type: 'axis',
+          orientation: isHorizontalBar ? 'horizontal' : 'vertical'
+        }
+      }
+    };
+  }
+
+  // Build inline records for each series
+  const seriesWithRecords = seriesKeys.map(key => {
+    const records = rows.map(row => ({
+      x: row[indepKey],
+      y: row[key]
+    }));
+    return {
+      key,
+      theme: {
+        baseQuantity: key.toLowerCase(),
+        baseKind: 'number' as const
+      },
+      records
+    };
+  });
+
+  return {
+    datasets: [
+      {
+        representation: {
+          type: 'chart',
+          subtype: manifestTypeMap[chartType]
+        },
+        title: chartTitle,
+        facets,
+        series: seriesWithRecords,
+        data: {
+          source: 'inline'
+        }
+      }
+    ]
+  };
+}

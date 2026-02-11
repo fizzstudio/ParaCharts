@@ -418,12 +418,17 @@ export class ParaView extends ParaComponent {
 
   // Anything that needs to be done when data is updated, do here
   private async dataUpdated(): Promise<void> {
-    this.createDocumentView();
-    if (this.paraChart.headless) {
-      await this.addJIMSeriesSummaries();
+    try {
+      this.createDocumentView();
+      if (this.paraChart.headless) {
+        await this.addJIMSeriesSummaries();
+      }
+      this._jim = this._paraState.jimerator ? JSON.stringify(this._paraState.jimerator.jim, undefined, 2) : '';
+      this._jimReadyResolver();
+    } catch (error) {
+      this.log.error('dataUpdated error:', error);
+      this._jimReadyRejector();
     }
-    this._jim = this._paraState.jimerator ? JSON.stringify(this._paraState.jimerator.jim, undefined, 2) : '';
-    this._jimReadyResolver();
   }
 
   protected willUpdate(changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -713,12 +718,16 @@ export class ParaView extends ParaComponent {
   // }
 
   async addJIMSeriesSummaries() {
-    const summarizer = this._documentView!.chartInfo.summarizer;
+    if (!this._documentView?.chartInfo?.summarizer) {
+      this.log.warn('Cannot add JIM series summaries: documentView or summarizer not available');
+      return;
+    }
+    const summarizer = this._documentView.chartInfo.summarizer;
     const seriesKeys = this._paraState.model?.originalSeriesKeys || [];
     for (const seriesKey of seriesKeys) {
       const summary = await summarizer.getSeriesSummary(strToId(seriesKey));
       const summaryText = typeof summary === 'string' ? summary : summary.text;
-      this._paraState.jimerator!.addSeriesSummary(seriesKey, summaryText);
+      this._paraState.jimerator?.addSeriesSummary(seriesKey, summaryText);
     }
   }
 

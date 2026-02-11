@@ -140,7 +140,8 @@ export class ParaChart extends ParaComponent {
         resolve();
         await initParaSummary();
         // It's now safe to load a manifest
-        if (this.manifest) {
+        // In headless mode, loadManifest() handles loading via willUpdate, so skip here
+        if (this.manifest && !this.headless) {
           this.runLoader(this.manifest, this.manifestType).then(() => {
             this.log.info('ParaCharts fully initialized');
             this._scrollyteller = new Scrollyteller(this);

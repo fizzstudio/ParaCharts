@@ -64,8 +64,9 @@ export class ParaHeadless {
   ): Promise<LoadManifestResult> {
     await this._paraChart.ready;
     this._paraChart.manifestType = type;
-    await new Promise(resolve => setTimeout(resolve, 0));
     this._paraChart.manifest = input;
+    // Wait for Lit's update cycle to run willUpdate and create the new loader promise
+    await this._paraChart.updateComplete;
     
     try {
       await this._paraChart.loaded;
