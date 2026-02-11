@@ -117,7 +117,7 @@ export class SlotLoader {
         dataset.series[i].records = this.loadDataFromElement(els, manifest, vars[i].label);
       }
     }
-    if (!dataset.representation) {
+    if (!dataset.representation || !dataset.representation.subtype) {
       dataset.representation = {
         type: 'chart',
         subtype: this.findManifestType(els, manifest)
@@ -210,7 +210,8 @@ export class SlotLoader {
       const isIndep = (kid as HTMLElement).dataset.independent === 'true' ? 'independent' : 'dependent';
       let measure = (kid as HTMLElement).dataset.measure ?? 'nominal';
 
-      const isRadial =paraChart.type == 'pie' || paraChart.type == 'donut'
+      const chartType = paraChart.forcecharttype ?? paraChart.type;
+      const isRadial = chartType == 'pie' || chartType == 'donut';
       const horizVert = ['horizontal', 'vertical']
       let displayType;
       if (isRadial){
@@ -310,8 +311,12 @@ export class SlotLoader {
   }
 
   findManifestType(els: HTMLElement[], manifest: Manifest): ChartType {
-    if (document.getElementsByTagName('para-chart')[0].hasAttribute('type')){
-      return document.getElementsByTagName('para-chart')[0].getAttribute('type') as ChartType;
+    const paraChart = document.getElementsByTagName('para-chart')[0];
+    if (paraChart.hasAttribute('forcecharttype')){
+      return paraChart.getAttribute('forcecharttype') as ChartType;
+    }
+    if (paraChart.hasAttribute('type')){
+      return paraChart.getAttribute('type') as ChartType;
     }
     /*
     let title = this.findManifestTitle(els, manifest);
