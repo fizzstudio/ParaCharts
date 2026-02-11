@@ -11,29 +11,29 @@ export type Explainers = {
 
 const explainers: Partial<Explainers> = {
   column: {
-    summary: '<span data-phrasecode="0">This is a column chart.</span>',
+    summary: '<span data-phrasecode="0">Bar charts are used to display categories of data that are not continuous. They are useful when the goal is to compare individual values across categories rather than to emphasize trends over time. This chart shows how many students are enrolled in each subject at a given school, showing that core subjects have more students than electives.</span>',
     manifest: {
       "datasets": [
         {
-          "title": "Unemployment rate in Greece 1999-2019",
+          "title": "Student Enrollment Across Subjects at a Given School",
           "chartTheme": {
-            "baseQuantity": "employment",
-            "baseKind": "rate",
-            "locale": "Greece"
+            "baseQuantity": "enrollment",
+            "baseKind": "number",
+            "locale": "School"
           },
           "facets": {
             "x": {
-              "label": "Year",
+              "label": "Subject",
               "variableType": "independent",
-              "measure": "interval",
-              "datatype": "date",
-              "units": "year",
+              "measure": "nominal",
+              "datatype": "string",
+              "units": "string",
               "displayType": {
                 "type": "axis"
               }
             },
             "y": {
-              "label": "Unemployment rate",
+              "label": "Number of Students Enrolled",
               "variableType": "dependent",
               "measure": "ratio",
               "datatype": "number",
@@ -45,96 +45,40 @@ const explainers: Partial<Explainers> = {
           },
           "series": [
             {
-              "key": "Unemployment rate",
+              "key": "Student enrollment",
               "theme": {
-                "baseQuantity": "unemployment",
-                "baseKind": "rate",
-                "locale": "Greece"
+                "baseQuantity": "enrollment",
+                "baseKind": "number",
+                "locale": "School"
               },
               "records": [
                 {
-                  "x": "1999",
-                  "y": "11.85"
+                  "x": "Math",
+                  "y": "120"
                 },
                 {
-                  "x": "2000",
-                  "y": "11.25"
+                  "x": "English",
+                  "y": "110"
                 },
                 {
-                  "x": "2001",
-                  "y": "10.46"
+                  "x": "Science",
+                  "y": "105"
                 },
                 {
-                  "x": "2002",
-                  "y": "9.98"
+                  "x": "History",
+                  "y": "95"
                 },
                 {
-                  "x": "2003",
-                  "y": "9.41"
+                  "x": "Art",
+                  "y": "45"
                 },
                 {
-                  "x": "2004",
-                  "y": "10.31"
+                  "x": "Music",
+                  "y": "40"
                 },
                 {
-                  "x": "2005",
-                  "y": "9.99"
-                },
-                {
-                  "x": "2006",
-                  "y": "9.01"
-                },
-                {
-                  "x": "2007",
-                  "y": "8.4"
-                },
-                {
-                  "x": "2008",
-                  "y": "7.76"
-                },
-                {
-                  "x": "2009",
-                  "y": "9.62"
-                },
-                {
-                  "x": "2010",
-                  "y": "12.71"
-                },
-                {
-                  "x": "2011",
-                  "y": "17.86"
-                },
-                {
-                  "x": "2012",
-                  "y": "24.44"
-                },
-                {
-                  "x": "2013",
-                  "y": "27.47"
-                },
-                {
-                  "x": "2014",
-                  "y": "26.49"
-                },
-                {
-                  "x": "2015",
-                  "y": "24.9"
-                },
-                {
-                  "x": "2016",
-                  "y": "23.54"
-                },
-                {
-                  "x": "2017",
-                  "y": "21.49"
-                },
-                {
-                  "x": "2018",
-                  "y": "19.21"
-                },
-                {
-                  "x": "2019",
-                  "y": "18.08"
+                  "x": "Psychology",
+                  "y": "45"
                 }
               ]
             }
@@ -142,6 +86,86 @@ const explainers: Partial<Explainers> = {
           "representation": {
             "type": "chart",
             "subtype": "column"
+          },
+          "data": {
+            "source": "inline"
+          }
+        }
+      ]
+    }
+  },
+  line: {
+    summary: '<span data-phrasecode="0">Line charts are used to show numerical values over a continuous interval or period of time, with the interval or time scale on the x-axis and the values on the y-axis. This makes it easier to observe trends and patterns in the data. In this example of a line chart, we see a rebound trend, where the values initially increase, then fall, and then rise again.</span>',
+    manifest: {
+      "datasets": [
+        {
+          "title": "Average Temperature in January Each Year in a Given City from 2000 to 2006",
+          "facets": {
+            "x": {
+              "label": "Year",
+              "variableType": "independent",
+              "measure": "interval",
+              "datatype": "date",
+              "units": "year",
+              "displayType": {
+                "type": "axis",
+                "orientation": "horizontal"
+              }
+            },
+            "y": {
+              "label": "Average Temperature in Fahrenheit",
+              "variableType": "dependent",
+              "measure": "ratio",
+              "datatype": "number",
+              "displayType": {
+                "type": "axis",
+                "orientation": "vertical"
+              }
+            }
+          },
+          "series": [
+            {
+              "key": "Temperature in Fahrenheit",
+              "theme": {
+                "baseQuantity": "temperature",
+                "baseKind": "number",
+                "locale": "a given city"
+              },
+              records: [
+                {
+                  "x": "2000",
+                  "y": "40"
+                },
+                {
+                  "x": "2001",
+                  "y": "50"
+                },
+                {
+                  "x": "2002",
+                  "y": "60"
+                },
+                {
+                  "x": "2003",
+                  "y": "35"
+                },
+                {
+                  "x": "2004",
+                  "y": "40"
+                },
+                {
+                  "x": "2005",
+                  "y": "45"
+                },
+                {
+                  "x": "2006",
+                  "y": "50"
+                }
+              ]
+            }
+          ],
+          "representation": {
+            "type": "chart",
+            "subtype": "line"
           },
           "data": {
             "source": "inline"

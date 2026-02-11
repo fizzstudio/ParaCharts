@@ -458,6 +458,10 @@ export class ParaChart extends ParaComponent {
     //
     // (undocumented)
     protected _paraAPI: ParaAPI;
+    // Warning: (ae-forgotten-export) The symbol "ParaState" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    get paraState(): ParaState;
     // (undocumented)
     get paraView(): ParaView;
     // Warning: (ae-forgotten-export) The symbol "ParaView" needs to be exported by the entry point index.d.ts
@@ -474,7 +478,7 @@ export class ParaChart extends ParaComponent {
     render(): TemplateResult;
     resizeScrollytelling(): void;
     // (undocumented)
-    protected _runLoader(manifestInput: string, manifestType: SourceKind): Promise<void>;
+    runLoader(manifestInput: string, manifestType: SourceKind, forceType?: boolean, description?: string): Promise<void>;
     // (undocumented)
     get scrollyteller(): Scrollyteller | undefined;
     // Warning: (ae-forgotten-export) The symbol "Scrollyteller" needs to be exported by the entry point index.d.ts
