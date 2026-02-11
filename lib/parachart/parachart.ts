@@ -25,8 +25,9 @@ import '../control_panel/caption';
 import { type ParaCaptionBox } from '../control_panel/caption';
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel } from '../control_panel';
+import { ParaState } from '../state';
+import { load, LoadError, LoadErrorCode, type SourceKind } from '../loader/paraloader';
 import { GlobalState } from '../state';
-import { ParaLoader, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../state/custom_property_loader';
 import { styles } from '../view/styles';
 import '../components/aria_live';
@@ -66,7 +67,6 @@ export class ParaChart extends ParaComponent {
   protected _paraViewRef = createRef<ParaView>();
   protected _controlPanelRef = createRef<ParaControlPanel>();
   protected _manifest?: Manifest;
-  protected _loader = new ParaLoader();
   private _slotLoader = new SlotLoader();
   protected log: Logger = getLogger("ParaChart");
 
@@ -74,7 +74,7 @@ export class ParaChart extends ParaComponent {
   protected _readyPromise: Promise<void>;
   protected _loaderPromise: Promise<void> | null = null;
   protected _loaderResolver: (() => void) | null = null;
-  protected _loaderRejector: (() => void) | null = null;
+  protected _loaderRejector: ((error?: Error) => void) | null = null;
   protected _styleManager!: StyleManager;
   protected _commander!: Commander;
   protected _paraAPI!: ParaAPI;
@@ -140,10 +140,8 @@ export class ParaChart extends ParaComponent {
         resolve();
         await initParaSummary();
         // It's now safe to load a manifest
-        if (this.manifest) {
-          if (this.data) {
-            await this._loader.preloadData(this.data);
-          }
+        // In headless mode, loadManifest() handles loading via willUpdate, so skip here
+        if (this.manifest && !this.headless) {
           this.runLoader(this.manifest, this.manifestType).then(() => {
             this.log.info('ParaCharts fully initialized');
             this._scrollyteller = new Scrollyteller(this);
@@ -199,9 +197,6 @@ export class ParaChart extends ParaComponent {
     return this._loaderPromise;
   }
 
-  get loader() {
-    return this._loader;
-  }
   get slotted(){
     return this._slotted;
   }
@@ -338,30 +333,30 @@ export class ParaChart extends ParaComponent {
     description?: string
   ): Promise<void> {
     this._paraState.dataState = 'pending';
-    const loadresult = await this._loader.load(
-      manifestType,
-      manifestInput,
-      forceType ? this.forcecharttype : undefined,
-      description ?? this.description
-    );
-    if (loadresult.result === 'success') {
-      this._manifest = loadresult.manifest;
+    try {
+      const { manifest, data } = await load(
+        manifestType,
+        manifestInput,
+        forceType ? this.forcecharttype : undefined,
+        description ?? this.description
+      );
+      this._manifest = manifest;
       if (forceType) {
         this._paraState.clearVisited();
         this._paraState.clearSelected();
         this._paraState.clearAllHighlights();
         this._paraState.clearPopups();
       }
-      this._paraState.setManifest(loadresult.manifest, loadresult.data);
+      this._paraState.setManifest(manifest, data);
       this._paraState.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode
       this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
       this._paraAPI = new ParaAPI(this);
       this._loaderResolver!();
-    } else {
-      this.log.error(loadresult.error);
+    } catch (error) {
+      this.log.error(error instanceof Error ? error.message : String(error));
       this._paraState.dataState = 'error';
-      this._loaderRejector!();
+      this._loaderRejector!(error instanceof Error ? error : new LoadError(LoadErrorCode.UNKNOWN, String(error)));
     }
 
     if (this.api) {

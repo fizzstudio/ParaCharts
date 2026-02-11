@@ -32,7 +32,6 @@ import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';
 import { Model } from '@fizz/paramodel';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';
-import papa from 'papaparse';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { Point as Point_2 } from '@fizz/chart-classifier-utils';
 import { PropertyValueMap } from 'lit';
@@ -148,6 +147,9 @@ export type BoxStyle = {
     fill: Color;
 };
 
+// @public
+export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest;
+
 // @public (undocumented)
 export interface CaptionBoxSettings extends SettingGroup {
     hasBorder: boolean;
@@ -184,6 +186,9 @@ export interface ChartSettings extends SettingGroup {
 
 // @public
 export type ChartType = XYChartType | RadialChartType;
+
+// @public (undocumented)
+export type ChartTypeInput = 'line' | 'horizontal_bar' | 'vertical_bar' | 'pie' | 'donut';
 
 // @public
 export interface ChartTypeSettings extends SettingGroup {
@@ -233,6 +238,25 @@ export interface ControlPanelSettings extends SettingGroup {
     isSparkBrailleControlVisible: boolean;
     isSparkBrailleVisible: boolean;
     tabLabelStyle: TabLabelStyle;
+}
+
+// @public (undocumented)
+export type CsvDataType = 'string' | 'number' | 'date';
+
+// @public (undocumented)
+export interface CsvInferredDefaults {
+    // (undocumented)
+    chartTitle: string;
+    // (undocumented)
+    xAxis: {
+        title: string;
+        dataType: CsvDataType;
+    };
+    // (undocumented)
+    yAxis: {
+        title: string;
+        dataType: CsvDataType;
+    };
 }
 
 // @public
@@ -320,6 +344,9 @@ export type HorizCardinalDirection = 'east' | 'west';
 // @public (undocumented)
 export type HorizDirection = 'left' | 'right';
 
+// @public (undocumented)
+export function inferDefaultsFromCsvText(csvText: string, fileName?: string): CsvInferredDefaults;
+
 // @public
 export interface JimSettings extends SettingGroup {
     xValueFormat: LabelFormat;
@@ -369,7 +396,65 @@ export interface LineSettings extends PointSettings {
 }
 
 // @public
+export class LoadError extends Error {
+    constructor(code: LoadErrorCode, message: string);
+    // (undocumented)
+    readonly code: LoadErrorCode;
+}
+
+// @public
+export enum LoadErrorCode {
+    // (undocumented)
+    CSV_EMPTY = "CSV_EMPTY",
+    // (undocumented)
+    CSV_INVALID_FORMAT = "CSV_INVALID_FORMAT",
+    // (undocumented)
+    CSV_PARSE_ERROR = "CSV_PARSE_ERROR",
+    // (undocumented)
+    MANIFEST_PARSE_ERROR = "MANIFEST_PARSE_ERROR",
+    // (undocumented)
+    NETWORK_ERROR = "NETWORK_ERROR",
+    // (undocumented)
+    UNKNOWN = "UNKNOWN"
+}
+
+// @public (undocumented)
+export type LoadManifestFailure = {
+    success: false;
+    errorCode: LoadErrorCode;
+    message: string;
+};
+
+// @public (undocumented)
+export type LoadManifestResult = LoadManifestSuccess | LoadManifestFailure;
+
+// @public (undocumented)
+export type LoadManifestSuccess = {
+    success: true;
+};
+
+// @public
 export interface LollipopSettings extends BarSettings {
+}
+
+// @public (undocumented)
+export interface ManifestBuilderInput {
+    // (undocumented)
+    chartTitle: string;
+    // (undocumented)
+    chartType: ChartTypeInput;
+    // (undocumented)
+    csvText: string;
+    // (undocumented)
+    xAxis?: {
+        variable: string;
+        variableType: CsvDataType;
+        title: string;
+    };
+    // (undocumented)
+    yAxis?: {
+        title: string;
+    };
 }
 
 // @public
@@ -402,19 +487,29 @@ export class ParaHeadless {
     get api(): ParaAPI;
     // (undocumented)
     protected _createParaChart(): void;
+    getChartOutput(): Promise<{
+        svg: string;
+        description: string;
+        altText: string;
+        jim: string;
+    }>;
     // (undocumented)
     get jimReady(): Promise<void>;
-    // (undocumented)
     loadData(url: string): Promise<FieldInfo[]>;
     // Warning: (ae-forgotten-export) The symbol "SourceKind" needs to be exported by the entry point index-ai.d.ts
     //
     // (undocumented)
-    loadManifest(input: string, type?: SourceKind): Promise<void>;
+    loadManifest(input: string, type?: SourceKind): Promise<LoadManifestResult>;
     // (undocumented)
     protected _paraChart: ParaChart;
     // (undocumented)
     ready(): Promise<void>;
 }
+
+// Warning: (ae-forgotten-export) The symbol "CSVParseResult" needs to be exported by the entry point index-ai.d.ts
+//
+// @public
+export function parseCSV(csvText: string): CSVParseResult;
 
 // @public
 export interface PlaneChartSettings extends PlotSettings {
