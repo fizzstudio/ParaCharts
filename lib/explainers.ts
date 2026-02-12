@@ -173,6 +173,63 @@ const explainers: Partial<Explainers> = {
         }
       ]
     }
+  },
+  pie: {
+    summary: '<span data-phrasecode="0">Pie charts are used to show how a whole is divided into parts, with each slice representing a category’s percentage of the total. Because all of the slices together add up to 100 percent, pie charts make it easy to compare proportions at a glance. In this example, the chart shows how income is divided among different categories.</span><span data-phrasecode="1" data-action="getSeries(\'Proportion of total money\').getPoints(0).highlight()"> It is immediately clear that rent takes up the largest portion of the budget because its slice is the biggest</span><span data-phrasecode="2" data-action="getSeries(\'Proportion of total money\').getPoints(5).highlight()">, while entertainment represents the smallest share, shown by the smallest slice.</span>',
+    manifest: {
+      "datasets": [
+        {
+          "representation": {
+            "type": "chart",
+            "subtype": "pie"
+          },
+          "title": "Annual Budget for a Given Person",
+          "facets": {
+            "x": {
+              "label": "spending category",
+              "variableType": "independent",
+              "measure": "nominal",
+              "datatype": "string",
+              "displayType": {
+                "type": "marking"
+              }
+            },
+            "y": {
+              "label": "Proportion of total money",
+              "variableType": "dependent",
+              "measure": "ratio",
+              "datatype": "number",
+              "multiplier": 0.01,
+              "displayType": {
+                "type": "angle"
+              }
+            }
+          },
+          "series": [
+            {
+              "key": "Proportion of total money",
+              "theme": {
+                "baseQuantity": "money",
+                "baseKind": "proportion",
+                "entity": "total money",
+                "aggregate": "total"
+              },
+              "records": [
+                { "x": "Rent", "y": "35" },
+                { "x": "Transportation", "y": "15" },
+                { "x": "Groceries", "y": "15" },
+                { "x": "Utilities & Internet", "y": "10" },
+                { "x": "Savings", "y": "20" },
+                { "x": "Entertainment", "y": "5" },
+              ]
+            }
+          ],
+          "data": {
+            "source": "inline"
+          }
+        }
+      ]
+    }
   }
 };
 
