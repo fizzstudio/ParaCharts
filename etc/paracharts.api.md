@@ -447,7 +447,6 @@ export interface ManifestBuilderInput {
     csvText: string;
     // (undocumented)
     xAxis?: {
-        variable: string;
         variableType: CsvDataType;
         title: string;
     };
