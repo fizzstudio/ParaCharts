@@ -77,7 +77,6 @@ export class Label extends View {
   protected _text: string;
   protected _textCornerOffsets!: LabelTextCorners;
   protected _textLines: TextLine[] = [];
-  protected _isHighlighted = false;
 
   constructor(paraview: ParaView, private options: LabelOptions) {
     super(paraview);
@@ -255,14 +254,6 @@ export class Label extends View {
 
   get bottomLeftNormal(): Vec2 {
     return this.bottomNormal.add(this.leftNormal).normalize();
-  }
-
-  highlight() {
-    this._isHighlighted = true;
-  }
-
-  clearHighlight() {
-    this._isHighlighted = false;
   }
 
   resize(width: number, height: number): void {
@@ -462,12 +453,15 @@ export class Label extends View {
     `;
   }
 
+  renderHighlight() {
+    return this._renderRect(true, 'view-highlight');
+  }
+
   render() {
     // TODO: figure out why `this._y` is larger here than for single line titles
     // HACK: divide `this._y` by 2 for `y` attribute value
     return svg`
       ${this._renderRect(!!this.options.hasBackground, 'label-bg')}
-      ${this._renderRect(this._isHighlighted, 'label-highlight')}
       <text
         ${ref(this._elRef)}
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}

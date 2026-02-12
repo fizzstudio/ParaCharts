@@ -64,11 +64,23 @@
                 },*/
                 () => {
 					text.innerHTML = 'Change manifest';
-					chart.api.setManifest('/src/demo-data/line-single-manifest-128.json');
+					chart.api.setManifest('/src/demo-data/bar-multi-manifest-48.json');
                 },
 				() => {
 					text.innerHTML = 'Highlight title';
 					chart.api.highlightTitle();
+				},
+				() => {
+					text.innerHTML = 'Highlight horizontal axis';
+					chart.api.highlightHorizontalAxis();
+				},
+				() => {
+					text.innerHTML = 'Highlight vertical axis';
+					chart.api.highlightVerticalAxis();
+				},
+				() => {
+					text.innerHTML = 'Highlight legend';
+					chart.api.highlightEastLegend();
 				},
                 /*() => {
 					text.innerHTML = 'Highlight chart range';
