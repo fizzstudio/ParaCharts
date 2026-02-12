@@ -106,6 +106,7 @@ export class BarPlotView extends PlanePlotView {
     super(paraview, width, height, dataLayerIndex, chartInfo);
     this.log = getLogger("BarPlotView");
   }
+
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['color.colorPalette', 'color.colorVisionMode', 'chart.isShowPopups'].includes(path)) {
       if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
@@ -163,12 +164,18 @@ export class BarPlotView extends PlanePlotView {
     this._numStacks = numClusters * this._chartInfo.stacksPerCluster;
     let maxStackWidth = (this._width - numClusters * this._chartInfo.settings.clusterGap) / this._numStacks;
     let gapWidth = 0;
-    if (maxStackWidth >= MIN_STACK_WIDTH_FOR_GAPS) {
-      this._stackWidth = (1 - STACK_GAP_PERCENTAGE) * maxStackWidth;
-      gapWidth = STACK_GAP_PERCENTAGE * maxStackWidth;
+    let stackWidth = Math.min(this._chartInfo.settings.barWidth, maxStackWidth);
+    stackWidth ||= maxStackWidth;
+    if (this._chartInfo.settings.barWidth) {
+      gapWidth = maxStackWidth - stackWidth;
+      this._stackWidth = stackWidth;
+    } else if (stackWidth >= MIN_STACK_WIDTH_FOR_GAPS) {
+      this._stackWidth = (1 - STACK_GAP_PERCENTAGE) * stackWidth;
+      gapWidth = STACK_GAP_PERCENTAGE * stackWidth;
     } else {
-      this._stackWidth = maxStackWidth;
+      this._stackWidth = stackWidth;
     }
+
     // this._clusterWidth = this._stackWidth*this._chartInfo.stacksPerCluster
     //   + (this._chartInfo.stacksPerCluster - 1)*gapWidth;
     this._availSpace = gapWidth * this._numStacks;
