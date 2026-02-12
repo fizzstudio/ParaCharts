@@ -95,7 +95,7 @@ const explainers: Partial<Explainers> = {
     }
   },
   line: {
-    summary: '<span data-phrasecode="0">Line charts are used to show numerical values over a continuous interval or period of time, with the interval or time scale on the x-axis and the values on the y-axis. This makes it easier to observe trends and patterns in the data. In this example of a line chart, we see a rebound trend, where the values initially increase, then fall, and then rise again.</span>',
+    summary: `<span data-phrasecode="0">Line charts are used to show numerical values over a continuous interval or period of time</span><span data-phrasecode="1">, with the interval or time scale on the x-axis</span><span data-phrasecode="2"> and the values on the y-axis.</span><span data-phrasecode="3"> This makes it easier to observe trends and patterns in the data.</span><span data-phrasecode="4"> In this example of a line chart, we see a rebound trend</span>,<span data-phrasecode="5" data-action="getSeries('Temperature in Fahrenheit').getPoints(2).highlight()"> where the values initially increase</span>,<span data-phrasecode="6" data-action="getSeries('Temperature in Fahrenheit').getPoints(3).highlight()"> then fall</span>,<span data-phrasecode="7" data-action="getSeries('Temperature in Fahrenheit').getPoints(6).highlight()"> and then rise again.</span>`,
     manifest: {
       "datasets": [
         {
