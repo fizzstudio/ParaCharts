@@ -381,7 +381,6 @@ export interface ManifestBuilderInput {
   chartType: ChartTypeInput;
   chartTitle: string;
   xAxis?: {
-    variable: string;
     variableType: CsvDataType;
     title: string;
   };
