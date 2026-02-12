@@ -167,6 +167,11 @@ export class ParaView extends ParaComponent {
         stroke-width: 2;
         fill: none;
       }
+      .view-highlight {
+        stroke: red;
+        stroke-width: 2;
+        fill: none;
+      }
       .tick-label-horiz {
         font-size: calc(var(--horiz-axis-tick-label-font-size)*var(--chart-font-scale));
       }

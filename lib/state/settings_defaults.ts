@@ -59,7 +59,7 @@ export const defaults: Settings = {
       position: 'top',
     },
     orientation: 'north',
-    padding: '8 20',
+    padding: '8 30',
     //chartType: 'line'
     fontFamily: 'Helvetica, sans-serif',
     fontWeight: '300',

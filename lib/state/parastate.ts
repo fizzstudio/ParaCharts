@@ -173,6 +173,12 @@ export class ParaState extends BaseState {
   @property() frontSeries = '';
   @property() pointerCoords: Point = { x: 0, y: 0 }
   @property() isTitleHighlighted = false;
+  @property() isHorizontalAxisHighlighted = false;
+  @property() isVerticalAxisHighlighted = false;
+  @property() isEastLegendHighlighted = false;
+  @property() isWestLegendHighlighted = false;
+  @property() isNorthLegendHighlighted = false;
+  @property() isSouthLegendHighlighted = false;
 
   @property() protected _lowlightedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];

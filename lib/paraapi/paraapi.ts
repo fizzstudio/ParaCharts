@@ -306,6 +306,54 @@ export class ParaAPI {
     this._paraChart.paraState.isTitleHighlighted = false;
   }
 
+  highlightHorizontalAxis() {
+    this._paraChart.paraState.isHorizontalAxisHighlighted = true;
+  }
+
+  clearHorizontalAxisHighlight() {
+    this._paraChart.paraState.isHorizontalAxisHighlighted = false;
+  }
+
+  highlightVerticalAxis() {
+    this._paraChart.paraState.isVerticalAxisHighlighted = true;
+  }
+
+  clearVerticalAxisHighlight() {
+    this._paraChart.paraState.isVerticalAxisHighlighted = false;
+  }
+
+  highlightEastLegend() {
+    this._paraChart.paraState.isEastLegendHighlighted = true;
+  }
+
+  clearEastLegendHighlight() {
+    this._paraChart.paraState.isEastLegendHighlighted = false;
+  }
+
+  highlightWestLegend() {
+    this._paraChart.paraState.isWestLegendHighlighted = true;
+  }
+
+  clearWestLegendHighlight() {
+    this._paraChart.paraState.isWestLegendHighlighted = false;
+  }
+
+  highlightNorthLegend() {
+    this._paraChart.paraState.isNorthLegendHighlighted = true;
+  }
+
+  clearNorthLegendHighlight() {
+    this._paraChart.paraState.isNorthLegendHighlighted = false;
+  }
+
+  highlightSouthLegend() {
+    this._paraChart.paraState.isSouthLegendHighlighted = true;
+  }
+
+  clearSouthLegendHighlight() {
+    this._paraChart.paraState.isSouthLegendHighlighted = false;
+  }
+
   highlightRange(startPortion: number, endPortion: number) {
     this._paraChart.paraState.highlightRange(startPortion, endPortion);
   }
