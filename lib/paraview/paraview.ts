@@ -536,6 +536,18 @@ export class ParaView extends ParaComponent {
     if (this.documentView) {
       const delayedUpdate = () => {
         setTimeout(() => {
+          const newWidth = (window.innerWidth / window.innerHeight) * this._paraState.settings.chart.size.height;
+          if (this._isFullscreen) {
+            this._paraState.updateSettings(draft => {
+              this._modeSaved.set('chart.size.width', draft.chart.size.width);
+              draft.chart.size.width = newWidth;
+            }, true);
+          } else {
+            this._paraState.updateSettings(draft => {
+              draft.chart.size.width = this._modeSaved.get('chart.size.width');
+              this._modeSaved.delete('chart.size.width');
+            }, true);
+          }
           this.createDocumentView();
         }, 40);
       };
@@ -577,7 +589,7 @@ export class ParaView extends ParaComponent {
     if (this._exitingLowVisionMode) {
       queueMicrotask(() => {
         //this._paraState.updateSettings(draft => {
-          
+
         //});
         this._exitingLowVisionMode = false;
       });
@@ -970,7 +982,7 @@ export class ParaView extends ParaComponent {
           y="0"
           width="100%"
           height="100%"
-          @pointerleave=${(ev: PointerEvent) => {this.paraState.clearPopups()}}
+          @pointerleave=${(ev: PointerEvent) => { this.paraState.clearPopups() }}
         >
         </rect>
         ${this._paraState.model ? (this._documentView?.render() ?? '') : ''}
