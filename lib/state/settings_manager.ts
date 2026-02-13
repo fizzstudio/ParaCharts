@@ -113,7 +113,7 @@ export class SettingsManager {
   static getGroupForSetting(path: string, group: SettingGroup, create = false) {
     const segs = path.split('.');
     if (segs.length < 2) {
-      throw new Error(`setting path '${path}' has less than two elements`);
+      throw new Error(`setting path must have at least two elements`);
     }
     return SettingsManager.getGroup(segs.slice(0, -1).join('.'), group, create);
   }

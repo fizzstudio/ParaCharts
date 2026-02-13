@@ -6,8 +6,9 @@ import { Label } from './label';
 import { type LegendSettings, type DeepReadonly, SettingsManager } from '../state';
 import { RectShape } from './shape/rect';
 import { type ParaView } from '../paraview';
-import { TemplateResult } from 'lit';
+import { TemplateResult, svg } from 'lit';
 import { ClassInfo } from 'lit/directives/class-map.js';
+import { HIGHLIGHT_PADDING } from '../common';
 
 export type SeriesAttrs = {
   color: string;
@@ -155,6 +156,18 @@ export class Legend extends Container(View) {
 
   computeSize(): [number, number] {
     return [this._grid?.paddedWidth ?? 0, this._grid?.paddedHeight ?? 0];
+  }
+
+  renderHighlight() {
+    return svg`
+      <rect
+        x=${this.x + this.padding.left - HIGHLIGHT_PADDING/2}
+        y=${this.y + this.padding.top - HIGHLIGHT_PADDING/2}
+        width=${this.width + HIGHLIGHT_PADDING}
+        height=${this.height + HIGHLIGHT_PADDING}
+        class="view-highlight"
+      ></rect>
+    `;
   }
 
   content() {

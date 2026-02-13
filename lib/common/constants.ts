@@ -27,3 +27,5 @@ export const HERTZ = [
 ];
 
 export const SVGNS = 'http://www.w3.org/2000/svg';
+
+export const HIGHLIGHT_PADDING = 10;

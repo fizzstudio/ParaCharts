@@ -59,7 +59,7 @@ export const defaults: Settings = {
       position: 'top',
     },
     orientation: 'north',
-    padding: '8 20',
+    padding: '8 30',
     //chartType: 'line'
     fontFamily: 'Helvetica, sans-serif',
     fontWeight: '300',
@@ -207,7 +207,7 @@ export const defaults: Settings = {
   type: {
     bar: {
       stacking: 'standard',
-      barWidth: 20,
+      barWidth: 0,
       colorByDatapoint: false,
       isDrawTotalLabels: true,
       totalLabelGap: 5,
@@ -230,7 +230,7 @@ export const defaults: Settings = {
     },
     column: {
       stacking: 'standard',
-      barWidth: 10,
+      barWidth: 0,
       colorByDatapoint: false,
       isDrawTotalLabels: false,
       totalLabelGap: 10,
