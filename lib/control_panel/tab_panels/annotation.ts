@@ -92,11 +92,11 @@ export class AnnotationPanel extends ControlPanelTabPanel {
 
   async addAnnotation() {
     const newAnnotationList: PointAnnotation[] = [];
-    for (const dpId of this.paraState.visitedDatapoints) {
+    for (const dpId of this._paraState.visitedDatapoints) {
       const { seriesKey, index } = datapointIdToCursor(dpId);
-      const series = this.paraState.model!.atKey(seriesKey)!.getLabel();
+      const series = this._paraState.model!.atKey(seriesKey)!.getLabel();
       const recordLabel = formatXYDatapointX(
-        this.paraState.model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint,
+        this._paraState.model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint,
         'raw'
       );
       let result = await this.controlPanel.showAnnotDialog(dpId);
@@ -111,12 +111,12 @@ export class AnnotationPanel extends ControlPanelTabPanel {
           index,
           annotation: `${series}, ${recordLabel}: ${annotationText}`,
           text: annotationText,
-          id: `${series}-${recordLabel}-${this.paraState.nextAnnotID()}`,
-          isSelected: this.paraState.settings.ui.isLowVisionModeEnabled ? false : true,
+          id: `${series}-${recordLabel}-${this._paraState.nextAnnotID()}`,
+          isSelected: this._paraState.settings.ui.isLowVisionModeEnabled ? false : true,
         });
       }
     }
-    this.paraState.annotations = [...this.paraState.annotations, ...newAnnotationList];
+    this._paraState.annotations = [...this._paraState.annotations, ...newAnnotationList];
   }
 
   render() {
@@ -134,7 +134,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
             Add Annotation
           </button>
         </div>
-        <div> 
+        <div>
           <button
             @click=${
               () => {

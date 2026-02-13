@@ -1,6 +1,7 @@
 import { type Datatype } from '@fizz/dataframe';
 import { ChartType, DisplayType, Facet, Manifest, SeriesManifest } from '@fizz/paramanifest';
 import { Logger, getLogger } from '@fizz/logger';
+import { concatenateSeriesLabels } from './common';
 
 /*interface DataVar {
   name: string;
@@ -59,7 +60,10 @@ export class SlotLoader {
       this.log.info('Manifest ID not found or not present, attempting manifest construction from data');
       let manifest: Manifest = {
         datasets: [{
-          type: '' as 'line', 
+          representation: {
+            type: 'chart',
+            subtype: '' as 'line'
+          }, 
           //chartTheme: {baseQuantity: 'Y unit', baseKind: 'number'}, 
           title: '', 
           facets: {}, 
@@ -114,8 +118,11 @@ export class SlotLoader {
         dataset.series[i].records = this.loadDataFromElement(els, manifest, vars[i].label);
       }
     }
-    if (!dataset.type) {
-      dataset.type = this.findManifestType(els, manifest);
+    if (!dataset.representation || !dataset.representation.subtype) {
+      dataset.representation = {
+        type: 'chart',
+        subtype: this.findManifestType(els, manifest)
+      };
     }
     if (!dataset.data) {
       dataset.data = { source: 'inline' };
@@ -204,7 +211,8 @@ export class SlotLoader {
       const isIndep = (kid as HTMLElement).dataset.independent === 'true' ? 'independent' : 'dependent';
       let measure = (kid as HTMLElement).dataset.measure ?? 'nominal';
 
-      const isRadial =paraChart.type == 'pie' || paraChart.type == 'donut'
+      const chartType = paraChart.forcecharttype ?? paraChart.type;
+      const isRadial = chartType == 'pie' || chartType == 'donut';
       const horizVert = ['horizontal', 'vertical']
       let displayType;
       if (isRadial){
@@ -250,15 +258,8 @@ export class SlotLoader {
     if (indepFacet === undefined) {
       indepFacet = vars[0];
     }
-    let depFacetName = '';
-    for (let facet of vars.toSpliced(vars.indexOf(indepFacet), 1)) {
-      //Truncate generated facet name if it's too long
-      if (depFacetName.concat(facet.label, ' ').length > 50) {
-        depFacetName = depFacetName.concat('...')
-        break;
-      }
-      depFacetName = depFacetName.concat(facet.label, ', ')
-    }
+    const depVars = vars.toSpliced(vars.indexOf(indepFacet), 1);
+    const depFacetName = concatenateSeriesLabels(depVars.map(f => f.label));
     let facets = {x: vars[0], y: vars[1]};
     facets['x'].variableType = 'independent';
     facets['y'].label = depFacetName;
@@ -304,8 +305,12 @@ export class SlotLoader {
   }
 
   findManifestType(els: HTMLElement[], manifest: Manifest): ChartType {
-    if (document.getElementsByTagName('para-chart')[0].hasAttribute('type')){
-      return document.getElementsByTagName('para-chart')[0].getAttribute('type') as ChartType;
+    const paraChart = document.getElementsByTagName('para-chart')[0];
+    if (paraChart.hasAttribute('forcecharttype')){
+      return paraChart.getAttribute('forcecharttype') as ChartType;
+    }
+    if (paraChart.hasAttribute('type')){
+      return paraChart.getAttribute('type') as ChartType;
     }
     /*
     let title = this.findManifestTitle(els, manifest);

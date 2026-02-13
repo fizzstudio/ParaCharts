@@ -1,37 +1,179 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width">
-	<title>Headless demo -- ParaCharts</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22green%22/><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
-	<style>
-		.chart {
-			--para-stroke-width: 20;
-		}
-		body {
-			font-family: 'Helvetica Neue', Arial, sans-serif;
-			color: #333;
-			font-weight: 300;
-		}
-		h1 { 
-			position: fixed; 
-			bottom: 0; 
-			right: 0; 
-			margin: 1rem; 
-			font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-			font-style: italic;
-			font-weight: normal;
-			color: hsl(0, 0%, 40%);
-		} 
-	</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>ParaCharts Headless demo (Vite)</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22green%22/><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: #333;
+    }
+
+    h1 {
+      color: hsl(0, 0%, 40%);
+    }
+
+    header {
+      padding: 1em;
+    }
+
+    div#output {
+      height: 80vh;
+
+      display: grid;
+      grid-auto-columns: 1fr;
+      grid-auto-rows: 1fr;
+      grid-auto-flow: column;
+      gap: 1em;
+    }
+
+    #content-container {
+      background-color: rgb(251, 243, 229);
+    }
+
+    #content-container svg {
+      display: block;
+      width: 100%;
+    }
+
+    #output section textarea {
+      box-sizing: border-box;
+      width: 100%;
+      height: 100%;
+    }
+
+    .form-row {
+      margin-bottom: 0.75em;
+    }
+
+    .form-row label {
+      display: inline-block;
+      min-width: 120px;
+    }
+
+    .form-row input[type="text"],
+    .form-row select {
+      min-width: 200px;
+      padding: 0.25em 0.5em;
+    }
+
+    fieldset {
+      margin: 1em 0;
+      padding: 1em;
+    }
+
+    fieldset:disabled {
+      opacity: 0.6;
+    }
+
+    #axis-options {
+      margin-left: 1em;
+      padding: 0.5em;
+      border-left: 2px solid #ccc;
+    }
+
+    button {
+      padding: 0.5em 1em;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  </style>
 </head>
+
 <body>
-  	<script type="module" src="/src/demo/headless/vite/demo.ts"></script>
-	<h1>@fizz/paracharts Headless Demo</h1>
-  	<main>
-    	<section id="content-container">
-		</section>
-  	</main>
+  <script type="module" src="/src/demo/headless/vite/demo.ts"></script>
+  <h1>ParaCharts Headless</h1>
+  <main>
+    <header>
+      <div class="form-row">
+        <label class="field-label" for="data-select">
+          Select data file:
+        </label>
+        <input id="data-select" type="file" required accept=".csv,.json,text/csv,application/json">
+      </div>
+
+      <fieldset id="chart-options" disabled>
+        <legend>Chart Options</legend>
+        
+        <div class="form-row">
+          <label class="field-label" for="chart-type-input">
+            Chart type:
+          </label>
+          <select id="chart-type-input">
+            <option value="line">Line</option>
+            <option value="vertical_bar">Vertical Bar</option>
+            <option value="horizontal_bar">Horizontal Bar</option>
+            <option value="pie">Pie</option>
+            <option value="donut">Donut</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label class="field-label" for="title-input">
+            Chart title:
+          </label>
+          <input id="title-input" type="text" placeholder="Enter chart title">
+        </div>
+
+        <div id="axis-options">
+          <div class="form-row">
+            <label class="field-label" for="x-axis-variable-input">
+              X-axis variable:
+            </label>
+            <input id="x-axis-variable-input" type="text" placeholder="Column name" readonly>
+          </div>
+
+          <div class="form-row">
+            <label class="field-label" for="x-axis-type-input">
+              X-axis data type:
+            </label>
+            <select id="x-axis-type-input">
+              <option value="string">Text (String)</option>
+              <option value="number">Number</option>
+              <option value="date">Date</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label class="field-label" for="x-axis-title-input">
+              X-axis label:
+            </label>
+            <input id="x-axis-title-input" type="text" placeholder="Enter X-axis label">
+          </div>
+
+          <div class="form-row">
+            <label class="field-label" for="y-axis-title-input">
+              Y-axis label:
+            </label>
+            <input id="y-axis-title-input" type="text" placeholder="Enter Y-axis label">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <button id="generate-chart" type="button">Generate Chart</button>
+        </div>
+      </fieldset>
+
+      <br>
+      <button id="download-svg" disabled>Download SVG</button>
+    </header>
+
+    <div id="output">
+      <section id="content-container" class="item"></section>
+      <section class="item">
+        <label for="jim">Output JIM</label>
+        <textarea id="jim"></textarea>
+      </section>
+    </div>
+  </main>
 </body>
+
 </html>

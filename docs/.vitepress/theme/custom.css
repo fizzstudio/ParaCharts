@@ -1,0 +1,17 @@
+/**
+ * Custom CSS overrides for VitePress theme
+ */
+
+/* Make the table of contents narrower */
+.VPDocAsideOutline {
+  max-width: 200px !important;
+}
+
+.aside-container {
+  max-width: 200px !important;
+}
+
+/* Adjust the main content area to compensate */
+.VPDoc:not(.has-aside) .content-container {
+  max-width: 100% !important;
+}

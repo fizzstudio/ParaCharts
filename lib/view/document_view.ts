@@ -28,6 +28,8 @@ import { type LinePlotView } from './layers';
 import { type ParaView } from '../paraview';
 import { AxisInfo, AxisLabelInfo } from '../common';
 
+import { svg } from 'lit';
+
 export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
 
 /**
@@ -36,10 +38,10 @@ export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
 export class DocumentView extends Container(View) {
 
   readonly type: ChartType;
+  protected _titleLabel?: Label;
   protected _chartInfo!: BaseChartInfo;
   protected _chartLayers!: PlotLayerManager;
   protected _directLabelStrip: DirectLabelStrip | null = null;
-  protected _titleLabel?: Label;
   protected _horizAxis?: HorizAxis;
   protected _vertAxis?: VertAxis;
   protected _titleText!: string;
@@ -50,7 +52,7 @@ export class DocumentView extends Container(View) {
   constructor(paraview: ParaView) {
     super(paraview);
     this.log = getLogger('DocumentView');
-    this._paraState = paraview.paraState;
+    this._paraState = paraview.globalState.paraState;
     this.observeNotices();
     this.type = this._paraState.type;
   }
@@ -117,6 +119,12 @@ export class DocumentView extends Container(View) {
       this.createTitle();
     }
 
+    if (this._shouldAddLegend && this._paraState.settings.legend.position === 'north' && this._paraState.type !== 'venn') {
+      this.createLegend('north');
+      this._legends.north!.top = this._titleLabel?.paddedBottom ?? this.top;
+      this._legends.north!.centerX = this.centerX;
+    }
+
     // const horizAxisPos = this._paraState.settings.axis.horiz.position;
 
     const horizFacet = this.chartInfo.getFacetForOrientation('horiz');
@@ -147,24 +155,23 @@ export class DocumentView extends Container(View) {
     if (this._paraState.settings.axis.vert.isDrawAxis && vertFacet) {
       this._createVertAxis(vertFacet!, this._chartInfo as PlaneChartInfo, this._height
         - (this._titleLabel?.paddedHeight || 0)
-        - (this._horizAxis?.height || 0));
+        - (this._legends.north?.paddedHeight || 0)
+        - (this._horizAxis?.height || 0)
+      );
       this.append(this._vertAxis!);
       this._vertAxis!.left = this._legends.west?.paddedRight ?? this.left;
-      if (this._paraState.settings.chart.title.position === 'top') {
+      if (this._legends.north) {
+        this._vertAxis!.paddedTop = this._legends.north.paddedBottom;
+      } else if (this._titleLabel && this._paraState.settings.chart.title.position === 'top') {
         this._vertAxis!.top = this._titleLabel!.paddedBottom;
       } else {
-        // this._vertAxis!.bottom = this._titleLabel!.paddedTop;
         this._vertAxis!.top = this.top;
       }
     }
 
     // Create the direct label strip here so it can take its height from
     // the vertical axis
-    const shouldAddDirectLabelStrip = this._paraState.settings.chart.hasDirectLabels
-      && this.type === 'line'
-      && /*this._chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
-        this._paraState.model!.multi;
-    if (shouldAddDirectLabelStrip) {
+    if (this._shouldAddDirectLabelStrip) {
       this._directLabelStrip?.remove();
       this._directLabelStrip = new DirectLabelStrip(
         this.paraview, this._vertAxis?.height ?? this._height);
@@ -181,7 +188,7 @@ export class DocumentView extends Container(View) {
         - (this._directLabelStrip?.width ?? 0)
         - (this._legends.east?.width ?? this._legends.west?.width ?? 0));
       this.append(this._horizAxis!);
-      if (this._paraState.settings.chart.title.position === 'top') {
+      if (this._titleLabel && this._paraState.settings.chart.title.position === 'top') {
         this._horizAxis!.bottom = this.bottom;
       } else {
         this._horizAxis!.bottom = this._titleLabel!.paddedTop;
@@ -210,8 +217,9 @@ export class DocumentView extends Container(View) {
       - (this._directLabelStrip?.width ?? 0)
       - (this._legends.east?.width ?? this._legends.west?.width ?? 0);
     const plotHeight = this._height
-      - (this._horizAxis?.height ?? 0)
+      - (this._legends.north?.paddedHeight ?? 0)
       - (this._titleLabel?.paddedHeight ?? 0)
+      - (this._horizAxis?.height ?? 0)
       - (this._legends.south?.paddedHeight ?? 0);
     this._chartLayers?.remove();
     this._chartLayers = new PlotLayerManager(this.paraview, plotWidth, plotHeight);
@@ -274,12 +282,19 @@ export class DocumentView extends Container(View) {
     this._vertAxis.updateSize();
   }
 
+  protected get _shouldAddDirectLabelStrip(): boolean {
+    return this._paraState.settings.chart.hasDirectLabels
+      && this.type === 'line'
+      && /*this._chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
+        this._paraState.model!.multi;
+  }
+
   protected get _shouldAddLegend(): boolean {
     return this._paraState.settings.legend.isDrawLegend &&
       (this._paraState.settings.legend.isAlwaysDrawLegend
         // XXX direct label strip won't exist when this is called
-        || (this._directLabelStrip && this._paraState.settings.chart.hasLegendWithDirectLabels)
-        || (!this._directLabelStrip && this._paraState.model!.multi));
+        || (this._shouldAddDirectLabelStrip && this._paraState.settings.chart.hasLegendWithDirectLabels)
+        || (!this._shouldAddDirectLabelStrip && this._paraState.model!.multi));
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
@@ -483,8 +498,14 @@ export class DocumentView extends Container(View) {
       this._legends.north?.remove();
       this._legends.north = new Legend(this.paraview, items, {
         orientation: 'horiz',
-        wrapWidth: this._chartLayers.paddedWidth
+        wrapWidth: 300 // this._chartLayers.paddedWidth
       });
+      this._legends.north.padding = {
+        top: 0,
+        right: 0,
+        bottom: margin,
+        left: 0
+      };
       // this._grid.insertRow(this._paraState.settings.chart.title.isDrawTitle && this._paraState.title ? 1 : 0);
       // this._grid.append(this._legends.north, {
       //   x: 1,
@@ -493,7 +514,28 @@ export class DocumentView extends Container(View) {
       //   colAlign: 'center',
       //   //margin: {bottom: margin}
       // });
+      this.append(this._legends.north);
     }
+  }
+
+  content() {
+    return svg`
+      ${super.content()}
+      ${this._titleLabel && this._paraState.isTitleHighlighted
+        ? this._titleLabel.renderHighlight() : ''}
+      ${this._horizAxis && this._paraState.isHorizontalAxisHighlighted
+        ? this._horizAxis.renderHighlight() : ''}
+      ${this._vertAxis && this._paraState.isVerticalAxisHighlighted
+        ? this._vertAxis.renderHighlight() : ''}
+      ${this._legends.east && this._paraState.isEastLegendHighlighted
+        ? this._legends.east.renderHighlight() : ''}
+      ${this._legends.west && this._paraState.isWestLegendHighlighted
+        ? this._legends.west.renderHighlight() : ''}
+      ${this._legends.north && this._paraState.isNorthLegendHighlighted
+        ? this._legends.north.renderHighlight() : ''}
+      ${this._legends.south && this._paraState.isSouthLegendHighlighted
+        ? this._legends.south.renderHighlight() : ''}
+    `;
   }
 
 }

@@ -67,7 +67,7 @@ export interface UISettings extends SettingGroup {
   isNarrativeHighlightPaused: boolean;
   /** Enable aria-live announcements */
   isAnnouncementEnabled: boolean;
-  /** Voice output speech rate. Range: 0.1 to 10 */
+  /** Voice output speech rate. Range: 0.5 to 2 */
   speechRate: number;
   /** Enable fullscreen mode */
   isFullscreenEnabled: boolean;
@@ -463,6 +463,11 @@ export interface PopupSettings extends SettingGroup {
   borderRadius: number;
   /** Background color scheme */
   backgroundColor: "dark" | "light"
+  /** Show crosshair */
+  isShowCrosshair: boolean;
+  /** Make crosshair follow pointer */
+  isCrosshairFollowPointer: boolean;
+
 }
 
 /** Base settings for plot-based charts */
@@ -492,6 +497,8 @@ export interface BarSettings extends PlaneChartSettings {
   colorByDatapoint: boolean;
   /** Show total value labels on stacked bars */
   isDrawTotalLabels: boolean;
+  /** Gap between total value labels and stacks */
+  totalLabelGap: number;
   /** Gap between stack labels and bars */
   stackLabelGap: number;
   /** Show record name labels */

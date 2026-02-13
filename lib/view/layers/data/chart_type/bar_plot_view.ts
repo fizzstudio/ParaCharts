@@ -30,6 +30,7 @@ import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { BarChartInfo } from '../../../../chart_types/bar_chart';
 import { Popup } from '../../../popup';
+import { formatDatapointValue, formatDataValue } from '../../../../common';
 
 const MIN_STACK_WIDTH_FOR_GAPS = 8;
 const STACK_GAP_PERCENTAGE = 0.125;
@@ -105,6 +106,7 @@ export class BarPlotView extends PlanePlotView {
     super(paraview, width, height, dataLayerIndex, chartInfo);
     this.log = getLogger("BarPlotView");
   }
+
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['color.colorPalette', 'color.colorVisionMode', 'chart.isShowPopups'].includes(path)) {
       if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
@@ -162,12 +164,18 @@ export class BarPlotView extends PlanePlotView {
     this._numStacks = numClusters * this._chartInfo.stacksPerCluster;
     let maxStackWidth = (this._width - numClusters * this._chartInfo.settings.clusterGap) / this._numStacks;
     let gapWidth = 0;
-    if (maxStackWidth >= MIN_STACK_WIDTH_FOR_GAPS) {
-      this._stackWidth = (1 - STACK_GAP_PERCENTAGE) * maxStackWidth;
-      gapWidth = STACK_GAP_PERCENTAGE * maxStackWidth;
+    let stackWidth = Math.min(this._chartInfo.settings.barWidth, maxStackWidth);
+    stackWidth ||= maxStackWidth;
+    if (this._chartInfo.settings.barWidth) {
+      gapWidth = maxStackWidth - stackWidth;
+      this._stackWidth = stackWidth;
+    } else if (stackWidth >= MIN_STACK_WIDTH_FOR_GAPS) {
+      this._stackWidth = (1 - STACK_GAP_PERCENTAGE) * stackWidth;
+      gapWidth = STACK_GAP_PERCENTAGE * stackWidth;
     } else {
-      this._stackWidth = maxStackWidth;
+      this._stackWidth = stackWidth;
     }
+
     // this._clusterWidth = this._stackWidth*this._chartInfo.stacksPerCluster
     //   + (this._chartInfo.stacksPerCluster - 1)*gapWidth;
     this._availSpace = gapWidth * this._numStacks;
@@ -231,19 +239,17 @@ export class BarPlotView extends PlanePlotView {
             const seriesView = seriesViews.find(sv => sv.seriesKey === barStackItem.series)!;
             return seriesView.children[i - 1].datapoint;
           }).reduce((a, b) => a + b.facetValueAsNumber('y')!, 0);
-
+          const range = this._chartInfo.yInterval!.end - this._chartInfo.yInterval!.start;
+          const total = formatDataValue(sum, range);
           this._totalLabels.push(new Label(this.paraview, {
-            // XXX hack
-            text: sum.toFixed(2),
-            id: this._id + '-slb',
+            text: total,
             classList: [`${this.paraview.paraState.type}-total-label`],
-            role: 'datapoint',
             // textAnchor,
             angle
           }));
           this.append(this._totalLabels.at(-1)!);
           this._totalLabels.at(-1)!.centerX = barView.centerX;
-          this._totalLabels.at(-1)!.bottom = barView.top;
+          this._totalLabels.at(-1)!.bottom = barView.top - this._chartInfo.settings.totalLabelGap;
         }
       }
       // this._resizeToFitLabels();
@@ -422,7 +428,7 @@ export class Bar extends PlaneDatapointView {
       if (this.datapoint.data.y.value as number < 0) {
         this._y = this.chart.height - distFromXAxis - zeroHeight;
       } else {
-        this._y = this.chart.height - this.height - distFromXAxis - zeroHeight - orderIdx*chartInfo.settings.stackInsideGap;
+        this._y = this.chart.height - this.height - distFromXAxis - zeroHeight - orderIdx * chartInfo.settings.stackInsideGap;
       }
     }
     const barGap = this.chart.availSpace / this.chart.numStacks;
@@ -449,7 +455,7 @@ export class Bar extends PlaneDatapointView {
     if (this.datapoint.data.y.value as number < 0) {
       this._y = this.chart.height - distFromXAxis * bezT - zeroHeight;
     } else {
-      this._y = this.chart.height - this.height - distFromXAxis * bezT - zeroHeight - orderIdx*chartInfo.settings.stackInsideGap;
+      this._y = this.chart.height - this.height - distFromXAxis * bezT - zeroHeight - orderIdx * chartInfo.settings.stackInsideGap;
     }
     super.beginAnimStep(bezT, linearT);
   }
@@ -464,12 +470,10 @@ export class Bar extends PlaneDatapointView {
       angle = -90;
     }
     if (chartInfo.settings.isDrawRecordLabels) {
+      this._recordLabel?.remove();
       this._recordLabel = new Label(this.paraview, {
-        // @ts-ignore
-        text: formatBox(this.datapoint.data.x, this.paraview.paraState.getFormatType('pieSliceValue')),
-        id: this._id + '-rlb',
+        text: formatBox(this.datapoint.facetBox('x')!, this.paraview.paraState.getFormatType('pieSliceValue')),
         classList: [`${this.paraview.paraState.type}-label`],
-        role: 'datapoint',
         textAnchor,
         angle
       });
@@ -482,12 +486,11 @@ export class Bar extends PlaneDatapointView {
       this._recordLabel.y = this.chart.height - this._recordLabel.height - chartInfo.settings.stackLabelGap;
     }
     if (chartInfo.settings.isDrawDataLabels) {
+      this._dataLabel?.remove();
       this._dataLabel = new Label(this.paraview, {
-        // @ts-ignore
-        text: formatBox(this.datapoint.data.y, this.paraview.paraState.getFormatType('pieSliceValue')),
-        id: this._id + '-blb',
+        text: formatDatapointValue(this.datapoint, chartInfo.yInterval!.end - chartInfo.yInterval!.start, this.paraview.paraState.model!),
+        //text: formatDataValue(this.datapoint.facetValueAsNumber('y')!, chartInfo.yInterval!.end - chartInfo.yInterval!.start),
         classList: [`${this.paraview.paraState.type}-label`],
-        role: 'datapoint',
         textAnchor,
         angle
       });
@@ -536,13 +539,13 @@ export class Bar extends PlaneDatapointView {
       height: this._height,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups ? this.addDatapointPopup() : undefined
+        this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined;
       },
       pointerMove: (e) => {
-        this.movePopupAction();
+        this.shouldAddHoverPopup() ? this.movePopupAction() : undefined;
       },
       pointerLeave: (e) => {
-        this.paraview.paraState.settings.chart.isShowPopups ? this.paraview.paraState.removePopup(this.id) : undefined
+        this.chart.removeDatapointPopup(this);
       },
     }));
     super._createShapes();

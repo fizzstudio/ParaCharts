@@ -1,7 +1,10 @@
 {
   "datasets": [
     {
-      "type": "donut",
+      "representation": {
+        "type": "chart",
+        "subtype": "donut"
+      },
       "title": "Division of energy in the Universe",
       "facets": {
         "x": {

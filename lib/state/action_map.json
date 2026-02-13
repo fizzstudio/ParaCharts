@@ -51,6 +51,10 @@
     "label": "Toggle self-voicing mode",
     "hotkeys": ["v"]
   },
+  "openExplainer": {
+    "label": "Open chart explainer",
+    "hotkeys": ["x"]
+  },
   "move": {
     "label": "Move the cursor",
     "parameters": {

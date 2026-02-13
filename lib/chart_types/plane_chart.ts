@@ -260,6 +260,10 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     return this._paraState.model!.allFacetValues(facetKey)!.map(box => box.raw);
   }
 
+  facetTickLabelValues(facetKey: string): string[] {
+    return this._facetTickLabelValues(facetKey);
+  }
+
   /**
    * Called by `computeAxisLabelTiers` to get the displayed range for a numeric x-axis.
    * @param facetKey - Facet key
@@ -312,7 +316,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     // Create series and datapoint nav nodes, and link them horizontally thusly:
     // - [SERIES-A]-[SERIES-A-POINT-0]- ... -[SERIES-A-POINT-(N-1)]-[SERIES-B]-[SERIES-B-POINT-0]- ...
     let left = this._navMap!.root.get('top')!;
-    const depFacet = this._paraState.model!.dependentFacetKeys[0];
+    //const depFacet = this._paraState.model!.dependentFacetKeys[0];
     // Sort by value of first datapoint from greatest to least
     const sortedSeries = this.seriesInNavOrder();
     sortedSeries.forEach((series, i) => {

@@ -1,7 +1,10 @@
 {
   "datasets": [
     {
-      "type": "line",
+      "representation": {
+        "type": "chart",
+        "subtype": "line"
+      },
       "title": "Cattle population worldwide 2012 to 2019",
       "facets": {
         "x": {

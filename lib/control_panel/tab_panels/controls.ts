@@ -106,7 +106,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
             Keyboard Controls
           </button>
           <button
-            @click=${() => this.paraState.updateSettings(draft => {
+            @click=${() => this._paraState.updateSettings(draft => {
               draft.ui.isFullscreenEnabled = true;
             })}
           >
@@ -130,7 +130,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
           <para-animation-dialog
             ${ref(this._animationDialogRef)}
             id="animation-settings-dialog"
-            .paraState=${this._paraState}
+            .globalState=${this._globalState}
           >
           </para-animation-dialog>
         </section>
@@ -153,7 +153,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
       <para-advanced-control-settings-dialog
         ${ref(this._advancedControlDialogRef)}
         id="advanced-control-settings-dialog"
-        .paraState=${this._paraState}
+        .globalState=${this._globalState}
       ></para-advanced-control-settings-dialog>
     `;
   }
