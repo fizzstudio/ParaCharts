@@ -37,7 +37,7 @@ export class ParaAPI {
     const paraView = _paraChart.paraView;
 
     // we use a function here bc the chartInfo object may get replaced
-    const chartInfo = () => _paraChart.paraView.documentView!.chartInfo;
+    const chartInfo = () => _paraChart.globalState.paraState.chartInfo;
     const self = this;
     this._standardActions = {
       move(args: ActionArgumentMap) {
@@ -148,18 +148,20 @@ export class ParaAPI {
         if (_paraChart.globalState.paraState === _paraChart.globalState.paraStates[1]) {
           // Open the explainer
           const type = paraView.documentView!.type;
-          paraView.pushDocumentView();
+          paraView.destroyDocumentView();
           _paraChart.globalState.enableParaState(_paraChart.globalState.paraStates[0]);
           if (!_paraChart.globalState.paraState.model) {
             _paraChart.runLoader(
               JSON.stringify(explainers[type]!.manifest),
               'content',
               false,
-              explainers[type]!.summary
+              explainers[type]!.summary,
+              false // don't reset settings
             ).then(() => {
               _paraChart.paraState.updateSettings(draft => {
                 draft.chart.padding = '24 90';
               }, true);
+              _paraChart.styleManager.update();
               paraView.createDocumentView();
             });
           } else {
@@ -169,7 +171,7 @@ export class ParaAPI {
         } else {
           // Close the explainer
           _paraChart.globalState.enableParaState(_paraChart.globalState.paraStates[1]);
-          paraView.popDocumentView();
+          paraView.createDocumentView();
           _paraChart.captionBox.setCaption();
         }
       },
@@ -231,7 +233,7 @@ export class ParaAPI {
   }
 
   get chartInfo(): BaseChartInfo {
-    return this._paraChart.paraView.documentView!.chartInfo;
+    return this._paraChart.globalState.paraState.chartInfo;
   }
 
   get actions(): Actions {
@@ -271,7 +273,7 @@ export class ParaAPI {
   }
 
   async getDescription(): Promise<string | undefined> {
-    const summary = await this._paraChart.paraView.documentView?.chartInfo.summarizer.getChartSummary();
+    const summary = await this._paraChart.globalState.paraState.chartInfo.summarizer.getChartSummary();
     return summary?.text;
   }
 
@@ -280,7 +282,7 @@ export class ParaAPI {
     const orientationSentences = ['pie', 'donut', 'gauge'].includes(chartType)
       ? PASTRY_ORIENTATION_SENTENCES
       : ORIENTATION_SENTENCES;
-    const summary = await this.paraChart.paraView.documentView!.chartInfo.summarizer.getRequestedSummaries(orientationSentences);
+    const summary = await this.paraChart.globalState.paraState.chartInfo.summarizer.getRequestedSummaries(orientationSentences);
     return summary?.text;
   }
 

@@ -66,7 +66,7 @@ export class DirectLabelStrip extends Container(View) {
     this._seriesLabels = [];
     // Create labels
     endpoints.forEach((ep, i) => {
-      const yInterval = (this.paraview.documentView!.chartInfo as PlaneChartInfo).yInterval!;
+      const yInterval = (this.paraview.paraState.chartInfo as PlaneChartInfo).yInterval!;
       const pxPerYUnit = this._height / (yInterval.end - yInterval.start);
       const labelY = this._height - (ep.facetValueNumericized('y')! - yInterval.start) * pxPerYUnit;
       this._seriesLabels.push(new Label(this.paraview, {

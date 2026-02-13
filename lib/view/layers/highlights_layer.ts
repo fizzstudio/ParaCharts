@@ -48,7 +48,7 @@ export class HighlightsLayer extends PlotLayer {
   ) {
     // XXX Ultimately, we need to support pastry and other non-plane chart types here
     this.paraview.paraState.clearPopups();
-    const chartInfo = this.paraview.documentView!.chartInfo as PlaneChartInfo;
+    const chartInfo = this.paraview.paraState.chartInfo as PlaneChartInfo;
     const fields = sequenceId.split(/-/);
     const datapoints = [
       this.paraview.paraState.getDatapoint(`${fields[0]}-${fields[1]}`),

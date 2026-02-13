@@ -33,8 +33,8 @@ import { Highlight } from '@fizz/parasummary';
  */
 export class LineChartInfo extends PointChartInfo {
 
-  constructor(type: ChartType, paraView: ParaView) {
-    super(type, paraView);
+  constructor(type: ChartType, paraState: ParaState) {
+    super(type, paraState);
     this.log = getLogger("LineChartInfo");
   }
 

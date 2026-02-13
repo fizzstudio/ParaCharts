@@ -30,8 +30,8 @@ import { DocumentView } from '../view/document_view';
  */
 export abstract class PointChartInfo extends PlaneChartInfo {
 
-  constructor(type: ChartType, paraView: ParaView) {
-    super(type, paraView);
+  constructor(type: ChartType, paraState: ParaState) {
+    super(type, paraState);
   }
 
   protected _init(): void {

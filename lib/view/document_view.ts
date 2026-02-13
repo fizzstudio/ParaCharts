@@ -39,7 +39,6 @@ export class DocumentView extends Container(View) {
 
   readonly type: ChartType;
   protected _titleLabel?: Label;
-  protected _chartInfo!: BaseChartInfo;
   protected _chartLayers!: PlotLayerManager;
   protected _directLabelStrip: DirectLabelStrip | null = null;
   protected _horizAxis?: HorizAxis;
@@ -63,8 +62,6 @@ export class DocumentView extends Container(View) {
   }
 
   init() {
-    // @ts-ignore
-    this._chartInfo = new chartInfoClasses[this.type](this.type, this.paraview);
     this.setTitleText(this._paraState.title);
 
     const expandedPadding = this._parsePadding(this._paraState.settings.chart.padding);
@@ -133,18 +130,18 @@ export class DocumentView extends Container(View) {
 
     // const horizAxisPos = this._paraState.settings.axis.horiz.position;
 
-    const horizFacet = this.chartInfo.getFacetForOrientation('horiz');
-    const vertFacet = this.chartInfo.getFacetForOrientation('vert');
+    const horizFacet = this.paraview.paraState.chartInfo.getFacetForOrientation('horiz');
+    const vertFacet = this.paraview.paraState.chartInfo.getFacetForOrientation('vert');
     //const axisInfo = this._chartInfo.axisInfo;
 
     // Initially create axes to compute the size of each axis
     // along the shorter dimension
     if (this._paraState.settings.axis.horiz.isDrawAxis && horizFacet) {
-      this._createHorizAxis(horizFacet!, this._chartInfo as PlaneChartInfo, this._width);
+      this._createHorizAxis(horizFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width);
       // console.log('H-AXIS HEIGHT', this._horizAxis!.height);
     }
     if (this._paraState.settings.axis.vert.isDrawAxis && vertFacet) {
-      this._createVertAxis(vertFacet!, this._chartInfo as PlaneChartInfo, this._height);
+      this._createVertAxis(vertFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height);
       // console.log('V-AXIS WIDTH', this._vertAxis!.width);
     }
 
@@ -159,7 +156,7 @@ export class DocumentView extends Container(View) {
 
     // Recreate the axes using the size info computed above
     if (this._paraState.settings.axis.vert.isDrawAxis && vertFacet) {
-      this._createVertAxis(vertFacet!, this._chartInfo as PlaneChartInfo, this._height
+      this._createVertAxis(vertFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height
         - (this._titleLabel?.paddedHeight || 0)
         - (this._legends.north?.paddedHeight || 0)
         - (this._horizAxis?.height || 0)
@@ -189,7 +186,7 @@ export class DocumentView extends Container(View) {
     }
 
     if (this._paraState.settings.axis.horiz.isDrawAxis && horizFacet) {
-      this._createHorizAxis(horizFacet!, this._chartInfo as PlaneChartInfo, this._width
+      this._createHorizAxis(horizFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width
         - (this._vertAxis?.width ?? 0)
         - (this._directLabelStrip?.width ?? 0)
         - (this._legends.east?.width ?? this._legends.west?.width ?? 0));
@@ -273,7 +270,7 @@ export class DocumentView extends Container(View) {
       try {
         this._horizAxis?.remove();
         this._horizAxis = new HorizAxis(this.paraview, facet, chartInfo, length);
-        const horizAxisFacet = this._chartInfo.horizFacet!;
+        const horizAxisFacet = this.paraview.paraState.chartInfo.horizFacet!;
         this._horizAxis.setAxisLabelText(horizAxisFacet.label);
         this._horizAxis.createComponents();
         this._horizAxis.layoutComponents();
@@ -294,7 +291,7 @@ export class DocumentView extends Container(View) {
   protected _createVertAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
     this._vertAxis?.remove();
     this._vertAxis = new VertAxis(this.paraview, facet, chartInfo, length);
-    const vertAxisFacet = this._chartInfo.vertFacet!;
+    const vertAxisFacet = this.paraview.paraState.chartInfo.vertFacet!;
     this._vertAxis.setAxisLabelText(vertAxisFacet.label);
     this._vertAxis.createComponents();
     this._vertAxis.layoutComponents();
@@ -317,7 +314,7 @@ export class DocumentView extends Container(View) {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
-    this._chartInfo.settingDidChange(path, oldValue, newValue);
+    this.paraview.paraState.chartInfo.settingDidChange(path, oldValue, newValue);
     if (['chart.size.width', 'chart.size.height', 'chart.fontScale'].includes(path)) {
       this.updateSize();
       this._populate();
@@ -328,7 +325,7 @@ export class DocumentView extends Container(View) {
 
   async storeDidChange(key: string, value: any): Promise<void> {
     await super.storeDidChange(key, value);
-    return this._chartInfo.storeDidChange(key, value);
+    return this.paraview.paraState.chartInfo.storeDidChange(key, value);
   }
 
   // noticePosted(key: string, value: any): void {
@@ -353,10 +350,6 @@ export class DocumentView extends Container(View) {
   //     }
   //   }
   // }
-
-  get chartInfo() {
-    return this._chartInfo;
-  }
 
   protected _createId() {
     return 'doc-view';
@@ -480,7 +473,7 @@ export class DocumentView extends Container(View) {
   }*/
 
   createLegend(position: CardinalDirection) {
-    const items = this._chartInfo.legend();
+    const items = this.paraview.paraState.chartInfo.legend();
     const margin = this._paraState.settings.legend.margin;
     if (position === 'east') {
       this._legends.east?.remove();

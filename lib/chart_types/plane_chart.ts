@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { BaseChartInfo } from './base_chart';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, type NavMap } from '../view/layers/data/navigation';
-import { DeepReadonly, PlaneChartSettings } from '../state';
+import { DeepReadonly, PlaneChartSettings, type ParaState } from '../state';
 import { ParaView } from '../paraview';
 import { type RiffOrder } from './base_chart';
 import { type HorizDirection } from '../state';
@@ -79,8 +79,8 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   /** Min and max chart y values, if y is numeric */
   protected _yExtremes!: Interval | null;
 
-  constructor(type: ChartType, paraView: ParaView) {
-    super(type, paraView);
+  constructor(type: ChartType, paraState: ParaState) {
+    super(type, paraState);
   }
 
   protected _init(): void {

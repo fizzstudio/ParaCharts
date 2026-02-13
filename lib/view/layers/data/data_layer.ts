@@ -303,7 +303,7 @@ export abstract class DataLayer extends PlotLayer {
   // }
 
   focusRingBbox() {
-    const chartInfo = this._parent.parent.chartInfo;
+    const chartInfo = this.paraview.paraState.chartInfo;
     const cursor = chartInfo.navMap!.cursor;
     if (['series', 'chord', 'datapoint', 'sequence'].includes(cursor.type)) {
       return bboxOfBboxes(...cursor.datapoints.map(dp =>

@@ -17,7 +17,7 @@ export class GlobalState extends BaseState {
     protected _pairAnalyzerConstructor?: PairAnalyzerConstructor
   ) {
     super();
-    this._createSettings(_inputSettings);
+    // this._createSettings(_inputSettings);
     // this._getUrlAnnotations();
   }
 

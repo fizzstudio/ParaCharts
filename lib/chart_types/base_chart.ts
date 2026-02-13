@@ -22,7 +22,7 @@ import { ParaView } from '../paraview/paraview';
 import { type LegendItem } from '../view/legend';
 import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
 import { Logger, getLogger } from '@fizz/logger';
-import { ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor } from '../state';
+import { type ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor } from '../state';
 import { Sonifier } from '../audio/sonifier';
 import { type AxisCoord, AxisOrientation } from '../view/axis';
 
@@ -62,12 +62,15 @@ export abstract class BaseChartInfo {
   protected _sonifier!: Sonifier;
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
   protected _soniRiffInterval: ReturnType<typeof setTimeout> | null = null;
-  protected _paraState!: ParaState;
+  protected _paraView!: ParaView;
 
-  constructor(protected _type: ChartType, protected _paraView: ParaView) {
-    this._paraState = this._paraView.globalState.paraState;
+  constructor(protected _type: ChartType, protected _paraState: ParaState) {
     this._init();
     this._addSettingControls();
+  }
+
+  setParaView(paraView: ParaView) {
+    this._paraView = paraView;
   }
 
   protected _addSettingControls() {
