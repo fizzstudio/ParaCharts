@@ -67,7 +67,7 @@ export interface UISettings extends SettingGroup {
   isNarrativeHighlightPaused: boolean;
   /** Enable aria-live announcements */
   isAnnouncementEnabled: boolean;
-  /** Voice output speech rate. Range: 0.1 to 10 */
+  /** Voice output speech rate. Range: 0.5 to 2 */
   speechRate: number;
   /** Enable fullscreen mode */
   isFullscreenEnabled: boolean;
