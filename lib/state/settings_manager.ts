@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { 
+import {
   type Setting, type Settings, type SettingsInput, type SettingGroup,
   DeepReadonly
 } from './settings_types';
@@ -38,7 +38,7 @@ export class SettingsManager {
    * Generate a list of setting [key, value] pairs that would need to be applied
    * to `this` to turn it into `other`.
    * @param other - Another setting store object.
-   * @returns List of [key, value] pairs. 
+   * @returns List of [key, value] pairs.
    */
   /*diff(other: SettingStore): [string, Setting | undefined][] {
     return this.diffGroup(this.settings, other.settings);
@@ -54,15 +54,15 @@ export class SettingsManager {
           if (typeof withGroup[key] !== 'object') {
             throw new Error(`type of setting '${key as string}' must be ${typeof withGroup[key]}`);
           }
-          diff = diff.concat(this.diffGroup(group[key] as SettingGroup, withGroup[key] as SettingGroup, 
+          diff = diff.concat(this.diffGroup(group[key] as SettingGroup, withGroup[key] as SettingGroup,
             pathPlusKey));
         } else if (group[key] !== withGroup[key]) {
           diff.push([pathPlusKey, withGroup[key] as Setting | undefined]);
-        } 
+        }
       } else {
         // withGroup is guaranteed to have the key
         if (typeof withGroup[key] === 'object') {
-          diff = diff.concat(this.diffGroup({}, withGroup[key] as SettingGroup, 
+          diff = diff.concat(this.diffGroup({}, withGroup[key] as SettingGroup,
             `${path}.${key as string}`));
         } else {
           diff.push([pathPlusKey, withGroup[key] as Setting | undefined]);
@@ -91,8 +91,8 @@ export class SettingsManager {
           cursor = {};
           prev[seg] = cursor;
         } else {
-          throw new Error(`invalid setting group type '${typeof cursor}' in '${path}'`);          
-        }  
+          throw new Error(`invalid setting group type '${typeof cursor}' in '${path}'`);
+        }
       }
     }
     return cursor;
@@ -113,7 +113,7 @@ export class SettingsManager {
   static getGroupForSetting(path: string, group: SettingGroup, create = false) {
     const segs = path.split('.');
     if (segs.length < 2) {
-      throw new Error('setting path must have at least two elements');
+      throw new Error(`setting path must have at least two elements`);
     }
     return SettingsManager.getGroup(segs.slice(0, -1).join('.'), group, create);
   }
@@ -145,7 +145,7 @@ export class SettingsManager {
     /*if (Array.isArray(src[prop])) {
       // XXX should deep-copy the array
       dest[prop] = (src[prop] as any[]).map(item => item) as T[keyof T];
-    } else if (src[prop] === null) { 
+    } else if (src[prop] === null) {
       dest[prop] = null as T[keyof T];
     } else*/ if (typeof src[prop] === 'object') {
       dest[prop] = SettingsManager.cloneSettings(src[prop] as SettingGroup) as T[keyof T];
@@ -160,19 +160,19 @@ export class SettingsManager {
       if (settings.hasOwnProperty(key)) {
         /*if (Array.isArray(opts[key])) {
           continue;
-        } else if (opts[key] === null) { 
+        } else if (opts[key] === null) {
           continue;
         } else*/ if (typeof settings[key] === 'object') {
           if (typeof using[key] !== 'object') {
             throw new Error(`type of setting '${key as string}' must be ${typeof using[key]}`);
           }
           this.suppleteSettings(settings[key] as SettingGroup, using[key] as SettingGroup);
-        } else if (settings[key] === undefined) { 
+        } else if (settings[key] === undefined) {
           //opts[key] = using[key];
           SettingsManager.cloneProp(settings, using, key);
         } else {
           continue;
-        }  
+        }
       } else {
         SettingsManager.cloneProp(settings, using, key);
       }

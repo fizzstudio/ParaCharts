@@ -27,6 +27,7 @@ import { DirectLabelStrip } from './direct_label_strip';
 import { type LinePlotView } from './layers';
 import { type ParaView } from '../paraview';
 import { AxisInfo, AxisLabelInfo } from '../common';
+import { svg } from 'lit';
 
 export type Legends = Partial<{ [dir in CardinalDirection]: Legend }>;
 
@@ -36,10 +37,10 @@ export type Legends = Partial<{ [dir in CardinalDirection]: Legend }>;
 export class DocumentView extends Container(View) {
 
   readonly type: ChartType;
+  protected _titleLabel?: Label;
   protected _chartInfo!: BaseChartInfo;
   protected _chartLayers!: PlotLayerManager;
   protected _directLabelStrip: DirectLabelStrip | null = null;
-  protected _titleLabel?: Label;
   protected _horizAxis?: HorizAxis;
   protected _vertAxis?: VertAxis;
   protected _titleText!: string;
@@ -50,7 +51,7 @@ export class DocumentView extends Container(View) {
   constructor(paraview: ParaView) {
     super(paraview);
     this.log = getLogger('DocumentView');
-    this._paraState = paraview.paraState;
+    this._paraState = paraview.globalState.paraState;
     this.observeNotices();
     this.type = this._paraState.type;
   }
@@ -519,6 +520,26 @@ export class DocumentView extends Container(View) {
       // });
       this.append(this._legends.north);
     }
+  }
+
+  content() {
+    return svg`
+      ${super.content()}
+      ${this._titleLabel && this._paraState.isTitleHighlighted
+        ? this._titleLabel.renderHighlight() : ''}
+      ${this._horizAxis && this._paraState.isHorizontalAxisHighlighted
+        ? this._horizAxis.renderHighlight() : ''}
+      ${this._vertAxis && this._paraState.isVerticalAxisHighlighted
+        ? this._vertAxis.renderHighlight() : ''}
+      ${this._legends.east && this._paraState.isEastLegendHighlighted
+        ? this._legends.east.renderHighlight() : ''}
+      ${this._legends.west && this._paraState.isWestLegendHighlighted
+        ? this._legends.west.renderHighlight() : ''}
+      ${this._legends.north && this._paraState.isNorthLegendHighlighted
+        ? this._legends.north.renderHighlight() : ''}
+      ${this._legends.south && this._paraState.isSouthLegendHighlighted
+        ? this._legends.south.renderHighlight() : ''}
+    `;
   }
 
 }

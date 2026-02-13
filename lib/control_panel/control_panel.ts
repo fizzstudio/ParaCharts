@@ -167,7 +167,9 @@ export class ParaControlPanel extends ParaComponent {
       let toggleButton = this.shadowRoot?.getElementById("wrapper")?.children[0].shadowRoot?.children[0].getElementsByClassName("toggle")[0]
       if (toggleButton) {
         toggleButton.addEventListener("pointerenter", () => {
-          this.addPopup(this.paraChart.isControlPanelOpen ? true : false)
+          this._paraState.settings.chart.isShowPopups
+            && this._paraState.settings.popup.activation === "onHover"
+            && !this._paraState.settings.ui.isNarrativeHighlightEnabled ? this.addPopup(this.paraChart.isControlPanelOpen ? true : false) : undefined
         })
         toggleButton.addEventListener("pointerleave", () => {
           this.paraChart.paraView.paraState.removePopup(this.id);
@@ -327,13 +329,14 @@ export class ParaControlPanel extends ParaComponent {
           ?open=${this.settings.isControlPanelDefaultOpen}
           class=${deetsState}
           tablabelmode=${tabLabelModes[this.settings.tabLabelStyle]}
-		  openbuttonarialabel="ParaCharts control panel"
+		      openbuttonarialabel="ParaCharts control panel"
           @open=${
             () => {
               this.paraChart.isControlPanelOpen = true;
               if (this.settings.caption.isCaptionExternalWhenControlPanelClosed) {
                 this._descriptionPanelRef.value!.internalizeCaptionBox();
               }
+              this.requestUpdate();
             }
           }
           @close=${
@@ -342,6 +345,7 @@ export class ParaControlPanel extends ParaComponent {
               if (this.settings.caption.isCaptionExternalWhenControlPanelClosed) {
                 this.externalizeCaptionBox();
               }
+              this.requestUpdate();
             }
           }
           @invalidvalue=${(e: CustomEvent) => this._msgDialogRef.value!.show(e.detail)}

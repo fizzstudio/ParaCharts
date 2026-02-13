@@ -33,6 +33,7 @@ import { fixed } from '../common/utils';
 import { ParaView } from '../paraview';
 import { Vec2 } from '../common/vector';
 import { Popup } from './popup';
+import { HIGHLIGHT_PADDING } from '../common';
 
 export type SnapLocation = 'start' | 'end' | 'center';
 
@@ -181,6 +182,18 @@ export class BaseView {
 
   get classInfo(): ClassInfo {
     return {};
+  }
+
+  renderHighlight() {
+    return svg`
+      <rect
+        x=${this.x - HIGHLIGHT_PADDING/2}
+        y=${this.y - HIGHLIGHT_PADDING/2}
+        width=${this.width + HIGHLIGHT_PADDING}
+        height=${this.height + HIGHLIGHT_PADDING}
+        class="view-highlight"
+      ></rect>
+    `;
   }
 
   renderChildren(): TemplateResult {

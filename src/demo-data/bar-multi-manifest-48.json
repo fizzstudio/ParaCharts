@@ -1,7 +1,10 @@
 {
   "datasets": [
     {
-      "type": "column",
+      "representation": {
+        "type": "chart",
+        "subtype": "column"
+      },
       "title": "Gross domestic product of the ASEAN countries from 2008 to 2018",
       "chartTheme": {
         "baseQuantity": "GDP",

@@ -14,6 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { BaseState, SettingObserver } from './base_state';
 import { Logger, getLogger } from '@fizz/logger';
 import papa from 'papaparse';
 import { State, property } from '@lit-app/state';
@@ -37,7 +38,7 @@ import {
 } from '@fizz/paramodel';
 import {
   Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY,
-  HighlightedSummary, Highlight,
+  HighlightedSummary, type Highlight,
   formatBox
 } from '@fizz/parasummary';
 
@@ -59,6 +60,7 @@ import { Popup } from '../view/popup';
 import { type DatapointCursor } from '../view/layers/data/navigation';
 import { Point } from '@fizz/chart-classifier-utils';
 import { PathShape } from '../view/shape';
+import { GlobalState } from './global_state';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -71,8 +73,6 @@ export interface Announcement {
   clear?: boolean;
   startFrom: number;
 }
-
-export type SettingObserver = (oldValue?: Setting, newValue?: Setting) => void;
 
 export interface BaseAnnotation {
   type: string;
@@ -121,12 +121,6 @@ export interface SparkBrailleInfo {
   isBar?: boolean;
 }
 
-export interface ParaStateCallbacks {
-  onUpdate?: () => void;
-  onNotice?: (type: string, data: any) => void;
-  onSettingChange?: (path: string, oldValue?: Setting, newValue?: Setting) => void;
-}
-
 /**
  * Convert a datapoint ID string of format `${seriesKey}-${index}` into a DatapointCursor.
  * @param id - The ID
@@ -161,10 +155,8 @@ export function makeSequenceId(seriesKey: string, index1: number, index2: number
   return `${seriesKey}-${index1}-${index2}`;
 }
 
-export class ParaState extends State {
-
+export class ParaState extends BaseState {
   readonly symbols = new DataSymbols();
-
 
   @property() dataState: DataState = 'initial';
   @property() settings!: Settings;
@@ -180,6 +172,13 @@ export class ParaState extends State {
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() frontSeries = '';
   @property() pointerCoords: Point = { x: 0, y: 0 }
+  @property() isTitleHighlighted = false;
+  @property() isHorizontalAxisHighlighted = false;
+  @property() isVerticalAxisHighlighted = false;
+  @property() isEastLegendHighlighted = false;
+  @property() isWestLegendHighlighted = false;
+  @property() isNorthLegendHighlighted = false;
+  @property() isSouthLegendHighlighted = false;
 
   @property() protected _lowlightedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
@@ -188,7 +187,7 @@ export class ParaState extends State {
   @property() protected selected = null;
   @property() protected queryLevel = 'default';
   /** `${seriesKey}-${index}` */
-  protected _visitedDatapoints = new Set<string>();
+  @property() protected _visitedDatapoints = new Set<string>();
   protected _prevVisitedDatapoints = new Set<string>();
   protected _everVisitedDatapoints = new Set<string>();
   @property() protected _highlightedDatapoints = new Set<string>();
@@ -210,7 +209,7 @@ export class ParaState extends State {
   protected _facets: FacetSignature[] | null = null;
   protected _type: ChartType = 'line';
   protected _title = '';
-  protected _seriesProperties: SeriesPropertyManager | null = null;
+  protected _seriesProperties: SeriesPropertyManager;
   protected _colors: Colors;
   protected _keymapManager = new KeymapManager(actionMap);
   protected _summarizer!: Summarizer;
@@ -218,22 +217,27 @@ export class ParaState extends State {
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected _annotID: number = 0;
   protected log: Logger = getLogger("ParaState");
-  protected callbacks: ParaStateCallbacks = {};
 
   public idList: Record<string, boolean> = {};
 
   constructor(
+    protected _globalState: GlobalState,
     protected _inputSettings: SettingsInput,
     // suppleteSettingsWith?: DeepReadonly<Settings>,
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
     pairAnalyzerConstructor?: PairAnalyzerConstructor
   ) {
     super();
-    this._createSettings();
+    this._createSettings(_inputSettings);
     this._colors = new Colors(this);
+    this._seriesProperties = new SeriesPropertyManager(this);
     this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
     this._pairAnalyzerConstructor = pairAnalyzerConstructor;
-    this._getUrlAnnotations();
+    //this._getUrlAnnotations();
+  }
+
+  get globalState() {
+    return this._globalState;
   }
 
   get settingControls() {
@@ -292,46 +296,29 @@ export class ParaState extends State {
     return this._annotID++;
   }
 
-  protected _createSettings() {
-    const hydratedSettings = SettingsManager.hydrateInput(this._inputSettings);
-    SettingsManager.suppleteSettings(hydratedSettings, defaults);
-    this.settings = hydratedSettings as Settings;
-  }
-
-  registerCallbacks(callbacks: ParaStateCallbacks) {
-    this.callbacks = { ...this.callbacks, ...callbacks };
-  }
-
-  requestUpdate() {
-    this.callbacks.onUpdate?.();
-  }
-
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
-    this.callbacks.onSettingChange?.(path, oldValue, newValue);
-  }
-
-  postNotice(key: string, value: any) {
-    this.callbacks.onNotice?.(key, value);
+  get index(): number {
+    return this._globalState.paraStates.indexOf(this);
   }
 
   setManifest(manifest: Manifest, data?: AllSeriesData) {
     this._manifest = manifest;
     const dataset = this._manifest.datasets[0];
 
-    this._createSettings();
+    this._createSettings(this._inputSettings);
 
-    if (chartTypeDefaults[dataset.type]) {
-      Object.entries(chartTypeDefaults[dataset.type]!).forEach(([path, value]) =>
+    if (chartTypeDefaults[dataset.representation.subtype]) {
+      Object.entries(chartTypeDefaults[dataset.representation.subtype]!).forEach(([path, value]) => {
         this.updateSettings(draft => {
           SettingsManager.set(path, value, draft);
-        }));
+        }, true);
+      });
     }
 
     if (dataset.settings) {
       Object.entries(dataset.settings).forEach(([path, value]) =>
         this.updateSettings(draft => {
           SettingsManager.set(path, value as Setting | undefined, draft);
-        }));
+        }, true));
       if (this.settings.color.colorMap) {
         this._colors.setColorMap(...this.settings.color.colorMap.split(',').map(c => c.trim()));
       }
@@ -342,11 +329,11 @@ export class ParaState extends State {
 
     this.seriesAnalyses = {};
 
-    this._type = dataset.type;
+    this._type = dataset.representation.subtype;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
     if (dataset.data.source === 'inline') {
-      if (isPastryType(dataset.type) || isVennType(dataset.type)) {
+      if (isPastryType(this._type) || isVennType(this._type)) {
         this._model = modelFromInlineData(manifest);
       } else {
         this._model = planeModelFromInlineData(
@@ -358,10 +345,11 @@ export class ParaState extends State {
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
-      this._seriesProperties = new SeriesPropertyManager(this);
+      //this._seriesProperties = new SeriesPropertyManager(this);
+      this._seriesProperties.reset();
       this.data = dataFromManifest(manifest);
     } else if (data) {
-      if (isPastryType(dataset.type) || isVennType(dataset.type)) {
+      if (isPastryType(this._type) || isVennType(this._type)) {
         this._model = modelFromExternalData(data, manifest);
       } else {
         this._model = planeModelFromExternalData(
@@ -371,7 +359,8 @@ export class ParaState extends State {
           this._pairAnalyzerConstructor
         );
       }
-      this._seriesProperties = new SeriesPropertyManager(this);
+      //this._seriesProperties = new SeriesPropertyManager(this);
+      this._seriesProperties.reset();
       this.data = data;
     } else {
       throw new Error('store lacks external or inline chart data');
@@ -385,65 +374,6 @@ export class ParaState extends State {
       });
     }
     this.postNotice('paranotice', {key: 'manifestSet'});
-  }
-
-  updateSettings(updater: (draft: Settings) => void, ignoreObservers = false) {
-    const [newSettings, patches, inversePatches] = produceWithPatches(this.settings, updater);
-    this.settings = newSettings;
-    if (ignoreObservers) {
-      return;
-    }
-    const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
-    for (const patch of patches) {
-      if (patch.op !== 'replace') {
-        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
-        continue;
-      }
-      observed[patch.path.join('.')] = { newValue: patch.value };
-    }
-    for (const patch of inversePatches) {
-      if (patch.op !== 'replace') {
-        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
-        continue;
-      }
-      observed[patch.path.join('.')].oldValue = patch.value;
-    }
-    for (const [path, values] of Object.entries(observed)) {
-      this._settingObservers[path]?.forEach(observer =>
-        observer(values.oldValue, values.newValue)
-      );
-      this.settingDidChange(path, values.oldValue, values.newValue);
-    }
-  }
-
-  observeSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
-    if (!this._settingObservers[path]) {
-      this._settingObservers[path] = [];
-    }
-    if (this._settingObservers[path].includes(observer)) {
-      throw new Error(`observer already registered for setting '${path}'`);
-    }
-    this._settingObservers[path].push(observer);
-  }
-
-  observeSettings(paths: string[], observer: (oldValue: Setting, newValue: Setting) => void) {
-    for (let path of paths) {
-      this.observeSetting(path, observer);
-    }
-  }
-
-  unobserveSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
-    if (!this._settingObservers[path]) {
-      throw new Error(`no observers for setting '${path}'`);
-    }
-    const idx = this._settingObservers[path].indexOf(observer);
-    if (idx === -1) {
-      throw new Error(`observer not registered for setting '${path}'`);
-    }
-    this._settingObservers[path].splice(idx, 1);
-    if (this._settingObservers[path].length === 0) {
-      delete this._settingObservers[path];
-    }
   }
 
   lowlightSeries(seriesKey: string) {
@@ -527,7 +457,6 @@ export class ParaState extends State {
 
     if (this.settings.ui.isAnnouncementEnabled) {
       this.announcement = { text: announcement, html, highlights, clear: clearAriaLive, startFrom };
-      this.log.info('ANNOUNCE:', this.announcement.text);
     }
   }
 
@@ -565,7 +494,7 @@ export class ParaState extends State {
     }
     // NB: Making _visitedDatapoints a lit-app/state property proved
     // problematic for performance
-    this.requestUpdate();
+    //this.requestUpdate();
   }
 
   protected _datapointSetHas(

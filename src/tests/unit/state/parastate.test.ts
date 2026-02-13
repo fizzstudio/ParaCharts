@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ParaState, datapointIdToCursor, makeDatapointId, makeSequenceId } from '../../../../lib/state/parastate';
+import { GlobalState } from '../../../../lib/state';
 
 describe('ParaState', () => {
 
@@ -21,22 +22,28 @@ describe('ParaState', () => {
   });
 
   describe('Initialization', () => {
+    let globalState: GlobalState;
+
+    beforeEach(() => {
+      globalState = new GlobalState({});
+    });
+
     it('should initialize with minimal settings', () => {
-      const state = new ParaState({});
+      const state = new ParaState(globalState, {});
       expect(state).toBeDefined();
       expect(state.settings).toBeDefined();
       expect(state.dataState).toBe('initial');
     });
 
     it('should initialize with custom settings', () => {
-      const state = new ParaState({
+      const state = new ParaState(globalState, {
         'chart.size.width': 1024
       });
       expect(state.settings.chart?.size?.width).toBe(1024);
     });
 
     it('should register callbacks', () => {
-      const state = new ParaState({});
+      const state = new ParaState(globalState, {});
       const onUpdate = vi.fn();
       const onNotice = vi.fn();
 
@@ -54,7 +61,7 @@ describe('ParaState', () => {
     let state: ParaState;
 
     beforeEach(() => {
-      state = new ParaState({});
+      state = new ParaState(new GlobalState({}), {});
     });
 
     it('should update settings using valid path', () => {
@@ -124,7 +131,7 @@ describe('ParaState', () => {
     let state: ParaState;
 
     beforeEach(() => {
-      state = new ParaState({});
+      state = new ParaState(new GlobalState({}), {});
     });
 
     it('should lowlight a series', () => {
@@ -157,7 +164,7 @@ describe('ParaState', () => {
     let state: ParaState;
 
     beforeEach(() => {
-      state = new ParaState({});
+      state = new ParaState(new GlobalState({}), {});
     });
 
     it('should hide a series', () => {
@@ -190,7 +197,7 @@ describe('ParaState', () => {
     let state: ParaState;
 
     beforeEach(() => {
-      state = new ParaState({});
+      state = new ParaState(new GlobalState({}), {});
     });
 
     it('should highlight a datapoint', () => {
@@ -226,7 +233,7 @@ describe('ParaState', () => {
     let state: ParaState;
 
     beforeEach(() => {
-      state = new ParaState({});
+      state = new ParaState(new GlobalState({}), {});
     });
 
     it('should highlight a sequence', () => {
@@ -253,7 +260,7 @@ describe('ParaState', () => {
     let state: ParaState;
 
     beforeEach(() => {
-      state = new ParaState({});
+      state = new ParaState(new GlobalState({}), {});
     });
 
     it('should highlight a range', () => {
@@ -276,7 +283,7 @@ describe('ParaState', () => {
     let state: ParaState;
 
     beforeEach(() => {
-      state = new ParaState({});
+      state = new ParaState(new GlobalState({}), {});
     });
 
     it('should announce a string message', () => {
@@ -329,7 +336,7 @@ describe('ParaState', () => {
     let state: ParaState;
 
     beforeEach(() => {
-      state = new ParaState({});
+      state = new ParaState(new GlobalState({}), {});
     });
 
     it('should remove popup by id', () => {
