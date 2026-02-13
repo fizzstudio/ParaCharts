@@ -18,23 +18,15 @@ If a property contains nested object properties, they are shown in a separate
 subsection immediately after the parent property.
 
 
-### `datasets.type` — nested properties
+### `datasets.representation` — nested properties
 
-The property at `datasets.type` is an object or array. It contains the following
+The property at `datasets.representation` is an object or array. It contains the following
 sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-| `type` | `enum(line,stepline,bar,column,lollipop,histogram,waterfall,scatter,heatmap,pie,donut,graph,venn)` | Yes | The type of the chart, such as 'line' or 'column'. |
-| `title` | `string` | Yes | The name of something, as a non-empty string. |
-| `subtitle` | `string` | No | The name of something, as a non-empty string. |
-| `description` | `string` | No | The name of something, as a non-empty string. |
-| `chartTheme` | `object` | No | The topic of a series or chart. |
-| `facets` | `object` | Yes | Metadata describing each facet of the chart which represents some dimension of the data. |
-| `series` | `array` | Yes | Metadata, and possibly inline data, describing the series of the chart. |
-| `seriesRelations` | `enum(stacked,grouped)` | No | How series are related to each other in multi-series bar family charts. Defaults to 'stacked'. |
-| `data` | `object` | Yes | The source for the data of a dataset. |
-| `settings` | `object` | No | The settings needed to present a chart in ParaCharts. |
+| `type` | `object` | Yes | The type of the visualization, which is always 'chart'. |
+| `subtype` | `enum(line,stepline,bar,column,lollipop,histogram,waterfall,scatter,heatmap,pie,donut,graph,venn)` | Yes | The type of the chart, such as 'line' or 'column'. |
 
 
 ### `datasets.title` — nested properties
@@ -44,7 +36,7 @@ sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-| `type` | `enum(line,stepline,bar,column,lollipop,histogram,waterfall,scatter,heatmap,pie,donut,graph,venn)` | Yes | The type of the chart, such as 'line' or 'column'. |
+| `representation` | `object` | Yes | In what form the data is presented in the ParaChart element. |
 | `title` | `string` | Yes | The name of something, as a non-empty string. |
 | `subtitle` | `string` | No | The name of something, as a non-empty string. |
 | `description` | `string` | No | The name of something, as a non-empty string. |
@@ -63,7 +55,7 @@ sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-| `type` | `enum(line,stepline,bar,column,lollipop,histogram,waterfall,scatter,heatmap,pie,donut,graph,venn)` | Yes | The type of the chart, such as 'line' or 'column'. |
+| `representation` | `object` | Yes | In what form the data is presented in the ParaChart element. |
 | `title` | `string` | Yes | The name of something, as a non-empty string. |
 | `subtitle` | `string` | No | The name of something, as a non-empty string. |
 | `description` | `string` | No | The name of something, as a non-empty string. |
@@ -82,7 +74,7 @@ sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-| `type` | `enum(line,stepline,bar,column,lollipop,histogram,waterfall,scatter,heatmap,pie,donut,graph,venn)` | Yes | The type of the chart, such as 'line' or 'column'. |
+| `representation` | `object` | Yes | In what form the data is presented in the ParaChart element. |
 | `title` | `string` | Yes | The name of something, as a non-empty string. |
 | `subtitle` | `string` | No | The name of something, as a non-empty string. |
 | `description` | `string` | No | The name of something, as a non-empty string. |
@@ -105,7 +97,7 @@ sub-properties:
 | `baseKind` | `enum(number,dimensioned,rate,proportion)` | Yes | What kind of base quantity this is: either a number of things (number), a quantity measured by a unit (dimensioned), a rate of change (rate), or a proportion of a whole (proportion). |
 | `locale` | `object` | No | Either the name of a single thing, as a non-empty string, or multiple things, as an array of names. |
 | `entity` | `object` | No | Either the name of a single thing, as a non-empty string, or multiple things, as an array of names. |
-| `items` | `string` | No | The name of something, as a non-empty string. |
+| `items` | `object` | No | Either the name of a single thing, as a non-empty string, or multiple things, as an array of names. |
 | `aggregate` | `object` | No | Either the name of a single thing, as a non-empty string, or multiple things, as an array of names. |
 
 
@@ -116,7 +108,7 @@ sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-| `type` | `enum(line,stepline,bar,column,lollipop,histogram,waterfall,scatter,heatmap,pie,donut,graph,venn)` | Yes | The type of the chart, such as 'line' or 'column'. |
+| `representation` | `object` | Yes | In what form the data is presented in the ParaChart element. |
 | `title` | `string` | Yes | The name of something, as a non-empty string. |
 | `subtitle` | `string` | No | The name of something, as a non-empty string. |
 | `description` | `string` | No | The name of something, as a non-empty string. |
@@ -148,7 +140,7 @@ sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-| `type` | `enum(line,stepline,bar,column,lollipop,histogram,waterfall,scatter,heatmap,pie,donut,graph,venn)` | Yes | The type of the chart, such as 'line' or 'column'. |
+| `representation` | `object` | Yes | In what form the data is presented in the ParaChart element. |
 | `title` | `string` | Yes | The name of something, as a non-empty string. |
 | `subtitle` | `string` | No | The name of something, as a non-empty string. |
 | `description` | `string` | No | The name of something, as a non-empty string. |
