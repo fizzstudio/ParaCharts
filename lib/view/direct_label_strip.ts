@@ -229,7 +229,7 @@ class LineLabelLeader extends View {
   constructor(paraview: ParaView, protected _seriesKey: string, label: Label, pointY: number) {
     super(paraview);
     this._endX = this.paraview.paraState.settings.type.line.leaderLineLength;
-    this._endY = label.y - label.locOffset.y/2;
+    this._endY = label.y - label.height / 4;
     this._lineD = fixed`
       M${0},${pointY}
       L${this._endX},${this._endY}`;

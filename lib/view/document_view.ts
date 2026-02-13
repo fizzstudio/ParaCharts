@@ -302,18 +302,6 @@ export class DocumentView extends Container(View) {
       this._populate();
       //this.paraview.requestUpdate();
     }
-    if (path == 'ui.isFullscreenEnabled') {
-      if (['donut', 'pie'].includes(this._paraState.type)) {
-        const delayedUpdate = () => {
-          setTimeout(() => {
-            this.updateSize();
-            this._populate();
-          }, 60);
-        };
-        delayedUpdate();
-      }
-
-    }
     super.settingDidChange(path, oldValue, newValue);
   }
 
@@ -421,6 +409,7 @@ export class DocumentView extends Container(View) {
       classList: ['chart-title'],
       text: this._titleText,
       wrapWidth: this._width,
+      textAnchor: 'middle',
       justify: align
     });
     const isTop = this._paraState.settings.chart.title.position === 'top';

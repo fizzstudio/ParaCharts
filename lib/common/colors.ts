@@ -409,6 +409,10 @@ export class Colors {
             value: 'hsl(210, 25%, 25%)'
           },
           {
+            value: 'cyan',
+            name: 'highlight'
+          },
+          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
