@@ -533,6 +533,26 @@ export class ParaView extends ParaComponent {
         }, true);
       }
     }
+    if (this.documentView) {
+      const delayedUpdate = () => {
+        setTimeout(() => {
+          const newWidth = (window.innerWidth / window.innerHeight) * this._paraState.settings.chart.size.height;
+          if (this._isFullscreen) {
+            this._paraState.updateSettings(draft => {
+              this._modeSaved.set('chart.size.width', draft.chart.size.width);
+              draft.chart.size.width = newWidth;
+            }, true);
+          } else {
+            this._paraState.updateSettings(draft => {
+              draft.chart.size.width = this._modeSaved.get('chart.size.width');
+              this._modeSaved.delete('chart.size.width');
+            }, true);
+          }
+          this.createDocumentView();
+        }, 40);
+      };
+      delayedUpdate();
+    }
   }
 
   protected _handleLowVisionMode(newValue?: Setting) {
@@ -560,6 +580,7 @@ export class ParaView extends ParaComponent {
         this._exitingLowVisionMode = true;
         draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
         draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
+        draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
         this._modeSaved.delete('animation.isAnimationEnabled');
         this._modeSaved.delete('chart.fontScale');
         this._modeSaved.delete('grid.isDrawVertLines');
@@ -567,9 +588,9 @@ export class ParaView extends ParaComponent {
     });
     if (this._exitingLowVisionMode) {
       queueMicrotask(() => {
-        this._paraState.updateSettings(draft => {
-          draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
-        });
+        //this._paraState.updateSettings(draft => {
+
+        //});
         this._exitingLowVisionMode = false;
       });
     }
@@ -930,7 +951,7 @@ export class ParaView extends ParaComponent {
         @pointerup=${(ev: PointerEvent) => this._pointerEventManager?.handleEnd(ev)}
         @pointercancel=${(ev: PointerEvent) => this._pointerEventManager?.handleCancel(ev)}
         @pointermove=${(ev: PointerEvent) => this._pointerEventManager?.handleMove(ev)}
-        @pointerleave=${(ev: PointerEvent) => !isPointerInbounds(this, ev) ? this.requestUpdate() : undefined}
+        @pointerleave=${(ev: PointerEvent) => this.requestUpdate()}
         @click=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleClick(ev)}
         @dblclick=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleDoubleClick(ev)}
       >
@@ -961,7 +982,7 @@ export class ParaView extends ParaComponent {
           y="0"
           width="100%"
           height="100%"
-          @pointerleave=${(ev: PointerEvent) => {this.paraState.clearPopups()}}
+          @pointerleave=${(ev: PointerEvent) => { this.paraState.clearPopups() }}
         >
         </rect>
         ${this._paraState.model ? (this._documentView?.render() ?? '') : ''}

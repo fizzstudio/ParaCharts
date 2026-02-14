@@ -27,10 +27,9 @@ import { DirectLabelStrip } from './direct_label_strip';
 import { type LinePlotView } from './layers';
 import { type ParaView } from '../paraview';
 import { AxisInfo, AxisLabelInfo } from '../common';
-
 import { svg } from 'lit';
 
-export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
+export type Legends = Partial<{ [dir in CardinalDirection]: Legend }>;
 
 /**
  * Root of the view hierarchy.
@@ -59,12 +58,12 @@ export class DocumentView extends Container(View) {
 
   init() {
     // @ts-ignore
-	  this._chartInfo = new chartInfoClasses[this.type](this.type, this.paraview);
+    this._chartInfo = new chartInfoClasses[this.type](this.type, this.paraview);
     this.setTitleText(this._paraState.title);
 
     const expandedPadding = this._parsePadding(this._paraState.settings.chart.padding);
     // XXX temp hack for cpanel icon
-    const leftPad = Math.max(8 + 1.1*16, expandedPadding.left);
+    const leftPad = Math.max(8 + 1.1 * 16, expandedPadding.left);
     this.padding = {
       left: leftPad,
       right: expandedPadding.right,
@@ -210,7 +209,7 @@ export class DocumentView extends Container(View) {
     // XXX Change this method to set axis.titleText
     this._titleText = this._paraState.title
       ?? this._paraState.settings.chart.title.text;
-      //?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;
+    //?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;
 
     const plotWidth = this._width
       - (this._vertAxis?.width ?? 0)
@@ -286,7 +285,7 @@ export class DocumentView extends Container(View) {
     return this._paraState.settings.chart.hasDirectLabels
       && this.type === 'line'
       && /*this._chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
-        this._paraState.model!.multi;
+      this._paraState.model!.multi;
   }
 
   protected get _shouldAddLegend(): boolean {
@@ -411,6 +410,7 @@ export class DocumentView extends Container(View) {
       classList: ['chart-title'],
       text: this._titleText,
       wrapWidth: this._width,
+      textAnchor: 'middle',
       justify: align
     });
     const isTop = this._paraState.settings.chart.title.position === 'top';
@@ -437,6 +437,10 @@ export class DocumentView extends Container(View) {
     } else {
       this._titleLabel.centerX = this.centerX;
     }
+  }
+
+  removeTitle() {
+    this._titleLabel?.remove();
   }
 
   protected _childDidResize(_kid: View) {
