@@ -138,8 +138,8 @@ export class ParaChart extends ParaComponent {
     });
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
-        resolve();
         await initParaSummary();
+        resolve();
         // It's now safe to load a manifest
         // In headless mode, loadManifest() handles loading via willUpdate, so skip here
         if (this.manifest && !this.headless) {

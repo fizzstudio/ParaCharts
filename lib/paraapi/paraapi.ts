@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { type Datapoint } from '@fizz/paramodel';
 
-import { ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
+import { ORIENTATION_SENTENCES, PASTRY_ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
 import { Direction, makeSequenceId, Setting, SettingsManager } from '../state';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
@@ -276,7 +276,11 @@ export class ParaAPI {
   }
 
   async getAltText(): Promise<string | undefined> {
-    const summary = await this.paraChart.paraView.documentView!.chartInfo.summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
+    const chartType = this._paraChart.paraState.type;
+    const orientationSentences = ['pie', 'donut', 'gauge'].includes(chartType) 
+      ? PASTRY_ORIENTATION_SENTENCES 
+      : ORIENTATION_SENTENCES;
+    const summary = await this.paraChart.paraView.documentView!.chartInfo.summarizer.getRequestedSummaries(orientationSentences);
     return summary?.text;
   }
 
