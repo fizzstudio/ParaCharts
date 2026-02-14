@@ -5,13 +5,26 @@ import papa from 'papaparse';
 import { getLogger } from '@fizz/logger';
 import { concatenateSeriesLabels } from './common';
 
+/**
+ * Type of data source
+ * @public
+ */
 export type SourceKind = 'fizz-chart-data' | 'url' | 'content';
 
+/**
+ * Metadata for a field in a data set
+ * @public
+ */
 export type FieldInfo = {
   name: string;
   type: Datatype;
 };
 
+/**
+ * The result of parsing a CSV file.
+ * Contains both the raw data rows and the information about each field.
+ * @public
+ */
 export type CSVParseResult = {
   data: Record<string, string>[];
   fields: FieldInfo[];
@@ -19,6 +32,7 @@ export type CSVParseResult = {
 
 /**
  * Error codes for loader errors.
+ * @public
  */
 export enum LoadErrorCode {
   NETWORK_ERROR = 'NETWORK_ERROR',
@@ -31,6 +45,7 @@ export enum LoadErrorCode {
 
 /**
  * Error thrown by loader functions.
+ * @public
  */
 export class LoadError extends Error {
   constructor(
@@ -45,8 +60,9 @@ export class LoadError extends Error {
 /**
  * Parse CSV text into structured data with field information.
  * @param csvText - Raw CSV content
- * @returns Parse result with data and field info
- * @throws {LoadError} If CSV parsing fails or returns no data
+ * @returns Parse result containing an array of records (key-value pairs) and field info
+ * @throws LoadError If CSV parsing fails or returns no data
+ * @public
  */
 export function parseCSV(csvText: string): CSVParseResult {
   const result = papa.parse<Record<string, string>>(csvText, {
@@ -162,6 +178,10 @@ function extractFieldInfo(data: Record<string, string>[]): FieldInfo[] {
   }));
 }
 
+/**
+ * Represents the data loaded from a source, including the manifest and optional series data.
+ * @public
+ */
 export type LoadedData = {
   manifest: Manifest;
   data?: AllSeriesData;
@@ -175,6 +195,7 @@ const CHART_DATA_MODULE_PREFIX = './node_modules/@fizz/chart-data/data/';
  * @param manifestInput - Manifest content or path
  * @returns Parsed manifest
  * @throws {LoadError} If manifest loading or parsing fails
+ * @internal
  */
 async function loadManifest(
   kind: SourceKind,
@@ -210,6 +231,7 @@ async function loadManifest(
  * @param manifest - Manifest to modify
  * @param chartType - Optional chart type override
  * @param description - Optional description override
+ * @internal
  */
 function applyManifestOverrides(
   manifest: Manifest,
@@ -237,6 +259,7 @@ const log = getLogger('ParaLoader');
  * @param description - Optional description override
  * @returns Loaded manifest and optional external data
  * @throws {LoadError} If loading or processing fails
+ * @public
  */
 export async function load(
   kind: SourceKind,
@@ -262,8 +285,10 @@ export async function load(
   return { manifest, data };
 }
 
+/** @public */
 export type CsvDataType = 'string' | 'number' | 'date';
 
+/** @public */
 export interface CsvInferredDefaults {
   chartTitle: string;
   xAxis: {
@@ -340,6 +365,7 @@ function inferColumnDataType(values: string[], header: string): CsvDataType {
   return 'string';
 }
 
+/** @public */
 export function inferDefaultsFromCsvText(csvText: string, fileName?: string): CsvInferredDefaults {
   const lines = csvText.split('\n').filter(line => line.trim());
 
@@ -374,8 +400,10 @@ export function inferDefaultsFromCsvText(csvText: string, fileName?: string): Cs
   };
 }
 
+/** @public */
 export type ChartTypeInput = 'line' | 'horizontal_bar' | 'vertical_bar' | 'pie' | 'donut';
 
+/** @public */
 export interface ManifestBuilderInput {
   csvText: string;
   chartType: ChartTypeInput;
@@ -394,6 +422,7 @@ export interface ManifestBuilderInput {
  * 
  * @param input - Chart configuration including CSV text, type, and axis settings
  * @returns A Manifest object ready to be loaded by ParaHeadless
+ * @public
  */
 export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
   const { csvText, chartType, chartTitle, xAxis, yAxis } = input;
