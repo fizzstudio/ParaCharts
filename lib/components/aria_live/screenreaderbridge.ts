@@ -54,8 +54,7 @@ export class ScreenReaderBridge {
    * For the aria-live attribute, "polite" may also work, but that will create a queue of messages for the screen
    * reader to read out one after another which is probably not what you want.
    * @param element - the "caption" element which will host the messages for the screen reader to speak
-   * @param [ariaLive] - the politeness of the aria-live attribute, one of "off", "assertive", or "polite"
-   * @static
+   * @param ariaLive - Optional. The politeness of the aria-live attribute, one of "off", "assertive", or "polite"
    */
   public static addAriaAttributes(
     element: HTMLElement,
@@ -119,7 +118,7 @@ export class ScreenReaderBridge {
    * Pad the provided text with the padding character.
    * Padding the text tricks screen readers into speaking it, even if they think it should be suppressed.
    * @param text - the text to pad
-   * @private
+   * @internal
    */
   private _createPaddedText(text: string): string {
     let padding = '';
@@ -136,7 +135,7 @@ export class ScreenReaderBridge {
    * Remove any hidden elements that were hidden longer than the set milliseconds.
    * We wait to remove those elements even though they are hidden because some screen readers don't like the DOM
    * changing that much.
-   * @private
+   * @internal
    */
   private _removeOldElements(): void {
     // Remove old elements or add them to a list if they are too young.

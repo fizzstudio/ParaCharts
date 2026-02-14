@@ -51,6 +51,7 @@ import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramo
 import { initParaSummary } from '@fizz/parasummary';
 
 // NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
+/** @public */
 export class ParaChart extends ParaComponent {
   @property({ type: Boolean }) headless = false;
   @property() accessor manifest = '';

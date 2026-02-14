@@ -38,16 +38,29 @@ export type SettingGroup = {[key: string]: Setting | SettingGroup | undefined};
  */
 export type SettingsInput = {[path: string]: Setting};
 
-/** Color vision deficiency simulation options */
+/** Color vision deficiency simulation options
+ * @public
+ */
 export type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
-/** Control panel tab label display style */
+
+/** Control panel tab label display style
+ * @public
+ */
 export type TabLabelStyle = 'icon' | 'iconLabel' | 'label';
-/** Which axis to animate along during chart reveal */
+
+/** Which axis to animate along during chart reveal
+ * @public
+ */
 export type AnimationType = 'yAxis' | 'xAxis' | 'none';
-/** Starting point for chart animations */
+
+/** Starting point for chart animations
+ * @public
+ */
 export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
 
-/** Visual styling for boxes and containers */
+/** Visual styling for boxes and containers
+ * @public
+ */
 export type BoxStyle = {
   /** Border color */
   outline: Color;
@@ -195,7 +208,9 @@ export interface LabelSettings extends SettingGroup {
   color: Color; // NOTE: not yet implemented
 }
 
-/** SVG viewBox dimensions for chart viewport */
+/** SVG viewBox dimensions for chart viewport
+ * @public
+ */
 export interface ViewBox extends SettingGroup {
   /** X coordinate of top-left corner */
   x: number;
@@ -207,11 +222,22 @@ export interface ViewBox extends SettingGroup {
   height: number;
 }
 
+/** @public */
 export type VertDirection = 'up' | 'down';
+
+/** @public */
 export type HorizDirection = 'left' | 'right';
+
+/** @public */
 export type PlaneDirection = VertDirection | HorizDirection;
+
+/** @public */
 export type DepthDirection = 'in' | 'out';
+
+/** @public */
 export type Direction = VertDirection | HorizDirection | DepthDirection;
+
+/** @public */
 export const directions: Direction[] = ['up', 'down', 'left', 'right', 'in', 'out'];
 
 /** @public */
@@ -269,7 +295,9 @@ export interface ChartSettings extends SettingGroup {
   isShowPopups: boolean;
 }
 
-/** Developer and debugging settings */
+/** Developer and debugging settings
+ * @public
+ */
 export interface DevSettings extends SettingGroup {
   /** Enable debug mode with additional logging */
   isDebug: boolean;
@@ -277,7 +305,9 @@ export interface DevSettings extends SettingGroup {
   isShowGridTerritories: boolean;
 }
 
-/** Format for label display - 'raw' for unformatted or format string */
+/** Format for label display - 'raw' for unformatted or format string
+ * @public
+ */
 export type LabelFormat = 'raw' | string;
 
 /** @public */
@@ -356,7 +386,9 @@ export interface AxisTitleSettings extends SettingGroup {
   position?: 'top' | 'bottom';
 }
 
-/** Settings for horizontal or vertical axis orientation */
+/** Settings for horizontal or vertical axis orientation
+ * @public
+ */
 export interface OrientedAxisSettings<T extends AxisOrientation> extends SettingGroup {
   /** Enable drawing this axis */
   isDrawAxis: boolean;
@@ -380,11 +412,15 @@ export interface OrientedAxisSettings<T extends AxisOrientation> extends Setting
   isWrapLabels: boolean;
 }
 
-/** X-axis specific settings */
+/** X-axis specific settings
+ * @public
+ */
 export interface XAxisSettings extends AxisSettings {
 
 }
-/** Y-axis specific settings */
+/** Y-axis specific settings
+ * @public
+ */
 export interface YAxisSettings extends AxisSettings {
 }
 
@@ -404,7 +440,9 @@ export interface AxesSettings extends SettingGroup {
   vert: OrientedAxisSettings<'vert'>;
 }
 
-/** Order for legend items */
+/** Order for legend items
+ * @public
+ */
 export type LegendItemOrder = 'alphabetical' | 'series';
 
 /** @public */
@@ -433,13 +471,17 @@ export interface LegendSettings extends SettingGroup {
   fontSize: string;
 }
 
-/** Plot area dimensions */
+/** Plot area dimensions
+ * @public
+ */
 export interface PlotAreaSettings extends SettingGroup {
   /** Size of the plot area */
   size: Size2d;
 }
 
-/** Popup tooltip settings */
+/** Popup tooltip settings
+ * @public
+ */
 export interface PopupSettings extends SettingGroup {
   /** Background opacity (0-1) */
   opacity: number;
@@ -470,11 +512,15 @@ export interface PopupSettings extends SettingGroup {
 
 }
 
-/** Base settings for plot-based charts */
+/** Base settings for plot-based charts
+ * @public
+ */
 export interface PlotSettings extends SettingGroup {
 }
 
-/** Settings for 2D plane charts with X/Y axes */
+/** Settings for 2D plane charts with X/Y axes
+ * @public
+ */
 export interface PlaneChartSettings extends PlotSettings {
   /** Minimum Y value override */
   minYValue: number | 'unset';
@@ -482,9 +528,14 @@ export interface PlaneChartSettings extends PlotSettings {
   maxYValue: number | 'unset';
 }
 
-/** How to cluster bar data */
+/** How to cluster bar data
+ * @public
+ */
 export type BarClusterMode = 'facet';
-/** Position for data value labels on bars */
+
+/** Position for data value labels on bars
+ * @public
+ */
 export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
 
 /** @public */
@@ -529,7 +580,9 @@ export interface BarSettings extends PlaneChartSettings {
   labelFontSize: string;
 }
 
-/** Lollipop chart settings (extends bar settings) */
+/** Lollipop chart settings (extends bar settings)
+ * @public
+ */
 export interface LollipopSettings extends BarSettings {
 }
 
@@ -633,7 +686,9 @@ export interface HeatmapSettings extends PointSettings {
   resolution: number;
 }
 
-/** Histogram chart settings */
+/** Histogram chart settings
+ * @public
+ */
 export interface HistogramSettings extends PointSettings {
   /** Number of bins for grouping data */
   bins: number;
@@ -647,7 +702,9 @@ export interface HistogramSettings extends PointSettings {
 
 // export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
-/** Settings for labels outside radial charts */
+/** Settings for labels outside radial charts
+ * @public
+ */
 export interface RadialOutsideLabelSettings extends SettingGroup {
   /** Vertical gap between labels */
   vertGap: number;
@@ -667,7 +724,9 @@ export interface RadialOutsideLabelSettings extends SettingGroup {
   contents: string;
 }
 
-/** Settings for labels inside radial charts */
+/** Settings for labels inside radial charts
+ * @public
+ */
 export interface RadialInsideLabelSettings extends SettingGroup {
   /** Label value format */
   format: LabelFormat;
@@ -699,7 +758,9 @@ export interface RadialSettings extends SettingGroup {
   explodeDistance: number;
 }
 
-/** Chart type-specific settings collection */
+/** Chart type-specific settings collection
+ * @public
+ */
 export interface ChartTypeSettings extends SettingGroup {
   /** Bar chart settings */
   bar: BarSettings;
@@ -729,13 +790,17 @@ export interface ChartTypeSettings extends SettingGroup {
   venn: VennSettings
 }
 
-/** Navigation assistance settings (JIM - Jaws Integrated Mode) */
+/** Navigation assistance settings (JIM - Jaws Integrated Mode)
+ * @public
+ */
 export interface JimSettings extends SettingGroup {
   /** Format for X-axis values */
   xValueFormat: LabelFormat;
 }
 
-/** Data table display settings */
+/** Data table display settings
+ * @public
+ */
 export interface DataTableSettings extends SettingGroup {
   /** Format for X-axis values in table */
   xValueFormat: LabelFormat;
@@ -743,16 +808,29 @@ export interface DataTableSettings extends SettingGroup {
   yValueFormat: LabelFormat;
 }
 
-/** Chart types that display individual points */
+/** Chart types that display individual points
+ * @public
+ */
 export type PointChartType = 'line' | 'stepline' | 'scatter';
-/** Chart types that use X/Y coordinate system */
+
+/** Chart types that use X/Y coordinate system
+ * @public
+ */
 export type XYChartType = 'bar' | 'lollipop' | PointChartType;
-/** Chart types that use radial/circular layout */
+
+/** Chart types that use radial/circular layout
+ * @public
+ */
 export type RadialChartType = 'pie' | 'donut' | 'gauge';
-/** All supported chart types */
+
+/** All supported chart types
+ * @public
+ */
 export type ChartType = XYChartType | RadialChartType;
 
-/** Grid line display settings */
+/** Grid line display settings
+ * @public
+ */
 export interface GridSettings extends SettingGroup {
   /** Draw horizontal grid lines */
   isDrawHorizLines: boolean;
@@ -764,16 +842,22 @@ export interface GridSettings extends SettingGroup {
   isDrawVertAxisOppositeLine: boolean;
 }
 
-/** Status bar display settings */
+/** Status bar display settings
+ * @public
+ */
 export interface StatusBarSettings extends SettingGroup {
   /** Format for status bar values */
   valueFormat: LabelFormat;
 }
 
-/** Audio feedback playback speeds */
+/** Audio feedback playback speeds
+ * @public
+ */
 export type riffSpeeds = 'slow' | 'medium' | 'fast';
 
-/** Audio sonification settings */
+/** Audio sonification settings
+ * @public
+ */
 export interface SonificationSettings extends SettingGroup {
   /** Enable sonification audio feedback */
   isSoniEnabled: boolean;
@@ -795,7 +879,9 @@ export interface SonificationSettings extends SettingGroup {
   isArpeggiateChords: boolean;
 }
 
-/** Scrollytelling narrative mode settings */
+/** Scrollytelling narrative mode settings
+ * @public
+ */
 export interface ScrollytellingSettings extends SettingGroup {
   /** Enable scrollytelling mode */
   isScrollytellingEnabled: boolean;
@@ -805,7 +891,9 @@ export interface ScrollytellingSettings extends SettingGroup {
   isScrollySoniEnabled: boolean;
 }
 
-/** Complete settings configuration for ParaCharts */
+/** Complete settings configuration for ParaCharts
+ * @public
+ */
 export interface Settings extends SettingGroup {
   /** Chart display and behavior settings */
   chart: ChartSettings;
@@ -843,6 +931,7 @@ export interface Settings extends SettingGroup {
   dev: DevSettings;
 }
 
+/** @public */
 export type DeepReadonly<T> = {
   readonly [Property in keyof T]: T extends Setting ? T[Property] : DeepReadonly<T[Property]>;
 };
@@ -852,7 +941,10 @@ export type DeepReadonly<T> = {
  * @public
  */
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
-// Settings that control the format for each context
+
+/** Settings that control the format for each context
+ * @public
+ */
 export const FORMAT_CONTEXT_SETTINGS = {
   horizTick: 'axis.horiz.ticks.labelFormat',
   vertTick: 'axis.vert.ticks.labelFormat',

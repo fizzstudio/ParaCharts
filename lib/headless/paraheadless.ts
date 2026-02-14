@@ -1,22 +1,28 @@
 import { ParaChart } from '../parachart/parachart';
 import { type SourceKind, type FieldInfo, LoadError, LoadErrorCode, parseCSV, type CsvDataType } from '../loader/paraloader';
 
+/** @public */
 export { FieldInfo, LoadError, LoadErrorCode, CsvDataType };
 
+/** @public */
 export { type Manifest } from '@fizz/paramanifest';
 
+/** @public */
 export type LoadManifestSuccess = {
   success: true;
 };
 
+/** @public */
 export type LoadManifestFailure = {
   success: false;
   errorCode: LoadErrorCode;
   message: string;
 };
 
+/** @public */
 export type LoadManifestResult = LoadManifestSuccess | LoadManifestFailure;
 
+/** @public */
 export class ParaHeadless {
 
   protected _paraChart!: ParaChart;
