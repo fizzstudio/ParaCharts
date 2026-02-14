@@ -393,6 +393,10 @@ export class ParaView extends ParaComponent {
     });
   }
 
+  rejectJimReady() {
+    this._jimReadyRejector();
+  }
+
   get pointerEventManager() {
     return this._pointerEventManager;
   }
