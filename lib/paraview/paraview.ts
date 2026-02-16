@@ -104,8 +104,8 @@ export class ParaView extends ParaComponent {
         fill: lightgray;
       }
       #frame.explainer {
-        fill: floralwhite;
-        stroke: burlywood;
+        fill: aliceblue;
+        stroke: cornflowerblue;
         stroke-width: 2;
       }
       .darkmode {
@@ -167,10 +167,15 @@ export class ParaView extends ParaComponent {
         stroke-width: 2;
         fill: none;
       }
-      .view-highlight {
-        stroke: red;
+      .view-highlight-fg {
+        stroke: burlywood;
         stroke-width: 2;
         fill: none;
+      }
+      .view-highlight-bg {
+        stroke: none;
+        fill: cornsilk;
+        opacity: 0.5;
       }
       .tick-label-horiz {
         font-size: calc(var(--horiz-axis-tick-label-font-size)*var(--chart-font-scale));

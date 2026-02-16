@@ -524,21 +524,35 @@ export class DocumentView extends Container(View) {
 
   content() {
     return svg`
+      ${this._titleLabel && this._paraState.isTitleHighlighted
+        ? this._titleLabel.renderHighlight('bg') : ''}
+      ${this._horizAxis && this._paraState.isHorizontalAxisHighlighted
+        ? this._horizAxis.renderHighlight('bg') : ''}
+      ${this._vertAxis && this._paraState.isVerticalAxisHighlighted
+        ? this._vertAxis.renderHighlight('bg') : ''}
+      ${this._legends.east && this._paraState.isEastLegendHighlighted
+        ? this._legends.east.renderHighlight('bg') : ''}
+      ${this._legends.west && this._paraState.isWestLegendHighlighted
+        ? this._legends.west.renderHighlight('bg') : ''}
+      ${this._legends.north && this._paraState.isNorthLegendHighlighted
+        ? this._legends.north.renderHighlight('bg') : ''}
+      ${this._legends.south && this._paraState.isSouthLegendHighlighted
+        ? this._legends.south.renderHighlight('bg') : ''}
       ${super.content()}
       ${this._titleLabel && this._paraState.isTitleHighlighted
-        ? this._titleLabel.renderHighlight() : ''}
+        ? this._titleLabel.renderHighlight('fg') : ''}
       ${this._horizAxis && this._paraState.isHorizontalAxisHighlighted
-        ? this._horizAxis.renderHighlight() : ''}
+        ? this._horizAxis.renderHighlight('fg') : ''}
       ${this._vertAxis && this._paraState.isVerticalAxisHighlighted
-        ? this._vertAxis.renderHighlight() : ''}
+        ? this._vertAxis.renderHighlight('fg') : ''}
       ${this._legends.east && this._paraState.isEastLegendHighlighted
-        ? this._legends.east.renderHighlight() : ''}
+        ? this._legends.east.renderHighlight('fg') : ''}
       ${this._legends.west && this._paraState.isWestLegendHighlighted
-        ? this._legends.west.renderHighlight() : ''}
+        ? this._legends.west.renderHighlight('fg') : ''}
       ${this._legends.north && this._paraState.isNorthLegendHighlighted
-        ? this._legends.north.renderHighlight() : ''}
+        ? this._legends.north.renderHighlight('fg') : ''}
       ${this._legends.south && this._paraState.isSouthLegendHighlighted
-        ? this._legends.south.renderHighlight() : ''}
+        ? this._legends.south.renderHighlight('fg') : ''}
     `;
   }
 
