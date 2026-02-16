@@ -448,7 +448,7 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
   // Map xAxis.variableType to manifest measure/datatype
   const variableTypeMap: Record<CsvDataType, { measure: 'nominal' | 'interval'; datatype: Datatype }> = {
     'string': { measure: 'nominal', datatype: 'string' },
-    'number': { measure: 'interval', datatype: 'date' },
+    'number': { measure: 'interval', datatype: 'number' },
     'date': { measure: 'interval', datatype: 'date' }
   };
 
