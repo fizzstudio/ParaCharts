@@ -481,8 +481,8 @@ export class Label extends View {
     `;
   }
 
-  renderHighlight() {
-    return this._renderRect(true, 'view-highlight');
+  renderHighlight(type: 'fg' | 'bg') {
+    return this._renderRect(true, `view-highlight-${type}`);
   }
 
   render() {

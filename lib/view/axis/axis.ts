@@ -412,7 +412,6 @@ export class HorizAxis extends Axis<'horiz'> {
     }
     super.layoutComponents();
   }
-
 }
 
 /**
