@@ -76,6 +76,8 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   protected _xInterval!: Interval | null;
   /** Y-axis interval, if axis is numeric */
   protected _yInterval!: Interval | null;
+  /** Min and max chart y values, if y is numeric */
+  protected _yExtremes!: Interval | null;
 
   constructor(type: ChartType, paraView: ParaView) {
     super(type, paraView);
@@ -159,6 +161,10 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
 
   get yInterval(): Interval | null {
     return this._yInterval;
+  }
+
+  get yExtremes(): Interval | null {
+    return this._yExtremes;
   }
 
   get settings() {
@@ -283,6 +289,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
    */
   protected _numericYAxisRange(facetKey: string): Interval {
     const facetInterval = this._paraState.model!.getFacetInterval(facetKey)!;
+    this._yExtremes = facetInterval;
     return computeAxisRange(
       this.settings.minYValue === 'unset'
         ? facetInterval.start
