@@ -163,11 +163,7 @@ export class BarChartInfo extends PlaneChartInfo {
       const minY = Math.min(0, ...yValues);
       const maxY = Math.max(...yValues);
       this._yExtremes = {start: minY, end: maxY};
-      const barsPerStack = Object.values(Object.values(Object.values(this._clusteredData)[0].stacks)[0].bars).length;
-      const extra = barsPerStack
-        * this.settings.stackInsideGap
-        * (maxY - minY);
-      return computeAxisRange(minY, maxY + extra);
+      return computeAxisRange(minY, maxY);
     } else {
       throw new Error("facet key must be 'x' or 'y'");
     }
