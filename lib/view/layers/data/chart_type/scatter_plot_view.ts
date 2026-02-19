@@ -16,6 +16,7 @@ import { Popup } from '../../../popup';
 export class ScatterPlotView extends PointPlotView {
   declare protected _chartInfo: ScatterChartInfo;
   protected _types = new DataSymbols().types;
+  protected _trendLine?: ScatterTrendLineView;
   datapointViewsStatic?: ScatterPointView[];
 
   protected _clusterShellView: ClusterShellView | null = null;
@@ -92,6 +93,22 @@ export class ScatterPlotView extends PointPlotView {
     }
   }
 
+  protected _completeDatapointLayout(): void {
+    super._completeDatapointLayout();
+    if (this._trendLine) {
+      this._trendLine.remove();
+    }
+    const trendLine = new ScatterTrendLineView(this);
+    this._trendLine = trendLine;
+    this.append(trendLine);
+  }
+
+  noticePosted(key: string, value: any): void {
+    if (['animRevealEnd'].includes(key)) {
+      this._completeDatapointLayout();
+    }
+  }
+
   updateOutliers() {
     for (let datapoint of this.datapointViews) {
       if (datapoint.isOutlier) {
@@ -111,13 +128,6 @@ export class ScatterPlotView extends PointPlotView {
     }
     return super.content(...options);
   }
-
-  protected _animEnd() {
-    super._animEnd()
-    const trendLine = new ScatterTrendLineView(this);
-    this.append(trendLine);
-  }
-
 }
 
 class ScatterPointView extends PointDatapointView {
@@ -133,15 +143,6 @@ class ScatterPointView extends PointDatapointView {
       / (xInterval.end - xInterval.start);
     const parentWidth: number = this.chart.parent.width;
     return parentWidth * xTemp;
-  }
-
-  get width() {
-    if (this._symbol?.width!) {
-      return 2 * 1.5 * this._symbol!.width
-    }
-    else {
-      return 36
-    }
   }
 
   protected _createShape(): void {
