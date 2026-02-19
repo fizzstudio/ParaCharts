@@ -230,6 +230,90 @@ const explainers: Partial<Explainers> = {
         }
       ]
     }
+  },
+  scatter: {
+    summary: `<span data-phrasecode ="0" data-action="getSeries('Student Scores').getPoints(0).highlight()">Scatter plots are used to show the relationship between two sets of numerical data.</span><span data-phrasecode="1"> Each point represents one pair of values, making it easy to see patterns, trends, or correlations between them.</span><span data-phrasecode="2"> One common method of making scatter plots easier to interpret is by including the best fit line, which shows the overall trend of the data.</span><span data-phrasecode="3"> In this chart, the best fit line indicates that more hours studied corresponds to higher test scores.</span><span data-phrasecode="4"> Some scatter plots also show clusters, where points are grouped densely in specific areas; here we see two clusters: students who studied less and scored lower, and students who studied more and scored higher.</span>`,    
+    manifest: {
+      "datasets": [
+        {
+          "representation": {
+            "type": "chart",
+            "subtype": "scatter"
+          },
+          "title": "Hours Studied vs Test Score",
+          "facets": {
+            "x": {
+              "label": "Hours Studied",
+              "variableType": "independent",
+              "measure": "ratio",
+              "datatype": "number",
+              "units": "hour",
+              "displayType": {
+                "type": "axis",
+                "orientation": "horizontal"
+              }
+            },
+            "y": {
+              "label": "Test Score",
+              "variableType": "dependent",
+              "measure": "ratio",
+              "datatype": "number",
+              "displayType": {
+                "type": "axis",
+                "orientation": "vertical"
+              }
+            }
+          },
+          "series": [
+            {
+              "key": "Student Scores",
+              "theme": {
+                "baseQuantity": "score",
+                "baseKind": "number",
+                "entity": "student"
+              },
+              "records": [
+                { "x": "1", "y": "52" },
+                { "x": "1.5", "y": "55" },
+                { "x": "1.75", "y": "51" },
+                { "x": "2", "y": "58" },
+                { "x": "2", "y": "60" },
+                { "x": "2", "y": "42" },
+                { "x": "2.3", "y": "47" },
+                { "x": "2.5", "y": "62" },
+                { "x": "2.66", "y": "56" },
+                { "x": "2.75", "y": "53" },
+                { "x": "3", "y": "65" },
+                { "x": "3", "y": "52" },
+                { "x": "3.5", "y": "68" },
+                { "x": "3.5", "y": "72" },
+                { "x": "3.75", "y": "65" },
+                { "x": "4", "y": "70" },
+                { "x": "4.5", "y": "72" },
+                { "x": "6", "y": "80" },
+                { "x": "6.5", "y": "81" },
+                { "x": "6.5", "y": "73" },
+                { "x": "7", "y": "82" },
+                { "x": "7", "y": "84" },
+                { "x": "7", "y": "92" },
+                { "x": "7.5", "y": "86" },
+                { "x": "8", "y": "88" },
+                { "x": "8.5", "y": "84" },
+                { "x": "8.5", "y": "95" },
+                { "x": "9", "y": "92" },
+                { "x": "9.25", "y": "89" },
+                { "x": "9.5", "y": "94" },
+                { "x": "10", "y": "96" },
+                { "x": "10", "y": "91" }
+              ]
+            }
+          ],
+          "data": {
+            "source": "inline"
+          }
+        }
+      ]
+    }
   }
 };
 
