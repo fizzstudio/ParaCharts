@@ -531,16 +531,6 @@ export class DocumentView extends Container(View) {
 
   content() {
     return svg`
-      <rect
-        id="content"
-        class=${this._paraState.index === 0 ? 'explainer' : nothing}
-        pointer-events="all"
-        x="0"
-        y="0"
-        width=${this._width}
-        height=${this._height}
-      >
-      </rect>
       ${this._titleLabel && this._paraState.isTitleHighlighted
         ? this._titleLabel.renderHighlight('bg') : ''}
       ${this._horizAxis && this._paraState.isHorizontalAxisHighlighted
