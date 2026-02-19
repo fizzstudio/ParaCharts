@@ -415,20 +415,26 @@ export class Bar extends PlaneDatapointView {
       this._y = 0;
     } else {
       const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
+      const numBars = Object.keys(this._stack.bars).length;
+      const extra = (numBars - 1)*chartInfo.settings.stackInsideGap;
+      const delta = extra/numBars;
       const yRange = chartInfo.yInterval!.end - chartInfo.yInterval!.start;
       const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
       const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
-        .map(bar => bar.value.value * pxPerYUnit)
+        .map(bar => bar.value.value * pxPerYUnit - delta)
         .reduce((a, b) => a + b, 0);
       const zeroHeight = this.chart.parent.logicalHeight
         - (chartInfo.yInterval!.end * this.chart.parent.logicalHeight / yRange);
-      // @ts-ignore
-      this._height = Math.abs((this.datapoint.data.y.value as number) * pxPerYUnit);
-      // @ts-ignore
-      if (this.datapoint.data.y.value as number < 0) {
+      this._height = Math.max(1, Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit)
+        - delta);
+      if (this.datapoint.facetValueAsNumber('y')! < 0) {
         this._y = this.chart.height - distFromXAxis - zeroHeight;
       } else {
-        this._y = this.chart.height - this.height - distFromXAxis - zeroHeight - orderIdx * chartInfo.settings.stackInsideGap;
+        this._y = this.chart.height
+          - this.height
+          - distFromXAxis
+          - zeroHeight
+          - orderIdx * chartInfo.settings.stackInsideGap;
       }
     }
     const barGap = this.chart.availSpace / this.chart.numStacks;
@@ -442,20 +448,25 @@ export class Bar extends PlaneDatapointView {
   beginAnimStep(bezT: number, linearT: number): void {
     const chartInfo = this.chart.chartInfo as BarChartInfo;
     const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
+    const numBars = Object.keys(this._stack.bars).length;
+    const extra = (numBars - 1)*chartInfo.settings.stackInsideGap;
+    const delta = extra/numBars;
     const yRange = chartInfo.yInterval!.end - chartInfo.yInterval!.start;
     const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
     const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
-      .map(bar => bar.value.value * pxPerYUnit)
+      .map(bar => bar.value.value * pxPerYUnit - delta)
       .reduce((a, b) => a + b, 0);
     const zeroHeight = this.chart.parent.logicalHeight
       - (chartInfo.yInterval!.end * this.chart.parent.logicalHeight / yRange);
-    // @ts-ignore
-    this._height = Math.abs((this.datapoint.data.y.value as number) * pxPerYUnit * bezT);
-    // @ts-ignore
-    if (this.datapoint.data.y.value as number < 0) {
+    this._height = Math.max(1, Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit * bezT) - delta);
+    if (this.datapoint.facetValueAsNumber('y')! < 0) {
       this._y = this.chart.height - distFromXAxis * bezT - zeroHeight;
     } else {
-      this._y = this.chart.height - this.height - distFromXAxis * bezT - zeroHeight - orderIdx * chartInfo.settings.stackInsideGap;
+      this._y = this.chart.height
+        - this.height
+        - distFromXAxis * bezT
+        - zeroHeight
+        - orderIdx * chartInfo.settings.stackInsideGap;
     }
     super.beginAnimStep(bezT, linearT);
   }

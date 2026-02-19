@@ -125,6 +125,10 @@ export class DatapointView extends DataView {
     this._baseSymbolScale = scale;
   }
 
+  get baseSymbolScale() {
+    return this._baseSymbolScale;
+  }
+
   get classInfo(): ClassInfo {
     let index = this.index;
     return {

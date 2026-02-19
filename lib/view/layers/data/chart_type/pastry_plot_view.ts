@@ -155,9 +155,13 @@ export abstract class PastryPlotView extends DataLayer {
     super.init();
     this._resizeToFitLabels();
     if (this.settings.centerLabel === 'title') {
-      this.paraview.paraState.updateSettings(draft => {
-        draft.chart.title.isDrawTitle = false;
-      });
+      if (this.paraview.paraState.settings.chart.title.isDrawTitle) {
+        this.paraview.paraState.updateSettings(draft => {
+          draft.chart.title.isDrawTitle = false;
+        });
+        this.paraview.documentView!.removeTitle();
+        this.paraview.createDocumentView()
+      }
       this._centerLabel = new Label(this.paraview, {
         text: this.paraview.paraState.title,
         centerX: this._cx,
@@ -165,8 +169,7 @@ export abstract class PastryPlotView extends DataLayer {
         textAnchor: 'middle',
         wrapWidth: 2 * (this.radius - this.settings.annularThickness * this.radius)
           - this.settings.centerLabelPadding * 2,
-        id: 'chart-title',
-        classList: ['chart-title']
+        id: 'center-label'
       });
       this.append(this._centerLabel);
     }
@@ -495,7 +498,7 @@ export abstract class RadialSlice extends DatapointView {
     const gap = this.paraview.paraState.settings.ui.focusRingGap;
     const oldCentralAngle = shape.centralAngle;
     shape.centralAngle += 2 * gap * 360 / (2 * Math.PI * shape.r);
-    shape.orientationAngle -= (shape.centralAngle - oldCentralAngle)/2;
+    shape.orientationAngle -= (shape.centralAngle - oldCentralAngle) / 2;
     if (shape.annularThickness! < 1) {
       shape.r += gap;
       // a0/r0 = A

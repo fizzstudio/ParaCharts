@@ -27,10 +27,10 @@ import { DirectLabelStrip } from './direct_label_strip';
 import { type LinePlotView } from './layers';
 import { type ParaView } from '../paraview';
 import { AxisInfo, AxisLabelInfo } from '../common';
+import { svg, nothing } from 'lit';
+import { CloseXView } from './close_x';
 
-import { svg } from 'lit';
-
-export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
+export type Legends = Partial<{ [dir in CardinalDirection]: Legend }>;
 
 /**
  * Root of the view hierarchy.
@@ -46,6 +46,7 @@ export class DocumentView extends Container(View) {
   protected _vertAxis?: VertAxis;
   protected _titleText!: string;
   protected _legends: Legends = {};
+  protected _closeX: CloseXView;
 
   protected _paraState: ParaState;
 
@@ -55,25 +56,30 @@ export class DocumentView extends Container(View) {
     this._paraState = paraview.globalState.paraState;
     this.observeNotices();
     this.type = this._paraState.type;
+    this._closeX = new CloseXView(paraview, () => {
+      paraview.paraChart.api.doAction('openExplainer');
+    });
+    this._closeX.updateSize();
   }
 
   init() {
     // @ts-ignore
-	  this._chartInfo = new chartInfoClasses[this.type](this.type, this.paraview);
+    this._chartInfo = new chartInfoClasses[this.type](this.type, this.paraview);
     this.setTitleText(this._paraState.title);
 
     const expandedPadding = this._parsePadding(this._paraState.settings.chart.padding);
     // XXX temp hack for cpanel icon
-    const leftPad = Math.max(8 + 1.1*16, expandedPadding.left);
+    const leftPad = Math.max(8 + 1.1 * 16, expandedPadding.left);
     this.padding = {
       left: leftPad,
       right: expandedPadding.right,
       top: expandedPadding.top,
       bottom: expandedPadding.bottom
     };
-
     this.updateSize();
     this._populate();
+    this._closeX.right = this.paddedRight - 10;
+    this._closeX.top = this.top;
   }
 
   computeSize(): [number, number] {
@@ -210,7 +216,7 @@ export class DocumentView extends Container(View) {
     // XXX Change this method to set axis.titleText
     this._titleText = this._paraState.title
       ?? this._paraState.settings.chart.title.text;
-      //?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;
+    //?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;
 
     const plotWidth = this._width
       - (this._vertAxis?.width ?? 0)
@@ -286,7 +292,7 @@ export class DocumentView extends Container(View) {
     return this._paraState.settings.chart.hasDirectLabels
       && this.type === 'line'
       && /*this._chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
-        this._paraState.model!.multi;
+      this._paraState.model!.multi;
   }
 
   protected get _shouldAddLegend(): boolean {
@@ -411,6 +417,7 @@ export class DocumentView extends Container(View) {
       classList: ['chart-title'],
       text: this._titleText,
       wrapWidth: this._width,
+      textAnchor: 'middle',
       justify: align
     });
     const isTop = this._paraState.settings.chart.title.position === 'top';
@@ -437,6 +444,10 @@ export class DocumentView extends Container(View) {
     } else {
       this._titleLabel.centerX = this.centerX;
     }
+  }
+
+  removeTitle() {
+    this._titleLabel?.remove();
   }
 
   protected _childDidResize(_kid: View) {
@@ -520,21 +531,36 @@ export class DocumentView extends Container(View) {
 
   content() {
     return svg`
+      ${this._titleLabel && this._paraState.isTitleHighlighted
+        ? this._titleLabel.renderHighlight('bg') : ''}
+      ${this._horizAxis && this._paraState.isHorizontalAxisHighlighted
+        ? this._horizAxis.renderHighlight('bg') : ''}
+      ${this._vertAxis && this._paraState.isVerticalAxisHighlighted
+        ? this._vertAxis.renderHighlight('bg') : ''}
+      ${this._legends.east && this._paraState.isEastLegendHighlighted
+        ? this._legends.east.renderHighlight('bg') : ''}
+      ${this._legends.west && this._paraState.isWestLegendHighlighted
+        ? this._legends.west.renderHighlight('bg') : ''}
+      ${this._legends.north && this._paraState.isNorthLegendHighlighted
+        ? this._legends.north.renderHighlight('bg') : ''}
+      ${this._legends.south && this._paraState.isSouthLegendHighlighted
+        ? this._legends.south.renderHighlight('bg') : ''}
+      ${this._paraState.index === 0 ? this._closeX.render() : ''}
       ${super.content()}
       ${this._titleLabel && this._paraState.isTitleHighlighted
-        ? this._titleLabel.renderHighlight() : ''}
+        ? this._titleLabel.renderHighlight('fg') : ''}
       ${this._horizAxis && this._paraState.isHorizontalAxisHighlighted
-        ? this._horizAxis.renderHighlight() : ''}
+        ? this._horizAxis.renderHighlight('fg') : ''}
       ${this._vertAxis && this._paraState.isVerticalAxisHighlighted
-        ? this._vertAxis.renderHighlight() : ''}
+        ? this._vertAxis.renderHighlight('fg') : ''}
       ${this._legends.east && this._paraState.isEastLegendHighlighted
-        ? this._legends.east.renderHighlight() : ''}
+        ? this._legends.east.renderHighlight('fg') : ''}
       ${this._legends.west && this._paraState.isWestLegendHighlighted
-        ? this._legends.west.renderHighlight() : ''}
+        ? this._legends.west.renderHighlight('fg') : ''}
       ${this._legends.north && this._paraState.isNorthLegendHighlighted
-        ? this._legends.north.renderHighlight() : ''}
+        ? this._legends.north.renderHighlight('fg') : ''}
       ${this._legends.south && this._paraState.isSouthLegendHighlighted
-        ? this._legends.south.renderHighlight() : ''}
+        ? this._legends.south.renderHighlight('fg') : ''}
     `;
   }
 

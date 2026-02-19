@@ -180,7 +180,7 @@ export abstract class DataLayer extends PlotLayer {
 
   /**
    * Mutate `styleInfo` with any custom series styles.
-   * @param styleInfo
+   * @param styleInfo - The style object to mutate with series-specific styles
    */
   updateSeriesStyle(_styleInfo: StyleInfo) {
   }

@@ -409,6 +409,10 @@ export class Colors {
             value: 'hsl(210, 25%, 25%)'
           },
           {
+            value: 'cyan',
+            name: 'highlight'
+          },
+          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -974,7 +978,7 @@ export class Colors {
 
   /**
    * Wrap color index if out of range.
-   * @param index
+   * @param index - The color index to wrap
    * @returns valid index
    */
   wrapColorIndex(index: number) {
@@ -983,7 +987,7 @@ export class Colors {
 
   /**
    * Get palette index of a color.
-   * @param name
+   * @param name - The name of the color to look up
    * @returns index or -1 if not found
    */
   colorIndex(name: string) {
@@ -992,7 +996,7 @@ export class Colors {
 
   /**
    * Get palette index of a color value.
-   * @param value
+   * @param value - The color value to look up
    * @returns index or -1 if not found
    */
   colorValueIndex(value: string) {

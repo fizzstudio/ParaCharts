@@ -285,13 +285,13 @@ export type Direction = VertDirection | HorizDirection | DepthDirection;
 // @public (undocumented)
 export const directions: Direction[];
 
-// @public (undocumented)
+// @public
 export type FieldInfo = {
     name: string;
     type: Datatype_2;
 };
 
-// @public (undocumented)
+// @public
 export const FORMAT_CONTEXT_SETTINGS: {
     horizTick: string;
     vertTick: string;
@@ -771,7 +771,7 @@ export interface YAxisSettings extends AxisSettings {
 
 // Warnings were encountered during analysis:
 //
-// types-ai/lib/state/settings_types.d.ts:35:5 - (ae-forgotten-export) The symbol "Color" needs to be exported by the entry point index-ai.d.ts
+// types-ai/lib/state/settings_types.d.ts:45:5 - (ae-forgotten-export) The symbol "Color" needs to be exported by the entry point index-ai.d.ts
 
 // (No @packageDocumentation comment for this package)
 

@@ -13,7 +13,15 @@ Customize chart appearance, behavior, and accessibility using the hierarchical s
 | Setting Path | Description | Default | Type |
 |---|---|---|---|
 {{#settings}}
-| `{{path}}` | {{#description}}{{description}}{{/description}}{{^description}}{{#path}}{{#isBoolean}}Enable/disable {{simpleName}}{{/isBoolean}}{{^isBoolean}}Set {{simpleName}}{{/isBoolean}}{{/path}}{{/description}} | {{#defaultValue}}{{defaultValue}}{{/defaultValue}}{{^defaultValue}}*none*{{/defaultValue}} | `{{simpleType}}` |
+| `{{path}}` | {{#description}}{{description}}{{/description}}{{^description}}{{#path}}{{#isBoolean}}Enable/disable {{simpleName}}{{/isBoolean}}{{^isBoolean}}Set {{simpleName}}{{/isBoolean}}{{/path}}{{/description}} | {{#defaultValue}}{{defaultValue}}{{/defaultValue}}{{^defaultValue}}*none*{{/defaultValue}} | {{validValues}} |
 {{/settings}}
 
+{{#typeDefinitions.length}}
+**Type Definitions:**
+
+{{#typeDefinitions}}
+- <span id="{{id}}"></span>**{{name}}**: {{definition}}
+{{/typeDefinitions}}
+
+{{/typeDefinitions.length}}
 {{/categories}}

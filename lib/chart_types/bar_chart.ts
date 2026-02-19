@@ -160,7 +160,10 @@ export class BarChartInfo extends PlaneChartInfo {
         Object.values(c.stacks).map(s =>
           Object.values(s.bars).map(item => item.value.value).reduce((a, b) => a + b, 0)
       ));
-      return computeAxisRange(Math.min(0, ...yValues), Math.max(...yValues));
+      const minY = Math.min(0, ...yValues);
+      const maxY = Math.max(...yValues);
+      this._yExtremes = {start: minY, end: maxY};
+      return computeAxisRange(minY, maxY);
     } else {
       throw new Error("facet key must be 'x' or 'y'");
     }

@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { type Datapoint } from '@fizz/paramodel';
 
-import { ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
+import { ORIENTATION_SENTENCES, PASTRY_ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
 import { Direction, makeSequenceId, Setting, SettingsManager } from '../state';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
@@ -149,7 +149,6 @@ export class ParaAPI {
           // Open the explainer
           const type = paraView.documentView!.type;
           paraView.pushDocumentView();
-          // paraView.destroyDocumentView();
           _paraChart.globalState.enableParaState(_paraChart.globalState.paraStates[0]);
           if (!_paraChart.globalState.paraState.model) {
             _paraChart.runLoader(
@@ -158,6 +157,9 @@ export class ParaAPI {
               false,
               explainers[type]!.summary
             ).then(() => {
+              _paraChart.paraState.updateSettings(draft => {
+                draft.chart.padding = '24 90';
+              }, true);
               paraView.createDocumentView();
             });
           } else {
@@ -167,8 +169,6 @@ export class ParaAPI {
         } else {
           // Close the explainer
           _paraChart.globalState.enableParaState(_paraChart.globalState.paraStates[1]);
-          // XXX recreates the chartInfo object, which resets the nav map
-          // paraView.createDocumentView();
           paraView.popDocumentView();
           _paraChart.captionBox.setCaption();
         }
@@ -276,7 +276,11 @@ export class ParaAPI {
   }
 
   async getAltText(): Promise<string | undefined> {
-    const summary = await this.paraChart.paraView.documentView!.chartInfo.summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
+    const chartType = this._paraChart.paraState.type;
+    const orientationSentences = ['pie', 'donut', 'gauge'].includes(chartType)
+      ? PASTRY_ORIENTATION_SENTENCES
+      : ORIENTATION_SENTENCES;
+    const summary = await this.paraChart.paraView.documentView!.chartInfo.summarizer.getRequestedSummaries(orientationSentences);
     return summary?.text;
   }
 

@@ -51,6 +51,7 @@ import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramo
 import { initParaSummary } from '@fizz/parasummary';
 
 // NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
+/** @public */
 export class ParaChart extends ParaComponent {
   @property({ type: Boolean }) headless = false;
   @property() accessor manifest = '';
@@ -137,8 +138,8 @@ export class ParaChart extends ParaComponent {
     });
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
-        resolve();
         await initParaSummary();
+        resolve();
         // It's now safe to load a manifest
         // In headless mode, loadManifest() handles loading via willUpdate, so skip here
         if (this.manifest && !this.headless) {
@@ -357,6 +358,7 @@ export class ParaChart extends ParaComponent {
       this.log.error(error instanceof Error ? error.message : String(error));
       this._paraState.dataState = 'error';
       this._loaderRejector!(error instanceof Error ? error : new LoadError(LoadErrorCode.UNKNOWN, String(error)));
+      this._paraViewRef.value?.rejectJimReady();
     }
 
     if (this.api) {

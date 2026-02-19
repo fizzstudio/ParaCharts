@@ -15,6 +15,7 @@
 | **t** | Toggle trend navigation mode |
 | **u** | Clear the datapoint selection |
 | **v** | Toggle self-voicing mode |
+| **x** | Open chart explainer |
 | **arrowright, arrowleft, arrowup, arrowdown, Shift+arrowup, Shift+arrowdown** | Move the cursor |
 | **Shift+end** | Play datapoints to the right |
 | **Shift+home** | Play datapoints to the left |
