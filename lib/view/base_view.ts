@@ -533,7 +533,7 @@ export class View extends BaseView {
   }
 
   get right() {
-    return this.left + this.width;
+    return this.x + (this.width - this._locOffset.x);
   }
 
   set right(right: number) {

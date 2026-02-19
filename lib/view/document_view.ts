@@ -27,7 +27,8 @@ import { DirectLabelStrip } from './direct_label_strip';
 import { type LinePlotView } from './layers';
 import { type ParaView } from '../paraview';
 import { AxisInfo, AxisLabelInfo } from '../common';
-import { svg } from 'lit';
+import { svg, nothing } from 'lit';
+import { CloseXView } from './close_x';
 
 export type Legends = Partial<{ [dir in CardinalDirection]: Legend }>;
 
@@ -45,6 +46,7 @@ export class DocumentView extends Container(View) {
   protected _vertAxis?: VertAxis;
   protected _titleText!: string;
   protected _legends: Legends = {};
+  protected _closeX: CloseXView;
 
   protected _paraState: ParaState;
 
@@ -54,6 +56,10 @@ export class DocumentView extends Container(View) {
     this._paraState = paraview.globalState.paraState;
     this.observeNotices();
     this.type = this._paraState.type;
+    this._closeX = new CloseXView(paraview, () => {
+      paraview.paraChart.api.doAction('openExplainer');
+    });
+    this._closeX.updateSize();
   }
 
   init() {
@@ -70,9 +76,10 @@ export class DocumentView extends Container(View) {
       top: expandedPadding.top,
       bottom: expandedPadding.bottom
     };
-
     this.updateSize();
     this._populate();
+    this._closeX.right = this.paddedRight - 10;
+    this._closeX.top = this.top;
   }
 
   computeSize(): [number, number] {
@@ -524,6 +531,16 @@ export class DocumentView extends Container(View) {
 
   content() {
     return svg`
+      <rect
+        id="content"
+        class=${this._paraState.index === 0 ? 'explainer' : nothing}
+        pointer-events="all"
+        x="0"
+        y="0"
+        width=${this._width}
+        height=${this._height}
+      >
+      </rect>
       ${this._titleLabel && this._paraState.isTitleHighlighted
         ? this._titleLabel.renderHighlight('bg') : ''}
       ${this._horizAxis && this._paraState.isHorizontalAxisHighlighted
@@ -538,6 +555,7 @@ export class DocumentView extends Container(View) {
         ? this._legends.north.renderHighlight('bg') : ''}
       ${this._legends.south && this._paraState.isSouthLegendHighlighted
         ? this._legends.south.renderHighlight('bg') : ''}
+      ${this._paraState.index === 0 ? this._closeX.render() : ''}
       ${super.content()}
       ${this._titleLabel && this._paraState.isTitleHighlighted
         ? this._titleLabel.renderHighlight('fg') : ''}
