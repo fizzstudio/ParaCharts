@@ -21,6 +21,7 @@ export interface ShapeOptions {
   pointerEnter?: (e: PointerEvent) => void;
   pointerMove?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
+  click?: (e: MouseEvent) => void;
 }
 
 export abstract class Shape extends View {
