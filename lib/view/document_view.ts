@@ -21,13 +21,14 @@ import { Label } from './label';
 import { type CardinalDirection, ParaState, Setting } from '../state';
 import { Facet, type ChartType } from '@fizz/paramanifest';
 import { PlotLayerManager } from './layers';
-import { HorizAxis, VertAxis, type AxisCoord } from './axis';
+import { HorizAxis, LabelOverlapError, VertAxis, type AxisCoord } from './axis';
 import { Legend } from './legend';
 import { DirectLabelStrip } from './direct_label_strip';
 import { type LinePlotView } from './layers';
 import { type ParaView } from '../paraview';
 import { AxisInfo, AxisLabelInfo } from '../common';
-import { svg } from 'lit';
+import { svg, nothing } from 'lit';
+import { CloseXView } from './close_x';
 
 export type Legends = Partial<{ [dir in CardinalDirection]: Legend }>;
 
@@ -45,6 +46,7 @@ export class DocumentView extends Container(View) {
   protected _vertAxis?: VertAxis;
   protected _titleText!: string;
   protected _legends: Legends = {};
+  protected _closeX: CloseXView;
 
   protected _paraState: ParaState;
 
@@ -54,6 +56,10 @@ export class DocumentView extends Container(View) {
     this._paraState = paraview.globalState.paraState;
     this.observeNotices();
     this.type = this._paraState.type;
+    this._closeX = new CloseXView(paraview, () => {
+      paraview.paraChart.api.doAction('openExplainer');
+    });
+    this._closeX.updateSize();
   }
 
   init() {
@@ -70,9 +76,10 @@ export class DocumentView extends Container(View) {
       top: expandedPadding.top,
       bottom: expandedPadding.bottom
     };
-
     this.updateSize();
     this._populate();
+    this._closeX.right = this.paddedRight - 10;
+    this._closeX.top = this.top;
   }
 
   computeSize(): [number, number] {
@@ -262,13 +269,26 @@ export class DocumentView extends Container(View) {
   }
 
   protected _createHorizAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
-    this._horizAxis?.remove();
-    this._horizAxis = new HorizAxis(this.paraview, facet, chartInfo, length);
-    const horizAxisFacet = this._chartInfo.horizFacet!;
-    this._horizAxis.setAxisLabelText(horizAxisFacet.label);
-    this._horizAxis.createComponents();
-    this._horizAxis.layoutComponents();
-    this._horizAxis.updateSize();
+    while (true) {
+      try {
+        this._horizAxis?.remove();
+        this._horizAxis = new HorizAxis(this.paraview, facet, chartInfo, length);
+        const horizAxisFacet = this._chartInfo.horizFacet!;
+        this._horizAxis.setAxisLabelText(horizAxisFacet.label);
+        this._horizAxis.createComponents();
+        this._horizAxis.layoutComponents();
+        this._horizAxis.updateSize();
+        break;
+      } catch (e) {
+        if (e instanceof LabelOverlapError) {
+          this._paraState.updateSettings(draft => {
+            draft.axis.horiz.isStaggerLabels = true;
+          }, true);
+        } else {
+          throw e;
+        }
+      }
+    }
   }
 
   protected _createVertAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
@@ -538,6 +558,7 @@ export class DocumentView extends Container(View) {
         ? this._legends.north.renderHighlight('bg') : ''}
       ${this._legends.south && this._paraState.isSouthLegendHighlighted
         ? this._legends.south.renderHighlight('bg') : ''}
+      ${this._paraState.index === 0 ? this._closeX.render() : ''}
       ${super.content()}
       ${this._titleLabel && this._paraState.isTitleHighlighted
         ? this._titleLabel.renderHighlight('fg') : ''}

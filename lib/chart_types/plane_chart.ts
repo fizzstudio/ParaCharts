@@ -85,17 +85,15 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
 
   protected _init(): void {
     super._init();
-    const indepFacetKey = this._paraState.model!.independentFacetKeys[0];
-    const indepFacet = this._paraState.model!.getFacet(indepFacetKey)!;
-    const depFacetKey = this._paraState.model!.dependentFacetKeys[0];
-    const depFacet = this._paraState.model!.getFacet(depFacetKey)!;
+    const indepFacet = this._paraState.model!.getFacet("x")!;
+    const depFacet = this._paraState.model!.getFacet("y")!;
     if (indepFacet.datatype === 'number') {
-      this._xInterval = this._numericXAxisRange(indepFacetKey);
+      this._xInterval = this._numericXAxisRange("x");
     } else {
       this._xInterval = null;
     }
     if (depFacet.datatype === 'number') {
-      this._yInterval = this._numericYAxisRange(depFacetKey);
+      this._yInterval = this._numericYAxisRange("y");
     } else {
       this._yInterval = null;
     }

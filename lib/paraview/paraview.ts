@@ -106,7 +106,13 @@ export class ParaView extends ParaComponent {
       #frame.explainer {
         fill: aliceblue;
         stroke: cornflowerblue;
-        stroke-width: 2;
+        stroke-width: 5;
+      }
+      #content {
+        fill: white;
+      }
+      #content.explainer {
+        fill: aliceblue;
       }
       .darkmode {
         --axis-line-color: ghostwhite;
