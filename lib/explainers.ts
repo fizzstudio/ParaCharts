@@ -11,7 +11,8 @@ export type Explainers = {
 
 const explainers: Partial<Explainers> = {
   column: {
-    summary: `<span data-phrasecode="0">Bar charts are used to display categories of data that are not continuous.</span><span data-phrasecode="1"> They are useful when the goal is to compare individual values across categories rather than to emphasize trends over time.</span><span data-phrasecode="2"> This chart shows how many students are enrolled in each subject at a given school, showing that core subjects such as </span><span data-phrasecode="3" data-action="getSeries('Student enrollment').getPoints(0).highlight()">math</span><span data-phrasecode="4">, </span><span data-phrasecode="5" data-action="getSeries('Student enrollment').getPoints(1).highlight()">English</span><span data-phrasecode="6">, </span><span data-phrasecode="7" data-action="getSeries('Student enrollment').getPoints(2).highlight()">science</span><span data-phrasecode="8">, and </span><span data-phrasecode="9" data-action="getSeries('Student enrollment').getPoints(3).highlight()">history</span><span data-phrasecode="10"> have more students than electives such as </span><span data-phrasecode="11" data-action="getSeries('Student enrollment').getPoints(4).highlight()">art</span><span data-phrasecode="12">, </span><span data-phrasecode="13" data-action="getSeries('Student enrollment').getPoints(5).highlight()">music</span><span data-phrasecode="14">, and </span><span data-phrasecode="15" data-action="getSeries('Student enrollment').getPoints(6).highlight()">psychology</span><span data-phrasecode="16">.</span>`,
+    summary: `<span data-phrasecode="0">School subjects are shown on the </span><span data-phrasecode="1" data-action="highlightHorizontalAxis()">x-axis. </span><span data-phrasecode="2" data-action="clearHorizontalAxisHighlight">The </span><span data-phrasecode="3">number of students enrolled in each subject is shown on the </span><span data-phrasecode="4" data-action="highlightVerticalAxis()">y-axis.
+</span><span data-phrasecode="5" data-action="clearVerticalAxisHighlight">By </span><span data-phrasecode="6">the heights of the columns, we see that core subjects like </span><span data-phrasecode="7" data-action="getSeries('Student enrollment').getPoints(0).highlight()">math, </span><span data-phrasecode="8" data-action="getSeries('Student enrollment').getPoints(1).highlight()">English, </span><span data-phrasecode="9" data-action="getSeries('Student enrollment').getPoints(2).highlight()">science, </span><span data-phrasecode="10">and </span><span data-phrasecode="11" data-action="getSeries('Student enrollment').getPoints(3).highlight()">history </span><span data-phrasecode="12">have more students enrolled than electives like </span><span data-phrasecode="13" data-action="getSeries('Student enrollment').getPoints(4).highlight()">art, </span><span data-phrasecode="14" data-action="getSeries('Student enrollment').getPoints(5).highlight()">music, </span><span data-phrasecode="15">and </span><span data-phrasecode="16" data-action="getSeries('Student enrollment').getPoints(6).highlight()">psychology.</span>`,
     manifest: {
       "datasets": [
         {
@@ -175,7 +176,7 @@ const explainers: Partial<Explainers> = {
     }
   },
   pie: {
-    summary: `<span data-phrasecode="0">Pie charts are used to show how a whole is divided into parts, with each slice representing a category’s percentage of the total. Because all of the slices together add up to 100 percent, pie charts make it easy to compare proportions at a glance. In this example of the </span><span data-phrasecode="1" data-action="highlightTitle()">annual budget for a given person</span><span data-phrasecode="2" data-action="clearTitleHighlight()">, the chart shows how income is divided among different categories.</span><span data-phrasecode="3" data-action="getSeries('Proportion of total money').getPoints(0).highlight()"> It is immediately clear that rent takes up the largest portion of the budget because its slice is the biggest</span><span data-phrasecode="4" data-action="getSeries('Proportion of total money').getPoints(5).highlight()">, while entertainment represents the smallest share, shown by the smallest slice.</span>`,
+    summary: `<span data-phrasecode="0" data-action="getSeries('Proportion of time').getPoints(1).highlight()">The most amount of time is spent working, at 42 percent.</span><span data-phrasecode="1" data-action="getSeries('Proportion of time').getPoints(2).highlight()">The least amount of time is spent on leisure activities, at 25 percent.</span><span data-phrasecode="2">The time spent on </span><span data-phrasecode="3" data-action="getSeries('Proportion of time').getPoints(0).highlight()">sleep, </span><span data-phrasecode="4" data-action="getSeries('Proportion of time').getPoints(1).highlight()">work, </span><span data-phrasecode="5" data-action="getSeries('Proportion of time').getPoints(2).highlight()">and leisure </span><span data-phrasecode="6" data-action = "clearAllHighlights()">adds up to 100 percent.</span>`,
     manifest: {
       "datasets": [
         {
@@ -183,10 +184,10 @@ const explainers: Partial<Explainers> = {
             "type": "chart",
             "subtype": "pie"
           },
-          "title": "Annual Budget for a Given Person",
+          "title": "Daily Time Allocation",
           "facets": {
             "x": {
-              "label": "spending category",
+              "label": "Activity",
               "variableType": "independent",
               "measure": "nominal",
               "datatype": "string",
@@ -195,7 +196,7 @@ const explainers: Partial<Explainers> = {
               }
             },
             "y": {
-              "label": "Proportion of total money",
+              "label": "proportion of time",
               "variableType": "dependent",
               "measure": "ratio",
               "datatype": "number",
@@ -207,20 +208,17 @@ const explainers: Partial<Explainers> = {
           },
           "series": [
             {
-              "key": "Proportion of total money",
+              "key": "Proportion of time",
               "theme": {
-                "baseQuantity": "money",
+                "baseQuantity": "time",
                 "baseKind": "proportion",
-                "entity": "total money",
+                "entity": "total time",
                 "aggregate": "total"
               },
               "records": [
-                { "x": "Rent", "y": "35" },
-                { "x": "Transportation", "y": "15" },
-                { "x": "Groceries", "y": "15" },
-                { "x": "Utilities & Internet", "y": "10" },
-                { "x": "Savings", "y": "20" },
-                { "x": "Entertainment", "y": "5" },
+                { "x": "Sleep", "y": "33" },
+                { "x": "Work", "y": "42" },
+                { "x": "Leisure", "y": "25" }
               ]
             }
           ],
