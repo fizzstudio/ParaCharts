@@ -284,6 +284,63 @@ const explainers: Partial<Explainers> = {
   },
 
 
+  donut: {
+    single: {
+      summary: `<span data-phrasecode="0">This chart shows the </span><span data-phrasecode="1" data-action="highlightTitle()">daily time allocation </span><span data-phrasecode="2" data-action="clearTitleHighlight()">of different activities. </span><span data-phrasecode="3">The most amount of time is spent </span><span data-phrasecode="4" data-action="getSeries('Proportion of time').getPoints(1).highlight()">working, at 42%. </span><span data-phrasecode="5" data-action="getSeries('Proportion of time').getPoints(1).clearHighlight()">The least amount of time is spent on </span><span data-phrasecode="6" data-action="getSeries('Proportion of time').getPoints(2).highlight()">leisure activities, at 25%. </span><span data-phrasecode="7" data-action="getSeries('Proportion of time').getPoints(2).clearHighlight()">The time spent on </span><span data-phrasecode="8" data-action="getSeries('Proportion of time').getPoints(0).highlight()">sleep, </span><span data-phrasecode="9" data-action="getSeries('Proportion of time').getPoints(1).highlight()">work, </span><span data-phrasecode="10" data-action="getSeries('Proportion of time').getPoints(1).clearHighlight()">and </span><span data-phrasecode="11" data-action="getSeries('Proportion of time').getPoints(2).highlight()">leisure </span><span data-phrasecode="12" data-action="getSeries('Proportion of time').getPoints(2).clearHighlight()">adds up to 100%.</span>`,
+      manifest: {
+        "datasets": [
+          {
+            "representation": {
+              "type": "chart",
+              "subtype": "donut"
+            },
+            "title": "Daily Time Allocation",
+            "facets": {
+              "x": {
+                "label": "Activity",
+                "variableType": "independent",
+                "measure": "nominal",
+                "datatype": "string",
+                "displayType": {
+                  "type": "marking"
+                }
+              },
+              "y": {
+                "label": "proportion of time",
+                "variableType": "dependent",
+                "measure": "ratio",
+                "datatype": "number",
+                "multiplier": 0.01,
+                "displayType": {
+                  "type": "angle"
+                }
+              }
+            },
+            "series": [
+              {
+                "key": "Proportion of time",
+                "theme": {
+                  "baseQuantity": "time",
+                  "baseKind": "proportion",
+                  "entity": "total time",
+                  "aggregate": "total"
+                },
+                "records": [
+                  { "x": "Sleep", "y": "33" },
+                  { "x": "Work", "y": "42" },
+                  { "x": "Leisure", "y": "25" }
+                ]
+              }
+            ],
+            "data": {
+              "source": "inline"
+            }
+          }
+        ]
+      }
+    }
+  },
+
   pie: {
     single: {
       summary: `<span data-phrasecode="0">This chart shows the </span><span data-phrasecode="1" data-action="highlightTitle()">daily time allocation </span><span data-phrasecode="2" data-action="clearTitleHighlight()">of different activities. </span><span data-phrasecode="3">The most amount of time is spent </span><span data-phrasecode="4" data-action="getSeries('Proportion of time').getPoints(1).highlight()">working, at 42%. </span><span data-phrasecode="5" data-action="getSeries('Proportion of time').getPoints(1).clearHighlight()">The least amount of time is spent on </span><span data-phrasecode="6" data-action="getSeries('Proportion of time').getPoints(2).highlight()">leisure activities, at 25%. </span><span data-phrasecode="7" data-action="getSeries('Proportion of time').getPoints(2).clearHighlight()">The time spent on </span><span data-phrasecode="8" data-action="getSeries('Proportion of time').getPoints(0).highlight()">sleep, </span><span data-phrasecode="9" data-action="getSeries('Proportion of time').getPoints(1).highlight()">work, </span><span data-phrasecode="10" data-action="getSeries('Proportion of time').getPoints(1).clearHighlight()">and </span><span data-phrasecode="11" data-action="getSeries('Proportion of time').getPoints(2).highlight()">leisure </span><span data-phrasecode="12" data-action="getSeries('Proportion of time').getPoints(2).clearHighlight()">adds up to 100%.</span>`,
