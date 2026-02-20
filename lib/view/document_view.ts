@@ -21,7 +21,7 @@ import { Label } from './label';
 import { type CardinalDirection, ParaState, Setting } from '../state';
 import { Facet, type ChartType } from '@fizz/paramanifest';
 import { PlotLayerManager } from './layers';
-import { HorizAxis, VertAxis, type AxisCoord } from './axis';
+import { HorizAxis, LabelOverlapError, VertAxis, type AxisCoord } from './axis';
 import { Legend } from './legend';
 import { DirectLabelStrip } from './direct_label_strip';
 import { type LinePlotView } from './layers';
@@ -269,13 +269,26 @@ export class DocumentView extends Container(View) {
   }
 
   protected _createHorizAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
-    this._horizAxis?.remove();
-    this._horizAxis = new HorizAxis(this.paraview, facet, chartInfo, length);
-    const horizAxisFacet = this._chartInfo.horizFacet!;
-    this._horizAxis.setAxisLabelText(horizAxisFacet.label);
-    this._horizAxis.createComponents();
-    this._horizAxis.layoutComponents();
-    this._horizAxis.updateSize();
+    while (true) {
+      try {
+        this._horizAxis?.remove();
+        this._horizAxis = new HorizAxis(this.paraview, facet, chartInfo, length);
+        const horizAxisFacet = this._chartInfo.horizFacet!;
+        this._horizAxis.setAxisLabelText(horizAxisFacet.label);
+        this._horizAxis.createComponents();
+        this._horizAxis.layoutComponents();
+        this._horizAxis.updateSize();
+        break;
+      } catch (e) {
+        if (e instanceof LabelOverlapError) {
+          this._paraState.updateSettings(draft => {
+            draft.axis.horiz.isStaggerLabels = true;
+          }, true);
+        } else {
+          throw e;
+        }
+      }
+    }
   }
 
   protected _createVertAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
