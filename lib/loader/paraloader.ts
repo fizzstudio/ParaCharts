@@ -498,7 +498,7 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
         datatype: xTypeConfig.datatype,
         displayType: {
           type: 'axis',
-          orientation: isHorizontalBar ? 'vertical' : 'horizontal'
+          orientation: 'horizontal'
         }
       },
       y: {
@@ -508,7 +508,7 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
         datatype: 'number',
         displayType: {
           type: 'axis',
-          orientation: isHorizontalBar ? 'horizontal' : 'vertical'
+          orientation: 'vertical'
         }
       }
     };
