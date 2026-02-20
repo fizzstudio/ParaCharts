@@ -151,17 +151,32 @@ export class ParaAPI {
           paraView.pushDocumentView();
           _paraChart.globalState.enableParaState(_paraChart.globalState.paraStates[0]);
           if (!_paraChart.globalState.paraState.model) {
-            _paraChart.runLoader(
-              JSON.stringify(explainers[type]!.manifest),
-              'content',
-              false,
-              explainers[type]!.summary
-            ).then(() => {
-              _paraChart.paraState.updateSettings(draft => {
-                draft.chart.padding = '24 90';
-              }, true);
-              paraView.createDocumentView();
-            });
+            if (_paraChart.globalState!.paraStates[1].model!.series.length === 1) {
+              _paraChart.runLoader(
+                JSON.stringify(explainers[type]!.single!.manifest),
+                'content',
+                false,
+                explainers[type]!.single!.summary
+              ).then(() => {
+                _paraChart.paraState.updateSettings(draft => {
+                  draft.chart.padding = '24 90';
+                }, true);
+                paraView.createDocumentView();
+              });
+            }
+            else {
+              _paraChart.runLoader(
+                JSON.stringify(explainers[type]!.multi!.manifest),
+                'content',
+                false,
+                explainers[type]!.multi!.summary
+              ).then(() => {
+                _paraChart.paraState.updateSettings(draft => {
+                  draft.chart.padding = '24 90';
+                }, true);
+                paraView.createDocumentView();
+              });
+            }
           } else {
             paraView.createDocumentView();
             _paraChart.captionBox.setCaption();
