@@ -96,11 +96,11 @@ const explainers: Partial<Explainers> = {
     }
   },
   line: {
-    summary: `<span data-phrasecode="0">Line charts are used to show numerical values over a continuous interval or period of time</span><span data-phrasecode="1" data-action="highlightHorizontalAxis()">, with the interval or time scale on the x-axis</span><span data-phrasecode="2" data-action="clearHorizontalAxisHighlight()"> and </span><span data-phrasecode="3" data-action="highlightVerticalAxis()">the values on the y-axis</span><span data-phrasecode="4" data-action="clearVerticalAxisHighlight()">. This</span><span data-phrasecode="5"> makes it easier to observe trends and patterns in the data.</span><span data-phrasecode="6"> In this example of a line chart, we see a rebound trend</span><span data-phrasecode="7" data-action="getSeries('Temperature in Fahrenheit').getPoints(2).highlight()">, where the values initially increase</span><span data-phrasecode="8" data-action="getSeries('Temperature in Fahrenheit').getPoints(3).highlight()">, then fall</span><span data-phrasecode="9" data-action="getSeries('Temperature in Fahrenheit').getPoints(6).highlight()">, and then rise again.</span>`,
+    summary: `<span data-phrasecode="0">This chart shows the </span><span data-phrasecode="1" data-action="highlightTitle()">average temperature in January each year in a given city from 2020 to 2026.</span><span data-phrasecode="2" data-action="clearTitleHighlight()"> The </span><span data-phrasecode="3">years are displayed along </span><span data-phrasecode="4" data-action="highlightHorizontalAxis()">the x-axis, </span><span data-phrasecode="5" data-action="clearHorizontalAxisHighlight()">and average temperatures in Fahrenheit are displayed along </span><span data-phrasecode="6" data-action="highlightVerticalAxis()">the y-axis.</span><span data-phrasecode="7" data-action="clearVerticalAxisHighlight()"> We </span><span data-phrasecode="8">see a rebound trend, where </span><span data-phrasecode="9" data-action="getSeries('Temperature in Fahrenheit').getSequence(0,3).highlight()">the values initially increase, </span><span data-phrasecode="10" data-action="getSeries('Temperature in Fahrenheit').getSequence(2,4).highlight()">then fall, </span><span data-phrasecode="11" data-action="getSeries('Temperature in Fahrenheit').getSequence(3,7).highlight()">and then rise again.</span>`,
     manifest: {
       "datasets": [
         {
-          "title": "Average Temperature in January Each Year in a Given City from 2000 to 2006",
+          "title": "Average Temperature in January Each Year in a Given City from 2020 to 2026",
           "facets": {
             "x": {
               "label": "Year",
@@ -134,31 +134,31 @@ const explainers: Partial<Explainers> = {
               },
               records: [
                 {
-                  "x": "2000",
+                  "x": "2020",
                   "y": "40"
                 },
                 {
-                  "x": "2001",
+                  "x": "2021",
                   "y": "50"
                 },
                 {
-                  "x": "2002",
+                  "x": "2022",
                   "y": "60"
                 },
                 {
-                  "x": "2003",
+                  "x": "2023",
                   "y": "35"
                 },
                 {
-                  "x": "2004",
+                  "x": "2024",
                   "y": "40"
                 },
                 {
-                  "x": "2005",
+                  "x": "2025",
                   "y": "45"
                 },
                 {
-                  "x": "2006",
+                  "x": "2026",
                   "y": "50"
                 }
               ]
