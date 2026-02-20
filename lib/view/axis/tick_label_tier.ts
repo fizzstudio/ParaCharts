@@ -42,6 +42,8 @@ export interface TickLabelTierOptions {
   isFacetIndep: boolean;
 }
 
+export class LabelOverlapError extends Error {}
+
 /**
  * A single tier of tick labels.
  */
@@ -266,10 +268,22 @@ export class HorizTickLabelTier extends TickLabelTier {
       }
     });
     this.updateSize();
-    if (checkLabels && this._options.datatype !== 'string') {
-      this._options.step = this._optimizeLabelSpacing();
-      this.createTickLabels(false);
+    if (checkLabels) {
+      if (this._options.datatype === 'string') {
+        if (this._labelsDoOverlap() && !this._axisSettings.isStaggerLabels) {
+          throw new LabelOverlapError();
+        }
+      } else {
+        this._options.step = this._optimizeLabelSpacing();
+        this.createTickLabels(false);
+      }
     }
+  }
+
+  protected _labelsDoOverlap(): boolean {
+    const bboxes = this._children.map(kid => kid.bbox);
+    const gaps = bboxes.slice(1).map((bbox, i) => bbox.left - bboxes[i].right);
+    return Math.round(Math.min(...gaps)) < this._axisSettings.ticks.labels.gap;
   }
 
   protected _optimizeLabelSpacing(): number {
