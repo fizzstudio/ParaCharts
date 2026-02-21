@@ -159,13 +159,11 @@ export abstract class DataLayer extends PlotLayer {
       }
     }
     if (['popup.activation'].includes(path)) {
-      if (oldValue === "onSelect" || oldValue === "onFocus") {
-        this.paraview.paraState.clearPopups();
-        this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length);
-      }
+      this.paraview.paraState.clearPopups();
+      this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length);
     }
     if (['chart.isShowPopups'].includes(path)) {
-      this.paraview.paraState.popups.splice(0, this.paraview.paraState.popups.length)
+      this.paraview.paraState.clearPopups();
     }
     super.settingDidChange(path, oldValue, newValue);
   }
