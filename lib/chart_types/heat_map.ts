@@ -5,6 +5,7 @@ import { PlaneChartInfo } from './plane_chart';
 import { type ParaView } from '../paraview';
 import { type NavNode } from '../view/layers';
 import { DocumentView } from '../view/document_view';
+import { type ParaState } from '../state';
 
 export class HeatMapInfo extends PlaneChartInfo {
   protected _resolution!: number;
@@ -12,8 +13,8 @@ export class HeatMapInfo extends PlaneChartInfo {
   protected _grid!: Array<Array<number>>;
   protected _maxCount!: number;
 
-  constructor(type: ChartType, paraView: ParaView) {
-    super(type, paraView);
+  constructor(type: ChartType, paraState: ParaState) {
+    super(type, paraState);
   }
 
   protected _init() {

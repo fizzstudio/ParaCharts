@@ -18,7 +18,7 @@ import { BaseState, SettingObserver } from './base_state';
 import { Logger, getLogger } from '@fizz/logger';
 import papa from 'papaparse';
 import { State, property } from '@lit-app/state';
-import { produceWithPatches, enablePatches } from 'immer';
+import { produceWithPatches, enablePatches, applyPatches } from 'immer';
 enablePatches();
 
 import {
@@ -61,6 +61,7 @@ import { type DatapointCursor } from '../view/layers/data/navigation';
 import { Point } from '@fizz/chart-classifier-utils';
 import { PathShape } from '../view/shape';
 import { GlobalState } from './global_state';
+import { BaseChartInfo, chartInfoClasses } from '../chart_types';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -120,6 +121,17 @@ export interface SparkBrailleInfo {
   isProportional?: boolean;
   isBar?: boolean;
 }
+
+const synchronizedSettings = [
+  'ui.isFullscreenEnabled',
+  'ui.isLowVisionModeEnabled',
+  'color.isDarkModeEnabled',
+  'chart.fontScale',
+  'color.colorPalette',
+  'grid.isDrawVertLines',
+  'chart.size.width',
+  'chart.size.height',
+];
 
 /**
  * Convert a datapoint ID string of format `${seriesKey}-${index}` into a DatapointCursor.
@@ -217,6 +229,7 @@ export class ParaState extends BaseState {
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected _annotID: number = 0;
   protected log: Logger = getLogger("ParaState");
+  protected _chartInfo!: BaseChartInfo;
 
   public idList: Record<string, boolean> = {};
 
@@ -300,11 +313,91 @@ export class ParaState extends BaseState {
     return this._globalState.paraStates.indexOf(this);
   }
 
-  setManifest(manifest: Manifest, data?: AllSeriesData) {
+  get chartInfo() {
+    return this._chartInfo;
+  }
+
+  protected _createChartInfo() {
+    // @ts-ignore
+    this._chartInfo = new chartInfoClasses[this.type](this.type, this);
+  }
+
+  protected _createSettings(inputSettings: SettingsInput) {
+    const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
+    SettingsManager.suppleteSettings(hydratedSettings, defaults);
+    this.settings = hydratedSettings as Settings;
+  }
+
+  updateSettings(updater: (draft: Settings) => void, ignoreObservers = false) {
+    const [newSettings, patches, inversePatches] = produceWithPatches(this.settings, updater);
+    this.settings = newSettings;
+    const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
+    const counterpart = this._globalState.paraStates[1 - this.index];
+    counterpart.settings = applyPatches(counterpart.settings, filtered);
+    if (ignoreObservers) {
+      return patches;
+    }
+    const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
+    for (const patch of patches) {
+      if (patch.op !== 'replace') {
+        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        continue;
+      }
+      observed[patch.path.join('.')] = { newValue: patch.value };
+    }
+    for (const patch of inversePatches) {
+      if (patch.op !== 'replace') {
+        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        continue;
+      }
+      observed[patch.path.join('.')].oldValue = patch.value;
+    }
+    for (const [path, values] of Object.entries(observed)) {
+      this._settingObservers[path]?.forEach(observer =>
+        observer(values.oldValue, values.newValue)
+      );
+      this.settingDidChange(path, values.oldValue, values.newValue);
+    }
+    return patches;
+  }
+
+  observeSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
+    if (!this._settingObservers[path]) {
+      this._settingObservers[path] = [];
+    }
+    if (this._settingObservers[path].includes(observer)) {
+      throw new Error(`observer already registered for setting '${path}'`);
+    }
+    this._settingObservers[path].push(observer);
+  }
+
+  observeSettings(paths: string[], observer: (oldValue: Setting, newValue: Setting) => void) {
+    for (let path of paths) {
+      this.observeSetting(path, observer);
+    }
+  }
+
+  unobserveSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
+    if (!this._settingObservers[path]) {
+      throw new Error(`no observers for setting '${path}'`);
+    }
+    const idx = this._settingObservers[path].indexOf(observer);
+    if (idx === -1) {
+      throw new Error(`observer not registered for setting '${path}'`);
+    }
+    this._settingObservers[path].splice(idx, 1);
+    if (this._settingObservers[path].length === 0) {
+      delete this._settingObservers[path];
+    }
+  }
+
+  setManifest(manifest: Manifest, data?: AllSeriesData, resetSettings = true) {
     this._manifest = manifest;
     const dataset = this._manifest.datasets[0];
 
-    this._createSettings(this._inputSettings);
+    if (resetSettings) {
+      this._createSettings(this._inputSettings);
+    }
 
     if (chartTypeDefaults[dataset.representation.subtype]) {
       Object.entries(chartTypeDefaults[dataset.representation.subtype]!).forEach(([path, value]) => {
@@ -332,6 +425,7 @@ export class ParaState extends BaseState {
     this._type = dataset.representation.subtype;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
+
     if (dataset.data.source === 'inline') {
       if (isPastryType(this._type) || isVennType(this._type)) {
         this._model = modelFromInlineData(manifest);
@@ -342,6 +436,7 @@ export class ParaState extends BaseState {
           this._pairAnalyzerConstructor
         );
       }
+      this._createChartInfo();
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
@@ -359,6 +454,7 @@ export class ParaState extends BaseState {
           this._pairAnalyzerConstructor
         );
       }
+      this._createChartInfo();
       //this._seriesProperties = new SeriesPropertyManager(this);
       this._seriesProperties.reset();
       this.data = data;

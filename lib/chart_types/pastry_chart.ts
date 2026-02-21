@@ -32,8 +32,8 @@ export type ArcType = 'circle' | 'semicircle';
 
 export class PastryChartInfo extends BaseChartInfo {
 
-  constructor(type: ChartType, paraView: ParaView) {
-    super(type, paraView);
+  constructor(type: ChartType, paraState: ParaState) {
+    super(type, paraState);
   }
 
   protected _addSettingControls(): void {

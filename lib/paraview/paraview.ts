@@ -38,6 +38,8 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { Unsubscribe } from '@lit-app/state';
 import { AvailableActions } from '../state/action_map';
 
+import { BaseChartInfo, chartInfoClasses } from '../chart_types';
+
 /**
  * Data provided for the on focus callback
  */
@@ -67,7 +69,6 @@ export class ParaView extends ParaComponent {
   protected _frameRef = createRef<SVGRectElement>();
   protected _dataspaceRef = createRef<SVGGElement>();
   protected _documentView?: DocumentView;
-  protected _pushedDocumentview: DocumentView | null = null;
   protected _containerRef = createRef<HTMLDivElement>();
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
@@ -84,7 +85,6 @@ export class ParaView extends ParaComponent {
   @state() protected _defs: { [key: string]: TemplateResult } = {};
   @state() protected _jim = '';
   @state() protected _isFullscreen = false;
-  protected _exitingLowVisionMode = false;
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
 
@@ -92,6 +92,7 @@ export class ParaView extends ParaComponent {
   protected _jimReadyPromise: Promise<void>;
   protected _jimReadyResolver!: (() => void);
   protected _jimReadyRejector!: (() => void);
+
 
   static styles = [
     //styles,
@@ -113,6 +114,9 @@ export class ParaView extends ParaComponent {
       }
       #content.explainer {
         fill: aliceblue;
+      }
+      .darkmode #frame.explainer, .darkmode #content.explainer {
+        fill: dimgray;
       }
       .darkmode {
         --axis-line-color: ghostwhite;
@@ -365,9 +369,14 @@ export class ParaView extends ParaComponent {
     return this._viewBox;
   }
 
+  get container() {
+    return this._containerRef.value;
+  }
+
   get root() {
     return this._rootRef.value;
   }
+
   get frame() {
     return this._frameRef.value;
   }
@@ -444,6 +453,7 @@ export class ParaView extends ParaComponent {
   // Anything that needs to be done when data is updated, do here
   private async dataUpdated(): Promise<void> {
     try {
+      this._paraState.chartInfo.setParaView(this);
       this.createDocumentView();
       if (this.paraChart.headless) {
         await this.addJIMSeriesSummaries();
@@ -563,6 +573,7 @@ export class ParaView extends ParaComponent {
               this._modeSaved.delete('chart.size.width');
             }, true);
           }
+          this.paraChart.styleManager.update();
           this.createDocumentView();
         }, 40);
       };
@@ -571,13 +582,6 @@ export class ParaView extends ParaComponent {
   }
 
   protected _handleLowVisionMode(newValue?: Setting) {
-    if (newValue) {
-      this._paraState.colors.selectPaletteWithKey("low-vision")
-    } else {
-      if (this._paraState.colors.prevSelectedColor.length > 0) {
-        this._paraState.colors.selectPaletteWithKey(this._paraState.colors.prevSelectedColor);
-      }
-    }
     this._paraState.updateSettings(draft => {
       this._paraState.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
       draft.color.isDarkModeEnabled = !!newValue;
@@ -586,29 +590,24 @@ export class ParaView extends ParaComponent {
         this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
         this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
         this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+        this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
         // end any in-progress animation here
         this._documentView!.chartLayers.dataLayer.stopAnimation();
         draft.animation.isAnimationEnabled = false;
         draft.chart.fontScale = 2;
         draft.grid.isDrawVertLines = true;
+        draft.color.colorPalette = 'low-vision';
       } else {
-        this._exitingLowVisionMode = true;
         draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
         draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
         draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
+        draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
         this._modeSaved.delete('animation.isAnimationEnabled');
-        this._modeSaved.delete('chart.fontScale');
+        //this._modeSaved.delete('chart.fontScale');
         this._modeSaved.delete('grid.isDrawVertLines');
+        this._modeSaved.delete('color.colorPalette');
       }
     });
-    if (this._exitingLowVisionMode) {
-      queueMicrotask(() => {
-        //this._paraState.updateSettings(draft => {
-
-        //});
-        this._exitingLowVisionMode = false;
-      });
-    }
   }
 
   protected _handleVoicing() {
@@ -729,19 +728,6 @@ export class ParaView extends ParaComponent {
     this._documentView = undefined;
   }
 
-  pushDocumentView() {
-    if (this._pushedDocumentview) throw new Error('doc view already pushed');
-    this._pushedDocumentview = this._documentView!;
-    this._documentView = undefined;
-  }
-
-  popDocumentView() {
-    if (!this._pushedDocumentview) throw new Error('no doc view pushed');
-    this._documentView = this._pushedDocumentview;
-    this._pushedDocumentview = null;
-    this.requestUpdate();
-  }
-
   computeViewBox() {
     this._viewBox = {
       x: 0,
@@ -764,11 +750,11 @@ export class ParaView extends ParaComponent {
   // }
 
   async addJIMSeriesSummaries() {
-    if (!this._documentView?.chartInfo?.summarizer) {
+    if (!this._paraState.chartInfo.summarizer) {
       this.log.warn('Cannot add JIM series summaries: documentView or summarizer not available');
       return;
     }
-    const summarizer = this._documentView.chartInfo.summarizer;
+    const summarizer = this._paraState.chartInfo.summarizer;
     const seriesKeys = this._paraState.model?.originalSeriesKeys || [];
     for (const seriesKey of seriesKeys) {
       const summary = await summarizer.getSeriesSummary(strToId(seriesKey));
@@ -907,7 +893,7 @@ export class ParaView extends ParaComponent {
   }
 
   navToDatapoint(seriesKey: string, index: number) {
-    this._documentView!.chartInfo.navToDatapoint(seriesKey, index);
+    this._paraState.chartInfo.navToDatapoint(seriesKey, index);
   }
 
 

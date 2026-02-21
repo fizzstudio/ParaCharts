@@ -11,8 +11,8 @@ export class HistogramChartInfo extends PlaneChartInfo {
   protected _grid: Array<number> = [];
   protected _maxCount: number = 0;
 
-  constructor(type: ChartType, paraView: ParaView) {
-    super(type, paraView);
+  constructor(type: ChartType, paraState: ParaState) {
+    super(type, paraState);
   }
 
   protected _init() {
