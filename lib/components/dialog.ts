@@ -8,6 +8,11 @@ import { LitElement, html, css, nothing, type PropertyValueMap, type TemplateRes
 import { property, state, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 
+export interface DialogReturn {
+  result: string;
+  text: string;
+}
+
 
 /**
  * Simple dialog that displays a message and a single
@@ -102,7 +107,7 @@ export class ParaDialog extends ParaComponent {
    * @param contentArray - status bar display contentArray.
    */
   // async show(title: string, contentArray: string[]) {
-  async show(title: string, content: TemplateResult = html``): Promise<string | string[] | void> {
+  async show(title: string, content: TemplateResult = html``): Promise<DialogReturn | void> {
     this.title = title;
     this._content = content;
     await this._dialogRef.value!.show(() => this._dialogRef.value!.button('cancel')!.focus());

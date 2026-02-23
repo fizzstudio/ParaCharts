@@ -27,6 +27,11 @@ export class AnnotationDialog extends ParaDialog {
   @property() cancelBtnText = 'Cancel';
 
   /**
+ * Close button text.
+ */
+  @property() removeBtnText = 'Remove annotation';
+
+  /**
    * Generic dialog.
    */
   @property({ type: Array }) contentArray: string[] = [];
@@ -39,7 +44,9 @@ export class AnnotationDialog extends ParaDialog {
   protected _dialogRef: Ref<Dialog> = createRef();
 
   render() {
-    const buttons = [{ tag: 'add', text: this.addBtnText }, { tag: 'cancel', text: this.cancelBtnText }];
+    const buttons = [{ tag: 'add', text: this.addBtnText }, { tag: 'cancel', text: this.cancelBtnText },
+    { tag: 'remove', text: this.removeBtnText }
+    ];
     return html`
       <fizz-dialog
         ${ref(this._dialogRef)}
@@ -55,14 +62,13 @@ export class AnnotationDialog extends ParaDialog {
    * Show the dialog
    * @param contentArray - status bar display contentArray.
    */
-  // async show(title: string, contentArray: string[]) {
   async show(title: string, content: TemplateResult = html``) {
     this.title = title;
     this._content = content;
     const result = await this._dialogRef.value!.show(() => this._dialogRef.value!.button('cancel')!.focus());
     const returnText = this._dialogRef.value!.getElementsByTagName("input").namedItem("annot")!.value;
     this._dialogRef.value!.getElementsByTagName("input").namedItem("annot")!.value = ''
-    return [result, returnText]
+    return {result: result, text: returnText}
   }
 }
 

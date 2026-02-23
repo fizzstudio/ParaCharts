@@ -49,6 +49,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
       <ol class="annotations">
         ${this._paraState.annotations.map(item => html`
             <li
+              id="${item.id}"
               data-series="${item.seriesKey}"
               data-index="${item.index}"
               @click=${(event: Event) => {
@@ -57,6 +58,10 @@ export class AnnotationPanel extends ControlPanelTabPanel {
                 }}
               @dblclick=${(event: Event) => {
                 this._paraState.annotations = this._paraState.annotations.filter(p => !(p.id == item.id))
+                }}
+              @contextmenu=${(event: Event) => {
+                event.preventDefault()
+                this.editAnnotation(event)
                 }}
             >${item.annotation}</li>
           `)
@@ -99,11 +104,11 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         this._paraState.model!.atKeyAndIndex(seriesKey, index) as PlaneDatapoint,
         'raw'
       );
-      let result = await this.controlPanel.showAnnotDialog(dpId);
-      if (result[0] == 'cancel'){
+      const { result, text } = await this.showAddAnnotDialog(dpId);
+      if (result == 'cancel') {
         continue;
       }
-      const annotationText = result[1];
+      const annotationText = text;
       if (annotationText) {
         newAnnotationList.push({
           type: "datapoint",
@@ -117,6 +122,64 @@ export class AnnotationPanel extends ControlPanelTabPanel {
       }
     }
     this._paraState.annotations = [...this._paraState.annotations, ...newAnnotationList];
+  }
+
+  async editAnnotation(event: Event) {
+    const target = (event?.target as HTMLElement);
+    if (target) {
+      const annot = this._paraState.annotations.filter(p => (p.id == target.id))[0] as PointAnnotation;
+      if (!annot){
+        return;
+      }
+      const { result, text } = await this.showEditAnnotDialog(annot);
+      if (result == 'cancel') {
+        return;
+      }
+      if (result == 'remove') {
+        this._paraState.annotations = this._paraState.annotations.filter(p => !(p.id == target.id));
+        return;
+      }
+      else {
+        annot.text = text;
+        this._paraState.requestUpdate();
+      }
+    }
+  }
+
+  async showAddAnnotDialog(dpId: string) {
+    return await this.controlPanel.annotationDialog.show('Add Annotation', this._addAnnot(dpId));
+  }
+
+  protected _addAnnot(dpId: string) {
+    const { seriesKey, index } = datapointIdToCursor(dpId);
+    const series = this._paraState.model!.atKey(seriesKey)!.getLabel();
+    return html`
+          <div id="annotDialog">
+            <div>Datapoint: ${series}, ${index}</div><br>
+            <label for="annot">Text:</label><br>
+            <input type="text" id="annot" name="annot">
+            <br><br>
+          </div>
+        `;
+  }
+
+  async showEditAnnotDialog(annot: PointAnnotation) {
+    return await this.controlPanel.annotationDialog.show('Edit Annotation', this._editAnnot(annot));
+  }
+
+  protected _editAnnot(annot: PointAnnotation) {
+    const seriesKey = annot.seriesKey;
+    const index = annot.index;
+    const series = this._paraState.model!.atKey(seriesKey)!.getLabel();
+    return html`
+          <div id="annotDialog">
+            <div>Datapoint: ${series}, ${index}</div><br>
+            <div>Current text: ${annot.text}</div><br>
+            <label for="annot">New text:</label><br>
+            <input type="text" id="annot" name="annot">
+            <br><br>
+          </div>
+        `;
   }
 
   render() {
@@ -136,8 +199,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         </div>
         <div>
           <button
-            @click=${
-              () => {
+            @click=${() => {
                 this._paraState.addUserLineBreaks()
               }
             }
@@ -147,8 +209,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         </div>
          <div>
           <button
-            @click=${
-              () => {
+            @click=${() => {
                 this._paraState.clearUserLineBreaks()
                 this._paraState.clearUserTrendLines()
               }
@@ -159,8 +220,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         </div>
          <div>
           <button
-            @click=${
-              () => {
+            @click=${() => {
                 this._paraState.updateSettings(draft => {
                   draft.controlPanel.isMDRAnnotationsVisible = !this._paraState.settings.controlPanel.isMDRAnnotationsVisible;
                 });
