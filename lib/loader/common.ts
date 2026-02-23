@@ -1,5 +1,7 @@
 import { type Manifest, type JIMManifest, type Dataset } from '@fizz/paramanifest';
 
+export type { Manifest, JIMManifest };
+
 /**
  * Concatenate multiple series labels into a single string for axis titles.
  * Labels are joined with ", " separator and truncated at 50 characters if needed.
@@ -59,4 +61,16 @@ export function getDatasets(manifest: Manifest | JIMManifest): Dataset[] {
     return manifest.jim.datasets;
   }
   return manifest.datasets;
+}
+
+/**
+ * Extract the first dataset from either a Manifest or JIMManifest object.
+ * 
+ * @internal
+ * 
+ * @param manifest - A Manifest or JIMManifest object containing dataset information
+ * @returns The first Dataset object from the manifest
+ */
+export function firstDataset(manifest: Manifest | JIMManifest): Dataset {
+  return getDatasets(manifest)[0];
 }
