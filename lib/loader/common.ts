@@ -1,3 +1,5 @@
+import { type Manifest, type JIMManifest, type Dataset } from '@fizz/paramanifest';
+
 /**
  * Concatenate multiple series labels into a single string for axis titles.
  * Labels are joined with ", " separator and truncated at 50 characters if needed.
@@ -30,4 +32,31 @@ export function concatenateSeriesLabels(labels: string[]): string {
   
   // Remove trailing comma and space
   return result.replace(/, $/, '');
+}
+
+/**
+ * Type guard to check if a manifest is an enveloped Manifest.
+ * 
+ * @internal
+ * 
+ * @param manifest - A Manifest or JIMManifest object
+ * @returns true if the manifest is enveloped (Manifest type), false if it's root form (JIMManifest type)
+ */
+export function isEnveloped(manifest: Manifest | JIMManifest): manifest is Manifest {
+  return 'jim' in manifest;
+}
+
+/**
+ * Extract datasets array from either a Manifest or JIMManifest object.
+ * 
+ * @internal
+ * 
+ * @param manifest - A Manifest or JIMManifest object containing dataset information
+ * @returns Array of Dataset objects extracted from the manifest
+ */
+export function getDatasets(manifest: Manifest | JIMManifest): Dataset[] {
+  if (isEnveloped(manifest)) {
+    return manifest.jim.datasets;
+  }
+  return manifest.datasets;
 }
