@@ -1,4 +1,4 @@
-import { PlaneChartInfo } from '.';
+import { PlaneChartInfo } from './plane_chart';
 import { type ParaState, type DeepReadonly } from '../state';
 import { type ParaView } from '../paraview';
 import { type ChartType } from "@fizz/paramanifest";

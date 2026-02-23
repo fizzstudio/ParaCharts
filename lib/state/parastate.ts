@@ -333,7 +333,9 @@ export class ParaState extends BaseState {
     this.settings = newSettings;
     const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
     const counterpart = this._globalState.paraStates[1 - this.index];
-    counterpart.settings = applyPatches(counterpart.settings, filtered);
+    if (counterpart) {
+      counterpart.settings = applyPatches(counterpart.settings, filtered);
+    }
     if (ignoreObservers) {
       return patches;
     }
