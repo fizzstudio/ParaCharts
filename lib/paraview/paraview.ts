@@ -927,6 +927,14 @@ export class ParaView extends ParaComponent {
 
   render(): TemplateResult {
     return html`
+    <svg role="img" 
+    aria-label= "Press tab to interact with ParaChart"
+    height="1" 
+    width="1" 
+    viewBox="0 0 1 1" 
+    xmlns=${SVGNS}
+      <rect x="0" y="0" width="1" height="1" fill="none" stroke="none" />
+    </svg>
     <div ${ref(this._containerRef)} @fullscreenchange=${() => this._onFullscreenChange()}>
     <svg
         role="application"
