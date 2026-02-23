@@ -331,7 +331,8 @@ export class ParaChart extends ParaComponent {
     manifestInput: string,
     manifestType: SourceKind,
     forceType = true,
-    description?: string
+    description?: string,
+    resetSettings = true,
   ): Promise<void> {
     this._paraState.dataState = 'pending';
     try {
@@ -348,7 +349,7 @@ export class ParaChart extends ParaComponent {
         this._paraState.clearAllHighlights();
         this._paraState.clearPopups();
       }
-      this._paraState.setManifest(manifest, data);
+      this._paraState.setManifest(manifest, data, resetSettings);
       this._paraState.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode
       this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
@@ -383,7 +384,7 @@ export class ParaChart extends ParaComponent {
       return
     }
     this.paraView.documentView?.noticePosted(key, value);
-    this.paraView.documentView?.chartInfo.noticePosted(key, value);
+    this._globalState.paraState.chartInfo.noticePosted(key, value);
     this.captionBox.noticePosted(key, value);
     this.dispatchEvent(
       new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));

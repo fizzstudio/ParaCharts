@@ -20,7 +20,7 @@ export class Commander {
     const paraState = paraView.paraState;
     // Always return the current chart info object (i.e., don't let the
     // commands close over a value that might be removed)
-    const chartInfo = () => paraView.documentView!.chartInfo;
+    const chartInfo = () => paraView.paraState.chartInfo;
     const chartView = () => paraView.documentView!.chartLayers.dataLayer;
     this._commands = {
       key(keyId: string): boolean {

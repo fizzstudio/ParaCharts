@@ -18,7 +18,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { ParaView } from '../paraview';
 import { PlaneChartInfo } from './plane_chart';
 import { AxisInfo } from '../common/axisinfo';
-import { DeepReadonly, BarSettings, datapointIdToCursor, Setting } from '../state';
+import { DeepReadonly, BarSettings, datapointIdToCursor, Setting, type ParaState } from '../state';
 import {
   queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax
 } from '../state/query_utils';
@@ -97,8 +97,8 @@ export class BarChartInfo extends PlaneChartInfo {
   protected _stacksPerCluster!: number;
   protected _prevHighlightNavcode = '';
 
-  constructor(type: ChartType, paraView: ParaView) {
-    super(type, paraView);
+  constructor(type: ChartType, paraState: ParaState) {
+    super(type, paraState);
   }
 
   protected _init(): void {

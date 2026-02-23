@@ -371,7 +371,7 @@ export abstract class PastryPlotView extends DataLayer {
   protected abstract _createSlice(seriesView: SeriesView, params: RadialDatapointParams): RadialSlice;
 
   focusRingShape(): Shape | null {
-    const chartInfo = this._parent.parent.chartInfo;
+    const chartInfo = this.paraview.paraState.chartInfo;
     const cursor = chartInfo.navMap!.cursor;
     if (cursor.isNodeType('datapoint')) {
       return this.datapointView(cursor.options.seriesKey, cursor.options.index)!.focusRingShape();

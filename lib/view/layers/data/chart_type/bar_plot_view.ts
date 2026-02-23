@@ -194,7 +194,7 @@ export class BarPlotView extends PlanePlotView {
   }
 
   protected _createDatapoints() {
-    const chartInfo = this._parent.parent.chartInfo as BarChartInfo;
+    const chartInfo = this.paraview.paraState.chartInfo as BarChartInfo;
     const seriesViews: { [key: string]: PlaneSeriesView } = {};
     Object.entries(chartInfo.clusteredData).forEach(([clusterKey, cluster], i) => {
       for (const [stackKey, stack] of Object.entries(cluster.stacks)) {

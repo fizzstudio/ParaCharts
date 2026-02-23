@@ -159,13 +159,11 @@ export abstract class DataLayer extends PlotLayer {
       }
     }
     if (['popup.activation'].includes(path)) {
-      if (oldValue === "onSelect" || oldValue === "onFocus") {
-        this.paraview.paraState.clearPopups();
-        this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length);
-      }
+      this.paraview.paraState.clearPopups();
+      this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length);
     }
     if (['chart.isShowPopups'].includes(path)) {
-      this.paraview.paraState.popups.splice(0, this.paraview.paraState.popups.length)
+      this.paraview.paraState.clearPopups();
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -303,7 +301,7 @@ export abstract class DataLayer extends PlotLayer {
   // }
 
   focusRingBbox() {
-    const chartInfo = this._parent.parent.chartInfo;
+    const chartInfo = this.paraview.paraState.chartInfo;
     const cursor = chartInfo.navMap!.cursor;
     if (['series', 'chord', 'datapoint', 'sequence'].includes(cursor.type)) {
       return bboxOfBboxes(...cursor.datapoints.map(dp =>
