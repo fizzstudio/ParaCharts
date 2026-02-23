@@ -1,4 +1,4 @@
-import { PointChartInfo } from '.';
+import { PointChartInfo } from './point_chart';
 import { clusterObject, coord, generateClusterAnalysis } from '@fizz/clustering';
 import { strToId, ChartType } from '@fizz/paramanifest';
 import { type ParaState } from '../state';
