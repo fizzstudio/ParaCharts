@@ -1,9 +1,9 @@
-import { ChartType, Manifest, type Datatype, type AllSeriesData } from '@fizz/paramanifest';
+import { ChartType, Dataset, Manifest, type Datatype, type AllSeriesData } from '@fizz/paramanifest';
 
 import papa from 'papaparse';
 
 import { getLogger } from '@fizz/logger';
-import { concatenateSeriesLabels } from './common';
+import { concatenateSeriesLabels, firstDataset } from './common';
 
 /**
  * Type of data source
@@ -128,11 +128,12 @@ function buildSeriesDataFromCSV(
 async function processExternalData(
   manifest: Manifest
 ): Promise<AllSeriesData> {
-  if (!manifest.datasets[0].data.path) {
+  const dataset = firstDataset(manifest);
+  if (!dataset.href?.path) {
     throw new LoadError(LoadErrorCode.CSV_INVALID_FORMAT, 'External data source requires a path');
   }
   
-  const url = manifest.datasets[0].data.path;
+  const url = dataset.href.path;
   const response = await fetch(url);
   if (!response.ok) {
     throw new LoadError(LoadErrorCode.NETWORK_ERROR, `Failed to fetch CSV from ${url}: ${response.status} ${response.statusText}`);
@@ -145,7 +146,7 @@ async function processExternalData(
     return {};
   }
   
-  const seriesKeys = manifest.datasets[0].series.map(series => series.key);
+  const seriesKeys = dataset.series.map(series => series.key);
   const fields = Object.keys(csvData[0]);
   const indepKey = fields.filter(field => !seriesKeys.includes(field))[0];
   
@@ -238,14 +239,15 @@ function applyManifestOverrides(
   chartType?: ChartType,
   description?: string
 ): void {
+  const dataset = firstDataset(manifest);
   if (chartType) {
-    manifest.datasets[0].representation = {
+    dataset.representation = {
       type: 'chart',
       subtype: chartType
     };
   }
   if (description) {
-    manifest.datasets[0].description = description;
+    dataset.description = description;
   }
 }
 
@@ -270,7 +272,7 @@ export async function load(
   const manifest = await loadManifest(kind, manifestInput);
   let data: AllSeriesData | undefined = undefined;
 
-  if (manifest.datasets[0].data.source === 'external') {
+  if (!!firstDataset(manifest).href) {
     data = await processExternalData(manifest);
   }
 
@@ -462,7 +464,7 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
   };
 
   // Build facets based on chart type
-  let facets: Manifest['datasets'][0]['facets'];
+  let facets: Dataset['facets'];
 
   if (isPastryChart) {
     // Pie/donut charts: derive facets from series keys
@@ -522,7 +524,7 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
     }));
     return {
       key,
-      theme: {
+      topic: {
         baseQuantity: key.toLowerCase(),
         baseKind: 'number' as const
       },
@@ -531,19 +533,18 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
   });
 
   return {
-    datasets: [
-      {
-        representation: {
-          type: 'chart',
-          subtype: manifestTypeMap[chartType]
-        },
-        title: chartTitle,
-        facets,
-        series: seriesWithRecords,
-        data: {
-          source: 'inline'
+    jim: {
+      datasets: [
+        {
+          representation: {
+            type: 'chart',
+            subtype: manifestTypeMap[chartType]
+          },
+          title: chartTitle,
+          facets,
+          series: seriesWithRecords
         }
-      }
-    ]
+      ]
+    }
   };
 }
