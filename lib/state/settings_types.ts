@@ -541,7 +541,7 @@ export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
 /** @public */
 export interface BarSettings extends PlaneChartSettings {
   /** How bars are stacked */
-  stacking: 'none' | 'standard'; // | '100%';
+  stacking: 'none' | 'standard' | string; // | '100%';
   /** Width of individual bars */
   barWidth: number;
   /** Color each bar individually vs by series */
