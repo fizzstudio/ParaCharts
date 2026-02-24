@@ -56,9 +56,6 @@ export class AnnotationPanel extends ControlPanelTabPanel {
                 item.isSelected = !item.isSelected;
                 this._selectAnnotation(event);
                 }}
-              @dblclick=${(event: Event) => {
-                this._paraState.annotations = this._paraState.annotations.filter(p => !(p.id == item.id))
-                }}
               @contextmenu=${(event: Event) => {
                 event.preventDefault()
                 this.editAnnotation(event)
