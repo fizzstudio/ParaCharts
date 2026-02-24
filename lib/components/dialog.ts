@@ -13,6 +13,9 @@ export interface DialogReturn {
   text: string;
 }
 
+export interface DialogOptions {
+}
+
 
 /**
  * Simple dialog that displays a message and a single
@@ -41,6 +44,9 @@ export class ParaDialog extends ParaComponent {
    * Content text.
    */
   @state() protected _content!: TemplateResult;
+
+  protected _options: DialogOptions = {};
+
 
   protected _dialogRef: Ref<Dialog> = createRef();
 
@@ -107,9 +113,12 @@ export class ParaDialog extends ParaComponent {
    * @param contentArray - status bar display contentArray.
    */
   // async show(title: string, contentArray: string[]) {
-  async show(title: string, content: TemplateResult = html``): Promise<DialogReturn | void> {
+  async show(title: string, content: TemplateResult = html``, options?: DialogOptions): Promise<DialogReturn | void> {
     this.title = title;
     this._content = content;
+    if (options) {
+      this._options = options;
+    }
     await this._dialogRef.value!.show(() => this._dialogRef.value!.button('cancel')!.focus());
   }
 }

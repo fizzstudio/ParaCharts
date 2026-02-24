@@ -6,6 +6,11 @@ import { ParaDialog } from '../../components';
 
 import { customElement, property, state } from 'lit/decorators.js';
 
+interface AnnotationDialogOptions{
+  showRemove?: boolean;
+}
+
+
 /**
  * @public
  */
@@ -42,11 +47,13 @@ export class AnnotationDialog extends ParaDialog {
   @state() protected _content!: TemplateResult;
 
   protected _dialogRef: Ref<Dialog> = createRef();
+    protected _options: AnnotationDialogOptions = {};
 
   render() {
-    const buttons = [{ tag: 'add', text: this.addBtnText }, { tag: 'cancel', text: this.cancelBtnText },
-    { tag: 'remove', text: this.removeBtnText }
-    ];
+    const buttons = [{ tag: 'add', text: this.addBtnText }, { tag: 'cancel', text: this.cancelBtnText }];
+    if (this._options.showRemove){
+      buttons.push({ tag: 'remove', text: this.removeBtnText });
+    }
     return html`
       <fizz-dialog
         ${ref(this._dialogRef)}
@@ -62,9 +69,12 @@ export class AnnotationDialog extends ParaDialog {
    * Show the dialog
    * @param contentArray - status bar display contentArray.
    */
-  async show(title: string, content: TemplateResult = html``) {
+  async show(title: string, content: TemplateResult = html``, options: AnnotationDialogOptions) {
     this.title = title;
     this._content = content;
+    if (options) {
+      this._options = options;
+    }
     const result = await this._dialogRef.value!.show(() => this._dialogRef.value!.button('cancel')!.focus());
     const returnText = this._dialogRef.value!.getElementsByTagName("input").namedItem("annot")!.value;
     this._dialogRef.value!.getElementsByTagName("input").namedItem("annot")!.value = ''

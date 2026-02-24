@@ -147,7 +147,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
   }
 
   async showAddAnnotDialog(dpId: string) {
-    return await this.controlPanel.annotationDialog.show('Add Annotation', this._addAnnot(dpId));
+    return await this.controlPanel.annotationDialog.show('Add Annotation', this._addAnnot(dpId), {showRemove: false});
   }
 
   protected _addAnnot(dpId: string) {
@@ -164,7 +164,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
   }
 
   async showEditAnnotDialog(annot: PointAnnotation) {
-    return await this.controlPanel.annotationDialog.show('Edit Annotation', this._editAnnot(annot));
+    return await this.controlPanel.annotationDialog.show('Edit Annotation', this._editAnnot(annot), {showRemove: true});
   }
 
   protected _editAnnot(annot: PointAnnotation) {
