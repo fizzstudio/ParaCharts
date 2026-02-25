@@ -368,6 +368,14 @@ export class ParaAPI {
     this._paraChart.paraState.clearRangeHighlight(startPortion, endPortion);
   }
 
+  highlightIntersection(index: number) {
+    this._paraChart.paraState.highlightIntersection(index);
+  }
+
+  clearIntersectionHighlight(index: number) {
+    this._paraChart.paraState.clearIntersectionHighlight(index);
+  }
+
   clearAllRangeHighlights() {
     this._paraChart.paraState.clearAllRangeHighlights();
   }
@@ -382,6 +390,10 @@ export class ParaAPI {
 
   clearAllSeriesLowlights() {
     this._paraChart.paraState.clearAllSeriesLowlights();
+  }
+
+  clearAllIntersectionHighlights() {
+    this._paraChart.paraState.clearAllIntersectionHighlights();
   }
 
   clearAllHighlights() {

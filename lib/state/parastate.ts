@@ -208,6 +208,7 @@ export class ParaState extends BaseState {
   @property() protected _prevSelectedDatapoints = new Set<string>();
   /** `${seriesKey}-${index1}-${index2}` */
   @property() protected _highlightedSequences = new Set<string>();
+  @property() protected _highlightedIntersections = new Set<number>();
   @property() protected _rangeHighlights: RangeHighlight[] = [];
   @property() protected _modelLineBreaks: LineBreak[] = [];
   @property() protected _userLineBreaks: LineBreak[] = [];
@@ -677,9 +678,31 @@ export class ParaState extends BaseState {
     this._highlightedSequences = new Set();
   }
 
+  get highlightedIntersections(): Set<number> {
+    return this._highlightedIntersections;
+  }
+
+  highlightIntersection(index: number) {
+    this._highlightedIntersections = new Set([
+      ...this._highlightedIntersections.values(),
+      index
+    ]);
+  }
+
+  clearIntersectionHighlight(index: number) {
+    this._highlightedIntersections = new Set(
+      [...this._highlightedIntersections.values()].filter(idx => idx !== index)
+    );
+  }
+
+  clearAllIntersectionHighlights() {
+    this._highlightedIntersections = new Set();
+  }
+
   clearAllHighlights() {
     this.clearAllDatapointHighlights();
     this.clearAllSequenceHighlights();
+    this.clearAllIntersectionHighlights();
     this.clearAllRangeHighlights();
     this.clearAllSeriesLowlights();
   }
