@@ -20,7 +20,7 @@ import { PointerEventManager } from './pointermanager';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaViewController } from '.';
 import { ParaComponent } from '../components';
-import { ChartType, strToId } from '@fizz/paramanifest';
+import { ChartType, isPastryType, strToId } from '@fizz/paramanifest';
 import { type ViewBox, type Setting, type HotkeyEvent } from '../state';
 import { View } from '../view/base_view';
 import { DocumentView } from '../view/document_view';
@@ -107,7 +107,7 @@ export class ParaView extends ParaComponent {
       #frame.explainer {
         fill: aliceblue;
         stroke: cornflowerblue;
-        stroke-width: 5;
+        stroke-width: 40;
       }
       #content {
         fill: white;
@@ -116,7 +116,7 @@ export class ParaView extends ParaComponent {
         fill: aliceblue;
       }
       .darkmode #frame.explainer, .darkmode #content.explainer {
-        fill: dimgray;
+        fill: var(--background-color);
       }
       .darkmode {
         --axis-line-color: ghostwhite;
@@ -750,6 +750,10 @@ export class ParaView extends ParaComponent {
   // }
 
   async addJIMSeriesSummaries() {
+    if (isPastryType(this._paraState.type)) {
+      this._addJIMSliceSummaries();
+      return;
+    }
     if (!this._paraState.chartInfo.summarizer) {
       this.log.warn('Cannot add JIM series summaries: documentView or summarizer not available');
       return;
@@ -761,6 +765,25 @@ export class ParaView extends ParaComponent {
       const summaryText = typeof summary === 'string' ? summary : summary.text;
       this._paraState.jimerator?.addSeriesSummary(seriesKey, summaryText);
     }
+  }
+
+  private _addJIMSliceSummaries() {
+    const model = this._paraState.model;
+    if (!model) {
+      this.log.warn('Cannot add JIM slice summaries: model not available');
+      return;
+    }
+    const series = model.series[0];
+    const datapoints = series.datapoints;
+    const totalValue = datapoints.reduce(
+      (sum, dp) => sum + (dp.facetValueNumericized('y') ?? 0), 0
+    );
+    datapoints.forEach((dp, index) => {
+      const value = dp.facetValueNumericized('y') ?? 0;
+      const pct = totalValue > 0 ? Math.round(value / totalValue * 100) : 0;
+      const description = `${dp.facetValue('x')}, ${pct}%`;
+      this._paraState.jimerator?.addSliceSummary(index, description);
+    });
   }
 
   serialize() {
@@ -927,11 +950,11 @@ export class ParaView extends ParaComponent {
 
   render(): TemplateResult {
     return html`
-    <svg role="img" 
+    <svg role="img"
     aria-label= "Press tab to interact with ParaChart"
-    height="1" 
-    width="1" 
-    viewBox="0 0 1 1" 
+    height="1"
+    width="1"
+    viewBox="0 0 1 1"
     xmlns=${SVGNS}
       <rect x="0" y="0" width="1" height="1" fill="none" stroke="none" />
     </svg>

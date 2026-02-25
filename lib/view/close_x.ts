@@ -5,7 +5,7 @@ import { CircleShape, PathShape } from './shape';
 import { Vec2 } from '../common';
 import { svg, TemplateResult } from 'lit';
 
-const R = 10;
+const R = 20;
 
 export class CloseXView extends Container(View) {
   protected _circle: CircleShape;
@@ -16,7 +16,7 @@ export class CloseXView extends Container(View) {
     super(paraview);
     this._locOffset.x = R;
     this._locOffset.y = R;
-    this._circle = new CircleShape(paraview, {r: R});
+    this._circle = new CircleShape(paraview, {r: R, fill: 'cornflowerblue'});
     this._x1 = new PathShape(paraview, {
       x: this._x,
       y: this._y,

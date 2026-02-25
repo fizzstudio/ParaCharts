@@ -20,6 +20,8 @@ import {
 } from './settings_types';
 //import { defaults } from './defaults';
 
+type SettingsStack = Array<{ group: Partial<SettingGroup>; prefix: string }>;
+
 /**
  * Helps set settings.
  * @internal
@@ -151,6 +153,27 @@ export class SettingsManager {
       dest[prop] = SettingsManager.cloneSettings(src[prop] as SettingGroup) as T[keyof T];
     } else {
       dest[prop] = src[prop];
+    }
+  }
+
+  /**
+   * Apply all leaf values from a nested settings source object into a draft.
+   * @param source - Nested settings object (or partial) to read values from.
+   * @param draft - The settings object to write into.
+   */
+  static applySettings(source: Partial<SettingGroup>, draft: SettingGroup): void {
+    const stack: SettingsStack = [{ group: source, prefix: '' }];
+    while (stack.length > 0) {
+      const { group, prefix } = stack.pop()!;
+      for (const key of Object.keys(group)) {
+        const value = group[key];
+        const path = prefix ? `${prefix}.${key}` : key;
+        if (value !== null && typeof value === 'object') {
+          stack.push({ group: value as Partial<SettingGroup>, prefix: path });
+        } else {
+          SettingsManager.set(path, value as Setting | undefined, draft, true);
+        }
+      }
     }
   }
 

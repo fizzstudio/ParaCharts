@@ -239,7 +239,7 @@ export const defaults: Settings = {
       dataLabelPosition: 'center',
       stackLabelGap: 10,
       clusterBy: undefined,
-      clusterGap: 2,
+      clusterGap: 5,
       isAbbrevSeries: true,
       orderBy: undefined,
       barGap: 20,

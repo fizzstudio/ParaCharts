@@ -32,6 +32,7 @@ import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';
 import { Model } from '@fizz/paramodel';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';
+import { Patch } from 'immer';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { Point as Point_2 } from '@fizz/chart-classifier-utils';
 import { PropertyValueMap } from 'lit';
@@ -556,7 +557,7 @@ export class ParaChart extends ParaComponent {
     render(): TemplateResult;
     resizeScrollytelling(): void;
     // (undocumented)
-    runLoader(manifestInput: string, manifestType: SourceKind, forceType?: boolean, description?: string): Promise<void>;
+    runLoader(manifestInput: string, manifestType: SourceKind, forceType?: boolean, description?: string, resetSettings?: boolean): Promise<void>;
     // (undocumented)
     get scrollyteller(): Scrollyteller | undefined;
     // Warning: (ae-forgotten-export) The symbol "Scrollyteller" needs to be exported by the entry point index.d.ts

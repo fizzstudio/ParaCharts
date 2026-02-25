@@ -157,10 +157,10 @@ export class ParaAPI {
                 'content',
                 false,
                 explainers[type]!.single!.summary,
-                false
+                false // don't reset settings
               ).then(() => {
                 _paraChart.paraState.updateSettings(draft => {
-                  draft.chart.padding = '24 90';
+                  draft.chart.padding = '32 120';
                 }, true);
                 _paraChart.styleManager.update();
                 paraView.createDocumentView();
@@ -172,10 +172,10 @@ export class ParaAPI {
                 'content',
                 false,
                 explainers[type]!.multi!.summary,
-                false
+                false // don't reset settings
               ).then(() => {
                 _paraChart.paraState.updateSettings(draft => {
-                  draft.chart.padding = '24 90';
+                  draft.chart.padding = '32 120';
                 }, true);
                 _paraChart.styleManager.update();
                 paraView.createDocumentView();
@@ -385,6 +385,14 @@ export class ParaAPI {
     this._paraChart.paraState.clearRangeHighlight(startPortion, endPortion);
   }
 
+  highlightIntersection(index: number) {
+    this._paraChart.paraState.highlightIntersection(index);
+  }
+
+  clearIntersectionHighlight(index: number) {
+    this._paraChart.paraState.clearIntersectionHighlight(index);
+  }
+
   clearAllRangeHighlights() {
     this._paraChart.paraState.clearAllRangeHighlights();
   }
@@ -399,6 +407,10 @@ export class ParaAPI {
 
   clearAllSeriesLowlights() {
     this._paraChart.paraState.clearAllSeriesLowlights();
+  }
+
+  clearAllIntersectionHighlights() {
+    this._paraChart.paraState.clearAllIntersectionHighlights();
   }
 
   clearAllHighlights() {

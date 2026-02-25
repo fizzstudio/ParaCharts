@@ -22,7 +22,7 @@ import { produceWithPatches, enablePatches, applyPatches } from 'immer';
 enablePatches();
 
 import {
-  dataFromManifest, type AllSeriesData, type ChartType, type Manifest,
+  dataFromManifest, type AllSeriesData, type ChartType,
   isPastryType,
   isVennType
 } from '@fizz/paramanifest';
@@ -44,7 +44,7 @@ import {
 
 import {
   DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
-  type Setting,
+  type Setting, type SettingGroup,
 } from './settings_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
@@ -62,6 +62,7 @@ import { Point } from '@fizz/chart-classifier-utils';
 import { PathShape } from '../view/shape';
 import { GlobalState } from './global_state';
 import { BaseChartInfo, chartInfoClasses } from '../chart_types';
+import { firstDataset, type Manifest } from '../loader/common';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -207,6 +208,7 @@ export class ParaState extends BaseState {
   @property() protected _prevSelectedDatapoints = new Set<string>();
   /** `${seriesKey}-${index1}-${index2}` */
   @property() protected _highlightedSequences = new Set<string>();
+  @property() protected _highlightedIntersections = new Set<number>();
   @property() protected _rangeHighlights: RangeHighlight[] = [];
   @property() protected _modelLineBreaks: LineBreak[] = [];
   @property() protected _userLineBreaks: LineBreak[] = [];
@@ -333,7 +335,9 @@ export class ParaState extends BaseState {
     this.settings = newSettings;
     const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
     const counterpart = this._globalState.paraStates[1 - this.index];
-    counterpart.settings = applyPatches(counterpart.settings, filtered);
+    if (counterpart) {
+      counterpart.settings = applyPatches(counterpart.settings, filtered);
+    }
     if (ignoreObservers) {
       return patches;
     }
@@ -393,7 +397,7 @@ export class ParaState extends BaseState {
 
   setManifest(manifest: Manifest, data?: AllSeriesData, resetSettings = true) {
     this._manifest = manifest;
-    const dataset = this._manifest.datasets[0];
+    const dataset = firstDataset(this._manifest);
 
     if (resetSettings) {
       this._createSettings(this._inputSettings);
@@ -407,17 +411,17 @@ export class ParaState extends BaseState {
       });
     }
 
-    if (dataset.settings) {
-      Object.entries(dataset.settings).forEach(([path, value]) =>
-        this.updateSettings(draft => {
-          SettingsManager.set(path, value as Setting | undefined, draft);
-        }, true));
+    const extSettings = manifest.extensions?.paracharts?.settings;
+    if (extSettings) {
+      this.updateSettings(draft => {
+        SettingsManager.applySettings(extSettings as SettingGroup, draft);
+      }, true);
       if (this.settings.color.colorMap) {
         this._colors.setColorMap(...this.settings.color.colorMap.split(',').map(c => c.trim()));
       }
     }
 
-    this._jimerator = new Jimerator(this._manifest, data);
+    this._jimerator = new Jimerator(this._manifest.jim, data);
     this._jimerator.render();
 
     this.seriesAnalyses = {};
@@ -426,7 +430,7 @@ export class ParaState extends BaseState {
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
 
-    if (dataset.data.source === 'inline') {
+    if (!dataset.href) {
       if (isPastryType(this._type) || isVennType(this._type)) {
         this._model = modelFromInlineData(manifest);
       } else {
@@ -674,9 +678,31 @@ export class ParaState extends BaseState {
     this._highlightedSequences = new Set();
   }
 
+  get highlightedIntersections(): Set<number> {
+    return this._highlightedIntersections;
+  }
+
+  highlightIntersection(index: number) {
+    this._highlightedIntersections = new Set([
+      ...this._highlightedIntersections.values(),
+      index
+    ]);
+  }
+
+  clearIntersectionHighlight(index: number) {
+    this._highlightedIntersections = new Set(
+      [...this._highlightedIntersections.values()].filter(idx => idx !== index)
+    );
+  }
+
+  clearAllIntersectionHighlights() {
+    this._highlightedIntersections = new Set();
+  }
+
   clearAllHighlights() {
     this.clearAllDatapointHighlights();
     this.clearAllSequenceHighlights();
+    this.clearAllIntersectionHighlights();
     this.clearAllRangeHighlights();
     this.clearAllSeriesLowlights();
   }

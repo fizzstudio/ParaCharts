@@ -39,7 +39,7 @@ import {
   type ScrollytellerOptions,
 } from '../scrollyteller/scrollyteller';
 
-import { Manifest } from '@fizz/paramanifest';
+
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
@@ -67,7 +67,6 @@ export class ParaChart extends ParaComponent {
   readonly captionBox: ParaCaptionBox;
   protected _paraViewRef = createRef<ParaView>();
   protected _controlPanelRef = createRef<ParaControlPanel>();
-  protected _manifest?: Manifest;
   private _slotLoader = new SlotLoader();
   protected log: Logger = getLogger("ParaChart");
 
@@ -342,7 +341,6 @@ export class ParaChart extends ParaComponent {
         forceType ? this.forcecharttype : undefined,
         description ?? this.description
       );
-      this._manifest = manifest;
       if (forceType) {
         this._paraState.clearVisited();
         this._paraState.clearSelected();

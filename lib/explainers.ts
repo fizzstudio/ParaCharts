@@ -1,4 +1,5 @@
-import { Manifest, ChartType } from '@fizz/paramanifest';
+import { ChartType } from '@fizz/paramanifest';
+import { type Manifest } from './loader/common';
 
 export type Explainer = {
   summary: string;
@@ -22,85 +23,84 @@ const explainers: Partial<Explainers> = {
     single: {
       summary: `<span data-phrasecode="0">This chart compares </span><span data-phrasecode="1" data-action="highlightTitle()">student enrollment across subjects at a given school. </span><span data-phrasecode="2" data-action="clearTitleHighlight()">School subjects are shown on </span><span data-phrasecode="3" data-action="highlightHorizontalAxis()">the x-axis. </span><span data-phrasecode="4" data-action="clearHorizontalAxisHighlight()">The number of students enrolled in each subject is shown on </span><span data-phrasecode="5" data-action="highlightVerticalAxis()">the y-axis. </span><span data-phrasecode="6" data-action="clearVerticalAxisHighlight()">By the heights of the columns, we see that core subjects like </span><span data-phrasecode="7" data-action="getSeries('Student enrollment').getPoints(0).highlight()">math, </span><span data-phrasecode="8" data-action="getSeries('Student enrollment').getPoints(1).highlight()">English, </span> <span data-phrasecode="9" data-action="getSeries('Student enrollment').getPoints(2).highlight()">science, </span><span data-phrasecode="10" data-action="getSeries('Student enrollment').getPoints(2).clearHighlight()">and </span> <span data-phrasecode="11" data-action="getSeries('Student enrollment').getPoints(3).highlight()">history </span><span data-phrasecode="12" data-action="getSeries('Student enrollment').getPoints(3).clearHighlight()">have more students enrolled than electives like </span><span data-phrasecode="13" data-action="getSeries('Student enrollment').getPoints(4).highlight()">art, </span><span data-phrasecode="14" data-action="getSeries('Student enrollment').getPoints(5).highlight()">music, </span><span data-phrasecode="15" data-action="getSeries('Student enrollment').getPoints(5).clearHighlight()">and </span><span data-phrasecode="16" data-action="getSeries('Student enrollment').getPoints(6).highlight()">psychology.</span>`,
       manifest: {
-        "datasets": [
-          {
-            "title": "Student Enrollment Across Subjects at a Given School",
-            "chartTheme": {
-              "baseQuantity": "enrollment",
-              "baseKind": "number",
-              "locale": "School"
-            },
-            "facets": {
-              "x": {
-                "label": "Subject",
-                "variableType": "independent",
-                "measure": "nominal",
-                "datatype": "string",
-                "units": "string",
-                "displayType": {
-                  "type": "axis"
+        "jim": {
+          "datasets": [
+            {
+              "title": "Student Enrollment Across Subjects at a Given School",
+              "topic": {
+                "baseQuantity": "enrollment",
+                "baseKind": "number",
+                "locale": "School"
+              },
+              "facets": {
+                "x": {
+                  "label": "Subject",
+                  "variableType": "independent",
+                  "measure": "nominal",
+                  "datatype": "string",
+                  "units": "string",
+                  "displayType": {
+                    "type": "axis"
+                  }
+                },
+                "y": {
+                  "label": "Number of Students Enrolled",
+                  "variableType": "dependent",
+                  "measure": "ratio",
+                  "datatype": "number",
+                  "multiplier": 0.01,
+                  "displayType": {
+                    "type": "axis"
+                  }
                 }
               },
-              "y": {
-                "label": "Number of Students Enrolled",
-                "variableType": "dependent",
-                "measure": "ratio",
-                "datatype": "number",
-                "multiplier": 0.01,
-                "displayType": {
-                  "type": "axis"
+              "series": [
+                {
+                  "key": "Student enrollment",
+                  "topic": {
+                    "baseQuantity": "enrollment",
+                    "baseKind": "number",
+                    "locale": "School"
+                  },
+                  "records": [
+                    {
+                      "x": "Math",
+                      "y": "120"
+                    },
+                    {
+                      "x": "English",
+                      "y": "110"
+                    },
+                    {
+                      "x": "Science",
+                      "y": "105"
+                    },
+                    {
+                      "x": "History",
+                      "y": "95"
+                    },
+                    {
+                      "x": "Art",
+                      "y": "45"
+                    },
+                    {
+                      "x": "Music",
+                      "y": "40"
+                    },
+                    {
+                      "x": "Psychology",
+                      "y": "45"
+                    }
+                  ]
                 }
+              ],
+              "representation": {
+                "type": "chart",
+                "subtype": "column"
               }
-            },
-            "series": [
-              {
-                "key": "Student enrollment",
-                "theme": {
-                  "baseQuantity": "enrollment",
-                  "baseKind": "number",
-                  "locale": "School"
-                },
-                "records": [
-                  {
-                    "x": "Math",
-                    "y": "120"
-                  },
-                  {
-                    "x": "English",
-                    "y": "110"
-                  },
-                  {
-                    "x": "Science",
-                    "y": "105"
-                  },
-                  {
-                    "x": "History",
-                    "y": "95"
-                  },
-                  {
-                    "x": "Art",
-                    "y": "45"
-                  },
-                  {
-                    "x": "Music",
-                    "y": "40"
-                  },
-                  {
-                    "x": "Psychology",
-                    "y": "45"
-                  }
-                ]
-              }
-            ],
-            "representation": {
-              "type": "chart",
-              "subtype": "column"
-            },
-            "data": {
-              "source": "inline"
             }
-          }
-        ]
+          ]
+        }
       }
     }
   },

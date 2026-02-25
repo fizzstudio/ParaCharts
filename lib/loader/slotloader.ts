@@ -1,7 +1,7 @@
 import { type Datatype } from '@fizz/dataframe';
 import { ChartType, DisplayType, Facet, Manifest, SeriesManifest } from '@fizz/paramanifest';
 import { Logger, getLogger } from '@fizz/logger';
-import { concatenateSeriesLabels } from './common';
+import { concatenateSeriesLabels, firstDataset } from './common';
 
 /*interface DataVar {
   name: string;
@@ -28,7 +28,7 @@ export class SlotLoader {
             = await fetch(document.getElementById(manifestID)!.getAttribute('src') as string);
           const manifest = await manifestRaw.json() as Manifest;
           if (description) {
-            manifest.datasets[0].description = description;
+            firstDataset(manifest).description = description;
             this.log.info('manifest description changed');
           }
           return { result: 'success', manifest: manifest };
@@ -59,17 +59,17 @@ export class SlotLoader {
     } else {
       this.log.info('Manifest ID not found or not present, attempting manifest construction from data');
       let manifest: Manifest = {
-        datasets: [{
-          representation: {
-            type: 'chart',
-            subtype: '' as 'line'
-          }, 
-          //chartTheme: {baseQuantity: 'Y unit', baseKind: 'number'}, 
-          title: '', 
-          facets: {}, 
-          series: [], 
-          data: {source: 'inline'}
-        }]
+        jim: {
+          datasets: [{
+            representation: {
+              type: 'chart',
+              subtype: '' as 'line'
+            }, 
+            title: '', 
+            facets: {}, 
+            series: []
+          }]
+        }
       }
       return {result: 'success', manifest: this.validateManifest(els, manifest, description).manifest}
     }
@@ -83,13 +83,13 @@ export class SlotLoader {
   ): {result: string, manifest: Manifest | undefined} {
     const paraChart = document.getElementsByTagName('para-chart')[0];
     const table = els[0] as HTMLTableElement;
-    const dataset = manifest.datasets[0];
+    const dataset = firstDataset(manifest);
 
     if (!dataset.title){
       dataset.title = this.findManifestTitle(table);
     }
 
-    if (!dataset.facets || !dataset.facets.keys) {
+    if (!dataset.facets || Object.keys(dataset.facets).length === 0) {
       dataset.facets = this.loadFacets(table.rows[0]);
     }
 
@@ -114,7 +114,7 @@ export class SlotLoader {
       dataset.series[0].theme!.baseKind = 'proportion';
     }*/
     for (let i = 1; i < vars.length; i++) {
-      if (manifest!.datasets[0]!.series[0]!.records!.length === 0) {
+      if (dataset!.series[0]!.records?.length === 0) {
         dataset.series[i].records = this.loadDataFromElement(els, manifest, vars[i].label);
       }
     }
@@ -124,13 +124,6 @@ export class SlotLoader {
         subtype: this.findManifestType(els, manifest)
       };
     }
-    if (!dataset.data) {
-      dataset.data = { source: 'inline' };
-    }
-    if (!dataset.settings) {
-      dataset.settings = { 'sonification.isSoniEnabled': true };
-    }
-
     const cols = vars.map(v => [] as string[]);
     Array.from(table.rows).slice(1).forEach((tr: HTMLTableRowElement) => {
       const vals = this.loadRow(tr, vars);
@@ -154,7 +147,7 @@ export class SlotLoader {
       }
     }
     if (description) {
-      manifest.datasets[0].description = description;
+      dataset.description = description;
       this.log.info('manifest description changed');
     }
     return {result: 'success', manifest: manifest };

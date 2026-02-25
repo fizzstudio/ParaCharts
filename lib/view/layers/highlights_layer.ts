@@ -8,6 +8,7 @@ import { type DatapointView } from '../data';
 import { PathShape, RectShape, Shape } from '../shape';
 import { type View } from '../base_view';
 import { PlaneChartInfo } from '../../chart_types';
+import { PlaneModel } from '@fizz/paramodel';
 
 export type HighlightsType = 'foreground' | 'background';
 
@@ -96,6 +97,33 @@ export class HighlightsLayer extends PlotLayer {
     });
   }
 
+  protected _processIntersection(index: number, overlays: (DataSymbol | Shape)[]) {
+    const chartInfo = this.paraview.paraState.chartInfo as PlaneChartInfo;
+    const yRange = chartInfo.yInterval!.end - chartInfo.yInterval!.start;
+    const pxPerYUnit = this.parent.logicalHeight / yRange;
+
+    this.paraview.paraState.clearPopups();
+
+    const model = this.paraview.paraState.model as PlaneModel;
+    const isect = model.intersections[index];
+
+    const sym = DataSymbol.fromType(this.paraview, 'circle.empty', {color: -1});
+    const first = model.series[0].datapoints[0].facetValueAsNumber('x')!;
+    const last = model.series[0].datapoints.at(-1)!.facetValueAsNumber('x')!;
+    const xRange = last - first;
+    const pxPerXUnit = this.parent.logicalWidth/xRange;
+    sym.x = (isect.independentValue - first)*pxPerXUnit;
+    sym.y = this.parent.logicalHeight - (isect.dependentValue - chartInfo.yInterval!.start)*pxPerYUnit;
+    overlays.push(sym);
+
+    // if (this.type === 'foreground' && !this.paraview.paraState.popups.some(p => p.id == datapointView.id)) {
+    //   datapointView.addDatapointPopup();
+    // }
+    overlays.at(-1)!.scale = 3;
+    overlays.at(-1)!.opacity = 0.5;
+    overlays.at(-1)!.fill = 'empty';
+  }
+
   content() {
     const underlayRects: RectShape[] = [];
     const overlays: (DataSymbol | Shape)[] = [];
@@ -105,6 +133,9 @@ export class HighlightsLayer extends PlotLayer {
     });
     this.paraview.paraState.highlightedSequences.forEach(sequenceId => {
       this._processSequence(sequenceId, overlays, overlayLines, underlayRects);
+    });
+    this.paraview.paraState.highlightedIntersections.forEach(index => {
+      this._processIntersection(index, overlays);
     });
     return svg`
       ${this.paraview.paraState.visitedDatapoints.values().map(datapointId => {
