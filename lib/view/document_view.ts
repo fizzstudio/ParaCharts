@@ -75,8 +75,8 @@ export class DocumentView extends Container(View) {
     };
     this.updateSize();
     this._populate();
-    this._closeX.right = this.paddedRight - 10;
-    this._closeX.top = this.paddedTop + 10;
+    this._closeX.right = this.paddedRight;
+    this._closeX.top = this.paddedTop;
   }
 
   computeSize(): [number, number] {
