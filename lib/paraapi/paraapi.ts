@@ -159,7 +159,7 @@ export class ParaAPI {
               false // don't reset settings
             ).then(() => {
               _paraChart.paraState.updateSettings(draft => {
-                draft.chart.padding = '24 90';
+                draft.chart.padding = '32 120';
               }, true);
               _paraChart.styleManager.update();
               paraView.createDocumentView();
