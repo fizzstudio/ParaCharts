@@ -613,7 +613,7 @@ export function executeParaActions<Ctx>(
     for (const segment of action.segments) {
       const method = ctx?.[segment.methodName];
       if (typeof method !== 'function') {
-        throw new Error(`Unknown action method on context: ${segment.methodName}`);
+        throw new Error(`Unknown action method on context ${ctx.constructor.name}: ${segment.methodName}`);
       }
 
       const jsArgs = segment.args.map((v) => v.value);
