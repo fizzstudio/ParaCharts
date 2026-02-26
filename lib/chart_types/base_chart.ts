@@ -71,6 +71,7 @@ export abstract class BaseChartInfo {
 
   setParaView(paraView: ParaView) {
     this._paraView = paraView;
+    this._sonifier = new Sonifier(this, this._paraState, this._paraView);
   }
 
   protected _addSettingControls() {
@@ -106,7 +107,6 @@ export abstract class BaseChartInfo {
 
   protected _init() {
     this._createNavMap();
-    this._sonifier = new Sonifier(this, this._paraState, this._paraView);
     this._storeChangeUnsub = this._paraState.subscribe(async (key, value) => {
       if (key === 'data') {
         this._createSummarizer();
