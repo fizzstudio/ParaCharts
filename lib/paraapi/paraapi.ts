@@ -587,6 +587,24 @@ export class ParaAPIPointGroup {
         datapoint.seriesKey, Number(datapoint.datapointIndex));
     });
   }
+  
+  addCrosshair() {
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.paraState.addDatapointCrosshair(
+        datapoint.seriesKey, datapoint.datapointIndex);
+    });
+  }
+
+  removeCrosshair() {
+    this._apiSeriesGroup.api.paraChart.paraState.clearPopups();
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.paraState.clearDatapointCrosshair(
+        datapoint.seriesKey, datapoint.datapointIndex);
+      //this._apiSeriesGroup.api.paraChart.paraState.removePopup(this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '')
+    }
+    );
+    this._apiSeriesGroup.api.paraChart.paraView.requestUpdate();
+  }
 
 }
 

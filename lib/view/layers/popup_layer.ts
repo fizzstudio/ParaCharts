@@ -116,7 +116,7 @@ export class PopupLayer extends PlotLayer {
                     const { seriesKey, index } = datapointIdToCursor(dp);
                     const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
                     let planeChart = datapointViews[0].chart as PlanePlotView
-                    planeChart.makeCrosshairsLocked(datapointView, true, false)
+                    planeChart.makeCrosshairsLocked([datapointView], true, false)
                 }
             }
 
@@ -131,6 +131,11 @@ export class PopupLayer extends PlotLayer {
                 const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
                 datapointView.addDatapointPopup({ select: true });
             }
+        }
+        if (this.paraview.paraState.crosshairedDatapoints.size > 0) {
+            const crosshairedPoints = Array.from(this.paraview.paraState.crosshairedDatapoints).map(s => this.paraview.paraState.getDatapoint(s));
+            const planeChart = this.paraview.documentView?.chartLayers.dataLayer as PlanePlotView;
+            planeChart.makeCrosshairsLocked(crosshairedPoints.map(datapoint => planeChart.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!), true);
         }
         this.paraview.paraState.crossHair.forEach(l => l.classInfo = { 'crosshair': true });
         for (const popup of [...this.paraview.paraState.crossHair,
@@ -160,7 +165,7 @@ export class PopupLayer extends PlotLayer {
         datapointViews[0].popup?.remove();
         const planeChart = datapointViews[0].chart as PlanePlotView;
         if (this.paraview.paraState.settings.popup.isShowCrosshair) {
-            planeChart.makeCrosshairsLocked(datapointViews[0], true, true)
+            planeChart.makeCrosshairsLocked([datapointViews[0]], true, true)
             this.paraview.documentView?.chartLayers.backgroundAnnotationLayer.render()!;
             return [];
         }

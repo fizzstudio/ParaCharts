@@ -205,6 +205,7 @@ export class ParaState extends BaseState {
   protected _everVisitedDatapoints = new Set<string>();
   @property() protected _highlightedDatapoints = new Set<string>();
   @property() protected _selectedDatapoints = new Set<string>();
+  @property() protected _crosshairedDatapoints = new Set<string>();
   @property() protected _prevSelectedDatapoints = new Set<string>();
   /** `${seriesKey}-${index1}-${index2}` */
   @property() protected _highlightedSequences = new Set<string>();
@@ -646,6 +647,23 @@ export class ParaState extends BaseState {
   clearDatapointHighlight(seriesKey: string, index: number) {
     this._highlightedDatapoints = new Set(
       [...this._highlightedDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
+    );
+  }
+
+  get crosshairedDatapoints() {
+    return this._crosshairedDatapoints;
+  }
+
+  addDatapointCrosshair(seriesKey: string, index: number) {
+    this._crosshairedDatapoints = new Set([
+      ...this._crosshairedDatapoints.values(),
+      makeDatapointId(seriesKey, index)
+    ]);
+  }
+
+  clearDatapointCrosshair(seriesKey: string, index: number) {
+    this._crosshairedDatapoints = new Set(
+      [...this._crosshairedDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
     );
   }
 

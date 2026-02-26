@@ -98,6 +98,14 @@
 					text.innerHTML = 'Clear range highlight';
                     chart.api.clearRangeHighlight(0.2, 0.6);
                 },*/
+				() => {
+					text.innerHTML = 'Add crosshair';
+					chart.api.getSeries('Services').getPoints(4).addCrosshair();
+				},
+				() => {
+					text.innerHTML = 'Remove crosshair';
+					chart.api.getSeries('Services').getPoints(4).removeCrosshair();
+				},
                 /*() => {
 					text.innerHTML = 'Highlight points';
                     chart.api.getSeries('Euro area').getPoints(4, 6).highlight();
