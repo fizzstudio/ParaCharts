@@ -31,7 +31,7 @@ import { ChartType, Facet } from '@fizz/paramanifest';
 import { Summarizer, formatBox, Highlight, summarizerFromModel } from '@fizz/parasummary';
 
 import { Unsubscribe } from '@lit-app/state';
-import { executeParaActions, parseAction } from '../paraactions/paraactions';
+import { executeParaActions, parseAction, parseActions } from '../paraactions/paraactions';
 
 export const ORIENTATION_SENTENCES = [
   '$.datasets[0].axes.dependent',
@@ -165,7 +165,7 @@ export abstract class BaseChartInfo {
       if (key === 'landmarkStart') {
         const highlight: Highlight = value;
         if (highlight.action) {
-          const parsed = parseAction(highlight.action);
+          const parsed = parseActions(highlight.action);
           if (!parsed) throw new Error(`error parsing action '${highlight.action}'`);
           executeParaActions(parsed, this._paraView.paraChart.api);
         } else {
