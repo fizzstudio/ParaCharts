@@ -135,7 +135,7 @@ export interface BarSettings extends PlaneChartSettings {
     labelFontSize: string;
     lineWidth: number;
     orderBy?: string;
-    stacking: 'none' | 'standard';
+    stacking: 'none' | 'standard' | string;
     stackInsideGap: number;
     stackLabelGap: number;
     totalLabelGap: number;
@@ -527,8 +527,6 @@ export class ParaChart extends ParaComponent {
     protected log: Logger;
     // (undocumented)
     accessor manifest: string;
-    // (undocumented)
-    protected _manifest?: Manifest;
     // Warning: (ae-forgotten-export) The symbol "SourceKind" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)

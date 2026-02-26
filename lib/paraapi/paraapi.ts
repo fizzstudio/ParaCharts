@@ -673,6 +673,7 @@ export class ParaAPIPointGroup {
     });
   }
   
+  /** Add crosshair and popup to the datapoint(s). */
   addCrosshair() {
     this._datapoints.forEach(datapoint => {
       this._apiSeriesGroup.api.paraChart.paraState.addDatapointCrosshair(
@@ -680,6 +681,7 @@ export class ParaAPIPointGroup {
     });
   }
 
+  /** Remove crosshair and popup from the datapoint(s). */
   removeCrosshair() {
     this._apiSeriesGroup.api.paraChart.paraState.clearPopups();
     this._datapoints.forEach(datapoint => {
