@@ -65,6 +65,7 @@ export abstract class PlanePlotView extends DataLayer {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`].includes(path)) {
+      this.paraview.paraState.createChartInfo();
       this.paraview.createDocumentView();
       this.paraview.requestUpdate();
     }

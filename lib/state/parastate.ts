@@ -320,7 +320,7 @@ export class ParaState extends BaseState {
     return this._chartInfo;
   }
 
-  protected _createChartInfo() {
+  createChartInfo() {
     // @ts-ignore
     this._chartInfo = new chartInfoClasses[this.type](this.type, this);
   }
@@ -441,7 +441,7 @@ export class ParaState extends BaseState {
           this._pairAnalyzerConstructor
         );
       }
-      this._createChartInfo();
+      this.createChartInfo();
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
@@ -459,7 +459,7 @@ export class ParaState extends BaseState {
           this._pairAnalyzerConstructor
         );
       }
-      this._createChartInfo();
+      this.createChartInfo();
       //this._seriesProperties = new SeriesPropertyManager(this);
       this._seriesProperties.reset();
       this.data = data;
