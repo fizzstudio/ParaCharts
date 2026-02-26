@@ -44,45 +44,59 @@ export class ParaAPI {
         chartInfo().clearPlay();
         chartInfo().move(args.direction as Direction);
       },
+      /** Go to the first point of a series. */
       goFirst() {
         chartInfo().navFirst();
       },
+      /** Go to the last point of a series. */
       goLast() {
         chartInfo().navLast();
       },
+      /** Go to the series minimum. */
       goMinimum() {
         chartInfo().goSeriesMinMax(true);
       },
+      /** Go to the series maximum. */
       goMaximum() {
         chartInfo().goSeriesMinMax(false);
       },
+      /** Go to the chart minimum. */
       goTotalMinimum() {
         chartInfo().goChartMinMax(true);
       },
+      /** Go to the chart maximum. */
       goTotalMaximum() {
         chartInfo().goChartMinMax(false);
       },
+      /** Select a datapoint. */
       select() {
         chartInfo().selectCurrent(false);
       },
+      /** Extend the current selection. */
       extendSelection() {
         chartInfo().selectCurrent(true);
       },
+      /** Clear the current selection. */
       clearSelection() {
         chartInfo().clearDatapointSelection();
       },
+      /** Play the sonification for the points to the right. */
       playRight() {
         chartInfo().playDir('right');
       },
+      /** Play the sonification for the points to the left. */
       playLeft() {
         chartInfo().playDir('left');
       },
+      /** Stop any sonification. */
       stopPlay() {
         chartInfo().clearPlay();
       },
+      /** Query datapoints. */
       queryData() {
         chartInfo().queryData();
       },
+      /** Toggle sonification mode. */
       toggleSonificationMode() {
         paraView.paraState.updateSettings(draft => {
           draft.sonification.isSoniEnabled = !draft.sonification.isSoniEnabled;
@@ -91,6 +105,7 @@ export class ParaAPI {
           _paraChart.postNotice(endisable + 'Sonification', null);
         });
       },
+      /** Toggle trend navigation mode. */
       toggleTrendNavigationMode() {
         paraView.paraState.updateSettings(draft => {
           draft.type.line.isTrendNavigationModeEnabled = !draft.type.line.isTrendNavigationModeEnabled;
@@ -99,6 +114,7 @@ export class ParaAPI {
           _paraChart.postNotice(endisable + 'TrendNavigation', null);
         });
       },
+      /** Toggle screen reader announcements. */
       toggleAnnouncementMode() {
         if (paraView.paraState.settings.ui.isAnnouncementEnabled) {
           paraView.paraState.announce('Announcements disabled');
@@ -114,6 +130,7 @@ export class ParaAPI {
           _paraChart.postNotice('enableAnnouncements', null);
         }
       },
+      /** Toggle self-voicing mode. */
       toggleVoicingMode() {
         paraView.paraState.updateSettings(draft => {
           draft.ui.isVoicingEnabled = !draft.ui.isVoicingEnabled;
@@ -121,6 +138,7 @@ export class ParaAPI {
           _paraChart.postNotice(endisable + 'Voicing', null);
         });
       },
+      /** Toggle dark mode. */
       toggleDarkMode() {
         paraView.paraState.updateSettings(draft => {
           draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
@@ -129,6 +147,7 @@ export class ParaAPI {
           paraView.paraState.announce(`Dark mode ${endisable + 'd'}`);
         });
       },
+      /** Toggle low-vision mode */
       toggleLowVisionMode() {
         paraView.paraState.updateSettings(draft => {
           if (draft.ui.isLowVisionModeEnabled) {
@@ -141,9 +160,11 @@ export class ParaAPI {
           }
         });
       },
+      /** Open the help dialog. */
       openHelp() {
         _paraChart.controlPanel.showHelpDialog();
       },
+      /** Open the chart explainer. */
       openExplainer() {
         if (_paraChart.globalState.paraState === _paraChart.globalState.paraStates[1]) {
           // Open the explainer
@@ -175,21 +196,27 @@ export class ParaAPI {
           _paraChart.captionBox.setCaption();
         }
       },
+      /** Announce the ParaCharts version information. */
       announceVersionInfo() {
         paraView.paraState.announce(`Version ${__APP_VERSION__}; commit ${__COMMIT_HASH__}`);
       },
+      /** Toggle chord mode. */
       jumpToChordLanding() {
         chartInfo().navToChordLanding();
       },
+      /** Silence any speech or sonification. */
       shutUp() {
         paraView.ariaLiveRegion.voicing.shutUp();
       },
+      /** Repeat the last announcement. */
       repeatLastAnnouncement() {
         paraView.ariaLiveRegion.replay();
       },
+      /** Add an annotation. */
       addAnnotation() {
         _paraChart.controlPanel.annotationPanel.addAnnotation();
       },
+      /** Toggle tour guide mode. */
       toggleNarrativeHighlightMode() {
         paraView.startNarrativeHighlightMode();
         self._actions = self._narrativeActions;
@@ -199,9 +226,11 @@ export class ParaAPI {
         //   _paraChart.postNotice('enableNarrativeHighlightMode', null);
         // });
       },
+      /** Play or pause audio. */
       playPauseMedia() {
 
       },
+      /** Reset chart selections and navigation. */
       reset() {
         paraView.paraState.clearSelected();
         chartInfo().navMap!.root.goTo('top', {});
@@ -240,10 +269,12 @@ export class ParaAPI {
     return this._actions;
   }
 
+  /** Perform a hotkey action. */
   doAction(action: keyof AvailableActions, args?: ActionArgumentMap) {
     this._actions[action](args);
   }
 
+  /** Set the chart manifest. */
   setManifest(manifestUrl: string) {
     this._paraChart.setAttribute('manifest', manifestUrl);
   }
@@ -258,6 +289,7 @@ export class ParaAPI {
   //   return this.getAllSeries(seriesLabel)[0];
   // }
 
+  /** Get one or more series to operate on. */
   getSeries(...seriesLabelsOrKeys: string[]): ParaAPISeriesGroup {
     // remove dups
     const labelsOrKeys = Array.from(new Set(seriesLabelsOrKeys));
@@ -268,15 +300,18 @@ export class ParaAPI {
   //   this._paraChart.command('key', [keyId]);
   // }
 
+  /** Get the serialized SVG version of the chart. */
   serializeChart() {
     return this._paraChart.paraView.serialize();
   }
 
+  /** Get the chart description. */
   async getDescription(): Promise<string | undefined> {
     const summary = await this._paraChart.globalState.paraState.chartInfo.summarizer.getChartSummary();
     return summary?.text;
   }
 
+  /** Get the chart alt text. */
   async getAltText(): Promise<string | undefined> {
     const chartType = this._paraChart.paraState.type;
     const orientationSentences = ['pie', 'donut', 'gauge'].includes(chartType)
@@ -286,132 +321,164 @@ export class ParaAPI {
     return summary?.text;
   }
 
+  /** Get the chart JIM. */
   getJIM(): JIM | undefined {
     return this.paraChart.paraState.jimerator?.jim
   }
 
+  /** Download the chart in SVG format. */
   downloadSVG() {
     this._paraChart.paraView.downloadSVG();
   }
 
+  /** Download the chart in PNG format. */
   downloadPNG() {
     this._paraChart.paraView.downloadPNG();
   }
 
+  /** Set a setting. */
   setSetting(settingPath: string, value: Setting) {
     this._paraChart.paraState.updateSettings(draft => {
       SettingsManager.set(settingPath, value, draft);
     });
   }
 
+  /** Highlight the chart title. */
   highlightTitle() {
     this._paraChart.paraState.isTitleHighlighted = true;
   }
 
+  /** Clear any chart title highlight. */
   clearTitleHighlight() {
     this._paraChart.paraState.isTitleHighlighted = false;
   }
 
+  /** Highlight the chart horizontal axis. */
   highlightHorizontalAxis() {
     this._paraChart.paraState.isHorizontalAxisHighlighted = true;
   }
 
+  /** Clear any chart horizontal axis highlight. */
   clearHorizontalAxisHighlight() {
     this._paraChart.paraState.isHorizontalAxisHighlighted = false;
   }
 
+  /** Highlight the chart vertical axis. */
   highlightVerticalAxis() {
     this._paraChart.paraState.isVerticalAxisHighlighted = true;
   }
 
+  /** Clear any chart vertical axis highlight. */
   clearVerticalAxisHighlight() {
     this._paraChart.paraState.isVerticalAxisHighlighted = false;
   }
 
+  /** Highlight the chart east legend. */
   highlightEastLegend() {
     this._paraChart.paraState.isEastLegendHighlighted = true;
   }
 
+  /** Clear any chart east legend highlight. */
   clearEastLegendHighlight() {
     this._paraChart.paraState.isEastLegendHighlighted = false;
   }
 
+  /** Highlight the chart west legend. */
   highlightWestLegend() {
     this._paraChart.paraState.isWestLegendHighlighted = true;
   }
 
+  /** Clear any chart west legend highlight. */
   clearWestLegendHighlight() {
     this._paraChart.paraState.isWestLegendHighlighted = false;
   }
 
+  /** Highlight the chart north legend. */
   highlightNorthLegend() {
     this._paraChart.paraState.isNorthLegendHighlighted = true;
   }
 
+  /** Clear any chart north legend highlight. */
   clearNorthLegendHighlight() {
     this._paraChart.paraState.isNorthLegendHighlighted = false;
   }
 
+  /** Highlight the chart south legend. */
   highlightSouthLegend() {
     this._paraChart.paraState.isSouthLegendHighlighted = true;
   }
 
+  /** Clear any chart south legend highlight. */
   clearSouthLegendHighlight() {
     this._paraChart.paraState.isSouthLegendHighlighted = false;
   }
 
+  /** Highlight a horizontal range of the chart. */
   highlightRange(startPortion: number, endPortion: number) {
     this._paraChart.paraState.highlightRange(startPortion, endPortion);
   }
 
+  /** Clear a chart horizontal range highlight. */
   clearRangeHighlight(startPortion: number, endPortion: number) {
     this._paraChart.paraState.clearRangeHighlight(startPortion, endPortion);
   }
 
+  /** Highlight an intersection between series. */
   highlightIntersection(index: number) {
     this._paraChart.paraState.highlightIntersection(index);
   }
 
+  /** Clear any series intersection highlight. */
   clearIntersectionHighlight(index: number) {
     this._paraChart.paraState.clearIntersectionHighlight(index);
   }
 
+  /** Clear all chart horizontal range highlights. */
   clearAllRangeHighlights() {
     this._paraChart.paraState.clearAllRangeHighlights();
   }
 
+  /** Clear all datapoint highlights. */
   clearAllDatapointHighlights() {
     this._paraChart.paraState.clearAllDatapointHighlights();
   }
 
+  /** Clear all sequence highlights. */
   clearAllSequenceHighlights() {
     this._paraChart.paraState.clearAllSequenceHighlights();
   }
 
+  /** Clear all series lowlights. */
   clearAllSeriesLowlights() {
     this._paraChart.paraState.clearAllSeriesLowlights();
   }
 
+  /** Clear all series intersection highlights. */
   clearAllIntersectionHighlights() {
     this._paraChart.paraState.clearAllIntersectionHighlights();
   }
 
+  /** Clear all chart highlights. */
   clearAllHighlights() {
     this._paraChart.paraState.clearAllHighlights();
   }
 
+  /** Hide all chart series. */
   hideAllSeries() {
     this._paraChart.paraState.hideAllSeries();
   }
 
+  /** Unhide all chart series. */
   unhideAllSeries() {
     this._paraChart.paraState.unhideAllSeries();
   }
 
+  /** Enable the hotkey actions for tour guide mode. */
   enableNarrativeActions() {
     this._actions = this._narrativeActions;
   }
 
+  /** Enable the standard hotkey actions. */
   enableStandardActions() {
     this._actions = this._standardActions;
   }
@@ -449,10 +516,12 @@ export class ParaAPISeriesGroup {
     return this._api;
   }
 
+  /** Get a datapoint to operate on. */
   getPoint(index: number): ParaAPIPointGroup {
     return this.getPoints(index);
   }
 
+  /** Get one or more datapoints to operate on. */
   getPoints(...indices: number[]): ParaAPIPointGroup {
     // remove dups
     const idxs = Array.from(new Set(indices));
@@ -464,10 +533,12 @@ export class ParaAPISeriesGroup {
     return new ParaAPIPointGroup(datapoints, this);
   }
 
+  /** Get a sequence to operate on. */
   getSequence(start: number, end: number): ParaAPISequenceGroup {
     return this.getSequences([start, end]);
   }
 
+  /** Get one or more sequences to operate on. */
   getSequences(...boundaryPairs: [number, number][]): ParaAPISequenceGroup {
     const hasPair = (ary: [number, number][], p: [number, number]) =>
       !!ary.find((val: [number, number]) => val[0] === p[0] && val[1] === p[1]);
@@ -487,12 +558,14 @@ export class ParaAPISeriesGroup {
     return new ParaAPISequenceGroup(datapoints, pairs, this);
   }
 
+  /** Lowlight the series. */
   lowlight() {
     this._keys.forEach(key => {
       this._api.paraChart.paraState.lowlightSeries(key);
     });
   }
 
+  /** Clear any series lowlights. */
   clearLowlight() {
     this._keys.forEach(key => {
       this._api.paraChart.paraState.clearSeriesLowlight(key);
@@ -503,16 +576,19 @@ export class ParaAPISeriesGroup {
   //   return this._api.paraChart.paraState.isSeriesLowlighted(this._key);
   // }
 
+  /** Lowlight all other series. */
   lowlightOthers() {
     this._api.paraChart.paraState.lowlightOtherSeries(...this._keys);
   }
 
+  /** Hide the series. */
   hide() {
     this._keys.forEach(key => {
       this._api.paraChart.paraState.hideSeries(key);
     });
   }
 
+  /** Unhide the series. */
   unhide() {
     this._keys.forEach(key => {
       this._api.paraChart.paraState.unhideSeries(key);
@@ -523,10 +599,12 @@ export class ParaAPISeriesGroup {
   //   return this._api.paraChart.paraState.isSeriesHidden(this._key);
   // }
 
+  /** Hide all other series. */
   hideOthers() {
     this._api.paraChart.paraState.hideOtherSeries(...this._keys);
   }
 
+  /** Play the sonification riff for the series. */
   playRiff() {
     this._keys.forEach(key => {
       this._api.chartInfo.playRiff(this._datapoints.get(key)!);
@@ -542,15 +620,18 @@ export class ParaAPIPointGroup {
 
   }
 
+  /** Visit the datapoint(s). */
   visit() {
     this._apiSeriesGroup.api.paraChart.paraState.visit(this._datapoints);
   }
 
+  /** Select the datapoint(s). */
   select(isExtend = false) {
     this.visit();
     this._apiSeriesGroup.api.chartInfo.selectCurrent(isExtend);
   }
 
+  /** Highlight the datapoint(s). */
   highlight() {
     this._apiSeriesGroup.api.clearAllDatapointHighlights();
     this._apiSeriesGroup.api.clearAllSequenceHighlights();
@@ -560,6 +641,7 @@ export class ParaAPIPointGroup {
     });
   }
 
+  /** Clear any datapoint highlights. */
   clearHighlight() {
     this._datapoints.forEach(datapoint => {
       this._apiSeriesGroup.api.paraChart.paraState.clearDatapointHighlight(
@@ -569,10 +651,12 @@ export class ParaAPIPointGroup {
     );
   }
 
+  /** Play the sonification for the datapoint(s). */
   play() {
     this._apiSeriesGroup.api.chartInfo.playDatapoints(this._datapoints);
   }
 
+  /** Annotate the datapoint(s). */
   annotate(text: string) {
     this._datapoints.forEach(datapoint => {
       this._apiSeriesGroup.api.paraChart.paraState.annotatePoint(
@@ -580,6 +664,7 @@ export class ParaAPIPointGroup {
     });
   }
 
+  /** Clip the datapoint(s). */
   clipTo() {
     // XXX not sure clipping to multiple points makes sense
     this._datapoints.forEach(datapoint => {
@@ -598,15 +683,18 @@ export class ParaAPISequenceGroup {
 
   }
 
+  /** Visit the sequence(s). */
   visit() {
     this._apiSeriesGroup.api.paraChart.paraState.visit(this._datapoints);
   }
 
+  /** Select the sequence(s). */
   select(isExtend = false) {
     this.visit();
     this._apiSeriesGroup.api.chartInfo.selectCurrent(isExtend);
   }
 
+  /** Highlight the sequence(s). */
   highlight() {
     this._apiSeriesGroup.api.clearAllDatapointHighlights();
     this._apiSeriesGroup.api.clearAllSequenceHighlights();
@@ -617,6 +705,7 @@ export class ParaAPISequenceGroup {
     });
   }
 
+  /** Clear any sequence highlights. */
   clearHighlight() {
     this._apiSeriesGroup.keys.forEach(key => {
       this._boundaryPairs.forEach(pair => {
@@ -626,10 +715,12 @@ export class ParaAPISequenceGroup {
     });
   }
 
+  /** Play the sonification for the sequence(s). */
   play() {
     this._apiSeriesGroup.api.chartInfo.playDatapoints(this._datapoints);
   }
 
+  /** Annotate the sequence(s). */
   annotate(text: string) {
     this._datapoints.forEach(datapoint => {
       this._apiSeriesGroup.api.paraChart.paraState.annotatePoint(
