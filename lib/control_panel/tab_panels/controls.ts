@@ -2,6 +2,7 @@
 import { ControlPanelTabPanel } from './tab_panel';
 import { AdvancedControlSettingsDialog } from '../dialogs';
 import { AnimationDialog } from '../dialogs';
+import { SummaryAuthoringTool } from '../dialogs';
 import { actionMap } from '../../state/action_map';
 
 import {
@@ -16,7 +17,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
 
   protected _advancedControlDialogRef = createRef<AdvancedControlSettingsDialog>();
   protected _animationDialogRef = createRef<AnimationDialog>();
-
+  protected _summaryAuthoringToolRef = createRef<SummaryAuthoringTool>();
   static styles = [
     ...ControlPanelTabPanel.styles,
     css`
@@ -141,6 +142,13 @@ export class ControlsPanel extends ControlPanelTabPanel {
           >
             Help
           </button>
+
+          <button
+            @click=${() => this._summaryAuthoringToolRef.value?.show()}
+          >
+            Custom Summary
+          </button>
+
           <button
             @click=${() => this._advancedControlDialogRef.value?.show()}
           >
@@ -155,6 +163,11 @@ export class ControlsPanel extends ControlPanelTabPanel {
         id="advanced-control-settings-dialog"
         .globalState=${this._globalState}
       ></para-advanced-control-settings-dialog>
+      <para-summary-dialog
+        ${ref(this._summaryAuthoringToolRef)}
+        id="summary-authoring-dialog"
+        .globalState=${this._globalState}
+      ></para-summary-dialog>
     `;
   }
 
