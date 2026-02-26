@@ -254,24 +254,6 @@ export class ParaControlPanel extends ParaComponent {
     return this._controlsPanelRef.value!.showHelpDialog();
   }
 
-  async showAnnotDialog(dpId: string) {
-    return await this.annotationDialog.show('Add Annotation', this._getAnnot(dpId));
-  }
-
-  protected _getAnnot(dpId: string) {
-    const { seriesKey, index } = datapointIdToCursor(dpId);
-    const series = this._paraState.model!.atKey(seriesKey)!.getLabel();
-    return html`
-        <div id="annotDialog">
-          <div>Datapoint: ${series}, ${index}</div><br>
-          <label for="annot">Text:</label><br>
-          <input type="text" id="annot" name="annot">
-          <br><br>
-        </div>
-      `;
-  }
-
-
   addPopup(isOpen: boolean) {
     let paraview = this.paraChart.paraView
     let text = isOpen ? "Close control panel" : "Customize settings"
