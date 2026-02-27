@@ -117,7 +117,7 @@ export class ParaHeadless {
     const svg = this.api.serializeChart();
     const description = await this.api.getDescription() ?? '';
     const altText = await this.api.getAltText() ?? '';
-    const jimObj = this.api.getManifest();
+    const jimObj = this.api.getJIM();
     const jim = jimObj ? JSON.stringify(jimObj) : '';
 
     return { svg, description, altText, jim };

@@ -286,7 +286,7 @@ export class ParaAPI {
     return summary?.text;
   }
 
-  getManifest(): Manifest | undefined {
+  getJIM(): Manifest | undefined {
     return this.paraChart.paraState.jimerator?.manifest
   }
 
