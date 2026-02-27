@@ -115,7 +115,7 @@ export class ParaView extends ParaComponent {
       #content.explainer {
         fill: aliceblue;
       }
-      .darkmode #frame.explainer, .darkmode #content.explainer {
+      .darkmode #frame, .darkmode #content {
         fill: var(--background-color);
       }
       .darkmode {
@@ -649,6 +649,10 @@ export class ParaView extends ParaComponent {
   }
 
   startNarrativeHighlightMode() {
+    this._paraState.clearSelected();
+    this._paraState.clearAllHighlights();
+    this._paraState.clearPopups();
+    this._paraState.chartInfo.navMap!.root.goTo('top', {});
     this._paraState.updateSettings(draft => {
       draft.ui.isNarrativeHighlightEnabled = true;
     });
