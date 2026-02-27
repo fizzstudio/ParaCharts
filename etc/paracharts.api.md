@@ -24,7 +24,6 @@ import { FormatType } from '@fizz/parasummary';
 import { Highlight as Highlight_2 } from '@fizz/parasummary';
 import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
-import type { JIM } from '@fizz/jimerator';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
 import { Logger } from '@fizz/logger';
@@ -135,7 +134,7 @@ export interface BarSettings extends PlaneChartSettings {
     labelFontSize: string;
     lineWidth: number;
     orderBy?: string;
-    stacking: 'none' | 'standard';
+    stacking: 'none' | 'standard' | string;
     stackInsideGap: number;
     stackLabelGap: number;
     totalLabelGap: number;
@@ -527,8 +526,6 @@ export class ParaChart extends ParaComponent {
     protected log: Logger;
     // (undocumented)
     accessor manifest: string;
-    // (undocumented)
-    protected _manifest?: Manifest;
     // Warning: (ae-forgotten-export) The symbol "SourceKind" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
