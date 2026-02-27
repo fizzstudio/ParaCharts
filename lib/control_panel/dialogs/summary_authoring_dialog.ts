@@ -8,40 +8,58 @@ import { ref, createRef } from 'lit/directives/ref.js';
 
 @customElement('para-summary-dialog')
 export class SummaryAuthoringTool extends ParaComponent {
+  @property() summaryText = '';
+  protected _dialogRef = createRef<Dialog>();
 
-    protected _dialogRef = createRef<Dialog>();
+  @property() btnText = 'Close';
 
-    @property() btnText = 'Close';
-
-    static styles = css`
+  static styles = css`
     #content {
       padding: 1rem;
     }
   `;
 
-    render() {
-        return html`
+  render() {
+    return html`
       <fizz-dialog
         ${ref(this._dialogRef)}
         title="Test Dialog"
-        .buttons=${[{ tag: 'cancel', text: this.btnText }]}
+        .buttons=${[
+        { tag: 'cancel', text: this.btnText },
+        { tag: 'save', text: 'Save' }
+      ]}
       >
-        <div id="content">
-          This is a test dialog. If you can see this, it is wired up correctly.
-        </div>
+      <div id="content">
+        <textarea
+        rows="6"
+        style="width: 100%;"
+        .value=${this.summaryText}
+        @input=${(e: Event) => {
+        this.summaryText = (e.target as HTMLTextAreaElement).value;
+      }}
+        ></textarea>
+      </div>
       </fizz-dialog>
     `;
-    }
+  }
+  async show() {
+    const clicked = await this._dialogRef.value!.show(() =>
+      this._dialogRef.value!.button('cancel')!.focus()
+    );
 
-    async show() {
-        await this._dialogRef.value!.show(() =>
-            this._dialogRef.value!.button('cancel')!.focus()
-        );
+    // If the user clicked Save, emit a custom event with the current summaryText
+    if (clicked === 'save') {
+      this.dispatchEvent(new CustomEvent('summary-saved', {
+        detail: { text: this.summaryText },
+        bubbles: true,
+        composed: true
+      }));
     }
+  }
 }
 
 declare global {
-    interface HTMLElementTagNameMap {
-        'para-summary-dialog': SummaryAuthoringTool;
-    }
+  interface HTMLElementTagNameMap {
+    'para-summary-dialog': SummaryAuthoringTool;
+  }
 }

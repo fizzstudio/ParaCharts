@@ -17,6 +17,7 @@ type HoverListener = (event: PointerEvent) => void;
 
 @customElement('para-caption-box')
 export class ParaCaptionBox extends ParaComponent {
+  private _customSummary: HighlightedSummary | null = null;
   private log: Logger = getLogger("ParaCaptionBox");
   protected _lastSpans = new Set<HTMLElement>();
   protected _prevSpanIdx = 0;
@@ -118,10 +119,22 @@ export class ParaCaptionBox extends ParaComponent {
   }
 
   async setCaption(): Promise<void> {
-    if (this._paraState.dataState === 'complete') {
-      this._caption =
-        await this.parachart.paraView.documentView?.chartInfo.summarizer.getChartSummary() ?? {text: '', html: ''};
+    if (this._paraState.dataState !== 'complete') return;
+
+    if (this._customSummary) {
+      this._caption = this._customSummary;
+      return;
     }
+
+    this._caption =
+      await this.parachart.paraView.documentView?.chartInfo.summarizer.getChartSummary()
+      ?? { text: '', html: '' };
+  }
+  
+  setCustomSummary(text: string) {
+    this._customSummary = { text, html: text };
+    this._caption = this._customSummary;
+    this.requestUpdate();
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {

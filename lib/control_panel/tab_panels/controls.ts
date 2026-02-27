@@ -14,7 +14,6 @@ import { ref, createRef } from 'lit/directives/ref.js';
 
 @customElement('para-controls-panel')
 export class ControlsPanel extends ControlPanelTabPanel {
-
   protected _advancedControlDialogRef = createRef<AdvancedControlSettingsDialog>();
   protected _animationDialogRef = createRef<AnimationDialog>();
   protected _summaryAuthoringToolRef = createRef<SummaryAuthoringTool>();
@@ -37,6 +36,13 @@ export class ControlsPanel extends ControlPanelTabPanel {
       key: 'animation.isAnimationEnabled',
       label: 'Animation enabled',
       parentView: 'controlPanel.tabs.controls.animation',
+    });
+  }
+
+  protected firstUpdated() {
+    this._summaryAuthoringToolRef.value?.addEventListener('summary-saved', (e: any) => {
+      const newText = e.detail.text;
+      this._controlPanel.paraChart.captionBox.setCustomSummary(newText);
     });
   }
 
