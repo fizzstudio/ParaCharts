@@ -107,7 +107,7 @@ export class DataPanel extends ControlPanelTabPanel {
                 html`
                   <pre>
                     <code>
-                      ${JSON.stringify(this._paraState.jimerator!.jim, undefined, 2)}
+                      ${JSON.stringify(this._paraState.jimerator!.manifest, undefined, 2)}
                     </code>
                   </pre>`
               )}

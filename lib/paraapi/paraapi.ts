@@ -21,7 +21,7 @@ import { type ParaChart } from '../parachart/parachart';
 import { Direction, makeSequenceId, Setting, SettingsManager } from '../state';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 import explainers from '../explainers';
-import type { JIM } from '@fizz/jimerator';
+import type { Manifest } from '@fizz/paramanifest';
 
 type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMap) => void | Promise<void>) };
 
@@ -322,8 +322,8 @@ export class ParaAPI {
   }
 
   /** Get the chart JIM. */
-  getJIM(): JIM | undefined {
-    return this.paraChart.paraState.jimerator?.jim
+  getJIM(): Manifest | undefined {
+    return this.paraChart.paraState.jimerator?.manifest
   }
 
   /** Download the chart in SVG format. */

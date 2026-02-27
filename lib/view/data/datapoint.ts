@@ -211,7 +211,7 @@ export class DatapointView extends DataView {
 
   protected _createId(..._args: any[]): string {
     const jimIndex = this._parent.modelIndex * this._series.length + this.index + 1;
-    const id = this.paraview.paraState.jimerator!.jim.selectors[`datapoint${jimIndex}`].dom as string;
+    const id = (this.paraview.paraState.jimerator!.manifest.jim as any).selectors[`datapoint${jimIndex}`].dom as string;
     // don't include the '#' from JIM
     return id.slice(1);
   }
