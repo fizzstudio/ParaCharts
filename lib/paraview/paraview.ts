@@ -83,7 +83,6 @@ export class ParaView extends ParaComponent {
   protected _pointerEventManager: PointerEventManager | null = null;
   // protected _hotkeyActions!: HotkeyActions;
   @state() protected _defs: { [key: string]: TemplateResult } = {};
-  @state() protected _jim = '';
   @state() protected _isFullscreen = false;
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
@@ -458,7 +457,6 @@ export class ParaView extends ParaComponent {
       if (this.paraChart.headless) {
         await this.addJIMSeriesSummaries();
       }
-      this._jim = this._paraState.jimerator ? JSON.stringify(this._paraState.jimerator.jim, undefined, 2) : '';
       this._jimReadyResolver();
     } catch (error) {
       this.log.error('dataUpdated error:', error);
@@ -765,6 +763,7 @@ export class ParaView extends ParaComponent {
       const summaryText = typeof summary === 'string' ? summary : summary.text;
       this._paraState.jimerator?.addSeriesSummary(seriesKey, summaryText);
     }
+    this.requestUpdate();
   }
 
   private _addJIMSliceSummaries() {
@@ -784,6 +783,7 @@ export class ParaView extends ParaComponent {
       const description = `${dp.facetValue('x')}, ${pct}%`;
       this._paraState.jimerator?.addSliceSummary(index, description);
     });
+    this.requestUpdate();
   }
 
   serialize() {
@@ -1003,7 +1003,7 @@ export class ParaView extends ParaComponent {
       }
         </defs>
         <metadata data-type="application/jim+json">
-          ${this._jim}
+          ${this._paraState.jimerator ? JSON.stringify(this._paraState.jimerator.manifest, undefined, 2) : ''}
         </metadata>
         <rect
           ${ref(this._frameRef)}
