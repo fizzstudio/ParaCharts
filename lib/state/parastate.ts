@@ -204,6 +204,7 @@ export class ParaState extends BaseState {
   protected _prevVisitedDatapoints = new Set<string>();
   protected _everVisitedDatapoints = new Set<string>();
   @property() protected _highlightedDatapoints = new Set<string>();
+  _prevHighlightedElements = new Set<string>();
   @property() protected _selectedDatapoints = new Set<string>();
   @property() protected _crosshairedDatapoints = new Set<string>();
   @property() protected _prevSelectedDatapoints = new Set<string>();
@@ -574,6 +575,10 @@ export class ParaState extends BaseState {
 
   get prevVisitedDatapoints() {
     return this._prevVisitedDatapoints;
+  }
+
+    get prevHighlightedElements() {
+    return this._prevHighlightedElements;
   }
 
   get everVisitedDatapoints() {

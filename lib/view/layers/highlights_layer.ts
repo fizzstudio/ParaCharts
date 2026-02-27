@@ -27,7 +27,6 @@ export class HighlightsLayer extends PlotLayer {
     datapointId: string,
     overlays: (DataSymbol | Shape)[],
   ) {
-    this.paraview.paraState.clearPopups();
     const datapoint = this.paraview.paraState.getDatapoint(datapointId);
     let datapointView = this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!;
     overlays.push((datapointView.symbol ?? datapointView.shapes[0]).clone());
@@ -48,7 +47,6 @@ export class HighlightsLayer extends PlotLayer {
     underlayRects: RectShape[]
   ) {
     // XXX Ultimately, we need to support pastry and other non-plane chart types here
-    this.paraview.paraState.clearPopups();
     const chartInfo = this.paraview.paraState.chartInfo as PlaneChartInfo;
     const fields = sequenceId.split(/-/);
     const datapoints = [
@@ -102,8 +100,6 @@ export class HighlightsLayer extends PlotLayer {
     const yRange = chartInfo.yInterval!.end - chartInfo.yInterval!.start;
     const pxPerYUnit = this.parent.logicalHeight / yRange;
 
-    this.paraview.paraState.clearPopups();
-
     const model = this.paraview.paraState.model as PlaneModel;
     const isect = model.intersections[index];
 
@@ -128,11 +124,17 @@ export class HighlightsLayer extends PlotLayer {
     const underlayRects: RectShape[] = [];
     const overlays: (DataSymbol | Shape)[] = [];
     const overlayLines: PathShape[] = [];
+    this.paraview.paraState.prevHighlightedElements.forEach(datapointId => {
+      this.paraview.paraState.removePopup(datapointId);
+    });
+    this.paraview.paraState._prevHighlightedElements = new Set()
     this.paraview.paraState.highlightedDatapoints.forEach(datapointId => {
       this._processDatapoint(datapointId, overlays);
+      this.paraview.paraState.prevHighlightedElements.add(datapointId);
     });
     this.paraview.paraState.highlightedSequences.forEach(sequenceId => {
       this._processSequence(sequenceId, overlays, overlayLines, underlayRects);
+      this.paraview.paraState.prevHighlightedElements.add(sequenceId);
     });
     this.paraview.paraState.highlightedIntersections.forEach(index => {
       this._processIntersection(index, overlays);
