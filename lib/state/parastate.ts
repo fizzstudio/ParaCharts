@@ -421,8 +421,7 @@ export class ParaState extends BaseState {
       }
     }
 
-    this._jimerator = new Jimerator(this._manifest.jim, data);
-    this._jimerator.render();
+    this._jimerator = new Jimerator(this._manifest, data);
 
     this.seriesAnalyses = {};
 

@@ -510,6 +510,11 @@ export abstract class BaseChartInfo {
     return this._paraState.model!.series;
   }
 
+  didClickBackground() {
+    this._paraState.clearSelected();
+    this.navMap!.root.goTo('top', {});
+  }
+
   /** Nav map layer from which to interpret selectors */
   get selectorLayer(): string {
     return 'root';
