@@ -31,7 +31,7 @@ import { ChartType, Facet } from '@fizz/paramanifest';
 import { Summarizer, formatBox, Highlight, summarizerFromModel } from '@fizz/parasummary';
 
 import { Unsubscribe } from '@lit-app/state';
-import { executeParaActions, parseAction, parseActions } from '../paraactions/paraactions';
+import { executeParaActions, parseActions } from '../paraactions/paraactions';
 
 export const ORIENTATION_SENTENCES = [
   '$.datasets[0].axes.dependent',
