@@ -590,6 +590,21 @@ export function parseAction(source: string): ParaAction | null {
   return actions[0];
 }
 
+export function parseActions(source: string): ParaAction[] | null {
+  const { actions, errors } = parseActionList(source);
+
+  if (errors.length > 0) {
+    // Preserve legacy behavior for callers that expect a thrown ParseError
+    // when given an invalid single-action string.
+    throw errors[0];
+  }
+
+  if (actions.length === 0) {
+    return null;
+  }
+  return actions;
+}
+
 /** ---------- EXECUTION ---------- **/
 
 /**
