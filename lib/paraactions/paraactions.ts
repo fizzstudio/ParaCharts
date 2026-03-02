@@ -1,5 +1,7 @@
 // paraactions.ts - Optimized lexer + parser with URL-safe :: syntax support (multi-arg)
 
+import { ParaAPI } from '../paraapi/paraapi';
+
 /** DSL value types **/
 export type ParaValue =
   | { kind: 'string'; value: string }
@@ -621,7 +623,7 @@ export function executeParaActions<Ctx>(
   initialContext: Ctx
 ): void {
   const list = Array.isArray(actions) ? actions : [actions];
-
+  (initialContext as ParaAPI).clearAllHighlights();
   for (const action of list) {
     let ctx: any = initialContext;
 

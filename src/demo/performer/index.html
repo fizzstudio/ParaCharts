@@ -68,15 +68,15 @@
                 },*/
 				() => {
 					text.innerHTML = 'Highlight title';
-					chart.api.highlightTitle();
+					chart.api.getTitle().highlight();
 				},
 				() => {
 					text.innerHTML = 'Highlight horizontal axis';
-					chart.api.highlightHorizontalAxis();
+					chart.api.getHorizontalAxis().highlight();
 				},
 				() => {
 					text.innerHTML = 'Highlight vertical axis';
-					chart.api.highlightVerticalAxis();
+					chart.api.getVerticalAxis().highlight();
 				},
 				/*() => {
 					text.innerHTML = 'Highlight legend';
@@ -84,7 +84,7 @@
 				},*/
 				() => {
 					text.innerHTML = 'Highlight intersection';
-					chart.api.highlightIntersection(1);
+					chart.api.getIntersection(1).highlight();
 				},
                 /*() => {
 					text.innerHTML = 'Highlight chart range';

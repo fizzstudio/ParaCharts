@@ -14,11 +14,11 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type Datapoint } from '@fizz/paramodel';
+import { PlaneModel, type Datapoint } from '@fizz/paramodel';
 
 import { ORIENTATION_SENTENCES, PASTRY_ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
-import { Direction, makeSequenceId, Setting, SettingsManager } from '../state';
+import { CardinalDirection, Direction, makeSequenceId, Setting, SettingsManager } from '../state';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 import explainers from '../explainers';
 import type { Manifest } from '@fizz/paramanifest';
@@ -279,6 +279,36 @@ export class ParaAPI {
     this._paraChart.setAttribute('manifest', manifestUrl);
   }
 
+  /** Get the chart title label. */
+  getTitle(): ParaAPITitle {
+    return new ParaAPITitle(this)
+  }
+
+  /** Get the chart horizontal axis. */
+  getHorizontalAxis(): ParaAPIHorizontalAxis {
+    return new ParaAPIHorizontalAxis(this)
+  }
+
+  /** Get the chart vertical axis. */
+  getVerticalAxis(): ParaAPIVerticalAxis {
+    return new ParaAPIVerticalAxis(this)
+  }
+
+  /** Get a chart legend. */
+  getLegend(location: CardinalDirection): ParaAPILegend {
+    return new ParaAPILegend(location, this);
+  }
+
+  /** Get a horizontal range of the chart. */
+  getRange(startPortion: number, endPortion: number): ParaAPIRange {
+    return new ParaAPIRange(startPortion, endPortion, this);
+  }
+
+  /** Get an intersection between two or more series. */
+  getIntersection(index: number): ParaAPIIntersection {
+    return new ParaAPIIntersection(index, this);
+  }
+
   // protected _labelToKey(seriesLabel: string): string {
   //   const series = this._paraChart.paraState.model!.series.find(s => s.label === seriesLabel);
   //   if (!series) throw new Error(`no series with label '${seriesLabel}'`);
@@ -345,93 +375,94 @@ export class ParaAPI {
 
   /** Highlight the chart title. */
   highlightTitle() {
-    this._paraChart.paraState.isTitleHighlighted = true;
+    this.getTitle().highlight();
   }
 
   /** Clear any chart title highlight. */
   clearTitleHighlight() {
-    this._paraChart.paraState.isTitleHighlighted = false;
+    this.getTitle().clearHighlight();
   }
 
   /** Highlight the chart horizontal axis. */
   highlightHorizontalAxis() {
-    this._paraChart.paraState.isHorizontalAxisHighlighted = true;
+    this.getHorizontalAxis().highlight();
   }
 
   /** Clear any chart horizontal axis highlight. */
   clearHorizontalAxisHighlight() {
-    this._paraChart.paraState.isHorizontalAxisHighlighted = false;
+    this.getHorizontalAxis().clearHighlight();
   }
 
   /** Highlight the chart vertical axis. */
   highlightVerticalAxis() {
-    this._paraChart.paraState.isVerticalAxisHighlighted = true;
+    this.getVerticalAxis().highlight();
   }
 
   /** Clear any chart vertical axis highlight. */
   clearVerticalAxisHighlight() {
-    this._paraChart.paraState.isVerticalAxisHighlighted = false;
+    this.getVerticalAxis().clearHighlight();
   }
 
   /** Highlight the chart east legend. */
   highlightEastLegend() {
-    this._paraChart.paraState.isEastLegendHighlighted = true;
+    this.getLegend('east').highlight();
   }
 
   /** Clear any chart east legend highlight. */
   clearEastLegendHighlight() {
-    this._paraChart.paraState.isEastLegendHighlighted = false;
+    this.getLegend('east').clearHighlight();
   }
 
   /** Highlight the chart west legend. */
   highlightWestLegend() {
-    this._paraChart.paraState.isWestLegendHighlighted = true;
+    this.getLegend('west').highlight();
   }
 
   /** Clear any chart west legend highlight. */
   clearWestLegendHighlight() {
-    this._paraChart.paraState.isWestLegendHighlighted = false;
+    this.getLegend('west').clearHighlight();
   }
 
   /** Highlight the chart north legend. */
   highlightNorthLegend() {
-    this._paraChart.paraState.isNorthLegendHighlighted = true;
+    this.getLegend('north').highlight();
   }
 
   /** Clear any chart north legend highlight. */
   clearNorthLegendHighlight() {
-    this._paraChart.paraState.isNorthLegendHighlighted = false;
+    this.getLegend('north').clearHighlight();
   }
 
   /** Highlight the chart south legend. */
   highlightSouthLegend() {
-    this._paraChart.paraState.isSouthLegendHighlighted = true;
+    this.getLegend('south').highlight();
   }
 
   /** Clear any chart south legend highlight. */
   clearSouthLegendHighlight() {
-    this._paraChart.paraState.isSouthLegendHighlighted = false;
+    this.getLegend('south').clearHighlight();
   }
 
   /** Highlight a horizontal range of the chart. */
   highlightRange(startPortion: number, endPortion: number) {
-    this._paraChart.paraState.highlightRange(startPortion, endPortion);
+    this.getRange(startPortion, endPortion).highlight();
   }
 
   /** Clear a chart horizontal range highlight. */
   clearRangeHighlight(startPortion: number, endPortion: number) {
-    this._paraChart.paraState.clearRangeHighlight(startPortion, endPortion);
+    this.getRange(startPortion, endPortion).clearHighlight();
   }
 
   /** Highlight an intersection between series. */
   highlightIntersection(index: number) {
-    this._paraChart.paraState.highlightIntersection(index);
+    this.getIntersection(index).highlight();
   }
 
   /** Clear any series intersection highlight. */
   clearIntersectionHighlight(index: number) {
-    this._paraChart.paraState.clearIntersectionHighlight(index);
+    this.getIntersection(index).clearHighlight();
   }
+
 
   /** Clear all chart horizontal range highlights. */
   clearAllRangeHighlights() {
@@ -448,9 +479,9 @@ export class ParaAPI {
     this._paraChart.paraState.clearAllSequenceHighlights();
   }
 
-  /** Clear all series lowlights. */
-  clearAllSeriesLowlights() {
-    this._paraChart.paraState.clearAllSeriesLowlights();
+  /** Clear all series highlights. */
+  clearAllSeriesHighlights() {
+    this._paraChart.paraState.clearAllSeriesDimming();
   }
 
   /** Clear all series intersection highlights. */
@@ -481,6 +512,156 @@ export class ParaAPI {
   /** Enable the standard hotkey actions. */
   enableStandardActions() {
     this._actions = this._standardActions;
+  }
+}
+
+/**
+ * Perform operations on the chart title.
+ */
+export class ParaAPITitle {
+  constructor(protected _api: ParaAPI) {
+  }
+
+  /** Highlight the title. */
+  highlight() {
+    this._api.paraChart.paraState.isTitleHighlighted = true;
+  }
+
+  /** Clear any title highlight. */
+  clearHighlight() {
+    this._api.paraChart.paraState.isTitleHighlighted = false;
+  }
+}
+
+/**
+ * Perform operations on the chart horizontal axis.
+ */
+export class ParaAPIHorizontalAxis {
+  constructor(protected _api: ParaAPI) {
+  }
+
+  /** Highlight the horizontal axis. */
+  highlight() {
+    this._api.paraChart.paraState.isHorizontalAxisHighlighted = true;
+  }
+
+  /** Clear any horizontal axis highlight. */
+  clearHighlight() {
+    this._api.paraChart.paraState.isHorizontalAxisHighlighted = false;
+  }
+}
+
+/**
+ * Perform operations on the chart vertical axis.
+ */
+export class ParaAPIVerticalAxis {
+  constructor(protected _api: ParaAPI) {
+  }
+
+  /** Highlight the vertical axis. */
+  highlight() {
+    this._api.paraChart.paraState.isVerticalAxisHighlighted = true;
+  }
+
+  /** Clear any vertical axis highlight. */
+  clearHighlight() {
+    this._api.paraChart.paraState.isVerticalAxisHighlighted = false;
+  }
+}
+
+/**
+ * Perform operations on the chart legend.
+ */
+export class ParaAPILegend {
+  constructor(protected _location: CardinalDirection, protected _api: ParaAPI) {
+    if (!['north', 'south', 'east', 'west'].includes(_location)) {
+      throw new Error("'location' must be one of 'north', 'south', 'east', 'west'");
+    }
+  }
+
+  /** Highlight the legend. */
+  highlight() {
+    switch (this._location) {
+      case 'north':
+        this._api.paraChart.paraState.isNorthLegendHighlighted = true; break;
+      case 'south':
+        this._api.paraChart.paraState.isSouthLegendHighlighted = true; break;
+      case 'east':
+        this._api.paraChart.paraState.isEastLegendHighlighted = true; break;
+      case 'west':
+        this._api.paraChart.paraState.isWestLegendHighlighted = true; break;
+    }
+  }
+
+  /** Clear any legend highlight. */
+  clearHighlight() {
+    switch (this._location) {
+      case 'north':
+        this._api.paraChart.paraState.isNorthLegendHighlighted = false; break;
+      case 'south':
+        this._api.paraChart.paraState.isSouthLegendHighlighted = false; break;
+      case 'east':
+        this._api.paraChart.paraState.isEastLegendHighlighted = false; break;
+      case 'west':
+        this._api.paraChart.paraState.isWestLegendHighlighted = false; break;
+    }
+  }
+}
+
+/**
+ * Perform operations on a horizontal range of the chart.
+ */
+export class ParaAPIRange {
+  /**
+   *
+   * @param _startPortion - Value between 0 and 1, < _endPortion
+   * @param _endPortion - Value between 0 and 1, > _startPortion
+   * @param _api
+   */
+  constructor(protected _startPortion: number, protected _endPortion: number, protected _api: ParaAPI) {
+    if (_startPortion < 0 || _startPortion > 1 || _endPortion < 0 || _endPortion > 1) {
+      throw new Error('startPortion and endPortion must be between 0 and 1 inclusive');
+    }
+    if (_startPortion >= _endPortion) {
+      throw new Error('startPortion must be < endPortion');
+    }
+  }
+
+  /** Highlight the range. */
+  highlight() {
+    this._api.paraChart.paraState.highlightRange(this._startPortion, this._endPortion);
+  }
+
+  /** Clear any highlight. */
+  clearHighlight() {
+    this._api.paraChart.paraState.clearRangeHighlight(this._startPortion, this._endPortion);
+  }
+}
+
+/**
+ * Perform operations on an intersection between two or more series.
+ */
+export class ParaAPIIntersection {
+  constructor(protected _index: number, protected _api: ParaAPI) {
+    if (!(this._api.paraChart.paraState.model instanceof PlaneModel)) {
+      throw new Error('chart type does not support intersections');
+    }
+    if (_index < 0) {
+      throw new Error('intersection index must not be negative');
+    }
+    if (_index > this._api.paraChart.paraState.model!.intersections.length - 1) {
+      throw new Error('intersection index out of range');
+    }
+  }
+
+  /** Highlight the intersection. */
+  highlight() {
+    this._api.paraChart.paraState.highlightIntersection(this._index);
+  }
+
+  /** Clear any highlight. */
+  clearHighlight() {
+    this._api.paraChart.paraState.clearIntersectionHighlight(this._index);
   }
 }
 
@@ -558,17 +739,17 @@ export class ParaAPISeriesGroup {
     return new ParaAPISequenceGroup(datapoints, pairs, this);
   }
 
-  /** Lowlight the series. */
-  lowlight() {
+  /** Dim the series. */
+  dim() {
     this._keys.forEach(key => {
-      this._api.paraChart.paraState.lowlightSeries(key);
+      this._api.paraChart.paraState.dimSeries(key);
     });
   }
 
-  /** Clear any series lowlights. */
-  clearLowlight() {
+  /** Clear any series dimming. */
+  clearDimming() {
     this._keys.forEach(key => {
-      this._api.paraChart.paraState.clearSeriesLowlight(key);
+      this._api.paraChart.paraState.clearSeriesDimming(key);
     });
   }
 
@@ -576,9 +757,20 @@ export class ParaAPISeriesGroup {
   //   return this._api.paraChart.paraState.isSeriesLowlighted(this._key);
   // }
 
-  /** Lowlight all other series. */
+  /** Highlight the series. */
+  highlight() {
+    this.clearDimming();
+    this._api.paraChart.paraState.dimOtherSeries(...this._keys);
+  }
+
+  /** Clear any highlight. */
+  clearHighlight() {
+    this._api.paraChart.paraState.clearAllSeriesDimming();
+  }
+
+  /** Deprecated alias for `highlight()` */
   lowlightOthers() {
-    this._api.paraChart.paraState.lowlightOtherSeries(...this._keys);
+    this.highlight();
   }
 
   /** Hide the series. */
@@ -633,8 +825,8 @@ export class ParaAPIPointGroup {
 
   /** Highlight the datapoint(s). */
   highlight() {
-    this._apiSeriesGroup.api.clearAllDatapointHighlights();
-    this._apiSeriesGroup.api.clearAllSequenceHighlights();
+    // this._apiSeriesGroup.api.clearAllDatapointHighlights();
+    // this._apiSeriesGroup.api.clearAllSequenceHighlights();
     this._datapoints.forEach(datapoint => {
       this._apiSeriesGroup.api.paraChart.paraState.highlightDatapoint(
         datapoint.seriesKey, datapoint.datapointIndex);
@@ -646,7 +838,8 @@ export class ParaAPIPointGroup {
     this._datapoints.forEach(datapoint => {
       this._apiSeriesGroup.api.paraChart.paraState.clearDatapointHighlight(
         datapoint.seriesKey, datapoint.datapointIndex);
-      this._apiSeriesGroup.api.paraChart.paraState.removePopup(this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '')
+      this._apiSeriesGroup.api.paraChart.paraState.removePopup(
+        this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '')
     }
     );
   }
@@ -696,8 +889,8 @@ export class ParaAPISequenceGroup {
 
   /** Highlight the sequence(s). */
   highlight() {
-    this._apiSeriesGroup.api.clearAllDatapointHighlights();
-    this._apiSeriesGroup.api.clearAllSequenceHighlights();
+    // this._apiSeriesGroup.api.clearAllDatapointHighlights();
+    // this._apiSeriesGroup.api.clearAllSequenceHighlights();
     this._apiSeriesGroup.keys.forEach(key => {
       this._boundaryPairs.forEach(pair => {
         this._apiSeriesGroup.api.paraChart.paraState.highlightSequence(key, pair[0], pair[1]);
@@ -727,5 +920,4 @@ export class ParaAPISequenceGroup {
         datapoint.seriesKey, datapoint.datapointIndex, text);
     });
   }
-
 }
