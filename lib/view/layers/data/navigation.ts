@@ -305,17 +305,19 @@ export class NavLayer {
     return [];
   }
 
-  goToNode(node: NavNode) {
+  goToNode(node: NavNode, quiet = false) {
     this._cursor = node.id;
-    this.map.visitDatapoints();
+    this.map.visitDatapoints(quiet);
   }
 
   goTo<T extends NavNodeType>(
     type: T,
-    optionsOrIndex: Readonly<NavNodeOptionsType<T>> | number) {
+    optionsOrIndex: Readonly<NavNodeOptionsType<T>> | number,
+    quiet = false
+  ) {
     const node = this.get(type, optionsOrIndex);
     if (node) {
-      this.goToNode(node);
+      this.goToNode(node, quiet);
     } else {
       throw new Error(`nav node not found (type='${type}')`);
     }

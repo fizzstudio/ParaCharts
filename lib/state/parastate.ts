@@ -704,6 +704,13 @@ export class ParaState extends BaseState {
     this.clearAllIntersectionHighlights();
     this.clearAllRangeHighlights();
     this.clearAllSeriesLowlights();
+    this.isTitleHighlighted = false;
+    this.isHorizontalAxisHighlighted = false;
+    this.isVerticalAxisHighlighted = false;
+    this.isEastLegendHighlighted = false;
+    this.isWestLegendHighlighted = false;
+    this.isNorthLegendHighlighted = false;
+    this.isSouthLegendHighlighted = false;
   }
 
   get selectedDatapoints() {

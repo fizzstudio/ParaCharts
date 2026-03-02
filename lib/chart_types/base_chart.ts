@@ -512,7 +512,7 @@ export abstract class BaseChartInfo {
 
   didClickBackground() {
     this._paraState.clearSelected();
-    this.navMap!.root.goTo('top', {});
+    this.navMap!.root.goTo('top', {}, true);
   }
 
   /** Nav map layer from which to interpret selectors */
