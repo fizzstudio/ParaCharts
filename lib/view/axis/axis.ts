@@ -157,6 +157,10 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     return this._tickLabelTiers;
   }
 
+  get tickLabelTierValues() {
+    return this._tickLabelTierValues;
+  }
+
   get role() {
     return 'graphics-object';
   }

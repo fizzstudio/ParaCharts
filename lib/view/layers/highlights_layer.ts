@@ -2,7 +2,7 @@
 import { PlotLayer} from '.';
 import { type ParaView } from '../../paraview';
 import { svg } from 'lit';
-import { datapointIdToCursor } from '../../state';
+import { datapointIdToCursor, HighlightAxisOptions } from '../../state';
 import { DataSymbol } from '../symbol';
 import { type DatapointView } from '../data';
 import { PathShape, RectShape, Shape } from '../shape';
@@ -120,6 +120,95 @@ export class HighlightsLayer extends PlotLayer {
     overlays.at(-1)!.fill = 'empty';
   }
 
+  protected _processAxisLabel(options: HighlightAxisOptions, overlays: (DataSymbol | Shape)[]) {
+    let labelText = this.paraview.documentView?.xAxis?.tickLabelTierValues[0].labels[options.index]
+    const tiers = this.paraview.paraState.model!.allFacetValues("x")!.map(box => box.raw);
+    if (!labelText){
+      return;
+    }
+    //console.log(this.paraview.documentView?.xAxis?.tickLabelTierValues)
+    console.log()
+    //console.log(this.paraview.documentView?.xAxis?.tickLabelTierValues)
+    if (options.orientation == 'horiz') {
+      const tier = this.paraview.documentView?.xAxis?.tickLabelTiers[0]!
+      tier.addPopup(labelText[0] == "Q" ? tiers[options.index] : labelText, options.index)
+      const regFactor = (tier._options.content.labels.length % tier.children.length == 0)
+      ? tier.children.length / tier._options.content.labels.length
+      : (tier.children.length) / (tier._options.content.labels.length + 1)
+      //console.log("tier._tickLabelX(options.index ?? 0)", tier._tickLabelX(options.index ?? 0))
+      //console.log("regFactor", regFactor)
+     // console.log(tier.children[options.index].width)
+      let width = tier.children[options.index].width * 1.5
+      let height = tier.children[options.index].height * 3
+      let strokeWidth = 5
+      //console.log(this.paraview.documentView?.xAxis)
+      //console.log(this.paraview.documentView?.xAxis)
+      //console.log(tier.height)
+      //console.log("width, height", width, height)
+      const shape = new RectShape(this.paraview, {
+        width: width, 
+        height: height,
+         x: tier._tickLabelX(options.index ?? 0)! * regFactor - width /2,
+        y: this.paraview.documentView?.chartLayers.height! + strokeWidth / 2,
+        fill: 'blue',
+        stroke: 'blue',
+        strokeWidth: strokeWidth,
+        opacity: .3
+      })
+      overlays.push(shape)
+
+    }
+    else if (options.orientation == 'vert') {
+      const tier = this.paraview.documentView?.yAxis?.tickLabelTiers[0]!
+      tier.addPopup(labelText[0] == "Q" ? tiers[options.index] : labelText, options.index)
+      let width = tier.children[options.index].width * 2
+      let height = tier.children[options.index].height * 1.5
+      const shape = new RectShape(this.paraview, {
+        width: width, 
+        height: height,
+         x: 0 -  width ,
+        y: tier._tickLabelY(options.index ?? 0)! - 2 * height / 3/* + this.paraview.paraState.settings.popup.margin - tier.children[options.index ?? 0].height*/,
+        fill: 'blue',
+        stroke: 'blue',
+        opacity: .3
+      })
+       overlays.push(shape)
+    }
+
+    
+    //console.log(this.paraview.documentView?.xAxis?.tickLabelTierValues[0].labels[index])
+    //this.paraview.documentView?.xAxis?.tickLabelTierValues[0].labels[index].addPopup()
+
+    //this.paraview.documentView?.xAxis?.tickLabelTierValues[index].addPopup();
+
+    const chartInfo = this.paraview.paraState.chartInfo as PlaneChartInfo;
+    const yRange = chartInfo.yInterval!.end - chartInfo.yInterval!.start;
+    const pxPerYUnit = this.parent.logicalHeight / yRange;
+
+    const model = this.paraview.paraState.model as PlaneModel;
+    const isect = model.intersections[options.index];
+
+    //const sym = DataSymbol.fromType(this.paraview, 'circle.empty', { color: -1 });
+    
+    if (options.orientation == 'vert'){
+
+    }
+    //const first = model.series[0].datapoints[0].facetValueAsNumber('x')!;
+    //const last = model.series[0].datapoints.at(-1)!.facetValueAsNumber('x')!;
+    //const xRange = last - first;
+    //const pxPerXUnit = this.parent.logicalWidth / xRange;
+    //sym.x = (isect.independentValue - first) * pxPerXUnit;
+    //sym.y = this.parent.logicalHeight - (isect.dependentValue - chartInfo.yInterval!.start) * pxPerYUnit;
+    //overlays.push(sym);
+
+    // if (this.type === 'foreground' && !this.paraview.paraState.popups.some(p => p.id == datapointView.id)) {
+    //   datapointView.addDatapointPopup();
+    // }
+    //overlays.at(-1)!.scale = 3;
+   // overlays.at(-1)!.opacity = 0.5;
+   // overlays.at(-1)!.fill = 'empty';
+  }
+
   content() {
     const underlayRects: RectShape[] = [];
     const overlays: (DataSymbol | Shape)[] = [];
@@ -127,6 +216,12 @@ export class HighlightsLayer extends PlotLayer {
     this.paraview.paraState.prevHighlightedElements.forEach(datapointId => {
       this.paraview.paraState.removePopup(datapointId);
     });
+    for (let label of this.paraview.documentView!.xAxis!.tickLabelTiers) {
+      this.paraview.paraState.removePopup(label.id)
+    }
+    for (let label of this.paraview.documentView!.yAxis!.tickLabelTiers) {
+      this.paraview.paraState.removePopup(label.id)
+    }
     this.paraview.paraState._prevHighlightedElements = new Set()
     this.paraview.paraState.highlightedDatapoints.forEach(datapointId => {
       this._processDatapoint(datapointId, overlays);
@@ -138,6 +233,9 @@ export class HighlightsLayer extends PlotLayer {
     });
     this.paraview.paraState.highlightedIntersections.forEach(index => {
       this._processIntersection(index, overlays);
+    });
+    this.paraview.paraState.highlightedAxisLabels.forEach(options => {
+      this._processAxisLabel(options, overlays);
     });
     return svg`
       ${this.paraview.paraState.visitedDatapoints.values().map(datapointId => {

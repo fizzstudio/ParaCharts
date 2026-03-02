@@ -123,6 +123,11 @@ export interface SparkBrailleInfo {
   isBar?: boolean;
 }
 
+export interface HighlightAxisOptions {
+  index: number;
+  orientation: "horiz" | "vert"
+}
+
 const synchronizedSettings = [
   'ui.isFullscreenEnabled',
   'ui.isLowVisionModeEnabled',
@@ -211,6 +216,7 @@ export class ParaState extends BaseState {
   /** `${seriesKey}-${index1}-${index2}` */
   @property() protected _highlightedSequences = new Set<string>();
   @property() protected _highlightedIntersections = new Set<number>();
+  @property() protected _highlightedAxisLabels = new Set<HighlightAxisOptions>();
   @property() protected _rangeHighlights: RangeHighlight[] = [];
   @property() protected _modelLineBreaks: LineBreak[] = [];
   @property() protected _userLineBreaks: LineBreak[] = [];
@@ -718,6 +724,29 @@ export class ParaState extends BaseState {
     );
   }
 
+  clearAllAxisLabelHighlights() {
+    this._highlightedAxisLabels = new Set();
+  }
+
+  get highlightedAxisLabels(): Set<HighlightAxisOptions> {
+    return this._highlightedAxisLabels;
+  }
+
+
+
+  highlightAxisLabel(options: HighlightAxisOptions) {
+    this._highlightedAxisLabels = new Set([
+      ...this._highlightedAxisLabels.values(),
+      {index: options.index, orientation: options.orientation}
+    ]);
+  }
+
+  clearAxisLabelHighlight(options: HighlightAxisOptions) {
+    this._highlightedAxisLabels = new Set(
+      [...this._highlightedAxisLabels.values()].filter(o => o.index !== options.index && o.orientation !== options.orientation)
+    );
+  }
+
   clearAllIntersectionHighlights() {
     this._highlightedIntersections = new Set();
   }
@@ -812,7 +841,8 @@ export class ParaState extends BaseState {
       index,
       annotation: `${seriesKey}, ${recordLabel}: ${text}`,
       text,
-      id: `${seriesKey}-${recordLabel}-${this._annotID}`
+      id: `${seriesKey}-${recordLabel}-${this._annotID}`,
+      isSelected: true
     } as PointAnnotation];
     this._annotID++;
   }

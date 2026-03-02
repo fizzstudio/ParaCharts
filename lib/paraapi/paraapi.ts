@@ -296,6 +296,12 @@ export class ParaAPI {
     return new ParaAPISeriesGroup(labelsOrKeys, this);
   }
 
+  /** Get one or more series to operate on. */
+  getAxis(orientation: "horiz" | "vert"): ParaAPIAxisGroup {
+    // remove dups
+    return new ParaAPIAxisGroup(orientation, this);
+  }
+
   // sendKey(keyId: string) {
   //   this._paraChart.command('key', [keyId]);
   // }
@@ -748,4 +754,45 @@ export class ParaAPISequenceGroup {
     });
   }
 
+}
+
+export class ParaAPIAxisGroup {
+  constructor(protected _orientation: "horiz" | "vert", protected _api: ParaAPI) {
+
+  }
+  highlight() {
+    if (this._orientation == 'horiz') {
+      this._api.paraChart.paraState.isHorizontalAxisHighlighted = true;
+    }
+    else if (this._orientation == 'vert') {
+      this._api.paraChart.paraState.isVerticalAxisHighlighted = true;
+    }
+  }
+
+  clearHighlight() {
+    if (this._orientation == 'horiz') {
+      this._api.paraChart.paraState.isHorizontalAxisHighlighted = false;
+    }
+    else if (this._orientation == 'vert') {
+      this._api.paraChart.paraState.isVerticalAxisHighlighted = false;
+    }
+  }
+
+  highlightLabel(index: number) {
+        if (this._orientation == 'horiz') {
+      this._api.paraChart.paraState.highlightAxisLabel({index: index, orientation: 'horiz'});
+    }
+    else if (this._orientation == 'vert') {
+      this._api.paraChart.paraState.highlightAxisLabel({index: index, orientation: 'vert'});
+    }
+    
+  }
+  clearHighlightLabel(index: number){
+            if (this._orientation == 'horiz') {
+      this._api.paraChart.paraState.clearAxisLabelHighlight({index: index, orientation: 'horiz'});
+    }
+    else if (this._orientation == 'vert') {
+      this._api.paraChart.paraState.clearAxisLabelHighlight({index: index, orientation: 'vert'});
+    }
+  }
 }

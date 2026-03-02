@@ -50,6 +50,7 @@
 		let demoDidStart = false;
         function runDemo() {
             const steps = [
+				/*
                 () => {
 					text.innerHTML = 'Move right';
                     chart.api.doAction('move', {direction: 'right'});
@@ -58,27 +59,48 @@
 					text.innerHTML = 'Move right again';
                     chart.api.doAction('move', {direction: 'right'});
                 },
-                /*() => {
+                () => {
 					text.innerHTML = 'Enable dark mode';
                     chart.api.setSetting('color.isDarkModeEnabled', true);
                 },*/
                 /*() => {
 					text.innerHTML = 'Change manifest';
 					chart.api.setManifest('/src/demo-data/bar-multi-manifest-48.json');
-                },*/
-				/*	
+                },
+				
 				() => {
 					text.innerHTML = 'Highlight title';
 					chart.api.highlightTitle();
-				},
+				},*/
+				/*
 				() => {
 					text.innerHTML = 'Highlight horizontal axis';
-					chart.api.highlightHorizontalAxis();
+					chart.api.getAxis('horiz').highlight();
 				},
 				() => {
 					text.innerHTML = 'Highlight vertical axis';
-					chart.api.highlightVerticalAxis();
+					chart.api.getAxis('vert').highlight();
 				},
+								() => {
+					text.innerHTML = 'Highlight horizontal axis';
+					chart.api.getAxis('horiz').clearHighlight();
+				},
+				() => {
+					text.innerHTML = 'Highlight vertical axis';
+					chart.api.getAxis('vert').clearHighlight();
+				},
+				
+			*/
+				() => {
+					text.innerHTML = 'Highlight horizontal label';
+					chart.api.getAxis('horiz').highlightLabel(4);
+				},
+				
+				() => {
+					text.innerHTML = 'Highlight vertical label';
+					chart.api.getAxis('vert').highlightLabel(4);
+				},
+					/*	
 				() => {
 					text.innerHTML = 'Highlight legend';
 					chart.api.highlightEastLegend();
@@ -109,12 +131,12 @@
 				},
                 () => {
 					text.innerHTML = 'Highlight points';
-                    chart.api.getSeries('Agriculture').getPoints(4, 6).highlight();
+                    chart.api.getSeries('Agriculture').getPoints(0, 7).highlight();
                 },
 				
                 () => {
 					text.innerHTML = 'Clear highlight';
-                    chart.api.getSeries('Agriculture').getPoints(4).clearHighlight();
+                    chart.api.getSeries('Agriculture').getPoints(0).clearHighlight();
                 },
 				/*
                 () => {
@@ -164,15 +186,17 @@
                 () => {
 					text.innerHTML = 'Deselect sequence';
                     chart.api.getSeries('Euro area').getSequences([2, 5]).select();
-                },*/
-                /*() => {
+                },
+                () => {
 					text.innerHTML = 'Play point sonification';
                     chart.api.getSeries('China').getPoints(6).play();
                 },
                 () => {
 					text.innerHTML = 'Annotate point';
-                    chart.api.getSeries('China').getPoints(6).annotate('Foobar');
+                    chart.api.getSeries('Industry').getPoints(6).annotate('Foobar');
                 },
+				*/
+				/*
                 () => {
 					text.innerHTML = 'Lowlight other series';
                     chart.api.getSeries('China').lowlightOthers();
