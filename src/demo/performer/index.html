@@ -70,16 +70,15 @@
 				
 				() => {
 					text.innerHTML = 'Highlight title';
-					chart.api.highlightTitle();
-				},*/
-				/*
+					chart.api.getTitle().highlight();
+				},
 				() => {
 					text.innerHTML = 'Highlight horizontal axis';
-					chart.api.getAxis('horiz').highlight();
+					chart.api.getHorizontalAxis().highlight();
 				},
 				() => {
 					text.innerHTML = 'Highlight vertical axis';
-					chart.api.getAxis('vert').highlight();
+					chart.api.getVerticalAxis().highlight();
 				},
 								() => {
 					text.innerHTML = 'Highlight horizontal axis';
@@ -93,12 +92,12 @@
 			*/
 				() => {
 					text.innerHTML = 'Highlight horizontal label';
-					chart.api.getAxis('horiz').highlightLabel(4);
+					chart.api.getVerticalAxis().highlightLabel(4);
 				},
 				
 				() => {
 					text.innerHTML = 'Highlight vertical label';
-					chart.api.getAxis('vert').highlightLabel(4);
+					chart.api.getHorizontalAxis.highlightLabel(4);
 				},
 					/*	
 				() => {
@@ -107,7 +106,7 @@
 				},*/
 				() => {
 					text.innerHTML = 'Highlight intersection';
-					chart.api.highlightIntersection(1);
+					chart.api.getIntersection(1).highlight();
 				},
                 /*() => {
 					text.innerHTML = 'Highlight chart range';

@@ -198,7 +198,7 @@ export class ParaState extends BaseState {
   @property() isNorthLegendHighlighted = false;
   @property() isSouthLegendHighlighted = false;
 
-  @property() protected _lowlightedSeries: string[] = [];
+  @property() protected _dimmedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
@@ -429,8 +429,7 @@ export class ParaState extends BaseState {
       }
     }
 
-    this._jimerator = new Jimerator(this._manifest.jim, data);
-    this._jimerator.render();
+    this._jimerator = new Jimerator(this._manifest, data);
 
     this.seriesAnalyses = {};
 
@@ -484,28 +483,28 @@ export class ParaState extends BaseState {
     this.postNotice('paranotice', {key: 'manifestSet'});
   }
 
-  lowlightSeries(seriesKey: string) {
-    if (!this._lowlightedSeries.includes(seriesKey)) {
-      this._lowlightedSeries = [...this._lowlightedSeries, seriesKey];
+  dimSeries(seriesKey: string) {
+    if (!this._dimmedSeries.includes(seriesKey)) {
+      this._dimmedSeries = [...this._dimmedSeries, seriesKey];
     }
   }
 
-  clearSeriesLowlight(seriesKey: string) {
-    if (this._lowlightedSeries.includes(seriesKey)) {
-      this._lowlightedSeries = this._lowlightedSeries.filter(el => el !== seriesKey);
+  clearSeriesDimming(seriesKey: string) {
+    if (this._dimmedSeries.includes(seriesKey)) {
+      this._dimmedSeries = this._dimmedSeries.filter(el => el !== seriesKey);
     }
   }
 
-  isSeriesLowlighted(seriesKey: string): boolean {
-    return this._lowlightedSeries.includes(seriesKey);
+  isSeriesDimmed(seriesKey: string): boolean {
+    return this._dimmedSeries.includes(seriesKey);
   }
 
-  lowlightOtherSeries(...seriesKeys: string[]) {
-    this._lowlightedSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
+  dimOtherSeries(...seriesKeys: string[]) {
+    this._dimmedSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
   }
 
-  clearAllSeriesLowlights() {
-    this._lowlightedSeries = [];
+  clearAllSeriesDimming() {
+    this._dimmedSeries = [];
   }
 
   hideSeries(seriesKey: string) {
@@ -756,7 +755,14 @@ export class ParaState extends BaseState {
     this.clearAllSequenceHighlights();
     this.clearAllIntersectionHighlights();
     this.clearAllRangeHighlights();
-    this.clearAllSeriesLowlights();
+    this.clearAllSeriesDimming();
+    this.isTitleHighlighted = false;
+    this.isHorizontalAxisHighlighted = false;
+    this.isVerticalAxisHighlighted = false;
+    this.isEastLegendHighlighted = false;
+    this.isWestLegendHighlighted = false;
+    this.isNorthLegendHighlighted = false;
+    this.isSouthLegendHighlighted = false;
   }
 
   get selectedDatapoints() {

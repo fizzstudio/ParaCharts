@@ -187,29 +187,6 @@ export class ParaCaptionBox extends ParaComponent {
     }
   }
 
-  getHighlightedSummary(): HighlightedSummary {
-    const highlights: Highlight[] = [];
-    const article = this._captionRef.value!.firstElementChild!;
-    let total = 0;
-    for (const span of article.children) {
-      const text = span.textContent;
-      highlights.push({
-        start: total,
-        end: total + text.length,
-        phrasecode: (span as HTMLElement).dataset.phrasecode!
-      });
-      if ((span as HTMLElement).dataset.action) {
-        highlights.at(-1)!.action = (span as HTMLElement).dataset.action;
-      }
-      total += text.length;
-    }
-    return {
-      text: article.textContent.trim(),
-      html: article.innerHTML,
-      highlights
-    }
-  }
-
   renderSummary(summary: HighlightedSummary | string, idPrefix: string): TemplateResult {
     if (typeof summary === 'string') {
       summary = { text: summary, html: summary };

@@ -31,7 +31,7 @@ import { ChartType, Facet } from '@fizz/paramanifest';
 import { Summarizer, formatBox, Highlight, summarizerFromModel } from '@fizz/parasummary';
 
 import { Unsubscribe } from '@lit-app/state';
-import { executeParaActions, parseAction } from '../paraactions/paraactions';
+import { executeParaActions, parseActions } from '../paraactions/paraactions';
 
 export const ORIENTATION_SENTENCES = [
   '$.datasets[0].axes.dependent',
@@ -165,7 +165,7 @@ export abstract class BaseChartInfo {
       if (key === 'landmarkStart') {
         const highlight: Highlight = value;
         if (highlight.action) {
-          const parsed = parseAction(highlight.action);
+          const parsed = parseActions(highlight.action);
           if (!parsed) throw new Error(`error parsing action '${highlight.action}'`);
           executeParaActions(parsed, this._paraView.paraChart.api);
         } else {
@@ -175,9 +175,8 @@ export abstract class BaseChartInfo {
         // So that on the initial transition from auto-narration to manual
         // span navigation, we don't remove any highlights added in manual mode
         if (!this._paraView.paraChart.captionBox.highlightManualOverride) {
-          this._paraState.clearAllDatapointHighlights();
-          this._paraState.clearAllSequenceHighlights();
-          this._paraState.clearAllSeriesLowlights();
+          this._paraState.clearAllHighlights();
+          this._paraState.clearPopups();
         }
       }
     }
@@ -508,6 +507,11 @@ export abstract class BaseChartInfo {
   /** Can be overridden by subclasses. */
   seriesInNavOrder() {
     return this._paraState.model!.series;
+  }
+
+  didClickBackground() {
+    this._paraState.clearSelected();
+    this.navMap!.root.goTo('top', {}, true);
   }
 
   /** Nav map layer from which to interpret selectors */

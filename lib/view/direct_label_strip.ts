@@ -104,10 +104,10 @@ export class DirectLabelStrip extends Container(View) {
         y: ep.y, // labelY,
         classList: ['direct-label'],
         pointerEnter: (e) => {
-          this.paraview.paraState.lowlightOtherSeries(ep.seriesKey);
+          this.paraview.paraState.dimOtherSeries(ep.seriesKey);
         },
         pointerLeave: (e) => {
-          this.paraview.paraState.clearAllSeriesLowlights();
+          this.paraview.paraState.clearAllSeriesDimming();
         }
       }));
       this.append(this._seriesLabels.at(-1)!);
@@ -249,7 +249,7 @@ class LineLabelLeader extends View {
   get classInfo(): ClassInfo {
     return {
       'label-leader': true,
-      'lowlight': this.paraview.paraState.isSeriesLowlighted(this._seriesKey)
+      'lowlight': this.paraview.paraState.isSeriesDimmed(this._seriesKey)
     }
   }
 

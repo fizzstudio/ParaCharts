@@ -80,10 +80,10 @@ export class Legend extends Container(View) {
         {
           color: item.color,
           pointerEnter: (e) => {
-            this.paraview.paraState.lowlightOtherSeries(item.seriesKey);
+            this.paraview.paraState.dimOtherSeries(item.seriesKey);
           },
           pointerLeave: (e) => {
-            this.paraview.paraState.clearAllSeriesLowlights();
+            this.paraview.paraState.clearAllSeriesDimming();
           }
         }
       ));
@@ -94,10 +94,10 @@ export class Legend extends Container(View) {
         textAnchor: 'start',
         classList: ['legend-label'],
         pointerEnter: (e) => {
-          this.paraview.paraState.lowlightOtherSeries(item.seriesKey);
+          this.paraview.paraState.dimOtherSeries(item.seriesKey);
         },
         pointerLeave: (e) => {
-          this.paraview.paraState.clearAllSeriesLowlights();
+          this.paraview.paraState.clearAllSeriesDimming();
         }
       }));
     });
