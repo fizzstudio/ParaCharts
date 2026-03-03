@@ -494,6 +494,11 @@ export class ParaAPI {
     this._paraChart.paraState.clearAllHighlights();
   }
 
+  /** Clear all chart highlights. */
+  clearAllPopups() {
+    this._paraChart.paraState.clearPopups();
+  }
+
   /** Hide all chart series. */
   hideAllSeries() {
     this._paraChart.paraState.hideAllSeries();
