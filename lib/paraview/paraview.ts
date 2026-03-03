@@ -630,7 +630,7 @@ export class ParaView extends ParaComponent {
           draft.ui.isVoicingEnabled = true;
         });
       }
-      this._paraState.announce(this.paraChart.captionBox.getHighlightedSummary());
+      this._paraState.announce(this.paraChart.captionBox.caption);
     } else {
       this.ariaLiveRegion.voicing.speak('Tour guide disabled.', []);
       this.paraChart.captionBox.clearSpanHighlights();
