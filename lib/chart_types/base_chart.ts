@@ -283,8 +283,9 @@ export abstract class BaseChartInfo {
     // command was issued (i.e., we know nothing about chord mode here)
     const seriesAndVal = (datapointId: string) => {
       const { seriesKey, index } = datapointIdToCursor(datapointId);
-      const dp = this._paraState.model!.atKeyAndIndex(seriesKey, index)!;
-      return `${seriesKey} (${formatBox(dp.facetBox('x')!, this._paraState.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this._paraState.getFormatType('statusBar'))})`;
+      const series = this._paraState.model!.atKey(seriesKey)!;
+      const dp = series[index];
+      return `${series.label} (${formatBox(dp.facetBox('x')!, this._paraState.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this._paraState.getFormatType('statusBar'))})`;
     };
 
     const newTotalSelected = this._paraState.selectedDatapoints.size;
