@@ -413,9 +413,15 @@ export interface ManifestBuilderInput {
   xAxis?: {
     variableType: CsvDataType;
     title: string;
+    /** Optional unit label for the X-axis (e.g., 'year', 'km'). */
+    units?: string;
   };
   yAxis?: {
     title: string;
+    /** Optional unit label for the Y-axis (e.g., 'dollars', 'feet'). */
+    units?: string;
+    /** Optional scale multiplier for Y-axis values (e.g., 1000 for thousands, 1000000 for millions). */
+    multiplier?: number;
   };
 }
 
@@ -498,6 +504,7 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
         variableType: 'independent',
         measure: xTypeConfig.measure,
         datatype: xTypeConfig.datatype,
+        units: xAxis!.units,
         displayType: {
           type: 'axis',
           orientation: 'horizontal'
@@ -508,6 +515,8 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
         variableType: 'dependent',
         measure: 'ratio',
         datatype: 'number',
+        units: yAxis!.units,
+        multiplier: yAxis!.multiplier,
         displayType: {
           type: 'axis',
           orientation: 'vertical'
