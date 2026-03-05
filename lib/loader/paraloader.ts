@@ -525,7 +525,7 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
     };
   }
 
-  const yBaseKind = (yAxis?.units ? 'dimensioned' : 'number');
+  const yBaseKind: 'dimensioned' | 'number' = yAxis?.units ? 'dimensioned' : 'number';
 
   // Build inline records for each series
   const seriesWithRecords = seriesKeys.map(key => {
