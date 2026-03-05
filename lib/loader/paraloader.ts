@@ -525,6 +525,8 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
     };
   }
 
+  const yBaseKind: 'dimensioned' | 'number' = yAxis?.units ? 'dimensioned' : 'number';
+
   // Build inline records for each series
   const seriesWithRecords = seriesKeys.map(key => {
     const records = rows.map(row => ({
@@ -535,11 +537,16 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
       key,
       topic: {
         baseQuantity: key.toLowerCase(),
-        baseKind: 'number' as const
+        baseKind: yBaseKind
       },
       records
     };
   });
+
+  const datasetTopic = yAxis?.units ? {
+    baseQuantity: chartTitle,
+    baseKind: 'dimensioned' as const,
+  } : undefined;
 
   return {
     jim: {
@@ -550,6 +557,7 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
             subtype: manifestTypeMap[chartType]
           },
           title: chartTitle,
+          ...(datasetTopic && { topic: datasetTopic }),
           facets,
           series: seriesWithRecords
         }
