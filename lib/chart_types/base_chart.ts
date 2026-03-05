@@ -43,6 +43,12 @@ export const PASTRY_ORIENTATION_SENTENCES = [
   '$.datasets[0].recordCount',
 ]
 
+// TODO: Add axes sentences back into scatter plot orientation sentences after scatter plot
+//   axes summaries are added: https://github.com/fizzstudio/ParaSummary/issues/93
+export const SCATTER_ORIENTATION_SENTENCES = [
+  '$.datasets[0].recordCount',
+]
+
 /**
  * @public
  */
@@ -435,8 +441,9 @@ export abstract class BaseChartInfo {
         let orientationSentences
         if (['pie', 'donut', 'gauge'].includes(this._paraState.type)) {
           orientationSentences = await this._summarizer.getRequestedSummaries(PASTRY_ORIENTATION_SENTENCES);
-        }
-        else {
+        } else if (this._paraState.type === 'scatter') {
+          orientationSentences = await this._summarizer.getRequestedSummaries(SCATTER_ORIENTATION_SENTENCES);
+        } else {
           orientationSentences = await this._summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
         }
         this._paraState.announce(orientationSentences);
