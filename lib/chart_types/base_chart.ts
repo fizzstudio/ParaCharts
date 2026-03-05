@@ -177,6 +177,8 @@ export abstract class BaseChartInfo {
         if (!this._paraView.paraChart.captionBox.highlightManualOverride) {
           this._paraState.clearAllHighlights();
           this._paraState.clearPopups();
+          this._paraState.clearSelected();
+          this._navMap!.root.goTo('top', {}, true);
         }
       }
     }
