@@ -624,6 +624,8 @@ export function executeParaActions<Ctx>(
 ): void {
   const list = Array.isArray(actions) ? actions : [actions];
   (initialContext as ParaAPI).clearAllHighlights();
+  (initialContext as ParaAPI).clearVisited();
+  (initialContext as ParaAPI).clearSelected();
   for (const action of list) {
     let ctx: any = initialContext;
 

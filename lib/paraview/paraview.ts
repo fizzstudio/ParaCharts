@@ -646,27 +646,6 @@ export class ParaView extends ParaComponent {
     this.ariaLiveRegion.voicing.togglePaused();
   }
 
-  startNarrativeHighlightMode() {
-    this._paraState.clearSelected();
-    this._paraState.clearAllHighlights();
-    this._paraState.clearPopups();
-    this._paraState.chartInfo.navMap!.root.goTo('top', {}, true);
-    this._paraState.updateSettings(draft => {
-      draft.ui.isNarrativeHighlightEnabled = true;
-    });
-  }
-
-  endNarrativeHighlightMode() {
-    this._paraState.clearSelected();
-    this._paraState.clearAllHighlights();
-    this._paraState.clearPopups();
-    this._paraState.chartInfo.navMap!.root.goTo('top', {}, true);
-    this._paraState.updateSettings(draft => {
-      draft.ui.isNarrativeHighlightEnabled = false;
-    });
-  }
-
-
   /*protected updated(changedProperties: PropertyValues) {
     this.log.info('canvas updated');
     if (changedProperties.has('dataState')) {
