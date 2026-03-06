@@ -325,16 +325,18 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     // Sort by value of first datapoint from greatest to least
     const sortedSeries = this.seriesInNavOrder();
     sortedSeries.forEach((series, i) => {
-      const seriesNode = new NavNode(this._navMap!.root, 'series', {
-        seriesKey: series.key
-      }, this._paraState);
-      seriesNode.connect('left', left);
-      if (i === 0) {
-        seriesNode.connect('up', left);
-        seriesNode.connect('down', left);
-        seriesNode.connect('right', left);
+      if (sortedSeries.length > 1) {
+        const seriesNode = new NavNode(this._navMap!.root, 'series', {
+          seriesKey: series.key
+        }, this._paraState);
+        seriesNode.connect('left', left);
+        if (i === 0) {
+          seriesNode.connect('up', left);
+          seriesNode.connect('down', left);
+          seriesNode.connect('right', left);
+        }
+        left = seriesNode;
       }
-      left = seriesNode;
       //series.datapoints.forEach((_dp, j) => seriesNode.addDatapoint(series.key, j));
       series.datapoints.forEach((dp, j) => {
         const node = new NavNode(this._navMap!.root,
@@ -342,6 +344,11 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
           this._paraState);
         //node.addDatapoint(series.key, j);
         node.connect('left', left);
+        if (j === 0 && sortedSeries.length === 1) {
+          node.connect('up', left);
+          node.connect('down', left);
+          node.connect('right', left);
+        }
         left = node;
       });
     });
