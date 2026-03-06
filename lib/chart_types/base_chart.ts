@@ -446,7 +446,12 @@ export abstract class BaseChartInfo {
         } else {
           orientationSentences = await this._summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
         }
-        this._paraState.announce(orientationSentences);
+        const chartSummary = await this._summarizer.getChartSummary();
+        this._paraState.announce({
+          text: chartSummary.text + ' ' + orientationSentences.text,
+          html: chartSummary.html + ' ' + orientationSentences.html,
+          highlights: [...(chartSummary.highlights ?? []), ...(orientationSentences.highlights ?? [])]
+        });
       }
     } else if (cursor.isNodeType('series')) {
       if (!quiet) {
@@ -521,7 +526,7 @@ export abstract class BaseChartInfo {
 
   didClickBackground() {
     this._paraState.clearSelected();
-    this.navMap!.root.goTo('top', {}, true);
+    this.navMap!.root.goTo('top', {});
   }
 
   /** Nav map layer from which to interpret selectors */
