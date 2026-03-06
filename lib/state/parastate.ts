@@ -213,6 +213,7 @@ export class ParaState extends BaseState {
   @property() protected _selectedDatapoints = new Set<string>();
   @property() protected _crosshairedDatapoints = new Set<string>();
   @property() protected _prevSelectedDatapoints = new Set<string>();
+  @property() protected _dataSpaceCrosshairs = new Set<{x: string, y: string}>();
   /** `${seriesKey}-${index1}-${index2}` */
   @property() protected _highlightedSequences = new Set<string>();
   @property() protected _highlightedIntersections = new Set<number>();
@@ -664,6 +665,10 @@ export class ParaState extends BaseState {
     return this._crosshairedDatapoints;
   }
 
+  get dataSpaceCrosshairs() {
+    return this._dataSpaceCrosshairs;
+  }
+
   addDatapointCrosshair(seriesKey: string, index: number) {
     this._crosshairedDatapoints = new Set([
       ...this._crosshairedDatapoints.values(),
@@ -674,6 +679,19 @@ export class ParaState extends BaseState {
   clearDatapointCrosshair(seriesKey: string, index: number) {
     this._crosshairedDatapoints = new Set(
       [...this._crosshairedDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
+    );
+  }
+
+  addDataSpaceCrosshair(x: string, y: string) {
+    this._dataSpaceCrosshairs = new Set([
+      ...this._dataSpaceCrosshairs.values(),
+      { x: x, y: y }
+    ]);
+  }
+
+  clearDataSpaceCrosshair(x: string, y: string) {
+    this._dataSpaceCrosshairs = new Set(
+      [...this._dataSpaceCrosshairs.values()].filter(ch => ch.x !== x || ch.y !== y)
     );
   }
 

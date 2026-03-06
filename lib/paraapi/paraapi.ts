@@ -518,6 +518,14 @@ export class ParaAPI {
   enableStandardActions() {
     this._actions = this._standardActions;
   }
+
+  addCrosshair(xAxis: string | number, yAxis: string | number) {
+    this.paraChart.paraState.addDataSpaceCrosshair(String(xAxis), String(yAxis))
+  }
+  
+  clearCrosshair(xAxis: string | number, yAxis: string | number) {
+    this.paraChart.paraState.clearDataSpaceCrosshair(String(xAxis), String(yAxis))
+  }
 }
 
 /**

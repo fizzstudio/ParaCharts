@@ -172,6 +172,45 @@ export class HighlightsLayer extends PlotLayer {
     }
   }
 
+  protected _processCrosshair(x: string, y: string) {
+    const chartInfo = this.paraview.documentView?.chartLayers.dataLayer.chartInfo;
+    if (chartInfo instanceof PlaneChartInfo) {
+      let height;
+      let width;
+      if (chartInfo.yInterval) {
+        let int = chartInfo.yInterval
+        if (!isNaN(Number(y))) {
+          height = (1 - ((Number(y) - int.start) / (int.end - int.start))) * this.paraview.documentView!.chartLayers.dataLayer.height
+        }
+      }
+      else if (this.paraview.documentView?.yAxis?.tickLabelTierValues.map(t => t.labels).flat().includes(y)) {
+
+      }
+      const xValues = this.paraview.paraState.model!.allFacetValues("x")!.map(box => box.raw);
+      if (chartInfo.xInterval) {
+        const int = chartInfo.xInterval
+        if (!isNaN(Number(x))) {
+          width = ((Number(x) - int.start) / (int.end - int.start)) * this.paraview.documentView!.chartLayers.dataLayer.width
+        }
+      }
+      else if (xValues.includes(x)) {
+        const index = xValues.indexOf(x)
+        const tier = this.paraview.documentView?.xAxis?.tickLabelTiers[0]!
+        /*const regFactor = (tier._options.content.labels.length % tier.children.length == 0)
+          ? tier.children.length / tier._options.content.labels.length
+          : (tier.children.length) / (tier._options.content.labels.length + 1)*/
+        width = tier._tickLabelX(index)
+      }
+      const planeChart = this.paraview.documentView?.chartLayers.dataLayer as PlanePlotView;
+      if (width !== undefined && height !== undefined) {
+        planeChart.makeCrosshairsAtPixelsCoords(width, height, `dataspace-${x}-${y}`);
+      }
+      else {
+        this.log.error('Invalid coordinates given for crosshair');
+      }
+    }
+  }
+
   content() {
     const underlayRects: RectShape[] = [];
     const overlays: (DataSymbol | Shape)[] = [];
@@ -196,6 +235,10 @@ export class HighlightsLayer extends PlotLayer {
     this.paraview.paraState.highlightedAxisLabels.forEach(options => {
       this._processAxisLabel(options, overlays);
       this.paraview.paraState.prevHighlightedElements.add(`axis-label-${options.orientation}-${options.labelIndex}`);
+    });
+    this.paraview.paraState.dataSpaceCrosshairs.forEach(point => {
+      this._processCrosshair(point.x, point.y)
+      this.paraview.paraState.prevHighlightedElements.add(`dataspace-${point.x}-${point.y}`);
     });
     return svg`
       ${this.paraview.paraState.visitedDatapoints.values().map(datapointId => {
