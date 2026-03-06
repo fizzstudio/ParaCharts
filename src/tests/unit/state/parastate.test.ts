@@ -134,29 +134,29 @@ describe('ParaState', () => {
       state = new ParaState(new GlobalState({}), {});
     });
 
-    it('should lowlight a series', () => {
-      state.lowlightSeries('series1');
-      expect(state.isSeriesLowlighted('series1')).toBe(true);
+    it('should dim a series', () => {
+      state.dimSeries('series1');
+      expect(state.isSeriesDimmed('series1')).toBe(true);
     });
 
-    it('should not duplicate lowlighted series', () => {
-      state.lowlightSeries('series1');
-      state.lowlightSeries('series1');
-      expect(state['_lowlightedSeries']).toHaveLength(1);
+    it('should not duplicate dimmed series', () => {
+      state.dimSeries('series1');
+      state.dimSeries('series1');
+      expect(state['_dimmedSeries']).toHaveLength(1);
     });
 
-    it('should clear series lowlight', () => {
-      state.lowlightSeries('series1');
-      state.clearSeriesLowlight('series1');
-      expect(state.isSeriesLowlighted('series1')).toBe(false);
+    it('should clear series dimming', () => {
+      state.dimSeries('series1');
+      state.clearSeriesDimming('series1');
+      expect(state.isSeriesDimmed('series1')).toBe(false);
     });
 
-    it('should clear all series lowlights', () => {
-      state.lowlightSeries('series1');
-      state.lowlightSeries('series2');
-      state.clearAllSeriesLowlights();
-      expect(state.isSeriesLowlighted('series1')).toBe(false);
-      expect(state.isSeriesLowlighted('series2')).toBe(false);
+    it('should clear all series dimming', () => {
+      state.dimSeries('series1');
+      state.dimSeries('series2');
+      state.clearAllSeriesDimming();
+      expect(state.isSeriesDimmed('series1')).toBe(false);
+      expect(state.isSeriesDimmed('series2')).toBe(false);
     });
   });
 
