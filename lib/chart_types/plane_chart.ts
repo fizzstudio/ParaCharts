@@ -329,6 +329,11 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
         seriesKey: series.key
       }, this._paraState);
       seriesNode.connect('left', left);
+      if (i === 0) {
+        seriesNode.connect('up', left);
+        seriesNode.connect('down', left);
+        seriesNode.connect('right', left);
+      }
       left = seriesNode;
       //series.datapoints.forEach((_dp, j) => seriesNode.addDatapoint(series.key, j));
       series.datapoints.forEach((dp, j) => {
