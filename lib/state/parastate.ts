@@ -124,8 +124,9 @@ export interface SparkBrailleInfo {
 }
 
 export interface HighlightAxisOptions {
-  index: number;
-  orientation: "horiz" | "vert"
+  tierIndex: number;
+  labelIndex: number;
+  orientation: "horiz" | "vert";
 }
 
 const synchronizedSettings = [
@@ -184,8 +185,7 @@ export class ParaState extends BaseState {
   @property() popups: Popup[] = [];
   @property() focusPopups: Popup[] = [];
   @property() selectPopups: Popup[] = [];
-  @property() crossHairLabels: Popup[] = [];
-  @property() crossHair: PathShape[] = [];
+  @property() crossHairs: Array<{ id: string, popups: Array<PathShape | Popup> }> = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() frontSeries = '';
@@ -480,7 +480,7 @@ export class ParaState extends BaseState {
         };
       });
     }
-    this.postNotice('paranotice', {key: 'manifestSet'});
+    this.postNotice('paranotice', { key: 'manifestSet' });
   }
 
   dimSeries(seriesKey: string) {
@@ -582,7 +582,7 @@ export class ParaState extends BaseState {
     return this._prevVisitedDatapoints;
   }
 
-    get prevHighlightedElements() {
+  get prevHighlightedElements() {
     return this._prevHighlightedElements;
   }
 
@@ -718,6 +718,9 @@ export class ParaState extends BaseState {
   }
 
   clearIntersectionHighlight(index: number) {
+    for (let intersection of Array.from(this._highlightedIntersections)) {
+      this.removeCrosshair(`intersection-${intersection}`)
+    }
     this._highlightedIntersections = new Set(
       [...this._highlightedIntersections.values()].filter(idx => idx !== index)
     );
@@ -736,13 +739,15 @@ export class ParaState extends BaseState {
   highlightAxisLabel(options: HighlightAxisOptions) {
     this._highlightedAxisLabels = new Set([
       ...this._highlightedAxisLabels.values(),
-      {index: options.index, orientation: options.orientation}
+      { tierIndex: options.tierIndex, labelIndex: options.labelIndex, orientation: options.orientation }
     ]);
   }
 
   clearAxisLabelHighlight(options: HighlightAxisOptions) {
     this._highlightedAxisLabels = new Set(
-      [...this._highlightedAxisLabels.values()].filter(o => o.index !== options.index && o.orientation !== options.orientation)
+      [...this._highlightedAxisLabels.values()].filter(l => (l.labelIndex !== options.labelIndex
+        || l.tierIndex !== options.tierIndex
+        || l.orientation !== options.orientation))
     );
   }
 
@@ -756,6 +761,7 @@ export class ParaState extends BaseState {
     this.clearAllIntersectionHighlights();
     this.clearAllRangeHighlights();
     this.clearAllSeriesDimming();
+    this.clearAllAxisLabelHighlights();
     this.isTitleHighlighted = false;
     this.isHorizontalAxisHighlighted = false;
     this.isVerticalAxisHighlighted = false;
@@ -1148,12 +1154,16 @@ export class ParaState extends BaseState {
     this.requestUpdate();
   }
 
+  removeCrosshair(id: string) {
+    this.crossHairs.splice(this.crossHairs.findIndex(p => p.id === id), 1);
+    this.requestUpdate();
+  }
+
   clearPopups() {
     this.popups.splice(0, this.popups.length);
     this.focusPopups.splice(0, this.focusPopups.length);
     this.selectPopups.splice(0, this.selectPopups.length);
-    this.crossHair.splice(0, this.crossHair.length);
-    this.crossHairLabels.splice(0, this.crossHairLabels.length);
+    this.crossHairs.splice(0, this.crossHairs.length);
   }
 
 }

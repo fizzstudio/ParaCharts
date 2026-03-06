@@ -556,12 +556,12 @@ export class ParaAPIHorizontalAxis {
   }
 
 
-  highlightLabel(index: number) {
-    this._api.paraChart.paraState.highlightAxisLabel({ index: index, orientation: 'horiz' });
+  highlightLabel(tierIndex: number, labelIndex: number) {
+    this._api.paraChart.paraState.highlightAxisLabel({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'horiz' });
 
   }
-  clearHighlightLabel(index: number) {
-    this._api.paraChart.paraState.clearAxisLabelHighlight({ index: index, orientation: 'horiz' });
+  clearHighlightLabel(tierIndex: number, labelIndex: number) {
+    this._api.paraChart.paraState.clearAxisLabelHighlight({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'horiz' });
   }
 }
 
@@ -582,12 +582,12 @@ export class ParaAPIVerticalAxis {
     this._api.paraChart.paraState.isVerticalAxisHighlighted = false;
   }
 
-  highlightLabel(index: number) {
-    this._api.paraChart.paraState.highlightAxisLabel({ index: index, orientation: 'vert' });
+  highlightLabel(tierIndex: number, labelIndex: number) {
+    this._api.paraChart.paraState.highlightAxisLabel({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'vert' });
 
   }
-  clearHighlightLabel(index: number) {
-    this._api.paraChart.paraState.clearAxisLabelHighlight({ index: index, orientation: 'vert' });
+  clearHighlightLabel(tierIndex: number, labelIndex: number) {
+    this._api.paraChart.paraState.clearAxisLabelHighlight({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'vert' });
   }
 }
 
@@ -860,8 +860,9 @@ export class ParaAPIPointGroup {
     this._datapoints.forEach(datapoint => {
       this._apiSeriesGroup.api.paraChart.paraState.clearDatapointHighlight(
         datapoint.seriesKey, datapoint.datapointIndex);
-      this._apiSeriesGroup.api.paraChart.paraState.removePopup(
-        this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '')
+        const id = this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '';
+      this._apiSeriesGroup.api.paraChart.paraState.removePopup(id);
+      this._apiSeriesGroup.api.paraChart.paraState.removeCrosshair(id);
     }
     );
   }

@@ -156,7 +156,7 @@ export abstract class TickLabelTier extends Container(View) {
           if (this.paraview.paraState.settings.chart.isShowPopups
             && this.paraview.paraState.settings.popup.activation === "onHover"
             && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
-              this.paraview.paraState.removePopup(this.id);
+              this.paraview.paraState.removePopup(`${this.id}-${i}`);
           }
         }
       });
@@ -326,7 +326,7 @@ export class HorizTickLabelTier extends TickLabelTier {
         text: text ?? datapointText,
         x: this._tickLabelX(index ?? 0) * regFactor,
         y: this.paraview.documentView?.chartLayers.height!,
-        id: this.id,
+        id: `${this.id}-${index}`,
         type: "horizTick",
         fill: "hsl(0, 0%, 0%)",
         inbounds: false
