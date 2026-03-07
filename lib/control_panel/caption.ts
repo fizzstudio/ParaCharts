@@ -107,7 +107,8 @@ export class ParaCaptionBox extends ParaComponent {
             || this.parachart.paraView.ariaLiveRegion.voicing.isSpeaking) return;
           // NB: this requires there be an announcement, so it only works
           // in NH mode
-          const highlight = this._paraState.announcement.highlights[i];
+          // const highlight = this._paraState.announcement.highlights[i];
+          const highlight = this._caption.highlights![i];
           this._paraState.postNotice('landmarkStart', highlight);
         });
         // span.addEventListener('pointerleave', (e: PointerEvent) => {
@@ -170,19 +171,26 @@ export class ParaCaptionBox extends ParaComponent {
     const voicing = this.parachart.paraView.ariaLiveRegion.voicing;
     let idx = this._prevSpanIdx;
     if (!this._highlightManualOverride) {
-      idx = voicing.highlightIndex!;
+      idx = voicing.highlightIndex ?? -1;
       this._highlightManualOverride = true;
     }
+    // idx = Math.min(
+    //   this._paraState.announcement.highlights.length - 1,
+    //   Math.max(0, idx + (next ? 1 : -1)));
     idx = Math.min(
-      this._paraState.announcement.highlights.length - 1,
+      this._caption.highlights!.length - 1,
       Math.max(0, idx + (next ? 1 : -1)));
 
     this._prevSpanIdx = idx;
 
-    const msg = getMsg(idx);
-    const highlight = this._paraState.announcement.highlights[idx];
-    voicing.shutUp();
-    voicing.speakText(msg);
+    // const highlight = this._paraState.announcement.highlights[idx];
+    const highlight = this._caption.highlights![idx];
+    if (this._paraState.settings.ui.isVoicingEnabled) {
+      //const msg = getMsg(idx);
+      const msg = this._captionRef.value!.firstElementChild!.children[idx].textContent;
+      voicing.shutUp();
+      voicing.speakText(msg);
+    }
     this._paraState.postNotice('landmarkStart', highlight);
   }
 

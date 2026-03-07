@@ -614,31 +614,41 @@ export class ParaView extends ParaComponent {
     } else {
       this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
       //this.ariaLiveRegion.voicing.shutUp();
-      if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
-        this._paraState.updateSettings(draft => {
-          draft.ui.isNarrativeHighlightEnabled = false;
-        });
-      }
+      // if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
+      //   this._paraState.updateSettings(draft => {
+      //     draft.ui.isNarrativeHighlightEnabled = false;
+      //   });
+      // }
     }
   }
 
   protected _handleNarrativeHighlight() {
     if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
-      this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
-      if (!this._paraState.settings.ui.isVoicingEnabled) {
-        this._paraState.updateSettings(draft => {
-          draft.ui.isVoicingEnabled = true;
-        });
+      // if (this._paraState.settings.ui.isVoicingEnabled) {
+      //   this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
+      // }
+      if (this._paraState.settings.ui.isVoicingEnabled) {
+        this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
+        this._paraState.announce(this.paraChart.captionBox.caption);
+      } else {
+        this._paraState.announce('Tour guide enabled.');
       }
-      this._paraState.announce(this.paraChart.captionBox.caption);
+      // if (!this._paraState.settings.ui.isVoicingEnabled) {
+      //   this._paraState.updateSettings(draft => {
+      //     draft.ui.isVoicingEnabled = true;
+      //   });
+      // }
     } else {
-      this.ariaLiveRegion.voicing.speak('Tour guide disabled.', []);
+      // if (this._paraState.settings.ui.isVoicingEnabled) {
+      //   this.ariaLiveRegion.voicing.speak('Tour guide disabled.', []);
+      // }
+      this._paraState.announce('Tour guide disabled.');
       this.paraChart.captionBox.clearSpanHighlights();
       this._paraState.clearAllHighlights();
       this._paraState.clearPopups();
-      this._paraState.updateSettings(draft => {
-        draft.ui.isVoicingEnabled = false;
-      });
+      // this._paraState.updateSettings(draft => {
+      //   draft.ui.isVoicingEnabled = false;
+      // });
     }
   }
 

@@ -217,8 +217,8 @@ export class ParaAPI {
         _paraChart.controlPanel.annotationPanel.addAnnotation();
       },
       /** Toggle tour guide mode. */
-      toggleNarrativeHighlightMode() {
-        paraView.paraState.startTourGuide();
+      toggleNarrativeHighlightMode(args: ActionArgumentMap) {
+        paraView.paraState.startTourGuide(args.noSelfVoicing as boolean);
         self._actions = self._narrativeActions;
         // paraView.paraState.updateSettings(draft => {
         //   draft.ui.isNarrativeHighlightEnabled = true; //!draft.ui.isNarrativeHighlightEnabled;
