@@ -646,27 +646,6 @@ export class ParaView extends ParaComponent {
     this.ariaLiveRegion.voicing.togglePaused();
   }
 
-  startNarrativeHighlightMode() {
-    this._paraState.clearSelected();
-    this._paraState.clearAllHighlights();
-    this._paraState.clearPopups();
-    this._paraState.chartInfo.navMap!.root.goTo('top', {}, true);
-    this._paraState.updateSettings(draft => {
-      draft.ui.isNarrativeHighlightEnabled = true;
-    });
-  }
-
-  endNarrativeHighlightMode() {
-    this._paraState.clearSelected();
-    this._paraState.clearAllHighlights();
-    this._paraState.clearPopups();
-    this._paraState.chartInfo.navMap!.root.goTo('top', {}, true);
-    this._paraState.updateSettings(draft => {
-      draft.ui.isNarrativeHighlightEnabled = false;
-    });
-  }
-
-
   /*protected updated(changedProperties: PropertyValues) {
     this.log.info('canvas updated');
     if (changedProperties.has('dataState')) {
@@ -980,12 +959,12 @@ export class ParaView extends ParaComponent {
         viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
         style=${styleMap(this._rootStyle())}
         @focus=${() => {
-        if (!this._paraState.settings.chart.isStatic) {
-          //this.log.info('focus');
-          //this.todo.deets?.onFocus();
-          //this.documentView?.chartInfo.navMap?.visitDatapoints();
-        }
-      }}
+          if (!this._paraState.settings.chart.isStatic) {
+            //this.log.info('focus');
+            //this.todo.deets?.onFocus();
+            this._paraState.chartInfo.navMap?.visitDatapoints();
+          }
+        }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
         @pointerdown=${(ev: PointerEvent) => this._pointerEventManager?.handleStart(ev)}
         @pointerup=${(ev: PointerEvent) => this._pointerEventManager?.handleEnd(ev)}

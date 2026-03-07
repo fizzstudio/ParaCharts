@@ -449,10 +449,13 @@ export interface ManifestBuilderInput {
     xAxis?: {
         variableType: CsvDataType;
         title: string;
+        units?: string;
     };
     // (undocumented)
     yAxis?: {
         title: string;
+        units?: string;
+        multiplier?: number;
     };
 }
 

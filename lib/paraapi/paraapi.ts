@@ -218,7 +218,7 @@ export class ParaAPI {
       },
       /** Toggle tour guide mode. */
       toggleNarrativeHighlightMode() {
-        paraView.startNarrativeHighlightMode();
+        paraView.paraState.startTourGuide();
         self._actions = self._narrativeActions;
         // paraView.paraState.updateSettings(draft => {
         //   draft.ui.isNarrativeHighlightEnabled = true; //!draft.ui.isNarrativeHighlightEnabled;
@@ -249,7 +249,7 @@ export class ParaAPI {
     this._narrativeActions.goLast = () => { };
     this._narrativeActions.repeatLastAnnouncement = () => { };
     this._narrativeActions.toggleNarrativeHighlightMode = () => {
-      paraView.endNarrativeHighlightMode();
+      paraView.paraState.endTourGuide();
       self._actions = this._standardActions;
     };
     this._narrativeActions.playPauseMedia = () => {
@@ -463,7 +463,6 @@ export class ParaAPI {
     this.getIntersection(index).clearHighlight();
   }
 
-
   /** Clear all chart horizontal range highlights. */
   clearAllRangeHighlights() {
     this._paraChart.paraState.clearAllRangeHighlights();
@@ -497,6 +496,13 @@ export class ParaAPI {
   /** Clear all chart highlights. */
   clearAllPopups() {
     this._paraChart.paraState.clearPopups();
+  }
+  clearVisited() {
+    this._paraChart.paraState.clearVisited();
+  }
+
+  clearSelected() {
+    this._paraChart.paraState.clearSelected();
   }
 
   /** Hide all chart series. */

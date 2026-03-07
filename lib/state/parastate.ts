@@ -484,6 +484,76 @@ export class ParaState extends BaseState {
     this.postNotice('paranotice', { key: 'manifestSet' });
   }
 
+  getActionChains() {
+    const chains: string[] = [];
+    if (this.isTitleHighlighted) {
+      chains.push('getTitle().highlight()');
+    }
+    if (this.isHorizontalAxisHighlighted) {
+      chains.push('getHorizontalAxis().highlight()');
+    }
+    if (this.isVerticalAxisHighlighted) {
+      chains.push('getVerticalAxis().highlight()');
+    }
+    if (this.isEastLegendHighlighted) {
+      chains.push('getLegend(east).highlight()');
+    }
+    if (this.isWestLegendHighlighted) {
+      chains.push('getLegend(west).highlight()');
+    }
+    if (this.isNorthLegendHighlighted) {
+      chains.push('getLegend(north).highlight()');
+    }
+    if (this.isSouthLegendHighlighted) {
+      chains.push('getLegend(south).highlight()');
+    }
+    this._rangeHighlights.forEach(highlight => {
+      chains.push(`getRange(${highlight.startPortion}, ${highlight.endPortion}).highlight()`);
+    });
+    this._highlightedIntersections.forEach(index => {
+      chains.push(`getIntersection(${index}).highlight()`);
+    });
+    this._dimmedSeries.forEach(series => {
+      chains.push(`getSeries(${series}).dim()`);
+    });
+    this._hiddenSeries.forEach(series => {
+      chains.push(`getSeries(${series}).hide()`);
+    });
+    this._visitedDatapoints.forEach(id => {
+      const cursor = datapointIdToCursor(id);
+      chains.push(`getSeries(${cursor.seriesKey}).getPoint(${cursor.index}).visit()`);
+    });
+    this._selectedDatapoints.forEach(id => {
+      const cursor = datapointIdToCursor(id);
+      chains.push(`getSeries(${cursor.seriesKey}).getPoint(${cursor.index}).select()`);
+    });
+    this._highlightedDatapoints.forEach(id => {
+      const cursor = datapointIdToCursor(id);
+      chains.push(`getSeries(${cursor.seriesKey}).getPoint(${cursor.index}).highlight()`);
+    });
+    return chains;
+  }
+
+  startTourGuide() {
+    this.clearSelected();
+    this.clearAllHighlights();
+    this.clearPopups();
+    this._chartInfo.navMap!.root.goTo('top', {}, true);
+    this.updateSettings(draft => {
+      draft.ui.isNarrativeHighlightEnabled = true;
+    });
+  }
+
+  endTourGuide() {
+    this.clearSelected();
+    this.clearAllHighlights();
+    this.clearPopups();
+    this.chartInfo.navMap!.root.goTo('top', {}, true);
+    this.updateSettings(draft => {
+      draft.ui.isNarrativeHighlightEnabled = false;
+    });
+  }
+
   dimSeries(seriesKey: string) {
     if (!this._dimmedSeries.includes(seriesKey)) {
       this._dimmedSeries = [...this._dimmedSeries, seriesKey];

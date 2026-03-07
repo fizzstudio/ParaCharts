@@ -43,6 +43,12 @@ export const PASTRY_ORIENTATION_SENTENCES = [
   '$.datasets[0].recordCount',
 ]
 
+// TODO: Add axes sentences back into scatter plot orientation sentences after scatter plot
+//   axes summaries are added: https://github.com/fizzstudio/ParaSummary/issues/93
+export const SCATTER_ORIENTATION_SENTENCES = [
+  '$.datasets[0].recordCount',
+]
+
 /**
  * @public
  */
@@ -177,6 +183,8 @@ export abstract class BaseChartInfo {
         if (!this._paraView.paraChart.captionBox.highlightManualOverride) {
           this._paraState.clearAllHighlights();
           this._paraState.clearPopups();
+          this._paraState.clearSelected();
+          this._navMap!.root.goTo('top', {}, true);
         }
       }
     }
@@ -281,8 +289,9 @@ export abstract class BaseChartInfo {
     // command was issued (i.e., we know nothing about chord mode here)
     const seriesAndVal = (datapointId: string) => {
       const { seriesKey, index } = datapointIdToCursor(datapointId);
-      const dp = this._paraState.model!.atKeyAndIndex(seriesKey, index)!;
-      return `${seriesKey} (${formatBox(dp.facetBox('x')!, this._paraState.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this._paraState.getFormatType('statusBar'))})`;
+      const series = this._paraState.model!.atKey(seriesKey)!;
+      const dp = series[index];
+      return `${series.label} (${formatBox(dp.facetBox('x')!, this._paraState.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this._paraState.getFormatType('statusBar'))})`;
     };
 
     const newTotalSelected = this._paraState.selectedDatapoints.size;
@@ -432,11 +441,17 @@ export abstract class BaseChartInfo {
         let orientationSentences
         if (['pie', 'donut', 'gauge'].includes(this._paraState.type)) {
           orientationSentences = await this._summarizer.getRequestedSummaries(PASTRY_ORIENTATION_SENTENCES);
-        }
-        else {
+        } else if (this._paraState.type === 'scatter') {
+          orientationSentences = await this._summarizer.getRequestedSummaries(SCATTER_ORIENTATION_SENTENCES);
+        } else {
           orientationSentences = await this._summarizer.getRequestedSummaries(ORIENTATION_SENTENCES);
         }
-        this._paraState.announce(orientationSentences);
+        const chartSummary = await this._summarizer.getChartSummary();
+        this._paraState.announce({
+          text: chartSummary.text + ' ' + orientationSentences.text,
+          html: chartSummary.html + ' ' + orientationSentences.html,
+          highlights: [...(chartSummary.highlights ?? []), ...(orientationSentences.highlights ?? [])]
+        });
       }
     } else if (cursor.isNodeType('series')) {
       if (!quiet) {
@@ -511,7 +526,7 @@ export abstract class BaseChartInfo {
 
   didClickBackground() {
     this._paraState.clearSelected();
-    this.navMap!.root.goTo('top', {}, true);
+    this.navMap!.root.goTo('top', {});
   }
 
   /** Nav map layer from which to interpret selectors */

@@ -1,11 +1,21 @@
 import { Logger, getLogger } from '@fizz/logger';
-import { ParaView } from '../paraview';
-import { capitalize, join, interpolate} from '@fizz/templum';
-import { ComparisonRelationship, ComparisonResult } from '@fizz/dataframe';
+import { capitalize, join, interpolate } from '@fizz/templum';
 import { DatapointView } from '../view/data';
 import { type Model } from '@fizz/paramodel';
 import Decimal from 'decimal.js';
 import { formatXYDatapoint } from '@fizz/parasummary';
+
+// TODO (@simonvarey): This is a redefined from the `ComparisonRelationship` in @fizz/dataframe. I should
+//   check whether the one in @fizz/dataframe should be changed/removed.
+type ComparisonRelationship = 'equal' | 'growing' | 'shrinking';
+
+// TODO (@simonvarey): This is a redefined from the `ComparisonResult` in @fizz/dataframe. I should
+//   check whether the one in @fizz/dataframe should be changed/removed.
+interface ComparisonResult {
+    relationship: ComparisonRelationship;
+    diff: number;
+    percentage: number;
+}
 
 export function describeSelections(
   visitedDatapoint: DatapointView,
@@ -26,7 +36,7 @@ export function describeSelections(
       if (!view.equals(visitedDatapoint)) {
         const viewValue = view.datapoint.facetValueNumericized('y')!;
         const targetValue = visitedDatapoint.datapoint.facetValueNumericized('y')!;
-        const result = compare(targetValue, viewValue);
+        const result = compare(viewValue, targetValue);
         const comparatorMsg = comparisonMsgs[result.relationship].msg;
         const diff = result.diff! !== 0 ? interpolate('${diff:number} ', { diff: result.diff! }) : undefined;
         msgArray.push(capitalize(interpolate(
@@ -88,7 +98,8 @@ export function /*for tests*/ describeAdjacentDatapoints(model: Model, targetVie
 
 export function /*for tests*/ describeAdjacentDatapointComparison(
     model: Model,
-    self: DatapointView, direction: 'prev' | 'next'
+    self: DatapointView, 
+    direction: 'prev' | 'next'
 ): string | null {
     let log: Logger = getLogger("describeAdjacentDatapointComparison");
 	const other = self[direction];
@@ -111,18 +122,19 @@ export function /*for tests*/ describeAdjacentDatapointComparison(
     //log.info(paraview.paraState.model!.allPoints[self.index].facetBox("x")!.raw)
     //Series key below
     //log.info(ParaView.paraState.model!.allPoints[self.index].seriesKey)
-    const selfValue = selfSeries[self.index].facetBox("y")!.raw as unknown as number;
-    const otherValue = otherSeries[other.index].facetBox("y")!.raw as unknown as number;
-    const result = compare(selfValue, otherValue);
+    const selfValue = selfSeries[self.index].facetValueNumericized('y')!;
+    const otherValue = otherSeries[other.index].facetValueNumericized('y')!;
+    const result = direction === 'prev' ? compare(otherValue, selfValue): compare(selfValue, otherValue);
+    console.log('p', direction, otherValue, selfValue)
     log.info(result);
+    console.log('r', result, result.relationship, direction)
     const comparator = comparisonMsgs[result.relationship][direction];
-    const percent = direction === 'prev' ? result.percentagePrev! : result.percentageNext!;
-    if (result.diff! === 0) {
+    if (result.diff === 0) {
         return interpolate('${comparator:string} ${otherLabel:string}', { comparator, otherLabel });
     }
     const preposition = direction === 'prev' ? 'from' : 'in';
     return interpolate('${comparator:string} ${diff:number} (${percent:number#.1}%) ${preposition:string} ${otherLabel:string}',
-        { comparator, diff: result.diff!, percent, preposition, otherLabel });
+        { comparator, diff: result.diff!, percent: result.percentage, preposition, otherLabel });
 }
 
 export const queryMessages = {
@@ -188,57 +200,53 @@ export const queryMessages = {
     'percentageOfChart': '${datapointX:string}% of total amount in chart. Datapoint ${datapointIndex:number} of ${datapointCount:number}.',
 } as const;
 
-export const comparisonMsgs: Record<ComparisonRelationship, ComparisonMsgs> = {
-    equal: {
-        msg: 'equal to',
-        prev: 'stayed the same from',
-        next: 'will stay the same in'
-    },
-    greater: {
-        msg: 'more than',
-        prev: 'grew by',
-        next: 'will decrease by'
-    },
-    less: {
-        msg: 'less than',
-        prev: 'decreased by',
-        next: 'will grow by'
-    }
-}
-
 export interface ComparisonMsgs {
     msg: string,
     prev: string,
     next: string
 }
 
-export function compare(value1: number, value2: number): ComparisonResult {
-    let log: Logger = getLogger("compare");
-    log.info(value2)
-    /*
-    if (!value2.isNumber()) {
-      throw new Error('must compare number with number');
+export const comparisonMsgs: Record<ComparisonRelationship, ComparisonMsgs> = {
+    equal: {
+        msg: 'equal to',
+        prev: 'stayed the same from',
+        next: 'will stay the same in'
+    },
+    growing: {
+        msg: 'more than',
+        prev: 'grew by',
+        next: 'will grow by'
+    },
+    shrinking: {
+        msg: 'less than',
+        prev: 'decreased by',
+        next: 'will decrease by'
     }
-      */
-    const result: Partial<ComparisonResult> = {
-      diff: 0
-    };
-    if (value1 === value2) {
-      result.relationship = 'equal';
-    } else {
-      result.relationship = value1 > value2 ? 'greater' : 'less';
-      const min = new Decimal(Math.min(value1, value2));
-      const max = new Decimal(Math.max(value1, value2));
-      result.diff = max.sub(min).toNumber();
-      // calculate the percentage difference
-      const startVal = new Decimal(value1);
-      const endVal = new Decimal(value2);
-      if (startVal) {
-        result.percentageNext = endVal.sub(startVal).dividedBy(startVal).times(100).toNumber();
-      }
-      if (endVal) {
-        result.percentagePrev = startVal.sub(endVal).dividedBy(endVal).times(100).toNumber();
-      }
+}
+
+export function compare(earlier: number, later: number): ComparisonResult {
+  /*let log: Logger = getLogger("compare");
+  log.info(later)*/
+  if (earlier === later) {
+    return {
+      relationship: 'equal',
+      diff: 0,
+      percentage: 0
     }
-    return result as ComparisonResult;
   }
+
+  const relationship = earlier > later ? 'shrinking' : 'growing';
+  console.log(earlier > later, earlier, later, relationship)
+  const min = new Decimal(Math.min(earlier, later));
+  const max = new Decimal(Math.max(earlier, later));
+  const diff = max.sub(min).toNumber();
+  // calculate the percentage difference
+  const startVal = new Decimal(earlier);
+  const endVal = new Decimal(later);
+  const percentage = endVal.sub(startVal).dividedBy(startVal).times(100).toNumber();
+  return {
+    relationship,
+    diff,
+    percentage
+  };
+}

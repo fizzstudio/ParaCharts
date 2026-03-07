@@ -449,10 +449,13 @@ export interface ManifestBuilderInput {
     xAxis?: {
         variableType: CsvDataType;
         title: string;
+        units?: string;
     };
     // (undocumented)
     yAxis?: {
         title: string;
+        units?: string;
+        multiplier?: number;
     };
 }
 
@@ -575,6 +578,12 @@ export class ParaChart extends ParaComponent {
     protected _styleManager: StyleManager;
     // (undocumented)
     static styles: CSSResult[];
+    // (undocumented)
+    get tourBus(): TourBus;
+    // Warning: (ae-forgotten-export) The symbol "TourBus" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _tourBus: TourBus;
     // (undocumented)
     type?: ChartType_2;
     // (undocumented)

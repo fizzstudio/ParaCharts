@@ -22,7 +22,8 @@ export default defineConfig({
         };`
       }
     },
-    outDir: 'dist-ai'
+    outDir: 'dist-ai',
+    sourcemap: true
   },
   server: {
     port: 5180

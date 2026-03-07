@@ -82,12 +82,16 @@ export class ParaCaptionBox extends ParaComponent {
   connectedCallback(): void {
     super.connectedCallback();
     this.setCaption();
-    this._storeChangeUnsub = this._paraState.subscribe(this.setCaption.bind(this));
+    // XXX does the caption really need to update every time parastate changes?
+    // this._storeChangeUnsub = this._paraState.subscribe(async () => {
+    //   console.log('SUBSCRIBE');
+    //   await this.setCaption();
+    // });
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    this._storeChangeUnsub();
+    // this._storeChangeUnsub();
   }
 
   protected updated(_changedProperties: PropertyValues): void {
@@ -117,10 +121,11 @@ export class ParaCaptionBox extends ParaComponent {
     this.parachart.clearAriaLive();
   }
 
-  async setCaption(): Promise<void> {
+  async setCaption(summary?: HighlightedSummary): Promise<void> {
     if (this._paraState.dataState === 'complete') {
-      this._caption =
-        await this.parachart.globalState.paraState.chartInfo.summarizer.getChartSummary() ?? {text: '', html: ''};
+      this._caption = summary
+        ?? await this._paraState.chartInfo.summarizer.getChartSummary()
+        ?? {text: '', html: ''};
     }
   }
 

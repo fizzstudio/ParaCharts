@@ -49,6 +49,7 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { SlotLoader } from '../loader/slotloader';
 import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { initParaSummary } from '@fizz/parasummary';
+import { TourBus } from './tour_bus';
 
 // NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
 /** @public */
@@ -80,6 +81,7 @@ export class ParaChart extends ParaComponent {
   protected _paraAPI!: ParaAPI;
   // allow _scrollyteller to be cleared with undefined after destroy() ===
   protected _scrollyteller: Scrollyteller | undefined;
+  protected _tourBus: TourBus;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -127,6 +129,9 @@ export class ParaChart extends ParaComponent {
     this.captionBox = document.createElement('para-caption-box');
     this.captionBox.globalState = this._globalState;
     this.captionBox.parachart = this;
+
+    this._tourBus = new TourBus(this._globalState.paraState, this.captionBox);
+
     customPropLoader.paraState = this.paraState;
     customPropLoader.registerColors();
     customPropLoader.registerSymbols();
@@ -211,6 +216,10 @@ export class ParaChart extends ParaComponent {
 
   get scrollyteller() {
     return this._scrollyteller;
+  }
+
+  get tourBus() {
+    return this._tourBus;
   }
 
   get paraState() {
@@ -352,6 +361,7 @@ export class ParaChart extends ParaComponent {
       // NB: cpanel doesn't exist in headless mode
       this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
       this._paraAPI = new ParaAPI(this);
+      await this._tourBus.sendContextPayload();
       this._loaderResolver!();
     } catch (error) {
       this.log.error(error instanceof Error ? error.message : String(error));
