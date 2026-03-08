@@ -321,4 +321,8 @@ export abstract class DataLayer extends PlotLayer {
     dpView.popup?.remove();
     this.paraview.requestUpdate()
   }
+
+  makeCrosshairsLocked(datapointViews: DatapointView[], focus?: boolean, chord?: boolean, popup: boolean = true) { }
+  makeCrosshairsAtPointer(nearestPoint: DatapointView) { }
+  makeCrosshairsAtPixelsCoords(x: number, y: number, id: string) { }
 }

@@ -493,6 +493,10 @@ export class ParaAPI {
     this._paraChart.paraState.clearAllHighlights();
   }
 
+  /** Clear all chart highlights. */
+  clearAllPopups() {
+    this._paraChart.paraState.clearPopups();
+  }
   clearVisited() {
     this._paraChart.paraState.clearVisited();
   }
@@ -519,6 +523,14 @@ export class ParaAPI {
   /** Enable the standard hotkey actions. */
   enableStandardActions() {
     this._actions = this._standardActions;
+  }
+
+  addCrosshair(xAxis: string | number, yAxis: string | number) {
+    this.paraChart.paraState.addDataSpaceCrosshair(String(xAxis), String(yAxis))
+  }
+  
+  clearCrosshair(xAxis: string | number, yAxis: string | number) {
+    this.paraChart.paraState.clearDataSpaceCrosshair(String(xAxis), String(yAxis))
   }
 }
 
@@ -556,6 +568,15 @@ export class ParaAPIHorizontalAxis {
   clearHighlight() {
     this._api.paraChart.paraState.isHorizontalAxisHighlighted = false;
   }
+
+
+  highlightLabel(tierIndex: number, labelIndex: number) {
+    this._api.paraChart.paraState.highlightAxisLabel({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'horiz' });
+
+  }
+  clearHighlightLabel(tierIndex: number, labelIndex: number) {
+    this._api.paraChart.paraState.clearAxisLabelHighlight({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'horiz' });
+  }
 }
 
 /**
@@ -573,6 +594,14 @@ export class ParaAPIVerticalAxis {
   /** Clear any vertical axis highlight. */
   clearHighlight() {
     this._api.paraChart.paraState.isVerticalAxisHighlighted = false;
+  }
+
+  highlightLabel(tierIndex: number, labelIndex: number) {
+    this._api.paraChart.paraState.highlightAxisLabel({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'vert' });
+
+  }
+  clearHighlightLabel(tierIndex: number, labelIndex: number) {
+    this._api.paraChart.paraState.clearAxisLabelHighlight({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'vert' });
   }
 }
 
@@ -845,8 +874,9 @@ export class ParaAPIPointGroup {
     this._datapoints.forEach(datapoint => {
       this._apiSeriesGroup.api.paraChart.paraState.clearDatapointHighlight(
         datapoint.seriesKey, datapoint.datapointIndex);
-      this._apiSeriesGroup.api.paraChart.paraState.removePopup(
-        this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '')
+        const id = this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '';
+      this._apiSeriesGroup.api.paraChart.paraState.removePopup(id);
+      this._apiSeriesGroup.api.paraChart.paraState.removeCrosshair(id);
     }
     );
   }
@@ -871,6 +901,26 @@ export class ParaAPIPointGroup {
       this._apiSeriesGroup.api.paraChart.paraView.clipTo(
         datapoint.seriesKey, Number(datapoint.datapointIndex));
     });
+  }
+
+  /** Add crosshair and popup to the datapoint(s). */
+  addCrosshair() {
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.paraState.addDatapointCrosshair(
+        datapoint.seriesKey, datapoint.datapointIndex);
+    });
+  }
+
+  /** Remove crosshair and popup from the datapoint(s). */
+  removeCrosshair() {
+    this._apiSeriesGroup.api.paraChart.paraState.clearPopups();
+    this._datapoints.forEach(datapoint => {
+      this._apiSeriesGroup.api.paraChart.paraState.clearDatapointCrosshair(
+        datapoint.seriesKey, datapoint.datapointIndex);
+      //this._apiSeriesGroup.api.paraChart.paraState.removePopup(this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '')
+    }
+    );
+    this._apiSeriesGroup.api.paraChart.paraView.requestUpdate();
   }
 
 }
