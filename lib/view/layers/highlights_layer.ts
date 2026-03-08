@@ -134,9 +134,10 @@ export class HighlightsLayer extends PlotLayer {
       const tier = this.paraview.documentView?.xAxis?.tickLabelTiers[options.tierIndex]!
       const xValues = this.paraview.paraState.model!.allFacetValues("x")!.map(box => box.raw);
       tier.addPopup(labelText[0] == "Q" ? xValues[options.labelIndex] : labelText, options.labelIndex)
-      const regFactor = (tier._options.content.labels.length % tier.children.length == 0)
-        ? tier.children.length / tier._options.content.labels.length
-        : (tier.children.length) / (tier._options.content.labels.length + 1)
+      const labelsLength = tier.options.content.labels.length
+      const regFactor = (labelsLength % tier.children.length == 0)
+        ? tier.children.length / labelsLength
+        : (tier.children.length) / (labelsLength + 1)
       let width = tier.children[options.labelIndex].width * 1.5
       let height = tier.children[options.labelIndex].height * 1.5
       let strokeWidth = 5

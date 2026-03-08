@@ -57,7 +57,7 @@ export abstract class TickLabelTier extends Container(View) {
   constructor(
     paraview: ParaView,
     protected _axisSettings: OrientedAxisSettings<AxisOrientation>,
-    public _options: TickLabelTierOptions
+    protected _options: TickLabelTierOptions
   ) {
     super(paraview);
     this._updateSizeFromLength(this._options.length);
@@ -87,6 +87,10 @@ export abstract class TickLabelTier extends Container(View) {
 
   get tickInterval() {
     return this._labelDistance;
+  }
+
+  get options() {
+    return this._options;
   }
 
   protected _createId(..._args: any[]): string {
