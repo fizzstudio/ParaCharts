@@ -540,6 +540,10 @@ export class ParaAPI {
   clearCrosshair(xAxis: string | number, yAxis: string | number) {
     this.paraChart.paraState.clearDataSpaceCrosshair(String(xAxis), String(yAxis))
   }
+
+  refresh() {
+    this._paraChart.paraView.createDocumentView();
+  }
 }
 
 /**
