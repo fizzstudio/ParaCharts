@@ -241,8 +241,6 @@ export class ParaState extends BaseState {
   protected _annotID: number = 0;
   protected log: Logger = getLogger("ParaState");
   protected _chartInfo!: BaseChartInfo;
-  protected _tourGuideNoSelfVoicing!: boolean;
-  protected _tourGuideSelfVoicingState!: boolean;
 
   public idList: Record<string, boolean> = {};
 
@@ -536,19 +534,11 @@ export class ParaState extends BaseState {
     return chains;
   }
 
-  startTourGuide(noSelfVoicing = false) {
+  startTourGuide() {
     this.clearSelected();
     this.clearAllHighlights();
     this.clearPopups();
     this._chartInfo.navMap!.root.goTo('top', {}, true);
-    this._tourGuideNoSelfVoicing = noSelfVoicing;
-    this.updateSettings(draft => {
-      draft.ui.isNarrativeHighlightEnabled = true;
-      if (!noSelfVoicing) {
-        this._tourGuideSelfVoicingState = draft.ui.isVoicingEnabled;
-        draft.ui.isVoicingEnabled = true;
-      }
-    });
   }
 
   endTourGuide() {
@@ -556,12 +546,6 @@ export class ParaState extends BaseState {
     this.clearAllHighlights();
     this.clearPopups();
     this.chartInfo.navMap!.root.goTo('top', {}, true);
-    this.updateSettings(draft => {
-      draft.ui.isNarrativeHighlightEnabled = false;
-      if (!this._tourGuideNoSelfVoicing) {
-        draft.ui.isVoicingEnabled = this._tourGuideSelfVoicingState;
-      }
-    });
   }
 
   dimSeries(seriesKey: string) {
