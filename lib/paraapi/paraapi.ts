@@ -31,7 +31,9 @@ type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMa
 export class ParaAPI {
   protected _actions: Actions;
   protected _standardActions: Actions;
-  protected _narrativeActions: Actions;
+  protected _tourGuideActions: Actions;
+  protected _tourGuideNoSelfVoicing = true;
+  protected _tourGuideSelfVoicingState!: boolean;
 
   constructor(protected _paraChart: ParaChart) {
     const paraView = _paraChart.paraView;
@@ -217,14 +219,15 @@ export class ParaAPI {
         _paraChart.controlPanel.annotationPanel.addAnnotation();
       },
       /** Toggle tour guide mode. */
-      toggleNarrativeHighlightMode() {
-        paraView.paraState.startTourGuide();
-        self._actions = self._narrativeActions;
-        // paraView.paraState.updateSettings(draft => {
-        //   draft.ui.isNarrativeHighlightEnabled = true; //!draft.ui.isNarrativeHighlightEnabled;
-        //   //const endisable = draft.ui.isNarrativeHighlightEnabled ? 'enable' : 'disable';
-        //   _paraChart.postNotice('enableNarrativeHighlightMode', null);
-        // });
+      toggleNarrativeHighlightMode: (args: ActionArgumentMap) => {
+        this._tourGuideNoSelfVoicing = args.noSelfVoicing as boolean;
+        paraView.paraState.updateSettings(draft => {
+          draft.ui.isNarrativeHighlightEnabled = true;
+          if (!args.noSelfVoicing) {
+            this._tourGuideSelfVoicingState = draft.ui.isVoicingEnabled;
+            draft.ui.isVoicingEnabled = true;
+          }
+        });
       },
       /** Play or pause audio. */
       playPauseMedia() {
@@ -239,22 +242,37 @@ export class ParaAPI {
     };
     this._actions = this._standardActions;
 
-    this._narrativeActions = Object.create(this._actions);
+    this._tourGuideActions = Object.create(this._actions);
     const voicing = paraView.ariaLiveRegion.voicing;
 
-    this._narrativeActions.move = async (args: ActionArgumentMap) => {
+    this._tourGuideActions.move = async (args: ActionArgumentMap) => {
       paraView.paraChart.captionBox.highlightSpan(args.direction === 'right' || args.direction === 'down');
     };
-    this._narrativeActions.goFirst = () => { };
-    this._narrativeActions.goLast = () => { };
-    this._narrativeActions.repeatLastAnnouncement = () => { };
-    this._narrativeActions.toggleNarrativeHighlightMode = () => {
-      paraView.paraState.endTourGuide();
-      self._actions = this._standardActions;
+    this._tourGuideActions.goFirst = () => { };
+    this._tourGuideActions.goLast = () => { };
+    this._tourGuideActions.repeatLastAnnouncement = () => { };
+    this._tourGuideActions.toggleNarrativeHighlightMode = () => {
+      paraView.paraState.updateSettings(draft => {
+        draft.ui.isNarrativeHighlightEnabled = false;
+        if (!this._tourGuideNoSelfVoicing) {
+          draft.ui.isVoicingEnabled = this._tourGuideSelfVoicingState;
+        }
+        this._tourGuideNoSelfVoicing = true;
+      });
     };
-    this._narrativeActions.playPauseMedia = () => {
+    this._tourGuideActions.playPauseMedia = () => {
       voicing.togglePaused();
     };
+  }
+
+  /** Enable the hotkey actions for tour guide mode. */
+  enableTourGuideActions() {
+    this._actions = this._tourGuideActions;
+  }
+
+  /** Enable the standard hotkey actions. */
+  disableTourGuideActions() {
+    this._actions = this._standardActions;
   }
 
   get paraChart(): ParaChart {
@@ -515,20 +533,10 @@ export class ParaAPI {
     this._paraChart.paraState.unhideAllSeries();
   }
 
-  /** Enable the hotkey actions for tour guide mode. */
-  enableNarrativeActions() {
-    this._actions = this._narrativeActions;
-  }
-
-  /** Enable the standard hotkey actions. */
-  enableStandardActions() {
-    this._actions = this._standardActions;
-  }
-
   addCrosshair(xAxis: string | number, yAxis: string | number) {
     this.paraChart.paraState.addDataSpaceCrosshair(String(xAxis), String(yAxis))
   }
-  
+
   clearCrosshair(xAxis: string | number, yAxis: string | number) {
     this.paraChart.paraState.clearDataSpaceCrosshair(String(xAxis), String(yAxis))
   }

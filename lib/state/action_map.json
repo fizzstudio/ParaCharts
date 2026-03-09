@@ -25,7 +25,20 @@
   },
   "toggleNarrativeHighlightMode": {
     "label": "Toggle narrative highlight mode",
-    "hotkeys": ["n"]
+    "hotkeys": [
+      {
+        "keyID": "n",
+        "args": {
+          "noSelfVoicing": false
+        }
+      },
+      {
+        "keyID": "Shift+n",
+        "args": {
+          "noSelfVoicing": true
+        }
+      }
+    ]
   },
   "queryData": {
     "label": "Query data",

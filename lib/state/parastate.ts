@@ -539,9 +539,6 @@ export class ParaState extends BaseState {
     this.clearAllHighlights();
     this.clearPopups();
     this._chartInfo.navMap!.root.goTo('top', {}, true);
-    this.updateSettings(draft => {
-      draft.ui.isNarrativeHighlightEnabled = true;
-    });
   }
 
   endTourGuide() {
@@ -549,9 +546,6 @@ export class ParaState extends BaseState {
     this.clearAllHighlights();
     this.clearPopups();
     this.chartInfo.navMap!.root.goTo('top', {}, true);
-    this.updateSettings(draft => {
-      draft.ui.isNarrativeHighlightEnabled = false;
-    });
   }
 
   dimSeries(seriesKey: string) {
