@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chart Initialization Contxt Test</title>
+  <script type="module" src="/dist-ai/paracharts.js" defer></script>
+  <style>
+    section {
+      background-color: aliceblue;
+    }
+
+    .hide {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Chart Initialization Contxt Test</h1>
+
+  <button>Show Chart</button>
+  <section id="chart" class="hide">
+    <h2>Chart initialized hidden</h2>
+    <para-chart id="chart-hidden" manifest="/src/demo-data/line-multi-manifest-57.json"></para-chart>
+  </section>
+
+  <section id="chart2">
+    <h2>Chart initialized visible</h2>
+    <para-chart manifest="/src/demo-data/line-multi-manifest-57.json"></para-chart>
+  </section>
+
+  <script>
+    const btn = document.querySelector('button');
+    const chart = document.getElementById('chart-hidden');
+    btn?.addEventListener('click', () => {
+      const container = document.querySelector('#chart');
+      container.classList.toggle('hide');
+      chart.paraView.createDocumentView();
+    });
+  </script>
+</body>
+
+</html>
