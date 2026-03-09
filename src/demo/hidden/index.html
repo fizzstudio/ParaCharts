@@ -37,7 +37,7 @@
     btn?.addEventListener('click', () => {
       const container = document.querySelector('#chart');
       container.classList.toggle('hide');
-      chart.paraView.createDocumentView();
+      chart.api.refresh();
     });
   </script>
 </body>
