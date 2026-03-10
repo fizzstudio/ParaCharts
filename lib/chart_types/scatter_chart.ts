@@ -1,13 +1,9 @@
 import { PointChartInfo } from './point_chart';
 import { clusterObject, coord, generateClusterAnalysis } from '@fizz/clustering';
-import { strToId, ChartType } from '@fizz/paramanifest';
+import { ChartType } from '@fizz/paramanifest';
 import { type ParaState } from '../state';
-import { type ParaView } from '../paraview';
-import { AxisInfo } from '../common/axisinfo';
-import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, ScatterPointNavNodeOptions } from '../view/layers/data/navigation';
+import { DatapointNavNodeType, NavNode, NavNodeOptionsType, ScatterPointNavNodeOptions, SeriesNavNodeOptions } from '../view/layers/data/navigation';
 import { Datapoint } from '@fizz/paramodel';
-import { mapn } from '@fizz/chart-classifier-utils';
-import { DocumentView } from '../view/document_view';
 
 
 export class ScatterChartInfo extends PointChartInfo {
@@ -105,7 +101,9 @@ export class ScatterChartInfo extends PointChartInfo {
 
   protected _createClusterNavNodes() {
     const seriesClusterNodes: NavNode<'cluster'>[][] = [];
-    this._navMap!.root.query('series').forEach(seriesNode => {
+    const isMultiSeries = this._navMap!.root.query('series').length > 0 ? true : false;
+    const seriesNodes = isMultiSeries ? this._navMap!.root.query('series') : this._navMap!.root.query('top');
+    seriesNodes.forEach(seriesNode => {
       if (seriesClusterNodes.length) {
         seriesNode.connect('left', seriesClusterNodes.at(-1)!.at(-1)!);
       }
@@ -118,7 +116,7 @@ export class ScatterChartInfo extends PointChartInfo {
 
       clustering.forEach(cluster => {
         const clusterNode = new NavNode(seriesNode.layer, 'cluster', {
-          seriesKey: seriesNode.options.seriesKey,
+          seriesKey: isMultiSeries ? (seriesNode.options as SeriesNavNodeOptions).seriesKey : this.seriesInNavOrder()[0].key,
           start: 0,//cluster.dataPointIDs[0],
           end: cluster.dataPointIDs.length - 1,//cluster.dataPointIDs[cluster.dataPointIDs.length - 1],
           datapoints: this._paraState.model!.numSeries > 1
@@ -130,7 +128,7 @@ export class ScatterChartInfo extends PointChartInfo {
         clusterNodes.push(clusterNode);
       });
       seriesClusterNodes.push(clusterNodes);
-      clusterNodes.sort((a,b) => a.options.clustering.centroid[0] - b.options.clustering.centroid[0]);
+      clusterNodes.sort((a, b) => a.options.clustering.centroid[0] - b.options.clustering.centroid[0]);
       clusterNodes.slice(0, -1).forEach((clusterNode, i) => {
         clusterNode.connect('right', clusterNodes[i + 1]);
       });
