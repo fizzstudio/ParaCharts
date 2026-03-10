@@ -115,8 +115,12 @@ export class PopupLayer extends PlotLayer {
                 for (let dp of this.paraview.paraState.visitedDatapoints) {
                     const { seriesKey, index } = datapointIdToCursor(dp);
                     const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
-                    let planeChart = datapointViews[0].chart as PlanePlotView
-                    planeChart.makeCrosshairsLocked(datapointView, true, false)
+                    if (datapointViews[0].chart instanceof PlanePlotView && this.paraview.paraState.settings.popup.isShowCrosshair) {
+                        datapointViews[0].chart.makeCrosshairsLocked([datapointView], true, false)
+                    }
+                    else {
+                        datapointView.addDatapointPopup()
+                    }
                 }
             }
 
@@ -132,9 +136,13 @@ export class PopupLayer extends PlotLayer {
                 datapointView.addDatapointPopup({ select: true });
             }
         }
-        this.paraview.paraState.crossHair.forEach(l => l.classInfo = { 'crosshair': true });
-        for (const popup of [...this.paraview.paraState.crossHair,
-        ...this.paraview.paraState.crossHairLabels,
+        if (this.paraview.paraState.crosshairedDatapoints.size > 0) {
+            const crosshairedPoints = Array.from(this.paraview.paraState.crosshairedDatapoints).map(s => this.paraview.paraState.getDatapoint(s));
+            const planeChart = this.paraview.documentView?.chartLayers.dataLayer as PlanePlotView;
+            planeChart.makeCrosshairsLocked(crosshairedPoints.map(datapoint => planeChart.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!), true);
+        }
+        let crosshairElements = this.paraview.paraState.crossHairs.map(ch => ch.popups).flat()
+        for (const popup of [...crosshairElements,
         ...this.paraview.paraState.popups,
         ...this.paraview.paraState.focusPopups,
         ...this.paraview.paraState.selectPopups,
@@ -158,32 +166,38 @@ export class PopupLayer extends PlotLayer {
         const dpView = datapointViews[0];
         const items = this.paraview.documentView?.chartLayers.dataLayer.chartInfo.popuplegend()!;
         datapointViews[0].popup?.remove();
-        const planeChart = datapointViews[0].chart as PlanePlotView;
-        if (this.paraview.paraState.settings.popup.isShowCrosshair) {
-            planeChart.makeCrosshairsLocked(datapointViews[0], true, true)
-            this.paraview.documentView?.chartLayers.backgroundAnnotationLayer.render()!;
-            return [];
+
+        if (datapointViews[0].chart instanceof PlanePlotView) {
+            const planeChart = datapointViews[0].chart as PlanePlotView;
+            if (this.paraview.paraState.settings.popup.isShowCrosshair) {
+                planeChart.makeCrosshairsLocked([datapointViews[0]], true, true)
+                this.paraview.documentView?.chartLayers.backgroundAnnotationLayer.render()!;
+                return [];
+            }
+            else {
+                const popup = new Popup(this.paraview,
+                    {
+                        text,
+                        x: dpView!.x,
+                        y: dpView!.y,
+                        id: this.id,
+                        color: dpView!.color,
+                        type: "chord",
+                        items,
+                        points: datapointViews
+                    },
+                    {
+                        fill: "hsl(0, 0%, 100%)"
+                        ,
+                        stroke: "hsl(0, 0%, 0%)"
+                    });
+                popup.classInfo = { 'popup': true };
+                this.paraview.documentView?.chartLayers.backgroundAnnotationLayer.render()!;
+                return [popup];
+            }
         }
         else {
-            const popup = new Popup(this.paraview,
-                {
-                    text,
-                    x: dpView!.x,
-                    y: dpView!.y,
-                    id: this.id,
-                    color: dpView!.color,
-                    type: "chord",
-                    items,
-                    points: datapointViews
-                },
-                {
-                    fill: "hsl(0, 0%, 100%)"
-                    ,
-                    stroke: "hsl(0, 0%, 0%)"
-                });
-            popup.classInfo = { 'popup': true };
-            this.paraview.documentView?.chartLayers.backgroundAnnotationLayer.render()!;
-            return [popup];
+            return [];
         }
     }
 

@@ -52,7 +52,7 @@ export class HotkeyEvent extends Event {
  * @internal
  */
 export class KeymapManager extends EventTarget {
-  protected log: Logger = getLogger("KeymapManager");  
+  protected log: Logger = getLogger("KeymapManager");
   protected _keyDetails: {
     [keyId: string]: KeyDetails;
   } = {};

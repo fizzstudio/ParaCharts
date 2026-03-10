@@ -123,6 +123,12 @@ export interface SparkBrailleInfo {
   isBar?: boolean;
 }
 
+export interface HighlightAxisOptions {
+  tierIndex: number;
+  labelIndex: number;
+  orientation: "horiz" | "vert";
+}
+
 const synchronizedSettings = [
   'ui.isFullscreenEnabled',
   'ui.isLowVisionModeEnabled',
@@ -179,8 +185,7 @@ export class ParaState extends BaseState {
   @property() popups: Popup[] = [];
   @property() focusPopups: Popup[] = [];
   @property() selectPopups: Popup[] = [];
-  @property() crossHairLabels: Popup[] = [];
-  @property() crossHair: PathShape[] = [];
+  @property() crossHairs: Array<{ id: string, popups: Array<PathShape | Popup> }> = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() frontSeries = '';
@@ -204,11 +209,15 @@ export class ParaState extends BaseState {
   protected _prevVisitedDatapoints = new Set<string>();
   protected _everVisitedDatapoints = new Set<string>();
   @property() protected _highlightedDatapoints = new Set<string>();
+  _prevHighlightedElements = new Set<string>();
   @property() protected _selectedDatapoints = new Set<string>();
+  @property() protected _crosshairedDatapoints = new Set<string>();
   @property() protected _prevSelectedDatapoints = new Set<string>();
+  @property() protected _dataSpaceCrosshairs = new Set<{x: string, y: string}>();
   /** `${seriesKey}-${index1}-${index2}` */
   @property() protected _highlightedSequences = new Set<string>();
   @property() protected _highlightedIntersections = new Set<number>();
+  @property() protected _highlightedAxisLabels = new Set<HighlightAxisOptions>();
   @property() protected _rangeHighlights: RangeHighlight[] = [];
   @property() protected _modelLineBreaks: LineBreak[] = [];
   @property() protected _userLineBreaks: LineBreak[] = [];
@@ -472,7 +481,7 @@ export class ParaState extends BaseState {
         };
       });
     }
-    this.postNotice('paranotice', {key: 'manifestSet'});
+    this.postNotice('paranotice', { key: 'manifestSet' });
   }
 
   getActionChains() {
@@ -530,9 +539,6 @@ export class ParaState extends BaseState {
     this.clearAllHighlights();
     this.clearPopups();
     this._chartInfo.navMap!.root.goTo('top', {}, true);
-    this.updateSettings(draft => {
-      draft.ui.isNarrativeHighlightEnabled = true;
-    });
   }
 
   endTourGuide() {
@@ -540,9 +546,6 @@ export class ParaState extends BaseState {
     this.clearAllHighlights();
     this.clearPopups();
     this.chartInfo.navMap!.root.goTo('top', {}, true);
-    this.updateSettings(draft => {
-      draft.ui.isNarrativeHighlightEnabled = false;
-    });
   }
 
   dimSeries(seriesKey: string) {
@@ -644,6 +647,10 @@ export class ParaState extends BaseState {
     return this._prevVisitedDatapoints;
   }
 
+  get prevHighlightedElements() {
+    return this._prevHighlightedElements;
+  }
+
   get everVisitedDatapoints() {
     return this._everVisitedDatapoints;
   }
@@ -718,6 +725,40 @@ export class ParaState extends BaseState {
     );
   }
 
+  get crosshairedDatapoints() {
+    return this._crosshairedDatapoints;
+  }
+
+  get dataSpaceCrosshairs() {
+    return this._dataSpaceCrosshairs;
+  }
+
+  addDatapointCrosshair(seriesKey: string, index: number) {
+    this._crosshairedDatapoints = new Set([
+      ...this._crosshairedDatapoints.values(),
+      makeDatapointId(seriesKey, index)
+    ]);
+  }
+
+  clearDatapointCrosshair(seriesKey: string, index: number) {
+    this._crosshairedDatapoints = new Set(
+      [...this._crosshairedDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
+    );
+  }
+
+  addDataSpaceCrosshair(x: string, y: string) {
+    this._dataSpaceCrosshairs = new Set([
+      ...this._dataSpaceCrosshairs.values(),
+      { x: x, y: y }
+    ]);
+  }
+
+  clearDataSpaceCrosshair(x: string, y: string) {
+    this._dataSpaceCrosshairs = new Set(
+      [...this._dataSpaceCrosshairs.values()].filter(ch => ch.x !== x || ch.y !== y)
+    );
+  }
+
   isDatapointHighlighted(seriesKey: string, index: number): boolean {
     return this._highlightedDatapoints.has(makeDatapointId(seriesKey, index));
   }
@@ -759,8 +800,36 @@ export class ParaState extends BaseState {
   }
 
   clearIntersectionHighlight(index: number) {
+    for (let intersection of Array.from(this._highlightedIntersections)) {
+      this.removeCrosshair(`intersection-${intersection}`)
+    }
     this._highlightedIntersections = new Set(
       [...this._highlightedIntersections.values()].filter(idx => idx !== index)
+    );
+  }
+
+  clearAllAxisLabelHighlights() {
+    this._highlightedAxisLabels = new Set();
+  }
+
+  get highlightedAxisLabels(): Set<HighlightAxisOptions> {
+    return this._highlightedAxisLabels;
+  }
+
+
+
+  highlightAxisLabel(options: HighlightAxisOptions) {
+    this._highlightedAxisLabels = new Set([
+      ...this._highlightedAxisLabels.values(),
+      { tierIndex: options.tierIndex, labelIndex: options.labelIndex, orientation: options.orientation }
+    ]);
+  }
+
+  clearAxisLabelHighlight(options: HighlightAxisOptions) {
+    this._highlightedAxisLabels = new Set(
+      [...this._highlightedAxisLabels.values()].filter(l => (l.labelIndex !== options.labelIndex
+        || l.tierIndex !== options.tierIndex
+        || l.orientation !== options.orientation))
     );
   }
 
@@ -774,6 +843,7 @@ export class ParaState extends BaseState {
     this.clearAllIntersectionHighlights();
     this.clearAllRangeHighlights();
     this.clearAllSeriesDimming();
+    this.clearAllAxisLabelHighlights();
     this.isTitleHighlighted = false;
     this.isHorizontalAxisHighlighted = false;
     this.isVerticalAxisHighlighted = false;
@@ -865,7 +935,8 @@ export class ParaState extends BaseState {
       index,
       annotation: `${seriesKey}, ${recordLabel}: ${text}`,
       text,
-      id: `${seriesKey}-${recordLabel}-${this._annotID}`
+      id: `${seriesKey}-${recordLabel}-${this._annotID}`,
+      isSelected: true
     } as PointAnnotation];
     this._annotID++;
   }
@@ -1165,12 +1236,16 @@ export class ParaState extends BaseState {
     this.requestUpdate();
   }
 
+  removeCrosshair(id: string) {
+    this.crossHairs.splice(this.crossHairs.findIndex(p => p.id === id), 1);
+    this.requestUpdate();
+  }
+
   clearPopups() {
     this.popups.splice(0, this.popups.length);
     this.focusPopups.splice(0, this.focusPopups.length);
     this.selectPopups.splice(0, this.selectPopups.length);
-    this.crossHair.splice(0, this.crossHair.length);
-    this.crossHairLabels.splice(0, this.crossHairLabels.length);
+    this.crossHairs.splice(0, this.crossHairs.length);
   }
 
 }

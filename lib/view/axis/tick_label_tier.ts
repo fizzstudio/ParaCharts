@@ -89,6 +89,10 @@ export abstract class TickLabelTier extends Container(View) {
     return this._labelDistance;
   }
 
+  get options() {
+    return this._options;
+  }
+
   protected _createId(..._args: any[]): string {
     return `tick-label-tier-${this._options.orientation}-${this._options.index}`;
   }
@@ -156,7 +160,7 @@ export abstract class TickLabelTier extends Container(View) {
           if (this.paraview.paraState.settings.chart.isShowPopups
             && this.paraview.paraState.settings.popup.activation === "onHover"
             && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
-              this.paraview.paraState.removePopup(this.id);
+              this.paraview.paraState.removePopup(`${this.id}-${i}`);
           }
         }
       });
@@ -176,9 +180,9 @@ export abstract class TickLabelTier extends Container(View) {
     // }
   }
 
-  protected abstract _tickLabelX(index: number): number;
+   abstract _tickLabelX(index: number): number;
 
-  protected abstract _tickLabelY(index: number): number;
+   abstract _tickLabelY(index: number): number;
 
 }
 
@@ -217,7 +221,7 @@ export class HorizTickLabelTier extends TickLabelTier {
     return [this._width, this._maxLabelHeight()];
   }
 
-  protected _tickLabelX(index: number) {
+  _tickLabelX(index: number) {
     // Labels are positioned with respect to their anchors. So if
     // labels are center-anchored, the first and last labels will
     // hang off the start and end boundaries of the tier.
@@ -238,7 +242,7 @@ export class HorizTickLabelTier extends TickLabelTier {
     );
   }
 
-  protected _tickLabelY(index: number) {
+   _tickLabelY(index: number) {
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
     //   have two axes
     const facet = (this.paraview.paraState.model as PlaneModel).getAxisFacet(this._options.orientation)
@@ -326,7 +330,7 @@ export class HorizTickLabelTier extends TickLabelTier {
         text: text ?? datapointText,
         x: this._tickLabelX(index ?? 0) * regFactor,
         y: this.paraview.documentView?.chartLayers.height!,
-        id: this.id,
+        id: `${this.id}-${index}`,
         type: "horizTick",
         fill: "hsl(0, 0%, 0%)",
         inbounds: false
@@ -374,14 +378,14 @@ export class VertTickLabelTier extends TickLabelTier {
     return [this._maxLabelWidth(), this._height];
   }
 
-  protected _tickLabelX(index: number) {
+   _tickLabelX(index: number) {
     // Right-justify if west, left-justify if east;
     return this._axisSettings.position === 'west'
       ? this.width //- this._children[index].width
       : 0;
   }
 
-  protected _tickLabelY(index: number) {
+   _tickLabelY(index: number) {
     const tickDelta = this._length/(this._options.numTicks - (this._options.isChartIntertick ? 0 : 1));
     const offset = this._options.isChartIntertick ? 2 : 1.5;
     let pos = /*this.tierIndex
