@@ -176,6 +176,7 @@ export class ParaChart extends ParaComponent {
           }
         }
           else {
+            console.log('nd')
             this.log.info("No datatable in slot")
             this._paraState.dataState = 'error'
           }
