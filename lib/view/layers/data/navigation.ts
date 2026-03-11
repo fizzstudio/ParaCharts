@@ -61,7 +61,8 @@ export interface ClusterNavNodeOptions {
   start: number;
   end: number;
   datapoints: number[];
-  clustering: clusterObject
+  clustering: clusterObject;
+  index: number;
 }
 
 function nodeOptionsEq<T extends NavNodeType>(

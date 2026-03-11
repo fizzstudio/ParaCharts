@@ -71,13 +71,15 @@ export class ScatterPlotView extends PointPlotView {
       }
     }
     const datapointViews = this.datapointViews;
-    for (const cluster of this._chartInfo.clustering!) {
-      for (const id of cluster.dataPointIDs) {
-        datapointViews[id].clusterID = cluster.id;
-      }
-      for (const id of cluster.outlierIDs) {
-        datapointViews[id].clusterID = cluster.id;
-        datapointViews[id].isOutlier = true;
+    if (this._chartInfo.clustering) {
+      for (const cluster of this._chartInfo.clustering) {
+        for (const id of cluster.dataPointIDs) {
+          datapointViews[id].clusterID = cluster.id;
+        }
+        for (const id of cluster.outlierIDs) {
+          datapointViews[id].clusterID = cluster.id;
+          datapointViews[id].isOutlier = true;
+        }
       }
     }
 
