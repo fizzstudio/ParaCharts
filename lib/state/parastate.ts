@@ -63,6 +63,7 @@ import { PathShape } from '../view/shape';
 import { GlobalState } from './global_state';
 import { BaseChartInfo, chartInfoClasses } from '../chart_types';
 import { firstDataset, type Manifest } from '../loader/common';
+import { clusterObject } from '@fizz/clustering';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -188,6 +189,7 @@ export class ParaState extends BaseState {
   @property() crossHairs: Array<{ id: string, popups: Array<PathShape | Popup> }> = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
+  @property() clusterAnalyses:  clusterObject[] | null = null;
   @property() frontSeries = '';
   @property() pointerCoords: Point = { x: 0, y: 0 }
   @property() isTitleHighlighted = false;
