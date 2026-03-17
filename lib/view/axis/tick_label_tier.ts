@@ -37,6 +37,7 @@ export interface TickLabelTierOptions {
   step: number;
   // mainStep: number;
   numTicks: number;
+  /** Whether the chart's datapoints fall on an x-axis tick or between them. */
   isChartIntertick: boolean;
   datatype: Datatype;
   isFacetIndep: boolean;
@@ -53,6 +54,7 @@ export abstract class TickLabelTier extends Container(View) {
 
   /** Distance between label centers (or starts or ends) */
   protected _labelDistance!: number;
+  protected _tickDistance!: number;
 
   constructor(
     paraview: ParaView,
@@ -120,6 +122,7 @@ export abstract class TickLabelTier extends Container(View) {
       ? this._options.content.labels.length
       : this._options.content.labels.length - 1;
     this._labelDistance = this._length/(n/this._options.step);
+    this._tickDistance = this._length/n;
     this.clearChildren();
     const tiers = this.paraview.paraState.model!.allFacetValues("x")!.map(box => box.raw);
     for (const [i, labelText] of this._options.content.labels.entries()) {
@@ -378,21 +381,17 @@ export class VertTickLabelTier extends TickLabelTier {
     return [this._maxLabelWidth(), this._height];
   }
 
-   _tickLabelX(index: number) {
+  _tickLabelX(index: number) {
     // Right-justify if west, left-justify if east;
     return this._axisSettings.position === 'west'
       ? this.width //- this._children[index].width
       : 0;
   }
 
-   _tickLabelY(index: number) {
-    const tickDelta = this._length/(this._options.numTicks - (this._options.isChartIntertick ? 0 : 1));
-    const offset = this._options.isChartIntertick ? 2 : 1.5;
-    let pos = /*this.tierIndex
-      ? 4*tickDelta*index + offset*tickDelta
-      :*/ this._labelDistance*index; // + this._labelDistance/2;
+  _tickLabelY(index: number) {
+    let pos = this._labelDistance*index;
     const y = (this._axisSettings.labelOrder === 'northToSouth'
-        ? pos + this._labelDistance/2 + this._children[index].height/3
+        ? pos + this._tickDistance/2 + this._children[index].height/3
         : this.height - pos + this._children[index].height/3);
     return y;
   }
@@ -413,7 +412,7 @@ export class VertTickLabelTier extends TickLabelTier {
   // }
 
 
-  createTickLabels() {
+  createTickLabels(checkLabels = true) {
     super.createTickLabels();
     // We need to compute the width before setting the label xs,
     // and we don't need the xs to compute the width
@@ -422,6 +421,37 @@ export class VertTickLabelTier extends TickLabelTier {
         kid.x = this._tickLabelX(i);
         kid.y = this._tickLabelY(i);
     });
+    if (checkLabels && this._options.isFacetIndep) {
+      this._options.step = this._optimizeLabelSpacing();
+      this.createTickLabels(false);
+    }
+  }
+
+  protected _optimizeLabelSpacing(): number {
+    const origBboxes = this._children.map(kid => kid.bbox);
+    let bboxes = [...origBboxes];
+    if (this._axisSettings.labelOrder === 'southToNorth') {
+      bboxes.reverse();
+    }
+    let tickStep = this._options.step;
+    while (true) {
+      const gaps = bboxes.slice(1).map((bbox, i) => bbox.top - bboxes[i].bottom);
+      const minGap = Math.min(...gaps);
+      if (Math.round(minGap) < this._axisSettings.ticks.labels.gap) {
+        tickStep++;
+        bboxes = origBboxes.filter((bbox, i) => i % tickStep === 0);
+        if (this._axisSettings.labelOrder === 'southToNorth') {
+          bboxes.reverse();
+        }
+        const newLabelCount = Math.floor(this._options.content.labels.length/tickStep) + this._options.content.labels.length % tickStep;
+        if (!newLabelCount) {
+          throw new Error('tick labels will always overlap');
+        }
+        continue;
+      }
+      break;
+    }
+    return tickStep;
   }
 
   addPopup(text?: string, index?: number) {
@@ -442,6 +472,4 @@ export class VertTickLabelTier extends TickLabelTier {
       })
     this.paraview.paraState.popups.push(popup)
   }
-
-
 }
