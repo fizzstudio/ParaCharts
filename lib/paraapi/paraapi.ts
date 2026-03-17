@@ -371,7 +371,9 @@ export class ParaAPI {
 
   /** Get the chart JIM. */
   getJIM(): Manifest | undefined {
-    return this.paraChart.paraState.jimerator?.manifest
+    const manifest = this.paraChart.paraState.jimerator?.manifest;
+    if (!manifest) return undefined;
+    return { jim: manifest.jim };
   }
 
   /** Download the chart in SVG format. */
