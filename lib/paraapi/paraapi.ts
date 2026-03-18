@@ -275,14 +275,17 @@ export class ParaAPI {
     this._actions = this._standardActions;
   }
 
+  /** The underlying ParaChart element. */
   get paraChart(): ParaChart {
     return this._paraChart;
   }
 
+  /** The current chart info object. */
   get chartInfo(): BaseChartInfo {
     return this._paraChart.globalState.paraState.chartInfo;
   }
 
+  /** The current set of hotkey actions. */
   get actions(): Actions {
     return this._actions;
   }
@@ -513,14 +516,17 @@ export class ParaAPI {
     this._paraChart.paraState.clearAllHighlights();
   }
 
-  /** Clear all chart highlights. */
+  /** Clear all chart popups. */
   clearAllPopups() {
     this._paraChart.paraState.clearPopups();
   }
+
+  /** Clear all visited datapoint markers. */
   clearVisited() {
     this._paraChart.paraState.clearVisited();
   }
 
+  /** Clear all selected datapoints. */
   clearSelected() {
     this._paraChart.paraState.clearSelected();
   }
@@ -535,14 +541,17 @@ export class ParaAPI {
     this._paraChart.paraState.unhideAllSeries();
   }
 
+  /** Add a crosshair at the given axis values. */
   addCrosshair(xAxis: string | number, yAxis: string | number) {
     this.paraChart.paraState.addDataSpaceCrosshair(String(xAxis), String(yAxis))
   }
 
+  /** Remove a crosshair at the given axis values. */
   clearCrosshair(xAxis: string | number, yAxis: string | number) {
     this.paraChart.paraState.clearDataSpaceCrosshair(String(xAxis), String(yAxis))
   }
 
+  /** Refresh the chart view. */
   refresh() {
     this._paraChart.paraView.createDocumentView();
   }
