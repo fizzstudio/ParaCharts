@@ -63,11 +63,19 @@
 					text.innerHTML = 'Enable dark mode';
                     chart.api.setSetting('color.isDarkModeEnabled', true);
                 },*/
+				() => {
+					text.innerHTML = 'Set width';
+					chart.api.setWidth(800);
+				},
+				() => {
+					text.innerHTML = 'Set height';
+					chart.api.setHeight(600);
+				},
                 /*() => {
 					text.innerHTML = 'Change manifest';
 					chart.api.setManifest('/src/demo-data/bar-multi-manifest-48.json');
                 },
-				
+
 				() => {
 					text.innerHTML = 'Highlight title';
 					chart.api.getTitle().highlight();
@@ -80,7 +88,7 @@
 					text.innerHTML = 'Highlight vertical axis';
 					chart.api.getVerticalAxis().highlight();
 				},
-			
+
 			*/() => {
 					text.innerHTML = 'Add crosshair';
 					chart.api.addCrosshair('Q4 2019', 47)
@@ -98,7 +106,7 @@
 					text.innerHTML = 'Highlight vertical label';
 					chart.api.getVerticalAxis().highlightLabel(0, 3);
 				},
-				
+
 				() => {
 					text.innerHTML = 'Highlight horizontal label';
 					chart.api.getHorizontalAxis().highlightLabel(0, 2);
@@ -123,19 +131,19 @@
 					text.innerHTML = 'Highlight horizontal label';
 					chart.api.getHorizontalAxis().clearHighlightLabel(1, 1);
 				},
-					
+
 								() => {
 					text.innerHTML = 'UnHighlight horizontal label';
 					chart.api.getVerticalAxis().clearHighlightLabel(4);
 				},
-				
+
 				() => {
 					text.innerHTML = 'UnHighlight vertical label';
 					chart.api.getHorizontalAxis().clearHighlightLabel(4);
 				},
-				
-				
-					
+
+
+
 				() => {
 					text.innerHTML = 'Highlight legend';
 					chart.api.highlightEastLegend();
@@ -181,7 +189,7 @@
 					text.innerHTML = 'Highlight points';
                     chart.api.getSeries('Agriculture').getPoints(0, 7).highlight();
                 },
-				
+
                 () => {
 					text.innerHTML = 'Clear highlight';
                     chart.api.getSeries('Agriculture').getPoints(0).clearHighlight();
