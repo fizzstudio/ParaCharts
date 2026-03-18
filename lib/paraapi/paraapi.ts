@@ -393,6 +393,25 @@ export class ParaAPI {
     });
   }
 
+  setWidth(width: number) {
+    this._paraChart.paraState.updateSettings(draft => {
+      draft.chart.size.width = width;
+    });
+  }
+
+  setHeight(height: number) {
+    this._paraChart.paraState.updateSettings(draft => {
+      draft.chart.size.height = height;
+    });
+  }
+
+  setSize(width: number, height: number) {
+    this._paraChart.paraState.updateSettings(draft => {
+      draft.chart.size.width = width;
+      draft.chart.size.height = height;
+    });
+  }
+
   /** Highlight the chart title. */
   highlightTitle() {
     this.getTitle().highlight();
