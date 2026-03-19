@@ -1,23 +1,19 @@
 import { type PlaneSeriesView, PointPlotView, PointDatapointView, PlaneDatapointView, TrendLineView } from '.';
-import { type ScatterSettings, Setting, type DeepReadonly, PointChartType } from '../../../../state/settings_types';
+import { type ScatterSettings, Setting, type DeepReadonly } from '../../../../state/settings_types';
 import { DataSymbol, DataSymbols } from '../../../symbol';
-import { svg, TemplateResult } from 'lit';
+import { svg } from 'lit';
 import { View } from '../../../base_view';
 import { Colors } from '../../../../common/colors';
 import { enumerate } from '@fizz/paramodel';
-import { formatBox } from '@fizz/parasummary';
-import { strToId } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { PlaneChartInfo, ScatterChartInfo } from '../../../../chart_types';
 import { fixed } from '../../../../common/utils';
-import { Popup } from '../../../popup';
 
 
 export class ScatterPlotView extends PointPlotView {
   declare protected _chartInfo: ScatterChartInfo;
   protected _types = new DataSymbols().types;
-  protected _trendLine?: ScatterTrendLineView;
-  datapointViewsStatic?: ScatterPointView[];
+  _trendLine?: TrendLineView;
 
   protected _clusterShellView: ClusterShellView | null = null;
 
@@ -82,27 +78,6 @@ export class ScatterPlotView extends PointPlotView {
         }
       }
     }
-
-    this.datapointViewsStatic = super.datapointViews as ScatterPointView[];
-  }
-
-  protected _beginDatapointLayout(): void {
-    super._beginDatapointLayout();
-    for (let child of this.children) {
-      if (child instanceof ScatterTrendLineView) {
-        child.remove();
-      }
-    }
-  }
-
-  protected _completeDatapointLayout(): void {
-    super._completeDatapointLayout();
-    if (this._trendLine) {
-      this._trendLine.remove();
-    }
-    const trendLine = new ScatterTrendLineView(this);
-    this._trendLine = trendLine;
-    this.append(trendLine);
   }
 
   noticePosted(key: string, value: any): void {
@@ -122,10 +97,11 @@ export class ScatterPlotView extends PointPlotView {
   content(...options: any[]) {
     const chartInfo = this.paraview.paraState.chartInfo as ScatterChartInfo;
     if (chartInfo.clustering) {
+      this.paraview.paraState.clusterShellViews = this.paraview.paraState.clusterShellViews.filter(c => c.clusterID !== this._clusterShellView?.clusterID)
       this._clusterShellView?.remove();
       if (chartInfo.currentCluster !== -1) {
         this._clusterShellView = new ClusterShellView(this, chartInfo.currentCluster);
-        this.append(this._clusterShellView);
+        this.paraview.paraState.clusterShellViews.push(this._clusterShellView)
       }
     }
     return super.content(...options);
@@ -215,33 +191,16 @@ class ScatterPointView extends PointDatapointView {
   }
 }
 
-export class ScatterTrendLineView extends TrendLineView {
-  render() {
-    if (!this.paraview.paraState.settings.type.scatter.isDrawTrendLine) { return svg`` }
-    return svg`
-    <line x1=${this.x1} x2=${this.x2} y1=${this.y1} y2=${this.y2} style="stroke:red;stroke-width:3"/>
-    `}
-}
 
 export class ClusterShellView extends View {
   protected _points: Array<Array<number>> = [];
-  constructor(private chart: ScatterPlotView, private clusterID?: number, private selectedPoints?: PlaneDatapointView[]) {
+  constructor(private chart: ScatterPlotView, public clusterID?: number, private selectedPoints?: PlaneDatapointView[]) {
     super(chart.paraview);
     this.generatePoints();
   }
 
   protected _createId(..._args: any[]): string {
     return ``;
-  }
-
-  get width() {
-    return this._width
-    //return this.selectionLayer.width;
-  }
-
-  get height() {
-    return this._height
-    //return Math.max(this.selectionLayer.height, 20);
   }
 
   protected generatePoints() {
@@ -252,7 +211,7 @@ export class ClusterShellView extends View {
       }
       this._points = points;
     } else if (this.clusterID !== undefined) {
-      const datapointViews = this.chart.datapointViewsStatic!
+      const datapointViews = this.chart.datapointViews;
       const chartInfo = this.paraview.paraState.chartInfo as ScatterChartInfo;
       const clustering = chartInfo.clustering!;
       const shellIDsList = clustering[this.clusterID].hullIDs;
@@ -278,7 +237,7 @@ export class ClusterShellView extends View {
     return pointsString;
   }
 
-  get centroid() {
+  get centroidCoords() {
     const c: number[] = [0, 0];
     for (const point of this.points!) {
       c[0] += (point[0] / this.points!.length);
@@ -287,23 +246,22 @@ export class ClusterShellView extends View {
     return c;
   }
 
-  get color() {
+  get centroidColor() {
     if (this.clusterID !== undefined) {
-      return this.clusterID
+      return this.clusterID;
     }
     else {
-      return 0
+      return 0;
     }
   }
 
   render() {
-    let colors = new Colors(this.paraview.paraState);
     return svg`<g>
       <polygon points=${this.pointsString} style="stroke:black; fill:none; stroke-width:2"/>
       <circle
-        cx=${fixed`${this.centroid[0]}`}
-        cy=${fixed`${this.centroid[1]}`} r="8"
-        style=stroke:black;fill:${colors.colorValueAt(this.color)}
+        cx=${fixed`${this.centroidCoords[0]}`}
+        cy=${fixed`${this.centroidCoords[1]}`} r="8"
+        style=stroke:black;fill:${this.paraview.paraState.colors.colorValueAt(this.centroidColor)}
       />
     </g>`
   }

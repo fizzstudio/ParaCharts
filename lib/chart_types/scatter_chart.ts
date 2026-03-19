@@ -35,7 +35,7 @@ export class ScatterChartInfo extends PointChartInfo {
     super._addSettingControls();
     this._paraState.settingControls.add({
       type: 'checkbox',
-      key: 'type.scatter.isDrawTrendLine',
+      key: 'type.scatter.isShowTrendLine',
       label: 'Trend line',
       parentView: 'controlPanel.tabs.chart.chart',
     });
@@ -127,20 +127,18 @@ export class ScatterChartInfo extends PointChartInfo {
         // Unless the first datapoint of the cluster already has an
         // 'out' link set (i.e., it's a boundary node), make a reciprocal
         // link to it
-        clusterNode.connect('in', datapointNodes[0],
-          !datapointNodes[0].getLink('out'));
-        for (const node of datapointNodes) {
+        const childDatapointNodes = datapointNodes.filter(dp => clusterNode.options.datapoints.includes(dp.index));
+        clusterNode.connect('in', childDatapointNodes[0],
+          !childDatapointNodes[0].getLink('out'));
+        for (const node of childDatapointNodes) {
           // non-reciprocal 'out' links from remaining datapoints to cluster
           node.connect('out', clusterNode, false);
-        }
-        for (let datapointId of clusterNode.options.datapoints) {
-          let node = datapointNodes.at(datapointId);
-          (node!.options as ScatterPointNavNodeOptions).cluster = clusterNode.index
+          (node!.options as ScatterPointNavNodeOptions).cluster = clusterNode.index;
         }
         if (clusterNode.peekNode('right', 1)) {
           // We aren't on the last cluster, so the final datapoint is a boundary point.
           // Make a non-reciprocal 'in' link to the next cluster
-          datapointNodes.at(-1)!.connect('in', clusterNode.peekNode('right', 1)!, false);
+          childDatapointNodes.at(-1)!.connect('in', clusterNode.peekNode('right', 1)!, false);
         }
       });
     });

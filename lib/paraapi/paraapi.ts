@@ -541,6 +541,19 @@ export class ParaAPI {
     this.paraChart.paraState.clearDataSpaceCrosshair(String(xAxis), String(yAxis))
   }
 
+  addTrendLine() {
+    this.paraChart.paraState.updateSettings(draft => {
+      draft.type.scatter.isShowTrendLine = true;
+    });
+  }
+
+
+  removeTrendLine() {
+    this.paraChart.paraState.updateSettings(draft => {
+      draft.type.scatter.isShowTrendLine = false;
+    });
+  }
+
   refresh() {
     this._paraChart.paraView.createDocumentView();
   }
