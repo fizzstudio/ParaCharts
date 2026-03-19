@@ -371,7 +371,9 @@ export class ParaAPI {
 
   /** Get the chart JIM. */
   getJIM(): Manifest | undefined {
-    return this.paraChart.paraState.jimerator?.manifest
+    const manifest = this.paraChart.paraState.jimerator?.manifest;
+    if (!manifest) return undefined;
+    return { jim: manifest.jim };
   }
 
   /** Download the chart in SVG format. */
@@ -388,6 +390,25 @@ export class ParaAPI {
   setSetting(settingPath: string, value: Setting) {
     this._paraChart.paraState.updateSettings(draft => {
       SettingsManager.set(settingPath, value, draft);
+    });
+  }
+
+  setWidth(width: number) {
+    this._paraChart.paraState.updateSettings(draft => {
+      draft.chart.size.width = width;
+    });
+  }
+
+  setHeight(height: number) {
+    this._paraChart.paraState.updateSettings(draft => {
+      draft.chart.size.height = height;
+    });
+  }
+
+  setSize(width: number, height: number) {
+    this._paraChart.paraState.updateSettings(draft => {
+      draft.chart.size.width = width;
+      draft.chart.size.height = height;
     });
   }
 
