@@ -122,12 +122,7 @@ export class DataPanel extends ControlPanelTabPanel {
           </button>
           <button
             @click=${() => {
-              this.controlPanel.dialog.show('Data table', html`
-                <para-datatable
-                  .model=${this._paraState.model}
-                >
-                </para-datatable>
-              `);
+              this._controlPanel.paraChart.isDataTableVisible = ! this._controlPanel.paraChart.isDataTableVisible;
             }}
           >
             Data table

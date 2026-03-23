@@ -229,6 +229,10 @@ export class ParaAPI {
           }
         });
       },
+      /** Toggle data table. */
+      toggleDataTable() {
+        _paraChart.isDataTableVisible = ! _paraChart.isDataTableVisible;
+      },
       /** Play or pause audio. */
       playPauseMedia() {
 
