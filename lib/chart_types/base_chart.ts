@@ -520,7 +520,6 @@ export abstract class BaseChartInfo {
     else if (cursor.isNodeType('cluster')) {
       this._paraState.announce(
         await this._summarizer.getClusterSummary(
-          cursor.options.seriesKey,
           cursor.options.index
         ))
     }

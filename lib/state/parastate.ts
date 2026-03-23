@@ -220,6 +220,7 @@ export class ParaState extends BaseState {
   /** `${seriesKey}-${index1}-${index2}` */
   @property() protected _highlightedSequences = new Set<string>();
   @property() protected _highlightedIntersections = new Set<number>();
+  @property() protected _highlightedClusters = new Set<number>();
   @property() protected _highlightedAxisLabels = new Set<HighlightAxisOptions>();
   @property() protected _rangeHighlights: RangeHighlight[] = [];
   @property() protected _modelLineBreaks: LineBreak[] = [];
@@ -811,6 +812,17 @@ export class ParaState extends BaseState {
     ]);
   }
 
+  highlightCluster(index: number) {
+    this._highlightedClusters = new Set([
+      ...this._highlightedClusters.values(),
+      index
+    ]);
+  }
+
+  get highlightedClusters() {
+    return this._highlightedClusters;
+  }
+
   clearIntersectionHighlight(index: number) {
     for (let intersection of Array.from(this._highlightedIntersections)) {
       this.removeCrosshair(`intersection-${intersection}`)
@@ -827,8 +839,6 @@ export class ParaState extends BaseState {
   get highlightedAxisLabels(): Set<HighlightAxisOptions> {
     return this._highlightedAxisLabels;
   }
-
-
 
   highlightAxisLabel(options: HighlightAxisOptions) {
     this._highlightedAxisLabels = new Set([
@@ -856,6 +866,8 @@ export class ParaState extends BaseState {
     this.clearAllRangeHighlights();
     this.clearAllSeriesDimming();
     this.clearAllAxisLabelHighlights();
+    this._highlightedClusters = new Set();
+    this._clusterShellViews = [];
     this.isTitleHighlighted = false;
     this.isHorizontalAxisHighlighted = false;
     this.isVerticalAxisHighlighted = false;

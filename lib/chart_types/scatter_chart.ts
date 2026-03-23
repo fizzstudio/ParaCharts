@@ -88,7 +88,7 @@ export class ScatterChartInfo extends PointChartInfo {
     const seriesClusterNodes: NavNode<'cluster'>[][] = [];
     const isMultiSeries = this._navMap!.root.query('series').length > 0 ? true : false;
     const seriesNodes = isMultiSeries ? this._navMap!.root.query('series') : this._navMap!.root.query('top');
-    seriesNodes.forEach(seriesNode => {
+    seriesNodes.forEach((seriesNode, seriesIndex) => {
       if (seriesClusterNodes.length) {
         seriesNode.connect('left', seriesClusterNodes.at(-1)!.at(-1)!);
       }
@@ -99,17 +99,14 @@ export class ScatterChartInfo extends PointChartInfo {
       const datapointNodes = seriesNode.allNodes('right', 'scatterpoint');
       const clusterNodes: NavNode<'cluster'>[] = [];
 
-      clustering.forEach((cluster, i) => {
+      clustering.forEach((cluster, clusterIndex) => {
         const clusterNode = new NavNode(seriesNode.layer, 'cluster', {
           seriesKey: isMultiSeries ? (seriesNode.options as SeriesNavNodeOptions).seriesKey : this.seriesInNavOrder()[0].key,
-          start: 0,//cluster.dataPointIDs[0],
-          end: cluster.dataPointIDs.length - 1,//cluster.dataPointIDs[cluster.dataPointIDs.length - 1],
-          datapoints: this._paraState.model!.numSeries > 1
-            // XXX not sure if this will work for general case of multi-series
-            ? cluster.dataPointIDs.map(id => id - cluster.dataPointIDs[0])
-            : [...cluster.dataPointIDs, ...cluster.outlierIDs],
+          start: 0,
+          end: cluster.dataPointIDs.length - 1,
+          datapoints: [...cluster.dataPointIDs, ...cluster.outlierIDs].map(id => this._paraState.model?.allPoints[id]).filter(p => p != undefined),
           clustering: cluster,
-          index: i
+          index: clusterIndex + seriesIndex
         }, this._paraState);
         clusterNodes.push(clusterNode);
       });
@@ -127,7 +124,7 @@ export class ScatterChartInfo extends PointChartInfo {
         // Unless the first datapoint of the cluster already has an
         // 'out' link set (i.e., it's a boundary node), make a reciprocal
         // link to it
-        const childDatapointNodes = datapointNodes.filter(dp => clusterNode.options.datapoints.includes(dp.index));
+        const childDatapointNodes = datapointNodes.filter(dp => clusterNode.options.datapoints.includes(dp.datapoints[0]));
         clusterNode.connect('in', childDatapointNodes[0],
           !childDatapointNodes[0].getLink('out'));
         for (const node of childDatapointNodes) {

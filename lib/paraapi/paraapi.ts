@@ -344,6 +344,10 @@ export class ParaAPI {
     return new ParaAPISeriesGroup(labelsOrKeys, this);
   }
 
+  highlightCluster(clusterID: number) {
+    this.paraChart.paraState.highlightCluster(clusterID);
+  }
+
   // sendKey(keyId: string) {
   //   this._paraChart.command('key', [keyId]);
   // }
@@ -615,7 +619,6 @@ export class ParaAPIHorizontalAxis {
     this._api.paraChart.paraState.isHorizontalAxisHighlighted = false;
   }
 
-
   highlightLabel(tierIndex: number, labelIndex: number) {
     this._api.paraChart.paraState.highlightAxisLabel({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'horiz' });
 
@@ -623,6 +626,21 @@ export class ParaAPIHorizontalAxis {
   clearHighlightLabel(tierIndex: number, labelIndex: number) {
     this._api.paraChart.paraState.clearAxisLabelHighlight({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'horiz' });
   }
+
+  getMaxPoints() {
+    const datapoints = this._api.paraChart.paraState.model!.allPoints;
+    const max = Math.max(...datapoints.map(d => d.facetValueNumericized("x")!));
+    const maxPoints = datapoints.filter(d => d.facetValueNumericized("x")! == max);
+    return new ParaAPIPointGroup(maxPoints, this._api.getSeries(maxPoints[0].seriesKey));
+  }
+
+  getMinPoints() {
+    const datapoints = this._api.paraChart.paraState.model!.allPoints;
+    const min = Math.min(...datapoints.map(d => d.facetValueNumericized("x")!));
+    const minPoints = datapoints.filter(d => d.facetValueNumericized("x")! == min);
+    return new ParaAPIPointGroup(minPoints, this._api.getSeries(minPoints[0].seriesKey));
+  }
+
 }
 
 /**
@@ -648,6 +666,20 @@ export class ParaAPIVerticalAxis {
   }
   clearHighlightLabel(tierIndex: number, labelIndex: number) {
     this._api.paraChart.paraState.clearAxisLabelHighlight({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'vert' });
+  }
+
+  getMaxPoints() {
+    const datapoints = this._api.paraChart.paraState.model!.allPoints;
+    const max = Math.max(...datapoints.map(d => d.facetValueNumericized("y")!));
+    const maxPoints = datapoints.filter(d => d.facetValueNumericized("y")! == max);
+    return new ParaAPIPointGroup(maxPoints, this._api.getSeries(maxPoints[0].seriesKey));
+  }
+
+  getMinPoints() {
+    const datapoints = this._api.paraChart.paraState.model!.allPoints;
+    const min = Math.min(...datapoints.map(d => d.facetValueNumericized("y")!));
+    const minPoints = datapoints.filter(d => d.facetValueNumericized("y")! == min);
+    return new ParaAPIPointGroup(minPoints, this._api.getSeries(minPoints[0].seriesKey));
   }
 }
 
@@ -920,7 +952,7 @@ export class ParaAPIPointGroup {
     this._datapoints.forEach(datapoint => {
       this._apiSeriesGroup.api.paraChart.paraState.clearDatapointHighlight(
         datapoint.seriesKey, datapoint.datapointIndex);
-        const id = this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '';
+      const id = this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '';
       this._apiSeriesGroup.api.paraChart.paraState.removePopup(id);
       this._apiSeriesGroup.api.paraChart.paraState.removeCrosshair(id);
     }

@@ -106,6 +106,11 @@ export class ScatterPlotView extends PointPlotView {
     }
     return super.content(...options);
   }
+
+  addClusterShell(index: number){
+    this.paraview.paraState.clusterShellViews.splice(0, this.paraview.paraState.clusterShellViews.length);
+    this.paraview.paraState.clusterShellViews.push(new ClusterShellView(this, index));
+  }
 }
 
 class ScatterPointView extends PointDatapointView {
