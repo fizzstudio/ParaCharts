@@ -102,7 +102,7 @@ describe('SettingsManager', () => {
     });
 
     it('should throw on non-existent path', () => {
-      expect(() => SettingsManager.getGroup('missing', {})).toThrow(`invalid setting group type 'undefined'`);
+      expect(() => SettingsManager.getGroup('missing', {})).toThrow(`no such setting group 'missing'`);
     });
   });
 
