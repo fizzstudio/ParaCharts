@@ -324,6 +324,18 @@ export class NavLayer {
     }
   }
 
+  /** Set the cursor from a set of visited datapoints. */
+  updateCursor(datapoints: Datapoint[]) {
+    for (const node of this._nodesById.values()) {
+      const nodeDatapoints = node.datapoints;
+      if (nodeDatapoints.length === datapoints.length
+        && datapoints.every(dp => nodeDatapoints.includes(dp))) {
+        this._cursor = node.id;
+        break;
+      }
+    }
+  }
+
 }
 
 /**
