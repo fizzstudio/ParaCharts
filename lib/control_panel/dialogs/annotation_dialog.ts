@@ -75,7 +75,7 @@ export class AnnotationDialog extends ParaDialog {
     if (options) {
       this._options = options;
     }
-    const result = await this._dialogRef.value!.show(() => this._dialogRef.value!.button('cancel')!.focus());
+    const result = await this._dialogRef.value!.show(() => this._dialogRef.value!.button('close')!.focus());
     const returnText = this._dialogRef.value!.getElementsByTagName("input").namedItem("annot")!.value;
     this._dialogRef.value!.getElementsByTagName("input").namedItem("annot")!.value = ''
     return {result: result, text: returnText}
