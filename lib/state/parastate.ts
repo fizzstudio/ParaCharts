@@ -141,13 +141,16 @@ const synchronizedSettings = [
   'chart.size.height',
 ];
 
+// NB: Must be disallowed in series keys
+const DATAPOINT_ID_SEP = '@';
+
 /**
- * Convert a datapoint ID string of format `${seriesKey}-${index}` into a DatapointCursor.
+ * Convert a datapoint ID string of format `${seriesKey}@${index}` into a DatapointCursor.
  * @param id - The ID
  * @returns DatapointCursor
  */
 export function datapointIdToCursor(id: string): DatapointCursor {
-  const [seriesKey, index] = id.split('-');
+  const [seriesKey, index] = id.split(DATAPOINT_ID_SEP);
   return {
     seriesKey,
     index: parseInt(index)
@@ -161,7 +164,7 @@ export function datapointIdToCursor(id: string): DatapointCursor {
  * @returns Datapoint ID string
  */
 export function makeDatapointId(seriesKey: string, index: number): string {
-  return `${seriesKey}-${index}`;
+  return `${seriesKey}${DATAPOINT_ID_SEP}${index}`;
 }
 
 /**
@@ -172,7 +175,7 @@ export function makeDatapointId(seriesKey: string, index: number): string {
  * @returns Sequence ID string
  */
 export function makeSequenceId(seriesKey: string, index1: number, index2: number): string {
-  return `${seriesKey}-${index1}-${index2}`;
+  return `${seriesKey}${DATAPOINT_ID_SEP}${index1}-${index2}`;
 }
 
 export class ParaState extends BaseState {
@@ -678,7 +681,7 @@ export class ParaState extends BaseState {
   protected _datapointSetHas(
     seriesKey: string, index: number, collection: Set<string>
   ): boolean {
-    return collection.has(`${seriesKey}-${index}`);
+    return collection.has(`${seriesKey}${DATAPOINT_ID_SEP}${index}`);
   }
 
   isVisited(seriesKey: string, index: number) {
@@ -686,7 +689,7 @@ export class ParaState extends BaseState {
   }
 
   isVisitedSeries(seriesKey: string) {
-    return this._visitedDatapoints.values().some(value => value.startsWith(seriesKey));
+    return this._visitedDatapoints.values().some(value => value.startsWith(seriesKey + DATAPOINT_ID_SEP));
   }
 
   wasVisited(seriesKey: string, index: number) {
@@ -694,7 +697,7 @@ export class ParaState extends BaseState {
   }
 
   wasVisitedSeries(seriesKey: string) {
-    return this._prevVisitedDatapoints.values().some(value => value.startsWith(seriesKey));
+    return this._prevVisitedDatapoints.values().some(value => value.startsWith(seriesKey + DATAPOINT_ID_SEP));
   }
 
   everVisited(seriesKey: string, index: number): boolean {
@@ -702,7 +705,7 @@ export class ParaState extends BaseState {
   }
 
   everVisitedSeries(seriesKey: string): boolean {
-    return this._everVisitedDatapoints.values().some(value => value.startsWith(seriesKey));
+    return this._everVisitedDatapoints.values().some(value => value.startsWith(seriesKey + DATAPOINT_ID_SEP));
   }
 
   clearVisited() {
@@ -903,7 +906,7 @@ export class ParaState extends BaseState {
   }
 
   isSelectedSeries(seriesKey: string) {
-    return this._selectedDatapoints.values().some(value => value.startsWith(seriesKey));
+    return this._selectedDatapoints.values().some(value => value.startsWith(seriesKey + DATAPOINT_ID_SEP));
   }
 
   wasSelected(seriesKey: string, index: number) {
@@ -911,7 +914,7 @@ export class ParaState extends BaseState {
   }
 
   wasSelectedSeries(seriesKey: string) {
-    return this._prevSelectedDatapoints.values().some(value => value.startsWith(seriesKey));
+    return this._prevSelectedDatapoints.values().some(value => value.startsWith(seriesKey + DATAPOINT_ID_SEP));
   }
 
   clearSelected() {
