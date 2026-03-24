@@ -18,7 +18,7 @@ import { PlaneModel, type Datapoint } from '@fizz/paramodel';
 
 import { ORIENTATION_SENTENCES, PASTRY_ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
-import { CardinalDirection, Direction, makeSequenceId, Setting, SettingsManager } from '../state';
+import { CardinalDirection, Direction, makeSequenceId, Setting, SettingsInput, SettingsManager } from '../state';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 import explainers from '../explainers';
 import type { Manifest } from '@fizz/paramanifest';
@@ -390,6 +390,25 @@ export class ParaAPI {
     this._paraChart.paraView.downloadPNG();
   }
 
+  /** Get a setting. */
+  getSetting(settingPath: string): Setting {
+    return SettingsManager.get(settingPath, this._paraChart.paraState.settings);
+  }
+
+  /** Get multiple settings. */
+  getSettings(settingPaths: string[]): SettingsInput {
+    const out: SettingsInput = {};
+    settingPaths.forEach(path => {
+      out[path] = SettingsManager.get(path, this._paraChart.paraState.settings);
+    });
+    return out;
+  }
+
+  /** Get all settings. */
+  getAllSettings(): SettingsInput {
+    return SettingsManager.getAllSettings(this._paraChart.paraState.settings);
+  }
+
   /** Set a setting. */
   setSetting(settingPath: string, value: Setting) {
     this._paraChart.paraState.updateSettings(draft => {
@@ -397,18 +416,30 @@ export class ParaAPI {
     });
   }
 
+  /** Set multiple settings. */
+  setSettings(settingsInput: SettingsInput) {
+    this._paraChart.paraState.updateSettings(draft => {
+      Object.entries(settingsInput).forEach(([path, value]) => {
+        SettingsManager.set(path, value, draft);
+      });
+    });
+  }
+
+  /** Set chart width. */
   setWidth(width: number) {
     this._paraChart.paraState.updateSettings(draft => {
       draft.chart.size.width = width;
     });
   }
 
+  /** Set chart height. */
   setHeight(height: number) {
     this._paraChart.paraState.updateSettings(draft => {
       draft.chart.size.height = height;
     });
   }
 
+  /** Set chart width and height. */
   setSize(width: number, height: number) {
     this._paraChart.paraState.updateSettings(draft => {
       draft.chart.size.width = width;
