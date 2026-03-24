@@ -60,7 +60,7 @@ export interface ClusterNavNodeOptions {
   seriesKey: string;
   start: number;
   end: number;
-  datapoints: number[];
+  datapoints: Datapoint[];
   clustering: clusterObject;
   index: number;
 }
@@ -410,7 +410,7 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
       }
     } else if (this.isNodeType('cluster')) {
       datapoints.push(...this._paraState.model!.atKey(this._options.seriesKey)!.datapoints.filter(dp =>
-        this._options.datapoints.includes(dp.datapointIndex)));
+        this._options.datapoints.includes(dp)));
     }
     return datapoints;
   }

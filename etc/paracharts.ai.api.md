@@ -597,8 +597,8 @@ export type riffSpeeds = 'slow' | 'medium' | 'fast';
 
 // @public (undocumented)
 export interface ScatterSettings extends PointSettings {
-    isDrawTrendLine: boolean;
     isShowOutliers: boolean;
+    isShowTrendLine: boolean;
 }
 
 // @public

@@ -517,6 +517,12 @@ export abstract class BaseChartInfo {
       //   `sequence-${cursor.options.seriesKey}-${cursor.options.start}-${cursor.options.end}`);
 
     }
+    else if (cursor.isNodeType('cluster')) {
+      this._paraState.announce(
+        await this._summarizer.getClusterSummary(
+          cursor.options.index
+        ))
+    }
   }
 
   /** Can be overridden by subclasses. */

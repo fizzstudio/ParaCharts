@@ -64,6 +64,7 @@ import { GlobalState } from './global_state';
 import { BaseChartInfo, chartInfoClasses } from '../chart_types';
 import { firstDataset, type Manifest } from '../loader/common';
 import { clusterObject } from '@fizz/clustering';
+import { ClusterShellView } from '../view/layers';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -192,7 +193,7 @@ export class ParaState extends BaseState {
   @property() crossHairs: Array<{ id: string, popups: Array<PathShape | Popup> }> = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
-  @property() clusterAnalyses:  clusterObject[] | null = null;
+  @property() clusterAnalyses: clusterObject[] | null = null;
   @property() frontSeries = '';
   @property() pointerCoords: Point = { x: 0, y: 0 }
   @property() isTitleHighlighted = false;
@@ -218,16 +219,18 @@ export class ParaState extends BaseState {
   @property() protected _selectedDatapoints = new Set<string>();
   @property() protected _crosshairedDatapoints = new Set<string>();
   @property() protected _prevSelectedDatapoints = new Set<string>();
-  @property() protected _dataSpaceCrosshairs = new Set<{x: string, y: string}>();
+  @property() protected _dataSpaceCrosshairs = new Set<{ x: string, y: string }>();
   /** `${seriesKey}-${index1}-${index2}` */
   @property() protected _highlightedSequences = new Set<string>();
   @property() protected _highlightedIntersections = new Set<number>();
+  @property() protected _highlightedClusters = new Set<number>();
   @property() protected _highlightedAxisLabels = new Set<HighlightAxisOptions>();
   @property() protected _rangeHighlights: RangeHighlight[] = [];
   @property() protected _modelLineBreaks: LineBreak[] = [];
   @property() protected _userLineBreaks: LineBreak[] = [];
   @property() protected _modelTrendLines: TrendLine[] = [];
   @property() protected _userTrendLines: TrendLine[] = [];
+  @property() protected _clusterShellViews: ClusterShellView[] = [];
 
   protected _settingControls = new SettingControlManager(this);
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
@@ -319,6 +322,14 @@ export class ParaState extends BaseState {
 
   get userTrendLines() {
     return this._userTrendLines;
+  }
+
+  get clusterShellViews() {
+    return this._clusterShellViews;
+  }
+
+  set clusterShellViews(views: ClusterShellView[]) {
+    this._clusterShellViews = views;
   }
 
   nextAnnotID(): number {
@@ -804,6 +815,17 @@ export class ParaState extends BaseState {
     ]);
   }
 
+  highlightCluster(index: number) {
+    this._highlightedClusters = new Set([
+      ...this._highlightedClusters.values(),
+      index
+    ]);
+  }
+
+  get highlightedClusters() {
+    return this._highlightedClusters;
+  }
+
   clearIntersectionHighlight(index: number) {
     for (let intersection of Array.from(this._highlightedIntersections)) {
       this.removeCrosshair(`intersection-${intersection}`)
@@ -820,8 +842,6 @@ export class ParaState extends BaseState {
   get highlightedAxisLabels(): Set<HighlightAxisOptions> {
     return this._highlightedAxisLabels;
   }
-
-
 
   highlightAxisLabel(options: HighlightAxisOptions) {
     this._highlightedAxisLabels = new Set([
@@ -849,6 +869,8 @@ export class ParaState extends BaseState {
     this.clearAllRangeHighlights();
     this.clearAllSeriesDimming();
     this.clearAllAxisLabelHighlights();
+    this._highlightedClusters = new Set();
+    this._clusterShellViews = [];
     this.isTitleHighlighted = false;
     this.isHorizontalAxisHighlighted = false;
     this.isVerticalAxisHighlighted = false;
@@ -856,6 +878,9 @@ export class ParaState extends BaseState {
     this.isWestLegendHighlighted = false;
     this.isNorthLegendHighlighted = false;
     this.isSouthLegendHighlighted = false;
+    this.updateSettings(draft => {
+      draft.type.scatter.isShowTrendLine = false
+    });
   }
 
   get selectedDatapoints() {

@@ -271,7 +271,7 @@ export const defaults: Settings = {
       maxYValue: 'unset'
     },
     scatter: {
-      isDrawTrendLine: false,
+      isShowTrendLine: false,
       isShowOutliers: false,
       pointLabelFormat: 'raw',
       symbolStrokeWidth: 2,
