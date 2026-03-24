@@ -119,7 +119,7 @@ export class ParaDialog extends ParaComponent {
     if (options) {
       this._options = options;
     }
-    await this._dialogRef.value!.show(() => this._dialogRef.value!.button('cancel')!.focus());
+    await this._dialogRef.value!.show(() => this._dialogRef.value!.button('close')!.focus());
   }
 }
 
