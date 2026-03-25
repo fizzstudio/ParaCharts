@@ -428,13 +428,14 @@ export class ParaChart extends ParaComponent {
           colormode=${this._paraState?.settings.color.colorVisionMode ?? nothing}
           ?disableFocus=${this.headless}
         ></para-view>
-        <para-data-table
-          .isVisible=${this.isDataTableVisible}
-          .globalState=${this._globalState}
-          style=${styleMap(cpanelStyles)}
-        ></para-data-table>
         ${!(this.headless || this._paraState.settings.chart.isStatic)
           ? html`
+          <para-data-table
+            .isVisible=${this.isDataTableVisible}
+            .globalState=${this._globalState}
+            style=${styleMap(cpanelStyles)}
+            .paraChart=${this}
+          ></para-data-table>
             <para-control-panel
               ${ref(this._controlPanelRef)}
               style=${styleMap(cpanelStyles)}

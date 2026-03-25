@@ -212,7 +212,6 @@ export class NavMap {
     }
     return node.datapoints;
   }
-
 }
 
 /**
@@ -334,8 +333,8 @@ export class NavLayer {
         break;
       }
     }
+    this.map.visitDatapoints();
   }
-
 }
 
 /**
