@@ -55,6 +55,7 @@ export class ParaView extends ParaComponent {
   paraChart!: ParaChart;
 
   @property() type: ChartType = 'bar';
+  @property({type: Boolean}) scalable = false;
   @property() chartTitle?: string;
   @property() xAxisLabel?: string;
   @property() yAxisLabel?: string;
@@ -121,6 +122,9 @@ export class ParaView extends ParaComponent {
         --axis-line-color: ghostwhite;
         --label-color: ghostwhite;
         --background-color: black;
+      }
+      svg.scalable {
+        width: 100%;
       }
       #loading-message {
         fill: black;
@@ -902,7 +906,7 @@ export class ParaView extends ParaComponent {
 
   protected _rootClasses() {
     return {
-      darkmode: this._paraState.settings.color.isDarkModeEnabled
+      darkmode: this._paraState.settings.color.isDarkModeEnabled,
     }
   }
 
@@ -957,8 +961,8 @@ export class ParaView extends ParaComponent {
         ${ref(this._rootRef)}
         xmlns=${SVGNS}
         data-charttype=${this.paraChart.type ?? this.type}
-        width=${fixed`${this._viewBox.width}px`}
-        height=${fixed`${this._viewBox.height}px`}
+        width=${this.scalable ? '100%' : fixed`${this._viewBox.width}px`}
+        height=${this.scalable ? '100%' : fixed`${this._viewBox.height}px`}
         class=${classMap(this._rootClasses())}
         viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
         style=${styleMap(this._rootStyle())}

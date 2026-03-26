@@ -54,6 +54,7 @@ import { TourBus } from './tour_bus';
 /** @public */
 export class ParaChart extends ParaComponent {
   @property({ type: Boolean }) headless = false;
+  @property({ type: Boolean }) scalable = false;
   @property() accessor manifest = '';
   @property() manifestType: SourceKind = 'url';
   // `data` must be a URL, if set
@@ -332,6 +333,9 @@ export class ParaChart extends ParaComponent {
         flex-direction: column;
         margin: 0;
       }
+      figure.scalable {
+        width: 100%;
+      }
     `
   ];
 
@@ -411,7 +415,8 @@ export class ParaChart extends ParaComponent {
     // We can't truly hide the para-chart, or labels don't get a proper size,
     // so we fall back on sr-only
     const classes = {
-      'sr-only': this.headless
+      'sr-only': this.headless,
+      'scalable': this.scalable
     };
     const cpanelStyles = {
       'width': `${this._paraState.settings.chart.size.width}px`
@@ -426,6 +431,7 @@ export class ParaChart extends ParaComponent {
           .paraChart=${this}
           .globalState=${this._globalState}
           colormode=${this._paraState?.settings.color.colorVisionMode ?? nothing}
+          ?scalable=${this.scalable}
           ?disableFocus=${this.headless}
         ></para-view>
         ${!(this.headless || this._paraState.settings.chart.isStatic)
