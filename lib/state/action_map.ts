@@ -29,6 +29,7 @@ export interface AvailableActions {
   repeatLastAnnouncement(): void;
   addAnnotation(): void;
   toggleNarrativeHighlightMode(noSelfVoicing: boolean): void;
+  toggleDataTable(): void;
   playPauseMedia(): void;
   reset(): void;
 }

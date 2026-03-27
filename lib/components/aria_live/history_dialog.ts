@@ -55,7 +55,7 @@ export class AriaLiveHistoryDialog extends ParaComponent {
     // Even though `history` is reactive, the container's `ccHistory` is just
     // getting mutated, so the above assignment won't trigger an update on its own.
     //this.requestUpdate();
-    await this._dialogRef.value!.show(() => this._dialogRef.value!.button('cancel')!.focus());
+    await this._dialogRef.value!.show(() => this._dialogRef.value!.button('close')!.focus());
   }
 }
 

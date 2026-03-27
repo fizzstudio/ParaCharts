@@ -18,7 +18,7 @@ import { PlaneModel, type Datapoint } from '@fizz/paramodel';
 
 import { ORIENTATION_SENTENCES, PASTRY_ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
-import { CardinalDirection, Direction, makeSequenceId, Setting, SettingsManager } from '../state';
+import { CardinalDirection, Direction, makeSequenceId, Setting, SettingsInput, SettingsManager } from '../state';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 import explainers from '../explainers';
 import type { Manifest } from '@fizz/paramanifest';
@@ -229,6 +229,10 @@ export class ParaAPI {
           }
         });
       },
+      /** Toggle data table. */
+      toggleDataTable() {
+        _paraChart.isDataTableVisible = ! _paraChart.isDataTableVisible;
+      },
       /** Play or pause audio. */
       playPauseMedia() {
 
@@ -275,17 +279,14 @@ export class ParaAPI {
     this._actions = this._standardActions;
   }
 
-  /** The underlying ParaChart element. */
   get paraChart(): ParaChart {
     return this._paraChart;
   }
 
-  /** The current chart info object. */
   get chartInfo(): BaseChartInfo {
     return this._paraChart.globalState.paraState.chartInfo;
   }
 
-  /** The current set of hotkey actions. */
   get actions(): Actions {
     return this._actions;
   }
@@ -347,6 +348,10 @@ export class ParaAPI {
     return new ParaAPISeriesGroup(labelsOrKeys, this);
   }
 
+  highlightCluster(clusterID: number) {
+    this.paraChart.paraState.highlightCluster(clusterID);
+  }
+
   // sendKey(keyId: string) {
   //   this._paraChart.command('key', [keyId]);
   // }
@@ -389,10 +394,60 @@ export class ParaAPI {
     this._paraChart.paraView.downloadPNG();
   }
 
+  /** Get a setting. */
+  getSetting(settingPath: string): Setting {
+    return SettingsManager.get(settingPath, this._paraChart.paraState.settings);
+  }
+
+  /** Get multiple settings. */
+  getSettings(settingPaths: string[]): SettingsInput {
+    const out: SettingsInput = {};
+    settingPaths.forEach(path => {
+      out[path] = SettingsManager.get(path, this._paraChart.paraState.settings);
+    });
+    return out;
+  }
+
+  /** Get all settings. */
+  getAllSettings(): SettingsInput {
+    return SettingsManager.getAllSettings(this._paraChart.paraState.settings);
+  }
+
   /** Set a setting. */
   setSetting(settingPath: string, value: Setting) {
     this._paraChart.paraState.updateSettings(draft => {
       SettingsManager.set(settingPath, value, draft);
+    });
+  }
+
+  /** Set multiple settings. */
+  setSettings(settingsInput: SettingsInput) {
+    this._paraChart.paraState.updateSettings(draft => {
+      Object.entries(settingsInput).forEach(([path, value]) => {
+        SettingsManager.set(path, value, draft);
+      });
+    });
+  }
+
+  /** Set chart width. */
+  setWidth(width: number) {
+    this._paraChart.paraState.updateSettings(draft => {
+      draft.chart.size.width = width;
+    });
+  }
+
+  /** Set chart height. */
+  setHeight(height: number) {
+    this._paraChart.paraState.updateSettings(draft => {
+      draft.chart.size.height = height;
+    });
+  }
+
+  /** Set chart width and height. */
+  setSize(width: number, height: number) {
+    this._paraChart.paraState.updateSettings(draft => {
+      draft.chart.size.width = width;
+      draft.chart.size.height = height;
     });
   }
 
@@ -516,17 +571,14 @@ export class ParaAPI {
     this._paraChart.paraState.clearAllHighlights();
   }
 
-  /** Clear all chart popups. */
+  /** Clear all chart highlights. */
   clearAllPopups() {
     this._paraChart.paraState.clearPopups();
   }
-
-  /** Clear all visited datapoint markers. */
   clearVisited() {
     this._paraChart.paraState.clearVisited();
   }
 
-  /** Clear all selected datapoints. */
   clearSelected() {
     this._paraChart.paraState.clearSelected();
   }
@@ -541,17 +593,27 @@ export class ParaAPI {
     this._paraChart.paraState.unhideAllSeries();
   }
 
-  /** Add a crosshair at the given axis values. */
   addCrosshair(xAxis: string | number, yAxis: string | number) {
     this.paraChart.paraState.addDataSpaceCrosshair(String(xAxis), String(yAxis))
   }
 
-  /** Remove a crosshair at the given axis values. */
   clearCrosshair(xAxis: string | number, yAxis: string | number) {
     this.paraChart.paraState.clearDataSpaceCrosshair(String(xAxis), String(yAxis))
   }
 
-  /** Refresh the chart view. */
+  addTrendLine() {
+    this.paraChart.paraState.updateSettings(draft => {
+      draft.type.scatter.isShowTrendLine = true;
+    });
+  }
+
+
+  removeTrendLine() {
+    this.paraChart.paraState.updateSettings(draft => {
+      draft.type.scatter.isShowTrendLine = false;
+    });
+  }
+
   refresh() {
     this._paraChart.paraView.createDocumentView();
   }
@@ -592,7 +654,6 @@ export class ParaAPIHorizontalAxis {
     this._api.paraChart.paraState.isHorizontalAxisHighlighted = false;
   }
 
-
   highlightLabel(tierIndex: number, labelIndex: number) {
     this._api.paraChart.paraState.highlightAxisLabel({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'horiz' });
 
@@ -600,6 +661,21 @@ export class ParaAPIHorizontalAxis {
   clearHighlightLabel(tierIndex: number, labelIndex: number) {
     this._api.paraChart.paraState.clearAxisLabelHighlight({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'horiz' });
   }
+
+  getMaxPoints() {
+    const datapoints = this._api.paraChart.paraState.model!.allPoints;
+    const max = Math.max(...datapoints.map(d => d.facetValueNumericized("x")!));
+    const maxPoints = datapoints.filter(d => d.facetValueNumericized("x")! == max);
+    return new ParaAPIPointGroup(maxPoints, this._api.getSeries(maxPoints[0].seriesKey));
+  }
+
+  getMinPoints() {
+    const datapoints = this._api.paraChart.paraState.model!.allPoints;
+    const min = Math.min(...datapoints.map(d => d.facetValueNumericized("x")!));
+    const minPoints = datapoints.filter(d => d.facetValueNumericized("x")! == min);
+    return new ParaAPIPointGroup(minPoints, this._api.getSeries(minPoints[0].seriesKey));
+  }
+
 }
 
 /**
@@ -625,6 +701,20 @@ export class ParaAPIVerticalAxis {
   }
   clearHighlightLabel(tierIndex: number, labelIndex: number) {
     this._api.paraChart.paraState.clearAxisLabelHighlight({ tierIndex: tierIndex, labelIndex: labelIndex, orientation: 'vert' });
+  }
+
+  getMaxPoints() {
+    const datapoints = this._api.paraChart.paraState.model!.allPoints;
+    const max = Math.max(...datapoints.map(d => d.facetValueNumericized("y")!));
+    const maxPoints = datapoints.filter(d => d.facetValueNumericized("y")! == max);
+    return new ParaAPIPointGroup(maxPoints, this._api.getSeries(maxPoints[0].seriesKey));
+  }
+
+  getMinPoints() {
+    const datapoints = this._api.paraChart.paraState.model!.allPoints;
+    const min = Math.min(...datapoints.map(d => d.facetValueNumericized("y")!));
+    const minPoints = datapoints.filter(d => d.facetValueNumericized("y")! == min);
+    return new ParaAPIPointGroup(minPoints, this._api.getSeries(minPoints[0].seriesKey));
   }
 }
 
@@ -897,7 +987,7 @@ export class ParaAPIPointGroup {
     this._datapoints.forEach(datapoint => {
       this._apiSeriesGroup.api.paraChart.paraState.clearDatapointHighlight(
         datapoint.seriesKey, datapoint.datapointIndex);
-        const id = this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '';
+      const id = this._apiSeriesGroup.api.paraChart.paraView.documentView!.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)?.id ?? '';
       this._apiSeriesGroup.api.paraChart.paraState.removePopup(id);
       this._apiSeriesGroup.api.paraChart.paraState.removeCrosshair(id);
     }

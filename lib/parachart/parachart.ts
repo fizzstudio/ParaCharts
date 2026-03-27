@@ -20,6 +20,7 @@ import { ChartType } from '@fizz/paramanifest'
 import { DeepReadonly, Settings, SettingsInput, type Setting } from '../state/settings_types';
 import { SettingsManager } from '../state';
 import '../paraview';
+import '../components/data_table';
 import '../control_panel';
 import '../control_panel/caption';
 import { type ParaCaptionBox } from '../control_panel/caption';
@@ -38,8 +39,6 @@ import {
   Scrollyteller,
   type ScrollytellerOptions,
 } from '../scrollyteller/scrollyteller';
-
-
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
@@ -64,6 +63,7 @@ export class ParaChart extends ParaComponent {
   @property() type?: ChartType;
   @property() accessor description: string | undefined;
   @property({type: Boolean, attribute: false}) isControlPanelOpen = false;
+  @property({type: Boolean, attribute: false}) isDataTableVisible = false;
 
   readonly captionBox: ParaCaptionBox;
   protected _paraViewRef = createRef<ParaView>();
@@ -430,6 +430,12 @@ export class ParaChart extends ParaComponent {
         ></para-view>
         ${!(this.headless || this._paraState.settings.chart.isStatic)
           ? html`
+          <para-data-table
+            .isVisible=${this.isDataTableVisible}
+            .globalState=${this._globalState}
+            style=${styleMap(cpanelStyles)}
+            .paraChart=${this}
+          ></para-data-table>
             <para-control-panel
               ${ref(this._controlPanelRef)}
               style=${styleMap(cpanelStyles)}

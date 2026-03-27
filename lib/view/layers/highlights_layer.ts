@@ -1,5 +1,5 @@
 
-import { PlanePlotView, PlotLayer } from '.';
+import { PlanePlotView, PlotLayer, ScatterPlotView } from '.';
 import { type ParaView } from '../../paraview';
 import { svg } from 'lit';
 import { datapointIdToCursor, HighlightAxisOptions } from '../../state';
@@ -125,7 +125,6 @@ export class HighlightsLayer extends PlotLayer {
   }
 
   protected _processAxisLabel(options: HighlightAxisOptions, overlays: (DataSymbol | Shape)[]) {
-
     if (options.orientation == 'horiz') {
       let labelText = this.paraview.documentView?.xAxis?.tickLabelTierValues[options.tierIndex].labels[options.labelIndex]
       if (!labelText) {
@@ -240,6 +239,14 @@ export class HighlightsLayer extends PlotLayer {
     this.paraview.paraState.dataSpaceCrosshairs.forEach(point => {
       this._processCrosshair(point.x, point.y)
       this.paraview.paraState.prevHighlightedElements.add(`dataspace-${point.x}-${point.y}`);
+    });
+    this.paraview.paraState.highlightedClusters.forEach(index => {
+      const chart = this.paraview.documentView?.chartLayers.dataLayer as ScatterPlotView
+      if (!(chart instanceof ScatterPlotView)) {
+        return;
+      }
+      chart.addClusterShell(index);
+      this.paraview.paraState.prevHighlightedElements.add(`cluster-${index}`);
     });
     return svg`
       ${this.paraview.paraState.visitedDatapoints.values().map(datapointId => {

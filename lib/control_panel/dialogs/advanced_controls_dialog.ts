@@ -103,7 +103,7 @@ export class AdvancedControlSettingsDialog extends ParaComponent {
    * Show the dialog
    */
   async show() {
-    await this._dialogRef.value!.show(() => this._dialogRef.value!.button('cancel')!.focus());
+    await this._dialogRef.value!.show(() => this._dialogRef.value!.button('close')!.focus());
   }
 }
 

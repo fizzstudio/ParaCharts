@@ -27,6 +27,7 @@ import { StyleInfo } from 'lit/directives/style-map.js';
 import { bboxOfBboxes } from '../../../common/utils';
 import { BaseChartInfo } from '../../../chart_types';
 import { Bezier, loopParaviewRefresh } from '../../../common';
+import { makeDatapointId } from '../../../state';
 
 /**
  * @public
@@ -115,12 +116,12 @@ export abstract class DataLayer extends PlotLayer {
   }
 
   registerDatapoint(datapointView: DatapointView) {
-    const key = `${datapointView.seriesKey}-${datapointView.index}`;
+    const key = makeDatapointId(datapointView.seriesKey, datapointView.index);
     this._datapointDomIds.set(key, datapointView.id);
   }
 
   unregisterDatapoint(datapointView: DatapointView) {
-    this._datapointDomIds.delete(`${datapointView.seriesKey}-${datapointView.index}`);
+    this._datapointDomIds.delete(makeDatapointId(datapointView.seriesKey, datapointView.index));
   }
 
   get datapointDomIds(): ReadonlyMap<string, string> {
@@ -325,4 +326,6 @@ export abstract class DataLayer extends PlotLayer {
   makeCrosshairsLocked(datapointViews: DatapointView[], focus?: boolean, chord?: boolean, popup: boolean = true) { }
   makeCrosshairsAtPointer(nearestPoint: DatapointView) { }
   makeCrosshairsAtPixelsCoords(x: number, y: number, id: string) { }
+  addTrendLine() { }
+  removeTrendLine() { }
 }

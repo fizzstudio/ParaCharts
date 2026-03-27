@@ -7,17 +7,17 @@ describe('ParaState', () => {
   describe('Utility Functions', () => {
     it('should create datapoint ID from seriesKey and index', () => {
       const id = makeDatapointId('series1', 5);
-      expect(id).toBe('series1-5');
+      expect(id).toBe('series1@5');
     });
 
     it('should parse datapoint ID to cursor', () => {
-      const cursor = datapointIdToCursor('series1-10');
+      const cursor = datapointIdToCursor('series1@10');
       expect(cursor).toEqual({ seriesKey: 'series1', index: 10 });
     });
 
     it('should create sequence ID from seriesKey and indices', () => {
       const id = makeSequenceId('series1', 0, 10);
-      expect(id).toBe('series1-0-10');
+      expect(id).toBe('series1@0-10');
     });
   });
 
@@ -224,8 +224,8 @@ describe('ParaState', () => {
       state.highlightDatapoint('series1', 1);
       const highlighted = state.highlightedDatapoints;
       expect(highlighted.size).toBe(2);
-      expect(highlighted.has('series1-0')).toBe(true);
-      expect(highlighted.has('series1-1')).toBe(true);
+      expect(highlighted.has('series1@0')).toBe(true);
+      expect(highlighted.has('series1@1')).toBe(true);
     });
   });
 
@@ -239,7 +239,7 @@ describe('ParaState', () => {
     it('should highlight a sequence', () => {
       state.highlightSequence('series1', 0, 5);
       const sequences = state.highlightedSequences;
-      expect(sequences.has('series1-0-5')).toBe(true);
+      expect(sequences.has('series1@0-5')).toBe(true);
     });
 
     it('should clear a sequence highlight', () => {

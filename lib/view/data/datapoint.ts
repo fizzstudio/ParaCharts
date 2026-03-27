@@ -1,7 +1,7 @@
 
 import { DataView, type SeriesView } from './';
 import { DataSymbol } from '../symbol';
-import { datapointIdToCursor } from '../../state';
+import { datapointIdToCursor, makeDatapointId } from '../../state';
 import { Shape } from '../shape/shape';
 import { RectShape } from '../shape/rect';
 
@@ -88,11 +88,11 @@ export class DatapointView extends DataView {
   }
 
   /**
-   * Identifier of the form: `${seriesKey}-${index}`
+   * Identifier of the form: `${seriesKey}@${index}`
    * NB: *NOT* the same as the `id` property (the DOM ID)
    */
   get datapointId(): string {
-    return `${this.seriesKey}-${this.index}`;
+    return makeDatapointId(this.seriesKey, this.index);
   }
 
   get selectedMarker(): Shape {

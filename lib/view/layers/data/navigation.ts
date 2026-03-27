@@ -60,7 +60,7 @@ export interface ClusterNavNodeOptions {
   seriesKey: string;
   start: number;
   end: number;
-  datapoints: number[];
+  datapoints: Datapoint[];
   clustering: clusterObject;
   index: number;
 }
@@ -212,7 +212,6 @@ export class NavMap {
     }
     return node.datapoints;
   }
-
 }
 
 /**
@@ -324,6 +323,18 @@ export class NavLayer {
     }
   }
 
+  /** Set the cursor from a set of visited datapoints. */
+  updateCursor(datapoints: Datapoint[]) {
+    for (const node of this._nodesById.values()) {
+      const nodeDatapoints = node.datapoints;
+      if (nodeDatapoints.length === datapoints.length
+        && datapoints.every(dp => nodeDatapoints.includes(dp))) {
+        this._cursor = node.id;
+        break;
+      }
+    }
+    this.map.visitDatapoints();
+  }
 }
 
 /**
@@ -398,7 +409,7 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
       }
     } else if (this.isNodeType('cluster')) {
       datapoints.push(...this._paraState.model!.atKey(this._options.seriesKey)!.datapoints.filter(dp =>
-        this._options.datapoints.includes(dp.datapointIndex)));
+        this._options.datapoints.includes(dp)));
     }
     return datapoints;
   }
