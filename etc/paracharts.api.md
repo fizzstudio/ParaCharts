@@ -518,6 +518,8 @@ export class ParaChart extends ParaComponent {
     // (undocumented)
     isControlPanelOpen: boolean;
     // (undocumented)
+    isDataTableVisible: boolean;
+    // (undocumented)
     get loaded(): Promise<void> | null;
     // (undocumented)
     protected _loaderPromise: Promise<void> | null;
