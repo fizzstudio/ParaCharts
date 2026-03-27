@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>AI demo -- ParaCharts</title>
+	<title>Short Desc Demo -- ParaCharts</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22green%22/><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
 	<style>
 		:root {
@@ -74,7 +74,7 @@
 </head>
 <body>
   	<script type="module" src="/src/demo/short-desc/demo.ts"></script>
-	<h1>@fizz/paracharts short Description Demo</h1>
+	<h1>@fizz/paracharts Short Description Demo</h1>
   	<main>
 			<table>
 				<tr>
@@ -83,6 +83,22 @@
 					</td>
 					<td>
 						<p id="single_line"></p>
+					</td>
+				</tr>
+        <tr>
+				  <td>
+						<para-chart manifest="/src/demo-data/line-multi-manifest-57.json"></para-chart>
+					</td>
+					<td>
+						<p id="multi_line"></p>
+					</td>
+				</tr>
+        <tr>
+				  <td>
+						<para-chart manifest="/src/demo-data/pie-manifest-dark-matter.json"></para-chart>
+					</td>
+					<td>
+						<p id="pie"></p>
 					</td>
 				</tr>
 			</table>
