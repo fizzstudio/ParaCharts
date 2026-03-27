@@ -32,7 +32,8 @@ export default defineConfig({
           items: [
             { text: 'Custom Elements', link: '/customElements' },
             { text: 'Manifest', link: '/manifest' },
-            { text: 'Settings Object', link: '/settingsObj' }
+            { text: 'Settings Object', link: '/settingsObj' },
+            { text: 'ParaAPI', link: '/paraapi' }
           ]
         }
       ]
