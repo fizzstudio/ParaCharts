@@ -73,12 +73,19 @@
 	</style>
 </head>
 <body>
-  	<script type="module" src="/src/demo/ai/demo.ts"></script>
-	<h1>@fizz/paracharts AI-enhanced Demo</h1>
+  	<script type="module" src="/src/demo/short-desc/demo.ts"></script>
+	<h1>@fizz/paracharts short Description Demo</h1>
   	<main>
-    	<section id="content-container">
-				<para-chart manifest="/src/demo-data/line-single-manifest-7.json"></para-chart>
-			</section>
+			<table>
+				<tr>
+					<td>
+						<para-chart manifest="/src/demo-data/line-single-manifest-7.json"></para-chart>
+					</td>
+					<td>
+						<p id="single_line"></p>
+					</td>
+				</tr>
+			</table>
   	</main>
 </body>
 </html>
