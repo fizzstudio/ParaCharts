@@ -1,29 +1,7 @@
-import { ApiModel, ApiClass, ApiMethod, ApiPropertyItem, ApiItemKind } from '@microsoft/api-extractor-model';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { ApiClass, ApiMethod, ApiPropertyItem, ApiItemKind } from '@microsoft/api-extractor-model';
+import { loadApiModel, extractSummaryText } from './apiModelUtils.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-function extractSummaryText(item: ApiClass | ApiMethod | ApiPropertyItem): string {
-    const summary = item.tsdocComment?.summarySection;
-    if (!summary) return '';
-    let text = '';
-    for (const node of summary.nodes) {
-        if (node.kind === 'Paragraph') {
-            for (const child of (node as any).nodes) {
-                if (child.kind === 'PlainText') {
-                    text += (child as any).text;
-                }
-            }
-        }
-    }
-    return text.trim();
-}
-
-const apiModel = new ApiModel();
-const apiJsonPath = path.resolve(__dirname, '../../temp/paracharts.api.json');
-apiModel.loadPackage(apiJsonPath);
+const apiModel = loadApiModel();
 
 let paraApiClass: ApiClass | undefined;
 for (const pkg of apiModel.packages) {
