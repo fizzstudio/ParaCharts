@@ -8,7 +8,7 @@
 | **h** | Show the help dialog |
 | **k** | Toggle dark mode |
 | **l** | Toggle low-vision mode |
-| **n** | Toggle narrative highlight mode |
+| **n, Shift+n** | Toggle narrative highlight mode |
 | **q** | Query data |
 | **r** | Repeat last message |
 | **s** | Toggle sonification mode |

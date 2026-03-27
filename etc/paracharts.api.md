@@ -471,6 +471,88 @@ export interface OrientedAxisSettings<T extends AxisOrientation> extends Setting
     title: AxisTitleSettings;
 }
 
+// @public
+export class ParaAPI {
+    constructor(_paraChart: ParaChart);
+    get actions(): Actions;
+    // Warning: (ae-forgotten-export) The symbol "Actions" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _actions: Actions;
+    addCrosshair(xAxis: string | number, yAxis: string | number): void;
+    // Warning: (ae-forgotten-export) The symbol "BaseChartInfo" needs to be exported by the entry point index.d.ts
+    get chartInfo(): BaseChartInfo;
+    clearAllDatapointHighlights(): void;
+    clearAllHighlights(): void;
+    clearAllIntersectionHighlights(): void;
+    clearAllPopups(): void;
+    clearAllRangeHighlights(): void;
+    clearAllSequenceHighlights(): void;
+    clearAllSeriesHighlights(): void;
+    clearCrosshair(xAxis: string | number, yAxis: string | number): void;
+    clearEastLegendHighlight(): void;
+    clearHorizontalAxisHighlight(): void;
+    clearIntersectionHighlight(index: number): void;
+    clearNorthLegendHighlight(): void;
+    clearRangeHighlight(startPortion: number, endPortion: number): void;
+    clearSelected(): void;
+    clearSouthLegendHighlight(): void;
+    clearTitleHighlight(): void;
+    clearVerticalAxisHighlight(): void;
+    clearVisited(): void;
+    clearWestLegendHighlight(): void;
+    disableTourGuideActions(): void;
+    // Warning: (ae-forgotten-export) The symbol "AvailableActions" needs to be exported by the entry point index.d.ts
+    // Warning: (ae-forgotten-export) The symbol "ActionArgumentMap" needs to be exported by the entry point index.d.ts
+    doAction(action: keyof AvailableActions, args?: ActionArgumentMap): void;
+    downloadPNG(): void;
+    downloadSVG(): void;
+    enableTourGuideActions(): void;
+    getAltText(): Promise<string | undefined>;
+    getDescription(): Promise<string | undefined>;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPIHorizontalAxis" needs to be exported by the entry point index.d.ts
+    getHorizontalAxis(): ParaAPIHorizontalAxis;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPIIntersection" needs to be exported by the entry point index.d.ts
+    getIntersection(index: number): ParaAPIIntersection;
+    getJIM(): Manifest | undefined;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPILegend" needs to be exported by the entry point index.d.ts
+    getLegend(location: CardinalDirection): ParaAPILegend;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPIRange" needs to be exported by the entry point index.d.ts
+    getRange(startPortion: number, endPortion: number): ParaAPIRange;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPISeriesGroup" needs to be exported by the entry point index.d.ts
+    getSeries(...seriesLabelsOrKeys: string[]): ParaAPISeriesGroup;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPITitle" needs to be exported by the entry point index.d.ts
+    getTitle(): ParaAPITitle;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPIVerticalAxis" needs to be exported by the entry point index.d.ts
+    getVerticalAxis(): ParaAPIVerticalAxis;
+    hideAllSeries(): void;
+    highlightEastLegend(): void;
+    highlightHorizontalAxis(): void;
+    highlightIntersection(index: number): void;
+    highlightNorthLegend(): void;
+    highlightRange(startPortion: number, endPortion: number): void;
+    highlightSouthLegend(): void;
+    highlightTitle(): void;
+    highlightVerticalAxis(): void;
+    highlightWestLegend(): void;
+    get paraChart(): ParaChart;
+    // (undocumented)
+    protected _paraChart: ParaChart;
+    refresh(): void;
+    serializeChart(): string;
+    setManifest(manifestUrl: string): void;
+    setSetting(settingPath: string, value: Setting): void;
+    // (undocumented)
+    protected _standardActions: Actions;
+    // (undocumented)
+    protected _tourGuideActions: Actions;
+    // (undocumented)
+    protected _tourGuideNoSelfVoicing: boolean;
+    // (undocumented)
+    protected _tourGuideSelfVoicingState: boolean;
+    unhideAllSeries(): void;
+}
+
 // Warning: (ae-forgotten-export) The symbol "ParaComponent" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
@@ -533,8 +615,6 @@ export class ParaChart extends ParaComponent {
     //
     // (undocumented)
     manifestType: SourceKind;
-    // Warning: (ae-forgotten-export) The symbol "ParaAPI" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     protected _paraAPI: ParaAPI;
     // Warning: (ae-forgotten-export) The symbol "ParaState" needs to be exported by the entry point index.d.ts
