@@ -33,12 +33,13 @@ import { type ParaState } from '../../state/parastate';
 import { type Datatype, type Scalar } from '@fizz/dataframe';
 import { type Facet } from '@fizz/paramanifest';
 
-import { type TemplateResult } from 'lit';
+import { svg, type TemplateResult } from 'lit';
 import { literal } from 'lit/static-html.js';
 import { PlaneModel } from '@fizz/paramodel';
 import { Popup } from '../popup';
 import { type ParaView } from '../../paraview';
 import { AxisLabelTier, PlaneChartInfo } from '../../chart_types';
+import { HIGHLIGHT_PADDING } from '../../common';
 
 export type AxisOrientation = 'horiz' | 'vert';
 export type AxisCoord = 'x' | 'y';
@@ -155,6 +156,10 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   get tickLabelTiers(): readonly TickLabelTier[] {
     return this._tickLabelTiers;
+  }
+
+  get tickLabelTierValues() {
+    return this._tickLabelTierValues;
   }
 
   get role() {
@@ -412,6 +417,18 @@ export class HorizAxis extends Axis<'horiz'> {
     }
     super.layoutComponents();
   }
+
+  renderHighlight(type: 'fg' | 'bg') {
+    return svg`
+      <rect
+        x=${this.x - 20}
+        y=${this.y - 5}
+        width=${this.width + 40}
+        height=${this.height + 10}
+        class="view-highlight-${type}"
+      ></rect>
+    `;
+  }
 }
 
 /**
@@ -538,5 +555,17 @@ export class VertAxis extends Axis<'vert'> {
 
   protected _getAxisTitleAngle() {
     return this.orientationSettings.position === 'east' ? 90 : -90;
+  }
+
+  renderHighlight(type: 'fg' | 'bg') {
+    return svg`
+      <rect
+        x=${this.x - 5}
+        y=${this.y - 10}
+        width=${this.width + 10}
+        height=${this.height + 20}
+        class="view-highlight-${type}"
+      ></rect>
+    `;
   }
 }

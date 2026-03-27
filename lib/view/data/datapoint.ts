@@ -1,7 +1,7 @@
 
 import { DataView, type SeriesView } from './';
 import { DataSymbol } from '../symbol';
-import { datapointIdToCursor } from '../../state';
+import { datapointIdToCursor, makeDatapointId } from '../../state';
 import { Shape } from '../shape/shape';
 import { RectShape } from '../shape/rect';
 
@@ -88,11 +88,11 @@ export class DatapointView extends DataView {
   }
 
   /**
-   * Identifier of the form: `${seriesKey}-${index}`
+   * Identifier of the form: `${seriesKey}@${index}`
    * NB: *NOT* the same as the `id` property (the DOM ID)
    */
   get datapointId(): string {
-    return `${this.seriesKey}-${this.index}`;
+    return makeDatapointId(this.seriesKey, this.index);
   }
 
   get selectedMarker(): Shape {
@@ -211,7 +211,7 @@ export class DatapointView extends DataView {
 
   protected _createId(..._args: any[]): string {
     const jimIndex = this._parent.modelIndex * this._series.length + this.index + 1;
-    const id = this.paraview.paraState.jimerator!.jim.selectors[`datapoint${jimIndex}`].dom as string;
+    const id = (this.paraview.paraState.jimerator!.manifest.jim as any).selectors[`datapoint${jimIndex}`].dom as string;
     // don't include the '#' from JIM
     return id.slice(1);
   }

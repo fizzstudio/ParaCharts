@@ -675,7 +675,7 @@ export interface StepLineSettings extends PointSettings {
 /** @public */
 export interface ScatterSettings extends PointSettings {
   /** Draw trend/regression line */
-  isDrawTrendLine: boolean;
+  isShowTrendLine: boolean;
   /** Highlight statistical outliers */
   isShowOutliers: boolean;
 }

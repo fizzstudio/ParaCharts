@@ -24,7 +24,6 @@ import { FormatType } from '@fizz/parasummary';
 import { Highlight as Highlight_2 } from '@fizz/parasummary';
 import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
-import type { JIM } from '@fizz/jimerator';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
 import { Logger } from '@fizz/logger';
@@ -450,10 +449,13 @@ export interface ManifestBuilderInput {
     xAxis?: {
         variableType: CsvDataType;
         title: string;
+        units?: string;
     };
     // (undocumented)
     yAxis?: {
         title: string;
+        units?: string;
+        multiplier?: number;
     };
 }
 
@@ -595,8 +597,8 @@ export type riffSpeeds = 'slow' | 'medium' | 'fast';
 
 // @public (undocumented)
 export interface ScatterSettings extends PointSettings {
-    isDrawTrendLine: boolean;
     isShowOutliers: boolean;
+    isShowTrendLine: boolean;
 }
 
 // @public

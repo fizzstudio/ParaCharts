@@ -92,6 +92,8 @@ export class SettingsManager {
         if (create && cursor === undefined) {
           cursor = {};
           prev[seg] = cursor;
+        } else if (cursor === undefined) {
+          throw new Error(`no such setting group '${path}'`);
         } else {
           throw new Error(`invalid setting group type '${typeof cursor}' in '${path}'`);
         }
@@ -115,7 +117,7 @@ export class SettingsManager {
   static getGroupForSetting(path: string, group: SettingGroup, create = false) {
     const segs = path.split('.');
     if (segs.length < 2) {
-      throw new Error(`setting path must have at least two elements`);
+      throw new Error('setting path must have at least two elements');
     }
     return SettingsManager.getGroup(segs.slice(0, -1).join('.'), group, create);
   }
@@ -124,8 +126,28 @@ export class SettingsManager {
     const value = SettingsManager.getGroupForSetting(path, group)[path.split('.').at(-1)!];
     if (typeof value === 'object') {
       throw new Error('can only get settings, not groups');
+    } else if (value === undefined) {
+      throw new Error(`no such setting '${path}'`);
     }
     return value;
+  }
+
+  static getAllSettings(group: SettingGroup, prefix = ''): SettingsInput {
+    const out: SettingsInput = {};
+    let path: string;
+    const keys = Object.keys(group);
+    for (const key of keys) {
+      path = prefix ? (prefix + '.' + key) : key;
+      if (typeof group[key] === 'object') {
+        const settings = this.getAllSettings(group[key] as SettingGroup, path);
+        Object.entries(settings).forEach(([path, value]) => {
+          out[path] = value;
+        });
+      } else {
+        out[path] = group[key]!;
+      }
+    }
+    return out;
   }
 
   static set(path: string, value: Setting | undefined, group: SettingGroup, create = false) {

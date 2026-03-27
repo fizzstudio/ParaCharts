@@ -138,7 +138,7 @@ export const defaults: Settings = {
           fontSize: '10pt',
           angle: 0,
           offsetGap: 0,
-          gap: 0
+          gap: 10
         },
         step: 1,
         isOnDatapoint: true
@@ -271,7 +271,7 @@ export const defaults: Settings = {
       maxYValue: 'unset'
     },
     scatter: {
-      isDrawTrendLine: false,
+      isShowTrendLine: false,
       isShowOutliers: false,
       pointLabelFormat: 'raw',
       symbolStrokeWidth: 2,

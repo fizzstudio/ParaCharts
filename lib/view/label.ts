@@ -400,7 +400,11 @@ export class Label extends View {
     } else {
       this._textLines = [];
       const numChars = text.getNumberOfChars();
-      const firstChar = text.getExtentOfChar(0)
+      let firstChar = new DOMRect(0, 0, 0, 0);
+      try {
+        firstChar = text.getExtentOfChar(0);
+      } catch {
+      }
       this._lineHeight = firstChar.height;
       if (this._angle) {
         // No need for extra translations since we're at the origin
@@ -417,7 +421,11 @@ export class Label extends View {
         this._locOffset.x = -(newClientRect.x - canvasRect.x) - (isFullscreen ? -(newClientRect.x - newClientRect.y) : 0);
         this._locOffset.y = -(newClientRect.y - canvasRect.y) + (isFullscreen ? -(newClientRect.x - newClientRect.y) : 0);
       }
-      const lastChar = text.getExtentOfChar(numChars - 1)
+      let lastChar = new DOMRect(0, 0, 0, 0);
+      try {
+        lastChar = text.getExtentOfChar(numChars - 1);
+      } catch {
+      }
       top = firstChar.y;
       bottom = firstChar.y + firstChar.height;
       left = firstChar.x;

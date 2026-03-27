@@ -28,7 +28,8 @@ export interface AvailableActions {
   shutUp(): void;
   repeatLastAnnouncement(): void;
   addAnnotation(): void;
-  toggleNarrativeHighlightMode(): void;
+  toggleNarrativeHighlightMode(noSelfVoicing: boolean): void;
+  toggleDataTable(): void;
   playPauseMedia(): void;
   reset(): void;
 }
@@ -49,14 +50,14 @@ export interface HotkeyWithArgument {
 }
 
 export interface ActionArgumentMap {
-  [name: string]: number | string;
+  [name: string]: number | string | boolean;
 }
 
 export interface ActionParameterMap {
   [name: string]: ActionParameterType;
 }
 
-export type ActionParameterType = 'number' | 'string';
+export type ActionParameterType = 'number' | 'string' | 'boolean';
 
 export interface Subaction {
   action: keyof AvailableActions;

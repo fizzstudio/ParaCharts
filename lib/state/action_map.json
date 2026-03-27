@@ -11,6 +11,10 @@
     "label": "Jump to chord landing",
     "hotkeys": ["c"]
   },
+  "toggleDataTable": {
+    "label": "Toggle data table",
+    "hotkeys": ["d"]
+  },
   "openHelp": {
     "label": "Show the help dialog",
     "hotkeys": ["h"]
@@ -25,7 +29,20 @@
   },
   "toggleNarrativeHighlightMode": {
     "label": "Toggle narrative highlight mode",
-    "hotkeys": ["n"]
+    "hotkeys": [
+      {
+        "keyID": "n",
+        "args": {
+          "noSelfVoicing": false
+        }
+      },
+      {
+        "keyID": "Shift+n",
+        "args": {
+          "noSelfVoicing": true
+        }
+      }
+    ]
   },
   "queryData": {
     "label": "Query data",

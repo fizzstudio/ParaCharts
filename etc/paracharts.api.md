@@ -24,7 +24,6 @@ import { FormatType } from '@fizz/parasummary';
 import { Highlight as Highlight_2 } from '@fizz/parasummary';
 import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
-import type { JIM } from '@fizz/jimerator';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
 import { Logger } from '@fizz/logger';
@@ -450,10 +449,13 @@ export interface ManifestBuilderInput {
     xAxis?: {
         variableType: CsvDataType;
         title: string;
+        units?: string;
     };
     // (undocumented)
     yAxis?: {
         title: string;
+        units?: string;
+        multiplier?: number;
     };
 }
 
@@ -577,6 +579,12 @@ export class ParaChart extends ParaComponent {
     // (undocumented)
     static styles: CSSResult[];
     // (undocumented)
+    get tourBus(): TourBus;
+    // Warning: (ae-forgotten-export) The symbol "TourBus" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _tourBus: TourBus;
+    // (undocumented)
     type?: ChartType_2;
     // (undocumented)
     willUpdate(changedProperties: PropertyValues<this>): void;
@@ -695,8 +703,8 @@ export type riffSpeeds = 'slow' | 'medium' | 'fast';
 
 // @public (undocumented)
 export interface ScatterSettings extends PointSettings {
-    isDrawTrendLine: boolean;
     isShowOutliers: boolean;
+    isShowTrendLine: boolean;
 }
 
 // @public
