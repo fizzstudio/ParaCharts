@@ -995,7 +995,7 @@ export class ParaState extends BaseState {
           return;
         };
         const length = this.model!.series[0].length - 1;
-        let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i]);
+        let relevantSequences = seriesAnalysis?.sequences
         for (let sequence of relevantSequences!) {
           this.highlightRange(sequence.start / length, (sequence.end - 1) / length);
         };
@@ -1003,7 +1003,7 @@ export class ParaState extends BaseState {
         this.addModelLineBreaks(seriesAnalysis!.sequences, seriesKey);
         this.addModelTrendLines(seriesAnalysis!.sequences, seriesKey);
 
-        let message = `Detected trend: ${seriesAnalysis?.message}, consisting of ${seriesAnalysis?.messageSeqs.length} datapoint sequences from`;
+        let message = `Detected trend: ${seriesAnalysis?.sequences.length} datapoint sequences from`;
         for (let seq of relevantSequences!) {
           const start = formatBox(this.model!.allPoints[seq.start].facetBox("x")!, this.getFormatType('horizTick'));
           const end = formatBox(this.model!.allPoints[seq.end - 1].facetBox("x")!, this.getFormatType('horizTick'));
@@ -1050,7 +1050,7 @@ export class ParaState extends BaseState {
         : null;
     }
     const length = this.model!.series[0].length - 1;
-    let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i]);
+    let relevantSequences = seriesAnalysis?.sequences;
     for (let sequence of relevantSequences!) {
       this.clearRangeHighlight(sequence.start / length, (sequence.end - 1) / length);
     }
