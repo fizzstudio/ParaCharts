@@ -2,11 +2,7 @@ import { ApiModel, ApiInterface, ApiPropertyItem, ApiItemKind } from '@microsoft
 import { defaults } from '../../lib/state/settings_defaults.js';
 import { settingRanges } from '../../lib/state/settings_ranges.js';
 import { formatRangeConstraint } from './rangeFormatter.js';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { loadApiModel, extractSummaryText } from './apiModelUtils.js';
 
 interface SettingInfo {
   path: string;
@@ -85,26 +81,6 @@ function extractTypeString(property: ApiPropertyItem): string {
 }
 
 /**
- * Extract description from a property's TSDoc comment
- */
-function extractDescription(property: ApiPropertyItem): string {
-  const summary = property.tsdocComment?.summarySection;
-  if (!summary) return '';
-  
-  let description = '';
-  for (const node of summary.nodes) {
-    if (node.kind === 'Paragraph') {
-      for (const child of (node as any).nodes) {
-        if (child.kind === 'PlainText') {
-          description += (child as any).text;
-        }
-      }
-    }
-  }
-  return description.trim();
-}
-
-/**
  * Find a property in the API model by its dot-notation path
  */
 function findPropertyByPath(apiModel: ApiModel, settingPath: string): { typeStr: string; description: string } | null {
@@ -133,7 +109,7 @@ function findPropertyByPath(apiModel: ApiModel, settingPath: string): { typeStr:
     if (i === pathParts.length - 1) {
       return {
         typeStr: extractTypeString(foundProperty),
-        description: extractDescription(foundProperty)
+        description: extractSummaryText(foundProperty)
       };
     }
     
@@ -159,14 +135,12 @@ function inferTypeFromValue(value: any): string {
  * Extract all settings from defaults and API model
  */
 function extractAllSettings(): { settings: SettingInfo[]; apiModel: ApiModel } {
-  const apiModel = new ApiModel();
-  const apiJsonPath = path.resolve(__dirname, '../../temp/paracharts.api.json');
-  
+  let apiModel: ApiModel;
   try {
-    apiModel.loadPackage(apiJsonPath);
+    apiModel = loadApiModel();
   } catch (error) {
     console.error('Error loading API model:', error);
-    return { settings: [], apiModel };
+    return { settings: [], apiModel: new ApiModel() };
   }
   
   const allSettingsPaths = extractSettingsPathsFromDefaults(defaults);
