@@ -10,7 +10,7 @@
         "facets": {
           "x": {
             "label": "Eruption duration time in minutes",
-            "variableType": "independent",
+            "variableType": "dependent",
             "measure": "ratio",
             "datatype": "number",
             "units": "minute",
@@ -21,7 +21,7 @@
           },
           "y": {
             "label": "Time since last eruption in minutes",
-            "variableType": "dependent",
+            "variableType": "independent",
             "measure": "ratio",
             "datatype": "number",
             "units": "minute",
@@ -1125,7 +1125,7 @@
               }
             ],
             "topic": {
-              "baseQuantity": "eruption",
+              "baseQuantity": "eruption duration time",
               "baseKind": "dimensioned",
               "entity": "Old Faithful"
             }
