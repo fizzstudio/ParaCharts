@@ -587,5 +587,16 @@
         }
       }
     ]
+  },
+  "extensions": {
+    "paracharts": {
+      "settings": {
+        "controlPanel.isControlPanelDefaultOpen": false,
+        "controlPanel.caption.isCaptionExternalWhenControlPanelClosed": true,
+        "chart.isShowPopups": true,
+        "popup.activation": "onSelect",
+        "animation.isAnimationEnabled": false
+      }
+    }
   }
 }
