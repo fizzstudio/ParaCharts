@@ -243,7 +243,7 @@ export class ParaState extends BaseState {
   protected _seriesProperties: SeriesPropertyManager;
   protected _colors: Colors;
   protected _keymapManager = new KeymapManager(actionMap);
-  protected _summarizer!: Summarizer;
+  //protected _summarizer!: Summarizer;
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected _annotID: number = 0;
@@ -1279,7 +1279,7 @@ export class ParaState extends BaseState {
   }
 
   async shortDescription(): Promise<HighlightedSummary> {
-    return this._summarizer.getRequestedSummaries(['$.datasets[0]._short']);
+    return this.chartInfo.summarizer.getRequestedSummaries(['$.datasets[0]._short']);
   }
 
 }

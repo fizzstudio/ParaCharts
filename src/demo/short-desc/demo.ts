@@ -11,8 +11,9 @@ import SINGLE_BAR_MANIFEST from '../../demo-data/bar-single-manifest-1018.json';
 import MULTI_BAR_MANIFEST from '../../demo-data/bar-multi-manifest-48.json';
 import SCATTER_MANIFEST from '../../demo-data/scatter-manifest-geyser.json';
 import WATERFALL_MANIFEST from '../../demo-data/waterfall-manifest-001.json';
+import { ParaChartAi } from '../../../lib-ai/index-ai';
 
-await initParaSummary();
+/*await initParaSummary();
 
 async function displayShortDesc(elementId: string, manifest: unknown): Promise<void> {
   const paraElement = document.getElementById(elementId) as HTMLParagraphElement;
@@ -20,12 +21,27 @@ async function displayShortDesc(elementId: string, manifest: unknown): Promise<v
   const summarizer = summarizerFromModel(model);
   const shortDesc = await summarizer.getRequestedSummaries(['$.datasets[0]._short']);
   paraElement.innerText = shortDesc.text;
+}*/
+
+async function displayShortDesc(pElementId: string, chartElementId: string): Promise<void> {
+  const pElement = document.getElementById(pElementId) as HTMLParagraphElement;
+  const chartElement = document.getElementById(chartElementId) as ParaChartAi;
+  const shortDesc = await chartElement.shortDescription();
+  pElement.innerText = shortDesc;
 }
 
-displayShortDesc('single_line', SINGLE_LINE_MANIFEST);
-displayShortDesc('multi_line', MULTI_LINE_MANIFEST);
-displayShortDesc('pie', PIE_MANIFEST);
-displayShortDesc('single_bar', SINGLE_BAR_MANIFEST);
-displayShortDesc('multi_bar', MULTI_BAR_MANIFEST);
-displayShortDesc('scatter', SCATTER_MANIFEST);
-displayShortDesc('waterfall', WATERFALL_MANIFEST);
+/*displayShortDesc('single_line_p', SINGLE_LINE_MANIFEST);
+displayShortDesc('multi_line_p', MULTI_LINE_MANIFEST);
+displayShortDesc('pie_p', PIE_MANIFEST);
+displayShortDesc('single_bar_p', SINGLE_BAR_MANIFEST);
+displayShortDesc('multi_bar_p', MULTI_BAR_MANIFEST);
+displayShortDesc('scatter_p', SCATTER_MANIFEST);
+displayShortDesc('waterfall_p', WATERFALL_MANIFEST);*/
+
+displayShortDesc('single_line_p', 'single_line_c');
+displayShortDesc('multi_line_p', 'multi_line_c');
+displayShortDesc('pie_p', 'pie_c');
+displayShortDesc('single_bar_p', 'single_bar_c');
+displayShortDesc('multi_bar_p', 'multi_bar_c');
+displayShortDesc('scatter_p', 'scatter_c');
+displayShortDesc('waterfall_p', 'waterfall_c');

@@ -495,7 +495,20 @@ export class ParaChart extends ParaComponent {
    *  Short Descriptions
    */ 
 
+  async waitForManifest(): Promise<void> {
+    return new Promise(resolve => {
+      this.addEventListener('manifestchange', (_evt: Event) => {
+        resolve()
+      });
+    });
+  }
+
   async shortDescription(): Promise<string> {
+    if (this.paraState.model == null) {
+      console.log('waiting')
+      await this.waitForManifest();
+      console.log('done')
+    }
     return this.paraState.shortDescription().then((summary) => {
       return summary.text;
     });
