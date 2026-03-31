@@ -491,4 +491,13 @@ export class ParaChart extends ParaComponent {
     this._scrollyteller = undefined;
   }
 
+  /*
+   *  Short Descriptions
+   */ 
+
+  async shortDescription(): Promise<string> {
+    return this.paraState.shortDescription().then((summary) => {
+      return summary.text;
+    });
+  }
 }

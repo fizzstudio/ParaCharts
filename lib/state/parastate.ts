@@ -1278,4 +1278,8 @@ export class ParaState extends BaseState {
     this.crossHairs.splice(0, this.crossHairs.length);
   }
 
+  async shortDescription(): Promise<HighlightedSummary> {
+    return this._summarizer.getRequestedSummaries(['$.datasets[0]._short']);
+  }
+
 }

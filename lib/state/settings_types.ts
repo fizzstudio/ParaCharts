@@ -953,7 +953,7 @@ export const FORMAT_CONTEXT_SETTINGS = {
   histogramPoint: 'type.histogram.pointLabelFormat',
   heatmapPoint: 'type.histogram.pointLabelFormat',
   barCluster: 'type.bar.clusterLabelFormat',
-  pieSliceLabel: 'type.pie.insideLabels.format',
+  pieSliceLabel: 'type.pie.sliceLabelFormat',
   pieSliceValue: 'type.pie.sliceValueFormat',
   donutSliceLabel: 'type.donut.sliceLabelFormat',
   gaugeSliceLabel: 'type.gauge.sliceLabelFormat',
