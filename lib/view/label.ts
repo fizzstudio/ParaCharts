@@ -260,9 +260,7 @@ export class Label extends View {
     // pretend to resize for grid layout
   }
 
-  computeSize() {
-    // XXX Need to make sure the label gets rendered here with the
-    // same font settings it will ultimately be displayed with
+  computeSize(): [number, number] {
     const text = document.createElementNS(SVGNS, 'text');
     if (this.options.classList) {
       text.classList.add(...this.options.classList);
@@ -275,26 +273,11 @@ export class Label extends View {
     } else {
       text.innerHTML = '&nbsp;';
     }
-
-    // WAS `root`
-    //this.paraview.renderRoot!.append(text);
     this.paraview.root!.append(text);
 
-    const canvasRect = this.paraview.root?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0);
-    const clientRect = !this.paraview.paraState.settings.ui.isFullscreenEnabled ?
-      text.getBoundingClientRect() :
-      text.getBBox()
-
-    let width = clientRect.width;
-    let height = clientRect.height;
-    // E.g., suppose text-anchor is middle. The text baseline center will be
-    // positioned at the origin of the view box, and the left half of the label
-    // will extend into the negative x-axis.
-    this._locOffset.x = -(clientRect.x - canvasRect.x);
-    this._locOffset.y = -(clientRect.y - canvasRect.y);
-
-    let top = 0, bottom = 0, left = 0, right = 0;
-
+    let bbox = text.getBBox();
+    let width = bbox.width;
+    let height = bbox.height;
     const wrapMode = this.options.wrapWidth !== undefined && width > this.options.wrapWidth;
     if (wrapMode || this._text.includes('\n')) {
       text.textContent = '';
@@ -308,11 +291,11 @@ export class Label extends View {
         if (tok.includes('\n')) {
           tspans.push(document.createElementNS(SVGNS, 'tspan'));
           const tspan = tspans.at(-1)!;
-          text.append(tspan!);
-          tspan!.textContent = tok;
-          tspan!.setAttribute('x', '0');
-          const rect = tspans.at(-2)!.getBoundingClientRect();
-          tspan!.setAttribute('dy', `${rect.height + this._lineSpacing}px`);
+          text.append(tspan);
+          tspan.textContent = tok;
+          tspan.setAttribute('x', '0');
+          const tspanBbox = this._getTextBBox(tspans.at(-2)!);
+          tspan.setAttribute('dy', `${tspanBbox.height + this._lineSpacing}px`);
           continue;
         }
         if (!tok.match(/\w/)) {
@@ -323,45 +306,33 @@ export class Label extends View {
         const oldContent = tspan.textContent;
         if (wrapMode) {
           tspan.textContent += ' ' + tok;
-          const rect = this.paraview.paraState.settings.ui.isFullscreenEnabled
-            ? tspan.getBBox()
-            : tspan.getBoundingClientRect();
-          if (rect.width >= this.options.wrapWidth!) {
+          const tspanBbox = this._getTextBBox(tspan);
+          if (tspanBbox.width >= this.options.wrapWidth!) {
             tspan.textContent = oldContent;
             tspans.push(document.createElementNS(SVGNS, 'tspan'));
             text.append(tspans.at(-1)!);
             tspans.at(-1)!.textContent = tok;
             tspans.at(-1)!.setAttribute('x', '0');
-            tspans.at(-1)!.setAttribute('dy', `${rect.height + this._lineSpacing}px`);
+            tspans.at(-1)!.setAttribute('dy', `${tspanBbox.height + this._lineSpacing}px`);
           }
         } else {
           tspan.textContent = tok;
-          const rect = this.paraview.paraState.settings.ui.isFullscreenEnabled
-            ? tspan.getBBox()
-            : tspan.getBoundingClientRect();
-          //text.append(tspans.at(-1)!);
+          const tspanBbox = this._getTextBBox(tspan);
           if (tspans.length > 1) {
             tspans.at(-1)!.setAttribute('x', '0');
-            tspans.at(-1)!.setAttribute('dy', `${rect.height + this._lineSpacing}px`);
+            tspans.at(-1)!.setAttribute('dy', `${tspanBbox.height + this._lineSpacing}px`);
           }
         }
       }
 
-      const clientRect = this.paraview.paraState.settings.ui.isFullscreenEnabled
-        ? text.getBBox()
-        : text.getBoundingClientRect();
-      width = clientRect.width;
-      height = clientRect.height;
-
-      this._locOffset.x = -(clientRect.x - canvasRect.x);
-      this._locOffset.y = -(clientRect.y - canvasRect.y);
-
+      bbox = text.getBBox();
+      [width, height] = this._measureOuterBbox(bbox);
       this._textLines = tspans.map(t => ({ text: t.textContent!, offset: 0 }));
 
-      if (this._justify !== 'start' && this.textAnchor == undefined) {
+      if (this._justify !== 'start' && this.textAnchor === undefined) {
         tspans.forEach((tspan, i) => {
-          const spanRect = tspan.getBoundingClientRect();
-          let x = width - spanRect.width;
+          const tspanBbox = this._getTextBBox(tspan);
+          let x = width - tspanBbox.width;
           if (this._justify === 'center') {
             x = x / 2;
           }
@@ -369,83 +340,85 @@ export class Label extends View {
         });
       }
 
-      if (this._angle) {
-        text.setAttribute('transform', `rotate(${this._angle})`);
-      }
-      // XXX needs testing
-      tspans.forEach(t => {
-        t.setAttribute('text-anchor', this._textAnchor);
-        const numChars = t.getNumberOfChars();
-        for (let i = 0; i < numChars; i++) {
-          const extent = t.getExtentOfChar(i);
-          top = Math.min(top, extent.y);
-          bottom = Math.max(bottom, extent.y + extent.height);
-          left = Math.min(left, extent.x);
-          right = Math.max(right, extent.x + extent.width);
-        }
-      });
-      const isVertical = (this.angle == 90 || this.angle == -90) ? true : false
-      if (isVertical) {
-        height = clientRect.width;
-        width = clientRect.height;
-        const isFullscreen = this.paraview.paraState.settings.ui.isFullscreenEnabled
-        const newClientRect = isFullscreen
-          ? text.getBBox()
-          : text.getBoundingClientRect();
-        this._locOffset.x = -(newClientRect.x - canvasRect.x) - (isFullscreen ? -(newClientRect.x - newClientRect.y) : 0);
-        this._locOffset.y = -(newClientRect.y - canvasRect.y) + (isFullscreen ? -(newClientRect.x - newClientRect.y) : 0);
-      }
       this._lineHeight = tspans[0].getExtentOfChar(0).height;
       tspans.forEach(t => t.remove());
     } else {
-      this._textLines = [];
-      const numChars = text.getNumberOfChars();
-      let firstChar = new DOMRect(0, 0, 0, 0);
-      try {
-        firstChar = text.getExtentOfChar(0);
-      } catch {
-      }
-      this._lineHeight = firstChar.height;
-      if (this._angle) {
-        // No need for extra translations since we're at the origin
-        text.setAttribute('transform', `rotate(${this._angle})`);
-      }
-      const isVertical = (this.angle == 90 || this.angle == -90) ? true : false
-      if (isVertical) {
-        height = clientRect.width;
-        width = clientRect.height;
-        const isFullscreen = this.paraview.paraState.settings.ui.isFullscreenEnabled
-        const newClientRect = isFullscreen
-          ? text.getBBox()
-          : text.getBoundingClientRect();
-        this._locOffset.x = -(newClientRect.x - canvasRect.x) - (isFullscreen ? -(newClientRect.x - newClientRect.y) : 0);
-        this._locOffset.y = -(newClientRect.y - canvasRect.y) + (isFullscreen ? -(newClientRect.x - newClientRect.y) : 0);
-      }
-      let lastChar = new DOMRect(0, 0, 0, 0);
-      try {
-        lastChar = text.getExtentOfChar(numChars - 1);
-      } catch {
-      }
-      top = firstChar.y;
-      bottom = firstChar.y + firstChar.height;
-      left = firstChar.x;
-      right = lastChar.x + lastChar.width;
+      [width, height] = this._measureOuterBbox(bbox);
     }
 
-    // Coord system is vertically mirrored, so flip the sign of the angle
-    const topLeft = new Vec2(left, top).rotate(-this._angle * Math.PI / 180);
-    const topRight = new Vec2(right, top).rotate(-this._angle * Math.PI / 180);
-    const bottomRight = new Vec2(right, bottom).rotate(-this._angle * Math.PI / 180);
-    const bottomLeft = new Vec2(left, bottom).rotate(-this._angle * Math.PI / 180);
-    this._textCornerOffsets = {
-      topLeft,
-      topRight,
-      bottomRight,
-      bottomLeft
-    };
-
     text.remove();
-    return [width, height] as [number, number];
+    return [width, height];
+  }
+
+  /**
+   * Compute the bounding box of a text-containing element.
+   * Works even for tspans when the chart is scaled (getBBox() has problems).
+   */
+  protected _getTextBBox(el: SVGTextContentElement): DOMRect {
+    const n = el.getNumberOfChars();
+    const minX = el.getExtentOfChar(0).x;
+    const maxX = el.getExtentOfChar(n - 1).x + el.getExtentOfChar(n - 1).width;
+    const minYs: number[] = [];
+    for (let i = 0; i < n; i++) {
+      minYs.push(el.getExtentOfChar(i).y);
+    }
+    const maxYs: number[] = [];
+    for (let i = 0; i < n; i++) {
+      maxYs.push(el.getExtentOfChar(i).y + el.getExtentOfChar(i).height);
+    }
+    const minY = Math.min(...minYs);
+    const maxY = Math.max(...maxYs);
+    return new DOMRect(minX, minY, maxX - minX, maxY - minY);
+  }
+
+  /**
+   * Given the axis-aligned bbox of a text element positioned at the origin,
+   * rotates the provided bbox, then computes an outer,
+   * axis-aligned bbox of the rotated bbox, and returns the size
+   * of the outer bbox. Also computes and sets `_locOffset` and
+   * `_textCornerOffsets`.
+   */
+  protected _measureOuterBbox(bbox: SVGRect): [number, number] {
+    const toRads = Math.PI/180;
+    // Coord system is vertically mirrored, so flip the sign of the angle
+    const theta = -this.angle*toRads;
+    const left = bbox.x;
+    const right = left + bbox.width;
+    const top = bbox.y;
+    const bottom = top + bbox.height;
+    if (theta) {
+      const topLeft = new Vec2(left, top).rotate(theta);
+      const topRight = new Vec2(right, top).rotate(theta);
+      const bottomRight = new Vec2(right, bottom).rotate(theta);
+      const bottomLeft = new Vec2(left, bottom).rotate(theta);
+      const minX = Math.min(topLeft.x, topRight.x, bottomRight.x, bottomLeft.x);
+      const maxX = Math.max(topLeft.x, topRight.x, bottomRight.x, bottomLeft.x);
+      const minY = Math.min(topLeft.y, topRight.y, bottomRight.y, bottomLeft.y);
+      const maxY = Math.max(topLeft.y, topRight.y, bottomRight.y, bottomLeft.y);
+      this._locOffset.x = -minX;
+      this._locOffset.y = -minY;
+      this._textCornerOffsets = {
+        topLeft,
+        topRight,
+        bottomRight,
+        bottomLeft
+      };
+      return [maxX - minX, maxY - minY];
+    } else {
+      const topLeft = new Vec2(left, top);
+      const topRight = new Vec2(right, top);
+      const bottomRight = new Vec2(right, bottom);
+      const bottomLeft = new Vec2(left, bottom);
+      this._locOffset.x = -left;
+      this._locOffset.y = -top;
+      this._textCornerOffsets = {
+        topLeft,
+        topRight,
+        bottomRight,
+        bottomLeft
+      };
+      return [bbox.width, bbox.height];
+    }
   }
 
   protected _makeTransform() {
