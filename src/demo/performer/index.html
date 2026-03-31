@@ -17,7 +17,8 @@
 		}
 		#chart {
 			--para-stroke-width: 20;
-			width: 600px;
+			/*width: 600px;*/
+			width: 50vw;
 		}
 		body {
 			font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -63,14 +64,14 @@
 					text.innerHTML = 'Enable dark mode';
                     chart.api.setSetting('color.isDarkModeEnabled', true);
                 },*/
-				() => {
+				/*() => {
 					text.innerHTML = 'Set width';
 					chart.api.setWidth(800);
 				},
 				() => {
 					text.innerHTML = 'Set height';
 					chart.api.setHeight(600);
-				},
+				},*/
                 /*() => {
 					text.innerHTML = 'Change manifest';
 					chart.api.setManifest('/src/demo-data/bar-multi-manifest-48.json');
@@ -304,6 +305,7 @@
   	<main>
     	<section id="content-container">
 			<para-chart
+				scalable
 				id="chart"
 				manifest="/src/demo-data/line-single-manifest-1047.json"
 			></para-chart>
