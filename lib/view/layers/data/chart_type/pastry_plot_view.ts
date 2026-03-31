@@ -283,7 +283,7 @@ export abstract class PastryPlotView extends DataLayer {
 
   protected _createDatapoints() {
     const xs = this.paraview.paraState.model!.series[0].datapoints.map(dp =>
-      formatBox(dp.facetBox('x')!, this.paraview.paraState.getFormatType('pieSliceLabel'))
+      formatBox(dp.facetBox('x')!, 'raw')
     );
     const ys = this.paraview.paraState.model!.series[0].datapoints.map(dp =>
       dp.facetValueNumericized('y')!);
@@ -316,10 +316,7 @@ export abstract class PastryPlotView extends DataLayer {
 
   protected _createLabels() {
     const xs = this.paraview.paraState.model!.series[0].datapoints.map(dp =>
-      formatBox(dp.facetBox('x')!, this.paraview.paraState.getFormatType('pieSliceLabel'))
-    );
-    const ys = this.paraview.paraState.model!.series[0].datapoints.map(dp =>
-      formatBox(dp.facetBox('y')!, this.paraview.paraState.getFormatType('pieSliceLabel'))
+      formatBox(dp.facetBox('x')!, 'raw')
     );
     for (const [x, i] of enumerate(xs)) {
       const slice = this._chartLandingView.children[0].children[i] as RadialSlice;
