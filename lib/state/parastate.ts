@@ -50,7 +50,7 @@ import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
 import { defaults, chartTypeDefaults } from './settings_defaults';
 import { Colors } from '../common/colors';
-import { joinStrArray } from '../common/utils';
+import { joinStrArray, trendTranslation } from '../common/utils';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { actionMap } from './action_map';
@@ -681,7 +681,9 @@ export class ParaState extends BaseState {
       this._everVisitedDatapoints.add(makeDatapointId(datapoint.seriesKey, datapoint.datapointIndex));
     }
     if (this.settings.controlPanel.isMDRAnnotationsVisible) {
-      this.removeMDRAnnotations(this._prevVisitedDatapoints);
+      if (this._prevVisitedDatapoints.size > 0) {
+        this.removeMDRAnnotations(this._prevVisitedDatapoints);
+      }
       this.showMDRAnnotations();
     }
     // NB: Making _visitedDatapoints a lit-app/state property proved
@@ -1007,7 +1009,7 @@ export class ParaState extends BaseState {
         for (let seq of relevantSequences!) {
           const start = formatBox(this.model!.allPoints[seq.start].facetBox("x")!, this.getFormatType('horizTick'));
           const end = formatBox(this.model!.allPoints[seq.end - 1].facetBox("x")!, this.getFormatType('horizTick'));
-          message += ` ${start} to ${end} (${seq.message}),`;
+          message += ` ${start} to ${end} (${trendTranslation[seq.slopeInfo.classes[0]]}),`;
         }
         message = message.slice(0, -1) + ".";
         if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
@@ -1039,7 +1041,7 @@ export class ParaState extends BaseState {
     if (this.type !== 'line') {
       // No MDR annotations need to be removed
     } else if (visitedDatapoints.size > 0) {
-      seriesKey = datapointIdToCursor(this.visitedDatapoints.keys()!.toArray()[0]).seriesKey;
+      seriesKey = datapointIdToCursor(visitedDatapoints.keys()!.toArray()[0]).seriesKey;
       seriesAnalysis = this.model
         ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
         : null;
