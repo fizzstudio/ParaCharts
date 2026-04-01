@@ -498,6 +498,9 @@ export class ParaState extends BaseState {
       });
     }
     this.postNotice('paranotice', { key: 'manifestSet' });
+    this.dispatchEvent(
+      new CustomEvent('manifestSet')
+    );
   }
 
   getActionChains() {

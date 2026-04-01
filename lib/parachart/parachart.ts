@@ -497,18 +497,17 @@ export class ParaChart extends ParaComponent {
 
   async waitForManifest(): Promise<void> {
     return new Promise(resolve => {
-      this.addEventListener('manifestchange', (_evt: Event) => {
-        resolve()
+      if (this.paraState.dataState === 'complete') {
+        resolve();
+      }
+      this.paraState.addEventListener('manifestSet', (_evt: Event) => {
+        resolve();
       });
     });
   }
 
   async shortDescription(): Promise<string> {
-    if (this.paraState.model == null) {
-      console.log('waiting')
-      await this.waitForManifest();
-      console.log('done')
-    }
+    await this.waitForManifest();
     return this.paraState.shortDescription().then((summary) => {
       return summary.text;
     });
