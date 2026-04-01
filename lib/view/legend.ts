@@ -80,10 +80,10 @@ export class Legend extends Container(View) {
         {
           color: item.color,
           pointerEnter: (e) => {
-            this.paraview.paraState.lowlightOtherSeries(item.seriesKey);
+            this.paraview.paraState.dimOtherSeries(item.seriesKey);
           },
           pointerLeave: (e) => {
-            this.paraview.paraState.clearAllSeriesLowlights();
+            this.paraview.paraState.clearAllSeriesDimming();
           }
         }
       ));
@@ -94,10 +94,10 @@ export class Legend extends Container(View) {
         textAnchor: 'start',
         classList: ['legend-label'],
         pointerEnter: (e) => {
-          this.paraview.paraState.lowlightOtherSeries(item.seriesKey);
+          this.paraview.paraState.dimOtherSeries(item.seriesKey);
         },
         pointerLeave: (e) => {
-          this.paraview.paraState.clearAllSeriesLowlights();
+          this.paraview.paraState.clearAllSeriesDimming();
         }
       }));
     });
@@ -158,14 +158,14 @@ export class Legend extends Container(View) {
     return [this._grid?.paddedWidth ?? 0, this._grid?.paddedHeight ?? 0];
   }
 
-  renderHighlight() {
+  renderHighlight(type: 'fg' | 'bg') {
     return svg`
       <rect
         x=${this.x + this.padding.left - HIGHLIGHT_PADDING/2}
         y=${this.y + this.padding.top - HIGHLIGHT_PADDING/2}
         width=${this.width + HIGHLIGHT_PADDING}
         height=${this.height + HIGHLIGHT_PADDING}
-        class="view-highlight"
+        class="view-highlight-${type}"
       ></rect>
     `;
   }

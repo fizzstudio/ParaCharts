@@ -60,8 +60,9 @@ export interface ClusterNavNodeOptions {
   seriesKey: string;
   start: number;
   end: number;
-  datapoints: number[];
-  clustering: clusterObject
+  datapoints: Datapoint[];
+  clustering: clusterObject;
+  index: number;
 }
 
 function nodeOptionsEq<T extends NavNodeType>(
@@ -211,7 +212,6 @@ export class NavMap {
     }
     return node.datapoints;
   }
-
 }
 
 /**
@@ -305,22 +305,36 @@ export class NavLayer {
     return [];
   }
 
-  goToNode(node: NavNode) {
+  goToNode(node: NavNode, quiet = false) {
     this._cursor = node.id;
-    this.map.visitDatapoints();
+    this.map.visitDatapoints(quiet);
   }
 
   goTo<T extends NavNodeType>(
     type: T,
-    optionsOrIndex: Readonly<NavNodeOptionsType<T>> | number) {
+    optionsOrIndex: Readonly<NavNodeOptionsType<T>> | number,
+    quiet = false
+  ) {
     const node = this.get(type, optionsOrIndex);
     if (node) {
-      this.goToNode(node);
+      this.goToNode(node, quiet);
     } else {
       throw new Error(`nav node not found (type='${type}')`);
     }
   }
 
+  /** Set the cursor from a set of visited datapoints. */
+  updateCursor(datapoints: Datapoint[]) {
+    for (const node of this._nodesById.values()) {
+      const nodeDatapoints = node.datapoints;
+      if (nodeDatapoints.length === datapoints.length
+        && datapoints.every(dp => nodeDatapoints.includes(dp))) {
+        this._cursor = node.id;
+        break;
+      }
+    }
+    this.map.visitDatapoints();
+  }
 }
 
 /**
@@ -395,7 +409,7 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
       }
     } else if (this.isNodeType('cluster')) {
       datapoints.push(...this._paraState.model!.atKey(this._options.seriesKey)!.datapoints.filter(dp =>
-        this._options.datapoints.includes(dp.datapointIndex)));
+        this._options.datapoints.includes(dp)));
     }
     return datapoints;
   }

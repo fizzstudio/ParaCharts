@@ -20,7 +20,7 @@ import { PointerEventManager } from './pointermanager';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaViewController } from '.';
 import { ParaComponent } from '../components';
-import { ChartType, strToId } from '@fizz/paramanifest';
+import { ChartType, isPastryType, strToId } from '@fizz/paramanifest';
 import { type ViewBox, type Setting, type HotkeyEvent } from '../state';
 import { View } from '../view/base_view';
 import { DocumentView } from '../view/document_view';
@@ -38,6 +38,8 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { Unsubscribe } from '@lit-app/state';
 import { AvailableActions } from '../state/action_map';
 
+import { BaseChartInfo, chartInfoClasses } from '../chart_types';
+
 /**
  * Data provided for the on focus callback
  */
@@ -53,6 +55,7 @@ export class ParaView extends ParaComponent {
   paraChart!: ParaChart;
 
   @property() type: ChartType = 'bar';
+  @property({type: Boolean}) scalable = false;
   @property() chartTitle?: string;
   @property() xAxisLabel?: string;
   @property() yAxisLabel?: string;
@@ -67,7 +70,6 @@ export class ParaView extends ParaComponent {
   protected _frameRef = createRef<SVGRectElement>();
   protected _dataspaceRef = createRef<SVGGElement>();
   protected _documentView?: DocumentView;
-  protected _pushedDocumentview: DocumentView | null = null;
   protected _containerRef = createRef<HTMLDivElement>();
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
@@ -82,9 +84,7 @@ export class ParaView extends ParaComponent {
   protected _pointerEventManager: PointerEventManager | null = null;
   // protected _hotkeyActions!: HotkeyActions;
   @state() protected _defs: { [key: string]: TemplateResult } = {};
-  @state() protected _jim = '';
   @state() protected _isFullscreen = false;
-  protected _exitingLowVisionMode = false;
   protected _hotkeyListener: (e: HotkeyEvent) => void;
   protected _storeChangeUnsub!: Unsubscribe;
 
@@ -92,6 +92,7 @@ export class ParaView extends ParaComponent {
   protected _jimReadyPromise: Promise<void>;
   protected _jimReadyResolver!: (() => void);
   protected _jimReadyRejector!: (() => void);
+
 
   static styles = [
     //styles,
@@ -104,14 +105,26 @@ export class ParaView extends ParaComponent {
         fill: lightgray;
       }
       #frame.explainer {
-        fill: floralwhite;
-        stroke: burlywood;
-        stroke-width: 2;
+        fill: aliceblue;
+        stroke: cornflowerblue;
+        stroke-width: 40;
+      }
+      #content {
+        fill: white;
+      }
+      #content.explainer {
+        fill: aliceblue;
+      }
+      .darkmode #frame, .darkmode #content {
+        fill: var(--background-color);
       }
       .darkmode {
         --axis-line-color: ghostwhite;
         --label-color: ghostwhite;
         --background-color: black;
+      }
+      svg.scalable {
+        width: 100%;
       }
       #loading-message {
         fill: black;
@@ -167,10 +180,15 @@ export class ParaView extends ParaComponent {
         stroke-width: 2;
         fill: none;
       }
-      .view-highlight {
-        stroke: red;
+      .view-highlight-fg {
+        stroke: burlywood;
         stroke-width: 2;
         fill: none;
+      }
+      .view-highlight-bg {
+        stroke: none;
+        fill: cornsilk;
+        opacity: 0.5;
       }
       .tick-label-horiz {
         font-size: calc(var(--horiz-axis-tick-label-font-size)*var(--chart-font-scale));
@@ -354,9 +372,14 @@ export class ParaView extends ParaComponent {
     return this._viewBox;
   }
 
+  get container() {
+    return this._containerRef.value;
+  }
+
   get root() {
     return this._rootRef.value;
   }
+
   get frame() {
     return this._frameRef.value;
   }
@@ -391,6 +414,10 @@ export class ParaView extends ParaComponent {
       this._jimReadyResolver = resolve;
       this._jimReadyRejector = reject;
     });
+  }
+
+  rejectJimReady() {
+    this._jimReadyRejector();
   }
 
   get pointerEventManager() {
@@ -429,11 +456,11 @@ export class ParaView extends ParaComponent {
   // Anything that needs to be done when data is updated, do here
   private async dataUpdated(): Promise<void> {
     try {
+      this._paraState.chartInfo.setParaView(this);
       this.createDocumentView();
       if (this.paraChart.headless) {
         await this.addJIMSeriesSummaries();
       }
-      this._jim = this._paraState.jimerator ? JSON.stringify(this._paraState.jimerator.jim, undefined, 2) : '';
       this._jimReadyResolver();
     } catch (error) {
       this.log.error('dataUpdated error:', error);
@@ -533,16 +560,30 @@ export class ParaView extends ParaComponent {
         }, true);
       }
     }
+    if (this.documentView) {
+      const delayedUpdate = () => {
+        setTimeout(() => {
+          const newWidth = (window.innerWidth / window.innerHeight) * this._paraState.settings.chart.size.height;
+          if (this._isFullscreen) {
+            this._paraState.updateSettings(draft => {
+              this._modeSaved.set('chart.size.width', draft.chart.size.width);
+              draft.chart.size.width = newWidth;
+            }, true);
+          } else {
+            this._paraState.updateSettings(draft => {
+              draft.chart.size.width = this._modeSaved.get('chart.size.width');
+              this._modeSaved.delete('chart.size.width');
+            }, true);
+          }
+          this.paraChart.styleManager.update();
+          this.createDocumentView();
+        }, 40);
+      };
+      delayedUpdate();
+    }
   }
 
   protected _handleLowVisionMode(newValue?: Setting) {
-    if (newValue) {
-      this._paraState.colors.selectPaletteWithKey("low-vision")
-    } else {
-      if (this._paraState.colors.prevSelectedColor.length > 0) {
-        this._paraState.colors.selectPaletteWithKey(this._paraState.colors.prevSelectedColor);
-      }
-    }
     this._paraState.updateSettings(draft => {
       this._paraState.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
       draft.color.isDarkModeEnabled = !!newValue;
@@ -551,28 +592,24 @@ export class ParaView extends ParaComponent {
         this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
         this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
         this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+        this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
         // end any in-progress animation here
         this._documentView!.chartLayers.dataLayer.stopAnimation();
         draft.animation.isAnimationEnabled = false;
         draft.chart.fontScale = 2;
         draft.grid.isDrawVertLines = true;
+        draft.color.colorPalette = 'low-vision';
       } else {
-        this._exitingLowVisionMode = true;
         draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
         draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
+        draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
+        draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
         this._modeSaved.delete('animation.isAnimationEnabled');
-        this._modeSaved.delete('chart.fontScale');
+        //this._modeSaved.delete('chart.fontScale');
         this._modeSaved.delete('grid.isDrawVertLines');
+        this._modeSaved.delete('color.colorPalette');
       }
     });
-    if (this._exitingLowVisionMode) {
-      queueMicrotask(() => {
-        this._paraState.updateSettings(draft => {
-          draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
-        });
-        this._exitingLowVisionMode = false;
-      });
-    }
   }
 
   protected _handleVoicing() {
@@ -581,50 +618,41 @@ export class ParaView extends ParaComponent {
     } else {
       this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
       //this.ariaLiveRegion.voicing.shutUp();
-      if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
-        this._paraState.updateSettings(draft => {
-          draft.ui.isNarrativeHighlightEnabled = false;
-        });
-      }
+      // if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
+      //   this._paraState.updateSettings(draft => {
+      //     draft.ui.isNarrativeHighlightEnabled = false;
+      //   });
+      // }
     }
   }
 
   protected _handleNarrativeHighlight() {
     if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
-      this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
-      if (!this._paraState.settings.ui.isVoicingEnabled) {
-        this._paraState.updateSettings(draft => {
-          draft.ui.isVoicingEnabled = true;
-        });
+      // if (this._paraState.settings.ui.isVoicingEnabled) {
+      //   this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
+      // }
+      if (this._paraState.settings.ui.isVoicingEnabled) {
+        this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
+        this._paraState.announce(this.paraChart.captionBox.caption);
+      } else {
+        this._paraState.announce('Tour guide enabled.');
       }
-      this._paraState.announce(this.paraChart.captionBox.getHighlightedSummary());
+      this._paraState.startTourGuide();
+      this.paraChart.api.enableTourGuideActions();
     } else {
-      this.ariaLiveRegion.voicing.speak('Tour guide disabled.', []);
+      // if (this._paraState.settings.ui.isVoicingEnabled) {
+      //   this.ariaLiveRegion.voicing.speak('Tour guide disabled.', []);
+      // }
+      this._paraState.announce('Tour guide disabled.');
+      this._paraState.endTourGuide();
       this.paraChart.captionBox.clearSpanHighlights();
-      this._paraState.clearAllHighlights();
-      this._paraState.clearPopups();
-      this._paraState.updateSettings(draft => {
-        draft.ui.isVoicingEnabled = false;
-      });
+      this.paraChart.api.disableTourGuideActions();
     }
   }
 
   protected _handleNarrativeHighlightPaused() {
     this.ariaLiveRegion.voicing.togglePaused();
   }
-
-  startNarrativeHighlightMode() {
-    this._paraState.updateSettings(draft => {
-      draft.ui.isNarrativeHighlightEnabled = true;
-    });
-  }
-
-  endNarrativeHighlightMode() {
-    this._paraState.updateSettings(draft => {
-      draft.ui.isNarrativeHighlightEnabled = false;
-    });
-  }
-
 
   /*protected updated(changedProperties: PropertyValues) {
     this.log.info('canvas updated');
@@ -693,19 +721,6 @@ export class ParaView extends ParaComponent {
     this._documentView = undefined;
   }
 
-  pushDocumentView() {
-    if (this._pushedDocumentview) throw new Error('doc view already pushed');
-    this._pushedDocumentview = this._documentView!;
-    this._documentView = undefined;
-  }
-
-  popDocumentView() {
-    if (!this._pushedDocumentview) throw new Error('no doc view pushed');
-    this._documentView = this._pushedDocumentview;
-    this._pushedDocumentview = null;
-    this.requestUpdate();
-  }
-
   computeViewBox() {
     this._viewBox = {
       x: 0,
@@ -728,17 +743,42 @@ export class ParaView extends ParaComponent {
   // }
 
   async addJIMSeriesSummaries() {
-    if (!this._documentView?.chartInfo?.summarizer) {
+    if (isPastryType(this._paraState.type)) {
+      this._addJIMSliceSummaries();
+      return;
+    }
+    if (!this._paraState.chartInfo.summarizer) {
       this.log.warn('Cannot add JIM series summaries: documentView or summarizer not available');
       return;
     }
-    const summarizer = this._documentView.chartInfo.summarizer;
+    const summarizer = this._paraState.chartInfo.summarizer;
     const seriesKeys = this._paraState.model?.originalSeriesKeys || [];
     for (const seriesKey of seriesKeys) {
       const summary = await summarizer.getSeriesSummary(strToId(seriesKey));
       const summaryText = typeof summary === 'string' ? summary : summary.text;
       this._paraState.jimerator?.addSeriesSummary(seriesKey, summaryText);
     }
+    this.requestUpdate();
+  }
+
+  private _addJIMSliceSummaries() {
+    const model = this._paraState.model;
+    if (!model) {
+      this.log.warn('Cannot add JIM slice summaries: model not available');
+      return;
+    }
+    const series = model.series[0];
+    const datapoints = series.datapoints;
+    const totalValue = datapoints.reduce(
+      (sum, dp) => sum + (dp.facetValueNumericized('y') ?? 0), 0
+    );
+    datapoints.forEach((dp, index) => {
+      const value = dp.facetValueNumericized('y') ?? 0;
+      const pct = totalValue > 0 ? Math.round(value / totalValue * 100) : 0;
+      const description = `${dp.facetValue('x')}, ${pct}%`;
+      this._paraState.jimerator?.addSliceSummary(index, description);
+    });
+    this.requestUpdate();
   }
 
   serialize() {
@@ -866,12 +906,12 @@ export class ParaView extends ParaComponent {
 
   protected _rootClasses() {
     return {
-      darkmode: this._paraState.settings.color.isDarkModeEnabled
+      darkmode: this._paraState.settings.color.isDarkModeEnabled,
     }
   }
 
   navToDatapoint(seriesKey: string, index: number) {
-    this._documentView!.chartInfo.navToDatapoint(seriesKey, index);
+    this._paraState.chartInfo.navToDatapoint(seriesKey, index);
   }
 
 
@@ -905,6 +945,14 @@ export class ParaView extends ParaComponent {
 
   render(): TemplateResult {
     return html`
+    <svg role="img"
+    aria-label= "Press tab to interact with ParaChart"
+    height="1"
+    width="1"
+    viewBox="0 0 1 1"
+    xmlns=${SVGNS}
+      <rect x="0" y="0" width="1" height="1" fill="none" stroke="none" />
+    </svg>
     <div ${ref(this._containerRef)} @fullscreenchange=${() => this._onFullscreenChange()}>
     <svg
         role="application"
@@ -913,24 +961,24 @@ export class ParaView extends ParaComponent {
         ${ref(this._rootRef)}
         xmlns=${SVGNS}
         data-charttype=${this.paraChart.type ?? this.type}
-        width=${fixed`${this._viewBox.width}px`}
-        height=${fixed`${this._viewBox.height}px`}
+        width=${this.scalable ? '100%' : fixed`${this._viewBox.width}px`}
+        height=${this.scalable ? '100%' : fixed`${this._viewBox.height}px`}
         class=${classMap(this._rootClasses())}
         viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
         style=${styleMap(this._rootStyle())}
         @focus=${() => {
-        if (!this._paraState.settings.chart.isStatic) {
-          //this.log.info('focus');
-          //this.todo.deets?.onFocus();
-          //this.documentView?.chartInfo.navMap?.visitDatapoints();
-        }
-      }}
+          if (!this._paraState.settings.chart.isStatic) {
+            //this.log.info('focus');
+            //this.todo.deets?.onFocus();
+            this._paraState.chartInfo.navMap?.visitDatapoints();
+          }
+        }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
         @pointerdown=${(ev: PointerEvent) => this._pointerEventManager?.handleStart(ev)}
         @pointerup=${(ev: PointerEvent) => this._pointerEventManager?.handleEnd(ev)}
         @pointercancel=${(ev: PointerEvent) => this._pointerEventManager?.handleCancel(ev)}
         @pointermove=${(ev: PointerEvent) => this._pointerEventManager?.handleMove(ev)}
-        @pointerleave=${(ev: PointerEvent) => !isPointerInbounds(this, ev) ? this.requestUpdate() : undefined}
+        @pointerleave=${(ev: PointerEvent) => this.requestUpdate()}
         @click=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleClick(ev)}
         @dblclick=${(ev: PointerEvent | MouseEvent) => this._pointerEventManager?.handleDoubleClick(ev)}
       >
@@ -950,7 +998,7 @@ export class ParaView extends ParaComponent {
       }
         </defs>
         <metadata data-type="application/jim+json">
-          ${this._jim}
+          ${this._paraState.jimerator ? JSON.stringify(this._paraState.jimerator.manifest, undefined, 2) : ''}
         </metadata>
         <rect
           ${ref(this._frameRef)}
@@ -961,7 +1009,7 @@ export class ParaView extends ParaComponent {
           y="0"
           width="100%"
           height="100%"
-          @pointerleave=${(ev: PointerEvent) => {this.paraState.clearPopups()}}
+          @pointerleave=${(ev: PointerEvent) => { this.paraState.clearPopups() }}
         >
         </rect>
         ${this._paraState.model ? (this._documentView?.render() ?? '') : ''}

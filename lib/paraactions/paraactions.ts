@@ -1,5 +1,7 @@
 // paraactions.ts - Optimized lexer + parser with URL-safe :: syntax support (multi-arg)
 
+import { ParaAPI } from '../paraapi/paraapi';
+
 /** DSL value types **/
 export type ParaValue =
   | { kind: 'string'; value: string }
@@ -590,6 +592,21 @@ export function parseAction(source: string): ParaAction | null {
   return actions[0];
 }
 
+export function parseActions(source: string): ParaAction[] | null {
+  const { actions, errors } = parseActionList(source);
+
+  if (errors.length > 0) {
+    // Preserve legacy behavior for callers that expect a thrown ParseError
+    // when given an invalid single-action string.
+    throw errors[0];
+  }
+
+  if (actions.length === 0) {
+    return null;
+  }
+  return actions;
+}
+
 /** ---------- EXECUTION ---------- **/
 
 /**
@@ -606,14 +623,16 @@ export function executeParaActions<Ctx>(
   initialContext: Ctx
 ): void {
   const list = Array.isArray(actions) ? actions : [actions];
-
+  (initialContext as ParaAPI).clearAllHighlights();
+  (initialContext as ParaAPI).clearVisited();
+  (initialContext as ParaAPI).clearSelected();
   for (const action of list) {
     let ctx: any = initialContext;
 
     for (const segment of action.segments) {
       const method = ctx?.[segment.methodName];
       if (typeof method !== 'function') {
-        throw new Error(`Unknown action method on context: ${segment.methodName}`);
+        throw new Error(`Unknown action method on context ${ctx.constructor.name}: ${segment.methodName}`);
       }
 
       const jsArgs = segment.args.map((v) => v.value);

@@ -36,8 +36,8 @@ export class WaterfallChartInfo extends PlaneChartInfo {
   protected _cumulativeTotals!: number[];
   protected _prevHighlightNavcode = '';
 
-  constructor(type: ChartType, paraView: ParaView) {
-    super(type, paraView);
+  constructor(type: ChartType, paraState: ParaState) {
+    super(type, paraState);
   }
 
   get isIntertick(): boolean {

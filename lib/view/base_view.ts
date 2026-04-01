@@ -184,14 +184,14 @@ export class BaseView {
     return {};
   }
 
-  renderHighlight() {
+  renderHighlight(type: 'fg' | 'bg') {
     return svg`
       <rect
         x=${this.x - HIGHLIGHT_PADDING/2}
         y=${this.y - HIGHLIGHT_PADDING/2}
         width=${this.width + HIGHLIGHT_PADDING}
         height=${this.height + HIGHLIGHT_PADDING}
-        class="view-highlight"
+        class="view-highlight-${type}"
       ></rect>
     `;
   }
@@ -533,7 +533,7 @@ export class View extends BaseView {
   }
 
   get right() {
-    return this.left + this.width;
+    return this.x + (this.width - this._locOffset.x);
   }
 
   set right(right: number) {

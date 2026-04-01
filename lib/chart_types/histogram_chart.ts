@@ -1,4 +1,4 @@
-import { PlaneChartInfo } from '.';
+import { PlaneChartInfo } from './plane_chart';
 import { type ParaState, type DeepReadonly } from '../state';
 import { type ParaView } from '../paraview';
 import { type ChartType } from "@fizz/paramanifest";
@@ -11,8 +11,8 @@ export class HistogramChartInfo extends PlaneChartInfo {
   protected _grid: Array<number> = [];
   protected _maxCount: number = 0;
 
-  constructor(type: ChartType, paraView: ParaView) {
-    super(type, paraView);
+  constructor(type: ChartType, paraState: ParaState) {
+    super(type, paraState);
   }
 
   protected _init() {

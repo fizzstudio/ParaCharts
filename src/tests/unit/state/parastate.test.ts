@@ -7,17 +7,17 @@ describe('ParaState', () => {
   describe('Utility Functions', () => {
     it('should create datapoint ID from seriesKey and index', () => {
       const id = makeDatapointId('series1', 5);
-      expect(id).toBe('series1-5');
+      expect(id).toBe('series1@5');
     });
 
     it('should parse datapoint ID to cursor', () => {
-      const cursor = datapointIdToCursor('series1-10');
+      const cursor = datapointIdToCursor('series1@10');
       expect(cursor).toEqual({ seriesKey: 'series1', index: 10 });
     });
 
     it('should create sequence ID from seriesKey and indices', () => {
       const id = makeSequenceId('series1', 0, 10);
-      expect(id).toBe('series1-0-10');
+      expect(id).toBe('series1@0-10');
     });
   });
 
@@ -134,29 +134,29 @@ describe('ParaState', () => {
       state = new ParaState(new GlobalState({}), {});
     });
 
-    it('should lowlight a series', () => {
-      state.lowlightSeries('series1');
-      expect(state.isSeriesLowlighted('series1')).toBe(true);
+    it('should dim a series', () => {
+      state.dimSeries('series1');
+      expect(state.isSeriesDimmed('series1')).toBe(true);
     });
 
-    it('should not duplicate lowlighted series', () => {
-      state.lowlightSeries('series1');
-      state.lowlightSeries('series1');
-      expect(state['_lowlightedSeries']).toHaveLength(1);
+    it('should not duplicate dimmed series', () => {
+      state.dimSeries('series1');
+      state.dimSeries('series1');
+      expect(state['_dimmedSeries']).toHaveLength(1);
     });
 
-    it('should clear series lowlight', () => {
-      state.lowlightSeries('series1');
-      state.clearSeriesLowlight('series1');
-      expect(state.isSeriesLowlighted('series1')).toBe(false);
+    it('should clear series dimming', () => {
+      state.dimSeries('series1');
+      state.clearSeriesDimming('series1');
+      expect(state.isSeriesDimmed('series1')).toBe(false);
     });
 
-    it('should clear all series lowlights', () => {
-      state.lowlightSeries('series1');
-      state.lowlightSeries('series2');
-      state.clearAllSeriesLowlights();
-      expect(state.isSeriesLowlighted('series1')).toBe(false);
-      expect(state.isSeriesLowlighted('series2')).toBe(false);
+    it('should clear all series dimming', () => {
+      state.dimSeries('series1');
+      state.dimSeries('series2');
+      state.clearAllSeriesDimming();
+      expect(state.isSeriesDimmed('series1')).toBe(false);
+      expect(state.isSeriesDimmed('series2')).toBe(false);
     });
   });
 
@@ -224,8 +224,8 @@ describe('ParaState', () => {
       state.highlightDatapoint('series1', 1);
       const highlighted = state.highlightedDatapoints;
       expect(highlighted.size).toBe(2);
-      expect(highlighted.has('series1-0')).toBe(true);
-      expect(highlighted.has('series1-1')).toBe(true);
+      expect(highlighted.has('series1@0')).toBe(true);
+      expect(highlighted.has('series1@1')).toBe(true);
     });
   });
 
@@ -239,7 +239,7 @@ describe('ParaState', () => {
     it('should highlight a sequence', () => {
       state.highlightSequence('series1', 0, 5);
       const sequences = state.highlightedSequences;
-      expect(sequences.has('series1-0-5')).toBe(true);
+      expect(sequences.has('series1@0-5')).toBe(true);
     });
 
     it('should clear a sequence highlight', () => {

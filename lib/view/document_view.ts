@@ -21,16 +21,16 @@ import { Label } from './label';
 import { type CardinalDirection, ParaState, Setting } from '../state';
 import { Facet, type ChartType } from '@fizz/paramanifest';
 import { PlotLayerManager } from './layers';
-import { HorizAxis, VertAxis, type AxisCoord } from './axis';
+import { HorizAxis, LabelOverlapError, VertAxis, type AxisCoord } from './axis';
 import { Legend } from './legend';
 import { DirectLabelStrip } from './direct_label_strip';
 import { type LinePlotView } from './layers';
 import { type ParaView } from '../paraview';
 import { AxisInfo, AxisLabelInfo } from '../common';
+import { svg, nothing } from 'lit';
+import { CloseXView } from './close_x';
 
-import { svg } from 'lit';
-
-export type Legends = Partial<{[dir in CardinalDirection]: Legend}>;
+export type Legends = Partial<{ [dir in CardinalDirection]: Legend }>;
 
 /**
  * Root of the view hierarchy.
@@ -39,13 +39,13 @@ export class DocumentView extends Container(View) {
 
   readonly type: ChartType;
   protected _titleLabel?: Label;
-  protected _chartInfo!: BaseChartInfo;
   protected _chartLayers!: PlotLayerManager;
   protected _directLabelStrip: DirectLabelStrip | null = null;
   protected _horizAxis?: HorizAxis;
   protected _vertAxis?: VertAxis;
   protected _titleText!: string;
   protected _legends: Legends = {};
+  protected _closeX: CloseXView;
 
   protected _paraState: ParaState;
 
@@ -55,25 +55,28 @@ export class DocumentView extends Container(View) {
     this._paraState = paraview.globalState.paraState;
     this.observeNotices();
     this.type = this._paraState.type;
+    this._closeX = new CloseXView(paraview, () => {
+      paraview.paraChart.api.doAction('openExplainer');
+    });
+    this._closeX.updateSize();
   }
 
   init() {
-    // @ts-ignore
-	  this._chartInfo = new chartInfoClasses[this.type](this.type, this.paraview);
     this.setTitleText(this._paraState.title);
 
     const expandedPadding = this._parsePadding(this._paraState.settings.chart.padding);
     // XXX temp hack for cpanel icon
-    const leftPad = Math.max(8 + 1.1*16, expandedPadding.left);
+    const leftPad = Math.max(8 + 1.1 * 16, expandedPadding.left);
     this.padding = {
       left: leftPad,
       right: expandedPadding.right,
       top: expandedPadding.top,
       bottom: expandedPadding.bottom
     };
-
     this.updateSize();
     this._populate();
+    this._closeX.right = this.paddedRight;
+    this._closeX.top = this.paddedTop;
   }
 
   computeSize(): [number, number] {
@@ -127,18 +130,18 @@ export class DocumentView extends Container(View) {
 
     // const horizAxisPos = this._paraState.settings.axis.horiz.position;
 
-    const horizFacet = this.chartInfo.getFacetForOrientation('horiz');
-    const vertFacet = this.chartInfo.getFacetForOrientation('vert');
+    const horizFacet = this.paraview.paraState.chartInfo.getFacetForOrientation('horiz');
+    const vertFacet = this.paraview.paraState.chartInfo.getFacetForOrientation('vert');
     //const axisInfo = this._chartInfo.axisInfo;
 
     // Initially create axes to compute the size of each axis
     // along the shorter dimension
     if (this._paraState.settings.axis.horiz.isDrawAxis && horizFacet) {
-      this._createHorizAxis(horizFacet!, this._chartInfo as PlaneChartInfo, this._width);
+      this._createHorizAxis(horizFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width);
       // console.log('H-AXIS HEIGHT', this._horizAxis!.height);
     }
     if (this._paraState.settings.axis.vert.isDrawAxis && vertFacet) {
-      this._createVertAxis(vertFacet!, this._chartInfo as PlaneChartInfo, this._height);
+      this._createVertAxis(vertFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height);
       // console.log('V-AXIS WIDTH', this._vertAxis!.width);
     }
 
@@ -153,7 +156,7 @@ export class DocumentView extends Container(View) {
 
     // Recreate the axes using the size info computed above
     if (this._paraState.settings.axis.vert.isDrawAxis && vertFacet) {
-      this._createVertAxis(vertFacet!, this._chartInfo as PlaneChartInfo, this._height
+      this._createVertAxis(vertFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height
         - (this._titleLabel?.paddedHeight || 0)
         - (this._legends.north?.paddedHeight || 0)
         - (this._horizAxis?.height || 0)
@@ -183,7 +186,7 @@ export class DocumentView extends Container(View) {
     }
 
     if (this._paraState.settings.axis.horiz.isDrawAxis && horizFacet) {
-      this._createHorizAxis(horizFacet!, this._chartInfo as PlaneChartInfo, this._width
+      this._createHorizAxis(horizFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width
         - (this._vertAxis?.width ?? 0)
         - (this._directLabelStrip?.width ?? 0)
         - (this._legends.east?.width ?? this._legends.west?.width ?? 0));
@@ -210,7 +213,7 @@ export class DocumentView extends Container(View) {
     // XXX Change this method to set axis.titleText
     this._titleText = this._paraState.title
       ?? this._paraState.settings.chart.title.text;
-      //?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;
+    //?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;
 
     const plotWidth = this._width
       - (this._vertAxis?.width ?? 0)
@@ -263,19 +266,32 @@ export class DocumentView extends Container(View) {
   }
 
   protected _createHorizAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
-    this._horizAxis?.remove();
-    this._horizAxis = new HorizAxis(this.paraview, facet, chartInfo, length);
-    const horizAxisFacet = this._chartInfo.horizFacet!;
-    this._horizAxis.setAxisLabelText(horizAxisFacet.label);
-    this._horizAxis.createComponents();
-    this._horizAxis.layoutComponents();
-    this._horizAxis.updateSize();
+    while (true) {
+      try {
+        this._horizAxis?.remove();
+        this._horizAxis = new HorizAxis(this.paraview, facet, chartInfo, length);
+        const horizAxisFacet = this.paraview.paraState.chartInfo.horizFacet!;
+        this._horizAxis.setAxisLabelText(horizAxisFacet.label);
+        this._horizAxis.createComponents();
+        this._horizAxis.layoutComponents();
+        this._horizAxis.updateSize();
+        break;
+      } catch (e) {
+        if (e instanceof LabelOverlapError) {
+          this._paraState.updateSettings(draft => {
+            draft.axis.horiz.isStaggerLabels = true;
+          }, true);
+        } else {
+          throw e;
+        }
+      }
+    }
   }
 
   protected _createVertAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
     this._vertAxis?.remove();
     this._vertAxis = new VertAxis(this.paraview, facet, chartInfo, length);
-    const vertAxisFacet = this._chartInfo.vertFacet!;
+    const vertAxisFacet = this.paraview.paraState.chartInfo.vertFacet!;
     this._vertAxis.setAxisLabelText(vertAxisFacet.label);
     this._vertAxis.createComponents();
     this._vertAxis.layoutComponents();
@@ -286,7 +302,7 @@ export class DocumentView extends Container(View) {
     return this._paraState.settings.chart.hasDirectLabels
       && this.type === 'line'
       && /*this._chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
-        this._paraState.model!.multi;
+      this._paraState.model!.multi;
   }
 
   protected get _shouldAddLegend(): boolean {
@@ -298,7 +314,7 @@ export class DocumentView extends Container(View) {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
-    this._chartInfo.settingDidChange(path, oldValue, newValue);
+    this.paraview.paraState.chartInfo.settingDidChange(path, oldValue, newValue);
     if (['chart.size.width', 'chart.size.height', 'chart.fontScale'].includes(path)) {
       this.updateSize();
       this._populate();
@@ -309,7 +325,7 @@ export class DocumentView extends Container(View) {
 
   async storeDidChange(key: string, value: any): Promise<void> {
     await super.storeDidChange(key, value);
-    return this._chartInfo.storeDidChange(key, value);
+    return this.paraview.paraState.chartInfo.storeDidChange(key, value);
   }
 
   // noticePosted(key: string, value: any): void {
@@ -334,10 +350,6 @@ export class DocumentView extends Container(View) {
   //     }
   //   }
   // }
-
-  get chartInfo() {
-    return this._chartInfo;
-  }
 
   protected _createId() {
     return 'doc-view';
@@ -411,6 +423,7 @@ export class DocumentView extends Container(View) {
       classList: ['chart-title'],
       text: this._titleText,
       wrapWidth: this._width,
+      textAnchor: 'middle',
       justify: align
     });
     const isTop = this._paraState.settings.chart.title.position === 'top';
@@ -439,6 +452,10 @@ export class DocumentView extends Container(View) {
     }
   }
 
+  removeTitle() {
+    this._titleLabel?.remove();
+  }
+
   protected _childDidResize(_kid: View) {
     this.updateSize(false);
   }
@@ -456,7 +473,7 @@ export class DocumentView extends Container(View) {
   }*/
 
   createLegend(position: CardinalDirection) {
-    const items = this._chartInfo.legend();
+    const items = this.paraview.paraState.chartInfo.legend();
     const margin = this._paraState.settings.legend.margin;
     if (position === 'east') {
       this._legends.east?.remove();
@@ -520,21 +537,36 @@ export class DocumentView extends Container(View) {
 
   content() {
     return svg`
+      ${this._titleLabel && this._paraState.isTitleHighlighted
+        ? this._titleLabel.renderHighlight('bg') : ''}
+      ${this._horizAxis && this._paraState.isHorizontalAxisHighlighted
+        ? this._horizAxis.renderHighlight('bg') : ''}
+      ${this._vertAxis && this._paraState.isVerticalAxisHighlighted
+        ? this._vertAxis.renderHighlight('bg') : ''}
+      ${this._legends.east && this._paraState.isEastLegendHighlighted
+        ? this._legends.east.renderHighlight('bg') : ''}
+      ${this._legends.west && this._paraState.isWestLegendHighlighted
+        ? this._legends.west.renderHighlight('bg') : ''}
+      ${this._legends.north && this._paraState.isNorthLegendHighlighted
+        ? this._legends.north.renderHighlight('bg') : ''}
+      ${this._legends.south && this._paraState.isSouthLegendHighlighted
+        ? this._legends.south.renderHighlight('bg') : ''}
+      ${this._paraState.index === 0 ? this._closeX.render() : ''}
       ${super.content()}
       ${this._titleLabel && this._paraState.isTitleHighlighted
-        ? this._titleLabel.renderHighlight() : ''}
+        ? this._titleLabel.renderHighlight('fg') : ''}
       ${this._horizAxis && this._paraState.isHorizontalAxisHighlighted
-        ? this._horizAxis.renderHighlight() : ''}
+        ? this._horizAxis.renderHighlight('fg') : ''}
       ${this._vertAxis && this._paraState.isVerticalAxisHighlighted
-        ? this._vertAxis.renderHighlight() : ''}
+        ? this._vertAxis.renderHighlight('fg') : ''}
       ${this._legends.east && this._paraState.isEastLegendHighlighted
-        ? this._legends.east.renderHighlight() : ''}
+        ? this._legends.east.renderHighlight('fg') : ''}
       ${this._legends.west && this._paraState.isWestLegendHighlighted
-        ? this._legends.west.renderHighlight() : ''}
+        ? this._legends.west.renderHighlight('fg') : ''}
       ${this._legends.north && this._paraState.isNorthLegendHighlighted
-        ? this._legends.north.renderHighlight() : ''}
+        ? this._legends.north.renderHighlight('fg') : ''}
       ${this._legends.south && this._paraState.isSouthLegendHighlighted
-        ? this._legends.south.renderHighlight() : ''}
+        ? this._legends.south.renderHighlight('fg') : ''}
     `;
   }
 

@@ -1,17 +1,30 @@
-import { ChartType, Manifest, type Datatype, type AllSeriesData } from '@fizz/paramanifest';
+import { ChartType, Dataset, Manifest, type Datatype, type AllSeriesData } from '@fizz/paramanifest';
 
 import papa from 'papaparse';
 
 import { getLogger } from '@fizz/logger';
-import { concatenateSeriesLabels } from './common';
+import { concatenateSeriesLabels, firstDataset } from './common';
 
+/**
+ * Type of data source
+ * @public
+ */
 export type SourceKind = 'fizz-chart-data' | 'url' | 'content';
 
+/**
+ * Metadata for a field in a data set
+ * @public
+ */
 export type FieldInfo = {
   name: string;
   type: Datatype;
 };
 
+/**
+ * The result of parsing a CSV file.
+ * Contains both the raw data rows and the information about each field.
+ * @public
+ */
 export type CSVParseResult = {
   data: Record<string, string>[];
   fields: FieldInfo[];
@@ -19,6 +32,7 @@ export type CSVParseResult = {
 
 /**
  * Error codes for loader errors.
+ * @public
  */
 export enum LoadErrorCode {
   NETWORK_ERROR = 'NETWORK_ERROR',
@@ -31,6 +45,7 @@ export enum LoadErrorCode {
 
 /**
  * Error thrown by loader functions.
+ * @public
  */
 export class LoadError extends Error {
   constructor(
@@ -45,8 +60,9 @@ export class LoadError extends Error {
 /**
  * Parse CSV text into structured data with field information.
  * @param csvText - Raw CSV content
- * @returns Parse result with data and field info
- * @throws {LoadError} If CSV parsing fails or returns no data
+ * @returns Parse result containing an array of records (key-value pairs) and field info
+ * @throws LoadError If CSV parsing fails or returns no data
+ * @public
  */
 export function parseCSV(csvText: string): CSVParseResult {
   const result = papa.parse<Record<string, string>>(csvText, {
@@ -112,11 +128,12 @@ function buildSeriesDataFromCSV(
 async function processExternalData(
   manifest: Manifest
 ): Promise<AllSeriesData> {
-  if (!manifest.datasets[0].data.path) {
+  const dataset = firstDataset(manifest);
+  if (!dataset.href?.path) {
     throw new LoadError(LoadErrorCode.CSV_INVALID_FORMAT, 'External data source requires a path');
   }
   
-  const url = manifest.datasets[0].data.path;
+  const url = dataset.href.path;
   const response = await fetch(url);
   if (!response.ok) {
     throw new LoadError(LoadErrorCode.NETWORK_ERROR, `Failed to fetch CSV from ${url}: ${response.status} ${response.statusText}`);
@@ -129,7 +146,7 @@ async function processExternalData(
     return {};
   }
   
-  const seriesKeys = manifest.datasets[0].series.map(series => series.key);
+  const seriesKeys = dataset.series.map(series => series.key);
   const fields = Object.keys(csvData[0]);
   const indepKey = fields.filter(field => !seriesKeys.includes(field))[0];
   
@@ -162,6 +179,10 @@ function extractFieldInfo(data: Record<string, string>[]): FieldInfo[] {
   }));
 }
 
+/**
+ * Represents the data loaded from a source, including the manifest and optional series data.
+ * @public
+ */
 export type LoadedData = {
   manifest: Manifest;
   data?: AllSeriesData;
@@ -175,6 +196,7 @@ const CHART_DATA_MODULE_PREFIX = './node_modules/@fizz/chart-data/data/';
  * @param manifestInput - Manifest content or path
  * @returns Parsed manifest
  * @throws {LoadError} If manifest loading or parsing fails
+ * @internal
  */
 async function loadManifest(
   kind: SourceKind,
@@ -210,20 +232,22 @@ async function loadManifest(
  * @param manifest - Manifest to modify
  * @param chartType - Optional chart type override
  * @param description - Optional description override
+ * @internal
  */
 function applyManifestOverrides(
   manifest: Manifest,
   chartType?: ChartType,
   description?: string
 ): void {
+  const dataset = firstDataset(manifest);
   if (chartType) {
-    manifest.datasets[0].representation = {
+    dataset.representation = {
       type: 'chart',
       subtype: chartType
     };
   }
   if (description) {
-    manifest.datasets[0].description = description;
+    dataset.description = description;
   }
 }
 
@@ -237,6 +261,7 @@ const log = getLogger('ParaLoader');
  * @param description - Optional description override
  * @returns Loaded manifest and optional external data
  * @throws {LoadError} If loading or processing fails
+ * @public
  */
 export async function load(
   kind: SourceKind,
@@ -247,7 +272,7 @@ export async function load(
   const manifest = await loadManifest(kind, manifestInput);
   let data: AllSeriesData | undefined = undefined;
 
-  if (manifest.datasets[0].data.source === 'external') {
+  if (!!firstDataset(manifest).href) {
     data = await processExternalData(manifest);
   }
 
@@ -262,8 +287,10 @@ export async function load(
   return { manifest, data };
 }
 
+/** @public */
 export type CsvDataType = 'string' | 'number' | 'date';
 
+/** @public */
 export interface CsvInferredDefaults {
   chartTitle: string;
   xAxis: {
@@ -340,6 +367,7 @@ function inferColumnDataType(values: string[], header: string): CsvDataType {
   return 'string';
 }
 
+/** @public */
 export function inferDefaultsFromCsvText(csvText: string, fileName?: string): CsvInferredDefaults {
   const lines = csvText.split('\n').filter(line => line.trim());
 
@@ -374,8 +402,10 @@ export function inferDefaultsFromCsvText(csvText: string, fileName?: string): Cs
   };
 }
 
+/** @public */
 export type ChartTypeInput = 'line' | 'horizontal_bar' | 'vertical_bar' | 'pie' | 'donut';
 
+/** @public */
 export interface ManifestBuilderInput {
   csvText: string;
   chartType: ChartTypeInput;
@@ -383,9 +413,15 @@ export interface ManifestBuilderInput {
   xAxis?: {
     variableType: CsvDataType;
     title: string;
+    /** Optional unit label for the X-axis (e.g., 'year', 'km'). */
+    units?: string;
   };
   yAxis?: {
     title: string;
+    /** Optional unit label for the Y-axis (e.g., 'dollars', 'feet'). */
+    units?: string;
+    /** Optional scale multiplier for Y-axis values (e.g., 1000 for thousands, 1000000 for millions). */
+    multiplier?: number;
   };
 }
 
@@ -394,6 +430,7 @@ export interface ManifestBuilderInput {
  * 
  * @param input - Chart configuration including CSV text, type, and axis settings
  * @returns A Manifest object ready to be loaded by ParaHeadless
+ * @public
  */
 export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
   const { csvText, chartType, chartTitle, xAxis, yAxis } = input;
@@ -419,7 +456,7 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
   // Map xAxis.variableType to manifest measure/datatype
   const variableTypeMap: Record<CsvDataType, { measure: 'nominal' | 'interval'; datatype: Datatype }> = {
     'string': { measure: 'nominal', datatype: 'string' },
-    'number': { measure: 'interval', datatype: 'date' },
+    'number': { measure: 'interval', datatype: 'number' },
     'date': { measure: 'interval', datatype: 'date' }
   };
 
@@ -433,7 +470,7 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
   };
 
   // Build facets based on chart type
-  let facets: Manifest['datasets'][0]['facets'];
+  let facets: Dataset['facets'];
 
   if (isPastryChart) {
     // Pie/donut charts: derive facets from series keys
@@ -467,9 +504,10 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
         variableType: 'independent',
         measure: xTypeConfig.measure,
         datatype: xTypeConfig.datatype,
+        units: xAxis!.units,
         displayType: {
           type: 'axis',
-          orientation: isHorizontalBar ? 'vertical' : 'horizontal'
+          orientation: 'horizontal'
         }
       },
       y: {
@@ -477,13 +515,17 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
         variableType: 'dependent',
         measure: 'ratio',
         datatype: 'number',
+        units: yAxis!.units,
+        multiplier: yAxis!.multiplier,
         displayType: {
           type: 'axis',
-          orientation: isHorizontalBar ? 'horizontal' : 'vertical'
+          orientation: 'vertical'
         }
       }
     };
   }
+
+  const yBaseKind: 'dimensioned' | 'number' = yAxis?.units ? 'dimensioned' : 'number';
 
   // Build inline records for each series
   const seriesWithRecords = seriesKeys.map(key => {
@@ -493,28 +535,33 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest {
     }));
     return {
       key,
-      theme: {
+      topic: {
         baseQuantity: key.toLowerCase(),
-        baseKind: 'number' as const
+        baseKind: yBaseKind
       },
       records
     };
   });
 
+  const datasetTopic = yAxis?.units ? {
+    baseQuantity: chartTitle,
+    baseKind: 'dimensioned' as const,
+  } : undefined;
+
   return {
-    datasets: [
-      {
-        representation: {
-          type: 'chart',
-          subtype: manifestTypeMap[chartType]
-        },
-        title: chartTitle,
-        facets,
-        series: seriesWithRecords,
-        data: {
-          source: 'inline'
+    jim: {
+      datasets: [
+        {
+          representation: {
+            type: 'chart',
+            subtype: manifestTypeMap[chartType]
+          },
+          title: chartTitle,
+          ...(datasetTopic && { topic: datasetTopic }),
+          facets,
+          series: seriesWithRecords
         }
-      }
-    ]
+      ]
+    }
   };
 }

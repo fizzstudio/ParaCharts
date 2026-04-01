@@ -1,27 +1,29 @@
-import { PointChartInfo } from '.';
-import { clusterObject, coord, generateClusterAnalysis } from '@fizz/clustering';
-import { strToId, ChartType } from '@fizz/paramanifest';
+import { PointChartInfo } from './point_chart';
+import { clusterObject } from '@fizz/clustering';
+import { ChartType } from '@fizz/paramanifest';
 import { type ParaState } from '../state';
-import { type ParaView } from '../paraview';
-import { AxisInfo } from '../common/axisinfo';
-import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, ScatterPointNavNodeOptions } from '../view/layers/data/navigation';
-import { Datapoint } from '@fizz/paramodel';
-import { mapn } from '@fizz/chart-classifier-utils';
-import { DocumentView } from '../view/document_view';
+import { DatapointNavNodeType, NavNode, NavNodeOptionsType, ScatterPointNavNodeOptions, SeriesNavNodeOptions } from '../view/layers/data/navigation';
+import { Datapoint, PlaneModel } from '@fizz/paramodel';
 
 
 export class ScatterChartInfo extends PointChartInfo {
 
-  protected _clustering?: clusterObject[];
+  _clustering?: clusterObject[] | null;
   protected _currentCluster = -1;
 
-  constructor(type: ChartType, paraView: ParaView) {
-    super(type, paraView);
+  constructor(type: ChartType, paraState: ParaState) {
+    super(type, paraState);
   }
 
   protected _init(): void {
     // perform clustering before the nav tree is created
-    this._generateClustering();
+    if (this._paraState.type == 'scatter') {
+      const cluster = async () => {
+        this._paraState.clusterAnalyses = await this._generateClustering();
+        (this._paraState.chartInfo as ScatterChartInfo)._clustering = this._paraState.clusterAnalyses;
+      };
+      cluster()
+    }
     super._init();
     // this._axisInfo = new AxisInfo(this._paraState, {
     //   xValues: this._paraState.model!.allFacetValues('x')!.map((x) => x.value as number),
@@ -33,7 +35,7 @@ export class ScatterChartInfo extends PointChartInfo {
     super._addSettingControls();
     this._paraState.settingControls.add({
       type: 'checkbox',
-      key: 'type.scatter.isDrawTrendLine',
+      key: 'type.scatter.isShowTrendLine',
       label: 'Trend line',
       parentView: 'controlPanel.tabs.chart.chart',
     });
@@ -59,39 +61,18 @@ export class ScatterChartInfo extends PointChartInfo {
 
   protected _datapointNavNodeOptions(datapoint: Datapoint): NavNodeOptionsType<DatapointNavNodeType> {
     const opts = super._datapointNavNodeOptions(datapoint) as ScatterPointNavNodeOptions;
-    opts.cluster = this._findCluster(datapoint.datapointIndex);
     return opts;
   }
 
-  protected _createNavMap() {
-    super._createNavMap();
-    if (this._clustering) {
+  async storeDidChange(key: string, value: any) {
+    await super.storeDidChange(key, value);
+    if (key === 'clusterAnalyses') {
       this._createClusterNavNodes();
+      this._paraView.documentView?.chartLayers.dataLayer.init();
     }
   }
-
-  protected _generateClustering() {
-    const data: Array<coord> = []
-    const seriesList = this._paraState.model!.series;
-    for (const series of seriesList) {
-      for (let i = 0; i < series.length; i++) {
-        data.push({ x: Number(series.rawData[i].x), y: Number(series.rawData[i].y) });
-      }
-    }
-    const labels: string[] = [];
-    if (seriesList.length > 1) {
-      for (const series of seriesList) {
-        for (let i = 0; i < series.length; i++) {
-          labels.push(series[i].seriesKey);
-        }
-      }
-    }
-
-    if (this._paraState.model!.numSeries > 1) {
-      this._clustering = generateClusterAnalysis(data, true, labels);
-    } else {
-      this._clustering = generateClusterAnalysis(data, false);
-    }
+  async _generateClustering() {
+    return await (this._paraState.model as PlaneModel).getClusteringAnalysis();
   }
 
   get navDatapointType(): DatapointNavNodeType {
@@ -105,7 +86,9 @@ export class ScatterChartInfo extends PointChartInfo {
 
   protected _createClusterNavNodes() {
     const seriesClusterNodes: NavNode<'cluster'>[][] = [];
-    this._navMap!.root.query('series').forEach(seriesNode => {
+    const isMultiSeries = this._navMap!.root.query('series').length > 0 ? true : false;
+    const seriesNodes = isMultiSeries ? this._navMap!.root.query('series') : this._navMap!.root.query('top');
+    seriesNodes.forEach((seriesNode, seriesIndex) => {
       if (seriesClusterNodes.length) {
         seriesNode.connect('left', seriesClusterNodes.at(-1)!.at(-1)!);
       }
@@ -116,21 +99,19 @@ export class ScatterChartInfo extends PointChartInfo {
       const datapointNodes = seriesNode.allNodes('right', 'scatterpoint');
       const clusterNodes: NavNode<'cluster'>[] = [];
 
-      clustering.forEach(cluster => {
+      clustering.forEach((cluster, clusterIndex) => {
         const clusterNode = new NavNode(seriesNode.layer, 'cluster', {
-          seriesKey: seriesNode.options.seriesKey,
-          start: 0,//cluster.dataPointIDs[0],
-          end: cluster.dataPointIDs.length - 1,//cluster.dataPointIDs[cluster.dataPointIDs.length - 1],
-          datapoints: this._paraState.model!.numSeries > 1
-            // XXX not sure if this will work for general case of multi-series
-            ? cluster.dataPointIDs.map(id => id - cluster.dataPointIDs[0])
-            : [...cluster.dataPointIDs, ...cluster.outlierIDs],
-          clustering: cluster
+          seriesKey: isMultiSeries ? (seriesNode.options as SeriesNavNodeOptions).seriesKey : this.seriesInNavOrder()[0].key,
+          start: 0,
+          end: cluster.dataPointIDs.length - 1,
+          datapoints: [...cluster.dataPointIDs, ...cluster.outlierIDs].map(id => this._paraState.model?.allPoints[id]).filter(p => p != undefined),
+          clustering: cluster,
+          index: clusterIndex + seriesIndex
         }, this._paraState);
         clusterNodes.push(clusterNode);
       });
       seriesClusterNodes.push(clusterNodes);
-      clusterNodes.sort((a,b) => a.options.clustering.centroid[0] - b.options.clustering.centroid[0]);
+      clusterNodes.sort((a, b) => a.options.clustering.centroid[0] - b.options.clustering.centroid[0]);
       clusterNodes.slice(0, -1).forEach((clusterNode, i) => {
         clusterNode.connect('right', clusterNodes[i + 1]);
       });
@@ -143,16 +124,18 @@ export class ScatterChartInfo extends PointChartInfo {
         // Unless the first datapoint of the cluster already has an
         // 'out' link set (i.e., it's a boundary node), make a reciprocal
         // link to it
-        clusterNode.connect('in', datapointNodes[0],
-          !datapointNodes[0].getLink('out'));
-        for (const node of datapointNodes) {
+        const childDatapointNodes = datapointNodes.filter(dp => clusterNode.options.datapoints.includes(dp.datapoints[0]));
+        clusterNode.connect('in', childDatapointNodes[0],
+          !childDatapointNodes[0].getLink('out'));
+        for (const node of childDatapointNodes) {
           // non-reciprocal 'out' links from remaining datapoints to cluster
           node.connect('out', clusterNode, false);
+          (node!.options as ScatterPointNavNodeOptions).cluster = clusterNode.index;
         }
         if (clusterNode.peekNode('right', 1)) {
           // We aren't on the last cluster, so the final datapoint is a boundary point.
           // Make a non-reciprocal 'in' link to the next cluster
-          datapointNodes.at(-1)!.connect('in', clusterNode.peekNode('right', 1)!, false);
+          childDatapointNodes.at(-1)!.connect('in', clusterNode.peekNode('right', 1)!, false);
         }
       });
     });
@@ -166,12 +149,6 @@ export class ScatterChartInfo extends PointChartInfo {
     seriesClusterNodes.slice(0, -1).forEach((clusterNodes, i) => {
       clusterNodes[clusterNodes.length - 1].connect('right', seriesClusterNodes[i + 1][0], true);
     });
-  }
-
-  protected _findCluster(datapointIndex: number) {
-    // XXX could speed this up by either doing a binary search (assuming the datapoint IDs are sorted),
-    // or caching the cluster ID in the datapoint node
-    return this._clustering!.findIndex(cluster => cluster.dataPointIDs.includes(datapointIndex));
   }
 
   async navRunDidEnd(cursor: NavNode, quiet = false): Promise<void> {

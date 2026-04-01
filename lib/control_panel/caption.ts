@@ -82,12 +82,16 @@ export class ParaCaptionBox extends ParaComponent {
   connectedCallback(): void {
     super.connectedCallback();
     this.setCaption();
-    this._storeChangeUnsub = this._paraState.subscribe(this.setCaption.bind(this));
+    // XXX does the caption really need to update every time parastate changes?
+    // this._storeChangeUnsub = this._paraState.subscribe(async () => {
+    //   console.log('SUBSCRIBE');
+    //   await this.setCaption();
+    // });
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    this._storeChangeUnsub();
+    // this._storeChangeUnsub();
   }
 
   protected updated(_changedProperties: PropertyValues): void {
@@ -103,7 +107,8 @@ export class ParaCaptionBox extends ParaComponent {
             || this.parachart.paraView.ariaLiveRegion.voicing.isSpeaking) return;
           // NB: this requires there be an announcement, so it only works
           // in NH mode
-          const highlight = this._paraState.announcement.highlights[i];
+          // const highlight = this._paraState.announcement.highlights[i];
+          const highlight = this._caption.highlights![i];
           this._paraState.postNotice('landmarkStart', highlight);
         });
         // span.addEventListener('pointerleave', (e: PointerEvent) => {
@@ -117,10 +122,11 @@ export class ParaCaptionBox extends ParaComponent {
     this.parachart.clearAriaLive();
   }
 
-  async setCaption(): Promise<void> {
+  async setCaption(summary?: HighlightedSummary): Promise<void> {
     if (this._paraState.dataState === 'complete') {
-      this._caption =
-        await this.parachart.paraView.documentView?.chartInfo.summarizer.getChartSummary() ?? {text: '', html: ''};
+      this._caption = summary
+        ?? await this._paraState.chartInfo.summarizer.getChartSummary()
+        ?? {text: '', html: ''};
     }
   }
 
@@ -165,48 +171,32 @@ export class ParaCaptionBox extends ParaComponent {
     const voicing = this.parachart.paraView.ariaLiveRegion.voicing;
     let idx = this._prevSpanIdx;
     if (!this._highlightManualOverride) {
-      idx = voicing.highlightIndex!;
+      idx = voicing.highlightIndex ?? -1;
       this._highlightManualOverride = true;
     }
+    // idx = Math.min(
+    //   this._paraState.announcement.highlights.length - 1,
+    //   Math.max(0, idx + (next ? 1 : -1)));
     idx = Math.min(
-      this._paraState.announcement.highlights.length - 1,
+      this._caption.highlights!.length - 1,
       Math.max(0, idx + (next ? 1 : -1)));
 
     this._prevSpanIdx = idx;
 
-    const msg = getMsg(idx);
-    const highlight = this._paraState.announcement.highlights[idx];
-    voicing.shutUp();
-    voicing.speakText(msg);
+    // const highlight = this._paraState.announcement.highlights[idx];
+    const highlight = this._caption.highlights![idx];
+    if (this._paraState.settings.ui.isVoicingEnabled) {
+      //const msg = getMsg(idx);
+      const msg = this._captionRef.value!.firstElementChild!.children[idx].textContent;
+      voicing.shutUp();
+      voicing.speakText(msg);
+    }
     this._paraState.postNotice('landmarkStart', highlight);
   }
 
   clearSpanHighlights() {
     for (const span of this.getSpans()) {
       span.classList.remove('highlight');
-    }
-  }
-
-  getHighlightedSummary(): HighlightedSummary {
-    const highlights: Highlight[] = [];
-    const article = this._captionRef.value!.firstElementChild!;
-    let total = 0;
-    for (const span of article.children) {
-      const text = span.textContent;
-      highlights.push({
-        start: total,
-        end: total + text.length,
-        phrasecode: (span as HTMLElement).dataset.phrasecode!
-      });
-      if ((span as HTMLElement).dataset.action) {
-        highlights.at(-1)!.action = (span as HTMLElement).dataset.action;
-      }
-      total += text.length;
-    }
-    return {
-      text: article.textContent.trim(),
-      html: article.innerHTML,
-      highlights
     }
   }
 

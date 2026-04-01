@@ -27,6 +27,7 @@ import { StyleInfo } from 'lit/directives/style-map.js';
 import { bboxOfBboxes } from '../../../common/utils';
 import { BaseChartInfo } from '../../../chart_types';
 import { Bezier, loopParaviewRefresh } from '../../../common';
+import { makeDatapointId } from '../../../state';
 
 /**
  * @public
@@ -115,12 +116,12 @@ export abstract class DataLayer extends PlotLayer {
   }
 
   registerDatapoint(datapointView: DatapointView) {
-    const key = `${datapointView.seriesKey}-${datapointView.index}`;
+    const key = makeDatapointId(datapointView.seriesKey, datapointView.index);
     this._datapointDomIds.set(key, datapointView.id);
   }
 
   unregisterDatapoint(datapointView: DatapointView) {
-    this._datapointDomIds.delete(`${datapointView.seriesKey}-${datapointView.index}`);
+    this._datapointDomIds.delete(makeDatapointId(datapointView.seriesKey, datapointView.index));
   }
 
   get datapointDomIds(): ReadonlyMap<string, string> {
@@ -159,13 +160,11 @@ export abstract class DataLayer extends PlotLayer {
       }
     }
     if (['popup.activation'].includes(path)) {
-      if (oldValue === "onSelect" || oldValue === "onFocus") {
-        this.paraview.paraState.clearPopups();
-        this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length);
-      }
+      this.paraview.paraState.clearPopups();
+      this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length);
     }
     if (['chart.isShowPopups'].includes(path)) {
-      this.paraview.paraState.popups.splice(0, this.paraview.paraState.popups.length)
+      this.paraview.paraState.clearPopups();
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -180,7 +179,7 @@ export abstract class DataLayer extends PlotLayer {
 
   /**
    * Mutate `styleInfo` with any custom series styles.
-   * @param styleInfo
+   * @param styleInfo - The style object to mutate with series-specific styles
    */
   updateSeriesStyle(_styleInfo: StyleInfo) {
   }
@@ -303,7 +302,7 @@ export abstract class DataLayer extends PlotLayer {
   // }
 
   focusRingBbox() {
-    const chartInfo = this._parent.parent.chartInfo;
+    const chartInfo = this.paraview.paraState.chartInfo;
     const cursor = chartInfo.navMap!.cursor;
     if (['series', 'chord', 'datapoint', 'sequence'].includes(cursor.type)) {
       return bboxOfBboxes(...cursor.datapoints.map(dp =>
@@ -323,4 +322,10 @@ export abstract class DataLayer extends PlotLayer {
     dpView.popup?.remove();
     this.paraview.requestUpdate()
   }
+
+  makeCrosshairsLocked(datapointViews: DatapointView[], focus?: boolean, chord?: boolean, popup: boolean = true) { }
+  makeCrosshairsAtPointer(nearestPoint: DatapointView) { }
+  makeCrosshairsAtPixelsCoords(x: number, y: number, id: string) { }
+  addTrendLine() { }
+  removeTrendLine() { }
 }

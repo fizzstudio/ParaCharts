@@ -26,7 +26,7 @@ export const styles = css`
     --theme-color: var(--fizz-theme-color, purple);
     --theme-color-light: var(--fizz-theme-color-light, hsl(275.4, 100%, 88%));
     --theme-contrast-color: white;
-    --fizz-theme-color: var(--paracharts-theme-color, navy);
+    --fizz-theme-color: var(--paracharts-theme-color, hsla(209, 100%, 27%, 1.00));
     --fizz-theme-color-light: var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%));
     /*--visited-color: red;*/
     --selected-color: var(--label-color);
@@ -34,6 +34,12 @@ export const styles = css`
     --focus-animation: all 0.5s ease-in-out;
     --chart-cursor: pointer;
     --data-cursor: cell;
+
+    --font-fam: "Trebuchet MS", Helvetica, sans-serif;
+
+    /* panel styles */
+    --panel-text-color: hsla(0, 0%, 5%, 1.00);
+    --panel-text-size: 1em;
 
     /* default color palette */
     --color-palette-series-0: hsl(225, 30%, 52%);
@@ -68,8 +74,13 @@ export const styles = css`
     white-space: nowrap !important;
   }
 
+  para-control-panel {
+    color: var( --panel-text-color);
+    font-size: var( --panel-text-size);
+  }
+
   * {
-    font-family: "Trebuchet MS", Helvetica, sans-serif;
+    font-family: var(--font-fam);
   }
   #y-axis-line {
     fill: none;

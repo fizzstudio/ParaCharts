@@ -56,7 +56,7 @@ export class DirectLabelStrip extends Container(View) {
 
   protected _createInitialLabels() {
     const directLabelPadding = this.paraview.paraState.settings.chart.isDrawSymbols
-      ? this.paraview.paraState.settings.type.line.seriesLabelPadding*2
+      ? this.paraview.paraState.settings.type.line.seriesLabelPadding * 2
       : this.paraview.paraState.settings.type.line.seriesLabelPadding;
     const endpoints = this.paraview.paraState.model!.series.map(series => series.datapoints.at(-1)!);
     endpoints.sort((a, b) => b.facetValueAsNumber('y')! - a.facetValueAsNumber('y')!);
@@ -66,7 +66,7 @@ export class DirectLabelStrip extends Container(View) {
     this._seriesLabels = [];
     // Create labels
     endpoints.forEach((ep, i) => {
-      const yInterval = (this.paraview.documentView!.chartInfo as PlaneChartInfo).yInterval!;
+      const yInterval = (this.paraview.paraState.chartInfo as PlaneChartInfo).yInterval!;
       const pxPerYUnit = this._height / (yInterval.end - yInterval.start);
       const labelY = this._height - (ep.facetValueNumericized('y')! - yInterval.start) * pxPerYUnit;
       this._seriesLabels.push(new Label(this.paraview, {
@@ -81,7 +81,7 @@ export class DirectLabelStrip extends Container(View) {
 
   createLabels() {
     const directLabelPadding = this.paraview.paraState.settings.chart.isDrawSymbols
-      ? this.paraview.paraState.settings.type.line.seriesLabelPadding*2
+      ? this.paraview.paraState.settings.type.line.seriesLabelPadding * 2
       : this.paraview.paraState.settings.type.line.seriesLabelPadding;
     // const endpoints = this._parent.chartLayers.dataLayer.chartLandingView.children.map(seriesView => seriesView.children.at(-1)!);
     const endpoints = this._parent.chartLayers.dataLayer.datapointViews
@@ -104,17 +104,17 @@ export class DirectLabelStrip extends Container(View) {
         y: ep.y, // labelY,
         classList: ['direct-label'],
         pointerEnter: (e) => {
-          this.paraview.paraState.lowlightOtherSeries(ep.seriesKey);
+          this.paraview.paraState.dimOtherSeries(ep.seriesKey);
         },
         pointerLeave: (e) => {
-          this.paraview.paraState.clearAllSeriesLowlights();
+          this.paraview.paraState.clearAllSeriesDimming();
         }
       }));
       this.append(this._seriesLabels.at(-1)!);
     });
     this._seriesLabels.forEach(label => {
       // Roughly center each label on its series endpoint
-        label.y += label.locOffset.y/2;
+      label.y += label.locOffset.y / 2;
     });
     // If the highest label is offscreen at all, push it back onscreen
     const topLabel = this._seriesLabels[0];
@@ -155,6 +155,7 @@ export class DirectLabelStrip extends Container(View) {
 
   protected _addedToParent(): void {
     this.observeNotices();
+    this.createLabels();
   }
 
   noticePosted(key: string, value: any): void {
@@ -170,7 +171,7 @@ export class DirectLabelStrip extends Container(View) {
     // XXX also need to support label strip on left, top, bottom
     return [
       Math.max(...this._seriesLabels.map(label => label.right))
-        + this.paraview.paraState.settings.type.line.leaderLineLength,
+      + this.paraview.paraState.settings.type.line.leaderLineLength,
       this._height
     ];
   }
@@ -228,7 +229,7 @@ class LineLabelLeader extends View {
   constructor(paraview: ParaView, protected _seriesKey: string, label: Label, pointY: number) {
     super(paraview);
     this._endX = this.paraview.paraState.settings.type.line.leaderLineLength;
-    this._endY = label.y - label.locOffset.y/2;
+    this._endY = label.bottom - label.height / 2;
     this._lineD = fixed`
       M${0},${pointY}
       L${this._endX},${this._endY}`;
@@ -248,7 +249,7 @@ class LineLabelLeader extends View {
   get classInfo(): ClassInfo {
     return {
       'label-leader': true,
-      'lowlight': this.paraview.paraState.isSeriesLowlighted(this._seriesKey)
+      'lowlight': this.paraview.paraState.isSeriesDimmed(this._seriesKey)
     }
   }
 

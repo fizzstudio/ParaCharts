@@ -18,7 +18,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { ParaView } from '../paraview';
 import { PlaneChartInfo } from './plane_chart';
 import { AxisInfo } from '../common/axisinfo';
-import { DeepReadonly, BarSettings, datapointIdToCursor, Setting } from '../state';
+import { DeepReadonly, BarSettings, datapointIdToCursor, Setting, type ParaState } from '../state';
 import {
   queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax
 } from '../state/query_utils';
@@ -28,7 +28,7 @@ import { computeAxisRange } from './plane_chart';
 import { Highlight } from '@fizz/parasummary';
 
 import { ChartType, strToId } from '@fizz/paramanifest';
-import { enumerate, Box } from '@fizz/paramodel';
+import { enumerate, Box, Series } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 import { DocumentView } from '../view/document_view';
@@ -97,8 +97,8 @@ export class BarChartInfo extends PlaneChartInfo {
   protected _stacksPerCluster!: number;
   protected _prevHighlightNavcode = '';
 
-  constructor(type: ChartType, paraView: ParaView) {
-    super(type, paraView);
+  constructor(type: ChartType, paraState: ParaState) {
+    super(type, paraState);
   }
 
   protected _init(): void {
@@ -131,7 +131,33 @@ export class BarChartInfo extends PlaneChartInfo {
     } else if (this.settings.stacking === 'none') {
       const seriesPerStack = 1;
       this._stacksPerCluster = Math.ceil(numSeries/seriesPerStack);
+    } else {
+      this._stacksPerCluster = this._normalizeStackCountsInput().split(/\s/).length;
     }
+  }
+
+  protected _normalizeStackCountsInput(): string {
+    let counts = this.settings.stacking.split(/\s/).map(tok => parseInt(tok));
+    const sumCounts = counts.reduce((a, b) => a + b, 0);
+    const numSeries = this._paraState.model!.series.length;
+    if (sumCounts < numSeries) {
+      // Add an extra count if necessary
+      counts.push(numSeries - sumCounts);
+    } else if (sumCounts > numSeries) {
+      const newCounts: number[] = [];
+      let total = 0;
+      for (const c of counts) {
+        if (c + total <= numSeries) {
+          total += c;
+          newCounts.push(c);
+        } else if (total < numSeries) {
+          newCounts.push(numSeries - total);
+          total = numSeries;
+        }
+      }
+      counts = newCounts;
+    }
+    return counts.map(c => c.toString()).join(' ');
   }
 
   protected get _isXVertical(): boolean {
@@ -160,7 +186,10 @@ export class BarChartInfo extends PlaneChartInfo {
         Object.values(c.stacks).map(s =>
           Object.values(s.bars).map(item => item.value.value).reduce((a, b) => a + b, 0)
       ));
-      return computeAxisRange(Math.min(0, ...yValues), Math.max(...yValues));
+      const minY = Math.min(0, ...yValues);
+      const maxY = Math.max(...yValues);
+      this._yExtremes = {start: minY, end: maxY};
+      return computeAxisRange(minY, maxY);
     } else {
       throw new Error("facet key must be 'x' or 'y'");
     }
@@ -217,35 +246,56 @@ export class BarChartInfo extends PlaneChartInfo {
     }
 
     const allSeries = [...this._paraState.model!.series];
-    if (this._paraState.type === 'column' && settings.stacking === 'standard') {
-      // Place the series into stacks in the reverse order to how they appear in the
-      // model (i.e., first series will be topmost onscreen in 'standard' mode)
+    if (this._paraState.type === 'column' && settings.stacking === 'none') {
       allSeries.reverse();
     }
-    for (const [series, i] of enumerate(allSeries)) {
-      for (const [value, j] of enumerate(series.datapoints.map(dp => dp.facetBox('y')))) {
-        let stack: BarStack;
-        let stackKey: string;
-        if (settings.stacking === 'standard') {
-          stackKey = 'stack';
-          stack = clusters[j].stacks[stackKey];
-          if (!stack) {
-            stack = new BarStack(clusters[j], stackKey);
-            clusters[j].stacks[stackKey] = stack;
-          }
-        } else if (settings.stacking === 'none') {
-          const seriesPerStack = 1;
-          stackKey = series.key;
-          stack = clusters[j].stacks[stackKey];
-          if (!stack) {
-            stack = new BarStack(clusters[j], stackKey);
-            clusters[j].stacks[stackKey] = stack;
-          }
+    const groupSeries = (countsInput: string) => {
+      const counts = countsInput.split(/\s/).map(tok => parseInt(tok));
+      const groups: Series[][] = [];
+      let total = 0;
+      counts.forEach((count, i) => {
+        if (!groups[i]) {
+          groups.push([]);
         }
-        stack!.bars[series.key] = {
-          series: series.key,
-          value: series.datapoints[j].facetBox('y') as Box<'number'>
-        };
+        for (let j = 0; j < count; j++) {
+          groups[i].push(allSeries[total++]);
+        }
+      });
+      return groups;
+    };
+    // const getSeriesGroup = (series: Series, groups: Series[][]) => {
+    //   return groups.findIndex(group => group.includes(series));
+    // };
+    const grouped = ['standard', 'none'].includes(this.settings.stacking)
+      ? [[...allSeries]]
+      : groupSeries(this._normalizeStackCountsInput());
+    for (let group of grouped) {
+      if (this._paraState.type === 'column') {
+        // Place the series into stacks in the reverse order to how they appear in the
+        // model (i.e., first series will be topmost onscreen in 'standard' mode)
+        group = group.toReversed();
+      }
+      for (const series of group) {
+        for (const [value, k] of enumerate(series.datapoints.map(dp => dp.facetBox('y')))) {
+          let stack: BarStack;
+          let stackKey: string;
+          if (settings.stacking === 'standard') {
+            stackKey = 'stack';
+          } else if (settings.stacking === 'none') {
+            stackKey = series.key;
+          } else {
+            stackKey = group.map(series => series.key).join('+');
+          }
+          stack = clusters[k].stacks[stackKey];
+          if (!stack) {
+            stack = new BarStack(clusters[k], stackKey);
+            clusters[k].stacks[stackKey] = stack;
+          }
+          stack.bars[series.key] = {
+            series: series.key,
+            value: series.datapoints[k].facetBox('y') as Box<'number'>
+          };
+        }
       }
     }
     return clusterMap;

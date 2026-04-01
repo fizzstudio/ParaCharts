@@ -15,7 +15,7 @@ export default meta;
 export const DescriptionOverride: Story = {
   args: {
     filename: 'manifests/autogen/line-single/line-single-manifest-843.json',
-    description: 'An unrelated description'
+    description: 'Unrelated <span data-action=\"getSeries(\'Revenue in million U.S. dollars\').getPoints(0).highlight()\" data-phrasecode=\"0\">description</span><span data-action=\"getSeries(\'Revenue in million U.S. dollars\').getPoints(1).highlight()\" data-phrasecode="1">.</span>'
   },
   play: async ({ canvas, userEvent }) => {
     const parachart = await canvas.findByTestId('para-chart');

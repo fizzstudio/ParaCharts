@@ -9,6 +9,7 @@ import { PointAnnotation, Setting } from '../../../state';
 import { Popup } from '../../popup';
 import { datapointIdToCursor } from '../../../state';
 import { PlaneChartInfo } from '../../../chart_types';
+import { ScatterPlotView, TrendLineView } from '../data';
 
 export type AnnotationType = 'foreground' | 'background';
 
@@ -40,6 +41,8 @@ export class AnnotationLayer extends PlotLayer {
 
   removeGroup(name: string, okIfNotExist = false) {
     if (this._groups.has(name)) {
+      this._groups.get(name)?.children.forEach(c => c.remove())
+      this._groups.get(name)?.remove();
       this._groups.delete(name);
     } else if (okIfNotExist) {
       return;
@@ -61,12 +64,12 @@ export class AnnotationLayer extends PlotLayer {
 
   renderChildren() {
     if (this.type === 'foreground') {
-      if (this.paraview.paraState.modelTrendLines && this.parent.parent.chartInfo instanceof PlaneChartInfo) {
+      if (this.paraview.paraState.modelTrendLines && this.paraview.paraState.chartInfo instanceof PlaneChartInfo) {
         this.addGroup('trend-lines', true);
         this.group('trend-lines')!.clearChildren();
         for (const tl of this.paraview.paraState.modelTrendLines) {
           const series = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0];
-          const range = this.parent.parent.chartInfo.yInterval!;
+          const range = this.paraview.paraState.chartInfo.yInterval!;
           const minValue = range.start ?? Number(this.paraview.paraState.settings.axis.y.minValue)
           const maxValue = range.end ?? Number(this.paraview.paraState.settings.axis.y.maxValue)
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
@@ -91,7 +94,7 @@ export class AnnotationLayer extends PlotLayer {
         }
       }
 
-      if (this.paraview.paraState.userTrendLines && this.parent.parent.chartInfo instanceof PlaneChartInfo) {
+      if (this.paraview.paraState.userTrendLines && this.paraview.paraState.chartInfo instanceof PlaneChartInfo) {
         this.addGroup('user-trend-lines', true);
         this.group('user-trend-lines')!.clearChildren();
         let tls = structuredClone(this.paraview.paraState.userTrendLines);
@@ -101,7 +104,7 @@ export class AnnotationLayer extends PlotLayer {
         }
         for (const tl of tls) {
           const series = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
-          const range = this.parent.parent.chartInfo.yInterval!;
+          const range = this.paraview.paraState.chartInfo.yInterval!;
           const minValue = range.start ?? Number(this.paraview.paraState.settings.axis.y.minValue)
           const maxValue = range.end ?? Number(this.paraview.paraState.settings.axis.y.maxValue)
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
@@ -123,6 +126,36 @@ export class AnnotationLayer extends PlotLayer {
       else {
         if (this._groups.has('user-trend-lines')) {
           this.removeGroup('user-trend-lines', true);
+        }
+      }
+      if (this.paraview.paraState.settings.type.scatter.isShowTrendLine && this.paraview.paraState.chartInfo instanceof PlaneChartInfo) {
+        this.removeGroup('overall-trend-line', true);
+        this.addGroup('overall-trend-line', true);
+        this.group('overall-trend-line')!.clearChildren();
+        const chart = this.paraview.documentView!.chartLayers.dataLayer! as ScatterPlotView;
+        if (chart._trendLine) {
+          chart._trendLine.remove();
+        }
+        const trendLine = new TrendLineView(chart);
+        chart._trendLine = trendLine;
+        this.group('overall-trend-line')!.append(trendLine);
+      }
+      else {
+        if (this._groups.has('overall-trend-line')) {
+          this.removeGroup('overall-trend-line', true);
+        }
+      }
+      if (this.paraview.paraState.clusterShellViews.length > 0) {
+        this.removeGroup('cluster-shell', true);
+        this.addGroup('cluster-shell', true);
+        this.group('cluster-shell')!.clearChildren();
+        for (let shell of this.paraview.paraState.clusterShellViews) {
+          this.group('cluster-shell')!.append(shell);
+        }
+      }
+      else {
+        if (this._groups.has('cluster-shell')) {
+          this.removeGroup('cluster-shell', true);
         }
       }
 

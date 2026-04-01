@@ -18,11 +18,11 @@ import { BaseState, SettingObserver } from './base_state';
 import { Logger, getLogger } from '@fizz/logger';
 import papa from 'papaparse';
 import { State, property } from '@lit-app/state';
-import { produceWithPatches, enablePatches } from 'immer';
+import { produceWithPatches, enablePatches, applyPatches } from 'immer';
 enablePatches();
 
 import {
-  dataFromManifest, type AllSeriesData, type ChartType, type Manifest,
+  dataFromManifest, type AllSeriesData, type ChartType,
   isPastryType,
   isVennType
 } from '@fizz/paramanifest';
@@ -44,7 +44,7 @@ import {
 
 import {
   DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
-  type Setting,
+  type Setting, type SettingGroup,
 } from './settings_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
@@ -61,6 +61,10 @@ import { type DatapointCursor } from '../view/layers/data/navigation';
 import { Point } from '@fizz/chart-classifier-utils';
 import { PathShape } from '../view/shape';
 import { GlobalState } from './global_state';
+import { BaseChartInfo, chartInfoClasses } from '../chart_types';
+import { firstDataset, type Manifest } from '../loader/common';
+import { clusterObject } from '@fizz/clustering';
+import { ClusterShellView } from '../view/layers';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -121,13 +125,33 @@ export interface SparkBrailleInfo {
   isBar?: boolean;
 }
 
+export interface HighlightAxisOptions {
+  tierIndex: number;
+  labelIndex: number;
+  orientation: "horiz" | "vert";
+}
+
+const synchronizedSettings = [
+  'ui.isFullscreenEnabled',
+  'ui.isLowVisionModeEnabled',
+  'color.isDarkModeEnabled',
+  'chart.fontScale',
+  'color.colorPalette',
+  'grid.isDrawVertLines',
+  'chart.size.width',
+  'chart.size.height',
+];
+
+// NB: Must be disallowed in series keys
+const DATAPOINT_ID_SEP = '@';
+
 /**
- * Convert a datapoint ID string of format `${seriesKey}-${index}` into a DatapointCursor.
+ * Convert a datapoint ID string of format `${seriesKey}@${index}` into a DatapointCursor.
  * @param id - The ID
  * @returns DatapointCursor
  */
 export function datapointIdToCursor(id: string): DatapointCursor {
-  const [seriesKey, index] = id.split('-');
+  const [seriesKey, index] = id.split(DATAPOINT_ID_SEP);
   return {
     seriesKey,
     index: parseInt(index)
@@ -141,7 +165,7 @@ export function datapointIdToCursor(id: string): DatapointCursor {
  * @returns Datapoint ID string
  */
 export function makeDatapointId(seriesKey: string, index: number): string {
-  return `${seriesKey}-${index}`;
+  return `${seriesKey}${DATAPOINT_ID_SEP}${index}`;
 }
 
 /**
@@ -152,7 +176,7 @@ export function makeDatapointId(seriesKey: string, index: number): string {
  * @returns Sequence ID string
  */
 export function makeSequenceId(seriesKey: string, index1: number, index2: number): string {
-  return `${seriesKey}-${index1}-${index2}`;
+  return `${seriesKey}${DATAPOINT_ID_SEP}${index1}-${index2}`;
 }
 
 export class ParaState extends BaseState {
@@ -166,10 +190,10 @@ export class ParaState extends BaseState {
   @property() popups: Popup[] = [];
   @property() focusPopups: Popup[] = [];
   @property() selectPopups: Popup[] = [];
-  @property() crossHairLabels: Popup[] = [];
-  @property() crossHair: PathShape[] = [];
+  @property() crossHairs: Array<{ id: string, popups: Array<PathShape | Popup> }> = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
+  @property() clusterAnalyses: clusterObject[] | null = null;
   @property() frontSeries = '';
   @property() pointerCoords: Point = { x: 0, y: 0 }
   @property() isTitleHighlighted = false;
@@ -180,7 +204,7 @@ export class ParaState extends BaseState {
   @property() isNorthLegendHighlighted = false;
   @property() isSouthLegendHighlighted = false;
 
-  @property() protected _lowlightedSeries: string[] = [];
+  @property() protected _dimmedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
   @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
@@ -191,15 +215,22 @@ export class ParaState extends BaseState {
   protected _prevVisitedDatapoints = new Set<string>();
   protected _everVisitedDatapoints = new Set<string>();
   @property() protected _highlightedDatapoints = new Set<string>();
+  _prevHighlightedElements = new Set<string>();
   @property() protected _selectedDatapoints = new Set<string>();
+  @property() protected _crosshairedDatapoints = new Set<string>();
   @property() protected _prevSelectedDatapoints = new Set<string>();
+  @property() protected _dataSpaceCrosshairs = new Set<{ x: string, y: string }>();
   /** `${seriesKey}-${index1}-${index2}` */
   @property() protected _highlightedSequences = new Set<string>();
+  @property() protected _highlightedIntersections = new Set<number>();
+  @property() protected _highlightedClusters = new Set<number>();
+  @property() protected _highlightedAxisLabels = new Set<HighlightAxisOptions>();
   @property() protected _rangeHighlights: RangeHighlight[] = [];
   @property() protected _modelLineBreaks: LineBreak[] = [];
   @property() protected _userLineBreaks: LineBreak[] = [];
   @property() protected _modelTrendLines: TrendLine[] = [];
   @property() protected _userTrendLines: TrendLine[] = [];
+  @property() protected _clusterShellViews: ClusterShellView[] = [];
 
   protected _settingControls = new SettingControlManager(this);
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
@@ -217,6 +248,7 @@ export class ParaState extends BaseState {
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected _annotID: number = 0;
   protected log: Logger = getLogger("ParaState");
+  protected _chartInfo!: BaseChartInfo;
 
   public idList: Record<string, boolean> = {};
 
@@ -292,6 +324,14 @@ export class ParaState extends BaseState {
     return this._userTrendLines;
   }
 
+  get clusterShellViews() {
+    return this._clusterShellViews;
+  }
+
+  set clusterShellViews(views: ClusterShellView[]) {
+    this._clusterShellViews = views;
+  }
+
   nextAnnotID(): number {
     return this._annotID++;
   }
@@ -300,11 +340,93 @@ export class ParaState extends BaseState {
     return this._globalState.paraStates.indexOf(this);
   }
 
-  setManifest(manifest: Manifest, data?: AllSeriesData) {
-    this._manifest = manifest;
-    const dataset = this._manifest.datasets[0];
+  get chartInfo() {
+    return this._chartInfo;
+  }
 
-    this._createSettings(this._inputSettings);
+  createChartInfo() {
+    // @ts-ignore
+    this._chartInfo = new chartInfoClasses[this.type](this.type, this);
+  }
+
+  protected _createSettings(inputSettings: SettingsInput) {
+    const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
+    SettingsManager.suppleteSettings(hydratedSettings, defaults);
+    this.settings = hydratedSettings as Settings;
+  }
+
+  updateSettings(updater: (draft: Settings) => void, ignoreObservers = false) {
+    const [newSettings, patches, inversePatches] = produceWithPatches(this.settings, updater);
+    this.settings = newSettings;
+    const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
+    const counterpart = this._globalState.paraStates[1 - this.index];
+    if (counterpart) {
+      counterpart.settings = applyPatches(counterpart.settings, filtered);
+    }
+    if (ignoreObservers) {
+      return patches;
+    }
+    const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
+    for (const patch of patches) {
+      if (patch.op !== 'replace') {
+        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        continue;
+      }
+      observed[patch.path.join('.')] = { newValue: patch.value };
+    }
+    for (const patch of inversePatches) {
+      if (patch.op !== 'replace') {
+        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        continue;
+      }
+      observed[patch.path.join('.')].oldValue = patch.value;
+    }
+    for (const [path, values] of Object.entries(observed)) {
+      this._settingObservers[path]?.forEach(observer =>
+        observer(values.oldValue, values.newValue)
+      );
+      this.settingDidChange(path, values.oldValue, values.newValue);
+    }
+    return patches;
+  }
+
+  observeSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
+    if (!this._settingObservers[path]) {
+      this._settingObservers[path] = [];
+    }
+    if (this._settingObservers[path].includes(observer)) {
+      throw new Error(`observer already registered for setting '${path}'`);
+    }
+    this._settingObservers[path].push(observer);
+  }
+
+  observeSettings(paths: string[], observer: (oldValue: Setting, newValue: Setting) => void) {
+    for (let path of paths) {
+      this.observeSetting(path, observer);
+    }
+  }
+
+  unobserveSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
+    if (!this._settingObservers[path]) {
+      throw new Error(`no observers for setting '${path}'`);
+    }
+    const idx = this._settingObservers[path].indexOf(observer);
+    if (idx === -1) {
+      throw new Error(`observer not registered for setting '${path}'`);
+    }
+    this._settingObservers[path].splice(idx, 1);
+    if (this._settingObservers[path].length === 0) {
+      delete this._settingObservers[path];
+    }
+  }
+
+  setManifest(manifest: Manifest, data?: AllSeriesData, resetSettings = true) {
+    this._manifest = manifest;
+    const dataset = firstDataset(this._manifest);
+
+    if (resetSettings) {
+      this._createSettings(this._inputSettings);
+    }
 
     if (chartTypeDefaults[dataset.representation.subtype]) {
       Object.entries(chartTypeDefaults[dataset.representation.subtype]!).forEach(([path, value]) => {
@@ -314,25 +436,25 @@ export class ParaState extends BaseState {
       });
     }
 
-    if (dataset.settings) {
-      Object.entries(dataset.settings).forEach(([path, value]) =>
-        this.updateSettings(draft => {
-          SettingsManager.set(path, value as Setting | undefined, draft);
-        }, true));
+    const extSettings = manifest.extensions?.paracharts?.settings;
+    if (extSettings) {
+      this.updateSettings(draft => {
+        SettingsManager.applySettings(extSettings as SettingGroup, draft);
+      }, true);
       if (this.settings.color.colorMap) {
         this._colors.setColorMap(...this.settings.color.colorMap.split(',').map(c => c.trim()));
       }
     }
 
     this._jimerator = new Jimerator(this._manifest, data);
-    this._jimerator.render();
 
     this.seriesAnalyses = {};
 
     this._type = dataset.representation.subtype;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
-    if (dataset.data.source === 'inline') {
+
+    if (!dataset.href) {
       if (isPastryType(this._type) || isVennType(this._type)) {
         this._model = modelFromInlineData(manifest);
       } else {
@@ -342,6 +464,7 @@ export class ParaState extends BaseState {
           this._pairAnalyzerConstructor
         );
       }
+      this.createChartInfo();
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
@@ -359,6 +482,7 @@ export class ParaState extends BaseState {
           this._pairAnalyzerConstructor
         );
       }
+      this.createChartInfo();
       //this._seriesProperties = new SeriesPropertyManager(this);
       this._seriesProperties.reset();
       this.data = data;
@@ -373,31 +497,95 @@ export class ParaState extends BaseState {
         };
       });
     }
-    this.postNotice('paranotice', {key: 'manifestSet'});
+    this.postNotice('paranotice', { key: 'manifestSet' });
   }
 
-  lowlightSeries(seriesKey: string) {
-    if (!this._lowlightedSeries.includes(seriesKey)) {
-      this._lowlightedSeries = [...this._lowlightedSeries, seriesKey];
+  getActionChains() {
+    const chains: string[] = [];
+    if (this.isTitleHighlighted) {
+      chains.push('getTitle().highlight()');
+    }
+    if (this.isHorizontalAxisHighlighted) {
+      chains.push('getHorizontalAxis().highlight()');
+    }
+    if (this.isVerticalAxisHighlighted) {
+      chains.push('getVerticalAxis().highlight()');
+    }
+    if (this.isEastLegendHighlighted) {
+      chains.push('getLegend(east).highlight()');
+    }
+    if (this.isWestLegendHighlighted) {
+      chains.push('getLegend(west).highlight()');
+    }
+    if (this.isNorthLegendHighlighted) {
+      chains.push('getLegend(north).highlight()');
+    }
+    if (this.isSouthLegendHighlighted) {
+      chains.push('getLegend(south).highlight()');
+    }
+    this._rangeHighlights.forEach(highlight => {
+      chains.push(`getRange(${highlight.startPortion}, ${highlight.endPortion}).highlight()`);
+    });
+    this._highlightedIntersections.forEach(index => {
+      chains.push(`getIntersection(${index}).highlight()`);
+    });
+    this._dimmedSeries.forEach(series => {
+      chains.push(`getSeries(${series}).dim()`);
+    });
+    this._hiddenSeries.forEach(series => {
+      chains.push(`getSeries(${series}).hide()`);
+    });
+    this._visitedDatapoints.forEach(id => {
+      const cursor = datapointIdToCursor(id);
+      chains.push(`getSeries(${cursor.seriesKey}).getPoint(${cursor.index}).visit()`);
+    });
+    this._selectedDatapoints.forEach(id => {
+      const cursor = datapointIdToCursor(id);
+      chains.push(`getSeries(${cursor.seriesKey}).getPoint(${cursor.index}).select()`);
+    });
+    this._highlightedDatapoints.forEach(id => {
+      const cursor = datapointIdToCursor(id);
+      chains.push(`getSeries(${cursor.seriesKey}).getPoint(${cursor.index}).highlight()`);
+    });
+    return chains;
+  }
+
+  startTourGuide() {
+    this.clearSelected();
+    this.clearAllHighlights();
+    this.clearPopups();
+    this._chartInfo.navMap!.root.goTo('top', {}, true);
+  }
+
+  endTourGuide() {
+    this.clearSelected();
+    this.clearAllHighlights();
+    this.clearPopups();
+    this.chartInfo.navMap!.root.goTo('top', {}, true);
+  }
+
+  dimSeries(seriesKey: string) {
+    if (!this._dimmedSeries.includes(seriesKey)) {
+      this._dimmedSeries = [...this._dimmedSeries, seriesKey];
     }
   }
 
-  clearSeriesLowlight(seriesKey: string) {
-    if (this._lowlightedSeries.includes(seriesKey)) {
-      this._lowlightedSeries = this._lowlightedSeries.filter(el => el !== seriesKey);
+  clearSeriesDimming(seriesKey: string) {
+    if (this._dimmedSeries.includes(seriesKey)) {
+      this._dimmedSeries = this._dimmedSeries.filter(el => el !== seriesKey);
     }
   }
 
-  isSeriesLowlighted(seriesKey: string): boolean {
-    return this._lowlightedSeries.includes(seriesKey);
+  isSeriesDimmed(seriesKey: string): boolean {
+    return this._dimmedSeries.includes(seriesKey);
   }
 
-  lowlightOtherSeries(...seriesKeys: string[]) {
-    this._lowlightedSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
+  dimOtherSeries(...seriesKeys: string[]) {
+    this._dimmedSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
   }
 
-  clearAllSeriesLowlights() {
-    this._lowlightedSeries = [];
+  clearAllSeriesDimming() {
+    this._dimmedSeries = [];
   }
 
   hideSeries(seriesKey: string) {
@@ -475,6 +663,10 @@ export class ParaState extends BaseState {
     return this._prevVisitedDatapoints;
   }
 
+  get prevHighlightedElements() {
+    return this._prevHighlightedElements;
+  }
+
   get everVisitedDatapoints() {
     return this._everVisitedDatapoints;
   }
@@ -500,7 +692,7 @@ export class ParaState extends BaseState {
   protected _datapointSetHas(
     seriesKey: string, index: number, collection: Set<string>
   ): boolean {
-    return collection.has(`${seriesKey}-${index}`);
+    return collection.has(`${seriesKey}${DATAPOINT_ID_SEP}${index}`);
   }
 
   isVisited(seriesKey: string, index: number) {
@@ -508,7 +700,7 @@ export class ParaState extends BaseState {
   }
 
   isVisitedSeries(seriesKey: string) {
-    return this._visitedDatapoints.values().some(value => value.startsWith(seriesKey));
+    return this._visitedDatapoints.values().some(value => value.startsWith(seriesKey + DATAPOINT_ID_SEP));
   }
 
   wasVisited(seriesKey: string, index: number) {
@@ -516,7 +708,7 @@ export class ParaState extends BaseState {
   }
 
   wasVisitedSeries(seriesKey: string) {
-    return this._prevVisitedDatapoints.values().some(value => value.startsWith(seriesKey));
+    return this._prevVisitedDatapoints.values().some(value => value.startsWith(seriesKey + DATAPOINT_ID_SEP));
   }
 
   everVisited(seriesKey: string, index: number): boolean {
@@ -524,7 +716,7 @@ export class ParaState extends BaseState {
   }
 
   everVisitedSeries(seriesKey: string): boolean {
-    return this._everVisitedDatapoints.values().some(value => value.startsWith(seriesKey));
+    return this._everVisitedDatapoints.values().some(value => value.startsWith(seriesKey + DATAPOINT_ID_SEP));
   }
 
   clearVisited() {
@@ -546,6 +738,40 @@ export class ParaState extends BaseState {
   clearDatapointHighlight(seriesKey: string, index: number) {
     this._highlightedDatapoints = new Set(
       [...this._highlightedDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
+    );
+  }
+
+  get crosshairedDatapoints() {
+    return this._crosshairedDatapoints;
+  }
+
+  get dataSpaceCrosshairs() {
+    return this._dataSpaceCrosshairs;
+  }
+
+  addDatapointCrosshair(seriesKey: string, index: number) {
+    this._crosshairedDatapoints = new Set([
+      ...this._crosshairedDatapoints.values(),
+      makeDatapointId(seriesKey, index)
+    ]);
+  }
+
+  clearDatapointCrosshair(seriesKey: string, index: number) {
+    this._crosshairedDatapoints = new Set(
+      [...this._crosshairedDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
+    );
+  }
+
+  addDataSpaceCrosshair(x: string, y: string) {
+    this._dataSpaceCrosshairs = new Set([
+      ...this._dataSpaceCrosshairs.values(),
+      { x: x, y: y }
+    ]);
+  }
+
+  clearDataSpaceCrosshair(x: string, y: string) {
+    this._dataSpaceCrosshairs = new Set(
+      [...this._dataSpaceCrosshairs.values()].filter(ch => ch.x !== x || ch.y !== y)
     );
   }
 
@@ -578,11 +804,83 @@ export class ParaState extends BaseState {
     this._highlightedSequences = new Set();
   }
 
+  get highlightedIntersections(): Set<number> {
+    return this._highlightedIntersections;
+  }
+
+  highlightIntersection(index: number) {
+    this._highlightedIntersections = new Set([
+      ...this._highlightedIntersections.values(),
+      index
+    ]);
+  }
+
+  highlightCluster(index: number) {
+    this._highlightedClusters = new Set([
+      ...this._highlightedClusters.values(),
+      index
+    ]);
+  }
+
+  get highlightedClusters() {
+    return this._highlightedClusters;
+  }
+
+  clearIntersectionHighlight(index: number) {
+    for (let intersection of Array.from(this._highlightedIntersections)) {
+      this.removeCrosshair(`intersection-${intersection}`)
+    }
+    this._highlightedIntersections = new Set(
+      [...this._highlightedIntersections.values()].filter(idx => idx !== index)
+    );
+  }
+
+  clearAllAxisLabelHighlights() {
+    this._highlightedAxisLabels = new Set();
+  }
+
+  get highlightedAxisLabels(): Set<HighlightAxisOptions> {
+    return this._highlightedAxisLabels;
+  }
+
+  highlightAxisLabel(options: HighlightAxisOptions) {
+    this._highlightedAxisLabels = new Set([
+      ...this._highlightedAxisLabels.values(),
+      { tierIndex: options.tierIndex, labelIndex: options.labelIndex, orientation: options.orientation }
+    ]);
+  }
+
+  clearAxisLabelHighlight(options: HighlightAxisOptions) {
+    this._highlightedAxisLabels = new Set(
+      [...this._highlightedAxisLabels.values()].filter(l => (l.labelIndex !== options.labelIndex
+        || l.tierIndex !== options.tierIndex
+        || l.orientation !== options.orientation))
+    );
+  }
+
+  clearAllIntersectionHighlights() {
+    this._highlightedIntersections = new Set();
+  }
+
   clearAllHighlights() {
     this.clearAllDatapointHighlights();
     this.clearAllSequenceHighlights();
+    this.clearAllIntersectionHighlights();
     this.clearAllRangeHighlights();
-    this.clearAllSeriesLowlights();
+    this.clearAllSeriesDimming();
+    this.clearAllAxisLabelHighlights();
+    this._highlightedClusters = new Set();
+    this._clusterShellViews = [];
+    this.isTitleHighlighted = false;
+    this.isHorizontalAxisHighlighted = false;
+    this.isVerticalAxisHighlighted = false;
+    this.isEastLegendHighlighted = false;
+    this.isWestLegendHighlighted = false;
+    this.isNorthLegendHighlighted = false;
+    this.isSouthLegendHighlighted = false;
+    this.updateSettings(draft => {
+      draft.type.scatter.isShowTrendLine = false
+    });
   }
 
   get selectedDatapoints() {
@@ -633,7 +931,7 @@ export class ParaState extends BaseState {
   }
 
   isSelectedSeries(seriesKey: string) {
-    return this._selectedDatapoints.values().some(value => value.startsWith(seriesKey));
+    return this._selectedDatapoints.values().some(value => value.startsWith(seriesKey + DATAPOINT_ID_SEP));
   }
 
   wasSelected(seriesKey: string, index: number) {
@@ -641,7 +939,7 @@ export class ParaState extends BaseState {
   }
 
   wasSelectedSeries(seriesKey: string) {
-    return this._prevSelectedDatapoints.values().some(value => value.startsWith(seriesKey));
+    return this._prevSelectedDatapoints.values().some(value => value.startsWith(seriesKey + DATAPOINT_ID_SEP));
   }
 
   clearSelected() {
@@ -667,7 +965,8 @@ export class ParaState extends BaseState {
       index,
       annotation: `${seriesKey}, ${recordLabel}: ${text}`,
       text,
-      id: `${seriesKey}-${recordLabel}-${this._annotID}`
+      id: `${seriesKey}-${recordLabel}-${this._annotID}`,
+      isSelected: true
     } as PointAnnotation];
     this._annotID++;
   }
@@ -967,12 +1266,16 @@ export class ParaState extends BaseState {
     this.requestUpdate();
   }
 
+  removeCrosshair(id: string) {
+    this.crossHairs.splice(this.crossHairs.findIndex(p => p.id === id), 1);
+    this.requestUpdate();
+  }
+
   clearPopups() {
     this.popups.splice(0, this.popups.length);
     this.focusPopups.splice(0, this.focusPopups.length);
     this.selectPopups.splice(0, this.selectPopups.length);
-    this.crossHair.splice(0, this.crossHair.length);
-    this.crossHairLabels.splice(0, this.crossHairLabels.length);
+    this.crossHairs.splice(0, this.crossHairs.length);
   }
 
 }

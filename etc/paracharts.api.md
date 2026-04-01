@@ -24,7 +24,6 @@ import { FormatType } from '@fizz/parasummary';
 import { Highlight as Highlight_2 } from '@fizz/parasummary';
 import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
-import type { JIM } from '@fizz/jimerator';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
 import { Logger } from '@fizz/logger';
@@ -32,6 +31,7 @@ import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';
 import { Model } from '@fizz/paramodel';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';
+import { Patch } from 'immer';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { Point as Point_2 } from '@fizz/chart-classifier-utils';
 import { PropertyValueMap } from 'lit';
@@ -134,7 +134,7 @@ export interface BarSettings extends PlaneChartSettings {
     labelFontSize: string;
     lineWidth: number;
     orderBy?: string;
-    stacking: 'none' | 'standard';
+    stacking: 'none' | 'standard' | string;
     stackInsideGap: number;
     stackLabelGap: number;
     totalLabelGap: number;
@@ -285,13 +285,13 @@ export type Direction = VertDirection | HorizDirection | DepthDirection;
 // @public (undocumented)
 export const directions: Direction[];
 
-// @public (undocumented)
+// @public
 export type FieldInfo = {
     name: string;
     type: Datatype_2;
 };
 
-// @public (undocumented)
+// @public
 export const FORMAT_CONTEXT_SETTINGS: {
     horizTick: string;
     vertTick: string;
@@ -449,10 +449,13 @@ export interface ManifestBuilderInput {
     xAxis?: {
         variableType: CsvDataType;
         title: string;
+        units?: string;
     };
     // (undocumented)
     yAxis?: {
         title: string;
+        units?: string;
+        multiplier?: number;
     };
 }
 
@@ -466,6 +469,88 @@ export interface OrientedAxisSettings<T extends AxisOrientation> extends Setting
     position: T extends 'horiz' ? VertCardinalDirection : HorizCardinalDirection;
     ticks: TickSettings;
     title: AxisTitleSettings;
+}
+
+// @public
+export class ParaAPI {
+    constructor(_paraChart: ParaChart);
+    get actions(): Actions;
+    // Warning: (ae-forgotten-export) The symbol "Actions" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _actions: Actions;
+    addCrosshair(xAxis: string | number, yAxis: string | number): void;
+    // Warning: (ae-forgotten-export) The symbol "BaseChartInfo" needs to be exported by the entry point index.d.ts
+    get chartInfo(): BaseChartInfo;
+    clearAllDatapointHighlights(): void;
+    clearAllHighlights(): void;
+    clearAllIntersectionHighlights(): void;
+    clearAllPopups(): void;
+    clearAllRangeHighlights(): void;
+    clearAllSequenceHighlights(): void;
+    clearAllSeriesHighlights(): void;
+    clearCrosshair(xAxis: string | number, yAxis: string | number): void;
+    clearEastLegendHighlight(): void;
+    clearHorizontalAxisHighlight(): void;
+    clearIntersectionHighlight(index: number): void;
+    clearNorthLegendHighlight(): void;
+    clearRangeHighlight(startPortion: number, endPortion: number): void;
+    clearSelected(): void;
+    clearSouthLegendHighlight(): void;
+    clearTitleHighlight(): void;
+    clearVerticalAxisHighlight(): void;
+    clearVisited(): void;
+    clearWestLegendHighlight(): void;
+    disableTourGuideActions(): void;
+    // Warning: (ae-forgotten-export) The symbol "AvailableActions" needs to be exported by the entry point index.d.ts
+    // Warning: (ae-forgotten-export) The symbol "ActionArgumentMap" needs to be exported by the entry point index.d.ts
+    doAction(action: keyof AvailableActions, args?: ActionArgumentMap): void;
+    downloadPNG(): void;
+    downloadSVG(): void;
+    enableTourGuideActions(): void;
+    getAltText(): Promise<string | undefined>;
+    getDescription(): Promise<string | undefined>;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPIHorizontalAxis" needs to be exported by the entry point index.d.ts
+    getHorizontalAxis(): ParaAPIHorizontalAxis;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPIIntersection" needs to be exported by the entry point index.d.ts
+    getIntersection(index: number): ParaAPIIntersection;
+    getJIM(): Manifest | undefined;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPILegend" needs to be exported by the entry point index.d.ts
+    getLegend(location: CardinalDirection): ParaAPILegend;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPIRange" needs to be exported by the entry point index.d.ts
+    getRange(startPortion: number, endPortion: number): ParaAPIRange;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPISeriesGroup" needs to be exported by the entry point index.d.ts
+    getSeries(...seriesLabelsOrKeys: string[]): ParaAPISeriesGroup;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPITitle" needs to be exported by the entry point index.d.ts
+    getTitle(): ParaAPITitle;
+    // Warning: (ae-forgotten-export) The symbol "ParaAPIVerticalAxis" needs to be exported by the entry point index.d.ts
+    getVerticalAxis(): ParaAPIVerticalAxis;
+    hideAllSeries(): void;
+    highlightEastLegend(): void;
+    highlightHorizontalAxis(): void;
+    highlightIntersection(index: number): void;
+    highlightNorthLegend(): void;
+    highlightRange(startPortion: number, endPortion: number): void;
+    highlightSouthLegend(): void;
+    highlightTitle(): void;
+    highlightVerticalAxis(): void;
+    highlightWestLegend(): void;
+    get paraChart(): ParaChart;
+    // (undocumented)
+    protected _paraChart: ParaChart;
+    refresh(): void;
+    serializeChart(): string;
+    setManifest(manifestUrl: string): void;
+    setSetting(settingPath: string, value: Setting): void;
+    // (undocumented)
+    protected _standardActions: Actions;
+    // (undocumented)
+    protected _tourGuideActions: Actions;
+    // (undocumented)
+    protected _tourGuideNoSelfVoicing: boolean;
+    // (undocumented)
+    protected _tourGuideSelfVoicingState: boolean;
+    unhideAllSeries(): void;
 }
 
 // Warning: (ae-forgotten-export) The symbol "ParaComponent" needs to be exported by the entry point index.d.ts
@@ -526,14 +611,10 @@ export class ParaChart extends ParaComponent {
     protected log: Logger;
     // (undocumented)
     accessor manifest: string;
-    // (undocumented)
-    protected _manifest?: Manifest;
     // Warning: (ae-forgotten-export) The symbol "SourceKind" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
     manifestType: SourceKind;
-    // Warning: (ae-forgotten-export) The symbol "ParaAPI" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     protected _paraAPI: ParaAPI;
     // Warning: (ae-forgotten-export) The symbol "ParaState" needs to be exported by the entry point index.d.ts
@@ -556,7 +637,7 @@ export class ParaChart extends ParaComponent {
     render(): TemplateResult;
     resizeScrollytelling(): void;
     // (undocumented)
-    runLoader(manifestInput: string, manifestType: SourceKind, forceType?: boolean, description?: string): Promise<void>;
+    runLoader(manifestInput: string, manifestType: SourceKind, forceType?: boolean, description?: string, resetSettings?: boolean): Promise<void>;
     // (undocumented)
     get scrollyteller(): Scrollyteller | undefined;
     // Warning: (ae-forgotten-export) The symbol "Scrollyteller" needs to be exported by the entry point index.d.ts
@@ -577,6 +658,12 @@ export class ParaChart extends ParaComponent {
     protected _styleManager: StyleManager;
     // (undocumented)
     static styles: CSSResult[];
+    // (undocumented)
+    get tourBus(): TourBus;
+    // Warning: (ae-forgotten-export) The symbol "TourBus" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _tourBus: TourBus;
     // (undocumented)
     type?: ChartType_2;
     // (undocumented)
@@ -696,8 +783,8 @@ export type riffSpeeds = 'slow' | 'medium' | 'fast';
 
 // @public (undocumented)
 export interface ScatterSettings extends PointSettings {
-    isDrawTrendLine: boolean;
     isShowOutliers: boolean;
+    isShowTrendLine: boolean;
 }
 
 // @public
@@ -873,7 +960,7 @@ export interface YAxisSettings extends AxisSettings {
 
 // Warnings were encountered during analysis:
 //
-// types/state/settings_types.d.ts:35:5 - (ae-forgotten-export) The symbol "Color" needs to be exported by the entry point index.d.ts
+// types/state/settings_types.d.ts:45:5 - (ae-forgotten-export) The symbol "Color" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

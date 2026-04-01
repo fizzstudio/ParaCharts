@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { BaseChartInfo } from './base_chart';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, type NavMap } from '../view/layers/data/navigation';
-import { DeepReadonly, PlaneChartSettings } from '../state';
+import { DeepReadonly, PlaneChartSettings, type ParaState } from '../state';
 import { ParaView } from '../paraview';
 import { type RiffOrder } from './base_chart';
 import { type HorizDirection } from '../state';
@@ -76,24 +76,24 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   protected _xInterval!: Interval | null;
   /** Y-axis interval, if axis is numeric */
   protected _yInterval!: Interval | null;
+  /** Min and max chart y values, if y is numeric */
+  protected _yExtremes!: Interval | null;
 
-  constructor(type: ChartType, paraView: ParaView) {
-    super(type, paraView);
+  constructor(type: ChartType, paraState: ParaState) {
+    super(type, paraState);
   }
 
   protected _init(): void {
     super._init();
-    const indepFacetKey = this._paraState.model!.independentFacetKeys[0];
-    const indepFacet = this._paraState.model!.getFacet(indepFacetKey)!;
-    const depFacetKey = this._paraState.model!.dependentFacetKeys[0];
-    const depFacet = this._paraState.model!.getFacet(depFacetKey)!;
+    const indepFacet = this._paraState.model!.getFacet("x")!;
+    const depFacet = this._paraState.model!.getFacet("y")!;
     if (indepFacet.datatype === 'number') {
-      this._xInterval = this._numericXAxisRange(indepFacetKey);
+      this._xInterval = this._numericXAxisRange("x");
     } else {
       this._xInterval = null;
     }
     if (depFacet.datatype === 'number') {
-      this._yInterval = this._numericYAxisRange(depFacetKey);
+      this._yInterval = this._numericYAxisRange("y");
     } else {
       this._yInterval = null;
     }
@@ -159,6 +159,10 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
 
   get yInterval(): Interval | null {
     return this._yInterval;
+  }
+
+  get yExtremes(): Interval | null {
+    return this._yExtremes;
   }
 
   get settings() {
@@ -283,6 +287,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
    */
   protected _numericYAxisRange(facetKey: string): Interval {
     const facetInterval = this._paraState.model!.getFacetInterval(facetKey)!;
+    this._yExtremes = facetInterval;
     return computeAxisRange(
       this.settings.minYValue === 'unset'
         ? facetInterval.start
@@ -320,11 +325,18 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     // Sort by value of first datapoint from greatest to least
     const sortedSeries = this.seriesInNavOrder();
     sortedSeries.forEach((series, i) => {
-      const seriesNode = new NavNode(this._navMap!.root, 'series', {
-        seriesKey: series.key
-      }, this._paraState);
-      seriesNode.connect('left', left);
-      left = seriesNode;
+      if (sortedSeries.length > 1) {
+        const seriesNode = new NavNode(this._navMap!.root, 'series', {
+          seriesKey: series.key
+        }, this._paraState);
+        seriesNode.connect('left', left);
+        if (i === 0) {
+          seriesNode.connect('up', left);
+          seriesNode.connect('down', left);
+          seriesNode.connect('right', left);
+        }
+        left = seriesNode;
+      }
       //series.datapoints.forEach((_dp, j) => seriesNode.addDatapoint(series.key, j));
       series.datapoints.forEach((dp, j) => {
         const node = new NavNode(this._navMap!.root,
@@ -332,6 +344,11 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
           this._paraState);
         //node.addDatapoint(series.key, j);
         node.connect('left', left);
+        if (j === 0 && sortedSeries.length === 1) {
+          node.connect('up', left);
+          node.connect('down', left);
+          node.connect('right', left);
+        }
         left = node;
       });
     });
@@ -375,14 +392,69 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
 
   protected _createSequenceNavNodes() {
     if (!this._canCreateSequenceNavNodes()) return;
-    const seriesSeqNodes: NavNode<'sequence'>[][] = [];
+    let seriesSeqNodes: NavNode<'sequence'>[][] = [];
     this._altNavMap = this._navMap!.clone();
+
+    const model = this._paraState.model!;
+    if (model.series.length === 1) {
+      seriesSeqNodes.push(this._createSingleSeriesSequenceNodes());
+    } else {
+      seriesSeqNodes = this._createMultiSeriesSequenceNodes();
+    }
+
+    // Make sequence node 'down' links
+    seriesSeqNodes.slice(0, -1).forEach((seqNodes, i) => {
+      seqNodes.forEach(node => {
+        const nodeBelow = seriesSeqNodes[i + 1].find(otherNode =>
+          otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
+        node.connect('down', nodeBelow, false);
+      });
+    });
+    // Make sequence node 'up' links
+    seriesSeqNodes.slice(1).forEach((seqNodes, i) => {
+      seqNodes.forEach((node, j) => {
+        const nodeAbove = seriesSeqNodes[i].find(otherNode =>
+          otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
+        node.connect('up', nodeAbove, false);
+      });
+    });
+  }
+
+  protected _createSingleSeriesSequenceNodes(): NavNode<'sequence'>[] {
+    const chartLanding = this._altNavMap!.root.query('top')[0];
+    const analysis = this._paraState.seriesAnalyses[this._paraState.model!.seriesKeys[0]]!;
+    const datapointNodes = this._altNavMap!.root.query('datapoint');
+    const seqNodes: NavNode<'sequence'>[] = [];
+    analysis.sequences.forEach(seq => {
+      const seqNode = new NavNode(datapointNodes[0].layer, 'sequence', {
+        seriesKey: this._paraState.model!.seriesKeys[0],
+        start: seq.start,
+        end: seq.end
+      }, this._paraState);
+      seqNodes.push(seqNode);
+    });
+    // Replace chart landing links to datapoints with links to sequences
+    chartLanding.connect('left', seqNodes[0]);
+    chartLanding.connect('right', seqNodes[0]);
+    chartLanding.connect('up', seqNodes[0]);
+    chartLanding.connect('down', seqNodes[0]);
+    seqNodes.slice(0, -1).forEach((seqNode, i) => {
+      seqNode.connect('right', seqNodes[i + 1]);
+    });
+    // Break first datapoint link with chart landing
+    datapointNodes[0].disconnect('left', false);
+    this._connectSequenceToDatapointNodes(seqNodes, datapointNodes);
+    return seqNodes;
+  }
+
+  protected _createMultiSeriesSequenceNodes(): NavNode<'sequence'>[][] {
+    const seriesSeqNodes: NavNode<'sequence'>[][] = [];
     this._altNavMap!.root.query('series').forEach(seriesNode => {
       if (seriesSeqNodes.length) {
         seriesNode.connect('left', seriesSeqNodes.at(-1)!.at(-1)!);
       }
       const analysis = this._paraState.seriesAnalyses[seriesNode.options.seriesKey]!;
-      const datapointNodes = seriesNode.allNodes('right', 'datapoint');
+      const datapointNodes = seriesNode.allNodes('right', 'datapoint') as NavNode<'datapoint'>[];
       const seqNodes: NavNode<'sequence'>[] = [];
       analysis.sequences.forEach(seq => {
         const seqNode = new NavNode(seriesNode.layer, 'sequence', {
@@ -404,38 +476,30 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       // Breaks first and last datapoint links with series landings
       datapointNodes[0].disconnect('left', false);
       datapointNodes.at(-1)!.disconnect('right');
-      seqNodes.forEach(seqNode => {
-        // Unless the first datapoint of the sequence already has an
-        // 'out' link set (i.e., it's a boundary node), make a reciprocal
-        // link to it
-        seqNode.connect('in', datapointNodes[seqNode.options.start],
-          !datapointNodes[seqNode.options.start].getLink('out'));
-        for (let i = seqNode.options.start + 1; i < seqNode.options.end; i++) {
-          // non-reciprocal 'out' links from remaining datapoints to sequence
-          datapointNodes[i].connect('out', seqNode, false);
-        }
-        if (seqNode.peekNode('right', 1)) {
-          // We aren't on the last sequence, so the final datapoint is a boundary point.
-          // Make a non-reciprocal 'in' link to the next sequence
-          datapointNodes[seqNode.options.end - 1].connect('in', seqNode.peekNode('right', 1)!, false);
-        }
-      });
+      this._connectSequenceToDatapointNodes(seqNodes, datapointNodes);
     });
-    // Make sequence node 'down' links
-    seriesSeqNodes.slice(0, -1).forEach((seqNodes, i) => {
-      seqNodes.forEach(node => {
-        const nodeBelow = seriesSeqNodes[i + 1].find(otherNode =>
-          otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
-        node.connect('down', nodeBelow, false);
-      });
-    });
-    // Make sequence node 'up' links
-    seriesSeqNodes.slice(1).forEach((seqNodes, i) => {
-      seqNodes.forEach((node, j) => {
-        const nodeAbove = seriesSeqNodes[i].find(otherNode =>
-          otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
-        node.connect('up', nodeAbove, false);
-      });
+    return seriesSeqNodes;
+  }
+
+  protected _connectSequenceToDatapointNodes(
+    seqNodes: NavNode<'sequence'>[],
+    datapointNodes: NavNode<'datapoint'>[]
+  ) {
+    seqNodes.forEach(seqNode => {
+      // Unless the first datapoint of the sequence already has an
+      // 'out' link set (i.e., it's a boundary node), make a reciprocal
+      // link to it
+      seqNode.connect('in', datapointNodes[seqNode.options.start],
+        !datapointNodes[seqNode.options.start].getLink('out'));
+      for (let i = seqNode.options.start + 1; i < seqNode.options.end; i++) {
+        // non-reciprocal 'out' links from remaining datapoints to sequence
+        datapointNodes[i].connect('out', seqNode, false);
+      }
+      if (seqNode.peekNode('right', 1)) {
+        // We aren't on the last sequence, so the final datapoint is a boundary point.
+        // Make a non-reciprocal 'in' link to the next sequence
+        datapointNodes[seqNode.options.end - 1].connect('in', seqNode.peekNode('right', 1)!, false);
+      }
     });
   }
 

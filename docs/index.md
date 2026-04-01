@@ -15,3 +15,4 @@ This site contains information on how to get the most out of ParaCharts as an en
 - [Custom Elements](customElements.md): the `para-chart` and `para-chart-ai` elements.
 - [Manifest](manifest.md): a description of the manifest format used by ParaCharts.
 - [Settings object](settingsObj.md): the settings property of a ParaChart element.
+- [ParaAPI](paraapi.md): the JavaScript API for controlling a ParaChart.

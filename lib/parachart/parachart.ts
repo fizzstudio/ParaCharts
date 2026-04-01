@@ -20,6 +20,7 @@ import { ChartType } from '@fizz/paramanifest'
 import { DeepReadonly, Settings, SettingsInput, type Setting } from '../state/settings_types';
 import { SettingsManager } from '../state';
 import '../paraview';
+import '../components/data_table';
 import '../control_panel';
 import '../control_panel/caption';
 import { type ParaCaptionBox } from '../control_panel/caption';
@@ -39,8 +40,6 @@ import {
   type ScrollytellerOptions,
 } from '../scrollyteller/scrollyteller';
 
-import { Manifest } from '@fizz/paramanifest';
-
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
 import { property, queryAssignedElements } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
@@ -49,10 +48,13 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { SlotLoader } from '../loader/slotloader';
 import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { initParaSummary } from '@fizz/parasummary';
+import { TourBus } from './tour_bus';
 
 // NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
+/** @public */
 export class ParaChart extends ParaComponent {
   @property({ type: Boolean }) headless = false;
+  @property({ type: Boolean }) scalable = false;
   @property() accessor manifest = '';
   @property() manifestType: SourceKind = 'url';
   // `data` must be a URL, if set
@@ -62,11 +64,11 @@ export class ParaChart extends ParaComponent {
   @property() type?: ChartType;
   @property() accessor description: string | undefined;
   @property({type: Boolean, attribute: false}) isControlPanelOpen = false;
+  @property({type: Boolean, attribute: false}) isDataTableVisible = false;
 
   readonly captionBox: ParaCaptionBox;
   protected _paraViewRef = createRef<ParaView>();
   protected _controlPanelRef = createRef<ParaControlPanel>();
-  protected _manifest?: Manifest;
   private _slotLoader = new SlotLoader();
   protected log: Logger = getLogger("ParaChart");
 
@@ -80,6 +82,7 @@ export class ParaChart extends ParaComponent {
   protected _paraAPI!: ParaAPI;
   // allow _scrollyteller to be cleared with undefined after destroy() ===
   protected _scrollyteller: Scrollyteller | undefined;
+  protected _tourBus: TourBus;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -127,6 +130,9 @@ export class ParaChart extends ParaComponent {
     this.captionBox = document.createElement('para-caption-box');
     this.captionBox.globalState = this._globalState;
     this.captionBox.parachart = this;
+
+    this._tourBus = new TourBus(this._globalState.paraState, this.captionBox);
+
     customPropLoader.paraState = this.paraState;
     customPropLoader.registerColors();
     customPropLoader.registerSymbols();
@@ -137,8 +143,8 @@ export class ParaChart extends ParaComponent {
     });
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
-        resolve();
         await initParaSummary();
+        resolve();
         // It's now safe to load a manifest
         // In headless mode, loadManifest() handles loading via willUpdate, so skip here
         if (this.manifest && !this.headless) {
@@ -211,6 +217,10 @@ export class ParaChart extends ParaComponent {
 
   get scrollyteller() {
     return this._scrollyteller;
+  }
+
+  get tourBus() {
+    return this._tourBus;
   }
 
   get paraState() {
@@ -323,6 +333,9 @@ export class ParaChart extends ParaComponent {
         flex-direction: column;
         margin: 0;
       }
+      figure.scalable {
+        width: 100%;
+      }
     `
   ];
 
@@ -330,7 +343,8 @@ export class ParaChart extends ParaComponent {
     manifestInput: string,
     manifestType: SourceKind,
     forceType = true,
-    description?: string
+    description?: string,
+    resetSettings = true,
   ): Promise<void> {
     this._paraState.dataState = 'pending';
     try {
@@ -340,23 +354,24 @@ export class ParaChart extends ParaComponent {
         forceType ? this.forcecharttype : undefined,
         description ?? this.description
       );
-      this._manifest = manifest;
       if (forceType) {
         this._paraState.clearVisited();
         this._paraState.clearSelected();
         this._paraState.clearAllHighlights();
         this._paraState.clearPopups();
       }
-      this._paraState.setManifest(manifest, data);
+      this._paraState.setManifest(manifest, data, resetSettings);
       this._paraState.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode
       this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
       this._paraAPI = new ParaAPI(this);
+      await this._tourBus.sendContextPayload();
       this._loaderResolver!();
     } catch (error) {
       this.log.error(error instanceof Error ? error.message : String(error));
       this._paraState.dataState = 'error';
       this._loaderRejector!(error instanceof Error ? error : new LoadError(LoadErrorCode.UNKNOWN, String(error)));
+      this._paraViewRef.value?.rejectJimReady();
     }
 
     if (this.api) {
@@ -381,7 +396,7 @@ export class ParaChart extends ParaComponent {
       return
     }
     this.paraView.documentView?.noticePosted(key, value);
-    this.paraView.documentView?.chartInfo.noticePosted(key, value);
+    this._globalState.paraState.chartInfo.noticePosted(key, value);
     this.captionBox.noticePosted(key, value);
     this.dispatchEvent(
       new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));
@@ -400,7 +415,8 @@ export class ParaChart extends ParaComponent {
     // We can't truly hide the para-chart, or labels don't get a proper size,
     // so we fall back on sr-only
     const classes = {
-      'sr-only': this.headless
+      'sr-only': this.headless,
+      'scalable': this.scalable
     };
     const cpanelStyles = {
       'width': `${this._paraState.settings.chart.size.width}px`
@@ -415,10 +431,17 @@ export class ParaChart extends ParaComponent {
           .paraChart=${this}
           .globalState=${this._globalState}
           colormode=${this._paraState?.settings.color.colorVisionMode ?? nothing}
+          ?scalable=${this.scalable}
           ?disableFocus=${this.headless}
         ></para-view>
         ${!(this.headless || this._paraState.settings.chart.isStatic)
           ? html`
+          <para-data-table
+            .isVisible=${this.isDataTableVisible}
+            .globalState=${this._globalState}
+            style=${styleMap(cpanelStyles)}
+            .paraChart=${this}
+          ></para-data-table>
             <para-control-panel
               ${ref(this._controlPanelRef)}
               style=${styleMap(cpanelStyles)}

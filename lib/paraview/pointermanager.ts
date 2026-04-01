@@ -35,22 +35,14 @@ interface Point {
 export class PointerEventManager {
   protected log: Logger = getLogger("PointerEventManager");
   private _dataRoot: SVGElement | null; // the group that contains all the datapoints
-  private _dataRect: SVGGraphicsElement | null; // the backdrop element behind all the datapoints, needs to be implemented
 
   private _touchArray: Array<PointerDetails> = [];
   private _currentTarget: SVGElement | null = null;
-
-  // TODO: remove all element selection code, since it's extraneous to chart datapoint selection
-  private _selectedElement: SVGElement | null = null;
-  private _selectedElements: Array<SVGElement> = [];
-  private _highlightBoxes = new WeakMap();
-  ///
 
   private _coords: Point | null = null;
 
   constructor(protected _paraView: ParaView) {
     this._dataRoot = null;
-    this._dataRect = null;
   }
 
   get coords() {
@@ -128,10 +120,6 @@ export class PointerEventManager {
     } else if (target !== this._currentTarget) {
       this._currentTarget = target;
 
-      if (this._selectedElements.includes(target)) {
-        // utteranceArray.push('Selected');
-      }
-
       // Note: the following block is not currently used, but may be in future features
       // track and update touches
       const id = event.pointerId;
@@ -172,8 +160,9 @@ export class PointerEventManager {
     const target = event.target as SVGGraphicsElement;
     if (event.detail < 2) {
       // not a double click, so do normal behavior
-      if (target === this._paraView.frame || target === this._dataRect) {
+      if (target === this._paraView.frame) {
         this.log.info('clicked backdrop!')
+        this._paraView.paraState.chartInfo.didClickBackground();
       } else {
         this._selectElement(target, event.shiftKey);
       }
@@ -201,116 +190,29 @@ export class PointerEventManager {
    */
   protected async _selectElement(target: SVGGraphicsElement, isAdd?: boolean) {
     if (this._paraView.paraState.settings.ui.isNarrativeHighlightEnabled) return;
-    if (!target) {
-      this._clearSelectedElements();
-    } else {
-      if (!isAdd) {
-        this._clearSelectedElements();
-      }
-
+    if (target) {
       const datapointEl = target.closest('[role="datapoint"]') as SVGElement;
       if (datapointEl) {
-        // const series = datapointEl.dataset.series as string;
-        // const index = +datapointEl.dataset.index!;
         const id = (datapointEl.id.endsWith('-sym')
           || datapointEl.id.endsWith('-ilb'))  // slice inside label
           ? datapointEl.id.slice(0, -4)
           : datapointEl.id;
         const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointViewForId(id)!;
-        // this._paraView.paraChart.command('click', [datapointView.seriesKey, datapointView.index]);
-        const chartInfo = this._paraView.documentView!.chartInfo;
+        const chartInfo = this._paraView.paraState.chartInfo;
         // Set quiet = true so that the visit announcement doesn't overwrite
         // the selection announcement
         chartInfo.navMap!.goTo(chartInfo.navDatapointType, {
           seriesKey: datapointView.seriesKey,
           index: datapointView.index
         }, true);
-        this._paraView.documentView!.chartInfo.selectCurrent(!!isAdd);
-
-        // TODO: remove all element selection code, since it's extraneous to chart datapoint selection
-        this._selectedElement = target;
-        this._selectedElements.push(target);
-
-        // this._createSelectBox(target);
+        this._paraView.paraState.chartInfo.selectCurrent(!!isAdd);
       } else {
         // might have clicked on an axis label, axis tick label or something else we can act on,
         //  but it's not a data point, so it can't be "selected"
-        this.log.info('not a datapoint!')
+        this.log.info('not a datapoint!');
+        this._paraView.paraState.chartInfo.didClickBackground();
       }
     }
-  }
-
-  // /**
-  //  * Set selected element and add a highlight box.
-  //  * @param {Element} target The element to be selected; deselects if absent or `null`.
-  //  * @private
-  //  * @memberOf module:@fizz/touchUI
-  //  */
-  // _createSelectBox(target: SVGGraphicsElement) {
-  //   // this.log.info('_selectElement');
-  //   if (target) {
-  //     // highlight box
-  //     const bbox = target.getBBox();
-
-  //     let x = bbox.x;
-  //     let y = bbox.y;
-
-  //     // find any transforms on the element
-  //     // TODO: fix this hack
-  //     const transforms = (target.parentNode! as SVGGraphicsElement).getAttribute('transform');
-  //     if (transforms) {
-  //       // highlightBox.setAttribute('transform', transforms );
-  //       // x += transforms.e;
-  //       // y += transforms.f;
-  //       let translate = transforms.split('translate(')[1].split(')')[0].split(',');
-  //       x += parseFloat(translate[0]);
-  //       y += parseFloat(translate[1]);
-  //       // const transformMatrix = target.transform.baseVal.consolidate().matrix;
-
-  //       // this.log.info('target.transform.baseVal.consolidate()', target.transform.baseVal.consolidate());
-  //     }
-  //     const highlightBox = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  //     highlightBox.classList.add('_highlight_box');
-  //     highlightBox.setAttribute('x', (x - 2.5).toString());
-  //     highlightBox.setAttribute('y', (y - 2.5).toString());
-  //     highlightBox.setAttribute('width', (bbox.width + 5).toString());
-  //     highlightBox.setAttribute('height', (bbox.height + 5).toString());
-
-  //     // this.canvasContainer.firstElementChild.append(highlightBox);
-
-  //     this._highlightBoxes.set(target, highlightBox);
-  //   }
-  // }
-
-  /**
-   * Remove selected element and remove its highlight box.
-   * @param target - The element to be selected; deselects if absent or `null`.
-   */
-  protected _deselectElement(target: SVGGraphicsElement) {
-    // if (target) {
-    //   if (target === this._selectedElement) {
-    //     this._selectedElement = null;
-    //   }
-    //   const index = this._selectedElements.indexOf(target);
-    //   this._selectedElements.splice(index, 1);
-
-    //   const highlightBox = this._highlightBoxes.get(target);
-    //   highlightBox.remove();
-    //   this._highlightBoxes.delete(target);
-    // }
-  }
-
-  /**
-   * Deselect all elements.
-   */
-  protected _clearSelectedElements() {
-    this._selectedElement = null;
-    // for (const target of this._selectedElements) {
-    //   const highlightBox = this._highlightBoxes.get(target);
-    //   highlightBox.remove();
-    // }
-    // this._selectedElements = [];
-    // this._highlightBoxes = new WeakMap();
   }
 
   /**

@@ -38,6 +38,9 @@ export class ParaChartAi extends ParaChart {
         flex-direction: column;
         margin: 0;
       }
+      figure.scalable {
+        width: 100%;
+      }
     `
   ];
 
