@@ -173,12 +173,14 @@ export class ParaChart extends ParaComponent {
             } else {
               //this.log.error(loadresult.error);
               this._paraState.dataState = 'error';
+              this._paraState.dispatchEvent(new CustomEvent('manifestError'));
             }
           }
         }
           else {
             this.log.info("No datatable in slot")
-            this._paraState.dataState = 'error'
+            this._paraState.dataState = 'error';
+            this._paraState.dispatchEvent(new CustomEvent('manifestError'));
           }
       });
     });
@@ -370,6 +372,7 @@ export class ParaChart extends ParaComponent {
     } catch (error) {
       this.log.error(error instanceof Error ? error.message : String(error));
       this._paraState.dataState = 'error';
+      this._paraState.dispatchEvent(new CustomEvent('manifestError'));
       this._loaderRejector!(error instanceof Error ? error : new LoadError(LoadErrorCode.UNKNOWN, String(error)));
       this._paraViewRef.value?.rejectJimReady();
     }
@@ -495,14 +498,16 @@ export class ParaChart extends ParaComponent {
    *  Short Descriptions
    */ 
 
-  async waitForManifest(): Promise<void> {
-    return new Promise(resolve => {
-      if (this.paraState.dataState === 'complete') {
-        resolve();
-      }
-      this.paraState.addEventListener('manifestSet', (_evt: Event) => {
-        resolve();
-      });
+  waitForManifest(): Promise<void> {
+    if (this.paraState.dataState === 'complete') {
+      return Promise.resolve();
+    }
+    if (this.paraState.dataState === 'error') {
+      return Promise.reject(new Error('Manifest failed to load'));
+    }
+    return new Promise((resolve, reject) => {
+      this.paraState.addEventListener('manifestSet', () => resolve(), { once: true });
+      this.paraState.addEventListener('manifestError', () => reject(new Error('Manifest failed to load')), { once: true });
     });
   }
 

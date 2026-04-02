@@ -318,6 +318,11 @@ export class ParaAPI {
     this._paraChart.setAttribute('manifest', manifestUrl);
   }
 
+  /** Wait for a manifest to be loaded. Resolves immediately if already loaded. */
+  waitForManifest(): Promise<void> {
+    return this._paraChart.waitForManifest();
+  }
+
   /** Get the chart title label. */
   getTitle(): ParaAPITitle {
     return new ParaAPITitle(this)
