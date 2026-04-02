@@ -348,13 +348,14 @@ describe('paraloader', () => {
       it('should parse bar-multi-manifest-48.json', () => {
         const content = readFileSync(resolve(DEMO_DATA_DIR, 'bar-multi-manifest-48.json'), 'utf-8');
         const manifest = JSON.parse(content);
+        const datasets = manifest.jim.datasets;
         
-        expect(manifest.datasets).toHaveLength(1);
-        expect(manifest.datasets[0].representation.subtype).toBe('column');
-        expect(manifest.datasets[0].title).toBe('Gross domestic product of the ASEAN countries from 2008 to 2018');
-        expect(manifest.datasets[0].series.length).toBeGreaterThan(0);
-        expect(manifest.datasets[0].facets.x.datatype).toBe('date');
-        expect(manifest.datasets[0].facets.y.datatype).toBe('number');
+        expect(datasets).toHaveLength(1);
+        expect(datasets[0].representation.subtype).toBe('column');
+        expect(datasets[0].title).toBe('Gross domestic product of the ASEAN countries from 2008 to 2018');
+        expect(datasets[0].series.length).toBeGreaterThan(0);
+        expect(datasets[0].facets.x.datatype).toBe('date');
+        expect(datasets[0].facets.y.datatype).toBe('number');
       });
 
       it('should parse line-single-manifest-128.json', () => {
