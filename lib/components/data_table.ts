@@ -7,7 +7,7 @@ import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
 
 import { html, css, nothing, render, type PropertyValues } from 'lit';
 import { property, state, queryAssignedElements, customElement } from 'lit/decorators.js';
-import {type Ref, ref, createRef} from 'lit/directives/ref.js';
+import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Unsubscribe } from '@lit-app/state';
 import { datapointIdToCursor } from '../state';
@@ -35,12 +35,12 @@ function cellCursorEq(cursor: CellCursor, other: CellCursor): boolean {
 @customElement('para-data-table')
 export class DataTable extends ParaComponent {
   paraChart!: ParaChart;
-  @property({type: Boolean}) isVisible = false;
+  @property({ type: Boolean }) isVisible = false;
   protected _log: Logger = getLogger('DataTable');
   protected _grid!: GridCell[][];
   protected _gridEls: Ref<HTMLElement>[][] = [];
   protected _paraStateChangeUnsub!: Unsubscribe;
-	// @state() protected _tabTargetCellCursor: CellCursor = {row: 0, col: 0};
+  // @state() protected _tabTargetCellCursor: CellCursor = {row: 0, col: 0};
 
   constructor() {
     super();
@@ -102,6 +102,10 @@ export class DataTable extends ParaComponent {
     return this._paraState.model!.seriesKeys[col];
   }
 
+  private _toggleTable() {
+    this.isVisible = !this.isVisible;
+  }
+
   protected _onKeydown(event: KeyboardEvent) {
     event.preventDefault();
     event.stopPropagation();
@@ -133,7 +137,7 @@ export class DataTable extends ParaComponent {
       this._paraState.chartInfo.navMap!.root.updateCursor([this._grid[row][this._numCols - 1].datapoint]);
       this._gridEls[row][this._numCols - 1].value!.focus();
     } else if (event.key === 'd' || event.key === 'D') {
-      this.paraChart.isDataTableVisible = ! this.paraChart.isDataTableVisible;
+      this.paraChart.isDataTableVisible = !this.paraChart.isDataTableVisible;
     } else if (event.key === ' ' || event.key === 'Enter') {
       this._paraState.chartInfo.selectCurrent(event.shiftKey);
     } else if (event.key === 'u' || event.key === 'U') {
@@ -173,7 +177,13 @@ export class DataTable extends ParaComponent {
 
   protected render() {
     return this._paraState.model
-    ? html`
+      ? html`
+       <button
+          id="datatablebutton"
+          @click=${this._toggleTable}
+          >
+          Show/Hide table
+        </button>
       <div
         class="wrapper"
         tabindex="-1"
@@ -203,9 +213,9 @@ export class DataTable extends ParaComponent {
                   ${row[0].x}
                 </td>
                 ${row.map((cell, j) => {
-                  const isVisited = this._paraState.isVisited(cell.datapoint.seriesKey, i);
-                  const isSelected = this._paraState.isSelected(cell.datapoint.seriesKey, i);
-                  return html`
+        const isVisited = this._paraState.isVisited(cell.datapoint.seriesKey, i);
+        const isSelected = this._paraState.isSelected(cell.datapoint.seriesKey, i);
+        return html`
                     <td
                       ${ref(this._gridEls[i][j])}
                       tabindex=${isVisited ? 0 : -1}
@@ -215,14 +225,15 @@ export class DataTable extends ParaComponent {
                     >
                       ${cell.y}
                     </td>
-                  `;})}
+                  `;
+      })}
               </tr>
             `)}
           </tbody>
         </table>
       </div>
     `
-    : html``;
+      : html``;
   }
 }
 
