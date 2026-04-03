@@ -474,13 +474,19 @@ export interface OrientedAxisSettings<T extends AxisOrientation> extends Setting
 // @public
 export class ParaAPI {
     constructor(_paraChart: ParaChart);
+    // (undocumented)
     get actions(): Actions;
     // Warning: (ae-forgotten-export) The symbol "Actions" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
     protected _actions: Actions;
+    // (undocumented)
     addCrosshair(xAxis: string | number, yAxis: string | number): void;
+    // (undocumented)
+    addTrendLine(): void;
     // Warning: (ae-forgotten-export) The symbol "BaseChartInfo" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
     get chartInfo(): BaseChartInfo;
     clearAllDatapointHighlights(): void;
     clearAllHighlights(): void;
@@ -489,16 +495,19 @@ export class ParaAPI {
     clearAllRangeHighlights(): void;
     clearAllSequenceHighlights(): void;
     clearAllSeriesHighlights(): void;
+    // (undocumented)
     clearCrosshair(xAxis: string | number, yAxis: string | number): void;
     clearEastLegendHighlight(): void;
     clearHorizontalAxisHighlight(): void;
     clearIntersectionHighlight(index: number): void;
     clearNorthLegendHighlight(): void;
     clearRangeHighlight(startPortion: number, endPortion: number): void;
+    // (undocumented)
     clearSelected(): void;
     clearSouthLegendHighlight(): void;
     clearTitleHighlight(): void;
     clearVerticalAxisHighlight(): void;
+    // (undocumented)
     clearVisited(): void;
     clearWestLegendHighlight(): void;
     disableTourGuideActions(): void;
@@ -508,6 +517,7 @@ export class ParaAPI {
     downloadPNG(): void;
     downloadSVG(): void;
     enableTourGuideActions(): void;
+    getAllSettings(): SettingsInput;
     getAltText(): Promise<string | undefined>;
     getDescription(): Promise<string | undefined>;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIHorizontalAxis" needs to be exported by the entry point index.d.ts
@@ -521,11 +531,15 @@ export class ParaAPI {
     getRange(startPortion: number, endPortion: number): ParaAPIRange;
     // Warning: (ae-forgotten-export) The symbol "ParaAPISeriesGroup" needs to be exported by the entry point index.d.ts
     getSeries(...seriesLabelsOrKeys: string[]): ParaAPISeriesGroup;
+    getSetting(settingPath: string): Setting;
+    getSettings(settingPaths: string[]): SettingsInput;
     // Warning: (ae-forgotten-export) The symbol "ParaAPITitle" needs to be exported by the entry point index.d.ts
     getTitle(): ParaAPITitle;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIVerticalAxis" needs to be exported by the entry point index.d.ts
     getVerticalAxis(): ParaAPIVerticalAxis;
     hideAllSeries(): void;
+    // (undocumented)
+    highlightCluster(clusterID: number): void;
     highlightEastLegend(): void;
     highlightHorizontalAxis(): void;
     highlightIntersection(index: number): void;
@@ -535,13 +549,21 @@ export class ParaAPI {
     highlightTitle(): void;
     highlightVerticalAxis(): void;
     highlightWestLegend(): void;
+    // (undocumented)
     get paraChart(): ParaChart;
     // (undocumented)
     protected _paraChart: ParaChart;
+    // (undocumented)
     refresh(): void;
+    // (undocumented)
+    removeTrendLine(): void;
     serializeChart(): string;
+    setHeight(height: number): void;
     setManifest(manifestUrl: string): void;
     setSetting(settingPath: string, value: Setting): void;
+    setSettings(settingsInput: SettingsInput): void;
+    setSize(width: number, height: number): void;
+    setWidth(width: number): void;
     // (undocumented)
     protected _standardActions: Actions;
     // (undocumented)
@@ -600,6 +622,8 @@ export class ParaChart extends ParaComponent {
     // (undocumented)
     isControlPanelOpen: boolean;
     // (undocumented)
+    isDataTableVisible: boolean;
+    // (undocumented)
     get loaded(): Promise<void> | null;
     // (undocumented)
     protected _loaderPromise: Promise<void> | null;
@@ -638,6 +662,8 @@ export class ParaChart extends ParaComponent {
     resizeScrollytelling(): void;
     // (undocumented)
     runLoader(manifestInput: string, manifestType: SourceKind, forceType?: boolean, description?: string, resetSettings?: boolean): Promise<void>;
+    // (undocumented)
+    scalable: boolean;
     // (undocumented)
     get scrollyteller(): Scrollyteller | undefined;
     // Warning: (ae-forgotten-export) The symbol "Scrollyteller" needs to be exported by the entry point index.d.ts
