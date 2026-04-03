@@ -6,52 +6,9 @@ import { Popup } from "../popup";
 import { PlotLayer } from "./layer";
 import { DatapointView } from "../data";
 import { PlanePlotView } from "./data";
+import { trendTranslation } from "../../common";
 
 export type AnnotationType = 'foreground' | 'background';
-export const trendTranslation = {
-    /** A single rising sequence */
-    "Rise": "Rising",
-    /** A single falling sequence */
-    "Fall": "Falling",
-    /** A single stable sequence */
-    "Stable": "Stable",
-    /** A single sequence that shows a large, rapid increase in value */
-    "BigJump": "Big Jump",
-    /** A single sequence that shows a large, rapid decrease in value */
-    "BigFall": "Big Fall",
-    /** A falling sequence followed by a rising sequence */
-    "ReversalToRise": "Reversal to Rising",
-    /** A rising sequence followed by a falling sequence */
-    "ReversalToFall": "Reversal to Falling",
-    /** A stable sequence followed by a rising sequence */
-    "EmergingRise": "Emerging Rising",
-    /** A stable sequence followed by a falling sequence */
-    "EmergingFall": "Emerging Falling",
-    /** A rising sequence followed by a stable sequence */
-    "RiseToStable": "Rising to Stable",
-    /** A falling sequence followed by a stable sequence */
-    "FallToStable": "Falling to Stable",
-    /** A rising sequence followed by a falling sequence and another rising sequence */
-    "Rebound": "Rebounding",
-    /** A falling sequence followed by a rising sequence and another falling sequence */
-    "TemporaryJump": "Temporary Jump",
-    /** A falling sequence followed by a short rising sequence at the end of the chart */
-    "PossibleReversalToRise": "Possible Reversal to Rising",
-    /** A rising sequence followed by a short falling sequence at the end of the chart */
-    "PossibleReversalToFall": "Possible Reversal to Falling",
-    /** A stable sequence followed by a short rising sequence at the end of the chart */
-    "PossibleEmergingRise": "Possible Emerging Rising",
-    /** A stable sequence followed by a short falling sequence at the end of the chart */
-    "PossibleEmergingFall": "Possible Emerging Falling",
-    /** A rising sequence followed by a short stable sequence at the end of the chart */
-    "PossibleRiseToStable": "Possible Rising to Stable",
-    /** A falling sequence followed by a short stable sequence at the end of the chart */
-    "PossibleFallToStable": "Possible Falling to Stable",
-    /** A rising sequence followed by a falling sequence and another short rising sequence at the end of the chart */
-    "PossibleRebound": "Possible Rebounding",
-    /** A falling sequence followed by a rising sequence and another short falling sequence at the end of the chart */
-    "PossibleTemporaryJump": "Possible Temporary Jump"
-}
 
 
 export class PopupLayer extends PlotLayer {
@@ -216,27 +173,13 @@ export class PopupLayer extends PlotLayer {
             y = leftDPView.y;
         }
         const seriesAnalysis = this.paraview.paraState.seriesAnalyses[firstDPView.seriesKey]!;
-        const index = seriesAnalysis.sequences.findIndex(s => s.start === datapointViews[0].index && s.end - 1 === datapointViews[datapointViews.length - 1].index);
+        const index = seriesAnalysis.sequences.findIndex(s => s.start === firstDPView.index && s.end - 1 === lastDPView.index);
         const labels = this.paraview.paraState.model!.series[0].datapoints.map(
             (p) => formatBox(p.facetBox('x')!, this.paraview.paraState.getFormatType('horizTick'))
         );
         const points = this.paraview.paraState.model!.series.find(s => s.key === datapointViews[0].seriesKey)!.datapoints;
         let text = '';
-        if (seriesAnalysis.sequences[index].message == null) {
-            let sequence = seriesAnalysis.sequences[index]
-            if (datapointViews[datapointViews.length - 1].y - datapointViews[0].y > 0 && Math.abs(sequence.slopeInfo.slope) > .2) {
-                text = text.concat(`Falling trend`)
-            }
-            else if (datapointViews[datapointViews.length - 1].y - datapointViews[0].y <= 0 && Math.abs(sequence.slopeInfo.slope) > .2) {
-                text = text.concat(`Rising trend`)
-            }
-            else {
-                text = text.concat(`Stable trend`)
-            }
-        }
-        else {
-            text = text.concat(`${trendTranslation[seriesAnalysis.sequences[index].message!]} trend`)
-        }
+        text = text.concat(`${trendTranslation[seriesAnalysis.sequences[index].slopeInfo.classes[0]]} trend`)
         const changeVal = parseFloat((points[seriesAnalysis.sequences[index].end - 1].facetValueAsNumber("y")!
             - points[seriesAnalysis.sequences[index].start].facetValueAsNumber("y")!).toFixed(4));
         text = text.concat(`\n${changeVal > 0 ? '+' : ''}${changeVal}`);
@@ -281,12 +224,12 @@ export class PopupLayer extends PlotLayer {
         let text = '';
 
         text = text.concat(`${(datapointViews[0].series.getLabel())}`);
-        if (seriesAnalysis?.message == null) {
-            text = text.concat(`\nNo trend detected`);
-        }
-        else {
-            text = text.concat(`\n${trendTranslation[seriesAnalysis?.message!]} trend`);
-        }
+        //if (seriesAnalysis?.message == null) {
+        //    text = text.concat(`\nNo trend detected`);
+        // }
+        //else {
+        //text = text.concat(`\n${trendTranslation[seriesAnalysis?.message!]} trend`);
+        // }
         let changeVal = parseFloat((points[points.length - 1].facetValueAsNumber("y")!
             - points[0].facetValueAsNumber("y")!).toFixed(4));
         text = text.concat(`\n${changeVal > 0 ? '+' : ''}${changeVal}`);

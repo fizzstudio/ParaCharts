@@ -50,7 +50,7 @@ import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
 import { defaults, chartTypeDefaults } from './settings_defaults';
 import { Colors } from '../common/colors';
-import { joinStrArray } from '../common/utils';
+import { joinStrArray, trendTranslation } from '../common/utils';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { actionMap } from './action_map';
@@ -684,7 +684,9 @@ export class ParaState extends BaseState {
       this._everVisitedDatapoints.add(makeDatapointId(datapoint.seriesKey, datapoint.datapointIndex));
     }
     if (this.settings.controlPanel.isMDRAnnotationsVisible) {
-      this.removeMDRAnnotations(this._prevVisitedDatapoints);
+      if (this._prevVisitedDatapoints.size > 0) {
+        this.removeMDRAnnotations(this._prevVisitedDatapoints);
+      }
       this.showMDRAnnotations();
     }
     // NB: Making _visitedDatapoints a lit-app/state property proved
@@ -998,7 +1000,7 @@ export class ParaState extends BaseState {
           return;
         };
         const length = this.model!.series[0].length - 1;
-        let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i]);
+        let relevantSequences = seriesAnalysis?.sequences
         for (let sequence of relevantSequences!) {
           this.highlightRange(sequence.start / length, (sequence.end - 1) / length);
         };
@@ -1006,11 +1008,11 @@ export class ParaState extends BaseState {
         this.addModelLineBreaks(seriesAnalysis!.sequences, seriesKey);
         this.addModelTrendLines(seriesAnalysis!.sequences, seriesKey);
 
-        let message = `Detected trend: ${seriesAnalysis?.message}, consisting of ${seriesAnalysis?.messageSeqs.length} datapoint sequences from`;
+        let message = `Detected trend: ${seriesAnalysis?.sequences.length} datapoint sequences from`;
         for (let seq of relevantSequences!) {
           const start = formatBox(this.model!.allPoints[seq.start].facetBox("x")!, this.getFormatType('horizTick'));
           const end = formatBox(this.model!.allPoints[seq.end - 1].facetBox("x")!, this.getFormatType('horizTick'));
-          message += ` ${start} to ${end} (${seq.message}),`;
+          message += ` ${start} to ${end} (${trendTranslation[seq.slopeInfo.classes[0]]}),`;
         }
         message = message.slice(0, -1) + ".";
         if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
@@ -1042,7 +1044,7 @@ export class ParaState extends BaseState {
     if (this.type !== 'line') {
       // No MDR annotations need to be removed
     } else if (visitedDatapoints.size > 0) {
-      seriesKey = datapointIdToCursor(this.visitedDatapoints.keys()!.toArray()[0]).seriesKey;
+      seriesKey = datapointIdToCursor(visitedDatapoints.keys()!.toArray()[0]).seriesKey;
       seriesAnalysis = this.model
         ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
         : null;
@@ -1053,7 +1055,7 @@ export class ParaState extends BaseState {
         : null;
     }
     const length = this.model!.series[0].length - 1;
-    let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i]);
+    let relevantSequences = seriesAnalysis?.sequences;
     for (let sequence of relevantSequences!) {
       this.clearRangeHighlight(sequence.start / length, (sequence.end - 1) / length);
     }
