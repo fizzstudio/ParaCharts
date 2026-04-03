@@ -673,6 +673,8 @@ export class ParaChart extends ParaComponent {
     // (undocumented)
     settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
     // (undocumented)
+    shortDescription(): Promise<string>;
+    // (undocumented)
     showAriaLiveHistory(): void;
     // (undocumented)
     get slotted(): HTMLElement[];
@@ -692,6 +694,8 @@ export class ParaChart extends ParaComponent {
     protected _tourBus: TourBus;
     // (undocumented)
     type?: ChartType_2;
+    // (undocumented)
+    waitForManifest(): Promise<void>;
     // (undocumented)
     willUpdate(changedProperties: PropertyValues<this>): void;
 }

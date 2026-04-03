@@ -1,0 +1,86 @@
+{
+  "jim": {
+    "datasets": [
+      {
+        "representation": {
+          "type": "chart",
+          "subtype": "waterfall"
+        },
+        "title": "Acme Corp Share Price",
+        "facets": {
+          "x": {
+            "label": "Year",
+            "variableType": "independent",
+            "measure": "nominal",
+            "datatype": "date",
+            "units": "year",
+            "displayType": {
+              "type": "axis",
+              "orientation": "horizontal"
+            }
+          },
+          "y": {
+            "label": "Share Price",
+            "variableType": "dependent",
+            "measure": "ratio",
+            "datatype": "number",
+            "multiplier": 1,
+            "units": "U.S. dollar",
+            "displayType": {
+              "type": "axis",
+              "orientation": "vertical"
+            }
+          }
+        },
+        "series": [
+          {
+            "key": "Acme Corp Share Price",
+            "records": [
+              {
+                "x": "D20130101",
+                "y": "10"
+              },
+              {
+                "x": "2013",
+                "y": "4"
+              },
+              {
+                "x": "2014",
+                "y": "3"
+              },
+              {
+                "x": "2015",
+                "y": "-9"
+              },
+              {
+                "x": "2016",
+                "y": "-5"
+              },
+              {
+                "x": "2017",
+                "y": "12"
+              },
+              {
+                "x": "2018",
+                "y": "-7"
+              },
+              {
+                "x": "2019",
+                "y": "4"
+              },
+              {
+                "x": "D20191231",
+                "y": "12"
+              }
+            ],
+            "topic": {
+              "baseQuantity": "share price",
+              "baseKind": "dimensioned",
+              "entity": "Acme Corp"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

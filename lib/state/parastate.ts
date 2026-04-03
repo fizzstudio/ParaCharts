@@ -243,7 +243,7 @@ export class ParaState extends BaseState {
   protected _seriesProperties: SeriesPropertyManager;
   protected _colors: Colors;
   protected _keymapManager = new KeymapManager(actionMap);
-  protected _summarizer!: Summarizer;
+  //protected _summarizer!: Summarizer;
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected _annotID: number = 0;
@@ -498,6 +498,9 @@ export class ParaState extends BaseState {
       });
     }
     this.postNotice('paranotice', { key: 'manifestSet' });
+    this.dispatchEvent(
+      new CustomEvent('manifestSet')
+    );
   }
 
   getActionChains() {
@@ -1278,6 +1281,10 @@ export class ParaState extends BaseState {
     this.focusPopups.splice(0, this.focusPopups.length);
     this.selectPopups.splice(0, this.selectPopups.length);
     this.crossHairs.splice(0, this.crossHairs.length);
+  }
+
+  async shortDescription(): Promise<HighlightedSummary> {
+    return this.chartInfo.summarizer.getRequestedSummaries(['$.datasets[0]._short']);
   }
 
 }
