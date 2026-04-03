@@ -208,15 +208,16 @@ export class DataTable extends ParaComponent {
           </thead>
           <tbody>
             ${this._grid.map((row, i) => html`
-              <tr>
-                <td>
+              <tr role="row">
+                <td role="rowheader">
                   ${row[0].x}
                 </td>
                 ${row.map((cell, j) => {
         const isVisited = this._paraState.isVisited(cell.datapoint.seriesKey, i);
         const isSelected = this._paraState.isSelected(cell.datapoint.seriesKey, i);
         return html`
-                    <td
+                    <td>
+                    <button
                       ${ref(this._gridEls[i][j])}
                       tabindex=${isVisited ? 0 : -1}
                       aria-selected=${isSelected ? 'true' : nothing}
@@ -224,7 +225,8 @@ export class DataTable extends ParaComponent {
                       @click=${() => this._onClick(cell, i, j)}
                     >
                       ${cell.y}
-                    </td>
+                    </button>
+                      </td>
                   `;
       })}
               </tr>
