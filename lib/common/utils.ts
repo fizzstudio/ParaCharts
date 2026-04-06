@@ -267,3 +267,12 @@ export function horizAdjust(label: Popup) {
   label.grid.y -= (label.grid.height / 2);
   label.box.y -= (label.grid.height / 2);
 };
+
+export const trendTranslation = {
+    /** A single rising sequence */
+    "1": "Rising",
+    /** A single falling sequence */
+    "-1": "Falling",
+    /** A single stable sequence */
+    "0": "Stable",
+}

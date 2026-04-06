@@ -93,7 +93,7 @@ export function /*for tests*/ describeAdjacentDatapoints(model: Model, targetVie
     if (comparisonNext = describeAdjacentDatapointComparison(model, targetView, 'next')) {
         comparisons.push(comparisonNext);
     }
-    return join(comparisons, true);
+    return join(comparisons);
 }
 
 export function /*for tests*/ describeAdjacentDatapointComparison(
