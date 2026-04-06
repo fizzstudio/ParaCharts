@@ -533,6 +533,7 @@ export class ParaAPI {
     getSeries(...seriesLabelsOrKeys: string[]): ParaAPISeriesGroup;
     getSetting(settingPath: string): Setting;
     getSettings(settingPaths: string[]): SettingsInput;
+    getShortDescription(): Promise<string | undefined>;
     // Warning: (ae-forgotten-export) The symbol "ParaAPITitle" needs to be exported by the entry point index.d.ts
     getTitle(): ParaAPITitle;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIVerticalAxis" needs to be exported by the entry point index.d.ts
@@ -573,6 +574,7 @@ export class ParaAPI {
     // (undocumented)
     protected _tourGuideSelfVoicingState: boolean;
     unhideAllSeries(): void;
+    waitForManifest(): Promise<void>;
 }
 
 // Warning: (ae-forgotten-export) The symbol "ParaComponent" needs to be exported by the entry point index.d.ts
@@ -711,6 +713,7 @@ export class ParaHeadless {
         svg: string;
         description: string;
         altText: string;
+        shortDescription: string;
         jim: string;
     }>;
     // (undocumented)

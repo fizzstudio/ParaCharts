@@ -399,6 +399,12 @@ export class ParaAPI {
     return summary?.text;
   }
 
+  /** Get the chart short description. */
+  async getShortDescription(): Promise<string | undefined> {
+    const summary = await this._paraChart.paraState.chartInfo.summarizer.getRequestedSummaries(['$.datasets[0]._short']);
+    return summary?.text;
+  }
+
   /** Get the chart JIM. */
   getJIM(): Manifest | undefined {
     const manifest = this.paraChart.paraState.jimerator?.manifest;

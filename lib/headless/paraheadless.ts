@@ -104,12 +104,13 @@ export class ParaHeadless {
   /**
    * Generate chart and return SVG with accessibility metadata.
    * Must be called after loadManifest() completes successfully.
-   * @returns Object containing SVG string, description, alt text, and JIM metadata
+   * @returns Object containing SVG string, description, alt text, short description, and JIM metadata
    */
   async getChartOutput(): Promise<{
     svg: string;
     description: string;
     altText: string;
+    shortDescription: string;
     jim: string;
   }> {
     await this.jimReady;
@@ -117,10 +118,11 @@ export class ParaHeadless {
     const svg = this.api.serializeChart();
     const description = await this.api.getDescription() ?? '';
     const altText = await this.api.getAltText() ?? '';
+    const shortDescription = await this.api.getShortDescription() ?? '';
     const jimObj = this.api.getJIM();
     const jim = jimObj ? JSON.stringify(jimObj) : '';
 
-    return { svg, description, altText, jim };
+    return { svg, description, altText, shortDescription, jim };
   }
 
 }
