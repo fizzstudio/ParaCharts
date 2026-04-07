@@ -75,6 +75,7 @@
     "test:unit": "vitest run --project=unit",
     "test:browser": "vitest run --project=browser",
     "test:watch": "vitest watch",
+    "pubalpha": "npm version prerelease --preid alpha && npm publish --tag alpha",
     "pubpatch": "npm version patch && npm publish",
     "pubminor": "npm version minor && npm publish",
     "pubmajor": "npm version major && npm publish",
