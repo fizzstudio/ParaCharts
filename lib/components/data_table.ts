@@ -199,7 +199,7 @@ export class DataTable extends ParaComponent {
           <tbody>
             ${this._grid.map((row, i) => html`
               <tr>
-                <td>
+                <td role="rowheader">
                   ${row[0].x}
                 </td>
                 ${row.map((cell, j) => {
@@ -207,6 +207,7 @@ export class DataTable extends ParaComponent {
                   const isSelected = this._paraState.isSelected(cell.datapoint.seriesKey, i);
                   return html`
                     <td
+                      role="gridcell"
                       ${ref(this._gridEls[i][j])}
                       tabindex=${isVisited ? 0 : -1}
                       aria-selected=${isSelected ? 'true' : nothing}
