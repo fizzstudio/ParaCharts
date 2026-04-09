@@ -189,7 +189,7 @@ export class PointerEventManager {
    * @param target - The element to be selected; deselects if absent or `null`.
    */
   protected async _selectElement(target: SVGGraphicsElement, isAdd?: boolean) {
-    if (this._paraView.paraState.settings.ui.isNarrativeHighlightEnabled) return;
+    if (this._paraView.paraState.config.ui.isTourGuideEnabled) return;
     if (target) {
       const datapointEl = target.closest('[role="datapoint"]') as SVGElement;
       if (datapointEl) {

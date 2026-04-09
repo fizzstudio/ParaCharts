@@ -73,8 +73,8 @@ export class AriaLive extends ParaComponent {
         this._setHistory([...this._history, msg ?? '']);
 
         if (msg
-          && this._paraState.settings.ui.isVoicingEnabled
-          && this._paraState.settings.ui.isAnnouncementEnabled) {
+          && this._paraState.config.ui.isVoicingEnabled
+          && this._paraState.config.ui.isAnnouncementEnabled) {
           this._voicing.speak(msg, JSON.parse(highlights!), this.announcement.startFrom);
         }
       })
@@ -114,7 +114,7 @@ export class AriaLive extends ParaComponent {
 
   render() {
     // XXX hack
-    this._voicing.rate = this._paraState.settings.ui.speechRate;
+    this._voicing.rate = this._paraState.config.ui.speechRate;
     return html`
       <div
         ${ref(this._ariaLiveRef)}

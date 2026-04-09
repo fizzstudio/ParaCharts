@@ -4,6 +4,7 @@ import {
   DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
   type Setting,
 } from './settings_types';
+import { Config } from '../config/config_types';
 import { SettingsManager } from './settings_manager';
 import { defaults, chartTypeDefaults } from './settings_defaults';
 
@@ -22,6 +23,7 @@ export interface ParaStateCallbacks {
  */
 export abstract class BaseState extends State {
   @property() settings!: Settings;
+  @property() config!: Config;
 
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
   protected log: Logger = getLogger("ParaState");

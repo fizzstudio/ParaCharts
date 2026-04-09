@@ -71,30 +71,6 @@ export type BoxStyle = {
 };
 
 /** @public */
-export interface UISettings extends SettingGroup {
-  /** Enable voice output for screen reader users */
-  isVoicingEnabled: boolean;
-  /** Enable visual highlighting when narrative elements are announced */
-  isNarrativeHighlightEnabled: boolean;
-  /** Pause narrative highlighting temporarily */
-  isNarrativeHighlightPaused: boolean;
-  /** Enable aria-live announcements */
-  isAnnouncementEnabled: boolean;
-  /** Voice output speech rate. Range: 0.5 to 2 */
-  speechRate: number;
-  /** Enable fullscreen mode */
-  isFullscreenEnabled: boolean;
-  /** Enable low vision accessibility enhancements */
-  isLowVisionModeEnabled: boolean;
-  /** Show focus ring around active elements */
-  isFocusRingEnabled: boolean;
-  /** Gap size around focus ring in pixels */
-  focusRingGap: number;
-  /** Timeout in milliseconds for navigation runs */
-  navRunTimeoutMs: number;
-}
-
-/** @public */
 export interface AnimationSettings extends SettingGroup {
   /** Enable chart animations */
   isAnimationEnabled: boolean;
@@ -702,62 +678,6 @@ export interface HistogramSettings extends PointSettings {
 
 // export type SliceLabelPosition = 'inside' | 'outside' | 'auto';
 
-/** Settings for labels outside radial charts
- * @public
- */
-export interface RadialOutsideLabelSettings extends SettingGroup {
-  /** Vertical gap between labels */
-  vertGap: number;
-  /** Gap between arc and label */
-  arcGap: number;
-  /** Horizontal shift for label positioning */
-  horizShift: number;
-  /** Horizontal padding around labels */
-  horizPadding: number;
-  /** Style of leader line to label */
-  leaderStyle: 'direct' | 'underline';
-  /** Label value format */
-  format: LabelFormat;
-  /** Gap for underline leader style */
-  underlineGap: number;
-  /** Label content template */
-  contents: string;
-}
-
-/** Settings for labels inside radial charts
- * @public
- */
-export interface RadialInsideLabelSettings extends SettingGroup {
-  /** Label value format */
-  format: LabelFormat;
-  /** Position as distance along radius (0-1) */
-  position: number;
-  /** Label content template */
-  contents: string;
-}
-
-/** @public */
-export interface RadialSettings extends SettingGroup {
-  /** Outside label configuration */
-  outsideLabels: RadialOutsideLabelSettings;
-  /** Inside label configuration */
-  insideLabels: RadialInsideLabelSettings;
-  /** Show label in center of chart */
-  isRenderCenterLabel: boolean;
-  /** Thickness of donut/gauge ring */
-  annularThickness: number;
-  /** What to show in center label */
-  centerLabel: 'none' | 'title';
-  /** Padding around center label */
-  centerLabelPadding: number;
-  /** Rotation offset for slice orientation */
-  orientationAngleOffset: number;
-  /** Which slices to separate from chart */
-  explode: string;
-  /** Distance for exploded slices */
-  explodeDistance: number;
-}
-
 /** Chart type-specific settings collection
  * @public
  */
@@ -774,12 +694,6 @@ export interface ChartTypeSettings extends SettingGroup {
   histogram: HistogramSettings;
   /** Heat map settings */
   heatmap: HeatmapSettings;
-  /** Pie chart settings */
-  pie: RadialSettings;
-  /** Donut chart settings */
-  donut: RadialSettings;
-  /** Gauge chart settings */
-  gauge: RadialSettings;
   /** Step line chart settings */
   stepline: StepLineSettings;
   /** Lollipop chart settings */
@@ -855,30 +769,6 @@ export interface StatusBarSettings extends SettingGroup {
  */
 export type riffSpeeds = 'slow' | 'medium' | 'fast';
 
-/** Audio sonification settings
- * @public
- */
-export interface SonificationSettings extends SettingGroup {
-  /** Enable sonification audio feedback */
-  isSoniEnabled: boolean;
-  /** Enable musical riff playback */
-  isRiffEnabled: boolean;
-  /** Enable audio notifications */
-  isNotificationEnabled: boolean;
-  /** Lower frequency bound in Hz */
-  hertzLower: number;
-  /** Upper frequency bound in Hz */
-  hertzUpper: number;
-  /** Sonification playback speed multiplier */
-  soniPlaySpeed?: number;
-  /** Speed for musical riffs */
-  riffSpeed?: riffSpeeds;
-  /** Numeric index for riff speed */
-  riffSpeedIndex: number;
-  /** Play chords as arpeggios */
-  isArpeggiateChords: boolean;
-}
-
 /** Scrollytelling narrative mode settings
  * @public
  */
@@ -909,8 +799,6 @@ export interface Settings extends SettingGroup {
   type: ChartTypeSettings;
   /** Grid line settings */
   grid: GridSettings;
-  /** User interface settings */
-  ui: UISettings;
   /** Animation settings */
   animation: AnimationSettings;
   /** Scrollytelling settings */
@@ -925,8 +813,6 @@ export interface Settings extends SettingGroup {
   dataTable: DataTableSettings;
   /** Status bar settings */
   statusBar: StatusBarSettings;
-  /** Audio sonification settings */
-  sonification: SonificationSettings;
   /** Developer/debugging settings */
   dev: DevSettings;
 }

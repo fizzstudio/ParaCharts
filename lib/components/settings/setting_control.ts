@@ -46,7 +46,11 @@ export abstract class SettingControl<T extends SettingControlType> extends ParaC
   ];
 
   protected _updateSetting(key: string, value: SettingControlValueType<SettingControlType>) {
-    this._paraState.updateSettings(draft => SettingsManager.set(key, value, draft));
+    if (this.info.isConfig) {
+      this._paraState.updateConfig(draft => SettingsManager.set(key, value, draft));
+    } else {
+      this._paraState.updateSettings(draft => SettingsManager.set(key, value, draft));
+    }
   }
 
   protected _validateInput(value: Setting, control: EventTarget) {

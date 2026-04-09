@@ -82,6 +82,10 @@ export abstract class DataLayer extends PlotLayer {
     return SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.paraState.settings);
   }
 
+  get config(): DeepReadonly<PlotSettings> {
+    return SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.paraState.config);
+  }
+
   get chartInfo(): BaseChartInfo {
     return this._chartInfo;
   }

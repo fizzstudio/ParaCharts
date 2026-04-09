@@ -114,7 +114,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
           annotation: `${series}, ${recordLabel}: ${annotationText}`,
           text: annotationText,
           id: `${series}-${recordLabel}-${this._paraState.nextAnnotID()}`,
-          isSelected: this._paraState.settings.ui.isLowVisionModeEnabled ? false : true,
+          isSelected: this._paraState.config.ui.isLowVisionModeEnabled ? false : true,
         });
       }
     }
