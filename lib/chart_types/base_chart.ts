@@ -454,11 +454,11 @@ export abstract class BaseChartInfo {
         });
       }
     } else if (cursor.isNodeType('series')) {
+      await this._playCurrentRiff();
       if (!quiet) {
         this._paraState.announce(
           await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
       }
-      this._playCurrentRiff();
       this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
     } else if (cursor.isNodeType(this.navDatapointType)) {
       // NOTE: this needs to be done before the datapoint is visited, to check whether the series has
@@ -481,11 +481,11 @@ export abstract class BaseChartInfo {
           announcements.push(seriesSummary.text);
         }
       }
+      if (this._paraState.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
+        await this.playDatapoints([datapoint]);
+      }
       if (!quiet) {
         this._paraState.announce(announcements);
-      }
-      if (this._paraState.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
-        this.playDatapoints([datapoint]);
       }
       this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
 
@@ -494,14 +494,15 @@ export abstract class BaseChartInfo {
     } else if (cursor.isNodeType('chord')) {
       if (this._paraState.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
         if (this._paraState.settings.sonification.isArpeggiateChords) {
-          this._playCurrentRiff(this._chordRiffOrder(), true);
+          await this._playCurrentRiff(this._chordRiffOrder(), true);
         } else {
           const datapoints = cursor.datapoints.map(dp =>
             this._paraState.model!.atKeyAndIndex(dp.seriesKey, dp.datapointIndex)!);
-          this.playDatapoints(datapoints);
+          await this.playDatapoints(datapoints);
         }
       }
     } else if (cursor.isNodeType('sequence')) {
+      await this._playCurrentRiff();
       if (!quiet) {
         this._paraState.announce(
           await this._summarizer.getSequenceSummary({
@@ -511,7 +512,6 @@ export abstract class BaseChartInfo {
           })
         );
       }
-      this._playCurrentRiff();
 
       // this._paraState.highlight(
       //   `sequence-${cursor.options.seriesKey}-${cursor.options.start}-${cursor.options.end}`);
@@ -549,20 +549,21 @@ export abstract class BaseChartInfo {
   }
 
   /** Play a riff for the current nav node */
-  protected _playCurrentRiff(order?: RiffOrder, isChord = false) {
+  protected _playCurrentRiff(order?: RiffOrder, isChord = false): Promise<void> {
     if (this._paraState.settings.sonification.isSoniEnabled
       && this._paraState.settings.sonification.isRiffEnabled) {
-      this.playRiff(this._navMap!.cursor.datapoints, order, isChord);
+      return this.playRiff(this._navMap!.cursor.datapoints, order, isChord);
     }
+    return Promise.resolve();
   }
 
-  abstract playRiff(datapoints: Datapoint[], order?: RiffOrder, isChord?: boolean): void;
+  abstract playRiff(datapoints: Datapoint[], order?: RiffOrder, isChord?: boolean): Promise<void>;
 
   protected _chordRiffOrder(): RiffOrder {
     return 'normal';
   }
 
-  abstract playDatapoints(datapoints: Datapoint[]): void;
+  abstract playDatapoints(datapoints: Datapoint[]): Promise<void>;
 
   /**
    * Play all datapoints in the given direction.

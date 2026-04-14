@@ -114,14 +114,15 @@ export class PastryChartInfo extends BaseChartInfo {
     }));
   }
 
-  playDatapoints(datapoints: PlaneDatapoint[]): void {
-    this._sonifier.playDatapoints(datapoints, {invert: true, durationVariable: true});
+  playDatapoints(datapoints: PlaneDatapoint[]): Promise<void> {
+    return this._sonifier.playDatapoints(datapoints, {invert: true, durationVariable: true});
   }
 
   playDir(dir: HorizDirection): void {
   }
 
-  playRiff(datapoints: Datapoint[], order?: RiffOrder) {
+  playRiff(datapoints: Datapoint[], order?: RiffOrder): Promise<void> {
+    return Promise.resolve();
   }
 
   protected _sparkBrailleInfo() {

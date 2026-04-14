@@ -110,7 +110,7 @@ export class WaterfallChartInfo extends PlaneChartInfo {
   //   super.playDatapoints(datapoints);
   // }
 
-  playDatapoints(datapoints: PlaneDatapoint[]): void {
+  async playDatapoints(datapoints: PlaneDatapoint[]): Promise<void> {
     const length = datapoints.length;
     loopParaviewRefresh(this._paraView,
       this._paraView.paraState.settings.animation.popInAnimateRevealTimeMs
@@ -135,11 +135,12 @@ export class WaterfallChartInfo extends PlaneChartInfo {
     // const total = this._cumulativeTotalForDatapoint(datapoints[0]);
     // console.log('TOTAL', total);
     // soniPoint.y = total;
-    this._sonifier.playSoniPoints([soniPoints[0]]);
+    await this._sonifier.playSoniPoints([soniPoints[0]]);
     if (soniPoints.length > 1) {
-      setTimeout(() => {
-        this._sonifier.playSoniPoints([soniPoints[1]]);
-      }, SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex));
+      await new Promise<void>(resolve =>
+        setTimeout(resolve, SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex))
+      );
+      await this._sonifier.playSoniPoints([soniPoints[1]]);
     }
   }
 

@@ -26,6 +26,7 @@ import { Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
 import { DocumentView } from '../view/document_view';
 import { Bezier, loopParaviewRefresh } from '../common';
 import { computeLabels } from '../common';
+import { NOTE_LENGTH } from '../audio/sonifier';
 
 import { Box, PlaneModel } from '@fizz/paramodel';
 import { Interval } from '@fizz/chart-classifier-utils';
@@ -503,7 +504,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     });
   }
 
-  playRiff(datapoints: Datapoint[], order?: RiffOrder, isChord?: boolean) {
+  playRiff(datapoints: Datapoint[], order?: RiffOrder, isChord?: boolean): Promise<void> {
     const datapointsClone = [...datapoints];
     datapointsClone.forEach(d => {
       const dpView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(d.seriesKey, d.datapointIndex)!;
@@ -554,19 +555,23 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       loopParaviewRefresh(paraview,
         paraview.paraState.settings.animation.popInAnimateRevealTimeMs
         + SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex)! * length, 50);
-      this._soniRiffInterval = setInterval(() => {
-        const datapoint = datapoints.shift();
-        if (!datapoint) {
-          clearInterval(this._soniRiffInterval!);
-        } else {
-          this._sonifier.playDatapoints([datapoint as PlaneDatapoint]);
-          this._soniNoteIndex++;
-        }
-      }, SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex));
+      return new Promise<void>(resolve => {
+        this._soniRiffInterval = setInterval(() => {
+          const datapoint = datapoints.shift();
+          if (!datapoint) {
+            clearInterval(this._soniRiffInterval!);
+            setTimeout(resolve, NOTE_LENGTH * 1000);
+          } else {
+            this._sonifier.playDatapoints([datapoint as PlaneDatapoint]);
+            this._soniNoteIndex++;
+          }
+        }, SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex));
+      });
     }
+    return Promise.resolve();
   }
 
-  playDatapoints(datapoints: PlaneDatapoint[]): void {
+  playDatapoints(datapoints: PlaneDatapoint[]): Promise<void> {
     const length = datapoints.length;
     for (let dpView of this._paraView.documentView!.chartLayers.dataLayer.datapointViews) {
       dpView.alwaysClip = false;
@@ -576,7 +581,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     loopParaviewRefresh(this._paraView,
       this._paraView.paraState.settings.animation.popInAnimateRevealTimeMs
       + SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex)! * length, 50);
-    this._sonifier.playDatapoints(datapoints);
+    return this._sonifier.playDatapoints(datapoints);
   }
 
   playDir(dir: HorizDirection) {
