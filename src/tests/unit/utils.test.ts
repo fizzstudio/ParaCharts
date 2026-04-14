@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { toFixed, capitalize, fixed } from '../../../lib/common/utils.js';
+import { toFixed, capitalize, fixed, precisionFromAxisRange, formatDataValue, joinStrArray, bboxOppositeAnchor } from '../../../lib/common/utils.js';
 
 describe('Utils', () => {
   describe('toFixed', () => {
@@ -73,6 +73,97 @@ describe('Utils', () => {
     it('should handle mixed content', () => {
       const result = fixed`Point (${1.234}, ${5.678}) named "${'origin'}"`;
       expect(result).toBe('Point (1.23, 5.68) named "origin"');
+    });
+  });
+
+  describe('precisionFromAxisRange', () => {
+    it('should return 0 digits for large ranges (log10 >= 3)', () => {
+      expect(precisionFromAxisRange(1000)).toBe(0);
+      expect(precisionFromAxisRange(10000)).toBe(0);
+    });
+
+    it('should return 1 digit for medium ranges (1 < log10 < 3)', () => {
+      expect(precisionFromAxisRange(100)).toBe(1);
+      expect(precisionFromAxisRange(50)).toBe(1);
+    });
+
+    it('should return ceil(abs(log10)) for small ranges (log10 <= 1)', () => {
+      expect(precisionFromAxisRange(10)).toBe(1);
+      expect(precisionFromAxisRange(1)).toBe(0);
+      expect(precisionFromAxisRange(0.1)).toBe(1);
+      expect(precisionFromAxisRange(0.01)).toBe(2);
+      expect(precisionFromAxisRange(0.001)).toBe(3);
+    });
+  });
+
+  describe('formatDataValue', () => {
+    it('should format values based on axis range precision', () => {
+      expect(formatDataValue(3.14159, 100)).toBe('3.1');
+      expect(formatDataValue(3.14159, 0.01)).toBe('3.14');
+    });
+
+    it('should strip trailing zeros for whole numbers', () => {
+      expect(formatDataValue(5, 100)).toBe('5');
+      expect(formatDataValue(42, 0.01)).toBe('42');
+    });
+
+    it('should handle negative values', () => {
+      expect(formatDataValue(-7.5, 100)).toBe('-7.5');
+      expect(formatDataValue(-0.123, 0.01)).toBe('-0.12');
+    });
+
+    it('should handle zero', () => {
+      expect(formatDataValue(0, 100)).toBe('0');
+      expect(formatDataValue(0, 1000)).toBe('0');
+    });
+  });
+
+  describe('joinStrArray', () => {
+    it('should return empty string for empty array', () => {
+      expect(joinStrArray([])).toBe('');
+    });
+
+    it('should return single item with a period', () => {
+      expect(joinStrArray(['Hello'])).toBe('Hello');
+    });
+
+    it('should join multiple items with periods', () => {
+      const result = joinStrArray(['First', 'Second', 'Third']);
+      expect(result).toContain('First');
+      expect(result).toContain('Second');
+      expect(result).toContain('Third');
+      expect(result.endsWith('.')).toBe(true);
+    });
+
+    it('should not double-add periods when items already end with punctuation', () => {
+      const result = joinStrArray(['Already punctuated.', 'Next']);
+      expect(result).not.toContain('..');
+    });
+
+    it('should filter out blank/whitespace-only strings', () => {
+      expect(joinStrArray(['', '  ', 'Valid'])).toBe('Valid');
+      expect(joinStrArray(['', '  ', '   '])).toBe('');
+    });
+
+    it('should include linebreak marker when provided', () => {
+      const result = joinStrArray(['First', 'Second'], '<br>');
+      expect(result).toContain('<br>');
+    });
+  });
+
+  describe('bboxOppositeAnchor', () => {
+    it('should return opposite sides', () => {
+      expect(bboxOppositeAnchor('top')).toBe('bottom');
+      expect(bboxOppositeAnchor('bottom')).toBe('top');
+      expect(bboxOppositeAnchor('left')).toBe('right');
+      expect(bboxOppositeAnchor('right')).toBe('left');
+    });
+
+    it('should return opposite corners', () => {
+      expect(bboxOppositeAnchor('topLeft')).toBe('bottomRight');
+      expect(bboxOppositeAnchor('topRight')).toBe('bottomLeft');
+      expect(bboxOppositeAnchor('bottomLeft')).toBe('topRight');
+      expect(bboxOppositeAnchor('bottomRight')).toBe('topLeft');
     });
   });
 });
