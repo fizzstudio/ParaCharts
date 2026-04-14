@@ -19,6 +19,7 @@ import { html, literal } from 'lit/static-html.js';
 import { State, property } from '@lit-app/state';
 import { produce } from 'immer';
 import { strToId } from '@fizz/paramanifest';
+import { ConfigSettingMetadata, configMetadata } from '../config/config_metadata';
 
 
 export type SettingControlOptionsType<T extends SettingControlType> =
@@ -60,6 +61,7 @@ export interface SettingControlOptions<T extends SettingControlType = SettingCon
  * @internal
  */
 export interface SettingControlInfo<T extends SettingControlType = SettingControlType> {
+  isConfig: boolean;
   /** Dotted path to the setting in the setting tree. */
   key: string;
   /** Setting control element reference. */
@@ -101,6 +103,7 @@ export class SettingControlManager extends State {
     this._settingControlInfo = produce(this._settingControlInfo, draft => {
       const controlInfo: Partial<SettingControlInfo<T>> = {};
       const tag = inputTypeTags[controlOptions.type];
+      controlInfo.isConfig = false;
       controlInfo.key = controlOptions.key;
       controlInfo.parentView = controlOptions.parentView;
       //controlInfo.settingControlRef = createRef();
@@ -117,6 +120,32 @@ export class SettingControlManager extends State {
         ></${tag}>
       `;
       draft[controlOptions.key] = controlInfo as SettingControlInfo;
+    });
+  }
+
+  insert<T extends SettingControlType>(key: string) {
+    const parts = key.split('.');
+    const metadata =
+      configMetadata[parts.slice(0, -1).join('.')].settings[parts.at(-1)!] as ConfigSettingMetadata<T>;
+    this._settingControlInfo = produce(this._settingControlInfo, draft => {
+      const controlInfo: Partial<SettingControlInfo<T>> = {};
+      const tag = inputTypeTags[metadata.control];
+      controlInfo.isConfig = true;
+      controlInfo.key = key;
+      controlInfo.parentView = metadata.parentView;
+      controlInfo.options = metadata.controlOptions;
+      // controlInfo.validator = controlOptions.validator;
+      controlInfo.render = () => html`
+        <${tag}
+          .value=${SettingsManager.get(key, this._paraState.config)}
+          .label=${metadata.label}
+          .info=${controlInfo}
+          .globalState=${this._paraState.globalState}
+          ?hidden=${metadata.hidden}
+          id="setting-${strToId(key)}"
+        ></${tag}>
+      `;
+      draft[key] = controlInfo as SettingControlInfo;
     });
   }
 

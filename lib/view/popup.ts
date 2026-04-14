@@ -112,7 +112,7 @@ export class Popup extends View {
                         : this.paraview.paraState.colors.contrastValueAt(this.popupLabelOptions.color!)
             };
         }
-        if (this.paraview.paraState.settings.ui.isLowVisionModeEnabled) {
+        if (this.paraview.paraState.config.ui.isLowVisionModeEnabled) {
             this._label.styleInfo = {
                 stroke: 'none',
                 fill: "black"
@@ -193,18 +193,18 @@ export class Popup extends View {
             this.pointerControlled = this.popupLabelOptions.pointerControlled;
         }
         if (!this.popupShapeOptions.fill) {
-            this.popupShapeOptions.fill = this.paraview.paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+            this.popupShapeOptions.fill = this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
                 : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
                     this.paraview.paraState.colors.lighten(this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.color), 6)
                     : this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.color);
         }
         if (!this.popupShapeOptions.stroke) {
-            this.popupShapeOptions.stroke = this.paraview.paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+            this.popupShapeOptions.stroke = this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
                 : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
                     this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.color)
                     : "black";
         }
-        if (!this.paraview.paraState.settings.ui.isLowVisionModeEnabled) {
+        if (!this.paraview.paraState.config.ui.isLowVisionModeEnabled) {
             this.popupShapeOptions.fill = `${this.popupShapeOptions.fill.slice(0, -1)}, ${this.paraview.paraState.settings.popup.opacity})`;
         }
         if (!this.popupShapeOptions.shape) {

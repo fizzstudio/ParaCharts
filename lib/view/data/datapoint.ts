@@ -401,9 +401,9 @@ export class DatapointView extends DataView {
       let chart = this.chart as PastryPlotView
       //@ts-ignore
       let params = this._params as RadialDatapointParams;
-      let angle = 2 * Math.PI - ((params.accum * 2 * Math.PI) + (params.percentage * Math.PI) - (chart.settings.orientationAngleOffset * 2 * Math.PI / 360))
-      x = this.x + chart.radius * (1 - chart.settings.annularThickness / 2) * Math.cos(angle)
-      y = this.y - chart.radius * (1 - chart.settings.annularThickness / 2) * Math.sin(angle)
+      let angle = 2 * Math.PI - ((params.accum * 2 * Math.PI) + (params.percentage * Math.PI) - (chart.config.orientationAngleOffset * 2 * Math.PI / 360))
+      x = this.x + chart.radius * (1 - chart.config.annularThickness / 2) * Math.cos(angle)
+      y = this.y - chart.radius * (1 - chart.config.annularThickness / 2) * Math.sin(angle)
       if (this.paraview.paraState.settings.popup.activation == "onHover") {
         pointerControlled = true;
       }

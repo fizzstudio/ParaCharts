@@ -1,0 +1,85 @@
+{
+    "abstract": true,
+    "family": "radial",
+    "settings": {
+        "annularThickness": {
+            "label": "Ring thickness",
+            "description": "Thickness of donut/gauge ring",
+            "type": "number",
+            "default": 1,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0,
+                "max": 1,
+                "step": 0.1
+            },
+            "advanced": true,
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "centerLabel": {
+            "label": "Center label",
+            "description": "What to show in center label",
+            "type": "'none' | 'title'",
+            "default": "none",
+            "control": "dropdown",
+            "advanced": true,
+            "panel": "chart"
+        },
+        "centerLabelPadding": {
+            "label": "Center label padding",
+            "description": "Padding around center label",
+            "type": "number",
+            "default": 10,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0
+            },
+            "advanced": true,
+            "panel": "chart"
+        },
+        "orientationAngleOffset": {
+            "label": "Orientation",
+            "description": "Rotation offset for slice orientation",
+            "type": "number",
+            "default": 90,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0,
+                "max": 359,
+                "step": 1,
+                "compact": true,
+                "width": "8rem"
+            },
+            "advanced": false,
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "explode": {
+            "label": "Explode slices",
+            "description": "Which slices to separate from chart",
+            "type": "string",
+            "default": "",
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "text"
+            },
+            "advanced": true,
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "explodeDistance": {
+            "label": "Slice explode distance",
+            "description": "Distance for exploded slices",
+            "type": "number",
+            "default": 20,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0,
+                "step": 1
+            },
+            "advanced": true,
+            "panel": "chart"
+        }
+    }
+}

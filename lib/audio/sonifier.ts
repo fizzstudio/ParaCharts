@@ -152,8 +152,8 @@ export class Sonifier {
    */
   private _getHertzRange() {
     return HERTZ.slice(
-      this._paraState.settings.sonification.hertzLower,
-      this._paraState.settings.sonification.hertzUpper
+      this._paraState.config.sonification.hertzLower,
+      this._paraState.config.sonification.hertzUpper
     );
   }
 
@@ -254,7 +254,7 @@ export class Sonifier {
    * @param earcon - the type of notification to play
    */
   playNotification(earcon?: string) {
-    if (this._paraState.settings.sonification.isNotificationEnabled  ) {
+    if (this._paraState.config.sonification.isNotificationEnabled  ) {
       this._checkAudioEngine();
 
       /* istanbul ignore next */

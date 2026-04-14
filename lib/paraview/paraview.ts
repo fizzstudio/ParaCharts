@@ -505,11 +505,11 @@ export class ParaView extends ParaComponent {
       case 'ui.isVoicingEnabled':
         this._handleVoicing();
         break;
-      case 'ui.isNarrativeHighlightEnabled':
-        this._handleNarrativeHighlight();
+      case 'ui.isTourGuideEnabled':
+        this._handleTourGuide();
         break;
-      case 'ui.isNarrativeHighlightPaused':
-        this._handleNarrativeHighlightPaused();
+      case 'ui.isTourGuidePaused':
+        this._handleTourGuidePaused();
         break;
       default:
         break;
@@ -522,7 +522,7 @@ export class ParaView extends ParaComponent {
         this._containerRef.value!.requestFullscreen();
       } catch {
         this.log.error('failed to enter fullscreen');
-        this._paraState.updateSettings(draft => {
+        this._paraState.updateConfig(draft => {
           draft.ui.isFullscreenEnabled = false;
         }, true);
       }
@@ -531,7 +531,7 @@ export class ParaView extends ParaComponent {
         document.exitFullscreen();
       } catch {
         this.log.error('failed to exit fullscreen');
-        this._paraState.updateSettings(draft => {
+        this._paraState.updateConfig(draft => {
           draft.ui.isFullscreenEnabled = true;
         }, true);
       }
@@ -541,21 +541,21 @@ export class ParaView extends ParaComponent {
   protected _onFullscreenChange() {
     if (document.fullscreenElement) {
       this._isFullscreen = true;
-      if (!this._paraState.settings.ui.isFullscreenEnabled) {
+      if (!this._paraState.config.ui.isFullscreenEnabled) {
         // fullscreen was entered manually
-        this._paraState.updateSettings(draft => {
+        this._paraState.updateConfig(draft => {
           draft.ui.isFullscreenEnabled = true;
         }, true);
       }
     } else {
       this._isFullscreen = false;
-      if (this._paraState.settings.ui.isLowVisionModeEnabled) {
-        this._paraState.updateSettings(draft => {
+      if (this._paraState.config.ui.isLowVisionModeEnabled) {
+        this._paraState.updateConfig(draft => {
           draft.ui.isLowVisionModeEnabled = false;
         });
-      } else if (this._paraState.settings.ui.isFullscreenEnabled) {
+      } else if (this._paraState.config.ui.isFullscreenEnabled) {
         // fullscreen was exited manually
-        this._paraState.updateSettings(draft => {
+        this._paraState.updateConfig(draft => {
           draft.ui.isFullscreenEnabled = false;
         }, true);
       }
@@ -587,7 +587,7 @@ export class ParaView extends ParaComponent {
     this._paraState.updateSettings(draft => {
       this._paraState.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
       draft.color.isDarkModeEnabled = !!newValue;
-      draft.ui.isFullscreenEnabled = !!newValue;
+      //draft.ui.isFullscreenEnabled = !!newValue;
       if (newValue) {
         this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
         this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
@@ -610,10 +610,13 @@ export class ParaView extends ParaComponent {
         this._modeSaved.delete('color.colorPalette');
       }
     });
+    this._paraState.updateConfig(draft => {
+      draft.ui.isFullscreenEnabled = !!newValue;
+    });
   }
 
   protected _handleVoicing() {
-    if (this._paraState.settings.ui.isVoicingEnabled) {
+    if (this._paraState.config.ui.isVoicingEnabled) {
       this.ariaLiveRegion.voicing.speak('Self-voicing enabled.', []);
     } else {
       this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
@@ -626,12 +629,12 @@ export class ParaView extends ParaComponent {
     }
   }
 
-  protected _handleNarrativeHighlight() {
-    if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
+  protected _handleTourGuide() {
+    if (this._paraState.config.ui.isTourGuideEnabled) {
       // if (this._paraState.settings.ui.isVoicingEnabled) {
       //   this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
       // }
-      if (this._paraState.settings.ui.isVoicingEnabled) {
+      if (this._paraState.config.ui.isVoicingEnabled) {
         this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
         this._paraState.announce(this.paraChart.captionBox.caption);
       } else {
@@ -650,7 +653,7 @@ export class ParaView extends ParaComponent {
     }
   }
 
-  protected _handleNarrativeHighlightPaused() {
+  protected _handleTourGuidePaused() {
     this.ariaLiveRegion.voicing.togglePaused();
   }
 
