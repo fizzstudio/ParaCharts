@@ -123,7 +123,7 @@ export class SettingControlManager extends State {
     });
   }
 
-  insert<T extends SettingControlType>(key: string) {
+  insert<T extends SettingControlType>(key: string, controlOptions?: SettingControlOptionsType<T>) {
     const parts = key.split('.');
     const metadata =
       configMetadata[parts.slice(0, -1).join('.')].settings[parts.at(-1)!] as ConfigSettingMetadata<T>;
@@ -133,7 +133,7 @@ export class SettingControlManager extends State {
       controlInfo.isConfig = true;
       controlInfo.key = key;
       controlInfo.parentView = metadata.parentView;
-      controlInfo.options = metadata.controlOptions;
+      controlInfo.options = metadata.controlOptions ?? controlOptions;
       // controlInfo.validator = controlOptions.validator;
       controlInfo.render = () => html`
         <${tag}

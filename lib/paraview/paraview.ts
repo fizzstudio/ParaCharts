@@ -586,32 +586,40 @@ export class ParaView extends ParaComponent {
   protected _handleLowVisionMode(newValue?: Setting) {
     this._paraState.updateSettings(draft => {
       this._paraState.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
-      draft.color.isDarkModeEnabled = !!newValue;
+      //draft.color.isDarkModeEnabled = !!newValue;
       //draft.ui.isFullscreenEnabled = !!newValue;
       if (newValue) {
         this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
         this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
         this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
-        this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
+        //this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
         // end any in-progress animation here
         this._documentView!.chartLayers.dataLayer.stopAnimation();
         draft.animation.isAnimationEnabled = false;
         draft.chart.fontScale = 2;
         draft.grid.isDrawVertLines = true;
-        draft.color.colorPalette = 'low-vision';
+        //draft.color.colorPalette = 'low-vision';
       } else {
         draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
         draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
         draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
-        draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
+        //draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
         this._modeSaved.delete('animation.isAnimationEnabled');
         //this._modeSaved.delete('chart.fontScale');
         this._modeSaved.delete('grid.isDrawVertLines');
-        this._modeSaved.delete('color.colorPalette');
+        //this._modeSaved.delete('color.colorPalette');
       }
     });
     this._paraState.updateConfig(draft => {
+      draft.color.isDarkModeEnabled = !!newValue;
       draft.ui.isFullscreenEnabled = !!newValue;
+      if (newValue) {
+        this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
+        draft.color.colorPalette = 'low-vision';
+      } else {
+        draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
+        this._modeSaved.delete('color.colorPalette');
+      }
     });
   }
 
@@ -895,8 +903,8 @@ export class ParaView extends ParaComponent {
       style.width = "100vw";
       style.height = "100vh";
     }
-    const contrast = this._paraState.settings.color.contrastLevel * 50;
-    if (this._paraState.settings.color.isDarkModeEnabled) {
+    const contrast = this._paraState.config.color.contrastLevel * 50;
+    if (this._paraState.config.color.isDarkModeEnabled) {
       style["--axis-line-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
       style["--label-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
       style["--background-color"] = `hsl(0, 0%, ${(100 - contrast) / 5 - 10}%)`;
@@ -909,7 +917,7 @@ export class ParaView extends ParaComponent {
 
   protected _rootClasses() {
     return {
-      darkmode: this._paraState.settings.color.isDarkModeEnabled,
+      darkmode: this._paraState.config.color.isDarkModeEnabled,
     }
   }
 

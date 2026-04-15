@@ -204,15 +204,6 @@ export interface ChartTypeSettings extends SettingGroup {
     waterfall: WaterfallSettings;
 }
 
-// @public (undocumented)
-export interface ColorSettings extends SettingGroup {
-    colorMap?: string;
-    colorPalette: string;
-    colorVisionMode: ColorVisionMode;
-    contrastLevel: number;
-    isDarkModeEnabled: boolean;
-}
-
 // @public
 export type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
 
@@ -701,7 +692,6 @@ export interface Settings extends SettingGroup {
     animation: AnimationSettings;
     axis: AxesSettings;
     chart: ChartSettings;
-    color: ColorSettings;
     controlPanel: ControlPanelSettings;
     dataTable: DataTableSettings;
     dev: DevSettings;

@@ -141,20 +141,6 @@ export interface ControlPanelSettings extends SettingGroup {
 }
 
 /** @public */
-export interface ColorSettings extends SettingGroup {
-  /** Color vision deficiency simulation mode */
-  colorVisionMode: ColorVisionMode;
-  /** Enable dark color scheme */
-  isDarkModeEnabled: boolean;
-  /** Contrast adjustment level (0-2) */
-  contrastLevel: number;
-  /** Name of the color palette to use */
-  colorPalette: string;
-  /** Comma-separated list of custom color names */
-  colorMap?: string;
-}
-
-/** @public */
 export interface TitleSettings extends SettingGroup {
   /** Whether to draw the chart title */
   isDrawTitle: boolean;
@@ -805,8 +791,6 @@ export interface Settings extends SettingGroup {
   scrollytelling: ScrollytellingSettings;
   /** Control panel settings */
   controlPanel: ControlPanelSettings;
-  /** Color and appearance settings */
-  color: ColorSettings;
   /** Navigation assistance settings */
   jim: JimSettings;
   /** Data table settings */

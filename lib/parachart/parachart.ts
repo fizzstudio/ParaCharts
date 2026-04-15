@@ -433,7 +433,7 @@ export class ParaChart extends ParaComponent {
           ${ref(this._paraViewRef)}
           .paraChart=${this}
           .globalState=${this._globalState}
-          colormode=${this._paraState?.settings.color.colorVisionMode ?? nothing}
+          colormode=${this._paraState?.config.color.colorVisionMode ?? nothing}
           ?scalable=${this.scalable}
           ?disableFocus=${this.headless}
         ></para-view>
@@ -496,7 +496,7 @@ export class ParaChart extends ParaComponent {
 
   /*
    *  Short Descriptions
-   */ 
+   */
 
   waitForManifest(): Promise<void> {
     if (this.paraState.dataState === 'complete') {

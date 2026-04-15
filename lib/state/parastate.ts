@@ -481,8 +481,8 @@ export class ParaState extends BaseState {
       this.updateSettings(draft => {
         SettingsManager.applySettings(extSettings as SettingGroup, draft);
       }, true);
-      if (this.settings.color.colorMap) {
-        this._colors.setColorMap(...this.settings.color.colorMap.split(',').map(c => c.trim()));
+      if (this.config.color.colorMap) {
+        this._colors.setColorMap(...this.config.color.colorMap.split(',').map(c => c.trim()));
       }
     }
 

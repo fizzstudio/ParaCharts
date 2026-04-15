@@ -144,7 +144,7 @@ export class ParaAPI {
       },
       /** Toggle dark mode. */
       toggleDarkMode() {
-        paraView.paraState.updateSettings(draft => {
+        paraView.paraState.updateConfig(draft => {
           draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
           const endisable = draft.color.isDarkModeEnabled ? 'enable' : 'disable';
           _paraChart.postNotice(endisable + 'DarkMode', null);
