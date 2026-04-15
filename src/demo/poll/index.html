@@ -88,9 +88,8 @@
 				() => {
 					text.innerHTML = 'Highlight vertical axis';
 					chart.api.getVerticalAxis().highlight();
-				},
-
-			*/() => {
+				},*/
+				/*() => {
 					text.innerHTML = 'Add crosshair';
 					chart.api.addCrosshair('Q4 2019', 47)
 				},
@@ -101,7 +100,7 @@
 							() => {
 					text.innerHTML = 'Remove crosshair';
 					chart.api.clearCrosshair('Q4 2019', 47)
-				},
+				},*/
 				/*
 				() => {
 					text.innerHTML = 'Highlight vertical label';
@@ -301,13 +300,14 @@
 		//chart.api.setSetting('chart.isShowPopups', true);
 		runDemo();
 	</script>
-	<h1>@fizz/paracharts ParaPerformer Demo</h1>
+	<h1>@fizz/ParaCharts Polling Demo</h1>
   	<main>
     	<section id="content-container">
 			<para-chart
 				scalable
 				id="chart"
-				manifest="/src/demo/performer/__line-single-manifest-1047.json"
+				manifest="/src/demo/poll/line-single-manifest-1047.json"
+				pollinterval="0.5"
 			></para-chart>
 		</section>
 		<section id="text"
