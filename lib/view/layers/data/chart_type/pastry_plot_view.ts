@@ -189,7 +189,7 @@ export abstract class PastryPlotView extends DataLayer {
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['color.colorPalette', 'color.colorVisionMode'].includes(path)) {
       if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
-        || this.paraview.paraState.settings.color.colorPalette === 'pattern') {
+        || this.paraview.paraState.config.color.colorPalette === 'pattern') {
         this.paraview.createDocumentView();
         this.paraview.requestUpdate();
       }

@@ -925,15 +925,15 @@ export class Colors {
         ]
       },
     ];
-    if (_paraState.settings.color.colorMap) {
-      this.setColorMap(..._paraState.settings.color.colorMap.split(',').map(c => c.trim()));
+    if (_paraState.config.color.colorMap) {
+      this.setColorMap(..._paraState.config.color.colorMap.split(',').map(c => c.trim()));
     }
   }
 
   get paletteKey() {
-    return this._paraState.settings.color.colorVisionMode === 'normal'
-      ? this._paraState.settings.color.colorPalette
-      : this._paraState.settings.color.colorVisionMode;
+    return this._paraState.config.color.colorVisionMode === 'normal'
+      ? this._paraState.config.color.colorPalette
+      : this._paraState.config.color.colorVisionMode;
   }
 
   get palette() {
@@ -1084,7 +1084,7 @@ export class Colors {
 
   selectPaletteWithKey(key: string) {
     this._prevSelectedColor = this.paletteKey
-    this._paraState.updateSettings(draft => {
+    this._paraState.updateConfig(draft => {
       draft.color.colorPalette = key;
     });
   }

@@ -17,9 +17,22 @@ export type ConfigGroup = {[key: string]: ConfigSetting | ConfigGroup | undefine
 
 
 export interface Config extends ConfigGroup {
+  color: ColorConfig;
   sonification: SonificationConfig;
   ui: UiConfig;
   type: TypeConfig;
+}
+export interface ColorConfig extends ConfigGroup {
+  /** Color vision deficiency simulation mode */
+  colorVisionMode: 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
+  /** Enable dark color scheme */
+  isDarkModeEnabled: boolean;
+  /** Contrast adjustment level (0-2) */
+  contrastLevel: number;
+  /** Name of the color palette to use */
+  colorPalette: string;
+  /** Comma-separated list of custom color names */
+  colorMap: string;
 }
 export interface SonificationConfig extends ConfigGroup {
   /** Enable sonification audio feedback */

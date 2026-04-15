@@ -408,12 +408,6 @@ export const defaults: Settings = {
     isColorPaletteControlVisible: true,
     isCVDControlVisible: true,
   },
-  color: {
-    colorVisionMode: 'normal',
-    isDarkModeEnabled: false,
-    contrastLevel: 1,
-    colorPalette: 'diva',
-  },
   jim: {
     xValueFormat: 'raw'
   },
