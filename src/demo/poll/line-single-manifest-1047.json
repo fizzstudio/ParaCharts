@@ -1,0 +1,115 @@
+{
+  "jim": {
+    "datasets": [
+      {
+        "representation": {
+          "type": "chart",
+          "subtype": "line"
+        },
+        "title": "Number of Xbox Live MAU Q1 2016 - Q4 2019",
+        "facets": {
+          "x": {
+            "label": "quarter",
+            "variableType": "independent",
+            "measure": "interval",
+            "datatype": "date",
+            "units": "quarter",
+            "displayType": {
+              "type": "axis",
+              "orientation": "horizontal"
+            }
+          },
+          "y": {
+            "label": "Monthly active users in millions",
+            "variableType": "dependent",
+            "measure": "ratio",
+            "datatype": "number",
+            "multiplier": 1000000,
+            "displayType": {
+              "type": "axis",
+              "orientation": "vertical"
+            }
+          }
+        },
+        "series": [
+          {
+            "key": "Number of users in millions",
+            "topic": {
+              "baseQuantity": "monthly active user",
+              "baseKind": "number",
+              "entity": "Xbox Live"
+            },
+            "records": [
+              {
+                "x": "Q4 2507",
+                "y": "64.08665050576815"
+              },
+              {
+                "x": "Q1 2508",
+                "y": "38.74981093055823"
+              },
+              {
+                "x": "Q2 2508",
+                "y": "38.15975521137575"
+              },
+              {
+                "x": "Q3 2508",
+                "y": "57.27510695852101"
+              },
+              {
+                "x": "Q4 2508",
+                "y": "55.1876903970702"
+              },
+              {
+                "x": "Q1 2509",
+                "y": "46.24267571667058"
+              },
+              {
+                "x": "Q2 2509",
+                "y": "39.87329483489637"
+              },
+              {
+                "x": "Q3 2509",
+                "y": "41.20417059001859"
+              },
+              {
+                "x": "Q4 2509",
+                "y": "40.165928255808325"
+              },
+              {
+                "x": "Q1 2510",
+                "y": "61.712484217715925"
+              },
+              {
+                "x": "Q2 2510",
+                "y": "56.2335371060528"
+              },
+              {
+                "x": "Q3 2510",
+                "y": "53.46209027885551"
+              },
+              {
+                "x": "Q4 2510",
+                "y": "43.48520292254564"
+              },
+              {
+                "x": "Q1 2511",
+                "y": "60.83033234229674"
+              },
+              {
+                "x": "Q2 2511",
+                "y": "52.920676536312385"
+              },
+              {
+                "x": "Q3 2511",
+                "y": "40.62689411950006"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}]
+  }
+}
