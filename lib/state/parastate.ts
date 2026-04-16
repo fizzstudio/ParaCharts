@@ -49,6 +49,8 @@ import {
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
 import { defaults, chartTypeDefaults } from './settings_defaults';
+import { Config } from '../config/config_types';
+import { defaultConfig } from '../config/config_defaults';
 import { Colors } from '../common/colors';
 import { joinStrArray, trendTranslation } from '../common/utils';
 import { DataSymbols } from '../view/symbol';
@@ -353,6 +355,9 @@ export class ParaState extends BaseState {
     const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
     SettingsManager.suppleteSettings(hydratedSettings, defaults);
     this.settings = hydratedSettings as Settings;
+    const hydratedConfig = {};
+    SettingsManager.suppleteSettings(hydratedConfig, defaultConfig);
+    this.config = hydratedConfig as Config;
   }
 
   updateSettings(updater: (draft: Settings) => void, ignoreObservers = false) {
@@ -385,6 +390,41 @@ export class ParaState extends BaseState {
       this._settingObservers[path]?.forEach(observer =>
         observer(values.oldValue, values.newValue)
       );
+      this.settingDidChange(path, values.oldValue, values.newValue);
+    }
+    return patches;
+  }
+
+  updateConfig(updater: (draft: Config) => void, ignoreObservers = false) {
+    const [newConfig, patches, inversePatches] = produceWithPatches(this.config, updater);
+    this.config = newConfig;
+    // const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
+    // const counterpart = this._globalState.paraStates[1 - this.index];
+    // if (counterpart) {
+    //   counterpart.config = applyPatches(counterpart.config, filtered);
+    // }
+    if (ignoreObservers) {
+      return patches;
+    }
+    const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
+    for (const patch of patches) {
+      if (patch.op !== 'replace') {
+        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        continue;
+      }
+      observed[patch.path.join('.')] = { newValue: patch.value };
+    }
+    for (const patch of inversePatches) {
+      if (patch.op !== 'replace') {
+        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+        continue;
+      }
+      observed[patch.path.join('.')].oldValue = patch.value;
+    }
+    for (const [path, values] of Object.entries(observed)) {
+      // this._settingObservers[path]?.forEach(observer =>
+      //   observer(values.oldValue, values.newValue)
+      // );
       this.settingDidChange(path, values.oldValue, values.newValue);
     }
     return patches;
@@ -441,8 +481,8 @@ export class ParaState extends BaseState {
       this.updateSettings(draft => {
         SettingsManager.applySettings(extSettings as SettingGroup, draft);
       }, true);
-      if (this.settings.color.colorMap) {
-        this._colors.setColorMap(...this.settings.color.colorMap.split(',').map(c => c.trim()));
+      if (this.config.color.colorMap) {
+        this._colors.setColorMap(...this.config.color.colorMap.split(',').map(c => c.trim()));
       }
     }
 
@@ -649,7 +689,7 @@ export class ParaState extends BaseState {
       highlights = msg.highlights ?? [];
     }
 
-    if (this.settings.ui.isAnnouncementEnabled) {
+    if (this.config.ui.isAnnouncementEnabled) {
       this.announcement = { text: announcement, html, highlights, clear: clearAriaLive, startFrom };
     }
   }

@@ -154,7 +154,7 @@ export class NavMap {
     this._runTimer = setTimeout(() => {
       this._runTimer = null;
       this._chart.navRunDidEnd(this.cursor, quiet);
-    }, this._paraState.settings.ui.navRunTimeoutMs);
+    }, this._paraState.config.ui.navRunTimeoutMs);
     //this._chart.navCursorDidChange(this.cursor);
   }
 

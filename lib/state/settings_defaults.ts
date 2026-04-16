@@ -308,78 +308,6 @@ export const defaults: Settings = {
       minYValue: 'unset',
       maxYValue: 'unset'
     },
-    pie: {
-      outsideLabels: {
-        vertGap: 10,
-        arcGap: 10,
-        horizShift: 15,
-        horizPadding: 10,
-        leaderStyle: 'direct',
-        format: 'raw',
-        underlineGap: 2,
-        contents: 'percentage:(value)'
-      },
-      insideLabels: {
-        format: 'raw',
-        position: 0.9,
-        contents: 'category'
-      },
-      isRenderCenterLabel: true,
-      annularThickness: 1,
-      centerLabel: 'none',
-      centerLabelPadding: 10,
-      orientationAngleOffset: 90,
-      explode: '',
-      explodeDistance: 20
-    },
-    donut: {
-      outsideLabels: {
-        vertGap: 10,
-        arcGap: 10,
-        horizShift: 15,
-        horizPadding: 10,
-        leaderStyle: 'direct',
-        format: 'raw',
-        underlineGap: 2,
-        contents: 'percentage:(value)'
-      },
-      insideLabels: {
-        format: 'raw',
-        position: 0.85,
-        contents: 'category'
-      },
-      isRenderCenterLabel: true,
-      annularThickness: 0.5,
-      centerLabel: 'title',
-      centerLabelPadding: 15,
-      orientationAngleOffset: 90,
-      explode: '',
-      explodeDistance: 20
-    },
-    gauge: {
-      outsideLabels: {
-        vertGap: 4,
-        arcGap: 10,
-        horizShift: 15,
-        horizPadding: 10,
-        leaderStyle: 'direct',
-        format: 'raw',
-        underlineGap: 6,
-        contents: 'percentage:(value)'
-      },
-      insideLabels: {
-        format: 'raw',
-        position: 0.85,
-        contents: 'category'
-      },
-      isRenderCenterLabel: true,
-      annularThickness: 0.5,
-      centerLabel: 'none',
-      centerLabelPadding: 10,
-      orientationAngleOffset: 90,
-      explode: '',
-      explodeDistance: 20
-    },
     stepline: {
       lineWidth: 5,
       lineWidthMax: 25,
@@ -444,18 +372,6 @@ export const defaults: Settings = {
     isDrawHorizAxisOppositeLine: true,
     isDrawVertAxisOppositeLine: true
   },
-  ui: {
-    isVoicingEnabled: false,
-  	isNarrativeHighlightEnabled: false,
-	  isNarrativeHighlightPaused: false,
-    isAnnouncementEnabled: true,
-    speechRate: 1,
-    isFullscreenEnabled: false,
-    isLowVisionModeEnabled: false,
-    isFocusRingEnabled: false,
-    focusRingGap: 10,
-    navRunTimeoutMs: 125,
-  },
   animation: {
     isAnimationEnabled: false,
     animateRevealTimeMs: 2500,
@@ -495,12 +411,6 @@ export const defaults: Settings = {
     isColorPaletteControlVisible: true,
     isCVDControlVisible: true,
   },
-  color: {
-    colorVisionMode: 'normal',
-    isDarkModeEnabled: false,
-    contrastLevel: 1,
-    colorPalette: 'diva',
-  },
   jim: {
     xValueFormat: 'raw'
   },
@@ -510,17 +420,6 @@ export const defaults: Settings = {
   },
   statusBar: {
     valueFormat: 'raw'
-  },
-  sonification: {
-    isSoniEnabled: false,
-    isRiffEnabled: true,
-    isNotificationEnabled: true,
-    hertzLower: 35,
-    hertzUpper: HERTZ.length - 12,
-    soniPlaySpeed: 3,
-    riffSpeed: 'medium',
-	  riffSpeedIndex: 2,
-    isArpeggiateChords: true
   },
   dev: {
     isDebug: false,

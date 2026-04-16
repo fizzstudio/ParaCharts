@@ -190,11 +190,11 @@ export class AnnotationLayer extends PlotLayer {
               points: [dpView]
             },
             {
-              fill: this.paraview.paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+              fill: this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
                 : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
                   this.paraview.paraState.colors.lighten(this.paraview.paraState.colors.colorValueAt(dpView.color), 6)
                   : this.paraview.paraState.colors.colorValueAt(dpView.color),
-              stroke: this.paraview.paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+              stroke: this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
                 : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
                   this.paraview.paraState.colors.colorValueAt(dpView.color)
                   : "black",

@@ -149,7 +149,7 @@ export abstract class TickLabelTier extends Container(View) {
           }
           if (this.paraview.paraState.settings.chart.isShowPopups
             && this.paraview.paraState.settings.popup.activation === "onHover"
-            && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
+            && !this.paraview.paraState.config.ui.isTourGuideEnabled) {
               this.addPopup(labelText[0] == "Q" ? tiers[i] : labelText, i);
           }
         },
@@ -162,7 +162,7 @@ export abstract class TickLabelTier extends Container(View) {
           }
           if (this.paraview.paraState.settings.chart.isShowPopups
             && this.paraview.paraState.settings.popup.activation === "onHover"
-            && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
+            && !this.paraview.paraState.config.ui.isTourGuideEnabled) {
               this.paraview.paraState.removePopup(`${this.id}-${i}`);
           }
         }

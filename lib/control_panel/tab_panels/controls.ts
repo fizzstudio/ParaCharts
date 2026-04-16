@@ -25,12 +25,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
 
   connectedCallback() {
     super.connectedCallback();
-    this._paraState.settingControls.add({
-      type: 'button',
-      key: 'ui.isFullscreenEnabled',
-      label: 'Fullscreen',
-      parentView: 'controlPanel.tabs.controls.fullscreen',
-    });
+    this._paraState.settingControls.insert('ui.isFullscreenEnabled');
     this._paraState.settingControls.add({
       type: 'checkbox',
       key: 'animation.isAnimationEnabled',
@@ -106,7 +101,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
             Keyboard Controls
           </button>
           <button
-            @click=${() => this._paraState.updateSettings(draft => {
+            @click=${() => this._paraState.updateConfig(draft => {
               draft.ui.isFullscreenEnabled = true;
             })}
           >

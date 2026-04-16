@@ -1,6 +1,6 @@
 {
   "name": "@fizz/paracharts",
-  "version": "0.39.0",
+  "version": "0.39.1-alpha.0",
   "description": "Not quite Parable Charts",
   "contributors": [
     {
@@ -66,6 +66,7 @@
     "demo:headless": "vite --port 5177",
     "demo:ai": "vite --port 5178 --open src/demo/ai/ai.html",
     "demo:short": "vite --port 5183 --open src/demo/short-desc/short.html",
+    "demo:poll": "vite --port 5199 --config src/demo/poll/vite.config.ts",
     "storybook": "storybook dev -p 5180",
     "build": "rimraf dist && rimraf types && tsc && vite build && api-extractor run --local --verbose",
     "build:ai": "rimraf dist-ai && rimraf types-ai && tsc --project ai.tsconfig.json && vite build --config ai.vite.config.ts && api-extractor run --local --verbose --config ai.api-extractor.json",
@@ -75,6 +76,7 @@
     "test:unit": "vitest run --project=unit",
     "test:browser": "vitest run --project=browser",
     "test:watch": "vitest watch",
+    "pubalpha": "npm version prerelease --preid alpha && npm publish --tag alpha",
     "pubpatch": "npm version patch && npm publish",
     "pubminor": "npm version minor && npm publish",
     "pubmajor": "npm version major && npm publish",

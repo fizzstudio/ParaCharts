@@ -77,7 +77,7 @@ export abstract class PlanePlotView extends DataLayer {
     const type = this.paraview.paraState.type;
     if (this.paraview.paraState.settings.chart.isShowPopups
       && this.paraview.paraState.settings.popup.activation === "onHover"
-      && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled
+      && !this.paraview.paraState.config.ui.isTourGuideEnabled
     ) {
       if (coords.x > 0 && coords.x < this.width && coords.y > 0 && coords.y < this.height) {
         const points = this.datapointViews;

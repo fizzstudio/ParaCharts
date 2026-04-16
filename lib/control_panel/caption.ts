@@ -95,7 +95,7 @@ export class ParaCaptionBox extends ParaComponent {
   }
 
   protected updated(_changedProperties: PropertyValues): void {
-    if (!this._paraState.settings.ui.isNarrativeHighlightEnabled) return;
+    if (!this._paraState.config.ui.isTourGuideEnabled) return;
     const spans = this.getSpans();
     this._spans = this._spans.filter(span => spans.includes(span));
     spans.forEach((span, i) => {
@@ -103,7 +103,7 @@ export class ParaCaptionBox extends ParaComponent {
       if (!this._spans.includes(span)) {
         this._spans.push(span);
         span.addEventListener('pointerenter', (e: PointerEvent) => {
-          if (!this._paraState.settings.ui.isNarrativeHighlightEnabled
+          if (!this._paraState.config.ui.isTourGuideEnabled
             || this.parachart.paraView.ariaLiveRegion.voicing.isSpeaking) return;
           // NB: this requires there be an announcement, so it only works
           // in NH mode
@@ -131,7 +131,7 @@ export class ParaCaptionBox extends ParaComponent {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
-    if (path === 'ui.isNarrativeHighlightEnabled' && !newValue) {
+    if (path === 'ui.isTourGuideEnabled' && !newValue) {
       this._prevSpanIdx = 0;
       this._highlightManualOverride = false;
       this._lastSpans.clear();
@@ -139,7 +139,7 @@ export class ParaCaptionBox extends ParaComponent {
   }
 
   noticePosted(key: string, value: any) {
-    if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
+    if (this._paraState.config.ui.isTourGuideEnabled) {
       if (key === 'landmarkStart') {
         const highlight: Highlight = value;
         for (const span of this.getSpans()) {
@@ -185,7 +185,7 @@ export class ParaCaptionBox extends ParaComponent {
 
     // const highlight = this._paraState.announcement.highlights[idx];
     const highlight = this._caption.highlights![idx];
-    if (this._paraState.settings.ui.isVoicingEnabled) {
+    if (this._paraState.config.ui.isVoicingEnabled) {
       //const msg = getMsg(idx);
       const msg = this._captionRef.value!.firstElementChild!.children[idx].textContent;
       voicing.shutUp();

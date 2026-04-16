@@ -22,6 +22,8 @@ import { CardinalDirection, Direction, makeSequenceId, Setting, SettingsInput, S
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 import explainers from '../explainers';
 import type { Manifest } from '@fizz/paramanifest';
+import { ConfigSetting } from '../config/config_types';
+import { ConfigGroupMetadata, ConfigGroupSettingsMetadata, configMetadata, ConfigSettingMetadata } from '../config/config_metadata';
 
 type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMap) => void | Promise<void>) };
 
@@ -100,9 +102,9 @@ export class ParaAPI {
       },
       /** Toggle sonification mode. */
       toggleSonificationMode() {
-        paraView.paraState.updateSettings(draft => {
-          draft.sonification.isSoniEnabled = !draft.sonification.isSoniEnabled;
-          const endisable = draft.sonification.isSoniEnabled ? 'enable' : 'disable';
+        paraView.paraState.updateConfig(draft => {
+          draft.sonification.isSonificationEnabled = !draft.sonification.isSonificationEnabled;
+          const endisable = draft.sonification.isSonificationEnabled ? 'enable' : 'disable';
           paraView.paraState.announce(`Sonification ${endisable + 'd'}`);
           _paraChart.postNotice(endisable + 'Sonification', null);
         });
@@ -118,14 +120,14 @@ export class ParaAPI {
       },
       /** Toggle screen reader announcements. */
       toggleAnnouncementMode() {
-        if (paraView.paraState.settings.ui.isAnnouncementEnabled) {
+        if (paraView.paraState.config.ui.isAnnouncementEnabled) {
           paraView.paraState.announce('Announcements disabled');
-          paraView.paraState.updateSettings(draft => {
+          paraView.paraState.updateConfig(draft => {
             draft.ui.isAnnouncementEnabled = false;
           });
           _paraChart.postNotice('disableAnnouncements', null);
         } else {
-          paraView.paraState.updateSettings(draft => {
+          paraView.paraState.updateConfig(draft => {
             draft.ui.isAnnouncementEnabled = true;
           });
           paraView.paraState.announce('Announcements enabled');
@@ -134,7 +136,7 @@ export class ParaAPI {
       },
       /** Toggle self-voicing mode. */
       toggleVoicingMode() {
-        paraView.paraState.updateSettings(draft => {
+        paraView.paraState.updateConfig(draft => {
           draft.ui.isVoicingEnabled = !draft.ui.isVoicingEnabled;
           const endisable = draft.ui.isVoicingEnabled ? 'enable' : 'disable';
           _paraChart.postNotice(endisable + 'Voicing', null);
@@ -142,7 +144,7 @@ export class ParaAPI {
       },
       /** Toggle dark mode. */
       toggleDarkMode() {
-        paraView.paraState.updateSettings(draft => {
+        paraView.paraState.updateConfig(draft => {
           draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
           const endisable = draft.color.isDarkModeEnabled ? 'enable' : 'disable';
           _paraChart.postNotice(endisable + 'DarkMode', null);
@@ -151,7 +153,7 @@ export class ParaAPI {
       },
       /** Toggle low-vision mode */
       toggleLowVisionMode() {
-        paraView.paraState.updateSettings(draft => {
+        paraView.paraState.updateConfig(draft => {
           if (draft.ui.isLowVisionModeEnabled) {
             // Allow the exit from fullscreen to disable LV mode
             draft.ui.isFullscreenEnabled = false;
@@ -238,8 +240,8 @@ export class ParaAPI {
       /** Toggle tour guide mode. */
       toggleNarrativeHighlightMode: (args: ActionArgumentMap) => {
         this._tourGuideNoSelfVoicing = args.noSelfVoicing as boolean;
-        paraView.paraState.updateSettings(draft => {
-          draft.ui.isNarrativeHighlightEnabled = true;
+        paraView.paraState.updateConfig(draft => {
+          draft.ui.isTourGuideEnabled = true;
           if (!args.noSelfVoicing) {
             this._tourGuideSelfVoicingState = draft.ui.isVoicingEnabled;
             draft.ui.isVoicingEnabled = true;
@@ -273,8 +275,8 @@ export class ParaAPI {
     this._tourGuideActions.goLast = () => { };
     this._tourGuideActions.repeatLastAnnouncement = () => { };
     this._tourGuideActions.toggleNarrativeHighlightMode = () => {
-      paraView.paraState.updateSettings(draft => {
-        draft.ui.isNarrativeHighlightEnabled = false;
+      paraView.paraState.updateConfig(draft => {
+        draft.ui.isTourGuideEnabled = false;
         if (!this._tourGuideNoSelfVoicing) {
           draft.ui.isVoicingEnabled = this._tourGuideSelfVoicingState;
         }
@@ -455,6 +457,59 @@ export class ParaAPI {
         SettingsManager.set(path, value, draft);
       });
     });
+  }
+
+  /** Get a setting. */
+  getConfigSetting(settingPath: string): ConfigSetting {
+    return SettingsManager.get(settingPath, this._paraChart.paraState.config);
+  }
+
+  /** Get multiple settings. */
+  getConfigSettings(settingPaths: string[]): SettingsInput {
+    const out: SettingsInput = {};
+    settingPaths.forEach(path => {
+      out[path] = SettingsManager.get(path, this._paraChart.paraState.config);
+    });
+    return out;
+  }
+
+  /** Get all settings. */
+  getAllConfigSettings(): SettingsInput {
+    return SettingsManager.getAllSettings(this._paraChart.paraState.config);
+  }
+
+  /** Set a setting. */
+  setConfigSetting(settingPath: string, value: ConfigSetting) {
+    this._paraChart.paraState.updateConfig(draft => {
+      SettingsManager.set(settingPath, value, draft);
+    });
+  }
+
+  /** Set multiple settings. */
+  setConfigSettings(settingsInput: SettingsInput) {
+    this._paraChart.paraState.updateConfig(draft => {
+      Object.entries(settingsInput).forEach(([path, value]) => {
+        SettingsManager.set(path, value, draft);
+      });
+    });
+  }
+
+  /** Get config group metadata. */
+  getConfigGroupMetadata(path: string): ConfigGroupMetadata | undefined{
+    return configMetadata[path];
+  }
+
+  /** Get config settings metadata matching all given keywords. */
+  getConfigSettingsMetadata(keywords: string[]): ConfigGroupSettingsMetadata {
+    const out: ConfigGroupSettingsMetadata = {};
+    for (const [path, group] of Object.entries(configMetadata)) {
+      for (const [key, settingMetadata] of Object.entries(group.settings)) {
+        if (keywords.every(kw => settingMetadata.keywords?.includes(kw))) {
+          out[`${path}.${key}`] = settingMetadata;
+        }
+      }
+    }
+    return out;
   }
 
   /** Set chart width. */

@@ -54,13 +54,13 @@ export class LinePlotView extends PointPlotView {
   }
 
   get effectiveLineWidth() {
-    return this.paraview.paraState.settings.ui.isLowVisionModeEnabled
+    return this.paraview.paraState.config.ui.isLowVisionModeEnabled
       ? this.paraview.paraState.settings.type.line.lowVisionLineWidth
       : this.paraview.paraState.settings.type.line.lineWidth;
   }
 
   get effectiveVisitedScale() {
-    return this.paraview.paraState.settings.ui.isLowVisionModeEnabled
+    return this.paraview.paraState.config.ui.isLowVisionModeEnabled
       ? 1
       : this.paraview.paraState.settings.type.line.lineHighlightScale;
   }
@@ -77,7 +77,7 @@ export class LinePlotView extends PointPlotView {
     const coords = this.paraview.paraState.pointerCoords;
     if (this.paraview.paraState.settings.chart.isShowPopups
       && this.paraview.paraState.settings.popup.activation === "onHover"
-      && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled
+      && !this.paraview.paraState.config.ui.isTourGuideEnabled
     ) {
       if (coords.x > 0 && coords.x < this.width && coords.y > 0 && coords.y < this.height) {
         let points = this.datapointViews
