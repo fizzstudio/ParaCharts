@@ -541,7 +541,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
         const elapsed = timestamp - start;
         // We can't really disable the animation, but setting the reveal time to 0
         // will result in an imperceptibly short animation duration
-        const revealTime = SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex)! * length
+        const revealTime = SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex)! * length
         const t = Math.min(elapsed / revealTime, 1);
         const linearT = linear.eval(t)!;
         this._paraView.clipWidth = linearT;
@@ -554,7 +554,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       requestAnimationFrame(step);
       loopParaviewRefresh(paraview,
         paraview.paraState.settings.animation.popInAnimateRevealTimeMs
-        + SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex)! * length, 50);
+        + SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex)! * length, 50);
       return new Promise<void>(resolve => {
         this._soniRiffInterval = setInterval(() => {
           const datapoint = datapoints.shift();
@@ -565,7 +565,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
             this._sonifier.playDatapoints([datapoint as PlaneDatapoint]);
             this._soniNoteIndex++;
           }
-        }, SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex));
+        }, SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex));
       });
     }
     return Promise.resolve();
@@ -580,7 +580,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     }
     loopParaviewRefresh(this._paraView,
       this._paraView.paraState.settings.animation.popInAnimateRevealTimeMs
-      + SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex)! * length, 50);
+      + SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex)! * length, 50);
     return this._sonifier.playDatapoints(datapoints);
   }
 

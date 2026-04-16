@@ -322,7 +322,7 @@ describe('ParaState', () => {
     });
 
     it('should not update announcement when disabled', () => {
-      state.updateSettings(draft => {
+      state.updateConfig(draft => {
         draft.ui!.isAnnouncementEnabled = false;
       });
 

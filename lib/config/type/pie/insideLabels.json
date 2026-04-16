@@ -1,0 +1,14 @@
+{
+    "ref": "type.pastry.insideLabels",
+    "settings": {
+        "format": {
+            "default": "raw"
+        },
+        "position": {
+            "default": 0.9
+        },
+        "contents": {
+            "default": "category"
+        }
+    }
+}

@@ -66,6 +66,7 @@
     "demo:headless": "vite --port 5177",
     "demo:ai": "vite --port 5178 --open src/demo/ai/ai.html",
     "demo:short": "vite --port 5183 --open src/demo/short-desc/short.html",
+    "demo:poll": "vite --port 5199 --config src/demo/poll/vite.config.ts",
     "storybook": "storybook dev -p 5180",
     "build": "rimraf dist && rimraf types && tsc && vite build && api-extractor run --local --verbose",
     "build:ai": "rimraf dist-ai && rimraf types-ai && tsc --project ai.tsconfig.json && vite build --config ai.vite.config.ts && api-extractor run --local --verbose --config ai.api-extractor.json",

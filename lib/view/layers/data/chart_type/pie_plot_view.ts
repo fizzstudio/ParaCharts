@@ -64,8 +64,8 @@ export class PieSlice extends RadialSlice {
       r: this.chart.radius,
       centralAngle: this._centralAngle,
       orientationAngle: this._params.accum*360,
-      orientationAngleOffset: this.chart.settings.orientationAngleOffset,
-      annularThickness: this.chart.settings.annularThickness,
+      orientationAngleOffset: this.chart.config.orientationAngleOffset,
+      annularThickness: this.chart.config.annularThickness,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
         this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined;
@@ -78,9 +78,9 @@ export class PieSlice extends RadialSlice {
       },
     });
     this._shapes.push(slice);
-    const explode = this.chart.settings.explode.split(':').map(idx => parseInt(idx));
+    const explode = this.chart.config.explode.split(':').map(idx => parseInt(idx));
     if (explode.includes(this.index)) {
-      slice.loc = slice.loc.add(slice.orientationVector.multiplyScalar(this.chart.settings.explodeDistance));
+      slice.loc = slice.loc.add(slice.orientationVector.multiplyScalar(this.chart.config.explodeDistance));
     }
     super._createShapes();
   }
@@ -112,8 +112,8 @@ export class PieSlice extends RadialSlice {
       r: this.chart.radius,
       centralAngle: this._params.percentage*360,
       orientationAngle: this._params.accum*360,
-      orientationAngleOffset: this.chart.settings.orientationAngleOffset,
-      annularThickness: this.chart.settings.annularThickness,
+      orientationAngleOffset: this.chart.config.orientationAngleOffset,
+      annularThickness: this.chart.config.annularThickness,
       fill: 'none',
       stroke: 'black',
       strokeWidth: 2

@@ -33,67 +33,38 @@ export class ColorsPanel extends ControlPanelTabPanel {
       .filter(palette => !palette.cvd)
       .map(palette => palette.key);
 
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'color.isDarkModeEnabled',
-      label: 'Dark mode',
-      parentView: 'controlPanel.tabs.color.colorContrast',
-    });
-    this._paraState.settingControls.add({
-      type: 'slider',
-      key: 'color.contrastLevel',
-      label: 'Contrast',
-      options: {
-        min: 0,
-        max: 1,
-        step: 0.1,
-        percent: true,
-        compact: true,
-      },
-      parentView: 'controlPanel.tabs.color.colorContrast'
-    });
-    this._paraState.settingControls.add({
-      type: 'radio',
-      key: 'color.colorVisionMode',
-      label: 'Chart colors for CVD (color blindness)',
-      options: {
-        buttons: {
-          normal: {
-            label: 'Normal',
-            title: 'Trichromat color vision',
-            icon: colorVisionIconNormal
-          },
-          deutan: {
-            label: 'Deutan',
-            title: 'Green-red color blindness',
-            icon: colorVisionIconDeutan
-          },
-          protan: {
-            label: 'Protan',
-            title: 'Red-green color blindness',
-            icon: colorVisionIconProtan
-          },
-          tritan: {
-            label: 'Tritan',
-            title: 'Blue-yellow color blindness',
-            icon: colorVisionIconTritan
-          },
-          grayscale: {
-            label: 'Gray',
-            title: 'Grayscale printing or achromotopsia',
-            icon: colorVisionIconGray
-          }
+    this._paraState.settingControls.insert('color.isDarkModeEnabled');
+    this._paraState.settingControls.insert('color.contrastLevel');
+    this._paraState.settingControls.insert('color.colorVisionMode', {
+      buttons: {
+        normal: {
+          label: 'Normal',
+          title: 'Trichromat color vision',
+          icon: colorVisionIconNormal
         },
-      },
-      parentView: 'controlPanel.tabs.color.colorVision'
+        deutan: {
+          label: 'Deutan',
+          title: 'Green-red color blindness',
+          icon: colorVisionIconDeutan
+        },
+        protan: {
+          label: 'Protan',
+          title: 'Red-green color blindness',
+          icon: colorVisionIconProtan
+        },
+        tritan: {
+          label: 'Tritan',
+          title: 'Blue-yellow color blindness',
+          icon: colorVisionIconTritan
+        },
+        grayscale: {
+          label: 'Gray',
+          title: 'Grayscale printing or achromotopsia',
+          icon: colorVisionIconGray
+        }
+      }
     });
-    this._paraState.settingControls.add({
-      type: 'dropdown',
-      key: 'color.colorPalette',
-      label: 'Color palette:',
-      options: {options: colorPalettes},
-      parentView: 'controlPanel.tabs.color.colorPalette'
-    });
+    this._paraState.settingControls.insert('color.colorPalette', {options: colorPalettes});
     this._state = new StateController(this, this._paraState.settingControls);
   }
 

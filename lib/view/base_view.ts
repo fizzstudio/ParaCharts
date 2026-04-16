@@ -738,7 +738,7 @@ export class View extends BaseView {
   shouldAddHoverPopup() {
     if (this.paraview.paraState.settings.chart.isShowPopups
       && this.paraview.paraState.settings.popup.activation === "onHover"
-      && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
+      && !this.paraview.paraState.config.ui.isTourGuideEnabled) {
       return true
     }
     else {

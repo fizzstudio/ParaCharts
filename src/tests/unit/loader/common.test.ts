@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { concatenateSeriesLabels } from '../../../../lib/loader/common';
+import { concatenateSeriesLabels, isEnveloped, getDatasets, firstDataset } from '../../../../lib/loader/common';
 
 describe('loader/common', () => {
   describe('concatenateSeriesLabels', () => {
@@ -56,6 +56,51 @@ describe('loader/common', () => {
 
     it('should handle empty string labels', () => {
       expect(concatenateSeriesLabels(['', 'Sales', ''])).toBe(', Sales, ');
+    });
+  });
+
+  describe('isEnveloped', () => {
+    it('should return true for enveloped manifests (with "jim" key)', () => {
+      const enveloped = { jim: { datasets: [] } };
+      expect(isEnveloped(enveloped as any)).toBe(true);
+    });
+
+    it('should return false for raw JIM manifests (without "jim" key)', () => {
+      const raw = { datasets: [] };
+      expect(isEnveloped(raw as any)).toBe(false);
+    });
+  });
+
+  describe('getDatasets', () => {
+    it('should extract datasets from an enveloped manifest', () => {
+      const datasets = [{ series: [] }];
+      const enveloped = { jim: { datasets } };
+      expect(getDatasets(enveloped as any)).toBe(datasets);
+    });
+
+    it('should extract datasets from a raw JIM manifest', () => {
+      const datasets = [{ series: [] }];
+      const raw = { datasets };
+      expect(getDatasets(raw as any)).toBe(datasets);
+    });
+
+    it('should return empty array when datasets is empty', () => {
+      expect(getDatasets({ datasets: [] } as any)).toEqual([]);
+      expect(getDatasets({ jim: { datasets: [] } } as any)).toEqual([]);
+    });
+  });
+
+  describe('firstDataset', () => {
+    it('should return the first dataset from an enveloped manifest', () => {
+      const ds = { series: [{ name: 'A' }] };
+      const enveloped = { jim: { datasets: [ds, { series: [] }] } };
+      expect(firstDataset(enveloped as any)).toBe(ds);
+    });
+
+    it('should return the first dataset from a raw JIM manifest', () => {
+      const ds = { series: [{ name: 'B' }] };
+      const raw = { datasets: [ds] };
+      expect(firstDataset(raw as any)).toBe(ds);
     });
   });
 });

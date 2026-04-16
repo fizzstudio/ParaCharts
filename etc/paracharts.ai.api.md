@@ -194,26 +194,14 @@ export type ChartTypeInput = 'line' | 'horizontal_bar' | 'vertical_bar' | 'pie' 
 export interface ChartTypeSettings extends SettingGroup {
     bar: BarSettings;
     column: BarSettings;
-    donut: RadialSettings;
-    gauge: RadialSettings;
     heatmap: HeatmapSettings;
     histogram: HistogramSettings;
     line: LineSettings;
     lollipop: LollipopSettings;
-    pie: RadialSettings;
     scatter: ScatterSettings;
     stepline: StepLineSettings;
     venn: VennSettings;
     waterfall: WaterfallSettings;
-}
-
-// @public (undocumented)
-export interface ColorSettings extends SettingGroup {
-    colorMap?: string;
-    colorPalette: string;
-    colorVisionMode: ColorVisionMode;
-    contrastLevel: number;
-    isDarkModeEnabled: boolean;
 }
 
 // @public
@@ -517,8 +505,16 @@ export class ParaAPI {
     downloadPNG(): void;
     downloadSVG(): void;
     enableTourGuideActions(): void;
+    getAllConfigSettings(): SettingsInput;
     getAllSettings(): SettingsInput;
     getAltText(): Promise<string | undefined>;
+    // Warning: (ae-forgotten-export) The symbol "ConfigGroupMetadata" needs to be exported by the entry point index-ai.d.ts
+    getConfigGroupMetadata(path: string): ConfigGroupMetadata | undefined;
+    // Warning: (ae-forgotten-export) The symbol "ConfigSetting" needs to be exported by the entry point index-ai.d.ts
+    getConfigSetting(settingPath: string): ConfigSetting;
+    getConfigSettings(settingPaths: string[]): SettingsInput;
+    // Warning: (ae-forgotten-export) The symbol "ConfigGroupSettingsMetadata" needs to be exported by the entry point index-ai.d.ts
+    getConfigSettingsMetadata(keywords: string[]): ConfigGroupSettingsMetadata;
     getDescription(): Promise<string | undefined>;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIHorizontalAxis" needs to be exported by the entry point index-ai.d.ts
     getHorizontalAxis(): ParaAPIHorizontalAxis;
@@ -561,6 +557,8 @@ export class ParaAPI {
     // (undocumented)
     removeTrendLine(): void;
     serializeChart(): string;
+    setConfigSetting(settingPath: string, value: ConfigSetting): void;
+    setConfigSettings(settingsInput: SettingsInput): void;
     setHeight(height: number): void;
     setManifest(manifestUrl: string): void;
     setSetting(settingPath: string, value: Setting): void;
@@ -666,38 +664,6 @@ export interface PopupSettings extends SettingGroup {
 export type RadialChartType = 'pie' | 'donut' | 'gauge';
 
 // @public
-export interface RadialInsideLabelSettings extends SettingGroup {
-    contents: string;
-    format: LabelFormat;
-    position: number;
-}
-
-// @public
-export interface RadialOutsideLabelSettings extends SettingGroup {
-    arcGap: number;
-    contents: string;
-    format: LabelFormat;
-    horizPadding: number;
-    horizShift: number;
-    leaderStyle: 'direct' | 'underline';
-    underlineGap: number;
-    vertGap: number;
-}
-
-// @public (undocumented)
-export interface RadialSettings extends SettingGroup {
-    annularThickness: number;
-    centerLabel: 'none' | 'title';
-    centerLabelPadding: number;
-    explode: string;
-    explodeDistance: number;
-    insideLabels: RadialInsideLabelSettings;
-    isRenderCenterLabel: boolean;
-    orientationAngleOffset: number;
-    outsideLabels: RadialOutsideLabelSettings;
-}
-
-// @public
 export type riffSpeeds = 'slow' | 'medium' | 'fast';
 
 // @public (undocumented)
@@ -726,7 +692,6 @@ export interface Settings extends SettingGroup {
     animation: AnimationSettings;
     axis: AxesSettings;
     chart: ChartSettings;
-    color: ColorSettings;
     controlPanel: ControlPanelSettings;
     dataTable: DataTableSettings;
     dev: DevSettings;
@@ -736,29 +701,14 @@ export interface Settings extends SettingGroup {
     plotArea: PlotAreaSettings;
     popup: PopupSettings;
     scrollytelling: ScrollytellingSettings;
-    sonification: SonificationSettings;
     statusBar: StatusBarSettings;
     type: ChartTypeSettings;
-    ui: UISettings;
 }
 
 // @public
 export type SettingsInput = {
     [path: string]: Setting;
 };
-
-// @public
-export interface SonificationSettings extends SettingGroup {
-    hertzLower: number;
-    hertzUpper: number;
-    isArpeggiateChords: boolean;
-    isNotificationEnabled: boolean;
-    isRiffEnabled: boolean;
-    isSoniEnabled: boolean;
-    riffSpeed?: riffSpeeds;
-    riffSpeedIndex: number;
-    soniPlaySpeed?: number;
-}
 
 // @public
 export interface StatusBarSettings extends SettingGroup {
@@ -812,20 +762,6 @@ export interface TitleSettings extends SettingGroup {
     margin: number;
     position?: 'top' | 'bottom';
     text?: string;
-}
-
-// @public (undocumented)
-export interface UISettings extends SettingGroup {
-    focusRingGap: number;
-    isAnnouncementEnabled: boolean;
-    isFocusRingEnabled: boolean;
-    isFullscreenEnabled: boolean;
-    isLowVisionModeEnabled: boolean;
-    isNarrativeHighlightEnabled: boolean;
-    isNarrativeHighlightPaused: boolean;
-    isVoicingEnabled: boolean;
-    navRunTimeoutMs: number;
-    speechRate: number;
 }
 
 // @public (undocumented)

@@ -1,0 +1,95 @@
+{
+    "settings": {
+        "vertGap": {
+            "label": "Label vertical gap",
+            "description": "Vertical gap between labels",
+            "type": "number",
+            "default": 10,
+            "control": "textfield",
+            "controlOptions": {
+                "min": 0
+            },
+            "advanced": true,
+            "panel": "chart"
+        },
+        "arcGap": {
+            "label": "Arc and label gap",
+            "description": "Gap between arc and label",
+            "type": "number",
+            "default": 10,
+            "control": "textfield",
+            "controlOptions": {
+                "min": 0
+            },
+            "advanced": true,
+            "panel": "chart"
+        },
+        "horizShift": {
+            "label": "Label horizontal shift",
+            "description": "Horizontal shift for label positioning",
+            "type": "number",
+            "default": 15,
+            "control": "textfield",
+            "controlOptions": {
+                "min": 0
+            },
+            "advanced": true,
+            "panel": "chart"
+        },
+        "horizPadding": {
+            "label": "Label horizontal padding",
+            "description": "Horizontal padding around labels",
+            "type": "number",
+            "default": 10,
+            "control": "textfield",
+            "controlOptions": {
+                "min": 0
+            },
+            "advanced": true,
+            "panel": "chart"
+        },
+        "leaderStyle": {
+            "label": "Label leader line style",
+            "description": "Style of leader line to label",
+            "type": "'direct' | 'underline'",
+            "default": "direct",
+            "control": "dropdown",
+            "advanced": true,
+            "panel": "chart"
+        },
+        "format": {
+            "label": "Label format",
+            "description": "Label value format",
+            "type": "string",
+            "default": "raw",
+            "control": "textfield",
+            "advanced": true,
+            "panel": "chart"
+        },
+        "underlineGap": {
+            "label": "Underline leader gap",
+            "description": "Gap for underline leader style",
+            "type": "number",
+            "default": 2,
+            "control": "textfield",
+            "controlOptions": {
+                "min": 0
+            },
+            "advanced": true,
+            "panel": "chart"
+        },
+        "contents": {
+            "label": "Outside labels",
+            "description": "Label content template",
+            "type": "string",
+            "default": "percentage:(value)",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["", "category", "percentage:(value)"]
+            },
+            "advanced": true,
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.chart"
+        }
+    }
+}

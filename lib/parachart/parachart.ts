@@ -57,6 +57,8 @@ export class ParaChart extends ParaComponent {
   @property({ type: Boolean }) scalable = false;
   @property() accessor manifest = '';
   @property() manifestType: SourceKind = 'url';
+  /** Manifest update polling interval in seconds */
+  @property({ type: Number }) pollInterval = 0;
   // `data` must be a URL, if set
   @property() data = '';
   @property({type: Object}) accessor config: SettingsInput = {};
@@ -150,6 +152,11 @@ export class ParaChart extends ParaComponent {
         if (this.manifest && !this.headless) {
           this.runLoader(this.manifest, this.manifestType).then(() => {
             this.log.info('ParaCharts fully initialized');
+            if (this.pollInterval && this.manifestType === 'url') {
+              setInterval(() => {
+                this.runLoader(this.manifest, this.manifestType);
+              }, this.pollInterval*1000);
+            }
             this._scrollyteller = new Scrollyteller(this);
           });
         } else if (this.getElementsByTagName("table")[0]) {
@@ -433,7 +440,7 @@ export class ParaChart extends ParaComponent {
           ${ref(this._paraViewRef)}
           .paraChart=${this}
           .globalState=${this._globalState}
-          colormode=${this._paraState?.settings.color.colorVisionMode ?? nothing}
+          colormode=${this._paraState?.config.color.colorVisionMode ?? nothing}
           ?scalable=${this.scalable}
           ?disableFocus=${this.headless}
         ></para-view>
@@ -496,7 +503,7 @@ export class ParaChart extends ParaComponent {
 
   /*
    *  Short Descriptions
-   */ 
+   */
 
   waitForManifest(): Promise<void> {
     if (this.paraState.dataState === 'complete') {

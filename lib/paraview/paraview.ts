@@ -505,11 +505,11 @@ export class ParaView extends ParaComponent {
       case 'ui.isVoicingEnabled':
         this._handleVoicing();
         break;
-      case 'ui.isNarrativeHighlightEnabled':
-        this._handleNarrativeHighlight();
+      case 'ui.isTourGuideEnabled':
+        this._handleTourGuide();
         break;
-      case 'ui.isNarrativeHighlightPaused':
-        this._handleNarrativeHighlightPaused();
+      case 'ui.isTourGuidePaused':
+        this._handleTourGuidePaused();
         break;
       default:
         break;
@@ -522,7 +522,7 @@ export class ParaView extends ParaComponent {
         this._containerRef.value!.requestFullscreen();
       } catch {
         this.log.error('failed to enter fullscreen');
-        this._paraState.updateSettings(draft => {
+        this._paraState.updateConfig(draft => {
           draft.ui.isFullscreenEnabled = false;
         }, true);
       }
@@ -531,7 +531,7 @@ export class ParaView extends ParaComponent {
         document.exitFullscreen();
       } catch {
         this.log.error('failed to exit fullscreen');
-        this._paraState.updateSettings(draft => {
+        this._paraState.updateConfig(draft => {
           draft.ui.isFullscreenEnabled = true;
         }, true);
       }
@@ -541,21 +541,21 @@ export class ParaView extends ParaComponent {
   protected _onFullscreenChange() {
     if (document.fullscreenElement) {
       this._isFullscreen = true;
-      if (!this._paraState.settings.ui.isFullscreenEnabled) {
+      if (!this._paraState.config.ui.isFullscreenEnabled) {
         // fullscreen was entered manually
-        this._paraState.updateSettings(draft => {
+        this._paraState.updateConfig(draft => {
           draft.ui.isFullscreenEnabled = true;
         }, true);
       }
     } else {
       this._isFullscreen = false;
-      if (this._paraState.settings.ui.isLowVisionModeEnabled) {
-        this._paraState.updateSettings(draft => {
+      if (this._paraState.config.ui.isLowVisionModeEnabled) {
+        this._paraState.updateConfig(draft => {
           draft.ui.isLowVisionModeEnabled = false;
         });
-      } else if (this._paraState.settings.ui.isFullscreenEnabled) {
+      } else if (this._paraState.config.ui.isFullscreenEnabled) {
         // fullscreen was exited manually
-        this._paraState.updateSettings(draft => {
+        this._paraState.updateConfig(draft => {
           draft.ui.isFullscreenEnabled = false;
         }, true);
       }
@@ -586,34 +586,45 @@ export class ParaView extends ParaComponent {
   protected _handleLowVisionMode(newValue?: Setting) {
     this._paraState.updateSettings(draft => {
       this._paraState.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
-      draft.color.isDarkModeEnabled = !!newValue;
-      draft.ui.isFullscreenEnabled = !!newValue;
+      //draft.color.isDarkModeEnabled = !!newValue;
+      //draft.ui.isFullscreenEnabled = !!newValue;
       if (newValue) {
         this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
         this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
         this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
-        this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
+        //this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
         // end any in-progress animation here
         this._documentView!.chartLayers.dataLayer.stopAnimation();
         draft.animation.isAnimationEnabled = false;
         draft.chart.fontScale = 2;
         draft.grid.isDrawVertLines = true;
-        draft.color.colorPalette = 'low-vision';
+        //draft.color.colorPalette = 'low-vision';
       } else {
         draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
         draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
         draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
-        draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
+        //draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
         this._modeSaved.delete('animation.isAnimationEnabled');
         //this._modeSaved.delete('chart.fontScale');
         this._modeSaved.delete('grid.isDrawVertLines');
+        //this._modeSaved.delete('color.colorPalette');
+      }
+    });
+    this._paraState.updateConfig(draft => {
+      draft.color.isDarkModeEnabled = !!newValue;
+      draft.ui.isFullscreenEnabled = !!newValue;
+      if (newValue) {
+        this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
+        draft.color.colorPalette = 'low-vision';
+      } else {
+        draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
         this._modeSaved.delete('color.colorPalette');
       }
     });
   }
 
   protected _handleVoicing() {
-    if (this._paraState.settings.ui.isVoicingEnabled) {
+    if (this._paraState.config.ui.isVoicingEnabled) {
       this.ariaLiveRegion.voicing.speak('Self-voicing enabled.', []);
     } else {
       this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
@@ -626,12 +637,12 @@ export class ParaView extends ParaComponent {
     }
   }
 
-  protected _handleNarrativeHighlight() {
-    if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
+  protected _handleTourGuide() {
+    if (this._paraState.config.ui.isTourGuideEnabled) {
       // if (this._paraState.settings.ui.isVoicingEnabled) {
       //   this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
       // }
-      if (this._paraState.settings.ui.isVoicingEnabled) {
+      if (this._paraState.config.ui.isVoicingEnabled) {
         this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
         this._paraState.announce(this.paraChart.captionBox.caption);
       } else {
@@ -650,7 +661,7 @@ export class ParaView extends ParaComponent {
     }
   }
 
-  protected _handleNarrativeHighlightPaused() {
+  protected _handleTourGuidePaused() {
     this.ariaLiveRegion.voicing.togglePaused();
   }
 
@@ -892,8 +903,8 @@ export class ParaView extends ParaComponent {
       style.width = "100vw";
       style.height = "100vh";
     }
-    const contrast = this._paraState.settings.color.contrastLevel * 50;
-    if (this._paraState.settings.color.isDarkModeEnabled) {
+    const contrast = this._paraState.config.color.contrastLevel * 50;
+    if (this._paraState.config.color.isDarkModeEnabled) {
       style["--axis-line-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
       style["--label-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
       style["--background-color"] = `hsl(0, 0%, ${(100 - contrast) / 5 - 10}%)`;
@@ -906,7 +917,7 @@ export class ParaView extends ParaComponent {
 
   protected _rootClasses() {
     return {
-      darkmode: this._paraState.settings.color.isDarkModeEnabled,
+      darkmode: this._paraState.config.color.isDarkModeEnabled,
     }
   }
 

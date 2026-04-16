@@ -167,7 +167,7 @@ export abstract class BaseChartInfo {
   }
 
   noticePosted(key: string, value: any) {
-    if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
+    if (this._paraState.config.ui.isTourGuideEnabled) {
       if (key === 'landmarkStart') {
         const highlight: Highlight = value;
         if (highlight.action) {
@@ -481,19 +481,19 @@ export abstract class BaseChartInfo {
           announcements.push(seriesSummary.text);
         }
       }
-      if (this._paraState.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
-        await this.playDatapoints([datapoint]);
-      }
       if (!quiet) {
         this._paraState.announce(announcements);
+      }
+      if (this._paraState.config.sonification.isSonificationEnabled) { // && !isNewComponentFocus) {
+        await this.playDatapoints([datapoint]);
       }
       this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
 
       // this._paraState.highlight(`datapoint-${cursor.options.seriesKey}-${cursor.options.index}`);
 
     } else if (cursor.isNodeType('chord')) {
-      if (this._paraState.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
-        if (this._paraState.settings.sonification.isArpeggiateChords) {
+      if (this._paraState.config.sonification.isSonificationEnabled) { // && !isNewComponentFocus) {
+        if (this._paraState.config.sonification.isArpeggiateChords) {
           await this._playCurrentRiff(this._chordRiffOrder(), true);
         } else {
           const datapoints = cursor.datapoints.map(dp =>
@@ -550,8 +550,8 @@ export abstract class BaseChartInfo {
 
   /** Play a riff for the current nav node */
   protected _playCurrentRiff(order?: RiffOrder, isChord = false): Promise<void> {
-    if (this._paraState.settings.sonification.isSoniEnabled
-      && this._paraState.settings.sonification.isRiffEnabled) {
+    if (this._paraState.config.sonification.isSonificationEnabled
+      && this._paraState.config.sonification.isRiffEnabled) {
       return this.playRiff(this._navMap!.cursor.datapoints, order, isChord);
     }
     return Promise.resolve();
