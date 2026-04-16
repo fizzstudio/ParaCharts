@@ -120,14 +120,15 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
-    "@fizz/chart-classifier-utils": "^0.16.0",
+    "@fizz/chart-classifier-utils": "^0.17.0",
     "@fizz/clustering": "^0.16.0",
     "@fizz/dataframe": "^0.27.0",
     "@fizz/jimerator": "^0.17.1",
     "@fizz/logger": "^0.1.0",
     "@fizz/paramanifest": "^0.11.2",
-    "@fizz/paramodel": "^0.8.0",
-    "@fizz/parasummary": "^0.14.0",
+    "@fizz/paramodel": "^0.8.4",
+    "@fizz/parasummary": "^0.14.4",
+    "@fizz/simple-statistics": "^7.10.0",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.5.5",
     "@fizz/ui-components": "^0.70.5",
@@ -137,7 +138,6 @@
     "lit": "^3.2.0",
     "papaparse": "^5.5.3",
     "printf": "^0.6.1",
-    "simple-statistics": "^7.8.8",
     "typescript-memoize": "^1.1.1"
   },
   "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b"
