@@ -89,7 +89,7 @@ export default defineConfig({
       '@fizz/templum',
       'decimal.js',
       'papaparse',
-      'simple-statistics'
+      '@fizz/simple-statistics'
     ]
   }
 });
