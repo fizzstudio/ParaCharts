@@ -70,6 +70,8 @@ import { ClusterShellView } from '../view/layers';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
+export type AnnounceTarget = 'all' | 'sr' | 'sv' | 'voice' | 'explorationbar';
+
 // This mostly exists so that each new announcement will be considered
 // distinct, even if the text is the same
 export interface Announcement {
@@ -78,6 +80,7 @@ export interface Announcement {
   highlights: Highlight[];
   clear?: boolean;
   startFrom: number;
+  target: AnnounceTarget;
 }
 
 export interface BaseAnnotation {
@@ -187,7 +190,7 @@ export class ParaState extends BaseState {
   @property() dataState: DataState = 'initial';
   @property() settings!: Settings;
   @property() darkMode = false;
-  @property() announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0 };
+  @property() announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0, target: 'all' };
   @property() annotations: BaseAnnotation[] = [];
   @property() popups: Popup[] = [];
   @property() focusPopups: Popup[] = [];
@@ -664,7 +667,8 @@ export class ParaState extends BaseState {
   announce(
     msg: string | string[] | HighlightedSummary,
     clearAriaLive = false,
-    startFrom = 0
+    startFrom = 0,
+    target: AnnounceTarget = 'all'
   ): void {
     /*
     This sends an announcement to the Status Bar.
@@ -690,7 +694,7 @@ export class ParaState extends BaseState {
     }
 
     if (this.config.ui.isAnnouncementEnabled) {
-      this.announcement = { text: announcement, html, highlights, clear: clearAriaLive, startFrom };
+      this.announcement = { text: announcement, html, highlights, clear: clearAriaLive, startFrom, target };
     }
   }
 
