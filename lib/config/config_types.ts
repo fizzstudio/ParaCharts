@@ -18,9 +18,10 @@ export type ConfigGroup = {[key: string]: ConfigSetting | ConfigGroup | undefine
 
 export interface Config extends ConfigGroup {
   color: ColorConfig;
+  description: DescriptionConfig;
   sonification: SonificationConfig;
-  ui: UiConfig;
   type: TypeConfig;
+  ui: UiConfig;
 }
 export interface ColorConfig extends ConfigGroup {
   /** Color vision deficiency simulation mode */
@@ -33,6 +34,10 @@ export interface ColorConfig extends ConfigGroup {
   colorPalette: string;
   /** Comma-separated list of custom color names */
   colorMap: string;
+}
+export interface DescriptionConfig extends ConfigGroup {
+  /** Use concise or full captions */
+  captionFormat: 'full' | 'concise';
 }
 export interface SonificationConfig extends ConfigGroup {
   /** Enable sonification audio feedback */
@@ -49,6 +54,56 @@ export interface SonificationConfig extends ConfigGroup {
   riffSpeedIndex: number;
   /** Play chords as arpeggios */
   isArpeggiateChords: boolean;
+}
+export interface TypeConfig extends ConfigGroup {
+  donut: TypeDonutConfig;
+  pie: TypePieConfig;
+}
+export interface TypeDonutConfig extends TypePastryConfig {
+}
+export interface TypePastryConfig extends ConfigGroup {
+  /** Thickness of donut/gauge ring */
+  annularThickness: number;
+  /** What to show in center label */
+  centerLabel: 'none' | 'title';
+  /** Padding around center label */
+  centerLabelPadding: number;
+  /** Rotation offset for slice orientation */
+  orientationAngleOffset: number;
+  /** Which slices to separate from chart */
+  explode: string;
+  /** Distance for exploded slices */
+  explodeDistance: number;
+  insideLabels: TypePastryInsidelabelsConfig;
+  outsideLabels: TypePastryOutsidelabelsConfig;
+}
+export interface TypePastryInsidelabelsConfig extends ConfigGroup {
+  /** Label value format */
+  format: string;
+  /** Position as percentage of distance along radius */
+  position: number;
+  /** Label content template */
+  contents: string;
+}
+export interface TypePastryOutsidelabelsConfig extends ConfigGroup {
+  /** Vertical gap between labels */
+  vertGap: number;
+  /** Gap between arc and label */
+  arcGap: number;
+  /** Horizontal shift for label positioning */
+  horizShift: number;
+  /** Horizontal padding around labels */
+  horizPadding: number;
+  /** Style of leader line to label */
+  leaderStyle: 'direct' | 'underline';
+  /** Label value format */
+  format: string;
+  /** Gap for underline leader style */
+  underlineGap: number;
+  /** Label content template */
+  contents: string;
+}
+export interface TypePieConfig extends TypePastryConfig {
 }
 export interface UiConfig extends ConfigGroup {
   /** Enable voice output for screen reader users */
@@ -71,54 +126,4 @@ export interface UiConfig extends ConfigGroup {
   focusRingGap: number;
   /** Timeout in milliseconds for navigation runs */
   navRunTimeoutMs: number;
-}
-export interface TypeConfig extends ConfigGroup {
-  donut: TypeDonutConfig;
-  pie: TypePieConfig;
-}
-export interface TypeDonutConfig extends TypePastryConfig {
-}
-export interface TypePastryConfig extends ConfigGroup {
-  /** Thickness of donut/gauge ring */
-  annularThickness: number;
-  /** What to show in center label */
-  centerLabel: 'none' | 'title';
-  /** Padding around center label */
-  centerLabelPadding: number;
-  /** Rotation offset for slice orientation */
-  orientationAngleOffset: number;
-  /** Which slices to separate from chart */
-  explode: string;
-  /** Distance for exploded slices */
-  explodeDistance: number;
-  outsideLabels: TypePastryOutsidelabelsConfig;
-  insideLabels: TypePastryInsidelabelsConfig;
-}
-export interface TypePastryOutsidelabelsConfig extends ConfigGroup {
-  /** Vertical gap between labels */
-  vertGap: number;
-  /** Gap between arc and label */
-  arcGap: number;
-  /** Horizontal shift for label positioning */
-  horizShift: number;
-  /** Horizontal padding around labels */
-  horizPadding: number;
-  /** Style of leader line to label */
-  leaderStyle: 'direct' | 'underline';
-  /** Label value format */
-  format: string;
-  /** Gap for underline leader style */
-  underlineGap: number;
-  /** Label content template */
-  contents: string;
-}
-export interface TypePastryInsidelabelsConfig extends ConfigGroup {
-  /** Label value format */
-  format: string;
-  /** Position as percentage of distance along radius */
-  position: number;
-  /** Label content template */
-  contents: string;
-}
-export interface TypePieConfig extends TypePastryConfig {
 }
