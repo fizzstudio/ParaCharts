@@ -255,6 +255,12 @@ export interface ChartSettings extends SettingGroup {
   isShowVisitedDatapointsOnly: boolean;
   /** Show popups on hover or focus */
   isShowPopups: boolean;
+  /** Max allowable error in first pass of segmentation algorithm */
+  maxError: number;
+  /** Max allowable segments in second pass of segmentation algorithm */
+  maxSegments: number;
+  /** Additional weight given to "peaks and valleys" during segmentation */
+  extremumWeight: number;
 }
 
 /** Developer and debugging settings
