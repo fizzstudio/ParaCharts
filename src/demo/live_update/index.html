@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width">
-	<title>ParaPerformer Demo -- ParaCharts</title>
+	<title>Single Series Live Update Demo -- ParaCharts</title>
 	<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22green%22/><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
 	<style>
 		:root {
@@ -19,6 +19,9 @@
 			--para-stroke-width: 20;
 			/*width: 600px;*/
 			width: 50vw;
+		}
+		#buttons {
+			padding: 0.5rem;
 		}
 		body {
 			font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -44,48 +47,22 @@
 	</style>
 </head>
 <body>
-  	<script type="module" src="/dist-ai/paracharts.js"></script>
-	<script type="module">
-    	const chart = document.getElementById('chart');
-		const text = document.getElementById('text');
-		let demoDidStart = false;
-        function runDemo() {
-            const steps = [
-                /*() => {
-					text.innerHTML = 'Change manifest';
-					chart.api.setManifest('/src/demo-data/bar-multi-manifest-48.json');
-                }*/
-            ];
-            steps.forEach((step, i) => {
-                setTimeout(step, (i + 1)*2000);
-            })
-        }
-		chart.addEventListener('paranotice', (e) => {
-			// XXX this won't work if animation is disabled
-			console.log('NOTICE', e.detail);
-			if (e.detail.key === 'animRevealEnd' && !demoDidStart) {
-                runDemo();
-				demoDidStart = true;
-			}
-		});
-		await chart.loaded;
-		console.log('CHART HAS LOADED');
-		//chart.api.setSetting('chart.isShowPopups', true);
-		runDemo();
-	</script>
-	<h1>@fizz/ParaCharts Polling Demo</h1>
+  	<script type="module" src="/src/demo/live_update/demo.ts"></script>
+	<h1>@fizz/ParaCharts Single Series Live Update Demo</h1>
   	<main>
     	<section id="content-container">
 			<para-chart
-				scalable
 				id="chart"
-				manifest="/src/demo/poll/mani.json"
-				pollinterval="0.5"
+				manifest="/src/demo/live_update/line-single-manifest-1047.json"
 			></para-chart>
 		</section>
-		<section id="text"
-		>
-			(Wait ...)
+		<section id="text">
+			<div id="buttons">
+				<button id="add-btn">Add Record</button>
+				<button id="start-btn">Start/Stop Auto-update</button>
+				<button id="reset-btn">Reset</button>
+			</div>
+			<textarea id="manifest" rows="10" cols="60" readonly></textarea>
 		</section>
   	</main>
 </body>
