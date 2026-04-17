@@ -12,9 +12,6 @@ export const defaultConfig: Config = {
       colorPalette: "diva",
       colorMap: "",
     },
-    description: {
-      captionFormat: "full",
-    },
     sonification: {
       isSonificationEnabled: false,
       isRiffEnabled: true,
@@ -24,53 +21,8 @@ export const defaultConfig: Config = {
       riffSpeedIndex: 2,
       isArpeggiateChords: true,
     },
-    type: {
-      donut: {
-        annularThickness: 0.5,
-        centerLabel: "title",
-        centerLabelPadding: 15,
-        orientationAngleOffset: 90,
-        explode: "",
-        explodeDistance: 20,
-        insideLabels: {
-          format: "raw",
-          position: 0.85,
-          contents: "category",
-        },
-        outsideLabels: {
-          vertGap: 10,
-          arcGap: 10,
-          horizShift: 15,
-          horizPadding: 10,
-          leaderStyle: "direct",
-          format: "raw",
-          underlineGap: 2,
-          contents: "percentage:(value)",
-        },
-      },
-      pie: {
-        annularThickness: 1,
-        centerLabel: "none",
-        centerLabelPadding: 10,
-        orientationAngleOffset: 90,
-        explode: "",
-        explodeDistance: 20,
-        insideLabels: {
-          format: "raw",
-          position: 0.9,
-          contents: "category",
-        },
-        outsideLabels: {
-          vertGap: 10,
-          arcGap: 10,
-          horizShift: 15,
-          horizPadding: 10,
-          leaderStyle: "direct",
-          format: "raw",
-          underlineGap: 2,
-          contents: "percentage:(value)",
-        },
-      },
+    description: {
+      captionFormat: "full",
     },
     ui: {
       isVoicingEnabled: false,
@@ -83,5 +35,57 @@ export const defaultConfig: Config = {
       isFocusRingEnabled: false,
       focusRingGap: 10,
       navRunTimeoutMs: 125,
+    },
+    type: {
+      donut: {
+        outsideLabels: {
+          vertGap: 10,
+          arcGap: 10,
+          horizShift: 15,
+          horizPadding: 10,
+          leaderStyle: "direct",
+          format: "raw",
+          underlineGap: 2,
+          contents: "percentage:(value)",
+        },
+        annularThickness: 0.5,
+        centerLabel: "title",
+        centerLabelPadding: 15,
+        orientationAngleOffset: 90,
+        explode: "",
+        explodeDistance: 20,
+        insideLabels: {
+          format: "raw",
+          position: 0.85,
+          contents: "category",
+        },
+      },
+      pie: {
+        outsideLabels: {
+          vertGap: 10,
+          arcGap: 10,
+          horizShift: 15,
+          horizPadding: 10,
+          leaderStyle: "direct",
+          format: "raw",
+          underlineGap: 2,
+          contents: "percentage:(value)",
+        },
+        annularThickness: 1,
+        centerLabel: "none",
+        centerLabelPadding: 10,
+        orientationAngleOffset: 90,
+        explode: "",
+        explodeDistance: 20,
+        insideLabels: {
+          format: "raw",
+          position: 0.9,
+          contents: "category",
+        },
+      },
+    },
+    axis: {
+      vert: {
+      },
     },
 }
