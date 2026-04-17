@@ -282,7 +282,7 @@ export class Popup extends View {
             this.popupLabelOptions.items!.forEach((item, i) => {
                 views.push(DataSymbol.fromType(
                     this.paraview,
-                    this.paraview.paraState.settings.chart.isDrawSymbols
+                    this.paraview.paraState.config.chart.isDrawSymbols
                         ? (item.symbol ?? 'square.solid')
                         : 'square.solid',
                     {

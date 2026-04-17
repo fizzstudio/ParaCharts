@@ -304,7 +304,7 @@ export class DatapointView extends DataView {
 
   protected get symbolScale() {
     if (this.paraview.paraState.isVisited(this.seriesKey, this.index)) {
-      return this.paraview.paraState.settings.chart.symbolHighlightScale * this._baseSymbolScale;
+      return this.paraview.paraState.config.chart.symbolHighlightScale * this._baseSymbolScale;
     } else if (this.paraview.paraState.isDatapointHighlighted(this.seriesKey, this.index)) {
       return 1; //this.paraview.paraState.settings.chart.symbolHighlightScale;
     } else {
@@ -329,7 +329,7 @@ export class DatapointView extends DataView {
     if (this._symbol) {
       this._symbol.scale = this.symbolScale;
       this._symbol.color = this._symbolColor;
-      this._symbol.hidden = !this.paraview.paraState.settings.chart.isDrawSymbols;
+      this._symbol.hidden = !this.paraview.paraState.config.chart.isDrawSymbols;
     }
   }
 
@@ -432,7 +432,7 @@ export class DatapointView extends DataView {
 
   shouldAddHoverPopup(): boolean {
     if (['bar', 'column', 'scatter', 'waterfall'].includes(this.paraview.paraState.type)) {
-      if (this.paraview.paraState.settings.chart.isShowPopups
+      if (this.paraview.paraState.config.chart.isShowPopups
         && this.paraview.paraState.settings.popup.activation == 'onHover'
         && (!this.paraview.paraState.settings.popup.isShowCrosshair
           || (this.paraview.paraState.settings.popup.isShowCrosshair
@@ -444,7 +444,7 @@ export class DatapointView extends DataView {
       }
     }
     else if (['pie', 'donut'].includes(this.paraview.paraState.type)) {
-      if (this.paraview.paraState.settings.chart.isShowPopups
+      if (this.paraview.paraState.config.chart.isShowPopups
         && this.paraview.paraState.settings.popup.activation == 'onHover') {
         return true
       }

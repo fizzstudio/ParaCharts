@@ -79,8 +79,8 @@ export const settingRanges: Record<string, NumericRange> = {
   // ============================================
   // Chart Settings
   // ============================================
-  'chart.size.width': { min: 1, type: 'int' },
-  'chart.size.height': { min: 1, type: 'int' },
+  'chart.width': { min: 1, type: 'int' },
+  'chart.height': { min: 1, type: 'int' },
   'chart.title.margin': { min: 0, type: 'int' },
   'chart.fontScale': { min: 0.5, type: 'float' },
   'chart.strokeWidth': { min: 0, type: 'float' },

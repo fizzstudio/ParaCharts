@@ -51,7 +51,7 @@ export class PopupLayer extends PlotLayer {
     addPopups() {
         this.addGroup('datapoint-popups', true);
         this.group('datapoint-popups')!.clearChildren();
-        if (this.paraview.paraState.settings.chart.isShowPopups && this.paraview.paraState.settings.popup.activation === "onFocus") {
+        if (this.paraview.paraState.config.chart.isShowPopups && this.paraview.paraState.settings.popup.activation === "onFocus") {
             this.paraview.paraState.clearPopups();
             this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length)
             const cursor = this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.navMap!.cursor
@@ -85,7 +85,7 @@ export class PopupLayer extends PlotLayer {
                 this.paraview.paraState.focusPopups.push(popup);
             }
         }
-        else if (this.paraview.paraState.settings.chart.isShowPopups && this.paraview.paraState.settings.popup.activation === "onSelect") {
+        else if (this.paraview.paraState.config.chart.isShowPopups && this.paraview.paraState.settings.popup.activation === "onSelect") {
             this.paraview.paraState.selectPopups.splice(0, this.paraview.paraState.selectPopups.length)
             for (let dp of this.paraview.paraState.selectedDatapoints) {
                 const { seriesKey, index } = datapointIdToCursor(dp);

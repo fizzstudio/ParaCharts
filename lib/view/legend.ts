@@ -74,7 +74,7 @@ export class Legend extends Container(View) {
       views.push(this._markers.at(-1)!);
       views.push(DataSymbol.fromType(
         this.paraview,
-        this.paraview.paraState.settings.chart.isDrawSymbols
+        this.paraview.paraState.config.chart.isDrawSymbols
           ? (item.symbol ?? 'square.solid')
           : 'square.solid',
         {

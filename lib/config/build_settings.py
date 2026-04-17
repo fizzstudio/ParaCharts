@@ -32,6 +32,9 @@ def main(args):
         print(no_edit, file=typesf)
         print(
 """
+import { type Size2d } from '@fizz/chart-classifier-utils'
+import { type SnapLocation } from '../common/types';
+
 /**
  * A single config item.
  * @public
@@ -42,6 +45,55 @@ export type ConfigSetting = string | number | boolean;
  * @public
  */
 export type ConfigGroup = {[key: string]: ConfigSetting | ConfigGroup | undefined};
+
+/** Chart types that display individual points
+ * @public
+ */
+export type PointChartType = 'line' | 'stepline' | 'scatter';
+
+/** Chart types drawn using a Cartesian coordinate system
+ * @public
+ */
+export type PlaneChartType = 'bar' | 'lollipop' | PointChartType;
+
+/** Chart types that use radial/circular layout
+ * @public
+ */
+export type PastryChartType = 'pie' | 'donut' | 'gauge';
+
+/** All supported chart types
+ * @public
+ */
+export type ChartType = PlaneChartType | PastryChartType;
+
+/** @public */
+export type VertDirection = 'up' | 'down';
+
+/** @public */
+export type HorizDirection = 'left' | 'right';
+
+/** @public */
+export type PlaneDirection = VertDirection | HorizDirection;
+
+/** @public */
+export type DepthDirection = 'in' | 'out';
+
+/** @public */
+export type Direction = VertDirection | HorizDirection | DepthDirection;
+
+/** @public */
+export const directions: Direction[] = ['up', 'down', 'left', 'right', 'in', 'out'];
+
+/** @public */
+export type VertCardinalDirection = 'north' | 'south';
+/** @public */
+export type HorizCardinalDirection = 'east' | 'west';
+
+/**
+ * Which direction is "up" on a chart.
+ * @public
+ */
+export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
 
 """, file=typesf)
         write_types_group([], tree, tree, typesf)

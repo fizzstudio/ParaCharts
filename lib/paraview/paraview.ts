@@ -442,7 +442,7 @@ export class ParaView extends ParaComponent {
     this.computeViewBox();
     // this._hotkeyActions ??= new NormalHotkeyActions(this);
     this._paraState.keymapManager.addEventListener('hotkeypress', this._hotkeyListener);
-    if (!this._paraState.settings.chart.isStatic) {
+    if (!this._paraState.config.chart.isStatic) {
       this._pointerEventManager = new PointerEventManager(this);
     }
   }
@@ -563,16 +563,16 @@ export class ParaView extends ParaComponent {
     if (this.documentView) {
       const delayedUpdate = () => {
         setTimeout(() => {
-          const newWidth = (window.innerWidth / window.innerHeight) * this._paraState.settings.chart.size.height;
+          const newWidth = (window.innerWidth / window.innerHeight) * this._paraState.config.chart.height;
           if (this._isFullscreen) {
-            this._paraState.updateSettings(draft => {
-              this._modeSaved.set('chart.size.width', draft.chart.size.width);
-              draft.chart.size.width = newWidth;
+            this._paraState.updateConfig(draft => {
+              this._modeSaved.set('chart.width', draft.chart.width);
+              draft.chart.width = newWidth;
             }, true);
           } else {
-            this._paraState.updateSettings(draft => {
-              draft.chart.size.width = this._modeSaved.get('chart.size.width');
-              this._modeSaved.delete('chart.size.width');
+            this._paraState.updateConfig(draft => {
+              draft.chart.width = this._modeSaved.get('chart.width');
+              this._modeSaved.delete('chart.width');
             }, true);
           }
           this.paraChart.styleManager.update();
@@ -590,23 +590,23 @@ export class ParaView extends ParaComponent {
       //draft.ui.isFullscreenEnabled = !!newValue;
       if (newValue) {
         this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
-        this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
-        this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+        // this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
+        // this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
         //this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
         // end any in-progress animation here
         this._documentView!.chartLayers.dataLayer.stopAnimation();
         draft.animation.isAnimationEnabled = false;
-        draft.chart.fontScale = 2;
-        draft.grid.isDrawVertLines = true;
+        //draft.chart.fontScale = 2;
+        // draft.grid.isDrawVertLines = true;
         //draft.color.colorPalette = 'low-vision';
       } else {
         draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
-        draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
-        draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
+        // draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
+        // draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
         //draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
         this._modeSaved.delete('animation.isAnimationEnabled');
         //this._modeSaved.delete('chart.fontScale');
-        this._modeSaved.delete('grid.isDrawVertLines');
+        // this._modeSaved.delete('grid.isDrawVertLines');
         //this._modeSaved.delete('color.colorPalette');
       }
     });
@@ -616,9 +616,16 @@ export class ParaView extends ParaComponent {
       if (newValue) {
         this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
         draft.color.colorPalette = 'low-vision';
+        this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
+        this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+        draft.chart.fontScale = 2;
+        draft.grid.isDrawVertLines = true;
       } else {
         draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
         this._modeSaved.delete('color.colorPalette');
+        draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
+        this._modeSaved.delete('grid.isDrawVertLines');
+        draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
       }
     });
   }
@@ -736,8 +743,8 @@ export class ParaView extends ParaComponent {
     this._viewBox = {
       x: 0,
       y: 0,
-      width: this._paraState.settings.chart.size.width,
-      height: this._paraState.settings.chart.size.height
+      width: this._paraState.config.chart.width,
+      height: this._paraState.config.chart.height
     };
     this.log.info('view box:', this._viewBox.width, 'x', this._viewBox.height);
   }
@@ -892,8 +899,8 @@ export class ParaView extends ParaComponent {
 
   protected _rootStyle() {
     const style: { [prop: string]: any } = {
-      fontFamily: this._paraState.settings.chart.fontFamily,
-      fontWeight: this._paraState.settings.chart.fontWeight
+      fontFamily: this._paraState.config.chart.fontFamily,
+      fontWeight: this._paraState.config.chart.fontWeight
     };
     if (this._isFullscreen) {
       const vbWidth = Math.round(this._viewBox.width);
@@ -978,7 +985,7 @@ export class ParaView extends ParaComponent {
         viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
         style=${styleMap(this._rootStyle())}
         @focus=${() => {
-          if (!this._paraState.settings.chart.isStatic) {
+          if (!this._paraState.config.chart.isStatic) {
             //this.log.info('focus');
             //this.todo.deets?.onFocus();
             this._paraState.chartInfo.navMap?.visitDatapoints();

@@ -75,7 +75,7 @@ export class LinePlotView extends PointPlotView {
 
   pointerMove(): void {
     const coords = this.paraview.paraState.pointerCoords;
-    if (this.paraview.paraState.settings.chart.isShowPopups
+    if (this.paraview.paraState.config.chart.isShowPopups
       && this.paraview.paraState.settings.popup.activation === "onHover"
       && !this.paraview.paraState.config.ui.isTourGuideEnabled
     ) {

@@ -150,7 +150,7 @@ export class DataSymbol extends View {
   ) {
     super(paraview);
     this._options = {
-      strokeWidth: options?.strokeWidth ?? this.paraview.paraState.settings.chart.symbolStrokeWidth,
+      strokeWidth: options?.strokeWidth ?? this.paraview.paraState.config.chart.symbolStrokeWidth,
       scale: options?.scale ?? 1,
       color: options?.color,
       opacity: options?.opacity,
