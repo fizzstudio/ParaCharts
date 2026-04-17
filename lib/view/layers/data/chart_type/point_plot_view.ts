@@ -22,7 +22,7 @@ import { Setting, type PointChartType } from '../../../../state/settings_types';
 import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 import { svg } from 'lit';
-import { linearRegression } from 'simple-statistics';
+import { linearRegression } from '@fizz/simple-statistics';
 import { View } from '../../../base_view';
 import { strToId } from '@fizz/paramanifest';
 import { Bezier } from '../../../../common';

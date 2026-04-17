@@ -326,109 +326,84 @@ export class Popup extends View {
         const x = 0;
         const width = grid.width, height = grid.height;
         const lPad = this.leftPadding, rPad = this.rightPadding, uPad = this.upPadding, dPad = this.downPadding;
+        const rightBorder = x + width + rPad, leftBorder = x - lPad, upBorder = y - height - uPad, downBorder = y + dPad;
+        const topLeft = new Vec2(leftBorder, upBorder), bottomLeft = new Vec2(leftBorder, downBorder), bottomRight = new Vec2(rightBorder, downBorder), topRight = new Vec2(rightBorder, upBorder);
         const hShift = this._horizShift;
         let box;
+        let points;
+        let shapeType: ShapeTypes;
+        let arrowPosition: "up" | "down" | "right" | "left" = "down";
+
         if (boxType === "boxWithArrow") {
+            shapeType = "boxWithArrow";
             if (this.arrowPosition == "bottom") {
-                const shape = new PopupPathShape(this.paraview, {
-                    points: [new Vec2(x - lPad, y - height - uPad),
-                    new Vec2(x - lPad, y + dPad),
-
-                    new Vec2(Math.max(x + width / 2 - Math.min(width / 2, BOX_ARROW_WIDTH) + hShift, x - lPad), y + dPad),
+                points = [topLeft,
+                    bottomLeft,
+                    new Vec2(Math.max(x + width / 2 - Math.min(width / 2, BOX_ARROW_WIDTH) + hShift, leftBorder), downBorder),
                     //This is manually correcting for what I'm pretty sure are floating-point errors
-                    new Vec2(Math.abs(x + width / 2 + hShift - (x + width + rPad)) < .5
-                        ? x + width + rPad :
-                        Math.abs(x + width / 2 + hShift - (x - lPad)) < .5 ? x - lPad
-                            : x + width / 2 + hShift, y + dPad + BOX_ARROW_HEIGHT),
-                    new Vec2(Math.min(x + width / 2 + Math.min(width / 2, BOX_ARROW_WIDTH) + hShift, x + width + rPad), y + dPad),
-
-                    new Vec2(x + width + rPad, y + dPad),
-                    new Vec2(x + width + rPad, y - height - uPad),
-                    new Vec2(x - lPad, y - height - uPad)],
-                    fill: options.fill,
-                    stroke: options.stroke,
-                    shape: "boxWithArrow",
-                    arrowPosition: "down"
-                });
-                box = shape;
+                    new Vec2(Math.abs(x + width / 2 + hShift - (rightBorder)) < .5
+                        ? rightBorder :
+                        Math.abs(x + width / 2 + hShift - (leftBorder)) < .5 ? leftBorder
+                            : x + width / 2 + hShift, downBorder + BOX_ARROW_HEIGHT),
+                    new Vec2(Math.min(x + width / 2 + Math.min(width / 2, BOX_ARROW_WIDTH) + hShift, rightBorder), downBorder),
+                    bottomRight,
+                    topRight,
+                    topLeft];
+                arrowPosition = "down";
             }
-            else if (this.arrowPosition == "right") {
-                let shape = new PopupPathShape(this.paraview, {
-                    points:
-                        [new Vec2(x - lPad, y - height - uPad),
-                        new Vec2(x - lPad, y + dPad),
-                        new Vec2(x + width + rPad, y + dPad),
-
-                        new Vec2(x + width + rPad, y - height / 2 + Math.min(height / 4, 15)),
-                        new Vec2(x + width + rPad + BOX_ARROW_HEIGHT, y - height / 2),
-                        new Vec2(x + width + rPad, y - height / 2 - Math.min(height / 4, 15)),
-
-                        new Vec2(x + width + rPad, y - height - uPad),
-                        new Vec2(x - lPad, y - height - uPad)],
-                    fill: options.fill,
-                    stroke: options.stroke,
-                    shape: "boxWithArrow",
-                    arrowPosition: "right"
-                });
-                box = shape;
+            else if (this.arrowPosition == "up") {
+                points = [topLeft,
+                    bottomLeft,
+                    bottomRight,
+                    topRight,
+                    new Vec2(Math.min(x + width / 2 + Math.min(width / 4, 15) + hShift, rightBorder), upBorder),
+                    //This is manually correcting for what I'm pretty sure are floating-point errors
+                    new Vec2(Math.abs(x + width / 2 + hShift - (rightBorder)) < .5
+                        ? rightBorder :
+                        Math.abs(x + width / 2 + hShift - (leftBorder)) < .5 ? leftBorder
+                            : x + width / 2 + hShift, upBorder - BOX_ARROW_HEIGHT),
+                    new Vec2(Math.max(x + width / 2 + - Math.min(width / 4, 15) + hShift, leftBorder), upBorder),
+                    topLeft];
+                arrowPosition = "up";
             }
             else if (this.arrowPosition == "left") {
-                let shape = new PopupPathShape(this.paraview, {
-                    points:
-                        [new Vec2(x - lPad, y - height - uPad),
-
-                        new Vec2(x - lPad, y - height / 2 - Math.min(height / 4, 15)),
-                        new Vec2(x - lPad - BOX_ARROW_HEIGHT, y - height / 2),
-                        new Vec2(x - lPad, y - height / 2 + Math.min(height / 4, 15)),
-
-                        new Vec2(x - lPad, y + dPad),
-                        new Vec2(x + width + rPad, y + dPad),
-                        new Vec2(x + width + rPad, y - height - uPad),
-                        new Vec2(x - lPad, y - height - uPad)],
-                    fill: options.fill,
-                    stroke: options.stroke,
-                    shape: "boxWithArrow",
-                    arrowPosition: "left"
-                });
-                box = shape;
+                points = [topLeft,
+                    new Vec2(leftBorder, y - height / 2 - Math.min(height / 4, 15)),
+                    new Vec2(leftBorder - BOX_ARROW_HEIGHT, y - height / 2),
+                    new Vec2(leftBorder, y - height / 2 + Math.min(height / 4, 15)),
+                    bottomLeft,
+                    bottomRight,
+                    topRight,
+                    topLeft];
+                arrowPosition = "left";
             }
             else {
-                let shape = new PopupPathShape(this.paraview, {
-                    points: [new Vec2(x - lPad, y - height - uPad),
-                    new Vec2(x - lPad, y + dPad),
-                    new Vec2(x + width + rPad, y + dPad),
-                    new Vec2(x + width + rPad, y - height - uPad),
-
-                    new Vec2(Math.min(x + width / 2 + Math.min(width / 4, 15) + hShift, x + width + rPad), y - height - uPad),
-                    //This is manually correcting for what I'm pretty sure are floating-point errors
-                    new Vec2(Math.abs(x + width / 2 + hShift - (x + width + rPad)) < .5
-                        ? x + width + rPad :
-                        Math.abs(x + width / 2 + hShift - (x - lPad)) < .5 ? x - lPad
-                            : x + width / 2 + hShift, y - height - uPad - BOX_ARROW_HEIGHT),
-                    new Vec2(Math.max(x + width / 2 + - Math.min(width / 4, 15) + hShift, x - lPad), y - height - uPad),
-
-                    new Vec2(x - lPad, y - height - uPad)],
-                    fill: options.fill,
-                    stroke: options.stroke,
-                    shape: "boxWithArrow",
-                    arrowPosition: "up"
-                });
-                box = shape;
+                points = [topLeft,
+                    bottomLeft,
+                    bottomRight,
+                    new Vec2(rightBorder, y - height / 2 + Math.min(height / 4, 15)),
+                    new Vec2(rightBorder + BOX_ARROW_HEIGHT, y - height / 2),
+                    new Vec2(rightBorder, y - height / 2 - Math.min(height / 4, 15)),
+                    topRight,
+                    topLeft];
+                arrowPosition = "right";
             }
         }
         else {
-            let shape = new PopupPathShape(this.paraview, {
-                points: [new Vec2(x - lPad, y - height - uPad),
-                new Vec2(x - lPad, y + dPad),
-                new Vec2(x + width + rPad, y + dPad),
-                new Vec2(x + width + rPad, y - height - uPad),
-                new Vec2(x - lPad, y - height - uPad)],
-                fill: options.fill,
-                stroke: options.stroke,
-                shape: "box"
-            });
-            box = shape;
+            points = [topLeft,
+                bottomLeft,
+                bottomRight,
+                topRight,
+                topLeft];
+            shapeType = "box";
         }
+        box = new PopupPathShape(this.paraview, {
+            points: points,
+            fill: options.fill,
+            stroke: options.stroke,
+            shape: shapeType,
+            arrowPosition: arrowPosition
+        });
         this._box = box;
         this.prepend(this._box);
         this.box.classInfo = { 'popup-box': true };

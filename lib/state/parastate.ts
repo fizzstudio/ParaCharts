@@ -529,10 +529,13 @@ export class ParaState extends BaseState {
     } else {
       throw new Error('store lacks external or inline chart data');
     }
+    const maxError = this.settings.chart.maxError;
+    const maxSegments = this.settings.chart.maxSegments;
+    const extremumWeight = this.settings.chart.extremumWeight;
     if (this._model instanceof PlaneModel) {
       this._model.seriesKeys.forEach(async (seriesKey) => {
         this.seriesAnalyses = {
-          [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey),
+          [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey, {maxError: maxError, maxSegments: maxSegments, extremumWeight: extremumWeight}),
           ...this.seriesAnalyses
         };
       });
