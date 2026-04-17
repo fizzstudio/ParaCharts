@@ -38,10 +38,11 @@ export class PastryChartInfo extends BaseChartInfo {
 
   protected _addSettingControls(): void {
     super._addSettingControls();
-    this._paraState.settingControls.insert(`type.${this._type}.orientationAngleOffset`);
+    // FIXME (@simonvarey): See https://github.com/fizzstudio/ParaCharts/issues/1216
+    /*this._paraState.settingControls.insert(`type.${this._type}.orientationAngleOffset`);
     this._paraState.settingControls.insert(`type.${this._type}.insideLabels.contents`);
     this._paraState.settingControls.insert(`type.${this._type}.outsideLabels.contents`);
-    this._paraState.settingControls.insert(`type.${this._type}.explode`);
+    this._paraState.settingControls.insert(`type.${this._type}.explode`);*/
   }
 
   protected _createNavMap() {

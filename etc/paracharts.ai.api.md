@@ -163,6 +163,7 @@ export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
 // @public (undocumented)
 export interface ChartSettings extends SettingGroup {
     directLabelFontSize: string;
+    extremumWeight: number;
     fontFamily: string;
     fontScale: number;
     fontWeight: string;
@@ -172,6 +173,8 @@ export interface ChartSettings extends SettingGroup {
     isShowPopups: boolean;
     isShowVisitedDatapointsOnly: boolean;
     isStatic: boolean;
+    maxError: number;
+    maxSegments: number;
     orientation: CardinalDirection;
     padding: string;
     size: Size2d;
