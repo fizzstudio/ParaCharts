@@ -1,0 +1,18 @@
+{
+    "family": "description",
+    "settings": {
+        "captionFormat": {
+            "label": "Caption Format",
+            "description": "Use concise or full captions",
+            "type": "'full' | 'concise'",
+            "default": "full",
+            "control": "radio",
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart",
+            "keywords": ["description"]
+        }
+    },
+    "defaults": {
+        "captionFormat": "full"
+    }
+}

@@ -21,6 +21,9 @@ export const defaultConfig: Config = {
       riffSpeedIndex: 2,
       isArpeggiateChords: true,
     },
+    description: {
+      captionFormat: "full",
+    },
     ui: {
       isVoicingEnabled: false,
       isTourGuideEnabled: false,
@@ -79,6 +82,10 @@ export const defaultConfig: Config = {
           position: 0.9,
           contents: "category",
         },
+      },
+    },
+    axis: {
+      vert: {
       },
     },
 }

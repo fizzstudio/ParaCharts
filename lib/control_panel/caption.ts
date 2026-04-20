@@ -124,9 +124,20 @@ export class ParaCaptionBox extends ParaComponent {
 
   async setCaption(summary?: HighlightedSummary): Promise<void> {
     if (this._paraState.dataState === 'complete') {
-      this._caption = summary
-        ?? await this._paraState.chartInfo.summarizer.getChartSummary()
-        ?? {text: '', html: ''};
+      if (summary !== undefined) {
+        this._caption = summary;
+      } else {
+        const shouldGetConcise = this._paraState.config.description.captionFormat === 'concise';
+        const generatedSummary = await (shouldGetConcise  
+          ? this._paraState.chartInfo.summarizer.getConciseSummary()
+          : this._paraState.chartInfo.summarizer.getChartSummary()
+        );
+        if (generatedSummary !== undefined) {
+          this._caption = generatedSummary;
+        } else {
+          this._caption = {text: '', html: ''};
+        }
+      }
     }
   }
 

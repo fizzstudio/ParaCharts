@@ -1,6 +1,6 @@
 {
   "name": "@fizz/paracharts",
-  "version": "0.39.1-alpha.0",
+  "version": "0.39.1",
   "description": "Not quite Parable Charts",
   "contributors": [
     {
@@ -114,6 +114,7 @@
     "happy-dom": "^20.3.1",
     "mustache": "^4.2.0",
     "playwright": "^1.54.1",
+    "printf": "^0.6.1",
     "rimraf": "^6.0.1",
     "shadow-dom-testing-library": "^1.12.0",
     "storybook": "^9.0.13",
@@ -129,19 +130,18 @@
     "@fizz/dataframe": "^0.27.0",
     "@fizz/jimerator": "^0.17.1",
     "@fizz/logger": "^0.1.0",
-    "@fizz/paramanifest": "^0.11.2",
+    "@fizz/paramanifest": "^0.11.4",
     "@fizz/paramodel": "^0.8.4",
-    "@fizz/parasummary": "^0.14.4",
+    "@fizz/parasummary": "^0.15.0",
     "@fizz/simple-statistics": "^7.10.0",
     "@fizz/sparkbraille-component": "^0.5.0",
-    "@fizz/templum": "^0.5.5",
+    "@fizz/templum": "^0.5.6",
     "@fizz/ui-components": "^0.70.5",
     "@lit-app/state": "^1.0.1",
     "decimal.js": "^10.4.3",
     "immer": "^10.1.1",
     "lit": "^3.2.0",
     "papaparse": "^5.5.3",
-    "printf": "^0.6.1",
     "typescript-memoize": "^1.1.1"
   },
   "packageManager": "pnpm@9.11.0+sha512.0a203ffaed5a3f63242cd064c8fb5892366c103e328079318f78062f24ea8c9d50bc6a47aa3567cabefd824d170e78fa2745ed1f16b132e16436146b7688f19b"

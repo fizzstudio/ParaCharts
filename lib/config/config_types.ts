@@ -19,8 +19,10 @@ export type ConfigGroup = {[key: string]: ConfigSetting | ConfigGroup | undefine
 export interface Config extends ConfigGroup {
   color: ColorConfig;
   sonification: SonificationConfig;
+  description: DescriptionConfig;
   ui: UiConfig;
   type: TypeConfig;
+  axis: AxisConfig;
 }
 export interface ColorConfig extends ConfigGroup {
   /** Color vision deficiency simulation mode */
@@ -49,6 +51,10 @@ export interface SonificationConfig extends ConfigGroup {
   riffSpeedIndex: number;
   /** Play chords as arpeggios */
   isArpeggiateChords: boolean;
+}
+export interface DescriptionConfig extends ConfigGroup {
+  /** Use concise or full captions */
+  captionFormat: 'full' | 'concise';
 }
 export interface UiConfig extends ConfigGroup {
   /** Enable voice output for screen reader users */
@@ -121,4 +127,9 @@ export interface TypePastryInsidelabelsConfig extends ConfigGroup {
   contents: string;
 }
 export interface TypePieConfig extends TypePastryConfig {
+}
+export interface AxisConfig extends ConfigGroup {
+  vert: AxisVertConfig;
+}
+export interface AxisVertConfig extends ConfigGroup {
 }
