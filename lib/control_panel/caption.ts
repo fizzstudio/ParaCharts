@@ -228,7 +228,10 @@ export class ParaCaptionBox extends ParaComponent {
 
   render() {
     this.style.maxWidth = `${this._paraState.settings.chart.size.width}px`;
-    this._isEBarVisible = !!this._paraState.announcement.text
+    const announcementTarget = this._paraState.announcement.target;
+    const sendToEBar = announcementTarget === 'all' || announcementTarget === 'explorationbar';
+    this._isEBarVisible = sendToEBar
+      && !!this._paraState.announcement.text
       && this._paraState.announcement.text !== this._caption.text;
     const isCaptionSolo = !this._isEBarVisible || !this._paraState.settings.controlPanel.isExplorationBarVisible;
     return html`

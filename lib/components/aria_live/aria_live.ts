@@ -13,7 +13,7 @@ import { HighlightReaderBridge } from './highlightreaderbridge';
 @customElement('para-aria-live-region')
 export class AriaLive extends ParaComponent {
 
-  @property({type: Object}) announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0 };
+  @property({type: Object}) announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0, target: 'all' };
 
   protected _srb!: HighlightReaderBridge;
   protected _voicing!: Voicing;
@@ -40,10 +40,14 @@ export class AriaLive extends ParaComponent {
 
   protected willUpdate(changedProperties: PropertyValues) {
     if (changedProperties.has('announcement') && this.announcement.text) {
-      if (this.announcement.clear) {
-        this._srb.clear();
+      const target = this.announcement.target;
+      const sendToSR = target === 'all' || target === 'sr' || target === 'voice';
+      if (sendToSR) {
+        if (this.announcement.clear) {
+          this._srb.clear();
+        }
+        this._srb.renderHighlights(this.announcement.text, this.announcement.highlights);
       }
-      this._srb.renderHighlights(this.announcement.text, this.announcement.highlights);
     }
   }
 
@@ -72,7 +76,10 @@ export class AriaLive extends ParaComponent {
         // trigger a reactive update of the history dialog.
         this._setHistory([...this._history, msg ?? '']);
 
+        const target = this.announcement.target;
+        const sendToSV = target === 'all' || target === 'sv' || target === 'voice';
         if (msg
+          && sendToSV
           && this._paraState.config.ui.isVoicingEnabled
           && this._paraState.config.ui.isAnnouncementEnabled) {
           this._voicing.speak(msg, JSON.parse(highlights!), this.announcement.startFrom);
