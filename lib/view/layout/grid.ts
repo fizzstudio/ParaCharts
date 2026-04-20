@@ -62,7 +62,7 @@ export interface GridTerritory extends GridTerritoryInput {
  * @param n
  * @returns
  */
-function roundHundredths(n: number): number {
+export function roundHundredths(n: number): number {
   return Math.round(n*100)/100;
 }
 
