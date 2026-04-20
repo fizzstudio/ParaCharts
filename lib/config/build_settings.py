@@ -44,10 +44,10 @@ export type ConfigSetting = string | number | boolean;
 export type ConfigGroup = {[key: string]: ConfigSetting | ConfigGroup | undefined};
 
 """, file=typesf)
-        write_types_group([''], tree, tree, typesf)
+        write_types_group([], tree, tree, typesf)
 
         print(no_edit, file=metadataf)
-        write_metadata_header([''], tree, tree, metadataf)
+        write_metadata_header(p, [], tree, tree, metadataf)
         print(
 """
 import { SettingControlType } from '../components';
@@ -104,7 +104,7 @@ for (const [k, v] of Object.entries(configMetadata)) {
 
 
 def load_dir(dir: Path, node, parent):
-    print(f'dir {dir}')
+    print(f'read dir {dir}')
 
     for kid in dir.iterdir():
         if kid.is_dir():
@@ -119,7 +119,7 @@ def load_dir(dir: Path, node, parent):
 
 
 def load_file(file: Path, node, parent):
-    print(f'file {file}')
+    print(f'read file {file}')
     with open(file) as f:
         md = json.load(f)
     if md.get('ref'):
@@ -135,9 +135,9 @@ def load_file(file: Path, node, parent):
 def write_defaults_group(key, node, tree, defaults, indent = 0):
     if node.get('__abstract__'):
         return
-    else:
-        print('ABSTRACT', key, node.get('__abstract__'))
-    print('write defaults group', key, node.keys())
+    #else:
+    #    print('ABSTRACT', key, node.get('__abstract__'))
+    # print('write defaults group', key)
     if key:
         print(f'{" "*indent}{key}: {{', file=defaults)
 
@@ -176,7 +176,7 @@ def js_value(py_val):
 
 
 def write_types_group(key_path, node, tree, types):
-    print('write types group', key_path, node.keys())
+    # print('write types group', '.'.join(key_path))
     key_path_joined = ''.join([k.capitalize() for k in key_path])
 
     if node.get('__ref__'):
@@ -226,17 +226,17 @@ def write_types_item(key, setting, types):
     print(f'  {key}: {setting.get('type')};', file=types)
 
 
-def write_metadata_header(key_path, node, tree, f):
-    print('write metadata header', key_path)
-    key_path_file = './' + '/'.join(key_path) + '.json'
-    key_path_dir = './' + '/'.join(key_path) + '/index.json'
+def write_metadata_header(dir_path, key_path, node, tree, f):
+    # print('write metadata header', '/'.join(key_path))
+    key_path_file = '/'.join(key_path) + '.json'
+    key_path_dir = '/'.join(key_path) + '/index.json'
     key_path_joined = ''.join([k.capitalize() for k in key_path])
     if key_path_joined:
         import_json = key_path_joined + 'Json'
-        if Path(key_path_file).exists():
-            print(f'import {import_json} from "{key_path_file}" with {{ type: "json" }};', file=f)
-        elif Path(key_path_dir).exists():
-            print(f'import {import_json} from "{key_path_dir}" with {{ type: "json" }};', file=f)
+        if (dir_path / key_path_file).exists():
+            print(f'import {import_json} from "./{key_path_file}" with {{ type: "json" }};', file=f)
+        elif (dir_path / key_path_dir).exists():
+            print(f'import {import_json} from "./{key_path_dir}" with {{ type: "json" }};', file=f)
         else:
             import_json = ''
         if import_json:
@@ -268,12 +268,12 @@ def write_metadata_header(key_path, node, tree, f):
     # print('}', file=types)
 
     for k, v in groups:
-        write_metadata_header(key_path + [k], v, tree, f)
+        write_metadata_header(dir_path, key_path + [k], v, tree, f)
 
 
 def write_metadata_group(key_path, node, tree, f):
     # 'sonification': SonificationJson,
-    print('write metadata group', key_path)
+    # print('write metadata group', '.'.join(key_path))
     key_path_joined = ''.join([k.capitalize() for k in key_path])
     key_path_dotted = '.'.join(key_path[1:])
     if key_path_joined:
