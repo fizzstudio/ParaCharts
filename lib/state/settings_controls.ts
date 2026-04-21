@@ -56,6 +56,8 @@ export interface SettingControlOptions<T extends SettingControlType = SettingCon
   parentView: string;
 }
 
+export type RefreshTarget = 'chart' | 'description';
+
 /**
  * Info stored about a setting control.
  * @internal
@@ -74,6 +76,7 @@ export interface SettingControlInfo<T extends SettingControlType = SettingContro
   options?: SettingControlOptionsType<T>;
   /** Optional function for validating input. */
   validator?: (value: Setting) => SettingValidationResult;
+  refresh: RefreshTarget;
 }
 
 const inputTypeTags = {
@@ -135,6 +138,7 @@ export class SettingControlManager extends State {
       controlInfo.parentView = metadata.parentView;
       controlInfo.options = metadata.controlOptions ?? controlOptions;
       // controlInfo.validator = controlOptions.validator;
+      controlInfo.refresh = metadata.refresh;
       controlInfo.render = () => html`
         <${tag}
           .value=${SettingsManager.get(key, this._paraState.config)}

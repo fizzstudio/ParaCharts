@@ -71,6 +71,7 @@ export class ChartPanel extends ControlPanelTabPanel {
 
   connectedCallback() {
     super.connectedCallback();
+    this._paraState.settingControls.insert('description.captionFormat');
     this._paraState.settingControls.add({
       type: 'slider',
       key: 'chart.fontScale',

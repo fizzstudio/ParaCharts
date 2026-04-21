@@ -2,17 +2,18 @@
     "family": "description",
     "settings": {
         "captionFormat": {
-            "label": "Caption Format",
+            "label": "Caption format",
             "description": "Use concise or full captions",
             "type": "'full' | 'concise'",
             "default": "full",
-            "control": "radio",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["full", "concise"]
+            },
             "panel": "chart",
-            "parentView": "controlPanel.tabs.chart",
-            "keywords": ["description"]
+            "parentView": "controlPanel.tabs.chart.chart",
+            "keywords": ["description"],
+            "refresh": "description"
         }
-    },
-    "defaults": {
-        "captionFormat": "full"
     }
 }
