@@ -8,7 +8,7 @@ import { property } from '@lit-app/state';
 
 export class GlobalState extends BaseState {
   protected _paraStates: ParaState[] = [];
-  protected _currentParaState!: ParaState;
+  @property() protected _currentParaState!: ParaState;
 
   constructor(
     protected _inputSettings: SettingsInput,

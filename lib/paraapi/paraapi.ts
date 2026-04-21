@@ -208,13 +208,13 @@ export class ParaAPI {
             }
           } else {
             paraView.createDocumentView();
-            _paraChart.captionBox.setCaption();
+            _paraChart.paraState.setCaption();
           }
         } else {
           // Close the explainer
           _paraChart.globalState.enableParaState(_paraChart.globalState.paraStates[1]);
           paraView.createDocumentView();
-          _paraChart.captionBox.setCaption();
+          _paraChart.paraState.setCaption();
         }
       },
       /** Announce the ParaCharts version information. */

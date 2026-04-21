@@ -97,7 +97,7 @@ export class TourBus {
         total += span.textContent.length;
       }
 
-      await this._caption.setCaption({text: detail.text, html: div.firstElementChild!.innerHTML.trim(), highlights});
+      await this._paraState.setCaption({text: detail.text, html: div.firstElementChild!.innerHTML.trim(), highlights});
       this._paraState.startTourGuide();
     });
 

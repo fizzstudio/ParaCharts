@@ -209,6 +209,7 @@ export class ParaState extends BaseState {
   @property() isNorthLegendHighlighted = false;
   @property() isSouthLegendHighlighted = false;
 
+  @property() protected _caption: HighlightedSummary = { text: '', html: '' };
   @property() protected _dimmedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
   @property() protected data: AllSeriesData | null = null;
@@ -335,6 +336,29 @@ export class ParaState extends BaseState {
 
   set clusterShellViews(views: ClusterShellView[]) {
     this._clusterShellViews = views;
+  }
+
+  get caption() {
+    return this._caption;
+  }
+
+  async setCaption(summary?: HighlightedSummary): Promise<void> {
+    if (this.dataState === 'complete') {
+      if (summary !== undefined) {
+        this._caption = summary;
+      } else {
+        const shouldGetConcise = this.config.description.captionFormat === 'concise';
+        const generatedSummary = await (shouldGetConcise
+          ? this._chartInfo.summarizer.getConciseSummary()
+          : this._chartInfo.summarizer.getChartSummary()
+        );
+        if (generatedSummary !== undefined) {
+          this._caption = generatedSummary;
+        } else {
+          this._caption = {text: '', html: ''};
+        }
+      }
+    }
   }
 
   nextAnnotID(): number {
