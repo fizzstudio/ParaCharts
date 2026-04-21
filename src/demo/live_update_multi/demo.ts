@@ -6,7 +6,8 @@ const MANI = '/src/demo/live_update_multi/line-multi-manifest-261.json';
 const MIN = 2;
 const MAX = 8;
 const RANGE = MAX - MIN;
-const AUTO_INTERVAL_MS = 500;
+
+let autoIntervalMs = 500;
 
 let mani: any;
 let url: string;
@@ -16,8 +17,11 @@ const addBtn = document.getElementById('add-btn')!;
 const startBtn = document.getElementById('start-btn')!;
 const resetBtn = document.getElementById('reset-btn')!;
 const maniText = document.getElementById('manifest')!;
+const delayInput = document.getElementById('delay-input') as HTMLInputElement;
 
 const chart = document.getElementById('chart') as ParaChartAi;
+
+delayInput.value = `${autoIntervalMs}`;
 
 addBtn.addEventListener('click', () => {
   if (interval) return;
@@ -31,7 +35,7 @@ startBtn.addEventListener('click', () => {
   }
   interval = setInterval(async () => {
     await addRecord();
-  }, AUTO_INTERVAL_MS);
+  }, autoIntervalMs);
 });
 resetBtn.addEventListener('click', () => {
   if (interval) {
@@ -39,6 +43,16 @@ resetBtn.addEventListener('click', () => {
     interval = null;
   }
   reset();
+});
+delayInput.addEventListener('change', () => {
+  console.log(delayInput.value);
+  autoIntervalMs = parseInt(delayInput.value);
+  if (interval) {
+    clearInterval(interval);
+    interval = setInterval(async () => {
+      await addRecord();
+    }, autoIntervalMs);
+  }
 });
 
 async function addRecord() {
