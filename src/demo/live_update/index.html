@@ -44,6 +44,9 @@
 			padding: 1rem;
 			margin: 20rem 0;
 		}
+		label {
+			font-size: 12pt;
+		}
 	</style>
 </head>
 <body>
@@ -61,8 +64,11 @@
 				<button id="add-btn">Add Record</button>
 				<button id="start-btn">Start/Stop Auto-update</button>
 				<button id="reset-btn">Reset</button>
+				<label>Delay (ms):
+					<input type="number" size="6" id="delay-input">
+				</label>
 			</div>
-			<textarea id="manifest" rows="10" cols="60" readonly></textarea>
+			<textarea id="manifest" rows="10" cols="70" readonly></textarea>
 		</section>
   	</main>
 </body>
