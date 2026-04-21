@@ -434,6 +434,9 @@ export abstract class BaseChartInfo {
     }
   }
 
+  didNavToNode(cursor: NavNode) {
+  }
+
   async navRunDidEnd(cursor: NavNode, quiet = false) {
     //const seriesKey = cursor.options.seriesKey ?? '';
     if (cursor.isNodeType('top')) {

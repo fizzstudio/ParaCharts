@@ -20,6 +20,7 @@ import { datapointIdToCursor, type ParaState } from '../state';
 import { type ParaView } from '../paraview';
 import { type LineSettings, type DeepReadonly, type Setting } from '../state/settings_types';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state/query_utils';
+import { NavNode } from '../view/layers';
 
 import { interpolate } from '@fizz/templum';
 
@@ -64,10 +65,25 @@ export class LineChartInfo extends PointChartInfo {
     return super.settings as DeepReadonly<LineSettings>;
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  async settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): Promise<void> {
     if (['type.line.isTrendNavigationModeEnabled'].includes(path)) {
+      if (this._navMap!.cursor.type === 'top') {
+        [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
+        return;
+      }
+      if (!newValue) {
+        await this._navMap!.cursor.move('in');
+      }
+      const index = this._navMap!.cursor.index;
+      const type = this._navMap!.cursor.type;
       [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
-      this._navMap!.root.goTo('top', {});
+      // go to corresponding data point in new mode nav map
+      this._navMap!.cursor.layer.goTo(type!, index!, true);
+      if (newValue) {
+        const trendNode = this._navMap!.cursor.peekNode('out', 1)!;
+        trendNode.connect('in', this._navMap!.cursor, false);
+        await this._navMap!.cursor.move('out');
+      }
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -87,6 +103,15 @@ export class LineChartInfo extends PointChartInfo {
     // In AI mode, the following call will only do anything when the doc view
     // has been recreated (so the series analyses already exist)
     this._createSequenceNavNodes();
+  }
+
+  didNavToNode(cursor: NavNode) {
+    if (cursor.isNodeType(this.navDatapointType)) {
+      const trendNode = cursor.peekNode('out', 1)!;
+      if (trendNode) {
+        trendNode.connect('in', cursor, false);
+      }
+    }
   }
 
   legend() {

@@ -151,6 +151,7 @@ export class NavMap {
     } else {
       await this._chart.navRunDidStart(this.cursor);
     }
+    this._chart.didNavToNode(this.cursor);
     this._runTimer = setTimeout(() => {
       this._runTimer = null;
       this._chart.navRunDidEnd(this.cursor, quiet);
