@@ -644,7 +644,7 @@ export class ParaView extends ParaComponent {
       // }
       if (this._paraState.config.ui.isVoicingEnabled) {
         this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
-        this._paraState.announce(this.paraChart.captionBox.caption);
+        this._paraState.announce(this.paraChart.paraState.caption);
       } else {
         this._paraState.announce('Tour guide enabled.');
       }

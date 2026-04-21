@@ -24,9 +24,8 @@ export class ParaCaptionBox extends ParaComponent {
 
   @property({ attribute: false }) parachart!: ParaChart;
 
-  @state() protected _caption: HighlightedSummary = { text: '', html: '' };
-
-  protected _storeChangeUnsub!: Unsubscribe;
+  protected _globalStateChangeUnsub!: Unsubscribe;
+  protected _paraStateChangeUnsub!: Unsubscribe;
   protected _spans: HTMLSpanElement[] = [];
   protected _isEBarVisible = false;
   protected _captionRef = createRef<HTMLElement>();
@@ -75,23 +74,21 @@ export class ParaCaptionBox extends ParaComponent {
     return this._highlightManualOverride;
   }
 
-  get caption() {
-    return this._caption;
-  }
-
   connectedCallback(): void {
     super.connectedCallback();
-    this.setCaption();
-    // XXX does the caption really need to update every time parastate changes?
-    // this._storeChangeUnsub = this._paraState.subscribe(async () => {
-    //   console.log('SUBSCRIBE');
-    //   await this.setCaption();
-    // });
+    this._paraState.setCaption();
+    this._globalStateChangeUnsub = this._globalState.subscribe(() => {
+      this.requestUpdate();
+    }, '_currentParaState');
+    this._paraStateChangeUnsub = this._paraState.subscribe(() => {
+      this.requestUpdate();
+    }, '_caption');
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    // this._storeChangeUnsub();
+    this._globalStateChangeUnsub();
+    this._paraStateChangeUnsub();
   }
 
   protected updated(_changedProperties: PropertyValues): void {
@@ -108,7 +105,7 @@ export class ParaCaptionBox extends ParaComponent {
           // NB: this requires there be an announcement, so it only works
           // in NH mode
           // const highlight = this._paraState.announcement.highlights[i];
-          const highlight = this._caption.highlights![i];
+          const highlight = this._paraState.caption.highlights![i];
           this._paraState.postNotice('landmarkStart', highlight);
         });
         // span.addEventListener('pointerleave', (e: PointerEvent) => {
@@ -120,25 +117,6 @@ export class ParaCaptionBox extends ParaComponent {
 
   clearStatusBar() {
     this.parachart.clearAriaLive();
-  }
-
-  async setCaption(summary?: HighlightedSummary): Promise<void> {
-    if (this._paraState.dataState === 'complete') {
-      if (summary !== undefined) {
-        this._caption = summary;
-      } else {
-        const shouldGetConcise = this._paraState.config.description.captionFormat === 'concise';
-        const generatedSummary = await (shouldGetConcise  
-          ? this._paraState.chartInfo.summarizer.getConciseSummary()
-          : this._paraState.chartInfo.summarizer.getChartSummary()
-        );
-        if (generatedSummary !== undefined) {
-          this._caption = generatedSummary;
-        } else {
-          this._caption = {text: '', html: ''};
-        }
-      }
-    }
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
@@ -189,13 +167,13 @@ export class ParaCaptionBox extends ParaComponent {
     //   this._paraState.announcement.highlights.length - 1,
     //   Math.max(0, idx + (next ? 1 : -1)));
     idx = Math.min(
-      this._caption.highlights!.length - 1,
+      this._paraState.caption.highlights!.length - 1,
       Math.max(0, idx + (next ? 1 : -1)));
 
     this._prevSpanIdx = idx;
 
     // const highlight = this._paraState.announcement.highlights[idx];
-    const highlight = this._caption.highlights![idx];
+    const highlight = this._paraState.caption.highlights![idx];
     if (this._paraState.config.ui.isVoicingEnabled) {
       //const msg = getMsg(idx);
       const msg = this._captionRef.value!.firstElementChild!.children[idx].textContent;
@@ -232,7 +210,7 @@ export class ParaCaptionBox extends ParaComponent {
     const sendToEBar = announcementTarget === 'all' || announcementTarget === 'explorationbar';
     this._isEBarVisible = sendToEBar
       && !!this._paraState.announcement.text
-      && this._paraState.announcement.text !== this._caption.text;
+      && this._paraState.announcement.text !== this._paraState.caption.text;
     const isCaptionSolo = !this._isEBarVisible || !this._paraState.settings.controlPanel.isExplorationBarVisible;
     return html`
       <figcaption class=${this.parachart.isControlPanelOpen ? '' : 'external'}>
@@ -243,7 +221,7 @@ export class ParaCaptionBox extends ParaComponent {
             class=${isCaptionSolo ? 'solo' : ''}
             ?hidden=${!this._paraState.settings.controlPanel.isCaptionVisible}
           >
-            ${this.renderSummary(this._caption, 'caption')}
+            ${this.renderSummary(this._paraState.caption, 'caption')}
           </div>
           <div
             id="exploration-bar"
@@ -253,7 +231,7 @@ export class ParaCaptionBox extends ParaComponent {
               id="exploration-bar-text"
               aria-hidden="true"
             >
-              ${this._paraState.announcement.text === this._caption.text
+              ${this._paraState.announcement.text === this._paraState.caption.text
                 ? ''
                 : this.renderSummary(this._paraState.announcement, 'statusbar')}
             </div>
