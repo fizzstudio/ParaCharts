@@ -121,6 +121,10 @@ export class ParaChart extends ParaComponent {
         onUpdate: () => {
           this._paraViewRef.value?.requestUpdate();
         },
+        onRefreshParaView: () => {
+          this._paraViewRef.value?.createDocumentView();
+          this._paraViewRef.value?.requestUpdate();
+        },
         onNotice: (key, value) => {
           this.postNotice(key, value);
         },

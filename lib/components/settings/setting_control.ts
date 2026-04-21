@@ -51,6 +51,11 @@ export abstract class SettingControl<T extends SettingControlType> extends ParaC
     } else {
       this._paraState.updateSettings(draft => SettingsManager.set(key, value, draft));
     }
+    if (this.info.refresh === 'chart') {
+      this._paraState.refreshParaView();
+    } else if (this.info.refresh === 'description') {
+      this._paraState.setCaption();
+    }
   }
 
   protected _validateInput(value: Setting, control: EventTarget) {

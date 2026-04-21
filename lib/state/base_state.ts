@@ -14,6 +14,7 @@ export type SettingObserver = (oldValue?: Setting, newValue?: Setting) => void;
 
 export interface ParaStateCallbacks {
   onUpdate?: () => void;
+  onRefreshParaView?: () => void;
   onNotice?: (type: string, data: any) => void;
   onSettingChange?: (path: string, oldValue?: Setting, newValue?: Setting) => void;
 }
@@ -39,6 +40,10 @@ export abstract class BaseState extends State {
 
   requestUpdate() {
     this.callbacks.onUpdate?.();
+  }
+
+  refreshParaView() {
+    this.callbacks.onRefreshParaView?.();
   }
 
   postNotice(key: string, value: any) {

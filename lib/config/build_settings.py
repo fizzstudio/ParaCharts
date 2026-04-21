@@ -51,7 +51,7 @@ export type ConfigGroup = {[key: string]: ConfigSetting | ConfigGroup | undefine
         print(
 """
 import { SettingControlType } from '../components';
-import { SettingControlOptionsType } from '../state';
+import { SettingControlOptionsType, RefreshTarget } from '../state';
 
 export interface ConfigSettingMetadata<T extends SettingControlType = SettingControlType> {
   /** Label displayed in UI */
@@ -70,6 +70,8 @@ export interface ConfigSettingMetadata<T extends SettingControlType = SettingCon
   parentView?: string;
   hidden?: boolean;
   keywords?: string[];
+  /** What to refresh when the setting changes **/
+  refresh: RefreshTarget;
 }
 export interface ConfigGroupMetadata {
   ref?: string;
