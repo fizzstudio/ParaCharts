@@ -77,7 +77,7 @@ export const defaults: Settings = {
     isShowVisitedDatapointsOnly: false,
     isShowPopups: false,
     maxError: .01,
-    maxSegments: 5,
+    maxSegments: 4,
     extremumWeight: 10
   },
   axis: {
