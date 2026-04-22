@@ -231,11 +231,14 @@ export class HorizTickLabelTier extends TickLabelTier {
     // These "hanging off" bits won't contribute to the size of
     // the tier, to make it easier to align.
     const isXIntertick = this._options.isChartIntertick && this._options.isFacetIndep;
-    const tickDelta = this._length/(this._options.numTicks - (isXIntertick ? 0 : 1));
-    const offset = isXIntertick ? 2 : 1.5;
-    let pos = (this._options.index && this._options.datatype === 'date')
-      ? 4*tickDelta*index + offset*tickDelta
-      : this._labelDistance*index; // + this._labelDistance/2;
+    let pos: number;
+    if (this._options.index && this._options.datatype === 'date') {
+      const intStart = this._length*this._options.content.intervals![index].start;
+      const intEnd = this._length*this._options.content.intervals![index].end;
+      pos = (intStart + intEnd)/2;
+    } else {
+      pos = this._labelDistance*index;
+    }
     if (isXIntertick && (!this._options.index || this._options.datatype !== 'date')) {
       pos += (this._labelDistance/this._options.step)/2;
     }

@@ -57,28 +57,39 @@ delayInput.addEventListener('change', () => {
 
 async function addRecord() {
   // mani.jim.datasets[0].series[0].records[0].x
-  const data1 = mani.jim.datasets[0].series[0].records;
-  const data2 = mani.jim.datasets[0].series[1].records;
-  data1.splice(0, 1);
-  let prevY = parseFloat(data1.at(-1)!.y);
-  let pctDelta = Math.random()*0.15 - 0.08;
-  data1.push({
-    x: nextX(data1.at(-1)!.x),
-    y: `${Math.abs(prevY + pctDelta*RANGE)}`
+  const data1 = chart.paraState.manifest!.jim.datasets[0].series[0].records!;
+  const data2 = chart.paraState.manifest!.jim.datasets[0].series[1].records!;
+  const prevY1 = parseFloat(data1.at(-1)!.y);
+  const pctDelta1 = Math.random()*0.15 - 0.08;
+  const prevY2 = parseFloat(data2.at(-1)!.y);
+  const pctDelta2 = Math.random()*0.15 - 0.06;
+  await chart.api.addRecord({
+    Expenses: {
+      x: nextX(data1.at(-1)!.x),
+      y: `${Math.abs(prevY1 + pctDelta1*RANGE)}`
+    },
+    Revenue: {
+      x: nextX(data2.at(-1)!.x),
+      y: `${Math.abs(prevY2 + pctDelta2*RANGE)}`
+    }
   });
-  data2.splice(0, 1);
-  prevY = parseFloat(data2.at(-1)!.y);
-  pctDelta = Math.random()*0.15 - 0.06;
-  data2.push({
-    x: nextX(data2.at(-1)!.x),
-    y: `${Math.abs(prevY + pctDelta*RANGE)}`
-  });
-  await updateChart();
+  const maniStr = JSON.stringify(chart.paraState.manifest, null, 2);
+  maniText.textContent = maniStr;
 }
 
+// function nextX(x: string) {
+//   const y = parseInt(x) + 1;
+//   return `${y + 1}`;
+// }
+
 function nextX(x: string) {
-  const y = parseInt(x) + 1;
-  return `${y + 1}`;
+  let [q, y] = x.split(' ');
+  const qnum = (parseInt(q[1]) - 1 + 1) % 4;
+  q = `Q${qnum + 1}`;
+  if (!qnum) {
+      y = `${parseInt(y) + 1}`;
+  }
+  return q + ' ' + y;
 }
 
 async function reset() {
@@ -102,4 +113,7 @@ async function updateChart() {
 
 await chart.loaded;
 
-await reset();
+// await reset();
+
+const maniStr = JSON.stringify(chart.paraState.manifest, null, 2);
+maniText.textContent = maniStr;
