@@ -1,0 +1,121 @@
+{
+  "jim": {
+    "datasets": [
+      {
+        "representation": {
+          "type": "chart",
+          "subtype": "line"
+        },
+        "title": "Number of Xbox Live MAU Q1 2016 - Q4 2019",
+        "facets": {
+          "x": {
+            "label": "quarter",
+            "variableType": "independent",
+            "measure": "interval",
+            "datatype": "date",
+            "units": "quarter",
+            "displayType": {
+              "type": "axis",
+              "orientation": "horizontal"
+            }
+          },
+          "y": {
+            "label": "Monthly active users in millions",
+            "variableType": "dependent",
+            "measure": "ratio",
+            "datatype": "number",
+            "multiplier": 1000000,
+            "displayType": {
+              "type": "axis",
+              "orientation": "vertical"
+            }
+          }
+        },
+        "series": [
+          {
+            "key": "Number of users in millions",
+            "topic": {
+              "baseQuantity": "monthly active user",
+              "baseKind": "number",
+              "entity": "Xbox Live"
+            },
+            "records": [
+              {
+                "x": "Q1 2016",
+                "y": "39"
+              },
+              {
+                "x": "Q2 2016",
+                "y": "48"
+              },
+              {
+                "x": "Q3 2016",
+                "y": "46"
+              },
+              {
+                "x": "Q4 2016",
+                "y": "49"
+              },
+              {
+                "x": "Q1 2017",
+                "y": "47"
+              },
+              {
+                "x": "Q2 2017",
+                "y": "55"
+              },
+              {
+                "x": "Q3 2017",
+                "y": "52"
+              },
+              {
+                "x": "Q4 2017",
+                "y": "53"
+              },
+              {
+                "x": "Q1 2018",
+                "y": "53"
+              },
+              {
+                "x": "Q2 2018",
+                "y": "59"
+              },
+              {
+                "x": "Q3 2018",
+                "y": "59"
+              },
+              {
+                "x": "Q4 2018",
+                "y": "57"
+              },
+              {
+                "x": "Q1 2019",
+                "y": "57"
+              },
+              {
+                "x": "Q2 2019",
+                "y": "64"
+              },
+              {
+                "x": "Q3 2019",
+                "y": "63"
+              },
+              {
+                "x": "Q4 2019",
+                "y": "65"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "extensions": {
+    "paracharts": {
+      "settings": {
+        "controlPanel.isControlPanelDefaultOpen": false,
+        "controlPanel.isCaptionVisible": true
+      }
+    }
+  }
+}

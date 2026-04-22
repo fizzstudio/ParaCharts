@@ -69,6 +69,7 @@
     "demo:poll": "vite --port 5199 --config src/demo/poll/vite.config.ts",
     "demo:live_update": "vite --port 5200 --open src/demo/live_update/index.html",
     "demo:live_update_multi": "vite --port 5201 --open src/demo/live_update_multi/index.html",
+    "demo:live_feed": "vite --port 5202 --open src/demo/live_feed/index.html",
     "storybook": "storybook dev -p 5180",
     "build": "rimraf dist && rimraf types && tsc && vite build && api-extractor run --local --verbose",
     "build:ai": "rimraf dist-ai && rimraf types-ai && tsc --project ai.tsconfig.json && vite build --config ai.vite.config.ts && api-extractor run --local --verbose --config ai.api-extractor.json",
