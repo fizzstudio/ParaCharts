@@ -21,7 +21,7 @@ import { type ParaChart } from '../parachart/parachart';
 import { CardinalDirection, Direction, makeSequenceId, Setting, SettingsInput, SettingsManager } from '../state';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 import explainers from '../explainers';
-import type { Manifest } from '@fizz/paramanifest';
+import type { DatapointManifest, Manifest } from '@fizz/paramanifest';
 import { ConfigSetting } from '../config/config_types';
 import { ConfigGroupMetadata, ConfigGroupSettingsMetadata, configMetadata, ConfigSettingMetadata } from '../config/config_metadata';
 
@@ -323,6 +323,29 @@ export class ParaAPI {
   /** Wait for a manifest to be loaded. Resolves immediately if already loaded. */
   waitForManifest(): Promise<void> {
     return this._paraChart.waitForManifest();
+  }
+
+  async addRecord(points: Record<string, {x: string, y: string}>) {
+    // mani.jim.datasets[0].series[0].records[0].x
+    const mani = this._paraChart.paraState.manifest!;
+    for (const [k, v] of Object.entries(points)) {
+      let data: DatapointManifest[] | undefined;
+      for (const series of mani.jim.datasets[0].series) {
+        if (series.key === k) {
+          data = series.records;
+        }
+      }
+      if (!data) {
+        throw new Error(`no such series '${k}'`);
+      }
+      data.splice(0, 1);
+      data.push({
+        x: v.x,
+        y: v.y
+      });
+    }
+    const maniStr = JSON.stringify(mani, null, 2);
+    await this._paraChart.runLoader(maniStr, 'content', undefined, undefined, false);
   }
 
   /** Get the chart title label. */

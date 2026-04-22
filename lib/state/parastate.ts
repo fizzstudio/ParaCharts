@@ -286,6 +286,10 @@ export class ParaState extends BaseState {
     return this._type;
   }
 
+  get manifest() {
+    return this._manifest;
+  }
+
   get model() {
     return this._model;
   }
