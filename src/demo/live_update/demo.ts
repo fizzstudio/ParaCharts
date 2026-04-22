@@ -58,17 +58,20 @@ delayInput.addEventListener('change', () => {
 
 async function addRecord() {
   // mani.jim.datasets[0].series[0].records[0].x
-  const data = mani.jim.datasets[0].series[0].records;
-  data.splice(0, 1);
+  const data = chart.paraState.manifest!.jim.datasets[0].series[0].records!;
   const prevY = parseFloat(data.at(-1)!.y);
   const pctDelta = Math.random()*0.3 - 0.15;
+  await chart.api.addRecord({
+    'Number of users in millions': {
+      x: nextX(data.at(-1)!.x),
+      y: `${prevY + pctDelta*RANGE}`
+    }
+  });
+  const maniStr = JSON.stringify(chart.paraState.manifest, null, 2);
+  maniText.textContent = maniStr;
+
   // const yInterval = (chart.paraState.chartInfo as PlaneChartInfo).yInterval!;
   // const yRange = yInterval.end - yInterval.start;
-  data.push({
-    x: nextX(data.at(-1)!.x),
-    y: `${prevY + pctDelta*RANGE}`
-  });
-  await updateChart();
 }
 
 function nextX(x: string) {
@@ -102,4 +105,7 @@ async function updateChart() {
 
 await chart.loaded;
 
-await reset();
+//await reset();
+
+const maniStr = JSON.stringify(chart.paraState.manifest, null, 2);
+maniText.textContent = maniStr;
