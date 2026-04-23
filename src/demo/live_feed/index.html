@@ -277,6 +277,25 @@
     #bias-controls {
       display: contents;
     }
+
+    .caption-format-row {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.6rem;
+    }
+
+    .caption-format-row > label {
+      font-size: 0.9rem;
+      color: #444;
+    }
+
+    .caption-format-row .mode-switch label {
+      justify-self: unset;
+      font-size: 0.82rem;
+      color: inherit;
+    }
   </style>
 </head>
 <body>
@@ -322,6 +341,34 @@
             <input type="number" id="step-input" min="1" max="50" step="1">
             <hr class="ac-divider">
             <div id="bias-controls"></div>
+            <hr class="ac-divider">
+            <div class="caption-format-row">
+              <label>Caption</label>
+              <div class="mode-switch">
+                <input type="radio" name="caption-format" id="caption-concise" value="concise" checked>
+                <label for="caption-concise">Concise</label>
+                <input type="radio" name="caption-format" id="caption-full" value="full">
+                <label for="caption-full">Full</label>
+              </div>
+            </div>
+            <div class="caption-format-row">
+              <label>Control Panel</label>
+              <div class="mode-switch">
+                <input type="radio" name="cp-open" id="cp-open-off" value="false" checked>
+                <label for="cp-open-off">Closed</label>
+                <input type="radio" name="cp-open" id="cp-open-on" value="true">
+                <label for="cp-open-on">Open</label>
+              </div>
+            </div>
+            <div class="caption-format-row">
+              <label>Caption Visible</label>
+              <div class="mode-switch">
+                <input type="radio" name="caption-visible" id="caption-visible-off" value="false">
+                <label for="caption-visible-off">Hidden</label>
+                <input type="radio" name="caption-visible" id="caption-visible-on" value="true" checked>
+                <label for="caption-visible-on">Visible</label>
+              </div>
+            </div>
           </div>
         </details>
       </div>
