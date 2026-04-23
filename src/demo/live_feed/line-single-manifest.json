@@ -114,7 +114,8 @@
     "paracharts": {
       "settings": {
         "controlPanel.isControlPanelDefaultOpen": false,
-        "controlPanel.isCaptionVisible": true
+        "controlPanel.isCaptionVisible": true,
+        "description.captionFormat": "concise"
       }
     }
   }

@@ -285,9 +285,9 @@
   <header>
     <h1>ParaCharts Live Feed Demo</h1>
     <div class="mode-switch" role="radiogroup" aria-label="Chart mode">
-      <input type="radio" name="mode" id="mode-single" value="single" checked>
+      <input type="radio" name="mode" id="mode-single" value="single">
       <label for="mode-single">Single Series</label>
-      <input type="radio" name="mode" id="mode-multi" value="multi">
+      <input type="radio" name="mode" id="mode-multi" value="multi" checked>
       <label for="mode-multi">Multi Series</label>
     </div>
   </header>
@@ -296,7 +296,7 @@
     <section id="chart-container">
       <para-chart
         id="chart"
-        manifest="/src/demo/live_feed/line-single-manifest.json"
+        manifest="/src/demo/live_feed/line-multi-manifest.json"
       ></para-chart>
     </section>
 
