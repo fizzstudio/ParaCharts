@@ -166,12 +166,7 @@ stepInput.addEventListener('change', () => { activeMode.STEP = parseFloat(stepIn
 
 captionFormatInputs.forEach(input => {
   input.addEventListener('change', () => {
-    const value = input.value;
-    chart.api.setConfigSetting('description.captionFormat', value);
-    chart.paraState.setCaption();
-    if (baseManifest) {
-      baseManifest.extensions.paracharts.settings['description.captionFormat'] = value;
-    }
+    chart.api.setConfigSetting('description.captionFormat', input.value);
   });
 });
 
