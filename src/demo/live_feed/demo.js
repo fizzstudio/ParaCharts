@@ -1,9 +1,5 @@
 import '/dist-ai/paracharts.js';
 
-// ── Switch to true when chart.api.removeRecord() is implemented ──────────────
-const USE_REMOVE_RECORD = false;
-// ─────────────────────────────────────────────────────────────────────────────
-
 const chart = document.getElementById('chart');
 const addBtn = document.getElementById('add-btn');
 const startBtn = document.getElementById('start-btn');
@@ -19,12 +15,23 @@ const stepInput = document.getElementById('step-input');
 
 let autoIntervalMs = 500;
 let interval = null;
-let futureBuffer = [];
-let recordDelta = 0;
 delayInput.value = autoIntervalMs;
 
-function captureBaseCount() {
-  recordDelta = 0;
+let allRecords = {};    // { seriesKey: [{x, y}, ...] } — full history, never shrunk
+let windowSize = 0;     // record count from the original manifest — fixed
+let windowEnd = 0;      // exclusive end index into allRecords; chart shows [windowEnd-windowSize, windowEnd)
+let baseManifest = null; // manifest structure with records stripped out, used as template
+
+function initFromManifest() {
+  const manifest = chart.paraState.manifest;
+  baseManifest = JSON.parse(JSON.stringify(manifest));
+  allRecords = {};
+  const series = manifest.jim.datasets[0].series;
+  for (const s of series) {
+    allRecords[s.key] = s.records.map(r => ({ ...r }));
+  }
+  windowSize = series[0].records.length;
+  windowEnd = windowSize;
 }
 
 const MODES = {
@@ -33,14 +40,11 @@ const MODES = {
     MIN: 35, MAX: 65, STEP: 0.15,
     SERIES: ['Number of users in millions'],
     BIAS: [0],
-    async addRecord() {
-      const records = chart.paraState.manifest.jim.datasets[0].series[0].records;
+    addRecord() {
+      const records = allRecords['Number of users in millions'];
       const prevY = parseFloat(records.at(-1).y);
       const raw = prevY + ((Math.random() * 2 - 1) * this.STEP + this.BIAS[0]) * (this.MAX - this.MIN);
-      const y = reflect(raw, this.MIN, this.MAX);
-      await chart.api.addRecord({
-        'Number of users in millions': { x: nextX(records.at(-1).x), y: y.toFixed(1) }
-      });
+      records.push({ x: nextX(records.at(-1).x), y: reflect(raw, this.MIN, this.MAX).toFixed(1) });
     }
   },
   multi: {
@@ -48,21 +52,17 @@ const MODES = {
     MIN: 2, MAX: 8, STEP: 0.08,
     SERIES: ['Expenses', 'Revenue'],
     BIAS: [-0.005, 0.015],
-    async addRecord() {
-      const series = chart.paraState.manifest.jim.datasets[0].series;
-      const r1 = series[0].records, r2 = series[1].records;
+    addRecord() {
+      const r1 = allRecords['Expenses'];
+      const r2 = allRecords['Revenue'];
       const range = this.MAX - this.MIN;
-      const y1 = reflect(parseFloat(r1.at(-1).y) + ((Math.random() * 2 - 1) * this.STEP + this.BIAS[0]) * range, this.MIN, this.MAX);
-      const y2 = reflect(parseFloat(r2.at(-1).y) + ((Math.random() * 2 - 1) * this.STEP + this.BIAS[1]) * range, this.MIN, this.MAX);
-      await chart.api.addRecord({
-        Expenses: { x: nextX(r1.at(-1).x), y: y1.toFixed(1) },
-        Revenue:  { x: nextX(r2.at(-1).x), y: y2.toFixed(1) }
-      });
+      r1.push({ x: nextX(r1.at(-1).x), y: reflect(parseFloat(r1.at(-1).y) + ((Math.random() * 2 - 1) * this.STEP + this.BIAS[0]) * range, this.MIN, this.MAX).toFixed(1) });
+      r2.push({ x: nextX(r2.at(-1).x), y: reflect(parseFloat(r2.at(-1).y) + ((Math.random() * 2 - 1) * this.STEP + this.BIAS[1]) * range, this.MIN, this.MAX).toFixed(1) });
     }
   }
 };
 
-let activeMode = MODES.single;
+let activeMode = MODES.multi;
 
 function reflect(value, min, max) {
   if (value < min) return 2 * min - value;
@@ -78,62 +78,45 @@ function nextX(x) {
   return `${q} ${y}`;
 }
 
-// ── Playback ──────────────────────────────────────────────────────────────────
+function totalRecords() {
+  return allRecords[Object.keys(allRecords)[0]]?.length ?? 0;
+}
 
-function snapshotLastRecord() {
-  const series = chart.paraState.manifest.jim.datasets[0].series;
-  const snapshot = {};
-  for (const s of series) snapshot[s.key] = { ...s.records.at(-1) };
-  return snapshot;
+// ── Window ────────────────────────────────────────────────────────────────────
+
+async function sendWindow() {
+  const manifest = JSON.parse(JSON.stringify(baseManifest));
+  for (const s of manifest.jim.datasets[0].series) {
+    s.records = allRecords[s.key].slice(windowEnd - windowSize, windowEnd);
+  }
+  const url = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type: 'application/json' }));
+  await chart.api.setManifest(url);
+  await chart.loaded;
+  URL.revokeObjectURL(url);
+}
+
+function updateStepButtons() {
+  backBtn.disabled = windowEnd <= windowSize;
+  fwdBtn.disabled = windowEnd >= totalRecords();
 }
 
 async function stepBack() {
-  if (recordDelta <= 0) return;
-
+  if (windowEnd <= windowSize) return;
   stopInterval();
-  const snapshot = snapshotLastRecord();
-
-  if (USE_REMOVE_RECORD) {
-    // ── PRIMARY: chart.api.removeRecord() ────────────────────────────────────
-    await chart.api.removeRecord();
-    // ─────────────────────────────────────────────────────────────────────────
-  } else {
-    // ── FALLBACK: rebuild manifest via setManifest() ──────────────────────────
-    const modified = JSON.parse(JSON.stringify(chart.paraState.manifest));
-    for (const s of modified.jim.datasets[0].series) s.records.pop();
-    const blob = new Blob([JSON.stringify(modified)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    await chart.api.setManifest(url);
-    await chart.loaded;
-    URL.revokeObjectURL(url);
-    // ─────────────────────────────────────────────────────────────────────────
-  }
-
-  recordDelta--;
-  futureBuffer.unshift(snapshot);
+  windowEnd--;
   updateStepButtons();
+  await sendWindow();
   updateLatestDisplay();
   updateManifestDisplay();
 }
 
 async function stepForward() {
-  if (!futureBuffer.length) return;
-  const snapshot = futureBuffer.shift();
-  await chart.api.addRecord(snapshot);
-  recordDelta++;
+  if (windowEnd >= totalRecords()) return;
+  windowEnd++;
   updateStepButtons();
+  await sendWindow();
   updateLatestDisplay();
   updateManifestDisplay();
-}
-
-function clearFutureBuffer() {
-  futureBuffer = [];
-  updateStepButtons();
-}
-
-function updateStepButtons() {
-  backBtn.disabled = recordDelta <= 0;
-  fwdBtn.disabled = futureBuffer.length === 0;
 }
 
 backBtn.addEventListener('click', stepBack);
@@ -181,9 +164,14 @@ function stopInterval() {
 
 function startInterval() {
   interval = setInterval(async () => {
-    await activeMode.addRecord();
-    recordDelta++;
-    clearFutureBuffer();
+    if (windowEnd < totalRecords()) {
+      windowEnd++;             // catch up through existing history
+    } else {
+      activeMode.addRecord();  // at the frontier — generate a new point
+      windowEnd = totalRecords();
+    }
+    updateStepButtons();
+    await sendWindow();
     updateLatestDisplay();
     updateManifestDisplay();
   }, autoIntervalMs);
@@ -191,9 +179,8 @@ function startInterval() {
 }
 
 function updateLatestDisplay() {
-  const series = chart.paraState.manifest.jim.datasets[0].series;
-  latestText.textContent = series
-    .map(s => `${s.key}: x=${s.records.at(-1).x}, y=${s.records.at(-1).y}`)
+  latestText.textContent = Object.entries(allRecords)
+    .map(([key, records]) => `${key}: x=${records[windowEnd - 1].x}, y=${records[windowEnd - 1].y}`)
     .join('\n');
 }
 
@@ -203,9 +190,10 @@ function updateManifestDisplay() {
 
 addBtn.addEventListener('click', async () => {
   if (interval) return;
-  await activeMode.addRecord();
-  recordDelta++;
-  clearFutureBuffer();
+  activeMode.addRecord();
+  windowEnd = totalRecords();
+  updateStepButtons();
+  await sendWindow();
   updateLatestDisplay();
   updateManifestDisplay();
 });
@@ -216,10 +204,9 @@ startBtn.addEventListener('click', () => {
 
 resetBtn.addEventListener('click', async () => {
   stopInterval();
-  clearFutureBuffer();
   await chart.api.setManifest(activeMode.manifest);
   await chart.loaded;
-  captureBaseCount();
+  initFromManifest();
   updateStepButtons();
   updateLatestDisplay();
   updateManifestDisplay();
@@ -236,12 +223,11 @@ delayInput.addEventListener('change', () => {
 document.querySelectorAll('input[name="mode"]').forEach(input => {
   input.addEventListener('change', async () => {
     stopInterval();
-    clearFutureBuffer();
     activeMode = MODES[input.value];
     syncRangeInputs();
     await chart.api.setManifest(activeMode.manifest);
     await chart.loaded;
-    captureBaseCount();
+    initFromManifest();
     updateStepButtons();
     updateLatestDisplay();
     updateManifestDisplay();
@@ -249,7 +235,7 @@ document.querySelectorAll('input[name="mode"]').forEach(input => {
 });
 
 await chart.loaded;
-captureBaseCount();
+initFromManifest();
 syncRangeInputs();
 updateStepButtons();
 updateLatestDisplay();
