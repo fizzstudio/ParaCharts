@@ -12,6 +12,9 @@ const delayInput = document.getElementById('delay-input');
 const minInput = document.getElementById('min-input');
 const maxInput = document.getElementById('max-input');
 const stepInput = document.getElementById('step-input');
+const captionFormatInputs = document.querySelectorAll('input[name="caption-format"]');
+const cpOpenInputs = document.querySelectorAll('input[name="cp-open"]');
+const captionVisibleInputs = document.querySelectorAll('input[name="caption-visible"]');
 
 let autoIntervalMs = 500;
 let interval = null;
@@ -84,6 +87,14 @@ function totalRecords() {
 
 // ── Window ────────────────────────────────────────────────────────────────────
 
+function latestPoints() {
+  const points = {};
+  for (const [key, records] of Object.entries(allRecords)) {
+    points[key] = records[windowEnd - 1];
+  }
+  return points;
+}
+
 async function sendWindow() {
   const manifest = JSON.parse(JSON.stringify(baseManifest));
   for (const s of manifest.jim.datasets[0].series) {
@@ -153,6 +164,36 @@ minInput.addEventListener('change', () => { activeMode.MIN = parseFloat(minInput
 maxInput.addEventListener('change', () => { activeMode.MAX = parseFloat(maxInput.value); });
 stepInput.addEventListener('change', () => { activeMode.STEP = parseFloat(stepInput.value) / 100; });
 
+captionFormatInputs.forEach(input => {
+  input.addEventListener('change', () => {
+    chart.api.setConfigSetting('description.captionFormat', input.value);
+  });
+});
+
+function resetCaptionFormat() {
+  document.getElementById('caption-concise').checked = true;
+}
+
+cpOpenInputs.forEach(input => {
+  input.addEventListener('change', () => {
+    chart.api.setSetting('controlPanel.isControlPanelDefaultOpen', input.value === 'true');
+  });
+});
+
+captionVisibleInputs.forEach(input => {
+  input.addEventListener('change', () => {
+    chart.api.setSetting('controlPanel.isCaptionVisible', input.value === 'true');
+  });
+});
+
+function resetCpOpen() {
+  document.getElementById('cp-open-off').checked = true;
+}
+
+function resetCaptionVisible() {
+  document.getElementById('caption-visible-on').checked = true;
+}
+
 // ── Playback controls ─────────────────────────────────────────────────────────
 
 function stopInterval() {
@@ -165,13 +206,15 @@ function stopInterval() {
 function startInterval() {
   interval = setInterval(async () => {
     if (windowEnd < totalRecords()) {
-      windowEnd++;             // catch up through existing history
+      windowEnd++;
+      updateStepButtons();
+      await sendWindow();
     } else {
-      activeMode.addRecord();  // at the frontier — generate a new point
+      activeMode.addRecord();
       windowEnd = totalRecords();
+      updateStepButtons();
+      await chart.api.addRecord(latestPoints());
     }
-    updateStepButtons();
-    await sendWindow();
     updateLatestDisplay();
     updateManifestDisplay();
   }, autoIntervalMs);
@@ -193,7 +236,7 @@ addBtn.addEventListener('click', async () => {
   activeMode.addRecord();
   windowEnd = totalRecords();
   updateStepButtons();
-  await sendWindow();
+  await chart.api.addRecord(latestPoints());
   updateLatestDisplay();
   updateManifestDisplay();
 });
@@ -207,6 +250,9 @@ resetBtn.addEventListener('click', async () => {
   await chart.api.setManifest(activeMode.manifest);
   await chart.loaded;
   initFromManifest();
+  resetCaptionFormat();
+  resetCpOpen();
+  resetCaptionVisible();
   updateStepButtons();
   updateLatestDisplay();
   updateManifestDisplay();
@@ -228,6 +274,9 @@ document.querySelectorAll('input[name="mode"]').forEach(input => {
     await chart.api.setManifest(activeMode.manifest);
     await chart.loaded;
     initFromManifest();
+    resetCaptionFormat();
+    resetCpOpen();
+    resetCaptionVisible();
     updateStepButtons();
     updateLatestDisplay();
     updateManifestDisplay();

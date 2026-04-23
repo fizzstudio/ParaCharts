@@ -403,6 +403,9 @@ export class ParaChart extends ParaComponent {
     this.captionBox.settingDidChange(path, oldValue, newValue);
     // ... then update it again to pick up any changed values from the view tree
     this._styleManager.update();
+    if (path.startsWith('description.')) {
+      this._paraState.setCaption();
+    }
   }
 
   postNotice(key: string, value: any) {

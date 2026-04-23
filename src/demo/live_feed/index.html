@@ -1,21 +1,27 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <title>Live Feed Demo — ParaCharts</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22green%22/><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22green%22/><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
   <style>
     :root {
-      --theme:       hsl(194, 28%, 45%);
+      --theme: hsl(194, 28%, 45%);
       --theme-light: hsl(194, 28%, 88%);
-      --border:      #d4d4d4;
-      --text:        #333;
-      --muted:       #777;
-      --panel:       #f7f8f9;
+      --border: #d4d4d4;
+      --text: #333;
+      --muted: #777;
+      --panel: #f7f8f9;
     }
 
-    *, *::before, *::after { box-sizing: border-box; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -73,9 +79,11 @@
       border-right: 1px solid var(--border);
     }
 
-    .mode-switch label:last-child { border-right: none; }
+    .mode-switch label:last-child {
+      border-right: none;
+    }
 
-    .mode-switch input[type="radio"]:checked + label {
+    .mode-switch input[type="radio"]:checked+label {
       background: var(--theme);
       color: #fff;
     }
@@ -84,7 +92,7 @@
       background: var(--theme-light);
     }
 
-    .mode-switch input[type="radio"]:checked + label:hover {
+    .mode-switch input[type="radio"]:checked+label:hover {
       background: var(--theme);
     }
 
@@ -154,7 +162,10 @@
       color: var(--border);
     }
 
-    button svg { fill: currentColor; display: block; }
+    button svg {
+      fill: currentColor;
+      display: block;
+    }
 
     input[type="number"] {
       width: 5rem;
@@ -207,8 +218,13 @@
       resize: vertical;
     }
 
-    #latest { min-height: 3.5rem; }
-    #manifest { min-height: 200px; }
+    #latest {
+      min-height: 3.5rem;
+    }
+
+    #manifest {
+      min-height: 200px;
+    }
 
     /* ── Advanced Controls dropdown ────────────── */
     #controls #advanced-details {
@@ -218,7 +234,7 @@
       margin-left: auto;
     }
 
-    #controls #advanced-details > summary {
+    #controls #advanced-details>summary {
       padding: 0.32rem 0.75rem;
       border: 1px solid var(--theme);
       border-radius: 4px;
@@ -228,7 +244,7 @@
       transition: background 0.15s, color 0.15s;
     }
 
-    #controls #advanced-details[open] > summary {
+    #controls #advanced-details[open]>summary {
       background: var(--theme);
       color: #fff;
       border-radius: 4px 4px 0 0;
@@ -249,7 +265,7 @@
       background: var(--panel);
       border: 1px solid #aaa;
       border-radius: 4px 0 4px 4px;
-      box-shadow: 2px 4px 10px rgba(0,0,0,0.15);
+      box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.15);
       white-space: nowrap;
     }
 
@@ -277,8 +293,28 @@
     #bias-controls {
       display: contents;
     }
+
+    .caption-format-row {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.6rem;
+    }
+
+    .caption-format-row>label {
+      font-size: 0.9rem;
+      color: #444;
+    }
+
+    .caption-format-row .mode-switch label {
+      justify-self: unset;
+      font-size: 0.82rem;
+      color: inherit;
+    }
   </style>
 </head>
+
 <body>
   <script type="module" src="demo.js"></script>
 
@@ -294,18 +330,19 @@
 
   <main>
     <section id="chart-container">
-      <para-chart
-        id="chart"
-        manifest="/src/demo/live_feed/line-multi-manifest.json"
-      ></para-chart>
+      <para-chart id="chart" manifest="/src/demo/live_feed/line-multi-manifest.json"></para-chart>
     </section>
 
     <section id="controls">
       <div class="toolbar">
         <button id="add-btn">Add Record</button>
         <button id="start-btn">Start</button>
-        <button id="back-btn"><svg width="16" height="16" viewBox="0 0 10 10" aria-hidden="true"><polygon points="8,1 2,5 8,9"/></svg></button>
-        <button id="fwd-btn"><svg width="16" height="16" viewBox="0 0 10 10" aria-hidden="true"><polygon points="2,1 8,5 2,9"/></svg></button>
+        <button id="back-btn"><svg width="16" height="16" viewBox="0 0 10 10" aria-hidden="true">
+            <polygon points="8,1 2,5 8,9" />
+          </svg></button>
+        <button id="fwd-btn"><svg width="16" height="16" viewBox="0 0 10 10" aria-hidden="true">
+            <polygon points="2,1 8,5 2,9" />
+          </svg></button>
         <button id="reset-btn">Reset</button>
         <details id="advanced-details">
           <summary>Advanced Controls</summary>
@@ -322,7 +359,37 @@
             <input type="number" id="step-input" min="1" max="50" step="1">
             <hr class="ac-divider">
             <div id="bias-controls"></div>
+            <hr class="ac-divider">
+            <div class="caption-format-row">
+              <label>Caption</label>
+              <div class="mode-switch">
+                <input type="radio" name="caption-format" id="caption-concise" value="concise" checked>
+                <label for="caption-concise">Concise</label>
+                <input type="radio" name="caption-format" id="caption-full" value="full">
+                <label for="caption-full">Full</label>
+              </div>
+            </div>
+            <!-- 
+            <div class="caption-format-row">
+              <label>Control Panel</label>
+              <div class="mode-switch">
+                <input type="radio" name="cp-open" id="cp-open-off" value="false" checked>
+                <label for="cp-open-off">Closed</label>
+                <input type="radio" name="cp-open" id="cp-open-on" value="true">
+                <label for="cp-open-on">Open</label>
+              </div>
+            </div>
+            <div class="caption-format-row">
+              <label>Caption Visible</label>
+              <div class="mode-switch">
+                <input type="radio" name="caption-visible" id="caption-visible-off" value="false">
+                <label for="caption-visible-off">Hidden</label>
+                <input type="radio" name="caption-visible" id="caption-visible-on" value="true" checked>
+                <label for="caption-visible-on">Visible</label>
+              </div>
+            </div>
           </div>
+           -->
         </details>
       </div>
       <details id="latest-details" open>
@@ -336,4 +403,5 @@
     </section>
   </main>
 </body>
+
 </html>

@@ -18,7 +18,7 @@ import { BaseState, SettingObserver } from './base_state';
 import { Logger, getLogger } from '@fizz/logger';
 import papa from 'papaparse';
 import { State, property } from '@lit-app/state';
-import { produceWithPatches, enablePatches, applyPatches } from 'immer';
+import { produceWithPatches, enablePatches, applyPatches, type Patch } from 'immer';
 enablePatches();
 
 import {
@@ -391,6 +391,19 @@ export class ParaState extends BaseState {
     this.config = hydratedConfig as Config;
   }
 
+  private syncPatchesToManifest(patches: Patch[]) {
+    if (!this._manifest) return;
+    this._manifest.extensions ??= {};
+    this._manifest.extensions.paracharts ??= {};
+    this._manifest.extensions.paracharts.settings ??= {};
+    const extSettings = this._manifest.extensions.paracharts.settings;
+    for (const patch of patches) {
+      if (patch.op === 'replace') {
+        extSettings[patch.path.join('.')] = patch.value as string | number | boolean;
+      }
+    }
+  }
+
   updateSettings(updater: (draft: Settings) => void, ignoreObservers = false) {
     const [newSettings, patches, inversePatches] = produceWithPatches(this.settings, updater);
     this.settings = newSettings;
@@ -402,6 +415,7 @@ export class ParaState extends BaseState {
     if (ignoreObservers) {
       return patches;
     }
+    this.syncPatchesToManifest(patches);
     const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
     for (const patch of patches) {
       if (patch.op !== 'replace') {
@@ -437,6 +451,7 @@ export class ParaState extends BaseState {
     if (ignoreObservers) {
       return patches;
     }
+    this.syncPatchesToManifest(patches);
     const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
     for (const patch of patches) {
       if (patch.op !== 'replace') {
