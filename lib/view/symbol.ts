@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { View } from './base_view';
 import { fixed } from '../common/utils';
 import { Colors } from '../common/colors';
-import { ParaView } from '../paraview';
+import { type ViewContext } from './view_context';
 import {
   circleInfo,
   squareInfo,
@@ -126,7 +126,7 @@ export class DataSymbol extends View {
   protected _shape?: DataSymbolShape;
 
   static fromType(
-    paraview: ParaView,
+    paraview: ViewContext,
     type: DataSymbolType,
     options?: Partial<DataSymbolOptions>,
   ) {
@@ -143,7 +143,7 @@ export class DataSymbol extends View {
   }
 
   constructor(
-    paraview: ParaView,
+    paraview: ViewContext,
     shape: DataSymbolShape,
     fill: DataSymbolFill,
     options?: Partial<DataSymbolOptions>,

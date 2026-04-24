@@ -22,7 +22,7 @@ import { classMap } from 'lit/directives/class-map.js';
 
 import { View, type SnapLocation, type BboxAnchorCorner } from '../view/base_view';
 import { generateUniqueId, fixed } from '../common/utils';
-import { ParaView } from '../paraview';
+import { type ViewContext } from './view_context';
 import { SVGNS } from '../common/constants';
 import { Vec2 } from '../common/vector';
 import { Setting } from '../state';
@@ -78,7 +78,7 @@ export class Label extends View {
   protected _textCornerOffsets!: LabelTextCorners;
   protected _textLines: TextLine[] = [];
 
-  constructor(paraview: ParaView, private options: LabelOptions) {
+  constructor(paraview: ViewContext, private options: LabelOptions) {
     super(paraview);
     this._canWidthFlex = true;
     this._canHeightFlex = true;

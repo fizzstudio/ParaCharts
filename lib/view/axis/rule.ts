@@ -21,7 +21,7 @@ import { type VertCardinalDirection, type HorizCardinalDirection } from '../../s
 
 import { svg } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
-import { ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 
 type RuleOrientation = 'h' | 'v';
 
@@ -33,7 +33,7 @@ export abstract class AxisRule extends View {
   declare protected _parent: TickStrip;
 
   constructor(
-    paraview: ParaView,
+    paraview: ViewContext,
     protected _major = true,
     length: number,
     protected _orientation: RuleOrientation,
@@ -90,7 +90,7 @@ export abstract class HorizRule extends AxisRule {
    * @param _pointsTo - The tick starts on the axis and points in this direction.
    * @param major
    */
-  constructor(protected _pointsTo: VertCardinalDirection, paraview: ParaView, major = true, length: number, darken: boolean = false) {
+  constructor(protected _pointsTo: VertCardinalDirection, paraview: ViewContext, major = true, length: number, darken: boolean = false) {
     super(paraview, major, length, 'v', darken);
   }
 
@@ -122,7 +122,7 @@ export abstract class VertRule extends AxisRule {
    * @param _pointsTo - The tick starts on the axis and points in this direction.
    * @param major
    */
-  constructor(protected _pointsTo: HorizCardinalDirection, paraview: ParaView, major = true, length: number, darken: boolean = false) {
+  constructor(protected _pointsTo: HorizCardinalDirection, paraview: ViewContext, major = true, length: number, darken: boolean = false) {
     super(paraview, major, length, 'h', darken);
   }
 

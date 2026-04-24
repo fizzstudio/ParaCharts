@@ -1,7 +1,7 @@
 
 import { View } from '../base_view';
 import { fixed } from '../../common/utils';
-import { type ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 
 import { svg, css } from 'lit';
 import { styleMap, type StyleInfo } from 'lit/directives/style-map.js';
@@ -31,7 +31,7 @@ export abstract class Shape extends View {
   protected _isPattern: boolean = false;
   protected _isClip: boolean;
 
-  constructor(paraview: ParaView, options: ShapeOptions) {
+  constructor(paraview: ViewContext, options: ShapeOptions) {
     super(paraview);
     this._x = options.x ?? this._x;
     this._y = options.y ?? this._y;

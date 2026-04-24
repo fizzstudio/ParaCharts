@@ -1,5 +1,5 @@
 import { Vec2 } from "../common/vector";
-import { ParaView } from "../paraview";
+import { type ViewContext } from './view_context';
 import { View } from "./base_view";
 import { Label, LabelOptions } from "./label";
 import { PathOptions, PathShape, ShapeOptions } from "./shape";
@@ -100,7 +100,7 @@ export class Popup extends View {
         return this.popupShapeOptions;
     }
 
-    constructor(paraview: ParaView, private popupLabelOptions: PopupLabelOptions, private popupShapeOptions: PopupShapeOptions) {
+    constructor(paraview: ViewContext, private popupLabelOptions: PopupLabelOptions, private popupShapeOptions: PopupShapeOptions) {
         super(paraview);
         this.applyDefaults();
         this._label = new Label(this.paraview, this.popupLabelOptions)
@@ -637,7 +637,7 @@ export interface PopupPathOptions extends PathOptions {
 }
 export class PopupPathShape extends PathShape {
     shape: ShapeTypes;
-    constructor(paraview: ParaView, private options: PopupPathOptions) {
+    constructor(paraview: ViewContext, private options: PopupPathOptions) {
         super(paraview, options);
         this._points = options.points.map(p => p.clone());
         this.shape = this.options.shape;

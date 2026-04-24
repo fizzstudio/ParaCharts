@@ -1,6 +1,6 @@
 
 import { fixed } from '../../common/utils';
-import { type ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 import { type ShapeOptions, Shape } from './shape';
 import { Vec2 } from '../../common/vector';
 
@@ -17,7 +17,7 @@ export interface CircleOptions extends ShapeOptions {
 export class CircleShape extends Shape {
   protected _r: number;
 
-  constructor(paraview: ParaView, private options: CircleOptions) {
+  constructor(paraview: ViewContext, private options: CircleOptions) {
     super(paraview, options);
     this._r = options.r;
   }

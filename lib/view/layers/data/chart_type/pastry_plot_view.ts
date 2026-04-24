@@ -7,7 +7,7 @@ import {
   Setting,
 } from '../../../../state';
 import { Label, type LabelTextAnchor } from '../../../label';
-import { type ParaView } from '../../../../paraview';
+import { type ViewContext } from '../../../view_context';
 import { type Shape, SectorShape, PathShape } from '../../../shape';
 import { Datapoint, enumerate } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
@@ -35,7 +35,7 @@ export abstract class PastryPlotView extends DataLayer {
   protected _centerLabel: Label | null = null;
 
   constructor(
-    paraview: ParaView,
+    paraview: ViewContext,
     width: number,
     height: number,
     index: number,

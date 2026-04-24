@@ -52,7 +52,7 @@ export class DocumentView extends Container(View) {
   constructor(paraview: ParaView) {
     super(paraview);
     this.log = getLogger('DocumentView');
-    this._paraState = paraview.globalState.paraState;
+    this._paraState = paraview.paraState;
     this.observeNotices();
     this.type = this._paraState.type;
     this._closeX = new CloseXView(paraview, () => {

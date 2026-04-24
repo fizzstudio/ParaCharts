@@ -39,6 +39,7 @@ import { Unsubscribe } from '@lit-app/state';
 import { AvailableActions } from '../state/action_map';
 
 import { BaseChartInfo, chartInfoClasses } from '../chart_types';
+import { type ViewContext } from '../view/view_context';
 
 /**
  * Data provided for the on focus callback
@@ -50,7 +51,7 @@ export type c2mCallbackType = {
 };
 
 @customElement('para-view')
-export class ParaView extends ParaComponent {
+export class ParaView extends ParaComponent implements ViewContext {
 
   paraChart!: ParaChart;
 

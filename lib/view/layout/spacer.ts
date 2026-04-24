@@ -17,14 +17,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { View } from '../base_view';
 
 import { svg } from 'lit';
-import { ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 
 /**
  * Invisible spacer that creates space between views.
  */
 export class Spacer extends View {
 
-  constructor(public readonly size: number, paraview: ParaView) {
+  constructor(public readonly size: number, paraview: ViewContext) {
     super(paraview);
   }
 

@@ -34,7 +34,7 @@ import { svg } from 'lit';
 import { HeatMapPlotView } from './data/chart_type';
 import { Histogram } from './data/chart_type/histogram';
 import { PopupLayer } from './popup_layer';
-import { ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
@@ -71,7 +71,7 @@ export class PlotLayerManager extends View {
   protected _popupLayer!: PopupLayer;
   protected _focusLayer!: FocusLayer;
 
-  constructor(paraview: ParaView, width: number, height: number) {
+  constructor(paraview: ViewContext, width: number, height: number) {
     super(paraview);
     this._orientation = this.paraview.paraState.settings.chart.orientation;
     this.width = width;

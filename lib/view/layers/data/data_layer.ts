@@ -20,6 +20,7 @@ import { PlotLayer } from '..';
 import { type PlotLayerManager } from '..';
 import { type PlotSettings, type DeepReadonly, type Direction, HorizDirection, Setting } from '../../../state/settings_types';
 import { ParaView } from '../../../paraview';
+import { type ViewContext } from '../../view_context';
 import { SettingsManager } from '../../../state/settings_manager';
 import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../../data';
 
@@ -52,15 +53,20 @@ export abstract class DataLayer extends PlotLayer {
   protected _datapointDomIds = new Map<string, string>();
   protected _currentAnimationFrame: number | null = null;
   protected _animateRevealComplete = false;
+  /** Retained concrete reference for ParaView-specific operations (animation). */
+  protected readonly _paraView: ParaView;
 
   constructor(
-    paraview: ParaView,
+    paraview: ViewContext,
     width: number,
     height: number,
     public readonly dataLayerIndex: number,
     protected _chartInfo: BaseChartInfo
   ) {
     super(paraview, width, height);
+    // DataLayer is always constructed by PlotLayerManager, which is always
+    // backed by a real ParaView. The cast is safe in this context.
+    this._paraView = paraview as unknown as ParaView;
   }
 
   protected _createId() {
@@ -239,7 +245,7 @@ export abstract class DataLayer extends PlotLayer {
       const bezT = bez.eval(t)!;
       const linearT = linear.eval(t)!;
       this._animStep(bezT, linearT);
-      this.paraview.paraChart.postNotice('animRevealStep', bezT);
+      this._paraView.paraChart.postNotice('animRevealStep', bezT);
       this.paraview.requestUpdate();
       if (elapsed < revealTime) {
         this._currentAnimationFrame = requestAnimationFrame(step);
@@ -249,14 +255,14 @@ export abstract class DataLayer extends PlotLayer {
     };
     this._currentAnimationFrame = requestAnimationFrame(step);
     if (this.paraview.paraState.settings.animation.animationType == 'xAxis') {
-      loopParaviewRefresh(this.paraview, 500 + this.paraview.paraState.settings.animation.popInAnimateRevealTimeMs
+      loopParaviewRefresh(this._paraView, 500 + this.paraview.paraState.settings.animation.popInAnimateRevealTimeMs
         + this.paraview.paraState.settings.animation.animateRevealTimeMs, 50);
     }
   }
 
   protected _animStep(bezT: number, linearT: number) {
     if (this.paraview.paraState.settings.animation.animationType == 'xAxis') {
-      this.paraview.clipWidth = linearT
+      this._paraView.clipWidth = linearT
     }
     for (const datapointView of this.datapointViews) {
       datapointView.beginAnimStep(bezT, linearT);
@@ -267,7 +273,7 @@ export abstract class DataLayer extends PlotLayer {
   }
 
   protected _animEnd() {
-    this.paraview.paraChart.postNotice('animRevealEnd', null);
+    this._paraView.paraChart.postNotice('animRevealEnd', null);
     this._currentAnimationFrame = null;
     this._animateRevealComplete = true;
   }
@@ -276,7 +282,7 @@ export abstract class DataLayer extends PlotLayer {
     if (this._currentAnimationFrame !== null) {
       cancelAnimationFrame(this._currentAnimationFrame);
       this._animStep(1, 1);
-      this.paraview.paraChart.postNotice('animRevealStep', 1);
+      this._paraView.paraChart.postNotice('animRevealStep', 1);
       this.paraview.requestUpdate();
       this._animEnd();
     }

@@ -8,7 +8,7 @@ import {
   Setting,
 } from '../../../../state';
 import { Label, type LabelTextAnchor } from '../../../label';
-import { type ParaView } from '../../../../paraview';
+import { type ViewContext } from '../../../view_context';
 import { type Shape, CircleShape, ArcShape } from '../../../shape';
 import { Datapoint, enumerate } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
@@ -36,7 +36,7 @@ export class VennPlotView extends DataLayer {
   protected _radius!: number;
 
   constructor(
-    paraview: ParaView,
+    paraview: ViewContext,
     width: number,
     height: number,
     index: number,

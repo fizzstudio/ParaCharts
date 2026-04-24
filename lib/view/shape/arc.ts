@@ -1,5 +1,5 @@
 import { fixed } from '../../common/utils';
-import { type ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 import { type ShapeOptions, Shape } from './shape';
 import { Vec2 } from '../../common/vector';
 
@@ -18,7 +18,7 @@ export class ArcShape extends Shape {
   protected _r: number;
   protected _points: Vec2[];
 
-  constructor(paraview: ParaView, private options: ArcOptions) {
+  constructor(paraview: ViewContext, private options: ArcOptions) {
     super(paraview, options);
     this._points = options.points.map(p => p.clone());
     this._r = options.r;
