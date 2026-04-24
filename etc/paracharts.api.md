@@ -474,6 +474,11 @@ export class ParaAPI {
     // (undocumented)
     addCrosshair(xAxis: string | number, yAxis: string | number): void;
     // (undocumented)
+    addRecord(points: Record<string, {
+        x: string;
+        y: string;
+    }>): Promise<void>;
+    // (undocumented)
     addTrendLine(): void;
     // Warning: (ae-forgotten-export) The symbol "BaseChartInfo" needs to be exported by the entry point index.d.ts
     //
