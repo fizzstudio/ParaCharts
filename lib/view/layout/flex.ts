@@ -17,6 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { View, type SnapLocation } from '../base_view';
 import { ParaView } from '../../paraview';
 import { Layout } from './layout';
+import { computeRowSize, computeColumnSize } from './layout_utils';
 import { fixed } from '../../common/utils';
 import { Logger, getLogger } from '@fizz/logger';
 
@@ -45,13 +46,7 @@ export class RowLayout extends FlexLayout {
   }
 
   computeSize(): [number, number] {
-    return [
-      this._children.reduce((sum, kid) => sum + kid.paddedWidth, 0)
-        + this.gap*(this._children.length - 1),
-      this._children.length
-        ? Math.max(...this._children.map(kid => kid.paddedHeight))
-        : 0
-    ];
+    return computeRowSize(this._children, this.gap);
   }
 
   protected _snapChildY(kid: View) {
@@ -86,13 +81,7 @@ export class ColumnLayout extends FlexLayout {
   }
 
   computeSize(): [number, number] {
-    return [
-      this._children.length
-        ? Math.max(...this._children.map(kid => kid.paddedWidth))
-        : 0,
-      this._children.reduce((sum, kid) => sum + kid.paddedHeight, 0)
-        + this.gap*(this._children.length - 1)
-    ];
+    return computeColumnSize(this._children, this.gap);
   }
 
   protected _snapChildX(kid: View) {
