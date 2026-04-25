@@ -54,7 +54,7 @@ const MODES = {
     manifest: '/src/demo/live_feed/line-multi-manifest.json',
     MIN: 2, MAX: 8, STEP: 0.08,
     SERIES: ['Expenses', 'Revenue'],
-    BIAS: [-0.005, 0.015],
+    BIAS: [-0.02, 0.02],
     addRecord() {
       const r1 = allRecords['Expenses'];
       const r2 = allRecords['Revenue'];
