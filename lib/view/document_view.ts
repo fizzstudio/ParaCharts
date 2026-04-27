@@ -36,6 +36,7 @@ export type Legends = Partial<{ [dir in CardinalDirection]: Legend }>;
  * Root of the view hierarchy.
  */
 export class DocumentView extends Container(View) {
+  declare public readonly paraview: ParaView;
 
   readonly type: ChartType;
   protected _titleLabel?: Label;

@@ -243,7 +243,7 @@ export function isPointerInbounds(paraview: ParaView, e: PointerEvent | MouseEve
   }
 }
 
-export function loopParaviewRefresh(paraview: ParaView, duration: number, interval: number) {
+export function loopParaviewRefresh(paraview: { requestUpdate(): void }, duration: number, interval: number) {
   const start = Date.now();
   const loop = () => {
     let timestamp = setTimeout(() => {

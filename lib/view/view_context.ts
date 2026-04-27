@@ -16,43 +16,32 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import type { SVGTemplateResult, TemplateResult } from 'lit';
 import type { Ref } from 'lit/directives/ref.js';
+import type { ParaChart } from '../parachart/parachart';
 import type { ParaState } from '../state';
 import type { DocumentView } from './document_view';
 
 /**
- * The narrow interface that {@link View} and its subclasses need from the
- * host element (ParaView). Using this interface instead of the concrete
- * ParaView class keeps the view layer decoupled from the custom-element
- * implementation and makes unit-testing view trees possible with simple
- * stub objects.
- *
- * The concrete `ParaView` class implements this interface.
+ * Narrow host interface used by View and its subclasses.
+ * ParaView implements this; tests can use a plain stub object.
  */
 export interface ViewContext {
-  /** Application state accessed by views for rendering decisions. */
   readonly paraState: ParaState;
-
-  /** The root document view, available after {@link createDocumentView}. */
   readonly documentView: DocumentView | undefined;
-
-  /** The SVG root element, used for off-screen measurement. */
+  /** SVG root element, used for off-screen measurement. */
   readonly root: SVGSVGElement | undefined;
-
-  /** Named SVG `<defs>` entries, keyed by an opaque string. */
+  /** Named SVG <defs> entries. */
   readonly defs: { [key: string]: TemplateResult };
-
-  /** Trigger a Lit re-render of the host element. */
   requestUpdate(): void;
-
-  /** Look up (or create) a named Lit {@link Ref} for an SVG element. */
   ref<T>(key: string): Ref<T>;
-
-  /** (Re)build the {@link DocumentView} tree from current state. */
   createDocumentView(): void;
-
-  /** Recompute the SVG viewBox after layout changes. */
   computeViewBox(): void;
-
-  /** Register a named SVG `<defs>` entry. Throws if key already registered. */
   addDef(key: string, template: SVGTemplateResult): void;
+}
+
+/**
+ * Extended host interface for data-layer views, which also need animation APIs.
+ */
+export interface DataLayerContext extends ViewContext {
+  readonly paraChart: Pick<ParaChart, 'postNotice'>;
+  clipWidth: number;
 }

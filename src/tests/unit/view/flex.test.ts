@@ -3,10 +3,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { RowLayout, ColumnLayout } from '../../../../lib/view/layout/flex';
 import type { ViewContext } from '../../../../lib/view/view_context';
 
-/**
- * Create a minimal ViewContext stub — no browser, no Lit, no custom elements.
- * This validates the decoupling introduced by the ViewContext interface.
- */
 function makeCtx(): ViewContext {
   return {
     paraState: {} as any,
@@ -22,7 +18,7 @@ function makeCtx(): ViewContext {
 }
 
 describe('RowLayout', () => {
-  it('can be constructed with a ViewContext stub', () => {
+  it('constructs without error', () => {
     const ctx = makeCtx();
     const row = new RowLayout(ctx, 8, 'start');
     expect(row).toBeDefined();
@@ -38,7 +34,7 @@ describe('RowLayout', () => {
 });
 
 describe('ColumnLayout', () => {
-  it('can be constructed with a ViewContext stub', () => {
+  it('constructs without error', () => {
     const ctx = makeCtx();
     const col = new ColumnLayout(ctx, 4, 'center');
     expect(col).toBeDefined();
