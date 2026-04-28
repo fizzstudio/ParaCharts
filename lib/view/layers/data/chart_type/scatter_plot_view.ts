@@ -161,7 +161,7 @@ class ScatterPointView extends PointDatapointView {
       }
     }
     this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
-      strokeWidth: this.paraview.paraState.settings.chart.symbolStrokeWidth,
+      strokeWidth: this.paraview.paraState.config.chart.symbolStrokeWidth,
       lighten: true,
       pointerEnter: (e) => {
         this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined

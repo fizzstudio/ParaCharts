@@ -155,8 +155,8 @@ export abstract class PastryPlotView extends DataLayer {
     super.init();
     this._resizeToFitLabels();
     if (this.config.centerLabel === 'title') {
-      if (this.paraview.paraState.settings.chart.title.isDrawTitle) {
-        this.paraview.paraState.updateSettings(draft => {
+      if (this.paraview.paraState.config.chart.title.isDrawTitle) {
+        this.paraview.paraState.updateConfig(draft => {
           draft.chart.title.isDrawTitle = false;
         });
         this.paraview.documentView!.removeTitle();

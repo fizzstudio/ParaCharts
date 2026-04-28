@@ -55,7 +55,7 @@ export class DirectLabelStrip extends Container(View) {
   }
 
   protected _createInitialLabels() {
-    const directLabelPadding = this.paraview.paraState.settings.chart.isDrawSymbols
+    const directLabelPadding = this.paraview.paraState.config.chart.isDrawSymbols
       ? this.paraview.paraState.settings.type.line.seriesLabelPadding * 2
       : this.paraview.paraState.settings.type.line.seriesLabelPadding;
     const endpoints = this.paraview.paraState.model!.series.map(series => series.datapoints.at(-1)!);
@@ -80,7 +80,7 @@ export class DirectLabelStrip extends Container(View) {
   }
 
   createLabels() {
-    const directLabelPadding = this.paraview.paraState.settings.chart.isDrawSymbols
+    const directLabelPadding = this.paraview.paraState.config.chart.isDrawSymbols
       ? this.paraview.paraState.settings.type.line.seriesLabelPadding * 2
       : this.paraview.paraState.settings.type.line.seriesLabelPadding;
     // const endpoints = this._parent.chartLayers.dataLayer.chartLandingView.children.map(seriesView => seriesView.children.at(-1)!);
@@ -138,7 +138,7 @@ export class DirectLabelStrip extends Container(View) {
         allColliders.set(c.label, c);
       })
     }
-    const leaderLabelOffset = this.paraview.paraState.settings.chart.isDrawSymbols
+    const leaderLabelOffset = this.paraview.paraState.config.chart.isDrawSymbols
       ? -this.paraview.paraState.settings.type.line.seriesLabelPadding
       : 0;
     this._leaders?.forEach(leader => {

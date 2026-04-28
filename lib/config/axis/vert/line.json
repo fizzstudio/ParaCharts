@@ -1,0 +1,25 @@
+{
+    "family": "axis",
+    "settings": {
+        "isDrawAxisLine": {
+            "description": "Draw the main axis line",
+            "type": "boolean",
+            "default": true
+        },
+        "isDrawOverhang": {
+            "description": "Draw overhang beyond data range",
+            "type": "boolean",
+            "default": true
+        },
+        "strokeWidth": {
+            "description": "Width of axis line stroke",
+            "type": "number",
+            "default": 2
+        },
+        "strokeLinecap": {
+            "description": "End cap style for axis line",
+            "type": "string",
+            "default": "round"
+        }
+    }
+}

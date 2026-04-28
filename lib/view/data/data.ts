@@ -86,7 +86,7 @@ export class DataView extends View {
     // }
     styleInfo.fill = colorValue;
     styleInfo.stroke = colorValue;
-    styleInfo.strokeWidth = this.paraview.paraState.settings.chart.strokeWidth;
+    styleInfo.strokeWidth = this.paraview.paraState.config.chart.strokeWidth;
   }
 
   async onFocus(_isNewComponentFocus = false) {

@@ -64,7 +64,7 @@ export class DocumentView extends Container(View) {
   init() {
     this.setTitleText(this._paraState.title);
 
-    const expandedPadding = this._parsePadding(this._paraState.settings.chart.padding);
+    const expandedPadding = this._parsePadding(this._paraState.config.chart.padding);
     // XXX temp hack for cpanel icon
     const leftPad = Math.max(8 + 1.1 * 16, expandedPadding.left);
     this.padding = {
@@ -81,8 +81,8 @@ export class DocumentView extends Container(View) {
 
   computeSize(): [number, number] {
     return [
-      this._paraState.settings.chart.size.width - this._padding.left - this._padding.right,
-      this._paraState.settings.chart.size.height - this._padding.top - this._padding.bottom
+      this._paraState.config.chart.width - this._padding.left - this._padding.right,
+      this._paraState.config.chart.height - this._padding.top - this._padding.bottom
     ];
   }
 
@@ -118,7 +118,7 @@ export class DocumentView extends Container(View) {
   }
 
   protected _populate() {
-    if (this._paraState.settings.chart.title.isDrawTitle && this._paraState.title) {
+    if (this._paraState.config.chart.title.isDrawTitle && this._paraState.title) {
       this.createTitle();
     }
 
@@ -136,11 +136,11 @@ export class DocumentView extends Container(View) {
 
     // Initially create axes to compute the size of each axis
     // along the shorter dimension
-    if (this._paraState.settings.axis.horiz.isDrawAxis && horizFacet) {
+    if (this._paraState.config.axis.horiz.isDrawAxis && horizFacet) {
       this._createHorizAxis(horizFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width);
       // console.log('H-AXIS HEIGHT', this._horizAxis!.height);
     }
-    if (this._paraState.settings.axis.vert.isDrawAxis && vertFacet) {
+    if (this._paraState.config.axis.vert.isDrawAxis && vertFacet) {
       this._createVertAxis(vertFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height);
       // console.log('V-AXIS WIDTH', this._vertAxis!.width);
     }
@@ -155,7 +155,7 @@ export class DocumentView extends Container(View) {
     }
 
     // Recreate the axes using the size info computed above
-    if (this._paraState.settings.axis.vert.isDrawAxis && vertFacet) {
+    if (this._paraState.config.axis.vert.isDrawAxis && vertFacet) {
       this._createVertAxis(vertFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height
         - (this._titleLabel?.paddedHeight || 0)
         - (this._legends.north?.paddedHeight || 0)
@@ -165,7 +165,7 @@ export class DocumentView extends Container(View) {
       this._vertAxis!.left = this._legends.west?.paddedRight ?? this.left;
       if (this._legends.north) {
         this._vertAxis!.paddedTop = this._legends.north.paddedBottom;
-      } else if (this._titleLabel && this._paraState.settings.chart.title.position === 'top') {
+      } else if (this._titleLabel && this._paraState.config.chart.title.position === 'top') {
         this._vertAxis!.top = this._titleLabel!.paddedBottom;
       } else {
         this._vertAxis!.top = this.top;
@@ -185,13 +185,13 @@ export class DocumentView extends Container(View) {
       this.createLegend('east');
     }
 
-    if (this._paraState.settings.axis.horiz.isDrawAxis && horizFacet) {
+    if (this._paraState.config.axis.horiz.isDrawAxis && horizFacet) {
       this._createHorizAxis(horizFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width
         - (this._vertAxis?.width ?? 0)
         - (this._directLabelStrip?.width ?? 0)
         - (this._legends.east?.width ?? this._legends.west?.width ?? 0));
       this.append(this._horizAxis!);
-      if (this._titleLabel && this._paraState.settings.chart.title.position === 'top') {
+      if (this._titleLabel && this._paraState.config.chart.title.position === 'top') {
         this._horizAxis!.bottom = this.bottom;
       } else {
         this._horizAxis!.bottom = this._titleLabel!.paddedTop;
@@ -212,7 +212,7 @@ export class DocumentView extends Container(View) {
 
     // XXX Change this method to set axis.titleText
     this._titleText = this._paraState.title
-      ?? this._paraState.settings.chart.title.text;
+      ?? this._paraState.config.chart.title.text;
     //?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;
 
     const plotWidth = this._width
@@ -278,7 +278,7 @@ export class DocumentView extends Container(View) {
         break;
       } catch (e) {
         if (e instanceof LabelOverlapError) {
-          this._paraState.updateSettings(draft => {
+          this._paraState.updateConfig(draft => {
             draft.axis.horiz.isStaggerLabels = true;
           }, true);
         } else {
@@ -299,7 +299,7 @@ export class DocumentView extends Container(View) {
   }
 
   protected get _shouldAddDirectLabelStrip(): boolean {
-    return this._paraState.settings.chart.hasDirectLabels
+    return this._paraState.config.chart.hasDirectLabels
       && this.type === 'line'
       && /*this._chartLayers.dataLayer.settings.isAlwaysShowSeriesLabel || */
       this._paraState.model!.multi;
@@ -309,13 +309,13 @@ export class DocumentView extends Container(View) {
     return this._paraState.settings.legend.isDrawLegend &&
       (this._paraState.settings.legend.isAlwaysDrawLegend
         // XXX direct label strip won't exist when this is called
-        || (this._shouldAddDirectLabelStrip && this._paraState.settings.chart.hasLegendWithDirectLabels)
+        || (this._shouldAddDirectLabelStrip && this._paraState.config.chart.hasLegendWithDirectLabels)
         || (!this._shouldAddDirectLabelStrip && this._paraState.model!.multi));
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
     this.paraview.paraState.chartInfo.settingDidChange(path, oldValue, newValue);
-    if (['chart.size.width', 'chart.size.height', 'chart.fontScale'].includes(path)) {
+    if (['chart.width', 'chart.height', 'chart.fontScale'].includes(path)) {
       this.updateSize();
       this._populate();
       //this.paraview.requestUpdate();
@@ -373,7 +373,7 @@ export class DocumentView extends Container(View) {
 
   setTitleText(text?: string) {
     this._titleText = text
-      ?? this._paraState.settings.chart.title.text
+      ?? this._paraState.config.chart.title.text
       ?? '[TITLE]';
     if (this._titleLabel) {
       this._titleLabel.text = this._titleText;
@@ -415,7 +415,7 @@ export class DocumentView extends Container(View) {
   }*/
 
   private createTitle() {
-    const align = this._paraState.settings.chart.title.align ?? 'center';
+    const align = this._paraState.config.chart.title.align ?? 'center';
     this._titleLabel?.remove();
     this._titleLabel = new Label(this.paraview, {
       id: 'chart-title',
@@ -426,17 +426,17 @@ export class DocumentView extends Container(View) {
       textAnchor: 'middle',
       justify: align
     });
-    const isTop = this._paraState.settings.chart.title.position === 'top';
+    const isTop = this._paraState.config.chart.title.position === 'top';
     this._titleLabel.padding = {
-      top: isTop ? 0 : this._paraState.settings.chart.title.margin,
+      top: isTop ? 0 : this._paraState.config.chart.title.margin,
       right: 0,
-      bottom: isTop ? this._paraState.settings.chart.title.margin : 0,
+      bottom: isTop ? this._paraState.config.chart.title.margin : 0,
       left: 0
     };
     this._titleLabel.canHeightFlex = false;
     let titleRow = 0;
-    const titleMargin = this._paraState.settings.chart.title.margin;
-    const titlePos = this._paraState.settings.chart.title.position;
+    const titleMargin = this._paraState.config.chart.title.margin;
+    const titlePos = this._paraState.config.chart.title.position;
     this.append(this._titleLabel);
     if (isTop) {
       this._titleLabel.top = this.top;

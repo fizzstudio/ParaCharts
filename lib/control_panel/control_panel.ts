@@ -167,7 +167,7 @@ export class ParaControlPanel extends ParaComponent {
       let toggleButton = this.shadowRoot?.getElementById("wrapper")?.children[0].shadowRoot?.children[0].getElementsByClassName("toggle")[0]
       if (toggleButton) {
         toggleButton.addEventListener("pointerenter", () => {
-          this._paraState.settings.chart.isShowPopups
+          this._paraState.config.chart.isShowPopups
             && this._paraState.settings.popup.activation === "onHover"
             && !this._paraState.config.ui.isTourGuideEnabled ? this.addPopup(this.paraChart.isControlPanelOpen ? true : false) : undefined
         })

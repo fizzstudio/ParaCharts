@@ -184,7 +184,7 @@ export class ParaAPI {
                 explainers[type]!.single!.summary,
                 false // don't reset settings
               ).then(() => {
-                _paraChart.paraState.updateSettings(draft => {
+                _paraChart.paraState.updateConfig(draft => {
                   draft.chart.padding = '32 120';
                 }, true);
                 _paraChart.styleManager.update();
@@ -199,7 +199,7 @@ export class ParaAPI {
                 explainers[type]!.multi!.summary,
                 false // don't reset settings
               ).then(() => {
-                _paraChart.paraState.updateSettings(draft => {
+                _paraChart.paraState.updateConfig(draft => {
                   draft.chart.padding = '32 120';
                 }, true);
                 _paraChart.styleManager.update();
@@ -555,23 +555,23 @@ export class ParaAPI {
 
   /** Set chart width. */
   setWidth(width: number) {
-    this._paraChart.paraState.updateSettings(draft => {
-      draft.chart.size.width = width;
+    this._paraChart.paraState.updateConfig(draft => {
+      draft.chart.width = width;
     });
   }
 
   /** Set chart height. */
   setHeight(height: number) {
-    this._paraChart.paraState.updateSettings(draft => {
-      draft.chart.size.height = height;
+    this._paraChart.paraState.updateConfig(draft => {
+      draft.chart.height = height;
     });
   }
 
   /** Set chart width and height. */
   setSize(width: number, height: number) {
-    this._paraChart.paraState.updateSettings(draft => {
-      draft.chart.size.width = width;
-      draft.chart.size.height = height;
+    this._paraChart.paraState.updateConfig(draft => {
+      draft.chart.width = width;
+      draft.chart.height = height;
     });
   }
 

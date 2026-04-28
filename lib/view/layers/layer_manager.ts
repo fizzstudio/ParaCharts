@@ -73,7 +73,7 @@ export class PlotLayerManager extends View {
 
   constructor(paraview: ParaView, width: number, height: number) {
     super(paraview);
-    this._orientation = this.paraview.paraState.settings.chart.orientation;
+    this._orientation = this.paraview.paraState.config.chart.orientation;
     this.width = width;
     this.height = height;
     this._canWidthFlex = true;

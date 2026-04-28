@@ -53,12 +53,7 @@ export class LineChartInfo extends PointChartInfo {
       },
       parentView: 'controlPanel.tabs.chart.chart',
     });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'chart.isDrawSymbols',
-      label: 'Show symbols',
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
+    this._paraState.settingControls.insert('chart.isDrawSymbols');
   }
 
   get settings() {
