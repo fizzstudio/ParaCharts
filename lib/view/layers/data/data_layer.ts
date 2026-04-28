@@ -178,8 +178,8 @@ export abstract class DataLayer extends PlotLayer {
    * Stroke width for visited datapoints. Can be overridden.
    */
   get visitedStrokeWidth(): number {
-    const visitedScale = this.paraview.paraState.settings.chart.strokeHighlightScale;
-    return this.paraview.paraState.settings.chart.strokeWidth * visitedScale;
+    const visitedScale = this.paraview.paraState.config.chart.strokeHighlightScale;
+    return this.paraview.paraState.config.chart.strokeWidth * visitedScale;
   }
 
   /**

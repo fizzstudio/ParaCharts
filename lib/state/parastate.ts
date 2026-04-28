@@ -143,8 +143,8 @@ const synchronizedSettings = [
   'chart.fontScale',
   'color.colorPalette',
   'grid.isDrawVertLines',
-  'chart.size.width',
-  'chart.size.height',
+  'chart.width',
+  'chart.height',
 ];
 
 // NB: Must be disallowed in series keys
@@ -386,12 +386,12 @@ export class ParaState extends BaseState {
     const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
     SettingsManager.suppleteSettings(hydratedSettings, defaults);
     this.settings = hydratedSettings as Settings;
-    const hydratedConfig = {};
+    const hydratedConfig = SettingsManager.hydrateInput(inputSettings) as Partial<Config>;
     SettingsManager.suppleteSettings(hydratedConfig, defaultConfig);
     this.config = hydratedConfig as Config;
   }
 
-  private syncPatchesToManifest(patches: Patch[]) {
+  protected _syncPatchesToManifest(patches: Patch[]) {
     if (!this._manifest) return;
     this._manifest.extensions ??= {};
     this._manifest.extensions.paracharts ??= {};
@@ -415,7 +415,7 @@ export class ParaState extends BaseState {
     if (ignoreObservers) {
       return patches;
     }
-    this.syncPatchesToManifest(patches);
+    this._syncPatchesToManifest(patches);
     const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
     for (const patch of patches) {
       if (patch.op !== 'replace') {
@@ -451,7 +451,7 @@ export class ParaState extends BaseState {
     if (ignoreObservers) {
       return patches;
     }
-    this.syncPatchesToManifest(patches);
+    this._syncPatchesToManifest(patches);
     const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
     for (const patch of patches) {
       if (patch.op !== 'replace') {
@@ -468,9 +468,9 @@ export class ParaState extends BaseState {
       observed[patch.path.join('.')].oldValue = patch.value;
     }
     for (const [path, values] of Object.entries(observed)) {
-      // this._settingObservers[path]?.forEach(observer =>
-      //   observer(values.oldValue, values.newValue)
-      // );
+      this._settingObservers[path]?.forEach(observer =>
+        observer(values.oldValue, values.newValue)
+      );
       this.settingDidChange(path, values.oldValue, values.newValue);
     }
     return patches;
@@ -516,7 +516,10 @@ export class ParaState extends BaseState {
 
     if (chartTypeDefaults[dataset.representation.subtype]) {
       Object.entries(chartTypeDefaults[dataset.representation.subtype]!).forEach(([path, value]) => {
-        this.updateSettings(draft => {
+        // this.updateSettings(draft => {
+        //   SettingsManager.set(path, value, draft);
+        // }, true);
+        this.updateConfig(draft => {
           SettingsManager.set(path, value, draft);
         }, true);
       });
@@ -578,9 +581,9 @@ export class ParaState extends BaseState {
     } else {
       throw new Error('store lacks external or inline chart data');
     }
-    const maxError = this.settings.chart.maxError;
-    const maxSegments = this.settings.chart.maxSegments;
-    const extremumWeight = this.settings.chart.extremumWeight;
+    const maxError = this.config.chart.maxError;
+    const maxSegments = this.config.chart.maxSegments;
+    const extremumWeight = this.config.chart.extremumWeight;
     if (this._model instanceof PlaneModel) {
       this._model.seriesKeys.forEach(async (seriesKey) => {
         this.seriesAnalyses = {

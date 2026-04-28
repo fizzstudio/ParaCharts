@@ -72,18 +72,7 @@ export class ChartPanel extends ControlPanelTabPanel {
   connectedCallback() {
     super.connectedCallback();
     this._paraState.settingControls.insert('description.captionFormat');
-    this._paraState.settingControls.add({
-      type: 'slider',
-      key: 'chart.fontScale',
-      label: 'Font scale',
-      options: {
-        min: 0.5,
-        max: 3,
-        step: 0.1,
-        showValue: true
-      },
-      parentView: 'controlPanel.tabs.chart.fonts',
-    });
+    this._paraState.settingControls.insert('chart.fontScale');
   }
 
   render() {

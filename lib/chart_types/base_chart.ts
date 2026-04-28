@@ -81,34 +81,9 @@ export abstract class BaseChartInfo {
   }
 
   protected _addSettingControls() {
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'chart.size.width',
-      label: 'Width',
-      options: {
-        inputType: 'number',
-        min: 1,
-        max: 1000
-      },
-      parentView: 'controlPanel.tabs.chart.general.width',
-    });
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'chart.size.height',
-      label: 'Height',
-      options: {
-        inputType: 'number',
-        min: 1,
-        max: 1000
-      },
-      parentView: 'controlPanel.tabs.chart.general.height',
-    });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'chart.isShowPopups',
-      label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.popups',
-    });
+    this._paraState.settingControls.insert('chart.width');
+    this._paraState.settingControls.insert('chart.height');
+    this._paraState.settingControls.insert('chart.isShowPopups');
   }
 
   protected _init() {

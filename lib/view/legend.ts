@@ -3,12 +3,13 @@ import { View, Container } from './base_view';
 import { SimpleGridLayout, type Layout } from './layout';
 import { type DataSymbolType, DataSymbol } from './symbol';
 import { Label } from './label';
-import { type LegendSettings, type DeepReadonly, SettingsManager } from '../state';
+import { type DeepReadonly, SettingsManager } from '../state';
 import { RectShape } from './shape/rect';
 import { type ViewContext } from './view_context';
 import { TemplateResult, svg } from 'lit';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { HIGHLIGHT_PADDING } from '../common';
+import { LegendConfig } from '../config/config_types';
 
 export type SeriesAttrs = {
   color: string;
@@ -56,8 +57,8 @@ export class Legend extends Container(View) {
     super(paraview);
   }
 
-  get settings() {
-    return SettingsManager.getGroupLink<LegendSettings>('legend', this.paraview.paraState.settings);
+  get config() {
+    return SettingsManager.getGroupLink<LegendConfig>('legend', this.paraview.paraState.config);
   }
 
   get classInfo() {
@@ -67,14 +68,14 @@ export class Legend extends Container(View) {
   protected _addedToParent() {
     const views: View[] = [];
 
-    const hasLegendBox = this.settings.boxStyle.outline !== 'none' || this.settings.boxStyle.fill !== 'none';
+    const hasLegendBox = this.config.boxStyle.outline !== 'none' || this.config.boxStyle.fill !== 'none';
 
     this._items.forEach(item => {
       this._markers.push(new RectShape(this.paraview, {width: 12, height: 6}));
       views.push(this._markers.at(-1)!);
       views.push(DataSymbol.fromType(
         this.paraview,
-        this.paraview.paraState.settings.chart.isDrawSymbols
+        this.paraview.paraState.config.chart.isDrawSymbols
           ? (item.symbol ?? 'square.solid')
           : 'square.solid',
         {
@@ -101,15 +102,15 @@ export class Legend extends Container(View) {
         }
       }));
     });
-    const symLabelGap = this.paraview.paraState.settings.legend.symbolLabelGap;
-    const pairGap = this.paraview.paraState.settings.legend.pairGap;
+    const symLabelGap = this.paraview.paraState.config.legend.symbolLabelGap;
+    const pairGap = this.paraview.paraState.config.legend.pairGap;
     if (this._options.orientation === 'vert') {
       this._grid = new SimpleGridLayout(this.paraview, {
         numCols: 3,
         colGaps: symLabelGap,
         colAligns: ['center', 'center', 'start'],
       }, 'legend-grid');
-      this._grid.padding = hasLegendBox ? this.paraview.paraState.settings.legend.padding : 0;
+      this._grid.padding = hasLegendBox ? this.paraview.paraState.config.legend.padding : 0;
       views.forEach(v => this._grid.append(v));
     } else {
       let labelsPerRow = views.length/3;
@@ -122,7 +123,7 @@ export class Legend extends Container(View) {
           numCols: labelsPerRow*3,
           colGaps: colGaps,
         }, 'legend-grid');
-        this._grid.padding = hasLegendBox ? this.paraview.paraState.settings.legend.padding : 0;
+        this._grid.padding = hasLegendBox ? this.paraview.paraState.config.legend.padding : 0;
         views.forEach(v => this._grid.append(v));
         if (this._options.wrapWidth === undefined ||
             this._grid.paddedWidth <= this._options.wrapWidth ||
@@ -146,9 +147,9 @@ export class Legend extends Container(View) {
       this.prepend(new RectShape(this.paraview, {
         width: this._grid.width,
         height: this._grid.height,
-        fill: this.settings.boxStyle.fill,
-        stroke: this.settings.boxStyle.outline,
-        strokeWidth: this.settings.boxStyle.outlineWidth
+        fill: this.config.boxStyle.fill,
+        stroke: this.config.boxStyle.outline,
+        strokeWidth: this.config.boxStyle.outlineWidth
       }));
     }
     this.updateSize();

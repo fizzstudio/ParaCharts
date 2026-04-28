@@ -286,14 +286,14 @@ export class ParaChart extends ParaComponent {
       '--exploration-bar-display': () => this._paraState.settings.controlPanel.isExplorationBarVisible
         ? 'flex'
         : 'none',
-      '--chart-font-scale': () => this._paraState.settings.chart.fontScale,
-      '--chart-title-font-size': () => this._paraState.settings.chart.title.fontSize,
-      '--horiz-axis-title-font-size': () => this._paraState.settings.axis.horiz.title.fontSize,
-      '--vert-axis-title-font-size': () => this._paraState.settings.axis.vert.title.fontSize,
-      '--horiz-axis-tick-label-font-size': () => this._paraState.settings.axis.horiz.ticks.labels.fontSize,
-      '--vert-axis-tick-label-font-size': () => this._paraState.settings.axis.vert.ticks.labels.fontSize,
-      '--direct-label-font-size': () => this._paraState.settings.chart.directLabelFontSize,
-      '--legend-label-font-size': () => this._paraState.settings.legend.fontSize,
+      '--chart-font-scale': () => this._paraState.config.chart.fontScale,
+      '--chart-title-font-size': () => this._paraState.config.chart.title.fontSize,
+      '--horiz-axis-title-font-size': () => this._paraState.config.axis.horiz.title.fontSize,
+      '--vert-axis-title-font-size': () => this._paraState.config.axis.vert.title.fontSize,
+      '--horiz-axis-tick-label-font-size': () => this._paraState.config.axis.horiz.ticks.labels.fontSize,
+      '--vert-axis-tick-label-font-size': () => this._paraState.config.axis.vert.ticks.labels.fontSize,
+      '--direct-label-font-size': () => this._paraState.config.chart.directLabelFontSize,
+      '--legend-label-font-size': () => this._paraState.config.legend.fontSize,
       '--bar-label-font-size': () => this._paraState.settings.type.bar.labelFontSize,
       '--column-label-font-size': () => this._paraState.settings.type.column.labelFontSize,
       '--waterfall-label-font-size': () => this._paraState.settings.type.waterfall.labelFontSize,
@@ -301,7 +301,7 @@ export class ParaChart extends ParaComponent {
       'font-family': '"Trebuchet MS", Helvetica, sans-serif',
       'font-size': 'var(--chart-view-font-size, 1rem)'
     });
-    if (this._paraState.settings.chart.isShowVisitedDatapointsOnly) {
+    if (this._paraState.config.chart.isShowVisitedDatapointsOnly) {
       this._styleManager.set('.datapoint:not(.visited)', {
         'display': 'none'
       });
@@ -436,7 +436,7 @@ export class ParaChart extends ParaComponent {
       'scalable': this.scalable
     };
     const cpanelStyles = {
-      'width': `${this._paraState.settings.chart.size.width}px`
+      'width': `${this._paraState.config.chart.width}px`
     };
     return html`
       <figure
@@ -451,7 +451,7 @@ export class ParaChart extends ParaComponent {
           ?scalable=${this.scalable}
           ?disableFocus=${this.headless}
         ></para-view>
-        ${!(this.headless || this._paraState.settings.chart.isStatic)
+        ${!(this.headless || this._paraState.config.chart.isStatic)
           ? html`
           <para-data-table
             .isVisible=${this.isDataTableVisible}

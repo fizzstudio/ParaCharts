@@ -58,18 +58,6 @@ export type AnimationType = 'yAxis' | 'xAxis' | 'none';
  */
 export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
 
-/** Visual styling for boxes and containers
- * @public
- */
-export type BoxStyle = {
-  /** Border color */
-  outline: Color;
-  /** Border width in pixels */
-  outlineWidth: number;
-  /** Background fill color */
-  fill: Color;
-};
-
 /** @public */
 export interface AnimationSettings extends SettingGroup {
   /** Enable chart animations */
@@ -213,56 +201,6 @@ export type HorizCardinalDirection = 'east' | 'west';
  */
 export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
 
-/** @public */
-export interface ChartSettings extends SettingGroup {
-  /** The type of chart to display */
-  type: ChartType;
-  /** Chart dimensions in pixels */
-  size: Size2d;
-  /** Chart title configuration */
-  title: TitleSettings;
-  /** Which direction is "up" on the chart */
-  orientation: CardinalDirection;
-  /** Padding around chart content (CSS format) */
-  padding: string;
-  /** Font family for all chart text */
-  fontFamily: string;
-  /** Font weight for chart text */
-  fontWeight: string;
-  /** Global font size multiplier */
-  fontScale: number;
-  /** Stroke color for lines and shapes */
-  stroke: string;
-  /** Stroke width in pixels */
-  strokeWidth: number;
-  /** Scale factor for highlighted strokes */
-  strokeHighlightScale: number;
-  /** Stroke width for symbols in pixels */
-  symbolStrokeWidth: number;
-  /** Scale factor for highlighted symbols */
-  symbolHighlightScale: number;
-  /** Show direct labels on data points */
-  hasDirectLabels: boolean;
-  /** Font size for direct labels */
-  directLabelFontSize: string;
-  /** Show legend when direct labels are present */
-  hasLegendWithDirectLabels: boolean;
-  /** Draw symbols at data points */
-  isDrawSymbols: boolean;
-  /** Disable all interactivity */
-  isStatic: boolean;
-  /** Only show data points that have been visited */
-  isShowVisitedDatapointsOnly: boolean;
-  /** Show popups on hover or focus */
-  isShowPopups: boolean;
-  /** Max allowable error in first pass of segmentation algorithm */
-  maxError: number;
-  /** Max allowable segments in second pass of segmentation algorithm */
-  maxSegments: number;
-  /** Additional weight given to "peaks and valleys" during segmentation */
-  extremumWeight: number;
-}
-
 /** Developer and debugging settings
  * @public
  */
@@ -279,56 +217,6 @@ export interface DevSettings extends SettingGroup {
 export type LabelFormat = 'raw' | string;
 
 /** @public */
-export interface TickLabelSettings extends SettingGroup {
-  /** Draw labels on tick marks */
-  isDrawTickLabels: boolean;
-  /** Font size for tick labels */
-  fontSize: string;
-  /** Rotation angle for labels in degrees */
-  angle: number;
-  /** Offset distance from tick marks */
-  offsetGap: number;
-  /** Gap between adjacent labels */
-  gap: number;
-}
-
-/** @public */
-export interface TickSettings extends SettingGroup {
-  /** Enable drawing of tick marks */
-  isDrawTicks?: boolean;
-  /** Padding around tick marks */
-  padding: number;
-  /** Opacity of tick marks (0-1) */
-  opacity: number;
-  /** Width of tick mark lines */
-  strokeWidth: number;
-  /** End cap style for tick lines */
-  strokeLinecap: string;
-  /** Length of tick marks in pixels */
-  length: number;
-  /** Format for tick labels */
-  labelFormat: LabelFormat;
-  /** Tick label settings */
-  labels: TickLabelSettings;
-  /** Interval between tick marks */
-  step: number;
-  /** Whether ticks align with data points (bar charts only) */
-  isOnDatapoint: boolean;
-}
-
-/** @public */
-export interface AxisLineSettings extends SettingGroup {
-  /** Draw the main axis line */
-  isDrawAxisLine: boolean;
-  /** Draw overhang beyond data range */
-  isDrawOverhang: boolean;
-  /** Width of axis line stroke */
-  strokeWidth: number;
-  /** End cap style for axis line */
-  strokeLinecap: string;
-}
-
-/** @public */
 export interface AxisSettings extends SettingGroup {
   /** Minimum value for axis scale */
   minValue: number | 'unset';
@@ -336,48 +224,6 @@ export interface AxisSettings extends SettingGroup {
   maxValue: number | 'unset';
   /** Interval between major values */
   interval: number | 'unset';
-}
-
-/** @public */
-export interface AxisTitleSettings extends SettingGroup {
-  /** Draw axis title */
-  isDrawTitle?: boolean;
-  /** Title text content */
-  text?: string;
-  /** Gap between title and axis */
-  gap: number;
-  /** Font size for title */
-  fontSize: string;
-  /** Text alignment relative to axis */
-  align?: 'start' | 'middle' | 'end';
-  /** Position relative to chart */
-  position?: 'top' | 'bottom';
-}
-
-/** Settings for horizontal or vertical axis orientation
- * @public
- */
-export interface OrientedAxisSettings<T extends AxisOrientation> extends SettingGroup {
-  /** Enable drawing this axis */
-  isDrawAxis: boolean;
-  /** Position relative to chart (north/south for horiz, east/west for vert) */
-  position: T extends 'horiz'
-    ? VertCardinalDirection
-    : HorizCardinalDirection;
-  /** Axis title configuration */
-  title: AxisTitleSettings;
-  /** Tick mark settings */
-  ticks: TickSettings;
-  /** Axis line settings */
-  line: AxisLineSettings;
-  /** Order of label values along axis */
-  labelOrder: T extends 'horiz'
-    ? 'westToEast' | 'eastToWest'
-    : 'southToNorth' | 'northToSouth';
-  /** Stagger labels to prevent overlap */
-  isStaggerLabels: boolean;
-  /** Wrap long labels to multiple lines */
-  isWrapLabels: boolean;
 }
 
 /** X-axis specific settings
@@ -402,41 +248,6 @@ export interface AxesSettings extends SettingGroup {
   x: XAxisSettings;
   /** Y-axis configuration */
   y: YAxisSettings;
-  /** Horizontal axis display settings */
-  horiz: OrientedAxisSettings<'horiz'>;
-  /** Vertical axis display settings */
-  vert: OrientedAxisSettings<'vert'>;
-}
-
-/** Order for legend items
- * @public
- */
-export type LegendItemOrder = 'alphabetical' | 'series';
-
-/** @public */
-export interface LegendSettings extends SettingGroup {
-  /** Draw chart legend */
-  isDrawLegend: boolean;
-  /** Draw legend only when multiple series present */
-  isDrawLegendWhenNeeded: boolean; // NOTE: not yet implemented
-  /** Always draw legend regardless of data */
-  isAlwaysDrawLegend: boolean;
-  /** Visual styling for legend box */
-  boxStyle: BoxStyle;
-  /** Internal padding within legend box */
-  padding: number;
-  /** Gap between symbol and label */
-  symbolLabelGap: number;
-  /** Gap between legend items */
-  pairGap: number;
-  /** Position relative to chart */
-  position: CardinalDirection;
-  /** Margin around legend */
-  margin: number;
-  /** Ordering of legend items */
-  itemOrder: LegendItemOrder;
-  /** Font size for legend text */
-  fontSize: string;
 }
 
 /** Plot area dimensions
@@ -734,20 +545,6 @@ export type RadialChartType = 'pie' | 'donut' | 'gauge';
  */
 export type ChartType = XYChartType | RadialChartType;
 
-/** Grid line display settings
- * @public
- */
-export interface GridSettings extends SettingGroup {
-  /** Draw horizontal grid lines */
-  isDrawHorizLines: boolean;
-  /** Draw vertical grid lines */
-  isDrawVertLines: boolean;
-  /** Draw line opposite horizontal axis */
-  isDrawHorizAxisOppositeLine: boolean;
-  /** Draw line opposite vertical axis */
-  isDrawVertAxisOppositeLine: boolean;
-}
-
 /** Status bar display settings
  * @public
  */
@@ -777,20 +574,14 @@ export interface ScrollytellingSettings extends SettingGroup {
  * @public
  */
 export interface Settings extends SettingGroup {
-  /** Chart display and behavior settings */
-  chart: ChartSettings;
   /** Axis configuration */
   axis: AxesSettings;
-  /** Legend configuration */
-  legend: LegendSettings;
   /** Popup tooltip settings */
   popup: PopupSettings;
   /** Plot area settings */
   plotArea: PlotAreaSettings;
   /** Chart type-specific settings */
   type: ChartTypeSettings;
-  /** Grid line settings */
-  grid: GridSettings;
   /** Animation settings */
   animation: AnimationSettings;
   /** Scrollytelling settings */

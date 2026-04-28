@@ -113,6 +113,8 @@
   "extensions": {
     "paracharts": {
       "settings": {
+        "chart.size.width": 800,
+        "chart.size.height": 450,
         "controlPanel.isControlPanelDefaultOpen": false,
         "controlPanel.isCaptionVisible": true,
         "description.captionFormat": "concise"

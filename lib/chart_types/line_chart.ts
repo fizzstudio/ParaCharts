@@ -53,12 +53,7 @@ export class LineChartInfo extends PointChartInfo {
       },
       parentView: 'controlPanel.tabs.chart.chart',
     });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'chart.isDrawSymbols',
-      label: 'Show symbols',
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
+    this._paraState.settingControls.insert('chart.isDrawSymbols');
   }
 
   get settings() {
@@ -117,7 +112,7 @@ export class LineChartInfo extends PointChartInfo {
   legend() {
     const model = this._paraState.model!;
     const seriesKeys = [...model.seriesKeys];
-    if (this._paraState.settings.legend.itemOrder === 'alphabetical') {
+    if (this._paraState.config.legend.itemOrder === 'alphabetical') {
       seriesKeys.sort();
     }
     return seriesKeys.map(key => ({

@@ -81,9 +81,9 @@ export class HorizAxisLine extends AxisLine<'horiz'> {
   }
 
   protected getLineD() {
-    if (this.axis.orientationSettings.line.isDrawOverhang) {
-      const tickLength = this.paraview.paraState.settings.axis.vert.ticks.length;
-      const x = this.paraview.paraState.settings.axis.vert.position === 'west' ?
+    if (this.axis.config.line.isDrawOverhang) {
+      const tickLength = this.paraview.paraState.config.axis.vert.ticks.length;
+      const x = this.paraview.paraState.config.axis.vert.position === 'west' ?
         -tickLength : 0;
       return fixed`M${x},0 h${this.width + tickLength}`;
     } else {
@@ -114,9 +114,9 @@ export class VertAxisLine extends AxisLine<'vert'> {
   }
 
   protected getLineD() {
-    if (this.axis.orientationSettings.line.isDrawOverhang) {
-      const tickLength = this.paraview.paraState.settings.axis.horiz.ticks.length;
-      const y = this.paraview.paraState.settings.axis.horiz.position === 'north' ?
+    if (this.axis.config.line.isDrawOverhang) {
+      const tickLength = this.paraview.paraState.config.axis.horiz.ticks.length;
+      const y = this.paraview.paraState.config.axis.horiz.position === 'north' ?
         -tickLength : 0;
       return fixed`M0,${y} v${this.height + tickLength}`;
     } else {

@@ -25,9 +25,9 @@ import { type TemplateResult } from 'lit';
 import { Vec2 } from '../../common/vector';
 import { PlaneModel } from '@fizz/paramodel';
 import { Popup } from '../popup';
-import { OrientedAxisSettings } from '../../state';
 import { Datatype } from '@fizz/paramanifest';
 import { AxisLabelTier } from '../../chart_types';
+import { AxisHorizConfig, AxisVertConfig } from '../../config/config_types';
 
 export interface TickLabelTierOptions {
   orientation: AxisOrientation;
@@ -58,7 +58,7 @@ export abstract class TickLabelTier extends Container(View) {
 
   constructor(
     paraview: ViewContext,
-    protected _axisSettings: OrientedAxisSettings<AxisOrientation>,
+    protected _axisSettings: AxisHorizConfig | AxisVertConfig,
     protected _options: TickLabelTierOptions
   ) {
     super(paraview);
@@ -147,7 +147,7 @@ export abstract class TickLabelTier extends Container(View) {
               this._options.content.intervals[i].start,
               this._options.content.intervals[i].end);
           }
-          if (this.paraview.paraState.settings.chart.isShowPopups
+          if (this.paraview.paraState.config.chart.isShowPopups
             && this.paraview.paraState.settings.popup.activation === "onHover"
             && !this.paraview.paraState.config.ui.isTourGuideEnabled) {
               this.addPopup(labelText[0] == "Q" ? tiers[i] : labelText, i);
@@ -160,7 +160,7 @@ export abstract class TickLabelTier extends Container(View) {
               this._options.content.intervals[i].start,
               this._options.content.intervals[i].end);
           }
-          if (this.paraview.paraState.settings.chart.isShowPopups
+          if (this.paraview.paraState.config.chart.isShowPopups
             && this.paraview.paraState.settings.popup.activation === "onHover"
             && !this.paraview.paraState.config.ui.isTourGuideEnabled) {
               this.paraview.paraState.removePopup(`${this.id}-${i}`);
@@ -195,7 +195,7 @@ export abstract class TickLabelTier extends Container(View) {
 export class HorizTickLabelTier extends TickLabelTier {
   constructor(
     paraview: ViewContext,
-    axisSettings: OrientedAxisSettings<AxisOrientation>,
+    axisSettings: AxisHorizConfig,
     options: TickLabelTierOptions,
   ) {
     super(paraview, axisSettings, options);
@@ -233,8 +233,9 @@ export class HorizTickLabelTier extends TickLabelTier {
     const isXIntertick = this._options.isChartIntertick && this._options.isFacetIndep;
     let pos: number;
     if (this._options.index && this._options.datatype === 'date') {
-      const intStart = this._length*this._options.content.intervals![index].start;
-      const intEnd = this._length*this._options.content.intervals![index].end;
+      const intIdx = index*this._options.step;
+      const intStart = this._length*this._options.content.intervals![intIdx].start;
+      const intEnd = this._length*this._options.content.intervals![intIdx].end;
       pos = (intStart + intEnd)/2;
     } else {
       pos = this._labelDistance*index;
@@ -265,7 +266,7 @@ export class HorizTickLabelTier extends TickLabelTier {
   createTickLabels(checkLabels = true) {
     super.createTickLabels();
     this._children.forEach((kid, i) => {
-      if (this.paraview.paraState.settings.axis.horiz.ticks.labels.angle) {
+      if (this.paraview.paraState.config.axis.horiz.ticks.labels.angle) {
         kid.angle = this._axisSettings.ticks.labels.angle;
       }
       if (kid.angle === 0) {
@@ -356,7 +357,7 @@ export class VertTickLabelTier extends TickLabelTier {
 
   constructor(
     paraview: ViewContext,
-    axisSettings: OrientedAxisSettings<AxisOrientation>,
+    axisSettings: AxisVertConfig,
     options: TickLabelTierOptions
   ) {
     super(paraview, axisSettings, options);
@@ -424,7 +425,7 @@ export class VertTickLabelTier extends TickLabelTier {
         kid.x = this._tickLabelX(i);
         kid.y = this._tickLabelY(i);
     });
-    if (checkLabels && this._options.isFacetIndep) {
+    if (checkLabels) {
       this._options.step = this._optimizeLabelSpacing();
       this.createTickLabels(false);
     }

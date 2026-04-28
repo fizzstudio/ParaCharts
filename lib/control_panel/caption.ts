@@ -205,7 +205,7 @@ export class ParaCaptionBox extends ParaComponent {
   }
 
   render() {
-    this.style.maxWidth = `${this._paraState.settings.chart.size.width}px`;
+    this.style.maxWidth = `${this._paraState.config.chart.width}px`;
     const announcementTarget = this._paraState.announcement.target;
     const sendToEBar = announcementTarget === 'all' || announcementTarget === 'explorationbar';
     this._isEBarVisible = sendToEBar

@@ -328,7 +328,7 @@ export class BarChartInfo extends PlaneChartInfo {
 
   legend() {
     const model = this._paraState.model!;
-    if (this._paraState.settings.legend.itemOrder === 'series') {
+    if (this._paraState.config.legend.itemOrder === 'series') {
       // return this._chartLandingView.children.map(view => ({
       //   label: (view as SeriesView).seriesKey,
       //   color: (view as SeriesView).color  // series color

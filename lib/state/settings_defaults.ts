@@ -45,117 +45,9 @@ export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}
  * @public
  */
 export const defaults: Settings = {
-  chart: {
-    type: 'bar',
-    size: {
-      width: 600,
-      height: 450
-    },
-    title: {
-      isDrawTitle: true,
-      margin: 40,
-      fontSize: '12pt',
-      align: 'center',
-      position: 'top',
-    },
-    orientation: 'north',
-    padding: '8 30',
-    //chartType: 'line'
-    fontFamily: 'Helvetica, sans-serif',
-    fontWeight: '300',
-    fontScale: 1,
-    stroke: 'purple',
-    strokeWidth: 4,
-    strokeHighlightScale: 1.5,
-    symbolStrokeWidth: 2,
-    symbolHighlightScale: 1.5,
-    hasDirectLabels: true,
-    directLabelFontSize: '10pt',
-    hasLegendWithDirectLabels: false,
-    isDrawSymbols: true,
-    isStatic: false,
-    isShowVisitedDatapointsOnly: false,
-    isShowPopups: false,
-    maxError: .01,
-    maxSegments: 4,
-    extremumWeight: 10
-  },
   axis: {
     minInterval: 25,
     datapointMargin: 3,
-    horiz: {
-      isDrawAxis: true,
-      position: 'south',
-      title: {
-        isDrawTitle: false,
-        gap: 8,
-        fontSize: '12pt'
-      },
-      ticks: {
-        isDrawTicks: true,
-        padding: 3,
-        opacity: 1,
-        strokeWidth: 2,
-        strokeLinecap: 'round',
-        length: 10,
-        labelFormat: 'raw',
-        labels: {
-          isDrawTickLabels: true,
-          fontSize: '10pt',
-          angle: 0, //-45,
-          offsetGap: 4,
-          gap: 10
-        },
-        step: 1,
-        isOnDatapoint: true
-      },
-      line: {
-        isDrawAxisLine: true,
-        isDrawOverhang: true,
-        strokeWidth: 2,
-        strokeLinecap: 'round',
-      },
-      labelOrder: 'westToEast',
-      isStaggerLabels: false,
-      isWrapLabels: true,
-      interval: 'unset',
-    },
-    vert: {
-      isDrawAxis: true,
-      position: 'west',
-      title: {
-        isDrawTitle: true,
-        gap: 8,
-        fontSize: '12pt'
-      },
-      ticks: {
-        isDrawTicks: true,
-        padding: 3,
-        opacity: 1,
-        strokeWidth: 2,
-        strokeLinecap: 'round',
-        length: 10,
-        labelFormat: 'raw',
-        labels: {
-          isDrawTickLabels: true,
-          fontSize: '10pt',
-          angle: 0,
-          offsetGap: 0,
-          gap: 10
-        },
-        step: 1,
-        isOnDatapoint: true
-      },
-      line: {
-        isDrawAxisLine: true,
-        isDrawOverhang: true,
-        strokeWidth: 2,
-        strokeLinecap: 'round',
-      },
-      labelOrder: 'southToNorth',
-      isStaggerLabels: false,
-      isWrapLabels: false
-    },
     x: {
       minValue: 'unset',
       maxValue: 'unset',
@@ -166,25 +58,6 @@ export const defaults: Settings = {
       maxValue: 'unset',
       interval: 'unset'
     },
-  },
-  legend: {
-    isDrawLegend: true,
-    isDrawLegendWhenNeeded: true,
-    isAlwaysDrawLegend: false,
-    boxStyle: {
-      outline: 'none',
-      //outline: 'gray',
-      outlineWidth: 1,
-      fill: 'none',
-      //fill: 'aliceblue',
-    },
-    padding: 10,
-    symbolLabelGap: 4,
-    pairGap: 10,
-    position: 'east',
-    margin: 20,
-    itemOrder: 'series',
-    fontSize: '10pt'
   },
   plotArea: {
     size: {
@@ -365,12 +238,6 @@ export const defaults: Settings = {
       outsideLabels: { contents: '' },
       explode: ''
     }
-  },
-  grid: {
-    isDrawHorizLines: true,
-    isDrawVertLines: true,
-    isDrawHorizAxisOppositeLine: true,
-    isDrawVertAxisOppositeLine: true
   },
   animation: {
     isAnimationEnabled: false,

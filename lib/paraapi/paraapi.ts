@@ -184,7 +184,7 @@ export class ParaAPI {
                 explainers[type]!.single!.summary,
                 false // don't reset settings
               ).then(() => {
-                _paraChart.paraState.updateSettings(draft => {
+                _paraChart.paraState.updateConfig(draft => {
                   draft.chart.padding = '32 120';
                 }, true);
                 _paraChart.styleManager.update();
@@ -199,7 +199,7 @@ export class ParaAPI {
                 explainers[type]!.multi!.summary,
                 false // don't reset settings
               ).then(() => {
-                _paraChart.paraState.updateSettings(draft => {
+                _paraChart.paraState.updateConfig(draft => {
                   draft.chart.padding = '32 120';
                 }, true);
                 _paraChart.styleManager.update();
@@ -325,7 +325,7 @@ export class ParaAPI {
     return this._paraChart.waitForManifest();
   }
 
-  async addRecord(points: Record<string, {x: string, y: string}>) {
+  protected async _slideWindow(points: Record<string, {x: string, y: string}>, forward = true) {
     // mani.jim.datasets[0].series[0].records[0].x
     const mani = this._paraChart.paraState.manifest!;
     for (const [k, v] of Object.entries(points)) {
@@ -338,14 +338,32 @@ export class ParaAPI {
       if (!data) {
         throw new Error(`no such series '${k}'`);
       }
-      data.splice(0, 1);
-      data.push({
-        x: v.x,
-        y: v.y
-      });
+      if (forward) {
+        data.splice(0, 1);
+        data.push({
+          x: v.x,
+          y: v.y
+        });
+      } else {
+        data.pop();
+        data.unshift({
+          x: v.x,
+          y: v.y
+        });
+      }
     }
     const maniStr = JSON.stringify(mani, null, 2);
     await this._paraChart.runLoader(maniStr, 'content', undefined, undefined, false);
+  }
+
+  /** Add a record to the end of the chart and remove the first record. */
+  async addRecord(pushPoints: Record<string, {x: string, y: string}>) {
+    await this._slideWindow(pushPoints);
+  }
+
+  /** Remove the last record from the chart and add a new record to the start. */
+  async removeRecord(unshiftPoints: Record<string, {x: string, y: string}>) {
+    await this._slideWindow(unshiftPoints, false);
   }
 
   /** Get the chart title label. */
@@ -537,23 +555,23 @@ export class ParaAPI {
 
   /** Set chart width. */
   setWidth(width: number) {
-    this._paraChart.paraState.updateSettings(draft => {
-      draft.chart.size.width = width;
+    this._paraChart.paraState.updateConfig(draft => {
+      draft.chart.width = width;
     });
   }
 
   /** Set chart height. */
   setHeight(height: number) {
-    this._paraChart.paraState.updateSettings(draft => {
-      draft.chart.size.height = height;
+    this._paraChart.paraState.updateConfig(draft => {
+      draft.chart.height = height;
     });
   }
 
   /** Set chart width and height. */
   setSize(width: number, height: number) {
-    this._paraChart.paraState.updateSettings(draft => {
-      draft.chart.size.width = width;
-      draft.chart.size.height = height;
+    this._paraChart.paraState.updateConfig(draft => {
+      draft.chart.width = width;
+      draft.chart.height = height;
     });
   }
 

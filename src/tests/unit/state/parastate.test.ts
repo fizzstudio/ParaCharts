@@ -37,9 +37,9 @@ describe('ParaState', () => {
 
     it('should initialize with custom settings', () => {
       const state = new ParaState(globalState, {
-        'chart.size.width': 1024
+        'chart.width': 1024
       });
-      expect(state.settings.chart?.size?.width).toBe(1024);
+      expect(state.config.chart?.width).toBe(1024);
     });
 
     it('should register callbacks', () => {
@@ -65,22 +65,22 @@ describe('ParaState', () => {
     });
 
     it('should update settings using valid path', () => {
-      const originalWidth = state.settings.chart?.size?.width;
+      const originalWidth = state.config.chart?.width;
 
-      state.updateSettings(draft => {
-        draft.chart!.size!.width = 2048;
+      state.updateConfig(draft => {
+        draft.chart!.width = 2048;
       });
 
-      expect(state.settings.chart?.size?.width).toBe(2048);
-      expect(state.settings.chart?.size?.width).not.toBe(originalWidth);
+      expect(state.config.chart?.width).toBe(2048);
+      expect(state.config.chart?.width).not.toBe(originalWidth);
     });
 
     it('should notify observers on setting change', () => {
       const observer = vi.fn();
-      state.observeSetting('chart.size.width', observer);
+      state.observeSetting('chart.width', observer);
 
-      state.updateSettings(draft => {
-        draft.chart!.size!.width = 1920;
+      state.updateConfig(draft => {
+        draft.chart!.width = 1920;
       });
 
       expect(observer).toHaveBeenCalledOnce();
@@ -88,11 +88,11 @@ describe('ParaState', () => {
 
     it('should unobserve settings', () => {
       const observer = vi.fn();
-      state.observeSetting('chart.size.width', observer);
-      state.unobserveSetting('chart.size.width', observer);
+      state.observeSetting('chart.width', observer);
+      state.unobserveSetting('chart.width', observer);
 
-      state.updateSettings(draft => {
-        draft.chart!.size!.width = 1920;
+      state.updateConfig(draft => {
+        draft.chart!.width = 1920;
       });
 
       expect(observer).not.toHaveBeenCalled();
@@ -100,10 +100,10 @@ describe('ParaState', () => {
 
     it('should throw when observing same setting twice with same observer', () => {
       const observer = vi.fn();
-      state.observeSetting('chart.size.width', observer);
+      state.observeSetting('chart.width', observer);
 
       expect(() => {
-        state.observeSetting('chart.size.width', observer);
+        state.observeSetting('chart.width', observer);
       }).toThrow(/already registered/);
     });
 
@@ -111,16 +111,16 @@ describe('ParaState', () => {
       const observer = vi.fn();
 
       expect(() => {
-        state.unobserveSetting('chart.size.width', observer);
+        state.unobserveSetting('chart.width', observer);
       }).toThrow(/no observers/);
     });
 
     it('should skip observers when ignoreObservers flag is true', () => {
       const observer = vi.fn();
-      state.observeSetting('chart.size.width', observer);
+      state.observeSetting('chart.width', observer);
 
-      state.updateSettings(draft => {
-        draft.chart!.size!.width = 1920;
+      state.updateConfig(draft => {
+        draft.chart!.width = 1920;
       }, true);
 
       expect(observer).not.toHaveBeenCalled();
