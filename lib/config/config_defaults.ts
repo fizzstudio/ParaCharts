@@ -12,6 +12,22 @@ export const defaultConfig: Config = {
       colorPalette: "diva",
       colorMap: "",
     },
+    legend: {
+      boxStyle: {
+        outline: "none",
+        outlineWidth: 1,
+        fill: "none",
+      },
+      isDrawLegend: true,
+      isAlwaysDrawLegend: false,
+      padding: 10,
+      symbolLabelGap: 4,
+      pairGap: 10,
+      position: "east",
+      margin: 20,
+      itemOrder: "series",
+      fontSize: "10pt",
+    },
     sonification: {
       isSonificationEnabled: false,
       isRiffEnabled: true,

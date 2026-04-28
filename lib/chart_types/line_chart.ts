@@ -112,7 +112,7 @@ export class LineChartInfo extends PointChartInfo {
   legend() {
     const model = this._paraState.model!;
     const seriesKeys = [...model.seriesKeys];
-    if (this._paraState.settings.legend.itemOrder === 'alphabetical') {
+    if (this._paraState.config.legend.itemOrder === 'alphabetical') {
       seriesKeys.sort();
     }
     return seriesKeys.map(key => ({

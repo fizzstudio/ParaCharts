@@ -122,7 +122,7 @@ export class DocumentView extends Container(View) {
       this.createTitle();
     }
 
-    if (this._shouldAddLegend && this._paraState.settings.legend.position === 'north' && this._paraState.type !== 'venn') {
+    if (this._shouldAddLegend && this._paraState.config.legend.position === 'north' && this._paraState.type !== 'venn') {
       this.createLegend('north');
       this._legends.north!.top = this._titleLabel?.paddedBottom ?? this.top;
       this._legends.north!.centerX = this.centerX;
@@ -146,11 +146,11 @@ export class DocumentView extends Container(View) {
     }
 
     // Create any west legend bc it affects the position of the vert axis
-    if (this._shouldAddLegend && this._paraState.settings.legend.position === 'west' && this._paraState.type !== 'venn') {
+    if (this._shouldAddLegend && this._paraState.config.legend.position === 'west' && this._paraState.type !== 'venn') {
       this.createLegend('west');
     }
 
-    if (this._shouldAddLegend && this._paraState.settings.legend.position === 'south' && this._paraState.type !== 'venn') {
+    if (this._shouldAddLegend && this._paraState.config.legend.position === 'south' && this._paraState.type !== 'venn') {
       this.createLegend('south');
     }
 
@@ -181,7 +181,7 @@ export class DocumentView extends Container(View) {
       this._directLabelStrip.updateSize();
     }
 
-    if (this._shouldAddLegend && this._paraState.settings.legend.position === 'east' && this._paraState.type !== 'venn') {
+    if (this._shouldAddLegend && this._paraState.config.legend.position === 'east' && this._paraState.type !== 'venn') {
       this.createLegend('east');
     }
 
@@ -306,8 +306,8 @@ export class DocumentView extends Container(View) {
   }
 
   protected get _shouldAddLegend(): boolean {
-    return this._paraState.settings.legend.isDrawLegend &&
-      (this._paraState.settings.legend.isAlwaysDrawLegend
+    return this._paraState.config.legend.isDrawLegend &&
+      (this._paraState.config.legend.isAlwaysDrawLegend
         // XXX direct label strip won't exist when this is called
         || (this._shouldAddDirectLabelStrip && this._paraState.config.chart.hasLegendWithDirectLabels)
         || (!this._shouldAddDirectLabelStrip && this._paraState.model!.multi));
@@ -474,7 +474,7 @@ export class DocumentView extends Container(View) {
 
   createLegend(position: CardinalDirection) {
     const items = this.paraview.paraState.chartInfo.legend();
-    const margin = this._paraState.settings.legend.margin;
+    const margin = this._paraState.config.legend.margin;
     if (position === 'east') {
       this._legends.east?.remove();
       this._legends.east = new Legend(this.paraview, items);
