@@ -293,7 +293,7 @@ export class ParaChart extends ParaComponent {
       '--horiz-axis-tick-label-font-size': () => this._paraState.config.axis.horiz.ticks.labels.fontSize,
       '--vert-axis-tick-label-font-size': () => this._paraState.config.axis.vert.ticks.labels.fontSize,
       '--direct-label-font-size': () => this._paraState.config.chart.directLabelFontSize,
-      '--legend-label-font-size': () => this._paraState.settings.legend.fontSize,
+      '--legend-label-font-size': () => this._paraState.config.legend.fontSize,
       '--bar-label-font-size': () => this._paraState.settings.type.bar.labelFontSize,
       '--column-label-font-size': () => this._paraState.settings.type.column.labelFontSize,
       '--waterfall-label-font-size': () => this._paraState.settings.type.waterfall.labelFontSize,

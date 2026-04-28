@@ -1,0 +1,50 @@
+{
+    "family": "legend",
+    "settings": {
+        "isDrawLegend": {
+            "description": "Draw chart legend",
+            "type": "boolean",
+            "default": true
+        },
+         "isAlwaysDrawLegend": {
+            "description": "Always draw legend regardless of data",
+            "type": "boolean",
+            "default": false
+        },
+        "padding": {
+            "description": "Internal padding within legend box",
+            "type": "number",
+            "default": 10
+        },
+        "symbolLabelGap": {
+            "description": "Gap between symbol and label",
+            "type": "number",
+            "default": 4
+        },
+        "pairGap": {
+            "description": "Gap between legend items",
+            "type": "number",
+            "default": 10
+        },
+        "position": {
+            "description": "Position relative to chart",
+            "type": "CardinalDirection",
+            "default": "east"
+        },
+        "margin": {
+            "description": "Margin around legend",
+            "type": "number",
+            "default": 20
+        },
+        "itemOrder": {
+            "description": "Ordering of legend items",
+            "type": "LegendItemOrder",
+            "default": "series"
+        },
+        "fontSize": {
+            "description": "Font size for legend text",
+            "type": "string",
+            "default": "10pt"
+        }
+    }
+}

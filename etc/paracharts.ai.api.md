@@ -120,13 +120,6 @@ export interface BarSettings extends PlaneChartSettings {
 }
 
 // @public
-export type BoxStyle = {
-    outline: Color;
-    outlineWidth: number;
-    fill: Color;
-};
-
-// @public
 export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest;
 
 // @public (undocumented)
@@ -292,28 +285,11 @@ export type LabelFormat = 'raw' | string;
 
 // @public (undocumented)
 export interface LabelSettings extends SettingGroup {
+    // Warning: (ae-forgotten-export) The symbol "Color" needs to be exported by the entry point index-ai.d.ts
     color: Color;
     fontSize: number;
     isDrawEnabled: boolean;
     margin: number;
-}
-
-// @public
-export type LegendItemOrder = 'alphabetical' | 'series';
-
-// @public (undocumented)
-export interface LegendSettings extends SettingGroup {
-    boxStyle: BoxStyle;
-    fontSize: string;
-    isAlwaysDrawLegend: boolean;
-    isDrawLegend: boolean;
-    isDrawLegendWhenNeeded: boolean;
-    itemOrder: LegendItemOrder;
-    margin: number;
-    padding: number;
-    pairGap: number;
-    position: CardinalDirection;
-    symbolLabelGap: number;
 }
 
 // @public (undocumented)
@@ -405,8 +381,7 @@ export class ParaAPI {
     protected _actions: Actions;
     // (undocumented)
     addCrosshair(xAxis: string | number, yAxis: string | number): void;
-    // (undocumented)
-    addRecord(points: Record<string, {
+    addRecord(pushPoints: Record<string, {
         x: string;
         y: string;
     }>): Promise<void>;
@@ -494,6 +469,10 @@ export class ParaAPI {
     protected _paraChart: ParaChart;
     // (undocumented)
     refresh(): void;
+    removeRecord(unshiftPoints: Record<string, {
+        x: string;
+        y: string;
+    }>): Promise<void>;
     // (undocumented)
     removeTrendLine(): void;
     serializeChart(): string;
@@ -505,6 +484,11 @@ export class ParaAPI {
     setSettings(settingsInput: SettingsInput): void;
     setSize(width: number, height: number): void;
     setWidth(width: number): void;
+    // (undocumented)
+    protected _slideWindow(points: Record<string, {
+        x: string;
+        y: string;
+    }>, forward?: boolean): Promise<void>;
     // (undocumented)
     protected _standardActions: Actions;
     // (undocumented)
@@ -635,7 +619,6 @@ export interface Settings extends SettingGroup {
     dataTable: DataTableSettings;
     dev: DevSettings;
     jim: JimSettings;
-    legend: LegendSettings;
     plotArea: PlotAreaSettings;
     popup: PopupSettings;
     scrollytelling: ScrollytellingSettings;
@@ -727,10 +710,6 @@ export type XYChartType = 'bar' | 'lollipop' | PointChartType;
 // @public
 export interface YAxisSettings extends AxisSettings {
 }
-
-// Warnings were encountered during analysis:
-//
-// types-ai/lib/state/settings_types.d.ts:44:5 - (ae-forgotten-export) The symbol "Color" needs to be exported by the entry point index-ai.d.ts
 
 // (No @packageDocumentation comment for this package)
 

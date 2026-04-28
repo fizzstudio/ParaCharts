@@ -58,18 +58,6 @@ export type AnimationType = 'yAxis' | 'xAxis' | 'none';
  */
 export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
 
-/** Visual styling for boxes and containers
- * @public
- */
-export type BoxStyle = {
-  /** Border color */
-  outline: Color;
-  /** Border width in pixels */
-  outlineWidth: number;
-  /** Background fill color */
-  fill: Color;
-};
-
 /** @public */
 export interface AnimationSettings extends SettingGroup {
   /** Enable chart animations */
@@ -260,37 +248,6 @@ export interface AxesSettings extends SettingGroup {
   x: XAxisSettings;
   /** Y-axis configuration */
   y: YAxisSettings;
-}
-
-/** Order for legend items
- * @public
- */
-export type LegendItemOrder = 'alphabetical' | 'series';
-
-/** @public */
-export interface LegendSettings extends SettingGroup {
-  /** Draw chart legend */
-  isDrawLegend: boolean;
-  /** Draw legend only when multiple series present */
-  isDrawLegendWhenNeeded: boolean; // NOTE: not yet implemented
-  /** Always draw legend regardless of data */
-  isAlwaysDrawLegend: boolean;
-  /** Visual styling for legend box */
-  boxStyle: BoxStyle;
-  /** Internal padding within legend box */
-  padding: number;
-  /** Gap between symbol and label */
-  symbolLabelGap: number;
-  /** Gap between legend items */
-  pairGap: number;
-  /** Position relative to chart */
-  position: CardinalDirection;
-  /** Margin around legend */
-  margin: number;
-  /** Ordering of legend items */
-  itemOrder: LegendItemOrder;
-  /** Font size for legend text */
-  fontSize: string;
 }
 
 /** Plot area dimensions
@@ -619,8 +576,6 @@ export interface ScrollytellingSettings extends SettingGroup {
 export interface Settings extends SettingGroup {
   /** Axis configuration */
   axis: AxesSettings;
-  /** Legend configuration */
-  legend: LegendSettings;
   /** Popup tooltip settings */
   popup: PopupSettings;
   /** Plot area settings */

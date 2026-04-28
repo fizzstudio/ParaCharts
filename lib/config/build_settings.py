@@ -34,6 +34,7 @@ def main(args):
 """
 import { type Size2d } from '@fizz/chart-classifier-utils'
 import { type SnapLocation } from '../common/types';
+import { type Color } from '../common/color_types';
 
 /**
  * A single config item.
@@ -94,6 +95,10 @@ export type HorizCardinalDirection = 'east' | 'west';
  * @public
  */
 export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
+/** Order for legend items
+ * @public
+ */
+export type LegendItemOrder = 'alphabetical' | 'series';
 
 """, file=typesf)
         write_types_group([], tree, tree, typesf)

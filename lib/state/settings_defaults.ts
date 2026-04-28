@@ -59,25 +59,6 @@ export const defaults: Settings = {
       interval: 'unset'
     },
   },
-  legend: {
-    isDrawLegend: true,
-    isDrawLegendWhenNeeded: true,
-    isAlwaysDrawLegend: false,
-    boxStyle: {
-      outline: 'none',
-      //outline: 'gray',
-      outlineWidth: 1,
-      fill: 'none',
-      //fill: 'aliceblue',
-    },
-    padding: 10,
-    symbolLabelGap: 4,
-    pairGap: 10,
-    position: 'east',
-    margin: 20,
-    itemOrder: 'series',
-    fontSize: '10pt'
-  },
   plotArea: {
     size: {
       width: 600,
