@@ -233,8 +233,9 @@ export class HorizTickLabelTier extends TickLabelTier {
     const isXIntertick = this._options.isChartIntertick && this._options.isFacetIndep;
     let pos: number;
     if (this._options.index && this._options.datatype === 'date') {
-      const intStart = this._length*this._options.content.intervals![index].start;
-      const intEnd = this._length*this._options.content.intervals![index].end;
+      const intIdx = index*this._options.step;
+      const intStart = this._length*this._options.content.intervals![intIdx].start;
+      const intEnd = this._length*this._options.content.intervals![intIdx].end;
       pos = (intStart + intEnd)/2;
     } else {
       pos = this._labelDistance*index;
@@ -424,7 +425,7 @@ export class VertTickLabelTier extends TickLabelTier {
         kid.x = this._tickLabelX(i);
         kid.y = this._tickLabelY(i);
     });
-    if (checkLabels && this._options.isFacetIndep) {
+    if (checkLabels) {
       this._options.step = this._optimizeLabelSpacing();
       this.createTickLabels(false);
     }
