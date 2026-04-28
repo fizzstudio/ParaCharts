@@ -16,13 +16,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Container, View } from '../base_view';
 import { type PlotLayerManager } from '.';
-import { ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 
 export abstract class PlotLayer extends Container(View) {
 
   declare protected _parent: PlotLayerManager;
 
-  constructor(paraview: ParaView, width: number, height: number) {
+  constructor(paraview: ViewContext, width: number, height: number) {
     super(paraview);
     this._width = width;
     this._height = height;

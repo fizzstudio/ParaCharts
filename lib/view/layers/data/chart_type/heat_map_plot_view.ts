@@ -5,7 +5,7 @@ import { nothing, svg } from "lit";
 import { type BaseChartInfo } from '../../../../chart_types';
 import { type HeatMapInfo } from '../../../../chart_types/heat_map';
 import { fixed } from "../../../../common/utils";
-import { ParaView } from "../../../../paraview";
+import { type DataLayerContext } from '../../../view_context';
 import { DeepReadonly, HeatmapSettings, PointChartType, type Setting } from "../../../../state";
 import { DatapointView, SeriesView } from "../../../data";
 
@@ -22,7 +22,7 @@ export class HeatMapPlotView extends PlanePlotView {
   declare protected _settings: DeepReadonly<HeatmapSettings>;
   declare protected _chartInfo: HeatMapInfo;
   constructor(
-    paraview: ParaView,
+    paraview: DataLayerContext,
     width: number,
     height: number,
     dataLayerIndex: number,

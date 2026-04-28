@@ -5,7 +5,7 @@ import { type DataSymbolType, DataSymbol } from './symbol';
 import { Label } from './label';
 import { type DeepReadonly, SettingsManager } from '../state';
 import { RectShape } from './shape/rect';
-import { type ParaView } from '../paraview';
+import { type ViewContext } from './view_context';
 import { TemplateResult, svg } from 'lit';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { HIGHLIGHT_PADDING } from '../common';
@@ -50,7 +50,7 @@ export class Legend extends Container(View) {
   protected _grid!: SimpleGridLayout;
   protected _markers: RectShape[] = [];
 
-  constructor(paraview: ParaView,
+  constructor(paraview: ViewContext,
     protected _items: LegendItem[],
     protected _options: Partial<LegendOptions> = {orientation: 'vert'}
   ) {

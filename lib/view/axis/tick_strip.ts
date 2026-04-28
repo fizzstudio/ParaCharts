@@ -24,7 +24,7 @@ import { mapn } from '@fizz/chart-classifier-utils';
 
 import { svg, type TemplateResult } from 'lit';
 import { HorizGridLine, HorizTick, VertGridLine, VertTick } from './rule';
-import { ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 import { HorizCardinalDirection, VertCardinalDirection } from '../../state';
 import { AxisHorizConfig, AxisVertConfig } from '../../config/config_types';
 
@@ -50,7 +50,7 @@ export abstract class TickStrip extends Container(View) {
   protected _interval!: number;
   protected _indices: number[] = [];
 
-  constructor(paraview: ParaView,
+  constructor(paraview: ViewContext,
     protected _axisSettings: AxisHorizConfig | AxisVertConfig,
     protected _majorModulus: number,
     protected _options: TickStripOptions
@@ -114,7 +114,7 @@ export class HorizTickStrip extends TickStrip {
   protected _ruleXs: number[] = [];
   protected _ruleY = 0;
 
-  constructor(paraview: ParaView,
+  constructor(paraview: ViewContext,
     _axisSettings: AxisHorizConfig,
     _majorModulus: number,
     _options: TickStripOptions,
@@ -209,7 +209,7 @@ export class VertTickStrip extends TickStrip {
   protected _ruleX = 0;
   protected _ruleYs: number[] = [];
 
-  constructor(paraview: ParaView,
+  constructor(paraview: ViewContext,
     _axisSettings: AxisVertConfig,
     _majorModulus: number,
     _options: TickStripOptions

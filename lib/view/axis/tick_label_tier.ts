@@ -19,7 +19,7 @@ import { View, Container } from '../base_view';
 import { type Layout } from '../layout';
 import { type Axis, type AxisOrientation } from './axis';
 import { Label, type LabelTextAnchor } from '../label';
-import { ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 
 import { type TemplateResult } from 'lit';
 import { Vec2 } from '../../common/vector';
@@ -57,7 +57,7 @@ export abstract class TickLabelTier extends Container(View) {
   protected _tickDistance!: number;
 
   constructor(
-    paraview: ParaView,
+    paraview: ViewContext,
     protected _axisSettings: AxisHorizConfig | AxisVertConfig,
     protected _options: TickLabelTierOptions
   ) {
@@ -194,7 +194,7 @@ export abstract class TickLabelTier extends Container(View) {
  */
 export class HorizTickLabelTier extends TickLabelTier {
   constructor(
-    paraview: ParaView,
+    paraview: ViewContext,
     axisSettings: AxisHorizConfig,
     options: TickLabelTierOptions,
   ) {
@@ -356,7 +356,7 @@ export class HorizTickLabelTier extends TickLabelTier {
 export class VertTickLabelTier extends TickLabelTier {
 
   constructor(
-    paraview: ParaView,
+    paraview: ViewContext,
     axisSettings: AxisVertConfig,
     options: TickLabelTierOptions
   ) {

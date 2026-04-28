@@ -1,7 +1,7 @@
 
 import { PlotLayer } from '../layer';
 import { View, Container } from '../../base_view';
-import { type ParaView } from '../../../paraview';
+import { type ViewContext } from '../../view_context';
 import { RectShape } from '../../shape/rect';
 import { PathShape } from '../../shape/path';
 import { Vec2 } from '../../../common/vector';
@@ -16,7 +16,7 @@ export type AnnotationType = 'foreground' | 'background';
 export class AnnotationLayer extends PlotLayer {
   protected _groups = new Map<string, DecorationGroup>();
 
-  constructor(paraview: ParaView, width: number, height: number, public readonly type: AnnotationType) {
+  constructor(paraview: ViewContext, width: number, height: number, public readonly type: AnnotationType) {
     super(paraview, width, height);
   }
 
@@ -292,7 +292,7 @@ export class AnnotationLayer extends PlotLayer {
 
 class DecorationGroup extends Container(View) {
 
-  constructor(paraview: ParaView, protected _name: string) {
+  constructor(paraview: ViewContext, protected _name: string) {
     super(paraview);
   }
 

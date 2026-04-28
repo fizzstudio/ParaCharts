@@ -1,5 +1,5 @@
 import { formatBox } from "@fizz/parasummary";
-import { ParaView } from "../../paraview";
+import { type ViewContext } from '../view_context';
 import { datapointIdToCursor, makeSequenceId, PointAnnotation } from "../../state";
 import { Container, View } from "../base_view";
 import { Popup } from "../popup";
@@ -14,7 +14,7 @@ export type AnnotationType = 'foreground' | 'background';
 export class PopupLayer extends PlotLayer {
     protected _groups = new Map<string, DecorationGroup>();
 
-    constructor(paraview: ParaView, width: number, height: number, public readonly type: AnnotationType) {
+    constructor(paraview: ViewContext, width: number, height: number, public readonly type: AnnotationType) {
         super(paraview, width, height);
     }
 
@@ -260,7 +260,7 @@ export class PopupLayer extends PlotLayer {
 
 class DecorationGroup extends Container(View) {
 
-    constructor(paraview: ParaView, protected _name: string) {
+    constructor(paraview: ViewContext, protected _name: string) {
         super(paraview);
     }
 

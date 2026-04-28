@@ -36,6 +36,7 @@ export type Legends = Partial<{ [dir in CardinalDirection]: Legend }>;
  * Root of the view hierarchy.
  */
 export class DocumentView extends Container(View) {
+  declare public readonly paraview: ParaView;
 
   readonly type: ChartType;
   protected _titleLabel?: Label;
@@ -52,7 +53,7 @@ export class DocumentView extends Container(View) {
   constructor(paraview: ParaView) {
     super(paraview);
     this.log = getLogger('DocumentView');
-    this._paraState = paraview.globalState.paraState;
+    this._paraState = paraview.paraState;
     this.observeNotices();
     this.type = this._paraState.type;
     this._closeX = new CloseXView(paraview, () => {

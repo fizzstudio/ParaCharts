@@ -3,7 +3,7 @@ import { formatBox } from "@fizz/parasummary";
 import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
 import { fixed } from "../../../../common/utils";
-import { ParaView } from "../../../../paraview";
+import { type ViewContext } from '../../../view_context';
 import { datapointIdToCursor, DeepReadonly, HistogramSettings, PointChartType, type Setting } from "../../../../state";
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";

@@ -36,7 +36,7 @@ import { svg, type TemplateResult } from 'lit';
 import { literal } from 'lit/static-html.js';
 import { PlaneModel } from '@fizz/paramodel';
 import { Popup } from '../popup';
-import { type ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 import { AxisLabelTier, PlaneChartInfo } from '../../chart_types';
 import { HIGHLIGHT_PADDING } from '../../common';
 import { AxisHorizConfig, AxisVertConfig } from '../../config/config_types';
@@ -76,7 +76,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   protected _paraState: ParaState;
 
   constructor(
-    paraview: ParaView,
+    paraview: ViewContext,
     public readonly orientation: T,
     protected _facet: Facet,
     protected _chartInfo: PlaneChartInfo,
@@ -305,7 +305,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
  */
 export class HorizAxis extends Axis<'horiz'> {
 
-  constructor(paraview: ParaView, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
+  constructor(paraview: ViewContext, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
     super(paraview, 'horiz', facet, chartInfo, length);
     this._tickLabelTierValues = this._chartInfo.computeAxisLabelTiers(
       this.coord, this.config.isStaggerLabels);
@@ -436,7 +436,7 @@ export class HorizAxis extends Axis<'horiz'> {
  */
 export class VertAxis extends Axis<'vert'> {
 
-  constructor(paraview: ParaView, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
+  constructor(paraview: ViewContext, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
     super(paraview, 'vert', facet, chartInfo, length);
     this._tickLabelTierValues = this._chartInfo.computeAxisLabelTiers(
       this.coord, this.config.isStaggerLabels);

@@ -1,6 +1,6 @@
 
 import { fixed } from '../../common/utils';
-import { type ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 import { type ShapeOptions, Shape } from './shape';
 import { Vec2 } from '../../common/vector';
 
@@ -58,7 +58,7 @@ export class SectorShape extends Shape {
   protected _arcLarge!: number;
   protected _arcSweep = 1;
 
-  constructor(paraview: ParaView, private options: SectorOptions) {
+  constructor(paraview: ViewContext, private options: SectorOptions) {
     super(paraview, options);
     this._r = options.r;
     this._centralAngle = options.centralAngle;

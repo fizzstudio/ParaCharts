@@ -19,7 +19,7 @@ import { ref } from 'lit/directives/ref.js';
 import { PlotLayer } from '..';
 import { type PlotLayerManager } from '..';
 import { type PlotSettings, type DeepReadonly, type Direction, HorizDirection, Setting } from '../../../state/settings_types';
-import { ParaView } from '../../../paraview';
+import { type DataLayerContext } from '../../view_context';
 import { SettingsManager } from '../../../state/settings_manager';
 import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../../data';
 
@@ -40,6 +40,7 @@ export type LandingView = ChartLandingView | DataView;
  * @public
  */
 export abstract class DataLayer extends PlotLayer {
+  declare public readonly paraview: DataLayerContext;
 
   declare protected _parent: PlotLayerManager;
 
@@ -54,7 +55,7 @@ export abstract class DataLayer extends PlotLayer {
   protected _animateRevealComplete = false;
 
   constructor(
-    paraview: ParaView,
+    paraview: DataLayerContext,
     width: number,
     height: number,
     public readonly dataLayerIndex: number,

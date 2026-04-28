@@ -1,6 +1,6 @@
 
 import { Shape, type ShapeOptions } from './shape';
-import { type ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 import { fixed } from '../../common/utils';
 
 import { svg, nothing } from 'lit';
@@ -15,7 +15,7 @@ export interface RectOptions extends ShapeOptions {
 
 export class RectShape extends Shape {
 
-  constructor(paraview: ParaView, public options: RectOptions) {
+  constructor(paraview: ViewContext, public options: RectOptions) {
     super(paraview, options);
     this._width = options.width;
     this._height = options.height;

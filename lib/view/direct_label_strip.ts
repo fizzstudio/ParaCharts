@@ -22,7 +22,7 @@ import { View, Container } from './base_view';
 import { svg, TemplateResult } from 'lit';
 import { styleMap, StyleInfo } from 'lit/directives/style-map.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
-import { type ParaView } from '../paraview';
+import { type ViewContext } from './view_context';
 import { type PlaneChartInfo } from '../chart_types';
 import { type DocumentView } from './document_view';
 
@@ -42,7 +42,7 @@ export class DirectLabelStrip extends Container(View) {
   protected _seriesLabels!: Label[];
   protected _leaders!: LineLabelLeader[];
 
-  constructor(paraview: ParaView, height: number) {
+  constructor(paraview: ViewContext, height: number) {
     super(paraview);
     this.log = getLogger('DirectLabelStrip');
     this._id = 'direct-label-strip';
@@ -226,7 +226,7 @@ class LineLabelLeader extends View {
   protected _endX: number;
   protected _endY: number;
 
-  constructor(paraview: ParaView, protected _seriesKey: string, label: Label, pointY: number) {
+  constructor(paraview: ViewContext, protected _seriesKey: string, label: Label, pointY: number) {
     super(paraview);
     this._endX = this.paraview.paraState.settings.type.line.leaderLineLength;
     this._endY = label.bottom - label.height / 2;

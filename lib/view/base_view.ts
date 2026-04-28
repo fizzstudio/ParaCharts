@@ -30,7 +30,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { TodoEvent, type Actions } from '../input/actions';
 import { type HotkeyInfo } from '../input/defaultactions';*/
 import { fixed } from '../common/utils';
-import { ParaView } from '../paraview';
+import { type ViewContext } from './view_context';
 import { Vec2 } from '../common/vector';
 import { Popup } from './popup';
 import { HIGHLIGHT_PADDING } from '../common';
@@ -242,7 +242,7 @@ export class View extends BaseView {
   protected _isObserveNotices = false;
   protected _popup?: Popup;
 
-  constructor(public readonly paraview: ParaView) {
+  constructor(public readonly paraview: ViewContext) {
     super();
     //this._setActions();
     //this.updateKeymap();

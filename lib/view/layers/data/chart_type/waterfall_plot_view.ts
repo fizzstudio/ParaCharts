@@ -14,7 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type ParaView } from '../../../../paraview';
+import { type DataLayerContext } from '../../../view_context';
 import { type BaseChartInfo } from '../../../../chart_types';
 import { Label } from '../../../label';
 
@@ -37,7 +37,7 @@ export class WaterfallPlotView extends PlanePlotView {
   protected _availSpace!: number;
 
   constructor(
-    paraview: ParaView,
+    paraview: DataLayerContext,
     width: number, height: number,
     dataLayerIndex: number,
     chartInfo: BaseChartInfo

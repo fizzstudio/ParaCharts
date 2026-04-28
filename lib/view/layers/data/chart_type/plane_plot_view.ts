@@ -25,7 +25,7 @@ import { DatapointView, SeriesView } from '../../../data';
 //import { NOTE_LENGTH } from '../audio/sonifier';
 //import { type Actions, type Action } from '../input/actions';
 
-import { ParaView } from '../../../../paraview';
+import { type DataLayerContext } from '../../../view_context';
 import { Setting } from '../../../../state';
 
 import { PlaneDatapoint, Datapoint } from '@fizz/paramodel';
@@ -41,7 +41,7 @@ export type DatapointViewType<T extends PlaneDatapointView> =
  */
 export abstract class PlanePlotView extends DataLayer {
   constructor(
-    paraview: ParaView,
+    paraview: DataLayerContext,
     width: number,
     height: number,
     dataLayerIndex: number,
