@@ -6,12 +6,13 @@ import {
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import { FontSettingsDialog } from '../dialogs/font_dialog';
 import { PopupSettingsDialog } from '../../view/popup';
 
 
 @customElement('para-chart-panel')
 export class ChartPanel extends ControlPanelTabPanel {
-
+  protected _fontDialogRef = createRef<FontSettingsDialog>();
   protected _popupDialogRef = createRef<PopupSettingsDialog>();
 
   static styles = [
@@ -25,6 +26,7 @@ export class ChartPanel extends ControlPanelTabPanel {
         column-gap: 0.5rem;
         row-gap: 0.5rem;
         align-items: center;
+        justify-items: center;
       }
       #width {
         grid-row: 1;
@@ -72,7 +74,6 @@ export class ChartPanel extends ControlPanelTabPanel {
   connectedCallback() {
     super.connectedCallback();
     this._paraState.settingControls.insert('description.captionFormat');
-    this._paraState.settingControls.insert('chart.fontScale');
   }
 
   render() {
@@ -99,6 +100,13 @@ export class ChartPanel extends ControlPanelTabPanel {
               ${columnContent}
             </div>
           `)}
+          <div>
+            <button
+              @click=${() => this._fontDialogRef.value?.show()}
+            >
+              Font settings
+            </button>
+          </div>
           ${popupsContent.map(columnContent => html`
             <div id="popup-content">
               ${columnContent}
@@ -124,6 +132,11 @@ export class ChartPanel extends ControlPanelTabPanel {
           ${fontsContent}
         </div>
       </section>
+      <para-font-settings-dialog
+        ${ref(this._fontDialogRef)}
+        id="font-settings-dialog"
+        .globalState=${this._globalState}
+      ></para-font-settings-dialog>
     `;
   }
 

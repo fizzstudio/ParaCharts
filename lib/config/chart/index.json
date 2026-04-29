@@ -45,9 +45,16 @@
             "default": "8 30"
         },
         "fontFamily": {
+            "label": "Font family",
             "description": "Font family for all chart text",
             "type": "string",
-            "default": "Helvetica, sans-serif"
+            "default": "Helvetica",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["Helvetica", "Verdana", "Tahoma", "Times New Roman", "Georgia", "Atkinson Hyperlegible"]
+            },
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.font.dialog"
         },
         "fontWeight": {
             "description": "Font weight for chart text",
@@ -67,7 +74,37 @@
                 "showValue": true
             },
             "panel": "chart",
-            "parentView": "controlPanel.tabs.chart.fonts"
+            "parentView": "controlPanel.tabs.chart.font.dialog"
+        },
+        "isUseBraille": {
+            "label": "Use Braille font",
+            "description": "Enable the use of a Braille font",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.font.dialog"
+        },
+        "isUseBrailleAndPrint": {
+            "label": "Include Braille and print text",
+            "description": "Include print text along with Braille",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.font.dialog"
+        },
+        "pageSize": {
+            "label": "Page size",
+            "description": "Document page size",
+            "type": "'us_letter' | 'us_legal'",
+            "default": "us_letter",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["us_letter", "us_legal"]
+            },
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.font.dialog"
         },
         "stroke": {
             "description": "Stroke color for lines and shapes",
