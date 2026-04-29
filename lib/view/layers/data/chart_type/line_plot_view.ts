@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { PlaneSeriesView, PointPlotView, PointDatapointView } from '.';
-import { type LineSettings, type DeepReadonly, type Setting } from '../../../../state/settings_types';
+import { type DeepReadonly, type Setting } from '../../../../state/settings_types';
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { bboxOfBboxes, isPointerInbounds } from '../../../../common/utils';
@@ -36,10 +36,6 @@ export class LinePlotView extends PointPlotView {
     return super.datapointViews as LineSection[];
   }
 
-  get settings() {
-    return super.settings as DeepReadonly<LineSettings>;
-  }
-
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['chart.hasDirectLabels'].includes(path)) {
       this.paraview.createDocumentView();
@@ -55,14 +51,14 @@ export class LinePlotView extends PointPlotView {
 
   get effectiveLineWidth() {
     return this.paraview.paraState.config.ui.isLowVisionModeEnabled
-      ? this.paraview.paraState.settings.type.line.lowVisionLineWidth
-      : this.paraview.paraState.settings.type.line.lineWidth;
+      ? this.paraview.paraState.config.type.line.lowVisionLineWidth
+      : this.paraview.paraState.config.type.line.lineWidth;
   }
 
   get effectiveVisitedScale() {
     return this.paraview.paraState.config.ui.isLowVisionModeEnabled
       ? 1
-      : this.paraview.paraState.settings.type.line.lineHighlightScale;
+      : this.paraview.paraState.config.type.line.lineHighlightScale;
   }
 
   get visitedStrokeWidth(): number {

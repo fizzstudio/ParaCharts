@@ -144,7 +144,6 @@ export interface ChartTypeSettings extends SettingGroup {
     column: BarSettings;
     heatmap: HeatmapSettings;
     histogram: HistogramSettings;
-    line: LineSettings;
     lollipop: LollipopSettings;
     scatter: ScatterSettings;
     stepline: StepLineSettings;
@@ -254,12 +253,12 @@ export const FORMAT_CONTEXT_SETTINGS: {
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
 
 // @public (undocumented)
-export interface HeatmapSettings extends PointSettings {
+export interface HeatmapSettings extends PlaneChartSettings {
     resolution: number;
 }
 
 // @public
-export interface HistogramSettings extends PointSettings {
+export interface HistogramSettings extends PlaneChartSettings {
     bins: number;
     displayAxis: string;
     groupingAxis: string;
@@ -290,20 +289,6 @@ export interface LabelSettings extends SettingGroup {
     fontSize: number;
     isDrawEnabled: boolean;
     margin: number;
-}
-
-// @public (undocumented)
-export interface LineSettings extends PointSettings {
-    baseSymbolSize: number;
-    isAlwaysShowSeriesLabel?: boolean;
-    isShowPopups: boolean;
-    isTrendNavigationModeEnabled: boolean;
-    leaderLineLength: number;
-    lineHighlightScale: number;
-    lineWidth: number;
-    lineWidthMax: number;
-    lowVisionLineWidth: number;
-    seriesLabelPadding: number;
 }
 
 // @public
@@ -565,12 +550,6 @@ export interface PlotSettings extends SettingGroup {
 // @public
 export type PointChartType = 'line' | 'stepline' | 'scatter';
 
-// @public (undocumented)
-export interface PointSettings extends PlaneChartSettings {
-    pointLabelFormat: LabelFormat;
-    selectedPointMarkerSize: Size2d;
-}
-
 // @public
 export interface PopupSettings extends SettingGroup {
     activation: "onHover" | "onFocus" | "onSelect";
@@ -595,7 +574,7 @@ export type RadialChartType = 'pie' | 'donut' | 'gauge';
 export type riffSpeeds = 'slow' | 'medium' | 'fast';
 
 // @public (undocumented)
-export interface ScatterSettings extends PointSettings {
+export interface ScatterSettings extends PlaneChartSettings {
     isShowOutliers: boolean;
     isShowTrendLine: boolean;
 }
@@ -641,7 +620,7 @@ export interface StatusBarSettings extends SettingGroup {
 }
 
 // @public (undocumented)
-export interface StepLineSettings extends PointSettings {
+export interface StepLineSettings extends PlaneChartSettings {
     baseSymbolSize: number;
     isAlwaysShowSeriesLabel?: boolean;
     leaderLineLength: number;

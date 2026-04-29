@@ -98,6 +98,18 @@ export const defaultConfig: Config = {
       navRunTimeoutMs: 125,
     },
     type: {
+      line: {
+        minYValue: "unset",
+        maxYValue: "unset",
+        lineWidth: 5,
+        lineWidthMax: 25,
+        lowVisionLineWidth: 15,
+        lineHighlightScale: 1.5,
+        seriesLabelPadding: 5,
+        leaderLineLength: 30,
+        isAlwaysShowSeriesLabel: false,
+        isTrendNavigationModeEnabled: false,
+      },
       donut: {
         outsideLabels: {
           vertGap: 10,

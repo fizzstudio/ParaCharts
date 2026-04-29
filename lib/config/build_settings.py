@@ -154,8 +154,10 @@ for (const [k, v] of Object.entries(configMetadata)) {
     configMetadata[k].settings = Object.create(refTarget.settings);
     Object.assign(configMetadata[k].settings, v.settings);
     for (const [sk, sv] of Object.entries(configMetadata[k].settings!)) {
-      configMetadata[k].settings![sk] = Object.create(refTarget.settings![sk]);
-      Object.assign(configMetadata[k].settings![sk], sv);
+      if (refTarget.settings![sk]) {
+        configMetadata[k].settings![sk] = Object.create(refTarget.settings![sk]);
+        Object.assign(configMetadata[k].settings![sk], sv);
+      }
     }
   }
 }
@@ -194,9 +196,6 @@ def load_file(file: Path, node, parent):
 def write_defaults_group(key, node, tree, defaults, indent = 0):
     if node.get('__abstract__'):
         return
-    #else:
-    #    print('ABSTRACT', key, node.get('__abstract__'))
-    # print('write defaults group', key)
     if key:
         print(f'{" "*indent}{key}: {{', file=defaults)
 
@@ -235,15 +234,16 @@ def js_value(py_val):
 
 
 def write_types_group(key_path, node, tree, types):
-    # print('write types group', '.'.join(key_path))
+    print('write types group', '.'.join(key_path))
     key_path_joined = ''.join([k.capitalize() for k in key_path])
 
     if node.get('__ref__'):
         parts = node['__ref__'].split('.')
+        print('parts', parts)
         parts_joined = ''.join([p.capitalize() for p in parts])
         iface = parts_joined + 'Config'
         print(f'export interface {key_path_joined}Config extends {iface} {{', file=types)
-        print('}', file=types)
+        # print('}', file=types)
 
         # new_node = tree
         # for part in parts:
@@ -260,25 +260,27 @@ def write_types_group(key_path, node, tree, types):
     else:
         print(f'export interface {key_path_joined}Config extends ConfigGroup {{', file=types)
 
-        groups = []
-        items = []
-        for k, v in node.items():
-            if isinstance(v, Group):
-                groups.append([k, v])
-            else:
-                items.append([k, v])
-        for k, v in items:
-            if not isinstance(v, dict):
-                continue
-            write_types_item(k, v, types)
-        for k, v in groups:
-            if v.get('__abstract__'):
-                continue
-            print(f'  {k}: {key_path_joined + k.capitalize()}Config;', file=types)
-        print('}', file=types)
+    groups = []
+    items = []
+    for k, v in node.items():
+        if isinstance(v, Group):
+            groups.append([k, v])
+        else:
+            items.append([k, v])
+    for k, v in items:
+        if not isinstance(v, dict):
+            continue
+        if not v.get('description'):
+            continue
+        write_types_item(k, v, types)
+    for k, v in groups:
+        if v.get('__abstract__'):
+            continue
+        print(f'  {k}: {key_path_joined + k.capitalize()}Config;', file=types)
+    print('}', file=types)
 
-        for k, v in groups:
-            write_types_group(key_path + [k], v, tree, types)
+    for k, v in groups:
+        write_types_group(key_path + [k], v, tree, types)
 
 def write_types_item(key, setting, types):
     print(f'  /** {setting.get('description')} */', file=types)
@@ -286,7 +288,7 @@ def write_types_item(key, setting, types):
 
 
 def write_metadata_header(dir_path, key_path, node, tree, f):
-    # print('write metadata header', '/'.join(key_path))
+    print('write metadata header', '/'.join(key_path))
     key_path_file = '/'.join(key_path) + '.json'
     key_path_dir = '/'.join(key_path) + '/index.json'
     key_path_joined = ''.join([k.capitalize() for k in key_path])
@@ -310,7 +312,7 @@ def write_metadata_header(dir_path, key_path, node, tree, f):
         for k, v in new_node.items():
             if k == '__abstract__':
                 continue
-            if not isinstance(v, Group):
+            if not isinstance(v, Group) and node.get(k):
                 v.update(node[k])
         node = new_node
     groups = []
@@ -349,7 +351,7 @@ def write_metadata_group(key_path, node, tree, f):
         for k, v in new_node.items():
             if k == '__abstract__':
                 continue
-            if not isinstance(v, Group):
+            if not isinstance(v, Group) and node.get(k):
                 v.update(node[k])
         node = new_node
     groups = []

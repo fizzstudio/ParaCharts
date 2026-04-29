@@ -77,7 +77,7 @@ export abstract class PointPlotView extends PlanePlotView {
   protected _createDatapoints() {
     const xs: string[] = [];
     for (const [p, i] of enumerate(this.paraview.paraState.model!.series[0].datapoints)) {
-      xs.push(formatBox(p.facetBox('x')!, this.paraview.paraState.getFormatType(`${this.parent.parent.type as PointChartType}Point`)));
+      xs.push(formatBox(p.facetBox('x')!, 'raw'));
       const xId = strToId(xs.at(-1)!);
       // if (this.selectors[i] === undefined) {
       //   this.selectors[i] = [];

@@ -18,7 +18,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState } from '../state';
 import { type ParaView } from '../paraview';
-import { type LineSettings, type DeepReadonly, type Setting } from '../state/settings_types';
+import { type DeepReadonly, type Setting } from '../state/settings_types';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state/query_utils';
 import { NavNode } from '../view/layers';
 
@@ -41,23 +41,10 @@ export class LineChartInfo extends PointChartInfo {
 
   protected _addSettingControls(): void {
     super._addSettingControls();
-    // XXX only do this if type === 'line'
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'type.line.lineWidth',
-      label: 'Line width',
-      options: {
-        inputType: 'number',
-        min: 1,
-        max: this._paraState.settings.type.line.lineWidthMax as number
-      },
-      parentView: 'controlPanel.tabs.chart.chart',
+    this._paraState.settingControls.insert('type.line.lineWidth', {
+      max: this._paraState.config.type.line.lineWidthMax
     });
     this._paraState.settingControls.insert('chart.isDrawSymbols');
-  }
-
-  get settings() {
-    return super.settings as DeepReadonly<LineSettings>;
   }
 
   async settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): Promise<void> {
