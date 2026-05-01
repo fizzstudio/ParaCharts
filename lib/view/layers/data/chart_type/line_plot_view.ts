@@ -155,16 +155,6 @@ export class LineSection extends PointDatapointView {
     super.completeLayout();
   }
 
-  protected _createSymbol() {
-    const series = this.seriesProps;
-    let symbolType = series.symbol;
-    // If datapoints are laid out again after the initial layout,
-    // we need to replace the original shape and symbol
-    this._symbol?.remove();
-    this._symbol = DataSymbol.fromType(this.paraview, symbolType);
-    this.append(this._symbol);
-  }
-
   protected _computePrev() {
     this._prevMidX = -this.width / 2; // - 0.1;
     this._prevMidY = (this._prev!.y - this.y) / 2;

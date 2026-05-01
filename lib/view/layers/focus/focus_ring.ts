@@ -37,7 +37,17 @@ export class FocusRing extends Container(View) {
         y,
         width,
         height,
-        stroke: 'white',
+        stroke: 'yellow',
+        strokeWidth: 1,
+        fill: 'yellow',
+        opacity: .3
+      }));
+      this.append(new RectShape(paraview, {
+        x,
+        y,
+        width,
+        height,
+        stroke: 'yellow',
         strokeWidth: strokeWidthOuter,
         fill: 'none'
       }));
