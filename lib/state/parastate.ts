@@ -389,6 +389,7 @@ export class ParaState extends BaseState {
     const hydratedConfig = SettingsManager.hydrateInput(inputSettings) as Partial<Config>;
     SettingsManager.suppleteSettings(hydratedConfig, defaultConfig);
     this.config = hydratedConfig as Config;
+    SettingsManager.suppleteSettings(this.settings, this.config as unknown as Settings);
   }
 
   protected _syncPatchesToManifest(patches: Patch[]) {
