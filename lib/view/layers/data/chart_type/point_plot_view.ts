@@ -21,7 +21,7 @@ import { Setting, type PointChartType } from '../../../../state/settings_types';
 
 import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
-import { svg, TemplateResult } from 'lit';
+import { svg } from 'lit';
 import { linearRegression } from '@fizz/simple-statistics';
 import { View } from '../../../base_view';
 import { strToId } from '@fizz/paramanifest';
@@ -136,18 +136,7 @@ export abstract class PointPlotView extends PlanePlotView {
 }
 
 export class PointSeriesView extends PlaneSeriesView {
-  renderChildren(): TemplateResult {
-    const childrenSymbols = this.children.map(kid => kid.symbol).flat().filter(s => s!==null)
-    //console.log(childrenSymbols);
-    return svg`${[...this.children, ...childrenSymbols].map(kid => {
-      //console.log(kid)
-      return kid.render({renderChildren: false})
-    })}`;
-    
-    return svg`${this.children.map(kid => {
-      //console.log(kid)
-      return kid.render()})}`;
-  }
+
 }
 
 
