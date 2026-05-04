@@ -289,7 +289,8 @@ export class DatapointView extends DataView {
     // If datapoints are laid out again after the initial layout,
     // we need to replace the original shape and symbol
     this._symbol?.remove();
-    this._symbol = DataSymbol.fromType(this.paraview, symbolType);
+    this._symbol = DataSymbol.fromType(this.paraview, symbolType,
+      { blackBorder: this.paraview.paraState.config.ui.isLowVisionModeEnabled, borderStrokeWidth: 3 });
     this.append(this._symbol);
   }
 

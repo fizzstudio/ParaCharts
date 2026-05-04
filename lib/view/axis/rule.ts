@@ -75,6 +75,7 @@ export abstract class AxisRule extends View {
         id=${this.darken ? 'grid-zero' : ''}
         class=${classMap(this.classInfo)}
         d=${move + ' ' + line}
+        stroke-width=${this.paraview.paraState.config.ui.isLowVisionModeEnabled ? 3 : 1}
       ></path>
     `;
   }

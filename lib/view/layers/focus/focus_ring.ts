@@ -37,7 +37,7 @@ export class FocusRing extends Container(View) {
         y,
         width,
         height,
-        stroke: 'white',
+        stroke: 'yellow',
         strokeWidth: strokeWidthOuter,
         fill: 'none'
       }));
