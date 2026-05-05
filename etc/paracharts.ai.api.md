@@ -387,6 +387,10 @@ export class ParaAPI {
     }>): Promise<void>;
     // (undocumented)
     addTrendLine(): void;
+    // (undocumented)
+    protected _batchRecordCount: number;
+    // (undocumented)
+    protected _batchUpdateTimeout: ReturnType<typeof setTimeout> | null;
     // Warning: (ae-forgotten-export) The symbol "BaseChartInfo" needs to be exported by the entry point index-ai.d.ts
     //
     // (undocumented)

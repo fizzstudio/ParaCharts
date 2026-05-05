@@ -82,7 +82,7 @@ export class AriaLive extends ParaComponent {
           && sendToSV
           && this._paraState.config.ui.isVoicingEnabled
           && this._paraState.config.ui.isAnnouncementEnabled) {
-          this._voicing.speak(msg, JSON.parse(highlights!), this.announcement.startFrom);
+          this._voicing.speak(msg, JSON.parse(highlights!));
         }
       })
     });
