@@ -107,6 +107,8 @@ export interface DataSymbolOptions {
   dashed: boolean;
   lighten?: boolean;
   isClip?: boolean;
+  blackBorder?: boolean;
+  borderStrokeWidth: number;
   pointerEnter?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
   click?: (e: MouseEvent) => void;
@@ -158,6 +160,8 @@ export class DataSymbol extends View {
       dashed: options?.dashed ?? false,
       lighten: options?.lighten ?? false,
       isClip: options?.isClip ?? false,
+      blackBorder: options?.blackBorder ?? false,
+      borderStrokeWidth: options?.borderStrokeWidth ?? 1,
       pointerEnter: options?.pointerEnter,
       pointerLeave: options?.pointerLeave,
       click: options?.click
@@ -313,6 +317,15 @@ export class DataSymbol extends View {
     }
   }
 
+  protected _blackBorderStyleInfo() {
+    return {
+      stroke: 'black',
+      strokeWidth: this._options.strokeWidth + this._options.borderStrokeWidth,
+      fill: 'none',
+      pointerEvents: 'none'
+    };
+  }
+
   content() {
     let transform;
     let shouldTransform = false;
@@ -321,13 +334,22 @@ export class DataSymbol extends View {
       transform = fixed`translate(${this._x},${this._y})`;
       transform += fixed` scale(${this._options.scale})`;
     }
-    let type = this.paraview.paraState.type
     if (this.parent instanceof DatapointView){
       if (this._y < 0 || this._y > this.parent.chart.parent.logicalHeight){
         this.hidden = true;
       }
     }
     return this.hidden ? svg`` : svg`
+      ${this._options.blackBorder ? svg`
+        <use
+          href="#${this._defsKey}"
+          style=${styleMap(this._blackBorderStyleInfo())}
+          transform=${shouldTransform ? transform : nothing}
+          x=${shouldTransform ? nothing : this._x}
+          y=${shouldTransform ? nothing : this._y}
+          clip-path=${nothing}
+        />
+      ` : nothing}
       <use
         href="#${this._defsKey}"
         id=${this._id || nothing}

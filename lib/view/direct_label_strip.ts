@@ -252,6 +252,7 @@ class LineLabelLeader extends View {
       this.paraview.paraState.seriesProperties!.properties(this._seriesKey).color);
     styles.fill = colorValue;
     styles.stroke = colorValue;
+    styles.strokeWidth = this.paraview.paraState.config.ui.isLowVisionModeEnabled ? 6 : 2;
     return styles;
   }
 

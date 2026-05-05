@@ -149,6 +149,7 @@ export class ParaChart extends ParaComponent {
     });
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
+        this._paraAPI = new ParaAPI(this);
         await initParaSummary();
         resolve();
         // It's now safe to load a manifest
@@ -377,7 +378,7 @@ export class ParaChart extends ParaComponent {
       this._paraState.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode
       this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
-      this._paraAPI = new ParaAPI(this);
+      // this._paraAPI = new ParaAPI(this);
       await this._tourBus.sendContextPayload();
       this._loaderResolver!();
     } catch (error) {
