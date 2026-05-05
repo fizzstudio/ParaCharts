@@ -104,10 +104,19 @@ export class DirectLabelStrip extends Container(View) {
         y: ep.y, // labelY,
         classList: ['direct-label'],
         pointerEnter: (e) => {
+          if (this.paraview.paraState.pinnedSeriesKey !== null) return;
           this.paraview.paraState.dimOtherSeries(ep.seriesKey);
         },
         pointerLeave: (e) => {
+          if (this.paraview.paraState.pinnedSeriesKey !== null) return;
           this.paraview.paraState.clearAllSeriesDimming();
+        },
+        click: (e) => {
+          if (this.paraview.paraState.pinnedSeriesKey === ep.seriesKey) {
+            this.paraview.paraState.unpinSeries();
+          } else {
+            this.paraview.paraState.pinSeries(ep.seriesKey);
+          }
         }
       }));
       this.append(this._seriesLabels.at(-1)!);
