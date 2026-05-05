@@ -61,6 +61,14 @@
             "parentView": "controlPanel.tabs.audio.voicing",
             "keywords": ["audio", "selfvoicing"]
         },
+        "liveUpdateDelay": {
+            "label": "Live update delay",
+            "description": "Delay in seconds between live update announcements",
+            "type": "number",
+            "default": 10,
+            "advanced": false,
+            "keywords": ["audio", "liveupdate"]
+        },
         "isFullscreenEnabled": {
             "label": "Fullscreen",
             "description": "Enable fullscreen mode",

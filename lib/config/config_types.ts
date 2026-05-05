@@ -219,6 +219,8 @@ export interface UiConfig extends ConfigGroup {
   isAnnouncementEnabled: boolean;
   /** Voice output speech rate. Range: 0.5 to 2 */
   speechRate: number;
+  /** Delay in seconds between live update announcements */
+  liveUpdateDelay: number;
   /** Enable fullscreen mode */
   isFullscreenEnabled: boolean;
   /** Enable low vision accessibility enhancements */

@@ -27,6 +27,8 @@ import { ConfigGroupMetadata, ConfigGroupSettingsMetadata, configMetadata, Confi
 
 type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMap) => void | Promise<void>) };
 
+const MSEC_PER_CHAR = 59;
+
 /**
  * Perform various operations on a ParaChart.
  */
@@ -36,6 +38,8 @@ export class ParaAPI {
   protected _tourGuideActions: Actions;
   protected _tourGuideNoSelfVoicing = true;
   protected _tourGuideSelfVoicingState!: boolean;
+  protected _batchUpdateTimeout: ReturnType<typeof setTimeout> | null = null;
+  protected _batchRecordCount = 0;
 
   constructor(protected _paraChart: ParaChart) {
     const paraView = _paraChart.paraView;
@@ -286,7 +290,38 @@ export class ParaAPI {
     this._tourGuideActions.playPauseMedia = () => {
       voicing.togglePaused();
     };
+
+    // this._enableLiveUpdateMonitor();
   }
+
+  // protected _enableLiveUpdateMonitor() {
+  //   const sleep = (msec: number) => {
+  //     return new Promise<void>((resolve, reject) => {
+  //       setTimeout(() => {
+  //         resolve();
+  //       }, msec);
+  //     });
+  //   };
+  //   (async () => {
+  //     while (true) {
+  //       await sleep(this._paraChart.paraState.config.ui.liveUpdateDelay*1000);
+  //       console.log('CHECKING');
+  //       if (this._batchRecords) {
+  //         console.log('RECORDS', this._batchRecords);
+  //         const concise = await this._paraChart.paraState.chartInfo.summarizer.getConciseSummary();
+  //         const announcement = `Live update: ${this._batchRecords} record${this._batchRecords > 1 ? 's' : ''} added. ${concise.text}`;
+  //         // Set batchRecords to 0 before we announce so that we don't miss any records that
+  //         // come in during the announcement
+  //         this._batchRecords = 0;
+  //         // const start = Date.now();
+  //         // await this._paraChart.paraView.ariaLiveRegion.voicing.speak(announcement, []);
+  //         // console.log('TIME', (Date.now() - start)/announcement.length);
+  //         this._paraChart.paraState.announce(announcement);
+  //         await sleep(announcement.length*MSEC_PER_CHAR);
+  //       }
+  //     }
+  //   })();
+  // }
 
   /** Enable the hotkey actions for tour guide mode. */
   enableTourGuideActions() {
@@ -359,6 +394,34 @@ export class ParaAPI {
   /** Add a record to the end of the chart and remove the first record. */
   async addRecord(pushPoints: Record<string, {x: string, y: string}>) {
     await this._slideWindow(pushPoints);
+    const sleep = (msec: number) => {
+      return new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+          resolve();
+        }, msec);
+      });
+    };
+    const liveUpdateDelayMs = this._paraChart.paraState.config.ui.liveUpdateDelay*1000;
+    this._batchRecordCount++;
+    if (this._batchUpdateTimeout === null) {
+      this._batchUpdateTimeout = setTimeout(async () => {
+        this._batchUpdateTimeout = null;
+        const concise = await this._paraChart.paraState.chartInfo.summarizer.getConciseSummary();
+        const announcement = `Live update: ${this._batchRecordCount} record${this._batchRecordCount > 1 ? 's' : ''} added. ${concise.text}`;
+        // Set batchRecords to 0 before we announce so that we don't miss any records that
+        // come in during the announcement
+        this._batchRecordCount = 0;
+        // const start = Date.now();
+        // await this._paraChart.paraView.ariaLiveRegion.voicing.speak(announcement, []);
+        // console.log('TIME', (Date.now() - start)/announcement.length);
+        this._paraChart.paraState.announce(announcement);
+        // NB: If a new record arrives while the announcement is being read,
+        // and `liveUpdateDelayMs` is < the time it takes to read the announcement,
+        // the new announcement will step on the older one. Taking the max below
+        // should mitigate the problem
+        await sleep(Math.max(announcement.length*MSEC_PER_CHAR, liveUpdateDelayMs));
+      }, liveUpdateDelayMs);
+    }
   }
 
   /** Remove the last record from the chart and add a new record to the start. */
