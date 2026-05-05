@@ -210,6 +210,7 @@ export class ParaState extends BaseState {
   @property() isSouthLegendHighlighted = false;
 
   @property() protected _caption: HighlightedSummary = { text: '', html: '' };
+  @property() protected _pinnedSeriesKey: string | null = null;
   @property() protected _dimmedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
   @property() protected data: AllSeriesData | null = null;
@@ -685,6 +686,20 @@ export class ParaState extends BaseState {
 
   clearAllSeriesDimming() {
     this._dimmedSeries = [];
+  }
+
+  get pinnedSeriesKey(): string | null {
+    return this._pinnedSeriesKey;
+  }
+
+  pinSeries(seriesKey: string) {
+    this._pinnedSeriesKey = seriesKey;
+    this.dimOtherSeries(seriesKey);
+  }
+
+  unpinSeries() {
+    this._pinnedSeriesKey = null;
+    this.clearAllSeriesDimming();
   }
 
   hideSeries(seriesKey: string) {

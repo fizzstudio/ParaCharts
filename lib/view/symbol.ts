@@ -111,6 +111,7 @@ export interface DataSymbolOptions {
   borderStrokeWidth: number;
   pointerEnter?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
+  click?: (e: MouseEvent) => void;
 }
 
 /**
@@ -162,7 +163,8 @@ export class DataSymbol extends View {
       blackBorder: options?.blackBorder ?? false,
       borderStrokeWidth: options?.borderStrokeWidth ?? 1,
       pointerEnter: options?.pointerEnter,
-      pointerLeave: options?.pointerLeave
+      pointerLeave: options?.pointerLeave,
+      click: options?.click
     };
     this.type = `${shape}.${fill}`;
     this._locOffset.x = this.width/2;
@@ -359,6 +361,7 @@ export class DataSymbol extends View {
         y=${shouldTransform ? nothing : this._y}
         @pointerenter=${this._options.pointerEnter ?? nothing}
         @pointerleave=${this._options.pointerLeave ?? nothing}
+        @click=${this._options.click ?? nothing}
         clip-path=${/*this._options.isClip ? 'url(#clip-path)' :*/ nothing}
       />
     `;
