@@ -4,6 +4,7 @@ import { ChartType } from '@fizz/paramanifest';
 import { type ParaState } from '../state';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, ScatterPointNavNodeOptions, SeriesNavNodeOptions } from '../view/layers/data/navigation';
 import { Datapoint, PlaneModel } from '@fizz/paramodel';
+import { DataSymbols } from '../view/symbol';
 
 
 export class ScatterChartInfo extends PointChartInfo {
@@ -21,6 +22,7 @@ export class ScatterChartInfo extends PointChartInfo {
       const cluster = async () => {
         this._paraState.clusterAnalyses = await this._generateClustering();
         (this._paraState.chartInfo as ScatterChartInfo)._clustering = this._paraState.clusterAnalyses;
+        this._paraView.documentView?.init();
       };
       cluster()
     }
@@ -163,5 +165,32 @@ export class ScatterChartInfo extends PointChartInfo {
     // the nav run timeout may end AFTER the latest render
     this._paraView.requestUpdate();
     super.navRunDidEnd(cursor, quiet)
+  }
+
+  legend() {
+    const model = this._paraState.model!;
+    const types = new DataSymbols().types;
+    if (model.multi || !this.clustering) {
+      const seriesKeys = [...model.seriesKeys];
+      if (this._paraState.config.legend.itemOrder === 'alphabetical') {
+        seriesKeys.sort();
+      }
+      return seriesKeys.map((key, i) => ({
+        label: model.atKey(key)!.getLabel(),
+        seriesKey: key,
+        color: this._paraState.seriesProperties!.properties(key).color,
+        symbol: types[i],
+        symbolOptions: { lighten: true }
+      }));
+    }
+    else {
+      return this.clustering.map((c, i) => ({
+        label: `cluster ${i + 1}`,
+        seriesKey: model.seriesKeys[0],
+        color: i,
+        symbol: types[i],
+        symbolOptions: { lighten: true }
+      }))
+    }
   }
 }

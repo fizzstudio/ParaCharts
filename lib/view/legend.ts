@@ -1,7 +1,7 @@
 
 import { View, Container } from './base_view';
 import { SimpleGridLayout, type Layout } from './layout';
-import { type DataSymbolType, DataSymbol } from './symbol';
+import { type DataSymbolType, DataSymbol, DataSymbolOptions } from './symbol';
 import { Label } from './label';
 import { type DeepReadonly, SettingsManager } from '../state';
 import { RectShape } from './shape/rect';
@@ -10,6 +10,7 @@ import { TemplateResult, svg } from 'lit';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { HIGHLIGHT_PADDING } from '../common';
 import { LegendConfig } from '../config/config_types';
+import { ScatterChartInfo } from '../chart_types';
 
 export type SeriesAttrs = {
   color: string;
@@ -20,6 +21,7 @@ export interface LegendItem {
   label: string;
   seriesKey: string;
   symbol?: DataSymbolType;
+  symbolOptions?: Partial<DataSymbolOptions>;
   color: number;
   datapointIndex?: number;
 }
@@ -81,11 +83,17 @@ export class Legend extends Container(View) {
         {
           color: item.color,
           pointerEnter: (e) => {
+            if ((this.paraview.paraState.chartInfo as ScatterChartInfo).clustering
+              && !this.paraview.paraState.model?.multi) {
+              this.paraview.paraState.dimOtherCluster(item.seriesKey, item.color)
+            }
             this.paraview.paraState.dimOtherSeries(item.seriesKey);
           },
           pointerLeave: (e) => {
             this.paraview.paraState.clearAllSeriesDimming();
-          }
+            this.paraview.paraState.clearAllPointsDimming();
+          },
+          lighten: item.symbolOptions?.lighten ?? false
         }
       ));
       views.push(new Label(this.paraview, {
@@ -95,10 +103,15 @@ export class Legend extends Container(View) {
         textAnchor: 'start',
         classList: ['legend-label'],
         pointerEnter: (e) => {
+          if ((this.paraview.paraState.chartInfo as ScatterChartInfo).clustering
+            && !this.paraview.paraState.model?.multi) {
+            this.paraview.paraState.dimOtherCluster(item.seriesKey, item.color)
+          }
           this.paraview.paraState.dimOtherSeries(item.seriesKey);
         },
         pointerLeave: (e) => {
           this.paraview.paraState.clearAllSeriesDimming();
+          this.paraview.paraState.clearAllPointsDimming();
         }
       }));
     });

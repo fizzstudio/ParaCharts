@@ -63,7 +63,7 @@ import { type DatapointCursor } from '../view/layers/data/navigation';
 import { Point } from '@fizz/chart-classifier-utils';
 import { PathShape } from '../view/shape';
 import { GlobalState } from './global_state';
-import { BaseChartInfo, chartInfoClasses } from '../chart_types';
+import { BaseChartInfo, chartInfoClasses, ScatterChartInfo } from '../chart_types';
 import { firstDataset, type Manifest } from '../loader/common';
 import { clusterObject } from '@fizz/clustering';
 import { ClusterShellView } from '../view/layers';
@@ -221,6 +221,7 @@ export class ParaState extends BaseState {
   protected _prevVisitedDatapoints = new Set<string>();
   protected _everVisitedDatapoints = new Set<string>();
   @property() protected _highlightedDatapoints = new Set<string>();
+  @property() protected _lowlightedDatapoints = new Set<string>();
   _prevHighlightedElements = new Set<string>();
   @property() protected _selectedDatapoints = new Set<string>();
   @property() protected _crosshairedDatapoints = new Set<string>();
@@ -359,7 +360,7 @@ export class ParaState extends BaseState {
         if (generatedSummary !== undefined) {
           this._caption = generatedSummary;
         } else {
-          this._caption = {text: '', html: ''};
+          this._caption = { text: '', html: '' };
         }
       }
     }
@@ -588,7 +589,7 @@ export class ParaState extends BaseState {
     if (this._model instanceof PlaneModel) {
       this._model.seriesKeys.forEach(async (seriesKey) => {
         this.seriesAnalyses = {
-          [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey, {maxError: maxError, maxSegments: maxSegments, extremumWeight: extremumWeight}),
+          [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey, { maxError: maxError, maxSegments: maxSegments, extremumWeight: extremumWeight }),
           ...this.seriesAnalyses
         };
       });
@@ -683,8 +684,19 @@ export class ParaState extends BaseState {
     this._dimmedSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
   }
 
+  dimOtherCluster(seriesKey: string, index: number) {
+    const chartInfo = this.chartInfo as ScatterChartInfo;
+    const otherDatapoints = chartInfo._clustering!.filter(c => c.id !== index).map(
+      c => { return [...c.dataPointIDs, ...c.outlierIDs] }).flat();
+    otherDatapoints.map(id => this.lowlightDatapoint(seriesKey, id))
+  }
+
   clearAllSeriesDimming() {
     this._dimmedSeries = [];
+  }
+
+  clearAllPointsDimming() {
+    this._lowlightedDatapoints = new Set();
   }
 
   hideSeries(seriesKey: string) {
@@ -830,6 +842,10 @@ export class ParaState extends BaseState {
     return this._highlightedDatapoints;
   }
 
+  get lowlightedDatapoints() {
+    return this._lowlightedDatapoints;
+  }
+
   highlightDatapoint(seriesKey: string, index: number) {
     this._highlightedDatapoints = new Set([
       ...this._highlightedDatapoints.values(),
@@ -880,6 +896,23 @@ export class ParaState extends BaseState {
   isDatapointHighlighted(seriesKey: string, index: number): boolean {
     return this._highlightedDatapoints.has(makeDatapointId(seriesKey, index));
   }
+
+  isDatapointLowlighted(seriesKey: string, index: number): boolean {
+    return this._lowlightedDatapoints.has(makeDatapointId(seriesKey, index));
+  }
+
+  lowlightDatapoint(seriesKey: string, index: number) {
+    this._lowlightedDatapoints.add(
+      makeDatapointId(seriesKey, index)
+    );
+  }
+
+  clearDatapointLowlight(seriesKey: string, index: number) {
+    this._lowlightedDatapoints = new Set(
+      [...this._lowlightedDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
+    );
+  }
+
 
   clearAllDatapointHighlights() {
     this._highlightedDatapoints = new Set();

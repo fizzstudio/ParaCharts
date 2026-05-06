@@ -43,7 +43,7 @@ export class SeriesView extends Container(DataView) {
   get classInfo(): ClassInfo {
     return {
       series: true,
-      lowlight: this.paraview.paraState.isSeriesDimmed(this._series.key),
+      lowlighted: this.paraview.paraState.isSeriesDimmed(this._series.key),
       hidden: this.paraview.paraState.isSeriesHidden(this._series.key)
     };
   }

@@ -135,7 +135,8 @@ export class DatapointView extends DataView {
       datapoint: true,
       visited: this.paraview.paraState.isVisited(this.seriesKey, index),
       selected: this.paraview.paraState.isSelected(this.seriesKey, index),
-      highlighted: this.paraview.paraState.isDatapointHighlighted(this.seriesKey, index)
+      highlighted: this.paraview.paraState.isDatapointHighlighted(this.seriesKey, index),
+      lowlighted: this.paraview.paraState.isDatapointLowlighted(this.seriesKey, index)
     };
   }
 

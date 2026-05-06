@@ -299,14 +299,11 @@ export class ParaView extends ParaComponent implements ViewContext {
         fill: var(--highlighted-color);
         stroke-width: var(--visited-stroke-width); */
       }
-      .lowlight {
+      .lowlighted {
         opacity: 0.20;
       }
       .hidden {
         display: none;
-      }
-      .invis {
-        opacity: 0;
       }
       .popup-box {
         filter: drop-shadow(3px 3px 5px #333);
