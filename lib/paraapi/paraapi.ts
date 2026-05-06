@@ -18,7 +18,7 @@ import { PlaneModel, type Datapoint } from '@fizz/paramodel';
 
 import { ORIENTATION_SENTENCES, PASTRY_ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
-import { CardinalDirection, Direction, makeSequenceId, Setting, SettingsInput, SettingsManager } from '../state';
+import { CardinalDirection, Direction, HotkeyEvent, makeSequenceId, Setting, SettingsInput, SettingsManager } from '../state';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 import explainers from '../explainers';
 import type { DatapointManifest, Manifest } from '@fizz/paramanifest';
@@ -26,8 +26,6 @@ import { ConfigSetting } from '../config/config_types';
 import { ConfigGroupMetadata, ConfigGroupSettingsMetadata, configMetadata, ConfigSettingMetadata } from '../config/config_metadata';
 
 type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMap) => void | Promise<void>) };
-
-const MSEC_PER_CHAR = 59;
 
 /**
  * Perform various operations on a ParaChart.
@@ -38,8 +36,8 @@ export class ParaAPI {
   protected _tourGuideActions: Actions;
   protected _tourGuideNoSelfVoicing = true;
   protected _tourGuideSelfVoicingState!: boolean;
-  protected _batchUpdateTimeout: ReturnType<typeof setTimeout> | null = null;
-  protected _batchRecordCount = 0;
+  protected _liveUpdateRecordCount = 0;
+  protected _liveUpdateWaiting = false;
 
   constructor(protected _paraChart: ParaChart) {
     const paraView = _paraChart.paraView;
@@ -290,38 +288,7 @@ export class ParaAPI {
     this._tourGuideActions.playPauseMedia = () => {
       voicing.togglePaused();
     };
-
-    // this._enableLiveUpdateMonitor();
   }
-
-  // protected _enableLiveUpdateMonitor() {
-  //   const sleep = (msec: number) => {
-  //     return new Promise<void>((resolve, reject) => {
-  //       setTimeout(() => {
-  //         resolve();
-  //       }, msec);
-  //     });
-  //   };
-  //   (async () => {
-  //     while (true) {
-  //       await sleep(this._paraChart.paraState.config.ui.liveUpdateDelay*1000);
-  //       console.log('CHECKING');
-  //       if (this._batchRecords) {
-  //         console.log('RECORDS', this._batchRecords);
-  //         const concise = await this._paraChart.paraState.chartInfo.summarizer.getConciseSummary();
-  //         const announcement = `Live update: ${this._batchRecords} record${this._batchRecords > 1 ? 's' : ''} added. ${concise.text}`;
-  //         // Set batchRecords to 0 before we announce so that we don't miss any records that
-  //         // come in during the announcement
-  //         this._batchRecords = 0;
-  //         // const start = Date.now();
-  //         // await this._paraChart.paraView.ariaLiveRegion.voicing.speak(announcement, []);
-  //         // console.log('TIME', (Date.now() - start)/announcement.length);
-  //         this._paraChart.paraState.announce(announcement);
-  //         await sleep(announcement.length*MSEC_PER_CHAR);
-  //       }
-  //     }
-  //   })();
-  // }
 
   /** Enable the hotkey actions for tour guide mode. */
   enableTourGuideActions() {
@@ -394,6 +361,7 @@ export class ParaAPI {
   /** Add a record to the end of the chart and remove the first record. */
   async addRecord(pushPoints: Record<string, {x: string, y: string}>) {
     await this._slideWindow(pushPoints);
+    //if (!this._paraChart.hasFocus) return;
     const sleep = (msec: number) => {
       return new Promise<void>((resolve, reject) => {
         setTimeout(() => {
@@ -401,26 +369,35 @@ export class ParaAPI {
         }, msec);
       });
     };
+    const waitKey = (key: string) => {
+      return new Promise<void>((resolve, reject) => {
+        this._paraChart.paraState.keymapManager.addEventListener('hotkeypress', (ev: HotkeyEvent) => {
+          if (ev.key === key) {
+            resolve();
+          }
+        });
+      });
+    };
     const liveUpdateDelayMs = this._paraChart.paraState.config.ui.liveUpdateDelay*1000;
-    this._batchRecordCount++;
-    if (this._batchUpdateTimeout === null) {
-      this._batchUpdateTimeout = setTimeout(async () => {
-        this._batchUpdateTimeout = null;
+    this._liveUpdateRecordCount++;
+    if (!this._liveUpdateWaiting) {
+      while (this._liveUpdateRecordCount) {
+        this._liveUpdateWaiting = true;
         const concise = await this._paraChart.paraState.chartInfo.summarizer.getConciseSummary();
-        const announcement = `Live update: ${this._batchRecordCount} record${this._batchRecordCount > 1 ? 's' : ''} added. ${concise.text}`;
-        // Set batchRecords to 0 before we announce so that we don't miss any records that
-        // come in during the announcement
-        this._batchRecordCount = 0;
-        // const start = Date.now();
-        // await this._paraChart.paraView.ariaLiveRegion.voicing.speak(announcement, []);
-        // console.log('TIME', (Date.now() - start)/announcement.length);
-        this._paraChart.paraState.announce(announcement);
-        // NB: If a new record arrives while the announcement is being read,
-        // and `liveUpdateDelayMs` is < the time it takes to read the announcement,
-        // the new announcement will step on the older one. Taking the max below
-        // should mitigate the problem
-        await sleep(Math.max(announcement.length*MSEC_PER_CHAR, liveUpdateDelayMs));
-      }, liveUpdateDelayMs);
+        const announcement = `Live update: ${this._liveUpdateRecordCount} record${this._liveUpdateRecordCount > 1 ? 's' : ''} added. ${concise.text}`;
+        this._liveUpdateRecordCount = 0;
+        if (this._paraChart.paraState.config.ui.isVoicingEnabled) {
+          await this._paraChart.paraView.ariaLiveRegion.voicing.speak(announcement, []);
+          await sleep(liveUpdateDelayMs);
+        } else {
+          this._paraChart.paraState.announce(announcement + ' Press spacebar for next update.');
+          // Await spacebar OR ui.isVoicingEnabled becoming true
+          await Promise.any([
+            waitKey(' '),
+            this._paraChart.paraState.waitForSetting('ui.isVoicingEnabled', true)]);
+        }
+        this._liveUpdateWaiting = false;
+      }
     }
   }
 

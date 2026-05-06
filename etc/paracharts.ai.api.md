@@ -462,6 +462,10 @@ export class ParaAPI {
     highlightVerticalAxis(): void;
     highlightWestLegend(): void;
     // (undocumented)
+    protected _liveUpdateRecordCount: number;
+    // (undocumented)
+    protected _liveUpdateWaiting: boolean;
+    // (undocumented)
     get paraChart(): ParaChart;
     // Warning: (ae-forgotten-export) The symbol "ParaChart" needs to be exported by the entry point index-ai.d.ts
     //

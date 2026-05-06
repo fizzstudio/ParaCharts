@@ -83,6 +83,7 @@ export class Legend extends Container(View) {
         {
           color: item.color,
           pointerEnter: (e) => {
+            if (this.paraview.paraState.pinnedSeriesKey !== null) return;
             if ((this.paraview.paraState.chartInfo as ScatterChartInfo).clustering
               && !this.paraview.paraState.model?.multi) {
               this.paraview.paraState.dimOtherCluster(item.seriesKey, item.color)
@@ -90,10 +91,19 @@ export class Legend extends Container(View) {
             this.paraview.paraState.dimOtherSeries(item.seriesKey);
           },
           pointerLeave: (e) => {
+            if (this.paraview.paraState.pinnedSeriesKey !== null) return;
             this.paraview.paraState.clearAllSeriesDimming();
             this.paraview.paraState.clearAllPointsDimming();
           },
           lighten: item.symbolOptions?.lighten ?? false
+          ,
+          click: (e) => {
+            if (this.paraview.paraState.pinnedSeriesKey === item.seriesKey) {
+              this.paraview.paraState.unpinSeries();
+            } else {
+              this.paraview.paraState.pinSeries(item.seriesKey);
+            }
+          }
         }
       ));
       views.push(new Label(this.paraview, {
@@ -103,6 +113,8 @@ export class Legend extends Container(View) {
         textAnchor: 'start',
         classList: ['legend-label'],
         pointerEnter: (e) => {
+
+          if (this.paraview.paraState.pinnedSeriesKey !== null) return;
           if ((this.paraview.paraState.chartInfo as ScatterChartInfo).clustering
             && !this.paraview.paraState.model?.multi) {
             this.paraview.paraState.dimOtherCluster(item.seriesKey, item.color)
@@ -110,8 +122,16 @@ export class Legend extends Container(View) {
           this.paraview.paraState.dimOtherSeries(item.seriesKey);
         },
         pointerLeave: (e) => {
+          if (this.paraview.paraState.pinnedSeriesKey !== null) return;
           this.paraview.paraState.clearAllSeriesDimming();
           this.paraview.paraState.clearAllPointsDimming();
+        },
+        click: (e) => {
+          if (this.paraview.paraState.pinnedSeriesKey === item.seriesKey) {
+            this.paraview.paraState.unpinSeries();
+          } else {
+            this.paraview.paraState.pinSeries(item.seriesKey);
+          }
         }
       }));
     });

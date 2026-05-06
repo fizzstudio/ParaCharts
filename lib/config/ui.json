@@ -65,7 +65,7 @@
             "label": "Live update delay",
             "description": "Delay in seconds between live update announcements",
             "type": "number",
-            "default": 10,
+            "default": 1,
             "advanced": false,
             "keywords": ["audio", "liveupdate"]
         },
