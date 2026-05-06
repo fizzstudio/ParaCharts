@@ -19,6 +19,12 @@ export interface ParaStateCallbacks {
   onSettingChange?: (path: string, oldValue?: Setting, newValue?: Setting) => void;
 }
 
+interface WaitSettingRecord {
+  value: Setting;
+  promise: Promise<void>;
+  resolve: () => void;
+}
+
 /**
  *
  */
@@ -29,6 +35,7 @@ export abstract class BaseState extends State {
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
   protected log: Logger = getLogger("ParaState");
   protected callbacks: ParaStateCallbacks = {};
+  protected _waitedSettings: { [path: string]: WaitSettingRecord } = {};
 
   registerCallbacks(callbacks: ParaStateCallbacks) {
     this.callbacks = { ...this.callbacks, ...callbacks };
@@ -36,6 +43,10 @@ export abstract class BaseState extends State {
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
     this.callbacks.onSettingChange?.(path, oldValue, newValue);
+    if (this._waitedSettings[path] && this._waitedSettings[path].value === newValue) {
+      this._waitedSettings[path].resolve();
+      delete this._waitedSettings[path];
+    }
   }
 
   requestUpdate() {
@@ -48,5 +59,17 @@ export abstract class BaseState extends State {
 
   postNotice(key: string, value: any) {
     this.callbacks.onNotice?.(key, value);
+  }
+
+  waitForSetting(path: string, value: Setting): Promise<void> {
+    if (SettingsManager.get(path, this.config) === value) Promise.resolve();
+    if (this._waitedSettings[path]) {
+      return this._waitedSettings[path].promise;
+    }
+    const prom = new Promise<void>((resolve, reject) => {
+      this._waitedSettings[path] = {value, resolve} as WaitSettingRecord;
+    });
+    (this._waitedSettings[path] as WaitSettingRecord).promise = prom;
+    return prom;
   }
 }
