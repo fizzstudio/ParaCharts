@@ -462,6 +462,10 @@ export class ParaAPI {
     highlightVerticalAxis(): void;
     highlightWestLegend(): void;
     // (undocumented)
+    protected _liveUpdateRecordCount: number;
+    // (undocumented)
+    protected _liveUpdateWaiting: boolean;
+    // (undocumented)
     get paraChart(): ParaChart;
     // (undocumented)
     protected _paraChart: ParaChart;
@@ -541,6 +545,10 @@ export class ParaChart extends ParaComponent {
     protected firstUpdated(_changedProperties: PropertyValues): void;
     // (undocumented)
     accessor forcecharttype: ChartType_3 | undefined;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    protected _hasFocus: boolean;
     // (undocumented)
     headless: boolean;
     // (undocumented)
