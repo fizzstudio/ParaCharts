@@ -387,10 +387,6 @@ export class ParaAPI {
     }>): Promise<void>;
     // (undocumented)
     addTrendLine(): void;
-    // (undocumented)
-    protected _batchRecordCount: number;
-    // (undocumented)
-    protected _batchUpdateTimeout: ReturnType<typeof setTimeout> | null;
     // Warning: (ae-forgotten-export) The symbol "BaseChartInfo" needs to be exported by the entry point index-ai.d.ts
     //
     // (undocumented)
@@ -465,6 +461,10 @@ export class ParaAPI {
     highlightTitle(): void;
     highlightVerticalAxis(): void;
     highlightWestLegend(): void;
+    // (undocumented)
+    protected _liveUpdateRecordCount: number;
+    // (undocumented)
+    protected _liveUpdateWaiting: boolean;
     // (undocumented)
     get paraChart(): ParaChart;
     // Warning: (ae-forgotten-export) The symbol "ParaChart" needs to be exported by the entry point index-ai.d.ts

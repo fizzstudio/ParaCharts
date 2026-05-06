@@ -79,7 +79,7 @@ export const defaultConfig: Config = {
       isTourGuidePaused: false,
       isAnnouncementEnabled: true,
       speechRate: 1,
-      liveUpdateDelay: 10,
+      liveUpdateDelay: 1,
       isFullscreenEnabled: false,
       isLowVisionModeEnabled: false,
       isFocusRingEnabled: false,

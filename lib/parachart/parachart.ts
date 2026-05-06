@@ -85,6 +85,7 @@ export class ParaChart extends ParaComponent {
   // allow _scrollyteller to be cleared with undefined after destroy() ===
   protected _scrollyteller: Scrollyteller | undefined;
   protected _tourBus: TourBus;
+  protected _hasFocus = false;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -239,6 +240,10 @@ export class ParaChart extends ParaComponent {
 
   get paraState() {
     return this._paraState;
+  }
+
+  get hasFocus() {
+    return this._hasFocus;
   }
 
   clearAriaLive() {
@@ -451,6 +456,12 @@ export class ParaChart extends ParaComponent {
           colormode=${this._paraState?.config.color.colorVisionMode ?? nothing}
           ?scalable=${this.scalable}
           ?disableFocus=${this.headless}
+          @focus=${() => {
+            this._hasFocus = true;
+          }}
+          @blur=${() => {
+            this._hasFocus = false;
+          }}
         ></para-view>
         ${!(this.headless || this._paraState.config.chart.isStatic)
           ? html`
@@ -459,12 +470,24 @@ export class ParaChart extends ParaComponent {
             .globalState=${this._globalState}
             style=${styleMap(cpanelStyles)}
             .paraChart=${this}
+            @focus=${() => {
+              this._hasFocus = true;
+            }}
+            @blur=${() => {
+              this._hasFocus = false;
+            }}
           ></para-data-table>
             <para-control-panel
               ${ref(this._controlPanelRef)}
               style=${styleMap(cpanelStyles)}
               .paraChart=${this}
               .globalState=${this._globalState}
+              @focus=${() => {
+                this._hasFocus = true;
+              }}
+              @blur=${() => {
+                this._hasFocus = false;
+              }}
             ></para-control-panel>`
           : ''
         }
