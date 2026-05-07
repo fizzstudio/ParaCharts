@@ -187,5 +187,14 @@
         }
       }
     ]
+  },
+  "extensions": {
+    "paracharts": {
+      "settings": {
+        "color.custom1": "red",
+        "color.custom2": "cyan",
+        "color.colorPalette": "custom"
+      }
+    }
   }
 }

@@ -95,6 +95,22 @@ export interface ColorConfig extends ConfigGroup {
   colorPalette: string;
   /** Comma-separated list of custom color names */
   colorMap: string;
+  /** Custom color 1 */
+  custom1: string;
+  /** Custom color 2 */
+  custom2: string;
+  /** Custom color 3 */
+  custom3: string;
+  /** Custom color 4 */
+  custom4: string;
+  /** Custom color 5 */
+  custom5: string;
+  /** Custom color 6 */
+  custom6: string;
+  /** Custom color 7 */
+  custom7: string;
+  /** Custom color 8 */
+  custom8: string;
 }
 export interface LegendConfig extends ConfigGroup {
   /** Draw chart legend */
