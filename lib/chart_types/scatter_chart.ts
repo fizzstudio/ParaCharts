@@ -90,6 +90,7 @@ export class ScatterChartInfo extends PointChartInfo {
     const seriesClusterNodes: NavNode<'cluster'>[][] = [];
     const isMultiSeries = this._navMap!.root.query('series').length > 0 ? true : false;
     const seriesNodes = isMultiSeries ? this._navMap!.root.query('series') : this._navMap!.root.query('top');
+    let left = this._navMap!.root.get('top')!;
     seriesNodes.forEach((seriesNode, seriesIndex) => {
       if (seriesClusterNodes.length) {
         seriesNode.connect('left', seriesClusterNodes.at(-1)!.at(-1)!);
@@ -133,6 +134,9 @@ export class ScatterChartInfo extends PointChartInfo {
           // non-reciprocal 'out' links from remaining datapoints to cluster
           node.connect('out', clusterNode, false);
           (node!.options as ScatterPointNavNodeOptions).cluster = clusterNode.index;
+          node.disconnect("left", false);
+          node.connect("left", left);
+          left = node;
         }
         if (clusterNode.peekNode('right', 1)) {
           // We aren't on the last cluster, so the final datapoint is a boundary point.
