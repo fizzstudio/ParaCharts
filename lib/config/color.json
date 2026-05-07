@@ -53,7 +53,46 @@
             "type": "string",
             "default": "",
             "advanced": true
+        },
+        "custom1": {
+            "description": "Custom color 1",
+            "type": "string",
+            "default": ""
+        },
+        "custom2": {
+            "description": "Custom color 2",
+            "type": "string",
+            "default": ""
+        },
+        "custom3": {
+            "description": "Custom color 3",
+            "type": "string",
+            "default": ""
+        },
+        "custom4": {
+            "description": "Custom color 4",
+            "type": "string",
+            "default": ""
+        },
+        "custom5": {
+            "description": "Custom color 5",
+            "type": "string",
+            "default": ""
+        },
+        "custom6": {
+            "description": "Custom color 6",
+            "type": "string",
+            "default": ""
+        },
+        "custom7": {
+            "description": "Custom color 7",
+            "type": "string",
+            "default": ""
+        },
+        "custom8": {
+            "description": "Custom color 8",
+            "type": "string",
+            "default": ""
         }
-
     }
 }

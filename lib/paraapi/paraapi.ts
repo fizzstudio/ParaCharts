@@ -113,7 +113,7 @@ export class ParaAPI {
       },
       /** Toggle trend navigation mode. */
       toggleTrendNavigationMode() {
-        paraView.paraState.updateSettings(draft => {
+        paraView.paraState.updateConfig(draft => {
           draft.type.line.isTrendNavigationModeEnabled = !draft.type.line.isTrendNavigationModeEnabled;
           const endisable = draft.type.line.isTrendNavigationModeEnabled ? 'enable' : 'disable';
           paraView.paraState.announce(`Trend navigation ${endisable + 'd'}`);
@@ -766,14 +766,14 @@ export class ParaAPI {
   }
 
   addTrendLine() {
-    this.paraChart.paraState.updateSettings(draft => {
+    this.paraChart.paraState.updateConfig(draft => {
       draft.type.scatter.isShowTrendLine = true;
     });
   }
 
 
   removeTrendLine() {
-    this.paraChart.paraState.updateSettings(draft => {
+    this.paraChart.paraState.updateConfig(draft => {
       draft.type.scatter.isShowTrendLine = false;
     });
   }

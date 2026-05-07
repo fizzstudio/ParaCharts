@@ -32,6 +32,7 @@ export class ColorsPanel extends ControlPanelTabPanel {
     const colorPalettes = this._paraState.colors.palettes
       .filter(palette => !palette.cvd)
       .map(palette => palette.key);
+    colorPalettes.push('custom');
 
     this._paraState.settingControls.insert('color.isDarkModeEnabled');
     this._paraState.settingControls.insert('color.contrastLevel');

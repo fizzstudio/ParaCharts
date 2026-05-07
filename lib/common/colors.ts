@@ -937,11 +937,63 @@ export class Colors {
   }
 
   get palette() {
-    const palette = this.palettes[this.indexOfPalette(this.paletteKey)];
+    const palette = this.paletteKey === 'custom'
+      ? this._makeCustomPalette()
+      : this.palettes[this.indexOfPalette(this.paletteKey)];
     if (palette) {
       return palette;
     }
     throw new Error(`no palette named '${this.paletteKey}'`);
+  }
+
+  protected _makeCustomPalette(): Palette {
+    const pal = {
+      key: 'custom',
+      title: 'custom',
+      colors: [
+        {
+          value: this._paraState.config.color.custom1 || this.palettes[0].colors[0].value,
+          name: 'custom-1'
+        },
+        {
+          value: this._paraState.config.color.custom2 || this.palettes[0].colors[1].value,
+          name: 'custom-2'
+        },
+        {
+          value: this._paraState.config.color.custom3 || this.palettes[0].colors[2].value,
+          name: 'custom-3'
+        },
+        {
+          value: this._paraState.config.color.custom4 || this.palettes[0].colors[3].value,
+          name: 'custom-4'
+        },
+        {
+          value: this._paraState.config.color.custom5 || this.palettes[0].colors[4].value,
+          name: 'custom-5'
+        },
+        {
+          value: this._paraState.config.color.custom6 || this.palettes[0].colors[5].value,
+          name: 'custom-6'
+        },
+        {
+          value: this._paraState.config.color.custom7 || this.palettes[0].colors[6].value,
+          name: 'custom-7'
+        },
+        {
+          value: this._paraState.config.color.custom8 || this.palettes[0].colors[7].value,
+          name: 'custom-8'
+        },
+        {
+          value: 'cyan',
+          name: 'highlight'
+        },
+        {
+          value: 'hsl(0, 100%, 50%)',
+          name: 'visit'
+        }
+      ]
+    };
+    return pal;
   }
 
   get prevSelectedColor() {

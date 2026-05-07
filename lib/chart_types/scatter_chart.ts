@@ -35,18 +35,8 @@ export class ScatterChartInfo extends PointChartInfo {
 
   protected _addSettingControls(): void {
     super._addSettingControls();
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'type.scatter.isShowTrendLine',
-      label: 'Trend line',
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'type.scatter.isShowOutliers',
-      label: 'Show outliers',
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
+    this._paraState.settingControls.insert('type.scatter.isShowTrendLine');
+    this._paraState.settingControls.insert('type.scatter.isShowOutliers');
   }
 
   get clustering() {

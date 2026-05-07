@@ -1028,7 +1028,7 @@ export class ParaState extends BaseState {
     this.isWestLegendHighlighted = false;
     this.isNorthLegendHighlighted = false;
     this.isSouthLegendHighlighted = false;
-    this.updateSettings(draft => {
+    this.updateConfig(draft => {
       draft.type.scatter.isShowTrendLine = false
     });
   }

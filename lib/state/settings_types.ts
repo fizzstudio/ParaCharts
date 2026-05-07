@@ -318,54 +318,6 @@ export type BarClusterMode = 'facet';
 export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
 
 /** @public */
-export interface BarSettings extends PlaneChartSettings {
-  /** How bars are stacked */
-  stacking: 'none' | 'standard' | string; // | '100%';
-  /** Width of individual bars */
-  barWidth: number;
-  /** Color each bar individually vs by series */
-  colorByDatapoint: boolean;
-  /** Show total value labels on stacked bars */
-  isDrawTotalLabels: boolean;
-  /** Gap between total value labels and stacks */
-  totalLabelGap: number;
-  /** Gap between stack labels and bars */
-  stackLabelGap: number;
-  /** Show record name labels */
-  isDrawRecordLabels: boolean;
-  /** Show data value labels on bars */
-  isDrawDataLabels: boolean;
-  /** Position of data value labels */
-  dataLabelPosition: BarDataLabelPosition;
-  /** How to cluster related bars */
-  clusterBy?: BarClusterMode;
-  /** Field to sort bars by */
-  orderBy?: string;
-  /** Gap between bar clusters */
-  clusterGap: number;
-  /** Gap between individual bars */
-  barGap: number;
-  /** Gap inside stacked bars */
-  stackInsideGap: number;
-  /** Abbreviate series names */
-  isAbbrevSeries: boolean;
-  /** Format for cluster labels */
-  clusterLabelFormat: LabelFormat;
-  /** Width of bar outlines */
-  lineWidth: number;
-  /** Enable popup tooltips */
-  isShowPopups: boolean;
-  /** Font size for bar labels */
-  labelFontSize: string;
-}
-
-/** Lollipop chart settings (extends bar settings)
- * @public
- */
-export interface LollipopSettings extends BarSettings {
-}
-
-/** @public */
 export interface WaterfallSettings extends PlaneChartSettings {
   /** Width of waterfall bars */
   barWidth: number;
@@ -404,39 +356,7 @@ export interface VennSettings extends SettingGroup {
 }
 
 /** @public */
-export interface PointSettings extends PlaneChartSettings {
-  /** Format for individual point labels */
-  pointLabelFormat: LabelFormat;
-  /** Size of selected point marker */
-  selectedPointMarkerSize: Size2d;
-}
-
-/** @public */
-export interface LineSettings extends PointSettings {
-  /** Width of line strokes */
-  lineWidth: number;
-  /** Maximum line width */
-  lineWidthMax: number;
-  /** Line width in low vision mode */
-  lowVisionLineWidth: number;
-  /** Scale factor for highlighted lines */
-  lineHighlightScale: number;
-  /** Base size for point symbols */
-  baseSymbolSize: number;
-  /** Padding around series labels */
-  seriesLabelPadding: number; // also used after leader lines
-  /** Length of leader lines to labels */
-  leaderLineLength: number;
-  /** Always show series labels regardless of space */
-  isAlwaysShowSeriesLabel?: boolean;
-  /** Enable popup tooltips */
-  isShowPopups: boolean;
-  /** Enable trend-following navigation mode */
-  isTrendNavigationModeEnabled: boolean;
-}
-
-/** @public */
-export interface StepLineSettings extends PointSettings {
+export interface StepLineSettings extends PlaneChartSettings {
   /** Width of step line strokes */
   lineWidth: number;
   /** Maximum line width */
@@ -452,15 +372,7 @@ export interface StepLineSettings extends PointSettings {
 }
 
 /** @public */
-export interface ScatterSettings extends PointSettings {
-  /** Draw trend/regression line */
-  isShowTrendLine: boolean;
-  /** Highlight statistical outliers */
-  isShowOutliers: boolean;
-}
-
-/** @public */
-export interface HeatmapSettings extends PointSettings {
+export interface HeatmapSettings extends PlaneChartSettings {
   /** Grid resolution for heat map */
   resolution: number;
 }
@@ -468,7 +380,7 @@ export interface HeatmapSettings extends PointSettings {
 /** Histogram chart settings
  * @public
  */
-export interface HistogramSettings extends PointSettings {
+export interface HistogramSettings extends PlaneChartSettings {
   /** Number of bins for grouping data */
   bins: number;
   /** Which axis shows the histogram bars */
@@ -485,22 +397,12 @@ export interface HistogramSettings extends PointSettings {
  * @public
  */
 export interface ChartTypeSettings extends SettingGroup {
-  /** Bar chart settings */
-  bar: BarSettings;
-  /** Column chart settings */
-  column: BarSettings;
-  /** Line chart settings */
-  line: LineSettings;
-  /** Scatter plot settings */
-  scatter: ScatterSettings;
   /** Histogram settings */
   histogram: HistogramSettings;
   /** Heat map settings */
   heatmap: HeatmapSettings;
   /** Step line chart settings */
   stepline: StepLineSettings;
-  /** Lollipop chart settings */
-  lollipop: LollipopSettings;
   /** Waterfall chart settings */
   waterfall: WaterfallSettings;
   /** Venn diagram settings */
