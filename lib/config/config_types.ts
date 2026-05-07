@@ -221,7 +221,7 @@ export interface ChartTitleConfig extends ConfigGroup {
   margin: number;
   /** The font size of the chart title, as a CSS font size string. */
   fontSize: string;
-  /** None */
+  /** The title alignment */
   align: SnapLocation;
   /** The position of the chart title (either 'top' or 'bottom'). */
   position: 'top' | 'bottom';
@@ -255,10 +255,41 @@ export interface UiConfig extends ConfigGroup {
   navRunTimeoutMs: number;
 }
 export interface TypeConfig extends ConfigGroup {
+  line: TypeLineConfig;
   donut: TypeDonutConfig;
   pie: TypePieConfig;
 }
+export interface TypeLineConfig extends TypePlaneConfig {
+  /** Width of line strokes */
+  lineWidth: number;
+  /** Maximum line width */
+  lineWidthMax: number;
+  /** Line width in low vision mode */
+  lowVisionLineWidth: number;
+  /** Scale factor for highlighted lines */
+  lineHighlightScale: number;
+  /** Padding around series labels */
+  seriesLabelPadding: number;
+  /** Length of leader lines to labels */
+  leaderLineLength: number;
+  /** Always show series labels regardless of space */
+  isAlwaysShowSeriesLabel: boolean;
+  /** Enable trend-following navigation mode */
+  isTrendNavigationModeEnabled: boolean;
+}
+export interface TypePlaneConfig extends ConfigGroup {
+  /** Minimum Y value override */
+  minYValue: number | 'unset';
+  /** Maximum Y value override */
+  maxYValue: number | 'unset';
+}
 export interface TypeDonutConfig extends TypePastryConfig {
+  outsideLabels: TypeDonutOutsidelabelsConfig;
+  insideLabels: TypeDonutInsidelabelsConfig;
+}
+export interface TypeDonutOutsidelabelsConfig extends TypePastryOutsidelabelsConfig {
+}
+export interface TypeDonutInsidelabelsConfig extends TypePastryInsidelabelsConfig {
 }
 export interface TypePastryConfig extends ConfigGroup {
   /** Thickness of donut/gauge ring */
@@ -303,6 +334,12 @@ export interface TypePastryInsidelabelsConfig extends ConfigGroup {
   contents: string;
 }
 export interface TypePieConfig extends TypePastryConfig {
+  outsideLabels: TypePieOutsidelabelsConfig;
+  insideLabels: TypePieInsidelabelsConfig;
+}
+export interface TypePieOutsidelabelsConfig extends TypePastryOutsidelabelsConfig {
+}
+export interface TypePieInsidelabelsConfig extends TypePastryInsidelabelsConfig {
 }
 export interface GridConfig extends ConfigGroup {
   /** Draw horizontal grid lines */

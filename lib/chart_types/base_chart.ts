@@ -114,6 +114,10 @@ export abstract class BaseChartInfo {
     return SettingsManager.getGroupLink(this.managedSettingKeys[0], this._paraState.settings);
   }
 
+  get config(): DeepReadonly<PlotSettings> {
+    return SettingsManager.getGroupLink(this.managedSettingKeys[0], this._paraState.config);
+  }
+
   get navMap() {
     return this._navMap;
   }

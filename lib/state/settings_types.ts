@@ -404,39 +404,7 @@ export interface VennSettings extends SettingGroup {
 }
 
 /** @public */
-export interface PointSettings extends PlaneChartSettings {
-  /** Format for individual point labels */
-  pointLabelFormat: LabelFormat;
-  /** Size of selected point marker */
-  selectedPointMarkerSize: Size2d;
-}
-
-/** @public */
-export interface LineSettings extends PointSettings {
-  /** Width of line strokes */
-  lineWidth: number;
-  /** Maximum line width */
-  lineWidthMax: number;
-  /** Line width in low vision mode */
-  lowVisionLineWidth: number;
-  /** Scale factor for highlighted lines */
-  lineHighlightScale: number;
-  /** Base size for point symbols */
-  baseSymbolSize: number;
-  /** Padding around series labels */
-  seriesLabelPadding: number; // also used after leader lines
-  /** Length of leader lines to labels */
-  leaderLineLength: number;
-  /** Always show series labels regardless of space */
-  isAlwaysShowSeriesLabel?: boolean;
-  /** Enable popup tooltips */
-  isShowPopups: boolean;
-  /** Enable trend-following navigation mode */
-  isTrendNavigationModeEnabled: boolean;
-}
-
-/** @public */
-export interface StepLineSettings extends PointSettings {
+export interface StepLineSettings extends PlaneChartSettings {
   /** Width of step line strokes */
   lineWidth: number;
   /** Maximum line width */
@@ -452,7 +420,7 @@ export interface StepLineSettings extends PointSettings {
 }
 
 /** @public */
-export interface ScatterSettings extends PointSettings {
+export interface ScatterSettings extends PlaneChartSettings {
   /** Draw trend/regression line */
   isShowTrendLine: boolean;
   /** Highlight statistical outliers */
@@ -460,7 +428,7 @@ export interface ScatterSettings extends PointSettings {
 }
 
 /** @public */
-export interface HeatmapSettings extends PointSettings {
+export interface HeatmapSettings extends PlaneChartSettings {
   /** Grid resolution for heat map */
   resolution: number;
 }
@@ -468,7 +436,7 @@ export interface HeatmapSettings extends PointSettings {
 /** Histogram chart settings
  * @public
  */
-export interface HistogramSettings extends PointSettings {
+export interface HistogramSettings extends PlaneChartSettings {
   /** Number of bins for grouping data */
   bins: number;
   /** Which axis shows the histogram bars */
@@ -489,8 +457,6 @@ export interface ChartTypeSettings extends SettingGroup {
   bar: BarSettings;
   /** Column chart settings */
   column: BarSettings;
-  /** Line chart settings */
-  line: LineSettings;
   /** Scatter plot settings */
   scatter: ScatterSettings;
   /** Histogram settings */

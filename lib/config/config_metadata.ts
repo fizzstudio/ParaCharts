@@ -11,6 +11,8 @@ import ChartJson from "./chart/index.json" with { type: "json" };
 import ChartTitleJson from "./chart/title.json" with { type: "json" };
 import DescriptionJson from "./description.json" with { type: "json" };
 import UiJson from "./ui.json" with { type: "json" };
+import TypeLineJson from "./type/line.json" with { type: "json" };
+import TypePlaneJson from "./type/plane.json" with { type: "json" };
 import TypeDonutJson from "./type/donut/index.json" with { type: "json" };
 import TypeDonutOutsidelabelsJson from "./type/donut/outsideLabels.json" with { type: "json" };
 import TypeDonutInsidelabelsJson from "./type/donut/insideLabels.json" with { type: "json" };
@@ -75,6 +77,8 @@ export const configMetadata: ConfigMetadata = {
   'chart.title': ChartTitleJson as unknown as ConfigGroupMetadata,
   'description': DescriptionJson as unknown as ConfigGroupMetadata,
   'ui': UiJson as unknown as ConfigGroupMetadata,
+  'type.line': TypeLineJson as unknown as ConfigGroupMetadata,
+  'type.plane': TypePlaneJson as unknown as ConfigGroupMetadata,
   'type.donut': TypeDonutJson as unknown as ConfigGroupMetadata,
   'type.donut.outsideLabels': TypeDonutOutsidelabelsJson as unknown as ConfigGroupMetadata,
   'type.donut.insideLabels': TypeDonutInsidelabelsJson as unknown as ConfigGroupMetadata,
@@ -105,8 +109,10 @@ for (const [k, v] of Object.entries(configMetadata)) {
     configMetadata[k].settings = Object.create(refTarget.settings);
     Object.assign(configMetadata[k].settings, v.settings);
     for (const [sk, sv] of Object.entries(configMetadata[k].settings!)) {
-      configMetadata[k].settings![sk] = Object.create(refTarget.settings![sk]);
-      Object.assign(configMetadata[k].settings![sk], sv);
+      if (refTarget.settings![sk]) {
+        configMetadata[k].settings![sk] = Object.create(refTarget.settings![sk]);
+        Object.assign(configMetadata[k].settings![sk], sv);
+      }
     }
   }
 }

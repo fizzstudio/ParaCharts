@@ -1,0 +1,29 @@
+{
+    "abstract": true,
+    "settings": {
+        "minYValue": {
+            "label": "Min y-value",
+            "description": "Minimum Y value override",
+            "type": "number | 'unset'",
+            "default": "unset",
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number"
+            },
+            "parentView": "controlPanel.tabs.chart.general.minY",
+            "refresh": "chart"
+        },
+        "maxYValue": {
+            "label": "Max y-value",
+            "description": "Maximum Y value override",
+            "type": "number | 'unset'",
+            "default": "unset",
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number"
+            },
+            "parentView": "controlPanel.tabs.chart.general.maxY",
+            "refresh": "chart"
+        }
+    }
+}

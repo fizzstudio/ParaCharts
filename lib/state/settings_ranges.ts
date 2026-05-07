@@ -189,7 +189,6 @@ export const settingRanges: Record<string, NumericRange> = {
   'type.line.lowVisionLineWidth': { type: 'float' },
   // Negative scale would mirror/flip; 0 means no highlight effect
   'type.line.lineHighlightScale': { min: 0, type: 'float' },
-  'type.line.baseSymbolSize': { type: 'int' },
   'type.line.seriesLabelPadding': { min: 0, type: 'int' },
   'type.line.leaderLineLength': { min: 0, type: 'int' },
 

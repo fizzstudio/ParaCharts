@@ -1,0 +1,54 @@
+{
+    "ref": "type.plane",
+    "family": "line",
+    "settings": {
+        "lineWidth": {
+            "label": "Line width",
+            "description": "Width of line strokes",
+            "type": "number",
+            "default": 5,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 1,
+                "max": 25
+            },
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "lineWidthMax": {
+            "description": "Maximum line width",
+            "type": "number",
+            "default": 25
+        },
+        "lowVisionLineWidth": {
+            "description": "Line width in low vision mode",
+            "type": "number",
+            "default": 15
+        },
+        "lineHighlightScale": {
+            "description": "Scale factor for highlighted lines",
+            "type": "number",
+            "default": 1.5
+        },
+        "seriesLabelPadding": {
+            "description": "Padding around series labels",
+            "type": "number",
+            "default": 5
+        },
+        "leaderLineLength": {
+            "description": "Length of leader lines to labels",
+            "type": "number",
+            "default": 30
+        },
+        "isAlwaysShowSeriesLabel": {
+            "description": "Always show series labels regardless of space",
+            "type": "boolean",
+            "default": false
+        },
+        "isTrendNavigationModeEnabled": {
+            "description": "Enable trend-following navigation mode",
+            "type": "boolean",
+            "default": false
+        }
+    }
+}

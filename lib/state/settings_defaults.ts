@@ -127,25 +127,6 @@ export const defaults: Settings = {
       minYValue: 'unset',
       maxYValue: 'unset'
     },
-    line: {
-      lineWidth: 5,
-      lineWidthMax: 25,
-      lowVisionLineWidth: 15,
-      lineHighlightScale: 1.5,
-      baseSymbolSize: 10,
-      seriesLabelPadding: 5,
-      pointLabelFormat: 'raw',
-      leaderLineLength: 30,
-      selectedPointMarkerSize: {
-        width: 20,
-        height: 20,
-      },
-      isDrawSymbols: true,
-      isShowPopups: false,
-      isTrendNavigationModeEnabled: false,
-      minYValue: 'unset',
-      maxYValue: 'unset'
-    },
     scatter: {
       isShowTrendLine: false,
       isShowOutliers: false,
