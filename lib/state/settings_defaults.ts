@@ -143,18 +143,6 @@ export const defaults: Settings = {
       minYValue: 'unset',
       maxYValue: 'unset'
     },
-    waterfall: {
-      barWidth: 10,
-      colorByDatapoint: false,
-      isDrawLabels: true,
-      labelPosition: 'outside',
-      barLabelGap: 10,
-      barGap: 10,
-      isShowPopups: false,
-      labelFontSize: '10pt',
-      minYValue: 'unset',
-      maxYValue: 'unset'
-    },
 	venn: {
       orientationAngleOffset: 0,
       insideLabels: { contents: '' },

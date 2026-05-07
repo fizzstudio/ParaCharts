@@ -121,7 +121,6 @@ export interface ChartTypeSettings extends SettingGroup {
     histogram: HistogramSettings;
     stepline: StepLineSettings;
     venn: VennSettings;
-    waterfall: WaterfallSettings;
 }
 
 // @public
@@ -632,18 +631,6 @@ export interface ViewBox extends SettingGroup {
     width: number;
     x: number;
     y: number;
-}
-
-// @public (undocumented)
-export interface WaterfallSettings extends PlaneChartSettings {
-    barGap: number;
-    barLabelGap: number;
-    barWidth: number;
-    colorByDatapoint: boolean;
-    isDrawLabels: boolean;
-    isShowPopups: boolean;
-    labelFontSize: string;
-    labelPosition: BarDataLabelPosition;
 }
 
 // @public

@@ -307,7 +307,7 @@ export class ParaChart extends ParaComponent {
       '--legend-label-font-size': () => this._paraState.config.legend.fontSize,
       '--bar-label-font-size': () => this._paraState.config.type.bar.labelFontSize,
       '--column-label-font-size': () => this._paraState.config.type.column.labelFontSize,
-      '--waterfall-label-font-size': () => this._paraState.settings.type.waterfall.labelFontSize,
+      '--waterfall-label-font-size': () => this._paraState.config.type.waterfall.labelFontSize,
       'display': 'block',
       'font-family': '"Trebuchet MS", Helvetica, sans-serif',
       'font-size': 'var(--chart-view-font-size, 1rem)'

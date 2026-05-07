@@ -271,6 +271,7 @@ export interface TypeConfig extends ConfigGroup {
   column: TypeColumnConfig;
   pie: TypePieConfig;
   bar: TypeBarConfig;
+  waterfall: TypeWaterfallConfig;
 }
 export interface TypeLineConfig extends TypePlaneConfig {
   /** Width of line strokes */
@@ -426,6 +427,22 @@ export interface TypeBarConfig extends TypePlaneConfig {
   /** Width of bar outlines */
   lineWidth: number;
   /** Font size for bar labels */
+  labelFontSize: string;
+}
+export interface TypeWaterfallConfig extends TypePlaneConfig {
+  /** Width of waterfall bars */
+  barWidth: number;
+  /** Color each bar individually */
+  colorByDatapoint: boolean;
+  /** Draw value labels on bars */
+  isDrawLabels: boolean;
+  /** Position of value labels */
+  labelPosition: BarDataLabelPosition;
+  /** Gap between labels and bars */
+  barLabelGap: number;
+  /** Gap between adjacent bars */
+  barGap: number;
+  /** Font size for labels */
   labelFontSize: string;
 }
 export interface GridConfig extends ConfigGroup {

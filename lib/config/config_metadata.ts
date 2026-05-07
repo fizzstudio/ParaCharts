@@ -25,6 +25,7 @@ import TypePieJson from "./type/pie/index.json" with { type: "json" };
 import TypePieOutsidelabelsJson from "./type/pie/outsideLabels.json" with { type: "json" };
 import TypePieInsidelabelsJson from "./type/pie/insideLabels.json" with { type: "json" };
 import TypeBarJson from "./type/bar.json" with { type: "json" };
+import TypeWaterfallJson from "./type/waterfall.json" with { type: "json" };
 import GridJson from "./grid.json" with { type: "json" };
 import AxisVertJson from "./axis/vert/index.json" with { type: "json" };
 import AxisVertLineJson from "./axis/vert/line.json" with { type: "json" };
@@ -94,6 +95,7 @@ export const configMetadata: ConfigMetadata = {
   'type.pie.outsideLabels': TypePieOutsidelabelsJson as unknown as ConfigGroupMetadata,
   'type.pie.insideLabels': TypePieInsidelabelsJson as unknown as ConfigGroupMetadata,
   'type.bar': TypeBarJson as unknown as ConfigGroupMetadata,
+  'type.waterfall': TypeWaterfallJson as unknown as ConfigGroupMetadata,
   'grid': GridJson as unknown as ConfigGroupMetadata,
   'axis.vert': AxisVertJson as unknown as ConfigGroupMetadata,
   'axis.vert.line': AxisVertLineJson as unknown as ConfigGroupMetadata,
