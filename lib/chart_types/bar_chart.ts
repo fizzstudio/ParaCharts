@@ -18,7 +18,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { ParaView } from '../paraview';
 import { PlaneChartInfo } from './plane_chart';
 import { AxisInfo } from '../common/axisinfo';
-import { DeepReadonly, BarSettings, datapointIdToCursor, Setting, type ParaState } from '../state';
+import { DeepReadonly, datapointIdToCursor, Setting, type ParaState } from '../state';
 import {
   queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax
 } from '../state/query_utils';
@@ -33,6 +33,7 @@ import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasumm
 import { interpolate } from '@fizz/templum';
 import { DocumentView } from '../view/document_view';
 import { Interval } from '@fizz/chart-classifier-utils';
+import { TypeBarConfig } from '../config/config_types';
 
 type BarClusterMap = {[key: string]: BarCluster};
 
@@ -126,9 +127,9 @@ export class BarChartInfo extends PlaneChartInfo {
     //   isXVertical: this._paraState.type === 'bar'
     // });
     const numSeries = this._paraState.model!.numSeries;
-    if (this.settings.stacking === 'standard') {
+    if (this.config.stacking === 'standard') {
       this._stacksPerCluster = 1;
-    } else if (this.settings.stacking === 'none') {
+    } else if (this.config.stacking === 'none') {
       const seriesPerStack = 1;
       this._stacksPerCluster = Math.ceil(numSeries/seriesPerStack);
     } else {
@@ -137,7 +138,7 @@ export class BarChartInfo extends PlaneChartInfo {
   }
 
   protected _normalizeStackCountsInput(): string {
-    let counts = this.settings.stacking.split(/\s/).map(tok => parseInt(tok));
+    let counts = this.config.stacking.split(/\s/).map(tok => parseInt(tok));
     const sumCounts = counts.reduce((a, b) => a + b, 0);
     const numSeries = this._paraState.model!.series.length;
     if (sumCounts < numSeries) {
@@ -199,8 +200,8 @@ export class BarChartInfo extends PlaneChartInfo {
     return true;
   }
 
-  get settings() {
-    return super.settings as DeepReadonly<BarSettings>;
+  get config() {
+    return super.config as DeepReadonly<TypeBarConfig>;
   }
 
   get clusteredData() {
@@ -212,7 +213,7 @@ export class BarChartInfo extends PlaneChartInfo {
   }
 
   protected _clusterData() {
-    const settings = this._paraState.settings.type[this._type] as BarSettings;
+    const settings = this._paraState.config.type[this._type] as TypeBarConfig;
     const clusterMap: BarClusterMap = {};
     const xs = this._paraState.model!.series[0].datapoints.map(dp => dp.facetBox('x')!);
 
@@ -266,7 +267,7 @@ export class BarChartInfo extends PlaneChartInfo {
     // const getSeriesGroup = (series: Series, groups: Series[][]) => {
     //   return groups.findIndex(group => group.includes(series));
     // };
-    const grouped = ['standard', 'none'].includes(this.settings.stacking)
+    const grouped = ['standard', 'none'].includes(this.config.stacking)
       ? [[...allSeries]]
       : groupSeries(this._normalizeStackCountsInput());
     for (let group of grouped) {

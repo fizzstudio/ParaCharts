@@ -20,9 +20,11 @@ import TypePastryJson from "./type/pastry/index.json" with { type: "json" };
 import TypePastryOutsidelabelsJson from "./type/pastry/outsideLabels.json" with { type: "json" };
 import TypePastryInsidelabelsJson from "./type/pastry/insideLabels.json" with { type: "json" };
 import TypeScatterJson from "./type/scatter.json" with { type: "json" };
+import TypeColumnJson from "./type/column.json" with { type: "json" };
 import TypePieJson from "./type/pie/index.json" with { type: "json" };
 import TypePieOutsidelabelsJson from "./type/pie/outsideLabels.json" with { type: "json" };
 import TypePieInsidelabelsJson from "./type/pie/insideLabels.json" with { type: "json" };
+import TypeBarJson from "./type/bar.json" with { type: "json" };
 import GridJson from "./grid.json" with { type: "json" };
 import AxisVertJson from "./axis/vert/index.json" with { type: "json" };
 import AxisVertLineJson from "./axis/vert/line.json" with { type: "json" };
@@ -87,9 +89,11 @@ export const configMetadata: ConfigMetadata = {
   'type.pastry.outsideLabels': TypePastryOutsidelabelsJson as unknown as ConfigGroupMetadata,
   'type.pastry.insideLabels': TypePastryInsidelabelsJson as unknown as ConfigGroupMetadata,
   'type.scatter': TypeScatterJson as unknown as ConfigGroupMetadata,
+  'type.column': TypeColumnJson as unknown as ConfigGroupMetadata,
   'type.pie': TypePieJson as unknown as ConfigGroupMetadata,
   'type.pie.outsideLabels': TypePieOutsidelabelsJson as unknown as ConfigGroupMetadata,
   'type.pie.insideLabels': TypePieInsidelabelsJson as unknown as ConfigGroupMetadata,
+  'type.bar': TypeBarJson as unknown as ConfigGroupMetadata,
   'grid': GridJson as unknown as ConfigGroupMetadata,
   'axis.vert': AxisVertJson as unknown as ConfigGroupMetadata,
   'axis.vert.line': AxisVertLineJson as unknown as ConfigGroupMetadata,

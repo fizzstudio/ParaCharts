@@ -96,29 +96,6 @@ export type BarClusterMode = 'facet';
 // @public
 export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
 
-// @public (undocumented)
-export interface BarSettings extends PlaneChartSettings {
-    barGap: number;
-    barWidth: number;
-    clusterBy?: BarClusterMode;
-    clusterGap: number;
-    clusterLabelFormat: LabelFormat;
-    colorByDatapoint: boolean;
-    dataLabelPosition: BarDataLabelPosition;
-    isAbbrevSeries: boolean;
-    isDrawDataLabels: boolean;
-    isDrawRecordLabels: boolean;
-    isDrawTotalLabels: boolean;
-    isShowPopups: boolean;
-    labelFontSize: string;
-    lineWidth: number;
-    orderBy?: string;
-    stacking: 'none' | 'standard' | string;
-    stackInsideGap: number;
-    stackLabelGap: number;
-    totalLabelGap: number;
-}
-
 // @public
 export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest;
 
@@ -140,11 +117,8 @@ export type ChartTypeInput = 'line' | 'horizontal_bar' | 'vertical_bar' | 'pie' 
 
 // @public
 export interface ChartTypeSettings extends SettingGroup {
-    bar: BarSettings;
-    column: BarSettings;
     heatmap: HeatmapSettings;
     histogram: HistogramSettings;
-    lollipop: LollipopSettings;
     stepline: StepLineSettings;
     venn: VennSettings;
     waterfall: WaterfallSettings;
@@ -327,10 +301,6 @@ export type LoadManifestResult = LoadManifestSuccess | LoadManifestFailure;
 export type LoadManifestSuccess = {
     success: true;
 };
-
-// @public
-export interface LollipopSettings extends BarSettings {
-}
 
 // @public (undocumented)
 export interface ManifestBuilderInput {
