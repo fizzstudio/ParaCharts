@@ -202,6 +202,17 @@ export const defaultConfig: Config = {
         lineWidth: 5,
         labelFontSize: "8pt",
       },
+      waterfall: {
+        minYValue: "unset",
+        maxYValue: "unset",
+        barWidth: 10,
+        colorByDatapoint: false,
+        isDrawLabels: true,
+        labelPosition: "outside",
+        barLabelGap: 10,
+        barGap: 10,
+        labelFontSize: "10pt",
+      },
     },
     grid: {
       isDrawHorizLines: true,

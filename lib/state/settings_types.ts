@@ -318,26 +318,6 @@ export type BarClusterMode = 'facet';
 export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
 
 /** @public */
-export interface WaterfallSettings extends PlaneChartSettings {
-  /** Width of waterfall bars */
-  barWidth: number;
-  /** Color each bar individually */
-  colorByDatapoint: boolean;
-  /** Draw value labels on bars */
-  isDrawLabels: boolean;
-  /** Position of value labels */
-  labelPosition: BarDataLabelPosition;
-  /** Gap between labels and bars */
-  barLabelGap: number;
-  /** Gap between adjacent bars */
-  barGap: number;
-  /** Enable popup tooltips */
-  isShowPopups: boolean;
-  /** Font size for labels */
-  labelFontSize: string;
-}
-
-/** @public */
 export interface VennSettings extends SettingGroup {
   /** Rotation offset for diagram orientation */
   orientationAngleOffset: number;
@@ -403,8 +383,6 @@ export interface ChartTypeSettings extends SettingGroup {
   heatmap: HeatmapSettings;
   /** Step line chart settings */
   stepline: StepLineSettings;
-  /** Waterfall chart settings */
-  waterfall: WaterfallSettings;
   /** Venn diagram settings */
   venn: VennSettings
 }
