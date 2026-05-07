@@ -127,18 +127,6 @@ export const defaults: Settings = {
       minYValue: 'unset',
       maxYValue: 'unset'
     },
-    scatter: {
-      isShowTrendLine: false,
-      isShowOutliers: false,
-      pointLabelFormat: 'raw',
-      symbolStrokeWidth: 2,
-      selectedPointMarkerSize: {
-        width: 20,
-        height: 20,
-      },
-      minYValue: 'unset',
-      maxYValue: 'unset'
-    },
     histogram: {
       pointLabelFormat: 'raw',
       bins: 20,

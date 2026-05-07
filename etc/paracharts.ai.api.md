@@ -145,7 +145,6 @@ export interface ChartTypeSettings extends SettingGroup {
     heatmap: HeatmapSettings;
     histogram: HistogramSettings;
     lollipop: LollipopSettings;
-    scatter: ScatterSettings;
     stepline: StepLineSettings;
     venn: VennSettings;
     waterfall: WaterfallSettings;
@@ -572,12 +571,6 @@ export type RadialChartType = 'pie' | 'donut' | 'gauge';
 
 // @public
 export type riffSpeeds = 'slow' | 'medium' | 'fast';
-
-// @public (undocumented)
-export interface ScatterSettings extends PlaneChartSettings {
-    isShowOutliers: boolean;
-    isShowTrendLine: boolean;
-}
 
 // @public
 export interface ScrollytellingSettings extends SettingGroup {

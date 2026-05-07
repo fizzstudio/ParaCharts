@@ -133,6 +133,12 @@ export const defaultConfig: Config = {
           contents: "category",
         },
       },
+      scatter: {
+        minYValue: "unset",
+        maxYValue: "unset",
+        isShowTrendLine: false,
+        isShowOutliers: false,
+      },
       pie: {
         outsideLabels: {
           vertGap: 10,

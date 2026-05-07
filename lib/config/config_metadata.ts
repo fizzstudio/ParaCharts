@@ -19,6 +19,7 @@ import TypeDonutInsidelabelsJson from "./type/donut/insideLabels.json" with { ty
 import TypePastryJson from "./type/pastry/index.json" with { type: "json" };
 import TypePastryOutsidelabelsJson from "./type/pastry/outsideLabels.json" with { type: "json" };
 import TypePastryInsidelabelsJson from "./type/pastry/insideLabels.json" with { type: "json" };
+import TypeScatterJson from "./type/scatter.json" with { type: "json" };
 import TypePieJson from "./type/pie/index.json" with { type: "json" };
 import TypePieOutsidelabelsJson from "./type/pie/outsideLabels.json" with { type: "json" };
 import TypePieInsidelabelsJson from "./type/pie/insideLabels.json" with { type: "json" };
@@ -85,6 +86,7 @@ export const configMetadata: ConfigMetadata = {
   'type.pastry': TypePastryJson as unknown as ConfigGroupMetadata,
   'type.pastry.outsideLabels': TypePastryOutsidelabelsJson as unknown as ConfigGroupMetadata,
   'type.pastry.insideLabels': TypePastryInsidelabelsJson as unknown as ConfigGroupMetadata,
+  'type.scatter': TypeScatterJson as unknown as ConfigGroupMetadata,
   'type.pie': TypePieJson as unknown as ConfigGroupMetadata,
   'type.pie.outsideLabels': TypePieOutsidelabelsJson as unknown as ConfigGroupMetadata,
   'type.pie.insideLabels': TypePieInsidelabelsJson as unknown as ConfigGroupMetadata,
