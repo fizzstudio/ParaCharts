@@ -50,6 +50,10 @@ import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramo
 import { initParaSummary } from '@fizz/parasummary';
 import { TourBus } from './tour_bus';
 
+import brailleFont from '../assets/Braille36US.woff2';
+import hyperFont from '../assets/Atkinson-Hyperlegible-Regular-102a.woff2';
+
+
 // NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
 /** @public */
 export class ParaChart extends ParaComponent {
@@ -257,7 +261,8 @@ export class ParaChart extends ParaComponent {
   connectedCallback() {
     super.connectedCallback();
     this.isControlPanelOpen = this._paraState.settings.controlPanel.isControlPanelDefaultOpen;
-
+    this._injectFontFace('braille36', brailleFont);
+    this._injectFontFace('Atkinson Hyperlegible', hyperFont);
     this._styleManager = new StyleManager(this.shadowRoot!.adoptedStyleSheets[0]);
     this._styleManager.set(':host', {
       '--axis-line-color': 'hsl(0, 0%, 0%)',
@@ -357,6 +362,30 @@ export class ParaChart extends ParaComponent {
       }
     `
   ];
+
+  protected _injectFontFace(family: string, url: string) {
+    // @font-face rules don't work inside of shadow DOM stylesheets, so
+    // we have to inject a rule into the document adopted stylesheets.
+    // See https://github.com/mdn/interactive-examples/issues/887,
+    // https://issues.chromium.org/issues/41085401
+    let hasFontFace = false;
+    outer: for (const sheet of document.adoptedStyleSheets) {
+      for (const rule of sheet.cssRules) {
+        if (rule instanceof CSSFontFaceRule && rule.style.getPropertyValue('font-family') === family) {
+          hasFontFace = true;
+          break outer;
+        }
+      }
+    }
+    if (!hasFontFace) {
+      const fontFaceSheet = new CSSStyleSheet();
+      fontFaceSheet.replaceSync(`@font-face {
+        font-family: "${family}";
+        src: url("${url}") format('woff2');
+      }`);
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, fontFaceSheet];
+    }
+  }
 
   async runLoader(
     manifestInput: string,

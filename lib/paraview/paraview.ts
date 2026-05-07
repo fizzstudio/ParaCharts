@@ -899,10 +899,21 @@ export class ParaView extends ParaComponent implements ViewContext {
   }
 
   protected _rootStyle() {
+    const fontFamilyClasses: Record<string, string> = {
+      'Helvetica': 'sans-serif',
+      'Verdana': 'sans-serif',
+      'Tahoma': 'sans-serif',
+      'Times New Roman': 'serif',
+      'Georgia': 'serif'
+    };
     const style: { [prop: string]: any } = {
-      fontFamily: this._paraState.config.chart.fontFamily,
+      fontFamily: this._paraState.config.chart.fontFamily
+        + ',' + fontFamilyClasses[this._paraState.config.chart.fontFamily],
       fontWeight: this._paraState.config.chart.fontWeight
     };
+    if (this._paraState.config.chart.isUseBraille) {
+      style.fontFamily = 'braille36';
+    }
     if (this._isFullscreen) {
       const vbWidth = Math.round(this._viewBox.width);
       const vbHeight = Math.round(this._viewBox.height);

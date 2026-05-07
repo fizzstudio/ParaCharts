@@ -174,6 +174,12 @@ export interface ChartConfig extends ConfigGroup {
   fontWeight: string;
   /** Global font size multiplier */
   fontScale: number;
+  /** Enable the use of a Braille font */
+  isUseBraille: boolean;
+  /** Include print text along with Braille */
+  isUseBrailleAndPrint: boolean;
+  /** Document page size */
+  pageSize: 'us_letter' | 'us_legal';
   /** Stroke color for lines and shapes */
   stroke: string;
   /** Stroke width in pixels */
