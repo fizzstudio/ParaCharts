@@ -128,7 +128,7 @@ export class AnnotationLayer extends PlotLayer {
           this.removeGroup('user-trend-lines', true);
         }
       }
-      if (this.paraview.paraState.settings.type.scatter.isShowTrendLine && this.paraview.paraState.chartInfo instanceof PlaneChartInfo) {
+      if (this.paraview.paraState.config.type.scatter.isShowTrendLine && this.paraview.paraState.chartInfo instanceof PlaneChartInfo) {
         this.removeGroup('overall-trend-line', true);
         this.addGroup('overall-trend-line', true);
         this.group('overall-trend-line')!.clearChildren();

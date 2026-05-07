@@ -1,5 +1,5 @@
 import { type PlaneSeriesView, PointPlotView, PointDatapointView, PlaneDatapointView, TrendLineView } from '.';
-import { type ScatterSettings, Setting, type DeepReadonly } from '../../../../state/settings_types';
+import { Setting, type DeepReadonly } from '../../../../state/settings_types';
 import { DataSymbol, DataSymbols } from '../../../symbol';
 import { svg } from 'lit';
 import { View } from '../../../base_view';
@@ -16,10 +16,6 @@ export class ScatterPlotView extends PointPlotView {
   _trendLine?: TrendLineView;
 
   protected _clusterShellView: ClusterShellView | null = null;
-
-  get settings() {
-    return super.settings as DeepReadonly<ScatterSettings>;
-  }
 
   get chartInfo(): ScatterChartInfo {
     return this._chartInfo;
@@ -154,7 +150,7 @@ class ScatterPointView extends PointDatapointView {
       else {
         symbolType = types[8]
       }
-      const isShowOutliers = this.paraview.paraState.settings.type.scatter.isShowOutliers
+      const isShowOutliers = this.paraview.paraState.config.type.scatter.isShowOutliers
       if (isShowOutliers && this.isOutlier) {
         color = 0
         symbolType = types[8]

@@ -257,6 +257,7 @@ export interface UiConfig extends ConfigGroup {
 export interface TypeConfig extends ConfigGroup {
   line: TypeLineConfig;
   donut: TypeDonutConfig;
+  scatter: TypeScatterConfig;
   pie: TypePieConfig;
 }
 export interface TypeLineConfig extends TypePlaneConfig {
@@ -332,6 +333,12 @@ export interface TypePastryInsidelabelsConfig extends ConfigGroup {
   position: number;
   /** Label content template */
   contents: string;
+}
+export interface TypeScatterConfig extends TypePlaneConfig {
+  /** Draw trend/regression line */
+  isShowTrendLine: boolean;
+  /** Highlight statistical outliers */
+  isShowOutliers: boolean;
 }
 export interface TypePieConfig extends TypePastryConfig {
   outsideLabels: TypePieOutsidelabelsConfig;

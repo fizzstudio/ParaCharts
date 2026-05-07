@@ -766,14 +766,14 @@ export class ParaAPI {
   }
 
   addTrendLine() {
-    this.paraChart.paraState.updateSettings(draft => {
+    this.paraChart.paraState.updateConfig(draft => {
       draft.type.scatter.isShowTrendLine = true;
     });
   }
 
 
   removeTrendLine() {
-    this.paraChart.paraState.updateSettings(draft => {
+    this.paraChart.paraState.updateConfig(draft => {
       draft.type.scatter.isShowTrendLine = false;
     });
   }

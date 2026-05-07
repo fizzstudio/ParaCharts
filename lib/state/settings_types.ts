@@ -420,14 +420,6 @@ export interface StepLineSettings extends PlaneChartSettings {
 }
 
 /** @public */
-export interface ScatterSettings extends PlaneChartSettings {
-  /** Draw trend/regression line */
-  isShowTrendLine: boolean;
-  /** Highlight statistical outliers */
-  isShowOutliers: boolean;
-}
-
-/** @public */
 export interface HeatmapSettings extends PlaneChartSettings {
   /** Grid resolution for heat map */
   resolution: number;
@@ -457,8 +449,6 @@ export interface ChartTypeSettings extends SettingGroup {
   bar: BarSettings;
   /** Column chart settings */
   column: BarSettings;
-  /** Scatter plot settings */
-  scatter: ScatterSettings;
   /** Histogram settings */
   histogram: HistogramSettings;
   /** Heat map settings */
