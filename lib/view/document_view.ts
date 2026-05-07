@@ -311,7 +311,8 @@ export class DocumentView extends Container(View) {
       (this._paraState.config.legend.isAlwaysDrawLegend
         // XXX direct label strip won't exist when this is called
         || (this._shouldAddDirectLabelStrip && this._paraState.config.chart.hasLegendWithDirectLabels)
-        || (!this._shouldAddDirectLabelStrip && this._paraState.model!.multi));
+        || (!this._shouldAddDirectLabelStrip && this._paraState.model!.multi)
+        || (this._paraState.type == 'scatter'));
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {

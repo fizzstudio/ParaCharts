@@ -259,7 +259,7 @@ class LineLabelLeader extends View {
   get classInfo(): ClassInfo {
     return {
       'label-leader': true,
-      'lowlight': this.paraview.paraState.isSeriesDimmed(this._seriesKey)
+      'lowlighted': this.paraview.paraState.isSeriesDimmed(this._seriesKey)
     }
   }
 
