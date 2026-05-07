@@ -318,54 +318,6 @@ export type BarClusterMode = 'facet';
 export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
 
 /** @public */
-export interface BarSettings extends PlaneChartSettings {
-  /** How bars are stacked */
-  stacking: 'none' | 'standard' | string; // | '100%';
-  /** Width of individual bars */
-  barWidth: number;
-  /** Color each bar individually vs by series */
-  colorByDatapoint: boolean;
-  /** Show total value labels on stacked bars */
-  isDrawTotalLabels: boolean;
-  /** Gap between total value labels and stacks */
-  totalLabelGap: number;
-  /** Gap between stack labels and bars */
-  stackLabelGap: number;
-  /** Show record name labels */
-  isDrawRecordLabels: boolean;
-  /** Show data value labels on bars */
-  isDrawDataLabels: boolean;
-  /** Position of data value labels */
-  dataLabelPosition: BarDataLabelPosition;
-  /** How to cluster related bars */
-  clusterBy?: BarClusterMode;
-  /** Field to sort bars by */
-  orderBy?: string;
-  /** Gap between bar clusters */
-  clusterGap: number;
-  /** Gap between individual bars */
-  barGap: number;
-  /** Gap inside stacked bars */
-  stackInsideGap: number;
-  /** Abbreviate series names */
-  isAbbrevSeries: boolean;
-  /** Format for cluster labels */
-  clusterLabelFormat: LabelFormat;
-  /** Width of bar outlines */
-  lineWidth: number;
-  /** Enable popup tooltips */
-  isShowPopups: boolean;
-  /** Font size for bar labels */
-  labelFontSize: string;
-}
-
-/** Lollipop chart settings (extends bar settings)
- * @public
- */
-export interface LollipopSettings extends BarSettings {
-}
-
-/** @public */
 export interface WaterfallSettings extends PlaneChartSettings {
   /** Width of waterfall bars */
   barWidth: number;
@@ -445,18 +397,12 @@ export interface HistogramSettings extends PlaneChartSettings {
  * @public
  */
 export interface ChartTypeSettings extends SettingGroup {
-  /** Bar chart settings */
-  bar: BarSettings;
-  /** Column chart settings */
-  column: BarSettings;
   /** Histogram settings */
   histogram: HistogramSettings;
   /** Heat map settings */
   heatmap: HeatmapSettings;
   /** Step line chart settings */
   stepline: StepLineSettings;
-  /** Lollipop chart settings */
-  lollipop: LollipopSettings;
   /** Waterfall chart settings */
   waterfall: WaterfallSettings;
   /** Venn diagram settings */

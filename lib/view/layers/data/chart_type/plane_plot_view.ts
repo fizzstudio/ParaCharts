@@ -97,7 +97,7 @@ export abstract class PlanePlotView extends DataLayer {
         let nearestPoint = points[distances.indexOf(Math.min(...distances))];
         if (nearestPoint.cousins.length > 0) {
           if (['column'].includes(type)) {
-            nearestPoint = nearestPoint.withCousins.filter(p => p.y < coords.y && p.y + p.height + this.paraview.paraState.settings.type.bar.barGap > coords.y)[0]
+            nearestPoint = nearestPoint.withCousins.filter(p => p.y < coords.y && p.y + p.height + this.paraview.paraState.config.type.bar.barGap > coords.y)[0]
               ?? nearestPoint.withCousins.sort((a, b) => a.y - b.y)[0];
           }
           else {

@@ -100,6 +100,16 @@ export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
  */
 export type LegendItemOrder = 'alphabetical' | 'series';
 
+/** Position for data value labels on bars
+ * @public
+ */
+export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
+/** Format for label display - 'raw' for unformatted or format string
+ * @public
+ */
+export type LabelFormat = 'raw' | string;
+
+
 """, file=typesf)
         write_types_group([], tree, tree, typesf)
 
@@ -312,6 +322,8 @@ def write_metadata_header(dir_path, key_path, node, tree, f):
         for k, v in new_node.items():
             if k == '__abstract__':
                 continue
+            if k == '__ref__':
+                continue
             if not isinstance(v, Group) and node.get(k):
                 v.update(node[k])
         node = new_node
@@ -350,6 +362,8 @@ def write_metadata_group(key_path, node, tree, f):
         new_node = new_node.copy()
         for k, v in new_node.items():
             if k == '__abstract__':
+                continue
+            if k == '__ref__':
                 continue
             if not isinstance(v, Group) and node.get(k):
                 v.update(node[k])

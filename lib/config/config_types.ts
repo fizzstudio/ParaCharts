@@ -72,6 +72,16 @@ export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
  */
 export type LegendItemOrder = 'alphabetical' | 'series';
 
+/** Position for data value labels on bars
+ * @public
+ */
+export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
+/** Format for label display - 'raw' for unformatted or format string
+ * @public
+ */
+export type LabelFormat = 'raw' | string;
+
+
 
 export interface Config extends ConfigGroup {
   color: ColorConfig;
@@ -258,7 +268,9 @@ export interface TypeConfig extends ConfigGroup {
   line: TypeLineConfig;
   donut: TypeDonutConfig;
   scatter: TypeScatterConfig;
+  column: TypeColumnConfig;
   pie: TypePieConfig;
+  bar: TypeBarConfig;
 }
 export interface TypeLineConfig extends TypePlaneConfig {
   /** Width of line strokes */
@@ -340,6 +352,40 @@ export interface TypeScatterConfig extends TypePlaneConfig {
   /** Highlight statistical outliers */
   isShowOutliers: boolean;
 }
+export interface TypeColumnConfig extends TypePlaneConfig {
+  /** How bars are stacked */
+  stacking: 'none' | 'standard' | string;
+  /** Width of individual bars */
+  barWidth: number;
+  /** Color each bar individually vs by series */
+  colorByDatapoint: boolean;
+  /** Show total value labels on stacked bars */
+  isDrawTotalLabels: boolean;
+  /** Gap between total value labels and stacks */
+  totalLabelGap: number;
+  /** Gap between stack labels and bars */
+  stackLabelGap: number;
+  /** Show record name labels */
+  isDrawRecordLabels: boolean;
+  /** Show data value labels on bars */
+  isDrawDataLabels: boolean;
+  /** Position of data value labels */
+  dataLabelPosition: BarDataLabelPosition;
+  /** Gap between bar clusters */
+  clusterGap: number;
+  /** Gap between individual bars */
+  barGap: number;
+  /** Gap inside stacked bars */
+  stackInsideGap: number;
+  /** Abbreviate series names */
+  isAbbrevSeries: boolean;
+  /** Format for cluster labels */
+  clusterLabelFormat: LabelFormat;
+  /** Width of bar outlines */
+  lineWidth: number;
+  /** Font size for bar labels */
+  labelFontSize: string;
+}
 export interface TypePieConfig extends TypePastryConfig {
   outsideLabels: TypePieOutsidelabelsConfig;
   insideLabels: TypePieInsidelabelsConfig;
@@ -347,6 +393,40 @@ export interface TypePieConfig extends TypePastryConfig {
 export interface TypePieOutsidelabelsConfig extends TypePastryOutsidelabelsConfig {
 }
 export interface TypePieInsidelabelsConfig extends TypePastryInsidelabelsConfig {
+}
+export interface TypeBarConfig extends TypePlaneConfig {
+  /** How bars are stacked */
+  stacking: 'none' | 'standard' | string;
+  /** Width of individual bars */
+  barWidth: number;
+  /** Color each bar individually vs by series */
+  colorByDatapoint: boolean;
+  /** Show total value labels on stacked bars */
+  isDrawTotalLabels: boolean;
+  /** Gap between total value labels and stacks */
+  totalLabelGap: number;
+  /** Gap between stack labels and bars */
+  stackLabelGap: number;
+  /** Show record name labels */
+  isDrawRecordLabels: boolean;
+  /** Show data value labels on bars */
+  isDrawDataLabels: boolean;
+  /** Position of data value labels */
+  dataLabelPosition: BarDataLabelPosition;
+  /** Gap between bar clusters */
+  clusterGap: number;
+  /** Gap between individual bars */
+  barGap: number;
+  /** Gap inside stacked bars */
+  stackInsideGap: number;
+  /** Abbreviate series names */
+  isAbbrevSeries: boolean;
+  /** Format for cluster labels */
+  clusterLabelFormat: LabelFormat;
+  /** Width of bar outlines */
+  lineWidth: number;
+  /** Font size for bar labels */
+  labelFontSize: string;
 }
 export interface GridConfig extends ConfigGroup {
   /** Draw horizontal grid lines */

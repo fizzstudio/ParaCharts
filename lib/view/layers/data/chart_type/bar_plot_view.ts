@@ -19,7 +19,7 @@ import { type DataLayerContext } from '../../../view_context';
 import { Logger, getLogger } from '@fizz/logger';
 import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
 import {
-  Setting, DeepReadonly, BarSettings
+  Setting,
 } from '../../../../state/settings_types';
 import { RectShape } from '../../../shape/rect';
 import { Label, LabelTextAnchor } from '../../../label';
@@ -93,7 +93,7 @@ export class BarPlotView extends PlanePlotView {
       parentView: 'chartDetails.tabs.chart.chart',
     });
     todo().deets!.chartPanel.requestUpdate();*/
-    if (this.paraview.paraState.settings.type.bar.isAbbrevSeries) {
+    if (this.paraview.paraState.config.type.bar.isAbbrevSeries) {
       this._abbrevs = abbreviateSeries(this.paraview.paraState.model!.seriesKeys);
     }
   }
@@ -162,11 +162,11 @@ export class BarPlotView extends PlanePlotView {
     // on its right, and each cluster is separated by `clusterGap`
 
     this._numStacks = numClusters * this._chartInfo.stacksPerCluster;
-    let maxStackWidth = (this._width - numClusters * this._chartInfo.settings.clusterGap) / this._numStacks;
+    let maxStackWidth = (this._width - numClusters * this._chartInfo.config.clusterGap) / this._numStacks;
     let gapWidth = 0;
-    let stackWidth = Math.min(this._chartInfo.settings.barWidth, maxStackWidth);
+    let stackWidth = Math.min(this._chartInfo.config.barWidth, maxStackWidth);
     stackWidth ||= maxStackWidth;
-    if (this._chartInfo.settings.barWidth) {
+    if (this._chartInfo.config.barWidth) {
       gapWidth = maxStackWidth - stackWidth;
       this._stackWidth = stackWidth;
     } else if (stackWidth >= MIN_STACK_WIDTH_FOR_GAPS) {
@@ -216,7 +216,7 @@ export class BarPlotView extends PlanePlotView {
 
   protected _completeDatapointLayout() {
     super._completeDatapointLayout();
-    if (this._chartInfo.settings.stacking === 'standard' && this._chartInfo.settings.isDrawTotalLabels) {
+    if (this._chartInfo.config.stacking === 'standard' && this._chartInfo.config.isDrawTotalLabels) {
       this._totalLabels.forEach(label => {
         label.remove();
       });
@@ -249,7 +249,7 @@ export class BarPlotView extends PlanePlotView {
           }));
           this.append(this._totalLabels.at(-1)!);
           this._totalLabels.at(-1)!.centerX = barView.centerX;
-          this._totalLabels.at(-1)!.bottom = barView.top - this._chartInfo.settings.totalLabelGap;
+          this._totalLabels.at(-1)!.bottom = barView.top - this._chartInfo.config.totalLabelGap;
         }
       }
       // this._resizeToFitLabels();
@@ -334,7 +334,7 @@ export class Bar extends PlaneDatapointView {
   ) {
     super(seriesView);
     //this._width = 45; //BarStack.width; // this.paraview.paraState.settings.type.bar.barWidth;
-    this._isStyleEnabled = this.paraview.paraState.settings.type.bar.colorByDatapoint;
+    this._isStyleEnabled = this.paraview.paraState.config.type.bar.colorByDatapoint;
   }
 
   get classInfo() {
@@ -416,7 +416,7 @@ export class Bar extends PlaneDatapointView {
     } else {
       const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
       const numBars = Object.keys(this._stack.bars).length;
-      const extra = (numBars - 1)*chartInfo.settings.stackInsideGap;
+      const extra = (numBars - 1)*chartInfo.config.stackInsideGap;
       const delta = extra/numBars;
       const yRange = chartInfo.yInterval!.end - chartInfo.yInterval!.start;
       const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
@@ -434,11 +434,11 @@ export class Bar extends PlaneDatapointView {
           - this.height
           - distFromXAxis
           - zeroHeight
-          - orderIdx * chartInfo.settings.stackInsideGap;
+          - orderIdx * chartInfo.config.stackInsideGap;
       }
     }
     const barGap = this.chart.availSpace / this.chart.numStacks;
-    const clusterGap = chartInfo.settings.clusterGap;
+    const clusterGap = chartInfo.config.clusterGap;
     this._x = clusterGap / 2 + barGap / 2
       + idealWidth * (chartInfo.stacksPerCluster * this._stack.cluster.index + this._stack.index)
       + clusterGap * this._stack.cluster.index
@@ -449,7 +449,7 @@ export class Bar extends PlaneDatapointView {
     const chartInfo = this.chart.chartInfo as BarChartInfo;
     const orderIdx = Object.keys(this._stack.bars).indexOf(this.series.key);
     const numBars = Object.keys(this._stack.bars).length;
-    const extra = (numBars - 1)*chartInfo.settings.stackInsideGap;
+    const extra = (numBars - 1)*chartInfo.config.stackInsideGap;
     const delta = extra/numBars;
     const yRange = chartInfo.yInterval!.end - chartInfo.yInterval!.start;
     const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
@@ -466,7 +466,7 @@ export class Bar extends PlaneDatapointView {
         - this.height
         - distFromXAxis * bezT
         - zeroHeight
-        - orderIdx * chartInfo.settings.stackInsideGap;
+        - orderIdx * chartInfo.config.stackInsideGap;
     }
     super.beginAnimStep(bezT, linearT);
   }
@@ -480,7 +480,7 @@ export class Bar extends PlaneDatapointView {
       textAnchor = 'start';
       angle = -90;
     }
-    if (chartInfo.settings.isDrawRecordLabels) {
+    if (chartInfo.config.isDrawRecordLabels) {
       this._recordLabel?.remove();
       this._recordLabel = new Label(this.paraview, {
         text: formatBox(this.datapoint.facetBox('x')!, this.paraview.paraState.getFormatType('pieSliceValue')),
@@ -494,9 +494,9 @@ export class Bar extends PlaneDatapointView {
         fill: this.paraview.paraState.colors.contrastValueAt(this._isStyleEnabled ? this.index : this.parent.index)
       };
       this._recordLabel.centerX = this.centerX;
-      this._recordLabel.y = this.chart.height - this._recordLabel.height - chartInfo.settings.stackLabelGap;
+      this._recordLabel.y = this.chart.height - this._recordLabel.height - chartInfo.config.stackLabelGap;
     }
-    if (chartInfo.settings.isDrawDataLabels) {
+    if (chartInfo.config.isDrawDataLabels) {
       this._dataLabel?.remove();
       this._dataLabel = new Label(this.paraview, {
         text: formatDatapointValue(this.datapoint, chartInfo.yInterval!.end - chartInfo.yInterval!.start, this.paraview.paraState.model!),
@@ -513,11 +513,11 @@ export class Bar extends PlaneDatapointView {
           : this.parent.index)
       };
       this._dataLabel.centerX = this.centerX;
-      if (chartInfo.settings.dataLabelPosition === 'center') {
+      if (chartInfo.config.dataLabelPosition === 'center') {
         this._dataLabel.centerY = this.centerY;
-      } else if (chartInfo.settings.dataLabelPosition === 'end') {
+      } else if (chartInfo.config.dataLabelPosition === 'end') {
         this._dataLabel.top = this.top;
-      } else if (chartInfo.settings.dataLabelPosition === 'base') {
+      } else if (chartInfo.config.dataLabelPosition === 'base') {
         this._dataLabel.bottom = this.bottom;
       } else {
         this._dataLabel.bottom = this.top;
