@@ -74,8 +74,23 @@ export class VennPlotView extends DataLayer {
   }
 
   content(): TemplateResult {
+    const visitedColor = this.paraview.paraState.colors.colorValue('visit');
+    const visitedStrokeWidth = this.paraview.paraState.config.chart.strokeWidth
+      * this.paraview.paraState.config.chart.strokeHighlightScale;
+    const visitedRings = this.datapointViews
+      .filter(v => this.paraview.paraState.isVisited(v.seriesKey, v.index))
+      .map(v => svg`<circle
+        cx=${this._cx + v.xOff}
+        cy=${this._cy + v.yOff}
+        r=${v.r}
+        fill="none"
+        stroke=${visitedColor}
+        stroke-width=${visitedStrokeWidth}
+        pointer-events="none"
+      />`);
     return svg`
       ${super.content()}
+      ${visitedRings}
       ${this._seriesLeaders.map(l => l.render())}
       ${this._seriesLabelItems.map(l => l.render())}
     `;
@@ -557,6 +572,10 @@ export class VennRegionView extends DatapointView {
   protected _yOff: number;
   protected _r: number;
 
+  get xOff() { return this._xOff; }
+  get yOff() { return this._yOff; }
+  get r() { return this._r; }
+
   constructor(parent: SeriesView, x_offset: number = 0, y_offset: number = 0, r: number = 0) {
     super(parent);
     this._xOff = x_offset;
@@ -598,18 +617,10 @@ export class VennRegionView extends DatapointView {
 
   protected _shapeStyleInfo(_shapeIndex: number) {
     const parentStyle = this._parent.styleInfo;
-    const isVisited = this.paraview.paraState.isVisited(this.seriesKey, this.index);
-    const strokeColor = isVisited
-      ? this.paraview.paraState.colors.colorValue('visit')
-      : 'white';
-    const strokeWidth = isVisited
-      ? String(this.paraview.paraState.config.chart.strokeWidth
-          * this.paraview.paraState.config.chart.strokeHighlightScale)
-      : '5';
     return {
       fill: parentStyle.fill,
-      stroke: strokeColor,
-      strokeWidth,
+      stroke: 'white',
+      strokeWidth: '5',
     };
   }
 
