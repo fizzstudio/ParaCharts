@@ -80,11 +80,10 @@ export class VennDiagramInfo extends BaseChartInfo {
     directions.forEach(dir => {
       this._navMap!.node('top', {})!.connect(dir, layer);
     });
-    const nodes = this._paraState.model!.series[0].datapoints.map((datapoint, i) => {
-    //const nodes = this._chartLandingView.children[0].children.map((datapointView, i) => {
+    const nodes = this._paraState.model!.series.map((series, i) => {
       const node = new NavNode(layer, 'datapoint', {
-        seriesKey: datapoint.seriesKey,
-        index: datapoint.datapointIndex
+        seriesKey: series.key,
+        index: 0
       }, this._paraState);
       //node.addDatapointView(datapointView);
       node.connect('out', this._navMap!.root);

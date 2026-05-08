@@ -465,6 +465,7 @@ export class VennPlotView extends DataLayer {
           x,
           y,
         });
+        label.styleInfo = { fill: 'white' };
         this.append(label);
       });
     };
