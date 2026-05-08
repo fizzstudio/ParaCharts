@@ -1,4 +1,5 @@
 
+import { svg, TemplateResult } from 'lit';
 import { DataLayer } from '..';
 import { type BaseChartInfo } from '../../../../chart_types';
 import { DatapointView, SeriesView } from '../../../data';
@@ -9,7 +10,7 @@ import {
 } from '../../../../state';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type DataLayerContext } from '../../../view_context';
-import { type Shape, CircleShape, ArcShape } from '../../../shape';
+import { type Shape, CircleShape, ArcShape, PathShape } from '../../../shape';
 import { Datapoint, enumerate } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { Vec2 } from '../../../../common/vector';
@@ -34,6 +35,8 @@ export class VennPlotView extends DataLayer {
   protected _cx!: number;
   protected _cy!: number;
   protected _radius!: number;
+  protected _seriesLeaders: PathShape[] = [];
+  protected _seriesLabelItems: Label[] = [];
 
   constructor(
     paraview: DataLayerContext,
@@ -68,6 +71,14 @@ export class VennPlotView extends DataLayer {
 
   get datapointViews() {
     return super.datapointViews as VennRegionView[];
+  }
+
+  content(): TemplateResult {
+    return svg`
+      ${super.content()}
+      ${this._seriesLeaders.map(l => l.render())}
+      ${this._seriesLabelItems.map(l => l.render())}
+    `;
   }
 
   protected logSumExpMax(x: number, y: number): number {
@@ -473,6 +484,55 @@ export class VennPlotView extends DataLayer {
     placeLabels(rectanglesA, pointsA, [true, false]);
     placeLabels(rectanglesB, pointsB, [false, true]);
     placeLabels(rectanglesAB, pointsAB, [true, true]);
+
+    this._createSeriesLabels();
+  }
+
+  protected _createSeriesLabels(): void {
+    const series = this.paraview.paraState.model!.series;
+    if (series.length !== 2) return;
+
+    this._seriesLeaders = [];
+    this._seriesLabelItems = [];
+
+    // Series 0 (A): label top-left, just above circle A
+    const circleACenterX = this._cx - 0.5 * this._radius;
+    const circleBCenterX = this._cx + 0.5 * this._radius;
+
+    const leaderLen = 25;
+    const label0X = circleACenterX - leaderLen;
+    const label0Y = this._cy - this._radius - 8;
+    const leader0Start = new Vec2(circleACenterX, this._cy - this._radius);
+    const leader0End = new Vec2(label0X, label0Y);
+
+    // Series 1 (B): label bottom-right, just below circle B
+    const label1X = circleBCenterX + leaderLen;
+    const label1Y = this._cy + this._radius + 18;
+    const leader1Start = new Vec2(circleBCenterX, this._cy + this._radius);
+    const leader1End = new Vec2(label1X, label1Y);
+
+    const configs = [
+      { series: series[0], leaderStart: leader0Start, leaderEnd: leader0End, labelX: label0X, labelY: label0Y, textAnchor: 'end' as LabelTextAnchor },
+      { series: series[1], leaderStart: leader1Start, leaderEnd: leader1End, labelX: label1X, labelY: label1Y, textAnchor: 'start' as LabelTextAnchor },
+    ];
+
+    configs.forEach(({ series: s, leaderStart, leaderEnd, labelX, labelY, textAnchor }, i) => {
+      const colorValue = this.paraview.paraState.colors.colorValueAt(i);
+      const leader = new PathShape(this.paraview, {
+        points: [leaderStart, leaderEnd],
+        stroke: colorValue,
+      });
+      leader.classInfo = { 'label-leader': true };
+      this._seriesLeaders.push(leader);
+
+      const label = new Label(this.paraview, {
+        text: s.getLabel(),
+        x: labelX,
+        y: labelY,
+        textAnchor,
+      });
+      this._seriesLabelItems.push(label);
+    });
   }
 
 
