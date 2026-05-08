@@ -82,13 +82,13 @@ export class DataPanel extends ControlPanelTabPanel {
           <p>Source: <span id="source-name">unknown</span></p>
         </div>
         <div id="data-buttons">
-          ${this.controlPanel.settings.isSparkBrailleControlVisible
+          ${this.controlPanel.config.isSparkBrailleControlVisible
             ? html`
               <button
                 @click=${() => {
                   this.isSparkBrailleVisible = !this.isSparkBrailleVisible;
                   // XXX Does this work?
-                  paraView.paraState.updateSettings(draft => {
+                  paraView.paraState.updateConfig(draft => {
                     draft.controlPanel.isSparkBrailleVisible = this.isSparkBrailleVisible;
                   })
                   //this.controlPanel.requestUpdate();

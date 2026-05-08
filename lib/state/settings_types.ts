@@ -81,54 +81,6 @@ export interface AnimationSettings extends SettingGroup {
 }
 
 /** @public */
-export interface CaptionBoxSettings extends SettingGroup {
-  /** Move caption outside chart when control panel is closed */
-  isCaptionExternalWhenControlPanelClosed: boolean;
-  /** Show border around caption box */
-  hasBorder: boolean;
-  /** Place exploration bar beside caption instead of below */
-  isExplorationBarBeside: boolean;
-}
-
-/** @public */
-export interface ControlPanelSettings extends SettingGroup {
-  /** Open control panel by default */
-  isControlPanelDefaultOpen: boolean;
-  /** Style for tab labels (icon, text, or both) */
-  tabLabelStyle: TabLabelStyle;
-  /** Show chart caption */
-  isCaptionVisible: boolean;
-  /** Show exploration status bar */
-  isExplorationBarVisible: boolean;
-  /** Caption box configuration */
-  caption: CaptionBoxSettings;
-  /** Show spark braille display */
-  isSparkBrailleVisible: boolean;
-  /** Show data table tab */
-  isDataTabVisible: boolean;
-  /** Show colors/appearance tab */
-  isColorsTabVisible: boolean;
-  /** Show audio settings tab */
-  isAudioTabVisible: boolean;
-  /** Show controls/interaction tab */
-  isControlsTabVisible: boolean;
-  /** Show chart settings tab */
-  isChartTabVisible: boolean;
-  /** Show annotations tab */
-  isAnnotationsTabVisible: boolean;
-  /** Show MDR annotations */
-  isMDRAnnotationsVisible: boolean;
-  /** Show analysis tab */
-  isAnalysisTabVisible: boolean;
-  /** Show spark braille control */
-  isSparkBrailleControlVisible: boolean;
-  /** Show color palette control */
-  isColorPaletteControlVisible: boolean;
-  /** Show color vision deficiency control */
-  isCVDControlVisible: boolean;
-}
-
-/** @public */
 export interface TitleSettings extends SettingGroup {
   /** Whether to draw the chart title */
   isDrawTitle: boolean;
@@ -466,8 +418,6 @@ export interface Settings extends SettingGroup {
   animation: AnimationSettings;
   /** Scrollytelling settings */
   scrollytelling: ScrollytellingSettings;
-  /** Control panel settings */
-  controlPanel: ControlPanelSettings;
   /** Navigation assistance settings */
   jim: JimSettings;
   /** Data table settings */

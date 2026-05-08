@@ -1,0 +1,85 @@
+{
+    "family": "controlPanel",
+    "settings": {
+        "isControlPanelDefaultOpen": {
+            "description": "Open control panel by default",
+            "type": "boolean",
+            "default": true
+        },
+        "tabLabelStyle": {
+            "description": "Style for tab labels (icon, text, or both)",
+            "type": "TabLabelStyle",
+            "default": "label"
+        },
+        "isCaptionVisible": {
+            "description": "Show chart caption",
+            "type": "boolean",
+            "default": true
+        },
+        "isExplorationBarVisible": {
+            "description": "Show exploration status bar",
+            "type": "boolean",
+            "default": true
+        },
+        "isSparkBrailleVisible": {
+            "description": "Show spark braille display",
+            "type": "boolean",
+            "default": false
+        },
+        "isDataTabVisible": {
+            "description": "Show data table tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isColorsTabVisible": {
+            "description": "Show colors/appearance tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isAudioTabVisible": {
+            "description": "Show audio settings tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isControlsTabVisible": {
+            "description": "Show controls/interaction tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isChartTabVisible": {
+            "description": "Show chart settings tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isAnnotationsTabVisible": {
+            "description": "Show annotations tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isMDRAnnotationsVisible": {
+            "description": "Show MDR annotations",
+            "type": "boolean",
+            "default": false
+        },
+        "isAnalysisTabVisible": {
+            "description": "Show analysis tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isSparkBrailleControlVisible": {
+            "description": "Show spark braille control",
+            "type": "boolean",
+            "default": true
+        },
+        "isColorPaletteControlVisible": {
+            "description": "Show color palette control",
+            "type": "boolean",
+            "default": true
+        },
+        "isCVDControlVisible": {
+            "description": "Show color vision deficiency control",
+            "type": "boolean",
+            "default": true
+        }
+    }
+}
