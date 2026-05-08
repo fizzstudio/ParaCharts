@@ -260,7 +260,7 @@ export class ParaChart extends ParaComponent {
 
   connectedCallback() {
     super.connectedCallback();
-    this.isControlPanelOpen = this._paraState.settings.controlPanel.isControlPanelDefaultOpen;
+    this.isControlPanelOpen = this._paraState.config.controlPanel.isControlPanelDefaultOpen;
     this._injectFontFace('braille36', brailleFont);
     this._injectFontFace('Atkinson Hyperlegible', hyperFont);
     this._styleManager = new StyleManager(this.shadowRoot!.adoptedStyleSheets[0]);
@@ -285,16 +285,16 @@ export class ParaChart extends ParaComponent {
       '--data-cursor': 'cell',
       '--focus-shadow-color': 'gray',
       '--focus-shadow': 'drop-shadow(0px 0px 4px var(--focus-shadow-color))',
-      '--caption-border': () => this._paraState.settings.controlPanel.caption.hasBorder
+      '--caption-border': () => this._paraState.config.controlPanel.caption.hasBorder
         ? 'solid 2px var(--theme-color)'
         : 'none',
       '--caption-grid-template-columns': () =>
-        this._paraState.settings.controlPanel.isExplorationBarVisible
-        && this._paraState.settings.controlPanel.isCaptionVisible
-        && this._paraState.settings.controlPanel.caption.isExplorationBarBeside
+        this._paraState.config.controlPanel.isExplorationBarVisible
+        && this._paraState.config.controlPanel.isCaptionVisible
+        && this._paraState.config.controlPanel.caption.isExplorationBarBeside
           ? '2fr 1fr' //'auto auto'
           : '1fr',
-      '--exploration-bar-display': () => this._paraState.settings.controlPanel.isExplorationBarVisible
+      '--exploration-bar-display': () => this._paraState.config.controlPanel.isExplorationBarVisible
         ? 'flex'
         : 'none',
       '--chart-font-scale': () => this._paraState.config.chart.fontScale,

@@ -211,7 +211,7 @@ export class ParaCaptionBox extends ParaComponent {
     this._isEBarVisible = sendToEBar
       && !!this._paraState.announcement.text
       && this._paraState.announcement.text !== this._paraState.caption.text;
-    const isCaptionSolo = !this._isEBarVisible || !this._paraState.settings.controlPanel.isExplorationBarVisible;
+    const isCaptionSolo = !this._isEBarVisible || !this._paraState.config.controlPanel.isExplorationBarVisible;
     return html`
       <figcaption class=${this.parachart.isControlPanelOpen ? '' : 'external'}>
         <div id="caption-box">
@@ -219,7 +219,7 @@ export class ParaCaptionBox extends ParaComponent {
             ${ref(this._captionRef)}
             id="caption"
             class=${isCaptionSolo ? 'solo' : ''}
-            ?hidden=${!this._paraState.settings.controlPanel.isCaptionVisible}
+            ?hidden=${!this._paraState.config.controlPanel.isCaptionVisible}
           >
             ${this.renderSummary(this._paraState.caption, 'caption')}
           </div>
@@ -235,7 +235,7 @@ export class ParaCaptionBox extends ParaComponent {
                 ? ''
                 : this.renderSummary(this._paraState.announcement, 'statusbar')}
             </div>
-            ${!this._paraState.settings.controlPanel.caption.isCaptionExternalWhenControlPanelClosed
+            ${!this._paraState.config.controlPanel.caption.isCaptionExternalWhenControlPanelClosed
               || this.parachart.isControlPanelOpen
               ? html`
                 <button

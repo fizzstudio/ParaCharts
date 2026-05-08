@@ -80,11 +80,16 @@ export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
  * @public
  */
 export type LabelFormat = 'raw' | string;
+/** Control panel tab label display style
+ * @public
+ */
+export type TabLabelStyle = 'icon' | 'iconLabel' | 'label';
 
 
 
 export interface Config extends ConfigGroup {
   color: ColorConfig;
+  controlPanel: ControlpanelConfig;
   legend: LegendConfig;
   sonification: SonificationConfig;
   chart: ChartConfig;
@@ -121,6 +126,49 @@ export interface ColorConfig extends ConfigGroup {
   custom7: string;
   /** Custom color 8 */
   custom8: string;
+}
+export interface ControlpanelConfig extends ConfigGroup {
+  /** Open control panel by default */
+  isControlPanelDefaultOpen: boolean;
+  /** Style for tab labels (icon, text, or both) */
+  tabLabelStyle: TabLabelStyle;
+  /** Show chart caption */
+  isCaptionVisible: boolean;
+  /** Show exploration status bar */
+  isExplorationBarVisible: boolean;
+  /** Show spark braille display */
+  isSparkBrailleVisible: boolean;
+  /** Show data table tab */
+  isDataTabVisible: boolean;
+  /** Show colors/appearance tab */
+  isColorsTabVisible: boolean;
+  /** Show audio settings tab */
+  isAudioTabVisible: boolean;
+  /** Show controls/interaction tab */
+  isControlsTabVisible: boolean;
+  /** Show chart settings tab */
+  isChartTabVisible: boolean;
+  /** Show annotations tab */
+  isAnnotationsTabVisible: boolean;
+  /** Show MDR annotations */
+  isMDRAnnotationsVisible: boolean;
+  /** Show analysis tab */
+  isAnalysisTabVisible: boolean;
+  /** Show spark braille control */
+  isSparkBrailleControlVisible: boolean;
+  /** Show color palette control */
+  isColorPaletteControlVisible: boolean;
+  /** Show color vision deficiency control */
+  isCVDControlVisible: boolean;
+  caption: ControlpanelCaptionConfig;
+}
+export interface ControlpanelCaptionConfig extends ConfigGroup {
+  /** Move caption outside chart when control panel is closed */
+  isCaptionExternalWhenControlPanelClosed: boolean;
+  /** Show border around caption box */
+  hasBorder: boolean;
+  /** Place exploration bar beside caption instead of below */
+  isExplorationBarBeside: boolean;
 }
 export interface LegendConfig extends ConfigGroup {
   /** Draw chart legend */

@@ -99,13 +99,6 @@ export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
 // @public
 export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest;
 
-// @public (undocumented)
-export interface CaptionBoxSettings extends SettingGroup {
-    hasBorder: boolean;
-    isCaptionExternalWhenControlPanelClosed: boolean;
-    isExplorationBarBeside: boolean;
-}
-
 // @public
 export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
 
@@ -125,27 +118,6 @@ export interface ChartTypeSettings extends SettingGroup {
 
 // @public
 export type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
-
-// @public (undocumented)
-export interface ControlPanelSettings extends SettingGroup {
-    caption: CaptionBoxSettings;
-    isAnalysisTabVisible: boolean;
-    isAnnotationsTabVisible: boolean;
-    isAudioTabVisible: boolean;
-    isCaptionVisible: boolean;
-    isChartTabVisible: boolean;
-    isColorPaletteControlVisible: boolean;
-    isColorsTabVisible: boolean;
-    isControlPanelDefaultOpen: boolean;
-    isControlsTabVisible: boolean;
-    isCVDControlVisible: boolean;
-    isDataTabVisible: boolean;
-    isExplorationBarVisible: boolean;
-    isMDRAnnotationsVisible: boolean;
-    isSparkBrailleControlVisible: boolean;
-    isSparkBrailleVisible: boolean;
-    tabLabelStyle: TabLabelStyle;
-}
 
 // @public (undocumented)
 export type CsvDataType = 'string' | 'number' | 'date';
@@ -560,7 +532,6 @@ export type SettingGroup = {
 export interface Settings extends SettingGroup {
     animation: AnimationSettings;
     axis: AxesSettings;
-    controlPanel: ControlPanelSettings;
     dataTable: DataTableSettings;
     dev: DevSettings;
     jim: JimSettings;

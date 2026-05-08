@@ -5,7 +5,6 @@ import { ParaDialog, ParaComponent } from '../components';
 import {
   type DeepReadonly,
   type TabLabelStyle,
-  type ControlPanelSettings
 } from '../state/settings_types';
 import { SettingsManager } from '../state/settings_manager';
 import {
@@ -38,6 +37,7 @@ import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { Popup } from '../view/popup';
 import { datapointIdToCursor } from '../state';
 import { AnnotationDialog } from './dialogs/annotation_dialog';
+import { ControlpanelConfig } from '../config/config_types';
 
 
 @customElement('para-control-panel')
@@ -111,9 +111,9 @@ export class ParaControlPanel extends ParaComponent {
     `
   ];
 
-  get settings() {
-    return SettingsManager.getGroupLink<ControlPanelSettings>(
-      this.managedSettingKeys[0], this._paraState.settings);
+  get config() {
+    return SettingsManager.getGroupLink<ControlpanelConfig>(
+      this.managedSettingKeys[0], this._paraState.config);
   }
 
   get managedSettingKeys() {
@@ -308,14 +308,14 @@ export class ParaControlPanel extends ParaComponent {
       <div id="wrapper">
         <fizz-tabs
           ${ref(this._tabsRef)}
-          ?open=${this.settings.isControlPanelDefaultOpen}
+          ?open=${this.config.isControlPanelDefaultOpen}
           class=${deetsState}
-          tablabelmode=${tabLabelModes[this.settings.tabLabelStyle]}
+          tablabelmode=${tabLabelModes[this.config.tabLabelStyle]}
 		      openbuttonarialabel="ParaCharts control panel"
           @open=${
             () => {
               this.paraChart.isControlPanelOpen = true;
-              if (this.settings.caption.isCaptionExternalWhenControlPanelClosed) {
+              if (this.config.caption.isCaptionExternalWhenControlPanelClosed) {
                 this._descriptionPanelRef.value!.internalizeCaptionBox();
               }
               this.requestUpdate();
@@ -324,7 +324,7 @@ export class ParaControlPanel extends ParaComponent {
           @close=${
             () => {
               this.paraChart.isControlPanelOpen = false;
-              if (this.settings.caption.isCaptionExternalWhenControlPanelClosed) {
+              if (this.config.caption.isCaptionExternalWhenControlPanelClosed) {
                 this.externalizeCaptionBox();
               }
               this.requestUpdate();
@@ -351,19 +351,19 @@ export class ParaControlPanel extends ParaComponent {
           <fizz-tab-panel
             tablabel="Data"
             icon=${tabDataIcon}
-            ?hidden=${!this.settings.isDataTabVisible}
+            ?hidden=${!this.config.isDataTabVisible}
           >
             <para-data-panel
               ${ref(this._dataPanelRef)}
               .controlPanel=${this}
               .sparkBrailleData=${this.sparkBrailleData}
-              .isSparkBrailleVisible=${this.settings.isSparkBrailleVisible}
+              .isSparkBrailleVisible=${this.config.isSparkBrailleVisible}
             ></para-data-panel>
           </fizz-tab-panel>
           <fizz-tab-panel
             tablabel="Colors"
             icon=${tabColorsIcon}
-            ?hidden=${!this.settings.isColorsTabVisible}
+            ?hidden=${!this.config.isColorsTabVisible}
           >
             <para-colors-panel
               ${ref(this._colorsPanelRef)}
@@ -374,7 +374,7 @@ export class ParaControlPanel extends ParaComponent {
           <fizz-tab-panel
             tablabel="Audio"
             icon=${tabAudioIcon}
-            ?hidden=${!this.settings.isAudioTabVisible}
+            ?hidden=${!this.config.isAudioTabVisible}
           >
             <para-audio-panel
               .controlPanel=${this}
@@ -384,7 +384,7 @@ export class ParaControlPanel extends ParaComponent {
           <fizz-tab-panel
             tablabel="Controls"
             icon=${tabControlsIcon}
-            ?hidden=${!this.settings.isControlsTabVisible}
+            ?hidden=${!this.config.isControlsTabVisible}
           >
             <para-controls-panel
               ${ref(this._controlsPanelRef)}
@@ -395,7 +395,7 @@ export class ParaControlPanel extends ParaComponent {
           <fizz-tab-panel
             tablabel="Chart"
             icon=${tabChartIcon}
-            ?hidden=${!this.settings.isChartTabVisible}
+            ?hidden=${!this.config.isChartTabVisible}
           >
             <para-chart-panel
               ${ref(this._chartPanelRef)}
@@ -406,23 +406,13 @@ export class ParaControlPanel extends ParaComponent {
           <fizz-tab-panel
             tablabel="Annotations"
             icon=${tabAnalysisIcon}
-            ?hidden=${!this.settings.isAnnotationsTabVisible}
+            ?hidden=${!this.config.isAnnotationsTabVisible}
           >
             <para-annotation-panel
               ${ref(this._annotationPanelRef)}
               .controlPanel=${this}
             ></para-annotation-panel>
           </fizz-tab-panel>
-
-          <!--<fizz-tab-panel
-            tablabel="Analysis"
-            icon=${tabAnalysisIcon}
-            ?hidden=${!this.settings.isAnalysisTabVisible}
-          >
-            <para-analysis-panel
-              .controlPanel=${this}
-            ></para-analysis-panel>
-          </fizz-tab-panel>-->
         </fizz-tabs>
       </div>
       ${this.renderDialog()}

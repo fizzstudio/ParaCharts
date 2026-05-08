@@ -699,7 +699,7 @@ export class ParaState extends BaseState {
   clearAllPointsDimming() {
     this._lowlightedDatapoints = new Set();
   }
-  
+
   get pinnedSeriesKey(): string | null {
     return this._pinnedSeriesKey;
   }
@@ -807,7 +807,7 @@ export class ParaState extends BaseState {
     for (const datapoint of datapoints) {
       this._everVisitedDatapoints.add(makeDatapointId(datapoint.seriesKey, datapoint.datapointIndex));
     }
-    if (this.settings.controlPanel.isMDRAnnotationsVisible) {
+    if (this.config.controlPanel.isMDRAnnotationsVisible) {
       if (this._prevVisitedDatapoints.size > 0) {
         this.removeMDRAnnotations(this._prevVisitedDatapoints);
       }
@@ -1123,7 +1123,7 @@ export class ParaState extends BaseState {
 
   async showMDRAnnotations() {
     if (this.type === 'line') {
-      if (this.settings.controlPanel.isMDRAnnotationsVisible) {
+      if (this.config.controlPanel.isMDRAnnotationsVisible) {
         let seriesAnalysis;
         let seriesKey: string;
         if (this.visitedDatapoints.size > 0) {
@@ -1139,8 +1139,8 @@ export class ParaState extends BaseState {
         };
         if (!seriesAnalysis) {
           this.log.info("This chart does not support AI trend annotations")
-          this.updateSettings(draft => {
-            draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
+          this.updateConfig(draft => {
+            draft.controlPanel.isMDRAnnotationsVisible = !this.config.controlPanel.isMDRAnnotationsVisible;
           });
           return;
         };
@@ -1174,8 +1174,8 @@ export class ParaState extends BaseState {
       }
     } else {
       this.log.info("Trend annotations not currently supported for this chart type");
-      this.updateSettings(draft => {
-        draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
+      this.updateConfig(draft => {
+        draft.controlPanel.isMDRAnnotationsVisible = !this.config.controlPanel.isMDRAnnotationsVisible;
       });
     }
   }

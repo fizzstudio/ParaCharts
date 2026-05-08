@@ -218,8 +218,8 @@ export class AnnotationPanel extends ControlPanelTabPanel {
          <div>
           <button
             @click=${() => {
-                this._paraState.updateSettings(draft => {
-                  draft.controlPanel.isMDRAnnotationsVisible = !this._paraState.settings.controlPanel.isMDRAnnotationsVisible;
+                this._paraState.updateConfig(draft => {
+                  draft.controlPanel.isMDRAnnotationsVisible = !this._paraState.config.controlPanel.isMDRAnnotationsVisible;
                 });
                 this._paraState.showMDRAnnotations()
               }

@@ -75,12 +75,12 @@ export class ColorsPanel extends ControlPanelTabPanel {
         <div class="control-column">
           ${this._paraState.settingControls.getContent('controlPanel.tabs.color.colorContrast')}
 
-          ${this.controlPanel.settings.isColorPaletteControlVisible
+          ${this.controlPanel.config.isColorPaletteControlVisible
             ? this._paraState.settingControls.getContent('controlPanel.tabs.color.colorPalette')
             : nothing
           }
         </div>
-        ${this.controlPanel.settings.isCVDControlVisible
+        ${this.controlPanel.config.isCVDControlVisible
           ? html`
             <div>
               ${this._paraState.settingControls.getContent('controlPanel.tabs.color.colorVision')}

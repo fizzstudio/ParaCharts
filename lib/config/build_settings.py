@@ -108,6 +108,10 @@ export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
  * @public
  */
 export type LabelFormat = 'raw' | string;
+/** Control panel tab label display style
+ * @public
+ */
+export type TabLabelStyle = 'icon' | 'iconLabel' | 'label';
 
 
 """, file=typesf)

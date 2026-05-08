@@ -166,29 +166,6 @@ export const defaults: Settings = {
     isScrollyAnnouncementsEnabled: true,
     isScrollySoniEnabled: true,
   },
-  controlPanel: {
-    isControlPanelDefaultOpen: true,
-    tabLabelStyle: 'label',
-    isCaptionVisible: true,
-    isExplorationBarVisible: true,
-    caption: {
-      isCaptionExternalWhenControlPanelClosed: true,
-      hasBorder: false,
-      isExplorationBarBeside: true
-    },
-    isSparkBrailleVisible: false,
-    isSparkBrailleControlVisible: true,
-    isMDRAnnotationsVisible: false,
-    isDataTabVisible: true,
-    isColorsTabVisible: true,
-    isAudioTabVisible: true,
-    isControlsTabVisible: true,
-    isChartTabVisible: true,
-    isAnnotationsTabVisible: true,
-    isAnalysisTabVisible: true,
-    isColorPaletteControlVisible: true,
-    isCVDControlVisible: true,
-  },
   jim: {
     xValueFormat: 'raw'
   },
