@@ -85,9 +85,31 @@ export class VennDiagramInfo extends BaseChartInfo {
         seriesKey: series.key,
         index: 0
       }, this._paraState);
-      //node.addDatapointView(datapointView);
       node.connect('out', this._navMap!.root);
       node.connect('up', this._navMap!.root);
+
+      // Create a per-circle sub-layer with "only" and "intersection" regions
+      const circleLayer = new NavLayer(this._navMap!, `circle-${series.key}`);
+      const onlyNode = new NavNode(circleLayer, 'venn-part', {
+        seriesKey: series.key,
+        part: 'only'
+      }, this._paraState);
+      const intersectionNode = new NavNode(circleLayer, 'venn-part', {
+        seriesKey: series.key,
+        part: 'intersection'
+      }, this._paraState);
+      // left/right between the two parts (with wrap-around)
+      onlyNode.connect('right', intersectionNode);        // also sets intersectionNode.left = onlyNode
+      intersectionNode.connect('right', onlyNode, false); // wrap: right from intersection → only
+      onlyNode.connect('left', intersectionNode, false);  // wrap: left from only → intersection
+      // up/out from a part returns to the circles layer
+      onlyNode.connect('up', layer, false);
+      onlyNode.connect('out', layer, false);
+      intersectionNode.connect('up', layer, false);
+      intersectionNode.connect('out', layer, false);
+      // down from circle node enters its sub-layer
+      node.connect('down', circleLayer, false);
+
       return node;
     });
     nodes.slice(0, -1).forEach((node, i) => {
@@ -100,6 +122,48 @@ export class VennDiagramInfo extends BaseChartInfo {
   legend() {
   }
 */
+  async navRunDidEnd(cursor: NavNode, quiet = false) {
+    if (cursor.isNodeType('venn-part')) {
+      if (!quiet) {
+        this._paraState.announce([this._describeVennPart(cursor.options.seriesKey, cursor.options.part)]);
+      }
+    } else {
+      await super.navRunDidEnd(cursor, quiet);
+    }
+  }
+
+  private _describeVennPart(seriesKey: string, part: 'only' | 'intersection'): string {
+    const allSeries = this._paraState.model!.series;
+    const seriesLabel = this._paraState.model!.atKey(seriesKey)!.getLabel();
+    const itemMap = new Map<string, { inThisSeries: boolean; inOther: boolean }>();
+    for (const s of allSeries) {
+      for (const dp of s.datapoints) {
+        const item = String(dp.facetValue('item') ?? '');
+        if (!itemMap.has(item)) {
+          itemMap.set(item, { inThisSeries: false, inOther: false });
+        }
+        const entry = itemMap.get(item)!;
+        if (s.key === seriesKey && dp.facetValue('membership') === 'included') {
+          entry.inThisSeries = true;
+        }
+        if (s.key !== seriesKey && dp.facetValue('membership') === 'included') {
+          entry.inOther = true;
+        }
+      }
+    }
+    if (part === 'only') {
+      const items = [...itemMap.entries()]
+        .filter(([, e]) => e.inThisSeries && !e.inOther)
+        .map(([item]) => item);
+      return `${seriesLabel} only: ${items.join(', ')}`;
+    } else {
+      const items = [...itemMap.entries()]
+        .filter(([, e]) => e.inThisSeries && e.inOther)
+        .map(([item]) => item);
+      return `Intersection: ${items.join(', ')}`;
+    }
+  }
+
   playDatapoints(datapoints: PlaneDatapoint[]): Promise<void> {
     return this._sonifier.playDatapoints(datapoints, { invert: true, durationVariable: true });
   }
@@ -136,6 +200,8 @@ export class VennDiagramInfo extends BaseChartInfo {
 
     if (queriedNode.isNodeType('top')) {
       msgArray.push(`Displaying Chart: ${this._paraState.title}`);
+    } else if (queriedNode.isNodeType('venn-part')) {
+      msgArray.push(this._describeVennPart(queriedNode.options.seriesKey, queriedNode.options.part));
     } else if (queriedNode.isNodeType('series')) {
       const seriesKey = queriedNode.options.seriesKey;
       const series = this._paraState.model!.atKey(seriesKey)!;

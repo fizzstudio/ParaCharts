@@ -37,6 +37,7 @@ export class VennPlotView extends DataLayer {
   protected _radius!: number;
   protected _seriesLeaders: PathShape[] = [];
   protected _seriesLabelItems: Label[] = [];
+  protected _intersectionPoints: Point[] = [];
 
   constructor(
     paraview: DataLayerContext,
@@ -88,9 +89,46 @@ export class VennPlotView extends DataLayer {
         stroke-width=${visitedStrokeWidth}
         pointer-events="none"
       />`);
+
+    // Highlight for venn-part navigation
+    const cursor = this.paraview.paraState.chartInfo.navMap?.cursor;
+    let vennPartHighlight = svg``;
+    if (cursor?.isNodeType('venn-part') && this._intersectionPoints.length === 2) {
+      const [p1, p2] = this._intersectionPoints;
+      const r = this._radius;
+      const seriesKeys = this.paraview.paraState.model!.seriesKeys;
+      const seriesIndex = seriesKeys.indexOf(cursor.options.seriesKey);
+      if (cursor.options.part === 'only') {
+        // Crescent shape: outer arc of this circle + inner arc of the other circle as the cut boundary.
+        // Series 0 (left/A): CCW major arc of A (large=1,sweep=0) then CW minor arc of B back (large=0,sweep=1)
+        // Series 1 (right/B): CW major arc of B (large=1,sweep=1) then CCW minor arc of A back (large=0,sweep=0)
+        const crescentD = seriesIndex === 0
+          ? `M ${p1.x},${p1.y} A ${r},${r} 0 1,0 ${p2.x},${p2.y} A ${r},${r} 0 0,1 ${p1.x},${p1.y} Z`
+          : `M ${p1.x},${p1.y} A ${r},${r} 0 1,1 ${p2.x},${p2.y} A ${r},${r} 0 0,0 ${p1.x},${p1.y} Z`;
+        vennPartHighlight = svg`<path
+          d=${crescentD}
+          fill="none"
+          stroke=${visitedColor}
+          stroke-width=${visitedStrokeWidth}
+          pointer-events="none"
+        />`;
+      } else {
+        // lens / intersection shape
+        const d = `M ${p1.x},${p1.y} A ${r},${r} 0 0,1 ${p2.x},${p2.y} A ${r},${r} 0 0,1 ${p1.x},${p1.y} Z`;
+        vennPartHighlight = svg`<path
+          d=${d}
+          fill="none"
+          stroke=${visitedColor}
+          stroke-width=${visitedStrokeWidth}
+          pointer-events="none"
+        />`;
+      }
+    }
+
     return svg`
       ${super.content()}
       ${visitedRings}
+      ${vennPartHighlight}
       ${this._seriesLeaders.map(l => l.render())}
       ${this._seriesLabelItems.map(l => l.render())}
     `;
@@ -374,6 +412,8 @@ export class VennPlotView extends DataLayer {
       { center: { x: this._cx - 0.5 * this._radius, y: this._cy }, radius: this._radius, name: 'A' },
       { center: { x: this._cx + 0.5 * this._radius, y: this._cy }, radius: this._radius, name: 'B' }
     );
+
+    this._intersectionPoints = intersections;
 
     if (intersections.length === 2) {
       const [p1, p2] = intersections;
