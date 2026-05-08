@@ -588,6 +588,31 @@ export class VennRegionView extends DatapointView {
     };
   }
 
+  get classInfo() {
+    // Suppress the `visited` CSS class so the global `.datapoint.visited` rule
+    // doesn't override the fill. We handle the visited highlight via
+    // _shapeStyleInfo (stroke only).
+    const base = super.classInfo;
+    return { ...base, visited: false };
+  }
+
+  protected _shapeStyleInfo(_shapeIndex: number) {
+    const parentStyle = this._parent.styleInfo;
+    const isVisited = this.paraview.paraState.isVisited(this.seriesKey, this.index);
+    const strokeColor = isVisited
+      ? this.paraview.paraState.colors.colorValue('visit')
+      : 'white';
+    const strokeWidth = isVisited
+      ? String(this.paraview.paraState.config.chart.strokeWidth
+          * this.paraview.paraState.config.chart.strokeHighlightScale)
+      : '5';
+    return {
+      fill: parentStyle.fill,
+      stroke: strokeColor,
+      strokeWidth,
+    };
+  }
+
   get x() {
     return super.x;
   }
@@ -614,5 +639,13 @@ export class VennRegionView extends DatapointView {
   }
   protected _createShapes() {
     this._createSymbol();
+  }
+
+  completeLayout() {
+    super.completeLayout();
+    // Prevent HighlightsLayer from rendering a <use> copy of this filled circle
+    // on top of the item labels (which are in the DataLayer above). The visited
+    // state is shown via the stroke color change in _shapeStyleInfo instead.
+    this._parent.chart.unregisterDatapoint(this);
   }
 }
