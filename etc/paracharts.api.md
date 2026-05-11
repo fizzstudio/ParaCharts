@@ -96,29 +96,6 @@ export type BarClusterMode = 'facet';
 // @public
 export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
 
-// @public (undocumented)
-export interface BarSettings extends PlaneChartSettings {
-    barGap: number;
-    barWidth: number;
-    clusterBy?: BarClusterMode;
-    clusterGap: number;
-    clusterLabelFormat: LabelFormat;
-    colorByDatapoint: boolean;
-    dataLabelPosition: BarDataLabelPosition;
-    isAbbrevSeries: boolean;
-    isDrawDataLabels: boolean;
-    isDrawRecordLabels: boolean;
-    isDrawTotalLabels: boolean;
-    isShowPopups: boolean;
-    labelFontSize: string;
-    lineWidth: number;
-    orderBy?: string;
-    stacking: 'none' | 'standard' | string;
-    stackInsideGap: number;
-    stackLabelGap: number;
-    totalLabelGap: number;
-}
-
 // @public
 export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest;
 
@@ -140,13 +117,8 @@ export type ChartTypeInput = 'line' | 'horizontal_bar' | 'vertical_bar' | 'pie' 
 
 // @public
 export interface ChartTypeSettings extends SettingGroup {
-    bar: BarSettings;
-    column: BarSettings;
     heatmap: HeatmapSettings;
     histogram: HistogramSettings;
-    line: LineSettings;
-    lollipop: LollipopSettings;
-    scatter: ScatterSettings;
     stepline: StepLineSettings;
     venn: VennSettings;
     waterfall: WaterfallSettings;
@@ -254,12 +226,12 @@ export const FORMAT_CONTEXT_SETTINGS: {
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
 
 // @public (undocumented)
-export interface HeatmapSettings extends PointSettings {
+export interface HeatmapSettings extends PlaneChartSettings {
     resolution: number;
 }
 
 // @public
-export interface HistogramSettings extends PointSettings {
+export interface HistogramSettings extends PlaneChartSettings {
     bins: number;
     displayAxis: string;
     groupingAxis: string;
@@ -290,20 +262,6 @@ export interface LabelSettings extends SettingGroup {
     fontSize: number;
     isDrawEnabled: boolean;
     margin: number;
-}
-
-// @public (undocumented)
-export interface LineSettings extends PointSettings {
-    baseSymbolSize: number;
-    isAlwaysShowSeriesLabel?: boolean;
-    isShowPopups: boolean;
-    isTrendNavigationModeEnabled: boolean;
-    leaderLineLength: number;
-    lineHighlightScale: number;
-    lineWidth: number;
-    lineWidthMax: number;
-    lowVisionLineWidth: number;
-    seriesLabelPadding: number;
 }
 
 // @public
@@ -343,10 +301,6 @@ export type LoadManifestResult = LoadManifestSuccess | LoadManifestFailure;
 export type LoadManifestSuccess = {
     success: true;
 };
-
-// @public
-export interface LollipopSettings extends BarSettings {
-}
 
 // @public (undocumented)
 export interface ManifestBuilderInput {
@@ -552,6 +506,8 @@ export class ParaChart extends ParaComponent {
     // (undocumented)
     headless: boolean;
     // (undocumented)
+    protected _injectFontFace(family: string, url: string): void;
+    // (undocumented)
     isControlPanelOpen: boolean;
     // (undocumented)
     isDataTableVisible: boolean;
@@ -684,12 +640,6 @@ export interface PlotSettings extends SettingGroup {
 // @public
 export type PointChartType = 'line' | 'stepline' | 'scatter';
 
-// @public (undocumented)
-export interface PointSettings extends PlaneChartSettings {
-    pointLabelFormat: LabelFormat;
-    selectedPointMarkerSize: Size2d;
-}
-
 // @public
 export interface PopupSettings extends SettingGroup {
     activation: "onHover" | "onFocus" | "onSelect";
@@ -712,12 +662,6 @@ export type RadialChartType = 'pie' | 'donut' | 'gauge';
 
 // @public
 export type riffSpeeds = 'slow' | 'medium' | 'fast';
-
-// @public (undocumented)
-export interface ScatterSettings extends PointSettings {
-    isShowOutliers: boolean;
-    isShowTrendLine: boolean;
-}
 
 // @public
 export interface ScrollytellingSettings extends SettingGroup {
@@ -760,7 +704,7 @@ export interface StatusBarSettings extends SettingGroup {
 }
 
 // @public (undocumented)
-export interface StepLineSettings extends PointSettings {
+export interface StepLineSettings extends PlaneChartSettings {
     baseSymbolSize: number;
     isAlwaysShowSeriesLabel?: boolean;
     leaderLineLength: number;
