@@ -82,7 +82,7 @@ export const defaultConfig: Config = {
       height: 450,
       orientation: "north",
       padding: "8 30",
-      fontFamily: "Helvetica",
+      fontFamily: "Atkinson Hyperlegible",
       fontWeight: "300",
       fontScale: 1,
       isUseBraille: false,
