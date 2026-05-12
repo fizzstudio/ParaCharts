@@ -23,6 +23,9 @@ export class FontSettingsDialog extends SettingControlContainer {
   @property() btnText = 'Okay';
 
   static styles = css`
+    fizz-dialog {
+      --item-gap: 1rem;
+    }
   `;
 
   connectedCallback() {
