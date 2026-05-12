@@ -458,6 +458,9 @@ export class PopupSettingsDialog extends ParaComponent {
     @property() btnText = 'Okay';
 
     static styles = css`
+    fizz-dialog {
+        --item-gap: 1rem;
+    }
     #controls {
       display: flex;
       flex-direction: column;
@@ -606,13 +609,7 @@ export class PopupSettingsDialog extends ParaComponent {
         title="Popup Settings"
         .buttons=${[{ tag: 'cancel', text: this.btnText }]}
       >
-        <div id="controls">
-          <div id="popup-settings"
-            class="popup-views"
-          >
-            ${this._paraState.settingControls.getContent('controlPanel.tabs.chart.dialog.popups')}
-          </div>
-        </div>
+        ${this._paraState.settingControls.getContent('controlPanel.tabs.chart.dialog.popups')}
       </fizz-dialog>
     `;
     }
