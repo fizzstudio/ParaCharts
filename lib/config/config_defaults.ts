@@ -69,10 +69,17 @@ export const defaultConfig: Config = {
       isArpeggiateChords: true,
     },
     chart: {
+      subtitle: {
+        isDrawSubtitle: true,
+        text: "",
+        margin: 20,
+        fontSize: "11pt",
+        align: "center",
+      },
       title: {
         isDrawTitle: true,
         text: "",
-        margin: 40,
+        margin: 20,
         fontSize: "12pt",
         align: "center",
         position: "top",

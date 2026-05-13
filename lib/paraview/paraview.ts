@@ -157,6 +157,9 @@ export class ParaView extends ParaComponent implements ViewContext {
       .chart-title {
         font-size: calc(var(--chart-title-font-size)*var(--chart-font-scale));
       }
+      .chart-subtitle {
+        font-size: calc(var(--chart-subtitle-font-size)*var(--chart-font-scale));
+      }
       .axis-title-horiz {
         font-size: calc(var(--horiz-axis-title-font-size)*var(--chart-font-scale));
       }
@@ -433,9 +436,10 @@ export class ParaView extends ParaComponent implements ViewContext {
     this._controller ??= new ParaViewController(this._paraState);
     this._storeChangeUnsub = this._paraState.subscribe(async (key, value) => {
       if (key === 'data') {
-        await this.dataUpdated();
+        await this._dataUpdated();
       }
       await this._documentView?.storeDidChange(key, value);
+      await this._paraState.chartInfo?.storeDidChange(key, value);
     });
     this.computeViewBox();
     // this._hotkeyActions ??= new NormalHotkeyActions(this);
@@ -452,7 +456,7 @@ export class ParaView extends ParaComponent implements ViewContext {
   }
 
   // Anything that needs to be done when data is updated, do here
-  private async dataUpdated(): Promise<void> {
+  protected async _dataUpdated(): Promise<void> {
     try {
       this._paraState.chartInfo.setParaView(this);
       this.createDocumentView();

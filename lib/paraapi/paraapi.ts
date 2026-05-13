@@ -773,7 +773,6 @@ export class ParaAPI {
     });
   }
 
-
   removeTrendLine() {
     this.paraChart.paraState.updateConfig(draft => {
       draft.type.scatter.isShowTrendLine = false;

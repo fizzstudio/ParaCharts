@@ -22,7 +22,9 @@ export class ScatterChartInfo extends PointChartInfo {
       const cluster = async () => {
         this._paraState.clusterAnalyses = await this._generateClustering();
         (this._paraState.chartInfo as ScatterChartInfo)._clustering = this._paraState.clusterAnalyses;
-        this._paraView.documentView?.init();
+        // Make sure _paraView exists
+        while (await !this._paraView) {}
+        this._paraView.documentView!.init();
       };
       cluster()
     }
@@ -60,7 +62,7 @@ export class ScatterChartInfo extends PointChartInfo {
     await super.storeDidChange(key, value);
     if (key === 'clusterAnalyses') {
       this._createClusterNavNodes();
-      this._paraView.documentView?.chartLayers.dataLayer.init();
+      //this._paraView.documentView?.chartLayers.dataLayer.init();
     }
   }
   async _generateClustering() {
