@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { BaseChartInfo, RiffOrder } from './base_chart';
-import { type ParaState, directions, type HorizDirection, datapointIdToCursor } from '../state';
+import { type ParaState, directions, type Direction, type HorizDirection, datapointIdToCursor } from '../state';
 import { type ParaView } from '../paraview';
 import { queryMessages, describeSelections, getDatapointMinMax } from '../state/query_utils';
 import { Datapoint } from '@fizz/paramodel';
@@ -118,10 +118,29 @@ export class VennDiagramInfo extends BaseChartInfo {
     nodes.at(-1)!.connect('right', nodes[0]);
   }
 
-  /*
-  legend() {
+  async move(dir: Direction) {
+    const dirStr = dir as string;
+    if ((dirStr === 'shiftleft' || dirStr === 'shiftright')
+        && this._navMap!.cursor.isNodeType('venn-part')) {
+      const allParts = this._paraState.model!.series.flatMap(series => [
+        { seriesKey: series.key, part: 'only' as const },
+        { seriesKey: series.key, part: 'intersection' as const },
+      ]);
+      const cursor = this._navMap!.cursor;
+      const currentIndex = allParts.findIndex(
+        p => p.seriesKey === cursor.options.seriesKey && p.part === cursor.options.part
+      );
+      if (currentIndex !== -1) {
+        const delta = dirStr === 'shiftright' ? 1 : -1;
+        const nextIndex = (currentIndex + delta + allParts.length) % allParts.length;
+        this._navMap!.goTo('venn-part', allParts[nextIndex]);
+        this._paraState.postNotice('move', { dir, options: this._navMap!.cursor.options });
+        return;
+      }
+    }
+    await super.move(dir);
   }
-*/
+
   async navRunDidEnd(cursor: NavNode, quiet = false) {
     if (cursor.isNodeType('venn-part')) {
       if (!quiet) {
