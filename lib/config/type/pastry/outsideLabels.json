@@ -79,7 +79,7 @@
             "panel": "chart"
         },
         "contents": {
-            "label": "Outside labels",
+            "label": "cpanel.tabs.chart.pastry_outside_labels",
             "description": "Label content template",
             "type": "string",
             "default": "percentage:(value)",

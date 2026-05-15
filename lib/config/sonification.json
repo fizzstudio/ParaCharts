@@ -2,7 +2,7 @@
     "family": "audio",
     "settings": {
         "isSonificationEnabled": {
-            "label": "Sonification",
+            "label": "cpanel.tabs.audio.sonification",
             "description": "Enable sonification audio feedback",
             "type": "boolean",
             "default": false,
@@ -13,7 +13,7 @@
             "keywords": ["audio", "sonification"]
         },
         "isRiffEnabled": {
-            "label": "Series riff enabled",
+            "label": "cpanel.tabs.audio.soni_dialog.play_series_riff",
             "description": "Enable series riff playback",
             "type": "boolean",
             "default": true,
@@ -24,7 +24,7 @@
             "keywords": ["audio", "sonification"]
         },
         "isNotificationEnabled": {
-            "label": "Notification sounds",
+            "label": "cpanel.tabs.audio.soni_dialog.notification_sounds",
             "description": "Enable audio notifications",
             "type": "boolean",
             "default": true,
@@ -35,7 +35,7 @@
             "keywords": ["audio", "sonification"]
         },
         "hertzLower": {
-            "label": "Lower hertz",
+            "label": "cpanel.tabs.audio.soni_dialog.lower_hertz",
             "description": "Lower frequency bound in Hz",
             "type": "number",
             "default": 35,
@@ -52,7 +52,7 @@
             "keywords": ["audio", "sonification"]
         },
         "hertzUpper": {
-            "label": "Upper hertz",
+            "label": "cpanel.tabs.audio.soni_dialog.upper_hertz",
             "description": "Upper frequency bound in Hz",
             "type": "number",
             "default": 96,
@@ -69,7 +69,7 @@
             "keywords": ["audio", "sonification"]
         },
         "riffSpeedIndex": {
-            "label": "Riff speed",
+            "label": "cpanel.tabs.audio.soni_dialog.riff_speed",
             "description": "Speed for musical riffs",
             "type": "number",
             "default": 2,
@@ -85,7 +85,7 @@
             "keywords": ["audio", "sonification"]
         },
         "isArpeggiateChords": {
-            "label": "Chords are arpeggiated",
+            "label": "cpanel.tabs.audio.soni_dialog.arpeg_chords",
             "description": "Play chords as arpeggios",
             "type": "boolean",
             "default": true,

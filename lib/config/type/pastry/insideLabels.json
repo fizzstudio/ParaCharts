@@ -23,7 +23,7 @@
             "panel": "chart"
         },
         "contents": {
-            "label": "Inside labels",
+            "label": "cpanel.tabs.chart.pastry_inside_labels",
             "description": "Label content template",
             "type": "string",
             "default": "category",

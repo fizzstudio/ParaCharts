@@ -2,7 +2,7 @@
     "family": "popup",
     "settings": {
         "opacity": {
-            "label": "Opacity",
+            "label": "cpanel.tabs.chart.popup_dialog.opacity",
             "description": "Background opacity (0-1)",
             "type": "number",
             "default": 1,
@@ -15,7 +15,7 @@
             "parentView": "controlPanel.tabs.chart.dialog.popups"
         },
         "leftPadding": {
-            "label": "Left padding",
+            "label": "cpanel.tabs.chart.popup_dialog.left_padding",
             "description": "Left padding inside popup",
             "type": "number",
             "default": 10,
@@ -28,7 +28,7 @@
             "parentView": "controlPanel.tabs.chart.dialog.popups"
         },
         "rightPadding": {
-            "label": "Right padding",
+            "label": "cpanel.tabs.chart.popup_dialog.right_padding",
             "description": "Right padding inside popup",
             "type": "number",
             "default": 10,
@@ -41,7 +41,7 @@
             "parentView": "controlPanel.tabs.chart.dialog.popups"
         },
         "upPadding": {
-            "label": "Up padding",
+            "label": "cpanel.tabs.chart.popup_dialog.up_padding",
             "description": "Top padding inside popup",
             "type": "number",
             "default": 10,
@@ -54,7 +54,7 @@
             "parentView": "controlPanel.tabs.chart.dialog.popups"
         },
         "downPadding": {
-            "label": "Down padding",
+            "label": "cpanel.tabs.chart.popup_dialog.down_padding",
             "description": "Bottom padding inside popup",
             "type": "number",
             "default": 10,
@@ -67,7 +67,7 @@
             "parentView": "controlPanel.tabs.chart.dialog.popups"
         },
         "margin": {
-            "label": "Vertical margin",
+            "label": "cpanel.tabs.chart.popup_dialog.margin",
             "description": "Margin around popup",
             "type": "number",
             "default": 40,
@@ -80,7 +80,7 @@
             "parentView": "controlPanel.tabs.chart.dialog.popups"
         },
         "maxWidth": {
-            "label": "Max width",
+            "label": "cpanel.tabs.chart.popup_dialog.max_width",
             "description": "Maximum width before text wraps",
             "type": "number",
             "default": 175,
@@ -93,7 +93,7 @@
             "parentView": "controlPanel.tabs.chart.dialog.popups"
         },
         "shape": {
-            "label": "Shape",
+            "label": "cpanel.tabs.chart.popup_dialog.shape",
             "description": "Visual style of popup",
             "type": "'box' | 'boxWithArrow'",
             "default": "boxWithArrow",
@@ -104,7 +104,7 @@
             "parentView": "controlPanel.tabs.chart.dialog.popups"
         },
         "activation": {
-            "label": "Activate popups on",
+            "label": "cpanel.tabs.chart.popup_dialog.activation",
             "description": "When popup appears",
             "type": "'onHover' | 'onFocus' | 'onSelect'",
             "default": "onHover",
@@ -115,7 +115,7 @@
             "parentView": "controlPanel.tabs.chart.dialog.popups"
         },
         "borderRadius": {
-            "label": "Border radius",
+            "label": "cpanel.tabs.chart.popup_dialog.border_radius",
             "description": "Corner radius for rounded popups",
             "type": "number",
             "default": 5,
@@ -128,7 +128,7 @@
             "parentView": "controlPanel.tabs.chart.dialog.popups"
         },
         "backgroundColor": {
-            "label": "Color mode",
+            "label": "cpanel.tabs.chart.popup_dialog.bg_color",
             "description": "Background color scheme",
             "type": "'dark' | 'light'",
             "default": "dark",
@@ -139,7 +139,7 @@
             "parentView": "controlPanel.tabs.chart.dialog.popups"
         },
         "isShowCrosshair": {
-            "label": "Show Crosshair?",
+            "label": "cpanel.tabs.chart.popup_dialog.crosshair",
             "description": "Show crosshair",
             "type": "boolean",
             "default": true,
@@ -147,7 +147,7 @@
             "parentView": "controlPanel.tabs.chart.dialog.popups"
         },
         "isCrosshairFollowPointer": {
-            "label": "Track Crosshair to pointer?",
+            "label": "cpanel.tabs.chart.popup_dialog.crosshair_follow",
             "description": "Make crosshair follow pointer",
             "type": "boolean",
             "default": false,

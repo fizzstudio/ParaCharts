@@ -1,0 +1,72 @@
+{
+    "ja": {
+        "cpanel": {
+            "tabs": {
+                "description": {
+                    "title": "記述"
+                },
+                "data": {
+                    "title": "データ",
+                    "source": "情報源",
+                    "unknown": "不明",
+                    "save_data": "データを保存",
+                    "save_chart": "図表を保存",
+                    "data_table": "データ表",
+                    "source_links": "情報源のリンク"
+                },
+                "colors": {
+                    "title": "配色",
+                    "dark_mode": "ダークモード",
+                    "contrast": "コントラスト",
+                    "low_vision": "低視力モード",
+                    "color_palette": "色彩パレット",
+                    "cvd_colors": "CVD（色覚異常）の色彩"
+                },
+                "audio": {
+                    "title": "音声",
+                    "self_voicing": "自己発声",
+                    "tour_guide": "ツアーガイド",
+                    "pause_tour_guide": "ツアーガイドを再生/一時停止",
+                    "speech_rate": "発声速度",
+                    "announce_screen_reader": "スクリーンリーダーに発表"
+                },
+                "controls": {
+                    "title": "コントロール",
+                    "keyboard_controls": "ショートカットキー",
+                    "fullscreen": "フルスクリーン",
+                    "animation": "アニメーション",
+                    "animation_settings": "アニメーション設定",
+                    "help": "ヘルプ",
+                    "advanced_controls": "詳細設定",
+                    "anim_dialog": {
+                        "animation_type": "アニメーション型",
+                        "animation_rate": "アニメーション速度",
+                        "animation_origin": "アニメーション起点",
+                        "animation_origin_value": "アニメーション起点の値"
+                    }
+                },
+                "chart": {
+                    "title": "図表",
+                    "width": "横",
+                    "height": "縦",
+                    "min_y": "最小のY値",
+                    "max_y": "最大のY値",
+                    "caption_format": "キャプション型",
+                    "line_width": "線の厚さ",
+                    "show_symbols": "記号を表示",
+                    "show_popups": "ポップアップを表示",
+                    "popup_settings": "ポップアップ設定",
+                    "font_settings": "フォント設定"
+                },
+                "annotations": {
+                    "title": "注釈",
+                    "add_annotation": "注釈を追加",
+                    "add_line_breaks": "線切断を追加",
+                    "remove_line_breaks": "線切断を除去",
+                    "show_annotations": "トレンド注釈を表示"
+
+                }
+            }
+        }
+    }
+}

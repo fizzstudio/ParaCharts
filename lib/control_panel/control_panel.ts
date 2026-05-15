@@ -326,6 +326,7 @@ export class ParaControlPanel extends ParaComponent {
   }
 
   render() {
+    const description = this._globalState.l10n?.localize('cpanel.tabs.description.title') ?? '';
     let deetsState = this._panelOpen ? 'expanded' : 'collapsed';
 //    deetsState += this.todo.darkMode ? ' darkmode' : '';
 
@@ -361,6 +362,7 @@ export class ParaControlPanel extends ParaComponent {
           class=${deetsState}
           tablabelmode=${tabLabelModes[this.config.tabLabelStyle]}
 		      openbuttonarialabel="ParaCharts control panel"
+          style="--tab-text-transform: capitalize"
           @open=${
             () => {
               this.paraChart.isControlPanelOpen = true;
@@ -389,7 +391,7 @@ export class ParaControlPanel extends ParaComponent {
           }}
         >
           <fizz-tab-panel
-            tablabel="Description"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.description.title')}
             icon=${tabDescriptionIcon}
           >
             <para-description-panel
@@ -398,7 +400,7 @@ export class ParaControlPanel extends ParaComponent {
             ></para-description-panel>
           </fizz-tab-panel>
           <fizz-tab-panel
-            tablabel="Data"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.data.title')}
             icon=${tabDataIcon}
             ?hidden=${!this.config.isDataTabVisible}
           >
@@ -410,7 +412,7 @@ export class ParaControlPanel extends ParaComponent {
             ></para-data-panel>
           </fizz-tab-panel>
           <fizz-tab-panel
-            tablabel="Colors"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.colors.title')}
             icon=${tabColorsIcon}
             ?hidden=${!this.config.isColorsTabVisible}
           >
@@ -421,7 +423,7 @@ export class ParaControlPanel extends ParaComponent {
           </fizz-tab-panel>
 
           <fizz-tab-panel
-            tablabel="Audio"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.audio.title')}
             icon=${tabAudioIcon}
             ?hidden=${!this.config.isAudioTabVisible}
           >
@@ -431,7 +433,7 @@ export class ParaControlPanel extends ParaComponent {
           </fizz-tab-panel>
 
           <fizz-tab-panel
-            tablabel="Controls"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.controls.title')}
             icon=${tabControlsIcon}
             ?hidden=${!this.config.isControlsTabVisible}
           >
@@ -442,7 +444,7 @@ export class ParaControlPanel extends ParaComponent {
           </fizz-tab-panel>
 
           <fizz-tab-panel
-            tablabel="Chart"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.chart.title')}
             icon=${tabChartIcon}
             ?hidden=${!this.config.isChartTabVisible}
           >
@@ -453,7 +455,7 @@ export class ParaControlPanel extends ParaComponent {
           </fizz-tab-panel>
 
           <fizz-tab-panel
-            tablabel="Annotations"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.annotations.title')}
             icon=${tabAnalysisIcon}
             ?hidden=${!this.config.isAnnotationsTabVisible}
           >
