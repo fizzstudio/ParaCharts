@@ -479,19 +479,27 @@ export class DocumentView extends Container(View) {
     const margin = this._paraState.config.legend.margin;
     if (position === 'east') {
       this._legends.east?.remove();
-      this._legends.east = new Legend(this.paraview, items);
+      this._legends.east = new Legend(this.paraview, items,
+        {
+          orientation: 'vert',
+          rowGap: 5
+        });
       this._legends.east.padding = {
         top: 0,
         right: 0,
         bottom: 0,
-        left: margin
+        left: margin,
       };
       this.append(this._legends.east);
       // this._legends.east.updateSize();
       // this._grid.setColGap(this._directLabelStrip ? 2 : 1, margin);
     } else if (position === 'west') {
       this._legends.west?.remove();
-      this._legends.west = new Legend(this.paraview, items);
+      this._legends.west = new Legend(this.paraview, items,
+        {
+          orientation: 'vert',
+          rowGap: 5
+        });
       this._legends.west.padding = {
         top: 0,
         right: margin,
@@ -504,7 +512,8 @@ export class DocumentView extends Container(View) {
       this._legends.south?.remove();
       this._legends.south = new Legend(this.paraview, items, {
         orientation: 'horiz',
-        wrapWidth: 300 // this._chartLayers.paddedWidth
+        wrapWidth: this._width,
+        rowGap: 5
       });
       this._legends.south.padding = {
         top: margin,
@@ -517,7 +526,8 @@ export class DocumentView extends Container(View) {
       this._legends.north?.remove();
       this._legends.north = new Legend(this.paraview, items, {
         orientation: 'horiz',
-        wrapWidth: 300 // this._chartLayers.paddedWidth
+        wrapWidth: this._width,
+        rowGap: 5
       });
       this._legends.north.padding = {
         top: 0,

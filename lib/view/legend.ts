@@ -31,6 +31,7 @@ export type LegendOrientation = 'horiz' | 'vert';
 export interface LegendOptions {
   orientation: LegendOrientation;
   wrapWidth: number;
+  rowGap: number;
 }
 
 const intersperse = (...arrays: any[][]) => {
@@ -113,7 +114,6 @@ export class Legend extends Container(View) {
         textAnchor: 'start',
         classList: ['legend-label'],
         pointerEnter: (e) => {
-
           if (this.paraview.paraState.pinnedSeriesKey !== null) return;
           if ((this.paraview.paraState.chartInfo as ScatterChartInfo).clustering
             && !this.paraview.paraState.model?.multi) {
@@ -137,16 +137,17 @@ export class Legend extends Container(View) {
     });
     const symLabelGap = this.paraview.paraState.config.legend.symbolLabelGap;
     const pairGap = this.paraview.paraState.config.legend.pairGap;
+    let labelsPerRow = views.length/3;
     if (this._options.orientation === 'vert') {
       this._grid = new SimpleGridLayout(this.paraview, {
         numCols: 3,
         colGaps: symLabelGap,
         colAligns: ['center', 'center', 'start'],
+        rowGaps: this._options.rowGap ? new Array(labelsPerRow + 1).fill(this._options.rowGap) : undefined
       }, 'legend-grid');
       this._grid.padding = hasLegendBox ? this.paraview.paraState.config.legend.padding : 0;
       views.forEach(v => this._grid.append(v));
     } else {
-      let labelsPerRow = views.length/3;
       while (true) {
         const colGaps = intersperse(
           new Array(labelsPerRow).fill(0),
@@ -155,9 +156,11 @@ export class Legend extends Container(View) {
         this._grid = new SimpleGridLayout(this.paraview, {
           numCols: labelsPerRow*3,
           colGaps: colGaps,
+          rowGaps: new Array(labelsPerRow + 1).fill(this._options.rowGap)
         }, 'legend-grid');
         this._grid.padding = hasLegendBox ? this.paraview.paraState.config.legend.padding : 0;
         views.forEach(v => this._grid.append(v));
+        this._grid.updateSize();
         if (this._options.wrapWidth === undefined ||
             this._grid.paddedWidth <= this._options.wrapWidth ||
             labelsPerRow === 1) {
@@ -169,6 +172,7 @@ export class Legend extends Container(View) {
         views.forEach(v => v.remove());
       }
       this._grid.colAligns = intersperse(
+        new Array(labelsPerRow).fill('center'),
         new Array(labelsPerRow).fill('center'),
         new Array(labelsPerRow).fill('start'));
     }

@@ -48,7 +48,7 @@
             "label": "Font family",
             "description": "Font family for all chart text",
             "type": "string",
-            "default": "Helvetica",
+            "default": "Atkinson Hyperlegible",
             "control": "dropdown",
             "controlOptions": {
                 "options": ["Helvetica", "Verdana", "Tahoma", "Times New Roman", "Georgia", "Atkinson Hyperlegible"]

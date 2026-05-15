@@ -37,7 +37,8 @@ export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}
   waterfall: {
     //'axis.horiz.ticks.isDrawTicks': false,
     'grid.isDrawVertLines': false
-  }
+  },
+  scatter: { 'legend.position': 'north' }
 };
 
 /**

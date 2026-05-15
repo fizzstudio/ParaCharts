@@ -23,10 +23,8 @@ export class AnimationDialog extends ParaComponent {
   @property() btnText = 'Okay';
 
   static styles = css`
-    #animation-controls {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+    fizz-dialog {
+      --item-gap: 1rem;
     }
   `;
 
@@ -117,9 +115,7 @@ export class AnimationDialog extends ParaComponent {
         title="Animation Settings"
         .buttons=${[{ tag: 'cancel', text: this.btnText }]}
       >
-        <div id="animation-controls">
-          ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.animation')}
-        </div>
+        ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.animation')}
       </fizz-dialog>
     `;
   }

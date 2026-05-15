@@ -179,11 +179,11 @@ export class ScatterChartInfo extends PointChartInfo {
     }
     else {
       return this.clustering.map((c, i) => ({
-        label: `cluster ${i + 1}`,
+        label: `cluster ${i + 1} (${c.regionDesc})`,
         seriesKey: model.seriesKeys[0],
         color: i,
         symbol: types[i],
-        symbolOptions: { lighten: true }
+        symbolOptions: { lighten: true },
       }))
     }
   }
