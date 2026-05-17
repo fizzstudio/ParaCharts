@@ -404,6 +404,9 @@ export class ParaState extends BaseState {
     // this.settings = hydratedSettings as Settings;
     const hydratedConfig = SettingsManager.hydrateInput(inputSettings) as Partial<Config>;
     SettingsManager.suppleteSettings(hydratedConfig, defaultConfig);
+    for (const [path, value] of Object.entries(inputSettings)) {
+      SettingsManager.set(path, value, hydratedConfig as ConfigGroup, true);
+    }
     this.config = hydratedConfig as Config;
     // SettingsManager.suppleteSettings(this.settings, this.config as unknown as Settings);
     this._configResetCallbacks.forEach(cb => cb());

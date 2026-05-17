@@ -1,6 +1,6 @@
 import { Logger, getLogger } from '@fizz/logger';
 import { type SettingsInput } from '../config/config_types';
-import { Colors, Color, Palette } from '../common/colors';
+import { Palette } from '../common/colors';
 import { type DataSymbolType, type DataSymbolShape, type DataSymbolFill } from '../view/symbol';
 import { type ParaState } from './parastate';
 
@@ -92,7 +92,7 @@ export class CustomPropertyLoader {
           .filter(this._isParaProp.bind(this))
           .map((propName) => {
             return {
-              [propName]: styleRule.style.getPropertyValue(propName)
+              [propName]: styleRule.style.getPropertyValue(propName).trim()
             }
           });
 
@@ -164,10 +164,8 @@ export class CustomPropertyLoader {
 
   protected _isColorProp(propName: string): boolean {
     const colorMatch = propName.match(/series-\d+-color/gi);
-    const palletteMatch = propName.match(/palette/gi);
-    // let result = string.match(/eek/gi);
-    const isColorProp = (colorMatch?.length || palletteMatch?.length) ? true : false;
-    return isColorProp;
+    const paletteMatch = propName === `${this._customPrefix}palette`;
+    return (colorMatch?.length || paletteMatch) ? true : false;
   }
 
   protected _processColorProps(propName: string, propValue: string) {

@@ -236,6 +236,7 @@ export class ParaAPI {
     getConfigSettings(settingPaths: string[]): SettingsInput;
     // Warning: (ae-forgotten-export) The symbol "ConfigGroupSettingsMetadata" needs to be exported by the entry point index-ai.d.ts
     getConfigSettingsMetadata(keywords: string[]): ConfigGroupSettingsMetadata;
+    getCustomProperties(): SettingsInput;
     getDescription(): Promise<string | undefined>;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIHorizontalAxis" needs to be exported by the entry point index-ai.d.ts
     getHorizontalAxis(): ParaAPIHorizontalAxis;
