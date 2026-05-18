@@ -18,7 +18,7 @@ export interface Oklch {
 // Internal helpers
 // ---------------------------------------------------------------------------
 
-function gammaToLinear(x: number): number {
+export function gammaToLinear(x: number): number {
   return x <= 0.04045
     ? x / 12.92
     : ((x + 0.055) / 1.055) ** 2.4;

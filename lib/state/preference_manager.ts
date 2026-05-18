@@ -1,7 +1,12 @@
+import { Logger, getLogger } from '@fizz/logger';
 import { type ParaState } from './parastate';
 import { type Setting } from '.';
 import { type ColorPrefSource } from '../config/config_types';
 import { hexToOklch, formatOklch } from '../common/color_space';
+import {
+  cssColorToHex, checkContrast,
+  type ContrastWarning, type ContrastRole,
+} from '../common/contrast';
 
 // ---------------------------------------------------------------------------
 // PreferenceManager — generic localStorage helper for any preference category
@@ -107,6 +112,7 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
   private readonly _mqlHandlers = new Map<string, (e: MediaQueryListEvent) => void>();
   private readonly _settingObservers: Array<{ path: string; fn: (o: Setting, n: Setting) => void }> = [];
   private _unregisterConfigReset?: () => void;
+  private readonly _log: Logger = getLogger('ColorPrefManager');
 
   /** True while the manager itself is updating config — suppresses localStorage writes in observers. */
   private _programmaticUpdate = false;
@@ -333,6 +339,7 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
       this._programmaticUpdate = true;
       this._paraState.updateConfig(draft => { draft.color.isDarkModeEnabled = false; });
       this._programmaticUpdate = false;
+      this._paraState.updateContrastWarnings([]);
       return;
     }
 
@@ -374,6 +381,90 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
         : (color.backgroundColorLight || 'oklch(1 0 0)');
     });
     this._programmaticUpdate = false;
+
+    this._paraState.updateContrastWarnings(this._checkContrast());
+  }
+
+  // -------------------------------------------------------------------------
+  // Private — contrast checking
+  // -------------------------------------------------------------------------
+
+  /**
+   * Check WCAG and APCA contrast for key foreground colors against the resolved
+   * background. Returns one ContrastWarning per failing pair.
+   *
+   * Skips the check when forced-colors is active — the OS manages contrast.
+   */
+  private _checkContrast(): ContrastWarning[] {
+    const color = this._paraState.config.color;
+
+    // Skip entirely under forced-colors (OS controls rendering).
+    const sys = this.getSystemState();
+    if (sys.forcedColorsActive && color.forcedColorsMode === 'system') return [];
+
+    const bgRaw = color.backgroundColor;
+    if (!bgRaw) return [];
+
+    const bgHex = cssColorToHex(bgRaw);
+    if (!bgHex) return [];
+
+    // Compute the label/axis color using the same formula as paraview._rootStyle().
+    const pct = color.contrastLevel * 50;
+    const labelLightness = color.isDarkModeEnabled ? 50 + pct : 50 - pct;
+    const labelHsl = `hsl(0,0%,${labelLightness}%)`;
+
+    // Static foreground colors: gridline and visited default.
+    const GRIDLINE_COLOR = 'hsl(270,50%,50%)';
+    const VISITED_COLOR  = '#ff0000';  // CSS default for --visited-color
+
+    // Collect checks: [role, fg CSS string, wcagTarget, apcaRole]
+    const checks: Array<[ContrastRole, string, 'text' | 'non-text', 'body' | 'spot']> = [
+      ['label',    labelHsl,        'text',     'body'],
+      ['axis',     labelHsl,        'text',     'body'],
+      ['gridline', GRIDLINE_COLOR,  'non-text', 'spot'],
+      ['visited',  VISITED_COLOR,   'non-text', 'spot'],
+    ];
+
+    const warnings: ContrastWarning[] = [];
+
+    for (const [role, fgCss, wcagTarget, apcaRole] of checks) {
+      const fgHex = cssColorToHex(fgCss);
+      if (!fgHex) continue;
+
+      const result = checkContrast(fgHex, bgHex, wcagTarget, apcaRole);
+      if (!result.wcag.AA || !result.apca.pass) {
+        warnings.push({ role, fg: fgHex, bg: bgHex, result });
+        this._log.warn(
+          `Contrast warning [${role}]: fg=${fgCss} bg=${bgRaw} ` +
+          `WCAG ${result.wcag.ratio.toFixed(2)}:1 (AA ${result.wcag.AA ? 'pass' : 'FAIL'}) ` +
+          `APCA Lc${result.apca.lc.toFixed(1)} (${result.apca.pass ? 'pass' : 'FAIL'})`
+        );
+      }
+    }
+
+    // Check first 6 series palette colors separately to capture index + name.
+    const paletteColors = this._paraState.colors;
+    if (paletteColors) {
+      const paletteSize = Math.min(6, paletteColors.palette?.colors?.length ?? 0);
+      for (let i = 0; i < paletteSize; i++) {
+        const fgCss = paletteColors.colorValueAt(i);
+        const fgHex = cssColorToHex(fgCss);
+        if (!fgHex) continue;
+
+        const result = checkContrast(fgHex, bgHex, 'non-text', 'spot');
+        if (!result.wcag.AA || !result.apca.pass) {
+          const seriesName = paletteColors.palette.colors[i]?.name;
+          warnings.push({ role: 'series', fg: fgHex, bg: bgHex, result, seriesIndex: i, seriesName });
+          this._log.warn(
+            `Contrast warning [series]: fg=${fgCss} bg=${bgRaw} ` +
+            `WCAG ${result.wcag.ratio.toFixed(2)}:1 (AA ${result.wcag.AA ? 'pass' : 'FAIL'}) ` +
+            `APCA Lc${result.apca.lc.toFixed(1)} (${result.apca.pass ? 'pass' : 'FAIL'})`
+          );
+        }
+      }
+    }
+
+    return warnings;
   }
 
   // Compute the theme-appropriate background as an oklch() CSS string.

@@ -295,3 +295,83 @@ describe('ColorPrefManager', () => {
     expect(stored).toBeNull();
   });
 });
+
+// ---------------------------------------------------------------------------
+// ColorPrefManager — contrast warnings
+// ---------------------------------------------------------------------------
+
+describe('ColorPrefManager contrast warnings', () => {
+  let state: ReturnType<typeof makeState>;
+  let manager: ColorPrefManager;
+  let mqlStub: ReturnType<typeof stubMatchMedia>;
+
+  beforeEach(() => {
+    mqlStub = stubMatchMedia();
+    vi.stubGlobal('matchMedia', mqlStub.impl);
+    localStorage.clear();
+    state = makeState();
+    manager = new ColorPrefManager(state);
+    manager.init();
+  });
+
+  afterEach(() => {
+    manager.destroy();
+    vi.unstubAllGlobals();
+    localStorage.clear();
+  });
+
+  it('no label or axis warnings with default colors (white bg, light mode)', () => {
+    // The default diva palette has one light series color that warns against white —
+    // that is correct behaviour. What must NOT warn is text/axis (critical roles).
+    const critical = state.colorContrastWarnings.filter(
+      w => w.role === 'label' || w.role === 'axis',
+    );
+    expect(critical).toHaveLength(0);
+  });
+
+  it('warns about labels/axes when a very dark background is set in light mode', () => {
+    // Near-black background in light mode: labels will be ~#333, low contrast
+    state.updateConfig(draft => {
+      draft.color.backgroundColorLight = 'oklch(0.1 0 0)';
+    });
+    mqlStub.fire('(prefers-color-scheme: dark)', false);
+
+    const roles = state.colorContrastWarnings.map(w => w.role);
+    expect(roles).toContain('label');
+  });
+
+  it('clears all warnings when forced-colors is active', () => {
+    // Set a bad background first so we have warnings to clear
+    state.updateConfig(draft => {
+      draft.color.backgroundColorLight = 'oklch(0.1 0 0)';
+    });
+    mqlStub.fire('(prefers-color-scheme: dark)', false);
+    expect(state.colorContrastWarnings.length).toBeGreaterThan(0);
+
+    // Activate forced-colors — checker must clear all warnings
+    mqlStub.fire('(forced-colors: active)', true);
+    expect(state.colorContrastWarnings).toHaveLength(0);
+  });
+
+  it('clears label/axis warnings when background is reset to white', () => {
+    // Set a bad background to generate label/axis warnings
+    state.updateConfig(draft => {
+      draft.color.backgroundColorLight = 'oklch(0.1 0 0)';
+    });
+    mqlStub.fire('(prefers-color-scheme: dark)', false);
+    const criticalBefore = state.colorContrastWarnings.filter(
+      w => w.role === 'label' || w.role === 'axis',
+    );
+    expect(criticalBefore.length).toBeGreaterThan(0);
+
+    // Reset to white — label/axis warnings must clear
+    state.updateConfig(draft => {
+      draft.color.backgroundColorLight = 'oklch(1 0 0)';
+    });
+    mqlStub.fire('(prefers-color-scheme: dark)', false);
+    const criticalAfter = state.colorContrastWarnings.filter(
+      w => w.role === 'label' || w.role === 'axis',
+    );
+    expect(criticalAfter).toHaveLength(0);
+  });
+});

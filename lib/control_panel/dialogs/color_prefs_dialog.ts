@@ -68,6 +68,33 @@ export class ColorPrefsDialog extends SettingControlContainer {
       align-items: center;
       gap: 0.5rem;
     }
+    .contrast-warnings {
+      margin-top: 0.5rem;
+      padding: 0.4rem 0.6rem;
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 0.25rem;
+      font-size: 0.875em;
+    }
+    .contrast-warnings ul {
+      margin: 0.25rem 0 0;
+      padding-left: 1.2rem;
+    }
+    .color-swatch {
+      display: inline-block;
+      width: 0.9em;
+      height: 0.9em;
+      border-radius: 2px;
+      border: 1px solid rgba(0,0,0,0.3);
+      vertical-align: middle;
+      margin-right: 0.25rem;
+      flex-shrink: 0;
+    }
+    .series-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+    }
   `;
 
   connectedCallback() {
@@ -124,7 +151,52 @@ export class ColorPrefsDialog extends SettingControlContainer {
             .value=${this._bgHex()}
             @input=${(e: Event) => this._setBackgroundColor((e.target as HTMLInputElement).value)}>
         </label>
+
+        ${this._renderContrastWarnings()}
       </fizz-dialog>
+    `;
+  }
+
+  private _renderContrastWarnings() {
+    const warnings = this._paraState.colorContrastWarnings;
+    if (!warnings.length) return null;
+
+    const ROLE_LABELS: Record<string, string> = {
+      label:    'Text labels',
+      axis:     'Axis lines',
+      gridline: 'Gridlines',
+      series:   'Series colors',
+      visited:  'Visited marker',
+    };
+    const seen = new Set<string>();
+    const unique = warnings.filter(w => {
+      const key = `${w.role}:${w.fg}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    return html`
+      <div class="contrast-warnings" role="alert">
+        ⚠ Low contrast against this background:
+        <ul>
+          ${unique.map(w => {
+            const dataLabel = w.role === 'series'
+              ? this._paraState.model?.series[w.seriesIndex!]?.getLabel()
+              : undefined;
+            return html`
+            <li>
+              ${w.role === 'series' ? html`
+                <span class="series-label">
+                  <span class="color-swatch" style="background-color:${w.fg}"></span>${w.seriesIndex! + 1}${w.seriesName ? html` (${w.seriesName})` : ''}${dataLabel ? html`, ${dataLabel}` : ''}
+                </span>
+              ` : ROLE_LABELS[w.role] ?? w.role}:
+              WCAG ${w.result.wcag.ratio.toFixed(1)}:1
+              ${w.result.wcag.AA ? '' : html`<em>(AA fail)</em>`}
+            </li>
+          `; })}
+        </ul>
+      </div>
     `;
   }
 
