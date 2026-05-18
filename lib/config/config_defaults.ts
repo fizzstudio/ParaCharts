@@ -19,6 +19,15 @@ export const defaultConfig: Config = {
       custom6: "",
       custom7: "",
       custom8: "",
+      themeMode: "system",
+      themeSource: "default",
+      contrastMode: "system",
+      contrastSource: "default",
+      forcedColorsMode: "system",
+      invertedColorsMode: "system",
+      backgroundColor: "",
+      backgroundColorLight: "",
+      backgroundColorDark: "",
     },
     controlPanel: {
       caption: {

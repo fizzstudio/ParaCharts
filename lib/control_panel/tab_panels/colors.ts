@@ -1,11 +1,13 @@
-//import { styles } from '../../styles';
 import { ControlPanelTabPanel } from './tab_panel';
+import { ColorPrefsDialog } from '../dialogs';
+import '../dialogs';
 
 import {
   html, css, nothing
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { StateController } from '@lit-app/state';
+import { createRef, ref } from 'lit/directives/ref.js';
 
 import colorVisionIconNormal from '../../assets/color-vision-normal-icon.svg';
 import colorVisionIconDeutan from '../../assets/color-vision-deutan-icon.svg';
@@ -16,7 +18,7 @@ import colorVisionIconGray from '../../assets/color-vision-grayscale-icon.svg';
 @customElement('para-colors-panel')
 export class ColorsPanel extends ControlPanelTabPanel {
   protected _state!: StateController;
-
+  protected _colorPrefsDialogRef = createRef<ColorPrefsDialog>();
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -74,6 +76,11 @@ export class ColorsPanel extends ControlPanelTabPanel {
       <div class="tab-content">
         <div class="control-column">
           ${this._paraState.settingControls.getContent('controlPanel.tabs.color.colorContrast')}
+          ${this._paraState.settingControls.getContent('controlPanel.tabs.color.colorContrastSlider')}
+
+          <button @click=${() => this._colorPrefsDialogRef.value?.show()}>
+            System color preferences
+          </button>
 
           ${this.controlPanel.config.isColorPaletteControlVisible
             ? this._paraState.settingControls.getContent('controlPanel.tabs.color.colorPalette')
@@ -89,6 +96,11 @@ export class ColorsPanel extends ControlPanelTabPanel {
           : nothing
         }
       </div>
+
+      <para-color-prefs-dialog
+        ${ref(this._colorPrefsDialogRef)}
+        .globalState=${this._globalState}
+      ></para-color-prefs-dialog>
     `;
   }
 
