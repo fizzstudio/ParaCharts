@@ -35,6 +35,7 @@ export class VennPlotView extends DataLayer {
   protected _cx!: number;
   protected _cy!: number;
   protected _radius!: number;
+  protected _circleCenters: Point[] = [];
   protected _seriesLeaders: PathShape[] = [];
   protected _seriesLabelItems: Label[] = [];
   protected _intersectionPoints: Point[] = [];
@@ -382,61 +383,57 @@ export class VennPlotView extends DataLayer {
 
   protected _createDatapoints() {
     const seriesKeys = this.paraview.paraState.model!.seriesKeys;
-    for (let idx = 0; idx < seriesKeys.length; idx++) {
-      const series = this.paraview.paraState.model!.series.find(
-        s => s.key === seriesKeys[idx]
-      );
-      if (!series) continue;
+    const n = seriesKeys.length;
+    const d = 0.5 * this._radius;
+    // 2 circles: left/right layout. 3+ circles: evenly-spaced angles from the top.
+    const startAngle = n === 2 ? Math.PI : -Math.PI / 2;
 
-      for (let dpIdx = 0; dpIdx < series.datapoints.length; dpIdx++) {
-        const dp = series.datapoints[dpIdx];
-      }
-    }
-    let mult: number = -1;
-    let regionIdx: number = 0;
-    seriesKeys.forEach(seriesKey => {
+    this._circleCenters = [];
+
+    seriesKeys.forEach((seriesKey, i) => {
+      const angle = startAngle + i * (2 * Math.PI / n);
+      const xOff = d * Math.cos(angle);
+      const yOff = d * Math.sin(angle);
+      this._circleCenters.push({ x: this._cx + xOff, y: this._cy + yOff });
+
       const seriesView = new SeriesView(this, seriesKey);
       this._chartLandingView.append(seriesView);
-      const region = new VennRegionView(
-        seriesView,
-        mult * 0.5 * this._radius,
-        0,
-        this._radius
-      );
+      const region = new VennRegionView(seriesView, xOff, yOff, this._radius);
       seriesView.append(region);
-      mult = 1;
-      regionIdx += 1;
     });
 
-    const intersections = this.getIntersections(
-      { center: { x: this._cx - 0.5 * this._radius, y: this._cy }, radius: this._radius, name: 'A' },
-      { center: { x: this._cx + 0.5 * this._radius, y: this._cy }, radius: this._radius, name: 'B' }
-    );
+    if (n === 2) {
+      const intersections = this.getIntersections(
+        { center: this._circleCenters[0], radius: this._radius, name: 'A' },
+        { center: this._circleCenters[1], radius: this._radius, name: 'B' }
+      );
+      this._intersectionPoints = intersections;
 
-    this._intersectionPoints = intersections;
-
-    if (intersections.length === 2) {
-      const [p1, p2] = intersections;
-      const arc = new ArcShape(this.paraview, {
-        r: this._radius,
-        points: [
-          new Vec2(p1.x, p1.y),
-          new Vec2(p2.x, p2.y),
-          new Vec2(p2.x, p2.y),
-          new Vec2(p1.x, p1.y)
-        ],
-        stroke: "white",
-        fill: "mediumseagreen",
-        strokeWidth: 5,
-      });
-      this.append(arc);
+      if (intersections.length === 2) {
+        const [p1, p2] = intersections;
+        const arc = new ArcShape(this.paraview, {
+          r: this._radius,
+          points: [
+            new Vec2(p1.x, p1.y),
+            new Vec2(p2.x, p2.y),
+            new Vec2(p2.x, p2.y),
+            new Vec2(p1.x, p1.y)
+          ],
+          stroke: "white",
+          fill: "mediumseagreen",
+          strokeWidth: 5,
+        });
+        this.append(arc);
+      }
+    } else {
+      this._intersectionPoints = [];
     }
   }
 
   protected _createLabels() {
     const seriesKeys = this.paraview.paraState.model!.series.map(s => s.key);
     if (seriesKeys.length !== 2) {
-      throw new Error("Expected exactly two series");
+      return;
     }
 
     const [seriesAKey, seriesBKey] = seriesKeys;
