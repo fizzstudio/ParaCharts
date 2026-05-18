@@ -40,6 +40,7 @@ import { AvailableActions } from '../state/action_map';
 
 import { BaseChartInfo, chartInfoClasses } from '../chart_types';
 import { type ViewContext } from '../view/view_context';
+import { ColorPrefManager } from '../state/preference_manager';
 
 /**
  * Data provided for the on focus callback
@@ -90,6 +91,7 @@ export class ParaView extends ParaComponent implements ViewContext {
   protected _storeChangeUnsub!: Unsubscribe;
 
   protected _modeSaved = new Map<string, any>();
+  protected _colorPrefManager!: ColorPrefManager;
   protected _jimReadyPromise: Promise<void>;
   protected _jimReadyResolver!: (() => void);
   protected _jimReadyRejector!: (() => void);
@@ -427,6 +429,8 @@ export class ParaView extends ParaComponent implements ViewContext {
 
   connectedCallback() {
     super.connectedCallback();
+    this._colorPrefManager = new ColorPrefManager(this._paraState);
+    this._colorPrefManager.init();
     // create a default view box so the SVG element can have a size
     // while any data is loading
     this._controller ??= new ParaViewController(this._paraState);
@@ -447,6 +451,7 @@ export class ParaView extends ParaComponent implements ViewContext {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this._colorPrefManager?.destroy();
     this._storeChangeUnsub();
     this._paraState.keymapManager.removeEventListener('hotkeyPress', this._hotkeyListener);
   }
@@ -583,8 +588,13 @@ export class ParaView extends ParaComponent implements ViewContext {
 
   protected _handleLowVisionMode(newValue?: Setting) {
     this._paraState.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
+    if (newValue) {
+      // Default low-vision to dark theme — skipped if user has explicitly chosen a theme.
+      this._colorPrefManager.setModeDefault('themeMode', 'dark');
+    } else {
+      this._colorPrefManager.clearModeDefault('themeMode');
+    }
     this._paraState.updateConfig(draft => {
-      draft.color.isDarkModeEnabled = !!newValue;
       draft.ui.isFullscreenEnabled = !!newValue;
       if (newValue) {
         this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
@@ -913,18 +923,24 @@ export class ParaView extends ParaComponent implements ViewContext {
     if (this._paraState.config.color.isDarkModeEnabled) {
       style["--axis-line-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
       style["--label-color"] = `hsl(0, 0%, ${50 + contrast}%)`;
-      style["--background-color"] = `hsl(0, 0%, ${(100 - contrast) / 5 - 10}%)`;
     } else {
       style["--axis-line-color"] = `hsl(0, 0%, ${50 - contrast}%)`;
       style["--label-color"] = `hsl(0, 0%, ${50 - contrast}%)`;
     }
+    // backgroundColor is always set by ColorPrefManager._resolve() to the
+    // theme-appropriate default (white / computed dark) unless the user has
+    // explicitly chosen a custom color, in which case their choice wins.
+    style["--background-color"] = this._paraState.config.color.backgroundColor || '#ffffff';
     return style;
   }
 
   protected _rootClasses() {
+    const sys = this._colorPrefManager?.getSystemState();
     return {
-      darkmode: this._paraState.config.color.isDarkModeEnabled,
-    }
+      darkmode:          this._paraState.config.color.isDarkModeEnabled,
+      'forced-colors':   sys?.forcedColorsActive   ?? false,
+      'inverted-colors': sys?.invertedColorsActive ?? false,
+    };
   }
 
   navToDatapoint(seriesKey: string, index: number) {

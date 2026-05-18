@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Color Accessibility Queries — ParaCharts Demo</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22white%22/><text y=%22.9em%22 font-size=%2290%22>🍲</text></svg>">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --accent: hsl(214, 72%, 50%);
+      --surface: hsl(0, 0%, 97%);
+      --border: hsl(0, 0%, 82%);
+      --text: hsl(0, 0%, 15%);
+      --text-dim: hsl(0, 0%, 45%);
+      --active-bg: hsl(142, 55%, 90%);
+      --active-color: hsl(142, 60%, 28%);
+      --inactive-bg: hsl(0, 0%, 91%);
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      color: var(--text);
+      background: white;
+      margin: 0;
+      padding: 1rem;
+    }
+
+    h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0 0 0.25rem;
+    }
+    p.subtitle {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin: 0 0 1.25rem;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 24rem;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    para-chart {
+      display: block;
+      width: 100%;
+    }
+
+    /* ---- sidebar ---- */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem 1rem;
+    }
+    .card h2 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      margin: 0 0 0.6rem;
+    }
+
+    /* ---- system indicators ---- */
+    .indicators {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .indicator-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+    }
+    .indicator-row .badge {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 0.1em 0.55em;
+      border-radius: 3px;
+      background: var(--inactive-bg);
+      color: var(--text-dim);
+    }
+    .indicator-row .badge[data-active="true"] {
+      background: var(--active-bg);
+      color: var(--active-color);
+    }
+
+    /* ---- API controls ---- */
+    .control-group {
+      margin-bottom: 0.6rem;
+    }
+    .control-group:last-child { margin-bottom: 0; }
+    .control-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      margin-bottom: 0.3rem;
+    }
+    .radio-row {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+    .radio-row label {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.8rem;
+      font-weight: normal;
+      color: var(--text);
+      cursor: pointer;
+      margin: 0;
+    }
+    .slider-wrap {
+      margin-top: 0.4rem;
+    }
+    .slider-wrap label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      margin-bottom: 0.25rem;
+    }
+    input[type="range"] { width: 100%; }
+
+    /* ---- resolved state ---- */
+    .state-grid {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.2rem 0.6rem;
+      font-size: 0.8rem;
+    }
+    .state-grid dt {
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+    .state-grid dd {
+      margin: 0;
+      font-weight: 600;
+      font-family: monospace;
+    }
+    .state-grid dd[data-active="true"]  { color: var(--active-color); }
+    .state-grid dd[data-active="false"] { color: var(--text-dim); }
+
+    /* ---- storage ---- */
+    pre#storage-contents {
+      font-size: 0.75rem;
+      font-family: monospace;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.5rem;
+      margin: 0 0 0.5rem;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      min-height: 3rem;
+    }
+    button#clear-storage {
+      font-size: 0.78rem;
+      padding: 0.25em 0.7em;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+    button#clear-storage:hover { background: hsl(0, 72%, 95%); border-color: hsl(0, 60%, 70%); }
+
+    /* ---- devtools guide ---- */
+    .guide-list {
+      font-size: 0.78rem;
+      padding-left: 1.2rem;
+      margin: 0;
+    }
+    .guide-list li { margin-bottom: 0.35rem; }
+    code {
+      font-family: monospace;
+      font-size: 0.85em;
+      background: hsl(220, 20%, 93%);
+      padding: 0.1em 0.35em;
+      border-radius: 3px;
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <h1>Color Accessibility Queries — ParaCharts Demo</h1>
+  <p class="subtitle">
+    Shows how ParaCharts responds to <code>prefers-color-scheme</code>,
+    <code>prefers-contrast</code>, <code>forced-colors</code>, and
+    <code>inverted-colors</code>, with user preference overrides and
+    <code>localStorage</code> persistence.
+  </p>
+
+  <div class="layout">
+    <!-- ====== Chart ====== -->
+    <div>
+      <para-chart
+        id="chart"
+        manifest="/src/demo-data/bar-multi-manifest-48.json"
+      ></para-chart>
+    </div>
+
+    <!-- ====== Sidebar ====== -->
+    <aside class="sidebar">
+
+      <!-- System media-query state -->
+      <div class="card">
+        <h2>System Media Query State</h2>
+        <div class="indicators">
+          <div class="indicator-row">
+            <span>prefers-color-scheme: dark</span>
+            <span id="ind-dark" class="badge" data-active="false">inactive</span>
+          </div>
+          <div class="indicator-row">
+            <span>prefers-contrast: more</span>
+            <span id="ind-contrast-more" class="badge" data-active="false">inactive</span>
+          </div>
+          <div class="indicator-row">
+            <span>prefers-contrast: less</span>
+            <span id="ind-contrast-less" class="badge" data-active="false">inactive</span>
+          </div>
+          <div class="indicator-row">
+            <span>forced-colors: active</span>
+            <span id="ind-forced" class="badge" data-active="false">inactive</span>
+          </div>
+          <div class="indicator-row">
+            <span>inverted-colors: inverted</span>
+            <span id="ind-inverted" class="badge" data-active="false">inactive</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Direct API preference controls -->
+      <div class="card">
+        <h2>Preference Controls (Direct API)</h2>
+        <div class="control-group">
+          <label>Color theme</label>
+          <div class="radio-row">
+            <label><input type="radio" name="theme-mode" value="system"> System</label>
+            <label><input type="radio" name="theme-mode" value="light"> Light</label>
+            <label><input type="radio" name="theme-mode" value="dark"> Dark</label>
+          </div>
+        </div>
+        <div class="control-group">
+          <label>Contrast preference</label>
+          <div class="radio-row">
+            <label><input type="radio" name="contrast-mode" value="system"> System</label>
+            <label><input type="radio" name="contrast-mode" value="lower"> Lower</label>
+            <label><input type="radio" name="contrast-mode" value="normal"> Normal</label>
+            <label><input type="radio" name="contrast-mode" value="higher"> Higher</label>
+            <label><input type="radio" name="contrast-mode" value="custom"> Custom</label>
+          </div>
+        </div>
+        <div id="contrast-slider-wrap" class="slider-wrap" hidden>
+          <label for="contrast-custom">Custom contrast level</label>
+          <input
+            id="contrast-custom"
+            type="range"
+            min="0" max="2" step="0.1"
+            value="1"
+          >
+        </div>
+      </div>
+
+      <!-- Resolved state -->
+      <div class="card">
+        <h2>Resolved State</h2>
+        <dl class="state-grid">
+          <dt>isDarkModeEnabled</dt>
+          <dd id="resolved-dark" data-active="false">false</dd>
+
+          <dt>contrastLevel</dt>
+          <dd id="resolved-contrast">1.0</dd>
+
+          <dt>themeMode</dt>
+          <dd id="resolved-theme-mode">system</dd>
+
+          <dt>themeSource</dt>
+          <dd id="resolved-theme-source">default</dd>
+
+          <dt>contrastMode</dt>
+          <dd id="resolved-contrast-mode">system</dd>
+
+          <dt>contrastSource</dt>
+          <dd id="resolved-contrast-source">default</dd>
+        </dl>
+      </div>
+
+      <!-- localStorage -->
+      <div class="card">
+        <h2>Stored Preferences (localStorage)</h2>
+        <pre id="storage-contents">(nothing stored)</pre>
+        <button id="clear-storage" type="button">Clear stored preferences</button>
+      </div>
+
+      <!-- DevTools testing guide -->
+      <div class="card">
+        <h2>Testing with DevTools</h2>
+        <ol class="guide-list">
+          <li>Open DevTools → <strong>Rendering</strong> tab (⋮ → More tools → Rendering)</li>
+          <li>Set <strong>Emulate CSS media feature prefers-color-scheme</strong> to <code>dark</code> — chart should switch when Theme is "System"</li>
+          <li>Set <strong>prefers-contrast</strong> to <code>more</code> — contrastLevel should jump to 2.0 when Contrast is "System"</li>
+          <li>Set <strong>forced-colors</strong> to <code>active</code> — series retain author colors (pattern/shape redundancy); axes use system CanvasText color</li>
+          <li>Pick an explicit Theme (e.g. <strong>Light</strong>), then switch the system to dark — chart stays light; source shows <code>user</code></li>
+          <li>Reload the page — stored preferences restore (check the localStorage panel above)</li>
+          <li>Click <strong>Clear stored preferences</strong>, then reload — chart returns to system defaults</li>
+        </ol>
+      </div>
+
+    </aside>
+  </div>
+
+  <script type="module" src="/dist-ai/paracharts.js"></script>
+  <script type="module" src="/src/demo/color_queries/demo.js"></script>
+</body>
+</html>

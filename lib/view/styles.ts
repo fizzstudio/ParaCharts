@@ -552,4 +552,46 @@ export const styles = css`
   #chart-layers {
     cursor: var(--data-cursor);
   }
+
+  /* -------------------------------------------------------------------------
+   * forced-colors: active
+   * When the OS/browser constrains colour rendering, defer structural elements
+   * to system colour keywords so text and structure remain legible.
+   * Series fill/stroke use forced-color-adjust: none ONLY because ParaCharts
+   * already provides shape and pattern redundancy for non-colour differentiation
+   * (see lib/common/colors.ts pattern palette and 16 symbol types).
+   * ------------------------------------------------------------------------- */
+  @media (forced-colors: active) {
+    :host { background-color: Canvas; }
+
+    #y-axis-line,
+    #x-axis-line     { stroke: CanvasText; }
+
+    .chart-title,
+    .axis-title       { fill: CanvasText; }
+
+    .axis-label,
+    .tick-label       { fill: CanvasText; }
+
+    .tick-grid        { stroke: CanvasText; opacity: 0.25; }
+
+    .focus-ring       { stroke: Highlight; }
+
+    .visited          { fill: GrayText; stroke: GrayText; }
+
+    /* Preserve author series colours: shape + pattern redundancy is already in
+       place, so meaning does not depend on colour alone. */
+    .series-0, .series-1, .series-2, .series-3,
+    .series-4, .series-5, .series-6, .series-7,
+    .series-8, .series-9 { forced-color-adjust: none; }
+  }
+
+  /* -------------------------------------------------------------------------
+   * inverted-colors: inverted
+   * Strengthen structural differentiation; avoid hue-semantic reliance.
+   * ParaCharts' existing shape/pattern redundancy is the primary safeguard.
+   * ------------------------------------------------------------------------- */
+  @media (inverted-colors: inverted) {
+    .focus-ring { stroke-width: 3px; }
+  }
 `;

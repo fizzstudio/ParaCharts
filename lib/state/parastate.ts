@@ -384,6 +384,13 @@ export class ParaState extends BaseState {
     this._chartInfo = new chartInfoClasses[this.type](this.type, this);
   }
 
+  private _configResetCallbacks = new Set<() => void>();
+
+  onConfigReset(cb: () => void): () => void {
+    this._configResetCallbacks.add(cb);
+    return () => this._configResetCallbacks.delete(cb);
+  }
+
   protected _createSettings(inputSettings: SettingsInput) {
     const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
     SettingsManager.suppleteSettings(hydratedSettings, defaults);
@@ -392,6 +399,7 @@ export class ParaState extends BaseState {
     SettingsManager.suppleteSettings(hydratedConfig, defaultConfig);
     this.config = hydratedConfig as Config;
     SettingsManager.suppleteSettings(this.settings, this.config as unknown as Settings);
+    this._configResetCallbacks.forEach(cb => cb());
   }
 
   protected _syncPatchesToManifest(patches: Patch[]) {
