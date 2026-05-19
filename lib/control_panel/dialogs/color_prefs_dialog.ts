@@ -3,9 +3,12 @@ import { hexToOklch, oklchToHex, formatOklch, parseOklch } from '../../common/co
 
 import * as ui from '@fizz/ui-components';
 
+import warningIcon from '../../assets/warning-icon.svg?raw';
+
 import { html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
+import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 
 const THEME_VIEW = 'controlPanel.tabs.color.colorPrefs.dialog';
 
@@ -76,6 +79,14 @@ export class ColorPrefsDialog extends SettingControlContainer {
       border-radius: 0.25rem;
       font-size: 0.875em;
     }
+    .contrast-warnings .warning-icon {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      vertical-align: -0.15em;
+      margin-right: 0.25em;
+      color: orangered;
+    }
     .contrast-warnings ul {
       margin: 0.25rem 0 0;
       padding-left: 1.2rem;
@@ -94,6 +105,7 @@ export class ColorPrefsDialog extends SettingControlContainer {
       display: inline-flex;
       align-items: center;
       gap: 0;
+      vertical-align: -0.09em;
     }
   `;
 
@@ -178,7 +190,7 @@ export class ColorPrefsDialog extends SettingControlContainer {
 
     return html`
       <div class="contrast-warnings" role="alert">
-        ⚠ Low contrast against this background:
+        <span class="warning-icon">${unsafeSVG(warningIcon)}</span> Low contrast against this background:
         <ul>
           ${unique.map(w => {
             const dataLabel = w.role === 'series'
