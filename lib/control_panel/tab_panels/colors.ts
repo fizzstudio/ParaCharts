@@ -71,6 +71,10 @@ export class ColorsPanel extends ControlPanelTabPanel {
     this._state = new StateController(this, this._paraState.settingControls);
   }
 
+  showColorPrefsDialog() {
+    return this._colorPrefsDialogRef.value?.show();
+  }
+
   render() {
     return html`
       <div class="tab-content">
