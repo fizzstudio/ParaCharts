@@ -47,7 +47,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { SlotLoader } from '../loader/slotloader';
 import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
-import { initParaSummary } from '@fizz/parasummary';
+//import { initParaSummary } from '@fizz/parasummary';
 import { TourBus } from './tour_bus';
 
 import brailleFont from '../assets/Braille36US.woff2';
@@ -155,7 +155,7 @@ export class ParaChart extends ParaComponent {
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
         this._paraAPI = new ParaAPI(this);
-        await initParaSummary();
+        //await initParaSummary();
         resolve();
         // It's now safe to load a manifest
         // In headless mode, loadManifest() handles loading via willUpdate, so skip here

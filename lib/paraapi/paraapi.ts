@@ -278,11 +278,13 @@ export class ParaAPI {
     this._tourGuideActions.repeatLastAnnouncement = () => { };
     this._tourGuideActions.toggleNarrativeHighlightMode = () => {
       paraView.paraState.updateConfig(draft => {
-        draft.ui.isTourGuideEnabled = false;
         if (!this._tourGuideNoSelfVoicing) {
           draft.ui.isVoicingEnabled = this._tourGuideSelfVoicingState;
         }
         this._tourGuideNoSelfVoicing = true;
+      });
+      paraView.paraState.updateConfig(draft => {
+        draft.ui.isTourGuideEnabled = false;
       });
     };
     this._tourGuideActions.playPauseMedia = () => {
