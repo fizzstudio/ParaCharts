@@ -138,6 +138,30 @@
             "default": "system",
             "advanced": true
         },
+        "lowVisionColorPalette": {
+            "description": "Use the low-vision high-contrast color palette when low-vision mode is enabled",
+            "type": "boolean",
+            "default": true,
+            "advanced": true
+        },
+        "lowVisionThemeDefault": {
+            "description": "Theme to apply as a mode default when low-vision mode is enabled",
+            "type": "'system' | 'light' | 'dark'",
+            "default": "dark",
+            "advanced": true
+        },
+        "lowVisionContrastDefault": {
+            "description": "Contrast mode to apply as a mode default when low-vision mode is enabled",
+            "type": "'system' | 'lower' | 'normal' | 'higher' | 'custom'",
+            "default": "higher",
+            "advanced": true
+        },
+        "lowVisionContrastLevel": {
+            "description": "Contrast level for custom low-vision contrast (0-1)",
+            "type": "number",
+            "default": 1,
+            "advanced": true
+        },
         "backgroundColor": {
             "description": "Resolved active background color (oklch string, set by ColorPrefManager)",
             "type": "string",

@@ -35,7 +35,6 @@ import {
 } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
-import { styleMap } from 'lit/directives/style-map.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { Popup } from '../view/popup';
 import { datapointIdToCursor } from '../state';
@@ -81,10 +80,9 @@ export class ParaControlPanel extends ParaComponent {
       }
       fizz-tabs {
         --background: #eee;
-        --toggle-button-icon: var(--control-panel-icon, url(${unsafeCSS(cpanelIcon)}));
-        /*--control-panel-icon: url(${unsafeCSS(cpanelIconAlt)});*/
         --summary-marker-font-weight: bold;
         --control-panel-icon-size: 1.1rem;
+        --toggle-button-size: 1.5em;
         --contents-margin: 2px 0 0 0;
         width: 1;
         /*min-width: 40rem;*/
@@ -93,8 +91,8 @@ export class ParaControlPanel extends ParaComponent {
       fizz-tabs.collapsed {
         /*width: rem;*/
         /*min-width: unset;*/
-        position: absolute;
-        bottom: 10px;
+        /*position: absolute;*/
+        /*bottom: 10px;*/
         /*--background: none;
         --control-panel-background: none;
         --control-panel-icon-color: var(--theme-color);
@@ -102,6 +100,7 @@ export class ParaControlPanel extends ParaComponent {
         --theme-contrast-color: var(--theme-color);
         --border: none;*/
         border: 2px solid transparent;
+        margin: 4px 0 0 4px;
       }
 
       fizz-tabs.expanded {
@@ -117,7 +116,35 @@ export class ParaControlPanel extends ParaComponent {
         --control-panel-icon-color: ghostwhite;
       }
 
-    `
+    `,
+    // Isolated from the main css block above: Vite's build transformation of Lit
+    // css`` templates silently drops rules that follow a ${unsafeCSS()} interpolation
+    // in the same block. Keep any unsafeCSS() usage quarantined here so it cannot
+    // corrupt other rules.
+    css`
+      fizz-tabs {
+        --toggle-button-icon: var(--control-panel-icon, url(${unsafeCSS(cpanelIcon)}));
+        /*--control-panel-icon: url(${unsafeCSS(cpanelIconAlt)});*/
+      }
+    `,
+    css`
+      .contrast-warning-badge {
+        position: absolute;
+        bottom: 1px;
+        left: 1.9rem;
+        width: 1.1rem;
+        height: 1.3rem;
+        display: inline-flex;
+        align-items: center;
+        padding: 0;
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: orangered;
+        user-select: none;
+        z-index: 10;
+      }
+    `,
   ];
 
   get config() {
@@ -441,22 +468,7 @@ export class ParaControlPanel extends ParaComponent {
         </fizz-tabs>
         ${!this._panelOpen && this._paraState.colorContrastWarnings.length > 0 ? html`
           <button
-            style=${styleMap({
-              position: 'absolute',
-              bottom: '-2px',
-              left: '1.6rem',
-              width: '1.1rem',
-              height: '1.3rem',
-              display: 'inline-flex',
-              'align-items': 'center',
-              padding: '0',
-              border: 'none',
-              background: 'none',
-              cursor: 'pointer',
-              color: 'orangered',
-              'user-select': 'none',
-              'z-index': '10',
-            })}
+            class="contrast-warning-badge"
             title="Color contrast issues detected — click to review"
             aria-label="Color contrast issues detected"
             @click=${() => this.openColorPrefsViaAlert()}

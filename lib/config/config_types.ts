@@ -161,6 +161,14 @@ export interface ColorConfig extends ConfigGroup {
   forcedColorsMode: 'system' | 'respect';
   /** How to respond to inverted-colors system mode */
   invertedColorsMode: 'system' | 'adapt';
+  /** Use the low-vision high-contrast color palette when low-vision mode is enabled */
+  lowVisionColorPalette: boolean;
+  /** Theme to apply as a mode default when low-vision mode is enabled */
+  lowVisionThemeDefault: 'system' | 'light' | 'dark';
+  /** Contrast mode to apply as a mode default when low-vision mode is enabled */
+  lowVisionContrastDefault: 'system' | 'lower' | 'normal' | 'higher' | 'custom';
+  /** Contrast level for custom low-vision contrast (0-1) */
+  lowVisionContrastLevel: number;
   /** Resolved active background color (oklch string, set by ColorPrefManager) */
   backgroundColor: string;
   /** Explicit background color for light mode as an oklch() string. Empty string uses the theme default. */
@@ -373,6 +381,14 @@ export interface UiConfig extends ConfigGroup {
   isFullscreenEnabled: boolean;
   /** Enable low vision accessibility enhancements */
   isLowVisionModeEnabled: boolean;
+  /** Font scale multiplier to apply when low-vision mode is enabled */
+  lowVisionFontScale: number;
+  /** Enable vertical gridlines when low-vision mode is enabled */
+  lowVisionIsVertGridlines: boolean;
+  /** Disable animations when low-vision mode is enabled */
+  lowVisionDisableAnimations: boolean;
+  /** Enable fullscreen when low-vision mode is enabled */
+  lowVisionIsFullscreen: boolean;
   /** Show focus ring around active elements */
   isFocusRingEnabled: boolean;
   /** Gap size around focus ring in pixels */

@@ -62,6 +62,15 @@ interface StoredColorPrefs {
   /** Per-mode explicit background colors. Stored independently so switching themes restores each mode's choice. */
   backgroundColorLight?: string;
   backgroundColorDark?: string;
+  /** Low-vision mode default preferences (what gets applied when low-vision mode is enabled). */
+  lowVisionThemeDefault?: 'system' | 'light' | 'dark';
+  lowVisionContrastDefault?: ContrastMode;
+  lowVisionContrastLevel?: number;
+  lowVisionColorPalette?: boolean;
+  lowVisionFontScale?: number;
+  lowVisionIsVertGridlines?: boolean;
+  lowVisionDisableAnimations?: boolean;
+  lowVisionIsFullscreen?: boolean;
 }
 
 /** Live system media-query state (never persisted). */
@@ -155,10 +164,11 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
 
   /**
    * Apply a mode default (e.g. low-vision dark default).
-   * No-op if the user has already made an explicit choice (source === 'user').
+   * No-op if the user has already made an explicit choice (source === 'user'),
+   * unless force=true (used by low-vision mode, which has its own user-configured default).
    */
-  setModeDefault(field: 'themeMode', value: 'dark' | 'light'): void {
-    if (this._paraState.config.color.themeSource === 'user') return;
+  setModeDefault(field: 'themeMode', value: 'dark' | 'light', force = false): void {
+    if (!force && this._paraState.config.color.themeSource === 'user') return;
     this._programmaticUpdate = true;
     this._paraState.updateConfig(draft => {
       if (field === 'themeMode') {
@@ -183,6 +193,64 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
         draft.color.themeMode = 'system';
         draft.color.themeSource = 'default';
       }
+    });
+    this._programmaticUpdate = false;
+    this._resolve();
+  }
+
+  /** Restore theme to a previously-saved mode+source pair (used by low-vision mode on disable). */
+  restoreTheme(mode: ThemeMode, source: ColorPrefSource): void {
+    this._programmaticUpdate = true;
+    this._paraState.updateConfig(draft => {
+      draft.color.themeMode   = mode;
+      draft.color.themeSource = source;
+    });
+    this._programmaticUpdate = false;
+    this._resolve();
+  }
+
+  /**
+   * Apply a contrast mode default (e.g. low-vision higher-contrast default).
+   * No-op if the user has already made an explicit contrast choice (source === 'user'),
+   * unless force=true (used by low-vision mode, which has its own user-configured default).
+   */
+  setContrastModeDefault(mode: ContrastMode, level?: number, force = false): void {
+    if (!force && this._paraState.config.color.contrastSource === 'user') return;
+    this._programmaticUpdate = true;
+    this._paraState.updateConfig(draft => {
+      draft.color.contrastMode = mode;
+      draft.color.contrastSource = 'modeDefault' as ColorPrefSource;
+      if (mode === 'custom' && level !== undefined) {
+        draft.color.contrastLevel = level;
+      }
+    });
+    this._programmaticUpdate = false;
+    this._resolve();
+  }
+
+  /**
+   * Clear the contrast mode default, restoring to system/default behaviour.
+   * No-op if the user has an explicit choice, or no mode default is active.
+   */
+  clearContrastModeDefault(): void {
+    if (this._paraState.config.color.contrastSource === 'user') return;
+    if (this._paraState.config.color.contrastSource !== 'modeDefault') return;
+    this._programmaticUpdate = true;
+    this._paraState.updateConfig(draft => {
+      draft.color.contrastMode = 'system';
+      draft.color.contrastSource = 'default' as ColorPrefSource;
+    });
+    this._programmaticUpdate = false;
+    this._resolve();
+  }
+
+  /** Restore contrast to a previously-saved mode+source pair (used by low-vision mode on disable). */
+  restoreContrast(mode: ContrastMode, level: number, source: ColorPrefSource): void {
+    this._programmaticUpdate = true;
+    this._paraState.updateConfig(draft => {
+      draft.color.contrastMode   = mode;
+      draft.color.contrastLevel  = level;
+      draft.color.contrastSource = source;
     });
     this._programmaticUpdate = false;
     this._resolve();
@@ -276,15 +344,70 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
       this._resolve();
     };
 
-    this._paraState.observeSetting('color.themeMode',            themeFn);
-    this._paraState.observeSetting('color.contrastMode',         contrastFn);
-    this._paraState.observeSetting('color.backgroundColorLight', bgLightFn);
-    this._paraState.observeSetting('color.backgroundColorDark',  bgDarkFn);
+    const lvThemeFn = (_old: Setting, newVal: Setting) => {
+      if (this._programmaticUpdate) return;
+      this.save({ lowVisionThemeDefault: newVal as ThemeMode });
+      if (this._paraState.config.ui.isLowVisionModeEnabled) {
+        if (newVal !== 'system') {
+          this.setModeDefault('themeMode', newVal as 'dark' | 'light', true);
+        } else {
+          this.clearModeDefault('themeMode');
+        }
+      }
+    };
+
+    const lvContrastFn = (_old: Setting, newVal: Setting) => {
+      if (this._programmaticUpdate) return;
+      this.save({ lowVisionContrastDefault: newVal as ContrastMode });
+      if (this._paraState.config.ui.isLowVisionModeEnabled) {
+        this.setContrastModeDefault(
+          newVal as ContrastMode,
+          this._paraState.config.color.lowVisionContrastLevel as number,
+          true,
+        );
+      }
+    };
+
+    const lvContrastLevelFn = (_old: Setting, newVal: Setting) => {
+      if (this._programmaticUpdate) return;
+      this.save({ lowVisionContrastLevel: newVal as number });
+      if (this._paraState.config.ui.isLowVisionModeEnabled
+        && this._paraState.config.color.lowVisionContrastDefault === 'custom') {
+        this.setContrastModeDefault('custom', newVal as number);
+      }
+    };
+
+    const lvColorPaletteFn = (_old: Setting, newVal: Setting) => { if (!this._programmaticUpdate) this.save({ lowVisionColorPalette:    newVal as boolean }); };
+    const lvFontScaleFn    = (_old: Setting, newVal: Setting) => { if (!this._programmaticUpdate) this.save({ lowVisionFontScale:        newVal as number  }); };
+    const lvVertGridFn     = (_old: Setting, newVal: Setting) => { if (!this._programmaticUpdate) this.save({ lowVisionIsVertGridlines:  newVal as boolean }); };
+    const lvAnimFn         = (_old: Setting, newVal: Setting) => { if (!this._programmaticUpdate) this.save({ lowVisionDisableAnimations: newVal as boolean }); };
+    const lvFullscreenFn   = (_old: Setting, newVal: Setting) => { if (!this._programmaticUpdate) this.save({ lowVisionIsFullscreen:     newVal as boolean }); };
+
+    this._paraState.observeSetting('color.themeMode',                themeFn);
+    this._paraState.observeSetting('color.contrastMode',             contrastFn);
+    this._paraState.observeSetting('color.backgroundColorLight',     bgLightFn);
+    this._paraState.observeSetting('color.backgroundColorDark',      bgDarkFn);
+    this._paraState.observeSetting('color.lowVisionThemeDefault',    lvThemeFn);
+    this._paraState.observeSetting('color.lowVisionContrastDefault', lvContrastFn);
+    this._paraState.observeSetting('color.lowVisionContrastLevel',   lvContrastLevelFn);
+    this._paraState.observeSetting('color.lowVisionColorPalette',    lvColorPaletteFn);
+    this._paraState.observeSetting('ui.lowVisionFontScale',          lvFontScaleFn);
+    this._paraState.observeSetting('ui.lowVisionIsVertGridlines',    lvVertGridFn);
+    this._paraState.observeSetting('ui.lowVisionDisableAnimations',  lvAnimFn);
+    this._paraState.observeSetting('ui.lowVisionIsFullscreen',       lvFullscreenFn);
     this._settingObservers.push(
-      { path: 'color.themeMode',            fn: themeFn },
-      { path: 'color.contrastMode',         fn: contrastFn },
-      { path: 'color.backgroundColorLight', fn: bgLightFn },
-      { path: 'color.backgroundColorDark',  fn: bgDarkFn },
+      { path: 'color.themeMode',                fn: themeFn },
+      { path: 'color.contrastMode',             fn: contrastFn },
+      { path: 'color.backgroundColorLight',     fn: bgLightFn },
+      { path: 'color.backgroundColorDark',      fn: bgDarkFn },
+      { path: 'color.lowVisionThemeDefault',    fn: lvThemeFn },
+      { path: 'color.lowVisionContrastDefault', fn: lvContrastFn },
+      { path: 'color.lowVisionContrastLevel',   fn: lvContrastLevelFn },
+      { path: 'color.lowVisionColorPalette',    fn: lvColorPaletteFn },
+      { path: 'ui.lowVisionFontScale',          fn: lvFontScaleFn },
+      { path: 'ui.lowVisionIsVertGridlines',    fn: lvVertGridFn },
+      { path: 'ui.lowVisionDisableAnimations',  fn: lvAnimFn },
+      { path: 'ui.lowVisionIsFullscreen',       fn: lvFullscreenFn },
     );
   }
 
@@ -296,7 +419,11 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
     const prefs = this.load();
     const hasPrefs = prefs.theme !== undefined || prefs.contrast !== undefined
       || prefs.forcedColors !== undefined || prefs.invertedColors !== undefined
-      || prefs.backgroundColorLight !== undefined || prefs.backgroundColorDark !== undefined;
+      || prefs.backgroundColorLight !== undefined || prefs.backgroundColorDark !== undefined
+      || prefs.lowVisionThemeDefault !== undefined || prefs.lowVisionContrastDefault !== undefined
+      || prefs.lowVisionContrastLevel !== undefined || prefs.lowVisionColorPalette !== undefined
+      || prefs.lowVisionFontScale !== undefined || prefs.lowVisionIsVertGridlines !== undefined
+      || prefs.lowVisionDisableAnimations !== undefined || prefs.lowVisionIsFullscreen !== undefined;
 
     if (hasPrefs) {
       // ignoreObservers = true: loading is not a user action; observers must not persist again.
@@ -312,10 +439,18 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
             draft.color.contrastLevel = prefs.contrastLevel;
           }
         }
-        if (prefs.forcedColors !== undefined)        draft.color.forcedColorsMode      = prefs.forcedColors;
-        if (prefs.invertedColors !== undefined)      draft.color.invertedColorsMode    = prefs.invertedColors;
-        if (prefs.backgroundColorLight !== undefined) draft.color.backgroundColorLight = prefs.backgroundColorLight;
-        if (prefs.backgroundColorDark  !== undefined) draft.color.backgroundColorDark  = prefs.backgroundColorDark;
+        if (prefs.forcedColors !== undefined)         draft.color.forcedColorsMode         = prefs.forcedColors;
+        if (prefs.invertedColors !== undefined)       draft.color.invertedColorsMode       = prefs.invertedColors;
+        if (prefs.backgroundColorLight !== undefined) draft.color.backgroundColorLight      = prefs.backgroundColorLight;
+        if (prefs.backgroundColorDark  !== undefined) draft.color.backgroundColorDark       = prefs.backgroundColorDark;
+        if (prefs.lowVisionThemeDefault !== undefined)    draft.color.lowVisionThemeDefault    = prefs.lowVisionThemeDefault;
+        if (prefs.lowVisionContrastDefault !== undefined) draft.color.lowVisionContrastDefault = prefs.lowVisionContrastDefault;
+        if (prefs.lowVisionContrastLevel !== undefined)   draft.color.lowVisionContrastLevel   = prefs.lowVisionContrastLevel;
+        if (prefs.lowVisionColorPalette !== undefined)    draft.color.lowVisionColorPalette    = prefs.lowVisionColorPalette;
+        if (prefs.lowVisionFontScale !== undefined)       draft.ui.lowVisionFontScale          = prefs.lowVisionFontScale;
+        if (prefs.lowVisionIsVertGridlines !== undefined) draft.ui.lowVisionIsVertGridlines    = prefs.lowVisionIsVertGridlines;
+        if (prefs.lowVisionDisableAnimations !== undefined) draft.ui.lowVisionDisableAnimations = prefs.lowVisionDisableAnimations;
+        if (prefs.lowVisionIsFullscreen !== undefined)    draft.ui.lowVisionIsFullscreen       = prefs.lowVisionIsFullscreen;
       }, true /* ignoreObservers */);
     }
 
