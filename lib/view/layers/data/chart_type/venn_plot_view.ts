@@ -31,6 +31,176 @@ type WordRect = { word: string; width: number; height: number };
 type IntersectionPoint = { x: number; y: number; circles: Circle[] };
 const alphaLSE = 1.0;
 
+// --- 3-circle Venn geometry helpers (ported from VennDiagrams/Venn.ts) ---
+
+function getArcFlags(circle: Circle, p1: Point, p2: Point): { largeArcFlag: number; sweepFlag: number } {
+  const angle = (point: Point) => Math.atan2(point.y - circle.center.y, point.x - circle.center.x);
+  let a1 = angle(p1);
+  let a2 = angle(p2);
+  if (a1 < 0) a1 += 2 * Math.PI;
+  if (a2 < 0) a2 += 2 * Math.PI;
+  let delta = a2 - a1;
+  if (delta < 0) delta += 2 * Math.PI;
+  const largeArcFlag = delta > Math.PI ? 1 : 0;
+  return { largeArcFlag, sweepFlag: 1 };
+}
+
+function isInsideCircle(circle: Circle, p: Point): boolean {
+  const dx = p.x - circle.center.x;
+  const dy = p.y - circle.center.y;
+  return Math.sqrt(dx * dx + dy * dy) <= circle.radius + 1e-6;
+}
+
+function findTripleIntersectionPoints(
+  circle1: Circle, circle2: Circle, circle3: Circle,
+  points: IntersectionPoint[]
+): IntersectionPoint[] {
+  return points.filter(p =>
+    isInsideCircle(circle1, p) &&
+    isInsideCircle(circle2, p) &&
+    isInsideCircle(circle3, p)
+  );
+}
+
+function averagePoints(points: Point[]): Point {
+  const result: Point = { x: 0, y: 0 };
+  for (const point of points) {
+    result.x += point.x;
+    result.y += point.y;
+  }
+  result.x /= points.length;
+  result.y /= points.length;
+  return result;
+}
+
+function sortPointsByAngle(points: IntersectionPoint[]): IntersectionPoint[] {
+  const center = averagePoints(points);
+  return points.slice().sort((a, b) => {
+    const angleA = Math.atan2(a.y - center.y, a.x - center.x);
+    const angleB = Math.atan2(b.y - center.y, b.x - center.x);
+    return angleA - angleB;
+  });
+}
+
+function describeTripleIntersectionPath(points: IntersectionPoint[]): string {
+  const [p1, p2, p3] = points;
+  if (!p1 || !p2 || !p3) return '';
+  const shared1 = p1.circles.find(c => p2.circles.includes(c))!;
+  const shared2 = p2.circles.find(c => p3.circles.includes(c))!;
+  const shared3 = p3.circles.find(c => p1.circles.includes(c))!;
+  const arc1 = getArcFlags(shared1, p1, p2);
+  const arc2 = getArcFlags(shared2, p2, p3);
+  const arc3 = getArcFlags(shared3, p3, p1);
+  return [
+    `M ${p1.x},${p1.y}`,
+    `A ${shared1.radius},${shared1.radius} 0 ${arc1.largeArcFlag} 1 ${p2.x},${p2.y}`,
+    `A ${shared2.radius},${shared2.radius} 0 ${arc2.largeArcFlag} 1 ${p3.x},${p3.y}`,
+    `A ${shared3.radius},${shared3.radius} 0 ${arc3.largeArcFlag} 1 ${p1.x},${p1.y}`,
+    'Z',
+  ].join(' ');
+}
+
+function describeAOnlyPath(triplePoints: IntersectionPoint[], nonTriplePoints: IntersectionPoint[]): string {
+  const AB = nonTriplePoints.find(p => hasNames(p, 'A', 'B'))!;
+  const AC = nonTriplePoints.find(p => hasNames(p, 'A', 'C'))!;
+  const BC = triplePoints.find(p => hasNames(p, 'B', 'C'))!;
+  const A = AB.circles.find(c => c.name === 'A')!;
+  const C = AC.circles.find(c => c.name === 'C')!;
+  const B = BC.circles.find(c => c.name === 'B')!;
+  return [
+    `M ${AB.x},${AB.y}`,
+    `A ${A.radius},${A.radius} 0 1 1 ${AC.x},${AC.y}`,
+    `A ${C.radius},${C.radius} 0 0 0 ${BC.x},${BC.y}`,
+    `A ${B.radius},${B.radius} 0 0 0 ${AB.x},${AB.y}`,
+    'Z',
+  ].join(' ');
+}
+
+function describeBOnlyPath(triplePoints: IntersectionPoint[], nonTriplePoints: IntersectionPoint[]): string {
+  const BC = nonTriplePoints.find(p => hasNames(p, 'B', 'C'))!;
+  const BA = nonTriplePoints.find(p => hasNames(p, 'A', 'B'))!;
+  const AC = triplePoints.find(p => hasNames(p, 'A', 'C'))!;
+  const B = BC.circles.find(c => c.name === 'B')!;
+  const A = BA.circles.find(c => c.name === 'A')!;
+  const C = AC.circles.find(c => c.name === 'C')!;
+  return [
+    `M ${BC.x},${BC.y}`,
+    `A ${B.radius},${B.radius} 0 1 1 ${BA.x},${BA.y}`,
+    `A ${A.radius},${A.radius} 0 0 0 ${AC.x},${AC.y}`,
+    `A ${C.radius},${C.radius} 0 0 0 ${BC.x},${BC.y}`,
+    'Z',
+  ].join(' ');
+}
+
+function describeCOnlyPath(triplePoints: IntersectionPoint[], nonTriplePoints: IntersectionPoint[]): string {
+  const AC = nonTriplePoints.find(p => hasNames(p, 'A', 'C'))!;
+  const BC = nonTriplePoints.find(p => hasNames(p, 'B', 'C'))!;
+  const AB = triplePoints.find(p => hasNames(p, 'A', 'B'))!;
+  const C = BC.circles.find(c => c.name === 'C')!;
+  const B = AB.circles.find(c => c.name === 'B')!;
+  const A = AC.circles.find(c => c.name === 'A')!;
+  return [
+    `M ${AC.x},${AC.y}`,
+    `A ${C.radius},${C.radius} 0 1 1 ${BC.x},${BC.y}`,
+    `A ${B.radius},${B.radius} 0 0 0 ${AB.x},${AB.y}`,
+    `A ${A.radius},${A.radius} 0 0 0 ${AC.x},${AC.y}`,
+    'Z',
+  ].join(' ');
+}
+
+function describeABPath(triplePoints: IntersectionPoint[], nonTriplePoints: IntersectionPoint[]): string {
+  const AC = triplePoints.find(p => hasNames(p, 'A', 'C'))!;
+  const AB = nonTriplePoints.find(p => hasNames(p, 'A', 'B'))!;
+  const BC = triplePoints.find(p => hasNames(p, 'B', 'C'))!;
+  const A = AB.circles.find(c => c.name === 'A')!;
+  const C = AC.circles.find(c => c.name === 'C')!;
+  const B = BC.circles.find(c => c.name === 'B')!;
+  return [
+    `M ${AC.x},${AC.y}`,
+    `A ${A.radius},${A.radius} 0 0 1 ${AB.x},${AB.y}`,
+    `A ${B.radius},${B.radius} 0 0 1 ${BC.x},${BC.y}`,
+    `A ${C.radius},${C.radius} 0 0 0 ${AC.x},${AC.y}`,
+    'Z',
+  ].join(' ');
+}
+
+function describeACPath(triplePoints: IntersectionPoint[], nonTriplePoints: IntersectionPoint[]): string {
+  const AC = nonTriplePoints.find(p => hasNames(p, 'A', 'C'))!;
+  const AB = triplePoints.find(p => hasNames(p, 'A', 'B'))!;
+  const BC = triplePoints.find(p => hasNames(p, 'B', 'C'))!;
+  const A = AB.circles.find(c => c.name === 'A')!;
+  const C = AC.circles.find(c => c.name === 'C')!;
+  const B = BC.circles.find(c => c.name === 'B')!;
+  return [
+    `M ${AC.x},${AC.y}`,
+    `A ${A.radius},${A.radius} 0 0 1 ${AB.x},${AB.y}`,
+    `A ${B.radius},${B.radius} 0 0 0 ${BC.x},${BC.y}`,
+    `A ${C.radius},${C.radius} 0 0 1 ${AC.x},${AC.y}`,
+    'Z',
+  ].join(' ');
+}
+
+function describeBCPath(triplePoints: IntersectionPoint[], nonTriplePoints: IntersectionPoint[]): string {
+  const AB = triplePoints.find(p => hasNames(p, 'A', 'B'))!;
+  const BC = nonTriplePoints.find(p => hasNames(p, 'B', 'C'))!;
+  const AC = triplePoints.find(p => hasNames(p, 'A', 'C'))!;
+  const A = AB.circles.find(c => c.name === 'A')!;
+  const C = AC.circles.find(c => c.name === 'C')!;
+  const B = BC.circles.find(c => c.name === 'B')!;
+  return [
+    `M ${AB.x},${AB.y}`,
+    `A ${B.radius},${B.radius} 0 0 1 ${BC.x},${BC.y}`,
+    `A ${C.radius},${C.radius} 0 0 1 ${AC.x},${AC.y}`,
+    `A ${A.radius},${A.radius} 0 0 0 ${AB.x},${AB.y}`,
+    'Z',
+  ].join(' ');
+}
+
+function hasNames(p: IntersectionPoint, name1: string, name2: string): boolean {
+  const names = p.circles.map(c => c.name);
+  return names.includes(name1) && names.includes(name2);
+}
+
 export class VennPlotView extends DataLayer {
   protected _cx!: number;
   protected _cy!: number;
@@ -39,6 +209,7 @@ export class VennPlotView extends DataLayer {
   protected _seriesLeaders: PathShape[] = [];
   protected _seriesLabelItems: Label[] = [];
   protected _intersectionPoints: Point[] = [];
+  protected _threeCircleRegionPaths: Array<{ d: string; fill: string }> = [];
 
   constructor(
     paraview: DataLayerContext,
@@ -127,6 +298,14 @@ export class VennPlotView extends DataLayer {
     }
 
     return svg`
+      ${this._threeCircleRegionPaths.map(({ d, fill }) => svg`<path
+        d=${d}
+        fill=${fill}
+        fill-opacity="0.4"
+        stroke="white"
+        stroke-width="2"
+        pointer-events="none"
+      />`)}
       ${super.content()}
       ${visitedRings}
       ${vennPartHighlight}
@@ -425,8 +604,66 @@ export class VennPlotView extends DataLayer {
         });
         this.append(arc);
       }
+    } else if (n === 3) {
+      this._intersectionPoints = [];
+      this._threeCircleRegionPaths = [];
+      const names = ['A', 'B', 'C'] as const;
+      const circles: Circle[] = this._circleCenters.map((center, i) => ({
+        center,
+        radius: this._radius,
+        name: names[i]!,
+      }));
+      const [circleA, circleB, circleC] = circles as [Circle, Circle, Circle];
+
+      const ab = this.getIntersections(circleA, circleB);
+      const ac = this.getIntersections(circleA, circleC);
+      const bc = this.getIntersections(circleB, circleC);
+
+      if (ab.length === 2 && ac.length === 2 && bc.length === 2) {
+        const [p1, p2] = ab as [Point, Point];
+        const [p3, p4] = ac as [Point, Point];
+        const [p5, p6] = bc as [Point, Point];
+
+        const allPoints: IntersectionPoint[] = [
+          { x: p1.x, y: p1.y, circles: [circleA, circleB] },
+          { x: p2.x, y: p2.y, circles: [circleA, circleB] },
+          { x: p3.x, y: p3.y, circles: [circleA, circleC] },
+          { x: p4.x, y: p4.y, circles: [circleA, circleC] },
+          { x: p5.x, y: p5.y, circles: [circleB, circleC] },
+          { x: p6.x, y: p6.y, circles: [circleB, circleC] },
+        ];
+
+        const triplePoints = findTripleIntersectionPoints(circleA, circleB, circleC, allPoints);
+
+        if (triplePoints.length >= 3) {
+          const sortedTriple = sortPointsByAngle(triplePoints);
+          const nonTriplePoints = allPoints.filter(
+            p => !triplePoints.some(tp => tp.x === p.x && tp.y === p.y)
+          );
+
+          const colors = this.paraview.paraState.colors;
+          const colorA   = colors.colorValueAt(0);
+          const colorB   = colors.colorValueAt(1);
+          const colorC   = colors.colorValueAt(2);
+          const colorAB  = colors.colorValueAt(3);
+          const colorAC  = colors.colorValueAt(4);
+          const colorBC  = colors.colorValueAt(5);
+          const colorABC = colors.colorValueAt(6);
+
+          this._threeCircleRegionPaths = [
+            { d: describeAOnlyPath(triplePoints, nonTriplePoints),            fill: colorA   },
+            { d: describeBOnlyPath(triplePoints, nonTriplePoints),            fill: colorB   },
+            { d: describeCOnlyPath(triplePoints, nonTriplePoints),            fill: colorC   },
+            { d: describeABPath(triplePoints, nonTriplePoints),               fill: colorAB  },
+            { d: describeACPath(triplePoints, nonTriplePoints),               fill: colorAC  },
+            { d: describeBCPath(triplePoints, nonTriplePoints),               fill: colorBC  },
+            { d: describeTripleIntersectionPath(sortedTriple),                fill: colorABC },
+          ];
+        }
+      }
     } else {
       this._intersectionPoints = [];
+      this._threeCircleRegionPaths = [];
     }
   }
 
@@ -654,6 +891,14 @@ export class VennRegionView extends DatapointView {
 
   protected _shapeStyleInfo(_shapeIndex: number) {
     const parentStyle = this._parent.styleInfo;
+    const numSeries = this.paraview.paraState.model?.seriesKeys.length ?? 2;
+    if (numSeries >= 3) {
+      return {
+        fill: 'none',
+        stroke: parentStyle.fill,
+        strokeWidth: '3',
+      };
+    }
     return {
       fill: parentStyle.fill,
       stroke: 'white',
