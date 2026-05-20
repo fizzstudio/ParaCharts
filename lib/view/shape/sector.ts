@@ -306,8 +306,8 @@ export class SectorShape extends Shape {
   }
 
   render() {
-    if (this._options.isPattern) {
-      let index = this.parent!.index
+    const index = this.parent?.index;
+    if (this.paraview.paraState.colors.palette.isPattern && index !== undefined) {
       let parent = this.parent! as DatapointView
       this._styleInfo.fill = `url(#Pattern${index})`
       //I can't figure out why the visited styles don't auto-apply, so I'm doing it manually here

@@ -754,64 +754,229 @@ export class Colors {
         patterns: [
           {
             value: svg`
-              <pattern id="Pattern0"  patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)">
-                <line class="pattern" x1="0" y="0" x2="0" y2="10" stroke='hsl(225, 30%, 52%)' stroke-width="5" />
-              </pattern>
-              `,
+              <pattern id="Pattern0" patternUnits="userSpaceOnUse" width="6" height="6">
+                <path d="M-2 8L8-2M-2 2L2-2M4 8L8 4"
+                  stroke="hsl(225, 30%, 52%)" stroke-width="1.4" opacity="0.65" />
+              </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
-            name: 'diagonal_lines'
+            name: 'diagonal'
           },
           {
             value: svg`
-              <pattern id="Pattern1" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10">
-                <circle cx="5" cy="5" r="2" fill='hsl(12, 69%, 35%)' />
-              </pattern>
-              `,
+              <pattern id="Pattern1" patternUnits="userSpaceOnUse" width="6" height="6">
+                <circle cx="3" cy="3" r="1.1" fill="hsl(12, 69%, 35%)" stroke="none" opacity="0.65" />
+              </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
-            name: 'dots'
+            name: 'dot'
           },
           {
             value: svg`
-              <pattern id="Pattern2" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10">
-                <path d="M 10 0 L 0 0 0 10" fill="none" stroke='hsl(75, 43%, 45%)' stroke-width="5"/>
-              </pattern>
-              `,
+              <pattern id="Pattern2" patternUnits="userSpaceOnUse" width="12" height="6">
+                <path d="M-3 3 C-1.5 1, 1.5 1, 3 3 S7.5 5, 9 3 S13.5 1, 15 3"
+                  fill="none" stroke="hsl(75, 43%, 45%)" stroke-width="1.35"
+                  stroke-linecap="round" opacity="0.66" />
+              </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
-            name: 'grid'
+            name: 'wave'
           },
           {
             value: svg`
-              <pattern id="Pattern3" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10">
-                <path d="M 0 0 L 10 10 M 10 0 L 0 10" stroke='hsl(40, 98%, 69%)' stroke-width="3"/>
-              </pattern>
-               `,
+              <pattern id="Pattern3" patternUnits="userSpaceOnUse" width="5" height="5">
+                <path d="M2.5 0V5" stroke="hsl(40, 98%, 69%)" stroke-width="1.5" opacity="0.62" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'vertical'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern4" patternUnits="userSpaceOnUse" width="9" height="9">
+                <circle cx="2.25" cy="2.25" r="1.7" fill="none"
+                  stroke="hsl(215, 37%, 66%)" stroke-width="1.0" opacity="0.68" />
+                <circle cx="6.75" cy="6.75" r="1.7" fill="none"
+                  stroke="hsl(215, 37%, 66%)" stroke-width="1.0" opacity="0.68" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'ring'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern5" patternUnits="userSpaceOnUse" width="6" height="6">
+                <path d="M-2 8L8-2M-2-2L8 8"
+                  stroke="hsl(63, 100%, 23%)" stroke-width="1" opacity="0.58" />
+              </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
             name: 'crosshatch'
           },
           {
             value: svg`
-              <pattern id="Pattern4" class="pattern" patternUnits="userSpaceOnUse" width="20" height="10">
-                <path d="M 0 5 Q 5 0, 10 5 T 20 5" fill="none" stroke='hsl(215, 37%, 66%)' stroke-width="3"/>
-              </pattern>
-              `,
+              <pattern id="Pattern6" patternUnits="userSpaceOnUse" width="6" height="8">
+                <path d="M3-4 L1 0 L5 4 L1 8 L5 12"
+                  fill="none" stroke="hsl(34, 57%, 46%)" stroke-width="1.35"
+                  stroke-linejoin="round" stroke-linecap="round" opacity="0.68" />
+              </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
-            name: 'waves'
+            name: 'vertical_zigzag'
           },
           {
             value: svg`
-              <pattern id="Pattern5" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(135)">
-                <line x1="0" y="0" x2="0" y2="10" stroke='hsl(63, 100%, 23%)' stroke-width="5" />
+              <pattern id="Pattern7" patternUnits="userSpaceOnUse" width="12" height="12">
+                <path d="M-2-2L14 14 M-2 10L2 14 M10-2L14 2"
+                  stroke="hsl(51, 56%, 64%)" stroke-width="3.3" opacity="0.62" />
               </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
-            name: 'diagonal_lines2'
+            name: 'reverse_stripe'
           },
           {
             value: svg`
-              <pattern id="Pattern6" class="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-              <circle cx="10" cy="10" r="10" fill='hsl(34, 57%, 46%)'" />
+              <pattern id="Pattern8" patternUnits="userSpaceOnUse" width="5" height="5">
+                <path d="M0 2.5H5" stroke="hsl(253, 26%, 43%)" stroke-width="1.5" opacity="0.62" />
               </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
-            name: ''
+            name: 'horizontal'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern9" patternUnits="userSpaceOnUse" width="10" height="10">
+                <path d="M0 0H5V5H0Z M5 5H10V10H5Z"
+                  fill="hsl(85, 65%, 36%)" stroke="none" opacity="0.42" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'checker'
+          },
+          {
+            value: svg`hsl(0, 100%, 50%)`,
+            name: 'visit'
+          }
+        ]
+      },
+      {
+        key: 'pattern-2',
+        title: 'pattern 2',
+        isPattern: true,
+        colors: [
+          { value: 'hsl(225, 30%, 52%)', name: 'blue' },
+          { value: 'hsl(12, 69%, 35%)', name: 'red' },
+          { value: 'hsl(75, 43%, 45%)', name: 'green' },
+          { value: 'hsl(40, 98%, 69%)', name: 'yellow' },
+          { value: 'hsl(215, 37%, 66%)', name: 'light blue' },
+          { value: 'hsl(63, 100%, 23%)', name: 'olive green' },
+          { value: 'hsl(34, 57%, 46%)', name: 'caramel' },
+          { value: 'hsl(51, 56%, 64%)', name: 'tan' },
+          { value: 'hsl(253, 26%, 43%)', name: 'purple' },
+          { value: 'hsl(85, 65%, 36%)', name: 'forest green' },
+          { value: 'hsl(12, 56%, 51%)', name: 'red-orange' },
+          { value: 'hsl(30, 42%, 35%)', name: 'brown' },
+          { value: 'hsl(240, 100%, 50%)', name: 'bright blue' },
+          { value: 'hsl(120, 100%, 50%)', name: 'lime green' },
+          { value: 'hsl(39, 100%, 50%)', name: 'orange' },
+          { value: 'hsl(300, 100%, 25%)', name: 'royal purple' },
+          { value: 'hsl(51, 100%, 50%)', name: 'lemon yellow' },
+          { value: 'hsl(328, 100%, 54%)', name: 'fuschia' },
+          { value: 'hsl(177, 70%, 41%)', name: 'cyan' },
+          { value: 'cyan', name: 'highlight' },
+          { value: 'hsl(0, 100%, 50%)', name: 'visit' }
+        ],
+        patterns: [
+          {
+            value: svg`
+              <pattern id="Pattern0" patternUnits="userSpaceOnUse" width="6" height="6">
+                <rect width="6" height="6" fill="hsl(225, 20%, 85%)" stroke="none" />
+                <path d="M-2 8L8-2M-2 2L2-2M4 8L8 4"
+                  stroke="hsl(225, 40%, 35%)" stroke-width="1.4" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'diagonal'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern1" patternUnits="userSpaceOnUse" width="6" height="6">
+                <rect width="6" height="6" fill="hsl(12, 50%, 80%)" stroke="none" />
+                <circle cx="3" cy="3" r="1.1" fill="hsl(12, 70%, 22%)" stroke="none" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'dot'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern2" patternUnits="userSpaceOnUse" width="12" height="6">
+                <rect width="12" height="6" fill="hsl(75, 30%, 80%)" stroke="none" />
+                <path d="M-3 3 C-1.5 1, 1.5 1, 3 3 S7.5 5, 9 3 S13.5 1, 15 3"
+                  fill="none" stroke="hsl(75, 50%, 28%)" stroke-width="1.35"
+                  stroke-linecap="round" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'wave'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern3" patternUnits="userSpaceOnUse" width="5" height="5">
+                <rect width="5" height="5" fill="hsl(40, 70%, 88%)" stroke="none" />
+                <path d="M2.5 0V5" stroke="hsl(40, 100%, 42%)" stroke-width="1.5" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'vertical'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern4" patternUnits="userSpaceOnUse" width="9" height="9">
+                <rect width="9" height="9" fill="hsl(215, 25%, 88%)" stroke="none" />
+                <circle cx="2.25" cy="2.25" r="1.7" fill="none"
+                  stroke="hsl(215, 50%, 40%)" stroke-width="1.0" />
+                <circle cx="6.75" cy="6.75" r="1.7" fill="none"
+                  stroke="hsl(215, 50%, 40%)" stroke-width="1.0" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'ring'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern5" patternUnits="userSpaceOnUse" width="6" height="6">
+                <rect width="6" height="6" fill="hsl(63, 60%, 78%)" stroke="none" />
+                <path d="M-2 8L8-2M-2-2L8 8"
+                  stroke="hsl(63, 100%, 14%)" stroke-width="1" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'crosshatch'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern6" patternUnits="userSpaceOnUse" width="6" height="8">
+                <rect width="6" height="8" fill="hsl(34, 40%, 82%)" stroke="none" />
+                <path d="M3-4 L1 0 L5 4 L1 8 L5 12"
+                  fill="none" stroke="hsl(34, 65%, 28%)" stroke-width="1.35"
+                  stroke-linejoin="round" stroke-linecap="round" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'vertical_zigzag'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern7" patternUnits="userSpaceOnUse" width="12" height="12">
+                <rect width="12" height="12" fill="hsl(51, 40%, 88%)" stroke="none" />
+                <path d="M-2-2L14 14 M-2 10L2 14 M10-2L14 2"
+                  stroke="hsl(51, 65%, 38%)" stroke-width="3.3" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'reverse_stripe'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern8" patternUnits="userSpaceOnUse" width="5" height="5">
+                <rect width="5" height="5" fill="hsl(253, 20%, 82%)" stroke="none" />
+                <path d="M0 2.5H5" stroke="hsl(253, 35%, 25%)" stroke-width="1.5" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'horizontal'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern9" patternUnits="userSpaceOnUse" width="10" height="10">
+                <rect width="10" height="10" fill="hsl(85, 40%, 78%)" stroke="none" />
+                <path d="M0 0H5V5H0Z M5 5H10V10H5Z"
+                  fill="hsl(85, 75%, 20%)" stroke="none" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'checker'
           },
           {
             value: svg`hsl(0, 100%, 50%)`,
