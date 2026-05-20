@@ -327,6 +327,7 @@ export class DataSymbol extends View {
   }
 
   content() {
+    this._updateStyleInfo();
     let transform;
     let shouldTransform = false;
     if (this._options.scale !== 1) {
@@ -339,7 +340,23 @@ export class DataSymbol extends View {
         this.hidden = true;
       }
     }
-    return this.hidden ? svg`` : svg`
+    if (this.hidden) return svg``;
+    if (this.paraview.paraState.colors.palette.isPattern && this._options.color !== undefined) {
+      const index = this._options.color;
+      const x = this._x - this.width/2;
+      const y = this._y - this.height/2;
+      return svg`
+        <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
+        <rect x=${x} y=${y} width=${this.width} height=${this.height}
+          fill="white" stroke="none" />
+        <rect x=${x} y=${y} width=${this.width} height=${this.height}
+          fill="url(#Pattern${index})" stroke="none"
+          @pointerenter=${this._options.pointerEnter ?? nothing}
+          @pointerleave=${this._options.pointerLeave ?? nothing}
+          @click=${this._options.click ?? nothing} />
+      `;
+    }
+    return svg`
       ${this._options.blackBorder ? svg`
         <use
           href="#${this._defsKey}"
