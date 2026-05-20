@@ -630,9 +630,19 @@ export class ParaView extends ParaComponent implements ViewContext {
 
   protected _handleVoicing() {
     if (this._paraState.config.ui.isVoicingEnabled) {
-      this.ariaLiveRegion.voicing.speak('Self-voicing enabled.', []);
+      if (this._paraState.config.ui.isTourGuideEnabled){
+        this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
+      }
+      else{
+        this.ariaLiveRegion.voicing.speak('Self-voicing enabled.', []);
+      }
     } else {
-      this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
+      if (this._paraState.config.ui.isTourGuideEnabled){
+        this.ariaLiveRegion.voicing.speak('Tour guide disabled.', []);
+      }
+      else{
+        this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
+      }
       //this.ariaLiveRegion.voicing.shutUp();
       // if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
       //   this._paraState.updateSettings(draft => {

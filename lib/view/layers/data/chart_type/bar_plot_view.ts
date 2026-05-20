@@ -239,10 +239,8 @@ export class BarPlotView extends PlanePlotView {
             const seriesView = seriesViews.find(sv => sv.seriesKey === barStackItem.series)!;
             return seriesView.children[i - 1].datapoint;
           }).reduce((a, b) => a + b.facetValueAsNumber('y')!, 0);
-          const range = this._chartInfo.yInterval!.end - this._chartInfo.yInterval!.start;
-          const total = formatDataValue(sum, range);
           this._totalLabels.push(new Label(this.paraview, {
-            text: total,
+            text: String(sum),
             classList: [`${this.paraview.paraState.type}-total-label`],
             // textAnchor,
             angle

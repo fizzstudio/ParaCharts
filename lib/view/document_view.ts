@@ -245,7 +245,7 @@ export class DocumentView extends Container(View) {
     }
 
     if (this._legends.east) {
-      this._legends.east.left = this._chartLayers.right;
+      this._legends.east.left = this._directLabelStrip ? this._directLabelStrip.right : this._chartLayers.right
       this._legends.east.top = this._chartLayers.top;
     }
     if (this._legends.west) {
