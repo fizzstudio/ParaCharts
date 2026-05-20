@@ -301,7 +301,7 @@ export class VennPlotView extends DataLayer {
       ${this._threeCircleRegionPaths.map(({ d, fill }) => svg`<path
         d=${d}
         fill=${fill}
-        fill-opacity="0.4"
+        fill-opacity="0.7"
         stroke="white"
         stroke-width="2"
         pointer-events="none"
