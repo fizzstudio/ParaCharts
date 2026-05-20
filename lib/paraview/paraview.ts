@@ -587,53 +587,104 @@ export class ParaView extends ParaComponent implements ViewContext {
   }
 
   protected _handleLowVisionMode(newValue?: Setting) {
+    const cc = this._paraState.config.color;
+    const ui = this._paraState.config.ui;
+
+    // --- Settings (updateSettings path: animation) ---
     this._paraState.updateSettings(draft => {
       this._paraState.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
-      //draft.color.isDarkModeEnabled = !!newValue;
-      //draft.ui.isFullscreenEnabled = !!newValue;
       if (newValue) {
-        this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
-        // this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
-        // this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
-        //this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
-        // end any in-progress animation here
-        this._documentView!.chartLayers.dataLayer.stopAnimation();
-        draft.animation.isAnimationEnabled = false;
-        //draft.chart.fontScale = 2;
-        // draft.grid.isDrawVertLines = true;
-        //draft.color.colorPalette = 'low-vision';
+        if (ui.lowVisionDisableAnimations) {
+          this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
+          this._documentView!.chartLayers.dataLayer.stopAnimation();
+          draft.animation.isAnimationEnabled = false;
+        }
       } else {
-        draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
-        // draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
-        // draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
-        //draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
-        this._modeSaved.delete('animation.isAnimationEnabled');
-        //this._modeSaved.delete('chart.fontScale');
-        // this._modeSaved.delete('grid.isDrawVertLines');
-        //this._modeSaved.delete('color.colorPalette');
+        if (this._modeSaved.has('animation.isAnimationEnabled')) {
+          draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
+          this._modeSaved.delete('animation.isAnimationEnabled');
+        }
       }
     });
+
+    // --- Theme and contrast (ColorPrefManager path) ---
+    // force=true: LV mode applies its user-configured defaults even when the user
+    // has an explicit general preference, and saves/restores the original state.
     if (newValue) {
-      // Default low-vision to dark theme — skipped if user has explicitly chosen a theme.
-      this._colorPrefManager.setModeDefault('themeMode', 'dark');
+      const themeDefault = cc.lowVisionThemeDefault as 'system' | 'light' | 'dark';
+      if (themeDefault !== 'system') {
+        this._modeSaved.set('color.themeMode',   cc.themeMode);
+        this._modeSaved.set('color.themeSource', cc.themeSource);
+        this._colorPrefManager.setModeDefault('themeMode', themeDefault, true);
+      }
+      const contrastDefault = cc.lowVisionContrastDefault as 'system' | 'lower' | 'normal' | 'higher' | 'custom';
+      if (contrastDefault !== 'system') {
+        this._modeSaved.set('color.contrastMode',   cc.contrastMode);
+        this._modeSaved.set('color.contrastLevel',  cc.contrastLevel);
+        this._modeSaved.set('color.contrastSource', cc.contrastSource);
+        this._colorPrefManager.setContrastModeDefault(contrastDefault, cc.lowVisionContrastLevel as number, true);
+      }
     } else {
-      this._colorPrefManager.clearModeDefault('themeMode');
-    }
-    this._paraState.updateConfig(draft => {
-      draft.ui.isFullscreenEnabled = !!newValue;
-      if (newValue) {
-        this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
-        draft.color.colorPalette = 'low-vision';
-        this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
-        this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
-        draft.chart.fontScale = 2;
-        draft.grid.isDrawVertLines = true;
+      if (this._modeSaved.has('color.themeMode')) {
+        this._colorPrefManager.restoreTheme(
+          this._modeSaved.get('color.themeMode') as 'system' | 'light' | 'dark',
+          this._modeSaved.get('color.themeSource') as any,
+        );
+        this._modeSaved.delete('color.themeMode');
+        this._modeSaved.delete('color.themeSource');
       } else {
-        draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
-        this._modeSaved.delete('color.colorPalette');
-        draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
-        this._modeSaved.delete('grid.isDrawVertLines');
-        draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
+        this._colorPrefManager.clearModeDefault('themeMode');
+      }
+      if (this._modeSaved.has('color.contrastMode')) {
+        this._colorPrefManager.restoreContrast(
+          this._modeSaved.get('color.contrastMode') as any,
+          this._modeSaved.get('color.contrastLevel') as number,
+          this._modeSaved.get('color.contrastSource') as any,
+        );
+        this._modeSaved.delete('color.contrastMode');
+        this._modeSaved.delete('color.contrastLevel');
+        this._modeSaved.delete('color.contrastSource');
+      } else {
+        this._colorPrefManager.clearContrastModeDefault();
+      }
+    }
+
+    // --- Config (updateConfig path: palette, font scale, gridlines, fullscreen) ---
+    this._paraState.updateConfig(draft => {
+      if (newValue) {
+        if (ui.lowVisionIsFullscreen) {
+          this._modeSaved.set('ui.isFullscreenEnabled', draft.ui.isFullscreenEnabled);
+          draft.ui.isFullscreenEnabled = true;
+        }
+        if (cc.lowVisionColorPalette) {
+          this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
+          draft.color.colorPalette = 'low-vision';
+        }
+        if (ui.lowVisionFontScale !== 1) {
+          this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
+          draft.chart.fontScale = ui.lowVisionFontScale as number;
+        }
+        if (ui.lowVisionIsVertGridlines) {
+          this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+          draft.grid.isDrawVertLines = true;
+        }
+      } else {
+        if (this._modeSaved.has('ui.isFullscreenEnabled')) {
+          draft.ui.isFullscreenEnabled = this._modeSaved.get('ui.isFullscreenEnabled');
+          this._modeSaved.delete('ui.isFullscreenEnabled');
+        }
+        if (this._modeSaved.has('color.colorPalette')) {
+          draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
+          this._modeSaved.delete('color.colorPalette');
+        }
+        if (this._modeSaved.has('chart.fontScale')) {
+          draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
+          this._modeSaved.delete('chart.fontScale');
+        }
+        if (this._modeSaved.has('grid.isDrawVertLines')) {
+          draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
+          this._modeSaved.delete('grid.isDrawVertLines');
+        }
       }
     });
   }
