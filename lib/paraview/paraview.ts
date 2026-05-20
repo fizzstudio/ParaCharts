@@ -249,6 +249,51 @@ export class ParaView extends ParaComponent implements ViewContext {
         /*opacity: 0.5;*/
         pointer-events: all;
       }
+      /* Palette CSS custom properties — default (diva) values.
+       * Overridden at runtime by Colors.paletteVars() injected onto the SVG
+       * root element, so any palette (including author-defined) works. */
+      :host {
+        --color-palette-series-0: hsl(225, 30%, 52%);
+        --color-palette-series-1: hsl(12, 69%, 35%);
+        --color-palette-series-2: hsl(75, 43%, 45%);
+        --color-palette-series-3: hsl(40, 100%, 49%);
+        --color-palette-series-4: hsl(215, 37%, 66%);
+        --color-palette-series-5: hsl(63, 100%, 23%);
+        --color-palette-series-6: hsl(34, 57%, 46%);
+        --color-palette-series-7: hsl(51, 56%, 64%);
+        --color-palette-series-8: hsl(253, 26%, 43%);
+        --color-palette-series-9: hsl(85, 65%, 36%);
+        /* Precomputed diva lightened variants (reduced saturation, +25% lightness).
+         * Overridden at runtime alongside base vars by Colors.paletteVars(). */
+        --color-palette-series-0-light: hsl(225, 20%, 77%);
+        --color-palette-series-1-light: hsl(12, 59%, 60%);
+        --color-palette-series-2-light: hsl(75, 33%, 70%);
+        --color-palette-series-3-light: hsl(40, 90%, 74%);
+        --color-palette-series-4-light: hsl(215, 27%, 91%);
+        --color-palette-series-5-light: hsl(63, 90%, 48%);
+        --color-palette-series-6-light: hsl(34, 47%, 71%);
+        --color-palette-series-7-light: hsl(51, 46%, 89%);
+        --color-palette-series-8-light: hsl(253, 16%, 68%);
+        --color-palette-series-9-light: hsl(85, 55%, 61%);
+      }
+      /* Series color rules. --series-color-light is a scoped helper var that
+       * .symbol.lighten reads so it can vary per series without needing
+       * a separate rule per series-N combination. */
+      .series-0 { fill: var(--color-palette-series-0); stroke: var(--color-palette-series-0); --series-color-light: var(--color-palette-series-0-light); }
+      .series-1 { fill: var(--color-palette-series-1); stroke: var(--color-palette-series-1); --series-color-light: var(--color-palette-series-1-light); }
+      .series-2 { fill: var(--color-palette-series-2); stroke: var(--color-palette-series-2); --series-color-light: var(--color-palette-series-2-light); }
+      .series-3 { fill: var(--color-palette-series-3); stroke: var(--color-palette-series-3); --series-color-light: var(--color-palette-series-3-light); }
+      .series-4 { fill: var(--color-palette-series-4); stroke: var(--color-palette-series-4); --series-color-light: var(--color-palette-series-4-light); }
+      .series-5 { fill: var(--color-palette-series-5); stroke: var(--color-palette-series-5); --series-color-light: var(--color-palette-series-5-light); }
+      .series-6 { fill: var(--color-palette-series-6); stroke: var(--color-palette-series-6); --series-color-light: var(--color-palette-series-6-light); }
+      .series-7 { fill: var(--color-palette-series-7); stroke: var(--color-palette-series-7); --series-color-light: var(--color-palette-series-7-light); }
+      .series-8 { fill: var(--color-palette-series-8); stroke: var(--color-palette-series-8); --series-color-light: var(--color-palette-series-8-light); }
+      .series-9 { fill: var(--color-palette-series-9); stroke: var(--color-palette-series-9); --series-color-light: var(--color-palette-series-9-light); }
+      /* Symbol fill overrides — must appear after .series-N so they win. */
+      .symbol.lighten { fill: var(--series-color-light); }
+      .symbol.empty   { fill: none; }
+      /* Cluster centroid: series color fills, black stroke forces centroid ring. */
+      .cluster-centroid { stroke: black; }
       .symbol {
         /*stroke-width: 2;*/
         stroke-linejoin: round;
@@ -256,6 +301,10 @@ export class ParaView extends ParaComponent implements ViewContext {
       .symbol.outline {
         fill: white;
       }
+      /* Pastry/leader overrides — same specificity as .series-N, later position wins */
+      .pastry-outside-label-leader { fill: none; }
+      .pastry-slice { stroke: white; }
+      .label-leader path { fill: none; }
       use.visited-mark {
        pointer-events: none;
       }
@@ -292,8 +341,8 @@ export class ParaView extends ParaComponent implements ViewContext {
         stroke-opacity: 0.8;
       }
       .datapoint.visited:not(.highlighted) {
-        stroke: var(--visited-color);
-        fill: var(--visited-color);
+        stroke: var(--visited-color, hsl(0, 100%, 50%));
+        fill: var(--visited-color, hsl(0, 100%, 50%));
         stroke-width: var(--visited-stroke-width);
       }
       .datapoint.highlighted {
@@ -334,6 +383,35 @@ export class ParaView extends ParaComponent implements ViewContext {
       stroke-dasharray: 12 12;
       stroke-width: 1.5;
       pointer-events: none;
+      }
+      /* -----------------------------------------------------------------------
+       * forced-colors: active
+       * Structural elements defer to system colour keywords; series colours are
+       * preserved via forced-color-adjust: none because ParaCharts already
+       * provides shape and pattern redundancy for non-colour differentiation.
+       * ----------------------------------------------------------------------- */
+      @media (forced-colors: active) {
+        :host { background-color: Canvas; }
+        #vert-axis-line,
+        #horiz-axis-line  { stroke: CanvasText; }
+        .chart-title,
+        .axis-title-horiz,
+        .axis-title-vert  { fill: CanvasText; }
+        .tick-label-horiz,
+        .tick-label-vert  { fill: CanvasText; }
+        .tick             { stroke: CanvasText; opacity: 0.25; }
+        .datapoint.visited { fill: GrayText; stroke: GrayText; }
+        .series-0, .series-1, .series-2, .series-3,
+        .series-4, .series-5, .series-6, .series-7,
+        .series-8, .series-9 { forced-color-adjust: none; }
+      }
+      /* -----------------------------------------------------------------------
+       * inverted-colors: inverted
+       * Strengthen structural differentiation; shape/pattern redundancy is the
+       * primary safeguard.
+       * ----------------------------------------------------------------------- */
+      @media (inverted-colors: inverted) {
+        .focus-ring { stroke-width: 3px; }
       }
     `
   ];
@@ -862,7 +940,21 @@ export class ParaView extends ParaComponent implements ViewContext {
     const svg = this.root!.cloneNode(true) as SVGSVGElement;
     svg.id = 'para' + (window.crypto.randomUUID?.() ?? '');
 
-    const styles = this.paraChart.extractStyles(svg.id) + '\n' + this.extractStyles(svg.id);
+    // Build a #svgId { } rule from the canonical palette state and append it after the
+    // extracted shadow DOM styles so it wins the cascade over the diva fallback values
+    // in the rewritten :host block. Reading from the model (paletteVars()) rather than
+    // back from the DOM avoids coupling this code to the naming conventions used by
+    // _rootStyle().
+    const paletteVars = this._paraState.colors.paletteVars();
+    const paletteRule = Object.keys(paletteVars).length
+      ? `#${svg.id} {\n${Object.entries(paletteVars).map(([k, v]) => `  ${k}: ${v};`).join('\n')}\n}\n`
+      : '';
+    // Remove palette vars from the cloned element's inline style — they now live in <style>.
+    for (const key of Object.keys(paletteVars)) {
+      svg.style.removeProperty(key);
+    }
+
+    const styles = this.paraChart.extractStyles(svg.id) + '\n' + this.extractStyles(svg.id) + '\n' + paletteRule;
     const styleEl = document.createElementNS(SVGNS, 'style');
     styleEl.textContent = styles;
     svg.prepend(styleEl);
@@ -992,6 +1084,9 @@ export class ParaView extends ParaComponent implements ViewContext {
     // theme-appropriate default (white / computed dark) unless the user has
     // explicitly chosen a custom color, in which case their choice wins.
     style["--background-color"] = this._paraState.config.color.backgroundColor || '#ffffff';
+    // Inject per-palette CSS custom properties so .series-N rules resolve
+    // correctly for any palette, including author-defined ones.
+    Object.assign(style, this._paraState.colors.paletteVars());
     return style;
   }
 
@@ -999,6 +1094,15 @@ export class ParaView extends ParaComponent implements ViewContext {
     const sys = this._colorPrefManager?.getSystemState();
     return {
       darkmode:          this._paraState.config.color.isDarkModeEnabled,
+      // These JS classes mirror the @media (forced-colors: active) and
+      // @media (inverted-colors: inverted) blocks in static styles. The @media blocks
+      // handle standard browser support. These classes exist as the fallback hook for
+      // -para- prefixed custom media queries (e.g. (-para-forced-colors: active)) that
+      // browsers won't detect natively — _colorPrefManager detects those via JS and
+      // surfaces them here so static styles can target .forced-colors and
+      // .inverted-colors as selectors alongside the standard @media blocks.
+      // When -para- query detection is implemented, add matching CSS rules for
+      // .forced-colors { ... } and .inverted-colors { ... } in static styles.
       'forced-colors':   sys?.forcedColorsActive   ?? false,
       'inverted-colors': sys?.invertedColorsActive ?? false,
     };

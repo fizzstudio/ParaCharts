@@ -1,10 +1,12 @@
-import { LitElement, html, css, nothing } from 'lit';
+import { LitElement, html, css, nothing, type TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { type ButtonDescriptor } from '@fizz/ui-components';
 
 export interface CardDescriptor extends ButtonDescriptor {
   /** CSS color values — renders a swatch strip when present. */
   swatches?: string[];
+  /** SVG template result — replaces the CSS swatch strip when present (e.g. pattern palettes). */
+  svgSwatches?: TemplateResult;
 }
 
 @customElement('para-card-selector')
@@ -108,6 +110,12 @@ export class CardSelector extends LitElement {
       forced-color-adjust: none;
     }
 
+    label.has-swatches .swatches svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
     /* Label-only: compact chip */
     label.label-only {
       flex-direction: row;
@@ -177,7 +185,7 @@ export class CardSelector extends LitElement {
           ${entries.map(([key, desc]) => {
             const isSelected = key === this.selected;
             const hasIcon = !!desc.icon;
-            const hasSwatches = !!desc.swatches?.length;
+            const hasSwatches = !!(desc.swatches?.length || desc.svgSwatches);
             const modeClass = hasIcon ? 'has-icon' : hasSwatches ? 'has-swatches' : 'label-only';
             return html`
               <label
@@ -194,7 +202,7 @@ export class CardSelector extends LitElement {
                 ${hasIcon ? html`<img src=${desc.icon!} alt="">` : nothing}
                 ${hasSwatches ? html`
                   <span class="swatches">
-                    ${desc.swatches!.map(color => html`
+                    ${desc.svgSwatches ?? desc.swatches!.map(color => html`
                       <span class="swatch" style="background:${color}"></span>
                     `)}
                   </span>

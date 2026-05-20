@@ -12,7 +12,7 @@ function _capitalize(key: string): string {
 }
 
 import {
-  html, css, nothing
+  html, css, svg, nothing
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { StateController } from '@lit-app/state';
@@ -103,16 +103,29 @@ export class ColorsPanel extends ControlPanelTabPanel {
     const buttons: { [key: string]: CardDescriptor } = {};
     for (const palette of this._paraState.colors.palettes.filter(p => !p.cvd)) {
       const c4 = palette.colors.slice(0, 4).map(c => c.value);
-      const swatches = palette.isPattern ? [
-        `repeating-linear-gradient(45deg, ${c4[0]} 0, ${c4[0]} 3px, transparent 3px, transparent 8px)`,
-        `radial-gradient(${c4[1]} 30%, transparent 30%) 0 0 / 6px 6px`,
-        `repeating-linear-gradient(0deg, ${c4[2]} 0, ${c4[2]} 2px, transparent 2px, transparent 6px), repeating-linear-gradient(90deg, ${c4[2]} 0, ${c4[2]} 2px, transparent 2px, transparent 6px)`,
-        `repeating-linear-gradient(45deg, ${c4[3]} 0, ${c4[3]} 2px, transparent 2px, transparent 6px), repeating-linear-gradient(-45deg, ${c4[3]} 0, ${c4[3]} 2px, transparent 2px, transparent 6px)`,
-      ] : c4;
+      if (palette.isPattern) {
+        const p = palette.patterns!;
+        buttons[palette.key] = {
+          label: _capitalize(palette.key),
+          title: palette.title,
+          svgSwatches: svg`
+            <svg viewBox="0 0 62 14" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                ${p[0].value}${p[1].value}${p[2].value}${p[3].value}
+              </defs>
+              <rect x="0"  y="0" width="14" height="14" rx="2" fill="url(#Pattern0)" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>
+              <rect x="16" y="0" width="14" height="14" rx="2" fill="url(#Pattern1)" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>
+              <rect x="32" y="0" width="14" height="14" rx="2" fill="url(#Pattern2)" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>
+              <rect x="48" y="0" width="14" height="14" rx="2" fill="url(#Pattern3)" stroke="rgba(0,0,0,0.15)" stroke-width="0.5"/>
+            </svg>
+          `,
+        };
+        continue;
+      }
       buttons[palette.key] = {
         label: _capitalize(palette.key),
         title: palette.title,
-        swatches,
+        swatches: c4,
       };
     }
     const cc = this._paraState.config.color;

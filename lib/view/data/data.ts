@@ -80,12 +80,6 @@ export class DataView extends View {
   }
 
   protected _updateStyleInfo(styleInfo: StyleInfo) {
-    let colorValue = this.chart.paraview.paraState.colors.colorValueAt(this.color);
-    // if (this.paraview.paraState.isVisitedSeries(this.seriesKey)) {
-    //   colorValue = this.chart.paraview.paraState.colors.colorValue('highlight');
-    // }
-    styleInfo.fill = colorValue;
-    styleInfo.stroke = colorValue;
     styleInfo.strokeWidth = this.paraview.paraState.config.chart.strokeWidth;
   }
 
