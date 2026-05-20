@@ -130,9 +130,11 @@ export class DatapointView extends DataView {
   }
 
   get classInfo(): ClassInfo {
-    let index = this.index;
+    const index = this.index;
+    const numColors = this.paraview.paraState.colors.numSeriesColors;
     return {
       datapoint: true,
+      [`series-${this.color % numColors}`]: true,
       visited: this.paraview.paraState.isVisited(this.seriesKey, index),
       selected: this.paraview.paraState.isSelected(this.seriesKey, index),
       highlighted: this.paraview.paraState.isDatapointHighlighted(this.seriesKey, index),
@@ -351,7 +353,13 @@ export class DatapointView extends DataView {
     if (this._children.length === 1) {
       // classInfo may change, so needs to get reassigned here
       const kid = this._children[0] as (Shape | DataSymbol);
-      kid.classInfo = this.classInfo;
+      if (kid instanceof DataSymbol) {
+        // Merge: preserve symbol-managed classes (symbol, fill-type, lighten) while
+        // adding datapoint state classes (series-N, visited, selected, etc.)
+        kid.classInfo = { ...kid.classInfo, ...this.classInfo };
+      } else {
+        kid.classInfo = this.classInfo;
+      }
       return super.content();
     } else {
       return svg`

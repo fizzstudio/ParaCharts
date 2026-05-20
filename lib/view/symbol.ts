@@ -169,11 +169,6 @@ export class DataSymbol extends View {
     this.type = `${shape}.${fill}`;
     this._locOffset.x = this.width/2;
     this._locOffset.y = this.height/2;
-    this._updateStyleInfo();
-    this._classInfo = {
-      symbol: true,
-      [fill]: true
-    };
   }
 
   get type(): DataSymbolType {
@@ -195,6 +190,7 @@ export class DataSymbol extends View {
       `);
     }
     this._updateStyleInfo();
+    this._updateClassInfo();
   }
 
   get width() {
@@ -238,7 +234,6 @@ export class DataSymbol extends View {
 
   set fill(fill: DataSymbolFill) {
     this.type = (this._type.split('.')[0] + '.' + fill) as DataSymbolType;
-    this._updateStyleInfo();
   }
 
   get color() {
@@ -248,6 +243,7 @@ export class DataSymbol extends View {
   set color(color: number | undefined) {
     this._options.color = color;
     this._updateStyleInfo();
+    this._updateClassInfo();
   }
 
   get opacity() {
@@ -282,6 +278,18 @@ export class DataSymbol extends View {
     return sym;
   }
 
+  protected _updateClassInfo() {
+    const numColors = this.paraview.paraState.colors.numSeriesColors;
+    this._classInfo = {
+      symbol: true,
+      [this.fill]: true,
+      ...(this._options.lighten ? { lighten: true } : {}),
+      ...(this._options.color !== undefined && this._options.color >= 0
+        ? { [`series-${this._options.color % numColors}`]: true }
+        : {}),
+    };
+  }
+
   protected _updateStyleInfo() {
     this._styleInfo = {
       strokeWidth: this._options.strokeWidth,
@@ -289,31 +297,8 @@ export class DataSymbol extends View {
     if (this._options.dashed) {
       this._styleInfo.strokeDasharray = '1px 2px';
     }
-    if (this._options.color !== undefined) {
-      if (this.fill === 'solid') {
-        if (this._options.lighten) {
-          const col = this.paraview.paraState.colors.colorValueAt(
-            this._options.color).match(/\d+/g)!.map(Number);
-          //10 and 25 are magic numbers
-          col[1] -= Math.min(10, col[1]);
-          col[2] += Math.min(25, 100 - col[2]);
-          this._styleInfo.fill = `hsl(${col[0]}, ${col[1]}%, ${col[2]}%)`;
-        }
-        else {
-          this._styleInfo.fill = this.paraview.paraState.colors.colorValueAt(
-            this._options.color);
-        }
-      }
-      else if (this.fill === 'outline') {
-        this._styleInfo.fill = 'white';
-      } else {
-        this._styleInfo.fill = 'none';
-      }
-      if (this._options.opacity !== undefined) {
-        this._styleInfo.opacity = this._options.opacity;
-      }
-      this._styleInfo.stroke = this.paraview.paraState.colors.colorValueAt(
-        this._options.color);
+    if (this._options.opacity !== undefined) {
+      this._styleInfo.opacity = this._options.opacity;
     }
   }
 
@@ -327,7 +312,6 @@ export class DataSymbol extends View {
   }
 
   content() {
-    this._updateStyleInfo();
     let transform;
     let shouldTransform = false;
     if (this._options.scale !== 1) {
