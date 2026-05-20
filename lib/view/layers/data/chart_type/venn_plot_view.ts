@@ -564,13 +564,16 @@ export class VennPlotView extends DataLayer {
     const seriesKeys = this.paraview.paraState.model!.seriesKeys;
     const n = seriesKeys.length;
     const d = 0.5 * this._radius;
-    // 2 circles: left/right layout. 3+ circles: evenly-spaced angles from the top.
-    const startAngle = n === 2 ? Math.PI : -Math.PI / 2;
 
     this._circleCenters = [];
 
     seriesKeys.forEach((seriesKey, i) => {
-      const angle = startAngle + i * (2 * Math.PI / n);
+      // Keep the 3-circle geometry in the same A/B/C orientation assumed by Venn.js.
+      const angle = n === 2
+        ? Math.PI + i * Math.PI
+        : n === 3
+          ? [5 * Math.PI / 6, Math.PI / 6, -Math.PI / 2][i]!
+          : -Math.PI / 2 + i * (2 * Math.PI / n);
       const xOff = d * Math.cos(angle);
       const yOff = d * Math.sin(angle);
       this._circleCenters.push({ x: this._cx + xOff, y: this._cy + yOff });
