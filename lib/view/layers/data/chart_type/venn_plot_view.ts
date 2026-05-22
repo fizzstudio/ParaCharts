@@ -510,6 +510,8 @@ export class VennPlotView extends DataLayer {
         r=${circleA.radius}
         fill=${regionFill(0)}
         fill-opacity=${regionOpacity}
+        stroke="white"
+        stroke-width="3"
         mask=${`url(#${aOnlyId})`}
         pointer-events="none"
       />
@@ -519,6 +521,8 @@ export class VennPlotView extends DataLayer {
         r=${circleB.radius}
         fill=${regionFill(1)}
         fill-opacity=${regionOpacity}
+        stroke="white"
+        stroke-width="3"
         mask=${`url(#${bOnlyId})`}
         pointer-events="none"
       />
@@ -528,6 +532,8 @@ export class VennPlotView extends DataLayer {
         r=${circleC.radius}
         fill=${regionFill(2)}
         fill-opacity=${regionOpacity}
+        stroke="white"
+        stroke-width="3"
         mask=${`url(#${cOnlyId})`}
         pointer-events="none"
       />
@@ -538,6 +544,8 @@ export class VennPlotView extends DataLayer {
         r=${circleA.radius}
         fill=${regionFill(3)}
         fill-opacity=${regionOpacity}
+        stroke="white"
+        stroke-width="3"
         clip-path=${`url(#${clipBId})`}
         mask=${`url(#${outsideCId})`}
         pointer-events="none"
@@ -548,6 +556,8 @@ export class VennPlotView extends DataLayer {
         r=${circleA.radius}
         fill=${regionFill(4)}
         fill-opacity=${regionOpacity}
+        stroke="white"
+        stroke-width="3"
         clip-path=${`url(#${clipCId})`}
         mask=${`url(#${outsideBId})`}
         pointer-events="none"
@@ -558,6 +568,8 @@ export class VennPlotView extends DataLayer {
         r=${circleB.radius}
         fill=${regionFill(5)}
         fill-opacity=${regionOpacity}
+        stroke="white"
+        stroke-width="3"
         clip-path=${`url(#${clipCId})`}
         mask=${`url(#${outsideAId})`}
         pointer-events="none"
@@ -569,6 +581,8 @@ export class VennPlotView extends DataLayer {
         r=${circleA.radius}
         fill=${regionFill(6)}
         fill-opacity=${regionOpacity}
+        stroke="white"
+        stroke-width="3"
         clip-path=${`url(#${clipBId})`}
         mask=${`url(#${insideCId})`}
         pointer-events="none"
@@ -1421,7 +1435,7 @@ export class VennRegionView extends DatapointView {
     if (numSeries >= 3) {
       return {
         fill: 'none',
-        stroke: parentStyle.fill,
+        stroke: 'white',
         strokeWidth: '3',
       };
     }
