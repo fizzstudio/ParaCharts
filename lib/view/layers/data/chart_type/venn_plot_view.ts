@@ -1326,7 +1326,7 @@ export class VennPlotView extends DataLayer {
           : 'middle';
 
       if (series.length === 3 && Math.abs(unitX) < 0.25 && unitY < -0.6) {
-        leaderEnd = new Vec2(leaderEnd.x + 150, leaderEnd.y - 18);
+        leaderEnd = new Vec2(leaderStart.x + 42, leaderStart.y - 18);
         textAnchor = 'start';
       }
 
