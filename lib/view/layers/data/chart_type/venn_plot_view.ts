@@ -29,6 +29,8 @@ type Point = { x: number; y: number };
 type Circle = { center: Point; radius: number; name: string };
 type WordRect = { word: string; width: number; height: number };
 type IntersectionPoint = { x: number; y: number; circles: Circle[] };
+type ArcRegionSide = 'inside' | 'outside';
+type RegionPredicate = (point: Point) => boolean;
 const alphaLSE = 1.0;
 
 // --- 3-circle Venn geometry helpers (ported from VennDiagrams/Venn.ts) ---
@@ -100,18 +102,79 @@ function describeTripleIntersectionPath(points: IntersectionPoint[]): string {
   ].join(' ');
 }
 
+function normalizeAngle(angle: number): number {
+  while (angle < 0) angle += 2 * Math.PI;
+  while (angle >= 2 * Math.PI) angle -= 2 * Math.PI;
+  return angle;
+}
+
+function pointOnCircle(circle: Circle, angle: number): Point {
+  return {
+    x: circle.center.x + circle.radius * Math.cos(angle),
+    y: circle.center.y + circle.radius * Math.sin(angle),
+  };
+}
+
+function describeRegionArc(
+  circle: Circle,
+  from: Point,
+  to: Point,
+  side: ArcRegionSide,
+  regionPredicate: RegionPredicate
+): string {
+  const startAngle = normalizeAngle(Math.atan2(from.y - circle.center.y, from.x - circle.center.x));
+  const endAngle = normalizeAngle(Math.atan2(to.y - circle.center.y, to.x - circle.center.x));
+  const clockwiseDelta = normalizeAngle(endAngle - startAngle);
+  const counterClockwiseDelta = clockwiseDelta === 0 ? 2 * Math.PI : 2 * Math.PI - clockwiseDelta;
+  const probeDistance = 1;
+
+  const candidates = [
+    { sweepFlag: 1, largeArcFlag: clockwiseDelta > Math.PI ? 1 : 0, delta: clockwiseDelta },
+    { sweepFlag: 0, largeArcFlag: counterClockwiseDelta > Math.PI ? 1 : 0, delta: counterClockwiseDelta },
+  ];
+
+  for (const candidate of candidates) {
+    const direction = candidate.sweepFlag === 1 ? 1 : -1;
+    const midpointAngle = normalizeAngle(startAngle + direction * candidate.delta / 2);
+    const midpoint = pointOnCircle(circle, midpointAngle);
+    const dx = midpoint.x - circle.center.x;
+    const dy = midpoint.y - circle.center.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    const scale = side === 'inside' ? -probeDistance / length : probeDistance / length;
+    const probe = {
+      x: midpoint.x + dx * scale,
+      y: midpoint.y + dy * scale,
+    };
+
+    if (regionPredicate(probe)) {
+      return `A ${circle.radius},${circle.radius} 0 ${candidate.largeArcFlag} ${candidate.sweepFlag} ${to.x},${to.y}`;
+    }
+  }
+
+  const fallback = candidates[0]!;
+  return `A ${circle.radius},${circle.radius} 0 ${fallback.largeArcFlag} ${fallback.sweepFlag} ${to.x},${to.y}`;
+}
+
+function makeRegionPredicate(included: Circle[], excluded: Circle[]): RegionPredicate {
+  return (point: Point) => included.every(circle => isInsideCircle(circle, point))
+    && excluded.every(circle => !isInsideCircle(circle, point));
+}
+
 function describeAOnlyPath(triplePoints: IntersectionPoint[], nonTriplePoints: IntersectionPoint[]): string {
   const AB = nonTriplePoints.find(p => hasNames(p, 'A', 'B'))!;
   const AC = nonTriplePoints.find(p => hasNames(p, 'A', 'C'))!;
-  const BC = triplePoints.find(p => hasNames(p, 'B', 'C'))!;
+  const ABTriple = triplePoints.find(p => hasNames(p, 'A', 'B'))!;
+  const ACTriple = triplePoints.find(p => hasNames(p, 'A', 'C'))!;
   const A = AB.circles.find(c => c.name === 'A')!;
   const C = AC.circles.find(c => c.name === 'C')!;
-  const B = BC.circles.find(c => c.name === 'B')!;
+  const B = AB.circles.find(c => c.name === 'B')!;
+  const predicate = makeRegionPredicate([A], [B, C]);
   return [
     `M ${AB.x},${AB.y}`,
-    `A ${A.radius},${A.radius} 0 1 1 ${AC.x},${AC.y}`,
-    `A ${C.radius},${C.radius} 0 0 0 ${BC.x},${BC.y}`,
-    `A ${B.radius},${B.radius} 0 0 0 ${AB.x},${AB.y}`,
+    describeRegionArc(A, AB, AC, 'inside', predicate),
+    describeRegionArc(C, AC, ACTriple, 'outside', predicate),
+    describeRegionArc(A, ACTriple, ABTriple, 'inside', predicate),
+    describeRegionArc(B, ABTriple, AB, 'outside', predicate),
     'Z',
   ].join(' ');
 }
@@ -119,15 +182,18 @@ function describeAOnlyPath(triplePoints: IntersectionPoint[], nonTriplePoints: I
 function describeBOnlyPath(triplePoints: IntersectionPoint[], nonTriplePoints: IntersectionPoint[]): string {
   const BC = nonTriplePoints.find(p => hasNames(p, 'B', 'C'))!;
   const BA = nonTriplePoints.find(p => hasNames(p, 'A', 'B'))!;
-  const AC = triplePoints.find(p => hasNames(p, 'A', 'C'))!;
+  const ABTriple = triplePoints.find(p => hasNames(p, 'A', 'B'))!;
+  const BCTriple = triplePoints.find(p => hasNames(p, 'B', 'C'))!;
   const B = BC.circles.find(c => c.name === 'B')!;
   const A = BA.circles.find(c => c.name === 'A')!;
-  const C = AC.circles.find(c => c.name === 'C')!;
+  const C = BC.circles.find(c => c.name === 'C')!;
+  const predicate = makeRegionPredicate([B], [A, C]);
   return [
     `M ${BC.x},${BC.y}`,
-    `A ${B.radius},${B.radius} 0 1 1 ${BA.x},${BA.y}`,
-    `A ${A.radius},${A.radius} 0 0 0 ${AC.x},${AC.y}`,
-    `A ${C.radius},${C.radius} 0 0 0 ${BC.x},${BC.y}`,
+    describeRegionArc(B, BC, BA, 'inside', predicate),
+    describeRegionArc(A, BA, ABTriple, 'outside', predicate),
+    describeRegionArc(B, ABTriple, BCTriple, 'inside', predicate),
+    describeRegionArc(C, BCTriple, BC, 'outside', predicate),
     'Z',
   ].join(' ');
 }
@@ -135,15 +201,18 @@ function describeBOnlyPath(triplePoints: IntersectionPoint[], nonTriplePoints: I
 function describeCOnlyPath(triplePoints: IntersectionPoint[], nonTriplePoints: IntersectionPoint[]): string {
   const AC = nonTriplePoints.find(p => hasNames(p, 'A', 'C'))!;
   const BC = nonTriplePoints.find(p => hasNames(p, 'B', 'C'))!;
-  const AB = triplePoints.find(p => hasNames(p, 'A', 'B'))!;
+  const ACTriple = triplePoints.find(p => hasNames(p, 'A', 'C'))!;
+  const BCTriple = triplePoints.find(p => hasNames(p, 'B', 'C'))!;
   const C = BC.circles.find(c => c.name === 'C')!;
-  const B = AB.circles.find(c => c.name === 'B')!;
+  const B = BC.circles.find(c => c.name === 'B')!;
   const A = AC.circles.find(c => c.name === 'A')!;
+  const predicate = makeRegionPredicate([C], [A, B]);
   return [
     `M ${AC.x},${AC.y}`,
-    `A ${C.radius},${C.radius} 0 1 1 ${BC.x},${BC.y}`,
-    `A ${B.radius},${B.radius} 0 0 0 ${AB.x},${AB.y}`,
-    `A ${A.radius},${A.radius} 0 0 0 ${AC.x},${AC.y}`,
+    describeRegionArc(C, AC, BC, 'inside', predicate),
+    describeRegionArc(B, BC, BCTriple, 'outside', predicate),
+    describeRegionArc(C, BCTriple, ACTriple, 'inside', predicate),
+    describeRegionArc(A, ACTriple, AC, 'outside', predicate),
     'Z',
   ].join(' ');
 }
@@ -246,6 +315,161 @@ export class VennPlotView extends DataLayer {
     return super.datapointViews as VennRegionView[];
   }
 
+  protected _renderThreeCircleRegions(): TemplateResult {
+    if (this._circleCenters.length !== 3) {
+      return svg``;
+    }
+
+    const [circleA, circleB, circleC] = this._circleCenters.map((center, index) => ({
+      center,
+      radius: this._radius,
+      name: ['A', 'B', 'C'][index]!,
+    })) as [Circle, Circle, Circle];
+
+    const colors = this.paraview.paraState.colors;
+    const regionOpacity = 0.7;
+    const prefix = `${this.id || 'venn'}-region`;
+    const clipAId = `${prefix}-clip-a`;
+    const clipBId = `${prefix}-clip-b`;
+    const clipCId = `${prefix}-clip-c`;
+    const outsideAId = `${prefix}-outside-a`;
+    const outsideBId = `${prefix}-outside-b`;
+    const outsideCId = `${prefix}-outside-c`;
+    const insideAId = `${prefix}-inside-a`;
+    const insideBId = `${prefix}-inside-b`;
+    const insideCId = `${prefix}-inside-c`;
+    const aOnlyId = `${prefix}-a-only`;
+    const bOnlyId = `${prefix}-b-only`;
+    const cOnlyId = `${prefix}-c-only`;
+
+    const renderCircle = (circle: Circle, fill: string) => svg`<circle
+      cx=${circle.center.x}
+      cy=${circle.center.y}
+      r=${circle.radius}
+      fill=${fill}
+    />`;
+
+    return svg`
+      <defs>
+        <clipPath id=${clipAId}>${renderCircle(circleA, 'white')}</clipPath>
+        <clipPath id=${clipBId}>${renderCircle(circleB, 'white')}</clipPath>
+        <clipPath id=${clipCId}>${renderCircle(circleC, 'white')}</clipPath>
+
+        <mask id=${outsideAId} maskUnits="userSpaceOnUse" x="0" y="0" width=${this._width} height=${this._height}>
+          <rect x="0" y="0" width=${this._width} height=${this._height} fill="white" />
+          ${renderCircle(circleA, 'black')}
+        </mask>
+        <mask id=${outsideBId} maskUnits="userSpaceOnUse" x="0" y="0" width=${this._width} height=${this._height}>
+          <rect x="0" y="0" width=${this._width} height=${this._height} fill="white" />
+          ${renderCircle(circleB, 'black')}
+        </mask>
+        <mask id=${outsideCId} maskUnits="userSpaceOnUse" x="0" y="0" width=${this._width} height=${this._height}>
+          <rect x="0" y="0" width=${this._width} height=${this._height} fill="white" />
+          ${renderCircle(circleC, 'black')}
+        </mask>
+
+        <mask id=${insideAId} maskUnits="userSpaceOnUse" x="0" y="0" width=${this._width} height=${this._height}>
+          <rect x="0" y="0" width=${this._width} height=${this._height} fill="black" />
+          ${renderCircle(circleA, 'white')}
+        </mask>
+        <mask id=${insideBId} maskUnits="userSpaceOnUse" x="0" y="0" width=${this._width} height=${this._height}>
+          <rect x="0" y="0" width=${this._width} height=${this._height} fill="black" />
+          ${renderCircle(circleB, 'white')}
+        </mask>
+        <mask id=${insideCId} maskUnits="userSpaceOnUse" x="0" y="0" width=${this._width} height=${this._height}>
+          <rect x="0" y="0" width=${this._width} height=${this._height} fill="black" />
+          ${renderCircle(circleC, 'white')}
+        </mask>
+
+        <mask id=${aOnlyId} maskUnits="userSpaceOnUse" x="0" y="0" width=${this._width} height=${this._height}>
+          <rect x="0" y="0" width=${this._width} height=${this._height} fill="white" />
+          ${renderCircle(circleB, 'black')}
+          ${renderCircle(circleC, 'black')}
+        </mask>
+        <mask id=${bOnlyId} maskUnits="userSpaceOnUse" x="0" y="0" width=${this._width} height=${this._height}>
+          <rect x="0" y="0" width=${this._width} height=${this._height} fill="white" />
+          ${renderCircle(circleA, 'black')}
+          ${renderCircle(circleC, 'black')}
+        </mask>
+        <mask id=${cOnlyId} maskUnits="userSpaceOnUse" x="0" y="0" width=${this._width} height=${this._height}>
+          <rect x="0" y="0" width=${this._width} height=${this._height} fill="white" />
+          ${renderCircle(circleA, 'black')}
+          ${renderCircle(circleB, 'black')}
+        </mask>
+      </defs>
+
+      <circle
+        cx=${circleA.center.x}
+        cy=${circleA.center.y}
+        r=${circleA.radius}
+        fill=${colors.colorValueAt(0)}
+        fill-opacity=${regionOpacity}
+        mask=${`url(#${aOnlyId})`}
+        pointer-events="none"
+      />
+      <circle
+        cx=${circleB.center.x}
+        cy=${circleB.center.y}
+        r=${circleB.radius}
+        fill=${colors.colorValueAt(1)}
+        fill-opacity=${regionOpacity}
+        mask=${`url(#${bOnlyId})`}
+        pointer-events="none"
+      />
+      <circle
+        cx=${circleC.center.x}
+        cy=${circleC.center.y}
+        r=${circleC.radius}
+        fill=${colors.colorValueAt(2)}
+        fill-opacity=${regionOpacity}
+        mask=${`url(#${cOnlyId})`}
+        pointer-events="none"
+      />
+
+      <circle
+        cx=${circleA.center.x}
+        cy=${circleA.center.y}
+        r=${circleA.radius}
+        fill=${colors.colorValueAt(3)}
+        fill-opacity=${regionOpacity}
+        clip-path=${`url(#${clipBId})`}
+        mask=${`url(#${outsideCId})`}
+        pointer-events="none"
+      />
+      <circle
+        cx=${circleA.center.x}
+        cy=${circleA.center.y}
+        r=${circleA.radius}
+        fill=${colors.colorValueAt(4)}
+        fill-opacity=${regionOpacity}
+        clip-path=${`url(#${clipCId})`}
+        mask=${`url(#${outsideBId})`}
+        pointer-events="none"
+      />
+      <circle
+        cx=${circleB.center.x}
+        cy=${circleB.center.y}
+        r=${circleB.radius}
+        fill=${colors.colorValueAt(5)}
+        fill-opacity=${regionOpacity}
+        clip-path=${`url(#${clipCId})`}
+        mask=${`url(#${outsideAId})`}
+        pointer-events="none"
+      />
+
+      <circle
+        cx=${circleA.center.x}
+        cy=${circleA.center.y}
+        r=${circleA.radius}
+        fill=${colors.colorValueAt(6)}
+        fill-opacity=${regionOpacity}
+        clip-path=${`url(#${clipBId})`}
+        mask=${`url(#${insideCId})`}
+        pointer-events="none"
+      />
+    `;
+  }
+
   content(): TemplateResult {
     const visitedColor = this.paraview.paraState.colors.colorValue('visit');
     const visitedStrokeWidth = this.paraview.paraState.config.chart.strokeWidth
@@ -298,14 +522,7 @@ export class VennPlotView extends DataLayer {
     }
 
     return svg`
-      ${this._threeCircleRegionPaths.map(({ d, fill }) => svg`<path
-        d=${d}
-        fill=${fill}
-        fill-opacity="0.7"
-        stroke="white"
-        stroke-width="2"
-        pointer-events="none"
-      />`)}
+      ${this._renderThreeCircleRegions()}
       ${super.content()}
       ${visitedRings}
       ${vennPartHighlight}
@@ -568,7 +785,6 @@ export class VennPlotView extends DataLayer {
     this._circleCenters = [];
 
     seriesKeys.forEach((seriesKey, i) => {
-      // Keep the 3-circle geometry in the same A/B/C orientation assumed by Venn.js.
       const angle = n === 2
         ? Math.PI + i * Math.PI
         : n === 3
