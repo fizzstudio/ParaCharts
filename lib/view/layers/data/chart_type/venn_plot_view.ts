@@ -19,8 +19,7 @@ import { datapointMatchKeyAndIndex, bboxOppositeAnchor } from '../../../../commo
 import { type BboxAnchorCorner } from '../../../base_view';
 
 type ItemEntry = {
-  inA: boolean;
-  inB: boolean;
+  includedSeries: Set<string>;
   datapoints: Datapoint[];
 };
 type Rectangle = [number, number];
@@ -276,6 +275,7 @@ export class VennPlotView extends DataLayer {
   protected _radius!: number;
   protected _circleCenters: Point[] = [];
   protected _seriesLeaders: PathShape[] = [];
+  protected _itemLabelItems: Label[] = [];
   protected _seriesLabelItems: Label[] = [];
   protected _intersectionPoints: Point[] = [];
   protected _threeCircleRegionPaths: Array<{ d: string; fill: string }> = [];
@@ -620,6 +620,7 @@ export class VennPlotView extends DataLayer {
       ${visitedRings}
       ${vennPartHighlight}
       ${this._seriesLeaders.map(l => l.render())}
+      ${this._itemLabelItems.map(l => l.render())}
       ${this._seriesLabelItems.map(l => l.render())}
     `;
   }
@@ -654,6 +655,30 @@ export class VennPlotView extends DataLayer {
         circleBools
       ),
       Array.from(positions, () => 0)
+    );
+    return solution.argument;
+  }
+
+  protected computeLayout3(
+    rectangles: Rectangle[],
+    positions: number[],
+    circleCenter1: Position,
+    circleCenter2: Position,
+    circleCenter3: Position,
+    circleRadius: number,
+    circleBools: [boolean, boolean, boolean]
+  ): number[] {
+    const solution = this.minimize(
+      (candidatePositions: number[]) => this.cost3(
+        rectangles.map(([w, h]) => [w + 50, h + 50]),
+        candidatePositions,
+        circleCenter1,
+        circleCenter2,
+        circleCenter3,
+        circleRadius,
+        circleBools,
+      ),
+      positions,
     );
     return solution.argument;
   }
@@ -776,6 +801,82 @@ export class VennPlotView extends DataLayer {
         const dx2 = cx - circleCenter2[0];
         const dy2 = cy - circleCenter2[1];
         dists[1] = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+        for (let p = 0; p < circleBools.length; p++) {
+          const circleCoeff = circleBools[p] ? 1 : -1;
+          const penalty = Math.min(0, circleCoeff * ((circleRadius - 20) - dists[p]));
+          costVal += 100 * penalty * penalty;
+        }
+      }
+    }
+
+    for (let i = 0; i < nRects; i++) {
+      const [w1, h1] = rectangles[i];
+      const [x1, y1] = reshapedPositions[i];
+
+      for (let j = i + 1; j < nRects; j++) {
+        const [w2, h2] = rectangles[j];
+        const [x2, y2] = reshapedPositions[j];
+
+        const dx = Math.max(
+          0,
+          Math.min(x1 + w1 / 2, x2 + w2 / 2) -
+          Math.max(x1 - w1 / 2, x2 - w2 / 2)
+        );
+
+        const dy = Math.max(
+          0,
+          Math.min(y1 + h1 / 2, y2 + h2 / 2) -
+          Math.max(y1 - h1 / 2, y2 - h2 / 2)
+        );
+
+        const overlapArea = dx * dy;
+        costVal += 100 * overlapArea;
+      }
+    }
+
+    return costVal;
+  }
+
+  protected cost3(
+    rectangles: Rectangle[],
+    positions: number[],
+    circleCenter1: [number, number],
+    circleCenter2: [number, number],
+    circleCenter3: [number, number],
+    circleRadius: number,
+    circleBools: [boolean, boolean, boolean]
+  ): number {
+    const nRects = rectangles.length;
+    const reshapedPositions: Position[] = [];
+    for (let i = 0; i < nRects; i++) {
+      reshapedPositions.push([positions[2 * i], positions[2 * i + 1]]);
+    }
+
+    let costVal = 0;
+    for (let k = 0; k < nRects; k++) {
+      const [w, h] = rectangles[k];
+      const [x, y] = reshapedPositions[k];
+      const corners: Position[] = [
+        [x - w / 2, y - h / 2],
+        [x + w / 2, y - h / 2],
+        [x - w / 2, y + h / 2],
+        [x + w / 2, y + h / 2],
+      ];
+
+      for (const [cx, cy] of corners) {
+        const dists = [0, 0, 0];
+        const dx1 = cx - circleCenter1[0];
+        const dy1 = cy - circleCenter1[1];
+        dists[0] = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+
+        const dx2 = cx - circleCenter2[0];
+        const dy2 = cy - circleCenter2[1];
+        dists[1] = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+
+        const dx3 = cx - circleCenter3[0];
+        const dy3 = cy - circleCenter3[1];
+        dists[2] = Math.sqrt(dx3 * dx3 + dy3 * dy3);
+
         for (let p = 0; p < circleBools.length; p++) {
           const circleCoeff = circleBools[p] ? 1 : -1;
           const penalty = Math.min(0, circleCoeff * ((circleRadius - 20) - dists[p]));
@@ -981,18 +1082,12 @@ export class VennPlotView extends DataLayer {
 
   protected _createLabels() {
     const seriesKeys = this.paraview.paraState.model!.series.map(s => s.key);
-    if (seriesKeys.length !== 2) {
+    this._itemLabelItems = [];
+
+    if (seriesKeys.length !== 2 && seriesKeys.length !== 3) {
+      this._createSeriesLabels();
       return;
     }
-
-    const [seriesAKey, seriesBKey] = seriesKeys;
-
-    const rectanglesA: [number, number][] = [];
-    const rectanglesB: [number, number][] = [];
-    const rectanglesAB: [number, number][] = [];
-    const pointsA: Datapoint[] = [];
-    const pointsB: Datapoint[] = [];
-    const pointsAB: Datapoint[] = [];
 
     const allDatapoints: Datapoint[] = [];
     for (const series of this.paraview.paraState.model!.series) {
@@ -1006,118 +1101,200 @@ export class VennPlotView extends DataLayer {
 
       let entry = itemMap.get(item);
       if (!entry) {
-        entry = { inA: false, inB: false, datapoints: [] };
+        entry = { includedSeries: new Set(), datapoints: [] };
         itemMap.set(item, entry);
       }
 
       entry.datapoints.push(dp);
 
-      if (
-        dp.seriesKey === seriesAKey &&
-        dp.facetValue("membership") === "included"
-      ) {
-        entry.inA = true;
-      }
-
-      if (
-        dp.seriesKey === seriesBKey &&
-        dp.facetValue("membership") === "included"
-      ) {
-        entry.inB = true;
+      if (dp.facetValue("membership") === "included") {
+        entry.includedSeries.add(dp.seriesKey);
       }
     }
 
     const w = 80;
     const h = 10;
 
-    for (const entry of itemMap.values()) {
-      const dp = entry.datapoints[0];
-
-      if (entry.inA && !entry.inB) {
-        rectanglesA.push([w, h]);
-        pointsA.push(dp);
-      } else if (!entry.inA && entry.inB) {
-        rectanglesB.push([w, h]);
-        pointsB.push(dp);
-      } else if (entry.inA && entry.inB) {
-        rectanglesAB.push([w, h]);
-        pointsAB.push(dp);
+    const makeInitialPositions = (count: number, anchor: Point): number[] => {
+      const positions: number[] = [];
+      const spacing = 16;
+      const startY = anchor.y - ((count - 1) * spacing) / 2;
+      for (let i = 0; i < count; i++) {
+        positions.push(anchor.x, startY + i * spacing);
       }
-    }
-
-    const circle1: [number, number] = [
-      this._cx - 0.5 * this._radius,
-      this._cy,
-    ];
-    const circle2: [number, number] = [
-      this._cx + 0.5 * this._radius,
-      this._cy,
-    ];
-
-    const placeLabels = (
-      rects: [number, number][],
-      points: Datapoint[],
-      mask: [boolean, boolean]
-    ) => {
-      const initialPositions = Array(rects.length * 2).fill(200);
-      const layout = this.computeLayout(
-        rects,
-        initialPositions,
-        circle1,
-        circle2,
-        this._radius,
-        mask
-      );
-
-      points.forEach((dp, i) => {
-        const x = layout[2 * i];
-        const y = layout[2 * i + 1];
-        const label = new Label(this.paraview, {
-          text: String(dp.facetValue("item") ?? ""),
-          x,
-          y,
-        });
-        label.styleInfo = { fill: 'white' };
-        this.append(label);
-      });
+      return positions;
     };
 
-    placeLabels(rectanglesA, pointsA, [true, false]);
-    placeLabels(rectanglesB, pointsB, [false, true]);
-    placeLabels(rectanglesAB, pointsAB, [true, true]);
+    const pushLabel = (dp: Datapoint, x: number, y: number) => {
+      const label = new Label(this.paraview, {
+        text: String(dp.facetValue("item") ?? ""),
+        x,
+        y,
+      });
+      label.styleInfo = { fill: 'white' };
+      this._itemLabelItems.push(label);
+    };
+
+    if (seriesKeys.length === 2) {
+      const [seriesAKey, seriesBKey] = seriesKeys;
+      const rectanglesA: Rectangle[] = [];
+      const rectanglesB: Rectangle[] = [];
+      const rectanglesAB: Rectangle[] = [];
+      const pointsA: Datapoint[] = [];
+      const pointsB: Datapoint[] = [];
+      const pointsAB: Datapoint[] = [];
+
+      for (const entry of itemMap.values()) {
+        const dp = entry.datapoints[0]!;
+        const inA = entry.includedSeries.has(seriesAKey);
+        const inB = entry.includedSeries.has(seriesBKey);
+
+        if (inA && !inB) {
+          rectanglesA.push([w, h]);
+          pointsA.push(dp);
+        } else if (!inA && inB) {
+          rectanglesB.push([w, h]);
+          pointsB.push(dp);
+        } else if (inA && inB) {
+          rectanglesAB.push([w, h]);
+          pointsAB.push(dp);
+        }
+      }
+
+      const circle1 = [this._circleCenters[0]!.x, this._circleCenters[0]!.y] as [number, number];
+      const circle2 = [this._circleCenters[1]!.x, this._circleCenters[1]!.y] as [number, number];
+
+      const placeLabels = (
+        rects: Rectangle[],
+        points: Datapoint[],
+        mask: [boolean, boolean],
+        anchor: Point
+      ) => {
+        if (!rects.length) return;
+        const layout = this.computeLayout(
+          rects,
+          makeInitialPositions(rects.length, anchor),
+          circle1,
+          circle2,
+          this._radius,
+          mask
+        );
+
+        points.forEach((dp, i) => {
+          pushLabel(dp, layout[2 * i]!, layout[2 * i + 1]!);
+        });
+      };
+
+      placeLabels(rectanglesA, pointsA, [true, false], this._circleCenters[0]!);
+      placeLabels(rectanglesB, pointsB, [false, true], this._circleCenters[1]!);
+      placeLabels(rectanglesAB, pointsAB, [true, true], { x: this._cx, y: this._cy });
+    } else {
+      const [seriesAKey, seriesBKey, seriesCKey] = seriesKeys;
+      const regionBuckets = new Map<string, { rects: Rectangle[]; points: Datapoint[]; mask: [boolean, boolean, boolean]; anchor: Point }>([
+        ['100', { rects: [], points: [], mask: [true, false, false], anchor: this._regionAnchor([0], []) }],
+        ['010', { rects: [], points: [], mask: [false, true, false], anchor: this._regionAnchor([1], []) }],
+        ['001', { rects: [], points: [], mask: [false, false, true], anchor: this._regionAnchor([2], []) }],
+        ['110', { rects: [], points: [], mask: [true, true, false], anchor: this._regionAnchor([0, 1], [2]) }],
+        ['101', { rects: [], points: [], mask: [true, false, true], anchor: this._regionAnchor([0, 2], [1]) }],
+        ['011', { rects: [], points: [], mask: [false, true, true], anchor: this._regionAnchor([1, 2], [0]) }],
+        ['111', { rects: [], points: [], mask: [true, true, true], anchor: { x: this._cx, y: this._cy } }],
+      ]);
+
+      for (const entry of itemMap.values()) {
+        const dp = entry.datapoints[0]!;
+        const signature = [
+          entry.includedSeries.has(seriesAKey) ? '1' : '0',
+          entry.includedSeries.has(seriesBKey) ? '1' : '0',
+          entry.includedSeries.has(seriesCKey) ? '1' : '0',
+        ].join('');
+        const bucket = regionBuckets.get(signature);
+        if (!bucket) {
+          continue;
+        }
+        bucket.rects.push([w, h]);
+        bucket.points.push(dp);
+      }
+
+      const circle1 = [this._circleCenters[0]!.x, this._circleCenters[0]!.y] as [number, number];
+      const circle2 = [this._circleCenters[1]!.x, this._circleCenters[1]!.y] as [number, number];
+      const circle3 = [this._circleCenters[2]!.x, this._circleCenters[2]!.y] as [number, number];
+
+      for (const bucket of regionBuckets.values()) {
+        if (!bucket.rects.length) continue;
+        const layout = this.computeLayout3(
+          bucket.rects,
+          makeInitialPositions(bucket.rects.length, bucket.anchor),
+          circle1,
+          circle2,
+          circle3,
+          this._radius,
+          bucket.mask
+        );
+
+        bucket.points.forEach((dp, i) => {
+          pushLabel(dp, layout[2 * i]!, layout[2 * i + 1]!);
+        });
+      }
+    }
 
     this._createSeriesLabels();
   }
 
+  protected _regionAnchor(includedIndexes: number[], excludedIndexes: number[]): Point {
+    const includedCenters = includedIndexes.map(index => this._circleCenters[index]!);
+    const excludedCenters = excludedIndexes.map(index => this._circleCenters[index]!);
+    const includedAverage = averagePoints(includedCenters);
+    if (!excludedCenters.length) {
+      const awayX = includedAverage.x - this._cx;
+      const awayY = includedAverage.y - this._cy;
+      const length = Math.hypot(awayX, awayY) || 1;
+      const scale = this._radius * 0.2;
+      return {
+        x: includedAverage.x + (awayX / length) * scale,
+        y: includedAverage.y + (awayY / length) * scale,
+      };
+    }
+
+    const excludedAverage = averagePoints(excludedCenters);
+    const awayX = includedAverage.x - excludedAverage.x;
+    const awayY = includedAverage.y - excludedAverage.y;
+    const length = Math.hypot(awayX, awayY) || 1;
+    const scale = includedIndexes.length === 1 ? this._radius * 0.28 : this._radius * 0.16;
+    return {
+      x: includedAverage.x + (awayX / length) * scale,
+      y: includedAverage.y + (awayY / length) * scale,
+    };
+  }
+
   protected _createSeriesLabels(): void {
     const series = this.paraview.paraState.model!.series;
-    if (series.length !== 2) return;
-
     this._seriesLeaders = [];
     this._seriesLabelItems = [];
+    if (series.length < 2 || series.length > this._circleCenters.length) return;
 
-    // Series 0 (A): label top-left, just above circle A
-    const circleACenterX = this._cx - 0.5 * this._radius;
-    const circleBCenterX = this._cx + 0.5 * this._radius;
-
-    const leaderLen = 25;
-    const label0X = circleACenterX - leaderLen;
-    const label0Y = this._cy - this._radius - 8;
-    const leader0Start = new Vec2(circleACenterX, this._cy - this._radius);
-    const leader0End = new Vec2(label0X, label0Y);
-
-    // Series 1 (B): label bottom-right, just below circle B
-    const label1X = circleBCenterX + leaderLen;
-    const label1Y = this._cy + this._radius + 18;
-    const leader1Start = new Vec2(circleBCenterX, this._cy + this._radius);
-    const leader1End = new Vec2(label1X, label1Y);
-
-    const configs = [
-      { series: series[0], leaderStart: leader0Start, leaderEnd: leader0End, labelX: label0X, labelY: label0Y, textAnchor: 'end' as LabelTextAnchor },
-      { series: series[1], leaderStart: leader1Start, leaderEnd: leader1End, labelX: label1X, labelY: label1Y, textAnchor: 'start' as LabelTextAnchor },
-    ];
-
-    configs.forEach(({ series: s, leaderStart, leaderEnd, labelX, labelY, textAnchor }, i) => {
+    const leaderLen = series.length === 2 ? 25 : 30;
+    series.forEach((s, i) => {
+      const center = this._circleCenters[i]!;
+      const directionX = center.x - this._cx;
+      const directionY = center.y - this._cy;
+      const directionLength = Math.hypot(directionX, directionY) || 1;
+      const unitX = directionX / directionLength;
+      const unitY = directionY / directionLength;
+      const leaderStart = new Vec2(
+        center.x + unitX * this._radius,
+        center.y + unitY * this._radius,
+      );
+      const leaderEnd = new Vec2(
+        leaderStart.x + unitX * leaderLen,
+        leaderStart.y + unitY * leaderLen,
+      );
+      const textAnchor: LabelTextAnchor = unitX > 0.25
+        ? 'start'
+        : unitX < -0.25
+          ? 'end'
+          : 'middle';
+      const labelX = leaderEnd.x + (textAnchor === 'start' ? 4 : textAnchor === 'end' ? -4 : 0);
+      const labelY = leaderEnd.y + (unitY > 0.35 ? 12 : unitY < -0.35 ? -8 : 4);
       const colorValue = this.paraview.paraState.colors.colorValueAt(i);
       const leader = new PathShape(this.paraview, {
         points: [leaderStart, leaderEnd],
