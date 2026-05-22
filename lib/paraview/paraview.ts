@@ -157,6 +157,9 @@ export class ParaView extends ParaComponent implements ViewContext {
       .chart-title {
         font-size: calc(var(--chart-title-font-size)*var(--chart-font-scale));
       }
+      .chart-subtitle {
+        font-size: calc(var(--chart-subtitle-font-size)*var(--chart-font-scale));
+      }
       .axis-title-horiz {
         font-size: calc(var(--horiz-axis-title-font-size)*var(--chart-font-scale));
       }
@@ -433,9 +436,10 @@ export class ParaView extends ParaComponent implements ViewContext {
     this._controller ??= new ParaViewController(this._paraState);
     this._storeChangeUnsub = this._paraState.subscribe(async (key, value) => {
       if (key === 'data') {
-        await this.dataUpdated();
+        await this._dataUpdated();
       }
       await this._documentView?.storeDidChange(key, value);
+      await this._paraState.chartInfo?.storeDidChange(key, value);
     });
     this.computeViewBox();
     // this._hotkeyActions ??= new NormalHotkeyActions(this);
@@ -452,7 +456,7 @@ export class ParaView extends ParaComponent implements ViewContext {
   }
 
   // Anything that needs to be done when data is updated, do here
-  private async dataUpdated(): Promise<void> {
+  protected async _dataUpdated(): Promise<void> {
     try {
       this._paraState.chartInfo.setParaView(this);
       this.createDocumentView();
@@ -582,45 +586,25 @@ export class ParaView extends ParaComponent implements ViewContext {
   }
 
   protected _handleLowVisionMode(newValue?: Setting) {
-    this._paraState.updateSettings(draft => {
-      this._paraState.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
-      //draft.color.isDarkModeEnabled = !!newValue;
-      //draft.ui.isFullscreenEnabled = !!newValue;
-      if (newValue) {
-        this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
-        // this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
-        // this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
-        //this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
-        // end any in-progress animation here
-        this._documentView!.chartLayers.dataLayer.stopAnimation();
-        draft.animation.isAnimationEnabled = false;
-        //draft.chart.fontScale = 2;
-        // draft.grid.isDrawVertLines = true;
-        //draft.color.colorPalette = 'low-vision';
-      } else {
-        draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
-        // draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
-        // draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
-        //draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
-        this._modeSaved.delete('animation.isAnimationEnabled');
-        //this._modeSaved.delete('chart.fontScale');
-        // this._modeSaved.delete('grid.isDrawVertLines');
-        //this._modeSaved.delete('color.colorPalette');
-      }
-    });
+    this._paraState.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);
     this._paraState.updateConfig(draft => {
       draft.color.isDarkModeEnabled = !!newValue;
       draft.ui.isFullscreenEnabled = !!newValue;
       if (newValue) {
+        this._modeSaved.set('animation.isAnimationEnabled', draft.animation.isAnimationEnabled);
         this._modeSaved.set('color.colorPalette', draft.color.colorPalette);
         draft.color.colorPalette = 'low-vision';
         this._modeSaved.set('chart.fontScale', draft.chart.fontScale);
         this._modeSaved.set('grid.isDrawVertLines', draft.grid.isDrawVertLines);
+        this._documentView!.chartLayers.dataLayer.stopAnimation();
+        draft.animation.isAnimationEnabled = false;
         draft.chart.fontScale = 2;
         draft.grid.isDrawVertLines = true;
       } else {
+        draft.animation.isAnimationEnabled = this._modeSaved.get('animation.isAnimationEnabled');
         draft.color.colorPalette = this._modeSaved.get('color.colorPalette');
         this._modeSaved.delete('color.colorPalette');
+        this._modeSaved.delete('animation.isAnimationEnabled');
         draft.grid.isDrawVertLines = this._modeSaved.get('grid.isDrawVertLines');
         this._modeSaved.delete('grid.isDrawVertLines');
         draft.chart.fontScale = this._modeSaved.get('chart.fontScale');
@@ -630,9 +614,19 @@ export class ParaView extends ParaComponent implements ViewContext {
 
   protected _handleVoicing() {
     if (this._paraState.config.ui.isVoicingEnabled) {
-      this.ariaLiveRegion.voicing.speak('Self-voicing enabled.', []);
+      if (this._paraState.config.ui.isTourGuideEnabled){
+        this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
+      }
+      else{
+        this.ariaLiveRegion.voicing.speak('Self-voicing enabled.', []);
+      }
     } else {
-      this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
+      if (this._paraState.config.ui.isTourGuideEnabled){
+        this.ariaLiveRegion.voicing.speak('Tour guide disabled.', []);
+      }
+      else{
+        this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
+      }
       //this.ariaLiveRegion.voicing.shutUp();
       // if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
       //   this._paraState.updateSettings(draft => {
@@ -965,7 +959,7 @@ export class ParaView extends ParaComponent implements ViewContext {
     }
     loopParaviewRefresh(
       this,
-      this._paraState.settings.animation.popInAnimateRevealTimeMs,
+      this._paraState.config.animation.popInAnimateRevealTimeMs,
       50
     );
   }

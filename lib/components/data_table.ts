@@ -197,7 +197,7 @@ export class DataTable extends ParaComponent {
             </tr>
           </thead>
           <tbody>
-            ${this._grid.map((row, i) => html`
+            ${this._grid?.map((row, i) => html`
               <tr>
                 <td>
                   ${row[0].x}

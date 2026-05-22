@@ -113,8 +113,6 @@ export abstract class TickLabelTier extends Container(View) {
     return Math.max(...this._children.map(kid => kid.paddedHeight ?? 0));
   }
 
-  protected abstract get _labelTextAnchor(): LabelTextAnchor;
-
   protected abstract get _labelWrapWidth(): number | undefined;
 
   createTickLabels(_checkLabels = true) {
@@ -136,7 +134,6 @@ export abstract class TickLabelTier extends Container(View) {
           this._axisSettings.position as string],
         role: 'axislabel',
         text: labelText,
-        textAnchor: this._labelTextAnchor,
         wrapWidth: this._labelWrapWidth,
         x: 0,
         y: 0,
@@ -210,10 +207,6 @@ export class HorizTickLabelTier extends TickLabelTier {
 
   protected get _length(): number {
     return this._width;
-  }
-
-  protected get _labelTextAnchor(): LabelTextAnchor {
-    return this._axisSettings.ticks.labels.angle ? 'end' : 'middle';
   }
 
   protected get _labelWrapWidth() {
@@ -373,10 +366,6 @@ export class VertTickLabelTier extends TickLabelTier {
     return this._height;
   }
 
-  protected get _labelTextAnchor(): LabelTextAnchor {
-    return 'end';
-  }
-
   protected get _labelWrapWidth() {
     return undefined;
   }
@@ -422,7 +411,7 @@ export class VertTickLabelTier extends TickLabelTier {
     // and we don't need the xs to compute the width
     this.updateSize(false);
     this._children.forEach((kid, i) => {
-        kid.x = this._tickLabelX(i);
+        kid.right = this._tickLabelX(i);
         kid.y = this._tickLabelY(i);
     });
     if (checkLabels) {

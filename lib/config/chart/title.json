@@ -14,7 +14,7 @@
         "margin": {
             "description": "Space between the chart title and content (in SVG units).",
             "type": "number",
-            "default": 40
+            "default": 20
         },
         "fontSize": {
             "description": "The font size of the chart title, as a CSS font size string.",

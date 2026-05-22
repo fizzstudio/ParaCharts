@@ -194,15 +194,15 @@ export class PointDatapointView extends PlaneDatapointView {
 
   computeLocation() {
     this._x = this.computeX();
-    if (this.paraview.paraState.settings.animation.isAnimationEnabled && this.paraview.paraState.settings.animation.animationType == 'yAxis') {
-      if (this.paraview.paraState.settings.animation.animationOrigin === 'initialValue') {
+    if (this.paraview.paraState.config.animation.isAnimationEnabled && this.paraview.paraState.config.animation.animationType === 'yAxis') {
+      if (this.paraview.paraState.config.animation.animationOrigin === 'initialValue') {
         this._animStartState.y = (this._parent.children[0] as PointDatapointView).computeY();
-      } else if (this.paraview.paraState.settings.animation.animationOrigin === 'baseline') {
+      } else if (this.paraview.paraState.config.animation.animationOrigin === 'baseline') {
         this._animStartState.y = this.chart.height;
-      } else if (this.paraview.paraState.settings.animation.animationOrigin === 'top') {
+      } else if (this.paraview.paraState.config.animation.animationOrigin === 'top') {
         this._animStartState.y = 0;
       } else {
-        this._animStartState.y = this.paraview.paraState.settings.animation.animationOriginValue;;
+        this._animStartState.y = this.paraview.paraState.config.animation.animationOriginValue;
       }
       this._animEndState.y = this.computeY();
       this._y = this._animStartState.y;
@@ -214,7 +214,7 @@ export class PointDatapointView extends PlaneDatapointView {
   }
 
   beginAnimStep(bezT: number, linearT: number): void {
-    if (this.paraview.paraState.settings.animation.animationType == 'xAxis') {
+    if (this.paraview.paraState.config.animation.animationType === 'xAxis') {
       if (linearT + .01 >= this.x / this.chart.width && !this._isAnimating && !this._hasAnimated) {
         this.popInAnimation()
       }
@@ -240,7 +240,7 @@ export class PointDatapointView extends PlaneDatapointView {
         start = timestamp;
       }
       const elapsed = timestamp - start;
-      const revealTime = Math.max(1, this.paraview.paraState.settings.animation.popInAnimateRevealTimeMs);
+      const revealTime = Math.max(1, this.paraview.paraState.config.animation.popInAnimateRevealTimeMs);
       const t = Math.min(elapsed / revealTime, 1);
       const bezT = bez.eval(t)!;
       this._baseSymbolScale = bezT * .25 + .75
