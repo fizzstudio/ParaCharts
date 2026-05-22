@@ -269,6 +269,20 @@ function hasNames(p: IntersectionPoint, name1: string, name2: string): boolean {
   return names.includes(name1) && names.includes(name2);
 }
 
+function darkenHsl(hsl: string, shadeCount: number): string {
+  const match = hsl.match(/hsla?\(([-\d.]+),\s*([-\d.]+)%?,\s*([-\d.]+)%?(?:,\s*([-\d.]+))?\)/i);
+  if (!match) {
+    return hsl;
+  }
+  const hue = Number(match[1]);
+  const saturation = Number(match[2]);
+  const lightness = Math.max(0, Number(match[3]) - shadeCount * 5);
+  const alpha = match[4];
+  return alpha === undefined
+    ? `hsl(${hue}, ${saturation}%, ${lightness}%)`
+    : `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
+}
+
 export class VennPlotView extends DataLayer {
   protected _cx!: number;
   protected _cy!: number;
@@ -418,7 +432,8 @@ export class VennPlotView extends DataLayer {
     })) as [Circle, Circle, Circle];
 
     const colors = this.paraview.paraState.colors;
-    const regionOpacity = 0.7;
+    const regionOpacity = 0.9;
+    const regionFill = (index: number) => darkenHsl(colors.colorValueAt(index), 4);
     const prefix = this._threeCircleRegionPrefix();
     const clipAId = `${prefix}-clip-a`;
     const clipBId = `${prefix}-clip-b`;
@@ -493,7 +508,7 @@ export class VennPlotView extends DataLayer {
         cx=${circleA.center.x}
         cy=${circleA.center.y}
         r=${circleA.radius}
-        fill=${colors.colorValueAt(0)}
+        fill=${regionFill(0)}
         fill-opacity=${regionOpacity}
         mask=${`url(#${aOnlyId})`}
         pointer-events="none"
@@ -502,7 +517,7 @@ export class VennPlotView extends DataLayer {
         cx=${circleB.center.x}
         cy=${circleB.center.y}
         r=${circleB.radius}
-        fill=${colors.colorValueAt(1)}
+        fill=${regionFill(1)}
         fill-opacity=${regionOpacity}
         mask=${`url(#${bOnlyId})`}
         pointer-events="none"
@@ -511,7 +526,7 @@ export class VennPlotView extends DataLayer {
         cx=${circleC.center.x}
         cy=${circleC.center.y}
         r=${circleC.radius}
-        fill=${colors.colorValueAt(2)}
+        fill=${regionFill(2)}
         fill-opacity=${regionOpacity}
         mask=${`url(#${cOnlyId})`}
         pointer-events="none"
@@ -521,7 +536,7 @@ export class VennPlotView extends DataLayer {
         cx=${circleA.center.x}
         cy=${circleA.center.y}
         r=${circleA.radius}
-        fill=${colors.colorValueAt(3)}
+        fill=${regionFill(3)}
         fill-opacity=${regionOpacity}
         clip-path=${`url(#${clipBId})`}
         mask=${`url(#${outsideCId})`}
@@ -531,7 +546,7 @@ export class VennPlotView extends DataLayer {
         cx=${circleA.center.x}
         cy=${circleA.center.y}
         r=${circleA.radius}
-        fill=${colors.colorValueAt(4)}
+        fill=${regionFill(4)}
         fill-opacity=${regionOpacity}
         clip-path=${`url(#${clipCId})`}
         mask=${`url(#${outsideBId})`}
@@ -541,7 +556,7 @@ export class VennPlotView extends DataLayer {
         cx=${circleB.center.x}
         cy=${circleB.center.y}
         r=${circleB.radius}
-        fill=${colors.colorValueAt(5)}
+        fill=${regionFill(5)}
         fill-opacity=${regionOpacity}
         clip-path=${`url(#${clipCId})`}
         mask=${`url(#${outsideAId})`}
@@ -552,7 +567,7 @@ export class VennPlotView extends DataLayer {
         cx=${circleA.center.x}
         cy=${circleA.center.y}
         r=${circleA.radius}
-        fill=${colors.colorValueAt(6)}
+        fill=${regionFill(6)}
         fill-opacity=${regionOpacity}
         clip-path=${`url(#${clipBId})`}
         mask=${`url(#${insideCId})`}
@@ -668,6 +683,7 @@ export class VennPlotView extends DataLayer {
     circleRadius: number,
     circleBools: [boolean, boolean, boolean]
   ): number[] {
+    const anchorWeight = 0.2;
     const solution = this.minimize(
       (candidatePositions: number[]) => this.cost3(
         rectangles.map(([w, h]) => [w + 50, h + 50]),
@@ -677,10 +693,29 @@ export class VennPlotView extends DataLayer {
         circleCenter3,
         circleRadius,
         circleBools,
-      ),
+      ) + candidatePositions.reduce((sum, value, index) => {
+        const delta = value - positions[index]!;
+        return sum + anchorWeight * delta * delta;
+      }, 0),
       positions,
     );
     return solution.argument;
+  }
+
+  protected rectSamplePoints(rectangle: Rectangle, position: Position): Position[] {
+    const [w, h] = rectangle;
+    const [x, y] = position;
+    return [
+      [x, y],
+      [x - w / 2, y - h / 2],
+      [x + w / 2, y - h / 2],
+      [x - w / 2, y + h / 2],
+      [x + w / 2, y + h / 2],
+      [x, y - h / 2],
+      [x, y + h / 2],
+      [x - w / 2, y],
+      [x + w / 2, y],
+    ];
   }
 
   protected unitVector(n: number, idx: number) {
@@ -778,6 +813,8 @@ export class VennPlotView extends DataLayer {
     circleRadius: number,
     circleBools: [boolean, boolean]
   ): number {
+    const boundaryPadding = 26;
+    const boundaryWeight = 180;
     const nRects = rectangles.length;
     const reshapedPositions: Position[] = [];
     for (let i = 0; i < nRects; i++) {
@@ -787,13 +824,7 @@ export class VennPlotView extends DataLayer {
     for (let k = 0; k < nRects; k++) {
       const [w, h] = rectangles[k];
       const [x, y] = reshapedPositions[k];
-      const corners: Position[] = [
-        [x - w / 2, y - h / 2],
-        [x + w / 2, y - h / 2],
-        [x - w / 2, y + h / 2],
-        [x + w / 2, y + h / 2],
-      ];
-      for (const [cx, cy] of corners) {
+      for (const [cx, cy] of this.rectSamplePoints([w, h], [x, y])) {
         const dists = [0, 0];
         const dx1 = cx - circleCenter1[0];
         const dy1 = cy - circleCenter1[1];
@@ -803,8 +834,8 @@ export class VennPlotView extends DataLayer {
         dists[1] = Math.sqrt(dx2 * dx2 + dy2 * dy2);
         for (let p = 0; p < circleBools.length; p++) {
           const circleCoeff = circleBools[p] ? 1 : -1;
-          const penalty = Math.min(0, circleCoeff * ((circleRadius - 20) - dists[p]));
-          costVal += 100 * penalty * penalty;
+          const penalty = Math.min(0, circleCoeff * ((circleRadius - boundaryPadding) - dists[p]));
+          costVal += boundaryWeight * penalty * penalty;
         }
       }
     }
@@ -846,6 +877,8 @@ export class VennPlotView extends DataLayer {
     circleRadius: number,
     circleBools: [boolean, boolean, boolean]
   ): number {
+    const boundaryPadding = 30;
+    const boundaryWeight = 240;
     const nRects = rectangles.length;
     const reshapedPositions: Position[] = [];
     for (let i = 0; i < nRects; i++) {
@@ -856,14 +889,8 @@ export class VennPlotView extends DataLayer {
     for (let k = 0; k < nRects; k++) {
       const [w, h] = rectangles[k];
       const [x, y] = reshapedPositions[k];
-      const corners: Position[] = [
-        [x - w / 2, y - h / 2],
-        [x + w / 2, y - h / 2],
-        [x - w / 2, y + h / 2],
-        [x + w / 2, y + h / 2],
-      ];
 
-      for (const [cx, cy] of corners) {
+      for (const [cx, cy] of this.rectSamplePoints([w, h], [x, y])) {
         const dists = [0, 0, 0];
         const dx1 = cx - circleCenter1[0];
         const dy1 = cy - circleCenter1[1];
@@ -879,8 +906,8 @@ export class VennPlotView extends DataLayer {
 
         for (let p = 0; p < circleBools.length; p++) {
           const circleCoeff = circleBools[p] ? 1 : -1;
-          const penalty = Math.min(0, circleCoeff * ((circleRadius - 20) - dists[p]));
-          costVal += 100 * penalty * penalty;
+          const penalty = Math.min(0, circleCoeff * ((circleRadius - boundaryPadding) - dists[p]));
+          costVal += boundaryWeight * penalty * penalty;
         }
       }
     }
@@ -1221,6 +1248,10 @@ export class VennPlotView extends DataLayer {
 
       for (const bucket of regionBuckets.values()) {
         if (!bucket.rects.length) continue;
+        if (bucket.rects.length === 1) {
+          pushLabel(bucket.points[0]!, bucket.anchor.x, bucket.anchor.y);
+          continue;
+        }
         const layout = this.computeLayout3(
           bucket.rects,
           makeInitialPositions(bucket.rects.length, bucket.anchor),
@@ -1248,7 +1279,7 @@ export class VennPlotView extends DataLayer {
       const awayX = includedAverage.x - this._cx;
       const awayY = includedAverage.y - this._cy;
       const length = Math.hypot(awayX, awayY) || 1;
-      const scale = this._radius * 0.2;
+      const scale = this._radius * 0.28;
       return {
         x: includedAverage.x + (awayX / length) * scale,
         y: includedAverage.y + (awayY / length) * scale,
@@ -1259,7 +1290,7 @@ export class VennPlotView extends DataLayer {
     const awayX = includedAverage.x - excludedAverage.x;
     const awayY = includedAverage.y - excludedAverage.y;
     const length = Math.hypot(awayX, awayY) || 1;
-    const scale = includedIndexes.length === 1 ? this._radius * 0.28 : this._radius * 0.16;
+    const scale = includedIndexes.length === 1 ? this._radius * 0.36 : this._radius * 0.3;
     return {
       x: includedAverage.x + (awayX / length) * scale,
       y: includedAverage.y + (awayY / length) * scale,
@@ -1284,15 +1315,21 @@ export class VennPlotView extends DataLayer {
         center.x + unitX * this._radius,
         center.y + unitY * this._radius,
       );
-      const leaderEnd = new Vec2(
+      let leaderEnd = new Vec2(
         leaderStart.x + unitX * leaderLen,
         leaderStart.y + unitY * leaderLen,
       );
-      const textAnchor: LabelTextAnchor = unitX > 0.25
+      let textAnchor: LabelTextAnchor = unitX > 0.25
         ? 'start'
         : unitX < -0.25
           ? 'end'
           : 'middle';
+
+      if (series.length === 3 && Math.abs(unitX) < 0.25 && unitY < -0.6) {
+        leaderEnd = new Vec2(leaderEnd.x + 150, leaderEnd.y - 18);
+        textAnchor = 'start';
+      }
+
       const labelX = leaderEnd.x + (textAnchor === 'start' ? 4 : textAnchor === 'end' ? -4 : 0);
       const labelY = leaderEnd.y + (unitY > 0.35 ? 12 : unitY < -0.35 ? -8 : 4);
       const colorValue = this.paraview.paraState.colors.colorValueAt(i);
