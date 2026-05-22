@@ -67,7 +67,8 @@ export interface ClusterNavNodeOptions {
 }
 export interface VennPartNavNodeOptions {
   seriesKey: string;
-  part: 'only' | 'intersection';
+  part: 'only' | 'pair' | 'triple';
+  otherSeriesKey?: string;
 }
 
 function nodeOptionsEq<T extends NavNodeType>(

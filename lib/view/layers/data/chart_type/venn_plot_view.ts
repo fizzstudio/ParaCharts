@@ -315,6 +315,97 @@ export class VennPlotView extends DataLayer {
     return super.datapointViews as VennRegionView[];
   }
 
+  protected _threeCircleRegionPrefix(): string {
+    return `${this.id || 'venn'}-region`;
+  }
+
+  protected _renderThreeCircleRegionHighlight(stroke: string, strokeWidth: number): TemplateResult {
+    if (this._circleCenters.length !== 3) {
+      return svg``;
+    }
+    const cursor = this.paraview.paraState.chartInfo.navMap?.cursor;
+    if (!cursor?.isNodeType('venn-part')) {
+      return svg``;
+    }
+
+    const seriesKeys = this.paraview.paraState.model!.seriesKeys;
+    const ids = {
+      clip: {
+        a: `${this._threeCircleRegionPrefix()}-clip-a`,
+        b: `${this._threeCircleRegionPrefix()}-clip-b`,
+        c: `${this._threeCircleRegionPrefix()}-clip-c`,
+      },
+      outside: {
+        a: `${this._threeCircleRegionPrefix()}-outside-a`,
+        b: `${this._threeCircleRegionPrefix()}-outside-b`,
+        c: `${this._threeCircleRegionPrefix()}-outside-c`,
+      },
+      inside: {
+        a: `${this._threeCircleRegionPrefix()}-inside-a`,
+        b: `${this._threeCircleRegionPrefix()}-inside-b`,
+        c: `${this._threeCircleRegionPrefix()}-inside-c`,
+      },
+      only: {
+        a: `${this._threeCircleRegionPrefix()}-a-only`,
+        b: `${this._threeCircleRegionPrefix()}-b-only`,
+        c: `${this._threeCircleRegionPrefix()}-c-only`,
+      },
+    };
+    const circles = {
+      a: this._circleCenters[0]!,
+      b: this._circleCenters[1]!,
+      c: this._circleCenters[2]!,
+    };
+    const seriesToCircle = new Map(seriesKeys.map((seriesKey, index) => [seriesKey, (['a', 'b', 'c'] as const)[index]! ]));
+    const currentCircle = seriesToCircle.get(cursor.options.seriesKey);
+    if (!currentCircle) {
+      return svg``;
+    }
+
+    const outlineCircle = (
+      circleKey: 'a' | 'b' | 'c',
+      options: { clipId?: string; maskId?: string } = {}
+    ) => svg`<circle
+      cx=${circles[circleKey].x}
+      cy=${circles[circleKey].y}
+      r=${this._radius}
+      fill="none"
+      stroke=${stroke}
+      stroke-width=${strokeWidth}
+      clip-path=${options.clipId ? `url(#${options.clipId})` : undefined}
+      mask=${options.maskId ? `url(#${options.maskId})` : undefined}
+      pointer-events="none"
+    />`;
+
+    if (cursor.options.part === 'triple') {
+      return svg`
+        ${outlineCircle('a', { clipId: ids.clip.b, maskId: ids.inside.c })}
+        ${outlineCircle('b', { clipId: ids.clip.c, maskId: ids.inside.a })}
+        ${outlineCircle('c', { clipId: ids.clip.a, maskId: ids.inside.b })}
+      `;
+    }
+
+    if (cursor.options.part === 'pair' && cursor.options.otherSeriesKey) {
+      const otherCircle = seriesToCircle.get(cursor.options.otherSeriesKey);
+      if (!otherCircle) {
+        return svg``;
+      }
+      const excludedCircle = (['a', 'b', 'c'] as const).find(key => key !== currentCircle && key !== otherCircle)!;
+      return svg`
+        ${outlineCircle(currentCircle, { clipId: ids.clip[otherCircle], maskId: ids.outside[excludedCircle] })}
+        ${outlineCircle(otherCircle, { clipId: ids.clip[currentCircle], maskId: ids.outside[excludedCircle] })}
+        ${outlineCircle(excludedCircle, { clipId: ids.clip[currentCircle], maskId: ids.inside[otherCircle] })}
+      `;
+    }
+
+    const otherCircles = (['a', 'b', 'c'] as const).filter(key => key !== currentCircle);
+    return svg`
+      ${outlineCircle(currentCircle, { maskId: ids.only[currentCircle] })}
+      ${outlineCircle(otherCircles[0]!, { clipId: ids.clip[currentCircle], maskId: ids.outside[otherCircles[1]!] })}
+      ${outlineCircle(otherCircles[1]!, { clipId: ids.clip[currentCircle], maskId: ids.outside[otherCircles[0]!] })}
+    `;
+  }
+
   protected _renderThreeCircleRegions(): TemplateResult {
     if (this._circleCenters.length !== 3) {
       return svg``;
@@ -328,7 +419,7 @@ export class VennPlotView extends DataLayer {
 
     const colors = this.paraview.paraState.colors;
     const regionOpacity = 0.7;
-    const prefix = `${this.id || 'venn'}-region`;
+    const prefix = this._threeCircleRegionPrefix();
     const clipAId = `${prefix}-clip-a`;
     const clipBId = `${prefix}-clip-b`;
     const clipCId = `${prefix}-clip-c`;
@@ -488,7 +579,7 @@ export class VennPlotView extends DataLayer {
 
     // Highlight for venn-part navigation
     const cursor = this.paraview.paraState.chartInfo.navMap?.cursor;
-    let vennPartHighlight = svg``;
+    let vennPartHighlight: TemplateResult = svg``;
     if (cursor?.isNodeType('venn-part') && this._intersectionPoints.length === 2) {
       const [p1, p2] = this._intersectionPoints;
       const r = this._radius;
@@ -519,6 +610,8 @@ export class VennPlotView extends DataLayer {
           pointer-events="none"
         />`;
       }
+    } else if (cursor?.isNodeType('venn-part') && this._circleCenters.length === 3) {
+      vennPartHighlight = this._renderThreeCircleRegionHighlight(visitedColor, visitedStrokeWidth);
     }
 
     return svg`
