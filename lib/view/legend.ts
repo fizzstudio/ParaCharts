@@ -111,7 +111,7 @@ export class Legend extends Container(View) {
         text: item.label,
         x: 0,
         y: 0,
-        textAnchor: 'start',
+        //textAnchor: 'start',
         classList: ['legend-label'],
         pointerEnter: (e) => {
           if (this.paraview.paraState.pinnedSeriesKey !== null) return;

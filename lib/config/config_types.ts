@@ -268,7 +268,20 @@ export interface ChartConfig extends ConfigGroup {
   maxSegments: number;
   /** Additional weight given to "peaks and valleys" during segmentation */
   extremumWeight: number;
+  subtitle: ChartSubtitleConfig;
   title: ChartTitleConfig;
+}
+export interface ChartSubtitleConfig extends ConfigGroup {
+  /** Whether to draw the chart subtitle */
+  isDrawSubtitle: boolean;
+  /** The text of the chart's subtitle. */
+  text: string;
+  /** Space between the chart subtitle and content (in SVG units). */
+  margin: number;
+  /** The font size of the chart subtitle, as a CSS font size string. */
+  fontSize: string;
+  /** The subtitle alignment */
+  align: SnapLocation;
 }
 export interface ChartTitleConfig extends ConfigGroup {
   /** Whether to draw the chart title */
