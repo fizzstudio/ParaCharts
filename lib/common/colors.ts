@@ -15,7 +15,128 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { svg, TemplateResult } from 'lit';
+import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { type ParaState } from '../state';
+
+// ---- Author-supplied color/palette/pattern/symbol specs ----
+
+/** A single color entry in an author-supplied palette. */
+export type CustomColorSpec =
+  | string                                              // plain CSS color string
+  | { id?: string; value: string; label?: string; source?: string };
+
+/** An author-supplied color palette. */
+export interface CustomPaletteSpec {
+  id: string;
+  name?: string;
+  colors: CustomColorSpec[];
+}
+
+/** A single SVG pattern entry in an author-supplied pattern palette. */
+export interface CustomPatternEntrySpec {
+  id: string;
+  svg: string;
+}
+
+/** An author-supplied SVG pattern palette. */
+export interface CustomPatternPaletteSpec {
+  id: string;
+  name?: string;
+  patterns: CustomPatternEntrySpec[];
+}
+
+/** A single custom SVG symbol or path to inject into chart defs. */
+export interface CustomSymbolSpec {
+  id: string;
+  svg: string;
+}
+
+// ---- Author color model (Layer 1 — stored intent) ----
+
+export interface AuthorColorModel {
+  background?: string;
+  palette?: CustomPaletteSpec;
+}
+
+// ---- Helpers ----
+
+const DEFAULT_VISIT_COLOR: Color = { value: 'hsl(0, 100%, 50%)', name: 'visit' };
+const DEFAULT_HIGHLIGHT_COLOR: Color = { value: 'cyan', name: 'highlight' };
+
+/**
+ * Convert a CustomColorSpec to an internal Color, auto-generating an id if absent.
+ */
+function resolveColorSpec(spec: CustomColorSpec, index: number): Color {
+  if (typeof spec === 'string') {
+    return { value: spec, name: `color-${index}` };
+  }
+  return {
+    value: spec.value,
+    name: spec.id ?? `color-${index}`,
+    ...(spec.label ? { contrastValue: undefined } : {}),
+  };
+}
+
+/**
+ * Convert a CustomPaletteSpec to an internal Palette.
+ * Auto-appends default highlight and visit colors if absent.
+ * Expected tail order: [...series, highlight, visit]
+ */
+export function customPaletteSpecToPalette(spec: CustomPaletteSpec): Palette {
+  const colors = spec.colors.map((c, i) => resolveColorSpec(c, i));
+  const lastColor = colors.at(-1);
+  if (!lastColor || lastColor.name !== 'visit') {
+    const secondLast = colors.at(-1);
+    if (!secondLast || secondLast.name !== 'highlight') {
+      colors.push(DEFAULT_HIGHLIGHT_COLOR);
+    }
+    colors.push(DEFAULT_VISIT_COLOR);
+  }
+  return {
+    key: spec.id,
+    title: spec.name ?? spec.id,
+    colors,
+  };
+}
+
+/**
+ * Convert an SVG string pattern to an internal Pattern, rewriting the id attribute
+ * to Pattern{index} so existing shape rendering (fill="url(#Pattern{index})") works
+ * unchanged.
+ */
+export function svgStringToPattern(svgStr: string, index: number, id: string): Pattern {
+  const normalized = svgStr.replace(/\bid\s*=\s*["'][^"']*["']/i, `id="Pattern${index}"`);
+  return { value: svg`${unsafeSVG(normalized)}`, name: id };
+}
+
+/**
+ * Convert a CustomPatternPaletteSpec to an internal Palette with isPattern: true.
+ * Auto-generates placeholder Color entries (neutral gray) for paletteVars() / legend.
+ * Appends a transparent visit pattern if the author didn't provide one.
+ */
+export function customPatternSpecToPalette(spec: CustomPatternPaletteSpec): Palette {
+  const patterns: Pattern[] = spec.patterns.map((p, i) => svgStringToPattern(p.svg, i, p.id));
+  // Visit-slot pattern: transparent rectangle
+  patterns.push({
+    value: svg`<pattern id="Pattern${patterns.length}" patternUnits="userSpaceOnUse" width="1" height="1"><rect width="1" height="1" fill="none"/></pattern>`,
+    name: 'visit',
+  });
+
+  // Placeholder colors so paletteVars() / numSeriesColors work correctly
+  const colors: Color[] = spec.patterns.map((p, i) => ({
+    value: `hsl(0, 0%, ${60 - i * 5}%)`,
+    name: p.id,
+  }));
+  colors.push(DEFAULT_VISIT_COLOR);
+
+  return {
+    key: spec.id,
+    title: spec.name ?? spec.id,
+    colors,
+    patterns,
+    isPattern: true,
+  };
+}
 
 export interface Palette {
   key: string;
@@ -925,12 +1046,12 @@ export class Colors {
   }
 
   get palette() {
-    const palette = this.paletteKey === 'custom'
-      ? this._makeCustomPalette()
-      : this.palettes[this.indexOfPalette(this.paletteKey)];
-    if (palette) {
-      return palette;
-    }
+    // A palette registered via addPalette() always takes priority, including for
+    // the 'custom' key. Fall back to _makeCustomPalette() only when 'custom' is
+    // requested and no registered palette with that key exists (legacy CSS-prop path).
+    const registered = this.palettes[this.indexOfPalette(this.paletteKey)];
+    if (registered) return registered;
+    if (this.paletteKey === 'custom') return this._makeCustomPalette();
     throw new Error(`no palette named '${this.paletteKey}'`);
   }
 
@@ -1005,7 +1126,24 @@ export class Colors {
   }
 
   addPalette(palette: Palette) {
-    this.palettes.push(palette);
+    const existing = this.indexOfPalette(palette.key);
+    if (existing >= 0) {
+      this.palettes[existing] = palette;
+    } else {
+      this.palettes.push(palette);
+    }
+  }
+
+  /** Register a CustomPaletteSpec as an internal Palette and select it. */
+  addCustomPalette(spec: CustomPaletteSpec) {
+    this.addPalette(customPaletteSpecToPalette(spec));
+    this.selectPaletteWithKey(spec.id);
+  }
+
+  /** Register a CustomPatternPaletteSpec as an internal pattern Palette and select it. */
+  addCustomPatternPalette(spec: CustomPatternPaletteSpec) {
+    this.addPalette(customPatternSpecToPalette(spec));
+    this.selectPaletteWithKey(spec.id);
   }
 
   indexOfPalette(key: string) {
@@ -1089,14 +1227,21 @@ export class Colors {
   // pattern colors themselves — those are hardcoded as SVG presentation attributes
   // inside the <pattern> elements and cannot be driven by CSS vars. See the patterns
   // array comment in the palette definitions above for the full explanation.
-  paletteVars(): { [key: string]: string } {
+  paletteVars(minSlots = 0): { [key: string]: string } {
     const vars: { [key: string]: string } = {};
     const colors = this._colorMap
       ? this._colorMap.map(i => this.palette.colors[i])
       : this.palette.colors;
-    const numSeries = colors.length - 1; // exclude "visit" slot
-    for (let i = 0; i < numSeries; i++) {
-      const value = colors[i].value;
+    const paletteSize = colors.length - 1; // exclude "visit" slot
+    const numSlots = Math.max(paletteSize, minSlots);
+    // Diva is always palettes[0]; used to fill any slots the author palette doesn't define.
+    // Slot i keeps its diva position so adding a 4th brand color simply replaces diva[3].
+    const divaColors = this.palettes[0].colors;
+    const divaSize   = divaColors.length - 1; // exclude visit slot
+    for (let i = 0; i < numSlots; i++) {
+      const value = i < paletteSize
+        ? colors[i].value
+        : divaColors[i % divaSize].value;
       vars[`--color-palette-series-${i}`] = value;
       // Precompute lightened variant (used by scatter plot symbols).
       // Parses HSL numeric components; falls back to base color for non-HSL values.

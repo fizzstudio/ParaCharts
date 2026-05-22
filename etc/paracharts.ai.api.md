@@ -76,6 +76,14 @@ export interface AnimationSettings extends SettingGroup {
 export type AnimationType = 'yAxis' | 'xAxis' | 'none';
 
 // @public (undocumented)
+export interface AuthorColorModel {
+    // (undocumented)
+    background?: string;
+    // (undocumented)
+    palette?: CustomPaletteSpec;
+}
+
+// @public (undocumented)
 export interface AxesSettings extends SettingGroup {
     datapointMargin: number;
     minInterval: number;
@@ -136,6 +144,50 @@ export interface CsvInferredDefaults {
         title: string;
         dataType: CsvDataType;
     };
+}
+
+// @public
+export type CustomColorSpec = string | {
+    id?: string;
+    value: string;
+    label?: string;
+    source?: string;
+};
+
+// @public
+export interface CustomPaletteSpec {
+    // (undocumented)
+    colors: CustomColorSpec[];
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    name?: string;
+}
+
+// @public
+export interface CustomPatternEntrySpec {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    svg: string;
+}
+
+// @public
+export interface CustomPatternPaletteSpec {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    name?: string;
+    // (undocumented)
+    patterns: CustomPatternEntrySpec[];
+}
+
+// @public
+export interface CustomSymbolSpec {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    svg: string;
 }
 
 // @public
@@ -306,6 +358,8 @@ export class ParaAPI {
     protected _actions: Actions;
     // (undocumented)
     addCrosshair(xAxis: string | number, yAxis: string | number): void;
+    addCustomPatternPalette(spec: CustomPatternPaletteSpec): void;
+    addCustomSymbols(symbols: CustomSymbolSpec[]): void;
     addRecord(pushPoints: Record<string, {
         x: string;
         y: string;
@@ -348,6 +402,7 @@ export class ParaAPI {
     getAllConfigSettings(): SettingsInput;
     getAllSettings(): SettingsInput;
     getAltText(): Promise<string | undefined>;
+    getAuthorColorModel(): AuthorColorModel;
     // Warning: (ae-forgotten-export) The symbol "ConfigGroupMetadata" needs to be exported by the entry point index-ai.d.ts
     getConfigGroupMetadata(path: string): ConfigGroupMetadata | undefined;
     // Warning: (ae-forgotten-export) The symbol "ConfigSetting" needs to be exported by the entry point index-ai.d.ts
@@ -365,6 +420,13 @@ export class ParaAPI {
     getLegend(location: CardinalDirection): ParaAPILegend;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIRange" needs to be exported by the entry point index-ai.d.ts
     getRange(startPortion: number, endPortion: number): ParaAPIRange;
+    getResolvedColorModel(): {
+        paletteId: string;
+        colors: {
+            id: string;
+            value: string;
+        }[];
+    };
     // Warning: (ae-forgotten-export) The symbol "ParaAPISeriesGroup" needs to be exported by the entry point index-ai.d.ts
     getSeries(...seriesLabelsOrKeys: string[]): ParaAPISeriesGroup;
     getSetting(settingPath: string): Setting;
@@ -405,6 +467,8 @@ export class ParaAPI {
     // (undocumented)
     removeTrendLine(): void;
     serializeChart(): string;
+    setBackgroundColor(value: string): void;
+    setColorPalette(spec: CustomPaletteSpec): void;
     setConfigSetting(settingPath: string, value: ConfigSetting): void;
     setConfigSettings(settingsInput: SettingsInput): void;
     setHeight(height: number): void;

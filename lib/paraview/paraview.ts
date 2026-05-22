@@ -31,6 +31,7 @@ import { fixed, isPointerInbounds } from '../common/utils';
 import { loopParaviewRefresh } from '../common';
 
 import { PropertyValueMap, SVGTemplateResult, TemplateResult, css, html, nothing, render, svg } from 'lit';
+import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -157,19 +158,19 @@ export class ParaView extends ParaComponent implements ViewContext {
         stroke: var(--label-color);
       }
       .chart-title {
-        font-size: calc(var(--chart-title-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--chart-title-font-size, 12pt)*var(--chart-font-scale, 1));
       }
       .axis-title-horiz {
-        font-size: calc(var(--horiz-axis-title-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--horiz-axis-title-font-size, 12pt)*var(--chart-font-scale, 1));
       }
       .axis-title-vert {
-        font-size: calc(var(--vert-axis-title-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--vert-axis-title-font-size, 12pt)*var(--chart-font-scale, 1));
       }
       .direct-label {
-        font-size: calc(var(--direct-label-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--direct-label-font-size, 10pt)*var(--chart-font-scale, 1));
       }
       .legend-label {
-        font-size: calc(var(--legend-label-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--legend-label-font-size, 10pt)*var(--chart-font-scale, 1));
       }
       .label {
         fill: var(--label-color);
@@ -194,28 +195,27 @@ export class ParaView extends ParaComponent implements ViewContext {
         opacity: 0.5;
       }
       .tick-label-horiz {
-        font-size: calc(var(--horiz-axis-tick-label-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--horiz-axis-tick-label-font-size, 10pt)*var(--chart-font-scale, 1));
       }
       .tick-label-vert {
-        font-size: calc(var(--vert-axis-tick-label-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--vert-axis-tick-label-font-size, 10pt)*var(--chart-font-scale, 1));
       }
       .bar-label {
-        font-size: calc(var(--bar-label-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--bar-label-font-size, 8pt)*var(--chart-font-scale, 1));
         fill: white;
       }
       .bar-total-label {
-        font-size: calc(var(--bar-label-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--bar-label-font-size, 8pt)*var(--chart-font-scale, 1));
       }
       .column-label {
-        font-size: calc(var(--column-label-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--column-label-font-size, 8pt)*var(--chart-font-scale, 1));
         fill: white;
       }
       .column-total-label {
-        font-size: calc(var(--column-label-font-size)*var(--chart-font-scale));
-                background-color: red;
+        font-size: calc(var(--column-label-font-size, 8pt)*var(--chart-font-scale, 1));
       }
       .waterfall-label {
-        font-size: calc(var(--waterfall-label-font-size)*var(--chart-font-scale));
+        font-size: calc(var(--waterfall-label-font-size, 10pt)*var(--chart-font-scale, 1));
       }
       .pastry-inside-label {
       }
@@ -534,11 +534,22 @@ export class ParaView extends ParaComponent implements ViewContext {
     this._paraState.keymapManager.removeEventListener('hotkeyPress', this._hotkeyListener);
   }
 
+  /** Inject any author-supplied custom symbols into SVG <defs>. */
+  injectCustomSymbols() {
+    for (const spec of this._paraState.customSymbols) {
+      const key = `custom-${spec.id}`;
+      if (this._defs[key]) continue;
+      const normalized = spec.svg.replace(/\bid\s*=\s*["'][^"']*["']/i, `id="${key}"`);
+      this.addDef(key, svg`${unsafeSVG(normalized)}`);
+    }
+  }
+
   // Anything that needs to be done when data is updated, do here
   private async dataUpdated(): Promise<void> {
     try {
       this._paraState.chartInfo.setParaView(this);
       this.createDocumentView();
+      this.injectCustomSymbols();
       if (this.paraChart.headless) {
         await this.addJIMSeriesSummaries();
       }
@@ -945,7 +956,7 @@ export class ParaView extends ParaComponent implements ViewContext {
     // in the rewritten :host block. Reading from the model (paletteVars()) rather than
     // back from the DOM avoids coupling this code to the naming conventions used by
     // _rootStyle().
-    const paletteVars = this._paraState.colors.paletteVars();
+    const paletteVars = this._paraState.colors.paletteVars(this._paraState.model?.numSeries ?? 0);
     const paletteRule = Object.keys(paletteVars).length
       ? `#${svg.id} {\n${Object.entries(paletteVars).map(([k, v]) => `  ${k}: ${v};`).join('\n')}\n}\n`
       : '';
@@ -1086,7 +1097,7 @@ export class ParaView extends ParaComponent implements ViewContext {
     style["--background-color"] = this._paraState.config.color.backgroundColor || '#ffffff';
     // Inject per-palette CSS custom properties so .series-N rules resolve
     // correctly for any palette, including author-defined ones.
-    Object.assign(style, this._paraState.colors.paletteVars());
+    Object.assign(style, this._paraState.colors.paletteVars(this._paraState.model?.numSeries ?? 0));
     return style;
   }
 

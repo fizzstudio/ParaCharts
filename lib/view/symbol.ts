@@ -39,7 +39,7 @@ export type DataSymbolShape =
 
 // empty == no fill at all
 export type DataSymbolFill = 'outline' | 'solid' | 'empty';
-export type DataSymbolType = `${DataSymbolShape}.${DataSymbolFill}` | 'default';
+export type DataSymbolType = `${DataSymbolShape}.${DataSymbolFill}` | 'default' | `custom:${string}`;
 
 const triSide = 15.1967;
 const triHeight = 13.161;
@@ -177,17 +177,24 @@ export class DataSymbol extends View {
 
   set type(type: DataSymbolType) {
     this._type = type;
-    const [shape, fill] = type.split('.');
-    this._shape = shape as DataSymbolShape;
-    this._fill = fill as DataSymbolFill;
-    this._defsKey = `sym-${shape}-${fill}`;
-    if (!this.paraview.defs[this._defsKey]) {
-      this.paraview.addDef(this._defsKey, svg`
-        <path
-          id=${this._defsKey}
-          d=${shapeInfo[this.shape].path}
-        />
-      `);
+    if (type.startsWith('custom:')) {
+      // Custom symbol — defs injected by ParaView.injectCustomSymbols()
+      const id = type.slice(7);
+      this._defsKey = `custom-${id}`;
+      // Leave _shape/_fill at their previous values; they're unused for custom types
+    } else {
+      const [shape, fill] = type.split('.');
+      this._shape = shape as DataSymbolShape;
+      this._fill = fill as DataSymbolFill;
+      this._defsKey = `sym-${shape}-${fill}`;
+      if (!this.paraview.defs[this._defsKey]) {
+        this.paraview.addDef(this._defsKey, svg`
+          <path
+            id=${this._defsKey}
+            d=${shapeInfo[this.shape].path}
+          />
+        `);
+      }
     }
     this._updateStyleInfo();
     this._updateClassInfo();

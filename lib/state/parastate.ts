@@ -51,7 +51,12 @@ import { SettingControlManager } from './settings_controls';
 import { defaults, chartTypeDefaults } from './settings_defaults';
 import { Config } from '../config/config_types';
 import { defaultConfig } from '../config/config_defaults';
-import { Colors } from '../common/colors';
+import {
+  Colors,
+  type CustomPaletteSpec,
+  type CustomPatternPaletteSpec,
+  type CustomSymbolSpec,
+} from '../common/colors';
 import { type ContrastWarning } from '../common/contrast';
 import { joinStrArray, trendTranslation } from '../common/utils';
 import { DataSymbols } from '../view/symbol';
@@ -410,6 +415,38 @@ export class ParaState extends BaseState {
     this._configResetCallbacks.forEach(cb => cb());
   }
 
+  /**
+   * Apply extensions.paracharts.style to register author-supplied palettes,
+   * patterns, and symbols. Called at the end of setManifest().
+   */
+  protected _applyStyleExtension(style: Record<string, unknown>) {
+    const colorStyle = style.color as Record<string, unknown> | undefined;
+    if (colorStyle) {
+      if (colorStyle.background && typeof colorStyle.background === 'string') {
+        this.updateConfig(draft => {
+          draft.color.backgroundColor = colorStyle.background as string;
+        }, true);
+      }
+      if (colorStyle.palette) {
+        this._colors.addCustomPalette(colorStyle.palette as CustomPaletteSpec);
+      }
+    }
+
+    const patternStyle = style.pattern as Record<string, unknown> | undefined;
+    if (patternStyle?.palette) {
+      this._colors.addCustomPatternPalette(patternStyle.palette as CustomPatternPaletteSpec);
+    }
+
+    // Custom symbols are stored on the state so ParaView can inject them into defs
+    const symbolStyle = style.symbol as Record<string, unknown> | undefined;
+    if (symbolStyle?.defs && Array.isArray(symbolStyle.defs)) {
+      this.customSymbols = symbolStyle.defs as CustomSymbolSpec[];
+    }
+  }
+
+  /** Custom symbol defs; ParaView injects these into SVG <defs> on first render. */
+  customSymbols: CustomSymbolSpec[] = [];
+
   protected _syncPatchesToManifest(patches: Patch[]) {
     if (!this._manifest) return;
     this._manifest.extensions ??= {};
@@ -555,6 +592,12 @@ export class ParaState extends BaseState {
       if (this.config.color.colorMap) {
         this._colors.setColorMap(...this.config.color.colorMap.split(',').map(c => c.trim()));
       }
+    }
+
+    // Apply extensions.paracharts.style — author-supplied palettes, patterns, and symbols
+    const extStyle = (manifest.extensions?.paracharts as Record<string, unknown> | undefined)?.style as Record<string, unknown> | undefined;
+    if (extStyle) {
+      this._applyStyleExtension(extStyle);
     }
 
     this._jimerator = new Jimerator(this._manifest, data);

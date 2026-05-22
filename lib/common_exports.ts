@@ -6,3 +6,11 @@ export { ParaHeadless, type LoadManifestResult, type LoadManifestSuccess, type L
 export { ParaAPI } from './paraapi/paraapi';
 
 export type * from './state/settings_types';
+export type {
+  CustomColorSpec,
+  CustomPaletteSpec,
+  CustomPatternEntrySpec,
+  CustomPatternPaletteSpec,
+  CustomSymbolSpec,
+  AuthorColorModel,
+} from './common/colors';

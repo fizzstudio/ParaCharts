@@ -24,6 +24,12 @@ import explainers from '../explainers';
 import type { DatapointManifest, Manifest } from '@fizz/paramanifest';
 import { ConfigSetting } from '../config/config_types';
 import { ConfigGroupMetadata, ConfigGroupSettingsMetadata, configMetadata, ConfigSettingMetadata } from '../config/config_metadata';
+import {
+  type CustomPaletteSpec,
+  type CustomPatternPaletteSpec,
+  type CustomSymbolSpec,
+  type AuthorColorModel,
+} from '../common/colors';
 
 type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMap) => void | Promise<void>) };
 
@@ -573,6 +579,68 @@ export class ParaAPI {
         SettingsManager.set(path, value, draft);
       });
     });
+  }
+
+  // ---- Author-defined color / palette / pattern / symbol API ----
+
+  /**
+   * Register an author-supplied color palette and make it the active palette.
+   * If a palette with the same id already exists it is replaced.
+   */
+  setColorPalette(spec: CustomPaletteSpec): void {
+    this._paraChart.paraState.colors.addCustomPalette(spec);
+  }
+
+  /**
+   * Register an author-supplied pattern palette and make it the active palette.
+   * If a palette with the same id already exists it is replaced.
+   */
+  addCustomPatternPalette(spec: CustomPatternPaletteSpec): void {
+    this._paraChart.paraState.colors.addCustomPatternPalette(spec);
+  }
+
+  /**
+   * Set the chart background color.
+   * Equivalent to setConfigSetting('color.backgroundColor', value).
+   */
+  setBackgroundColor(value: string): void {
+    this._paraChart.paraState.updateConfig(draft => {
+      draft.color.backgroundColor = value;
+    });
+  }
+
+  /**
+   * Inject custom SVG symbol or path defs into the chart's SVG defs block.
+   * After registration, reference a symbol as 'custom:myId' in per-series symbol settings.
+   */
+  addCustomSymbols(symbols: CustomSymbolSpec[]): void {
+    this._paraChart.paraState.customSymbols = [
+      ...this._paraChart.paraState.customSymbols,
+      ...symbols.filter(s => !this._paraChart.paraState.customSymbols.some(e => e.id === s.id)),
+    ];
+    this._paraChart.paraView?.injectCustomSymbols();
+  }
+
+  /**
+   * Return the author-defined color model as stored in manifest style — unmodified
+   * by CVD simulation, forced-colors, or contrast adaptation.
+   */
+  getAuthorColorModel(): AuthorColorModel {
+    const extStyle = (this._paraChart.paraState.manifest?.extensions?.paracharts as Record<string, unknown> | undefined)?.style as Record<string, unknown> | undefined;
+    return (extStyle?.color as AuthorColorModel | undefined) ?? {};
+  }
+
+  /**
+   * Return the current resolved color values as CSS strings, one per series slot.
+   * These reflect whatever palette, CVD mode, or contrast adaptation is active.
+   */
+  getResolvedColorModel(): { paletteId: string; colors: { id: string; value: string }[] } {
+    const palette = this._paraChart.paraState.colors.palette;
+    const numSeries = this._paraChart.paraState.colors.numSeriesColors;
+    return {
+      paletteId: palette.key,
+      colors: palette.colors.slice(0, numSeries).map(c => ({ id: c.name, value: c.value })),
+    };
   }
 
   /** Get config group metadata. */
