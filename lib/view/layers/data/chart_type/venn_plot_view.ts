@@ -949,7 +949,12 @@ export class VennPlotView extends DataLayer {
       }
     }
 
-    // --- Overlap penalty between labels ---
+    // --- Separation penalty between labels ---
+    // Inflate each rectangle by gapPad in the pairwise check so that a minimum
+    // visual gap is enforced even when labels are not strictly touching.  The
+    // rectangles input already carries boundary padding; this extra inflation is
+    // applied only here so boundary and spacing concerns stay decoupled.
+    const gapPad = 14;
     for (let i = 0; i < nRects; i++) {
       const [w1, h1] = rectangles[i]!;
       const [x1, y1] = reshapedPositions[i]!;
@@ -960,14 +965,14 @@ export class VennPlotView extends DataLayer {
 
         const dx = Math.max(
           0,
-          Math.min(x1 + w1 / 2, x2 + w2 / 2) -
-          Math.max(x1 - w1 / 2, x2 - w2 / 2)
+          Math.min(x1 + (w1 + gapPad) / 2, x2 + (w2 + gapPad) / 2) -
+          Math.max(x1 - (w1 + gapPad) / 2, x2 - (w2 + gapPad) / 2)
         );
 
         const dy = Math.max(
           0,
-          Math.min(y1 + h1 / 2, y2 + h2 / 2) -
-          Math.max(y1 - h1 / 2, y2 - h2 / 2)
+          Math.min(y1 + (h1 + gapPad) / 2, y2 + (h2 + gapPad) / 2) -
+          Math.max(y1 - (h1 + gapPad) / 2, y2 - (h2 + gapPad) / 2)
         );
 
         costVal += overlapWeight * dx * dy;
@@ -1177,11 +1182,11 @@ export class VennPlotView extends DataLayer {
     }
 
     const w = 80;
-    const h = 10;
+    const h = 14;
 
     const makeInitialPositions = (count: number, anchor: Point): number[] => {
       const positions: number[] = [];
-      const spacing = 16;
+      const spacing = 22;
       const startY = anchor.y - ((count - 1) * spacing) / 2;
       for (let i = 0; i < count; i++) {
         positions.push(anchor.x, startY + i * spacing);
