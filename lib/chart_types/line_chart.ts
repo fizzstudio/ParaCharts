@@ -27,8 +27,6 @@ import { interpolate } from '@fizz/templum';
 import { formatXYDatapoint } from '@fizz/parasummary';
 import { type ChartType } from '@fizz/paramanifest';
 import { Highlight } from '@fizz/parasummary';
-import { DataSymbols } from '../view/symbol';
-import { enumerate, PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
 
 /**
  * Business logic for line charts.
@@ -100,25 +98,14 @@ export class LineChartInfo extends PointChartInfo {
 
   legend() {
     const model = this._paraState.model!;
-    const seriesKeys = enumerate([...model.seriesKeys]);
-    const types = new DataSymbols().types;
+    const seriesKeys = [...model.seriesKeys];
     if (this._paraState.config.legend.itemOrder === 'alphabetical') {
       seriesKeys.sort();
     }
-    else {
-      const model = this._paraState.model as PlaneModel;
-      const startChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(0) as PlaneDatapoint).indepBox)!;
-      seriesKeys.sort((a, b) =>
-        startChord.find(point => point.seriesKey === b[0])!.facetValueAsNumber("y")!
-        - startChord.find(point => point.seriesKey === a[0])!.facetValueAsNumber("y")!
-      )
-    }
     return seriesKeys.map(key => ({
-      label: model.atKey(key[0])!.getLabel(),
-      seriesKey: key[0],
-      color: this._paraState.seriesProperties!.properties(key[0]).color,
-      symbol: types[key[1]],
-      symbolOptions: { lighten: true }
+      label: model.atKey(key)!.getLabel(),
+      seriesKey: key,
+      color: this._paraState.seriesProperties!.properties(key).color
     }));
   }
 

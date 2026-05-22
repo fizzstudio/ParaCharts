@@ -151,6 +151,17 @@ export const defaults: Settings = {
       explode: ''
     }
   },
+  animation: {
+    isAnimationEnabled: false,
+    animateRevealTimeMs: 2500,
+    popInAnimateRevealTimeMs: 750,
+    animationType: 'yAxis',
+    animationOrigin: 'initialValue',
+    animationOriginValue: 0,
+    expandPoints: true,
+    lineSnake: false,
+    symbolPopIn: false
+  },
   scrollytelling: {
     isScrollytellingEnabled: true,
     isScrollyAnnouncementsEnabled: true,

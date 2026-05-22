@@ -231,7 +231,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       role: 'heading',
       angle: this._getAxisTitleAngle(),
       wrapWidth: this._height,
-      //textAnchor: 'middle',
+      textAnchor: 'middle',
       pointerEnter: (e) => {
         this.shouldAddHoverPopup() ? this.addPopup() : undefined;
       },

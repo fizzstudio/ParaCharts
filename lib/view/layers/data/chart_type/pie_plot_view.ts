@@ -38,7 +38,7 @@ export class PieSlice extends RadialSlice {
   }
 
   computeLocation(): void {
-    if (this.paraview.paraState.config.animation.isAnimationEnabled) {
+    if (this.paraview.paraState.settings.animation.isAnimationEnabled) {
       this._centralAngle = this.chart.animateRevealComplete
         ? this._params.percentage*360
         : 0;

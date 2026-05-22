@@ -509,7 +509,7 @@ export class ParaState extends BaseState {
     }
   }
 
-  async setManifest(manifest: Manifest, data?: AllSeriesData, resetSettings = true) {
+  setManifest(manifest: Manifest, data?: AllSeriesData, resetSettings = true) {
     this._manifest = manifest;
     const dataset = firstDataset(this._manifest);
 
@@ -560,7 +560,6 @@ export class ParaState extends BaseState {
         );
       }
       this.createChartInfo();
-      await this._chartInfo.setup();
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
@@ -579,7 +578,6 @@ export class ParaState extends BaseState {
         );
       }
       this.createChartInfo();
-      await this._chartInfo.setup();
       //this._seriesProperties = new SeriesPropertyManager(this);
       this._seriesProperties.reset();
       this.data = data;
@@ -590,13 +588,12 @@ export class ParaState extends BaseState {
     const maxSegments = this.config.chart.maxSegments;
     const extremumWeight = this.config.chart.extremumWeight;
     if (this._model instanceof PlaneModel) {
-      await Promise.all(
-        this._model.seriesKeys.map(async (seriesKey) => {
-          this.seriesAnalyses = {
-            [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey, { maxError: maxError, maxSegments: maxSegments, extremumWeight: extremumWeight }),
-            ...this.seriesAnalyses
-          };
-        }));
+      this._model.seriesKeys.forEach(async (seriesKey) => {
+        this.seriesAnalyses = {
+          [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey, { maxError: maxError, maxSegments: maxSegments, extremumWeight: extremumWeight }),
+          ...this.seriesAnalyses
+        };
+      });
     }
     this.postNotice('paranotice', { key: 'manifestSet' });
     this.dispatchEvent(

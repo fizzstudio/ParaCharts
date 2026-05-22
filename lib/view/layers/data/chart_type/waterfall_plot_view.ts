@@ -164,7 +164,7 @@ export class WaterfallBarView extends PlaneDatapointView {
   computeLocation() {
     const idealWidth = this.chart.barWidth;
     this._width = this.chart.barWidth;
-    if (this.paraview.paraState.config.animation.isAnimationEnabled) {
+    if (this.paraview.paraState.settings.animation.isAnimationEnabled) {
       this._height = 0;
       this._y = 0;
     } else {

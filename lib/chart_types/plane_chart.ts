@@ -556,7 +556,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       };
       requestAnimationFrame(step);
       loopParaviewRefresh(paraview,
-        paraview.paraState.config.animation.popInAnimateRevealTimeMs
+        paraview.paraState.settings.animation.popInAnimateRevealTimeMs
         + SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex)! * length, 50);
       return new Promise<void>(resolve => {
         this._soniRiffInterval = setInterval(() => {
@@ -582,7 +582,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       dpView.completeLayout();
     }
     loopParaviewRefresh(this._paraView,
-      this._paraView.paraState.config.animation.popInAnimateRevealTimeMs
+      this._paraView.paraState.settings.animation.popInAnimateRevealTimeMs
       + SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex)! * length, 50);
     return this._sonifier.playDatapoints(datapoints);
   }

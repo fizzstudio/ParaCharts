@@ -59,6 +59,28 @@ export type AnimationType = 'yAxis' | 'xAxis' | 'none';
 export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
 
 /** @public */
+export interface AnimationSettings extends SettingGroup {
+  /** Enable chart animations */
+  isAnimationEnabled: boolean;
+  /** Duration for main chart reveal animation in milliseconds */
+  animateRevealTimeMs: number;
+  /** Duration for symbol pop-in animation in milliseconds */
+  popInAnimateRevealTimeMs: number;
+  /** Which axis to animate along */
+  animationType: AnimationType;
+  /** Starting point for animations */
+  animationOrigin: AnimationOrigin;
+  /** Custom value for animation origin when set to 'custom' */
+  animationOriginValue: number;
+  /** Animate point expansion on data reveal */
+  expandPoints: boolean;
+  /** Animate lines drawing like snakes */
+  lineSnake: boolean;
+  /** Animate symbols popping in individually */
+  symbolPopIn: boolean;
+}
+
+/** @public */
 export interface TitleSettings extends SettingGroup {
   /** Whether to draw the chart title */
   isDrawTitle: boolean;
@@ -392,6 +414,8 @@ export interface Settings extends SettingGroup {
   plotArea: PlotAreaSettings;
   /** Chart type-specific settings */
   type: ChartTypeSettings;
+  /** Animation settings */
+  animation: AnimationSettings;
   /** Scrollytelling settings */
   scrollytelling: ScrollytellingSettings;
   /** Navigation assistance settings */

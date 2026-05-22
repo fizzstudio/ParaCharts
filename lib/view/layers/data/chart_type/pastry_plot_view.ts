@@ -14,7 +14,7 @@ import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { Vec2 } from '../../../../common/vector';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { datapointMatchKeyAndIndex, bboxOppositeAnchor } from '../../../../common/utils';
-import { SnapLocation, type BboxAnchorCorner } from '../../../base_view';
+import { type BboxAnchorCorner } from '../../../base_view';
 import { TypePastryConfig } from '../../../../config/config_types';
 
 export type ArcType = 'circle' | 'semicircle';
@@ -166,6 +166,7 @@ export abstract class PastryPlotView extends DataLayer {
         text: this.paraview.paraState.title,
         centerX: this._cx,
         centerY: this._cy,
+        textAnchor: 'middle',
         wrapWidth: 2 * (this.radius - this.config.annularThickness * this.radius)
           - this.config.centerLabelPadding * 2,
         id: 'center-label'
@@ -543,7 +544,6 @@ export abstract class RadialSlice extends DatapointView {
       this.chart.config.outsideLabels.arcGap);
     let textAnchor: LabelTextAnchor = 'end';
     let bboxAnchor: BboxAnchorCorner = 'topLeft';
-    let justify: SnapLocation = 'start';
     let leftPad = 0;
     let rightPad = 0;
     const loc = sector.arcCenter.add(arcDistVec);
@@ -554,12 +554,11 @@ export abstract class RadialSlice extends DatapointView {
     } else {
       loc.x -= this.chart.config.outsideLabels.horizShift;
       rightPad = this.chart.config.outsideLabels.horizPadding;
-      justify = 'end';
     }
     if (this.isPositionBottom) {
-      bboxAnchor = textAnchor === ('start' as LabelTextAnchor) ? 'topLeft' : 'topRight';
+      bboxAnchor = textAnchor === 'start' ? 'topLeft' : 'topRight';
     } else {
-      bboxAnchor = textAnchor === ('start' as LabelTextAnchor) ? 'bottomLeft' : 'bottomRight';
+      bboxAnchor = textAnchor === 'start' ? 'bottomLeft' : 'bottomRight';
     }
     this._outsideLabel?.remove();
     this._outsideLabel = new Label(this.paraview, {
@@ -568,8 +567,7 @@ export abstract class RadialSlice extends DatapointView {
       classList: ['pastry-outside-label'],
       role: 'datapoint',
       [bboxAnchor]: loc,
-      //textAnchor: textAnchor,
-      justify
+      textAnchor: textAnchor,
     });
     this._outsideLabel.padding = { left: leftPad, right: rightPad };
     this._leader?.remove();
@@ -631,9 +629,7 @@ export abstract class RadialSlice extends DatapointView {
     });
     if (!Object.values(this._insideLabel.textCorners).every(point => sector.containsPoint(point))) {
       if (this._outsideLabel) {
-        const oldBboxAnchor = this._outsideLabel[bboxAnchor];
         this._outsideLabel.text += `\n${this._insideLabel.text}`;
-        this._outsideLabel[bboxAnchor] = oldBboxAnchor;
         // the old leader is still appended to the datapoint!
         const oldLeader = this._leader!;
         this._leader = this._createOutsideLabelLeader();

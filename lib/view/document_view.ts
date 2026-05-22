@@ -40,7 +40,6 @@ export class DocumentView extends Container(View) {
 
   readonly type: ChartType;
   protected _titleLabel?: Label;
-  protected _subtitleLabel?: Label;
   protected _chartLayers!: PlotLayerManager;
   protected _directLabelStrip: DirectLabelStrip | null = null;
   protected _horizAxis?: HorizAxis;
@@ -123,13 +122,11 @@ export class DocumentView extends Container(View) {
     if (this._paraState.config.chart.title.isDrawTitle && this._paraState.title) {
       this.createTitle();
     }
-    if (this._paraState.config.chart.subtitle.isDrawSubtitle) {
-      this._createSubtitle();
-    }
-    this._positionTitles();
 
     if (this._shouldAddLegend && this._paraState.config.legend.position === 'north' && this._paraState.type !== 'venn') {
       this.createLegend('north');
+      this._legends.north!.top = this._titleLabel?.paddedBottom ?? this.top;
+      this._legends.north!.centerX = this.centerX;
     }
 
     // const horizAxisPos = this._paraState.settings.axis.horiz.position;
@@ -157,16 +154,23 @@ export class DocumentView extends Container(View) {
     if (this._shouldAddLegend && this._paraState.config.legend.position === 'south' && this._paraState.type !== 'venn') {
       this.createLegend('south');
     }
+
     // Recreate the axes using the size info computed above
     if (this._paraState.config.axis.vert.isDrawAxis && vertFacet) {
       this._createVertAxis(vertFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height
         - (this._titleLabel?.paddedHeight || 0)
-        - (this._subtitleLabel?.paddedHeight || 0)
         - (this._legends.north?.paddedHeight || 0)
-        - (this._legends.south?.paddedHeight || 0)
         - (this._horizAxis?.height || 0)
       );
       this.append(this._vertAxis!);
+      this._vertAxis!.left = this._legends.west?.paddedRight ?? this.left;
+      if (this._legends.north) {
+        this._vertAxis!.paddedTop = this._legends.north.paddedBottom;
+      } else if (this._titleLabel && this._paraState.config.chart.title.position === 'top') {
+        this._vertAxis!.top = this._titleLabel!.paddedBottom;
+      } else {
+        this._vertAxis!.top = this.top;
+      }
     }
 
     // Create the direct label strip here so it can take its height from
@@ -188,6 +192,12 @@ export class DocumentView extends Container(View) {
         - (this._directLabelStrip?.width ?? 0)
         - (this._legends.east?.width ?? this._legends.west?.width ?? 0));
       this.append(this._horizAxis!);
+      if (this._titleLabel && this._paraState.config.chart.title.position === 'top') {
+        this._horizAxis!.bottom = this.bottom;
+      } else {
+        this._horizAxis!.bottom = this._titleLabel!.paddedTop;
+      }
+      this._horizAxis!.left = this._vertAxis?.right ?? 0;
     }
 
     ////////////////////////////////////////////
@@ -213,7 +223,6 @@ export class DocumentView extends Container(View) {
     const plotHeight = this._height
       - (this._legends.north?.paddedHeight ?? 0)
       - (this._titleLabel?.paddedHeight ?? 0)
-      - (this._subtitleLabel?.paddedHeight ?? 0)
       - (this._horizAxis?.height ?? 0)
       - (this._legends.south?.paddedHeight ?? 0);
     this._chartLayers?.remove();
@@ -221,6 +230,8 @@ export class DocumentView extends Container(View) {
     this.append(this._chartLayers);
     this._chartLayers.createLayers();
     this._chartLayers.dataLayer.init();
+    this._chartLayers.left = this._vertAxis?.right ?? this._legends.west?.right ?? 0;
+    this._chartLayers.bottom = this._horizAxis?.top ?? this._height;
 
     // At this point, we're fully connected to the root of the view tree,
     // so we can safely observe
@@ -229,12 +240,22 @@ export class DocumentView extends Container(View) {
 
     if (this._directLabelStrip) {
       this.insert(this._directLabelStrip, -1);
+      this._directLabelStrip.left = this._chartLayers.right;
+      this._directLabelStrip.top = this._chartLayers.top;
     }
 
-    this._positionLegends();
-    this._positionAxes();
-    this._positionLayers();
-    this._positionDirectLabelStrip();
+    if (this._legends.east) {
+      this._legends.east.left = this._chartLayers.right;
+      this._legends.east.top = this._chartLayers.top;
+    }
+    if (this._legends.west) {
+      this._legends.west.left = this.left;
+      this._legends.west.top = this._chartLayers.top;
+    }
+    if (this._legends.south) {
+      this._legends.south.bottom = this.bottom;
+      this._legends.south.centerX = this.centerX;
+    }
 
     if (this._horizAxis) {
       this._horizAxis.addGridRules(this._chartLayers.height);
@@ -242,72 +263,7 @@ export class DocumentView extends Container(View) {
     if (this._vertAxis) {
       this._vertAxis.addGridRules(this._chartLayers.width);
     }
-  }
 
-  protected _positionLegends() {
-    if (this._legends.north) {
-      this._legends.north.top = this._subtitleLabel?.paddedBottom ?? this._titleLabel?.paddedBottom ?? this.top;
-      this._legends.north.centerX = this.centerX;
-    }
-    if (this._legends.east) {
-      this._legends.east.right = this.right;
-      this._legends.east.top = this._subtitleLabel?.paddedBottom ?? this._titleLabel?.paddedBottom ?? this.top;
-    }
-    if (this._legends.west) {
-      this._legends.west.left = this.left;
-      this._legends.west.top = this._subtitleLabel?.paddedBottom ?? this._titleLabel?.paddedBottom ?? this.top;
-    }
-    if (this._legends.south) {
-      this._legends.south.bottom = this.bottom;
-      this._legends.south.centerX = this.centerX;
-    }
-  }
-
-  protected _positionAxes() {
-    if (this._vertAxis) {
-      this._vertAxis.left = this._legends.west?.paddedRight ?? this.left;
-      if (this._legends.north) {
-        this._vertAxis.paddedTop = this._legends.north.paddedBottom;
-      } else if (this._subtitleLabel && this._paraState.config.chart.title.position === 'top') {
-        this._vertAxis.top = this._subtitleLabel!.paddedBottom;
-      } else if (this._titleLabel && this._paraState.config.chart.title.position === 'top') {
-        this._vertAxis.top = this._titleLabel!.paddedBottom;
-      } else {
-        this._vertAxis.top = this.top;
-      }
-    }
-    if (this._horizAxis) {
-      if (this._titleLabel && this._paraState.config.chart.title.position === 'bottom') {
-        this._horizAxis.bottom = this._titleLabel.paddedTop;
-      } else if (this._subtitleLabel && this._paraState.config.chart.title.position === 'bottom') {
-        this._horizAxis.bottom = this._subtitleLabel.paddedTop;
-      } else if (this._legends.south) {
-        this._horizAxis.bottom = this._legends.south.paddedTop;
-      } else {
-        this._horizAxis.bottom = this.bottom;
-      }
-      this._horizAxis.left = this._vertAxis?.right ?? 0;
-    }
-  }
-
-  protected _positionLayers() {
-    if (this._vertAxis) {
-      this._chartLayers.left = this._vertAxis.right;
-    } else if (this._horizAxis) {
-      this._chartLayers.centerX = this._horizAxis?.centerX;
-    } else if (this._legends.west) {
-      this._chartLayers.left = this._legends.west.right;
-    } else {
-      this._chartLayers.left = 0;
-    }
-    this._chartLayers.bottom = this._horizAxis?.top ?? this._height;
-  }
-
-  protected _positionDirectLabelStrip() {
-    if (this._directLabelStrip) {
-      this._directLabelStrip.left = this._chartLayers.right;
-      this._directLabelStrip.top = this._chartLayers.top;
-    }
   }
 
   protected _createHorizAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
@@ -371,6 +327,7 @@ export class DocumentView extends Container(View) {
 
   async storeDidChange(key: string, value: any): Promise<void> {
     await super.storeDidChange(key, value);
+    return this.paraview.paraState.chartInfo.storeDidChange(key, value);
   }
 
   // noticePosted(key: string, value: any): void {
@@ -460,6 +417,7 @@ export class DocumentView extends Container(View) {
   }*/
 
   private createTitle() {
+    const align = this._paraState.config.chart.title.align ?? 'center';
     this._titleLabel?.remove();
     this._titleLabel = new Label(this.paraview, {
       id: 'chart-title',
@@ -467,7 +425,8 @@ export class DocumentView extends Container(View) {
       classList: ['chart-title'],
       text: this._titleText,
       wrapWidth: this._width,
-      justify: this._paraState.config.chart.title.align
+      textAnchor: 'middle',
+      justify: align
     });
     const isTop = this._paraState.config.chart.title.position === 'top';
     this._titleLabel.padding = {
@@ -477,72 +436,26 @@ export class DocumentView extends Container(View) {
       left: 0
     };
     this._titleLabel.canHeightFlex = false;
+    let titleRow = 0;
+    const titleMargin = this._paraState.config.chart.title.margin;
+    const titlePos = this._paraState.config.chart.title.position;
     this.append(this._titleLabel);
+    if (isTop) {
+      this._titleLabel.top = this.top;
+    } else {
+      this._titleLabel.bottom = this.bottom;
+    }
+    if (align === 'start') {
+      this._titleLabel.left = this.left;
+    } else if (align === 'end') {
+      this._titleLabel.right = this.right;
+    } else {
+      this._titleLabel.centerX = this.centerX;
+    }
   }
 
   removeTitle() {
     this._titleLabel?.remove();
-  }
-
-  protected _createSubtitle() {
-    this._subtitleLabel?.remove();
-    this._subtitleLabel = new Label(this.paraview, {
-      id: 'chart-subtitle',
-      role: 'heading',
-      classList: ['chart-subtitle'],
-      text: this._paraState.chartInfo.conciseSummary.text,
-      wrapWidth: this._width,
-      justify: this._paraState.config.chart.subtitle.align
-    });
-    const isTop = this._paraState.config.chart.title.position === 'top';
-    this._subtitleLabel.padding = {
-      top: isTop ? 0 : this._paraState.config.chart.subtitle.margin,
-      right: 0,
-      bottom: isTop ? this._paraState.config.chart.subtitle.margin : 0,
-      left: 0
-    };
-    this._subtitleLabel.canHeightFlex = false;
-    this.append(this._subtitleLabel);
-  }
-
-  protected _positionTitles() {
-    if (this._paraState.config.chart.title.position === 'top') {
-      if (this._titleLabel) {
-        this._titleLabel.top = this.top;
-        if (this._subtitleLabel) {
-          this._subtitleLabel.top = this._titleLabel.paddedBottom;
-        }
-      } else if (this._subtitleLabel) {
-        this._subtitleLabel.top = this.top;
-      }
-    } else {
-      if (this._subtitleLabel) {
-        this._subtitleLabel.bottom = this.bottom;
-        if (this._titleLabel) {
-          this._titleLabel.bottom = this._subtitleLabel.paddedTop;
-        }
-      } else if (this._titleLabel) {
-        this._titleLabel.bottom = this.bottom;
-      }
-    }
-    if (this._titleLabel) {
-      if (this._paraState.config.chart.title.align === 'start') {
-        this._titleLabel.left = this.left;
-      } else if (this._paraState.config.chart.title.align === 'end') {
-        this._titleLabel.right = this.right;
-      } else {
-        this._titleLabel.centerX = this.centerX;
-      }
-    }
-    if (this._subtitleLabel) {
-      if (this._paraState.config.chart.subtitle.align === 'start') {
-        this._subtitleLabel.left = this.left;
-      } else if (this._paraState.config.chart.subtitle.align === 'end') {
-        this._subtitleLabel.right = this.right;
-      } else {
-        this._subtitleLabel.centerX = this.centerX;
-      }
-    }
   }
 
   protected _childDidResize(_kid: View) {

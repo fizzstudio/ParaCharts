@@ -151,7 +151,7 @@ export abstract class DataLayer extends PlotLayer {
 
   init() {
     this._layoutDatapoints();
-    if (this.paraview.paraState.config.animation.isAnimationEnabled) {
+    if (this.paraview.paraState.settings.animation.isAnimationEnabled) {
       this._animateReveal();
     }
   }
@@ -207,8 +207,8 @@ export abstract class DataLayer extends PlotLayer {
   protected _layoutDatapoints() {
     this._chartLandingView.clearChildren();
     this._beginDatapointLayout();
-    if (this.paraview.paraState.config.animation.isAnimationEnabled
-      && this.paraview.paraState.config.animation.animationType === 'xAxis') {
+    if (this.paraview.paraState.settings.animation.isAnimationEnabled
+      && this.paraview.paraState.settings.animation.animationType == 'xAxis') {
       this.datapointViews.map(d => d.baseSymbolScale = 0)
     }
     this._completeDatapointLayout();
@@ -235,7 +235,7 @@ export abstract class DataLayer extends PlotLayer {
       const elapsed = timestamp - start;
       // We can't really disable the animation, but setting the reveal time to 0
       // will result in an imperceptibly short animation duration
-      const revealTime = Math.max(1, this.paraview.paraState.config.animation.animateRevealTimeMs);
+      const revealTime = Math.max(1, this.paraview.paraState.settings.animation.animateRevealTimeMs);
       const t = Math.min(elapsed / revealTime, 1);
       const bezT = bez.eval(t)!;
       const linearT = linear.eval(t)!;
@@ -249,14 +249,14 @@ export abstract class DataLayer extends PlotLayer {
       }
     };
     this._currentAnimationFrame = requestAnimationFrame(step);
-    if (this.paraview.paraState.config.animation.animationType === 'xAxis') {
-      loopParaviewRefresh(this.paraview, 500 + this.paraview.paraState.config.animation.popInAnimateRevealTimeMs
-        + this.paraview.paraState.config.animation.animateRevealTimeMs, 50);
+    if (this.paraview.paraState.settings.animation.animationType == 'xAxis') {
+      loopParaviewRefresh(this.paraview, 500 + this.paraview.paraState.settings.animation.popInAnimateRevealTimeMs
+        + this.paraview.paraState.settings.animation.animateRevealTimeMs, 50);
     }
   }
 
   protected _animStep(bezT: number, linearT: number) {
-    if (this.paraview.paraState.config.animation.animationType === 'xAxis') {
+    if (this.paraview.paraState.settings.animation.animationType == 'xAxis') {
       this.paraview.clipWidth = linearT
     }
     for (const datapointView of this.datapointViews) {

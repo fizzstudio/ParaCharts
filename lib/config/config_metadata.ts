@@ -10,9 +10,7 @@ import LegendJson from "./legend/index.json" with { type: "json" };
 import LegendBoxstyleJson from "./legend/boxStyle.json" with { type: "json" };
 import SonificationJson from "./sonification.json" with { type: "json" };
 import ChartJson from "./chart/index.json" with { type: "json" };
-import ChartSubtitleJson from "./chart/subtitle.json" with { type: "json" };
 import ChartTitleJson from "./chart/title.json" with { type: "json" };
-import AnimationJson from "./animation.json" with { type: "json" };
 import DescriptionJson from "./description.json" with { type: "json" };
 import UiJson from "./ui.json" with { type: "json" };
 import TypeLineJson from "./type/line.json" with { type: "json" };
@@ -84,9 +82,7 @@ export const configMetadata: ConfigMetadata = {
   'legend.boxStyle': LegendBoxstyleJson as unknown as ConfigGroupMetadata,
   'sonification': SonificationJson as unknown as ConfigGroupMetadata,
   'chart': ChartJson as unknown as ConfigGroupMetadata,
-  'chart.subtitle': ChartSubtitleJson as unknown as ConfigGroupMetadata,
   'chart.title': ChartTitleJson as unknown as ConfigGroupMetadata,
-  'animation': AnimationJson as unknown as ConfigGroupMetadata,
   'description': DescriptionJson as unknown as ConfigGroupMetadata,
   'ui': UiJson as unknown as ConfigGroupMetadata,
   'type.line': TypeLineJson as unknown as ConfigGroupMetadata,

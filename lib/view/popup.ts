@@ -171,9 +171,9 @@ export class Popup extends View {
         if (this.popupLabelOptions.color == undefined) {
             this.popupLabelOptions.color = 0;
         }
-        // if (this.popupLabelOptions.textAnchor == undefined) {
-        //     this.popupLabelOptions.textAnchor == "middle"
-        // }
+        if (this.popupLabelOptions.textAnchor == undefined) {
+            this.popupLabelOptions.textAnchor == "middle"
+        }
         if (this.popupLabelOptions.wrapWidth == undefined) {
             this.popupLabelOptions.wrapWidth = this.wrapWidth;
         }
@@ -296,7 +296,7 @@ export class Popup extends View {
                     x: 0,
                     y: 0,
                     wrapWidth: this.wrapWidth,
-                    // textAnchor: 'start'
+                    textAnchor: 'start'
                 }));
             });
             views.forEach(v => this._grid.append(v));

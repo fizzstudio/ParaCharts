@@ -26,7 +26,12 @@ export class ControlsPanel extends ControlPanelTabPanel {
   connectedCallback() {
     super.connectedCallback();
     this._paraState.settingControls.insert('ui.isFullscreenEnabled');
-    this._paraState.settingControls.insert('animation.isAnimationEnabled');
+    this._paraState.settingControls.add({
+      type: 'checkbox',
+      key: 'animation.isAnimationEnabled',
+      label: 'Animation enabled',
+      parentView: 'controlPanel.tabs.controls.animation',
+    });
   }
 
   protected _getHelp() {

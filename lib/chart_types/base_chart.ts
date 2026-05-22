@@ -28,7 +28,7 @@ import { type AxisCoord, AxisOrientation } from '../view/axis';
 
 import { Datapoint } from '@fizz/paramodel';
 import { ChartType, Facet } from '@fizz/paramanifest';
-import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
+import { Summarizer, formatBox, Highlight, summarizerFromModel } from '@fizz/parasummary';
 
 import { Unsubscribe } from '@lit-app/state';
 import { executeParaActions, parseActions } from '../paraactions/paraactions';
@@ -69,7 +69,6 @@ export abstract class BaseChartInfo {
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
   protected _soniRiffInterval: ReturnType<typeof setTimeout> | null = null;
   protected _paraView!: ParaView;
-  protected _conciseSummary!: HighlightedSummary;
 
   constructor(protected _type: ChartType, protected _paraState: ParaState) {
     this._init();
@@ -103,16 +102,8 @@ export abstract class BaseChartInfo {
     this._summarizer = summarizerFromModel(this._paraState.model!);
   }
 
-  async setup() {
-    this._conciseSummary = await this._summarizer.getConciseSummary();
-  }
-
   get summarizer(): Summarizer {
     return this._summarizer;
-  }
-
-  get conciseSummary(): HighlightedSummary {
-    return this._conciseSummary;
   }
 
   get managedSettingKeys() {

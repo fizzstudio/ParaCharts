@@ -201,8 +201,8 @@ export class DatapointView extends DataView {
       return true;
     }
     const obb = this.outerBbox;
-    if (this.paraview.paraState.config.animation.isAnimationEnabled
-      && this.paraview.paraState.config.animation.animationType === 'xAxis'
+    if (this.paraview.paraState.settings.animation.isAnimationEnabled
+      && this.paraview.paraState.settings.animation.animationType == 'xAxis'
     ) {
       return true;
     }

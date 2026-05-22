@@ -33,7 +33,7 @@ export class ParaHeadless {
 
   async ready() {
     await this._paraChart.ready;
-    this._paraChart.paraState.updateConfig(draft => {
+    this._paraChart.paraState.updateSettings(draft => {
       // XXX something is overriding this ...
       draft.animation.isAnimationEnabled = false;
     });
@@ -73,7 +73,7 @@ export class ParaHeadless {
     this._paraChart.manifest = input;
     // Wait for Lit's update cycle to run willUpdate and create the new loader promise
     await this._paraChart.updateComplete;
-
+    
     try {
       await this._paraChart.loaded;
       return { success: true };
@@ -114,7 +114,7 @@ export class ParaHeadless {
     jim: string;
   }> {
     await this.jimReady;
-
+    
     const svg = this.api.serializeChart();
     const description = await this.api.getDescription() ?? '';
     const altText = await this.api.getAltText() ?? '';

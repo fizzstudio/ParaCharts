@@ -69,17 +69,10 @@ export const defaultConfig: Config = {
       isArpeggiateChords: true,
     },
     chart: {
-      subtitle: {
-        isDrawSubtitle: true,
-        text: "",
-        margin: 20,
-        fontSize: "11pt",
-        align: "center",
-      },
       title: {
         isDrawTitle: true,
         text: "",
-        margin: 20,
+        margin: 40,
         fontSize: "12pt",
         align: "center",
         position: "top",
@@ -110,14 +103,6 @@ export const defaultConfig: Config = {
       maxError: 0.01,
       maxSegments: 4,
       extremumWeight: 10,
-    },
-    animation: {
-      isAnimationEnabled: false,
-      animateRevealTimeMs: 2500,
-      popInAnimateRevealTimeMs: 750,
-      animationType: "yAxis",
-      animationOrigin: "initialValue",
-      animationOriginValue: 0,
     },
     description: {
       captionFormat: "full",

@@ -84,15 +84,7 @@ export type LabelFormat = 'raw' | string;
  * @public
  */
 export type TabLabelStyle = 'icon' | 'iconLabel' | 'label';
-/** Which axis to animate along during chart reveal
- * @public
- */
-export type AnimationType = 'yAxis' | 'xAxis' | 'none';
 
-/** Starting point for chart animations
- * @public
- */
-export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
 
 
 export interface Config extends ConfigGroup {
@@ -101,7 +93,6 @@ export interface Config extends ConfigGroup {
   legend: LegendConfig;
   sonification: SonificationConfig;
   chart: ChartConfig;
-  animation: AnimationConfig;
   description: DescriptionConfig;
   ui: UiConfig;
   type: TypeConfig;
@@ -277,20 +268,7 @@ export interface ChartConfig extends ConfigGroup {
   maxSegments: number;
   /** Additional weight given to "peaks and valleys" during segmentation */
   extremumWeight: number;
-  subtitle: ChartSubtitleConfig;
   title: ChartTitleConfig;
-}
-export interface ChartSubtitleConfig extends ConfigGroup {
-  /** Whether to draw the chart subtitle */
-  isDrawSubtitle: boolean;
-  /** The text of the chart's subtitle. */
-  text: string;
-  /** Space between the chart subtitle and content (in SVG units). */
-  margin: number;
-  /** The font size of the chart subtitle, as a CSS font size string. */
-  fontSize: string;
-  /** The subtitle alignment */
-  align: SnapLocation;
 }
 export interface ChartTitleConfig extends ConfigGroup {
   /** Whether to draw the chart title */
@@ -305,20 +283,6 @@ export interface ChartTitleConfig extends ConfigGroup {
   align: SnapLocation;
   /** The position of the chart title (either 'top' or 'bottom'). */
   position: 'top' | 'bottom';
-}
-export interface AnimationConfig extends ConfigGroup {
-  /** Enable chart animations */
-  isAnimationEnabled: boolean;
-  /** Duration for main chart reveal animation in milliseconds */
-  animateRevealTimeMs: number;
-  /** Duration for symbol pop-in animation in milliseconds */
-  popInAnimateRevealTimeMs: number;
-  /** Which axis to animate along */
-  animationType: AnimationType;
-  /** Starting point for animations */
-  animationOrigin: AnimationOrigin;
-  /** Custom value for animation origin when set to 'custom' */
-  animationOriginValue: number;
 }
 export interface DescriptionConfig extends ConfigGroup {
   /** Use concise or full captions */

@@ -239,8 +239,10 @@ export class BarPlotView extends PlanePlotView {
             const seriesView = seriesViews.find(sv => sv.seriesKey === barStackItem.series)!;
             return seriesView.children[i - 1].datapoint;
           }).reduce((a, b) => a + b.facetValueAsNumber('y')!, 0);
+          const range = this._chartInfo.yInterval!.end - this._chartInfo.yInterval!.start;
+          const total = formatDataValue(sum, range);
           this._totalLabels.push(new Label(this.paraview, {
-            text: String(sum),
+            text: total,
             classList: [`${this.paraview.paraState.type}-total-label`],
             // textAnchor,
             angle
@@ -398,7 +400,7 @@ export class Bar extends PlaneDatapointView {
 
     const idealWidth = this.chart.stackWidth;
     this._width = this.chart.stackWidth;
-    if (this.paraview.paraState.config.animation.isAnimationEnabled) {
+    if (this.paraview.paraState.settings.animation.isAnimationEnabled) {
       this._height = 0;
       //this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
 
@@ -472,10 +474,10 @@ export class Bar extends PlaneDatapointView {
   completeLayout() {
     super.completeLayout();
     const chartInfo = this.chart.chartInfo as BarChartInfo;
-//    let textAnchor: LabelTextAnchor = 'middle';
+    let textAnchor: LabelTextAnchor = 'middle';
     let angle = 0;
     if (this.chart.parent.orientation === 'east') {
-  //    textAnchor = 'start';
+      textAnchor = 'start';
       angle = -90;
     }
     if (chartInfo.config.isDrawRecordLabels) {
@@ -483,7 +485,7 @@ export class Bar extends PlaneDatapointView {
       this._recordLabel = new Label(this.paraview, {
         text: formatBox(this.datapoint.facetBox('x')!, this.paraview.paraState.getFormatType('pieSliceValue')),
         classList: [`${this.paraview.paraState.type}-label`],
-//        textAnchor,
+        textAnchor,
         angle
       });
       this.append(this._recordLabel);
@@ -500,7 +502,7 @@ export class Bar extends PlaneDatapointView {
         text: formatDatapointValue(this.datapoint, chartInfo.yInterval!.end - chartInfo.yInterval!.start, this.paraview.paraState.model!),
         //text: formatDataValue(this.datapoint.facetValueAsNumber('y')!, chartInfo.yInterval!.end - chartInfo.yInterval!.start),
         classList: [`${this.paraview.paraState.type}-label`],
-     //   textAnchor,
+        textAnchor,
         angle
       });
       this.append(this._dataLabel);
