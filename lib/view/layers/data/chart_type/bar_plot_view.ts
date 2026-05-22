@@ -398,7 +398,7 @@ export class Bar extends PlaneDatapointView {
 
     const idealWidth = this.chart.stackWidth;
     this._width = this.chart.stackWidth;
-    if (this.paraview.paraState.settings.animation.isAnimationEnabled) {
+    if (this.paraview.paraState.config.animation.isAnimationEnabled) {
       this._height = 0;
       //this._x = this._stack.x + this._stack.cluster.x; // - this.width/2; // + BarCluster.width/2 - this.width/2;
 
