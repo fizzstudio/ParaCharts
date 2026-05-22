@@ -697,20 +697,19 @@ export class VennPlotView extends DataLayer {
     circleRadius: number,
     circleBools: [boolean, boolean, boolean]
   ): number[] {
-    const anchorWeight = 0.2;
+    // The margin-reward term in cost3 now drives labels toward the region centre,
+    // so no external anchor penalty is needed.  The initial `positions` (built from
+    // the region anchor) serve as a warm-start for the Powell minimiser.
     const solution = this.minimize(
       (candidatePositions: number[]) => this.cost3(
-        rectangles.map(([w, h]) => [w + 50, h + 50]),
+        rectangles.map(([w, h]) => [w + 30, h + 30]),
         candidatePositions,
         circleCenter1,
         circleCenter2,
         circleCenter3,
         circleRadius,
         circleBools,
-      ) + candidatePositions.reduce((sum, value, index) => {
-        const delta = value - positions[index]!;
-        return sum + anchorWeight * delta * delta;
-      }, 0),
+      ),
       positions,
     );
     return solution.argument;
@@ -891,9 +890,19 @@ export class VennPlotView extends DataLayer {
     circleRadius: number,
     circleBools: [boolean, boolean, boolean]
   ): number {
-    const boundaryPadding = 30;
-    const boundaryWeight = 240;
+    // boundaryPadding: required clearance from every boundary edge.
+    // For "inside" circles  → penalise if sample point is within padding of (or beyond) the boundary.
+    // For "outside" circles → penalise if sample point is within padding of (or inside) the boundary.
+    // This corrects the previous bug where a label could be up to boundaryPadding *inside* an
+    // excluded circle with zero penalty, causing labels to bleed into adjacent regions.
+    const boundaryPadding = 28;
+    const boundaryWeight = 320;
+    // Reward the label centre for being far from all boundaries so the optimizer
+    // pulls labels toward the deepest point of their region, not just the edge.
+    const marginRewardWeight = 32;
+    const overlapWeight = 200;
     const nRects = rectangles.length;
+    const circleCenters: [number, number][] = [circleCenter1, circleCenter2, circleCenter3];
     const reshapedPositions: Position[] = [];
     for (let i = 0; i < nRects; i++) {
       reshapedPositions.push([positions[2 * i], positions[2 * i + 1]]);
@@ -901,38 +910,53 @@ export class VennPlotView extends DataLayer {
 
     let costVal = 0;
     for (let k = 0; k < nRects; k++) {
-      const [w, h] = rectangles[k];
-      const [x, y] = reshapedPositions[k];
+      const [w, h] = rectangles[k]!;
+      const [x, y] = reshapedPositions[k]!;
 
+      // --- Violation penalty: every sample point must be well inside the correct side ---
       for (const [cx, cy] of this.rectSamplePoints([w, h], [x, y])) {
-        const dists = [0, 0, 0];
-        const dx1 = cx - circleCenter1[0];
-        const dy1 = cy - circleCenter1[1];
-        dists[0] = Math.sqrt(dx1 * dx1 + dy1 * dy1);
-
-        const dx2 = cx - circleCenter2[0];
-        const dy2 = cy - circleCenter2[1];
-        dists[1] = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-
-        const dx3 = cx - circleCenter3[0];
-        const dy3 = cy - circleCenter3[1];
-        dists[2] = Math.sqrt(dx3 * dx3 + dy3 * dy3);
-
-        for (let p = 0; p < circleBools.length; p++) {
-          const circleCoeff = circleBools[p] ? 1 : -1;
-          const penalty = Math.min(0, circleCoeff * ((circleRadius - boundaryPadding) - dists[p]));
+        for (let p = 0; p < 3; p++) {
+          const [px, py] = circleCenters[p]!;
+          const dist = Math.sqrt((cx - px) ** 2 + (cy - py) ** 2);
+          // Threshold such that we penalise being within boundaryPadding of the boundary
+          // on either the wrong side or the "too close" side.
+          //   inside  circle: penalise if dist > circleRadius - boundaryPadding
+          //   outside circle: penalise if dist < circleRadius + boundaryPadding
+          const threshold = circleBools[p]
+            ? circleRadius - boundaryPadding   // inside
+            : circleRadius + boundaryPadding;  // outside
+          const signedDist = circleBools[p]
+            ? threshold - dist   // positive = safely inside
+            : dist - threshold;  // positive = safely outside
+          const penalty = Math.min(0, signedDist);
           costVal += boundaryWeight * penalty * penalty;
         }
       }
+
+      // --- Margin reward: push label centre as far from all boundaries as possible ---
+      let centerMargin = Infinity;
+      for (let p = 0; p < 3; p++) {
+        const [px, py] = circleCenters[p]!;
+        const dist = Math.sqrt((x - px) ** 2 + (y - py) ** 2);
+        // Signed clearance from boundary p (positive = on the correct side)
+        const clearance = circleBools[p] ? circleRadius - dist : dist - circleRadius;
+        centerMargin = Math.min(centerMargin, clearance);
+      }
+      // Only reward when already on the correct side of every boundary; violations
+      // are already handled by the penalty loop above.
+      if (centerMargin > 0) {
+        costVal -= marginRewardWeight * centerMargin;
+      }
     }
 
+    // --- Overlap penalty between labels ---
     for (let i = 0; i < nRects; i++) {
-      const [w1, h1] = rectangles[i];
-      const [x1, y1] = reshapedPositions[i];
+      const [w1, h1] = rectangles[i]!;
+      const [x1, y1] = reshapedPositions[i]!;
 
       for (let j = i + 1; j < nRects; j++) {
-        const [w2, h2] = rectangles[j];
-        const [x2, y2] = reshapedPositions[j];
+        const [w2, h2] = rectangles[j]!;
+        const [x2, y2] = reshapedPositions[j]!;
 
         const dx = Math.max(
           0,
@@ -946,8 +970,7 @@ export class VennPlotView extends DataLayer {
           Math.max(y1 - h1 / 2, y2 - h2 / 2)
         );
 
-        const overlapArea = dx * dy;
-        costVal += 100 * overlapArea;
+        costVal += overlapWeight * dx * dy;
       }
     }
 
@@ -1262,10 +1285,9 @@ export class VennPlotView extends DataLayer {
 
       for (const bucket of regionBuckets.values()) {
         if (!bucket.rects.length) continue;
-        if (bucket.rects.length === 1) {
-          pushLabel(bucket.points[0]!, bucket.anchor.x, bucket.anchor.y);
-          continue;
-        }
+        // Always run the optimizer — even for a single label — so that the margin
+        // reward pushes it toward the deepest point of the region rather than
+        // leaving it at the raw anchor position.
         const layout = this.computeLayout3(
           bucket.rects,
           makeInitialPositions(bucket.rects.length, bucket.anchor),
