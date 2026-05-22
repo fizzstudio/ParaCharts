@@ -111,6 +111,14 @@ export const defaultConfig: Config = {
       maxSegments: 4,
       extremumWeight: 10,
     },
+    animation: {
+      isAnimationEnabled: false,
+      animateRevealTimeMs: 2500,
+      popInAnimateRevealTimeMs: 750,
+      animationType: "yAxis",
+      animationOrigin: "initialValue",
+      animationOriginValue: 0,
+    },
     description: {
       captionFormat: "full",
     },

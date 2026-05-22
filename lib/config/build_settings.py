@@ -112,7 +112,15 @@ export type LabelFormat = 'raw' | string;
  * @public
  */
 export type TabLabelStyle = 'icon' | 'iconLabel' | 'label';
+/** Which axis to animate along during chart reveal
+ * @public
+ */
+export type AnimationType = 'yAxis' | 'xAxis' | 'none';
 
+/** Starting point for chart animations
+ * @public
+ */
+export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
 
 """, file=typesf)
         write_types_group([], tree, tree, typesf)
