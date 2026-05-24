@@ -308,64 +308,68 @@ export const styles = css`
   /* COLOR PALETTES */
 
   .theme-diva {
-    --color-palette-series-0: hsl(225, 30%, 52%);
-    --color-palette-series-1: hsl(12, 69%, 35%);
-    --color-palette-series-2: hsl(75, 43%, 45%);
-    --color-palette-series-3: hsl(40, 100%, 49%);
-    --color-palette-series-4: hsl(215, 37%, 66%);
-    --color-palette-series-5: hsl(63, 100%, 23%);
-    --color-palette-series-6: hsl(34, 57%, 46%);
-    --color-palette-series-7: hsl(51, 56%, 64%);
-    --color-palette-series-8: hsl(253, 26%, 43%);
-    --color-palette-series-9: hsl(85, 65%, 36%);
+    --color-palette-series-0: hsl(207, 43%, 40%);
+    --color-palette-series-1: hsl(13, 40%, 46%);
+    --color-palette-series-2: hsl(102, 24%, 39%);
+    --color-palette-series-3: hsl(276, 18%, 47%);
+    --color-palette-series-4: hsl(177, 33%, 35%);
+    --color-palette-series-5: hsl(37, 57%, 45%);
+    --color-palette-series-6: hsl(208, 35%, 62%);
+    --color-palette-series-7: hsl(65, 26%, 37%);
+    --color-palette-series-8: hsl(30, 52%, 45%);
+    --color-palette-series-9: hsl(40, 22%, 55%);
   }
 
-  /* NOTE: not real deutan color palette! Replace after research */
   .theme-deutan {
-    --color-palette-series-0: #800080;
-    --color-palette-series-1: #ff00ff;
-    --color-palette-series-2: #ca0088;
-    --color-palette-series-3: #fa0080;
-    --color-palette-series-4: #b400b4;
-    --color-palette-series-5: #4477AA;
-    --color-palette-series-6: #EE6677;
-    --color-palette-series-7: #228833;
-    --color-palette-series-8: #CCBB44;
-    --color-palette-series-9: #66CCEE;
-    --color-palette-series-10: #AA3377;
+    --color-palette-series-0: hsl(207, 43%, 40%);
+    --color-palette-series-1: hsl(10, 41%, 49%);
+    --color-palette-series-2: hsl(146, 23%, 40%);
+    --color-palette-series-3: hsl(295, 22%, 46%);
+    --color-palette-series-4: hsl(185, 61%, 36%);
+    --color-palette-series-5: hsl(38, 60%, 45%);
+    --color-palette-series-6: hsl(207, 42%, 63%);
+    --color-palette-series-7: hsl(88, 24%, 37%);
+    --color-palette-series-8: hsl(29, 55%, 46%);
+    --color-palette-series-9: hsl(41, 24%, 56%);
   }
 
-  /* NOTE: not real protan color palette! Replace after research */
   .theme-protan {
-    --color-palette-series-0: hsl(39, 70%, 54%);
-    --color-palette-series-1: hsl(206, 68%, 66%);
-    --color-palette-series-2: hsl(154, 39%, 44%);
-    --color-palette-series-3: hsl(56, 81%, 66%);
-    --color-palette-series-4: hsl(209, 57%, 43%);
-    --color-palette-series-5: hsl(24, 68%, 46%);
-    --color-palette-series-6: hsl(324, 35%, 62%);
+    --color-palette-series-0: hsl(206, 54%, 40%);
+    --color-palette-series-1: hsl(13, 49%, 48%);
+    --color-palette-series-2: hsl(165, 27%, 38%);
+    --color-palette-series-3: hsl(331, 30%, 45%);
+    --color-palette-series-4: hsl(177, 54%, 35%);
+    --color-palette-series-5: hsl(38, 60%, 45%);
+    --color-palette-series-6: hsl(209, 34%, 58%);
+    --color-palette-series-7: hsl(117, 10%, 39%);
+    --color-palette-series-8: hsl(28, 54%, 45%);
+    --color-palette-series-9: hsl(41, 24%, 56%);
   }
 
-  /* NOTE: not real tritan color palette! Replace after research */
   .theme-tritan {
-    --color-palette-series-0: #77AADD;
-    --color-palette-series-1: #99DDFF;
-    --color-palette-series-2: #44BB99;
-    --color-palette-series-3: #BBCC33;
-    --color-palette-series-4: #AAAAOO;
-    --color-palette-series-5: #EEDD88;
-    --color-palette-series-6: #FFAABB;
+    --color-palette-series-0: hsl(202, 43%, 50%);
+    --color-palette-series-1: hsl(353, 52%, 54%);
+    --color-palette-series-2: hsl(140, 14%, 43%);
+    --color-palette-series-3: hsl(274, 15%, 45%);
+    --color-palette-series-4: hsl(186, 48%, 36%);
+    --color-palette-series-5: hsl(10, 44%, 56%);
+    --color-palette-series-6: hsl(197, 34%, 58%);
+    --color-palette-series-7: hsl(317, 6%, 46%);
+    --color-palette-series-8: hsl(14, 44%, 51%);
+    --color-palette-series-9: hsl(251, 10%, 68%);
   }
 
-  /* NOTE: not real grayscale color palette! Replace after research */
   .theme-grayscale {
-    --color-palette-series-0: #262626;
-    --color-palette-series-1: #595959;
-    --color-palette-series-2: #7f7f7f;
-    --color-palette-series-3: #a1a1a1;
-    --color-palette-series-4: #bababa;
-    --color-palette-series-5: #d4d4d4;
-    --color-palette-series-6: #ededed;
+    --color-palette-series-0: hsl(205, 44%, 41%);
+    --color-palette-series-1: hsl(8, 33%, 48%);
+    --color-palette-series-2: hsl(110, 14%, 42%);
+    --color-palette-series-3: hsl(270, 12%, 58%);
+    --color-palette-series-4: hsl(182, 17%, 41%);
+    --color-palette-series-5: hsl(37, 35%, 61%);
+    --color-palette-series-6: hsl(211, 23%, 77%);
+    --color-palette-series-7: hsl(63, 10%, 37%);
+    --color-palette-series-8: hsl(33, 14%, 54%);
+    --color-palette-series-9: hsl(41, 15%, 80%);
   }
 
   .series-0 {
