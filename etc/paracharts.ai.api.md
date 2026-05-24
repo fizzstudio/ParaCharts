@@ -59,19 +59,6 @@ import { Unsubscribe } from '@lit-app/state';
 // @public
 export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
 
-// @public (undocumented)
-export interface AnimationSettings extends SettingGroup {
-    animateRevealTimeMs: number;
-    animationOrigin: AnimationOrigin;
-    animationOriginValue: number;
-    animationType: AnimationType;
-    expandPoints: boolean;
-    isAnimationEnabled: boolean;
-    lineSnake: boolean;
-    popInAnimateRevealTimeMs: number;
-    symbolPopIn: boolean;
-}
-
 // @public
 export type AnimationType = 'yAxis' | 'xAxis' | 'none';
 
@@ -530,7 +517,6 @@ export type SettingGroup = {
 
 // @public
 export interface Settings extends SettingGroup {
-    animation: AnimationSettings;
     axis: AxesSettings;
     dataTable: DataTableSettings;
     dev: DevSettings;
