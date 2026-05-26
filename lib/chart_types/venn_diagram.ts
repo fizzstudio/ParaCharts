@@ -32,6 +32,10 @@ export class VennDiagramInfo extends BaseChartInfo {
     super(type, paraState);
   }
 
+  get shouldDrawFocusRing() {
+    return false;
+  }
+
   private _regionOptionsForSeries(seriesKey: string): VennPartNavNodeOptions[] {
     const seriesKeys = this._paraState.model!.series.map(series => series.key);
     const seriesIndex = seriesKeys.indexOf(seriesKey);
