@@ -420,6 +420,85 @@ export class VennPlotView extends DataLayer {
     `;
   }
 
+  protected _renderThreeCircleArrows(stroke: string): TemplateResult {
+    if (this._circleCenters.length !== 3) {
+      return svg``;
+    }
+    const cursor = this.paraview.paraState.chartInfo.navMap?.cursor;
+    if (!cursor?.isNodeType('venn-part')) {
+      return svg``;
+    }
+
+    const seriesKeys = this.paraview.paraState.model!.seriesKeys;
+    const seriesToCircle = new Map(
+      seriesKeys.map((seriesKey, index) => [seriesKey, (['a', 'b', 'c'] as const)[index]!])
+    );
+    const currentCircle = seriesToCircle.get(cursor.options.seriesKey);
+    if (!currentCircle) {
+      return svg``;
+    }
+
+    let involvedKeys: ('a' | 'b' | 'c')[];
+    if (cursor.options.part === 'triple') {
+      involvedKeys = ['a', 'b', 'c'];
+    } else if (cursor.options.part === 'pair' && cursor.options.otherSeriesKey) {
+      const otherCircle = seriesToCircle.get(cursor.options.otherSeriesKey);
+      if (!otherCircle) {
+        return svg``;
+      }
+      involvedKeys = [currentCircle, otherCircle];
+    } else {
+      involvedKeys = [currentCircle];
+    }
+
+    const circleCenters = {
+      a: this._circleCenters[0]!,
+      b: this._circleCenters[1]!,
+      c: this._circleCenters[2]!,
+    };
+    const r = this._radius;
+    const arrowLength = 30;
+    const arrowGap = 4;
+    const markerId = `${this._threeCircleRegionPrefix()}-arrow-marker`;
+
+    return svg`
+      <defs>
+        <marker id=${markerId} markerUnits="userSpaceOnUse"
+                markerWidth="12" markerHeight="10"
+                refX="12" refY="5" orient="auto">
+          <polygon points="0 0, 12 5, 0 10" fill=${stroke} />
+        </marker>
+      </defs>
+      ${involvedKeys.map(key => {
+        const center = circleCenters[key];
+        const dx = center.x - this._cx;
+        const dy = center.y - this._cy;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const nx = dx / dist;
+        const ny = dy / dist;
+        // Rotate 30° clockwise from the outward direction (standard R(+π/6) in SVG).
+        // This places each arrow ~15px to the side of its leader line at the tip
+        // while staying in the clear outer zone away from the other circles.
+        const cos30 = Math.sqrt(3) / 2;
+        const sin30 = 0.5;
+        const arrowNx = nx * cos30 - ny * sin30;
+        const arrowNy = nx * sin30 + ny * cos30;
+        const tipX = center.x + arrowNx * (r + arrowGap);
+        const tipY = center.y + arrowNy * (r + arrowGap);
+        const tailX = center.x + arrowNx * (r + arrowGap + arrowLength);
+        const tailY = center.y + arrowNy * (r + arrowGap + arrowLength);
+        return svg`<line
+          x1=${tailX} y1=${tailY}
+          x2=${tipX} y2=${tipY}
+          stroke=${stroke}
+          stroke-width="3"
+          marker-end="url(#${markerId})"
+          pointer-events="none"
+        />`;
+      })}
+    `;
+  }
+
   protected _renderThreeCircleRegions(): TemplateResult {
     if (this._circleCenters.length !== 3) {
       return svg``;
@@ -648,6 +727,7 @@ export class VennPlotView extends DataLayer {
       ${super.content()}
       ${visitedRings}
       ${vennPartHighlight}
+      ${this._renderThreeCircleArrows(visitedColor)}
       ${this._seriesLeaders.map(l => l.render())}
       ${this._itemLabelItems.map(l => l.render())}
       ${this._seriesLabelItems.map(l => l.render())}
