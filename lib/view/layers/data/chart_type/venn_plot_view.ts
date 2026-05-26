@@ -431,9 +431,9 @@ export class VennPlotView extends DataLayer {
       name: ['A', 'B', 'C'][index]!,
     })) as [Circle, Circle, Circle];
 
-    const colors = this.paraview.paraState.colors;
     const regionOpacity = 0.9;
-    const regionFill = (index: number) => darkenHsl(colors.colorValueAt(index), 4);
+    const regionColors = ['#1a56b0', '#c0392b', '#1e8449', '#7d3c98', '#0e6655', '#b9770e', '#2e4057'];
+    const regionFill = (index: number) => regionColors[index] ?? '#555555';
     const prefix = this._threeCircleRegionPrefix();
     const clipAId = `${prefix}-clip-a`;
     const clipBId = `${prefix}-clip-b`;
@@ -1123,14 +1123,8 @@ export class VennPlotView extends DataLayer {
             p => !triplePoints.some(tp => tp.x === p.x && tp.y === p.y)
           );
 
-          const colors = this.paraview.paraState.colors;
-          const colorA   = colors.colorValueAt(0);
-          const colorB   = colors.colorValueAt(1);
-          const colorC   = colors.colorValueAt(2);
-          const colorAB  = colors.colorValueAt(3);
-          const colorAC  = colors.colorValueAt(4);
-          const colorBC  = colors.colorValueAt(5);
-          const colorABC = colors.colorValueAt(6);
+          const [colorA, colorB, colorC, colorAB, colorAC, colorBC, colorABC] =
+            ['#1a56b0', '#c0392b', '#1e8449', '#7d3c98', '#0e6655', '#b9770e', '#2e4057'];
 
           this._threeCircleRegionPaths = [
             { d: describeAOnlyPath(triplePoints, nonTriplePoints),            fill: colorA   },
