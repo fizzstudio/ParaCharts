@@ -132,8 +132,13 @@
     "@fizz/jimerator": "^0.17.1",
     "@fizz/logger": "^0.1.0",
     "@fizz/paramanifest": "^0.11.4",
+<<<<<<< HEAD
     "@fizz/paramodel": "^0.8.12",
     "@fizz/parasummary": "^0.15.6",
+=======
+    "@fizz/paramodel": "^0.8.16",
+    "@fizz/parasummary": "^0.16.1",
+>>>>>>> develop
     "@fizz/simple-statistics": "^7.10.0",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.5.6",
