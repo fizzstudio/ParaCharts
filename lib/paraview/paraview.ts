@@ -153,6 +153,7 @@ export class ParaView extends ParaComponent implements ViewContext {
       }
       .tick {
         stroke: var(--label-color);
+        stroke-linecap: round;
       }
       .chart-title {
         font-size: calc(var(--chart-title-font-size)*var(--chart-font-scale));
@@ -296,11 +297,6 @@ export class ParaView extends ParaComponent implements ViewContext {
         stroke: var(--visited-color);
         fill: var(--visited-color);
         stroke-width: var(--visited-stroke-width);
-      }
-      .datapoint.highlighted {
-/*        stroke: var(--highlighted-color);
-        fill: var(--highlighted-color);
-        stroke-width: var(--visited-stroke-width); */
       }
       .lowlighted {
         opacity: 0.20;
