@@ -328,6 +328,8 @@ export class Popup extends View {
         const lPad = this.leftPadding, rPad = this.rightPadding, uPad = this.upPadding, dPad = this.downPadding;
         const rightBorder = x + width + rPad, leftBorder = x - lPad, upBorder = y - height - uPad, downBorder = y + dPad;
         const topLeft = new Vec2(leftBorder, upBorder), bottomLeft = new Vec2(leftBorder, downBorder), bottomRight = new Vec2(rightBorder, downBorder), topRight = new Vec2(rightBorder, upBorder);
+        const horizMidpoint = x + width / 2;
+        const vertMidpoint = y + height / 2;
         const hShift = this._horizShift;
         let box;
         let points;
@@ -339,13 +341,13 @@ export class Popup extends View {
             if (this.arrowPosition == "bottom") {
                 points = [topLeft,
                     bottomLeft,
-                    new Vec2(Math.max(x + width / 2 - Math.min(width / 2, BOX_ARROW_WIDTH) + hShift, leftBorder), downBorder),
+                    new Vec2(Math.max(horizMidpoint - Math.min(width / 2, BOX_ARROW_WIDTH) + hShift, leftBorder), downBorder),
                     //This is manually correcting for what I'm pretty sure are floating-point errors
-                    new Vec2(Math.abs(x + width / 2 + hShift - (rightBorder)) < .5
+                    new Vec2(Math.abs(horizMidpoint + hShift - (rightBorder)) < .5
                         ? rightBorder :
-                        Math.abs(x + width / 2 + hShift - (leftBorder)) < .5 ? leftBorder
-                            : x + width / 2 + hShift, downBorder + BOX_ARROW_HEIGHT),
-                    new Vec2(Math.min(x + width / 2 + Math.min(width / 2, BOX_ARROW_WIDTH) + hShift, rightBorder), downBorder),
+                        Math.abs(horizMidpoint + hShift - (leftBorder)) < .5 ? leftBorder
+                            : horizMidpoint + hShift, downBorder + BOX_ARROW_HEIGHT),
+                    new Vec2(Math.min(horizMidpoint + Math.min(width / 2, BOX_ARROW_WIDTH) + hShift, rightBorder), downBorder),
                     bottomRight,
                     topRight,
                     topLeft];
@@ -356,21 +358,21 @@ export class Popup extends View {
                     bottomLeft,
                     bottomRight,
                     topRight,
-                    new Vec2(Math.min(x + width / 2 + Math.min(width / 4, 15) + hShift, rightBorder), upBorder),
+                    new Vec2(Math.min(horizMidpoint + Math.min(width / 4, 15) + hShift, rightBorder), upBorder),
                     //This is manually correcting for what I'm pretty sure are floating-point errors
-                    new Vec2(Math.abs(x + width / 2 + hShift - (rightBorder)) < .5
+                    new Vec2(Math.abs(horizMidpoint + hShift - (rightBorder)) < .5
                         ? rightBorder :
-                        Math.abs(x + width / 2 + hShift - (leftBorder)) < .5 ? leftBorder
-                            : x + width / 2 + hShift, upBorder - BOX_ARROW_HEIGHT),
-                    new Vec2(Math.max(x + width / 2 + - Math.min(width / 4, 15) + hShift, leftBorder), upBorder),
+                        Math.abs(horizMidpoint + hShift - (leftBorder)) < .5 ? leftBorder
+                            : horizMidpoint + hShift, upBorder - BOX_ARROW_HEIGHT),
+                    new Vec2(Math.max(horizMidpoint + - Math.min(width / 4, 15) + hShift, leftBorder), upBorder),
                     topLeft];
                 arrowPosition = "up";
             }
             else if (this.arrowPosition == "left") {
                 points = [topLeft,
-                    new Vec2(leftBorder, y - height / 2 - Math.min(height / 4, 15)),
-                    new Vec2(leftBorder - BOX_ARROW_HEIGHT, y - height / 2),
-                    new Vec2(leftBorder, y - height / 2 + Math.min(height / 4, 15)),
+                    new Vec2(leftBorder, vertMidpoint - Math.min(height / 4, 15)),
+                    new Vec2(leftBorder - BOX_ARROW_HEIGHT, vertMidpoint),
+                    new Vec2(leftBorder, vertMidpoint + Math.min(height / 4, 15)),
                     bottomLeft,
                     bottomRight,
                     topRight,
@@ -381,9 +383,9 @@ export class Popup extends View {
                 points = [topLeft,
                     bottomLeft,
                     bottomRight,
-                    new Vec2(rightBorder, y - height / 2 + Math.min(height / 4, 15)),
-                    new Vec2(rightBorder + BOX_ARROW_HEIGHT, y - height / 2),
-                    new Vec2(rightBorder, y - height / 2 - Math.min(height / 4, 15)),
+                    new Vec2(rightBorder, vertMidpoint + Math.min(height / 4, 15)),
+                    new Vec2(rightBorder + BOX_ARROW_HEIGHT, vertMidpoint),
+                    new Vec2(rightBorder, vertMidpoint - Math.min(height / 4, 15)),
                     topRight,
                     topLeft];
                 arrowPosition = "right";

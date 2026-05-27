@@ -70,7 +70,7 @@ export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
 /** Order for legend items
  * @public
  */
-export type LegendItemOrder = 'alphabetical' | 'series';
+export type LegendItemOrder = 'alphabetical' | 'reverseAlphabetical' | 'startingOrder' | 'endingOrder';
 
 /** Position for data value labels on bars
  * @public
@@ -199,6 +199,7 @@ export interface LegendConfig extends ConfigGroup {
   /** Font size for legend text */
   fontSize: string;
   boxStyle: LegendBoxstyleConfig;
+  useDirectLegends: boolean;
 }
 export interface LegendBoxstyleConfig extends ConfigGroup {
   /** Border color */

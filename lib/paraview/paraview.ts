@@ -1011,8 +1011,8 @@ export class ParaView extends ParaComponent implements ViewContext {
               <rect
                 x=${0}
                 y=${0}
-                width=${this.clipWidth * this._documentView.chartLayers.width}
-                height=${this._documentView.chartLayers.height}>
+                width=${this._documentView.chartLayers ? this.clipWidth * this._documentView.chartLayers.width : 0}
+                height=${this._documentView.chartLayers ? this._documentView.chartLayers.height : 0}>
               </rect>
             </clipPath>
           ` : ''

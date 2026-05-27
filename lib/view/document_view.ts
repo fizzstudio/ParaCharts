@@ -123,7 +123,9 @@ export class DocumentView extends Container(View) {
     if (this._paraState.config.chart.title.isDrawTitle && this._paraState.title) {
       this.createTitle();
     }
-    if (this._paraState.config.chart.subtitle.isDrawSubtitle) {
+    if (this._paraState.config.chart.subtitle.isDrawSubtitle
+      && this._paraState.chartInfo.conciseSummary
+    ) {
       this._createSubtitle();
     }
     this._positionTitles();
@@ -242,6 +244,11 @@ export class DocumentView extends Container(View) {
     if (this._vertAxis) {
       this._vertAxis.addGridRules(this._chartLayers.width);
     }
+    if (this._paraState.config.legend.useDirectLegends) {
+      if (this._legends.east) {
+        this._legends.east.makeDirect();
+      }
+    }
   }
 
   protected _positionLegends() {
@@ -351,12 +358,14 @@ export class DocumentView extends Container(View) {
   }
 
   protected get _shouldAddLegend(): boolean {
+    return this._paraState.config.legend.isAlwaysDrawLegend;
+    /*
     return this._paraState.config.legend.isDrawLegend &&
       (this._paraState.config.legend.isAlwaysDrawLegend
         // XXX direct label strip won't exist when this is called
         || (this._shouldAddDirectLabelStrip && this._paraState.config.chart.hasLegendWithDirectLabels)
-        || (!this._shouldAddDirectLabelStrip && this._paraState.model!.multi)
-        || (this._paraState.type == 'scatter'));
+        || (!this._shouldAddDirectLabelStrip && this._paraState.model!.multi));
+        */
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {

@@ -55,7 +55,7 @@ export class Legend extends Container(View) {
 
   constructor(paraview: ViewContext,
     protected _items: LegendItem[],
-    protected _options: Partial<LegendOptions> = {orientation: 'vert'}
+    protected _options: Partial<LegendOptions> = { orientation: 'vert' }
   ) {
     super(paraview);
   }
@@ -74,7 +74,7 @@ export class Legend extends Container(View) {
     const hasLegendBox = this.config.boxStyle.outline !== 'none' || this.config.boxStyle.fill !== 'none';
 
     this._items.forEach(item => {
-      this._markers.push(new RectShape(this.paraview, {width: 12, height: 6}));
+      this._markers.push(new RectShape(this.paraview, { width: 12, height: 6 }));
       views.push(this._markers.at(-1)!);
       views.push(DataSymbol.fromType(
         this.paraview,
@@ -137,7 +137,7 @@ export class Legend extends Container(View) {
     });
     const symLabelGap = this.paraview.paraState.config.legend.symbolLabelGap;
     const pairGap = this.paraview.paraState.config.legend.pairGap;
-    let labelsPerRow = views.length/3;
+    let labelsPerRow = views.length / 3;
     if (this._options.orientation === 'vert') {
       this._grid = new SimpleGridLayout(this.paraview, {
         numCols: 3,
@@ -154,7 +154,7 @@ export class Legend extends Container(View) {
           new Array(labelsPerRow).fill(symLabelGap),
           new Array(labelsPerRow - 1).fill(pairGap));
         this._grid = new SimpleGridLayout(this.paraview, {
-          numCols: labelsPerRow*3,
+          numCols: labelsPerRow * 3,
           colGaps: colGaps,
           rowGaps: new Array(labelsPerRow + 1).fill(this._options.rowGap)
         }, 'legend-grid');
@@ -162,8 +162,8 @@ export class Legend extends Container(View) {
         views.forEach(v => this._grid.append(v));
         this._grid.updateSize();
         if (this._options.wrapWidth === undefined ||
-            this._grid.paddedWidth <= this._options.wrapWidth ||
-            labelsPerRow === 1) {
+          this._grid.paddedWidth <= this._options.wrapWidth ||
+          labelsPerRow === 1) {
           break;
         }
         labelsPerRow--;
@@ -196,11 +196,42 @@ export class Legend extends Container(View) {
     return [this._grid?.paddedWidth ?? 0, this._grid?.paddedHeight ?? 0];
   }
 
+  makeDirect() {
+    const bundledItems = [];
+    const alreadyMoved: number[] = [];
+    for (let i = 0; i < this._items.length; i++) {
+      const lastDatapointView = this.paraview.documentView?.chartLayers.dataLayer.chartLandingView.getSeriesView(this._items[i].seriesKey)!.children.at(-1)!;
+      const newY = lastDatapointView.centerY;
+      this._grid.children[3 * i].centerY = newY;
+      this._grid.children[3 * i + 1].centerY = newY;
+      this._grid.children[3 * i + 2].centerY = newY;
+      bundledItems.push([this._grid.children[3 * i], this._grid.children[3 * i + 1], this._grid.children[3 * i + 2]])
+    }
+    const sortedItems = bundledItems.toSorted((a, b) => a[2].y - b[2].y);
+    for (let i = 0; i < sortedItems.length; i++) {
+      for (let j = i + 1; j < sortedItems.length; j++) {
+        if (sortedItems[i][2].intersects(sortedItems[j][2])) {
+          const child1 = sortedItems[i][2];
+          const child2 = sortedItems[j][2];
+          const midpoint = (child1.y + child2.y) / 2;
+          if (!alreadyMoved.includes(i)) {
+            sortedItems[i].forEach(c => c.y -= (child1.bottom - midpoint));
+            sortedItems[j].forEach(c => c.y += (midpoint - child2.top));
+          }
+          else {
+            sortedItems[j].forEach(c => c.y += (midpoint - child2.top) + (child1.bottom - midpoint));
+          }
+          alreadyMoved.push(i, j);
+        }
+      }
+    }
+  }
+
   renderHighlight(type: 'fg' | 'bg') {
     return svg`
       <rect
-        x=${this.x + this.padding.left - HIGHLIGHT_PADDING/2}
-        y=${this.y + this.padding.top - HIGHLIGHT_PADDING/2}
+        x=${this.x + this.padding.left - HIGHLIGHT_PADDING / 2}
+        y=${this.y + this.padding.top - HIGHLIGHT_PADDING / 2}
         width=${this.width + HIGHLIGHT_PADDING}
         height=${this.height + HIGHLIGHT_PADDING}
         class="view-highlight-${type}"

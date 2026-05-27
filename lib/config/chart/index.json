@@ -187,6 +187,5 @@
             "type": "number",
             "default": 10
         }
-
     }
 }

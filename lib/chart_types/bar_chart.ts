@@ -329,23 +329,18 @@ export class BarChartInfo extends PlaneChartInfo {
 
   legend() {
     const model = this._paraState.model!;
-    if (this._paraState.config.legend.itemOrder === 'series') {
-      // return this._chartLandingView.children.map(view => ({
-      //   label: (view as SeriesView).seriesKey,
-      //   color: (view as SeriesView).color  // series color
-      // }));
-      return model.series.map(series => ({
-        label: series.getLabel(),
-        seriesKey: series.key,
-        color: this._paraState.seriesProperties!.properties(series.key).color
-      }));
-    } else {
-      return model.seriesKeys.toSorted().map(key => ({
-        label: model.atKey(key)!.getLabel(),
-        seriesKey: key,
-        color: this._paraState.seriesProperties!.properties(key).color
-      }));
+    const seriesKeys = enumerate([...model.seriesKeys]);
+    if (this._paraState.config.legend.itemOrder === 'alphabetical') {
+      seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
     }
+    else if (this._paraState.config.legend.itemOrder === 'reverseAlphabetical') {
+      seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
+    }
+    return seriesKeys.map(key => ({
+      label: model.atKey(key[0])!.getLabel(),
+      seriesKey: key[0],
+      color: this._paraState.seriesProperties!.properties(key[0]).color,
+    }));
   }
 
   // TODO: localize this text output

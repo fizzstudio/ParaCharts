@@ -103,15 +103,26 @@ export class LineChartInfo extends PointChartInfo {
     const seriesKeys = enumerate([...model.seriesKeys]);
     const types = new DataSymbols().types;
     if (this._paraState.config.legend.itemOrder === 'alphabetical') {
-      seriesKeys.sort();
+      seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
     }
-    else {
+    else if (this._paraState.config.legend.itemOrder === 'reverseAlphabetical') {
+      seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
+    }
+    else if (this._paraState.config.legend.itemOrder === 'startingOrder') {
       const model = this._paraState.model as PlaneModel;
       const startChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(0) as PlaneDatapoint).indepBox)!;
       seriesKeys.sort((a, b) =>
         startChord.find(point => point.seriesKey === b[0])!.facetValueAsNumber("y")!
         - startChord.find(point => point.seriesKey === a[0])!.facetValueAsNumber("y")!
-      )
+      );
+    }
+    else if (this._paraState.config.legend.itemOrder === 'endingOrder') {
+      const model = this._paraState.model as PlaneModel;
+      const endChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(-1) as PlaneDatapoint).indepBox)!;
+      seriesKeys.sort((a, b) =>
+        endChord.find(point => point.seriesKey === b[0])!.facetValueAsNumber("y")!
+        - endChord.find(point => point.seriesKey === a[0])!.facetValueAsNumber("y")!
+      );
     }
     return seriesKeys.map(key => ({
       label: model.atKey(key[0])!.getLabel(),
