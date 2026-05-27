@@ -329,7 +329,7 @@ export class Popup extends View {
         const rightBorder = x + width + rPad, leftBorder = x - lPad, upBorder = y - height - uPad, downBorder = y + dPad;
         const topLeft = new Vec2(leftBorder, upBorder), bottomLeft = new Vec2(leftBorder, downBorder), bottomRight = new Vec2(rightBorder, downBorder), topRight = new Vec2(rightBorder, upBorder);
         const horizMidpoint = x + width / 2;
-        const vertMidpoint = y + height / 2;
+        const vertMidpoint = y - height / 2;
         const hShift = this._horizShift;
         let box;
         let points;
