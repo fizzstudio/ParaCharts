@@ -32,7 +32,7 @@ import { GlobalState } from '../state';
 import { CustomPropertyLoader } from '../state/custom_property_loader';
 import { styles } from '../view/styles';
 import '../components/aria_live';
-import { StyleManager } from './style_manager';
+import { StyleManager, StyleManagerDeclarationValue } from './style_manager';
 import { AvailableCommands, Commander } from './commander';
 import { ParaAPI } from '../paraapi/paraapi';
 import {
@@ -51,6 +51,9 @@ import { TourBus } from './tour_bus';
 
 import brailleFont from '../assets/Braille36US.woff2';
 import hyperFont from '../assets/Atkinson-Hyperlegible-Regular-102a.woff2';
+
+// @ts-ignore
+import cpanelIconAlt from '../assets/info-icon-alt.svg';
 
 
 // NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
@@ -258,33 +261,27 @@ export class ParaChart extends ParaComponent {
 
   connectedCallback() {
     super.connectedCallback();
+    if (this._styleManager) return;
     this.isControlPanelOpen = this._paraState.config.controlPanel.isControlPanelDefaultOpen;
     this._injectFontFace('braille36', brailleFont);
     this._injectFontFace('Atkinson Hyperlegible', hyperFont);
-    this._styleManager = new StyleManager(this.shadowRoot!.adoptedStyleSheets[0]);
-    this._styleManager.set(':host', {
-      '--axis-line-color': 'hsl(0, 0%, 0%)',
-      '--label-color': 'hsl(0, 0%, 0%)',
-      '--tick-grid-color': 'hsl(270, 50%, 50%)',
+    this._styleManager = new StyleManager();
+    this.shadowRoot!.adoptedStyleSheets = [
+      ...this.shadowRoot!.adoptedStyleSheets,
+      this._styleManager.stylesheet
+    ];
+    const hostDeclarations: Record<string, StyleManagerDeclarationValue> = {
       '--background-color': 'white',
-      '--theme-color': 'var(--fizz-theme-color, purple)',
-      '--theme-color-light': 'var(--fizz-theme-color-light, hsl(275.4, 100%, 88%))',
-      '--theme-contrast-color': 'white',
       '--fizz-theme-color': 'var(--paracharts-theme-color, navy)',
       '--fizz-theme-color-light': 'var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%))',
       '--visited-color': () => this._paraState.colors.colorValue('visit'),
-      '--highlighted-color': () => this._paraState.colors.colorValue('highlight'),
       '--visited-stroke-width': () =>
         this._paraViewRef.value?.documentView?.chartLayers.dataLayer.visitedStrokeWidth ?? 0,
       '--selected-color': 'var(--label-color)',
-      '--datapoint-centroid': '50% 50%',
-      '--focus-animation': 'all 0.5s ease-in-out',
       '--chart-cursor': 'pointer',
       '--data-cursor': 'cell',
-      '--focus-shadow-color': 'gray',
-      '--focus-shadow': 'drop-shadow(0px 0px 4px var(--focus-shadow-color))',
       '--caption-border': () => this._paraState.config.controlPanel.caption.hasBorder
-        ? 'solid 2px var(--theme-color)'
+        ? 'solid 2px var(--fizz-theme-color)'
         : 'none',
       '--caption-grid-template-columns': () =>
         this._paraState.config.controlPanel.isExplorationBarVisible
@@ -310,7 +307,12 @@ export class ParaChart extends ParaComponent {
       'display': 'block',
       'font-family': '"Trebuchet MS", Helvetica, sans-serif',
       'font-size': 'var(--chart-view-font-size, 1rem)'
-    });
+    };
+    if (this.tagName === 'PARA-CHART-AI') {
+      hostDeclarations['--control-panel-icon'] =  `url(${cpanelIconAlt})`;
+    }
+    this._styleManager.set(':host', hostDeclarations);
+
     if (this._paraState.config.chart.isShowVisitedDatapointsOnly) {
       this._styleManager.set('.datapoint:not(.visited)', {
         'display': 'none'
@@ -346,11 +348,7 @@ export class ParaChart extends ParaComponent {
   }
 
   static styles = [
-    styles,
     css`
-      :host {
-        --summary-marker-size: 1.1rem;
-      }
       figure {
         display: inline flex;
         flex-direction: column;
