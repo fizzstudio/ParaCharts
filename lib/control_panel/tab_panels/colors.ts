@@ -29,10 +29,9 @@ export class ColorsPanel extends ControlPanelTabPanel {
 
   connectedCallback() {
     super.connectedCallback();
-    const colorPalettes = this._paraState.colors.palettes
-      .filter(palette => !palette.cvd)
-      .map(palette => palette.key);
-    colorPalettes.push('custom');
+    const nonCvdPalettes = this._paraState.colors.palettes.filter(palette => !palette.cvd);
+    const colorPaletteLabels = [...nonCvdPalettes.map(p => p.title), 'Custom'];
+    const colorPaletteKeys = [...nonCvdPalettes.map(p => p.key), 'custom'];
 
     this._paraState.settingControls.insert('color.isDarkModeEnabled');
     this._paraState.settingControls.insert('color.contrastLevel');
@@ -65,7 +64,7 @@ export class ColorsPanel extends ControlPanelTabPanel {
         }
       }
     });
-    this._paraState.settingControls.insert('color.colorPalette', {options: colorPalettes});
+    this._paraState.settingControls.insert('color.colorPalette', {options: colorPaletteLabels, values: colorPaletteKeys});
     this._state = new StateController(this, this._paraState.settingControls);
   }
 
