@@ -246,7 +246,16 @@ export class DocumentView extends Container(View) {
     }
     if (this._paraState.config.legend.useDirectLegends) {
       if (this._legends.east) {
-        this._legends.east.makeDirect();
+        this._legends.east.makeDirect("east");
+      }
+      if (this._legends.west) {
+        this._legends.west.makeDirect("west");
+      }
+      if (this._legends.north) {
+        this._legends.north.makeDirect("north");
+      }
+      if (this._legends.south) {
+        this._legends.south.makeDirect("south");
       }
     }
   }

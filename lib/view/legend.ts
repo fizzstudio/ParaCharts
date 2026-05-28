@@ -9,7 +9,7 @@ import { type ViewContext } from './view_context';
 import { TemplateResult, svg } from 'lit';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { HIGHLIGHT_PADDING } from '../common';
-import { LegendConfig } from '../config/config_types';
+import { CardinalDirection, LegendConfig } from '../config/config_types';
 import { ScatterChartInfo } from '../chart_types';
 
 export type SeriesAttrs = {
@@ -196,32 +196,89 @@ export class Legend extends Container(View) {
     return [this._grid?.paddedWidth ?? 0, this._grid?.paddedHeight ?? 0];
   }
 
-  makeDirect() {
+  makeDirect(dir: CardinalDirection) {
     const bundledItems = [];
     const alreadyMoved: number[] = [];
-    for (let i = 0; i < this._items.length; i++) {
-      const lastDatapointView = this.paraview.documentView?.chartLayers.dataLayer.chartLandingView.getSeriesView(this._items[i].seriesKey)!.children.at(-1)!;
-      const newY = lastDatapointView.centerY;
-      this._grid.children[3 * i].centerY = newY;
-      this._grid.children[3 * i + 1].centerY = newY;
-      this._grid.children[3 * i + 2].centerY = newY;
-      bundledItems.push([this._grid.children[3 * i], this._grid.children[3 * i + 1], this._grid.children[3 * i + 2]])
-    }
-    const sortedItems = bundledItems.toSorted((a, b) => a[2].y - b[2].y);
-    for (let i = 0; i < sortedItems.length; i++) {
-      for (let j = i + 1; j < sortedItems.length; j++) {
-        if (sortedItems[i][2].intersects(sortedItems[j][2])) {
+    const dataLayer = this.paraview.documentView?.chartLayers.dataLayer!;
+    const clv = dataLayer.chartLandingView!;
+    //NB Sam: I don't know where this comes from but it aligns the horizontal direct legends correctly by eye
+    const WEIRD_MAGIC_NUMBER = 70;
+    if (dir == "east" || dir == "west") {
+      if (['bar'].includes(this.paraview.paraState.type)) {
+        return;
+      }
+      for (let i = 0; i < this._items.length; i++) {
+        let newY = 0;
+        if (dir == "east") {
+          const lastDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(-1)!;
+          newY = lastDatapointView.centerY;
+        }
+        else if (dir == "west") {
+          const firstDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(0)!;
+          newY = firstDatapointView.centerY;
+        }
+        this._grid.children[3 * i].centerY = newY;
+        this._grid.children[3 * i + 1].centerY = newY;
+        this._grid.children[3 * i + 2].centerY = newY;
+        bundledItems.push([this._grid.children[3 * i], this._grid.children[3 * i + 1], this._grid.children[3 * i + 2]])
+      }
+      const sortedItems = bundledItems.toSorted((a, b) => a[2].y - b[2].y);
+      for (let i = 0; i < sortedItems.length; i++) {
+        for (let j = i + 1; j < sortedItems.length; j++) {
           const child1 = sortedItems[i][2];
           const child2 = sortedItems[j][2];
-          const midpoint = (child1.y + child2.y) / 2;
-          if (!alreadyMoved.includes(i)) {
-            sortedItems[i].forEach(c => c.y -= (child1.bottom - midpoint));
-            sortedItems[j].forEach(c => c.y += (midpoint - child2.top));
+          if (child1.intersects(child2)) {
+            const midpoint = (child1.y + child2.y) / 2;
+            if (!alreadyMoved.includes(i)) {
+              sortedItems[i].forEach(c => c.y -= (child1.bottom - midpoint));
+              sortedItems[j].forEach(c => c.y += (midpoint - child2.top));
+            }
+            else {
+              sortedItems[j].forEach(c => c.y += (midpoint - child2.top) + (child1.bottom - midpoint));
+            }
+            alreadyMoved.push(i, j);
           }
-          else {
-            sortedItems[j].forEach(c => c.y += (midpoint - child2.top) + (child1.bottom - midpoint));
+        }
+      }
+    }
+    else if (dir == "north" || dir == "south") {
+      if (['column', 'line', 'scatter'].includes(this.paraview.paraState.type)) {
+        return;
+      }
+      for (let i = 0; i < this._items.length; i++) {
+        let newX = 0;
+        if (dir == "south") {
+          const lastDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(-1)!;
+          newX = dataLayer.height - lastDatapointView.centerY - this.x + WEIRD_MAGIC_NUMBER;
+        }
+        else if (dir == "north") {
+          const firstDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(0)!;
+          newX = dataLayer.height - firstDatapointView.centerY - this.x + WEIRD_MAGIC_NUMBER;
+        }
+        const leftDiff = this._grid.children[3 * i + 1].centerX - this._grid.children[3 * i].centerX;
+        const rightDiff = this._grid.children[3 * i + 2].centerX - this._grid.children[3 * i + 1].centerX;
+        this._grid.children[3 * i].centerX = newX - leftDiff;
+        this._grid.children[3 * i + 1].centerX = newX;
+        this._grid.children[3 * i + 2].centerX = newX + rightDiff;
+        bundledItems.push([this._grid.children[3 * i], this._grid.children[3 * i + 1], this._grid.children[3 * i + 2]])
+      }
+      const sortedItems = bundledItems.toSorted((a, b) => a[2].y - b[2].y);
+      for (let i = 0; i < sortedItems.length; i++) {
+        for (let j = i + 1; j < sortedItems.length; j++) {
+          const child1 = sortedItems[i][2];
+          const child2 = sortedItems[j][2];
+          if (sortedItems[i][2].intersects(sortedItems[j][0])
+            || sortedItems[i][2].intersects(sortedItems[j][1])
+            || sortedItems[i][2].intersects(sortedItems[j][2])) {
+            const midpoint = (child1.y + child2.y) / 2;
+            if (!alreadyMoved.includes(i)) {
+              sortedItems[j].forEach(c => c.y += child1.height);
+            }
+            else {
+              sortedItems[j].forEach(c => c.y += (midpoint - child2.top) + (child1.bottom - midpoint));
+            }
+            alreadyMoved.push(i, j);
           }
-          alreadyMoved.push(i, j);
         }
       }
     }
