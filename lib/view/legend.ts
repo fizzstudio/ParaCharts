@@ -255,11 +255,11 @@ export class Legend extends Container(View) {
           const firstDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(0)!;
           newX = dataLayer.height - firstDatapointView.centerY - this.x + WEIRD_MAGIC_NUMBER;
         }
-        const leftDiff = this._grid.children[3 * i + 1].centerX - this._grid.children[3 * i].centerX;
-        const rightDiff = this._grid.children[3 * i + 2].centerX - this._grid.children[3 * i + 1].centerX;
+        const leftDiff = this._grid.children[3 * i + 2].centerX - this._grid.children[3 * i].centerX;
+        const middleDiff = this._grid.children[3 * i + 2].centerX - this._grid.children[3 * i + 1].centerX;
         this._grid.children[3 * i].centerX = newX - leftDiff;
-        this._grid.children[3 * i + 1].centerX = newX;
-        this._grid.children[3 * i + 2].centerX = newX + rightDiff;
+        this._grid.children[3 * i + 1].centerX = newX - middleDiff;
+        this._grid.children[3 * i + 2].centerX = newX;
         bundledItems.push([this._grid.children[3 * i], this._grid.children[3 * i + 1], this._grid.children[3 * i + 2]])
       }
       const sortedItems = bundledItems.toSorted((a, b) => a[2].y - b[2].y);
