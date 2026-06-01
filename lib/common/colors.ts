@@ -271,10 +271,6 @@ export class Colors {
             name: 'cyan'
           },
           {
-            value: 'hsl(234, 20.5%, 47.8%)',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -305,10 +301,6 @@ export class Colors {
             name: 'forest green'
           },
           {
-            value: 'cyan',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -337,10 +329,6 @@ export class Colors {
           {
             value: 'hsl(41, 100%, 50%)',
             name: 'orange'
-          },
-          {
-            value: 'cyan',
-            name: 'highlight'
           },
           {
             value: 'hsl(0, 100%, 50%)',
@@ -413,10 +401,6 @@ export class Colors {
             name: 'black'
           },
           {
-            value: 'cyan',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -440,10 +424,6 @@ export class Colors {
             value: 'hsl(227, 26%, 52%)',
             name: 'neutral',
             contrastValue: `hsl(0, 0%, 100%)`
-          },
-          {
-            value: 'cyan',
-            name: 'highlight'
           },
           {
             value: 'hsl(0, 100%, 50%)',
@@ -505,10 +485,6 @@ export class Colors {
             value: 'hsl(44, 11%, 81%)',
             name: 'khaki',
             contrastValue: 'hsl(0, 0%, 0%)'
-          },
-          {
-            value: 'cyan',
-            name: 'highlight'
           },
           {
             value: 'hsl(0, 100%, 50%)',
@@ -573,10 +549,6 @@ export class Colors {
             contrastValue: 'hsl(0, 0%, 100%)'
           },
           {
-            value: 'cyan',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -637,10 +609,6 @@ export class Colors {
             value: 'hsl(41, 24%, 56%)',
             name: 'khaki',
             contrastValue: 'hsl(0, 0%, 100%)'
-          },
-          {
-            value: 'cyan',
-            name: 'highlight'
           },
           {
             value: 'hsl(0, 100%, 50%)',
@@ -705,10 +673,6 @@ export class Colors {
             contrastValue: 'hsl(0, 0%, 0%)'
           },
           {
-            value: 'cyan',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -771,10 +735,6 @@ export class Colors {
             contrastValue: 'hsl(0, 0%, 0%)'
           },
           {
-            value: 'cyan',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -804,7 +764,6 @@ export class Colors {
           { value: 'hsl(51, 100%, 50%)', name: 'lemon yellow' },
           { value: 'hsl(328, 100%, 54%)', name: 'fuschia' },
           { value: 'hsl(177, 70%, 41%)', name: 'cyan' },
-          { value: 'cyan', name: 'highlight' },
           { value: 'hsl(0, 100%, 50%)', name: 'visit' }
         ],
         // Pattern colors are hardcoded as SVG presentation attributes (stroke="hsl(...)",
@@ -1021,10 +980,6 @@ export class Colors {
             name: 'cyan'
           },
           {
-            value: 'hsl(234, 20.5%, 47.8%)',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -1088,10 +1043,6 @@ export class Colors {
         {
           value: this._paraState.config.color.custom8 || this.palettes[0].colors[7].value,
           name: 'custom-8'
-        },
-        {
-          value: 'cyan',
-          name: 'highlight'
         },
         {
           value: 'hsl(0, 100%, 50%)',
@@ -1179,9 +1130,6 @@ export class Colors {
     if (index === -1) {
       // visit
       return colors.at(-1)!.value;
-    } else if (index === -2) {
-      // highlight
-      return colors.at(-2)!.value;
     }
     // Never use 'visit' for any series/datapoint color
     return colors[index % (colors.length - 1)].value;
