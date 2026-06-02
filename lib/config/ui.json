@@ -85,8 +85,35 @@
             "description": "Enable low vision accessibility enhancements",
             "type": "boolean",
             "default": false,
-            "control": "button",
-            "advanced": false
+            "control": "checkbox",
+            "advanced": false,
+            "panel": "color",
+            "parentView": "controlPanel.tabs.color.lowVision",
+            "keywords": ["color", "accessibility"]
+        },
+        "lowVisionFontScale": {
+            "description": "Font scale multiplier to apply when low-vision mode is enabled",
+            "type": "number",
+            "default": 2,
+            "advanced": true
+        },
+        "lowVisionIsVertGridlines": {
+            "description": "Enable vertical gridlines when low-vision mode is enabled",
+            "type": "boolean",
+            "default": true,
+            "advanced": true
+        },
+        "lowVisionDisableAnimations": {
+            "description": "Disable animations when low-vision mode is enabled",
+            "type": "boolean",
+            "default": true,
+            "advanced": true
+        },
+        "lowVisionIsFullscreen": {
+            "description": "Enable fullscreen when low-vision mode is enabled",
+            "type": "boolean",
+            "default": true,
+            "advanced": true
         },
         "isFocusRingEnabled": {
             "label": "Show focus ring",

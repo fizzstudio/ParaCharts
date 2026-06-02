@@ -121,6 +121,20 @@ export type AnimationType = 'yAxis' | 'xAxis' | 'none';
  * @public
  */
 export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
+/**
+ * Identifies the source that set a color preference value.
+ * Determines whether an incoming change (e.g. from a mode or system event)
+ * is allowed to override the current value.
+ * @public
+ */
+export type ColorPrefSource =
+  | 'default'      // ParaCharts fallback
+  | 'chartDefault' // author/manifest default
+  | 'modeDefault'  // set by an active mode (e.g. low-vision mode)
+  | 'profile'      // saved in manifest extensions
+  | 'system'       // derived from current media-query state
+  | 'user';        // explicit user choice — wins until explicitly reset
+
 
 """, file=typesf)
         write_types_group([], tree, tree, typesf)

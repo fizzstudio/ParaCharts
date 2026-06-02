@@ -224,7 +224,7 @@ export class HeatmapTile extends RectShape {
   render() {
     this._styleInfo.stroke = this.paraview.paraState.visitedDatapoints.values().some(item =>
       item === (this.parent as HeatmapTileView).datapointId)
-        ? 'hsl(0, 100.00%, 50.00%)'
+        ? 'var(--visited-color, hsl(0, 100%, 50%))'
         : this.options.stroke ?? this._options.stroke;
     return svg`
         <rect
