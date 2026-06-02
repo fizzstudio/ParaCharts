@@ -121,6 +121,7 @@ export interface Config extends ConfigGroup {
   type: TypeConfig;
   grid: GridConfig;
   axis: AxisConfig;
+  popup: PopupConfig;
 }
 export interface ColorConfig extends ConfigGroup {
   /** Color vision deficiency simulation mode */
@@ -731,4 +732,32 @@ export interface AxisHorizTitleConfig extends ConfigGroup {
   fontSize: string;
   /** Text alignment relative to axis */
   align: 'start' | 'middle' | 'end';
+}
+export interface PopupConfig extends ConfigGroup {
+  /** Background opacity (0-1) */
+  opacity: number;
+  /** Left padding inside popup */
+  leftPadding: number;
+  /** Right padding inside popup */
+  rightPadding: number;
+  /** Top padding inside popup */
+  upPadding: number;
+  /** Bottom padding inside popup */
+  downPadding: number;
+  /** Margin around popup */
+  margin: number;
+  /** Maximum width before text wraps */
+  maxWidth: number;
+  /** Visual style of popup */
+  shape: 'box' | 'boxWithArrow';
+  /** When popup appears */
+  activation: 'onHover' | 'onFocus' | 'onSelect';
+  /** Corner radius for rounded popups */
+  borderRadius: number;
+  /** Background color scheme */
+  backgroundColor: 'dark' | 'light';
+  /** Show crosshair */
+  isShowCrosshair: boolean;
+  /** Make crosshair follow pointer */
+  isCrosshairFollowPointer: boolean;
 }

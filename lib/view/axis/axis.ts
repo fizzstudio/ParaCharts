@@ -237,7 +237,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
       },
       pointerMove: (e) => {
         this.shouldAddHoverPopup() ?
-          this.addPopup(undefined, this.paraview.paraState.pointerCoords.x, this.paraview.paraState.pointerCoords.y + this.paraview.paraState.settings.popup.margin)
+          this.addPopup(undefined, this.paraview.paraState.pointerCoords.x, this.paraview.paraState.pointerCoords.y + this.paraview.paraState.config.popup.margin)
           : undefined;
       },
       pointerLeave: (e) => {

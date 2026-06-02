@@ -145,7 +145,7 @@ export abstract class TickLabelTier extends Container(View) {
               this._options.content.intervals[i].end);
           }
           if (this.paraview.paraState.config.chart.isShowPopups
-            && this.paraview.paraState.settings.popup.activation === "onHover"
+            && this.paraview.paraState.config.popup.activation === "onHover"
             && !this.paraview.paraState.config.ui.isTourGuideEnabled) {
               this.addPopup(labelText[0] == "Q" ? tiers[i] : labelText, i);
           }
@@ -158,7 +158,7 @@ export abstract class TickLabelTier extends Container(View) {
               this._options.content.intervals[i].end);
           }
           if (this.paraview.paraState.config.chart.isShowPopups
-            && this.paraview.paraState.settings.popup.activation === "onHover"
+            && this.paraview.paraState.config.popup.activation === "onHover"
             && !this.paraview.paraState.config.ui.isTourGuideEnabled) {
               this.paraview.paraState.removePopup(`${this.id}-${i}`);
           }
@@ -453,7 +453,7 @@ export class VertTickLabelTier extends TickLabelTier {
       {
         text: text ?? datapointText,
         x: this._tickLabelX(index ?? 0) + 15,
-        y: this._tickLabelY(index ?? 0) + this.paraview.paraState.settings.popup.margin - this.children[index ?? 0].height ,
+        y: this._tickLabelY(index ?? 0) + this.paraview.paraState.config.popup.margin - this.children[index ?? 0].height ,
         id: this.id,
         type: "vertTick",
         fill: "hsl(0, 0%, 0%)",

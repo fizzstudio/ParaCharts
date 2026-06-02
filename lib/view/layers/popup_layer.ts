@@ -51,7 +51,7 @@ export class PopupLayer extends PlotLayer {
     addPopups() {
         this.addGroup('datapoint-popups', true);
         this.group('datapoint-popups')!.clearChildren();
-        if (this.paraview.paraState.config.chart.isShowPopups && this.paraview.paraState.settings.popup.activation === "onFocus") {
+        if (this.paraview.paraState.config.chart.isShowPopups && this.paraview.paraState.config.popup.activation === "onFocus") {
             this.paraview.paraState.clearPopups();
             this.paraview.paraState.userLineBreaks.splice(0, this.paraview.paraState.userLineBreaks.length)
             const cursor = this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.navMap!.cursor
@@ -72,7 +72,7 @@ export class PopupLayer extends PlotLayer {
                 for (let dp of this.paraview.paraState.visitedDatapoints) {
                     const { seriesKey, index } = datapointIdToCursor(dp);
                     const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
-                    if (datapointViews[0].chart instanceof PlanePlotView && this.paraview.paraState.settings.popup.isShowCrosshair) {
+                    if (datapointViews[0].chart instanceof PlanePlotView && this.paraview.paraState.config.popup.isShowCrosshair) {
                         datapointViews[0].chart.makeCrosshairsLocked([datapointView], true, false)
                     }
                     else {
@@ -85,7 +85,7 @@ export class PopupLayer extends PlotLayer {
                 this.paraview.paraState.focusPopups.push(popup);
             }
         }
-        else if (this.paraview.paraState.config.chart.isShowPopups && this.paraview.paraState.settings.popup.activation === "onSelect") {
+        else if (this.paraview.paraState.config.chart.isShowPopups && this.paraview.paraState.config.popup.activation === "onSelect") {
             this.paraview.paraState.selectPopups.splice(0, this.paraview.paraState.selectPopups.length)
             for (let dp of this.paraview.paraState.selectedDatapoints) {
                 const { seriesKey, index } = datapointIdToCursor(dp);
@@ -126,7 +126,7 @@ export class PopupLayer extends PlotLayer {
 
         if (datapointViews[0].chart instanceof PlanePlotView) {
             const planeChart = datapointViews[0].chart as PlanePlotView;
-            if (this.paraview.paraState.settings.popup.isShowCrosshair) {
+            if (this.paraview.paraState.config.popup.isShowCrosshair) {
                 planeChart.makeCrosshairsLocked([datapointViews[0]], true, true)
                 this.paraview.documentView?.chartLayers.backgroundAnnotationLayer.render()!;
                 return [];

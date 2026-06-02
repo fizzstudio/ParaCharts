@@ -70,21 +70,6 @@ export const defaults: Settings = {
       height: 250
     }
   },
-  popup :{
-    opacity: 1,
-    leftPadding: 10,
-    rightPadding: 10,
-    upPadding: 10,
-    downPadding: 10,
-    margin: 40,
-    maxWidth: 175,
-    shape: "boxWithArrow",
-    activation: "onHover",
-    borderRadius: 5,
-    backgroundColor: "dark",
-    isShowCrosshair: true,
-    isCrosshairFollowPointer: false,
-  },
   type: {
     histogram: {
       pointLabelFormat: 'raw',
