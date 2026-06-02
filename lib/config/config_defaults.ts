@@ -69,7 +69,8 @@ export const defaultConfig: Config = {
       pairGap: 10,
       position: "east",
       margin: 20,
-      itemOrder: "series",
+      itemOrder: "startingOrder",
+      useDirectLegends: false,
       fontSize: "10pt",
     },
     sonification: {

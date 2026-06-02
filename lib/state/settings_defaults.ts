@@ -25,11 +25,14 @@ export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}
     'axis.vert.labelOrder': 'northToSouth',
     'axis.horiz.ticks.isDrawTicks': false,
     'grid.isDrawHorizLines': false,
+    'legend.position': 'south',
+    'legend.isAlwaysDrawLegend' : true
   },
   column: {
     'axis.horiz.ticks.isDrawTicks': true,
     'axis.vert.line.isDrawOverhang': true,
     'grid.isDrawVertLines': false,
+    'legend.isAlwaysDrawLegend' : true
   },
   line: {
     'grid.isDrawVertLines': false
@@ -38,7 +41,8 @@ export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}
     //'axis.horiz.ticks.isDrawTicks': false,
     'grid.isDrawVertLines': false
   },
-  scatter: { 'legend.position': 'north' }
+  scatter: { 'legend.isAlwaysDrawLegend': true,
+    'legend.position': 'north' }
 };
 
 /**

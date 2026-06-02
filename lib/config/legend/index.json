@@ -4,12 +4,16 @@
         "isDrawLegend": {
             "description": "Draw chart legend",
             "type": "boolean",
-            "default": true
+            "default": true,
+            "parentView": "controlPanel.tabs.chart.legend.dialog"
         },
-         "isAlwaysDrawLegend": {
-            "description": "Always draw legend regardless of data",
+        "isAlwaysDrawLegend": {
+            "label": "Show legend",
+            "description": "Draw legend",
             "type": "boolean",
-            "default": false
+            "default": true,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.legend.dialog"
         },
         "padding": {
             "description": "Internal padding within legend box",
@@ -27,9 +31,20 @@
             "default": 10
         },
         "position": {
+            "label": "Legend position",
             "description": "Position relative to chart",
             "type": "CardinalDirection",
-            "default": "east"
+            "default": "east",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": [
+                    "east",
+                    "west",
+                    "north",
+                    "south"
+                ]
+            },
+            "parentView": "controlPanel.tabs.chart.legend.dialog"
         },
         "margin": {
             "description": "Margin around legend",
@@ -37,14 +52,33 @@
             "default": 20
         },
         "itemOrder": {
+            "label": "Legend item order",
             "description": "Ordering of legend items",
             "type": "LegendItemOrder",
-            "default": "series"
+            "default": "series",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": [
+                    "startingOrder",
+                    "endingOrder",
+                    "alphabetical",
+                    "reverseAlphabetical"
+                ]
+            },
+            "parentView": "controlPanel.tabs.chart.legend.dialog"
         },
         "fontSize": {
             "description": "Font size for legend text",
             "type": "string",
             "default": "10pt"
+        },
+        "useDirectLegends": {
+            "label": "Use direct legend",
+            "description": "Position legend items directly",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.legend.dialog"
         }
     }
 }

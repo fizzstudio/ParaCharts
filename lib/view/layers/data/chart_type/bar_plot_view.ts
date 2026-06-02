@@ -30,7 +30,7 @@ import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { BarChartInfo } from '../../../../chart_types/bar_chart';
 import { Popup } from '../../../popup';
-import { formatDatapointValue, formatDataValue } from '../../../../common';
+import { formatDatapointValue, preciseAdd } from '../../../../common';
 
 const MIN_STACK_WIDTH_FOR_GAPS = 8;
 const STACK_GAP_PERCENTAGE = 0.125;
@@ -238,7 +238,7 @@ export class BarPlotView extends PlanePlotView {
           const sum = Object.values(stack.bars).map(barStackItem => {
             const seriesView = seriesViews.find(sv => sv.seriesKey === barStackItem.series)!;
             return seriesView.children[i - 1].datapoint;
-          }).reduce((a, b) => a + b.facetValueAsNumber('y')!, 0);
+          }).reduce((a, b) => preciseAdd(a, b.facetValueAsNumber("y")!), 0);
           this._totalLabels.push(new Label(this.paraview, {
             text: String(sum),
             classList: [`${this.paraview.paraState.type}-total-label`],
