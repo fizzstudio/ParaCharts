@@ -281,7 +281,7 @@ const TYPE_EXPANSIONS: Record<string, string> = {
   'ChartType': "'bar' | 'lollipop' | 'line' | 'stepline' | 'scatter' | 'pie' | 'donut' | 'gauge' | 'histogram' | 'heatmap' | 'waterfall' | 'venn'",
   'CardinalDirection': "'north' | 'south' | 'east' | 'west'",
   'SnapLocation': "'start' | 'end' | 'center'",
-  'LegendItemOrder': "'alphabetical' | 'series'",
+  'LegendItemOrder': "'alphabetical' | 'reverseAlphabetical' | 'startingOrder' | 'endingOrder'",
   'BarClusterMode': "'facet'",
   'BarDataLabelPosition': "'center' | 'end' | 'base' | 'outside'",
 };

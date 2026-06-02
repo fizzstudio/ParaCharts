@@ -98,7 +98,7 @@ export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
 /** Order for legend items
  * @public
  */
-export type LegendItemOrder = 'alphabetical' | 'series';
+export type LegendItemOrder = 'alphabetical' | 'reverseAlphabetical' | 'startingOrder' | 'endingOrder';
 
 /** Position for data value labels on bars
  * @public

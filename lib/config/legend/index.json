@@ -55,7 +55,7 @@
             "label": "Legend item order",
             "description": "Ordering of legend items",
             "type": "LegendItemOrder",
-            "default": "series",
+            "default": "startingOrder",
             "control": "dropdown",
             "controlOptions": {
                 "options": [

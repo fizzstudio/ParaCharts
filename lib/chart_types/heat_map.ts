@@ -3,14 +3,16 @@ import { AxisInfo, computeLabels } from '../common/axisinfo';
 import { ChartType } from "@fizz/paramanifest";
 import { PlaneChartInfo } from './plane_chart';
 import { type ParaView } from '../paraview';
-import { type NavNode } from '../view/layers';
+import { NavNode } from '../view/layers';
 import { DocumentView } from '../view/document_view';
 import { type ParaState } from '../state';
+import { Datapoint, PlaneModel } from '@fizz/paramodel';
 
 export class HeatMapInfo extends PlaneChartInfo {
   protected _resolution!: number;
   protected _data!: Array<Array<number>>;
   protected _grid!: Array<Array<number>>;
+  protected _datapointGrid!: Array<Array<Array<Datapoint>>>;
   protected _maxCount!: number;
 
   constructor(type: ChartType, paraState: ParaState) {
@@ -24,11 +26,12 @@ export class HeatMapInfo extends PlaneChartInfo {
     this._maxCount = Math.max(...values);
     //this._paraState.clearVisited();
     //this._paraState.clearSelected();
-    // this._axisInfo = new AxisInfo(this._paraState, {
-    //   xValues: this._paraState.model!.allFacetValues('x')!.map((x) => x.value as number),
-    //   yValues: this._paraState.model!.allFacetValues('y')!.map((x) => x.value as number),
-    // });
     // Generate the heat map before creating the nav nodes
+    const cluster = async () => {
+      this._paraState.clusterAnalyses = await this._generateClustering();
+      //(this._paraState.chartInfo as ScatterChartInfo)._clustering = this._paraState.clusterAnalyses;
+    };
+    cluster()
     super._init();
   }
 
@@ -51,20 +54,83 @@ export class HeatMapInfo extends PlaneChartInfo {
     return this._grid;
   }
 
+  get datapointGrid() {
+    return this._datapointGrid;
+  }
+
   get maxCount() {
     return this._maxCount;
   }
 
   protected _createPrimaryNavNodes() {
-    super._createPrimaryNavNodes();
-    // Create vertical links between datapoints
-    this._navMap!.root.query('series').forEach(seriesNode => {
-      seriesNode.allNodes('right')
-        // skip bottom row
-        .slice(0, -this._resolution).forEach((pointNode, i) => {
-        pointNode.connect('down', pointNode.layer.get('datapoint', i + this._resolution)!);
-      });
+    // Create series and datapoint nav nodes, and link them horizontally thusly:
+    // - [SERIES-A]-[SERIES-A-POINT-0]- ... -[SERIES-A-POINT-(N-1)]-[SERIES-B]-[SERIES-B-POINT-0]- ...
+    let left = this._navMap!.root.get('top')!;
+    //const depFacet = this._paraState.model!.dependentFacetKeys[0];
+    // Sort by value of first datapoint from greatest to least
+    const sortedSeries = this.seriesInNavOrder();
+    sortedSeries.forEach((series, i) => {
+      if (sortedSeries.length > 1) {
+        const seriesNode = new NavNode(this._navMap!.root, 'series', {
+          seriesKey: series.key
+        }, this._paraState);
+        seriesNode.connect('left', left);
+        if (i === 0) {
+          seriesNode.connect('up', left);
+          seriesNode.connect('down', left);
+          seriesNode.connect('right', left);
+        }
+        left = seriesNode;
+      }
+      //series.datapoints.forEach((_dp, j) => seriesNode.addDatapoint(series.key, j));
+      //console.log("series.datapoints.length", series.datapoints.length)
+      /*
+      for (let i = 0; i < this._resolution ** 2; i++) {
+        const node = new NavNode(this._navMap!.root,
+          this._datapointNavNodeType, {
+          seriesKey: sortedSeries[0].key,
+          index: i
+        },
+          this._paraState);
+        //node.addDatapoint(series.key, j);
+        node.connect('left', left);
+        if (i === 0 && sortedSeries.length === 1) {
+          node.connect('up', left);
+          node.connect('down', left);
+          node.connect('right', left);
+        }
+        left = node;
+      };
+      */
     });
+
+    left = this._navMap!.root.get('top')!;
+    for (let i = 0; i < this._grid.length; i++) {
+      for (let j = 0; j < this._grid[i].length; j++) {
+        const entry = this.grid[i][j]
+        const datapoints = this._datapointGrid[i][j]
+        const node = new NavNode(this._navMap!.root, 'heatmapTile', {
+          datapointCount: entry,
+          datapoints: datapoints,
+          yIndex: i,
+          xIndex: j
+        }, this._paraState)
+        node.connect('left', left);
+        if (i === 0 && j === 0 && sortedSeries.length === 1) {
+          node.connect('up', left);
+          node.connect('down', left);
+          node.connect('right', left);
+        }
+        left = node;
+      }
+    }
+
+    // Create vertical links between datapoints
+    this._navMap!.root.query('heatmapTile').slice(0, -this._resolution).forEach(
+      (pointNode, i) => {
+        pointNode.connect('down', pointNode.layer.get('heatmapTile', i + this._resolution)!);
+      }
+    )
   }
 
   protected _createNavLinksBetweenSeries() {
@@ -74,6 +140,10 @@ export class HeatMapInfo extends PlaneChartInfo {
 
   protected _createChordNavNodes() {
 
+  }
+
+  async _generateClustering() {
+    return await (this._paraState.model as PlaneModel).getClusteringAnalysis();
   }
 
   protected _datapointSummary(index: number) {
@@ -170,19 +240,27 @@ export class HeatMapInfo extends PlaneChartInfo {
     xMin -= (xMax - xMin) / 10;
 
     const grid: Array<Array<number>> = [];
+    const datapointGrid: Array<Array<Array<Datapoint>>> = [];
 
     for (let i = 0; i < this.resolution; i++) {
       grid.push([]);
+      datapointGrid.push([]);
       for (let j = 0; j < this.resolution; j++) {
         grid[i].push(0);
+        datapointGrid[i].push([]);
       }
     }
-    for (const point of this._data) {
+    for (let i = 0; i < this._data.length; i++) {
+      const point = this._data[i]
       const xIndex: number = Math.floor((point[0] - xMin) * this.resolution / (xMax - xMin));
       const yIndex: number = Math.floor((point[1] - yMin) * this.resolution / (yMax - yMin));
       grid[xIndex][this.resolution - yIndex - 1]++;
+      datapointGrid[xIndex][this.resolution - yIndex - 1].push(this._paraState.model!.allPoints[i])
     }
     this._grid = grid;
+    this._datapointGrid = datapointGrid
+    //console.log("grid", grid)
+    //console.log("datapointGrid", datapointGrid)
     return grid;
   }
 

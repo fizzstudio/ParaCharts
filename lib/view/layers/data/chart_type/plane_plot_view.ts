@@ -407,6 +407,10 @@ export abstract class PlanePlotView extends DataLayer {
       });
     focus ? this.paraview.paraState.focusPopups.push(popup) : this.paraview.paraState.popups.push(popup);
   }
+
+  protected _newSeriesView(seriesKey: string) {
+    return new PlaneSeriesView(this, seriesKey);
+  }
   /*
   protected get _eventActions(): Actions<this> {
     return {

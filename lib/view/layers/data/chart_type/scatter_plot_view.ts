@@ -109,7 +109,7 @@ export class ScatterPlotView extends PointPlotView {
   }
 }
 
-class ScatterPointView extends PointDatapointView {
+export class ScatterPointView extends PointDatapointView {
   declare readonly chart: ScatterPlotView;
   symbolColor: number | undefined;
   clusterID?: number;

@@ -96,134 +96,175 @@ export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
 
 
 export interface Config extends ConfigGroup {
+  animation: AnimationConfig;
+  axis: AxisConfig;
+  chart: ChartConfig;
   color: ColorConfig;
   controlPanel: ControlpanelConfig;
+  description: DescriptionConfig;
+  grid: GridConfig;
   legend: LegendConfig;
   sonification: SonificationConfig;
-  chart: ChartConfig;
-  animation: AnimationConfig;
-  description: DescriptionConfig;
-  ui: UiConfig;
   type: TypeConfig;
-  grid: GridConfig;
-  axis: AxisConfig;
+  ui: UiConfig;
 }
-export interface ColorConfig extends ConfigGroup {
-  /** Color vision deficiency simulation mode */
-  colorVisionMode: 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
-  /** Enable dark color scheme */
-  isDarkModeEnabled: boolean;
-  /** Contrast adjustment level (0-2) */
-  contrastLevel: number;
-  /** Name of the color palette to use */
-  colorPalette: string;
-  /** Comma-separated list of custom color names */
-  colorMap: string;
-  /** Custom color 1 */
-  custom1: string;
-  /** Custom color 2 */
-  custom2: string;
-  /** Custom color 3 */
-  custom3: string;
-  /** Custom color 4 */
-  custom4: string;
-  /** Custom color 5 */
-  custom5: string;
-  /** Custom color 6 */
-  custom6: string;
-  /** Custom color 7 */
-  custom7: string;
-  /** Custom color 8 */
-  custom8: string;
+export interface AnimationConfig extends ConfigGroup {
+  /** Enable chart animations */
+  isAnimationEnabled: boolean;
+  /** Duration for main chart reveal animation in milliseconds */
+  animateRevealTimeMs: number;
+  /** Duration for symbol pop-in animation in milliseconds */
+  popInAnimateRevealTimeMs: number;
+  /** Which axis to animate along */
+  animationType: AnimationType;
+  /** Starting point for animations */
+  animationOrigin: AnimationOrigin;
+  /** Custom value for animation origin when set to 'custom' */
+  animationOriginValue: number;
 }
-export interface ControlpanelConfig extends ConfigGroup {
-  /** Open control panel by default */
-  isControlPanelDefaultOpen: boolean;
-  /** Style for tab labels (icon, text, or both) */
-  tabLabelStyle: TabLabelStyle;
-  /** Show chart caption */
-  isCaptionVisible: boolean;
-  /** Show exploration status bar */
-  isExplorationBarVisible: boolean;
-  /** Show spark braille display */
-  isSparkBrailleVisible: boolean;
-  /** Show data table tab */
-  isDataTabVisible: boolean;
-  /** Show colors/appearance tab */
-  isColorsTabVisible: boolean;
-  /** Show audio settings tab */
-  isAudioTabVisible: boolean;
-  /** Show controls/interaction tab */
-  isControlsTabVisible: boolean;
-  /** Show chart settings tab */
-  isChartTabVisible: boolean;
-  /** Show annotations tab */
-  isAnnotationsTabVisible: boolean;
-  /** Show MDR annotations */
-  isMDRAnnotationsVisible: boolean;
-  /** Show analysis tab */
-  isAnalysisTabVisible: boolean;
-  /** Show spark braille control */
-  isSparkBrailleControlVisible: boolean;
-  /** Show color palette control */
-  isColorPaletteControlVisible: boolean;
-  /** Show color vision deficiency control */
-  isCVDControlVisible: boolean;
-  caption: ControlpanelCaptionConfig;
+export interface AxisConfig extends ConfigGroup {
+  horiz: AxisHorizConfig;
+  vert: AxisVertConfig;
 }
-export interface ControlpanelCaptionConfig extends ConfigGroup {
-  /** Move caption outside chart when control panel is closed */
-  isCaptionExternalWhenControlPanelClosed: boolean;
-  /** Show border around caption box */
-  hasBorder: boolean;
-  /** Place exploration bar beside caption instead of below */
-  isExplorationBarBeside: boolean;
-}
-export interface LegendConfig extends ConfigGroup {
-  /** Draw chart legend */
-  isDrawLegend: boolean;
-  /** Always draw legend regardless of data */
-  isAlwaysDrawLegend: boolean;
-  /** Internal padding within legend box */
-  padding: number;
-  /** Gap between symbol and label */
-  symbolLabelGap: number;
-  /** Gap between legend items */
-  pairGap: number;
+export interface AxisHorizConfig extends ConfigGroup {
+  /** Enable drawing this axis */
+  isDrawAxis: boolean;
   /** Position relative to chart */
-  position: CardinalDirection;
-  /** Margin around legend */
-  margin: number;
-  /** Ordering of legend items */
-  itemOrder: LegendItemOrder;
-  /** Font size for legend text */
+  position: VertCardinalDirection;
+  /** Order of label values along axis */
+  labelOrder: 'westToEast' | 'eastToWest';
+  /** Stagger labels to prevent overlap */
+  isStaggerLabels: boolean;
+  /** Wrap long labels to multiple lines */
+  isWrapLabels: boolean;
+  line: AxisHorizLineConfig;
+  ticks: AxisHorizTicksConfig;
+  title: AxisHorizTitleConfig;
+}
+export interface AxisHorizLineConfig extends ConfigGroup {
+  /** Draw the main axis line */
+  isDrawAxisLine: boolean;
+  /** Draw overhang beyond data range */
+  isDrawOverhang: boolean;
+  /** Width of axis line stroke */
+  strokeWidth: number;
+  /** End cap style for axis line */
+  strokeLinecap: string;
+}
+export interface AxisHorizTicksConfig extends ConfigGroup {
+  /** Enable drawing of tick marks */
+  isDrawTicks: boolean;
+  /** Padding around tick marks */
+  padding: number;
+  /** Opacity of tick marks (0-1) */
+  opacity: number;
+  /** Width of tick mark lines */
+  strokeWidth: number;
+  /** End cap style for tick lines */
+  strokeLinecap: string;
+  /** Length of tick marks in pixels */
+  length: number;
+  /** Format for tick labels */
+  labelFormat: string;
+  /** Interval between tick marks */
+  step: number;
+  /** Whether ticks align with data points (bar charts only) */
+  isOnDatapoint: boolean;
+  labels: AxisHorizTicksLabelsConfig;
+}
+export interface AxisHorizTicksLabelsConfig extends ConfigGroup {
+  /** Draw labels on tick marks */
+  isDrawTickLabels: boolean;
+  /** Font size for tick labels */
   fontSize: string;
-  boxStyle: LegendBoxstyleConfig;
-  useDirectLegends: boolean;
+  /** Rotation angle for labels in degrees */
+  angle: number;
+  /** Offset distance from tick marks */
+  offsetGap: number;
+  /** Gap between adjacent labels */
+  gap: number;
 }
-export interface LegendBoxstyleConfig extends ConfigGroup {
-  /** Border color */
-  outline: Color;
-  /** Border width in pixels */
-  outlineWidth: number;
-  /** Background fill color */
-  fill: Color;
+export interface AxisHorizTitleConfig extends ConfigGroup {
+  /** Draw axis title */
+  isDrawTitle: boolean;
+  /** Title text content */
+  text: string;
+  /** Gap between title and axis */
+  gap: number;
+  /** Font size for title */
+  fontSize: string;
+  /** Text alignment relative to axis */
+  align: 'start' | 'middle' | 'end';
 }
-export interface SonificationConfig extends ConfigGroup {
-  /** Enable sonification audio feedback */
-  isSonificationEnabled: boolean;
-  /** Enable series riff playback */
-  isRiffEnabled: boolean;
-  /** Enable audio notifications */
-  isNotificationEnabled: boolean;
-  /** Lower frequency bound in Hz */
-  hertzLower: number;
-  /** Upper frequency bound in Hz */
-  hertzUpper: number;
-  /** Speed for musical riffs */
-  riffSpeedIndex: number;
-  /** Play chords as arpeggios */
-  isArpeggiateChords: boolean;
+export interface AxisVertConfig extends ConfigGroup {
+  /** Enable drawing this axis */
+  isDrawAxis: boolean;
+  /** Position relative to chart */
+  position: HorizCardinalDirection;
+  /** Order of label values along axis */
+  labelOrder: 'southToNorth' | 'northToSouth';
+  /** Stagger labels to prevent overlap */
+  isStaggerLabels: boolean;
+  /** Wrap long labels onto multiple lines */
+  isWrapLabels: boolean;
+  line: AxisVertLineConfig;
+  ticks: AxisVertTicksConfig;
+  title: AxisVertTitleConfig;
+}
+export interface AxisVertLineConfig extends ConfigGroup {
+  /** Draw the main axis line */
+  isDrawAxisLine: boolean;
+  /** Draw overhang beyond data range */
+  isDrawOverhang: boolean;
+  /** Width of axis line stroke */
+  strokeWidth: number;
+  /** End cap style for axis line */
+  strokeLinecap: string;
+}
+export interface AxisVertTicksConfig extends ConfigGroup {
+  /** Enable drawing of tick marks */
+  isDrawTicks: boolean;
+  /** Padding around tick marks */
+  padding: number;
+  /** Opacity of tick marks (0-1) */
+  opacity: number;
+  /** Width of tick mark lines */
+  strokeWidth: number;
+  /** End cap style for tick lines */
+  strokeLinecap: string;
+  /** Length of tick marks in pixels */
+  length: number;
+  /** Format for tick labels */
+  labelFormat: string;
+  /** Interval between tick marks */
+  step: number;
+  /** Whether ticks align with data points (bar charts only) */
+  isOnDatapoint: boolean;
+  labels: AxisVertTicksLabelsConfig;
+}
+export interface AxisVertTicksLabelsConfig extends ConfigGroup {
+  /** Draw labels on tick marks */
+  isDrawTickLabels: boolean;
+  /** Font size for tick labels */
+  fontSize: string;
+  /** Rotation angle for labels in degrees */
+  angle: number;
+  /** Offset distance from tick marks */
+  offsetGap: number;
+  /** Gap between adjacent labels */
+  gap: number;
+}
+export interface AxisVertTitleConfig extends ConfigGroup {
+  /** Draw axis title */
+  isDrawTitle: boolean;
+  /** Title text content */
+  text: string;
+  /** Gap between title and axis */
+  gap: number;
+  /** Font size for title */
+  fontSize: string;
+  /** Text alignment relative to axis */
+  align: 'start' | 'middle' | 'end';
 }
 export interface ChartConfig extends ConfigGroup {
   /** The type of chart to display */
@@ -307,178 +348,147 @@ export interface ChartTitleConfig extends ConfigGroup {
   /** The position of the chart title (either 'top' or 'bottom'). */
   position: 'top' | 'bottom';
 }
-export interface AnimationConfig extends ConfigGroup {
-  /** Enable chart animations */
-  isAnimationEnabled: boolean;
-  /** Duration for main chart reveal animation in milliseconds */
-  animateRevealTimeMs: number;
-  /** Duration for symbol pop-in animation in milliseconds */
-  popInAnimateRevealTimeMs: number;
-  /** Which axis to animate along */
-  animationType: AnimationType;
-  /** Starting point for animations */
-  animationOrigin: AnimationOrigin;
-  /** Custom value for animation origin when set to 'custom' */
-  animationOriginValue: number;
+export interface ColorConfig extends ConfigGroup {
+  /** Color vision deficiency simulation mode */
+  colorVisionMode: 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
+  /** Enable dark color scheme */
+  isDarkModeEnabled: boolean;
+  /** Contrast adjustment level (0-2) */
+  contrastLevel: number;
+  /** Name of the color palette to use */
+  colorPalette: string;
+  /** Comma-separated list of custom color names */
+  colorMap: string;
+  /** Custom color 1 */
+  custom1: string;
+  /** Custom color 2 */
+  custom2: string;
+  /** Custom color 3 */
+  custom3: string;
+  /** Custom color 4 */
+  custom4: string;
+  /** Custom color 5 */
+  custom5: string;
+  /** Custom color 6 */
+  custom6: string;
+  /** Custom color 7 */
+  custom7: string;
+  /** Custom color 8 */
+  custom8: string;
+}
+export interface ControlpanelConfig extends ConfigGroup {
+  /** Open control panel by default */
+  isControlPanelDefaultOpen: boolean;
+  /** Style for tab labels (icon, text, or both) */
+  tabLabelStyle: TabLabelStyle;
+  /** Show chart caption */
+  isCaptionVisible: boolean;
+  /** Show exploration status bar */
+  isExplorationBarVisible: boolean;
+  /** Show spark braille display */
+  isSparkBrailleVisible: boolean;
+  /** Show data table tab */
+  isDataTabVisible: boolean;
+  /** Show colors/appearance tab */
+  isColorsTabVisible: boolean;
+  /** Show audio settings tab */
+  isAudioTabVisible: boolean;
+  /** Show controls/interaction tab */
+  isControlsTabVisible: boolean;
+  /** Show chart settings tab */
+  isChartTabVisible: boolean;
+  /** Show annotations tab */
+  isAnnotationsTabVisible: boolean;
+  /** Show MDR annotations */
+  isMDRAnnotationsVisible: boolean;
+  /** Show analysis tab */
+  isAnalysisTabVisible: boolean;
+  /** Show spark braille control */
+  isSparkBrailleControlVisible: boolean;
+  /** Show color palette control */
+  isColorPaletteControlVisible: boolean;
+  /** Show color vision deficiency control */
+  isCVDControlVisible: boolean;
+  caption: ControlpanelCaptionConfig;
+}
+export interface ControlpanelCaptionConfig extends ConfigGroup {
+  /** Move caption outside chart when control panel is closed */
+  isCaptionExternalWhenControlPanelClosed: boolean;
+  /** Show border around caption box */
+  hasBorder: boolean;
+  /** Place exploration bar beside caption instead of below */
+  isExplorationBarBeside: boolean;
 }
 export interface DescriptionConfig extends ConfigGroup {
   /** Use concise or full captions */
   captionFormat: 'full' | 'concise';
 }
-export interface UiConfig extends ConfigGroup {
-  /** Enable voice output for screen reader users */
-  isVoicingEnabled: boolean;
-  /** Enable visual highlighting when narrative elements are announced */
-  isTourGuideEnabled: boolean;
-  /** Pause Tour Guide temporarily */
-  isTourGuidePaused: boolean;
-  /** Enable aria-live announcements */
-  isAnnouncementEnabled: boolean;
-  /** Voice output speech rate. Range: 0.5 to 2 */
-  speechRate: number;
-  /** Delay in seconds between live update announcements */
-  liveUpdateDelay: number;
-  /** Enable fullscreen mode */
-  isFullscreenEnabled: boolean;
-  /** Enable low vision accessibility enhancements */
-  isLowVisionModeEnabled: boolean;
-  /** Show focus ring around active elements */
-  isFocusRingEnabled: boolean;
-  /** Gap size around focus ring in pixels */
-  focusRingGap: number;
-  /** Timeout in milliseconds for navigation runs */
-  navRunTimeoutMs: number;
+export interface GridConfig extends ConfigGroup {
+  /** Draw horizontal grid lines */
+  isDrawHorizLines: boolean;
+  /** Draw vertical grid lines */
+  isDrawVertLines: boolean;
+  /** Draw line opposite horizontal axis */
+  isDrawHorizAxisOppositeLine: boolean;
+  /** Draw line opposite vertical axis */
+  isDrawVertAxisOppositeLine: boolean;
+}
+export interface LegendConfig extends ConfigGroup {
+  /** Draw chart legend */
+  isDrawLegend: boolean;
+  /** Draw legend */
+  isAlwaysDrawLegend: boolean;
+  /** Internal padding within legend box */
+  padding: number;
+  /** Gap between symbol and label */
+  symbolLabelGap: number;
+  /** Gap between legend items */
+  pairGap: number;
+  /** Position relative to chart */
+  position: CardinalDirection;
+  /** Margin around legend */
+  margin: number;
+  /** Ordering of legend items */
+  itemOrder: LegendItemOrder;
+  /** Font size for legend text */
+  fontSize: string;
+  /** Position legend items directly */
+  useDirectLegends: boolean;
+  boxStyle: LegendBoxstyleConfig;
+}
+export interface LegendBoxstyleConfig extends ConfigGroup {
+  /** Border color */
+  outline: Color;
+  /** Border width in pixels */
+  outlineWidth: number;
+  /** Background fill color */
+  fill: Color;
+}
+export interface SonificationConfig extends ConfigGroup {
+  /** Enable sonification audio feedback */
+  isSonificationEnabled: boolean;
+  /** Enable series riff playback */
+  isRiffEnabled: boolean;
+  /** Enable audio notifications */
+  isNotificationEnabled: boolean;
+  /** Lower frequency bound in Hz */
+  hertzLower: number;
+  /** Upper frequency bound in Hz */
+  hertzUpper: number;
+  /** Speed for musical riffs */
+  riffSpeedIndex: number;
+  /** Play chords as arpeggios */
+  isArpeggiateChords: boolean;
 }
 export interface TypeConfig extends ConfigGroup {
-  line: TypeLineConfig;
-  donut: TypeDonutConfig;
-  scatter: TypeScatterConfig;
-  column: TypeColumnConfig;
-  pie: TypePieConfig;
   bar: TypeBarConfig;
+  column: TypeColumnConfig;
+  donut: TypeDonutConfig;
+  heatmap: TypeHeatmapConfig;
+  line: TypeLineConfig;
+  pie: TypePieConfig;
+  scatter: TypeScatterConfig;
   waterfall: TypeWaterfallConfig;
-}
-export interface TypeLineConfig extends TypePlaneConfig {
-  /** Width of line strokes */
-  lineWidth: number;
-  /** Maximum line width */
-  lineWidthMax: number;
-  /** Line width in low vision mode */
-  lowVisionLineWidth: number;
-  /** Scale factor for highlighted lines */
-  lineHighlightScale: number;
-  /** Padding around series labels */
-  seriesLabelPadding: number;
-  /** Length of leader lines to labels */
-  leaderLineLength: number;
-  /** Always show series labels regardless of space */
-  isAlwaysShowSeriesLabel: boolean;
-  /** Enable trend-following navigation mode */
-  isTrendNavigationModeEnabled: boolean;
-}
-export interface TypePlaneConfig extends ConfigGroup {
-  /** Minimum Y value override */
-  minYValue: number | 'unset';
-  /** Maximum Y value override */
-  maxYValue: number | 'unset';
-}
-export interface TypeDonutConfig extends TypePastryConfig {
-  outsideLabels: TypeDonutOutsidelabelsConfig;
-  insideLabels: TypeDonutInsidelabelsConfig;
-}
-export interface TypeDonutOutsidelabelsConfig extends TypePastryOutsidelabelsConfig {
-}
-export interface TypeDonutInsidelabelsConfig extends TypePastryInsidelabelsConfig {
-}
-export interface TypePastryConfig extends ConfigGroup {
-  /** Thickness of donut/gauge ring */
-  annularThickness: number;
-  /** What to show in center label */
-  centerLabel: 'none' | 'title';
-  /** Padding around center label */
-  centerLabelPadding: number;
-  /** Rotation offset for slice orientation */
-  orientationAngleOffset: number;
-  /** Which slices to separate from chart */
-  explode: string;
-  /** Distance for exploded slices */
-  explodeDistance: number;
-  outsideLabels: TypePastryOutsidelabelsConfig;
-  insideLabels: TypePastryInsidelabelsConfig;
-}
-export interface TypePastryOutsidelabelsConfig extends ConfigGroup {
-  /** Vertical gap between labels */
-  vertGap: number;
-  /** Gap between arc and label */
-  arcGap: number;
-  /** Horizontal shift for label positioning */
-  horizShift: number;
-  /** Horizontal padding around labels */
-  horizPadding: number;
-  /** Style of leader line to label */
-  leaderStyle: 'direct' | 'underline';
-  /** Label value format */
-  format: string;
-  /** Gap for underline leader style */
-  underlineGap: number;
-  /** Label content template */
-  contents: string;
-}
-export interface TypePastryInsidelabelsConfig extends ConfigGroup {
-  /** Label value format */
-  format: string;
-  /** Position as percentage of distance along radius */
-  position: number;
-  /** Label content template */
-  contents: string;
-}
-export interface TypeScatterConfig extends TypePlaneConfig {
-  /** Draw trend/regression line */
-  isShowTrendLine: boolean;
-  /** Highlight statistical outliers */
-  isShowOutliers: boolean;
-}
-export interface TypeColumnConfig extends TypePlaneConfig {
-  /** How bars are stacked */
-  stacking: 'none' | 'standard' | string;
-  /** Width of individual bars */
-  barWidth: number;
-  /** Color each bar individually vs by series */
-  colorByDatapoint: boolean;
-  /** Show total value labels on stacked bars */
-  isDrawTotalLabels: boolean;
-  /** Gap between total value labels and stacks */
-  totalLabelGap: number;
-  /** Gap between stack labels and bars */
-  stackLabelGap: number;
-  /** Show record name labels */
-  isDrawRecordLabels: boolean;
-  /** Show data value labels on bars */
-  isDrawDataLabels: boolean;
-  /** Position of data value labels */
-  dataLabelPosition: BarDataLabelPosition;
-  /** Gap between bar clusters */
-  clusterGap: number;
-  /** Gap between individual bars */
-  barGap: number;
-  /** Gap inside stacked bars */
-  stackInsideGap: number;
-  /** Abbreviate series names */
-  isAbbrevSeries: boolean;
-  /** Format for cluster labels */
-  clusterLabelFormat: LabelFormat;
-  /** Width of bar outlines */
-  lineWidth: number;
-  /** Font size for bar labels */
-  labelFontSize: string;
-}
-export interface TypePieConfig extends TypePastryConfig {
-  outsideLabels: TypePieOutsidelabelsConfig;
-  insideLabels: TypePieInsidelabelsConfig;
-}
-export interface TypePieOutsidelabelsConfig extends TypePastryOutsidelabelsConfig {
-}
-export interface TypePieInsidelabelsConfig extends TypePastryInsidelabelsConfig {
 }
 export interface TypeBarConfig extends TypePlaneConfig {
   /** How bars are stacked */
@@ -514,6 +524,134 @@ export interface TypeBarConfig extends TypePlaneConfig {
   /** Font size for bar labels */
   labelFontSize: string;
 }
+export interface TypeColumnConfig extends TypePlaneConfig {
+  /** How bars are stacked */
+  stacking: 'none' | 'standard' | string;
+  /** Width of individual bars */
+  barWidth: number;
+  /** Color each bar individually vs by series */
+  colorByDatapoint: boolean;
+  /** Show total value labels on stacked bars */
+  isDrawTotalLabels: boolean;
+  /** Gap between total value labels and stacks */
+  totalLabelGap: number;
+  /** Gap between stack labels and bars */
+  stackLabelGap: number;
+  /** Show record name labels */
+  isDrawRecordLabels: boolean;
+  /** Show data value labels on bars */
+  isDrawDataLabels: boolean;
+  /** Position of data value labels */
+  dataLabelPosition: BarDataLabelPosition;
+  /** Gap between bar clusters */
+  clusterGap: number;
+  /** Gap between individual bars */
+  barGap: number;
+  /** Gap inside stacked bars */
+  stackInsideGap: number;
+  /** Abbreviate series names */
+  isAbbrevSeries: boolean;
+  /** Format for cluster labels */
+  clusterLabelFormat: LabelFormat;
+  /** Width of bar outlines */
+  lineWidth: number;
+  /** Font size for bar labels */
+  labelFontSize: string;
+}
+export interface TypeDonutConfig extends TypePastryConfig {
+  insideLabels: TypeDonutInsidelabelsConfig;
+  outsideLabels: TypeDonutOutsidelabelsConfig;
+}
+export interface TypeDonutInsidelabelsConfig extends TypePastryInsidelabelsConfig {
+}
+export interface TypeDonutOutsidelabelsConfig extends TypePastryOutsidelabelsConfig {
+}
+export interface TypeHeatmapConfig extends TypePlaneConfig {
+  /** Draw trend/regression line */
+  isShowTrendLine: boolean;
+  /** Highlight statistical outliers */
+  isShowOutliers: boolean;
+}
+export interface TypeLineConfig extends TypePlaneConfig {
+  /** Width of line strokes */
+  lineWidth: number;
+  /** Maximum line width */
+  lineWidthMax: number;
+  /** Line width in low vision mode */
+  lowVisionLineWidth: number;
+  /** Scale factor for highlighted lines */
+  lineHighlightScale: number;
+  /** Padding around series labels */
+  seriesLabelPadding: number;
+  /** Length of leader lines to labels */
+  leaderLineLength: number;
+  /** Always show series labels regardless of space */
+  isAlwaysShowSeriesLabel: boolean;
+  /** Enable trend-following navigation mode */
+  isTrendNavigationModeEnabled: boolean;
+}
+export interface TypePastryConfig extends ConfigGroup {
+  /** Thickness of donut/gauge ring */
+  annularThickness: number;
+  /** What to show in center label */
+  centerLabel: 'none' | 'title';
+  /** Padding around center label */
+  centerLabelPadding: number;
+  /** Rotation offset for slice orientation */
+  orientationAngleOffset: number;
+  /** Which slices to separate from chart */
+  explode: string;
+  /** Distance for exploded slices */
+  explodeDistance: number;
+  insideLabels: TypePastryInsidelabelsConfig;
+  outsideLabels: TypePastryOutsidelabelsConfig;
+}
+export interface TypePastryInsidelabelsConfig extends ConfigGroup {
+  /** Label value format */
+  format: string;
+  /** Position as percentage of distance along radius */
+  position: number;
+  /** Label content template */
+  contents: string;
+}
+export interface TypePastryOutsidelabelsConfig extends ConfigGroup {
+  /** Vertical gap between labels */
+  vertGap: number;
+  /** Gap between arc and label */
+  arcGap: number;
+  /** Horizontal shift for label positioning */
+  horizShift: number;
+  /** Horizontal padding around labels */
+  horizPadding: number;
+  /** Style of leader line to label */
+  leaderStyle: 'direct' | 'underline';
+  /** Label value format */
+  format: string;
+  /** Gap for underline leader style */
+  underlineGap: number;
+  /** Label content template */
+  contents: string;
+}
+export interface TypePieConfig extends TypePastryConfig {
+  insideLabels: TypePieInsidelabelsConfig;
+  outsideLabels: TypePieOutsidelabelsConfig;
+}
+export interface TypePieInsidelabelsConfig extends TypePastryInsidelabelsConfig {
+}
+export interface TypePieOutsidelabelsConfig extends TypePastryOutsidelabelsConfig {
+}
+export interface TypePlaneConfig extends ConfigGroup {
+  /** Minimum Y value override */
+  minYValue: number | 'unset';
+  /** Maximum Y value override */
+  maxYValue: number | 'unset';
+}
+export interface TypeScatterConfig extends TypePlaneConfig {
+  /** Draw trend/regression line */
+  isShowTrendLine: boolean;
+  /** Highlight statistical outliers */
+  isShowOutliers: boolean;
+}
 export interface TypeWaterfallConfig extends TypePlaneConfig {
   /** Width of waterfall bars */
   barWidth: number;
@@ -530,157 +668,27 @@ export interface TypeWaterfallConfig extends TypePlaneConfig {
   /** Font size for labels */
   labelFontSize: string;
 }
-export interface GridConfig extends ConfigGroup {
-  /** Draw horizontal grid lines */
-  isDrawHorizLines: boolean;
-  /** Draw vertical grid lines */
-  isDrawVertLines: boolean;
-  /** Draw line opposite horizontal axis */
-  isDrawHorizAxisOppositeLine: boolean;
-  /** Draw line opposite vertical axis */
-  isDrawVertAxisOppositeLine: boolean;
-}
-export interface AxisConfig extends ConfigGroup {
-  vert: AxisVertConfig;
-  horiz: AxisHorizConfig;
-}
-export interface AxisVertConfig extends ConfigGroup {
-  /** Enable drawing this axis */
-  isDrawAxis: boolean;
-  /** Position relative to chart */
-  position: HorizCardinalDirection;
-  /** Order of label values along axis */
-  labelOrder: 'southToNorth' | 'northToSouth';
-  /** Stagger labels to prevent overlap */
-  isStaggerLabels: boolean;
-  /** Wrap long labels onto multiple lines */
-  isWrapLabels: boolean;
-  line: AxisVertLineConfig;
-  ticks: AxisVertTicksConfig;
-  title: AxisVertTitleConfig;
-}
-export interface AxisVertLineConfig extends ConfigGroup {
-  /** Draw the main axis line */
-  isDrawAxisLine: boolean;
-  /** Draw overhang beyond data range */
-  isDrawOverhang: boolean;
-  /** Width of axis line stroke */
-  strokeWidth: number;
-  /** End cap style for axis line */
-  strokeLinecap: string;
-}
-export interface AxisVertTicksConfig extends ConfigGroup {
-  /** Enable drawing of tick marks */
-  isDrawTicks: boolean;
-  /** Padding around tick marks */
-  padding: number;
-  /** Opacity of tick marks (0-1) */
-  opacity: number;
-  /** Width of tick mark lines */
-  strokeWidth: number;
-  /** End cap style for tick lines */
-  strokeLinecap: string;
-  /** Length of tick marks in pixels */
-  length: number;
-  /** Format for tick labels */
-  labelFormat: string;
-  /** Interval between tick marks */
-  step: number;
-  /** Whether ticks align with data points (bar charts only) */
-  isOnDatapoint: boolean;
-  labels: AxisVertTicksLabelsConfig;
-}
-export interface AxisVertTicksLabelsConfig extends ConfigGroup {
-  /** Draw labels on tick marks */
-  isDrawTickLabels: boolean;
-  /** Font size for tick labels */
-  fontSize: string;
-  /** Rotation angle for labels in degrees */
-  angle: number;
-  /** Offset distance from tick marks */
-  offsetGap: number;
-  /** Gap between adjacent labels */
-  gap: number;
-}
-export interface AxisVertTitleConfig extends ConfigGroup {
-  /** Draw axis title */
-  isDrawTitle: boolean;
-  /** Title text content */
-  text: string;
-  /** Gap between title and axis */
-  gap: number;
-  /** Font size for title */
-  fontSize: string;
-  /** Text alignment relative to axis */
-  align: 'start' | 'middle' | 'end';
-}
-export interface AxisHorizConfig extends ConfigGroup {
-  /** Enable drawing this axis */
-  isDrawAxis: boolean;
-  /** Position relative to chart */
-  position: VertCardinalDirection;
-  /** Order of label values along axis */
-  labelOrder: 'westToEast' | 'eastToWest';
-  /** Stagger labels to prevent overlap */
-  isStaggerLabels: boolean;
-  /** Wrap long labels to multiple lines */
-  isWrapLabels: boolean;
-  line: AxisHorizLineConfig;
-  ticks: AxisHorizTicksConfig;
-  title: AxisHorizTitleConfig;
-}
-export interface AxisHorizLineConfig extends ConfigGroup {
-  /** Draw the main axis line */
-  isDrawAxisLine: boolean;
-  /** Draw overhang beyond data range */
-  isDrawOverhang: boolean;
-  /** Width of axis line stroke */
-  strokeWidth: number;
-  /** End cap style for axis line */
-  strokeLinecap: string;
-}
-export interface AxisHorizTicksConfig extends ConfigGroup {
-  /** Enable drawing of tick marks */
-  isDrawTicks: boolean;
-  /** Padding around tick marks */
-  padding: number;
-  /** Opacity of tick marks (0-1) */
-  opacity: number;
-  /** Width of tick mark lines */
-  strokeWidth: number;
-  /** End cap style for tick lines */
-  strokeLinecap: string;
-  /** Length of tick marks in pixels */
-  length: number;
-  /** Format for tick labels */
-  labelFormat: string;
-  /** Interval between tick marks */
-  step: number;
-  /** Whether ticks align with data points (bar charts only) */
-  isOnDatapoint: boolean;
-  labels: AxisHorizTicksLabelsConfig;
-}
-export interface AxisHorizTicksLabelsConfig extends ConfigGroup {
-  /** Draw labels on tick marks */
-  isDrawTickLabels: boolean;
-  /** Font size for tick labels */
-  fontSize: string;
-  /** Rotation angle for labels in degrees */
-  angle: number;
-  /** Offset distance from tick marks */
-  offsetGap: number;
-  /** Gap between adjacent labels */
-  gap: number;
-}
-export interface AxisHorizTitleConfig extends ConfigGroup {
-  /** Draw axis title */
-  isDrawTitle: boolean;
-  /** Title text content */
-  text: string;
-  /** Gap between title and axis */
-  gap: number;
-  /** Font size for title */
-  fontSize: string;
-  /** Text alignment relative to axis */
-  align: 'start' | 'middle' | 'end';
+export interface UiConfig extends ConfigGroup {
+  /** Enable voice output for screen reader users */
+  isVoicingEnabled: boolean;
+  /** Enable visual highlighting when narrative elements are announced */
+  isTourGuideEnabled: boolean;
+  /** Pause Tour Guide temporarily */
+  isTourGuidePaused: boolean;
+  /** Enable aria-live announcements */
+  isAnnouncementEnabled: boolean;
+  /** Voice output speech rate. Range: 0.5 to 2 */
+  speechRate: number;
+  /** Delay in seconds between live update announcements */
+  liveUpdateDelay: number;
+  /** Enable fullscreen mode */
+  isFullscreenEnabled: boolean;
+  /** Enable low vision accessibility enhancements */
+  isLowVisionModeEnabled: boolean;
+  /** Show focus ring around active elements */
+  isFocusRingEnabled: boolean;
+  /** Gap size around focus ring in pixels */
+  focusRingGap: number;
+  /** Timeout in milliseconds for navigation runs */
+  navRunTimeoutMs: number;
 }
