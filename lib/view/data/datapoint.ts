@@ -392,7 +392,7 @@ export class DatapointView extends DataView {
     let pointerControlled = false;
     if (['bar', 'column', 'waterfall'].includes(this.paraview.paraState.type)) {
       x = this.x + this.width / 2
-      if (this.paraview.paraState.settings.popup.activation == "onHover") {
+      if (this.paraview.paraState.config.popup.activation == "onHover") {
         pointerControlled = true;
       }
     }
@@ -418,7 +418,7 @@ export class DatapointView extends DataView {
       let angle = 2 * Math.PI - ((params.accum * 2 * Math.PI) + (params.percentage * Math.PI) - (chart.config.orientationAngleOffset * 2 * Math.PI / 360))
       x = this.x + chart.radius * (1 - chart.config.annularThickness / 2) * Math.cos(angle)
       y = this.y - chart.radius * (1 - chart.config.annularThickness / 2) * Math.sin(angle)
-      if (this.paraview.paraState.settings.popup.activation == "onHover") {
+      if (this.paraview.paraState.config.popup.activation == "onHover") {
         pointerControlled = true;
       }
     }
@@ -447,10 +447,10 @@ export class DatapointView extends DataView {
   shouldAddHoverPopup(): boolean {
     if (['bar', 'column', 'scatter', 'waterfall'].includes(this.paraview.paraState.type)) {
       if (this.paraview.paraState.config.chart.isShowPopups
-        && this.paraview.paraState.settings.popup.activation == 'onHover'
-        && (!this.paraview.paraState.settings.popup.isShowCrosshair
-          || (this.paraview.paraState.settings.popup.isShowCrosshair
-            && this.paraview.paraState.settings.popup.isCrosshairFollowPointer))) {
+        && this.paraview.paraState.config.popup.activation == 'onHover'
+        && (!this.paraview.paraState.config.popup.isShowCrosshair
+          || (this.paraview.paraState.config.popup.isShowCrosshair
+            && this.paraview.paraState.config.popup.isCrosshairFollowPointer))) {
         return true
       }
       else {
@@ -459,7 +459,7 @@ export class DatapointView extends DataView {
     }
     else if (['pie', 'donut'].includes(this.paraview.paraState.type)) {
       if (this.paraview.paraState.config.chart.isShowPopups
-        && this.paraview.paraState.settings.popup.activation == 'onHover') {
+        && this.paraview.paraState.config.popup.activation == 'onHover') {
         return true
       }
       else {

@@ -41,6 +41,7 @@ import AxisHorizLineJson from "./axis/horiz/line.json" with { type: "json" };
 import AxisHorizTicksJson from "./axis/horiz/ticks/index.json" with { type: "json" };
 import AxisHorizTicksLabelsJson from "./axis/horiz/ticks/labels.json" with { type: "json" };
 import AxisHorizTitleJson from "./axis/horiz/title.json" with { type: "json" };
+import PopupJson from "./popup.json" with { type: "json" };
 
 import { SettingControlType } from '../components';
 import { SettingControlOptionsType, RefreshTarget } from '../state';
@@ -115,6 +116,7 @@ export const configMetadata: ConfigMetadata = {
   'axis.horiz.ticks': AxisHorizTicksJson as unknown as ConfigGroupMetadata,
   'axis.horiz.ticks.labels': AxisHorizTicksLabelsJson as unknown as ConfigGroupMetadata,
   'axis.horiz.title': AxisHorizTitleJson as unknown as ConfigGroupMetadata,
+  'popup': PopupJson as unknown as ConfigGroupMetadata,
 }
 
 for (const [k, v] of Object.entries(configMetadata)) {

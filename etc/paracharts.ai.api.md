@@ -478,23 +478,6 @@ export interface PlotSettings extends SettingGroup {
 export type PointChartType = 'line' | 'stepline' | 'scatter';
 
 // @public
-export interface PopupSettings extends SettingGroup {
-    activation: "onHover" | "onFocus" | "onSelect";
-    backgroundColor: "dark" | "light";
-    borderRadius: number;
-    downPadding: number;
-    isCrosshairFollowPointer: boolean;
-    isShowCrosshair: boolean;
-    leftPadding: number;
-    margin: number;
-    maxWidth: number;
-    opacity: number;
-    rightPadding: number;
-    shape: "box" | "boxWithArrow";
-    upPadding: number;
-}
-
-// @public
 export type RadialChartType = 'pie' | 'donut' | 'gauge';
 
 // @public
@@ -522,7 +505,6 @@ export interface Settings extends SettingGroup {
     dev: DevSettings;
     jim: JimSettings;
     plotArea: PlotAreaSettings;
-    popup: PopupSettings;
     scrollytelling: ScrollytellingSettings;
     statusBar: StatusBarSettings;
     type: ChartTypeSettings;

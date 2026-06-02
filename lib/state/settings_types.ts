@@ -188,39 +188,6 @@ export interface PlotAreaSettings extends SettingGroup {
   size: Size2d;
 }
 
-/** Popup tooltip settings
- * @public
- */
-export interface PopupSettings extends SettingGroup {
-  /** Background opacity (0-1) */
-  opacity: number;
-  /** Left padding inside popup */
-  leftPadding: number;
-  /** Right padding inside popup */
-  rightPadding: number;
-  /** Top padding inside popup */
-  upPadding: number;
-  /** Bottom padding inside popup */
-  downPadding: number;
-  /** Margin around popup */
-  margin: number;
-  /** Maximum width before text wraps */
-  maxWidth: number;
-  /** Visual style of popup */
-  shape: "box" | "boxWithArrow";
-  /** When popup appears */
-  activation: "onHover" | "onFocus" | "onSelect";
-  /** Corner radius for rounded popups */
-  borderRadius: number;
-  /** Background color scheme */
-  backgroundColor: "dark" | "light"
-  /** Show crosshair */
-  isShowCrosshair: boolean;
-  /** Make crosshair follow pointer */
-  isCrosshairFollowPointer: boolean;
-
-}
-
 /** Base settings for plot-based charts
  * @public
  */
@@ -386,8 +353,6 @@ export interface ScrollytellingSettings extends SettingGroup {
 export interface Settings extends SettingGroup {
   /** Axis configuration */
   axis: AxesSettings;
-  /** Popup tooltip settings */
-  popup: PopupSettings;
   /** Plot area settings */
   plotArea: PlotAreaSettings;
   /** Chart type-specific settings */

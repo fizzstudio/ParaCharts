@@ -159,7 +159,7 @@ export abstract class DataLayer extends PlotLayer {
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['ui.isLowVisionModeEnabled'].includes(path)) {
       if (!oldValue) {
-        this.paraview.paraState.updateSettings(draft => {
+        this.paraview.paraState.updateConfig(draft => {
           draft.popup.activation = 'onSelect'
         });
       }
