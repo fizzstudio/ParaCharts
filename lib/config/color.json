@@ -35,7 +35,7 @@
                 "compact": true
             },
             "panel": "color",
-            "parentView": "controlPanel.tabs.color.colorContrast",
+            "parentView": "controlPanel.tabs.color.colorContrastSlider",
             "keywords": ["color"]
         },
         "colorPalette": {
@@ -93,6 +93,94 @@
             "description": "Custom color 8",
             "type": "string",
             "default": ""
+        },
+        "themeMode": {
+            "label": "Color theme",
+            "description": "Color theme preference: follow system, always light, or always dark",
+            "type": "'system' | 'light' | 'dark'",
+            "default": "system",
+            "control": "radio",
+            "panel": "color",
+            "parentView": "controlPanel.tabs.color.colorPrefs.dialog",
+            "keywords": ["color", "theme"]
+        },
+        "themeSource": {
+            "description": "Source of the current theme setting",
+            "type": "ColorPrefSource",
+            "default": "default",
+            "advanced": true
+        },
+        "contrastMode": {
+            "label": "Contrast preference",
+            "description": "Contrast level preference: follow system, lower, normal, higher, or custom",
+            "type": "'system' | 'lower' | 'normal' | 'higher' | 'custom'",
+            "default": "system",
+            "control": "radio",
+            "panel": "color",
+            "parentView": "controlPanel.tabs.color.colorPrefs.contrast",
+            "keywords": ["color", "contrast"]
+        },
+        "contrastSource": {
+            "description": "Source of the current contrast setting",
+            "type": "ColorPrefSource",
+            "default": "default",
+            "advanced": true
+        },
+        "forcedColorsMode": {
+            "description": "How to respond to forced-colors system mode",
+            "type": "'system' | 'respect'",
+            "default": "system",
+            "advanced": true
+        },
+        "invertedColorsMode": {
+            "description": "How to respond to inverted-colors system mode",
+            "type": "'system' | 'adapt'",
+            "default": "system",
+            "advanced": true
+        },
+        "lowVisionColorPalette": {
+            "description": "Use the low-vision high-contrast color palette when low-vision mode is enabled",
+            "type": "boolean",
+            "default": true,
+            "advanced": true
+        },
+        "lowVisionThemeDefault": {
+            "description": "Theme to apply as a mode default when low-vision mode is enabled",
+            "type": "'system' | 'light' | 'dark'",
+            "default": "dark",
+            "advanced": true
+        },
+        "lowVisionContrastDefault": {
+            "description": "Contrast mode to apply as a mode default when low-vision mode is enabled",
+            "type": "'system' | 'lower' | 'normal' | 'higher' | 'custom'",
+            "default": "higher",
+            "advanced": true
+        },
+        "lowVisionContrastLevel": {
+            "description": "Contrast level for custom low-vision contrast (0-1)",
+            "type": "number",
+            "default": 1,
+            "advanced": true
+        },
+        "backgroundColor": {
+            "description": "Resolved active background color (oklch string, set by ColorPrefManager)",
+            "type": "string",
+            "default": "",
+            "advanced": true
+        },
+        "backgroundColorLight": {
+            "label": "Background color (light mode)",
+            "description": "Explicit background color for light mode as an oklch() string. Empty string uses the theme default.",
+            "type": "string",
+            "default": "",
+            "advanced": true
+        },
+        "backgroundColorDark": {
+            "label": "Background color (dark mode)",
+            "description": "Explicit background color for dark mode as an oklch() string. Empty string uses the theme default.",
+            "type": "string",
+            "default": "",
+            "advanced": true
         }
     }
 }

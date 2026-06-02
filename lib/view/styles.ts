@@ -287,9 +287,6 @@ export const styles = css`
     /*stroke-width: 2;*/
     stroke-linejoin: round;
   }
-  .symbol.outline {
-    fill: white;
-  }
   .slice path {
     stroke: none;
     /*opacity: 0.5;*/
@@ -305,112 +302,83 @@ export const styles = css`
     background-color: var(--background-color);
   }
 
-  /* COLOR PALETTES */
-
-  .theme-diva {
-    --color-palette-series-0: hsl(207, 43%, 40%);
-    --color-palette-series-1: hsl(13, 40%, 46%);
-    --color-palette-series-2: hsl(102, 24%, 39%);
-    --color-palette-series-3: hsl(276, 18%, 47%);
-    --color-palette-series-4: hsl(177, 33%, 35%);
-    --color-palette-series-5: hsl(37, 57%, 45%);
-    --color-palette-series-6: hsl(208, 35%, 62%);
-    --color-palette-series-7: hsl(65, 26%, 37%);
-    --color-palette-series-8: hsl(30, 52%, 45%);
-    --color-palette-series-9: hsl(40, 22%, 55%);
-  }
-
-  .theme-deutan {
-    --color-palette-series-0: hsl(207, 43%, 40%);
-    --color-palette-series-1: hsl(10, 41%, 49%);
-    --color-palette-series-2: hsl(146, 23%, 40%);
-    --color-palette-series-3: hsl(295, 22%, 46%);
-    --color-palette-series-4: hsl(185, 61%, 36%);
-    --color-palette-series-5: hsl(38, 60%, 45%);
-    --color-palette-series-6: hsl(207, 42%, 63%);
-    --color-palette-series-7: hsl(88, 24%, 37%);
-    --color-palette-series-8: hsl(29, 55%, 46%);
-    --color-palette-series-9: hsl(41, 24%, 56%);
-  }
-
-  .theme-protan {
-    --color-palette-series-0: hsl(206, 54%, 40%);
-    --color-palette-series-1: hsl(13, 49%, 48%);
-    --color-palette-series-2: hsl(165, 27%, 38%);
-    --color-palette-series-3: hsl(331, 30%, 45%);
-    --color-palette-series-4: hsl(177, 54%, 35%);
-    --color-palette-series-5: hsl(38, 60%, 45%);
-    --color-palette-series-6: hsl(209, 34%, 58%);
-    --color-palette-series-7: hsl(117, 10%, 39%);
-    --color-palette-series-8: hsl(28, 54%, 45%);
-    --color-palette-series-9: hsl(41, 24%, 56%);
-  }
-
-  .theme-tritan {
-    --color-palette-series-0: hsl(202, 43%, 50%);
-    --color-palette-series-1: hsl(353, 52%, 54%);
-    --color-palette-series-2: hsl(140, 14%, 43%);
-    --color-palette-series-3: hsl(274, 15%, 45%);
-    --color-palette-series-4: hsl(186, 48%, 36%);
-    --color-palette-series-5: hsl(10, 44%, 56%);
-    --color-palette-series-6: hsl(197, 34%, 58%);
-    --color-palette-series-7: hsl(317, 6%, 46%);
-    --color-palette-series-8: hsl(14, 44%, 51%);
-    --color-palette-series-9: hsl(251, 10%, 68%);
-  }
-
-  .theme-grayscale {
-    --color-palette-series-0: hsl(205, 44%, 41%);
-    --color-palette-series-1: hsl(8, 33%, 48%);
-    --color-palette-series-2: hsl(110, 14%, 42%);
-    --color-palette-series-3: hsl(270, 12%, 58%);
-    --color-palette-series-4: hsl(182, 17%, 41%);
-    --color-palette-series-5: hsl(37, 35%, 61%);
-    --color-palette-series-6: hsl(211, 23%, 77%);
-    --color-palette-series-7: hsl(63, 10%, 37%);
-    --color-palette-series-8: hsl(33, 14%, 54%);
-    --color-palette-series-9: hsl(41, 15%, 80%);
-  }
+  /* COLOR PALETTES
+   * --color-palette-series-N and --color-palette-series-N-light vars are
+   * injected dynamically onto the SVG root element by Colors.paletteVars()
+   * whenever the palette changes. This supports built-in and author-defined
+   * palettes equally — no per-palette CSS blocks needed here.
+   *
+   * Each .series-N rule also defines --series-color-light so that child
+   * elements (e.g. .symbol.lighten) can reference the lightened variant
+   * via a single inherited custom property.
+   */
 
   .series-0 {
     fill: var(--color-palette-series-0);
     stroke: var(--color-palette-series-0);
+    --series-color-light: var(--color-palette-series-0-light);
   }
   .series-1 {
     fill: var(--color-palette-series-1);
     stroke: var(--color-palette-series-1);
+    --series-color-light: var(--color-palette-series-1-light);
   }
   .series-2 {
     fill: var(--color-palette-series-2);
     stroke: var(--color-palette-series-2);
+    --series-color-light: var(--color-palette-series-2-light);
   }
   .series-3 {
     fill: var(--color-palette-series-3);
     stroke: var(--color-palette-series-3);
+    --series-color-light: var(--color-palette-series-3-light);
   }
   .series-4 {
     fill: var(--color-palette-series-4);
     stroke: var(--color-palette-series-4);
+    --series-color-light: var(--color-palette-series-4-light);
   }
   .series-5 {
     fill: var(--color-palette-series-5);
     stroke: var(--color-palette-series-5);
+    --series-color-light: var(--color-palette-series-5-light);
   }
   .series-6 {
     fill: var(--color-palette-series-6);
     stroke: var(--color-palette-series-6);
+    --series-color-light: var(--color-palette-series-6-light);
   }
   .series-7 {
     fill: var(--color-palette-series-7);
     stroke: var(--color-palette-series-7);
+    --series-color-light: var(--color-palette-series-7-light);
   }
   .series-8 {
     fill: var(--color-palette-series-8);
     stroke: var(--color-palette-series-8);
+    --series-color-light: var(--color-palette-series-8-light);
   }
   .series-9 {
     fill: var(--color-palette-series-9);
     stroke: var(--color-palette-series-9);
+    --series-color-light: var(--color-palette-series-9-light);
+  }
+
+  /* Symbol fill overrides — must appear after .series-N rules so that
+   * outline/empty/lighten beats the inherited series fill. */
+  .symbol.outline {
+    fill: white;
+  }
+  .symbol.empty {
+    fill: none;
+  }
+  .symbol.lighten {
+    fill: var(--series-color-light);
+  }
+
+  /* Cluster centroid marker: fill from .series-N, stroke forced black. */
+  .cluster-centroid {
+    stroke: black;
   }
 
   .range-highlights {
@@ -551,5 +519,47 @@ export const styles = css`
 
   #chart-layers {
     cursor: var(--data-cursor);
+  }
+
+  /* -------------------------------------------------------------------------
+   * forced-colors: active
+   * When the OS/browser constrains colour rendering, defer structural elements
+   * to system colour keywords so text and structure remain legible.
+   * Series fill/stroke use forced-color-adjust: none ONLY because ParaCharts
+   * already provides shape and pattern redundancy for non-colour differentiation
+   * (see lib/common/colors.ts pattern palette and 16 symbol types).
+   * ------------------------------------------------------------------------- */
+  @media (forced-colors: active) {
+    :host { background-color: Canvas; }
+
+    #y-axis-line,
+    #x-axis-line     { stroke: CanvasText; }
+
+    .chart-title,
+    .axis-title       { fill: CanvasText; }
+
+    .axis-label,
+    .tick-label       { fill: CanvasText; }
+
+    .tick-grid        { stroke: CanvasText; opacity: 0.25; }
+
+    .focus-ring       { stroke: Highlight; }
+
+    .visited          { fill: GrayText; stroke: GrayText; }
+
+    /* Preserve author series colours: shape + pattern redundancy is already in
+       place, so meaning does not depend on colour alone. */
+    .series-0, .series-1, .series-2, .series-3,
+    .series-4, .series-5, .series-6, .series-7,
+    .series-8, .series-9 { forced-color-adjust: none; }
+  }
+
+  /* -------------------------------------------------------------------------
+   * inverted-colors: inverted
+   * Strengthen structural differentiation; avoid hue-semantic reliance.
+   * ParaCharts' existing shape/pattern redundancy is the primary safeguard.
+   * ------------------------------------------------------------------------- */
+  @media (inverted-colors: inverted) {
+    .focus-ring { stroke-width: 3px; }
   }
 `;

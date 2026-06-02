@@ -4,3 +4,5 @@ export * from './advanced_controls_dialog';
 export * from './animation_dialog';
 export * from './annotation_dialog';
 export * from './legend_dialog';
+export * from './color_prefs_dialog';
+export * from './low_vision_dialog';
