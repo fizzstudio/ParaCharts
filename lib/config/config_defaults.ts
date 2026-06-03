@@ -19,7 +19,7 @@ export const defaultConfig: Config = {
       custom6: "",
       custom7: "",
       custom8: "",
-      themeMode: "system",
+      themeMode: "auto",
       themeSource: "default",
       contrastMode: "system",
       contrastSource: "default",
