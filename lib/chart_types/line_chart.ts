@@ -69,6 +69,13 @@ export class LineChartInfo extends PointChartInfo {
         await this._navMap!.cursor.move('out');
       }
     }
+    // Add or remove single-series series landings based on whether
+    // soni is enabled
+    if (path === 'sonification.isSonificationEnabled') {
+      const idx = this._navMap!.cursor.index;
+      this._createNavMap();
+      this._navMap!.layer(this._navMap!.currentLayer)!.goTo('datapoint', idx, true);
+    }
     super.settingDidChange(path, oldValue, newValue);
   }
 

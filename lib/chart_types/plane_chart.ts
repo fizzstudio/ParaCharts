@@ -329,7 +329,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     // Sort by value of first datapoint from greatest to least
     const sortedSeries = this.seriesInNavOrder();
     sortedSeries.forEach((series, i) => {
-      if (sortedSeries.length > 1) {
+      if (sortedSeries.length > 1 || this._paraState.config.sonification.isSonificationEnabled) {
         const seriesNode = new NavNode(this._navMap!.root, 'series', {
           seriesKey: series.key
         }, this._paraState);
