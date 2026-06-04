@@ -16,10 +16,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { BaseChartInfo } from './base_chart';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, type NavMap } from '../view/layers/data/navigation';
-import { DeepReadonly, PlaneChartSettings, type ParaState } from '../state';
+import { type ParaState } from '../state';
+import { DeepReadonly } from '../config/config_types';
 import { ParaView } from '../paraview';
 import { type RiffOrder } from './base_chart';
-import { type HorizDirection } from '../state';
+import { TypePlaneConfig, type HorizDirection } from '../config/config_types';
 
 import { ChartType, Datatype, Facet } from '@fizz/paramanifest';
 import { Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
@@ -160,11 +161,11 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   }
 
   get settings() {
-    return super.settings as DeepReadonly<PlaneChartSettings>;
+    return super.settings as DeepReadonly<TypePlaneConfig>;
   }
 
   get config() {
-    return super.config as DeepReadonly<PlaneChartSettings>;
+    return super.config as DeepReadonly<TypePlaneConfig>;
   }
 
   get horizFacet(): Facet | null {

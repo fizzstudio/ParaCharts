@@ -2,11 +2,8 @@ import { Logger, getLogger } from '@fizz/logger';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaDialog, ParaComponent } from '../components';
 //import { styles } from '../../styles';
-import {
-  type DeepReadonly,
-  type TabLabelStyle,
-} from '../state/settings_types';
 import { SettingsManager } from '../state/settings_manager';
+import { TabLabelStyle } from '../config/config_types';
 import {
   DescriptionPanel, DataPanel, ColorsPanel, ChartPanel,
   AnnotationPanel, ControlsPanel

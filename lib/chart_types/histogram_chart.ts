@@ -1,5 +1,6 @@
 import { PlaneChartInfo } from './plane_chart';
-import { type ParaState, type DeepReadonly } from '../state';
+import { type ParaState } from '../state';
+import { DeepReadonly } from '../config/config_types';
 import { type ParaView } from '../paraview';
 import { type ChartType } from "@fizz/paramanifest";
 import { AxisInfo, computeLabels } from '../common';
@@ -17,7 +18,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
 
   protected _init() {
     super._init();
-    this._bins = this._paraState.settings.type.histogram.bins ?? 20;
+    this._bins = this._paraState.config.type.histogram.bins ?? 20;
     this._generateBins();
     const values = this._grid.flat();
     this._maxCount = Math.max(...values);
@@ -80,39 +81,13 @@ export class HistogramChartInfo extends PlaneChartInfo {
 
   protected _addSettingControls(): void {
     super._addSettingControls();
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'type.histogram.bins',
-      label: 'Bins',
-      options: {
-        inputType: 'number',
-        min: 5,
-        max: 100
-      },
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
+    this._paraState.settingControls.insert('type.histogram.bins');
     const variables = this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label);
-    this._paraState.settingControls.add({
-      type: 'dropdown',
-      key: 'type.histogram.groupingAxis',
-      label: 'Axis to group:',
-      options: { options: variables as string[] },
-      parentView: 'controlPanel.tabs.chart.chart'
+    this._paraState.settingControls.insert('type.histogram.groupingAxis', {
+      options: variables as string[]
     });
-    this._paraState.settingControls.add({
-      type: 'dropdown',
-      key: 'type.histogram.displayAxis',
-      label: 'Axis to display histogram:',
-      options: { options: ["x", "y"] },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
-    this._paraState.settingControls.add({
-      type: 'dropdown',
-      key: 'type.histogram.relativeAxes',
-      label: 'Show counts vs percentages:',
-      options: { options: ["Counts", "Percentage"] },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
+    this._paraState.settingControls.insert('type.histogram.displayAxis');
+    this._paraState.settingControls.insert('type.histogram.relativeAxes');
   }
 
   get grid() {

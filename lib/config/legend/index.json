@@ -11,7 +11,7 @@
             "label": "Show legend",
             "description": "Draw legend",
             "type": "boolean",
-            "default": true,
+            "default": false,
             "control": "checkbox",
             "parentView": "controlPanel.tabs.chart.legend.dialog"
         },
@@ -55,7 +55,7 @@
             "label": "Legend item order",
             "description": "Ordering of legend items",
             "type": "LegendItemOrder",
-            "default": "series",
+            "default": "startingOrder",
             "control": "dropdown",
             "controlOptions": {
                 "options": [

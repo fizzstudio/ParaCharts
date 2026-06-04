@@ -1,12 +1,8 @@
 import { State, property } from '@lit-app/state';
 
-import {
-  DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
-  type Setting,
-} from './settings_types';
+import { Settings, type Setting } from './settings_types';
 import { Config } from '../config/config_types';
 import { SettingsManager } from './settings_manager';
-import { defaults, chartTypeDefaults } from './settings_defaults';
 
 import { Logger, getLogger } from '@fizz/logger';
 

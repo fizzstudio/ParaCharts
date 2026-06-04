@@ -18,6 +18,11 @@ export type ConfigSetting = string | number | boolean;
  * @public
  */
 export type ConfigGroup = {[key: string]: ConfigSetting | ConfigGroup | undefined};
+/**
+ * A mapping of dotted setting paths to values.
+ * @public
+ */
+export type SettingsInput = {[path: string]: ConfigSetting};
 
 /** Chart types that display individual points
  * @public
@@ -38,6 +43,20 @@ export type PastryChartType = 'pie' | 'donut' | 'gauge';
  * @public
  */
 export type ChartType = PlaneChartType | PastryChartType;
+
+/** SVG viewBox dimensions for chart viewport
+ * @public
+ */
+export interface ViewBox extends ConfigGroup {
+  /** X coordinate of top-left corner */
+  x: number;
+  /** Y coordinate of top-left corner */
+  y: number;
+  /** Width of viewable area */
+  width: number;
+  /** Height of viewable area */
+  height: number;
+}
 
 /** @public */
 export type VertDirection = 'up' | 'down';
@@ -107,7 +126,10 @@ export type ColorPrefSource =
   | 'system'       // derived from current media-query state
   | 'user';        // explicit user choice — wins until explicitly reset
 
-
+/** @public */
+export type DeepReadonly<T> = {
+  readonly [Property in keyof T]: T extends ConfigSetting ? T[Property] : DeepReadonly<T[Property]>;
+};
 
 export interface Config extends ConfigGroup {
   color: ColorConfig;
@@ -122,6 +144,7 @@ export interface Config extends ConfigGroup {
   grid: GridConfig;
   axis: AxisConfig;
   popup: PopupConfig;
+  scrollytelling: ScrollytellingConfig;
 }
 export interface ColorConfig extends ConfigGroup {
   /** Color vision deficiency simulation mode */
@@ -223,7 +246,7 @@ export interface ControlpanelCaptionConfig extends ConfigGroup {
 export interface LegendConfig extends ConfigGroup {
   /** Draw chart legend */
   isDrawLegend: boolean;
-  /** Always draw legend regardless of data */
+  /** Draw legend */
   isAlwaysDrawLegend: boolean;
   /** Internal padding within legend box */
   padding: number;
@@ -239,8 +262,9 @@ export interface LegendConfig extends ConfigGroup {
   itemOrder: LegendItemOrder;
   /** Font size for legend text */
   fontSize: string;
-  boxStyle: LegendBoxstyleConfig;
+  /** Position legend items directly */
   useDirectLegends: boolean;
+  boxStyle: LegendBoxstyleConfig;
 }
 export interface LegendBoxstyleConfig extends ConfigGroup {
   /** Border color */
@@ -400,7 +424,9 @@ export interface UiConfig extends ConfigGroup {
 }
 export interface TypeConfig extends ConfigGroup {
   line: TypeLineConfig;
+  histogram: TypeHistogramConfig;
   donut: TypeDonutConfig;
+  heatmap: TypeHeatmapConfig;
   scatter: TypeScatterConfig;
   column: TypeColumnConfig;
   pie: TypePieConfig;
@@ -431,6 +457,16 @@ export interface TypePlaneConfig extends ConfigGroup {
   /** Maximum Y value override */
   maxYValue: number | 'unset';
 }
+export interface TypeHistogramConfig extends TypePlaneConfig {
+  /** Number of bins for grouping data */
+  bins: number;
+  /** Which axis shows the histogram bars */
+  displayAxis: string;
+  /** Which axis is used for grouping */
+  groupingAxis: string;
+  /** Show counts or percentages */
+  relativeAxes: 'Counts' | 'Percentage';
+}
 export interface TypeDonutConfig extends TypePastryConfig {
   outsideLabels: TypeDonutOutsidelabelsConfig;
   insideLabels: TypeDonutInsidelabelsConfig;
@@ -438,6 +474,10 @@ export interface TypeDonutConfig extends TypePastryConfig {
 export interface TypeDonutOutsidelabelsConfig extends TypePastryOutsidelabelsConfig {
 }
 export interface TypeDonutInsidelabelsConfig extends TypePastryInsidelabelsConfig {
+}
+export interface TypeHeatmapConfig extends TypePlaneConfig {
+  /** Grid resolution for heat map */
+  resolution: number;
 }
 export interface TypePastryConfig extends ConfigGroup {
   /** Thickness of donut/gauge ring */
@@ -760,4 +800,12 @@ export interface PopupConfig extends ConfigGroup {
   isShowCrosshair: boolean;
   /** Make crosshair follow pointer */
   isCrosshairFollowPointer: boolean;
+}
+export interface ScrollytellingConfig extends ConfigGroup {
+  /** Enable scrollytelling mode */
+  isScrollytellingEnabled: boolean;
+  /** Enable audio announcements during scrolling */
+  isScrollyAnnouncementsEnabled: boolean;
+  /** Enable sonification during scrolling */
+  isScrollySoniEnabled: boolean;
 }

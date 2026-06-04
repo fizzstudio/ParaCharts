@@ -94,16 +94,16 @@ export class AxisInfo {
   protected _yLabelInfo!: AxisLabelInfo;
 
   constructor(protected _paraState: ParaState, protected _options: AxisOptions) {
-    if (_options.xTiers) {
-      this._xLabelInfo = {labelTiers: _options.xTiers};
-    } else {
-      this._computeXLabelInfo();
-    }
-    if (_options.yTiers) {
-      this._yLabelInfo = {labelTiers: _options.yTiers}
-    } else {
-      this._computeYLabelInfo();
-    }
+    // if (_options.xTiers) {
+    //   this._xLabelInfo = {labelTiers: _options.xTiers};
+    // } else {
+    //   this._computeXLabelInfo();
+    // }
+    // if (_options.yTiers) {
+    //   this._yLabelInfo = {labelTiers: _options.yTiers}
+    // } else {
+    //   this._computeYLabelInfo();
+    // }
   }
 
   get xLabelInfo() {
@@ -148,58 +148,58 @@ export class AxisInfo {
     return orientation === 'horiz' ? this.horizFacet : this.vertFacet;
   }
 
-  updateYRange() {
-    // this._options.yMin = min === 'unset'
-    //   ? Math.min(...this._options.yValues)
-    //   : min;
-    // this._options.yMax = max === 'unset'
-    //   ? Math.max(...this._options.yValues)
-    //   : max;
-    this._computeYLabelInfo();
-  }
+  // updateYRange() {
+  //   // this._options.yMin = min === 'unset'
+  //   //   ? Math.min(...this._options.yValues)
+  //   //   : min;
+  //   // this._options.yMax = max === 'unset'
+  //   //   ? Math.max(...this._options.yValues)
+  //   //   : max;
+  //   this._computeYLabelInfo();
+  // }
 
-  protected _computeXLabels(xMin: number, xMax: number) {
-    return computeLabels(
-      this._paraState.settings.axis.x.minValue === 'unset'
-        ? xMin
-        : this._paraState.settings.axis.x.minValue as number,
-      this._paraState.settings.axis.x.maxValue === 'unset'
-        ? xMax
-        : this._paraState.settings.axis.x.maxValue as number,
-      false);
-  }
+  // protected _computeXLabels(xMin: number, xMax: number) {
+  //   return computeLabels(
+  //     this._paraState.settings.axis.x.minValue === 'unset'
+  //       ? xMin
+  //       : this._paraState.settings.axis.x.minValue as number,
+  //     this._paraState.settings.axis.x.maxValue === 'unset'
+  //       ? xMax
+  //       : this._paraState.settings.axis.x.maxValue as number,
+  //     false);
+  // }
 
-  protected _computeYLabels(yMin: number, yMax: number) {
-    if (this._paraState.settings.axis.y.interval !== 'unset') {
-      return computeLabelsFromInterval(yMin, yMax, this._paraState.settings.axis.y.interval, false);
-    } else {
-      return computeLabels(yMin, yMax, false); //this._model.depFormat === 'percent');
-    }
-  }
+  // protected _computeYLabels(yMin: number, yMax: number) {
+  //   if (this._paraState.settings.axis.y.interval !== 'unset') {
+  //     return computeLabelsFromInterval(yMin, yMax, this._paraState.settings.axis.y.interval, false);
+  //   } else {
+  //     return computeLabels(yMin, yMax, false); //this._model.depFormat === 'percent');
+  //   }
+  // }
 
-  protected _computeXLabelInfo() {
-    if (this._options.xValues) {
-      this._xLabelInfo = this._computeXLabels(
-        Math.min(...this._options.xValues),
-        Math.max(...this._options.xValues));
-    } else {
-      const labels = this._paraState.model!.series[0].datapoints.map(
-        (p) => formatBox(p.facetBox('x')!, this._paraState.getFormatType('horizTick'))
-      );
-      this._xLabelInfo = {
-        labelTiers: [labels]
-      };
-    }
-  }
+  // protected _computeXLabelInfo() {
+  //   if (this._options.xValues) {
+  //     this._xLabelInfo = this._computeXLabels(
+  //       Math.min(...this._options.xValues),
+  //       Math.max(...this._options.xValues));
+  //   } else {
+  //     const labels = this._paraState.model!.series[0].datapoints.map(
+  //       (p) => formatBox(p.facetBox('x')!, this._paraState.getFormatType('horizTick'))
+  //     );
+  //     this._xLabelInfo = {
+  //       labelTiers: [labels]
+  //     };
+  //   }
+  // }
 
-  protected _computeYLabelInfo() {
-    const yMin = this._paraState.settings.axis.y.minValue === 'unset'
-      ? this._options.yMin ?? Math.min(...this._options.yValues)
-      : this._paraState.settings.axis.y.minValue;
-    const yMax = this._paraState.settings.axis.y.maxValue === 'unset'
-      ? this._options.yMax ?? Math.max(...this._options.yValues)
-      : this._paraState.settings.axis.y.maxValue;
-    this._yLabelInfo = this._computeYLabels(yMin, yMax);
-  }
+  // protected _computeYLabelInfo() {
+  //   const yMin = this._paraState.settings.axis.y.minValue === 'unset'
+  //     ? this._options.yMin ?? Math.min(...this._options.yValues)
+  //     : this._paraState.settings.axis.y.minValue;
+  //   const yMax = this._paraState.settings.axis.y.maxValue === 'unset'
+  //     ? this._options.yMax ?? Math.max(...this._options.yValues)
+  //     : this._paraState.settings.axis.y.maxValue;
+  //   this._yLabelInfo = this._computeYLabels(yMin, yMax);
+  // }
 
 }

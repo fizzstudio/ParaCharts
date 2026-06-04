@@ -17,9 +17,11 @@ import DescriptionJson from "./description.json" with { type: "json" };
 import UiJson from "./ui.json" with { type: "json" };
 import TypeLineJson from "./type/line.json" with { type: "json" };
 import TypePlaneJson from "./type/plane.json" with { type: "json" };
+import TypeHistogramJson from "./type/histogram.json" with { type: "json" };
 import TypeDonutJson from "./type/donut/index.json" with { type: "json" };
 import TypeDonutOutsidelabelsJson from "./type/donut/outsideLabels.json" with { type: "json" };
 import TypeDonutInsidelabelsJson from "./type/donut/insideLabels.json" with { type: "json" };
+import TypeHeatmapJson from "./type/heatmap.json" with { type: "json" };
 import TypePastryJson from "./type/pastry/index.json" with { type: "json" };
 import TypePastryOutsidelabelsJson from "./type/pastry/outsideLabels.json" with { type: "json" };
 import TypePastryInsidelabelsJson from "./type/pastry/insideLabels.json" with { type: "json" };
@@ -42,6 +44,7 @@ import AxisHorizTicksJson from "./axis/horiz/ticks/index.json" with { type: "jso
 import AxisHorizTicksLabelsJson from "./axis/horiz/ticks/labels.json" with { type: "json" };
 import AxisHorizTitleJson from "./axis/horiz/title.json" with { type: "json" };
 import PopupJson from "./popup.json" with { type: "json" };
+import ScrollytellingJson from "./scrollytelling.json" with { type: "json" };
 
 import { SettingControlType } from '../components';
 import { SettingControlOptionsType, RefreshTarget } from '../state';
@@ -92,9 +95,11 @@ export const configMetadata: ConfigMetadata = {
   'ui': UiJson as unknown as ConfigGroupMetadata,
   'type.line': TypeLineJson as unknown as ConfigGroupMetadata,
   'type.plane': TypePlaneJson as unknown as ConfigGroupMetadata,
+  'type.histogram': TypeHistogramJson as unknown as ConfigGroupMetadata,
   'type.donut': TypeDonutJson as unknown as ConfigGroupMetadata,
   'type.donut.outsideLabels': TypeDonutOutsidelabelsJson as unknown as ConfigGroupMetadata,
   'type.donut.insideLabels': TypeDonutInsidelabelsJson as unknown as ConfigGroupMetadata,
+  'type.heatmap': TypeHeatmapJson as unknown as ConfigGroupMetadata,
   'type.pastry': TypePastryJson as unknown as ConfigGroupMetadata,
   'type.pastry.outsideLabels': TypePastryOutsidelabelsJson as unknown as ConfigGroupMetadata,
   'type.pastry.insideLabels': TypePastryInsidelabelsJson as unknown as ConfigGroupMetadata,
@@ -117,6 +122,7 @@ export const configMetadata: ConfigMetadata = {
   'axis.horiz.ticks.labels': AxisHorizTicksLabelsJson as unknown as ConfigGroupMetadata,
   'axis.horiz.title': AxisHorizTitleJson as unknown as ConfigGroupMetadata,
   'popup': PopupJson as unknown as ConfigGroupMetadata,
+  'scrollytelling': ScrollytellingJson as unknown as ConfigGroupMetadata,
 }
 
 for (const [k, v] of Object.entries(configMetadata)) {

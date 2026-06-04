@@ -46,6 +46,11 @@ export type ConfigSetting = string | number | boolean;
  * @public
  */
 export type ConfigGroup = {[key: string]: ConfigSetting | ConfigGroup | undefined};
+/**
+ * A mapping of dotted setting paths to values.
+ * @public
+ */
+export type SettingsInput = {[path: string]: ConfigSetting};
 
 /** Chart types that display individual points
  * @public
@@ -66,6 +71,20 @@ export type PastryChartType = 'pie' | 'donut' | 'gauge';
  * @public
  */
 export type ChartType = PlaneChartType | PastryChartType;
+
+/** SVG viewBox dimensions for chart viewport
+ * @public
+ */
+export interface ViewBox extends ConfigGroup {
+  /** X coordinate of top-left corner */
+  x: number;
+  /** Y coordinate of top-left corner */
+  y: number;
+  /** Width of viewable area */
+  width: number;
+  /** Height of viewable area */
+  height: number;
+}
 
 /** @public */
 export type VertDirection = 'up' | 'down';
@@ -98,7 +117,7 @@ export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
 /** Order for legend items
  * @public
  */
-export type LegendItemOrder = 'alphabetical' | 'series';
+export type LegendItemOrder = 'alphabetical' | 'reverseAlphabetical' | 'startingOrder' | 'endingOrder';
 
 /** Position for data value labels on bars
  * @public
@@ -135,7 +154,10 @@ export type ColorPrefSource =
   | 'system'       // derived from current media-query state
   | 'user';        // explicit user choice — wins until explicitly reset
 
-
+/** @public */
+export type DeepReadonly<T> = {
+  readonly [Property in keyof T]: T extends ConfigSetting ? T[Property] : DeepReadonly<T[Property]>;
+};
 """, file=typesf)
         write_types_group([], tree, tree, typesf)
 
