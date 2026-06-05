@@ -1,7 +1,7 @@
 
 import { DatapointView } from '../../data';
 import { type ParaState } from '../../../state';
-import { type Direction } from '../../../state';
+import { type Direction } from '../../../config/config_types';
 import { DataLayer } from './data_layer';
 import { clusterObject } from '@fizz/clustering';
 import { BaseChartInfo } from '../../../chart_types';

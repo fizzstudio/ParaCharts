@@ -245,20 +245,17 @@ class LineLabelLeader extends View {
   }
 
   get styleInfo(): StyleInfo {
-    const styles: StyleInfo = {};
-    // const colorValue = this._controller.colors.colorValue(
-    //   this._controller.seriesManager.series(this.endpoint.seriesKey).color);
-    let colorValue = this.paraview.paraState.colors.colorValueAt(
-      this.paraview.paraState.seriesProperties!.properties(this._seriesKey).color);
-    styles.fill = colorValue;
-    styles.stroke = colorValue;
-    styles.strokeWidth = this.paraview.paraState.config.ui.isLowVisionModeEnabled ? 6 : 2;
-    return styles;
+    return {
+      strokeWidth: this.paraview.paraState.config.ui.isLowVisionModeEnabled ? 6 : 2,
+    };
   }
 
   get classInfo(): ClassInfo {
+    const color = this.paraview.paraState.seriesProperties!.properties(this._seriesKey).color;
+    const numColors = this.paraview.paraState.colors.numSeriesColors;
     return {
       'label-leader': true,
+      [`series-${color % numColors}`]: true,
       'lowlighted': this.paraview.paraState.isSeriesDimmed(this._seriesKey)
     }
   }

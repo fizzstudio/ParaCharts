@@ -3,7 +3,7 @@ import { View, Container } from './base_view';
 import { SimpleGridLayout, type Layout } from './layout';
 import { type DataSymbolType, DataSymbol, DataSymbolOptions } from './symbol';
 import { Label } from './label';
-import { type DeepReadonly, SettingsManager } from '../state';
+import { SettingsManager } from '../state';
 import { RectShape } from './shape/rect';
 import { type ViewContext } from './view_context';
 import { TemplateResult, svg } from 'lit';

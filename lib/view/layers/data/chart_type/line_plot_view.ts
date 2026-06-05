@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { PlaneSeriesView, PointPlotView, PointDatapointView } from '.';
-import { type DeepReadonly, type Setting } from '../../../../state/settings_types';
+import { type Setting } from '../../../../state/settings_types';
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { bboxOfBboxes, isPointerInbounds } from '../../../../common/utils';
@@ -72,7 +72,7 @@ export class LinePlotView extends PointPlotView {
   pointerMove(): void {
     const coords = this.paraview.paraState.pointerCoords;
     if (this.paraview.paraState.config.chart.isShowPopups
-      && this.paraview.paraState.settings.popup.activation === "onHover"
+      && this.paraview.paraState.config.popup.activation === "onHover"
       && !this.paraview.paraState.config.ui.isTourGuideEnabled
     ) {
       if (coords.x > 0 && coords.x < this.width && coords.y > 0 && coords.y < this.height) {

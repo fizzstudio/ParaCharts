@@ -15,8 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { BaseChartInfo, RiffOrder } from './base_chart';
-import { type ParaState, directions, type HorizDirection, datapointIdToCursor } from '../state';
-import { type ParaView } from '../paraview';
+import { type ParaState, datapointIdToCursor } from '../state';
+import { directions, HorizDirection } from '../config/config_types';
 import { queryMessages, describeSelections, getDatapointMinMax } from '../state/query_utils';
 import { Datapoint } from '@fizz/paramodel';
 import { formatXYDatapointX } from '@fizz/parasummary';

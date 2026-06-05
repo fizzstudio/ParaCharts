@@ -15,9 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import {
-  type Setting, type Settings, type SettingsInput, type SettingGroup,
-  DeepReadonly
+  type Setting, type Settings, type SettingGroup,
 } from './settings_types';
+import { SettingsInput, DeepReadonly } from '../config/config_types';
 //import { defaults } from './defaults';
 
 type SettingsStack = Array<{ group: Partial<SettingGroup>; prefix: string }>;

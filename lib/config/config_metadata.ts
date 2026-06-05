@@ -24,6 +24,8 @@ import DescriptionJson from "./description.json" with { type: "json" };
 import GridJson from "./grid.json" with { type: "json" };
 import LegendJson from "./legend/index.json" with { type: "json" };
 import LegendBoxstyleJson from "./legend/boxStyle.json" with { type: "json" };
+import PopupJson from "./popup.json" with { type: "json" };
+import ScrollytellingJson from "./scrollytelling.json" with { type: "json" };
 import SonificationJson from "./sonification.json" with { type: "json" };
 import TypeBarJson from "./type/bar.json" with { type: "json" };
 import TypeColumnJson from "./type/column.json" with { type: "json" };
@@ -31,6 +33,7 @@ import TypeDonutJson from "./type/donut/index.json" with { type: "json" };
 import TypeDonutInsidelabelsJson from "./type/donut/insideLabels.json" with { type: "json" };
 import TypeDonutOutsidelabelsJson from "./type/donut/outsideLabels.json" with { type: "json" };
 import TypeHeatmapJson from "./type/heatmap.json" with { type: "json" };
+import TypeHistogramJson from "./type/histogram.json" with { type: "json" };
 import TypeLineJson from "./type/line.json" with { type: "json" };
 import TypePastryJson from "./type/pastry/index.json" with { type: "json" };
 import TypePastryInsidelabelsJson from "./type/pastry/insideLabels.json" with { type: "json" };
@@ -99,6 +102,8 @@ export const configMetadata: ConfigMetadata = {
   'grid': GridJson as unknown as ConfigGroupMetadata,
   'legend': LegendJson as unknown as ConfigGroupMetadata,
   'legend.boxStyle': LegendBoxstyleJson as unknown as ConfigGroupMetadata,
+  'popup': PopupJson as unknown as ConfigGroupMetadata,
+  'scrollytelling': ScrollytellingJson as unknown as ConfigGroupMetadata,
   'sonification': SonificationJson as unknown as ConfigGroupMetadata,
   'type.bar': TypeBarJson as unknown as ConfigGroupMetadata,
   'type.column': TypeColumnJson as unknown as ConfigGroupMetadata,
@@ -106,6 +111,7 @@ export const configMetadata: ConfigMetadata = {
   'type.donut.insideLabels': TypeDonutInsidelabelsJson as unknown as ConfigGroupMetadata,
   'type.donut.outsideLabels': TypeDonutOutsidelabelsJson as unknown as ConfigGroupMetadata,
   'type.heatmap': TypeHeatmapJson as unknown as ConfigGroupMetadata,
+  'type.histogram': TypeHistogramJson as unknown as ConfigGroupMetadata,
   'type.line': TypeLineJson as unknown as ConfigGroupMetadata,
   'type.pastry': TypePastryJson as unknown as ConfigGroupMetadata,
   'type.pastry.insideLabels': TypePastryInsidelabelsJson as unknown as ConfigGroupMetadata,

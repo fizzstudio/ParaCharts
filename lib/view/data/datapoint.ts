@@ -130,9 +130,11 @@ export class DatapointView extends DataView {
   }
 
   get classInfo(): ClassInfo {
-    let index = this.index;
+    const index = this.index;
+    const numColors = this.paraview.paraState.colors.numSeriesColors;
     return {
       datapoint: true,
+      [`series-${this.color % numColors}`]: true,
       visited: this.paraview.paraState.isVisited(this.seriesKey, index),
       selected: this.paraview.paraState.isSelected(this.seriesKey, index),
       highlighted: this.paraview.paraState.isDatapointHighlighted(this.seriesKey, index),
@@ -351,7 +353,13 @@ export class DatapointView extends DataView {
     if (this._children.length === 1) {
       // classInfo may change, so needs to get reassigned here
       const kid = this._children[0] as (Shape | DataSymbol);
-      kid.classInfo = this.classInfo;
+      if (kid instanceof DataSymbol) {
+        // Merge: preserve symbol-managed classes (symbol, fill-type, lighten) while
+        // adding datapoint state classes (series-N, visited, selected, etc.)
+        kid.classInfo = { ...kid.classInfo, ...this.classInfo };
+      } else {
+        kid.classInfo = this.classInfo;
+      }
       return super.content();
     } else {
       return svg`
@@ -384,7 +392,7 @@ export class DatapointView extends DataView {
     let pointerControlled = false;
     if (['bar', 'column', 'waterfall'].includes(this.paraview.paraState.type)) {
       x = this.x + this.width / 2
-      if (this.paraview.paraState.settings.popup.activation == "onHover") {
+      if (this.paraview.paraState.config.popup.activation == "onHover") {
         pointerControlled = true;
       }
     }
@@ -410,7 +418,7 @@ export class DatapointView extends DataView {
       let angle = 2 * Math.PI - ((params.accum * 2 * Math.PI) + (params.percentage * Math.PI) - (chart.config.orientationAngleOffset * 2 * Math.PI / 360))
       x = this.x + chart.radius * (1 - chart.config.annularThickness / 2) * Math.cos(angle)
       y = this.y - chart.radius * (1 - chart.config.annularThickness / 2) * Math.sin(angle)
-      if (this.paraview.paraState.settings.popup.activation == "onHover") {
+      if (this.paraview.paraState.config.popup.activation == "onHover") {
         pointerControlled = true;
       }
     }
@@ -439,10 +447,10 @@ export class DatapointView extends DataView {
   shouldAddHoverPopup(): boolean {
     if (['bar', 'column', 'scatter', 'waterfall'].includes(this.paraview.paraState.type)) {
       if (this.paraview.paraState.config.chart.isShowPopups
-        && this.paraview.paraState.settings.popup.activation == 'onHover'
-        && (!this.paraview.paraState.settings.popup.isShowCrosshair
-          || (this.paraview.paraState.settings.popup.isShowCrosshair
-            && this.paraview.paraState.settings.popup.isCrosshairFollowPointer))) {
+        && this.paraview.paraState.config.popup.activation == 'onHover'
+        && (!this.paraview.paraState.config.popup.isShowCrosshair
+          || (this.paraview.paraState.config.popup.isShowCrosshair
+            && this.paraview.paraState.config.popup.isCrosshairFollowPointer))) {
         return true
       }
       else {
@@ -451,7 +459,7 @@ export class DatapointView extends DataView {
     }
     else if (['pie', 'donut'].includes(this.paraview.paraState.type)) {
       if (this.paraview.paraState.config.chart.isShowPopups
-        && this.paraview.paraState.settings.popup.activation == 'onHover') {
+        && this.paraview.paraState.config.popup.activation == 'onHover') {
         return true
       }
       else {

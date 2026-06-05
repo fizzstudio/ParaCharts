@@ -6,7 +6,8 @@ import { chartInfoClasses, type BaseChartInfo } from '../../../../chart_types';
 import { type HeatMapInfo } from '../../../../chart_types/heat_map';
 import { fixed, getMostCommonReduce } from "../../../../common/utils";
 import { type DataLayerContext } from '../../../view_context';
-import { DeepReadonly, HeatmapSettings, PointChartType, type Setting } from "../../../../state";
+import { type Setting } from "../../../../state";
+import { PointChartType } from '../../../../config/config_types';
 import { DatapointView, SeriesView } from "../../../data";
 
 import { RectShape } from "../../../shape/rect";
@@ -20,7 +21,6 @@ import { NavNode } from "../navigation";
 import { View } from '../../../base_view';
 
 export class HeatMapPlotView extends PlanePlotView {
-  declare protected _settings: DeepReadonly<HeatmapSettings>;
   declare protected _chartInfo: HeatMapInfo;
   protected _tiles: HeatmapTileView[] = [];
   constructor(
@@ -32,7 +32,6 @@ export class HeatMapPlotView extends PlanePlotView {
   ) {
     super(paraview, width, height, dataLayerIndex, chartInfo);
     this.log = getLogger("HeatMapPlotView");
-    this._settings = this.paraview.paraState.settings.type.heatmap;
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
@@ -42,10 +41,6 @@ export class HeatMapPlotView extends PlanePlotView {
       this.paraview.requestUpdate();
     }
     super.settingDidChange(path, oldValue, newValue);
-  }
-
-  get settings() {
-    return this._settings;
   }
 
   get chartInfo(): HeatMapInfo {
@@ -78,26 +73,6 @@ export class HeatMapPlotView extends PlanePlotView {
     //for (const [col, i] of enumerate(this.paraview.paraState.model!.series)) {
     //const seriesView = this._newSeriesView(col.key);
     //this._chartLandingView.append(seriesView);
-
-
-    for (const [x, i] of enumerate(this.paraview.paraState.model!.allFacetValues('x')!)) {
-      xs.push(formatBox(x, this.paraview.paraState.getFormatType(`${this.parent.parent.type as PointChartType}Point`)));
-      const xId = strToId(xs.at(-1)!);
-      // if (this.selectors[i] === undefined) {
-      //   this.selectors[i] = [];
-      // }
-      // this.selectors[i].push(`tick-x-${xId}`);
-    }
-    /*
-    for (const [col, i] of enumerate(this.paraview.paraState.model!.series)) {
-      const seriesView = new PlaneSeriesView(this, col.key);
-      this._chartLandingView.append(seriesView);
-      for (let i = 0; i < this._chartInfo.resolution ** 2; i++) {
-        const heatmapTile = new HeatmapTileView(this, seriesView);
-        seriesView.append(heatmapTile)
-      }
-    }
-*/
     // NB: This only works properly because we haven't added series direct labels
     // yet, which are also direct children of the chart.
     //this._chartLandingView.sortChildren((a: PlaneSeriesView, b: PlaneSeriesView) => {
@@ -301,17 +276,13 @@ export class HeatmapTile extends RectShape {
   render() {
     const cursor = this.chart.chartInfo.navMap!.cursor!
     if (cursor.type == 'heatmapTile' && cursor.index == this.parent!.index - 1) {
-      this._styleInfo.stroke = 'hsl(0, 100.00%, 50.00%)'
+      this._styleInfo.stroke = 'var(--visited-color, hsl(0, 100%, 50%))'
       this._styleInfo.strokeWidth = 4;
     }
     else {
       this._styleInfo.stroke = this.options.stroke ?? this._options.stroke;
       this._styleInfo.strokeWidth = this.options.strokeWidth ?? this._options.strokeWidth;
     }
-    //this._styleInfo.stroke = this.paraview.paraState.visitedDatapoints.values().some(item =>
-    //  item === (this.parent as HeatmapTileView).datapointId)
-    //  ? 'hsl(0, 100.00%, 50.00%)'
-    //  : this.options.stroke ?? this._options.stroke;
     return svg`
         <rect
           ${this._ref ? ref(this._ref) : undefined}

@@ -17,7 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest'
-import { DeepReadonly, Settings, SettingsInput, type Setting } from '../state/settings_types';
+import { type Setting } from '../state/settings_types';
+import { SettingsInput } from '../config/config_types';
 import { SettingsManager } from '../state';
 import '../paraview';
 import '../components/data_table';
@@ -41,7 +42,7 @@ import {
 } from '../scrollyteller/scrollyteller';
 
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
-import { property, queryAssignedElements } from 'lit/decorators.js';
+import { property, state, queryAssignedElements } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -353,6 +354,7 @@ export class ParaChart extends ParaComponent {
         display: inline flex;
         flex-direction: column;
         margin: 0;
+        position: relative;
       }
       figure.scalable {
         width: 100%;
@@ -535,7 +537,7 @@ export class ParaChart extends ParaComponent {
   ): void {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-    if (this._paraState.settings.scrollytelling.isScrollytellingEnabled) {
+    if (this._paraState.config.scrollytelling.isScrollytellingEnabled) {
       this._scrollyteller?.destroy();
       this._scrollyteller = new Scrollyteller(this, options);
       this._scrollyteller.init();

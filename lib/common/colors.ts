@@ -271,10 +271,6 @@ export class Colors {
             name: 'cyan'
           },
           {
-            value: 'hsl(234, 20.5%, 47.8%)',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -305,10 +301,6 @@ export class Colors {
             name: 'forest green'
           },
           {
-            value: 'cyan',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -337,10 +329,6 @@ export class Colors {
           {
             value: 'hsl(41, 100%, 50%)',
             name: 'orange'
-          },
-          {
-            value: 'cyan',
-            name: 'highlight'
           },
           {
             value: 'hsl(0, 100%, 50%)',
@@ -413,10 +401,6 @@ export class Colors {
             name: 'black'
           },
           {
-            value: 'cyan',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -440,10 +424,6 @@ export class Colors {
             value: 'hsl(227, 26%, 52%)',
             name: 'neutral',
             contrastValue: `hsl(0, 0%, 100%)`
-          },
-          {
-            value: 'cyan',
-            name: 'highlight'
           },
           {
             value: 'hsl(0, 100%, 50%)',
@@ -505,10 +485,6 @@ export class Colors {
             value: 'hsl(44, 11%, 81%)',
             name: 'khaki',
             contrastValue: 'hsl(0, 0%, 0%)'
-          },
-          {
-            value: 'cyan',
-            name: 'highlight'
           },
           {
             value: 'hsl(0, 100%, 50%)',
@@ -573,10 +549,6 @@ export class Colors {
             contrastValue: 'hsl(0, 0%, 100%)'
           },
           {
-            value: 'cyan',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -637,10 +609,6 @@ export class Colors {
             value: 'hsl(41, 24%, 56%)',
             name: 'khaki',
             contrastValue: 'hsl(0, 0%, 100%)'
-          },
-          {
-            value: 'cyan',
-            name: 'highlight'
           },
           {
             value: 'hsl(0, 100%, 50%)',
@@ -705,10 +673,6 @@ export class Colors {
             contrastValue: 'hsl(0, 0%, 0%)'
           },
           {
-            value: 'cyan',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -771,10 +735,6 @@ export class Colors {
             contrastValue: 'hsl(0, 0%, 0%)'
           },
           {
-            value: 'cyan',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -785,151 +745,138 @@ export class Colors {
         title: 'pattern',
         isPattern: true,
         colors: [
-          {
-            value: 'hsl(225, 30%, 52%)',
-            name: 'blue'
-          },
-          {
-            value: 'hsl(12, 69%, 35%)',
-            name: 'red'
-          },
-          {
-            value: 'hsl(75, 43%, 45%)',
-            name: 'green'
-          },
-          {
-            value: 'hsl(40, 98%, 69%)',
-            name: 'yellow'
-          },
-          {
-            value: 'hsl(215, 37%, 66%)',
-            name: 'light blue'
-          },
-          {
-            value: 'hsl(63, 100%, 23%)',
-            name: 'olive green'
-          },
-          {
-            value: 'hsl(34, 57%, 46%)',
-            name: 'caramel'
-          },
-          {
-            value: 'hsl(51, 56%, 64%)',
-            name: 'tan'
-          },
-          {
-            value: 'hsl(253, 26%, 43%)',
-            name: 'purple'
-          },
-          {
-            value: 'hsl(85, 65%, 36%)',
-            name: 'forest green'
-          },
-          {
-            value: 'hsl(12, 56%, 51%)',
-            name: 'red-orange'
-          },
-          {
-            value: 'hsl(30, 42%, 35%)',
-            name: 'brown'
-          },
-          {
-            value: 'hsl(240, 100%, 50%)',
-            name: 'bright blue'
-          },
-          {
-            value: 'hsl(120, 100%, 50%)',
-            name: 'lime green'
-          },
-          {
-            value: 'hsl(39, 100%, 50%)',
-            name: 'orange'
-          },
-          {
-            value: 'hsl(300, 100%, 25%)',
-            name: 'royal purple'
-          },
-          {
-            value: 'hsl(51, 100%, 50%)',
-            name: 'lemon yellow'
-          },
-          {
-            value: 'hsl(328, 100%, 54%)',
-            name: 'fuschia'
-          },
-          {
-            value: 'hsl(177, 70%, 41%)',
-            name: 'cyan'
-          },
-          {
-            value: 'cyan',
-            name: 'highlight'
-          },
-          {
-            value: `hsl(0, 100%, 50%)`,
-            name: 'visit'
-          }],
+          { value: 'hsl(225, 30%, 52%)', name: 'blue' },
+          { value: 'hsl(12, 69%, 35%)', name: 'red' },
+          { value: 'hsl(75, 43%, 45%)', name: 'green' },
+          { value: 'hsl(40, 98%, 69%)', name: 'yellow' },
+          { value: 'hsl(215, 37%, 66%)', name: 'light blue' },
+          { value: 'hsl(63, 100%, 23%)', name: 'olive green' },
+          { value: 'hsl(34, 57%, 46%)', name: 'caramel' },
+          { value: 'hsl(51, 56%, 64%)', name: 'tan' },
+          { value: 'hsl(253, 26%, 43%)', name: 'purple' },
+          { value: 'hsl(85, 65%, 36%)', name: 'forest green' },
+          { value: 'hsl(12, 56%, 51%)', name: 'red-orange' },
+          { value: 'hsl(30, 42%, 35%)', name: 'brown' },
+          { value: 'hsl(240, 100%, 50%)', name: 'bright blue' },
+          { value: 'hsl(120, 100%, 50%)', name: 'lime green' },
+          { value: 'hsl(39, 100%, 50%)', name: 'orange' },
+          { value: 'hsl(300, 100%, 25%)', name: 'royal purple' },
+          { value: 'hsl(51, 100%, 50%)', name: 'lemon yellow' },
+          { value: 'hsl(328, 100%, 54%)', name: 'fuschia' },
+          { value: 'hsl(177, 70%, 41%)', name: 'cyan' },
+          { value: 'hsl(0, 100%, 50%)', name: 'visit' }
+        ],
+        // Pattern colors are hardcoded as SVG presentation attributes (stroke="hsl(...)",
+        // fill="hsl(...)") rather than CSS custom properties. This is intentional: var()
+        // references are not valid in SVG presentation attributes — they only work in CSS
+        // property values (i.e. in a style="" attribute or a stylesheet rule). As a result,
+        // the --color-palette-series-N vars injected by paletteVars() have no effect on
+        // pattern colors. To make pattern colors CSS-editable in static exports, the
+        // presentation attributes would need to be replaced with style="stroke: var(...)"
+        // on each path/circle/rect inside the <pattern> elements. That change was deferred
+        // because pattern palette colors are deliberately chosen for accessibility (contrast,
+        // distinguishability) and making them freely editable via CSS risks undermining that.
         patterns: [
           {
             value: svg`
-              <pattern id="Pattern0"  patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(45)">
-                <line class="pattern" x1="0" y="0" x2="0" y2="10" stroke='hsl(225, 30%, 52%)' stroke-width="5" />
-              </pattern>
-              `,
+              <pattern id="Pattern0" patternUnits="userSpaceOnUse" width="6" height="6">
+                <rect width="6" height="6" fill="hsl(225, 20%, 85%)" stroke="none" />
+                <path d="M-2 8L8-2M-2 2L2-2M4 8L8 4"
+                  stroke="hsl(225, 40%, 35%)" stroke-width="1.4" />
+              </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
-            name: 'diagonal_lines'
+            name: 'diagonal'
           },
           {
             value: svg`
-              <pattern id="Pattern1" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10">
-                <circle cx="5" cy="5" r="2" fill='hsl(12, 69%, 35%)' />
-              </pattern>
-              `,
+              <pattern id="Pattern1" patternUnits="userSpaceOnUse" width="6" height="6">
+                <rect width="6" height="6" fill="hsl(12, 50%, 80%)" stroke="none" />
+                <circle cx="3" cy="3" r="1.1" fill="hsl(12, 70%, 22%)" stroke="none" />
+              </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
-            name: 'dots'
+            name: 'dot'
           },
           {
             value: svg`
-              <pattern id="Pattern2" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10">
-                <path d="M 10 0 L 0 0 0 10" fill="none" stroke='hsl(75, 43%, 45%)' stroke-width="5"/>
-              </pattern>
-              `,
+              <pattern id="Pattern2" patternUnits="userSpaceOnUse" width="12" height="6">
+                <rect width="12" height="6" fill="hsl(75, 30%, 80%)" stroke="none" />
+                <path d="M-3 3 C-1.5 1, 1.5 1, 3 3 S7.5 5, 9 3 S13.5 1, 15 3"
+                  fill="none" stroke="hsl(75, 50%, 28%)" stroke-width="1.35"
+                  stroke-linecap="round" />
+              </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
-            name: 'grid'
+            name: 'wave'
           },
           {
             value: svg`
-              <pattern id="Pattern3" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10">
-                <path d="M 0 0 L 10 10 M 10 0 L 0 10" stroke='hsl(40, 98%, 69%)' stroke-width="3"/>
-              </pattern>
-               `,
+              <pattern id="Pattern3" patternUnits="userSpaceOnUse" width="5" height="5">
+                <rect width="5" height="5" fill="hsl(40, 70%, 88%)" stroke="none" />
+                <path d="M2.5 0V5" stroke="hsl(40, 100%, 42%)" stroke-width="1.5" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'vertical'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern4" patternUnits="userSpaceOnUse" width="9" height="9">
+                <rect width="9" height="9" fill="hsl(215, 25%, 88%)" stroke="none" />
+                <circle cx="2.25" cy="2.25" r="1.7" fill="none"
+                  stroke="hsl(215, 50%, 40%)" stroke-width="1.0" />
+                <circle cx="6.75" cy="6.75" r="1.7" fill="none"
+                  stroke="hsl(215, 50%, 40%)" stroke-width="1.0" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'ring'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern5" patternUnits="userSpaceOnUse" width="6" height="6">
+                <rect width="6" height="6" fill="hsl(63, 60%, 78%)" stroke="none" />
+                <path d="M-2 8L8-2M-2-2L8 8"
+                  stroke="hsl(63, 100%, 14%)" stroke-width="1" />
+              </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
             name: 'crosshatch'
           },
           {
             value: svg`
-              <pattern id="Pattern4" class="pattern" patternUnits="userSpaceOnUse" width="20" height="10">
-                <path d="M 0 5 Q 5 0, 10 5 T 20 5" fill="none" stroke='hsl(215, 37%, 66%)' stroke-width="3"/>
-              </pattern>
-              `,
+              <pattern id="Pattern6" patternUnits="userSpaceOnUse" width="6" height="8">
+                <rect width="6" height="8" fill="hsl(34, 40%, 82%)" stroke="none" />
+                <path d="M3-4 L1 0 L5 4 L1 8 L5 12"
+                  fill="none" stroke="hsl(34, 65%, 28%)" stroke-width="1.35"
+                  stroke-linejoin="round" stroke-linecap="round" />
+              </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
-            name: 'waves'
+            name: 'vertical_zigzag'
           },
           {
             value: svg`
-              <pattern id="Pattern5" class="pattern" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(135)">
-                <line x1="0" y="0" x2="0" y2="10" stroke='hsl(63, 100%, 23%)' stroke-width="5" />
+              <pattern id="Pattern7" patternUnits="userSpaceOnUse" width="12" height="12">
+                <rect width="12" height="12" fill="hsl(51, 40%, 88%)" stroke="none" />
+                <path d="M-2-2L14 14 M-2 10L2 14 M10-2L14 2"
+                  stroke="hsl(51, 65%, 38%)" stroke-width="3.3" />
               </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
-            name: 'diagonal_lines2'
+            name: 'reverse_stripe'
           },
           {
             value: svg`
-              <pattern id="Pattern6" class="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-              <circle cx="10" cy="10" r="10" fill='hsl(34, 57%, 46%)'" />
+              <pattern id="Pattern8" patternUnits="userSpaceOnUse" width="5" height="5">
+                <rect width="5" height="5" fill="hsl(253, 20%, 82%)" stroke="none" />
+                <path d="M0 2.5H5" stroke="hsl(253, 35%, 25%)" stroke-width="1.5" />
               </pattern>`,
             contrastValue: "hsl(0, 0%, 0%)",
-            name: ''
+            name: 'horizontal'
+          },
+          {
+            value: svg`
+              <pattern id="Pattern9" patternUnits="userSpaceOnUse" width="10" height="10">
+                <rect width="10" height="10" fill="hsl(85, 40%, 78%)" stroke="none" />
+                <path d="M0 0H5V5H0Z M5 5H10V10H5Z"
+                  fill="hsl(85, 75%, 20%)" stroke="none" />
+              </pattern>`,
+            contrastValue: "hsl(0, 0%, 0%)",
+            name: 'checker'
           },
           {
             value: svg`hsl(0, 100%, 50%)`,
@@ -1033,10 +980,6 @@ export class Colors {
             name: 'cyan'
           },
           {
-            value: 'hsl(234, 20.5%, 47.8%)',
-            name: 'highlight'
-          },
-          {
             value: 'hsl(0, 100%, 50%)',
             name: 'visit'
           }
@@ -1100,10 +1043,6 @@ export class Colors {
         {
           value: this._paraState.config.color.custom8 || this.palettes[0].colors[7].value,
           name: 'custom-8'
-        },
-        {
-          value: 'cyan',
-          name: 'highlight'
         },
         {
           value: 'hsl(0, 100%, 50%)',
@@ -1191,12 +1130,53 @@ export class Colors {
     if (index === -1) {
       // visit
       return colors.at(-1)!.value;
-    } else if (index === -2) {
-      // highlight
-      return colors.at(-2)!.value;
     }
     // Never use 'visit' for any series/datapoint color
     return colors[index % (colors.length - 1)].value;
+  }
+
+  get numSeriesColors(): number {
+    const colors = this._colorMap
+      ? this._colorMap.map(i => this.palette.colors[i])
+      : this.palette.colors;
+    return colors.length - 1; // last entry is the "visit" color
+  }
+
+  /**
+   * Returns CSS custom property key/value pairs for all series colors in the
+   * current palette, plus precomputed lightened variants. Inject these onto the
+   * SVG root element so that `.series-N` CSS rules resolve correctly without
+   * any hardcoded per-palette CSS blocks.
+   */
+  // Returns CSS custom property declarations for the active palette, keyed as
+  // --color-palette-series-N and --color-palette-series-N-light. These are injected
+  // onto the SVG root element at render time so they cascade to all chart elements.
+  // NOTE: for pattern palettes, these vars are injected but have no effect on the
+  // pattern colors themselves — those are hardcoded as SVG presentation attributes
+  // inside the <pattern> elements and cannot be driven by CSS vars. See the patterns
+  // array comment in the palette definitions above for the full explanation.
+  paletteVars(): { [key: string]: string } {
+    const vars: { [key: string]: string } = {};
+    const colors = this._colorMap
+      ? this._colorMap.map(i => this.palette.colors[i])
+      : this.palette.colors;
+    const numSeries = colors.length - 1; // exclude "visit" slot
+    for (let i = 0; i < numSeries; i++) {
+      const value = colors[i].value;
+      vars[`--color-palette-series-${i}`] = value;
+      // Precompute lightened variant (used by scatter plot symbols).
+      // Parses HSL numeric components; falls back to base color for non-HSL values.
+      const nums = value.match(/\d+/g)?.map(Number);
+      if (nums && nums.length >= 3) {
+        const [h, s, l] = nums;
+        const sLight = Math.max(0, s - Math.min(10, s));
+        const lLight = Math.min(100, l + Math.min(25, 100 - l));
+        vars[`--color-palette-series-${i}-light`] = `hsl(${h}, ${sLight}%, ${lLight}%)`;
+      } else {
+        vars[`--color-palette-series-${i}-light`] = value;
+      }
+    }
+    return vars;
   }
 
   patternValueAt(index: number) {

@@ -18,7 +18,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState } from '../state';
 import { type ParaView } from '../paraview';
-import { type DeepReadonly, type Setting } from '../state/settings_types';
+import { type Setting } from '../state/settings_types';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state/query_utils';
 import { NavNode } from '../view/layers';
 
@@ -68,6 +68,13 @@ export class LineChartInfo extends PointChartInfo {
         trendNode.connect('in', this._navMap!.cursor, false);
         await this._navMap!.cursor.move('out');
       }
+    }
+    // Add or remove single-series series landings based on whether
+    // soni is enabled
+    if (path === 'sonification.isSonificationEnabled') {
+      const idx = this._navMap!.cursor.index;
+      this._createNavMap();
+      this._navMap!.layer(this._navMap!.currentLayer)!.goTo('datapoint', idx, true);
     }
     super.settingDidChange(path, oldValue, newValue);
   }

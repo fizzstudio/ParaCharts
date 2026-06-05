@@ -40,3 +40,6 @@ docs/scripts/docs/
 .DS_Store       
 ## Personal project notes, not my reference notes.md
 *.org
+
+# AI
+memory/

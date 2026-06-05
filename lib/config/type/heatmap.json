@@ -2,20 +2,17 @@
     "ref": "type.plane",
     "family": "heatmap",
     "settings": {
-        "isShowTrendLine": {
-            "label": "Trend line",
-            "description": "Draw trend/regression line",
-            "type": "boolean",
-            "default": false,
-            "control": "checkbox",
-            "parentView": "controlPanel.tabs.chart.chart"
-        },
-        "isShowOutliers": {
-            "label": "Show outliers",
-            "description": "Highlight statistical outliers",
-            "type": "boolean",
-            "default": false,
-            "control": "checkbox",
+        "resolution": {
+            "label": "Resolution",
+            "description": "Grid resolution for heat map",
+            "type": "number",
+            "default": 20,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 5,
+                "max": 100
+            },
             "parentView": "controlPanel.tabs.chart.chart"
         }
     }

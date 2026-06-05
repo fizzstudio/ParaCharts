@@ -25,7 +25,7 @@ import { mapn } from '@fizz/chart-classifier-utils';
 import { svg, type TemplateResult } from 'lit';
 import { HorizGridLine, HorizTick, VertGridLine, VertTick } from './rule';
 import { type ViewContext } from '../view_context';
-import { HorizCardinalDirection, VertCardinalDirection } from '../../state';
+import { HorizCardinalDirection, VertCardinalDirection } from '../../config/config_types';
 import { AxisHorizConfig, AxisVertConfig } from '../../config/config_types';
 
 export interface TickStripOptions {

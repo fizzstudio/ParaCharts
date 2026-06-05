@@ -17,8 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaView } from '../paraview';
 import { PlaneChartInfo } from './plane_chart';
-import { AxisInfo } from '../common/axisinfo';
-import { DeepReadonly, datapointIdToCursor, Setting, type ParaState } from '../state';
+import { datapointIdToCursor, Setting, type ParaState } from '../state';
+import { DeepReadonly } from '../config/config_types';
 import {
   queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax
 } from '../state/query_utils';

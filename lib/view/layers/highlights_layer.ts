@@ -163,7 +163,7 @@ export class HighlightsLayer extends PlotLayer {
         width: width,
         height: height,
         x: 0 - width,
-        y: tier._tickLabelY(options.labelIndex ?? 0)! - 2 * height / 3/* + this.paraview.paraState.settings.popup.margin - tier.children[options.index ?? 0].height*/,
+        y: tier._tickLabelY(options.labelIndex ?? 0)! - 2 * height / 3/* + this.paraview.paraState.config.popup.margin - tier.children[options.index ?? 0].height*/,
         fill: 'blue',
         stroke: 'blue',
         opacity: .3

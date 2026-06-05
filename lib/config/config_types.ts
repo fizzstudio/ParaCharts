@@ -18,6 +18,11 @@ export type ConfigSetting = string | number | boolean;
  * @public
  */
 export type ConfigGroup = {[key: string]: ConfigSetting | ConfigGroup | undefined};
+/**
+ * A mapping of dotted setting paths to values.
+ * @public
+ */
+export type SettingsInput = {[path: string]: ConfigSetting};
 
 /** Chart types that display individual points
  * @public
@@ -38,6 +43,20 @@ export type PastryChartType = 'pie' | 'donut' | 'gauge';
  * @public
  */
 export type ChartType = PlaneChartType | PastryChartType;
+
+/** SVG viewBox dimensions for chart viewport
+ * @public
+ */
+export interface ViewBox extends ConfigGroup {
+  /** X coordinate of top-left corner */
+  x: number;
+  /** Y coordinate of top-left corner */
+  y: number;
+  /** Width of viewable area */
+  width: number;
+  /** Height of viewable area */
+  height: number;
+}
 
 /** @public */
 export type VertDirection = 'up' | 'down';
@@ -93,7 +112,24 @@ export type AnimationType = 'yAxis' | 'xAxis' | 'none';
  * @public
  */
 export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
+/**
+ * Identifies the source that set a color preference value.
+ * Determines whether an incoming change (e.g. from a mode or system event)
+ * is allowed to override the current value.
+ * @public
+ */
+export type ColorPrefSource =
+  | 'default'      // ParaCharts fallback
+  | 'chartDefault' // author/manifest default
+  | 'modeDefault'  // set by an active mode (e.g. low-vision mode)
+  | 'profile'      // saved in manifest extensions
+  | 'system'       // derived from current media-query state
+  | 'user';        // explicit user choice — wins until explicitly reset
 
+/** @public */
+export type DeepReadonly<T> = {
+  readonly [Property in keyof T]: T extends ConfigSetting ? T[Property] : DeepReadonly<T[Property]>;
+};
 
 export interface Config extends ConfigGroup {
   animation: AnimationConfig;
@@ -104,6 +140,8 @@ export interface Config extends ConfigGroup {
   description: DescriptionConfig;
   grid: GridConfig;
   legend: LegendConfig;
+  popup: PopupConfig;
+  scrollytelling: ScrollytellingConfig;
   sonification: SonificationConfig;
   type: TypeConfig;
   ui: UiConfig;
@@ -375,6 +413,32 @@ export interface ColorConfig extends ConfigGroup {
   custom7: string;
   /** Custom color 8 */
   custom8: string;
+  /** Color theme preference: follow system, always light, or always dark */
+  themeMode: 'system' | 'light' | 'dark';
+  /** Source of the current theme setting */
+  themeSource: ColorPrefSource;
+  /** Contrast level preference: follow system, lower, normal, higher, or custom */
+  contrastMode: 'system' | 'lower' | 'normal' | 'higher' | 'custom';
+  /** Source of the current contrast setting */
+  contrastSource: ColorPrefSource;
+  /** How to respond to forced-colors system mode */
+  forcedColorsMode: 'system' | 'respect';
+  /** How to respond to inverted-colors system mode */
+  invertedColorsMode: 'system' | 'adapt';
+  /** Use the low-vision high-contrast color palette when low-vision mode is enabled */
+  lowVisionColorPalette: boolean;
+  /** Theme to apply as a mode default when low-vision mode is enabled */
+  lowVisionThemeDefault: 'system' | 'light' | 'dark';
+  /** Contrast mode to apply as a mode default when low-vision mode is enabled */
+  lowVisionContrastDefault: 'system' | 'lower' | 'normal' | 'higher' | 'custom';
+  /** Contrast level for custom low-vision contrast (0-1) */
+  lowVisionContrastLevel: number;
+  /** Resolved active background color (oklch string, set by ColorPrefManager) */
+  backgroundColor: string;
+  /** Explicit background color for light mode as an oklch() string. Empty string uses the theme default. */
+  backgroundColorLight: string;
+  /** Explicit background color for dark mode as an oklch() string. Empty string uses the theme default. */
+  backgroundColorDark: string;
 }
 export interface ControlpanelConfig extends ConfigGroup {
   /** Open control panel by default */
@@ -464,6 +528,42 @@ export interface LegendBoxstyleConfig extends ConfigGroup {
   /** Background fill color */
   fill: Color;
 }
+export interface PopupConfig extends ConfigGroup {
+  /** Background opacity (0-1) */
+  opacity: number;
+  /** Left padding inside popup */
+  leftPadding: number;
+  /** Right padding inside popup */
+  rightPadding: number;
+  /** Top padding inside popup */
+  upPadding: number;
+  /** Bottom padding inside popup */
+  downPadding: number;
+  /** Margin around popup */
+  margin: number;
+  /** Maximum width before text wraps */
+  maxWidth: number;
+  /** Visual style of popup */
+  shape: 'box' | 'boxWithArrow';
+  /** When popup appears */
+  activation: 'onHover' | 'onFocus' | 'onSelect';
+  /** Corner radius for rounded popups */
+  borderRadius: number;
+  /** Background color scheme */
+  backgroundColor: 'dark' | 'light';
+  /** Show crosshair */
+  isShowCrosshair: boolean;
+  /** Make crosshair follow pointer */
+  isCrosshairFollowPointer: boolean;
+}
+export interface ScrollytellingConfig extends ConfigGroup {
+  /** Enable scrollytelling mode */
+  isScrollytellingEnabled: boolean;
+  /** Enable audio announcements during scrolling */
+  isScrollyAnnouncementsEnabled: boolean;
+  /** Enable sonification during scrolling */
+  isScrollySoniEnabled: boolean;
+}
 export interface SonificationConfig extends ConfigGroup {
   /** Enable sonification audio feedback */
   isSonificationEnabled: boolean;
@@ -485,6 +585,7 @@ export interface TypeConfig extends ConfigGroup {
   column: TypeColumnConfig;
   donut: TypeDonutConfig;
   heatmap: TypeHeatmapConfig;
+  histogram: TypeHistogramConfig;
   line: TypeLineConfig;
   pie: TypePieConfig;
   scatter: TypeScatterConfig;
@@ -567,10 +668,18 @@ export interface TypeDonutInsidelabelsConfig extends TypePastryInsidelabelsConfi
 export interface TypeDonutOutsidelabelsConfig extends TypePastryOutsidelabelsConfig {
 }
 export interface TypeHeatmapConfig extends TypePlaneConfig {
-  /** Draw trend/regression line */
-  isShowTrendLine: boolean;
-  /** Highlight statistical outliers */
-  isShowOutliers: boolean;
+  /** Grid resolution for heat map */
+  resolution: number;
+}
+export interface TypeHistogramConfig extends TypePlaneConfig {
+  /** Number of bins for grouping data */
+  bins: number;
+  /** Which axis shows the histogram bars */
+  displayAxis: string;
+  /** Which axis is used for grouping */
+  groupingAxis: string;
+  /** Show counts or percentages */
+  relativeAxes: 'Counts' | 'Percentage';
 }
 export interface TypeLineConfig extends TypePlaneConfig {
   /** Width of line strokes */
@@ -685,6 +794,14 @@ export interface UiConfig extends ConfigGroup {
   isFullscreenEnabled: boolean;
   /** Enable low vision accessibility enhancements */
   isLowVisionModeEnabled: boolean;
+  /** Font scale multiplier to apply when low-vision mode is enabled */
+  lowVisionFontScale: number;
+  /** Enable vertical gridlines when low-vision mode is enabled */
+  lowVisionIsVertGridlines: boolean;
+  /** Disable animations when low-vision mode is enabled */
+  lowVisionDisableAnimations: boolean;
+  /** Enable fullscreen when low-vision mode is enabled */
+  lowVisionIsFullscreen: boolean;
   /** Show focus ring around active elements */
   isFocusRingEnabled: boolean;
   /** Gap size around focus ring in pixels */

@@ -1,0 +1,158 @@
+{
+    "family": "popup",
+    "settings": {
+        "opacity": {
+            "label": "Opacity",
+            "description": "Background opacity (0-1)",
+            "type": "number",
+            "default": 1,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0,
+                "max": 1,
+                "step": 0.1
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "leftPadding": {
+            "label": "Left padding",
+            "description": "Left padding inside popup",
+            "type": "number",
+            "default": 10,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 100
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "rightPadding": {
+            "label": "Right padding",
+            "description": "Right padding inside popup",
+            "type": "number",
+            "default": 10,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 100
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "upPadding": {
+            "label": "Up padding",
+            "description": "Top padding inside popup",
+            "type": "number",
+            "default": 10,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 100
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "downPadding": {
+            "label": "Down padding",
+            "description": "Bottom padding inside popup",
+            "type": "number",
+            "default": 10,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 100
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "margin": {
+            "label": "Vertical margin",
+            "description": "Margin around popup",
+            "type": "number",
+            "default": 40,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 100
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "maxWidth": {
+            "label": "Max width",
+            "description": "Maximum width before text wraps",
+            "type": "number",
+            "default": 175,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 300
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "shape": {
+            "label": "Shape",
+            "description": "Visual style of popup",
+            "type": "'box' | 'boxWithArrow'",
+            "default": "boxWithArrow",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["box", "boxWithArrow"]
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "activation": {
+            "label": "Activate popups on",
+            "description": "When popup appears",
+            "type": "'onHover' | 'onFocus' | 'onSelect'",
+            "default": "onHover",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["onHover", "onFocus", "onSelect"]
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "borderRadius": {
+            "label": "Border radius",
+            "description": "Corner radius for rounded popups",
+            "type": "number",
+            "default": 5,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 20
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "backgroundColor": {
+            "label": "Color mode",
+            "description": "Background color scheme",
+            "type": "'dark' | 'light'",
+            "default": "dark",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["dark", "light"]
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "isShowCrosshair": {
+            "label": "Show Crosshair?",
+            "description": "Show crosshair",
+            "type": "boolean",
+            "default": true,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "isCrosshairFollowPointer": {
+            "label": "Track Crosshair to pointer?",
+            "description": "Make crosshair follow pointer",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        }
+    }
+}

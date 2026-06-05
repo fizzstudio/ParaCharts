@@ -16,17 +16,17 @@ interface SettingInfo {
  */
 function extractSettingsPathsFromDefaults(obj: any, prefix: string = ''): string[] {
   const paths: string[] = [];
-  
+
   for (const [key, value] of Object.entries(obj)) {
     const currentPath = prefix ? `${prefix}.${key}` : key;
-    
+
     if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
       paths.push(...extractSettingsPathsFromDefaults(value, currentPath));
     } else {
       paths.push(currentPath);
     }
   }
-  
+
   return paths;
 }
 
@@ -85,15 +85,15 @@ function extractTypeString(property: ApiPropertyItem): string {
  */
 function findPropertyByPath(apiModel: ApiModel, settingPath: string): { typeStr: string; description: string } | null {
   const pathParts = settingPath.split('.');
-  
+
   const settingsInterface = findInterface(apiModel, 'Settings');
   if (!settingsInterface) return null;
-  
+
   let currentInterface: ApiInterface | undefined = settingsInterface;
-  
+
   for (let i = 0; i < pathParts.length; i++) {
     const part = pathParts[i];
-    
+
     // Find the property in the current interface
     let foundProperty: ApiPropertyItem | null = null;
     for (const member of currentInterface.members) {
@@ -102,9 +102,9 @@ function findPropertyByPath(apiModel: ApiModel, settingPath: string): { typeStr:
         break;
       }
     }
-    
+
     if (!foundProperty) return null;
-    
+
     // If this is the last part, return the type and description
     if (i === pathParts.length - 1) {
       return {
@@ -112,13 +112,13 @@ function findPropertyByPath(apiModel: ApiModel, settingPath: string): { typeStr:
         description: extractSummaryText(foundProperty)
       };
     }
-    
+
     // Navigate to the next interface
     const propertyType = extractTypeString(foundProperty).replace(/\s/g, '');
     currentInterface = findInterface(apiModel, propertyType);
     if (!currentInterface) return null;
   }
-  
+
   return null;
 }
 
@@ -142,13 +142,13 @@ function extractAllSettings(): { settings: SettingInfo[]; apiModel: ApiModel } {
     console.error('Error loading API model:', error);
     return { settings: [], apiModel: new ApiModel() };
   }
-  
+
   const allSettingsPaths = extractSettingsPathsFromDefaults(defaults);
-  
+
   const settings = allSettingsPaths.map(settingPath => {
     const defaultValue = getValueByPath(defaults, settingPath);
     const apiInfo = findPropertyByPath(apiModel, settingPath);
-    
+
     return {
       path: settingPath,
       description: apiInfo?.description || '',
@@ -156,7 +156,7 @@ function extractAllSettings(): { settings: SettingInfo[]; apiModel: ApiModel } {
       type: apiInfo?.typeStr || inferTypeFromValue(defaultValue)
     };
   });
-  
+
   return { settings, apiModel };
 }
 
@@ -179,20 +179,20 @@ function formatDefaultValue(value: any): string {
  */
 function simplifyType(typeStr: string): string {
   if (!typeStr || typeStr === 'unknown' || typeStr === 'undefined') return 'any';
-  
+
   // Handle complex generic types
   if (typeStr.includes('T extends')) return 'string';
-  
+
   // Leave union types as-is for processing by expandOrReferenceType
   if (typeStr.includes(' | ')) {
     return typeStr.replace(/\s+/g, ' ').trim();
   }
-  
+
   // Simplify axis types
   if (typeStr.includes('RadialAxisType') || typeStr.includes('OrientedAxisType')) {
     return 'string';
   }
-  
+
   return typeStr.replace(/\s+/g, ' ').trim();
 }
 
@@ -201,11 +201,11 @@ function simplifyType(typeStr: string): string {
  */
 function generateDescription(path: string, type: string, existingDescription?: string): string {
   if (existingDescription?.trim()) return existingDescription;
-  
+
   const lastPart = path.split('.').pop() || '';
   const isBoolean = type === 'boolean';
   const isNumber = type === 'number';
-  
+
   // Boolean patterns
   if (isBoolean) {
     if (lastPart.startsWith('is')) {
@@ -217,7 +217,7 @@ function generateDescription(path: string, type: string, existingDescription?: s
       return `Enable ${feature}`;
     }
   }
-  
+
   // Size and dimensions
   if (lastPart.includes('Width') || lastPart.includes('Height') || lastPart.includes('strokeWidth')) {
     return 'Width or height in pixels';
@@ -227,16 +227,16 @@ function generateDescription(path: string, type: string, existingDescription?: s
   }
   if (lastPart.includes('Size') && isNumber) return 'Size in pixels';
   if (lastPart.includes('Size')) return 'Size settings';
-  
+
   // Font
   if (lastPart.includes('fontSize')) return 'Font size (e.g., "12pt")';
   if (lastPart.includes('fontWeight')) return 'Font weight (e.g., "normal", "bold")';
   if (lastPart.includes('fontFamily')) return 'Font family name';
-  
+
   // Formatting
   if (lastPart.includes('Format')) return 'Display format (e.g., "raw", "percentage")';
   if (lastPart.includes('Color') || lastPart.includes('color')) return 'Color value';
-  
+
   // Numeric values
   if (isNumber) {
     if (lastPart.includes('Scale') || lastPart.includes('Factor')) return 'Scaling factor';
@@ -244,7 +244,7 @@ function generateDescription(path: string, type: string, existingDescription?: s
     if (lastPart.includes('Max')) return 'Maximum value';
     if (lastPart.includes('Min')) return 'Minimum value';
   }
-  
+
   // Generic fallback using property name
   const readable = lastPart.replace(/([A-Z])/g, ' $1').toLowerCase().trim();
   return `Set ${readable}`;
@@ -265,7 +265,6 @@ const categoryDescriptions: Record<string, string> = {
   type: 'Chart type-specific settings (bar, line, pie, etc.)',
   grid: 'Grid lines and background elements.',
   popup: 'Tooltip and popup styling.',
-  plotArea: 'Main chart plotting area dimensions.',
   scrollytelling: 'Narrative scrolling features.',
   statusBar: 'Status bar display options.',
   dataTable: 'Data table formatting.',
@@ -295,19 +294,19 @@ function countUnionMembers(typeStr: string): number | null {
   if (!typeStr.includes(' | ')) {
     // Single string literal like 'value'
     const trimmed = typeStr.trim();
-    if ((trimmed.startsWith("'") && trimmed.endsWith("'")) || 
+    if ((trimmed.startsWith("'") && trimmed.endsWith("'")) ||
         (trimmed.startsWith('"') && trimmed.endsWith('"'))) {
       return 1;
     }
     return null;
   }
-  
+
   const parts = typeStr.split(' | ').map(p => p.trim());
-  const isSimpleUnion = parts.every(p => 
-    (p.startsWith("'") && p.endsWith("'")) || 
+  const isSimpleUnion = parts.every(p =>
+    (p.startsWith("'") && p.endsWith("'")) ||
     (p.startsWith('"') && p.endsWith('"'))
   );
-  
+
   return isSimpleUnion ? parts.length : null;
 }
 
@@ -340,12 +339,12 @@ function expandOrReferenceType(typeStr: string, apiModel: ApiModel, typeGlossary
     // Not a simple union, return as-is
     return typeStr;
   }
-  
+
   // Primitive types
   if (typeStr === 'boolean' || typeStr === 'number' || typeStr === 'string') {
     return typeStr;
   }
-  
+
   // Single identifier - check manual expansions first
   const typeName = typeStr.trim();
   if (TYPE_EXPANSIONS[typeName]) {
@@ -359,7 +358,7 @@ function expandOrReferenceType(typeStr: string, apiModel: ApiModel, typeGlossary
       return `[${typeName}](#${typeName.toLowerCase()})`;
     }
   }
-  
+
   // Try API model as fallback
   if (/^[A-Z][a-zA-Z0-9]*$/.test(typeName)) {
     const expandedType = findTypeAlias(apiModel, typeName);
@@ -374,7 +373,7 @@ function expandOrReferenceType(typeStr: string, apiModel: ApiModel, typeGlossary
       }
     }
   }
-  
+
   return typeStr;
 }
 
@@ -394,7 +393,7 @@ for (const setting of allSettings) {
  */
 function formatValidValues(simpleType: string, settingPath: string, apiModel: ApiModel, typeGlossary: Map<string, string>): string {
   const range = settingRanges[settingPath];
-  
+
   if (range) {
     const typeName = range.type === 'int' ? 'integer' : 'number';
     const constraint = formatRangeConstraint(range);
@@ -408,7 +407,7 @@ function formatValidValues(simpleType: string, settingPath: string, apiModel: Ap
     }
     return typeName;
   }
-  
+
   // No range defined - expand or reference the type
   const expanded = expandOrReferenceType(simpleType, apiModel, typeGlossary);
   return expanded.replace(/\|/g, '\\|');
@@ -417,7 +416,7 @@ function formatValidValues(simpleType: string, settingPath: string, apiModel: Ap
 export default {
   categories: Object.entries(settingsByCategory).map(([name, settings]) => {
     const typeGlossary = new Map<string, string>();
-    
+
     const processedSettings = settings.map(s => {
       const simpleType = simplifyType(s.type);
       return {
@@ -429,14 +428,14 @@ export default {
         validValues: formatValidValues(simpleType, s.path, apiModel, typeGlossary)
       };
     });
-    
+
     // Convert glossary to array for template
     const typeDefinitions = Array.from(typeGlossary.entries()).map(([name, definition]) => ({
       name,
       id: name.toLowerCase(),
       definition: definition.replace(/\|/g, '\\|')
     }));
-    
+
     return {
       name,
       description: categoryDescriptions[name] || '',

@@ -4,7 +4,8 @@ import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
 import { fixed } from "../../../../common/utils";
 import { type ViewContext } from '../../../view_context';
-import { datapointIdToCursor, DeepReadonly, HistogramSettings, PointChartType, type Setting } from "../../../../state";
+import { datapointIdToCursor, type Setting } from "../../../../state";
+import { PointChartType } from '../../../../config/config_types';
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { PlanePlotView, PlaneSeriesView } from ".";
@@ -13,7 +14,6 @@ import { strToId } from "@fizz/paramanifest";
 import { HistogramChartInfo } from '../../../../chart_types/histogram_chart';
 
 export class Histogram extends PlanePlotView {
-  declare protected _settings: DeepReadonly<HistogramSettings>;
   declare protected _chartInfo: HistogramChartInfo;
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
@@ -23,12 +23,12 @@ export class Histogram extends PlanePlotView {
     } else if (path === 'type.histogram.bins') {
         this.paraview.createDocumentView();
         this.paraview.requestUpdate();
-        this.paraview.paraState.updateSettings(draft => {
-          draft.axis.y.maxValue = 'unset'
-        });
-        this.paraview.paraState.updateSettings(draft => {
-          draft.axis.y.minValue = 'unset'
-        });
+        // this.paraview.paraState.updateSettings(draft => {
+        //   draft.axis.y.maxValue = 'unset'
+        // });
+        // this.paraview.paraState.updateSettings(draft => {
+        //   draft.axis.y.minValue = 'unset'
+        // });
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -39,10 +39,6 @@ export class Histogram extends PlanePlotView {
 
   get datapointViews() {
     return super.datapointViews;
-  }
-
-  get settings() {
-    return this._settings;
   }
 
   protected _newDatapointView(seriesView: PlaneSeriesView) {
@@ -245,55 +241,27 @@ export class HistogramBinView extends DatapointView {
   }
 
   render() {
-    let stroke = `hsl(0, 0%, 0%)`
-    let fill = this.paraview.paraState.colors.colorValueAt(0)
-    if (this.paraview.paraState.visitedDatapoints.values().some(item => {
+    const isVisited = this.paraview.paraState.visitedDatapoints.values().some(item => {
       const cursor = datapointIdToCursor(item);
       return cursor.index === this.index;
-    })) {
-      if (this.chart.settings.displayAxis == "x" || this.chart.settings.displayAxis == undefined) {
-        return svg`
-                    <g>
-                        <path
-                            d='${this._d}'
-                            role="datapoint"
-                            stroke-width= '2'
-                            fill= '${'hsl(0, 100.00%, 50.00%)'}'
-                            stroke= '${stroke}'
-                            id= '${this.id}'
-                        ></path>
-                        <line x1=${this._x} y1=${this._y} x2=${this._x + this._width} y2=${this._y} stroke="hsl(0, 100.00%, 50.00%)" stroke-width= 2 />
-                    </g>
-                `;
-      }
-      else {
-        return svg`
-                    <g>
-                        <path
-                            d='${this._d}'
-                            role="datapoint"
-                            stroke-width= '2'
-                            fill= '${'hsl(0, 100.00%, 50.00%)'}'
-                            stroke= '${stroke}'
-                            id= '${this.id}'
-                        ></path>
-                        <line x1=${this._x} y1=${this._y} x2=${this._x} y2=${this._y - this._height} stroke="hsl(0, 100.00%, 50.00%)" stroke-width= 2 />
-                    </g>
-                `;
-      }
-    }
-    else {
+    });
+    if (isVisited) {
+      const axis = this.chart.settings.displayAxis;
+      const line = axis === 'y'
+        ? svg`<line x1=${this._x} y1=${this._y} x2=${this._x} y2=${this._y - this._height} stroke="var(--visited-color, hsl(0,100%,50%))" stroke-width=2 />`
+        : svg`<line x1=${this._x} y1=${this._y} x2=${this._x + this._width} y2=${this._y} stroke="var(--visited-color, hsl(0,100%,50%))" stroke-width=2 />`;
       return svg`
-                    <path
-                        d='${this._d}'
-                        role="datapoint"
-                        stroke-width= '2'
-                        fill= '${fill}'
-                        stroke= '${stroke}'
-                        id= '${this.id}'
-                    ></path>
-            `;
+        <g>
+          <path d=${this._d} role="datapoint" stroke-width=2
+            class="series-0 datapoint visited" id=${this.id}></path>
+          ${line}
+        </g>
+      `;
     }
+    return svg`
+      <path class="series-0" d=${this._d} role="datapoint"
+        stroke-width=2 stroke="hsl(0,0%,0%)" id=${this.id}></path>
+    `;
   }
 
 }

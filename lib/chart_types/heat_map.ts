@@ -20,7 +20,7 @@ export class HeatMapInfo extends PlaneChartInfo {
   }
 
   protected _init() {
-    this._resolution = this._paraState.settings.type.heatmap.resolution ?? 20;
+    this._resolution = this._paraState.config.type.heatmap.resolution ?? 20;
     this._generateHeatmap();
     const values = this._grid.flat();
     this._maxCount = Math.max(...values);
@@ -35,17 +35,7 @@ export class HeatMapInfo extends PlaneChartInfo {
 
   protected _addSettingControls(): void {
     super._addSettingControls();
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'type.heatmap.resolution',
-      label: 'Resolution',
-      options: {
-        inputType: 'number',
-        min: 5,
-        max: 100
-      },
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
+    this._paraState.settingControls.insert('type.heatmap.resolution');
   }
 
   get grid() {
