@@ -4,7 +4,8 @@ import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
 import { fixed } from "../../../../common/utils";
 import { type ViewContext } from '../../../view_context';
-import { datapointIdToCursor, DeepReadonly, HistogramSettings, PointChartType, type Setting } from "../../../../state";
+import { datapointIdToCursor, type Setting } from "../../../../state";
+import { PointChartType } from '../../../../config/config_types';
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { PlanePlotView, PlaneSeriesView } from ".";
@@ -13,7 +14,6 @@ import { strToId } from "@fizz/paramanifest";
 import { HistogramChartInfo } from '../../../../chart_types/histogram_chart';
 
 export class Histogram extends PlanePlotView {
-  declare protected _settings: DeepReadonly<HistogramSettings>;
   declare protected _chartInfo: HistogramChartInfo;
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
@@ -23,12 +23,12 @@ export class Histogram extends PlanePlotView {
     } else if (path === 'type.histogram.bins') {
         this.paraview.createDocumentView();
         this.paraview.requestUpdate();
-        this.paraview.paraState.updateSettings(draft => {
-          draft.axis.y.maxValue = 'unset'
-        });
-        this.paraview.paraState.updateSettings(draft => {
-          draft.axis.y.minValue = 'unset'
-        });
+        // this.paraview.paraState.updateSettings(draft => {
+        //   draft.axis.y.maxValue = 'unset'
+        // });
+        // this.paraview.paraState.updateSettings(draft => {
+        //   draft.axis.y.minValue = 'unset'
+        // });
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -39,10 +39,6 @@ export class Histogram extends PlanePlotView {
 
   get datapointViews() {
     return super.datapointViews;
-  }
-
-  get settings() {
-    return this._settings;
   }
 
   protected _newDatapointView(seriesView: PlaneSeriesView) {

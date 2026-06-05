@@ -18,10 +18,6 @@ import { Container, Padding, PaddingInput, View } from '../base_view';
 import { GridLayout, type Layout } from '../layout';
 import { type GridTerritoryInput } from '../layout';
 //import { type FlexLayout, type Layout, RowLayout, ColumnLayout } from '../layout';
-import {
-  type AxisSettings,
-  type DeepReadonly
-} from '../../state/settings_types';
 import { Label } from '../label';
 import { type AxisLine, HorizAxisLine, VertAxisLine } from './axis_line';
 import { type TickLabelTier, HorizTickLabelTier, VertTickLabelTier } from './tick_label_tier';
@@ -60,8 +56,6 @@ export class ChartTooWideError extends Error {
 export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   declare protected _parent: Layout;
 
-  readonly settings: DeepReadonly<AxisSettings>;
-
   readonly datatype: Datatype;
 
   // protected _layout!: FlexLayout;
@@ -91,9 +85,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     //  ?? this._paraState.model!.getFacet(coord)!;
     this.datatype = this._facet.datatype;
 
-    this.settings = SettingsManager.getGroupLink<AxisSettings>(
-      this.managedSettingKeys[0], this._paraState.settings
-    );
     // this.orientationSettings = SettingsManager.getGroupLink<OrientedAxisSettings<T>>(
     //   `axis.${orientation}`, this._paraState.config
     // );

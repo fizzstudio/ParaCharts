@@ -1,6 +1,6 @@
 import { BaseState } from './base_state';
 import { ParaState } from './parastate';
-import { SettingsInput, Setting } from './settings_types';
+import { SettingsInput } from '../config/config_types';
 
 import { SeriesAnalyzerConstructor, PairAnalyzerConstructor } from '@fizz/paramodel';
 

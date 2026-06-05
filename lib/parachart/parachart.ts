@@ -17,7 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest'
-import { DeepReadonly, Settings, SettingsInput, type Setting } from '../state/settings_types';
+import { type Setting } from '../state/settings_types';
+import { SettingsInput } from '../config/config_types';
 import { SettingsManager } from '../state';
 import '../paraview';
 import '../components/data_table';
@@ -536,7 +537,7 @@ export class ParaChart extends ParaComponent {
   ): void {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-    if (this._paraState.settings.scrollytelling.isScrollytellingEnabled) {
+    if (this._paraState.config.scrollytelling.isScrollytellingEnabled) {
       this._scrollyteller?.destroy();
       this._scrollyteller = new Scrollyteller(this, options);
       this._scrollyteller.init();

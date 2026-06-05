@@ -2,10 +2,8 @@
 import { DataLayer } from '..';
 import { type BaseChartInfo } from '../../../../chart_types';
 import { DatapointView, SeriesView } from '../../../data';
-import {
-  type DeepReadonly,
-  Setting,
-} from '../../../../state';
+import { Setting } from '../../../../state';
+import { DeepReadonly } from '../../../../config/config_types';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type DataLayerContext } from '../../../view_context';
 import { type Shape, SectorShape, PathShape } from '../../../shape';

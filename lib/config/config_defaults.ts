@@ -70,8 +70,8 @@ export const defaultConfig: Config = {
       position: "east",
       margin: 20,
       itemOrder: "startingOrder",
-      useDirectLegends: false,
       fontSize: "10pt",
+      useDirectLegends: false,
     },
     sonification: {
       isSonificationEnabled: false,
@@ -166,6 +166,14 @@ export const defaultConfig: Config = {
         isAlwaysShowSeriesLabel: false,
         isTrendNavigationModeEnabled: false,
       },
+      histogram: {
+        minYValue: "unset",
+        maxYValue: "unset",
+        bins: 20,
+        displayAxis: "x",
+        groupingAxis: "",
+        relativeAxes: "Counts",
+      },
       donut: {
         outsideLabels: {
           vertGap: 10,
@@ -188,6 +196,11 @@ export const defaultConfig: Config = {
           position: 0.85,
           contents: "category",
         },
+      },
+      heatmap: {
+        minYValue: "unset",
+        maxYValue: "unset",
+        resolution: 20,
       },
       scatter: {
         minYValue: "unset",
@@ -368,5 +381,10 @@ export const defaultConfig: Config = {
       backgroundColor: "dark",
       isShowCrosshair: true,
       isCrosshairFollowPointer: false,
+    },
+    scrollytelling: {
+      isScrollytellingEnabled: true,
+      isScrollyAnnouncementsEnabled: true,
+      isScrollySoniEnabled: true,
     },
 }

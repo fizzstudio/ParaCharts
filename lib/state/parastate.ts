@@ -43,9 +43,10 @@ import {
 } from '@fizz/parasummary';
 
 import {
-  DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
+  FORMAT_CONTEXT_SETTINGS, Settings, FormatContext,
   type Setting, type SettingGroup,
 } from './settings_types';
+import { SettingsInput } from '../config/config_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
 import { defaults, chartTypeDefaults } from './settings_defaults';
@@ -1118,7 +1119,7 @@ export class ParaState extends BaseState {
 
   getFormatType(context: FormatContext): FormatType {
     return context === 'domId' ? 'domId'
-      : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.settings) as FormatType;
+      : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.config) as FormatType;
   }
 
   annotatePoint(seriesKey: string, index: number, text: string) {
