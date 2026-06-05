@@ -11,7 +11,7 @@
             "label": "Show legend",
             "description": "Draw legend",
             "type": "boolean",
-            "default": true,
+            "default": false,
             "control": "checkbox",
             "parentView": "controlPanel.tabs.chart.legend.dialog"
         },

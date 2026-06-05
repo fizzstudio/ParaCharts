@@ -107,8 +107,8 @@ export class HeatMapInfo extends PlaneChartInfo {
     left = this._navMap!.root.get('top')!;
     for (let i = 0; i < this._grid.length; i++) {
       for (let j = 0; j < this._grid[i].length; j++) {
-        const entry = this.grid[i][j]
-        const datapoints = this._datapointGrid[i][j]
+        const entry = this.grid[j][i]
+        const datapoints = this._datapointGrid[j][i]
         const node = new NavNode(this._navMap!.root, 'heatmapTile', {
           datapointCount: entry,
           datapoints: datapoints,

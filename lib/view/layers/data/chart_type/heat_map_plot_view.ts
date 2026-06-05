@@ -144,15 +144,16 @@ export class HeatmapTileView extends View {
   protected _count: number = 0;
   protected _datapoints: Datapoint[] = [];
   protected _shapes: Shape[] = [];
-
+  protected _series: SeriesView;
+  _xIndex: number = 0;
+  _yIndex: number = 0;
   constructor(
     chart: HeatMapPlotView,
     series: SeriesView
   ) {
     super(chart.paraview);
-    this.chart = chart
-    //this._createShapes();
-    //this.completeLayout();
+    this.chart = chart;
+    this._series = series;
   }
 
   get width() {
@@ -167,17 +168,22 @@ export class HeatmapTileView extends View {
     return this._count
   }
 
+  get datapoints() {
+    return this._datapoints;
+  }
+
   get fillColor() {
     let color = `hsl(0, 0%, 0%)`
     if (this._count > 0) {
       //this.chart.chartInfo.maxCount
-      let ca = this.paraview.paraState.clusterAnalyses!
-      const clusterIds = this._datapoints.map(d => d.datapointIndex).map(id => ca.findIndex(c => [...c.dataPointIDs, ...c.outlierIDs].includes(id)))
-      const mostCommonCluster = getMostCommonReduce(clusterIds)
-      const baseColor = this.paraview.paraState.colors.colorValueAt(mostCommonCluster)
-      const lightenCount = Math.floor(this._count / this.chart.chartInfo.maxCount * 8) - 2
-      const lightened = this.paraview.paraState.colors.lighten(baseColor, lightenCount)
-      color = lightened
+      const cA = this.paraview.paraState.clusterAnalyses!;
+      const clusterIds = this._datapoints.map(d => d.datapointIndex).map(
+        id => cA.findIndex(c => [...c.dataPointIDs, ...c.outlierIDs].includes(id)));
+      const mostCommonCluster = getMostCommonReduce(clusterIds);
+      const baseColor = this.paraview.paraState.colors.colorValueAt(mostCommonCluster);
+      const lightenCount = Math.floor(this._count / this.chart.chartInfo.maxCount * 8) - 2;
+      const lightened = this.paraview.paraState.colors.lighten(baseColor, lightenCount);
+      color = lightened;
     }
     return color
   }
@@ -221,11 +227,13 @@ export class HeatmapTileView extends View {
     const info = this.chart.chartInfo;
     this._height = this.chart.parent.height / info.resolution;
     this._width = this.chart.parent.width / info.resolution;
-    this._x = (index) % info.resolution * this._width;
-    this._y = Math.floor((index) / info.resolution) * this._height;
-    const id = index;
-    this._count = info.grid[id % info.resolution][Math.floor(id / info.resolution)]
-    this._datapoints = info.datapointGrid[id % info.resolution][Math.floor(id / info.resolution)];
+    this._yIndex = Math.floor(index / info.resolution);
+    this._xIndex = index % info.resolution;
+    this._x = this._xIndex * this._width;
+    this._y = this._yIndex * this._height;
+    this._count = info.grid[this._xIndex][this._yIndex];
+    this._datapoints = info.datapointGrid[this._xIndex][this._yIndex];
+
     this.id = [
       'datapoint',
       //strToId(this.seriesKey),
@@ -262,25 +270,37 @@ export class HeatmapTileView extends View {
 
 export class HeatmapTile extends RectShape {
   get count() {
-    let parent = this.parent as HeatmapTileView;
+    const parent = this.parent as HeatmapTileView;
     return parent.count;
   }
   get chart() {
-    let parent = this.parent as HeatmapTileView;
+    const parent = this.parent as HeatmapTileView;
     return parent.chart;
   }
   get fillColor() {
-    let parent = this.parent as HeatmapTileView;
+    const parent = this.parent as HeatmapTileView;
     return parent.fillColor;
   }
 
   get parentIndex() {
-    let parent = this.parent as HeatmapTileView;
+    const parent = this.parent as HeatmapTileView;
     return parent.index;
   }
+
+  protected _onClick() {
+    const parent = this.parent as HeatmapTileView;
+    this.chart.chartInfo.navMap?.goTo('heatmapTile',
+      {
+        datapointCount: parent.count,
+        datapoints: parent.datapoints,
+        yIndex: parent._yIndex,
+        xIndex: parent._xIndex
+      });
+  }
+
   render() {
     const cursor = this.chart.chartInfo.navMap!.cursor!
-    if (cursor.type == 'heatmapTile' && cursor.index == this.parent!.index) {
+    if (cursor.type == 'heatmapTile' && cursor.index == this.parent!.index - 1) {
       this._styleInfo.stroke = 'hsl(0, 100.00%, 50.00%)'
       this._styleInfo.strokeWidth = 4;
     }
@@ -298,13 +318,13 @@ export class HeatmapTile extends RectShape {
           id=${this._id || nothing}
           style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
           class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
-          role=${this._role || nothing}
+          role=${'clickable'}
           x=${fixed`${this._x}`}
           y=${fixed`${this._y}`}
           width=${fixed`${this.width}`}
           height=${fixed`${this.height}`}
           fill= '${this.fillColor}'
-
+          @click=${() => this._onClick()}
           clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
         ></rect>
       `;

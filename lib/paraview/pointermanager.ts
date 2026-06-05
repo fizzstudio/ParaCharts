@@ -102,7 +102,7 @@ export class PointerEventManager {
    * @param event - The event on the element.
    */
   handleMove(event: PointerEvent) {
-    if (!this._paraView?.documentView?.chartLayers){
+    if (!this._paraView?.documentView?.chartLayers) {
       return;
     }
     const target = event.target as SVGGraphicsElement;
@@ -210,10 +210,13 @@ export class PointerEventManager {
         }, true);
         this._paraView.paraState.chartInfo.selectCurrent(!!isAdd);
       } else {
-        // might have clicked on an axis label, axis tick label or something else we can act on,
-        //  but it's not a data point, so it can't be "selected"
-        this.log.info('not a datapoint!');
-        this._paraView.paraState.chartInfo.didClickBackground();
+        const clickableEl = target.closest('[role="clickable"]')
+        if (!clickableEl) {
+          // might have clicked on an axis label, axis tick label or something else we can act on,
+          //  but it's not a data point, so it can't be "selected"
+          this.log.info('not a datapoint!');
+          this._paraView.paraState.chartInfo.didClickBackground();
+        }
       }
     }
   }

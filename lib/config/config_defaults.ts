@@ -188,7 +188,7 @@ export const defaultConfig: Config = {
         fill: "none",
       },
       isDrawLegend: true,
-      isAlwaysDrawLegend: true,
+      isAlwaysDrawLegend: false,
       padding: 10,
       symbolLabelGap: 4,
       pairGap: 10,
