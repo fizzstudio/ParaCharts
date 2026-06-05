@@ -1,7 +1,7 @@
 import { SettingControl } from '.';
 
 import { customElement } from 'lit/decorators.js';
-import { html } from 'lit';
+import { html, css } from 'lit';
 
 export interface ButtonSettingControlOptions {
 
@@ -9,6 +9,15 @@ export interface ButtonSettingControlOptions {
 
 @customElement('para-button-setting-control')
 export class ButtonSettingControl extends SettingControl<'button'> {
+
+  static styles = [
+    //styles,
+    css`
+      button::first-letter {
+        text-transform: uppercase;
+      }
+    `
+  ];
 
   protected content() {
     return html`
@@ -21,7 +30,7 @@ export class ButtonSettingControl extends SettingControl<'button'> {
           }}
         >
           ${this.label}
-        </button> 
+        </button>
       </label>
     `;
   }

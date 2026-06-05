@@ -87,7 +87,6 @@ export class ParaChart extends ParaComponent {
   protected _loaderResolver: (() => void) | null = null;
   protected _loaderRejector: ((error?: Error) => void) | null = null;
   protected _styleManager!: StyleManager;
-  protected _commander!: Commander;
   protected _paraAPI!: ParaAPI;
   // allow _scrollyteller to be cleared with undefined after destroy() ===
   protected _scrollyteller: Scrollyteller | undefined;
@@ -260,9 +259,10 @@ export class ParaChart extends ParaComponent {
     this.paraView.showAriaLiveHistory();
   }
 
-  connectedCallback() {
+  async connectedCallback() {
     super.connectedCallback();
     if (this._styleManager) return;
+    await this._globalState.init();
     this.isControlPanelOpen = this._paraState.config.controlPanel.isControlPanelDefaultOpen;
     this._injectFontFace('braille36', brailleFont);
     this._injectFontFace('Atkinson Hyperlegible', hyperFont);
@@ -323,10 +323,6 @@ export class ParaChart extends ParaComponent {
       });
     }
     this._styleManager.update();
-  }
-
-  protected firstUpdated(_changedProperties: PropertyValues): void {
-    this._commander = Commander.getInst(this._paraViewRef.value!);
   }
 
   willUpdate(changedProperties: PropertyValues<this>) {
@@ -453,15 +449,6 @@ export class ParaChart extends ParaComponent {
       new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));
   }
 
-  command(name: keyof AvailableCommands, args: any[]): any {
-    const handler = this._commander.commands[name];
-    if (handler) {
-      return handler(...args);
-    } else {
-      this.log.warn(`no handler for command '${name}'`);
-    }
-  }
-
   render(): TemplateResult {
     // We can't truly hide the para-chart, or labels don't get a proper size,
     // so we fall back on sr-only
@@ -472,7 +459,7 @@ export class ParaChart extends ParaComponent {
     const cpanelStyles = {
       'width': `${this._paraState.config.chart.width}px`
     };
-    return html`
+    return this._globalState.l10n ? html`
       <figure
         class=${classMap(classes)}
         aria-hidden=${this.headless ? 'true' : 'false'}
@@ -520,7 +507,7 @@ export class ParaChart extends ParaComponent {
           : ''
         }
       </figure>
-    `;
+    ` : html``;
   }
 
   /*

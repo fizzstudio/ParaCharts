@@ -2,7 +2,7 @@
     "abstract": true,
     "settings": {
         "minYValue": {
-            "label": "Min y-value",
+            "label": "cpanel.tabs.chart.min_y",
             "description": "Minimum Y value override",
             "type": "number | 'unset'",
             "default": "unset",
@@ -14,7 +14,7 @@
             "refresh": "chart"
         },
         "maxYValue": {
-            "label": "Max y-value",
+            "label": "cpanel.tabs.chart.max_y",
             "description": "Maximum Y value override",
             "type": "number | 'unset'",
             "default": "unset",
