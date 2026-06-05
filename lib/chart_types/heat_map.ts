@@ -24,8 +24,6 @@ export class HeatMapInfo extends PlaneChartInfo {
     this._generateHeatmap();
     const values = this._grid.flat();
     this._maxCount = Math.max(...values);
-    //this._paraState.clearVisited();
-    //this._paraState.clearSelected();
     // Generate the heat map before creating the nav nodes
     const cluster = async () => {
       this._paraState.clusterAnalyses = await this._generateClustering();
@@ -82,26 +80,6 @@ export class HeatMapInfo extends PlaneChartInfo {
         }
         left = seriesNode;
       }
-      //series.datapoints.forEach((_dp, j) => seriesNode.addDatapoint(series.key, j));
-      //console.log("series.datapoints.length", series.datapoints.length)
-      /*
-      for (let i = 0; i < this._resolution ** 2; i++) {
-        const node = new NavNode(this._navMap!.root,
-          this._datapointNavNodeType, {
-          seriesKey: sortedSeries[0].key,
-          index: i
-        },
-          this._paraState);
-        //node.addDatapoint(series.key, j);
-        node.connect('left', left);
-        if (i === 0 && sortedSeries.length === 1) {
-          node.connect('up', left);
-          node.connect('down', left);
-          node.connect('right', left);
-        }
-        left = node;
-      };
-      */
     });
 
     left = this._navMap!.root.get('top')!;
@@ -146,24 +124,26 @@ export class HeatMapInfo extends PlaneChartInfo {
     return await (this._paraState.model as PlaneModel).getClusteringAnalysis();
   }
 
-  protected _datapointSummary(index: number) {
-    // const count = this._grid[index % this._resolution][Math.floor(index/this._resolution)];
-    // const xInfo = this._axisInfo!.xLabelInfo!
-    // const yInfo = this._axisInfo!.yLabelInfo!
-    // const xSpan = xInfo.range! / this._resolution;
-    // const ySpan = yInfo.range! / this._resolution;
-    // const up = (yInfo.max! - ySpan * (Math.floor((index) / this._resolution))).toFixed(2);
-    // const down = (yInfo.max! - ySpan * (Math.floor((index) / this._resolution) + 1)).toFixed(2);
-    // const left = (xInfo.min! + xSpan * ((index) % this._resolution)).toFixed(2);
-    // const right = (xInfo.min! + xSpan * ((index) % this._resolution + 1)).toFixed(2);
-    // return `This block contains ${count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
-    return 'FIXME';
+  protected _datapointSummary(xIndex: number, yIndex: number) {
+    const index = yIndex * this.resolution + xIndex;
+    const count = this._grid[index % this._resolution][Math.floor(index / this._resolution)];
+    const xInterval = this.xInterval!;
+    const yInterval = this.yInterval!;
+    const xRange = xInterval.end - xInterval.start;
+    const yRange = yInterval.end - yInterval.start;
+    const xSpan = xRange / this._resolution;
+    const ySpan = yRange / this._resolution;
+    const up = (yInterval.end - ySpan * (Math.floor((index) / this._resolution))).toFixed(2);
+    const down = (yInterval.end - ySpan * (Math.floor((index) / this._resolution) + 1)).toFixed(2);
+    const left = (xInterval.start + xSpan * ((index) % this._resolution)).toFixed(2);
+    const right = (xInterval.start + xSpan * ((index) % this._resolution + 1)).toFixed(2);
+    return `This block contains ${count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
   }
 
   async navRunDidEnd(cursor: NavNode, quiet = false) {
-    if (cursor.isNodeType('datapoint')) {
+    if (cursor.isNodeType('heatmapTile')) {
       if (!quiet) {
-        this._paraState.announce(this._datapointSummary(cursor.options.index));
+        this._paraState.announce(this._datapointSummary(cursor.options.xIndex, cursor.options.yIndex));
       }
     }
     //Sam: Most stuff here (summaries, sparkbraille, sonification) is not implemented yet for heatmaps,
