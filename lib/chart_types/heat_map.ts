@@ -56,6 +56,7 @@ export class HeatMapInfo extends PlaneChartInfo {
     let left = this._navMap!.root.get('top')!;
     //const depFacet = this._paraState.model!.dependentFacetKeys[0];
     // Sort by value of first datapoint from greatest to least
+    /*
     const sortedSeries = this.seriesInNavOrder();
     sortedSeries.forEach((series, i) => {
       if (sortedSeries.length > 1) {
@@ -71,7 +72,13 @@ export class HeatMapInfo extends PlaneChartInfo {
         left = seriesNode;
       }
     });
-
+    if (this._paraState.model?.multi){
+      left = this._navMap!.root.get('series')!;
+    }
+    else{
+      left = this._navMap!.root.get('top')!;
+    }
+      */
     left = this._navMap!.root.get('top')!;
     for (let i = 0; i < this._grid.length; i++) {
       for (let j = 0; j < this._grid[i].length; j++) {
@@ -84,7 +91,7 @@ export class HeatMapInfo extends PlaneChartInfo {
           xIndex: j
         }, this._paraState)
         node.connect('left', left);
-        if (i === 0 && j === 0 && sortedSeries.length === 1) {
+        if (i === 0 && j === 0) {
           node.connect('up', left);
           node.connect('down', left);
           node.connect('right', left);
@@ -104,6 +111,10 @@ export class HeatMapInfo extends PlaneChartInfo {
   protected _createNavLinksBetweenSeries() {
     // Don't do anything here, since we create vertical links between rows
     // XXX For the case of a multi-series heatmap, we need to do ... something
+  }
+
+  protected _createVerticalNavLinks(): void {
+    
   }
 
   protected _createChordNavNodes() {
@@ -206,9 +217,6 @@ export class HeatMapInfo extends PlaneChartInfo {
     let yMin: number = yLabels.min!;
     let xMin: number = xLabels.min!;
 
-    xMax += (xMax - xMin) / 10;
-    xMin -= (xMax - xMin) / 10;
-
     const grid: Array<Array<number>> = [];
     const datapointGrid: Array<Array<Array<Datapoint>>> = [];
 
@@ -221,16 +229,17 @@ export class HeatMapInfo extends PlaneChartInfo {
       }
     }
     for (let i = 0; i < this._data.length; i++) {
-      const point = this._data[i]
+      const point = this._data[i];
       const xIndex: number = Math.floor((point[0] - xMin) * this.resolution / (xMax - xMin));
-      const yIndex: number = Math.floor((point[1] - yMin) * this.resolution / (yMax - yMin));
-      grid[xIndex][this.resolution - yIndex - 1]++;
-      datapointGrid[xIndex][this.resolution - yIndex - 1].push(this._paraState.model!.allPoints[i])
+      let yIndex: number = this.resolution - Math.floor((point[1] - yMin) * this.resolution / (yMax - yMin)) - 1;
+      if (yIndex == -1){
+        yIndex++;
+      }
+      grid[xIndex][ yIndex]++;
+      datapointGrid[xIndex][yIndex].push(this._paraState.model!.allPoints[i]);
     }
     this._grid = grid;
-    this._datapointGrid = datapointGrid
-    //console.log("grid", grid)
-    //console.log("datapointGrid", datapointGrid)
+    this._datapointGrid = datapointGrid;
     return grid;
   }
 

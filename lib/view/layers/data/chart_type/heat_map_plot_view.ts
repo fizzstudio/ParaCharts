@@ -48,7 +48,7 @@ export class HeatMapPlotView extends PlanePlotView {
   }
 
   protected _newDatapointView(seriesView: PlaneSeriesView) {
-    return new ScatterPointView(seriesView);
+    return new HeatmapPointView(seriesView);
   }
 
   protected _createDatapoints() {
@@ -62,13 +62,12 @@ export class HeatMapPlotView extends PlanePlotView {
         seriesView.append(datapointView);
         // the `index` property of the datapoint view will equal j
       }
-      for (let i = 0; i < this._chartInfo.resolution ** 2; i++) {
-        const tileView = new HeatmapTileView(this, seriesView);
-        this._tiles.push(tileView);
-        // the `index` property of the datapoint view will equal j
-      }
     }
-
+    for (let i = 0; i < this._chartInfo.resolution ** 2; i++) {
+      const tileView = new HeatmapTileView(this);
+      this._tiles.push(tileView);
+      // the `index` property of the datapoint view will equal j
+    }
 
     //for (const [col, i] of enumerate(this.paraview.paraState.model!.series)) {
     //const seriesView = this._newSeriesView(col.key);
@@ -109,6 +108,16 @@ export class HeatMapPlotView extends PlanePlotView {
 
 }
 
+export class HeatmapPointView extends ScatterPointView {
+  content() {
+    return svg``
+  }
+
+  protected _createSymbol(): void {
+    return;
+  }
+}
+
 export class HeatmapTileView extends View {
 
   declare readonly chart: HeatMapPlotView;
@@ -119,16 +128,14 @@ export class HeatmapTileView extends View {
   protected _count: number = 0;
   protected _datapoints: Datapoint[] = [];
   protected _shapes: Shape[] = [];
-  protected _series: SeriesView;
+  protected _fillColor!: string
   _xIndex: number = 0;
   _yIndex: number = 0;
   constructor(
     chart: HeatMapPlotView,
-    series: SeriesView
   ) {
     super(chart.paraview);
     this.chart = chart;
-    this._series = series;
   }
 
   get width() {
@@ -148,11 +155,23 @@ export class HeatmapTileView extends View {
   }
 
   get fillColor() {
-    let color = `hsl(0, 0%, 0%)`
+    if (this._fillColor) {
+      return this._fillColor;
+    }
+    let color = `hsl(0, 0%, 0%)`;
     if (this._count > 0) {
       //this.chart.chartInfo.maxCount
       const cA = this.paraview.paraState.clusterAnalyses!;
-      const clusterIds = this._datapoints.map(d => d.datapointIndex).map(
+      const indices = this._datapoints.map(d => {
+        const seriesKey = d.seriesKey;
+        const seriesIndex = this.paraview.paraState.model?.seriesKeys.indexOf(seriesKey)!
+        let jimIndex = 0;
+        for (let i = seriesIndex - 1; i >= 0; i--) {
+          jimIndex += this.paraview.paraState.model!.series[i].datapoints.length;
+        }
+        return d.datapointIndex + jimIndex;
+      })
+      const clusterIds = indices.map(
         id => cA.findIndex(c => [...c.dataPointIDs, ...c.outlierIDs].includes(id)));
       const mostCommonCluster = getMostCommonReduce(clusterIds);
       const baseColor = this.paraview.paraState.colors.colorValueAt(mostCommonCluster);
@@ -160,6 +179,7 @@ export class HeatmapTileView extends View {
       const lightened = this.paraview.paraState.colors.lighten(baseColor, lightenCount);
       color = lightened;
     }
+    this._fillColor = color;
     return color
   }
 
