@@ -3,7 +3,7 @@ import { SettingControl } from '.';
 import { Slider } from '@fizz/ui-components';
 
 import { customElement } from 'lit/decorators.js';
-import { html, nothing } from 'lit';
+import { html, nothing, css } from 'lit';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { strToId } from '@fizz/paramanifest';
@@ -22,6 +22,15 @@ export interface SliderSettingControlOptions {
 
 @customElement('para-slider-setting-control')
 export class SliderSettingControl extends SettingControl<'slider'> {
+
+  static styles = [
+    //styles,
+    css`
+      fizz-slider {
+        --first-letter-text-transform: capitalize;
+      }
+    `
+  ];
 
   protected content() {
     const opts = this.info.options;

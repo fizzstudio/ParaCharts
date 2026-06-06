@@ -162,7 +162,7 @@ export class SettingControlManager extends State {
         return html`
           <${tag}
             .value=${value}
-            .label=${metadata.label}
+            .label=${this._paraState.globalState.l10n.localize(metadata.label!)}
             .info=${controlInfo}
             .globalState=${this._paraState.globalState}
             ?hidden=${metadata.hidden}

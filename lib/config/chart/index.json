@@ -7,7 +7,7 @@
             "default": "bar"
         },
         "width": {
-            "label": "Width",
+            "label": "cpanel.tabs.chart.width",
             "description": "Chart width in pixels",
             "type": "number",
             "default": 600,
@@ -21,7 +21,7 @@
             "parentView": "controlPanel.tabs.chart.general.width"
         },
         "height": {
-            "label": "Height",
+            "label": "cpanel.tabs.chart.height",
             "description": "Chart height in pixels",
             "type": "number",
             "default": 450,
@@ -45,7 +45,7 @@
             "default": "8 30"
         },
         "fontFamily": {
-            "label": "Font family",
+            "label": "cpanel.tabs.chart.font_dialog.font_family",
             "description": "Font family for all chart text",
             "type": "string",
             "default": "Atkinson Hyperlegible",
@@ -62,7 +62,7 @@
             "default": "300"
         },
         "fontScale": {
-            "label": "Font scale",
+            "label": "cpanel.tabs.chart.font_dialog.font_scale",
             "description": "Global font size multiplier",
             "type": "number",
             "default": 1,
@@ -77,7 +77,7 @@
             "parentView": "controlPanel.tabs.chart.font.dialog"
         },
         "isUseBraille": {
-            "label": "Use Braille font",
+            "label": "cpanel.tabs.chart.font_dialog.use_braille",
             "description": "Enable the use of a Braille font",
             "type": "boolean",
             "default": false,
@@ -86,7 +86,7 @@
             "parentView": "controlPanel.tabs.chart.font.dialog"
         },
         "isUseBrailleAndPrint": {
-            "label": "Include Braille and print text",
+            "label": "cpanel.tabs.chart.font_dialog.incl_braille_print",
             "description": "Include print text along with Braille",
             "type": "boolean",
             "default": false,
@@ -95,7 +95,7 @@
             "parentView": "controlPanel.tabs.chart.font.dialog"
         },
         "pageSize": {
-            "label": "Page size",
+            "label": "cpanel.tabs.chart.font_dialog.page_size",
             "description": "Document page size",
             "type": "'us_letter' | 'us_legal'",
             "default": "us_letter",
@@ -147,7 +147,7 @@
             "default": false
         },
         "isDrawSymbols": {
-            "label": "Show symbols",
+            "label": "cpanel.tabs.chart.show_symbols",
             "description": "Draw symbols at data points",
             "type": "boolean",
             "default": true,
@@ -165,7 +165,7 @@
             "default": false
         },
         "isShowPopups": {
-            "label": "Show popups",
+            "label": "cpanel.tabs.chart.show_popups",
             "description": "Show popups on hover or focus",
             "type": "boolean",
             "default": false,

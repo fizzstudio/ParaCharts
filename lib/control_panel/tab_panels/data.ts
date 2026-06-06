@@ -64,6 +64,9 @@ export class DataPanel extends ControlPanelTabPanel {
         width: 8rem;
         max-width: 8rem;
       }
+      #data-buttons button::first-letter {
+        text-transform: capitalize;
+      }
       #sparkbraille {
         background-color: var(--theme-color-light);
         padding: 0.2rem;
@@ -79,7 +82,10 @@ export class DataPanel extends ControlPanelTabPanel {
         class="tab-content"
       >
         <div>
-          <p>Source: <span id="source-name">unknown</span></p>
+          <p>
+            ${this._globalState.l10n.localize('cpanel.tabs.data.source')}:
+            <span id="source-name">${this._globalState.l10n.localize('cpanel.tabs.data.unknown')}</span>
+          </p>
         </div>
         <div id="data-buttons">
           ${this.controlPanel.config.isSparkBrailleControlVisible
@@ -118,26 +124,26 @@ export class DataPanel extends ControlPanelTabPanel {
           <button
             @click=${() => this._saveData()}
           >
-            Save data
+            ${this._globalState.l10n.localize('cpanel.tabs.data.save_data')}
           </button>
           <button
             @click=${() => {
               this._controlPanel.paraChart.isDataTableVisible = ! this._controlPanel.paraChart.isDataTableVisible;
             }}
           >
-            Data table
+            ${this._globalState.l10n.localize('cpanel.tabs.data.data_table')}
           </button>
           <button
             @click=${() => this.controlPanel.dialog.show('Source links')}
           >
-            Source Links
+            ${this._globalState.l10n.localize('cpanel.tabs.data.source_links')}
           </button>
           <button
             @click=${() => {
               this._saveChart();
             }}
           >
-            Save chart
+            ${this._globalState.l10n.localize('cpanel.tabs.data.save_chart')}
           </button>
         </div>
       </div>

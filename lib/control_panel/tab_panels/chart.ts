@@ -70,6 +70,9 @@ export class ChartPanel extends ControlPanelTabPanel {
         gap: 0.5rem;
         align-items: center;
       }
+      button::first-letter {
+        text-transform: capitalize;
+      }
     `
   ];
 
@@ -107,7 +110,7 @@ export class ChartPanel extends ControlPanelTabPanel {
             <button
               @click=${() => this._fontDialogRef.value?.show()}
             >
-              Font settings
+              ${this._globalState.l10n.localize('cpanel.tabs.chart.font_settings')}
             </button>
           </div>
           <div>
@@ -129,7 +132,7 @@ export class ChartPanel extends ControlPanelTabPanel {
                   this._popupDialogRef.value?.show()
                 }}
             >
-              Popup settings
+              ${this._globalState.l10n.localize('cpanel.tabs.chart.popup_settings')}
             </button>
             <para-popup-settings-dialog
               ${ref(this._popupDialogRef)}

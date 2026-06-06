@@ -8,7 +8,7 @@
             "parentView": "controlPanel.tabs.chart.legend.dialog"
         },
         "isAlwaysDrawLegend": {
-            "label": "Show legend",
+            "label": "cpanel.tabs.chart.legend_dialog.show",
             "description": "Draw legend",
             "type": "boolean",
             "default": false,
@@ -31,7 +31,7 @@
             "default": 10
         },
         "position": {
-            "label": "Legend position",
+            "label": "cpanel.tabs.chart.legend_dialog.position",
             "description": "Position relative to chart",
             "type": "CardinalDirection",
             "default": "east",
@@ -52,7 +52,7 @@
             "default": 20
         },
         "itemOrder": {
-            "label": "Legend item order",
+            "label": "cpanel.tabs.chart.legend_dialog.item_order",
             "description": "Ordering of legend items",
             "type": "LegendItemOrder",
             "default": "startingOrder",
@@ -73,7 +73,7 @@
             "default": "10pt"
         },
         "useDirectLegends": {
-            "label": "Use direct legend",
+            "label": "cpanel.tabs.chart.legend_dialog.direct",
             "description": "Position legend items directly",
             "type": "boolean",
             "default": false,

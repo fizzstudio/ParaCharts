@@ -1,0 +1,118 @@
+{
+    "en": {
+        "cpanel": {
+            "tabs": {
+                "description": {
+                    "title": "description"
+                },
+                "data": {
+                    "title": "data",
+                    "source": "source",
+                    "unknown": "unknown",
+                    "save_data": "save data",
+                    "save_chart": "save chart",
+                    "data_table": "data table",
+                    "source_links": "source links"
+                },
+                "colors": {
+                    "title": "colors",
+                    "dark_mode": "dark mode",
+                    "contrast": "contrast",
+                    "low_vision": "low-vision mode",
+                    "color_palette": "color palette",
+                    "cvd_colors": "chart colors for CVD (color blindness)",
+                    "color_dialog": {
+                        "color_theme": "color theme"
+                    }
+                },
+                "audio": {
+                    "title": "audio",
+                    "sonification": "sonification",
+                    "sonification_controls": "sonification controls",
+                    "self_voicing": "self-voicing",
+                    "tour_guide": "tour guide",
+                    "pause_tour_guide": "play/pause tour guide",
+                    "speech_rate": "speech rate",
+                    "announce_screen_reader": "announce to screen reader",
+                    "soni_dialog": {
+                        "play_series_riff": "play series riffs",
+                        "lower_hertz": "lower hertz",
+                        "upper_hertz": "upper hertz",
+                        "riff_speed": "riff speed",
+                        "arpeg_chords": "chords are arpeggiated",
+                        "notification_sounds": "notification sounds"
+                    }
+                },
+                "controls": {
+                    "title": "controls",
+                    "keyboard_controls": "keyboard controls",
+                    "fullscreen": "fullscreen",
+                    "animation": "animation",
+                    "animation_settings": "animation settings",
+                    "help": "help",
+                    "advanced_controls": "advanced controls",
+                    "anim_dialog": {
+                        "animation_type": "animation type",
+                        "animation_rate": "animation rate",
+                        "animation_origin": "animation origin",
+                        "animation_origin_value": "animation origin value"
+                    }
+                },
+                "chart": {
+                    "title": "chart",
+                    "width": "width",
+                    "height": "height",
+                    "min_y": "min y-value",
+                    "max_y": "max y-value",
+                    "caption_format": "caption format",
+                    "line_width": "line width",
+                    "show_symbols": "show symbols",
+                    "show_popups": "show popups",
+                    "popup_settings": "popup settings",
+                    "font_settings": "font settings",
+                    "pastry_orientation": "orientation",
+                    "pastry_explode": "explode",
+                    "pastry_inside_labels": "inside labels",
+                    "pastry_outside_labels": "outside labels",
+                    "scatter_trend_line": "trend line",
+                    "scatter_outliers": "show outliers",
+                    "popup_dialog": {
+                        "opacity": "opacity",
+                        "left_padding": "left padding",
+                        "right_padding": "right padding",
+                        "up_padding": "up padding",
+                        "down_padding": "down padding",
+                        "margin": "vertical margin",
+                        "max_width": "max width",
+                        "shape": "shape",
+                        "activation": "activate popups on",
+                        "border_radius": "border radius",
+                        "bg_color": "color mode",
+                        "crosshair": "Show crosshair?",
+                        "crosshair_follow": "Track crosshair to pointer?"
+                    },
+                    "font_dialog": {
+                        "font_family": "font family",
+                        "font_scale": "font scale",
+                        "use_braille": "use braille font",
+                        "incl_braille_print": "include braille and print text",
+                        "page_size": "page size"
+                    },
+                    "legend_dialog": {
+                        "show": "show legend",
+                        "position": "legend position",
+                        "item_order": "legend item order",
+                        "direct": "use direct legend"
+                    }
+                },
+                "annotations": {
+                    "title": "annotations",
+                    "add_annotation": "add annotation",
+                    "add_line_breaks": "add line breaks",
+                    "remove_line_breaks": "remove added line breaks",
+                    "show_annotations": "show trend annotations"
+                }
+            }
+        }
+    }
+}
