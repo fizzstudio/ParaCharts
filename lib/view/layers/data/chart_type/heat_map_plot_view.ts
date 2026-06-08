@@ -262,7 +262,7 @@ export class HeatmapTileView extends View {
       stroke: fillColor,
       strokeWidth: strokeWidth + .5,
       pointerEnter: (e) => {
-        this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined;
+        this.shouldAddHoverPopup() ? this.addPopup() : undefined;
       },
       pointerLeave: (e) => {
         this.paraview.paraState.removePopup(this.id);
@@ -274,7 +274,7 @@ export class HeatmapTileView extends View {
     })
   }
 
-  addDatapointPopup() {
+  addPopup() {
     const index = this._yIndex * this.chart.chartInfo.resolution + this._xIndex + 1;
     let datapointText = `Tile ${index} / ${this.chart.chartInfo.resolution ** 2}: ${this.count} points`
     let x = this.x + this.width / 2;
