@@ -35,9 +35,10 @@ export class HeatMapPlotView extends PlanePlotView {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (path === 'type.heatmap.resolution') {
+    if (['type.heatmap.resolution', 'color.colorVisionMode', 'color.colorPalette'].includes(path)) {
       this.paraview.paraState.createChartInfo();
       this.paraview.createDocumentView();
+      this._completeDatapointLayout();
       this.paraview.requestUpdate();
     }
     super.settingDidChange(path, oldValue, newValue);
@@ -88,7 +89,7 @@ export class HeatMapPlotView extends PlanePlotView {
   protected _completeDatapointLayout() {
 
     super._completeDatapointLayout();
-    this._tiles.forEach(t => this.append(t))
+    this._tiles.forEach(t => t.parent == undefined ? this.append(t) : nothing)
     this._tiles.forEach(t => t.completeLayout())
     this._tiles.forEach(t => t._createShapes())
   }
@@ -128,7 +129,8 @@ export class HeatmapTileView extends View {
   protected _count: number = 0;
   protected _datapoints: Datapoint[] = [];
   protected _shapes: Shape[] = [];
-  protected _fillColor!: string
+  protected _fillColor!: string;
+  protected _fillColorIndex!: number;
   _xIndex: number = 0;
   _yIndex: number = 0;
   constructor(
@@ -174,6 +176,7 @@ export class HeatmapTileView extends View {
       const clusterIds = indices.map(
         id => cA.findIndex(c => [...c.dataPointIDs, ...c.outlierIDs].includes(id)));
       const mostCommonCluster = getMostCommonReduce(clusterIds);
+      this._fillColorIndex = mostCommonCluster;
       const baseColor = this.paraview.paraState.colors.colorValueAt(mostCommonCluster);
       const lightenCount = Math.floor(this._count / this.chart.chartInfo.maxCount * 8) - 2;
       const lightened = this.paraview.paraState.colors.lighten(baseColor, lightenCount);
@@ -181,6 +184,10 @@ export class HeatmapTileView extends View {
     }
     this._fillColor = color;
     return color
+  }
+
+  get fillColorIndex() {
+    return this._fillColorIndex;
   }
 
   get _selectedMarkerX() {
@@ -244,6 +251,7 @@ export class HeatmapTileView extends View {
   layoutSymbol() { }
 
   _createShapes() {
+    this._shapes = [];
     const strokeWidth = 3
     const fillColor = this.fillColor
     const shape = new HeatmapTile(this.paraview, {
@@ -272,9 +280,15 @@ export class HeatmapTile extends RectShape {
     const parent = this.parent as HeatmapTileView;
     return parent.chart;
   }
+
   get fillColor() {
     const parent = this.parent as HeatmapTileView;
     return parent.fillColor;
+  }
+
+  get fillColorIndex() {
+    const parent = this.parent as HeatmapTileView;
+    return parent.fillColorIndex;
   }
 
   get parentIndex() {
@@ -303,7 +317,36 @@ export class HeatmapTile extends RectShape {
       this._styleInfo.stroke = this.options.stroke ?? this._options.stroke;
       this._styleInfo.strokeWidth = this.options.strokeWidth ?? this._options.strokeWidth;
     }
-    return svg`
+    const index = this.fillColorIndex
+    if (this.paraview.paraState.colors.palette.isPattern && index !== undefined) {
+      this._styleInfo.fill = `url(#Pattern${index})`
+      return svg`
+      <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
+      <rect
+        x=${fixed`${this._x}`}
+        y=${fixed`${this._y}`}
+        width=${fixed`${this.width}`}
+        height=${fixed`${this.height}`}
+        fill="white"
+        stroke-width=2
+      ></rect>
+      <rect
+        ${this._ref ? ref(this._ref) : undefined}
+        id=${this._id || nothing}
+        style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+        class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
+        role=${'clickable'}
+        x=${fixed`${this._x}`}
+        y=${fixed`${this._y}`}
+        width=${fixed`${this.width}`}
+        height=${fixed`${this.height}`}
+        @pointerenter=${this.options.pointerEnter ?? nothing}
+        @pointerleave=${this.options.pointerLeave ?? nothing}
+      ></rect>
+    `;
+    }
+    else {
+      return svg`
         <rect
           ${this._ref ? ref(this._ref) : undefined}
           id=${this._id || nothing}
@@ -319,5 +362,6 @@ export class HeatmapTile extends RectShape {
           clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
         ></rect>
       `;
+    }
   }
 }

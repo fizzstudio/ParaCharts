@@ -3,25 +3,25 @@ import { AiChart, type ChartProps } from '../Chart';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { expect } from 'storybook/test';
 
-import Runner from '../tests/waterfallTests';
+import Runner from '../tests/steplineTests';
 
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "AI-enhanced Charts/Waterfall Charts",
+  title: "AI-enhanced Charts/Line Charts/Multi Stepline Charts",
   render: (args) => AiChart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
-export const AiChart62: Story = {
-  name: "Acme Corp Share Price (62)",
+export const AiChart47: Story = {
+  name: "Expenses vs. Revenue (47)",
   args: {
-    filename: "manifests/waterfall-manifest-001.json",
-    forcecharttype: "waterfall",
+    filename: "manifests/line-two-manifest.json",
+    forcecharttype: "stepline",
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/waterfall-manifest-001.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/line-two-manifest.json");
     await runner.run();
   }
 }

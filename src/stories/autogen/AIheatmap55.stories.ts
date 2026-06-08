@@ -5,16 +5,16 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "AI-enhanced Charts/Waterfall Charts",
+  title: "AI-enhanced Charts/Heat Maps",
   render: (args) => AiChart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
-export const AiChart62: Story = {
-  name: "Acme Corp Share Price (62)",
+export const AiChart55: Story = {
+  name: "Iris Flower Data Set (55)",
   args: {
-    filename: "manifests/waterfall-manifest-001.json",
-    forcecharttype: "waterfall",
+    filename: "manifests/scatter-manifest-iris-petal.json",
+    forcecharttype: "heatmap",
   }
 }

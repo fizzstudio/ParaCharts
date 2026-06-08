@@ -5,16 +5,16 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Waterfall Charts",
+  title: "Basic Charts/Line Charts/Multi Line Charts",
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
-export const Chart62: Story = {
-  name: "Acme Corp Share Price (62)",
+export const Chart47: Story = {
+  name: "Expenses vs. Revenue (47)",
   args: {
-    filename: "manifests/waterfall-manifest-001.json",
-    forcecharttype: "waterfall",
+    filename: "manifests/line-two-manifest.json",
+    forcecharttype: "line",
   }
 }

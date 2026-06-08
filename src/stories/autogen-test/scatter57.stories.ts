@@ -3,25 +3,25 @@ import { Chart, type ChartProps } from '../Chart';
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { expect } from 'storybook/test';
 
-import Runner from '../tests/waterfallTests';
+import Runner from '../tests/scatterTests';
 
 type Story = StoryObj<ChartProps>;
 
 const meta = {
-  title: "Basic Charts/Waterfall Charts",
+  title: "Basic Charts/Scatter Charts",
   render: (args) => Chart(args),
 } satisfies Meta<ChartProps>;
 
 export default meta;
 
-export const Chart62: Story = {
-  name: "Acme Corp Share Price (62)",
+export const Chart57: Story = {
+  name: "s1 (57)",
   args: {
-    filename: "manifests/waterfall-manifest-001.json",
-    forcecharttype: "waterfall",
+    filename: "manifests/scatter-manifest-s1.json",
+    forcecharttype: "scatter",
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/waterfall-manifest-001.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/scatter-manifest-s1.json");
     await runner.run();
   }
 }
