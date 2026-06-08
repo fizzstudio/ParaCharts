@@ -1,24 +1,20 @@
-import { Logger, getLogger } from '@fizz/logger';
+import { getLogger } from '@fizz/logger';
 import { Datapoint, enumerate } from "@fizz/paramodel";
-import { formatBox } from "@fizz/parasummary";
 import { nothing, svg } from "lit";
-import { chartInfoClasses, type BaseChartInfo } from '../../../../chart_types';
+import { type BaseChartInfo } from '../../../../chart_types';
 import { type HeatMapInfo } from '../../../../chart_types/heat_map';
 import { fixed, getMostCommonReduce } from "../../../../common/utils";
 import { type DataLayerContext } from '../../../view_context';
 import { type Setting } from "../../../../state";
-import { PointChartType } from '../../../../config/config_types';
-import { DatapointView, SeriesView } from "../../../data";
-
+import { DatapointPopupOptions } from "../../../data";
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { PlanePlotView, PlaneSeriesView, ScatterPointView } from ".";
-import { strToId } from "@fizz/paramanifest";
 import { classMap } from "lit/directives/class-map.js";
 import { ref } from "lit/directives/ref.js";
 import { styleMap } from "lit/directives/style-map.js";
-import { NavNode } from "../navigation";
 import { View } from '../../../base_view';
+import { Popup, ShapeTypes } from '../../../popup';
 
 export class HeatMapPlotView extends PlanePlotView {
   declare protected _chartInfo: HeatMapInfo;
@@ -115,6 +111,9 @@ export class HeatmapPointView extends ScatterPointView {
   }
 
   protected _createSymbol(): void {
+    return;
+  }
+  addDatapointPopup(options?: DatapointPopupOptions): void {
     return;
   }
 }
@@ -261,12 +260,49 @@ export class HeatmapTileView extends View {
       height: this._height - strokeWidth,
       fill: fillColor,
       stroke: fillColor,
-      strokeWidth: strokeWidth + .5
+      strokeWidth: strokeWidth + .5,
+      pointerEnter: (e) => {
+        this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined;
+      },
+      pointerLeave: (e) => {
+        this.paraview.paraState.removePopup(this.id);
+      },
     });
     this._shapes.push(shape)
     this._shapes.forEach(shape => {
       this.append(shape);
     })
+  }
+
+  addDatapointPopup() {
+    const index = this._yIndex * this.chart.chartInfo.resolution + this._xIndex + 1;
+    let datapointText = `Tile ${index} / ${this.chart.chartInfo.resolution ** 2}: ${this.count} points`
+    let x = this.x + this.width / 2;
+    let y = this.y;
+    let color = this.fillColorIndex;
+    let fill = undefined;
+    let shape = "boxWithArrow";
+    let pointerControlled = false;
+    let popup = new Popup(this.paraview,
+      {
+        text: datapointText,
+        x: x,
+        y: y,
+        id: this.id,
+        color: color,
+        rotationExempt: this.paraview.paraState.type == 'bar' ? false : true,
+        angle: this.paraview.paraState.type == 'bar' ? -90 : 0,
+        pointerControlled,
+        margin: this.height
+      },
+      {
+        shape: shape as ShapeTypes,
+        fill: fill
+      });
+    //focus ? this.paraview.paraState.focusPopups.push(popup) :
+    //  select ? this.paraview.paraState.selectPopups.push(popup) :
+    this.paraview.paraState.popups.push(popup);
+    this._popup = popup;
   }
 
 }
@@ -359,6 +395,8 @@ export class HeatmapTile extends RectShape {
           height=${fixed`${this.height}`}
           fill= '${this.fillColor}'
           @click=${() => this._onClick()}
+          @pointerenter=${this.options.pointerEnter ?? nothing}
+          @pointerleave=${this.options.pointerLeave ?? nothing}
           clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
         ></rect>
       `;

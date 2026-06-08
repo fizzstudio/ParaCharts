@@ -107,7 +107,7 @@ export abstract class PlanePlotView extends DataLayer {
             nearestPoint = nearestPoint.withCousins.sort((a, b) => Math.abs(a.y - coords.y) - Math.abs(b.y - coords.y))[0];
           }
         }
-        if (this.paraview.paraState.config.popup.isShowCrosshair) {
+        if (this.paraview.paraState.config.popup.isShowCrosshair && this.paraview.paraState.type !== 'heatmap') {
           if (!this.paraview.paraState.config.popup.isCrosshairFollowPointer) {
             nearestPoint.popup?.remove();
             const isChord = (type == 'line') && (this.paraview.paraState.model!.series.length > 1);

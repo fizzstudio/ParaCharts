@@ -21,7 +21,7 @@ const SELECTION_MARKER_SIZE = 40;
  */
 export type AnimState = Record<string, any>;
 
-interface DatapointPopupOptions {
+export interface DatapointPopupOptions {
   text?: string;
   xInput?: number;
   yInput?: number;
@@ -380,15 +380,15 @@ export class DatapointView extends DataView {
 
   addDatapointPopup(options: DatapointPopupOptions = {}) {
     const { text, xInput, yInput, focus, select } = options;
-    let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`
+    let datapointText = `${this.index + 1}/${this.series.datapoints.length}: ${this.chart.chartInfo.summarizer.getDatapointSummary(this.datapoint, 'statusBar')}`;
     if (this.paraview.paraState.model!.multi) {
       datapointText = `${this.series.getLabel()} ${datapointText}`
     }
-    let x = this.x
-    let y = this.y
-    let color = this.color
+    let x = this.x;
+    let y = this.y;
+    let color = this.color;
     let fill = undefined;
-    let shape = "boxWithArrow"
+    let shape = "boxWithArrow";
     let pointerControlled = false;
     if (['bar', 'column', 'waterfall'].includes(this.paraview.paraState.type)) {
       x = this.x + this.width / 2
@@ -412,17 +412,17 @@ export class DatapointView extends DataView {
       color = 0;
     }
     if (['pie', 'donut'].includes(this.paraview.paraState.type)) {
-      let chart = this.chart as PastryPlotView
+      const chart = this.chart as PastryPlotView;
       //@ts-ignore
-      let params = this._params as RadialDatapointParams;
-      let angle = 2 * Math.PI - ((params.accum * 2 * Math.PI) + (params.percentage * Math.PI) - (chart.config.orientationAngleOffset * 2 * Math.PI / 360))
+      const params = this._params as RadialDatapointParams;
+      const angle = 2 * Math.PI - ((params.accum * 2 * Math.PI) + (params.percentage * Math.PI) - (chart.config.orientationAngleOffset * 2 * Math.PI / 360))
       x = this.x + chart.radius * (1 - chart.config.annularThickness / 2) * Math.cos(angle)
       y = this.y - chart.radius * (1 - chart.config.annularThickness / 2) * Math.sin(angle)
       if (this.paraview.paraState.config.popup.activation == "onHover") {
         pointerControlled = true;
       }
     }
-    let popup = new Popup(this.paraview,
+    const popup = new Popup(this.paraview,
       {
         text: text ?? datapointText,
         x: xInput ?? x,

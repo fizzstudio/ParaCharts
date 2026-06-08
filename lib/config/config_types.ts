@@ -782,11 +782,11 @@ export interface UiConfig extends ConfigGroup {
   isVoicingEnabled: boolean;
   /** Enable visual highlighting when narrative elements are announced */
   isTourGuideEnabled: boolean;
-  /** Pause Tour Guide temporarily */
+  /** Pause Tour Guide */
   isTourGuidePaused: boolean;
   /** Enable aria-live announcements */
   isAnnouncementEnabled: boolean;
-  /** Voice output speech rate. Range: 0.5 to 2 */
+  /** Self-voicing speech rate. Range: 0.5 to 2 */
   speechRate: number;
   /** Delay in seconds between live update announcements */
   liveUpdateDelay: number;
