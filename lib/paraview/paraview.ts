@@ -686,7 +686,7 @@ export class ParaView extends ParaComponent implements ViewContext {
     } else {
       if (this._modeSaved.has('color.themeMode')) {
         this._colorPrefManager.restoreTheme(
-          this._modeSaved.get('color.themeMode') as 'system' | 'light' | 'dark',
+          this._modeSaved.get('color.themeMode') as 'auto' | 'light' | 'dark',
           this._modeSaved.get('color.themeSource') as any,
         );
         this._modeSaved.delete('color.themeMode');
