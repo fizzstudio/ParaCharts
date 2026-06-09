@@ -312,6 +312,7 @@ export class DataSymbol extends View {
   }
 
   content() {
+    this._updateClassInfo();
     let transform;
     let shouldTransform = false;
     if (this._options.scale !== 1) {

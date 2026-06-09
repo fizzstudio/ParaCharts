@@ -6,7 +6,7 @@ import { Shape } from '../shape/shape';
 import { RectShape } from '../shape/rect';
 
 import { type ClassInfo, classMap } from 'lit/directives/class-map.js';
-import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
+import { type StyleInfo } from 'lit/directives/style-map.js';
 import { svg, nothing, TemplateResult } from 'lit';
 import { formatBox } from '@fizz/parasummary';
 import { Datapoint } from '@fizz/paramodel';

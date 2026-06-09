@@ -954,7 +954,19 @@ export class ParaView extends ParaComponent implements ViewContext {
       svg.style.removeProperty(key);
     }
 
-    const styles = this.paraChart.extractStyles(svg.id) + '\n' + this.extractStyles(svg.id) + '\n' + paletteRule;
+    // Generate id-scoped series rules so exported SVG contains enough .series-N selectors
+    const baseKeys = Object.keys(paletteVars).filter(k => /^--color-palette-series-\d+$/.test(k));
+    let seriesRule = '';
+    if (baseKeys.length) {
+      const indices = baseKeys.map(k => Number(k.replace('--color-palette-series-', '')));
+      const maxIndex = Math.max(...indices);
+      const cap = Math.min(maxIndex, 255);
+      for (let i = 0; i <= cap; i++) {
+        seriesRule += `#${svg.id} .series-${i} { fill: var(--color-palette-series-${i}); stroke: var(--color-palette-series-${i}); --series-color-light: var(--color-palette-series-${i}-light); }\n`;
+      }
+    }
+
+    const styles = this.paraChart.extractStyles(svg.id) + '\n' + this.extractStyles(svg.id) + '\n' + paletteRule + '\n' + seriesRule;
     const styleEl = document.createElementNS(SVGNS, 'style');
     styleEl.textContent = styles;
     svg.prepend(styleEl);
@@ -1090,6 +1102,28 @@ export class ParaView extends ParaComponent implements ViewContext {
     return style;
   }
 
+  protected _seriesCss(): string {
+    try {
+      const paletteVars = this._paraState.colors.paletteVars();
+      // collect base series keys like --color-palette-series-0 (ignore -light variants)
+      const baseKeys = Object.keys(paletteVars).filter(k => /^--color-palette-series-\d+$/.test(k));
+      if (!baseKeys.length) return '';
+      // determine max index so we generate contiguous rules up to the highest index
+      const indices = baseKeys.map(k => Number(k.replace('--color-palette-series-', '')));
+      const maxIndex = Math.max(...indices);
+      // safety cap to avoid massive generation
+      const cap = Math.min(maxIndex, 255);
+      let css = '';
+      for (let i = 0; i <= cap; i++) {
+        css += `.series-${i} { fill: var(--color-palette-series-${i}); stroke: var(--color-palette-series-${i}); --series-color-light: var(--color-palette-series-${i}-light); }\n`;
+      }
+      return css;
+    } catch (err) {
+      this.log.error('failed to build series css', err);
+      return '';
+    }
+  }
+
   protected _rootClasses() {
     const sys = this._colorPrefManager?.getSystemState();
     return {
@@ -1183,6 +1217,7 @@ export class ParaView extends ParaComponent implements ViewContext {
         <defs>
           <g ${ref(this._defsRef)}>
           </g>
+          ${svg`${this._seriesCss() ? svg`<style>${this._seriesCss()}</style>` : ''}`}
           ${this._documentView?.horizAxis ? svg`
             <clipPath id="clip-path">
               <rect
