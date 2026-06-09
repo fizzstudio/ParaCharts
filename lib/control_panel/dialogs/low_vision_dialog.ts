@@ -14,7 +14,7 @@ const CONTRAST_LABELS: Record<string, string> = {
 };
 
 type ContrastMode = 'system' | 'lower' | 'normal' | 'higher' | 'custom';
-type ThemeMode = 'system' | 'light' | 'dark';
+type ThemeMode = 'auto' | 'light' | 'dark';
 
 @customElement('para-low-vision-dialog')
 export class LowVisionModeDialog extends SettingControlContainer {
@@ -112,7 +112,7 @@ export class LowVisionModeDialog extends SettingControlContainer {
         <fieldset>
           <legend>Theme</legend>
           <div class="radio-row">
-            ${(['system', 'light', 'dark'] as const).map(key => html`
+            ${(['auto', 'light', 'dark'] as const).map(key => html`
               <label class="radio-label">
                 <input type="radio" name="lv-theme"
                   .checked=${themeDefault === key}

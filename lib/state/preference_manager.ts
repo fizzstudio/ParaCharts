@@ -53,7 +53,7 @@ const COLOR_PREFS_KEY = 'paracharts:colorPreferences:v1';
 
 /** Shape of what is persisted to localStorage. */
 interface StoredColorPrefs {
-  theme?: 'system' | 'light' | 'dark';
+  theme?: 'auto' | 'light' | 'dark';
   contrast?: ContrastMode;
   /** Stored only when contrast === 'custom'. */
   contrastLevel?: number;
@@ -63,7 +63,7 @@ interface StoredColorPrefs {
   backgroundColorLight?: string;
   backgroundColorDark?: string;
   /** Low-vision mode default preferences (what gets applied when low-vision mode is enabled). */
-  lowVisionThemeDefault?: 'system' | 'light' | 'dark';
+  lowVisionThemeDefault?: 'auto' | 'light' | 'dark';
   lowVisionContrastDefault?: ContrastMode;
   lowVisionContrastLevel?: number;
   lowVisionColorPalette?: boolean;
@@ -83,7 +83,7 @@ export interface SystemColorState {
 }
 
 type ContrastMode = 'system' | 'lower' | 'normal' | 'higher' | 'custom';
-type ThemeMode = 'system' | 'light' | 'dark';
+type ThemeMode = 'auto' | 'light' | 'dark';
 
 // Numeric contrastLevel values for each named mode.
 const CONTRAST_VALUES: Record<'lower' | 'normal' | 'higher', number> = {
@@ -190,7 +190,7 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
     this._programmaticUpdate = true;
     this._paraState.updateConfig(draft => {
       if (field === 'themeMode') {
-        draft.color.themeMode = 'system';
+        draft.color.themeMode = 'auto';
         draft.color.themeSource = 'default';
       }
     });
@@ -430,7 +430,7 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
       this._paraState.updateConfig(draft => {
         if (prefs.theme !== undefined) {
           draft.color.themeMode   = prefs.theme;
-          draft.color.themeSource = (prefs.theme === 'system' ? 'system' : 'user') as ColorPrefSource;
+          draft.color.themeSource = (prefs.theme === 'auto' ? 'system' : 'user') as ColorPrefSource;
         }
         if (prefs.contrast !== undefined) {
           draft.color.contrastMode   = prefs.contrast;
@@ -483,7 +483,7 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
     switch (color.themeMode) {
       case 'dark':   resolvedDark = true;            break;
       case 'light':  resolvedDark = false;           break;
-      case 'system': resolvedDark = sys.prefersDark; break;
+      case 'auto': resolvedDark = sys.prefersDark; break;
     }
 
     // Contrast resolution
