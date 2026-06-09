@@ -1168,7 +1168,7 @@ export class ParaView extends ParaComponent implements ViewContext {
           if (!this._paraState.config.chart.isStatic) {
             //this.log.info('focus');
             //this.todo.deets?.onFocus();
-            this._paraState.chartInfo.navMap?.visitDatapoints();
+            //this._paraState.chartInfo.navMap?.visitDatapoints();
           }
         }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
