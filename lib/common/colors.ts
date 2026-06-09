@@ -74,112 +74,6 @@ export class Colors {
         description: 'Primary palette.',
         colors: [
           {
-            value: 'hsl(207, 43%, 40%)',
-            name: 'blue',
-            contrastValue: `hsl(0, 0%, 100%)`
-          },
-          {
-            value: 'hsl(13, 40%, 46%)',
-            name: 'red',
-            contrastValue: `hsl(0, 0%, 100%)`
-          },
-          {
-            value: 'hsl(102, 24%, 39%)',
-            name: 'green',
-            contrastValue: `hsl(0, 0%, 100%)`
-          },
-          {
-            value: 'hsl(276, 18%, 47%)',
-            name: 'purple',
-            contrastValue: `hsl(0, 0%, 100%)`
-          },
-          {
-            value: 'hsl(177, 33%, 35%)',
-            name: 'teal',
-            contrastValue: `hsl(0, 0%, 100%)`
-          },
-          {
-            value: 'hsl(37, 57%, 45%)',
-            name: 'amber',
-            contrastValue: `hsl(0, 0%, 100%)`
-          },
-          {
-            value: 'hsl(208, 35%, 62%)',
-            name: 'sky blue',
-            contrastValue: `hsl(0, 0%, 100%)`
-          },
-          {
-            value: 'hsl(65, 26%, 37%)',
-            name: 'olive',
-            contrastValue: `hsl(0, 0%, 100%)`
-          },
-          {
-            value: 'hsl(30, 52%, 45%)',
-            name: 'ochre',
-            contrastValue: `hsl(0, 0%, 100%)`
-          },
-          {
-            value: 'hsl(40, 22%, 55%)',
-            name: 'khaki',
-            contrastValue: `hsl(0, 0%, 100%)`
-          },
-          {
-            value: 'hsl(85, 65%, 36%)',
-            name: 'forest green'
-          },
-          {
-            value: 'hsl(12, 56%, 51%)',
-            name: 'red-orange'
-          },
-          {
-            value: 'hsl(30, 42%, 35%)',
-            name: 'brown'
-          },
-          {
-            value: 'hsl(240, 100%, 50%)',
-            name: 'bright blue'
-          },
-          {
-            value: 'hsl(120, 100%, 50%)',
-            name: 'lime green'
-          },
-          {
-            value: 'hsl(39, 100%, 50%)',
-            name: 'orange',
-            contrastValue: `hsl(0, 0%, 0%)`
-          },
-          {
-            value: 'hsl(300, 100%, 25%)',
-            name: 'royal purple'
-          },
-          {
-            value: 'hsl(51, 100%, 50%)',
-            name: 'lemon yellow'
-          },
-          {
-            value: 'hsl(328, 100%, 54%)',
-            name: 'fuschia'
-          },
-          {
-            value: 'hsl(177, 70%, 41%)',
-            name: 'cyan'
-          },
-          {
-            value: 'hsl(234, 20.5%, 47.8%)',
-            name: 'highlight'
-          },
-          {
-            value: 'hsl(0, 100%, 50%)',
-            name: 'visit'
-          }
-        ]
-      },
-      {
-        key: 'original',
-        title: 'Original',
-        description: 'Original Diva palette.',
-        colors: [
-          {
             value: 'hsl(227, 26%, 52%)',
             name: 'blue-1',
             contrastValue: `hsl(0, 0%, 100%)`
@@ -386,11 +280,11 @@ export class Colors {
           },
           {
             value: 'hsl(180, 100%, 29%)',
-            name: 'blue-gree'
+            name: 'blue-green'
           },
           {
             value: 'hsl(270, 100%, 71%)',
-            name: 'lavendar'
+            name: 'lavender'
           },
           {
             value: 'hsl(210, 100%, 71%)',
@@ -432,121 +326,54 @@ export class Colors {
         ]
       },
       {
-        key: 'grayscale-value',
-        title: 'Grayscale',
-        description: 'Full-color palette optimized for grayscale value roles.',
-        colors: [
-          {
-            value: 'hsl(209, 10%, 40%)',
-            name: 'blue',
-            contrastValue: 'hsl(0, 0%, 100%)'
-          },
-          {
-            value: 'hsl(0, 0%, 52%)',
-            name: 'red',
-            contrastValue: 'hsl(0, 0%, 100%)'
-          },
-          {
-            value: 'hsl(113, 4%, 44%)',
-            name: 'green',
-            contrastValue: 'hsl(0, 0%, 100%)'
-          },
-          {
-            value: 'hsl(276, 9%, 57%)',
-            name: 'purple',
-            contrastValue: 'hsl(0, 0%, 100%)'
-          },
-          {
-            value: 'hsl(189, 6%, 43%)',
-            name: 'teal',
-            contrastValue: 'hsl(0, 0%, 100%)'
-          },
-          {
-            value: 'hsl(0, 0%, 65%)',
-            name: 'amber',
-            contrastValue: 'hsl(0, 0%, 0%)'
-          },
-          {
-            value: 'hsl(216, 9%, 78%)',
-            name: 'sky blue',
-            contrastValue: 'hsl(0, 0%, 0%)'
-          },
-          {
-            value: 'hsl(80, 3%, 36%)',
-            name: 'olive',
-            contrastValue: 'hsl(0, 0%, 100%)'
-          },
-          {
-            value: 'hsl(32, 6%, 57%)',
-            name: 'ochre',
-            contrastValue: 'hsl(0, 0%, 100%)'
-          },
-          {
-            value: 'hsl(44, 11%, 81%)',
-            name: 'khaki',
-            contrastValue: 'hsl(0, 0%, 0%)'
-          },
-          {
-            value: 'hsl(0, 100%, 50%)',
-            name: 'visit'
-          }
-        ]
-      },
-      {
         key: 'deutan',
         title: 'Deutan',
         description: 'Adjusted for deuteranopia.',
         cvd: true,
         colors: [
           {
-            value: 'hsl(207, 43%, 40%)',
-            name: 'blue',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(300, 100%, 25%)',
+            name: ''
           },
           {
-            value: 'hsl(10, 41%, 49%)',
-            name: 'red',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(300, 100%, 50%)',
+            name: ''
           },
           {
-            value: 'hsl(146, 23%, 40%)',
-            name: 'green',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(320, 100%, 40%)',
+            name: ''
           },
           {
-            value: 'hsl(295, 22%, 46%)',
-            name: 'purple',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(329, 100%, 49%)',
+            name: ''
           },
           {
-            value: 'hsl(185, 61%, 36%)',
-            name: 'teal',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(300, 100%, 35%)',
+            name: ''
           },
           {
-            value: 'hsl(38, 60%, 45%)',
-            name: 'amber',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(210, 43%, 47%)',
+            name: ''
           },
           {
-            value: 'hsl(207, 42%, 63%)',
-            name: 'sky blue',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(353, 80%, 67%)',
+            name: ''
           },
           {
-            value: 'hsl(88, 24%, 37%)',
-            name: 'olive',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(130, 60%, 33%)',
+            name: ''
           },
           {
-            value: 'hsl(29, 55%, 46%)',
-            name: 'ochre',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(52, 57%, 53%)',
+            name: ''
           },
           {
-            value: 'hsl(41, 24%, 56%)',
-            name: 'khaki',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(195, 80%, 67%)',
+            name: ''
+          },
+          {
+            value: 'hsl(326, 54%, 43%)',
+            name: ''
           },
           {
             value: 'hsl(0, 100%, 50%)',
@@ -561,54 +388,32 @@ export class Colors {
         cvd: true,
         colors: [
           {
-            value: 'hsl(206, 54%, 40%)',
-            name: 'blue',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(39, 70%, 54%)',
+            name: ''
           },
           {
-            value: 'hsl(13, 49%, 48%)',
-            name: 'red',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(206, 68%, 66%)',
+            name: ''
           },
           {
-            value: 'hsl(165, 27%, 38%)',
-            name: 'green',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(154, 39%, 44%)',
+            name: ''
           },
           {
-            value: 'hsl(331, 30%, 45%)',
-            name: 'purple',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(56, 81%, 66%)',
+            name: ''
           },
           {
-            value: 'hsl(177, 54%, 35%)',
-            name: 'teal',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(209, 57%, 43%)',
+            name: ''
           },
           {
-            value: 'hsl(38, 60%, 45%)',
-            name: 'amber',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(24, 68%, 46%)',
+            name: ''
           },
           {
-            value: 'hsl(209, 34%, 58%)',
-            name: 'sky blue',
-            contrastValue: 'hsl(0, 0%, 100%)'
-          },
-          {
-            value: 'hsl(117, 10%, 39%)',
-            name: 'olive',
-            contrastValue: 'hsl(0, 0%, 100%)'
-          },
-          {
-            value: 'hsl(28, 54%, 45%)',
-            name: 'ochre',
-            contrastValue: 'hsl(0, 0%, 100%)'
-          },
-          {
-            value: 'hsl(41, 24%, 56%)',
-            name: 'khaki',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(324, 35%, 62%)',
+            name: ''
           },
           {
             value: 'hsl(0, 100%, 50%)',
@@ -623,54 +428,60 @@ export class Colors {
         cvd: true,
         colors: [
           {
-            value: 'hsl(202, 43%, 50%)',
-            name: 'blue',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(210, 60%, 67%)',
+            name: ''
           },
           {
-            value: 'hsl(353, 52%, 54%)',
-            name: 'red',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(200, 100%, 80%)',
+            name: ''
           },
           {
-            value: 'hsl(140, 14%, 43%)',
-            name: 'green',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(163, 47%, 50%)',
+            name: ''
           },
           {
-            value: 'hsl(274, 15%, 45%)',
-            name: 'purple',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(67, 60%, 50%)',
+            name: ''
           },
           {
-            value: 'hsl(186, 48%, 36%)',
-            name: 'teal',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(60, 100%, 33%)',
+            name: ''
           },
           {
-            value: 'hsl(10, 44%, 56%)',
-            name: 'amber',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(50, 75%, 73%)',
+            name: ''
           },
           {
-            value: 'hsl(197, 34%, 58%)',
-            name: 'sky blue',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(348, 100%, 83%)',
+            name: ''
           },
           {
-            value: 'hsl(317, 6%, 46%)',
-            name: 'olive',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(210, 60%, 67%)',
+            name: ''
           },
           {
-            value: 'hsl(14, 44%, 51%)',
-            name: 'ochre',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(200, 100%, 80%)',
+            name: ''
           },
           {
-            value: 'hsl(251, 10%, 68%)',
-            name: 'khaki',
-            contrastValue: 'hsl(0, 0%, 0%)'
+            value: 'hsl(163, 47%, 50%)',
+            name: ''
+          },
+          {
+            value: 'hsl(67, 60%, 50%)',
+            name: ''
+          },
+          {
+            value: 'hsl(60, 100%, 33%)',
+            name: ''
+          },
+          {
+            value: 'hsl(50, 75%, 73%)',
+            name: ''
+          },
+          {
+            value: 'hsl(348, 100%, 83%)',
+            name: ''
           },
           {
             value: 'hsl(0, 100%, 50%)',
@@ -685,54 +496,60 @@ export class Colors {
         cvd: true,
         colors: [
           {
-            value: 'hsl(205, 44%, 41%)',
-            name: 'blue',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(0, 0%, 15%)',
+            name: ''
           },
           {
-            value: 'hsl(8, 33%, 48%)',
-            name: 'red',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(0, 0%, 35%)',
+            name: ''
           },
           {
-            value: 'hsl(110, 14%, 42%)',
-            name: 'green',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(0, 0%, 50%)',
+            name: ''
           },
           {
-            value: 'hsl(270, 12%, 58%)',
-            name: 'purple',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(0, 0%, 63%)',
+            name: ''
           },
           {
-            value: 'hsl(182, 17%, 41%)',
-            name: 'teal',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(0, 0%, 73%)',
+            name: ''
           },
           {
-            value: 'hsl(37, 35%, 61%)',
-            name: 'amber',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(0, 0%, 83%)',
+            name: ''
           },
           {
-            value: 'hsl(211, 23%, 77%)',
-            name: 'sky blue',
-            contrastValue: 'hsl(0, 0%, 0%)'
+            value: 'hsl(0, 0%, 93%)',
+            name: ''
           },
           {
-            value: 'hsl(63, 10%, 37%)',
-            name: 'olive',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(0, 0%, 15%)',
+            name: ''
           },
           {
-            value: 'hsl(33, 14%, 54%)',
-            name: 'ochre',
-            contrastValue: 'hsl(0, 0%, 100%)'
+            value: 'hsl(0, 0%, 35%)',
+            name: ''
           },
           {
-            value: 'hsl(41, 15%, 80%)',
-            name: 'khaki',
-            contrastValue: 'hsl(0, 0%, 0%)'
+            value: 'hsl(0, 0%, 50%)',
+            name: ''
+          },
+          {
+            value: 'hsl(0, 0%, 63%)',
+            name: ''
+          },
+          {
+            value: 'hsl(0, 0%, 73%)',
+            name: ''
+          },
+          {
+            value: 'hsl(0, 0%, 83%)',
+            name: ''
+          },
+          {
+            value: 'hsl(0, 0%, 93%)',
+            name: ''
           },
           {
             value: 'hsl(0, 100%, 50%)',
