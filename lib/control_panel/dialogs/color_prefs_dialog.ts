@@ -111,13 +111,7 @@ export class ColorPrefsDialog extends SettingControlContainer {
 
   connectedCallback() {
     super.connectedCallback();
-    this._paraState.settingControls.insert('color.themeMode', {
-      buttons: {
-        system: { label: 'System', title: 'Follow the system color scheme' },
-        light:  { label: 'Light',  title: 'Always use the light theme' },
-        dark:   { label: 'Dark',   title: 'Always use the dark theme' },
-      }
-    });
+    this._paraState.settingControls.insert('color.themeMode');
   }
 
   render() {

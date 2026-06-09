@@ -67,8 +67,9 @@ export class ColorsPanel extends ControlPanelTabPanel {
     const colorPaletteLabels = [...nonCvdPalettes.map(p => p.title), 'Custom'];
     const colorPaletteKeys = [...nonCvdPalettes.map(p => p.key), 'custom'];
 
-    this._paraState.settingControls.insert('color.isDarkModeEnabled');
-    this._paraState.settingControls.insert('color.contrastLevel');
+    this._paraState.settingControls.insert('color.themeMode');
+    //this._paraState.settingControls.insert('color.isDarkModeEnabled');
+    //this._paraState.settingControls.insert('color.contrastLevel');
     this._paraState.settingControls.insert('ui.isLowVisionModeEnabled');
     this._paraState.settingControls.insert('color.colorVisionMode', {
       buttons: {
@@ -162,8 +163,7 @@ export class ColorsPanel extends ControlPanelTabPanel {
       <div class="tab-content">
         <div class="control-column">
           <div class="section">
-            ${this._paraState.settingControls.getContent('controlPanel.tabs.color.colorContrast')}
-            ${this._paraState.settingControls.getContent('controlPanel.tabs.color.colorContrastSlider')}
+            ${this._paraState.settingControls.getContent('controlPanel.tabs.color.colorPrefs.dialog')}
           </div>
 
           <div class="section">

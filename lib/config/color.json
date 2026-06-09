@@ -96,10 +96,17 @@
         },
         "themeMode": {
             "label": "cpanel.tabs.colors.color_dialog.color_theme",
-            "description": "Color theme preference: follow system, always light, or always dark",
-            "type": "'system' | 'light' | 'dark'",
-            "default": "system",
+            "description": "Color theme preference: automatic, always light, or always dark",
+            "type": "'auto' | 'light' | 'dark'",
+            "default": "auto",
             "control": "radio",
+            "controlOptions": {
+                "buttons": {
+                    "auto": { "label": "Auto", "title": "Follow the system color scheme" },
+                    "light":  { "label": "Light",  "title": "Always use the light theme" },
+                    "dark":   { "label": "Dark",   "title": "Always use the dark theme" }
+                }
+            },
             "panel": "color",
             "parentView": "controlPanel.tabs.color.colorPrefs.dialog",
             "keywords": ["color", "theme"]
