@@ -16,8 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { SeriesView } from '../../../data';
 import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
-import { AxisInfo } from '../../../../common/axisinfo';
-import { Setting, type PointChartType } from '../../../../state/settings_types';
 
 import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
@@ -38,21 +36,6 @@ export abstract class PointPlotView extends PlanePlotView {
 
   get chartInfo(): PointChartInfo {
     return this._chartInfo;
-  }
-
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
-      // this._axisInfo!.updateYRange();
-      // for (const datapointView of this.datapointViews) {
-      //   datapointView.computeLocation();
-      // }
-      // for (const datapointView of this.datapointViews) {
-      //   datapointView.completeLayout();
-      // }
-      this.paraview.createDocumentView();
-      this.paraview.requestUpdate();
-    }
-    super.settingDidChange(path, oldValue, newValue);
   }
 
   async storeDidChange(key: string, value: any) {

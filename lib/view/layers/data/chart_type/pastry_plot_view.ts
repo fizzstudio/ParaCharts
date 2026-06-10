@@ -2,10 +2,8 @@
 import { DataLayer } from '..';
 import { type BaseChartInfo } from '../../../../chart_types';
 import { DatapointView, SeriesView } from '../../../data';
-import {
-  type DeepReadonly,
-  Setting,
-} from '../../../../state';
+import { Setting } from '../../../../state';
+import { DeepReadonly } from '../../../../config/config_types';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type DataLayerContext } from '../../../view_context';
 import { type Shape, SectorShape, PathShape } from '../../../shape';
@@ -591,13 +589,16 @@ export abstract class RadialSlice extends DatapointView {
     const underlineSize = this.chart.config.outsideLabels.leaderStyle === 'direct'
       ? this.chart.config.outsideLabels.horizPadding
       : this._outsideLabel!.paddedWidth;
+    const numColors = this.paraview.paraState.colors.numSeriesColors;
     const path = new PathShape(this.paraview, {
       points: [this.shapes[0].arcCenter, underlineStart, underlineStart.x > this._outsideLabel!.centerX
         ? underlineStart.subtractX(underlineSize)
         : underlineStart.addX(underlineSize)],
-      stroke: this.paraview.paraState.colors.colorValueAt(this.color),
     });
-    path.classInfo = { 'pastry-outside-label-leader': true };
+    path.classInfo = {
+      'pastry-outside-label-leader': true,
+      [`series-${this.color % numColors}`]: true,
+    };
     return path;
   }
 

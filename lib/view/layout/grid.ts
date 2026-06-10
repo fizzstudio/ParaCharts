@@ -1436,12 +1436,14 @@ export class GridLayout extends Layout {
       rect.classInfo = {'debug-grid-territory': true};
       return rect;
     });
-    return svg`
-      ${super.content()}
+    /*
       ${this.paraview.paraState.settings.dev.isShowGridTerritories
         ? rects.map(r => r.render())
         : ''
       }
+    */
+    return svg`
+      ${super.content()}
     `;
   }
 

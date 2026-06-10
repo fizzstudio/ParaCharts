@@ -18,7 +18,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState } from '../state';
 import { type ParaView } from '../paraview';
-import { type DeepReadonly, type Setting } from '../state/settings_types';
+import { type Setting } from '../state/settings_types';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state/query_utils';
 import { NavNode } from '../view/layers';
 
@@ -67,6 +67,13 @@ export class LineChartInfo extends PointChartInfo {
         await this._navMap!.cursor.move('out');
       }
     }
+    // Add or remove single-series series landings based on whether
+    // soni is enabled
+    if (path === 'sonification.isSonificationEnabled') {
+      const idx = this._navMap!.cursor.index;
+      this._createNavMap();
+      this._navMap!.layer(this._navMap!.currentLayer)!.goTo('datapoint', idx, true);
+    }
     super.settingDidChange(path, oldValue, newValue);
   }
 
@@ -100,7 +107,26 @@ export class LineChartInfo extends PointChartInfo {
     const model = this._paraState.model!;
     const seriesKeys = [...model.seriesKeys];
     if (this._paraState.config.legend.itemOrder === 'alphabetical') {
-      seriesKeys.sort();
+      seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
+    }
+    else if (this._paraState.config.legend.itemOrder === 'reverseAlphabetical') {
+      seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
+    }
+    else if (this._paraState.config.legend.itemOrder === 'startingOrder') {
+      const model = this._paraState.model as PlaneModel;
+      const startChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(0) as PlaneDatapoint).indepBox)!;
+      seriesKeys.sort((a, b) =>
+        startChord.find(point => point.seriesKey === b[0])!.facetValueAsNumber("y")!
+        - startChord.find(point => point.seriesKey === a[0])!.facetValueAsNumber("y")!
+      );
+    }
+    else if (this._paraState.config.legend.itemOrder === 'endingOrder') {
+      const model = this._paraState.model as PlaneModel;
+      const endChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(-1) as PlaneDatapoint).indepBox)!;
+      seriesKeys.sort((a, b) =>
+        endChord.find(point => point.seriesKey === b[0])!.facetValueAsNumber("y")!
+        - endChord.find(point => point.seriesKey === a[0])!.facetValueAsNumber("y")!
+      );
     }
     return seriesKeys.map(key => ({
       label: model.atKey(key)!.getLabel(),

@@ -62,7 +62,7 @@ export class CircleShape extends Shape {
 
   render() {
     let index = this.parent?.index;
-    if (this._options.isPattern && index !== undefined) {
+    if (this.paraview.paraState.colors.palette.isPattern && index !== undefined) {
       let parent = this.parent as DatapointView;
       this._styleInfo.fill = `url(#Pattern${index})`;
 

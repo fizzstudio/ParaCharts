@@ -2,11 +2,8 @@ import { Logger, getLogger } from '@fizz/logger';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaDialog, ParaComponent } from '../components';
 //import { styles } from '../../styles';
-import {
-  type DeepReadonly,
-  type TabLabelStyle,
-} from '../state/settings_types';
 import { SettingsManager } from '../state/settings_manager';
+import { TabLabelStyle } from '../config/config_types';
 import {
   DescriptionPanel, DataPanel, ColorsPanel, ChartPanel,
   AnnotationPanel, ControlsPanel
@@ -22,6 +19,7 @@ import tabChartIcon from '../assets/tab-chart-icon.svg';
 import tabAnalysisIcon from '../assets/tab-analysis-icon.svg';
 import cpanelIcon from '../assets/info-icon.svg';
 import cpanelIconAlt from '../assets/info-icon-alt.svg';
+import warningIcon from '../assets/warning-icon.svg?raw';
 
 import { MessageDialog, FizzTabs, TabLabelMode } from '@fizz/ui-components';
 import '@fizz/ui-components';
@@ -30,10 +28,11 @@ import { type Unsubscribe } from '@lit-app/state';
 
 import {
   html, css, PropertyValues,
-  unsafeCSS
+  unsafeCSS, nothing
 } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
+import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { Popup } from '../view/popup';
 import { datapointIdToCursor } from '../state';
 import { AnnotationDialog } from './dialogs/annotation_dialog';
@@ -46,6 +45,11 @@ export class ParaControlPanel extends ParaComponent {
   @property() sparkBrailleData!: string;
 
   @state() dataState: 'initial' | 'pending' | 'complete' | 'error' = 'initial';
+  @state() private _panelOpenOverride: boolean | null = null;
+
+  private get _panelOpen(): boolean {
+    return this._panelOpenOverride ?? this._paraState?.config?.controlPanel?.isControlPanelDefaultOpen ?? true;
+  }
   dataError?: unknown;
   paraChart!: ParaChart;
 
@@ -73,10 +77,9 @@ export class ParaControlPanel extends ParaComponent {
       }
       fizz-tabs {
         --background: #eee;
-        --toggle-button-icon: var(--control-panel-icon, url(${unsafeCSS(cpanelIcon)}));
-        /*--control-panel-icon: url(${unsafeCSS(cpanelIconAlt)});*/
         --summary-marker-font-weight: bold;
         --control-panel-icon-size: 1.1rem;
+        --toggle-button-size: 1.5em;
         --contents-margin: 2px 0 0 0;
         width: 1;
         /*min-width: 40rem;*/
@@ -85,8 +88,8 @@ export class ParaControlPanel extends ParaComponent {
       fizz-tabs.collapsed {
         /*width: rem;*/
         /*min-width: unset;*/
-        position: absolute;
-        bottom: 10px;
+        /*position: absolute;*/
+        /*bottom: 10px;*/
         /*--background: none;
         --control-panel-background: none;
         --control-panel-icon-color: var(--theme-color);
@@ -94,6 +97,7 @@ export class ParaControlPanel extends ParaComponent {
         --theme-contrast-color: var(--theme-color);
         --border: none;*/
         border: 2px solid transparent;
+        margin: 4px 0 0 4px;
       }
 
       fizz-tabs.expanded {
@@ -108,7 +112,36 @@ export class ParaControlPanel extends ParaComponent {
       fizz-tabs.collapsed.darkmode  {
         --control-panel-icon-color: ghostwhite;
       }
-    `
+
+    `,
+    // Isolated from the main css block above: Vite's build transformation of Lit
+    // css`` templates silently drops rules that follow a ${unsafeCSS()} interpolation
+    // in the same block. Keep any unsafeCSS() usage quarantined here so it cannot
+    // corrupt other rules.
+    css`
+      fizz-tabs {
+        --toggle-button-icon: var(--control-panel-icon, url(${unsafeCSS(cpanelIcon)}));
+        /*--control-panel-icon: url(${unsafeCSS(cpanelIconAlt)});*/
+      }
+    `,
+    css`
+      .contrast-warning-badge {
+        position: absolute;
+        bottom: 1px;
+        left: 1.9rem;
+        width: 1.1rem;
+        height: 1.3rem;
+        display: inline-flex;
+        align-items: center;
+        padding: 0;
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: orangered;
+        user-select: none;
+        z-index: 10;
+      }
+    `,
   ];
 
   get config() {
@@ -168,8 +201,8 @@ export class ParaControlPanel extends ParaComponent {
       if (toggleButton) {
         toggleButton.addEventListener("pointerenter", () => {
           this._paraState.config.chart.isShowPopups
-            && this._paraState.settings.popup.activation === "onHover"
-            && !this._paraState.config.ui.isTourGuideEnabled ? this.addPopup(this.paraChart.isControlPanelOpen ? true : false) : undefined
+            && this._paraState.config.popup.activation === "onHover"
+            && !this._paraState.config.ui.isTourGuideEnabled ? this.addPopup(this._panelOpen) : undefined
         })
         toggleButton.addEventListener("pointerleave", () => {
           this.paraChart.paraView.paraState.removePopup(this.id);
@@ -208,6 +241,10 @@ export class ParaControlPanel extends ParaComponent {
     } else if (shortKey === 'isControlPanelDefaultOpen'
       || shortKey === 'tabLabelStyle'
     ) {
+      if (shortKey === 'isControlPanelDefaultOpen') {
+        this._panelOpenOverride = value as boolean;
+        this.paraChart.isControlPanelOpen = value as boolean;
+      }
       this.requestUpdate();
     } else if (shortKey === 'isCaptionVisible'
       || shortKey === 'isExplorationBarVisible') {
@@ -254,6 +291,18 @@ export class ParaControlPanel extends ParaComponent {
     return this._controlsPanelRef.value!.showHelpDialog();
   }
 
+  async openColorPrefsViaAlert() {
+    if (!this._panelOpen) {
+      const tabs = this._tabsRef.value!;
+      tabs.open = true;
+      tabs.dispatchEvent(new CustomEvent('open', { bubbles: true, composed: true }));
+      await this.updateComplete;
+    }
+    this._tabsRef.value!.selectedTab = 2;
+    await this.updateComplete;
+    this._colorsPanelRef.value!.showColorPrefsDialog();
+  }
+
   addPopup(isOpen: boolean) {
     let paraview = this.paraChart.paraView
     let text = isOpen ? "Close control panel" : "Customize settings"
@@ -277,7 +326,8 @@ export class ParaControlPanel extends ParaComponent {
   }
 
   render() {
-    let deetsState = this.paraChart.isControlPanelOpen ? 'expanded' : 'collapsed';
+    const description = this._globalState.l10n?.localize('cpanel.tabs.description.title') ?? '';
+    let deetsState = this._panelOpen ? 'expanded' : 'collapsed';
 //    deetsState += this.todo.darkMode ? ' darkmode' : '';
 
     const tabBarStyle = {
@@ -312,22 +362,23 @@ export class ParaControlPanel extends ParaComponent {
           class=${deetsState}
           tablabelmode=${tabLabelModes[this.config.tabLabelStyle]}
 		      openbuttonarialabel="ParaCharts control panel"
+          style="--tab-text-transform: capitalize"
           @open=${
             () => {
               this.paraChart.isControlPanelOpen = true;
+              this._panelOpenOverride = true;
               if (this.config.caption.isCaptionExternalWhenControlPanelClosed) {
                 this._descriptionPanelRef.value!.internalizeCaptionBox();
               }
-              this.requestUpdate();
             }
           }
           @close=${
             () => {
               this.paraChart.isControlPanelOpen = false;
+              this._panelOpenOverride = false;
               if (this.config.caption.isCaptionExternalWhenControlPanelClosed) {
                 this.externalizeCaptionBox();
               }
-              this.requestUpdate();
             }
           }
           @invalidvalue=${(e: CustomEvent) => this._msgDialogRef.value!.show(e.detail)}
@@ -340,7 +391,7 @@ export class ParaControlPanel extends ParaComponent {
           }}
         >
           <fizz-tab-panel
-            tablabel="Description"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.description.title')}
             icon=${tabDescriptionIcon}
           >
             <para-description-panel
@@ -349,7 +400,7 @@ export class ParaControlPanel extends ParaComponent {
             ></para-description-panel>
           </fizz-tab-panel>
           <fizz-tab-panel
-            tablabel="Data"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.data.title')}
             icon=${tabDataIcon}
             ?hidden=${!this.config.isDataTabVisible}
           >
@@ -361,7 +412,7 @@ export class ParaControlPanel extends ParaComponent {
             ></para-data-panel>
           </fizz-tab-panel>
           <fizz-tab-panel
-            tablabel="Colors"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.colors.title')}
             icon=${tabColorsIcon}
             ?hidden=${!this.config.isColorsTabVisible}
           >
@@ -372,7 +423,7 @@ export class ParaControlPanel extends ParaComponent {
           </fizz-tab-panel>
 
           <fizz-tab-panel
-            tablabel="Audio"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.audio.title')}
             icon=${tabAudioIcon}
             ?hidden=${!this.config.isAudioTabVisible}
           >
@@ -382,7 +433,7 @@ export class ParaControlPanel extends ParaComponent {
           </fizz-tab-panel>
 
           <fizz-tab-panel
-            tablabel="Controls"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.controls.title')}
             icon=${tabControlsIcon}
             ?hidden=${!this.config.isControlsTabVisible}
           >
@@ -393,7 +444,7 @@ export class ParaControlPanel extends ParaComponent {
           </fizz-tab-panel>
 
           <fizz-tab-panel
-            tablabel="Chart"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.chart.title')}
             icon=${tabChartIcon}
             ?hidden=${!this.config.isChartTabVisible}
           >
@@ -404,7 +455,7 @@ export class ParaControlPanel extends ParaComponent {
           </fizz-tab-panel>
 
           <fizz-tab-panel
-            tablabel="Annotations"
+            tablabel=${this._globalState.l10n.localize('cpanel.tabs.annotations.title')}
             icon=${tabAnalysisIcon}
             ?hidden=${!this.config.isAnnotationsTabVisible}
           >
@@ -414,6 +465,14 @@ export class ParaControlPanel extends ParaComponent {
             ></para-annotation-panel>
           </fizz-tab-panel>
         </fizz-tabs>
+        ${!this._panelOpen && this._paraState.colorContrastWarnings.length > 0 ? html`
+          <button
+            class="contrast-warning-badge"
+            title="Color contrast issues detected — click to review"
+            aria-label="Color contrast issues detected"
+            @click=${() => this.openColorPrefsViaAlert()}
+          >${unsafeSVG(warningIcon)}</button>
+        ` : nothing}
       </div>
       ${this.renderDialog()}
       ${this.renderAnnotationDialog()}

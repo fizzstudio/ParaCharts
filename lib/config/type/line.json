@@ -3,7 +3,7 @@
     "family": "line",
     "settings": {
         "lineWidth": {
-            "label": "Line width",
+            "label": "cpanel.tabs.chart.line_width",
             "description": "Width of line strokes",
             "type": "number",
             "default": 5,

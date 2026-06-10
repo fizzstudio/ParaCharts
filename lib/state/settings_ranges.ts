@@ -93,8 +93,6 @@ export const settingRanges: Record<string, NumericRange> = {
   // ============================================
   // Axis Settings
   // ============================================
-  'axis.minInterval': { min: 0, type: 'float' },
-  'axis.datapointMargin': { min: 0, type: 'float' },
 
   // Horizontal axis
   'axis.horiz.title.gap': { min: 0, type: 'int' },
@@ -130,12 +128,6 @@ export const settingRanges: Record<string, NumericRange> = {
   'legend.symbolLabelGap': { min: 0, type: 'int' },
   'legend.pairGap': { min: 0, type: 'int' },
   'legend.margin': { min: 0, type: 'int' },
-
-  // ============================================
-  // Plot Area Settings
-  // ============================================
-  'plotArea.size.width': { type: 'int' },
-  'plotArea.size.height': { type: 'int' },
 
   // ============================================
   // Popup Settings

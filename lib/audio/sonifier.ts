@@ -34,7 +34,6 @@ import { type ParaState } from '../state';
 import { type ParaView } from '../paraview';
 import { PlaneDatapoint } from '@fizz/paramodel';
 import { BaseChartInfo } from '../chart_types';
-import { AxisLabelInfo } from '../common/axisinfo';
 import { SoniPoint } from './soni_point';
 
 export const HERTZ = [

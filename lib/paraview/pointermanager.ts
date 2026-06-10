@@ -102,6 +102,9 @@ export class PointerEventManager {
    * @param event - The event on the element.
    */
   handleMove(event: PointerEvent) {
+    if (!this._paraView?.documentView?.chartLayers){
+      return;
+    }
     const target = event.target as SVGGraphicsElement;
     // To avoid "implicit pointer capture", where the event listener element prevents the event target
     // from changing to a another element, even a child element, se must explicitly release the pointer

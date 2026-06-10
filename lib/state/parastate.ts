@@ -43,15 +43,17 @@ import {
 } from '@fizz/parasummary';
 
 import {
-  DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
+  FORMAT_CONTEXT_SETTINGS, Settings, FormatContext,
   type Setting, type SettingGroup,
 } from './settings_types';
+import { SettingsInput } from '../config/config_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
 import { defaults, chartTypeDefaults } from './settings_defaults';
 import { Config } from '../config/config_types';
 import { defaultConfig } from '../config/config_defaults';
 import { Colors } from '../common/colors';
+import { type ContrastWarning } from '../common/contrast';
 import { joinStrArray, trendTranslation } from '../common/utils';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
@@ -260,6 +262,9 @@ export class ParaState extends BaseState {
 
   public idList: Record<string, boolean> = {};
 
+  /** Runtime contrast warnings from the last ColorPrefManager resolution. Empty when all colors pass. */
+  @property() colorContrastWarnings: ContrastWarning[] = [];
+
   constructor(
     protected _globalState: GlobalState,
     protected _inputSettings: SettingsInput,
@@ -384,6 +389,17 @@ export class ParaState extends BaseState {
     this._chartInfo = new chartInfoClasses[this.type](this.type, this);
   }
 
+  updateContrastWarnings(warnings: ContrastWarning[]): void {
+    this.colorContrastWarnings = warnings;
+  }
+
+  private _configResetCallbacks = new Set<() => void>();
+
+  onConfigReset(cb: () => void): () => void {
+    this._configResetCallbacks.add(cb);
+    return () => this._configResetCallbacks.delete(cb);
+  }
+
   protected _createSettings(inputSettings: SettingsInput) {
     const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
     SettingsManager.suppleteSettings(hydratedSettings, defaults);
@@ -392,6 +408,7 @@ export class ParaState extends BaseState {
     SettingsManager.suppleteSettings(hydratedConfig, defaultConfig);
     this.config = hydratedConfig as Config;
     SettingsManager.suppleteSettings(this.settings, this.config as unknown as Settings);
+    this._configResetCallbacks.forEach(cb => cb());
   }
 
   protected _syncPatchesToManifest(patches: Patch[]) {
@@ -1099,7 +1116,7 @@ export class ParaState extends BaseState {
 
   getFormatType(context: FormatContext): FormatType {
     return context === 'domId' ? 'domId'
-      : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.settings) as FormatType;
+      : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.config) as FormatType;
   }
 
   annotatePoint(seriesKey: string, index: number, text: string) {
