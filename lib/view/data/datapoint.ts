@@ -360,8 +360,7 @@ export class DatapointView extends DataView {
       } else {
         kid.classInfo = this.classInfo;
       }
-      return super.content();
-    } else {
+    }
       return svg`
         <g
           id=${this._id}
@@ -370,7 +369,7 @@ export class DatapointView extends DataView {
         >
           ${super.content()}
         </g>`;
-    }
+    
   }
 
   public equals(other: DatapointView): boolean {
