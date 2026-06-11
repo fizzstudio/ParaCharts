@@ -114,7 +114,7 @@ export class WaterfallChartInfo extends PlaneChartInfo {
   async playDatapoints(datapoints: PlaneDatapoint[]): Promise<void> {
     const length = datapoints.length;
     loopParaviewRefresh(this._paraView,
-      this._paraView.paraState.settings.animation.popInAnimateRevealTimeMs
+      this._paraView.paraState.config.animation.popInAnimateRevealTimeMs
       + SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex)! * length, 50);
     // We can't make the sonipoint directly from the model datapoint; we need to
     // take the sonipoint y-min/max from the cumulative totals for each datapoint

@@ -180,7 +180,7 @@ export class ParaChart extends ParaComponent {
             )
             this.log.info('loaded manifest')
             if (loadresult.result === 'success') {
-              this.paraState.setManifest(loadresult.manifest!);
+              await this.paraState.setManifest(loadresult.manifest!);
               this._paraState.dataState = 'complete';
               this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
               this._paraAPI = new ParaAPI(this);
@@ -297,6 +297,7 @@ export class ParaChart extends ParaComponent {
         : 'none',
       '--chart-font-scale': () => this._paraState.config.chart.fontScale,
       '--chart-title-font-size': () => this._paraState.config.chart.title.fontSize,
+      '--chart-subtitle-font-size': () => this._paraState.config.chart.subtitle.fontSize,
       '--horiz-axis-title-font-size': () => this._paraState.config.axis.horiz.title.fontSize,
       '--vert-axis-title-font-size': () => this._paraState.config.axis.vert.title.fontSize,
       '--horiz-axis-tick-label-font-size': () => this._paraState.config.axis.horiz.ticks.labels.fontSize,
@@ -406,7 +407,7 @@ export class ParaChart extends ParaComponent {
         this._paraState.clearAllHighlights();
         this._paraState.clearPopups();
       }
-      this._paraState.setManifest(manifest, data, resetSettings);
+      await this._paraState.setManifest(manifest, data, resetSettings);
       this._paraState.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode
       this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
