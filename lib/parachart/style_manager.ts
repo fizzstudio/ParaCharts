@@ -32,8 +32,15 @@ ${
 
 export class StyleManager {
   protected _rules = new Map<string, StyleManagerRule>();
-  private log: Logger = getLogger("StyleManager");  
-  constructor(protected _stylesheet: CSSStyleSheet) {}
+  private log: Logger = getLogger("StyleManager");
+  protected _stylesheet: CSSStyleSheet;
+  constructor() {
+    this._stylesheet = new CSSStyleSheet();
+  }
+
+  get stylesheet(): CSSStyleSheet {
+    return this._stylesheet;
+  }
 
   set(selector: string, keyValuePairs: Record<string, StyleManagerDeclarationValue>) {
     let rule = this._rules.get(selector);
@@ -45,19 +52,7 @@ export class StyleManager {
   }
 
   update() {
-    const matchIndices = this._rules.values().map(rule => {
-      const selParts = rule.selector.split(' ');
-      const regex = new RegExp(['^', ...selParts, '\\{'].join('\\s*'));
-      return Array.from(this._stylesheet.cssRules).findIndex(cssRule =>
-        cssRule.cssText.match(regex));
-    }).filter(idx => idx !== -1).toArray();
-    matchIndices.sort().reverse().forEach(idx => {
-      this.log.info('DEL', idx);
-      this._stylesheet.deleteRule(idx);
-    });
-    this._rules.values().forEach(rule => {
-      this.log.info('INS', rule);
-      this._stylesheet.insertRule(rule.toString());
-    });
+    const text = this._rules.values().map(rule => rule.toString()).toArray().join('\n');
+    this._stylesheet.replaceSync(text);
   }
 }

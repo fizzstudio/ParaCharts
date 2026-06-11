@@ -28,6 +28,10 @@ export class AudioPanel extends ControlPanelTabPanel {
         align-items: center;
         gap: 0.5em;
       }
+      button::first-letter {
+        text-transform: capitalize;
+      }
+
     `
   ];
 
@@ -55,7 +59,7 @@ export class AudioPanel extends ControlPanelTabPanel {
           <button
             @click=${() => this._soniDialogRef.value?.show()}
           >
-            Sonification Controls
+            ${this._globalState.l10n.localize('cpanel.tabs.audio.sonification_controls')}
           </button>
         </section>
       </div>

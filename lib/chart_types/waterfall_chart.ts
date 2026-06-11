@@ -14,9 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import {
-  DeepReadonly, type ParaState
-} from '../state';
+import { type ParaState } from '../state';
+import { DeepReadonly } from '../config/config_types';
 import { type ParaView } from '../paraview';
 import { NavNode } from '../view/layers';
 

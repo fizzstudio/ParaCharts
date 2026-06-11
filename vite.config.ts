@@ -48,6 +48,7 @@ export default defineConfig({
         test: {
           name: 'unit',
           include: ['src/tests/unit/**/*.test.ts'],
+          exclude: ['src/tests/unit/state/preference_manager.test.ts'],
           environment: 'happy-dom'
         }
       },

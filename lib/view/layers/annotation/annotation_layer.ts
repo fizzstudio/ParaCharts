@@ -70,8 +70,8 @@ export class AnnotationLayer extends PlotLayer {
         for (const tl of this.paraview.paraState.modelTrendLines) {
           const series = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0];
           const range = this.paraview.paraState.chartInfo.yInterval!;
-          const minValue = range.start ?? Number(this.paraview.paraState.settings.axis.y.minValue)
-          const maxValue = range.end ?? Number(this.paraview.paraState.settings.axis.y.maxValue)
+          const minValue = range.start;
+          const maxValue = range.end;
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
@@ -105,8 +105,8 @@ export class AnnotationLayer extends PlotLayer {
         for (const tl of tls) {
           const series = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
           const range = this.paraview.paraState.chartInfo.yInterval!;
-          const minValue = range.start ?? Number(this.paraview.paraState.settings.axis.y.minValue)
-          const maxValue = range.end ?? Number(this.paraview.paraState.settings.axis.y.maxValue)
+          const minValue = range.start;
+          const maxValue = range.end;
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
@@ -191,11 +191,11 @@ export class AnnotationLayer extends PlotLayer {
             },
             {
               fill: this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
-                : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
+                : this.paraview.paraState.config.popup.backgroundColor === "light" ?
                   this.paraview.paraState.colors.lighten(this.paraview.paraState.colors.colorValueAt(dpView.color), 6)
                   : this.paraview.paraState.colors.colorValueAt(dpView.color),
               stroke: this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
-                : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
+                : this.paraview.paraState.config.popup.backgroundColor === "light" ?
                   this.paraview.paraState.colors.colorValueAt(dpView.color)
                   : "black",
             })

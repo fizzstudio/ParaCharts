@@ -18,7 +18,8 @@ import { Logger, getLogger } from '@fizz/logger';
 import { type BaseChartInfo, chartInfoClasses, PlaneChartInfo } from '../chart_types';
 import { View, Container, Padding } from './base_view';
 import { Label } from './label';
-import { type CardinalDirection, ParaState, Setting } from '../state';
+import { ParaState, Setting } from '../state';
+import { CardinalDirection } from '../config/config_types';
 import { Facet, type ChartType } from '@fizz/paramanifest';
 import { PlotLayerManager } from './layers';
 import { HorizAxis, LabelOverlapError, VertAxis, type AxisCoord } from './axis';
@@ -123,7 +124,9 @@ export class DocumentView extends Container(View) {
     if (this._paraState.config.chart.title.isDrawTitle && this._paraState.title) {
       this.createTitle();
     }
-    if (this._paraState.config.chart.subtitle.isDrawSubtitle) {
+    if (this._paraState.config.chart.subtitle.isDrawSubtitle
+      && this._paraState.chartInfo.conciseSummary
+    ) {
       this._createSubtitle();
     }
     this._positionTitles();
@@ -242,6 +245,20 @@ export class DocumentView extends Container(View) {
     if (this._vertAxis) {
       this._vertAxis.addGridRules(this._chartLayers.width);
     }
+    if (this._paraState.config.legend.useDirectLegends) {
+      if (this._legends.east) {
+        this._legends.east.makeDirect("east");
+      }
+      if (this._legends.west) {
+        this._legends.west.makeDirect("west");
+      }
+      if (this._legends.north) {
+        this._legends.north.makeDirect("north");
+      }
+      if (this._legends.south) {
+        this._legends.south.makeDirect("south");
+      }
+    }
   }
 
   protected _positionLegends() {
@@ -351,12 +368,14 @@ export class DocumentView extends Container(View) {
   }
 
   protected get _shouldAddLegend(): boolean {
+    return this._paraState.config.legend.isAlwaysDrawLegend;
+    /*
     return this._paraState.config.legend.isDrawLegend &&
       (this._paraState.config.legend.isAlwaysDrawLegend
         // XXX direct label strip won't exist when this is called
         || (this._shouldAddDirectLabelStrip && this._paraState.config.chart.hasLegendWithDirectLabels)
-        || (!this._shouldAddDirectLabelStrip && this._paraState.model!.multi)
-        || (this._paraState.type == 'scatter'));
+        || (!this._shouldAddDirectLabelStrip && this._paraState.model!.multi));
+        */
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {

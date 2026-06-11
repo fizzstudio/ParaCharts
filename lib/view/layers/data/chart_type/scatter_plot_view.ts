@@ -1,5 +1,5 @@
 import { type PlaneSeriesView, PointPlotView, PointDatapointView, PlaneDatapointView, TrendLineView } from '.';
-import { Setting, type DeepReadonly } from '../../../../state/settings_types';
+import { Setting } from '../../../../state/settings_types';
 import { DataSymbol, DataSymbols } from '../../../symbol';
 import { svg } from 'lit';
 import { View } from '../../../base_view';
@@ -249,7 +249,8 @@ export class ClusterShellView extends View {
 
   get centroidColor() {
     if (this.clusterID !== undefined) {
-      return this.clusterID;
+      const numColors = this.paraview.paraState.colors.numSeriesColors;
+      return this.clusterID % numColors;
     }
     else {
       return 0;
@@ -262,7 +263,7 @@ export class ClusterShellView extends View {
       <circle
         cx=${fixed`${this.centroidCoords[0]}`}
         cy=${fixed`${this.centroidCoords[1]}`} r="8"
-        style=stroke:black;fill:${this.paraview.paraState.colors.colorValueAt(this.centroidColor)}
+        class="series-${this.centroidColor} cluster-centroid"
       />
     </g>`
   }

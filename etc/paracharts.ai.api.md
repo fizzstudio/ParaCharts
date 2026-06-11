@@ -6,7 +6,7 @@
 
 import { AllSeriesData } from '@fizz/paramanifest';
 import { ButtonDescriptor } from '@fizz/ui-components';
-import { ChartType as ChartType_3 } from '@fizz/paramanifest';
+import { ChartType as ChartType_2 } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { ClassInfo as ClassInfo_2 } from 'lit-html/directives/class-map.js';
 import { clusterObject } from '@fizz/clustering';
@@ -25,6 +25,7 @@ import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
+import { Localization } from '@elemental/localization';
 import { Logger } from '@fizz/logger';
 import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';
@@ -43,7 +44,6 @@ import { SequenceInfo } from '@fizz/series-analyzer';
 import { Series } from '@fizz/paramodel';
 import { SeriesAnalysis } from '@fizz/series-analyzer';
 import { SeriesAnalyzerConstructor } from '@fizz/paramodel';
-import { Size2d } from '@fizz/chart-classifier-utils';
 import { State } from '@lit-app/state';
 import { StateController } from '@lit-app/state';
 import { StaticValue } from 'lit-html/static.js';
@@ -57,54 +57,15 @@ import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
 
 // @public
-export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
-
-// @public
-export type AnimationType = 'yAxis' | 'xAxis' | 'none';
-
-// @public (undocumented)
-export interface AxesSettings extends SettingGroup {
-    datapointMargin: number;
-    minInterval: number;
-    x: XAxisSettings;
-    y: YAxisSettings;
-}
-
-// @public (undocumented)
-export interface AxisSettings extends SettingGroup {
-    interval: number | 'unset';
-    maxValue: number | 'unset';
-    minValue: number | 'unset';
-}
-
-// @public
-export type BarClusterMode = 'facet';
-
-// @public
-export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
-
-// @public
 export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest;
-
-// @public
-export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
-
-// @public
-export type ChartType = XYChartType | RadialChartType;
 
 // @public (undocumented)
 export type ChartTypeInput = 'line' | 'horizontal_bar' | 'vertical_bar' | 'pie' | 'donut';
 
 // @public
 export interface ChartTypeSettings extends SettingGroup {
-    heatmap: HeatmapSettings;
-    histogram: HistogramSettings;
-    stepline: StepLineSettings;
     venn: VennSettings;
 }
-
-// @public
-export type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
 
 // @public (undocumented)
 export type CsvDataType = 'string' | 'number' | 'date';
@@ -124,32 +85,6 @@ export interface CsvInferredDefaults {
         dataType: CsvDataType;
     };
 }
-
-// @public
-export interface DataTableSettings extends SettingGroup {
-    xValueFormat: LabelFormat;
-    yValueFormat: LabelFormat;
-}
-
-// @public (undocumented)
-export type DeepReadonly<T> = {
-    readonly [Property in keyof T]: T extends Setting ? T[Property] : DeepReadonly<T[Property]>;
-};
-
-// @public (undocumented)
-export type DepthDirection = 'in' | 'out';
-
-// @public
-export interface DevSettings extends SettingGroup {
-    isDebug: boolean;
-    isShowGridTerritories: boolean;
-}
-
-// @public (undocumented)
-export type Direction = VertDirection | HorizDirection | DepthDirection;
-
-// @public (undocumented)
-export const directions: Direction[];
 
 // @public
 export type FieldInfo = {
@@ -184,43 +119,7 @@ export const FORMAT_CONTEXT_SETTINGS: {
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
 
 // @public (undocumented)
-export interface HeatmapSettings extends PlaneChartSettings {
-    resolution: number;
-}
-
-// @public
-export interface HistogramSettings extends PlaneChartSettings {
-    bins: number;
-    displayAxis: string;
-    groupingAxis: string;
-    relativeAxes: "Counts" | "Percentage";
-}
-
-// @public (undocumented)
-export type HorizCardinalDirection = 'east' | 'west';
-
-// @public (undocumented)
-export type HorizDirection = 'left' | 'right';
-
-// @public (undocumented)
 export function inferDefaultsFromCsvText(csvText: string, fileName?: string): CsvInferredDefaults;
-
-// @public
-export interface JimSettings extends SettingGroup {
-    xValueFormat: LabelFormat;
-}
-
-// @public
-export type LabelFormat = 'raw' | string;
-
-// @public (undocumented)
-export interface LabelSettings extends SettingGroup {
-    // Warning: (ae-forgotten-export) The symbol "Color" needs to be exported by the entry point index-ai.d.ts
-    color: Color;
-    fontSize: number;
-    isDrawEnabled: boolean;
-    margin: number;
-}
 
 // @public
 export class LoadError extends Error {
@@ -348,6 +247,7 @@ export class ParaAPI {
     // Warning: (ae-forgotten-export) The symbol "ParaAPIIntersection" needs to be exported by the entry point index-ai.d.ts
     getIntersection(index: number): ParaAPIIntersection;
     getJIM(): Manifest | undefined;
+    // Warning: (ae-forgotten-export) The symbol "CardinalDirection" needs to be exported by the entry point index-ai.d.ts
     // Warning: (ae-forgotten-export) The symbol "ParaAPILegend" needs to be exported by the entry point index-ai.d.ts
     getLegend(location: CardinalDirection): ParaAPILegend;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIRange" needs to be exported by the entry point index-ai.d.ts
@@ -355,6 +255,7 @@ export class ParaAPI {
     // Warning: (ae-forgotten-export) The symbol "ParaAPISeriesGroup" needs to be exported by the entry point index-ai.d.ts
     getSeries(...seriesLabelsOrKeys: string[]): ParaAPISeriesGroup;
     getSetting(settingPath: string): Setting;
+    // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index-ai.d.ts
     getSettings(settingPaths: string[]): SettingsInput;
     getShortDescription(): Promise<string | undefined>;
     // Warning: (ae-forgotten-export) The symbol "ParaAPITitle" needs to be exported by the entry point index-ai.d.ts
@@ -457,57 +358,6 @@ export class ParaHeadless {
 export function parseCSV(csvText: string): CSVParseResult;
 
 // @public
-export interface PlaneChartSettings extends PlotSettings {
-    maxYValue: number | 'unset';
-    minYValue: number | 'unset';
-}
-
-// @public (undocumented)
-export type PlaneDirection = VertDirection | HorizDirection;
-
-// @public
-export interface PlotAreaSettings extends SettingGroup {
-    size: Size2d;
-}
-
-// @public
-export interface PlotSettings extends SettingGroup {
-}
-
-// @public
-export type PointChartType = 'line' | 'stepline' | 'scatter';
-
-// @public
-export interface PopupSettings extends SettingGroup {
-    activation: "onHover" | "onFocus" | "onSelect";
-    backgroundColor: "dark" | "light";
-    borderRadius: number;
-    downPadding: number;
-    isCrosshairFollowPointer: boolean;
-    isShowCrosshair: boolean;
-    leftPadding: number;
-    margin: number;
-    maxWidth: number;
-    opacity: number;
-    rightPadding: number;
-    shape: "box" | "boxWithArrow";
-    upPadding: number;
-}
-
-// @public
-export type RadialChartType = 'pie' | 'donut' | 'gauge';
-
-// @public
-export type riffSpeeds = 'slow' | 'medium' | 'fast';
-
-// @public
-export interface ScrollytellingSettings extends SettingGroup {
-    isScrollyAnnouncementsEnabled: boolean;
-    isScrollySoniEnabled: boolean;
-    isScrollytellingEnabled: boolean;
-}
-
-// @public
 export type Setting = string | number | boolean;
 
 // @public
@@ -517,51 +367,7 @@ export type SettingGroup = {
 
 // @public
 export interface Settings extends SettingGroup {
-    axis: AxesSettings;
-    dataTable: DataTableSettings;
-    dev: DevSettings;
-    jim: JimSettings;
-    plotArea: PlotAreaSettings;
-    popup: PopupSettings;
-    scrollytelling: ScrollytellingSettings;
-    statusBar: StatusBarSettings;
     type: ChartTypeSettings;
-}
-
-// @public
-export type SettingsInput = {
-    [path: string]: Setting;
-};
-
-// @public
-export interface StatusBarSettings extends SettingGroup {
-    valueFormat: LabelFormat;
-}
-
-// @public (undocumented)
-export interface StepLineSettings extends PlaneChartSettings {
-    baseSymbolSize: number;
-    isAlwaysShowSeriesLabel?: boolean;
-    leaderLineLength: number;
-    lineWidth: number;
-    lineWidthMax: number;
-    seriesLabelPadding: number;
-}
-
-// @public
-export type TabLabelStyle = 'icon' | 'iconLabel' | 'label';
-
-// @public (undocumented)
-export interface TitleSettings extends SettingGroup {
-    // Warning: (ae-forgotten-export) The symbol "SnapLocation" needs to be exported by the entry point index-ai.d.ts
-    //
-    // (undocumented)
-    align?: SnapLocation;
-    fontSize: string;
-    isDrawTitle: boolean;
-    margin: number;
-    position?: 'top' | 'bottom';
-    text?: string;
 }
 
 // @public (undocumented)
@@ -574,31 +380,6 @@ export interface VennSettings extends SettingGroup {
     outsideLabels: {
         contents: string;
     };
-}
-
-// @public (undocumented)
-export type VertCardinalDirection = 'north' | 'south';
-
-// @public (undocumented)
-export type VertDirection = 'up' | 'down';
-
-// @public
-export interface ViewBox extends SettingGroup {
-    height: number;
-    width: number;
-    x: number;
-    y: number;
-}
-
-// @public
-export interface XAxisSettings extends AxisSettings {
-}
-
-// @public
-export type XYChartType = 'bar' | 'lollipop' | PointChartType;
-
-// @public
-export interface YAxisSettings extends AxisSettings {
 }
 
 // (No @packageDocumentation comment for this package)

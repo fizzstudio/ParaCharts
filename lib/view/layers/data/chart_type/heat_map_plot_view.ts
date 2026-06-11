@@ -6,7 +6,8 @@ import { type BaseChartInfo } from '../../../../chart_types';
 import { type HeatMapInfo } from '../../../../chart_types/heat_map';
 import { fixed } from "../../../../common/utils";
 import { type DataLayerContext } from '../../../view_context';
-import { DeepReadonly, HeatmapSettings, PointChartType, type Setting } from "../../../../state";
+import { type Setting } from "../../../../state";
+import { PointChartType } from '../../../../config/config_types';
 import { DatapointView, SeriesView } from "../../../data";
 
 import { RectShape } from "../../../shape/rect";
@@ -16,10 +17,8 @@ import { strToId } from "@fizz/paramanifest";
 import { classMap } from "lit/directives/class-map.js";
 import { ref } from "lit/directives/ref.js";
 import { styleMap } from "lit/directives/style-map.js";
-import { NavNode } from "../navigation";
 
 export class HeatMapPlotView extends PlanePlotView {
-  declare protected _settings: DeepReadonly<HeatmapSettings>;
   declare protected _chartInfo: HeatMapInfo;
   constructor(
     paraview: DataLayerContext,
@@ -30,7 +29,6 @@ export class HeatMapPlotView extends PlanePlotView {
   ) {
     super(paraview, width, height, dataLayerIndex, chartInfo);
     this.log = getLogger("HeatMapPlotView");
-    this._settings = this.paraview.paraState.settings.type.heatmap;
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
@@ -39,10 +37,6 @@ export class HeatMapPlotView extends PlanePlotView {
       this.paraview.requestUpdate();
     }
     super.settingDidChange(path, oldValue, newValue);
-  }
-
-  get settings() {
-    return this._settings;
   }
 
   get chartInfo(): HeatMapInfo {
@@ -224,7 +218,7 @@ export class HeatmapTile extends RectShape {
   render() {
     this._styleInfo.stroke = this.paraview.paraState.visitedDatapoints.values().some(item =>
       item === (this.parent as HeatmapTileView).datapointId)
-        ? 'hsl(0, 100.00%, 50.00%)'
+        ? 'var(--visited-color, hsl(0, 100%, 50%))'
         : this.options.stroke ?? this._options.stroke;
     return svg`
         <rect

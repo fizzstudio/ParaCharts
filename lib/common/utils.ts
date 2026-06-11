@@ -276,3 +276,11 @@ export const trendTranslation = {
     /** A single stable sequence */
     "0": "Stable",
 }
+
+export function preciseAdd(a: number, b: number) {
+  const aSplit = a.toString().split(".")
+  const bSplit = b.toString().split(".")
+  const p = Math.max(aSplit.length > 1 ? aSplit.at(-1)!.length : 0,
+    bSplit.length > 1 ? bSplit.at(-1)!.length : 0)
+  return (Math.round(a * 10 ** p) + Math.round(b * 10 ** p)) / (10 ** p);
+}

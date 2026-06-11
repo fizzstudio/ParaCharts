@@ -64,10 +64,13 @@ export abstract class PlanePlotView extends DataLayer {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`].includes(path)) {
+    if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`, 'legend.isAlwaysDrawLegend',
+      'legend.useDirectLegends', 'legend.itemOrder', 'legend.position'].includes(path)) {
       this.paraview.paraState.createChartInfo();
-      this.paraview.createDocumentView();
-      this.paraview.requestUpdate();
+      this.paraview.paraState.chartInfo.setup().then(() => {
+        this.paraview.createDocumentView();
+        this.paraview.requestUpdate();
+      })
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -76,7 +79,7 @@ export abstract class PlanePlotView extends DataLayer {
     const coords = this.paraview.paraState.pointerCoords;
     const type = this.paraview.paraState.type;
     if (this.paraview.paraState.config.chart.isShowPopups
-      && this.paraview.paraState.settings.popup.activation === "onHover"
+      && this.paraview.paraState.config.popup.activation === "onHover"
       && !this.paraview.paraState.config.ui.isTourGuideEnabled
     ) {
       if (coords.x > 0 && coords.x < this.width && coords.y > 0 && coords.y < this.height) {
@@ -104,8 +107,8 @@ export abstract class PlanePlotView extends DataLayer {
             nearestPoint = nearestPoint.withCousins.sort((a, b) => Math.abs(a.y - coords.y) - Math.abs(b.y - coords.y))[0];
           }
         }
-        if (this.paraview.paraState.settings.popup.isShowCrosshair) {
-          if (!this.paraview.paraState.settings.popup.isCrosshairFollowPointer) {
+        if (this.paraview.paraState.config.popup.isShowCrosshair) {
+          if (!this.paraview.paraState.config.popup.isCrosshairFollowPointer) {
             nearestPoint.popup?.remove();
             const isChord = (type == 'line') && (this.paraview.paraState.model!.series.length > 1);
             this.removeDatapointPopup(nearestPoint);

@@ -67,7 +67,11 @@ export class LoadError extends Error {
 export function parseCSV(csvText: string): CSVParseResult {
   const result = papa.parse<Record<string, string>>(csvText, {
     header: true,
-    skipEmptyLines: true,
+    // 'greedy' also skips rows that contain only delimiters/whitespace (e.g.
+    // ",,," from a spreadsheet export), which would otherwise become empty
+    // datapoints and break numeric value parsing downstream. Rows with partial
+    // data (some cells empty) are still preserved.
+    skipEmptyLines: 'greedy',
   });
   
   const fatalErrors = result.errors.filter(e => e.type !== 'Delimiter');
@@ -369,7 +373,12 @@ function inferColumnDataType(values: string[], header: string): CsvDataType {
 
 /** @public */
 export function inferDefaultsFromCsvText(csvText: string, fileName?: string): CsvInferredDefaults {
-  const lines = csvText.split('\n').filter(line => line.trim());
+  // Drop blank lines and rows that contain only delimiters/whitespace (e.g.
+  // ",,," from a spreadsheet export); keep rows that have any non-empty cell so
+  // partial data is preserved. Mirrors parseCSV's 'greedy' empty-line handling.
+  const lines = csvText
+    .split('\n')
+    .filter(line => line.split(',').some(cell => cell.trim() !== ''));
 
   if (lines.length < 2) {
     throw new LoadError(LoadErrorCode.CSV_INVALID_FORMAT, 'CSV must have at least a header row and one data row');

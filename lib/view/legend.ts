@@ -3,13 +3,13 @@ import { View, Container } from './base_view';
 import { SimpleGridLayout, type Layout } from './layout';
 import { type DataSymbolType, DataSymbol, DataSymbolOptions } from './symbol';
 import { Label } from './label';
-import { type DeepReadonly, SettingsManager } from '../state';
+import { SettingsManager } from '../state';
 import { RectShape } from './shape/rect';
 import { type ViewContext } from './view_context';
 import { TemplateResult, svg } from 'lit';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { HIGHLIGHT_PADDING } from '../common';
-import { LegendConfig } from '../config/config_types';
+import { CardinalDirection, LegendConfig } from '../config/config_types';
 import { ScatterChartInfo } from '../chart_types';
 
 export type SeriesAttrs = {
@@ -55,7 +55,7 @@ export class Legend extends Container(View) {
 
   constructor(paraview: ViewContext,
     protected _items: LegendItem[],
-    protected _options: Partial<LegendOptions> = {orientation: 'vert'}
+    protected _options: Partial<LegendOptions> = { orientation: 'vert' }
   ) {
     super(paraview);
   }
@@ -74,7 +74,7 @@ export class Legend extends Container(View) {
     const hasLegendBox = this.config.boxStyle.outline !== 'none' || this.config.boxStyle.fill !== 'none';
 
     this._items.forEach(item => {
-      this._markers.push(new RectShape(this.paraview, {width: 12, height: 6}));
+      this._markers.push(new RectShape(this.paraview, { width: 12, height: 6 }));
       views.push(this._markers.at(-1)!);
       views.push(DataSymbol.fromType(
         this.paraview,
@@ -137,7 +137,7 @@ export class Legend extends Container(View) {
     });
     const symLabelGap = this.paraview.paraState.config.legend.symbolLabelGap;
     const pairGap = this.paraview.paraState.config.legend.pairGap;
-    let labelsPerRow = views.length/3;
+    let labelsPerRow = views.length / 3;
     if (this._options.orientation === 'vert') {
       this._grid = new SimpleGridLayout(this.paraview, {
         numCols: 3,
@@ -154,7 +154,7 @@ export class Legend extends Container(View) {
           new Array(labelsPerRow).fill(symLabelGap),
           new Array(labelsPerRow - 1).fill(pairGap));
         this._grid = new SimpleGridLayout(this.paraview, {
-          numCols: labelsPerRow*3,
+          numCols: labelsPerRow * 3,
           colGaps: colGaps,
           rowGaps: new Array(labelsPerRow + 1).fill(this._options.rowGap)
         }, 'legend-grid');
@@ -162,8 +162,8 @@ export class Legend extends Container(View) {
         views.forEach(v => this._grid.append(v));
         this._grid.updateSize();
         if (this._options.wrapWidth === undefined ||
-            this._grid.paddedWidth <= this._options.wrapWidth ||
-            labelsPerRow === 1) {
+          this._grid.paddedWidth <= this._options.wrapWidth ||
+          labelsPerRow === 1) {
           break;
         }
         labelsPerRow--;
@@ -196,11 +196,99 @@ export class Legend extends Container(View) {
     return [this._grid?.paddedWidth ?? 0, this._grid?.paddedHeight ?? 0];
   }
 
+  makeDirect(dir: CardinalDirection) {
+    const bundledItems = [];
+    const alreadyMoved: number[] = [];
+    const dataLayer = this.paraview.documentView?.chartLayers.dataLayer!;
+    const clv = dataLayer.chartLandingView!;
+    //NB Sam: I don't know where this comes from but it aligns the horizontal direct legends correctly by eye
+    const WEIRD_MAGIC_NUMBER = 70;
+    if (dir == "east" || dir == "west") {
+      if (['bar'].includes(this.paraview.paraState.type)) {
+        return;
+      }
+      for (let i = 0; i < this._items.length; i++) {
+        let newY = 0;
+        if (dir == "east") {
+          const lastDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(-1)!;
+          newY = lastDatapointView.centerY;
+        }
+        else if (dir == "west") {
+          const firstDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(0)!;
+          newY = firstDatapointView.centerY;
+        }
+        this._grid.children[3 * i].centerY = newY;
+        this._grid.children[3 * i + 1].centerY = newY;
+        this._grid.children[3 * i + 2].centerY = newY;
+        bundledItems.push([this._grid.children[3 * i], this._grid.children[3 * i + 1], this._grid.children[3 * i + 2]])
+      }
+      const sortedItems = bundledItems.toSorted((a, b) => a[2].y - b[2].y);
+      for (let i = 0; i < sortedItems.length; i++) {
+        for (let j = i + 1; j < sortedItems.length; j++) {
+          const child1 = sortedItems[i][2];
+          const child2 = sortedItems[j][2];
+          if (child1.intersects(child2)) {
+            const midpoint = (child1.y + child2.y) / 2;
+            if (!alreadyMoved.includes(i)) {
+              sortedItems[i].forEach(c => c.y -= (child1.bottom - midpoint));
+              sortedItems[j].forEach(c => c.y += (midpoint - child2.top));
+            }
+            else {
+              sortedItems[j].forEach(c => c.y += (midpoint - child2.top) + (child1.bottom - midpoint));
+            }
+            alreadyMoved.push(i, j);
+          }
+        }
+      }
+    }
+    else if (dir == "north" || dir == "south") {
+      if (['column', 'line', 'scatter'].includes(this.paraview.paraState.type)) {
+        return;
+      }
+      for (let i = 0; i < this._items.length; i++) {
+        let newX = 0;
+        if (dir == "south") {
+          const lastDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(-1)!;
+          newX = dataLayer.height - lastDatapointView.centerY - this.x + WEIRD_MAGIC_NUMBER;
+        }
+        else if (dir == "north") {
+          const firstDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(0)!;
+          newX = dataLayer.height - firstDatapointView.centerY - this.x + WEIRD_MAGIC_NUMBER;
+        }
+        const leftDiff = this._grid.children[3 * i + 2].centerX - this._grid.children[3 * i].centerX;
+        const middleDiff = this._grid.children[3 * i + 2].centerX - this._grid.children[3 * i + 1].centerX;
+        this._grid.children[3 * i].centerX = newX - leftDiff;
+        this._grid.children[3 * i + 1].centerX = newX - middleDiff;
+        this._grid.children[3 * i + 2].centerX = newX;
+        bundledItems.push([this._grid.children[3 * i], this._grid.children[3 * i + 1], this._grid.children[3 * i + 2]])
+      }
+      const sortedItems = bundledItems.toSorted((a, b) => a[2].y - b[2].y);
+      for (let i = 0; i < sortedItems.length; i++) {
+        for (let j = i + 1; j < sortedItems.length; j++) {
+          const child1 = sortedItems[i][2];
+          const child2 = sortedItems[j][2];
+          if (sortedItems[i][2].intersects(sortedItems[j][0])
+            || sortedItems[i][2].intersects(sortedItems[j][1])
+            || sortedItems[i][2].intersects(sortedItems[j][2])) {
+            const midpoint = (child1.y + child2.y) / 2;
+            if (!alreadyMoved.includes(i)) {
+              sortedItems[j].forEach(c => c.y += child1.height);
+            }
+            else {
+              sortedItems[j].forEach(c => c.y += (midpoint - child2.top) + (child1.bottom - midpoint));
+            }
+            alreadyMoved.push(i, j);
+          }
+        }
+      }
+    }
+  }
+
   renderHighlight(type: 'fg' | 'bg') {
     return svg`
       <rect
-        x=${this.x + this.padding.left - HIGHLIGHT_PADDING/2}
-        y=${this.y + this.padding.top - HIGHLIGHT_PADDING/2}
+        x=${this.x + this.padding.left - HIGHLIGHT_PADDING / 2}
+        y=${this.y + this.padding.top - HIGHLIGHT_PADDING / 2}
         width=${this.width + HIGHLIGHT_PADDING}
         height=${this.height + HIGHLIGHT_PADDING}
         class="view-highlight-${type}"

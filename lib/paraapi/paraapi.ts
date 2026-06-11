@@ -18,7 +18,9 @@ import { PlaneModel, type Datapoint } from '@fizz/paramodel';
 
 import { ORIENTATION_SENTENCES, PASTRY_ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
-import { CardinalDirection, Direction, HotkeyEvent, makeSequenceId, Setting, SettingsInput, SettingsManager } from '../state';
+import { HotkeyEvent, makeSequenceId, Setting, SettingsManager } from '../state';
+import { SettingsInput } from '../config/config_types';
+import { CardinalDirection, Direction } from '../config/config_types';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 import explainers from '../explainers';
 import type { DatapointManifest, Manifest } from '@fizz/paramanifest';
@@ -147,10 +149,19 @@ export class ParaAPI {
       /** Toggle dark mode. */
       toggleDarkMode() {
         paraView.paraState.updateConfig(draft => {
-          draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
-          const endisable = draft.color.isDarkModeEnabled ? 'enable' : 'disable';
-          _paraChart.postNotice(endisable + 'DarkMode', null);
-          paraView.paraState.announce(`Dark mode ${endisable + 'd'}`);
+          if (draft.color.themeMode === 'dark') {
+            draft.color.themeMode = 'auto';
+            _paraChart.postNotice('enableAutoColorMode', null);
+            paraView.paraState.announce('Using auto color theme.');
+          } else if (draft.color.themeMode === 'auto') {
+            draft.color.themeMode = 'light';
+            _paraChart.postNotice('enableLightColorMode', null);
+            paraView.paraState.announce('Using light color theme.');
+          } else {
+            draft.color.themeMode = 'dark';
+            _paraChart.postNotice('enableDarkColorMode', null);
+            paraView.paraState.announce('Using dark color theme.');
+          }
         });
       },
       /** Toggle low-vision mode */

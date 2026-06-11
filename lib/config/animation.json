@@ -2,7 +2,7 @@
     "family": "animation",
     "settings": {
         "isAnimationEnabled": {
-            "label": "Animation",
+            "label": "cpanel.tabs.controls.animation",
             "description": "Enable chart animations",
             "type": "boolean",
             "default": false,
@@ -10,7 +10,7 @@
             "parentView": "controlPanel.tabs.controls.animation"
         },
         "animateRevealTimeMs": {
-            "label": "Animation rate",
+            "label": "cpanel.tabs.controls.anim_dialog.animation_rate",
             "description": "Duration for main chart reveal animation in milliseconds",
             "type": "number",
             "default": 2500,
@@ -28,7 +28,7 @@
             "default": 750
         },
         "animationType": {
-            "label": "Animation type",
+            "label": "cpanel.tabs.controls.anim_dialog.animation_type",
             "description": "Which axis to animate along",
             "type": "AnimationType",
             "default": "yAxis",
@@ -47,7 +47,7 @@
             "parentView": "controlPanel.tabs.controls.dialog.animation"
         },
         "animationOrigin": {
-            "label": "Animation origin",
+            "label": "cpanel.tabs.controls.anim_dialog.animation_origin",
             "description": "Starting point for animations",
             "type": "AnimationOrigin",
             "default": "initialValue",
@@ -73,7 +73,7 @@
 
         },
         "animationOriginValue": {
-            "label": "Animation origin value",
+            "label": "cpanel.tabs.controls.anim_dialog.animation_origin_value",
             "description": "Custom value for animation origin when set to 'custom'",
             "type": "number",
             "default": 0,

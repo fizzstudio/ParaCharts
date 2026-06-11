@@ -23,8 +23,8 @@ export class ScatterChartInfo extends PointChartInfo {
         this._paraState.clusterAnalyses = await this._generateClustering();
         (this._paraState.chartInfo as ScatterChartInfo)._clustering = this._paraState.clusterAnalyses;
         // Make sure _paraView exists
-        while (await !this._paraView) {}
-        this._paraView.documentView!.init();
+        //while (!this._paraView) {}
+        //this._paraView.documentView!.init();
       };
       cluster()
     }

@@ -39,7 +39,7 @@
             "panel": "chart"
         },
         "orientationAngleOffset": {
-            "label": "Orientation",
+            "label": "cpanel.tabs.chart.pastry_orientation",
             "description": "Rotation offset for slice orientation",
             "type": "number",
             "default": 90,
@@ -56,7 +56,7 @@
             "parentView": "controlPanel.tabs.chart.chart"
         },
         "explode": {
-            "label": "Explode slices",
+            "label": "cpanel.tabs.chart.pastry_explode",
             "description": "Which slices to separate from chart",
             "type": "string",
             "default": "",

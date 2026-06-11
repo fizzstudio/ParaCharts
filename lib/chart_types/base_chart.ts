@@ -14,9 +14,9 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import {
-  type PlotSettings, type DeepReadonly, type Direction, HorizDirection, Setting
-} from '../state/settings_types';
+import { Setting } from '../state/settings_types';
+import { DeepReadonly } from '../config/config_types';
+import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
 import { SettingsManager } from '../state/settings_manager';
 import { ParaView } from '../paraview/paraview';
 import { type LegendItem } from '../view/legend';
@@ -119,11 +119,11 @@ export abstract class BaseChartInfo {
     return [`type.${this._type}`];
   }
 
-  get settings(): DeepReadonly<PlotSettings> {
+  get settings(): DeepReadonly<ConfigGroup> {
     return SettingsManager.getGroupLink(this.managedSettingKeys[0], this._paraState.settings);
   }
 
-  get config(): DeepReadonly<PlotSettings> {
+  get config(): DeepReadonly<ConfigGroup> {
     return SettingsManager.getGroupLink(this.managedSettingKeys[0], this._paraState.config);
   }
 
@@ -279,7 +279,7 @@ export abstract class BaseChartInfo {
       const { seriesKey, index } = datapointIdToCursor(datapointId);
       const series = this._paraState.model!.atKey(seriesKey)!;
       const dp = series[index];
-      return `${series.label} (${formatBox(dp.facetBox('x')!, this._paraState.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this._paraState.getFormatType('statusBar'))})`;
+      return `${series.label} (${formatBox(dp.facetBox('x')!, 'raw')}, ${formatBox(dp.facetBox('y')!, 'raw')})`;
     };
 
     const newTotalSelected = this._paraState.selectedDatapoints.size;
