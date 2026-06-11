@@ -48,6 +48,7 @@ export interface LabelOptions {
   bottomRight?: Vec2;
   bottomLeft?: Vec2;
   angle?: number;
+  textAnchor?: LabelTextAnchor;
   justify?: SnapLocation;
   wrapWidth?: number;
   lineSpacing?: number;
@@ -69,6 +70,7 @@ export class Label extends View {
 
   protected _elRef: Ref<SVGTextElement> = createRef();
   protected _angle: number;
+  protected _textAnchor: LabelTextAnchor;
   protected _justify: SnapLocation;
   protected _lineSpacing: number;
   protected _lineHeight!: number;
@@ -91,6 +93,7 @@ export class Label extends View {
       };
     }
     this._angle = this.options.angle ?? 0;
+    this._textAnchor = this.options.textAnchor ?? (options.wrapWidth ? 'start' : 'middle');
     this._justify = this.options.justify ?? 'start';
     this._lineSpacing = this.options.lineSpacing ?? 0;
     this._text = this.options.text;
@@ -164,6 +167,15 @@ export class Label extends View {
 
   set angle(newAngle: number) {
     this._angle = newAngle;
+    this.updateSize();
+  }
+
+  get textAnchor() {
+    return this._textAnchor;
+  }
+
+  set textAnchor(textAnchor: LabelTextAnchor) {
+    this._textAnchor = textAnchor;
     this.updateSize();
   }
 
@@ -253,6 +265,7 @@ export class Label extends View {
     if (this.options.classList) {
       text.classList.add(...this.options.classList);
     }
+    text.setAttribute('text-anchor', this._textAnchor);
     text.style.visibility = 'hidden';
     if (this._text) {
       // Don't insert arbitrary HTML
@@ -316,7 +329,7 @@ export class Label extends View {
       [width, height] = this._measureOuterBbox(bbox);
       this._textLines = tspans.map(t => ({ text: t.textContent!, offset: 0 }));
 
-      if (this._justify !== 'start') {
+      if (this._justify !== 'start' && this.textAnchor === undefined) {
         tspans.forEach((tspan, i) => {
           const tspanBbox = this._getTextBBox(tspan);
           let x = width - tspanBbox.width;
@@ -332,6 +345,7 @@ export class Label extends View {
     } else {
       [width, height] = this._measureOuterBbox(bbox);
     }
+
     text.remove();
     return [width, height];
   }
@@ -463,6 +477,7 @@ export class Label extends View {
         role=${this.options.role ?? nothing}
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}
+        text-anchor=${this._textAnchor !== 'start' ? this._textAnchor : nothing}
         transform=${this._makeTransform() ?? nothing}
         id=${this.id}
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
