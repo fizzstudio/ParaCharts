@@ -686,7 +686,7 @@ export class ParaView extends ParaComponent implements ViewContext {
     } else {
       if (this._modeSaved.has('color.themeMode')) {
         this._colorPrefManager.restoreTheme(
-          this._modeSaved.get('color.themeMode') as 'system' | 'light' | 'dark',
+          this._modeSaved.get('color.themeMode') as 'auto' | 'light' | 'dark',
           this._modeSaved.get('color.themeSource') as any,
         );
         this._modeSaved.delete('color.themeMode');
@@ -1168,7 +1168,7 @@ export class ParaView extends ParaComponent implements ViewContext {
           if (!this._paraState.config.chart.isStatic) {
             //this.log.info('focus');
             //this.todo.deets?.onFocus();
-            this._paraState.chartInfo.navMap?.visitDatapoints();
+            //this._paraState.chartInfo.navMap?.visitDatapoints();
           }
         }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}

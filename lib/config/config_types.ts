@@ -413,7 +413,7 @@ export interface ColorConfig extends ConfigGroup {
   custom7: string;
   /** Custom color 8 */
   custom8: string;
-  /** Color theme preference: follow system, always light, or always dark */
+  /** Color theme preference: automatic, always light, or always dark */
   themeMode: 'auto' | 'light' | 'dark';
   /** Source of the current theme setting */
   themeSource: ColorPrefSource;
@@ -428,7 +428,7 @@ export interface ColorConfig extends ConfigGroup {
   /** Use the low-vision high-contrast color palette when low-vision mode is enabled */
   lowVisionColorPalette: boolean;
   /** Theme to apply as a mode default when low-vision mode is enabled */
-  lowVisionThemeDefault: 'system' | 'light' | 'dark';
+  lowVisionThemeDefault: 'auto' | 'light' | 'dark';
   /** Contrast mode to apply as a mode default when low-vision mode is enabled */
   lowVisionContrastDefault: 'system' | 'lower' | 'normal' | 'higher' | 'custom';
   /** Contrast level for custom low-vision contrast (0-1) */

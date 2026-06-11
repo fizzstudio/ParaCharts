@@ -349,7 +349,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
           this._paraState);
         //node.addDatapoint(series.key, j);
         node.connect('left', left);
-        if (j === 0 && sortedSeries.length === 1) {
+        if (j === 0 && sortedSeries.length === 1 && !this._paraState.config.sonification.isSonificationEnabled) {
           node.connect('up', left);
           node.connect('down', left);
           node.connect('right', left);
