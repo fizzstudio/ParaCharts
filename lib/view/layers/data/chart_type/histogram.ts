@@ -1,6 +1,6 @@
 import { enumerate } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
-import { svg } from "lit";
+import { nothing, svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
 import { fixed } from "../../../../common/utils";
 import { type ViewContext } from '../../../view_context';
@@ -8,27 +8,31 @@ import { datapointIdToCursor, type Setting } from "../../../../state";
 import { PointChartType } from '../../../../config/config_types';
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
-import { PlanePlotView, PlaneSeriesView } from ".";
+import { PlanePlotView, PlaneSeriesView, ScatterPointView } from ".";
 import { DatapointView, SeriesView } from "../../../data";
 import { strToId } from "@fizz/paramanifest";
 import { HistogramChartInfo } from '../../../../chart_types/histogram_chart';
+import { View } from "../../../base_view";
+import { ClassInfo, classMap } from "lit/directives/class-map.js";
+import { ref } from "lit/directives/ref.js";
+import { styleMap } from "lit/directives/style-map.js";
 
 export class Histogram extends PlanePlotView {
   declare protected _chartInfo: HistogramChartInfo;
-
+  protected _bins: HistogramBinView[] = []
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
     if (['type.histogram.groupingAxis', 'type.histogram.displayAxis', 'type.histogram.relativeAxes', 'axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
       this.paraview.createDocumentView();
       this.paraview.requestUpdate();
     } else if (path === 'type.histogram.bins') {
-        this.paraview.createDocumentView();
-        this.paraview.requestUpdate();
-        // this.paraview.paraState.updateSettings(draft => {
-        //   draft.axis.y.maxValue = 'unset'
-        // });
-        // this.paraview.paraState.updateSettings(draft => {
-        //   draft.axis.y.minValue = 'unset'
-        // });
+      this.paraview.createDocumentView();
+      this.paraview.requestUpdate();
+      // this.paraview.paraState.updateSettings(draft => {
+      //   draft.axis.y.maxValue = 'unset'
+      // });
+      // this.paraview.paraState.updateSettings(draft => {
+      //   draft.axis.y.minValue = 'unset'
+      // });
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -42,25 +46,17 @@ export class Histogram extends PlanePlotView {
   }
 
   protected _newDatapointView(seriesView: PlaneSeriesView) {
-    return new HistogramBinView(this, seriesView);
+    return new ScatterPointView(seriesView);
   }
 
   protected _createDatapoints() {
-    const xs: string[] = [];
-    for (const [p, i] of enumerate(this.paraview.paraState.model!.series[0].datapoints)) {
-      xs.push(formatBox(p.facetBox('x')!, this.paraview.paraState.getFormatType(`${this.parent.parent.type as PointChartType}Point`)));
-      const xId = strToId(xs.at(-1)!);
-      // if (this.selectors[i] === undefined) {
-      //   this.selectors[i] = [];
-      // }
-      // this.selectors[i].push(`tick-x-${xId}`);
-    }
+    console.log("createDatapoints")
     const seriesView = new PlaneSeriesView(this, this.paraview.paraState.model!.series[0].key);
     this._chartLandingView.append(seriesView);
     for (let i = 0; i < this.chartInfo.bins; i++) {
-        const bin = new HistogramBinView(this, seriesView);
-        seriesView.append(bin)
-      }
+      const bin = new HistogramBinView(this, seriesView);
+      this._bins.push(bin)
+    }
     //Note from Sam: I will add multi-series stacked support eventually, for now it makes more sense to have the values from each series
     //added together in the same bin
     /*
@@ -81,15 +77,24 @@ export class Histogram extends PlanePlotView {
       return (b.children[0].datapoint.facetValueNumericized(b.children[0].datapoint.depKey)!) - (a.children[0].datapoint.facetValueNumericized(a.children[0].datapoint.depKey)!);
     });
   }
-
-  protected _layoutDatapoints() {
-    for (const datapointView of this.datapointViews) {
-      datapointView.completeLayout();
+  /*
+    protected _layoutDatapoints() {
+      for (const datapointView of this.datapointViews) {
+        datapointView.completeLayout();
+      }
     }
+  */
+  protected _completeDatapointLayout(): void {
+    console.log("bins", this._bins)
+    console.log("grid", this.chartInfo.grid)
+    super._completeDatapointLayout();
+    this._bins.forEach(t => t.parent == undefined ? this.append(t) : nothing)
+    this._bins.forEach(t => t.completeLayout())
+    this._bins.forEach(t => t._createShapes())
   }
 
   seriesRef(series: string) {
-      return this.paraview.ref<SVGGElement>(`series.${series}`);
+    return this.paraview.ref<SVGGElement>(`series.${series}`);
   }
 
   _raiseSeries(series: string) {
@@ -103,7 +108,7 @@ export class Histogram extends PlanePlotView {
 
 }
 
-export class HistogramBinView extends DatapointView {
+export class HistogramBinView extends View {
 
   declare readonly chart: Histogram;
   declare protected _parent: PlaneSeriesView;
@@ -111,12 +116,16 @@ export class HistogramBinView extends DatapointView {
   protected _height!: number;
   protected _width!: number;
   protected _count: number = 0;
+  protected _shapes: Shape[] = []
+  seriesKey: string = ''
   constructor(
     chart: Histogram,
     series: SeriesView
   ) {
 
-    super(series);
+    super(chart.paraview);
+    this.chart = chart
+    this.seriesKey = series.seriesKey
   }
 
   get width() {
@@ -167,21 +176,25 @@ export class HistogramBinView extends DatapointView {
   completeLayout() {
     const info = this.chart.chartInfo;
     if (this.chart.settings.displayAxis == "x" || this.chart.settings.displayAxis == undefined) {
-      const id = this.index;
+      const id = this.index - 1;
       this._y = this.chart.parent.height;
       this._width = this.chart.parent.width / info.bins;
-      this._x = (this.index) % info.bins * this._width
-      // this._height = (((info.grid[id] - info.axisInfo!.yLabelInfo!.min!) / info.axisInfo!.yLabelInfo!.max!) * this._y)
-      if (this.chart.settings.relativeAxes == "Percentage"){
+      this._x = (id) % info.bins * this._width
+      //console.log("info.grid", info.grid)
+      const gridMax = Math.max(...info.grid)
+      this._height = (info.grid[id] / gridMax) * this._y
+      if (this.chart.settings.relativeAxes == "Percentage") {
         this._height = this._height / info.grid.reduce((a, c) => a + c)
       }
       this._count = info.grid[id];
+      /*
       this._id = [
         'datapoint-tile',
         strToId(this.seriesKey),
         `${this._x}`,
         `${this._y}`
       ].join('-');
+      */
     }
     else {
       const id = this.index - length;
@@ -189,18 +202,18 @@ export class HistogramBinView extends DatapointView {
       this._height = this.chart.parent.height / info.bins;
       this._y = (info.grid.length - id - 1) % info.bins * this._height + (this._height)
       // this._width = (((info.grid[id] - info.axisInfo!.xLabelInfo!.min!) / info.axisInfo!.xLabelInfo!.max!) * this.chart.parent.width)
-      if (this.chart.settings.relativeAxes == "Percentage"){
+      if (this.chart.settings.relativeAxes == "Percentage") {
         this._width = this._width / info.grid.reduce((a, c) => a + c)
       }
       this._count = info.grid[id];
-
+      /*
       this._id = [
         'datapoint-tile',
         strToId(this.seriesKey),
         `${this._x}`,
         `${this._y}`
       ].join('-');
-
+*/
     }
   }
 
@@ -240,7 +253,62 @@ export class HistogramBinView extends DatapointView {
           Z`;
   }
 
+  _createShapes() {
+    console.log("createShapes")
+    this._shapes = [];
+    let rect = new HistogramBin(this.paraview, {
+      width: this._width,
+      height: this.height,
+      x: this._x,
+      y: this._y - this.height,
+      stroke: "black",
+      strokeWidth: 2,
+      click: (e) => this._onClick()
+    })
+    rect.role = 'clickable'
+    this._shapes.push(rect)
+    this._shapes.forEach(shape => {
+      this.append(shape);
+    })
+  }
+
+  get classInfo(): ClassInfo {
+    const index = this.index;
+    return {
+      datapoint: true,
+      [`series-${0}`]: true,
+      visited: this.paraview.paraState.isVisited(this.seriesKey, index),
+      selected: this.paraview.paraState.isSelected(this.seriesKey, index),
+      highlighted: this.paraview.paraState.isDatapointHighlighted(this.seriesKey, index),
+      lowlighted: this.paraview.paraState.isDatapointLowlighted(this.seriesKey, index)
+    };
+  }
+
+  protected _onClick() {
+    /*
+    this.chart.chartInfo.navMap?.goTo('heatmapTile',
+      {
+        datapointCount: parent.count,
+        datapoints: parent.datapoints,
+        yIndex: parent._yIndex,
+        xIndex: parent._xIndex
+      });
+      */
+  }
+
+  content() {
+    return svg`
+              <g
+                id=${this._id}
+                class=${classMap(this.classInfo)}
+              >
+                ${super.content()}
+              </g>`;
+  }
+  /*
   render() {
+    console.log("render")
+  
     const isVisited = this.paraview.paraState.visitedDatapoints.values().some(item => {
       const cursor = datapointIdToCursor(item);
       return cursor.index === this.index;
@@ -263,98 +331,73 @@ export class HistogramBinView extends DatapointView {
         stroke-width=2 stroke="hsl(0,0%,0%)" id=${this.id}></path>
     `;
   }
-
-}
-
-
-/*
-export class HistogramDatapointView extends XYDatapointView {
-
-    declare readonly chart: Histogram;
-    declare protected _parent: XYSeriesView;
-
-    protected _height!: number;
-    protected _width!: number;
-    protected _color: number = 0;
-
-    constructor(
-        seriesView: XYSeriesView,
-    ) {
-        super(seriesView);
-        this._id = [
-                'datapoint-unused',
-                strToId(this.seriesKey),
-                `${this._x}`,
-                `${this._y}`
-            ].join('-');
-    }
-
-    get width() {
-        return this._width;
-    }
-
-    get height() {
-        return this._height;
-    }
-
-    get color() {
-        return this._color
-    }
-
-    get _selectedMarkerX() {
-        return this._x;
-    }
-
-    get _selectedMarkerY() {
-        return this._y;
-    }
-
-    // protected get visitedTransform() {
-    //   return 'scaleX(1.15)';
-    // }
-
-    computeLayout() {
-
-        const orderIdx = Object.keys(this.stack.bars).indexOf(this.series.name!);
-        const distFromXAxis = Object.values(this.stack.bars).slice(0, orderIdx)
-          .map(bar => bar._height)
-          .reduce((a, b) => a + b, 0);
-        const pxPerYUnit = this.chart.height/this.chart.axisInfo!.yLabelInfo.range!;
-        this._height = this.datapoint.y.number*pxPerYUnit;
-        this._x = this.stack.x + this.stack.cluster.x;
-        this._y = this.chart.height - this._height - distFromXAxis;
-
-        if (this.chart.settings.displayAxis == "x" || undefined){
-            this._height = this.chart.height / this.chart.bins;
-            this._width = this.chart.width / this.chart.bins;
-            this._x = this.index % this.chart.bins * this._width
-            this._y = Math.floor(this.index / this.chart.bins) * this._height
-        }
-
-    }
-
-    protected get _d() {
-
-        return fixed`
-      M${this._x},${this._y}
-      v${this._height}
-      h${this._width}
-      v${-1 * this._height}
-      Z`;
-    }
-
-    render() {
-        // 'stacked' === this.paraChart.multiseries && this.params.yInfo.stackOffset ?
-        // aria-labelledby="${this.params.labelId}"
-        //const visitedScale = this._isVisited ? this.chart.settings.highlightScale : 1;
-        const visitedScale = 1.5
-        const styles = {
-            strokeWidth: 2 * visitedScale,
-            fill: this.color,
-            stroke: "white"
-        };
-        return svg``;
-    }
-
-}
 */
+}
+
+export class HistogramBin extends RectShape {
+
+  get chart() {
+    const parent = this.parent as HistogramBinView;
+    return parent.chart;
+  }
+  render() {
+    const cursor = this.chart.chartInfo.navMap!.cursor!
+    if (cursor.type == 'histogramBin' && cursor.index == this.parent!.index - 1) {
+      this._classInfo.visited = true;
+      this._styleInfo.strokeWidth = 4;
+    }
+    else {
+      this._classInfo.visited = false;
+      this._styleInfo.strokeWidth = this.options.strokeWidth ?? this._options.strokeWidth;
+    }
+    console.log(this._classInfo)
+    console.log(classMap(this._classInfo))
+    const index = (this.parent instanceof DatapointView) ? this.parent.parent?.index : undefined;
+    if (this.paraview.paraState.colors.palette.isPattern && index !== undefined) {
+      this._styleInfo.fill = `url(#Pattern${index})`
+      return svg`
+        <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
+        <rect
+          x=${fixed`${this._x}`}
+          y=${fixed`${this._y}`}
+          width=${fixed`${this.width}`}
+          height=${fixed`${this.height}`}
+          fill="white"
+          stroke-width=2
+        ></rect>
+        <rect
+          ${this._ref ? ref(this._ref) : undefined}
+          id=${this._id || nothing}
+          style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+          class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
+          role=${this._role || nothing}
+          x=${fixed`${this._x}`}
+          y=${fixed`${this._y}`}
+          width=${fixed`${this.width}`}
+          height=${fixed`${this.height}`}
+          @pointerenter=${this.options.pointerEnter ?? nothing}
+          @pointerleave=${this.options.pointerLeave ?? nothing}
+        ></rect>
+      `;
+    }
+    else {
+      return svg`
+        <rect
+          ${this._ref ? ref(this._ref) : undefined}
+          id=${this._id || nothing}
+          style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+          class=${Object.keys(this._classInfo).length ? classMap( this._classInfo) : nothing}
+          role=${this._role || nothing}
+          x=${fixed`${this._x}`}
+          y=${fixed`${this._y}`}
+          width=${fixed`${this.width}`}
+          height=${fixed`${this.height}`}
+          clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
+          @pointerenter=${this.options.pointerEnter ?? nothing}
+          @pointerleave=${this.options.pointerLeave ?? nothing}
+          @pointermove=${this.options.pointerMove ?? nothing}
+        ></rect>
+      `;
+    }
+  }
+}

@@ -6,6 +6,7 @@ import { ScatterChartInfo } from './scatter_chart';
 import { HeatMapInfo } from './heat_map';
 import { WaterfallChartInfo } from './waterfall_chart';
 import { VennDiagramInfo } from './venn_diagram';
+import { HistogramChartInfo } from './histogram_chart';
 
 export * from './base_chart';
 export * from './plane_chart';
@@ -28,7 +29,8 @@ export const chartInfoClasses = {
   scatter: ScatterChartInfo,
   heatmap: HeatMapInfo,
   waterfall: WaterfallChartInfo,
-  // histogram: Histogram,
+  histogram: HistogramChartInfo,
+  graph: LineChartInfo,
   // gauge: BarChart, //GaugeChart,
   stepline: LineChartInfo, //StepLineChart,
   lollipop: BarChartInfo, //LollipopChart

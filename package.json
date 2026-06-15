@@ -132,7 +132,7 @@
     "@fizz/dataframe": "^0.27.0",
     "@fizz/jimerator": "^0.17.1",
     "@fizz/logger": "^0.1.0",
-    "@fizz/paramanifest": "^0.11.4",
+    "@fizz/paramanifest": "^0.11.6",
     "@fizz/paramodel": "^0.8.16",
     "@fizz/parasummary": "^0.17.0",
     "@fizz/simple-statistics": "^7.10.0",
