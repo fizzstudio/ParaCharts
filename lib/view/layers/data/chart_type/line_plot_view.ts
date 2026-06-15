@@ -18,13 +18,9 @@ import { PlaneSeriesView, PointPlotView, PointDatapointView } from '.';
 import { type Setting } from '../../../../state/settings_types';
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
-import { bboxOfBboxes, isPointerInbounds } from '../../../../common/utils';
+import { bboxOfBboxes } from '../../../../common/utils';
 
 import { type StyleInfo } from 'lit/directives/style-map.js';
-import { RectShape } from '../../../shape';
-import { Popup } from '../../../popup';
-import { DataSymbol } from '../../../symbol';
-import { Label } from '../../../label';
 
 /**
  * Class for drawing line charts.

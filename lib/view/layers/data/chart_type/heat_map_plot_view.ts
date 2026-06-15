@@ -31,11 +31,18 @@ export class HeatMapPlotView extends PlanePlotView {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['type.heatmap.resolution', 'color.colorVisionMode', 'color.colorPalette'].includes(path)) {
+    if (['type.heatmap.resolution', 'color.colorVisionMode'].includes(path)) {
       this.paraview.paraState.createChartInfo();
       this.paraview.createDocumentView();
       this._completeDatapointLayout();
       this.paraview.requestUpdate();
+    }
+    if (['color.colorPalette'].includes(path)) {
+      this.paraview.paraState.createChartInfo();
+      this.paraview.createDocumentView();
+      this._completeDatapointLayout();
+      this.paraview.requestUpdate();
+      return;
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -357,7 +364,6 @@ export class HeatmapTile extends RectShape {
     if (this.paraview.paraState.colors.palette.isPattern && index !== undefined) {
       this._styleInfo.fill = `url(#Pattern${index})`
       return svg`
-      <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
       <rect
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}

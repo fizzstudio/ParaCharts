@@ -58,7 +58,7 @@ export class ParaView extends ParaComponent implements ViewContext {
   paraChart!: ParaChart;
 
   @property() type: ChartType = 'bar';
-  @property({type: Boolean}) scalable = false;
+  @property({ type: Boolean }) scalable = false;
   @property() chartTitle?: string;
   @property() xAxisLabel?: string;
   @property() yAxisLabel?: string;
@@ -76,6 +76,7 @@ export class ParaView extends ParaComponent implements ViewContext {
   protected _containerRef = createRef<HTMLDivElement>();
   private loadingMessageRectRef = createRef<SVGTextElement>();
   private loadingMessageTextRef = createRef<SVGTextElement>();
+  protected _registeredPatternKeys: string[] = [];
   protected log: Logger = getLogger("ParaView");
   clipWidth: number = 1
 
@@ -672,14 +673,14 @@ export class ParaView extends ParaComponent implements ViewContext {
     if (newValue) {
       const themeDefault = cc.lowVisionThemeDefault as 'system' | 'light' | 'dark';
       if (themeDefault !== 'system') {
-        this._modeSaved.set('color.themeMode',   cc.themeMode);
+        this._modeSaved.set('color.themeMode', cc.themeMode);
         this._modeSaved.set('color.themeSource', cc.themeSource);
         this._colorPrefManager.setModeDefault('themeMode', themeDefault, true);
       }
       const contrastDefault = cc.lowVisionContrastDefault as 'system' | 'lower' | 'normal' | 'higher' | 'custom';
       if (contrastDefault !== 'system') {
-        this._modeSaved.set('color.contrastMode',   cc.contrastMode);
-        this._modeSaved.set('color.contrastLevel',  cc.contrastLevel);
+        this._modeSaved.set('color.contrastMode', cc.contrastMode);
+        this._modeSaved.set('color.contrastLevel', cc.contrastLevel);
         this._modeSaved.set('color.contrastSource', cc.contrastSource);
         this._colorPrefManager.setContrastModeDefault(contrastDefault, cc.lowVisionContrastLevel as number, true);
       }
@@ -759,17 +760,17 @@ export class ParaView extends ParaComponent implements ViewContext {
 
   protected _handleVoicing() {
     if (this._paraState.config.ui.isVoicingEnabled) {
-      if (this._paraState.config.ui.isTourGuideEnabled){
+      if (this._paraState.config.ui.isTourGuideEnabled) {
         this.ariaLiveRegion.voicing.speak('Tour guide enabled.', []);
       }
-      else{
+      else {
         this.ariaLiveRegion.voicing.speak('Self-voicing enabled.', []);
       }
     } else {
-      if (this._paraState.config.ui.isTourGuideEnabled){
+      if (this._paraState.config.ui.isTourGuideEnabled) {
         this.ariaLiveRegion.voicing.speak('Tour guide disabled.', []);
       }
-      else{
+      else {
         this.ariaLiveRegion.voicing.speak('Self-voicing disabled.', []);
       }
       //this.ariaLiveRegion.voicing.shutUp();
@@ -870,9 +871,17 @@ export class ParaView extends ParaComponent implements ViewContext {
     this.computeViewBox();
     // The style manager may get declaration values from chart objects
     this.paraChart.styleManager.update();
+    // Ensure defs container is present before adding defs
+    // register/remove pattern defs based on current palette
+    if (this._paraState.colors.palette?.isPattern) {
+      this._registerPatternDefs();
+    } else {
+      this._removePatternDefs();
+    }
   }
 
   destroyDocumentView() {
+    this._removePatternDefs();
     this._documentView = undefined;
   }
 
@@ -954,7 +963,19 @@ export class ParaView extends ParaComponent implements ViewContext {
       svg.style.removeProperty(key);
     }
 
-    const styles = this.paraChart.extractStyles(svg.id) + '\n' + this.extractStyles(svg.id) + '\n' + paletteRule;
+    // Generate id-scoped series rules so exported SVG contains enough .series-N selectors
+    const baseKeys = Object.keys(paletteVars).filter(k => /^--color-palette-series-\d+$/.test(k));
+    let seriesRule = '';
+    if (baseKeys.length) {
+      const indices = baseKeys.map(k => Number(k.replace('--color-palette-series-', '')));
+      const maxIndex = Math.max(...indices);
+      const cap = Math.min(maxIndex, 255);
+      for (let i = 0; i <= cap; i++) {
+        seriesRule += `#${svg.id} .series-${i} { fill: var(--color-palette-series-${i}); stroke: var(--color-palette-series-${i}); --series-color-light: var(--color-palette-series-${i}-light); }\n`;
+      }
+    }
+
+    const styles = this.paraChart.extractStyles(svg.id) + '\n' + this.extractStyles(svg.id) + '\n' + paletteRule + '\n' + seriesRule;
     const styleEl = document.createElementNS(SVGNS, 'style');
     styleEl.textContent = styles;
     svg.prepend(styleEl);
@@ -1048,6 +1069,42 @@ export class ParaView extends ParaComponent implements ViewContext {
     });
   }
 
+  protected _registerPatternDefs() {
+    const palette = this._paraState.colors.palette;
+    if (!palette || !palette.isPattern || !palette.patterns) return;
+    for (let i = 0; i < palette.patterns.length; i++) {
+      const key = `Pattern${i}`;
+      if (!this._defs[key]) {
+        try {
+          this.addDef(key, palette.patterns[i].value as SVGTemplateResult);
+          this._registeredPatternKeys.push(key);
+        } catch {
+          // ignore if addDef failed (def already present)
+        }
+      }
+    }
+  }
+
+  protected _removePatternDefs() {
+    if (!this._registeredPatternKeys.length) return;
+    // remove entries from this._defs and from DOM
+    const remaining = { ...this._defs };
+    for (const key of this._registeredPatternKeys) {
+      if (remaining[key]) {
+        delete remaining[key];
+        // also attempt DOM removal for safety (defs rendered under _defsRef)
+        try {
+          const node = this._defsRef.value?.querySelector ? this._defsRef.value.querySelector(`#${key}`) : null;
+          if (node && node.parentNode) node.parentNode.removeChild(node);
+        } catch {
+          // ignore DOM removal errors
+        }
+      }
+    }
+    this._defs = remaining;
+    this._registeredPatternKeys = [];
+  }
+
   protected _rootStyle() {
     const fontFamilyClasses: Record<string, string> = {
       'Helvetica': 'sans-serif',
@@ -1090,10 +1147,32 @@ export class ParaView extends ParaComponent implements ViewContext {
     return style;
   }
 
+  protected _seriesCss(): string {
+    try {
+      const paletteVars = this._paraState.colors.paletteVars();
+      // collect base series keys like --color-palette-series-0 (ignore -light variants)
+      const baseKeys = Object.keys(paletteVars).filter(k => /^--color-palette-series-\d+$/.test(k));
+      if (!baseKeys.length) return '';
+      // determine max index so we generate contiguous rules up to the highest index
+      const indices = baseKeys.map(k => Number(k.replace('--color-palette-series-', '')));
+      const maxIndex = Math.max(...indices);
+      // safety cap to avoid massive generation
+      const cap = Math.min(maxIndex, 255);
+      let css = '';
+      for (let i = 0; i <= cap; i++) {
+        css += `.series-${i} { fill: var(--color-palette-series-${i}); stroke: var(--color-palette-series-${i}); --series-color-light: var(--color-palette-series-${i}-light); }\n`;
+      }
+      return css;
+    } catch (err) {
+      this.log.error('failed to build series css', err);
+      return '';
+    }
+  }
+
   protected _rootClasses() {
     const sys = this._colorPrefManager?.getSystemState();
     return {
-      darkmode:          this._paraState.config.color.isDarkModeEnabled,
+      darkmode: this._paraState.config.color.isDarkModeEnabled,
       // These JS classes mirror the @media (forced-colors: active) and
       // @media (inverted-colors: inverted) blocks in static styles. The @media blocks
       // handle standard browser support. These classes exist as the fallback hook for
@@ -1103,7 +1182,7 @@ export class ParaView extends ParaComponent implements ViewContext {
       // .inverted-colors as selectors alongside the standard @media blocks.
       // When -para- query detection is implemented, add matching CSS rules for
       // .forced-colors { ... } and .inverted-colors { ... } in static styles.
-      'forced-colors':   sys?.forcedColorsActive   ?? false,
+      'forced-colors': sys?.forcedColorsActive ?? false,
       'inverted-colors': sys?.invertedColorsActive ?? false,
     };
   }
@@ -1165,12 +1244,12 @@ export class ParaView extends ParaComponent implements ViewContext {
         viewBox=${fixed`${this._viewBox.x} ${this._viewBox.y} ${this._viewBox.width} ${this._viewBox.height}`}
         style=${styleMap(this._rootStyle())}
         @focus=${() => {
-          if (!this._paraState.config.chart.isStatic) {
-            //this.log.info('focus');
-            //this.todo.deets?.onFocus();
-            //this._paraState.chartInfo.navMap?.visitDatapoints();
-          }
-        }}
+        if (!this._paraState.config.chart.isStatic) {
+          //this.log.info('focus');
+          //this.todo.deets?.onFocus();
+          //this._paraState.chartInfo.navMap?.visitDatapoints();
+        }
+      }}
         @keydown=${(event: KeyboardEvent) => this._controller.handleKeyEvent(event)}
         @pointerdown=${(ev: PointerEvent) => this._pointerEventManager?.handleStart(ev)}
         @pointerup=${(ev: PointerEvent) => this._pointerEventManager?.handleEnd(ev)}
@@ -1183,6 +1262,7 @@ export class ParaView extends ParaComponent implements ViewContext {
         <defs>
           <g ${ref(this._defsRef)}>
           </g>
+          ${svg`${this._seriesCss() ? svg`<style>${this._seriesCss()}</style>` : ''}`}
           ${this._documentView?.horizAxis ? svg`
             <clipPath id="clip-path">
               <rect

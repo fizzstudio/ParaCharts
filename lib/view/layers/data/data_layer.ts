@@ -173,6 +173,13 @@ export abstract class DataLayer extends PlotLayer {
     if (['chart.isShowPopups'].includes(path)) {
       this.paraview.paraState.clearPopups();
     }
+    if (['color.colorPalette', 'color.colorVisionMode'].includes(path)) {
+      if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
+        || this.paraview.paraState.config.color.colorPalette === 'pattern') {
+        this.paraview.createDocumentView();
+        this.paraview.requestUpdate();
+      }
+    }
     super.settingDidChange(path, oldValue, newValue);
   }
 

@@ -72,7 +72,6 @@ export class CircleShape extends Shape {
       }
 
       return svg`
-      <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
       <circle
         cx=${this._x}
         cy=${this._y}

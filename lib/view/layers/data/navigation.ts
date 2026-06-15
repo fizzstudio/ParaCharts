@@ -476,11 +476,10 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
   }
 
   allNodes(dir: Direction, type?: NavNodeType) {
-    let count = 1;
-    let cursor: NavNode | undefined = undefined;
+    let cursor: NavNode | undefined = this;
     const all: NavNode[] = [];
     while (true) {
-      cursor = this.peekNode(dir, count++);
+      cursor = cursor.peekNode(dir, 1);
       if (cursor && (!type || type === cursor.type)) {
         if (all.includes(cursor)) {
           // there's a loop in the graph

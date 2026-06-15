@@ -103,7 +103,7 @@ export class ScatterPlotView extends PointPlotView {
     return super.content(...options);
   }
 
-  addClusterShell(index: number){
+  addClusterShell(index: number) {
     this.paraview.paraState.clusterShellViews.splice(0, this.paraview.paraState.clusterShellViews.length);
     this.paraview.paraState.clusterShellViews.push(new ClusterShellView(this, index));
   }
@@ -124,7 +124,7 @@ export class ScatterPointView extends PointDatapointView {
     return parentWidth * xTemp;
   }
 
-  protected _createShape(): void {
+  protected _createShapes(): void {
   }
 
   protected get _symbolColor(): number {
@@ -186,6 +186,7 @@ export class ScatterPointView extends PointDatapointView {
     }
     return super.color
   }
+  
   endAnimStep(bezT: number, linearT: number) {
     //this.completeLayout();
     this._symbol!.y = this.y
