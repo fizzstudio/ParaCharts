@@ -34,7 +34,7 @@ export class LegendSettingsDialog extends SettingControlContainer {
         this._paraState.settingControls.insert('legend.itemOrder');
         this._paraState.settingControls.insert('legend.position');
         document.addEventListener('paranotice', (e: CustomEvent<any>) => {
-            if (e.detail.value.key === 'manifestSet') {
+            if (e.detail.value?.key === 'manifestSet') {
                 if (['bar', 'column', 'line'].includes(this._paraState.type)) {
                     this._paraState.settingControls.insert('legend.useDirectLegends');
                 }

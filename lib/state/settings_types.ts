@@ -75,7 +75,7 @@ export const FORMAT_CONTEXT_SETTINGS = {
   linePoint: 'type.line.pointLabelFormat',
   scatterPoint: 'type.scatter.pointLabelFormat',
   histogramPoint: 'type.histogram.pointLabelFormat',
-  heatmapPoint: 'type.histogram.pointLabelFormat',
+  heatmapPoint: 'type.heatmap.pointLabelFormat',
   barCluster: 'type.bar.clusterLabelFormat',
   pieSliceLabel: 'type.pie.sliceLabelFormat',
   pieSliceValue: 'type.pie.sliceValueFormat',

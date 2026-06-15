@@ -3,14 +3,16 @@ import { AxisInfo, computeLabels } from '../common/axisinfo';
 import { ChartType } from "@fizz/paramanifest";
 import { PlaneChartInfo } from './plane_chart';
 import { type ParaView } from '../paraview';
-import { type NavNode } from '../view/layers';
+import { NavNode } from '../view/layers';
 import { DocumentView } from '../view/document_view';
 import { type ParaState } from '../state';
+import { Datapoint, PlaneModel } from '@fizz/paramodel';
 
 export class HeatMapInfo extends PlaneChartInfo {
   protected _resolution!: number;
   protected _data!: Array<Array<number>>;
   protected _grid!: Array<Array<number>>;
+  protected _datapointGrid!: Array<Array<Array<Datapoint>>>;
   protected _maxCount!: number;
 
   constructor(type: ChartType, paraState: ParaState) {
@@ -22,13 +24,12 @@ export class HeatMapInfo extends PlaneChartInfo {
     this._generateHeatmap();
     const values = this._grid.flat();
     this._maxCount = Math.max(...values);
-    //this._paraState.clearVisited();
-    //this._paraState.clearSelected();
-    // this._axisInfo = new AxisInfo(this._paraState, {
-    //   xValues: this._paraState.model!.allFacetValues('x')!.map((x) => x.value as number),
-    //   yValues: this._paraState.model!.allFacetValues('y')!.map((x) => x.value as number),
-    // });
     // Generate the heat map before creating the nav nodes
+    const cluster = async () => {
+      this._paraState.clusterAnalyses = await this._generateClustering();
+      //(this._paraState.chartInfo as ScatterChartInfo)._clustering = this._paraState.clusterAnalyses;
+    };
+    cluster()
     super._init();
   }
 
@@ -41,20 +42,70 @@ export class HeatMapInfo extends PlaneChartInfo {
     return this._grid;
   }
 
+  get datapointGrid() {
+    return this._datapointGrid;
+  }
+
   get maxCount() {
     return this._maxCount;
   }
 
   protected _createPrimaryNavNodes() {
-    super._createPrimaryNavNodes();
-    // Create vertical links between datapoints
-    this._navMap!.root.query('series').forEach(seriesNode => {
-      seriesNode.allNodes('right')
-        // skip bottom row
-        .slice(0, -this._resolution).forEach((pointNode, i) => {
-        pointNode.connect('down', pointNode.layer.get('datapoint', i + this._resolution)!);
-      });
+    // Create series and datapoint nav nodes, and link them horizontally thusly:
+    // - [SERIES-A]-[SERIES-A-POINT-0]- ... -[SERIES-A-POINT-(N-1)]-[SERIES-B]-[SERIES-B-POINT-0]- ...
+    let left = this._navMap!.root.get('top')!;
+    //const depFacet = this._paraState.model!.dependentFacetKeys[0];
+    // Sort by value of first datapoint from greatest to least
+    /*
+    const sortedSeries = this.seriesInNavOrder();
+    sortedSeries.forEach((series, i) => {
+      if (sortedSeries.length > 1) {
+        const seriesNode = new NavNode(this._navMap!.root, 'series', {
+          seriesKey: series.key
+        }, this._paraState);
+        seriesNode.connect('left', left);
+        if (i === 0) {
+          seriesNode.connect('up', left);
+          seriesNode.connect('down', left);
+          seriesNode.connect('right', left);
+        }
+        left = seriesNode;
+      }
     });
+    if (this._paraState.model?.multi){
+      left = this._navMap!.root.get('series')!;
+    }
+    else{
+      left = this._navMap!.root.get('top')!;
+    }
+      */
+    left = this._navMap!.root.get('top')!;
+    for (let i = 0; i < this._grid.length; i++) {
+      for (let j = 0; j < this._grid[i].length; j++) {
+        const entry = this.grid[j][i]
+        const datapoints = this._datapointGrid[j][i]
+        const node = new NavNode(this._navMap!.root, 'heatmapTile', {
+          datapointCount: entry,
+          datapoints: datapoints,
+          yIndex: i,
+          xIndex: j
+        }, this._paraState)
+        node.connect('left', left);
+        if (i === 0 && j === 0) {
+          node.connect('up', left);
+          node.connect('down', left);
+          node.connect('right', left);
+        }
+        left = node;
+      }
+    }
+
+    // Create vertical links between datapoints
+    this._navMap!.root.query('heatmapTile').slice(0, -this._resolution).forEach(
+      (pointNode, i) => {
+        pointNode.connect('down', pointNode.layer.get('heatmapTile', i + this._resolution)!);
+      }
+    )
   }
 
   protected _createNavLinksBetweenSeries() {
@@ -62,28 +113,38 @@ export class HeatMapInfo extends PlaneChartInfo {
     // XXX For the case of a multi-series heatmap, we need to do ... something
   }
 
+  protected _createVerticalNavLinks(): void {
+    
+  }
+
   protected _createChordNavNodes() {
 
   }
 
-  protected _datapointSummary(index: number) {
-    // const count = this._grid[index % this._resolution][Math.floor(index/this._resolution)];
-    // const xInfo = this._axisInfo!.xLabelInfo!
-    // const yInfo = this._axisInfo!.yLabelInfo!
-    // const xSpan = xInfo.range! / this._resolution;
-    // const ySpan = yInfo.range! / this._resolution;
-    // const up = (yInfo.max! - ySpan * (Math.floor((index) / this._resolution))).toFixed(2);
-    // const down = (yInfo.max! - ySpan * (Math.floor((index) / this._resolution) + 1)).toFixed(2);
-    // const left = (xInfo.min! + xSpan * ((index) % this._resolution)).toFixed(2);
-    // const right = (xInfo.min! + xSpan * ((index) % this._resolution + 1)).toFixed(2);
-    // return `This block contains ${count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
-    return 'FIXME';
+  async _generateClustering() {
+    return await (this._paraState.model as PlaneModel).getClusteringAnalysis();
+  }
+
+  protected _datapointSummary(xIndex: number, yIndex: number) {
+    const index = yIndex * this.resolution + xIndex;
+    const count = this._grid[index % this._resolution][Math.floor(index / this._resolution)];
+    const xInterval = this.xInterval!;
+    const yInterval = this.yInterval!;
+    const xRange = xInterval.end - xInterval.start;
+    const yRange = yInterval.end - yInterval.start;
+    const xSpan = xRange / this._resolution;
+    const ySpan = yRange / this._resolution;
+    const up = (yInterval.end - ySpan * (Math.floor((index) / this._resolution))).toFixed(2);
+    const down = (yInterval.end - ySpan * (Math.floor((index) / this._resolution) + 1)).toFixed(2);
+    const left = (xInterval.start + xSpan * ((index) % this._resolution)).toFixed(2);
+    const right = (xInterval.start + xSpan * ((index) % this._resolution + 1)).toFixed(2);
+    return `This block contains ${count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
   }
 
   async navRunDidEnd(cursor: NavNode, quiet = false) {
-    if (cursor.isNodeType('datapoint')) {
+    if (cursor.isNodeType('heatmapTile')) {
       if (!quiet) {
-        this._paraState.announce(this._datapointSummary(cursor.options.index));
+        this._paraState.announce(this._datapointSummary(cursor.options.xIndex, cursor.options.yIndex));
       }
     }
     //Sam: Most stuff here (summaries, sparkbraille, sonification) is not implemented yet for heatmaps,
@@ -156,23 +217,29 @@ export class HeatMapInfo extends PlaneChartInfo {
     let yMin: number = yLabels.min!;
     let xMin: number = xLabels.min!;
 
-    xMax += (xMax - xMin) / 10;
-    xMin -= (xMax - xMin) / 10;
-
     const grid: Array<Array<number>> = [];
+    const datapointGrid: Array<Array<Array<Datapoint>>> = [];
 
     for (let i = 0; i < this.resolution; i++) {
       grid.push([]);
+      datapointGrid.push([]);
       for (let j = 0; j < this.resolution; j++) {
         grid[i].push(0);
+        datapointGrid[i].push([]);
       }
     }
-    for (const point of this._data) {
+    for (let i = 0; i < this._data.length; i++) {
+      const point = this._data[i];
       const xIndex: number = Math.floor((point[0] - xMin) * this.resolution / (xMax - xMin));
-      const yIndex: number = Math.floor((point[1] - yMin) * this.resolution / (yMax - yMin));
-      grid[xIndex][this.resolution - yIndex - 1]++;
+      let yIndex: number = this.resolution - Math.floor((point[1] - yMin) * this.resolution / (yMax - yMin)) - 1;
+      if (yIndex == -1){
+        yIndex++;
+      }
+      grid[xIndex][ yIndex]++;
+      datapointGrid[xIndex][yIndex].push(this._paraState.model!.allPoints[i]);
     }
     this._grid = grid;
+    this._datapointGrid = datapointGrid;
     return grid;
   }
 

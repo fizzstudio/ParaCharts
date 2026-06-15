@@ -1,0 +1,92 @@
+{
+  "jim": {
+    "datasets": [
+      {
+        "representation": {
+          "type": "chart",
+          "subtype": "venn"
+        },
+        "title": "Students who like subjects",
+        "facets": {
+          "item": {
+            "label": "item",
+            "variableType": "independent",
+            "measure": "nominal",
+            "datatype": "string",
+            "displayType": {
+              "type": "text"
+            }
+          },
+          "membership": {
+            "label": "membership",
+            "variableType": "dependent",
+            "measure": "nominal",
+            "datatype": "string",
+            "displayType": {
+              "type": "area"
+            }
+          }
+        },
+        "series": [
+          {
+            "key": "Likes Math",
+            "records": [
+              { "item": "Alex",   "membership": "included" },
+              { "item": "Morgan", "membership": "included" },
+              { "item": "Brooke", "membership": "excluded" },
+              { "item": "Riley",  "membership": "excluded" },
+              { "item": "Chris",  "membership": "excluded" },
+              { "item": "Quinn",  "membership": "excluded" },
+              { "item": "Dana",   "membership": "included" },
+              { "item": "Taylor", "membership": "included" },
+              { "item": "Evan",   "membership": "excluded" },
+              { "item": "Casey",  "membership": "excluded" },
+              { "item": "Farah",  "membership": "included" },
+              { "item": "Jordan", "membership": "included" },
+              { "item": "Sam",    "membership": "included" },
+              { "item": "Drew",   "membership": "included" }
+            ]
+          },
+          {
+            "key": "Likes Science",
+            "records": [
+              { "item": "Alex",   "membership": "excluded" },
+              { "item": "Morgan", "membership": "excluded" },
+              { "item": "Brooke", "membership": "included" },
+              { "item": "Riley",  "membership": "included" },
+              { "item": "Chris",  "membership": "excluded" },
+              { "item": "Quinn",  "membership": "excluded" },
+              { "item": "Dana",   "membership": "included" },
+              { "item": "Taylor", "membership": "included" },
+              { "item": "Evan",   "membership": "included" },
+              { "item": "Casey",  "membership": "included" },
+              { "item": "Farah",  "membership": "excluded" },
+              { "item": "Jordan", "membership": "excluded" },
+              { "item": "Sam",    "membership": "included" },
+              { "item": "Drew",   "membership": "included" }
+            ]
+          },
+          {
+            "key": "Likes Reading",
+            "records": [
+              { "item": "Alex",   "membership": "excluded" },
+              { "item": "Morgan", "membership": "excluded" },
+              { "item": "Brooke", "membership": "excluded" },
+              { "item": "Riley",  "membership": "excluded" },
+              { "item": "Chris",  "membership": "included" },
+              { "item": "Quinn",  "membership": "included" },
+              { "item": "Dana",   "membership": "excluded" },
+              { "item": "Taylor", "membership": "excluded" },
+              { "item": "Evan",   "membership": "included" },
+              { "item": "Casey",  "membership": "included" },
+              { "item": "Farah",  "membership": "included" },
+              { "item": "Jordan", "membership": "included" },
+              { "item": "Sam",    "membership": "included" },
+              { "item": "Drew",   "membership": "included" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

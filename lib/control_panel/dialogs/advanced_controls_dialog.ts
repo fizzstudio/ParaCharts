@@ -86,7 +86,7 @@ export class AdvancedControlSettingsDialog extends ParaComponent {
       <fizz-dialog
         ${ref(this._dialogRef)}
         title="Advanced Settings"
-        .buttons=${[{tag: 'cancel', text: this.btnText}]}
+        .buttons=${[{tag: 'close', text: this.btnText}]}
       >
         <div id="advanced"
           class="advanced-views"
