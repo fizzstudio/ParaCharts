@@ -331,7 +331,6 @@ export class DataSymbol extends View {
       const x = this._x - this.width/2;
       const y = this._y - this.height/2;
       return svg`
-        <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
         <rect x=${x} y=${y} width=${this.width} height=${this.height}
           fill="white" stroke="none" />
         <rect x=${x} y=${y} width=${this.width} height=${this.height}

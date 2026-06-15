@@ -68,7 +68,6 @@ export class ArcShape extends Shape {
       }
 
       return svg`
-      <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
       <path
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}

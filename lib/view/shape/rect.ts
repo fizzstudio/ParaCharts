@@ -42,7 +42,6 @@ export class RectShape extends Shape {
     if (this.paraview.paraState.colors.palette.isPattern && index !== undefined) {
       this._styleInfo.fill = `url(#Pattern${index})`
       return svg`
-      <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
       <rect
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}
