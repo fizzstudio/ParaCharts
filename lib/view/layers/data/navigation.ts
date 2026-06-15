@@ -16,7 +16,7 @@ const oppositeDirs: Record<Direction, Direction> = {
   out: 'in'
 };
 
-export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence' | 'cluster' | 'scatterpoint' | 'heatmapTile';
+export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence' | 'cluster' | 'scatterpoint' | 'venn-part' | 'heatmapTile';
 export type DatapointNavNodeType = 'datapoint' | 'scatterpoint';
 
 
@@ -29,6 +29,7 @@ export type NavNodeOptionsType<T extends NavNodeType> =
   T extends 'cluster' ? ClusterNavNodeOptions :
   T extends 'scatterpoint' ? ScatterPointNavNodeOptions :
   T extends 'heatmapTile' ? HeatmapTileNavNodeOptions :
+  T extends 'venn-part' ? VennPartNavNodeOptions :
   never;
 
 export interface DatapointCursor {
@@ -64,6 +65,11 @@ export interface ClusterNavNodeOptions {
   datapoints: Datapoint[];
   clustering: clusterObject;
   index: number;
+}
+export interface VennPartNavNodeOptions {
+  seriesKey: string;
+  part: 'only' | 'pair' | 'triple';
+  otherSeriesKey?: string;
 }
 
 export interface HeatmapTileNavNodeOptions {
