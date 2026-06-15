@@ -54,7 +54,7 @@ export class AnimationDialog extends ParaComponent {
       <fizz-dialog
         ${ref(this._dialogRef)}
         title="Animation Settings"
-        .buttons=${[{ tag: 'cancel', text: this.btnText }]}
+        .buttons=${[{ tag: 'close', text: this.btnText }]}
       >
         ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.animation')}
       </fizz-dialog>

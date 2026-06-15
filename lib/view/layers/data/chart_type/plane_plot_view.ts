@@ -107,7 +107,7 @@ export abstract class PlanePlotView extends DataLayer {
             nearestPoint = nearestPoint.withCousins.sort((a, b) => Math.abs(a.y - coords.y) - Math.abs(b.y - coords.y))[0];
           }
         }
-        if (this.paraview.paraState.config.popup.isShowCrosshair) {
+        if (this.paraview.paraState.config.popup.isShowCrosshair && this.paraview.paraState.type !== 'heatmap') {
           if (!this.paraview.paraState.config.popup.isCrosshairFollowPointer) {
             nearestPoint.popup?.remove();
             const isChord = (type == 'line') && (this.paraview.paraState.model!.series.length > 1);
@@ -406,6 +406,10 @@ export abstract class PlanePlotView extends DataLayer {
         stroke: "hsl(0, 0%, 0%)"
       });
     focus ? this.paraview.paraState.focusPopups.push(popup) : this.paraview.paraState.popups.push(popup);
+  }
+
+  protected _newSeriesView(seriesKey: string) {
+    return new PlaneSeriesView(this, seriesKey);
   }
   /*
   protected get _eventActions(): Actions<this> {

@@ -1124,7 +1124,7 @@ export class Colors {
     let s = hsl_comp.saturation;
     let l = hsl_comp.lightness;
 
-    const new_l = Math.min((l + (shade_count * 5)), 100);
+    const new_l = Math.max(Math.min((l + (shade_count * 5)), 100), 0);
     return `hsl(${h}, ${s}%, ${new_l}%)`;
   }
 
