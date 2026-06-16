@@ -113,6 +113,18 @@
         "args": {
           "direction": "in"
         }
+      },
+      {
+        "keyID": "Shift+arrowleft",
+        "args": {
+          "direction": "shiftleft"
+        }
+      },
+      {
+        "keyID": "Shift+arrowright",
+        "args": {
+          "direction": "shiftright"
+        }
       }
     ]
   },

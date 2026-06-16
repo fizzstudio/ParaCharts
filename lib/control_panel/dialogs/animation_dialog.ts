@@ -23,10 +23,8 @@ export class AnimationDialog extends ParaComponent {
   @property() btnText = 'Okay';
 
   static styles = css`
-    #animation-controls {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+    fizz-dialog {
+      --item-gap: 1rem;
     }
   `;
 
@@ -45,69 +43,10 @@ export class AnimationDialog extends ParaComponent {
     //   label: 'Animation enabled',
     //   parentView: 'controlPanel.tabs.controls.dialog.animation',
     // });
-    this._paraState.settingControls.add({
-      type: 'radio',
-      key: 'animation.animationType',
-      label: 'Animation type',
-      options: {
-        buttons: {
-          yAxis: {
-            label: 'Y-axis'
-          },
-          xAxis: {
-            label: 'X-axis'
-          },
-        },
-        layout: 'horiz'
-      },
-      parentView: 'controlPanel.tabs.controls.dialog.animation'
-    });
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'animation.animateRevealTimeMs',
-      label: 'Animation rate',
-      options: {
-        inputType: 'number',
-        min: 0,
-        max: 10000
-      },
-      parentView: 'controlPanel.tabs.controls.dialog.animation',
-    });
-    this._paraState.settingControls.add({
-      type: 'radio',
-      key: 'animation.animationOrigin',
-      label: 'Animation origin',
-      options: {
-        buttons: {
-          baseline: {
-            label: 'Bottom'
-          },
-          top: {
-            label: 'Top'
-          },
-          initialValue: {
-            label: 'Initial Value'
-          },
-          custom: {
-            label: 'Custom'
-          },
-        },
-        layout: 'horiz'
-      },
-      parentView: 'controlPanel.tabs.controls.dialog.animation'
-    });
-
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'animation.animationOriginValue',
-      label: 'Animation origin value',
-      options: {
-        inputType: 'number',
-        min: 0,
-        max: 10000
-      },
-      parentView: 'controlPanel.tabs.controls.dialog.animation',
-    });
+    this._paraState.settingControls.insert('animation.animationType');
+    this._paraState.settingControls.insert('animation.animateRevealTimeMs');
+    this._paraState.settingControls.insert('animation.animationOrigin');
+    this._paraState.settingControls.insert('animation.animationOriginValue');
   }
 
   render() {
@@ -115,11 +54,9 @@ export class AnimationDialog extends ParaComponent {
       <fizz-dialog
         ${ref(this._dialogRef)}
         title="Animation Settings"
-        .buttons=${[{ tag: 'cancel', text: this.btnText }]}
+        .buttons=${[{ tag: 'close', text: this.btnText }]}
       >
-        <div id="animation-controls">
-          ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.animation')}
-        </div>
+        ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.animation')}
       </fizz-dialog>
     `;
   }

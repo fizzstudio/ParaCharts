@@ -1,0 +1,41 @@
+{
+    "ref": "type.plane",
+    "family": "waterfall",
+    "settings": {
+        "barWidth": {
+            "description": "Width of waterfall bars",
+            "type": "number",
+            "default": 10
+        },
+        "colorByDatapoint": {
+            "description": "Color each bar individually",
+            "type": "boolean",
+            "default": false
+        },
+        "isDrawLabels": {
+            "description": "Draw value labels on bars",
+            "type": "boolean",
+            "default": true
+        },
+        "labelPosition": {
+            "description": "Position of value labels",
+            "type": "BarDataLabelPosition",
+            "default": "outside"
+        },
+        "barLabelGap": {
+            "description": "Gap between labels and bars",
+            "type": "number",
+            "default": 10
+        },
+        "barGap": {
+            "description": "Gap between adjacent bars",
+            "type": "number",
+            "default": 10
+        },
+        "labelFontSize": {
+            "description": "Font size for labels",
+            "type": "string",
+            "default": "10pt"
+        }
+    }
+}

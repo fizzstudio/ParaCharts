@@ -5,7 +5,6 @@
 ```ts
 
 import { AllSeriesData } from '@fizz/paramanifest';
-import { AxisOrientation } from '@fizz/paramodel';
 import { ButtonDescriptor } from '@fizz/ui-components';
 import { ChartType as ChartType_2 } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
@@ -26,6 +25,7 @@ import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
+import { Localization } from '@elemental/localization';
 import { Logger } from '@fizz/logger';
 import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';
@@ -44,7 +44,6 @@ import { SequenceInfo } from '@fizz/series-analyzer';
 import { Series } from '@fizz/paramodel';
 import { SeriesAnalysis } from '@fizz/series-analyzer';
 import { SeriesAnalyzerConstructor } from '@fizz/paramodel';
-import { Size2d } from '@fizz/chart-classifier-utils';
 import { State } from '@lit-app/state';
 import { StateController } from '@lit-app/state';
 import { StaticValue } from 'lit-html/static.js';
@@ -58,177 +57,14 @@ import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
 
 // @public
-export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
-
-// @public (undocumented)
-export interface AnimationSettings extends SettingGroup {
-    animateRevealTimeMs: number;
-    animationOrigin: AnimationOrigin;
-    animationOriginValue: number;
-    animationType: AnimationType;
-    expandPoints: boolean;
-    isAnimationEnabled: boolean;
-    lineSnake: boolean;
-    popInAnimateRevealTimeMs: number;
-    symbolPopIn: boolean;
-}
-
-// @public
-export type AnimationType = 'yAxis' | 'xAxis' | 'none';
-
-// @public (undocumented)
-export interface AxesSettings extends SettingGroup {
-    datapointMargin: number;
-    horiz: OrientedAxisSettings<'horiz'>;
-    minInterval: number;
-    vert: OrientedAxisSettings<'vert'>;
-    x: XAxisSettings;
-    y: YAxisSettings;
-}
-
-// @public (undocumented)
-export interface AxisLineSettings extends SettingGroup {
-    isDrawAxisLine: boolean;
-    isDrawOverhang: boolean;
-    strokeLinecap: string;
-    strokeWidth: number;
-}
-
-// @public (undocumented)
-export interface AxisSettings extends SettingGroup {
-    interval: number | 'unset';
-    maxValue: number | 'unset';
-    minValue: number | 'unset';
-}
-
-// @public (undocumented)
-export interface AxisTitleSettings extends SettingGroup {
-    align?: 'start' | 'middle' | 'end';
-    fontSize: string;
-    gap: number;
-    isDrawTitle?: boolean;
-    position?: 'top' | 'bottom';
-    text?: string;
-}
-
-// @public
-export type BarClusterMode = 'facet';
-
-// @public
-export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
-
-// @public (undocumented)
-export interface BarSettings extends PlaneChartSettings {
-    barGap: number;
-    barWidth: number;
-    clusterBy?: BarClusterMode;
-    clusterGap: number;
-    clusterLabelFormat: LabelFormat;
-    colorByDatapoint: boolean;
-    dataLabelPosition: BarDataLabelPosition;
-    isAbbrevSeries: boolean;
-    isDrawDataLabels: boolean;
-    isDrawRecordLabels: boolean;
-    isDrawTotalLabels: boolean;
-    isShowPopups: boolean;
-    labelFontSize: string;
-    lineWidth: number;
-    orderBy?: string;
-    stacking: 'none' | 'standard' | string;
-    stackInsideGap: number;
-    stackLabelGap: number;
-    totalLabelGap: number;
-}
-
-// @public
-export type BoxStyle = {
-    outline: Color;
-    outlineWidth: number;
-    fill: Color;
-};
-
-// @public
 export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest;
-
-// @public (undocumented)
-export interface CaptionBoxSettings extends SettingGroup {
-    hasBorder: boolean;
-    isCaptionExternalWhenControlPanelClosed: boolean;
-    isExplorationBarBeside: boolean;
-}
-
-// @public
-export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
-
-// @public (undocumented)
-export interface ChartSettings extends SettingGroup {
-    directLabelFontSize: string;
-    extremumWeight: number;
-    fontFamily: string;
-    fontScale: number;
-    fontWeight: string;
-    hasDirectLabels: boolean;
-    hasLegendWithDirectLabels: boolean;
-    isDrawSymbols: boolean;
-    isShowPopups: boolean;
-    isShowVisitedDatapointsOnly: boolean;
-    isStatic: boolean;
-    maxError: number;
-    maxSegments: number;
-    orientation: CardinalDirection;
-    padding: string;
-    size: Size2d;
-    stroke: string;
-    strokeHighlightScale: number;
-    strokeWidth: number;
-    symbolHighlightScale: number;
-    symbolStrokeWidth: number;
-    title: TitleSettings;
-    type: ChartType;
-}
-
-// @public
-export type ChartType = XYChartType | RadialChartType;
 
 // @public (undocumented)
 export type ChartTypeInput = 'line' | 'horizontal_bar' | 'vertical_bar' | 'pie' | 'donut';
 
 // @public
 export interface ChartTypeSettings extends SettingGroup {
-    bar: BarSettings;
-    column: BarSettings;
-    heatmap: HeatmapSettings;
-    histogram: HistogramSettings;
-    line: LineSettings;
-    lollipop: LollipopSettings;
-    scatter: ScatterSettings;
-    stepline: StepLineSettings;
     venn: VennSettings;
-    waterfall: WaterfallSettings;
-}
-
-// @public
-export type ColorVisionMode = 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
-
-// @public (undocumented)
-export interface ControlPanelSettings extends SettingGroup {
-    caption: CaptionBoxSettings;
-    isAnalysisTabVisible: boolean;
-    isAnnotationsTabVisible: boolean;
-    isAudioTabVisible: boolean;
-    isCaptionVisible: boolean;
-    isChartTabVisible: boolean;
-    isColorPaletteControlVisible: boolean;
-    isColorsTabVisible: boolean;
-    isControlPanelDefaultOpen: boolean;
-    isControlsTabVisible: boolean;
-    isCVDControlVisible: boolean;
-    isDataTabVisible: boolean;
-    isExplorationBarVisible: boolean;
-    isMDRAnnotationsVisible: boolean;
-    isSparkBrailleControlVisible: boolean;
-    isSparkBrailleVisible: boolean;
-    tabLabelStyle: TabLabelStyle;
 }
 
 // @public (undocumented)
@@ -249,32 +85,6 @@ export interface CsvInferredDefaults {
         dataType: CsvDataType;
     };
 }
-
-// @public
-export interface DataTableSettings extends SettingGroup {
-    xValueFormat: LabelFormat;
-    yValueFormat: LabelFormat;
-}
-
-// @public (undocumented)
-export type DeepReadonly<T> = {
-    readonly [Property in keyof T]: T extends Setting ? T[Property] : DeepReadonly<T[Property]>;
-};
-
-// @public (undocumented)
-export type DepthDirection = 'in' | 'out';
-
-// @public
-export interface DevSettings extends SettingGroup {
-    isDebug: boolean;
-    isShowGridTerritories: boolean;
-}
-
-// @public (undocumented)
-export type Direction = VertDirection | HorizDirection | DepthDirection;
-
-// @public (undocumented)
-export const directions: Direction[];
 
 // @public
 export type FieldInfo = {
@@ -308,83 +118,8 @@ export const FORMAT_CONTEXT_SETTINGS: {
 // @public
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
 
-// @public
-export interface GridSettings extends SettingGroup {
-    isDrawHorizAxisOppositeLine: boolean;
-    isDrawHorizLines: boolean;
-    isDrawVertAxisOppositeLine: boolean;
-    isDrawVertLines: boolean;
-}
-
-// @public (undocumented)
-export interface HeatmapSettings extends PointSettings {
-    resolution: number;
-}
-
-// @public
-export interface HistogramSettings extends PointSettings {
-    bins: number;
-    displayAxis: string;
-    groupingAxis: string;
-    relativeAxes: "Counts" | "Percentage";
-}
-
-// @public (undocumented)
-export type HorizCardinalDirection = 'east' | 'west';
-
-// @public (undocumented)
-export type HorizDirection = 'left' | 'right';
-
 // @public (undocumented)
 export function inferDefaultsFromCsvText(csvText: string, fileName?: string): CsvInferredDefaults;
-
-// @public
-export interface JimSettings extends SettingGroup {
-    xValueFormat: LabelFormat;
-}
-
-// @public
-export type LabelFormat = 'raw' | string;
-
-// @public (undocumented)
-export interface LabelSettings extends SettingGroup {
-    color: Color;
-    fontSize: number;
-    isDrawEnabled: boolean;
-    margin: number;
-}
-
-// @public
-export type LegendItemOrder = 'alphabetical' | 'series';
-
-// @public (undocumented)
-export interface LegendSettings extends SettingGroup {
-    boxStyle: BoxStyle;
-    fontSize: string;
-    isAlwaysDrawLegend: boolean;
-    isDrawLegend: boolean;
-    isDrawLegendWhenNeeded: boolean;
-    itemOrder: LegendItemOrder;
-    margin: number;
-    padding: number;
-    pairGap: number;
-    position: CardinalDirection;
-    symbolLabelGap: number;
-}
-
-// @public (undocumented)
-export interface LineSettings extends PointSettings {
-    baseSymbolSize: number;
-    isAlwaysShowSeriesLabel?: boolean;
-    isShowPopups: boolean;
-    isTrendNavigationModeEnabled: boolean;
-    leaderLineLength: number;
-    lineHighlightScale: number;
-    lineWidth: number;
-    lineWidthMax: number;
-    lowVisionLineWidth: number;
-    seriesLabelPadding: number;
-}
 
 // @public
 export class LoadError extends Error {
@@ -424,10 +159,6 @@ export type LoadManifestSuccess = {
     success: true;
 };
 
-// @public
-export interface LollipopSettings extends BarSettings {
-}
-
 // @public (undocumented)
 export interface ManifestBuilderInput {
     // (undocumented)
@@ -451,18 +182,6 @@ export interface ManifestBuilderInput {
 }
 
 // @public
-export interface OrientedAxisSettings<T extends AxisOrientation> extends SettingGroup {
-    isDrawAxis: boolean;
-    isStaggerLabels: boolean;
-    isWrapLabels: boolean;
-    labelOrder: T extends 'horiz' ? 'westToEast' | 'eastToWest' : 'southToNorth' | 'northToSouth';
-    line: AxisLineSettings;
-    position: T extends 'horiz' ? VertCardinalDirection : HorizCardinalDirection;
-    ticks: TickSettings;
-    title: AxisTitleSettings;
-}
-
-// @public
 export class ParaAPI {
     constructor(_paraChart: ParaChart);
     // (undocumented)
@@ -473,8 +192,7 @@ export class ParaAPI {
     protected _actions: Actions;
     // (undocumented)
     addCrosshair(xAxis: string | number, yAxis: string | number): void;
-    // (undocumented)
-    addRecord(points: Record<string, {
+    addRecord(pushPoints: Record<string, {
         x: string;
         y: string;
     }>): Promise<void>;
@@ -529,6 +247,7 @@ export class ParaAPI {
     // Warning: (ae-forgotten-export) The symbol "ParaAPIIntersection" needs to be exported by the entry point index.d.ts
     getIntersection(index: number): ParaAPIIntersection;
     getJIM(): Manifest | undefined;
+    // Warning: (ae-forgotten-export) The symbol "CardinalDirection" needs to be exported by the entry point index.d.ts
     // Warning: (ae-forgotten-export) The symbol "ParaAPILegend" needs to be exported by the entry point index.d.ts
     getLegend(location: CardinalDirection): ParaAPILegend;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIRange" needs to be exported by the entry point index.d.ts
@@ -536,6 +255,7 @@ export class ParaAPI {
     // Warning: (ae-forgotten-export) The symbol "ParaAPISeriesGroup" needs to be exported by the entry point index.d.ts
     getSeries(...seriesLabelsOrKeys: string[]): ParaAPISeriesGroup;
     getSetting(settingPath: string): Setting;
+    // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index.d.ts
     getSettings(settingPaths: string[]): SettingsInput;
     getShortDescription(): Promise<string | undefined>;
     // Warning: (ae-forgotten-export) The symbol "ParaAPITitle" needs to be exported by the entry point index.d.ts
@@ -555,11 +275,19 @@ export class ParaAPI {
     highlightVerticalAxis(): void;
     highlightWestLegend(): void;
     // (undocumented)
+    protected _liveUpdateRecordCount: number;
+    // (undocumented)
+    protected _liveUpdateWaiting: boolean;
+    // (undocumented)
     get paraChart(): ParaChart;
     // (undocumented)
     protected _paraChart: ParaChart;
     // (undocumented)
     refresh(): void;
+    removeRecord(unshiftPoints: Record<string, {
+        x: string;
+        y: string;
+    }>): Promise<void>;
     // (undocumented)
     removeTrendLine(): void;
     serializeChart(): string;
@@ -571,6 +299,11 @@ export class ParaAPI {
     setSettings(settingsInput: SettingsInput): void;
     setSize(width: number, height: number): void;
     setWidth(width: number): void;
+    // (undocumented)
+    protected _slideWindow(points: Record<string, {
+        x: string;
+        y: string;
+    }>, forward?: boolean): Promise<void>;
     // (undocumented)
     protected _standardActions: Actions;
     // (undocumented)
@@ -596,18 +329,10 @@ export class ParaChart extends ParaComponent {
     readonly captionBox: ParaCaptionBox;
     // (undocumented)
     clearAriaLive(): void;
-    // Warning: (ae-forgotten-export) The symbol "AvailableCommands" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    command(name: keyof AvailableCommands, args: any[]): any;
-    // Warning: (ae-forgotten-export) The symbol "Commander" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    protected _commander: Commander;
     // (undocumented)
     accessor config: SettingsInput;
     // (undocumented)
-    connectedCallback(): void;
+    connectedCallback(): Promise<void>;
     // (undocumented)
     get controlPanel(): ParaControlPanel;
     // Warning: (ae-forgotten-export) The symbol "ParaControlPanel" needs to be exported by the entry point index.d.ts
@@ -622,11 +347,15 @@ export class ParaChart extends ParaComponent {
     // Warning: (ae-forgotten-export) The symbol "ScrollytellerOptions" needs to be exported by the entry point index.d.ts
     enableScrollytelling(options?: ScrollytellerOptions): void;
     // (undocumented)
-    protected firstUpdated(_changedProperties: PropertyValues): void;
-    // (undocumented)
     accessor forcecharttype: ChartType_2 | undefined;
     // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    protected _hasFocus: boolean;
+    // (undocumented)
     headless: boolean;
+    // (undocumented)
+    protected _injectFontFace(family: string, url: string): void;
     // (undocumented)
     isControlPanelOpen: boolean;
     // (undocumented)
@@ -740,69 +469,6 @@ export class ParaHeadless {
 export function parseCSV(csvText: string): CSVParseResult;
 
 // @public
-export interface PlaneChartSettings extends PlotSettings {
-    maxYValue: number | 'unset';
-    minYValue: number | 'unset';
-}
-
-// @public (undocumented)
-export type PlaneDirection = VertDirection | HorizDirection;
-
-// @public
-export interface PlotAreaSettings extends SettingGroup {
-    size: Size2d;
-}
-
-// @public
-export interface PlotSettings extends SettingGroup {
-}
-
-// @public
-export type PointChartType = 'line' | 'stepline' | 'scatter';
-
-// @public (undocumented)
-export interface PointSettings extends PlaneChartSettings {
-    pointLabelFormat: LabelFormat;
-    selectedPointMarkerSize: Size2d;
-}
-
-// @public
-export interface PopupSettings extends SettingGroup {
-    activation: "onHover" | "onFocus" | "onSelect";
-    backgroundColor: "dark" | "light";
-    borderRadius: number;
-    downPadding: number;
-    isCrosshairFollowPointer: boolean;
-    isShowCrosshair: boolean;
-    leftPadding: number;
-    margin: number;
-    maxWidth: number;
-    opacity: number;
-    rightPadding: number;
-    shape: "box" | "boxWithArrow";
-    upPadding: number;
-}
-
-// @public
-export type RadialChartType = 'pie' | 'donut' | 'gauge';
-
-// @public
-export type riffSpeeds = 'slow' | 'medium' | 'fast';
-
-// @public (undocumented)
-export interface ScatterSettings extends PointSettings {
-    isShowOutliers: boolean;
-    isShowTrendLine: boolean;
-}
-
-// @public
-export interface ScrollytellingSettings extends SettingGroup {
-    isScrollyAnnouncementsEnabled: boolean;
-    isScrollySoniEnabled: boolean;
-    isScrollytellingEnabled: boolean;
-}
-
-// @public
 export type Setting = string | number | boolean;
 
 // @public
@@ -812,79 +478,7 @@ export type SettingGroup = {
 
 // @public
 export interface Settings extends SettingGroup {
-    animation: AnimationSettings;
-    axis: AxesSettings;
-    chart: ChartSettings;
-    controlPanel: ControlPanelSettings;
-    dataTable: DataTableSettings;
-    dev: DevSettings;
-    grid: GridSettings;
-    jim: JimSettings;
-    legend: LegendSettings;
-    plotArea: PlotAreaSettings;
-    popup: PopupSettings;
-    scrollytelling: ScrollytellingSettings;
-    statusBar: StatusBarSettings;
     type: ChartTypeSettings;
-}
-
-// @public
-export type SettingsInput = {
-    [path: string]: Setting;
-};
-
-// @public
-export interface StatusBarSettings extends SettingGroup {
-    valueFormat: LabelFormat;
-}
-
-// @public (undocumented)
-export interface StepLineSettings extends PointSettings {
-    baseSymbolSize: number;
-    isAlwaysShowSeriesLabel?: boolean;
-    leaderLineLength: number;
-    lineWidth: number;
-    lineWidthMax: number;
-    seriesLabelPadding: number;
-}
-
-// @public
-export type TabLabelStyle = 'icon' | 'iconLabel' | 'label';
-
-// @public (undocumented)
-export interface TickLabelSettings extends SettingGroup {
-    angle: number;
-    fontSize: string;
-    gap: number;
-    isDrawTickLabels: boolean;
-    offsetGap: number;
-}
-
-// @public (undocumented)
-export interface TickSettings extends SettingGroup {
-    isDrawTicks?: boolean;
-    isOnDatapoint: boolean;
-    labelFormat: LabelFormat;
-    labels: TickLabelSettings;
-    length: number;
-    opacity: number;
-    padding: number;
-    step: number;
-    strokeLinecap: string;
-    strokeWidth: number;
-}
-
-// @public (undocumented)
-export interface TitleSettings extends SettingGroup {
-    // Warning: (ae-forgotten-export) The symbol "SnapLocation" needs to be exported by the entry point index.d.ts
-    //
-    // (undocumented)
-    align?: SnapLocation;
-    fontSize: string;
-    isDrawTitle: boolean;
-    margin: number;
-    position?: 'top' | 'bottom';
-    text?: string;
 }
 
 // @public (undocumented)
@@ -898,47 +492,6 @@ export interface VennSettings extends SettingGroup {
         contents: string;
     };
 }
-
-// @public (undocumented)
-export type VertCardinalDirection = 'north' | 'south';
-
-// @public (undocumented)
-export type VertDirection = 'up' | 'down';
-
-// @public
-export interface ViewBox extends SettingGroup {
-    height: number;
-    width: number;
-    x: number;
-    y: number;
-}
-
-// @public (undocumented)
-export interface WaterfallSettings extends PlaneChartSettings {
-    barGap: number;
-    barLabelGap: number;
-    barWidth: number;
-    colorByDatapoint: boolean;
-    isDrawLabels: boolean;
-    isShowPopups: boolean;
-    labelFontSize: string;
-    labelPosition: BarDataLabelPosition;
-}
-
-// @public
-export interface XAxisSettings extends AxisSettings {
-}
-
-// @public
-export type XYChartType = 'bar' | 'lollipop' | PointChartType;
-
-// @public
-export interface YAxisSettings extends AxisSettings {
-}
-
-// Warnings were encountered during analysis:
-//
-// types/state/settings_types.d.ts:45:5 - (ae-forgotten-export) The symbol "Color" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

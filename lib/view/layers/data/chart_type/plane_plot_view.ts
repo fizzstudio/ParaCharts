@@ -25,7 +25,7 @@ import { DatapointView, SeriesView } from '../../../data';
 //import { NOTE_LENGTH } from '../audio/sonifier';
 //import { type Actions, type Action } from '../input/actions';
 
-import { ParaView } from '../../../../paraview';
+import { type DataLayerContext } from '../../../view_context';
 import { Setting } from '../../../../state';
 
 import { PlaneDatapoint, Datapoint } from '@fizz/paramodel';
@@ -41,7 +41,7 @@ export type DatapointViewType<T extends PlaneDatapointView> =
  */
 export abstract class PlanePlotView extends DataLayer {
   constructor(
-    paraview: ParaView,
+    paraview: DataLayerContext,
     width: number,
     height: number,
     dataLayerIndex: number,
@@ -64,10 +64,13 @@ export abstract class PlanePlotView extends DataLayer {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`].includes(path)) {
+    if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`, 'legend.isAlwaysDrawLegend',
+      'legend.useDirectLegends', 'legend.itemOrder', 'legend.position'].includes(path)) {
       this.paraview.paraState.createChartInfo();
-      this.paraview.createDocumentView();
-      this.paraview.requestUpdate();
+      this.paraview.paraState.chartInfo.setup().then(() => {
+        this.paraview.createDocumentView();
+        this.paraview.requestUpdate();
+      })
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -75,8 +78,8 @@ export abstract class PlanePlotView extends DataLayer {
   pointerMove() {
     const coords = this.paraview.paraState.pointerCoords;
     const type = this.paraview.paraState.type;
-    if (this.paraview.paraState.settings.chart.isShowPopups
-      && this.paraview.paraState.settings.popup.activation === "onHover"
+    if (this.paraview.paraState.config.chart.isShowPopups
+      && this.paraview.paraState.config.popup.activation === "onHover"
       && !this.paraview.paraState.config.ui.isTourGuideEnabled
     ) {
       if (coords.x > 0 && coords.x < this.width && coords.y > 0 && coords.y < this.height) {
@@ -97,15 +100,15 @@ export abstract class PlanePlotView extends DataLayer {
         let nearestPoint = points[distances.indexOf(Math.min(...distances))];
         if (nearestPoint.cousins.length > 0) {
           if (['column'].includes(type)) {
-            nearestPoint = nearestPoint.withCousins.filter(p => p.y < coords.y && p.y + p.height + this.paraview.paraState.settings.type.bar.barGap > coords.y)[0]
+            nearestPoint = nearestPoint.withCousins.filter(p => p.y < coords.y && p.y + p.height + this.paraview.paraState.config.type.bar.barGap > coords.y)[0]
               ?? nearestPoint.withCousins.sort((a, b) => a.y - b.y)[0];
           }
           else {
             nearestPoint = nearestPoint.withCousins.sort((a, b) => Math.abs(a.y - coords.y) - Math.abs(b.y - coords.y))[0];
           }
         }
-        if (this.paraview.paraState.settings.popup.isShowCrosshair) {
-          if (!this.paraview.paraState.settings.popup.isCrosshairFollowPointer) {
+        if (this.paraview.paraState.config.popup.isShowCrosshair && this.paraview.paraState.type !== 'heatmap') {
+          if (!this.paraview.paraState.config.popup.isCrosshairFollowPointer) {
             nearestPoint.popup?.remove();
             const isChord = (type == 'line') && (this.paraview.paraState.model!.series.length > 1);
             this.removeDatapointPopup(nearestPoint);
@@ -403,6 +406,10 @@ export abstract class PlanePlotView extends DataLayer {
         stroke: "hsl(0, 0%, 0%)"
       });
     focus ? this.paraview.paraState.focusPopups.push(popup) : this.paraview.paraState.popups.push(popup);
+  }
+
+  protected _newSeriesView(seriesKey: string) {
+    return new PlaneSeriesView(this, seriesKey);
   }
   /*
   protected get _eventActions(): Actions<this> {

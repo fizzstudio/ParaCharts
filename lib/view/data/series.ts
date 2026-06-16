@@ -41,9 +41,11 @@ export class SeriesView extends Container(DataView) {
   }
 
   get classInfo(): ClassInfo {
+    const numColors = this.paraview.paraState.colors.numSeriesColors;
     return {
       series: true,
-      lowlight: this.paraview.paraState.isSeriesDimmed(this._series.key),
+      [`series-${this.color % numColors}`]: true,
+      lowlighted: this.paraview.paraState.isSeriesDimmed(this._series.key),
       hidden: this.paraview.paraState.isSeriesHidden(this._series.key)
     };
   }
@@ -68,7 +70,7 @@ export class SeriesView extends Container(DataView) {
   }
 
   protected _updateStyleInfo(styleInfo: StyleInfo): void {
-    super._updateStyleInfo(styleInfo);
+    super._updateStyleInfo(styleInfo); // sets strokeWidth only
     this.chart.updateSeriesStyle(styleInfo);
   }
 

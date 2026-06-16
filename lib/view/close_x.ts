@@ -1,6 +1,6 @@
 
 import { View, Container } from './base_view';
-import { type ParaView } from '../paraview';
+import { type ViewContext } from './view_context';
 import { CircleShape, PathShape } from './shape';
 import { Vec2 } from '../common';
 import { svg, TemplateResult } from 'lit';
@@ -12,7 +12,7 @@ export class CloseXView extends Container(View) {
   protected _x1: PathShape;
   protected _x2: PathShape;
 
-  constructor(paraview: ParaView, protected _onClick: () => void) {
+  constructor(paraview: ViewContext, protected _onClick: () => void) {
     super(paraview);
     this._locOffset.x = R;
     this._locOffset.y = R;

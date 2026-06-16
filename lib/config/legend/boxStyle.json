@@ -1,0 +1,20 @@
+{
+    "family": "legend",
+    "settings": {
+        "outline": {
+            "description": "Border color",
+            "type": "Color",
+            "default": "none"
+        },
+        "outlineWidth": {
+            "description": "Border width in pixels",
+            "type": "number",
+            "default": 1
+        },
+        "fill": {
+            "description": "Background fill color",
+            "type": "Color",
+            "default": "none"
+        }
+    }
+}

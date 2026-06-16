@@ -14,9 +14,8 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import {
-  DeepReadonly, WaterfallSettings, type ParaState
-} from '../state';
+import { type ParaState } from '../state';
+import { DeepReadonly } from '../config/config_types';
 import { type ParaView } from '../paraview';
 import { NavNode } from '../view/layers';
 
@@ -31,6 +30,7 @@ import { formatXYDatapointX } from '@fizz/parasummary';
 import { SoniPoint } from '../audio/soni_point';
 import { Datatype } from '@fizz/paramanifest';
 import { Interval } from '@fizz/chart-classifier-utils';
+import { TypeWaterfallConfig } from '../config/config_types';
 
 export class WaterfallChartInfo extends PlaneChartInfo {
   protected _cumulativeTotals!: number[];
@@ -44,8 +44,8 @@ export class WaterfallChartInfo extends PlaneChartInfo {
     return true;
   }
 
-  get settings() {
-    return super.settings as DeepReadonly<WaterfallSettings>;
+  get config() {
+    return super.config as DeepReadonly<TypeWaterfallConfig>;
   }
 
   protected _init(): void {
@@ -113,7 +113,7 @@ export class WaterfallChartInfo extends PlaneChartInfo {
   async playDatapoints(datapoints: PlaneDatapoint[]): Promise<void> {
     const length = datapoints.length;
     loopParaviewRefresh(this._paraView,
-      this._paraView.paraState.settings.animation.popInAnimateRevealTimeMs
+      this._paraView.paraState.config.animation.popInAnimateRevealTimeMs
       + SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex)! * length, 50);
     // We can't make the sonipoint directly from the model datapoint; we need to
     // take the sonipoint y-min/max from the cumulative totals for each datapoint

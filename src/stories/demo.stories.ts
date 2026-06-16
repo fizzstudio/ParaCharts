@@ -4,6 +4,9 @@ import type { Meta, StoryObj } from '@storybook/web-components';
 
 type Story = StoryObj<ChartProps>;
 
+const localVennManifest2 = new URL('./local-venn-manifest-2.json', import.meta.url).href;
+const localVennManifest3 = new URL('./local-venn-manifest-3.json', import.meta.url).href;
+
 const meta = {
   title: "Demos",
   render: (args) => AiChart(args),
@@ -86,5 +89,21 @@ export const DemoChart10: Story = {
   name: "10. Venn Diagram",
   args: {
     filename: "manifests/venn-manifest-1.json",
+  }
+}
+
+export const DemoChart11: Story = {
+  name: "11. Venn Diagram 2",
+  args: {
+    filename: localVennManifest2,
+    manifestType: 'url',
+  }
+}
+
+export const DemoChart12: Story = {
+  name: "12. Venn Diagram 3 (multi-label regions)",
+  args: {
+    filename: localVennManifest3,
+    manifestType: 'url',
   }
 }

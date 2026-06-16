@@ -43,15 +43,17 @@ import {
 } from '@fizz/parasummary';
 
 import {
-  DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
+  FORMAT_CONTEXT_SETTINGS, Settings, FormatContext,
   type Setting, type SettingGroup,
 } from './settings_types';
+import { SettingsInput } from '../config/config_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
 import { defaults, chartTypeDefaults } from './settings_defaults';
 import { Config } from '../config/config_types';
 import { defaultConfig } from '../config/config_defaults';
 import { Colors } from '../common/colors';
+import { type ContrastWarning } from '../common/contrast';
 import { joinStrArray, trendTranslation } from '../common/utils';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
@@ -63,7 +65,7 @@ import { type DatapointCursor } from '../view/layers/data/navigation';
 import { Point } from '@fizz/chart-classifier-utils';
 import { PathShape } from '../view/shape';
 import { GlobalState } from './global_state';
-import { BaseChartInfo, chartInfoClasses } from '../chart_types';
+import { BaseChartInfo, chartInfoClasses, ScatterChartInfo } from '../chart_types';
 import { firstDataset, type Manifest } from '../loader/common';
 import { clusterObject } from '@fizz/clustering';
 import { ClusterShellView } from '../view/layers';
@@ -143,8 +145,8 @@ const synchronizedSettings = [
   'chart.fontScale',
   'color.colorPalette',
   'grid.isDrawVertLines',
-  'chart.size.width',
-  'chart.size.height',
+  'chart.width',
+  'chart.height',
 ];
 
 // NB: Must be disallowed in series keys
@@ -210,6 +212,7 @@ export class ParaState extends BaseState {
   @property() isSouthLegendHighlighted = false;
 
   @property() protected _caption: HighlightedSummary = { text: '', html: '' };
+  @property() protected _pinnedSeriesKey: string | null = null;
   @property() protected _dimmedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
   @property() protected data: AllSeriesData | null = null;
@@ -221,6 +224,7 @@ export class ParaState extends BaseState {
   protected _prevVisitedDatapoints = new Set<string>();
   protected _everVisitedDatapoints = new Set<string>();
   @property() protected _highlightedDatapoints = new Set<string>();
+  @property() protected _lowlightedDatapoints = new Set<string>();
   _prevHighlightedElements = new Set<string>();
   @property() protected _selectedDatapoints = new Set<string>();
   @property() protected _crosshairedDatapoints = new Set<string>();
@@ -257,6 +261,9 @@ export class ParaState extends BaseState {
   protected _chartInfo!: BaseChartInfo;
 
   public idList: Record<string, boolean> = {};
+
+  /** Runtime contrast warnings from the last ColorPrefManager resolution. Empty when all colors pass. */
+  @property() colorContrastWarnings: ContrastWarning[] = [];
 
   constructor(
     protected _globalState: GlobalState,
@@ -359,7 +366,7 @@ export class ParaState extends BaseState {
         if (generatedSummary !== undefined) {
           this._caption = generatedSummary;
         } else {
-          this._caption = {text: '', html: ''};
+          this._caption = { text: '', html: '' };
         }
       }
     }
@@ -382,16 +389,29 @@ export class ParaState extends BaseState {
     this._chartInfo = new chartInfoClasses[this.type](this.type, this);
   }
 
+  updateContrastWarnings(warnings: ContrastWarning[]): void {
+    this.colorContrastWarnings = warnings;
+  }
+
+  private _configResetCallbacks = new Set<() => void>();
+
+  onConfigReset(cb: () => void): () => void {
+    this._configResetCallbacks.add(cb);
+    return () => this._configResetCallbacks.delete(cb);
+  }
+
   protected _createSettings(inputSettings: SettingsInput) {
     const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
     SettingsManager.suppleteSettings(hydratedSettings, defaults);
     this.settings = hydratedSettings as Settings;
-    const hydratedConfig = {};
+    const hydratedConfig = SettingsManager.hydrateInput(inputSettings) as Partial<Config>;
     SettingsManager.suppleteSettings(hydratedConfig, defaultConfig);
     this.config = hydratedConfig as Config;
+    SettingsManager.suppleteSettings(this.settings, this.config as unknown as Settings);
+    this._configResetCallbacks.forEach(cb => cb());
   }
 
-  private syncPatchesToManifest(patches: Patch[]) {
+  protected _syncPatchesToManifest(patches: Patch[]) {
     if (!this._manifest) return;
     this._manifest.extensions ??= {};
     this._manifest.extensions.paracharts ??= {};
@@ -415,7 +435,7 @@ export class ParaState extends BaseState {
     if (ignoreObservers) {
       return patches;
     }
-    this.syncPatchesToManifest(patches);
+    this._syncPatchesToManifest(patches);
     const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
     for (const patch of patches) {
       if (patch.op !== 'replace') {
@@ -451,7 +471,7 @@ export class ParaState extends BaseState {
     if (ignoreObservers) {
       return patches;
     }
-    this.syncPatchesToManifest(patches);
+    this._syncPatchesToManifest(patches);
     const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
     for (const patch of patches) {
       if (patch.op !== 'replace') {
@@ -468,9 +488,9 @@ export class ParaState extends BaseState {
       observed[patch.path.join('.')].oldValue = patch.value;
     }
     for (const [path, values] of Object.entries(observed)) {
-      // this._settingObservers[path]?.forEach(observer =>
-      //   observer(values.oldValue, values.newValue)
-      // );
+      this._settingObservers[path]?.forEach(observer =>
+        observer(values.oldValue, values.newValue)
+      );
       this.settingDidChange(path, values.oldValue, values.newValue);
     }
     return patches;
@@ -506,7 +526,7 @@ export class ParaState extends BaseState {
     }
   }
 
-  setManifest(manifest: Manifest, data?: AllSeriesData, resetSettings = true) {
+  async setManifest(manifest: Manifest, data?: AllSeriesData, resetSettings = true) {
     this._manifest = manifest;
     const dataset = firstDataset(this._manifest);
 
@@ -516,7 +536,10 @@ export class ParaState extends BaseState {
 
     if (chartTypeDefaults[dataset.representation.subtype]) {
       Object.entries(chartTypeDefaults[dataset.representation.subtype]!).forEach(([path, value]) => {
-        this.updateSettings(draft => {
+        // this.updateSettings(draft => {
+        //   SettingsManager.set(path, value, draft);
+        // }, true);
+        this.updateConfig(draft => {
           SettingsManager.set(path, value, draft);
         }, true);
       });
@@ -554,6 +577,7 @@ export class ParaState extends BaseState {
         );
       }
       this.createChartInfo();
+      await this._chartInfo.setup();
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
@@ -572,22 +596,24 @@ export class ParaState extends BaseState {
         );
       }
       this.createChartInfo();
+      await this._chartInfo.setup();
       //this._seriesProperties = new SeriesPropertyManager(this);
       this._seriesProperties.reset();
       this.data = data;
     } else {
       throw new Error('store lacks external or inline chart data');
     }
-    const maxError = this.settings.chart.maxError;
-    const maxSegments = this.settings.chart.maxSegments;
-    const extremumWeight = this.settings.chart.extremumWeight;
+    const maxError = this.config.chart.maxError;
+    const maxSegments = this.config.chart.maxSegments;
+    const extremumWeight = this.config.chart.extremumWeight;
     if (this._model instanceof PlaneModel) {
-      this._model.seriesKeys.forEach(async (seriesKey) => {
-        this.seriesAnalyses = {
-          [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey, {maxError: maxError, maxSegments: maxSegments, extremumWeight: extremumWeight}),
-          ...this.seriesAnalyses
-        };
-      });
+      await Promise.all(
+        this._model.seriesKeys.map(async (seriesKey) => {
+          this.seriesAnalyses = {
+            [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey, { maxError: maxError, maxSegments: maxSegments, extremumWeight: extremumWeight }),
+            ...this.seriesAnalyses
+          };
+        }));
     }
     this.postNotice('paranotice', { key: 'manifestSet' });
     this.dispatchEvent(
@@ -679,8 +705,33 @@ export class ParaState extends BaseState {
     this._dimmedSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
   }
 
+  dimOtherCluster(seriesKey: string, index: number) {
+    const chartInfo = this.chartInfo as ScatterChartInfo;
+    const otherDatapoints = chartInfo._clustering!.filter(c => c.id !== index).map(
+      c => { return [...c.dataPointIDs, ...c.outlierIDs] }).flat();
+    otherDatapoints.map(id => this.lowlightDatapoint(seriesKey, id))
+  }
+
   clearAllSeriesDimming() {
     this._dimmedSeries = [];
+  }
+
+  clearAllPointsDimming() {
+    this._lowlightedDatapoints = new Set();
+  }
+
+  get pinnedSeriesKey(): string | null {
+    return this._pinnedSeriesKey;
+  }
+
+  pinSeries(seriesKey: string) {
+    this._pinnedSeriesKey = seriesKey;
+    this.dimOtherSeries(seriesKey);
+  }
+
+  unpinSeries() {
+    this._pinnedSeriesKey = null;
+    this.clearAllSeriesDimming();
   }
 
   hideSeries(seriesKey: string) {
@@ -776,7 +827,7 @@ export class ParaState extends BaseState {
     for (const datapoint of datapoints) {
       this._everVisitedDatapoints.add(makeDatapointId(datapoint.seriesKey, datapoint.datapointIndex));
     }
-    if (this.settings.controlPanel.isMDRAnnotationsVisible) {
+    if (this.config.controlPanel.isMDRAnnotationsVisible) {
       if (this._prevVisitedDatapoints.size > 0) {
         this.removeMDRAnnotations(this._prevVisitedDatapoints);
       }
@@ -824,6 +875,10 @@ export class ParaState extends BaseState {
 
   get highlightedDatapoints() {
     return this._highlightedDatapoints;
+  }
+
+  get lowlightedDatapoints() {
+    return this._lowlightedDatapoints;
   }
 
   highlightDatapoint(seriesKey: string, index: number) {
@@ -876,6 +931,23 @@ export class ParaState extends BaseState {
   isDatapointHighlighted(seriesKey: string, index: number): boolean {
     return this._highlightedDatapoints.has(makeDatapointId(seriesKey, index));
   }
+
+  isDatapointLowlighted(seriesKey: string, index: number): boolean {
+    return this._lowlightedDatapoints.has(makeDatapointId(seriesKey, index));
+  }
+
+  lowlightDatapoint(seriesKey: string, index: number) {
+    this._lowlightedDatapoints.add(
+      makeDatapointId(seriesKey, index)
+    );
+  }
+
+  clearDatapointLowlight(seriesKey: string, index: number) {
+    this._lowlightedDatapoints = new Set(
+      [...this._lowlightedDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
+    );
+  }
+
 
   clearAllDatapointHighlights() {
     this._highlightedDatapoints = new Set();
@@ -976,7 +1048,7 @@ export class ParaState extends BaseState {
     this.isWestLegendHighlighted = false;
     this.isNorthLegendHighlighted = false;
     this.isSouthLegendHighlighted = false;
-    this.updateSettings(draft => {
+    this.updateConfig(draft => {
       draft.type.scatter.isShowTrendLine = false
     });
   }
@@ -1047,7 +1119,7 @@ export class ParaState extends BaseState {
 
   getFormatType(context: FormatContext): FormatType {
     return context === 'domId' ? 'domId'
-      : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.settings) as FormatType;
+      : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.config) as FormatType;
   }
 
   annotatePoint(seriesKey: string, index: number, text: string) {
@@ -1071,7 +1143,7 @@ export class ParaState extends BaseState {
 
   async showMDRAnnotations() {
     if (this.type === 'line') {
-      if (this.settings.controlPanel.isMDRAnnotationsVisible) {
+      if (this.config.controlPanel.isMDRAnnotationsVisible) {
         let seriesAnalysis;
         let seriesKey: string;
         if (this.visitedDatapoints.size > 0) {
@@ -1087,8 +1159,8 @@ export class ParaState extends BaseState {
         };
         if (!seriesAnalysis) {
           this.log.info("This chart does not support AI trend annotations")
-          this.updateSettings(draft => {
-            draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
+          this.updateConfig(draft => {
+            draft.controlPanel.isMDRAnnotationsVisible = !this.config.controlPanel.isMDRAnnotationsVisible;
           });
           return;
         };
@@ -1122,8 +1194,8 @@ export class ParaState extends BaseState {
       }
     } else {
       this.log.info("Trend annotations not currently supported for this chart type");
-      this.updateSettings(draft => {
-        draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
+      this.updateConfig(draft => {
+        draft.controlPanel.isMDRAnnotationsVisible = !this.config.controlPanel.isMDRAnnotationsVisible;
       });
     }
   }

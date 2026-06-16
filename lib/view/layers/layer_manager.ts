@@ -18,7 +18,7 @@ import { View } from '../base_view';
 import { fixed, isPointerInbounds } from '../../common/utils';
 import { type Layout } from '../layout';
 import { type DocumentView } from '../document_view';
-import { type CardinalDirection } from '../../state/settings_types';
+import { type CardinalDirection } from '../../config/config_types';
 import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, FocusLayer } from '.';
 import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, Bar, WaterfallPlotView, VennPlotView } from './data/chart_type';
 import { type AxisCoord } from '../axis';
@@ -34,7 +34,7 @@ import { svg } from 'lit';
 import { HeatMapPlotView } from './data/chart_type';
 import { Histogram } from './data/chart_type/histogram';
 import { PopupLayer } from './popup_layer';
-import { ParaView } from '../../paraview';
+import { type DataLayerContext } from '../view_context';
 
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
@@ -56,6 +56,7 @@ export const chartClasses = {
 };
 
 export class PlotLayerManager extends View {
+  declare public readonly paraview: DataLayerContext;
   declare protected _parent: DocumentView;
 
   protected _logicalWidth!: number;
@@ -71,9 +72,9 @@ export class PlotLayerManager extends View {
   protected _popupLayer!: PopupLayer;
   protected _focusLayer!: FocusLayer;
 
-  constructor(paraview: ParaView, width: number, height: number) {
+  constructor(paraview: DataLayerContext, width: number, height: number) {
     super(paraview);
-    this._orientation = this.paraview.paraState.settings.chart.orientation;
+    this._orientation = this.paraview.paraState.config.chart.orientation;
     this.width = width;
     this.height = height;
     this._canWidthFlex = true;

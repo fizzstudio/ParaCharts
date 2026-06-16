@@ -16,10 +16,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { BaseChartInfo } from './base_chart';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, type NavMap } from '../view/layers/data/navigation';
-import { DeepReadonly, PlaneChartSettings, type ParaState } from '../state';
+import { type ParaState } from '../state';
+import { DeepReadonly } from '../config/config_types';
 import { ParaView } from '../paraview';
 import { type RiffOrder } from './base_chart';
-import { type HorizDirection } from '../state';
+import { TypePlaneConfig, type HorizDirection } from '../config/config_types';
 
 import { ChartType, Datatype, Facet } from '@fizz/paramanifest';
 import { Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
@@ -108,43 +109,36 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     // XXX should be min/max label values as numbers, not min/max data values
     const min = this._yInterval!.start; // this._labelInfo.min!;
     const max = this._yInterval!.end; // this._labelInfo.max!;
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: `type.${this._type}.minYValue`,
-      label: 'Min y-value',
-      options: { inputType: 'number' },
-      value: this.settings.minYValue === 'unset'
+
+    this._paraState.settingControls.insert(
+      `type.${this._type}.minYValue`,
+      undefined,
+      (value: any) => value === 'unset'
         ? min
-        : this.settings.minYValue,
-      validator: value => {
-        const min = this.settings.maxYValue === 'unset'
+        : value,
+      value => {
+        const min = this.config.maxYValue === 'unset'
           ? max
-          : this.settings.maxYValue
+          : this.config.maxYValue
         // NB: If the new value is successfully validated, the inner chart
         // gets recreated, and `max` may change, due to re-quantization of
         // the tick values.
         return value as number >= min ?
           { err: `Min y-value (${value}) must be less than ${min}`} : {};
-      },
-      parentView: 'controlPanel.tabs.chart.general.minY',
-    });
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: `type.${this._type}.maxYValue`,
-      label: 'Max y-value',
-      options: { inputType: 'number' },
-      value: this.settings.maxYValue === 'unset'
+      });
+    this._paraState.settingControls.insert(
+      `type.${this._type}.maxYValue`,
+      undefined,
+      (value: any) => value === 'unset'
         ? max
-        : this.settings.maxYValue,
-      validator: value => {
-        const max = this.settings.minYValue === 'unset'
+        : value,
+      value => {
+        const max = this.config.minYValue === 'unset'
           ? min
-          : this.settings.minYValue
+          : this.config.minYValue
         return value as number <= max ?
           { err: `Max y-value (${value}) must be greater than ${max}`} : {};
-      },
-      parentView: 'controlPanel.tabs.chart.general.maxY',
-    });
+      });
   }
 
   /**
@@ -167,7 +161,11 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   }
 
   get settings() {
-    return super.settings as DeepReadonly<PlaneChartSettings>;
+    return super.settings as DeepReadonly<TypePlaneConfig>;
+  }
+
+  get config() {
+    return super.config as DeepReadonly<TypePlaneConfig>;
   }
 
   get horizFacet(): Facet | null {
@@ -296,12 +294,12 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     const facetInterval = this._paraState.model!.getFacetInterval(facetKey)!;
     this._yExtremes = facetInterval;
     return computeAxisRange(
-      this.settings.minYValue === 'unset'
+      this.config.minYValue === 'unset'
         ? facetInterval.start
-        : this.settings.minYValue,
-      this.settings.maxYValue === 'unset'
+        : this.config.minYValue,
+      this.config.maxYValue === 'unset'
         ? facetInterval.end
-        : this.settings.maxYValue);
+        : this.config.maxYValue);
   }
 
   protected _createNavMap() {
@@ -332,7 +330,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     // Sort by value of first datapoint from greatest to least
     const sortedSeries = this.seriesInNavOrder();
     sortedSeries.forEach((series, i) => {
-      if (sortedSeries.length > 1) {
+      if (sortedSeries.length > 1 || this._paraState.config.sonification.isSonificationEnabled) {
         const seriesNode = new NavNode(this._navMap!.root, 'series', {
           seriesKey: series.key
         }, this._paraState);
@@ -351,7 +349,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
           this._paraState);
         //node.addDatapoint(series.key, j);
         node.connect('left', left);
-        if (j === 0 && sortedSeries.length === 1) {
+        if (j === 0 && sortedSeries.length === 1 && !this._paraState.config.sonification.isSonificationEnabled) {
           node.connect('up', left);
           node.connect('down', left);
           node.connect('right', left);
@@ -559,7 +557,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       };
       requestAnimationFrame(step);
       loopParaviewRefresh(paraview,
-        paraview.paraState.settings.animation.popInAnimateRevealTimeMs
+        paraview.paraState.config.animation.popInAnimateRevealTimeMs
         + SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex)! * length, 50);
       return new Promise<void>(resolve => {
         this._soniRiffInterval = setInterval(() => {
@@ -585,7 +583,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       dpView.completeLayout();
     }
     loopParaviewRefresh(this._paraView,
-      this._paraView.paraState.settings.animation.popInAnimateRevealTimeMs
+      this._paraView.paraState.config.animation.popInAnimateRevealTimeMs
       + SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex)! * length, 50);
     return this._sonifier.playDatapoints(datapoints);
   }

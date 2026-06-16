@@ -143,7 +143,7 @@ function generateFamilyStories(family: ChartTypeFamily, ai: boolean, multi?: boo
   const familyMembers = CHART_FAMILY_MEMBERS[family];
   for (const chartType of familyMembers) {
     if (chartType === 'heatmap') {
-      continue;
+      //continue;
     }
     if (multi === undefined) {
       generateTypeStories(ai, chartType, familyManifests);
@@ -197,7 +197,7 @@ function generateFamilyAllStory(family: ChartTypeFamily, ai: boolean, multi?: bo
   const familyMembers = CHART_FAMILY_MEMBERS[family];
   for (const chartType of familyMembers) {
     if (chartType === 'heatmap') {
-      continue;
+      //continue;
     }
     if (multi === undefined) {
       generateAllStory(ai, chartType, family);

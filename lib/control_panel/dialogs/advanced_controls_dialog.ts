@@ -23,10 +23,13 @@ export class AdvancedControlSettingsDialog extends ParaComponent {
   @property() btnText = 'Okay';
 
   static styles = css`
-    #controls {
+    fizz-dialog {
+      --item-gap: 1rem;
+    }
+    #advanced {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.5rem;
     }
   `;
 
@@ -83,17 +86,15 @@ export class AdvancedControlSettingsDialog extends ParaComponent {
       <fizz-dialog
         ${ref(this._dialogRef)}
         title="Advanced Settings"
-        .buttons=${[{tag: 'cancel', text: this.btnText}]}
+        .buttons=${[{tag: 'close', text: this.btnText}]}
       >
-        <div id="controls">
-          <div id="advanced"
-            class="advanced-views"
-          >
-            ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.settings')}
-          </div>
-          <div>
-            ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.tabLabels')}
-          </div>
+        <div id="advanced"
+          class="advanced-views"
+        >
+          ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.settings')}
+        </div>
+        <div>
+          ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.tabLabels')}
         </div>
       </fizz-dialog>
     `;

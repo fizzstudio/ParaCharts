@@ -1,0 +1,84 @@
+{
+    "family": "legend",
+    "settings": {
+        "isDrawLegend": {
+            "description": "Draw chart legend",
+            "type": "boolean",
+            "default": true,
+            "parentView": "controlPanel.tabs.chart.legend.dialog"
+        },
+        "isAlwaysDrawLegend": {
+            "label": "cpanel.tabs.chart.legend_dialog.show",
+            "description": "Draw legend",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.legend.dialog"
+        },
+        "padding": {
+            "description": "Internal padding within legend box",
+            "type": "number",
+            "default": 10
+        },
+        "symbolLabelGap": {
+            "description": "Gap between symbol and label",
+            "type": "number",
+            "default": 4
+        },
+        "pairGap": {
+            "description": "Gap between legend items",
+            "type": "number",
+            "default": 10
+        },
+        "position": {
+            "label": "cpanel.tabs.chart.legend_dialog.position",
+            "description": "Position relative to chart",
+            "type": "CardinalDirection",
+            "default": "east",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": [
+                    "east",
+                    "west",
+                    "north",
+                    "south"
+                ]
+            },
+            "parentView": "controlPanel.tabs.chart.legend.dialog"
+        },
+        "margin": {
+            "description": "Margin around legend",
+            "type": "number",
+            "default": 20
+        },
+        "itemOrder": {
+            "label": "cpanel.tabs.chart.legend_dialog.item_order",
+            "description": "Ordering of legend items",
+            "type": "LegendItemOrder",
+            "default": "startingOrder",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": [
+                    "startingOrder",
+                    "endingOrder",
+                    "alphabetical",
+                    "reverseAlphabetical"
+                ]
+            },
+            "parentView": "controlPanel.tabs.chart.legend.dialog"
+        },
+        "fontSize": {
+            "description": "Font size for legend text",
+            "type": "string",
+            "default": "10pt"
+        },
+        "useDirectLegends": {
+            "label": "cpanel.tabs.chart.legend_dialog.direct",
+            "description": "Position legend items directly",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.legend.dialog"
+        }
+    }
+}

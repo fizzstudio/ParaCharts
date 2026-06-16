@@ -187,5 +187,20 @@
         }
       }
     ]
+  },
+  "extensions": {
+    "paracharts": {
+      "settings": {
+        "color.custom1": "red",
+        "color.custom2": "cyan",
+        "color.colorPalette": "custom",
+        "chart.title.position": "top",
+        "chart.title.align": "start",
+        "chart.subtitle.align": "start",
+        "axis.horiz.ticks.labels.angle": 0,
+        "legend.isAlwaysDrawLegend": true,
+        "legend.position": "west"
+      }
+    }
   }
 }

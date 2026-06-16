@@ -1,0 +1,35 @@
+{
+    "family": "title",
+    "settings": {
+        "isDrawTitle": {
+            "description": "Whether to draw the chart title",
+            "type": "boolean",
+            "default": true
+        },
+        "text": {
+            "description": "The text of the chart's title.",
+            "type": "string",
+            "default": ""
+        },
+        "margin": {
+            "description": "Space between the chart title and content (in SVG units).",
+            "type": "number",
+            "default": 20
+        },
+        "fontSize": {
+            "description": "The font size of the chart title, as a CSS font size string.",
+            "type": "string",
+            "default": "12pt"
+        },
+        "align": {
+            "description": "The title alignment",
+            "type": "SnapLocation",
+            "default": "center"
+        },
+        "position": {
+            "description": "The position of the chart title (either 'top' or 'bottom').",
+            "type": "'top' | 'bottom'",
+            "default": "top"
+        }
+    }
+}

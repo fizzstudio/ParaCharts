@@ -18,7 +18,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState } from '../state';
 import { type ParaView } from '../paraview';
-import { type LineSettings, type DeepReadonly, type Setting } from '../state/settings_types';
+import { type Setting } from '../state/settings_types';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state/query_utils';
 import { NavNode } from '../view/layers';
 
@@ -27,6 +27,8 @@ import { interpolate } from '@fizz/templum';
 import { formatXYDatapoint } from '@fizz/parasummary';
 import { type ChartType } from '@fizz/paramanifest';
 import { Highlight } from '@fizz/parasummary';
+import { DataSymbols } from '../view/symbol';
+import { enumerate, PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
 
 /**
  * Business logic for line charts.
@@ -41,28 +43,10 @@ export class LineChartInfo extends PointChartInfo {
 
   protected _addSettingControls(): void {
     super._addSettingControls();
-    // XXX only do this if type === 'line'
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'type.line.lineWidth',
-      label: 'Line width',
-      options: {
-        inputType: 'number',
-        min: 1,
-        max: this._paraState.settings.type.line.lineWidthMax as number
-      },
-      parentView: 'controlPanel.tabs.chart.chart',
+    this._paraState.settingControls.insert('type.line.lineWidth', {
+      max: this._paraState.config.type.line.lineWidthMax
     });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'chart.isDrawSymbols',
-      label: 'Show symbols',
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
-  }
-
-  get settings() {
-    return super.settings as DeepReadonly<LineSettings>;
+    this._paraState.settingControls.insert('chart.isDrawSymbols');
   }
 
   async settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): Promise<void> {
@@ -84,6 +68,13 @@ export class LineChartInfo extends PointChartInfo {
         trendNode.connect('in', this._navMap!.cursor, false);
         await this._navMap!.cursor.move('out');
       }
+    }
+    // Add or remove single-series series landings based on whether
+    // soni is enabled
+    if (path === 'sonification.isSonificationEnabled') {
+      const idx = this._navMap!.cursor.index;
+      this._createNavMap();
+      this._navMap!.layer(this._navMap!.currentLayer)!.goTo('datapoint', idx, true);
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -116,14 +107,36 @@ export class LineChartInfo extends PointChartInfo {
 
   legend() {
     const model = this._paraState.model!;
-    const seriesKeys = [...model.seriesKeys];
-    if (this._paraState.settings.legend.itemOrder === 'alphabetical') {
-      seriesKeys.sort();
+    const seriesKeys = enumerate([...model.seriesKeys]);
+    const types = new DataSymbols().types;
+    if (this._paraState.config.legend.itemOrder === 'alphabetical') {
+      seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
+    }
+    else if (this._paraState.config.legend.itemOrder === 'reverseAlphabetical') {
+      seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
+    }
+    else if (this._paraState.config.legend.itemOrder === 'startingOrder') {
+      const model = this._paraState.model as PlaneModel;
+      const startChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(0) as PlaneDatapoint).indepBox)!;
+      seriesKeys.sort((a, b) =>
+        startChord.find(point => point.seriesKey === b[0])!.facetValueAsNumber("y")!
+        - startChord.find(point => point.seriesKey === a[0])!.facetValueAsNumber("y")!
+      );
+    }
+    else if (this._paraState.config.legend.itemOrder === 'endingOrder') {
+      const model = this._paraState.model as PlaneModel;
+      const endChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(-1) as PlaneDatapoint).indepBox)!;
+      seriesKeys.sort((a, b) =>
+        endChord.find(point => point.seriesKey === b[0])!.facetValueAsNumber("y")!
+        - endChord.find(point => point.seriesKey === a[0])!.facetValueAsNumber("y")!
+      );
     }
     return seriesKeys.map(key => ({
-      label: model.atKey(key)!.getLabel(),
-      seriesKey: key,
-      color: this._paraState.seriesProperties!.properties(key).color
+      label: model.atKey(key[0])!.getLabel(),
+      seriesKey: key[0],
+      color: this._paraState.seriesProperties!.properties(key[0]).color,
+      symbol: types[key[1]],
+      symbolOptions: { lighten: true }
     }));
   }
 

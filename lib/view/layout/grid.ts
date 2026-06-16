@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { type View, type SnapLocation, type PaddingInput, type Padding } from '../base_view';
-import { type ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 import { Layout } from './layout';
 import { Logger, getLogger } from '@fizz/logger';
 import { nothing, svg, TemplateResult } from 'lit';
@@ -84,7 +84,7 @@ export class GridLayout extends Layout {
   private _isAutoWidth: boolean;
   private _isAutoHeight: boolean;
 
-  constructor(paraview: ParaView, options: GridOptionsInput, id?: string) {
+  constructor(paraview: ViewContext, options: GridOptionsInput, id?: string) {
     super(paraview, id);
     this.log = getLogger("GridLayout ");
     this._canWidthFlex = !!options.canWidthFlex;
@@ -1436,12 +1436,14 @@ export class GridLayout extends Layout {
       rect.classInfo = {'debug-grid-territory': true};
       return rect;
     });
-    return svg`
-      ${super.content()}
+    /*
       ${this.paraview.paraState.settings.dev.isShowGridTerritories
         ? rects.map(r => r.render())
         : ''
       }
+    */
+    return svg`
+      ${super.content()}
     `;
   }
 

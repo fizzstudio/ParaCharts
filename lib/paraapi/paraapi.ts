@@ -18,7 +18,9 @@ import { PlaneModel, type Datapoint } from '@fizz/paramodel';
 
 import { ORIENTATION_SENTENCES, PASTRY_ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
-import { CardinalDirection, Direction, makeSequenceId, Setting, SettingsInput, SettingsManager } from '../state';
+import { HotkeyEvent, makeSequenceId, Setting, SettingsManager } from '../state';
+import { SettingsInput } from '../config/config_types';
+import { CardinalDirection, Direction } from '../config/config_types';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 import explainers from '../explainers';
 import type { DatapointManifest, Manifest } from '@fizz/paramanifest';
@@ -36,6 +38,8 @@ export class ParaAPI {
   protected _tourGuideActions: Actions;
   protected _tourGuideNoSelfVoicing = true;
   protected _tourGuideSelfVoicingState!: boolean;
+  protected _liveUpdateRecordCount = 0;
+  protected _liveUpdateWaiting = false;
 
   constructor(protected _paraChart: ParaChart) {
     const paraView = _paraChart.paraView;
@@ -111,7 +115,7 @@ export class ParaAPI {
       },
       /** Toggle trend navigation mode. */
       toggleTrendNavigationMode() {
-        paraView.paraState.updateSettings(draft => {
+        paraView.paraState.updateConfig(draft => {
           draft.type.line.isTrendNavigationModeEnabled = !draft.type.line.isTrendNavigationModeEnabled;
           const endisable = draft.type.line.isTrendNavigationModeEnabled ? 'enable' : 'disable';
           paraView.paraState.announce(`Trend navigation ${endisable + 'd'}`);
@@ -145,10 +149,19 @@ export class ParaAPI {
       /** Toggle dark mode. */
       toggleDarkMode() {
         paraView.paraState.updateConfig(draft => {
-          draft.color.isDarkModeEnabled = !draft.color.isDarkModeEnabled;
-          const endisable = draft.color.isDarkModeEnabled ? 'enable' : 'disable';
-          _paraChart.postNotice(endisable + 'DarkMode', null);
-          paraView.paraState.announce(`Dark mode ${endisable + 'd'}`);
+          if (draft.color.themeMode === 'dark') {
+            draft.color.themeMode = 'auto';
+            _paraChart.postNotice('enableAutoColorMode', null);
+            paraView.paraState.announce('Using auto color theme.');
+          } else if (draft.color.themeMode === 'auto') {
+            draft.color.themeMode = 'light';
+            _paraChart.postNotice('enableLightColorMode', null);
+            paraView.paraState.announce('Using light color theme.');
+          } else {
+            draft.color.themeMode = 'dark';
+            _paraChart.postNotice('enableDarkColorMode', null);
+            paraView.paraState.announce('Using dark color theme.');
+          }
         });
       },
       /** Toggle low-vision mode */
@@ -184,7 +197,7 @@ export class ParaAPI {
                 explainers[type]!.single!.summary,
                 false // don't reset settings
               ).then(() => {
-                _paraChart.paraState.updateSettings(draft => {
+                _paraChart.paraState.updateConfig(draft => {
                   draft.chart.padding = '32 120';
                 }, true);
                 _paraChart.styleManager.update();
@@ -199,7 +212,7 @@ export class ParaAPI {
                 explainers[type]!.multi!.summary,
                 false // don't reset settings
               ).then(() => {
-                _paraChart.paraState.updateSettings(draft => {
+                _paraChart.paraState.updateConfig(draft => {
                   draft.chart.padding = '32 120';
                 }, true);
                 _paraChart.styleManager.update();
@@ -276,11 +289,13 @@ export class ParaAPI {
     this._tourGuideActions.repeatLastAnnouncement = () => { };
     this._tourGuideActions.toggleNarrativeHighlightMode = () => {
       paraView.paraState.updateConfig(draft => {
-        draft.ui.isTourGuideEnabled = false;
         if (!this._tourGuideNoSelfVoicing) {
           draft.ui.isVoicingEnabled = this._tourGuideSelfVoicingState;
         }
         this._tourGuideNoSelfVoicing = true;
+      });
+      paraView.paraState.updateConfig(draft => {
+        draft.ui.isTourGuideEnabled = false;
       });
     };
     this._tourGuideActions.playPauseMedia = () => {
@@ -325,7 +340,7 @@ export class ParaAPI {
     return this._paraChart.waitForManifest();
   }
 
-  async addRecord(points: Record<string, {x: string, y: string}>) {
+  protected async _slideWindow(points: Record<string, {x: string, y: string}>, forward = true) {
     // mani.jim.datasets[0].series[0].records[0].x
     const mani = this._paraChart.paraState.manifest!;
     for (const [k, v] of Object.entries(points)) {
@@ -338,14 +353,70 @@ export class ParaAPI {
       if (!data) {
         throw new Error(`no such series '${k}'`);
       }
-      data.splice(0, 1);
-      data.push({
-        x: v.x,
-        y: v.y
-      });
+      if (forward) {
+        data.splice(0, 1);
+        data.push({
+          x: v.x,
+          y: v.y
+        });
+      } else {
+        data.pop();
+        data.unshift({
+          x: v.x,
+          y: v.y
+        });
+      }
     }
     const maniStr = JSON.stringify(mani, null, 2);
     await this._paraChart.runLoader(maniStr, 'content', undefined, undefined, false);
+  }
+
+  /** Add a record to the end of the chart and remove the first record. */
+  async addRecord(pushPoints: Record<string, {x: string, y: string}>) {
+    await this._slideWindow(pushPoints);
+    //if (!this._paraChart.hasFocus) return;
+    const sleep = (msec: number) => {
+      return new Promise<void>((resolve, reject) => {
+        setTimeout(() => {
+          resolve();
+        }, msec);
+      });
+    };
+    const waitKey = (key: string) => {
+      return new Promise<void>((resolve, reject) => {
+        this._paraChart.paraState.keymapManager.addEventListener('hotkeypress', (ev: HotkeyEvent) => {
+          if (ev.key === key) {
+            resolve();
+          }
+        });
+      });
+    };
+    const liveUpdateDelayMs = this._paraChart.paraState.config.ui.liveUpdateDelay*1000;
+    this._liveUpdateRecordCount++;
+    if (!this._liveUpdateWaiting) {
+      while (this._liveUpdateRecordCount) {
+        this._liveUpdateWaiting = true;
+        const concise = await this._paraChart.paraState.chartInfo.summarizer.getConciseSummary();
+        const announcement = `Live update: ${this._liveUpdateRecordCount} record${this._liveUpdateRecordCount > 1 ? 's' : ''} added. ${concise.text}`;
+        this._liveUpdateRecordCount = 0;
+        if (this._paraChart.paraState.config.ui.isVoicingEnabled) {
+          await this._paraChart.paraView.ariaLiveRegion.voicing.speak(announcement, []);
+          await sleep(liveUpdateDelayMs);
+        } else {
+          this._paraChart.paraState.announce(announcement + ' Press spacebar for next update.');
+          // Await spacebar OR ui.isVoicingEnabled becoming true
+          await Promise.any([
+            waitKey(' '),
+            this._paraChart.paraState.waitForSetting('ui.isVoicingEnabled', true)]);
+        }
+        this._liveUpdateWaiting = false;
+      }
+    }
+  }
+
+  /** Remove the last record from the chart and add a new record to the start. */
+  async removeRecord(unshiftPoints: Record<string, {x: string, y: string}>) {
+    await this._slideWindow(unshiftPoints, false);
   }
 
   /** Get the chart title label. */
@@ -537,23 +608,23 @@ export class ParaAPI {
 
   /** Set chart width. */
   setWidth(width: number) {
-    this._paraChart.paraState.updateSettings(draft => {
-      draft.chart.size.width = width;
+    this._paraChart.paraState.updateConfig(draft => {
+      draft.chart.width = width;
     });
   }
 
   /** Set chart height. */
   setHeight(height: number) {
-    this._paraChart.paraState.updateSettings(draft => {
-      draft.chart.size.height = height;
+    this._paraChart.paraState.updateConfig(draft => {
+      draft.chart.height = height;
     });
   }
 
   /** Set chart width and height. */
   setSize(width: number, height: number) {
-    this._paraChart.paraState.updateSettings(draft => {
-      draft.chart.size.width = width;
-      draft.chart.size.height = height;
+    this._paraChart.paraState.updateConfig(draft => {
+      draft.chart.width = width;
+      draft.chart.height = height;
     });
   }
 
@@ -708,14 +779,13 @@ export class ParaAPI {
   }
 
   addTrendLine() {
-    this.paraChart.paraState.updateSettings(draft => {
+    this.paraChart.paraState.updateConfig(draft => {
       draft.type.scatter.isShowTrendLine = true;
     });
   }
 
-
   removeTrendLine() {
-    this.paraChart.paraState.updateSettings(draft => {
+    this.paraChart.paraState.updateConfig(draft => {
       draft.type.scatter.isShowTrendLine = false;
     });
   }

@@ -15,16 +15,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { PlaneSeriesView, PointPlotView, PointDatapointView } from '.';
-import { type LineSettings, type DeepReadonly, type Setting } from '../../../../state/settings_types';
+import { type Setting } from '../../../../state/settings_types';
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
-import { bboxOfBboxes, isPointerInbounds } from '../../../../common/utils';
+import { bboxOfBboxes } from '../../../../common/utils';
 
 import { type StyleInfo } from 'lit/directives/style-map.js';
-import { RectShape } from '../../../shape';
-import { Popup } from '../../../popup';
-import { DataSymbol } from '../../../symbol';
-import { Label } from '../../../label';
 
 /**
  * Class for drawing line charts.
@@ -34,10 +30,6 @@ export class LinePlotView extends PointPlotView {
 
   get datapointViews() {
     return super.datapointViews as LineSection[];
-  }
-
-  get settings() {
-    return super.settings as DeepReadonly<LineSettings>;
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
@@ -55,14 +47,14 @@ export class LinePlotView extends PointPlotView {
 
   get effectiveLineWidth() {
     return this.paraview.paraState.config.ui.isLowVisionModeEnabled
-      ? this.paraview.paraState.settings.type.line.lowVisionLineWidth
-      : this.paraview.paraState.settings.type.line.lineWidth;
+      ? this.paraview.paraState.config.type.line.lowVisionLineWidth
+      : this.paraview.paraState.config.type.line.lineWidth;
   }
 
   get effectiveVisitedScale() {
     return this.paraview.paraState.config.ui.isLowVisionModeEnabled
       ? 1
-      : this.paraview.paraState.settings.type.line.lineHighlightScale;
+      : this.paraview.paraState.config.type.line.lineHighlightScale;
   }
 
   get visitedStrokeWidth(): number {
@@ -75,8 +67,8 @@ export class LinePlotView extends PointPlotView {
 
   pointerMove(): void {
     const coords = this.paraview.paraState.pointerCoords;
-    if (this.paraview.paraState.settings.chart.isShowPopups
-      && this.paraview.paraState.settings.popup.activation === "onHover"
+    if (this.paraview.paraState.config.chart.isShowPopups
+      && this.paraview.paraState.config.popup.activation === "onHover"
       && !this.paraview.paraState.config.ui.isTourGuideEnabled
     ) {
       if (coords.x > 0 && coords.x < this.width && coords.y > 0 && coords.y < this.height) {
@@ -153,16 +145,6 @@ export class LineSection extends PointDatapointView {
 
     // create shape and symbol
     super.completeLayout();
-  }
-
-  protected _createSymbol() {
-    const series = this.seriesProps;
-    let symbolType = series.symbol;
-    // If datapoints are laid out again after the initial layout,
-    // we need to replace the original shape and symbol
-    this._symbol?.remove();
-    this._symbol = DataSymbol.fromType(this.paraview, symbolType);
-    this.append(this._symbol);
   }
 
   protected _computePrev() {

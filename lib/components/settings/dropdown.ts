@@ -1,7 +1,7 @@
 import { SettingControl } from '.';
 
 import { customElement } from 'lit/decorators.js';
-import { html } from 'lit';
+import { html, css } from 'lit';
 
 import { Dropdown } from '@fizz/ui-components';
 import '@fizz/ui-components';
@@ -18,6 +18,15 @@ export class DropdownSettingControl extends SettingControl<'dropdown'> {
 
   private values!: string[];
 
+  static styles = [
+    //styles,
+    css`
+      fizz-dropdown {
+        --first-letter-text-transform: capitalize;
+      }
+    `
+  ];
+
   connectedCallback() {
     super.connectedCallback();
     this.values = this.info.options!.values ?? this.info.options!.options;
@@ -25,8 +34,8 @@ export class DropdownSettingControl extends SettingControl<'dropdown'> {
 
   protected content() {
     return html`
-      <fizz-dropdown 
-        label=${this.label} 
+      <fizz-dropdown
+        label=${this.label}
         .options=${this.info.options!.options}
         selected=${this.values.indexOf(this._value as string)}
         @select=${(e: CustomEvent) => {

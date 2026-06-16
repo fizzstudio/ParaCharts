@@ -19,15 +19,15 @@ import { View, Container } from '../base_view';
 import { type Layout } from '../layout';
 import { type Axis, type AxisOrientation } from './axis';
 import { Label, type LabelTextAnchor } from '../label';
-import { ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 
 import { type TemplateResult } from 'lit';
 import { Vec2 } from '../../common/vector';
 import { PlaneModel } from '@fizz/paramodel';
 import { Popup } from '../popup';
-import { OrientedAxisSettings } from '../../state';
 import { Datatype } from '@fizz/paramanifest';
 import { AxisLabelTier } from '../../chart_types';
+import { AxisHorizConfig, AxisVertConfig } from '../../config/config_types';
 
 export interface TickLabelTierOptions {
   orientation: AxisOrientation;
@@ -57,8 +57,8 @@ export abstract class TickLabelTier extends Container(View) {
   protected _tickDistance!: number;
 
   constructor(
-    paraview: ParaView,
-    protected _axisSettings: OrientedAxisSettings<AxisOrientation>,
+    paraview: ViewContext,
+    protected _axisSettings: AxisHorizConfig | AxisVertConfig,
     protected _options: TickLabelTierOptions
   ) {
     super(paraview);
@@ -113,8 +113,6 @@ export abstract class TickLabelTier extends Container(View) {
     return Math.max(...this._children.map(kid => kid.paddedHeight ?? 0));
   }
 
-  protected abstract get _labelTextAnchor(): LabelTextAnchor;
-
   protected abstract get _labelWrapWidth(): number | undefined;
 
   createTickLabels(_checkLabels = true) {
@@ -136,7 +134,6 @@ export abstract class TickLabelTier extends Container(View) {
           this._axisSettings.position as string],
         role: 'axislabel',
         text: labelText,
-        textAnchor: this._labelTextAnchor,
         wrapWidth: this._labelWrapWidth,
         x: 0,
         y: 0,
@@ -147,8 +144,8 @@ export abstract class TickLabelTier extends Container(View) {
               this._options.content.intervals[i].start,
               this._options.content.intervals[i].end);
           }
-          if (this.paraview.paraState.settings.chart.isShowPopups
-            && this.paraview.paraState.settings.popup.activation === "onHover"
+          if (this.paraview.paraState.config.chart.isShowPopups
+            && this.paraview.paraState.config.popup.activation === "onHover"
             && !this.paraview.paraState.config.ui.isTourGuideEnabled) {
               this.addPopup(labelText[0] == "Q" ? tiers[i] : labelText, i);
           }
@@ -160,8 +157,8 @@ export abstract class TickLabelTier extends Container(View) {
               this._options.content.intervals[i].start,
               this._options.content.intervals[i].end);
           }
-          if (this.paraview.paraState.settings.chart.isShowPopups
-            && this.paraview.paraState.settings.popup.activation === "onHover"
+          if (this.paraview.paraState.config.chart.isShowPopups
+            && this.paraview.paraState.config.popup.activation === "onHover"
             && !this.paraview.paraState.config.ui.isTourGuideEnabled) {
               this.paraview.paraState.removePopup(`${this.id}-${i}`);
           }
@@ -194,8 +191,8 @@ export abstract class TickLabelTier extends Container(View) {
  */
 export class HorizTickLabelTier extends TickLabelTier {
   constructor(
-    paraview: ParaView,
-    axisSettings: OrientedAxisSettings<AxisOrientation>,
+    paraview: ViewContext,
+    axisSettings: AxisHorizConfig,
     options: TickLabelTierOptions,
   ) {
     super(paraview, axisSettings, options);
@@ -210,10 +207,6 @@ export class HorizTickLabelTier extends TickLabelTier {
 
   protected get _length(): number {
     return this._width;
-  }
-
-  protected get _labelTextAnchor(): LabelTextAnchor {
-    return this._axisSettings.ticks.labels.angle ? 'end' : 'middle';
   }
 
   protected get _labelWrapWidth() {
@@ -233,8 +226,9 @@ export class HorizTickLabelTier extends TickLabelTier {
     const isXIntertick = this._options.isChartIntertick && this._options.isFacetIndep;
     let pos: number;
     if (this._options.index && this._options.datatype === 'date') {
-      const intStart = this._length*this._options.content.intervals![index].start;
-      const intEnd = this._length*this._options.content.intervals![index].end;
+      const intIdx = index*this._options.step;
+      const intStart = this._length*this._options.content.intervals![intIdx].start;
+      const intEnd = this._length*this._options.content.intervals![intIdx].end;
       pos = (intStart + intEnd)/2;
     } else {
       pos = this._labelDistance*index;
@@ -265,7 +259,7 @@ export class HorizTickLabelTier extends TickLabelTier {
   createTickLabels(checkLabels = true) {
     super.createTickLabels();
     this._children.forEach((kid, i) => {
-      if (this.paraview.paraState.settings.axis.horiz.ticks.labels.angle) {
+      if (this.paraview.paraState.config.axis.horiz.ticks.labels.angle) {
         kid.angle = this._axisSettings.ticks.labels.angle;
       }
       if (kid.angle === 0) {
@@ -355,8 +349,8 @@ export class HorizTickLabelTier extends TickLabelTier {
 export class VertTickLabelTier extends TickLabelTier {
 
   constructor(
-    paraview: ParaView,
-    axisSettings: OrientedAxisSettings<AxisOrientation>,
+    paraview: ViewContext,
+    axisSettings: AxisVertConfig,
     options: TickLabelTierOptions
   ) {
     super(paraview, axisSettings, options);
@@ -370,10 +364,6 @@ export class VertTickLabelTier extends TickLabelTier {
 
   protected get _length() {
     return this._height;
-  }
-
-  protected get _labelTextAnchor(): LabelTextAnchor {
-    return 'end';
   }
 
   protected get _labelWrapWidth() {
@@ -421,10 +411,10 @@ export class VertTickLabelTier extends TickLabelTier {
     // and we don't need the xs to compute the width
     this.updateSize(false);
     this._children.forEach((kid, i) => {
-        kid.x = this._tickLabelX(i);
+        kid.right = this._tickLabelX(i);
         kid.y = this._tickLabelY(i);
     });
-    if (checkLabels && this._options.isFacetIndep) {
+    if (checkLabels) {
       this._options.step = this._optimizeLabelSpacing();
       this.createTickLabels(false);
     }
@@ -463,7 +453,7 @@ export class VertTickLabelTier extends TickLabelTier {
       {
         text: text ?? datapointText,
         x: this._tickLabelX(index ?? 0) + 15,
-        y: this._tickLabelY(index ?? 0) + this.paraview.paraState.settings.popup.margin - this.children[index ?? 0].height ,
+        y: this._tickLabelY(index ?? 0) + this.paraview.paraState.config.popup.margin - this.children[index ?? 0].height ,
         id: this.id,
         type: "vertTick",
         fill: "hsl(0, 0%, 0%)",

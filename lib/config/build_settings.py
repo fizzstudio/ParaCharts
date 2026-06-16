@@ -32,6 +32,10 @@ def main(args):
         print(no_edit, file=typesf)
         print(
 """
+import { type Size2d } from '@fizz/chart-classifier-utils'
+import { type SnapLocation } from '../common/types';
+import { type Color } from '../common/color_types';
+
 /**
  * A single config item.
  * @public
@@ -42,7 +46,118 @@ export type ConfigSetting = string | number | boolean;
  * @public
  */
 export type ConfigGroup = {[key: string]: ConfigSetting | ConfigGroup | undefined};
+/**
+ * A mapping of dotted setting paths to values.
+ * @public
+ */
+export type SettingsInput = {[path: string]: ConfigSetting};
 
+/** Chart types that display individual points
+ * @public
+ */
+export type PointChartType = 'line' | 'stepline' | 'scatter';
+
+/** Chart types drawn using a Cartesian coordinate system
+ * @public
+ */
+export type PlaneChartType = 'bar' | 'lollipop' | PointChartType;
+
+/** Chart types that use radial/circular layout
+ * @public
+ */
+export type PastryChartType = 'pie' | 'donut' | 'gauge';
+
+/** All supported chart types
+ * @public
+ */
+export type ChartType = PlaneChartType | PastryChartType;
+
+/** SVG viewBox dimensions for chart viewport
+ * @public
+ */
+export interface ViewBox extends ConfigGroup {
+  /** X coordinate of top-left corner */
+  x: number;
+  /** Y coordinate of top-left corner */
+  y: number;
+  /** Width of viewable area */
+  width: number;
+  /** Height of viewable area */
+  height: number;
+}
+
+/** @public */
+export type VertDirection = 'up' | 'down';
+
+/** @public */
+export type HorizDirection = 'left' | 'right';
+
+/** @public */
+export type PlaneDirection = VertDirection | HorizDirection;
+
+/** @public */
+export type DepthDirection = 'in' | 'out';
+
+/** @public */
+export type Direction = VertDirection | HorizDirection | DepthDirection;
+
+/** @public */
+export const directions: Direction[] = ['up', 'down', 'left', 'right', 'in', 'out'];
+
+/** @public */
+export type VertCardinalDirection = 'north' | 'south';
+/** @public */
+export type HorizCardinalDirection = 'east' | 'west';
+
+/**
+ * Which direction is "up" on a chart.
+ * @public
+ */
+export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
+/** Order for legend items
+ * @public
+ */
+export type LegendItemOrder = 'alphabetical' | 'reverseAlphabetical' | 'startingOrder' | 'endingOrder';
+
+/** Position for data value labels on bars
+ * @public
+ */
+export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
+/** Format for label display - 'raw' for unformatted or format string
+ * @public
+ */
+export type LabelFormat = 'raw' | string;
+/** Control panel tab label display style
+ * @public
+ */
+export type TabLabelStyle = 'icon' | 'iconLabel' | 'label';
+/** Which axis to animate along during chart reveal
+ * @public
+ */
+export type AnimationType = 'yAxis' | 'xAxis' | 'none';
+
+/** Starting point for chart animations
+ * @public
+ */
+export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
+/**
+ * Identifies the source that set a color preference value.
+ * Determines whether an incoming change (e.g. from a mode or system event)
+ * is allowed to override the current value.
+ * @public
+ */
+export type ColorPrefSource =
+  | 'default'      // ParaCharts fallback
+  | 'chartDefault' // author/manifest default
+  | 'modeDefault'  // set by an active mode (e.g. low-vision mode)
+  | 'profile'      // saved in manifest extensions
+  | 'system'       // derived from current media-query state
+  | 'user';        // explicit user choice — wins until explicitly reset
+
+/** @public */
+export type DeepReadonly<T> = {
+  readonly [Property in keyof T]: T extends ConfigSetting ? T[Property] : DeepReadonly<T[Property]>;
+};
 """, file=typesf)
         write_types_group([], tree, tree, typesf)
 
@@ -97,8 +212,10 @@ for (const [k, v] of Object.entries(configMetadata)) {
     configMetadata[k].settings = Object.create(refTarget.settings);
     Object.assign(configMetadata[k].settings, v.settings);
     for (const [sk, sv] of Object.entries(configMetadata[k].settings!)) {
-      configMetadata[k].settings![sk] = Object.create(refTarget.settings![sk]);
-      Object.assign(configMetadata[k].settings![sk], sv);
+      if (refTarget.settings![sk]) {
+        configMetadata[k].settings![sk] = Object.create(refTarget.settings![sk]);
+        Object.assign(configMetadata[k].settings![sk], sv);
+      }
     }
   }
 }
@@ -137,9 +254,6 @@ def load_file(file: Path, node, parent):
 def write_defaults_group(key, node, tree, defaults, indent = 0):
     if node.get('__abstract__'):
         return
-    #else:
-    #    print('ABSTRACT', key, node.get('__abstract__'))
-    # print('write defaults group', key)
     if key:
         print(f'{" "*indent}{key}: {{', file=defaults)
 
@@ -178,15 +292,16 @@ def js_value(py_val):
 
 
 def write_types_group(key_path, node, tree, types):
-    # print('write types group', '.'.join(key_path))
+    print('write types group', '.'.join(key_path))
     key_path_joined = ''.join([k.capitalize() for k in key_path])
 
     if node.get('__ref__'):
         parts = node['__ref__'].split('.')
+        print('parts', parts)
         parts_joined = ''.join([p.capitalize() for p in parts])
         iface = parts_joined + 'Config'
         print(f'export interface {key_path_joined}Config extends {iface} {{', file=types)
-        print('}', file=types)
+        # print('}', file=types)
 
         # new_node = tree
         # for part in parts:
@@ -203,25 +318,27 @@ def write_types_group(key_path, node, tree, types):
     else:
         print(f'export interface {key_path_joined}Config extends ConfigGroup {{', file=types)
 
-        groups = []
-        items = []
-        for k, v in node.items():
-            if isinstance(v, Group):
-                groups.append([k, v])
-            else:
-                items.append([k, v])
-        for k, v in items:
-            if not isinstance(v, dict):
-                continue
-            write_types_item(k, v, types)
-        for k, v in groups:
-            if v.get('__abstract__'):
-                continue
-            print(f'  {k}: {key_path_joined + k.capitalize()}Config;', file=types)
-        print('}', file=types)
+    groups = []
+    items = []
+    for k, v in node.items():
+        if isinstance(v, Group):
+            groups.append([k, v])
+        else:
+            items.append([k, v])
+    for k, v in items:
+        if not isinstance(v, dict):
+            continue
+        if not v.get('description'):
+            continue
+        write_types_item(k, v, types)
+    for k, v in groups:
+        if v.get('__abstract__'):
+            continue
+        print(f'  {k}: {key_path_joined + k.capitalize()}Config;', file=types)
+    print('}', file=types)
 
-        for k, v in groups:
-            write_types_group(key_path + [k], v, tree, types)
+    for k, v in groups:
+        write_types_group(key_path + [k], v, tree, types)
 
 def write_types_item(key, setting, types):
     print(f'  /** {setting.get('description')} */', file=types)
@@ -229,7 +346,7 @@ def write_types_item(key, setting, types):
 
 
 def write_metadata_header(dir_path, key_path, node, tree, f):
-    # print('write metadata header', '/'.join(key_path))
+    print('write metadata header', '/'.join(key_path))
     key_path_file = '/'.join(key_path) + '.json'
     key_path_dir = '/'.join(key_path) + '/index.json'
     key_path_joined = ''.join([k.capitalize() for k in key_path])
@@ -253,7 +370,9 @@ def write_metadata_header(dir_path, key_path, node, tree, f):
         for k, v in new_node.items():
             if k == '__abstract__':
                 continue
-            if not isinstance(v, Group):
+            if k == '__ref__':
+                continue
+            if not isinstance(v, Group) and node.get(k):
                 v.update(node[k])
         node = new_node
     groups = []
@@ -292,7 +411,9 @@ def write_metadata_group(key_path, node, tree, f):
         for k, v in new_node.items():
             if k == '__abstract__':
                 continue
-            if not isinstance(v, Group):
+            if k == '__ref__':
+                continue
+            if not isinstance(v, Group) and node.get(k):
                 v.update(node[k])
         node = new_node
     groups = []

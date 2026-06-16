@@ -2,7 +2,7 @@
     "family": "description",
     "settings": {
         "captionFormat": {
-            "label": "Caption format",
+            "label": "cpanel.tabs.chart.caption_format",
             "description": "Use concise or full captions",
             "type": "'full' | 'concise'",
             "default": "full",

@@ -79,8 +79,8 @@ export const settingRanges: Record<string, NumericRange> = {
   // ============================================
   // Chart Settings
   // ============================================
-  'chart.size.width': { min: 1, type: 'int' },
-  'chart.size.height': { min: 1, type: 'int' },
+  'chart.width': { min: 1, type: 'int' },
+  'chart.height': { min: 1, type: 'int' },
   'chart.title.margin': { min: 0, type: 'int' },
   'chart.fontScale': { min: 0.5, type: 'float' },
   'chart.strokeWidth': { min: 0, type: 'float' },
@@ -93,8 +93,6 @@ export const settingRanges: Record<string, NumericRange> = {
   // ============================================
   // Axis Settings
   // ============================================
-  'axis.minInterval': { min: 0, type: 'float' },
-  'axis.datapointMargin': { min: 0, type: 'float' },
 
   // Horizontal axis
   'axis.horiz.title.gap': { min: 0, type: 'int' },
@@ -130,12 +128,6 @@ export const settingRanges: Record<string, NumericRange> = {
   'legend.symbolLabelGap': { min: 0, type: 'int' },
   'legend.pairGap': { min: 0, type: 'int' },
   'legend.margin': { min: 0, type: 'int' },
-
-  // ============================================
-  // Plot Area Settings
-  // ============================================
-  'plotArea.size.width': { type: 'int' },
-  'plotArea.size.height': { type: 'int' },
 
   // ============================================
   // Popup Settings
@@ -189,7 +181,6 @@ export const settingRanges: Record<string, NumericRange> = {
   'type.line.lowVisionLineWidth': { type: 'float' },
   // Negative scale would mirror/flip; 0 means no highlight effect
   'type.line.lineHighlightScale': { min: 0, type: 'float' },
-  'type.line.baseSymbolSize': { type: 'int' },
   'type.line.seriesLabelPadding': { min: 0, type: 'int' },
   'type.line.leaderLineLength': { min: 0, type: 'int' },
 

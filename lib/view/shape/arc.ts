@@ -1,5 +1,5 @@
 import { fixed } from '../../common/utils';
-import { type ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 import { type ShapeOptions, Shape } from './shape';
 import { Vec2 } from '../../common/vector';
 
@@ -18,7 +18,7 @@ export class ArcShape extends Shape {
   protected _r: number;
   protected _points: Vec2[];
 
-  constructor(paraview: ParaView, private options: ArcOptions) {
+  constructor(paraview: ViewContext, private options: ArcOptions) {
     super(paraview, options);
     this._points = options.points.map(p => p.clone());
     this._r = options.r;
@@ -58,7 +58,7 @@ export class ArcShape extends Shape {
   render() {
     let index = this.parent?.index;
 
-    if (this._options.isPattern && index !== undefined) {
+    if (this.paraview.paraState.colors.palette.isPattern && index !== undefined) {
       let parent = this.parent as DatapointView;
       this._styleInfo.fill = `url(#Pattern${index})`;
 
@@ -68,7 +68,6 @@ export class ArcShape extends Shape {
       }
 
       return svg`
-      <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
       <path
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}

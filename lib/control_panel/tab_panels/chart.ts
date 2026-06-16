@@ -6,25 +6,29 @@ import {
 } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import { FontSettingsDialog } from '../dialogs/font_dialog';
 import { PopupSettingsDialog } from '../../view/popup';
+import { LegendSettingsDialog } from '../dialogs/legend_dialog';
 
 
 @customElement('para-chart-panel')
 export class ChartPanel extends ControlPanelTabPanel {
-
+  protected _fontDialogRef = createRef<FontSettingsDialog>();
   protected _popupDialogRef = createRef<PopupSettingsDialog>();
+  protected _legendDialogRef = createRef<LegendSettingsDialog>();
 
   static styles = [
     ...ControlPanelTabPanel.styles,
     css`
       #columns {
         display: grid;
-        grid-template-columns: 9rem minmax(0, 11rem) 9.5rem 8rem;
+        /*grid-template-columns: 9rem minmax(0, 20rem) 9.5rem 8rem;*/
         grid-template-rows: 2.5rem 2.5rem;
         padding: 0.25rem;
         column-gap: 0.5rem;
         row-gap: 0.5rem;
         align-items: center;
+        justify-items: center;
       }
       #width {
         grid-row: 1;
@@ -66,30 +70,22 @@ export class ChartPanel extends ControlPanelTabPanel {
         gap: 0.5rem;
         align-items: center;
       }
+      button::first-letter {
+        text-transform: capitalize;
+      }
     `
   ];
 
   connectedCallback() {
     super.connectedCallback();
     this._paraState.settingControls.insert('description.captionFormat');
-    this._paraState.settingControls.add({
-      type: 'slider',
-      key: 'chart.fontScale',
-      label: 'Font scale',
-      options: {
-        min: 0.5,
-        max: 3,
-        step: 0.1,
-        showValue: true
-      },
-      parentView: 'controlPanel.tabs.chart.fonts',
-    });
   }
 
   render() {
     const chartContent = this._paraState.settingControls.getContent(`controlPanel.tabs.chart.chart`);
     const popupsContent = this._paraState.settingControls.getContent(`controlPanel.tabs.chart.popups`);
     const fontsContent = this._paraState.settingControls.getContent(`controlPanel.tabs.chart.fonts`);
+    const legendContent = this._paraState.settingControls.getContent(`controlPanel.tabs.chart.legend`);
     return html`
       <section id="panel">
         <div id="columns">
@@ -110,6 +106,20 @@ export class ChartPanel extends ControlPanelTabPanel {
               ${columnContent}
             </div>
           `)}
+          <div>
+            <button
+              @click=${() => this._fontDialogRef.value?.show()}
+            >
+              ${this._globalState.l10n.localize('cpanel.tabs.chart.font_settings')}
+            </button>
+          </div>
+          <div>
+            <button
+              @click=${() => this._legendDialogRef.value?.show()}
+            >
+              Legend settings
+            </button>
+          </div>
           ${popupsContent.map(columnContent => html`
             <div id="popup-content">
               ${columnContent}
@@ -119,9 +129,10 @@ export class ChartPanel extends ControlPanelTabPanel {
           <section id="popups">
             <button
               @click=${() => {
-                this._popupDialogRef.value?.show()}}
+                  this._popupDialogRef.value?.show()
+                }}
             >
-              Popup settings
+              ${this._globalState.l10n.localize('cpanel.tabs.chart.popup_settings')}
             </button>
             <para-popup-settings-dialog
               ${ref(this._popupDialogRef)}
@@ -134,7 +145,20 @@ export class ChartPanel extends ControlPanelTabPanel {
         <div>
           ${fontsContent}
         </div>
+        <div>
+          ${legendContent}
+        </div>
       </section>
+      <para-font-settings-dialog
+        ${ref(this._fontDialogRef)}
+        id="font-settings-dialog"
+        .globalState=${this._globalState}
+      ></para-font-settings-dialog>
+      <para-legend-settings-dialog
+        ${ref(this._legendDialogRef)}
+        id="legend-settings-dialog"
+        .globalState=${this._globalState}
+      ></para-legend-settings-dialog>
     `;
   }
 

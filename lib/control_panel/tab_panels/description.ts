@@ -44,8 +44,8 @@ export class DescriptionPanel extends ControlPanelTabPanel {
   // }
 
   positionCaptionBox() {
-    if (this._controlPanel.settings.isControlPanelDefaultOpen
-      || !this._controlPanel.settings.caption.isCaptionExternalWhenControlPanelClosed) {
+    if (this._controlPanel.config.isControlPanelDefaultOpen
+      || !this._controlPanel.config.caption.isCaptionExternalWhenControlPanelClosed) {
       this.internalizeCaptionBox();
     } else {
       this._controlPanel.externalizeCaptionBox();

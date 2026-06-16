@@ -1,0 +1,29 @@
+{
+    "abstract": true,
+    "settings": {
+        "minYValue": {
+            "label": "cpanel.tabs.chart.min_y",
+            "description": "Minimum Y value override",
+            "type": "number | 'unset'",
+            "default": "unset",
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number"
+            },
+            "parentView": "controlPanel.tabs.chart.general.minY",
+            "refresh": "chart"
+        },
+        "maxYValue": {
+            "label": "cpanel.tabs.chart.max_y",
+            "description": "Maximum Y value override",
+            "type": "number | 'unset'",
+            "default": "unset",
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number"
+            },
+            "parentView": "controlPanel.tabs.chart.general.maxY",
+            "refresh": "chart"
+        }
+    }
+}

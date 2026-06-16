@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const Chart62: Story = {
-  name: "Sample data (62)",
+  name: "Acme Corp Share Price (62)",
   args: {
-    filename: "manifests/waterfall-manifest-004.json",
+    filename: "manifests/waterfall-manifest-001.json",
     forcecharttype: "waterfall",
   }
 }

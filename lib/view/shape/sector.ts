@@ -1,6 +1,6 @@
 
 import { fixed } from '../../common/utils';
-import { type ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 import { type ShapeOptions, Shape } from './shape';
 import { Vec2 } from '../../common/vector';
 
@@ -58,7 +58,7 @@ export class SectorShape extends Shape {
   protected _arcLarge!: number;
   protected _arcSweep = 1;
 
-  constructor(paraview: ParaView, private options: SectorOptions) {
+  constructor(paraview: ViewContext, private options: SectorOptions) {
     super(paraview, options);
     this._r = options.r;
     this._centralAngle = options.centralAngle;
@@ -306,8 +306,8 @@ export class SectorShape extends Shape {
   }
 
   render() {
-    if (this._options.isPattern) {
-      let index = this.parent!.index
+    const index = this.parent?.index;
+    if (this.paraview.paraState.colors.palette.isPattern && index !== undefined) {
       let parent = this.parent! as DatapointView
       this._styleInfo.fill = `url(#Pattern${index})`
       //I can't figure out why the visited styles don't auto-apply, so I'm doing it manually here
@@ -316,7 +316,6 @@ export class SectorShape extends Shape {
         this._styleInfo.strokeWidth = 6
       }
       return svg`
-          <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
           <path
             d=${this._pathD}
             transform=${this._scale !== 1

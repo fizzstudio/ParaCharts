@@ -14,9 +14,9 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import {
-  type PlotSettings, type DeepReadonly, type Direction, HorizDirection, Setting
-} from '../state/settings_types';
+import { Setting } from '../state/settings_types';
+import { DeepReadonly } from '../config/config_types';
+import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
 import { SettingsManager } from '../state/settings_manager';
 import { ParaView } from '../paraview/paraview';
 import { type LegendItem } from '../view/legend';
@@ -28,7 +28,7 @@ import { type AxisCoord, AxisOrientation } from '../view/axis';
 
 import { Datapoint } from '@fizz/paramodel';
 import { ChartType, Facet } from '@fizz/paramanifest';
-import { Summarizer, formatBox, Highlight, summarizerFromModel } from '@fizz/parasummary';
+import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
 
 import { Unsubscribe } from '@lit-app/state';
 import { executeParaActions, parseActions } from '../paraactions/paraactions';
@@ -69,6 +69,7 @@ export abstract class BaseChartInfo {
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
   protected _soniRiffInterval: ReturnType<typeof setTimeout> | null = null;
   protected _paraView!: ParaView;
+  protected _conciseSummary!: HighlightedSummary;
 
   constructor(protected _type: ChartType, protected _paraState: ParaState) {
     this._init();
@@ -81,34 +82,9 @@ export abstract class BaseChartInfo {
   }
 
   protected _addSettingControls() {
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'chart.size.width',
-      label: 'Width',
-      options: {
-        inputType: 'number',
-        min: 1,
-        max: 1000
-      },
-      parentView: 'controlPanel.tabs.chart.general.width',
-    });
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'chart.size.height',
-      label: 'Height',
-      options: {
-        inputType: 'number',
-        min: 1,
-        max: 1000
-      },
-      parentView: 'controlPanel.tabs.chart.general.height',
-    });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'chart.isShowPopups',
-      label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.popups',
-    });
+    this._paraState.settingControls.insert('chart.width');
+    this._paraState.settingControls.insert('chart.height');
+    this._paraState.settingControls.insert('chart.isShowPopups');
   }
 
   protected _init() {
@@ -127,16 +103,28 @@ export abstract class BaseChartInfo {
     this._summarizer = summarizerFromModel(this._paraState.model!);
   }
 
+  async setup() {
+    this._conciseSummary = await this._summarizer.getConciseSummary();
+  }
+
   get summarizer(): Summarizer {
     return this._summarizer;
+  }
+
+  get conciseSummary(): HighlightedSummary {
+    return this._conciseSummary;
   }
 
   get managedSettingKeys() {
     return [`type.${this._type}`];
   }
 
-  get settings(): DeepReadonly<PlotSettings> {
+  get settings(): DeepReadonly<ConfigGroup> {
     return SettingsManager.getGroupLink(this.managedSettingKeys[0], this._paraState.settings);
+  }
+
+  get config(): DeepReadonly<ConfigGroup> {
+    return SettingsManager.getGroupLink(this.managedSettingKeys[0], this._paraState.config);
   }
 
   get navMap() {
@@ -291,7 +279,7 @@ export abstract class BaseChartInfo {
       const { seriesKey, index } = datapointIdToCursor(datapointId);
       const series = this._paraState.model!.atKey(seriesKey)!;
       const dp = series[index];
-      return `${series.label} (${formatBox(dp.facetBox('x')!, this._paraState.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this._paraState.getFormatType('statusBar'))})`;
+      return `${series.label} (${formatBox(dp.facetBox('x')!, 'raw')}, ${formatBox(dp.facetBox('y')!, 'raw')})`;
     };
 
     const newTotalSelected = this._paraState.selectedDatapoints.size;

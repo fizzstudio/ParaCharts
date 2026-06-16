@@ -37,6 +37,9 @@ export class AnnotationPanel extends ControlPanelTabPanel {
         font-weight: bold;
         background-color: var(--theme-color-light);
       }
+      button::first-letter {
+        text-transform: capitalize;
+      }
     `
   ];
 
@@ -151,13 +154,13 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     const { seriesKey, index } = datapointIdToCursor(dpId);
     const series = this._paraState.model!.atKey(seriesKey)!.getLabel();
     return html`
-          <div id="annotDialog">
-            <div>Datapoint: ${series}, ${index}</div><br>
-            <label for="annot">Text:</label><br>
-            <input type="text" id="annot" name="annot">
-            <br><br>
-          </div>
-        `;
+      <div id="annotDialog">
+        <div>Datapoint: ${series}, ${index}</div><br>
+        <label for="annot">Text:</label><br>
+        <input type="text" id="annot" name="annot">
+        <br><br>
+      </div>
+    `;
   }
 
   async showEditAnnotDialog(annot: PointAnnotation) {
@@ -169,14 +172,14 @@ export class AnnotationPanel extends ControlPanelTabPanel {
     const index = annot.index;
     const series = this._paraState.model!.atKey(seriesKey)!.getLabel();
     return html`
-          <div id="annotDialog">
-            <div>Datapoint: ${series}, ${index}</div><br>
-            <div>Current text: ${annot.text}</div><br>
-            <label for="annot">New text:</label><br>
-            <input type="text" id="annot" name="annot">
-            <br><br>
-          </div>
-        `;
+      <div id="annotDialog">
+        <div>Datapoint: ${series}, ${index}</div><br>
+        <div>Current text: ${annot.text}</div><br>
+        <label for="annot">New text:</label><br>
+        <input type="text" id="annot" name="annot">
+        <br><br>
+      </div>
+    `;
   }
 
   render() {
@@ -191,7 +194,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
               this.addAnnotation();
             }}
           >
-            Add Annotation
+            ${this._globalState.l10n.localize('cpanel.tabs.annotations.add_annotation')}
           </button>
         </div>
         <div>
@@ -201,7 +204,7 @@ export class AnnotationPanel extends ControlPanelTabPanel {
               }
             }
           >
-            Add Line breaks
+            ${this._globalState.l10n.localize('cpanel.tabs.annotations.add_line_breaks')}
           </button>
         </div>
          <div>
@@ -212,20 +215,20 @@ export class AnnotationPanel extends ControlPanelTabPanel {
               }
             }
           >
-            Remove added line breaks
+            ${this._globalState.l10n.localize('cpanel.tabs.annotations.remove_line_breaks')}
           </button>
         </div>
          <div>
           <button
             @click=${() => {
-                this._paraState.updateSettings(draft => {
-                  draft.controlPanel.isMDRAnnotationsVisible = !this._paraState.settings.controlPanel.isMDRAnnotationsVisible;
+                this._paraState.updateConfig(draft => {
+                  draft.controlPanel.isMDRAnnotationsVisible = !this._paraState.config.controlPanel.isMDRAnnotationsVisible;
                 });
                 this._paraState.showMDRAnnotations()
               }
             }
           >
-            Show Trend Annotations
+            ${this._globalState.l10n.localize('cpanel.tabs.annotations.show_annotations')}
           </button>
         </div>
       </div>

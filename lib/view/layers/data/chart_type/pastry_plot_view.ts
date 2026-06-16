@@ -2,19 +2,17 @@
 import { DataLayer } from '..';
 import { type BaseChartInfo } from '../../../../chart_types';
 import { DatapointView, SeriesView } from '../../../data';
-import {
-  type DeepReadonly,
-  Setting,
-} from '../../../../state';
+import { Setting } from '../../../../state';
+import { DeepReadonly } from '../../../../config/config_types';
 import { Label, type LabelTextAnchor } from '../../../label';
-import { type ParaView } from '../../../../paraview';
+import { type DataLayerContext } from '../../../view_context';
 import { type Shape, SectorShape, PathShape } from '../../../shape';
 import { Datapoint, enumerate } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { Vec2 } from '../../../../common/vector';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { datapointMatchKeyAndIndex, bboxOppositeAnchor } from '../../../../common/utils';
-import { type BboxAnchorCorner } from '../../../base_view';
+import { SnapLocation, type BboxAnchorCorner } from '../../../base_view';
 import { TypePastryConfig } from '../../../../config/config_types';
 
 export type ArcType = 'circle' | 'semicircle';
@@ -35,7 +33,7 @@ export abstract class PastryPlotView extends DataLayer {
   protected _centerLabel: Label | null = null;
 
   constructor(
-    paraview: ParaView,
+    paraview: DataLayerContext,
     width: number,
     height: number,
     index: number,
@@ -155,8 +153,8 @@ export abstract class PastryPlotView extends DataLayer {
     super.init();
     this._resizeToFitLabels();
     if (this.config.centerLabel === 'title') {
-      if (this.paraview.paraState.settings.chart.title.isDrawTitle) {
-        this.paraview.paraState.updateSettings(draft => {
+      if (this.paraview.paraState.config.chart.title.isDrawTitle) {
+        this.paraview.paraState.updateConfig(draft => {
           draft.chart.title.isDrawTitle = false;
         });
         this.paraview.documentView!.removeTitle();
@@ -166,7 +164,6 @@ export abstract class PastryPlotView extends DataLayer {
         text: this.paraview.paraState.title,
         centerX: this._cx,
         centerY: this._cy,
-        textAnchor: 'middle',
         wrapWidth: 2 * (this.radius - this.config.annularThickness * this.radius)
           - this.config.centerLabelPadding * 2,
         id: 'center-label'
@@ -187,13 +184,6 @@ export abstract class PastryPlotView extends DataLayer {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['color.colorPalette', 'color.colorVisionMode'].includes(path)) {
-      if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
-        || this.paraview.paraState.config.color.colorPalette === 'pattern') {
-        this.paraview.createDocumentView();
-        this.paraview.requestUpdate();
-      }
-    }
 
     const settings = ['explode', 'orientationAngleOffset', 'insideLabels.contents', 'outsideLabels.contents'];
     if (settings.map(s => `type.${this.paraview.paraState.type}.${s}`).includes(path)) {
@@ -544,6 +534,7 @@ export abstract class RadialSlice extends DatapointView {
       this.chart.config.outsideLabels.arcGap);
     let textAnchor: LabelTextAnchor = 'end';
     let bboxAnchor: BboxAnchorCorner = 'topLeft';
+    let justify: SnapLocation = 'start';
     let leftPad = 0;
     let rightPad = 0;
     const loc = sector.arcCenter.add(arcDistVec);
@@ -554,11 +545,12 @@ export abstract class RadialSlice extends DatapointView {
     } else {
       loc.x -= this.chart.config.outsideLabels.horizShift;
       rightPad = this.chart.config.outsideLabels.horizPadding;
+      justify = 'end';
     }
     if (this.isPositionBottom) {
-      bboxAnchor = textAnchor === 'start' ? 'topLeft' : 'topRight';
+      bboxAnchor = textAnchor === ('start' as LabelTextAnchor) ? 'topLeft' : 'topRight';
     } else {
-      bboxAnchor = textAnchor === 'start' ? 'bottomLeft' : 'bottomRight';
+      bboxAnchor = textAnchor === ('start' as LabelTextAnchor) ? 'bottomLeft' : 'bottomRight';
     }
     this._outsideLabel?.remove();
     this._outsideLabel = new Label(this.paraview, {
@@ -567,7 +559,8 @@ export abstract class RadialSlice extends DatapointView {
       classList: ['pastry-outside-label'],
       role: 'datapoint',
       [bboxAnchor]: loc,
-      textAnchor: textAnchor,
+      //textAnchor: textAnchor,
+      justify
     });
     this._outsideLabel.padding = { left: leftPad, right: rightPad };
     this._leader?.remove();
@@ -591,13 +584,16 @@ export abstract class RadialSlice extends DatapointView {
     const underlineSize = this.chart.config.outsideLabels.leaderStyle === 'direct'
       ? this.chart.config.outsideLabels.horizPadding
       : this._outsideLabel!.paddedWidth;
+    const numColors = this.paraview.paraState.colors.numSeriesColors;
     const path = new PathShape(this.paraview, {
       points: [this.shapes[0].arcCenter, underlineStart, underlineStart.x > this._outsideLabel!.centerX
         ? underlineStart.subtractX(underlineSize)
         : underlineStart.addX(underlineSize)],
-      stroke: this.paraview.paraState.colors.colorValueAt(this.color),
     });
-    path.classInfo = { 'pastry-outside-label-leader': true };
+    path.classInfo = {
+      'pastry-outside-label-leader': true,
+      [`series-${this.color % numColors}`]: true,
+    };
     return path;
   }
 
@@ -629,7 +625,9 @@ export abstract class RadialSlice extends DatapointView {
     });
     if (!Object.values(this._insideLabel.textCorners).every(point => sector.containsPoint(point))) {
       if (this._outsideLabel) {
+        const oldBboxAnchor = this._outsideLabel[bboxAnchor];
         this._outsideLabel.text += `\n${this._insideLabel.text}`;
+        this._outsideLabel[bboxAnchor] = oldBboxAnchor;
         // the old leader is still appended to the datapoint!
         const oldLeader = this._leader!;
         this._leader = this._createOutsideLabelLeader();

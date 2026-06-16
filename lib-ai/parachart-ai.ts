@@ -14,25 +14,17 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { css, unsafeCSS } from 'lit';
+import { css } from 'lit';
 import { SeriesAnalyzer } from '@fizz/series-analyzer';
 import { AiSeriesPairMetadataAnalyzer } from '@fizz/paramodel';
 import { getLogger } from '@fizz/logger';
 import { ParaChart } from '../lib/parachart/parachart';
-import { styles } from '../lib/view/styles';
-// @ts-ignore
-import cpanelIconAlt from '../lib/assets/info-icon-alt.svg';
 
 // NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaCharts`
 export class ParaChartAi extends ParaChart {
 
   static styles = [
-    styles,
     css`
-      :host {
-      --control-panel-icon: url(${unsafeCSS(cpanelIconAlt)});
-        --summary-marker-size: 1.1rem;
-      }
       figure {
         display: inline-flex;
         flex-direction: column;

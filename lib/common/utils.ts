@@ -243,7 +243,7 @@ export function isPointerInbounds(paraview: ParaView, e: PointerEvent | MouseEve
   }
 }
 
-export function loopParaviewRefresh(paraview: ParaView, duration: number, interval: number) {
+export function loopParaviewRefresh(paraview: { requestUpdate(): void }, duration: number, interval: number) {
   const start = Date.now();
   const loop = () => {
     let timestamp = setTimeout(() => {
@@ -276,3 +276,29 @@ export const trendTranslation = {
     /** A single stable sequence */
     "0": "Stable",
 }
+
+export function preciseAdd(a: number, b: number) {
+  const aSplit = a.toString().split(".")
+  const bSplit = b.toString().split(".")
+  const p = Math.max(aSplit.length > 1 ? aSplit.at(-1)!.length : 0,
+    bSplit.length > 1 ? bSplit.at(-1)!.length : 0)
+  return (Math.round(a * 10 ** p) + Math.round(b * 10 ** p)) / (10 ** p);
+}
+
+export const getMostCommonReduce = (arr: number[]) => {
+  if (arr.length === 0) {
+    return NaN;
+  }
+
+  const hashmap = arr.reduce<Record<number, number>>((acc, val) => {
+    acc[val] = (acc[val] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  // Compare the keys based on their stored counts
+  const result = Object.keys(hashmap)
+    .map(Number)
+    .reduce((a, b) => hashmap[a] > hashmap[b] ? a : b);
+
+  return result;
+};

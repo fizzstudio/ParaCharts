@@ -15,13 +15,13 @@ const meta = {
 export default meta;
 
 export const Chart62: Story = {
-  name: "Sample data (62)",
+  name: "Acme Corp Share Price (62)",
   args: {
-    filename: "manifests/waterfall-manifest-004.json",
+    filename: "manifests/waterfall-manifest-001.json",
     forcecharttype: "waterfall",
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/waterfall-manifest-004.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/waterfall-manifest-001.json");
     await runner.run();
   }
 }

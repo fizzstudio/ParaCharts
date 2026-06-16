@@ -1,5 +1,5 @@
 import { type PlaneSeriesView, PointPlotView, PointDatapointView, PlaneDatapointView, TrendLineView } from '.';
-import { type ScatterSettings, Setting, type DeepReadonly } from '../../../../state/settings_types';
+import { Setting } from '../../../../state/settings_types';
 import { DataSymbol, DataSymbols } from '../../../symbol';
 import { svg } from 'lit';
 import { View } from '../../../base_view';
@@ -16,10 +16,6 @@ export class ScatterPlotView extends PointPlotView {
   _trendLine?: TrendLineView;
 
   protected _clusterShellView: ClusterShellView | null = null;
-
-  get settings() {
-    return super.settings as DeepReadonly<ScatterSettings>;
-  }
 
   get chartInfo(): ScatterChartInfo {
     return this._chartInfo;
@@ -107,13 +103,13 @@ export class ScatterPlotView extends PointPlotView {
     return super.content(...options);
   }
 
-  addClusterShell(index: number){
+  addClusterShell(index: number) {
     this.paraview.paraState.clusterShellViews.splice(0, this.paraview.paraState.clusterShellViews.length);
     this.paraview.paraState.clusterShellViews.push(new ClusterShellView(this, index));
   }
 }
 
-class ScatterPointView extends PointDatapointView {
+export class ScatterPointView extends PointDatapointView {
   declare readonly chart: ScatterPlotView;
   symbolColor: number | undefined;
   clusterID?: number;
@@ -128,7 +124,7 @@ class ScatterPointView extends PointDatapointView {
     return parentWidth * xTemp;
   }
 
-  protected _createShape(): void {
+  protected _createShapes(): void {
   }
 
   protected get _symbolColor(): number {
@@ -154,14 +150,14 @@ class ScatterPointView extends PointDatapointView {
       else {
         symbolType = types[8]
       }
-      const isShowOutliers = this.paraview.paraState.settings.type.scatter.isShowOutliers
+      const isShowOutliers = this.paraview.paraState.config.type.scatter.isShowOutliers
       if (isShowOutliers && this.isOutlier) {
         color = 0
         symbolType = types[8]
       }
     }
     this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
-      strokeWidth: this.paraview.paraState.settings.chart.symbolStrokeWidth,
+      strokeWidth: this.paraview.paraState.config.chart.symbolStrokeWidth,
       lighten: true,
       pointerEnter: (e) => {
         this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined
@@ -190,6 +186,7 @@ class ScatterPointView extends PointDatapointView {
     }
     return super.color
   }
+  
   endAnimStep(bezT: number, linearT: number) {
     //this.completeLayout();
     this._symbol!.y = this.y
@@ -253,7 +250,8 @@ export class ClusterShellView extends View {
 
   get centroidColor() {
     if (this.clusterID !== undefined) {
-      return this.clusterID;
+      const numColors = this.paraview.paraState.colors.numSeriesColors;
+      return this.clusterID % numColors;
     }
     else {
       return 0;
@@ -266,7 +264,7 @@ export class ClusterShellView extends View {
       <circle
         cx=${fixed`${this.centroidCoords[0]}`}
         cy=${fixed`${this.centroidCoords[1]}`} r="8"
-        style=stroke:black;fill:${this.paraview.paraState.colors.colorValueAt(this.centroidColor)}
+        class="series-${this.centroidColor} cluster-centroid"
       />
     </g>`
   }

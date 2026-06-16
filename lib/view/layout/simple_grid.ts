@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { View, type SnapLocation, type PaddingInput, type Padding } from '../base_view';
-import { ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 import { Layout } from './layout';
 
 import { mapn } from '@fizz/chart-classifier-utils';
@@ -46,7 +46,7 @@ export class SimpleGridLayout extends Layout {
   protected _hRules: number[] = [];
   protected _vRules: number[] = [];
 
-  constructor(paraview: ParaView, options: SimpleGridOptionsInput, id?: string) {
+  constructor(paraview: ViewContext, options: SimpleGridOptionsInput, id?: string) {
     super(paraview, id);
     this._numCols = options.numCols;
     this._rowGaps = options.rowGaps !== undefined

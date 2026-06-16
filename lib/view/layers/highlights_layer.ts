@@ -1,6 +1,6 @@
 
 import { PlanePlotView, PlotLayer, ScatterPlotView } from '.';
-import { type ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 import { svg } from 'lit';
 import { datapointIdToCursor, HighlightAxisOptions } from '../../state';
 import { DataSymbol } from '../symbol';
@@ -16,7 +16,7 @@ export type HighlightsType = 'foreground' | 'background';
 
 export class HighlightsLayer extends PlotLayer {
 
-  constructor(paraview: ParaView, width: number, height: number, public readonly type: HighlightsType) {
+  constructor(paraview: ViewContext, width: number, height: number, public readonly type: HighlightsType) {
     super(paraview, width, height);
   }
 
@@ -163,7 +163,7 @@ export class HighlightsLayer extends PlotLayer {
         width: width,
         height: height,
         x: 0 - width,
-        y: tier._tickLabelY(options.labelIndex ?? 0)! - 2 * height / 3/* + this.paraview.paraState.settings.popup.margin - tier.children[options.index ?? 0].height*/,
+        y: tier._tickLabelY(options.labelIndex ?? 0)! - 2 * height / 3/* + this.paraview.paraState.config.popup.margin - tier.children[options.index ?? 0].height*/,
         fill: 'blue',
         stroke: 'blue',
         opacity: .3

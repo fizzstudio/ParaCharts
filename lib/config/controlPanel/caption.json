@@ -1,0 +1,19 @@
+{
+    "settings": {
+        "isCaptionExternalWhenControlPanelClosed": {
+            "description": "Move caption outside chart when control panel is closed",
+            "type": "boolean",
+            "default": true
+        },
+        "hasBorder": {
+            "description": "Show border around caption box",
+            "type": "boolean",
+            "default": false
+        },
+        "isExplorationBarBeside": {
+            "description": "Place exploration bar beside caption instead of below",
+            "type": "boolean",
+            "default": true
+        }
+    }
+}

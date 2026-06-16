@@ -1,4 +1,4 @@
-import { type ParaView } from '../../../paraview';
+import { type ViewContext } from '../../view_context';
 import { View, Container } from '../../base_view';
 import { RectShape } from '../../shape/rect';
 import { type Shape } from '../../shape/shape';
@@ -10,7 +10,7 @@ const strokeWidthInner = 2;
 
 export class FocusRing extends Container(View) {
 
-  constructor(paraview: ParaView, focusView: View) {
+  constructor(paraview: ViewContext, focusView: View) {
     super(paraview);
     const gap = paraview.paraState.config.ui.focusRingGap;
     let shape = focusView.focusRingShape();
@@ -37,7 +37,7 @@ export class FocusRing extends Container(View) {
         y,
         width,
         height,
-        stroke: 'white',
+        stroke: 'yellow',
         strokeWidth: strokeWidthOuter,
         fill: 'none'
       }));
