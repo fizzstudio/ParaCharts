@@ -1,12 +1,13 @@
-import { PlaneChartInfo } from './plane_chart';
+import { AxisLabelTier, computeAxisRange, PlaneChartInfo } from './plane_chart';
 import { type ParaState } from '../state';
 import { DeepReadonly } from '../config/config_types';
 import { type ParaView } from '../paraview';
-import { type ChartType } from "@fizz/paramanifest";
+import { Facet, type ChartType } from "@fizz/paramanifest";
 import { AxisInfo, computeLabels } from '../common';
 import { DocumentView } from '../view/document_view';
 import { NavNode } from '../view/layers';
-import { Datapoint } from '@fizz/paramodel';
+import { AxisOrientation, Datapoint } from '@fizz/paramodel';
+import { Interval } from '@fizz/chart-classifier-utils';
 
 export class HistogramChartInfo extends PlaneChartInfo {
   protected _bins: number = 20;
@@ -20,17 +21,25 @@ export class HistogramChartInfo extends PlaneChartInfo {
     this._init();
   }
 
-  protected _init() {
+  _init() {
     this._bins = this._paraState.config.type.histogram.bins ?? 20;
     this._grid = this._generateBins();
+    const start = Math.min(...this.grid)
+    const end = Math.max(...this.grid)
+    if (this._paraState.config.type.histogram.displayAxis == 'x') {
+      this._yInterval = computeAxisRange(start, end)
+    }
+    else if (this._paraState.config.type.histogram.displayAxis == 'y') {
+      this._xInterval = computeAxisRange(start, end)
+    }
     const values = this._grid.flat();
     this._maxCount = Math.max(...values);
     this._paraState.clearVisited();
     this._paraState.clearSelected();
 
-    const targetAxis = this.settings.groupingAxis as DeepReadonly<string> == '' ?
+    const targetAxis = this._paraState.config.type.histogram.groupingAxis as DeepReadonly<string> == '' ?
       this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label)[0]
-      : this.settings.groupingAxis;
+      : this._paraState.config.type.histogram.groupingAxis;
     let targetFacet;
     for (let facet of this._paraState.model!.facetSignatures) {
       if (this._paraState.model!.getFacet(facet.key as string)!.label == targetAxis) {
@@ -95,7 +104,6 @@ export class HistogramChartInfo extends PlaneChartInfo {
   }
 
   get grid() {
-    //console.log("this._grid", this._grid)
     return this._grid;
   }
 
@@ -104,8 +112,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
   }
 
   protected _generateBins(): Array<number> {
-    console.log("generateBins")
-    const targetAxis = this.settings.groupingAxis as DeepReadonly<string | undefined>
+    const targetAxis = this._paraState.config.type.histogram.groupingAxis as DeepReadonly<string | undefined>
       ?? this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label)[0];
 
     let targetFacet;
@@ -177,79 +184,133 @@ export class HistogramChartInfo extends PlaneChartInfo {
     return grid;
   }
 
+
+  getFacetForOrientation(orientation: AxisOrientation): Facet | null {
+    if (this._paraState.config.type.histogram.groupingAxis
+      && ((orientation == 'horiz' && this._paraState.config.type.histogram.displayAxis == 'x')
+        || (orientation == 'vert' && this._paraState.config.type.histogram.displayAxis == 'y'))) {
+      const targetAxis = this._paraState.config.type.histogram.groupingAxis as DeepReadonly<string> == '' ?
+        this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label)[0]
+        : this._paraState.config.type.histogram.groupingAxis;
+      let targetFacet = this._paraState.config.type.histogram.displayAxis;
+      for (let facet of this._paraState.model!.facetSignatures) {
+        if (this._paraState.model!.getFacet(facet.key as string)!.label == targetAxis) {
+          targetFacet = facet.key;
+        }
+      }
+      return this._paraState.model!.getFacet(targetFacet)
+    }
+    return orientation === 'horiz' ? this.horizFacet : this.vertFacet;
+  }
+
+  /**
+     * Called by `Axis` instances to obtain label tiers.
+     * @param facetKey - Axis facet key
+     * @param isStagger - Whether to stagger labels between two tiers
+     * @returns Array of tiers (each tier being an array of strings)
+     */
+  computeAxisLabelTiers(facetKey: string, orientation: AxisOrientation, isStagger: boolean): AxisLabelTier[] {
+
+    if (orientation == 'horiz' && this._paraState.config.type.histogram.displayAxis == 'x') {
+      return super.computeAxisLabelTiers(facetKey, orientation, isStagger)
+    }
+    else {
+      const start = Math.min(...this.grid);
+      const end = Math.max(...this.grid);
+      const interval: Interval = { start: start, end: end };
+      if (this._paraState.config.type.histogram.displayAxis == 'x') {
+        this._yInterval = computeAxisRange(start, end);
+      }
+      else if (this._paraState.config.type.histogram.displayAxis == 'y') {
+        this._xInterval = computeAxisRange(start, end);
+      }
+      const computed = computeLabels(
+        interval.start, interval.end,
+        false, true, isStagger).labelTiers as string[][];
+      const ret: AxisLabelTier[] = [];
+      ret.push({ labels: computed[0] });
+      if (isStagger) {
+        ret.push({ labels: computed[1] });
+      }
+
+      return ret;
+    }
+
+  }
+
   get bins() {
     return this._bins;
   }
 
-    protected _createPrimaryNavNodes() {
-      // Create series and datapoint nav nodes, and link them horizontally thusly:
-      // - [SERIES-A]-[SERIES-A-POINT-0]- ... -[SERIES-A-POINT-(N-1)]-[SERIES-B]-[SERIES-B-POINT-0]- ...
-      let left = this._navMap!.root.get('top')!;
-      //const depFacet = this._paraState.model!.dependentFacetKeys[0];
-      // Sort by value of first datapoint from greatest to least
-      /*
-      const sortedSeries = this.seriesInNavOrder();
-      sortedSeries.forEach((series, i) => {
-        if (sortedSeries.length > 1) {
-          const seriesNode = new NavNode(this._navMap!.root, 'series', {
-            seriesKey: series.key
-          }, this._paraState);
-          seriesNode.connect('left', left);
-          if (i === 0) {
-            seriesNode.connect('up', left);
-            seriesNode.connect('down', left);
-            seriesNode.connect('right', left);
-          }
-          left = seriesNode;
+  protected _createPrimaryNavNodes() {
+    // Create series and datapoint nav nodes, and link them horizontally thusly:
+    // - [SERIES-A]-[SERIES-A-POINT-0]- ... -[SERIES-A-POINT-(N-1)]-[SERIES-B]-[SERIES-B-POINT-0]- ...
+    let left = this._navMap!.root.get('top')!;
+    //const depFacet = this._paraState.model!.dependentFacetKeys[0];
+    // Sort by value of first datapoint from greatest to least
+    /*
+    const sortedSeries = this.seriesInNavOrder();
+    sortedSeries.forEach((series, i) => {
+      if (sortedSeries.length > 1) {
+        const seriesNode = new NavNode(this._navMap!.root, 'series', {
+          seriesKey: series.key
+        }, this._paraState);
+        seriesNode.connect('left', left);
+        if (i === 0) {
+          seriesNode.connect('up', left);
+          seriesNode.connect('down', left);
+          seriesNode.connect('right', left);
         }
-      });
-      if (this._paraState.model?.multi){
-        left = this._navMap!.root.get('series')!;
+        left = seriesNode;
       }
-      else{
-        left = this._navMap!.root.get('top')!;
-      }
-        */
+    });
+    if (this._paraState.model?.multi){
+      left = this._navMap!.root.get('series')!;
+    }
+    else{
       left = this._navMap!.root.get('top')!;
-      for (let i = 0; i < this._grid.length; i++) {
-          const entry = this.grid[i]
-          const datapoints = this._datapointGrid[i]
-          const node = new NavNode(this._navMap!.root, 'histogramBin', {
-            datapointCount: entry,
-            datapoints: datapoints,
-            index: i
-          }, this._paraState)
-          node.connect('left', left);
-          if (i === 0) {
-            node.connect('up', left);
-            node.connect('down', left);
-            node.connect('right', left);
+    }
+      */
+    left = this._navMap!.root.get('top')!;
+    for (let i = 0; i < this._grid.length; i++) {
+      const entry = this.grid[i]
+      const datapoints = this._datapointGrid[i]
+      const node = new NavNode(this._navMap!.root, 'histogramBin', {
+        datapointCount: entry,
+        datapoints: datapoints,
+        index: i
+      }, this._paraState)
+      node.connect('left', left);
+      if (i === 0) {
+        node.connect('up', left);
+        node.connect('down', left);
+        node.connect('right', left);
+      }
+      left = node;
+    }
+
+    /*
+        // Create vertical links between datapoints
+        this._navMap!.root.query('heatmapTile').slice(0, -this._resolution).forEach(
+          (pointNode, i) => {
+            pointNode.connect('down', pointNode.layer.get('heatmapTile', i + this._resolution)!);
           }
-          left = node;
-        }
-      
-  /*
-      // Create vertical links between datapoints
-      this._navMap!.root.query('heatmapTile').slice(0, -this._resolution).forEach(
-        (pointNode, i) => {
-          pointNode.connect('down', pointNode.layer.get('heatmapTile', i + this._resolution)!);
-        }
-      )
-        */
-    }
-  
-    protected _createNavLinksBetweenSeries() {
-      // Don't do anything here, since we create vertical links between rows
-      // XXX For the case of a multi-series heatmap, we need to do ... something
-    }
-  
-    protected _createVerticalNavLinks(): void {
-      
-    }
-  
-    protected _createChordNavNodes() {
-  
-    }
+        )
+          */
+  }
+
+  protected _createNavLinksBetweenSeries() {
+    // Don't do anything here, since we create vertical links between rows
+    // XXX For the case of a multi-series heatmap, we need to do ... something
+  }
+
+  protected _createVerticalNavLinks(): void {
+
+  }
+
+  protected _createChordNavNodes() {
+
+  }
 
 
 }

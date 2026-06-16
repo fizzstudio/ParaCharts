@@ -23,7 +23,7 @@ import { type RiffOrder } from './base_chart';
 import { TypePlaneConfig, type HorizDirection } from '../config/config_types';
 
 import { ChartType, Datatype, Facet } from '@fizz/paramanifest';
-import { Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
+import { AxisOrientation, Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
 import { DocumentView } from '../view/document_view';
 import { Bezier, loopParaviewRefresh } from '../common';
 import { computeLabels } from '../common';
@@ -204,7 +204,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
    * @param isStagger - Whether to stagger labels between two tiers
    * @returns Array of tiers (each tier being an array of strings)
    */
-  computeAxisLabelTiers(facetKey: string, isStagger: boolean): AxisLabelTier[] {
+  computeAxisLabelTiers(facetKey: string, orientation: AxisOrientation, isStagger: boolean): AxisLabelTier[] {
     const rawVals = this._facetTickLabelValues(facetKey);
     const facet = this._paraState.model!.getFacet(facetKey)!;
     if (facet.datatype === 'date') {

@@ -165,9 +165,9 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     return this._layout;
   }
 
-  // get titleText() {
-  //   return this._titleText;
-  // }
+   get titleText() {
+     return this._titleText;
+   }
 
   get layout() {
     return this._layout;
@@ -273,6 +273,8 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   }
 
   setAxisLabelText(text?: string) {
+    console.log("setAxisLabelText", text)
+    //console.trace();
     this._titleText = text ?? this.config.title.text ?? '';
     if (this._axisTitle) {
       this._axisTitle.text = this._titleText;
@@ -299,7 +301,7 @@ export class HorizAxis extends Axis<'horiz'> {
   constructor(paraview: ViewContext, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
     super(paraview, 'horiz', facet, chartInfo, length);
     this._tickLabelTierValues = this._chartInfo.computeAxisLabelTiers(
-      this.coord, this.config.isStaggerLabels);
+      this.coord, 'horiz', this.config.isStaggerLabels);
     this._titleText = this.config.title.text ?? '';
 
     this._width = length;
@@ -430,7 +432,7 @@ export class VertAxis extends Axis<'vert'> {
   constructor(paraview: ViewContext, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
     super(paraview, 'vert', facet, chartInfo, length);
     this._tickLabelTierValues = this._chartInfo.computeAxisLabelTiers(
-      this.coord, this.config.isStaggerLabels);
+      this.coord, 'vert', this.config.isStaggerLabels);
     this._titleText = this.config.title.text ?? '';
 
     this._height = length;
