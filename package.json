@@ -12,7 +12,7 @@
     {
       "name": "Simon Varey",
       "email": "simon@fizz.studio",
-      "url": "https://fizz.studio",
+      "url": "https://github.com/simonvarey",
       "affiliation": "Fizz Studio"
     },
     {
@@ -38,12 +38,6 @@
       "email": "ryan@fizz.studio",
       "url": "https://github.com/RyanMcCleary",
       "affiliation": "Fizz Studio"
-    },
-    {
-      "name": "Julianna Langston",
-      "email": "julie.langston@gmail.com",
-      "url": "https://github.com/julianna-langston/chart2music",
-      "affiliation": "Chart2Music"
     }
   ],
   "license": "AGPL-3.0-or-later",
