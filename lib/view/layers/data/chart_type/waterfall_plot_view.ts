@@ -173,10 +173,10 @@ export class WaterfallBarView extends PlaneDatapointView {
   }
 
   beginAnimStep(bezT: number, linearT: number): void {
-    const yRange = this.chart.chartInfo.yInterval!.end - this.chart.chartInfo.yInterval!.start;
+    const yRange = this.chart.chartInfo.yRangeInfo!.interval.end - this.chart.chartInfo.yRangeInfo!.interval.start;
     const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
     const zeroHeight = this.chart.parent.logicalHeight
-      - (this.chart.chartInfo.yInterval!.end * pxPerYUnit);
+      - (this.chart.chartInfo.yRangeInfo!.interval.end * pxPerYUnit);
     this._height = Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit * bezT);
 
     if (this.index) {

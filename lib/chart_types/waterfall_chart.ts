@@ -14,14 +14,14 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type Interval } from '@fizz/chart-classifier-utils';
+import { ChartType } from '@fizz/paramanifest';
 import { type Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
-import { type ChartType } from '@fizz/paramanifest';
+
 import { formatXYDatapointX } from '@fizz/parasummary';
 import { type ParaState } from '../state';
 import { type DeepReadonly, TypeWaterfallConfig } from '../config/config_types';
 import { type NavNode } from '../view/layers';
-import { PlaneChartInfo, SONI_RIFF_SPEEDS, computeAxisRange } from './plane_chart';
+import { PlaneChartInfo, SONI_RIFF_SPEEDS, computeAxisRange, AxisRangeInfo } from './plane_chart';
 import { loopParaviewRefresh } from '../common';
 import { SoniPoint } from '../audio/soni_point';
 
@@ -75,7 +75,7 @@ export class WaterfallChartInfo extends PlaneChartInfo {
     }
   }
 
-  protected _numericYAxisRange(facetKey: string): Interval {
+  protected _numericYAxisRange(facetKey: string): AxisRangeInfo {
     return facetKey === 'x'
       ? super._numericYAxisRange(facetKey)
       : computeAxisRange(0, Math.max(...this._cumulativeTotals))

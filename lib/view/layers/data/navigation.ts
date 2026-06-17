@@ -397,24 +397,25 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
   }
 
   get datapoints() {
+    const model = this._layer.map.chartInfo.model!;
     const datapoints: Datapoint[] = [];
     if (this.isNodeType('datapoint') || this.isNodeType('scatterpoint')) {
       // @ts-ignore
-      datapoints.push(this._paraState.model!.atKeyAndIndex(this._options.seriesKey, this._options.index)!);
+      datapoints.push(model.atKeyAndIndex(this._options.seriesKey, this._options.index)!);
     } else if (this.isNodeType('series')) {
-      const seriesLength = this._paraState.model!.atKey(this._options.seriesKey)!.length;
+      const seriesLength = model.atKey(this._options.seriesKey)!.length;
       for (let i = 0; i < seriesLength; i++) {
-        datapoints.push(this._paraState.model!.atKeyAndIndex(this._options.seriesKey, i)!);
+        datapoints.push(model.atKeyAndIndex(this._options.seriesKey, i)!);
       }
     } else if (this.isNodeType('chord')) {
       datapoints.push(...this._layer.map.chartInfo.seriesInNavOrder().map(series =>
         series.datapoints[this._options.index]));
     } else if (this.isNodeType('sequence')) {
       for (let i = this._options.start; i < this._options.end; i++) {
-        datapoints.push(this._paraState.model!.atKeyAndIndex(this._options.seriesKey, i)!);
+        datapoints.push(model.atKeyAndIndex(this._options.seriesKey, i)!);
       }
     } else if (this.isNodeType('cluster')) {
-      datapoints.push(...this._paraState.model!.atKey(this._options.seriesKey)!.datapoints.filter(dp =>
+      datapoints.push(...model.atKey(this._options.seriesKey)!.datapoints.filter(dp =>
         this._options.datapoints.includes(dp)));
     }
     return datapoints;

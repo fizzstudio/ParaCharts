@@ -213,12 +213,21 @@ export class DatapointView extends DataView {
   protected _createId(..._args: any[]): string {
     let jimIndex = 1;
     for (let i = this._parent.modelIndex - 1; i >= 0; i--) {
-      jimIndex += this.paraview.paraState.model!.series[i].datapoints.length;
+      jimIndex += this.chart.model.series[i].datapoints.length;
     }
     jimIndex += this.index;
-    const id = (this.paraview.paraState.jimerator!.manifest.jim as any).selectors[`datapoint${jimIndex}`].dom as string;
+    const datasetIndex = this.datasetIndex;
+    let sel = `datapoint${jimIndex}`;
+    if (this.paraview.paraState.comboModel) {
+      sel = `dataset${datasetIndex}_` + sel;
+    }
+    const id = (this.paraview.paraState.jimerator!.manifest.jim as any).selectors[sel].dom as string;
     // don't include the '#' from JIM
     return id.slice(1);
+  }
+
+  get datasetIndex(): number {
+    return 0;
   }
 
   get id(): string {
@@ -443,25 +452,14 @@ export class DatapointView extends DataView {
 
   shouldAddHoverPopup(): boolean {
     if (['bar', 'column', 'scatter', 'waterfall', 'histogram', 'heatmap'].includes(this.paraview.paraState.type)) {
-      if (this.paraview.paraState.config.chart.isShowPopups
+      return (this.paraview.paraState.config.chart.isShowPopups
         && this.paraview.paraState.config.popup.activation == 'onHover'
         && (!this.paraview.paraState.config.popup.isShowCrosshair
-          || (this.paraview.paraState.config.popup.isShowCrosshair
-            && this.paraview.paraState.config.popup.isCrosshairFollowPointer))) {
-        return true
-      }
-      else {
-        return false
-      }
+          || this.paraview.paraState.config.popup.isCrosshairFollowPointer));
     }
     else if (['pie', 'donut'].includes(this.paraview.paraState.type)) {
-      if (this.paraview.paraState.config.chart.isShowPopups
-        && this.paraview.paraState.config.popup.activation == 'onHover') {
-        return true
-      }
-      else {
-        return false;
-      }
+      return (this.paraview.paraState.config.chart.isShowPopups
+        && this.paraview.paraState.config.popup.activation == 'onHover');
     }
     else {
       return true

@@ -545,6 +545,7 @@ export class ParaView extends ParaComponent implements ViewContext {
   protected async _dataUpdated(): Promise<void> {
     try {
       this._paraState.chartInfo.setParaView(this);
+      this._paraState.comboChartInfo?.setParaView(this);
       this.createDocumentView();
       if (this.paraChart.headless) {
         await this.addJIMSeriesSummaries();

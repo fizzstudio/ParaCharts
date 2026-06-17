@@ -36,6 +36,11 @@ export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}
   line: {
     'grid.isDrawVertLines': false
   },
+  // @ts-ignore
+  combo: {
+    'legend.position': 'south',
+    'legend.isAlwaysDrawLegend' : true
+  },
   waterfall: {
     //'axis.horiz.ticks.isDrawTicks': false,
     'grid.isDrawVertLines': false

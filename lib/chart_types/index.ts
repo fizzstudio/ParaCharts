@@ -7,6 +7,7 @@ import { HeatMapInfo } from './heat_map';
 import { WaterfallChartInfo } from './waterfall_chart';
 import { VennDiagramInfo } from './venn_diagram';
 import { HistogramChartInfo } from './histogram_chart';
+import { ComboChartInfo } from './combo_chart';
 
 export * from './base_chart';
 export * from './plane_chart';
@@ -17,8 +18,9 @@ export * from './scatter_chart';
 export * from './heat_map';
 export * from './waterfall_chart';
 export * from './venn_diagram';
+export * from './combo_chart';
 
-// (@simonvarey): stepline and lollipop should be replaced with dedicated SteplineChartInfo and 
+// (@simonvarey): stepline and lollipop should be replaced with dedicated SteplineChartInfo and
 //   LollipopChartInfo classes. See #820
 export const chartInfoClasses = {
   bar: BarChartInfo,
@@ -34,5 +36,6 @@ export const chartInfoClasses = {
   // gauge: BarChart, //GaugeChart,
   stepline: LineChartInfo, //StepLineChart,
   lollipop: BarChartInfo, //LollipopChart
-  venn: VennDiagramInfo, //VennDiagram
+  venn: VennDiagramInfo, //VennDiagram,
+  combo: ComboChartInfo
 };

@@ -227,7 +227,8 @@ export class Popup extends View {
         }
         let leftBorder = 0
         if (this.popupLabelOptions.type === 'vertAxis') {
-            leftBorder = 0 - this.paraview.documentView!.vertAxis!.layout.vRules[1]
+//            leftBorder = 0 - this.paraview.documentView!.vertAxis!.layout.vRules[1]
+           leftBorder = 0 - this.paraview.documentView!.vertAxis!.layout.width/2;
         }
         else if (this.popupLabelOptions.type === 'controlPanelIcon') {
             leftBorder = 0 - this.paraview.documentView!.chartLayers.x

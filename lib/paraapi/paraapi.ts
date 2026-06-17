@@ -74,6 +74,9 @@ export class ParaAPI {
       goTotalMaximum() {
         chartInfo().goChartMinMax(false);
       },
+      switchToOtherData() {
+        chartInfo().switchToOtherData();
+      },
       /** Select a datapoint. */
       select() {
         chartInfo().selectCurrent(false);

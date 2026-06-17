@@ -89,6 +89,11 @@ export abstract class DataLayer extends PlotLayer {
     return this._chartInfo;
   }
 
+  // Overridden by LinePlotView for combo charts
+  get model() {
+    return this.paraview.paraState.model!;
+  }
+
   resize(width: number, height: number) {
     super.resize(width, height);
     this._layoutDatapoints();
@@ -296,7 +301,7 @@ export abstract class DataLayer extends PlotLayer {
     return new SeriesView(this, seriesKey, isStyleEnabled);
   }
 
-  datapointView(seriesKey: string, index: number) {
+  datapointView(seriesKey: string, index: number): DatapointView | undefined {
     return this.datapointViews.find(view =>
       view.seriesKey === seriesKey && view.index === index);
   }

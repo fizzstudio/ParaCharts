@@ -15,12 +15,13 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
+
 import { ChartType, strToId } from '@fizz/paramanifest';
 import { enumerate, Box, Series } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 import { Interval } from '@fizz/chart-classifier-utils';
-import { PlaneChartInfo, computeAxisRange } from './plane_chart';
+import { PlaneChartInfo, computeAxisRange, AxisRangeInfo } from './plane_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax } from '../state';
 import { ConfigSetting, DeepReadonly, TypeBarConfig } from '../config/config_types';
 import { type Label } from '../view/label';
@@ -169,7 +170,7 @@ export class BarChartInfo extends PlaneChartInfo {
     }
   }
 
-  protected _numericYAxisRange(facetKey: string): Interval {
+  protected _numericYAxisRange(facetKey: string): AxisRangeInfo {
     if (facetKey === 'x') {
       return super._numericYAxisRange(facetKey);
     } else if (facetKey === 'y') {
@@ -237,7 +238,8 @@ export class BarChartInfo extends PlaneChartInfo {
     }
 
     const allSeries = [...this._paraState.model!.series];
-    if (this._paraState.type === 'column' && settings.stacking === 'none') {
+    // @ts-ignore
+    if ((this._paraState.type === 'column') && settings.stacking === 'none') {
       allSeries.reverse();
     }
     const groupSeries = (countsInput: string) => {
@@ -261,6 +263,7 @@ export class BarChartInfo extends PlaneChartInfo {
       ? [[...allSeries]]
       : groupSeries(this._normalizeStackCountsInput());
     for (let group of grouped) {
+      // @ts-ignore
       if (this._paraState.type === 'column') {
         // Place the series into stacks in the reverse order to how they appear in the
         // model (i.e., first series will be topmost onscreen in 'standard' mode)
@@ -374,7 +377,7 @@ export class BarChartInfo extends PlaneChartInfo {
       const selectedDatapoints = this._paraState.selectedDatapoints;
       const seriesKey = queriedNode.options.seriesKey;
       const index = queriedNode.options.index;
-      const series = this._paraState.model!.atKey(seriesKey)!;
+      const series = this.model!.atKey(seriesKey)!;
       const datapoint = series.datapoints[index];
       const seriesLabel = series.getLabel();
       const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;

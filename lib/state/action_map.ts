@@ -8,6 +8,7 @@ export interface AvailableActions {
   goMaximum(): void;
   goTotalMinimum(): void;
   goTotalMaximum(): void;
+  switchToOtherData(): void;
   select(): void;
   extendSelection(): void;
   clearSelection(): void;

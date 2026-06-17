@@ -23,6 +23,7 @@ import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, Focus
 import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, WaterfallPlotView, VennPlotView, Histogram, HeatMapPlotView } from './data/chart_type';
 import { PopupLayer } from './popup_layer';
 import { type DataLayerContext } from '../view_context';
+import { ComboPlotView } from './data/chart_type/combo_plot_view';
 
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
@@ -40,7 +41,8 @@ export const chartClasses = {
   lollipop: BarPlotView, //LollipopChart
   graph: LinePlotView,
   waterfall: WaterfallPlotView,
-  venn: VennPlotView
+  venn: VennPlotView,
+  combo: ComboPlotView
 };
 
 export class PlotLayerManager extends View {
@@ -208,7 +210,7 @@ export class PlotLayerManager extends View {
   }
 
   private createDataLayers() {
-    const ctor = chartClasses[this.paraview.paraState.type];
+    const ctor = this.paraview.paraState.comboModel ? chartClasses['combo'] : chartClasses[this.paraview.paraState.type];
     let dataLayer: DataLayer;
     if (ctor) {
       dataLayer = new ctor(this.paraview, this._width, this._height, 0, this.paraview.paraState.chartInfo);

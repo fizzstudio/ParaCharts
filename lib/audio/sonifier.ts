@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { type PlaneDatapoint } from '@fizz/paramodel';
+import { type PlaneDatapoint, type Model } from '@fizz/paramodel';
 import { OscillatorAudioEngine, type AudioEngine } from '.';
 import { AudioNotificationType } from './AudioEngine';
 import { type ParaState } from '../state';
@@ -126,7 +126,8 @@ export class Sonifier {
   constructor(
     protected _chartInfo: BaseChartInfo,
     protected _paraState: ParaState,
-    protected _paraView: ParaView
+    protected _paraView: ParaView,
+    protected _model: Model
   ) {}
 
   /**
@@ -170,9 +171,11 @@ export class Sonifier {
       const dpView = this._paraView.documentView?.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!;
       dpView.popInAnimation();
     });
-    return this.playSoniPoints(datapoints.map(dp => SoniPoint.fromModelDatapoint(dp, this._paraState.model!)), {
-      cont, invert, durationVariable
-    });
+    return this.playSoniPoints(
+      datapoints.map(dp =>
+        SoniPoint.fromModelDatapoint(dp, this._model)),
+        { cont, invert, durationVariable }
+    );
   }
 
   /**
