@@ -316,7 +316,6 @@ export class SectorShape extends Shape {
         this._styleInfo.strokeWidth = 6
       }
       return svg`
-          <defs>${this.paraview.paraState.colors.patternValueAt(index)}</defs>
           <path
             d=${this._pathD}
             transform=${this._scale !== 1

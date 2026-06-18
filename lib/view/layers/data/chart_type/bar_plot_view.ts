@@ -108,23 +108,6 @@ export class BarPlotView extends PlanePlotView {
   }
 
   settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['color.colorPalette', 'color.colorVisionMode', 'chart.isShowPopups'].includes(path)) {
-      if (newValue === 'pattern' || (newValue !== 'pattern' && oldValue === 'pattern')
-        || this.paraview.paraState.config.color.colorPalette === 'pattern') {
-        this.paraview.createDocumentView();
-        this.paraview.requestUpdate();
-      }
-      // if (!super.settingDidChange(key, value)) {
-      //   if (key === 'type.bar.stackContent') {
-      //     //todo().controller.settingViews.setVisible('type.bar.stackCount', value === 'count');
-      //   }
-      //   //todo().controller.clearSettingManagers();
-      //   this.paraview.createDocumentView();
-      //   this.paraview.requestUpdate();
-      //   return true;
-      // }
-    }
-
     super.settingDidChange(path, oldValue, newValue);
   }
 

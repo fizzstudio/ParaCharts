@@ -16,7 +16,8 @@ const oppositeDirs: Record<Direction, Direction> = {
   out: 'in'
 };
 
-export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence' | 'cluster' | 'scatterpoint' | 'heatmapTile' | 'histogramBin';
+export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence' 
+| 'cluster' | 'scatterpoint' | 'venn-part' | 'heatmapTile' | 'histogramBin';
 export type DatapointNavNodeType = 'datapoint' | 'scatterpoint';
 
 
@@ -30,6 +31,7 @@ export type NavNodeOptionsType<T extends NavNodeType> =
   T extends 'scatterpoint' ? ScatterPointNavNodeOptions :
   T extends 'heatmapTile' ? HeatmapTileNavNodeOptions :
   T extends 'histogramBin' ? HistogramBinNavNodeOptions :
+  T extends 'venn-part' ? VennPartNavNodeOptions :
   never;
 
 export interface DatapointCursor {
@@ -65,6 +67,18 @@ export interface ClusterNavNodeOptions {
   datapoints: Datapoint[];
   clustering: clusterObject;
   index: number;
+}
+export interface VennPartNavNodeOptions {
+  seriesKey: string;
+  part: 'only' | 'pair' | 'triple';
+  otherSeriesKey?: string;
+}
+
+export interface HeatmapTileNavNodeOptions {
+  datapoints: Datapoint[];
+  datapointCount: number;
+  yIndex: number;
+  xIndex: number;
 }
 
 export interface HeatmapTileNavNodeOptions {
@@ -477,11 +491,10 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
   }
 
   allNodes(dir: Direction, type?: NavNodeType) {
-    let count = 1;
-    let cursor: NavNode | undefined = undefined;
+    let cursor: NavNode | undefined = this;
     const all: NavNode[] = [];
     while (true) {
-      cursor = this.peekNode(dir, count++);
+      cursor = cursor.peekNode(dir, 1);
       if (cursor && (!type || type === cursor.type)) {
         if (all.includes(cursor)) {
           // there's a loop in the graph

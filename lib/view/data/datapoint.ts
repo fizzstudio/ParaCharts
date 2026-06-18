@@ -6,7 +6,7 @@ import { Shape } from '../shape/shape';
 import { RectShape } from '../shape/rect';
 
 import { type ClassInfo, classMap } from 'lit/directives/class-map.js';
-import { type StyleInfo, styleMap } from 'lit/directives/style-map.js';
+import { type StyleInfo } from 'lit/directives/style-map.js';
 import { svg, nothing, TemplateResult } from 'lit';
 import { formatBox } from '@fizz/parasummary';
 import { Datapoint } from '@fizz/paramodel';
@@ -360,8 +360,7 @@ export class DatapointView extends DataView {
       } else {
         kid.classInfo = this.classInfo;
       }
-      return super.content();
-    } else {
+    }
       return svg`
         <g
           id=${this._id}
@@ -370,7 +369,7 @@ export class DatapointView extends DataView {
         >
           ${super.content()}
         </g>`;
-    }
+    
   }
 
   public equals(other: DatapointView): boolean {
