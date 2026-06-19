@@ -1,9 +1,12 @@
 {
     "settings": {
         "isCaptionExternalWhenControlPanelClosed": {
+            "label": "cpanel.tabs.controls.advanced_dialog.caption_external",
             "description": "Move caption outside chart when control panel is closed",
             "type": "boolean",
-            "default": true
+            "default": true,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.controls.dialog.settings"
         },
         "hasBorder": {
             "description": "Show border around caption box",
@@ -11,9 +14,12 @@
             "default": false
         },
         "isExplorationBarBeside": {
+            "label": "cpanel.tabs.controls.advanced_dialog.expl_bar_beside",
             "description": "Place exploration bar beside caption instead of below",
             "type": "boolean",
-            "default": true
+            "default": true,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.controls.dialog.settings"
         }
     }
 }

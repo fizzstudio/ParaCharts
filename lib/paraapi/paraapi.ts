@@ -18,7 +18,7 @@ import { PlaneModel, type Datapoint } from '@fizz/paramodel';
 
 import { ORIENTATION_SENTENCES, PASTRY_ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
-import { HotkeyEvent, makeSequenceId, Setting, SettingsManager } from '../state';
+import { HotkeyEvent, makeSequenceId, SettingsManager } from '../state';
 import { SettingsInput } from '../config/config_types';
 import { CardinalDirection, Direction } from '../config/config_types';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
@@ -516,41 +516,6 @@ export class ParaAPI {
   /** Download the chart in PNG format. */
   downloadPNG() {
     this._paraChart.paraView.downloadPNG();
-  }
-
-  /** Get a setting. */
-  getSetting(settingPath: string): Setting {
-    return SettingsManager.get(settingPath, this._paraChart.paraState.settings);
-  }
-
-  /** Get multiple settings. */
-  getSettings(settingPaths: string[]): SettingsInput {
-    const out: SettingsInput = {};
-    settingPaths.forEach(path => {
-      out[path] = SettingsManager.get(path, this._paraChart.paraState.settings);
-    });
-    return out;
-  }
-
-  /** Get all settings. */
-  getAllSettings(): SettingsInput {
-    return SettingsManager.getAllSettings(this._paraChart.paraState.settings);
-  }
-
-  /** Set a setting. */
-  setSetting(settingPath: string, value: Setting) {
-    this._paraChart.paraState.updateSettings(draft => {
-      SettingsManager.set(settingPath, value, draft);
-    });
-  }
-
-  /** Set multiple settings. */
-  setSettings(settingsInput: SettingsInput) {
-    this._paraChart.paraState.updateSettings(draft => {
-      Object.entries(settingsInput).forEach(([path, value]) => {
-        SettingsManager.set(path, value, draft);
-      });
-    });
   }
 
   /** Get a setting. */

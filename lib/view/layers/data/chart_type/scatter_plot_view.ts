@@ -1,5 +1,4 @@
 import { type PlaneSeriesView, PointPlotView, PointDatapointView, PlaneDatapointView, TrendLineView } from '.';
-import { Setting } from '../../../../state/settings_types';
 import { DataSymbol, DataSymbols } from '../../../symbol';
 import { svg } from 'lit';
 import { View } from '../../../base_view';
@@ -8,6 +7,7 @@ import { enumerate } from '@fizz/paramodel';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { PlaneChartInfo, ScatterChartInfo } from '../../../../chart_types';
 import { fixed } from '../../../../common/utils';
+import { ConfigSetting } from '../../../../config/config_types';
 
 
 export class ScatterPlotView extends PointPlotView {
@@ -29,7 +29,7 @@ export class ScatterPlotView extends PointPlotView {
     return this._types
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['type.scatter.isShowOutliers'].includes(path)) {
       this.updateOutliers();
     }
@@ -186,7 +186,7 @@ export class ScatterPointView extends PointDatapointView {
     }
     return super.color
   }
-  
+
   endAnimStep(bezT: number, linearT: number) {
     //this.completeLayout();
     this._symbol!.y = this.y

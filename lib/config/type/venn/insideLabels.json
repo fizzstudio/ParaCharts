@@ -1,0 +1,15 @@
+{
+    "settings": {
+        "contents": {
+            "label": "cpanel.tabs.chart.venn_inside_labels",
+            "description": "Content to display in inside labels",
+            "type": "string",
+            "default": "",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["", "category", "percentage:(value)"]
+            },
+            "parentView": "controlPanel.tabs.chart.chart"
+        }
+    }
+}

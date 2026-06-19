@@ -18,7 +18,6 @@ import { Logger, getLogger } from '@fizz/logger';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState } from '../state';
 import { type ParaView } from '../paraview';
-import { type Setting } from '../state/settings_types';
 import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state/query_utils';
 import { NavNode } from '../view/layers';
 
@@ -29,6 +28,7 @@ import { type ChartType } from '@fizz/paramanifest';
 import { Highlight } from '@fizz/parasummary';
 import { DataSymbols } from '../view/symbol';
 import { enumerate, PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
+import { ConfigSetting } from '../config/config_types';
 
 /**
  * Business logic for line charts.
@@ -49,7 +49,7 @@ export class LineChartInfo extends PointChartInfo {
     this._paraState.settingControls.insert('chart.isDrawSymbols');
   }
 
-  async settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): Promise<void> {
+  async settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): Promise<void> {
     if (['type.line.isTrendNavigationModeEnabled'].includes(path)) {
       if (this._navMap!.cursor.type === 'top') {
         [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];

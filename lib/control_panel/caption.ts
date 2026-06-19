@@ -10,8 +10,8 @@ import { property, customElement, state } from 'lit/decorators.js';
 import { type Unsubscribe } from '@lit-app/state';
 import { ParaChart } from '../parachart/parachart';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import { Setting } from '../state';
 import { createRef, ref } from 'lit/directives/ref.js';
+import { ConfigSetting } from '../config/config_types';
 
 type HoverListener = (event: PointerEvent) => void;
 
@@ -119,7 +119,7 @@ export class ParaCaptionBox extends ParaComponent {
     this.parachart.clearAriaLive();
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     if (path === 'ui.isTourGuideEnabled' && !newValue) {
       this._prevSpanIdx = 0;
       this._highlightManualOverride = false;

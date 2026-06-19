@@ -26,12 +26,12 @@ import { DatapointView, SeriesView } from '../../../data';
 //import { type Actions, type Action } from '../input/actions';
 
 import { type DataLayerContext } from '../../../view_context';
-import { Setting } from '../../../../state';
 
 import { PlaneDatapoint, Datapoint } from '@fizz/paramodel';
 import { Popup } from '../../../popup';
 import { PathShape } from '../../../shape';
 import { horizAdjust, Vec2, vertAdjust } from '../../../../common';
+import { ConfigSetting } from '../../../../config/config_types';
 
 export type DatapointViewType<T extends PlaneDatapointView> =
   (new (...args: any[]) => T);
@@ -63,7 +63,7 @@ export abstract class PlanePlotView extends DataLayer {
     return super.selectedDatapointViews as PlaneDatapointView[];
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`, 'legend.isAlwaysDrawLegend',
       'legend.useDirectLegends', 'legend.itemOrder', 'legend.position'].includes(path)) {
       this.paraview.paraState.createChartInfo();

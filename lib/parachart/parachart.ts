@@ -17,8 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaComponent } from '../components';
 import { ChartType } from '@fizz/paramanifest'
-import { type Setting } from '../state/settings_types';
-import { SettingsInput } from '../config/config_types';
+import { ConfigSetting, SettingsInput } from '../config/config_types';
 import { SettingsManager } from '../state';
 import '../paraview';
 import '../components/data_table';
@@ -338,7 +337,7 @@ export class ParaChart extends ParaComponent {
     }
     if (changedProperties.has('config')) {
       Object.entries(this.config).forEach(([path, value]) =>
-        this._paraState.updateSettings(draft => {
+        this._paraState.updateConfig(draft => {
           SettingsManager.set(path, value, draft);
         }));
     }
@@ -424,7 +423,7 @@ export class ParaChart extends ParaComponent {
     }
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     this.log.info('setting did change:', path, '=', newValue, `(was ${oldValue})`);
     // Update the style manager before the paraview so, e.g., any font scale
     // change can take effect ...

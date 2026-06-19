@@ -21,8 +21,8 @@ import { type ParaChart } from '../parachart/parachart';
 import { ParaViewController } from '.';
 import { ParaComponent } from '../components';
 import { ChartType, isPastryType, strToId } from '@fizz/paramanifest';
-import { type Setting, type HotkeyEvent } from '../state';
-import { ViewBox } from '../config/config_types';
+import { type HotkeyEvent } from '../state';
+import { ConfigSetting, ViewBox } from '../config/config_types';
 import { View } from '../view/base_view';
 import { DocumentView } from '../view/document_view';
 import { PointDatapointView } from '../view/layers';
@@ -576,7 +576,7 @@ export class ParaView extends ParaComponent implements ViewContext {
     this.dispatchEvent(new CustomEvent('paraviewready', { bubbles: true, composed: true, cancelable: true }));
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     this._documentView?.settingDidChange(path, oldValue, newValue);
     switch (path) {
       case 'ui.isFullscreenEnabled':
@@ -599,7 +599,7 @@ export class ParaView extends ParaComponent implements ViewContext {
     }
   }
 
-  protected _handleFullscreen(newValue?: Setting) {
+  protected _handleFullscreen(newValue?: ConfigSetting) {
     if (newValue && !document.fullscreenElement) {
       try {
         this._containerRef.value!.requestFullscreen();
@@ -666,7 +666,7 @@ export class ParaView extends ParaComponent implements ViewContext {
     }
   }
 
-  protected _handleLowVisionMode(newValue?: Setting) {
+  protected _handleLowVisionMode(newValue?: ConfigSetting) {
     const cc = this._paraState.config.color;
     const ui = this._paraState.config.ui;
     this._paraState.announce(`Low vision mode ${newValue ? 'enabled' : 'disabled'}`);

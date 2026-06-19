@@ -25,9 +25,9 @@ export class HistogramChartInfo extends PlaneChartInfo {
     this._paraState.clearVisited();
     this._paraState.clearSelected();
 
-    const targetAxis = this.settings.groupingAxis as DeepReadonly<string> == '' ?
+    const targetAxis = this.config.groupingAxis as DeepReadonly<string> == '' ?
       this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label)[0]
-      : this.settings.groupingAxis;
+      : this.config.groupingAxis;
     let targetFacet;
     for (let facet of this._paraState.model!.facetSignatures) {
       if (this._paraState.model!.getFacet(facet.key as string)!.label == targetAxis) {
@@ -45,8 +45,8 @@ export class HistogramChartInfo extends PlaneChartInfo {
 
     const targetFacetBoxes = this._paraState.model!.allFacetValues(targetFacet!)!;
     const targetFacetNumbers = targetFacetBoxes.map((b) => b.asNumber()!);
-    if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined) {
-      if (this.settings.relativeAxes == "Counts") {
+    if (this.config.displayAxis == "x" || this.config.displayAxis == undefined) {
+      if (this.config.relativeAxes == "Counts") {
         // this._axisInfo = new AxisInfo(this._paraState, {
         //   xValues: targetFacetNumbers,
         //   yValues: this.grid,
@@ -62,7 +62,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
       }
     }
     else {
-      if (this.settings.relativeAxes == "Counts") {
+      if (this.config.relativeAxes == "Counts") {
         // this._axisInfo = new AxisInfo(this._paraState, {
         //   xValues: this.grid,
         //   yValues: targetFacetNumbers,
@@ -99,7 +99,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
   }
 
   protected _generateBins(): Array<number> {
-    const targetAxis = this.settings.groupingAxis as DeepReadonly<string | undefined>
+    const targetAxis = this.config.groupingAxis as DeepReadonly<string | undefined>
       ?? this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label)[0];
 
     let targetFacet;
