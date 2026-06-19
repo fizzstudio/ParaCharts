@@ -95,7 +95,15 @@ export abstract class HorizRule extends AxisRule {
    * @param _pointsTo - The tick starts on the axis and points in this direction.
    * @param major
    */
-  constructor(protected _pointsTo: VertCardinalDirection, paraview: ViewContext, major = true, length: number, darken: boolean = false, id = '', coord?: AxisCoord) {
+  constructor(
+    protected _pointsTo: VertCardinalDirection,
+    paraview: ViewContext,
+    major = true,
+    length: number,
+    darken: boolean = false,
+    id = '',
+    coord?: AxisCoord
+  ) {
     super(paraview, major, length, 'v', darken, id, coord);
   }
 
@@ -127,7 +135,15 @@ export abstract class VertRule extends AxisRule {
    * @param _pointsTo - The tick starts on the axis and points in this direction.
    * @param major
    */
-  constructor(protected _pointsTo: HorizCardinalDirection, paraview: ViewContext, major = true, length: number, darken: boolean = false, id = '', coord?: AxisCoord) {
+  constructor(
+    protected _pointsTo: HorizCardinalDirection,
+    paraview: ViewContext,
+    major = true,
+    length: number,
+    darken: boolean = false,
+    id = '',
+    coord?: AxisCoord
+  ) {
     super(paraview, major, length, 'h', darken, id, coord);
   }
 
