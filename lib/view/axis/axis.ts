@@ -367,6 +367,7 @@ export class HorizAxis extends Axis<'horiz'> {
   protected _createTickStrip() {
     return new HorizTickStrip(this.paraview, this.config, 1, {
       orientation: this.orientation,
+      coord: this.coord,
       length: this._width,
       // tickCount: this._labelInfo.labelTiers[0].length,
       tickCount: this._tickLabelTierValues[0].labels.length,
@@ -499,6 +500,7 @@ export class VertAxis extends Axis<'vert'> {
   protected _createTickStrip() {
     return new VertTickStrip(this.paraview, this.config, 1, {
       orientation: this.orientation,
+      coord: this.coord,
       length: this._height,
       // tickCount: this._labelInfo.labelTiers[0].length,
       tickCount: this._tickLabelTierValues[0].labels.length,

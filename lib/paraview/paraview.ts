@@ -151,7 +151,7 @@ export class ParaView extends ParaComponent implements ViewContext {
         stroke: var(--axis-line-color);
         opacity: 0.2;
       }
-      #grid-zero {
+      .grid-zero {
         opacity: 0.6;
         stroke-width: 2;
       }
