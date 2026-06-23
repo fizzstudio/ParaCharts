@@ -18,9 +18,6 @@ import { type BaseChartInfo } from '../../../../chart_types';
 import { type DataLayerContext } from '../../../view_context';
 import { Logger, getLogger } from '@fizz/logger';
 import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
-import {
-  Setting,
-} from '../../../../state/settings_types';
 import { RectShape } from '../../../shape/rect';
 import { Label, LabelTextAnchor } from '../../../label';
 import { BarStack } from '../../../../chart_types/bar_chart';
@@ -31,6 +28,7 @@ import { StyleInfo } from 'lit/directives/style-map.js';
 import { BarChartInfo } from '../../../../chart_types/bar_chart';
 import { Popup } from '../../../popup';
 import { formatDatapointValue, preciseAdd } from '../../../../common';
+import { ConfigSetting } from '../../../../config/config_types';
 
 const MIN_STACK_WIDTH_FOR_GAPS = 8;
 const STACK_GAP_PERCENTAGE = 0.125;
@@ -107,7 +105,7 @@ export class BarPlotView extends PlanePlotView {
     this.log = getLogger("BarPlotView");
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     super.settingDidChange(path, oldValue, newValue);
   }
 

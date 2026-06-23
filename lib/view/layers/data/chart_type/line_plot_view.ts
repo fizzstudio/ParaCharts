@@ -15,12 +15,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { PlaneSeriesView, PointPlotView, PointDatapointView } from '.';
-import { type Setting } from '../../../../state/settings_types';
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { bboxOfBboxes } from '../../../../common/utils';
 
 import { type StyleInfo } from 'lit/directives/style-map.js';
+import { ConfigSetting } from '../../../../config/config_types';
 
 /**
  * Class for drawing line charts.
@@ -32,7 +32,7 @@ export class LinePlotView extends PointPlotView {
     return super.datapointViews as LineSection[];
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['chart.hasDirectLabels'].includes(path)) {
       this.paraview.createDocumentView();
       this.paraview.requestUpdate();

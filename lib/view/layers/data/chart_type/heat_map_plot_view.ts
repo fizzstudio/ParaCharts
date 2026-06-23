@@ -5,7 +5,6 @@ import { type BaseChartInfo } from '../../../../chart_types';
 import { type HeatMapInfo } from '../../../../chart_types/heat_map';
 import { fixed, getMostCommonReduce } from "../../../../common/utils";
 import { type DataLayerContext } from '../../../view_context';
-import { type Setting } from "../../../../state";
 import { DatapointPopupOptions } from "../../../data";
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
@@ -15,6 +14,7 @@ import { ref } from "lit/directives/ref.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { View } from '../../../base_view';
 import { Popup, ShapeTypes } from '../../../popup';
+import { ConfigSetting } from '../../../../config/config_types';
 
 export class HeatMapPlotView extends PlanePlotView {
   declare protected _chartInfo: HeatMapInfo;
@@ -30,7 +30,7 @@ export class HeatMapPlotView extends PlanePlotView {
     this.log = getLogger("HeatMapPlotView");
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['type.heatmap.resolution', 'color.colorVisionMode'].includes(path)) {
       this.paraview.paraState.createChartInfo();
       this.paraview.createDocumentView();

@@ -7,19 +7,42 @@
             "default": true
         },
         "tabLabelStyle": {
+            "label": "cpanel.tabs.controls.advanced_dialog.tab_label_style",
             "description": "Style for tab labels (icon, text, or both)",
             "type": "TabLabelStyle",
-            "default": "label"
+            "default": "label",
+            "control": "radio",
+            "controlOptions": {
+                "buttons": {
+                    "icon": {
+                        "label": "Icon only"
+                    },
+                    "iconLabel": {
+                        "label": "Icon and label"
+                    },
+                    "label": {
+                        "label": "Label only"
+                    }
+                },
+                "layout": "horiz"
+            },
+            "parentView": "controlPanel.tabs.controls.dialog.tabLabels"
         },
         "isCaptionVisible": {
+            "label": "cpanel.tabs.controls.advanced_dialog.caption_visible",
             "description": "Show chart caption",
             "type": "boolean",
-            "default": true
+            "default": true,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.controls.dialog.settings"
         },
         "isExplorationBarVisible": {
+            "label": "cpanel.tabs.controls.advanced_dialog.expl_bar_visible",
             "description": "Show exploration status bar",
             "type": "boolean",
-            "default": true
+            "default": true,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.controls.dialog.settings"
         },
         "isSparkBrailleVisible": {
             "description": "Show spark braille display",

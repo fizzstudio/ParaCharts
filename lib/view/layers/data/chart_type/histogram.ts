@@ -4,8 +4,8 @@ import { svg } from "lit";
 import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
 import { fixed } from "../../../../common/utils";
 import { type ViewContext } from '../../../view_context';
-import { datapointIdToCursor, type Setting } from "../../../../state";
-import { PointChartType } from '../../../../config/config_types';
+import { datapointIdToCursor } from "../../../../state";
+import { ConfigSetting, PointChartType } from '../../../../config/config_types';
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { PlanePlotView, PlaneSeriesView } from ".";
@@ -16,7 +16,7 @@ import { HistogramChartInfo } from '../../../../chart_types/histogram_chart';
 export class Histogram extends PlanePlotView {
   declare protected _chartInfo: HistogramChartInfo;
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['type.histogram.groupingAxis', 'type.histogram.displayAxis', 'type.histogram.relativeAxes', 'axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
       this.paraview.createDocumentView();
       this.paraview.requestUpdate();
@@ -166,13 +166,13 @@ export class HistogramBinView extends DatapointView {
   */
   completeLayout() {
     const info = this.chart.chartInfo;
-    if (this.chart.settings.displayAxis == "x" || this.chart.settings.displayAxis == undefined) {
+    if (this.chart.config.displayAxis == "x" || this.chart.config.displayAxis == undefined) {
       const id = this.index;
       this._y = this.chart.parent.height;
       this._width = this.chart.parent.width / info.bins;
       this._x = (this.index) % info.bins * this._width
       // this._height = (((info.grid[id] - info.axisInfo!.yLabelInfo!.min!) / info.axisInfo!.yLabelInfo!.max!) * this._y)
-      if (this.chart.settings.relativeAxes == "Percentage"){
+      if (this.chart.config.relativeAxes == "Percentage"){
         this._height = this._height / info.grid.reduce((a, c) => a + c)
       }
       this._count = info.grid[id];
@@ -189,7 +189,7 @@ export class HistogramBinView extends DatapointView {
       this._height = this.chart.parent.height / info.bins;
       this._y = (info.grid.length - id - 1) % info.bins * this._height + (this._height)
       // this._width = (((info.grid[id] - info.axisInfo!.xLabelInfo!.min!) / info.axisInfo!.xLabelInfo!.max!) * this.chart.parent.width)
-      if (this.chart.settings.relativeAxes == "Percentage"){
+      if (this.chart.config.relativeAxes == "Percentage"){
         this._width = this._width / info.grid.reduce((a, c) => a + c)
       }
       this._count = info.grid[id];
@@ -246,7 +246,7 @@ export class HistogramBinView extends DatapointView {
       return cursor.index === this.index;
     });
     if (isVisited) {
-      const axis = this.chart.settings.displayAxis;
+      const axis = this.chart.config.displayAxis;
       const line = axis === 'y'
         ? svg`<line x1=${this._x} y1=${this._y} x2=${this._x} y2=${this._y - this._height} stroke="var(--visited-color, hsl(0,100%,50%))" stroke-width=2 />`
         : svg`<line x1=${this._x} y1=${this._y} x2=${this._x + this._width} y2=${this._y} stroke="var(--visited-color, hsl(0,100%,50%))" stroke-width=2 />`;

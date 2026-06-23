@@ -1,5 +1,5 @@
 
-import { type Setting, SettingsManager } from '.';
+import { SettingsManager } from '.';
 import { Logger, getLogger } from '@fizz/logger';
 import {
   type SettingControlType,
@@ -20,6 +20,7 @@ import { State, property } from '@lit-app/state';
 import { produce } from 'immer';
 import { strToId } from '@fizz/paramanifest';
 import { ConfigSettingMetadata, configMetadata } from '../config/config_metadata';
+import { ConfigSetting } from '../config/config_types';
 
 
 export type SettingControlOptionsType<T extends SettingControlType> =
@@ -31,7 +32,7 @@ export type SettingControlOptionsType<T extends SettingControlType> =
   T extends 'button' ? ButtonSettingControlOptions :
   never;
 
-type Validator = (value: Setting) => SettingValidationResult;
+type Validator = (value: ConfigSetting) => SettingValidationResult;
 type SettingValidationResult = {err?: string};
 
 /**
@@ -64,7 +65,6 @@ export type RefreshTarget = 'chart' | 'description';
  * @internal
  */
 export interface SettingControlInfo<T extends SettingControlType = SettingControlType> {
-  isConfig: boolean;
   /** Dotted path to the setting in the setting tree. */
   key: string;
   /** Setting control element reference. */
@@ -101,32 +101,6 @@ export class SettingControlManager extends State {
     super();
   }
 
-  add<T extends SettingControlType>(
-    controlOptions: SettingControlOptions<T>
-  ) {
-    this._settingControlInfo = produce(this._settingControlInfo, draft => {
-      const controlInfo: Partial<SettingControlInfo<T>> = {};
-      const tag = inputTypeTags[controlOptions.type];
-      controlInfo.isConfig = false;
-      controlInfo.key = controlOptions.key;
-      controlInfo.parentView = controlOptions.parentView;
-      //controlInfo.settingControlRef = createRef();
-      controlInfo.options = controlOptions.options;
-      controlInfo.validator = controlOptions.validator;
-      controlInfo.render = () => html`
-        <${tag}
-          .value=${controlOptions.value ?? SettingsManager.get(controlOptions.key, this._paraState.settings)}
-          .label=${controlOptions.label}
-          .info=${controlInfo}
-          .globalState=${this._paraState.globalState}
-          ?hidden=${controlOptions.hidden}
-          id="setting-${strToId(controlOptions.key)}"
-        ></${tag}>
-      `;
-      draft[controlOptions.key] = controlInfo as SettingControlInfo;
-    });
-  }
-
   insert<T extends SettingControlType>(
     key: string,
     controlOptions?: SettingControlOptionsType<T>,
@@ -139,7 +113,7 @@ export class SettingControlManager extends State {
     this._settingControlInfo = produce(this._settingControlInfo, draft => {
       const controlInfo: Partial<SettingControlInfo<T>> = {};
       const tag = inputTypeTags[metadata.control];
-      controlInfo.isConfig = true;
+      // controlInfo.isConfig = true;
       controlInfo.key = key;
       controlInfo.parentView = metadata.parentView;
       // controlInfo.options = metadata.controlOptions ?? controlOptions;

@@ -14,8 +14,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Setting } from '../state/settings_types';
-import { DeepReadonly } from '../config/config_types';
+import { ConfigSetting, DeepReadonly } from '../config/config_types';
 import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
 import { SettingsManager } from '../state/settings_manager';
 import { ParaView } from '../paraview/paraview';
@@ -119,10 +118,6 @@ export abstract class BaseChartInfo {
     return [`type.${this._type}`];
   }
 
-  get settings(): DeepReadonly<ConfigGroup> {
-    return SettingsManager.getGroupLink(this.managedSettingKeys[0], this._paraState.settings);
-  }
-
   get config(): DeepReadonly<ConfigGroup> {
     return SettingsManager.getGroupLink(this.managedSettingKeys[0], this._paraState.config);
   }
@@ -148,7 +143,7 @@ export abstract class BaseChartInfo {
     return orientation === 'horiz' ? this.horizFacet : this.vertFacet;
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
   }
 
   async storeDidChange(key: string, value: any) {

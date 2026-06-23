@@ -5,11 +5,12 @@ import { type ViewContext } from '../../view_context';
 import { RectShape } from '../../shape/rect';
 import { PathShape } from '../../shape/path';
 import { Vec2 } from '../../../common/vector';
-import { PointAnnotation, Setting } from '../../../state';
+import { PointAnnotation } from '../../../state';
 import { Popup } from '../../popup';
 import { datapointIdToCursor } from '../../../state';
 import { PlaneChartInfo } from '../../../chart_types';
 import { ScatterPlotView, TrendLineView } from '../data';
+import { ConfigSetting } from '../../../config/config_types';
 
 export type AnnotationType = 'foreground' | 'background';
 
@@ -52,7 +53,7 @@ export class AnnotationLayer extends PlotLayer {
     }
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['ui.isLowVisionModeEnabled'].includes(path)) {
       if (!oldValue) {
         for (let annot of this.paraview.paraState.annotations) {

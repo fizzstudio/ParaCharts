@@ -56,6 +56,13 @@
                         "animation_rate": "animation rate",
                         "animation_origin": "animation origin",
                         "animation_origin_value": "animation origin value"
+                    },
+                    "advanced_dialog": {
+                        "tab_label_style": "tab label style",
+                        "caption_visible": "caption visible",
+                        "expl_bar_visible": "exploration bar is visible",
+                        "caption_external": "caption external when control panel closed",
+                        "expl_bar_beside": "exploration bar is beside caption"
                     }
                 },
                 "chart": {
@@ -76,6 +83,10 @@
                     "pastry_outside_labels": "outside labels",
                     "scatter_trend_line": "trend line",
                     "scatter_outliers": "show outliers",
+                    "venn_orientation": "orientation",
+                    "venn_inside_labels": "inside labels",
+                    "venn_outside_labels": "outside labels",
+                    "venn_explode": "explode",
                     "popup_dialog": {
                         "opacity": "opacity",
                         "left_padding": "left padding",

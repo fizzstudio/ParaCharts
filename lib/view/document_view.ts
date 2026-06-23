@@ -18,8 +18,8 @@ import { Logger, getLogger } from '@fizz/logger';
 import { type BaseChartInfo, chartInfoClasses, PlaneChartInfo } from '../chart_types';
 import { View, Container, Padding } from './base_view';
 import { Label } from './label';
-import { ParaState, Setting } from '../state';
-import { CardinalDirection } from '../config/config_types';
+import { ParaState } from '../state';
+import { CardinalDirection, ConfigSetting } from '../config/config_types';
 import { Facet, type ChartType } from '@fizz/paramanifest';
 import { PlotLayerManager } from './layers';
 import { HorizAxis, LabelOverlapError, VertAxis, type AxisCoord } from './axis';
@@ -378,7 +378,7 @@ export class DocumentView extends Container(View) {
         */
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     this.paraview.paraState.chartInfo.settingDidChange(path, oldValue, newValue);
     if (['chart.width', 'chart.height', 'chart.fontScale'].includes(path)) {
       this.updateSize();

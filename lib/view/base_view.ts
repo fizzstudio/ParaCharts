@@ -19,7 +19,6 @@ import { svg as staticSvg, StaticValue } from 'lit/static-html.js';
 import { ref } from 'lit/directives/ref.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
-import { type Setting } from '../state';
 import { type Shape } from './shape/shape';
 import { Logger, getLogger } from '@fizz/logger';
 
@@ -34,6 +33,7 @@ import { type ViewContext } from './view_context';
 import { Vec2 } from '../common/vector';
 import { Popup } from './popup';
 import { HIGHLIGHT_PADDING } from '../common';
+import { ConfigSetting } from '../config/config_types';
 
 export type SnapLocation = 'start' | 'end' | 'center';
 
@@ -910,7 +910,7 @@ export class View extends BaseView {
     this.insert(newChild, i);
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     this._children.forEach(kid => kid.settingDidChange(path, oldValue, newValue));
   }
 

@@ -3,11 +3,7 @@ import { svg, TemplateResult } from 'lit';
 import { DataLayer } from '..';
 import { type BaseChartInfo } from '../../../../chart_types';
 import { DatapointView, SeriesView } from '../../../data';
-import {
-  type VennSettings,
-  Setting,
-} from '../../../../state';
-import { DeepReadonly } from '../../../../config/config_types';
+import { ConfigSetting, DeepReadonly } from '../../../../config/config_types';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type DataLayerContext } from '../../../view_context';
 import { type Shape, CircleShape, ArcShape, PathShape } from '../../../shape';
@@ -307,10 +303,6 @@ export class VennPlotView extends DataLayer {
 
   protected _addedToParent() {
     super._addedToParent();
-  }
-
-  get settings() {
-    return super.settings as DeepReadonly<VennSettings>;
   }
 
   get cx() {
@@ -1110,7 +1102,7 @@ export class VennPlotView extends DataLayer {
     super.init();
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     super.settingDidChange(path, oldValue, newValue);
   }
 
