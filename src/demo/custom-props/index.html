@@ -8,7 +8,7 @@
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22white%22/><text y=%22.9em%22 font-size=%2290%22>🍲</text></svg>">
   <link rel="stylesheet" href="./style.css">
-  <!-- <link rel="stylesheet" href="./para-style.css"> -->
+  <link rel="stylesheet" href="./para-style.css">
   <link rel="stylesheet" href="./para-style-basic.css">
 
 
@@ -79,7 +79,7 @@
   <h1>Custom Props</h1>
   <main>
     <section class="chart-area">
-      <para-chart id="main-chart" manifest="/src/demo-data/china-gdp-line-1.manifest.json"></para-chart>
+      <para-chart id="main-chart" manifest="../../demo-data/line-multi-manifest-261.json"></para-chart>
     </section>
 
     
@@ -94,6 +94,20 @@
   </main>
 
   <script type="module" src="/dist-ai/paracharts.js"></script>
+  <script type="module">
+    const chart = document.getElementById('main-chart');
+    const textarea = document.getElementById('output_text_area');
+
+    chart.loaded.then(() => {
+      const props = chart.api.getCustomProperties();
+      const lines = Object.entries(props)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([path, value]) => `${path}: ${JSON.stringify(value)}`);
+      textarea.value = lines.length
+        ? lines.join('\n')
+        : '(no --para-* custom properties found on this page)';
+    });
+  </script>
 </body>
 
 </html>

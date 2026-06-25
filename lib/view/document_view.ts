@@ -92,8 +92,8 @@ export class DocumentView extends Container(View) {
   /**
    * Parse `padding` like CSS padding (1-4 numbers, same order as CSS)
    */
-  protected _parsePadding(padding: string): Padding {
-    const vals = padding.trim().split(' ');
+  protected _parsePadding(padding: string | number): Padding {
+    const vals = String(padding).trim().split(' ');
     if (vals.length === 0) {
       throw new Error(`must supply between 1 and 4 values for chart padding`);
     }

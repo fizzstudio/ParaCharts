@@ -21,6 +21,7 @@ import { type ParaChart } from '../parachart/parachart';
 import { HotkeyEvent, makeSequenceId, SettingsManager } from '../state';
 import { SettingsInput } from '../config/config_types';
 import { CardinalDirection, Direction } from '../config/config_types';
+import { CustomPropertyLoader } from '../state/custom_property_loader';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 import explainers from '../explainers';
 import type { DatapointManifest, Manifest } from '@fizz/paramanifest';
@@ -517,6 +518,18 @@ export class ParaAPI {
   downloadPNG() {
     this._paraChart.paraView.downloadPNG();
   }
+
+
+  /**
+   * Return all `--para-*` CSS custom properties found in the page's stylesheets,
+   * as a flat dot-path map (e.g. `{ 'chart.type': 'line', 'type.line.lineWidth': 5 }`).
+   * Useful for debugging and verifying which CSS properties are being picked up.
+   */
+  getCustomProperties(): SettingsInput {
+    const loader = new CustomPropertyLoader();
+    return loader.processProperties();
+  }
+
 
   /** Get a setting. */
   getConfigSetting(settingPath: string): ConfigSetting {
