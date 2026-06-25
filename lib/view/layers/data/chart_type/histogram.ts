@@ -86,12 +86,11 @@ export class Histogram extends PlanePlotView {
     this._bins.forEach(t => t.parent == undefined ? this.append(t) : nothing)
     this._bins.forEach(t => t.completeLayout())
     this._bins.forEach(t => t._createShapes())
-        console.log("computeAxisLabelTiers")
     const targetAxis = this.paraview.paraState.config.type.histogram.groupingAxis as DeepReadonly<string> == '' ?
-        this.paraview.paraState.model?.facetSignatures.map((facet) => this.paraview.paraState.model?.getFacet(facet.key)?.label)[0]
-        : this.paraview.paraState.config.type.histogram.groupingAxis;
+      this.paraview.paraState.model?.facetSignatures.map((facet) => this.paraview.paraState.model?.getFacet(facet.key)?.label)[0]
+      : this.paraview.paraState.config.type.histogram.groupingAxis;
     this.paraview.documentView!.yAxis?.setAxisLabelText(`Frequency of ${targetAxis}`)
-    
+
   }
 
   seriesRef(series: string) {
@@ -177,7 +176,7 @@ export class HistogramBinView extends View {
   */
   completeLayout() {
     const info = this.chart.chartInfo;
-    if (this.chart.paraview.paraState.config.type.histogram.displayAxis == "x" 
+    if (this.chart.paraview.paraState.config.type.histogram.displayAxis == "x"
       || this.chart.paraview.paraState.config.type.histogram.displayAxis == undefined) {
       const id = this.index - 1;
       this._y = this.chart.parent.height;
@@ -186,7 +185,7 @@ export class HistogramBinView extends View {
       //console.log("info.grid", info.grid)
       const gridMax = Math.max(...info.grid)
       const max = this.chart.chartInfo.yInterval!.end;
-      const min =  this.chart.chartInfo.yInterval!.start; 
+      const min = this.chart.chartInfo.yInterval!.start;
       this._height = this._y - ((max - info.grid[id]) / (max - min)) * this._y
       if (this.chart.settings.relativeAxes == "Percentage") {
         this._height = this._height / info.grid.reduce((a, c) => a + c)
@@ -203,13 +202,12 @@ export class HistogramBinView extends View {
       */
     }
     else {
-      console.log("TESTING TESTING")
       const id = this.index - length;
       this._x = 0;
       this._height = this.chart.parent.height / info.bins;
       this._y = (info.grid.length - id - 1) % info.bins * this._height + (this._height)
       const max = this.chart.chartInfo.xInterval!.end;
-      const min =  this.chart.chartInfo.xInterval!.start; 
+      const min = this.chart.chartInfo.xInterval!.start;
       this._width = (((info.grid[id] - min) / max) * this.chart.parent.width)
       if (this.chart.settings.relativeAxes == "Percentage") {
         this._width = this._width / info.grid.reduce((a, c) => a + c)

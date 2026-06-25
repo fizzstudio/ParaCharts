@@ -5,6 +5,7 @@
 ```ts
 
 import { AllSeriesData } from '@fizz/paramanifest';
+import { AxisOrientation as AxisOrientation_2 } from '@fizz/paramodel';
 import { ButtonDescriptor } from '@fizz/ui-components';
 import { ChartType as ChartType_2 } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';

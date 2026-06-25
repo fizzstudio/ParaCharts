@@ -7,6 +7,7 @@ import { NavNode } from '../view/layers';
 import { DocumentView } from '../view/document_view';
 import { type ParaState } from '../state';
 import { Datapoint, PlaneModel } from '@fizz/paramodel';
+import { clusterObject } from '@fizz/clustering';
 
 export class HeatMapInfo extends PlaneChartInfo {
   protected _resolution!: number;
@@ -121,7 +122,7 @@ export class HeatMapInfo extends PlaneChartInfo {
 
   }
 
-  async _generateClustering() {
+  async _generateClustering(): Promise<clusterObject[] | null> {
     return await (this._paraState.model as PlaneModel).getClusteringAnalysis();
   }
 

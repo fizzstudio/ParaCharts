@@ -273,8 +273,6 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   }
 
   setAxisLabelText(text?: string) {
-    console.log("setAxisLabelText", text)
-    //console.trace();
     this._titleText = text ?? this.config.title.text ?? '';
     if (this._axisTitle) {
       this._axisTitle.text = this._titleText;

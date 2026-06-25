@@ -58,7 +58,7 @@ export class ScatterChartInfo extends PointChartInfo {
       //this._paraView.documentView?.chartLayers.dataLayer.init();
     }
   }
-  async _generateClustering() {
+  async _generateClustering(): Promise<clusterObject[] | null> {
     return await (this._paraState.model as PlaneModel).getClusteringAnalysis();
   }
 
