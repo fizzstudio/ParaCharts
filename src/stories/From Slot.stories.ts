@@ -8,7 +8,6 @@ import { unsafeHTML } from 'lit-html/directives/unsafe-html.js';
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 const meta = {
   title: 'Chart',
-  tags: ['autodocs'],
   render: (args) => Chart(args),
   argTypes: {
 
