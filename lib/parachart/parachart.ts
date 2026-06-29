@@ -258,10 +258,10 @@ export class ParaChart extends ParaComponent {
     this.paraView.showAriaLiveHistory();
   }
 
-  async connectedCallback() {
+  connectedCallback() {
     super.connectedCallback();
     if (this._styleManager) return;
-    await this._globalState.init();
+    this._globalState.init();
     this.isControlPanelOpen = this._paraState.config.controlPanel.isControlPanelDefaultOpen;
     this._injectFontFace('braille36', brailleFont);
     this._injectFontFace('Atkinson Hyperlegible', hyperFont);
