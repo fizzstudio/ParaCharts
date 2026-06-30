@@ -4,7 +4,7 @@
         "isDrawSubtitle": {
             "description": "Whether to draw the chart subtitle",
             "type": "boolean",
-            "default": true
+            "default": false
         },
         "text": {
             "description": "The text of the chart's subtitle.",
