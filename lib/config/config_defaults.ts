@@ -84,7 +84,7 @@ export const defaultConfig: Config = {
     },
     chart: {
       subtitle: {
-        isDrawSubtitle: true,
+        isDrawSubtitle: false,
         text: "",
         margin: 20,
         fontSize: "11pt",
