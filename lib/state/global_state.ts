@@ -6,7 +6,8 @@ import { SeriesAnalyzerConstructor, PairAnalyzerConstructor } from '@fizz/paramo
 
 import { property } from '@lit-app/state';
 
-import { Localization } from '@elemental/localization';
+// import { Localization } from '@elemental/localization';
+import { Localization } from '../l10n/l10n';
 
 export class GlobalState extends BaseState {
   protected _paraStates: ParaState[] = [];
@@ -24,8 +25,9 @@ export class GlobalState extends BaseState {
     // this._getUrlAnnotations();
   }
 
-  async init() {
-    this._l10n = await Localization.make(navigator.languages, {defaultLocale: 'en', path: '/lib/assets/locales'});
+  init() {
+    // this._l10n = await Localization.make(navigator.languages, {defaultLocale: 'en', path: '/lib/assets/locales'});
+    this._l10n = new Localization();
   }
 
   get paraState(): ParaState {
