@@ -54,7 +54,7 @@ import { Config } from '../config/config_types';
 import { defaultConfig } from '../config/config_defaults';
 import { Colors } from '../common/colors';
 import { type ContrastWarning } from '../common/contrast';
-import { joinStrArray, trendTranslation } from '../common/utils';
+import { joinStrArray, preciseAdd, trendTranslation } from '../common/utils';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { actionMap } from './action_map';
@@ -69,6 +69,7 @@ import { BaseChartInfo, chartInfoClasses, ScatterChartInfo } from '../chart_type
 import { firstDataset, type Manifest } from '../loader/common';
 import { clusterObject } from '@fizz/clustering';
 import { ClusterShellView } from '../view/layers';
+import { computeLabels } from '../common/axisinfo';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -245,6 +246,7 @@ export class ParaState extends BaseState {
   protected _settingControls = new SettingControlManager(this);
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
   protected _manifest: Manifest | null = null;
+  protected _originalManifest: Manifest | null = null;
   protected _jimerator: Jimerator | null = null;
   protected _model: Model | null = null;
   protected _facets: FacetSignature[] | null = null;
@@ -295,6 +297,10 @@ export class ParaState extends BaseState {
 
   get manifest() {
     return this._manifest;
+  }
+
+  get originalManifest() {
+    return this._originalManifest;
   }
 
   get model() {
@@ -527,9 +533,14 @@ export class ParaState extends BaseState {
   }
 
   async setManifest(manifest: Manifest, data?: AllSeriesData, resetSettings = true) {
+    this._originalManifest = structuredClone(manifest);
     this._manifest = manifest;
     const dataset = firstDataset(this._manifest);
 
+    if (dataset.representation.subtype == 'histogram') {
+      manifest = this.augmentHistogramDataset(manifest);
+      this._manifest = manifest;
+    }
     if (resetSettings) {
       this._createSettings(this._inputSettings);
     }
@@ -619,6 +630,64 @@ export class ParaState extends BaseState {
     this.dispatchEvent(
       new CustomEvent('manifestSet')
     );
+  }
+
+  augmentHistogramDataset(manifest: Manifest): Manifest {
+    const dataset = manifest.jim.datasets[0];
+    let workingLabels;
+    const bins = this.config.type.histogram.bins ?? 20;
+    let targetFacet = Object.keys(dataset.facets)[0]
+    if (this.config.type.histogram.groupingAxis) {
+      targetFacet = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == this.config.type.histogram.groupingAxis)![0][0];
+    }
+
+    const xValues: number[] = []
+    for (let series of dataset.series) {
+      for (let datapoint of series.records!) {
+        xValues.push(Number(datapoint[targetFacet]));
+      }
+    }
+
+    workingLabels = computeLabels(Math.min(...xValues), Math.max(...xValues), false)
+    let xMax: number = workingLabels.max!;
+    let xMin: number = workingLabels.min!;
+    const xRange = xMax - xMin;
+    const seriesList = dataset.series;
+
+    for (let series of seriesList) {
+      const _data = [];
+      for (let i = 0; i < series.records!.length; i++) {
+        _data.push(Number(series.records![i][targetFacet]));
+      }
+      const grid: Array<number> = [];
+      for (let i = 0; i < bins; i++) {
+        grid.push(0);
+      }
+      for (let i = 0; i < _data.length; i++) {
+        const point = _data[i];
+        // TODO: check that `- 1` is correct
+        const xIndex: number = Math.floor((point - xMin) * (bins - 1) / (xMax - xMin));
+        grid[xIndex]++;
+      }
+      const xVals = grid.map((g, i) => String(preciseAdd(xMin, i * (xRange / bins))));
+      let yVals = grid.map((g, i) => String(grid[i]));
+      if (this.config.type.histogram.relativeAxes == 'Percentage') {
+        const sum = grid.reduce((a, c) => a + c);
+        yVals = yVals.map(y => (Number(y) / sum).toFixed(4));
+      }
+      series.records = grid.map((g, i) => { return { x: xVals[i], y: yVals[i] } })
+    }
+    manifest.jim.datasets[0].facets["x"].measure = 'interval';
+    manifest.jim.datasets[0].facets["x"].variableType = 'independent';
+    manifest.jim.datasets[0].facets["y"] = {
+      datatype: "number",
+      label: `Count of ${manifest.jim.datasets[0].facets[targetFacet].label}`,
+      variableType: "dependent",
+      measure: "nominal",
+      displayType: { type: 'axis', orientation: "vertical" }
+    };
+    return manifest;
   }
 
   getActionChains() {

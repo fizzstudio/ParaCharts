@@ -58,6 +58,7 @@ export abstract class PointPlotView extends PlanePlotView {
   }
 
   protected _createDatapoints() {
+    /*
     const xs: string[] = [];
     for (const [p, i] of enumerate(this.paraview.paraState.model!.series[0].datapoints)) {
       xs.push(formatBox(p.facetBox('x')!, 'raw'));
@@ -67,6 +68,7 @@ export abstract class PointPlotView extends PlanePlotView {
       // }
       // this.selectors[i].push(`tick-x-${xId}`);
     }
+      */
     for (const [col, i] of enumerate(this.paraview.paraState.model!.series)) {
       const seriesView = this._newSeriesView(col.key);
       this._chartLandingView.append(seriesView);

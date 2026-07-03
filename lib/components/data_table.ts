@@ -172,7 +172,7 @@ export class DataTable extends ParaComponent {
   ];
 
   protected render() {
-    return this._paraState.model
+    return (this._paraState.model && this._paraState.model.facetKeys.length > 1)
     ? html`
       <div
         class="wrapper"
