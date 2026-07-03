@@ -186,7 +186,6 @@ export function makeSequenceId(seriesKey: string, index1: number, index2: number
 export class ParaState extends BaseState {
   readonly symbols = new DataSymbols();
 
-  @property() dataState: DataState = 'initial';
   @property() darkMode = false;
   @property() announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0, target: 'all' };
   @property() annotations: BaseAnnotation[] = [];
@@ -195,7 +194,6 @@ export class ParaState extends BaseState {
   @property() selectPopups: Popup[] = [];
   @property() crossHairs: Array<{ id: string, popups: Array<PathShape | Popup> }> = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
-  @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() clusterAnalyses: clusterObject[] | null = null;
   @property() frontSeries = '';
   @property() pointerCoords: Point = { x: 0, y: 0 }
@@ -211,7 +209,6 @@ export class ParaState extends BaseState {
   @property() protected _pinnedSeriesKey: string | null = null;
   @property() protected _dimmedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
-  @property() protected data: AllSeriesData | null = null;
   @property() protected focused = 'chart';
   @property() protected selected = null;
   @property() protected queryLevel = 'default';
@@ -238,6 +235,8 @@ export class ParaState extends BaseState {
   @property() protected _userTrendLines: TrendLine[] = [];
   @property() protected _clusterShellViews: ClusterShellView[] = [];
 
+  protected _data: AllSeriesData | null = null;
+  protected _dataState: DataState = 'initial';
   protected _settingControls = new SettingControlManager(this);
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
   protected _manifest: Manifest | null = null;
@@ -256,6 +255,7 @@ export class ParaState extends BaseState {
   protected _annotID: number = 0;
   protected log: Logger = getLogger("ParaState");
   protected _chartInfo!: BaseChartInfo;
+  protected _seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
 
   public idList: Record<string, boolean> = {};
 
@@ -276,6 +276,23 @@ export class ParaState extends BaseState {
     this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
     this._pairAnalyzerConstructor = pairAnalyzerConstructor;
     //this._getUrlAnnotations();
+  }
+
+  get dataState(): DataState {
+    return this._dataState;
+  }
+
+  set dataState(dataState: DataState) {
+    this._dataState = dataState;
+  }
+
+  get data(): AllSeriesData | null {
+    return this._data;
+  }
+
+  set data(data: AllSeriesData | null) {
+    this._data = data;
+    this.postNotice('setData', data);
   }
 
   get globalState() {
@@ -383,6 +400,10 @@ export class ParaState extends BaseState {
 
   get chartInfo() {
     return this._chartInfo;
+  }
+
+  get seriesAnalyses() {
+    return this._seriesAnalyses;
   }
 
   createChartInfo() {
@@ -562,7 +583,7 @@ export class ParaState extends BaseState {
 
     this._jimerator = new Jimerator(this._manifest, data);
 
-    this.seriesAnalyses = {};
+    this._seriesAnalyses = {};
 
     this._type = dataset.representation.subtype;
     this._title = dataset.title;
@@ -585,6 +606,7 @@ export class ParaState extends BaseState {
       // at that point, the chart won't init properly
       //this._seriesProperties = new SeriesPropertyManager(this);
       this._seriesProperties.reset();
+      // Use the setter to post a notice
       this.data = dataFromManifest(manifest);
     } else if (data) {
       if (isPastryType(this._type) || isVennType(this._type)) {
@@ -611,11 +633,12 @@ export class ParaState extends BaseState {
     if (this._model instanceof PlaneModel) {
       await Promise.all(
         this._model.seriesKeys.map(async (seriesKey) => {
-          this.seriesAnalyses = {
+          this._seriesAnalyses = {
             [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey, { maxError: maxError, maxSegments: maxSegments, extremumWeight: extremumWeight }),
-            ...this.seriesAnalyses
+            ...this._seriesAnalyses
           };
         }));
+        this.postNotice('seriesAnalyses', null);
     }
     this.postNotice('paranotice', { key: 'manifestSet' });
     this.dispatchEvent(

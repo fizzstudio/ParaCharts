@@ -74,12 +74,9 @@ export class LineChartInfo extends PointChartInfo {
     super.settingDidChange(path, oldValue, newValue);
   }
 
-  async storeDidChange(key: string, value: any) {
-    await super.storeDidChange(key, value);
+  noticePosted(key: string, value: any) {
+    super.noticePosted(key, value);
     if (key === 'seriesAnalyses') {
-      // This gets called each time a series analysis completes after a
-      // new manifest is loaded in AI mode. The following call will only
-      // do anything once analyses have been generated for all series.
       this._createSequenceNavNodes();
     }
   }

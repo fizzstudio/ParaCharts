@@ -32,6 +32,22 @@ import cpanelIcon from '../assets/info-icon.svg';
 import cpanelIconAlt from '../assets/info-icon-alt.svg';
 import warningIcon from '../assets/warning-icon.svg?raw';
 
+import { MessageDialog, FizzTabs, TabLabelMode } from '@fizz/ui-components';
+import '@fizz/ui-components';
+
+import {
+  html, css, PropertyValues,
+  unsafeCSS, nothing
+} from 'lit';
+import { property, state, customElement } from 'lit/decorators.js';
+import { type Ref, ref, createRef } from 'lit/directives/ref.js';
+import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
+import { Popup } from '../view/popup';
+import { datapointIdToCursor } from '../state';
+import { AnnotationDialog } from './dialogs/annotation_dialog';
+import { ControlpanelConfig } from '../config/config_types';
+
+
 @customElement('para-control-panel')
 export class ParaControlPanel extends ParaComponent {
   private log: Logger = getLogger("ParaControlPanel");
@@ -56,7 +72,6 @@ export class ParaControlPanel extends ParaComponent {
   protected _dialogRef = createRef<ParaDialog>();
   protected _annotationDialogRef = createRef<AnnotationDialog>();
   protected _msgDialogRef = createRef<MessageDialog>();
-  protected _storeChangeUnsub!: Unsubscribe;
 
   static styles = [
     //styles,
@@ -177,12 +192,13 @@ export class ParaControlPanel extends ParaComponent {
   connectedCallback() {
     super.connectedCallback();
     //this._isOpen = this.settings.isControlPanelDefaultOpen;
-    this._storeChangeUnsub = this._paraState.subscribe((key, value) => {
-      if (key === 'data') {
-        this.dataUpdated();
-      }
-    });
     this.addButtonListeners();
+  }
+
+  noticePosted(key: string, value: any) {
+    if (key === 'setData') {
+      this.dataUpdated();
+    }
   }
 
   addButtonListeners() {
@@ -213,7 +229,6 @@ export class ParaControlPanel extends ParaComponent {
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    this._storeChangeUnsub();
   }
 
   // Anything that needs to be done when data is updated, do here

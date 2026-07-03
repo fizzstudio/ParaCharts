@@ -27,6 +27,12 @@ import { AxisOrientation } from '../view/axis';
 import { NavMap, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
 import { type ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor, SettingsManager } from '../state';
 import { Sonifier } from '../audio/sonifier';
+import { type AxisCoord, AxisOrientation } from '../view/axis';
+
+import { Datapoint } from '@fizz/paramodel';
+import { ChartType, Facet } from '@fizz/paramanifest';
+import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
+
 import { executeParaActions, parseActions } from '../paraactions/paraactions';
 
 export const ORIENTATION_SENTENCES = [
@@ -59,7 +65,6 @@ export abstract class BaseChartInfo {
   protected log: Logger = getLogger("BaseChartInfo");
   protected _navMap: NavMap | null = null;
   protected _summarizer!: Summarizer;
-  protected _storeChangeUnsub!: Unsubscribe;
   protected _chordPrevSeriesKey = '';
   protected _sonifier!: Sonifier;
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
@@ -85,13 +90,8 @@ export abstract class BaseChartInfo {
 
   protected _init() {
     this._createNavMap();
-    this._storeChangeUnsub = this._paraState.subscribe(async (key, value) => {
-      if (key === 'data') {
-        this._createSummarizer();
-      }
-    });
-    // We initially get created after the data has loaded, so the above
-    // callback won't run
+    // We initially get created after the data has loaded, so the
+    // postNotice hook won't run
     this._createSummarizer();
   }
 
@@ -167,6 +167,9 @@ export abstract class BaseChartInfo {
           this._navMap!.root.goTo('top', {}, true);
         }
       }
+    }
+    if (key === 'setData') {
+      this._createSummarizer();
     }
   }
 
