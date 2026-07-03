@@ -2,8 +2,7 @@
 import { DataLayer } from '..';
 import { type BaseChartInfo } from '../../../../chart_types';
 import { DatapointView, SeriesView } from '../../../data';
-import { Setting } from '../../../../state';
-import { DeepReadonly } from '../../../../config/config_types';
+import { ConfigSetting, DeepReadonly } from '../../../../config/config_types';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type DataLayerContext } from '../../../view_context';
 import { type Shape, SectorShape, PathShape } from '../../../shape';
@@ -183,7 +182,7 @@ export abstract class PastryPlotView extends DataLayer {
     // }
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
 
     const settings = ['explode', 'orientationAngleOffset', 'insideLabels.contents', 'outsideLabels.contents'];
     if (settings.map(s => `type.${this.paraview.paraState.type}.${s}`).includes(path)) {

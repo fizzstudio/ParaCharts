@@ -11,6 +11,7 @@
   --para-point-label-format: 'raw';
   --para-leader-line-length: 30;
   --para-is-draw-symbols: true;
+  --para-is-draw-symbols: false;
   --para-highlight-scale: 1.6;
 }
 

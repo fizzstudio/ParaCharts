@@ -1,7 +1,6 @@
 import { Logger, getLogger } from '@fizz/logger';
 import { type ParaState } from './parastate';
-import { type Setting } from '.';
-import { type ColorPrefSource } from '../config/config_types';
+import { ConfigSetting, type ColorPrefSource } from '../config/config_types';
 import { hexToOklch, formatOklch } from '../common/color_space';
 import {
   cssColorToHex, checkContrast,
@@ -119,7 +118,7 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
   private readonly _paraState: ParaState;
   private readonly _mql = new Map<string, MediaQueryList>();
   private readonly _mqlHandlers = new Map<string, (e: MediaQueryListEvent) => void>();
-  private readonly _settingObservers: Array<{ path: string; fn: (o: Setting, n: Setting) => void }> = [];
+  private readonly _settingObservers: Array<{ path: string; fn: (o: ConfigSetting, n: ConfigSetting) => void }> = [];
   private _unregisterConfigReset?: () => void;
   private readonly _log: Logger = getLogger('ColorPrefManager');
 
@@ -303,7 +302,7 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
   // -------------------------------------------------------------------------
 
   private _registerSettingObservers(): void {
-    const themeFn = (_old: Setting, newVal: Setting) => {
+    const themeFn = (_old: ConfigSetting, newVal: ConfigSetting) => {
       if (this._programmaticUpdate) {
         this._resolve();
         return;
@@ -318,7 +317,7 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
       this._resolve();
     };
 
-    const contrastFn = (_old: Setting, newVal: Setting) => {
+    const contrastFn = (_old: ConfigSetting, newVal: ConfigSetting) => {
       if (this._programmaticUpdate) {
         this._resolve();
         return;
@@ -332,19 +331,19 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
       this._resolve();
     };
 
-    const bgLightFn = (_old: Setting, newVal: Setting) => {
+    const bgLightFn = (_old: ConfigSetting, newVal: ConfigSetting) => {
       if (this._programmaticUpdate) return;
       this.save({ backgroundColorLight: newVal as string });
       this._resolve();
     };
 
-    const bgDarkFn = (_old: Setting, newVal: Setting) => {
+    const bgDarkFn = (_old: ConfigSetting, newVal: ConfigSetting) => {
       if (this._programmaticUpdate) return;
       this.save({ backgroundColorDark: newVal as string });
       this._resolve();
     };
 
-    const lvThemeFn = (_old: Setting, newVal: Setting) => {
+    const lvThemeFn = (_old: ConfigSetting, newVal: ConfigSetting) => {
       if (this._programmaticUpdate) return;
       this.save({ lowVisionThemeDefault: newVal as ThemeMode });
       if (this._paraState.config.ui.isLowVisionModeEnabled) {
@@ -356,7 +355,7 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
       }
     };
 
-    const lvContrastFn = (_old: Setting, newVal: Setting) => {
+    const lvContrastFn = (_old: ConfigSetting, newVal: ConfigSetting) => {
       if (this._programmaticUpdate) return;
       this.save({ lowVisionContrastDefault: newVal as ContrastMode });
       if (this._paraState.config.ui.isLowVisionModeEnabled) {
@@ -368,7 +367,7 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
       }
     };
 
-    const lvContrastLevelFn = (_old: Setting, newVal: Setting) => {
+    const lvContrastLevelFn = (_old: ConfigSetting, newVal: ConfigSetting) => {
       if (this._programmaticUpdate) return;
       this.save({ lowVisionContrastLevel: newVal as number });
       if (this._paraState.config.ui.isLowVisionModeEnabled
@@ -377,11 +376,11 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
       }
     };
 
-    const lvColorPaletteFn = (_old: Setting, newVal: Setting) => { if (!this._programmaticUpdate) this.save({ lowVisionColorPalette:    newVal as boolean }); };
-    const lvFontScaleFn    = (_old: Setting, newVal: Setting) => { if (!this._programmaticUpdate) this.save({ lowVisionFontScale:        newVal as number  }); };
-    const lvVertGridFn     = (_old: Setting, newVal: Setting) => { if (!this._programmaticUpdate) this.save({ lowVisionIsVertGridlines:  newVal as boolean }); };
-    const lvAnimFn         = (_old: Setting, newVal: Setting) => { if (!this._programmaticUpdate) this.save({ lowVisionDisableAnimations: newVal as boolean }); };
-    const lvFullscreenFn   = (_old: Setting, newVal: Setting) => { if (!this._programmaticUpdate) this.save({ lowVisionIsFullscreen:     newVal as boolean }); };
+    const lvColorPaletteFn = (_old: ConfigSetting, newVal: ConfigSetting) => { if (!this._programmaticUpdate) this.save({ lowVisionColorPalette:    newVal as boolean }); };
+    const lvFontScaleFn    = (_old: ConfigSetting, newVal: ConfigSetting) => { if (!this._programmaticUpdate) this.save({ lowVisionFontScale:        newVal as number  }); };
+    const lvVertGridFn     = (_old: ConfigSetting, newVal: ConfigSetting) => { if (!this._programmaticUpdate) this.save({ lowVisionIsVertGridlines:  newVal as boolean }); };
+    const lvAnimFn         = (_old: ConfigSetting, newVal: ConfigSetting) => { if (!this._programmaticUpdate) this.save({ lowVisionDisableAnimations: newVal as boolean }); };
+    const lvFullscreenFn   = (_old: ConfigSetting, newVal: ConfigSetting) => { if (!this._programmaticUpdate) this.save({ lowVisionIsFullscreen:     newVal as boolean }); };
 
     this._paraState.observeSetting('color.themeMode',                themeFn);
     this._paraState.observeSetting('color.contrastMode',             contrastFn);

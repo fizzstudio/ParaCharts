@@ -42,9 +42,9 @@ export class HistogramChartInfo extends PlaneChartInfo {
     this._paraState.clearVisited();
     this._paraState.clearSelected();
     /*
-    const targetAxis = this._paraState.config.type.histogram.groupingAxis as DeepReadonly<string> == '' ?
+    const targetAxis = this.config.groupingAxis as DeepReadonly<string> == '' ?
       this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label)[0]
-      : this._paraState.config.type.histogram.groupingAxis;
+      : this.config.groupingAxis;
     let targetFacet;
     for (let facet of this._paraState.model!.facetSignatures) {
       if (this._paraState.model!.getFacet(facet.key as string)!.label == targetAxis) {
@@ -62,8 +62,8 @@ export class HistogramChartInfo extends PlaneChartInfo {
 
     const targetFacetBoxes = this._paraState.model!.allFacetValues(targetFacet!)!;
     const targetFacetNumbers = targetFacetBoxes.map((b) => b.asNumber()!);
-    if (this.settings.displayAxis == "x" || this.settings.displayAxis == undefined) {
-      if (this.settings.relativeAxes == "Counts") {
+    if (this.config.displayAxis == "x" || this.config.displayAxis == undefined) {
+      if (this.config.relativeAxes == "Counts") {
         // this._axisInfo = new AxisInfo(this._paraState, {
         //   xValues: targetFacetNumbers,
         //   yValues: this.grid,
@@ -79,7 +79,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
       }
     }
     else {
-      if (this.settings.relativeAxes == "Counts") {
+      if (this.config.relativeAxes == "Counts") {
         // this._axisInfo = new AxisInfo(this._paraState, {
         //   xValues: this.grid,
         //   yValues: targetFacetNumbers,
@@ -201,14 +201,70 @@ export class HistogramChartInfo extends PlaneChartInfo {
     return this._maxCount;
   }
   /*
-    protected _generateBins(): Array<number> {
-      const targetAxis = this._paraState.config.type.histogram.groupingAxis as DeepReadonly<string | undefined>
-        ?? this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label)[0];
-  
-      let targetFacet;
-      for (let facet of this._paraState.model!.facetSignatures) {
-        if (this._paraState.model!.getFacet(facet.key as string)!.label == targetAxis) {
-          targetFacet = facet.key;
+  protected _generateBins(): Array<number> {
+    const targetAxis = this.config.groupingAxis as DeepReadonly<string | undefined>
+      ?? this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label)[0];
+
+    let targetFacet;
+    for (let facet of this._paraState.model!.facetSignatures) {
+      if (this._paraState.model!.getFacet(facet.key as string)!.label == targetAxis) {
+        targetFacet = facet.key;
+      }
+    }
+    //HACK: THIS WILL BREAK IF WE EVER ADD MORE FACETS THAN JUST X/Y
+    let nonTargetFacet;
+    if (targetFacet == "y") {
+      nonTargetFacet = "x";
+    }
+    else {
+      nonTargetFacet = "y";
+    }
+    let workingLabels;
+    if (targetFacet) {
+      const yValues = []
+      const xValues = []
+      for (let datapoint of this._paraState.model!.series[0]) {
+        xValues.push(datapoint.facetValueNumericized(targetFacet)!)
+      }
+      for (let datapoint of this._paraState.model!.series[0]) {
+        yValues.push(datapoint.facetValueNumericized(nonTargetFacet)!)
+      }
+      workingLabels = computeLabels(Math.min(...xValues), Math.max(...xValues), false)
+    }
+    else {
+      const xBoxes = this._paraState.model!.allFacetValues('x')!;
+      const xNumbers = xBoxes.map((x) => x.asNumber()!);
+      workingLabels = computeLabels(Math.min(...xNumbers), Math.max(...xNumbers), false);
+    }
+    const seriesList = this._paraState.model!.series
+    this._data = [];
+    for (let series of seriesList) {
+      for (let i = 0; i < series.length; i++) {
+        this._data.push([series[i].facetValueNumericized(targetFacet ?? "x")!, series[i].facetValueNumericized(nonTargetFacet ?? "y")!]);
+      }
+    }
+
+    const y: Array<number> = [];
+    const x: Array<number> = [];
+
+    for (let point of this._data) {
+      x.push(point[0]);
+      y.push(point[1]);
+    }
+
+    let xMax: number = workingLabels.max!
+    let xMin: number = workingLabels.min!
+
+    const grid: Array<number> = [];
+
+    for (let i = 0; i < this.bins; i++) {
+      grid.push(0);
+    }
+
+        for (let point of this._data) {
+          // TODO: check that `- 1` is correct
+          const xIndex: number = Math.floor((point[0] - xMin) * (this.bins - 1) / (xMax - xMin));
+          grid[xIndex]++;
         }
       }
       //HACK: THIS WILL BREAK IF WE EVER ADD MORE FACETS THAN JUST X/Y

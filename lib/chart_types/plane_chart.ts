@@ -160,10 +160,6 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     return this._yExtremes;
   }
 
-  get settings() {
-    return super.settings as DeepReadonly<TypePlaneConfig>;
-  }
-
   get config() {
     return super.config as DeepReadonly<TypePlaneConfig>;
   }

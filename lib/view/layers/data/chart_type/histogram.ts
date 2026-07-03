@@ -1,14 +1,9 @@
-import { Datapoint, enumerate } from "@fizz/paramodel";
-import { formatBox } from "@fizz/parasummary";
+import { enumerate } from "@fizz/paramodel";
 import { nothing, svg } from "lit";
-import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
 import { fixed } from "../../../../common/utils";
-import { type ViewContext } from '../../../view_context';
-import { datapointIdToCursor, type Setting } from "../../../../state";
-import { DeepReadonly, PointChartType } from '../../../../config/config_types';
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
-import { PlanePlotView, PlaneSeriesView, ScatterPointView } from ".";
+import { PlanePlotView, PlaneSeriesView } from ".";
 import { DatapointView, SeriesView } from "../../../data";
 import { strToId } from "@fizz/paramanifest";
 import { HistogramChartInfo } from '../../../../chart_types/histogram_chart';
@@ -16,11 +11,12 @@ import { View } from "../../../base_view";
 import { ClassInfo, classMap } from "lit/directives/class-map.js";
 import { ref } from "lit/directives/ref.js";
 import { StyleInfo, styleMap } from "lit/directives/style-map.js";
+import { ConfigSetting } from "../../../../config/config_types";
 
 export class Histogram extends PlanePlotView {
   declare protected _chartInfo: HistogramChartInfo;
-  protected _bins: HistogramBinView[] = []
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['type.histogram.groupingAxis', 'type.histogram.displayAxis', 'type.histogram.relativeAxes', 'axis.y.maxValue', 'axis.y.minValue', 'type.histogram.bins'].includes(path)) {
       this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false)
       //this.paraview.createDocumentView();
@@ -67,9 +63,9 @@ export class Histogram extends PlanePlotView {
   */
   protected _completeDatapointLayout(): void {
     super._completeDatapointLayout();
-    this._bins.forEach(t => t.parent == undefined ? this.append(t) : nothing)
-    this._bins.forEach(t => t.completeLayout())
-    this._bins.forEach(t => t._createShapes())
+    //this._bins.forEach(t => t.parent == undefined ? this.append(t) : nothing)
+    //this._bins.forEach(t => t.completeLayout())
+    //this._bins.forEach(t => t._createShapes())
     //const targetAxis = this.paraview.paraState.config.type.histogram.groupingAxis as DeepReadonly<string> == '' ?
     //  this.paraview.paraState.model?.facetSignatures.map((facet) => this.paraview.paraState.model?.getFacet(facet.key)?.label)[0]
     //  : this.paraview.paraState.config.type.histogram.groupingAxis;
@@ -163,8 +159,7 @@ export class HistogramBinView extends DatapointView {
   */
   completeLayout() {
     const info = this.chart.chartInfo;
-    if (this.chart.paraview.paraState.config.type.histogram.displayAxis == "x"
-      || this.chart.paraview.paraState.config.type.histogram.displayAxis == undefined) {
+    if (this.chart.config.displayAxis == "x" || this.chart.config.displayAxis == undefined) {
       const id = this.index;
       const seriesIndex = this.parent.index;
       this._y = this.chart.parent.height 
@@ -178,7 +173,7 @@ export class HistogramBinView extends DatapointView {
       const yRange = max - min;
       const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
       this._height = Math.max(0, Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit));
-      if (this.chart.settings.relativeAxes == "Percentage") {
+      if (this.chart.config.relativeAxes == "Percentage") {
         this._height = this.height / (info.grid.flat()).reduce((a, c) => a + c)
       }
       this._count = info.grid[seriesIndex][id];

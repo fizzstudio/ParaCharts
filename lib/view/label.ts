@@ -25,7 +25,7 @@ import { generateUniqueId, fixed } from '../common/utils';
 import { type ViewContext } from './view_context';
 import { SVGNS } from '../common/constants';
 import { Vec2 } from '../common/vector';
-import { Setting } from '../state';
+import { ConfigSetting } from '../config/config_types';
 
 export type LabelTextAnchor = 'start' | 'middle' | 'end';
 
@@ -432,7 +432,7 @@ export class Label extends View {
     return t;
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     this.updateSize();
     super.settingDidChange(path, oldValue, newValue);
   }

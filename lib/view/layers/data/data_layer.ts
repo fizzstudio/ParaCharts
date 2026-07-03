@@ -18,8 +18,7 @@ import { ref } from 'lit/directives/ref.js';
 
 import { PlotLayer } from '..';
 import { type PlotLayerManager } from '..';
-import { Setting } from '../../../state/settings_types';
-import { DeepReadonly } from '../../../config/config_types';
+import { ConfigSetting, DeepReadonly } from '../../../config/config_types';
 import { type DataLayerContext } from '../../view_context';
 import { SettingsManager } from '../../../state/settings_manager';
 import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../../data';
@@ -79,10 +78,6 @@ export abstract class DataLayer extends PlotLayer {
 
   get managedSettingKeys() {
     return [`type.${this._parent.parent.type}`];
-  }
-
-  get settings(): DeepReadonly<ConfigGroup> {
-    return SettingsManager.getGroupLink(this.managedSettingKeys[0], this.paraview.paraState.settings);
   }
 
   get config(): DeepReadonly<ConfigGroup> {
@@ -158,7 +153,7 @@ export abstract class DataLayer extends PlotLayer {
     }
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['ui.isLowVisionModeEnabled'].includes(path)) {
       if (!oldValue) {
         this.paraview.paraState.updateConfig(draft => {

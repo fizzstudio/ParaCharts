@@ -14,13 +14,10 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import {
-  type Setting, type Settings, type SettingGroup,
-} from './settings_types';
-import { SettingsInput, DeepReadonly } from '../config/config_types';
+import { SettingsInput, DeepReadonly, ConfigGroup, Config, ConfigSetting } from '../config/config_types';
 //import { defaults } from './defaults';
 
-type SettingsStack = Array<{ group: Partial<SettingGroup>; prefix: string }>;
+type SettingsStack = Array<{ group: Partial<ConfigGroup>; prefix: string }>;
 
 /**
  * Helps set settings.
@@ -28,8 +25,8 @@ type SettingsStack = Array<{ group: Partial<SettingGroup>; prefix: string }>;
  */
 export class SettingsManager {
 
-  static hydrateInput(input: SettingsInput): Partial<Settings> {
-    const out: Partial<Settings> = {};
+  static hydrateInput(input: SettingsInput): Partial<Config> {
+    const out: Partial<Config> = {};
     for (const [path, value] of Object.entries(input)) {
       SettingsManager.set(path, value, out, true);
     }
@@ -46,7 +43,7 @@ export class SettingsManager {
     return this.diffGroup(this.settings, other.settings);
   }
 
-  private diffGroup<T extends SettingGroup>(group: Partial<T>, withGroup: T, path = '') {
+  private diffGroup<T extends ConfigGroup>(group: Partial<T>, withGroup: T, path = '') {
     let diff: [string, Setting | undefined][] = [];
     const keys = Object.keys(withGroup) as (keyof T)[];
     for (const key of keys) {
@@ -56,7 +53,7 @@ export class SettingsManager {
           if (typeof withGroup[key] !== 'object') {
             throw new Error(`type of setting '${key as string}' must be ${typeof withGroup[key]}`);
           }
-          diff = diff.concat(this.diffGroup(group[key] as SettingGroup, withGroup[key] as SettingGroup,
+          diff = diff.concat(this.diffGroup(group[key] as ConfigGroup, withGroup[key] as ConfigGroup,
             pathPlusKey));
         } else if (group[key] !== withGroup[key]) {
           diff.push([pathPlusKey, withGroup[key] as Setting | undefined]);
@@ -64,7 +61,7 @@ export class SettingsManager {
       } else {
         // withGroup is guaranteed to have the key
         if (typeof withGroup[key] === 'object') {
-          diff = diff.concat(this.diffGroup({}, withGroup[key] as SettingGroup,
+          diff = diff.concat(this.diffGroup({}, withGroup[key] as ConfigGroup,
             `${path}.${key as string}`));
         } else {
           diff.push([pathPlusKey, withGroup[key] as Setting | undefined]);
@@ -81,13 +78,13 @@ export class SettingsManager {
    * @param create - Optionally create groups that don't exist.
    * @returns Setting group object.
    */
-  static getGroup(path: string, group: SettingGroup, create = false) {
+  static getGroup(path: string, group: ConfigGroup, create = false) {
     const segs = path.split('.');
-    let cursor: SettingGroup = group;
-    let prev: SettingGroup | null = null;
+    let cursor: ConfigGroup = group;
+    let prev: ConfigGroup | null = null;
     for (const seg of segs) {
       prev = cursor;
-      cursor = cursor[seg] as SettingGroup;
+      cursor = cursor[seg] as ConfigGroup;
       if (typeof cursor !== 'object') {
         if (create && cursor === undefined) {
           cursor = {};
@@ -102,7 +99,7 @@ export class SettingsManager {
     return cursor;
   }
 
-  static getGroupLink<T extends SettingGroup>(path: string, group: SettingGroup) {
+  static getGroupLink<T extends ConfigGroup>(path: string, group: ConfigGroup) {
     return SettingsManager.getGroup(path, group) as DeepReadonly<T>;
   }
 
@@ -114,7 +111,7 @@ export class SettingsManager {
    * @param create - Optionally create groups that don't exist.
    * @returns Setting group.
    */
-  static getGroupForSetting(path: string, group: SettingGroup, create = false) {
+  static getGroupForSetting(path: string, group: ConfigGroup, create = false) {
     const segs = path.split('.');
     if (segs.length < 2) {
       throw new Error('setting path must have at least two elements');
@@ -122,7 +119,7 @@ export class SettingsManager {
     return SettingsManager.getGroup(segs.slice(0, -1).join('.'), group, create);
   }
 
-  static get(path: string, group: SettingGroup) {
+  static get(path: string, group: ConfigGroup) {
     const value = SettingsManager.getGroupForSetting(path, group)[path.split('.').at(-1)!];
     if (typeof value === 'object') {
       throw new Error('can only get settings, not groups');
@@ -132,14 +129,14 @@ export class SettingsManager {
     return value;
   }
 
-  static getAllSettings(group: SettingGroup, prefix = ''): SettingsInput {
+  static getAllSettings(group: ConfigGroup, prefix = ''): SettingsInput {
     const out: SettingsInput = {};
     let path: string;
     const keys = Object.keys(group);
     for (const key of keys) {
       path = prefix ? (prefix + '.' + key) : key;
       if (typeof group[key] === 'object') {
-        const settings = this.getAllSettings(group[key] as SettingGroup, path);
+        const settings = this.getAllSettings(group[key] as ConfigGroup, path);
         Object.entries(settings).forEach(([path, value]) => {
           out[path] = value;
         });
@@ -150,13 +147,13 @@ export class SettingsManager {
     return out;
   }
 
-  static set(path: string, value: Setting | undefined, group: SettingGroup, create = false) {
+  static set(path: string, value: ConfigSetting | undefined, group: ConfigGroup, create = false) {
     const segs = path.split('.');
-    const settingGroup = SettingsManager.getGroupForSetting(path, group, create);
-    settingGroup[segs.at(-1)!] = value;
+    const ConfigGroup = SettingsManager.getGroupForSetting(path, group, create);
+    ConfigGroup[segs.at(-1)!] = value;
   }
 
-  static cloneSettings<T extends SettingGroup>(settings: T): T {
+  static cloneSettings<T extends ConfigGroup>(settings: T): T {
     const clone: T = {} as T;
     const keys = Object.keys(settings) as (keyof T)[];
     for (const key of keys) {
@@ -172,7 +169,7 @@ export class SettingsManager {
     } else if (src[prop] === null) {
       dest[prop] = null as T[keyof T];
     } else*/ if (typeof src[prop] === 'object') {
-      dest[prop] = SettingsManager.cloneSettings(src[prop] as SettingGroup) as T[keyof T];
+      dest[prop] = SettingsManager.cloneSettings(src[prop] as ConfigGroup) as T[keyof T];
     } else {
       dest[prop] = src[prop];
     }
@@ -183,7 +180,7 @@ export class SettingsManager {
    * @param source - Nested settings object (or partial) to read values from.
    * @param draft - The settings object to write into.
    */
-  static applySettings(source: Partial<SettingGroup>, draft: SettingGroup): void {
+  static applySettings(source: Partial<ConfigGroup>, draft: ConfigGroup): void {
     const stack: SettingsStack = [{ group: source, prefix: '' }];
     while (stack.length > 0) {
       const { group, prefix } = stack.pop()!;
@@ -191,15 +188,15 @@ export class SettingsManager {
         const value = group[key];
         const path = prefix ? `${prefix}.${key}` : key;
         if (value !== null && typeof value === 'object') {
-          stack.push({ group: value as Partial<SettingGroup>, prefix: path });
+          stack.push({ group: value as Partial<ConfigGroup>, prefix: path });
         } else {
-          SettingsManager.set(path, value as Setting | undefined, draft, true);
+          SettingsManager.set(path, value as ConfigSetting | undefined, draft, true);
         }
       }
     }
   }
 
-  static suppleteSettings<T extends SettingGroup>(settings: Partial<T>, using: T) {
+  static suppleteSettings<T extends ConfigGroup>(settings: Partial<T>, using: T) {
     const keys = Object.keys(using) as (keyof T)[];
     for (const key of keys) {
       if (settings.hasOwnProperty(key)) {
@@ -211,7 +208,7 @@ export class SettingsManager {
           if (typeof using[key] !== 'object') {
             throw new Error(`type of setting '${key as string}' must be ${typeof using[key]}`);
           }
-          this.suppleteSettings(settings[key] as SettingGroup, using[key] as SettingGroup);
+          this.suppleteSettings(settings[key] as ConfigGroup, using[key] as ConfigGroup);
         } else if (settings[key] === undefined) {
           //opts[key] = using[key];
           SettingsManager.cloneProp(settings, using, key);

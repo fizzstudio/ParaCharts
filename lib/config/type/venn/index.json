@@ -1,0 +1,31 @@
+{
+    "family": "venn",
+    "settings": {
+        "orientationAngleOffset": {
+            "label": "cpanel.tabs.chart.venn_orientation",
+            "description": "Rotation offset for diagram orientation",
+            "type": "number",
+            "default": 0,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0,
+                "max": 360,
+                "step": 1,
+                "compact": true,
+                "width": "8rem"
+            },
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "explode": {
+            "label": "cpanel.tabs.chart.venn_explode",
+            "description": "Which circles to separate/explode",
+            "type": "string",
+            "default": "",
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "text"
+            },
+            "parentView": "controlPanel.tabs.chart.chart"
+        }
+    }
+}

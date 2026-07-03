@@ -14,7 +14,6 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type Settings } from './settings_types';
 import { SettingsInput } from '../config/config_types';
 import { ChartType } from '@fizz/paramanifest';
 
@@ -43,19 +42,4 @@ export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}
   },
   scatter: { 'legend.isAlwaysDrawLegend': true,
     'legend.position': 'north' }
-};
-
-/**
- * Default values for all settings.
- * @public
- */
-export const defaults: Settings = {
-  type: {
-  	venn: {
-      orientationAngleOffset: 0,
-      insideLabels: { contents: '' },
-      outsideLabels: { contents: '' },
-      explode: ''
-    }
-  },
 };

@@ -17,8 +17,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaView } from '../paraview';
 import { PlaneChartInfo } from './plane_chart';
-import { datapointIdToCursor, Setting, type ParaState } from '../state';
-import { DeepReadonly } from '../config/config_types';
+import { datapointIdToCursor, type ParaState } from '../state';
+import { ConfigSetting, DeepReadonly } from '../config/config_types';
 import {
   queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax
 } from '../state/query_utils';
@@ -302,7 +302,7 @@ export class BarChartInfo extends PlaneChartInfo {
     return clusterMap;
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['type.line.isTrendNavigationModeEnabled'].includes(path)) {
       [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
       this._navMap!.root.goTo('top', {});

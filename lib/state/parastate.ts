@@ -43,13 +43,12 @@ import {
 } from '@fizz/parasummary';
 
 import {
-  FORMAT_CONTEXT_SETTINGS, Settings, FormatContext,
-  type Setting, type SettingGroup,
+  FORMAT_CONTEXT_SETTINGS, FormatContext,
 } from './settings_types';
-import { SettingsInput } from '../config/config_types';
+import { ConfigGroup, ConfigSetting, SettingsInput } from '../config/config_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
-import { defaults, chartTypeDefaults } from './settings_defaults';
+import { chartTypeDefaults } from './settings_defaults';
 import { Config } from '../config/config_types';
 import { defaultConfig } from '../config/config_defaults';
 import { Colors } from '../common/colors';
@@ -191,7 +190,6 @@ export class ParaState extends BaseState {
   readonly symbols = new DataSymbols();
 
   @property() dataState: DataState = 'initial';
-  @property() settings!: Settings;
   @property() darkMode = false;
   @property() announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0, target: 'all' };
   @property() annotations: BaseAnnotation[] = [];
@@ -407,13 +405,16 @@ export class ParaState extends BaseState {
   }
 
   protected _createSettings(inputSettings: SettingsInput) {
-    const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
-    SettingsManager.suppleteSettings(hydratedSettings, defaults);
-    this.settings = hydratedSettings as Settings;
+    // const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
+    // SettingsManager.suppleteSettings(hydratedSettings, defaults);
+    // this.settings = hydratedSettings as Settings;
     const hydratedConfig = SettingsManager.hydrateInput(inputSettings) as Partial<Config>;
     SettingsManager.suppleteSettings(hydratedConfig, defaultConfig);
+    for (const [path, value] of Object.entries(inputSettings)) {
+      SettingsManager.set(path, value, hydratedConfig as ConfigGroup, true);
+    }
     this.config = hydratedConfig as Config;
-    SettingsManager.suppleteSettings(this.settings, this.config as unknown as Settings);
+    // SettingsManager.suppleteSettings(this.settings, this.config as unknown as Settings);
     this._configResetCallbacks.forEach(cb => cb());
   }
 
@@ -430,55 +431,55 @@ export class ParaState extends BaseState {
     }
   }
 
-  updateSettings(updater: (draft: Settings) => void, ignoreObservers = false) {
-    const [newSettings, patches, inversePatches] = produceWithPatches(this.settings, updater);
-    this.settings = newSettings;
-    const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
-    const counterpart = this._globalState.paraStates[1 - this.index];
-    if (counterpart) {
-      counterpart.settings = applyPatches(counterpart.settings, filtered);
-    }
-    if (ignoreObservers) {
-      return patches;
-    }
-    this._syncPatchesToManifest(patches);
-    const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
-    for (const patch of patches) {
-      if (patch.op !== 'replace') {
-        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
-        continue;
-      }
-      observed[patch.path.join('.')] = { newValue: patch.value };
-    }
-    for (const patch of inversePatches) {
-      if (patch.op !== 'replace') {
-        this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
-        continue;
-      }
-      observed[patch.path.join('.')].oldValue = patch.value;
-    }
-    for (const [path, values] of Object.entries(observed)) {
-      this._settingObservers[path]?.forEach(observer =>
-        observer(values.oldValue, values.newValue)
-      );
-      this.settingDidChange(path, values.oldValue, values.newValue);
-    }
-    return patches;
-  }
+  // updateSettings(updater: (draft: Settings) => void, ignoreObservers = false) {
+  //   const [newSettings, patches, inversePatches] = produceWithPatches(this.settings, updater);
+  //   this.settings = newSettings;
+  //   const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
+  //   const counterpart = this._globalState.paraStates[1 - this.index];
+  //   if (counterpart) {
+  //     counterpart.settings = applyPatches(counterpart.settings, filtered);
+  //   }
+  //   if (ignoreObservers) {
+  //     return patches;
+  //   }
+  //   this._syncPatchesToManifest(patches);
+  //   const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
+  //   for (const patch of patches) {
+  //     if (patch.op !== 'replace') {
+  //       this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+  //       continue;
+  //     }
+  //     observed[patch.path.join('.')] = { newValue: patch.value };
+  //   }
+  //   for (const patch of inversePatches) {
+  //     if (patch.op !== 'replace') {
+  //       this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+  //       continue;
+  //     }
+  //     observed[patch.path.join('.')].oldValue = patch.value;
+  //   }
+  //   for (const [path, values] of Object.entries(observed)) {
+  //     this._settingObservers[path]?.forEach(observer =>
+  //       observer(values.oldValue, values.newValue)
+  //     );
+  //     this.settingDidChange(path, values.oldValue, values.newValue);
+  //   }
+  //   return patches;
+  // }
 
   updateConfig(updater: (draft: Config) => void, ignoreObservers = false) {
     const [newConfig, patches, inversePatches] = produceWithPatches(this.config, updater);
     this.config = newConfig;
-    // const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
-    // const counterpart = this._globalState.paraStates[1 - this.index];
-    // if (counterpart) {
-    //   counterpart.config = applyPatches(counterpart.config, filtered);
-    // }
+    const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
+    const counterpart = this._globalState.paraStates[1 - this.index];
+    if (counterpart) {
+      counterpart.config = applyPatches(counterpart.config, filtered);
+    }
     if (ignoreObservers) {
       return patches;
     }
     this._syncPatchesToManifest(patches);
-    const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
+    const observed: { [path: string]: Partial<{ oldValue: ConfigSetting, newValue: ConfigSetting }> } = {};
     for (const patch of patches) {
       if (patch.op !== 'replace') {
         this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
@@ -502,7 +503,7 @@ export class ParaState extends BaseState {
     return patches;
   }
 
-  observeSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
+  observeSetting(path: string, observer: (oldValue: ConfigSetting, newValue: ConfigSetting) => void) {
     if (!this._settingObservers[path]) {
       this._settingObservers[path] = [];
     }
@@ -512,13 +513,13 @@ export class ParaState extends BaseState {
     this._settingObservers[path].push(observer);
   }
 
-  observeSettings(paths: string[], observer: (oldValue: Setting, newValue: Setting) => void) {
+  observeSettings(paths: string[], observer: (oldValue: ConfigSetting, newValue: ConfigSetting) => void) {
     for (let path of paths) {
       this.observeSetting(path, observer);
     }
   }
 
-  unobserveSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
+  unobserveSetting(path: string, observer: (oldValue: ConfigSetting, newValue: ConfigSetting) => void) {
     if (!this._settingObservers[path]) {
       throw new Error(`no observers for setting '${path}'`);
     }
@@ -547,9 +548,6 @@ export class ParaState extends BaseState {
 
     if (chartTypeDefaults[dataset.representation.subtype]) {
       Object.entries(chartTypeDefaults[dataset.representation.subtype]!).forEach(([path, value]) => {
-        // this.updateSettings(draft => {
-        //   SettingsManager.set(path, value, draft);
-        // }, true);
         this.updateConfig(draft => {
           SettingsManager.set(path, value, draft);
         }, true);
@@ -558,11 +556,11 @@ export class ParaState extends BaseState {
 
     const extSettings = manifest.extensions?.paracharts?.settings;
     if (extSettings) {
-      this.updateSettings(draft => {
-        SettingsManager.applySettings(extSettings as SettingGroup, draft);
-      }, true);
+      // this.updateSettings(draft => {
+      //   SettingsManager.applySettings(extSettings as SettingGroup, draft);
+      // }, true);
       this.updateConfig(draft => {
-        SettingsManager.applySettings(extSettings as SettingGroup, draft);
+        SettingsManager.applySettings(extSettings as ConfigGroup, draft);
       }, true);
       if (this.config.color.colorMap) {
         this._colors.setColorMap(...this.config.color.colorMap.split(',').map(c => c.trim()));

@@ -84,43 +84,10 @@ export class VennDiagramInfo extends BaseChartInfo {
 
   protected _addSettingControls(): void {
     super._addSettingControls();
-    this._paraState.settingControls.add({
-      type: 'slider',
-      key: `type.${this._type}.orientationAngleOffset`,
-      label: 'Orientation',
-      options: {
-        min: 0,
-        max: 360,
-        step: 1,
-        compact: true,
-        width: '8rem'
-      },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
-    const labelContents = ['', 'category', 'percentage:(value)'];
-    this._paraState.settingControls.add({
-      type: 'dropdown',
-      key: `type.${this._type}.insideLabels.contents`,
-      label: 'Inside labels:',
-      options: { options: labelContents },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
-    this._paraState.settingControls.add({
-      type: 'dropdown',
-      key: `type.${this._type}.outsideLabels.contents`,
-      label: 'Outside labels:',
-      options: { options: labelContents },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: `type.${this._type}.explode`,
-      label: 'Explode',
-      options: {
-        inputType: 'text',
-      },
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
+    this._paraState.settingControls.insert('type.venn.orientationAngleOffset');
+    this._paraState.settingControls.insert('type.venn.insideLabels.contents');
+    this._paraState.settingControls.insert('type.venn.outsideLabels.contents');
+    this._paraState.settingControls.insert('type.venn.explode');
   }
 
   protected _createNavMap() {

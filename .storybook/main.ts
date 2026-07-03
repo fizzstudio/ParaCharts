@@ -23,8 +23,7 @@ const config: StorybookConfig = {
   ],
 
   addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-docs"
+    "@storybook/addon-links"
   ],
 
   framework: {
@@ -36,6 +35,5 @@ const config: StorybookConfig = {
     `${head}
       <link rel="shortcut icon" href="../public/favicon.svg" type="image/xml+svg">`,
 
-  docs: {}
 };
 export default config;
