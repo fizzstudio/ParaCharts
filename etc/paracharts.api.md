@@ -26,7 +26,6 @@ import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
-import { Localization } from '@elemental/localization';
 import { Logger } from '@fizz/logger';
 import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';
@@ -62,11 +61,6 @@ export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest;
 
 // @public (undocumented)
 export type ChartTypeInput = 'line' | 'horizontal_bar' | 'vertical_bar' | 'pie' | 'donut';
-
-// @public
-export interface ChartTypeSettings extends SettingGroup {
-    venn: VennSettings;
-}
 
 // @public (undocumented)
 export type CsvDataType = 'string' | 'number' | 'date';
@@ -233,7 +227,6 @@ export class ParaAPI {
     downloadSVG(): void;
     enableTourGuideActions(): void;
     getAllConfigSettings(): SettingsInput;
-    getAllSettings(): SettingsInput;
     getAltText(): Promise<string | undefined>;
     // Warning: (ae-forgotten-export) The symbol "ConfigGroupMetadata" needs to be exported by the entry point index.d.ts
     getConfigGroupMetadata(path: string): ConfigGroupMetadata | undefined;
@@ -242,6 +235,8 @@ export class ParaAPI {
     getConfigSettings(settingPaths: string[]): SettingsInput;
     // Warning: (ae-forgotten-export) The symbol "ConfigGroupSettingsMetadata" needs to be exported by the entry point index.d.ts
     getConfigSettingsMetadata(keywords: string[]): ConfigGroupSettingsMetadata;
+    // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index.d.ts
+    getCustomProperties(): SettingsInput;
     getDescription(): Promise<string | undefined>;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIHorizontalAxis" needs to be exported by the entry point index.d.ts
     getHorizontalAxis(): ParaAPIHorizontalAxis;
@@ -255,9 +250,6 @@ export class ParaAPI {
     getRange(startPortion: number, endPortion: number): ParaAPIRange;
     // Warning: (ae-forgotten-export) The symbol "ParaAPISeriesGroup" needs to be exported by the entry point index.d.ts
     getSeries(...seriesLabelsOrKeys: string[]): ParaAPISeriesGroup;
-    getSetting(settingPath: string): Setting;
-    // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index.d.ts
-    getSettings(settingPaths: string[]): SettingsInput;
     getShortDescription(): Promise<string | undefined>;
     // Warning: (ae-forgotten-export) The symbol "ParaAPITitle" needs to be exported by the entry point index.d.ts
     getTitle(): ParaAPITitle;
@@ -296,8 +288,6 @@ export class ParaAPI {
     setConfigSettings(settingsInput: SettingsInput): void;
     setHeight(height: number): void;
     setManifest(manifestUrl: string): void;
-    setSetting(settingPath: string, value: Setting): void;
-    setSettings(settingsInput: SettingsInput): void;
     setSize(width: number, height: number): void;
     setWidth(width: number): void;
     // (undocumented)
@@ -333,7 +323,7 @@ export class ParaChart extends ParaComponent {
     // (undocumented)
     accessor config: SettingsInput;
     // (undocumented)
-    connectedCallback(): Promise<void>;
+    connectedCallback(): void;
     // (undocumented)
     get controlPanel(): ParaControlPanel;
     // Warning: (ae-forgotten-export) The symbol "ParaControlPanel" needs to be exported by the entry point index.d.ts
@@ -410,7 +400,7 @@ export class ParaChart extends ParaComponent {
     // (undocumented)
     protected _scrollyteller: Scrollyteller | undefined;
     // (undocumented)
-    settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void;
+    settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void;
     // (undocumented)
     shortDescription(): Promise<string>;
     // (undocumented)
@@ -468,31 +458,6 @@ export class ParaHeadless {
 //
 // @public
 export function parseCSV(csvText: string): CSVParseResult;
-
-// @public
-export type Setting = string | number | boolean;
-
-// @public
-export type SettingGroup = {
-    [key: string]: Setting | SettingGroup | undefined;
-};
-
-// @public
-export interface Settings extends SettingGroup {
-    type: ChartTypeSettings;
-}
-
-// @public (undocumented)
-export interface VennSettings extends SettingGroup {
-    explode: string;
-    insideLabels: {
-        contents: string;
-    };
-    orientationAngleOffset: number;
-    outsideLabels: {
-        contents: string;
-    };
-}
 
 // (No @packageDocumentation comment for this package)
 
