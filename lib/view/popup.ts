@@ -1,21 +1,21 @@
+import { html, css, svg } from 'lit';
+import { property, customElement } from 'lit/decorators.js';
+import { ref, createRef } from 'lit/directives/ref.js';
+import { Logger, getLogger } from '@fizz/logger';
+import { Dialog } from '@fizz/ui-components';
+import '@fizz/ui-components';
 import { Vec2 } from "../common/vector";
 import { type ViewContext } from './view_context';
 import { View } from "./base_view";
 import { Label, LabelOptions } from "./label";
-import { PathOptions, PathShape, ShapeOptions } from "./shape";
+import { type PathOptions, PathShape, ShapeOptions } from "./shape";
 import { ParaComponent } from "../components/paracomponent";
 import { fixed } from "../common";
-import { Logger, getLogger } from '@fizz/logger';
-import { Dialog } from '@fizz/ui-components';
-import '@fizz/ui-components';
-import { html, css, svg } from 'lit';
-import { property, customElement } from 'lit/decorators.js';
-import { ref, createRef } from 'lit/directives/ref.js';
 import { GridLayout } from "./layout";
-import { DataSymbol, DataSymbolType } from "./symbol";
-import { LegendItem } from "./legend";
-import { DatapointView } from "./data";
-import { WaterfallBarView } from "./layers";
+import { DataSymbol} from "./symbol";
+import { type LegendItem } from "./legend";
+import { type DatapointView } from "./data/datapoint";
+import { type WaterfallBarView } from "./layers";
 
 export interface PopupLabelOptions extends LabelOptions {
     color?: number;

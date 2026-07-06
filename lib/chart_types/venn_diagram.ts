@@ -14,18 +14,14 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { BaseChartInfo, RiffOrder } from './base_chart';
-import { type ParaState, datapointIdToCursor } from '../state';
-import { directions, HorizDirection, type Direction } from '../config/config_types';
-import { queryMessages, describeSelections, getDatapointMinMax } from '../state/query_utils';
-import { Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
 import { formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
-import {
-  NavLayer, NavNode, type VennPartNavNodeOptions,
-} from '../view/layers/data/navigation';
-
+import { type Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
 import { ChartType } from '@fizz/paramanifest';
+import { BaseChartInfo, RiffOrder } from './base_chart';
+import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax } from '../state';
+import { directions, type HorizDirection, type Direction } from '../config/config_types';
+import { NavLayer, NavNode, type VennPartNavNodeOptions } from '../view/layers/data/navigation';
 
 export class VennDiagramInfo extends BaseChartInfo {
 

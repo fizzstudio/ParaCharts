@@ -1,14 +1,8 @@
-
-//import { styles } from '../../styles';
+import { html, css } from 'lit';
+import { property, customElement } from 'lit/decorators.js';
+import { createRef } from 'lit/directives/ref.js';
 import { ControlPanelTabPanel } from './tab_panel';
-import { type AriaLive } from '../../components';
 import '../../components/aria_live';
-
-import { html, css, PropertyValues } from 'lit';
-import { property, customElement, state } from 'lit/decorators.js';
-import { ref, createRef } from 'lit/directives/ref.js';
-import { styleMap } from 'lit/directives/style-map.js';
-import { PlaneModel } from '@fizz/paramodel';
 
 @customElement('para-description-panel')
 export class DescriptionPanel extends ControlPanelTabPanel {

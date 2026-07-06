@@ -14,13 +14,12 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { PlaneSeriesView, PointPlotView, PointDatapointView } from '.';
+import { type StyleInfo } from 'lit/directives/style-map.js';
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { bboxOfBboxes } from '../../../../common/utils';
-
-import { type StyleInfo } from 'lit/directives/style-map.js';
-import { ConfigSetting } from '../../../../config/config_types';
+import { type ConfigSetting } from '../../../../config/config_types';
+import { PointDatapointView, PointPlotView, type PointSeriesView } from './point_plot_view';
 
 /**
  * Class for drawing line charts.
@@ -61,7 +60,7 @@ export class LinePlotView extends PointPlotView {
     return this.effectiveLineWidth * this.effectiveVisitedScale;
   }
 
-  protected _newDatapointView(seriesView: PlaneSeriesView) {
+  protected _newDatapointView(seriesView: PointSeriesView) {
     return new LineSection(seriesView);
   }
 

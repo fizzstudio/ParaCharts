@@ -1,20 +1,19 @@
-import { getLogger } from '@fizz/logger';
-import { Datapoint, enumerate } from "@fizz/paramodel";
-import { nothing, svg } from "lit";
-import { type BaseChartInfo } from '../../../../chart_types';
-import { type HeatMapInfo } from '../../../../chart_types/heat_map';
-import { fixed, getMostCommonReduce } from "../../../../common/utils";
-import { type DataLayerContext } from '../../../view_context';
-import { DatapointPopupOptions } from "../../../data";
-import { RectShape } from "../../../shape/rect";
-import { Shape } from "../../../shape/shape";
-import { PlanePlotView, PlaneSeriesView, ScatterPointView } from ".";
 import { classMap } from "lit/directives/class-map.js";
 import { ref } from "lit/directives/ref.js";
 import { styleMap } from "lit/directives/style-map.js";
+import { nothing, svg } from "lit";
+import { getLogger } from '@fizz/logger';
+import { Datapoint, enumerate } from "@fizz/paramodel";
+import { type PlaneChartInfo, type HeatMapInfo } from '../../../../chart_types';
+import { fixed, getMostCommonReduce } from "../../../../common/utils";
+import { type DataLayerContext } from '../../../view_context';
+import { DatapointPopupOptions } from "../../../data/datapoint";
+import { RectShape, Shape } from "../../../shape";
 import { View } from '../../../base_view';
 import { Popup, ShapeTypes } from '../../../popup';
 import { ConfigSetting } from '../../../../config/config_types';
+import { PlanePlotView, PlaneSeriesView } from './plane_plot_view';
+import { ScatterPointView } from './scatter_plot_view';
 
 export class HeatMapPlotView extends PlanePlotView {
   declare protected _chartInfo: HeatMapInfo;
@@ -24,7 +23,7 @@ export class HeatMapPlotView extends PlanePlotView {
     width: number,
     height: number,
     dataLayerIndex: number,
-    chartInfo: BaseChartInfo
+    chartInfo: PlaneChartInfo
   ) {
     super(paraview, width, height, dataLayerIndex, chartInfo);
     this.log = getLogger("HeatMapPlotView");

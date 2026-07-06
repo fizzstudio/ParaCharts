@@ -1,6 +1,4 @@
 import { Logger, getLogger } from '@fizz/logger';
-import { Popup } from '../view/popup';
-
 import { type ParaView } from './paraview';
 
 interface BasePointerDetails {

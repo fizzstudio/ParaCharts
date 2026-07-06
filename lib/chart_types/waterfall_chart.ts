@@ -14,23 +14,16 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type ParaState } from '../state';
-import { DeepReadonly } from '../config/config_types';
-import { type ParaView } from '../paraview';
-import { NavNode } from '../view/layers';
-
-import { ChartType } from '@fizz/paramanifest';
-import { PlaneChartInfo, SONI_RIFF_SPEEDS } from './plane_chart';
-import { AxisInfo, loopParaviewRefresh } from '../common';
-import { computeAxisRange } from './plane_chart';
-
-import { Datapoint, PlaneDatapoint, Box } from '@fizz/paramodel';
-
+import { type Interval } from '@fizz/chart-classifier-utils';
+import { type Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
+import { type ChartType } from '@fizz/paramanifest';
 import { formatXYDatapointX } from '@fizz/parasummary';
+import { type ParaState } from '../state';
+import { type DeepReadonly, TypeWaterfallConfig } from '../config/config_types';
+import { type NavNode } from '../view/layers';
+import { PlaneChartInfo, SONI_RIFF_SPEEDS, computeAxisRange } from './plane_chart';
+import { loopParaviewRefresh } from '../common';
 import { SoniPoint } from '../audio/soni_point';
-import { Datatype } from '@fizz/paramanifest';
-import { Interval } from '@fizz/chart-classifier-utils';
-import { TypeWaterfallConfig } from '../config/config_types';
 
 export class WaterfallChartInfo extends PlaneChartInfo {
   protected _cumulativeTotals!: number[];

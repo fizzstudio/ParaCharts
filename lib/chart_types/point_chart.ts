@@ -14,15 +14,10 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { PlaneChartInfo } from './plane_chart';
-import { AxisInfo } from '../common/axisinfo';
-import { type ParaState } from '../state';
-import { type ParaView } from '../paraview';
-
 import { type ChartType } from '@fizz/paramanifest';
 import { Series } from '@fizz/paramodel';
-import { DocumentView } from '../view/document_view';
-
+import { PlaneChartInfo } from './plane_chart';
+import { type ParaState } from '../state';
 
 /**
  * Abstract base class for charts that represent data values as

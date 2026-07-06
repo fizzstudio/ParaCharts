@@ -1,13 +1,24 @@
+import { type Unsubscribe } from '@lit-app/state';
+import {
+  html, css, PropertyValues,
+  unsafeCSS, nothing
+} from 'lit';
+import { property, state, customElement } from 'lit/decorators.js';
+import { ref, createRef } from 'lit/directives/ref.js';
+import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { Logger, getLogger } from '@fizz/logger';
+import { MessageDialog, FizzTabs, TabLabelMode } from '@fizz/ui-components';
+import '@fizz/ui-components';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaDialog, ParaComponent } from '../components';
-//import { styles } from '../../styles';
 import { SettingsManager } from '../state/settings_manager';
-import { TabLabelStyle } from '../config/config_types';
+import { TabLabelStyle, ControlpanelConfig } from '../config/config_types';
 import {
   DescriptionPanel, DataPanel, ColorsPanel, ChartPanel,
   AnnotationPanel, ControlsPanel
 } from '.';
+import { Popup } from '../view/popup';
+import { AnnotationDialog } from './dialogs/annotation_dialog';
 import '.';
 
 import tabDescriptionIcon from '../assets/tab-description-icon.svg';
@@ -20,24 +31,6 @@ import tabAnalysisIcon from '../assets/tab-analysis-icon.svg';
 import cpanelIcon from '../assets/info-icon.svg';
 import cpanelIconAlt from '../assets/info-icon-alt.svg';
 import warningIcon from '../assets/warning-icon.svg?raw';
-
-import { MessageDialog, FizzTabs, TabLabelMode } from '@fizz/ui-components';
-import '@fizz/ui-components';
-
-import { type Unsubscribe } from '@lit-app/state';
-
-import {
-  html, css, PropertyValues,
-  unsafeCSS, nothing
-} from 'lit';
-import { property, state, customElement } from 'lit/decorators.js';
-import { type Ref, ref, createRef } from 'lit/directives/ref.js';
-import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
-import { Popup } from '../view/popup';
-import { datapointIdToCursor } from '../state';
-import { AnnotationDialog } from './dialogs/annotation_dialog';
-import { ControlpanelConfig } from '../config/config_types';
-
 
 @customElement('para-control-panel')
 export class ParaControlPanel extends ParaComponent {

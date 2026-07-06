@@ -15,18 +15,15 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { PlaneModel, type Datapoint } from '@fizz/paramodel';
-
+import type { DatapointManifest, Manifest } from '@fizz/paramanifest';
 import { ORIENTATION_SENTENCES, PASTRY_ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
 import { HotkeyEvent, makeSequenceId, SettingsManager } from '../state';
-import { SettingsInput } from '../config/config_types';
-import { CardinalDirection, Direction } from '../config/config_types';
+import { CardinalDirection, Direction, SettingsInput, ConfigSetting } from '../config/config_types';
 import { CustomPropertyLoader } from '../state/custom_property_loader';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 import explainers from '../explainers';
-import type { DatapointManifest, Manifest } from '@fizz/paramanifest';
-import { ConfigSetting } from '../config/config_types';
-import { ConfigGroupMetadata, ConfigGroupSettingsMetadata, configMetadata, ConfigSettingMetadata } from '../config/config_metadata';
+import { type ConfigGroupMetadata, type ConfigGroupSettingsMetadata, configMetadata } from '../config/config_metadata';
 
 type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMap) => void | Promise<void>) };
 

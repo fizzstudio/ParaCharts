@@ -1,10 +1,8 @@
+import { type ChartType } from "@fizz/paramanifest";
 import { PlaneChartInfo } from './plane_chart';
 import { type ParaState } from '../state';
-import { DeepReadonly } from '../config/config_types';
-import { type ParaView } from '../paraview';
-import { type ChartType } from "@fizz/paramanifest";
-import { AxisInfo, computeLabels } from '../common';
-import { DocumentView } from '../view/document_view';
+import { type DeepReadonly } from '../config/config_types';
+import { computeLabels } from '../common';
 
 export class HistogramChartInfo extends PlaneChartInfo {
   protected _bins: number = 20;

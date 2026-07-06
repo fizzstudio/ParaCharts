@@ -1,18 +1,18 @@
-
-import { DataLayer } from '..';
+import { ClassInfo } from 'lit/directives/class-map.js';
+import { enumerate } from '@fizz/paramodel';
+import { formatBox } from '@fizz/parasummary';
 import { type BaseChartInfo } from '../../../../chart_types';
-import { DatapointView, SeriesView } from '../../../data';
 import { ConfigSetting, DeepReadonly } from '../../../../config/config_types';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type DataLayerContext } from '../../../view_context';
 import { type Shape, SectorShape, PathShape } from '../../../shape';
-import { Datapoint, enumerate } from '@fizz/paramodel';
-import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { Vec2 } from '../../../../common/vector';
-import { ClassInfo } from 'lit/directives/class-map.js';
-import { datapointMatchKeyAndIndex, bboxOppositeAnchor } from '../../../../common/utils';
+import { bboxOppositeAnchor } from '../../../../common/utils';
 import { SnapLocation, type BboxAnchorCorner } from '../../../base_view';
 import { TypePastryConfig } from '../../../../config/config_types';
+import { DataLayer } from '../data_layer';
+import { SeriesView } from '../../../data/series';
+import { DatapointView } from '../../../data/datapoint';
 
 export type ArcType = 'circle' | 'semicircle';
 

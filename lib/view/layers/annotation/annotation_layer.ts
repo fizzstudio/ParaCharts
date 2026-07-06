@@ -1,15 +1,13 @@
-
 import { PlotLayer } from '../layer';
 import { View, Container } from '../../base_view';
 import { type ViewContext } from '../../view_context';
-import { RectShape } from '../../shape/rect';
-import { PathShape } from '../../shape/path';
+import { RectShape, PathShape } from '../../shape';
 import { Vec2 } from '../../../common/vector';
-import { PointAnnotation } from '../../../state';
+import { type PointAnnotation, datapointIdToCursor } from '../../../state/parastate';
 import { Popup } from '../../popup';
-import { datapointIdToCursor } from '../../../state';
 import { PlaneChartInfo } from '../../../chart_types';
-import { ScatterPlotView, TrendLineView } from '../data';
+import { type ScatterPlotView} from '../data/chart_type/scatter_plot_view';
+import { TrendLineView } from '../data/chart_type/point_plot_view';
 import { ConfigSetting } from '../../../config/config_types';
 
 export type AnnotationType = 'foreground' | 'background';

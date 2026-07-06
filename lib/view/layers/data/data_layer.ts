@@ -15,20 +15,21 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { ref } from 'lit/directives/ref.js';
-
-import { PlotLayer } from '..';
-import { type PlotLayerManager } from '..';
+import { StyleInfo } from 'lit/directives/style-map.js';
 import { ConfigSetting, DeepReadonly } from '../../../config/config_types';
 import { type DataLayerContext } from '../../view_context';
 import { SettingsManager } from '../../../state/settings_manager';
-import { ChartLandingView, DatapointView, SeriesView, type DataView } from '../../data';
-
-import { StyleInfo } from 'lit/directives/style-map.js';
+import { type DataView } from '../../data/data';
+import { SeriesView } from '../../data/series';
+import { DatapointView } from '../../data/datapoint';
+import { ChartLandingView } from '../../data/chart_landing';
 import { bboxOfBboxes } from '../../../common/utils';
-import { BaseChartInfo } from '../../../chart_types';
+import { BaseChartInfo } from '../../../chart_types/base_chart';
 import { Bezier, loopParaviewRefresh } from '../../../common';
-import { makeDatapointId } from '../../../state';
+import { makeDatapointId } from '../../../state/parastate';
 import { ConfigGroup } from '../../../config/config_types';
+import { PlotLayer } from '../layer';
+import { PlotLayerManager } from '../layer_manager';
 
 /**
  * @public

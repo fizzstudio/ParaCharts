@@ -1,12 +1,8 @@
-//import { styles } from '../../styles';
-import { ControlPanelTabPanel } from './tab_panel';
-
-import { 
+import {
   html, css,
 } from 'lit';
-import { property, customElement } from 'lit/decorators.js';
-import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-
+import { customElement } from 'lit/decorators.js';
+import { ControlPanelTabPanel } from './tab_panel';
 
 @customElement('para-analysis-panel')
 export class AnalysisPanel extends ControlPanelTabPanel {

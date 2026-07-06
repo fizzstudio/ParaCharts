@@ -1,10 +1,8 @@
-
+import { type StyleInfo } from 'lit/directives/style-map.js';
+import { type Series } from '@fizz/paramodel';
 import { View } from '../base_view';
 import { type DataLayer } from '../layers';
 import { type SeriesProperties } from '../../state';
-
-import { type StyleInfo } from 'lit/directives/style-map.js';
-import { Series } from '@fizz/paramodel';
 
 /**
  * Abstract base class for datapoint and series views.

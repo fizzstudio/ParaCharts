@@ -1,14 +1,13 @@
-
-import { strToId } from '@fizz/paramanifest';
-import { DataView, type ChartLandingView, type DatapointView } from '.';
-import { Container } from '../base_view';
-import { type DataLayer } from '../layers';
-
 import { ref } from 'lit/directives/ref.js';
 import { type StyleInfo } from 'lit/directives/style-map.js';
 import { type ClassInfo } from 'lit/directives/class-map.js';
 import { TemplateResult } from 'lit';
-import { datapointIdToCursor } from '../../state';
+import { strToId } from '@fizz/paramanifest';
+import { Container } from '../base_view';
+import { type DataLayer } from '../layers/data/data_layer';
+import { DataView } from './data'
+import { type ChartLandingView } from './chart_landing'
+import { type DatapointView } from './datapoint';
 
 /**
  * Abstract base class for a view representing an entire series.

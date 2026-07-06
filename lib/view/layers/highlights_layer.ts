@@ -1,15 +1,15 @@
-
-import { PlanePlotView, PlotLayer, ScatterPlotView } from '.';
-import { type ViewContext } from '../view_context';
 import { svg } from 'lit';
-import { datapointIdToCursor, HighlightAxisOptions } from '../../state';
+import { type PlaneModel } from '@fizz/paramodel';
+import { type ViewContext } from '../view_context';
+import { datapointIdToCursor, HighlightAxisOptions } from '../../state/parastate';
 import { DataSymbol } from '../symbol';
-import { type DatapointView } from '../data';
 import { PathShape, RectShape, Shape } from '../shape';
-import { type View } from '../base_view';
 import { PlaneChartInfo } from '../../chart_types';
-import { PlaneModel } from '@fizz/paramodel';
 import { Label } from '../label';
+import { PlotLayer } from './layer';
+import { type PlanePlotView } from './data/chart_type/plane_plot_view';
+import { ScatterPlotView } from './data/chart_type/scatter_plot_view';
+import { type PlaneDatapointView } from '../data/plane_datapoint';
 
 export type HighlightsType = 'foreground' | 'background';
 
@@ -54,8 +54,8 @@ export class HighlightsLayer extends PlotLayer {
       this.paraview.paraState.getDatapoint(`${fields[0]}@${fields[1]}`),
       this.paraview.paraState.getDatapoint(`${fields[0]}@${parseInt(fields[2]) - 1}`),
     ];
-    let datapointViews: DatapointView[] = datapoints.map(datapoint =>
-      this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!);
+    let datapointViews: PlaneDatapointView[] = datapoints.map(datapoint =>
+      this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!) as PlaneDatapointView[];
     overlays.push((datapointViews[0].symbol ?? datapointViews[0].shapes[0]).clone());
     overlays.push((datapointViews.at(-1)!.symbol ?? datapointViews.at(-1)!.shapes[0]).clone());
 

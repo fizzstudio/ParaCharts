@@ -1,7 +1,6 @@
 import { type ViewContext } from '../../view_context';
 import { View, Container } from '../../base_view';
 import { RectShape } from '../../shape/rect';
-import { type Shape } from '../../shape/shape';
 
 import { type TemplateResult, svg } from 'lit';
 

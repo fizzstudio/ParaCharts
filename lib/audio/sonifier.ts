@@ -26,14 +26,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import { type PlaneDatapoint } from '@fizz/paramodel';
 import { OscillatorAudioEngine, type AudioEngine } from '.';
 import { AudioNotificationType } from './AudioEngine';
-import { type Axis } from '../view/axis';
-import { PointDatapointView, type DataLayer } from '../view/layers';
 import { type ParaState } from '../state';
 import { type ParaView } from '../paraview';
-import { PlaneDatapoint } from '@fizz/paramodel';
-import { BaseChartInfo } from '../chart_types';
+import { type BaseChartInfo } from '../chart_types';
 import { SoniPoint } from './soni_point';
 
 export const HERTZ = [
@@ -170,9 +168,7 @@ export class Sonifier {
   } = {}): Promise<void> {
     datapoints.forEach((datapoint, i) => {
       const dpView = this._paraView.documentView?.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!;
-      if (dpView instanceof PointDatapointView) {
-        dpView.popInAnimation();
-      }
+      dpView.popInAnimation();
     });
     return this.playSoniPoints(datapoints.map(dp => SoniPoint.fromModelDatapoint(dp, this._paraState.model!)), {
       cont, invert, durationVariable

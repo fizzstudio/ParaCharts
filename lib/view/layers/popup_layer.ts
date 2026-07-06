@@ -1,12 +1,12 @@
 import { formatBox } from "@fizz/parasummary";
 import { type ViewContext } from '../view_context';
-import { datapointIdToCursor, makeSequenceId, PointAnnotation } from "../../state";
+import { datapointIdToCursor, makeSequenceId } from "../../state";
 import { Container, View } from "../base_view";
 import { Popup } from "../popup";
-import { PlotLayer } from "./layer";
-import { DatapointView } from "../data";
-import { PlanePlotView } from "./data";
 import { trendTranslation } from "../../common";
+import { PlanePlotView } from "./data/chart_type/plane_plot_view";
+import { PlotLayer } from "./layer";
+import { type PlaneDatapointView } from "../data/plane_datapoint";
 
 export type AnnotationType = 'foreground' | 'background';
 
@@ -57,7 +57,7 @@ export class PopupLayer extends PlotLayer {
             const cursor = this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.navMap!.cursor
             const datapoints = cursor.datapoints;
             const datapointViews = datapoints.map(datapoint =>
-                this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!);
+                this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!) as PlaneDatapointView[];
             let popups: Popup[] = []
             if (cursor.type === 'chord') {
                 popups.push(...this.addChordPopups(datapointViews));
@@ -73,7 +73,7 @@ export class PopupLayer extends PlotLayer {
                     const { seriesKey, index } = datapointIdToCursor(dp);
                     const datapointView = this.paraview.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
                     if (datapointViews[0].chart instanceof PlanePlotView && this.paraview.paraState.config.popup.isShowCrosshair) {
-                        datapointViews[0].chart.makeCrosshairsLocked([datapointView], true, false)
+                        datapointViews[0].chart.makeCrosshairsLocked([datapointView as PlaneDatapointView], true, false)
                     }
                     else {
                         datapointView.addDatapointPopup()
@@ -96,7 +96,7 @@ export class PopupLayer extends PlotLayer {
         if (this.paraview.paraState.crosshairedDatapoints.size > 0) {
             const crosshairedPoints = Array.from(this.paraview.paraState.crosshairedDatapoints).map(s => this.paraview.paraState.getDatapoint(s));
             const planeChart = this.paraview.documentView?.chartLayers.dataLayer as PlanePlotView;
-            planeChart.makeCrosshairsLocked(crosshairedPoints.map(datapoint => planeChart.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!), true);
+            planeChart.makeCrosshairsLocked(crosshairedPoints.map(datapoint => planeChart.datapointView(datapoint.seriesKey, datapoint.datapointIndex)! as PlaneDatapointView), true);
         }
         let crosshairElements = this.paraview.paraState.crossHairs.map(ch => ch.popups).flat()
         for (const popup of [...crosshairElements,
@@ -115,7 +115,7 @@ export class PopupLayer extends PlotLayer {
         }
     }
 
-    addChordPopups(datapointViews: DatapointView[]): Popup[] {
+    addChordPopups(datapointViews: PlaneDatapointView[]): Popup[] {
         let text = '';
         for (let dpView of datapointViews) {
             text = text.concat(`${dpView.series.getLabel()}: ${this.paraview.documentView!.chartLayers!.dataLayer.chartInfo.summarizer.getDatapointSummary(dpView.datapoint, 'statusBar')}\n`);
@@ -127,7 +127,7 @@ export class PopupLayer extends PlotLayer {
         if (datapointViews[0].chart instanceof PlanePlotView) {
             const planeChart = datapointViews[0].chart as PlanePlotView;
             if (this.paraview.paraState.config.popup.isShowCrosshair) {
-                planeChart.makeCrosshairsLocked([datapointViews[0]], true, true)
+                planeChart.makeCrosshairsLocked([datapointViews[0] as PlaneDatapointView], true, true)
                 this.paraview.documentView?.chartLayers.backgroundAnnotationLayer.render()!;
                 return [];
             }
@@ -158,7 +158,7 @@ export class PopupLayer extends PlotLayer {
         }
     }
 
-    addSequencePopups(datapointViews: DatapointView[]): Popup[] {
+    addSequencePopups(datapointViews: PlaneDatapointView[]): Popup[] {
         const firstDPView = datapointViews[0];
         const lastDPView = datapointViews[datapointViews.length - 1];
         let x = (lastDPView.x + firstDPView.x) / 2;
@@ -202,7 +202,7 @@ export class PopupLayer extends PlotLayer {
         return [popup];
     }
 
-    addSeriesPopups(datapointViews: DatapointView[]): Popup[] {
+    addSeriesPopups(datapointViews: PlaneDatapointView[]): Popup[] {
         const firstDPView = datapointViews[0];
         const lastDPView = datapointViews[datapointViews.length - 1];
         let x = (lastDPView.x + firstDPView.x) / 2;
