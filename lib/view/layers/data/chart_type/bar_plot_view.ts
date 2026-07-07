@@ -16,7 +16,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { formatBox } from '@fizz/parasummary';
 import { getLogger } from '@fizz/logger';
-import { PlaneChartInfo } from '../../../../chart_types';
 import { type DataLayerContext } from '../../../view_context';
 import { RectShape } from '../../../shape/rect';
 import { Label } from '../../../label';
@@ -24,6 +23,7 @@ import { BarStack, BarChartInfo } from '../../../../chart_types/bar_chart';
 import { formatDatapointValue, preciseAdd } from '../../../../common';
 import { ConfigSetting } from '../../../../config/config_types';
 import { PlanePlotView, PlaneSeriesView, PlaneDatapointView } from './plane_plot_view';
+import { type BaseChartInfo } from '../../../../chart_types/base_chart';
 
 const MIN_STACK_WIDTH_FOR_GAPS = 8;
 const STACK_GAP_PERCENTAGE = 0.125;
@@ -95,7 +95,7 @@ export class BarPlotView extends PlanePlotView {
     width: number,
     height: number,
     dataLayerIndex: number,
-    chartInfo: PlaneChartInfo) {
+    chartInfo: BaseChartInfo) {
     super(paraview, width, height, dataLayerIndex, chartInfo);
     this.log = getLogger("BarPlotView");
   }

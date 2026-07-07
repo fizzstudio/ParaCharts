@@ -7,7 +7,7 @@ import { PathShape, RectShape, Shape } from '../shape';
 import { PlaneChartInfo } from '../../chart_types';
 import { Label } from '../label';
 import { PlotLayer } from './layer';
-import { type PlanePlotView, PlaneDatapointView } from './data/chart_type/plane_plot_view';
+import { type PlanePlotView, type PlaneDatapointView } from './data/chart_type/plane_plot_view';
 import { ScatterPlotView } from './data/chart_type/scatter_plot_view';
 
 export type HighlightsType = 'foreground' | 'background';

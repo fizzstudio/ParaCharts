@@ -27,6 +27,7 @@ import { SeriesView } from '../../../data/series';
 import { type PlaneChartInfo } from '../../../../chart_types/plane_chart';
 import { DatapointView } from '../../../data/datapoint';
 import { PlaneDatapoint } from '@fizz/paramodel';
+import { type BaseChartInfo } from '../../../../chart_types/base_chart';
 
 export type DatapointViewType<T extends PlaneDatapointView> =
   (new (...args: any[]) => T);
@@ -40,7 +41,7 @@ export abstract class PlanePlotView extends DataLayer {
     width: number,
     height: number,
     dataLayerIndex: number,
-    chartInfo: PlaneChartInfo
+    chartInfo: BaseChartInfo
   ) {
     super(paraview, width, height, dataLayerIndex, chartInfo);
     this.log = getLogger("PlanePlotView");
@@ -492,20 +493,26 @@ export class PlaneSeriesView extends SeriesView {
 
 }
 
+/**
+ * Abstract base class for chart views representing XYChart datapoint values
+ * (e.g., points, bars, etc.).
+ * @public
+ */
+
 export abstract class PlaneDatapointView extends DatapointView {
 
-    declare readonly chart: PlanePlotView;
-    declare _datapoint: PlaneDatapoint;
+  declare readonly chart: PlanePlotView;
+  declare _datapoint: PlaneDatapoint;
 
-    protected centroid?: string;
+  protected centroid?: string;
 
-    constructor(seriesView: SeriesView) {
-        super(seriesView);
-    }
+  constructor(seriesView: SeriesView) {
+    super(seriesView);
+  }
 
-    // override to get more specific return type
-    get datapoint(): PlaneDatapoint {
-        return super.datapoint as PlaneDatapoint;
-    }
+  // override to get more specific return type
+  get datapoint(): PlaneDatapoint {
+    return super.datapoint as PlaneDatapoint;
+  }
 
 }

@@ -211,7 +211,6 @@ export class PlotLayerManager extends View {
     const ctor = chartClasses[this.paraview.paraState.type];
     let dataLayer: DataLayer;
     if (ctor) {
-      //@ts-ignore
       dataLayer = new ctor(this.paraview, this._width, this._height, 0, this.paraview.paraState.chartInfo);
       this.append(dataLayer);
     } else {

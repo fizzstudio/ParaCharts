@@ -4,7 +4,7 @@ import { styleMap } from "lit/directives/style-map.js";
 import { nothing, svg } from "lit";
 import { getLogger } from '@fizz/logger';
 import { Datapoint, enumerate } from "@fizz/paramodel";
-import { type PlaneChartInfo, type HeatMapInfo } from '../../../../chart_types';
+import { type HeatMapInfo, type BaseChartInfo } from '../../../../chart_types';
 import { fixed, getMostCommonReduce } from "../../../../common/utils";
 import { type DataLayerContext } from '../../../view_context';
 import { DatapointPopupOptions } from "../../../data/datapoint";
@@ -23,7 +23,7 @@ export class HeatMapPlotView extends PlanePlotView {
     width: number,
     height: number,
     dataLayerIndex: number,
-    chartInfo: PlaneChartInfo
+    chartInfo: BaseChartInfo
   ) {
     super(paraview, width, height, dataLayerIndex, chartInfo);
     this.log = getLogger("HeatMapPlotView");

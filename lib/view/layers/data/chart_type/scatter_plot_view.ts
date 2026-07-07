@@ -3,7 +3,7 @@ import { ClassInfo } from 'lit/directives/class-map.js';
 import { enumerate } from '@fizz/paramodel';
 import { DataSymbol, DataSymbols } from '../../../symbol';
 import { View } from '../../../base_view';
-import { PlaneChartInfo, ScatterChartInfo } from '../../../../chart_types';
+import { type ScatterChartInfo } from '../../../../chart_types';
 import { fixed } from '../../../../common/utils';
 import { ConfigSetting } from '../../../../config/config_types';
 import { PointDatapointView, PointPlotView, type PointSeriesView, type TrendLineView } from './point_plot_view';
@@ -115,7 +115,7 @@ export class ScatterPointView extends PointDatapointView {
   isOutlier: boolean = false;
 
   computeX() {
-    const xInterval = (this.chart.chartInfo as PlaneChartInfo).xInterval!;
+    const xInterval = this.chart.chartInfo.xInterval!;
     // Scales points in proportion to the data range
     const xTemp = (this.datapoint.facetValueNumericized('x')! - xInterval.start)
       / (xInterval.end - xInterval.start);

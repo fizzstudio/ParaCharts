@@ -22,6 +22,7 @@ import { Label } from '../../../label';
 import { PlanePlotView, PlaneSeriesView, PlaneDatapointView } from './plane_plot_view';
 import { RectShape, PathShape } from '../../../shape';
 import { Vec2 } from '../../../../common';
+import { type BaseChartInfo } from '../../../../chart_types/base_chart';
 
 const MIN_BAR_WIDTH_FOR_GAPS = 8;
 const BAR_GAP_PERCENTAGE = 0.25;
@@ -37,7 +38,7 @@ export class WaterfallPlotView extends PlanePlotView {
     paraview: DataLayerContext,
     width: number, height: number,
     dataLayerIndex: number,
-    chartInfo: WaterfallChartInfo
+    chartInfo: BaseChartInfo
   ) {
     super(paraview, width, height, dataLayerIndex, chartInfo);
   }
