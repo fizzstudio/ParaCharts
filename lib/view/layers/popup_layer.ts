@@ -4,9 +4,8 @@ import { datapointIdToCursor, makeSequenceId } from "../../state";
 import { Container, View } from "../base_view";
 import { Popup } from "../popup";
 import { trendTranslation } from "../../common";
-import { PlanePlotView } from "./data/chart_type/plane_plot_view";
+import { PlanePlotView, PlaneDatapointView } from "./data/chart_type/plane_plot_view";
 import { PlotLayer } from "./layer";
-import { type PlaneDatapointView } from "../data/plane_datapoint";
 
 export type AnnotationType = 'foreground' | 'background';
 

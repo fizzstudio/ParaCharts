@@ -25,7 +25,8 @@ import { horizAdjust, Vec2, vertAdjust } from '../../../../common';
 import { ConfigSetting } from '../../../../config/config_types';
 import { SeriesView } from '../../../data/series';
 import { type PlaneChartInfo } from '../../../../chart_types/plane_chart';
-import { PlaneDatapointView } from '../../../data';
+import { DatapointView } from '../../../data/datapoint';
+import { PlaneDatapoint } from '@fizz/paramodel';
 
 export type DatapointViewType<T extends PlaneDatapointView> =
   (new (...args: any[]) => T);
@@ -488,5 +489,23 @@ export class PlaneSeriesView extends SeriesView {
   get siblings(): readonly this[] {
     return super.siblings as this[];
   }
+
+}
+
+export abstract class PlaneDatapointView extends DatapointView {
+
+    declare readonly chart: PlanePlotView;
+    declare _datapoint: PlaneDatapoint;
+
+    protected centroid?: string;
+
+    constructor(seriesView: SeriesView) {
+        super(seriesView);
+    }
+
+    // override to get more specific return type
+    get datapoint(): PlaneDatapoint {
+        return super.datapoint as PlaneDatapoint;
+    }
 
 }

@@ -23,8 +23,7 @@ import { linearRegression } from '@fizz/simple-statistics';
 import { View } from '../../../base_view';
 import { Bezier } from '../../../../common';
 import { PointChartInfo } from '../../../../chart_types/point_chart';
-import { PlanePlotView, PlaneSeriesView } from './plane_plot_view';
-import { PlaneDatapointView } from '../../../data/plane_datapoint';
+import { PlanePlotView, PlaneSeriesView, PlaneDatapointView } from './plane_plot_view';
 
 /**
  * Abstract base class for charts that represent data values as points

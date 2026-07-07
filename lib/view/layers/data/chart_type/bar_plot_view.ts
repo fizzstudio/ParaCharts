@@ -23,8 +23,7 @@ import { Label } from '../../../label';
 import { BarStack, BarChartInfo } from '../../../../chart_types/bar_chart';
 import { formatDatapointValue, preciseAdd } from '../../../../common';
 import { ConfigSetting } from '../../../../config/config_types';
-import { PlanePlotView, PlaneSeriesView } from './plane_plot_view';
-import { PlaneDatapointView } from '../../../data/plane_datapoint';
+import { PlanePlotView, PlaneSeriesView, PlaneDatapointView } from './plane_plot_view';
 
 const MIN_STACK_WIDTH_FOR_GAPS = 8;
 const STACK_GAP_PERCENTAGE = 0.125;

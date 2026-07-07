@@ -19,10 +19,9 @@ import { formatXYDatapointY } from '@fizz/parasummary';
 import { type DataLayerContext } from '../../../view_context';
 import { WaterfallChartInfo } from '../../../../chart_types/waterfall_chart';
 import { Label } from '../../../label';
-import { PlanePlotView, PlaneSeriesView } from './plane_plot_view';
+import { PlanePlotView, PlaneSeriesView, PlaneDatapointView } from './plane_plot_view';
 import { RectShape, PathShape } from '../../../shape';
 import { Vec2 } from '../../../../common';
-import { PlaneDatapointView } from '../../../data/plane_datapoint';
 
 const MIN_BAR_WIDTH_FOR_GAPS = 8;
 const BAR_GAP_PERCENTAGE = 0.25;
