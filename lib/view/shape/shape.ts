@@ -1,11 +1,7 @@
 
 import { View } from '../base_view';
-import { fixed } from '../../common/utils';
 import { type ViewContext } from '../view_context';
 
-import { svg, css } from 'lit';
-import { styleMap, type StyleInfo } from 'lit/directives/style-map.js';
-import { classMap, type ClassInfo } from 'lit/directives/class-map.js';
 import { type Ref, ref } from 'lit/directives/ref.js';
 
 export interface ShapeOptions {

@@ -14,45 +14,36 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Logger, getLogger } from '@fizz/logger';
-import { ParaComponent } from '../components';
-import { ChartType } from '@fizz/paramanifest'
-import { ConfigSetting, SettingsInput } from '../config/config_types';
-import { SettingsManager } from '../state';
-import '../paraview';
-import '../components/data_table';
-import '../control_panel';
-import '../control_panel/caption';
-import { type ParaCaptionBox } from '../control_panel/caption';
-import { type ParaView } from '../paraview';
-import { type ParaControlPanel } from '../control_panel';
-import { ParaState } from '../state';
-import { load, LoadError, LoadErrorCode, type SourceKind } from '../loader/paraloader';
-import { GlobalState } from '../state';
-import { CustomPropertyLoader } from '../state/custom_property_loader';
-import { styles } from '../view/styles';
-import '../components/aria_live';
-import { StyleManager, StyleManagerDeclarationValue } from './style_manager';
-import { AvailableCommands, Commander } from './commander';
-import { ParaAPI } from '../paraapi/paraapi';
-import {
-  Scrollyteller,
-  type ScrollytellerOptions,
-} from '../scrollyteller/scrollyteller';
-
 import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
 import { property, state, queryAssignedElements } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { SlotLoader } from '../loader/slotloader';
+import { Logger, getLogger } from '@fizz/logger';
+import { type ChartType } from '@fizz/paramanifest'
 import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
+import { ParaComponent } from '../components';
+import { ConfigSetting, SettingsInput } from '../config/config_types';
+import { SettingsManager, GlobalState } from '../state';
+import { type ParaView } from '../paraview';
+import { type ParaControlPanel, type ParaCaptionBox } from '../control_panel';
+import { load, LoadError, LoadErrorCode, type SourceKind } from '../loader/paraloader';
+import { CustomPropertyLoader } from '../state/custom_property_loader';
+import '../components/aria_live';
+import { StyleManager, StyleManagerDeclarationValue } from './style_manager';
+import { ParaAPI } from '../paraapi/paraapi';
+import {
+  Scrollyteller,
+  type ScrollytellerOptions,
+} from '../scrollyteller/scrollyteller';
+import '../paraview';
+import '../components/data_table';
+import '../control_panel';
+import '../control_panel/caption';
+import { SlotLoader } from '../loader/slotloader';
 import { TourBus } from './tour_bus';
-
 import brailleFont from '../assets/Braille36US.woff2';
 import hyperFont from '../assets/Atkinson-Hyperlegible-Regular-102a.woff2';
-
-// @ts-ignore
 import cpanelIconAlt from '../assets/info-icon-alt.svg';
 
 

@@ -6,9 +6,10 @@ import { enumerate } from "@fizz/paramodel";
 import { fixed } from "../../../../common/utils";
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
-import { PlanePlotView, PlaneSeriesView } from ".";
-import { DatapointView, SeriesView } from "../../../data";
 import { HistogramChartInfo } from '../../../../chart_types/histogram_chart';
+import { PlanePlotView, PlaneSeriesView } from "./plane_plot_view";
+import { DatapointView } from "../../../data/datapoint";
+import { type SeriesView } from "../../../data/series";
 
 import { ConfigSetting } from "../../../../config/config_types";
 

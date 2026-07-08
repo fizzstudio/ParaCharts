@@ -2,7 +2,7 @@
 import { Shape, type ShapeOptions } from './shape';
 import { type ViewContext } from '../view_context';
 import { fixed } from '../../common/utils';
-import { DatapointView } from '../data';
+//import { DatapointView } from '../data/datapoint';
 
 import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -38,7 +38,7 @@ export class RectShape extends Shape {
   }
 
   render() {
-    const index = (this.parent instanceof DatapointView) ? this.parent.parent?.index : undefined;
+    const index = this.parent?.parent?.index ?? undefined;
     if (this.paraview.paraState.colors.palette.isPattern && index !== undefined) {
       this._styleInfo.fill = `url(#Pattern${index})`
       return svg`

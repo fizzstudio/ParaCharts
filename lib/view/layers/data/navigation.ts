@@ -1,11 +1,9 @@
-
-import { DatapointView } from '../../data';
+import { type clusterObject } from '@fizz/clustering';
+import { type Datapoint } from '@fizz/paramodel';
 import { type ParaState } from '../../../state';
 import { type Direction } from '../../../config/config_types';
-import { DataLayer } from './data_layer';
-import { clusterObject } from '@fizz/clustering';
-import { BaseChartInfo } from '../../../chart_types';
-import { type Datapoint } from '@fizz/paramodel';
+import { type BaseChartInfo } from '../../../chart_types';
+
 
 const oppositeDirs: Record<Direction, Direction> = {
   up: 'down',

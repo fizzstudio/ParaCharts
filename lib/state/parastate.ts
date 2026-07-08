@@ -14,13 +14,11 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { BaseState, SettingObserver } from './base_state';
-import { Logger, getLogger } from '@fizz/logger';
+import { property } from '@lit-app/state';
 import papa from 'papaparse';
-import { State, property } from '@lit-app/state';
 import { produceWithPatches, enablePatches, applyPatches, type Patch } from 'immer';
 enablePatches();
-
+import { Logger, getLogger } from '@fizz/logger';
 import {
   dataFromManifest, type AllSeriesData, type ChartType,
   isPastryType,
@@ -34,22 +32,21 @@ import {
   planeModelFromInlineData,
   planeModelFromExternalData,
   PlaneModel,
-  Datapoint
+  type Datapoint
 } from '@fizz/paramodel';
 import {
-  Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY,
+  FormatType, formatXYDatapointX, formatXYDatapointY,
   HighlightedSummary, type Highlight,
   formatBox
 } from '@fizz/parasummary';
-
+import { BaseState, SettingObserver } from './base_state';
 import {
   FORMAT_CONTEXT_SETTINGS, FormatContext,
 } from './settings_types';
-import { ConfigGroup, ConfigSetting, SettingsInput } from '../config/config_types';
+import { ConfigGroup, ConfigSetting, SettingsInput, Config } from '../config/config_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
 import { chartTypeDefaults } from './settings_defaults';
-import { Config } from '../config/config_types';
 import { defaultConfig } from '../config/config_defaults';
 import { Colors } from '../common/colors';
 import { type ContrastWarning } from '../common/contrast';
@@ -61,10 +58,10 @@ import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { Popup } from '../view/popup';
 import { type DatapointCursor } from '../view/layers/data/navigation';
-import { Point } from '@fizz/chart-classifier-utils';
-import { PathShape } from '../view/shape';
-import { GlobalState } from './global_state';
-import { BaseChartInfo, chartInfoClasses, ScatterChartInfo } from '../chart_types';
+import { type Point } from '@fizz/chart-classifier-utils';
+import { type PathShape } from '../view/shape';
+import { type GlobalState } from './global_state';
+import { type BaseChartInfo, chartInfoClasses, type ScatterChartInfo } from '../chart_types';
 import { firstDataset, type Manifest } from '../loader/common';
 import { clusterObject } from '@fizz/clustering';
 import { ClusterShellView } from '../view/layers';

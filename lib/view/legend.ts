@@ -1,4 +1,5 @@
-
+import { ClassInfo } from 'lit/directives/class-map.js';
+import { TemplateResult, svg } from 'lit';
 import { View, Container } from './base_view';
 import { SimpleGridLayout, type Layout } from './layout';
 import { type DataSymbolType, DataSymbol, DataSymbolOptions } from './symbol';
@@ -6,11 +7,9 @@ import { Label } from './label';
 import { SettingsManager } from '../state';
 import { RectShape } from './shape/rect';
 import { type ViewContext } from './view_context';
-import { TemplateResult, svg } from 'lit';
-import { ClassInfo } from 'lit/directives/class-map.js';
 import { HIGHLIGHT_PADDING } from '../common';
-import { CardinalDirection, LegendConfig } from '../config/config_types';
-import { ScatterChartInfo } from '../chart_types';
+import { type CardinalDirection, type LegendConfig } from '../config/config_types';
+import { type ScatterChartInfo } from '../chart_types/scatter_chart';
 
 export type SeriesAttrs = {
   color: string;

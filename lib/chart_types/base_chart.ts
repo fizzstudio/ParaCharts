@@ -14,22 +14,19 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { ConfigSetting, DeepReadonly } from '../config/config_types';
-import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
-import { SettingsManager } from '../state/settings_manager';
-import { ParaView } from '../paraview/paraview';
-import { type LegendItem } from '../view/legend';
-import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
+import { Unsubscribe } from '@lit-app/state';
 import { Logger, getLogger } from '@fizz/logger';
-import { type ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor } from '../state';
-import { Sonifier } from '../audio/sonifier';
-import { type AxisCoord, AxisOrientation } from '../view/axis';
-
 import { Datapoint } from '@fizz/paramodel';
 import { ChartType, Facet } from '@fizz/paramanifest';
 import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
-
-import { Unsubscribe } from '@lit-app/state';
+import { ConfigSetting, DeepReadonly } from '../config/config_types';
+import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
+import { ParaView } from '../paraview/paraview';
+import { type LegendItem } from '../view/legend';
+import { AxisOrientation } from '../view/axis';
+import { NavMap, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
+import { type ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor, SettingsManager } from '../state';
+import { Sonifier } from '../audio/sonifier';
 import { executeParaActions, parseActions } from '../paraactions/paraactions';
 
 export const ORIENTATION_SENTENCES = [

@@ -14,21 +14,19 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { svg } from 'lit';
+import { Facet, type ChartType } from '@fizz/paramanifest';
 import { Logger, getLogger } from '@fizz/logger';
-import { type BaseChartInfo, chartInfoClasses, PlaneChartInfo } from '../chart_types';
+import { PlaneChartInfo } from '../chart_types';
 import { View, Container, Padding } from './base_view';
 import { Label } from './label';
 import { ParaState } from '../state';
 import { CardinalDirection, ConfigSetting } from '../config/config_types';
-import { Facet, type ChartType } from '@fizz/paramanifest';
 import { PlotLayerManager } from './layers';
 import { HorizAxis, LabelOverlapError, VertAxis, type AxisCoord } from './axis';
 import { Legend } from './legend';
 import { DirectLabelStrip } from './direct_label_strip';
-import { type LinePlotView } from './layers';
 import { type ParaView } from '../paraview';
-import { AxisInfo, AxisLabelInfo } from '../common';
-import { svg, nothing } from 'lit';
 import { CloseXView } from './close_x';
 
 export type Legends = Partial<{ [dir in CardinalDirection]: Legend }>;

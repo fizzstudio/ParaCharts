@@ -14,34 +14,26 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type AriaLive } from '../components';
-import { Logger, getLogger } from '@fizz/logger';
-import { PointerEventManager } from './pointermanager';
-import { type ParaChart } from '../parachart/parachart';
-import { ParaViewController } from '.';
-import { ParaComponent } from '../components';
-import { ChartType, isPastryType, strToId } from '@fizz/paramanifest';
-import { type HotkeyEvent } from '../state';
-import { ConfigSetting, ViewBox } from '../config/config_types';
-import { View } from '../view/base_view';
-import { DocumentView } from '../view/document_view';
-import { PointDatapointView } from '../view/layers';
-//import { styles } from './styles';
-import { SVGNS } from '../common/constants';
-import { fixed, isPointerInbounds } from '../common/utils';
-import { loopParaviewRefresh } from '../common';
-
 import { PropertyValueMap, SVGTemplateResult, TemplateResult, css, html, nothing, render, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Unsubscribe } from '@lit-app/state';
+import { Logger, getLogger } from '@fizz/logger';
+import { type ChartType, isPastryType, strToId } from '@fizz/paramanifest';
+import { PointerEventManager } from './pointermanager';
+import { type ParaChart } from '../parachart/parachart';
+import { ParaComponent, type AriaLive } from '../components';
+import { type HotkeyEvent } from '../state';
 import { AvailableActions } from '../state/action_map';
-
-import { BaseChartInfo, chartInfoClasses } from '../chart_types';
-import { type ViewContext } from '../view/view_context';
 import { ColorPrefManager } from '../state/preference_manager';
+import { ConfigSetting, ViewBox } from '../config/config_types';
+import { type View } from '../view/base_view';
+import { DocumentView } from '../view/document_view';
+import { type ViewContext } from '../view/view_context';
+import { loopParaviewRefresh, fixed, SVGNS } from '../common';
+import { ParaViewController } from '.';
 
 /**
  * Data provided for the on focus callback
@@ -1197,12 +1189,12 @@ export class ParaView extends ParaComponent implements ViewContext {
     const oldWidth = this.clipWidth;
     this.clipWidth = Number(fraction);
     for (let dpView of this.documentView!.chartLayers.dataLayer.datapointViews) {
-      const pointDpView = dpView as PointDatapointView;
+      const pointDpView = dpView;
       dpView.completeLayout();
       pointDpView.stopAnimation();
     }
     for (let dpView of this.documentView!.chartLayers.dataLayer.datapointViews) {
-      const pointDpView = dpView as PointDatapointView;
+      const pointDpView = dpView;
       pointDpView.alwaysClip = true;
       if (pointDpView.x - 1 <= Number(fraction) * this.documentView!.chartLayers.width
         && pointDpView.x - 1 > oldWidth * this.documentView!.chartLayers.width

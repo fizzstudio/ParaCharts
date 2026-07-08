@@ -1,12 +1,9 @@
-import { AxisInfo, computeLabels } from '../common/axisinfo';
-
-import { ChartType } from "@fizz/paramanifest";
+import { type Datapoint, type PlaneModel } from '@fizz/paramodel';
+import { type ChartType } from "@fizz/paramanifest";
+import { computeLabels } from '../common/axisinfo';
 import { PlaneChartInfo } from './plane_chart';
-import { type ParaView } from '../paraview';
 import { NavNode } from '../view/layers';
-import { DocumentView } from '../view/document_view';
 import { type ParaState } from '../state';
-import { Datapoint, PlaneModel } from '@fizz/paramodel';
 import { clusterObject } from '@fizz/clustering';
 
 export class HeatMapInfo extends PlaneChartInfo {

@@ -1,18 +1,14 @@
-
 import { svg, TemplateResult } from 'lit';
-import { DataLayer } from '..';
+import { Datapoint } from '@fizz/paramodel';
 import { type BaseChartInfo } from '../../../../chart_types';
-import { DatapointView, SeriesView } from '../../../data';
-import { ConfigSetting, DeepReadonly } from '../../../../config/config_types';
+import { ConfigSetting } from '../../../../config/config_types';
 import { Label, type LabelTextAnchor } from '../../../label';
 import { type DataLayerContext } from '../../../view_context';
 import { type Shape, CircleShape, ArcShape, PathShape } from '../../../shape';
-import { Datapoint, enumerate } from '@fizz/paramodel';
-import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
 import { Vec2 } from '../../../../common/vector';
-import { ClassInfo } from 'lit/directives/class-map.js';
-import { datapointMatchKeyAndIndex, bboxOppositeAnchor } from '../../../../common/utils';
-import { type BboxAnchorCorner } from '../../../base_view';
+import { SeriesView } from '../../../data/series';
+import { DatapointView } from '../../../data/datapoint';
+import { DataLayer } from '../data_layer';
 
 type ItemEntry = {
   includedSeries: Set<string>;

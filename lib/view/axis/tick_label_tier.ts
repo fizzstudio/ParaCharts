@@ -14,20 +14,19 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Logger, getLogger } from '@fizz/logger';
-import { View, Container } from '../base_view';
-import { type Layout } from '../layout';
-import { type Axis, type AxisOrientation } from './axis';
-import { Label, type LabelTextAnchor } from '../label';
-import { type ViewContext } from '../view_context';
-
 import { type TemplateResult } from 'lit';
-import { Vec2 } from '../../common/vector';
+import { Logger, getLogger } from '@fizz/logger';
 import { PlaneModel } from '@fizz/paramodel';
-import { Popup } from '../popup';
 import { Datatype } from '@fizz/paramanifest';
-import { AxisLabelTier } from '../../chart_types';
-import { AxisHorizConfig, AxisVertConfig } from '../../config/config_types';
+import { View, Container } from '../base_view';
+import { type Layout } from '../layout/layout';
+import { type AxisOrientation } from './axis';
+import { Label } from '../label';
+import { type ViewContext } from '../view_context';
+import { Vec2 } from '../../common/vector';
+import { Popup } from '../popup';
+import { type AxisLabelTier } from '../../chart_types';
+import { type AxisHorizConfig, type AxisVertConfig } from '../../config/config_types';
 
 export interface TickLabelTierOptions {
   orientation: AxisOrientation;

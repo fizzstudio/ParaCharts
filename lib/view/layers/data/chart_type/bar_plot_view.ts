@@ -14,21 +14,16 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type BaseChartInfo } from '../../../../chart_types';
+import { formatBox } from '@fizz/parasummary';
+import { getLogger } from '@fizz/logger';
 import { type DataLayerContext } from '../../../view_context';
-import { Logger, getLogger } from '@fizz/logger';
-import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
 import { RectShape } from '../../../shape/rect';
-import { Label, LabelTextAnchor } from '../../../label';
-import { BarStack } from '../../../../chart_types/bar_chart';
-
-import { formatBox, formatXYDatapoint } from '@fizz/parasummary';
-
-import { StyleInfo } from 'lit/directives/style-map.js';
-import { BarChartInfo } from '../../../../chart_types/bar_chart';
-import { Popup } from '../../../popup';
+import { Label } from '../../../label';
+import { BarStack, BarChartInfo } from '../../../../chart_types/bar_chart';
 import { formatDatapointValue, preciseAdd } from '../../../../common';
 import { ConfigSetting } from '../../../../config/config_types';
+import { PlanePlotView, PlaneSeriesView, PlaneDatapointView } from './plane_plot_view';
+import { type BaseChartInfo } from '../../../../chart_types/base_chart';
 
 const MIN_STACK_WIDTH_FOR_GAPS = 8;
 const STACK_GAP_PERCENTAGE = 0.125;

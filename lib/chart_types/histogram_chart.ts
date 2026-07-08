@@ -1,6 +1,6 @@
+import { type ChartType } from "@fizz/paramanifest";
 import { PlaneChartInfo } from './plane_chart';
 import { type ParaState } from '../state';
-import { type ChartType } from "@fizz/paramanifest";
 
 export class HistogramChartInfo extends PlaneChartInfo {
   protected _bins: number = 20;

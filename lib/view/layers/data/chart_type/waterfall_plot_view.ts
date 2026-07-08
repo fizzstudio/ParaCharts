@@ -14,17 +14,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type DataLayerContext } from '../../../view_context';
-import { type BaseChartInfo } from '../../../../chart_types';
-import { Label } from '../../../label';
-
-import { WaterfallChartInfo } from '../../../../chart_types/waterfall_chart';
-import { PlanePlotView, PlaneSeriesView, PlaneDatapointView } from './plane_plot_view';
-import { RectShape, PathShape } from '../../../shape';
-
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { formatXYDatapointY } from '@fizz/parasummary';
+import { type DataLayerContext } from '../../../view_context';
+import { WaterfallChartInfo } from '../../../../chart_types/waterfall_chart';
+import { Label } from '../../../label';
+import { PlanePlotView, PlaneSeriesView, PlaneDatapointView } from './plane_plot_view';
+import { RectShape, PathShape } from '../../../shape';
 import { Vec2 } from '../../../../common';
+import { type BaseChartInfo } from '../../../../chart_types/base_chart';
 
 const MIN_BAR_WIDTH_FOR_GAPS = 8;
 const BAR_GAP_PERCENTAGE = 0.25;

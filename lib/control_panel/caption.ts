@@ -1,16 +1,12 @@
-import { ParaComponent } from '../components';
-import { Logger, getLogger } from '@fizz/logger';
-import { Highlight } from '@fizz/parasummary';
-
-//import { styles } from '../../styles';
-import { HighlightedSummary } from '@fizz/parasummary';
-
 import { html, css, TemplateResult, PropertyValues } from 'lit';
 import { property, customElement, state } from 'lit/decorators.js';
 import { type Unsubscribe } from '@lit-app/state';
-import { ParaChart } from '../parachart/parachart';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { createRef, ref } from 'lit/directives/ref.js';
+import { Logger, getLogger } from '@fizz/logger';
+import { Highlight, HighlightedSummary } from '@fizz/parasummary';
+import { ParaComponent } from '../components';
+import { ParaChart } from '../parachart/parachart';
 import { ConfigSetting } from '../config/config_types';
 
 type HoverListener = (event: PointerEvent) => void;

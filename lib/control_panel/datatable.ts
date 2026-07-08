@@ -1,14 +1,9 @@
-
-import { ParaComponent } from '../components';
+import { html, css } from 'lit';
+import { customElement } from 'lit/decorators.js';
 import { Logger, getLogger } from '@fizz/logger';
-import { PlaneDatapoint, type Model } from '@fizz/paramodel';
+import { type PlaneDatapoint, type Model } from '@fizz/paramodel';
 import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
-
-import { html, css, nothing, render, type PropertyValues } from 'lit';
-import { property, state, queryAssignedElements, customElement } from 'lit/decorators.js';
-import {type Ref, ref, createRef} from 'lit/directives/ref.js';
-import { styleMap } from 'lit/directives/style-map.js';
-
+import { ParaComponent } from '../components';
 
 /**
  * Data table view.

@@ -14,19 +14,16 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { BaseChartInfo, RiffOrder } from './base_chart';
-import { type ParaState, datapointIdToCursor } from '../state';
-import { directions, HorizDirection } from '../config/config_types';
-import { queryMessages, describeSelections, getDatapointMinMax } from '../state/query_utils';
+import { type PlaneDatapoint } from '@fizz/paramodel';
+import { ChartType } from '@fizz/paramanifest';
 import { Datapoint } from '@fizz/paramodel';
 import { formatBox, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
-import {
-  NavLayer, NavNode,
-} from '../view/layers/data/navigation'
-import { type PlaneDatapoint } from '@fizz/paramodel';
+import { BaseChartInfo, RiffOrder } from './base_chart';
+import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax } from '../state';
+import { directions, HorizDirection } from '../config/config_types';
+import { NavLayer, NavNode } from '../view/layers/data/navigation'
 
-import { ChartType } from '@fizz/paramanifest';
 
 export type ArcType = 'circle' | 'semicircle';
 

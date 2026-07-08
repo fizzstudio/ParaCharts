@@ -14,25 +14,18 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { BaseChartInfo } from './base_chart';
-import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, type NavMap } from '../view/layers/data/navigation';
-import { type ParaState } from '../state';
-import { DeepReadonly } from '../config/config_types';
-import { ParaView } from '../paraview';
-import { type RiffOrder } from './base_chart';
-import { TypePlaneConfig, type HorizDirection } from '../config/config_types';
-
-import { ChartType, Datatype, Facet } from '@fizz/paramanifest';
-import { AxisOrientation, Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
-import { DocumentView } from '../view/document_view';
-import { Bezier, loopParaviewRefresh } from '../common';
-import { computeLabels } from '../common';
-import { NOTE_LENGTH } from '../audio/sonifier';
-
-import { Box, PlaneModel } from '@fizz/paramodel';
-import { Interval } from '@fizz/chart-classifier-utils';
-
 import { Decimal } from 'decimal.js';
+import { type Interval } from '@fizz/chart-classifier-utils';
+import { type ChartType, type Facet } from '@fizz/paramanifest';
+import { type Datapoint, type PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
+import { BaseChartInfo } from './base_chart';
+import { DatapointNavNodeType, NavNode, NavNodeOptionsType, type NavMap } from '../view/layers/data/navigation';
+import { type ParaState } from '../state';
+import { type RiffOrder } from './base_chart';
+import { type TypePlaneConfig, type HorizDirection, type DeepReadonly } from '../config/config_types';
+import { Bezier, loopParaviewRefresh, computeLabels } from '../common';
+import { NOTE_LENGTH } from '../audio/sonifier';
+import { type AxisOrientation } from '../view/axis/axis';
 
 // Soni Constants
 export const SONI_PLAY_SPEEDS = [1000, 250, 100, 50, 25];

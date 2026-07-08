@@ -1,17 +1,13 @@
-//import { styles } from '../../styles';
-import { ControlPanelTabPanel } from './tab_panel';
-import { ParaView } from '../../paraview';
-import '../datatable';
-
-import * as sb from '@fizz/sparkbraille-component';
-import '@fizz/sparkbraille-component';
-
 import {
   html, css, nothing,
 } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
-
+import * as sb from '@fizz/sparkbraille-component';
+import '@fizz/sparkbraille-component';
+import { ControlPanelTabPanel } from './tab_panel';
+import { type ParaView } from '../../paraview';
+import '../datatable';
 
 @customElement('para-data-panel')
 export class DataPanel extends ControlPanelTabPanel {

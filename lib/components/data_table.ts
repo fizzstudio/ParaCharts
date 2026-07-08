@@ -1,15 +1,11 @@
-
-import { ParaComponent } from '.';
-
-import { Logger, getLogger } from '@fizz/logger';
-import { PlaneDatapoint, type Model } from '@fizz/paramodel';
-import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
-
-import { html, css, nothing, render, type PropertyValues } from 'lit';
-import { property, state, queryAssignedElements, customElement } from 'lit/decorators.js';
-import {type Ref, ref, createRef} from 'lit/directives/ref.js';
-import { styleMap } from 'lit/directives/style-map.js';
+import { html, css, nothing } from 'lit';
+import { property, customElement } from 'lit/decorators.js';
+import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { Unsubscribe } from '@lit-app/state';
+import { type Logger, getLogger } from '@fizz/logger';
+import { type PlaneDatapoint } from '@fizz/paramodel';
+import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
+import { ParaComponent } from '.';
 import { datapointIdToCursor } from '../state';
 import { type ParaChart } from '../parachart/parachart';
 

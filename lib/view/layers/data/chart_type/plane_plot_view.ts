@@ -14,24 +14,20 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Logger, getLogger } from '@fizz/logger';
+import { getLogger } from '@fizz/logger';
 import {
   DataLayer,
 } from '../data_layer';
-import { PlaneChartInfo, type BaseChartInfo } from '../../../../chart_types';
-import { DatapointView, SeriesView } from '../../../data';
-//import { keymaps } from '../input';
-//import { hotkeyActions } from '../input/defaultactions';
-//import { NOTE_LENGTH } from '../audio/sonifier';
-//import { type Actions, type Action } from '../input/actions';
-
 import { type DataLayerContext } from '../../../view_context';
-
-import { PlaneDatapoint, Datapoint } from '@fizz/paramodel';
 import { Popup } from '../../../popup';
 import { PathShape } from '../../../shape';
 import { horizAdjust, Vec2, vertAdjust } from '../../../../common';
 import { ConfigSetting } from '../../../../config/config_types';
+import { SeriesView } from '../../../data/series';
+import { type PlaneChartInfo } from '../../../../chart_types/plane_chart';
+import { DatapointView } from '../../../data/datapoint';
+import { PlaneDatapoint } from '@fizz/paramodel';
+import { type BaseChartInfo } from '../../../../chart_types/base_chart';
 
 export type DatapointViewType<T extends PlaneDatapointView> =
   (new (...args: any[]) => T);
@@ -122,7 +118,7 @@ export abstract class PlanePlotView extends DataLayer {
     }
   }
 
-  makeCrosshairsLocked(datapointViews: DatapointView[], focus?: boolean, chord?: boolean, popup: boolean = true) {
+  makeCrosshairsLocked(datapointViews: PlaneDatapointView[], focus?: boolean, chord?: boolean, popup: boolean = true) {
     const chartInfo = this.chartInfo as PlaneChartInfo;
     const type = this.paraview.paraState.type;
     this.paraview.paraState.crossHairs.splice(0, this.paraview.paraState.crossHairs.length);
@@ -270,7 +266,7 @@ export abstract class PlanePlotView extends DataLayer {
     this.paraview.requestUpdate();
   }
 
-  makeCrosshairsAtPointer(nearestPoint: DatapointView) {
+  makeCrosshairsAtPointer(nearestPoint: PlaneDatapointView) {
     const chartInfo = this.chartInfo as PlaneChartInfo;
     const coords = this.paraview.paraState.pointerCoords;
     const isBar = this.paraview.paraState.type == 'bar' ? true : false;
@@ -380,7 +376,7 @@ export abstract class PlanePlotView extends DataLayer {
     this.paraview.paraState.crossHairs.push({ id: `id`, popups: [vertLabel, horizLabel, vertLine, horizLine].filter((item): item is PathShape | Popup => item !== undefined) });
   }
 
-  addChordPopup(datapoint: DatapointView, focus?: boolean) {
+  addChordPopup(datapoint: PlaneDatapointView, focus?: boolean) {
     let datapointViews = datapoint.withCousins;
     let text = '';
     for (let dpView of datapointViews) {
@@ -481,6 +477,7 @@ type Mutable<Type> = {
  * Abstract base class for a view representing an entire series on an XYChart.
  * @public
  */
+
 export class PlaneSeriesView extends SeriesView {
 
   declare protected _children: PlaneDatapointView[];
@@ -501,6 +498,7 @@ export class PlaneSeriesView extends SeriesView {
  * (e.g., points, bars, etc.).
  * @public
  */
+
 export abstract class PlaneDatapointView extends DatapointView {
 
   declare readonly chart: PlanePlotView;
@@ -512,95 +510,9 @@ export abstract class PlaneDatapointView extends DatapointView {
     super(seriesView);
   }
 
-  protected _addedToParent() {
-    super._addedToParent();
-    // this._extraAttrs = [
-    //   {
-    //     attr: literal`data-series`,
-    //     value: this.series.key
-    //   },
-    //   {
-    //     attr: literal`data-index`,
-    //     value: this.index
-    //   },
-    //   {
-    //     attr: literal`data-label`,
-    //     value:
-    //     formatXYDatapointX(this.datapoint, this.paraview.paraState.getFormatType('domId')),
-    //   },
-    //   {
-    //     attr: literal`data-centroid`,
-    //     value: this.centroid
-    //   }
-    // ];
-  }
-
   // override to get more specific return type
   get datapoint(): PlaneDatapoint {
     return super.datapoint as PlaneDatapoint;
-  }
-
-  // get styleInfo() {
-  //   const styles = super.styleInfo;
-  //   styles['--datapoint-centroid'] = this.centroid;
-  //   return styles;
-  // }
-
-  /*protected get _eventActions(): Actions<this> {
-    return {
-      datapoint_focused: function(focusInfo: FocusInfo) {
-        todo().controller.announce(this.summary(focusInfo));
-      },
-      datapoint_selected: function(selectionInfo: XYSelectionInfo) {
-        todo().controller.announce(this.chart.composeDatapointSelectionAnnouncement(selectionInfo));
-      },
-    };
-  }*/
-
-  //abstract computeLayout(): void;
-
-  /*summary(focusInfo: FocusInfo) {
-    if (focusInfo.visited.length > 1) {
-      return `${this.datapoint.formatX('statusBar')}, all points`;
-    } else {
-      // Don't include the series name unless the previously-visited point
-      // was in a different series
-      const datapoint = this.datapoint.format('statusBar');
-      /*if (!focusInfo.isSeriesChange) {
-        return datapoint;
-      } else if (todo().seriesSummaries[focusInfo.visited[0].series.name!]) {
-        return `${todo().controller.todo.seriesSummaries[focusInfo.visited[0].series.name!]} ${datapoint}`;
-      } else {
-        return `${focusInfo.visited[0].series.name!}: ${datapoint}`;
-      }*/
-  //  }
-  //}
-
-  async onFocus(isNewComponentFocus = false) {
-    await super.onFocus(isNewComponentFocus);
-    // let data = []
-    // for (let point of this.series.rawData){
-    //   data.push(point.y)
-    // }
-    // if (this.paraview.paraState.type == "bar" || this.paraview.paraState.type == "column"){
-    //   this.paraview.paraState.updateSettings(draft => {
-    //   draft.controlPanel.isSparkBrailleBar = true
-    // })};
-    // this.paraview.paraState.sparkBrailleData = data.join(' ');
-    /*todo().deets!.sparkBrailleData = this.series.data.join(' ');
-    if (todo().controller.settingStore.settings.sonification.isSoniEnabled) {
-      this.chart.sonifier.playDatapoints(...visited.map(v => v.datapoint));
-    }
-    setTimeout(() => {
-      this.eventActionManager!.dispatch('datapoint_focused', {
-        visited,
-        isSeriesChange:
-          this.chart.isChordModeEnabled ? false :
-          !(todo().canvas.prevFocusLeaf instanceof DataView) ? true :
-          (todo().canvas.prevFocusLeaf as DataView).series.name !== visited[0].series.name ? true :
-          false
-      });
-    }, NOTE_LENGTH*1000);*/
   }
 
 }
