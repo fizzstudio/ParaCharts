@@ -674,20 +674,39 @@ export class ParaState extends BaseState {
         const sum = grid.reduce((a, c) => a + c);
         yVals = yVals.map(y => (Number(y) / sum).toFixed(4));
       }
-      series.records = grid.map((g, i) => { return { x: xVals[i], y: yVals[i] } })
+      if (this.config.type.histogram.displayAxis == 'x') {
+        series.records = grid.map((g, i) => { return { x: xVals[i], y: yVals[i] } })
+      }
+      else {
+        series.records = grid.map((g, i) => { return { y: xVals[i], x: yVals[i] } })
+      }
     }
-    dataset.facets["x"].measure = 'interval';
-    dataset.facets["x"].variableType = 'independent';
-    const storeX = structuredClone(dataset.facets["x"])
-    dataset.facets = {}
-    dataset.facets["x"] = storeX
-    dataset.facets["y"] = {
-      datatype: "number",
-      label: `Count of ${manifest.jim.datasets[0].facets["x"].label}`,
-      variableType: "dependent",
-      measure: "nominal",
-      displayType: { type: 'axis', orientation: "vertical" }
-    };
+    dataset.facets[targetFacet].measure = 'interval';
+    dataset.facets[targetFacet].variableType = 'independent';
+    const storeFacet = structuredClone(dataset.facets[targetFacet]);
+    dataset.facets = {};
+    if (this.config.type.histogram.displayAxis == 'x') {
+      dataset.facets["x"] = storeFacet;
+      dataset.facets["x"].displayType.orientation = 'horizontal'
+      dataset.facets["y"] = {
+        datatype: "number",
+        label: `Count of ${manifest.jim.datasets[0].facets["x"].label}`,
+        variableType: "dependent",
+        measure: "nominal",
+        displayType: { type: 'axis', orientation: "vertical" }
+      };
+    }
+    else {
+      dataset.facets["y"] = storeFacet;
+      dataset.facets["y"].displayType.orientation = 'vertical'
+      dataset.facets["x"] = {
+        datatype: "number",
+        label: `Count of ${manifest.jim.datasets[0].facets["y"].label}`,
+        variableType: "dependent",
+        measure: "nominal",
+        displayType: { type: 'axis', orientation: "horizontal" }
+      };
+    }
     return manifest;
   }
 

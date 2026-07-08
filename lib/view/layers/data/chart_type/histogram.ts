@@ -1,16 +1,15 @@
-import { enumerate } from "@fizz/paramodel";
+import { classMap } from "lit/directives/class-map.js";
+import { ref } from "lit/directives/ref.js";
+import { StyleInfo, styleMap } from "lit/directives/style-map.js";
 import { nothing, svg } from "lit";
+import { enumerate } from "@fizz/paramodel";
 import { fixed } from "../../../../common/utils";
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
 import { PlanePlotView, PlaneSeriesView } from ".";
 import { DatapointView, SeriesView } from "../../../data";
-import { strToId } from "@fizz/paramanifest";
 import { HistogramChartInfo } from '../../../../chart_types/histogram_chart';
-import { View } from "../../../base_view";
-import { ClassInfo, classMap } from "lit/directives/class-map.js";
-import { ref } from "lit/directives/ref.js";
-import { StyleInfo, styleMap } from "lit/directives/style-map.js";
+
 import { ConfigSetting } from "../../../../config/config_types";
 
 export class Histogram extends PlanePlotView {
@@ -70,17 +69,13 @@ export class HistogramBinView extends DatapointView {
   protected _height!: number;
   protected _width!: number;
   protected _count: number = 0;
-  //protected _datapoints: Datapoint[] = [];
-  protected _shapes: Shape[] = []
-  seriesKey: string = ''
+  protected _shapes: Shape[] = [];
   constructor(
     chart: Histogram,
     series: SeriesView
   ) {
-
     super(series);
     this.chart = chart
-    this.seriesKey = series.seriesKey
   }
 
   get width() {
@@ -115,65 +110,45 @@ export class HistogramBinView extends DatapointView {
     });
   }
 
-
   computeLocation() {
   }
+
   layoutSymbol() {
   }
-  protected _createSymbol(): void {
 
+  protected _createSymbol(): void {
   }
 
   completeLayout() {
     const info = this.chart.chartInfo;
+    const id = this.index;
+    const seriesIndex = this.parent.index;
+    this._count = info.grid[seriesIndex][id];
     if (this.chart.config.displayAxis == "x" || this.chart.config.displayAxis == undefined) {
-      const id = this.index;
-      const seriesIndex = this.parent.index;
-      this._y = this.chart.parent.height
+      this._y = this.chart.parent.height;
       if (this.cousins.length > 0) {
         this._y -= this.cousins.map(dp => Math.max(dp.height, 0)).reduce((a, c) => a + c);
       }
       this._width = this.chart.parent.width / info.bins;
       this._x = (id) % info.bins * this._width;
-      const max = this.chart.chartInfo.yInterval!.end;
-      const min = this.chart.chartInfo.yInterval!.start;
-      const yRange = max - min;
+      const yMax = this.chart.chartInfo.yInterval!.end;
+      const yMin = this.chart.chartInfo.yInterval!.start;
+      const yRange = yMax - yMin;
       const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
       this._height = Math.max(0, Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit));
-      if (this.chart.config.relativeAxes == "Percentage") {
-        this._height = this.height / (info.grid.flat()).reduce((a, c) => a + c)
-      }
-      this._count = info.grid[seriesIndex][id];
-      //this._datapoints = info._datapointGrid[id]
-      /*
-      this._id = [
-        'datapoint-tile',
-        strToId(this.seriesKey),
-        `${this._x}`,
-        `${this._y}`
-      ].join('-');
-      */
     }
     else {
-      const id = this.index - length;
       this._x = 0;
+      if (this.cousins.length > 0) {
+        this._x += this.cousins.map(dp => Math.max(dp.width, 0)).reduce((a, c) => a + c);
+      }
       this._height = this.chart.parent.height / info.bins;
-      this._y = (info.grid.length - id - 1) % info.bins * this.height + (this.height)
-      const max = this.chart.chartInfo.xInterval!.end;
-      const min = this.chart.chartInfo.xInterval!.start;
-      //this._width = (((info.grid[id] - min) / max) * this.chart.parent.width)
-      //if (this.chart.settings.relativeAxes == "Percentage") {
-      //  this._width = this._width / info.grid.reduce((a, c) => a + c)
-      // }
-      //this._count = info.grid[id];
-      /*
-      this._id = [
-        'datapoint-tile',
-        strToId(this.seriesKey),
-        `${this._x}`,
-        `${this._y}`
-      ].join('-');
-*/
+      this._y = (info.bins - id) % (info.bins + 1) * this._height;
+      const xMax = this.chart.chartInfo.xInterval!.end;
+      const xMin = this.chart.chartInfo.xInterval!.start;
+      const xRange = xMax - xMin;
+      const pxPerYUnit = this.chart.parent.logicalHeight / xRange;
+      this._width = Math.max(0, Math.abs(this.datapoint.facetValueAsNumber('x')! * pxPerYUnit));
     }
     super.completeLayout();
   }
@@ -191,18 +166,6 @@ export class HistogramBinView extends DatapointView {
     this._shapes.forEach(shape => {
       this.append(shape);
     })
-  }
-  get classInfo(): ClassInfo {
-    const index = this.index;
-    const numColors = this.paraview.paraState.colors.numSeriesColors;
-    return {
-      datapoint: true,
-      [`series-${this.color % numColors}`]: true,
-      visited: this.paraview.paraState.isVisited(this.seriesKey, index),
-      selected: this.paraview.paraState.isSelected(this.seriesKey, index),
-      highlighted: this.paraview.paraState.isDatapointHighlighted(this.seriesKey, index),
-      lowlighted: this.paraview.paraState.isDatapointLowlighted(this.seriesKey, index)
-    };
   }
 
   protected _shapeStyleInfo(_shapeIndex: number): StyleInfo {

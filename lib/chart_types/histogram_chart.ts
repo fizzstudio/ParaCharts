@@ -97,7 +97,6 @@ export class HistogramChartInfo extends PlaneChartInfo {
     this._paraState.settingControls.insert('type.histogram.relativeAxes');
   }
 
-
   protected _createChordNavNodes() {
   }
 
