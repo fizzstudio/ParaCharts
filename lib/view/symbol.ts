@@ -32,7 +32,6 @@ import {
 import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { DatapointView } from './data';
 
 export type DataSymbolShape =
 'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
@@ -320,8 +319,9 @@ export class DataSymbol extends View {
       transform = fixed`translate(${this._x},${this._y})`;
       transform += fixed` scale(${this._options.scale})`;
     }
-    if (this.parent instanceof DatapointView){
-      if (this._y < 0 || this._y > this.parent.chart.parent.logicalHeight){
+
+    if (this.parent) {
+      if (this._y < 0 || this._y > this.paraview.documentView!.chartLayers.dataLayer.height) {
         this.hidden = true;
       }
     }

@@ -1,8 +1,6 @@
-
-import { Logger, getLogger } from '@fizz/logger';
-import { PastryPlotView, RadialSlice, type RadialDatapointParams } from '.';
-import { type SeriesView } from '../../../data';
-import { Popup } from '../../../popup';
+import { getLogger } from '@fizz/logger';
+import { PastryPlotView, RadialSlice, type RadialDatapointParams } from './pastry_plot_view';
+import { type SeriesView } from '../../../data/series';
 import { SectorShape } from '../../../shape/sector';
 
 export class PiePlotView extends PastryPlotView {

@@ -15,25 +15,15 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
-import { ParaView } from '../paraview';
-import { PlaneChartInfo } from './plane_chart';
-import { datapointIdToCursor, type ParaState } from '../state';
-import { ConfigSetting, DeepReadonly } from '../config/config_types';
-import {
-  queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax
-} from '../state/query_utils';
-import { type Label } from '../view/label';
-import { computeAxisRange } from './plane_chart';
-
-import { Highlight } from '@fizz/parasummary';
-
 import { ChartType, strToId } from '@fizz/paramanifest';
 import { enumerate, Box, Series } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
-import { DocumentView } from '../view/document_view';
 import { Interval } from '@fizz/chart-classifier-utils';
-import { TypeBarConfig } from '../config/config_types';
+import { PlaneChartInfo, computeAxisRange } from './plane_chart';
+import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax } from '../state';
+import { ConfigSetting, DeepReadonly, TypeBarConfig } from '../config/config_types';
+import { type Label } from '../view/label';
 
 type BarClusterMap = {[key: string]: BarCluster};
 

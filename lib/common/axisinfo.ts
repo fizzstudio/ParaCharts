@@ -1,10 +1,7 @@
-
-import { ParaState } from '../state/parastate';
-import { formatBox } from '@fizz/parasummary';
-
 import Decimal from 'decimal.js';
-import { Facet } from '@fizz/paramanifest';
-import { AxisOrientation, type PlaneModel } from '@fizz/paramodel';
+import { type Facet } from '@fizz/paramanifest';
+import { type AxisOrientation, type PlaneModel } from '@fizz/paramodel';
+import { type ParaState } from '../state/parastate';
 
 export type Tier = string[];
 export interface ChildTierItem {

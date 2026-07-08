@@ -1,13 +1,12 @@
-import { type PlaneSeriesView, PointPlotView, PointDatapointView, PlaneDatapointView, TrendLineView } from '.';
-import { DataSymbol, DataSymbols } from '../../../symbol';
 import { svg } from 'lit';
-import { View } from '../../../base_view';
-import { Colors } from '../../../../common/colors';
-import { enumerate } from '@fizz/paramodel';
 import { ClassInfo } from 'lit/directives/class-map.js';
-import { PlaneChartInfo, ScatterChartInfo } from '../../../../chart_types';
+import { enumerate } from '@fizz/paramodel';
+import { DataSymbol, DataSymbols } from '../../../symbol';
+import { View } from '../../../base_view';
+import { type ScatterChartInfo } from '../../../../chart_types';
 import { fixed } from '../../../../common/utils';
 import { ConfigSetting } from '../../../../config/config_types';
+import { PointDatapointView, PointPlotView, type PointSeriesView, type TrendLineView } from './point_plot_view';
 
 
 export class ScatterPlotView extends PointPlotView {
@@ -36,7 +35,7 @@ export class ScatterPlotView extends PointPlotView {
     super.settingDidChange(path, oldValue, newValue);
   }
 
-  protected _newDatapointView(seriesView: PlaneSeriesView) {
+  protected _newDatapointView(seriesView: PointSeriesView) {
     return new ScatterPointView(seriesView);
   }
 
@@ -116,7 +115,7 @@ export class ScatterPointView extends PointDatapointView {
   isOutlier: boolean = false;
 
   computeX() {
-    const xInterval = (this.chart.chartInfo as PlaneChartInfo).xInterval!;
+    const xInterval = this.chart.chartInfo.xInterval!;
     // Scales points in proportion to the data range
     const xTemp = (this.datapoint.facetValueNumericized('x')! - xInterval.start)
       / (xInterval.end - xInterval.start);
@@ -196,7 +195,7 @@ export class ScatterPointView extends PointDatapointView {
 
 export class ClusterShellView extends View {
   protected _points: Array<Array<number>> = [];
-  constructor(private chart: ScatterPlotView, public clusterID?: number, private selectedPoints?: PlaneDatapointView[]) {
+  constructor(private chart: ScatterPlotView, public clusterID?: number, private selectedPoints?: ScatterPointView[]) {
     super(chart.paraview);
     this.generatePoints();
   }

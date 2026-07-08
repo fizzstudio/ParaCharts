@@ -1,13 +1,11 @@
-
+import { html, css, type PropertyValues } from 'lit';
+import { ref, createRef } from 'lit/directives/ref.js';
+import { property, customElement } from 'lit/decorators.js';
 import { ParaComponent } from '../paracomponent';
 import { ScreenReaderBridge, type AriaLiveHistoryDialog } from '.';
 import { Voicing } from './voicing';
 import { styles } from '../../view/styles';
 import { type Announcement } from '../../state';
-
-import { html, css, type PropertyValues } from 'lit';
-import { ref, createRef } from 'lit/directives/ref.js';
-import { property, customElement } from 'lit/decorators.js';
 import { HighlightReaderBridge } from './highlightreaderbridge';
 
 @customElement('para-aria-live-region')

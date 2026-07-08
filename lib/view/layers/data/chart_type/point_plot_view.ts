@@ -14,18 +14,16 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { SeriesView } from '../../../data';
-import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
-
+import { svg } from 'lit';
 import { enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
-import { svg } from 'lit';
+import { strToId } from '@fizz/paramanifest';
+import { type SeriesView } from '../../../data/series';
 import { linearRegression } from '@fizz/simple-statistics';
 import { View } from '../../../base_view';
-import { strToId } from '@fizz/paramanifest';
 import { Bezier } from '../../../../common';
-import { Logger, getLogger } from '@fizz/logger';
-import { PointChartInfo } from '../../../../chart_types';
+import { PointChartInfo } from '../../../../chart_types/point_chart';
+import { PlanePlotView, PlaneSeriesView, PlaneDatapointView } from './plane_plot_view';
 
 /**
  * Abstract base class for charts that represent data values as points

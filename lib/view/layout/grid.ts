@@ -14,14 +14,13 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { svg } from 'lit';
+import { getLogger } from '@fizz/logger';
+import { mapn } from '@fizz/chart-classifier-utils';
 import { type View, type SnapLocation, type PaddingInput, type Padding } from '../base_view';
 import { type ViewContext } from '../view_context';
 import { Layout } from './layout';
-import { Logger, getLogger } from '@fizz/logger';
-import { nothing, svg, TemplateResult } from 'lit';
 import { RectShape } from '../shape/rect';
-
-import { mapn } from '@fizz/chart-classifier-utils';
 import { Label } from '../label';
 
 export interface GridOptionsInput {

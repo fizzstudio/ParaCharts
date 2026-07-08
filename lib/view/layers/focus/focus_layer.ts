@@ -1,5 +1,5 @@
 
-import { PlotLayer } from '..';
+import { PlotLayer } from '../layer';
 import { FocusRing } from './focus_ring';
 
 import { svg } from 'lit';

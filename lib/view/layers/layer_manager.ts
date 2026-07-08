@@ -14,25 +14,13 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { svg } from 'lit';
 import { View } from '../base_view';
-import { fixed, isPointerInbounds } from '../../common/utils';
-import { type Layout } from '../layout';
+import { fixed } from '../../common/utils';
 import { type DocumentView } from '../document_view';
 import { type CardinalDirection } from '../../config/config_types';
 import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, FocusLayer } from '.';
-import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, Bar, WaterfallPlotView, VennPlotView } from './data/chart_type';
-import { type AxisCoord } from '../axis';
-//import { StepLineChart } from './stepline';
-//import { LollipopChart } from './lollipop';
-//import { DonutChart } from './donut';
-//import { GaugeChart } from './gauge';
-//import { type Model } from '../data/model';
-
-import { type Interval } from '@fizz/chart-classifier-utils';
-
-import { svg } from 'lit';
-import { HeatMapPlotView } from './data/chart_type';
-import { Histogram } from './data/chart_type/histogram';
+import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, WaterfallPlotView, VennPlotView, Histogram, HeatMapPlotView } from './data/chart_type';
 import { PopupLayer } from './popup_layer';
 import { type DataLayerContext } from '../view_context';
 

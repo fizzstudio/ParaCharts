@@ -1,17 +1,15 @@
+import { svg } from "lit";
 import { enumerate } from "@fizz/paramodel";
 import { formatBox } from "@fizz/parasummary";
-import { svg } from "lit";
-import { AxisInfo, computeLabels } from "../../../../common/axisinfo";
+import { strToId } from "@fizz/paramanifest";
 import { fixed } from "../../../../common/utils";
-import { type ViewContext } from '../../../view_context';
 import { datapointIdToCursor } from "../../../../state";
 import { ConfigSetting, PointChartType } from '../../../../config/config_types';
-import { RectShape } from "../../../shape/rect";
-import { Shape } from "../../../shape/shape";
-import { PlanePlotView, PlaneSeriesView } from ".";
-import { DatapointView, SeriesView } from "../../../data";
-import { strToId } from "@fizz/paramanifest";
+import { RectShape, type Shape } from "../../../shape";
 import { HistogramChartInfo } from '../../../../chart_types/histogram_chart';
+import { PlanePlotView, PlaneSeriesView } from "./plane_plot_view";
+import { DatapointView } from "../../../data/datapoint";
+import { type SeriesView } from "../../../data/series";
 
 export class Histogram extends PlanePlotView {
   declare protected _chartInfo: HistogramChartInfo;

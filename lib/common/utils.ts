@@ -14,13 +14,12 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { ParaState } from "../state/parastate";
-import { BboxAnchor, type View } from '../view/base_view';
-import { Box, Datapoint, Model } from "@fizz/paramodel";
-import { Datatype } from "@fizz/paramanifest";
-import { DatapointView } from "../view/data";
-import { ParaView } from "../paraview";
-import { Popup } from "../view/popup";
+import { type Datapoint, type Model } from "@fizz/paramodel";
+import { type ParaState } from "../state/parastate";
+import { type BboxAnchor, type View } from '../view/base_view';
+import { type DatapointView } from "../view/data";
+import { type ParaView } from "../paraview";
+import { type Popup } from "../view/popup";
 
 const bboxOppositeAnchors: Record<BboxAnchor, BboxAnchor> = {
   top: 'bottom',

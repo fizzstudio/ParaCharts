@@ -1,8 +1,7 @@
+import { StateController } from '@lit-app/state';
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaComponent } from '../components';
 import '../components';
-
-import { StateController } from '@lit-app/state';
 
 export abstract class SettingControlContainer extends ParaComponent {
   private log: Logger = getLogger("SettingControlContainer");

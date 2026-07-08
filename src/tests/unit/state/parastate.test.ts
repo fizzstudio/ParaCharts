@@ -31,7 +31,7 @@ describe('ParaState', () => {
     it('should initialize with minimal settings', () => {
       const state = new ParaState(globalState, {});
       expect(state).toBeDefined();
-      expect(state.settings).toBeDefined();
+      expect(state.config).toBeDefined();
       expect(state.dataState).toBe('initial');
     });
 

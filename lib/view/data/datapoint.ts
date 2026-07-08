@@ -1,18 +1,16 @@
-
-import { DataView, type SeriesView } from './';
-import { DataSymbol } from '../symbol';
-import { datapointIdToCursor, makeDatapointId } from '../../state';
-import { Shape } from '../shape/shape';
-import { RectShape } from '../shape/rect';
-
+import { svg, TemplateResult } from 'lit';
 import { type ClassInfo, classMap } from 'lit/directives/class-map.js';
 import { type StyleInfo } from 'lit/directives/style-map.js';
-import { svg, nothing, TemplateResult } from 'lit';
-import { formatBox } from '@fizz/parasummary';
 import { Datapoint } from '@fizz/paramodel';
+import { DataSymbol } from '../symbol';
+import { makeDatapointId } from '../../state';
+import { Shape } from '../shape/shape';
+import { RectShape } from '../shape/rect';
 import { Label } from '../label';
 import { Popup, ShapeTypes } from '../popup';
-import { PastryPlotView, RadialDatapointParams } from '../layers';
+import { type PastryPlotView, type RadialDatapointParams } from '../layers';
+import { SeriesView } from './series';
+import { DataView } from './data';
 
 const SELECTION_MARKER_SIZE = 40;
 
@@ -361,7 +359,7 @@ export class DatapointView extends DataView {
         kid.classInfo = this.classInfo;
       }
     }
-      return svg`
+    return svg`
         <g
           id=${this._id}
           class=${classMap(this.classInfo)}
@@ -369,7 +367,7 @@ export class DatapointView extends DataView {
         >
           ${super.content()}
         </g>`;
-    
+
   }
 
   public equals(other: DatapointView): boolean {
@@ -483,5 +481,7 @@ export class DatapointView extends DataView {
       }
     }
   }
+
+  stopAnimation() { }
 
 }

@@ -1,11 +1,8 @@
-
-import { ParaComponent } from '../../components';
-
-import * as ui from '@fizz/ui-components';
-
-import {html, css } from 'lit';
+import { html, css } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
+import * as ui from '@fizz/ui-components';
+import { ParaComponent } from '../../components';
 
 @customElement('para-aria-live-history-dialog')
 export class AriaLiveHistoryDialog extends ParaComponent {

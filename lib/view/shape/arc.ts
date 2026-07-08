@@ -1,13 +1,11 @@
-import { fixed } from '../../common/utils';
-import { type ViewContext } from '../view_context';
-import { type ShapeOptions, Shape } from './shape';
-import { Vec2 } from '../../common/vector';
-
 import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ref } from 'lit/directives/ref.js';
-import { DatapointView } from '../data';
+import { fixed } from '../../common/utils';
+import { type ViewContext } from '../view_context';
+import { type ShapeOptions, Shape } from './shape';
+import { Vec2 } from '../../common/vector';
 
 export interface ArcOptions extends ShapeOptions {
   r: number;
@@ -59,14 +57,7 @@ export class ArcShape extends Shape {
     let index = this.parent?.index;
 
     if (this.paraview.paraState.colors.palette.isPattern && index !== undefined) {
-      let parent = this.parent as DatapointView;
       this._styleInfo.fill = `url(#Pattern${index})`;
-
-      if (this.paraview.paraState.isVisited(parent.seriesKey, index)) {
-        this._styleInfo.stroke = this.paraview.paraState.colors.colorValue('visit');
-        this._styleInfo.strokeWidth = 6;
-      }
-
       return svg`
       <path
         ${this._ref ? ref(this._ref) : undefined}

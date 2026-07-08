@@ -14,28 +14,21 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { svg, type TemplateResult } from 'lit';
+import { literal } from 'lit/static-html.js';
+import { type Datatype } from '@fizz/dataframe';
+import { type Facet } from '@fizz/paramanifest';
 import { Container, Padding, PaddingInput, View } from '../base_view';
 import { GridLayout, type Layout } from '../layout';
-import { type GridTerritoryInput } from '../layout';
-//import { type FlexLayout, type Layout, RowLayout, ColumnLayout } from '../layout';
 import { Label } from '../label';
 import { type AxisLine, HorizAxisLine, VertAxisLine } from './axis_line';
 import { type TickLabelTier, HorizTickLabelTier, VertTickLabelTier } from './tick_label_tier';
 import { type TickStrip, HorizTickStrip, VertTickStrip } from './tick_strip';
-import { SettingsManager } from '../../state/settings_manager';
 import { type ParaState } from '../../state/parastate';
-
-import { type Datatype, type Scalar } from '@fizz/dataframe';
-import { type Facet } from '@fizz/paramanifest';
-
-import { svg, type TemplateResult } from 'lit';
-import { literal } from 'lit/static-html.js';
-import { PlaneModel } from '@fizz/paramodel';
 import { Popup } from '../popup';
 import { type ViewContext } from '../view_context';
-import { AxisLabelTier, PlaneChartInfo } from '../../chart_types';
-import { HIGHLIGHT_PADDING } from '../../common';
-import { AxisHorizConfig, AxisVertConfig } from '../../config/config_types';
+import { type AxisLabelTier, type PlaneChartInfo } from '../../chart_types';
+import { type AxisHorizConfig, type AxisVertConfig } from '../../config/config_types';
 
 export type AxisOrientation = 'horiz' | 'vert';
 export type AxisCoord = 'x' | 'y';

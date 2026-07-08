@@ -1,6 +1,6 @@
 import { Highlight } from '@fizz/parasummary';
-import { ParaState } from '../../state';
 import { Logger, getLogger } from '@fizz/logger';
+import { ParaState } from '../../state';
 
 export class Voicing {
   protected _voice: SpeechSynthesis | null = null;

@@ -14,20 +14,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Logger, getLogger } from '@fizz/logger';
-import { PointChartInfo } from './point_chart';
-import { datapointIdToCursor, type ParaState } from '../state';
-import { type ParaView } from '../paraview';
-import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state/query_utils';
-import { NavNode } from '../view/layers';
-
+import { getLogger } from '@fizz/logger';
 import { interpolate } from '@fizz/templum';
-
 import { formatXYDatapoint } from '@fizz/parasummary';
 import { type ChartType } from '@fizz/paramanifest';
-import { Highlight } from '@fizz/parasummary';
-import { DataSymbols } from '../view/symbol';
 import { enumerate, PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
+import { PointChartInfo } from './point_chart';
+import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state';
+import { NavNode } from '../view/layers';
+import { DataSymbols } from '../view/symbol';
 import { ConfigSetting } from '../config/config_types';
 
 /**
