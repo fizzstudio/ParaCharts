@@ -7,6 +7,7 @@ import {
 import { customElement } from 'lit/decorators.js';
 import { createRef, ref } from 'lit/directives/ref.js';
 import { FontSettingsDialog } from '../dialogs/font_dialog';
+import { TactileSettingsDialog } from '../dialogs';
 import { PopupSettingsDialog } from '../../view/popup';
 import { LegendSettingsDialog } from '../dialogs/legend_dialog';
 
@@ -14,6 +15,7 @@ import { LegendSettingsDialog } from '../dialogs/legend_dialog';
 @customElement('para-chart-panel')
 export class ChartPanel extends ControlPanelTabPanel {
   protected _fontDialogRef = createRef<FontSettingsDialog>();
+  protected _tactileDialogRef = createRef<TactileSettingsDialog>();
   protected _popupDialogRef = createRef<PopupSettingsDialog>();
   protected _legendDialogRef = createRef<LegendSettingsDialog>();
 
@@ -115,6 +117,13 @@ export class ChartPanel extends ControlPanelTabPanel {
           </div>
           <div>
             <button
+              @click=${() => this._tactileDialogRef.value?.show()}
+            >
+              ${this._globalState.l10n.localize('cpanel.tabs.chart.tactile_settings')}
+            </button>
+          </div>
+          <div>
+            <button
               @click=${() => this._legendDialogRef.value?.show()}
             >
               Legend settings
@@ -154,6 +163,11 @@ export class ChartPanel extends ControlPanelTabPanel {
         id="font-settings-dialog"
         .globalState=${this._globalState}
       ></para-font-settings-dialog>
+      <para-tactile-settings-dialog
+        ${ref(this._tactileDialogRef)}
+        id="tactile-settings-dialog"
+        .globalState=${this._globalState}
+      ></para-tactile-settings-dialog>
       <para-legend-settings-dialog
         ${ref(this._legendDialogRef)}
         id="legend-settings-dialog"

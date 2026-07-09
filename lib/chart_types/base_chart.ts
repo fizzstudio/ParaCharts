@@ -186,6 +186,10 @@ export abstract class BaseChartInfo {
     return [];
   }
 
+  shouldDrawTitle(): boolean {
+    return this._paraState.config.chart.title.isDrawTitle && !!this._paraState.title;
+  }
+
   popuplegend() {
     //const seriesKeys = [...this._paraState.model!.seriesKeys];
     const seriesInNavOrder = this.seriesInNavOrder().map(s => s.key)

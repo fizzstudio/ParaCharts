@@ -82,6 +82,12 @@ export class PastryChartInfo extends BaseChartInfo {
     }));
   }
 
+  shouldDrawTitle(): boolean {
+    return this._type === 'donut'
+      ? !(!this._paraState.config.chart.isTactileEnabled && this._paraState.config.type.donut.centerLabel === 'title')
+      : super.shouldDrawTitle();
+  }
+
   playDatapoints(datapoints: PlaneDatapoint[]): Promise<void> {
     return this._sonifier.playDatapoints(datapoints, {invert: true, durationVariable: true});
   }

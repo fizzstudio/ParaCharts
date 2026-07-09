@@ -181,6 +181,9 @@ export class ParaView extends ParaComponent implements ViewContext {
         fill: var(--label-color);
         stroke: none;
       }
+      .label.tactile {
+        font-size: 36pt;
+      }
       .label-bg {
         fill: lightgray;
       }
@@ -1118,7 +1121,7 @@ export class ParaView extends ParaComponent implements ViewContext {
         + ',' + fontFamilyClasses[this._paraState.config.chart.fontFamily],
       fontWeight: this._paraState.config.chart.fontWeight
     };
-    if (this._paraState.config.chart.isUseBraille) {
+    if (this._paraState.config.chart.isTactileEnabled) {
       style.fontFamily = 'braille36';
     }
     if (this._isFullscreen) {

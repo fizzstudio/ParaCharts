@@ -244,8 +244,6 @@ export class View extends BaseView {
 
   constructor(public readonly paraview: ViewContext) {
     super();
-    //this._setActions();
-    //this.updateKeymap();
   }
 
   get id() {
@@ -908,6 +906,17 @@ export class View extends BaseView {
     const i = oldChild.index;
     oldChild.remove();
     this.insert(newChild, i);
+  }
+
+  find(pred: (child: View) => boolean): View[] {
+    let matches: View[] = [];
+    this._children.forEach(kid => {
+      matches = [...matches, ...kid.find(pred)];
+    });
+    if (pred(this)) {
+      matches.push(this);
+    }
+    return matches;
   }
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {

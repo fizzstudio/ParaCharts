@@ -12,8 +12,8 @@ import { ref, createRef } from 'lit/directives/ref.js';
 /**
  * @public
  */
-@customElement('para-font-settings-dialog')
-export class FontSettingsDialog extends SettingControlContainer {
+@customElement('para-tactile-settings-dialog')
+export class TactileSettingsDialog extends SettingControlContainer {
 
   protected _dialogRef = createRef<ui.Dialog>();
 
@@ -30,18 +30,20 @@ export class FontSettingsDialog extends SettingControlContainer {
 
   connectedCallback() {
     super.connectedCallback();
-    this._paraState.settingControls.insert('chart.fontFamily');
-    this._paraState.settingControls.insert('chart.fontScale');
+    this._paraState.settingControls.insert('chart.isTactileEnabled');
+    this._paraState.settingControls.insert('chart.tactileBrailleGrade');
+    this._paraState.settingControls.insert('chart.tactileLabelMode');
+    this._paraState.settingControls.insert('chart.pageSize');
   }
 
   render() {
     return html`
       <fizz-dialog
         ${ref(this._dialogRef)}
-        title="Font Settings"
+        title="Tactile Settings"
         .buttons=${[{ tag: 'cancel', text: this.btnText }]}
       >
-        ${this._paraState.settingControls.getContent('controlPanel.tabs.chart.font.dialog')}
+        ${this._paraState.settingControls.getContent('controlPanel.tabs.chart.tactile.dialog')}
       </fizz-dialog>
     `;
   }
@@ -56,7 +58,7 @@ export class FontSettingsDialog extends SettingControlContainer {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'para-font-settings-dialog': FontSettingsDialog;
+    'para-tactile-settings-dialog': TactileSettingsDialog;
   }
 
 }

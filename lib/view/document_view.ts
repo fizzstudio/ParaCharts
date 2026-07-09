@@ -121,7 +121,7 @@ export class DocumentView extends Container(View) {
   }
 
   protected _populate() {
-    if (this._paraState.config.chart.title.isDrawTitle && this._paraState.title) {
+    if (this._paraState.chartInfo.shouldDrawTitle()) {
       this.createTitle();
     }
     if (this._paraState.config.chart.subtitle.isDrawSubtitle
@@ -380,10 +380,10 @@ export class DocumentView extends Container(View) {
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     this.paraview.paraState.chartInfo.settingDidChange(path, oldValue, newValue);
-    if (['chart.width', 'chart.height', 'chart.fontScale'].includes(path)) {
+    if (['chart.width', 'chart.height', 'chart.fontScale', 'chart.isTactileEnabled'].includes(path)) {
       this.updateSize();
+      this.clearChildren();
       this._populate();
-      //this.paraview.requestUpdate();
     }
     super.settingDidChange(path, oldValue, newValue);
   }
