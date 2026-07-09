@@ -6,19 +6,18 @@ import { enumerate } from "@fizz/paramodel";
 import { fixed } from "../../../../common/utils";
 import { RectShape } from "../../../shape/rect";
 import { Shape } from "../../../shape/shape";
-import { HistogramChartInfo } from '../../../../chart_types/histogram_chart';
-import { PlanePlotView, PlaneSeriesView } from "./plane_plot_view";
+import { type HistogramChartInfo } from '../../../../chart_types/histogram_chart';
+import { PlanePlotView, type PlaneSeriesView } from "./plane_plot_view";
 import { DatapointView } from "../../../data/datapoint";
 import { type SeriesView } from "../../../data/series";
-
-import { ConfigSetting } from "../../../../config/config_types";
+import { type ConfigSetting } from "../../../../config/config_types";
 
 export class Histogram extends PlanePlotView {
   declare protected _chartInfo: HistogramChartInfo;
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['type.histogram.groupingAxis', 'type.histogram.displayAxis', 'type.histogram.relativeAxes', 'axis.y.maxValue', 'axis.y.minValue', 'type.histogram.bins'].includes(path)) {
-      this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false)
+      this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false);
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -104,7 +103,7 @@ export class HistogramBinView extends DatapointView {
       width: this._width,
       height: this._height,
       x: this._x,
-      y: this._y - this._height,
+      y: this._y,
       fill: 'none',
       stroke: 'black',
       strokeWidth: 4
@@ -122,34 +121,35 @@ export class HistogramBinView extends DatapointView {
 
   completeLayout() {
     const info = this.chart.chartInfo;
+    const bins = info.bins;
     const id = this.index;
     const seriesIndex = this.parent.index;
     this._count = info.grid[seriesIndex][id];
     if (this.chart.config.displayAxis == "x" || this.chart.config.displayAxis == undefined) {
-      this._y = this.chart.parent.height;
-      if (this.cousins.length > 0) {
-        this._y -= this.cousins.map(dp => Math.max(dp.height, 0)).reduce((a, c) => a + c);
-      }
-      this._width = this.chart.parent.width / info.bins;
-      this._x = (id) % info.bins * this._width;
-      const yMax = this.chart.chartInfo.yInterval!.end;
-      const yMin = this.chart.chartInfo.yInterval!.start;
+      this._width = this.chart.parent.width / bins;
+      this._x = ((id) % bins) * this._width;
+      const yMax = info.yInterval!.end;
+      const yMin = info.yInterval!.start;
       const yRange = yMax - yMin;
       const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
       this._height = Math.max(0, Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit));
+      this._y = this.chart.parent.height - this._height;
+      const multiSeriesAdjust = info.grid.slice(seriesIndex + 1, undefined)!.map(
+        s => s[id]).map(h => h * pxPerYUnit).reduce((a, b) => a + b, 0);
+      this.y -= multiSeriesAdjust;
     }
     else {
-      this._x = 0;
-      if (this.cousins.length > 0) {
-        this._x += this.cousins.map(dp => Math.max(dp.width, 0)).reduce((a, c) => a + c);
-      }
-      this._height = this.chart.parent.height / info.bins;
-      this._y = (info.bins - id) % (info.bins + 1) * this._height;
-      const xMax = this.chart.chartInfo.xInterval!.end;
-      const xMin = this.chart.chartInfo.xInterval!.start;
+      this._height = this.chart.parent.height / bins;
+      this._y = ((bins - id - 1) % (bins)) * this._height;
+      const xMax = info.xInterval!.end;
+      const xMin = info.xInterval!.start;
       const xRange = xMax - xMin;
-      const pxPerYUnit = this.chart.parent.logicalHeight / xRange;
+      const pxPerYUnit = this.chart.parent.logicalWidth / xRange;
       this._width = Math.max(0, Math.abs(this.datapoint.facetValueAsNumber('x')! * pxPerYUnit));
+      this._x = 0;
+      const multiSeriesAdjust = info.grid.slice(seriesIndex + 1, undefined)!.map(
+        s => s[id]).map(h => h * pxPerYUnit).reduce((a, b) => a + b, 0);
+      this._x += multiSeriesAdjust;
     }
     super.completeLayout();
   }
@@ -160,7 +160,7 @@ export class HistogramBinView extends DatapointView {
       width: this._width,
       height: this.height,
       x: this._x,
-      y: this._y - this.height
+      y: this._y
     })
     rect.role = 'datapoint'
     this._shapes.push(rect)

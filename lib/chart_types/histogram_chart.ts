@@ -1,6 +1,7 @@
 import { type ChartType } from "@fizz/paramanifest";
 import { PlaneChartInfo } from './plane_chart';
 import { type ParaState } from '../state';
+import { DeepReadonly, type TypeHistogramConfig } from "../config/config_types";
 
 export class HistogramChartInfo extends PlaneChartInfo {
   protected _bins: number = 20;
@@ -24,9 +25,18 @@ export class HistogramChartInfo extends PlaneChartInfo {
     return this._bins;
   }
 
+  get config() {
+    return super.config as DeepReadonly<TypeHistogramConfig>;
+  }
+
   _init() {
     this._bins = this._paraState.config.type.histogram.bins ?? 20;
-    this._grid = this._paraState.model!.series.map(s => s.datapoints.map(p => p.facetValueAsNumber('y') as number));
+    if (this.config.displayAxis == 'x') {
+      this._grid = this._paraState.model!.series.map(s => s.datapoints.map(p => p.facetValueAsNumber('y') as number));
+    }
+    else {
+      this._grid = this._paraState.model!.series.map(s => s.datapoints.map(p => p.facetValueAsNumber('x') as number));
+    }
     this._xInterval = this._numericXAxisRange("x");
     this._yInterval = this._numericYAxisRange("y");
     const values = this._grid.flat();

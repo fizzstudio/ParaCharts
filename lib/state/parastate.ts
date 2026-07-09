@@ -39,6 +39,7 @@ import {
   HighlightedSummary, type Highlight,
   formatBox
 } from '@fizz/parasummary';
+import { clusterObject } from '@fizz/clustering';
 import { BaseState, SettingObserver } from './base_state';
 import {
   FORMAT_CONTEXT_SETTINGS, FormatContext,
@@ -63,7 +64,6 @@ import { type PathShape } from '../view/shape';
 import { type GlobalState } from './global_state';
 import { type BaseChartInfo, chartInfoClasses, type ScatterChartInfo } from '../chart_types';
 import { firstDataset, type Manifest } from '../loader/common';
-import { clusterObject } from '@fizz/clustering';
 import { ClusterShellView } from '../view/layers';
 import { computeLabels } from '../common/axisinfo';
 
@@ -534,11 +534,7 @@ export class ParaState extends BaseState {
     this._originalManifest = structuredClone(manifest);
     this._manifest = manifest;
     const dataset = firstDataset(this._manifest);
-
-    if (dataset.representation.subtype == 'histogram') {
-      manifest = this.augmentHistogramDataset(manifest);
-      this._manifest = manifest;
-    }
+    manifest = this.augmentManifest(manifest);
     if (resetSettings) {
       this._createSettings(this._inputSettings);
     }
@@ -627,33 +623,43 @@ export class ParaState extends BaseState {
     );
   }
 
-  augmentHistogramDataset(manifest: Manifest): Manifest {
+  augmentManifest(manifest: Manifest): Manifest {
+    const dataset = firstDataset(manifest);
+    if (dataset.representation.subtype == 'histogram') {
+      return this.augmentHistogramManifest(manifest);
+    }
+    else {
+      return manifest;
+    }
+  }
+
+  augmentHistogramManifest(manifest: Manifest): Manifest {
     const dataset = manifest.jim.datasets[0];
-    let workingLabels;
     const bins = this.config.type.histogram.bins ?? 20;
-    let targetFacet = Object.keys(dataset.facets)[0]
+    let targetFacetKey = Object.keys(dataset.facets)[0];
     if (this.config.type.histogram.groupingAxis) {
-      targetFacet = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+      targetFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
         f[1].label == this.config.type.histogram.groupingAxis)![0][0];
     }
+    const targetFacet = dataset.facets[targetFacetKey];
 
     const xValues: number[] = []
     for (let series of dataset.series) {
       for (let datapoint of series.records!) {
-        xValues.push(Number(datapoint[targetFacet]));
+        xValues.push(Number(datapoint[targetFacetKey]));
       }
     }
 
-    workingLabels = computeLabels(Math.min(...xValues), Math.max(...xValues), false)
-    let xMax: number = workingLabels.max!;
-    let xMin: number = workingLabels.min!;
+    const workingLabels = computeLabels(Math.min(...xValues), Math.max(...xValues), false);
+    const xMax: number = workingLabels.max!;
+    const xMin: number = workingLabels.min!;
     const xRange = xMax - xMin;
     const seriesList = dataset.series;
 
     for (let series of seriesList) {
       const _data = [];
       for (let i = 0; i < series.records!.length; i++) {
-        _data.push(Number(series.records![i][targetFacet]));
+        _data.push(Number(series.records![i][targetFacetKey]));
       }
       const grid: Array<number> = [];
       for (let i = 0; i < bins; i++) {
@@ -672,19 +678,19 @@ export class ParaState extends BaseState {
         yVals = yVals.map(y => (Number(y) / sum).toFixed(4));
       }
       if (this.config.type.histogram.displayAxis == 'x') {
-        series.records = grid.map((g, i) => { return { x: xVals[i], y: yVals[i] } })
+        series.records = grid.map((g, i) => { return { x: xVals[i], y: yVals[i] } });
       }
       else {
-        series.records = grid.map((g, i) => { return { y: xVals[i], x: yVals[i] } })
+        series.records = grid.map((g, i) => { return { y: xVals[i], x: yVals[i] } });
       }
     }
-    dataset.facets[targetFacet].measure = 'interval';
-    dataset.facets[targetFacet].variableType = 'independent';
-    const storeFacet = structuredClone(dataset.facets[targetFacet]);
+    targetFacet.measure = 'interval';
+    targetFacet.variableType = 'independent';
+    const storeFacet = structuredClone(targetFacet);
     dataset.facets = {};
     if (this.config.type.histogram.displayAxis == 'x') {
       dataset.facets["x"] = storeFacet;
-      dataset.facets["x"].displayType.orientation = 'horizontal'
+      dataset.facets["x"].displayType.orientation = 'horizontal';
       dataset.facets["y"] = {
         datatype: "number",
         label: `Count of ${manifest.jim.datasets[0].facets["x"].label}`,
@@ -695,7 +701,7 @@ export class ParaState extends BaseState {
     }
     else {
       dataset.facets["y"] = storeFacet;
-      dataset.facets["y"].displayType.orientation = 'vertical'
+      dataset.facets["y"].displayType.orientation = 'vertical';
       dataset.facets["x"] = {
         datatype: "number",
         label: `Count of ${manifest.jim.datasets[0].facets["y"].label}`,
