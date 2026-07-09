@@ -158,9 +158,9 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     return this._layout;
   }
 
-   get titleText() {
-     return this._titleText;
-   }
+  // get titleText() {
+  //   return this._titleText;
+  // }
 
   get layout() {
     return this._layout;
@@ -292,7 +292,7 @@ export class HorizAxis extends Axis<'horiz'> {
   constructor(paraview: ViewContext, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
     super(paraview, 'horiz', facet, chartInfo, length);
     this._tickLabelTierValues = this._chartInfo.computeAxisLabelTiers(
-      this.coord, 'horiz', this.config.isStaggerLabels);
+      this.coord, this.config.isStaggerLabels);
     this._titleText = this.config.title.text ?? '';
 
     this._width = length;
@@ -337,16 +337,16 @@ export class HorizAxis extends Axis<'horiz'> {
       new HorizTickLabelTier(
         this.paraview,
         this.config, {
-          orientation: this.orientation,
-          content: tier,
-          index: i,
-          length: this._width,
-          step: this.config.ticks.step,
-          numTicks: this._tickLabelTierValues[0].labels.length,
-          isChartIntertick: this._chartInfo.isIntertick,
-          datatype: this.datatype,
-          isFacetIndep: this._facet.variableType === 'independent'
-        }
+        orientation: this.orientation,
+        content: tier,
+        index: i,
+        length: this._width,
+        step: this.config.ticks.step,
+        numTicks: this._tickLabelTierValues[0].labels.length,
+        isChartIntertick: this._chartInfo.isIntertick,
+        datatype: this.datatype,
+        isFacetIndep: this._facet.variableType === 'independent'
+      }
       ));
   }
 
@@ -424,7 +424,7 @@ export class VertAxis extends Axis<'vert'> {
   constructor(paraview: ViewContext, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
     super(paraview, 'vert', facet, chartInfo, length);
     this._tickLabelTierValues = this._chartInfo.computeAxisLabelTiers(
-      this.coord, 'vert', this.config.isStaggerLabels);
+      this.coord, this.config.isStaggerLabels);
     this._titleText = this.config.title.text ?? '';
 
     this._height = length;

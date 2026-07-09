@@ -533,8 +533,8 @@ export class ParaState extends BaseState {
   async setManifest(manifest: Manifest, data?: AllSeriesData, resetSettings = true) {
     this._originalManifest = structuredClone(manifest);
     this._manifest = manifest;
-    const dataset = firstDataset(this._manifest);
     manifest = this.augmentManifest(manifest);
+    const dataset = firstDataset(this._manifest);
     if (resetSettings) {
       this._createSettings(this._inputSettings);
     }

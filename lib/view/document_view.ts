@@ -349,14 +349,10 @@ export class DocumentView extends Container(View) {
   }
 
   protected _createVertAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
-    let oldText;
-    if (this._vertAxis){
-      oldText = this._vertAxis.titleText
-    }
     this._vertAxis?.remove();
     this._vertAxis = new VertAxis(this.paraview, facet, chartInfo, length);
     const vertAxisFacet = this.paraview.paraState.chartInfo.vertFacet!;
-    this._vertAxis.setAxisLabelText(oldText ?? vertAxisFacet.label);
+    this._vertAxis.setAxisLabelText(vertAxisFacet.label);
     this._vertAxis.createComponents();
     this._vertAxis.layoutComponents();
     this._vertAxis.updateSize();

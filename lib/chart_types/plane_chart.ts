@@ -117,7 +117,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
         // gets recreated, and `max` may change, due to re-quantization of
         // the tick values.
         return value as number >= min ?
-          { err: `Min y-value (${value}) must be less than ${min}`} : {};
+          { err: `Min y-value (${value}) must be less than ${min}` } : {};
       });
     this._paraState.settingControls.insert(
       `type.${this._type}.maxYValue`,
@@ -130,7 +130,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
           ? min
           : this.config.minYValue
         return value as number <= max ?
-          { err: `Max y-value (${value}) must be greater than ${max}`} : {};
+          { err: `Max y-value (${value}) must be greater than ${max}` } : {};
       });
   }
 
@@ -193,7 +193,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
    * @param isStagger - Whether to stagger labels between two tiers
    * @returns Array of tiers (each tier being an array of strings)
    */
-  computeAxisLabelTiers(facetKey: string, orientation: AxisOrientation, isStagger: boolean): AxisLabelTier[] {
+  computeAxisLabelTiers(facetKey: string, isStagger: boolean): AxisLabelTier[] {
     const rawVals = this._facetTickLabelValues(facetKey);
     const facet = this._paraState.model!.getFacet(facetKey)!;
     if (facet.datatype === 'date') {
@@ -205,15 +205,15 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
           const year = raw.split(' ')[1];
           if (!tier2.includes(year)) {
             tier2.push(year);
-            const val = i/(rawVals.length - (this.isIntertick ? 0 : 1));
+            const val = i / (rawVals.length - (this.isIntertick ? 0 : 1));
             tier2Intervals.push({
               start: val,
               end: val
             });
           } else {
             tier2Intervals.at(-1)!.end = this.isIntertick
-              ? (i/rawVals.length + 1/rawVals.length)
-              : (i/(rawVals.length - 1));
+              ? (i / rawVals.length + 1 / rawVals.length)
+              : (i / (rawVals.length - 1));
           }
         });
         return [
@@ -239,9 +239,9 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     } else {
       return isStagger
         ? [
-            { labels: rawVals.map((label, i) => i % 2 === 0 ? label : '') },
-            { labels: rawVals.map((label, i) => i % 2 === 1 ? label : '') }
-          ]
+          { labels: rawVals.map((label, i) => i % 2 === 0 ? label : '') },
+          { labels: rawVals.map((label, i) => i % 2 === 1 ? label : '') }
+        ]
         : [{ labels: rawVals }];
     }
   }
