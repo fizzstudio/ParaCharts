@@ -486,7 +486,7 @@ export class PopupSettingsDialog extends ParaComponent {
 
         document.addEventListener('paranotice', (e: CustomEvent<any>) => {
             if (e.detail.value?.key == 'manifestSet') {
-                if (['bar', 'column', 'line', 'waterfall', 'scatter'].includes(this._paraState.type)) {
+                if (['bar', 'column', 'line', 'waterfall', 'scatter', 'histogram'].includes(this._paraState.type)) {
                     this._paraState.settingControls.insert('popup.isShowCrosshair');
                     this._paraState.settingControls.insert('popup.isCrosshairFollowPointer');
                 }

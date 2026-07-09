@@ -26,10 +26,6 @@ export class Histogram extends PlanePlotView {
     return this._chartInfo;
   }
 
-  get datapointViews() {
-    return super.datapointViews;
-  }
-
   protected _newDatapointView(seriesView: PlaneSeriesView) {
     return new HistogramBinView(this, seriesView);
   }
@@ -56,7 +52,7 @@ export class Histogram extends PlanePlotView {
   }
 
   getTickX(idx: number) {
-    return this.datapointViews[idx].x; // this.points[idx][0].x;
+    return this.datapointViews[idx].x;
   }
 
 }
@@ -160,7 +156,16 @@ export class HistogramBinView extends DatapointView {
       width: this._width,
       height: this.height,
       x: this._x,
-      y: this._y
+      y: this._y,
+      pointerEnter: (e) => {
+        this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined;
+      },
+      pointerMove: (e) => {
+        this.shouldAddHoverPopup() ? this.movePopupAction() : undefined;
+      },
+      pointerLeave: (e) => {
+        this.chart.removeDatapointPopup(this);
+      }
     })
     rect.role = 'datapoint'
     this._shapes.push(rect)
@@ -184,7 +189,7 @@ export class HistogramBin extends RectShape {
   render() {
     const index = (this.parent instanceof DatapointView) ? this.parent.parent?.index : undefined;
     if (this.paraview.paraState.colors.palette.isPattern && index !== undefined) {
-      this._styleInfo.fill = `url(#Pattern${index})`
+      this._styleInfo.fill = `url(#Pattern${index})`;
       return svg`
         <rect
           x=${fixed`${this._x}`}

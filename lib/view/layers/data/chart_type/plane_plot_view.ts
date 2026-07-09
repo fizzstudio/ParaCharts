@@ -84,7 +84,7 @@ export abstract class PlanePlotView extends DataLayer {
         if (['line'].includes(type)) {
           distances = points.map((dp, i) => Number(Math.abs((dp.x - coords.x) ** 2)));
         }
-        else if (['column', 'waterfall'].includes(type)) {
+        else if (['column', 'waterfall', 'histogram'].includes(type)) {
           distances = points.map((dp, i) => Number(Math.abs((dp.x + dp.width / 2 - coords.x) ** 2)));
         }
         else if (['bar'].includes(type)) {
@@ -95,7 +95,7 @@ export abstract class PlanePlotView extends DataLayer {
         }
         let nearestPoint = points[distances.indexOf(Math.min(...distances))];
         if (nearestPoint.cousins.length > 0) {
-          if (['column'].includes(type)) {
+          if (['column', 'histogram'].includes(type)) {
             nearestPoint = nearestPoint.withCousins.filter(p => p.y < coords.y && p.y + p.height + this.paraview.paraState.config.type.bar.barGap > coords.y)[0]
               ?? nearestPoint.withCousins.sort((a, b) => a.y - b.y)[0];
           }
@@ -140,7 +140,7 @@ export abstract class PlanePlotView extends DataLayer {
         fill: "black",
         stroke: "black"
       });
-      if (['bar', 'waterfall', 'column'].includes(type)) {
+      if (['bar', 'waterfall', 'column', 'histogram'].includes(type)) {
         vertLine = new PathShape(this.paraview, {
           points: [new Vec2(nearestPoint.x + nearestPoint.width / 2, 0),
           new Vec2(nearestPoint.x + nearestPoint.width / 2, this.height),],
@@ -213,7 +213,7 @@ export abstract class PlanePlotView extends DataLayer {
         horizLabels.push(horizLabel);
       }
       else {
-        const isColumn = this.paraview.paraState.type === 'column';
+        const isColumn = ['column', 'histogram'].includes(this.paraview.paraState.type);
         const vertLabelText = String(nearestPoint.datapoint.facetBox("x")!.raw);
         const horizLabelText = String(nearestPoint.datapoint.facetBox("y")!.raw);
         const vertLabel = new Popup(this.paraview, {
