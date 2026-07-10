@@ -44,6 +44,8 @@ export type c2mCallbackType = {
   //point: SupportedDataPointType;
 };
 
+const BRAILLE_FONT_SIZE_PT = 20;
+
 @customElement('para-view')
 export class ParaView extends ParaComponent implements ViewContext {
 
@@ -174,7 +176,7 @@ export class ParaView extends ParaComponent implements ViewContext {
         stroke: none;
       }
       .label.tactile {
-        font-size: 36pt;
+        font-size: ${BRAILLE_FONT_SIZE_PT}pt;
       }
       .label-bg {
         fill: lightgray;
