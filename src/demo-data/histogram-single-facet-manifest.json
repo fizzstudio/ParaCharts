@@ -1,0 +1,101 @@
+{
+  "jim": {
+    "datasets": [
+      {
+        "representation": {
+          "type": "chart",
+          "subtype": "histogram"
+        },
+        "title": "Old Faithful Geyser Eruptions",
+        "facets": {
+          "x": {
+            "label": "Eruption duration time in minutes",
+            "variableType": "dependent",
+            "measure": "ratio",
+            "datatype": "number",
+            "units": "minute",
+            "displayType": {
+              "type": "axis",
+              "orientation": "horizontal"
+            }
+          }
+        },
+        "series": [
+          {
+            "key": "Eruptions of Old Faithful",
+            "records": [
+              {
+                "x": "3.6"
+              },
+              {
+                "x": "1.8"
+              },
+              {
+                "x": "3.333"
+              },
+              {
+                "x": "2.283"
+              },
+              {
+                "x": "4.533"
+              },
+              {
+                "x": "2.883"
+              },
+              {
+                "x": "4.7"
+              },
+              {
+                "x": "3.6"
+              },
+              {
+                "x": "1.95"
+              },
+              {
+                "x": "4.35"
+              },
+              {
+                "x": "1.833"
+              },
+              {
+                "x": "3.917"
+              },
+              {
+                "x": "4.2"
+              },
+              {
+                "x": "1.75"
+              },
+              {
+                "x": "4.7"
+              },
+              {
+                "x": "2.167"
+              },
+              {
+                "x": "1.75"
+              },
+              {
+                "x": "4.8"
+              },
+              {
+                "x": "1.6"
+              },
+              {
+                "x": "4.25"
+              },
+              {
+                "x": "1.8"
+              }
+            ],
+            "topic": {
+              "baseQuantity": "eruption duration time",
+              "baseKind": "dimensioned",
+              "entity": "Old Faithful"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

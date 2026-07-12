@@ -337,16 +337,16 @@ export class HorizAxis extends Axis<'horiz'> {
       new HorizTickLabelTier(
         this.paraview,
         this.config, {
-          orientation: this.orientation,
-          content: tier,
-          index: i,
-          length: this._width,
-          step: this.config.ticks.step,
-          numTicks: this._tickLabelTierValues[0].labels.length,
-          isChartIntertick: this._chartInfo.isIntertick,
-          datatype: this.datatype,
-          isFacetIndep: this._facet.variableType === 'independent'
-        }
+        orientation: this.orientation,
+        content: tier,
+        index: i,
+        length: this._width,
+        step: this.config.ticks.step,
+        numTicks: this._tickLabelTierValues[0].labels.length,
+        isChartIntertick: this._chartInfo.isIntertick,
+        datatype: this.datatype,
+        isFacetIndep: this._facet.variableType === 'independent'
+      }
       ));
   }
 

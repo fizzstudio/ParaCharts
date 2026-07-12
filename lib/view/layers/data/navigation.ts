@@ -14,7 +14,8 @@ const oppositeDirs: Record<Direction, Direction> = {
   out: 'in'
 };
 
-export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence' | 'cluster' | 'scatterpoint' | 'venn-part' | 'heatmapTile';
+export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence'
+  | 'cluster' | 'scatterpoint' | 'venn-part' | 'heatmapTile';
 export type DatapointNavNodeType = 'datapoint' | 'scatterpoint';
 
 
@@ -35,7 +36,7 @@ export interface DatapointCursor {
   index: number;
 }
 
-export interface TopNavNodeOptions {}
+export interface TopNavNodeOptions { }
 export interface SeriesNavNodeOptions {
   seriesKey: string;
 }
@@ -43,7 +44,7 @@ export interface DatapointNavNodeOptions {
   seriesKey: string;
   index: number;
 }
-export interface ScatterPointNavNodeOptions extends DatapointNavNodeOptions{
+export interface ScatterPointNavNodeOptions extends DatapointNavNodeOptions {
   cluster: number;
 }
 export interface ChordNavNodeOptions {
@@ -68,6 +69,13 @@ export interface VennPartNavNodeOptions {
   seriesKey: string;
   part: 'only' | 'pair' | 'triple';
   otherSeriesKey?: string;
+}
+
+export interface HeatmapTileNavNodeOptions {
+  datapoints: Datapoint[];
+  datapointCount: number;
+  yIndex: number;
+  xIndex: number;
 }
 
 export interface HeatmapTileNavNodeOptions {
@@ -215,7 +223,7 @@ export class NavMap {
         end: parseInt(fields[3])
       });
     } else if (nodeType === 'series') {
-      node = layer.get('series', {seriesKey: fields[1]});
+      node = layer.get('series', { seriesKey: fields[1] });
     } else {
       //throw new Error(`selectors are undefined for type '${nodeType}'`);
       return [];
@@ -297,7 +305,7 @@ export class NavLayer {
   ): NavNode<NavNodeType> | undefined {
     const list = this._nodes.get(type);
     if (list) {
-      return this._nodesById.get( (typeof optionsOrIndex === 'number')
+      return this._nodesById.get((typeof optionsOrIndex === 'number')
         ? list[optionsOrIndex]
         // Every item in `optionsOrIndex` must have a corresponding item with
         // the same value in `node.options`, but the converse is not true;

@@ -1,91 +1,16 @@
 import { type ChartType } from "@fizz/paramanifest";
 import { PlaneChartInfo } from './plane_chart';
 import { type ParaState } from '../state';
-import { type DeepReadonly } from '../config/config_types';
-import { computeLabels } from '../common';
+import { DeepReadonly, type TypeHistogramConfig } from "../config/config_types";
 
 export class HistogramChartInfo extends PlaneChartInfo {
   protected _bins: number = 20;
-  protected _data: Array<Array<number>> = [];
-  protected _grid: Array<number> = [];
+  protected _grid: Array<Array<number>> = [[0]];
   protected _maxCount: number = 0;
 
   constructor(type: ChartType, paraState: ParaState) {
     super(type, paraState);
-  }
-
-  protected _init() {
-    super._init();
-    this._bins = this._paraState.config.type.histogram.bins ?? 20;
-    this._generateBins();
-    const values = this._grid.flat();
-    this._maxCount = Math.max(...values);
-    this._paraState.clearVisited();
-    this._paraState.clearSelected();
-
-    const targetAxis = this.config.groupingAxis as DeepReadonly<string> == '' ?
-      this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label)[0]
-      : this.config.groupingAxis;
-    let targetFacet;
-    for (let facet of this._paraState.model!.facetSignatures) {
-      if (this._paraState.model!.getFacet(facet.key as string)!.label == targetAxis) {
-        targetFacet = facet.key;
-      }
-    }
-    //HACK: THIS WILL BREAK IF WE EVER ADD MORE FACETS THAN JUST X/Y
-    let nonTargetFacet;
-    if (targetFacet == "y") {
-      nonTargetFacet = "x";
-    }
-    else {
-      nonTargetFacet = "y";
-    }
-
-    const targetFacetBoxes = this._paraState.model!.allFacetValues(targetFacet!)!;
-    const targetFacetNumbers = targetFacetBoxes.map((b) => b.asNumber()!);
-    if (this.config.displayAxis == "x" || this.config.displayAxis == undefined) {
-      if (this.config.relativeAxes == "Counts") {
-        // this._axisInfo = new AxisInfo(this._paraState, {
-        //   xValues: targetFacetNumbers,
-        //   yValues: this.grid,
-        // });
-      }
-      else {
-        const sum = this.grid.reduce((a, c) => a + c)
-        const pctGrid = this.grid.map(g => g / sum)
-        // this._axisInfo = new AxisInfo(this._paraState, {
-        //   xValues: targetFacetNumbers,
-        //   yValues: pctGrid
-        // });
-      }
-    }
-    else {
-      if (this.config.relativeAxes == "Counts") {
-        // this._axisInfo = new AxisInfo(this._paraState, {
-        //   xValues: this.grid,
-        //   yValues: targetFacetNumbers,
-        // });
-      }
-      else {
-        const sum = this.grid.reduce((a, c) => a + c)
-        const pctGrid = this.grid.map(g => g / sum)
-        // this._axisInfo = new AxisInfo(this._paraState, {
-        //   xValues: pctGrid,
-        //   yValues: targetFacetNumbers,
-        // });
-      }
-    }
-  }
-
-  protected _addSettingControls(): void {
-    super._addSettingControls();
-    this._paraState.settingControls.insert('type.histogram.bins');
-    const variables = this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label);
-    this._paraState.settingControls.insert('type.histogram.groupingAxis', {
-      options: variables as string[]
-    });
-    this._paraState.settingControls.insert('type.histogram.displayAxis');
-    this._paraState.settingControls.insert('type.histogram.relativeAxes');
+    this._init();
   }
 
   get grid() {
@@ -96,139 +21,93 @@ export class HistogramChartInfo extends PlaneChartInfo {
     return this._maxCount;
   }
 
-  protected _generateBins(): Array<number> {
-    const targetAxis = this.config.groupingAxis as DeepReadonly<string | undefined>
-      ?? this._paraState.model?.facetSignatures.map((facet) => this._paraState.model?.getFacet(facet.key)?.label)[0];
-
-    let targetFacet;
-    for (let facet of this._paraState.model!.facetSignatures) {
-      if (this._paraState.model!.getFacet(facet.key as string)!.label == targetAxis) {
-        targetFacet = facet.key;
-      }
-    }
-    //HACK: THIS WILL BREAK IF WE EVER ADD MORE FACETS THAN JUST X/Y
-    let nonTargetFacet;
-    if (targetFacet == "y") {
-      nonTargetFacet = "x";
-    }
-    else {
-      nonTargetFacet = "y";
-    }
-    let workingLabels;
-    if (targetFacet) {
-      const yValues = []
-      const xValues = []
-      for (let datapoint of this._paraState.model!.series[0]) {
-        xValues.push(datapoint.facetValueNumericized(targetFacet)!)
-      }
-      for (let datapoint of this._paraState.model!.series[0]) {
-        yValues.push(datapoint.facetValueNumericized(nonTargetFacet)!)
-      }
-      workingLabels = computeLabels(Math.min(...xValues), Math.max(...xValues), false)
-    }
-    else {
-      const xBoxes = this._paraState.model!.allFacetValues('x')!;
-      const xNumbers = xBoxes.map((x) => x.asNumber()!);
-      workingLabels = computeLabels(Math.min(...xNumbers), Math.max(...xNumbers), false);
-    }
-    const seriesList = this._paraState.model!.series
-    this._data = [];
-    for (let series of seriesList) {
-      for (let i = 0; i < series.length; i++) {
-        this._data.push([series[i].facetValueNumericized(targetFacet ?? "x")!, series[i].facetValueNumericized(nonTargetFacet ?? "y")!]);
-      }
-    }
-
-    const y: Array<number> = [];
-    const x: Array<number> = [];
-
-    for (let point of this._data) {
-      x.push(point[0]);
-      y.push(point[1]);
-    }
-
-    let xMax: number = workingLabels.max!
-    let xMin: number = workingLabels.min!
-
-    const grid: Array<number> = [];
-
-    for (let i = 0; i < this.bins; i++) {
-      grid.push(0);
-    }
-
-        for (let point of this._data) {
-          // TODO: check that `- 1` is correct
-          const xIndex: number = Math.floor((point[0] - xMin) * (this.bins - 1) / (xMax - xMin));
-          grid[xIndex]++;
-        }
-        return this._grid = grid;
-    }
-
   get bins() {
     return this._bins;
   }
 
-  async moveRight() {
-    // const leaf = this._chartLandingView.focusLeaf;
-    // if (leaf instanceof HistogramBinView) {
-    //   if (!leaf.next) {
-    //     //leaf.blur(false)
-    //     //this._eventActionManager!.dispatch('series_endpoint_reached');
-    //   }
-    //   else {
-    //     await leaf.next!.focus();
-    //   }
-    // }
+  get config() {
+    return super.config as DeepReadonly<TypeHistogramConfig>;
   }
 
-  async moveLeft() {
-    // const leaf = this._chartLandingView.focusLeaf;
-    // if (leaf instanceof HistogramBinView) {
-    //   if (!leaf.prev) {
-    //     //leaf.blur(false)
-    //     //this._eventActionManager!.dispatch('series_endpoint_reached');
-    //   }
-    //   else {
-    //     await leaf.prev!.focus();
-    //   }
-    // }
+  _init() {
+    this._bins = this._paraState.config.type.histogram.bins ?? 20;
+    if (this.config.displayAxis == 'x') {
+      this._grid = this._paraState.model!.series.map(s => s.datapoints.map(p => p.facetValueAsNumber('y') as number));
+    }
+    else {
+      this._grid = this._paraState.model!.series.map(s => s.datapoints.map(p => p.facetValueAsNumber('x') as number));
+    }
+    this._xInterval = this._numericXAxisRange("x");
+    this._yInterval = this._numericYAxisRange("y");
+    const values = this._grid.flat();
+    this._maxCount = Math.max(...values);
+    this._paraState.clearVisited();
+    this._paraState.clearSelected();
+    this._createNavMap();
+    this._storeChangeUnsub = this._paraState.subscribe(async (key, value) => {
+      if (key === 'data') {
+        this._createSummarizer();
+      }
+    });
+    // We initially get created after the data has loaded, so the above
+    // callback won't run
+    this._createSummarizer();
   }
 
-  async moveDown() {
-    // const leaf = this._chartLandingView.focusLeaf;
-    // if (leaf instanceof HistogramBinView) {
-    //   if (!leaf.prev) {
-    //     //leaf.blur(false)
-    //     //this._eventActionManager!.dispatch('series_endpoint_reached');
-    //   }
-    //   else {
-    //     await leaf.prev!.focus();
-    //   }
-    // } else if (leaf instanceof SeriesView) {
-    //   if (!leaf.next) {
-    //     await this._chartLandingView.children[0].children[0].focus();
-    //     return;
-    //   } else {
-    //     await leaf.next!.focus();
-    //     //this._sonifier.playNotification('series');
-    //   }
-    // } else {
-    //   // At chart root, so move to the first series landing
-    //   await this._chartLandingView.children[0].focus();
-    // }
+  async setup() {
+    //this._conciseSummary = 'test';
   }
 
-  async moveUp() {
-    // const leaf = this._chartLandingView.focusLeaf;
-    // if (leaf instanceof HistogramBinView) {
-    //   if (!leaf.next) {
-    //     //leaf.blur(false)
-    //     //this._eventActionManager!.dispatch('series_endpoint_reached');
-    //   }
-    //   else {
-    //     await leaf.next!.focus();
-    //   }
-    // }
+  protected _addSettingControls(): void {
+    this._paraState.settingControls.insert('chart.width');
+    this._paraState.settingControls.insert('chart.height');
+    this._paraState.settingControls.insert('chart.isShowPopups');
+    // Only add these controls if the y-axis is numeric
+    if (!this._paraState.model!.getFacet('y') || this._paraState.model!.getFacet('y')!.datatype !== 'number') return;
+    // const range = this.chartLayers.getYAxisInterval();
+    // XXX should be min/max label values as numbers, not min/max data values
+    const min = this._yInterval!.start; // this._labelInfo.min!;
+    const max = this._yInterval!.end; // this._labelInfo.max!;
+
+    this._paraState.settingControls.insert(
+      `type.${this._type}.minYValue`,
+      undefined,
+      (value: any) => value === 'unset'
+        ? min
+        : value,
+      value => {
+        const min = this.config.maxYValue === 'unset'
+          ? max
+          : this.config.maxYValue
+        // NB: If the new value is successfully validated, the inner chart
+        // gets recreated, and `max` may change, due to re-quantization of
+        // the tick values.
+        return value as number >= min ?
+          { err: `Min y-value (${value}) must be less than ${min}` } : {};
+      });
+    this._paraState.settingControls.insert(
+      `type.${this._type}.maxYValue`,
+      undefined,
+      (value: any) => value === 'unset'
+        ? max
+        : value,
+      value => {
+        const max = this.config.minYValue === 'unset'
+          ? min
+          : this.config.minYValue
+        return value as number <= max ?
+          { err: `Max y-value (${value}) must be greater than ${max}` } : {};
+      });
+    this._paraState.settingControls.insert('type.histogram.bins');
+    const variables = Object.entries(this._paraState.originalManifest!.jim.datasets[0].facets).map(f => f[1].label);
+    this._paraState.settingControls.insert('type.histogram.groupingAxis', {
+      options: variables
+    });
+    this._paraState.settingControls.insert('type.histogram.displayAxis');
+    this._paraState.settingControls.insert('type.histogram.relativeAxes');
+  }
+
+  protected _createChordNavNodes() {
   }
 
 }
