@@ -18,10 +18,22 @@ export class HeatMapInfo extends PlaneChartInfo {
   }
 
   protected _init() {
+    this._grid = []
     this._resolution = this._paraState.config.type.heatmap.resolution ?? 20;
-    this._generateHeatmap();
-    const values = this._grid.flat();
-    this._maxCount = Math.max(...values);
+     for (let i = 0; i < this.resolution; i++) {
+       this._grid.push([]);
+     }
+    for (let i = 0; i < this.resolution; i++) {
+      for (let j = 0; j < this.resolution; j++) {
+        //this._grid[i][j] = this._paraState.model?.allPoints[i * this.resolution + j].facetValueNumericized("z")!;
+        this._grid[i][j] = this._paraState.model?.allPoints[j * this.resolution + i].facetValueNumericized("z")!;
+      }
+    }
+    //console.log("grid", this.grid)
+    //this._generateHeatmap();
+    //const values = this._grid.flat();
+    //console.log("allFacetValues", this._paraState.model?.allFacetValues("z"))
+    this._maxCount = Math.max(...this.grid.flat());
     // Generate the heat map before creating the nav nodes
     const cluster = async () => {
       this._paraState.clusterAnalyses = await this._generateClustering();
@@ -49,6 +61,14 @@ export class HeatMapInfo extends PlaneChartInfo {
   }
 
   protected _createPrimaryNavNodes() {
+    super._createPrimaryNavNodes();
+    // Create vertical links between datapoints
+    this._navMap!.root.query('datapoint').slice(0, -this._resolution).forEach(
+      (pointNode, i) => {
+        pointNode.connect('down', pointNode.layer.get('datapoint', i + this._resolution)!);
+      }
+    )
+    return;
     // Create series and datapoint nav nodes, and link them horizontally thusly:
     // - [SERIES-A]-[SERIES-A-POINT-0]- ... -[SERIES-A-POINT-(N-1)]-[SERIES-B]-[SERIES-B-POINT-0]- ...
     let left = this._navMap!.root.get('top')!;
@@ -77,6 +97,7 @@ export class HeatMapInfo extends PlaneChartInfo {
       left = this._navMap!.root.get('top')!;
     }
       */
+     /*
     left = this._navMap!.root.get('top')!;
     for (let i = 0; i < this._grid.length; i++) {
       for (let j = 0; j < this._grid[i].length; j++) {
@@ -104,6 +125,7 @@ export class HeatMapInfo extends PlaneChartInfo {
         pointNode.connect('down', pointNode.layer.get('heatmapTile', i + this._resolution)!);
       }
     )
+      */
   }
 
   protected _createNavLinksBetweenSeries() {
@@ -138,16 +160,18 @@ export class HeatMapInfo extends PlaneChartInfo {
     const right = (xInterval.start + xSpan * ((index) % this._resolution + 1)).toFixed(2);
     return `This block contains ${count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
   }
-
+ /*
   async navRunDidEnd(cursor: NavNode, quiet = false) {
+   
     if (cursor.isNodeType('heatmapTile')) {
       if (!quiet) {
         this._paraState.announce(this._datapointSummary(cursor.options.xIndex, cursor.options.yIndex));
       }
     }
+     
     //Sam: Most stuff here (summaries, sparkbraille, sonification) is not implemented yet for heatmaps,
     // I'm overriding to prevent errors, uncomment this as they get added
-    /*
+    
       const seriesKey = cursor.at(0)?.seriesKey ?? '';
       if (cursor.type === 'top') {
         await this.paraview.paraState.asyncAnnounce(this.paraview.summarizer.getChartSummary());
@@ -186,9 +210,9 @@ export class HeatMapInfo extends PlaneChartInfo {
         this.paraview.paraState.announce(await this.paraview.summarizer.getSequenceSummary(cursor.options as SequenceNavNodeOptions));
         this._playRiff();
       }
-        */
+        
   }
-
+ */
   protected _generateHeatmap(): Array<Array<number>> {
     const seriesList = this._paraState.model!.series;
     this._data = [];

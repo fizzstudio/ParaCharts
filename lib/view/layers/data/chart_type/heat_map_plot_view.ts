@@ -7,13 +7,13 @@ import { Datapoint, enumerate } from "@fizz/paramodel";
 import { type HeatMapInfo, type BaseChartInfo } from '../../../../chart_types';
 import { fixed, getMostCommonReduce } from "../../../../common/utils";
 import { type DataLayerContext } from '../../../view_context';
-import { DatapointPopupOptions } from "../../../data/datapoint";
+import { DatapointPopupOptions, DatapointView } from "../../../data/datapoint";
 import { RectShape, Shape } from "../../../shape";
 import { View } from '../../../base_view';
 import { Popup, ShapeTypes } from '../../../popup';
 import { ConfigSetting } from '../../../../config/config_types';
-import { PlanePlotView, PlaneSeriesView } from './plane_plot_view';
-import { ScatterPointView } from './scatter_plot_view';
+import { PlaneDatapointView, PlanePlotView, PlaneSeriesView } from './plane_plot_view';
+import { SeriesView } from "../../../data";
 
 export class HeatMapPlotView extends PlanePlotView {
   declare protected _chartInfo: HeatMapInfo;
@@ -30,12 +30,12 @@ export class HeatMapPlotView extends PlanePlotView {
   }
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
-    if (['type.heatmap.resolution', 'color.colorVisionMode'].includes(path)) {
-      this.paraview.paraState.createChartInfo();
-      this.paraview.createDocumentView();
-      this._completeDatapointLayout();
-      this.paraview.requestUpdate();
+    if (['type.heatmap.resolution', 'color.colorVisionMode', 'color.colorPalette'].includes(path)) {
+      this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false);
+      //this.chartInfo.navMap!.goTo('top', {})
+      this.paraview.paraState.clearSelected();
     }
+    /*
     if (['color.colorPalette'].includes(path)) {
       this.paraview.paraState.createChartInfo();
       this.paraview.createDocumentView();
@@ -43,6 +43,7 @@ export class HeatMapPlotView extends PlanePlotView {
       this.paraview.requestUpdate();
       return;
     }
+      */
     super.settingDidChange(path, oldValue, newValue);
   }
 
@@ -51,12 +52,10 @@ export class HeatMapPlotView extends PlanePlotView {
   }
 
   protected _newDatapointView(seriesView: PlaneSeriesView) {
-    return new HeatmapPointView(seriesView);
+    return new HeatmapTileView(this, seriesView);
   }
 
   protected _createDatapoints() {
-    this.log.info('CREATING DATAPOINTS');
-    const xs: string[] = [];
     for (const [col, i] of enumerate(this.paraview.paraState.model!.series)) {
       const seriesView = this._newSeriesView(col.key);
       this._chartLandingView.append(seriesView);
@@ -66,20 +65,6 @@ export class HeatMapPlotView extends PlanePlotView {
         // the `index` property of the datapoint view will equal j
       }
     }
-    for (let i = 0; i < this._chartInfo.resolution ** 2; i++) {
-      const tileView = new HeatmapTileView(this);
-      this._tiles.push(tileView);
-      // the `index` property of the datapoint view will equal j
-    }
-
-    //for (const [col, i] of enumerate(this.paraview.paraState.model!.series)) {
-    //const seriesView = this._newSeriesView(col.key);
-    //this._chartLandingView.append(seriesView);
-    // NB: This only works properly because we haven't added series direct labels
-    // yet, which are also direct children of the chart.
-    //this._chartLandingView.sortChildren((a: PlaneSeriesView, b: PlaneSeriesView) => {
-    //  return (b.children[0].datapoint.facetValueNumericized(b.children[0].datapoint.depKey)!) - (a.children[0].datapoint.facetValueNumericized(a.children[0].datapoint.depKey)!);
-    //});
   }
 
   // protected _layoutDatapoints() {
@@ -87,7 +72,7 @@ export class HeatMapPlotView extends PlanePlotView {
   //     datapointView.completeLayout();
   //   }
   // }
-
+/*
   protected _completeDatapointLayout() {
 
     super._completeDatapointLayout();
@@ -95,7 +80,7 @@ export class HeatMapPlotView extends PlanePlotView {
     this._tiles.forEach(t => t.completeLayout())
     this._tiles.forEach(t => t._createShapes())
   }
-
+*/
   seriesRef(series: string) {
     return this.paraview.ref<SVGGElement>(`series.${series}`);
   }
@@ -111,20 +96,7 @@ export class HeatMapPlotView extends PlanePlotView {
 
 }
 
-export class HeatmapPointView extends ScatterPointView {
-  content() {
-    return svg``
-  }
-
-  protected _createSymbol(): void {
-    return;
-  }
-  addDatapointPopup(options?: DatapointPopupOptions): void {
-    return;
-  }
-}
-
-export class HeatmapTileView extends View {
+export class HeatmapTileView extends PlaneDatapointView {
 
   declare readonly chart: HeatMapPlotView;
   declare protected _parent: PlaneSeriesView;
@@ -140,8 +112,9 @@ export class HeatmapTileView extends View {
   _yIndex: number = 0;
   constructor(
     chart: HeatMapPlotView,
+    series: SeriesView
   ) {
-    super(chart.paraview);
+    super(series);
     this.chart = chart;
   }
 
@@ -168,7 +141,8 @@ export class HeatmapTileView extends View {
     let color = `hsl(0, 0%, 0%)`;
     if (this._count > 0) {
       //this.chart.chartInfo.maxCount
-      const cA = this.paraview.paraState.clusterAnalyses!;
+      //const cA = this.paraview.paraState.clusterAnalyses!;
+      /*
       const indices = this._datapoints.map(d => {
         const seriesKey = d.seriesKey;
         const seriesIndex = this.paraview.paraState.model?.seriesKeys.indexOf(seriesKey)!
@@ -182,7 +156,8 @@ export class HeatmapTileView extends View {
         id => cA.findIndex(c => [...c.dataPointIDs, ...c.outlierIDs].includes(id)));
       const mostCommonCluster = getMostCommonReduce(clusterIds);
       this._fillColorIndex = mostCommonCluster;
-      const baseColor = this.paraview.paraState.colors.colorValueAt(mostCommonCluster);
+      */
+      const baseColor = this.paraview.paraState.colors.colorValueAt(0);
       const lightenCount = Math.floor(this._count / this.chart.chartInfo.maxCount * 8) - 2;
       const lightened = this.paraview.paraState.colors.lighten(baseColor, lightenCount);
       color = lightened;
@@ -230,7 +205,8 @@ export class HeatmapTileView extends View {
   }
 
   completeLayout() {
-    const index = this.index - 1;
+    
+    const index = this.index;
     const info = this.chart.chartInfo;
     this._height = this.chart.parent.height / info.resolution;
     this._width = this.chart.parent.width / info.resolution;
@@ -239,16 +215,16 @@ export class HeatmapTileView extends View {
     this._x = this._xIndex * this._width;
     this._y = this._yIndex * this._height;
     this._count = info.grid[this._xIndex][this._yIndex];
-    this._datapoints = info.datapointGrid[this._xIndex][this._yIndex];
-
+    //this._datapoints = info.datapointGrid[this._xIndex][this._yIndex];
+    //console.log("x", this.x)
+    //console.log("y", this.y)
     this.id = [
       'datapoint',
       //strToId(this.seriesKey),
       fixed`${this._x}`,
       fixed`${this._y}`
     ].join('-');
-
-    //super.completeLayout();
+    super.completeLayout();
   }
 
   protected _createSymbol() { }
@@ -268,7 +244,7 @@ export class HeatmapTileView extends View {
       stroke: fillColor,
       strokeWidth: strokeWidth + .5,
       pointerEnter: (e) => {
-        this.shouldAddHoverPopup() ? this.addPopup() : undefined;
+        this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined;
       },
       pointerLeave: (e) => {
         this.paraview.paraState.removePopup(this.id);
@@ -278,8 +254,9 @@ export class HeatmapTileView extends View {
     this._shapes.forEach(shape => {
       this.append(shape);
     })
+    //console.log(this)
   }
-
+/*
   addPopup() {
     const index = this._yIndex * this.chart.chartInfo.resolution + this._xIndex + 1;
     let datapointText = `Tile ${index} / ${this.chart.chartInfo.resolution ** 2}: ${this.count} points`
@@ -310,7 +287,7 @@ export class HeatmapTileView extends View {
     this.paraview.paraState.popups.push(popup);
     this._popup = popup;
   }
-
+*/
 }
 
 export class HeatmapTile extends RectShape {
@@ -339,6 +316,7 @@ export class HeatmapTile extends RectShape {
   }
 
   protected _onClick() {
+    /*
     const parent = this.parent as HeatmapTileView;
     this.chart.chartInfo.navMap?.goTo('heatmapTile',
       {
@@ -347,11 +325,12 @@ export class HeatmapTile extends RectShape {
         yIndex: parent._yIndex,
         xIndex: parent._xIndex
       });
+      */
   }
 
   render() {
     const cursor = this.chart.chartInfo.navMap!.cursor!
-    if (cursor.type == 'heatmapTile' && cursor.index == this.parent!.index - 1) {
+    if (cursor.type == 'datapoint' && cursor.index == this.parent!.index) {
       this._styleInfo.stroke = 'var(--visited-color, hsl(0, 100%, 50%))'
       this._styleInfo.strokeWidth = 4;
     }
@@ -359,6 +338,7 @@ export class HeatmapTile extends RectShape {
       this._styleInfo.stroke = this.options.stroke ?? this._options.stroke;
       this._styleInfo.strokeWidth = this.options.strokeWidth ?? this._options.strokeWidth;
     }
+      
     const index = this.fillColorIndex
     if (this.paraview.paraState.colors.palette.isPattern && index !== undefined) {
       this._styleInfo.fill = `url(#Pattern${index})`

@@ -628,6 +628,9 @@ export class ParaState extends BaseState {
     if (dataset.representation.subtype == 'histogram') {
       return this.augmentHistogramManifest(manifest);
     }
+    if (dataset.representation.subtype == 'heatmap') {
+      return this.augmentHeatmapManifest(manifest);
+    }
     else {
       return manifest;
     }
@@ -644,7 +647,8 @@ export class ParaState extends BaseState {
     const targetFacet = dataset.facets[targetFacetKey];
 
     const xValues: number[] = []
-    for (let series of dataset.series) {
+    const seriesList = dataset.series;
+    for (let series of seriesList) {
       for (let datapoint of series.records!) {
         xValues.push(Number(datapoint[targetFacetKey]));
       }
@@ -654,7 +658,6 @@ export class ParaState extends BaseState {
     const xMax: number = workingLabels.max!;
     const xMin: number = workingLabels.min!;
     const xRange = xMax - xMin;
-    const seriesList = dataset.series;
 
     for (let series of seriesList) {
       const _data = [];
@@ -710,6 +713,84 @@ export class ParaState extends BaseState {
         displayType: { type: 'axis', orientation: "horizontal" }
       };
     }
+    return manifest;
+  }
+
+  augmentHeatmapManifest(manifest: Manifest): Manifest {
+    const dataset = manifest.jim.datasets[0];
+    const resolution = this.config.type.heatmap.resolution ?? 20;
+    const _data = [];
+    const seriesList = dataset.series;
+    for (let series of seriesList) {
+      for (let datapoint of series.records!) {
+        _data.push([Number(datapoint["x"]), Number(datapoint["y"])]);
+      }
+    }
+
+    const y: Array<number> = [];
+    const x: Array<number> = [];
+
+    for (const point of _data) {
+      x.push(point[0]);
+      y.push(point[1]);
+    }
+    const xLabels = computeLabels(Math.min(...x),
+      Math.max(...x), false);
+    const yLabels = computeLabels(Math.min(...y),
+      Math.max(...y), false);
+
+    let yMax: number = yLabels.max!;
+    let xMax: number = xLabels.max!;
+    let yMin: number = yLabels.min!;
+    let xMin: number = xLabels.min!;
+    const xRange = xMax - xMin;
+    const yRange = yMax - yMin;
+
+    const grid: Array<Array<number>> = [];
+    const datapointGrid: Array<Array<Array<Datapoint>>> = [];
+
+    for (let i = 0; i < resolution; i++) {
+      grid.push([]);
+      datapointGrid.push([]);
+      for (let j = 0; j < resolution; j++) {
+        grid[i].push(0);
+        datapointGrid[i].push([]);
+      }
+    }
+    for (let i = 0; i < _data.length; i++) {
+      const point = _data[i];
+      const xIndex: number = Math.floor((point[0] - xMin) * resolution / (xRange));
+      let yIndex: number = resolution - Math.floor((point[1] - yMin) * resolution / (yRange)) - 1;
+      if (yIndex == -1) {
+        yIndex++;
+      }
+      grid[xIndex][yIndex]++;
+      //datapointGrid[xIndex][yIndex].push(this._paraState.model!.allPoints[i]);
+    }
+    //console.log("grid", grid)
+    const xVals = grid.map((g, i) => String(preciseAdd(xMin, i * (xRange / resolution))));
+    // xVals.sort((a ,b) => Number(b)-Number(a))
+    const yVals = grid.map((g, i) => String(preciseAdd(yMin, i * (yRange / resolution))));
+    seriesList[0].records = []
+    for (let i = 0; i < resolution; i++) {
+      for (let j = 0; j < resolution; j++) {
+        //seriesList[0].records.push({ x: xVals[j], y: yVals[resolution -i - 1], z: String(grid[i][j]) })
+        // seriesList[0].records.push({ x: xVals[j], y: yVals[resolution -i - 1], z: String(grid[resolution - i - 1][j]) })
+        seriesList[0].records.push({ x: xVals[j], y: yVals[resolution - i - 1], z: String(grid[j][i]) });
+      }
+    }
+    //console.log(seriesList[0].records.map(r => r.z))
+    dataset.facets["z"] = {
+      datatype: "number",
+      label: `Datapoint count`,
+      variableType: "dependent",
+      measure: "nominal",
+      displayType: { type: "marking" }
+    };
+    //seriesList[0].records = grid.map((g, i) => { return { x: xVals[i], y: yVals[i], z: grid[i] } });
+    //this._grid = grid;
+    //this._datapointGrid = datapointGrid;
+    //console.log("return manifest", JSON.parse(JSON.stringify(manifest)))
     return manifest;
   }
 

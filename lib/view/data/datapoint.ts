@@ -442,7 +442,7 @@ export class DatapointView extends DataView {
   }
 
   shouldAddHoverPopup(): boolean {
-    if (['bar', 'column', 'scatter', 'waterfall', 'histogram'].includes(this.paraview.paraState.type)) {
+    if (['bar', 'column', 'scatter', 'waterfall', 'histogram', 'heatmap'].includes(this.paraview.paraState.type)) {
       if (this.paraview.paraState.config.chart.isShowPopups
         && this.paraview.paraState.config.popup.activation == 'onHover'
         && (!this.paraview.paraState.config.popup.isShowCrosshair
