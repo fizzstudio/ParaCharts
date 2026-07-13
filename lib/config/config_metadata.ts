@@ -32,6 +32,7 @@ import SonificationJson from "./sonification.json" with { type: "json" };
 import TypeJson from "./type/index.json" with { type: "json" };
 import TypeBarJson from "./type/bar.json" with { type: "json" };
 import TypeBubbleJson from "./type/bubble.json" with { type: "json" };
+import TypeCandlestickJson from "./type/candlestick.json" with { type: "json" };
 import TypeColumnJson from "./type/column.json" with { type: "json" };
 import TypeComboJson from "./type/combo.json" with { type: "json" };
 import TypeDonutJson from "./type/donut/index.json" with { type: "json" };
@@ -87,6 +88,7 @@ export const configMetadata: ConfigMetadata = {
   'type': TypeJson as unknown as ConfigGroupMetadata,
   'type.bar': TypeBarJson as unknown as ConfigGroupMetadata,
   'type.bubble': TypeBubbleJson as unknown as ConfigGroupMetadata,
+  'type.candlestick': TypeCandlestickJson as unknown as ConfigGroupMetadata,
   'type.column': TypeColumnJson as unknown as ConfigGroupMetadata,
   'type.combo': TypeComboJson as unknown as ConfigGroupMetadata,
   'type.donut': TypeDonutJson as unknown as ConfigGroupMetadata,

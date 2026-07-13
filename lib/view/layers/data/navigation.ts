@@ -1,8 +1,9 @@
 import { type clusterObject } from '@fizz/clustering';
 import { type Datapoint } from '@fizz/paramodel';
 import { type ParaState } from '../../../state';
-import { type Direction } from '../../../config/config_types';
+import { HorizDirection, type Direction, type PlaneDirection } from '../../../config/config_types';
 import { type BaseChartInfo } from '../../../chart_types';
+import { NavOrientation } from '../../../navigation';
 
 
 const oppositeDirs: Record<Direction, Direction> = {
@@ -14,13 +15,24 @@ const oppositeDirs: Record<Direction, Direction> = {
   out: 'in'
 };
 
-export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence'
-  | 'cluster' | 'scatterpoint' | 'venn-part';
+export type NavNodeType =
+| 'top'
+| 'collective'
+| 'series'
+| 'datapoint'
+| 'chord'
+| 'sequence'
+| 'cluster'
+| 'scatterpoint'
+| 'venn-part'
+| 'candlestick'
+| 'stack';
 export type DatapointNavNodeType = 'datapoint' | 'scatterpoint';
 
 
 export type NavNodeOptionsType<T extends NavNodeType> =
   T extends 'top' ? TopNavNodeOptions :
+  T extends 'collective' ? CollectiveNodeOptions :
   T extends 'series' ? SeriesNavNodeOptions :
   T extends 'datapoint' ? DatapointNavNodeOptions :
   T extends 'chord' ? ChordNavNodeOptions :
@@ -28,6 +40,8 @@ export type NavNodeOptionsType<T extends NavNodeType> =
   T extends 'cluster' ? ClusterNavNodeOptions :
   T extends 'scatterpoint' ? ScatterPointNavNodeOptions :
   T extends 'venn-part' ? VennPartNavNodeOptions :
+  T extends 'candlestick' ? CandlestickNavNodeOptions :
+  T extends 'stack' ? StackNavNodeOptions :
   never;
 
 export interface DatapointCursor {
@@ -39,6 +53,7 @@ export interface TopNavNodeOptions { }
 export interface SeriesNavNodeOptions {
   seriesKey: string;
 }
+export interface CollectiveNodeOptions { }
 export interface DatapointNavNodeOptions {
   seriesKey: string;
   index: number;
@@ -69,6 +84,12 @@ export interface VennPartNavNodeOptions {
   part: 'only' | 'pair' | 'triple';
   otherSeriesKey?: string;
 }
+export interface CandlestickNavNodeOptions {
+  index: number;
+}
+export interface StackNavNodeOptions {
+  index: number;
+}
 
 function nodeOptionsEq<T extends NavNodeType>(
   options1: NavNodeOptionsType<T>,
@@ -95,36 +116,67 @@ function nodeOptionsMatch<T extends NavNodeType>(
   return false;
 }
 
+export interface NavMapOptions {
+  shouldWrapMove: boolean;
+}
+
 /**
  * Navigation map
  * Manages the graph that controls datapoint focus and visitation during
  * keyboard navigation.
  */
 export class NavMap {
-  protected _layers: Map<string, NavLayer> = new Map();
-  protected _currentLayer: string;
+  /** Map of nav layer type to array of nav layers */
+  protected _layers: Map<string, NavLayer[]> = new Map();
+  protected _currentLayerType: string;
+  protected _currentLayerIdx: number;
   protected _runTimer: ReturnType<typeof setTimeout> | null = null;
+  protected _options: NavMapOptions;
 
-  constructor(protected _paraState: ParaState, protected _chart: BaseChartInfo) {
-    this._currentLayer = 'root';
-    const root = new NavLayer(this, this._currentLayer);
-    this._layers.set(this._currentLayer, root);
+  constructor(
+    protected _paraState: ParaState,
+    protected _chart: BaseChartInfo,
+    options: Partial<NavMapOptions> = {}
+  ) {
+    this._options = {
+      shouldWrapMove: false
+    };
+    Object.assign(this._options, options);
+    this._currentLayerType = 'top';
+    this._currentLayerIdx = 0;
+    const root0 = new NavLayer(this, this._currentLayerType, this._paraState);
+    this.registerLayer(root0);
   }
 
-  get currentLayer() {
-    return this._currentLayer;
+  get options(): Readonly<NavMapOptions> {
+    return this._options;
   }
 
-  set currentLayer(layer: string) {
-    this._currentLayer = layer;
+  setOptions(options: Partial<NavMapOptions>) {
+    Object.assign(this._options, options);
   }
 
-  get cursor() {
-    return this.layer(this._currentLayer)!.cursor;
+  get currentLayer(): NavLayer {
+    return this._layers.get(this._currentLayerType)![this._currentLayerIdx];
   }
 
-  get root() {
-    return this._layers.get('root')!;
+  set currentLayer(layer: NavLayer) {
+    if (!this._layers.has(layer.type)) {
+      throw new Error(`no layers of type '${layer.type}'`);
+    }
+    if (this._layers.get(layer.type)![layer.index] !== layer) {
+      throw new Error(`layer not found at index ${layer.index}`);
+    }
+    this._currentLayerType = layer.type;
+    this._currentLayerIdx = layer.index;
+  }
+
+  get cursor(): NavNode | null {
+    return this.currentLayer.cursor;
+  }
+
+  get top(): NavLayer {
+    return this._layers.get('top')![0];
   }
 
   get chartInfo() {
@@ -133,33 +185,43 @@ export class NavMap {
 
   clone(): NavMap {
     const c = new NavMap(this._paraState, this._chart);
-    c._layers = new Map(this._layers.entries().map(([id, layer]) => [id, layer.clone(c)]));
-    c._currentLayer = this._currentLayer;
+    c._layers = new Map();
+    for (const entry of this._layers.entries()) {
+      c._layers.set(entry[0], entry[1].map(layer => layer.clone(c)));
+    }
+    c.currentLayer = this.currentLayer;
     return c;
   }
 
-  layer(layer: string) {
-    return this._layers.get(layer);
+  layer(type: string, index: number): NavLayer | null {
+    return this._layers.get(type)?.at(index) ?? null;
   }
 
   registerLayer(layer: NavLayer) {
-    if (this._layers.has(layer.id)) {
-      return;
+    if (!this._layers.has(layer.type)) {
+      this._layers.set(layer.type, []);
     }
-    this._layers.set(layer.id, layer);
+    this._layers.get(layer.type)!.push(layer);
+    layer.index = this._layers.get(layer.type)!.length - 1;
+  }
+
+  newLayer(type: string, orientation: NavOrientation = 'horiz'): NavLayer {
+    const layer = new NavLayer(this, type, this._paraState, orientation);
+    this.registerLayer(layer);
+    return layer;
   }
 
   async visitDatapoints(quiet = false) {
-    this._paraState.visit(this.cursor.datapoints);
+    this._paraState.visit(this.cursor!.datapoints);
     if (this._runTimer) {
       clearTimeout(this._runTimer);
     } else {
-      await this._chart.navRunDidStart(this.cursor);
+      await this._chart.navRunDidStart(this.cursor!);
     }
-    this._chart.didNavToNode(this.cursor);
+    this._chart.didNavToNode(this.cursor!);
     this._runTimer = setTimeout(() => {
       this._runTimer = null;
-      this._chart.navRunDidEnd(this.cursor, quiet);
+      this._chart.navRunDidEnd(this.cursor!, quiet);
     }, this._paraState.config.ui.navRunTimeoutMs);
     //this._chart.navCursorDidChange(this.cursor);
   }
@@ -167,7 +229,7 @@ export class NavMap {
   node<T extends NavNodeType>(
     type: T,
     options: Readonly<NavNodeOptionsType<T>>) {
-    for (const layer of this._layers.values()) {
+    for (const layer of this._layers.values().toArray().flat()) {
       const node = layer.get(type, options);
       if (node) {
         return node;
@@ -180,215 +242,76 @@ export class NavMap {
     const node = this.node(type, options);
     if (node) {
       node.layer.cursor = node;
-      this._currentLayer = node.layer.id;
+      this.currentLayer = node.layer;
       this.visitDatapoints(quiet);
     } else {
       throw new Error('nav node not found');
     }
   }
 
-  datapointsForSelector(layerName: string, selector: string): readonly Datapoint[] {
-    const layer = this._layers.get(layerName);
-    if (!layer) {
-      throw new Error(`no such layer '${layerName}'`);
-    }
-    const fields = selector.split(/-/);
-    const nodeType = fields[0] as NavNodeType;
-    let node: NavNode<NavNodeType> | undefined = undefined;
-    if (nodeType === 'datapoint') {
-      // XXX need to allow multiple indices
-      node = layer.get('datapoint', {
-        seriesKey: fields[1],
-        index: parseInt(fields[2])
-      });
-    } else if (nodeType === 'sequence') {
-      node = layer.get('sequence', {
-        seriesKey: fields[1],
-        start: parseInt(fields[2]),
-        end: parseInt(fields[3])
-      });
-    } else if (nodeType === 'series') {
-      node = layer.get('series', { seriesKey: fields[1] });
-    } else {
-      //throw new Error(`selectors are undefined for type '${nodeType}'`);
-      return [];
-    }
-    if (!node) {
-      return [];
-    }
-    return node.datapoints;
-  }
+  // datapointsForSelector(layerName: string, selector: string): readonly Datapoint[] {
+  //   const layer = this._layers.get(layerName);
+  //   if (!layer) {
+  //     throw new Error(`no such layer '${layerName}'`);
+  //   }
+  //   const fields = selector.split(/-/);
+  //   const nodeType = fields[0] as NavNodeType;
+  //   let node: NavNode<NavNodeType> | undefined = undefined;
+  //   if (nodeType === 'datapoint') {
+  //     // XXX need to allow multiple indices
+  //     node = layer.get('datapoint', {
+  //       seriesKey: fields[1],
+  //       index: parseInt(fields[2])
+  //     });
+  //   } else if (nodeType === 'sequence') {
+  //     node = layer.get('sequence', {
+  //       seriesKey: fields[1],
+  //       start: parseInt(fields[2]),
+  //       end: parseInt(fields[3])
+  //     });
+  //   } else if (nodeType === 'series') {
+  //     node = layer.get('series', { seriesKey: fields[1] });
+  //   } else {
+  //     //throw new Error(`selectors are undefined for type '${nodeType}'`);
+  //     return [];
+  //   }
+  //   if (!node) {
+  //     return [];
+  //   }
+  //   return node.datapoints;
+  // }
 }
 
 /**
  * Navigation layer
  */
 export class NavLayer {
-  static nextId = 0;
+  protected _nodes: NavNode[] = [];
+  protected _cursor: NavNode | null = null;
+  /** Index within peer layers of the same type */
+  protected _index = -1;
 
-  protected _nodes = new Map<NavNodeType, string[]>();
-  // node id -> node
-  protected _nodesById = new Map<string, NavNode>();
-  // A NavLayer is basically only valid/useful if it has nodes, and
-  // if it has nodes, the cursor will be set.
-  protected _cursor!: string;
-
-  constructor(protected _map: NavMap, protected _id: string) {
-    _map.registerLayer(this);
+  constructor(
+    protected _map: NavMap,
+    protected _type: string,
+    protected _paraState: ParaState,
+    protected _orientation: 'horiz' | 'vert' | 'both' = 'horiz'
+  ) {
   }
 
-  get map() {
+  get nodes(): readonly NavNode[] {
+    return this._nodes;
+  }
+
+  get map(): NavMap {
     return this._map;
   }
 
-  get id() {
-    return this._id;
-  }
-
-  get cursor() {
-    return this._nodesById.get(this._cursor)!;
-  }
-
-  set cursor(cursor: NavNode) {
-    this._cursor = cursor.id;
-  }
-
-  clone(map: NavMap): NavLayer {
-    const c = new NavLayer(map, this._id);
-    c._nodesById = new Map(this._nodesById.entries().map(([id, node]) => [id, node.clone(c)]));
-    c._nodes = new Map(this._nodes.entries().map(([type, ids]) => [type, [...ids]]));
-    c._cursor = this._cursor;
-    return c;
-  }
-
-  registerNode<T extends NavNodeType>(node: NavNode<T>) {
-    if (node.index !== -1) {
-      return;
-    }
-    this._nodesById.set(node.id, node);
-    let list = this._nodes.get(node.type);
-    if (!list) {
-      list = [];
-      this._nodes.set(node.type, list);
-    }
-    list.push(node.id);
-    node.index = list.length - 1;
-    if (!this._cursor) {
-      this._cursor = node.id;
-    }
-  }
-
-  /** Get a node from its ID. */
-  node(id: string): NavNode<any> | undefined {
-    return this._nodesById.get(id);
-  }
-
-  /** Get a node from its options or index. */
-  get<T extends NavNodeType>(
-    type: T,
-    optionsOrIndex: Readonly<NavNodeOptionsType<T>> | number = 0
-  ): NavNode<NavNodeType> | undefined {
-    const list = this._nodes.get(type);
-    if (list) {
-      return this._nodesById.get((typeof optionsOrIndex === 'number')
-        ? list[optionsOrIndex]
-        // Every item in `optionsOrIndex` must have a corresponding item with
-        // the same value in `node.options`, but the converse is not true;
-        // i.e., node.options may have items lacking in `optionsOrIndex`
-        : list.find((id: string) => nodeOptionsEq(optionsOrIndex, this._nodesById.get(id)!.options))!);
-    }
-    return undefined;
-  }
-
-  /** Get all nodes matching partial options. */
-  query<T extends NavNodeType>(type: T, options: Partial<NavNodeOptionsType<T>> = {}): NavNode<T>[] {
-    const list = this._nodes.get(type);
-    if (list) {
-      return list
-        .filter(id => nodeOptionsMatch(options, (this._nodesById.get(id) as NavNode<T>).options))
-        .map(id => this._nodesById.get(id) as NavNode<T>);
-    }
-    return [];
-  }
-
-  goToNode(node: NavNode, quiet = false) {
-    this._cursor = node.id;
-    this.map.visitDatapoints(quiet);
-  }
-
-  goTo<T extends NavNodeType>(
-    type: T,
-    optionsOrIndex: Readonly<NavNodeOptionsType<T>> | number,
-    quiet = false
-  ) {
-    const node = this.get(type, optionsOrIndex);
-    if (node) {
-      this.goToNode(node, quiet);
-    } else {
-      throw new Error(`nav node not found (type='${type}')`);
-    }
-  }
-
-  /** Set the cursor from a set of visited datapoints. */
-  updateCursor(datapoints: Datapoint[]) {
-    for (const node of this._nodesById.values()) {
-      const nodeDatapoints = node.datapoints;
-      if (nodeDatapoints.length === datapoints.length
-        && datapoints.every(dp => nodeDatapoints.includes(dp))) {
-        this._cursor = node.id;
-        break;
-      }
-    }
-    this.map.visitDatapoints();
-  }
-}
-
-/**
- * Navigation node
- */
-export class NavNode<T extends NavNodeType = NavNodeType> {
-  static nextId = 0;
-
-  // direction -> layer or node ID
-  protected _links: Map<Direction, string> = new Map();
-  // protected _datapoints: DatapointCursor[] = [];
-  // NB: This is the index of the nav node in the layer's list of nodes
-  // of this type, NOT, e.g., the index of a datapoint in a series
-  protected _index = -1;
-  protected _id: string;
-
-  constructor(
-    protected _layer: NavLayer,
-    protected _type: T,
-    protected _options: NavNodeOptionsType<T>,
-    protected _paraState: ParaState
-  ) {
-    // NB: Layer IDs are not allowed to start with a colon
-    this._id = `:${NavNode.nextId++}`;
-    _layer.registerNode(this);
-  }
-
-  // get datapoints(): readonly DatapointCursor[] {
-  //   return this._datapoints;
-  // }
-
-  get id() {
-    return this._id;
-  }
-
-  get type() {
+  get type(): string {
     return this._type;
   }
 
-  get options() {
-    return this._options as Readonly<NavNodeOptionsType<T>>;
-  }
-
-  get layer() {
-    return this._layer;
-  }
-
-  get index() {
+  get index(): number {
     return this._index;
   }
 
@@ -396,7 +319,205 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     this._index = index;
   }
 
-  get datapoints() {
+  get orientation() {
+    return this._orientation;
+  }
+
+  get cursor(): NavNode | null {
+    return this._cursor;
+  }
+
+  set cursor(cursor: NavNode | null) {
+    this._cursor = cursor;
+  }
+
+  cursorForward(): boolean {
+    if (this._cursor) {
+      if (this._cursor.index < this._nodes.length - 1) {
+        this._cursor = this._nodes[this._cursor.index + 1];
+        this._map.visitDatapoints();
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }
+
+  cursorBack(): boolean {
+    if (this._cursor) {
+      if (this._cursor.index) {
+        this._cursor = this._nodes[this._cursor.index - 1];
+        this._map.visitDatapoints();
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }
+
+  setCursorIndex(index: number) {
+    if (this._cursor) {
+      if (index >= 0 && index < this._nodes.length) {
+        this._cursor = this._nodes[index];
+      } else {
+        throw new Error(`cursor index ${index} out of range`);
+      }
+    }
+  }
+
+  cursorCanGoForward(): boolean {
+    return !!this._cursor && this._cursor.index < this._nodes.length - 1;
+  }
+
+  cursorCanGoBack(): boolean {
+    return !!this._cursor && !!this._cursor.index;
+  }
+
+  next(): NavLayer | null {
+    return this._map.layer(this._type, this._index + 1);
+  }
+
+  prev(): NavLayer | null {
+    if (this._index === 0) return null;
+    return this._map.layer(this._type, this._index - 1);
+  }
+
+  first(): NavLayer {
+    return this._map.layer(this._type, 0)!;
+  }
+
+  last(): NavLayer {
+    return this._map.layer(this._type, -1)!;
+  }
+
+  clone(map: NavMap): NavLayer {
+    const c = new NavLayer(map, this._type, this._paraState);
+    c._nodes = [...this._nodes];
+    c._cursor = this._cursor;
+    return c;
+  }
+
+  registerNode(node: NavNode) {
+    if (node.index !== -1) {
+      return;
+    }
+    this._nodes.push(node);
+    node.index = this._nodes.length - 1;
+    if (!this._cursor) {
+      this._cursor = node;
+    }
+  }
+
+  /** Get a node from its ID. */
+  // node(id: string): NavNode<any> | undefined {
+  //   return this._nodesById.get(id);
+  // }
+
+  /** Get a node from its options or index. */
+  get<T extends NavNodeType>(
+    type: T,
+    options: Readonly<NavNodeOptionsType<T>>
+  ): NavNode<T> | undefined {
+    const list = this._nodes.filter(node => node.type === type) as NavNode<T>[];
+    if (list.length) {
+      // Every item in `options` must have a corresponding item with
+      // the same value in `node.options`, but the converse is not true;
+      // i.e., node.options may have items lacking in `options`
+      return list.find((node: NavNode) => nodeOptionsEq(options, node.options))!;
+    }
+    return undefined;
+  }
+
+  /** Get all nodes matching partial options. */
+  query<T extends NavNodeType>(type: T, options: Partial<NavNodeOptionsType<T>> = {}): NavNode<T>[] {
+    const list = this._nodes.filter(node => node.type === type) as NavNode<T>[];
+    if (list.length) {
+      return list
+        .filter(node => nodeOptionsMatch(options, node.options));
+    }
+    return [];
+  }
+
+  goToNode(node: NavNode, quiet = false) {
+    this._cursor = node;
+    this._map.currentLayer = this;
+    this._map.visitDatapoints(quiet);
+  }
+
+  goTo<T extends NavNodeType>(
+    type: T,
+    options: Readonly<NavNodeOptionsType<T>>,
+    quiet = false
+  ) {
+    const node = this.get(type, options);
+    if (node) {
+      this.goToNode(node, quiet);
+    } else {
+      throw new Error('nav node not found');
+    }
+  }
+
+  /** Set the cursor from a set of visited datapoints. */
+  updateCursor(datapoints: Datapoint[]) {
+    for (const node of this._nodes) {
+      const nodeDatapoints = node.datapoints;
+      if (nodeDatapoints.length === datapoints.length
+        && datapoints.every(dp => nodeDatapoints.includes(dp))) {
+        this._cursor = node;
+        break;
+      }
+    }
+    this.map.visitDatapoints();
+  }
+
+  newNode<T extends NavNodeType>(
+    type: T,
+    options: NavNodeOptionsType<T>,
+  ): NavNode<T> {
+    const node = new NavNode(this, type, options, this._paraState);
+    this.registerNode(node);
+    return node;
+  }
+}
+
+/**
+ * Navigation node
+ */
+export class NavNode<T extends NavNodeType = NavNodeType> {
+  // direction -> node
+  protected _links: Map<Direction, NavNode> = new Map();
+  /** Index of the nav node in the layer's list of nodes */
+  protected _index = -1;
+
+  constructor(
+    protected _layer: NavLayer,
+    protected _type: T,
+    protected _options: NavNodeOptionsType<T>,
+    protected _paraState: ParaState,
+  ) {
+  }
+
+  get type(): T {
+    return this._type;
+  }
+
+  get options(): Readonly<NavNodeOptionsType<T>> {
+    return this._options as Readonly<NavNodeOptionsType<T>>;
+  }
+
+  get layer(): NavLayer {
+    return this._layer;
+  }
+
+  get index(): number {
+    return this._index;
+  }
+
+  set index(index: number) {
+    this._index = index;
+  }
+
+  get datapoints(): Datapoint[] {
     const model = this._layer.map.chartInfo.model!;
     const datapoints: Datapoint[] = [];
     if (this.isNodeType('datapoint') || this.isNodeType('scatterpoint')) {
@@ -407,6 +528,9 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
       for (let i = 0; i < seriesLength; i++) {
         datapoints.push(model.atKeyAndIndex(this._options.seriesKey, i)!);
       }
+    } else if (this.isNodeType('collective')) {
+      datapoints.push(...this._layer.map.chartInfo.seriesInNavOrder().flatMap(series =>
+        series.datapoints));
     } else if (this.isNodeType('chord')) {
       datapoints.push(...this._layer.map.chartInfo.seriesInNavOrder().map(series =>
         series.datapoints[this._options.index]));
@@ -417,6 +541,13 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     } else if (this.isNodeType('cluster')) {
       datapoints.push(...model.atKey(this._options.seriesKey)!.datapoints.filter(dp =>
         this._options.datapoints.includes(dp)));
+    } else if (this.isNodeType('candlestick')) {
+      for (const seriesKey of ['open', 'high', 'low', 'close']) {
+        datapoints.push(model.atKeyAndIndex(seriesKey, this._options.index)!);
+      }
+    } else if (this.isNodeType('stack')) {
+      datapoints.push(...this._layer.map.chartInfo.seriesInNavOrder().map(series =>
+        series.datapoints[this._options.index]));
     }
     return datapoints;
   }
@@ -425,49 +556,38 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     const c = new NavNode<T>(layer, this._type, this._options, this._paraState);
     c._links = new Map(this._links);
     c._index = this._index;
-    c._id = this._id;
     return c;
   }
 
-  getLink(dir: Direction) {
+  getLink(dir: Direction): NavNode | undefined {
     return this._links.get(dir);
   }
 
-  setLink(dir: Direction, node: NavLayer | NavNode) {
-    this._links.set(dir, node.id);
+  setLink(dir: Direction, node: NavNode) {
+    this._links.set(dir, node);
   }
 
   removeLink(dir: Direction) {
     this._links.delete(dir);
   }
 
-  connect(dir: Direction, to: NavLayer | NavNode, isReciprocal = true) {
+  connect(dir: Direction, to: NavNode, isReciprocal = true) {
     this.setLink(dir, to);
-    if (to instanceof NavNode && isReciprocal) {
+    if (isReciprocal) {
       to.setLink(oppositeDirs[dir], this);
     }
   }
 
-  disconnect(dir: Direction, isReciprocal = true) {
-    const linked = this._links.get(dir);
-    if (linked) {
-      this.removeLink(dir);
-      if (linked[0] === ':' && isReciprocal) {
-        this._layer.node(linked)!.removeLink(oppositeDirs[dir]);
-      }
-    }
-  }
-
-  peekNode(dir: Direction, count: number): NavNode<any> | undefined {
-    let cursor: string | undefined = this._id;
+  peekNode(dir: Direction, count: number): NavNode | undefined {
+    let cursor: NavNode | undefined = this;
     while (cursor && count--) {
-      const peeked = this._layer.node(cursor)!.getLink(dir);
-      cursor = (peeked && peeked[0] !== ':') ? undefined : peeked;
+      const peeked = cursor.getLink(dir);
+      cursor = (peeked && !(peeked instanceof NavNode)) ? undefined : peeked;
     }
-    return cursor ? this._layer.node(cursor) : undefined;
+    return cursor;
   }
 
-  allNodes(dir: Direction, type?: NavNodeType) {
+  allNodes(dir: Direction, type?: NavNodeType): NavNode[] {
     let cursor: NavNode | undefined = this;
     const all: NavNode[] = [];
     while (true) {
@@ -485,17 +605,49 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
     return all;
   }
 
-  async move(dir: Direction) {
+  async move(dir: Direction): Promise<boolean> {
     const link = this._links.get(dir);
-    if (!link) {
-      return;
-    }
-    if (link[0] === ':') {
-      this.layer.cursor = this._layer.node(link)!;
+    if (link) {
+      this._layer.map.currentLayer = link.layer;
+      link.layer.cursor = link;
+      await this._layer.map.visitDatapoints();
+      return true;
+    } else if ((this._layer.orientation === 'horiz' && (dir === 'up' || dir === 'down'))
+      || (this._layer.orientation === 'vert' && (dir === 'left' || dir === 'right'))) {
+      return await this.jump(dir);
     } else {
-      this._layer.map.currentLayer = link;
+      return false;
     }
-    this._layer.map.visitDatapoints();
+  }
+
+  async jump(dir: PlaneDirection): Promise<boolean> {
+    const isNext = (dir === 'right' || dir === 'down');
+    const target = isNext
+      ? this._layer.next()
+      : this._layer.prev();
+    const cursorCanGoForwardOrBack = (isNext ? this._layer.cursorCanGoForward() : this._layer.cursorCanGoBack());
+    if (target) {
+      if (target === this._layer) return false;
+      this._layer.map.currentLayer = target;
+
+      const targetNodes = target.nodes;
+      target.cursor = targetNodes[this.index];
+
+      await this._layer.map.visitDatapoints();
+      return true;
+    } else if (this._layer.map.options.shouldWrapMove && cursorCanGoForwardOrBack) {
+      if (isNext) {
+        this._layer.map.currentLayer = this._layer.first();
+        this._layer.map.currentLayer.setCursorIndex(this._index + 1);
+      } else {
+        this._layer.map.currentLayer = this._layer.last();
+        this._layer.map.currentLayer.setCursorIndex(this._index - 1);
+      }
+      await this._layer.map.visitDatapoints();
+      return true;
+    } else {
+      return false;
+    }
   }
 
   go() {
@@ -510,5 +662,4 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
   isDatapointNode(): this is NavNode<'datapoint'> {
     return this.type === 'datapoint';
   }
-
 }

@@ -21,9 +21,10 @@ import { formatBox, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 import { BaseChartInfo, RiffOrder } from './base_chart';
 import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax, SettingsManager } from '../state';
-import { directions, HorizDirection, LegendConfig } from '../config/config_types';
-import { NavLayer, NavNode } from '../view/layers/data/navigation'
+import { HorizDirection, LegendConfig } from '../config/config_types';
+import { type NavNode } from '../view/layers/data/navigation'
 import { LegendItemsWithPosition } from '../view/legend';
+import { populateNavMap } from '../navigation/nav_map_builder';
 
 
 export type ArcType = 'circle' | 'semicircle';
@@ -43,28 +44,31 @@ export class PastryChartInfo extends BaseChartInfo {
     this._paraState.settingControls.insert(`type.${this._type}.explode`);
   }
 
-  protected _createNavMap() {
-    super._createNavMap();
-    const layer = new NavLayer(this._navMap!, 'slices');
-    directions.forEach(dir => {
-      this._navMap!.node('top', {})!.connect(dir, layer);
-    });
-    const nodes = this._paraState.model!.series[0].datapoints.map((datapoint, i) => {
-      //const nodes = this._chartLandingView.children[0].children.map((datapointView, i) => {
-      const node = new NavNode(layer, 'datapoint', {
-        seriesKey: datapoint.seriesKey,
-        index: datapoint.datapointIndex
-      }, this._paraState);
-      //node.addDatapointView(datapointView);
-      node.connect('out', this._navMap!.root);
-      node.connect('up', this._navMap!.root);
-      return node;
-    });
-    nodes.slice(0, -1).forEach((node, i) => {
-      node.connect('right', layer.get('datapoint', i + 1)!);
-    });
-    nodes.at(-1)!.connect('right', nodes[0]);
+  protected _populateNavMap(): void {
+    populateNavMap(this._navMap!, this);
   }
+
+  // protected _populateNavMap() {
+  //   const top = this._navMap!.top.get()!;
+  //   const layer = this._navMap!.newLayer('datapoint');
+  //   top.connectIn(layer);
+  //   top.connect('left', layer);
+  //   top.connect('right', layer);
+  //   top.connect('up', layer);
+  //   top.connect('down', layer);
+  //   const nodes = this._paraState.model!.series[0].datapoints.map((datapoint, i) => {
+  //     const node = layer.newNode(
+  //       {
+  //         seriesKey: datapoint.seriesKey,
+  //         index: datapoint.datapointIndex
+  //       });
+  //     return node;
+  //   });
+  //   nodes.slice(0, -1).forEach((node, i) => {
+  //     node.connect('right', layer.get(i + 1)!);
+  //   });
+  //   nodes.at(-1)!.connect('right', nodes[0]);
+  // }
 
   legend(): LegendItemsWithPosition[] {
     const series = this._paraState.model!.series[0];
@@ -106,8 +110,8 @@ export class PastryChartInfo extends BaseChartInfo {
 
   protected _sparkBrailleInfo() {
     return {
-      data: (this._navMap!.cursor.isNodeType('datapoint')
-        || this._navMap!.cursor.isNodeType('series'))
+      data: (this._navMap!.cursor!.isNodeType('datapoint')
+        || this._navMap!.cursor!.isNodeType('series'))
         ? JSON.stringify(this._paraState.model!.atKey(
           this._navMap!.cursor.options.seriesKey)!.datapoints.map(dp => ({
             // XXX shouldn't assume x is string (or that we have an 'x' facet, for that matter)
@@ -125,7 +129,7 @@ export class PastryChartInfo extends BaseChartInfo {
   queryData(): void {
     const msgArray: string[] = [];
 
-    const queriedNode = this._navMap!.cursor;
+    const queriedNode = this._navMap!.cursor!;
 
     if (queriedNode.isNodeType('top')) {
       msgArray.push(`Displaying Chart: ${this._paraState.title}`);

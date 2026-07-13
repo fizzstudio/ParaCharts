@@ -21,11 +21,12 @@ import { type ChartType } from '@fizz/chartsignal-internal';
 import { enumerate, PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
 import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax, SettingsManager } from '../state';
-import { NavNode } from '../view/layers';
+import { NavMap, type NavNode } from '../view/layers';
 import { DataSymbols } from '../view/symbol';
-import { ConfigSetting, LegendConfig } from '../config/config_types';
+import { ConfigSetting, LegendConfig, PlaneDirection } from '../config/config_types';
 import { AxisRangeInfo } from './plane_chart';
 import { LegendItemsWithPosition } from '../view/legend';
+import { populateNavMap } from '../navigation/nav_map_builder';
 
 /**
  * Business logic for line charts.
@@ -35,7 +36,7 @@ export class LineChartInfo extends PointChartInfo {
 
   constructor(type: ChartType, paraState: ParaState) {
     super(type, paraState);
-    this.log = getLogger("LineChartInfo");
+    this.log = getLogger('LineChartInfo');
   }
 
   protected _addSettingControls(): void {
@@ -49,42 +50,25 @@ export class LineChartInfo extends PointChartInfo {
   }
 
   async settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): Promise<void> {
-    if (['type.line.isTrendNavigationModeEnabled'].includes(path)) {
-      if (this._navMap!.cursor.type === 'top') {
-        [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
-        return;
-      }
-      if (!newValue) {
-        await this._navMap!.cursor.move('in');
-      }
-      const index = this._navMap!.cursor.index;
-      const type = this._navMap!.cursor.type;
-      [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
-      // go to corresponding data point in new mode nav map
-      this._navMap!.cursor.layer.goTo(type, index, true);
-      if (newValue) {
-        const trendNode = this._navMap!.cursor.peekNode('out', 1)!;
-        trendNode.connect('in', this._navMap!.cursor, false);
-        await this._navMap!.cursor.move('out');
-      }
-    }
-    // Add or remove single-series series landings based on whether
-    // soni is enabled
     if (path === 'sonification.isSonificationEnabled') {
-      const idx = this._navMap!.cursor.index;
-      this._createNavMap();
+      // Add or remove single-series series landings based on whether
+      // soni is enabled
+      const idx = this._navMap!.cursor!.index;
+      if (!this.model!.multi) {
+        this._createNavMap();
+      }
       if (!this._paraState.comboModel || this._paraState.currentDataset) {
-        this._navMap!.layer(this._navMap!.currentLayer)!.goTo('datapoint', idx, true);
+        //this._navMap!.currentLayer.goTo('datapoint', idx, true);
       }
     }
     super.settingDidChange(path, oldValue, newValue);
   }
 
-  noticePosted(key: string, value: any) {
-    super.noticePosted(key, value);
-    if (key === 'seriesAnalyses') {
-      this._createSequenceNavNodes();
-    }
+  noticePosted(key: string, value: any, count: number) {
+    super.noticePosted(key, value, count);
+    // if (key === 'seriesAnalyses') {
+    //   this._createSequenceNavNodes();
+    // }
   }
 
   get model() {
@@ -115,21 +99,27 @@ export class LineChartInfo extends PointChartInfo {
       : range;
   }
 
-  protected _createNavMap() {
-    super._createNavMap();
-    // In AI mode, the following call will only do anything when the doc view
-    // has been recreated (so the series analyses already exist)
-    this._createSequenceNavNodes();
-  }
-
-  didNavToNode(cursor: NavNode) {
-    if (cursor.isNodeType(this.navDatapointType)) {
-      const trendNode = cursor.peekNode('out', 1)!;
-      if (trendNode) {
-        trendNode.connect('in', cursor, false);
-      }
+  protected _onNavFail(dir: PlaneDirection, from: NavNode): void {
+    if (this.model!.series.length < 2) return;
+    if (dir === 'right') {
+      this.move('out');
+      this._navMap!.currentLayer.cursorForward();
     }
   }
+
+  protected _canCreateSequenceNavNodes(): boolean {
+    return !!this._navMap && Object.keys(this._paraState.seriesAnalyses).length === this.model!.seriesKeys.length
+      && !!this._paraState.seriesAnalyses[this.model!.seriesKeys[0]];
+  }
+
+  // chooseNavOutNode(nodes: readonly NavNode[]): NavNode {
+  //   console.log('CHOOSE OUT FOR', this._navMap!.cursor!.type);
+  //   if (this._navMap!.cursor!.isNodeType('sequence')) {
+  //     return nodes[this._navMap!.cursor.options.start];
+  //   } else {
+  //     return nodes[0];
+  //   }
+  // }
 
   legend(): LegendItemsWithPosition[] {
     const model = this.model!;
@@ -179,7 +169,7 @@ export class LineChartInfo extends PointChartInfo {
   queryData(): void {
     const msgArray: string[] = [];
 
-    const queriedNode = this._navMap!.cursor;
+    const queriedNode = this._navMap!.cursor!;
 
     if (queriedNode.isNodeType('top')) {
       msgArray.push(`Displaying Chart: ${this._paraState.title}`);

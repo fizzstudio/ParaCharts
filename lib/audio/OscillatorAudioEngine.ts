@@ -109,23 +109,23 @@ export class OscillatorAudioEngine implements AudioEngine {
       case AudioNotificationType.Annotation:
         this._playAnnotation(panning, duration);
         break;
-    
+
       case AudioNotificationType.Bumper:
         this._playBumper(panning, duration);
         break;
-    
+
       case AudioNotificationType.Intersection:
         this._playIntersection(panning, duration);
         break;
-    
+
       case AudioNotificationType.High:
         this._playHigh(panning, duration);
         break;
-    
+
       case AudioNotificationType.Low:
         this._playLow(panning, duration);
         break;
-    
+
       case AudioNotificationType.Series:
         this._playSeriesChange(panning, duration);
         // this._playHigh(panning, duration);
@@ -135,7 +135,7 @@ export class OscillatorAudioEngine implements AudioEngine {
       case AudioNotificationType.Threshold:
         this._playThreshold(panning, duration);
         break;
-         
+
       default:
         break;
     }

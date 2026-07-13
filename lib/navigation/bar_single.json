@@ -1,0 +1,19 @@
+{
+    "start": "datapoints",
+    "levels": [
+        {
+            "id": "datapoints"
+        },
+        {
+            "id": "sequences"
+        }
+    ],
+    "transitions": [
+        {
+            "from": "datapoints",
+            "to": "sequences",
+            "source": "multi",
+            "target": "containing"
+        }
+    ]
+}

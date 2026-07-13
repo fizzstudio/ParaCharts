@@ -86,9 +86,9 @@ export class VennDiagramInfo extends BaseChartInfo {
     this._paraState.settingControls.insert('type.venn.explode');
   }
 
-  protected _createNavMap() {
+/*  protected _createNavMap() {
     super._createNavMap();
-    const layer = new NavLayer(this._navMap!, 'circles');
+    const layer = this._navMap!.newLayer('circles');
     directions.forEach(dir => {
       this._navMap!.node('top', {})!.connect(dir, layer);
     });
@@ -97,12 +97,12 @@ export class VennDiagramInfo extends BaseChartInfo {
         seriesKey: series.key,
         index: 0
       }, this._paraState);
-      node.connect('out', this._navMap!.root);
-      node.connect('up', this._navMap!.root);
+      node.connect('out', this._navMap!.top.cursor!);
+      node.connect('up', this._navMap!.top.cursor!);
 
       const regionOptions = this._regionOptionsForSeries(series.key);
       if (regionOptions.length) {
-        const circleLayer = new NavLayer(this._navMap!, `circle-${series.key}`);
+        const circleLayer = this._navMap!.newLayer(`circle-${series.key}`);
         const regionNodes = regionOptions.map(options => new NavNode(circleLayer, 'venn-part', options, this._paraState));
         regionNodes.forEach((regionNode, regionIndex) => {
           const nextRegion = regionNodes[(regionIndex + 1) % regionNodes.length]!;
@@ -121,12 +121,12 @@ export class VennDiagramInfo extends BaseChartInfo {
       node.connect('right', layer.get('datapoint', i + 1)!);
     });
     nodes.at(-1)!.connect('right', nodes[0]);
-  }
+  } */
 
   async move(dir: Direction) {
     const dirStr = dir as string;
     if ((dirStr === 'shiftleft' || dirStr === 'shiftright')
-        && this._navMap!.cursor.isNodeType('venn-part')) {
+        && this._navMap!.cursor!.isNodeType('venn-part')) {
       const allParts = this._paraState.model!.series.flatMap(series => this._regionOptionsForSeries(series.key));
       const cursor = this._navMap!.cursor;
       const currentIndex = allParts.findIndex(
@@ -200,8 +200,8 @@ export class VennDiagramInfo extends BaseChartInfo {
 
   protected _sparkBrailleInfo() {
     return {
-      data: (this._navMap!.cursor.isNodeType('datapoint')
-        || this._navMap!.cursor.isNodeType('series'))
+      data: (this._navMap!.cursor!.isNodeType('datapoint')
+        || this._navMap!.cursor!.isNodeType('series'))
         ? JSON.stringify(this._paraState.model!.atKey(
           this._navMap!.cursor.options.seriesKey)!.datapoints.map(dp => ({
             label: dp.facetValue('x') as string,
@@ -215,7 +215,7 @@ export class VennDiagramInfo extends BaseChartInfo {
   queryData(): void {
     const msgArray: string[] = [];
 
-    const queriedNode = this._navMap!.cursor;
+    const queriedNode = this._navMap!.cursor!;
 
     if (queriedNode.isNodeType('top')) {
       msgArray.push(`Displaying Chart: ${this._paraState.title}`);

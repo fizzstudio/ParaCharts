@@ -1,0 +1,14 @@
+{
+    "ref": "type.plane",
+    "family": "candlestick",
+    "settings": {
+        "isHollow": {
+            "label": "cpanel.tabs.chart.candlestick_hollow",
+            "description": "Whether the chart is a hollow candlestick chart",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.chart"
+        }
+    }
+}

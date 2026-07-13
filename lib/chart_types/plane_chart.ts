@@ -319,15 +319,6 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
         : this.config.maxYValue);
   }
 
-  protected _createNavMap() {
-    super._createNavMap();
-    this._createPrimaryNavNodes();
-    if (this.model!.seriesKeys.length > 1) {
-      this._createVerticalNavLinks();
-      this._createChordNavNodes();
-    }
-  }
-
   protected get _datapointNavNodeType(): DatapointNavNodeType {
     return 'datapoint';
   }
@@ -339,191 +330,111 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     };
   }
 
-  protected _createPrimaryNavNodes() {
-    // Create series and datapoint nav nodes, and link them horizontally thusly:
-    // - [SERIES-A]-[SERIES-A-POINT-0]- ... -[SERIES-A-POINT-(N-1)]-[SERIES-B]-[SERIES-B-POINT-0]- ...
-    let left = this._navMap!.root.get('top')!;
-    //const depFacet = this._paraState.model!.dependentFacetKeys[0];
-    // Sort by value of first datapoint from greatest to least
-    const sortedSeries = this.seriesInNavOrder();
-    sortedSeries.forEach((series, i) => {
-      if (sortedSeries.length > 1 || this._paraState.config.sonification.isSonificationEnabled) {
-        const seriesNode = new NavNode(this._navMap!.root, 'series', {
-          seriesKey: series.key
-        }, this._paraState);
-        seriesNode.connect('left', left);
-        if (i === 0) {
-          seriesNode.connect('up', left);
-          seriesNode.connect('down', left);
-          seriesNode.connect('right', left);
+/*  protected _populateNavMap() {
+    const top = this._navMap!.top.get()!;
+    if (this.model!.seriesKeys.length > 1) {
+      const collectiveLayer = this._navMap!.newLayer('collective');
+      top.connectIn(collectiveLayer);
+      top.connect('left', collectiveLayer);
+      top.connect('right', collectiveLayer);
+      top.connect('up', collectiveLayer);
+      top.connect('down', collectiveLayer);
+      const collectiveLanding = collectiveLayer.newNode({});
+      const seriesLayer = this._navMap!.newLayer('series');
+      collectiveLanding.connectIn(seriesLayer);
+      // Sort by value of first datapoint from greatest to least
+      const sortedSeries = this.seriesInNavOrder();
+      let prevSeriesLanding: NavNode<'series'> | null = null;
+      let prevInterstitialLanding: NavNode | null = null;
+      sortedSeries.forEach((series, i) => {
+        const seriesLanding = seriesLayer.newNode(
+          {
+            seriesKey: series.key,
+          });
+        if (prevSeriesLanding) {
+          seriesLanding.connect('up', prevSeriesLanding);
         }
-        left = seriesNode;
-      }
-      //series.datapoints.forEach((_dp, j) => seriesNode.addDatapoint(series.key, j));
-      series.datapoints.forEach((dp, j) => {
-        const node = new NavNode(this._navMap!.root,
-          this._datapointNavNodeType, this._datapointNavNodeOptions(dp),
-          this._paraState);
-        //node.addDatapoint(series.key, j);
-        node.connect('left', left);
-        if (j === 0 && sortedSeries.length === 1 && !this._paraState.config.sonification.isSonificationEnabled) {
-          node.connect('up', left);
-          node.connect('down', left);
-          node.connect('right', left);
-        }
-        left = node;
+        prevSeriesLanding = seriesLanding;
+
+        const datapointLayerI = this._navMap!.newLayer('datapoint');
+        seriesLanding.connectIn(datapointLayerI);
+        seriesLanding.connect('right', datapointLayerI);
+        prevInterstitialLanding?.connectIn(datapointLayerI, false);
+        let prevDatapointNode: NavNode<'datapoint'> | null = null;
+        series.datapoints.forEach((datapoint, j) => {
+          const datapointNodeJ = datapointLayerI.newNode(
+            {
+              seriesKey: series.key,
+              index: j
+            });
+          if (prevDatapointNode) {
+            datapointNodeJ.connect('left', prevDatapointNode);
+          }
+          prevDatapointNode = datapointNodeJ;
+        });
+        // if (i < sortedSeries.length - 1) {
+        //   const interstitialLanding = datapointLayerI.newNode(
+        //     'series',
+        //     {
+        //       seriesKey: sortedSeries[i + 1].key,
+        //     });
+        //   prevDatapointNode!.connect('right', interstitialLanding);
+        //   prevInterstitialLanding = interstitialLanding;
+        // }
       });
-    });
-  }
-
-  protected _createVerticalNavLinks() {
-    // Create vertical links between series and datapoints
-    this.model!.series.slice(0, -1).forEach((series, i) => {
-      const seriesNode = this._navMap!.root.get('series', i)!;
-      const nextSeriesNode = this._navMap!.root.get('series', i + 1)!;
-      seriesNode.connect('down', nextSeriesNode);
-      for (let j = 1; j <= series.datapoints.length; j++) {
-        seriesNode.peekNode('right', j)!.connect(
-          'down', nextSeriesNode.peekNode('right', j)!);
-      }
-    });
-  }
-
-  protected _createChordNavNodes() {
-    // Create chord landings
-    // NB: This will produce the nodes in insertion order
-    this._navMap!.root.query(this._datapointNavNodeType, {
-      seriesKey: this.seriesInNavOrder()[0].key
-    }).forEach(node => {
-      const chordNode = new NavNode(
-        this._navMap!.root, 'chord', { index: node.options.index }, this._paraState);
-      // [node, ...node.allNodes('down', 'datapoint')].forEach(node => {
-      //   chordNode.addDatapointView(node.at(0)!);
-      // });
-    });
-    // Link chord landings
-    this._navMap!.root.query('chord').slice(0, -1).forEach((node, i) => {
-      node.connect('right', this._navMap!.root.get('chord', i + 1)!);
-    });
-  }
-
-  protected _canCreateSequenceNavNodes(): boolean {
-    return !!this._navMap && Object.keys(this._paraState.seriesAnalyses).length === this.model!.seriesKeys.length
-      && !!this._paraState.seriesAnalyses[this.model!.seriesKeys[0]];
-  }
-
-  protected _createSequenceNavNodes() {
-    if (!this._canCreateSequenceNavNodes()) return;
-    let seriesSeqNodes: NavNode<'sequence'>[][] = [];
-    this._altNavMap = this._navMap!.clone();
-
-    const model = this.model!;
-    if (model.series.length === 1) {
-      seriesSeqNodes.push(this._createSingleSeriesSequenceNodes());
     } else {
-      seriesSeqNodes = this._createMultiSeriesSequenceNodes();
+      const datapointLayer = this._navMap!.newLayer('datapoint');
+      if (this._paraState.config.sonification.isSonificationEnabled) {
+        const seriesLayer = this._navMap!.newLayer('series');
+        const seriesLanding = seriesLayer.newNode(
+          {
+            seriesKey: this.model!.seriesKeys[0]
+          });
+        top.connectIn(seriesLayer);
+        top.connect('left', seriesLayer);
+        top.connect('right', seriesLayer);
+        top.connect('up', seriesLayer);
+        top.connect('down', seriesLayer);
+        seriesLanding.connectIn(datapointLayer);
+      } else {
+        top.connectIn(datapointLayer);
+        top.connect('left', datapointLayer);
+        top.connect('right', datapointLayer);
+        top.connect('up', datapointLayer);
+        top.connect('down', datapointLayer);
+      }
+      let prevDatapointNode: NavNode<'datapoint'> | null = null;
+      this.model!.series[0].datapoints.forEach((datapoint, i) => {
+        const datapointNode = datapointLayer.newNode(
+          {
+            seriesKey: this.model!.seriesKeys[0],
+            index: i
+          });
+        if (prevDatapointNode) {
+          datapointNode.connect('left', prevDatapointNode);
+        }
+        prevDatapointNode = datapointNode;
+      });
     }
+  } */
 
-    // Make sequence node 'down' links
-    seriesSeqNodes.slice(0, -1).forEach((seqNodes, i) => {
-      seqNodes.forEach(node => {
-        const nodeBelow = seriesSeqNodes[i + 1].find(otherNode =>
-          otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
-        node.connect('down', nodeBelow, false);
-      });
-    });
-    // Make sequence node 'up' links
-    seriesSeqNodes.slice(1).forEach((seqNodes, i) => {
-      seqNodes.forEach((node, j) => {
-        const nodeAbove = seriesSeqNodes[i].find(otherNode =>
-          otherNode.options.start <= node.options.start && otherNode.options.end > node.options.start)!;
-        node.connect('up', nodeAbove, false);
-      });
-    });
-  }
-
-  protected _createSingleSeriesSequenceNodes(): NavNode<'sequence'>[] {
-    const chartLanding = this._altNavMap!.root.query('top')[0];
-    const analysis = this._paraState.seriesAnalyses[this.model!.seriesKeys[0]]!;
-    const datapointNodes = this._altNavMap!.root.query('datapoint');
-    const seqNodes: NavNode<'sequence'>[] = [];
-    analysis.sequences.forEach(seq => {
-      const seqNode = new NavNode(datapointNodes[0].layer, 'sequence', {
-        seriesKey: this.model!.seriesKeys[0],
-        start: seq.start,
-        end: seq.end
-      }, this._paraState);
-      seqNodes.push(seqNode);
-    });
-    // Replace chart landing links to datapoints with links to sequences
-    chartLanding.connect('left', seqNodes[0]);
-    chartLanding.connect('right', seqNodes[0]);
-    chartLanding.connect('up', seqNodes[0]);
-    chartLanding.connect('down', seqNodes[0]);
-    seqNodes.slice(0, -1).forEach((seqNode, i) => {
-      seqNode.connect('right', seqNodes[i + 1]);
-    });
-    // Break first datapoint link with chart landing
-    datapointNodes[0].disconnect('left', false);
-    this._connectSequenceToDatapointNodes(seqNodes, datapointNodes);
-    return seqNodes;
-  }
-
-  protected _createMultiSeriesSequenceNodes(): NavNode<'sequence'>[][] {
-    const seriesSeqNodes: NavNode<'sequence'>[][] = [];
-    this._altNavMap!.root.query('series').forEach(seriesNode => {
-      if (seriesSeqNodes.length) {
-        seriesNode.connect('left', seriesSeqNodes.at(-1)!.at(-1)!);
-      }
-      const analysis = this._paraState.seriesAnalyses[seriesNode.options.seriesKey]!;
-      const datapointNodes = seriesNode.allNodes('right', 'datapoint') as NavNode<'datapoint'>[];
-      const seqNodes: NavNode<'sequence'>[] = [];
-      analysis.sequences.forEach(seq => {
-        const seqNode = new NavNode(seriesNode.layer, 'sequence', {
-          seriesKey: seriesNode.options.seriesKey,
-          start: seq.start,
-          end: seq.end
-        }, this._paraState);
-        seqNodes.push(seqNode);
-        // seriesNode.datapointViews.slice(seq.start, seq.end).forEach(view => {
-        //   seqNode.addDatapointView(view);
-        // });
-      });
-      seriesSeqNodes.push(seqNodes);
-      seqNodes.slice(0, -1).forEach((seqNode, i) => {
-        seqNode.connect('right', seqNodes[i + 1]);
-      });
-      // Replace series link to datapoints with link to sequences
-      seriesNode.connect('right', seqNodes[0]);
-      // Breaks first and last datapoint links with series landings
-      datapointNodes[0].disconnect('left', false);
-      datapointNodes.at(-1)!.disconnect('right');
-      this._connectSequenceToDatapointNodes(seqNodes, datapointNodes);
-    });
-    return seriesSeqNodes;
-  }
-
-  protected _connectSequenceToDatapointNodes(
-    seqNodes: NavNode<'sequence'>[],
-    datapointNodes: NavNode<'datapoint'>[]
-  ) {
-    seqNodes.forEach(seqNode => {
-      // Unless the first datapoint of the sequence already has an
-      // 'out' link set (i.e., it's a boundary node), make a reciprocal
-      // link to it
-      seqNode.connect('in', datapointNodes[seqNode.options.start],
-        !datapointNodes[seqNode.options.start].getLink('out'));
-      for (let i = seqNode.options.start + 1; i < seqNode.options.end; i++) {
-        // non-reciprocal 'out' links from remaining datapoints to sequence
-        datapointNodes[i].connect('out', seqNode, false);
-      }
-      if (seqNode.peekNode('right', 1)) {
-        // We aren't on the last sequence, so the final datapoint is a boundary point.
-        // Make a non-reciprocal 'in' link to the next sequence
-        datapointNodes[seqNode.options.end - 1].connect('in', seqNode.peekNode('right', 1)!, false);
-      }
-    });
-  }
+  // protected _createChordNavNodes() {
+  //   // Create chord landings
+  //   // NB: This will produce the nodes in insertion order
+  //   this._navMap!.root.query(this._datapointNavNodeType, {
+  //     seriesKey: this.seriesInNavOrder()[0].key
+  //   }).forEach(node => {
+  //     const chordNode = new NavNode(
+  //       this._navMap!.root, 'chord', { index: node.options.index }, this._paraState);
+  //     // [node, ...node.allNodes('down', 'datapoint')].forEach(node => {
+  //     //   chordNode.addDatapointView(node.at(0)!);
+  //     // });
+  //   });
+  //   // Link chord landings
+  //   this._navMap!.root.query('chord').slice(0, -1).forEach((node, i) => {
+  //     node.connect('right', this._navMap!.root.get('chord', i + 1)!);
+  //   });
+  // }
 
   playRiff(datapoints: Datapoint[], order?: RiffOrder, isChord?: boolean): Promise<void> {
     const datapointsClone = [...datapoints];
@@ -606,13 +517,13 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   }
 
   playDir(dir: HorizDirection) {
-    if (this._navMap!.cursor.type !== this._datapointNavNodeType) {
+    if (this._navMap!.cursor!.type !== this._datapointNavNodeType) {
       return;
     }
     this.clearPlay();
     let cursor = this._navMap!.cursor;
     this._soniInterval = setInterval(() => {
-      const next = cursor.peekNode(dir, 1);
+      const next = cursor!.peekNode(dir, 1);
       if (next && next.type === this._datapointNavNodeType) {
         this.playDatapoints([next.datapoints[0] as PlaneDatapoint]);
         cursor = next;
@@ -624,15 +535,17 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
 
   protected _sparkBrailleInfo() {
     return {
-      data: (this._navMap!.cursor.isNodeType(this._datapointNavNodeType)
-        || this._navMap!.cursor.isNodeType('series')
-        || this._navMap!.cursor.isNodeType('sequence'))
-        ? this.model!.atKey(this._navMap!.cursor.options.seriesKey)!.datapoints.map(dp =>
-          dp.facetValueAsNumber('y')!).join(' ')
-        : '0',
+      data: this._sparkBrailleData(),
       isBar: this._type === 'bar' || this._type === 'column'
     };
   }
 
-
+  protected _sparkBrailleData(): string {
+    return (this._navMap!.cursor!.isNodeType(this._datapointNavNodeType)
+      || this._navMap!.cursor!.isNodeType('series')
+      || this._navMap!.cursor!.isNodeType('sequence'))
+      ? this.model!.atKey(this._navMap!.cursor.options.seriesKey)!.datapoints.map(dp =>
+        dp.facetValueAsNumber('y')!).join(' ')
+      : '0';
+  }
 }
