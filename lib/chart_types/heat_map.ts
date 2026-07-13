@@ -35,11 +35,11 @@ export class HeatMapInfo extends PlaneChartInfo {
     //console.log("allFacetValues", this._paraState.model?.allFacetValues("z"))
     this._maxCount = Math.max(...this.grid.flat());
     // Generate the heat map before creating the nav nodes
-    const cluster = async () => {
-      this._paraState.clusterAnalyses = await this._generateClustering();
+    //const cluster = async () => {
+    //  this._paraState.clusterAnalyses = await this._generateClustering();
       //(this._paraState.chartInfo as ScatterChartInfo)._clustering = this._paraState.clusterAnalyses;
-    };
-    cluster()
+    //};
+    //cluster()
     super._init();
   }
 

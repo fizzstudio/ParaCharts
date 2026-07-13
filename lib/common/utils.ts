@@ -268,12 +268,12 @@ export function horizAdjust(label: Popup) {
 };
 
 export const trendTranslation = {
-    /** A single rising sequence */
-    "1": "Rising",
-    /** A single falling sequence */
-    "-1": "Falling",
-    /** A single stable sequence */
-    "0": "Stable",
+  /** A single rising sequence */
+  "1": "Rising",
+  /** A single falling sequence */
+  "-1": "Falling",
+  /** A single stable sequence */
+  "0": "Stable",
 }
 
 export function preciseAdd(a: number, b: number) {
@@ -281,7 +281,16 @@ export function preciseAdd(a: number, b: number) {
   const bSplit = b.toString().split(".")
   const p = Math.max(aSplit.length > 1 ? aSplit.at(-1)!.length : 0,
     bSplit.length > 1 ? bSplit.at(-1)!.length : 0)
-  return (Math.round(a * 10 ** p) + Math.round(b * 10 ** p)) / (10 ** p);
+  return (Math.round(a * 10 ** p) + Math.round(b * 10 ** p)) / (10 ** (p));
+}
+
+export function preciseMultiply(a: number, b: number) {
+  const aSplit = a.toString().split(".")
+  const bSplit = b.toString().split(".")
+  const p = Math.max(aSplit.length > 1 ? aSplit.at(-1)!.length + 1 : 0,
+    bSplit.length > 1 ? bSplit.at(-1)!.length + 1 : 0)
+  const returnVal = (Math.round(a * 10 ** p) * Math.round(b * 10 ** p)) / (10 ** (2 * p))
+  return returnVal;
 }
 
 export const getMostCommonReduce = (arr: number[]) => {

@@ -30,20 +30,10 @@ export class HeatMapPlotView extends PlanePlotView {
   }
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
-    if (['type.heatmap.resolution', 'color.colorVisionMode', 'color.colorPalette'].includes(path)) {
+    if (['type.heatmap.resolution', 'color.colorVisionMode', 'color.colorPalette', 'color.isDarkModeEnabled'].includes(path)) {
       this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false);
-      //this.chartInfo.navMap!.goTo('top', {})
       this.paraview.paraState.clearSelected();
     }
-    /*
-    if (['color.colorPalette'].includes(path)) {
-      this.paraview.paraState.createChartInfo();
-      this.paraview.createDocumentView();
-      this._completeDatapointLayout();
-      this.paraview.requestUpdate();
-      return;
-    }
-      */
     super.settingDidChange(path, oldValue, newValue);
   }
 
@@ -72,15 +62,15 @@ export class HeatMapPlotView extends PlanePlotView {
   //     datapointView.completeLayout();
   //   }
   // }
-/*
-  protected _completeDatapointLayout() {
-
-    super._completeDatapointLayout();
-    this._tiles.forEach(t => t.parent == undefined ? this.append(t) : nothing)
-    this._tiles.forEach(t => t.completeLayout())
-    this._tiles.forEach(t => t._createShapes())
-  }
-*/
+  /*
+    protected _completeDatapointLayout() {
+  
+      super._completeDatapointLayout();
+      this._tiles.forEach(t => t.parent == undefined ? this.append(t) : nothing)
+      this._tiles.forEach(t => t.completeLayout())
+      this._tiles.forEach(t => t._createShapes())
+    }
+  */
   seriesRef(series: string) {
     return this.paraview.ref<SVGGElement>(`series.${series}`);
   }
@@ -138,32 +128,45 @@ export class HeatmapTileView extends PlaneDatapointView {
     if (this._fillColor) {
       return this._fillColor;
     }
-    let color = `hsl(0, 0%, 0%)`;
-    if (this._count > 0) {
-      //this.chart.chartInfo.maxCount
-      //const cA = this.paraview.paraState.clusterAnalyses!;
-      /*
-      const indices = this._datapoints.map(d => {
-        const seriesKey = d.seriesKey;
-        const seriesIndex = this.paraview.paraState.model?.seriesKeys.indexOf(seriesKey)!
-        let jimIndex = 0;
-        for (let i = seriesIndex - 1; i >= 0; i--) {
-          jimIndex += this.paraview.paraState.model!.series[i].datapoints.length;
-        }
-        return d.datapointIndex + jimIndex;
-      })
-      const clusterIds = indices.map(
-        id => cA.findIndex(c => [...c.dataPointIDs, ...c.outlierIDs].includes(id)));
-      const mostCommonCluster = getMostCommonReduce(clusterIds);
-      this._fillColorIndex = mostCommonCluster;
-      */
-      const baseColor = this.paraview.paraState.colors.colorValueAt(0);
-      const lightenCount = Math.floor(this._count / this.chart.chartInfo.maxCount * 8) - 2;
-      const lightened = this.paraview.paraState.colors.lighten(baseColor, lightenCount);
-      color = lightened;
+    if (this.paraview.paraState.config.color.isDarkModeEnabled) {
+      let color = `hsl(0, 0%, 0%)`;
+      if (this._count > 0) {
+        //this.chart.chartInfo.maxCount
+        //const cA = this.paraview.paraState.clusterAnalyses!;
+        /*
+        const indices = this._datapoints.map(d => {
+          const seriesKey = d.seriesKey;
+          const seriesIndex = this.paraview.paraState.model?.seriesKeys.indexOf(seriesKey)!
+          let jimIndex = 0;
+          for (let i = seriesIndex - 1; i >= 0; i--) {
+            jimIndex += this.paraview.paraState.model!.series[i].datapoints.length;
+          }
+          return d.datapointIndex + jimIndex;
+        })
+        const clusterIds = indices.map(
+          id => cA.findIndex(c => [...c.dataPointIDs, ...c.outlierIDs].includes(id)));
+        const mostCommonCluster = getMostCommonReduce(clusterIds);
+        this._fillColorIndex = mostCommonCluster;
+        */
+        const baseColor = this.paraview.paraState.colors.colorValueAt(0);
+        const lightenCount = Math.floor(this._count / this.chart.chartInfo.maxCount * 8) - 2;
+        const lightened = this.paraview.paraState.colors.lighten(baseColor, lightenCount);
+        color = lightened;
+      }
+      this._fillColor = color;
+      return color
     }
-    this._fillColor = color;
-    return color
+    else {
+      let color = `hsl(0, 0%, 100%)`;
+      if (this._count > 0) {
+        const baseColor = this.paraview.paraState.colors.colorValueAt(0);
+        const lightenCount = 2 - Math.floor(this._count / this.chart.chartInfo.maxCount * 8);
+        const lightened = this.paraview.paraState.colors.lighten(baseColor, lightenCount);
+        color = lightened;
+      }
+      this._fillColor = color;
+      return color
+    }
   }
 
   get fillColorIndex() {
@@ -205,7 +208,7 @@ export class HeatmapTileView extends PlaneDatapointView {
   }
 
   completeLayout() {
-    
+
     const index = this.index;
     const info = this.chart.chartInfo;
     this._height = this.chart.parent.height / info.resolution;
@@ -256,38 +259,38 @@ export class HeatmapTileView extends PlaneDatapointView {
     })
     //console.log(this)
   }
-/*
-  addPopup() {
-    const index = this._yIndex * this.chart.chartInfo.resolution + this._xIndex + 1;
-    let datapointText = `Tile ${index} / ${this.chart.chartInfo.resolution ** 2}: ${this.count} points`
-    let x = this.x + this.width / 2;
-    let y = this.y;
-    let color = this.fillColorIndex;
-    let fill = undefined;
-    let shape = "boxWithArrow";
-    let pointerControlled = false;
-    let popup = new Popup(this.paraview,
-      {
-        text: datapointText,
-        x: x,
-        y: y,
-        id: this.id,
-        color: color,
-        rotationExempt: this.paraview.paraState.type == 'bar' ? false : true,
-        angle: this.paraview.paraState.type == 'bar' ? -90 : 0,
-        pointerControlled,
-        margin: this.height
-      },
-      {
-        shape: shape as ShapeTypes,
-        fill: fill
-      });
-    //focus ? this.paraview.paraState.focusPopups.push(popup) :
-    //  select ? this.paraview.paraState.selectPopups.push(popup) :
-    this.paraview.paraState.popups.push(popup);
-    this._popup = popup;
-  }
-*/
+  /*
+    addPopup() {
+      const index = this._yIndex * this.chart.chartInfo.resolution + this._xIndex + 1;
+      let datapointText = `Tile ${index} / ${this.chart.chartInfo.resolution ** 2}: ${this.count} points`
+      let x = this.x + this.width / 2;
+      let y = this.y;
+      let color = this.fillColorIndex;
+      let fill = undefined;
+      let shape = "boxWithArrow";
+      let pointerControlled = false;
+      let popup = new Popup(this.paraview,
+        {
+          text: datapointText,
+          x: x,
+          y: y,
+          id: this.id,
+          color: color,
+          rotationExempt: this.paraview.paraState.type == 'bar' ? false : true,
+          angle: this.paraview.paraState.type == 'bar' ? -90 : 0,
+          pointerControlled,
+          margin: this.height
+        },
+        {
+          shape: shape as ShapeTypes,
+          fill: fill
+        });
+      //focus ? this.paraview.paraState.focusPopups.push(popup) :
+      //  select ? this.paraview.paraState.selectPopups.push(popup) :
+      this.paraview.paraState.popups.push(popup);
+      this._popup = popup;
+    }
+  */
 }
 
 export class HeatmapTile extends RectShape {
@@ -338,7 +341,7 @@ export class HeatmapTile extends RectShape {
       this._styleInfo.stroke = this.options.stroke ?? this._options.stroke;
       this._styleInfo.strokeWidth = this.options.strokeWidth ?? this._options.strokeWidth;
     }
-      
+
     const index = this.fillColorIndex
     if (this.paraview.paraState.colors.palette.isPattern && index !== undefined) {
       this._styleInfo.fill = `url(#Pattern${index})`
