@@ -3,7 +3,7 @@ import { BarChartInfo } from './bar_chart';
 import { PlaneModel } from '@fizz/paramodel';
 import { NavMap } from '../view/layers';
 import { ParaState } from '../state';
-import { ConfigSetting, Direction } from '../config/config_types';
+import { ConfigSetting, Direction, PlaneDirection } from '../config/config_types';
 import { LegendItemsWithPosition } from '../view/legend';
 
 export class ComboChartInfo extends BarChartInfo {
@@ -47,15 +47,15 @@ export class ComboChartInfo extends BarChartInfo {
     if (!this._otherNavMap) {
       this._otherNavMap = this._paraState.comboChartInfo!.navMap!;
     }
-    const index = this._navMap!.cursor.index;
-    const type = this._navMap!.cursor.type;
+    const index = this._navMap!.cursor!.index;
+    const type = this._navMap!.cursor!.type;
     [this._navMap, this._otherNavMap] = [this._otherNavMap, this._navMap!];
     this._paraState.currentDataset = 1 - this._paraState.currentDataset;
     // go to corresponding data point in new mode nav map
-    this._navMap!.cursor.layer.goTo(type, index);
+    this._navMap!.cursor!.layer.goTo(type, index);
   }
 
-  move(dir: Direction): Promise<void> {
+  move(dir: PlaneDirection): Promise<void> {
     if (this._paraState.currentDataset) {
       return this._paraState.comboChartInfo!.move(dir);
     } else {

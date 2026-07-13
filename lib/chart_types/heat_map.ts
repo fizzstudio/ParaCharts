@@ -4,6 +4,7 @@ import { PlaneChartInfo } from './plane_chart';
 import { SettingsManager, type ParaState } from '../state';
 import { LegendItemsWithPosition } from '../view/legend';
 import { LegendConfig } from '../config/config_types';
+import { populateNavMap } from '../navigation/nav_map_builder';
 
 export class HeatMapInfo extends PlaneChartInfo {
   protected _resolution!: number;
@@ -65,28 +66,34 @@ export class HeatMapInfo extends PlaneChartInfo {
     return this._resolution
   }
 
-  protected _createPrimaryNavNodes() {
-    super._createPrimaryNavNodes();
+  protected _populateNavMap(): void {
+    super._populateNavMap();
     // Create vertical links between datapoints
-    this._navMap!.root.query('datapoint').slice(0, -this._resolution).forEach(
+    this._navMap!.layer('datapoints', 0)!.query('datapoint').slice(0, -this._resolution).forEach(
+      (pointNode, i) => {
+        pointNode.connect('down', pointNode.layer.get('datapoint', {
+          seriesKey: pointNode.options.seriesKey,
+          index: i + this._resolution
+        })!);
+      }
+    );
+  }
+
+/*  protected _populateNavMap() {
+    super._populateNavMap();
+    // Create vertical links between datapoints
+    this._navMap!.layer('datapoint', 0)!.query('datapoint').slice(0, -this._resolution).forEach(
       (pointNode, i) => {
         pointNode.connect('down', pointNode.layer.get('datapoint', i + this._resolution)!);
       }
     )
-  }
+  } */
 
   protected _createNavLinksBetweenSeries() {
     // Don't do anything here, since we create vertical links between rows
     // XXX For the case of a multi-series heatmap, we need to do ... something
   }
 
-  protected _createVerticalNavLinks(): void {
-
-  }
-
-  protected _createChordNavNodes() {
-
-  }
 
   goSeriesMinMax(isMin: boolean): void {
 

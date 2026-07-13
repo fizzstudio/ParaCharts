@@ -20,7 +20,7 @@ import { fixed } from '../../common/utils';
 import { type DocumentView } from '../document_view';
 import { type CardinalDirection } from '../../config/config_types';
 import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, FocusLayer } from '.';
-import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, WaterfallPlotView, VennPlotView, Histogram, HeatMapPlotView } from './data/chart_type';
+import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, WaterfallPlotView, VennPlotView, Histogram, HeatMapPlotView, CandlestickPlotView } from './data/chart_type';
 import { PopupLayer } from './popup_layer';
 import { type DataLayerContext } from '../view_context';
 import { BubblePlotView } from './data/chart_type/bubble_plot_view';
@@ -44,8 +44,8 @@ export const chartClasses: Record<ChartType, any> = {
   waterfall: WaterfallPlotView,
   venn: VennPlotView,
   bubble: BubblePlotView,
-  combo: ComboPlotView,
-  candlestick: BarPlotView
+  candlestick: CandlestickPlotView,
+  combo: ComboPlotView
 };
 
 export class PlotLayerManager extends View {

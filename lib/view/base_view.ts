@@ -948,13 +948,13 @@ export class View extends BaseView {
     }
   }
 
-  noticePosted(key: string, value: any) {
+  noticePosted(key: string, value: any, count: number) {
     if (!this._isObserveNotices) {
       return;
     }
     this._children.forEach(kid => {
       if (kid.isObserveNotices) {
-        kid.noticePosted(key, value);
+        kid.noticePosted(key, value, count);
       }
     });
   }

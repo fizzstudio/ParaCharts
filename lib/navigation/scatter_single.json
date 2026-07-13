@@ -1,0 +1,21 @@
+{
+    "start": {
+        "level": "clusters"
+    },
+    "levels": [
+        {
+            "id": "clusters"
+        },
+        {
+            "id": "eachClusterDatapoints"
+        }
+    ],
+    "transitions": [
+        {
+            "from": "clusters",
+            "to": "eachClusterDatapoints",
+            "mode": "eachToFirstOfEachSet",
+            "iter": "clusters"
+        }
+    ]
+}

@@ -47,6 +47,8 @@ import cpanelIconAlt from '../assets/info-icon-alt.svg';
 import { type BrailleGrade, type BrailleTranslationProvider } from '../braille/braille_translation_provider';
 import { BrailleTranslationService } from '../braille/braille_translation_service';
 
+const NOTICE_COUNTS_CLEAR_TIMEOUT_MS = 1000;
+
 /** @public */
 @customElement('para-chart')
 export class ParaChart extends ParaComponent {
@@ -86,6 +88,7 @@ export class ParaChart extends ParaComponent {
   private _brailleTranslation = new BrailleTranslationService();
   private _activeBrailleProvider?: BrailleTranslationProvider;
   private _pollTimer: ReturnType<typeof setInterval> | undefined;
+  protected _noticeCounts: Map<string, number> = new Map();
 
   constructor() {
     super();
@@ -383,7 +386,7 @@ export class ParaChart extends ParaComponent {
     }
     // Don't load a manifest before the paraview has rendered
     if (changedProperties.has('manifest') && this.manifest !== '' && this._paraViewRef.value) {
-      console.log(`manifest changed: ${this.manifest}`);
+      // console.log(`manifest changed: ${this.manifest}`);
       this._loaderPromise = new Promise((resolve, reject) => {
         this._loaderResolver = resolve;
         this._loaderRejector = reject;
@@ -504,13 +507,18 @@ export class ParaChart extends ParaComponent {
 
   postNotice(key: string, value: any) {
     if (!this.paraView) {
-      return
+      return;
     }
-    this.paraView.noticePosted(key, value);
-    this.paraView.documentView?.noticePosted(key, value);
-    this._globalState.paraState.chartInfo.noticePosted(key, value);
-    this._controlPanelRef.value?.noticePosted(key, value);
-    this.captionBox.noticePosted(key, value);
+    this._noticeCounts.set(key, (this._noticeCounts.get(key) ?? 0) + 1);
+    setTimeout(() => {
+      this._noticeCounts.clear();
+    }, NOTICE_COUNTS_CLEAR_TIMEOUT_MS);
+    const noticeCount = this._noticeCounts.get(key)!;
+    this.paraView.noticePosted(key, value, noticeCount);
+    this.paraView.documentView?.noticePosted(key, value, noticeCount);
+    this._globalState.paraState.chartInfo.noticePosted(key, value, noticeCount);
+    this._controlPanelRef.value?.noticePosted(key, value, noticeCount);
+    this.captionBox.noticePosted(key, value, noticeCount);
     this.dispatchEvent(
       new CustomEvent('paranotice', { detail: { key, value }, bubbles: true, composed: true }));
   }

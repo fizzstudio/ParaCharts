@@ -4,6 +4,8 @@ import { PointChartInfo } from "./point_chart";
 import { LegendItem, LegendItemsWithPosition } from "../view/legend";
 import { DataSymbols } from "../view/symbol";
 import { LegendConfig } from "../config/config_types";
+import { NavMap } from '../view/layers';
+import { populateNavMap } from '../navigation/nav_map_builder';
 
 export class BubbleChartInfo extends PointChartInfo {
 
@@ -42,6 +44,15 @@ export class BubbleChartInfo extends PointChartInfo {
         }
         return `${series.label} (${formatBox(dp.facetBox('x')!, 'raw')}, ${formatBox(dp.facetBox('y')!, 'raw')}, ${formatBox(dp.facetBox('z')!, 'raw')})`;
     };
+
+     protected _createNavMap() {
+        this._navMap = new NavMap(this._paraState, this);
+        this._createChartLandingNode();
+    }
+
+    protected _populateNavMap(): void {
+        populateNavMap(this._navMap!, this);
+    }
 
     legend(): LegendItemsWithPosition[] {
         const model = this._paraState.model!;

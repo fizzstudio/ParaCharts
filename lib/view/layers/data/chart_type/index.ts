@@ -9,3 +9,4 @@ export * from './heat_map_plot_view';
 export * from './histogram';
 export * from './waterfall_plot_view';
 export * from './venn_plot_view';
+export * from './candlestick_plot_view';

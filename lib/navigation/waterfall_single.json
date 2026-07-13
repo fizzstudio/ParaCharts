@@ -1,0 +1,13 @@
+{
+    "start": {
+        "level": "datapoints"
+    },
+    "levels": [
+        {
+            "id": "datapoints"
+        }
+    ],
+    "transitions": [
+
+    ]
+}

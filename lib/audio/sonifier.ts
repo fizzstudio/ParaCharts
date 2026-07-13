@@ -259,7 +259,7 @@ export class Sonifier {
    * @returns a Promise that resolves when the notification finishes playing.
    */
   playNotification(earcon?: string): Promise<void> {
-    if (this._paraState.config.sonification.isNotificationEnabled) {
+    if (!this._paraState.config.sonification.isNotificationEnabled) {
       return Promise.resolve();
     }
 

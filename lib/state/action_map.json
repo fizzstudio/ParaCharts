@@ -132,6 +132,38 @@
       }
     ]
   },
+  "jump": {
+    "label": "Jump to an adjacent navigation layer",
+    "parameters": {
+      "direction": "string"
+    },
+    "hotkeys": [
+      {
+        "keyID": "Alt+Shift+arrowleft",
+        "args": {
+          "direction": "left"
+        }
+      },
+      {
+        "keyID": "Alt+Shift+arrowright",
+        "args": {
+          "direction": "right"
+        }
+      },
+      {
+        "keyID": "Alt+Shift+arrowup",
+        "args": {
+          "direction": "up"
+        }
+      },
+      {
+        "keyID": "Alt+Shift+arrowdown",
+        "args": {
+          "direction": "down"
+        }
+      }
+    ]
+  },
   "playRight": {
     "label": "Play datapoints to the right",
     "hotkeys": ["Shift+end"]
