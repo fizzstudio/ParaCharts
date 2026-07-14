@@ -28,6 +28,7 @@ import { Legend } from './legend';
 import { DirectLabelStrip } from './direct_label_strip';
 import { type ParaView } from '../paraview';
 import { CloseXView } from './close_x';
+import { BANA_MARGIN_PX, CSS_DPI, MM_PER_INCH, PAPER_INFO } from '../common/paper';
 
 export type Legends = Partial<{ [dir in CardinalDirection]: Legend }>;
 
@@ -81,10 +82,19 @@ export class DocumentView extends Container(View) {
   }
 
   computeSize(): [number, number] {
-    return [
-      this._paraState.config.chart.width - this._padding.left - this._padding.right,
-      this._paraState.config.chart.height - this._padding.top - this._padding.bottom
-    ];
+    const paddingHoriz = this._padding.left + this._padding.right;
+    const paddingVert = this._padding.top + this._padding.bottom;
+    if (this._paraState.config.chart.pageSize === 'auto') {
+      return [
+        this._paraState.config.chart.width - paddingHoriz,
+        this._paraState.config.chart.height - paddingVert
+      ];
+    } else {
+      const paperInfo = PAPER_INFO[this._paraState.config.chart.pageSize];
+      const width = (paperInfo.widthMm/MM_PER_INCH)*CSS_DPI;
+      const height = (paperInfo.heightMm/MM_PER_INCH)*CSS_DPI;
+      return [width - paddingHoriz, height - paddingVert];
+    }
   }
 
   /**
@@ -96,24 +106,24 @@ export class DocumentView extends Container(View) {
       throw new Error(`must supply between 1 and 4 values for chart padding`);
     }
     if (vals.length === 1) {
-      return this._expandPadding(parseFloat(vals[0]));
+      return this._expandPadding(Math.max(BANA_MARGIN_PX, parseFloat(vals[0])));
     } else if (vals.length === 2) {
       return this._expandPadding({
-        vert: parseFloat(vals[0]),
-        horiz: parseFloat(vals[1])
+        vert: Math.max(BANA_MARGIN_PX, parseFloat(vals[0])),
+        horiz: Math.max(BANA_MARGIN_PX, parseFloat(vals[1]))
       });
     } else if (vals.length === 3) {
       return this._expandPadding({
-        top: parseFloat(vals[0]),
-        horiz: parseFloat(vals[1]),
-        bottom: parseFloat(vals[2])
+        top: Math.max(BANA_MARGIN_PX, parseFloat(vals[0])),
+        horiz: Math.max(BANA_MARGIN_PX, parseFloat(vals[1])),
+        bottom: Math.max(BANA_MARGIN_PX, parseFloat(vals[2]))
       });
     } else {
       return this._expandPadding({
-        top: parseFloat(vals[0]),
-        right: parseFloat(vals[1]),
-        bottom: parseFloat(vals[2]),
-        left: parseFloat(vals[3])
+        top: Math.max(BANA_MARGIN_PX, parseFloat(vals[0])),
+        right: Math.max(BANA_MARGIN_PX, parseFloat(vals[1])),
+        bottom: Math.max(BANA_MARGIN_PX, parseFloat(vals[2])),
+        left: Math.max(BANA_MARGIN_PX, parseFloat(vals[3]))
       });
     }
   }
@@ -378,7 +388,7 @@ export class DocumentView extends Container(View) {
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     this.paraview.paraState.chartInfo.settingDidChange(path, oldValue, newValue);
-    if (['chart.width', 'chart.height', 'chart.fontScale', 'chart.isTactileEnabled'].includes(path)) {
+    if (['chart.width', 'chart.height', 'chart.fontScale', 'chart.isTactileEnabled', 'chart.pageSize'].includes(path)) {
       this.updateSize();
       this.clearChildren();
       this._populate();

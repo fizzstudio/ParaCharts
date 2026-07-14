@@ -34,6 +34,7 @@ import { DocumentView } from '../view/document_view';
 import { type ViewContext } from '../view/view_context';
 import { loopParaviewRefresh, fixed, SVGNS } from '../common';
 import { ParaViewController } from '.';
+import { CSS_DPI, MM_PER_INCH, PAPER_INFO } from '../common/paper';
 
 /**
  * Data provided for the on focus callback
@@ -44,7 +45,7 @@ export type c2mCallbackType = {
   //point: SupportedDataPointType;
 };
 
-const BRAILLE_FONT_SIZE_PT = 20;
+const BRAILLE_FONT_SIZE_PT = 36;
 
 @customElement('para-view')
 export class ParaView extends ParaComponent implements ViewContext {
@@ -121,6 +122,10 @@ export class ParaView extends ParaComponent implements ViewContext {
         --axis-line-color: ghostwhite;
         --label-color: ghostwhite;
         --background-color: black;
+      }
+      svg.canvas {
+        width: var(--chart-width);
+        height: var(--chart-height);
       }
       svg.scalable {
         width: 100%;
@@ -883,13 +888,24 @@ export class ParaView extends ParaComponent implements ViewContext {
   }
 
   computeViewBox() {
-    this._viewBox = {
-      x: 0,
-      y: 0,
-      width: this._paraState.config.chart.width,
-      height: this._paraState.config.chart.height
-    };
-    this.log.info('view box:', this._viewBox.width, 'x', this._viewBox.height);
+    if (this._paraState.config.chart.pageSize === 'auto') {
+      this._viewBox = {
+        x: 0,
+        y: 0,
+        width: this._paraState.config.chart.width,
+        height: this._paraState.config.chart.height
+      };
+    } else {
+      const paperInfo = PAPER_INFO[this._paraState.config.chart.pageSize];
+      const width = (paperInfo.widthMm/MM_PER_INCH)*CSS_DPI;
+      const height = (paperInfo.heightMm/MM_PER_INCH)*CSS_DPI;
+      this._viewBox = {
+        x: 0,
+        y: 0,
+        width,
+        height
+      };
+    }
   }
 
   updateViewbox(x?: number, y?: number, width?: number, height?: number) {
@@ -1169,6 +1185,7 @@ export class ParaView extends ParaComponent implements ViewContext {
   protected _rootClasses() {
     const sys = this._colorPrefManager?.getSystemState();
     return {
+      canvas: true,
       darkmode: this._paraState.config.color.isDarkModeEnabled,
       // These JS classes mirror the @media (forced-colors: active) and
       // @media (inverted-colors: inverted) blocks in static styles. The @media blocks
