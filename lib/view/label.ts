@@ -86,10 +86,14 @@ export class Label extends View {
       if (!options.classList.includes('label')) {
         options.classList.push('label');
       }
+      if (paraview.paraState.config.chart.isTactileEnabled && !options.classList.includes('tactile')) {
+        options.classList.push('tactile');
+      }
       this._classInfo = Object.fromEntries(options.classList.map(cls => [cls, true]));
     } else {
       this._classInfo = {
-        label: true
+        label: true,
+        tactile: paraview.paraState.config.chart.isTactileEnabled
       };
     }
     this._angle = this.options.angle ?? 0;
@@ -162,7 +166,10 @@ export class Label extends View {
   }
 
   get angle() {
-    return this._angle;
+    // Disallow angled (but not vertical) text in tactile mode
+    return (this.paraview.paraState.config.chart.isTactileEnabled && this._angle % 90)
+      ? 0
+      : this._angle;
   }
 
   set angle(newAngle: number) {
@@ -225,19 +232,19 @@ export class Label extends View {
   }
 
   get topNormal(): Vec2 {
-    return new Vec2(0, 1).rotate(this._angle*Math.PI/180);
+    return new Vec2(0, 1).rotate(this.angle*Math.PI/180);
   }
 
   get bottomNormal(): Vec2 {
-    return new Vec2(0, -1).rotate(this._angle*Math.PI/180);
+    return new Vec2(0, -1).rotate(this.angle*Math.PI/180);
   }
 
   get leftNormal(): Vec2 {
-    return new Vec2(-1, 0).rotate(this._angle*Math.PI/180);
+    return new Vec2(-1, 0).rotate(this.angle*Math.PI/180);
   }
 
   get rightNormal(): Vec2 {
-    return new Vec2(1, 0).rotate(this._angle*Math.PI/180);
+    return new Vec2(1, 0).rotate(this.angle*Math.PI/180);
   }
 
   get topLeftNormal(): Vec2 {
@@ -254,6 +261,14 @@ export class Label extends View {
 
   get bottomLeftNormal(): Vec2 {
     return this.bottomNormal.add(this.leftNormal).normalize();
+  }
+
+  addClass(cls: string) {
+    this._classInfo[cls] = true;
+  }
+
+  removeClass(cls: string) {
+    delete this._classInfo[cls];
   }
 
   resize(width: number, height: number): void {
@@ -423,10 +438,10 @@ export class Label extends View {
 
   protected _makeTransform() {
     let t: string | undefined;
-    if (this._angle) {
+    if (this.angle) {
       t = fixed`
         translate(${this._x},${this._y})
-        rotate(${this._angle})
+        rotate(${this.angle})
         translate(${-this._x},${-this._y})`;
     }
     return t;

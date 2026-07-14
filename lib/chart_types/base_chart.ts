@@ -14,7 +14,6 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Unsubscribe } from '@lit-app/state';
 import { Logger, getLogger } from '@fizz/logger';
 import { Datapoint } from '@fizz/paramodel';
 import { ChartType, Facet } from '@fizz/paramanifest';
@@ -27,6 +26,8 @@ import { AxisOrientation } from '../view/axis';
 import { NavMap, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
 import { type ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor, SettingsManager } from '../state';
 import { Sonifier } from '../audio/sonifier';
+
+
 import { executeParaActions, parseActions } from '../paraactions/paraactions';
 
 export const ORIENTATION_SENTENCES = [
@@ -59,7 +60,6 @@ export abstract class BaseChartInfo {
   protected log: Logger = getLogger("BaseChartInfo");
   protected _navMap: NavMap | null = null;
   protected _summarizer!: Summarizer;
-  protected _storeChangeUnsub!: Unsubscribe;
   protected _chordPrevSeriesKey = '';
   protected _sonifier!: Sonifier;
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
@@ -85,13 +85,8 @@ export abstract class BaseChartInfo {
 
   protected _init() {
     this._createNavMap();
-    this._storeChangeUnsub = this._paraState.subscribe(async (key, value) => {
-      if (key === 'data') {
-        this._createSummarizer();
-      }
-    });
-    // We initially get created after the data has loaded, so the above
-    // callback won't run
+    // We initially get created after the data has loaded, so the
+    // postNotice hook won't run
     this._createSummarizer();
   }
 
@@ -168,6 +163,9 @@ export abstract class BaseChartInfo {
         }
       }
     }
+    if (key === 'setData') {
+      this._createSummarizer();
+    }
   }
 
   protected _createNavMap() {
@@ -181,6 +179,10 @@ export abstract class BaseChartInfo {
 
   legend(): LegendItem[] {
     return [];
+  }
+
+  shouldDrawTitle(): boolean {
+    return this._paraState.config.chart.title.isDrawTitle && !!this._paraState.title;
   }
 
   popuplegend() {

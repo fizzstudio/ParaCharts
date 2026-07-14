@@ -44,13 +44,6 @@ export class HistogramChartInfo extends PlaneChartInfo {
     this._paraState.clearVisited();
     this._paraState.clearSelected();
     this._createNavMap();
-    this._storeChangeUnsub = this._paraState.subscribe(async (key, value) => {
-      if (key === 'data') {
-        this._createSummarizer();
-      }
-    });
-    // We initially get created after the data has loaded, so the above
-    // callback won't run
     this._createSummarizer();
   }
 

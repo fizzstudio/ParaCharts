@@ -77,6 +77,7 @@
                     "show_popups": "show popups",
                     "popup_settings": "popup settings",
                     "font_settings": "font settings",
+                    "tactile_settings": "tactile settings",
                     "pastry_orientation": "orientation",
                     "pastry_explode": "explode",
                     "pastry_inside_labels": "inside labels",
@@ -108,9 +109,12 @@
                     },
                     "font_dialog": {
                         "font_family": "font family",
-                        "font_scale": "font scale",
-                        "use_braille": "use braille font",
-                        "incl_braille_print": "include braille and print text",
+                        "font_scale": "font scale"
+                    },
+                    "tactile_dialog": {
+                        "enabled": "enable tactile mode",
+                        "grade": "braille grade",
+                        "label_mode": "label mode",
                         "page_size": "page size"
                     },
                     "legend_dialog": {

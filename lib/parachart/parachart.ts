@@ -27,6 +27,7 @@ import { ConfigSetting, SettingsInput } from '../config/config_types';
 import { SettingsManager, GlobalState } from '../state';
 import { type ParaView } from '../paraview';
 import { type ParaControlPanel, type ParaCaptionBox } from '../control_panel';
+import { DataTable } from '../components/data_table';
 import { load, LoadError, LoadErrorCode, type SourceKind } from '../loader/paraloader';
 import { CustomPropertyLoader } from '../state/custom_property_loader';
 import '../components/aria_live';
@@ -45,7 +46,6 @@ import { TourBus } from './tour_bus';
 import brailleFont from '../assets/Braille36US.woff2';
 import hyperFont from '../assets/Atkinson-Hyperlegible-Regular-102a.woff2';
 import cpanelIconAlt from '../assets/info-icon-alt.svg';
-
 
 // NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
 /** @public */
@@ -68,6 +68,7 @@ export class ParaChart extends ParaComponent {
   readonly captionBox: ParaCaptionBox;
   protected _paraViewRef = createRef<ParaView>();
   protected _controlPanelRef = createRef<ParaControlPanel>();
+  protected _dataTableRef = createRef<DataTable>();
   private _slotLoader = new SlotLoader();
   protected log: Logger = getLogger("ParaChart");
 
@@ -176,6 +177,7 @@ export class ParaChart extends ParaComponent {
               await this.paraState.setManifest(loadresult.manifest!);
               this._paraState.dataState = 'complete';
               this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
+              this._dataTableRef.value?.init();
               this._paraAPI = new ParaAPI(this);
               this._loaderResolver!();
             } else {
@@ -283,6 +285,8 @@ export class ParaChart extends ParaComponent {
       '--exploration-bar-display': () => this._paraState.config.controlPanel.isExplorationBarVisible
         ? 'flex'
         : 'none',
+      '--chart-width': () => `${this._paraState.config.chart.width}px`,
+      '--chart-height': () => `${this._paraState.config.chart.height}px`,
       '--chart-font-scale': () => this._paraState.config.chart.fontScale,
       '--chart-title-font-size': () => this._paraState.config.chart.title.fontSize,
       '--chart-subtitle-font-size': () => this._paraState.config.chart.subtitle.fontSize,
@@ -397,6 +401,7 @@ export class ParaChart extends ParaComponent {
       this._paraState.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode
       this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
+      this._dataTableRef.value?.init();
       // this._paraAPI = new ParaAPI(this);
       await this._tourBus.sendContextPayload();
       this._loaderResolver!();
@@ -432,8 +437,10 @@ export class ParaChart extends ParaComponent {
     if (!this.paraView){
       return
     }
+    this.paraView.noticePosted(key, value);
     this.paraView.documentView?.noticePosted(key, value);
     this._globalState.paraState.chartInfo.noticePosted(key, value);
+    this.controlPanel.noticePosted(key, value);
     this.captionBox.noticePosted(key, value);
     this.dispatchEvent(
       new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));
@@ -471,6 +478,7 @@ export class ParaChart extends ParaComponent {
         ${!(this.headless || this._paraState.config.chart.isStatic)
           ? html`
           <para-data-table
+            ${ref(this._dataTableRef)}
             .isVisible=${this.isDataTableVisible}
             .globalState=${this._globalState}
             style=${styleMap(cpanelStyles)}

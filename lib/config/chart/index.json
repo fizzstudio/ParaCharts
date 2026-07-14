@@ -76,35 +76,49 @@
             "panel": "chart",
             "parentView": "controlPanel.tabs.chart.font.dialog"
         },
-        "isUseBraille": {
-            "label": "cpanel.tabs.chart.font_dialog.use_braille",
-            "description": "Enable the use of a Braille font",
+        "isTactileEnabled": {
+            "label": "cpanel.tabs.chart.tactile_dialog.enabled",
+            "description": "Enable Tactile Mode",
             "type": "boolean",
             "default": false,
             "control": "checkbox",
             "panel": "chart",
-            "parentView": "controlPanel.tabs.chart.font.dialog"
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
         },
-        "isUseBrailleAndPrint": {
-            "label": "cpanel.tabs.chart.font_dialog.incl_braille_print",
-            "description": "Include print text along with Braille",
-            "type": "boolean",
-            "default": false,
-            "control": "checkbox",
-            "panel": "chart",
-            "parentView": "controlPanel.tabs.chart.font.dialog"
-        },
-        "pageSize": {
-            "label": "cpanel.tabs.chart.font_dialog.page_size",
-            "description": "Document page size",
-            "type": "'us_letter' | 'us_legal'",
-            "default": "us_letter",
+        "tactileBrailleGrade": {
+            "label": "cpanel.tabs.chart.tactile_dialog.grade",
+            "description": "Braille grade",
+            "type": "1|2",
+            "default": 1,
             "control": "dropdown",
             "controlOptions": {
-                "options": ["us_letter", "us_legal"]
+                "options": ["1", "2"]
+            },
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
+        "tactileLabelMode": {
+            "label": "cpanel.tabs.chart.tactile_dialog.label_mode",
+            "description": "Include Latin text along with Braille",
+            "type": "'Braille'|'Latin'|'Both'|'None'",
+            "default": "Both",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["Braille", "Latin", "Both", "None"]
             },
             "panel": "chart",
-            "parentView": "controlPanel.tabs.chart.font.dialog"
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
+        "pageSize": {
+            "label": "cpanel.tabs.chart.tactile_dialog.page_size",
+            "description": "Document page size",
+            "type": "'auto'|'letter_portrait'|'letter_landscape'|'tractor_us_standard'|'tractor_us_rotated'|'tractor_de_standard'|'tractor_de_rotated'|'a4_portrait'|'a4_landscape'|'tabloid_portrait'|'tabloid_landscape'|'monarch_portrait'|'monarch_landscape'",
+            "default": "auto",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["auto", "letter_portrait", "letter_landscape", "tractor_us_standard", "tractor_us_rotated", "tractor_de_standard", "tractor_de_rotated", "a4_portrait", "a4_landscape", "tabloid_portrait", "tabloid_landscape", "monarch_portrait", "monarch_landscape"]
+            },
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
         },
         "stroke": {
             "description": "Stroke color for lines and shapes",

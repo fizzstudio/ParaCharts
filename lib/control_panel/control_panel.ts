@@ -32,6 +32,8 @@ import cpanelIcon from '../assets/info-icon.svg';
 import cpanelIconAlt from '../assets/info-icon-alt.svg';
 import warningIcon from '../assets/warning-icon.svg?raw';
 
+import '@fizz/ui-components';
+
 @customElement('para-control-panel')
 export class ParaControlPanel extends ParaComponent {
   private log: Logger = getLogger("ParaControlPanel");
@@ -56,7 +58,6 @@ export class ParaControlPanel extends ParaComponent {
   protected _dialogRef = createRef<ParaDialog>();
   protected _annotationDialogRef = createRef<AnnotationDialog>();
   protected _msgDialogRef = createRef<MessageDialog>();
-  protected _storeChangeUnsub!: Unsubscribe;
 
   static styles = [
     //styles,
@@ -177,12 +178,13 @@ export class ParaControlPanel extends ParaComponent {
   connectedCallback() {
     super.connectedCallback();
     //this._isOpen = this.settings.isControlPanelDefaultOpen;
-    this._storeChangeUnsub = this._paraState.subscribe((key, value) => {
-      if (key === 'data') {
-        this.dataUpdated();
-      }
-    });
     this.addButtonListeners();
+  }
+
+  noticePosted(key: string, value: any) {
+    if (key === 'setData') {
+      this.dataUpdated();
+    }
   }
 
   addButtonListeners() {
@@ -213,7 +215,6 @@ export class ParaControlPanel extends ParaComponent {
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    this._storeChangeUnsub();
   }
 
   // Anything that needs to be done when data is updated, do here

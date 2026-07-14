@@ -307,12 +307,14 @@ export interface ChartConfig extends ConfigGroup {
   fontWeight: string;
   /** Global font size multiplier */
   fontScale: number;
-  /** Enable the use of a Braille font */
-  isUseBraille: boolean;
-  /** Include print text along with Braille */
-  isUseBrailleAndPrint: boolean;
+  /** Enable Tactile Mode */
+  isTactileEnabled: boolean;
+  /** Braille grade */
+  tactileBrailleGrade: 1|2;
+  /** Include Latin text along with Braille */
+  tactileLabelMode: 'Braille'|'Latin'|'Both'|'None';
   /** Document page size */
-  pageSize: 'us_letter' | 'us_legal';
+  pageSize: 'auto'|'letter_portrait'|'letter_landscape'|'tractor_us_standard'|'tractor_us_rotated'|'tractor_de_standard'|'tractor_de_rotated'|'a4_portrait'|'a4_landscape'|'tabloid_portrait'|'tabloid_landscape'|'monarch_portrait'|'monarch_landscape';
   /** Stroke color for lines and shapes */
   stroke: string;
   /** Stroke width in pixels */
