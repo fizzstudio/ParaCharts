@@ -25,7 +25,6 @@ import { HighlightedSummary } from '@fizz/parasummary';
 import { Interval } from '@fizz/chart-classifier-utils';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
-import { Localization } from '@elemental/localization';
 import { Logger } from '@fizz/logger';
 import { Manifest } from '@fizz/paramanifest';
 import { MessageDialog } from '@fizz/ui-components';
@@ -232,10 +231,10 @@ export class ParaAPI {
     getConfigGroupMetadata(path: string): ConfigGroupMetadata | undefined;
     // Warning: (ae-forgotten-export) The symbol "ConfigSetting" needs to be exported by the entry point index-ai.d.ts
     getConfigSetting(settingPath: string): ConfigSetting;
-    // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index-ai.d.ts
     getConfigSettings(settingPaths: string[]): SettingsInput;
     // Warning: (ae-forgotten-export) The symbol "ConfigGroupSettingsMetadata" needs to be exported by the entry point index-ai.d.ts
     getConfigSettingsMetadata(keywords: string[]): ConfigGroupSettingsMetadata;
+    // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index-ai.d.ts
     getCustomProperties(): SettingsInput;
     getDescription(): Promise<string | undefined>;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIHorizontalAxis" needs to be exported by the entry point index-ai.d.ts

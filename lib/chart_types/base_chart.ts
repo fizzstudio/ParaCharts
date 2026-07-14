@@ -14,7 +14,6 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Unsubscribe } from '@lit-app/state';
 import { Logger, getLogger } from '@fizz/logger';
 import { Datapoint } from '@fizz/paramodel';
 import { ChartType, Facet } from '@fizz/paramanifest';
@@ -27,11 +26,7 @@ import { AxisOrientation } from '../view/axis';
 import { NavMap, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
 import { type ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor, SettingsManager } from '../state';
 import { Sonifier } from '../audio/sonifier';
-import { type AxisCoord, AxisOrientation } from '../view/axis';
 
-import { Datapoint } from '@fizz/paramodel';
-import { ChartType, Facet } from '@fizz/paramanifest';
-import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
 
 import { executeParaActions, parseActions } from '../paraactions/paraactions';
 
