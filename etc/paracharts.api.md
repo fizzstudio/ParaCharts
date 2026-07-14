@@ -331,6 +331,10 @@ export class ParaChart extends ParaComponent {
     protected _controlPanelRef: Ref_2<ParaControlPanel>;
     // (undocumented)
     data: string;
+    // Warning: (ae-forgotten-export) The symbol "DataTable" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    protected _dataTableRef: Ref_2<DataTable>;
     // (undocumented)
     accessor description: string | undefined;
     disableScrollytelling(): void;

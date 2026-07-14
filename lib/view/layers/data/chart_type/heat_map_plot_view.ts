@@ -3,14 +3,11 @@ import { ref } from "lit/directives/ref.js";
 import { styleMap } from "lit/directives/style-map.js";
 import { nothing, svg } from "lit";
 import { getLogger } from '@fizz/logger';
-import { Datapoint, enumerate } from "@fizz/paramodel";
+import { enumerate } from "@fizz/paramodel";
 import { type HeatMapInfo, type BaseChartInfo } from '../../../../chart_types';
-import { fixed, getMostCommonReduce } from "../../../../common/utils";
+import { fixed } from "../../../../common/utils";
 import { type DataLayerContext } from '../../../view_context';
-import { DatapointPopupOptions, DatapointView } from "../../../data/datapoint";
 import { RectShape, Shape } from "../../../shape";
-import { View } from '../../../base_view';
-import { Popup, ShapeTypes } from '../../../popup';
 import { ConfigSetting } from '../../../../config/config_types';
 import { PlaneDatapointView, PlanePlotView, PlaneSeriesView } from './plane_plot_view';
 import { SeriesView } from "../../../data";
@@ -31,7 +28,7 @@ export class HeatMapPlotView extends PlanePlotView {
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['type.heatmap.resolution', 'type.heatmap.xFacet', 'type.heatmap.yFacet',
-       'color.colorVisionMode', 'color.colorPalette', 'color.isDarkModeEnabled'].includes(path)) {
+      'color.colorVisionMode', 'color.colorPalette', 'color.isDarkModeEnabled'].includes(path)) {
       this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false);
       this.paraview.paraState.clearSelected();
     }
@@ -58,20 +55,6 @@ export class HeatMapPlotView extends PlanePlotView {
     }
   }
 
-  // protected _layoutDatapoints() {
-  //   for (const datapointView of this.datapointViews) {
-  //     datapointView.completeLayout();
-  //   }
-  // }
-  /*
-    protected _completeDatapointLayout() {
-  
-      super._completeDatapointLayout();
-      this._tiles.forEach(t => t.parent == undefined ? this.append(t) : nothing)
-      this._tiles.forEach(t => t.completeLayout())
-      this._tiles.forEach(t => t._createShapes())
-    }
-  */
   seriesRef(series: string) {
     return this.paraview.ref<SVGGElement>(`series.${series}`);
   }
@@ -95,7 +78,6 @@ export class HeatmapTileView extends PlaneDatapointView {
   protected _height!: number;
   protected _width!: number;
   protected _count: number = 0;
-  protected _datapoints: Datapoint[] = [];
   protected _shapes: Shape[] = [];
   protected _fillColor!: string;
   protected _fillColorIndex!: number;
@@ -119,10 +101,6 @@ export class HeatmapTileView extends PlaneDatapointView {
 
   get count() {
     return this._count
-  }
-
-  get datapoints() {
-    return this._datapoints;
   }
 
   get fillColor() {
@@ -166,7 +144,7 @@ export class HeatmapTileView extends PlaneDatapointView {
         color = lightened;
       }
       this._fillColor = color;
-      return color
+      return color;
     }
   }
 
@@ -194,22 +172,7 @@ export class HeatmapTileView extends PlaneDatapointView {
     });
   }
 
-  protected _createId(..._args: any[]): string {
-    /*
-    //const facets = [...this.datapoint.entries()].map(([key, box]) =>
-    // `${key}_${formatBox(box, this.paraview.paraState.getFormatType('domId'))}`).join('-');
-    return [
-      'datapoint',
-      strToId(this.series.key),
-      //facets,
-      `${this.index}`
-    ].join('-');
-    */
-    return super._createId(..._args);
-  }
-
   completeLayout() {
-
     const index = this.index;
     const info = this.chart.chartInfo;
     this._height = this.chart.parent.height / info.resolution;
@@ -219,9 +182,6 @@ export class HeatmapTileView extends PlaneDatapointView {
     this._x = this._xIndex * this._width;
     this._y = this._yIndex * this._height;
     this._count = info.grid[this._xIndex][this._yIndex];
-    //this._datapoints = info.datapointGrid[this._xIndex][this._yIndex];
-    //console.log("x", this.x)
-    //console.log("y", this.y)
     this.id = [
       'datapoint',
       //strToId(this.seriesKey),
@@ -257,44 +217,12 @@ export class HeatmapTileView extends PlaneDatapointView {
         this.chart.removeDatapointPopup(this);
       },
     });
-    this._shapes.push(shape)
+    shape.role = 'datapoint';
+    this._shapes.push(shape);
     this._shapes.forEach(shape => {
       this.append(shape);
-    })
-    //console.log(this)
+    });
   }
-  /*
-    addPopup() {
-      const index = this._yIndex * this.chart.chartInfo.resolution + this._xIndex + 1;
-      let datapointText = `Tile ${index} / ${this.chart.chartInfo.resolution ** 2}: ${this.count} points`
-      let x = this.x + this.width / 2;
-      let y = this.y;
-      let color = this.fillColorIndex;
-      let fill = undefined;
-      let shape = "boxWithArrow";
-      let pointerControlled = false;
-      let popup = new Popup(this.paraview,
-        {
-          text: datapointText,
-          x: x,
-          y: y,
-          id: this.id,
-          color: color,
-          rotationExempt: this.paraview.paraState.type == 'bar' ? false : true,
-          angle: this.paraview.paraState.type == 'bar' ? -90 : 0,
-          pointerControlled,
-          margin: this.height
-        },
-        {
-          shape: shape as ShapeTypes,
-          fill: fill
-        });
-      //focus ? this.paraview.paraState.focusPopups.push(popup) :
-      //  select ? this.paraview.paraState.selectPopups.push(popup) :
-      this.paraview.paraState.popups.push(popup);
-      this._popup = popup;
-    }
-  */
 }
 
 export class HeatmapTile extends RectShape {
@@ -320,19 +248,6 @@ export class HeatmapTile extends RectShape {
   get parentIndex() {
     const parent = this.parent as HeatmapTileView;
     return parent.index;
-  }
-
-  protected _onClick() {
-    /*
-    const parent = this.parent as HeatmapTileView;
-    this.chart.chartInfo.navMap?.goTo('heatmapTile',
-      {
-        datapointCount: parent.count,
-        datapoints: parent.datapoints,
-        yIndex: parent._yIndex,
-        xIndex: parent._xIndex
-      });
-      */
   }
 
   render() {
@@ -363,7 +278,7 @@ export class HeatmapTile extends RectShape {
         id=${this._id || nothing}
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
-        role=${'clickable'}
+         role=${this._role || nothing}
         x=${fixed`${this._x}`}
         y=${fixed`${this._y}`}
         width=${fixed`${this.width}`}
@@ -380,13 +295,12 @@ export class HeatmapTile extends RectShape {
           id=${this._id || nothing}
           style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
           class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
-          role=${'clickable'}
+          role=${this._role || nothing}
           x=${fixed`${this._x}`}
           y=${fixed`${this._y}`}
           width=${fixed`${this.width}`}
           height=${fixed`${this.height}`}
           fill= '${this.fillColor}'
-          @click=${() => this._onClick()}
           @pointerenter=${this.options.pointerEnter ?? nothing}
           @pointerleave=${this.options.pointerLeave ?? nothing}
           clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
