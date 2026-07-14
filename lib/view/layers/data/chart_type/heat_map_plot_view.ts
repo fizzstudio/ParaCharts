@@ -30,7 +30,8 @@ export class HeatMapPlotView extends PlanePlotView {
   }
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
-    if (['type.heatmap.resolution', 'color.colorVisionMode', 'color.colorPalette', 'color.isDarkModeEnabled'].includes(path)) {
+    if (['type.heatmap.resolution', 'type.heatmap.xFacet', 'type.heatmap.yFacet',
+       'color.colorVisionMode', 'color.colorPalette', 'color.isDarkModeEnabled'].includes(path)) {
       this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false);
       this.paraview.paraState.clearSelected();
     }

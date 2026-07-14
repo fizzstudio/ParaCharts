@@ -464,7 +464,7 @@ export interface TypeHistogramConfig extends TypePlaneConfig {
   /** Which axis shows the histogram bars */
   displayAxis: string;
   /** Which axis is used for grouping */
-  groupingAxis: string;
+  groupingFacet: string;
   /** Show counts or percentages */
   relativeAxes: 'Counts' | 'Percentage';
 }
@@ -479,6 +479,10 @@ export interface TypeDonutInsidelabelsConfig extends TypePastryInsidelabelsConfi
 export interface TypeHeatmapConfig extends TypePlaneConfig {
   /** Grid resolution for heat map */
   resolution: number;
+  /** Axis grouped on the x axis */
+  xFacet: string;
+  /** Axis grouped on the y axis */
+  yFacet: string;
 }
 export interface TypePastryConfig extends ConfigGroup {
   /** Thickness of donut/gauge ring */

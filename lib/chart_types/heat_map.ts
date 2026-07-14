@@ -46,6 +46,13 @@ export class HeatMapInfo extends PlaneChartInfo {
   protected _addSettingControls(): void {
     super._addSettingControls();
     this._paraState.settingControls.insert('type.heatmap.resolution');
+    const variables = Object.entries(this._paraState.originalManifest!.jim.datasets[0].facets).map(f => f[1].label);
+    this._paraState.settingControls.insert('type.heatmap.xFacet', {
+      options: variables
+    });
+    this._paraState.settingControls.insert('type.heatmap.yFacet', {
+      options: variables
+    });
   }
 
   get grid() {

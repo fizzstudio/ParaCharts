@@ -171,7 +171,7 @@ export const defaultConfig: Config = {
         maxYValue: "unset",
         bins: 20,
         displayAxis: "x",
-        groupingAxis: "",
+        groupingFacet: "",
         relativeAxes: "Counts",
       },
       donut: {
@@ -201,6 +201,8 @@ export const defaultConfig: Config = {
         minYValue: "unset",
         maxYValue: "unset",
         resolution: 20,
+        xFacet: "",
+        yFacet: ""
       },
       scatter: {
         minYValue: "unset",

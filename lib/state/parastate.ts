@@ -641,9 +641,9 @@ export class ParaState extends BaseState {
     const dataset = manifest.jim.datasets[0];
     const bins = this.config.type.histogram.bins ?? 20;
     let targetFacetKey = Object.keys(dataset.facets)[0];
-    if (this.config.type.histogram.groupingAxis) {
+    if (this.config.type.histogram.groupingFacet) {
       targetFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
-        f[1].label == this.config.type.histogram.groupingAxis)![0][0];
+        f[1].label == this.config.type.histogram.groupingFacet)![0][0];
     }
     const targetFacet = dataset.facets[targetFacetKey];
 
@@ -721,9 +721,21 @@ export class ParaState extends BaseState {
     const resolution = this.config.type.heatmap.resolution ?? 20;
     const allData = [];
     let seriesList = dataset.series;
+    let xFacetKey = Object.keys(dataset.facets)[0];
+    let yFacetKey = Object.keys(dataset.facets)[1];
+    if (this.config.type.heatmap.xFacet) {
+      xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == this.config.type.heatmap.xFacet)![0][0];
+    }
+    if (this.config.type.heatmap.yFacet) {
+      yFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == this.config.type.heatmap.yFacet)![0][0];
+    }
+    const xFacet = dataset.facets[xFacetKey];
+    const yFacet = dataset.facets[yFacetKey];
     for (let series of seriesList) {
       for (let datapoint of series.records!) {
-        allData.push([Number(datapoint["x"]), Number(datapoint["y"])]);
+        allData.push([Number(datapoint[xFacetKey]), Number(datapoint[yFacetKey])]);
       }
     }
 
@@ -791,6 +803,16 @@ export class ParaState extends BaseState {
       dataset.series[0].key = combinedKey;
       dataset.series = [seriesList[0]];
     }
+
+    const storeXFacet = structuredClone(xFacet);
+    const storeYFacet = structuredClone(yFacet);
+    dataset.facets = {};
+    dataset.facets["x"] = storeXFacet;
+    dataset.facets["x"].variableType = 'independent';
+    dataset.facets["x"].displayType.orientation = 'horizontal';
+    dataset.facets["y"] = storeYFacet;
+    dataset.facets["y"].variableType = 'dependent';
+    dataset.facets["y"].displayType.orientation = 'vertical';
     dataset.facets["z"] = {
       datatype: "number",
       label: `Datapoint count`,
@@ -798,7 +820,11 @@ export class ParaState extends BaseState {
       measure: "nominal",
       displayType: { type: "marking" }
     };
-
+    manifest.extensions ??= {};
+    manifest.extensions.paracharts ??= {};
+    manifest.extensions.paracharts.settings ??= {};
+    manifest.extensions!.paracharts!.settings!["type.heatmap.xFacet"] = xFacet.label;
+    manifest.extensions!.paracharts!.settings!["type.heatmap.yFacet"] = yFacet.label;
     return manifest;
   }
 
