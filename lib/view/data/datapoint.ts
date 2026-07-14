@@ -387,7 +387,7 @@ export class DatapointView extends DataView {
     let fill = undefined;
     let shape = "boxWithArrow";
     let pointerControlled = false;
-    if (['bar', 'column', 'waterfall', 'histogram'].includes(this.paraview.paraState.type)) {
+    if (['bar', 'column', 'waterfall', 'histogram', 'heatmap'].includes(this.paraview.paraState.type)) {
       x = this.x + this.width / 2
       if (this.paraview.paraState.config.popup.activation == "onHover") {
         pointerControlled = true;
@@ -472,7 +472,7 @@ export class DatapointView extends DataView {
     if (this._popup) {
       this._popup.remove()
       this.chart.removeDatapointPopup(this)
-      if (['column', 'waterfall', 'pie', 'donut', 'histogram'].includes(this.paraview.paraState.type)) {
+      if (['column', 'waterfall', 'pie', 'donut', 'histogram', 'heatmap'].includes(this.paraview.paraState.type)) {
         this.addDatapointPopup({ xInput: this.paraview.paraState.pointerCoords.x, yInput: this.paraview.paraState.pointerCoords.y })
         this._popup.horizShift = this.paraview.paraState.pointerCoords.x - (this._popup.grid.x + this._popup.grid.width / 2)
       }

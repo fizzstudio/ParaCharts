@@ -90,8 +90,11 @@
                     "venn_explode": "explode",
                     "histogram_bins": "bins",
                     "histogram_display_axis": "toggle orientation",
-                    "histogram_grouping_axis": "facet to group by",
+                    "histogram_grouping_facet": "facet to group by",
                     "histogram_relative_axes": "raw counts/Percentages",
+                    "heatmap_resolution": "display resolution",
+                    "heatmap_x_facet": "facet to group on x axis",
+                    "heatmap_y_facet": "facet to group on y axis",
                     "popup_dialog": {
                         "opacity": "opacity",
                         "left_padding": "left padding",

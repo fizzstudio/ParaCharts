@@ -639,7 +639,7 @@ export class ParaState extends BaseState {
             ...this._seriesAnalyses
           };
         }));
-        this.postNotice('seriesAnalyses', null);
+      this.postNotice('seriesAnalyses', null);
     }
     this.postNotice('paranotice', { key: 'manifestSet' });
     this.dispatchEvent(
@@ -741,43 +741,42 @@ export class ParaState extends BaseState {
 
   augmentHeatmapManifest(manifest: Manifest): Manifest {
     const dataset = manifest.jim.datasets[0];
-    const resolution = this.config.type.heatmap.resolution ?? 20;
+    const config = this.config.type.heatmap;
+    const resolution = config.resolution ?? 20;
     const allData = [];
+    const x: Array<number> = [];
+    const y: Array<number> = [];
     let seriesList = dataset.series;
     let xFacetKey = Object.keys(dataset.facets)[0];
     let yFacetKey = Object.keys(dataset.facets)[1];
-    if (this.config.type.heatmap.xFacet) {
+    if (config.xFacet) {
       xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
-        f[1].label == this.config.type.heatmap.xFacet)![0][0];
+        f[1].label == config.xFacet)![0][0];
     }
-    if (this.config.type.heatmap.yFacet) {
+    if (config.yFacet) {
       yFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
-        f[1].label == this.config.type.heatmap.yFacet)![0][0];
+        f[1].label == config.yFacet)![0][0];
     }
     const xFacet = dataset.facets[xFacetKey];
     const yFacet = dataset.facets[yFacetKey];
     for (let series of seriesList) {
       for (let datapoint of series.records!) {
-        allData.push([Number(datapoint[xFacetKey]), Number(datapoint[yFacetKey])]);
+        const xNum = Number(datapoint[xFacetKey]);
+        const yNum = Number(datapoint[yFacetKey]);
+        allData.push([xNum, yNum]);
+        x.push(xNum);
+        y.push(yNum);
       }
-    }
-
-    const y: Array<number> = [];
-    const x: Array<number> = [];
-
-    for (const point of allData) {
-      x.push(point[0]);
-      y.push(point[1]);
     }
     const xLabels = computeLabels(Math.min(...x),
       Math.max(...x), false);
     const yLabels = computeLabels(Math.min(...y),
       Math.max(...y), false);
 
-    let yMax: number = yLabels.max!;
-    let xMax: number = xLabels.max!;
-    let yMin: number = yLabels.min!;
-    let xMin: number = xLabels.min!;
+    const yMax: number = yLabels.max!;
+    const xMax: number = xLabels.max!;
+    const yMin: number = yLabels.min!;
+    const xMin: number = xLabels.min!;
     const xRange = xMax - xMin;
     const yRange = yMax - yMin;
 
@@ -794,7 +793,10 @@ export class ParaState extends BaseState {
     }
     for (let i = 0; i < allData.length; i++) {
       const point = allData[i];
-      const xIndex: number = Math.floor((point[0] - xMin) * resolution / (xRange));
+      let xIndex: number = Math.floor((point[0] - xMin) * resolution / (xRange));
+      if (xIndex == resolution) {
+        xIndex--;
+      }
       let yIndex: number = resolution - Math.floor((point[1] - yMin) * resolution / (yRange)) - 1;
       if (yIndex == -1) {
         yIndex++;
@@ -802,14 +804,14 @@ export class ParaState extends BaseState {
       grid[yIndex][xIndex]++;
     }
     const xVals = grid.map((g, i) => {
-      const scaled = numberToScaledNumberRounded(xMin + i * (xRange / resolution), 5)
-      return String(preciseMultiply(scaled.number, scaled.scale))
+      const scaled = numberToScaledNumberRounded(xMin + i * (xRange / resolution), 5);
+      return String(preciseMultiply(scaled.number, scaled.scale));
     });
     const yVals = grid.map((g, i) => {
-      const scaled = numberToScaledNumberRounded(yMin + i * (yRange / resolution), 5)
-      return String(preciseMultiply(scaled.number, scaled.scale))
+      const scaled = numberToScaledNumberRounded(yMin + i * (yRange / resolution), 5);
+      return String(preciseMultiply(scaled.number, scaled.scale));
     });
-    seriesList[0].records = []
+    seriesList[0].records = [];
     for (let i = 0; i < resolution; i++) {
       for (let j = 0; j < resolution; j++) {
         seriesList[0].records.push({ x: xVals[j], y: yVals[resolution - i - 1], z: String(grid[i][j]) });

@@ -250,8 +250,11 @@ export class HeatmapTileView extends PlaneDatapointView {
       pointerEnter: (e) => {
         this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined;
       },
+      pointerMove: (e) => {
+        this.shouldAddHoverPopup() ? this.movePopupAction() : undefined;
+      },
       pointerLeave: (e) => {
-        this.paraview.paraState.removePopup(this.id);
+        this.chart.removeDatapointPopup(this);
       },
     });
     this._shapes.push(shape)
