@@ -56,21 +56,15 @@ export abstract class PointPlotView extends PlanePlotView {
   }
 
   protected _createDatapoints() {
-    /*
-    const xs: string[] = [];
-    for (const [p, i] of enumerate(this.paraview.paraState.model!.series[0].datapoints)) {
-      xs.push(formatBox(p.facetBox('x')!, 'raw'));
-      const xId = strToId(xs.at(-1)!);
-      // if (this.selectors[i] === undefined) {
-      //   this.selectors[i] = [];
-      // }
-      // this.selectors[i].push(`tick-x-${xId}`);
-    }
-      */
-    for (const [col, i] of enumerate(this.paraview.paraState.model!.series)) {
-      const seriesView = this._newSeriesView(col.key);
+    // const xs: string[] = [];
+    // for (const [p, i] of enumerate(this.paraview.paraState.model!.series[0].datapoints)) {
+    //   xs.push(formatBox(p.facetBox('x')!, 'raw'));
+    //   const xId = strToId(xs.at(-1)!);
+    // }
+    for (const [series, i] of enumerate(this.paraview.paraState.model!.series)) {
+      const seriesView = this._newSeriesView(series.key);
       this._chartLandingView.append(seriesView);
-      for (const [value, j] of enumerate(col)) {
+      for (const [value, j] of enumerate(series)) {
         const datapointView = this._newDatapointView(seriesView);
         seriesView.append(datapointView);
         // the `index` property of the datapoint view will equal j

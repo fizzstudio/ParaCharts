@@ -54,6 +54,10 @@ export class DataTable extends ParaComponent {
     });
   }
 
+  init() {
+    this._initGrid();
+  }
+
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this._paraStateChangeUnsub();

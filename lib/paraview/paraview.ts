@@ -517,9 +517,6 @@ export class ParaView extends ParaComponent implements ViewContext {
     // while any data is loading
     this._controller ??= new ParaViewController(this._paraState);
     this._storeChangeUnsub = this._paraState.subscribe(async (key, value) => {
-      if (key === 'data') {
-        await this._dataUpdated();
-      }
       await this._documentView?.storeDidChange(key, value);
       await this._paraState.chartInfo?.storeDidChange(key, value);
     });
@@ -536,6 +533,12 @@ export class ParaView extends ParaComponent implements ViewContext {
     this._colorPrefManager?.destroy();
     this._storeChangeUnsub();
     this._paraState.keymapManager.removeEventListener('hotkeyPress', this._hotkeyListener);
+  }
+
+  async noticePosted(key: string, value: any) {
+    if (key === 'setData') {
+      await this._dataUpdated();
+    }
   }
 
   // Anything that needs to be done when data is updated, do here
