@@ -111,11 +111,11 @@
         "pageSize": {
             "label": "cpanel.tabs.chart.tactile_dialog.page_size",
             "description": "Document page size",
-            "type": "'us_letter' | 'us_legal'",
-            "default": "us_letter",
+            "type": "'auto'|'letter_portrait'|'letter_landscape'|'tractor_us_standard'|'tractor_us_rotated'|'tractor_de_standard'|'tractor_de_rotated'|'a4_portrait'|'a4_landscape'|'tabloid_portrait'|'tabloid_landscape'|'monarch_portrait'|'monarch_landscape'",
+            "default": "auto",
             "control": "dropdown",
             "controlOptions": {
-                "options": ["us_letter", "us_legal"]
+                "options": ["auto", "letter_portrait", "letter_landscape", "tractor_us_standard", "tractor_us_rotated", "tractor_de_standard", "tractor_de_rotated", "a4_portrait", "a4_landscape", "tabloid_portrait", "tabloid_landscape", "monarch_portrait", "monarch_landscape"]
             },
             "panel": "chart",
             "parentView": "controlPanel.tabs.chart.tactile.dialog"

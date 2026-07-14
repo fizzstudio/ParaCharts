@@ -109,7 +109,7 @@ export const defaultConfig: Config = {
       isTactileEnabled: false,
       tactileBrailleGrade: 1,
       tactileLabelMode: "Both",
-      pageSize: "us_letter",
+      pageSize: "auto",
       stroke: "purple",
       strokeWidth: 4,
       strokeHighlightScale: 1.5,

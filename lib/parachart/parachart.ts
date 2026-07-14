@@ -283,6 +283,8 @@ export class ParaChart extends ParaComponent {
       '--exploration-bar-display': () => this._paraState.config.controlPanel.isExplorationBarVisible
         ? 'flex'
         : 'none',
+      '--chart-width': () => `${this._paraState.config.chart.width}px`,
+      '--chart-height': () => `${this._paraState.config.chart.height}px`,
       '--chart-font-scale': () => this._paraState.config.chart.fontScale,
       '--chart-title-font-size': () => this._paraState.config.chart.title.fontSize,
       '--chart-subtitle-font-size': () => this._paraState.config.chart.subtitle.fontSize,
