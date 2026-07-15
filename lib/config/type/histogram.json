@@ -22,12 +22,15 @@
             "default": "x",
             "control": "dropdown",
             "controlOptions": {
-                "options": ["x", "y"]
+                "options": [
+                    "x",
+                    "y"
+                ]
             },
             "parentView": "controlPanel.tabs.chart.chart"
         },
-        "groupingAxis": {
-            "label": "cpanel.tabs.chart.histogram_grouping_axis",
+        "groupingFacet": {
+            "label": "cpanel.tabs.chart.histogram_grouping_facet",
             "description": "Which axis is used for grouping",
             "type": "string",
             "default": "",
@@ -41,7 +44,10 @@
             "default": "Counts",
             "control": "dropdown",
             "controlOptions": {
-                "options": ["Counts", "Percentage"]
+                "options": [
+                    "Counts",
+                    "Percentage"
+                ]
             },
             "parentView": "controlPanel.tabs.chart.chart"
         }

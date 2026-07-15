@@ -93,7 +93,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
       });
     this._paraState.settingControls.insert('type.histogram.bins');
     const variables = Object.entries(this._paraState.originalManifest!.jim.datasets[0].facets).map(f => f[1].label);
-    this._paraState.settingControls.insert('type.histogram.groupingAxis', {
+    this._paraState.settingControls.insert('type.histogram.groupingFacet', {
       options: variables
     });
     this._paraState.settingControls.insert('type.histogram.displayAxis');

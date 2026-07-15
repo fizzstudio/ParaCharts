@@ -51,7 +51,7 @@ import { chartTypeDefaults } from './settings_defaults';
 import { defaultConfig } from '../config/config_defaults';
 import { Colors } from '../common/colors';
 import { type ContrastWarning } from '../common/contrast';
-import { joinStrArray, preciseAdd, trendTranslation } from '../common/utils';
+import { joinStrArray, preciseAdd, preciseMultiply, trendTranslation } from '../common/utils';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { actionMap } from './action_map';
@@ -66,6 +66,7 @@ import { type BaseChartInfo, chartInfoClasses, type ScatterChartInfo } from '../
 import { firstDataset, type Manifest } from '../loader/common';
 import { ClusterShellView } from '../view/layers';
 import { computeLabels } from '../common/axisinfo';
+import { numberToScaledNumberRounded } from '@fizz/number-scaling-rounding';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -638,7 +639,7 @@ export class ParaState extends BaseState {
             ...this._seriesAnalyses
           };
         }));
-        this.postNotice('seriesAnalyses', null);
+      this.postNotice('seriesAnalyses', null);
     }
     this.postNotice('paranotice', { key: 'manifestSet' });
     this.dispatchEvent(
@@ -651,6 +652,9 @@ export class ParaState extends BaseState {
     if (dataset.representation.subtype == 'histogram') {
       return this.augmentHistogramManifest(manifest);
     }
+    if (dataset.representation.subtype == 'heatmap') {
+      return this.augmentHeatmapManifest(manifest);
+    }
     else {
       return manifest;
     }
@@ -660,14 +664,15 @@ export class ParaState extends BaseState {
     const dataset = manifest.jim.datasets[0];
     const bins = this.config.type.histogram.bins ?? 20;
     let targetFacetKey = Object.keys(dataset.facets)[0];
-    if (this.config.type.histogram.groupingAxis) {
+    if (this.config.type.histogram.groupingFacet) {
       targetFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
-        f[1].label == this.config.type.histogram.groupingAxis)![0][0];
+        f[1].label == this.config.type.histogram.groupingFacet)![0][0];
     }
     const targetFacet = dataset.facets[targetFacetKey];
 
     const xValues: number[] = []
-    for (let series of dataset.series) {
+    const seriesList = dataset.series;
+    for (let series of seriesList) {
       for (let datapoint of series.records!) {
         xValues.push(Number(datapoint[targetFacetKey]));
       }
@@ -677,7 +682,6 @@ export class ParaState extends BaseState {
     const xMax: number = workingLabels.max!;
     const xMin: number = workingLabels.min!;
     const xRange = xMax - xMin;
-    const seriesList = dataset.series;
 
     for (let series of seriesList) {
       const _data = [];
@@ -690,11 +694,10 @@ export class ParaState extends BaseState {
       }
       for (let i = 0; i < _data.length; i++) {
         const point = _data[i];
-        // TODO: check that `- 1` is correct
-        const xIndex: number = Math.floor((point - xMin) * (bins - 1) / (xMax - xMin));
+        const xIndex: number = Math.floor((point - xMin) * (bins) / (xMax - xMin));
         grid[xIndex]++;
       }
-      const xVals = grid.map((g, i) => String(preciseAdd(xMin, i * (xRange / bins))));
+      const xVals = grid.map((g, i) => String(numberToScaledNumberRounded(preciseAdd(xMin, i * (xRange / bins)), 5).number));
       let yVals = grid.map((g, i) => String(grid[i]));
       if (this.config.type.histogram.relativeAxes == 'Percentage') {
         const sum = grid.reduce((a, c) => a + c);
@@ -733,6 +736,120 @@ export class ParaState extends BaseState {
         displayType: { type: 'axis', orientation: "horizontal" }
       };
     }
+    return manifest;
+  }
+
+  augmentHeatmapManifest(manifest: Manifest): Manifest {
+    const dataset = manifest.jim.datasets[0];
+    const config = this.config.type.heatmap;
+    const resolution = config.resolution ?? 20;
+    const allData = [];
+    const x: Array<number> = [];
+    const y: Array<number> = [];
+    let seriesList = dataset.series;
+    let xFacetKey = Object.keys(dataset.facets)[0];
+    let yFacetKey = Object.keys(dataset.facets)[1];
+    if (config.xFacet) {
+      xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.xFacet)![0][0];
+    }
+    if (config.yFacet) {
+      yFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.yFacet)![0][0];
+    }
+    const xFacet = dataset.facets[xFacetKey];
+    const yFacet = dataset.facets[yFacetKey];
+    for (let series of seriesList) {
+      for (let datapoint of series.records!) {
+        const xNum = Number(datapoint[xFacetKey]);
+        const yNum = Number(datapoint[yFacetKey]);
+        allData.push([xNum, yNum]);
+        x.push(xNum);
+        y.push(yNum);
+      }
+    }
+    const xLabels = computeLabels(Math.min(...x),
+      Math.max(...x), false);
+    const yLabels = computeLabels(Math.min(...y),
+      Math.max(...y), false);
+
+    const yMax: number = yLabels.max!;
+    const xMax: number = xLabels.max!;
+    const yMin: number = yLabels.min!;
+    const xMin: number = xLabels.min!;
+    const xRange = xMax - xMin;
+    const yRange = yMax - yMin;
+
+    const grid: Array<Array<number>> = [];
+    const datapointGrid: Array<Array<Array<Datapoint>>> = [];
+
+    for (let i = 0; i < resolution; i++) {
+      grid.push([]);
+      datapointGrid.push([]);
+      for (let j = 0; j < resolution; j++) {
+        grid[i].push(0);
+        datapointGrid[i].push([]);
+      }
+    }
+    for (let i = 0; i < allData.length; i++) {
+      const point = allData[i];
+      let xIndex: number = Math.floor((point[0] - xMin) * resolution / (xRange));
+      if (xIndex == resolution) {
+        xIndex--;
+      }
+      let yIndex: number = resolution - Math.floor((point[1] - yMin) * resolution / (yRange)) - 1;
+      if (yIndex == -1) {
+        yIndex++;
+      }
+      grid[yIndex][xIndex]++;
+    }
+    const xVals = grid.map((g, i) => {
+      const scaled = numberToScaledNumberRounded(xMin + i * (xRange / resolution), 5);
+      return String(preciseMultiply(scaled.number, scaled.scale));
+    });
+    const yVals = grid.map((g, i) => {
+      const scaled = numberToScaledNumberRounded(yMin + i * (yRange / resolution), 5);
+      return String(preciseMultiply(scaled.number, scaled.scale));
+    });
+    seriesList[0].records = [];
+    for (let i = 0; i < resolution; i++) {
+      for (let j = 0; j < resolution; j++) {
+        seriesList[0].records.push({ x: xVals[j], y: yVals[resolution - i - 1], z: String(grid[i][j]) });
+      }
+    }
+
+    if (seriesList.length > 1) {
+      let combinedKey = '';
+      for (let i = 0; i < seriesList.length - 1; i++) {
+        const series = seriesList[i];
+        combinedKey = combinedKey.concat(`${series.key ?? ''}, `);
+      }
+      combinedKey = combinedKey.concat(`${seriesList[seriesList.length - 1].key ?? ''}`);
+      dataset.series[0].key = combinedKey;
+      dataset.series = [seriesList[0]];
+    }
+
+    const storeXFacet = structuredClone(xFacet);
+    const storeYFacet = structuredClone(yFacet);
+    dataset.facets = {};
+    dataset.facets["x"] = storeXFacet;
+    dataset.facets["x"].variableType = 'independent';
+    dataset.facets["x"].displayType.orientation = 'horizontal';
+    dataset.facets["y"] = storeYFacet;
+    dataset.facets["y"].variableType = 'dependent';
+    dataset.facets["y"].displayType.orientation = 'vertical';
+    dataset.facets["z"] = {
+      datatype: "number",
+      label: `Datapoint count`,
+      variableType: "dependent",
+      measure: "nominal",
+      displayType: { type: "marking" }
+    };
+    manifest.extensions ??= {};
+    manifest.extensions.paracharts ??= {};
+    manifest.extensions.paracharts.settings ??= {};
+    manifest.extensions!.paracharts!.settings!["type.heatmap.xFacet"] = xFacet.label;
+    manifest.extensions!.paracharts!.settings!["type.heatmap.yFacet"] = yFacet.label;
     return manifest;
   }
 

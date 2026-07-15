@@ -90,6 +90,9 @@ export abstract class PlanePlotView extends DataLayer {
         else if (['bar'].includes(type)) {
           distances = points.map((dp, i) => Number(Math.abs((dp.x - coords.y) ** 2)));
         }
+        else if (['heatmap'].includes(type)) {
+          distances = points.map((dp, i) => Number(Math.abs((dp.x + dp.width / 2- coords.x) ** 2 + (dp.y + dp.height / 2 - coords.y) ** 2)));
+        }
         else {
           distances = points.map((dp, i) => Number(Math.abs((dp.x - coords.x) ** 2 + (dp.y - coords.y) ** 2)));
         }
@@ -103,7 +106,7 @@ export abstract class PlanePlotView extends DataLayer {
             nearestPoint = nearestPoint.withCousins.sort((a, b) => Math.abs(a.y - coords.y) - Math.abs(b.y - coords.y))[0];
           }
         }
-        if (this.paraview.paraState.config.popup.isShowCrosshair && this.paraview.paraState.type !== 'heatmap') {
+        if (this.paraview.paraState.config.popup.isShowCrosshair) {
           if (!this.paraview.paraState.config.popup.isCrosshairFollowPointer) {
             nearestPoint.popup?.remove();
             const isChord = (type == 'line') && (this.paraview.paraState.model!.series.length > 1);
@@ -140,7 +143,7 @@ export abstract class PlanePlotView extends DataLayer {
         fill: "black",
         stroke: "black"
       });
-      if (['bar', 'waterfall', 'column', 'histogram'].includes(type)) {
+      if (['bar', 'waterfall', 'column', 'histogram', 'heatmap'].includes(type)) {
         vertLine = new PathShape(this.paraview, {
           points: [new Vec2(nearestPoint.x + nearestPoint.width / 2, 0),
           new Vec2(nearestPoint.x + nearestPoint.width / 2, this.height),],

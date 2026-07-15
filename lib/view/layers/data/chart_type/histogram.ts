@@ -16,7 +16,8 @@ export class Histogram extends PlanePlotView {
   declare protected _chartInfo: HistogramChartInfo;
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
-    if (['type.histogram.groupingAxis', 'type.histogram.displayAxis', 'type.histogram.relativeAxes', 'axis.y.maxValue', 'axis.y.minValue', 'type.histogram.bins'].includes(path)) {
+    if (['type.histogram.groupingFacet', 'type.histogram.displayAxis', 'type.histogram.relativeAxes',
+      'axis.y.maxValue', 'axis.y.minValue', 'type.histogram.bins'].includes(path)) {
       this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false);
     }
     super.settingDidChange(path, oldValue, newValue);
