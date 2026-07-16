@@ -34,6 +34,10 @@ export class TactileSettingsDialog extends SettingControlContainer {
     this._paraState.settingControls.insert('chart.tactileBrailleGrade');
     this._paraState.settingControls.insert('chart.tactileLabelMode');
     this._paraState.settingControls.insert('chart.pageSize');
+    this._paraState.settingControls.insert('chart.pageMarginLeft');
+    this._paraState.settingControls.insert('chart.pageMarginRight');
+    this._paraState.settingControls.insert('chart.pageMarginTop');
+    this._paraState.settingControls.insert('chart.pageMarginBottom');
   }
 
   render() {
