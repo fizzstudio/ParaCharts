@@ -1,5 +1,6 @@
 import { ParaChart } from '../parachart/parachart';
 import { type SourceKind, type FieldInfo, LoadError, LoadErrorCode, parseCSV, type CsvDataType } from '../loader/paraloader';
+import { type SettingsInput } from '../config/config_types';
 
 /** @public */
 export { FieldInfo, LoadError, LoadErrorCode, CsvDataType };
@@ -21,6 +22,30 @@ export type LoadManifestFailure = {
 
 /** @public */
 export type LoadManifestResult = LoadManifestSuccess | LoadManifestFailure;
+
+/** Physical page sizes supported by headless chart rendering. @public */
+export type HeadlessPageSize =
+  | 'auto'
+  | 'letter_portrait'
+  | 'letter_landscape'
+  | 'tractor_us_standard'
+  | 'tractor_us_rotated'
+  | 'tractor_de_standard'
+  | 'tractor_de_rotated'
+  | 'a4_portrait'
+  | 'a4_landscape'
+  | 'tabloid_portrait'
+  | 'tabloid_landscape'
+  | 'monarch_portrait'
+  | 'monarch_landscape';
+
+/** Presentation options applied before a headless chart is laid out. @public */
+export interface HeadlessRenderOptions {
+  /** Render labels with tactile layout and the Braille36 US font. */
+  isTactileEnabled?: boolean;
+  /** Size the serialized SVG for a physical page, or use chart dimensions for `auto`. */
+  pageSize?: HeadlessPageSize;
+}
 
 /** @public */
 export class ParaHeadless {
@@ -64,11 +89,28 @@ export class ParaHeadless {
     return result.fields;
   }
 
+  /**
+   * Load and render a chart manifest.
+   * @param input - Manifest URL or serialized manifest content.
+   * @param type - How to interpret `input`.
+   * @param options - Presentation options applied before chart layout.
+   */
   async loadManifest(
     input: string,
     type: SourceKind = 'url',
+    options: HeadlessRenderOptions = {},
   ): Promise<LoadManifestResult> {
     await this._paraChart.ready;
+    const settings: SettingsInput = {
+      'animation.isAnimationEnabled': false,
+    };
+    if (options.isTactileEnabled !== undefined) {
+      settings['chart.isTactileEnabled'] = options.isTactileEnabled;
+    }
+    if (options.pageSize !== undefined) {
+      settings['chart.pageSize'] = options.pageSize;
+    }
+    this._paraChart.config = settings;
     this._paraChart.manifestType = type;
     this._paraChart.manifest = input;
     // Wait for Lit's update cycle to run willUpdate and create the new loader promise

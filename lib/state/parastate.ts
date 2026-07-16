@@ -552,7 +552,12 @@ export class ParaState extends BaseState {
     }
   }
 
-  async setManifest(manifest: Manifest, data?: AllSeriesData, resetSettings = true) {
+  async setManifest(
+    manifest: Manifest,
+    data?: AllSeriesData,
+    resetSettings = true,
+    inputSettings?: SettingsInput,
+  ) {
     this._originalManifest = structuredClone(manifest);
     this._manifest = manifest;
     manifest = this.augmentManifest(manifest);
@@ -580,6 +585,12 @@ export class ParaState extends BaseState {
       if (this.config.color.colorMap) {
         this._colors.setColorMap(...this.config.color.colorMap.split(',').map(c => c.trim()));
       }
+    }
+
+    if (inputSettings) {
+      this.updateConfig(draft => {
+        SettingsManager.applySettings(inputSettings, draft);
+      }, true);
     }
 
     this._jimerator = new Jimerator(this._manifest, data);

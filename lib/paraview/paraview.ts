@@ -1135,7 +1135,7 @@ export class ParaView extends ParaComponent implements ViewContext {
       fontWeight: this._paraState.config.chart.fontWeight
     };
     if (this._paraState.config.chart.isTactileEnabled) {
-      style.fontFamily = 'braille36';
+      style.fontFamily = 'Braille36 US';
     }
     if (this._isFullscreen) {
       const vbWidth = Math.round(this._viewBox.width);
