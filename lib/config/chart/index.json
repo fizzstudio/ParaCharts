@@ -120,6 +120,54 @@
             "panel": "chart",
             "parentView": "controlPanel.tabs.chart.tactile.dialog"
         },
+        "pageMarginLeft": {
+            "label": "cpanel.tabs.chart.tactile_dialog.margin_left",
+            "description": "Page left margin in inches",
+            "type": "number",
+            "default": 0.5,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0
+            },
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
+        "pageMarginRight": {
+            "label": "cpanel.tabs.chart.tactile_dialog.margin_right",
+            "description": "Page right margin in inches",
+            "type": "number",
+            "default": 0.5,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0
+            },
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
+        "pageMarginTop": {
+            "label": "cpanel.tabs.chart.tactile_dialog.margin_top",
+            "description": "Page top margin in inches",
+            "type": "number",
+            "default": 0.5,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0
+            },
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
+        "pageMarginBottom": {
+            "label": "cpanel.tabs.chart.tactile_dialog.margin_bottom",
+            "description": "Page bottom margin in inches",
+            "type": "number",
+            "default": 0.5,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0
+            },
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
         "stroke": {
             "description": "Stroke color for lines and shapes",
             "type": "string",

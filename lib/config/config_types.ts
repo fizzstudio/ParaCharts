@@ -315,6 +315,14 @@ export interface ChartConfig extends ConfigGroup {
   tactileLabelMode: 'Braille'|'Latin'|'Both'|'None';
   /** Document page size */
   pageSize: 'auto'|'letter_portrait'|'letter_landscape'|'tractor_us_standard'|'tractor_us_rotated'|'tractor_de_standard'|'tractor_de_rotated'|'a4_portrait'|'a4_landscape'|'tabloid_portrait'|'tabloid_landscape'|'monarch_portrait'|'monarch_landscape';
+  /** Page left margin in inches */
+  pageMarginLeft: number;
+  /** Page right margin in inches */
+  pageMarginRight: number;
+  /** Page top margin in inches */
+  pageMarginTop: number;
+  /** Page bottom margin in inches */
+  pageMarginBottom: number;
   /** Stroke color for lines and shapes */
   stroke: string;
   /** Stroke width in pixels */

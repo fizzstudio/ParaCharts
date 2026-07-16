@@ -115,7 +115,11 @@
                         "enabled": "enable tactile mode",
                         "grade": "braille grade",
                         "label_mode": "label mode",
-                        "page_size": "page size"
+                        "page_size": "page size",
+                        "margin_left": "left margin (in)",
+                        "margin_right": "right margin (in)",
+                        "margin_top": "top margin (in)",
+                        "margin_bottom": "bottom margin (in)"
                     },
                     "legend_dialog": {
                         "show": "show legend",

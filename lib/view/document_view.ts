@@ -85,15 +85,26 @@ export class DocumentView extends Container(View) {
     const paddingHoriz = this._padding.left + this._padding.right;
     const paddingVert = this._padding.top + this._padding.bottom;
     if (this._paraState.config.chart.pageSize === 'auto') {
+      this._x = 0;
+      this._y = 0;
       return [
         this._paraState.config.chart.width - paddingHoriz,
         this._paraState.config.chart.height - paddingVert
       ];
     } else {
       const paperInfo = PAPER_INFO[this._paraState.config.chart.pageSize];
-      const width = (paperInfo.widthMm/MM_PER_INCH)*CSS_DPI;
-      const height = (paperInfo.heightMm/MM_PER_INCH)*CSS_DPI;
-      return [width - paddingHoriz, height - paddingVert];
+      const pageWidth = (paperInfo.widthMm/MM_PER_INCH)*CSS_DPI;
+      const pageHeight = (paperInfo.heightMm/MM_PER_INCH)*CSS_DPI;
+      const marginLeft = this._paraState.config.chart.pageMarginLeft*CSS_DPI;
+      const marginRight = this._paraState.config.chart.pageMarginRight*CSS_DPI;
+      const marginTop = this._paraState.config.chart.pageMarginTop*CSS_DPI;
+      const marginBottom = this._paraState.config.chart.pageMarginBottom*CSS_DPI;
+      this._x = marginLeft/2;
+      this._y = marginTop/2;
+      return [
+        pageWidth - paddingHoriz - marginLeft - marginRight,
+        pageHeight - paddingVert - marginTop - marginBottom
+      ];
     }
   }
 
@@ -388,7 +399,9 @@ export class DocumentView extends Container(View) {
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     this.paraview.paraState.chartInfo.settingDidChange(path, oldValue, newValue);
-    if (['chart.width', 'chart.height', 'chart.fontScale', 'chart.isTactileEnabled', 'chart.pageSize'].includes(path)) {
+    if (['chart.width', 'chart.height', 'chart.fontScale', 'chart.isTactileEnabled', 'chart.pageSize',
+      'chart.pageMarginLeft', 'chart.pageMarginRight', 'chart.pageMarginTop', 'chart.pageMarginBottom'
+    ].includes(path)) {
       this.updateSize();
       this.clearChildren();
       this._populate();
