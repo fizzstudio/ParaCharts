@@ -152,11 +152,11 @@ export class ParaChart extends ParaComponent {
         // It's now safe to load a manifest
         // In headless mode, loadManifest() handles loading via willUpdate, so skip here
         if (this.manifest && !this.headless) {
-          this.runLoader(this.manifest, this.manifestType).then(() => {
+          this.runLoader(this.manifest, this.manifestType, true, undefined, true, this.config).then(() => {
             this.log.info('ParaCharts fully initialized');
             if (this.pollInterval && this.manifestType === 'url') {
               setInterval(() => {
-                this.runLoader(this.manifest, this.manifestType);
+                this.runLoader(this.manifest, this.manifestType, true, undefined, true, this.config);
               }, this.pollInterval*1000);
             }
             this._scrollyteller = new Scrollyteller(this);
@@ -256,7 +256,7 @@ export class ParaChart extends ParaComponent {
     if (this._styleManager) return;
     this._globalState.init();
     this.isControlPanelOpen = this._paraState.config.controlPanel.isControlPanelDefaultOpen;
-    this._injectFontFace('braille36', brailleFont);
+    this._injectFontFace('Braille36 US', brailleFont);
     this._injectFontFace('Atkinson Hyperlegible', hyperFont);
     this._styleManager = new StyleManager();
     this.shadowRoot!.adoptedStyleSheets = [
@@ -327,7 +327,7 @@ export class ParaChart extends ParaComponent {
         this._loaderResolver = resolve;
         this._loaderRejector = reject;
       });
-      this.runLoader(this.manifest, this.manifestType);
+      this.runLoader(this.manifest, this.manifestType, true, undefined, true, this.config);
       this.dispatchEvent(new CustomEvent('manifestchange', {bubbles: true, composed: true, cancelable: true}));
     }
     if (changedProperties.has('config')) {
@@ -382,6 +382,7 @@ export class ParaChart extends ParaComponent {
     forceType = true,
     description?: string,
     resetSettings = true,
+    inputSettings?: SettingsInput,
   ): Promise<void> {
     this._paraState.dataState = 'pending';
     try {
@@ -397,7 +398,7 @@ export class ParaChart extends ParaComponent {
         this._paraState.clearAllHighlights();
         this._paraState.clearPopups();
       }
-      await this._paraState.setManifest(manifest, data, resetSettings);
+      await this._paraState.setManifest(manifest, data, resetSettings, inputSettings);
       this._paraState.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode
       this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
@@ -440,7 +441,7 @@ export class ParaChart extends ParaComponent {
     this.paraView.noticePosted(key, value);
     this.paraView.documentView?.noticePosted(key, value);
     this._globalState.paraState.chartInfo.noticePosted(key, value);
-    this.controlPanel.noticePosted(key, value);
+    this._controlPanelRef.value?.noticePosted(key, value);
     this.captionBox.noticePosted(key, value);
     this.dispatchEvent(
       new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));

@@ -112,6 +112,15 @@ export const FORMAT_CONTEXT_SETTINGS: {
 // @public
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
 
+// @public
+export type HeadlessPageSize = 'auto' | 'letter_portrait' | 'letter_landscape' | 'tractor_us_standard' | 'tractor_us_rotated' | 'tractor_de_standard' | 'tractor_de_rotated' | 'a4_portrait' | 'a4_landscape' | 'tabloid_portrait' | 'tabloid_landscape' | 'monarch_portrait' | 'monarch_landscape';
+
+// @public
+export interface HeadlessRenderOptions {
+    isTactileEnabled?: boolean;
+    pageSize?: HeadlessPageSize;
+}
+
 // @public (undocumented)
 export function inferDefaultsFromCsvText(csvText: string, fileName?: string): CsvInferredDefaults;
 
@@ -332,10 +341,7 @@ export class ParaHeadless {
     // (undocumented)
     get jimReady(): Promise<void>;
     loadData(url: string): Promise<FieldInfo[]>;
-    // Warning: (ae-forgotten-export) The symbol "SourceKind" needs to be exported by the entry point index-ai.d.ts
-    //
-    // (undocumented)
-    loadManifest(input: string, type?: SourceKind): Promise<LoadManifestResult>;
+    loadManifest(input: string, type?: SourceKind, options?: HeadlessRenderOptions): Promise<LoadManifestResult>;
     // (undocumented)
     protected _paraChart: ParaChart;
     // (undocumented)
@@ -346,6 +352,9 @@ export class ParaHeadless {
 //
 // @public
 export function parseCSV(csvText: string): CSVParseResult;
+
+// @public
+export type SourceKind = 'fizz-chart-data' | 'url' | 'content';
 
 // (No @packageDocumentation comment for this package)
 
