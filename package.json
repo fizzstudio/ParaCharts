@@ -125,6 +125,7 @@
     "@fizz/dataframe": "^0.27.0",
     "@fizz/jimerator": "^0.17.1",
     "@fizz/logger": "^0.1.0",
+    "@fizz/number-scaling-rounding": "^0.6.1",
     "@fizz/paramanifest": "^0.11.6",
     "@fizz/paramodel": "^0.8.18",
     "@fizz/parasummary": "^0.17.1",
