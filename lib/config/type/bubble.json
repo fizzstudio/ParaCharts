@@ -1,0 +1,30 @@
+{
+    "ref": "type.plane",
+    "family": "bubble",
+    "settings": {
+        "xFacet": {
+            "label": "cpanel.tabs.chart.bubble_x_facet",
+            "description": "Axis to display on the X axis",
+            "type": "string",
+            "default": "",
+            "control": "dropdown",
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "yFacet": {
+            "label": "cpanel.tabs.chart.bubble_y_facet",
+            "description": "Axis to display on the Y axis",
+            "type": "string",
+            "default": "",
+            "control": "dropdown",
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "bubbleFacet": {
+            "label": "cpanel.tabs.chart.bubble_bubble_facet",
+            "description": "Axis to use for bubble size",
+            "type": "string",
+            "default": "",
+            "control": "dropdown",
+            "parentView": "controlPanel.tabs.chart.chart"
+        }
+    }
+}

@@ -10,7 +10,7 @@
         "facets": {
           "x": {
             "label": "Normally distributed",
-            "variableType": "dependent",
+            "variableType": "independent",
             "measure": "ratio",
             "datatype": "number",
             "units": "unit",

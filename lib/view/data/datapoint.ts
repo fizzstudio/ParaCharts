@@ -464,7 +464,7 @@ export class DatapointView extends DataView {
       }
     }
     else {
-      return true
+      return false;
     }
   }
 

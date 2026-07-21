@@ -663,8 +663,11 @@ export class ParaState extends BaseState {
     if (dataset.representation.subtype == 'histogram') {
       return this.augmentHistogramManifest(manifest);
     }
-    if (dataset.representation.subtype == 'heatmap') {
+    else if (dataset.representation.subtype == 'heatmap') {
       return this.augmentHeatmapManifest(manifest);
+    }
+    else if (dataset.representation.subtype == 'bubble') {
+      return this.augmentBubbleManifest(manifest);
     }
     else {
       return manifest;
@@ -861,6 +864,87 @@ export class ParaState extends BaseState {
     manifest.extensions.paracharts.settings ??= {};
     manifest.extensions!.paracharts!.settings!["type.heatmap.xFacet"] = xFacet.label;
     manifest.extensions!.paracharts!.settings!["type.heatmap.yFacet"] = yFacet.label;
+    return manifest;
+  }
+
+  augmentBubbleManifest(manifest: Manifest): Manifest {
+    const dataset = manifest.jim.datasets[0];
+    const config = this.config.type.bubble;
+    const facetKeys = Object.keys(dataset.facets)
+    let index1 = 0;
+    let index2 = 0;
+    let xFacetKey: string | undefined = undefined
+    let yFacetKey: string | undefined = undefined
+    let bubbleFacetKey: string | undefined = undefined
+    for (let i = 0; i < facetKeys.length; i++) {
+      if (dataset.facets[facetKeys[i]].datatype == 'number') {
+        xFacetKey = facetKeys[i];
+        index1 = i;
+        break;
+      }
+    }
+    for (let j = index1 + 1; j < facetKeys.length; j++) {
+      if (dataset.facets[facetKeys[j]].datatype == 'number') {
+        yFacetKey = facetKeys[j];
+        index2 = j;
+        break;
+      }
+    }
+    for (let k = index2 + 1; k < facetKeys.length; k++) {
+      if (dataset.facets[facetKeys[k]].datatype == 'number') {
+        bubbleFacetKey = facetKeys[k];
+        break;
+      }
+    }
+
+    if (xFacetKey == undefined || yFacetKey == undefined || bubbleFacetKey == undefined) {
+      throw new Error("Manifest must have at least three numeric facets");
+    }
+    /*
+    let xFacetKey = facetKeys[0];
+    let yFacetKey = facetKeys[1];
+    let bubbleFacetKey = facetKeys[2];
+    */
+    if (config.xFacet) {
+      xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.xFacet)![0][0];
+    }
+    if (config.yFacet) {
+      yFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.yFacet)![0][0];
+    }
+    if (config.bubbleFacet) {
+      bubbleFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.bubbleFacet)![0][0];
+    }
+    const xFacet = dataset.facets[xFacetKey];
+    const yFacet = dataset.facets[yFacetKey];
+    const bubbleFacet = dataset.facets[bubbleFacetKey];
+    const xData = dataset.series[0].records!.map(r => r[xFacetKey]);
+    const yData = dataset.series[0].records!.map(r => r[yFacetKey]);
+    const bubbleData = dataset.series[0].records!.map(r => r[bubbleFacetKey]);
+    dataset.series[0].records = dataset.series[0].records?.map((r, i) => {
+      return { x: xData[i], y: yData[i], z: bubbleData[i] }
+    })
+    const storeXFacet = structuredClone(xFacet);
+    const storeYFacet = structuredClone(yFacet);
+    const storeBubbleFacet = structuredClone(bubbleFacet);
+    dataset.facets = {};
+    dataset.facets["x"] = storeXFacet;
+    dataset.facets["x"].variableType = 'independent';
+    dataset.facets["x"].displayType.orientation = 'horizontal';
+    dataset.facets["y"] = storeYFacet;
+    dataset.facets["y"].variableType = 'dependent';
+    dataset.facets["y"].displayType.orientation = 'vertical';
+    dataset.facets["z"] = storeBubbleFacet;
+    dataset.facets["z"].variableType = 'dependent';
+    dataset.facets["z"].displayType.orientation = undefined;
+    manifest.extensions ??= {};
+    manifest.extensions.paracharts ??= {};
+    manifest.extensions.paracharts.settings ??= {};
+    manifest.extensions!.paracharts!.settings!["type.bubble.xFacet"] = xFacet.label;
+    manifest.extensions!.paracharts!.settings!["type.bubble.yFacet"] = yFacet.label;
+    manifest.extensions!.paracharts!.settings!["type.bubble.bubbleFacet"] = bubbleFacet.label;
     return manifest;
   }
 

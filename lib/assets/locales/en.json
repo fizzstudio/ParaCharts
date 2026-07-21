@@ -95,6 +95,9 @@
                     "heatmap_resolution": "display resolution",
                     "heatmap_x_facet": "facet to group on x axis",
                     "heatmap_y_facet": "facet to group on y axis",
+                    "bubble_x_facet": "facet to display on x axis",
+                    "bubble_y_facet": "facet to display on y axis",
+                    "bubble_bubble_facet": "facet to display as bubble size",
                     "popup_dialog": {
                         "opacity": "opacity",
                         "left_padding": "left padding",

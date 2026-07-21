@@ -23,6 +23,7 @@ import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, Focus
 import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, WaterfallPlotView, VennPlotView, Histogram, HeatMapPlotView } from './data/chart_type';
 import { PopupLayer } from './popup_layer';
 import { type DataLayerContext } from '../view_context';
+import { BubblePlotView } from './data/chart_type/bubble_plot_view';
 
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
@@ -40,7 +41,8 @@ export const chartClasses = {
   lollipop: BarPlotView, //LollipopChart
   graph: LinePlotView,
   waterfall: WaterfallPlotView,
-  venn: VennPlotView
+  venn: VennPlotView,
+  bubble: BubblePlotView
 };
 
 export class PlotLayerManager extends View {
