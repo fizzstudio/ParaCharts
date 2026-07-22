@@ -14,5 +14,7 @@ export class BubbleChartInfo extends PointChartInfo {
         this._paraState.settingControls.insert('type.bubble.bubbleFacet', {
             options: variables
         });
+        this._paraState.settingControls.insert('type.bubble.maxBubbleSize');
+        this._paraState.settingControls.insert('type.bubble.minBubbleSize');
     }
 }

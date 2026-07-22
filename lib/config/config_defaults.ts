@@ -272,6 +272,8 @@ export const defaultConfig: Config = {
         xFacet: "",
         yFacet: "",
         bubbleFacet: "",
+        maxBubbleSize: 4,
+        minBubbleSize: 0.5,
       },
       column: {
         minYValue: "unset",

@@ -98,6 +98,8 @@
                     "bubble_x_facet": "facet to display on x axis",
                     "bubble_y_facet": "facet to display on y axis",
                     "bubble_bubble_facet": "facet to display as bubble size",
+                    "bubble_max_bubble_size": "max bubble size",
+                    "bubble_min_bubble_size": "min bubble size",
                     "popup_dialog": {
                         "opacity": "opacity",
                         "left_padding": "left padding",

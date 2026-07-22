@@ -923,13 +923,29 @@ export class ParaState extends BaseState {
     const xData = dataset.series[0].records!.map(r => r[xFacetKey]);
     const yData = dataset.series[0].records!.map(r => r[yFacetKey]);
     const bubbleData = dataset.series[0].records!.map(r => r[bubbleFacetKey]);
-    dataset.series[0].records = dataset.series[0].records?.map((r, i) => {
-      return { x: xData[i], y: yData[i], z: bubbleData[i] }
-    })
+    //dataset.series[0].records = dataset.series[0].records?.map((r, i) => {
+    //  return { x: xData[i], y: yData[i], z: bubbleData[i] }
+    //})
+    for (let i = 0; i < dataset.series[0].records!.length; i++) {
+      dataset.series[0].records![i].x = xData[i];
+      dataset.series[0].records![i].y = yData[i];
+      dataset.series[0].records![i].z = bubbleData[i];
+      for (let j = 0; j < dataset.series[0].records!.length - 3; j++) {
+        //let otherFacet = datas
+      }
+    }
     const storeXFacet = structuredClone(xFacet);
     const storeYFacet = structuredClone(yFacet);
     const storeBubbleFacet = structuredClone(bubbleFacet);
-    dataset.facets = {};
+    //dataset.facets = {};
+    for (let i = 0; i < facetKeys.length; i++) {
+      if (!['number', 'date', 'string'].includes(dataset.facets[facetKeys[i]].datatype)) {
+        delete dataset.facets[facetKeys[i]];
+        for (let j = 0; j < dataset.series[0].records!.length; j++) {
+          delete dataset.series[0].records![j][facetKeys[i]];
+        }
+      }
+    }
     dataset.facets["x"] = storeXFacet;
     dataset.facets["x"].variableType = 'independent';
     dataset.facets["x"].displayType.orientation = 'horizontal';

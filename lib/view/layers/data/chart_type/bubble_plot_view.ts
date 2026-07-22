@@ -1,5 +1,5 @@
 import { enumerate } from "@fizz/paramodel";
-import { PointDatapointView, PointPlotView, PointSeriesView, ScatterPlotView } from ".";
+import { PointDatapointView, PointPlotView, PointSeriesView } from ".";
 import { DataSymbol } from "../../../symbol";
 import { ConfigSetting } from "../../../../config/config_types";
 
@@ -26,8 +26,8 @@ export class BubblePlotView extends PointPlotView {
         const maxZ = Math.max(...allZ);
         const minZ = Math.min(...allZ);
         const zRange = maxZ - minZ;
-        const maxSize = 4;
-        const minSize = .75;
+        const maxSize = this.paraview.paraState.config.type.bubble.maxBubbleSize;
+        const minSize = this.paraview.paraState.config.type.bubble.minBubbleSize;
         const sizeRange = maxSize - minSize;
         for (let i = 0; i < this.datapointViews.length; i++) {
             const scale = ((allZ[i] - minZ) * sizeRange / zRange) + minSize;
@@ -39,6 +39,9 @@ export class BubblePlotView extends PointPlotView {
         if (['type.bubble.bubbleFacet', 'type.bubble.xFacet', 'type.bubble.yFacet'].includes(path)) {
             this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false);
             this.paraview.paraState.clearSelected();
+        }
+        if (['type.bubble.maxBubbleSize', 'type.bubble.minBubbleSize'].includes(path)) {
+            this.paraview.createDocumentView();
         }
         super.settingDidChange(path, oldValue, newValue);
     }

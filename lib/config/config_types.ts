@@ -644,6 +644,10 @@ export interface TypeBubbleConfig extends TypePlaneConfig {
   yFacet: string;
   /** Axis to use for bubble size */
   bubbleFacet: string;
+  /** Max bubble size */
+  maxBubbleSize: number;
+  /** Min bubble size */
+  minBubbleSize: number;
 }
 export interface TypeColumnConfig extends TypePlaneConfig {
   /** How bars are stacked */
