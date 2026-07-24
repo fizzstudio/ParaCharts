@@ -2,6 +2,8 @@ import { enumerate } from "@fizz/paramodel";
 import { PointDatapointView, PointPlotView, PointSeriesView } from ".";
 import { DataSymbol } from "../../../symbol";
 import { ConfigSetting } from "../../../../config/config_types";
+import { RectShape, Shape } from "../../../shape";
+import { SELECTION_MARKER_SIZE } from "../../../data";
 
 export class BubblePlotView extends PointPlotView {
     protected _createDatapoints(): void {
@@ -38,6 +40,7 @@ export class BubblePlotView extends PointPlotView {
     settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
         if (['type.bubble.bubbleFacet', 'type.bubble.xFacet', 'type.bubble.yFacet'].includes(path)) {
             this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false);
+            this.paraview.paraState.setCaption();
             this.paraview.paraState.clearSelected();
         }
         if (['type.bubble.maxBubbleSize', 'type.bubble.minBubbleSize'].includes(path)) {
@@ -56,6 +59,29 @@ export class BubblePointView extends PointDatapointView {
             / (xInterval.end - xInterval.start);
         const parentWidth: number = this.chart.parent.width;
         return parentWidth * xTemp;
+    }
+
+    get width() {
+        return Math.max(SELECTION_MARKER_SIZE * this.baseSymbolScale, SELECTION_MARKER_SIZE * .75);
+    }
+
+    get height() {
+        return Math.max(SELECTION_MARKER_SIZE * this.baseSymbolScale, SELECTION_MARKER_SIZE * .75);
+    }
+
+    get selectedMarker(): Shape {
+        const width = this.width;
+        const height = this.height;
+        return new RectShape(this.paraview, {
+            width: width / 2,
+            height: height / 2,
+            x: this._x - width / 4,
+            y: this._y - height / 4,
+            fill: 'none',
+            stroke: 'black',
+            strokeWidth: 2,
+            isClip: this.shouldClip
+        });
     }
 
     protected _createSymbol(): void {

@@ -266,15 +266,17 @@ export abstract class BaseChartInfo {
     this._paraState.postNotice('goChartMinMax', { isMin, options: this._navMap!.cursor.options });
   }
 
+  protected seriesAndVal = (datapointId: string) => {
+    const { seriesKey, index } = datapointIdToCursor(datapointId);
+    const series = this._paraState.model!.atKey(seriesKey)!;
+    const dp = series[index];
+    return `${series.label} (${formatBox(dp.facetBox('x')!, 'raw')}, ${formatBox(dp.facetBox('y')!, 'raw')})`;
+  };
+
   protected _composePointSelectionAnnouncement(isExtend: boolean) {
     // This method assumes only a single point was visited when the select
     // command was issued (i.e., we know nothing about chord mode here)
-    const seriesAndVal = (datapointId: string) => {
-      const { seriesKey, index } = datapointIdToCursor(datapointId);
-      const series = this._paraState.model!.atKey(seriesKey)!;
-      const dp = series[index];
-      return `${series.label} (${formatBox(dp.facetBox('x')!, 'raw')}, ${formatBox(dp.facetBox('y')!, 'raw')})`;
-    };
+
 
     const newTotalSelected = this._paraState.selectedDatapoints.size;
     const oldTotalSelected = this._paraState.prevSelectedDatapoints.size;
@@ -288,22 +290,22 @@ export abstract class BaseChartInfo {
 
     if (oldTotalSelected === 0) {
       // None were selected; selected 1
-      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}`;
+      return `Selected ${this.seriesAndVal(justSelected.values().toArray()[0])}`;
     } else if (oldTotalSelected === 1 && !newTotalSelected) {
       // 1 was selected; it has been deselected
-      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. No points selected.`;
+      return `Deselected ${this.seriesAndVal(justDeselected.values().toArray()[0])}. No points selected.`;
     } else if (!isExtend && justSelected.size && oldTotalSelected) {
       // Selected 1 new, deselected others
-      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}. 1 point selected.`;
+      return `Selected ${this.seriesAndVal(justSelected.values().toArray()[0])}. 1 point selected.`;
     } else if (!isExtend && newTotalSelected && oldTotalSelected) {
       // Kept 1 selected, deselected others
-      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. 1 point selected.`;
+      return `Deselected ${this.seriesAndVal(justDeselected.values().toArray()[0])}. 1 point selected.`;
     } else if (isExtend && justDeselected.size) {
       // Deselected 1
-      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. ${newTotSel}`;
+      return `Deselected ${this.seriesAndVal(justDeselected.values().toArray()[0])}. ${newTotSel}`;
     } else if (isExtend && justSelected.size) {
       // Selected 1
-      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}. ${newTotSel}`;
+      return `Selected ${this.seriesAndVal(justSelected.values().toArray()[0])}. ${newTotSel}`;
     } else {
       return 'ERROR';
     }

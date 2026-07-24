@@ -677,7 +677,17 @@ export class ParaState extends BaseState {
   augmentHistogramManifest(manifest: Manifest): Manifest {
     const dataset = manifest.jim.datasets[0];
     const bins = this.config.type.histogram.bins ?? 20;
-    let targetFacetKey = Object.keys(dataset.facets)[0];
+    const facetKeys = Object.keys(dataset.facets);
+    let targetFacetKey: string | undefined = undefined;
+    for (let i = 0; i < facetKeys.length; i++) {
+      if (dataset.facets[facetKeys[i]].datatype == 'number') {
+        targetFacetKey = facetKeys[i];
+        break;
+      }
+    }
+    if (targetFacetKey == undefined) {
+      throw new Error("Histogram manifest must have at least one numeric facet.");
+    }
     if (this.config.type.histogram.groupingFacet) {
       targetFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
         f[1].label == this.config.type.histogram.groupingFacet)![0][0];
@@ -755,14 +765,32 @@ export class ParaState extends BaseState {
 
   augmentHeatmapManifest(manifest: Manifest): Manifest {
     const dataset = manifest.jim.datasets[0];
+    const facetKeys = Object.keys(dataset.facets);
     const config = this.config.type.heatmap;
     const resolution = config.resolution ?? 20;
     const allData = [];
     const x: Array<number> = [];
     const y: Array<number> = [];
+    let index1 = 0;
     let seriesList = dataset.series;
-    let xFacetKey = Object.keys(dataset.facets)[0];
-    let yFacetKey = Object.keys(dataset.facets)[1];
+    let xFacetKey: string | undefined = undefined;
+    let yFacetKey: string | undefined = undefined;
+    for (let i = 0; i < facetKeys.length; i++) {
+      if (dataset.facets[facetKeys[i]].datatype == 'number') {
+        xFacetKey = facetKeys[i];
+        index1 = i;
+        break;
+      }
+    }
+    for (let j = index1 + 1; j < facetKeys.length; j++) {
+      if (dataset.facets[facetKeys[j]].datatype == 'number') {
+        yFacetKey = facetKeys[j];
+        break;
+      }
+    }
+    if (xFacetKey == undefined || yFacetKey == undefined) {
+      throw new Error("Heatmap manifest must have at least two numeric facets.");
+    }
     if (config.xFacet) {
       xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
         f[1].label == config.xFacet)![0][0];
@@ -898,7 +926,7 @@ export class ParaState extends BaseState {
     }
 
     if (xFacetKey == undefined || yFacetKey == undefined || bubbleFacetKey == undefined) {
-      throw new Error("Manifest must have at least three numeric facets");
+      throw new Error("Bubble chart manifest must have at least three numeric facets.");
     }
     /*
     let xFacetKey = facetKeys[0];

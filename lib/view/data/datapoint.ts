@@ -12,7 +12,7 @@ import { type PastryPlotView, type RadialDatapointParams } from '../layers';
 import { SeriesView } from './series';
 import { DataView } from './data';
 
-const SELECTION_MARKER_SIZE = 40;
+export const SELECTION_MARKER_SIZE = 40;
 
 /**
  * Mapping of datapoint properties to values.

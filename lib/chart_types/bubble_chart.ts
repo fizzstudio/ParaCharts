@@ -1,3 +1,5 @@
+import { formatBox } from "@fizz/parasummary";
+import { datapointIdToCursor } from "../state";
 import { PointChartInfo } from "./point_chart";
 
 export class BubbleChartInfo extends PointChartInfo {
@@ -17,4 +19,13 @@ export class BubbleChartInfo extends PointChartInfo {
         this._paraState.settingControls.insert('type.bubble.maxBubbleSize');
         this._paraState.settingControls.insert('type.bubble.minBubbleSize');
     }
+
+
+    protected seriesAndVal = (datapointId: string) => {
+        const { seriesKey, index } = datapointIdToCursor(datapointId);
+        const series = this._paraState.model!.atKey(seriesKey)!;
+        const dp = series[index];
+        return `${series.label} (${formatBox(dp.facetBox('x')!, 'raw')}, ${formatBox(dp.facetBox('y')!, 'raw')}, ${formatBox(dp.facetBox('z')!, 'raw')})`;
+    };
+
 }

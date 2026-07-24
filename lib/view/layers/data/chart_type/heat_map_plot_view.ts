@@ -30,6 +30,7 @@ export class HeatMapPlotView extends PlanePlotView {
     if (['type.heatmap.resolution', 'type.heatmap.xFacet', 'type.heatmap.yFacet',
       'color.colorVisionMode', 'color.colorPalette', 'color.isDarkModeEnabled'].includes(path)) {
       this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false);
+      this.paraview.paraState.setCaption();
       this.paraview.paraState.clearSelected();
     }
     super.settingDidChange(path, oldValue, newValue);
