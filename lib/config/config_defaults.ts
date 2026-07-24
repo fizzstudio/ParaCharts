@@ -272,6 +272,7 @@ export const defaultConfig: Config = {
         xFacet: "",
         yFacet: "",
         bubbleFacet: "",
+        labelFacet: "",
         maxBubbleSize: 4,
         minBubbleSize: 0.5,
       },

@@ -638,12 +638,14 @@ export interface TypeBarConfig extends TypePlaneConfig {
   labelFontSize: string;
 }
 export interface TypeBubbleConfig extends TypePlaneConfig {
-  /** Axis to display on the X axis */
+  /** Facet to display on the X axis */
   xFacet: string;
-  /** Axis to display on the Y axis */
+  /** Facet to display on the Y axis */
   yFacet: string;
-  /** Axis to use for bubble size */
+  /** Facet to use for bubble size */
   bubbleFacet: string;
+  /** Facet to use for as labels */
+  labelFacet: string;
   /** Max bubble size */
   maxBubbleSize: number;
   /** Min bubble size */

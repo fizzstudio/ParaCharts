@@ -4,7 +4,7 @@
     "settings": {
         "xFacet": {
             "label": "cpanel.tabs.chart.bubble_x_facet",
-            "description": "Axis to display on the X axis",
+            "description": "Facet to display on the X axis",
             "type": "string",
             "default": "",
             "control": "dropdown",
@@ -12,7 +12,7 @@
         },
         "yFacet": {
             "label": "cpanel.tabs.chart.bubble_y_facet",
-            "description": "Axis to display on the Y axis",
+            "description": "Facet to display on the Y axis",
             "type": "string",
             "default": "",
             "control": "dropdown",
@@ -20,7 +20,15 @@
         },
         "bubbleFacet": {
             "label": "cpanel.tabs.chart.bubble_bubble_facet",
-            "description": "Axis to use for bubble size",
+            "description": "Facet to use for bubble size",
+            "type": "string",
+            "default": "",
+            "control": "dropdown",
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "labelFacet": {
+            "label": "cpanel.tabs.chart.bubble_label_facet",
+            "description": "Facet to use for as labels",
             "type": "string",
             "default": "",
             "control": "dropdown",

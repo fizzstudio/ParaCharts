@@ -951,6 +951,12 @@ export class ParaState extends BaseState {
     const xData = dataset.series[0].records!.map(r => r[xFacetKey]);
     const yData = dataset.series[0].records!.map(r => r[yFacetKey]);
     const bubbleData = dataset.series[0].records!.map(r => r[bubbleFacetKey]);
+    let labelFacetKey = '';
+    if (config.labelFacet !== '') {
+      labelFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.labelFacet)![0][0];
+    }
+
     //dataset.series[0].records = dataset.series[0].records?.map((r, i) => {
     //  return { x: xData[i], y: yData[i], z: bubbleData[i] }
     //})
@@ -958,6 +964,11 @@ export class ParaState extends BaseState {
       dataset.series[0].records![i].x = xData[i];
       dataset.series[0].records![i].y = yData[i];
       dataset.series[0].records![i].z = bubbleData[i];
+      if (config.labelFacet !== '') {
+        const labelData = dataset.series[0].records!.map(r => r[labelFacetKey]);
+        dataset.series[0].records![i]['label'] = labelData[i]
+        delete dataset.series[0].records![i][labelFacetKey];
+      }
       for (let j = 0; j < dataset.series[0].records!.length - 3; j++) {
         //let otherFacet = datas
       }
@@ -983,6 +994,11 @@ export class ParaState extends BaseState {
     dataset.facets["z"] = storeBubbleFacet;
     dataset.facets["z"].variableType = 'dependent';
     dataset.facets["z"].displayType.orientation = undefined;
+    if (config.labelFacet !== '') {
+      const labelFacet = dataset.facets[labelFacetKey];
+      dataset.facets['label'] = structuredClone(labelFacet);
+      delete dataset.facets[labelFacetKey];
+    }
     manifest.extensions ??= {};
     manifest.extensions.paracharts ??= {};
     manifest.extensions.paracharts.settings ??= {};

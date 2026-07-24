@@ -38,7 +38,7 @@ export class BubblePlotView extends PointPlotView {
     }
 
     settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
-        if (['type.bubble.bubbleFacet', 'type.bubble.xFacet', 'type.bubble.yFacet'].includes(path)) {
+        if (['type.bubble.bubbleFacet', 'type.bubble.labelFacet', 'type.bubble.xFacet', 'type.bubble.yFacet'].includes(path)) {
             this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false);
             this.paraview.paraState.setCaption();
             this.paraview.paraState.clearSelected();
