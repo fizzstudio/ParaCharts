@@ -33,7 +33,7 @@ export class BubblePlotView extends PointPlotView {
         const sizeRange = maxSize - minSize;
         for (let i = 0; i < this.datapointViews.length; i++) {
             const scale = ((allZ[i] - minZ) * sizeRange / zRange) + minSize;
-            this.datapointViews[i].baseSymbolScale = scale
+            //this.datapointViews[i].baseSymbolScale = scale
         }
     }
 
@@ -87,6 +87,14 @@ export class BubblePointView extends PointDatapointView {
     protected _createSymbol(): void {
         const series = this.seriesProps;
         let symbolType = series.symbol;
+        const allZ = this.paraview.paraState.model!.allPoints.map(dp => dp.facetValueAsNumber("z")!);
+        const maxZ = Math.max(...allZ);
+        const minZ = Math.min(...allZ);
+        const zRange = maxZ - minZ;
+        const maxSize = this.paraview.paraState.config.type.bubble.maxBubbleSize;
+        const minSize = this.paraview.paraState.config.type.bubble.minBubbleSize;
+        const sizeRange = maxSize - minSize;
+        const scale = ((((allZ[this.index] - minZ) * sizeRange / zRange) + minSize) ** 2);
         this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
             strokeWidth: this.paraview.paraState.config.chart.symbolStrokeWidth,
             lighten: true,
@@ -96,7 +104,8 @@ export class BubblePointView extends PointDatapointView {
             pointerLeave: (e) => {
                 this.paraview.paraState.removePopup(this.id);
             },
-            //scale: scale
+            baseSize: scale,
+            opacity: .75
         });
         //this._baseSymbolScale = scale;
         this._symbol.role = 'datapoint'

@@ -97,6 +97,7 @@ export class Legend extends Container(View) {
           },
           lighten: item.symbolOptions?.lighten ?? false
           ,
+          baseSize: item.symbolOptions?.baseSize ?? 1,
           click: (e) => {
             if (this.paraview.paraState.pinnedSeriesKey === item.seriesKey) {
               this.paraview.paraState.unpinSeries();

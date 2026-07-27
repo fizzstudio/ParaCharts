@@ -27,6 +27,7 @@ import {
   plusInfo,
   xInfo,
   starInfo,
+  AREA,
 } from './symbol_geometry';
 
 import { svg, nothing } from 'lit';
@@ -87,20 +88,12 @@ function starPath() {
   `;
 }
 
-const shapeInfo = {
-  circle: circleInfo(),
-  square: squareInfo(),
-  triangle_up: triangleUpInfo(),
-  triangle_down: triangleDownInfo(),
-  diamond: diamondInfo(),
-  plus: plusInfo(),
-  x: xInfo(),
-  star: starInfo()
-};
+
 
 export interface DataSymbolOptions {
   strokeWidth: number;
   scale: number;
+  baseSize: number;
   color?: number;
   opacity?: number;
   dashed: boolean;
@@ -126,7 +119,8 @@ export class DataSymbol extends View {
   protected _role = '';
   protected _fill?: DataSymbolFill;
   protected _shape?: DataSymbolShape;
-
+  protected shapeInfo;
+   
   static fromType(
     paraview: ViewContext,
     type: DataSymbolType,
@@ -154,6 +148,7 @@ export class DataSymbol extends View {
     this._options = {
       strokeWidth: options?.strokeWidth ?? this.paraview.paraState.config.chart.symbolStrokeWidth,
       scale: options?.scale ?? 1,
+      baseSize: options?.baseSize ?? 1,
       color: options?.color,
       opacity: options?.opacity,
       dashed: options?.dashed ?? false,
@@ -164,6 +159,16 @@ export class DataSymbol extends View {
       pointerEnter: options?.pointerEnter,
       pointerLeave: options?.pointerLeave,
       click: options?.click
+    };
+    this.shapeInfo = {
+      circle: circleInfo(this._options.baseSize * AREA),
+      square: squareInfo(this._options.baseSize * AREA),
+      triangle_up: triangleUpInfo(this._options.baseSize * AREA),
+      triangle_down: triangleDownInfo(this._options.baseSize * AREA),
+      diamond: diamondInfo(this._options.baseSize * AREA),
+      plus: plusInfo(this._options.baseSize * AREA),
+      x: xInfo(this._options.baseSize * AREA),
+      star: starInfo(this._options.baseSize * AREA)
     };
     this.type = `${shape}.${fill}`;
     this._locOffset.x = this.width/2;
@@ -177,14 +182,15 @@ export class DataSymbol extends View {
   set type(type: DataSymbolType) {
     this._type = type;
     const [shape, fill] = type.split('.');
+    const size = this._options.baseSize ?? 1;
     this._shape = shape as DataSymbolShape;
     this._fill = fill as DataSymbolFill;
-    this._defsKey = `sym-${shape}-${fill}`;
+    this._defsKey = `sym-${shape}-${fill}-${size}`;
     if (!this.paraview.defs[this._defsKey]) {
       this.paraview.addDef(this._defsKey, svg`
         <path
           id=${this._defsKey}
-          d=${shapeInfo[this.shape].path}
+          d=${this.shapeInfo[this.shape].path}
         />
       `);
     }
@@ -193,11 +199,11 @@ export class DataSymbol extends View {
   }
 
   get width() {
-    return shapeInfo[this.shape].baseWidth*this._options.scale;
+    return this.shapeInfo[this.shape].baseWidth*this._options.scale;
   }
 
   get height() {
-    return shapeInfo[this.shape].baseHeight*this._options.scale;
+    return this.shapeInfo[this.shape].baseHeight*this._options.scale;
   }
 
   get outerBbox() {
