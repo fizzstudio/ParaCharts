@@ -6,6 +6,14 @@ import { RectShape, Shape } from "../../../shape";
 import { SELECTION_MARKER_SIZE } from "../../../data";
 
 export class BubblePlotView extends PointPlotView {
+    allZ: number[] = [];
+    maxZ = 0;
+    minZ = 0;
+    zRange = 0;
+    maxSize = 0;
+    minSize = 0;
+    sizeRange = 0;
+
     protected _createDatapoints(): void {
         for (const [series, i] of enumerate(this.paraview.paraState.model!.series)) {
             const seriesView = this._newSeriesView(series.key);
@@ -21,20 +29,16 @@ export class BubblePlotView extends PointPlotView {
     protected _newDatapointView(seriesView: PointSeriesView) {
         return new BubblePointView(seriesView);
     }
-
-    protected _completeDatapointLayout() {
-        super._completeDatapointLayout();
-        const allZ = this.paraview.paraState.model!.allPoints.map(dp => dp.facetValueAsNumber("z")!);
-        const maxZ = Math.max(...allZ);
-        const minZ = Math.min(...allZ);
-        const zRange = maxZ - minZ;
-        const maxSize = this.paraview.paraState.config.type.bubble.maxBubbleSize;
-        const minSize = this.paraview.paraState.config.type.bubble.minBubbleSize;
-        const sizeRange = maxSize - minSize;
-        for (let i = 0; i < this.datapointViews.length; i++) {
-            const scale = ((allZ[i] - minZ) * sizeRange / zRange) + minSize;
-            //this.datapointViews[i].baseSymbolScale = scale
-        }
+    protected _layoutDatapoints(): void {
+        this.allZ = this.paraview.paraState.model!.allPoints.map(dp => dp.facetValueAsNumber("z")!);
+        console.log(this.paraview.paraState.model?.allPoints.length)
+        this.maxZ = Math.max(...this.allZ);
+        this.minZ = Math.min(...this.allZ);
+        this.zRange = this.maxZ - this.minZ;
+        this.maxSize = this.paraview.paraState.config.type.bubble.maxBubbleSize;
+        this.minSize = this.paraview.paraState.config.type.bubble.minBubbleSize;
+        this.sizeRange = this.maxSize - this.minSize;
+        super._layoutDatapoints();
     }
 
     settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
@@ -52,6 +56,7 @@ export class BubblePlotView extends PointPlotView {
 }
 
 export class BubblePointView extends PointDatapointView {
+    declare readonly chart: BubblePlotView;
     computeX() {
         const xInterval = this.chart.chartInfo.xInterval!;
         // Scales points in proportion to the data range
@@ -87,14 +92,12 @@ export class BubblePointView extends PointDatapointView {
     protected _createSymbol(): void {
         const series = this.seriesProps;
         let symbolType = series.symbol;
-        const allZ = this.paraview.paraState.model!.allPoints.map(dp => dp.facetValueAsNumber("z")!);
-        const maxZ = Math.max(...allZ);
-        const minZ = Math.min(...allZ);
-        const zRange = maxZ - minZ;
-        const maxSize = this.paraview.paraState.config.type.bubble.maxBubbleSize;
-        const minSize = this.paraview.paraState.config.type.bubble.minBubbleSize;
-        const sizeRange = maxSize - minSize;
-        const scale = ((((allZ[this.index] - minZ) * sizeRange / zRange) + minSize) ** 2);
+        let jimIndex = 0;
+        for (let i = this._parent.modelIndex - 1; i >= 0; i--) {
+            jimIndex += this.paraview.paraState.model!.series[i].datapoints.length;
+        }
+        jimIndex += this.index;
+        const scale = ((((this.chart.allZ[jimIndex] - this.chart.minZ) * this.chart.sizeRange / this.chart.zRange) + this.chart.minSize) ** 2);
         this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
             strokeWidth: this.paraview.paraState.config.chart.symbolStrokeWidth,
             lighten: true,

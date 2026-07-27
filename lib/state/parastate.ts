@@ -898,7 +898,8 @@ export class ParaState extends BaseState {
   augmentBubbleManifest(manifest: Manifest): Manifest {
     const dataset = manifest.jim.datasets[0];
     const config = this.config.type.bubble;
-    const facetKeys = Object.keys(dataset.facets)
+    const facetKeys = Object.keys(dataset.facets);
+    let seriesList = dataset.series;
     let index1 = 0;
     let index2 = 0;
     let xFacetKey: string | undefined = undefined
@@ -948,31 +949,35 @@ export class ParaState extends BaseState {
     const xFacet = dataset.facets[xFacetKey];
     const yFacet = dataset.facets[yFacetKey];
     const bubbleFacet = dataset.facets[bubbleFacetKey];
-    const xData = dataset.series[0].records!.map(r => r[xFacetKey]);
-    const yData = dataset.series[0].records!.map(r => r[yFacetKey]);
-    const bubbleData = dataset.series[0].records!.map(r => r[bubbleFacetKey]);
     let labelFacetKey = '';
     if (config.labelFacet !== '') {
       labelFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
         f[1].label == config.labelFacet)![0][0];
     }
+    for (let series of seriesList) {
+      const xData = series.records!.map(r => r[xFacetKey]);
+      const yData = series.records!.map(r => r[yFacetKey]);
+      const bubbleData = series.records!.map(r => r[bubbleFacetKey]);
 
-    //dataset.series[0].records = dataset.series[0].records?.map((r, i) => {
-    //  return { x: xData[i], y: yData[i], z: bubbleData[i] }
-    //})
-    for (let i = 0; i < dataset.series[0].records!.length; i++) {
-      dataset.series[0].records![i].x = xData[i];
-      dataset.series[0].records![i].y = yData[i];
-      dataset.series[0].records![i].z = bubbleData[i];
-      if (config.labelFacet !== '') {
-        const labelData = dataset.series[0].records!.map(r => r[labelFacetKey]);
-        dataset.series[0].records![i]['label'] = labelData[i]
-        delete dataset.series[0].records![i][labelFacetKey];
-      }
-      for (let j = 0; j < dataset.series[0].records!.length - 3; j++) {
-        //let otherFacet = datas
+
+      //dataset.series[0].records = dataset.series[0].records?.map((r, i) => {
+      //  return { x: xData[i], y: yData[i], z: bubbleData[i] }
+      //})
+      for (let i = 0; i < series.records!.length; i++) {
+        series.records![i].x = xData[i];
+        series.records![i].y = yData[i];
+        series.records![i].z = bubbleData[i];
+        if (config.labelFacet !== '') {
+          const labelData = series.records!.map(r => r[labelFacetKey]);
+          series.records![i]['label'] = labelData[i]
+          delete series.records![i][labelFacetKey];
+        }
+        for (let j = 0; j < series.records!.length - 3; j++) {
+          //let otherFacet = datas
+        }
       }
     }
+
     const storeXFacet = structuredClone(xFacet);
     const storeYFacet = structuredClone(yFacet);
     const storeBubbleFacet = structuredClone(bubbleFacet);
@@ -980,9 +985,12 @@ export class ParaState extends BaseState {
     for (let i = 0; i < facetKeys.length; i++) {
       if (!['number', 'date', 'string'].includes(dataset.facets[facetKeys[i]].datatype)) {
         delete dataset.facets[facetKeys[i]];
-        for (let j = 0; j < dataset.series[0].records!.length; j++) {
-          delete dataset.series[0].records![j][facetKeys[i]];
+        for (let series of seriesList) {
+          for (let j = 0; j < series.records!.length; j++) {
+            delete series.records![j][facetKeys[i]];
+          }
         }
+
       }
     }
     dataset.facets["x"] = storeXFacet;

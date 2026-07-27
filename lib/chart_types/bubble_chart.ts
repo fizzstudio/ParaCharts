@@ -2,6 +2,7 @@ import { formatBox } from "@fizz/parasummary";
 import { datapointIdToCursor } from "../state";
 import { PointChartInfo } from "./point_chart";
 import { LegendItem } from "../view/legend";
+import { DataSymbols } from "../view/symbol";
 
 export class BubbleChartInfo extends PointChartInfo {
     protected _addSettingControls(): void {
@@ -40,6 +41,7 @@ export class BubbleChartInfo extends PointChartInfo {
     legend() {
         const model = this._paraState.model!;
         //let symbolType = series.symbol;
+        const types = new DataSymbols().types;
         const allZ = this._paraState.model!.allPoints.map(dp => dp.facetValueAsNumber("z")!);
         const maxZ = Math.max(...allZ);
         const minZ = Math.min(...allZ);
@@ -48,37 +50,41 @@ export class BubbleChartInfo extends PointChartInfo {
         const maxSize = this._paraState.config.type.bubble.maxBubbleSize;
         const minSize = this._paraState.config.type.bubble.minBubbleSize;
         const sizeRange = maxSize - minSize;
-        //const scale = ((((allZ[this.index] - minZ) * sizeRange / zRange) + minSize)**2) * AREA;
         const minSymbolSize = minSize ** 2;
-        const medSymbolSize = ((((zRange / 2) * sizeRange / zRange) + minSize)**2)
+        const medSymbolSize = ((((zRange / 2) * sizeRange / zRange) + minSize) ** 2)
         const maxSymbolSize = (sizeRange + minSize) ** 2;
         const items: LegendItem[] = [];
-        for (let key of model.seriesKeys) {
+        for (let i = 0; i < model.seriesKeys.length; i++) {
+            const key = model.seriesKeys[i];
             const minSymbolItem: LegendItem = {
                 label: `${minZ}`,
                 seriesKey: key,
-                color: 0,
-                symbol: 'circle.empty',
+                color: i,
+                symbol: types[i],
                 symbolOptions: { baseSize: minSymbolSize }
             }
             const medSymbolItem: LegendItem = {
                 label: `${medZ}`,
                 seriesKey: key,
-                color: 0,
-                symbol: 'circle.empty',
+                color: i,
+                symbol: types[i],
                 symbolOptions: { baseSize: medSymbolSize }
             }
             const maxSymbolItem: LegendItem = {
                 label: `${maxZ}`,
                 seriesKey: key,
-                color: 0,
-                symbol: 'circle.empty',
+                color: i,
+                symbol: types[i],
                 symbolOptions: { baseSize: maxSymbolSize }
             }
-            items.push(minSymbolItem)
-             items.push(medSymbolItem)
-            items.push(maxSymbolItem)
+            items.push(minSymbolItem);
+            items.push(medSymbolItem);
+            items.push(maxSymbolItem);
         }
         return items;
+    }
+
+    protected _createVerticalNavLinks(): void {
+
     }
 }

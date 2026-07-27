@@ -70,6 +70,33 @@ export function diamondMetrics(area?: number): DiamondMetrics {
   return { side, radius };
 }
 
+function starMetrics() {
+  const pentArea = 25;
+  const t = Math.sqrt(pentArea / 1.72);
+  const triArea = (100 - pentArea) / 5;
+  const h = triArea * 2 / t;
+  const s = Math.sqrt((t / 2) ** 2 + h ** 2);
+  const triPeakAngle = 2 * 180 * Math.atan((t / 2) / h) / Math.PI;
+  const interTriAngle = triPeakAngle + 72;
+  const alpha = interTriAngle - triPeakAngle / 2 - 90;
+  const m = Math.cos(alpha * Math.PI / 180) * s;
+  const n = Math.sin(alpha * Math.PI / 180) * s;
+  const beta = 180 - 90 - alpha;
+  const gamma = 180 - beta - triPeakAngle;
+  const delta = 180 - 90 - gamma;
+  const epsilon = interTriAngle - delta;
+  const p = Math.sin(gamma * Math.PI / 180) * s;
+  const q = Math.cos(gamma * Math.PI / 180) * s;
+  const u = Math.cos(epsilon * Math.PI / 180) * s;
+  const v = Math.sin(epsilon * Math.PI / 180) * s;
+  const w = Math.sin(interTriAngle / 2 * Math.PI / 180) * s;
+  const z = Math.cos(interTriAngle / 2 * Math.PI / 180) * s;
+  const pentApothem = 0.6882 * t;
+  return { t, h, m, n, p, q, u, v, w, z, pentApothem };
+}
+const REF = starMetrics();
+
+
 export function circleInfo(area?: number): ShapeInfo {
   const { r, d } = circleMetrics(area);
   return {
@@ -165,27 +192,21 @@ export function xInfo(area?: number): ShapeInfo {
 }
 
 export function starInfo(area?: number): ShapeInfo {
-  const pentArea = (area ?? AREA) / 2;
-  const t = Math.sqrt(pentArea / 1.72);
-  const triArea = (100 - pentArea) / 5;
-  const h = triArea * 2 / t;
-  const s = Math.sqrt((t / 2) ** 2 + h ** 2);
-  const triPeakAngle = 2 * 180 * Math.atan((t / 2) / h) / Math.PI;
-  const interTriAngle = triPeakAngle + 72;
-  const alpha = interTriAngle - triPeakAngle / 2 - 90;
-  const m = Math.cos(alpha * Math.PI / 180) * s;
-  const n = Math.sin(alpha * Math.PI / 180) * s;
-  const beta = 180 - 90 - alpha;
-  const gamma = 180 - beta - triPeakAngle;
-  const delta = 180 - 90 - gamma;
-  const epsilon = interTriAngle - delta;
-  const p = Math.sin(gamma * Math.PI / 180) * s;
-  const q = Math.cos(gamma * Math.PI / 180) * s;
-  const u = Math.cos(epsilon * Math.PI / 180) * s;
-  const v = Math.sin(epsilon * Math.PI / 180) * s;
-  const w = Math.sin(interTriAngle / 2 * Math.PI / 180) * s;
-  const z = Math.cos(interTriAngle / 2 * Math.PI / 180) * s;
-  const pentApothem = 0.6682 * t;
+  // Linear size scales with sqrt(area), since area ~ size^2.
+  const k = Math.sqrt((area ?? AREA) / 150);
+
+  const t = REF.t * k;
+  const h = REF.h * k;
+  const m = REF.m * k;
+  const n = REF.n * k;
+  const p = REF.p * k;
+  const q = REF.q * k;
+  const u = REF.u * k;
+  const v = REF.v * k;
+  const w = REF.w * k;
+  const z = REF.z * k;
+  const pentApothem = REF.pentApothem * k;
+
   return {
     path: fixed`
       m-${t / 2},-${pentApothem}
