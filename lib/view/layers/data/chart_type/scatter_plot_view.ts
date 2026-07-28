@@ -3,7 +3,7 @@ import { ClassInfo } from 'lit/directives/class-map.js';
 import { enumerate } from '@fizz/paramodel';
 import { DataSymbol, DataSymbols } from '../../../symbol';
 import { View } from '../../../base_view';
-import { type ScatterChartInfo } from '../../../../chart_types';
+import { PlaneChartInfo, type ScatterChartInfo } from '../../../../chart_types';
 import { fixed } from '../../../../common/utils';
 import { ConfigSetting } from '../../../../config/config_types';
 import { PointDatapointView, PointPlotView, type PointSeriesView, type TrendLineView } from './point_plot_view';
