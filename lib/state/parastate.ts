@@ -62,7 +62,7 @@ import { type DatapointCursor } from '../view/layers/data/navigation';
 import { type Point } from '@fizz/chart-classifier-utils';
 import { type PathShape } from '../view/shape';
 import { type GlobalState } from './global_state';
-import { type BaseChartInfo, chartInfoClasses, type ScatterChartInfo } from '../chart_types';
+import { type BaseChartInfo, chartInfoClasses, ComboChartInfo, LineChartInfo, ScatterChartInfo } from '../chart_types';
 import { firstDataset, type Manifest } from '../loader/common';
 import { ClusterShellView } from '../view/layers';
 import { computeLabels } from '../common/axisinfo';
@@ -244,10 +244,12 @@ export class ParaState extends BaseState {
   protected _originalManifest: Manifest | null = null;
   protected _jimerator: Jimerator | null = null;
   protected _model: Model | null = null;
+  protected _comboModel: Model | null = null;
   protected _facets: FacetSignature[] | null = null;
   protected _type: ChartType = 'line';
   protected _title = '';
   protected _seriesProperties: SeriesPropertyManager;
+  protected _comboSeriesProperties: SeriesPropertyManager;
   protected _colors: Colors;
   protected _keymapManager = new KeymapManager(actionMap);
   //protected _summarizer!: Summarizer;
@@ -257,6 +259,8 @@ export class ParaState extends BaseState {
   protected log: Logger = getLogger("ParaState");
   protected _chartInfo!: BaseChartInfo;
   protected _seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
+  protected _comboChartInfo: LineChartInfo | null = null;
+  protected _currentDataset = 0;
 
   public idList: Record<string, boolean> = {};
 
@@ -274,6 +278,7 @@ export class ParaState extends BaseState {
     this._createSettings(_inputSettings);
     this._colors = new Colors(this);
     this._seriesProperties = new SeriesPropertyManager(this);
+    this._comboSeriesProperties = new SeriesPropertyManager(this, true);
     this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
     this._pairAnalyzerConstructor = pairAnalyzerConstructor;
     //this._getUrlAnnotations();
@@ -320,6 +325,10 @@ export class ParaState extends BaseState {
     return this._model;
   }
 
+  get comboModel() {
+    return this._comboModel;
+  }
+
   get title() {
     return this._title;
   }
@@ -330,6 +339,10 @@ export class ParaState extends BaseState {
 
   get seriesProperties() {
     return this._seriesProperties;
+  }
+
+  get comboSeriesProperties() {
+    return this._comboSeriesProperties;
   }
 
   get colors() {
@@ -407,9 +420,25 @@ export class ParaState extends BaseState {
     return this._seriesAnalyses;
   }
 
+  get comboChartInfo() {
+    return this._comboChartInfo;
+  }
+
+  get currentDataset(): number {
+    return this._currentDataset;
+  }
+
+  set currentDataset(currentDataset: number) {
+    this._currentDataset = currentDataset;
+  }
+
   createChartInfo() {
-    // @ts-ignore
-    this._chartInfo = new chartInfoClasses[this.type](this.type, this);
+    if (this._manifest!.jim.datasets.length > 1) {
+      this._chartInfo = new ComboChartInfo(this.type, this);
+      this._comboChartInfo = new LineChartInfo('line', this);
+    } else {
+      this._chartInfo = new chartInfoClasses[this.type](this.type, this);
+    }
   }
 
   updateContrastWarnings(warnings: ContrastWarning[]): void {
@@ -561,13 +590,16 @@ export class ParaState extends BaseState {
     this._originalManifest = structuredClone(manifest);
     this._manifest = manifest;
     manifest = this.augmentManifest(manifest);
+    const datasets = manifest.jim.datasets;
     const dataset = firstDataset(this._manifest);
+    this._type = dataset.representation.subtype;
+
     if (resetSettings) {
       this._createSettings(this._inputSettings);
     }
 
-    if (chartTypeDefaults[dataset.representation.subtype]) {
-      Object.entries(chartTypeDefaults[dataset.representation.subtype]!).forEach(([path, value]) => {
+    if (chartTypeDefaults[this._type]) {
+      Object.entries(chartTypeDefaults[this._type]!).forEach(([path, value]) => {
         this.updateConfig(draft => {
           SettingsManager.set(path, value, draft);
         }, true);
@@ -576,9 +608,6 @@ export class ParaState extends BaseState {
 
     const extSettings = manifest.extensions?.paracharts?.settings;
     if (extSettings) {
-      // this.updateSettings(draft => {
-      //   SettingsManager.applySettings(extSettings as SettingGroup, draft);
-      // }, true);
       this.updateConfig(draft => {
         SettingsManager.applySettings(extSettings as ConfigGroup, draft);
       }, true);
@@ -597,7 +626,6 @@ export class ParaState extends BaseState {
 
     this._seriesAnalyses = {};
 
-    this._type = dataset.representation.subtype;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
 
@@ -610,6 +638,15 @@ export class ParaState extends BaseState {
           this._seriesAnalyzerConstructor,
           this._pairAnalyzerConstructor
         );
+        if (datasets.length > 1) {
+          this._comboModel = planeModelFromInlineData(
+            manifest,
+            this._seriesAnalyzerConstructor,
+            this._pairAnalyzerConstructor,
+            undefined,
+            1
+          );
+        }
       }
       this.createChartInfo();
       await this._chartInfo.setup();
@@ -630,6 +667,17 @@ export class ParaState extends BaseState {
           this._seriesAnalyzerConstructor,
           this._pairAnalyzerConstructor
         );
+        if (datasets.length > 1) {
+          this._comboModel = planeModelFromExternalData(
+            // XXX should be datasets[1] data
+            data,
+            manifest,
+            this._seriesAnalyzerConstructor,
+            this._pairAnalyzerConstructor,
+            undefined,
+            1
+          );
+        }
       }
       this.createChartInfo();
       await this._chartInfo.setup();
@@ -945,7 +993,11 @@ export class ParaState extends BaseState {
   }
 
   dimOtherSeries(...seriesKeys: string[]) {
-    this._dimmedSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
+    let toFilter = this._model!.seriesKeys;
+    if (this._comboModel) {
+      toFilter = [...toFilter, ...this._comboModel.seriesKeys];
+    }
+    this._dimmedSeries = toFilter.filter(key => !seriesKeys.includes(key));
   }
 
   dimOtherCluster(seriesKey: string, index: number) {
@@ -1076,9 +1128,6 @@ export class ParaState extends BaseState {
       }
       this.showMDRAnnotations();
     }
-    // NB: Making _visitedDatapoints a lit-app/state property proved
-    // problematic for performance
-    //this.requestUpdate();
   }
 
   protected _datapointSetHas(

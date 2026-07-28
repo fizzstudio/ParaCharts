@@ -68,9 +68,9 @@ export class AnnotationLayer extends PlotLayer {
         this.group('trend-lines')!.clearChildren();
         for (const tl of this.paraview.paraState.modelTrendLines) {
           const series = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0];
-          const range = this.paraview.paraState.chartInfo.yInterval!;
-          const minValue = range.start;
-          const maxValue = range.end;
+          const range = this.paraview.paraState.chartInfo.yRangeInfo!;
+          const minValue = range.interval.start;
+          const maxValue = range.interval.end;
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
@@ -103,9 +103,9 @@ export class AnnotationLayer extends PlotLayer {
         }
         for (const tl of tls) {
           const series = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
-          const range = this.paraview.paraState.chartInfo.yInterval!;
-          const minValue = range.start;
-          const maxValue = range.end;
+          const range = this.paraview.paraState.chartInfo.yRangeInfo!;
+          const minValue = range.interval.start;
+          const maxValue = range.interval.end;
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;

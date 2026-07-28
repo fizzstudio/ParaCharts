@@ -97,7 +97,7 @@ export class HighlightsLayer extends PlotLayer {
 
   protected _processIntersection(index: number, overlays: (DataSymbol | Shape)[]) {
     const chartInfo = this.paraview.paraState.chartInfo as PlaneChartInfo;
-    const yRange = chartInfo.yInterval!.end - chartInfo.yInterval!.start;
+    const yRange = chartInfo.yRangeInfo!.interval.end - chartInfo.yRangeInfo!.interval.start;
     const pxPerYUnit = this.parent.logicalHeight / yRange;
 
     const model = this.paraview.paraState.model as PlaneModel;
@@ -109,7 +109,7 @@ export class HighlightsLayer extends PlotLayer {
     const xRange = last - first;
     const pxPerXUnit = this.parent.logicalWidth / xRange;
     const x = (isect.independentValue - first) * pxPerXUnit;
-    const y = this.parent.logicalHeight - (isect.dependentValue - chartInfo.yInterval!.start) * pxPerYUnit;
+    const y = this.parent.logicalHeight - (isect.dependentValue - chartInfo.yRangeInfo!.interval.start) * pxPerYUnit;
     sym.x = x;
     sym.y = y
     overlays.push(sym);
@@ -176,8 +176,8 @@ export class HighlightsLayer extends PlotLayer {
     if (chartInfo instanceof PlaneChartInfo) {
       let height;
       let width;
-      if (chartInfo.yInterval) {
-        let int = chartInfo.yInterval
+      if (chartInfo.yRangeInfo) {
+        let int = chartInfo.yRangeInfo.interval;
         if (!isNaN(Number(y))) {
           height = (1 - ((Number(y) - int.start) / (int.end - int.start))) * this.paraview.documentView!.chartLayers.dataLayer.height
         }
@@ -186,8 +186,8 @@ export class HighlightsLayer extends PlotLayer {
 
       }
       const xValues = this.paraview.paraState.model!.allFacetValues("x")!.map(box => box.raw);
-      if (chartInfo.xInterval) {
-        const int = chartInfo.xInterval
+      if (chartInfo.xRangeInfo) {
+        const int = chartInfo.xRangeInfo.interval;
         if (!isNaN(Number(x))) {
           width = ((Number(x) - int.start) / (int.end - int.start)) * this.paraview.documentView!.chartLayers.dataLayer.width
         }

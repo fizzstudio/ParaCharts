@@ -33,7 +33,9 @@ export abstract class PlotLayer extends Container(View) {
   }
 
   protected _addedToParent() {
-    this.setSize(this._parent.logicalWidth, this._parent.logicalHeight, false);
+    this.setSize(
+      this.paraview.documentView!.chartLayers.logicalWidth,
+      this.paraview.documentView!.chartLayers.logicalHeight, false);
   }
 
   get parent() {

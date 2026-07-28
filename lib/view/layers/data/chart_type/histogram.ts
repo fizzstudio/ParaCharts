@@ -125,8 +125,8 @@ export class HistogramBinView extends DatapointView {
     if (this.chart.config.displayAxis == "x" || this.chart.config.displayAxis == undefined) {
       this._width = this.chart.parent.width / bins;
       this._x = ((id) % bins) * this._width;
-      const yMax = info.yInterval!.end;
-      const yMin = info.yInterval!.start;
+      const yMax = info.yRangeInfo!.interval.end;
+      const yMin = info.yRangeInfo!.interval.start;
       const yRange = yMax - yMin;
       const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
       this._height = Math.max(0, Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit));
@@ -138,8 +138,8 @@ export class HistogramBinView extends DatapointView {
     else {
       this._height = this.chart.parent.height / bins;
       this._y = ((bins - id - 1) % (bins)) * this._height;
-      const xMax = info.xInterval!.end;
-      const xMin = info.xInterval!.start;
+      const xMax = info.xRangeInfo!.interval.end;
+      const xMin = info.xRangeInfo!.interval.start;
       const xRange = xMax - xMin;
       const pxPerYUnit = this.chart.parent.logicalWidth / xRange;
       this._width = Math.max(0, Math.abs(this.datapoint.facetValueAsNumber('x')! * pxPerYUnit));

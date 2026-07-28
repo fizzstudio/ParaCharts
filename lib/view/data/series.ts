@@ -57,7 +57,6 @@ export class SeriesView extends Container(DataView) {
     super.parent = parent;
   }
 
-  // @ts-ignore
   get children(): readonly DatapointView[] {
     return this._children;
   }

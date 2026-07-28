@@ -443,6 +443,7 @@ export interface TypeConfig extends ConfigGroup {
   pie: TypePieConfig;
   bar: TypeBarConfig;
   waterfall: TypeWaterfallConfig;
+  combo: TypeComboConfig;
 }
 export interface TypeLineConfig extends TypePlaneConfig {
   /** Width of line strokes */
@@ -648,6 +649,40 @@ export interface TypeWaterfallConfig extends TypePlaneConfig {
   /** Gap between adjacent bars */
   barGap: number;
   /** Font size for labels */
+  labelFontSize: string;
+}
+export interface TypeComboConfig extends TypePlaneConfig {
+  /** How bars are stacked */
+  stacking: 'none' | 'standard' | string;
+  /** Width of individual bars */
+  barWidth: number;
+  /** Color each bar individually vs by series */
+  colorByDatapoint: boolean;
+  /** Show total value labels on stacked bars */
+  isDrawTotalLabels: boolean;
+  /** Gap between total value labels and stacks */
+  totalLabelGap: number;
+  /** Gap between stack labels and bars */
+  stackLabelGap: number;
+  /** Show record name labels */
+  isDrawRecordLabels: boolean;
+  /** Show data value labels on bars */
+  isDrawDataLabels: boolean;
+  /** Position of data value labels */
+  dataLabelPosition: BarDataLabelPosition;
+  /** Gap between bar clusters */
+  clusterGap: number;
+  /** Gap between individual bars */
+  barGap: number;
+  /** Gap inside stacked bars */
+  stackInsideGap: number;
+  /** Abbreviate series names */
+  isAbbrevSeries: boolean;
+  /** Format for cluster labels */
+  clusterLabelFormat: LabelFormat;
+  /** Width of bar outlines */
+  lineWidth: number;
+  /** Font size for bar labels */
   labelFontSize: string;
 }
 export interface GridConfig extends ConfigGroup {

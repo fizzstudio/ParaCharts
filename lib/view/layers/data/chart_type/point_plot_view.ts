@@ -61,7 +61,7 @@ export abstract class PointPlotView extends PlanePlotView {
     //   xs.push(formatBox(p.facetBox('x')!, 'raw'));
     //   const xId = strToId(xs.at(-1)!);
     // }
-    for (const [series, i] of enumerate(this.paraview.paraState.model!.series)) {
+    for (const [series, i] of enumerate(this.model.series)) {
       const seriesView = this._newSeriesView(series.key);
       this._chartLandingView.append(seriesView);
       for (const [value, j] of enumerate(series)) {
@@ -139,12 +139,15 @@ export class PointDatapointView extends PlaneDatapointView {
   }
 
   get width() {
-    const axisDivisions = this.paraview.paraState.model!.series[0].length - 1;
-    return this.chart.width / axisDivisions;
+    return this.chart.width / this._axisDivisions;
   }
 
   get height() {
     return 0;
+  }
+
+  protected get _axisDivisions(): number {
+    return this.chart.model.series[0].length - 1;
   }
 
   get _selectedMarkerX() {
@@ -164,9 +167,9 @@ export class PointDatapointView extends PlaneDatapointView {
   }
 
   computeY() {
-    const yInterval = this.chart.chartInfo.yInterval!;
-    const pxPerYUnit = this.chart.height / (yInterval.end - yInterval.start);
-    return this.chart.height - (this.datapoint.facetValueNumericized('y')! - yInterval.start) * pxPerYUnit;
+    const yRange = this.chart.chartInfo.yRangeInfo!;
+    const pxPerYUnit = this.chart.height / (yRange.interval.end - yRange.interval.start);
+    return this.chart.height - (this.datapoint.facetValueNumericized('y')! - yRange.interval.start) * pxPerYUnit;
   }
 
   computeLocation() {

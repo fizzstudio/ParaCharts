@@ -189,7 +189,7 @@ export class PointerEventManager {
    * Set selected element and add a highlight box.
    * @param target - The element to be selected; deselects if absent or `null`.
    */
-  protected async _selectElement(target: SVGGraphicsElement, isAdd?: boolean) {
+  protected async _selectElement(target: SVGGraphicsElement, isShift: boolean) {
     if (this._paraView.paraState.config.ui.isTourGuideEnabled) return;
     if (target) {
       const datapointEl = target.closest('[role="datapoint"]') as SVGElement;
@@ -199,14 +199,8 @@ export class PointerEventManager {
           ? datapointEl.id.slice(0, -4)
           : datapointEl.id;
         const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointViewForId(id)!;
-        const chartInfo = this._paraView.paraState.chartInfo;
-        // Set quiet = true so that the visit announcement doesn't overwrite
-        // the selection announcement
-        chartInfo.navMap!.goTo(chartInfo.navDatapointType, {
-          seriesKey: datapointView.seriesKey,
-          index: datapointView.index
-        }, true);
-        this._paraView.paraState.chartInfo.selectCurrent(!!isAdd);
+        this._paraView.paraState.chartInfo.pointerClick(
+          datapointView.datasetIndex, datapointView.seriesKey, datapointView.index, isShift);
       } else {
         const clickableEl = target.closest('[role="clickable"]')
         if (!clickableEl) {

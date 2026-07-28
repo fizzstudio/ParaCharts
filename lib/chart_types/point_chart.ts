@@ -37,9 +37,9 @@ export abstract class PointChartInfo extends PlaneChartInfo {
   }
 
   seriesInNavOrder(): Series[] {
-    const depFacet = this._paraState.model!.dependentFacetKeys[0];
+    const depFacet = this.model!.dependentFacetKeys[0];
     // Sort by value of first datapoint from greatest to least
-    return this._paraState.model!.series.toSorted((a, b) =>
+    return this.model!.series.toSorted((a, b) =>
       b.datapoints[0].facetValueNumericized(depFacet)! -
       a.datapoints[0].facetValueNumericized(depFacet)!);
   }

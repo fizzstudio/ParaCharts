@@ -22,7 +22,7 @@ export class DataView extends View {
     public readonly seriesKey: string,
   ) {
     super(chart.paraview);
-    this._series = this.chart.paraview.paraState.model!.atKey(seriesKey)!;
+    this._series = this.chart.model.atKey(seriesKey)!;
   }
 
   get series() {

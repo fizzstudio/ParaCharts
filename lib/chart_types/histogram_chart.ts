@@ -37,8 +37,8 @@ export class HistogramChartInfo extends PlaneChartInfo {
     else {
       this._grid = this._paraState.model!.series.map(s => s.datapoints.map(p => p.facetValueAsNumber('x') as number));
     }
-    this._xInterval = this._numericXAxisRange("x");
-    this._yInterval = this._numericYAxisRange("y");
+    this._xRangeInfo = this._numericXAxisRange("x");
+    this._yRangeInfo = this._numericYAxisRange("y");
     const values = this._grid.flat();
     this._maxCount = Math.max(...values);
     this._paraState.clearVisited();
@@ -59,8 +59,8 @@ export class HistogramChartInfo extends PlaneChartInfo {
     if (!this._paraState.model!.getFacet('y') || this._paraState.model!.getFacet('y')!.datatype !== 'number') return;
     // const range = this.chartLayers.getYAxisInterval();
     // XXX should be min/max label values as numbers, not min/max data values
-    const min = this._yInterval!.start; // this._labelInfo.min!;
-    const max = this._yInterval!.end; // this._labelInfo.max!;
+    const min = this._yRangeInfo!.interval.start; // this._labelInfo.min!;
+    const max = this._yRangeInfo!.interval.end; // this._labelInfo.max!;
 
     this._paraState.settingControls.insert(
       `type.${this._type}.minYValue`,

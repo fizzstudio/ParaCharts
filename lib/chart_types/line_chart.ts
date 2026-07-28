@@ -23,7 +23,9 @@ import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state';
 import { NavNode } from '../view/layers';
 import { DataSymbols } from '../view/symbol';
+import { Interval } from '@fizz/chart-classifier-utils';
 import { ConfigSetting } from '../config/config_types';
+import { AxisRangeInfo } from './plane_chart';
 
 /**
  * Business logic for line charts.
@@ -37,7 +39,9 @@ export class LineChartInfo extends PointChartInfo {
   }
 
   protected _addSettingControls(): void {
-    super._addSettingControls();
+    if (!this._paraState.comboModel) {
+      super._addSettingControls();
+    }
     this._paraState.settingControls.insert('type.line.lineWidth', {
       max: this._paraState.config.type.line.lineWidthMax
     });
@@ -57,7 +61,7 @@ export class LineChartInfo extends PointChartInfo {
       const type = this._navMap!.cursor.type;
       [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
       // go to corresponding data point in new mode nav map
-      this._navMap!.cursor.layer.goTo(type!, index!, true);
+      this._navMap!.cursor.layer.goTo(type, index, true);
       if (newValue) {
         const trendNode = this._navMap!.cursor.peekNode('out', 1)!;
         trendNode.connect('in', this._navMap!.cursor, false);
@@ -69,7 +73,9 @@ export class LineChartInfo extends PointChartInfo {
     if (path === 'sonification.isSonificationEnabled') {
       const idx = this._navMap!.cursor.index;
       this._createNavMap();
-      this._navMap!.layer(this._navMap!.currentLayer)!.goTo('datapoint', idx, true);
+      if (!this._paraState.comboModel || this._paraState.currentDataset) {
+        this._navMap!.layer(this._navMap!.currentLayer)!.goTo('datapoint', idx, true);
+      }
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -79,6 +85,34 @@ export class LineChartInfo extends PointChartInfo {
     if (key === 'seriesAnalyses') {
       this._createSequenceNavNodes();
     }
+  }
+
+  get model() {
+    return this._paraState.comboModel ?? this._paraState.model;
+  }
+
+  get seriesProperties() {
+    return this._paraState.comboModel
+      ? this._paraState.comboSeriesProperties
+      : this._paraState.seriesProperties;
+  }
+
+  /**
+   * Called by `computeAxisLabelTiers` to get the displayed range for a numeric y-axis.
+   * @param facetKey - Facet key
+   * @returns Displayed axis range as an Interval
+   */
+  protected _numericYAxisRange(facetKey: string): AxisRangeInfo {
+    const range = super._numericYAxisRange(facetKey);
+    return this._paraState.comboModel
+      ? {
+          interval: {
+            start: Math.min(0, range.interval.start),
+            end: range.interval.end
+          },
+          step: range.step
+        }
+      : range;
   }
 
   protected _createNavMap() {
@@ -98,7 +132,7 @@ export class LineChartInfo extends PointChartInfo {
   }
 
   legend() {
-    const model = this._paraState.model!;
+    const model = this.model!;
     const seriesKeys = enumerate([...model.seriesKeys]);
     const types = new DataSymbols().types;
     if (this._paraState.config.legend.itemOrder === 'alphabetical') {
@@ -108,7 +142,7 @@ export class LineChartInfo extends PointChartInfo {
       seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
     }
     else if (this._paraState.config.legend.itemOrder === 'startingOrder') {
-      const model = this._paraState.model as PlaneModel;
+      const model = this.model as PlaneModel;
       const startChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(0) as PlaneDatapoint).indepBox)!;
       seriesKeys.sort((a, b) =>
         startChord.find(point => point.seriesKey === b[0])!.facetValueAsNumber("y")!
@@ -116,7 +150,7 @@ export class LineChartInfo extends PointChartInfo {
       );
     }
     else if (this._paraState.config.legend.itemOrder === 'endingOrder') {
-      const model = this._paraState.model as PlaneModel;
+      const model = this.model as PlaneModel;
       const endChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(-1) as PlaneDatapoint).indepBox)!;
       seriesKeys.sort((a, b) =>
         endChord.find(point => point.seriesKey === b[0])!.facetValueAsNumber("y")!
@@ -126,7 +160,7 @@ export class LineChartInfo extends PointChartInfo {
     return seriesKeys.map(key => ({
       label: model.atKey(key[0])!.getLabel(),
       seriesKey: key[0],
-      color: this._paraState.seriesProperties!.properties(key[0]).color,
+      color: this.seriesProperties.properties(key[0]).color,
       symbol: types[key[1]],
       symbolOptions: { lighten: true }
     }));
@@ -151,7 +185,7 @@ export class LineChartInfo extends PointChartInfo {
         msgArray = this.describeChord(visitedDatapoints);
       } */
       const seriesKey = queriedNode.options.seriesKey;
-      const series = this._paraState.model!.atKey(seriesKey)!;
+      const series = this.model!.atKey(seriesKey)!;
       const datapointCount = series.length;
       const seriesLabel = series.getLabel();
       msgArray.push(interpolate(
@@ -174,7 +208,7 @@ export class LineChartInfo extends PointChartInfo {
       //const visitedDatapoint = queriedNode.datapointViews[0];
       const seriesKey = queriedNode.options.seriesKey;
       const index = queriedNode.options.index;
-      const series = this._paraState.model!.atKey(seriesKey)!;
+      const series = this.model!.atKey(seriesKey)!;
       const datapoint = series.datapoints[index];
       const seriesLabel = series.getLabel();
       const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
@@ -184,7 +218,7 @@ export class LineChartInfo extends PointChartInfo {
           seriesLabel,
           datapointXY: formatXYDatapoint(datapoint, 'raw'),
           datapointIndex: queriedNode.options.index + 1,
-          datapointCount: this._paraState.model!.atKey(seriesKey)!.length
+          datapointCount: this.model!.atKey(seriesKey)!.length
         }
       ));
 
@@ -202,13 +236,13 @@ export class LineChartInfo extends PointChartInfo {
         msgArray.push(...selectionMsgArray);
       } else {
         // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
-        const datapointMsg = describeAdjacentDatapoints(this._paraState.model!, datapointView);
+        const datapointMsg = describeAdjacentDatapoints(this.model!, datapointView);
         msgArray.push(datapointMsg);
       }
 
       // also add the high or low indicators
       const minMaxMsgArray = getDatapointMinMax(
-        this._paraState.model!,
+        this.model!,
         datapoint.facetValueAsNumber('y')!,
         seriesKey
       );
