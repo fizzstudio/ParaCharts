@@ -10,13 +10,13 @@ export interface DropdownSettingControlOptions {
   /** Visible dropdown options; used as setting values if `values` not given. */
   options: string[];
   /** Optional setting values. */
-  values?: string[];
+  values?: Array<string | number>;
 }
 
 @customElement('para-dropdown-setting-control')
 export class DropdownSettingControl extends SettingControl<'dropdown'> {
 
-  private values!: string[];
+  private values!: Array<string | number>;
 
   static styles = [
     //styles,
@@ -37,7 +37,7 @@ export class DropdownSettingControl extends SettingControl<'dropdown'> {
       <fizz-dropdown
         label=${this.label}
         .options=${this.info.options!.options}
-        selected=${this.values.indexOf(this._value as string)}
+        selected=${this.values.indexOf(this._value)}
         @select=${(e: CustomEvent) => {
           const idx = (e.target as Dropdown).selectedIndex;
           this._updateSetting(this.info.key, this.values[idx]);

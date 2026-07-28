@@ -14,6 +14,7 @@ function makeCtx(): ViewContext {
     createDocumentView: vi.fn(),
     computeViewBox: vi.fn(),
     addDef: vi.fn(),
+    translateBraille: vi.fn((text: string) => text),
   };
 }
 

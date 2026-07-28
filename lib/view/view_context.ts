@@ -19,6 +19,7 @@ import type { Ref } from 'lit/directives/ref.js';
 import type { ParaChart } from '../parachart/parachart';
 import type { ParaState } from '../state';
 import type { DocumentView } from './document_view';
+import type { BrailleGrade } from '../braille/braille_translation_provider';
 
 /**
  * Narrow host interface used by View and its subclasses.
@@ -36,6 +37,7 @@ export interface ViewContext {
   createDocumentView(): void;
   computeViewBox(): void;
   addDef(key: string, template: SVGTemplateResult): void;
+  translateBraille(text: string, grade: BrailleGrade): string;
 }
 
 /**

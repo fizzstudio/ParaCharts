@@ -56,6 +56,15 @@ import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
 
 // @public
+export type BrailleGrade = 1 | 2;
+
+// @public
+export interface BrailleTranslationProvider {
+    ready(): Promise<void>;
+    translate(text: string): string;
+}
+
+// @public
 export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest;
 
 // @public (undocumented)
@@ -119,6 +128,8 @@ export type HeadlessPageSize = 'auto' | 'letter_portrait' | 'letter_landscape' |
 export interface HeadlessRenderOptions {
     isTactileEnabled?: boolean;
     pageSize?: HeadlessPageSize;
+    tactileBrailleGrade?: 1 | 2;
+    tactileLabelMode?: 'Braille' | 'Latin' | 'Both' | 'None';
 }
 
 // @public (undocumented)
@@ -133,6 +144,8 @@ export class LoadError extends Error {
 
 // @public
 export enum LoadErrorCode {
+    // (undocumented)
+    BRAILLE_TRANSLATION_ERROR = "BRAILLE_TRANSLATION_ERROR",
     // (undocumented)
     CSV_EMPTY = "CSV_EMPTY",
     // (undocumented)
@@ -287,6 +300,7 @@ export class ParaAPI {
     protected _paraChart: ParaChart;
     // (undocumented)
     refresh(): void;
+    registerBrailleTranslationProvider(provider: BrailleTranslationProvider): Promise<void>;
     removeRecord(unshiftPoints: Record<string, {
         x: string;
         y: string;

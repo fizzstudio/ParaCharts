@@ -43,9 +43,10 @@ import '../control_panel';
 import '../control_panel/caption';
 import { SlotLoader } from '../loader/slotloader';
 import { TourBus } from './tour_bus';
-import brailleFont from '../assets/Braille36US.woff2';
 import hyperFont from '../assets/Atkinson-Hyperlegible-Regular-102a.woff2';
 import cpanelIconAlt from '../assets/info-icon-alt.svg';
+import { type BrailleGrade, type BrailleTranslationProvider } from '../braille/braille_translation_provider';
+import { BrailleTranslationService } from '../braille/braille_translation_service';
 
 // NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
 /** @public */
@@ -83,6 +84,8 @@ export class ParaChart extends ParaComponent {
   protected _scrollyteller: Scrollyteller | undefined;
   protected _tourBus: TourBus;
   protected _hasFocus = false;
+  private _brailleTranslation = new BrailleTranslationService();
+  private _activeBrailleProvider?: BrailleTranslationProvider;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -227,6 +230,21 @@ export class ParaChart extends ParaComponent {
     return this._paraAPI;
   }
 
+  /** @internal */
+  async registerBrailleTranslationProvider(provider: BrailleTranslationProvider): Promise<void> {
+    await this._brailleTranslation.register(provider);
+    const shouldRefresh = this._activeBrailleProvider !== provider && Boolean(this._paraState.data);
+    this._activeBrailleProvider = provider;
+    if (shouldRefresh) {
+      this._paraState.refreshParaView();
+    }
+  }
+
+  /** @internal */
+  translateBraille(text: string, grade: BrailleGrade): string {
+    return this._brailleTranslation.translate(text, grade);
+  }
+
   get scrollyteller() {
     return this._scrollyteller;
   }
@@ -256,7 +274,6 @@ export class ParaChart extends ParaComponent {
     if (this._styleManager) return;
     this._globalState.init();
     this.isControlPanelOpen = this._paraState.config.controlPanel.isControlPanelDefaultOpen;
-    this._injectFontFace('Braille36 US', brailleFont);
     this._injectFontFace('Atkinson Hyperlegible', hyperFont);
     this._styleManager = new StyleManager();
     this.shadowRoot!.adoptedStyleSheets = [
