@@ -104,7 +104,6 @@ export class LineChartInfo extends PointChartInfo {
    */
   protected _numericYAxisRange(facetKey: string): AxisRangeInfo {
     const range = super._numericYAxisRange(facetKey);
-    // @ts-ignore
     return this._paraState.comboModel
       ? {
           interval: {

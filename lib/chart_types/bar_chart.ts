@@ -238,7 +238,6 @@ export class BarChartInfo extends PlaneChartInfo {
     }
 
     const allSeries = [...this._paraState.model!.series];
-    // @ts-ignore
     if ((this._paraState.type === 'column') && settings.stacking === 'none') {
       allSeries.reverse();
     }
@@ -263,7 +262,6 @@ export class BarChartInfo extends PlaneChartInfo {
       ? [[...allSeries]]
       : groupSeries(this._normalizeStackCountsInput());
     for (let group of grouped) {
-      // @ts-ignore
       if (this._paraState.type === 'column') {
         // Place the series into stacks in the reverse order to how they appear in the
         // model (i.e., first series will be topmost onscreen in 'standard' mode)
