@@ -14,7 +14,7 @@ export type SettingControlType = 'textfield' | 'dropdown' | 'checkbox' | 'radio'
 
 export type SettingControlValueType<T extends SettingControlType> =
   T extends 'textfield' ? string | number :
-  T extends 'dropdown' ? string :
+  T extends 'dropdown' ? string | number :
   T extends 'checkbox' ? boolean :
   T extends 'radio' ? string :
   T extends 'slider' ? number :

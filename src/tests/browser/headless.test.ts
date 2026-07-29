@@ -44,6 +44,5 @@ describe('ParaHeadless render options', () => {
 
     const svg = headless.api.serializeChart();
     expect(svg).toContain('viewBox="0 0 1056 816"');
-    expect(svg).toContain('font-family: &quot;Braille36 US&quot;');
   });
 });

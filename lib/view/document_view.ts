@@ -438,7 +438,8 @@ export class DocumentView extends Container(View) {
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     this.paraview.paraState.chartInfo.settingDidChange(path, oldValue, newValue);
-    if (['chart.width', 'chart.height', 'chart.fontScale', 'chart.isTactileEnabled', 'chart.pageSize',
+    if (['chart.width', 'chart.height', 'chart.fontScale', 'chart.isTactileEnabled',
+      'chart.tactileBrailleGrade', 'chart.tactileLabelMode', 'chart.pageSize',
       'chart.pageMarginLeft', 'chart.pageMarginRight', 'chart.pageMarginTop', 'chart.pageMarginBottom'
     ].includes(path)) {
       this.updateSize();

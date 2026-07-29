@@ -56,6 +56,15 @@ import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
 
 // @public
+export type BrailleGrade = 1 | 2;
+
+// @public
+export interface BrailleTranslationProvider {
+    ready(): Promise<void>;
+    translate(text: string): string;
+}
+
+// @public
 export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest;
 
 // @public (undocumented)
@@ -112,6 +121,17 @@ export const FORMAT_CONTEXT_SETTINGS: {
 // @public
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
 
+// @public
+export type HeadlessPageSize = 'auto' | 'letter_portrait' | 'letter_landscape' | 'tractor_us_standard' | 'tractor_us_rotated' | 'tractor_de_standard' | 'tractor_de_rotated' | 'a4_portrait' | 'a4_landscape' | 'tabloid_portrait' | 'tabloid_landscape' | 'monarch_portrait' | 'monarch_landscape';
+
+// @public
+export interface HeadlessRenderOptions {
+    isTactileEnabled?: boolean;
+    pageSize?: HeadlessPageSize;
+    tactileBrailleGrade?: 1 | 2;
+    tactileLabelMode?: 'Braille' | 'Latin' | 'Both' | 'None';
+}
+
 // @public (undocumented)
 export function inferDefaultsFromCsvText(csvText: string, fileName?: string): CsvInferredDefaults;
 
@@ -124,6 +144,8 @@ export class LoadError extends Error {
 
 // @public
 export enum LoadErrorCode {
+    // (undocumented)
+    BRAILLE_TRANSLATION_ERROR = "BRAILLE_TRANSLATION_ERROR",
     // (undocumented)
     CSV_EMPTY = "CSV_EMPTY",
     // (undocumented)
@@ -276,6 +298,7 @@ export class ParaAPI {
     protected _paraChart: ParaChart;
     // (undocumented)
     refresh(): void;
+    registerBrailleTranslationProvider(provider: BrailleTranslationProvider): Promise<void>;
     removeRecord(unshiftPoints: Record<string, {
         x: string;
         y: string;
@@ -366,8 +389,6 @@ export class ParaChart extends ParaComponent {
     protected log: Logger;
     // (undocumented)
     accessor manifest: string;
-    // Warning: (ae-forgotten-export) The symbol "SourceKind" needs to be exported by the entry point index.d.ts
-    //
     // (undocumented)
     manifestType: SourceKind;
     // (undocumented)
@@ -389,11 +410,13 @@ export class ParaChart extends ParaComponent {
     get ready(): Promise<void>;
     // (undocumented)
     protected _readyPromise: Promise<void>;
+    // @internal (undocumented)
+    registerBrailleTranslationProvider(provider: BrailleTranslationProvider): Promise<void>;
     // (undocumented)
     render(): TemplateResult;
     resizeScrollytelling(): void;
     // (undocumented)
-    runLoader(manifestInput: string, manifestType: SourceKind, forceType?: boolean, description?: string, resetSettings?: boolean): Promise<void>;
+    runLoader(manifestInput: string, manifestType: SourceKind, forceType?: boolean, description?: string, resetSettings?: boolean, inputSettings?: SettingsInput): Promise<void>;
     // (undocumented)
     scalable: boolean;
     // (undocumented)
@@ -424,6 +447,8 @@ export class ParaChart extends ParaComponent {
     //
     // (undocumented)
     protected _tourBus: TourBus;
+    // @internal (undocumented)
+    translateBraille(text: string, grade: BrailleGrade): string;
     // (undocumented)
     type?: ChartType_2;
     // (undocumented)
@@ -449,8 +474,7 @@ export class ParaHeadless {
     // (undocumented)
     get jimReady(): Promise<void>;
     loadData(url: string): Promise<FieldInfo[]>;
-    // (undocumented)
-    loadManifest(input: string, type?: SourceKind): Promise<LoadManifestResult>;
+    loadManifest(input: string, type?: SourceKind, options?: HeadlessRenderOptions): Promise<LoadManifestResult>;
     // (undocumented)
     protected _paraChart: ParaChart;
     // (undocumented)
@@ -461,6 +485,9 @@ export class ParaHeadless {
 //
 // @public
 export function parseCSV(csvText: string): CSVParseResult;
+
+// @public
+export type SourceKind = 'fizz-chart-data' | 'url' | 'content';
 
 // (No @packageDocumentation comment for this package)
 
