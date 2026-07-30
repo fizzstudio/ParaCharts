@@ -1,6 +1,6 @@
 import { enumerate } from "@fizz/paramodel";
 import { PointDatapointView, PointPlotView, PointSeriesView } from ".";
-import { DataSymbol } from "../../../symbol";
+import { DataSymbol, DataSymbols } from "../../../symbol";
 import { ConfigSetting } from "../../../../config/config_types";
 import { RectShape, Shape } from "../../../shape";
 import { SELECTION_MARKER_SIZE } from "../../../data";
@@ -31,7 +31,6 @@ export class BubblePlotView extends PointPlotView {
     }
     protected _layoutDatapoints(): void {
         this.allZ = this.paraview.paraState.model!.allPoints.map(dp => dp.facetValueAsNumber("z")!);
-        console.log(this.paraview.paraState.model?.allPoints.length)
         this.maxZ = Math.max(...this.allZ);
         this.minZ = Math.min(...this.allZ);
         this.zRange = this.maxZ - this.minZ;
@@ -91,7 +90,8 @@ export class BubblePointView extends PointDatapointView {
 
     protected _createSymbol(): void {
         const series = this.seriesProps;
-        let symbolType = series.symbol;
+        const types = new DataSymbols().types;
+        let symbolType = types[(this.parent.index + 8) % 16];
         let jimIndex = 0;
         for (let i = this._parent.modelIndex - 1; i >= 0; i--) {
             jimIndex += this.paraview.paraState.model!.series[i].datapoints.length;

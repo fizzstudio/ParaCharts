@@ -3,8 +3,13 @@ import { datapointIdToCursor } from "../state";
 import { PointChartInfo } from "./point_chart";
 import { LegendItem } from "../view/legend";
 import { DataSymbols } from "../view/symbol";
+import { CardinalDirection } from "../config/config_types";
 
 export class BubbleChartInfo extends PointChartInfo {
+
+    minZ = 0;
+    medZ = 0;
+    maxZ = 0;
     protected _addSettingControls(): void {
         super._addSettingControls();
         const numericVariables = Object.entries(this._paraState.originalManifest!.jim.datasets[0].facets).filter(f =>
@@ -38,7 +43,7 @@ export class BubbleChartInfo extends PointChartInfo {
         return `${series.label} (${formatBox(dp.facetBox('x')!, 'raw')}, ${formatBox(dp.facetBox('y')!, 'raw')}, ${formatBox(dp.facetBox('z')!, 'raw')})`;
     };
 
-    legend() {
+    legend(position?: CardinalDirection) {
         const model = this._paraState.model!;
         //let symbolType = series.symbol;
         const types = new DataSymbols().types;
@@ -46,41 +51,56 @@ export class BubbleChartInfo extends PointChartInfo {
         const maxZ = Math.max(...allZ);
         const minZ = Math.min(...allZ);
         const zRange = maxZ - minZ;
-        const medZ = zRange / 2 + minZ
+        const medZ = Math.round((zRange / 2 + minZ) * 1000) / 1000;
         const maxSize = this._paraState.config.type.bubble.maxBubbleSize;
         const minSize = this._paraState.config.type.bubble.minBubbleSize;
         const sizeRange = maxSize - minSize;
         const minSymbolSize = minSize ** 2;
+        this.minZ = minZ;
+        this.medZ = medZ;
+        this.maxZ = maxZ;
         const medSymbolSize = ((((zRange / 2) * sizeRange / zRange) + minSize) ** 2)
         const maxSymbolSize = (sizeRange + minSize) ** 2;
         const items: LegendItem[] = [];
         for (let i = 0; i < model.seriesKeys.length; i++) {
             const key = model.seriesKeys[i];
-            const minSymbolItem: LegendItem = {
-                label: `${minZ}`,
-                seriesKey: key,
-                color: i,
-                symbol: types[i],
-                symbolOptions: { baseSize: minSymbolSize }
-            }
             const medSymbolItem: LegendItem = {
-                label: `${medZ}`,
+                label: `${model.atKey(key)!.getLabel()}`,
                 seriesKey: key,
                 color: i,
-                symbol: types[i],
-                symbolOptions: { baseSize: medSymbolSize }
+                symbol: types[(i + 8) % 16],
+                symbolOptions: { baseSize: medSymbolSize, lighten: true }
             }
-            const maxSymbolItem: LegendItem = {
-                label: `${maxZ}`,
-                seriesKey: key,
-                color: i,
-                symbol: types[i],
-                symbolOptions: { baseSize: maxSymbolSize }
-            }
-            items.push(minSymbolItem);
             items.push(medSymbolItem);
-            items.push(maxSymbolItem);
         }
+        const key = model.seriesKeys[0];
+        const minSymbolItem: LegendItem = {
+            label: `${minZ}`,
+            seriesKey: key,
+            color: 0,
+            symbol: types[8],
+            symbolOptions: { baseSize: minSymbolSize, lighten: true },
+            bubbleSize: "small"
+        }
+        const medSymbolItem: LegendItem = {
+            label: `${medZ}`,
+            seriesKey: key,
+            color: 0,
+            symbol: types[8],
+            symbolOptions: { baseSize: medSymbolSize, lighten: true },
+            bubbleSize: "medium"
+        }
+        const maxSymbolItem: LegendItem = {
+            label: `${maxZ}`,
+            seriesKey: key,
+            color: 0,
+            symbol: types[8],
+            symbolOptions: { baseSize: maxSymbolSize, lighten: true },
+            bubbleSize: "large"
+        }
+        items.push(minSymbolItem);
+        items.push(medSymbolItem);
+        items.push(maxSymbolItem);
         return items;
     }
 

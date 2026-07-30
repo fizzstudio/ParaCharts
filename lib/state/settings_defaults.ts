@@ -41,5 +41,7 @@ export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}
     'grid.isDrawVertLines': false
   },
   scatter: { 'legend.isAlwaysDrawLegend': true,
-    'legend.position': 'north' }
+    'legend.position': 'north' },
+    bubble: { 'legend.isAlwaysDrawLegend': true,
+    'legend.position': 'north' },
 };

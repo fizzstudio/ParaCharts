@@ -67,6 +67,8 @@ import { firstDataset, type Manifest } from '../loader/common';
 import { ClusterShellView } from '../view/layers';
 import { computeLabels } from '../common/axisinfo';
 import { numberToScaledNumberRounded } from '@fizz/number-scaling-rounding';
+import { LegendItem } from '../view/legend';
+import { type BubbleChartInfo } from '../chart_types/bubble_chart';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -1005,6 +1007,7 @@ export class ParaState extends BaseState {
     if (config.labelFacet !== '') {
       const labelFacet = dataset.facets[labelFacetKey];
       dataset.facets['label'] = structuredClone(labelFacet);
+      dataset.facets['label'].displayType.orientation = undefined;
       delete dataset.facets[labelFacetKey];
     }
     manifest.extensions ??= {};
@@ -1098,6 +1101,7 @@ export class ParaState extends BaseState {
 
   dimOtherSeries(...seriesKeys: string[]) {
     this._dimmedSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
+    this.frontSeries = seriesKeys[0];
   }
 
   dimOtherCluster(seriesKey: string, index: number) {
@@ -1105,6 +1109,26 @@ export class ParaState extends BaseState {
     const otherDatapoints = chartInfo._clustering!.filter(c => c.id !== index).map(
       c => { return [...c.dataPointIDs, ...c.outlierIDs] }).flat();
     otherDatapoints.map(id => this.lowlightDatapoint(seriesKey, id))
+    this.refreshParaView();
+  }
+
+  dimOtherSizes(item: LegendItem) {
+    let chartInfo = this.chartInfo as BubbleChartInfo
+    let otherDatapoints: Datapoint[] = []
+    if (item.bubbleSize == "small") {
+      otherDatapoints = this.model!.allPoints.filter(dp => dp.facetValueAsNumber("z")! > (chartInfo.minZ + chartInfo.medZ) / 2);
+    }
+    else if (item.bubbleSize == "medium") {
+      otherDatapoints = this.model!.allPoints.filter(dp =>
+        (dp.facetValueAsNumber("z")! < (chartInfo.minZ + chartInfo.medZ) / 2) ||
+        (dp.facetValueAsNumber("z")! > (chartInfo.maxZ + chartInfo.medZ) / 2));
+    }
+    else if (item.bubbleSize == "large") {
+      otherDatapoints = this.model!.allPoints.filter(dp =>
+        dp.facetValueAsNumber("z")! < (chartInfo.maxZ + chartInfo.medZ) / 2);
+    }
+    otherDatapoints.map(dp => this.lowlightDatapoint(dp.seriesKey, dp.datapointIndex));
+    this.refreshParaView();
   }
 
   clearAllSeriesDimming() {

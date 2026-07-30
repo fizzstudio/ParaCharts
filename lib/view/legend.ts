@@ -23,6 +23,7 @@ export interface LegendItem {
   symbolOptions?: Partial<DataSymbolOptions>;
   color: number;
   datapointIndex?: number;
+  bubbleSize?: "small" | "medium" | "large"
 }
 
 export type LegendOrientation = 'horiz' | 'vert';
@@ -84,9 +85,14 @@ export class Legend extends Container(View) {
           color: item.color,
           pointerEnter: (e) => {
             if (this.paraview.paraState.pinnedSeriesKey !== null) return;
+            if (item.bubbleSize) {
+              this.paraview.paraState.dimOtherSizes(item);
+              return;
+            }
             if ((this.paraview.paraState.chartInfo as ScatterChartInfo).clustering
               && !this.paraview.paraState.model?.multi) {
               this.paraview.paraState.dimOtherCluster(item.seriesKey, item.color)
+              return;
             }
             this.paraview.paraState.dimOtherSeries(item.seriesKey);
           },
@@ -115,9 +121,14 @@ export class Legend extends Container(View) {
         classList: ['legend-label'],
         pointerEnter: (e) => {
           if (this.paraview.paraState.pinnedSeriesKey !== null) return;
+          if (item.bubbleSize) {
+            this.paraview.paraState.dimOtherSizes(item);
+            return;
+          }
           if ((this.paraview.paraState.chartInfo as ScatterChartInfo).clustering
             && !this.paraview.paraState.model?.multi) {
             this.paraview.paraState.dimOtherCluster(item.seriesKey, item.color)
+            return;
           }
           this.paraview.paraState.dimOtherSeries(item.seriesKey);
         },

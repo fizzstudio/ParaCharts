@@ -871,9 +871,14 @@ export class ParaView extends ParaComponent implements ViewContext {
   }
 
   createDocumentView() {
-    this._documentView = new DocumentView(this);
-    this._documentView.init();
-    this.computeViewBox();
+    // Wait for browser fonts to finish loading and remeasure text-dependent sizes.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        this._documentView = new DocumentView(this);
+        this._documentView.init();
+        this.computeViewBox();
+      }).catch(() => { /* ignore font-load failures */ });
+    }
     // The style manager may get declaration values from chart objects
     this.paraChart.styleManager.update();
     // Ensure defs container is present before adding defs
@@ -900,8 +905,8 @@ export class ParaView extends ParaComponent implements ViewContext {
       };
     } else {
       const paperInfo = PAPER_INFO[this._paraState.config.chart.pageSize];
-      const width = (paperInfo.widthMm/MM_PER_INCH)*CSS_DPI;
-      const height = (paperInfo.heightMm/MM_PER_INCH)*CSS_DPI;
+      const width = (paperInfo.widthMm / MM_PER_INCH) * CSS_DPI;
+      const height = (paperInfo.heightMm / MM_PER_INCH) * CSS_DPI;
       this._viewBox = {
         x: 0,
         y: 0,

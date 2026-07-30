@@ -18,7 +18,7 @@ import { Logger, getLogger } from '@fizz/logger';
 import { Datapoint } from '@fizz/paramodel';
 import { ChartType, Facet } from '@fizz/paramanifest';
 import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
-import { ConfigSetting, DeepReadonly } from '../config/config_types';
+import { CardinalDirection, ConfigSetting, DeepReadonly } from '../config/config_types';
 import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
 import { ParaView } from '../paraview/paraview';
 import { type LegendItem } from '../view/legend';
@@ -177,7 +177,7 @@ export abstract class BaseChartInfo {
     root.cursor = chartLandingNode;
   }
 
-  legend(): LegendItem[] {
+  legend(position?: CardinalDirection): LegendItem[] {
     return [];
   }
 
