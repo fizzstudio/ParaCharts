@@ -1,0 +1,5 @@
+src/tests/fixtures/liblouis/vendor/liblouis-runtime/liblouisWASM.data binary
+src/tests/fixtures/liblouis/vendor/liblouis-runtime/liblouisWASM.js linguist-generated=true
+src/tests/fixtures/liblouis/vendor/liblouis-runtime/liblouisWASM.wasm binary
+etc/paracharts.api.md whitespace=cr-at-eol
+etc/paracharts.ai.api.md whitespace=cr-at-eol

@@ -67,6 +67,7 @@ export class BarPlotView extends PlanePlotView {
   protected _stackWidth!: number;
   protected _clusterWidth!: number;
   protected _availSpace!: number;
+
   protected _addedToParent() {
     super._addedToParent();
     /*todo().controller.settingViews.add(this, {
@@ -95,9 +96,10 @@ export class BarPlotView extends PlanePlotView {
     width: number,
     height: number,
     dataLayerIndex: number,
-    chartInfo: BaseChartInfo) {
+    chartInfo: BaseChartInfo
+  ) {
     super(paraview, width, height, dataLayerIndex, chartInfo);
-    this.log = getLogger("BarPlotView");
+    this.log = getLogger('BarPlotView');
   }
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
@@ -392,13 +394,13 @@ export class Bar extends PlaneDatapointView {
       const numBars = Object.keys(this._stack.bars).length;
       const extra = (numBars - 1)*chartInfo.config.stackInsideGap;
       const delta = extra/numBars;
-      const yRange = chartInfo.yInterval!.end - chartInfo.yInterval!.start;
-      const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
+      const yRange = chartInfo.yRangeInfo!.interval.end - chartInfo.yRangeInfo!.interval.start;
+      const pxPerYUnit = this.paraview.documentView!.chartLayers.logicalHeight / yRange;
       const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
         .map(bar => bar.value.value * pxPerYUnit - delta)
         .reduce((a, b) => a + b, 0);
-      const zeroHeight = this.chart.parent.logicalHeight
-        - (chartInfo.yInterval!.end * this.chart.parent.logicalHeight / yRange);
+      const zeroHeight = this.paraview.documentView!.chartLayers.logicalHeight
+        - (chartInfo.yRangeInfo!.interval.end * this.paraview.documentView!.chartLayers.logicalHeight / yRange);
       this._height = Math.max(1, Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit)
         - delta);
       if (this.datapoint.facetValueAsNumber('y')! < 0) {
@@ -425,13 +427,13 @@ export class Bar extends PlaneDatapointView {
     const numBars = Object.keys(this._stack.bars).length;
     const extra = (numBars - 1)*chartInfo.config.stackInsideGap;
     const delta = extra/numBars;
-    const yRange = chartInfo.yInterval!.end - chartInfo.yInterval!.start;
-    const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
+    const yRange = chartInfo.yRangeInfo!.interval.end - chartInfo.yRangeInfo!.interval.start;
+    const pxPerYUnit = this.paraview.documentView!.chartLayers.logicalHeight / yRange;
     const distFromXAxis = Object.values(this._stack.bars).slice(0, orderIdx)
       .map(bar => bar.value.value * pxPerYUnit - delta)
       .reduce((a, b) => a + b, 0);
-    const zeroHeight = this.chart.parent.logicalHeight
-      - (chartInfo.yInterval!.end * this.chart.parent.logicalHeight / yRange);
+    const zeroHeight = this.paraview.documentView!.chartLayers.logicalHeight
+      - (chartInfo.yRangeInfo!.interval.end * this.paraview.documentView!.chartLayers.logicalHeight / yRange);
     this._height = Math.max(1, Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit * bezT) - delta);
     if (this.datapoint.facetValueAsNumber('y')! < 0) {
       this._y = this.chart.height - distFromXAxis * bezT - zeroHeight;
@@ -473,7 +475,7 @@ export class Bar extends PlaneDatapointView {
     if (chartInfo.config.isDrawDataLabels) {
       this._dataLabel?.remove();
       this._dataLabel = new Label(this.paraview, {
-        text: formatDatapointValue(this.datapoint, chartInfo.yInterval!.end - chartInfo.yInterval!.start, this.paraview.paraState.model!),
+        text: formatDatapointValue(this.datapoint, chartInfo.yRangeInfo!.interval.end - chartInfo.yRangeInfo!.interval.start, this.paraview.paraState.model!),
         //text: formatDataValue(this.datapoint.facetValueAsNumber('y')!, chartInfo.yInterval!.end - chartInfo.yInterval!.start),
         classList: [`${this.paraview.paraState.type}-label`],
      //   textAnchor,

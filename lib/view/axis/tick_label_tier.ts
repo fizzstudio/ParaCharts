@@ -58,7 +58,8 @@ export abstract class TickLabelTier extends Container(View) {
   constructor(
     paraview: ViewContext,
     protected _axisSettings: AxisHorizConfig | AxisVertConfig,
-    protected _options: TickLabelTierOptions
+    protected _options: TickLabelTierOptions,
+    protected _axisIsPrimary: boolean
   ) {
     super(paraview);
     this._updateSizeFromLength(this._options.length);
@@ -193,8 +194,9 @@ export class HorizTickLabelTier extends TickLabelTier {
     paraview: ViewContext,
     axisSettings: AxisHorizConfig,
     options: TickLabelTierOptions,
+    axisIsPrimary: boolean
   ) {
-    super(paraview, axisSettings, options);
+    super(paraview, axisSettings, options, axisIsPrimary);
     this.log = getLogger('HorizTickLabelTier');
     this._canWidthFlex = true;
     this.padding = {top: this._axisSettings.ticks.labels.offsetGap};
@@ -350,9 +352,10 @@ export class VertTickLabelTier extends TickLabelTier {
   constructor(
     paraview: ViewContext,
     axisSettings: AxisVertConfig,
-    options: TickLabelTierOptions
+    options: TickLabelTierOptions,
+    axisIsPrimary: boolean
   ) {
-    super(paraview, axisSettings, options);
+    super(paraview, axisSettings, options, axisIsPrimary);
     this._canHeightFlex = true;
     this.padding = {right: this._axisSettings.ticks.labels.offsetGap};
   }
@@ -374,8 +377,8 @@ export class VertTickLabelTier extends TickLabelTier {
   }
 
   _tickLabelX(index: number) {
-    // Right-justify if west, left-justify if east;
-    return this._axisSettings.position === 'west'
+    // Right-justify if primary, left-justify if secondary;
+    return this._axisIsPrimary
       ? this.width //- this._children[index].width
       : 0;
   }
@@ -410,8 +413,12 @@ export class VertTickLabelTier extends TickLabelTier {
     // and we don't need the xs to compute the width
     this.updateSize(false);
     this._children.forEach((kid, i) => {
+      if (this._axisIsPrimary) {
         kid.right = this._tickLabelX(i);
-        kid.y = this._tickLabelY(i);
+      } else {
+        kid.left = this._tickLabelX(i);
+      }
+      kid.y = this._tickLabelY(i);
     });
     if (checkLabels) {
       this._options.step = this._optimizeLabelSpacing();

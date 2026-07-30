@@ -18,8 +18,10 @@ import { type StyleInfo } from 'lit/directives/style-map.js';
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
 import { bboxOfBboxes } from '../../../../common/utils';
-import { type ConfigSetting } from '../../../../config/config_types';
-import { PointDatapointView, PointPlotView, type PointSeriesView } from './point_plot_view';
+
+import { ConfigSetting } from '../../../../config/config_types';
+import { PointDatapointView, PointPlotView, PointSeriesView } from './point_plot_view';
+import { SeriesProperties } from '../../../../state';
 
 /**
  * Class for drawing line charts.
@@ -64,6 +66,14 @@ export class LinePlotView extends PointPlotView {
     return new LineSection(seriesView);
   }
 
+  get model() {
+    return this.paraview.paraState.comboModel ?? this.paraview.paraState.model!;
+  }
+
+  protected _newSeriesView(seriesKey: string) {
+    return new LineSeriesView(this, seriesKey);
+  }
+
   pointerMove(): void {
     const coords = this.paraview.paraState.pointerCoords;
     if (this.paraview.paraState.config.chart.isShowPopups
@@ -86,11 +96,30 @@ export class LinePlotView extends PointPlotView {
 }
 
 /**
+ *
+ */
+export class LineSeriesView extends PointSeriesView {
+  declare readonly chart: LinePlotView;
+
+  get modelIndex() {
+    // Used by datapoint views to extract the correct ID from the JIM
+    // (series views may reorder their children)
+    return this.chart.model.seriesKeys.indexOf(this.seriesKey);
+  }
+
+  get seriesProps(): SeriesProperties {
+    const props = this.paraview.paraState.comboModel
+      ? this.paraview.paraState.comboSeriesProperties
+      : this.paraview.paraState.seriesProperties;
+    return props.properties(this.seriesKey);
+  }
+}
+
+/**
  * A visual indicator of a line chart datapoint, plus line segments
  * drawn halfway to its neighbors.
  */
 export class LineSection extends PointDatapointView {
-
   declare readonly chart: LinePlotView;
 
   protected _prevMidX?: number;
@@ -119,11 +148,36 @@ export class LineSection extends PointDatapointView {
   //   return this._shape!.bottom;
   // }
 
+  get datasetIndex(): number {
+    return this.paraview.paraState.comboModel
+      ? 1
+      : 0;
+  }
+
+  protected get _axisDivisions() {
+    return this.paraview.paraState.comboModel
+      ? this.chart.model.series[0].length
+      : this.chart.model.series[0].length - 1;
+  }
+
+  get seriesProps(): SeriesProperties {
+    const props = this.paraview.paraState.comboModel
+      ? this.paraview.paraState.comboSeriesProperties
+      : this.paraview.paraState.seriesProperties;
+    return props.properties(this.seriesKey);
+  }
+
   get outerBbox() {
     const shapeOuters = this._shapes.map(shape => shape.outerBbox);
     return this._symbol
       ? bboxOfBboxes(...shapeOuters, this._symbol!.outerBbox)
       : bboxOfBboxes(...shapeOuters);
+  }
+
+  computeX() {
+    return this.paraview.paraState.comboModel
+      ? (this.width * this.index + this.width/2)
+      : (this.width * this.index);
   }
 
   completeLayout() {

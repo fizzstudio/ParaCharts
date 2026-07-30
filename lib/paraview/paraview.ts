@@ -183,6 +183,12 @@ export class ParaView extends ParaComponent implements ViewContext {
       .label.tactile {
         font-size: ${BRAILLE_FONT_SIZE_PT}pt;
       }
+      .tactile-braille-run {
+        fill: #b3b3b3;
+      }
+      .tactile-latin-run {
+        fill: #000;
+      }
       .label-bg {
         fill: lightgray;
       }
@@ -509,6 +515,10 @@ export class ParaView extends ParaComponent implements ViewContext {
     return this._paraState;
   }
 
+  translateBraille(text: string, grade: 1 | 2): string {
+    return this.paraChart.translateBraille(text, grade);
+  }
+
   connectedCallback() {
     super.connectedCallback();
     this._colorPrefManager = new ColorPrefManager(this._paraState);
@@ -545,6 +555,7 @@ export class ParaView extends ParaComponent implements ViewContext {
   protected async _dataUpdated(): Promise<void> {
     try {
       this._paraState.chartInfo.setParaView(this);
+      this._paraState.comboChartInfo?.setParaView(this);
       this.createDocumentView();
       if (this.paraChart.headless) {
         await this.addJIMSeriesSummaries();
@@ -1139,9 +1150,6 @@ export class ParaView extends ParaComponent implements ViewContext {
         + ',' + fontFamilyClasses[this._paraState.config.chart.fontFamily],
       fontWeight: this._paraState.config.chart.fontWeight
     };
-    if (this._paraState.config.chart.isTactileEnabled) {
-      style.fontFamily = 'Braille36 US';
-    }
     if (this._isFullscreen) {
       const vbWidth = Math.round(this._viewBox.width);
       const vbHeight = Math.round(this._viewBox.height);

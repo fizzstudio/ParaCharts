@@ -74,7 +74,7 @@ export abstract class BaseChartInfo {
 
   setParaView(paraView: ParaView) {
     this._paraView = paraView;
-    this._sonifier = new Sonifier(this, this._paraState, this._paraView);
+    this._sonifier = new Sonifier(this, this._paraState, this._paraView, this.model!);
   }
 
   protected _addSettingControls() {
@@ -91,7 +91,7 @@ export abstract class BaseChartInfo {
   }
 
   protected _createSummarizer(): void {
-    this._summarizer = summarizerFromModel(this._paraState.model!);
+    this._summarizer = summarizerFromModel(this.model!);
   }
 
   async setup() {
@@ -104,6 +104,11 @@ export abstract class BaseChartInfo {
 
   get conciseSummary(): HighlightedSummary {
     return this._conciseSummary;
+  }
+
+  // Overriden by LineChartInfo for combo charts
+  get model() {
+    return this._paraState.model;
   }
 
   get managedSettingKeys() {
@@ -131,8 +136,20 @@ export abstract class BaseChartInfo {
     return null;
   }
 
+  get secondaryHorizFacet(): Facet | null {
+    return null;
+  }
+
+  get secondaryVertFacet(): Facet | null {
+    return null;
+  }
+
   getFacetForOrientation(orientation: AxisOrientation): Facet | null {
     return orientation === 'horiz' ? this.horizFacet : this.vertFacet;
+  }
+
+  getSecondaryFacetForOrientation(orientation: AxisOrientation): Facet | null {
+    return orientation === 'horiz' ? this.secondaryHorizFacet : this.secondaryVertFacet;
   }
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
@@ -206,6 +223,16 @@ export abstract class BaseChartInfo {
     this._paraState.postNotice('move', { dir, options: this._navMap!.cursor.options });
   }
 
+  pointerClick(datasetIndex: number, seriesKey: string, datapointIndex: number, isShift: boolean) {
+    // Set quiet = true so that the visit announcement doesn't overwrite
+    // the selection announcement
+    this._navMap!.goTo(this.navDatapointType, {
+      seriesKey,
+      index: datapointIndex
+    }, true);
+    this._paraView.paraState.chartInfo.selectCurrent(isShift);
+  }
+
   /**
    * Navigate to the series minimum/maximum datapoint
    * @param isMin - If true, go the the minimum. Otherwise, go to the maximum
@@ -223,10 +250,10 @@ export abstract class BaseChartInfo {
       const seriesKey = node.options.seriesKey;
 
       if (node.isNodeType(this.navDatapointType)) {
-        datapoint = this._paraState.model!.atKeyAndIndex(node.options.seriesKey, node.options.index);
+        datapoint = this.model!.atKeyAndIndex(node.options.seriesKey, node.options.index);
       }
-      const depKey = this._paraState.model!.dependentFacetKeys[0]!; // TODO: Assumes exactly 1 dep facet
-      const stats = this._paraState.model!.atKey(seriesKey)!.getFacetStats(depKey)!;
+      const depKey = this.model!.dependentFacetKeys[0]!; // TODO: Assumes exactly 1 dep facet
+      const stats = this.model!.atKey(seriesKey)!.getFacetStats(depKey)!;
       let seriesMatchArray = isMin
         ? stats.min.datapoints
         : stats.max.datapoints;
@@ -255,15 +282,19 @@ export abstract class BaseChartInfo {
    * @param isMin - If true, go the the minimum. Otherwise, go to the maximum
    */
   goChartMinMax(isMin: boolean) {
-    const stats = this._paraState.model!.getFacetStats('y')!;
+    const stats = this.model!.getFacetStats('y')!;
     const matchTarget = isMin ? stats.min.value : stats.max.value;
-    const matchDatapoint = this._paraState.model!.allPoints.find(dp =>
+    const matchDatapoint = this.model!.allPoints.find(dp =>
       dp.facetValueAsNumber('y') === matchTarget)!;
     this._navMap!.goTo(this.navDatapointType, {
       seriesKey: matchDatapoint?.seriesKey,
       index: matchDatapoint?.datapointIndex
     });
     this._paraState.postNotice('goChartMinMax', { isMin, options: this._navMap!.cursor.options });
+  }
+
+  switchToOtherData() {
+
   }
 
   protected seriesAndVal = (datapointId: string) => {
@@ -273,7 +304,7 @@ export abstract class BaseChartInfo {
     return `${series.label} (${formatBox(dp.facetBox('x')!, 'raw')}, ${formatBox(dp.facetBox('y')!, 'raw')})`;
   };
 
-  protected _composePointSelectionAnnouncement(isExtend: boolean) {
+  protected composePointSelectionAnnouncement(isExtend: boolean) {
     // This method assumes only a single point was visited when the select
     // command was issued (i.e., we know nothing about chord mode here)
 
@@ -340,7 +371,7 @@ export abstract class BaseChartInfo {
       this._paraState.select();
     }
     const announcement =
-      this._navMap!.cursor.isNodeType('datapoint') ? this._composePointSelectionAnnouncement(isExtend) :
+      this._navMap!.cursor.isNodeType('datapoint') ? this.composePointSelectionAnnouncement(isExtend) :
         this._navMap!.cursor.isNodeType('series') ? this._composeSeriesSelectionAnnouncement() :
           '';
     if (announcement) {
@@ -392,7 +423,7 @@ export abstract class BaseChartInfo {
 
   navToChordLanding() {
     //Add to this list when adding chord support for additional chart types
-    if (['line', 'bar', 'column'].includes(this._paraState.type) && this._paraState.model!.series.length > 1) {
+    if (['line', 'bar', 'column'].includes(this._paraState.type) && this.model!.series.length > 1) {
       if (this._navMap!.cursor.isNodeType(this.navDatapointType)) {
         const seriesKey = this._navMap!.cursor.options.seriesKey;
         this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
@@ -451,7 +482,7 @@ export abstract class BaseChartInfo {
       // NOTE: this needs to be done before the datapoint is visited, to check whether the series has
       //   ever been visited before this point
       const seriesPreviouslyVisited = this._paraState.everVisitedSeries(cursor.options.seriesKey);
-      const datapoint = this._paraState.model!.atKeyAndIndex(cursor.options.seriesKey, cursor.options.index)!;
+      const datapoint = this.model!.atKeyAndIndex(cursor.options.seriesKey, cursor.options.index)!;
       const announcements = [this._summarizer.getDatapointSummary(datapoint, 'statusBar')];
       const annotations = this._paraState.annotations.filter(
         (a) => a.type === 'datapoint' && a.seriesKey === datapoint.seriesKey && a.index === datapoint.datapointIndex
@@ -462,7 +493,7 @@ export abstract class BaseChartInfo {
       }
       const isSeriesChange = !this._paraState.wasVisitedSeries(cursor.options.seriesKey);
       if (isSeriesChange) {
-        announcements[0] = `${this._paraState.model!.atKey(cursor.options.seriesKey)!.getLabel()}: ${announcements[0]}`;
+        announcements[0] = `${this.model!.atKey(cursor.options.seriesKey)!.getLabel()}: ${announcements[0]}`;
         if (!seriesPreviouslyVisited) {
           const seriesSummary = await this._summarizer.getSeriesSummary(cursor.options.seriesKey);
           announcements.push(seriesSummary.text);
@@ -484,7 +515,7 @@ export abstract class BaseChartInfo {
           await this._playCurrentRiff(this._chordRiffOrder(), true);
         } else {
           const datapoints = cursor.datapoints.map(dp =>
-            this._paraState.model!.atKeyAndIndex(dp.seriesKey, dp.datapointIndex)!);
+            this.model!.atKeyAndIndex(dp.seriesKey, dp.datapointIndex)!);
           await this.playDatapoints(datapoints);
         }
       }
@@ -514,7 +545,7 @@ export abstract class BaseChartInfo {
 
   /** Can be overridden by subclasses. */
   seriesInNavOrder() {
-    return this._paraState.model!.series;
+    return this.model!.series;
   }
 
   didClickBackground() {

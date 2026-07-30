@@ -19,7 +19,7 @@ import { literal } from 'lit/static-html.js';
 import { type Datatype } from '@fizz/dataframe';
 import { type Facet } from '@fizz/paramanifest';
 import { Container, Padding, PaddingInput, View } from '../base_view';
-import { GridLayout, type Layout } from '../layout';
+import { ColumnLayout, FlexLayout, GridLayout, RowLayout, type Layout } from '../layout';
 import { Label } from '../label';
 import { type AxisLine, HorizAxisLine, VertAxisLine } from './axis_line';
 import { type TickLabelTier, HorizTickLabelTier, VertTickLabelTier } from './tick_label_tier';
@@ -51,8 +51,8 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   readonly datatype: Datatype;
 
-  // protected _layout!: FlexLayout;
-  protected _layout!: GridLayout;
+  protected _layout!: FlexLayout;
+  // protected _layout!: GridLayout;
   protected _titleText!: string;
   protected _axisTitle?: Label;
   protected _tickLabelTiers: TickLabelTier[] = [];
@@ -67,7 +67,8 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
     public readonly orientation: T,
     protected _facet: Facet,
     protected _chartInfo: PlaneChartInfo,
-    _length: number
+    _length: number,
+    protected _isPrimary = true
   ) {
     super(paraview);
     this._paraState = this.paraview.paraState;
@@ -85,8 +86,9 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
   }
 
   get coord() {
-    return this._paraState.model!.facetKeys.find(key =>
-      this._paraState.model!.getFacet(key) === this._facet) as AxisCoord;
+    const model = this._isPrimary ? this._paraState.model : this._paraState.comboModel;
+    return model!.facetKeys.find(key =>
+      model!.getFacet(key) === this._facet) as AxisCoord;
   }
 
   protected _createId() {
@@ -204,7 +206,7 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
 
   layoutComponents() {
     // uncomment if using flex layout
-    // this._layout.layoutViews();
+    this._layout.layoutViews();
   }
 
   protected _createAxisTitle() {
@@ -289,24 +291,30 @@ export abstract class Axis<T extends AxisOrientation> extends Container(View) {
  */
 export class HorizAxis extends Axis<'horiz'> {
 
-  constructor(paraview: ViewContext, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
-    super(paraview, 'horiz', facet, chartInfo, length);
+  constructor(
+    paraview: ViewContext,
+    facet: Facet,
+    chartInfo: PlaneChartInfo,
+    length: number,
+    isPrimary = true
+  ) {
+    super(paraview, 'horiz', facet, chartInfo, length, isPrimary);
     this._tickLabelTierValues = this._chartInfo.computeAxisLabelTiers(
       this.coord, this.config.isStaggerLabels);
     this._titleText = this.config.title.text ?? '';
 
     this._width = length;
     this._canWidthFlex = true;
-    this._layout = new GridLayout(this.paraview, {
-      numCols: 1,
-      rowAligns: 'end',
-      colAligns: 'center',
-      canWidthFlex: true,
-      // width: this.docView.width,
-      width: this.width,
-      isAutoHeight: true
-    }, 'horiz-axis-layout');
-    // this._layout = new ColumnLayout(this.paraview, 0, 'center', 'horiz-axis-layout');
+    // this._layout = new GridLayout(this.paraview, {
+    //   numCols: 1,
+    //   rowAligns: 'end',
+    //   colAligns: 'center',
+    //   canWidthFlex: true,
+    //   // width: this.docView.width,
+    //   width: this.width,
+    //   isAutoHeight: true
+    // }, 'horiz-axis-layout');
+    this._layout = new ColumnLayout(this.paraview, 0, 'center', 'horiz-axis-layout');
     this._layout.isBubbleSizeChange = true;
     this.append(this._layout);
   }
@@ -322,8 +330,8 @@ export class HorizAxis extends Axis<'horiz'> {
   computeSize(): [number, number] {
     return [
       // uncomment if using flex layout
-      // this._width,
-      this._layout.width,
+      this._width,
+      //this._layout.width,
       this._layout.height
     ];
   }
@@ -346,13 +354,14 @@ export class HorizAxis extends Axis<'horiz'> {
         isChartIntertick: this._chartInfo.isIntertick,
         datatype: this.datatype,
         isFacetIndep: this._facet.variableType === 'independent'
-      }
+      },
+        this._isPrimary
       ));
   }
 
   protected _appendTickLabelTiers() {
     this._tickLabelTiers.toReversed().forEach((tier, i) => {
-      this._layout.splitRowTop(0, 'end');
+      // this._layout.splitRowTop(0, 'end');
       this._layout.append(tier);
     });
   }
@@ -375,7 +384,7 @@ export class HorizAxis extends Axis<'horiz'> {
   }
 
   protected _appendTickStrip() {
-    this._layout.splitRowTop(0, 'end');
+    // this._layout.splitRowTop(0, 'end');
     this._layout.append(this._tickStrip!);
   }
 
@@ -384,7 +393,7 @@ export class HorizAxis extends Axis<'horiz'> {
   }
 
   protected _appendAxisLine() {
-    this._layout.splitRowTop(0, 'end');
+    // this._layout.splitRowTop(0, 'end');
     this._layout.append(this._axisLine);
   }
 
@@ -395,7 +404,7 @@ export class HorizAxis extends Axis<'horiz'> {
   }
 
   layoutComponents() {
-    if (this.config.position === 'south') {
+    if (this._isPrimary) {
       this._layout.reverseChildren();
       this._layout.layoutViews();
     }
@@ -421,24 +430,30 @@ export class HorizAxis extends Axis<'horiz'> {
  */
 export class VertAxis extends Axis<'vert'> {
 
-  constructor(paraview: ViewContext, facet: Facet, chartInfo: PlaneChartInfo, length: number) {
-    super(paraview, 'vert', facet, chartInfo, length);
+  constructor(
+    paraview: ViewContext,
+    facet: Facet,
+    chartInfo: PlaneChartInfo,
+    length: number,
+    isPrimary = true
+  ) {
+    super(paraview, 'vert', facet, chartInfo, length, isPrimary);
     this._tickLabelTierValues = this._chartInfo.computeAxisLabelTiers(
       this.coord, this.config.isStaggerLabels);
     this._titleText = this.config.title.text ?? '';
 
     this._height = length;
     this._canHeightFlex = true;
-    this._layout = new GridLayout(this.paraview, {
-      numCols: 1, // new cols will get added as needed
-      rowAligns: 'center',
-      colAligns: 'start',
-      canHeightFlex: true,
-      // height: this.docView.height,
-      height: this.height,
-      isAutoWidth: true,
-    }, 'vert-axis-layout');
-    // this._layout = new RowLayout(this.paraview, 0, 'center', 'vert-axis-layout');
+    // this._layout = new GridLayout(this.paraview, {
+    //   numCols: 1, // new cols will get added as needed
+    //   rowAligns: 'center',
+    //   colAligns: 'start',
+    //   canHeightFlex: true,
+    //   // height: this.docView.height,
+    //   height: this.height,
+    //   isAutoWidth: true,
+    // }, 'vert-axis-layout');
+    this._layout = new RowLayout(this.paraview, 0, 'center', 'vert-axis-layout');
     this._layout.isBubbleSizeChange = true;
     this.append(this._layout);
   }
@@ -454,8 +469,8 @@ export class VertAxis extends Axis<'vert'> {
   computeSize(): [number, number] {
     return [
       this._layout.width,
-      this._layout.height
-      // this._height
+      // this._layout.height
+      this._height
     ];
   }
 
@@ -468,25 +483,27 @@ export class VertAxis extends Axis<'vert'> {
       new VertTickLabelTier(
         this.paraview,
         this.config, {
-        orientation: this.orientation,
-        content: tier,
-        index: i,
-        length: this._height,
-        step: this.config.ticks.step,
-        numTicks: this._tickLabelTierValues[0].labels.length,
-        isChartIntertick: this._chartInfo.isIntertick,
-        datatype: this.datatype,
-        isFacetIndep: this._facet.variableType === 'independent'
-      }
+          orientation: this.orientation,
+          content: tier,
+          index: i,
+          length: this._height,
+          step: this.config.ticks.step,
+          numTicks: this._tickLabelTierValues[0].labels.length,
+          isChartIntertick: this._chartInfo.isIntertick,
+          datatype: this.datatype,
+          isFacetIndep: this._facet.variableType === 'independent'
+        },
+        this._isPrimary
       ));
   }
 
   protected _appendTickLabelTiers() {
     this._tickLabelTiers.toReversed().forEach((tier, i) => {
-      this._layout.splitColumnRight(i, 0, 'start');
-      this._layout.append(tier, {
-        x: i + 1,
-      });
+      // this._layout.splitColumnRight(i, 0, 'start');
+      // this._layout.append(tier, {
+      //   x: i + 1,
+      // });
+      this._layout.append(tier);
     });
   }
 
@@ -509,10 +526,11 @@ export class VertAxis extends Axis<'vert'> {
   }
 
   protected _appendTickStrip() {
-    this._layout.splitColumnRight(this._tickLabelTiers.length, 0, 'start');
-    this._layout.append(this._tickStrip!, {
-      x: this._layout.numCols - 1,
-    });
+    // this._layout.splitColumnRight(this._tickLabelTiers.length, 0, 'start');
+    // this._layout.append(this._tickStrip!, {
+    //   x: this._layout.numCols - 1,
+    // });
+    this._layout.append(this._tickStrip!);
   }
 
   protected _createAxisLine() {
@@ -520,14 +538,15 @@ export class VertAxis extends Axis<'vert'> {
   }
 
   protected _appendAxisLine() {
-    this._layout.splitColumnRight(this._tickLabelTiers.length + 1, 0, 'start');
-    this._layout.append(this._axisLine, {
-      x: this._layout.numCols - 1,
-    });
+    // this._layout.splitColumnRight(this._tickLabelTiers.length + 1, 0, 'start');
+    // this._layout.append(this._axisLine, {
+    //   x: this._layout.numCols - 1,
+    // });
+    this._layout.append(this._axisLine);
   }
 
   protected _getAxisTitlePadding(): PaddingInput {
-    return this.config.position === 'west'
+    return this._isPrimary
       ? { right: this.config.title.gap }
       : { left: this.config.title.gap };
   }
@@ -539,7 +558,7 @@ export class VertAxis extends Axis<'vert'> {
   }
 
   layoutComponents() {
-    if (this.config.position === 'west') {
+    if (this._isPrimary) {
     } else {
       this._layout.reverseChildren();
     }

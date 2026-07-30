@@ -45,6 +45,7 @@ export class DocumentView extends Container(View) {
   protected _directLabelStrip: DirectLabelStrip | null = null;
   protected _horizAxis?: HorizAxis;
   protected _vertAxis?: VertAxis;
+  protected _secondaryVertAxis?: VertAxis;
   protected _titleText!: string;
   protected _legends: Legends = {};
   protected _closeX: CloseXView;
@@ -158,17 +159,20 @@ export class DocumentView extends Container(View) {
 
     const horizFacet = this.paraview.paraState.chartInfo.getFacetForOrientation('horiz');
     const vertFacet = this.paraview.paraState.chartInfo.getFacetForOrientation('vert');
-    //const axisInfo = this._chartInfo.axisInfo;
+    const comboFacet = this.paraview.paraState.chartInfo.secondaryVertFacet;
 
     // Initially create axes to compute the size of each axis
     // along the shorter dimension
     if (this._paraState.config.axis.horiz.isDrawAxis && horizFacet) {
-      this._createHorizAxis(horizFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width);
+      this._createHorizAxis(horizFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width);
       // console.log('H-AXIS HEIGHT', this._horizAxis!.height);
     }
     if (this._paraState.config.axis.vert.isDrawAxis && vertFacet) {
-      this._createVertAxis(vertFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height);
+      this._createVertAxis(vertFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height);
       // console.log('V-AXIS WIDTH', this._vertAxis!.width);
+    }
+    if (comboFacet) {
+      this._createSecondaryVertAxis(comboFacet, this.paraview.paraState.comboChartInfo as PlaneChartInfo, this._height);
     }
 
     // Create any west legend bc it affects the position of the vert axis
@@ -181,7 +185,7 @@ export class DocumentView extends Container(View) {
     }
     // Recreate the axes using the size info computed above
     if (this._paraState.config.axis.vert.isDrawAxis && vertFacet) {
-      this._createVertAxis(vertFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height
+      this._createVertAxis(vertFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._height
         - (this._titleLabel?.paddedHeight || 0)
         - (this._subtitleLabel?.paddedHeight || 0)
         - (this._legends.north?.paddedHeight || 0)
@@ -205,12 +209,25 @@ export class DocumentView extends Container(View) {
     }
 
     if (this._paraState.config.axis.horiz.isDrawAxis && horizFacet) {
-      this._createHorizAxis(horizFacet!, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width
+      this._createHorizAxis(horizFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width
         - (this._vertAxis?.width ?? 0)
+        - (this._secondaryVertAxis?.width ?? 0)
         - (this._directLabelStrip?.width ?? 0)
         - (this._legends.east?.width ?? this._legends.west?.width ?? 0));
       this.append(this._horizAxis!);
     }
+
+    if (comboFacet) {
+      this._createSecondaryVertAxis(comboFacet, this.paraview.paraState.comboChartInfo as PlaneChartInfo, this._height
+        - (this._titleLabel?.paddedHeight || 0)
+        - (this._subtitleLabel?.paddedHeight || 0)
+        - (this._legends.north?.paddedHeight || 0)
+        - (this._legends.south?.paddedHeight || 0)
+        - (this._horizAxis?.height || 0)
+      );
+      this.append(this._secondaryVertAxis!);
+    }
+
 
     ////////////////////////////////////////////
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
@@ -230,6 +247,7 @@ export class DocumentView extends Container(View) {
 
     const plotWidth = this._width
       - (this._vertAxis?.width ?? 0)
+      - (this._secondaryVertAxis?.width ?? 0)
       - (this._directLabelStrip?.width ?? 0)
       - (this._legends.east?.width ?? this._legends.west?.width ?? 0);
     const plotHeight = this._height
@@ -312,6 +330,18 @@ export class DocumentView extends Container(View) {
         this._vertAxis.top = this.top;
       }
     }
+    if (this._secondaryVertAxis) {
+      this._secondaryVertAxis.right = this._legends.east?.left ?? this.right;
+      if (this._legends.north) {
+        this._secondaryVertAxis.paddedTop = this._legends.north.paddedBottom;
+      } else if (this._subtitleLabel && this._paraState.config.chart.title.position === 'top') {
+        this._secondaryVertAxis.top = this._subtitleLabel!.paddedBottom;
+      } else if (this._titleLabel && this._paraState.config.chart.title.position === 'top') {
+        this._secondaryVertAxis.top = this._titleLabel!.paddedBottom;
+      } else {
+        this._secondaryVertAxis.top = this.top;
+      }
+    }
     if (this._horizAxis) {
       if (this._titleLabel && this._paraState.config.chart.title.position === 'bottom') {
         this._horizAxis.bottom = this._titleLabel.paddedTop;
@@ -379,6 +409,15 @@ export class DocumentView extends Container(View) {
     this._vertAxis.updateSize();
   }
 
+  protected _createSecondaryVertAxis(facet: Facet, chartInfo: PlaneChartInfo, length: number) {
+    this._secondaryVertAxis?.remove();
+    this._secondaryVertAxis = new VertAxis(this.paraview, facet, chartInfo, length, false);
+    this._secondaryVertAxis.setAxisLabelText(facet.label);
+    this._secondaryVertAxis.createComponents();
+    this._secondaryVertAxis.layoutComponents();
+    this._secondaryVertAxis.updateSize();
+  }
+
   protected get _shouldAddDirectLabelStrip(): boolean {
     return this._paraState.config.chart.hasDirectLabels
       && this.type === 'line'
@@ -399,7 +438,8 @@ export class DocumentView extends Container(View) {
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     this.paraview.paraState.chartInfo.settingDidChange(path, oldValue, newValue);
-    if (['chart.width', 'chart.height', 'chart.fontScale', 'chart.isTactileEnabled', 'chart.pageSize',
+    if (['chart.width', 'chart.height', 'chart.fontScale', 'chart.isTactileEnabled',
+      'chart.tactileBrailleGrade', 'chart.tactileLabelMode', 'chart.pageSize',
       'chart.pageMarginLeft', 'chart.pageMarginRight', 'chart.pageMarginTop', 'chart.pageMarginBottom'
     ].includes(path)) {
       this.updateSize();

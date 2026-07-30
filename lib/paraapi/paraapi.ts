@@ -24,6 +24,7 @@ import { CustomPropertyLoader } from '../state/custom_property_loader';
 import { ActionArgumentMap, AvailableActions } from '../state/action_map';
 import explainers from '../explainers';
 import { type ConfigGroupMetadata, type ConfigGroupSettingsMetadata, configMetadata } from '../config/config_metadata';
+import { type BrailleTranslationProvider } from '../braille/braille_translation_provider';
 
 type Actions = { [Property in keyof AvailableActions]: ((args?: ActionArgumentMap) => void | Promise<void>) };
 
@@ -73,6 +74,9 @@ export class ParaAPI {
       /** Go to the chart maximum. */
       goTotalMaximum() {
         chartInfo().goChartMinMax(false);
+      },
+      switchToOtherData() {
+        chartInfo().switchToOtherData();
       },
       /** Select a datapoint. */
       select() {
@@ -321,6 +325,14 @@ export class ParaAPI {
 
   get actions(): Actions {
     return this._actions;
+  }
+
+  /**
+   * Register and initialize the literary Braille translator used by this chart.
+   * Await this method before loading a tactile manifest that uses Braille labels.
+   */
+  registerBrailleTranslationProvider(provider: BrailleTranslationProvider): Promise<void> {
+    return this._paraChart.registerBrailleTranslationProvider(provider);
   }
 
   /** Perform a hotkey action. */

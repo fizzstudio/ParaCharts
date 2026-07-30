@@ -44,6 +44,10 @@
       }
     ]
   },
+  "switchToOtherData": {
+    "label": "Switch to other data set",
+    "hotkeys": ["o"]
+  },
   "queryData": {
     "label": "Query data",
     "hotkeys": ["q"]

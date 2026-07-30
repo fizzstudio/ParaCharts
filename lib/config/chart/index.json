@@ -92,7 +92,8 @@
             "default": 1,
             "control": "dropdown",
             "controlOptions": {
-                "options": ["1", "2"]
+                "options": ["1", "2"],
+                "values": [1, 2]
             },
             "parentView": "controlPanel.tabs.chart.tactile.dialog"
         },

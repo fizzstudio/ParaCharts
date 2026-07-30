@@ -160,7 +160,7 @@ export class Popup extends View {
             }
 
         }
-        this.label.classInfo = { 'popup-text': true };
+        this.label.addClass('popup-text');
         //The box generation relies on the grid having set dimensions, which happens during append()
         //but we also need the box to render behind the grid
         this._children[0] = this.box;
@@ -227,7 +227,8 @@ export class Popup extends View {
         }
         let leftBorder = 0
         if (this.popupLabelOptions.type === 'vertAxis') {
-            leftBorder = 0 - this.paraview.documentView!.vertAxis!.layout.vRules[1]
+//            leftBorder = 0 - this.paraview.documentView!.vertAxis!.layout.vRules[1]
+           leftBorder = 0 - this.paraview.documentView!.vertAxis!.layout.width/2;
         }
         else if (this.popupLabelOptions.type === 'controlPanelIcon') {
             leftBorder = 0 - this.paraview.documentView!.chartLayers.x

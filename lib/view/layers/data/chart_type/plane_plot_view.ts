@@ -293,10 +293,10 @@ export abstract class PlanePlotView extends DataLayer {
       fill: "black",
       stroke: "black"
     });
-    const vertProportion = ((this.height - y) / this.height) * (chartInfo.yInterval!.end - chartInfo.yInterval!.start) + chartInfo.yInterval!.start;
+    const vertProportion = ((this.height - y) / this.height) * (chartInfo.yRangeInfo!.interval.end - chartInfo.yRangeInfo!.interval.start) + chartInfo.yRangeInfo!.interval.start;
     let horizText = '';
-    if (chartInfo.xInterval) {
-      horizText = ((x / this.width) * (chartInfo.xInterval.end - chartInfo.xInterval.start) + chartInfo.xInterval.start).toFixed(2);
+    if (chartInfo.xRangeInfo) {
+      horizText = ((x / this.width) * (chartInfo.xRangeInfo.interval.end - chartInfo.xRangeInfo.interval.start) + chartInfo.xRangeInfo.interval.start).toFixed(2);
     }
     else {
       horizText = String(nearestPoint.datapoint.facetBox("x")!.raw);
@@ -353,8 +353,8 @@ export abstract class PlanePlotView extends DataLayer {
     }
     let vertLabel;
     let horizLabel;
-    if (chartInfo.xInterval) {
-      let horizText = ((x / this.width) * (chartInfo.xInterval.end - chartInfo.xInterval.start) + chartInfo.xInterval.start).toFixed(2);
+    if (chartInfo.xRangeInfo) {
+      let horizText = ((x / this.width) * (chartInfo.xRangeInfo.interval.end - chartInfo.xRangeInfo.interval.start) + chartInfo.xRangeInfo.interval.start).toFixed(2);
       vertLabel = new Popup(this.paraview, {
         text: horizText,
         x: x,
@@ -364,8 +364,8 @@ export abstract class PlanePlotView extends DataLayer {
       }, { shape: "box", fill: "hsl(0, 0%, 100%)" });
       vertAdjust(vertLabel);
     }
-    if (chartInfo.yInterval) {
-      const vertProportion = ((this.height - y) / this.height) * (chartInfo.yInterval!.end - chartInfo.yInterval!.start) + chartInfo.yInterval!.start;
+    if (chartInfo.yRangeInfo) {
+      const vertProportion = ((this.height - y) / this.height) * (chartInfo.yRangeInfo.interval.end - chartInfo.yRangeInfo.interval.start) + chartInfo.yRangeInfo.interval.start;
       horizLabel = new Popup(this.paraview, {
         text: vertProportion.toFixed(2),
         x: 0,

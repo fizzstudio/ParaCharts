@@ -24,6 +24,7 @@ import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, WaterfallPlotV
 import { PopupLayer } from './popup_layer';
 import { type DataLayerContext } from '../view_context';
 import { BubblePlotView } from './data/chart_type/bubble_plot_view';
+import { ComboPlotView } from './data/chart_type/combo_plot_view';
 
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
@@ -42,7 +43,8 @@ export const chartClasses = {
   graph: LinePlotView,
   waterfall: WaterfallPlotView,
   venn: VennPlotView,
-  bubble: BubblePlotView
+  bubble: BubblePlotView,
+  combo: ComboPlotView
 };
 
 export class PlotLayerManager extends View {
@@ -210,7 +212,7 @@ export class PlotLayerManager extends View {
   }
 
   private createDataLayers() {
-    const ctor = chartClasses[this.paraview.paraState.type];
+    const ctor = this.paraview.paraState.comboModel ? chartClasses['combo'] : chartClasses[this.paraview.paraState.type];
     let dataLayer: DataLayer;
     if (ctor) {
       dataLayer = new ctor(this.paraview, this._width, this._height, 0, this.paraview.paraState.chartInfo);

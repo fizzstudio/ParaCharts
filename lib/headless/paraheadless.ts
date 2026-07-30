@@ -41,10 +41,14 @@ export type HeadlessPageSize =
 
 /** Presentation options applied before a headless chart is laid out. @public */
 export interface HeadlessRenderOptions {
-  /** Render labels with tactile layout and the Braille36 US font. */
+  /** Render labels with tactile layout. */
   isTactileEnabled?: boolean;
   /** Size the serialized SVG for a physical page, or use chart dimensions for `auto`. */
   pageSize?: HeadlessPageSize;
+  /** Braille grade used for translated tactile labels. */
+  tactileBrailleGrade?: 1 | 2;
+  /** Select which forms of tactile labels are visible. */
+  tactileLabelMode?: 'Braille' | 'Latin' | 'Both' | 'None';
 }
 
 /** @public */
@@ -109,6 +113,12 @@ export class ParaHeadless {
     }
     if (options.pageSize !== undefined) {
       settings['chart.pageSize'] = options.pageSize;
+    }
+    if (options.tactileBrailleGrade !== undefined) {
+      settings['chart.tactileBrailleGrade'] = options.tactileBrailleGrade;
+    }
+    if (options.tactileLabelMode !== undefined) {
+      settings['chart.tactileLabelMode'] = options.tactileLabelMode;
     }
     this._paraChart.config = settings;
     this._paraChart.manifestType = type;
