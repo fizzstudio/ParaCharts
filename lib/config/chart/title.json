@@ -1,4 +1,5 @@
 {
+    "description": "Chart title display and styling.",
     "family": "title",
     "settings": {
         "isDrawTitle": {

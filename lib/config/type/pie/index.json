@@ -1,4 +1,5 @@
 {
+    "description": "Pie chart settings.",
     "ref": "type.pastry",
     "settings": {
         "annularThickness": {

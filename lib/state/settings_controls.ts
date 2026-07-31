@@ -109,17 +109,20 @@ export class SettingControlManager extends State {
   ) {
     const parts = key.split('.');
     const path = parts.slice(0, -1).join('.');
-    const metadata = configMetadata[path].settings[parts.at(-1)!] as ConfigSettingMetadata<T>;
+    const groupMetadata = configMetadata[path];
+    if (!groupMetadata) throw new Error(`no such config group '${path}'`);
+    const metadata = groupMetadata.settings[parts.at(-1)!] as ConfigSettingMetadata<T> | undefined;
+    if (!metadata) throw new Error(`no such config setting '${key}'`);
     this._settingControlInfo = produce(this._settingControlInfo, draft => {
       const controlInfo: Partial<SettingControlInfo<T>> = {};
-      const tag = inputTypeTags[metadata.control];
+      const tag = inputTypeTags[metadata.control!];
       // controlInfo.isConfig = true;
       controlInfo.key = key;
       controlInfo.parentView = metadata.parentView;
       // controlInfo.options = metadata.controlOptions ?? controlOptions;
       if (metadata.controlOptions) {
         // We can't mutate metadata.controlOptions, so we make a new object that we can
-        controlInfo.options = Object.assign({}, metadata.controlOptions);
+        controlInfo.options = Object.assign({}, metadata.controlOptions) as unknown as SettingControlOptionsType<T>;
         if (controlOptions) {
           Object.assign(controlInfo.options, controlOptions);
         }

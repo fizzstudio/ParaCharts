@@ -1,4 +1,5 @@
 {
+    "description": "Outside-label settings for pie charts.",
     "ref": "type.pastry.outsideLabels",
     "settings": {
         "vertGap": {

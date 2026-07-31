@@ -1,4 +1,5 @@
 {
+    "description": "Waterfall chart settings.",
     "ref": "type.plane",
     "family": "waterfall",
     "settings": {

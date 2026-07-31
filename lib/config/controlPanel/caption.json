@@ -1,4 +1,5 @@
 {
+    "description": "Control panel caption layout and styling.",
     "settings": {
         "isCaptionExternalWhenControlPanelClosed": {
             "label": "cpanel.tabs.controls.advanced_dialog.caption_external",

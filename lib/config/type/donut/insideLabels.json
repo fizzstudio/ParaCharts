@@ -1,4 +1,5 @@
 {
+    "description": "Inside-label settings for donut charts.",
     "ref": "type.pastry.insideLabels",
     "settings": {
         "position": {

@@ -1,4 +1,5 @@
 {
+    "description": "Shared settings for radial pie, donut, and gauge charts.",
     "abstract": true,
     "family": "radial",
     "settings": {

@@ -1,4 +1,5 @@
 {
+    "description": "Color schemes, palettes, contrast, and vision accessibility.",
     "family": "color",
     "settings": {
         "colorVisionMode": {
