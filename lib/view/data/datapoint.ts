@@ -11,6 +11,7 @@ import { Popup, ShapeTypes } from '../popup';
 import { type PastryPlotView, type RadialDatapointParams } from '../layers';
 import { SeriesView } from './series';
 import { DataView } from './data';
+import { ref } from 'lit/directives/ref.js';
 
 export const SELECTION_MARKER_SIZE = 40;
 
@@ -155,11 +156,11 @@ export class DatapointView extends DataView {
   }
 
   get ref() {
-    return this.chart.paraview.ref<SVGElement>(this._id);
+    return ref(this.chart.paraview.ref<SVGElement>(this._id));
   }
 
   get el() {
-    return this.ref.value!;
+    return this.chart.paraview.ref<SVGElement>(this._id).value!;
   }
 
   get x() {
@@ -370,6 +371,7 @@ export class DatapointView extends DataView {
     }
     return svg`
         <g
+          ${this.ref}
           id=${this._id}
           class=${classMap(this.classInfo)}
           role="datapoint"

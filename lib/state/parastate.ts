@@ -199,6 +199,7 @@ export class ParaState extends BaseState {
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() clusterAnalyses: clusterObject[] | null = null;
   @property() frontSeries = '';
+  @property() frontDatapoints: Datapoint[] = [];
   @property() pointerCoords: Point = { x: 0, y: 0 }
   @property() isTitleHighlighted = false;
   @property() isHorizontalAxisHighlighted = false;
@@ -210,6 +211,7 @@ export class ParaState extends BaseState {
 
   @property() protected _caption: HighlightedSummary = { text: '', html: '' };
   @property() protected _pinnedSeriesKey: string | null = null;
+  @property() protected _pinnedBubbleSize: string | null = null;
   @property() protected _dimmedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
   @property() protected focused = 'chart';
@@ -1163,26 +1165,6 @@ export class ParaState extends BaseState {
     otherDatapoints.map(id => this.lowlightDatapoint(seriesKey, id))
     this.refreshParaView();
   }
-
-  dimOtherSizes(item: LegendItem) {
-    let chartInfo = this.chartInfo as BubbleChartInfo
-    let otherDatapoints: Datapoint[] = []
-    if (item.bubbleSize == "small") {
-      otherDatapoints = this.model!.allPoints.filter(dp => dp.facetValueAsNumber("z")! > (chartInfo.minZ + chartInfo.medZ) / 2);
-    }
-    else if (item.bubbleSize == "medium") {
-      otherDatapoints = this.model!.allPoints.filter(dp =>
-        (dp.facetValueAsNumber("z")! < (chartInfo.minZ + chartInfo.medZ) / 2) ||
-        (dp.facetValueAsNumber("z")! > (chartInfo.maxZ + chartInfo.medZ) / 2));
-    }
-    else if (item.bubbleSize == "large") {
-      otherDatapoints = this.model!.allPoints.filter(dp =>
-        dp.facetValueAsNumber("z")! < (chartInfo.maxZ + chartInfo.medZ) / 2);
-    }
-    otherDatapoints.map(dp => this.lowlightDatapoint(dp.seriesKey, dp.datapointIndex));
-    this.refreshParaView();
-  }
-
   clearAllSeriesDimming() {
     this._dimmedSeries = [];
   }
@@ -1198,6 +1180,14 @@ export class ParaState extends BaseState {
   pinSeries(seriesKey: string) {
     this._pinnedSeriesKey = seriesKey;
     this.dimOtherSeries(seriesKey);
+  }
+
+  get pinnedBubbleSize(): string | null {
+    return this._pinnedBubbleSize;
+  }
+
+  set pinnedBubbleSize(size: string | null) {
+    this._pinnedBubbleSize = size;
   }
 
   unpinSeries() {
@@ -1419,6 +1409,10 @@ export class ParaState extends BaseState {
 
   clearAllDatapointHighlights() {
     this._highlightedDatapoints = new Set();
+  }
+
+  clearAllDatapointLowlights() {
+    this._lowlightedDatapoints = new Set();
   }
 
   get highlightedSequences() {

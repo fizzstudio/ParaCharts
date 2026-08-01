@@ -1,4 +1,4 @@
-import { enumerate } from "@fizz/paramodel";
+import { Datapoint, enumerate } from "@fizz/paramodel";
 import { PointDatapointView, PointPlotView, PointSeriesView } from ".";
 import { DataSymbol, DataSymbols } from "../../../symbol";
 import { ConfigSetting } from "../../../../config/config_types";
@@ -52,12 +52,51 @@ export class BubblePlotView extends PointPlotView {
         super.settingDidChange(path, oldValue, newValue);
     }
 
+    dimOtherSizes(size: string) {
+        this._resetFrontedDatapoints();
+        let backDatapoints: Datapoint[] = [];
+        const lowerThirdLimit = (2 / 3) * this.minZ + (1 / 3) * this.maxZ;
+        const upperThirdLimit = (1 / 3) * this.minZ + (2 / 3) * this.maxZ;
+        const points = this.model!.allPoints;
+        if (size == "small") {
+            this.paraview.paraState.frontDatapoints = points.filter(dp => dp.facetValueAsNumber("z")! <= lowerThirdLimit);
+            backDatapoints = this.model!.allPoints.filter(dp => dp.facetValueAsNumber("z")! > lowerThirdLimit);
+        }
+        else if (size == "medium") {
+            this.paraview.paraState.frontDatapoints = points.filter(dp =>
+                (dp.facetValueAsNumber("z")! > lowerThirdLimit) &&
+                (dp.facetValueAsNumber("z")! <= upperThirdLimit));
+            backDatapoints = points.filter(dp =>
+                (dp.facetValueAsNumber("z")! <= lowerThirdLimit) ||
+                (dp.facetValueAsNumber("z")! > upperThirdLimit));
+        }
+        else if (size == "large") {
+            this.paraview.paraState.frontDatapoints = points.filter(dp =>
+                dp.facetValueAsNumber("z")! > upperThirdLimit);
+            backDatapoints = points.filter(dp =>
+                dp.facetValueAsNumber("z")! <= upperThirdLimit);
+        }
+        backDatapoints.forEach(dp => this.paraview.paraState.lowlightDatapoint(dp.seriesKey, dp.datapointIndex));
+        this.paraview.paraState.frontSeries = '';
+        this.paraview.paraState.refreshParaView();
+    }
+
+    pinBubbleSize(size: string) {
+        this.unpinBubbleSize();
+        this.paraview.paraState.pinnedBubbleSize = size;
+        this.dimOtherSizes(size);
+    }
+
+    unpinBubbleSize() {
+        this.paraview.paraState.pinnedBubbleSize = null;
+        this.paraview.paraState.clearAllDatapointLowlights();
+    }
 }
 
 export class BubblePointView extends PointDatapointView {
     declare readonly chart: BubblePlotView;
     computeX() {
-        const xInterval = this.chart.chartInfo.xInterval!;
+        const xInterval = this.chart.chartInfo.xRangeInfo!.interval!;
         // Scales points in proportion to the data range
         const xTemp = (this.datapoint.facetValueNumericized('x')! - xInterval.start)
             / (xInterval.end - xInterval.start);
