@@ -84,6 +84,9 @@ export class Legend extends Container(View) {
           : 'square.solid',
         {
           color: item.color,
+          lighten: item.symbolOptions?.lighten ?? false,
+          baseSize: item.symbolOptions?.baseSize ?? 1,
+          dashed: item.symbolOptions?.dashed ?? false,
           pointerEnter: (e) => {
             if (this.paraview.paraState.pinnedSeriesKey !== null || this.paraview.paraState.pinnedBubbleSize !== null) return;
             if (item.bubbleSize) {
@@ -102,9 +105,6 @@ export class Legend extends Container(View) {
             this.paraview.paraState.clearAllSeriesDimming();
             this.paraview.paraState.clearAllPointsDimming();
           },
-          lighten: item.symbolOptions?.lighten ?? false
-          ,
-          baseSize: item.symbolOptions?.baseSize ?? 1,
           click: (e) => {
             if (item.bubbleSize) {
               if (this.paraview.paraState.pinnedBubbleSize === item.bubbleSize) {

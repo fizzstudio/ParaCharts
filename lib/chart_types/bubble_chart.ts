@@ -64,38 +64,38 @@ export class BubbleChartInfo extends PointChartInfo {
         const items: LegendItem[] = [];
         for (let i = 0; i < model.seriesKeys.length; i++) {
             const key = model.seriesKeys[i];
-            const medSymbolItem: LegendItem = {
+            const symbolItem: LegendItem = {
                 label: `${model.atKey(key)!.getLabel()}`,
                 seriesKey: key,
                 color: i,
                 symbol: types[(i + 8) % 16],
-                symbolOptions: { baseSize: medSymbolSize, lighten: true }
+                symbolOptions: { baseSize: 1, lighten: true }
             }
-            items.push(medSymbolItem);
+            items.push(symbolItem);
         }
         const key = model.seriesKeys[0];
         const minSymbolItem: LegendItem = {
             label: `${minZ}`,
             seriesKey: key,
             color: 0,
-            symbol: types[8],
-            symbolOptions: { baseSize: minSymbolSize, lighten: true },
+            symbol: types[0],
+            symbolOptions: { baseSize: minSymbolSize, lighten: true, dashed: true },
             bubbleSize: "small"
         }
         const medSymbolItem: LegendItem = {
             label: `${medZ}`,
             seriesKey: key,
             color: 0,
-            symbol: types[8],
-            symbolOptions: { baseSize: medSymbolSize, lighten: true },
+            symbol: types[0],
+            symbolOptions: { baseSize: medSymbolSize, lighten: true, dashed: true },
             bubbleSize: "medium"
         }
         const maxSymbolItem: LegendItem = {
             label: `${maxZ}`,
             seriesKey: key,
             color: 0,
-            symbol: types[8],
-            symbolOptions: { baseSize: maxSymbolSize, lighten: true },
+            symbol: types[0],
+            symbolOptions: { baseSize: maxSymbolSize, lighten: true, dashed: true },
             bubbleSize: "large"
         }
         items.push(minSymbolItem);

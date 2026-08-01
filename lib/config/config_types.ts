@@ -124,7 +124,7 @@ export type ColorPrefSource =
   | 'modeDefault'  // set by an active mode (e.g. low-vision mode)
   | 'profile'      // saved in manifest extensions
   | 'system'       // derived from current media-query state
-  | 'user';        // explicit user choice ï¿½ wins until explicitly reset
+  | 'user';        // explicit user choice — wins until explicitly reset
 
 /** @public */
 export type DeepReadonly<T> = {
@@ -594,6 +594,7 @@ export interface TypeConfig extends ConfigGroup {
   bar: TypeBarConfig;
   bubble: TypeBubbleConfig;
   column: TypeColumnConfig;
+  combo: TypeComboConfig;
   donut: TypeDonutConfig;
   heatmap: TypeHeatmapConfig;
   histogram: TypeHistogramConfig;
@@ -652,6 +653,40 @@ export interface TypeBubbleConfig extends TypePlaneConfig {
   minBubbleSize: number;
 }
 export interface TypeColumnConfig extends TypePlaneConfig {
+  /** How bars are stacked */
+  stacking: 'none' | 'standard' | string;
+  /** Width of individual bars */
+  barWidth: number;
+  /** Color each bar individually vs by series */
+  colorByDatapoint: boolean;
+  /** Show total value labels on stacked bars */
+  isDrawTotalLabels: boolean;
+  /** Gap between total value labels and stacks */
+  totalLabelGap: number;
+  /** Gap between stack labels and bars */
+  stackLabelGap: number;
+  /** Show record name labels */
+  isDrawRecordLabels: boolean;
+  /** Show data value labels on bars */
+  isDrawDataLabels: boolean;
+  /** Position of data value labels */
+  dataLabelPosition: BarDataLabelPosition;
+  /** Gap between bar clusters */
+  clusterGap: number;
+  /** Gap between individual bars */
+  barGap: number;
+  /** Gap inside stacked bars */
+  stackInsideGap: number;
+  /** Abbreviate series names */
+  isAbbrevSeries: boolean;
+  /** Format for cluster labels */
+  clusterLabelFormat: LabelFormat;
+  /** Width of bar outlines */
+  lineWidth: number;
+  /** Font size for bar labels */
+  labelFontSize: string;
+}
+export interface TypeComboConfig extends TypePlaneConfig {
   /** How bars are stacked */
   stacking: 'none' | 'standard' | string;
   /** Width of individual bars */

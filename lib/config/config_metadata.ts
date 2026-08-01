@@ -30,6 +30,7 @@ import SonificationJson from "./sonification.json" with { type: "json" };
 import TypeBarJson from "./type/bar.json" with { type: "json" };
 import TypeBubbleJson from "./type/bubble.json" with { type: "json" };
 import TypeColumnJson from "./type/column.json" with { type: "json" };
+import TypeComboJson from "./type/combo.json" with { type: "json" };
 import TypeDonutJson from "./type/donut/index.json" with { type: "json" };
 import TypeDonutInsidelabelsJson from "./type/donut/insideLabels.json" with { type: "json" };
 import TypeDonutOutsidelabelsJson from "./type/donut/outsideLabels.json" with { type: "json" };
@@ -112,6 +113,7 @@ export const configMetadata: ConfigMetadata = {
   'type.bar': TypeBarJson as unknown as ConfigGroupMetadata,
   'type.bubble': TypeBubbleJson as unknown as ConfigGroupMetadata,
   'type.column': TypeColumnJson as unknown as ConfigGroupMetadata,
+  'type.combo': TypeComboJson as unknown as ConfigGroupMetadata,
   'type.donut': TypeDonutJson as unknown as ConfigGroupMetadata,
   'type.donut.insideLabels': TypeDonutInsidelabelsJson as unknown as ConfigGroupMetadata,
   'type.donut.outsideLabels': TypeDonutOutsidelabelsJson as unknown as ConfigGroupMetadata,
