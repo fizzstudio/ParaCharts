@@ -26,6 +26,7 @@ import { DataSymbols } from '../view/symbol';
 import { Interval } from '@fizz/chart-classifier-utils';
 import { ConfigSetting } from '../config/config_types';
 import { AxisRangeInfo } from './plane_chart';
+import { LegendItem } from '../view/legend';
 
 /**
  * Business logic for line charts.
@@ -131,7 +132,7 @@ export class LineChartInfo extends PointChartInfo {
     }
   }
 
-  legend() {
+  legend(): LegendItem[] {
     const model = this.model!;
     const seriesKeys = enumerate([...model.seriesKeys]);
     const types = new DataSymbols().types;
@@ -160,7 +161,7 @@ export class LineChartInfo extends PointChartInfo {
     return seriesKeys.map(key => ({
       label: model.atKey(key[0])!.getLabel(),
       seriesKey: key[0],
-      color: this.seriesProperties.properties(key[0]).color,
+      colorIndex: this.seriesProperties.properties(key[0]).color,
       symbol: types[key[1]],
       symbolOptions: { lighten: true }
     }));

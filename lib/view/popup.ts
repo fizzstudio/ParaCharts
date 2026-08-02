@@ -287,7 +287,7 @@ export class Popup extends View {
                         ? (item.symbol ?? 'square.solid')
                         : 'square.solid',
                     {
-                        color: item.color
+                        color: item.colorIndex
                     }
                 ));
                 const text = this.popupLabelOptions.text;

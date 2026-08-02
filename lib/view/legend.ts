@@ -22,7 +22,7 @@ export interface LegendItem {
   seriesKey: string;
   symbol?: DataSymbolType;
   symbolOptions?: Partial<DataSymbolOptions>;
-  color: number;
+  colorIndex: number;
   datapointIndex?: number;
   bubbleSize?: "small" | "medium" | "large"
 }
@@ -83,7 +83,7 @@ export class Legend extends Container(View) {
           ? (item.symbol ?? 'square.solid')
           : 'square.solid',
         {
-          color: item.color,
+          color: item.colorIndex,
           lighten: item.symbolOptions?.lighten ?? false,
           baseSize: item.symbolOptions?.baseSize ?? 1,
           dashed: item.symbolOptions?.dashed ?? false,
@@ -95,7 +95,7 @@ export class Legend extends Container(View) {
             }
             if ((this.paraview.paraState.chartInfo as ScatterChartInfo).clustering
               && !this.paraview.paraState.model?.multi) {
-              this.paraview.paraState.dimOtherCluster(item.seriesKey, item.color)
+              this.paraview.paraState.dimOtherCluster(item.seriesKey, item.colorIndex)
               return;
             }
             this.paraview.paraState.dimOtherSeries(item.seriesKey);
@@ -123,6 +123,9 @@ export class Legend extends Container(View) {
           }
         }
       ));
+      if (item.bubbleSize) {
+        views.at(-1)!.styleInfo = { fill: "lightgray", ...views.at(-1)!.styleInfo };
+      }
       views.push(new Label(this.paraview, {
         text: item.label,
         x: 0,
@@ -137,7 +140,7 @@ export class Legend extends Container(View) {
           }
           if ((this.paraview.paraState.chartInfo as ScatterChartInfo).clustering
             && !this.paraview.paraState.model?.multi) {
-            this.paraview.paraState.dimOtherCluster(item.seriesKey, item.color)
+            this.paraview.paraState.dimOtherCluster(item.seriesKey, item.colorIndex)
             return;
           }
           this.paraview.paraState.dimOtherSeries(item.seriesKey);

@@ -67,7 +67,7 @@ export class BubbleChartInfo extends PointChartInfo {
             const symbolItem: LegendItem = {
                 label: `${model.atKey(key)!.getLabel()}`,
                 seriesKey: key,
-                color: i,
+                colorIndex: i,
                 symbol: types[(i + 8) % 16],
                 symbolOptions: { baseSize: 1, lighten: true }
             }
@@ -77,7 +77,7 @@ export class BubbleChartInfo extends PointChartInfo {
         const minSymbolItem: LegendItem = {
             label: `${minZ}`,
             seriesKey: key,
-            color: 0,
+            colorIndex: 0,
             symbol: types[0],
             symbolOptions: { baseSize: minSymbolSize, lighten: true, dashed: true },
             bubbleSize: "small"
@@ -85,7 +85,7 @@ export class BubbleChartInfo extends PointChartInfo {
         const medSymbolItem: LegendItem = {
             label: `${medZ}`,
             seriesKey: key,
-            color: 0,
+            colorIndex: 0,
             symbol: types[0],
             symbolOptions: { baseSize: medSymbolSize, lighten: true, dashed: true },
             bubbleSize: "medium"
@@ -93,7 +93,7 @@ export class BubbleChartInfo extends PointChartInfo {
         const maxSymbolItem: LegendItem = {
             label: `${maxZ}`,
             seriesKey: key,
-            color: 0,
+            colorIndex: 0,
             symbol: types[0],
             symbolOptions: { baseSize: maxSymbolSize, lighten: true, dashed: true },
             bubbleSize: "large"

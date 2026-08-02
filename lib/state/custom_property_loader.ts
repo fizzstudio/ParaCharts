@@ -1,7 +1,7 @@
 import { Logger, getLogger } from '@fizz/logger';
 import { type SettingsInput } from '../config/config_types';
 import { Palette } from '../common/colors';
-import { type DataSymbolType, type DataSymbolShape, type DataSymbolFill } from '../view/symbol';
+import { type DataSymbolType, type DataSymbolShape, type DataSymbolFillType } from '../view/symbol';
 import { type ParaState } from './parastate';
 
 export class CustomPropertyLoader {
@@ -217,7 +217,7 @@ export class CustomPropertyLoader {
     const seriesIndex = parseInt((propName.match(/\d+/g) as string[])[0]);
     const valueArray = propValue.split(/,\s+['"]/);
     const dataSymbolShape = this._trimQuotes(valueArray[0]) as DataSymbolShape;
-    const dataSymbolFill = this._trimQuotes(valueArray[1]) as DataSymbolFill;
+    const dataSymbolFill = this._trimQuotes(valueArray[1]) as DataSymbolFillType;
 
     this._symbolSet[seriesIndex] = `${dataSymbolShape}.${dataSymbolFill}`;
 

@@ -25,6 +25,7 @@ import { PlaneChartInfo, computeAxisRange, AxisRangeInfo } from './plane_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax } from '../state';
 import { ConfigSetting, DeepReadonly, TypeBarConfig } from '../config/config_types';
 import { type Label } from '../view/label';
+import { LegendItem } from '../view/legend';
 
 type BarClusterMap = {[key: string]: BarCluster};
 
@@ -318,7 +319,7 @@ export class BarChartInfo extends PlaneChartInfo {
     this._createSequenceNavNodes();
   }
 
-  legend() {
+  legend(): LegendItem[] {
     const model = this._paraState.model!;
     const seriesKeys = enumerate([...model.seriesKeys]);
     if (this._paraState.config.legend.itemOrder === 'alphabetical') {
@@ -330,7 +331,7 @@ export class BarChartInfo extends PlaneChartInfo {
     return seriesKeys.map(key => ({
       label: model.atKey(key[0])!.getLabel(),
       seriesKey: key[0],
-      color: this._paraState.seriesProperties!.properties(key[0]).color,
+      colorIndex: this._paraState.seriesProperties!.properties(key[0]).color,
     }));
   }
 

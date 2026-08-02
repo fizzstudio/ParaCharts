@@ -23,6 +23,7 @@ import { BaseChartInfo, RiffOrder } from './base_chart';
 import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax } from '../state';
 import { directions, HorizDirection } from '../config/config_types';
 import { NavLayer, NavNode } from '../view/layers/data/navigation'
+import { LegendItem } from '../view/legend';
 
 
 export type ArcType = 'circle' | 'semicircle';
@@ -65,7 +66,7 @@ export class PastryChartInfo extends BaseChartInfo {
     nodes.at(-1)!.connect('right', nodes[0]);
   }
 
-  legend() {
+  legend(): LegendItem[] {
     const series = this._paraState.model!.series[0];
     const xs = series.datapoints.map(dp =>
       formatBox(dp.facetBox('x')!, this._paraState.getFormatType('pieSliceLabel')));
@@ -74,7 +75,7 @@ export class PastryChartInfo extends BaseChartInfo {
     return xs.map((x, i) => ({
       label: `${x}: ${ys[i]}`,
       seriesKey: series.key,
-      color: i,
+      colorIndex: i,
       datapointIndex: i
     }));
   }

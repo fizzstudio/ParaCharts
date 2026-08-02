@@ -202,14 +202,14 @@ export abstract class BaseChartInfo {
     return this._paraState.config.chart.title.isDrawTitle && !!this._paraState.title;
   }
 
-  popuplegend() {
+  popuplegend(): LegendItem[] {
     //const seriesKeys = [...this._paraState.model!.seriesKeys];
     const seriesInNavOrder = this.seriesInNavOrder().map(s => s.key)
     return seriesInNavOrder.map((key, i) => (
       {
         label: '',
         seriesKey: key,
-        color: this._paraState.seriesProperties!.properties(key).color,
+        colorIndex: this._paraState.seriesProperties!.properties(key).color,
         symbol: this._paraState.seriesProperties!.properties(key).symbol,
       }));
   }
