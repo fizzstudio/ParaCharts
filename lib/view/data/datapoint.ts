@@ -142,7 +142,7 @@ export class DatapointView extends DataView {
   }
 
   get color(): number {
-    return this._isStyleEnabled ? this.index : this._parent.color;
+    return this._isStyleEnabled ? this.index : this._parent.colorIndex;
   }
 
   /**

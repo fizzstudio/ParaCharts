@@ -168,7 +168,7 @@ export class ScatterChartInfo extends PointChartInfo {
       return seriesKeys.map((key, i) => ({
         label: model.atKey(key)!.getLabel(),
         seriesKey: key,
-        colorIndex: this._paraState.seriesProperties!.properties(key).color,
+        colorIndex: this._paraState.seriesProperties!.properties(key).colorIndex,
         symbol: types[i],
         symbolOptions: { lighten: true }
       }));

@@ -209,7 +209,7 @@ export abstract class BaseChartInfo {
       {
         label: '',
         seriesKey: key,
-        colorIndex: this._paraState.seriesProperties!.properties(key).color,
+        colorIndex: this._paraState.seriesProperties!.properties(key).colorIndex,
         symbol: this._paraState.seriesProperties!.properties(key).symbol,
       }));
   }

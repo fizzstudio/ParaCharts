@@ -129,7 +129,7 @@ export class ScatterPointView extends PointDatapointView {
   protected get _symbolColor(): number {
     // @simonvarey: I added the symbolColor assignment to fix a build error. It may be incorrect
     if (this.symbolColor === undefined) {
-      this.symbolColor = this.seriesProps.color;
+      this.symbolColor = this.seriesProps.colorIndex;
     }
     return this.paraview.paraState.isVisited(this.seriesKey, this.index)
       ? -1
@@ -139,7 +139,7 @@ export class ScatterPointView extends PointDatapointView {
   protected _createSymbol(): void {
     const series = this.seriesProps;
     let symbolType = series.symbol;
-    let color: number = series.color;
+    let color: number = series.colorIndex;
     const types = this.chart.types;
     if (this.chart.chartInfo.clustering) {
       if (this.clusterID !== undefined) {

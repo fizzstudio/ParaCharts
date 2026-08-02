@@ -161,7 +161,7 @@ export class LineChartInfo extends PointChartInfo {
     return seriesKeys.map(key => ({
       label: model.atKey(key[0])!.getLabel(),
       seriesKey: key[0],
-      colorIndex: this.seriesProperties.properties(key[0]).color,
+      colorIndex: this.seriesProperties.properties(key[0]).colorIndex,
       symbol: types[key[1]],
       symbolOptions: { lighten: true }
     }));

@@ -54,6 +54,6 @@ export class SeriesPropertyManager {
 
 export class SeriesProperties {
 
-  constructor(public readonly key: string, public color: number, public symbol: DataSymbolType) { }
+  constructor(public readonly key: string, public colorIndex: number, public symbol: DataSymbolType) { }
 
 }

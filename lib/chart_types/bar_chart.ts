@@ -331,7 +331,7 @@ export class BarChartInfo extends PlaneChartInfo {
     return seriesKeys.map(key => ({
       label: model.atKey(key[0])!.getLabel(),
       seriesKey: key[0],
-      colorIndex: this._paraState.seriesProperties!.properties(key[0]).color,
+      colorIndex: this._paraState.seriesProperties!.properties(key[0]).colorIndex,
     }));
   }
 
