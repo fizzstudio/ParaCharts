@@ -28,6 +28,7 @@ import {
   xInfo,
   starInfo,
   AREA,
+  type ShapeInfo,
 } from './symbol_geometry';
 
 import { svg, nothing } from 'lit';
@@ -119,7 +120,7 @@ export class DataSymbol extends View {
   protected _role = '';
   protected _fill?: DataSymbolFillType;
   protected _shape?: DataSymbolShape;
-  protected shapeInfo;
+  protected shapeInfo: Partial<Record<DataSymbolShape, ShapeInfo>>;
 
   static fromType(
     paraview: ViewContext,
@@ -160,16 +161,7 @@ export class DataSymbol extends View {
       pointerLeave: options?.pointerLeave,
       click: options?.click
     };
-    this.shapeInfo = {
-      circle: circleInfo(this._options.baseSize * AREA),
-      square: squareInfo(this._options.baseSize * AREA),
-      triangle_up: triangleUpInfo(this._options.baseSize * AREA),
-      triangle_down: triangleDownInfo(this._options.baseSize * AREA),
-      diamond: diamondInfo(this._options.baseSize * AREA),
-      plus: plusInfo(this._options.baseSize * AREA),
-      x: xInfo(this._options.baseSize * AREA),
-      star: starInfo(this._options.baseSize * AREA)
-    };
+    this.shapeInfo = {};
     this.type = `${shape}.${fill}`;
     this._locOffset.x = this.width / 2;
     this._locOffset.y = this.height / 2;
@@ -190,7 +182,7 @@ export class DataSymbol extends View {
       this.paraview.addDef(this._defsKey, svg`
         <path
           id=${this._defsKey}
-          d=${this.shapeInfo[this.shape].path}
+          d=${this._getShapeInfo(this.shape).path}
         />
       `);
     }
@@ -198,12 +190,45 @@ export class DataSymbol extends View {
     this._updateClassInfo();
   }
 
+  protected _getShapeInfo(shape: DataSymbolShape): ShapeInfo {
+    if (!this.shapeInfo[shape]) {
+      switch (shape) {
+        case 'circle':
+          this.shapeInfo[shape] = circleInfo(this._options.baseSize * AREA);
+          break;
+        case 'square':
+          this.shapeInfo[shape] = squareInfo(this._options.baseSize * AREA);
+          break;
+        case 'triangle_up':
+          this.shapeInfo[shape] = triangleUpInfo(this._options.baseSize * AREA);
+          break;
+        case 'triangle_down':
+          this.shapeInfo[shape] = triangleDownInfo(this._options.baseSize * AREA);
+          break;
+        case 'diamond':
+          this.shapeInfo[shape] = diamondInfo(this._options.baseSize * AREA);
+          break;
+        case 'plus':
+          this.shapeInfo[shape] = plusInfo(this._options.baseSize * AREA);
+          break;
+        case 'x':
+          this.shapeInfo[shape] = xInfo(this._options.baseSize * AREA);
+          break;
+        case 'star':
+          this.shapeInfo[shape] = starInfo(this._options.baseSize * AREA);
+          break;
+      }
+    }
+
+    return this.shapeInfo[shape]!;
+  }
+
   get width() {
-    return this.shapeInfo[this.shape].baseWidth * this._options.scale;
+    return this._getShapeInfo(this.shape).baseWidth * this._options.scale;
   }
 
   get height() {
-    return this.shapeInfo[this.shape].baseHeight * this._options.scale;
+    return this._getShapeInfo(this.shape).baseHeight * this._options.scale;
   }
 
   get outerBbox() {
