@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const AiChart64: Story = {
-  name: "Acme Corp EBITDA Margin (64)",
+  name: "Acme Corp EBITDA Gross Margin (64)",
   args: {
-    filename: "manifests/waterfall-manifest-003.json",
+    filename: "manifests/waterfall-manifest-002.json",
     forcecharttype: "waterfall",
   }
 }
