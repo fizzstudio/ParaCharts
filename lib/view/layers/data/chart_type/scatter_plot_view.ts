@@ -179,11 +179,11 @@ export class ScatterPointView extends PointDatapointView {
     };
   }
 
-  get color() {
+  get colorIndex() {
     if (this.chart.chartInfo.clustering) {
       return this.clusterID!
     }
-    return super.color
+    return super.colorIndex
   }
 
   endAnimStep(bezT: number, linearT: number) {

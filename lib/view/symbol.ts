@@ -95,7 +95,7 @@ export interface DataSymbolOptions {
   strokeWidth: number;
   scale: number;
   baseSize: number;
-  color?: number;
+  colorIndex?: number;
   opacity?: number;
   dashed: boolean;
   lighten?: boolean;
@@ -150,7 +150,7 @@ export class DataSymbol extends View {
       strokeWidth: options?.strokeWidth ?? this.paraview.paraState.config.chart.symbolStrokeWidth,
       scale: options?.scale ?? 1,
       baseSize: options?.baseSize ?? 1,
-      color: options?.color,
+      colorIndex: options?.colorIndex,
       opacity: options?.opacity,
       dashed: options?.dashed ?? false,
       lighten: options?.lighten ?? false,
@@ -266,12 +266,12 @@ export class DataSymbol extends View {
     this.type = (this._type.split('.')[0] + '.' + fillType) as DataSymbolType;
   }
 
-  get color() {
-    return this._options.color;
+  get colorIndex() {
+    return this._options.colorIndex;
   }
 
-  set color(color: number | undefined) {
-    this._options.color = color;
+  set colorIndex(colorIndex: number | undefined) {
+    this._options.colorIndex = colorIndex;
     this._updateStyleInfo();
     this._updateClassInfo();
   }
@@ -314,8 +314,8 @@ export class DataSymbol extends View {
       symbol: true,
       [this.fill]: true,
       ...(this._options.lighten ? { lighten: true } : {}),
-      ...(this._options.color !== undefined && this._options.color >= 0
-        ? { [`series-${this._options.color % numColors}`]: true }
+      ...(this._options.colorIndex !== undefined && this._options.colorIndex >= 0
+        ? { [`series-${this._options.colorIndex % numColors}`]: true }
         : {}),
     };
   }
@@ -357,8 +357,8 @@ export class DataSymbol extends View {
       }
     }
     if (this.hidden) return svg``;
-    if (this.paraview.paraState.colors.palette.isPattern && this._options.color !== undefined) {
-      const index = this._options.color;
+    if (this.paraview.paraState.colors.palette.isPattern && this._options.colorIndex !== undefined) {
+      const index = this._options.colorIndex;
       const x = this._x - this.width / 2;
       const y = this._y - this.height / 2;
       return svg`

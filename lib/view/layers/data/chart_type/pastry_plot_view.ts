@@ -584,7 +584,7 @@ export abstract class RadialSlice extends DatapointView {
     });
     path.classInfo = {
       'pastry-outside-label-leader': true,
-      [`series-${this.color % numColors}`]: true,
+      [`series-${this.colorIndex % numColors}`]: true,
     };
     return path;
   }
@@ -634,7 +634,7 @@ export abstract class RadialSlice extends DatapointView {
       this._insideLabel = null;
     } else {
       this._insideLabel.styleInfo = {
-        fill: this.paraview.paraState.colors.contrastValueAt(this.color)
+        fill: this.paraview.paraState.colors.contrastValueAt(this.colorIndex)
       };
       this.append(this._insideLabel);
     }

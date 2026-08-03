@@ -83,7 +83,7 @@ export class Legend extends Container(View) {
           ? (item.symbol ?? 'square.solid')
           : 'square.solid',
         {
-          color: item.colorIndex,
+          colorIndex: item.colorIndex,
           lighten: item.symbolOptions?.lighten ?? false,
           baseSize: item.symbolOptions?.baseSize ?? 1,
           dashed: item.symbolOptions?.dashed ?? false,

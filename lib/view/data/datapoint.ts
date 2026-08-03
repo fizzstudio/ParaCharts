@@ -133,7 +133,7 @@ export class DatapointView extends DataView {
     const numColors = this.paraview.paraState.colors.numSeriesColors;
     return {
       datapoint: true,
-      [`series-${this.color % numColors}`]: true,
+      [`series-${this.colorIndex % numColors}`]: true,
       visited: this.paraview.paraState.isVisited(this.seriesKey, index),
       selected: this.paraview.paraState.isSelected(this.seriesKey, index),
       highlighted: this.paraview.paraState.isDatapointHighlighted(this.seriesKey, index),
@@ -141,7 +141,7 @@ export class DatapointView extends DataView {
     };
   }
 
-  get color(): number {
+  get colorIndex(): number {
     return this._isStyleEnabled ? this.index : this._parent.colorIndex;
   }
 
@@ -328,10 +328,10 @@ export class DatapointView extends DataView {
     }
   }
 
-  protected get _symbolColor() {
+  protected get _symbolColorIndex() {
     //return this.chart.chartInfo.isHighlighted(this.seriesKey, this.index) ? -2 as number :
     return this.paraview.paraState.isVisited(this.seriesKey, this.index) ? -1 as number :
-      this.color; //undefined; // set the color so the highlights layer can clone it
+      this.colorIndex; //undefined; // set the color so the highlights layer can clone it
   }
 
   protected _contentUpdateShapes() {
@@ -344,7 +344,7 @@ export class DatapointView extends DataView {
   protected _contentUpdateSymbol() {
     if (this._symbol) {
       this._symbol.scale = this.symbolScale;
-      this._symbol.color = this._symbolColor;
+      this._symbol.colorIndex = this._symbolColorIndex;
       this._symbol.hidden = !this.paraview.paraState.config.chart.isDrawSymbols;
     }
   }
@@ -394,7 +394,7 @@ export class DatapointView extends DataView {
     }
     let x = this.x;
     let y = this.y;
-    let color = this.color;
+    let color = this.colorIndex;
     let fill = undefined;
     let shape = "boxWithArrow";
     let pointerControlled = false;
@@ -436,7 +436,7 @@ export class DatapointView extends DataView {
         x: xInput ?? x,
         y: yInput ?? y,
         id: this.id,
-        color: color,
+        colorIndex: color,
         points: [this],
         rotationExempt: this.paraview.paraState.type == 'bar' ? false : true,
         angle: this.paraview.paraState.type == 'bar' ? -90 : 0,
