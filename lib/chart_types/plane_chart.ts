@@ -29,6 +29,7 @@ import { Bezier, loopParaviewRefresh } from '../common';
 import { computeLabels } from '../common';
 import { NOTE_LENGTH } from '../audio/sonifier';
 import { type AxisOrientation } from '../view/axis/axis';
+import { numberToScaledNumberRounded } from '@fizz/number-scaling-rounding';
 
 // Soni Constants
 export const SONI_PLAY_SPEEDS = [1000, 250, 100, 50, 25];
@@ -68,7 +69,8 @@ export function computeAxisLabels(
   rangeInfo: AxisRangeInfo, isPercent: boolean, isGrouping = true, stagger = false
 ): string[][] {
   const fmt = new Intl.NumberFormat(undefined, { maximumFractionDigits: 5, useGrouping: isGrouping });
-  const labels = new Array((rangeInfo.interval.end - rangeInfo.interval.start)/rangeInfo.step + 1)
+  const length = numberToScaledNumberRounded((rangeInfo.interval.end - rangeInfo.interval.start)/rangeInfo.step + 1, 5).number;
+  const labels = new Array(length)
     .fill(0)
     .map((_, i) => fmt.format(rangeInfo.interval.start + rangeInfo.step*i) + (isPercent ? '%' : ''));
   const labelTiers = stagger

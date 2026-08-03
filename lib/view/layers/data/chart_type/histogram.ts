@@ -19,6 +19,7 @@ export class Histogram extends PlanePlotView {
     if (['type.histogram.groupingFacet', 'type.histogram.displayAxis', 'type.histogram.relativeAxes',
       'axis.y.maxValue', 'axis.y.minValue', 'type.histogram.bins'].includes(path)) {
       this.paraview.paraState.setManifest(this.paraview.paraState.originalManifest!, undefined, false);
+      this.paraview.paraState.setCaption();
     }
     super.settingDidChange(path, oldValue, newValue);
   }

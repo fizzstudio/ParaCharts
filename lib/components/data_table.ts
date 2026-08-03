@@ -64,6 +64,9 @@ export class DataTable extends ParaComponent {
   }
 
   protected _initGrid() {
+    if (Array.from(new Set(this._paraState.model!.series.map(s => s.datapoints.length))).length > 1){
+      return;
+    }
     this._grid = this._paraState.model!.series[0].datapoints.map((dp, i) => {
       this._gridEls[i] = [];
       return this._paraState.model!.series.map((s, j) => {

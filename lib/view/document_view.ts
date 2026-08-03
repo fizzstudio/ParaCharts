@@ -94,14 +94,14 @@ export class DocumentView extends Container(View) {
       ];
     } else {
       const paperInfo = PAPER_INFO[this._paraState.config.chart.pageSize];
-      const pageWidth = (paperInfo.widthMm/MM_PER_INCH)*CSS_DPI;
-      const pageHeight = (paperInfo.heightMm/MM_PER_INCH)*CSS_DPI;
-      const marginLeft = this._paraState.config.chart.pageMarginLeft*CSS_DPI;
-      const marginRight = this._paraState.config.chart.pageMarginRight*CSS_DPI;
-      const marginTop = this._paraState.config.chart.pageMarginTop*CSS_DPI;
-      const marginBottom = this._paraState.config.chart.pageMarginBottom*CSS_DPI;
-      this._x = marginLeft/2;
-      this._y = marginTop/2;
+      const pageWidth = (paperInfo.widthMm / MM_PER_INCH) * CSS_DPI;
+      const pageHeight = (paperInfo.heightMm / MM_PER_INCH) * CSS_DPI;
+      const marginLeft = this._paraState.config.chart.pageMarginLeft * CSS_DPI;
+      const marginRight = this._paraState.config.chart.pageMarginRight * CSS_DPI;
+      const marginTop = this._paraState.config.chart.pageMarginTop * CSS_DPI;
+      const marginBottom = this._paraState.config.chart.pageMarginBottom * CSS_DPI;
+      this._x = marginLeft / 2;
+      this._y = marginTop / 2;
       return [
         pageWidth - paddingHoriz - marginLeft - marginRight,
         pageHeight - paddingVert - marginTop - marginBottom
@@ -642,9 +642,9 @@ export class DocumentView extends Container(View) {
   }*/
 
   createLegend(position: CardinalDirection) {
-    const items = this.paraview.paraState.chartInfo.legend();
     const margin = this._paraState.config.legend.margin;
     if (position === 'east') {
+      const items = this.paraview.paraState.chartInfo.legend('east');
       this._legends.east?.remove();
       this._legends.east = new Legend(this.paraview, items,
         {
@@ -661,6 +661,7 @@ export class DocumentView extends Container(View) {
       // this._legends.east.updateSize();
       // this._grid.setColGap(this._directLabelStrip ? 2 : 1, margin);
     } else if (position === 'west') {
+      const items = this.paraview.paraState.chartInfo.legend('west');
       this._legends.west?.remove();
       this._legends.west = new Legend(this.paraview, items,
         {
@@ -676,10 +677,11 @@ export class DocumentView extends Container(View) {
       this.append(this._legends.west);
       // this._grid.addColumnLeft();
     } else if (position === 'south') {
+      const items = this.paraview.paraState.chartInfo.legend('south');
       this._legends.south?.remove();
       this._legends.south = new Legend(this.paraview, items, {
         orientation: 'horiz',
-        wrapWidth: this._width,
+        wrapWidth: this._width + 70,
         rowGap: 5
       });
       this._legends.south.padding = {
@@ -690,10 +692,11 @@ export class DocumentView extends Container(View) {
       };
       this.append(this._legends.south);
     } else if (position === 'north') {
+      const items = this.paraview.paraState.chartInfo.legend('north');
       this._legends.north?.remove();
       this._legends.north = new Legend(this.paraview, items, {
         orientation: 'horiz',
-        wrapWidth: this._width,
+        wrapWidth: this._width + 70,
         rowGap: 5
       });
       this._legends.north.padding = {

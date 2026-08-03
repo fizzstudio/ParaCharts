@@ -185,17 +185,17 @@ export class AnnotationLayer extends PlotLayer {
               x: dpView.x,
               y: dpView.y,
               id: this.id,
-              color: dpView.color,
+              colorIndex: dpView.colorIndex,
               points: [dpView]
             },
             {
               fill: this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
                 : this.paraview.paraState.config.popup.backgroundColor === "light" ?
-                  this.paraview.paraState.colors.lighten(this.paraview.paraState.colors.colorValueAt(dpView.color), 6)
-                  : this.paraview.paraState.colors.colorValueAt(dpView.color),
+                  this.paraview.paraState.colors.lighten(this.paraview.paraState.colors.colorValueAt(dpView.colorIndex), 6)
+                  : this.paraview.paraState.colors.colorValueAt(dpView.colorIndex),
               stroke: this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
                 : this.paraview.paraState.config.popup.backgroundColor === "light" ?
-                  this.paraview.paraState.colors.colorValueAt(dpView.color)
+                  this.paraview.paraState.colors.colorValueAt(dpView.colorIndex)
                   : "black",
             })
           popup.classInfo = { 'popup': true }

@@ -15,9 +15,8 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { svg } from 'lit';
-import { enumerate } from '@fizz/paramodel';
+import { Datapoint, enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
-import { strToId } from '@fizz/paramanifest';
 import { type SeriesView } from '../../../data/series';
 import { linearRegression } from '@fizz/simple-statistics';
 import { View } from '../../../base_view';
@@ -38,8 +37,11 @@ export abstract class PointPlotView extends PlanePlotView {
 
   async storeDidChange(key: string, value: any) {
     await super.storeDidChange(key, value);
-    if (key === 'frontSeries') {
+    if (key === 'frontSeries' && value !== '') {
       this._raiseSeries(value);
+    }
+    else if (key == 'frontDatapoints') {
+      this._raisePoints(value);
     }
   }
 
@@ -88,10 +90,41 @@ export abstract class PointPlotView extends PlanePlotView {
     return this.paraview.ref<SVGGElement>(`series.${series}`);
   }
 
+  datapointRef(datapoint: Datapoint) {
+    const id = this.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!.id;
+    const ref = this.paraview.ref<SVGGElement>(`${id}`);
+    return ref;
+  }
+
   _raiseSeries(series: string) {
+    this._resetFrontedDatapoints();
     this.log.info('RAISING', series);
     const seriesG = this.seriesRef(series).value!;
     this.dataset.append(seriesG);
+  }
+
+  _raisePoints(datapoints: Datapoint[]) {
+    this._resetFrontedDatapoints();
+    for (let datapoint of datapoints) {
+      const datapointG = this.datapointRef(datapoint).value!;
+      if (datapointG) {
+        this.dataset.append(datapointG);
+      }
+    }
+  }
+
+  _resetFrontedDatapoints() {
+    let datapointIndex = 0;
+    for (let i = 0; i < this.dataset.children.length; i++) {
+      const child = this.dataset.children[i];
+      if (child.role == 'datapoint') {
+        const seriesKey = this.paraview.paraState.frontDatapoints[datapointIndex].seriesKey;
+        const series = this.seriesRef(seriesKey).value!;
+        series.append(child)
+        datapointIndex++;
+        i--;
+      }
+    }
   }
 
   getDatapointGroupBbox(labelText: string) {

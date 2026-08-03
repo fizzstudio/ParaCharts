@@ -23,6 +23,7 @@ import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, Focus
 import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, WaterfallPlotView, VennPlotView, Histogram, HeatMapPlotView } from './data/chart_type';
 import { PopupLayer } from './popup_layer';
 import { type DataLayerContext } from '../view_context';
+import { BubblePlotView } from './data/chart_type/bubble_plot_view';
 import { ComboPlotView } from './data/chart_type/combo_plot_view';
 
 
@@ -42,6 +43,7 @@ export const chartClasses = {
   graph: LinePlotView,
   waterfall: WaterfallPlotView,
   venn: VennPlotView,
+  bubble: BubblePlotView,
   combo: ComboPlotView
 };
 

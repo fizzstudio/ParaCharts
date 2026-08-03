@@ -61,8 +61,8 @@ export class DataView extends View {
     return this._prevFocus;
   }
 
-  get color(): number {
-    return this.seriesProps.color;
+  get colorIndex(): number {
+    return this.seriesProps.colorIndex;
   }
 
   get styleInfo(): StyleInfo {

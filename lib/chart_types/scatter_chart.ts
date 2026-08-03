@@ -5,6 +5,7 @@ import { type ParaState } from '../state/parastate';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, ScatterPointNavNodeOptions, SeriesNavNodeOptions } from '../view/layers/data/navigation';
 import { Datapoint, PlaneModel } from '@fizz/paramodel';
 import { DataSymbols } from '../view/symbol';
+import { LegendItem } from '../view/legend';
 
 
 export class ScatterChartInfo extends PointChartInfo {
@@ -156,7 +157,7 @@ export class ScatterChartInfo extends PointChartInfo {
     super.navRunDidEnd(cursor, quiet)
   }
 
-  legend() {
+  legend(): LegendItem[] {
     const model = this._paraState.model!;
     const types = new DataSymbols().types;
     if (model.multi || !this.clustering) {
@@ -167,7 +168,7 @@ export class ScatterChartInfo extends PointChartInfo {
       return seriesKeys.map((key, i) => ({
         label: model.atKey(key)!.getLabel(),
         seriesKey: key,
-        color: this._paraState.seriesProperties!.properties(key).color,
+        colorIndex: this._paraState.seriesProperties!.properties(key).colorIndex,
         symbol: types[i],
         symbolOptions: { lighten: true }
       }));
@@ -176,7 +177,7 @@ export class ScatterChartInfo extends PointChartInfo {
       return this.clustering.map((c, i) => ({
         label: `cluster ${i + 1} (${c.regionDesc})`,
         seriesKey: model.seriesKeys[0],
-        color: i,
+        colorIndex: i,
         symbol: types[i],
         symbolOptions: { lighten: true },
       }))

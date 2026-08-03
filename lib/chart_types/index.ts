@@ -7,6 +7,7 @@ import { HeatMapInfo } from './heat_map';
 import { WaterfallChartInfo } from './waterfall_chart';
 import { VennDiagramInfo } from './venn_diagram';
 import { HistogramChartInfo } from './histogram_chart';
+import { BubbleChartInfo } from './bubble_chart';
 import { ComboChartInfo } from './combo_chart';
 
 export * from './base_chart';
@@ -37,5 +38,6 @@ export const chartInfoClasses = {
   stepline: LineChartInfo, //StepLineChart,
   lollipop: BarChartInfo, //LollipopChart
   venn: VennDiagramInfo, //VennDiagram,
-  combo: ComboChartInfo
+  combo: ComboChartInfo,
+  bubble: BubbleChartInfo
 };

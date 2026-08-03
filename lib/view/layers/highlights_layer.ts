@@ -59,7 +59,7 @@ export class HighlightsLayer extends PlotLayer {
     overlays.push((datapointViews.at(-1)!.symbol ?? datapointViews.at(-1)!.shapes[0]).clone());
 
     const lineStroke = overlays.at(-2)! instanceof DataSymbol
-      ? this.paraview.paraState.colors.colorValueAt((overlays.at(-2) as DataSymbol).color!)
+      ? this.paraview.paraState.colors.colorValueAt((overlays.at(-2) as DataSymbol).colorIndex!)
       : (overlays.at(-2) as Shape).stroke;
     overlayLines.push(new PathShape(this.paraview, {
       x: 0,//overlays.at(-2)!.width/2,
@@ -71,7 +71,7 @@ export class HighlightsLayer extends PlotLayer {
     }));
     if (this.type === 'background') {
       const rectFill = overlays.at(-2)! instanceof DataSymbol
-        ? this.paraview.paraState.colors.colorValueAt((overlays.at(-2) as DataSymbol).color!)
+        ? this.paraview.paraState.colors.colorValueAt((overlays.at(-2) as DataSymbol).colorIndex!)
         : (overlays.at(-2) as Shape).fill;
       const rect = new RectShape(this.paraview, {
         x: overlays.at(-2)!.x,
@@ -103,7 +103,7 @@ export class HighlightsLayer extends PlotLayer {
     const model = this.paraview.paraState.model as PlaneModel;
     const isect = model.intersections[index];
 
-    const sym = DataSymbol.fromType(this.paraview, 'circle.empty', { color: -1 });
+    const sym = DataSymbol.fromType(this.paraview, 'circle.empty', { colorIndex: -1 });
     const first = model.series[0].datapoints[0].facetValueAsNumber('x')!;
     const last = model.series[0].datapoints.at(-1)!.facetValueAsNumber('x')!;
     const xRange = last - first;

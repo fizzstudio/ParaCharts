@@ -18,20 +18,20 @@ import { SettingsInput } from '../config/config_types';
 import { ChartType } from '@fizz/paramanifest';
 
 // Per-chart-type default settings outside of the chart's own setting group
-export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}> = {
+export const chartTypeDefaults: Partial<{ [Property in ChartType]: SettingsInput }> = {
   bar: {
     'chart.orientation': 'east',
     'axis.vert.labelOrder': 'northToSouth',
     'axis.horiz.ticks.isDrawTicks': false,
     'grid.isDrawHorizLines': false,
     'legend.position': 'south',
-    'legend.isAlwaysDrawLegend' : true
+    'legend.isAlwaysDrawLegend': true
   },
   column: {
     'axis.horiz.ticks.isDrawTicks': true,
     'axis.vert.line.isDrawOverhang': true,
     'grid.isDrawVertLines': false,
-    'legend.isAlwaysDrawLegend' : true
+    'legend.isAlwaysDrawLegend': true
   },
   line: {
     'grid.isDrawVertLines': false
@@ -45,6 +45,12 @@ export const chartTypeDefaults: Partial<{[Property in ChartType]: SettingsInput}
     //'axis.horiz.ticks.isDrawTicks': false,
     'grid.isDrawVertLines': false
   },
-  scatter: { 'legend.isAlwaysDrawLegend': true,
-    'legend.position': 'north' }
+  scatter: {
+    'legend.isAlwaysDrawLegend': true,
+    'legend.position': 'north'
+  },
+  bubble: {
+    'legend.isAlwaysDrawLegend': true,
+    'legend.position': 'north'
+  },
 };

@@ -67,6 +67,8 @@ import { firstDataset, type Manifest } from '../loader/common';
 import { ClusterShellView } from '../view/layers';
 import { computeLabels } from '../common/axisinfo';
 import { numberToScaledNumberRounded } from '@fizz/number-scaling-rounding';
+import { LegendItem } from '../view/legend';
+import { type BubbleChartInfo } from '../chart_types/bubble_chart';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -197,6 +199,7 @@ export class ParaState extends BaseState {
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
   @property() clusterAnalyses: clusterObject[] | null = null;
   @property() frontSeries = '';
+  @property() frontDatapoints: Datapoint[] = [];
   @property() pointerCoords: Point = { x: 0, y: 0 }
   @property() isTitleHighlighted = false;
   @property() isHorizontalAxisHighlighted = false;
@@ -208,6 +211,7 @@ export class ParaState extends BaseState {
 
   @property() protected _caption: HighlightedSummary = { text: '', html: '' };
   @property() protected _pinnedSeriesKey: string | null = null;
+  @property() protected _pinnedBubbleSize: string | null = null;
   @property() protected _dimmedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
   @property() protected focused = 'chart';
@@ -711,8 +715,11 @@ export class ParaState extends BaseState {
     if (dataset.representation.subtype == 'histogram') {
       return this.augmentHistogramManifest(manifest);
     }
-    if (dataset.representation.subtype == 'heatmap') {
+    else if (dataset.representation.subtype == 'heatmap') {
       return this.augmentHeatmapManifest(manifest);
+    }
+    else if (dataset.representation.subtype == 'bubble') {
+      return this.augmentBubbleManifest(manifest);
     }
     else {
       return manifest;
@@ -722,7 +729,17 @@ export class ParaState extends BaseState {
   augmentHistogramManifest(manifest: Manifest): Manifest {
     const dataset = manifest.jim.datasets[0];
     const bins = this.config.type.histogram.bins ?? 20;
-    let targetFacetKey = Object.keys(dataset.facets)[0];
+    const facetKeys = Object.keys(dataset.facets);
+    let targetFacetKey: string | undefined = undefined;
+    for (let i = 0; i < facetKeys.length; i++) {
+      if (dataset.facets[facetKeys[i]].datatype == 'number') {
+        targetFacetKey = facetKeys[i];
+        break;
+      }
+    }
+    if (targetFacetKey == undefined) {
+      throw new Error("Histogram manifest must have at least one numeric facet.");
+    }
     if (this.config.type.histogram.groupingFacet) {
       targetFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
         f[1].label == this.config.type.histogram.groupingFacet)![0][0];
@@ -800,14 +817,32 @@ export class ParaState extends BaseState {
 
   augmentHeatmapManifest(manifest: Manifest): Manifest {
     const dataset = manifest.jim.datasets[0];
+    const facetKeys = Object.keys(dataset.facets);
     const config = this.config.type.heatmap;
     const resolution = config.resolution ?? 20;
     const allData = [];
     const x: Array<number> = [];
     const y: Array<number> = [];
+    let index1 = 0;
     let seriesList = dataset.series;
-    let xFacetKey = Object.keys(dataset.facets)[0];
-    let yFacetKey = Object.keys(dataset.facets)[1];
+    let xFacetKey: string | undefined = undefined;
+    let yFacetKey: string | undefined = undefined;
+    for (let i = 0; i < facetKeys.length; i++) {
+      if (dataset.facets[facetKeys[i]].datatype == 'number') {
+        xFacetKey = facetKeys[i];
+        index1 = i;
+        break;
+      }
+    }
+    for (let j = index1 + 1; j < facetKeys.length; j++) {
+      if (dataset.facets[facetKeys[j]].datatype == 'number') {
+        yFacetKey = facetKeys[j];
+        break;
+      }
+    }
+    if (xFacetKey == undefined || yFacetKey == undefined) {
+      throw new Error("Heatmap manifest must have at least two numeric facets.");
+    }
     if (config.xFacet) {
       xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
         f[1].label == config.xFacet)![0][0];
@@ -912,6 +947,128 @@ export class ParaState extends BaseState {
     return manifest;
   }
 
+  augmentBubbleManifest(manifest: Manifest): Manifest {
+    const dataset = manifest.jim.datasets[0];
+    const config = this.config.type.bubble;
+    const facetKeys = Object.keys(dataset.facets);
+    let seriesList = dataset.series;
+    let index1 = 0;
+    let index2 = 0;
+    let xFacetKey: string | undefined = undefined
+    let yFacetKey: string | undefined = undefined
+    let bubbleFacetKey: string | undefined = undefined
+    for (let i = 0; i < facetKeys.length; i++) {
+      if (dataset.facets[facetKeys[i]].datatype == 'number') {
+        xFacetKey = facetKeys[i];
+        index1 = i;
+        break;
+      }
+    }
+    for (let j = index1 + 1; j < facetKeys.length; j++) {
+      if (dataset.facets[facetKeys[j]].datatype == 'number') {
+        yFacetKey = facetKeys[j];
+        index2 = j;
+        break;
+      }
+    }
+    for (let k = index2 + 1; k < facetKeys.length; k++) {
+      if (dataset.facets[facetKeys[k]].datatype == 'number') {
+        bubbleFacetKey = facetKeys[k];
+        break;
+      }
+    }
+
+    if (xFacetKey == undefined || yFacetKey == undefined || bubbleFacetKey == undefined) {
+      throw new Error("Bubble chart manifest must have at least three numeric facets.");
+    }
+    /*
+    let xFacetKey = facetKeys[0];
+    let yFacetKey = facetKeys[1];
+    let bubbleFacetKey = facetKeys[2];
+    */
+    if (config.xFacet) {
+      xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.xFacet)![0][0];
+    }
+    if (config.yFacet) {
+      yFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.yFacet)![0][0];
+    }
+    if (config.bubbleFacet) {
+      bubbleFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.bubbleFacet)![0][0];
+    }
+    const xFacet = dataset.facets[xFacetKey];
+    const yFacet = dataset.facets[yFacetKey];
+    const bubbleFacet = dataset.facets[bubbleFacetKey];
+    let labelFacetKey = '';
+    if (config.labelFacet !== '') {
+      labelFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.labelFacet)![0][0];
+    }
+    for (let series of seriesList) {
+      const xData = series.records!.map(r => r[xFacetKey]);
+      const yData = series.records!.map(r => r[yFacetKey]);
+      const bubbleData = series.records!.map(r => r[bubbleFacetKey]);
+
+
+      //dataset.series[0].records = dataset.series[0].records?.map((r, i) => {
+      //  return { x: xData[i], y: yData[i], z: bubbleData[i] }
+      //})
+      for (let i = 0; i < series.records!.length; i++) {
+        series.records![i].x = xData[i];
+        series.records![i].y = yData[i];
+        series.records![i].z = bubbleData[i];
+        if (config.labelFacet !== '') {
+          const labelData = series.records!.map(r => r[labelFacetKey]);
+          series.records![i]['label'] = labelData[i]
+          delete series.records![i][labelFacetKey];
+        }
+        for (let j = 0; j < series.records!.length - 3; j++) {
+          //let otherFacet = datas
+        }
+      }
+    }
+
+    const storeXFacet = structuredClone(xFacet);
+    const storeYFacet = structuredClone(yFacet);
+    const storeBubbleFacet = structuredClone(bubbleFacet);
+    //dataset.facets = {};
+    for (let i = 0; i < facetKeys.length; i++) {
+      if (!['number', 'date', 'string'].includes(dataset.facets[facetKeys[i]].datatype)) {
+        delete dataset.facets[facetKeys[i]];
+        for (let series of seriesList) {
+          for (let j = 0; j < series.records!.length; j++) {
+            delete series.records![j][facetKeys[i]];
+          }
+        }
+
+      }
+    }
+    dataset.facets["x"] = storeXFacet;
+    dataset.facets["x"].variableType = 'independent';
+    dataset.facets["x"].displayType.orientation = 'horizontal';
+    dataset.facets["y"] = storeYFacet;
+    dataset.facets["y"].variableType = 'dependent';
+    dataset.facets["y"].displayType.orientation = 'vertical';
+    dataset.facets["z"] = storeBubbleFacet;
+    dataset.facets["z"].variableType = 'dependent';
+    dataset.facets["z"].displayType.orientation = undefined;
+    if (config.labelFacet !== '') {
+      const labelFacet = dataset.facets[labelFacetKey];
+      dataset.facets['label'] = structuredClone(labelFacet);
+      dataset.facets['label'].displayType.orientation = undefined;
+      delete dataset.facets[labelFacetKey];
+    }
+    manifest.extensions ??= {};
+    manifest.extensions.paracharts ??= {};
+    manifest.extensions.paracharts.settings ??= {};
+    manifest.extensions!.paracharts!.settings!["type.bubble.xFacet"] = xFacet.label;
+    manifest.extensions!.paracharts!.settings!["type.bubble.yFacet"] = yFacet.label;
+    manifest.extensions!.paracharts!.settings!["type.bubble.bubbleFacet"] = bubbleFacet.label;
+    return manifest;
+  }
+
   getActionChains() {
     const chains: string[] = [];
     if (this.isTitleHighlighted) {
@@ -998,6 +1155,7 @@ export class ParaState extends BaseState {
       toFilter = [...toFilter, ...this._comboModel.seriesKeys];
     }
     this._dimmedSeries = toFilter.filter(key => !seriesKeys.includes(key));
+    this.frontSeries = seriesKeys[0];
   }
 
   dimOtherCluster(seriesKey: string, index: number) {
@@ -1005,8 +1163,8 @@ export class ParaState extends BaseState {
     const otherDatapoints = chartInfo._clustering!.filter(c => c.id !== index).map(
       c => { return [...c.dataPointIDs, ...c.outlierIDs] }).flat();
     otherDatapoints.map(id => this.lowlightDatapoint(seriesKey, id))
+    this.refreshParaView();
   }
-
   clearAllSeriesDimming() {
     this._dimmedSeries = [];
   }
@@ -1022,6 +1180,14 @@ export class ParaState extends BaseState {
   pinSeries(seriesKey: string) {
     this._pinnedSeriesKey = seriesKey;
     this.dimOtherSeries(seriesKey);
+  }
+
+  get pinnedBubbleSize(): string | null {
+    return this._pinnedBubbleSize;
+  }
+
+  set pinnedBubbleSize(size: string | null) {
+    this._pinnedBubbleSize = size;
   }
 
   unpinSeries() {
@@ -1243,6 +1409,10 @@ export class ParaState extends BaseState {
 
   clearAllDatapointHighlights() {
     this._highlightedDatapoints = new Set();
+  }
+
+  clearAllDatapointLowlights() {
+    this._lowlightedDatapoints = new Set();
   }
 
   get highlightedSequences() {

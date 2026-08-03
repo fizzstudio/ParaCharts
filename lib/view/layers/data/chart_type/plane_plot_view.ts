@@ -394,7 +394,7 @@ export abstract class PlanePlotView extends DataLayer {
         x: dpView!.x,
         y: dpView!.y,
         id: this.id,
-        color: dpView!.color,
+        colorIndex: dpView!.colorIndex,
         type: "chord",
         items,
         points: datapointViews

@@ -146,7 +146,7 @@ export class SimpleGridLayout extends Layout {
     };
   }
 
-  protected _findView(view: View): [number, number] | null {
+  findView(view: View): [number, number] | null {
     for (let i = 0; i < this._rows.length; i++) {
       for (let j = 0; j < this._numCols; j++) {
         if (this._rows[i][j] === view) {
@@ -158,7 +158,7 @@ export class SimpleGridLayout extends Layout {
   }
 
   append(child: View, territory?: SimpleGridTerritoryInput) {
-    if (this._findView(child)) {
+    if (this.findView(child)) {
       throw new Error('view already present in grid');
     }
     this._arrangeChild(child, territory);
@@ -166,7 +166,7 @@ export class SimpleGridLayout extends Layout {
   }
 
   prepend(child: View, territory?: SimpleGridTerritoryInput) {
-    if (this._findView(child)) {
+    if (this.findView(child)) {
       throw new Error('view already present in grid');
     }
     this._arrangeChild(child, territory);
@@ -226,7 +226,7 @@ export class SimpleGridLayout extends Layout {
   }
 
   protected _adjustRules(kid: View) {
-    const [row, col] = this._findView(kid)!;
+    const [row, col] = this.findView(kid)!;
     const hRuleStart = row;
     const hRuleEnd = hRuleStart + 1;
     const hDiff = this._hRules[hRuleEnd] - this._hRules[hRuleStart];
@@ -321,7 +321,7 @@ export class SimpleGridLayout extends Layout {
   }
 
   protected _snapChildX(kid: View) {
-    const [row, col] = this._findView(kid)!;
+    const [row, col] = this.findView(kid)!;
     let colLeft = this.left; // + this._padding.left;
     const colWidths = this._vRules.slice(1).map((vr, i) => vr - this._vRules[i]);
     const colGaps = this._colGaps;
@@ -340,7 +340,7 @@ export class SimpleGridLayout extends Layout {
   }
 
   protected _snapChildY(kid: View) {
-    const [row, col] = this._findView(kid)!;
+    const [row, col] = this.findView(kid)!;
     let rowTop = this.top; // + this._padding.top;
     const rowHeights = this._hRules.slice(1).map((hr, i) => hr - this._hRules[i]);
     const rowGaps = this._rowGaps;
