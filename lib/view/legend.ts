@@ -52,7 +52,7 @@ export class Legend extends Container(View) {
   declare protected _parent: Layout;
 
   protected _grid!: SimpleGridLayout;
-  protected _markers: RectShape[] = [];
+  //protected _markers: RectShape[] = [];
 
   constructor(paraview: ViewContext,
     protected _items: LegendItem[],
@@ -75,8 +75,8 @@ export class Legend extends Container(View) {
     const hasLegendBox = this.config.boxStyle.outline !== 'none' || this.config.boxStyle.fill !== 'none';
 
     this._items.forEach(item => {
-      this._markers.push(new RectShape(this.paraview, { width: 12, height: 6 }));
-      views.push(this._markers.at(-1)!);
+      //this._markers.push(new RectShape(this.paraview, { width: 12, height: 6 }));
+      //views.push(this._markers.at(-1)!);
       views.push(DataSymbol.fromType(
         this.paraview,
         this.paraview.paraState.config.chart.isDrawSymbols
@@ -88,43 +88,18 @@ export class Legend extends Container(View) {
           baseSize: item.symbolOptions?.baseSize ?? 1,
           dashed: item.symbolOptions?.dashed ?? false,
           pointerEnter: (e) => {
-            if (this.paraview.paraState.pinnedSeriesKey !== null || this.paraview.paraState.pinnedBubbleSize !== null) return;
-            if (item.bubbleSize) {
-              (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).dimOtherSizes(item.bubbleSize);
-              return;
-            }
-            if ((this.paraview.paraState.chartInfo as ScatterChartInfo).clustering
-              && !this.paraview.paraState.model?.multi) {
-              this.paraview.paraState.dimOtherCluster(item.seriesKey, item.colorIndex)
-              return;
-            }
-            this.paraview.paraState.dimOtherSeries(item.seriesKey);
+            this.pointerEnterActions(item);
           },
           pointerLeave: (e) => {
-            if (this.paraview.paraState.pinnedSeriesKey !== null || this.paraview.paraState.pinnedBubbleSize !== null) return;
-            this.paraview.paraState.clearAllSeriesDimming();
-            this.paraview.paraState.clearAllPointsDimming();
+            this.pointerLeaveAction(item);
           },
           click: (e) => {
-            if (item.bubbleSize) {
-              if (this.paraview.paraState.pinnedBubbleSize === item.bubbleSize) {
-                (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).unpinBubbleSize();
-              }
-              else {
-                (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).pinBubbleSize(item.bubbleSize);
-              }
-              return;
-            }
-            if (this.paraview.paraState.pinnedSeriesKey === item.seriesKey) {
-              this.paraview.paraState.unpinSeries();
-            } else {
-              this.paraview.paraState.pinSeries(item.seriesKey);
-            }
+            this.clickAction(item);
           }
         }
       ));
       if (item.bubbleSize) {
-        views.at(-1)!.styleInfo = { fill: "lightgray", ...views.at(-1)!.styleInfo };
+        views.at(-1)!.styleInfo = { fill: "hsl(0, 0%, 90%)", ...views.at(-1)!.styleInfo };
       }
       views.push(new Label(this.paraview, {
         text: item.label,
@@ -133,49 +108,24 @@ export class Legend extends Container(View) {
         //textAnchor: 'start',
         classList: ['legend-label'],
         pointerEnter: (e) => {
-          if (this.paraview.paraState.pinnedSeriesKey !== null || this.paraview.paraState.pinnedBubbleSize !== null) return;
-          if (item.bubbleSize) {
-            (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).dimOtherSizes(item.bubbleSize);
-            return;
-          }
-          if ((this.paraview.paraState.chartInfo as ScatterChartInfo).clustering
-            && !this.paraview.paraState.model?.multi) {
-            this.paraview.paraState.dimOtherCluster(item.seriesKey, item.colorIndex)
-            return;
-          }
-          this.paraview.paraState.dimOtherSeries(item.seriesKey);
+          this.pointerEnterActions(item);
         },
         pointerLeave: (e) => {
-          if (this.paraview.paraState.pinnedSeriesKey !== null || this.paraview.paraState.pinnedBubbleSize !== null) return;
-          this.paraview.paraState.clearAllSeriesDimming();
-          this.paraview.paraState.clearAllPointsDimming();
+          this.pointerLeaveAction(item);
         },
         click: (e) => {
-          if (item.bubbleSize) {
-            if (this.paraview.paraState.pinnedBubbleSize === item.bubbleSize) {
-              (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).unpinBubbleSize();
-            }
-            else {
-              (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).pinBubbleSize(item.bubbleSize);
-            }
-            return;
-          }
-          if (this.paraview.paraState.pinnedSeriesKey === item.seriesKey) {
-            this.paraview.paraState.unpinSeries();
-          } else {
-            this.paraview.paraState.pinSeries(item.seriesKey);
-          }
+          this.clickAction(item);
         }
       }));
     });
     const symLabelGap = this.paraview.paraState.config.legend.symbolLabelGap;
     const pairGap = this.paraview.paraState.config.legend.pairGap;
-    let labelsPerRow = views.length / 3;
+    let labelsPerRow = views.length / 2;
     if (this._options.orientation === 'vert') {
       this._grid = new SimpleGridLayout(this.paraview, {
-        numCols: 3,
+        numCols: 2,
         colGaps: symLabelGap,
-        colAligns: ['center', 'center', 'start'],
+        colAligns: ['center', 'start'],
         rowGaps: this._options.rowGap ? new Array(labelsPerRow + 1).fill(this._options.rowGap) : undefined
       }, 'legend-grid');
       this._grid.padding = hasLegendBox ? this.paraview.paraState.config.legend.padding : 0;
@@ -183,11 +133,11 @@ export class Legend extends Container(View) {
     } else {
       while (true) {
         const colGaps = intersperse(
-          new Array(labelsPerRow).fill(0),
+          //new Array(labelsPerRow).fill(0),
           new Array(labelsPerRow).fill(symLabelGap),
           new Array(labelsPerRow - 1).fill(pairGap));
         this._grid = new SimpleGridLayout(this.paraview, {
-          numCols: labelsPerRow * 3,
+          numCols: labelsPerRow * 2,
           colGaps: colGaps,
           rowGaps: new Array(labelsPerRow + 1).fill(this._options.rowGap)
         }, 'legend-grid');
@@ -205,7 +155,7 @@ export class Legend extends Container(View) {
         views.forEach(v => v.remove());
       }
       this._grid.colAligns = intersperse(
-        new Array(labelsPerRow).fill('center'),
+        //new Array(labelsPerRow).fill('center'),
         new Array(labelsPerRow).fill('center'),
         new Array(labelsPerRow).fill('start'));
     }
@@ -223,6 +173,67 @@ export class Legend extends Container(View) {
       }));
     }
     this.updateSize();
+  }
+
+  protected pointerEnterActions(item: LegendItem) {
+    if (item.bubbleSize) {
+      if (this.paraview.paraState.pinnedBubbleSize !== null) return;
+      (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).dimOtherSizes(item.bubbleSize);
+      return;
+    }
+    if (this.paraview.paraState.isSeriesHidden(item.seriesKey)) return;
+    if (this.paraview.paraState.pinnedSeriesKey !== null) return;
+
+    if ((this.paraview.paraState.chartInfo as ScatterChartInfo).clustering
+      && !this.paraview.paraState.model?.multi) {
+      this.paraview.paraState.dimOtherCluster(item.seriesKey, item.colorIndex)
+      return;
+    }
+    this.paraview.paraState.dimOtherSeries(item.seriesKey);
+  }
+
+  protected pointerLeaveAction(item: LegendItem) {
+    if (item.bubbleSize) {
+      if (this.paraview.paraState.pinnedBubbleSize !== null) return;
+      this.paraview.paraState.clearAllPointsDimming();
+    }
+
+    if (this.paraview.paraState.pinnedSeriesKey !== null) return;
+    this.paraview.paraState.clearAllSeriesDimming();
+
+  }
+
+  protected clickAction(item: LegendItem) {
+    if (item.bubbleSize) {
+      if (this.paraview.paraState.pinnedBubbleSize === item.bubbleSize
+        || this.paraview.paraState.isSizeHidden(item.bubbleSize)
+      ) {
+        if (this.paraview.paraState.isSizeHidden(item.bubbleSize)) {
+          (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).unhideSize(item.bubbleSize)
+        }
+        else {
+          (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).unpinBubbleSize();
+          (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).hideSize(item.bubbleSize);
+        }
+      }
+      else {
+        (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).pinBubbleSize(item.bubbleSize);
+      }
+      return;
+    }
+    if (this.paraview.paraState.pinnedSeriesKey === item.seriesKey
+      || this.paraview.paraState.isSeriesHidden(item.seriesKey)
+    ) {
+      if (this.paraview.paraState.isSeriesHidden(item.seriesKey)) {
+        this.paraview.paraState.unhideSeries(item.seriesKey)
+      }
+      else {
+        this.paraview.paraState.unpinSeries();
+        this.paraview.paraState.hideSeries(item.seriesKey)
+      }
+    } else {
+      this.paraview.paraState.pinSeries(item.seriesKey);
+    }
   }
 
   computeSize(): [number, number] {
@@ -331,28 +342,29 @@ export class Legend extends Container(View) {
 
   content() {
     this._items.forEach((item, i) => {
-      const style = this._markers[i].styleInfo;
+      //const style = this._markers[i].styleInfo;
       let visited = item.datapointIndex !== undefined
         ? this.paraview.paraState.isVisited(
           this.paraview.paraState.model!.seriesKeys[0], item.datapointIndex)
         : this.paraview.paraState.isVisitedSeries(item.label);
+      let hidden = this.paraview.paraState.isSeriesHidden(item.seriesKey) ? true : false;
       if (this.paraview.paraState.pinnedSeriesKey == item.seriesKey) {
         visited = true;
       }
-      if (visited) {
-        style.fill = this.paraview.paraState.colors.colorValueAt(-1);
-      } else {
-        style.fill = 'none';
-      }
       if (item.bubbleSize) {
-        if (this.paraview.paraState.pinnedBubbleSize == item.bubbleSize) {
-          style.fill = this.paraview.paraState.colors.colorValueAt(-1);
+        visited = false;
+        hidden = false;
+        if (this.paraview.paraState.isSizeHidden(item.bubbleSize)) {
+          hidden = true
         }
-        else {
-          style.fill = 'none';
+
+        if (this.paraview.paraState.pinnedBubbleSize == item.bubbleSize) {
+          visited = true;
         }
       }
-      this._markers[i].styleInfo = style;
+      this._grid.children[(i) * 2 + 1].isSelected = visited
+      this._grid.children[(i) * 2 + 1].isHidden = hidden
+      //this._markers[i].styleInfo = style;
     });
     return super.content();
   }

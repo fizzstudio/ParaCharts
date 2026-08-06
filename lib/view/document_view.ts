@@ -681,7 +681,7 @@ export class DocumentView extends Container(View) {
       this._legends.south?.remove();
       this._legends.south = new Legend(this.paraview, items, {
         orientation: 'horiz',
-        wrapWidth: this._width + 70,
+        wrapWidth: this._width,
         rowGap: 5
       });
       this._legends.south.padding = {
@@ -696,7 +696,7 @@ export class DocumentView extends Container(View) {
       this._legends.north?.remove();
       this._legends.north = new Legend(this.paraview, items, {
         orientation: 'horiz',
-        wrapWidth: this._width + 70,
+        wrapWidth: this._width,
         rowGap: 5
       });
       this._legends.north.padding = {

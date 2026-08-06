@@ -214,6 +214,7 @@ export class ParaState extends BaseState {
   @property() protected _pinnedBubbleSize: string | null = null;
   @property() protected _dimmedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
+  @property() protected _hiddenBubbleSize: string[] = [];
   @property() protected focused = 'chart';
   @property() protected selected = null;
   @property() protected queryLevel = 'default';
@@ -223,6 +224,7 @@ export class ParaState extends BaseState {
   protected _everVisitedDatapoints = new Set<string>();
   @property() protected _highlightedDatapoints = new Set<string>();
   @property() protected _lowlightedDatapoints = new Set<string>();
+  @property() protected _hiddenDatapoints = new Set<string>();
   _prevHighlightedElements = new Set<string>();
   @property() protected _selectedDatapoints = new Set<string>();
   @property() protected _crosshairedDatapoints = new Set<string>();
@@ -1222,6 +1224,33 @@ export class ParaState extends BaseState {
     this._hiddenSeries = [];
   }
 
+  hideSize(size: string) {
+    if (this._hiddenBubbleSize.includes(size)) return;
+    this._hiddenBubbleSize = [...this._hiddenBubbleSize, size];
+  }
+
+  unhideSize(size: string) {
+    if (this._hiddenBubbleSize.includes(size)) {
+      this._hiddenBubbleSize = this._hiddenBubbleSize.filter(el => el !== size);
+    }
+  }
+
+  isSizeHidden(size: string): boolean {
+    return this._hiddenBubbleSize.includes(size);
+  }
+
+  hideOtherSize(...sizes: string[]) {
+    this._hiddenBubbleSize = this._model!.seriesKeys.filter(key => !sizes.includes(key));
+  }
+
+  hideAllSize() {
+    this._hiddenBubbleSize = ['small', 'medium', 'large'];
+  }
+
+  unhideAllSizes() {
+    this._hiddenBubbleSize = [];
+  }
+
   announce(
     msg: string | string[] | HighlightedSummary,
     clearAriaLive = false,
@@ -1339,6 +1368,14 @@ export class ParaState extends BaseState {
     return this._lowlightedDatapoints;
   }
 
+  get hiddenDatapoints() {
+    return this._hiddenDatapoints;
+  }
+
+  set hiddenDatapoints(set: Set<string>) {
+    this._hiddenDatapoints = set;
+  }
+
   highlightDatapoint(seriesKey: string, index: number) {
     this._highlightedDatapoints = new Set([
       ...this._highlightedDatapoints.values(),
@@ -1391,11 +1428,21 @@ export class ParaState extends BaseState {
   }
 
   isDatapointLowlighted(seriesKey: string, index: number): boolean {
-    return this._lowlightedDatapoints.has(makeDatapointId(seriesKey, index));
+    return this._lowlightedDatapoints.has(makeDatapointId(seriesKey, index)) || this._dimmedSeries.includes(seriesKey);
+  }
+
+  isDatapointHidden(seriesKey: string, index: number): boolean {
+    return this._hiddenDatapoints.has(makeDatapointId(seriesKey, index)) || this._hiddenSeries.includes(seriesKey);
   }
 
   lowlightDatapoint(seriesKey: string, index: number) {
     this._lowlightedDatapoints.add(
+      makeDatapointId(seriesKey, index)
+    );
+  }
+
+  hideDatapoint(seriesKey: string, index: number) {
+    this._hiddenDatapoints.add(
       makeDatapointId(seriesKey, index)
     );
   }
@@ -1406,6 +1453,11 @@ export class ParaState extends BaseState {
     );
   }
 
+  clearDatapointHidden(seriesKey: string, index: number) {
+    this._hiddenDatapoints = new Set(
+      [...this._hiddenDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
+    );
+  }
 
   clearAllDatapointHighlights() {
     this._highlightedDatapoints = new Set();
@@ -1414,6 +1466,11 @@ export class ParaState extends BaseState {
   clearAllDatapointLowlights() {
     this._lowlightedDatapoints = new Set();
   }
+
+  clearAllDatapointHidden() {
+    this._hiddenDatapoints = new Set();
+  }
+
 
   get highlightedSequences() {
     return this._highlightedSequences;

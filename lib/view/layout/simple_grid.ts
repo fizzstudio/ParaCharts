@@ -14,11 +14,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { nothing, svg } from 'lit';
 import { View, type SnapLocation, type PaddingInput, type Padding } from '../base_view';
 import { type ViewContext } from '../view_context';
 import { Layout } from './layout';
 
 import { mapn } from '@fizz/chart-classifier-utils';
+import { fixed } from '../../common';
+import { classMap } from 'lit/directives/class-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
 
 export interface SimpleGridOptionsInput {
   numCols: number;
@@ -42,7 +46,7 @@ export class SimpleGridLayout extends Layout {
   protected _colGaps: number[];
   protected _rowAligns: SnapLocation[];
   protected _colAligns: SnapLocation[];
-  protected _rows: (View | null)[][] = [];
+  protected _rows: (SimpleGridCell | null)[][] = [];
   protected _hRules: number[] = [];
   protected _vRules: number[] = [];
 
@@ -96,6 +100,10 @@ export class SimpleGridLayout extends Layout {
 
   get colAligns() {
     return Array.from(this._colAligns);
+  }
+
+  get children() {
+    return super.children as SimpleGridCell[];
   }
 
   protected _expandRowGaps(rowGaps: number | number[]) {
@@ -161,15 +169,20 @@ export class SimpleGridLayout extends Layout {
     if (this.findView(child)) {
       throw new Error('view already present in grid');
     }
-    this._arrangeChild(child, territory);
-    super.append(child);
+    let gridCell = new SimpleGridCell(this.paraview);
+    gridCell.setChild(child);
+    this._arrangeChild(gridCell, territory);
+    super.append(gridCell);
   }
 
   prepend(child: View, territory?: SimpleGridTerritoryInput) {
     if (this.findView(child)) {
       throw new Error('view already present in grid');
     }
-    this._arrangeChild(child, territory);
+
+    let gridCell = new SimpleGridCell(this.paraview);
+    gridCell.setChild(child);
+    this._arrangeChild(gridCell, territory);
     super.prepend(child);
   }
 
@@ -198,7 +211,7 @@ export class SimpleGridLayout extends Layout {
     return [this._rows.length, 0];
   }
 
-  protected _arrangeChild(kid: View, territory?: SimpleGridTerritoryInput) {
+  protected _arrangeChild(kid: SimpleGridCell, territory?: SimpleGridTerritoryInput) {
     let row: number;
     let col: number;
     if (territory) {
@@ -335,7 +348,7 @@ export class SimpleGridLayout extends Layout {
     } else if (align === 'end') {
       kid.right = colLeft + spanWidth;
     } else {
-      kid.centerX = colLeft + spanWidth/2;
+      kid.centerX = colLeft + spanWidth / 2;
     }
   }
 
@@ -354,8 +367,62 @@ export class SimpleGridLayout extends Layout {
     } else if (align === 'end') {
       kid.bottom = rowTop + spanHeight;
     } else {
-      kid.centerY = rowTop + spanHeight/2;
+      kid.centerY = rowTop + spanHeight / 2;
     }
   }
 
+}
+
+class SimpleGridCell extends View {
+  child: View | null = null;
+  isSelected: boolean = false;
+  isHidden: boolean = false;
+
+  setChild(view: View) {
+    if (this.child !== null) {
+      return;
+    }
+
+    this._x = 0;
+    this._y = 0;
+    this.append(view);
+    this.child = view;
+    this.child.padding.left = 4;
+    this.child.padding.top = 4;
+    this.child.padding.right = 4;
+    this.child.padding.bottom = 4;
+    this.layoutViews();
+  }
+
+  computeSize(): [number, number] {
+    return this.child ? [this.child.paddedWidth, this.child.paddedHeight] : [0, 0];
+  }
+
+  layoutViews() {
+    if (this.child) {
+      this.child.left = this.left + this.padding.left;
+      this.child.top = this.top + this.padding.top;
+    }
+  }
+
+  get styleInfo() {
+    const stroke = this.isHidden ? "black" : this.isSelected ? "red" : "none"
+    const strokeWidth = 2
+    return { fill: "none", stroke: stroke, strokeWidth: strokeWidth, ...super.styleInfo }
+  }
+
+  render() {
+    return svg`
+      <g transform=${fixed`translate(${this.left},${this.top})`}>
+        <rect 
+          id=${this._id || nothing}
+          style=${Object.keys(this.styleInfo).length ? styleMap(this.styleInfo) : nothing}
+          class=${Object.keys(this.classInfo).length ? classMap(this.classInfo) : nothing}
+          x=${fixed`${0 - (this.child?.padding.left ?? 0)}`}
+          y=${fixed`${0 - (this.child?.padding.top ?? 0)}`}
+          width=${fixed`${this.width}`}
+          height=${fixed`${this.height}`}/>
+        ${this.child?.render()} </g>
+  `;
+  }
 }
