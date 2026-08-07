@@ -9,8 +9,8 @@ import { RectShape } from './shape/rect';
 import { type ViewContext } from './view_context';
 import { HIGHLIGHT_PADDING } from '../common';
 import { type CardinalDirection, type LegendConfig } from '../config/config_types';
-import { type ScatterChartInfo } from '../chart_types/scatter_chart';
 import { BubblePlotView } from './layers/data/chart_type/bubble_plot_view';
+import { ScatterPlotView } from './layers';
 
 export type SeriesAttrs = {
   color: string;
@@ -24,6 +24,7 @@ export interface LegendItem {
   symbolOptions?: Partial<DataSymbolOptions>;
   colorIndex: number;
   datapointIndex?: number;
+  clusterIndex?: number;
   bubbleSize?: "small" | "medium" | "large"
 }
 
@@ -52,6 +53,8 @@ export class Legend extends Container(View) {
   declare protected _parent: Layout;
 
   protected _grid!: SimpleGridLayout;
+  protected symbols: View[] = [];
+  protected labels: View[] = []
   //protected _markers: RectShape[] = [];
 
   constructor(paraview: ViewContext,
@@ -70,14 +73,11 @@ export class Legend extends Container(View) {
   }
 
   protected _addedToParent() {
-    const views: View[] = [];
-
+    const symbols: View[] = [];
+    const labels: View[] = [];
     const hasLegendBox = this.config.boxStyle.outline !== 'none' || this.config.boxStyle.fill !== 'none';
-
     this._items.forEach(item => {
-      //this._markers.push(new RectShape(this.paraview, { width: 12, height: 6 }));
-      //views.push(this._markers.at(-1)!);
-      views.push(DataSymbol.fromType(
+      symbols.push(DataSymbol.fromType(
         this.paraview,
         this.paraview.paraState.config.chart.isDrawSymbols
           ? (item.symbol ?? 'square.solid')
@@ -99,9 +99,9 @@ export class Legend extends Container(View) {
         }
       ));
       if (item.bubbleSize) {
-        views.at(-1)!.styleInfo = { fill: "hsl(0, 0%, 90%)", ...views.at(-1)!.styleInfo };
+        symbols.at(-1)!.styleInfo = { fill: "hsl(0, 0%, 90%)", ...symbols.at(-1)!.styleInfo };
       }
-      views.push(new Label(this.paraview, {
+      labels.push(new Label(this.paraview, {
         text: item.label,
         x: 0,
         y: 0,
@@ -118,9 +118,11 @@ export class Legend extends Container(View) {
         }
       }));
     });
+    this.symbols = symbols;
+    this.labels = labels;
     const symLabelGap = this.paraview.paraState.config.legend.symbolLabelGap;
     const pairGap = this.paraview.paraState.config.legend.pairGap;
-    let labelsPerRow = views.length / 2;
+    let labelsPerRow = labels.length;
     if (this._options.orientation === 'vert') {
       this._grid = new SimpleGridLayout(this.paraview, {
         numCols: 2,
@@ -129,20 +131,27 @@ export class Legend extends Container(View) {
         rowGaps: this._options.rowGap ? new Array(labelsPerRow + 1).fill(this._options.rowGap) : undefined
       }, 'legend-grid');
       this._grid.padding = hasLegendBox ? this.paraview.paraState.config.legend.padding : 0;
-      views.forEach(v => this._grid.append(v));
+      for (let i = 0; i < labelsPerRow; i++) {
+        this._grid.append(symbols[i]);
+        this._grid.append(labels[i]);
+      }
     } else {
       while (true) {
         const colGaps = intersperse(
           //new Array(labelsPerRow).fill(0),
           new Array(labelsPerRow).fill(symLabelGap),
           new Array(labelsPerRow - 1).fill(pairGap));
+        const numRows = Math.ceil(this._items.length / labelsPerRow);
         this._grid = new SimpleGridLayout(this.paraview, {
           numCols: labelsPerRow * 2,
           colGaps: colGaps,
-          rowGaps: new Array(labelsPerRow + 1).fill(this._options.rowGap)
+          rowGaps: new Array(numRows - 1).fill(this._options.rowGap)
         }, 'legend-grid');
         this._grid.padding = hasLegendBox ? this.paraview.paraState.config.legend.padding : 0;
-        views.forEach(v => this._grid.append(v));
+        for (let i = 0; i < this.symbols.length; i++) {
+          this._grid.append(symbols[i]);
+          this._grid.append(labels[i]);
+        }
         this._grid.updateSize();
         if (this._options.wrapWidth === undefined ||
           this._grid.paddedWidth <= this._options.wrapWidth ||
@@ -152,7 +161,8 @@ export class Legend extends Container(View) {
         labelsPerRow--;
         // This is necessary to unset v.parent; it does have the side-effect
         // of resizing the grid, which isn't really necessary
-        views.forEach(v => v.remove());
+        symbols.forEach(v => v.remove());
+        labels.forEach(v => v.remove());
       }
       this._grid.colAligns = intersperse(
         //new Array(labelsPerRow).fill('center'),
@@ -181,14 +191,14 @@ export class Legend extends Container(View) {
       (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).dimOtherSizes(item.bubbleSize);
       return;
     }
+    if (item.clusterIndex !== undefined) {
+      if (this.paraview.paraState.pinnedCluster !== null) return;
+      (this.paraview.documentView?.chartLayers.dataLayer as ScatterPlotView).dimOtherClusters(item.seriesKey, item.colorIndex)
+      return;
+    }
     if (this.paraview.paraState.isSeriesHidden(item.seriesKey)) return;
     if (this.paraview.paraState.pinnedSeriesKey !== null) return;
 
-    if ((this.paraview.paraState.chartInfo as ScatterChartInfo).clustering
-      && !this.paraview.paraState.model?.multi) {
-      this.paraview.paraState.dimOtherCluster(item.seriesKey, item.colorIndex)
-      return;
-    }
     this.paraview.paraState.dimOtherSeries(item.seriesKey);
   }
 
@@ -197,7 +207,11 @@ export class Legend extends Container(View) {
       if (this.paraview.paraState.pinnedBubbleSize !== null) return;
       this.paraview.paraState.clearAllPointsDimming();
     }
-
+    if (item.clusterIndex !== undefined) {
+      if (this.paraview.paraState.pinnedCluster !== null) return;
+      this.paraview.paraState.clearAllPointsDimming();
+      return;
+    }
     if (this.paraview.paraState.pinnedSeriesKey !== null) return;
     this.paraview.paraState.clearAllSeriesDimming();
 
@@ -218,6 +232,23 @@ export class Legend extends Container(View) {
       }
       else {
         (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).pinBubbleSize(item.bubbleSize);
+      }
+      return;
+    }
+    else if (item.clusterIndex !== undefined) {
+      if (this.paraview.paraState.pinnedCluster === item.clusterIndex
+        || this.paraview.paraState.isClusterHidden(item.clusterIndex)
+      ) {
+        if (this.paraview.paraState.isClusterHidden(item.clusterIndex)) {
+          (this.paraview.documentView?.chartLayers.dataLayer as ScatterPlotView).unhideCluster(item.seriesKey, item.clusterIndex)
+        }
+        else {
+          (this.paraview.documentView?.chartLayers.dataLayer as ScatterPlotView).unpinCluster();
+          (this.paraview.documentView?.chartLayers.dataLayer as ScatterPlotView).hideCluster(item.seriesKey, item.clusterIndex);
+        }
+      }
+      else {
+        (this.paraview.documentView?.chartLayers.dataLayer as ScatterPlotView).pinCluster(item.seriesKey, item.clusterIndex);
       }
       return;
     }
@@ -357,14 +388,30 @@ export class Legend extends Container(View) {
         if (this.paraview.paraState.isSizeHidden(item.bubbleSize)) {
           hidden = true
         }
-
         if (this.paraview.paraState.pinnedBubbleSize == item.bubbleSize) {
           visited = true;
         }
       }
-      this._grid.children[(i) * 2 + 1].isSelected = visited
-      this._grid.children[(i) * 2 + 1].isHidden = hidden
-      //this._markers[i].styleInfo = style;
+      if (item.clusterIndex !== undefined) {
+        visited = false;
+        hidden = false;
+        if (this.paraview.paraState.isClusterHidden(item.clusterIndex)) {
+          hidden = true
+        }
+        if (this.paraview.paraState.pinnedCluster == item.clusterIndex) {
+          visited = true;
+        }
+      }
+      if (visited) {
+        this._grid.highlightRegion([this.symbols[i], this.labels[i]], 'red');
+      }
+      else if (hidden) {
+        this._grid.removeRegionHighlight([this.symbols[i], this.labels[i]]);
+        this._grid.highlightRegion([this.symbols[i], this.labels[i]], 'black');
+      }
+      else {
+        this._grid.removeRegionHighlight([this.symbols[i], this.labels[i]]);
+      }
     });
     return super.content();
   }

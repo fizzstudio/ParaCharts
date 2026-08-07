@@ -212,9 +212,11 @@ export class ParaState extends BaseState {
   @property() protected _caption: HighlightedSummary = { text: '', html: '' };
   @property() protected _pinnedSeriesKey: string | null = null;
   @property() protected _pinnedBubbleSize: string | null = null;
+  @property() protected _pinnedCluster: number | null = null;
   @property() protected _dimmedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
   @property() protected _hiddenBubbleSize: string[] = [];
+  @property() protected _hiddenCluster: number[] = [];
   @property() protected focused = 'chart';
   @property() protected selected = null;
   @property() protected queryLevel = 'default';
@@ -1160,13 +1162,6 @@ export class ParaState extends BaseState {
     this.frontSeries = seriesKeys[0];
   }
 
-  dimOtherCluster(seriesKey: string, index: number) {
-    const chartInfo = this.chartInfo as ScatterChartInfo;
-    const otherDatapoints = chartInfo._clustering!.filter(c => c.id !== index).map(
-      c => { return [...c.dataPointIDs, ...c.outlierIDs] }).flat();
-    otherDatapoints.map(id => this.lowlightDatapoint(seriesKey, id))
-    this.refreshParaView();
-  }
   clearAllSeriesDimming() {
     this._dimmedSeries = [];
   }
@@ -1190,6 +1185,14 @@ export class ParaState extends BaseState {
 
   set pinnedBubbleSize(size: string | null) {
     this._pinnedBubbleSize = size;
+  }
+
+  get pinnedCluster(): number | null {
+    return this._pinnedCluster;
+  }
+
+  set pinnedCluster(index: number | null) {
+    this._pinnedCluster = index;
   }
 
   unpinSeries() {
@@ -1239,16 +1242,19 @@ export class ParaState extends BaseState {
     return this._hiddenBubbleSize.includes(size);
   }
 
-  hideOtherSize(...sizes: string[]) {
-    this._hiddenBubbleSize = this._model!.seriesKeys.filter(key => !sizes.includes(key));
+  hideCluster(index: number) {
+    if (this._hiddenCluster.includes(index)) return;
+    this._hiddenCluster = [...this._hiddenCluster, index];
   }
 
-  hideAllSize() {
-    this._hiddenBubbleSize = ['small', 'medium', 'large'];
+  unhideCluster(index: number) {
+    if (this._hiddenCluster.includes(index)) {
+      this._hiddenCluster = this._hiddenCluster.filter(el => el !== index);
+    }
   }
 
-  unhideAllSizes() {
-    this._hiddenBubbleSize = [];
+  isClusterHidden(index: number): boolean {
+    return this._hiddenCluster.includes(index);
   }
 
   announce(
@@ -1428,7 +1434,7 @@ export class ParaState extends BaseState {
   }
 
   isDatapointLowlighted(seriesKey: string, index: number): boolean {
-    return this._lowlightedDatapoints.has(makeDatapointId(seriesKey, index)) || this._dimmedSeries.includes(seriesKey);
+    return this._lowlightedDatapoints.has(makeDatapointId(seriesKey, index));
   }
 
   isDatapointHidden(seriesKey: string, index: number): boolean {

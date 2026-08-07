@@ -14,15 +14,11 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { nothing, svg } from 'lit';
+import { mapn } from '@fizz/chart-classifier-utils';
 import { View, type SnapLocation, type PaddingInput, type Padding } from '../base_view';
 import { type ViewContext } from '../view_context';
 import { Layout } from './layout';
-
-import { mapn } from '@fizz/chart-classifier-utils';
-import { fixed } from '../../common';
-import { classMap } from 'lit/directives/class-map.js';
-import { styleMap } from 'lit/directives/style-map.js';
+import { RectShape } from '../shape';
 
 export interface SimpleGridOptionsInput {
   numCols: number;
@@ -37,6 +33,10 @@ export interface SimpleGridTerritoryInput {
   y: number;
 }
 
+export interface SimpleGridAdditionalInput {
+  background: boolean;
+}
+
 /**
  * Simple grid layout for views.
  */
@@ -46,9 +46,11 @@ export class SimpleGridLayout extends Layout {
   protected _colGaps: number[];
   protected _rowAligns: SnapLocation[];
   protected _colAligns: SnapLocation[];
-  protected _rows: (SimpleGridCell | null)[][] = [];
+  protected _rows: (View | null)[][] = [];
   protected _hRules: number[] = [];
   protected _vRules: number[] = [];
+  protected addingBackground: boolean = false;
+  protected _highlightedRegions = new Map<string, (View | undefined)>();
 
   constructor(paraview: ViewContext, options: SimpleGridOptionsInput, id?: string) {
     super(paraview, id);
@@ -103,7 +105,7 @@ export class SimpleGridLayout extends Layout {
   }
 
   get children() {
-    return super.children as SimpleGridCell[];
+    return super.children as View[];
   }
 
   protected _expandRowGaps(rowGaps: number | number[]) {
@@ -165,37 +167,47 @@ export class SimpleGridLayout extends Layout {
     return null;
   }
 
-  append(child: View, territory?: SimpleGridTerritoryInput) {
+  append(child: View, territory?: SimpleGridTerritoryInput, gridItemOptions?: Partial<SimpleGridAdditionalInput>) {
     if (this.findView(child)) {
       throw new Error('view already present in grid');
     }
-    let gridCell = new SimpleGridCell(this.paraview);
-    gridCell.setChild(child);
-    this._arrangeChild(gridCell, territory);
-    super.append(gridCell);
+    if (gridItemOptions?.background) {
+      this.addingBackground = true;
+      super.append(child);
+      return;
+    }
+    this.addingBackground = false
+    this._arrangeChild(child, territory);
+    super.append(child);
   }
 
-  prepend(child: View, territory?: SimpleGridTerritoryInput) {
+  prepend(child: View, territory?: SimpleGridTerritoryInput, gridItemOptions?: Partial<SimpleGridAdditionalInput>) {
     if (this.findView(child)) {
       throw new Error('view already present in grid');
     }
-
-    let gridCell = new SimpleGridCell(this.paraview);
-    gridCell.setChild(child);
-    this._arrangeChild(gridCell, territory);
+    if (gridItemOptions?.background) {
+      this.addingBackground = true;
+      super.prepend(child);
+      return;
+    }
+    this._arrangeChild(child, territory);
     super.prepend(child);
   }
 
   protected _didAddChild(kid: View) {
-    this._adjustRules(kid);
+    if (!this.addingBackground) {
+      this._adjustRules(kid);
+    }
     super._didAddChild(kid);
   }
 
   protected _didRemoveChild(kid: View): void {
-    this._rows = this._rows.map(row =>
-      row.map(v => v === kid ? null : v));
-    this._contractRules();
-    this._updateGaps();
+    if (!this.addingBackground) {
+      this._rows = this._rows.map(row =>
+        row.map(v => v === kid ? null : v));
+      this._contractRules();
+      this._updateGaps();
+    }
     super._didRemoveChild(kid);
   }
 
@@ -211,7 +223,7 @@ export class SimpleGridLayout extends Layout {
     return [this._rows.length, 0];
   }
 
-  protected _arrangeChild(kid: SimpleGridCell, territory?: SimpleGridTerritoryInput) {
+  protected _arrangeChild(kid: View, territory?: SimpleGridTerritoryInput) {
     let row: number;
     let col: number;
     if (territory) {
@@ -371,58 +383,62 @@ export class SimpleGridLayout extends Layout {
     }
   }
 
-}
-
-class SimpleGridCell extends View {
-  child: View | null = null;
-  isSelected: boolean = false;
-  isHidden: boolean = false;
-
-  setChild(view: View) {
-    if (this.child !== null) {
+  highlightRegion(children: View[], color?: string) {
+    const territories = children.map(c => this.findView(c)!).map(a => { return { x: a[1], y: a[0] } });
+    const id = this._makeRegionId(territories);
+    if (this._highlightedRegions.has(id)) {
       return;
     }
-
-    this._x = 0;
-    this._y = 0;
-    this.append(view);
-    this.child = view;
-    this.child.padding.left = 4;
-    this.child.padding.top = 4;
-    this.child.padding.right = 4;
-    this.child.padding.bottom = 4;
-    this.layoutViews();
+    const xInputs = territories.map(t => t.x);
+    const yInputs = territories.map(t => t.y);
+    const minX = Math.min(...xInputs);
+    const maxX = Math.max(...xInputs);
+    const minY = Math.min(...yInputs);
+    const maxY = Math.max(...yInputs);
+    const strokeColor = color ?? 'red';
+    const pairGap = this.paraview.paraState.config.legend.pairGap;
+    const rowGap = this.rowGaps[minY] ?? 10
+    const x = this._vRules[minX] + this.colGaps.slice(0, minX).reduce((a, b) => a + b, 0) - pairGap / 2;
+    const y = this._hRules[minY] + this.rowGaps.slice(0, minY).reduce((a, b) => a + b, 0) -  rowGap / 2;
+    const width = this._vRules[maxX + 1] - this._vRules[minX] + pairGap + 5;
+    const height = this._hRules[maxY + 1] - this._hRules[minY] + rowGap;
+    const highlight = new RectShape(this.paraview, {
+      x: x,
+      y: y,
+      width: width,
+      height: height,
+      fill: "none",
+      stroke: strokeColor,
+      strokeWidth: 2
+    });
+    highlight.classInfo = { 'underlay-rect': true };
+    this.append(highlight, undefined, { background: true });
+    this._highlightedRegions.set(id, highlight);
   }
 
-  computeSize(): [number, number] {
-    return this.child ? [this.child.paddedWidth, this.child.paddedHeight] : [0, 0];
-  }
-
-  layoutViews() {
-    if (this.child) {
-      this.child.left = this.left + this.padding.left;
-      this.child.top = this.top + this.padding.top;
+  removeRegionHighlight(children: View[]) {
+    if (children.length == 0 || children.map(c => this.findView(c)!).some(e => e == null)) {
+      return;
+    }
+    const territories = children.map(c => this.findView(c)!).map(a => { return { x: a[1], y: a[0] } });
+    const id = this._makeRegionId(territories);
+    if (this._highlightedRegions.has(id)) {
+      this._highlightedRegions.get(id)?.remove();
+      this._highlightedRegions.delete(id);
     }
   }
 
-  get styleInfo() {
-    const stroke = this.isHidden ? "black" : this.isSelected ? "red" : "none"
-    const strokeWidth = 2
-    return { fill: "none", stroke: stroke, strokeWidth: strokeWidth, ...super.styleInfo }
-  }
-
-  render() {
-    return svg`
-      <g transform=${fixed`translate(${this.left},${this.top})`}>
-        <rect 
-          id=${this._id || nothing}
-          style=${Object.keys(this.styleInfo).length ? styleMap(this.styleInfo) : nothing}
-          class=${Object.keys(this.classInfo).length ? classMap(this.classInfo) : nothing}
-          x=${fixed`${0 - (this.child?.padding.left ?? 0)}`}
-          y=${fixed`${0 - (this.child?.padding.top ?? 0)}`}
-          width=${fixed`${this.width}`}
-          height=${fixed`${this.height}`}/>
-        ${this.child?.render()} </g>
-  `;
+  _makeRegionId(territories: SimpleGridTerritoryInput[]) {
+    const sorted = territories.toSorted((a, b) => {
+      if (a.x !== b.x) {
+        return a.x - b.x; // Compare x
+      }
+      return a.y - b.y;     // Compare y if x is equal
+    });
+    let id = '';
+    for (let territory of sorted) {
+      id = id.concat(`${territory.x}, ${territory.y} `);
+    }
+    return id;
   }
 }
