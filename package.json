@@ -122,7 +122,7 @@
     "@elemental/localization": "^1.10.0",
     "@fizz/chart-classifier-utils": "^0.17.0",
     "@fizz/clustering": "^0.16.0",
-    "@fizz/dataframe": "^0.27.0",
+    "@fizz/dataframe": "^0.27.2",
     "@fizz/jimerator": "^0.20.1",
     "@fizz/logger": "^0.1.0",
     "@fizz/number-scaling-rounding": "^0.6.1",

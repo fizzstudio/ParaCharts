@@ -304,7 +304,7 @@ export abstract class BaseChartInfo {
     return `${series.label} (${formatBox(dp.facetBox('x')!, 'raw')}, ${formatBox(dp.facetBox('y')!, 'raw')})`;
   };
 
-  protected composePointSelectionAnnouncement(isExtend: boolean) {
+  public composePointSelectionAnnouncement(isExtend: boolean) {
     // This method assumes only a single point was visited when the select
     // command was issued (i.e., we know nothing about chord mode here)
 
