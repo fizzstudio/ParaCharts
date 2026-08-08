@@ -55,7 +55,8 @@ export class BubblePlotView extends PointPlotView {
     dimOtherSizes(size: string) {
         this._resetFrontedDatapoints();
         const { frontDatapoints, backDatapoints } = this.getPointsbySize(size);
-        this.paraview.paraState.frontDatapoints = frontDatapoints;
+        this.paraview.paraState.frontDatapoints = frontDatapoints.filter(dp =>
+            !this.paraview.paraState.isSeriesDimmed(dp.seriesKey));
         backDatapoints.forEach(dp => this.paraview.paraState.lowlightDatapoint(dp.seriesKey, dp.datapointIndex));
         this.paraview.paraState.frontSeries = '';
         this.paraview.paraState.refreshParaView();
