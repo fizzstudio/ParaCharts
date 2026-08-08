@@ -289,16 +289,15 @@ export class Legend extends Container(View) {
           const firstDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(0)!;
           newY = firstDatapointView.centerY;
         }
-        this._grid.children[3 * i].centerY = newY;
-        this._grid.children[3 * i + 1].centerY = newY;
-        this._grid.children[3 * i + 2].centerY = newY;
-        bundledItems.push([this._grid.children[3 * i], this._grid.children[3 * i + 1], this._grid.children[3 * i + 2]])
+        this._grid.children[2 * i].centerY = newY;
+        this._grid.children[2 * i + 1].centerY = newY;
+        bundledItems.push([this._grid.children[2 * i], this._grid.children[2 * i + 1]])
       }
       const sortedItems = bundledItems.toSorted((a, b) => a[2].y - b[2].y);
       for (let i = 0; i < sortedItems.length; i++) {
         for (let j = i + 1; j < sortedItems.length; j++) {
-          const child1 = sortedItems[i][2];
-          const child2 = sortedItems[j][2];
+          const child1 = sortedItems[i][1];
+          const child2 = sortedItems[j][1];
           if (child1.intersects(child2)) {
             const midpoint = (child1.y + child2.y) / 2;
             if (!alreadyMoved.includes(i)) {
@@ -327,21 +326,18 @@ export class Legend extends Container(View) {
           const firstDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(0)!;
           newX = dataLayer.height - firstDatapointView.centerY - this.x + WEIRD_MAGIC_NUMBER;
         }
-        const leftDiff = this._grid.children[3 * i + 2].centerX - this._grid.children[3 * i].centerX;
-        const middleDiff = this._grid.children[3 * i + 2].centerX - this._grid.children[3 * i + 1].centerX;
-        this._grid.children[3 * i].centerX = newX - leftDiff;
-        this._grid.children[3 * i + 1].centerX = newX - middleDiff;
-        this._grid.children[3 * i + 2].centerX = newX;
-        bundledItems.push([this._grid.children[3 * i], this._grid.children[3 * i + 1], this._grid.children[3 * i + 2]])
+        const horizDiff = this._grid.children[2 * i + 1].centerX - this._grid.children[2 * i].centerX;
+        this._grid.children[2 * i].centerX = newX;
+        this._grid.children[2 * i + 1].centerX = newX + horizDiff;
+        bundledItems.push([this._grid.children[2 * i], this._grid.children[2 * i + 1]])
       }
-      const sortedItems = bundledItems.toSorted((a, b) => a[2].y - b[2].y);
+      const sortedItems = bundledItems.toSorted((a, b) => a[1].y - b[1].y);
       for (let i = 0; i < sortedItems.length; i++) {
         for (let j = i + 1; j < sortedItems.length; j++) {
-          const child1 = sortedItems[i][2];
-          const child2 = sortedItems[j][2];
-          if (sortedItems[i][2].intersects(sortedItems[j][0])
-            || sortedItems[i][2].intersects(sortedItems[j][1])
-            || sortedItems[i][2].intersects(sortedItems[j][2])) {
+          const child1 = sortedItems[i][1];
+          const child2 = sortedItems[j][1];
+          if (sortedItems[i][1].intersects(sortedItems[j][0])
+            || sortedItems[i][1].intersects(sortedItems[j][1])) {
             const midpoint = (child1.y + child2.y) / 2;
             if (!alreadyMoved.includes(i)) {
               sortedItems[j].forEach(c => c.y += child1.height);

@@ -685,7 +685,7 @@ export class DocumentView extends Container(View) {
         rowGap: 10
       });
       this._legends.south.padding = {
-        top: margin,
+        top: margin / 2,
         right: 0,
         bottom: 0,
         left: 0
