@@ -55,7 +55,6 @@ export class Legend extends Container(View) {
   protected _grid!: SimpleGridLayout;
   protected symbols: View[] = [];
   protected labels: View[] = []
-  //protected _markers: RectShape[] = [];
 
   constructor(paraview: ViewContext,
     protected _items: LegendItem[],
@@ -138,7 +137,6 @@ export class Legend extends Container(View) {
     } else {
       while (true) {
         const colGaps = intersperse(
-          //new Array(labelsPerRow).fill(0),
           new Array(labelsPerRow).fill(symLabelGap),
           new Array(labelsPerRow - 1).fill(pairGap));
         const numRows = Math.ceil(this._items.length / labelsPerRow);
@@ -165,7 +163,6 @@ export class Legend extends Container(View) {
         labels.forEach(v => v.remove());
       }
       this._grid.colAligns = intersperse(
-        //new Array(labelsPerRow).fill('center'),
         new Array(labelsPerRow).fill('center'),
         new Array(labelsPerRow).fill('start'));
     }
@@ -373,7 +370,6 @@ export class Legend extends Container(View) {
 
   content() {
     this._items.forEach((item, i) => {
-      //const style = this._markers[i].styleInfo;
       let visited = item.datapointIndex !== undefined
         ? this.paraview.paraState.isVisited(
           this.paraview.paraState.model!.seriesKeys[0], item.datapointIndex)
@@ -403,11 +399,11 @@ export class Legend extends Container(View) {
         }
       }
       if (visited) {
-        this._grid.highlightRegion([this.symbols[i], this.labels[i]], 'red');
+        this._grid.highlightViews([this.symbols[i], this.labels[i]], 'red');
       }
       else if (hidden) {
         this._grid.removeRegionHighlight([this.symbols[i], this.labels[i]]);
-        this._grid.highlightRegion([this.symbols[i], this.labels[i]], 'black');
+        this._grid.highlightViews([this.symbols[i], this.labels[i]], 'black');
       }
       else {
         this._grid.removeRegionHighlight([this.symbols[i], this.labels[i]]);

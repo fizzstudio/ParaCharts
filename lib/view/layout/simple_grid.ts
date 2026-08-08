@@ -383,7 +383,7 @@ export class SimpleGridLayout extends Layout {
     }
   }
 
-  highlightRegion(children: View[], color?: string) {
+  highlightViews(children: View[], color?: string) {
     const territories = children.map(c => this.findView(c)!).map(a => { return { x: a[1], y: a[0] } });
     const id = this._makeRegionId(territories);
     if (this._highlightedRegions.has(id)) {
