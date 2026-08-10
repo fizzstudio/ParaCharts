@@ -60,11 +60,15 @@ export class ScatterChartInfo extends PointChartInfo {
     }
   }
   async _generateClustering(): Promise<clusterObject[] | null> {
-    return await (this._paraState.model as PlaneModel).getClusteringAnalysis();
+    return await this.model.getClusteringAnalysis();
   }
 
   get navDatapointType(): DatapointNavNodeType {
     return 'scatterpoint';
+  }
+
+  get model() {
+    return super.model as PlaneModel;
   }
 
   seriesInNavOrder() {
@@ -180,6 +184,7 @@ export class ScatterChartInfo extends PointChartInfo {
         colorIndex: i,
         symbol: types[i],
         symbolOptions: { lighten: true },
+        clusterIndex: i
       }))
     }
   }

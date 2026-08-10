@@ -1,6 +1,6 @@
 import { svg } from 'lit';
 import { ClassInfo } from 'lit/directives/class-map.js';
-import { enumerate } from '@fizz/paramodel';
+import { Datapoint, enumerate, PlaneModel } from '@fizz/paramodel';
 import { DataSymbol, DataSymbols } from '../../../symbol';
 import { View } from '../../../base_view';
 import { PlaneChartInfo, type ScatterChartInfo } from '../../../../chart_types';
@@ -26,6 +26,10 @@ export class ScatterPlotView extends PointPlotView {
 
   get types() {
     return this._types
+  }
+
+  get model() {
+    return super.model as PlaneModel;
   }
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
@@ -105,6 +109,57 @@ export class ScatterPlotView extends PointPlotView {
   addClusterShell(index: number) {
     this.paraview.paraState.clusterShellViews.splice(0, this.paraview.paraState.clusterShellViews.length);
     this.paraview.paraState.clusterShellViews.push(new ClusterShellView(this, index));
+  }
+
+  dimOtherClusters(seriesKey: string, index: number) {
+    const chartInfo = this.chartInfo as ScatterChartInfo;
+    const otherDatapoints = chartInfo._clustering!.filter(c => c.id !== index).map(
+      c => { return [...c.dataPointIDs, ...c.outlierIDs] }).flat();
+    otherDatapoints.map(id => this.paraview.paraState.lowlightDatapoint(seriesKey, id))
+    this.paraview.paraState.refreshParaView();
+  }
+
+
+  pinCluster(seriesKey: string, index: number) {
+    this.unpinCluster();
+    this.paraview.paraState.pinnedCluster = index;
+    this.dimOtherClusters(seriesKey, index);
+  }
+
+  unpinCluster() {
+    this.paraview.paraState.pinnedCluster = null;
+    this.paraview.paraState.clearAllDatapointLowlights();
+  }
+
+  hideCluster(seriesKey: string, index: number) {
+    this._resetFrontedDatapoints();
+    const { frontDatapoints, backDatapoints } = this.getPointsbyCluster(index);
+    frontDatapoints.forEach(p => this.paraview.paraState.hideDatapoint(p.seriesKey, p.datapointIndex));
+    this.paraview.paraState.hideCluster(index);
+    this.paraview.paraState.refreshParaView();
+  }
+
+  unhideCluster(seriesKey: string, index: number) {
+    this._resetFrontedDatapoints();
+    const { frontDatapoints, backDatapoints } = this.getPointsbyCluster(index);
+    frontDatapoints.forEach(p => this.paraview.paraState.clearDatapointHidden(p.seriesKey, p.datapointIndex));
+    this.paraview.paraState.unhideCluster(index);
+    this.paraview.paraState.refreshParaView();
+  }
+
+  getPointsbyCluster(index: number): { frontDatapoints: Datapoint[], backDatapoints: Datapoint[] } {
+    let frontDatapoints: Datapoint[] = [];
+    let backDatapoints: Datapoint[] = [];
+    const points = this.model!.allPoints;
+    for (let point of points) {
+      if ([...this.paraview.paraState.clusterAnalyses![index].dataPointIDs, ...this.paraview.paraState.clusterAnalyses![index].outlierIDs].includes(point.datapointIndex)) {
+        frontDatapoints.push(point);
+      }
+      else {
+        backDatapoints.push(point);
+      }
+    }
+    return { frontDatapoints, backDatapoints };
   }
 }
 
