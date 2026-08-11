@@ -5,10 +5,12 @@
 | **a** | Add an annotation |
 | **b** | Toggle screen reader announcements |
 | **c** | Jump to chord landing |
+| **d** | Toggle data table |
 | **h** | Show the help dialog |
 | **k** | Toggle dark mode |
 | **l** | Toggle low-vision mode |
 | **n, Shift+n** | Toggle narrative highlight mode |
+| **o** | Switch to other data set |
 | **q** | Query data |
 | **r** | Repeat last message |
 | **s** | Toggle sonification mode |
@@ -16,7 +18,7 @@
 | **u** | Clear the datapoint selection |
 | **v** | Toggle self-voicing mode |
 | **x** | Open chart explainer |
-| **arrowright, arrowleft, arrowup, arrowdown, Shift+arrowup, Shift+arrowdown** | Move the cursor |
+| **arrowright, arrowleft, arrowup, arrowdown, Shift+arrowup, Shift+arrowdown, Shift+arrowleft, Shift+arrowright** | Move the cursor |
 | **Shift+end** | Play datapoints to the right |
 | **Shift+home** | Play datapoints to the left |
 | **Ctrl+control** | Stop playing |

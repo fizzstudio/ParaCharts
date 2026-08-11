@@ -584,7 +584,10 @@ export class ParaAPI {
   getConfigSettingsMetadata(keywords: string[]): ConfigGroupSettingsMetadata {
     const out: ConfigGroupSettingsMetadata = {};
     for (const [path, group] of Object.entries(configMetadata)) {
-      for (const [key, settingMetadata] of Object.entries(group.settings)) {
+      if (!group) continue;
+      for (const key in group.settings) {
+        const settingMetadata = group.settings[key];
+        if (!settingMetadata) continue;
         if (keywords.every(kw => settingMetadata.keywords?.includes(kw))) {
           out[`${path}.${key}`] = settingMetadata;
         }

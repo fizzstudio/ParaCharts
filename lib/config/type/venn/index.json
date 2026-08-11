@@ -1,4 +1,5 @@
 {
+    "description": "Venn diagram settings.",
     "family": "venn",
     "settings": {
         "orientationAngleOffset": {

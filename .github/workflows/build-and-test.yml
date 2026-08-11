@@ -4,11 +4,14 @@ on:
   push:
     branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   build-and-test:
@@ -44,3 +47,9 @@ jobs:
 
       - name: Run unit tests
         run: npm run test:unit
+
+      - name: Build docs
+        run: npm run docs:build
+
+      - name: Verify generated source artifacts are current
+        run: git diff --exit-code -- lib/config/config_defaults.ts lib/config/config_metadata.ts lib/config/config_types.ts etc/paracharts.api.md

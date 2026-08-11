@@ -1,4 +1,5 @@
 {
+    "description": "Chart animation timing and effects.",
     "family": "animation",
     "settings": {
         "isAnimationEnabled": {

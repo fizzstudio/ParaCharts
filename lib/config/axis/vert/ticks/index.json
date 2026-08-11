@@ -1,4 +1,5 @@
 {
+    "description": "Vertical axis tick display and styling.",
     "family": "axis",
     "settings": {
         "isDrawTicks":{

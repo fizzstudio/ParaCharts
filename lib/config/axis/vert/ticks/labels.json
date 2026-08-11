@@ -1,4 +1,5 @@
 {
+    "description": "Vertical axis tick label display and layout.",
     "family": "axis",
     "settings": {
         "isDrawTickLabels": {

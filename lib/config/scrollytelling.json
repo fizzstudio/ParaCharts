@@ -1,4 +1,5 @@
 {
+    "description": "Narrative scrolling features.",
     "family": "scrollytelling",
     "settings": {
         "isScrollytellingEnabled": {

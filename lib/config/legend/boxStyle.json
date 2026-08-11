@@ -1,4 +1,5 @@
 {
+    "description": "Legend box border and fill styling.",
     "family": "legend",
     "settings": {
         "outline": {

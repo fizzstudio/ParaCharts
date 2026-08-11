@@ -1,4 +1,5 @@
 {
+    "description": "Tooltip and popup styling.",
     "family": "popup",
     "settings": {
         "opacity": {

@@ -1,4 +1,5 @@
 {
+    "description": "Histogram settings.",
     "ref": "type.plane",
     "family": "histogram",
     "settings": {

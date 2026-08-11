@@ -1,4 +1,5 @@
 {
+    "description": "Inside-label settings for Venn diagrams.",
     "settings": {
         "contents": {
             "label": "cpanel.tabs.chart.venn_inside_labels",

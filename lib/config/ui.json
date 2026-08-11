@@ -1,4 +1,5 @@
 {
+    "description": "User interface and accessibility features.",
     "settings": {
         "isVoicingEnabled": {
             "label": "cpanel.tabs.audio.self_voicing",

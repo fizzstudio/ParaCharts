@@ -1,4 +1,5 @@
 {
+    "description": "Shared inside-label settings for radial charts.",
     "settings": {
         "format": {
             "label": "Label format",

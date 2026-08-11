@@ -197,14 +197,10 @@ export type ColorKeyword =
 /** CSS custom property reference (e.g. var(--my-color)) */
 export type CSSVar = `var(${string})`;
 
-/** Any valid CSS color value */
-export type Color =
-  | RGB
-  | RGBA
-  | HSL
-  | HSLA
-  | HEX
-  | ModernRGB
-  | ModernHSL
-  | ColorKeyword
-  | CSSVar;
+/** A CSS color value.
+ *
+ * Kept as a string because CSS color syntax evolves and cannot be represented
+ * completely by a maintainable TypeScript template-literal union.
+ * @public
+ */
+export type Color = string;

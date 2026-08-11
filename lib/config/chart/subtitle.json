@@ -1,4 +1,5 @@
 {
+    "description": "Chart subtitle display and styling.",
     "family": "subtitle",
     "settings": {
         "isDrawSubtitle": {

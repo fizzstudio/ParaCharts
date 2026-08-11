@@ -4,15 +4,23 @@ Perform various operations on a ParaChart.
 
 ### get actions
 
-The current set of hotkey actions.
+
 
 ### addCrosshair(xAxis, yAxis)
 
-Add a crosshair at the given axis values.
+
+
+### addRecord(pushPoints)
+
+Add a record to the end of the chart and remove the first record.
+
+### addTrendLine()
+
+
 
 ### get chartInfo
 
-The current chart info object.
+
 
 ### clearAllDatapointHighlights()
 
@@ -28,7 +36,7 @@ Clear all series intersection highlights.
 
 ### clearAllPopups()
 
-Clear all chart popups.
+Clear all chart highlights.
 
 ### clearAllRangeHighlights()
 
@@ -44,7 +52,7 @@ Clear all series highlights.
 
 ### clearCrosshair(xAxis, yAxis)
 
-Remove a crosshair at the given axis values.
+
 
 ### clearEastLegendHighlight()
 
@@ -68,7 +76,7 @@ Clear a chart horizontal range highlight.
 
 ### clearSelected()
 
-Clear all selected datapoints.
+
 
 ### clearSouthLegendHighlight()
 
@@ -84,7 +92,7 @@ Clear any chart vertical axis highlight.
 
 ### clearVisited()
 
-Clear all visited datapoint markers.
+
 
 ### clearWestLegendHighlight()
 
@@ -110,9 +118,33 @@ Download the chart in SVG format.
 
 Enable the hotkey actions for tour guide mode.
 
+### getAllConfigSettings()
+
+Get all settings.
+
 ### getAltText()
 
 Get the chart alt text.
+
+### getConfigGroupMetadata(path)
+
+Get config group metadata.
+
+### getConfigSetting(settingPath)
+
+Get a setting.
+
+### getConfigSettings(settingPaths)
+
+Get multiple settings.
+
+### getConfigSettingsMetadata(keywords)
+
+Get config settings metadata matching all given keywords.
+
+### getCustomProperties()
+
+Return all  CSS custom properties found in the page's stylesheets, as a flat dot-path map (e.g. ). Useful for debugging and verifying which CSS properties are being picked up.
 
 ### getDescription()
 
@@ -142,6 +174,10 @@ Get a horizontal range of the chart.
 
 Get one or more series to operate on.
 
+### getShortDescription()
+
+Get the chart short description.
+
 ### getTitle()
 
 Get the chart title label.
@@ -153,6 +189,10 @@ Get the chart vertical axis.
 ### hideAllSeries()
 
 Hide all chart series.
+
+### highlightCluster(clusterID)
+
+
 
 ### highlightEastLegend()
 
@@ -192,25 +232,57 @@ Highlight the chart west legend.
 
 ### get paraChart
 
-The underlying ParaChart element.
+
 
 ### refresh()
 
-Refresh the chart view.
+
+
+### registerBrailleTranslationProvider(provider)
+
+Register and initialize the literary Braille translator used by this chart. Await this method before loading a tactile manifest that uses Braille labels.
+
+### removeRecord(unshiftPoints)
+
+Remove the last record from the chart and add a new record to the start.
+
+### removeTrendLine()
+
+
 
 ### serializeChart()
 
 Get the serialized SVG version of the chart.
 
+### setConfigSetting(settingPath, value)
+
+Set a setting.
+
+### setConfigSettings(settingsInput)
+
+Set multiple settings.
+
+### setHeight(height)
+
+Set chart height.
+
 ### setManifest(manifestUrl)
 
 Set the chart manifest.
 
-### setSetting(settingPath, value)
+### setSize(width, height)
 
-Set a setting.
+Set chart width and height.
+
+### setWidth(width)
+
+Set chart width.
 
 ### unhideAllSeries()
 
 Unhide all chart series.
+
+### waitForManifest()
+
+Wait for a manifest to be loaded. Resolves immediately if already loaded.
 
