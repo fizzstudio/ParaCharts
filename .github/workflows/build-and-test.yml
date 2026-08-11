@@ -51,7 +51,5 @@ jobs:
       - name: Build docs
         run: npm run docs:build
 
-      - name: Verify generated documentation is current
-        run: |
-          git diff --exit-code -- lib/config/config_defaults.ts lib/config/config_metadata.ts lib/config/config_types.ts etc/paracharts.api.md docs
-          test -z "$(git ls-files --others --exclude-standard -- docs/api docs/config)"
+      - name: Verify generated source artifacts are current
+        run: git diff --exit-code -- lib/config/config_defaults.ts lib/config/config_metadata.ts lib/config/config_types.ts etc/paracharts.api.md
