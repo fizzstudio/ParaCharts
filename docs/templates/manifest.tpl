@@ -21,8 +21,7 @@ property with its type, whether it is required, and a short description.
 If a property contains nested object properties, they are shown in a separate
 subsection immediately after the parent property.
 
-{{#properties}}
-{{#children}}
+{{#nestedSections}}
 
 ### `{{path}}` — nested properties
 
@@ -31,9 +30,8 @@ sub-properties:
 
 | Property | Type | Required | Description |
 |---|---|:---:|---|
-{{#children}}
+{{#properties}}
 | `{{name}}` | `{{type}}` | {{#required}}Yes{{/required}}{{^required}}No{{/required}} | {{#description}}{{description}}{{/description}}{{^description}}No description.{{/description}} |
-{{/children}}
-
-{{/children}}
 {{/properties}}
+
+{{/nestedSections}}

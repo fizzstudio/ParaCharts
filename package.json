@@ -71,7 +71,9 @@
     "build-storybook": "storybook build",
     "prepack": "npm run build",
     "config:generate": "python3 lib/config/build_settings.py lib/config",
-    "doc": "rimraf docs/.api-staging && api-documenter markdown --input-folder ./temp --output-folder ./docs/.api-staging && tsx ./docs/scripts/prepareApiDocs.ts docs/.api-staging && tsx ./docs/scripts/replaceGeneratedDir.ts docs/.api-staging docs/api",
+    "docs:api-model": "tsx ./docs/scripts/stageApiModel.ts ./temp/paracharts.api.json ./docs/.api-model",
+    "docs:api": "npm run docs:api-model && rimraf docs/.api-staging && api-documenter markdown --input-folder ./docs/.api-model --output-folder ./docs/.api-staging && tsx ./docs/scripts/prepareApiDocs.ts docs/.api-staging && tsx ./docs/scripts/replaceGeneratedDir.ts docs/.api-staging docs/api",
+    "docs:pages": "tsx ./docs/scripts/buildDocs.ts",
     "test:unit": "vitest run --project=unit",
     "test:browser": "vitest run --project=browser",
     "test:watch": "vitest watch",
@@ -79,10 +81,11 @@
     "pubpatch": "npm version patch && npm publish",
     "pubminor": "npm version minor && npm publish",
     "pubmajor": "npm version major && npm publish",
-    "docs:generate": "npm run config:generate && tsc && api-extractor run --local --verbose && npm run doc && tsx ./docs/scripts/buildDocs.ts",
+    "docs:generate": "npm run config:generate && tsc && api-extractor run --local --verbose && npm run docs:api && npm run docs:pages",
+    "docs:check": "git diff --exit-code -- lib/config/config_defaults.ts lib/config/config_metadata.ts lib/config/config_types.ts etc/paracharts.api.md",
     "docs:dev": "npm run docs:generate && vitepress dev docs",
     "docs:build": "npm run docs:generate && vitepress build docs",
-    "docs:serve": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs"
   },
   "files": [
     "dist"
@@ -97,6 +100,7 @@
     "@fizz/test-utils": "^0.2.0",
     "@microsoft/api-documenter": "^7.25.11",
     "@microsoft/api-extractor": "^7.47.6",
+    "@microsoft/api-extractor-model": "^7.33.10",
     "@storybook/addon-coverage": "^2.0.0",
     "@storybook/addon-links": "^9.0.13",
     "@storybook/addon-vitest": "^9.0.13",

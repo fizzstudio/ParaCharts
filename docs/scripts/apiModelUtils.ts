@@ -6,11 +6,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
- * Load and return the API Extractor model from temp/paracharts.api.json.
+ * Load and return the staged API Extractor model.
  */
 export function loadApiModel(): ApiModel {
   const apiModel = new ApiModel();
-  const apiJsonPath = path.resolve(__dirname, '../../temp/paracharts.api.json');
+  const apiJsonPath = path.resolve(__dirname, '../.api-model/paracharts.api.json');
   apiModel.loadPackage(apiJsonPath);
   return apiModel;
 }

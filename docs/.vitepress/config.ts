@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import { fileURLToPath } from 'node:url'
 import { defaultConfig } from '../../lib/config/config_defaults.js'
 
 const configLabels: Record<string, string> = {
@@ -23,6 +24,9 @@ export default defineConfig({
   base: '/ParaCharts/',
   title: 'ParaCharts',
   description: 'ParaCharts user and developer documentation',
+  vite: {
+    publicDir: fileURLToPath(new URL('../../public', import.meta.url))
+  },
   themeConfig: {
     logo: '/fizz-logo.svg',
     nav: [
@@ -51,6 +55,7 @@ export default defineConfig({
           items: [
             { text: 'Custom Elements', link: '/customElements' },
             { text: 'Manifest', link: '/manifest' },
+            { text: 'Braille Translation Providers', link: '/braille-translation-provider' },
             {
               text: 'Configuration',
               collapsed: true,
