@@ -27,6 +27,8 @@ import {
   plusInfo,
   xInfo,
   starInfo,
+  AREA,
+  type ShapeInfo,
 } from './symbol_geometry';
 
 import { svg, nothing } from 'lit';
@@ -34,11 +36,11 @@ import { styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
 
 export type DataSymbolShape =
-'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
+  'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
 
 // empty == no fill at all
-export type DataSymbolFill = 'outline' | 'solid' | 'empty';
-export type DataSymbolType = `${DataSymbolShape}.${DataSymbolFill}` | 'default';
+export type DataSymbolFillType = 'outline' | 'solid' | 'empty';
+export type DataSymbolType = `${DataSymbolShape}.${DataSymbolFillType}` | 'default';
 
 const triSide = 15.1967;
 const triHeight = 13.161;
@@ -60,23 +62,23 @@ function starPath() {
   */
   const PHI = 1.618; // golden ratio
   const t = 4.165;  // inner pentagon side length
-  const s = PHI*t;  // equilateral side length of triangles pointing out from pentagon
-  const pentCircumRad = 0.8507*t; // dist from pentagon center to pentagon vert
-  const pentApothem = 0.6682*t; // dist from pentagon center to middle of side
-  const h = Math.sqrt(s**2 - (t/2)**2); // triangle height
-  const n = t*Math.sin(72*Math.PI/180); // vert dist from C to D
-  const m = s*Math.cos(Math.asin(n/s)); // horiz dist from C to D
-  const oppVertDist = s*2 + t; // distance between opposite star outer vertices (e.g., A to E)
-  const height = oppVertDist*Math.cos(18*Math.PI/180); // total height of star
+  const s = PHI * t;  // equilateral side length of triangles pointing out from pentagon
+  const pentCircumRad = 0.8507 * t; // dist from pentagon center to pentagon vert
+  const pentApothem = 0.6682 * t; // dist from pentagon center to middle of side
+  const h = Math.sqrt(s ** 2 - (t / 2) ** 2); // triangle height
+  const n = t * Math.sin(72 * Math.PI / 180); // vert dist from C to D
+  const m = s * Math.cos(Math.asin(n / s)); // horiz dist from C to D
+  const oppVertDist = s * 2 + t; // distance between opposite star outer vertices (e.g., A to E)
+  const height = oppVertDist * Math.cos(18 * Math.PI / 180); // total height of star
   const q = height - h - n;                    // vert dist from D to E
-  const p = s*Math.sin(Math.acos(q/s));        // horiz dist from D to E
-  const r = s*Math.sin(54*Math.PI/180);        // horiz dist from E to F
+  const p = s * Math.sin(Math.acos(q / s));        // horiz dist from D to E
+  const r = s * Math.sin(54 * Math.PI / 180);        // horiz dist from E to F
   const pentHeight = pentApothem + pentCircumRad;  // pentagon height
   // Traverse vertices clockwise starting with J
   return fixed`
-    m-${t/2},-${pentApothem}
-    l${t/2},-${h}
-    l${t/2},${h}
+    m-${t / 2},-${pentApothem}
+    l${t / 2},-${h}
+    l${t / 2},${h}
     h${s}
     l-${m},${n}
     l${p},${q}
@@ -87,21 +89,13 @@ function starPath() {
   `;
 }
 
-const shapeInfo = {
-  circle: circleInfo(),
-  square: squareInfo(),
-  triangle_up: triangleUpInfo(),
-  triangle_down: triangleDownInfo(),
-  diamond: diamondInfo(),
-  plus: plusInfo(),
-  x: xInfo(),
-  star: starInfo()
-};
+
 
 export interface DataSymbolOptions {
   strokeWidth: number;
   scale: number;
-  color?: number;
+  baseSize: number;
+  colorIndex?: number;
   opacity?: number;
   dashed: boolean;
   lighten?: boolean;
@@ -124,22 +118,23 @@ export class DataSymbol extends View {
   protected _options: DataSymbolOptions;
   protected _defsKey!: string;
   protected _role = '';
-  protected _fill?: DataSymbolFill;
+  protected _fill?: DataSymbolFillType;
   protected _shape?: DataSymbolShape;
+  protected shapeInfo: Partial<Record<DataSymbolShape, ShapeInfo>>;
 
   static fromType(
     paraview: ViewContext,
     type: DataSymbolType,
     options?: Partial<DataSymbolOptions>,
   ) {
-    let shape: DataSymbolShape, fill: DataSymbolFill;
+    let shape: DataSymbolShape, fill: DataSymbolFillType;
     if (type === 'default') {
       shape = 'circle';
       fill = 'outline';
       options ??= {};
       options.dashed = true;
     } else {
-      [shape, fill] = type.split('.') as [DataSymbolShape, DataSymbolFill];
+      [shape, fill] = type.split('.') as [DataSymbolShape, DataSymbolFillType];
     }
     return new DataSymbol(paraview, shape, fill, options);
   }
@@ -147,14 +142,15 @@ export class DataSymbol extends View {
   constructor(
     paraview: ViewContext,
     shape: DataSymbolShape,
-    fill: DataSymbolFill,
+    fill: DataSymbolFillType,
     options?: Partial<DataSymbolOptions>,
   ) {
     super(paraview);
     this._options = {
       strokeWidth: options?.strokeWidth ?? this.paraview.paraState.config.chart.symbolStrokeWidth,
       scale: options?.scale ?? 1,
-      color: options?.color,
+      baseSize: options?.baseSize ?? 1,
+      colorIndex: options?.colorIndex,
       opacity: options?.opacity,
       dashed: options?.dashed ?? false,
       lighten: options?.lighten ?? false,
@@ -165,9 +161,10 @@ export class DataSymbol extends View {
       pointerLeave: options?.pointerLeave,
       click: options?.click
     };
+    this.shapeInfo = {};
     this.type = `${shape}.${fill}`;
-    this._locOffset.x = this.width/2;
-    this._locOffset.y = this.height/2;
+    this._locOffset.x = this.width / 2;
+    this._locOffset.y = this.height / 2;
   }
 
   get type(): DataSymbolType {
@@ -177,14 +174,15 @@ export class DataSymbol extends View {
   set type(type: DataSymbolType) {
     this._type = type;
     const [shape, fill] = type.split('.');
+    const size = this._options.baseSize ?? 1;
     this._shape = shape as DataSymbolShape;
-    this._fill = fill as DataSymbolFill;
-    this._defsKey = `sym-${shape}-${fill}`;
+    this._fill = fill as DataSymbolFillType;
+    this._defsKey = `sym-${shape}-${fill}-${size}`;
     if (!this.paraview.defs[this._defsKey]) {
       this.paraview.addDef(this._defsKey, svg`
         <path
           id=${this._defsKey}
-          d=${shapeInfo[this.shape].path}
+          d=${this._getShapeInfo(this.shape).path}
         />
       `);
     }
@@ -192,28 +190,61 @@ export class DataSymbol extends View {
     this._updateClassInfo();
   }
 
+  protected _getShapeInfo(shape: DataSymbolShape): ShapeInfo {
+    if (!this.shapeInfo[shape]) {
+      switch (shape) {
+        case 'circle':
+          this.shapeInfo[shape] = circleInfo(this._options.baseSize * AREA);
+          break;
+        case 'square':
+          this.shapeInfo[shape] = squareInfo(this._options.baseSize * AREA);
+          break;
+        case 'triangle_up':
+          this.shapeInfo[shape] = triangleUpInfo(this._options.baseSize * AREA);
+          break;
+        case 'triangle_down':
+          this.shapeInfo[shape] = triangleDownInfo(this._options.baseSize * AREA);
+          break;
+        case 'diamond':
+          this.shapeInfo[shape] = diamondInfo(this._options.baseSize * AREA);
+          break;
+        case 'plus':
+          this.shapeInfo[shape] = plusInfo(this._options.baseSize * AREA);
+          break;
+        case 'x':
+          this.shapeInfo[shape] = xInfo(this._options.baseSize * AREA);
+          break;
+        case 'star':
+          this.shapeInfo[shape] = starInfo(this._options.baseSize * AREA);
+          break;
+      }
+    }
+
+    return this.shapeInfo[shape]!;
+  }
+
   get width() {
-    return shapeInfo[this.shape].baseWidth*this._options.scale;
+    return this._getShapeInfo(this.shape).baseWidth * this._options.scale;
   }
 
   get height() {
-    return shapeInfo[this.shape].baseHeight*this._options.scale;
+    return this._getShapeInfo(this.shape).baseHeight * this._options.scale;
   }
 
   get outerBbox() {
     return new DOMRect(
-      this._x - this.width/2 - this._options.scale*this._options.strokeWidth/2,
-      this._y - this.height/2 - this._options.scale*this._options.strokeWidth/2,
-      this.width + this._options.scale*this._options.strokeWidth,
-      this.height + this._options.scale*this._options.strokeWidth
+      this._x - this.width / 2 - this._options.scale * this._options.strokeWidth / 2,
+      this._y - this.height / 2 - this._options.scale * this._options.strokeWidth / 2,
+      this.width + this._options.scale * this._options.strokeWidth,
+      this.height + this._options.scale * this._options.strokeWidth
     );
   }
 
   get shape() {
-    if (this._shape){
+    if (this._shape) {
       return this._shape;
     }
-    else{
+    else {
       return this._type.split('.')[0] as DataSymbolShape;
     }
   }
@@ -227,20 +258,20 @@ export class DataSymbol extends View {
       return this._fill
     }
     else {
-      return this._type.split('.')[1] as DataSymbolFill;
+      return this._type.split('.')[1] as DataSymbolFillType;
     }
   }
 
-  set fill(fill: DataSymbolFill) {
-    this.type = (this._type.split('.')[0] + '.' + fill) as DataSymbolType;
+  set fill(fillType: DataSymbolFillType) {
+    this.type = (this._type.split('.')[0] + '.' + fillType) as DataSymbolType;
   }
 
-  get color() {
-    return this._options.color;
+  get colorIndex() {
+    return this._options.colorIndex;
   }
 
-  set color(color: number | undefined) {
-    this._options.color = color;
+  set colorIndex(colorIndex: number | undefined) {
+    this._options.colorIndex = colorIndex;
     this._updateStyleInfo();
     this._updateClassInfo();
   }
@@ -283,8 +314,8 @@ export class DataSymbol extends View {
       symbol: true,
       [this.fill]: true,
       ...(this._options.lighten ? { lighten: true } : {}),
-      ...(this._options.color !== undefined && this._options.color >= 0
-        ? { [`series-${this._options.color % numColors}`]: true }
+      ...(this._options.colorIndex !== undefined && this._options.colorIndex >= 0
+        ? { [`series-${this._options.colorIndex % numColors}`]: true }
         : {}),
     };
   }
@@ -326,10 +357,10 @@ export class DataSymbol extends View {
       }
     }
     if (this.hidden) return svg``;
-    if (this.paraview.paraState.colors.palette.isPattern && this._options.color !== undefined) {
-      const index = this._options.color;
-      const x = this._x - this.width/2;
-      const y = this._y - this.height/2;
+    if (this.paraview.paraState.colors.palette.isPattern && this._options.colorIndex !== undefined) {
+      const index = this._options.colorIndex;
+      const x = this._x - this.width / 2;
+      const y = this._y - this.height / 2;
       return svg`
         <rect x=${x} y=${y} width=${this.width} height=${this.height}
           fill="white" stroke="none" />
@@ -357,7 +388,7 @@ export class DataSymbol extends View {
         role=${this._role || nothing}
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
-        transform=${shouldTransform  ? transform : nothing}
+        transform=${shouldTransform ? transform : nothing}
         x=${shouldTransform ? nothing : this._x}
         y=${shouldTransform ? nothing : this._y}
         @pointerenter=${this._options.pointerEnter ?? nothing}
@@ -376,7 +407,7 @@ export class DataSymbols {
     'circle', 'square', 'triangle_up', 'diamond', 'plus', 'star', 'triangle_down', 'x'
   ];
 
-  readonly fills: readonly DataSymbolFill[] = [
+  readonly fills: readonly DataSymbolFillType[] = [
     'outline', 'solid'
   ];
 

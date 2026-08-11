@@ -24,12 +24,12 @@
         "symbolLabelGap": {
             "description": "Gap between symbol and label",
             "type": "number",
-            "default": 4
+            "default": 6
         },
         "pairGap": {
             "description": "Gap between legend items",
             "type": "number",
-            "default": 10
+            "default": 15
         },
         "position": {
             "label": "cpanel.tabs.chart.legend_dialog.position",

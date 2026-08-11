@@ -32,6 +32,7 @@ import { Model } from '@fizz/paramodel';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';
 import { Patch } from 'immer';
 import { PlaneDatapoint } from '@fizz/paramodel';
+import { PlaneModel } from '@fizz/paramodel';
 import { Point as Point_2 } from '@fizz/chart-classifier-utils';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
@@ -938,6 +939,16 @@ export interface TypeBarConfig extends TypePlaneConfig {
 }
 
 // @public
+export interface TypeBubbleConfig extends TypePlaneConfig {
+    bubbleFacet: string;
+    labelFacet: string;
+    maxBubbleSize: number;
+    minBubbleSize: number;
+    xFacet: string;
+    yFacet: string;
+}
+
+// @public
 export interface TypeColumnConfig extends TypePlaneConfig {
     barGap: number;
     barWidth: number;
@@ -980,6 +991,7 @@ export interface TypeComboConfig extends TypePlaneConfig {
 // @public
 export interface TypeConfig extends ConfigGroup {
     bar: TypeBarConfig;
+    bubble: TypeBubbleConfig;
     column: TypeColumnConfig;
     combo: TypeComboConfig;
     donut: TypeDonutConfig;

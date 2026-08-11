@@ -7,7 +7,10 @@ import { HeatMapInfo } from './heat_map';
 import { WaterfallChartInfo } from './waterfall_chart';
 import { VennDiagramInfo } from './venn_diagram';
 import { HistogramChartInfo } from './histogram_chart';
+import { BubbleChartInfo } from './bubble_chart';
 import { ComboChartInfo } from './combo_chart';
+import { ChartType } from '@fizz/paramanifest';
+import { ParaState } from '../state';
 
 export * from './base_chart';
 export * from './plane_chart';
@@ -20,9 +23,11 @@ export * from './waterfall_chart';
 export * from './venn_diagram';
 export * from './combo_chart';
 
-// (@simonvarey): stepline and lollipop should be replaced with dedicated SteplineChartInfo and
-//   LollipopChartInfo classes. See #820
-export const chartInfoClasses = {
+type ChartInfoConstructor = new (type: ChartType, state: ParaState) => BaseChartInfo
+
+// (@simonvarey): stepline, lollipop and candlestick should be replaced with dedicated 
+//   SteplineChartInfo, LollipopChartInfo and CandlestickChartInfo classes. See #820
+export const chartInfoClasses: Record<ChartType, ChartInfoConstructor> = {
   bar: BarChartInfo,
   column: BarChartInfo,
   line: LineChartInfo,
@@ -37,5 +42,7 @@ export const chartInfoClasses = {
   stepline: LineChartInfo, //StepLineChart,
   lollipop: BarChartInfo, //LollipopChart
   venn: VennDiagramInfo, //VennDiagram,
-  combo: ComboChartInfo
+  combo: ComboChartInfo,
+  bubble: BubbleChartInfo,
+  candlestick: BarChartInfo
 };

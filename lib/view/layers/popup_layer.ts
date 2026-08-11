@@ -137,7 +137,7 @@ export class PopupLayer extends PlotLayer {
                         x: dpView!.x,
                         y: dpView!.y,
                         id: this.id,
-                        color: dpView!.color,
+                        colorIndex: dpView!.colorIndex,
                         type: "chord",
                         items,
                         points: datapointViews
@@ -191,7 +191,7 @@ export class PopupLayer extends PlotLayer {
                 x: x,
                 y: y,
                 id: makeSequenceId(firstDPView.seriesKey, firstDPView.index, lastDPView.index + 1),
-                color: firstDPView.color,
+                colorIndex: firstDPView.colorIndex,
                 margin: 60,
                 type: "sequence",
                 points: datapointViews
@@ -241,7 +241,7 @@ export class PopupLayer extends PlotLayer {
                 x: x,
                 y: y,
                 id: this.id,
-                color: firstDPView.color,
+                colorIndex: firstDPView.colorIndex,
                 margin: 60,
                 points: datapointViews
             },

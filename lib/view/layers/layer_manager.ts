@@ -23,11 +23,12 @@ import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, Focus
 import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, WaterfallPlotView, VennPlotView, Histogram, HeatMapPlotView } from './data/chart_type';
 import { PopupLayer } from './popup_layer';
 import { type DataLayerContext } from '../view_context';
+import { BubblePlotView } from './data/chart_type/bubble_plot_view';
 import { ComboPlotView } from './data/chart_type/combo_plot_view';
-
+import { ChartType } from '@fizz/paramanifest';
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
-export const chartClasses = {
+export const chartClasses: Record<ChartType, any> = {
   bar: BarPlotView,
   column: BarPlotView,
   line: LinePlotView,
@@ -36,13 +37,15 @@ export const chartClasses = {
   heatmap: HeatMapPlotView,
   pie: PiePlotView,
   donut: PiePlotView,
-  gauge: BarPlotView, //GaugeChart,
+  //gauge: BarPlotView, //GaugeChart,
   stepline: LinePlotView, //StepLineChart,
   lollipop: BarPlotView, //LollipopChart
   graph: LinePlotView,
   waterfall: WaterfallPlotView,
   venn: VennPlotView,
-  combo: ComboPlotView
+  bubble: BubblePlotView,
+  combo: ComboPlotView,
+  candlestick: BarPlotView
 };
 
 export class PlotLayerManager extends View {

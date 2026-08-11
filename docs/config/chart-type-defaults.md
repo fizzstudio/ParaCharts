@@ -20,3 +20,5 @@ Some chart types override settings outside their own `type` group.
 | waterfall | `grid.isDrawVertLines` | `false` |
 | scatter | `legend.isAlwaysDrawLegend` | `true` |
 | scatter | `legend.position` | `"north"` |
+| bubble | `legend.isAlwaysDrawLegend` | `true` |
+| bubble | `legend.position` | `"north"` |

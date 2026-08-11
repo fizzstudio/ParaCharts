@@ -15,13 +15,13 @@ const meta = {
 export default meta;
 
 export const AiChart64: Story = {
-  name: "Acme Corp EBITDA Margin (64)",
+  name: "Acme Corp EBITDA Gross Margin (64)",
   args: {
-    filename: "manifests/waterfall-manifest-003.json",
+    filename: "manifests/waterfall-manifest-002.json",
     forcecharttype: "waterfall",
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/waterfall-manifest-003.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/waterfall-manifest-002.json");
     await runner.run();
   }
 }

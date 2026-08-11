@@ -18,7 +18,7 @@ import { type DatapointView } from "./data/datapoint";
 import { type WaterfallBarView } from "./layers";
 
 export interface PopupLabelOptions extends LabelOptions {
-    color?: number;
+    colorIndex?: number;
     margin?: number;
     type?: string;
     items?: LegendItem[];
@@ -109,7 +109,7 @@ export class Popup extends View {
                 stroke: 'none',
                 fill: this.popupLabelOptions.fill ? this.popupLabelOptions.fill
                     : this.popupLabelOptions.type == "chord" ? "black"
-                        : this.paraview.paraState.colors.contrastValueAt(this.popupLabelOptions.color!)
+                        : this.paraview.paraState.colors.contrastValueAt(this.popupLabelOptions.colorIndex!)
             };
         }
         if (this.paraview.paraState.config.ui.isLowVisionModeEnabled) {
@@ -168,8 +168,8 @@ export class Popup extends View {
     }
 
     applyDefaults() {
-        if (this.popupLabelOptions.color == undefined) {
-            this.popupLabelOptions.color = 0;
+        if (this.popupLabelOptions.colorIndex == undefined) {
+            this.popupLabelOptions.colorIndex = 0;
         }
         // if (this.popupLabelOptions.textAnchor == undefined) {
         //     this.popupLabelOptions.textAnchor == "middle"
@@ -195,13 +195,13 @@ export class Popup extends View {
         if (!this.popupShapeOptions.fill) {
             this.popupShapeOptions.fill = this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
                 : this.paraview.paraState.config.popup.backgroundColor === "light" ?
-                    this.paraview.paraState.colors.lighten(this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.color), 6)
-                    : this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.color);
+                    this.paraview.paraState.colors.lighten(this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.colorIndex), 6)
+                    : this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.colorIndex);
         }
         if (!this.popupShapeOptions.stroke) {
             this.popupShapeOptions.stroke = this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
                 : this.paraview.paraState.config.popup.backgroundColor === "light" ?
-                    this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.color)
+                    this.paraview.paraState.colors.colorValueAt(this.popupLabelOptions.colorIndex)
                     : "black";
         }
         if (!this.paraview.paraState.config.ui.isLowVisionModeEnabled) {
@@ -287,7 +287,7 @@ export class Popup extends View {
                         ? (item.symbol ?? 'square.solid')
                         : 'square.solid',
                     {
-                        color: item.color
+                        colorIndex: item.colorIndex
                     }
                 ));
                 const text = this.popupLabelOptions.text;

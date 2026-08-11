@@ -709,6 +709,8 @@ export interface SonificationConfig extends ConfigGroup {
 export interface TypeConfig extends ConfigGroup {
   /** Horizontal bar chart settings. */
   bar: TypeBarConfig;
+  /** Shared settings for Cartesian chart types. */
+  bubble: TypeBubbleConfig;
   /** Vertical column chart settings. */
   column: TypeColumnConfig;
   /** Combination chart settings. */
@@ -767,6 +769,24 @@ export interface TypeBarConfig extends TypePlaneConfig {
   lineWidth: number;
   /** Font size for bar labels */
   labelFontSize: string;
+}
+/**
+ * Shared settings for Cartesian chart types.
+ * @public
+ */
+export interface TypeBubbleConfig extends TypePlaneConfig {
+  /** Facet to display on the X axis */
+  xFacet: string;
+  /** Facet to display on the Y axis */
+  yFacet: string;
+  /** Facet to use for bubble size */
+  bubbleFacet: string;
+  /** Facet to use for as labels */
+  labelFacet: string;
+  /** Max bubble size */
+  maxBubbleSize: number;
+  /** Min bubble size */
+  minBubbleSize: number;
 }
 /**
  * Vertical column chart settings.

@@ -59,12 +59,12 @@ export class ParaChart extends ParaComponent {
   @property({ type: Number }) pollInterval = 0;
   // `data` must be a URL, if set
   @property() data = '';
-  @property({type: Object}) accessor config: SettingsInput = {};
+  @property({ type: Object }) accessor config: SettingsInput = {};
   @property() accessor forcecharttype: ChartType | undefined;
   @property() type?: ChartType;
   @property() accessor description: string | undefined;
-  @property({type: Boolean, attribute: false}) isControlPanelOpen = false;
-  @property({type: Boolean, attribute: false}) isDataTableVisible = false;
+  @property({ type: Boolean, attribute: false }) isControlPanelOpen = false;
+  @property({ type: Boolean, attribute: false }) isDataTableVisible = false;
 
   readonly captionBox: ParaCaptionBox;
   protected _paraViewRef = createRef<ParaView>();
@@ -160,7 +160,7 @@ export class ParaChart extends ParaComponent {
             if (this.pollInterval && this.manifestType === 'url') {
               setInterval(() => {
                 this.runLoader(this.manifest, this.manifestType, true, undefined, true, this.config);
-              }, this.pollInterval*1000);
+              }, this.pollInterval * 1000);
             }
             this._scrollyteller = new Scrollyteller(this);
           });
@@ -190,16 +190,16 @@ export class ParaChart extends ParaComponent {
             }
           }
         }
-          else {
-            this.log.info("No datatable in slot")
-            this._paraState.dataState = 'error';
-            this._paraState.dispatchEvent(new CustomEvent('manifestError'));
-          }
+        else {
+          this.log.info("No datatable in slot")
+          this._paraState.dataState = 'error';
+          this._paraState.dispatchEvent(new CustomEvent('manifestError'));
+        }
       });
     });
   }
 
-  @queryAssignedElements({flatten: true})
+  @queryAssignedElements({ flatten: true })
   private _slotted!: HTMLElement[];
 
   get paraView() {
@@ -218,7 +218,7 @@ export class ParaChart extends ParaComponent {
     return this._loaderPromise;
   }
 
-  get slotted(){
+  get slotted() {
     return this._slotted;
   }
 
@@ -295,8 +295,8 @@ export class ParaChart extends ParaComponent {
         : 'none',
       '--caption-grid-template-columns': () =>
         this._paraState.config.controlPanel.isExplorationBarVisible
-        && this._paraState.config.controlPanel.isCaptionVisible
-        && this._paraState.config.controlPanel.caption.isExplorationBarBeside
+          && this._paraState.config.controlPanel.isCaptionVisible
+          && this._paraState.config.controlPanel.caption.isExplorationBarBeside
           ? '2fr 1fr' //'auto auto'
           : '1fr',
       '--exploration-bar-display': () => this._paraState.config.controlPanel.isExplorationBarVisible
@@ -321,7 +321,7 @@ export class ParaChart extends ParaComponent {
       'font-size': 'var(--chart-view-font-size, 1rem)'
     };
     if (this.tagName === 'PARA-CHART-AI') {
-      hostDeclarations['--control-panel-icon'] =  `url(${cpanelIconAlt})`;
+      hostDeclarations['--control-panel-icon'] = `url(${cpanelIconAlt})`;
     }
     this._styleManager.set(':host', hostDeclarations);
 
@@ -334,6 +334,22 @@ export class ParaChart extends ParaComponent {
       });
     }
     this._styleManager.update();
+    // Ensure webfonts are actually loaded before initial measurements.
+    // Use a small timeout as a safety cap so we don't hang forever.
+    if (document.fonts && document.fonts.load) {
+      const family = this._paraState.config.chart.fontFamily;
+      const loads = [
+        // representative sizes so glyph metrics are available
+        document.fonts.load(`16px "${family}"`).catch(() => { }),
+        document.fonts.load('16px "Atkinson Hyperlegible"').catch(() => { }),
+        document.fonts.load('36pt "Braille36 US"').catch(() => { })
+      ];
+      const timeout = new Promise(resolve => setTimeout(resolve, 500));
+      Promise.race([Promise.all(loads), timeout]).then(() => {
+        // Trigger a remeasure/re-render once fonts are ready (or timeout).
+        this._paraViewRef.value?.requestUpdate();
+      }).catch(() => { /* ignore */ });
+    }
   }
 
   willUpdate(changedProperties: PropertyValues<this>) {
@@ -345,7 +361,7 @@ export class ParaChart extends ParaComponent {
         this._loaderRejector = reject;
       });
       this.runLoader(this.manifest, this.manifestType, true, undefined, true, this.config);
-      this.dispatchEvent(new CustomEvent('manifestchange', {bubbles: true, composed: true, cancelable: true}));
+      this.dispatchEvent(new CustomEvent('manifestchange', { bubbles: true, composed: true, cancelable: true }));
     }
     if (changedProperties.has('config')) {
       Object.entries(this.config).forEach(([path, value]) =>
@@ -452,7 +468,7 @@ export class ParaChart extends ParaComponent {
   }
 
   postNotice(key: string, value: any) {
-    if (!this.paraView){
+    if (!this.paraView) {
       return
     }
     this.paraView.noticePosted(key, value);
@@ -461,7 +477,7 @@ export class ParaChart extends ParaComponent {
     this._controlPanelRef.value?.noticePosted(key, value);
     this.captionBox.noticePosted(key, value);
     this.dispatchEvent(
-      new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));
+      new CustomEvent('paranotice', { detail: { key, value }, bubbles: true, composed: true }));
   }
 
   render(): TemplateResult {
@@ -487,14 +503,14 @@ export class ParaChart extends ParaComponent {
           ?scalable=${this.scalable}
           ?disableFocus=${this.headless}
           @focus=${() => {
-            this._hasFocus = true;
-          }}
+        this._hasFocus = true;
+      }}
           @blur=${() => {
-            this._hasFocus = false;
-          }}
+        this._hasFocus = false;
+      }}
         ></para-view>
         ${!(this.headless || this._paraState.config.chart.isStatic)
-          ? html`
+        ? html`
           <para-data-table
             ${ref(this._dataTableRef)}
             .isVisible=${this.isDataTableVisible}
@@ -502,11 +518,11 @@ export class ParaChart extends ParaComponent {
             style=${styleMap(cpanelStyles)}
             .paraChart=${this}
             @focus=${() => {
-              this._hasFocus = true;
-            }}
+            this._hasFocus = true;
+          }}
             @blur=${() => {
-              this._hasFocus = false;
-            }}
+            this._hasFocus = false;
+          }}
           ></para-data-table>
             <para-control-panel
               ${ref(this._controlPanelRef)}
@@ -514,14 +530,14 @@ export class ParaChart extends ParaComponent {
               .paraChart=${this}
               .globalState=${this._globalState}
               @focus=${() => {
-                this._hasFocus = true;
-              }}
+            this._hasFocus = true;
+          }}
               @blur=${() => {
-                this._hasFocus = false;
-              }}
+            this._hasFocus = false;
+          }}
             ></para-control-panel>`
-          : ''
-        }
+        : ''
+      }
       </figure>
     ` : html``;
   }

@@ -45,33 +45,60 @@ export interface DiamondMetrics {
 
 export const AREA = 100;
 
-export function circleMetrics(): CircleMetrics {
-  const r = Math.sqrt(AREA / Math.PI);
+export function circleMetrics(area?: number): CircleMetrics {
+  const r = Math.sqrt((area ?? AREA) / Math.PI);
   const d = r * 2;
   return { r, d };
 }
 
-export function squareMetrics(): SquareMetrics {
-  const side = Math.sqrt(AREA);
+export function squareMetrics(area?: number): SquareMetrics {
+  const side = Math.sqrt((area ?? AREA));
   const apothem = side / 2;
   return { side, apothem };
 }
 
-export function triangleMetrics(): TriangleMetrics {
+export function triangleMetrics(area?: number): TriangleMetrics {
   const sqrt34 = Math.sqrt(3 / 4);
-  const side = Math.sqrt(2 * AREA / sqrt34);
+  const side = Math.sqrt(2 * (area ?? AREA) / sqrt34);
   const height = side * sqrt34;
   return { sqrt34, side, height };
 }
 
-export function diamondMetrics(): DiamondMetrics {
-  const side = Math.sqrt(AREA);
+export function diamondMetrics(area?: number): DiamondMetrics {
+  const side = Math.sqrt((area ?? AREA));
   const radius = Math.sqrt(2 * side ** 2) / 2;
   return { side, radius };
 }
 
-export function circleInfo(): ShapeInfo {
-  const { r, d } = circleMetrics();
+function starMetrics() {
+  const pentArea = 25;
+  const t = Math.sqrt(pentArea / 1.72);
+  const triArea = (100 - pentArea) / 5;
+  const h = triArea * 2 / t;
+  const s = Math.sqrt((t / 2) ** 2 + h ** 2);
+  const triPeakAngle = 2 * 180 * Math.atan((t / 2) / h) / Math.PI;
+  const interTriAngle = triPeakAngle + 72;
+  const alpha = interTriAngle - triPeakAngle / 2 - 90;
+  const m = Math.cos(alpha * Math.PI / 180) * s;
+  const n = Math.sin(alpha * Math.PI / 180) * s;
+  const beta = 180 - 90 - alpha;
+  const gamma = 180 - beta - triPeakAngle;
+  const delta = 180 - 90 - gamma;
+  const epsilon = interTriAngle - delta;
+  const p = Math.sin(gamma * Math.PI / 180) * s;
+  const q = Math.cos(gamma * Math.PI / 180) * s;
+  const u = Math.cos(epsilon * Math.PI / 180) * s;
+  const v = Math.sin(epsilon * Math.PI / 180) * s;
+  const w = Math.sin(interTriAngle / 2 * Math.PI / 180) * s;
+  const z = Math.cos(interTriAngle / 2 * Math.PI / 180) * s;
+  const pentApothem = 0.6882 * t;
+  return { t, h, m, n, p, q, u, v, w, z, pentApothem };
+}
+const REF = starMetrics();
+
+
+export function circleInfo(area?: number): ShapeInfo {
+  const { r, d } = circleMetrics(area);
   return {
     path: fixed`m0,${-r} a${r},${r} 0 1,1 0,${d} a${r},${r} 0 1,1 0,${-d}`,
     baseWidth: d,
@@ -79,8 +106,8 @@ export function circleInfo(): ShapeInfo {
   };
 }
 
-export function squareInfo(): ShapeInfo {
-  const { side, apothem } = squareMetrics();
+export function squareInfo(area?: number): ShapeInfo {
+  const { side, apothem } = squareMetrics(area);
   return {
     path: `m${-apothem},${-apothem} h${side} v${side} h${-side} z`,
     baseWidth: side,
@@ -88,8 +115,8 @@ export function squareInfo(): ShapeInfo {
   };
 }
 
-export function triangleUpInfo(): ShapeInfo {
-  const { sqrt34, side, height } = triangleMetrics();
+export function triangleUpInfo(area?: number): ShapeInfo {
+  const { sqrt34, side, height } = triangleMetrics(area);
   return {
     path: fixed`m${-side / 2},${height / 2.5} h${side} l${-side / 2},${-height} z`,
     baseWidth: side,
@@ -97,8 +124,8 @@ export function triangleUpInfo(): ShapeInfo {
   };
 }
 
-export function triangleDownInfo(): ShapeInfo {
-  const { sqrt34, side, height } = triangleMetrics();
+export function triangleDownInfo(area?: number): ShapeInfo {
+  const { sqrt34, side, height } = triangleMetrics(area);
   return {
     path: fixed`m${-side / 2},-${height / 2.5} h${side} l${-side / 2},${height} z`,
     baseWidth: side,
@@ -106,8 +133,8 @@ export function triangleDownInfo(): ShapeInfo {
   };
 }
 
-export function diamondInfo(): ShapeInfo {
-  const { radius } = diamondMetrics();
+export function diamondInfo(area?: number): ShapeInfo {
+  const { radius } = diamondMetrics(area);
   return {
     path: fixed`
       m0,-${radius}
@@ -119,8 +146,8 @@ export function diamondInfo(): ShapeInfo {
   };
 }
 
-export function plusInfo(): ShapeInfo {
-  const squareArea = AREA / 5;
+export function plusInfo(area?: number): ShapeInfo {
+  const squareArea = (area ?? AREA) / 5;
   const side = Math.sqrt(squareArea);
   return {
     path: fixed`
@@ -141,8 +168,8 @@ export function plusInfo(): ShapeInfo {
   };
 }
 
-export function xInfo(): ShapeInfo {
-  const squareArea = AREA / 5;
+export function xInfo(area?: number): ShapeInfo {
+  const squareArea = (area ?? AREA) / 5;
   const side = Math.sqrt(squareArea);
   const squareCircumRad = Math.sqrt(2 * side ** 2) / 2;
   return {
@@ -164,28 +191,22 @@ export function xInfo(): ShapeInfo {
   };
 }
 
-export function starInfo(): ShapeInfo {
-  const pentArea = AREA / 2;
-  const t = Math.sqrt(pentArea / 1.72);
-  const triArea = (100 - pentArea) / 5;
-  const h = triArea * 2 / t;
-  const s = Math.sqrt((t / 2) ** 2 + h ** 2);
-  const triPeakAngle = 2 * 180 * Math.atan((t / 2) / h) / Math.PI;
-  const interTriAngle = triPeakAngle + 72;
-  const alpha = interTriAngle - triPeakAngle / 2 - 90;
-  const m = Math.cos(alpha * Math.PI / 180) * s;
-  const n = Math.sin(alpha * Math.PI / 180) * s;
-  const beta = 180 - 90 - alpha;
-  const gamma = 180 - beta - triPeakAngle;
-  const delta = 180 - 90 - gamma;
-  const epsilon = interTriAngle - delta;
-  const p = Math.sin(gamma * Math.PI / 180) * s;
-  const q = Math.cos(gamma * Math.PI / 180) * s;
-  const u = Math.cos(epsilon * Math.PI / 180) * s;
-  const v = Math.sin(epsilon * Math.PI / 180) * s;
-  const w = Math.sin(interTriAngle / 2 * Math.PI / 180) * s;
-  const z = Math.cos(interTriAngle / 2 * Math.PI / 180) * s;
-  const pentApothem = 0.6682 * t;
+export function starInfo(area?: number): ShapeInfo {
+  // Linear size scales with sqrt(area), since area ~ size^2.
+  const k = Math.sqrt((area ?? AREA) / 150);
+
+  const t = REF.t * k;
+  const h = REF.h * k;
+  const m = REF.m * k;
+  const n = REF.n * k;
+  const p = REF.p * k;
+  const q = REF.q * k;
+  const u = REF.u * k;
+  const v = REF.v * k;
+  const w = REF.w * k;
+  const z = REF.z * k;
+  const pentApothem = REF.pentApothem * k;
+
   return {
     path: fixed`
       m-${t / 2},-${pentApothem}

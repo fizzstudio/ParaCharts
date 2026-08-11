@@ -14,8 +14,8 @@ Settings marked with † are advanced.
 | `legend.isDrawLegend` | Draw chart legend | `true` | boolean |
 | `legend.isAlwaysDrawLegend` | Draw legend | `false` | boolean |
 | `legend.padding` | Internal padding within legend box | `10` | number |
-| `legend.symbolLabelGap` | Gap between symbol and label | `4` | number |
-| `legend.pairGap` | Gap between legend items | `10` | number |
+| `legend.symbolLabelGap` | Gap between symbol and label | `6` | number |
+| `legend.pairGap` | Gap between legend items | `15` | number |
 | `legend.position` | Position relative to chart | `"east"` | [CardinalDirection](#cardinaldirection) |
 | `legend.margin` | Margin around legend | `20` | number |
 | `legend.itemOrder` | Ordering of legend items | `"startingOrder"` | [LegendItemOrder](#legenditemorder) |

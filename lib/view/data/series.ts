@@ -43,7 +43,7 @@ export class SeriesView extends Container(DataView) {
     const numColors = this.paraview.paraState.colors.numSeriesColors;
     return {
       series: true,
-      [`series-${this.color % numColors}`]: true,
+      [`series-${this.colorIndex % numColors}`]: true,
       lowlighted: this.paraview.paraState.isSeriesDimmed(this._series.key),
       hidden: this.paraview.paraState.isSeriesHidden(this._series.key)
     };

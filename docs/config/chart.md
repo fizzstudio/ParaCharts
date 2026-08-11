@@ -53,7 +53,7 @@ Settings marked with † are advanced.
 
 ## Type Definitions
 
-- <span id="charttype"></span>**ChartType**: 'line' \| 'stepline' \| 'bar' \| 'column' \| 'lollipop' \| 'histogram' \| 'waterfall' \| 'scatter' \| 'heatmap' \| 'pie' \| 'donut' \| 'graph' \| 'venn'
+- <span id="charttype"></span>**ChartType**: 'line' \| 'stepline' \| 'bar' \| 'column' \| 'lollipop' \| 'histogram' \| 'waterfall' \| 'scatter' \| 'heatmap' \| 'pie' \| 'donut' \| 'graph' \| 'venn' \| 'bubble' \| 'candlestick' \| 'combo'
 - <span id="cardinaldirection"></span>**CardinalDirection**: 'north' \| 'south' \| 'east' \| 'west'
 - <span id="chart-tactilelabelmode-values"></span>**chart.tactileLabelMode values**: 'Braille' \| 'Latin' \| 'Both' \| 'None'
 - <span id="chart-pagesize-values"></span>**chart.pageSize values**: 'auto' \| 'letter_portrait' \| 'letter_landscape' \| 'tractor_us_standard' \| 'tractor_us_rotated' \| 'tractor_de_standard' \| 'tractor_de_rotated' \| 'a4_portrait' \| 'a4_landscape' \| 'tabloid_portrait' \| 'tabloid_landscape' \| 'monarch_portrait' \| 'monarch_landscape'

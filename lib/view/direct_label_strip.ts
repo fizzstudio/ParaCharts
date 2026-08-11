@@ -251,7 +251,7 @@ class LineLabelLeader extends View {
   }
 
   get classInfo(): ClassInfo {
-    const color = this.paraview.paraState.seriesProperties!.properties(this._seriesKey).color;
+    const color = this.paraview.paraState.seriesProperties!.properties(this._seriesKey).colorIndex;
     const numColors = this.paraview.paraState.colors.numSeriesColors;
     return {
       'label-leader': true,

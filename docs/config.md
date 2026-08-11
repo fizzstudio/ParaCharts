@@ -25,7 +25,7 @@ const allSettings = chart.api.getAllConfigSettings();
 
 ## Settings Reference
 
-The 331 documented settings are split into focused reference pages. Settings marked with † are advanced.
+The 339 documented settings are split into focused reference pages. Settings marked with † are advanced.
 
 | Category | Description | Settings |
 |---|---|---:|
@@ -40,7 +40,7 @@ The 331 documented settings are split into focused reference pages. Settings mar
 | [Popup](config/popup.md) | Tooltip and popup styling. | 13 |
 | [Scrollytelling](config/scrollytelling.md) | Narrative scrolling features. | 3 |
 | [Sonification](config/sonification.md) | Audio feedback and sonification settings. | 7 |
-| [Chart Types](config/type.md) | Chart type-specific settings. | 126 |
+| [Chart Types](config/type.md) | Chart type-specific settings. | 134 |
 | [UI](config/ui.md) | User interface and accessibility features. | 15 |
 
 ## Contributor Reference

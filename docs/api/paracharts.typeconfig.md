@@ -57,6 +57,25 @@ Horizontal bar chart settings.
 </td></tr>
 <tr><td>
 
+[bubble](./paracharts.typeconfig.bubble.md)
+
+
+</td><td>
+
+
+</td><td>
+
+[TypeBubbleConfig](./paracharts.typebubbleconfig.md)
+
+
+</td><td>
+
+Shared settings for Cartesian chart types.
+
+
+</td></tr>
+<tr><td>
+
 [column](./paracharts.typeconfig.column.md)
 
 
