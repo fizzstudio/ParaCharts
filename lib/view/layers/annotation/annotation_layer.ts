@@ -6,7 +6,7 @@ import { Vec2 } from '../../../common/vector';
 import { type PointAnnotation, datapointIdToCursor } from '../../../state/parastate';
 import { Popup } from '../../popup';
 import { PlaneChartInfo } from '../../../chart_types';
-import { type ScatterPlotView} from '../data/chart_type/scatter_plot_view';
+import { type ScatterPlotView } from '../data/chart_type/scatter_plot_view';
 import { TrendLineView } from '../data/chart_type/point_plot_view';
 import { ConfigSetting } from '../../../config/config_types';
 
@@ -280,6 +280,22 @@ export class AnnotationLayer extends PlotLayer {
       else {
         if (this._groups.has('user-linebreaks')) {
           this.removeGroup('userlinebreaks', true);
+        }
+      }
+
+      if (this.paraview.paraState.thresholds) {
+        this.addGroup('thresholds', true);
+        this.group('thresholds')!.clearChildren();
+        for (const threshold of this.paraview.paraState.thresholds) {
+          threshold.classInfo = { 'threshold': true };
+          threshold.highlightPoints();
+
+          this.group('thresholds')!.append(threshold);
+        }
+      }
+      else {
+        if (this._groups.has('thresholds')) {
+          this.removeGroup('thresholds', true);
         }
       }
 

@@ -69,6 +69,7 @@ import { computeLabels } from '../common/axisinfo';
 import { numberToScaledNumberRounded } from '@fizz/number-scaling-rounding';
 import { LegendItem } from '../view/legend';
 import { type BubbleChartInfo } from '../chart_types/bubble_chart';
+import { Threshold } from '../view/layers/annotation/threshold';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
 
@@ -227,6 +228,7 @@ export class ParaState extends BaseState {
   @property() protected _highlightedDatapoints = new Set<string>();
   @property() protected _lowlightedDatapoints = new Set<string>();
   @property() protected _hiddenDatapoints = new Set<string>();
+  @property() protected _contrastedDatapoints = new Set<string>();
   _prevHighlightedElements = new Set<string>();
   @property() protected _selectedDatapoints = new Set<string>();
   @property() protected _crosshairedDatapoints = new Set<string>();
@@ -244,6 +246,7 @@ export class ParaState extends BaseState {
   @property() protected _userTrendLines: TrendLine[] = [];
   @property() protected _clusterShellViews: ClusterShellView[] = [];
 
+  @property() protected _thresholds: Threshold[] = [];
   protected _data: AllSeriesData | null = null;
   protected _dataState: DataState = 'initial';
   protected _settingControls = new SettingControlManager(this);
@@ -391,6 +394,10 @@ export class ParaState extends BaseState {
 
   get caption() {
     return this._caption;
+  }
+
+  get thresholds() {
+    return this._thresholds;
   }
 
   async setCaption(summary?: HighlightedSummary): Promise<void> {
@@ -1441,6 +1448,10 @@ export class ParaState extends BaseState {
     return this._hiddenDatapoints.has(makeDatapointId(seriesKey, index)) || this._hiddenSeries.includes(seriesKey);
   }
 
+  isDatapointContrasted(seriesKey: string, index: number): boolean {
+    return this._contrastedDatapoints.has(makeDatapointId(seriesKey, index));
+  }
+
   lowlightDatapoint(seriesKey: string, index: number) {
     this._lowlightedDatapoints.add(
       makeDatapointId(seriesKey, index)
@@ -1449,6 +1460,12 @@ export class ParaState extends BaseState {
 
   hideDatapoint(seriesKey: string, index: number) {
     this._hiddenDatapoints.add(
+      makeDatapointId(seriesKey, index)
+    );
+  }
+
+  contrastDatapoint(seriesKey: string, index: number) {
+    this._contrastedDatapoints.add(
       makeDatapointId(seriesKey, index)
     );
   }
@@ -1462,6 +1479,12 @@ export class ParaState extends BaseState {
   clearDatapointHidden(seriesKey: string, index: number) {
     this._hiddenDatapoints = new Set(
       [...this._hiddenDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
+    );
+  }
+
+  clearDatapointContrasted(seriesKey: string, index: number) {
+    this._contrastedDatapoints = new Set(
+      [...this._contrastedDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
     );
   }
 

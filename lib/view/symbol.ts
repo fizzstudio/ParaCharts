@@ -34,6 +34,7 @@ import {
 import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { Datapoint } from '@fizz/paramodel';
 
 export type DataSymbolShape =
   'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
@@ -102,6 +103,7 @@ export interface DataSymbolOptions {
   isClip?: boolean;
   blackBorder?: boolean;
   borderStrokeWidth: number;
+  datapoint?: Datapoint;
   pointerEnter?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
   click?: (e: MouseEvent) => void;
@@ -157,6 +159,7 @@ export class DataSymbol extends View {
       isClip: options?.isClip ?? false,
       blackBorder: options?.blackBorder ?? false,
       borderStrokeWidth: options?.borderStrokeWidth ?? 1,
+      datapoint: options?.datapoint ?? undefined,
       pointerEnter: options?.pointerEnter,
       pointerLeave: options?.pointerLeave,
       click: options?.click
@@ -342,6 +345,11 @@ export class DataSymbol extends View {
   }
 
   content() {
+    if (this._options.datapoint) {
+      if (this.paraview.paraState.isDatapointContrasted(this._options.datapoint?.seriesKey, this._options.datapoint?.datapointIndex)) {
+        this._styleInfo.stroke = 'red'
+      }
+    }
     this._updateClassInfo();
     let transform;
     let shouldTransform = false;
@@ -401,6 +409,84 @@ export class DataSymbol extends View {
 
 }
 
+
+
+/*
+content() {
+    const altStyleInfo = {
+      stroke: 'red',
+      strokeWidth: this._options.strokeWidth,
+      fill: 'white',
+      pointerEvents: 'none'
+    };;
+    this._updateClassInfo();
+    let transform;
+    let shouldTransform = false;
+    if (this._options.scale !== 1) {
+      shouldTransform = true;
+      transform = fixed`translate(${this._x},${this._y})`;
+      transform += fixed` scale(${this._options.scale})`;
+    }
+
+    if (this.parent) {
+      if (this._y < 0 || this._y > this.paraview.documentView!.chartLayers.dataLayer.height) {
+        this.hidden = true;
+      }
+    }
+    if (this.hidden) return svg``;
+    if (this.paraview.paraState.colors.palette.isPattern && this._options.colorIndex !== undefined) {
+      const index = this._options.colorIndex;
+      const x = this._x - this.width / 2;
+      const y = this._y - this.height / 2;
+      return svg`
+        <rect x=${x} y=${y} width=${this.width} height=${this.height}
+          fill="white" stroke="none" />
+        <rect x=${x} y=${y} width=${this.width} height=${this.height}
+          fill="url(#Pattern${index})" stroke="none"
+          @pointerenter=${this._options.pointerEnter ?? nothing}
+          @pointerleave=${this._options.pointerLeave ?? nothing}
+          @click=${this._options.click ?? nothing} />
+      `;
+    }
+    return svg`
+            <use
+          href="#${this._defsKey}"
+          style=${styleMap({ ...this._styleInfo, ...altStyleInfo,})}
+          transform=${shouldTransform ? transform : nothing}
+          x=${shouldTransform ? nothing : this._x}
+          y=${shouldTransform ? nothing : this._y}
+        />
+      <g clip-path=${'url(#clip-path)'}>
+      ${this._options.blackBorder ? svg`  
+        <use
+          href="#${this._defsKey}"
+          style=${styleMap(this._blackBorderStyleInfo())}
+          transform=${shouldTransform ? transform : nothing}
+          x=${shouldTransform ? nothing : this._x}
+          y=${shouldTransform ? nothing : this._y}
+        />
+      ` : nothing} 
+
+      <use
+        href="#${this._defsKey}"
+        id=${this._id || nothing}
+        role=${this._role || nothing}
+        style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
+        class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
+        transform=${shouldTransform ? transform : nothing}
+        x=${shouldTransform ? nothing : this._x}
+        y=${shouldTransform ? nothing : this._y}
+        @pointerenter=${this._options.pointerEnter ?? nothing}
+        @pointerleave=${this._options.pointerLeave ?? nothing}
+        @click=${this._options.click ?? nothing}
+      />
+       
+      </g>
+    `;
+  }
+
+
+*/
 export class DataSymbols {
 
   readonly shapes: readonly DataSymbolShape[] = [

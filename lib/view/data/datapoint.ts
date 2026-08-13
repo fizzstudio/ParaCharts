@@ -199,6 +199,9 @@ export class DatapointView extends DataView {
   }
 
   get shouldClip() {
+    if (this.paraview.paraState.thresholds.length > 0) {
+      return true;
+    }
     if (this.alwaysClip) {
       return true;
     }
@@ -302,7 +305,7 @@ export class DatapointView extends DataView {
     // we need to replace the original shape and symbol
     this._symbol?.remove();
     this._symbol = DataSymbol.fromType(this.paraview, symbolType,
-      { blackBorder: this.paraview.paraState.config.ui.isLowVisionModeEnabled, borderStrokeWidth: 3 });
+      { blackBorder: this.paraview.paraState.config.ui.isLowVisionModeEnabled, borderStrokeWidth: 3, datapoint: this.datapoint });
     this.append(this._symbol);
   }
 

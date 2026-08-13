@@ -97,7 +97,17 @@ export class PathShape extends Shape {
   }
 
   render() {
-    return svg`
+    const altStyleInfo = { stroke: "red" };
+    return svg`<g>
+    <path
+        ${this._ref ? ref(this._ref) : undefined}
+        id=${this._id || nothing}
+        style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : styleMap(altStyleInfo)}
+        class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
+        role=${this._role || nothing}
+        d=${this._pathD}
+         clip-path=${this._options.isClip ? 'url(#inverse-threshold-clip-path)' : nothing}
+      ></path>
       <path
         ${this._ref ? ref(this._ref) : undefined}
         id=${this._id || nothing}
@@ -105,8 +115,9 @@ export class PathShape extends Shape {
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         role=${this._role || nothing}
         d=${this._pathD}
-        clip-path=${this._options.isClip ? 'url(#clip-path)' : nothing}
+        clip-path=${this._options.isClip ? 'url(#threshold-clip-path)' : nothing}
       ></path>
+      </g>
     `;
   }
 

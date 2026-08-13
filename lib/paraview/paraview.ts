@@ -74,6 +74,7 @@ export class ParaView extends ParaComponent implements ViewContext {
   protected _registeredPatternKeys: string[] = [];
   protected log: Logger = getLogger("ParaView");
   clipWidth: number = 1
+  clipHeight: number = 1
 
   @state() private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
@@ -353,6 +354,10 @@ export class ParaView extends ParaComponent implements ViewContext {
         stroke-linecap: butt;
         stroke-dasharray: 12 12;
         stroke-opacity: 0.8;
+      }
+      .threshold-line{
+      stroke-dasharray: 12 12;
+      stroke-opacity: 0.8;
       }
       .datapoint.visited:not(.highlighted) {
         stroke: var(--visited-color, hsl(0, 100%, 50%));
@@ -1294,16 +1299,24 @@ export class ParaView extends ParaComponent implements ViewContext {
           </g>
           ${svg`${this._seriesCss() ? svg`<style>${this._seriesCss()}</style>` : ''}`}
           ${this._documentView?.horizAxis ? svg`
-            <clipPath id="clip-path">
+            <clipPath id="clip-path" clipPathUnits="userSpaceOnUse">
               <rect
                 x=${0}
                 y=${0}
                 width=${this._documentView.chartLayers ? this.clipWidth * this._documentView.chartLayers.width : 0}
-                height=${this._documentView.chartLayers ? this._documentView.chartLayers.height : 0}>
+                height=${this._documentView.chartLayers ? this.clipHeight * this._documentView.chartLayers.height : 0}>
+              </rect>
+            </clipPath>
+            <clipPath id="threshold-clip-path" clipPathUnits="userSpaceOnUse">
+              <rect
+                x=${0}
+                y=${0}
+                width=${this._documentView.chartLayers ? this.clipWidth * this._documentView.chartLayers.width : 0}
+                height=${this._documentView.chartLayers ? this.clipHeight * this._documentView.chartLayers.height : 0}>
               </rect>
             </clipPath>
           ` : ''
-      }
+      }          
         </defs>
         <metadata data-type="application/jim+json">
           ${this._paraState.jimerator ? JSON.stringify(this._paraState.jimerator.manifest, undefined, 2) : ''}
