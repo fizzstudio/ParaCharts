@@ -52,4 +52,4 @@ jobs:
         run: npm run docs:build
 
       - name: Verify generated source artifacts are current
-        run: git diff --exit-code -- lib/config/config_defaults.ts lib/config/config_metadata.ts lib/config/config_types.ts etc/paracharts.api.md
+        run: npm run docs:check

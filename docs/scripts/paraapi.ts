@@ -16,29 +16,29 @@ for (const pkg of apiModel.packages) {
 
 const methods: { heading: string; description: string }[] = [];
 
-if (paraApiClass) {
-    for (const member of paraApiClass.members) {
-        if (member.kind === ApiItemKind.Constructor) continue;
-        if ((member as any).isProtected) continue;
+if (!paraApiClass) throw new Error('ParaAPI was not found in the staged API model');
 
-        if (member.kind === ApiItemKind.Method) {
-            const method = member as ApiMethod;
-            const params = method.parameters.map(p => p.name).join(', ');
-            methods.push({
-                heading: `${method.displayName}(${params})`,
-                description: extractSummaryText(method),
-            });
-        } else if (member.kind === ApiItemKind.Property) {
-            const prop = member as ApiPropertyItem;
-            methods.push({
-                heading: `get ${prop.displayName}`,
-                description: extractSummaryText(prop),
-            });
-        }
+for (const member of paraApiClass.members) {
+    if (member.kind === ApiItemKind.Constructor) continue;
+    if ((member as any).isProtected) continue;
+
+    if (member.kind === ApiItemKind.Method) {
+        const method = member as ApiMethod;
+        const params = method.parameters.map(p => p.name).join(', ');
+        methods.push({
+            heading: `${method.displayName}(${params})`,
+            description: extractSummaryText(method),
+        });
+    } else if (member.kind === ApiItemKind.Property) {
+        const prop = member as ApiPropertyItem;
+        methods.push({
+            heading: `get ${prop.displayName}`,
+            description: extractSummaryText(prop),
+        });
     }
 }
 
 export default {
-    classDescription: paraApiClass ? extractSummaryText(paraApiClass) : '',
+    classDescription: extractSummaryText(paraApiClass),
     methods,
 };
