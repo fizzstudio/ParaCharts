@@ -1,4 +1,5 @@
 {
+    "description": "Vertical column chart settings.",
     "ref": "type.plane",
     "family": "bar",
     "settings": {

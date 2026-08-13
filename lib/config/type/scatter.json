@@ -1,4 +1,5 @@
 {
+    "description": "Scatter plot settings.",
     "ref": "type.plane",
     "family": "scatter",
     "settings": {

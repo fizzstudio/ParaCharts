@@ -1,4 +1,5 @@
 {
+    "description": "Donut chart settings.",
     "ref": "type.pastry",
     "settings": {
         "annularThickness": {

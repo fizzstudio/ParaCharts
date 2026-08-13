@@ -1,4 +1,5 @@
 {
+    "description": "Combination chart settings.",
     "family": "combo",
     "ref": "type.plane",
     "settings": {

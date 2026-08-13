@@ -1,4 +1,5 @@
 {
+    "description": "Generated chart description settings.",
     "family": "description",
     "settings": {
         "captionFormat": {

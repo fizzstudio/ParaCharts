@@ -1,4 +1,5 @@
 {
+    "description": "Horizontal axis line styling.",
     "family": "axis",
     "settings": {
         "isDrawAxisLine": {

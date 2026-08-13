@@ -1,4 +1,5 @@
 {
+    "description": "Shared outside-label settings for radial charts.",
     "settings": {
         "vertGap": {
             "label": "Label vertical gap",

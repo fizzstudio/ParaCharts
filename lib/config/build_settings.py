@@ -2,6 +2,7 @@
 import argparse
 import json
 import pprint
+import sys
 from pathlib import Path
 
 class Group(dict):
@@ -19,6 +20,12 @@ def main(args):
     p = Path(args.dir)
     tree = {}
     load_dir(Path(args.dir), tree, None)
+    missing_descriptions = find_missing_descriptions(tree, tree)
+    if missing_descriptions:
+        print('Config settings without descriptions:', file=sys.stderr)
+        for setting_path in missing_descriptions:
+            print(f'  {setting_path}', file=sys.stderr)
+        raise ValueError('All visible config settings must have descriptions')
     # pprint.pp(tree)
     with open(p / 'config_types.ts', 'w') as typesf, \
         open(p / 'config_defaults.ts', 'w') as defaultsf, \
@@ -33,6 +40,7 @@ def main(args):
         print(
 """
 import { type Size2d } from '@fizz/chart-classifier-utils'
+import { type ChartType } from '@fizz/paramanifest';
 import { type SnapLocation } from '../common/types';
 import { type Color } from '../common/color_types';
 
@@ -51,26 +59,6 @@ export type ConfigGroup = {[key: string]: ConfigSetting | ConfigGroup | undefine
  * @public
  */
 export type SettingsInput = {[path: string]: ConfigSetting};
-
-/** Chart types that display individual points
- * @public
- */
-export type PointChartType = 'line' | 'stepline' | 'scatter';
-
-/** Chart types drawn using a Cartesian coordinate system
- * @public
- */
-export type PlaneChartType = 'bar' | 'lollipop' | PointChartType;
-
-/** Chart types that use radial/circular layout
- * @public
- */
-export type PastryChartType = 'pie' | 'donut' | 'gauge';
-
-/** All supported chart types
- * @public
- */
-export type ChartType = PlaneChartType | PastryChartType;
 
 /** SVG viewBox dimensions for chart viewport
  * @public
@@ -165,39 +153,8 @@ export type DeepReadonly<T> = {
         write_metadata_header(p, [], tree, tree, metadataf)
         print(
 """
-import { SettingControlType } from '../components';
-import { SettingControlOptionsType, RefreshTarget } from '../state';
-
-export interface ConfigSettingMetadata<T extends SettingControlType = SettingControlType> {
-  /** Label displayed in UI */
-  label?: string;
-  /** Internal description of item */
-  description?: string;
-  /** Stringified Typescript type of item */
-  type?: string;
-  default: any;
-  control: T;
-  /** Control-specific options. */
-  controlOptions?: SettingControlOptionsType<T>;
-  /** Whether item is advanced */
-  advanced?: boolean;
-  panel?: string;
-  parentView?: string;
-  hidden?: boolean;
-  keywords?: string[];
-  /** What to refresh when the setting changes **/
-  refresh: RefreshTarget;
-}
-export interface ConfigGroupMetadata {
-  ref?: string;
-  settings: ConfigGroupSettingsMetadata;
-}
-export interface ConfigGroupSettingsMetadata {
-  [settingName: string]: ConfigSettingMetadata;
-}
-export interface ConfigMetadata {
-  [groupPath: string]: ConfigGroupMetadata;
-}
+import { type ConfigGroupMetadata, type ConfigMetadata } from './config_metadata_types';
+export type * from './config_metadata_types';
 """, file=metadataf)
         print('export const configMetadata: ConfigMetadata = {', file=metadataf)
         write_metadata_group([''], tree, tree, metadataf)
@@ -205,16 +162,17 @@ export interface ConfigMetadata {
         print(
 """
 for (const [k, v] of Object.entries(configMetadata)) {
+  if (!v) continue;
   if (v.ref) {
     const refTarget = configMetadata[v.ref];
-    configMetadata[k] = Object.create(refTarget);
-    Object.assign(configMetadata[k], v);
-    configMetadata[k].settings = Object.create(refTarget.settings);
-    Object.assign(configMetadata[k].settings, v.settings);
-    for (const [sk, sv] of Object.entries(configMetadata[k].settings!)) {
-      if (refTarget.settings![sk]) {
-        configMetadata[k].settings![sk] = Object.create(refTarget.settings![sk]);
-        Object.assign(configMetadata[k].settings![sk], sv);
+    if (!refTarget) throw new Error(`Unknown config metadata ref: ${v.ref}`);
+    const resolvedGroup = Object.assign(Object.create(refTarget), v) as ConfigGroupMetadata;
+    resolvedGroup.settings = Object.assign(Object.create(refTarget.settings), v.settings);
+    configMetadata[k] = resolvedGroup;
+    for (const [sk, sv] of Object.entries(resolvedGroup.settings)) {
+      const inheritedSetting = refTarget.settings[sk];
+      if (inheritedSetting) {
+        resolvedGroup.settings[sk] = Object.assign(Object.create(inheritedSetting), sv);
       }
     }
   }
@@ -225,7 +183,7 @@ for (const [k, v] of Object.entries(configMetadata)) {
 def load_dir(dir: Path, node, parent):
     print(f'read dir {dir}')
 
-    for kid in dir.iterdir():
+    for kid in sorted(dir.iterdir(), key=lambda path: path.name):
         if kid.is_dir():
             node[kid.stem] = Group()
             load_dir(kid, node[kid.stem], node)
@@ -241,6 +199,8 @@ def load_file(file: Path, node, parent):
     print(f'read file {file}')
     with open(file) as f:
         md = json.load(f)
+    if md.get('description'):
+        node['__description__'] = md['description']
     if md.get('ref'):
         node['__ref__'] = md['ref']
     if md.get('abstract'):
@@ -269,6 +229,8 @@ def write_defaults_group(key, node, tree, defaults, indent = 0):
         if node.get('__abstract__'):
             del node['__abstract__']
     for k, v in node.items():
+        if k.startswith('__'):
+            continue
         if isinstance(v, Group):
             write_defaults_group(k, v, tree, defaults, indent = indent + 2)
         else:
@@ -295,6 +257,12 @@ def write_types_group(key_path, node, tree, types):
     print('write types group', '.'.join(key_path))
     key_path_joined = ''.join([k.capitalize() for k in key_path])
 
+    resolved_node = resolve_group(node, tree)
+    description = resolved_node.get('__description__', 'Complete ParaCharts configuration tree.')
+    print('/**', file=types)
+    print(f' * {description}', file=types)
+    print(' * @public', file=types)
+    print(' */', file=types)
     if node.get('__ref__'):
         parts = node['__ref__'].split('.')
         print('parts', parts)
@@ -334,11 +302,52 @@ def write_types_group(key_path, node, tree, types):
     for k, v in groups:
         if v.get('__abstract__'):
             continue
+        group_description = resolve_group(v, tree).get('__description__')
+        if group_description:
+            print(f'  /** {group_description} */', file=types)
         print(f'  {k}: {key_path_joined + k.capitalize()}Config;', file=types)
     print('}', file=types)
 
     for k, v in groups:
         write_types_group(key_path + [k], v, tree, types)
+
+
+def resolve_group(node, tree):
+    resolved = Group()
+    if node.get('__ref__'):
+        ref_node = tree
+        for part in node['__ref__'].split('.'):
+            ref_node = ref_node[part]
+        resolved.update(resolve_group(ref_node, tree))
+        resolved.pop('__abstract__', None)
+
+    for key, value in node.items():
+        if key == '__ref__':
+            continue
+        if isinstance(value, dict) and not isinstance(value, Group) and isinstance(resolved.get(key), dict):
+            merged_setting = resolved[key].copy()
+            merged_setting.update(value)
+            resolved[key] = merged_setting
+        else:
+            resolved[key] = value
+    return resolved
+
+
+def find_missing_descriptions(node, tree, path = []):
+    resolved = resolve_group(node, tree)
+    if resolved.get('__abstract__'):
+        return []
+
+    missing = []
+    for key, value in resolved.items():
+        if key.startswith('__'):
+            continue
+        setting_path = path + [key]
+        if isinstance(value, Group):
+            missing.extend(find_missing_descriptions(value, tree, setting_path))
+        elif isinstance(value, dict) and not value.get('description'):
+            missing.append('.'.join(setting_path))
+    return missing
 
 def write_types_item(key, setting, types):
     print(f'  /** {setting.get('description')} */', file=types)
@@ -368,9 +377,7 @@ def write_metadata_header(dir_path, key_path, node, tree, f):
             new_node = new_node[part]
         new_node = new_node.copy()
         for k, v in new_node.items():
-            if k == '__abstract__':
-                continue
-            if k == '__ref__':
+            if k.startswith('__'):
                 continue
             if not isinstance(v, Group) and node.get(k):
                 v.update(node[k])
@@ -409,9 +416,7 @@ def write_metadata_group(key_path, node, tree, f):
             new_node = new_node[part]
         new_node = new_node.copy()
         for k, v in new_node.items():
-            if k == '__abstract__':
-                continue
-            if k == '__ref__':
+            if k.startswith('__'):
                 continue
             if not isinstance(v, Group) and node.get(k):
                 v.update(node[k])

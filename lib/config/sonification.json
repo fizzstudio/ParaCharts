@@ -1,4 +1,5 @@
 {
+    "description": "Audio feedback and sonification settings.",
     "family": "audio",
     "settings": {
         "isSonificationEnabled": {

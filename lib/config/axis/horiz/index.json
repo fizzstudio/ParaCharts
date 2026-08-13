@@ -1,4 +1,5 @@
 {
+    "description": "Horizontal axis display and layout.",
     "family": "axis",
     "settings": {
         "isDrawAxis": {

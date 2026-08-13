@@ -893,16 +893,16 @@ export class ParaView extends ParaComponent implements ViewContext {
         this._documentView = new DocumentView(this);
         this._documentView.init();
         this.computeViewBox();
+        // The style manager may get declaration values from chart objects
+        this.paraChart.styleManager.update();
+        // Ensure defs container is present before adding defs
+        // register/remove pattern defs based on current palette
+        if (this._paraState.colors.palette?.isPattern) {
+          this._registerPatternDefs();
+        } else {
+          this._removePatternDefs();
+        }
       }).catch(() => { /* ignore font-load failures */ });
-    }
-    // The style manager may get declaration values from chart objects
-    this.paraChart.styleManager.update();
-    // Ensure defs container is present before adding defs
-    // register/remove pattern defs based on current palette
-    if (this._paraState.colors.palette?.isPattern) {
-      this._registerPatternDefs();
-    } else {
-      this._removePatternDefs();
     }
   }
 

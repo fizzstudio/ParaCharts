@@ -1,4 +1,5 @@
 {
+    "description": "Overall chart appearance and behavior settings.",
     "family": "chart",
     "settings": {
         "type": {

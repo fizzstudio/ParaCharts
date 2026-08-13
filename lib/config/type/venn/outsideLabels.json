@@ -1,4 +1,5 @@
 {
+    "description": "Outside-label settings for Venn diagrams.",
     "settings": {
         "contents": {
             "label": "cpanel.tabs.chart.venn_outside_labels",

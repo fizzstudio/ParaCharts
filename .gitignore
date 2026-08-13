@@ -21,6 +21,15 @@ dist-ai/
 # TS types for the AI-enhanced build process
 types-ai/
 # Artifacts from docs generation script
+docs/.generated-pages.json
+docs/.api-model/
+docs/.api-staging/
+docs/api/
+docs/config.md
+docs/config/
+docs/manifest.md
+docs/paraapi.md
+docs/shortcutsAndCommands.md
 docs/scripts/lib/
 docs/scripts/docs/
 

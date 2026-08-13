@@ -1,4 +1,5 @@
 {
+    "description": "Vertical axis title display and styling.",
     "family": "axis",
     "settings": {
         "isDrawTitle": {

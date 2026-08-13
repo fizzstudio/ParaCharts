@@ -1,4 +1,4 @@
-import schema from '../../node_modules/@fizz/paramanifest/schema/manifest.schema.json' with { type: 'json' };
+import schema from '../../node_modules/@fizz/paramanifest/schema/manifest_bundle.schema.json' with { type: 'json' };
 
 type AnySchema = any;
 
@@ -67,15 +67,28 @@ function extractProperties(s: AnySchema, root: AnySchema, parentPath?: string): 
   return props;
 }
 
+function nestedSections(properties: Array<any>): Array<{ path: string; properties: Array<any> }> {
+  return properties.flatMap(property => property.children?.length
+    ? [
+        { path: property.path, properties: property.children },
+        ...nestedSections(property.children),
+      ]
+    : []);
+}
+
 const manifestSchema: AnySchema = (schema as AnySchema) || {};
 if (!manifestSchema.definitions && manifestSchema.$defs) {
   manifestSchema.definitions = manifestSchema.$defs;
 }
 
+const properties = extractProperties(manifestSchema, manifestSchema);
+if (properties.length === 0) throw new Error('Manifest schema has no documentable properties');
+
 const context = {
   title: manifestSchema.title || 'Manifest',
   description: manifestSchema.description || '',
-  properties: extractProperties(manifestSchema, manifestSchema),
+  properties,
+  nestedSections: nestedSections(properties),
 };
 
 export default context;

@@ -1,4 +1,5 @@
 {
+    "description": "Line and step-line chart settings.",
     "ref": "type.plane",
     "family": "line",
     "settings": {

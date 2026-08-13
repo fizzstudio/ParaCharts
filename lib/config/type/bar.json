@@ -1,4 +1,5 @@
 {
+    "description": "Horizontal bar chart settings.",
     "ref": "type.plane",
     "family": "bar",
     "settings": {

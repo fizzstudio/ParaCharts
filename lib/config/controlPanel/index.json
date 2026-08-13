@@ -1,4 +1,5 @@
 {
+    "description": "Control panel visibility, layout, and available features.",
     "family": "controlPanel",
     "settings": {
         "isControlPanelDefaultOpen": {

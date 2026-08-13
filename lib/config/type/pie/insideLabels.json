@@ -1,4 +1,5 @@
 {
+    "description": "Inside-label settings for pie charts.",
     "ref": "type.pastry.insideLabels",
     "settings": {
         "format": {

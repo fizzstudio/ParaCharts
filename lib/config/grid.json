@@ -1,4 +1,5 @@
 {
+    "description": "Grid line display settings.",
     "family": "grid",
     "settings": {
         "isDrawHorizLines": {
