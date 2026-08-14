@@ -6,7 +6,7 @@
 
 import { AllSeriesData } from '@fizz/paramanifest';
 import { ButtonDescriptor } from '@fizz/ui-components';
-import { ChartType as ChartType_2 } from '@fizz/paramanifest';
+import { ChartType } from '@fizz/paramanifest';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { ClassInfo as ClassInfo_2 } from 'lit-html/directives/class-map.js';
 import { clusterObject } from '@fizz/clustering';
@@ -32,6 +32,7 @@ import { Model } from '@fizz/paramodel';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';
 import { Patch } from 'immer';
 import { PlaneDatapoint } from '@fizz/paramodel';
+import { PlaneModel } from '@fizz/paramodel';
 import { Point as Point_2 } from '@fizz/chart-classifier-utils';
 import { PropertyValueMap } from 'lit';
 import { PropertyValues } from 'lit';
@@ -56,6 +57,135 @@ import * as ui from '@fizz/ui-components';
 import { Unsubscribe } from '@lit-app/state';
 
 // @public
+export interface AnimationConfig extends ConfigGroup {
+    animateRevealTimeMs: number;
+    animationOrigin: AnimationOrigin;
+    animationOriginValue: number;
+    animationType: AnimationType;
+    isAnimationEnabled: boolean;
+    popInAnimateRevealTimeMs: number;
+}
+
+// @public
+export type AnimationOrigin = 'baseline' | 'top' | 'initialValue' | 'custom';
+
+// @public
+export type AnimationType = 'yAxis' | 'xAxis' | 'none';
+
+// @public
+export interface AxisConfig extends ConfigGroup {
+    horiz: AxisHorizConfig;
+    vert: AxisVertConfig;
+}
+
+// @public
+export interface AxisHorizConfig extends ConfigGroup {
+    isDrawAxis: boolean;
+    isStaggerLabels: boolean;
+    isWrapLabels: boolean;
+    labelOrder: 'westToEast' | 'eastToWest';
+    line: AxisHorizLineConfig;
+    position: VertCardinalDirection;
+    ticks: AxisHorizTicksConfig;
+    title: AxisHorizTitleConfig;
+}
+
+// @public
+export interface AxisHorizLineConfig extends ConfigGroup {
+    isDrawAxisLine: boolean;
+    isDrawOverhang: boolean;
+    strokeLinecap: string;
+    strokeWidth: number;
+}
+
+// @public
+export interface AxisHorizTicksConfig extends ConfigGroup {
+    isDrawTicks: boolean;
+    isOnDatapoint: boolean;
+    labelFormat: string;
+    labels: AxisHorizTicksLabelsConfig;
+    length: number;
+    opacity: number;
+    padding: number;
+    step: number;
+    strokeLinecap: string;
+    strokeWidth: number;
+}
+
+// @public
+export interface AxisHorizTicksLabelsConfig extends ConfigGroup {
+    angle: number;
+    fontSize: string;
+    gap: number;
+    isDrawTickLabels: boolean;
+    offsetGap: number;
+}
+
+// @public
+export interface AxisHorizTitleConfig extends ConfigGroup {
+    align: 'start' | 'middle' | 'end';
+    fontSize: string;
+    gap: number;
+    isDrawTitle: boolean;
+    text: string;
+}
+
+// @public
+export interface AxisVertConfig extends ConfigGroup {
+    isDrawAxis: boolean;
+    isStaggerLabels: boolean;
+    isWrapLabels: boolean;
+    labelOrder: 'southToNorth' | 'northToSouth';
+    line: AxisVertLineConfig;
+    position: HorizCardinalDirection;
+    ticks: AxisVertTicksConfig;
+    title: AxisVertTitleConfig;
+}
+
+// @public
+export interface AxisVertLineConfig extends ConfigGroup {
+    isDrawAxisLine: boolean;
+    isDrawOverhang: boolean;
+    strokeLinecap: string;
+    strokeWidth: number;
+}
+
+// @public
+export interface AxisVertTicksConfig extends ConfigGroup {
+    isDrawTicks: boolean;
+    isOnDatapoint: boolean;
+    labelFormat: string;
+    labels: AxisVertTicksLabelsConfig;
+    length: number;
+    opacity: number;
+    padding: number;
+    step: number;
+    strokeLinecap: string;
+    strokeWidth: number;
+}
+
+// @public
+export interface AxisVertTicksLabelsConfig extends ConfigGroup {
+    angle: number;
+    fontSize: string;
+    gap: number;
+    isDrawTickLabels: boolean;
+    offsetGap: number;
+}
+
+// @public
+export interface AxisVertTitleConfig extends ConfigGroup {
+    align: 'start' | 'middle' | 'end';
+    fontSize: string;
+    gap: number;
+    isDrawTitle: boolean;
+    text: string;
+}
+
+// @public
+export type BarDataLabelPosition = 'center' | 'end' | 'base' | 'outside';
+
+// @public
 export type BrailleGrade = 1 | 2;
 
 // @public
@@ -67,8 +197,202 @@ export interface BrailleTranslationProvider {
 // @public
 export function buildManifestFromCsv(input: ManifestBuilderInput): Manifest;
 
+// @public
+export type CardinalDirection = VertCardinalDirection | HorizCardinalDirection;
+
+// @public
+export interface ChartConfig extends ConfigGroup {
+    directLabelFontSize: string;
+    extremumWeight: number;
+    fontFamily: string;
+    fontScale: number;
+    fontWeight: string;
+    hasDirectLabels: boolean;
+    hasLegendWithDirectLabels: boolean;
+    height: number;
+    isDrawSymbols: boolean;
+    isShowPopups: boolean;
+    isShowVisitedDatapointsOnly: boolean;
+    isStatic: boolean;
+    isTactileEnabled: boolean;
+    maxError: number;
+    maxSegments: number;
+    orientation: CardinalDirection;
+    padding: string;
+    pageMarginBottom: number;
+    pageMarginLeft: number;
+    pageMarginRight: number;
+    pageMarginTop: number;
+    pageSize: 'auto' | 'letter_portrait' | 'letter_landscape' | 'tractor_us_standard' | 'tractor_us_rotated' | 'tractor_de_standard' | 'tractor_de_rotated' | 'a4_portrait' | 'a4_landscape' | 'tabloid_portrait' | 'tabloid_landscape' | 'monarch_portrait' | 'monarch_landscape';
+    stroke: string;
+    strokeHighlightScale: number;
+    strokeWidth: number;
+    subtitle: ChartSubtitleConfig;
+    symbolHighlightScale: number;
+    symbolStrokeWidth: number;
+    tactileBrailleGrade: 1 | 2;
+    tactileLabelMode: 'Braille' | 'Latin' | 'Both' | 'None';
+    title: ChartTitleConfig;
+    type: ChartType;
+    width: number;
+}
+
+// @public
+export interface ChartSubtitleConfig extends ConfigGroup {
+    align: SnapLocation;
+    fontSize: string;
+    isDrawSubtitle: boolean;
+    margin: number;
+    text: string;
+}
+
+// @public
+export interface ChartTitleConfig extends ConfigGroup {
+    align: SnapLocation;
+    fontSize: string;
+    isDrawTitle: boolean;
+    margin: number;
+    position: 'top' | 'bottom';
+    text: string;
+}
+
 // @public (undocumented)
 export type ChartTypeInput = 'line' | 'horizontal_bar' | 'vertical_bar' | 'pie' | 'donut';
+
+// @public
+export type Color = string;
+
+// @public
+export interface ColorConfig extends ConfigGroup {
+    backgroundColor: string;
+    backgroundColorDark: string;
+    backgroundColorLight: string;
+    colorMap: string;
+    colorPalette: string;
+    colorVisionMode: 'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale';
+    contrastLevel: number;
+    contrastMode: 'system' | 'lower' | 'normal' | 'higher' | 'custom';
+    contrastSource: ColorPrefSource;
+    custom1: string;
+    custom2: string;
+    custom3: string;
+    custom4: string;
+    custom5: string;
+    custom6: string;
+    custom7: string;
+    custom8: string;
+    forcedColorsMode: 'system' | 'respect';
+    invertedColorsMode: 'system' | 'adapt';
+    isDarkModeEnabled: boolean;
+    lowVisionColorPalette: boolean;
+    lowVisionContrastDefault: 'system' | 'lower' | 'normal' | 'higher' | 'custom';
+    lowVisionContrastLevel: number;
+    lowVisionThemeDefault: 'auto' | 'light' | 'dark';
+    themeMode: 'auto' | 'light' | 'dark';
+    themeSource: ColorPrefSource;
+}
+
+// @public
+export type ColorPrefSource = 'default' | 'chartDefault' | 'modeDefault' | 'profile' | 'system' | 'user';
+
+// @public
+export interface Config extends ConfigGroup {
+    animation: AnimationConfig;
+    axis: AxisConfig;
+    chart: ChartConfig;
+    color: ColorConfig;
+    controlPanel: ControlpanelConfig;
+    description: DescriptionConfig;
+    grid: GridConfig;
+    legend: LegendConfig;
+    popup: PopupConfig;
+    scrollytelling: ScrollytellingConfig;
+    sonification: SonificationConfig;
+    type: TypeConfig;
+    ui: UiConfig;
+}
+
+// @public
+export interface ConfigControlOptions {
+    [option: string]: unknown;
+    inputType?: 'number' | 'text' | 'color';
+    max?: number;
+    min?: number;
+}
+
+// @public
+export type ConfigControlType = 'textfield' | 'dropdown' | 'checkbox' | 'radio' | 'slider' | 'button';
+
+// @public
+export type ConfigGroup = {
+    [key: string]: ConfigSetting | ConfigGroup | undefined;
+};
+
+// @public
+export interface ConfigGroupMetadata {
+    abstract?: boolean;
+    description: string;
+    family?: string;
+    ref?: string;
+    settings: ConfigGroupSettingsMetadata;
+}
+
+// @public
+export interface ConfigGroupSettingsMetadata {
+    [settingName: string]: ConfigSettingMetadata | undefined;
+}
+
+// @public
+export interface ConfigMetadata {
+    [groupPath: string]: ConfigGroupMetadata | undefined;
+}
+
+// @public
+export type ConfigSetting = string | number | boolean;
+
+// @public
+export interface ConfigSettingMetadata<T extends ConfigControlType = ConfigControlType> {
+    advanced?: boolean;
+    control?: T;
+    controlOptions?: ConfigControlOptions;
+    default: ConfigSetting;
+    description: string;
+    hidden?: boolean;
+    keywords?: string[];
+    label?: string;
+    panel?: string;
+    parentView?: string;
+    refresh?: 'chart' | 'description';
+    type: string;
+}
+
+// @public
+export interface ControlpanelCaptionConfig extends ConfigGroup {
+    hasBorder: boolean;
+    isCaptionExternalWhenControlPanelClosed: boolean;
+    isExplorationBarBeside: boolean;
+}
+
+// @public
+export interface ControlpanelConfig extends ConfigGroup {
+    caption: ControlpanelCaptionConfig;
+    isAnalysisTabVisible: boolean;
+    isAnnotationsTabVisible: boolean;
+    isAudioTabVisible: boolean;
+    isCaptionVisible: boolean;
+    isChartTabVisible: boolean;
+    isColorPaletteControlVisible: boolean;
+    isColorsTabVisible: boolean;
+    isControlPanelDefaultOpen: boolean;
+    isControlsTabVisible: boolean;
+    isCVDControlVisible: boolean;
+    isDataTabVisible: boolean;
+    isExplorationBarVisible: boolean;
+    isMDRAnnotationsVisible: boolean;
+    isSparkBrailleControlVisible: boolean;
+    isSparkBrailleVisible: boolean;
+    tabLabelStyle: TabLabelStyle;
+}
 
 // @public (undocumented)
 export type CsvDataType = 'string' | 'number' | 'date';
@@ -88,6 +412,25 @@ export interface CsvInferredDefaults {
         dataType: CsvDataType;
     };
 }
+
+// @public (undocumented)
+export type DeepReadonly<T> = {
+    readonly [Property in keyof T]: T extends ConfigSetting ? T[Property] : DeepReadonly<T[Property]>;
+};
+
+// @public (undocumented)
+export type DepthDirection = 'in' | 'out';
+
+// @public
+export interface DescriptionConfig extends ConfigGroup {
+    captionFormat: 'full' | 'concise';
+}
+
+// @public (undocumented)
+export type Direction = VertDirection | HorizDirection | DepthDirection;
+
+// @public (undocumented)
+export const directions: Direction[];
 
 // @public
 export type FieldInfo = {
@@ -122,6 +465,14 @@ export const FORMAT_CONTEXT_SETTINGS: {
 export type FormatContext = keyof typeof FORMAT_CONTEXT_SETTINGS;
 
 // @public
+export interface GridConfig extends ConfigGroup {
+    isDrawHorizAxisOppositeLine: boolean;
+    isDrawHorizLines: boolean;
+    isDrawVertAxisOppositeLine: boolean;
+    isDrawVertLines: boolean;
+}
+
+// @public
 export type HeadlessPageSize = 'auto' | 'letter_portrait' | 'letter_landscape' | 'tractor_us_standard' | 'tractor_us_rotated' | 'tractor_de_standard' | 'tractor_de_rotated' | 'a4_portrait' | 'a4_landscape' | 'tabloid_portrait' | 'tabloid_landscape' | 'monarch_portrait' | 'monarch_landscape';
 
 // @public
@@ -133,7 +484,41 @@ export interface HeadlessRenderOptions {
 }
 
 // @public (undocumented)
+export type HorizCardinalDirection = 'east' | 'west';
+
+// @public (undocumented)
+export type HorizDirection = 'left' | 'right';
+
+// @public (undocumented)
 export function inferDefaultsFromCsvText(csvText: string, fileName?: string): CsvInferredDefaults;
+
+// @public
+export type LabelFormat = 'raw' | string;
+
+// @public
+export interface LegendBoxstyleConfig extends ConfigGroup {
+    fill: Color;
+    outline: Color;
+    outlineWidth: number;
+}
+
+// @public
+export interface LegendConfig extends ConfigGroup {
+    boxStyle: LegendBoxstyleConfig;
+    fontSize: string;
+    isAlwaysDrawLegend: boolean;
+    isDrawLegend: boolean;
+    itemOrder: LegendItemOrder;
+    margin: number;
+    padding: number;
+    pairGap: number;
+    position: CardinalDirection;
+    symbolLabelGap: number;
+    useDirectLegends: boolean;
+}
+
+// @public
+export type LegendItemOrder = 'alphabetical' | 'reverseAlphabetical' | 'startingOrder' | 'endingOrder';
 
 // @public
 export class LoadError extends Error {
@@ -249,14 +634,10 @@ export class ParaAPI {
     enableTourGuideActions(): void;
     getAllConfigSettings(): SettingsInput;
     getAltText(): Promise<string | undefined>;
-    // Warning: (ae-forgotten-export) The symbol "ConfigGroupMetadata" needs to be exported by the entry point index-ai.d.ts
     getConfigGroupMetadata(path: string): ConfigGroupMetadata | undefined;
-    // Warning: (ae-forgotten-export) The symbol "ConfigSetting" needs to be exported by the entry point index-ai.d.ts
     getConfigSetting(settingPath: string): ConfigSetting;
     getConfigSettings(settingPaths: string[]): SettingsInput;
-    // Warning: (ae-forgotten-export) The symbol "ConfigGroupSettingsMetadata" needs to be exported by the entry point index-ai.d.ts
     getConfigSettingsMetadata(keywords: string[]): ConfigGroupSettingsMetadata;
-    // Warning: (ae-forgotten-export) The symbol "SettingsInput" needs to be exported by the entry point index-ai.d.ts
     getCustomProperties(): SettingsInput;
     getDescription(): Promise<string | undefined>;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIHorizontalAxis" needs to be exported by the entry point index-ai.d.ts
@@ -264,7 +645,6 @@ export class ParaAPI {
     // Warning: (ae-forgotten-export) The symbol "ParaAPIIntersection" needs to be exported by the entry point index-ai.d.ts
     getIntersection(index: number): ParaAPIIntersection;
     getJIM(): Manifest | undefined;
-    // Warning: (ae-forgotten-export) The symbol "CardinalDirection" needs to be exported by the entry point index-ai.d.ts
     // Warning: (ae-forgotten-export) The symbol "ParaAPILegend" needs to be exported by the entry point index-ai.d.ts
     getLegend(location: CardinalDirection): ParaAPILegend;
     // Warning: (ae-forgotten-export) The symbol "ParaAPIRange" needs to be exported by the entry point index-ai.d.ts
@@ -367,8 +747,303 @@ export class ParaHeadless {
 // @public
 export function parseCSV(csvText: string): CSVParseResult;
 
+// @public (undocumented)
+export type PlaneDirection = VertDirection | HorizDirection;
+
+// @public
+export interface PopupConfig extends ConfigGroup {
+    activation: 'onHover' | 'onFocus' | 'onSelect';
+    backgroundColor: 'dark' | 'light';
+    borderRadius: number;
+    downPadding: number;
+    isCrosshairFollowPointer: boolean;
+    isShowCrosshair: boolean;
+    leftPadding: number;
+    margin: number;
+    maxWidth: number;
+    opacity: number;
+    rightPadding: number;
+    shape: 'box' | 'boxWithArrow';
+    upPadding: number;
+}
+
+// @public
+export interface ScrollytellingConfig extends ConfigGroup {
+    isScrollyAnnouncementsEnabled: boolean;
+    isScrollySoniEnabled: boolean;
+    isScrollytellingEnabled: boolean;
+}
+
+// @public
+export type SettingsInput = {
+    [path: string]: ConfigSetting;
+};
+
+// @public (undocumented)
+export type SnapLocation = 'start' | 'end' | 'center';
+
+// @public
+export interface SonificationConfig extends ConfigGroup {
+    hertzLower: number;
+    hertzUpper: number;
+    isArpeggiateChords: boolean;
+    isNotificationEnabled: boolean;
+    isRiffEnabled: boolean;
+    isSonificationEnabled: boolean;
+    riffSpeedIndex: number;
+}
+
 // @public
 export type SourceKind = 'fizz-chart-data' | 'url' | 'content';
+
+// @public
+export type TabLabelStyle = 'icon' | 'iconLabel' | 'label';
+
+// @public
+export interface TypeBarConfig extends TypePlaneConfig {
+    barGap: number;
+    barWidth: number;
+    clusterGap: number;
+    clusterLabelFormat: LabelFormat;
+    colorByDatapoint: boolean;
+    dataLabelPosition: BarDataLabelPosition;
+    isAbbrevSeries: boolean;
+    isDrawDataLabels: boolean;
+    isDrawRecordLabels: boolean;
+    isDrawTotalLabels: boolean;
+    labelFontSize: string;
+    lineWidth: number;
+    stacking: 'none' | 'standard' | string;
+    stackInsideGap: number;
+    stackLabelGap: number;
+    totalLabelGap: number;
+}
+
+// @public
+export interface TypeBubbleConfig extends TypePlaneConfig {
+    bubbleFacet: string;
+    labelFacet: string;
+    maxBubbleSize: number;
+    minBubbleSize: number;
+    xFacet: string;
+    yFacet: string;
+}
+
+// @public
+export interface TypeColumnConfig extends TypePlaneConfig {
+    barGap: number;
+    barWidth: number;
+    clusterGap: number;
+    clusterLabelFormat: LabelFormat;
+    colorByDatapoint: boolean;
+    dataLabelPosition: BarDataLabelPosition;
+    isAbbrevSeries: boolean;
+    isDrawDataLabels: boolean;
+    isDrawRecordLabels: boolean;
+    isDrawTotalLabels: boolean;
+    labelFontSize: string;
+    lineWidth: number;
+    stacking: 'none' | 'standard' | string;
+    stackInsideGap: number;
+    stackLabelGap: number;
+    totalLabelGap: number;
+}
+
+// @public
+export interface TypeComboConfig extends TypePlaneConfig {
+    barGap: number;
+    barWidth: number;
+    clusterGap: number;
+    clusterLabelFormat: LabelFormat;
+    colorByDatapoint: boolean;
+    dataLabelPosition: BarDataLabelPosition;
+    isAbbrevSeries: boolean;
+    isDrawDataLabels: boolean;
+    isDrawRecordLabels: boolean;
+    isDrawTotalLabels: boolean;
+    labelFontSize: string;
+    lineWidth: number;
+    stacking: 'none' | 'standard' | string;
+    stackInsideGap: number;
+    stackLabelGap: number;
+    totalLabelGap: number;
+}
+
+// @public
+export interface TypeConfig extends ConfigGroup {
+    bar: TypeBarConfig;
+    bubble: TypeBubbleConfig;
+    column: TypeColumnConfig;
+    combo: TypeComboConfig;
+    donut: TypeDonutConfig;
+    heatmap: TypeHeatmapConfig;
+    histogram: TypeHistogramConfig;
+    line: TypeLineConfig;
+    pie: TypePieConfig;
+    scatter: TypeScatterConfig;
+    venn: TypeVennConfig;
+    waterfall: TypeWaterfallConfig;
+}
+
+// @public
+export interface TypeDonutConfig extends TypePastryConfig {
+    insideLabels: TypeDonutInsidelabelsConfig;
+    outsideLabels: TypeDonutOutsidelabelsConfig;
+}
+
+// @public
+export interface TypeDonutInsidelabelsConfig extends TypePastryInsidelabelsConfig {
+}
+
+// @public
+export interface TypeDonutOutsidelabelsConfig extends TypePastryOutsidelabelsConfig {
+}
+
+// @public
+export interface TypeHeatmapConfig extends TypePlaneConfig {
+    resolution: number;
+    xFacet: string;
+    yFacet: string;
+}
+
+// @public
+export interface TypeHistogramConfig extends TypePlaneConfig {
+    bins: number;
+    displayAxis: string;
+    groupingFacet: string;
+    relativeAxes: 'Counts' | 'Percentage';
+}
+
+// @public
+export interface TypeLineConfig extends TypePlaneConfig {
+    isAlwaysShowSeriesLabel: boolean;
+    isTrendNavigationModeEnabled: boolean;
+    leaderLineLength: number;
+    lineHighlightScale: number;
+    lineWidth: number;
+    lineWidthMax: number;
+    lowVisionLineWidth: number;
+    seriesLabelPadding: number;
+}
+
+// @public
+export interface TypePastryConfig extends ConfigGroup {
+    annularThickness: number;
+    centerLabel: 'none' | 'title';
+    centerLabelPadding: number;
+    explode: string;
+    explodeDistance: number;
+    insideLabels: TypePastryInsidelabelsConfig;
+    orientationAngleOffset: number;
+    outsideLabels: TypePastryOutsidelabelsConfig;
+}
+
+// @public
+export interface TypePastryInsidelabelsConfig extends ConfigGroup {
+    contents: string;
+    format: string;
+    position: number;
+}
+
+// @public
+export interface TypePastryOutsidelabelsConfig extends ConfigGroup {
+    arcGap: number;
+    contents: string;
+    format: string;
+    horizPadding: number;
+    horizShift: number;
+    leaderStyle: 'direct' | 'underline';
+    underlineGap: number;
+    vertGap: number;
+}
+
+// @public
+export interface TypePieConfig extends TypePastryConfig {
+    insideLabels: TypePieInsidelabelsConfig;
+    outsideLabels: TypePieOutsidelabelsConfig;
+}
+
+// @public
+export interface TypePieInsidelabelsConfig extends TypePastryInsidelabelsConfig {
+}
+
+// @public
+export interface TypePieOutsidelabelsConfig extends TypePastryOutsidelabelsConfig {
+}
+
+// @public
+export interface TypePlaneConfig extends ConfigGroup {
+    maxYValue: number | 'unset';
+    minYValue: number | 'unset';
+}
+
+// @public
+export interface TypeScatterConfig extends TypePlaneConfig {
+    isShowOutliers: boolean;
+    isShowTrendLine: boolean;
+}
+
+// @public
+export interface TypeVennConfig extends ConfigGroup {
+    explode: string;
+    insideLabels: TypeVennInsidelabelsConfig;
+    orientationAngleOffset: number;
+    outsideLabels: TypeVennOutsidelabelsConfig;
+}
+
+// @public
+export interface TypeVennInsidelabelsConfig extends ConfigGroup {
+    contents: string;
+}
+
+// @public
+export interface TypeVennOutsidelabelsConfig extends ConfigGroup {
+    contents: string;
+}
+
+// @public
+export interface TypeWaterfallConfig extends TypePlaneConfig {
+    barGap: number;
+    barLabelGap: number;
+    barWidth: number;
+    colorByDatapoint: boolean;
+    isDrawLabels: boolean;
+    labelFontSize: string;
+    labelPosition: BarDataLabelPosition;
+}
+
+// @public
+export interface UiConfig extends ConfigGroup {
+    focusRingGap: number;
+    isAnnouncementEnabled: boolean;
+    isFocusRingEnabled: boolean;
+    isFullscreenEnabled: boolean;
+    isLowVisionModeEnabled: boolean;
+    isTourGuideEnabled: boolean;
+    isTourGuidePaused: boolean;
+    isVoicingEnabled: boolean;
+    liveUpdateDelay: number;
+    lowVisionDisableAnimations: boolean;
+    lowVisionFontScale: number;
+    lowVisionIsFullscreen: boolean;
+    lowVisionIsVertGridlines: boolean;
+    navRunTimeoutMs: number;
+    speechRate: number;
+}
+
+// @public (undocumented)
+export type VertCardinalDirection = 'north' | 'south';
+
+// @public (undocumented)
+export type VertDirection = 'up' | 'down';
+
+// @public
+export interface ViewBox extends ConfigGroup {
+    height: number;
+    width: number;
+    x: number;
+    y: number;
+}
 
 // (No @packageDocumentation comment for this package)
 

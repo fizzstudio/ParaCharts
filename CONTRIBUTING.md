@@ -24,12 +24,16 @@ Run the checks relevant to your change. For changes that cross multiple areas, r
 
 ```sh
 npm run build
+npm run build:ai
 npm run test:unit
+npm run test:browser
+npm run build-storybook
 npm run docs:build
 npm run docs:check
+npm pack --dry-run
 ```
 
-Review changes to tracked generated files before committing. In particular, `etc/paracharts.api.md` represents the public API surface and should change only when that surface changes.
+Review changes to tracked generated files before committing. In particular, `etc/paracharts.api.md` and `etc/paracharts.ai.api.md` represent the public API surfaces and should change only when those surfaces change.
 
 ## Documentation
 

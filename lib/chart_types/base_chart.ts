@@ -112,7 +112,17 @@ export abstract class BaseChartInfo {
   }
 
   get managedSettingKeys() {
-    return [`type.${this._type}`];
+    return [`type.${this.configType}`];
+  }
+
+  get configType(): ChartType {
+    const aliases: Partial<Record<ChartType, ChartType>> = {
+      candlestick: 'bar',
+      graph: 'line',
+      lollipop: 'bar',
+      stepline: 'line',
+    };
+    return aliases[this._type] ?? this._type;
   }
 
   get config(): DeepReadonly<ConfigGroup> {

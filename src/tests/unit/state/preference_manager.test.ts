@@ -2,12 +2,13 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ParaState } from '../../../../lib/state/parastate';
 import { GlobalState } from '../../../../lib/state';
 import { PreferenceManager, ColorPrefManager } from '../../../../lib/state/preference_manager';
+import type { SettingsInput } from '../../../../lib/config/config_types';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function makeState(overrides: Record<string, unknown> = {}): ParaState {
+function makeState(overrides: SettingsInput = {}): ParaState {
   const globalState = new GlobalState({});
   return new ParaState(globalState, overrides);
 }
@@ -119,7 +120,7 @@ describe('ColorPrefManager', () => {
     expect(state.config.color.isDarkModeEnabled).toBe(false);
   });
 
-  it('resolves dark when system prefers dark and themeMode is system', () => {
+  it('resolves dark when system prefers dark and themeMode is auto', () => {
     manager.destroy();
     mqlStub = stubMatchMedia({ '(prefers-color-scheme: dark)': true });
     vi.stubGlobal('matchMedia', mqlStub.impl);
@@ -159,9 +160,9 @@ describe('ColorPrefManager', () => {
     expect(state.config.color.themeSource).toBe('user');
   });
 
-  it('marks themeSource as system when themeMode is set to system', () => {
+  it('marks themeSource as system when themeMode is set to auto', () => {
     state.updateConfig(draft => { draft.color.themeMode = 'dark'; });
-    state.updateConfig(draft => { draft.color.themeMode = 'system'; });
+    state.updateConfig(draft => { draft.color.themeMode = 'auto'; });
     expect(state.config.color.themeSource).toBe('system');
   });
 
@@ -234,7 +235,7 @@ describe('ColorPrefManager', () => {
   it('clearModeDefault restores system behavior after a mode default', () => {
     manager.setModeDefault('themeMode', 'dark');
     manager.clearModeDefault('themeMode');
-    expect(state.config.color.themeMode).toBe('system');
+    expect(state.config.color.themeMode).toBe('auto');
     expect(state.config.color.themeSource).toBe('default');
   });
 
@@ -254,7 +255,7 @@ describe('ColorPrefManager', () => {
   // Live system preference updates
   // -------------------------------------------------------------------------
 
-  it('updates isDarkModeEnabled when system color-scheme changes and themeMode is system', () => {
+  it('updates isDarkModeEnabled when system color-scheme changes and themeMode is auto', () => {
     expect(state.config.color.isDarkModeEnabled).toBe(false);
     mqlStub.fire('(prefers-color-scheme: dark)', true);
     expect(state.config.color.isDarkModeEnabled).toBe(true);

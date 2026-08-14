@@ -82,7 +82,7 @@
     "pubminor": "npm version minor && npm publish",
     "pubmajor": "npm version major && npm publish",
     "docs:generate": "npm run config:generate && tsc && api-extractor run --local --verbose && npm run docs:api && npm run docs:pages",
-    "docs:check": "git diff --exit-code -- lib/config/config_defaults.ts lib/config/config_metadata.ts lib/config/config_types.ts etc/paracharts.api.md",
+    "docs:check": "git diff --exit-code -- lib/config/config_defaults.ts lib/config/config_metadata.ts lib/config/config_types.ts etc/paracharts.api.md etc/paracharts.ai.api.md",
     "docs:dev": "npm run docs:generate && vitepress dev docs",
     "docs:build": "npm run docs:generate && vitepress build docs",
     "docs:preview": "vitepress preview docs"
