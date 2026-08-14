@@ -1,0 +1,56 @@
+{
+    "description": "Histogram settings.",
+    "ref": "type.plane",
+    "family": "histogram",
+    "settings": {
+        "bins": {
+            "label": "cpanel.tabs.chart.histogram_bins",
+            "description": "Number of bins for grouping data",
+            "type": "number",
+            "default": 20,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 5,
+                "max": 100
+            },
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "displayAxis": {
+            "label": "cpanel.tabs.chart.histogram_display_axis",
+            "description": "Which axis shows the histogram bars",
+            "type": "string",
+            "default": "x",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": [
+                    "x",
+                    "y"
+                ]
+            },
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "groupingFacet": {
+            "label": "cpanel.tabs.chart.histogram_grouping_facet",
+            "description": "Which axis is used for grouping",
+            "type": "string",
+            "default": "",
+            "control": "dropdown",
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "relativeAxes": {
+            "label": "cpanel.tabs.chart.histogram_relative_axes",
+            "description": "Show counts or percentages",
+            "type": "'Counts' | 'Percentage'",
+            "default": "Counts",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": [
+                    "Counts",
+                    "Percentage"
+                ]
+            },
+            "parentView": "controlPanel.tabs.chart.chart"
+        }
+    }
+}

@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const Chart51: Story = {
-  name: "Old Faithful Geyser Eruptions (51)",
+  name: "d3 (51)",
   args: {
-    filename: "manifests/scatter-manifest-geyser.json",
+    filename: "manifests/scatter-manifest-d3.json",
     forcecharttype: "scatter",
   }
 }

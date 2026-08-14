@@ -1,18 +1,18 @@
-import { Manifest } from '@fizz/paramanifest';
-import { modelFromInlineManifest  } from '@fizz/paramodel';
-import { initParaSummary, summarizerFromModel } from '@fizz/parasummary';
-
 import '../../../lib-ai/index-ai';
 
-import SINGLE_LINE_MANIFEST from '../../demo-data/line-single-manifest-7.json';
+import { ParaChartAi } from '../../../lib-ai/index-ai';
 
-await initParaSummary();
+async function displayShortDesc(pElementId: string, chartElementId: string): Promise<void> {
+  const pElement = document.getElementById(pElementId) as HTMLParagraphElement;
+  const chartElement = document.getElementById(chartElementId) as ParaChartAi;
+  const shortDesc = await chartElement.shortDescription();
+  pElement.innerText = shortDesc;
+}
 
-const singleLinePara = document.getElementById('single_line') as HTMLParagraphElement;
-
-const singleLineModel = modelFromInlineManifest(SINGLE_LINE_MANIFEST as Manifest);
-const singleLineSummarizer = summarizerFromModel(singleLineModel);
-
-const singleLineShort = await singleLineSummarizer.getRequestedSummaries(['$.datasets[0]._short']);
-
-singleLinePara.innerText = singleLineShort.text;
+displayShortDesc('single_line_p', 'single_line_c');
+displayShortDesc('multi_line_p', 'multi_line_c');
+displayShortDesc('pie_p', 'pie_c');
+displayShortDesc('single_bar_p', 'single_bar_c');
+displayShortDesc('multi_bar_p', 'multi_bar_c');
+displayShortDesc('scatter_p', 'scatter_c');
+displayShortDesc('waterfall_p', 'waterfall_c');

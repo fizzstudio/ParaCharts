@@ -15,8 +15,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { View, type SnapLocation } from '../base_view';
-import { ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 import { Layout } from './layout';
+import { computeRowSize, computeColumnSize } from './layout_utils';
 import { fixed } from '../../common/utils';
 import { Logger, getLogger } from '@fizz/logger';
 
@@ -25,7 +26,7 @@ import { Logger, getLogger } from '@fizz/logger';
  */
 export abstract class FlexLayout extends Layout {
 
-  constructor(paraview: ParaView, public readonly gap: number, public readonly alignViews: SnapLocation, id?: string) {
+  constructor(paraview: ViewContext, public readonly gap: number, public readonly alignViews: SnapLocation, id?: string) {
     super(paraview, id);
   }
 
@@ -39,19 +40,13 @@ export abstract class FlexLayout extends Layout {
  * Horizontal row of views.
  */
 export class RowLayout extends FlexLayout {
-  constructor(paraview: ParaView, gap: number, alignViews: SnapLocation, id?: string) {
+  constructor(paraview: ViewContext, gap: number, alignViews: SnapLocation, id?: string) {
     super(paraview, gap, alignViews, id);
     this.log = getLogger("RowLayout");
   }
 
   computeSize(): [number, number] {
-    return [
-      this._children.reduce((sum, kid) => sum + kid.paddedWidth, 0)
-        + this.gap*(this._children.length - 1),
-      this._children.length
-        ? Math.max(...this._children.map(kid => kid.paddedHeight))
-        : 0
-    ];
+    return computeRowSize(this._children, this.gap);
   }
 
   protected _snapChildY(kid: View) {
@@ -80,19 +75,13 @@ export class RowLayout extends FlexLayout {
  * Vertical column of views.
  */
 export class ColumnLayout extends FlexLayout {
-  constructor(paraview: ParaView, gap: number, alignViews: SnapLocation, id?: string) {
+  constructor(paraview: ViewContext, gap: number, alignViews: SnapLocation, id?: string) {
     super(paraview, gap, alignViews, id);
     this.log = getLogger("ColumnLayout");
   }
 
   computeSize(): [number, number] {
-    return [
-      this._children.length
-        ? Math.max(...this._children.map(kid => kid.paddedWidth))
-        : 0,
-      this._children.reduce((sum, kid) => sum + kid.paddedHeight, 0)
-        + this.gap*(this._children.length - 1)
-    ];
+    return computeColumnSize(this._children, this.gap);
   }
 
   protected _snapChildX(kid: View) {

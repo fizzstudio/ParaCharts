@@ -14,23 +14,16 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import {
-  DeepReadonly, WaterfallSettings, type ParaState
-} from '../state';
-import { type ParaView } from '../paraview';
-import { NavNode } from '../view/layers';
-
 import { ChartType } from '@fizz/paramanifest';
-import { PlaneChartInfo, SONI_RIFF_SPEEDS } from './plane_chart';
-import { AxisInfo, loopParaviewRefresh } from '../common';
-import { computeAxisRange } from './plane_chart';
-
-import { Datapoint, PlaneDatapoint, Box } from '@fizz/paramodel';
+import { type Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
 
 import { formatXYDatapointX } from '@fizz/parasummary';
+import { type ParaState } from '../state';
+import { type DeepReadonly, TypeWaterfallConfig } from '../config/config_types';
+import { type NavNode } from '../view/layers';
+import { PlaneChartInfo, SONI_RIFF_SPEEDS, computeAxisRange, AxisRangeInfo } from './plane_chart';
+import { loopParaviewRefresh } from '../common';
 import { SoniPoint } from '../audio/soni_point';
-import { Datatype } from '@fizz/paramanifest';
-import { Interval } from '@fizz/chart-classifier-utils';
 
 export class WaterfallChartInfo extends PlaneChartInfo {
   protected _cumulativeTotals!: number[];
@@ -44,8 +37,8 @@ export class WaterfallChartInfo extends PlaneChartInfo {
     return true;
   }
 
-  get settings() {
-    return super.settings as DeepReadonly<WaterfallSettings>;
+  get config() {
+    return super.config as DeepReadonly<TypeWaterfallConfig>;
   }
 
   protected _init(): void {
@@ -82,7 +75,7 @@ export class WaterfallChartInfo extends PlaneChartInfo {
     }
   }
 
-  protected _numericYAxisRange(facetKey: string): Interval {
+  protected _numericYAxisRange(facetKey: string): AxisRangeInfo {
     return facetKey === 'x'
       ? super._numericYAxisRange(facetKey)
       : computeAxisRange(0, Math.max(...this._cumulativeTotals))
@@ -110,11 +103,11 @@ export class WaterfallChartInfo extends PlaneChartInfo {
   //   super.playDatapoints(datapoints);
   // }
 
-  playDatapoints(datapoints: PlaneDatapoint[]): void {
+  async playDatapoints(datapoints: PlaneDatapoint[]): Promise<void> {
     const length = datapoints.length;
     loopParaviewRefresh(this._paraView,
-      this._paraView.paraState.settings.animation.popInAnimateRevealTimeMs
-      + SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex)! * length, 50);
+      this._paraView.paraState.config.animation.popInAnimateRevealTimeMs
+      + SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex)! * length, 50);
     // We can't make the sonipoint directly from the model datapoint; we need to
     // take the sonipoint y-min/max from the cumulative totals for each datapoint
     const soniPoints = [new SoniPoint(
@@ -135,12 +128,12 @@ export class WaterfallChartInfo extends PlaneChartInfo {
     // const total = this._cumulativeTotalForDatapoint(datapoints[0]);
     // console.log('TOTAL', total);
     // soniPoint.y = total;
-    this._sonifier.playSoniPoints([soniPoints[0]]);
+    await this._sonifier.playSoniPoints([soniPoints[0]]);
     if (soniPoints.length > 1) {
-      setTimeout(() => {
-        this._sonifier.playSoniPoints([soniPoints[1]]);
-      }, SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex));
+      await new Promise<void>(resolve =>
+        setTimeout(resolve, SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex))
+      );
+      await this._sonifier.playSoniPoints([soniPoints[1]]);
     }
   }
-
 }

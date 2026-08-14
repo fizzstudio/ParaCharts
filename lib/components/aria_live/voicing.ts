@@ -1,6 +1,6 @@
 import { Highlight } from '@fizz/parasummary';
-import { ParaState } from '../../state';
 import { Logger, getLogger } from '@fizz/logger';
+import { ParaState } from '../../state';
 
 export class Voicing {
   protected _voice: SpeechSynthesis | null = null;
@@ -28,17 +28,17 @@ export class Voicing {
     return this._speakingCount > 0;
   }
 
-  speak(msg: string, highlights: Highlight[], startFrom = 0) {
+  speak(msg: string, highlights: Highlight[]): Promise<void> {
     if (this._voice) {
       this.shutUp();
 
-      this._utterance = this.speakText(msg);
+      this.speakText(msg);
       this._speakingCount++;
       // Get the index of the highlight containing the word
       const getHighlightIndex = (wordIndex: number) =>
         highlights.findIndex(hl => wordIndex >= hl.start && wordIndex < hl.end);
 
-      this._utterance.onboundary = (event: SpeechSynthesisEvent) => {
+      this._utterance!.onboundary = (event: SpeechSynthesisEvent) => {
         const highlightIndex = getHighlightIndex(event.charIndex);
         if (highlightIndex === -1) {
           this._highlightIndex = null;
@@ -49,14 +49,19 @@ export class Voicing {
         this._paraState.postNotice('landmarkStart', highlight);
       };
 
-      this._utterance.onend = (event: SpeechSynthesisEvent) => {
-        this._paraState.postNotice('landmarkEnd', null);
-        this._speakingCount--;
-      };
+      const prom = new Promise<void>((resolve, reject) => {
+        this._utterance!.onend = (event: SpeechSynthesisEvent) => {
+          this._paraState.postNotice('landmarkEnd', null);
+          this._speakingCount--;
+          resolve();
+        };
+      });
+      return prom;
     }
+    return Promise.resolve();
   }
 
-  speakText(text: string): SpeechSynthesisUtterance {
+  speakText(text: string) {
     // Keep the utterance around until it finishes playing so it doesn't
     // get GC'd
     this._utterance = new SpeechSynthesisUtterance(text);
@@ -65,7 +70,6 @@ export class Voicing {
     this._utterance.pitch = this._pitch;
     this._utterance.volume = this._volume;
     this._voice!.speak(this._utterance);
-    return this._utterance;
   }
 
   pause() {

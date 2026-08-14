@@ -1,17 +1,13 @@
-//import { styles } from '../../styles';
-import { ControlPanelTabPanel } from './tab_panel';
-import { ParaView } from '../../paraview';
-import '../datatable';
-
-import * as sb from '@fizz/sparkbraille-component';
-import '@fizz/sparkbraille-component';
-
 import {
   html, css, nothing,
 } from 'lit';
 import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
-
+import * as sb from '@fizz/sparkbraille-component';
+import '@fizz/sparkbraille-component';
+import { ControlPanelTabPanel } from './tab_panel';
+import { type ParaView } from '../../paraview';
+import '../datatable';
 
 @customElement('para-data-panel')
 export class DataPanel extends ControlPanelTabPanel {
@@ -64,6 +60,9 @@ export class DataPanel extends ControlPanelTabPanel {
         width: 8rem;
         max-width: 8rem;
       }
+      #data-buttons button::first-letter {
+        text-transform: capitalize;
+      }
       #sparkbraille {
         background-color: var(--theme-color-light);
         padding: 0.2rem;
@@ -79,16 +78,19 @@ export class DataPanel extends ControlPanelTabPanel {
         class="tab-content"
       >
         <div>
-          <p>Source: <span id="source-name">unknown</span></p>
+          <p>
+            ${this._globalState.l10n.localize('cpanel.tabs.data.source')}:
+            <span id="source-name">${this._globalState.l10n.localize('cpanel.tabs.data.unknown')}</span>
+          </p>
         </div>
         <div id="data-buttons">
-          ${this.controlPanel.settings.isSparkBrailleControlVisible
+          ${this.controlPanel.config.isSparkBrailleControlVisible
             ? html`
               <button
                 @click=${() => {
                   this.isSparkBrailleVisible = !this.isSparkBrailleVisible;
                   // XXX Does this work?
-                  paraView.paraState.updateSettings(draft => {
+                  paraView.paraState.updateConfig(draft => {
                     draft.controlPanel.isSparkBrailleVisible = this.isSparkBrailleVisible;
                   })
                   //this.controlPanel.requestUpdate();
@@ -118,26 +120,26 @@ export class DataPanel extends ControlPanelTabPanel {
           <button
             @click=${() => this._saveData()}
           >
-            Save data
+            ${this._globalState.l10n.localize('cpanel.tabs.data.save_data')}
           </button>
           <button
             @click=${() => {
               this._controlPanel.paraChart.isDataTableVisible = ! this._controlPanel.paraChart.isDataTableVisible;
             }}
           >
-            Data table
+            ${this._globalState.l10n.localize('cpanel.tabs.data.data_table')}
           </button>
           <button
             @click=${() => this.controlPanel.dialog.show('Source links')}
           >
-            Source Links
+            ${this._globalState.l10n.localize('cpanel.tabs.data.source_links')}
           </button>
           <button
             @click=${() => {
               this._saveChart();
             }}
           >
-            Save chart
+            ${this._globalState.l10n.localize('cpanel.tabs.data.save_chart')}
           </button>
         </div>
       </div>

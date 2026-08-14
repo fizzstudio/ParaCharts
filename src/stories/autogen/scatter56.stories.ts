@@ -12,9 +12,9 @@ const meta = {
 export default meta;
 
 export const Chart56: Story = {
-  name: "s1 (56)",
+  name: "Iris Flower Data Set (56)",
   args: {
-    filename: "manifests/scatter-manifest-s1.json",
+    filename: "manifests/scatter-manifest-iris-petal.json",
     forcecharttype: "scatter",
   }
 }

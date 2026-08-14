@@ -22,10 +22,10 @@ import { classMap } from 'lit/directives/class-map.js';
 
 import { View, type SnapLocation, type BboxAnchorCorner } from '../view/base_view';
 import { generateUniqueId, fixed } from '../common/utils';
-import { ParaView } from '../paraview';
+import { type ViewContext } from './view_context';
 import { SVGNS } from '../common/constants';
 import { Vec2 } from '../common/vector';
-import { Setting } from '../state';
+import { ConfigSetting } from '../config/config_types';
 
 export type LabelTextAnchor = 'start' | 'middle' | 'end';
 
@@ -75,10 +75,12 @@ export class Label extends View {
   protected _lineSpacing: number;
   protected _lineHeight!: number;
   protected _text: string;
+  protected _displayText: string;
+  protected _brailleText?: string;
   protected _textCornerOffsets!: LabelTextCorners;
   protected _textLines: TextLine[] = [];
 
-  constructor(paraview: ParaView, private options: LabelOptions) {
+  constructor(paraview: ViewContext, private options: LabelOptions) {
     super(paraview);
     this._canWidthFlex = true;
     this._canHeightFlex = true;
@@ -86,10 +88,14 @@ export class Label extends View {
       if (!options.classList.includes('label')) {
         options.classList.push('label');
       }
+      if (paraview.paraState.config.chart.isTactileEnabled && !options.classList.includes('tactile')) {
+        options.classList.push('tactile');
+      }
       this._classInfo = Object.fromEntries(options.classList.map(cls => [cls, true]));
     } else {
       this._classInfo = {
-        label: true
+        label: true,
+        tactile: paraview.paraState.config.chart.isTactileEnabled
       };
     }
     this._angle = this.options.angle ?? 0;
@@ -97,6 +103,8 @@ export class Label extends View {
     this._justify = this.options.justify ?? 'start';
     this._lineSpacing = this.options.lineSpacing ?? 0;
     this._text = this.options.text;
+    this._displayText = this._text;
+    this._refreshDisplayText();
     // It should be okay to go ahead and compute our size here, rather than
     // waiting to be parented
     this.updateSize();
@@ -156,13 +164,17 @@ export class Label extends View {
 
   set text(text: string) {
     this._text = text;
+    this._refreshDisplayText();
     this.updateSize();
     // updateSize() only requests an update if the size has changed
     this.paraview.requestUpdate();
   }
 
   get angle() {
-    return this._angle;
+    // Disallow angled (but not vertical) text in tactile mode
+    return (this.paraview.paraState.config.chart.isTactileEnabled && this._angle % 90)
+      ? 0
+      : this._angle;
   }
 
   set angle(newAngle: number) {
@@ -225,19 +237,19 @@ export class Label extends View {
   }
 
   get topNormal(): Vec2 {
-    return new Vec2(0, 1).rotate(this._angle*Math.PI/180);
+    return new Vec2(0, 1).rotate(this.angle*Math.PI/180);
   }
 
   get bottomNormal(): Vec2 {
-    return new Vec2(0, -1).rotate(this._angle*Math.PI/180);
+    return new Vec2(0, -1).rotate(this.angle*Math.PI/180);
   }
 
   get leftNormal(): Vec2 {
-    return new Vec2(-1, 0).rotate(this._angle*Math.PI/180);
+    return new Vec2(-1, 0).rotate(this.angle*Math.PI/180);
   }
 
   get rightNormal(): Vec2 {
-    return new Vec2(1, 0).rotate(this._angle*Math.PI/180);
+    return new Vec2(1, 0).rotate(this.angle*Math.PI/180);
   }
 
   get topLeftNormal(): Vec2 {
@@ -256,20 +268,67 @@ export class Label extends View {
     return this.bottomNormal.add(this.leftNormal).normalize();
   }
 
+  addClass(cls: string) {
+    this._classInfo[cls] = true;
+  }
+
+  removeClass(cls: string) {
+    delete this._classInfo[cls];
+  }
+
   resize(width: number, height: number): void {
     // pretend to resize for grid layout
   }
 
-  computeSize(): [number, number] {
-    const text = document.createElementNS(SVGNS, 'text');
-    if (this.options.classList) {
-      text.classList.add(...this.options.classList);
+  protected get _tactileLabelMode() {
+    if (!this.paraview.paraState.config.chart.isTactileEnabled) return undefined;
+    return this.paraview.paraState.config.chart.tactileLabelMode;
+  }
+
+  protected _refreshDisplayText() {
+    const mode = this._tactileLabelMode;
+    delete this._classInfo['tactile-braille'];
+    delete this._classInfo['tactile-latin'];
+    delete this._classInfo['tactile-both'];
+    delete this._classInfo['tactile-none'];
+    this._brailleText = undefined;
+    this._displayText = this._text;
+
+    if (!mode) return;
+    this._classInfo[`tactile-${mode.toLowerCase()}`] = true;
+    if (mode === 'Braille' || mode === 'Both') {
+      this._brailleText = this.paraview.translateBraille(
+        this._text,
+        this.paraview.paraState.config.chart.tactileBrailleGrade,
+      );
+      if (mode === 'Braille') this._displayText = this._brailleText;
     }
+  }
+
+  computeSize(): [number, number] {
+    this._textLines = [];
+    if (this._tactileLabelMode === 'None') {
+      return this._measureOuterBbox(new DOMRect(0, 0, 0, 0));
+    }
+    const text = document.createElementNS(SVGNS, 'text');
+    text.classList.add(...Object.keys(this._classInfo).filter(cls => this._classInfo[cls]));
     text.setAttribute('text-anchor', this._textAnchor);
     text.style.visibility = 'hidden';
-    if (this._text) {
+    if (this._tactileLabelMode === 'Both') {
+      const braille = document.createElementNS(SVGNS, 'tspan');
+      braille.classList.add('tactile-braille-run');
+      braille.setAttribute('x', '0');
+      braille.setAttribute('dy', '0');
+      braille.textContent = this._brailleText ?? '';
+      const latin = document.createElementNS(SVGNS, 'tspan');
+      latin.classList.add('tactile-latin-run');
+      latin.setAttribute('x', '0');
+      latin.setAttribute('dy', '0');
+      latin.textContent = this._text;
+      text.append(braille, latin);
+    } else if (this._displayText) {
       // Don't insert arbitrary HTML
-      text.textContent = this._text;
+      text.textContent = this._displayText;
     } else {
       text.innerHTML = '&nbsp;';
     }
@@ -279,10 +338,11 @@ export class Label extends View {
     let width = bbox.width;
     let height = bbox.height;
     const wrapMode = this.options.wrapWidth !== undefined && width > this.options.wrapWidth;
-    if (wrapMode || this._text.includes('\n')) {
+    const wrapText = this._tactileLabelMode === 'Braille' ? this._text : this._displayText;
+    if (wrapMode || wrapText.includes('\n')) {
       text.textContent = '';
       const tspans: SVGTSpanElement[] = [document.createElementNS(SVGNS, 'tspan')];
-      const tokens = this._text.split(wrapMode ? /(\s+)/ : /(\n+)/);
+      const tokens = wrapText.split(wrapMode ? /(\s+)/ : /(\n+)/);
       // XXX Assumes first token is non-whitespace
       tspans.at(-1)!.textContent = tokens.shift()!;
       text.append(tspans.at(-1)!);
@@ -306,7 +366,7 @@ export class Label extends View {
         const oldContent = tspan.textContent;
         if (wrapMode) {
           tspan.textContent += ' ' + tok;
-          const tspanBbox = this._getTextBBox(tspan);
+          const tspanBbox = this._getDisplayLineBBox(tspan);
           if (tspanBbox.width >= this.options.wrapWidth!) {
             tspan.textContent = oldContent;
             tspans.push(document.createElementNS(SVGNS, 'tspan'));
@@ -326,13 +386,33 @@ export class Label extends View {
       }
 
       bbox = text.getBBox();
+      const lineBboxes = tspans.map(tspan => this._getDisplayLineBBox(tspan));
+      const maxLineHeight = Math.max(...lineBboxes.map(line => line.height));
+      if (this._tactileLabelMode === 'Braille' || this._tactileLabelMode === 'Both') {
+        bbox = new DOMRect(
+          bbox.x,
+          bbox.y,
+          Math.max(...lineBboxes.map(line => line.width)),
+          Math.max(
+            bbox.height,
+            maxLineHeight * lineBboxes.length + this._lineSpacing * (lineBboxes.length - 1),
+          ),
+        );
+      }
       [width, height] = this._measureOuterBbox(bbox);
-      this._textLines = tspans.map(t => ({ text: t.textContent!, offset: 0 }));
+      this._textLines = tspans.map(tspan => ({
+        text: this._tactileLabelMode === 'Braille'
+          ? this.paraview.translateBraille(
+            tspan.textContent!,
+            this.paraview.paraState.config.chart.tactileBrailleGrade,
+          )
+          : tspan.textContent!,
+        offset: 0,
+      }));
 
       if (this._justify !== 'start' && this.textAnchor === undefined) {
-        tspans.forEach((tspan, i) => {
-          const tspanBbox = this._getTextBBox(tspan);
-          let x = width - tspanBbox.width;
+        lineBboxes.forEach((lineBbox, i) => {
+          let x = width - lineBbox.width;
           if (this._justify === 'center') {
             x = x / 2;
           }
@@ -340,7 +420,7 @@ export class Label extends View {
         });
       }
 
-      this._lineHeight = tspans[0].getExtentOfChar(0).height;
+      this._lineHeight = maxLineHeight || bbox.height;
       tspans.forEach(t => t.remove());
     } else {
       [width, height] = this._measureOuterBbox(bbox);
@@ -356,6 +436,7 @@ export class Label extends View {
    */
   protected _getTextBBox(el: SVGTextContentElement): DOMRect {
     const n = el.getNumberOfChars();
+    if (n === 0) return el.getBBox();
     const minX = el.getExtentOfChar(0).x;
     const maxX = el.getExtentOfChar(n - 1).x + el.getExtentOfChar(n - 1).width;
     const minYs: number[] = [];
@@ -369,6 +450,29 @@ export class Label extends View {
     const minY = Math.min(...minYs);
     const maxY = Math.max(...maxYs);
     return new DOMRect(minX, minY, maxX - minX, maxY - minY);
+  }
+
+  protected _getDisplayLineBBox(tspan: SVGTSpanElement): DOMRect {
+    const latinBbox = this._getTextBBox(tspan);
+    if ((this._tactileLabelMode !== 'Braille' && this._tactileLabelMode !== 'Both')
+      || !tspan.textContent) return latinBbox;
+
+    const braille = document.createElementNS(SVGNS, 'tspan');
+    braille.textContent = this.paraview.translateBraille(
+      tspan.textContent,
+      this.paraview.paraState.config.chart.tactileBrailleGrade,
+    );
+    braille.setAttribute('x', '0');
+    tspan.parentElement!.append(braille);
+    const brailleBbox = this._getTextBBox(braille);
+    braille.remove();
+    if (this._tactileLabelMode === 'Braille') return brailleBbox;
+    return new DOMRect(
+      latinBbox.x,
+      latinBbox.y,
+      Math.max(latinBbox.width, brailleBbox.width),
+      Math.max(latinBbox.height, brailleBbox.height),
+    );
   }
 
   /**
@@ -423,16 +527,17 @@ export class Label extends View {
 
   protected _makeTransform() {
     let t: string | undefined;
-    if (this._angle) {
+    if (this.angle) {
       t = fixed`
         translate(${this._x},${this._y})
-        rotate(${this._angle})
+        rotate(${this.angle})
         translate(${-this._x},${-this._y})`;
     }
     return t;
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
+    this._refreshDisplayText();
     this.updateSize();
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -467,6 +572,7 @@ export class Label extends View {
   }
 
   render() {
+    if (this._tactileLabelMode === 'None') return svg`${nothing}`;
     // TODO: figure out why `this._y` is larger here than for single line titles
     // HACK: divide `this._y` by 2 for `y` attribute value
     return svg`
@@ -480,13 +586,30 @@ export class Label extends View {
         text-anchor=${this._textAnchor !== 'start' ? this._textAnchor : nothing}
         transform=${this._makeTransform() ?? nothing}
         id=${this.id}
+        aria-label=${this._tactileLabelMode === 'Braille' || this._tactileLabelMode === 'Both'
+          ? this._text
+          : nothing}
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
         @pointerenter=${this.options.pointerEnter ?? nothing}
         @pointerleave=${this.options.pointerLeave ?? nothing}
         @pointermove=${this.options.pointerMove ?? nothing}
         @click=${this.options.click ?? nothing}
       >
-        ${this._textLines.length
+        ${this._tactileLabelMode === 'Both'
+        ? (this._textLines.length ? this._textLines : [{ text: this._text, offset: 0 }]).map((line, i) => svg`
+            <tspan
+              class="tactile-braille-run"
+              x=${fixed`${this._x + line.offset}`}
+              dy=${i === 0 ? '0' : `${this._lineHeight + this._lineSpacing}px`}
+            >${this._textLines.length
+              ? this.paraview.translateBraille(
+                line.text,
+                this.paraview.paraState.config.chart.tactileBrailleGrade,
+              )
+              : this._brailleText}</tspan>
+            <tspan class="tactile-latin-run" x=${fixed`${this._x + line.offset}`} dy="0">${line.text}</tspan>
+          `)
+        : this._textLines.length
         ? this._textLines.map((line, i) =>
           svg`
               <tspan
@@ -496,7 +619,7 @@ export class Label extends View {
                 ${line.text}
               </tspan>
             `)
-        : this._text ? this._text : unsafeHTML('&nbsp;')}
+        : this._displayText ? this._displayText : unsafeHTML('&nbsp;')}
       </text>
     `;
   }

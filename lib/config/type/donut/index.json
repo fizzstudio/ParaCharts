@@ -1,0 +1,24 @@
+{
+    "description": "Donut chart settings.",
+    "ref": "type.pastry",
+    "settings": {
+        "annularThickness": {
+            "default": 0.5
+        },
+        "centerLabel": {
+            "default": "title"
+        },
+        "centerLabelPadding": {
+            "default": 15
+        },
+        "orientationAngleOffset": {
+            "default": 90
+        },
+        "explode": {
+            "default": ""
+        },
+        "explodeDistance": {
+            "default": 20
+        }
+    }
+}

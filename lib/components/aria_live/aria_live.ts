@@ -1,19 +1,17 @@
-
+import { html, css, type PropertyValues } from 'lit';
+import { ref, createRef } from 'lit/directives/ref.js';
+import { property, customElement } from 'lit/decorators.js';
 import { ParaComponent } from '../paracomponent';
 import { ScreenReaderBridge, type AriaLiveHistoryDialog } from '.';
 import { Voicing } from './voicing';
 import { styles } from '../../view/styles';
 import { type Announcement } from '../../state';
-
-import { html, css, type PropertyValues } from 'lit';
-import { ref, createRef } from 'lit/directives/ref.js';
-import { property, customElement } from 'lit/decorators.js';
 import { HighlightReaderBridge } from './highlightreaderbridge';
 
 @customElement('para-aria-live-region')
 export class AriaLive extends ParaComponent {
 
-  @property({type: Object}) announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0 };
+  @property({type: Object}) announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0, target: 'all' };
 
   protected _srb!: HighlightReaderBridge;
   protected _voicing!: Voicing;
@@ -40,10 +38,14 @@ export class AriaLive extends ParaComponent {
 
   protected willUpdate(changedProperties: PropertyValues) {
     if (changedProperties.has('announcement') && this.announcement.text) {
-      if (this.announcement.clear) {
-        this._srb.clear();
+      const target = this.announcement.target;
+      const sendToSR = target === 'all' || target === 'sr' || target === 'voice';
+      if (sendToSR) {
+        if (this.announcement.clear) {
+          this._srb.clear();
+        }
+        this._srb.renderHighlights(this.announcement.text, this.announcement.highlights);
       }
-      this._srb.renderHighlights(this.announcement.text, this.announcement.highlights);
     }
   }
 
@@ -72,10 +74,13 @@ export class AriaLive extends ParaComponent {
         // trigger a reactive update of the history dialog.
         this._setHistory([...this._history, msg ?? '']);
 
+        const target = this.announcement.target;
+        const sendToSV = target === 'all' || target === 'sv' || target === 'voice';
         if (msg
-          && this._paraState.settings.ui.isVoicingEnabled
-          && this._paraState.settings.ui.isAnnouncementEnabled) {
-          this._voicing.speak(msg, JSON.parse(highlights!), this.announcement.startFrom);
+          && sendToSV
+          && this._paraState.config.ui.isVoicingEnabled
+          && this._paraState.config.ui.isAnnouncementEnabled) {
+          this._voicing.speak(msg, JSON.parse(highlights!));
         }
       })
     });
@@ -114,7 +119,7 @@ export class AriaLive extends ParaComponent {
 
   render() {
     // XXX hack
-    this._voicing.rate = this._paraState.settings.ui.speechRate;
+    this._voicing.rate = this._paraState.config.ui.speechRate;
     return html`
       <div
         ${ref(this._ariaLiveRef)}

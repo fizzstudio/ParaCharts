@@ -14,13 +14,11 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { BaseState, SettingObserver } from './base_state';
-import { Logger, getLogger } from '@fizz/logger';
+import { property } from '@lit-app/state';
 import papa from 'papaparse';
-import { State, property } from '@lit-app/state';
-import { produceWithPatches, enablePatches, applyPatches } from 'immer';
+import { produceWithPatches, enablePatches, applyPatches, type Patch } from 'immer';
 enablePatches();
-
+import { Logger, getLogger } from '@fizz/logger';
 import {
   dataFromManifest, type AllSeriesData, type ChartType,
   isPastryType,
@@ -34,23 +32,26 @@ import {
   planeModelFromInlineData,
   planeModelFromExternalData,
   PlaneModel,
-  Datapoint
+  type Datapoint
 } from '@fizz/paramodel';
 import {
-  Summarizer, FormatType, formatXYDatapointX, formatXYDatapointY,
+  FormatType, formatXYDatapointX, formatXYDatapointY,
   HighlightedSummary, type Highlight,
   formatBox
 } from '@fizz/parasummary';
-
+import { clusterObject } from '@fizz/clustering';
+import { BaseState, SettingObserver } from './base_state';
 import {
-  DeepReadonly, FORMAT_CONTEXT_SETTINGS, Settings, SettingsInput, FormatContext,
-  type Setting, type SettingGroup,
+  FORMAT_CONTEXT_SETTINGS, FormatContext,
 } from './settings_types';
+import { ConfigGroup, ConfigSetting, SettingsInput, Config } from '../config/config_types';
 import { SettingsManager } from './settings_manager';
 import { SettingControlManager } from './settings_controls';
-import { defaults, chartTypeDefaults } from './settings_defaults';
+import { chartTypeDefaults } from './settings_defaults';
+import { defaultConfig } from '../config/config_defaults';
 import { Colors } from '../common/colors';
-import { joinStrArray } from '../common/utils';
+import { type ContrastWarning } from '../common/contrast';
+import { joinStrArray, preciseAdd, preciseMultiply, trendTranslation } from '../common/utils';
 import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { actionMap } from './action_map';
@@ -58,15 +59,20 @@ import { KeymapManager } from './keymap_manager';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { Popup } from '../view/popup';
 import { type DatapointCursor } from '../view/layers/data/navigation';
-import { Point } from '@fizz/chart-classifier-utils';
-import { PathShape } from '../view/shape';
-import { GlobalState } from './global_state';
-import { BaseChartInfo, chartInfoClasses } from '../chart_types';
+import { type Point } from '@fizz/chart-classifier-utils';
+import { type PathShape } from '../view/shape';
+import { type GlobalState } from './global_state';
+import { type BaseChartInfo, chartInfoClasses, ComboChartInfo, LineChartInfo, ScatterChartInfo } from '../chart_types';
 import { firstDataset, type Manifest } from '../loader/common';
-import { clusterObject } from '@fizz/clustering';
 import { ClusterShellView } from '../view/layers';
+import { computeLabels } from '../common/axisinfo';
+import { numberToScaledNumberRounded } from '@fizz/number-scaling-rounding';
+import { LegendItem } from '../view/legend';
+import { type BubbleChartInfo } from '../chart_types/bubble_chart';
 
 export type DataState = 'initial' | 'pending' | 'complete' | 'error';
+
+export type AnnounceTarget = 'all' | 'sr' | 'sv' | 'voice' | 'explorationbar';
 
 // This mostly exists so that each new announcement will be considered
 // distinct, even if the text is the same
@@ -76,6 +82,7 @@ export interface Announcement {
   highlights: Highlight[];
   clear?: boolean;
   startFrom: number;
+  target: AnnounceTarget;
 }
 
 export interface BaseAnnotation {
@@ -138,8 +145,8 @@ const synchronizedSettings = [
   'chart.fontScale',
   'color.colorPalette',
   'grid.isDrawVertLines',
-  'chart.size.width',
-  'chart.size.height',
+  'chart.width',
+  'chart.height',
 ];
 
 // NB: Must be disallowed in series keys
@@ -182,19 +189,17 @@ export function makeSequenceId(seriesKey: string, index1: number, index2: number
 export class ParaState extends BaseState {
   readonly symbols = new DataSymbols();
 
-  @property() dataState: DataState = 'initial';
-  @property() settings!: Settings;
   @property() darkMode = false;
-  @property() announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0 };
+  @property() announcement: Announcement = { text: '', html: '', highlights: [], startFrom: 0, target: 'all' };
   @property() annotations: BaseAnnotation[] = [];
   @property() popups: Popup[] = [];
   @property() focusPopups: Popup[] = [];
   @property() selectPopups: Popup[] = [];
   @property() crossHairs: Array<{ id: string, popups: Array<PathShape | Popup> }> = [];
   @property() sparkBrailleInfo: SparkBrailleInfo | null = null;
-  @property() seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
   @property() clusterAnalyses: clusterObject[] | null = null;
   @property() frontSeries = '';
+  @property() frontDatapoints: Datapoint[] = [];
   @property() pointerCoords: Point = { x: 0, y: 0 }
   @property() isTitleHighlighted = false;
   @property() isHorizontalAxisHighlighted = false;
@@ -204,9 +209,14 @@ export class ParaState extends BaseState {
   @property() isNorthLegendHighlighted = false;
   @property() isSouthLegendHighlighted = false;
 
+  @property() protected _caption: HighlightedSummary = { text: '', html: '' };
+  @property() protected _pinnedSeriesKey: string | null = null;
+  @property() protected _pinnedBubbleSize: string | null = null;
+  @property() protected _pinnedCluster: number | null = null;
   @property() protected _dimmedSeries: string[] = [];
   @property() protected _hiddenSeries: string[] = [];
-  @property() protected data: AllSeriesData | null = null;
+  @property() protected _hiddenBubbleSize: string[] = [];
+  @property() protected _hiddenCluster: number[] = [];
   @property() protected focused = 'chart';
   @property() protected selected = null;
   @property() protected queryLevel = 'default';
@@ -215,6 +225,8 @@ export class ParaState extends BaseState {
   protected _prevVisitedDatapoints = new Set<string>();
   protected _everVisitedDatapoints = new Set<string>();
   @property() protected _highlightedDatapoints = new Set<string>();
+  @property() protected _lowlightedDatapoints = new Set<string>();
+  @property() protected _hiddenDatapoints = new Set<string>();
   _prevHighlightedElements = new Set<string>();
   @property() protected _selectedDatapoints = new Set<string>();
   @property() protected _crosshairedDatapoints = new Set<string>();
@@ -232,25 +244,36 @@ export class ParaState extends BaseState {
   @property() protected _userTrendLines: TrendLine[] = [];
   @property() protected _clusterShellViews: ClusterShellView[] = [];
 
+  protected _data: AllSeriesData | null = null;
+  protected _dataState: DataState = 'initial';
   protected _settingControls = new SettingControlManager(this);
   protected _settingObservers: { [path: string]: SettingObserver[] } = {};
   protected _manifest: Manifest | null = null;
+  protected _originalManifest: Manifest | null = null;
   protected _jimerator: Jimerator | null = null;
   protected _model: Model | null = null;
+  protected _comboModel: Model | null = null;
   protected _facets: FacetSignature[] | null = null;
   protected _type: ChartType = 'line';
   protected _title = '';
   protected _seriesProperties: SeriesPropertyManager;
+  protected _comboSeriesProperties: SeriesPropertyManager;
   protected _colors: Colors;
   protected _keymapManager = new KeymapManager(actionMap);
-  protected _summarizer!: Summarizer;
+  //protected _summarizer!: Summarizer;
   protected _seriesAnalyzerConstructor?: SeriesAnalyzerConstructor;
   protected _pairAnalyzerConstructor?: PairAnalyzerConstructor;
   protected _annotID: number = 0;
   protected log: Logger = getLogger("ParaState");
   protected _chartInfo!: BaseChartInfo;
+  protected _seriesAnalyses: Record<string, SeriesAnalysis | null> = {};
+  protected _comboChartInfo: LineChartInfo | null = null;
+  protected _currentDataset = 0;
 
   public idList: Record<string, boolean> = {};
+
+  /** Runtime contrast warnings from the last ColorPrefManager resolution. Empty when all colors pass. */
+  @property() colorContrastWarnings: ContrastWarning[] = [];
 
   constructor(
     protected _globalState: GlobalState,
@@ -263,9 +286,27 @@ export class ParaState extends BaseState {
     this._createSettings(_inputSettings);
     this._colors = new Colors(this);
     this._seriesProperties = new SeriesPropertyManager(this);
+    this._comboSeriesProperties = new SeriesPropertyManager(this, true);
     this._seriesAnalyzerConstructor = seriesAnalyzerConstructor;
     this._pairAnalyzerConstructor = pairAnalyzerConstructor;
     //this._getUrlAnnotations();
+  }
+
+  get dataState(): DataState {
+    return this._dataState;
+  }
+
+  set dataState(dataState: DataState) {
+    this._dataState = dataState;
+  }
+
+  get data(): AllSeriesData | null {
+    return this._data;
+  }
+
+  set data(data: AllSeriesData | null) {
+    this._data = data;
+    this.postNotice('setData', data);
   }
 
   get globalState() {
@@ -280,8 +321,20 @@ export class ParaState extends BaseState {
     return this._type;
   }
 
+  get manifest() {
+    return this._manifest;
+  }
+
+  get originalManifest() {
+    return this._originalManifest;
+  }
+
   get model() {
     return this._model;
+  }
+
+  get comboModel() {
+    return this._comboModel;
   }
 
   get title() {
@@ -294,6 +347,10 @@ export class ParaState extends BaseState {
 
   get seriesProperties() {
     return this._seriesProperties;
+  }
+
+  get comboSeriesProperties() {
+    return this._comboSeriesProperties;
   }
 
   get colors() {
@@ -332,6 +389,29 @@ export class ParaState extends BaseState {
     this._clusterShellViews = views;
   }
 
+  get caption() {
+    return this._caption;
+  }
+
+  async setCaption(summary?: HighlightedSummary): Promise<void> {
+    if (this.dataState === 'complete') {
+      if (summary !== undefined) {
+        this._caption = summary;
+      } else {
+        const shouldGetConcise = this.config.description.captionFormat === 'concise';
+        const generatedSummary = await (shouldGetConcise
+          ? this._chartInfo.summarizer.getConciseSummary()
+          : this._chartInfo.summarizer.getChartSummary()
+        );
+        if (generatedSummary !== undefined) {
+          this._caption = generatedSummary;
+        } else {
+          this._caption = { text: '', html: '' };
+        }
+      }
+    }
+  }
+
   nextAnnotID(): number {
     return this._annotID++;
   }
@@ -344,29 +424,118 @@ export class ParaState extends BaseState {
     return this._chartInfo;
   }
 
+  get seriesAnalyses() {
+    return this._seriesAnalyses;
+  }
+
+  get comboChartInfo() {
+    return this._comboChartInfo;
+  }
+
+  get currentDataset(): number {
+    return this._currentDataset;
+  }
+
+  set currentDataset(currentDataset: number) {
+    this._currentDataset = currentDataset;
+  }
+
   createChartInfo() {
-    // @ts-ignore
-    this._chartInfo = new chartInfoClasses[this.type](this.type, this);
+    if (this._manifest!.jim.datasets.length > 1) {
+      this._chartInfo = new ComboChartInfo(this.type, this);
+      this._comboChartInfo = new LineChartInfo('line', this);
+    } else {
+      this._chartInfo = new chartInfoClasses[this.type](this.type, this);
+    }
+  }
+
+  updateContrastWarnings(warnings: ContrastWarning[]): void {
+    this.colorContrastWarnings = warnings;
+  }
+
+  private _configResetCallbacks = new Set<() => void>();
+
+  onConfigReset(cb: () => void): () => void {
+    this._configResetCallbacks.add(cb);
+    return () => this._configResetCallbacks.delete(cb);
   }
 
   protected _createSettings(inputSettings: SettingsInput) {
-    const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
-    SettingsManager.suppleteSettings(hydratedSettings, defaults);
-    this.settings = hydratedSettings as Settings;
+    // const hydratedSettings = SettingsManager.hydrateInput(inputSettings);
+    // SettingsManager.suppleteSettings(hydratedSettings, defaults);
+    // this.settings = hydratedSettings as Settings;
+    const hydratedConfig = SettingsManager.hydrateInput(inputSettings) as Partial<Config>;
+    SettingsManager.suppleteSettings(hydratedConfig, defaultConfig);
+    for (const [path, value] of Object.entries(inputSettings)) {
+      SettingsManager.set(path, value, hydratedConfig as ConfigGroup, true);
+    }
+    this.config = hydratedConfig as Config;
+    // SettingsManager.suppleteSettings(this.settings, this.config as unknown as Settings);
+    this._configResetCallbacks.forEach(cb => cb());
   }
 
-  updateSettings(updater: (draft: Settings) => void, ignoreObservers = false) {
-    const [newSettings, patches, inversePatches] = produceWithPatches(this.settings, updater);
-    this.settings = newSettings;
+  protected _syncPatchesToManifest(patches: Patch[]) {
+    if (!this._manifest) return;
+    this._manifest.extensions ??= {};
+    this._manifest.extensions.paracharts ??= {};
+    this._manifest.extensions.paracharts.settings ??= {};
+    const extSettings = this._manifest.extensions.paracharts.settings;
+    for (const patch of patches) {
+      if (patch.op === 'replace') {
+        extSettings[patch.path.join('.')] = patch.value as string | number | boolean;
+      }
+    }
+  }
+
+  // updateSettings(updater: (draft: Settings) => void, ignoreObservers = false) {
+  //   const [newSettings, patches, inversePatches] = produceWithPatches(this.settings, updater);
+  //   this.settings = newSettings;
+  //   const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
+  //   const counterpart = this._globalState.paraStates[1 - this.index];
+  //   if (counterpart) {
+  //     counterpart.settings = applyPatches(counterpart.settings, filtered);
+  //   }
+  //   if (ignoreObservers) {
+  //     return patches;
+  //   }
+  //   this._syncPatchesToManifest(patches);
+  //   const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
+  //   for (const patch of patches) {
+  //     if (patch.op !== 'replace') {
+  //       this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+  //       continue;
+  //     }
+  //     observed[patch.path.join('.')] = { newValue: patch.value };
+  //   }
+  //   for (const patch of inversePatches) {
+  //     if (patch.op !== 'replace') {
+  //       this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
+  //       continue;
+  //     }
+  //     observed[patch.path.join('.')].oldValue = patch.value;
+  //   }
+  //   for (const [path, values] of Object.entries(observed)) {
+  //     this._settingObservers[path]?.forEach(observer =>
+  //       observer(values.oldValue, values.newValue)
+  //     );
+  //     this.settingDidChange(path, values.oldValue, values.newValue);
+  //   }
+  //   return patches;
+  // }
+
+  updateConfig(updater: (draft: Config) => void, ignoreObservers = false) {
+    const [newConfig, patches, inversePatches] = produceWithPatches(this.config, updater);
+    this.config = newConfig;
     const filtered = patches.filter(p => synchronizedSettings.includes(p.path.join('.')));
     const counterpart = this._globalState.paraStates[1 - this.index];
     if (counterpart) {
-      counterpart.settings = applyPatches(counterpart.settings, filtered);
+      counterpart.config = applyPatches(counterpart.config, filtered);
     }
     if (ignoreObservers) {
       return patches;
     }
-    const observed: { [path: string]: Partial<{ oldValue: Setting, newValue: Setting }> } = {};
+    this._syncPatchesToManifest(patches);
+    const observed: { [path: string]: Partial<{ oldValue: ConfigSetting, newValue: ConfigSetting }> } = {};
     for (const patch of patches) {
       if (patch.op !== 'replace') {
         this.log.error(`unexpected patch op '${patch.op}' (${patch.path})`);
@@ -390,7 +559,7 @@ export class ParaState extends BaseState {
     return patches;
   }
 
-  observeSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
+  observeSetting(path: string, observer: (oldValue: ConfigSetting, newValue: ConfigSetting) => void) {
     if (!this._settingObservers[path]) {
       this._settingObservers[path] = [];
     }
@@ -400,13 +569,13 @@ export class ParaState extends BaseState {
     this._settingObservers[path].push(observer);
   }
 
-  observeSettings(paths: string[], observer: (oldValue: Setting, newValue: Setting) => void) {
+  observeSettings(paths: string[], observer: (oldValue: ConfigSetting, newValue: ConfigSetting) => void) {
     for (let path of paths) {
       this.observeSetting(path, observer);
     }
   }
 
-  unobserveSetting(path: string, observer: (oldValue: Setting, newValue: Setting) => void) {
+  unobserveSetting(path: string, observer: (oldValue: ConfigSetting, newValue: ConfigSetting) => void) {
     if (!this._settingObservers[path]) {
       throw new Error(`no observers for setting '${path}'`);
     }
@@ -420,17 +589,26 @@ export class ParaState extends BaseState {
     }
   }
 
-  setManifest(manifest: Manifest, data?: AllSeriesData, resetSettings = true) {
+  async setManifest(
+    manifest: Manifest,
+    data?: AllSeriesData,
+    resetSettings = true,
+    inputSettings?: SettingsInput,
+  ) {
+    this._originalManifest = structuredClone(manifest);
     this._manifest = manifest;
+    manifest = this.augmentManifest(manifest);
+    const datasets = manifest.jim.datasets;
     const dataset = firstDataset(this._manifest);
+    this._type = dataset.representation.subtype;
 
     if (resetSettings) {
       this._createSettings(this._inputSettings);
     }
 
-    if (chartTypeDefaults[dataset.representation.subtype]) {
-      Object.entries(chartTypeDefaults[dataset.representation.subtype]!).forEach(([path, value]) => {
-        this.updateSettings(draft => {
+    if (chartTypeDefaults[this._type]) {
+      Object.entries(chartTypeDefaults[this._type]!).forEach(([path, value]) => {
+        this.updateConfig(draft => {
           SettingsManager.set(path, value, draft);
         }, true);
       });
@@ -438,19 +616,24 @@ export class ParaState extends BaseState {
 
     const extSettings = manifest.extensions?.paracharts?.settings;
     if (extSettings) {
-      this.updateSettings(draft => {
-        SettingsManager.applySettings(extSettings as SettingGroup, draft);
+      this.updateConfig(draft => {
+        SettingsManager.applySettings(extSettings as ConfigGroup, draft);
       }, true);
-      if (this.settings.color.colorMap) {
-        this._colors.setColorMap(...this.settings.color.colorMap.split(',').map(c => c.trim()));
+      if (this.config.color.colorMap) {
+        this._colors.setColorMap(...this.config.color.colorMap.split(',').map(c => c.trim()));
       }
+    }
+
+    if (inputSettings) {
+      this.updateConfig(draft => {
+        SettingsManager.applySettings(inputSettings, draft);
+      }, true);
     }
 
     this._jimerator = new Jimerator(this._manifest, data);
 
-    this.seriesAnalyses = {};
+    this._seriesAnalyses = {};
 
-    this._type = dataset.representation.subtype;
     this._title = dataset.title;
     this._facets = facetsFromDataset(dataset);
 
@@ -463,13 +646,24 @@ export class ParaState extends BaseState {
           this._seriesAnalyzerConstructor,
           this._pairAnalyzerConstructor
         );
+        if (datasets.length > 1) {
+          this._comboModel = planeModelFromInlineData(
+            manifest,
+            this._seriesAnalyzerConstructor,
+            this._pairAnalyzerConstructor,
+            undefined,
+            1
+          );
+        }
       }
       this.createChartInfo();
+      await this._chartInfo.setup();
       // `data` is the subscribed property that causes the paraview
       // to create the doc view; if the series prop manager is null
       // at that point, the chart won't init properly
       //this._seriesProperties = new SeriesPropertyManager(this);
       this._seriesProperties.reset();
+      // Use the setter to post a notice
       this.data = dataFromManifest(manifest);
     } else if (data) {
       if (isPastryType(this._type) || isVennType(this._type)) {
@@ -481,23 +675,402 @@ export class ParaState extends BaseState {
           this._seriesAnalyzerConstructor,
           this._pairAnalyzerConstructor
         );
+        if (datasets.length > 1) {
+          this._comboModel = planeModelFromExternalData(
+            // XXX should be datasets[1] data
+            data,
+            manifest,
+            this._seriesAnalyzerConstructor,
+            this._pairAnalyzerConstructor,
+            undefined,
+            1
+          );
+        }
       }
       this.createChartInfo();
+      await this._chartInfo.setup();
       //this._seriesProperties = new SeriesPropertyManager(this);
       this._seriesProperties.reset();
       this.data = data;
     } else {
       throw new Error('store lacks external or inline chart data');
     }
+    const maxError = this.config.chart.maxError;
+    const maxSegments = this.config.chart.maxSegments;
+    const extremumWeight = this.config.chart.extremumWeight;
     if (this._model instanceof PlaneModel) {
-      this._model.seriesKeys.forEach(async (seriesKey) => {
-        this.seriesAnalyses = {
-          [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey),
-          ...this.seriesAnalyses
-        };
-      });
+      await Promise.all(
+        this._model.seriesKeys.map(async (seriesKey) => {
+          this._seriesAnalyses = {
+            [seriesKey]: await (this._model as PlaneModel).getSeriesAnalysis(seriesKey, { maxError: maxError, maxSegments: maxSegments, extremumWeight: extremumWeight }),
+            ...this._seriesAnalyses
+          };
+        }));
+      this.postNotice('seriesAnalyses', null);
     }
     this.postNotice('paranotice', { key: 'manifestSet' });
+    this.dispatchEvent(
+      new CustomEvent('manifestSet')
+    );
+  }
+
+  augmentManifest(manifest: Manifest): Manifest {
+    const dataset = firstDataset(manifest);
+    if (dataset.representation.subtype == 'histogram') {
+      return this.augmentHistogramManifest(manifest);
+    }
+    else if (dataset.representation.subtype == 'heatmap') {
+      return this.augmentHeatmapManifest(manifest);
+    }
+    else if (dataset.representation.subtype == 'bubble') {
+      return this.augmentBubbleManifest(manifest);
+    }
+    else {
+      return manifest;
+    }
+  }
+
+  augmentHistogramManifest(manifest: Manifest): Manifest {
+    const dataset = manifest.jim.datasets[0];
+    const bins = this.config.type.histogram.bins ?? 20;
+    const facetKeys = Object.keys(dataset.facets);
+    let targetFacetKey: string | undefined = undefined;
+    for (let i = 0; i < facetKeys.length; i++) {
+      if (dataset.facets[facetKeys[i]].datatype == 'number') {
+        targetFacetKey = facetKeys[i];
+        break;
+      }
+    }
+    if (targetFacetKey == undefined) {
+      throw new Error("Histogram manifest must have at least one numeric facet.");
+    }
+    if (this.config.type.histogram.groupingFacet) {
+      targetFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == this.config.type.histogram.groupingFacet)![0][0];
+    }
+    const targetFacet = dataset.facets[targetFacetKey];
+
+    const xValues: number[] = []
+    const seriesList = dataset.series;
+    for (let series of seriesList) {
+      for (let datapoint of series.records!) {
+        xValues.push(Number(datapoint[targetFacetKey]));
+      }
+    }
+
+    const workingLabels = computeLabels(Math.min(...xValues), Math.max(...xValues), false);
+    const xMax: number = workingLabels.max!;
+    const xMin: number = workingLabels.min!;
+    const xRange = xMax - xMin;
+
+    for (let series of seriesList) {
+      const _data = [];
+      for (let i = 0; i < series.records!.length; i++) {
+        _data.push(Number(series.records![i][targetFacetKey]));
+      }
+      const grid: Array<number> = [];
+      for (let i = 0; i < bins; i++) {
+        grid.push(0);
+      }
+      for (let i = 0; i < _data.length; i++) {
+        const point = _data[i];
+        const xIndex: number = Math.floor((point - xMin) * (bins) / (xMax - xMin));
+        grid[xIndex]++;
+      }
+      const xVals = grid.map((g, i) => String(numberToScaledNumberRounded(preciseAdd(xMin, i * (xRange / bins)), 5).number));
+      let yVals = grid.map((g, i) => String(grid[i]));
+      if (this.config.type.histogram.relativeAxes == 'Percentage') {
+        const sum = grid.reduce((a, c) => a + c);
+        yVals = yVals.map(y => (Number(y) / sum).toFixed(4));
+      }
+      if (this.config.type.histogram.displayAxis == 'x') {
+        series.records = grid.map((g, i) => { return { x: xVals[i], y: yVals[i] } });
+      }
+      else {
+        series.records = grid.map((g, i) => { return { y: xVals[i], x: yVals[i] } });
+      }
+    }
+    targetFacet.measure = 'interval';
+    targetFacet.variableType = 'independent';
+    const storeFacet = structuredClone(targetFacet);
+    dataset.facets = {};
+    if (this.config.type.histogram.displayAxis == 'x') {
+      dataset.facets["x"] = storeFacet;
+      dataset.facets["x"].displayType.orientation = 'horizontal';
+      dataset.facets["y"] = {
+        datatype: "number",
+        label: `Count of ${manifest.jim.datasets[0].facets["x"].label}`,
+        variableType: "dependent",
+        measure: "nominal",
+        displayType: { type: 'axis', orientation: "vertical" }
+      };
+    }
+    else {
+      dataset.facets["y"] = storeFacet;
+      dataset.facets["y"].displayType.orientation = 'vertical';
+      dataset.facets["x"] = {
+        datatype: "number",
+        label: `Count of ${manifest.jim.datasets[0].facets["y"].label}`,
+        variableType: "dependent",
+        measure: "nominal",
+        displayType: { type: 'axis', orientation: "horizontal" }
+      };
+    }
+    return manifest;
+  }
+
+  augmentHeatmapManifest(manifest: Manifest): Manifest {
+    const dataset = manifest.jim.datasets[0];
+    const facetKeys = Object.keys(dataset.facets);
+    const config = this.config.type.heatmap;
+    const resolution = config.resolution ?? 20;
+    const allData = [];
+    const x: Array<number> = [];
+    const y: Array<number> = [];
+    let index1 = 0;
+    let seriesList = dataset.series;
+    let xFacetKey: string | undefined = undefined;
+    let yFacetKey: string | undefined = undefined;
+    for (let i = 0; i < facetKeys.length; i++) {
+      if (dataset.facets[facetKeys[i]].datatype == 'number') {
+        xFacetKey = facetKeys[i];
+        index1 = i;
+        break;
+      }
+    }
+    for (let j = index1 + 1; j < facetKeys.length; j++) {
+      if (dataset.facets[facetKeys[j]].datatype == 'number') {
+        yFacetKey = facetKeys[j];
+        break;
+      }
+    }
+    if (xFacetKey == undefined || yFacetKey == undefined) {
+      throw new Error("Heatmap manifest must have at least two numeric facets.");
+    }
+    if (config.xFacet) {
+      xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.xFacet)![0][0];
+    }
+    if (config.yFacet) {
+      yFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.yFacet)![0][0];
+    }
+    const xFacet = dataset.facets[xFacetKey];
+    const yFacet = dataset.facets[yFacetKey];
+    for (let series of seriesList) {
+      for (let datapoint of series.records!) {
+        const xNum = Number(datapoint[xFacetKey]);
+        const yNum = Number(datapoint[yFacetKey]);
+        allData.push([xNum, yNum]);
+        x.push(xNum);
+        y.push(yNum);
+      }
+    }
+    const xLabels = computeLabels(Math.min(...x),
+      Math.max(...x), false);
+    const yLabels = computeLabels(Math.min(...y),
+      Math.max(...y), false);
+
+    const yMax: number = yLabels.max!;
+    const xMax: number = xLabels.max!;
+    const yMin: number = yLabels.min!;
+    const xMin: number = xLabels.min!;
+    const xRange = xMax - xMin;
+    const yRange = yMax - yMin;
+
+    const grid: Array<Array<number>> = [];
+    const datapointGrid: Array<Array<Array<Datapoint>>> = [];
+
+    for (let i = 0; i < resolution; i++) {
+      grid.push([]);
+      datapointGrid.push([]);
+      for (let j = 0; j < resolution; j++) {
+        grid[i].push(0);
+        datapointGrid[i].push([]);
+      }
+    }
+    for (let i = 0; i < allData.length; i++) {
+      const point = allData[i];
+      let xIndex: number = Math.floor((point[0] - xMin) * resolution / (xRange));
+      if (xIndex == resolution) {
+        xIndex--;
+      }
+      let yIndex: number = resolution - Math.floor((point[1] - yMin) * resolution / (yRange)) - 1;
+      if (yIndex == -1) {
+        yIndex++;
+      }
+      grid[yIndex][xIndex]++;
+    }
+    const xVals = grid.map((g, i) => {
+      const scaled = numberToScaledNumberRounded(xMin + i * (xRange / resolution), 5);
+      return String(preciseMultiply(scaled.number, scaled.scale));
+    });
+    const yVals = grid.map((g, i) => {
+      const scaled = numberToScaledNumberRounded(yMin + i * (yRange / resolution), 5);
+      return String(preciseMultiply(scaled.number, scaled.scale));
+    });
+    seriesList[0].records = [];
+    for (let i = 0; i < resolution; i++) {
+      for (let j = 0; j < resolution; j++) {
+        seriesList[0].records.push({ x: xVals[j], y: yVals[resolution - i - 1], z: String(grid[i][j]) });
+      }
+    }
+
+    if (seriesList.length > 1) {
+      let combinedKey = '';
+      for (let i = 0; i < seriesList.length - 1; i++) {
+        const series = seriesList[i];
+        combinedKey = combinedKey.concat(`${series.key ?? ''}, `);
+      }
+      combinedKey = combinedKey.concat(`${seriesList[seriesList.length - 1].key ?? ''}`);
+      dataset.series[0].key = combinedKey;
+      dataset.series = [seriesList[0]];
+    }
+
+    const storeXFacet = structuredClone(xFacet);
+    const storeYFacet = structuredClone(yFacet);
+    dataset.facets = {};
+    dataset.facets["x"] = storeXFacet;
+    dataset.facets["x"].variableType = 'independent';
+    dataset.facets["x"].displayType.orientation = 'horizontal';
+    dataset.facets["y"] = storeYFacet;
+    dataset.facets["y"].variableType = 'dependent';
+    dataset.facets["y"].displayType.orientation = 'vertical';
+    dataset.facets["z"] = {
+      datatype: "number",
+      label: `Datapoint count`,
+      variableType: "dependent",
+      measure: "nominal",
+      displayType: { type: "marking" }
+    };
+    manifest.extensions ??= {};
+    manifest.extensions.paracharts ??= {};
+    manifest.extensions.paracharts.settings ??= {};
+    manifest.extensions!.paracharts!.settings!["type.heatmap.xFacet"] = xFacet.label;
+    manifest.extensions!.paracharts!.settings!["type.heatmap.yFacet"] = yFacet.label;
+    return manifest;
+  }
+
+  augmentBubbleManifest(manifest: Manifest): Manifest {
+    const dataset = manifest.jim.datasets[0];
+    const config = this.config.type.bubble;
+    const facetKeys = Object.keys(dataset.facets);
+    let seriesList = dataset.series;
+    let index1 = 0;
+    let index2 = 0;
+    let xFacetKey: string | undefined = undefined
+    let yFacetKey: string | undefined = undefined
+    let bubbleFacetKey: string | undefined = undefined
+    for (let i = 0; i < facetKeys.length; i++) {
+      if (dataset.facets[facetKeys[i]].datatype == 'number') {
+        xFacetKey = facetKeys[i];
+        index1 = i;
+        break;
+      }
+    }
+    for (let j = index1 + 1; j < facetKeys.length; j++) {
+      if (dataset.facets[facetKeys[j]].datatype == 'number') {
+        yFacetKey = facetKeys[j];
+        index2 = j;
+        break;
+      }
+    }
+    for (let k = index2 + 1; k < facetKeys.length; k++) {
+      if (dataset.facets[facetKeys[k]].datatype == 'number') {
+        bubbleFacetKey = facetKeys[k];
+        break;
+      }
+    }
+
+    if (xFacetKey == undefined || yFacetKey == undefined || bubbleFacetKey == undefined) {
+      throw new Error("Bubble chart manifest must have at least three numeric facets.");
+    }
+    /*
+    let xFacetKey = facetKeys[0];
+    let yFacetKey = facetKeys[1];
+    let bubbleFacetKey = facetKeys[2];
+    */
+    if (config.xFacet) {
+      xFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.xFacet)![0][0];
+    }
+    if (config.yFacet) {
+      yFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.yFacet)![0][0];
+    }
+    if (config.bubbleFacet) {
+      bubbleFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.bubbleFacet)![0][0];
+    }
+    const xFacet = dataset.facets[xFacetKey];
+    const yFacet = dataset.facets[yFacetKey];
+    const bubbleFacet = dataset.facets[bubbleFacetKey];
+    let labelFacetKey = '';
+    if (config.labelFacet !== '') {
+      labelFacetKey = Object.entries(manifest.jim.datasets[0].facets).filter(f =>
+        f[1].label == config.labelFacet)![0][0];
+    }
+    for (let series of seriesList) {
+      const xData = series.records!.map(r => r[xFacetKey]);
+      const yData = series.records!.map(r => r[yFacetKey]);
+      const bubbleData = series.records!.map(r => r[bubbleFacetKey]);
+
+
+      //dataset.series[0].records = dataset.series[0].records?.map((r, i) => {
+      //  return { x: xData[i], y: yData[i], z: bubbleData[i] }
+      //})
+      for (let i = 0; i < series.records!.length; i++) {
+        series.records![i].x = xData[i];
+        series.records![i].y = yData[i];
+        series.records![i].z = bubbleData[i];
+        if (config.labelFacet !== '') {
+          const labelData = series.records!.map(r => r[labelFacetKey]);
+          series.records![i]['label'] = labelData[i]
+          delete series.records![i][labelFacetKey];
+        }
+        for (let j = 0; j < series.records!.length - 3; j++) {
+          //let otherFacet = datas
+        }
+      }
+    }
+
+    const storeXFacet = structuredClone(xFacet);
+    const storeYFacet = structuredClone(yFacet);
+    const storeBubbleFacet = structuredClone(bubbleFacet);
+    //dataset.facets = {};
+    for (let i = 0; i < facetKeys.length; i++) {
+      if (!['number', 'date', 'string'].includes(dataset.facets[facetKeys[i]].datatype)) {
+        delete dataset.facets[facetKeys[i]];
+        for (let series of seriesList) {
+          for (let j = 0; j < series.records!.length; j++) {
+            delete series.records![j][facetKeys[i]];
+          }
+        }
+
+      }
+    }
+    dataset.facets["x"] = storeXFacet;
+    dataset.facets["x"].variableType = 'independent';
+    dataset.facets["x"].displayType.orientation = 'horizontal';
+    dataset.facets["y"] = storeYFacet;
+    dataset.facets["y"].variableType = 'dependent';
+    dataset.facets["y"].displayType.orientation = 'vertical';
+    dataset.facets["z"] = storeBubbleFacet;
+    dataset.facets["z"].variableType = 'dependent';
+    dataset.facets["z"].displayType.orientation = undefined;
+    if (config.labelFacet !== '') {
+      const labelFacet = dataset.facets[labelFacetKey];
+      dataset.facets['label'] = structuredClone(labelFacet);
+      dataset.facets['label'].displayType.orientation = undefined;
+      delete dataset.facets[labelFacetKey];
+    }
+    manifest.extensions ??= {};
+    manifest.extensions.paracharts ??= {};
+    manifest.extensions.paracharts.settings ??= {};
+    manifest.extensions!.paracharts!.settings!["type.bubble.xFacet"] = xFacet.label;
+    manifest.extensions!.paracharts!.settings!["type.bubble.yFacet"] = yFacet.label;
+    manifest.extensions!.paracharts!.settings!["type.bubble.bubbleFacet"] = bubbleFacet.label;
+    return manifest;
   }
 
   getActionChains() {
@@ -581,11 +1154,50 @@ export class ParaState extends BaseState {
   }
 
   dimOtherSeries(...seriesKeys: string[]) {
-    this._dimmedSeries = this._model!.seriesKeys.filter(key => !seriesKeys.includes(key));
+    let toFilter = this._model!.seriesKeys;
+    if (this._comboModel) {
+      toFilter = [...toFilter, ...this._comboModel.seriesKeys];
+    }
+    this._dimmedSeries = toFilter.filter(key => !seriesKeys.includes(key));
+    this.frontSeries = seriesKeys[0];
   }
 
   clearAllSeriesDimming() {
     this._dimmedSeries = [];
+  }
+
+  clearAllPointsDimming() {
+    this._lowlightedDatapoints = new Set();
+  }
+
+  get pinnedSeriesKey(): string | null {
+    return this._pinnedSeriesKey;
+  }
+
+  pinSeries(seriesKey: string) {
+    this._pinnedSeriesKey = seriesKey;
+    this.dimOtherSeries(seriesKey);
+  }
+
+  get pinnedBubbleSize(): string | null {
+    return this._pinnedBubbleSize;
+  }
+
+  set pinnedBubbleSize(size: string | null) {
+    this._pinnedBubbleSize = size;
+  }
+
+  get pinnedCluster(): number | null {
+    return this._pinnedCluster;
+  }
+
+  set pinnedCluster(index: number | null) {
+    this._pinnedCluster = index;
+  }
+
+  unpinSeries() {
+    this._pinnedSeriesKey = null;
+    this.clearAllSeriesDimming();
   }
 
   hideSeries(seriesKey: string) {
@@ -615,10 +1227,41 @@ export class ParaState extends BaseState {
     this._hiddenSeries = [];
   }
 
+  hideSize(size: string) {
+    if (this._hiddenBubbleSize.includes(size)) return;
+    this._hiddenBubbleSize = [...this._hiddenBubbleSize, size];
+  }
+
+  unhideSize(size: string) {
+    if (this._hiddenBubbleSize.includes(size)) {
+      this._hiddenBubbleSize = this._hiddenBubbleSize.filter(el => el !== size);
+    }
+  }
+
+  isSizeHidden(size: string): boolean {
+    return this._hiddenBubbleSize.includes(size);
+  }
+
+  hideCluster(index: number) {
+    if (this._hiddenCluster.includes(index)) return;
+    this._hiddenCluster = [...this._hiddenCluster, index];
+  }
+
+  unhideCluster(index: number) {
+    if (this._hiddenCluster.includes(index)) {
+      this._hiddenCluster = this._hiddenCluster.filter(el => el !== index);
+    }
+  }
+
+  isClusterHidden(index: number): boolean {
+    return this._hiddenCluster.includes(index);
+  }
+
   announce(
     msg: string | string[] | HighlightedSummary,
     clearAriaLive = false,
-    startFrom = 0
+    startFrom = 0,
+    target: AnnounceTarget = 'all'
   ): void {
     /*
     This sends an announcement to the Status Bar.
@@ -643,8 +1286,8 @@ export class ParaState extends BaseState {
       highlights = msg.highlights ?? [];
     }
 
-    if (this.settings.ui.isAnnouncementEnabled) {
-      this.announcement = { text: announcement, html, highlights, clear: clearAriaLive, startFrom };
+    if (this.config.ui.isAnnouncementEnabled) {
+      this.announcement = { text: announcement, html, highlights, clear: clearAriaLive, startFrom, target };
     }
   }
 
@@ -680,13 +1323,12 @@ export class ParaState extends BaseState {
     for (const datapoint of datapoints) {
       this._everVisitedDatapoints.add(makeDatapointId(datapoint.seriesKey, datapoint.datapointIndex));
     }
-    if (this.settings.controlPanel.isMDRAnnotationsVisible) {
-      this.removeMDRAnnotations(this._prevVisitedDatapoints);
+    if (this.config.controlPanel.isMDRAnnotationsVisible) {
+      if (this._prevVisitedDatapoints.size > 0) {
+        this.removeMDRAnnotations(this._prevVisitedDatapoints);
+      }
       this.showMDRAnnotations();
     }
-    // NB: Making _visitedDatapoints a lit-app/state property proved
-    // problematic for performance
-    //this.requestUpdate();
   }
 
   protected _datapointSetHas(
@@ -726,6 +1368,18 @@ export class ParaState extends BaseState {
 
   get highlightedDatapoints() {
     return this._highlightedDatapoints;
+  }
+
+  get lowlightedDatapoints() {
+    return this._lowlightedDatapoints;
+  }
+
+  get hiddenDatapoints() {
+    return this._hiddenDatapoints;
+  }
+
+  set hiddenDatapoints(set: Set<string>) {
+    this._hiddenDatapoints = set;
   }
 
   highlightDatapoint(seriesKey: string, index: number) {
@@ -779,9 +1433,50 @@ export class ParaState extends BaseState {
     return this._highlightedDatapoints.has(makeDatapointId(seriesKey, index));
   }
 
+  isDatapointLowlighted(seriesKey: string, index: number): boolean {
+    return this._lowlightedDatapoints.has(makeDatapointId(seriesKey, index));
+  }
+
+  isDatapointHidden(seriesKey: string, index: number): boolean {
+    return this._hiddenDatapoints.has(makeDatapointId(seriesKey, index)) || this._hiddenSeries.includes(seriesKey);
+  }
+
+  lowlightDatapoint(seriesKey: string, index: number) {
+    this._lowlightedDatapoints.add(
+      makeDatapointId(seriesKey, index)
+    );
+  }
+
+  hideDatapoint(seriesKey: string, index: number) {
+    this._hiddenDatapoints.add(
+      makeDatapointId(seriesKey, index)
+    );
+  }
+
+  clearDatapointLowlight(seriesKey: string, index: number) {
+    this._lowlightedDatapoints = new Set(
+      [...this._lowlightedDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
+    );
+  }
+
+  clearDatapointHidden(seriesKey: string, index: number) {
+    this._hiddenDatapoints = new Set(
+      [...this._hiddenDatapoints.values()].filter(id => id !== makeDatapointId(seriesKey, index))
+    );
+  }
+
   clearAllDatapointHighlights() {
     this._highlightedDatapoints = new Set();
   }
+
+  clearAllDatapointLowlights() {
+    this._lowlightedDatapoints = new Set();
+  }
+
+  clearAllDatapointHidden() {
+    this._hiddenDatapoints = new Set();
+  }
+
 
   get highlightedSequences() {
     return this._highlightedSequences;
@@ -878,7 +1573,7 @@ export class ParaState extends BaseState {
     this.isWestLegendHighlighted = false;
     this.isNorthLegendHighlighted = false;
     this.isSouthLegendHighlighted = false;
-    this.updateSettings(draft => {
+    this.updateConfig(draft => {
       draft.type.scatter.isShowTrendLine = false
     });
   }
@@ -949,7 +1644,7 @@ export class ParaState extends BaseState {
 
   getFormatType(context: FormatContext): FormatType {
     return context === 'domId' ? 'domId'
-      : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.settings) as FormatType;
+      : SettingsManager.get(FORMAT_CONTEXT_SETTINGS[context], this.config) as FormatType;
   }
 
   annotatePoint(seriesKey: string, index: number, text: string) {
@@ -973,7 +1668,7 @@ export class ParaState extends BaseState {
 
   async showMDRAnnotations() {
     if (this.type === 'line') {
-      if (this.settings.controlPanel.isMDRAnnotationsVisible) {
+      if (this.config.controlPanel.isMDRAnnotationsVisible) {
         let seriesAnalysis;
         let seriesKey: string;
         if (this.visitedDatapoints.size > 0) {
@@ -989,13 +1684,13 @@ export class ParaState extends BaseState {
         };
         if (!seriesAnalysis) {
           this.log.info("This chart does not support AI trend annotations")
-          this.updateSettings(draft => {
-            draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
+          this.updateConfig(draft => {
+            draft.controlPanel.isMDRAnnotationsVisible = !this.config.controlPanel.isMDRAnnotationsVisible;
           });
           return;
         };
         const length = this.model!.series[0].length - 1;
-        let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i]);
+        let relevantSequences = seriesAnalysis?.sequences
         for (let sequence of relevantSequences!) {
           this.highlightRange(sequence.start / length, (sequence.end - 1) / length);
         };
@@ -1003,11 +1698,11 @@ export class ParaState extends BaseState {
         this.addModelLineBreaks(seriesAnalysis!.sequences, seriesKey);
         this.addModelTrendLines(seriesAnalysis!.sequences, seriesKey);
 
-        let message = `Detected trend: ${seriesAnalysis?.message}, consisting of ${seriesAnalysis?.messageSeqs.length} datapoint sequences from`;
+        let message = `Detected trend: ${seriesAnalysis?.sequences.length} datapoint sequences from`;
         for (let seq of relevantSequences!) {
           const start = formatBox(this.model!.allPoints[seq.start].facetBox("x")!, this.getFormatType('horizTick'));
           const end = formatBox(this.model!.allPoints[seq.end - 1].facetBox("x")!, this.getFormatType('horizTick'));
-          message += ` ${start} to ${end} (${seq.message}),`;
+          message += ` ${start} to ${end} (${trendTranslation[seq.slopeInfo.classes[0]]}),`;
         }
         message = message.slice(0, -1) + ".";
         if (this.annotations.some(a => a.id == "trend-analysis-annotation")) {
@@ -1024,8 +1719,8 @@ export class ParaState extends BaseState {
       }
     } else {
       this.log.info("Trend annotations not currently supported for this chart type");
-      this.updateSettings(draft => {
-        draft.controlPanel.isMDRAnnotationsVisible = !this.settings.controlPanel.isMDRAnnotationsVisible;
+      this.updateConfig(draft => {
+        draft.controlPanel.isMDRAnnotationsVisible = !this.config.controlPanel.isMDRAnnotationsVisible;
       });
     }
   }
@@ -1039,7 +1734,7 @@ export class ParaState extends BaseState {
     if (this.type !== 'line') {
       // No MDR annotations need to be removed
     } else if (visitedDatapoints.size > 0) {
-      seriesKey = datapointIdToCursor(this.visitedDatapoints.keys()!.toArray()[0]).seriesKey;
+      seriesKey = datapointIdToCursor(visitedDatapoints.keys()!.toArray()[0]).seriesKey;
       seriesAnalysis = this.model
         ? await (this.model as PlaneModel).getSeriesAnalysis(seriesKey)
         : null;
@@ -1050,7 +1745,7 @@ export class ParaState extends BaseState {
         : null;
     }
     const length = this.model!.series[0].length - 1;
-    let relevantSequences = seriesAnalysis?.messageSeqs.map(i => seriesAnalysis.sequences[i]);
+    let relevantSequences = seriesAnalysis?.sequences;
     for (let sequence of relevantSequences!) {
       this.clearRangeHighlight(sequence.start / length, (sequence.end - 1) / length);
     }
@@ -1276,6 +1971,10 @@ export class ParaState extends BaseState {
     this.focusPopups.splice(0, this.focusPopups.length);
     this.selectPopups.splice(0, this.selectPopups.length);
     this.crossHairs.splice(0, this.crossHairs.length);
+  }
+
+  async shortDescription(): Promise<HighlightedSummary> {
+    return this.chartInfo.summarizer.getRequestedSummaries(['$.datasets[0]._short']);
   }
 
 }

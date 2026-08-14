@@ -1,0 +1,31 @@
+{
+    "description": "Horizontal axis tick label display and layout.",
+    "family": "axis",
+    "settings": {
+        "isDrawTickLabels": {
+            "description": "Draw labels on tick marks",
+            "type": "boolean",
+            "default": true
+        },
+        "fontSize": {
+            "description": "Font size for tick labels",
+            "type": "string",
+            "default": "10pt"
+        },
+        "angle": {
+            "description": "Rotation angle for labels in degrees",
+            "type": "number",
+            "default": 0
+        },
+        "offsetGap": {
+            "description": "Offset distance from tick marks",
+            "type": "number",
+            "default": 4
+        },
+        "gap": {
+            "description": "Gap between adjacent labels",
+            "type": "number",
+            "default": 10
+        }
+    }
+}

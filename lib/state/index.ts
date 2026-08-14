@@ -8,3 +8,4 @@ export * from './settings_manager';
 export * from './settings_ranges';
 export * from './settings_types';
 export * from './keymap_manager';
+export * from './query_utils';

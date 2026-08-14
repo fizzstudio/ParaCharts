@@ -23,59 +23,23 @@ export class AdvancedControlSettingsDialog extends ParaComponent {
   @property() btnText = 'Okay';
 
   static styles = css`
-    #controls {
+    fizz-dialog {
+      --item-gap: 1rem;
+    }
+    #advanced {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.5rem;
     }
   `;
 
   connectedCallback() {
     super.connectedCallback();
-    this._paraState.settingControls.add({
-      type: 'radio',
-      key: 'controlPanel.tabLabelStyle',
-      label: 'Tab label style',
-      options: {
-        buttons: {
-          icon: {
-            label: 'Icon only'
-          },
-          iconLabel: {
-            label: 'Icon and label'
-          },
-          label: {
-            label: 'Label only'
-          }
-        },
-        layout: 'horiz'
-      },
-      parentView: 'controlPanel.tabs.controls.dialog.tabLabels'
-    });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'controlPanel.isCaptionVisible',
-      label: 'Caption visible',
-      parentView: 'controlPanel.tabs.controls.dialog.settings',
-    });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'controlPanel.isExplorationBarVisible',
-      label: 'Exploration bar visible',
-      parentView: 'controlPanel.tabs.controls.dialog.settings',
-    });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'controlPanel.caption.isCaptionExternalWhenControlPanelClosed',
-      label: 'Caption external when control panel closed',
-      parentView: 'controlPanel.tabs.controls.dialog.settings',
-    });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'controlPanel.caption.isExplorationBarBeside',
-      label: 'Exploration bar is beside caption',
-      parentView: 'controlPanel.tabs.controls.dialog.settings',
-    });
+    this._paraState.settingControls.insert('controlPanel.tabLabelStyle');
+    this._paraState.settingControls.insert('controlPanel.isCaptionVisible');
+    this._paraState.settingControls.insert('controlPanel.isExplorationBarVisible');
+    this._paraState.settingControls.insert('controlPanel.caption.isCaptionExternalWhenControlPanelClosed');
+    this._paraState.settingControls.insert('controlPanel.caption.isExplorationBarBeside');
   }
 
   render() {
@@ -83,17 +47,15 @@ export class AdvancedControlSettingsDialog extends ParaComponent {
       <fizz-dialog
         ${ref(this._dialogRef)}
         title="Advanced Settings"
-        .buttons=${[{tag: 'cancel', text: this.btnText}]}
+        .buttons=${[{tag: 'close', text: this.btnText}]}
       >
-        <div id="controls">
-          <div id="advanced"
-            class="advanced-views"
-          >
-            ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.settings')}
-          </div>
-          <div>
-            ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.tabLabels')}
-          </div>
+        <div id="advanced"
+          class="advanced-views"
+        >
+          ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.settings')}
+        </div>
+        <div>
+          ${this._paraState.settingControls.getContent('controlPanel.tabs.controls.dialog.tabLabels')}
         </div>
       </fizz-dialog>
     `;

@@ -14,15 +14,10 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { PlaneChartInfo } from './plane_chart';
-import { AxisInfo } from '../common/axisinfo';
-import { type ParaState } from '../state';
-import { type ParaView } from '../paraview';
-
 import { type ChartType } from '@fizz/paramanifest';
 import { Series } from '@fizz/paramodel';
-import { DocumentView } from '../view/document_view';
-
+import { PlaneChartInfo } from './plane_chart';
+import { type ParaState } from '../state';
 
 /**
  * Abstract base class for charts that represent data values as
@@ -42,9 +37,9 @@ export abstract class PointChartInfo extends PlaneChartInfo {
   }
 
   seriesInNavOrder(): Series[] {
-    const depFacet = this._paraState.model!.dependentFacetKeys[0];
+    const depFacet = this.model!.dependentFacetKeys[0];
     // Sort by value of first datapoint from greatest to least
-    return this._paraState.model!.series.toSorted((a, b) =>
+    return this.model!.series.toSorted((a, b) =>
       b.datapoints[0].facetValueNumericized(depFacet)! -
       a.datapoints[0].facetValueNumericized(depFacet)!);
   }

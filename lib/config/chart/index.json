@@ -1,0 +1,255 @@
+{
+    "description": "Overall chart appearance and behavior settings.",
+    "family": "chart",
+    "settings": {
+        "type": {
+            "description": "The type of chart to display",
+            "type": "ChartType",
+            "default": "bar"
+        },
+        "width": {
+            "label": "cpanel.tabs.chart.width",
+            "description": "Chart width in pixels",
+            "type": "number",
+            "default": 600,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 1,
+                "max": 1000
+            },
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.general.width"
+        },
+        "height": {
+            "label": "cpanel.tabs.chart.height",
+            "description": "Chart height in pixels",
+            "type": "number",
+            "default": 450,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 1,
+                "max": 1000
+            },
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.general.height"
+        },
+        "orientation": {
+            "description": "Which direction is 'up' on the chart",
+            "type": "CardinalDirection",
+            "default": "north"
+        },
+        "padding": {
+            "description": "Padding around chart content (CSS format)",
+            "type": "string",
+            "default": "8 30"
+        },
+        "fontFamily": {
+            "label": "cpanel.tabs.chart.font_dialog.font_family",
+            "description": "Font family for all chart text",
+            "type": "string",
+            "default": "Atkinson Hyperlegible",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["Helvetica", "Verdana", "Tahoma", "Times New Roman", "Georgia", "Atkinson Hyperlegible"]
+            },
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.font.dialog"
+        },
+        "fontWeight": {
+            "description": "Font weight for chart text",
+            "type": "string",
+            "default": "300"
+        },
+        "fontScale": {
+            "label": "cpanel.tabs.chart.font_dialog.font_scale",
+            "description": "Global font size multiplier",
+            "type": "number",
+            "default": 1,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0.5,
+                "max": 3,
+                "step": 0.1,
+                "showValue": true
+            },
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.font.dialog"
+        },
+        "isTactileEnabled": {
+            "label": "cpanel.tabs.chart.tactile_dialog.enabled",
+            "description": "Enable Tactile Mode",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
+        "tactileBrailleGrade": {
+            "label": "cpanel.tabs.chart.tactile_dialog.grade",
+            "description": "Braille grade",
+            "type": "1|2",
+            "default": 1,
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["1", "2"],
+                "values": [1, 2]
+            },
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
+        "tactileLabelMode": {
+            "label": "cpanel.tabs.chart.tactile_dialog.label_mode",
+            "description": "Include Latin text along with Braille",
+            "type": "'Braille'|'Latin'|'Both'|'None'",
+            "default": "Both",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["Braille", "Latin", "Both", "None"]
+            },
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
+        "pageSize": {
+            "label": "cpanel.tabs.chart.tactile_dialog.page_size",
+            "description": "Document page size",
+            "type": "'auto'|'letter_portrait'|'letter_landscape'|'tractor_us_standard'|'tractor_us_rotated'|'tractor_de_standard'|'tractor_de_rotated'|'a4_portrait'|'a4_landscape'|'tabloid_portrait'|'tabloid_landscape'|'monarch_portrait'|'monarch_landscape'",
+            "default": "auto",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["auto", "letter_portrait", "letter_landscape", "tractor_us_standard", "tractor_us_rotated", "tractor_de_standard", "tractor_de_rotated", "a4_portrait", "a4_landscape", "tabloid_portrait", "tabloid_landscape", "monarch_portrait", "monarch_landscape"]
+            },
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
+        "pageMarginLeft": {
+            "label": "cpanel.tabs.chart.tactile_dialog.margin_left",
+            "description": "Page left margin in inches",
+            "type": "number",
+            "default": 0.5,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0
+            },
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
+        "pageMarginRight": {
+            "label": "cpanel.tabs.chart.tactile_dialog.margin_right",
+            "description": "Page right margin in inches",
+            "type": "number",
+            "default": 0.5,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0
+            },
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
+        "pageMarginTop": {
+            "label": "cpanel.tabs.chart.tactile_dialog.margin_top",
+            "description": "Page top margin in inches",
+            "type": "number",
+            "default": 0.5,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0
+            },
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
+        "pageMarginBottom": {
+            "label": "cpanel.tabs.chart.tactile_dialog.margin_bottom",
+            "description": "Page bottom margin in inches",
+            "type": "number",
+            "default": 0.5,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0
+            },
+            "parentView": "controlPanel.tabs.chart.tactile.dialog"
+        },
+        "stroke": {
+            "description": "Stroke color for lines and shapes",
+            "type": "string",
+            "default": "purple"
+        },
+        "strokeWidth": {
+            "description": "Stroke width in pixels",
+            "type": "number",
+            "default": 4
+        },
+        "strokeHighlightScale": {
+            "description": "Scale factor for highlighted strokes",
+            "type": "number",
+            "default": 1.5
+        },
+        "symbolStrokeWidth": {
+            "description": "Stroke width for symbols in pixels",
+            "type": "number",
+            "default": 2
+        },
+        "symbolHighlightScale": {
+            "description": "Scale factor for highlighted symbols",
+            "type": "number",
+            "default": 1.5
+        },
+        "hasDirectLabels": {
+            "description": "Show direct labels on data points",
+            "type": "boolean",
+            "default": true
+        },
+        "directLabelFontSize": {
+            "description":  "Font size for direct labels",
+            "type": "string",
+            "default": "10pt"
+        },
+        "hasLegendWithDirectLabels": {
+            "description": "Show legend when direct labels are present",
+            "type": "boolean",
+            "default": false
+        },
+        "isDrawSymbols": {
+            "label": "cpanel.tabs.chart.show_symbols",
+            "description": "Draw symbols at data points",
+            "type": "boolean",
+            "default": true,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "isStatic": {
+            "description": "Disable all interactivity",
+            "type": "boolean",
+            "default": false
+        },
+        "isShowVisitedDatapointsOnly": {
+            "description": "Only show data points that have been visited",
+            "type": "boolean",
+            "default": false
+        },
+        "isShowPopups": {
+            "label": "cpanel.tabs.chart.show_popups",
+            "description": "Show popups on hover or focus",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.popups"
+        },
+        "maxError": {
+            "description": "Max allowable error in first pass of segmentation algorithm",
+            "type": "number",
+            "default": 0.01
+        },
+        "maxSegments": {
+            "description": "Max allowable segments in second pass of segmentation algorithm",
+            "type": "number",
+            "default": 4
+        },
+        "extremumWeight": {
+            "description": "Additional weight given to \"peaks and valleys\" during segmentation",
+            "type": "number",
+            "default": 10
+        }
+    }
+}

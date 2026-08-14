@@ -1,22 +1,21 @@
-
-import { PlanePlotView, PlotLayer, ScatterPlotView } from '.';
-import { type ParaView } from '../../paraview';
 import { svg } from 'lit';
-import { datapointIdToCursor, HighlightAxisOptions } from '../../state';
+import { type PlaneModel } from '@fizz/paramodel';
+import { type ViewContext } from '../view_context';
+import { datapointIdToCursor, HighlightAxisOptions } from '../../state/parastate';
 import { DataSymbol } from '../symbol';
-import { type DatapointView } from '../data';
 import { PathShape, RectShape, Shape } from '../shape';
-import { type View } from '../base_view';
 import { PlaneChartInfo } from '../../chart_types';
-import { PlaneModel } from '@fizz/paramodel';
 import { Label } from '../label';
+import { PlotLayer } from './layer';
+import { type PlanePlotView, type PlaneDatapointView } from './data/chart_type/plane_plot_view';
+import { ScatterPlotView } from './data/chart_type/scatter_plot_view';
 
 export type HighlightsType = 'foreground' | 'background';
 
 
 export class HighlightsLayer extends PlotLayer {
 
-  constructor(paraview: ParaView, width: number, height: number, public readonly type: HighlightsType) {
+  constructor(paraview: ViewContext, width: number, height: number, public readonly type: HighlightsType) {
     super(paraview, width, height);
   }
 
@@ -49,18 +48,18 @@ export class HighlightsLayer extends PlotLayer {
   ) {
     // XXX Ultimately, we need to support pastry and other non-plane chart types here
     const chartInfo = this.paraview.paraState.chartInfo as PlaneChartInfo;
-    const fields = sequenceId.split(/-/);
+    const fields = sequenceId.split(/[-@]/);
     const datapoints = [
-      this.paraview.paraState.getDatapoint(`${fields[0]}-${fields[1]}`),
-      this.paraview.paraState.getDatapoint(`${fields[0]}-${parseInt(fields[2]) - 1}`),
+      this.paraview.paraState.getDatapoint(`${fields[0]}@${fields[1]}`),
+      this.paraview.paraState.getDatapoint(`${fields[0]}@${parseInt(fields[2]) - 1}`),
     ];
-    let datapointViews: DatapointView[] = datapoints.map(datapoint =>
-      this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!);
+    let datapointViews: PlaneDatapointView[] = datapoints.map(datapoint =>
+      this._parent.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!) as PlaneDatapointView[];
     overlays.push((datapointViews[0].symbol ?? datapointViews[0].shapes[0]).clone());
     overlays.push((datapointViews.at(-1)!.symbol ?? datapointViews.at(-1)!.shapes[0]).clone());
 
     const lineStroke = overlays.at(-2)! instanceof DataSymbol
-      ? this.paraview.paraState.colors.colorValueAt((overlays.at(-2) as DataSymbol).color!)
+      ? this.paraview.paraState.colors.colorValueAt((overlays.at(-2) as DataSymbol).colorIndex!)
       : (overlays.at(-2) as Shape).stroke;
     overlayLines.push(new PathShape(this.paraview, {
       x: 0,//overlays.at(-2)!.width/2,
@@ -72,7 +71,7 @@ export class HighlightsLayer extends PlotLayer {
     }));
     if (this.type === 'background') {
       const rectFill = overlays.at(-2)! instanceof DataSymbol
-        ? this.paraview.paraState.colors.colorValueAt((overlays.at(-2) as DataSymbol).color!)
+        ? this.paraview.paraState.colors.colorValueAt((overlays.at(-2) as DataSymbol).colorIndex!)
         : (overlays.at(-2) as Shape).fill;
       const rect = new RectShape(this.paraview, {
         x: overlays.at(-2)!.x,
@@ -98,19 +97,19 @@ export class HighlightsLayer extends PlotLayer {
 
   protected _processIntersection(index: number, overlays: (DataSymbol | Shape)[]) {
     const chartInfo = this.paraview.paraState.chartInfo as PlaneChartInfo;
-    const yRange = chartInfo.yInterval!.end - chartInfo.yInterval!.start;
+    const yRange = chartInfo.yRangeInfo!.interval.end - chartInfo.yRangeInfo!.interval.start;
     const pxPerYUnit = this.parent.logicalHeight / yRange;
 
     const model = this.paraview.paraState.model as PlaneModel;
     const isect = model.intersections[index];
 
-    const sym = DataSymbol.fromType(this.paraview, 'circle.empty', { color: -1 });
+    const sym = DataSymbol.fromType(this.paraview, 'circle.empty', { colorIndex: -1 });
     const first = model.series[0].datapoints[0].facetValueAsNumber('x')!;
     const last = model.series[0].datapoints.at(-1)!.facetValueAsNumber('x')!;
     const xRange = last - first;
     const pxPerXUnit = this.parent.logicalWidth / xRange;
     const x = (isect.independentValue - first) * pxPerXUnit;
-    const y = this.parent.logicalHeight - (isect.dependentValue - chartInfo.yInterval!.start) * pxPerYUnit;
+    const y = this.parent.logicalHeight - (isect.dependentValue - chartInfo.yRangeInfo!.interval.start) * pxPerYUnit;
     sym.x = x;
     sym.y = y
     overlays.push(sym);
@@ -163,7 +162,7 @@ export class HighlightsLayer extends PlotLayer {
         width: width,
         height: height,
         x: 0 - width,
-        y: tier._tickLabelY(options.labelIndex ?? 0)! - 2 * height / 3/* + this.paraview.paraState.settings.popup.margin - tier.children[options.index ?? 0].height*/,
+        y: tier._tickLabelY(options.labelIndex ?? 0)! - 2 * height / 3/* + this.paraview.paraState.config.popup.margin - tier.children[options.index ?? 0].height*/,
         fill: 'blue',
         stroke: 'blue',
         opacity: .3
@@ -177,8 +176,8 @@ export class HighlightsLayer extends PlotLayer {
     if (chartInfo instanceof PlaneChartInfo) {
       let height;
       let width;
-      if (chartInfo.yInterval) {
-        let int = chartInfo.yInterval
+      if (chartInfo.yRangeInfo) {
+        let int = chartInfo.yRangeInfo.interval;
         if (!isNaN(Number(y))) {
           height = (1 - ((Number(y) - int.start) / (int.end - int.start))) * this.paraview.documentView!.chartLayers.dataLayer.height
         }
@@ -187,8 +186,8 @@ export class HighlightsLayer extends PlotLayer {
 
       }
       const xValues = this.paraview.paraState.model!.allFacetValues("x")!.map(box => box.raw);
-      if (chartInfo.xInterval) {
-        const int = chartInfo.xInterval
+      if (chartInfo.xRangeInfo) {
+        const int = chartInfo.xRangeInfo.interval;
         if (!isNaN(Number(x))) {
           width = ((Number(x) - int.start) / (int.end - int.start)) * this.paraview.documentView!.chartLayers.dataLayer.width
         }

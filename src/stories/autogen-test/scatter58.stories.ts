@@ -15,13 +15,13 @@ const meta = {
 export default meta;
 
 export const Chart58: Story = {
-  name: "s2 (58)",
+  name: "s1 (58)",
   args: {
-    filename: "manifests/scatter-manifest-s2.json",
+    filename: "manifests/scatter-manifest-s1.json",
     forcecharttype: "scatter",
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/scatter-manifest-s2.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/scatter-manifest-s1.json");
     await runner.run();
   }
 }

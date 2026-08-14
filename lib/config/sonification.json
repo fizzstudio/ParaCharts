@@ -1,0 +1,109 @@
+{
+    "description": "Audio feedback and sonification settings.",
+    "family": "audio",
+    "settings": {
+        "isSonificationEnabled": {
+            "label": "cpanel.tabs.audio.sonification",
+            "description": "Enable sonification audio feedback",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "advanced": false,
+            "panel": "audio",
+            "parentView": "controlPanel.tabs.audio.sonification",
+            "keywords": ["audio", "sonification"]
+        },
+        "isRiffEnabled": {
+            "label": "cpanel.tabs.audio.soni_dialog.play_series_riff",
+            "description": "Enable series riff playback",
+            "type": "boolean",
+            "default": true,
+            "control": "checkbox",
+            "advanced": false,
+            "panel": "sonification_dialog",
+            "parentView": "controlPanel.tabs.audio.sonification.dialog",
+            "keywords": ["audio", "sonification"]
+        },
+        "isNotificationEnabled": {
+            "label": "cpanel.tabs.audio.soni_dialog.notification_sounds",
+            "description": "Enable audio notifications",
+            "type": "boolean",
+            "default": true,
+            "control": "checkbox",
+            "advanced": false,
+            "panel": "sonification_dialog",
+            "parentView": "controlPanel.tabs.audio.sonification.dialog",
+            "keywords": ["audio", "sonification"]
+        },
+        "hertzLower": {
+            "label": "cpanel.tabs.audio.soni_dialog.lower_hertz",
+            "description": "Lower frequency bound in Hz",
+            "type": "number",
+            "default": 35,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0,
+                "max": 107,
+                "step": 1,
+                "lessThan": "sonification.hertzUpper"
+            },
+            "advanced": false,
+            "panel": "sonification_dialog",
+            "parentView": "controlPanel.tabs.audio.sonification.dialog",
+            "keywords": ["audio", "sonification"]
+        },
+        "hertzUpper": {
+            "label": "cpanel.tabs.audio.soni_dialog.upper_hertz",
+            "description": "Upper frequency bound in Hz",
+            "type": "number",
+            "default": 96,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0,
+                "max": 107,
+                "step": 1,
+                "greaterThan": "sonification.hertzLower"
+            },
+            "advanced": false,
+            "panel": "sonification_dialog",
+            "parentView": "controlPanel.tabs.audio.sonification.dialog",
+            "keywords": ["audio", "sonification"]
+        },
+        "riffSpeedIndex": {
+            "label": "cpanel.tabs.audio.soni_dialog.riff_speed",
+            "description": "Speed for musical riffs",
+            "type": "number",
+            "default": 2,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0,
+                "max": 4,
+                "step": 1
+            },
+            "advanced": false,
+            "panel": "sonification_dialog",
+            "parentView": "controlPanel.tabs.audio.sonification.dialog",
+            "keywords": ["audio", "sonification"]
+        },
+        "isArpeggiateChords": {
+            "label": "cpanel.tabs.audio.soni_dialog.arpeg_chords",
+            "description": "Play chords as arpeggios",
+            "type": "boolean",
+            "default": true,
+            "control": "checkbox",
+            "advanced": false,
+            "panel": "sonification_dialog",
+            "parentView": "controlPanel.tabs.audio.sonification.dialog",
+            "keywords": ["audio", "sonification"]
+        }
+    },
+    "defaults": {
+        "isSonificationEnabled": false,
+        "isRiffEnabled": true,
+        "isNotificationEnabled": true,
+        "hertzLower": 35,
+        "hertzUpper": 96,
+        "riffSpeedIndex": 2,
+        "isArpeggiateChords": true
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "description": "Outside-label settings for Venn diagrams.",
+    "settings": {
+        "contents": {
+            "label": "cpanel.tabs.chart.venn_outside_labels",
+            "description": "Content to display in outside labels",
+            "type": "string",
+            "default": "",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["", "category", "percentage:(value)"]
+            },
+            "parentView": "controlPanel.tabs.chart.chart"
+        }
+    }
+}

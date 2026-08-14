@@ -1,9 +1,9 @@
+import Decimal from 'decimal.js';
 import { Logger, getLogger } from '@fizz/logger';
 import { capitalize, join, interpolate } from '@fizz/templum';
-import { DatapointView } from '../view/data';
 import { type Model } from '@fizz/paramodel';
-import Decimal from 'decimal.js';
 import { formatXYDatapoint } from '@fizz/parasummary';
+import { type DatapointView } from '../view/data';
 
 // TODO (@simonvarey): This is a redefined from the `ComparisonRelationship` in @fizz/dataframe. I should
 //   check whether the one in @fizz/dataframe should be changed/removed.
@@ -93,7 +93,7 @@ export function /*for tests*/ describeAdjacentDatapoints(model: Model, targetVie
     if (comparisonNext = describeAdjacentDatapointComparison(model, targetView, 'next')) {
         comparisons.push(comparisonNext);
     }
-    return join(comparisons, true);
+    return join(comparisons);
 }
 
 export function /*for tests*/ describeAdjacentDatapointComparison(

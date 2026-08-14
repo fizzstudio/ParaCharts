@@ -1,15 +1,11 @@
-
-import { ParaComponent } from '.';
-
-import { Logger, getLogger } from '@fizz/logger';
-import { PlaneDatapoint, type Model } from '@fizz/paramodel';
-import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
-
-import { html, css, nothing, render, type PropertyValues } from 'lit';
-import { property, state, queryAssignedElements, customElement } from 'lit/decorators.js';
-import {type Ref, ref, createRef} from 'lit/directives/ref.js';
-import { styleMap } from 'lit/directives/style-map.js';
+import { html, css, nothing } from 'lit';
+import { property, customElement } from 'lit/decorators.js';
+import { type Ref, ref, createRef } from 'lit/directives/ref.js';
 import { Unsubscribe } from '@lit-app/state';
+import { type Logger, getLogger } from '@fizz/logger';
+import { type PlaneDatapoint } from '@fizz/paramodel';
+import { formatXYDatapointX, formatXYDatapointY } from '@fizz/parasummary';
+import { ParaComponent } from '.';
 import { datapointIdToCursor } from '../state';
 import { type ParaChart } from '../parachart/parachart';
 
@@ -58,12 +54,19 @@ export class DataTable extends ParaComponent {
     });
   }
 
+  init() {
+    this._initGrid();
+  }
+
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this._paraStateChangeUnsub();
   }
 
   protected _initGrid() {
+    if (Array.from(new Set(this._paraState.model!.series.map(s => s.datapoints.length))).length > 1){
+      return;
+    }
     this._grid = this._paraState.model!.series[0].datapoints.map((dp, i) => {
       this._gridEls[i] = [];
       return this._paraState.model!.series.map((s, j) => {
@@ -172,7 +175,7 @@ export class DataTable extends ParaComponent {
   ];
 
   protected render() {
-    return this._paraState.model
+    return (this._paraState.model && this._paraState.model.facetKeys.length > 1)
     ? html`
       <div
         class="wrapper"
@@ -197,7 +200,7 @@ export class DataTable extends ParaComponent {
             </tr>
           </thead>
           <tbody>
-            ${this._grid.map((row, i) => html`
+            ${this._grid?.map((row, i) => html`
               <tr>
                 <td>
                   ${row[0].x}

@@ -1,14 +1,18 @@
 import { BaseState } from './base_state';
 import { ParaState } from './parastate';
-import { SettingsInput, Setting } from './settings_types';
+import { SettingsInput } from '../config/config_types';
 
 import { SeriesAnalyzerConstructor, PairAnalyzerConstructor } from '@fizz/paramodel';
 
 import { property } from '@lit-app/state';
 
+// import { Localization } from '@elemental/localization';
+import { Localization } from '../l10n/l10n';
+
 export class GlobalState extends BaseState {
   protected _paraStates: ParaState[] = [];
-  protected _currentParaState!: ParaState;
+  @property() protected _currentParaState!: ParaState;
+  protected _l10n!: Localization;
 
   constructor(
     protected _inputSettings: SettingsInput,
@@ -21,12 +25,21 @@ export class GlobalState extends BaseState {
     // this._getUrlAnnotations();
   }
 
+  init() {
+    // this._l10n = await Localization.make(navigator.languages, {defaultLocale: 'en', path: '/lib/assets/locales'});
+    this._l10n = new Localization();
+  }
+
   get paraState(): ParaState {
     return this._currentParaState;
   }
 
   get paraStates(): readonly ParaState[] {
     return this._paraStates;
+  }
+
+  get l10n(): Localization {
+    return this._l10n;
   }
 
   createParaState() {

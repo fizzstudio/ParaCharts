@@ -14,18 +14,19 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Logger, getLogger } from '@fizz/logger';
-import { PointChartInfo } from './point_chart';
-import { datapointIdToCursor, type ParaState } from '../state';
-import { type ParaView } from '../paraview';
-import { type LineSettings, type DeepReadonly, type Setting } from '../state/settings_types';
-import { queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state/query_utils';
-
+import { getLogger } from '@fizz/logger';
 import { interpolate } from '@fizz/templum';
-
 import { formatXYDatapoint } from '@fizz/parasummary';
 import { type ChartType } from '@fizz/paramanifest';
-import { Highlight } from '@fizz/parasummary';
+import { enumerate, PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
+import { PointChartInfo } from './point_chart';
+import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state';
+import { NavNode } from '../view/layers';
+import { DataSymbols } from '../view/symbol';
+import { Interval } from '@fizz/chart-classifier-utils';
+import { ConfigSetting } from '../config/config_types';
+import { AxisRangeInfo } from './plane_chart';
+import { LegendItem } from '../view/legend';
 
 /**
  * Business logic for line charts.
@@ -39,47 +40,80 @@ export class LineChartInfo extends PointChartInfo {
   }
 
   protected _addSettingControls(): void {
-    super._addSettingControls();
-    // XXX only do this if type === 'line'
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'type.line.lineWidth',
-      label: 'Line width',
-      options: {
-        inputType: 'number',
-        min: 1,
-        max: this._paraState.settings.type.line.lineWidthMax as number
-      },
-      parentView: 'controlPanel.tabs.chart.chart',
+    if (!this._paraState.comboModel) {
+      super._addSettingControls();
+    }
+    this._paraState.settingControls.insert('type.line.lineWidth', {
+      max: this._paraState.config.type.line.lineWidthMax
     });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'chart.isDrawSymbols',
-      label: 'Show symbols',
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
+    this._paraState.settingControls.insert('chart.isDrawSymbols');
   }
 
-  get settings() {
-    return super.settings as DeepReadonly<LineSettings>;
-  }
-
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  async settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): Promise<void> {
     if (['type.line.isTrendNavigationModeEnabled'].includes(path)) {
+      if (this._navMap!.cursor.type === 'top') {
+        [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
+        return;
+      }
+      if (!newValue) {
+        await this._navMap!.cursor.move('in');
+      }
+      const index = this._navMap!.cursor.index;
+      const type = this._navMap!.cursor.type;
       [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
-      this._navMap!.root.goTo('top', {});
+      // go to corresponding data point in new mode nav map
+      this._navMap!.cursor.layer.goTo(type, index, true);
+      if (newValue) {
+        const trendNode = this._navMap!.cursor.peekNode('out', 1)!;
+        trendNode.connect('in', this._navMap!.cursor, false);
+        await this._navMap!.cursor.move('out');
+      }
+    }
+    // Add or remove single-series series landings based on whether
+    // soni is enabled
+    if (path === 'sonification.isSonificationEnabled') {
+      const idx = this._navMap!.cursor.index;
+      this._createNavMap();
+      if (!this._paraState.comboModel || this._paraState.currentDataset) {
+        this._navMap!.layer(this._navMap!.currentLayer)!.goTo('datapoint', idx, true);
+      }
     }
     super.settingDidChange(path, oldValue, newValue);
   }
 
-  async storeDidChange(key: string, value: any) {
-    await super.storeDidChange(key, value);
+  noticePosted(key: string, value: any) {
+    super.noticePosted(key, value);
     if (key === 'seriesAnalyses') {
-      // This gets called each time a series analysis completes after a
-      // new manifest is loaded in AI mode. The following call will only
-      // do anything once analyses have been generated for all series.
       this._createSequenceNavNodes();
     }
+  }
+
+  get model() {
+    return this._paraState.comboModel ?? this._paraState.model;
+  }
+
+  get seriesProperties() {
+    return this._paraState.comboModel
+      ? this._paraState.comboSeriesProperties
+      : this._paraState.seriesProperties;
+  }
+
+  /**
+   * Called by `computeAxisLabelTiers` to get the displayed range for a numeric y-axis.
+   * @param facetKey - Facet key
+   * @returns Displayed axis range as an Interval
+   */
+  protected _numericYAxisRange(facetKey: string): AxisRangeInfo {
+    const range = super._numericYAxisRange(facetKey);
+    return this._paraState.comboModel
+      ? {
+          interval: {
+            start: Math.min(0, range.interval.start),
+            end: range.interval.end
+          },
+          step: range.step
+        }
+      : range;
   }
 
   protected _createNavMap() {
@@ -89,16 +123,47 @@ export class LineChartInfo extends PointChartInfo {
     this._createSequenceNavNodes();
   }
 
-  legend() {
-    const model = this._paraState.model!;
-    const seriesKeys = [...model.seriesKeys];
-    if (this._paraState.settings.legend.itemOrder === 'alphabetical') {
-      seriesKeys.sort();
+  didNavToNode(cursor: NavNode) {
+    if (cursor.isNodeType(this.navDatapointType)) {
+      const trendNode = cursor.peekNode('out', 1)!;
+      if (trendNode) {
+        trendNode.connect('in', cursor, false);
+      }
+    }
+  }
+
+  legend(): LegendItem[] {
+    const model = this.model!;
+    const seriesKeys = enumerate([...model.seriesKeys]);
+    const types = new DataSymbols().types;
+    if (this._paraState.config.legend.itemOrder === 'alphabetical') {
+      seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
+    }
+    else if (this._paraState.config.legend.itemOrder === 'reverseAlphabetical') {
+      seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
+    }
+    else if (this._paraState.config.legend.itemOrder === 'startingOrder') {
+      const model = this.model as PlaneModel;
+      const startChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(0) as PlaneDatapoint).indepBox)!;
+      seriesKeys.sort((a, b) =>
+        startChord.find(point => point.seriesKey === b[0])!.facetValueAsNumber("y")!
+        - startChord.find(point => point.seriesKey === a[0])!.facetValueAsNumber("y")!
+      );
+    }
+    else if (this._paraState.config.legend.itemOrder === 'endingOrder') {
+      const model = this.model as PlaneModel;
+      const endChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(-1) as PlaneDatapoint).indepBox)!;
+      seriesKeys.sort((a, b) =>
+        endChord.find(point => point.seriesKey === b[0])!.facetValueAsNumber("y")!
+        - endChord.find(point => point.seriesKey === a[0])!.facetValueAsNumber("y")!
+      );
     }
     return seriesKeys.map(key => ({
-      label: model.atKey(key)!.getLabel(),
-      seriesKey: key,
-      color: this._paraState.seriesProperties!.properties(key).color
+      label: model.atKey(key[0])!.getLabel(),
+      seriesKey: key[0],
+      colorIndex: this.seriesProperties.properties(key[0]).colorIndex,
+      symbol: types[key[1]],
+      symbolOptions: { lighten: true }
     }));
   }
 
@@ -121,7 +186,7 @@ export class LineChartInfo extends PointChartInfo {
         msgArray = this.describeChord(visitedDatapoints);
       } */
       const seriesKey = queriedNode.options.seriesKey;
-      const series = this._paraState.model!.atKey(seriesKey)!;
+      const series = this.model!.atKey(seriesKey)!;
       const datapointCount = series.length;
       const seriesLabel = series.getLabel();
       msgArray.push(interpolate(
@@ -144,7 +209,7 @@ export class LineChartInfo extends PointChartInfo {
       //const visitedDatapoint = queriedNode.datapointViews[0];
       const seriesKey = queriedNode.options.seriesKey;
       const index = queriedNode.options.index;
-      const series = this._paraState.model!.atKey(seriesKey)!;
+      const series = this.model!.atKey(seriesKey)!;
       const datapoint = series.datapoints[index];
       const seriesLabel = series.getLabel();
       const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;
@@ -154,7 +219,7 @@ export class LineChartInfo extends PointChartInfo {
           seriesLabel,
           datapointXY: formatXYDatapoint(datapoint, 'raw'),
           datapointIndex: queriedNode.options.index + 1,
-          datapointCount: this._paraState.model!.atKey(seriesKey)!.length
+          datapointCount: this.model!.atKey(seriesKey)!.length
         }
       ));
 
@@ -172,13 +237,13 @@ export class LineChartInfo extends PointChartInfo {
         msgArray.push(...selectionMsgArray);
       } else {
         // If no selected datapoints, compare the current datapoint to previous and next datapoints in this series
-        const datapointMsg = describeAdjacentDatapoints(this._paraState.model!, datapointView);
+        const datapointMsg = describeAdjacentDatapoints(this.model!, datapointView);
         msgArray.push(datapointMsg);
       }
 
       // also add the high or low indicators
       const minMaxMsgArray = getDatapointMinMax(
-        this._paraState.model!,
+        this.model!,
         datapoint.facetValueAsNumber('y')!,
         seriesKey
       );

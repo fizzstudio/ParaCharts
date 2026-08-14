@@ -1,0 +1,31 @@
+{
+    "description": "Horizontal axis display and layout.",
+    "family": "axis",
+    "settings": {
+        "isDrawAxis": {
+            "description": "Enable drawing this axis",
+            "type": "boolean",
+            "default": true
+        },
+        "position": {
+            "description": "Position relative to chart",
+            "type": "VertCardinalDirection",
+            "default": "south"
+        },
+        "labelOrder": {
+            "description": "Order of label values along axis",
+            "type": "'westToEast' | 'eastToWest'",
+            "default": "westToEast"
+        },
+        "isStaggerLabels": {
+            "description": "Stagger labels to prevent overlap",
+            "type": "boolean",
+            "default": false
+        },
+        "isWrapLabels": {
+            "description": "Wrap long labels to multiple lines",
+            "type": "boolean",
+            "default": true
+        }
+    }
+}

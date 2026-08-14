@@ -1,0 +1,36 @@
+{
+    "description": "Heat map settings.",
+    "ref": "type.plane",
+    "family": "heatmap",
+    "settings": {
+        "resolution": {
+            "label": "cpanel.tabs.chart.heatmap_resolution",
+            "description": "Grid resolution for heat map",
+            "type": "number",
+            "default": 20,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 5,
+                "max": 100
+            },
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "xFacet": {
+            "label": "cpanel.tabs.chart.heatmap_x_facet",
+            "description": "Axis to group on the X axis",
+            "type": "string",
+            "default": "",
+            "control": "dropdown",
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "yFacet": {
+            "label": "cpanel.tabs.chart.heatmap_y_facet",
+            "description": "Axis to group on the Y axis",
+            "type": "string",
+            "default": "",
+            "control": "dropdown",
+            "parentView": "controlPanel.tabs.chart.chart"
+        }
+    }
+}

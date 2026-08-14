@@ -1,0 +1,145 @@
+{
+    "description": "User interface and accessibility features.",
+    "settings": {
+        "isVoicingEnabled": {
+            "label": "cpanel.tabs.audio.self_voicing",
+            "description": "Enable voice output for screen reader users",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "advanced": false,
+            "panel": "audio",
+            "parentView": "controlPanel.tabs.audio.voicing",
+            "keywords": ["audio", "selfvoicing"]
+        },
+        "isTourGuideEnabled": {
+            "label": "cpanel.tabs.audio.tour_guide",
+            "description": "Enable visual highlighting when narrative elements are announced",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "advanced": false,
+            "panel": "audio",
+            "parentView": "controlPanel.tabs.audio.narrative",
+            "keywords": ["audio", "tourguide"]
+        },
+        "isTourGuidePaused": {
+            "label": "cpanel.tabs.audio.pause_tour_guide",
+            "description": "Pause Tour Guide",
+            "type": "boolean",
+            "default": false,
+            "control": "button",
+            "advanced": false,
+            "panel": "audio",
+            "parentView": "controlPanel.tabs.audio.narrative",
+            "keywords": ["audio", "tourguide"]
+        },
+        "isAnnouncementEnabled": {
+            "label": "cpanel.tabs.audio.announce_screen_reader",
+            "description": "Enable aria-live announcements",
+            "type": "boolean",
+            "default": true,
+            "control": "checkbox",
+            "advanced": false,
+            "panel": "audio",
+            "parentView": "controlPanel.tabs.audio.voicing",
+            "keywords": ["audio", "selfvoicing"]
+        },
+        "speechRate": {
+            "label": "cpanel.tabs.audio.speech_rate",
+            "description": "Self-voicing speech rate. Range: 0.5 to 2",
+            "type": "number",
+            "default": 1,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0.5,
+                "max": 2,
+                "step": 0.1,
+                "percent": true
+            },
+            "advanced": false,
+            "panel": "audio",
+            "parentView": "controlPanel.tabs.audio.voicing",
+            "keywords": ["audio", "selfvoicing"]
+        },
+        "liveUpdateDelay": {
+            "label": "Live update delay",
+            "description": "Delay in seconds between live update announcements",
+            "type": "number",
+            "default": 1,
+            "advanced": false,
+            "keywords": ["audio", "liveupdate"]
+        },
+        "isFullscreenEnabled": {
+            "label": "Fullscreen",
+            "description": "Enable fullscreen mode",
+            "type": "boolean",
+            "default": false,
+            "control": "button",
+            "advanced": false,
+            "panel": "controls",
+            "parentView": "controlPanel.tabs.controls.fullscreen",
+            "keywords": ["controls", "fullscreen"]
+        },
+        "isLowVisionModeEnabled": {
+            "label": "cpanel.tabs.colors.low_vision",
+            "description": "Enable low vision accessibility enhancements",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "advanced": false,
+            "panel": "color",
+            "parentView": "controlPanel.tabs.color.lowVision",
+            "keywords": ["color", "accessibility"]
+        },
+        "lowVisionFontScale": {
+            "description": "Font scale multiplier to apply when low-vision mode is enabled",
+            "type": "number",
+            "default": 2,
+            "advanced": true
+        },
+        "lowVisionIsVertGridlines": {
+            "description": "Enable vertical gridlines when low-vision mode is enabled",
+            "type": "boolean",
+            "default": true,
+            "advanced": true
+        },
+        "lowVisionDisableAnimations": {
+            "description": "Disable animations when low-vision mode is enabled",
+            "type": "boolean",
+            "default": true,
+            "advanced": true
+        },
+        "lowVisionIsFullscreen": {
+            "description": "Enable fullscreen when low-vision mode is enabled",
+            "type": "boolean",
+            "default": true,
+            "advanced": true
+        },
+        "isFocusRingEnabled": {
+            "label": "Show focus ring",
+            "description": "Show focus ring around active elements",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "advanced": true
+        },
+        "focusRingGap": {
+            "label": "Focus ring gap",
+            "description": "Gap size around focus ring in pixels",
+            "type": "number",
+            "default": 10,
+            "control": "textfield",
+            "advanced": true
+        },
+        "navRunTimeoutMs": {
+            "label": "Navigation run timeout (ms)",
+            "description": "Timeout in milliseconds for navigation runs",
+            "type": "number",
+            "default": 125,
+            "control": "textfield",
+            "advanced": true
+        }
+
+    }
+}

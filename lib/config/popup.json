@@ -1,0 +1,159 @@
+{
+    "description": "Tooltip and popup styling.",
+    "family": "popup",
+    "settings": {
+        "opacity": {
+            "label": "cpanel.tabs.chart.popup_dialog.opacity",
+            "description": "Background opacity (0-1)",
+            "type": "number",
+            "default": 1,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0,
+                "max": 1,
+                "step": 0.1
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "leftPadding": {
+            "label": "cpanel.tabs.chart.popup_dialog.left_padding",
+            "description": "Left padding inside popup",
+            "type": "number",
+            "default": 10,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 100
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "rightPadding": {
+            "label": "cpanel.tabs.chart.popup_dialog.right_padding",
+            "description": "Right padding inside popup",
+            "type": "number",
+            "default": 10,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 100
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "upPadding": {
+            "label": "cpanel.tabs.chart.popup_dialog.up_padding",
+            "description": "Top padding inside popup",
+            "type": "number",
+            "default": 10,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 100
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "downPadding": {
+            "label": "cpanel.tabs.chart.popup_dialog.down_padding",
+            "description": "Bottom padding inside popup",
+            "type": "number",
+            "default": 10,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 100
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "margin": {
+            "label": "cpanel.tabs.chart.popup_dialog.margin",
+            "description": "Margin around popup",
+            "type": "number",
+            "default": 40,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 100
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "maxWidth": {
+            "label": "cpanel.tabs.chart.popup_dialog.max_width",
+            "description": "Maximum width before text wraps",
+            "type": "number",
+            "default": 175,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 300
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "shape": {
+            "label": "cpanel.tabs.chart.popup_dialog.shape",
+            "description": "Visual style of popup",
+            "type": "'box' | 'boxWithArrow'",
+            "default": "boxWithArrow",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["box", "boxWithArrow"]
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "activation": {
+            "label": "cpanel.tabs.chart.popup_dialog.activation",
+            "description": "When popup appears",
+            "type": "'onHover' | 'onFocus' | 'onSelect'",
+            "default": "onHover",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["onHover", "onFocus", "onSelect"]
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "borderRadius": {
+            "label": "cpanel.tabs.chart.popup_dialog.border_radius",
+            "description": "Corner radius for rounded popups",
+            "type": "number",
+            "default": 5,
+            "control": "textfield",
+            "controlOptions": {
+                "inputType": "number",
+                "min": 0,
+                "max": 20
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "backgroundColor": {
+            "label": "cpanel.tabs.chart.popup_dialog.bg_color",
+            "description": "Background color scheme",
+            "type": "'dark' | 'light'",
+            "default": "dark",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["dark", "light"]
+            },
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "isShowCrosshair": {
+            "label": "cpanel.tabs.chart.popup_dialog.crosshair",
+            "description": "Show crosshair",
+            "type": "boolean",
+            "default": true,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        },
+        "isCrosshairFollowPointer": {
+            "label": "cpanel.tabs.chart.popup_dialog.crosshair_follow",
+            "description": "Make crosshair follow pointer",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.dialog.popups"
+        }
+    }
+}

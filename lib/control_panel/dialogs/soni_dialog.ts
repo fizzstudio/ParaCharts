@@ -10,6 +10,7 @@ import { property, customElement } from 'lit/decorators.js';
 import { ref, createRef } from 'lit/directives/ref.js';
 
 
+
 /**
  * @public
  */
@@ -24,63 +25,19 @@ export class SoniSettingsDialog extends SettingControlContainer {
   @property() btnText = 'Okay';
 
   static styles = css`
+    fizz-dialog {
+      --item-gap: 1rem;
+    }
   `;
 
   connectedCallback() {
     super.connectedCallback();
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'sonification.isNotificationEnabled',
-      label: 'Notification sounds',
-      parentView: 'controlPanel.tabs.audio.sonification.dialog',
-    });
-    this._paraState.settingControls.add({
-      type: 'slider',
-      key: 'sonification.hertzLower',
-      label: 'Lower hertz',
-      options: {
-        min: 0,
-        max: HERTZ.length - 1,
-        highBound: this._paraState.settings.sonification.hertzUpper - 1,
-        step: 1
-      },
-      parentView: 'controlPanel.tabs.audio.sonification.dialog'
-    });
-    this._paraState.settingControls.add({
-      type: 'slider',
-      key: 'sonification.hertzUpper',
-      label: 'Upper hertz',
-      options: {
-        min: 0,
-        max: HERTZ.length - 1,
-        lowBound: this._paraState.settings.sonification.hertzLower + 1,
-        step: 1,
-      },
-      parentView: 'controlPanel.tabs.audio.sonification.dialog'
-    });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'sonification.isRiffEnabled',
-      label: 'Series riff enabled',
-      parentView: 'controlPanel.tabs.audio.sonification.dialog',
-    });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'sonification.isArpeggiateChords',
-      label: 'Chords are arpeggiated',
-      parentView: 'controlPanel.tabs.audio.sonification.dialog',
-    });
-    this._paraState.settingControls.add({
-      type: 'slider',
-      key: 'sonification.riffSpeedIndex',
-      label: 'Riff speed',
-      options: {
-        min: 0,
-        max: SONI_RIFF_SPEEDS.length - 1,
-        step: 1,
-      },
-      parentView: 'controlPanel.tabs.audio.sonification.dialog',
-    });
+    this._paraState.settingControls.insert('sonification.isNotificationEnabled');
+    this._paraState.settingControls.insert('sonification.hertzLower');
+    this._paraState.settingControls.insert('sonification.hertzUpper');
+    this._paraState.settingControls.insert('sonification.isRiffEnabled');
+    this._paraState.settingControls.insert('sonification.isArpeggiateChords');
+    this._paraState.settingControls.insert('sonification.riffSpeedIndex');
   }
 
   render() {

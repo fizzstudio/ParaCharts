@@ -1,0 +1,21 @@
+{
+    "description": "Narrative scrolling features.",
+    "family": "scrollytelling",
+    "settings": {
+        "isScrollytellingEnabled": {
+            "description": "Enable scrollytelling mode",
+            "type": "boolean",
+            "default": true
+        },
+        "isScrollyAnnouncementsEnabled": {
+            "description": "Enable audio announcements during scrolling",
+            "type": "boolean",
+            "default": true
+        },
+        "isScrollySoniEnabled": {
+            "description": "Enable sonification during scrolling",
+            "type": "boolean",
+            "default": true
+        }
+    }
+}

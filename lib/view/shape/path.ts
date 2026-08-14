@@ -1,6 +1,6 @@
 
 import { fixed } from '../../common/utils';
-import { type ParaView } from '../../paraview';
+import { type ViewContext } from '../view_context';
 import { Shape, type ShapeOptions } from './shape';
 import { Vec2 } from '../../common/vector';
 
@@ -16,7 +16,7 @@ export interface PathOptions extends ShapeOptions {
 export class PathShape extends Shape {
   protected _points: Vec2[];
 
-  constructor(paraview: ParaView, options: PathOptions) {
+  constructor(paraview: ViewContext, options: PathOptions) {
     super(paraview, options);
     this._points = options.points.map(p => p.clone());
   }

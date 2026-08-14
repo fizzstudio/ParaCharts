@@ -1,0 +1,109 @@
+{
+    "description": "Control panel visibility, layout, and available features.",
+    "family": "controlPanel",
+    "settings": {
+        "isControlPanelDefaultOpen": {
+            "description": "Open control panel by default",
+            "type": "boolean",
+            "default": true
+        },
+        "tabLabelStyle": {
+            "label": "cpanel.tabs.controls.advanced_dialog.tab_label_style",
+            "description": "Style for tab labels (icon, text, or both)",
+            "type": "TabLabelStyle",
+            "default": "label",
+            "control": "radio",
+            "controlOptions": {
+                "buttons": {
+                    "icon": {
+                        "label": "Icon only"
+                    },
+                    "iconLabel": {
+                        "label": "Icon and label"
+                    },
+                    "label": {
+                        "label": "Label only"
+                    }
+                },
+                "layout": "horiz"
+            },
+            "parentView": "controlPanel.tabs.controls.dialog.tabLabels"
+        },
+        "isCaptionVisible": {
+            "label": "cpanel.tabs.controls.advanced_dialog.caption_visible",
+            "description": "Show chart caption",
+            "type": "boolean",
+            "default": true,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.controls.dialog.settings"
+        },
+        "isExplorationBarVisible": {
+            "label": "cpanel.tabs.controls.advanced_dialog.expl_bar_visible",
+            "description": "Show exploration status bar",
+            "type": "boolean",
+            "default": true,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.controls.dialog.settings"
+        },
+        "isSparkBrailleVisible": {
+            "description": "Show spark braille display",
+            "type": "boolean",
+            "default": false
+        },
+        "isDataTabVisible": {
+            "description": "Show data table tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isColorsTabVisible": {
+            "description": "Show colors/appearance tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isAudioTabVisible": {
+            "description": "Show audio settings tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isControlsTabVisible": {
+            "description": "Show controls/interaction tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isChartTabVisible": {
+            "description": "Show chart settings tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isAnnotationsTabVisible": {
+            "description": "Show annotations tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isMDRAnnotationsVisible": {
+            "description": "Show MDR annotations",
+            "type": "boolean",
+            "default": false
+        },
+        "isAnalysisTabVisible": {
+            "description": "Show analysis tab",
+            "type": "boolean",
+            "default": true
+        },
+        "isSparkBrailleControlVisible": {
+            "description": "Show spark braille control",
+            "type": "boolean",
+            "default": true
+        },
+        "isColorPaletteControlVisible": {
+            "description": "Show color palette control",
+            "type": "boolean",
+            "default": true
+        },
+        "isCVDControlVisible": {
+            "description": "Show color vision deficiency control",
+            "type": "boolean",
+            "default": true
+        }
+    }
+}

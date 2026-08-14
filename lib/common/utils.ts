@@ -14,13 +14,12 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { ParaState } from "../state/parastate";
-import { BboxAnchor, type View } from '../view/base_view';
-import { Box, Datapoint, Model } from "@fizz/paramodel";
-import { Datatype } from "@fizz/paramanifest";
-import { DatapointView } from "../view/data";
-import { ParaView } from "../paraview";
-import { Popup } from "../view/popup";
+import { type Datapoint, type Model } from "@fizz/paramodel";
+import { type ParaState } from "../state/parastate";
+import { type BboxAnchor, type View } from '../view/base_view';
+import { type DatapointView } from "../view/data";
+import { type ParaView } from "../paraview";
+import { type Popup } from "../view/popup";
 
 const bboxOppositeAnchors: Record<BboxAnchor, BboxAnchor> = {
   top: 'bottom',
@@ -243,7 +242,7 @@ export function isPointerInbounds(paraview: ParaView, e: PointerEvent | MouseEve
   }
 }
 
-export function loopParaviewRefresh(paraview: ParaView, duration: number, interval: number) {
+export function loopParaviewRefresh(paraview: { requestUpdate(): void }, duration: number, interval: number) {
   const start = Date.now();
   const loop = () => {
     let timestamp = setTimeout(() => {
@@ -266,4 +265,48 @@ export function horizAdjust(label: Popup) {
   label.box.x -= (label.grid.width / 2) + 11;
   label.grid.y -= (label.grid.height / 2);
   label.box.y -= (label.grid.height / 2);
+};
+
+export const trendTranslation = {
+  /** A single rising sequence */
+  "1": "Rising",
+  /** A single falling sequence */
+  "-1": "Falling",
+  /** A single stable sequence */
+  "0": "Stable",
+}
+
+export function preciseAdd(a: number, b: number) {
+  const aSplit = a.toString().split(".")
+  const bSplit = b.toString().split(".")
+  const p = Math.max(aSplit.length > 1 ? aSplit.at(-1)!.length : 0,
+    bSplit.length > 1 ? bSplit.at(-1)!.length : 0)
+  return (Math.round(a * 10 ** p) + Math.round(b * 10 ** p)) / (10 ** (p));
+}
+
+export function preciseMultiply(a: number, b: number) {
+  const aSplit = a.toString().split(".")
+  const bSplit = b.toString().split(".")
+  const p = Math.max(aSplit.length > 1 ? aSplit.at(-1)!.length + 1 : 0,
+    bSplit.length > 1 ? bSplit.at(-1)!.length + 1 : 0)
+  const returnVal = (Math.round(a * 10 ** p) * Math.round(b * 10 ** p)) / (10 ** (2 * p))
+  return returnVal;
+}
+
+export const getMostCommonReduce = (arr: number[]) => {
+  if (arr.length === 0) {
+    return NaN;
+  }
+
+  const hashmap = arr.reduce<Record<number, number>>((acc, val) => {
+    acc[val] = (acc[val] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  // Compare the keys based on their stored counts
+  const result = Object.keys(hashmap)
+    .map(Number)
+    .reduce((a, b) => hashmap[a] > hashmap[b] ? a : b);
+
+  return result;
 };

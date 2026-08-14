@@ -20,23 +20,16 @@ export class ControlsPanel extends ControlPanelTabPanel {
   static styles = [
     ...ControlPanelTabPanel.styles,
     css`
+      #controls-tab button::first-letter {
+        text-transform: capitalize;
+      }
     `
   ];
 
   connectedCallback() {
     super.connectedCallback();
-    this._paraState.settingControls.add({
-      type: 'button',
-      key: 'ui.isFullscreenEnabled',
-      label: 'Fullscreen',
-      parentView: 'controlPanel.tabs.controls.fullscreen',
-    });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'animation.isAnimationEnabled',
-      label: 'Animation enabled',
-      parentView: 'controlPanel.tabs.controls.animation',
-    });
+    this._paraState.settingControls.insert('ui.isFullscreenEnabled');
+    this._paraState.settingControls.insert('animation.isAnimationEnabled');
   }
 
   protected _getHelp() {
@@ -71,7 +64,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
 
       <p>Explore the collapsible Control Panel to find many more accessibility features, including options for color blindness, dark mode with fine-grained contrast, self-voicing, SparkBraille tactile support, and more.</p>
 
-      <p>For more details, visit the <a href="https://fizzstudio.github.io/paracharts" target="_blank">ParaCharts Documentation</a>.</p>
+      <p>For more details, visit the <a href="https://fizzstudio.github.io/ParaCharts/" target="_blank">ParaCharts Documentation</a>.</p>
     `;
   }
 
@@ -90,7 +83,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
                 <td><button disable>edit</button></td>
               </tr>
             `)
-      }
+          }
         </tbody>
       </table>
     `;
@@ -103,14 +96,14 @@ export class ControlsPanel extends ControlPanelTabPanel {
           <button
             @click=${() => this.controlPanel.dialog.show('Key Bindings', this._getKeyTable())}
           >
-            Keyboard Controls
+            ${this._globalState.l10n.localize('cpanel.tabs.controls.keyboard_controls')}
           </button>
           <button
-            @click=${() => this._paraState.updateSettings(draft => {
+            @click=${() => this._paraState.updateConfig(draft => {
               draft.ui.isFullscreenEnabled = true;
             })}
           >
-            Fullscreen
+            ${this._globalState.l10n.localize('cpanel.tabs.controls.fullscreen')}
           </button>
         </div>
 
@@ -125,7 +118,7 @@ export class ControlsPanel extends ControlPanelTabPanel {
         this._animationDialogRef.value?.show()
       }}
           >
-            Animation settings
+            ${this._globalState.l10n.localize('cpanel.tabs.controls.animation_settings')}
           </button>
           <para-animation-dialog
             ${ref(this._animationDialogRef)}
@@ -139,12 +132,12 @@ export class ControlsPanel extends ControlPanelTabPanel {
           <button
             @click=${() => this.showHelpDialog()}
           >
-            Help
+            ${this._globalState.l10n.localize('cpanel.tabs.controls.help')}
           </button>
           <button
             @click=${() => this._advancedControlDialogRef.value?.show()}
           >
-          Advanced Controls
+          ${this._globalState.l10n.localize('cpanel.tabs.controls.advanced_controls')}
           </button>
         </section>
       </div>

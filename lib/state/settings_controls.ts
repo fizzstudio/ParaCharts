@@ -1,5 +1,5 @@
 
-import { type Setting, SettingsManager } from '.';
+import { SettingsManager } from '.';
 import { Logger, getLogger } from '@fizz/logger';
 import {
   type SettingControlType,
@@ -19,6 +19,8 @@ import { html, literal } from 'lit/static-html.js';
 import { State, property } from '@lit-app/state';
 import { produce } from 'immer';
 import { strToId } from '@fizz/paramanifest';
+import { ConfigSettingMetadata, configMetadata } from '../config/config_metadata';
+import { ConfigSetting } from '../config/config_types';
 
 
 export type SettingControlOptionsType<T extends SettingControlType> =
@@ -30,6 +32,7 @@ export type SettingControlOptionsType<T extends SettingControlType> =
   T extends 'button' ? ButtonSettingControlOptions :
   never;
 
+type Validator = (value: ConfigSetting) => SettingValidationResult;
 type SettingValidationResult = {err?: string};
 
 /**
@@ -48,12 +51,14 @@ export interface SettingControlOptions<T extends SettingControlType = SettingCon
   /** Optional initial control value (defaults to setting value). */
   value?: SettingControlValueType<T>;
   /** Optional function for validating input. */
-  validator?: (value: Setting) => SettingValidationResult;
+  validator?: Validator;
   /** Whether control is initially hidden. */
   hidden?: boolean;
   /** Tag indicating where the setting control will be displayed. */
   parentView: string;
 }
+
+export type RefreshTarget = 'chart' | 'description';
 
 /**
  * Info stored about a setting control.
@@ -71,7 +76,8 @@ export interface SettingControlInfo<T extends SettingControlType = SettingContro
   /** Type-specific options. */
   options?: SettingControlOptionsType<T>;
   /** Optional function for validating input. */
-  validator?: (value: Setting) => SettingValidationResult;
+  validator?: Validator;
+  refresh: RefreshTarget;
 }
 
 const inputTypeTags = {
@@ -95,28 +101,53 @@ export class SettingControlManager extends State {
     super();
   }
 
-  add<T extends SettingControlType>(
-    controlOptions: SettingControlOptions<T>
+  insert<T extends SettingControlType>(
+    key: string,
+    controlOptions?: SettingControlOptionsType<T>,
+    valueTransformer?: (value: any) => any,
+    validator?: Validator
   ) {
+    const parts = key.split('.');
+    const path = parts.slice(0, -1).join('.');
+    const groupMetadata = configMetadata[path];
+    if (!groupMetadata) throw new Error(`no such config group '${path}'`);
+    const metadata = groupMetadata.settings[parts.at(-1)!] as ConfigSettingMetadata<T> | undefined;
+    if (!metadata) throw new Error(`no such config setting '${key}'`);
     this._settingControlInfo = produce(this._settingControlInfo, draft => {
       const controlInfo: Partial<SettingControlInfo<T>> = {};
-      const tag = inputTypeTags[controlOptions.type];
-      controlInfo.key = controlOptions.key;
-      controlInfo.parentView = controlOptions.parentView;
-      //controlInfo.settingControlRef = createRef();
-      controlInfo.options = controlOptions.options;
-      controlInfo.validator = controlOptions.validator;
-      controlInfo.render = () => html`
-        <${tag}
-          .value=${controlOptions.value ?? SettingsManager.get(controlOptions.key, this._paraState.settings)}
-          .label=${controlOptions.label}
-          .info=${controlInfo}
-          .globalState=${this._paraState.globalState}
-          ?hidden=${controlOptions.hidden}
-          id="setting-${strToId(controlOptions.key)}"
-        ></${tag}>
-      `;
-      draft[controlOptions.key] = controlInfo as SettingControlInfo;
+      const tag = inputTypeTags[metadata.control!];
+      // controlInfo.isConfig = true;
+      controlInfo.key = key;
+      controlInfo.parentView = metadata.parentView;
+      // controlInfo.options = metadata.controlOptions ?? controlOptions;
+      if (metadata.controlOptions) {
+        // We can't mutate metadata.controlOptions, so we make a new object that we can
+        controlInfo.options = Object.assign({}, metadata.controlOptions) as unknown as SettingControlOptionsType<T>;
+        if (controlOptions) {
+          Object.assign(controlInfo.options, controlOptions);
+        }
+      } else if (controlOptions) {
+        controlInfo.options = controlOptions;
+      }
+      controlInfo.validator = validator;
+      controlInfo.refresh = metadata.refresh;
+      controlInfo.render = () => {
+        let value = SettingsManager.get(key, this._paraState.config);
+        if (valueTransformer) {
+          value = valueTransformer(value);
+        }
+        return html`
+          <${tag}
+            .value=${value}
+            .label=${this._paraState.globalState.l10n.localize(metadata.label!)}
+            .info=${controlInfo}
+            .globalState=${this._paraState.globalState}
+            ?hidden=${metadata.hidden}
+            id="setting-${strToId(key)}"
+          ></${tag}>
+        `;
+      };
+      draft[key] = controlInfo as SettingControlInfo;
     });
   }
 
@@ -144,10 +175,11 @@ export class SettingControlManager extends State {
   //   }
   // }
 
-  getContent(parentView: string) {
-    return Object.values(this._settingControlInfo)
+  getContent(parentView: string): TemplateResult[] {
+    const results = Object.values(this._settingControlInfo)
       .filter(settingInfo => settingInfo.parentView === parentView)
       .map(settingInfo => settingInfo.render());
+    return results;
   }
 
   /**

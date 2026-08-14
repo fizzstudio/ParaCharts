@@ -14,17 +14,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { type ParaView } from '../../../../paraview';
-import { type BaseChartInfo } from '../../../../chart_types';
-import { Label } from '../../../label';
-
-import { WaterfallChartInfo } from '../../../../chart_types/waterfall_chart';
-import { PlanePlotView, PlaneSeriesView, PlaneDatapointView } from './plane_plot_view';
-import { RectShape, PathShape } from '../../../shape';
-
 import { StyleInfo } from 'lit/directives/style-map.js';
 import { formatXYDatapointY } from '@fizz/parasummary';
+import { type DataLayerContext } from '../../../view_context';
+import { WaterfallChartInfo } from '../../../../chart_types/waterfall_chart';
+import { Label } from '../../../label';
+import { PlanePlotView, PlaneSeriesView, PlaneDatapointView } from './plane_plot_view';
+import { RectShape, PathShape } from '../../../shape';
 import { Vec2 } from '../../../../common';
+import { type BaseChartInfo } from '../../../../chart_types/base_chart';
 
 const MIN_BAR_WIDTH_FOR_GAPS = 8;
 const BAR_GAP_PERCENTAGE = 0.25;
@@ -37,7 +35,7 @@ export class WaterfallPlotView extends PlanePlotView {
   protected _availSpace!: number;
 
   constructor(
-    paraview: ParaView,
+    paraview: DataLayerContext,
     width: number, height: number,
     dataLayerIndex: number,
     chartInfo: BaseChartInfo
@@ -164,7 +162,7 @@ export class WaterfallBarView extends PlaneDatapointView {
   computeLocation() {
     const idealWidth = this.chart.barWidth;
     this._width = this.chart.barWidth;
-    if (this.paraview.paraState.settings.animation.isAnimationEnabled) {
+    if (this.paraview.paraState.config.animation.isAnimationEnabled) {
       this._height = 0;
       this._y = 0;
     } else {
@@ -175,10 +173,10 @@ export class WaterfallBarView extends PlaneDatapointView {
   }
 
   beginAnimStep(bezT: number, linearT: number): void {
-    const yRange = this.chart.chartInfo.yInterval!.end - this.chart.chartInfo.yInterval!.start;
+    const yRange = this.chart.chartInfo.yRangeInfo!.interval.end - this.chart.chartInfo.yRangeInfo!.interval.start;
     const pxPerYUnit = this.chart.parent.logicalHeight / yRange;
     const zeroHeight = this.chart.parent.logicalHeight
-      - (this.chart.chartInfo.yInterval!.end * pxPerYUnit);
+      - (this.chart.chartInfo.yRangeInfo!.interval.end * pxPerYUnit);
     this._height = Math.abs(this.datapoint.facetValueAsNumber('y')! * pxPerYUnit * bezT);
 
     if (this.index) {
@@ -226,7 +224,7 @@ export class WaterfallBarView extends PlaneDatapointView {
       // XXX needs formatting
       ? total.toString()
       : formatXYDatapointY(this.datapoint, 'raw');
-    if (this.chart.chartInfo.settings.isDrawLabels) {
+    if (this.chart.chartInfo.config.isDrawLabels) {
       this._label?.remove();
       this._label = new Label(this.paraview, {
         text,
@@ -236,26 +234,26 @@ export class WaterfallBarView extends PlaneDatapointView {
       });
       this.append(this._label);
       this._label.centerX = this.centerX;
-      if (this.chart.chartInfo.settings.labelPosition === 'center') {
+      if (this.chart.chartInfo.config.labelPosition === 'center') {
         this._label.centerY = this.centerY;
-      } else if (this.chart.chartInfo.settings.labelPosition === 'end') {
+      } else if (this.chart.chartInfo.config.labelPosition === 'end') {
         this._label.top = this.top;
-      } else if (this.chart.chartInfo.settings.labelPosition === 'base') {
+      } else if (this.chart.chartInfo.config.labelPosition === 'base') {
         this._label.bottom = this.bottom;
       } else if (this.isLast) {
         if (total >= 0) {
-          this._label.bottom = this.top - this.chart.chartInfo.settings.barLabelGap;
+          this._label.bottom = this.top - this.chart.chartInfo.config.barLabelGap;
         } else {
-          this._label.top = this.bottom + this.chart.chartInfo.settings.barLabelGap;
+          this._label.top = this.bottom + this.chart.chartInfo.config.barLabelGap;
         }
       } else if (this.datapoint.facetValueAsNumber('y')! >= 0) {
         // outside top
-        this._label.bottom = this.top - this.chart.chartInfo.settings.barLabelGap;
+        this._label.bottom = this.top - this.chart.chartInfo.config.barLabelGap;
       } else {
         // outside bottom
-        this._label.top = this.bottom + this.chart.chartInfo.settings.barLabelGap;
+        this._label.top = this.bottom + this.chart.chartInfo.config.barLabelGap;
       }
-      if (this.chart.chartInfo.settings.labelPosition !== 'outside') {
+      if (this.chart.chartInfo.config.labelPosition !== 'outside') {
         const palIdx = this.paraview.paraState.colors.indexOfPalette('semantic');
         const pal = this.paraview.paraState.colors.palettes[palIdx];
 

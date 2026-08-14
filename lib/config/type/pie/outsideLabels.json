@@ -1,0 +1,30 @@
+{
+    "description": "Outside-label settings for pie charts.",
+    "ref": "type.pastry.outsideLabels",
+    "settings": {
+        "vertGap": {
+            "default": 10
+        },
+        "arcGap": {
+            "default": 10
+        },
+        "horizShift": {
+            "default": 15
+        },
+        "horizPadding": {
+            "default": 10
+        },
+        "leaderStyle": {
+            "default": "direct"
+        },
+        "format": {
+            "default": "raw"
+        },
+        "underlineGap": {
+            "default": 2
+        },
+        "contents": {
+            "default": "percentage:(value)"
+        }
+    }
+}

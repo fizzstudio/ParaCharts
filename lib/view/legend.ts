@@ -1,14 +1,16 @@
-
+import { ClassInfo } from 'lit/directives/class-map.js';
+import { TemplateResult, svg } from 'lit';
 import { View, Container } from './base_view';
 import { SimpleGridLayout, type Layout } from './layout';
-import { type DataSymbolType, DataSymbol } from './symbol';
+import { type DataSymbolType, DataSymbol, DataSymbolOptions } from './symbol';
 import { Label } from './label';
-import { type LegendSettings, type DeepReadonly, SettingsManager } from '../state';
+import { SettingsManager } from '../state';
 import { RectShape } from './shape/rect';
-import { type ParaView } from '../paraview';
-import { TemplateResult, svg } from 'lit';
-import { ClassInfo } from 'lit/directives/class-map.js';
+import { type ViewContext } from './view_context';
 import { HIGHLIGHT_PADDING } from '../common';
+import { type CardinalDirection, type LegendConfig } from '../config/config_types';
+import { BubblePlotView } from './layers/data/chart_type/bubble_plot_view';
+import { ScatterPlotView } from './layers';
 
 export type SeriesAttrs = {
   color: string;
@@ -19,8 +21,11 @@ export interface LegendItem {
   label: string;
   seriesKey: string;
   symbol?: DataSymbolType;
-  color: number;
+  symbolOptions?: Partial<DataSymbolOptions>;
+  colorIndex: number;
   datapointIndex?: number;
+  clusterIndex?: number;
+  bubbleSize?: "small" | "medium" | "large"
 }
 
 export type LegendOrientation = 'horiz' | 'vert';
@@ -28,6 +33,7 @@ export type LegendOrientation = 'horiz' | 'vert';
 export interface LegendOptions {
   orientation: LegendOrientation;
   wrapWidth: number;
+  rowGap: number;
 }
 
 const intersperse = (...arrays: any[][]) => {
@@ -47,17 +53,18 @@ export class Legend extends Container(View) {
   declare protected _parent: Layout;
 
   protected _grid!: SimpleGridLayout;
-  protected _markers: RectShape[] = [];
+  protected symbols: View[] = [];
+  protected labels: View[] = []
 
-  constructor(paraview: ParaView,
+  constructor(paraview: ViewContext,
     protected _items: LegendItem[],
-    protected _options: Partial<LegendOptions> = {orientation: 'vert'}
+    protected _options: Partial<LegendOptions> = { orientation: 'vert' }
   ) {
     super(paraview);
   }
 
-  get settings() {
-    return SettingsManager.getGroupLink<LegendSettings>('legend', this.paraview.paraState.settings);
+  get config() {
+    return SettingsManager.getGroupLink<LegendConfig>('legend', this.paraview.paraState.config);
   }
 
   get classInfo() {
@@ -65,74 +72,95 @@ export class Legend extends Container(View) {
   }
 
   protected _addedToParent() {
-    const views: View[] = [];
-
-    const hasLegendBox = this.settings.boxStyle.outline !== 'none' || this.settings.boxStyle.fill !== 'none';
-
+    const symbols: View[] = [];
+    const labels: View[] = [];
+    const hasLegendBox = this.config.boxStyle.outline !== 'none' || this.config.boxStyle.fill !== 'none';
     this._items.forEach(item => {
-      this._markers.push(new RectShape(this.paraview, {width: 12, height: 6}));
-      views.push(this._markers.at(-1)!);
-      views.push(DataSymbol.fromType(
+      symbols.push(DataSymbol.fromType(
         this.paraview,
-        this.paraview.paraState.settings.chart.isDrawSymbols
+        this.paraview.paraState.config.chart.isDrawSymbols
           ? (item.symbol ?? 'square.solid')
           : 'square.solid',
         {
-          color: item.color,
+          colorIndex: item.colorIndex,
+          lighten: item.symbolOptions?.lighten ?? false,
+          baseSize: item.symbolOptions?.baseSize ?? 1,
+          dashed: item.symbolOptions?.dashed ?? false,
           pointerEnter: (e) => {
-            this.paraview.paraState.dimOtherSeries(item.seriesKey);
+            this.pointerEnterActions(item);
           },
           pointerLeave: (e) => {
-            this.paraview.paraState.clearAllSeriesDimming();
+            this.pointerLeaveAction(item);
+          },
+          click: (e) => {
+            this.clickAction(item);
           }
         }
       ));
-      views.push(new Label(this.paraview, {
+      if (item.bubbleSize) {
+        symbols.at(-1)!.styleInfo = { fill: "hsl(0, 0%, 90%)", ...symbols.at(-1)!.styleInfo };
+      }
+      labels.push(new Label(this.paraview, {
         text: item.label,
         x: 0,
         y: 0,
-        textAnchor: 'start',
+        //textAnchor: 'start',
         classList: ['legend-label'],
         pointerEnter: (e) => {
-          this.paraview.paraState.dimOtherSeries(item.seriesKey);
+          this.pointerEnterActions(item);
         },
         pointerLeave: (e) => {
-          this.paraview.paraState.clearAllSeriesDimming();
+          this.pointerLeaveAction(item);
+        },
+        click: (e) => {
+          this.clickAction(item);
         }
       }));
     });
-    const symLabelGap = this.paraview.paraState.settings.legend.symbolLabelGap;
-    const pairGap = this.paraview.paraState.settings.legend.pairGap;
+    this.symbols = symbols;
+    this.labels = labels;
+    const symLabelGap = this.paraview.paraState.config.legend.symbolLabelGap;
+    const pairGap = this.paraview.paraState.config.legend.pairGap;
+    let labelsPerRow = labels.length;
     if (this._options.orientation === 'vert') {
       this._grid = new SimpleGridLayout(this.paraview, {
-        numCols: 3,
+        numCols: 2,
         colGaps: symLabelGap,
-        colAligns: ['center', 'center', 'start'],
+        colAligns: ['center', 'start'],
+        rowGaps: this._options.rowGap ? new Array(labelsPerRow + 1).fill(this._options.rowGap) : undefined
       }, 'legend-grid');
-      this._grid.padding = hasLegendBox ? this.paraview.paraState.settings.legend.padding : 0;
-      views.forEach(v => this._grid.append(v));
+      this._grid.padding = hasLegendBox ? this.paraview.paraState.config.legend.padding : 0;
+      for (let i = 0; i < labelsPerRow; i++) {
+        this._grid.append(symbols[i]);
+        this._grid.append(labels[i]);
+      }
     } else {
-      let labelsPerRow = views.length/3;
       while (true) {
         const colGaps = intersperse(
-          new Array(labelsPerRow).fill(0),
           new Array(labelsPerRow).fill(symLabelGap),
           new Array(labelsPerRow - 1).fill(pairGap));
+        const numRows = Math.ceil(this._items.length / labelsPerRow);
         this._grid = new SimpleGridLayout(this.paraview, {
-          numCols: labelsPerRow*3,
+          numCols: labelsPerRow * 2,
           colGaps: colGaps,
+          rowGaps: new Array(numRows - 1).fill(this._options.rowGap)
         }, 'legend-grid');
-        this._grid.padding = hasLegendBox ? this.paraview.paraState.settings.legend.padding : 0;
-        views.forEach(v => this._grid.append(v));
+        this._grid.padding = hasLegendBox ? this.paraview.paraState.config.legend.padding : 0;
+        for (let i = 0; i < this.symbols.length; i++) {
+          this._grid.append(symbols[i]);
+          this._grid.append(labels[i]);
+        }
+        this._grid.updateSize();
         if (this._options.wrapWidth === undefined ||
-            this._grid.paddedWidth <= this._options.wrapWidth ||
-            labelsPerRow === 1) {
+          this._grid.paddedWidth <= this._options.wrapWidth ||
+          labelsPerRow === 1) {
           break;
         }
         labelsPerRow--;
         // This is necessary to unset v.parent; it does have the side-effect
         // of resizing the grid, which isn't really necessary
-        views.forEach(v => v.remove());
+        symbols.forEach(v => v.remove());
+        labels.forEach(v => v.remove());
       }
       this._grid.colAligns = intersperse(
         new Array(labelsPerRow).fill('center'),
@@ -146,23 +174,189 @@ export class Legend extends Container(View) {
       this.prepend(new RectShape(this.paraview, {
         width: this._grid.width,
         height: this._grid.height,
-        fill: this.settings.boxStyle.fill,
-        stroke: this.settings.boxStyle.outline,
-        strokeWidth: this.settings.boxStyle.outlineWidth
+        fill: this.config.boxStyle.fill,
+        stroke: this.config.boxStyle.outline,
+        strokeWidth: this.config.boxStyle.outlineWidth
       }));
     }
     this.updateSize();
+  }
+
+  protected pointerEnterActions(item: LegendItem) {
+    if (item.bubbleSize) {
+      if (this.paraview.paraState.pinnedBubbleSize !== null) return;
+      (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).dimOtherSizes(item.bubbleSize);
+      return;
+    }
+    if (item.clusterIndex !== undefined) {
+      if (this.paraview.paraState.pinnedCluster !== null) return;
+      (this.paraview.documentView?.chartLayers.dataLayer as ScatterPlotView).dimOtherClusters(item.seriesKey, item.colorIndex)
+      return;
+    }
+    if (this.paraview.paraState.isSeriesHidden(item.seriesKey)) return;
+    if (this.paraview.paraState.pinnedSeriesKey !== null) return;
+
+    this.paraview.paraState.dimOtherSeries(item.seriesKey);
+  }
+
+  protected pointerLeaveAction(item: LegendItem) {
+    if (item.bubbleSize) {
+      if (this.paraview.paraState.pinnedBubbleSize !== null) return;
+      this.paraview.paraState.clearAllPointsDimming();
+    }
+    if (item.clusterIndex !== undefined) {
+      if (this.paraview.paraState.pinnedCluster !== null) return;
+      this.paraview.paraState.clearAllPointsDimming();
+      return;
+    }
+    if (this.paraview.paraState.pinnedSeriesKey !== null) return;
+    this.paraview.paraState.clearAllSeriesDimming();
+
+  }
+
+  protected clickAction(item: LegendItem) {
+    if (item.bubbleSize) {
+      if (this.paraview.paraState.pinnedBubbleSize === item.bubbleSize
+        || this.paraview.paraState.isSizeHidden(item.bubbleSize)
+      ) {
+        if (this.paraview.paraState.isSizeHidden(item.bubbleSize)) {
+          (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).unhideSize(item.bubbleSize)
+        }
+        else {
+          (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).unpinBubbleSize();
+          (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).hideSize(item.bubbleSize);
+        }
+      }
+      else {
+        (this.paraview.documentView?.chartLayers.dataLayer as BubblePlotView).pinBubbleSize(item.bubbleSize);
+      }
+      return;
+    }
+    else if (item.clusterIndex !== undefined) {
+      if (this.paraview.paraState.pinnedCluster === item.clusterIndex
+        || this.paraview.paraState.isClusterHidden(item.clusterIndex)
+      ) {
+        if (this.paraview.paraState.isClusterHidden(item.clusterIndex)) {
+          (this.paraview.documentView?.chartLayers.dataLayer as ScatterPlotView).unhideCluster(item.seriesKey, item.clusterIndex)
+        }
+        else {
+          (this.paraview.documentView?.chartLayers.dataLayer as ScatterPlotView).unpinCluster();
+          (this.paraview.documentView?.chartLayers.dataLayer as ScatterPlotView).hideCluster(item.seriesKey, item.clusterIndex);
+        }
+      }
+      else {
+        (this.paraview.documentView?.chartLayers.dataLayer as ScatterPlotView).pinCluster(item.seriesKey, item.clusterIndex);
+      }
+      return;
+    }
+    if (this.paraview.paraState.pinnedSeriesKey === item.seriesKey
+      || this.paraview.paraState.isSeriesHidden(item.seriesKey)
+    ) {
+      if (this.paraview.paraState.isSeriesHidden(item.seriesKey)) {
+        this.paraview.paraState.unhideSeries(item.seriesKey)
+      }
+      else {
+        this.paraview.paraState.unpinSeries();
+        this.paraview.paraState.hideSeries(item.seriesKey)
+      }
+    } else {
+      this.paraview.paraState.pinSeries(item.seriesKey);
+    }
   }
 
   computeSize(): [number, number] {
     return [this._grid?.paddedWidth ?? 0, this._grid?.paddedHeight ?? 0];
   }
 
+  makeDirect(dir: CardinalDirection) {
+    const bundledItems = [];
+    const alreadyMoved: number[] = [];
+    const dataLayer = this.paraview.documentView?.chartLayers.dataLayer!;
+    const clv = dataLayer.chartLandingView!;
+    //NB Sam: I don't know where this comes from but it aligns the horizontal direct legends correctly by eye
+    const WEIRD_MAGIC_NUMBER = 70;
+    if (dir == "east" || dir == "west") {
+      if (['bar'].includes(this.paraview.paraState.type)) {
+        return;
+      }
+      for (let i = 0; i < this._items.length; i++) {
+        let newY = 0;
+        if (dir == "east") {
+          const lastDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(-1)!;
+          newY = lastDatapointView.centerY;
+        }
+        else if (dir == "west") {
+          const firstDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(0)!;
+          newY = firstDatapointView.centerY;
+        }
+        this._grid.children[2 * i].centerY = newY;
+        this._grid.children[2 * i + 1].centerY = newY;
+        bundledItems.push([this._grid.children[2 * i], this._grid.children[2 * i + 1]])
+      }
+      const sortedItems = bundledItems.toSorted((a, b) => a[2].y - b[2].y);
+      for (let i = 0; i < sortedItems.length; i++) {
+        for (let j = i + 1; j < sortedItems.length; j++) {
+          const child1 = sortedItems[i][1];
+          const child2 = sortedItems[j][1];
+          if (child1.intersects(child2)) {
+            const midpoint = (child1.y + child2.y) / 2;
+            if (!alreadyMoved.includes(i)) {
+              sortedItems[i].forEach(c => c.y -= (child1.bottom - midpoint));
+              sortedItems[j].forEach(c => c.y += (midpoint - child2.top));
+            }
+            else {
+              sortedItems[j].forEach(c => c.y += (midpoint - child2.top) + (child1.bottom - midpoint));
+            }
+            alreadyMoved.push(i, j);
+          }
+        }
+      }
+    }
+    else if (dir == "north" || dir == "south") {
+      if (['column', 'line', 'scatter'].includes(this.paraview.paraState.type)) {
+        return;
+      }
+      for (let i = 0; i < this._items.length; i++) {
+        let newX = 0;
+        if (dir == "south") {
+          const lastDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(-1)!;
+          newX = dataLayer.height - lastDatapointView.centerY - this.x + WEIRD_MAGIC_NUMBER;
+        }
+        else if (dir == "north") {
+          const firstDatapointView = clv.getSeriesView(this._items[i].seriesKey)!.children.at(0)!;
+          newX = dataLayer.height - firstDatapointView.centerY - this.x + WEIRD_MAGIC_NUMBER;
+        }
+        const horizDiff = this._grid.children[2 * i + 1].centerX - this._grid.children[2 * i].centerX;
+        this._grid.children[2 * i].centerX = newX;
+        this._grid.children[2 * i + 1].centerX = newX + horizDiff;
+        bundledItems.push([this._grid.children[2 * i], this._grid.children[2 * i + 1]])
+      }
+      const sortedItems = bundledItems.toSorted((a, b) => a[1].y - b[1].y);
+      for (let i = 0; i < sortedItems.length; i++) {
+        for (let j = i + 1; j < sortedItems.length; j++) {
+          const child1 = sortedItems[i][1];
+          const child2 = sortedItems[j][1];
+          if (sortedItems[i][1].intersects(sortedItems[j][0])
+            || sortedItems[i][1].intersects(sortedItems[j][1])) {
+            const midpoint = (child1.y + child2.y) / 2;
+            if (!alreadyMoved.includes(i)) {
+              sortedItems[j].forEach(c => c.y += child1.height);
+            }
+            else {
+              sortedItems[j].forEach(c => c.y += (midpoint - child2.top) + (child1.bottom - midpoint));
+            }
+            alreadyMoved.push(i, j);
+          }
+        }
+      }
+    }
+  }
+
   renderHighlight(type: 'fg' | 'bg') {
     return svg`
       <rect
-        x=${this.x + this.padding.left - HIGHLIGHT_PADDING/2}
-        y=${this.y + this.padding.top - HIGHLIGHT_PADDING/2}
+        x=${this.x + this.padding.left - HIGHLIGHT_PADDING / 2}
+        y=${this.y + this.padding.top - HIGHLIGHT_PADDING / 2}
         width=${this.width + HIGHLIGHT_PADDING}
         height=${this.height + HIGHLIGHT_PADDING}
         class="view-highlight-${type}"
@@ -172,17 +366,44 @@ export class Legend extends Container(View) {
 
   content() {
     this._items.forEach((item, i) => {
-      const style = this._markers[i].styleInfo;
-      const visited = item.datapointIndex !== undefined
+      let visited = item.datapointIndex !== undefined
         ? this.paraview.paraState.isVisited(
           this.paraview.paraState.model!.seriesKeys[0], item.datapointIndex)
         : this.paraview.paraState.isVisitedSeries(item.label);
-      if (visited) {
-        style.fill = this.paraview.paraState.colors.colorValueAt(-1);
-      } else {
-        style.fill = 'none';
+      let hidden = this.paraview.paraState.isSeriesHidden(item.seriesKey) ? true : false;
+      if (this.paraview.paraState.pinnedSeriesKey == item.seriesKey) {
+        visited = true;
       }
-      this._markers[i].styleInfo = style;
+      if (item.bubbleSize) {
+        visited = false;
+        hidden = false;
+        if (this.paraview.paraState.isSizeHidden(item.bubbleSize)) {
+          hidden = true
+        }
+        if (this.paraview.paraState.pinnedBubbleSize == item.bubbleSize) {
+          visited = true;
+        }
+      }
+      if (item.clusterIndex !== undefined) {
+        visited = false;
+        hidden = false;
+        if (this.paraview.paraState.isClusterHidden(item.clusterIndex)) {
+          hidden = true
+        }
+        if (this.paraview.paraState.pinnedCluster == item.clusterIndex) {
+          visited = true;
+        }
+      }
+      if (visited) {
+        this._grid.highlightViews([this.symbols[i], this.labels[i]], 'red');
+      }
+      else if (hidden) {
+        this._grid.removeRegionHighlight([this.symbols[i], this.labels[i]]);
+        this._grid.highlightViews([this.symbols[i], this.labels[i]], 'black');
+      }
+      else {
+        this._grid.removeRegionHighlight([this.symbols[i], this.labels[i]]);
+      }
     });
     return super.content();
   }

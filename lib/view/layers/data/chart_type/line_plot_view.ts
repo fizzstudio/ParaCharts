@@ -14,17 +14,14 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { PlaneSeriesView, PointPlotView, PointDatapointView } from '.';
-import { type LineSettings, type DeepReadonly, type Setting } from '../../../../state/settings_types';
+import { type StyleInfo } from 'lit/directives/style-map.js';
 import { PathShape } from '../../../shape/path';
 import { Vec2 } from '../../../../common/vector';
-import { bboxOfBboxes, isPointerInbounds } from '../../../../common/utils';
+import { bboxOfBboxes } from '../../../../common/utils';
 
-import { type StyleInfo } from 'lit/directives/style-map.js';
-import { RectShape } from '../../../shape';
-import { Popup } from '../../../popup';
-import { DataSymbol } from '../../../symbol';
-import { Label } from '../../../label';
+import { ConfigSetting } from '../../../../config/config_types';
+import { PointDatapointView, PointPlotView, PointSeriesView } from './point_plot_view';
+import { SeriesProperties } from '../../../../state';
 
 /**
  * Class for drawing line charts.
@@ -36,11 +33,7 @@ export class LinePlotView extends PointPlotView {
     return super.datapointViews as LineSection[];
   }
 
-  get settings() {
-    return super.settings as DeepReadonly<LineSettings>;
-  }
-
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['chart.hasDirectLabels'].includes(path)) {
       this.paraview.createDocumentView();
       this.paraview.requestUpdate();
@@ -54,30 +47,38 @@ export class LinePlotView extends PointPlotView {
   }
 
   get effectiveLineWidth() {
-    return this.paraview.paraState.settings.ui.isLowVisionModeEnabled
-      ? this.paraview.paraState.settings.type.line.lowVisionLineWidth
-      : this.paraview.paraState.settings.type.line.lineWidth;
+    return this.paraview.paraState.config.ui.isLowVisionModeEnabled
+      ? this.paraview.paraState.config.type.line.lowVisionLineWidth
+      : this.paraview.paraState.config.type.line.lineWidth;
   }
 
   get effectiveVisitedScale() {
-    return this.paraview.paraState.settings.ui.isLowVisionModeEnabled
+    return this.paraview.paraState.config.ui.isLowVisionModeEnabled
       ? 1
-      : this.paraview.paraState.settings.type.line.lineHighlightScale;
+      : this.paraview.paraState.config.type.line.lineHighlightScale;
   }
 
   get visitedStrokeWidth(): number {
     return this.effectiveLineWidth * this.effectiveVisitedScale;
   }
 
-  protected _newDatapointView(seriesView: PlaneSeriesView) {
+  protected _newDatapointView(seriesView: PointSeriesView) {
     return new LineSection(seriesView);
+  }
+
+  get model() {
+    return this.paraview.paraState.comboModel ?? this.paraview.paraState.model!;
+  }
+
+  protected _newSeriesView(seriesKey: string) {
+    return new LineSeriesView(this, seriesKey);
   }
 
   pointerMove(): void {
     const coords = this.paraview.paraState.pointerCoords;
-    if (this.paraview.paraState.settings.chart.isShowPopups
-      && this.paraview.paraState.settings.popup.activation === "onHover"
-      && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled
+    if (this.paraview.paraState.config.chart.isShowPopups
+      && this.paraview.paraState.config.popup.activation === "onHover"
+      && !this.paraview.paraState.config.ui.isTourGuideEnabled
     ) {
       if (coords.x > 0 && coords.x < this.width && coords.y > 0 && coords.y < this.height) {
         let points = this.datapointViews
@@ -95,11 +96,30 @@ export class LinePlotView extends PointPlotView {
 }
 
 /**
+ *
+ */
+export class LineSeriesView extends PointSeriesView {
+  declare readonly chart: LinePlotView;
+
+  get modelIndex() {
+    // Used by datapoint views to extract the correct ID from the JIM
+    // (series views may reorder their children)
+    return this.chart.model.seriesKeys.indexOf(this.seriesKey);
+  }
+
+  get seriesProps(): SeriesProperties {
+    const props = this.paraview.paraState.comboModel
+      ? this.paraview.paraState.comboSeriesProperties
+      : this.paraview.paraState.seriesProperties;
+    return props.properties(this.seriesKey);
+  }
+}
+
+/**
  * A visual indicator of a line chart datapoint, plus line segments
  * drawn halfway to its neighbors.
  */
 export class LineSection extends PointDatapointView {
-
   declare readonly chart: LinePlotView;
 
   protected _prevMidX?: number;
@@ -128,11 +148,36 @@ export class LineSection extends PointDatapointView {
   //   return this._shape!.bottom;
   // }
 
+  get datasetIndex(): number {
+    return this.paraview.paraState.comboModel
+      ? 1
+      : 0;
+  }
+
+  protected get _axisDivisions() {
+    return this.paraview.paraState.comboModel
+      ? this.chart.model.series[0].length
+      : this.chart.model.series[0].length - 1;
+  }
+
+  get seriesProps(): SeriesProperties {
+    const props = this.paraview.paraState.comboModel
+      ? this.paraview.paraState.comboSeriesProperties
+      : this.paraview.paraState.seriesProperties;
+    return props.properties(this.seriesKey);
+  }
+
   get outerBbox() {
     const shapeOuters = this._shapes.map(shape => shape.outerBbox);
     return this._symbol
       ? bboxOfBboxes(...shapeOuters, this._symbol!.outerBbox)
       : bboxOfBboxes(...shapeOuters);
+  }
+
+  computeX() {
+    return this.paraview.paraState.comboModel
+      ? (this.width * this.index + this.width/2)
+      : (this.width * this.index);
   }
 
   completeLayout() {
@@ -153,16 +198,6 @@ export class LineSection extends PointDatapointView {
 
     // create shape and symbol
     super.completeLayout();
-  }
-
-  protected _createSymbol() {
-    const series = this.seriesProps;
-    let symbolType = series.symbol;
-    // If datapoints are laid out again after the initial layout,
-    // we need to replace the original shape and symbol
-    this._symbol?.remove();
-    this._symbol = DataSymbol.fromType(this.paraview, symbolType);
-    this.append(this._symbol);
   }
 
   protected _computePrev() {

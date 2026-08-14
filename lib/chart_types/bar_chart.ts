@@ -15,24 +15,17 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
-import { ParaView } from '../paraview';
-import { PlaneChartInfo } from './plane_chart';
-import { AxisInfo } from '../common/axisinfo';
-import { DeepReadonly, BarSettings, datapointIdToCursor, Setting, type ParaState } from '../state';
-import {
-  queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax
-} from '../state/query_utils';
-import { type Label } from '../view/label';
-import { computeAxisRange } from './plane_chart';
-
-import { Highlight } from '@fizz/parasummary';
 
 import { ChartType, strToId } from '@fizz/paramanifest';
 import { enumerate, Box, Series } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
-import { DocumentView } from '../view/document_view';
 import { Interval } from '@fizz/chart-classifier-utils';
+import { PlaneChartInfo, computeAxisRange, AxisRangeInfo } from './plane_chart';
+import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax } from '../state';
+import { ConfigSetting, DeepReadonly, TypeBarConfig } from '../config/config_types';
+import { type Label } from '../view/label';
+import { LegendItem } from '../view/legend';
 
 type BarClusterMap = {[key: string]: BarCluster};
 
@@ -126,9 +119,9 @@ export class BarChartInfo extends PlaneChartInfo {
     //   isXVertical: this._paraState.type === 'bar'
     // });
     const numSeries = this._paraState.model!.numSeries;
-    if (this.settings.stacking === 'standard') {
+    if (this.config.stacking === 'standard') {
       this._stacksPerCluster = 1;
-    } else if (this.settings.stacking === 'none') {
+    } else if (this.config.stacking === 'none') {
       const seriesPerStack = 1;
       this._stacksPerCluster = Math.ceil(numSeries/seriesPerStack);
     } else {
@@ -137,7 +130,7 @@ export class BarChartInfo extends PlaneChartInfo {
   }
 
   protected _normalizeStackCountsInput(): string {
-    let counts = this.settings.stacking.split(/\s/).map(tok => parseInt(tok));
+    let counts = this.config.stacking.split(/\s/).map(tok => parseInt(tok));
     const sumCounts = counts.reduce((a, b) => a + b, 0);
     const numSeries = this._paraState.model!.series.length;
     if (sumCounts < numSeries) {
@@ -178,7 +171,7 @@ export class BarChartInfo extends PlaneChartInfo {
     }
   }
 
-  protected _numericYAxisRange(facetKey: string): Interval {
+  protected _numericYAxisRange(facetKey: string): AxisRangeInfo {
     if (facetKey === 'x') {
       return super._numericYAxisRange(facetKey);
     } else if (facetKey === 'y') {
@@ -199,8 +192,8 @@ export class BarChartInfo extends PlaneChartInfo {
     return true;
   }
 
-  get settings() {
-    return super.settings as DeepReadonly<BarSettings>;
+  get config() {
+    return super.config as DeepReadonly<TypeBarConfig>;
   }
 
   get clusteredData() {
@@ -212,7 +205,7 @@ export class BarChartInfo extends PlaneChartInfo {
   }
 
   protected _clusterData() {
-    const settings = this._paraState.settings.type[this._type] as BarSettings;
+    const settings = this._paraState.config.type[this.configType] as TypeBarConfig;
     const clusterMap: BarClusterMap = {};
     const xs = this._paraState.model!.series[0].datapoints.map(dp => dp.facetBox('x')!);
 
@@ -246,7 +239,7 @@ export class BarChartInfo extends PlaneChartInfo {
     }
 
     const allSeries = [...this._paraState.model!.series];
-    if (this._paraState.type === 'column' && settings.stacking === 'none') {
+    if ((this._paraState.type === 'column') && settings.stacking === 'none') {
       allSeries.reverse();
     }
     const groupSeries = (countsInput: string) => {
@@ -266,7 +259,7 @@ export class BarChartInfo extends PlaneChartInfo {
     // const getSeriesGroup = (series: Series, groups: Series[][]) => {
     //   return groups.findIndex(group => group.includes(series));
     // };
-    const grouped = ['standard', 'none'].includes(this.settings.stacking)
+    const grouped = ['standard', 'none'].includes(this.config.stacking)
       ? [[...allSeries]]
       : groupSeries(this._normalizeStackCountsInput());
     for (let group of grouped) {
@@ -301,7 +294,7 @@ export class BarChartInfo extends PlaneChartInfo {
     return clusterMap;
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['type.line.isTrendNavigationModeEnabled'].includes(path)) {
       [this._navMap, this._altNavMap] = [this._altNavMap, this._navMap!];
       this._navMap!.root.goTo('top', {});
@@ -326,25 +319,20 @@ export class BarChartInfo extends PlaneChartInfo {
     this._createSequenceNavNodes();
   }
 
-  legend() {
+  legend(): LegendItem[] {
     const model = this._paraState.model!;
-    if (this._paraState.settings.legend.itemOrder === 'series') {
-      // return this._chartLandingView.children.map(view => ({
-      //   label: (view as SeriesView).seriesKey,
-      //   color: (view as SeriesView).color  // series color
-      // }));
-      return model.series.map(series => ({
-        label: series.getLabel(),
-        seriesKey: series.key,
-        color: this._paraState.seriesProperties!.properties(series.key).color
-      }));
-    } else {
-      return model.seriesKeys.toSorted().map(key => ({
-        label: model.atKey(key)!.getLabel(),
-        seriesKey: key,
-        color: this._paraState.seriesProperties!.properties(key).color
-      }));
+    const seriesKeys = enumerate([...model.seriesKeys]);
+    if (this._paraState.config.legend.itemOrder === 'alphabetical') {
+      seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
     }
+    else if (this._paraState.config.legend.itemOrder === 'reverseAlphabetical') {
+      seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
+    }
+    return seriesKeys.map(key => ({
+      label: model.atKey(key[0])!.getLabel(),
+      seriesKey: key[0],
+      colorIndex: this._paraState.seriesProperties!.properties(key[0]).colorIndex,
+    }));
   }
 
   // TODO: localize this text output
@@ -388,7 +376,7 @@ export class BarChartInfo extends PlaneChartInfo {
       const selectedDatapoints = this._paraState.selectedDatapoints;
       const seriesKey = queriedNode.options.seriesKey;
       const index = queriedNode.options.index;
-      const series = this._paraState.model!.atKey(seriesKey)!;
+      const series = this.model!.atKey(seriesKey)!;
       const datapoint = series.datapoints[index];
       const seriesLabel = series.getLabel();
       const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(seriesKey, index)!;

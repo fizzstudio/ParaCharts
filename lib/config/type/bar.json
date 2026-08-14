@@ -1,0 +1,87 @@
+{
+    "description": "Horizontal bar chart settings.",
+    "ref": "type.plane",
+    "family": "bar",
+    "settings": {
+        "stacking": {
+            "description": "How bars are stacked",
+            "type": "'none' | 'standard' | string",
+            "default": "standard"
+        },
+        "barWidth": {
+            "description": "Width of individual bars",
+            "type": "number",
+            "default": 0
+        },
+        "colorByDatapoint": {
+            "description": "Color each bar individually vs by series",
+            "type": "boolean",
+            "default": false
+        },
+        "isDrawTotalLabels": {
+            "description": "Show total value labels on stacked bars",
+            "type": "boolean",
+            "default": true
+        },
+        "totalLabelGap": {
+            "description": "Gap between total value labels and stacks",
+            "type": "number",
+            "default": 5
+        },
+        "stackLabelGap": {
+            "description": "Gap between stack labels and bars",
+            "type": "number",
+            "default": 10
+        },
+        "isDrawRecordLabels": {
+            "description": "Show record name labels",
+            "type": "boolean",
+            "default": false
+        },
+        "isDrawDataLabels": {
+            "description": "Show data value labels on bars",
+            "type": "boolean",
+            "default": false
+        },
+        "dataLabelPosition": {
+            "description": "Position of data value labels",
+            "type": "BarDataLabelPosition",
+            "default": "center"
+        },
+        "clusterGap": {
+            "description": "Gap between bar clusters",
+            "type": "number",
+            "default": 0
+        },
+        "barGap": {
+            "description": "Gap between individual bars",
+            "type": "number",
+            "default": 2
+        },
+        "stackInsideGap": {
+            "description": "Gap inside stacked bars",
+            "type": "number",
+            "default": 2
+        },
+        "isAbbrevSeries": {
+            "description": "Abbreviate series names",
+            "type": "boolean",
+            "default": true
+        },
+        "clusterLabelFormat": {
+            "description": "Format for cluster labels",
+            "type": "LabelFormat",
+            "default": "raw"
+        },
+        "lineWidth": {
+            "description": "Width of bar outlines",
+            "type": "number",
+            "default": 5
+        },
+        "labelFontSize": {
+            "description": "Font size for bar labels",
+            "type": "string",
+            "default": "8pt"
+        }
+    }
+}

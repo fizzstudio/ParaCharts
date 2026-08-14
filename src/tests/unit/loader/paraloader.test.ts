@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import {
   parseCSV,
   inferDefaultsFromCsvText,
+  buildManifestFromCsv,
   LoadError,
   LoadErrorCode,
 } from '../../../../lib/loader/paraloader';
@@ -348,13 +349,14 @@ describe('paraloader', () => {
       it('should parse bar-multi-manifest-48.json', () => {
         const content = readFileSync(resolve(DEMO_DATA_DIR, 'bar-multi-manifest-48.json'), 'utf-8');
         const manifest = JSON.parse(content);
+        const datasets = manifest.jim.datasets;
         
-        expect(manifest.datasets).toHaveLength(1);
-        expect(manifest.datasets[0].representation.subtype).toBe('column');
-        expect(manifest.datasets[0].title).toBe('Gross domestic product of the ASEAN countries from 2008 to 2018');
-        expect(manifest.datasets[0].series.length).toBeGreaterThan(0);
-        expect(manifest.datasets[0].facets.x.datatype).toBe('date');
-        expect(manifest.datasets[0].facets.y.datatype).toBe('number');
+        expect(datasets).toHaveLength(1);
+        expect(datasets[0].representation.subtype).toBe('column');
+        expect(datasets[0].title).toBe('Gross domestic product of the ASEAN countries from 2008 to 2018');
+        expect(datasets[0].series.length).toBeGreaterThan(0);
+        expect(datasets[0].facets.x.datatype).toBe('date');
+        expect(datasets[0].facets.y.datatype).toBe('number');
       });
 
       it('should parse line-single-manifest-128.json', () => {
@@ -588,6 +590,56 @@ describe('paraloader', () => {
       // Sum a column
       const bruneiTotal = result.data.reduce((sum, row) => sum + parseFloat(row['Brunei']), 0);
       expect(bruneiTotal).toBeGreaterThan(0);
+    });
+  });
+
+  // Regression: a spreadsheet export with trailing "empty" rows (cells present
+  // but all blank, e.g. ",,,") must not leak empty datapoints into the manifest.
+  // These rows produce {x:'', y:''} records and the numeric model throws
+  // "x values in Numeric Datapoints must be numbers" (parseFloat('') -> NaN).
+  describe('all-empty trailing rows from spreadsheet export', () => {
+    const CSV_WITH_TRAILING_EMPTY = [
+      'Label,A,B,C',
+      'Foo,10,20,30',
+      'Bar,40,50,60',
+      'Baz,70,80,90',
+      ',,,',
+      ',,,',
+      ',,, ', // trailing whitespace in the final cell
+    ].join('\n');
+
+    it('parseCSV drops rows that contain only delimiters/whitespace', () => {
+      const { data } = parseCSV(CSV_WITH_TRAILING_EMPTY);
+      expect(data).toHaveLength(3);
+      expect(data.every(row => row.Label !== '')).toBe(true);
+    });
+
+    it('parseCSV still preserves rows with partial (some-empty) cells', () => {
+      const { data } = parseCSV('c1,c2,c3\na,,c\n,b,\nx,y,z');
+      expect(data).toHaveLength(3);
+    });
+
+    it('inferDefaultsFromCsvText ignores trailing empty rows when typing columns', () => {
+      const defaults = inferDefaultsFromCsvText(CSV_WITH_TRAILING_EMPTY, 'sample.csv');
+      // With the empty rows excluded, the first series column is purely numeric.
+      expect(defaults.yAxis.dataType).toBe('number');
+    });
+
+    it('buildManifestFromCsv emits no empty {x, y} datapoints', () => {
+      const manifest = buildManifestFromCsv({
+        csvText: CSV_WITH_TRAILING_EMPTY,
+        chartType: 'vertical_bar',
+        chartTitle: 'Sample',
+        xAxis: { title: 'Label', variableType: 'string' },
+        yAxis: { title: 'A, B, C' },
+      });
+      const series = manifest.jim.datasets[0].series ?? [];
+      expect(series).toHaveLength(3);
+      for (const s of series) {
+        const records = (s.records ?? []) as Array<{ x: string; y: string }>;
+        expect(records).toHaveLength(3);
+        expect(records.every(r => r.x !== '' && r.y !== '')).toBe(true);
+      }
     });
   });
 });

@@ -5,7 +5,7 @@ export class ParaViewController {
   protected log: Logger = getLogger("ParaViewController");
   constructor(protected _paraState: ParaState) {}
   handleKeyEvent(event: KeyboardEvent) {
-    if (this._paraState.settings.chart.isStatic) {
+    if (this._paraState.config.chart.isStatic) {
       return;
     }
     let key = event.key === 'Control' ? 'Ctrl' : event.key.toLocaleLowerCase();

@@ -1,9 +1,11 @@
 import { PointChartInfo } from './point_chart';
-import { clusterObject } from '@fizz/clustering';
-import { ChartType } from '@fizz/paramanifest';
-import { type ParaState } from '../state';
+import { type clusterObject } from '@fizz/clustering';
+import { type ChartType } from '@fizz/paramanifest';
+import { type ParaState } from '../state/parastate';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, ScatterPointNavNodeOptions, SeriesNavNodeOptions } from '../view/layers/data/navigation';
 import { Datapoint, PlaneModel } from '@fizz/paramodel';
+import { DataSymbols } from '../view/symbol';
+import { LegendItem } from '../view/legend';
 
 
 export class ScatterChartInfo extends PointChartInfo {
@@ -25,26 +27,12 @@ export class ScatterChartInfo extends PointChartInfo {
       cluster()
     }
     super._init();
-    // this._axisInfo = new AxisInfo(this._paraState, {
-    //   xValues: this._paraState.model!.allFacetValues('x')!.map((x) => x.value as number),
-    //   yValues: this._paraState.model!.allFacetValues('y')!.map((x) => x.value as number),
-    // });
   }
 
   protected _addSettingControls(): void {
     super._addSettingControls();
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'type.scatter.isShowTrendLine',
-      label: 'Trend line',
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'type.scatter.isShowOutliers',
-      label: 'Show outliers',
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
+    this._paraState.settingControls.insert('type.scatter.isShowTrendLine');
+    this._paraState.settingControls.insert('type.scatter.isShowOutliers');
   }
 
   get clustering() {
@@ -68,15 +56,19 @@ export class ScatterChartInfo extends PointChartInfo {
     await super.storeDidChange(key, value);
     if (key === 'clusterAnalyses') {
       this._createClusterNavNodes();
-      this._paraView.documentView?.chartLayers.dataLayer.init();
+      //this._paraView.documentView?.chartLayers.dataLayer.init();
     }
   }
-  async _generateClustering() {
-    return await (this._paraState.model as PlaneModel).getClusteringAnalysis();
+  async _generateClustering(): Promise<clusterObject[] | null> {
+    return await this.model.getClusteringAnalysis();
   }
 
   get navDatapointType(): DatapointNavNodeType {
     return 'scatterpoint';
+  }
+
+  get model() {
+    return super.model as PlaneModel;
   }
 
   seriesInNavOrder() {
@@ -88,6 +80,7 @@ export class ScatterChartInfo extends PointChartInfo {
     const seriesClusterNodes: NavNode<'cluster'>[][] = [];
     const isMultiSeries = this._navMap!.root.query('series').length > 0 ? true : false;
     const seriesNodes = isMultiSeries ? this._navMap!.root.query('series') : this._navMap!.root.query('top');
+    let left = this._navMap!.root.get('top')!;
     seriesNodes.forEach((seriesNode, seriesIndex) => {
       if (seriesClusterNodes.length) {
         seriesNode.connect('left', seriesClusterNodes.at(-1)!.at(-1)!);
@@ -131,6 +124,9 @@ export class ScatterChartInfo extends PointChartInfo {
           // non-reciprocal 'out' links from remaining datapoints to cluster
           node.connect('out', clusterNode, false);
           (node!.options as ScatterPointNavNodeOptions).cluster = clusterNode.index;
+          node.disconnect("left", false);
+          node.connect("left", left);
+          left = node;
         }
         if (clusterNode.peekNode('right', 1)) {
           // We aren't on the last cluster, so the final datapoint is a boundary point.
@@ -163,5 +159,33 @@ export class ScatterChartInfo extends PointChartInfo {
     // the nav run timeout may end AFTER the latest render
     this._paraView.requestUpdate();
     super.navRunDidEnd(cursor, quiet)
+  }
+
+  legend(): LegendItem[] {
+    const model = this._paraState.model!;
+    const types = new DataSymbols().types;
+    if (model.multi || !this.clustering) {
+      const seriesKeys = [...model.seriesKeys];
+      if (this._paraState.config.legend.itemOrder === 'alphabetical') {
+        seriesKeys.sort();
+      }
+      return seriesKeys.map((key, i) => ({
+        label: model.atKey(key)!.getLabel(),
+        seriesKey: key,
+        colorIndex: this._paraState.seriesProperties!.properties(key).colorIndex,
+        symbol: types[i],
+        symbolOptions: { lighten: true }
+      }));
+    }
+    else {
+      return this.clustering.map((c, i) => ({
+        label: `cluster ${i + 1} (${c.regionDesc})`,
+        seriesKey: model.seriesKeys[0],
+        colorIndex: i,
+        symbol: types[i],
+        symbolOptions: { lighten: true },
+        clusterIndex: i
+      }))
+    }
   }
 }

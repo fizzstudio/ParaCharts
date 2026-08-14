@@ -14,20 +14,19 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Logger, getLogger } from '@fizz/logger';
-import { View, Container } from '../base_view';
-import { type Layout } from '../layout';
-import { type Axis, type AxisOrientation } from './axis';
-import { Label, type LabelTextAnchor } from '../label';
-import { ParaView } from '../../paraview';
-
 import { type TemplateResult } from 'lit';
-import { Vec2 } from '../../common/vector';
+import { Logger, getLogger } from '@fizz/logger';
 import { PlaneModel } from '@fizz/paramodel';
-import { Popup } from '../popup';
-import { OrientedAxisSettings } from '../../state';
 import { Datatype } from '@fizz/paramanifest';
-import { AxisLabelTier } from '../../chart_types';
+import { View, Container } from '../base_view';
+import { type Layout } from '../layout/layout';
+import { type AxisOrientation } from './axis';
+import { Label } from '../label';
+import { type ViewContext } from '../view_context';
+import { Vec2 } from '../../common/vector';
+import { Popup } from '../popup';
+import { type AxisLabelTier } from '../../chart_types';
+import { type AxisHorizConfig, type AxisVertConfig } from '../../config/config_types';
 
 export interface TickLabelTierOptions {
   orientation: AxisOrientation;
@@ -57,9 +56,10 @@ export abstract class TickLabelTier extends Container(View) {
   protected _tickDistance!: number;
 
   constructor(
-    paraview: ParaView,
-    protected _axisSettings: OrientedAxisSettings<AxisOrientation>,
-    protected _options: TickLabelTierOptions
+    paraview: ViewContext,
+    protected _axisSettings: AxisHorizConfig | AxisVertConfig,
+    protected _options: TickLabelTierOptions,
+    protected _axisIsPrimary: boolean
   ) {
     super(paraview);
     this._updateSizeFromLength(this._options.length);
@@ -113,8 +113,6 @@ export abstract class TickLabelTier extends Container(View) {
     return Math.max(...this._children.map(kid => kid.paddedHeight ?? 0));
   }
 
-  protected abstract get _labelTextAnchor(): LabelTextAnchor;
-
   protected abstract get _labelWrapWidth(): number | undefined;
 
   createTickLabels(_checkLabels = true) {
@@ -136,7 +134,6 @@ export abstract class TickLabelTier extends Container(View) {
           this._axisSettings.position as string],
         role: 'axislabel',
         text: labelText,
-        textAnchor: this._labelTextAnchor,
         wrapWidth: this._labelWrapWidth,
         x: 0,
         y: 0,
@@ -147,9 +144,9 @@ export abstract class TickLabelTier extends Container(View) {
               this._options.content.intervals[i].start,
               this._options.content.intervals[i].end);
           }
-          if (this.paraview.paraState.settings.chart.isShowPopups
-            && this.paraview.paraState.settings.popup.activation === "onHover"
-            && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
+          if (this.paraview.paraState.config.chart.isShowPopups
+            && this.paraview.paraState.config.popup.activation === "onHover"
+            && !this.paraview.paraState.config.ui.isTourGuideEnabled) {
               this.addPopup(labelText[0] == "Q" ? tiers[i] : labelText, i);
           }
         },
@@ -160,9 +157,9 @@ export abstract class TickLabelTier extends Container(View) {
               this._options.content.intervals[i].start,
               this._options.content.intervals[i].end);
           }
-          if (this.paraview.paraState.settings.chart.isShowPopups
-            && this.paraview.paraState.settings.popup.activation === "onHover"
-            && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
+          if (this.paraview.paraState.config.chart.isShowPopups
+            && this.paraview.paraState.config.popup.activation === "onHover"
+            && !this.paraview.paraState.config.ui.isTourGuideEnabled) {
               this.paraview.paraState.removePopup(`${this.id}-${i}`);
           }
         }
@@ -194,11 +191,12 @@ export abstract class TickLabelTier extends Container(View) {
  */
 export class HorizTickLabelTier extends TickLabelTier {
   constructor(
-    paraview: ParaView,
-    axisSettings: OrientedAxisSettings<AxisOrientation>,
+    paraview: ViewContext,
+    axisSettings: AxisHorizConfig,
     options: TickLabelTierOptions,
+    axisIsPrimary: boolean
   ) {
-    super(paraview, axisSettings, options);
+    super(paraview, axisSettings, options, axisIsPrimary);
     this.log = getLogger('HorizTickLabelTier');
     this._canWidthFlex = true;
     this.padding = {top: this._axisSettings.ticks.labels.offsetGap};
@@ -210,10 +208,6 @@ export class HorizTickLabelTier extends TickLabelTier {
 
   protected get _length(): number {
     return this._width;
-  }
-
-  protected get _labelTextAnchor(): LabelTextAnchor {
-    return this._axisSettings.ticks.labels.angle ? 'end' : 'middle';
   }
 
   protected get _labelWrapWidth() {
@@ -231,11 +225,15 @@ export class HorizTickLabelTier extends TickLabelTier {
     // These "hanging off" bits won't contribute to the size of
     // the tier, to make it easier to align.
     const isXIntertick = this._options.isChartIntertick && this._options.isFacetIndep;
-    const tickDelta = this._length/(this._options.numTicks - (isXIntertick ? 0 : 1));
-    const offset = isXIntertick ? 2 : 1.5;
-    let pos = (this._options.index && this._options.datatype === 'date')
-      ? 4*tickDelta*index + offset*tickDelta
-      : this._labelDistance*index; // + this._labelDistance/2;
+    let pos: number;
+    if (this._options.index && this._options.datatype === 'date') {
+      const intIdx = index*this._options.step;
+      const intStart = this._length*this._options.content.intervals![intIdx].start;
+      const intEnd = this._length*this._options.content.intervals![intIdx].end;
+      pos = (intStart + intEnd)/2;
+    } else {
+      pos = this._labelDistance*index;
+    }
     if (isXIntertick && (!this._options.index || this._options.datatype !== 'date')) {
       pos += (this._labelDistance/this._options.step)/2;
     }
@@ -248,8 +246,8 @@ export class HorizTickLabelTier extends TickLabelTier {
    _tickLabelY(index: number) {
     // FIXME (@simonvarey): This is a temporary fix until we guarantee that plane charts
     //   have two axes
-    const facet = (this.paraview.paraState.model as PlaneModel).getAxisFacet(this._options.orientation)
-       ?? this.paraview.paraState.model!.getFacet(this._options.orientation === 'horiz' ? 'x' : 'y')!;
+    //const facet = (this.paraview.paraState.model as PlaneModel).getAxisFacet(this._options.orientation)
+    //   ?? this.paraview.paraState.model!.getFacet(this._options.orientation === 'horiz' ? 'x' : 'y')!;
     // const tickLen = facet!.variableType === 'independent'
     //   ? this.paraview.paraState.settings.axis.x.tick.length
     //   : this.paraview.paraState.settings.axis.y.tick.length;
@@ -262,7 +260,7 @@ export class HorizTickLabelTier extends TickLabelTier {
   createTickLabels(checkLabels = true) {
     super.createTickLabels();
     this._children.forEach((kid, i) => {
-      if (this.paraview.paraState.settings.axis.horiz.ticks.labels.angle) {
+      if (this.paraview.paraState.config.axis.horiz.ticks.labels.angle) {
         kid.angle = this._axisSettings.ticks.labels.angle;
       }
       if (kid.angle === 0) {
@@ -352,11 +350,12 @@ export class HorizTickLabelTier extends TickLabelTier {
 export class VertTickLabelTier extends TickLabelTier {
 
   constructor(
-    paraview: ParaView,
-    axisSettings: OrientedAxisSettings<AxisOrientation>,
-    options: TickLabelTierOptions
+    paraview: ViewContext,
+    axisSettings: AxisVertConfig,
+    options: TickLabelTierOptions,
+    axisIsPrimary: boolean
   ) {
-    super(paraview, axisSettings, options);
+    super(paraview, axisSettings, options, axisIsPrimary);
     this._canHeightFlex = true;
     this.padding = {right: this._axisSettings.ticks.labels.offsetGap};
   }
@@ -369,10 +368,6 @@ export class VertTickLabelTier extends TickLabelTier {
     return this._height;
   }
 
-  protected get _labelTextAnchor(): LabelTextAnchor {
-    return 'end';
-  }
-
   protected get _labelWrapWidth() {
     return undefined;
   }
@@ -382,8 +377,8 @@ export class VertTickLabelTier extends TickLabelTier {
   }
 
   _tickLabelX(index: number) {
-    // Right-justify if west, left-justify if east;
-    return this._axisSettings.position === 'west'
+    // Right-justify if primary, left-justify if secondary;
+    return this._axisIsPrimary
       ? this.width //- this._children[index].width
       : 0;
   }
@@ -418,10 +413,14 @@ export class VertTickLabelTier extends TickLabelTier {
     // and we don't need the xs to compute the width
     this.updateSize(false);
     this._children.forEach((kid, i) => {
-        kid.x = this._tickLabelX(i);
-        kid.y = this._tickLabelY(i);
+      if (this._axisIsPrimary) {
+        kid.right = this._tickLabelX(i);
+      } else {
+        kid.left = this._tickLabelX(i);
+      }
+      kid.y = this._tickLabelY(i);
     });
-    if (checkLabels && this._options.isFacetIndep) {
+    if (checkLabels) {
       this._options.step = this._optimizeLabelSpacing();
       this.createTickLabels(false);
     }
@@ -460,7 +459,7 @@ export class VertTickLabelTier extends TickLabelTier {
       {
         text: text ?? datapointText,
         x: this._tickLabelX(index ?? 0) + 15,
-        y: this._tickLabelY(index ?? 0) + this.paraview.paraState.settings.popup.margin - this.children[index ?? 0].height ,
+        y: this._tickLabelY(index ?? 0) + this.paraview.paraState.config.popup.margin - this.children[index ?? 0].height ,
         id: this.id,
         type: "vertTick",
         fill: "hsl(0, 0%, 0%)",

@@ -1,0 +1,20 @@
+{
+    "description": "Generated chart description settings.",
+    "family": "description",
+    "settings": {
+        "captionFormat": {
+            "label": "cpanel.tabs.chart.caption_format",
+            "description": "Use concise or full captions",
+            "type": "'full' | 'concise'",
+            "default": "full",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["full", "concise"]
+            },
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.chart",
+            "keywords": ["description"],
+            "refresh": "description"
+        }
+    }
+}

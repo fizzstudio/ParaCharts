@@ -14,41 +14,39 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
+import { property, state, queryAssignedElements } from 'lit/decorators.js';
+import { createRef, ref } from 'lit/directives/ref.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { Logger, getLogger } from '@fizz/logger';
+import { type ChartType } from '@fizz/paramanifest'
+import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { ParaComponent } from '../components';
-import { ChartType } from '@fizz/paramanifest'
-import { DeepReadonly, Settings, SettingsInput, type Setting } from '../state/settings_types';
-import { SettingsManager } from '../state';
-import '../paraview';
-import '../components/data_table';
-import '../control_panel';
-import '../control_panel/caption';
-import { type ParaCaptionBox } from '../control_panel/caption';
+import { ConfigSetting, SettingsInput } from '../config/config_types';
+import { SettingsManager, GlobalState } from '../state';
 import { type ParaView } from '../paraview';
-import { type ParaControlPanel } from '../control_panel';
-import { ParaState } from '../state';
+import { type ParaControlPanel, type ParaCaptionBox } from '../control_panel';
+import { DataTable } from '../components/data_table';
 import { load, LoadError, LoadErrorCode, type SourceKind } from '../loader/paraloader';
-import { GlobalState } from '../state';
 import { CustomPropertyLoader } from '../state/custom_property_loader';
-import { styles } from '../view/styles';
 import '../components/aria_live';
-import { StyleManager } from './style_manager';
-import { AvailableCommands, Commander } from './commander';
+import { StyleManager, StyleManagerDeclarationValue } from './style_manager';
 import { ParaAPI } from '../paraapi/paraapi';
 import {
   Scrollyteller,
   type ScrollytellerOptions,
 } from '../scrollyteller/scrollyteller';
-
-import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
-import { property, queryAssignedElements } from 'lit/decorators.js';
-import { createRef, ref } from 'lit/directives/ref.js';
-import { classMap } from 'lit/directives/class-map.js';
-import { styleMap } from 'lit/directives/style-map.js';
+import '../paraview';
+import '../components/data_table';
+import '../control_panel';
+import '../control_panel/caption';
 import { SlotLoader } from '../loader/slotloader';
-import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
-import { initParaSummary } from '@fizz/parasummary';
 import { TourBus } from './tour_bus';
+import hyperFont from '../assets/Atkinson-Hyperlegible-Regular-102a.woff2';
+import cpanelIconAlt from '../assets/info-icon-alt.svg';
+import { type BrailleGrade, type BrailleTranslationProvider } from '../braille/braille_translation_provider';
+import { BrailleTranslationService } from '../braille/braille_translation_service';
 
 // NOTE: We cannot use the `customElement` decorator here as that would clash with `ParaChartsAi`
 /** @public */
@@ -57,18 +55,21 @@ export class ParaChart extends ParaComponent {
   @property({ type: Boolean }) scalable = false;
   @property() accessor manifest = '';
   @property() manifestType: SourceKind = 'url';
+  /** Manifest update polling interval in seconds */
+  @property({ type: Number }) pollInterval = 0;
   // `data` must be a URL, if set
   @property() data = '';
-  @property({type: Object}) accessor config: SettingsInput = {};
+  @property({ type: Object }) accessor config: SettingsInput = {};
   @property() accessor forcecharttype: ChartType | undefined;
   @property() type?: ChartType;
   @property() accessor description: string | undefined;
-  @property({type: Boolean, attribute: false}) isControlPanelOpen = false;
-  @property({type: Boolean, attribute: false}) isDataTableVisible = false;
+  @property({ type: Boolean, attribute: false }) isControlPanelOpen = false;
+  @property({ type: Boolean, attribute: false }) isDataTableVisible = false;
 
   readonly captionBox: ParaCaptionBox;
   protected _paraViewRef = createRef<ParaView>();
   protected _controlPanelRef = createRef<ParaControlPanel>();
+  protected _dataTableRef = createRef<DataTable>();
   private _slotLoader = new SlotLoader();
   protected log: Logger = getLogger("ParaChart");
 
@@ -78,11 +79,14 @@ export class ParaChart extends ParaComponent {
   protected _loaderResolver: (() => void) | null = null;
   protected _loaderRejector: ((error?: Error) => void) | null = null;
   protected _styleManager!: StyleManager;
-  protected _commander!: Commander;
   protected _paraAPI!: ParaAPI;
   // allow _scrollyteller to be cleared with undefined after destroy() ===
   protected _scrollyteller: Scrollyteller | undefined;
   protected _tourBus: TourBus;
+  protected _hasFocus = false;
+  private _brailleTranslation = new BrailleTranslationService();
+  private _activeBrailleProvider?: BrailleTranslationProvider;
+  private _pollTimer: ReturnType<typeof setInterval> | undefined;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -119,6 +123,10 @@ export class ParaChart extends ParaComponent {
         onUpdate: () => {
           this._paraViewRef.value?.requestUpdate();
         },
+        onRefreshParaView: () => {
+          this._paraViewRef.value?.createDocumentView();
+          this._paraViewRef.value?.requestUpdate();
+        },
         onNotice: (key, value) => {
           this.postNotice(key, value);
         },
@@ -143,12 +151,12 @@ export class ParaChart extends ParaComponent {
     });
     this._readyPromise = new Promise((resolve) => {
       this.addEventListener('paraviewready', async () => {
-        await initParaSummary();
+        this._paraAPI = new ParaAPI(this);
         resolve();
         // It's now safe to load a manifest
         // In headless mode, loadManifest() handles loading via willUpdate, so skip here
         if (this.manifest && !this.headless) {
-          this.runLoader(this.manifest, this.manifestType).then(() => {
+          this.runLoader(this.manifest, this.manifestType, true, undefined, true, this.config).then(() => {
             this.log.info('ParaCharts fully initialized');
             this._scrollyteller = new Scrollyteller(this);
           });
@@ -165,26 +173,29 @@ export class ParaChart extends ParaComponent {
             )
             this.log.info('loaded manifest')
             if (loadresult.result === 'success') {
-              this.paraState.setManifest(loadresult.manifest!);
+              await this.paraState.setManifest(loadresult.manifest!);
               this._paraState.dataState = 'complete';
               this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
+              this._dataTableRef.value?.init();
               this._paraAPI = new ParaAPI(this);
               this._loaderResolver!();
             } else {
               //this.log.error(loadresult.error);
               this._paraState.dataState = 'error';
+              this._paraState.dispatchEvent(new CustomEvent('manifestError'));
             }
           }
         }
-          else {
-            this.log.info("No datatable in slot")
-            this._paraState.dataState = 'error'
-          }
+        else {
+          this.log.info("No datatable in slot")
+          this._paraState.dataState = 'error';
+          this._paraState.dispatchEvent(new CustomEvent('manifestError'));
+        }
       });
     });
   }
 
-  @queryAssignedElements({flatten: true})
+  @queryAssignedElements({ flatten: true })
   private _slotted!: HTMLElement[];
 
   get paraView() {
@@ -203,7 +214,7 @@ export class ParaChart extends ParaComponent {
     return this._loaderPromise;
   }
 
-  get slotted(){
+  get slotted() {
     return this._slotted;
   }
 
@@ -213,6 +224,21 @@ export class ParaChart extends ParaComponent {
 
   get api() {
     return this._paraAPI;
+  }
+
+  /** @internal */
+  async registerBrailleTranslationProvider(provider: BrailleTranslationProvider): Promise<void> {
+    await this._brailleTranslation.register(provider);
+    const shouldRefresh = this._activeBrailleProvider !== provider && Boolean(this._paraState.data);
+    this._activeBrailleProvider = provider;
+    if (shouldRefresh) {
+      this._paraState.refreshParaView();
+    }
+  }
+
+  /** @internal */
+  translateBraille(text: string, grade: BrailleGrade): string {
+    return this._brailleTranslation.translate(text, grade);
   }
 
   get scrollyteller() {
@@ -227,6 +253,10 @@ export class ParaChart extends ParaComponent {
     return this._paraState;
   }
 
+  get hasFocus() {
+    return this._hasFocus;
+  }
+
   clearAriaLive() {
     this.paraView.clearAriaLive;
   }
@@ -235,60 +265,90 @@ export class ParaChart extends ParaComponent {
     this.paraView.showAriaLiveHistory();
   }
 
+  private _stopPolling(): void {
+    if (this._pollTimer !== undefined) {
+      clearInterval(this._pollTimer);
+      this._pollTimer = undefined;
+    }
+  }
+
+  private _startPolling(): void {
+    if (
+      this._pollTimer !== undefined
+      || !this.isConnected
+      || this.headless
+      || !this.manifest
+      || this.manifestType !== 'url'
+      || !Number.isFinite(this.pollInterval)
+      || this.pollInterval <= 0
+      || this._paraState.dataState !== 'complete'
+    ) {
+      return;
+    }
+
+    this._pollTimer = setInterval(() => {
+      void this.runLoader(this.manifest, this.manifestType, true, undefined, true, this.config);
+    }, this.pollInterval * 1000);
+  }
+
   connectedCallback() {
     super.connectedCallback();
-    this.isControlPanelOpen = this._paraState.settings.controlPanel.isControlPanelDefaultOpen;
-
-    this._styleManager = new StyleManager(this.shadowRoot!.adoptedStyleSheets[0]);
-    this._styleManager.set(':host', {
-      '--axis-line-color': 'hsl(0, 0%, 0%)',
-      '--label-color': 'hsl(0, 0%, 0%)',
-      '--tick-grid-color': 'hsl(270, 50%, 50%)',
+    this._startPolling();
+    if (this._styleManager) return;
+    this._globalState.init();
+    this.isControlPanelOpen = this._paraState.config.controlPanel.isControlPanelDefaultOpen;
+    this._injectFontFace('Atkinson Hyperlegible', hyperFont);
+    this._styleManager = new StyleManager();
+    this.shadowRoot!.adoptedStyleSheets = [
+      ...this.shadowRoot!.adoptedStyleSheets,
+      this._styleManager.stylesheet
+    ];
+    const hostDeclarations: Record<string, StyleManagerDeclarationValue> = {
       '--background-color': 'white',
-      '--theme-color': 'var(--fizz-theme-color, purple)',
-      '--theme-color-light': 'var(--fizz-theme-color-light, hsl(275.4, 100%, 88%))',
-      '--theme-contrast-color': 'white',
       '--fizz-theme-color': 'var(--paracharts-theme-color, navy)',
       '--fizz-theme-color-light': 'var(--paracharts-theme-color-light, hsl(210.5, 100%, 88%))',
       '--visited-color': () => this._paraState.colors.colorValue('visit'),
-      '--highlighted-color': () => this._paraState.colors.colorValue('highlight'),
       '--visited-stroke-width': () =>
         this._paraViewRef.value?.documentView?.chartLayers.dataLayer.visitedStrokeWidth ?? 0,
       '--selected-color': 'var(--label-color)',
-      '--datapoint-centroid': '50% 50%',
-      '--focus-animation': 'all 0.5s ease-in-out',
       '--chart-cursor': 'pointer',
       '--data-cursor': 'cell',
-      '--focus-shadow-color': 'gray',
-      '--focus-shadow': 'drop-shadow(0px 0px 4px var(--focus-shadow-color))',
-      '--caption-border': () => this._paraState.settings.controlPanel.caption.hasBorder
-        ? 'solid 2px var(--theme-color)'
+      '--caption-border': () => this._paraState.config.controlPanel.caption.hasBorder
+        ? 'solid 2px var(--fizz-theme-color)'
         : 'none',
       '--caption-grid-template-columns': () =>
-        this._paraState.settings.controlPanel.isExplorationBarVisible
-        && this._paraState.settings.controlPanel.isCaptionVisible
-        && this._paraState.settings.controlPanel.caption.isExplorationBarBeside
+        this._paraState.config.controlPanel.isExplorationBarVisible
+          && this._paraState.config.controlPanel.isCaptionVisible
+          && this._paraState.config.controlPanel.caption.isExplorationBarBeside
           ? '2fr 1fr' //'auto auto'
           : '1fr',
-      '--exploration-bar-display': () => this._paraState.settings.controlPanel.isExplorationBarVisible
+      '--exploration-bar-display': () => this._paraState.config.controlPanel.isExplorationBarVisible
         ? 'flex'
         : 'none',
-      '--chart-font-scale': () => this._paraState.settings.chart.fontScale,
-      '--chart-title-font-size': () => this._paraState.settings.chart.title.fontSize,
-      '--horiz-axis-title-font-size': () => this._paraState.settings.axis.horiz.title.fontSize,
-      '--vert-axis-title-font-size': () => this._paraState.settings.axis.vert.title.fontSize,
-      '--horiz-axis-tick-label-font-size': () => this._paraState.settings.axis.horiz.ticks.labels.fontSize,
-      '--vert-axis-tick-label-font-size': () => this._paraState.settings.axis.vert.ticks.labels.fontSize,
-      '--direct-label-font-size': () => this._paraState.settings.chart.directLabelFontSize,
-      '--legend-label-font-size': () => this._paraState.settings.legend.fontSize,
-      '--bar-label-font-size': () => this._paraState.settings.type.bar.labelFontSize,
-      '--column-label-font-size': () => this._paraState.settings.type.column.labelFontSize,
-      '--waterfall-label-font-size': () => this._paraState.settings.type.waterfall.labelFontSize,
+      '--chart-width': () => `${this._paraState.config.chart.width}px`,
+      '--chart-height': () => `${this._paraState.config.chart.height}px`,
+      '--chart-font-scale': () => this._paraState.config.chart.fontScale,
+      '--chart-title-font-size': () => this._paraState.config.chart.title.fontSize,
+      '--chart-subtitle-font-size': () => this._paraState.config.chart.subtitle.fontSize,
+      '--horiz-axis-title-font-size': () => this._paraState.config.axis.horiz.title.fontSize,
+      '--vert-axis-title-font-size': () => this._paraState.config.axis.vert.title.fontSize,
+      '--horiz-axis-tick-label-font-size': () => this._paraState.config.axis.horiz.ticks.labels.fontSize,
+      '--vert-axis-tick-label-font-size': () => this._paraState.config.axis.vert.ticks.labels.fontSize,
+      '--direct-label-font-size': () => this._paraState.config.chart.directLabelFontSize,
+      '--legend-label-font-size': () => this._paraState.config.legend.fontSize,
+      '--bar-label-font-size': () => this._paraState.config.type.bar.labelFontSize,
+      '--column-label-font-size': () => this._paraState.config.type.column.labelFontSize,
+      '--waterfall-label-font-size': () => this._paraState.config.type.waterfall.labelFontSize,
       'display': 'block',
       'font-family': '"Trebuchet MS", Helvetica, sans-serif',
       'font-size': 'var(--chart-view-font-size, 1rem)'
-    });
-    if (this._paraState.settings.chart.isShowVisitedDatapointsOnly) {
+    };
+    if (this.tagName === 'PARA-CHART-AI') {
+      hostDeclarations['--control-panel-icon'] = `url(${cpanelIconAlt})`;
+    }
+    this._styleManager.set(':host', hostDeclarations);
+
+    if (this._paraState.config.chart.isShowVisitedDatapointsOnly) {
       this._styleManager.set('.datapoint:not(.visited)', {
         'display': 'none'
       });
@@ -297,13 +357,36 @@ export class ParaChart extends ParaComponent {
       });
     }
     this._styleManager.update();
+    // Ensure webfonts are actually loaded before initial measurements.
+    // Use a small timeout as a safety cap so we don't hang forever.
+    if (document.fonts && document.fonts.load) {
+      const family = this._paraState.config.chart.fontFamily;
+      const loads = [
+        // representative sizes so glyph metrics are available
+        document.fonts.load(`16px "${family}"`).catch(() => { }),
+        document.fonts.load('16px "Atkinson Hyperlegible"').catch(() => { }),
+        document.fonts.load('36pt "Braille36 US"').catch(() => { })
+      ];
+      const timeout = new Promise(resolve => setTimeout(resolve, 500));
+      Promise.race([Promise.all(loads), timeout]).then(() => {
+        // Trigger a remeasure/re-render once fonts are ready (or timeout).
+        this._paraViewRef.value?.requestUpdate();
+      }).catch(() => { /* ignore */ });
+    }
   }
 
-  protected firstUpdated(_changedProperties: PropertyValues): void {
-    this._commander = Commander.getInst(this._paraViewRef.value!);
+  disconnectedCallback(): void {
+    this._stopPolling();
+    super.disconnectedCallback();
   }
 
   willUpdate(changedProperties: PropertyValues<this>) {
+    const pollingChanged = changedProperties.has('manifest')
+      || changedProperties.has('manifestType')
+      || changedProperties.has('pollInterval');
+    if (pollingChanged) {
+      this._stopPolling();
+    }
     // Don't load a manifest before the paraview has rendered
     if (changedProperties.has('manifest') && this.manifest !== '' && this._paraViewRef.value) {
       console.log(`manifest changed: ${this.manifest}`);
@@ -311,27 +394,27 @@ export class ParaChart extends ParaComponent {
         this._loaderResolver = resolve;
         this._loaderRejector = reject;
       });
-      this.runLoader(this.manifest, this.manifestType);
-      this.dispatchEvent(new CustomEvent('manifestchange', {bubbles: true, composed: true, cancelable: true}));
+      this.runLoader(this.manifest, this.manifestType, true, undefined, true, this.config);
+      this.dispatchEvent(new CustomEvent('manifestchange', { bubbles: true, composed: true, cancelable: true }));
     }
     if (changedProperties.has('config')) {
       Object.entries(this.config).forEach(([path, value]) =>
-        this._paraState.updateSettings(draft => {
+        this._paraState.updateConfig(draft => {
           SettingsManager.set(path, value, draft);
         }));
+    }
+    if (pollingChanged) {
+      this._startPolling();
     }
   }
 
   static styles = [
-    styles,
     css`
-      :host {
-        --summary-marker-size: 1.1rem;
-      }
       figure {
         display: inline flex;
         flex-direction: column;
         margin: 0;
+        position: relative;
       }
       figure.scalable {
         width: 100%;
@@ -339,12 +422,37 @@ export class ParaChart extends ParaComponent {
     `
   ];
 
+  protected _injectFontFace(family: string, url: string) {
+    // @font-face rules don't work inside of shadow DOM stylesheets, so
+    // we have to inject a rule into the document adopted stylesheets.
+    // See https://github.com/mdn/interactive-examples/issues/887,
+    // https://issues.chromium.org/issues/41085401
+    let hasFontFace = false;
+    outer: for (const sheet of document.adoptedStyleSheets) {
+      for (const rule of sheet.cssRules) {
+        if (rule instanceof CSSFontFaceRule && rule.style.getPropertyValue('font-family') === family) {
+          hasFontFace = true;
+          break outer;
+        }
+      }
+    }
+    if (!hasFontFace) {
+      const fontFaceSheet = new CSSStyleSheet();
+      fontFaceSheet.replaceSync(`@font-face {
+        font-family: "${family}";
+        src: url("${url}") format('woff2');
+      }`);
+      document.adoptedStyleSheets = [...document.adoptedStyleSheets, fontFaceSheet];
+    }
+  }
+
   async runLoader(
     manifestInput: string,
     manifestType: SourceKind,
     forceType = true,
     description?: string,
     resetSettings = true,
+    inputSettings?: SettingsInput,
   ): Promise<void> {
     this._paraState.dataState = 'pending';
     try {
@@ -360,16 +468,18 @@ export class ParaChart extends ParaComponent {
         this._paraState.clearAllHighlights();
         this._paraState.clearPopups();
       }
-      this._paraState.setManifest(manifest, data, resetSettings);
+      await this._paraState.setManifest(manifest, data, resetSettings, inputSettings);
       this._paraState.dataState = 'complete';
       // NB: cpanel doesn't exist in headless mode
       this._controlPanelRef.value?.descriptionPanel.positionCaptionBox();
-      this._paraAPI = new ParaAPI(this);
+      this._dataTableRef.value?.init();
+      // this._paraAPI = new ParaAPI(this);
       await this._tourBus.sendContextPayload();
       this._loaderResolver!();
     } catch (error) {
       this.log.error(error instanceof Error ? error.message : String(error));
       this._paraState.dataState = 'error';
+      this._paraState.dispatchEvent(new CustomEvent('manifestError'));
       this._loaderRejector!(error instanceof Error ? error : new LoadError(LoadErrorCode.UNKNOWN, String(error)));
       this._paraViewRef.value?.rejectJimReady();
     }
@@ -378,9 +488,10 @@ export class ParaChart extends ParaComponent {
       // this should be called after chart is rendered, as final step
       this.enableScrollytelling();
     }
+    this._startPolling();
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     this.log.info('setting did change:', path, '=', newValue, `(was ${oldValue})`);
     // Update the style manager before the paraview so, e.g., any font scale
     // change can take effect ...
@@ -389,26 +500,22 @@ export class ParaChart extends ParaComponent {
     this.captionBox.settingDidChange(path, oldValue, newValue);
     // ... then update it again to pick up any changed values from the view tree
     this._styleManager.update();
+    if (path.startsWith('description.')) {
+      this._paraState.setCaption();
+    }
   }
 
   postNotice(key: string, value: any) {
-    if (!this.paraView){
+    if (!this.paraView) {
       return
     }
+    this.paraView.noticePosted(key, value);
     this.paraView.documentView?.noticePosted(key, value);
     this._globalState.paraState.chartInfo.noticePosted(key, value);
+    this._controlPanelRef.value?.noticePosted(key, value);
     this.captionBox.noticePosted(key, value);
     this.dispatchEvent(
-      new CustomEvent('paranotice', {detail: {key, value}, bubbles: true, composed: true}));
-  }
-
-  command(name: keyof AvailableCommands, args: any[]): any {
-    const handler = this._commander.commands[name];
-    if (handler) {
-      return handler(...args);
-    } else {
-      this.log.warn(`no handler for command '${name}'`);
-    }
+      new CustomEvent('paranotice', { detail: { key, value }, bubbles: true, composed: true }));
   }
 
   render(): TemplateResult {
@@ -419,9 +526,9 @@ export class ParaChart extends ParaComponent {
       'scalable': this.scalable
     };
     const cpanelStyles = {
-      'width': `${this._paraState.settings.chart.size.width}px`
+      'width': `${this._paraState.config.chart.width}px`
     };
-    return html`
+    return this._globalState.l10n ? html`
       <figure
         class=${classMap(classes)}
         aria-hidden=${this.headless ? 'true' : 'false'}
@@ -430,28 +537,47 @@ export class ParaChart extends ParaComponent {
           ${ref(this._paraViewRef)}
           .paraChart=${this}
           .globalState=${this._globalState}
-          colormode=${this._paraState?.settings.color.colorVisionMode ?? nothing}
+          colormode=${this._paraState?.config.color.colorVisionMode ?? nothing}
           ?scalable=${this.scalable}
           ?disableFocus=${this.headless}
+          @focus=${() => {
+        this._hasFocus = true;
+      }}
+          @blur=${() => {
+        this._hasFocus = false;
+      }}
         ></para-view>
-        ${!(this.headless || this._paraState.settings.chart.isStatic)
-          ? html`
+        ${!(this.headless || this._paraState.config.chart.isStatic)
+        ? html`
           <para-data-table
+            ${ref(this._dataTableRef)}
             .isVisible=${this.isDataTableVisible}
             .globalState=${this._globalState}
             style=${styleMap(cpanelStyles)}
             .paraChart=${this}
+            @focus=${() => {
+            this._hasFocus = true;
+          }}
+            @blur=${() => {
+            this._hasFocus = false;
+          }}
           ></para-data-table>
             <para-control-panel
               ${ref(this._controlPanelRef)}
               style=${styleMap(cpanelStyles)}
               .paraChart=${this}
               .globalState=${this._globalState}
+              @focus=${() => {
+            this._hasFocus = true;
+          }}
+              @blur=${() => {
+            this._hasFocus = false;
+          }}
             ></para-control-panel>`
-          : ''
-        }
+        : ''
+      }
       </figure>
-    `;
+    ` : html``;
   }
 
   /*
@@ -468,7 +594,7 @@ export class ParaChart extends ParaComponent {
   ): void {
     if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-    if (this._paraState.settings.scrollytelling.isScrollytellingEnabled) {
+    if (this._paraState.config.scrollytelling.isScrollytellingEnabled) {
       this._scrollyteller?.destroy();
       this._scrollyteller = new Scrollyteller(this, options);
       this._scrollyteller.init();
@@ -491,4 +617,27 @@ export class ParaChart extends ParaComponent {
     this._scrollyteller = undefined;
   }
 
+  /*
+   *  Short Descriptions
+   */
+
+  waitForManifest(): Promise<void> {
+    if (this.paraState.dataState === 'complete') {
+      return Promise.resolve();
+    }
+    if (this.paraState.dataState === 'error') {
+      return Promise.reject(new Error('Manifest failed to load'));
+    }
+    return new Promise((resolve, reject) => {
+      this.paraState.addEventListener('manifestSet', () => resolve(), { once: true });
+      this.paraState.addEventListener('manifestError', () => reject(new Error('Manifest failed to load')), { once: true });
+    });
+  }
+
+  async shortDescription(): Promise<string> {
+    await this.waitForManifest();
+    return this.paraState.shortDescription().then((summary) => {
+      return summary.text;
+    });
+  }
 }

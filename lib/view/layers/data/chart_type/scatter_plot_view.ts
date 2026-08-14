@@ -1,13 +1,12 @@
-import { type PlaneSeriesView, PointPlotView, PointDatapointView, PlaneDatapointView, TrendLineView } from '.';
-import { type ScatterSettings, Setting, type DeepReadonly } from '../../../../state/settings_types';
-import { DataSymbol, DataSymbols } from '../../../symbol';
 import { svg } from 'lit';
-import { View } from '../../../base_view';
-import { Colors } from '../../../../common/colors';
-import { enumerate } from '@fizz/paramodel';
 import { ClassInfo } from 'lit/directives/class-map.js';
-import { PlaneChartInfo, ScatterChartInfo } from '../../../../chart_types';
+import { Datapoint, enumerate, PlaneModel } from '@fizz/paramodel';
+import { DataSymbol, DataSymbols } from '../../../symbol';
+import { View } from '../../../base_view';
+import { PlaneChartInfo, type ScatterChartInfo } from '../../../../chart_types';
 import { fixed } from '../../../../common/utils';
+import { ConfigSetting } from '../../../../config/config_types';
+import { PointDatapointView, PointPlotView, type PointSeriesView, type TrendLineView } from './point_plot_view';
 
 
 export class ScatterPlotView extends PointPlotView {
@@ -16,10 +15,6 @@ export class ScatterPlotView extends PointPlotView {
   _trendLine?: TrendLineView;
 
   protected _clusterShellView: ClusterShellView | null = null;
-
-  get settings() {
-    return super.settings as DeepReadonly<ScatterSettings>;
-  }
 
   get chartInfo(): ScatterChartInfo {
     return this._chartInfo;
@@ -33,14 +28,18 @@ export class ScatterPlotView extends PointPlotView {
     return this._types
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  get model() {
+    return super.model as PlaneModel;
+  }
+
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['type.scatter.isShowOutliers'].includes(path)) {
       this.updateOutliers();
     }
     super.settingDidChange(path, oldValue, newValue);
   }
 
-  protected _newDatapointView(seriesView: PlaneSeriesView) {
+  protected _newDatapointView(seriesView: PointSeriesView) {
     return new ScatterPointView(seriesView);
   }
 
@@ -107,34 +106,85 @@ export class ScatterPlotView extends PointPlotView {
     return super.content(...options);
   }
 
-  addClusterShell(index: number){
+  addClusterShell(index: number) {
     this.paraview.paraState.clusterShellViews.splice(0, this.paraview.paraState.clusterShellViews.length);
     this.paraview.paraState.clusterShellViews.push(new ClusterShellView(this, index));
   }
+
+  dimOtherClusters(seriesKey: string, index: number) {
+    const chartInfo = this.chartInfo as ScatterChartInfo;
+    const otherDatapoints = chartInfo._clustering!.filter(c => c.id !== index).map(
+      c => { return [...c.dataPointIDs, ...c.outlierIDs] }).flat();
+    otherDatapoints.map(id => this.paraview.paraState.lowlightDatapoint(seriesKey, id))
+    this.paraview.paraState.refreshParaView();
+  }
+
+
+  pinCluster(seriesKey: string, index: number) {
+    this.unpinCluster();
+    this.paraview.paraState.pinnedCluster = index;
+    this.dimOtherClusters(seriesKey, index);
+  }
+
+  unpinCluster() {
+    this.paraview.paraState.pinnedCluster = null;
+    this.paraview.paraState.clearAllDatapointLowlights();
+  }
+
+  hideCluster(seriesKey: string, index: number) {
+    this._resetFrontedDatapoints();
+    const { frontDatapoints, backDatapoints } = this.getPointsbyCluster(index);
+    frontDatapoints.forEach(p => this.paraview.paraState.hideDatapoint(p.seriesKey, p.datapointIndex));
+    this.paraview.paraState.hideCluster(index);
+    this.paraview.paraState.refreshParaView();
+  }
+
+  unhideCluster(seriesKey: string, index: number) {
+    this._resetFrontedDatapoints();
+    const { frontDatapoints, backDatapoints } = this.getPointsbyCluster(index);
+    frontDatapoints.forEach(p => this.paraview.paraState.clearDatapointHidden(p.seriesKey, p.datapointIndex));
+    this.paraview.paraState.unhideCluster(index);
+    this.paraview.paraState.refreshParaView();
+  }
+
+  getPointsbyCluster(index: number): { frontDatapoints: Datapoint[], backDatapoints: Datapoint[] } {
+    let frontDatapoints: Datapoint[] = [];
+    let backDatapoints: Datapoint[] = [];
+    const points = this.model!.allPoints;
+    for (let point of points) {
+      if ([...this.paraview.paraState.clusterAnalyses![index].dataPointIDs, ...this.paraview.paraState.clusterAnalyses![index].outlierIDs].includes(point.datapointIndex)) {
+        frontDatapoints.push(point);
+      }
+      else {
+        backDatapoints.push(point);
+      }
+    }
+    return { frontDatapoints, backDatapoints };
+  }
 }
 
-class ScatterPointView extends PointDatapointView {
+export class ScatterPointView extends PointDatapointView {
   declare readonly chart: ScatterPlotView;
   symbolColor: number | undefined;
   clusterID?: number;
   isOutlier: boolean = false;
 
   computeX() {
-    const xInterval = (this.chart.chartInfo as PlaneChartInfo).xInterval!;
+    const xRange = (this.chart.chartInfo as PlaneChartInfo).xRangeInfo!;
     // Scales points in proportion to the data range
-    const xTemp = (this.datapoint.facetValueNumericized('x')! - xInterval.start)
-      / (xInterval.end - xInterval.start);
+    const xTemp = (this.datapoint.facetValueNumericized('x')! - xRange.interval.start)
+      / (xRange.interval.end - xRange.interval.start);
     const parentWidth: number = this.chart.parent.width;
     return parentWidth * xTemp;
   }
 
-  protected _createShape(): void {
+  protected _createShapes(): void {
   }
 
   protected get _symbolColor(): number {
     // @simonvarey: I added the symbolColor assignment to fix a build error. It may be incorrect
     if (this.symbolColor === undefined) {
-      this.symbolColor = this.seriesProps.color;
+      this.symbolColor = this.seriesProps.colorIndex;
     }
     return this.paraview.paraState.isVisited(this.seriesKey, this.index)
       ? -1
@@ -144,7 +194,7 @@ class ScatterPointView extends PointDatapointView {
   protected _createSymbol(): void {
     const series = this.seriesProps;
     let symbolType = series.symbol;
-    let color: number = series.color;
+    let color: number = series.colorIndex;
     const types = this.chart.types;
     if (this.chart.chartInfo.clustering) {
       if (this.clusterID !== undefined) {
@@ -154,14 +204,14 @@ class ScatterPointView extends PointDatapointView {
       else {
         symbolType = types[8]
       }
-      const isShowOutliers = this.paraview.paraState.settings.type.scatter.isShowOutliers
+      const isShowOutliers = this.paraview.paraState.config.type.scatter.isShowOutliers
       if (isShowOutliers && this.isOutlier) {
         color = 0
         symbolType = types[8]
       }
     }
     this._symbol = DataSymbol.fromType(this.paraview, symbolType, {
-      strokeWidth: this.paraview.paraState.settings.chart.symbolStrokeWidth,
+      strokeWidth: this.paraview.paraState.config.chart.symbolStrokeWidth,
       lighten: true,
       pointerEnter: (e) => {
         this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined
@@ -184,12 +234,13 @@ class ScatterPointView extends PointDatapointView {
     };
   }
 
-  get color() {
+  get colorIndex() {
     if (this.chart.chartInfo.clustering) {
       return this.clusterID!
     }
-    return super.color
+    return super.colorIndex
   }
+
   endAnimStep(bezT: number, linearT: number) {
     //this.completeLayout();
     this._symbol!.y = this.y
@@ -199,7 +250,7 @@ class ScatterPointView extends PointDatapointView {
 
 export class ClusterShellView extends View {
   protected _points: Array<Array<number>> = [];
-  constructor(private chart: ScatterPlotView, public clusterID?: number, private selectedPoints?: PlaneDatapointView[]) {
+  constructor(private chart: ScatterPlotView, public clusterID?: number, private selectedPoints?: ScatterPointView[]) {
     super(chart.paraview);
     this.generatePoints();
   }
@@ -253,7 +304,8 @@ export class ClusterShellView extends View {
 
   get centroidColor() {
     if (this.clusterID !== undefined) {
-      return this.clusterID;
+      const numColors = this.paraview.paraState.colors.numSeriesColors;
+      return this.clusterID % numColors;
     }
     else {
       return 0;
@@ -266,7 +318,7 @@ export class ClusterShellView extends View {
       <circle
         cx=${fixed`${this.centroidCoords[0]}`}
         cy=${fixed`${this.centroidCoords[1]}`} r="8"
-        style=stroke:black;fill:${this.paraview.paraState.colors.colorValueAt(this.centroidColor)}
+        class="series-${this.centroidColor} cluster-centroid"
       />
     </g>`
   }

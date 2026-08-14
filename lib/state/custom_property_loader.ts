@@ -1,7 +1,7 @@
 import { Logger, getLogger } from '@fizz/logger';
-import { type SettingsInput } from './settings_types';
-import { Colors, Color, Palette } from '../common/colors';
-import { type DataSymbolType, type DataSymbolShape, type DataSymbolFill } from '../view/symbol';
+import { type SettingsInput } from '../config/config_types';
+import { Palette } from '../common/colors';
+import { type DataSymbolType, type DataSymbolShape, type DataSymbolFillType } from '../view/symbol';
 import { type ParaState } from './parastate';
 
 export class CustomPropertyLoader {
@@ -14,8 +14,8 @@ export class CustomPropertyLoader {
 
   protected _paraState!: ParaState;
 
-  protected log: Logger = getLogger("CustomPropertyLoader");  
-  
+  protected log: Logger = getLogger("CustomPropertyLoader");
+
   get paraState() {
     return this._paraState;
   }
@@ -92,7 +92,7 @@ export class CustomPropertyLoader {
           .filter(this._isParaProp.bind(this))
           .map((propName) => {
             return {
-              [propName]: styleRule.style.getPropertyValue(propName)
+              [propName]: styleRule.style.getPropertyValue(propName).trim()
             }
           });
 
@@ -144,14 +144,14 @@ export class CustomPropertyLoader {
   }
 
   protected _convertCamelToKebabCase(camelCaseStr: string): string {
-    // [A-Z]+(?![a-z]) matches any consecutive capital letters, excluding any capitals 
-    // followed by a lowercase (signifying the next word). Adding |[A-Z] then includes 
-    // any single capital letters. It must be after the consecutive capital expression, 
-    // otherwise the expression will match all capital letters individually and never 
+    // [A-Z]+(?![a-z]) matches any consecutive capital letters, excluding any capitals
+    // followed by a lowercase (signifying the next word). Adding |[A-Z] then includes
+    // any single capital letters. It must be after the consecutive capital expression,
+    // otherwise the expression will match all capital letters individually and never
     // match consecutives.
 
-    // `String.prototype.replace` can take a replacer function. Here, it returns the 
-    // lowercased matched capital(s) for each word, after prefixing a hyphen when the 
+    // `String.prototype.replace` can take a replacer function. Here, it returns the
+    // lowercased matched capital(s) for each word, after prefixing a hyphen when the
     // match offset is truthy (not zero - not the first character of the string).
 
     // The 0-9 additions split numbers into their own token, such as `color-series-0`.
@@ -164,10 +164,8 @@ export class CustomPropertyLoader {
 
   protected _isColorProp(propName: string): boolean {
     const colorMatch = propName.match(/series-\d+-color/gi);
-    const palletteMatch = propName.match(/palette/gi);
-    // let result = string.match(/eek/gi);
-    const isColorProp = (colorMatch?.length || palletteMatch?.length) ? true : false;
-    return isColorProp;
+    const paletteMatch = propName === `${this._customPrefix}palette`;
+    return (colorMatch?.length || paletteMatch) ? true : false;
   }
 
   protected _processColorProps(propName: string, propValue: string) {
@@ -219,7 +217,7 @@ export class CustomPropertyLoader {
     const seriesIndex = parseInt((propName.match(/\d+/g) as string[])[0]);
     const valueArray = propValue.split(/,\s+['"]/);
     const dataSymbolShape = this._trimQuotes(valueArray[0]) as DataSymbolShape;
-    const dataSymbolFill = this._trimQuotes(valueArray[1]) as DataSymbolFill;
+    const dataSymbolFill = this._trimQuotes(valueArray[1]) as DataSymbolFillType;
 
     this._symbolSet[seriesIndex] = `${dataSymbolShape}.${dataSymbolFill}`;
 

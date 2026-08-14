@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Live Feed Demo — ParaCharts</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22green%22/><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+  <style>
+    :root {
+      --theme: hsl(194, 28%, 45%);
+      --theme-light: hsl(194, 28%, 88%);
+      --border: #d4d4d4;
+      --text: #333;
+      --muted: #777;
+      --panel: #f7f8f9;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      font-weight: 300;
+      color: var(--text);
+    }
+
+    /* ── Header ─────────────────────────────────── */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      padding: 0.6rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+      font-style: italic;
+      font-weight: normal;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ── Mode switch ────────────────────────────── */
+    .mode-switch {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .mode-switch input[type="radio"] {
+      appearance: none;
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .mode-switch label {
+      display: flex;
+      align-items: center;
+      padding: 0.3rem 0.85rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s, color 0.15s;
+      border-right: 1px solid var(--border);
+    }
+
+    .mode-switch label:last-child {
+      border-right: none;
+    }
+
+    .mode-switch input[type="radio"]:checked+label {
+      background: var(--theme);
+      color: #fff;
+    }
+
+    .mode-switch label:hover {
+      background: var(--theme-light);
+    }
+
+    .mode-switch input[type="radio"]:checked+label:hover {
+      background: var(--theme);
+    }
+
+    /* ── Main layout ────────────────────────────── */
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      flex: 1;
+      min-height: 0;
+    }
+
+    #chart-container {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    #chart {
+      --paracharts-theme-color: var(--theme);
+      --paracharts-theme-color-light: var(--theme-light);
+      --para-stroke-width: 20;
+      width: 100%;
+    }
+
+    /* ── Controls panel ─────────────────────────── */
+    #controls {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      min-height: 0;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 0.32rem 0.75rem;
+      border: 1px solid var(--theme);
+      border-radius: 4px;
+      background: #fff;
+      color: var(--theme);
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-family: inherit;
+      font-weight: 400;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    button:hover {
+      background: var(--theme);
+      color: #fff;
+    }
+
+    button:disabled {
+      border-color: var(--border);
+      color: var(--border);
+      cursor: default;
+    }
+
+    button:disabled:hover {
+      background: #fff;
+      color: var(--border);
+    }
+
+    button svg {
+      fill: currentColor;
+      display: block;
+    }
+
+    input[type="number"] {
+      width: 5rem;
+      padding: 0.28rem 0.4rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      color: var(--text);
+    }
+
+    #controls details {
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    #controls details summary {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.82rem;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+    }
+
+    #controls details summary::before {
+      content: '▶';
+      display: inline-block;
+      margin-right: 0.4rem;
+      font-size: 0.65rem;
+      transition: transform 0.15s;
+    }
+
+    #controls details[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    textarea {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 0.6rem;
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: 0.72rem;
+      line-height: 1.45;
+      color: #555;
+      background: var(--panel);
+      border: none;
+      border-top: 1px solid var(--border);
+      resize: vertical;
+    }
+
+    #latest {
+      min-height: 3.5rem;
+    }
+
+    #manifest {
+      min-height: 200px;
+    }
+
+    /* ── Advanced Controls dropdown ────────────── */
+    #controls #advanced-details {
+      position: relative;
+      border: none;
+      overflow: visible;
+      margin-left: auto;
+    }
+
+    #controls #advanced-details>summary {
+      padding: 0.32rem 0.75rem;
+      border: 1px solid var(--theme);
+      border-radius: 4px;
+      color: var(--theme);
+      background: #fff;
+      font-size: 0.82rem;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    #controls #advanced-details[open]>summary {
+      background: var(--theme);
+      color: #fff;
+      border-radius: 4px 4px 0 0;
+      border-bottom: none;
+    }
+
+    .advanced-content {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: max-content 4rem max-content 4rem;
+      align-items: baseline;
+      column-gap: 0.4rem;
+      row-gap: 0.45rem;
+      padding: 0.65rem 1.25rem;
+      background: var(--panel);
+      border: 1px solid #aaa;
+      border-radius: 4px 0 4px 4px;
+      box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.15);
+      white-space: nowrap;
+    }
+
+    .advanced-content input[type="number"] {
+      width: 4rem;
+    }
+
+    .advanced-content label {
+      font-size: 0.9rem;
+      color: #444;
+      justify-self: end;
+    }
+
+    .ac-pair-start {
+      margin-left: 1.5rem;
+    }
+
+    .ac-divider {
+      grid-column: 1 / -1;
+      border: none;
+      border-top: 1px solid #e0e0e0;
+      margin: 0.1rem 0;
+    }
+
+    #bias-controls {
+      display: contents;
+    }
+
+    .caption-format-row {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.6rem;
+    }
+
+    .caption-format-row>label {
+      font-size: 0.9rem;
+      color: #444;
+    }
+
+    .caption-format-row .mode-switch label {
+      justify-self: unset;
+      font-size: 0.82rem;
+      color: inherit;
+    }
+  </style>
+</head>
+
+<body>
+  <script type="module" src="demo.js"></script>
+
+  <header>
+    <h1>ParaCharts Live Feed Demo</h1>
+    <div class="mode-switch" role="radiogroup" aria-label="Chart mode">
+      <input type="radio" name="mode" id="mode-single" value="single">
+      <label for="mode-single">Single Series</label>
+      <input type="radio" name="mode" id="mode-multi" value="multi" checked>
+      <label for="mode-multi">Multi Series</label>
+    </div>
+  </header>
+
+  <main>
+    <section id="chart-container">
+      <para-chart id="chart" manifest="/src/demo/live_feed/line-multi-manifest.json"></para-chart>
+    </section>
+
+    <section id="controls">
+      <div class="toolbar">
+        <button id="add-btn">Add Record</button>
+        <button id="start-btn">Start</button>
+        <button id="back-btn"><svg width="16" height="16" viewBox="0 0 10 10" aria-hidden="true">
+            <polygon points="8,1 2,5 8,9" />
+          </svg></button>
+        <button id="fwd-btn"><svg width="16" height="16" viewBox="0 0 10 10" aria-hidden="true">
+            <polygon points="2,1 8,5 2,9" />
+          </svg></button>
+        <button id="reset-btn">Reset</button>
+        <details id="advanced-details">
+          <summary>Advanced Controls</summary>
+          <div class="advanced-content">
+            <label for="delay-input">Delay (ms)</label>
+            <input type="number" id="delay-input" min="50" step="50">
+            <hr class="ac-divider">
+            <label for="min-input">Min</label>
+            <input type="number" id="min-input" step="0.1">
+            <label class="ac-pair-start" for="max-input">Max</label>
+            <input type="number" id="max-input" step="0.1">
+            <hr class="ac-divider">
+            <label for="step-input">Step (%)</label>
+            <input type="number" id="step-input" min="1" max="50" step="1">
+            <hr class="ac-divider">
+            <div id="bias-controls"></div>
+            <hr class="ac-divider">
+            <div class="caption-format-row">
+              <label>Caption</label>
+              <div class="mode-switch">
+                <input type="radio" name="caption-format" id="caption-concise" value="concise" checked>
+                <label for="caption-concise">Concise</label>
+                <input type="radio" name="caption-format" id="caption-full" value="full">
+                <label for="caption-full">Full</label>
+              </div>
+            </div>
+            <!--
+            <div class="caption-format-row">
+              <label>Control Panel</label>
+              <div class="mode-switch">
+                <input type="radio" name="cp-open" id="cp-open-off" value="false" checked>
+                <label for="cp-open-off">Closed</label>
+                <input type="radio" name="cp-open" id="cp-open-on" value="true">
+                <label for="cp-open-on">Open</label>
+              </div>
+            </div>
+            <div class="caption-format-row">
+              <label>Caption Visible</label>
+              <div class="mode-switch">
+                <input type="radio" name="caption-visible" id="caption-visible-off" value="false">
+                <label for="caption-visible-off">Hidden</label>
+                <input type="radio" name="caption-visible" id="caption-visible-on" value="true" checked>
+                <label for="caption-visible-on">Visible</label>
+              </div>
+            </div>
+          </div>
+           -->
+        </details>
+      </div>
+      <details id="latest-details" open>
+        <summary>Latest values</summary>
+        <textarea id="latest" readonly></textarea>
+      </details>
+      <details id="manifest-details">
+        <summary>Manifest</summary>
+        <textarea id="manifest" readonly></textarea>
+      </details>
+    </section>
+  </main>
+</body>
+
+</html>

@@ -14,19 +14,17 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { BaseChartInfo, RiffOrder } from './base_chart';
-import { type ParaState, directions, type HorizDirection, datapointIdToCursor } from '../state';
-import { ParaView } from '../paraview';
-import { queryMessages, describeSelections, getDatapointMinMax } from '../state/query_utils';
+import { type PlaneDatapoint } from '@fizz/paramodel';
+import { ChartType } from '@fizz/paramanifest';
 import { Datapoint } from '@fizz/paramodel';
 import { formatBox, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
-import {
-  NavLayer, NavNode,
-} from '../view/layers/data/navigation'
-import { type PlaneDatapoint } from '@fizz/paramodel';
+import { BaseChartInfo, RiffOrder } from './base_chart';
+import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax } from '../state';
+import { directions, HorizDirection } from '../config/config_types';
+import { NavLayer, NavNode } from '../view/layers/data/navigation'
+import { LegendItem } from '../view/legend';
 
-import { ChartType } from '@fizz/paramanifest';
 
 export type ArcType = 'circle' | 'semicircle';
 
@@ -38,43 +36,11 @@ export class PastryChartInfo extends BaseChartInfo {
 
   protected _addSettingControls(): void {
     super._addSettingControls();
-    this._paraState.settingControls.add({
-      type: 'slider',
-      key: `type.${this._type}.orientationAngleOffset`,
-      label: 'Orientation',
-      options: {
-        min: 0,
-        max: 360,
-        step: 1,
-        compact: true,
-        width: '8rem'
-      },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
-    const labelContents = ['', 'category', 'percentage:(value)'];
-    this._paraState.settingControls.add({
-      type: 'dropdown',
-      key: `type.${this._type}.insideLabels.contents`,
-      label: 'Inside labels:',
-      options: { options: labelContents },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
-    this._paraState.settingControls.add({
-      type: 'dropdown',
-      key: `type.${this._type}.outsideLabels.contents`,
-      label: 'Outside labels:',
-      options: { options: labelContents },
-      parentView: 'controlPanel.tabs.chart.chart'
-    });
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: `type.${this._type}.explode`,
-      label: 'Explode',
-      options: {
-        inputType: 'text',
-      },
-      parentView: 'controlPanel.tabs.chart.chart',
-    });
+    // FIXME (@simonvarey): See https://github.com/fizzstudio/ParaCharts/issues/1216
+    this._paraState.settingControls.insert(`type.${this._type}.orientationAngleOffset`);
+    this._paraState.settingControls.insert(`type.${this._type}.insideLabels.contents`);
+    this._paraState.settingControls.insert(`type.${this._type}.outsideLabels.contents`);
+    this._paraState.settingControls.insert(`type.${this._type}.explode`);
   }
 
   protected _createNavMap() {
@@ -100,7 +66,7 @@ export class PastryChartInfo extends BaseChartInfo {
     nodes.at(-1)!.connect('right', nodes[0]);
   }
 
-  legend() {
+  legend(): LegendItem[] {
     const series = this._paraState.model!.series[0];
     const xs = series.datapoints.map(dp =>
       formatBox(dp.facetBox('x')!, this._paraState.getFormatType('pieSliceLabel')));
@@ -109,19 +75,26 @@ export class PastryChartInfo extends BaseChartInfo {
     return xs.map((x, i) => ({
       label: `${x}: ${ys[i]}`,
       seriesKey: series.key,
-      color: i,
+      colorIndex: i,
       datapointIndex: i
     }));
   }
 
-  playDatapoints(datapoints: PlaneDatapoint[]): void {
-    this._sonifier.playDatapoints(datapoints, {invert: true, durationVariable: true});
+  shouldDrawTitle(): boolean {
+    return this._type === 'donut'
+      ? !(!this._paraState.config.chart.isTactileEnabled && this._paraState.config.type.donut.centerLabel === 'title')
+      : super.shouldDrawTitle();
+  }
+
+  playDatapoints(datapoints: PlaneDatapoint[]): Promise<void> {
+    return this._sonifier.playDatapoints(datapoints, {invert: true, durationVariable: true});
   }
 
   playDir(dir: HorizDirection): void {
   }
 
-  playRiff(datapoints: Datapoint[], order?: RiffOrder) {
+  playRiff(datapoints: Datapoint[], order?: RiffOrder): Promise<void> {
+    return Promise.resolve();
   }
 
   protected _sparkBrailleInfo() {

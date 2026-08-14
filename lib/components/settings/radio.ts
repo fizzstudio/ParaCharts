@@ -3,7 +3,7 @@ import { SettingControl } from '.';
 import { ButtonDescriptor } from '@fizz/ui-components';
 
 import { customElement } from 'lit/decorators.js';
-import { html, nothing } from 'lit';
+import { html, css, nothing } from 'lit';
 
 export interface RadioSettingControlOptions {
   buttons: {[key: string]: ButtonDescriptor};
@@ -13,6 +13,19 @@ export interface RadioSettingControlOptions {
 
 @customElement('para-radio-setting-control')
 export class RadioSettingControl extends SettingControl<'radio'> {
+
+  static styles = [
+    //styles,
+    css`
+      span {
+        display: inline-block;
+      }
+      /* ::first-letter only applies to block containers */
+      span::first-letter {
+        text-transform: uppercase;
+      }
+    `
+  ];
 
   protected content() {
     const opts = this.info.options;

@@ -1,8 +1,6 @@
-
-import { Logger, getLogger } from '@fizz/logger';
-import { PastryPlotView, RadialSlice, type RadialDatapointParams } from '.';
-import { type SeriesView } from '../../../data';
-import { Popup } from '../../../popup';
+import { getLogger } from '@fizz/logger';
+import { PastryPlotView, RadialSlice, type RadialDatapointParams } from './pastry_plot_view';
+import { type SeriesView } from '../../../data/series';
 import { SectorShape } from '../../../shape/sector';
 
 export class PiePlotView extends PastryPlotView {
@@ -38,7 +36,7 @@ export class PieSlice extends RadialSlice {
   }
 
   computeLocation(): void {
-    if (this.paraview.paraState.settings.animation.isAnimationEnabled) {
+    if (this.paraview.paraState.config.animation.isAnimationEnabled) {
       this._centralAngle = this.chart.animateRevealComplete
         ? this._params.percentage*360
         : 0;
@@ -64,8 +62,8 @@ export class PieSlice extends RadialSlice {
       r: this.chart.radius,
       centralAngle: this._centralAngle,
       orientationAngle: this._params.accum*360,
-      orientationAngleOffset: this.chart.settings.orientationAngleOffset,
-      annularThickness: this.chart.settings.annularThickness,
+      orientationAngleOffset: this.chart.config.orientationAngleOffset,
+      annularThickness: this.chart.config.annularThickness,
       isPattern: isPattern ? true : false,
       pointerEnter: (e) => {
         this.shouldAddHoverPopup() ? this.addDatapointPopup() : undefined;
@@ -78,9 +76,9 @@ export class PieSlice extends RadialSlice {
       },
     });
     this._shapes.push(slice);
-    const explode = this.chart.settings.explode.split(':').map(idx => parseInt(idx));
+    const explode = this.chart.config.explode.split(':').map(idx => parseInt(idx));
     if (explode.includes(this.index)) {
-      slice.loc = slice.loc.add(slice.orientationVector.multiplyScalar(this.chart.settings.explodeDistance));
+      slice.loc = slice.loc.add(slice.orientationVector.multiplyScalar(this.chart.config.explodeDistance));
     }
     super._createShapes();
   }
@@ -112,8 +110,8 @@ export class PieSlice extends RadialSlice {
       r: this.chart.radius,
       centralAngle: this._params.percentage*360,
       orientationAngle: this._params.accum*360,
-      orientationAngleOffset: this.chart.settings.orientationAngleOffset,
-      annularThickness: this.chart.settings.annularThickness,
+      orientationAngleOffset: this.chart.config.orientationAngleOffset,
+      annularThickness: this.chart.config.annularThickness,
       fill: 'none',
       stroke: 'black',
       strokeWidth: 2

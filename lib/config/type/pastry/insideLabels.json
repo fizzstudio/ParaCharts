@@ -1,0 +1,41 @@
+{
+    "description": "Shared inside-label settings for radial charts.",
+    "settings": {
+        "format": {
+            "label": "Label format",
+            "description": "Label value format",
+            "type": "string",
+            "default": "raw",
+            "control": "textfield",
+            "advanced": true,
+            "panel": "chart"
+        },
+        "position": {
+            "label": "Label position",
+            "description": "Position as percentage of distance along radius",
+            "type": "number",
+            "default": 0.9,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0,
+                "max": 1
+            },
+            "advanced": true,
+            "panel": "chart"
+        },
+        "contents": {
+            "label": "cpanel.tabs.chart.pastry_inside_labels",
+            "description": "Label content template",
+            "type": "string",
+            "default": "category",
+            "control": "dropdown",
+            "controlOptions": {
+                "options": ["", "category", "percentage:(value)"]
+            },
+            "advanced": false,
+            "panel": "chart",
+            "parentView": "controlPanel.tabs.chart.chart"
+
+        }
+    }
+}

@@ -56,6 +56,9 @@ export class SignalManager {
     const results = await f(names.map(name => this._signals[name].promise));
     this.log.info(`got ${signal}: '${names.join(', ')}'`);
     this.clear(...names);
+    if (isAny) {
+      return results;
+    }
     return results.length === 1 ? results[0] : Object.fromEntries(names.map((n, i) => [n, results[i]]));
   }
 

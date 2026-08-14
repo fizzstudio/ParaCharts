@@ -1,10 +1,8 @@
-
+import { type StyleInfo } from 'lit/directives/style-map.js';
+import { type Series } from '@fizz/paramodel';
 import { View } from '../base_view';
 import { type DataLayer } from '../layers';
 import { type SeriesProperties } from '../../state';
-
-import { type StyleInfo } from 'lit/directives/style-map.js';
-import { Series } from '@fizz/paramodel';
 
 /**
  * Abstract base class for datapoint and series views.
@@ -24,7 +22,7 @@ export class DataView extends View {
     public readonly seriesKey: string,
   ) {
     super(chart.paraview);
-    this._series = this.chart.paraview.paraState.model!.atKey(seriesKey)!;
+    this._series = this.chart.model.atKey(seriesKey)!;
   }
 
   get series() {
@@ -63,8 +61,8 @@ export class DataView extends View {
     return this._prevFocus;
   }
 
-  get color(): number {
-    return this.seriesProps.color;
+  get colorIndex(): number {
+    return this.seriesProps.colorIndex;
   }
 
   get styleInfo(): StyleInfo {
@@ -80,13 +78,7 @@ export class DataView extends View {
   }
 
   protected _updateStyleInfo(styleInfo: StyleInfo) {
-    let colorValue = this.chart.paraview.paraState.colors.colorValueAt(this.color);
-    // if (this.paraview.paraState.isVisitedSeries(this.seriesKey)) {
-    //   colorValue = this.chart.paraview.paraState.colors.colorValue('highlight');
-    // }
-    styleInfo.fill = colorValue;
-    styleInfo.stroke = colorValue;
-    styleInfo.strokeWidth = this.paraview.paraState.settings.chart.strokeWidth;
+    styleInfo.strokeWidth = this.paraview.paraState.config.chart.strokeWidth;
   }
 
   async onFocus(_isNewComponentFocus = false) {

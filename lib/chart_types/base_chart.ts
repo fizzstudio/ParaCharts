@@ -14,23 +14,20 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import {
-  type PlotSettings, type DeepReadonly, type Direction, HorizDirection, Setting
-} from '../state/settings_types';
-import { SettingsManager } from '../state/settings_manager';
-import { ParaView } from '../paraview/paraview';
-import { type LegendItem } from '../view/legend';
-import { NavMap, NavLayer, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
 import { Logger, getLogger } from '@fizz/logger';
-import { type ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor } from '../state';
-import { Sonifier } from '../audio/sonifier';
-import { type AxisCoord, AxisOrientation } from '../view/axis';
-
 import { Datapoint } from '@fizz/paramodel';
 import { ChartType, Facet } from '@fizz/paramanifest';
-import { Summarizer, formatBox, Highlight, summarizerFromModel } from '@fizz/parasummary';
+import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
+import { CardinalDirection, ConfigSetting, DeepReadonly } from '../config/config_types';
+import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
+import { ParaView } from '../paraview/paraview';
+import { type LegendItem } from '../view/legend';
+import { AxisOrientation } from '../view/axis';
+import { NavMap, NavNode, NavNodeType, DatapointNavNodeType } from '../view/layers/data/navigation';
+import { type ParaState, PointAnnotation, type SparkBrailleInfo, datapointIdToCursor, SettingsManager } from '../state';
+import { Sonifier } from '../audio/sonifier';
 
-import { Unsubscribe } from '@lit-app/state';
+
 import { executeParaActions, parseActions } from '../paraactions/paraactions';
 
 export const ORIENTATION_SENTENCES = [
@@ -63,12 +60,12 @@ export abstract class BaseChartInfo {
   protected log: Logger = getLogger("BaseChartInfo");
   protected _navMap: NavMap | null = null;
   protected _summarizer!: Summarizer;
-  protected _storeChangeUnsub!: Unsubscribe;
   protected _chordPrevSeriesKey = '';
   protected _sonifier!: Sonifier;
   protected _soniInterval: ReturnType<typeof setTimeout> | null = null;
   protected _soniRiffInterval: ReturnType<typeof setTimeout> | null = null;
   protected _paraView!: ParaView;
+  protected _conciseSummary!: HighlightedSummary;
 
   constructor(protected _type: ChartType, protected _paraState: ParaState) {
     this._init();
@@ -77,66 +74,59 @@ export abstract class BaseChartInfo {
 
   setParaView(paraView: ParaView) {
     this._paraView = paraView;
-    this._sonifier = new Sonifier(this, this._paraState, this._paraView);
+    this._sonifier = new Sonifier(this, this._paraState, this._paraView, this.model!);
   }
 
   protected _addSettingControls() {
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'chart.size.width',
-      label: 'Width',
-      options: {
-        inputType: 'number',
-        min: 1,
-        max: 1000
-      },
-      parentView: 'controlPanel.tabs.chart.general.width',
-    });
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'chart.size.height',
-      label: 'Height',
-      options: {
-        inputType: 'number',
-        min: 1,
-        max: 1000
-      },
-      parentView: 'controlPanel.tabs.chart.general.height',
-    });
-    this._paraState.settingControls.add({
-      type: 'checkbox',
-      key: 'chart.isShowPopups',
-      label: 'Show popups',
-      parentView: 'controlPanel.tabs.chart.popups',
-    });
+    this._paraState.settingControls.insert('chart.width');
+    this._paraState.settingControls.insert('chart.height');
+    this._paraState.settingControls.insert('chart.isShowPopups');
   }
 
   protected _init() {
     this._createNavMap();
-    this._storeChangeUnsub = this._paraState.subscribe(async (key, value) => {
-      if (key === 'data') {
-        this._createSummarizer();
-      }
-    });
-    // We initially get created after the data has loaded, so the above
-    // callback won't run
+    // We initially get created after the data has loaded, so the
+    // postNotice hook won't run
     this._createSummarizer();
   }
 
   protected _createSummarizer(): void {
-    this._summarizer = summarizerFromModel(this._paraState.model!);
+    this._summarizer = summarizerFromModel(this.model!);
+  }
+
+  async setup() {
+    this._conciseSummary = await this._summarizer.getConciseSummary();
   }
 
   get summarizer(): Summarizer {
     return this._summarizer;
   }
 
-  get managedSettingKeys() {
-    return [`type.${this._type}`];
+  get conciseSummary(): HighlightedSummary {
+    return this._conciseSummary;
   }
 
-  get settings(): DeepReadonly<PlotSettings> {
-    return SettingsManager.getGroupLink(this.managedSettingKeys[0], this._paraState.settings);
+  // Overriden by LineChartInfo for combo charts
+  get model() {
+    return this._paraState.model;
+  }
+
+  get managedSettingKeys() {
+    return [`type.${this.configType}`];
+  }
+
+  get configType(): ChartType {
+    const aliases: Partial<Record<ChartType, ChartType>> = {
+      candlestick: 'bar',
+      graph: 'line',
+      lollipop: 'bar',
+      stepline: 'line',
+    };
+    return aliases[this._type] ?? this._type;
+  }
+
+  get config(): DeepReadonly<ConfigGroup> {
+    return SettingsManager.getGroupLink(this.managedSettingKeys[0], this._paraState.config);
   }
 
   get navMap() {
@@ -156,18 +146,30 @@ export abstract class BaseChartInfo {
     return null;
   }
 
+  get secondaryHorizFacet(): Facet | null {
+    return null;
+  }
+
+  get secondaryVertFacet(): Facet | null {
+    return null;
+  }
+
   getFacetForOrientation(orientation: AxisOrientation): Facet | null {
     return orientation === 'horiz' ? this.horizFacet : this.vertFacet;
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+  getSecondaryFacetForOrientation(orientation: AxisOrientation): Facet | null {
+    return orientation === 'horiz' ? this.secondaryHorizFacet : this.secondaryVertFacet;
+  }
+
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
   }
 
   async storeDidChange(key: string, value: any) {
   }
 
   noticePosted(key: string, value: any) {
-    if (this._paraState.settings.ui.isNarrativeHighlightEnabled) {
+    if (this._paraState.config.ui.isTourGuideEnabled) {
       if (key === 'landmarkStart') {
         const highlight: Highlight = value;
         if (highlight.action) {
@@ -188,6 +190,9 @@ export abstract class BaseChartInfo {
         }
       }
     }
+    if (key === 'setData') {
+      this._createSummarizer();
+    }
   }
 
   protected _createNavMap() {
@@ -199,18 +204,22 @@ export abstract class BaseChartInfo {
     root.cursor = chartLandingNode;
   }
 
-  legend(): LegendItem[] {
+  legend(position?: CardinalDirection): LegendItem[] {
     return [];
   }
 
-  popuplegend() {
+  shouldDrawTitle(): boolean {
+    return this._paraState.config.chart.title.isDrawTitle && !!this._paraState.title;
+  }
+
+  popuplegend(): LegendItem[] {
     //const seriesKeys = [...this._paraState.model!.seriesKeys];
     const seriesInNavOrder = this.seriesInNavOrder().map(s => s.key)
     return seriesInNavOrder.map((key, i) => (
       {
         label: '',
         seriesKey: key,
-        color: this._paraState.seriesProperties!.properties(key).color,
+        colorIndex: this._paraState.seriesProperties!.properties(key).colorIndex,
         symbol: this._paraState.seriesProperties!.properties(key).symbol,
       }));
   }
@@ -222,6 +231,16 @@ export abstract class BaseChartInfo {
   async move(dir: Direction) {
     await this._navMap!.cursor.move(dir);
     this._paraState.postNotice('move', { dir, options: this._navMap!.cursor.options });
+  }
+
+  pointerClick(datasetIndex: number, seriesKey: string, datapointIndex: number, isShift: boolean) {
+    // Set quiet = true so that the visit announcement doesn't overwrite
+    // the selection announcement
+    this._navMap!.goTo(this.navDatapointType, {
+      seriesKey,
+      index: datapointIndex
+    }, true);
+    this._paraView.paraState.chartInfo.selectCurrent(isShift);
   }
 
   /**
@@ -241,10 +260,10 @@ export abstract class BaseChartInfo {
       const seriesKey = node.options.seriesKey;
 
       if (node.isNodeType(this.navDatapointType)) {
-        datapoint = this._paraState.model!.atKeyAndIndex(node.options.seriesKey, node.options.index);
+        datapoint = this.model!.atKeyAndIndex(node.options.seriesKey, node.options.index);
       }
-      const depKey = this._paraState.model!.dependentFacetKeys[0]!; // TODO: Assumes exactly 1 dep facet
-      const stats = this._paraState.model!.atKey(seriesKey)!.getFacetStats(depKey)!;
+      const depKey = this.model!.dependentFacetKeys[0]!; // TODO: Assumes exactly 1 dep facet
+      const stats = this.model!.atKey(seriesKey)!.getFacetStats(depKey)!;
       let seriesMatchArray = isMin
         ? stats.min.datapoints
         : stats.max.datapoints;
@@ -273,9 +292,9 @@ export abstract class BaseChartInfo {
    * @param isMin - If true, go the the minimum. Otherwise, go to the maximum
    */
   goChartMinMax(isMin: boolean) {
-    const stats = this._paraState.model!.getFacetStats('y')!;
+    const stats = this.model!.getFacetStats('y')!;
     const matchTarget = isMin ? stats.min.value : stats.max.value;
-    const matchDatapoint = this._paraState.model!.allPoints.find(dp =>
+    const matchDatapoint = this.model!.allPoints.find(dp =>
       dp.facetValueAsNumber('y') === matchTarget)!;
     this._navMap!.goTo(this.navDatapointType, {
       seriesKey: matchDatapoint?.seriesKey,
@@ -284,15 +303,21 @@ export abstract class BaseChartInfo {
     this._paraState.postNotice('goChartMinMax', { isMin, options: this._navMap!.cursor.options });
   }
 
-  protected _composePointSelectionAnnouncement(isExtend: boolean) {
+  switchToOtherData() {
+
+  }
+
+  protected seriesAndVal = (datapointId: string) => {
+    const { seriesKey, index } = datapointIdToCursor(datapointId);
+    const series = this._paraState.model!.atKey(seriesKey)!;
+    const dp = series[index];
+    return `${series.label} (${formatBox(dp.facetBox('x')!, 'raw')}, ${formatBox(dp.facetBox('y')!, 'raw')})`;
+  };
+
+  public composePointSelectionAnnouncement(isExtend: boolean) {
     // This method assumes only a single point was visited when the select
     // command was issued (i.e., we know nothing about chord mode here)
-    const seriesAndVal = (datapointId: string) => {
-      const { seriesKey, index } = datapointIdToCursor(datapointId);
-      const series = this._paraState.model!.atKey(seriesKey)!;
-      const dp = series[index];
-      return `${series.label} (${formatBox(dp.facetBox('x')!, this._paraState.getFormatType('statusBar'))}, ${formatBox(dp.facetBox('y')!, this._paraState.getFormatType('statusBar'))})`;
-    };
+
 
     const newTotalSelected = this._paraState.selectedDatapoints.size;
     const oldTotalSelected = this._paraState.prevSelectedDatapoints.size;
@@ -306,22 +331,22 @@ export abstract class BaseChartInfo {
 
     if (oldTotalSelected === 0) {
       // None were selected; selected 1
-      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}`;
+      return `Selected ${this.seriesAndVal(justSelected.values().toArray()[0])}`;
     } else if (oldTotalSelected === 1 && !newTotalSelected) {
       // 1 was selected; it has been deselected
-      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. No points selected.`;
+      return `Deselected ${this.seriesAndVal(justDeselected.values().toArray()[0])}. No points selected.`;
     } else if (!isExtend && justSelected.size && oldTotalSelected) {
       // Selected 1 new, deselected others
-      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}. 1 point selected.`;
+      return `Selected ${this.seriesAndVal(justSelected.values().toArray()[0])}. 1 point selected.`;
     } else if (!isExtend && newTotalSelected && oldTotalSelected) {
       // Kept 1 selected, deselected others
-      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. 1 point selected.`;
+      return `Deselected ${this.seriesAndVal(justDeselected.values().toArray()[0])}. 1 point selected.`;
     } else if (isExtend && justDeselected.size) {
       // Deselected 1
-      return `Deselected ${seriesAndVal(justDeselected.values().toArray()[0])}. ${newTotSel}`;
+      return `Deselected ${this.seriesAndVal(justDeselected.values().toArray()[0])}. ${newTotSel}`;
     } else if (isExtend && justSelected.size) {
       // Selected 1
-      return `Selected ${seriesAndVal(justSelected.values().toArray()[0])}. ${newTotSel}`;
+      return `Selected ${this.seriesAndVal(justSelected.values().toArray()[0])}. ${newTotSel}`;
     } else {
       return 'ERROR';
     }
@@ -356,7 +381,7 @@ export abstract class BaseChartInfo {
       this._paraState.select();
     }
     const announcement =
-      this._navMap!.cursor.isNodeType('datapoint') ? this._composePointSelectionAnnouncement(isExtend) :
+      this._navMap!.cursor.isNodeType('datapoint') ? this.composePointSelectionAnnouncement(isExtend) :
         this._navMap!.cursor.isNodeType('series') ? this._composeSeriesSelectionAnnouncement() :
           '';
     if (announcement) {
@@ -408,7 +433,7 @@ export abstract class BaseChartInfo {
 
   navToChordLanding() {
     //Add to this list when adding chord support for additional chart types
-    if (['line', 'bar', 'column'].includes(this._paraState.type) && this._paraState.model!.series.length > 1) {
+    if (['line', 'bar', 'column'].includes(this._paraState.type) && this.model!.series.length > 1) {
       if (this._navMap!.cursor.isNodeType(this.navDatapointType)) {
         const seriesKey = this._navMap!.cursor.options.seriesKey;
         this._navMap!.cursor.layer.goTo('chord', this._navMap!.cursor.options.index);
@@ -434,6 +459,9 @@ export abstract class BaseChartInfo {
     }
   }
 
+  didNavToNode(cursor: NavNode) {
+  }
+
   async navRunDidEnd(cursor: NavNode, quiet = false) {
     //const seriesKey = cursor.options.seriesKey ?? '';
     if (cursor.isNodeType('top')) {
@@ -454,17 +482,17 @@ export abstract class BaseChartInfo {
         });
       }
     } else if (cursor.isNodeType('series')) {
+      await this._playCurrentRiff();
       if (!quiet) {
         this._paraState.announce(
           await this._summarizer.getSeriesSummary(cursor.options.seriesKey));
       }
-      this._playCurrentRiff();
       this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
     } else if (cursor.isNodeType(this.navDatapointType)) {
       // NOTE: this needs to be done before the datapoint is visited, to check whether the series has
       //   ever been visited before this point
       const seriesPreviouslyVisited = this._paraState.everVisitedSeries(cursor.options.seriesKey);
-      const datapoint = this._paraState.model!.atKeyAndIndex(cursor.options.seriesKey, cursor.options.index)!;
+      const datapoint = this.model!.atKeyAndIndex(cursor.options.seriesKey, cursor.options.index)!;
       const announcements = [this._summarizer.getDatapointSummary(datapoint, 'statusBar')];
       const annotations = this._paraState.annotations.filter(
         (a) => a.type === 'datapoint' && a.seriesKey === datapoint.seriesKey && a.index === datapoint.datapointIndex
@@ -475,7 +503,7 @@ export abstract class BaseChartInfo {
       }
       const isSeriesChange = !this._paraState.wasVisitedSeries(cursor.options.seriesKey);
       if (isSeriesChange) {
-        announcements[0] = `${this._paraState.model!.atKey(cursor.options.seriesKey)!.getLabel()}: ${announcements[0]}`;
+        announcements[0] = `${this.model!.atKey(cursor.options.seriesKey)!.getLabel()}: ${announcements[0]}`;
         if (!seriesPreviouslyVisited) {
           const seriesSummary = await this._summarizer.getSeriesSummary(cursor.options.seriesKey);
           announcements.push(seriesSummary.text);
@@ -484,24 +512,25 @@ export abstract class BaseChartInfo {
       if (!quiet) {
         this._paraState.announce(announcements);
       }
-      if (this._paraState.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
-        this.playDatapoints([datapoint]);
+      if (this._paraState.config.sonification.isSonificationEnabled) { // && !isNewComponentFocus) {
+        await this.playDatapoints([datapoint]);
       }
       this._paraState.sparkBrailleInfo = this._sparkBrailleInfo();
 
       // this._paraState.highlight(`datapoint-${cursor.options.seriesKey}-${cursor.options.index}`);
 
     } else if (cursor.isNodeType('chord')) {
-      if (this._paraState.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
-        if (this._paraState.settings.sonification.isArpeggiateChords) {
-          this._playCurrentRiff(this._chordRiffOrder(), true);
+      if (this._paraState.config.sonification.isSonificationEnabled) { // && !isNewComponentFocus) {
+        if (this._paraState.config.sonification.isArpeggiateChords) {
+          await this._playCurrentRiff(this._chordRiffOrder(), true);
         } else {
           const datapoints = cursor.datapoints.map(dp =>
-            this._paraState.model!.atKeyAndIndex(dp.seriesKey, dp.datapointIndex)!);
-          this.playDatapoints(datapoints);
+            this.model!.atKeyAndIndex(dp.seriesKey, dp.datapointIndex)!);
+          await this.playDatapoints(datapoints);
         }
       }
     } else if (cursor.isNodeType('sequence')) {
+      await this._playCurrentRiff();
       if (!quiet) {
         this._paraState.announce(
           await this._summarizer.getSequenceSummary({
@@ -511,7 +540,6 @@ export abstract class BaseChartInfo {
           })
         );
       }
-      this._playCurrentRiff();
 
       // this._paraState.highlight(
       //   `sequence-${cursor.options.seriesKey}-${cursor.options.start}-${cursor.options.end}`);
@@ -527,7 +555,7 @@ export abstract class BaseChartInfo {
 
   /** Can be overridden by subclasses. */
   seriesInNavOrder() {
-    return this._paraState.model!.series;
+    return this.model!.series;
   }
 
   didClickBackground() {
@@ -549,20 +577,21 @@ export abstract class BaseChartInfo {
   }
 
   /** Play a riff for the current nav node */
-  protected _playCurrentRiff(order?: RiffOrder, isChord = false) {
-    if (this._paraState.settings.sonification.isSoniEnabled
-      && this._paraState.settings.sonification.isRiffEnabled) {
-      this.playRiff(this._navMap!.cursor.datapoints, order, isChord);
+  protected _playCurrentRiff(order?: RiffOrder, isChord = false): Promise<void> {
+    if (this._paraState.config.sonification.isSonificationEnabled
+      && this._paraState.config.sonification.isRiffEnabled) {
+      return this.playRiff(this._navMap!.cursor.datapoints, order, isChord);
     }
+    return Promise.resolve();
   }
 
-  abstract playRiff(datapoints: Datapoint[], order?: RiffOrder, isChord?: boolean): void;
+  abstract playRiff(datapoints: Datapoint[], order?: RiffOrder, isChord?: boolean): Promise<void>;
 
   protected _chordRiffOrder(): RiffOrder {
     return 'normal';
   }
 
-  abstract playDatapoints(datapoints: Datapoint[]): void;
+  abstract playDatapoints(datapoints: Datapoint[]): Promise<void>;
 
   /**
    * Play all datapoints in the given direction.

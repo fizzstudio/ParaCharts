@@ -1,0 +1,194 @@
+{
+    "description": "Color schemes, palettes, contrast, and vision accessibility.",
+    "family": "color",
+    "settings": {
+        "colorVisionMode": {
+            "label": "cpanel.tabs.colors.cvd_colors",
+            "description": "Color vision deficiency simulation mode",
+            "type": "'normal' | 'deutan' | 'protan' | 'tritan' | 'grayscale'",
+            "default": "normal",
+            "control": "radio",
+            "panel": "color",
+            "parentView": "controlPanel.tabs.color.colorVision",
+            "keywords": ["color"]
+        },
+        "isDarkModeEnabled": {
+            "label": "cpanel.tabs.colors.dark_mode",
+            "description": "Enable dark color scheme",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "panel": "color",
+            "parentView": "controlPanel.tabs.color.colorContrast",
+            "keywords": ["color"]
+        },
+        "contrastLevel": {
+            "label": "cpanel.tabs.colors.contrast",
+            "description": "Contrast adjustment level (0-2)",
+            "type": "number",
+            "default": 1,
+            "control": "slider",
+            "controlOptions": {
+                "min": 0,
+                "max": 1,
+                "step": 0.1,
+                "percent": true,
+                "compact": true
+            },
+            "panel": "color",
+            "parentView": "controlPanel.tabs.color.colorContrastSlider",
+            "keywords": ["color"]
+        },
+        "colorPalette": {
+            "label": "cpanel.tabs.colors.color_palette",
+            "description": "Name of the color palette to use",
+            "type": "string",
+            "default": "diva",
+            "control": "dropdown",
+            "panel": "color",
+            "parentView": "controlPanel.tabs.color.colorPalette",
+            "keywords": ["color"]
+        },
+        "colorMap": {
+            "description": "Comma-separated list of custom color names",
+            "type": "string",
+            "default": "",
+            "advanced": true
+        },
+        "custom1": {
+            "description": "Custom color 1",
+            "type": "string",
+            "default": ""
+        },
+        "custom2": {
+            "description": "Custom color 2",
+            "type": "string",
+            "default": ""
+        },
+        "custom3": {
+            "description": "Custom color 3",
+            "type": "string",
+            "default": ""
+        },
+        "custom4": {
+            "description": "Custom color 4",
+            "type": "string",
+            "default": ""
+        },
+        "custom5": {
+            "description": "Custom color 5",
+            "type": "string",
+            "default": ""
+        },
+        "custom6": {
+            "description": "Custom color 6",
+            "type": "string",
+            "default": ""
+        },
+        "custom7": {
+            "description": "Custom color 7",
+            "type": "string",
+            "default": ""
+        },
+        "custom8": {
+            "description": "Custom color 8",
+            "type": "string",
+            "default": ""
+        },
+        "themeMode": {
+            "label": "cpanel.tabs.colors.color_dialog.color_theme",
+            "description": "Color theme preference: automatic, always light, or always dark",
+            "type": "'auto' | 'light' | 'dark'",
+            "default": "auto",
+            "control": "radio",
+            "controlOptions": {
+                "buttons": {
+                    "auto": { "label": "Auto", "title": "Follow the system color scheme" },
+                    "light":  { "label": "Light",  "title": "Always use the light theme" },
+                    "dark":   { "label": "Dark",   "title": "Always use the dark theme" }
+                }
+            },
+            "panel": "color",
+            "parentView": "controlPanel.tabs.color.colorPrefs.dialog",
+            "keywords": ["color", "theme"]
+        },
+        "themeSource": {
+            "description": "Source of the current theme setting",
+            "type": "ColorPrefSource",
+            "default": "default",
+            "advanced": true
+        },
+        "contrastMode": {
+            "label": "Contrast preference",
+            "description": "Contrast level preference: follow system, lower, normal, higher, or custom",
+            "type": "'system' | 'lower' | 'normal' | 'higher' | 'custom'",
+            "default": "system",
+            "control": "radio",
+            "panel": "color",
+            "parentView": "controlPanel.tabs.color.colorPrefs.contrast",
+            "keywords": ["color", "contrast"]
+        },
+        "contrastSource": {
+            "description": "Source of the current contrast setting",
+            "type": "ColorPrefSource",
+            "default": "default",
+            "advanced": true
+        },
+        "forcedColorsMode": {
+            "description": "How to respond to forced-colors system mode",
+            "type": "'system' | 'respect'",
+            "default": "system",
+            "advanced": true
+        },
+        "invertedColorsMode": {
+            "description": "How to respond to inverted-colors system mode",
+            "type": "'system' | 'adapt'",
+            "default": "system",
+            "advanced": true
+        },
+        "lowVisionColorPalette": {
+            "description": "Use the low-vision high-contrast color palette when low-vision mode is enabled",
+            "type": "boolean",
+            "default": true,
+            "advanced": true
+        },
+        "lowVisionThemeDefault": {
+            "description": "Theme to apply as a mode default when low-vision mode is enabled",
+            "type": "'auto' | 'light' | 'dark'",
+            "default": "dark",
+            "advanced": true
+        },
+        "lowVisionContrastDefault": {
+            "description": "Contrast mode to apply as a mode default when low-vision mode is enabled",
+            "type": "'system' | 'lower' | 'normal' | 'higher' | 'custom'",
+            "default": "higher",
+            "advanced": true
+        },
+        "lowVisionContrastLevel": {
+            "description": "Contrast level for custom low-vision contrast (0-1)",
+            "type": "number",
+            "default": 1,
+            "advanced": true
+        },
+        "backgroundColor": {
+            "description": "Resolved active background color (oklch string, set by ColorPrefManager)",
+            "type": "string",
+            "default": "",
+            "advanced": true
+        },
+        "backgroundColorLight": {
+            "label": "Background color (light mode)",
+            "description": "Explicit background color for light mode as an oklch() string. Empty string uses the theme default.",
+            "type": "string",
+            "default": "",
+            "advanced": true
+        },
+        "backgroundColorDark": {
+            "label": "Background color (dark mode)",
+            "description": "Explicit background color for dark mode as an oklch() string. Empty string uses the theme default.",
+            "type": "string",
+            "default": "",
+            "advanced": true
+        }
+    }
+}

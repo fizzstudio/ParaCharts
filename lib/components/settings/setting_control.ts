@@ -1,19 +1,20 @@
 import { Logger, getLogger } from '@fizz/logger';
 import { ParaComponent } from '../../components';
-import { type SettingControlInfo, type Setting, SettingsManager } from '../../state';
+import { type SettingControlInfo, SettingsManager } from '../../state';
 //import { styles } from '../styles';
 
 import '@fizz/ui-components';
 
 import { html, css, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { ConfigSetting } from '../../config/config_types';
 
 
 export type SettingControlType = 'textfield' | 'dropdown' | 'checkbox' | 'radio' | 'slider' | 'button';
 
 export type SettingControlValueType<T extends SettingControlType> =
   T extends 'textfield' ? string | number :
-  T extends 'dropdown' ? string :
+  T extends 'dropdown' ? string | number :
   T extends 'checkbox' ? boolean :
   T extends 'radio' ? string :
   T extends 'slider' ? number :
@@ -46,10 +47,15 @@ export abstract class SettingControl<T extends SettingControlType> extends ParaC
   ];
 
   protected _updateSetting(key: string, value: SettingControlValueType<SettingControlType>) {
-    this._paraState.updateSettings(draft => SettingsManager.set(key, value, draft));
+    this._paraState.updateConfig(draft => SettingsManager.set(key, value, draft));
+    if (this.info.refresh === 'chart') {
+      this._paraState.refreshParaView();
+    } else if (this.info.refresh === 'description') {
+      this._paraState.setCaption();
+    }
   }
 
-  protected _validateInput(value: Setting, control: EventTarget) {
+  protected _validateInput(value: ConfigSetting, control: EventTarget) {
     //this.log.info('validating', controlInfo.key, value);
     if (this.info.validator) {
       const result = this.info.validator(value);

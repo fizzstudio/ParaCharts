@@ -30,11 +30,15 @@ export class ParaComponent extends LitElement {
   extractStyles(id: string) {
     const stylesheets = this.shadowRoot!.adoptedStyleSheets;
     const out: string[] = [];
+    // Replace all :host and :host(...) occurrences, not just at the start of the
+    // string. The anchored /^:host/ would miss :host inside @media blocks, and
+    // would corrupt :host(.selector) into an invalid #id(.selector) form.
+    const rewriteHost = (css: string) =>
+      css.replace(/:host(?=\b|\()/g, `#${id}`);
     for (const stylesheet of stylesheets) {
       const rules = stylesheet.cssRules;
       for (let i = 0; i < rules.length; i++) {
-        const rule = rules.item(i) as CSSRule;
-        out.push(rule.cssText.replace(/^:host/, `#${id}`));
+        out.push(rewriteHost((rules.item(i) as CSSRule).cssText));
       }
     }
     return out.join('\n');

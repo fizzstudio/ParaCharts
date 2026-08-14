@@ -21,10 +21,10 @@ export class SeriesPropertyManager {
 
   private _seriesList!: SeriesProperties[];
 
-  constructor(private _paraState: ParaState) {
+  constructor(private _paraState: ParaState, private _isCombo = false) {
   }
 
-  private get seriesList() {
+  get seriesList() {
     if (!this._seriesList) {
       this.reset();
     }
@@ -32,10 +32,13 @@ export class SeriesPropertyManager {
   }
 
   reset() {
-    this._seriesList = this._paraState.model!.series.map((series, i) =>
+    const model = this._isCombo ? this._paraState.comboModel : this._paraState.model;
+    this._seriesList = model!.series.map((series, i) =>
       new SeriesProperties(
         series.key,
-        this._paraState.colors.wrapColorIndex(i),
+        this._paraState.colors.wrapColorIndex(this._isCombo
+          ? i + this._paraState.seriesProperties.seriesList.length
+          : i),
         this._paraState.symbols.symbolAt(i)));
   }
 
@@ -51,6 +54,6 @@ export class SeriesPropertyManager {
 
 export class SeriesProperties {
 
-  constructor(public readonly key: string, public color: number, public symbol: DataSymbolType) { }
+  constructor(public readonly key: string, public colorIndex: number, public symbol: DataSymbolType) { }
 
 }

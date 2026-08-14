@@ -15,25 +15,17 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { type TemplateResult, svg, nothing } from 'lit';
-import { svg as staticSvg, StaticValue } from 'lit/static-html.js';
+import { svg as staticSvg } from 'lit/static-html.js';
 import { ref } from 'lit/directives/ref.js';
 import { StyleInfo, styleMap } from 'lit/directives/style-map.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
-import { type Setting } from '../state';
-import { type Shape } from './shape/shape';
 import { Logger, getLogger } from '@fizz/logger';
-
-/*import {
-  HotkeyActionManager, EventActionManager, type KeyRegistrations, KeymapManager,
-  type KeyDetails
-} from '../input';
-import { TodoEvent, type Actions } from '../input/actions';
-import { type HotkeyInfo } from '../input/defaultactions';*/
-import { fixed } from '../common/utils';
-import { ParaView } from '../paraview';
+import { type Shape } from './shape/shape';
+import { type ViewContext } from './view_context';
 import { Vec2 } from '../common/vector';
-import { Popup } from './popup';
-import { HIGHLIGHT_PADDING } from '../common';
+import { type Popup } from './popup';
+import { HIGHLIGHT_PADDING, fixed } from '../common';
+import { type ConfigSetting } from '../config/config_types';
 
 export type SnapLocation = 'start' | 'end' | 'center';
 
@@ -242,10 +234,8 @@ export class View extends BaseView {
   protected _isObserveNotices = false;
   protected _popup?: Popup;
 
-  constructor(public readonly paraview: ParaView) {
+  constructor(public readonly paraview: ViewContext) {
     super();
-    //this._setActions();
-    //this.updateKeymap();
   }
 
   get id() {
@@ -736,9 +726,9 @@ export class View extends BaseView {
   }
 
   shouldAddHoverPopup() {
-    if (this.paraview.paraState.settings.chart.isShowPopups
-      && this.paraview.paraState.settings.popup.activation === "onHover"
-      && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled) {
+    if (this.paraview.paraState.config.chart.isShowPopups
+      && this.paraview.paraState.config.popup.activation === "onHover"
+      && !this.paraview.paraState.config.ui.isTourGuideEnabled) {
       return true
     }
     else {
@@ -910,7 +900,18 @@ export class View extends BaseView {
     this.insert(newChild, i);
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting) {
+  find(pred: (child: View) => boolean): View[] {
+    let matches: View[] = [];
+    this._children.forEach(kid => {
+      matches = [...matches, ...kid.find(pred)];
+    });
+    if (pred(this)) {
+      matches.push(this);
+    }
+    return matches;
+  }
+
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {
     this._children.forEach(kid => kid.settingDidChange(path, oldValue, newValue));
   }
 

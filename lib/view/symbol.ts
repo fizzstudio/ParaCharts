@@ -17,186 +17,30 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { View } from './base_view';
 import { fixed } from '../common/utils';
 import { Colors } from '../common/colors';
-import { ParaView } from '../paraview';
+import { type ViewContext } from './view_context';
+import {
+  circleInfo,
+  squareInfo,
+  triangleUpInfo,
+  triangleDownInfo,
+  diamondInfo,
+  plusInfo,
+  xInfo,
+  starInfo,
+  AREA,
+  type ShapeInfo,
+} from './symbol_geometry';
 
 import { svg, nothing } from 'lit';
 import { styleMap } from 'lit/directives/style-map.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { DatapointView } from './data';
 
 export type DataSymbolShape =
-'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
+  'circle' | 'square' | 'triangle_up' | 'diamond' | 'plus' | 'star' | 'triangle_down' | 'x';
 
 // empty == no fill at all
-export type DataSymbolFill = 'outline' | 'solid' | 'empty';
-export type DataSymbolType = `${DataSymbolShape}.${DataSymbolFill}` | 'default';
-
-interface ShapeInfo {
-  path: string;
-  baseWidth: number;
-  baseHeight: number;
-}
-
-const AREA = 100;
-
-function circleInfo(): ShapeInfo {
-  const r = Math.sqrt(AREA/Math.PI);
-  const d = r*2;
-  return {
-    path: fixed`m0,${-r} a${r},${r} 0 1,1 0,${d} a${r},${r} 0 1,1 0,${-d}`,
-    baseWidth: d,
-    baseHeight: d
-  };
-}
-
-function squareInfo(): ShapeInfo {
-  const side = Math.sqrt(AREA);
-  const apothem = side/2;
-  return {
-    path: `m${-apothem},${-apothem} h${side} v${side} h${-side} z`,
-    baseWidth: side,
-    baseHeight: side
-  };
-}
-
-/*
- * For an equilateral triangle with side length A, the length of a line
- * segment B from one vertex to the opposite edge that bisects the edge
- * is: B = A*sqrt(3/4). We can use this fact to compute the side length of
- * an equilateral triangle with area = 100: approx 15.1967
- * The height of such a triangle will be: approx 13.161
- */
-function triangleUpInfo(): ShapeInfo {
-  // 2*AREA == side*height == side*side*sqrt(3/4)
-  // 2*AREA/sqrt(3/4) == side**2
-  // side == sqrt(2*AREA/sqrt(3/4))
-  const sqrt34 = Math.sqrt(3/4);
-  const side = Math.sqrt(2*AREA/sqrt34);
-  const height = side*sqrt34;
-  return {
-    path: fixed`m${-side/2},${height/2.5} h${side} l${-side/2},${-height} z`,
-    baseWidth: side,
-    baseHeight: height
-  };
-}
-
-function triangleDownInfo(): ShapeInfo {
-  const sqrt34 = Math.sqrt(3/4);
-  const side = Math.sqrt(2*AREA/sqrt34);
-  const height = side*sqrt34;
-  return {
-    path: fixed`m${-side/2},-${height/2.5} h${side} l${-side/2},${height} z`,
-    baseWidth: side,
-    baseHeight: height
-  };
-}
-
-function diamondInfo(): ShapeInfo {
-  const side = Math.sqrt(AREA);
-  const radius = Math.sqrt(2*side**2)/2;
-  return {
-    path: fixed`
-      m0,-${radius}
-      l${radius},${radius}
-      l-${radius},${radius}
-      l-${radius},-${radius} z`,
-    baseWidth: radius*2,
-    baseHeight: radius*2
-  };
-}
-
-/*
- * The plus is made up of 5 squares, each with area AREA/5. So the side of
- * each small square is sqrt(AREA/5).
- */
-function plusInfo(): ShapeInfo {
-  const squareArea = AREA/5;
-  const side = Math.sqrt(squareArea);
-  return {
-    path: fixed`
-      m${-side*1.5},${side/2}
-      h${side}
-      v${side}
-      h${side}
-      v${-side}
-      h${side}
-      v${-side}
-      h${-side}
-      v${-side}
-      h${-side}
-      v${side}
-      h${-side} z`,
-    baseWidth: side*3,
-    baseHeight: side*3
-  };
-}
-
-function xInfo(): ShapeInfo {
-  const squareArea = AREA/5;
-  const side = Math.sqrt(squareArea);
-  const squareCircumRad = Math.sqrt(2*side**2)/2;
-  return {
-    path: fixed`
-      m-${squareCircumRad},0
-      l-${squareCircumRad},-${squareCircumRad}
-      l${squareCircumRad},-${squareCircumRad}
-      l${squareCircumRad},${squareCircumRad}
-      l${squareCircumRad},-${squareCircumRad}
-      l${squareCircumRad},${squareCircumRad}
-      l-${squareCircumRad},${squareCircumRad}
-      l${squareCircumRad},${squareCircumRad}
-      l-${squareCircumRad},${squareCircumRad}
-      l-${squareCircumRad},-${squareCircumRad}
-      l-${squareCircumRad},${squareCircumRad}
-      l-${squareCircumRad},-${squareCircumRad} z`,
-    baseWidth: squareCircumRad*3,
-    baseHeight: squareCircumRad*3
-  };
-}
-
-/**
- * Generate the perimeter of a non-regular pentagram, specifying the
- * area occupied by the inner pentagon vs the outer triangles.
- */
-function starInfo(): ShapeInfo {
-  const pentArea = AREA/2;
-  const t = Math.sqrt(pentArea/1.72); // pentagon side length
-  const triArea = (100 - pentArea)/5;
-  const h = triArea*2/t;                // triangle height
-  const s = Math.sqrt((t/2)**2 + h**2); // triangle side
-  const triPeakAngle = 2*180*Math.atan((t/2)/h)/Math.PI;
-  // NB: This may be > 180!
-  const interTriAngle = triPeakAngle + 72;
-  const alpha = interTriAngle - triPeakAngle/2 - 90;
-  const m = Math.cos(alpha*Math.PI/180)*s;
-  const n = Math.sin(alpha*Math.PI/180)*s;
-  const beta = 180 - 90 - alpha;
-  const gamma = 180 - beta - triPeakAngle;
-  const delta = 180 - 90 - gamma;
-  const epsilon = interTriAngle - delta;
-  const p = Math.sin(gamma*Math.PI/180)*s;
-  const q = Math.cos(gamma*Math.PI/180)*s;
-  const u = Math.cos(epsilon*Math.PI/180)*s;
-  const v = Math.sin(epsilon*Math.PI/180)*s;
-  const w = Math.sin(interTriAngle/2*Math.PI/180)*s;
-  const z = Math.cos(interTriAngle/2*Math.PI/180)*s;
-  const pentApothem = 0.6682*t; // dist from pentagon center to middle of side
-  return {
-    path: fixed`
-      m-${t/2},-${pentApothem}
-      l${t/2},-${h}
-      l${t/2},${h}
-      l${m},${n}
-      l-${p},${q}
-      l${u},${v}
-      l-${w},-${z}
-      l-${w},${z}
-      l${u},-${v}
-      l-${p},-${q} z`,
-    baseWidth: m*2 + t,
-    baseHeight: h + n + + q + v
-  }
-}
+export type DataSymbolFillType = 'outline' | 'solid' | 'empty';
+export type DataSymbolType = `${DataSymbolShape}.${DataSymbolFillType}` | 'default';
 
 const triSide = 15.1967;
 const triHeight = 13.161;
@@ -218,23 +62,23 @@ function starPath() {
   */
   const PHI = 1.618; // golden ratio
   const t = 4.165;  // inner pentagon side length
-  const s = PHI*t;  // equilateral side length of triangles pointing out from pentagon
-  const pentCircumRad = 0.8507*t; // dist from pentagon center to pentagon vert
-  const pentApothem = 0.6682*t; // dist from pentagon center to middle of side
-  const h = Math.sqrt(s**2 - (t/2)**2); // triangle height
-  const n = t*Math.sin(72*Math.PI/180); // vert dist from C to D
-  const m = s*Math.cos(Math.asin(n/s)); // horiz dist from C to D
-  const oppVertDist = s*2 + t; // distance between opposite star outer vertices (e.g., A to E)
-  const height = oppVertDist*Math.cos(18*Math.PI/180); // total height of star
+  const s = PHI * t;  // equilateral side length of triangles pointing out from pentagon
+  const pentCircumRad = 0.8507 * t; // dist from pentagon center to pentagon vert
+  const pentApothem = 0.6682 * t; // dist from pentagon center to middle of side
+  const h = Math.sqrt(s ** 2 - (t / 2) ** 2); // triangle height
+  const n = t * Math.sin(72 * Math.PI / 180); // vert dist from C to D
+  const m = s * Math.cos(Math.asin(n / s)); // horiz dist from C to D
+  const oppVertDist = s * 2 + t; // distance between opposite star outer vertices (e.g., A to E)
+  const height = oppVertDist * Math.cos(18 * Math.PI / 180); // total height of star
   const q = height - h - n;                    // vert dist from D to E
-  const p = s*Math.sin(Math.acos(q/s));        // horiz dist from D to E
-  const r = s*Math.sin(54*Math.PI/180);        // horiz dist from E to F
+  const p = s * Math.sin(Math.acos(q / s));        // horiz dist from D to E
+  const r = s * Math.sin(54 * Math.PI / 180);        // horiz dist from E to F
   const pentHeight = pentApothem + pentCircumRad;  // pentagon height
   // Traverse vertices clockwise starting with J
   return fixed`
-    m-${t/2},-${pentApothem}
-    l${t/2},-${h}
-    l${t/2},${h}
+    m-${t / 2},-${pentApothem}
+    l${t / 2},-${h}
+    l${t / 2},${h}
     h${s}
     l-${m},${n}
     l${p},${q}
@@ -245,27 +89,22 @@ function starPath() {
   `;
 }
 
-const shapeInfo = {
-  circle: circleInfo(),
-  square: squareInfo(),
-  triangle_up: triangleUpInfo(),
-  triangle_down: triangleDownInfo(),
-  diamond: diamondInfo(),
-  plus: plusInfo(),
-  x: xInfo(),
-  star: starInfo()
-};
+
 
 export interface DataSymbolOptions {
   strokeWidth: number;
   scale: number;
-  color?: number;
+  baseSize: number;
+  colorIndex?: number;
   opacity?: number;
   dashed: boolean;
   lighten?: boolean;
   isClip?: boolean;
+  blackBorder?: boolean;
+  borderStrokeWidth: number;
   pointerEnter?: (e: PointerEvent) => void;
   pointerLeave?: (e: PointerEvent) => void;
+  click?: (e: MouseEvent) => void;
 }
 
 /**
@@ -279,52 +118,53 @@ export class DataSymbol extends View {
   protected _options: DataSymbolOptions;
   protected _defsKey!: string;
   protected _role = '';
-  protected _fill?: DataSymbolFill;
+  protected _fill?: DataSymbolFillType;
   protected _shape?: DataSymbolShape;
+  protected shapeInfo: Partial<Record<DataSymbolShape, ShapeInfo>>;
 
   static fromType(
-    paraview: ParaView,
+    paraview: ViewContext,
     type: DataSymbolType,
     options?: Partial<DataSymbolOptions>,
   ) {
-    let shape: DataSymbolShape, fill: DataSymbolFill;
+    let shape: DataSymbolShape, fill: DataSymbolFillType;
     if (type === 'default') {
       shape = 'circle';
       fill = 'outline';
       options ??= {};
       options.dashed = true;
     } else {
-      [shape, fill] = type.split('.') as [DataSymbolShape, DataSymbolFill];
+      [shape, fill] = type.split('.') as [DataSymbolShape, DataSymbolFillType];
     }
     return new DataSymbol(paraview, shape, fill, options);
   }
 
   constructor(
-    paraview: ParaView,
+    paraview: ViewContext,
     shape: DataSymbolShape,
-    fill: DataSymbolFill,
+    fill: DataSymbolFillType,
     options?: Partial<DataSymbolOptions>,
   ) {
     super(paraview);
     this._options = {
-      strokeWidth: options?.strokeWidth ?? this.paraview.paraState.settings.chart.symbolStrokeWidth,
+      strokeWidth: options?.strokeWidth ?? this.paraview.paraState.config.chart.symbolStrokeWidth,
       scale: options?.scale ?? 1,
-      color: options?.color,
+      baseSize: options?.baseSize ?? 1,
+      colorIndex: options?.colorIndex,
       opacity: options?.opacity,
       dashed: options?.dashed ?? false,
       lighten: options?.lighten ?? false,
       isClip: options?.isClip ?? false,
+      blackBorder: options?.blackBorder ?? false,
+      borderStrokeWidth: options?.borderStrokeWidth ?? 1,
       pointerEnter: options?.pointerEnter,
-      pointerLeave: options?.pointerLeave
+      pointerLeave: options?.pointerLeave,
+      click: options?.click
     };
+    this.shapeInfo = {};
     this.type = `${shape}.${fill}`;
-    this._locOffset.x = this.width/2;
-    this._locOffset.y = this.height/2;
-    this._updateStyleInfo();
-    this._classInfo = {
-      symbol: true,
-      [fill]: true
-    };
+    this._locOffset.x = this.width / 2;
+    this._locOffset.y = this.height / 2;
   }
 
   get type(): DataSymbolType {
@@ -334,42 +174,77 @@ export class DataSymbol extends View {
   set type(type: DataSymbolType) {
     this._type = type;
     const [shape, fill] = type.split('.');
+    const size = this._options.baseSize ?? 1;
     this._shape = shape as DataSymbolShape;
-    this._fill = fill as DataSymbolFill;
-    this._defsKey = `sym-${shape}-${fill}`;
+    this._fill = fill as DataSymbolFillType;
+    this._defsKey = `sym-${shape}-${fill}-${size}`;
     if (!this.paraview.defs[this._defsKey]) {
       this.paraview.addDef(this._defsKey, svg`
         <path
           id=${this._defsKey}
-          d=${shapeInfo[this.shape].path}
+          d=${this._getShapeInfo(this.shape).path}
         />
       `);
     }
     this._updateStyleInfo();
+    this._updateClassInfo();
+  }
+
+  protected _getShapeInfo(shape: DataSymbolShape): ShapeInfo {
+    if (!this.shapeInfo[shape]) {
+      switch (shape) {
+        case 'circle':
+          this.shapeInfo[shape] = circleInfo(this._options.baseSize * AREA);
+          break;
+        case 'square':
+          this.shapeInfo[shape] = squareInfo(this._options.baseSize * AREA);
+          break;
+        case 'triangle_up':
+          this.shapeInfo[shape] = triangleUpInfo(this._options.baseSize * AREA);
+          break;
+        case 'triangle_down':
+          this.shapeInfo[shape] = triangleDownInfo(this._options.baseSize * AREA);
+          break;
+        case 'diamond':
+          this.shapeInfo[shape] = diamondInfo(this._options.baseSize * AREA);
+          break;
+        case 'plus':
+          this.shapeInfo[shape] = plusInfo(this._options.baseSize * AREA);
+          break;
+        case 'x':
+          this.shapeInfo[shape] = xInfo(this._options.baseSize * AREA);
+          break;
+        case 'star':
+          this.shapeInfo[shape] = starInfo(this._options.baseSize * AREA);
+          break;
+      }
+    }
+
+    return this.shapeInfo[shape]!;
   }
 
   get width() {
-    return shapeInfo[this.shape].baseWidth*this._options.scale;
+    return this._getShapeInfo(this.shape).baseWidth * this._options.scale;
   }
 
   get height() {
-    return shapeInfo[this.shape].baseHeight*this._options.scale;
+    return this._getShapeInfo(this.shape).baseHeight * this._options.scale;
   }
 
   get outerBbox() {
     return new DOMRect(
-      this._x - this.width/2 - this._options.scale*this._options.strokeWidth/2,
-      this._y - this.height/2 - this._options.scale*this._options.strokeWidth/2,
-      this.width + this._options.scale*this._options.strokeWidth,
-      this.height + this._options.scale*this._options.strokeWidth
+      this._x - this.width / 2 - this._options.scale * this._options.strokeWidth / 2,
+      this._y - this.height / 2 - this._options.scale * this._options.strokeWidth / 2,
+      this.width + this._options.scale * this._options.strokeWidth,
+      this.height + this._options.scale * this._options.strokeWidth
     );
   }
 
   get shape() {
-    if (this._shape){
+    if (this._shape) {
       return this._shape;
     }
-    else{
+    else {
       return this._type.split('.')[0] as DataSymbolShape;
     }
   }
@@ -383,22 +258,22 @@ export class DataSymbol extends View {
       return this._fill
     }
     else {
-      return this._type.split('.')[1] as DataSymbolFill;
+      return this._type.split('.')[1] as DataSymbolFillType;
     }
   }
 
-  set fill(fill: DataSymbolFill) {
-    this.type = (this._type.split('.')[0] + '.' + fill) as DataSymbolType;
-    this._updateStyleInfo();
+  set fill(fillType: DataSymbolFillType) {
+    this.type = (this._type.split('.')[0] + '.' + fillType) as DataSymbolType;
   }
 
-  get color() {
-    return this._options.color;
+  get colorIndex() {
+    return this._options.colorIndex;
   }
 
-  set color(color: number | undefined) {
-    this._options.color = color;
+  set colorIndex(colorIndex: number | undefined) {
+    this._options.colorIndex = colorIndex;
     this._updateStyleInfo();
+    this._updateClassInfo();
   }
 
   get opacity() {
@@ -433,6 +308,18 @@ export class DataSymbol extends View {
     return sym;
   }
 
+  protected _updateClassInfo() {
+    const numColors = this.paraview.paraState.colors.numSeriesColors;
+    this._classInfo = {
+      symbol: true,
+      [this.fill]: true,
+      ...(this._options.lighten ? { lighten: true } : {}),
+      ...(this._options.colorIndex !== undefined && this._options.colorIndex >= 0
+        ? { [`series-${this._options.colorIndex % numColors}`]: true }
+        : {}),
+    };
+  }
+
   protected _updateStyleInfo() {
     this._styleInfo = {
       strokeWidth: this._options.strokeWidth,
@@ -440,35 +327,22 @@ export class DataSymbol extends View {
     if (this._options.dashed) {
       this._styleInfo.strokeDasharray = '1px 2px';
     }
-    if (this._options.color !== undefined) {
-      if (this.fill === 'solid') {
-        if (this._options.lighten) {
-          const col = this.paraview.paraState.colors.colorValueAt(
-            this._options.color).match(/\d+/g)!.map(Number);
-          //10 and 25 are magic numbers
-          col[1] -= Math.min(10, col[1]);
-          col[2] += Math.min(25, 100 - col[2]);
-          this._styleInfo.fill = `hsl(${col[0]}, ${col[1]}%, ${col[2]}%)`;
-        }
-        else {
-          this._styleInfo.fill = this.paraview.paraState.colors.colorValueAt(
-            this._options.color);
-        }
-      }
-      else if (this.fill === 'outline') {
-        this._styleInfo.fill = 'white';
-      } else {
-        this._styleInfo.fill = 'none';
-      }
-      if (this._options.opacity !== undefined) {
-        this._styleInfo.opacity = this._options.opacity;
-      }
-      this._styleInfo.stroke = this.paraview.paraState.colors.colorValueAt(
-        this._options.color);
+    if (this._options.opacity !== undefined) {
+      this._styleInfo.opacity = this._options.opacity;
     }
   }
 
+  protected _blackBorderStyleInfo() {
+    return {
+      stroke: 'black',
+      strokeWidth: this._options.strokeWidth + this._options.borderStrokeWidth,
+      fill: 'none',
+      pointerEvents: 'none'
+    };
+  }
+
   content() {
+    this._updateClassInfo();
     let transform;
     let shouldTransform = false;
     if (this._options.scale !== 1) {
@@ -476,24 +350,50 @@ export class DataSymbol extends View {
       transform = fixed`translate(${this._x},${this._y})`;
       transform += fixed` scale(${this._options.scale})`;
     }
-    let type = this.paraview.paraState.type
-    if (this.parent instanceof DatapointView){
-      if (this._y < 0 || this._y > this.parent.chart.parent.logicalHeight){
+
+    if (this.parent) {
+      if (this._y < 0 || this._y > this.paraview.documentView!.chartLayers.dataLayer.height) {
         this.hidden = true;
       }
     }
-    return this.hidden ? svg`` : svg`
+    if (this.hidden) return svg``;
+    if (this.paraview.paraState.colors.palette.isPattern && this._options.colorIndex !== undefined) {
+      const index = this._options.colorIndex;
+      const x = this._x - this.width / 2;
+      const y = this._y - this.height / 2;
+      return svg`
+        <rect x=${x} y=${y} width=${this.width} height=${this.height}
+          fill="white" stroke="none" />
+        <rect x=${x} y=${y} width=${this.width} height=${this.height}
+          fill="url(#Pattern${index})" stroke="none"
+          @pointerenter=${this._options.pointerEnter ?? nothing}
+          @pointerleave=${this._options.pointerLeave ?? nothing}
+          @click=${this._options.click ?? nothing} />
+      `;
+    }
+    return svg`
+      ${this._options.blackBorder ? svg`
+        <use
+          href="#${this._defsKey}"
+          style=${styleMap(this._blackBorderStyleInfo())}
+          transform=${shouldTransform ? transform : nothing}
+          x=${shouldTransform ? nothing : this._x}
+          y=${shouldTransform ? nothing : this._y}
+          clip-path=${nothing}
+        />
+      ` : nothing}
       <use
         href="#${this._defsKey}"
         id=${this._id || nothing}
         role=${this._role || nothing}
         style=${Object.keys(this._styleInfo).length ? styleMap(this._styleInfo) : nothing}
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
-        transform=${shouldTransform  ? transform : nothing}
+        transform=${shouldTransform ? transform : nothing}
         x=${shouldTransform ? nothing : this._x}
         y=${shouldTransform ? nothing : this._y}
         @pointerenter=${this._options.pointerEnter ?? nothing}
         @pointerleave=${this._options.pointerLeave ?? nothing}
+        @click=${this._options.click ?? nothing}
         clip-path=${/*this._options.isClip ? 'url(#clip-path)' :*/ nothing}
       />
     `;
@@ -507,7 +407,7 @@ export class DataSymbols {
     'circle', 'square', 'triangle_up', 'diamond', 'plus', 'star', 'triangle_down', 'x'
   ];
 
-  readonly fills: readonly DataSymbolFill[] = [
+  readonly fills: readonly DataSymbolFillType[] = [
     'outline', 'solid'
   ];
 

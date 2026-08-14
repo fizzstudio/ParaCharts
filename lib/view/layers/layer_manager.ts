@@ -14,31 +14,21 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { View } from '../base_view';
-import { fixed, isPointerInbounds } from '../../common/utils';
-import { type Layout } from '../layout';
-import { type DocumentView } from '../document_view';
-import { type CardinalDirection } from '../../state/settings_types';
-import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, FocusLayer } from '.';
-import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, Bar, WaterfallPlotView, VennPlotView } from './data/chart_type';
-import { type AxisCoord } from '../axis';
-//import { StepLineChart } from './stepline';
-//import { LollipopChart } from './lollipop';
-//import { DonutChart } from './donut';
-//import { GaugeChart } from './gauge';
-//import { type Model } from '../data/model';
-
-import { type Interval } from '@fizz/chart-classifier-utils';
-
 import { svg } from 'lit';
-import { HeatMapPlotView } from './data/chart_type';
-import { Histogram } from './data/chart_type/histogram';
+import { View } from '../base_view';
+import { fixed } from '../../common/utils';
+import { type DocumentView } from '../document_view';
+import { type CardinalDirection } from '../../config/config_types';
+import { AnnotationLayer, type DataLayer, HighlightsLayer, SelectionLayer, FocusLayer } from '.';
+import { LinePlotView, ScatterPlotView, BarPlotView, PiePlotView, WaterfallPlotView, VennPlotView, Histogram, HeatMapPlotView } from './data/chart_type';
 import { PopupLayer } from './popup_layer';
-import { ParaView } from '../../paraview';
-
+import { type DataLayerContext } from '../view_context';
+import { BubblePlotView } from './data/chart_type/bubble_plot_view';
+import { ComboPlotView } from './data/chart_type/combo_plot_view';
+import { ChartType } from '@fizz/paramanifest';
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
-export const chartClasses = {
+export const chartClasses: Record<ChartType, any> = {
   bar: BarPlotView,
   column: BarPlotView,
   line: LinePlotView,
@@ -47,15 +37,19 @@ export const chartClasses = {
   heatmap: HeatMapPlotView,
   pie: PiePlotView,
   donut: PiePlotView,
-  gauge: BarPlotView, //GaugeChart,
+  //gauge: BarPlotView, //GaugeChart,
   stepline: LinePlotView, //StepLineChart,
   lollipop: BarPlotView, //LollipopChart
   graph: LinePlotView,
   waterfall: WaterfallPlotView,
-  venn: VennPlotView
+  venn: VennPlotView,
+  bubble: BubblePlotView,
+  combo: ComboPlotView,
+  candlestick: BarPlotView
 };
 
 export class PlotLayerManager extends View {
+  declare public readonly paraview: DataLayerContext;
   declare protected _parent: DocumentView;
 
   protected _logicalWidth!: number;
@@ -71,9 +65,9 @@ export class PlotLayerManager extends View {
   protected _popupLayer!: PopupLayer;
   protected _focusLayer!: FocusLayer;
 
-  constructor(paraview: ParaView, width: number, height: number) {
+  constructor(paraview: DataLayerContext, width: number, height: number) {
     super(paraview);
-    this._orientation = this.paraview.paraState.settings.chart.orientation;
+    this._orientation = this.paraview.paraState.config.chart.orientation;
     this.width = width;
     this.height = height;
     this._canWidthFlex = true;
@@ -219,7 +213,7 @@ export class PlotLayerManager extends View {
   }
 
   private createDataLayers() {
-    const ctor = chartClasses[this.paraview.paraState.type];
+    const ctor = this.paraview.paraState.comboModel ? chartClasses['combo'] : chartClasses[this.paraview.paraState.type];
     let dataLayer: DataLayer;
     if (ctor) {
       dataLayer = new ctor(this.paraview, this._width, this._height, 0, this.paraview.paraState.chartInfo);

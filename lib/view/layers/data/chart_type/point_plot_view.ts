@@ -14,20 +14,15 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { SeriesView } from '../../../data';
-import { PlanePlotView, PlaneDatapointView, PlaneSeriesView } from '.';
-import { AxisInfo } from '../../../../common/axisinfo';
-import { Setting, type PointChartType } from '../../../../state/settings_types';
-
-import { enumerate } from '@fizz/paramodel';
-import { formatBox } from '@fizz/parasummary';
 import { svg } from 'lit';
-import { linearRegression } from 'simple-statistics';
+import { Datapoint, enumerate } from '@fizz/paramodel';
+import { formatBox } from '@fizz/parasummary';
+import { type SeriesView } from '../../../data/series';
+import { linearRegression } from '@fizz/simple-statistics';
 import { View } from '../../../base_view';
-import { strToId } from '@fizz/paramanifest';
 import { Bezier } from '../../../../common';
-import { Logger, getLogger } from '@fizz/logger';
-import { PointChartInfo } from '../../../../chart_types';
+import { PointChartInfo } from '../../../../chart_types/point_chart';
+import { PlanePlotView, PlaneSeriesView, PlaneDatapointView } from './plane_plot_view';
 
 /**
  * Abstract base class for charts that represent data values as points
@@ -40,25 +35,13 @@ export abstract class PointPlotView extends PlanePlotView {
     return this._chartInfo;
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if (['axis.y.maxValue', 'axis.y.minValue'].includes(path)) {
-      // this._axisInfo!.updateYRange();
-      // for (const datapointView of this.datapointViews) {
-      //   datapointView.computeLocation();
-      // }
-      // for (const datapointView of this.datapointViews) {
-      //   datapointView.completeLayout();
-      // }
-      this.paraview.createDocumentView();
-      this.paraview.requestUpdate();
-    }
-    super.settingDidChange(path, oldValue, newValue);
-  }
-
   async storeDidChange(key: string, value: any) {
     await super.storeDidChange(key, value);
-    if (key === 'frontSeries') {
+    if (key === 'frontSeries' && value !== '') {
       this._raiseSeries(value);
+    }
+    else if (key == 'frontDatapoints') {
+      this._raisePoints(value);
     }
   }
 
@@ -75,19 +58,15 @@ export abstract class PointPlotView extends PlanePlotView {
   }
 
   protected _createDatapoints() {
-    const xs: string[] = [];
-    for (const [p, i] of enumerate(this.paraview.paraState.model!.series[0].datapoints)) {
-      xs.push(formatBox(p.facetBox('x')!, this.paraview.paraState.getFormatType(`${this.parent.parent.type as PointChartType}Point`)));
-      const xId = strToId(xs.at(-1)!);
-      // if (this.selectors[i] === undefined) {
-      //   this.selectors[i] = [];
-      // }
-      // this.selectors[i].push(`tick-x-${xId}`);
-    }
-    for (const [col, i] of enumerate(this.paraview.paraState.model!.series)) {
-      const seriesView = this._newSeriesView(col.key);
+    // const xs: string[] = [];
+    // for (const [p, i] of enumerate(this.paraview.paraState.model!.series[0].datapoints)) {
+    //   xs.push(formatBox(p.facetBox('x')!, 'raw'));
+    //   const xId = strToId(xs.at(-1)!);
+    // }
+    for (const [series, i] of enumerate(this.model.series)) {
+      const seriesView = this._newSeriesView(series.key);
       this._chartLandingView.append(seriesView);
-      for (const [value, j] of enumerate(col)) {
+      for (const [value, j] of enumerate(series)) {
         const datapointView = this._newDatapointView(seriesView);
         seriesView.append(datapointView);
         // the `index` property of the datapoint view will equal j
@@ -111,10 +90,41 @@ export abstract class PointPlotView extends PlanePlotView {
     return this.paraview.ref<SVGGElement>(`series.${series}`);
   }
 
+  datapointRef(datapoint: Datapoint) {
+    const id = this.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!.id;
+    const ref = this.paraview.ref<SVGGElement>(`${id}`);
+    return ref;
+  }
+
   _raiseSeries(series: string) {
+    this._resetFrontedDatapoints();
     this.log.info('RAISING', series);
     const seriesG = this.seriesRef(series).value!;
     this.dataset.append(seriesG);
+  }
+
+  _raisePoints(datapoints: Datapoint[]) {
+    this._resetFrontedDatapoints();
+    for (let datapoint of datapoints) {
+      const datapointG = this.datapointRef(datapoint).value!;
+      if (datapointG) {
+        this.dataset.append(datapointG);
+      }
+    }
+  }
+
+  _resetFrontedDatapoints() {
+    let datapointIndex = 0;
+    for (let i = 0; i < this.dataset.children.length; i++) {
+      const child = this.dataset.children[i];
+      if (child.role == 'datapoint') {
+        const seriesKey = this.paraview.paraState.frontDatapoints[datapointIndex].seriesKey;
+        const series = this.seriesRef(seriesKey).value!;
+        series.append(child)
+        datapointIndex++;
+        i--;
+      }
+    }
   }
 
   getDatapointGroupBbox(labelText: string) {
@@ -162,12 +172,15 @@ export class PointDatapointView extends PlaneDatapointView {
   }
 
   get width() {
-    const axisDivisions = this.paraview.paraState.model!.series[0].length - 1;
-    return this.chart.width / axisDivisions;
+    return this.chart.width / this._axisDivisions;
   }
 
   get height() {
     return 0;
+  }
+
+  protected get _axisDivisions(): number {
+    return this.chart.model.series[0].length - 1;
   }
 
   get _selectedMarkerX() {
@@ -187,22 +200,22 @@ export class PointDatapointView extends PlaneDatapointView {
   }
 
   computeY() {
-    const yInterval = this.chart.chartInfo.yInterval!;
-    const pxPerYUnit = this.chart.height / (yInterval.end - yInterval.start);
-    return this.chart.height - (this.datapoint.facetValueNumericized('y')! - yInterval.start) * pxPerYUnit;
+    const yRange = this.chart.chartInfo.yRangeInfo!;
+    const pxPerYUnit = this.chart.height / (yRange.interval.end - yRange.interval.start);
+    return this.chart.height - (this.datapoint.facetValueNumericized('y')! - yRange.interval.start) * pxPerYUnit;
   }
 
   computeLocation() {
     this._x = this.computeX();
-    if (this.paraview.paraState.settings.animation.isAnimationEnabled && this.paraview.paraState.settings.animation.animationType == 'yAxis') {
-      if (this.paraview.paraState.settings.animation.animationOrigin === 'initialValue') {
+    if (this.paraview.paraState.config.animation.isAnimationEnabled && this.paraview.paraState.config.animation.animationType === 'yAxis') {
+      if (this.paraview.paraState.config.animation.animationOrigin === 'initialValue') {
         this._animStartState.y = (this._parent.children[0] as PointDatapointView).computeY();
-      } else if (this.paraview.paraState.settings.animation.animationOrigin === 'baseline') {
+      } else if (this.paraview.paraState.config.animation.animationOrigin === 'baseline') {
         this._animStartState.y = this.chart.height;
-      } else if (this.paraview.paraState.settings.animation.animationOrigin === 'top') {
+      } else if (this.paraview.paraState.config.animation.animationOrigin === 'top') {
         this._animStartState.y = 0;
       } else {
-        this._animStartState.y = this.paraview.paraState.settings.animation.animationOriginValue;;
+        this._animStartState.y = this.paraview.paraState.config.animation.animationOriginValue;
       }
       this._animEndState.y = this.computeY();
       this._y = this._animStartState.y;
@@ -214,7 +227,7 @@ export class PointDatapointView extends PlaneDatapointView {
   }
 
   beginAnimStep(bezT: number, linearT: number): void {
-    if (this.paraview.paraState.settings.animation.animationType == 'xAxis') {
+    if (this.paraview.paraState.config.animation.animationType === 'xAxis') {
       if (linearT + .01 >= this.x / this.chart.width && !this._isAnimating && !this._hasAnimated) {
         this.popInAnimation()
       }
@@ -240,7 +253,7 @@ export class PointDatapointView extends PlaneDatapointView {
         start = timestamp;
       }
       const elapsed = timestamp - start;
-      const revealTime = Math.max(1, this.paraview.paraState.settings.animation.popInAnimateRevealTimeMs);
+      const revealTime = Math.max(1, this.paraview.paraState.config.animation.popInAnimateRevealTimeMs);
       const t = Math.min(elapsed / revealTime, 1);
       const bezT = bez.eval(t)!;
       this._baseSymbolScale = bezT * .25 + .75

@@ -1,11 +1,9 @@
-
-import { DatapointView } from '../../data';
-import { type ParaState } from '../../../state';
-import { type Direction } from '../../../state';
-import { DataLayer } from './data_layer';
-import { clusterObject } from '@fizz/clustering';
-import { BaseChartInfo } from '../../../chart_types';
+import { type clusterObject } from '@fizz/clustering';
 import { type Datapoint } from '@fizz/paramodel';
+import { type ParaState } from '../../../state';
+import { type Direction } from '../../../config/config_types';
+import { type BaseChartInfo } from '../../../chart_types';
+
 
 const oppositeDirs: Record<Direction, Direction> = {
   up: 'down',
@@ -16,7 +14,8 @@ const oppositeDirs: Record<Direction, Direction> = {
   out: 'in'
 };
 
-export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence' | 'cluster' | 'scatterpoint';
+export type NavNodeType = 'top' | 'series' | 'datapoint' | 'chord' | 'sequence'
+  | 'cluster' | 'scatterpoint' | 'venn-part';
 export type DatapointNavNodeType = 'datapoint' | 'scatterpoint';
 
 
@@ -28,6 +27,7 @@ export type NavNodeOptionsType<T extends NavNodeType> =
   T extends 'sequence' ? SequenceNavNodeOptions :
   T extends 'cluster' ? ClusterNavNodeOptions :
   T extends 'scatterpoint' ? ScatterPointNavNodeOptions :
+  T extends 'venn-part' ? VennPartNavNodeOptions :
   never;
 
 export interface DatapointCursor {
@@ -35,7 +35,7 @@ export interface DatapointCursor {
   index: number;
 }
 
-export interface TopNavNodeOptions {}
+export interface TopNavNodeOptions { }
 export interface SeriesNavNodeOptions {
   seriesKey: string;
 }
@@ -43,7 +43,7 @@ export interface DatapointNavNodeOptions {
   seriesKey: string;
   index: number;
 }
-export interface ScatterPointNavNodeOptions extends DatapointNavNodeOptions{
+export interface ScatterPointNavNodeOptions extends DatapointNavNodeOptions {
   cluster: number;
 }
 export interface ChordNavNodeOptions {
@@ -63,6 +63,11 @@ export interface ClusterNavNodeOptions {
   datapoints: Datapoint[];
   clustering: clusterObject;
   index: number;
+}
+export interface VennPartNavNodeOptions {
+  seriesKey: string;
+  part: 'only' | 'pair' | 'triple';
+  otherSeriesKey?: string;
 }
 
 function nodeOptionsEq<T extends NavNodeType>(
@@ -151,10 +156,11 @@ export class NavMap {
     } else {
       await this._chart.navRunDidStart(this.cursor);
     }
+    this._chart.didNavToNode(this.cursor);
     this._runTimer = setTimeout(() => {
       this._runTimer = null;
       this._chart.navRunDidEnd(this.cursor, quiet);
-    }, this._paraState.settings.ui.navRunTimeoutMs);
+    }, this._paraState.config.ui.navRunTimeoutMs);
     //this._chart.navCursorDidChange(this.cursor);
   }
 
@@ -202,7 +208,7 @@ export class NavMap {
         end: parseInt(fields[3])
       });
     } else if (nodeType === 'series') {
-      node = layer.get('series', {seriesKey: fields[1]});
+      node = layer.get('series', { seriesKey: fields[1] });
     } else {
       //throw new Error(`selectors are undefined for type '${nodeType}'`);
       return [];
@@ -284,7 +290,7 @@ export class NavLayer {
   ): NavNode<NavNodeType> | undefined {
     const list = this._nodes.get(type);
     if (list) {
-      return this._nodesById.get( (typeof optionsOrIndex === 'number')
+      return this._nodesById.get((typeof optionsOrIndex === 'number')
         ? list[optionsOrIndex]
         // Every item in `optionsOrIndex` must have a corresponding item with
         // the same value in `node.options`, but the converse is not true;
@@ -391,24 +397,25 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
   }
 
   get datapoints() {
+    const model = this._layer.map.chartInfo.model!;
     const datapoints: Datapoint[] = [];
     if (this.isNodeType('datapoint') || this.isNodeType('scatterpoint')) {
       // @ts-ignore
-      datapoints.push(this._paraState.model!.atKeyAndIndex(this._options.seriesKey, this._options.index)!);
+      datapoints.push(model.atKeyAndIndex(this._options.seriesKey, this._options.index)!);
     } else if (this.isNodeType('series')) {
-      const seriesLength = this._paraState.model!.atKey(this._options.seriesKey)!.length;
+      const seriesLength = model.atKey(this._options.seriesKey)!.length;
       for (let i = 0; i < seriesLength; i++) {
-        datapoints.push(this._paraState.model!.atKeyAndIndex(this._options.seriesKey, i)!);
+        datapoints.push(model.atKeyAndIndex(this._options.seriesKey, i)!);
       }
     } else if (this.isNodeType('chord')) {
       datapoints.push(...this._layer.map.chartInfo.seriesInNavOrder().map(series =>
         series.datapoints[this._options.index]));
     } else if (this.isNodeType('sequence')) {
       for (let i = this._options.start; i < this._options.end; i++) {
-        datapoints.push(this._paraState.model!.atKeyAndIndex(this._options.seriesKey, i)!);
+        datapoints.push(model.atKeyAndIndex(this._options.seriesKey, i)!);
       }
     } else if (this.isNodeType('cluster')) {
-      datapoints.push(...this._paraState.model!.atKey(this._options.seriesKey)!.datapoints.filter(dp =>
+      datapoints.push(...model.atKey(this._options.seriesKey)!.datapoints.filter(dp =>
         this._options.datapoints.includes(dp)));
     }
     return datapoints;
@@ -461,11 +468,10 @@ export class NavNode<T extends NavNodeType = NavNodeType> {
   }
 
   allNodes(dir: Direction, type?: NavNodeType) {
-    let count = 1;
-    let cursor: NavNode | undefined = undefined;
+    let cursor: NavNode | undefined = this;
     const all: NavNode[] = [];
     while (true) {
-      cursor = this.peekNode(dir, count++);
+      cursor = cursor.peekNode(dir, 1);
       if (cursor && (!type || type === cursor.type)) {
         if (all.includes(cursor)) {
           // there's a loop in the graph

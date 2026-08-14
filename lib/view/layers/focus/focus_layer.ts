@@ -1,5 +1,5 @@
 
-import { PlotLayer } from '..';
+import { PlotLayer } from '../layer';
 import { FocusRing } from './focus_ring';
 
 import { svg } from 'lit';
@@ -13,8 +13,8 @@ export class FocusLayer extends PlotLayer {
   content() {
     const leaf = this._parent.dataLayer.focusLeaf;
     const ring = this.paraview.paraState.chartInfo.shouldDrawFocusRing
-      && (this.paraview.paraState.settings.ui.isLowVisionModeEnabled
-        || this.paraview.paraState.settings.ui.isFocusRingEnabled)
+      && (this.paraview.paraState.config.ui.isLowVisionModeEnabled
+        || this.paraview.paraState.config.ui.isFocusRingEnabled)
       ? new FocusRing(this.paraview, leaf)
       : null;
     return svg`

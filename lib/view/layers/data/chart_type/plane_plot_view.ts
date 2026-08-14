@@ -14,24 +14,20 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
-import { Logger, getLogger } from '@fizz/logger';
+import { getLogger } from '@fizz/logger';
 import {
   DataLayer,
 } from '../data_layer';
-import { PlaneChartInfo, type BaseChartInfo } from '../../../../chart_types';
-import { DatapointView, SeriesView } from '../../../data';
-//import { keymaps } from '../input';
-//import { hotkeyActions } from '../input/defaultactions';
-//import { NOTE_LENGTH } from '../audio/sonifier';
-//import { type Actions, type Action } from '../input/actions';
-
-import { ParaView } from '../../../../paraview';
-import { Setting } from '../../../../state';
-
-import { PlaneDatapoint, Datapoint } from '@fizz/paramodel';
+import { type DataLayerContext } from '../../../view_context';
 import { Popup } from '../../../popup';
 import { PathShape } from '../../../shape';
 import { horizAdjust, Vec2, vertAdjust } from '../../../../common';
+import { ConfigSetting } from '../../../../config/config_types';
+import { SeriesView } from '../../../data/series';
+import { type PlaneChartInfo } from '../../../../chart_types/plane_chart';
+import { DatapointView } from '../../../data/datapoint';
+import { PlaneDatapoint } from '@fizz/paramodel';
+import { type BaseChartInfo } from '../../../../chart_types/base_chart';
 
 export type DatapointViewType<T extends PlaneDatapointView> =
   (new (...args: any[]) => T);
@@ -41,7 +37,7 @@ export type DatapointViewType<T extends PlaneDatapointView> =
  */
 export abstract class PlanePlotView extends DataLayer {
   constructor(
-    paraview: ParaView,
+    paraview: DataLayerContext,
     width: number,
     height: number,
     dataLayerIndex: number,
@@ -63,11 +59,14 @@ export abstract class PlanePlotView extends DataLayer {
     return super.selectedDatapointViews as PlaneDatapointView[];
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
-    if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`].includes(path)) {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
+    if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`, 'legend.isAlwaysDrawLegend',
+      'legend.useDirectLegends', 'legend.itemOrder', 'legend.position'].includes(path)) {
       this.paraview.paraState.createChartInfo();
-      this.paraview.createDocumentView();
-      this.paraview.requestUpdate();
+      this.paraview.paraState.chartInfo.setup().then(() => {
+        this.paraview.createDocumentView();
+        this.paraview.requestUpdate();
+      })
     }
     super.settingDidChange(path, oldValue, newValue);
   }
@@ -75,9 +74,9 @@ export abstract class PlanePlotView extends DataLayer {
   pointerMove() {
     const coords = this.paraview.paraState.pointerCoords;
     const type = this.paraview.paraState.type;
-    if (this.paraview.paraState.settings.chart.isShowPopups
-      && this.paraview.paraState.settings.popup.activation === "onHover"
-      && !this.paraview.paraState.settings.ui.isNarrativeHighlightEnabled
+    if (this.paraview.paraState.config.chart.isShowPopups
+      && this.paraview.paraState.config.popup.activation === "onHover"
+      && !this.paraview.paraState.config.ui.isTourGuideEnabled
     ) {
       if (coords.x > 0 && coords.x < this.width && coords.y > 0 && coords.y < this.height) {
         const points = this.datapointViews;
@@ -85,27 +84,30 @@ export abstract class PlanePlotView extends DataLayer {
         if (['line'].includes(type)) {
           distances = points.map((dp, i) => Number(Math.abs((dp.x - coords.x) ** 2)));
         }
-        else if (['column', 'waterfall'].includes(type)) {
+        else if (['column', 'waterfall', 'histogram'].includes(type)) {
           distances = points.map((dp, i) => Number(Math.abs((dp.x + dp.width / 2 - coords.x) ** 2)));
         }
         else if (['bar'].includes(type)) {
           distances = points.map((dp, i) => Number(Math.abs((dp.x - coords.y) ** 2)));
+        }
+        else if (['heatmap'].includes(type)) {
+          distances = points.map((dp, i) => Number(Math.abs((dp.x + dp.width / 2- coords.x) ** 2 + (dp.y + dp.height / 2 - coords.y) ** 2)));
         }
         else {
           distances = points.map((dp, i) => Number(Math.abs((dp.x - coords.x) ** 2 + (dp.y - coords.y) ** 2)));
         }
         let nearestPoint = points[distances.indexOf(Math.min(...distances))];
         if (nearestPoint.cousins.length > 0) {
-          if (['column'].includes(type)) {
-            nearestPoint = nearestPoint.withCousins.filter(p => p.y < coords.y && p.y + p.height + this.paraview.paraState.settings.type.bar.barGap > coords.y)[0]
+          if (['column', 'histogram'].includes(type)) {
+            nearestPoint = nearestPoint.withCousins.filter(p => p.y < coords.y && p.y + p.height + this.paraview.paraState.config.type.bar.barGap > coords.y)[0]
               ?? nearestPoint.withCousins.sort((a, b) => a.y - b.y)[0];
           }
           else {
             nearestPoint = nearestPoint.withCousins.sort((a, b) => Math.abs(a.y - coords.y) - Math.abs(b.y - coords.y))[0];
           }
         }
-        if (this.paraview.paraState.settings.popup.isShowCrosshair) {
-          if (!this.paraview.paraState.settings.popup.isCrosshairFollowPointer) {
+        if (this.paraview.paraState.config.popup.isShowCrosshair) {
+          if (!this.paraview.paraState.config.popup.isCrosshairFollowPointer) {
             nearestPoint.popup?.remove();
             const isChord = (type == 'line') && (this.paraview.paraState.model!.series.length > 1);
             this.removeDatapointPopup(nearestPoint);
@@ -119,7 +121,7 @@ export abstract class PlanePlotView extends DataLayer {
     }
   }
 
-  makeCrosshairsLocked(datapointViews: DatapointView[], focus?: boolean, chord?: boolean, popup: boolean = true) {
+  makeCrosshairsLocked(datapointViews: PlaneDatapointView[], focus?: boolean, chord?: boolean, popup: boolean = true) {
     const chartInfo = this.chartInfo as PlaneChartInfo;
     const type = this.paraview.paraState.type;
     this.paraview.paraState.crossHairs.splice(0, this.paraview.paraState.crossHairs.length);
@@ -141,7 +143,7 @@ export abstract class PlanePlotView extends DataLayer {
         fill: "black",
         stroke: "black"
       });
-      if (['bar', 'waterfall', 'column'].includes(type)) {
+      if (['bar', 'waterfall', 'column', 'histogram', 'heatmap'].includes(type)) {
         vertLine = new PathShape(this.paraview, {
           points: [new Vec2(nearestPoint.x + nearestPoint.width / 2, 0),
           new Vec2(nearestPoint.x + nearestPoint.width / 2, this.height),],
@@ -214,7 +216,7 @@ export abstract class PlanePlotView extends DataLayer {
         horizLabels.push(horizLabel);
       }
       else {
-        const isColumn = this.paraview.paraState.type === 'column';
+        const isColumn = ['column', 'histogram'].includes(this.paraview.paraState.type);
         const vertLabelText = String(nearestPoint.datapoint.facetBox("x")!.raw);
         const horizLabelText = String(nearestPoint.datapoint.facetBox("y")!.raw);
         const vertLabel = new Popup(this.paraview, {
@@ -267,7 +269,7 @@ export abstract class PlanePlotView extends DataLayer {
     this.paraview.requestUpdate();
   }
 
-  makeCrosshairsAtPointer(nearestPoint: DatapointView) {
+  makeCrosshairsAtPointer(nearestPoint: PlaneDatapointView) {
     const chartInfo = this.chartInfo as PlaneChartInfo;
     const coords = this.paraview.paraState.pointerCoords;
     const isBar = this.paraview.paraState.type == 'bar' ? true : false;
@@ -291,10 +293,10 @@ export abstract class PlanePlotView extends DataLayer {
       fill: "black",
       stroke: "black"
     });
-    const vertProportion = ((this.height - y) / this.height) * (chartInfo.yInterval!.end - chartInfo.yInterval!.start) + chartInfo.yInterval!.start;
+    const vertProportion = ((this.height - y) / this.height) * (chartInfo.yRangeInfo!.interval.end - chartInfo.yRangeInfo!.interval.start) + chartInfo.yRangeInfo!.interval.start;
     let horizText = '';
-    if (chartInfo.xInterval) {
-      horizText = ((x / this.width) * (chartInfo.xInterval.end - chartInfo.xInterval.start) + chartInfo.xInterval.start).toFixed(2);
+    if (chartInfo.xRangeInfo) {
+      horizText = ((x / this.width) * (chartInfo.xRangeInfo.interval.end - chartInfo.xRangeInfo.interval.start) + chartInfo.xRangeInfo.interval.start).toFixed(2);
     }
     else {
       horizText = String(nearestPoint.datapoint.facetBox("x")!.raw);
@@ -351,8 +353,8 @@ export abstract class PlanePlotView extends DataLayer {
     }
     let vertLabel;
     let horizLabel;
-    if (chartInfo.xInterval) {
-      let horizText = ((x / this.width) * (chartInfo.xInterval.end - chartInfo.xInterval.start) + chartInfo.xInterval.start).toFixed(2);
+    if (chartInfo.xRangeInfo) {
+      let horizText = ((x / this.width) * (chartInfo.xRangeInfo.interval.end - chartInfo.xRangeInfo.interval.start) + chartInfo.xRangeInfo.interval.start).toFixed(2);
       vertLabel = new Popup(this.paraview, {
         text: horizText,
         x: x,
@@ -362,8 +364,8 @@ export abstract class PlanePlotView extends DataLayer {
       }, { shape: "box", fill: "hsl(0, 0%, 100%)" });
       vertAdjust(vertLabel);
     }
-    if (chartInfo.yInterval) {
-      const vertProportion = ((this.height - y) / this.height) * (chartInfo.yInterval!.end - chartInfo.yInterval!.start) + chartInfo.yInterval!.start;
+    if (chartInfo.yRangeInfo) {
+      const vertProportion = ((this.height - y) / this.height) * (chartInfo.yRangeInfo.interval.end - chartInfo.yRangeInfo.interval.start) + chartInfo.yRangeInfo.interval.start;
       horizLabel = new Popup(this.paraview, {
         text: vertProportion.toFixed(2),
         x: 0,
@@ -377,7 +379,7 @@ export abstract class PlanePlotView extends DataLayer {
     this.paraview.paraState.crossHairs.push({ id: `id`, popups: [vertLabel, horizLabel, vertLine, horizLine].filter((item): item is PathShape | Popup => item !== undefined) });
   }
 
-  addChordPopup(datapoint: DatapointView, focus?: boolean) {
+  addChordPopup(datapoint: PlaneDatapointView, focus?: boolean) {
     let datapointViews = datapoint.withCousins;
     let text = '';
     for (let dpView of datapointViews) {
@@ -392,7 +394,7 @@ export abstract class PlanePlotView extends DataLayer {
         x: dpView!.x,
         y: dpView!.y,
         id: this.id,
-        color: dpView!.color,
+        colorIndex: dpView!.colorIndex,
         type: "chord",
         items,
         points: datapointViews
@@ -403,6 +405,10 @@ export abstract class PlanePlotView extends DataLayer {
         stroke: "hsl(0, 0%, 0%)"
       });
     focus ? this.paraview.paraState.focusPopups.push(popup) : this.paraview.paraState.popups.push(popup);
+  }
+
+  protected _newSeriesView(seriesKey: string) {
+    return new PlaneSeriesView(this, seriesKey);
   }
   /*
   protected get _eventActions(): Actions<this> {
@@ -474,6 +480,7 @@ type Mutable<Type> = {
  * Abstract base class for a view representing an entire series on an XYChart.
  * @public
  */
+
 export class PlaneSeriesView extends SeriesView {
 
   declare protected _children: PlaneDatapointView[];
@@ -494,6 +501,7 @@ export class PlaneSeriesView extends SeriesView {
  * (e.g., points, bars, etc.).
  * @public
  */
+
 export abstract class PlaneDatapointView extends DatapointView {
 
   declare readonly chart: PlanePlotView;
@@ -505,95 +513,9 @@ export abstract class PlaneDatapointView extends DatapointView {
     super(seriesView);
   }
 
-  protected _addedToParent() {
-    super._addedToParent();
-    // this._extraAttrs = [
-    //   {
-    //     attr: literal`data-series`,
-    //     value: this.series.key
-    //   },
-    //   {
-    //     attr: literal`data-index`,
-    //     value: this.index
-    //   },
-    //   {
-    //     attr: literal`data-label`,
-    //     value:
-    //     formatXYDatapointX(this.datapoint, this.paraview.paraState.getFormatType('domId')),
-    //   },
-    //   {
-    //     attr: literal`data-centroid`,
-    //     value: this.centroid
-    //   }
-    // ];
-  }
-
   // override to get more specific return type
   get datapoint(): PlaneDatapoint {
     return super.datapoint as PlaneDatapoint;
-  }
-
-  // get styleInfo() {
-  //   const styles = super.styleInfo;
-  //   styles['--datapoint-centroid'] = this.centroid;
-  //   return styles;
-  // }
-
-  /*protected get _eventActions(): Actions<this> {
-    return {
-      datapoint_focused: function(focusInfo: FocusInfo) {
-        todo().controller.announce(this.summary(focusInfo));
-      },
-      datapoint_selected: function(selectionInfo: XYSelectionInfo) {
-        todo().controller.announce(this.chart.composeDatapointSelectionAnnouncement(selectionInfo));
-      },
-    };
-  }*/
-
-  //abstract computeLayout(): void;
-
-  /*summary(focusInfo: FocusInfo) {
-    if (focusInfo.visited.length > 1) {
-      return `${this.datapoint.formatX('statusBar')}, all points`;
-    } else {
-      // Don't include the series name unless the previously-visited point
-      // was in a different series
-      const datapoint = this.datapoint.format('statusBar');
-      /*if (!focusInfo.isSeriesChange) {
-        return datapoint;
-      } else if (todo().seriesSummaries[focusInfo.visited[0].series.name!]) {
-        return `${todo().controller.todo.seriesSummaries[focusInfo.visited[0].series.name!]} ${datapoint}`;
-      } else {
-        return `${focusInfo.visited[0].series.name!}: ${datapoint}`;
-      }*/
-  //  }
-  //}
-
-  async onFocus(isNewComponentFocus = false) {
-    await super.onFocus(isNewComponentFocus);
-    // let data = []
-    // for (let point of this.series.rawData){
-    //   data.push(point.y)
-    // }
-    // if (this.paraview.paraState.type == "bar" || this.paraview.paraState.type == "column"){
-    //   this.paraview.paraState.updateSettings(draft => {
-    //   draft.controlPanel.isSparkBrailleBar = true
-    // })};
-    // this.paraview.paraState.sparkBrailleData = data.join(' ');
-    /*todo().deets!.sparkBrailleData = this.series.data.join(' ');
-    if (todo().controller.settingStore.settings.sonification.isSoniEnabled) {
-      this.chart.sonifier.playDatapoints(...visited.map(v => v.datapoint));
-    }
-    setTimeout(() => {
-      this.eventActionManager!.dispatch('datapoint_focused', {
-        visited,
-        isSeriesChange:
-          this.chart.isChordModeEnabled ? false :
-          !(todo().canvas.prevFocusLeaf instanceof DataView) ? true :
-          (todo().canvas.prevFocusLeaf as DataView).series.name !== visited[0].series.name ? true :
-          false
-      });
-    }, NOTE_LENGTH*1000);*/
   }
 
 }

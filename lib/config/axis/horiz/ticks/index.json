@@ -1,0 +1,51 @@
+{
+    "description": "Horizontal axis tick display and styling.",
+    "family": "axis",
+    "settings": {
+        "isDrawTicks":{
+            "description": "Enable drawing of tick marks",
+            "type": "boolean",
+            "default": true
+        },
+        "padding": {
+            "description": "Padding around tick marks",
+            "type": "number",
+            "default": 3
+        },
+        "opacity": {
+            "description": "Opacity of tick marks (0-1)",
+            "type": "number",
+            "default": 1
+        },
+        "strokeWidth": {
+            "description": "Width of tick mark lines",
+            "type": "number",
+            "default": 2
+        },
+        "strokeLinecap": {
+            "description": "End cap style for tick lines",
+            "type": "string",
+            "default": "round"
+        },
+        "length": {
+            "description": "Length of tick marks in pixels",
+            "type": "number",
+            "default": 10
+        },
+        "labelFormat": {
+            "description": "Format for tick labels",
+            "type": "string",
+            "default": "raw"
+        },
+        "step": {
+            "description": "Interval between tick marks",
+            "type": "number",
+            "default": 1
+        },
+        "isOnDatapoint": {
+            "description": "Whether ticks align with data points (bar charts only)",
+            "type": "boolean",
+            "default": true
+        }
+    }
+}

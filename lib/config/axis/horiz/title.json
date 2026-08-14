@@ -1,0 +1,31 @@
+{
+    "description": "Horizontal axis title display and styling.",
+    "family": "axis",
+    "settings": {
+        "isDrawTitle": {
+            "description": "Draw axis title",
+            "type": "boolean",
+            "default": false
+        },
+        "text": {
+            "description": "Title text content",
+            "type": "string",
+            "default": ""
+        },
+        "gap": {
+            "description": "Gap between title and axis",
+            "type": "number",
+            "default": 8
+        },
+        "fontSize": {
+            "description": "Font size for title",
+            "type": "string",
+            "default": "12pt"
+        },
+        "align": {
+            "description": "Text alignment relative to axis",
+            "type": "'start' | 'middle' | 'end'",
+            "default": "middle"
+        }
+    }
+}

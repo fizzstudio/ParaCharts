@@ -1,16 +1,13 @@
-import { AxisInfo, computeLabels } from '../common/axisinfo';
-
-import { ChartType } from "@fizz/paramanifest";
+import { type Datapoint } from '@fizz/paramodel';
+import { type ChartType } from "@fizz/paramanifest";
 import { PlaneChartInfo } from './plane_chart';
-import { type ParaView } from '../paraview';
-import { type NavNode } from '../view/layers';
-import { DocumentView } from '../view/document_view';
 import { type ParaState } from '../state';
 
 export class HeatMapInfo extends PlaneChartInfo {
   protected _resolution!: number;
   protected _data!: Array<Array<number>>;
   protected _grid!: Array<Array<number>>;
+  protected _datapointGrid!: Array<Array<Array<Datapoint>>>;
   protected _maxCount!: number;
 
   constructor(type: ChartType, paraState: ParaState) {
@@ -18,32 +15,35 @@ export class HeatMapInfo extends PlaneChartInfo {
   }
 
   protected _init() {
-    this._resolution = this._paraState.settings.type.heatmap.resolution ?? 20;
-    this._generateHeatmap();
-    const values = this._grid.flat();
-    this._maxCount = Math.max(...values);
-    //this._paraState.clearVisited();
-    //this._paraState.clearSelected();
-    // this._axisInfo = new AxisInfo(this._paraState, {
-    //   xValues: this._paraState.model!.allFacetValues('x')!.map((x) => x.value as number),
-    //   yValues: this._paraState.model!.allFacetValues('y')!.map((x) => x.value as number),
-    // });
+    this._grid = []
+    this._resolution = this._paraState.config.type.heatmap.resolution ?? 20;
+    for (let i = 0; i < this.resolution; i++) {
+      this._grid.push([]);
+    }
+    for (let i = 0; i < this.resolution; i++) {
+      for (let j = 0; j < this.resolution; j++) {
+        this._grid[i][j] = this._paraState.model?.allPoints[j * this.resolution + i].facetValueNumericized("z")!;
+      }
+    }
+    this._maxCount = Math.max(...this.grid.flat());
     // Generate the heat map before creating the nav nodes
+    //const cluster = async () => {
+    //  this._paraState.clusterAnalyses = await this._generateClustering();
+    //(this._paraState.chartInfo as ScatterChartInfo)._clustering = this._paraState.clusterAnalyses;
+    //};
+    //cluster()
     super._init();
   }
 
   protected _addSettingControls(): void {
     super._addSettingControls();
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: 'type.heatmap.resolution',
-      label: 'Resolution',
-      options: {
-        inputType: 'number',
-        min: 5,
-        max: 100
-      },
-      parentView: 'controlPanel.tabs.chart.chart',
+    this._paraState.settingControls.insert('type.heatmap.resolution');
+    const variables = Object.entries(this._paraState.originalManifest!.jim.datasets[0].facets).map(f => f[1].label);
+    this._paraState.settingControls.insert('type.heatmap.xFacet', {
+      options: variables
+    });
+    this._paraState.settingControls.insert('type.heatmap.yFacet', {
+      options: variables
     });
   }
 
@@ -51,20 +51,26 @@ export class HeatMapInfo extends PlaneChartInfo {
     return this._grid;
   }
 
+  get datapointGrid() {
+    return this._datapointGrid;
+  }
+
   get maxCount() {
     return this._maxCount;
+  }
+
+  get resolution() {
+    return this._resolution
   }
 
   protected _createPrimaryNavNodes() {
     super._createPrimaryNavNodes();
     // Create vertical links between datapoints
-    this._navMap!.root.query('series').forEach(seriesNode => {
-      seriesNode.allNodes('right')
-        // skip bottom row
-        .slice(0, -this._resolution).forEach((pointNode, i) => {
+    this._navMap!.root.query('datapoint').slice(0, -this._resolution).forEach(
+      (pointNode, i) => {
         pointNode.connect('down', pointNode.layer.get('datapoint', i + this._resolution)!);
-      });
-    });
+      }
+    )
   }
 
   protected _createNavLinksBetweenSeries() {
@@ -72,123 +78,35 @@ export class HeatMapInfo extends PlaneChartInfo {
     // XXX For the case of a multi-series heatmap, we need to do ... something
   }
 
+  protected _createVerticalNavLinks(): void {
+
+  }
+
   protected _createChordNavNodes() {
 
   }
-
-  protected _datapointSummary(index: number) {
-    // const count = this._grid[index % this._resolution][Math.floor(index/this._resolution)];
-    // const xInfo = this._axisInfo!.xLabelInfo!
-    // const yInfo = this._axisInfo!.yLabelInfo!
-    // const xSpan = xInfo.range! / this._resolution;
-    // const ySpan = yInfo.range! / this._resolution;
-    // const up = (yInfo.max! - ySpan * (Math.floor((index) / this._resolution))).toFixed(2);
-    // const down = (yInfo.max! - ySpan * (Math.floor((index) / this._resolution) + 1)).toFixed(2);
-    // const left = (xInfo.min! + xSpan * ((index) % this._resolution)).toFixed(2);
-    // const right = (xInfo.min! + xSpan * ((index) % this._resolution + 1)).toFixed(2);
-    // return `This block contains ${count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
-    return 'FIXME';
-  }
-
-  async navRunDidEnd(cursor: NavNode, quiet = false) {
-    if (cursor.isNodeType('datapoint')) {
-      if (!quiet) {
-        this._paraState.announce(this._datapointSummary(cursor.options.index));
-      }
+  /*
+    async _generateClustering(): Promise<clusterObject[] | null> {
+      return await (this._paraState.model as PlaneModel).getClusteringAnalysis();
     }
-    //Sam: Most stuff here (summaries, sparkbraille, sonification) is not implemented yet for heatmaps,
-    // I'm overriding to prevent errors, uncomment this as they get added
-    /*
-      const seriesKey = cursor.at(0)?.seriesKey ?? '';
-      if (cursor.type === 'top') {
-        await this.paraview.paraState.asyncAnnounce(this.paraview.summarizer.getChartSummary());
-      } else if (cursor.type === 'series') {
-        this.paraview.paraState.announce(
-          await this.paraview.summarizer.getSeriesSummary(seriesKey));
-        this._playRiff();
-        this.paraview.paraState.sparkBrailleInfo = this._sparkBrailleInfo();
-      } else if (cursor.type === 'datapoint') {
-        // NOTE: this needs to be done before the datapoint is visited, to check whether the series has
-        //   ever been visited before this point
-        const seriesPreviouslyVisited = this.paraview.paraState.everVisitedSeries(seriesKey);
-        const announcements = [this.paraview.summarizer.getDatapointSummary(cursor.at(0)!.datapoint, 'statusBar')];
-        const isSeriesChange = !this.paraview.paraState.wasVisitedSeries(seriesKey);
-        if (isSeriesChange) {
-          announcements[0] = `${seriesKey}: ${announcements[0]}`;
-          if (!seriesPreviouslyVisited) {
-            const seriesSummary = await this.paraview.summarizer.getSeriesSummary(seriesKey);
-            announcements.push(seriesSummary);
-          }
-        }
-        this.paraview.paraState.announce(announcements);
-        if (this.paraview.paraState.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
-          this._playDatapoints([cursor.at(0)!.datapoint]);
-        }
-        this.paraview.paraState.sparkBrailleInfo = this._sparkBrailleInfo();
-      } else if (cursor.type === 'chord') {
-        if (this.paraview.paraState.settings.sonification.isSoniEnabled) { // && !isNewComponentFocus) {
-          if (this.paraview.paraState.settings.sonification.isArpeggiateChords) {
-            this._playRiff(this._chordRiffOrder());
-          } else {
-            this._playDatapoints(cursor.datapointViews.map(view => view.datapoint));
-          }
-        }
-      } else if (cursor.type === 'sequence') {
-        this.paraview.paraState.announce(await this.paraview.summarizer.getSequenceSummary(cursor.options as SequenceNavNodeOptions));
-        this._playRiff();
-      }
-        */
-  }
-
-  protected _generateHeatmap(): Array<Array<number>> {
-    const seriesList = this._paraState.model!.series;
-    this._data = [];
-    for (let series of seriesList) {
-      for (let i = 0; i < series.length; i++) {
-        this._data.push([series[i].facetValueNumericized("x")!, series[i].facetValueNumericized("y")!]);
-      }
+  */
+  /*
+    protected _datapointSummary(xIndex: number, yIndex: number) {
+      const index = yIndex * this.resolution + xIndex;
+      const count = this._grid[index % this._resolution][Math.floor(index / this._resolution)];
+      const xInterval = this.xInterval!;
+      const yInterval = this.yInterval!;
+      const xRange = xInterval.end - xInterval.start;
+      const yRange = yInterval.end - yInterval.start;
+      const xSpan = xRange / this._resolution;
+      const ySpan = yRange / this._resolution;
+      const up = (yInterval.end - ySpan * (Math.floor((index) / this._resolution))).toFixed(2);
+      const down = (yInterval.end - ySpan * (Math.floor((index) / this._resolution) + 1)).toFixed(2);
+      const left = (xInterval.start + xSpan * ((index) % this._resolution)).toFixed(2);
+      const right = (xInterval.start + xSpan * ((index) % this._resolution + 1)).toFixed(2);
+      return `This block contains ${count} datapoints. It spans x values from ${left} to ${right}, and y values from ${down} to ${up}`
     }
-
-    const y: Array<number> = [];
-    const x: Array<number> = [];
-
-    for (const point of this._data) {
-      x.push(point[0]);
-      y.push(point[1]);
-    }
-    const xLabels = computeLabels(Math.min(...this._paraState.model!.allFacetValues('x')!.map((x) => x.value as number)),
-      Math.max(...this._paraState.model!.allFacetValues('x')!.map((x) => x.value as number)), false);
-    const yLabels = computeLabels(Math.min(...this._paraState.model!.allFacetValues('y')!.map((x) => x.value as number)),
-      Math.max(...this._paraState.model!.allFacetValues('y')!.map((x) => x.value as number)), false);
-
-    let yMax: number = yLabels.max!;
-    let xMax: number = xLabels.max!;
-    let yMin: number = yLabels.min!;
-    let xMin: number = xLabels.min!;
-
-    xMax += (xMax - xMin) / 10;
-    xMin -= (xMax - xMin) / 10;
-
-    const grid: Array<Array<number>> = [];
-
-    for (let i = 0; i < this.resolution; i++) {
-      grid.push([]);
-      for (let j = 0; j < this.resolution; j++) {
-        grid[i].push(0);
-      }
-    }
-    for (const point of this._data) {
-      const xIndex: number = Math.floor((point[0] - xMin) * this.resolution / (xMax - xMin));
-      const yIndex: number = Math.floor((point[1] - yMin) * this.resolution / (yMax - yMin));
-      grid[xIndex][this.resolution - yIndex - 1]++;
-    }
-    this._grid = grid;
-    return grid;
-  }
-
-  get resolution() {
-    return this._resolution
-  }
+    */
 
   goSeriesMinMax(isMin: boolean): void {
 

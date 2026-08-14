@@ -1,0 +1,26 @@
+{
+    "description": "Grid line display settings.",
+    "family": "grid",
+    "settings": {
+        "isDrawHorizLines": {
+            "description": "Draw horizontal grid lines",
+            "type": "boolean",
+            "default": true
+        },
+        "isDrawVertLines": {
+            "description": "Draw vertical grid lines",
+            "type": "boolean",
+            "default": true
+        },
+        "isDrawHorizAxisOppositeLine": {
+            "description": "Draw line opposite horizontal axis",
+            "type": "boolean",
+            "default": true
+        },
+        "isDrawVertAxisOppositeLine": {
+            "description": "Draw line opposite vertical axis",
+            "type": "boolean",
+            "default": true
+        }
+    }
+}

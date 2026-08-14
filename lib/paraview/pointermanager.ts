@@ -1,6 +1,4 @@
 import { Logger, getLogger } from '@fizz/logger';
-import { Popup } from '../view/popup';
-
 import { type ParaView } from './paraview';
 
 interface BasePointerDetails {
@@ -102,6 +100,9 @@ export class PointerEventManager {
    * @param event - The event on the element.
    */
   handleMove(event: PointerEvent) {
+    if (!this._paraView?.documentView?.chartLayers) {
+      return;
+    }
     const target = event.target as SVGGraphicsElement;
     // To avoid "implicit pointer capture", where the event listener element prevents the event target
     // from changing to a another element, even a child element, se must explicitly release the pointer
@@ -188,8 +189,8 @@ export class PointerEventManager {
    * Set selected element and add a highlight box.
    * @param target - The element to be selected; deselects if absent or `null`.
    */
-  protected async _selectElement(target: SVGGraphicsElement, isAdd?: boolean) {
-    if (this._paraView.paraState.settings.ui.isNarrativeHighlightEnabled) return;
+  protected async _selectElement(target: SVGGraphicsElement, isShift: boolean) {
+    if (this._paraView.paraState.config.ui.isTourGuideEnabled) return;
     if (target) {
       const datapointEl = target.closest('[role="datapoint"]') as SVGElement;
       if (datapointEl) {
@@ -198,19 +199,16 @@ export class PointerEventManager {
           ? datapointEl.id.slice(0, -4)
           : datapointEl.id;
         const datapointView = this._paraView.documentView!.chartLayers.dataLayer.datapointViewForId(id)!;
-        const chartInfo = this._paraView.paraState.chartInfo;
-        // Set quiet = true so that the visit announcement doesn't overwrite
-        // the selection announcement
-        chartInfo.navMap!.goTo(chartInfo.navDatapointType, {
-          seriesKey: datapointView.seriesKey,
-          index: datapointView.index
-        }, true);
-        this._paraView.paraState.chartInfo.selectCurrent(!!isAdd);
+        this._paraView.paraState.chartInfo.pointerClick(
+          datapointView.datasetIndex, datapointView.seriesKey, datapointView.index, isShift);
       } else {
-        // might have clicked on an axis label, axis tick label or something else we can act on,
-        //  but it's not a data point, so it can't be "selected"
-        this.log.info('not a datapoint!');
-        this._paraView.paraState.chartInfo.didClickBackground();
+        const clickableEl = target.closest('[role="clickable"]')
+        if (!clickableEl) {
+          // might have clicked on an axis label, axis tick label or something else we can act on,
+          //  but it's not a data point, so it can't be "selected"
+          this.log.info('not a datapoint!');
+          this._paraView.paraState.chartInfo.didClickBackground();
+        }
       }
     }
   }

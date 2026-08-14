@@ -1,0 +1,24 @@
+{
+    "description": "Pie chart settings.",
+    "ref": "type.pastry",
+    "settings": {
+        "annularThickness": {
+            "default": 1
+        },
+        "centerLabel": {
+            "default": "none"
+        },
+        "centerLabelPadding": {
+            "default": 10
+        },
+        "orientationAngleOffset": {
+            "default": 90
+        },
+        "explode": {
+            "default": ""
+        },
+        "explodeDistance": {
+            "default": 20
+        }
+    }
+}

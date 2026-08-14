@@ -1,12 +1,9 @@
-
-import { ParaComponent } from '../components';
-
-import { Dialog } from '@fizz/ui-components';
-import '@fizz/ui-components';
-
-import { LitElement, html, css, nothing, type PropertyValueMap, type TemplateResult } from 'lit';
+import { html, css, type TemplateResult } from 'lit';
 import { property, state, customElement } from 'lit/decorators.js';
 import { type Ref, ref, createRef } from 'lit/directives/ref.js';
+import { type Dialog } from '@fizz/ui-components';
+import { ParaComponent } from '../components';
+import '@fizz/ui-components';
 
 export interface DialogReturn {
   result: string;

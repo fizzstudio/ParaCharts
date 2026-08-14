@@ -1,0 +1,191 @@
+{
+  "jim": {
+    "datasets": [
+      {
+        "representation": {
+          "type": "chart",
+          "subtype": "line"
+        },
+        "title": "Expenses vs. Revenue",
+        "facets": {
+          "x": {
+            "label": "Year",
+            "variableType": "independent",
+            "measure": "interval",
+            "datatype": "date",
+            "units": "year",
+            "displayType": {
+              "type": "axis",
+              "orientation": "horizontal"
+            }
+          },
+          "y": {
+            "label": "Expenses and revenue in millions",
+            "variableType": "dependent",
+            "measure": "ratio",
+            "datatype": "number",
+            "multiplier": 1000000,
+            "units": "U.S. dollar",
+            "displayType": {
+              "type": "axis",
+              "orientation": "vertical"
+            }
+          }
+        },
+        "series": [
+          {
+            "key": "Expenses",
+            "topic": {
+              "baseQuantity": "expenses",
+              "baseKind": "dimensioned"
+            },
+            "label": "Expenses",
+            "records": [
+              {
+                "x": "Q1 1980",
+                "y": "7.66"
+              },
+              {
+                "x": "Q2 1980",
+                "y": "7.76"
+              },
+              {
+                "x": "Q3 1980",
+                "y": "7.56"
+              },
+              {
+                "x": "Q4 1980",
+                "y": "6.77"
+              },
+              {
+                "x": "Q1 1981",
+                "y": "7.4"
+              },
+              {
+                "x": "Q2 1981",
+                "y": "7.64"
+              },
+              {
+                "x": "Q3 1981",
+                "y": "7.09"
+              },
+              {
+                "x": "Q4 1981",
+                "y": "7.24"
+              },
+              {
+                "x": "Q1 1982",
+                "y": "7.59"
+              },
+              {
+                "x": "Q2 1982",
+                "y": "7.69"
+              },
+              {
+                "x": "Q3 1982",
+                "y": "7.52"
+              },
+              {
+                "x": "Q4 1982",
+                "y": "6.87"
+              },
+              {
+                "x": "Q1 1983",
+                "y": "7.08"
+              },
+              {
+                "x": "Q2 1983",
+                "y": "7.3"
+              },
+              {
+                "x": "Q3 1983",
+                "y": "7.1"
+              },
+              {
+                "x": "Q4 1983",
+                "y": "7.2"
+              }
+            ]
+          },
+          {
+            "key": "Revenue",
+            "topic": {
+              "baseQuantity": "revenue",
+              "baseKind": "dimensioned"
+            },
+            "records": [
+              {
+                "x": "Q1 1980",
+                "y": "3.32"
+              },
+              {
+                "x": "Q2 1980",
+                "y": "3.47"
+              },
+              {
+                "x": "Q3 1980",
+                "y": "3.15"
+              },
+              {
+                "x": "Q4 1980",
+                "y": "3.09"
+              },
+              {
+                "x": "Q1 1981",
+                "y": "3.81"
+              },
+              {
+                "x": "Q2 1981",
+                "y": "2.92"
+              },
+              {
+                "x": "Q3 1981",
+                "y": "3.17"
+              },
+              {
+                "x": "Q4 1981",
+                "y": "3.08"
+              },
+              {
+                "x": "Q1 1982",
+                "y": "2.95"
+              },
+              {
+                "x": "Q2 1982",
+                "y": "3.04"
+              },
+              {
+                "x": "Q3 1982",
+                "y": "3.21"
+              },
+              {
+                "x": "Q4 1982",
+                "y": "3.35"
+              },
+              {
+                "x": "Q1 1983",
+                "y": "3.44"
+              },
+              {
+                "x": "Q2 1983",
+                "y": "3.44"
+              },
+              {
+                "x": "Q3 1983",
+                "y": "3.1"
+              },
+              {
+                "x": "Q4 1983",
+                "y": "3.3"
+              }
+            ]
+          }
+        ],
+        "topic": {
+          "baseQuantity": "expenses and revenue",
+          "baseKind": "dimensioned"
+        }
+      }
+    ]
+  }
+}

@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from "@storybook/web-components-vite";
 
 type Story = StoryObj<ChartProps>;
 
-const titleToFilenameMap = familyManifestPathsMap('histogram', false);
+const titleToFilenameMap = familyManifestPathsMap('scatter', false);
 
 const meta = {
   title: "AI-enhanced Charts/Histograms",

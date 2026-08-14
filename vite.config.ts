@@ -41,8 +41,6 @@ export default defineConfig({
   },
 
   test: {
-    dangerouslyIgnoreUnhandledErrors: true,
-
     projects: [
       {
         test: {
@@ -56,10 +54,11 @@ export default defineConfig({
         test: {
           name: 'browser',
           include: ['src/tests/browser/**/*.test.ts'],
+          fileParallelism: false,
           browser: {
             enabled: true,
             provider: 'playwright',
-            name: 'chromium',
+            instances: [{ browser: 'chromium' }],
             headless: true
           }
         }
@@ -89,7 +88,7 @@ export default defineConfig({
       '@fizz/templum',
       'decimal.js',
       'papaparse',
-      'simple-statistics'
+      '@fizz/simple-statistics'
     ]
   }
 });

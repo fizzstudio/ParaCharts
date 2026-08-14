@@ -17,18 +17,20 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { View, Container } from '../base_view';
 import { type Layout } from '../layout';
 import {
-  type Axis, type AxisOrientation,
+  type AxisCoord, type AxisOrientation,
 } from './axis';
 
 import { mapn } from '@fizz/chart-classifier-utils';
 
 import { svg, type TemplateResult } from 'lit';
 import { HorizGridLine, HorizTick, VertGridLine, VertTick } from './rule';
-import { ParaView } from '../../paraview';
-import { HorizCardinalDirection, OrientedAxisSettings, VertCardinalDirection } from '../../state';
+import { type ViewContext } from '../view_context';
+import { HorizCardinalDirection, VertCardinalDirection } from '../../config/config_types';
+import { AxisHorizConfig, AxisVertConfig } from '../../config/config_types';
 
 export interface TickStripOptions {
   orientation: AxisOrientation;
+  coord: AxisCoord;
   length: number;
   tickCount: number;
   // isInterval: boolean;
@@ -49,8 +51,8 @@ export abstract class TickStrip extends Container(View) {
   protected _interval!: number;
   protected _indices: number[] = [];
 
-  constructor(paraview: ParaView,
-    protected _axisSettings: OrientedAxisSettings<AxisOrientation>,
+  constructor(paraview: ViewContext,
+    protected _axisSettings: AxisHorizConfig | AxisVertConfig,
     protected _majorModulus: number,
     protected _options: TickStripOptions
   ) {
@@ -104,6 +106,10 @@ export abstract class TickStrip extends Container(View) {
   protected abstract _createTicks(): void;
   abstract addRules(length: number): void;
 
+  protected _gridLineId(index: number) {
+    return `gridline-${this._options.coord}-${index}`;
+  }
+
 }
 
 /**
@@ -113,8 +119,8 @@ export class HorizTickStrip extends TickStrip {
   protected _ruleXs: number[] = [];
   protected _ruleY = 0;
 
-  constructor(paraview: ParaView,
-    _axisSettings: OrientedAxisSettings<AxisOrientation>,
+  constructor(paraview: ViewContext,
+    _axisSettings: AxisHorizConfig,
     _majorModulus: number,
     _options: TickStripOptions,
   ) {
@@ -165,7 +171,7 @@ export class HorizTickStrip extends TickStrip {
     const isXIntertick = this._options.isChartIntertick && this._options.isFacetIndep;
     this._indices = mapn(this._options.tickCount + (isXIntertick ? 1 : 0), i => i)
       .filter(i => i % this._options.tickStep === 0);
-    if (!this.paraview.paraState.settings.grid.isDrawVertAxisOppositeLine) {
+    if (!this.paraview.paraState.config.grid.isDrawVertAxisOppositeLine) {
       this._indices = isOrthoEast
         ? this._indices.slice(0, -1)
         : this._indices.slice(1);
@@ -192,10 +198,11 @@ export class HorizTickStrip extends TickStrip {
     this._indices.forEach((idx, i) => {
       this.append(new HorizGridLine(
         this._axisSettings.position as VertCardinalDirection,
-        this.paraview, undefined, length, i === this._options.zeroIndex));
+        this.paraview, undefined, length, i === this._options.zeroIndex,
+        this._gridLineId(idx), this._options.coord));
       this._children.at(-1)!.x = this._ruleXs[i];
       this._children.at(-1)!.y = this._ruleY;
-      this._children.at(-1)!.hidden = !this.paraview.paraState.settings.grid.isDrawVertLines;
+      this._children.at(-1)!.hidden = !this.paraview.paraState.config.grid.isDrawVertLines;
     });
   }
 }
@@ -208,8 +215,8 @@ export class VertTickStrip extends TickStrip {
   protected _ruleX = 0;
   protected _ruleYs: number[] = [];
 
-  constructor(paraview: ParaView,
-    _axisSettings: OrientedAxisSettings<AxisOrientation>,
+  constructor(paraview: ViewContext,
+    _axisSettings: AxisVertConfig,
     _majorModulus: number,
     _options: TickStripOptions
   ) {
@@ -254,7 +261,7 @@ export class VertTickStrip extends TickStrip {
     this._ruleX = tickLength;
     const isXIntertick = this._options.isChartIntertick && this._options.isFacetIndep;
     this._indices = mapn(this._options.tickCount, i => i);
-    if (!this.paraview.paraState.settings.grid.isDrawHorizAxisOppositeLine) {
+    if (!this.paraview.paraState.config.grid.isDrawHorizAxisOppositeLine) {
       this._indices = isNorth
         ? this._indices.slice(1)
         : this._indices.slice(0, -1);
@@ -284,10 +291,11 @@ export class VertTickStrip extends TickStrip {
         this._axisSettings.position as HorizCardinalDirection,
         // XXX don't use `plotWidth` here
         this.paraview, undefined, length,
-        this._indices.length - i - 1 === this._options.zeroIndex));
+        this._indices.length - i - 1 === this._options.zeroIndex,
+        this._gridLineId(i), this._options.coord));
       this._children.at(-1)!.x = this._ruleX;
       this._children.at(-1)!.y = this._ruleYs[i];
-      this._children.at(-1)!.hidden = !this.paraview.paraState.settings.grid.isDrawHorizLines;
+      this._children.at(-1)!.hidden = !this.paraview.paraState.config.grid.isDrawHorizLines;
     });
   }
 }

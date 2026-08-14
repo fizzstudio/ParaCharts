@@ -26,15 +26,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+import { type PlaneDatapoint, type Model } from '@fizz/paramodel';
 import { OscillatorAudioEngine, type AudioEngine } from '.';
 import { AudioNotificationType } from './AudioEngine';
-import { type Axis } from '../view/axis';
-import { PointDatapointView, type DataLayer } from '../view/layers';
 import { type ParaState } from '../state';
 import { type ParaView } from '../paraview';
-import { PlaneDatapoint } from '@fizz/paramodel';
-import { BaseChartInfo } from '../chart_types';
-import { AxisLabelInfo } from '../common/axisinfo';
+import { type BaseChartInfo } from '../chart_types';
 import { SoniPoint } from './soni_point';
 
 export const HERTZ = [
@@ -129,7 +126,8 @@ export class Sonifier {
   constructor(
     protected _chartInfo: BaseChartInfo,
     protected _paraState: ParaState,
-    protected _paraView: ParaView
+    protected _paraView: ParaView,
+    protected _model: Model
   ) {}
 
   /**
@@ -152,8 +150,8 @@ export class Sonifier {
    */
   private _getHertzRange() {
     return HERTZ.slice(
-      this._paraState.settings.sonification.hertzLower,
-      this._paraState.settings.sonification.hertzUpper
+      this._paraState.config.sonification.hertzLower,
+      this._paraState.config.sonification.hertzUpper
     );
   }
 
@@ -168,20 +166,21 @@ export class Sonifier {
     cont?: boolean,
     invert?: boolean,
     durationVariable?: boolean
-  } = {}) {
+  } = {}): Promise<void> {
     datapoints.forEach((datapoint, i) => {
       const dpView = this._paraView.documentView?.chartLayers.dataLayer.datapointView(datapoint.seriesKey, datapoint.datapointIndex)!;
-      if (dpView instanceof PointDatapointView) {
-        dpView.popInAnimation();
-      }
+      dpView.popInAnimation();
     });
-    this.playSoniPoints(datapoints.map(dp => SoniPoint.fromModelDatapoint(dp, this._paraState.model!)), {
-      cont, invert, durationVariable
-    });
+    return this.playSoniPoints(
+      datapoints.map(dp =>
+        SoniPoint.fromModelDatapoint(dp, this._model)),
+        { cont, invert, durationVariable }
+    );
   }
 
   /**
    * Play sonifiable datapoints.
+   * @returns a Promise that resolves when the last note finishes playing.
    */
   playSoniPoints(soniPoints: SoniPoint[], {
     cont = false,
@@ -191,14 +190,15 @@ export class Sonifier {
     cont?: boolean,
     invert?: boolean,
     durationVariable?: boolean
-  } = {}) {
+  } = {}): Promise<void> {
     this._checkAudioEngine();
 
     if (!this._audioEngine) {
-      return;
+      return Promise.resolve();
     }
 
     const hertzes = this._getHertzRange();
+    let maxDuration = 0;
 
     soniPoints.forEach((soniPoint, i) => {
       const xPan =
@@ -232,6 +232,7 @@ export class Sonifier {
         // let pan = calcPan((x - this._chartInfo.axisInfo!.xLabelInfo.min!)
         //   / this._chartInfo.axisInfo!.xLabelInfo.range!);
         this._audioEngine!.playDataPoint(hz, xPan, NOTE_LENGTH);
+        maxDuration = Math.max(maxDuration, NOTE_LENGTH);
       }
       else {
         const yBin = interpolateBin({
@@ -245,61 +246,68 @@ export class Sonifier {
           ? (0.1 + (origY - soniPoint.yMin)/soniPoint.yRange)
           : NOTE_LENGTH;
         this._audioEngine!.playDataPoint(hertzes[yBin], xPan, duration);
+        maxDuration = Math.max(maxDuration, duration);
       }
     });
+
+    return new Promise(resolve => setTimeout(resolve, maxDuration * 1000));
   }
 
   /**
-   * Play an audio notification
+   * Play an audio notification.
    * @param earcon - the type of notification to play
+   * @returns a Promise that resolves when the notification finishes playing.
    */
-  playNotification(earcon?: string) {
-    if (this._paraState.settings.sonification.isNotificationEnabled  ) {
-      this._checkAudioEngine();
-
-      /* istanbul ignore next */
-      if (!this._audioEngine) {
-        return;
-      }
-
-      let notificationType = AudioNotificationType.Annotation;
-      let duration = 0.5;
-      switch (earcon) {
-        case 'annotation':
-          notificationType = AudioNotificationType.Annotation;
-          break;
-
-        case 'bumper':
-          notificationType = AudioNotificationType.Bumper;
-          duration = 0.25;
-          break;
-
-        case 'high':
-          notificationType = AudioNotificationType.High;
-          break;
-
-        case 'low':
-          notificationType = AudioNotificationType.Low;
-          break;
-
-        case 'series':
-          notificationType = AudioNotificationType.Series;
-          duration = 0.3;
-          break;
-
-        case 'intersection':
-          notificationType = AudioNotificationType.Intersection;
-          break;
-
-        case 'threshold':
-          notificationType = AudioNotificationType.Threshold;
-          break;
-
-        default:
-          break;
-      }
-
-      this._audioEngine.playNotification!(notificationType, 0, duration);
+  playNotification(earcon?: string): Promise<void> {
+    if (this._paraState.config.sonification.isNotificationEnabled) {
+      return Promise.resolve();
     }
+
+    this._checkAudioEngine();
+
+    /* istanbul ignore next */
+    if (!this._audioEngine) {
+      return Promise.resolve();
+    }
+
+    let notificationType = AudioNotificationType.Annotation;
+    let duration = 0.5;
+    switch (earcon) {
+      case 'annotation':
+        notificationType = AudioNotificationType.Annotation;
+        break;
+
+      case 'bumper':
+        notificationType = AudioNotificationType.Bumper;
+        duration = 0.25;
+        break;
+
+      case 'high':
+        notificationType = AudioNotificationType.High;
+        break;
+
+      case 'low':
+        notificationType = AudioNotificationType.Low;
+        break;
+
+      case 'series':
+        notificationType = AudioNotificationType.Series;
+        duration = 0.3;
+        break;
+
+      case 'intersection':
+        notificationType = AudioNotificationType.Intersection;
+        break;
+
+      case 'threshold':
+        notificationType = AudioNotificationType.Threshold;
+        break;
+
+      default:
+        break;
+    }
+
+    this._audioEngine.playNotification!(notificationType, 0, duration);
+    return new Promise(resolve => setTimeout(resolve, duration * 1000));
   }
 }

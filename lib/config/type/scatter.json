@@ -1,0 +1,23 @@
+{
+    "description": "Scatter plot settings.",
+    "ref": "type.plane",
+    "family": "scatter",
+    "settings": {
+        "isShowTrendLine": {
+            "label": "cpanel.tabs.chart.scatter_trend_line",
+            "description": "Draw trend/regression line",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.chart"
+        },
+        "isShowOutliers": {
+            "label": "cpanel.tabs.chart.scatter_outliers",
+            "description": "Highlight statistical outliers",
+            "type": "boolean",
+            "default": false,
+            "control": "checkbox",
+            "parentView": "controlPanel.tabs.chart.chart"
+        }
+    }
+}

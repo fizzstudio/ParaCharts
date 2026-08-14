@@ -15,13 +15,13 @@ const meta = {
 export default meta;
 
 export const AiChart51: Story = {
-  name: "Old Faithful Geyser Eruptions (51)",
+  name: "d3 (51)",
   args: {
-    filename: "manifests/scatter-manifest-geyser.json",
+    filename: "manifests/scatter-manifest-d3.json",
     forcecharttype: "scatter",
   },
   play: async ({canvas, userEvent}) => {
-    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/scatter-manifest-geyser.json");
+    const runner = await (new Runner(canvas, userEvent, expect)).loadManifest("manifests/scatter-manifest-d3.json");
     await runner.run();
   }
 }

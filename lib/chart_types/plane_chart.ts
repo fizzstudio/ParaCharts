@@ -14,50 +14,74 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
+import { Decimal } from 'decimal.js';
+import { type Interval } from '@fizz/chart-classifier-utils';
+import { type ChartType, type Facet } from '@fizz/paramanifest';
+import { type Datapoint, type PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
 import { BaseChartInfo } from './base_chart';
-import { DatapointNavNodeType, NavNode, NavNodeOptionsType, NavNodeType, type NavMap } from '../view/layers/data/navigation';
-import { DeepReadonly, PlaneChartSettings, type ParaState } from '../state';
-import { ParaView } from '../paraview';
+import { DatapointNavNodeType, NavNode, NavNodeOptionsType, type NavMap } from '../view/layers/data/navigation';
+import { type ParaState } from '../state';
+import { DeepReadonly } from '../config/config_types';
 import { type RiffOrder } from './base_chart';
-import { type HorizDirection } from '../state';
+import { type TypePlaneConfig, type HorizDirection } from '../config/config_types';
 
-import { ChartType, Datatype, Facet } from '@fizz/paramanifest';
-import { Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
-import { DocumentView } from '../view/document_view';
 import { Bezier, loopParaviewRefresh } from '../common';
 import { computeLabels } from '../common';
-
-import { Box, PlaneModel } from '@fizz/paramodel';
-import { Interval } from '@fizz/chart-classifier-utils';
-
-import { Decimal } from 'decimal.js';
+import { NOTE_LENGTH } from '../audio/sonifier';
+import { type AxisOrientation } from '../view/axis/axis';
+import { numberToScaledNumberRounded } from '@fizz/number-scaling-rounding';
 
 // Soni Constants
 export const SONI_PLAY_SPEEDS = [1000, 250, 100, 50, 25];
 export const SONI_RIFF_SPEEDS = [450, 300, 150, 100, 75];
 
+export interface AxisRangeInfo {
+  interval: Interval;
+  step: number;
+}
 
-export function computeAxisRange(start: number, end: number): Interval {
+export function computeAxisRange(start: number, end: number): AxisRangeInfo {
   const minDec = new Decimal(start);
   const maxDec = new Decimal(end);
   const diff = maxDec.sub(minDec);
   const interval = diff.div(10);
-  let quantizedInterval: Decimal, quantizedMin: Decimal, quantizedMax: Decimal;
-  quantizedInterval = new Decimal(10).pow(interval.log(10).ceil());
-  if (quantizedInterval.div(diff).gte(0.8)) {
-    quantizedInterval = quantizedInterval.div(10);
-  } else if (quantizedInterval.div(diff).gte(0.5)) {
-    quantizedInterval = quantizedInterval.div(4);
-  } else if (quantizedInterval.div(diff).gte(0.2)) {
-    quantizedInterval = quantizedInterval.div(2);
+  let quantizedStep: Decimal, quantizedMin: Decimal, quantizedMax: Decimal;
+  quantizedStep = new Decimal(10).pow(interval.log(10).ceil());
+  if (quantizedStep.div(diff).gte(0.8)) {
+    quantizedStep = quantizedStep.div(10);
+  } else if (quantizedStep.div(diff).gte(0.5)) {
+    quantizedStep = quantizedStep.div(4);
+  } else if (quantizedStep.div(diff).gte(0.2)) {
+    quantizedStep = quantizedStep.div(2);
   }
-  quantizedMin = minDec.div(quantizedInterval).floor().mul(quantizedInterval);
-  quantizedMax = maxDec.div(quantizedInterval).ceil().mul(quantizedInterval);
+  quantizedMin = minDec.div(quantizedStep).floor().mul(quantizedStep);
+  quantizedMax = maxDec.div(quantizedStep).ceil().mul(quantizedStep);
   return {
-    start: quantizedMin.toNumber(),
-    end: quantizedMax.toNumber(),
+    interval: {
+      start: quantizedMin.toNumber(),
+      end: quantizedMax.toNumber(),
+    },
+    step: quantizedStep.toNumber()
   };
 }
+
+export function computeAxisLabels(
+  rangeInfo: AxisRangeInfo, isPercent: boolean, isGrouping = true, stagger = false
+): string[][] {
+  const fmt = new Intl.NumberFormat(undefined, { maximumFractionDigits: 5, useGrouping: isGrouping });
+  const length = numberToScaledNumberRounded((rangeInfo.interval.end - rangeInfo.interval.start)/rangeInfo.step + 1, 5).number;
+  const labels = new Array(length)
+    .fill(0)
+    .map((_, i) => fmt.format(rangeInfo.interval.start + rangeInfo.step*i) + (isPercent ? '%' : ''));
+  const labelTiers = stagger
+    ? [
+        labels.map((label, i) => i % 2 === 0 ? label : ''),
+        labels.map((label, i) => i % 2 === 1 ? label : '')
+      ]
+    : [labels];
+  return labelTiers;
+}
+
 
 export interface AxisLabelTier {
   labels: string[];
@@ -73,9 +97,9 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   protected _soniNoteIndex = 0;
   protected _soniSpeedRateIndex = 1;
   /** X-axis interval, if axis is numeric */
-  protected _xInterval!: Interval | null;
+  protected _xRangeInfo!: AxisRangeInfo | null;
   /** Y-axis interval, if axis is numeric */
-  protected _yInterval!: Interval | null;
+  protected _yRangeInfo!: AxisRangeInfo | null;
   /** Min and max chart y values, if y is numeric */
   protected _yExtremes!: Interval | null;
 
@@ -85,65 +109,58 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
 
   protected _init(): void {
     super._init();
-    const indepFacet = this._paraState.model!.getFacet("x")!;
-    const depFacet = this._paraState.model!.getFacet("y")!;
+    const indepFacet = this.model!.getFacet("x")!;
+    const depFacet = this.model!.getFacet("y")!;
     if (indepFacet.datatype === 'number') {
-      this._xInterval = this._numericXAxisRange("x");
+      this._xRangeInfo = this._numericXAxisRange("x");
     } else {
-      this._xInterval = null;
+      this._xRangeInfo = null;
     }
     if (depFacet.datatype === 'number') {
-      this._yInterval = this._numericYAxisRange("y");
+      this._yRangeInfo = this._numericYAxisRange("y");
     } else {
-      this._yInterval = null;
+      this._yRangeInfo = null;
     }
   }
 
   protected _addSettingControls() {
     super._addSettingControls();
     // Only add these controls if the y-axis is numeric
-    if (this._paraState.model!.getFacet('y')!.datatype !== 'number') return;
+    if (this.model!.getFacet('y')!.datatype !== 'number') return;
     // const range = this.chartLayers.getYAxisInterval();
     // XXX should be min/max label values as numbers, not min/max data values
-    const min = this._yInterval!.start; // this._labelInfo.min!;
-    const max = this._yInterval!.end; // this._labelInfo.max!;
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: `type.${this._type}.minYValue`,
-      label: 'Min y-value',
-      options: { inputType: 'number' },
-      value: this.settings.minYValue === 'unset'
+    const min = this._yRangeInfo!.interval.start; // this._labelInfo.min!;
+    const max = this._yRangeInfo!.interval.end; // this._labelInfo.max!;
+
+    this._paraState.settingControls.insert(
+      `type.${this.configType}.minYValue`,
+      undefined,
+      (value: any) => value === 'unset'
         ? min
-        : this.settings.minYValue,
-      validator: value => {
-        const min = this.settings.maxYValue === 'unset'
+        : value,
+      value => {
+        const min = this.config.maxYValue === 'unset'
           ? max
-          : this.settings.maxYValue
+          : this.config.maxYValue
         // NB: If the new value is successfully validated, the inner chart
         // gets recreated, and `max` may change, due to re-quantization of
         // the tick values.
         return value as number >= min ?
-          { err: `Min y-value (${value}) must be less than ${min}`} : {};
-      },
-      parentView: 'controlPanel.tabs.chart.general.minY',
-    });
-    this._paraState.settingControls.add({
-      type: 'textfield',
-      key: `type.${this._type}.maxYValue`,
-      label: 'Max y-value',
-      options: { inputType: 'number' },
-      value: this.settings.maxYValue === 'unset'
+          { err: `Min y-value (${value}) must be less than ${min}` } : {};
+      });
+    this._paraState.settingControls.insert(
+      `type.${this.configType}.maxYValue`,
+      undefined,
+      (value: any) => value === 'unset'
         ? max
-        : this.settings.maxYValue,
-      validator: value => {
-        const max = this.settings.minYValue === 'unset'
+        : value,
+      value => {
+        const max = this.config.minYValue === 'unset'
           ? min
-          : this.settings.minYValue
+          : this.config.minYValue
         return value as number <= max ?
-          { err: `Max y-value (${value}) must be greater than ${max}`} : {};
-      },
-      parentView: 'controlPanel.tabs.chart.general.maxY',
-    });
+          { err: `Max y-value (${value}) must be greater than ${max}` } : {};
+      });
   }
 
   /**
@@ -153,20 +170,20 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     return false;
   }
 
-  get xInterval(): Interval | null {
-    return this._xInterval;
+  get xRangeInfo(): AxisRangeInfo | null {
+    return this._xRangeInfo;
   }
 
-  get yInterval(): Interval | null {
-    return this._yInterval;
+  get yRangeInfo(): AxisRangeInfo | null {
+    return this._yRangeInfo;
   }
 
   get yExtremes(): Interval | null {
     return this._yExtremes;
   }
 
-  get settings() {
-    return super.settings as DeepReadonly<PlaneChartSettings>;
+  get config() {
+    return super.config as DeepReadonly<TypePlaneConfig>;
   }
 
   get horizFacet(): Facet | null {
@@ -176,7 +193,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     //     ? this._paraState.model!.dependentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
     //     : this._paraState.model!.independentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
     // return this._paraState.model!.getFacet(facetKey)!
-    return (this._paraState.model as PlaneModel).getAxisFacet(this._isXVertical
+    return (this.model as PlaneModel).getAxisFacet(this._isXVertical
       ? 'vert'
       : 'horiz'
     )!;
@@ -189,7 +206,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     //     ? this._paraState.model!.independentFacetKeys[0] // TODO: Assumes exactly 1 dep facet
     //     : this._paraState.model!.dependentFacetKeys[0]; // TODO: Assumes exactly 1 indep facet
     // return this._paraState.model!.getFacet(facetKey)!
-    return (this._paraState.model as PlaneModel).getAxisFacet(this._isXVertical
+    return (this.model as PlaneModel).getAxisFacet(this._isXVertical
       ? 'horiz'
       : 'vert'
     )!;
@@ -207,7 +224,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
    */
   computeAxisLabelTiers(facetKey: string, isStagger: boolean): AxisLabelTier[] {
     const rawVals = this._facetTickLabelValues(facetKey);
-    const facet = this._paraState.model!.getFacet(facetKey)!;
+    const facet = this.model!.getFacet(facetKey)!;
     if (facet.datatype === 'date') {
       // XXX HACK: should convert date values to standard string values
       if (rawVals[0][0] === 'Q') {
@@ -217,9 +234,15 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
           const year = raw.split(' ')[1];
           if (!tier2.includes(year)) {
             tier2.push(year);
-            tier2Intervals.push({start: i/(rawVals.length - (this.isIntertick ? 0 : 1) ), end: 0});
+            const val = i / (rawVals.length - (this.isIntertick ? 0 : 1));
+            tier2Intervals.push({
+              start: val,
+              end: val
+            });
           } else {
-            tier2Intervals.at(-1)!.end = this.isIntertick ? (i/rawVals.length + 1/rawVals.length) : (i/(rawVals.length - 1));
+            tier2Intervals.at(-1)!.end = this.isIntertick
+              ? (i / rawVals.length + 1 / rawVals.length)
+              : (i / (rawVals.length - 1));
           }
         });
         return [
@@ -230,12 +253,11 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
         return [{ labels: rawVals }];
       }
     } else if (facet.datatype === 'number') {
-      const interval = facet.variableType === 'independent'
+      const rangeInfo = facet.variableType === 'independent'
         ? this._numericXAxisRange(facetKey)
         : this._numericYAxisRange(facetKey);
-      const computed = computeLabels(
-        interval.start, interval.end,
-        false, true, isStagger).labelTiers as string[][];
+      const computed = computeAxisLabels(
+        rangeInfo, false, true, isStagger);
       const ret: AxisLabelTier[] = [];
       ret.push({ labels: computed[0] });
       if (isStagger) {
@@ -245,9 +267,9 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     } else {
       return isStagger
         ? [
-            { labels: rawVals.map((label, i) => i % 2 === 0 ? label : '') },
-            { labels: rawVals.map((label, i) => i % 2 === 1 ? label : '') }
-          ]
+          { labels: rawVals.map((label, i) => i % 2 === 0 ? label : '') },
+          { labels: rawVals.map((label, i) => i % 2 === 1 ? label : '') }
+        ]
         : [{ labels: rawVals }];
     }
   }
@@ -261,7 +283,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
    * May be overridden to return, e.g., computed stacked bar or waterfall totals
    */
   protected _facetTickLabelValues(facetKey: string): string[] {
-    return this._paraState.model!.allFacetValues(facetKey)!.map(box => box.raw);
+    return this.model!.allFacetValues(facetKey)!.map(box => box.raw);
   }
 
   facetTickLabelValues(facetKey: string): string[] {
@@ -271,36 +293,36 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   /**
    * Called by `computeAxisLabelTiers` to get the displayed range for a numeric x-axis.
    * @param facetKey - Facet key
-   * @returns Displayed axis range as an Interval
+   * @returns Displayed axis range info
    */
-  protected _numericXAxisRange(facetKey: string): Interval {
-    const facetInterval = this._paraState.model!.getFacetInterval(facetKey)!;
+  protected _numericXAxisRange(facetKey: string): AxisRangeInfo {
+    const facetInterval = this.model!.getFacetInterval(facetKey)!;
     return computeAxisRange(facetInterval.start, facetInterval.end);
   }
 
   /**
    * Called by `computeAxisLabelTiers` to get the displayed range for a numeric y-axis.
    * @param facetKey - Facet key
-   * @returns Displayed axis range as an Interval
+   * @returns Displayed axis range info
    * @remarks
    * May be overridden to return, e.g., stacked bar or waterfall total intervals
    */
-  protected _numericYAxisRange(facetKey: string): Interval {
-    const facetInterval = this._paraState.model!.getFacetInterval(facetKey)!;
+  protected _numericYAxisRange(facetKey: string): AxisRangeInfo {
+    const facetInterval = this.model!.getFacetInterval(facetKey)!;
     this._yExtremes = facetInterval;
     return computeAxisRange(
-      this.settings.minYValue === 'unset'
+      this.config.minYValue === 'unset'
         ? facetInterval.start
-        : this.settings.minYValue,
-      this.settings.maxYValue === 'unset'
+        : this.config.minYValue,
+      this.config.maxYValue === 'unset'
         ? facetInterval.end
-        : this.settings.maxYValue);
+        : this.config.maxYValue);
   }
 
   protected _createNavMap() {
     super._createNavMap();
     this._createPrimaryNavNodes();
-    if (this._paraState.model!.seriesKeys.length > 1) {
+    if (this.model!.seriesKeys.length > 1) {
       this._createVerticalNavLinks();
       this._createChordNavNodes();
     }
@@ -325,7 +347,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     // Sort by value of first datapoint from greatest to least
     const sortedSeries = this.seriesInNavOrder();
     sortedSeries.forEach((series, i) => {
-      if (sortedSeries.length > 1) {
+      if (sortedSeries.length > 1 || this._paraState.config.sonification.isSonificationEnabled) {
         const seriesNode = new NavNode(this._navMap!.root, 'series', {
           seriesKey: series.key
         }, this._paraState);
@@ -344,7 +366,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
           this._paraState);
         //node.addDatapoint(series.key, j);
         node.connect('left', left);
-        if (j === 0 && sortedSeries.length === 1) {
+        if (j === 0 && sortedSeries.length === 1 && !this._paraState.config.sonification.isSonificationEnabled) {
           node.connect('up', left);
           node.connect('down', left);
           node.connect('right', left);
@@ -356,7 +378,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
 
   protected _createVerticalNavLinks() {
     // Create vertical links between series and datapoints
-    this._paraState.model!.series.slice(0, -1).forEach((series, i) => {
+    this.model!.series.slice(0, -1).forEach((series, i) => {
       const seriesNode = this._navMap!.root.get('series', i)!;
       const nextSeriesNode = this._navMap!.root.get('series', i + 1)!;
       seriesNode.connect('down', nextSeriesNode);
@@ -386,8 +408,8 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
   }
 
   protected _canCreateSequenceNavNodes(): boolean {
-    return !!this._navMap && Object.keys(this._paraState.seriesAnalyses).length === this._paraState.model!.seriesKeys.length
-      && !!this._paraState.seriesAnalyses[this._paraState.model!.seriesKeys[0]];
+    return !!this._navMap && Object.keys(this._paraState.seriesAnalyses).length === this.model!.seriesKeys.length
+      && !!this._paraState.seriesAnalyses[this.model!.seriesKeys[0]];
   }
 
   protected _createSequenceNavNodes() {
@@ -395,7 +417,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     let seriesSeqNodes: NavNode<'sequence'>[][] = [];
     this._altNavMap = this._navMap!.clone();
 
-    const model = this._paraState.model!;
+    const model = this.model!;
     if (model.series.length === 1) {
       seriesSeqNodes.push(this._createSingleSeriesSequenceNodes());
     } else {
@@ -422,12 +444,12 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
 
   protected _createSingleSeriesSequenceNodes(): NavNode<'sequence'>[] {
     const chartLanding = this._altNavMap!.root.query('top')[0];
-    const analysis = this._paraState.seriesAnalyses[this._paraState.model!.seriesKeys[0]]!;
+    const analysis = this._paraState.seriesAnalyses[this.model!.seriesKeys[0]]!;
     const datapointNodes = this._altNavMap!.root.query('datapoint');
     const seqNodes: NavNode<'sequence'>[] = [];
     analysis.sequences.forEach(seq => {
       const seqNode = new NavNode(datapointNodes[0].layer, 'sequence', {
-        seriesKey: this._paraState.model!.seriesKeys[0],
+        seriesKey: this.model!.seriesKeys[0],
         start: seq.start,
         end: seq.end
       }, this._paraState);
@@ -503,7 +525,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     });
   }
 
-  playRiff(datapoints: Datapoint[], order?: RiffOrder, isChord?: boolean) {
+  playRiff(datapoints: Datapoint[], order?: RiffOrder, isChord?: boolean): Promise<void> {
     const datapointsClone = [...datapoints];
     datapointsClone.forEach(d => {
       const dpView = this._paraView.documentView!.chartLayers.dataLayer.datapointView(d.seriesKey, d.datapointIndex)!;
@@ -540,7 +562,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
         const elapsed = timestamp - start;
         // We can't really disable the animation, but setting the reveal time to 0
         // will result in an imperceptibly short animation duration
-        const revealTime = SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex)! * length
+        const revealTime = SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex)! * length
         const t = Math.min(elapsed / revealTime, 1);
         const linearT = linear.eval(t)!;
         this._paraView.clipWidth = linearT;
@@ -552,21 +574,25 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       };
       requestAnimationFrame(step);
       loopParaviewRefresh(paraview,
-        paraview.paraState.settings.animation.popInAnimateRevealTimeMs
-        + SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex)! * length, 50);
-      this._soniRiffInterval = setInterval(() => {
-        const datapoint = datapoints.shift();
-        if (!datapoint) {
-          clearInterval(this._soniRiffInterval!);
-        } else {
-          this._sonifier.playDatapoints([datapoint as PlaneDatapoint]);
-          this._soniNoteIndex++;
-        }
-      }, SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex));
+        paraview.paraState.config.animation.popInAnimateRevealTimeMs
+        + SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex)! * length, 50);
+      return new Promise<void>(resolve => {
+        this._soniRiffInterval = setInterval(() => {
+          const datapoint = datapoints.shift();
+          if (!datapoint) {
+            clearInterval(this._soniRiffInterval!);
+            setTimeout(resolve, NOTE_LENGTH * 1000);
+          } else {
+            this._sonifier.playDatapoints([datapoint as PlaneDatapoint]);
+            this._soniNoteIndex++;
+          }
+        }, SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex));
+      });
     }
+    return Promise.resolve();
   }
 
-  playDatapoints(datapoints: PlaneDatapoint[]): void {
+  playDatapoints(datapoints: PlaneDatapoint[]): Promise<void> {
     const length = datapoints.length;
     for (let dpView of this._paraView.documentView!.chartLayers.dataLayer.datapointViews) {
       dpView.alwaysClip = false;
@@ -574,9 +600,9 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       dpView.completeLayout();
     }
     loopParaviewRefresh(this._paraView,
-      this._paraView.paraState.settings.animation.popInAnimateRevealTimeMs
-      + SONI_RIFF_SPEEDS.at(this._paraState.settings.sonification.riffSpeedIndex)! * length, 50);
-    this._sonifier.playDatapoints(datapoints);
+      this._paraView.paraState.config.animation.popInAnimateRevealTimeMs
+      + SONI_RIFF_SPEEDS.at(this._paraState.config.sonification.riffSpeedIndex)! * length, 50);
+    return this._sonifier.playDatapoints(datapoints);
   }
 
   playDir(dir: HorizDirection) {
@@ -601,7 +627,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
       data: (this._navMap!.cursor.isNodeType(this._datapointNavNodeType)
         || this._navMap!.cursor.isNodeType('series')
         || this._navMap!.cursor.isNodeType('sequence'))
-        ? this._paraState.model!.atKey(this._navMap!.cursor.options.seriesKey)!.datapoints.map(dp =>
+        ? this.model!.atKey(this._navMap!.cursor.options.seriesKey)!.datapoints.map(dp =>
           dp.facetValueAsNumber('y')!).join(' ')
         : '0',
       isBar: this._type === 'bar' || this._type === 'column'

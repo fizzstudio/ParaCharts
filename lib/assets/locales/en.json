@@ -1,0 +1,150 @@
+{
+    "en": {
+        "cpanel": {
+            "tabs": {
+                "description": {
+                    "title": "description"
+                },
+                "data": {
+                    "title": "data",
+                    "source": "source",
+                    "unknown": "unknown",
+                    "save_data": "save data",
+                    "save_chart": "save chart",
+                    "data_table": "data table",
+                    "source_links": "source links"
+                },
+                "colors": {
+                    "title": "colors",
+                    "dark_mode": "dark mode",
+                    "contrast": "contrast",
+                    "low_vision": "low-vision mode",
+                    "color_palette": "color palette",
+                    "cvd_colors": "chart colors for CVD (color blindness)",
+                    "color_dialog": {
+                        "color_theme": "color theme"
+                    }
+                },
+                "audio": {
+                    "title": "audio",
+                    "sonification": "sonification",
+                    "sonification_controls": "sonification controls",
+                    "self_voicing": "self-voicing",
+                    "tour_guide": "tour guide",
+                    "pause_tour_guide": "play/pause tour guide",
+                    "speech_rate": "speech rate",
+                    "announce_screen_reader": "announce to screen reader",
+                    "soni_dialog": {
+                        "play_series_riff": "play series riffs",
+                        "lower_hertz": "lower hertz",
+                        "upper_hertz": "upper hertz",
+                        "riff_speed": "riff speed",
+                        "arpeg_chords": "chords are arpeggiated",
+                        "notification_sounds": "notification sounds"
+                    }
+                },
+                "controls": {
+                    "title": "controls",
+                    "keyboard_controls": "keyboard controls",
+                    "fullscreen": "fullscreen",
+                    "animation": "animation",
+                    "animation_settings": "animation settings",
+                    "help": "help",
+                    "advanced_controls": "advanced controls",
+                    "anim_dialog": {
+                        "animation_type": "animation type",
+                        "animation_rate": "animation rate",
+                        "animation_origin": "animation origin",
+                        "animation_origin_value": "animation origin value"
+                    },
+                    "advanced_dialog": {
+                        "tab_label_style": "tab label style",
+                        "caption_visible": "caption visible",
+                        "expl_bar_visible": "exploration bar is visible",
+                        "caption_external": "caption external when control panel closed",
+                        "expl_bar_beside": "exploration bar is beside caption"
+                    }
+                },
+                "chart": {
+                    "title": "chart",
+                    "width": "width",
+                    "height": "height",
+                    "min_y": "min y-value",
+                    "max_y": "max y-value",
+                    "caption_format": "caption format",
+                    "line_width": "line width",
+                    "show_symbols": "show symbols",
+                    "show_popups": "show popups",
+                    "popup_settings": "popup settings",
+                    "font_settings": "font settings",
+                    "tactile_settings": "tactile settings",
+                    "pastry_orientation": "orientation",
+                    "pastry_explode": "explode",
+                    "pastry_inside_labels": "inside labels",
+                    "pastry_outside_labels": "outside labels",
+                    "scatter_trend_line": "trend line",
+                    "scatter_outliers": "show outliers",
+                    "venn_orientation": "orientation",
+                    "venn_inside_labels": "inside labels",
+                    "venn_outside_labels": "outside labels",
+                    "venn_explode": "explode",
+                    "histogram_bins": "bins",
+                    "histogram_display_axis": "toggle orientation",
+                    "histogram_grouping_facet": "facet to group by",
+                    "histogram_relative_axes": "raw counts/Percentages",
+                    "heatmap_resolution": "display resolution",
+                    "heatmap_x_facet": "facet to group on x axis",
+                    "heatmap_y_facet": "facet to group on y axis",
+                    "bubble_x_facet": "facet to display on x axis",
+                    "bubble_y_facet": "facet to display on y axis",
+                    "bubble_bubble_facet": "facet to display as bubble size",
+                    "bubble_label_facet": "facet to use as labels",
+                    "bubble_max_bubble_size": "max bubble size",
+                    "bubble_min_bubble_size": "min bubble size",
+                    "popup_dialog": {
+                        "opacity": "opacity",
+                        "left_padding": "left padding",
+                        "right_padding": "right padding",
+                        "up_padding": "up padding",
+                        "down_padding": "down padding",
+                        "margin": "vertical margin",
+                        "max_width": "max width",
+                        "shape": "shape",
+                        "activation": "activate popups on",
+                        "border_radius": "border radius",
+                        "bg_color": "color mode",
+                        "crosshair": "Show crosshair?",
+                        "crosshair_follow": "Track crosshair to pointer?"
+                    },
+                    "font_dialog": {
+                        "font_family": "font family",
+                        "font_scale": "font scale"
+                    },
+                    "tactile_dialog": {
+                        "enabled": "enable tactile mode",
+                        "grade": "braille grade",
+                        "label_mode": "label mode",
+                        "page_size": "page size",
+                        "margin_left": "left margin (in)",
+                        "margin_right": "right margin (in)",
+                        "margin_top": "top margin (in)",
+                        "margin_bottom": "bottom margin (in)"
+                    },
+                    "legend_dialog": {
+                        "show": "show legend",
+                        "position": "legend position",
+                        "item_order": "legend item order",
+                        "direct": "use direct legend"
+                    }
+                },
+                "annotations": {
+                    "title": "annotations",
+                    "add_annotation": "add annotation",
+                    "add_line_breaks": "add line breaks",
+                    "remove_line_breaks": "remove added line breaks",
+                    "show_annotations": "show trend annotations"
+                }
+            }
+        }
+    }
+}

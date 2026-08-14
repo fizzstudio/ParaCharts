@@ -44,6 +44,10 @@
       }
     ]
   },
+  "switchToOtherData": {
+    "label": "Switch to other data set",
+    "hotkeys": ["o"]
+  },
   "queryData": {
     "label": "Query data",
     "hotkeys": ["q"]
@@ -112,6 +116,18 @@
         "keyID": "Shift+arrowdown",
         "args": {
           "direction": "in"
+        }
+      },
+      {
+        "keyID": "Shift+arrowleft",
+        "args": {
+          "direction": "shiftleft"
+        }
+      },
+      {
+        "keyID": "Shift+arrowright",
+        "args": {
+          "direction": "shiftright"
         }
       }
     ]

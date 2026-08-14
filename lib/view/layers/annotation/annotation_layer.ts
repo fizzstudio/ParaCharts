@@ -1,22 +1,21 @@
-
 import { PlotLayer } from '../layer';
 import { View, Container } from '../../base_view';
-import { type ParaView } from '../../../paraview';
-import { RectShape } from '../../shape/rect';
-import { PathShape } from '../../shape/path';
+import { type ViewContext } from '../../view_context';
+import { RectShape, PathShape } from '../../shape';
 import { Vec2 } from '../../../common/vector';
-import { PointAnnotation, Setting } from '../../../state';
+import { type PointAnnotation, datapointIdToCursor } from '../../../state/parastate';
 import { Popup } from '../../popup';
-import { datapointIdToCursor } from '../../../state';
 import { PlaneChartInfo } from '../../../chart_types';
-import { ScatterPlotView, TrendLineView } from '../data';
+import { type ScatterPlotView} from '../data/chart_type/scatter_plot_view';
+import { TrendLineView } from '../data/chart_type/point_plot_view';
+import { ConfigSetting } from '../../../config/config_types';
 
 export type AnnotationType = 'foreground' | 'background';
 
 export class AnnotationLayer extends PlotLayer {
   protected _groups = new Map<string, DecorationGroup>();
 
-  constructor(paraview: ParaView, width: number, height: number, public readonly type: AnnotationType) {
+  constructor(paraview: ViewContext, width: number, height: number, public readonly type: AnnotationType) {
     super(paraview, width, height);
   }
 
@@ -52,7 +51,7 @@ export class AnnotationLayer extends PlotLayer {
     }
   }
 
-  settingDidChange(path: string, oldValue?: Setting, newValue?: Setting): void {
+  settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
     if (['ui.isLowVisionModeEnabled'].includes(path)) {
       if (!oldValue) {
         for (let annot of this.paraview.paraState.annotations) {
@@ -69,9 +68,9 @@ export class AnnotationLayer extends PlotLayer {
         this.group('trend-lines')!.clearChildren();
         for (const tl of this.paraview.paraState.modelTrendLines) {
           const series = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0];
-          const range = this.paraview.paraState.chartInfo.yInterval!;
-          const minValue = range.start ?? Number(this.paraview.paraState.settings.axis.y.minValue)
-          const maxValue = range.end ?? Number(this.paraview.paraState.settings.axis.y.maxValue)
+          const range = this.paraview.paraState.chartInfo.yRangeInfo!;
+          const minValue = range.interval.start;
+          const maxValue = range.interval.end;
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
@@ -104,9 +103,9 @@ export class AnnotationLayer extends PlotLayer {
         }
         for (const tl of tls) {
           const series = this.paraview.paraState.model!.series.filter(s => s[0].seriesKey == tl.seriesKey)[0]
-          const range = this.paraview.paraState.chartInfo.yInterval!;
-          const minValue = range.start ?? Number(this.paraview.paraState.settings.axis.y.minValue)
-          const maxValue = range.end ?? Number(this.paraview.paraState.settings.axis.y.maxValue)
+          const range = this.paraview.paraState.chartInfo.yRangeInfo!;
+          const minValue = range.interval.start;
+          const maxValue = range.interval.end;
           const startHeight = this.height - (series.datapoints[tl.startIndex].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const endHeight = this.height - (series.datapoints[tl.endIndex - 1].facetValueNumericized("y")! - minValue) / (maxValue - minValue) * this.height;
           const startPx = this.width * tl.startPortion;
@@ -128,7 +127,7 @@ export class AnnotationLayer extends PlotLayer {
           this.removeGroup('user-trend-lines', true);
         }
       }
-      if (this.paraview.paraState.settings.type.scatter.isShowTrendLine && this.paraview.paraState.chartInfo instanceof PlaneChartInfo) {
+      if (this.paraview.paraState.config.type.scatter.isShowTrendLine && this.paraview.paraState.chartInfo instanceof PlaneChartInfo) {
         this.removeGroup('overall-trend-line', true);
         this.addGroup('overall-trend-line', true);
         this.group('overall-trend-line')!.clearChildren();
@@ -186,17 +185,17 @@ export class AnnotationLayer extends PlotLayer {
               x: dpView.x,
               y: dpView.y,
               id: this.id,
-              color: dpView.color,
+              colorIndex: dpView.colorIndex,
               points: [dpView]
             },
             {
-              fill: this.paraview.paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
-                : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
-                  this.paraview.paraState.colors.lighten(this.paraview.paraState.colors.colorValueAt(dpView.color), 6)
-                  : this.paraview.paraState.colors.colorValueAt(dpView.color),
-              stroke: this.paraview.paraState.settings.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
-                : this.paraview.paraState.settings.popup.backgroundColor === "light" ?
-                  this.paraview.paraState.colors.colorValueAt(dpView.color)
+              fill: this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 100%)"
+                : this.paraview.paraState.config.popup.backgroundColor === "light" ?
+                  this.paraview.paraState.colors.lighten(this.paraview.paraState.colors.colorValueAt(dpView.colorIndex), 6)
+                  : this.paraview.paraState.colors.colorValueAt(dpView.colorIndex),
+              stroke: this.paraview.paraState.config.ui.isLowVisionModeEnabled ? "hsl(0, 0%, 0%)"
+                : this.paraview.paraState.config.popup.backgroundColor === "light" ?
+                  this.paraview.paraState.colors.colorValueAt(dpView.colorIndex)
                   : "black",
             })
           popup.classInfo = { 'popup': true }
@@ -292,7 +291,7 @@ export class AnnotationLayer extends PlotLayer {
 
 class DecorationGroup extends Container(View) {
 
-  constructor(paraview: ParaView, protected _name: string) {
+  constructor(paraview: ViewContext, protected _name: string) {
     super(paraview);
   }
 
