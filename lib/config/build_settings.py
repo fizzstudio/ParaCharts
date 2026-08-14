@@ -22,9 +22,10 @@ def main(args):
     load_dir(Path(args.dir), tree, None)
     missing_descriptions = find_missing_descriptions(tree, tree)
     if missing_descriptions:
-        print('Warning: config settings without descriptions:', file=sys.stderr)
+        print('Config settings without descriptions:', file=sys.stderr)
         for setting_path in missing_descriptions:
             print(f'  {setting_path}', file=sys.stderr)
+        raise ValueError('All visible config settings must have descriptions')
     # pprint.pp(tree)
     with open(p / 'config_types.ts', 'w') as typesf, \
         open(p / 'config_defaults.ts', 'w') as defaultsf, \
@@ -176,7 +177,7 @@ for (const [k, v] of Object.entries(configMetadata)) {
     }
   }
 }
-""", file=metadataf)
+""".rstrip(), file=metadataf)
 
 
 def load_dir(dir: Path, node, parent):

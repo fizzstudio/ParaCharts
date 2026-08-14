@@ -205,7 +205,7 @@ export class BarChartInfo extends PlaneChartInfo {
   }
 
   protected _clusterData() {
-    const settings = this._paraState.config.type[this._type] as TypeBarConfig;
+    const settings = this._paraState.config.type[this.configType] as TypeBarConfig;
     const clusterMap: BarClusterMap = {};
     const xs = this._paraState.model!.series[0].datapoints.map(dp => dp.facetBox('x')!);
 

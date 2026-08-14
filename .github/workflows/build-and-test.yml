@@ -45,11 +45,26 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Build AI variant
+        run: npm run build:ai
+
       - name: Run unit tests
         run: npm run test:unit
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser tests
+        run: npm run test:browser
+
+      - name: Build Storybook
+        run: npm run build-storybook
 
       - name: Build docs
         run: npm run docs:build
 
       - name: Verify generated source artifacts are current
-        run: git diff --exit-code -- lib/config/config_defaults.ts lib/config/config_metadata.ts lib/config/config_types.ts etc/paracharts.api.md
+        run: npm run docs:check
+
+      - name: Verify package contents
+        run: npm pack --dry-run

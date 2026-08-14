@@ -128,6 +128,7 @@ export class ParaHeadless {
 
     try {
       await this._paraChart.loaded;
+      await this.jimReady;
       return { success: true };
     } catch (error) {
       if (error instanceof LoadError) {
