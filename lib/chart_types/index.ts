@@ -25,7 +25,7 @@ export * from './combo_chart';
 
 type ChartInfoConstructor = new (type: ChartType, state: ParaState) => BaseChartInfo
 
-// (@simonvarey): stepline, lollipop and candlestick should be replaced with dedicated 
+// (@simonvarey): stepline, lollipop and candlestick should be replaced with dedicated
 //   SteplineChartInfo, LollipopChartInfo and CandlestickChartInfo classes. See #820
 export const chartInfoClasses: Record<ChartType, ChartInfoConstructor> = {
   bar: BarChartInfo,

@@ -177,7 +177,7 @@ for (const [k, v] of Object.entries(configMetadata)) {
     }
   }
 }
-""", file=metadataf)
+""".rstrip(), file=metadataf)
 
 
 def load_dir(dir: Path, node, parent):
