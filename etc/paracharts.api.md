@@ -741,6 +741,8 @@ export class ParaChart extends ParaComponent {
     // (undocumented)
     accessor description: string | undefined;
     disableScrollytelling(): void;
+    // (undocumented)
+    disconnectedCallback(): void;
     // Warning: (ae-forgotten-export) The symbol "ScrollytellerOptions" needs to be exported by the entry point index.d.ts
     enableScrollytelling(options?: ScrollytellerOptions): void;
     // (undocumented)
