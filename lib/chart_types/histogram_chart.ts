@@ -1,4 +1,4 @@
-import { type ChartType } from "@fizz/paramanifest";
+import { type ChartType } from "@fizz/chartsignal-internal";
 import { PlaneChartInfo } from './plane_chart';
 import { type ParaState } from '../state';
 import { DeepReadonly, type TypeHistogramConfig } from "../config/config_types";

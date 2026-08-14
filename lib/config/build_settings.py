@@ -39,7 +39,7 @@ def main(args):
         print(
 """
 import { type Size2d } from '@fizz/chart-classifier-utils'
-import { type ChartType } from '@fizz/paramanifest';
+import { type ChartType } from '@fizz/chartsignal-internal';
 import { type SnapLocation } from '../common/types';
 import { type Color } from '../common/color_types';
 

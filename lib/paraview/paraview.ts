@@ -21,7 +21,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Unsubscribe } from '@lit-app/state';
 import { Logger, getLogger } from '@fizz/logger';
-import { type ChartType, isPastryType, strToId } from '@fizz/paramanifest';
+import { type ChartType, isPastryType, strToId } from '@fizz/chartsignal-internal';
 import { PointerEventManager } from './pointermanager';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaComponent, type AriaLive } from '../components';

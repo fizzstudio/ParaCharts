@@ -1,4 +1,4 @@
-import { ChartType } from '@fizz/paramanifest';
+import { ChartType } from '@fizz/chartsignal-internal';
 import { type Manifest } from './loader/common';
 
 export type Explainer = {

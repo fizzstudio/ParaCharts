@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
 import { Datapoint } from '@fizz/paramodel';
-import { ChartType, Facet } from '@fizz/paramanifest';
+import { ChartType, Facet } from '@fizz/chartsignal-internal';
 import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
 import { CardinalDirection, ConfigSetting, DeepReadonly } from '../config/config_types';
 import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';

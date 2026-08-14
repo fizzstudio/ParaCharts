@@ -18,7 +18,7 @@ import { type TemplateResult } from 'lit';
 import { html, literal } from 'lit/static-html.js';
 import { State, property } from '@lit-app/state';
 import { produce } from 'immer';
-import { strToId } from '@fizz/paramanifest';
+import { strToId } from '@fizz/chartsignal-internal';
 import { ConfigSettingMetadata, configMetadata } from '../config/config_metadata';
 import { ConfigSetting } from '../config/config_types';
 

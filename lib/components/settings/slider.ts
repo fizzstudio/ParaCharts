@@ -6,7 +6,7 @@ import { customElement } from 'lit/decorators.js';
 import { html, nothing, css } from 'lit';
 import { ref, createRef } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import { strToId } from '@fizz/paramanifest';
+import { strToId } from '@fizz/chartsignal-internal';
 
 export interface SliderSettingControlOptions {
   min?: number;

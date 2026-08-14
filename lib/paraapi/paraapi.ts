@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { PlaneModel, type Datapoint } from '@fizz/paramodel';
-import type { DatapointManifest, Manifest } from '@fizz/paramanifest';
+import type { DatapointManifest, Manifest } from '@fizz/chartsignal-internal';
 import { ORIENTATION_SENTENCES, PASTRY_ORIENTATION_SENTENCES, type BaseChartInfo } from '../chart_types';
 import { type ParaChart } from '../parachart/parachart';
 import { HotkeyEvent, makeSequenceId, SettingsManager } from '../state';

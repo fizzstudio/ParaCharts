@@ -6,7 +6,7 @@ import {
   type CsvDataType,
   type CsvInferredDefaults
 } from '../../../../lib';
-import { type Manifest } from '@fizz/paramanifest';
+import { type Manifest } from '@fizz/chartsignal-internal';
 
 const container = document.getElementById('content-container')!;
 const jim = document.getElementById('jim')! as HTMLTextAreaElement;

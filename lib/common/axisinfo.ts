@@ -1,5 +1,5 @@
 import Decimal from 'decimal.js';
-import { type Facet } from '@fizz/paramanifest';
+import { type Facet } from '@fizz/chartsignal-internal';
 import { type AxisOrientation, type PlaneModel } from '@fizz/paramodel';
 import { type ParaState } from '../state/parastate';
 

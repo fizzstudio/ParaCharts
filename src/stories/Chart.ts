@@ -5,7 +5,7 @@ import { type SettingsInput } from '../../lib/state/settings_types';
 import { html, nothing, TemplateResult } from 'lit';
 import { ParaChart } from '../../lib/parachart/parachart';
 import { ParaChartAi } from '../../lib-ai/parachart-ai';
-import { ChartType } from '@fizz/paramanifest';
+import { ChartType } from '@fizz/chartsignal-internal';
 
 customElements.define('para-chart', ParaChart);
 customElements.define('para-chart-ai', ParaChartAi);
