@@ -24,8 +24,7 @@ describe('Chart Rendering', () => {
   });
 
   chartTypes.forEach(({ type, manifest }) => {
-    const testFn = (type === 'histogram' || type === 'pie') ? test.skip : test;
-    testFn(`${type} chart loads successfully`, async () => {
+    test(`${type} chart loads successfully`, async () => {
       document.body.innerHTML = `<para-chart data-testid="para-chart" manifest="${manifest}" forcecharttype="${type}"></para-chart>`;
       
       const parachart = getParachart() as any;

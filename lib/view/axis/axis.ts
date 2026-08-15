@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { svg, type TemplateResult } from 'lit';
 import { literal } from 'lit/static-html.js';
 import { type Datatype } from '@fizz/dataframe';
-import { type Facet } from '@fizz/paramanifest';
+import { type Facet } from '@fizz/chartsignal-internal';
 import { Container, Padding, PaddingInput, View } from '../base_view';
 import { ColumnLayout, FlexLayout, GridLayout, RowLayout, type Layout } from '../layout';
 import { Label } from '../label';

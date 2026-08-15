@@ -9,7 +9,7 @@ import { VennDiagramInfo } from './venn_diagram';
 import { HistogramChartInfo } from './histogram_chart';
 import { BubbleChartInfo } from './bubble_chart';
 import { ComboChartInfo } from './combo_chart';
-import { ChartType } from '@fizz/paramanifest';
+import { ChartType } from '@fizz/chartsignal-internal';
 import { ParaState } from '../state';
 
 export * from './base_chart';

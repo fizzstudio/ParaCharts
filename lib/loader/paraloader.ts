@@ -1,4 +1,4 @@
-import { ChartType, Dataset, Manifest, type Datatype, type AllSeriesData } from '@fizz/paramanifest';
+import { ChartType, Dataset, Manifest, type Datatype, type AllSeriesData } from '@fizz/chartsignal-internal';
 
 import papa from 'papaparse';
 

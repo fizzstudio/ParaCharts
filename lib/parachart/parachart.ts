@@ -20,7 +20,7 @@ import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Logger, getLogger } from '@fizz/logger';
-import { type ChartType } from '@fizz/paramanifest'
+import { type ChartType } from '@fizz/chartsignal-internal'
 import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { ParaComponent } from '../components';
 import { ConfigSetting, SettingsInput } from '../config/config_types';

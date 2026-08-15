@@ -77,7 +77,7 @@ export default defineConfig({
       'lit/static-html.js',
       '@lit-app/state',
       'immer',
-      '@fizz/paramanifest',
+      '@fizz/chartsignal-internal',
       '@fizz/parasummary',
       '@fizz/chart-classifier-utils',
       '@fizz/ui-components',

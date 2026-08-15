@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { type TemplateResult } from 'lit';
 import { Logger, getLogger } from '@fizz/logger';
 import { PlaneModel } from '@fizz/paramodel';
-import { Datatype } from '@fizz/paramanifest';
+import { Datatype } from '@fizz/chartsignal-internal';
 import { View, Container } from '../base_view';
 import { type Layout } from '../layout/layout';
 import { type AxisOrientation } from './axis';

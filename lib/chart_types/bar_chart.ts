@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
 
-import { ChartType, strToId } from '@fizz/paramanifest';
+import { ChartType, strToId } from '@fizz/chartsignal-internal';
 import { enumerate, Box, Series } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';

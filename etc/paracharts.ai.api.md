@@ -4,19 +4,19 @@
 
 ```ts
 
-import { AllSeriesData } from '@fizz/paramanifest';
+import { AllSeriesData } from '@fizz/chartsignal-internal';
 import { ButtonDescriptor } from '@fizz/ui-components';
-import { ChartType } from '@fizz/paramanifest';
+import { ChartType } from '@fizz/chartsignal-internal';
 import { ClassInfo } from 'lit/directives/class-map.js';
 import { ClassInfo as ClassInfo_2 } from 'lit-html/directives/class-map.js';
 import { clusterObject } from '@fizz/clustering';
 import { CSSResult } from 'lit';
 import { Datapoint } from '@fizz/paramodel';
 import { Datatype } from '@fizz/dataframe';
-import { Datatype as Datatype_2 } from '@fizz/paramanifest';
+import { Datatype as Datatype_2 } from '@fizz/chartsignal-internal';
 import { Dialog } from '@fizz/ui-components';
 import { DirectiveResult } from 'lit-html/directive.js';
-import { Facet } from '@fizz/paramanifest';
+import { Facet } from '@fizz/chartsignal-internal';
 import { FacetSignature } from '@fizz/paramodel';
 import { FizzTabs } from '@fizz/ui-components';
 import { FormatType } from '@fizz/parasummary';
@@ -26,7 +26,7 @@ import { Interval } from '@fizz/chart-classifier-utils';
 import { Jimerator } from '@fizz/jimerator';
 import { LitElement } from 'lit';
 import { Logger } from '@fizz/logger';
-import { Manifest } from '@fizz/paramanifest';
+import { Manifest } from '@fizz/chartsignal-internal';
 import { MessageDialog } from '@fizz/ui-components';
 import { Model } from '@fizz/paramodel';
 import { PairAnalyzerConstructor } from '@fizz/paramodel';

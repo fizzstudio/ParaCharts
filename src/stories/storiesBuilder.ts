@@ -11,7 +11,7 @@ import { template } from './storyTemplate.ts';
 import { template as testTemplate } from './testStoriesTemplate.ts';
 import { familyCatalogMap, familyCatalogMapMulti } from './chartSelectorHelper.ts';
 import { allTemplate } from './allStoriesTemplate.ts';
-import { CHART_FAMILY_MEMBERS, type ChartTypeFamily, type ChartType } from '@fizz/paramanifest';
+import { CHART_FAMILY_MEMBERS, type ChartTypeFamily, type ChartType } from '@fizz/chartsignal-internal';
 //import { capitalize } from '../../lib/common/utils.ts';
 
 function capitalize(string: string) {

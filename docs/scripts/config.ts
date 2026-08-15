@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { ApiInterface, ApiItemKind, ApiPropertyItem } from '@microsoft/api-extractor-model';
-import { CHART_FAMILY_MAP } from '@fizz/paramanifest';
+import { CHART_FAMILY_MAP } from '@fizz/chartsignal-internal';
 import { configMetadata } from '../../lib/config/config_metadata.js';
 import { defaultConfig } from '../../lib/config/config_defaults.js';
 import { chartTypeDefaults } from '../../lib/state/settings_defaults.js';

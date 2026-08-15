@@ -6,7 +6,7 @@ import { type SettingsInput } from '../config/config_types';
 export { FieldInfo, LoadError, LoadErrorCode, CsvDataType };
 
 /** @public */
-export { type Manifest } from '@fizz/paramanifest';
+export { type Manifest } from '@fizz/chartsignal-internal';
 
 /** @public */
 export type LoadManifestSuccess = {

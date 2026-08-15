@@ -25,7 +25,7 @@ import { PopupLayer } from './popup_layer';
 import { type DataLayerContext } from '../view_context';
 import { BubblePlotView } from './data/chart_type/bubble_plot_view';
 import { ComboPlotView } from './data/chart_type/combo_plot_view';
-import { ChartType } from '@fizz/paramanifest';
+import { ChartType } from '@fizz/chartsignal-internal';
 
 // FIXME: Temporarily replace chart types that haven't been introduced yet
 export const chartClasses: Record<ChartType, any> = {

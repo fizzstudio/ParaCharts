@@ -20,10 +20,8 @@ import { produceWithPatches, enablePatches, applyPatches, type Patch } from 'imm
 enablePatches();
 import { Logger, getLogger } from '@fizz/logger';
 import {
-  dataFromManifest, type AllSeriesData, type ChartType,
-  isPastryType,
-  isVennType
-} from '@fizz/paramanifest';
+  dataFromManifest, type AllSeriesData, type ChartType, isPastryType, isVennType
+} from '@fizz/chartsignal-internal';
 import { Jimerator } from '@fizz/jimerator';
 import {
   facetsFromDataset, Model, modelFromExternalData, modelFromInlineData,

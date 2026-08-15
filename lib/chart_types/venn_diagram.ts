@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 import { formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 import { type Datapoint, type PlaneDatapoint } from '@fizz/paramodel';
-import { ChartType } from '@fizz/paramanifest';
+import { ChartType } from '@fizz/chartsignal-internal';
 import { BaseChartInfo, RiffOrder } from './base_chart';
 import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax } from '../state';
 import { directions, type HorizDirection, type Direction } from '../config/config_types';
