@@ -289,7 +289,7 @@ export class AnnotationLayer extends PlotLayer {
         for (const threshold of this.paraview.paraState.thresholds) {
           threshold.classInfo = { 'threshold': true };
           threshold.highlightPoints();
-
+      
           this.group('thresholds')!.append(threshold);
         }
       }

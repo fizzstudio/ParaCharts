@@ -105,7 +105,7 @@ export type ColorPrefSource =
   | 'modeDefault'  // set by an active mode (e.g. low-vision mode)
   | 'profile'      // saved in manifest extensions
   | 'system'       // derived from current media-query state
-  | 'user';        // explicit user choice â€” wins until explicitly reset
+  | 'user';        // explicit user choice — wins until explicitly reset
 
 /** @public */
 export type DeepReadonly<T> = {
@@ -133,6 +133,8 @@ export interface Config extends ConfigGroup {
   grid: GridConfig;
   /** Legend visibility, positioning, and styling. */
   legend: LegendConfig;
+  /** Marker/threshold styling. */
+  marker: MarkerConfig;
   /** Tooltip and popup styling. */
   popup: PopupConfig;
   /** Narrative scrolling features. */
@@ -637,6 +639,18 @@ export interface LegendBoxstyleConfig extends ConfigGroup {
   outlineWidth: number;
   /** Background fill color */
   fill: Color;
+}
+/**
+ * Marker/threshold styling.
+ * @public
+ */
+export interface MarkerConfig extends ConfigGroup {
+  /** Highlight points */
+  highlightStyle: string;
+  /** Make highlighted region dashed */
+  isMakeThresholdHighlightDashed: boolean;
+  /** Make highlighted region dashed */
+  isChangeThresholdHighlightColor: boolean;
 }
 /**
  * Tooltip and popup styling.

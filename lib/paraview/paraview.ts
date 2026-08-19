@@ -35,6 +35,7 @@ import { type ViewContext } from '../view/view_context';
 import { loopParaviewRefresh, fixed, SVGNS } from '../common';
 import { ParaViewController } from '.';
 import { CSS_DPI, MM_PER_INCH, PAPER_INFO } from '../common/paper';
+import { Interval } from '@fizz/chart-classifier-utils';
 
 /**
  * Data provided for the on focus callback
@@ -74,7 +75,7 @@ export class ParaView extends ParaComponent implements ViewContext {
   protected _registeredPatternKeys: string[] = [];
   protected log: Logger = getLogger("ParaView");
   clipWidth: number = 1
-  clipHeight: number = 1
+  markerClipBox: [Interval, Interval] = [{start: 0, end: 1}, {start: 0, end: 1}]
 
   @state() private loadingMessageStyles: { [key: string]: any } = {
     display: 'none'
@@ -1299,20 +1300,22 @@ export class ParaView extends ParaComponent implements ViewContext {
           </g>
           ${svg`${this._seriesCss() ? svg`<style>${this._seriesCss()}</style>` : ''}`}
           ${this._documentView?.horizAxis ? svg`
-            <clipPath id="clip-path" clipPathUnits="userSpaceOnUse">
+            <clipPath id="clip-path" >
               <rect
                 x=${0}
                 y=${0}
                 width=${this._documentView.chartLayers ? this.clipWidth * this._documentView.chartLayers.width : 0}
-                height=${this._documentView.chartLayers ? this.clipHeight * this._documentView.chartLayers.height : 0}>
+                height=${this._documentView.chartLayers ? this._documentView.chartLayers.height : 0}>
               </rect>
             </clipPath>
-            <clipPath id="threshold-clip-path" clipPathUnits="userSpaceOnUse">
+            <clipPath id="threshold-clip-path" >
               <rect
-                x=${0}
-                y=${0}
-                width=${this._documentView.chartLayers ? this.clipWidth * this._documentView.chartLayers.width : 0}
-                height=${this._documentView.chartLayers ? this.clipHeight * this._documentView.chartLayers.height : 0}>
+                x=${this._documentView.chartLayers ?  this.markerClipBox[0].start * this._documentView.chartLayers.width : 0}
+                y=${this._documentView.chartLayers ?  this.markerClipBox[1].start * this._documentView.chartLayers.height : 0}
+                width=${this._documentView.chartLayers ? 
+                  (this.markerClipBox[0].end - this.markerClipBox[0].start) * this._documentView.chartLayers.width 
+                  : 0}
+                height=${this._documentView.chartLayers ? (this.markerClipBox[1].end - this.markerClipBox[1].start) * this._documentView.chartLayers.height : 0}>
               </rect>
             </clipPath>
           ` : ''

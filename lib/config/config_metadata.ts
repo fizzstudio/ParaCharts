@@ -25,6 +25,7 @@ import DescriptionJson from "./description.json" with { type: "json" };
 import GridJson from "./grid.json" with { type: "json" };
 import LegendJson from "./legend/index.json" with { type: "json" };
 import LegendBoxstyleJson from "./legend/boxStyle.json" with { type: "json" };
+import MarkerJson from "./marker.json" with { type: "json" };
 import PopupJson from "./popup.json" with { type: "json" };
 import ScrollytellingJson from "./scrollytelling.json" with { type: "json" };
 import SonificationJson from "./sonification.json" with { type: "json" };
@@ -79,6 +80,7 @@ export const configMetadata: ConfigMetadata = {
   'grid': GridJson as unknown as ConfigGroupMetadata,
   'legend': LegendJson as unknown as ConfigGroupMetadata,
   'legend.boxStyle': LegendBoxstyleJson as unknown as ConfigGroupMetadata,
+  'marker': MarkerJson as unknown as ConfigGroupMetadata,
   'popup': PopupJson as unknown as ConfigGroupMetadata,
   'scrollytelling': ScrollytellingJson as unknown as ConfigGroupMetadata,
   'sonification': SonificationJson as unknown as ConfigGroupMetadata,

@@ -1500,6 +1500,10 @@ export class ParaState extends BaseState {
     this._hiddenDatapoints = new Set();
   }
 
+  clearAllDatapointContrast() {
+    this._contrastedDatapoints = new Set();
+  }
+
 
   get highlightedSequences() {
     return this._highlightedSequences;

@@ -68,6 +68,11 @@ export abstract class PlanePlotView extends DataLayer {
         this.paraview.requestUpdate();
       })
     }
+    if (['marker.highlightStyle'].includes(path)) {
+      setTimeout(() => {
+        this.paraview.requestUpdate();
+      }, 100);
+    }
     super.settingDidChange(path, oldValue, newValue);
   }
 
@@ -91,7 +96,7 @@ export abstract class PlanePlotView extends DataLayer {
           distances = points.map((dp, i) => Number(Math.abs((dp.x - coords.y) ** 2)));
         }
         else if (['heatmap'].includes(type)) {
-          distances = points.map((dp, i) => Number(Math.abs((dp.x + dp.width / 2- coords.x) ** 2 + (dp.y + dp.height / 2 - coords.y) ** 2)));
+          distances = points.map((dp, i) => Number(Math.abs((dp.x + dp.width / 2 - coords.x) ** 2 + (dp.y + dp.height / 2 - coords.y) ** 2)));
         }
         else {
           distances = points.map((dp, i) => Number(Math.abs((dp.x - coords.x) ** 2 + (dp.y - coords.y) ** 2)));

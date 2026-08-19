@@ -97,7 +97,15 @@ export class PathShape extends Shape {
   }
 
   render() {
-    const altStyleInfo = { stroke: "red" };
+    const altStyleInfo: Record<string, string> = {};
+    if (this.paraview.paraState.config.marker.highlightStyle !== 'No highlight') {
+      if (this.paraview.paraState.config.marker.isChangeThresholdHighlightColor) {
+        altStyleInfo["stroke"] = "red"
+      }
+      if (this.paraview.paraState.config.marker.isMakeThresholdHighlightDashed) {
+        altStyleInfo["stroke-dasharray"] = "9, 9"
+      }
+    }
     return svg`<g>
     <path
         ${this._ref ? ref(this._ref) : undefined}
@@ -106,7 +114,7 @@ export class PathShape extends Shape {
         class=${Object.keys(this._classInfo).length ? classMap(this._classInfo) : nothing}
         role=${this._role || nothing}
         d=${this._pathD}
-         clip-path=${this._options.isClip ? 'url(#inverse-threshold-clip-path)' : nothing}
+        clip-path=${this._options.isClip ? 'url(#inverse-threshold-clip-path)' : nothing}
       ></path>
       <path
         ${this._ref ? ref(this._ref) : undefined}

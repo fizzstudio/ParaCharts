@@ -135,6 +135,11 @@
                         "position": "legend position",
                         "item_order": "legend item order",
                         "direct": "use direct legend"
+                    },
+                    "marker_dialog": {
+                        "highlight_style": "Highlight style",
+                        "highlight_dashed": "Make line dashed",
+                        "highlight_color": "Change line's color"
                     }
                 },
                 "annotations": {

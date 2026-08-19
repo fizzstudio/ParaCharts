@@ -347,7 +347,9 @@ export class DataSymbol extends View {
   content() {
     if (this._options.datapoint) {
       if (this.paraview.paraState.isDatapointContrasted(this._options.datapoint?.seriesKey, this._options.datapoint?.datapointIndex)) {
-        this._styleInfo.stroke = 'red'
+        if (this.paraview.paraState.config.marker.isChangeThresholdHighlightColor) {
+          this._styleInfo.stroke = 'red';
+        }
       }
     }
     this._updateClassInfo();

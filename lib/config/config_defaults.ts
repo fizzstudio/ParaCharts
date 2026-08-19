@@ -216,6 +216,11 @@ export const defaultConfig: Config = {
       fontSize: "10pt",
       useDirectLegends: false,
     },
+    marker: {
+      highlightStyle: "Highlight above",
+      isMakeThresholdHighlightDashed: false,
+      isChangeThresholdHighlightColor: true,
+    },
     popup: {
       opacity: 1,
       leftPadding: 10,

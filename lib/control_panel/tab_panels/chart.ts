@@ -10,6 +10,7 @@ import { FontSettingsDialog } from '../dialogs/font_dialog';
 import { TactileSettingsDialog } from '../dialogs';
 import { PopupSettingsDialog } from '../../view/popup';
 import { LegendSettingsDialog } from '../dialogs/legend_dialog';
+import { MarkerSettingsDialog } from '../dialogs/marker_dialog';
 
 
 @customElement('para-chart-panel')
@@ -18,6 +19,7 @@ export class ChartPanel extends ControlPanelTabPanel {
   protected _tactileDialogRef = createRef<TactileSettingsDialog>();
   protected _popupDialogRef = createRef<PopupSettingsDialog>();
   protected _legendDialogRef = createRef<LegendSettingsDialog>();
+  protected _markerDialogRef = createRef<MarkerSettingsDialog>();
 
   static styles = [
     ...ControlPanelTabPanel.styles,
@@ -129,6 +131,13 @@ export class ChartPanel extends ControlPanelTabPanel {
               Legend settings
             </button>
           </div>
+          <div>
+            <button
+              @click=${() => this._markerDialogRef.value?.show()}
+            >
+              Marker settings
+            </button>
+          </div>
           ${popupsContent.map(columnContent => html`
             <div id="popup-content">
               ${columnContent}
@@ -173,6 +182,11 @@ export class ChartPanel extends ControlPanelTabPanel {
         id="legend-settings-dialog"
         .globalState=${this._globalState}
       ></para-legend-settings-dialog>
+      <para-marker-settings-dialog
+        ${ref(this._markerDialogRef)}
+        id="marker-settings-dialog"
+        .globalState=${this._globalState}
+      ></para-marker-settings-dialog>
     `;
   }
 

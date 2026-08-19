@@ -396,6 +396,30 @@ export class DatapointView extends DataView {
     if (this.paraview.paraState.model!.multi) {
       datapointText = `${this.series.getLabel()} ${datapointText}`
     }
+    if (this.paraview.paraState.thresholds.length > 0) {
+      const allTs = this.paraview.paraState.thresholds;
+      const yVal = this.datapoint.facetValueAsNumber('y')!;
+        const aboveT = allTs.filter(t => t.align > yVal);
+        const belowT = allTs.filter(t => t.align < yVal);
+        const onT = allTs.filter(t => t.align == yVal);
+        if (onT.length > 0) {
+          datapointText = datapointText.concat(` On threshold ${onT[0].label ?? onT[0].align}.`)
+        }
+        else if (aboveT.length > 0 && belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Above threshold ${highestBelowT.label ?? highestBelowT.align} but below threshold ${lowestAboveT.label ?? lowestAboveT.align}.`)
+        }
+        else if (aboveT.length > 0) {
+          const lowestAboveT = aboveT.sort((a, b) => a.align - b.align)[0]!;
+          datapointText = datapointText.concat(` Below threshold ${lowestAboveT.label ?? lowestAboveT.align}.`)
+        }
+        else if (belowT.length > 0) {
+          const highestBelowT = belowT.sort((a, b) => b.align - a.align)[0]!;
+          datapointText = datapointText.concat(` Above threshold ${highestBelowT.label ?? highestBelowT.align}.`)
+        }
+    }
+
     let x = this.x;
     let y = this.y;
     let color = this.colorIndex;
