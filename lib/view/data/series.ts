@@ -2,7 +2,7 @@ import { ref } from 'lit/directives/ref.js';
 import { type StyleInfo } from 'lit/directives/style-map.js';
 import { type ClassInfo } from 'lit/directives/class-map.js';
 import { TemplateResult } from 'lit';
-import { strToId } from '@fizz/paramanifest';
+import { strToId } from '@fizz/chartsignal-internal';
 import { Container } from '../base_view';
 import { type DataLayer } from '../layers/data/data_layer';
 import { DataView } from './data'

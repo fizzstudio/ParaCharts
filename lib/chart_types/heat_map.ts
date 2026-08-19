@@ -1,5 +1,5 @@
 import { type Datapoint } from '@fizz/paramodel';
-import { type ChartType } from "@fizz/paramanifest";
+import { type ChartType } from "@fizz/chartsignal-internal";
 import { PlaneChartInfo } from './plane_chart';
 import { type ParaState } from '../state';
 

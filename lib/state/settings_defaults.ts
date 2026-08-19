@@ -15,7 +15,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { SettingsInput } from '../config/config_types';
-import { ChartType } from '@fizz/paramanifest';
+import { ChartType } from '@fizz/chartsignal-internal';
 
 // Per-chart-type default settings outside of the chart's own setting group
 export const chartTypeDefaults: Partial<{ [Property in ChartType]: SettingsInput }> = {

@@ -21,7 +21,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Unsubscribe } from '@lit-app/state';
 import { Logger, getLogger } from '@fizz/logger';
-import { type ChartType, isPastryType, strToId } from '@fizz/paramanifest';
+import { type ChartType, isPastryType, strToId } from '@fizz/chartsignal-internal';
 import { PointerEventManager } from './pointermanager';
 import { type ParaChart } from '../parachart/parachart';
 import { ParaComponent, type AriaLive } from '../components';
@@ -503,6 +503,9 @@ export class ParaView extends ParaComponent implements ViewContext {
 
   async jimReady() {
     await this._jimReadyPromise;
+  }
+
+  private _resetJimReady() {
     this._jimReadyPromise = new Promise((resolve, reject) => {
       this._jimReadyResolver = resolve;
       this._jimReadyRejector = reject;
@@ -553,6 +556,7 @@ export class ParaView extends ParaComponent implements ViewContext {
 
   async noticePosted(key: string, value: any) {
     if (key === 'setData') {
+      this._resetJimReady();
       await this._dataUpdated();
     }
   }
@@ -562,7 +566,7 @@ export class ParaView extends ParaComponent implements ViewContext {
     try {
       this._paraState.chartInfo.setParaView(this);
       this._paraState.comboChartInfo?.setParaView(this);
-      this.createDocumentView();
+      await this.createDocumentView();
       if (this.paraChart.headless) {
         await this.addJIMSeriesSummaries();
       }
@@ -887,23 +891,22 @@ export class ParaView extends ParaComponent implements ViewContext {
     }
   }
 
-  createDocumentView() {
+  async createDocumentView() {
     // Wait for browser fonts to finish loading and remeasure text-dependent sizes.
     if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => {
-        this._documentView = new DocumentView(this);
-        this._documentView.init();
-        this.computeViewBox();
-        // The style manager may get declaration values from chart objects
-        this.paraChart.styleManager.update();
-        // Ensure defs container is present before adding defs
-        // register/remove pattern defs based on current palette
-        if (this._paraState.colors.palette?.isPattern) {
-          this._registerPatternDefs();
-        } else {
-          this._removePatternDefs();
-        }
-      }).catch(() => { /* ignore font-load failures */ });
+      await document.fonts.ready.catch(() => { /* ignore font-load failures */ });
+    }
+    this._documentView = new DocumentView(this);
+    this._documentView.init();
+    this.computeViewBox();
+    // The style manager may get declaration values from chart objects
+    this.paraChart.styleManager.update();
+    // Ensure defs container is present before adding defs
+    // register/remove pattern defs based on current palette
+    if (this._paraState.colors.palette?.isPattern) {
+      this._registerPatternDefs();
+    } else {
+      this._removePatternDefs();
     }
   }
 
@@ -1031,8 +1034,8 @@ export class ParaView extends ParaComponent implements ViewContext {
     pruneComments(svg.childNodes);
     toPrune.forEach(c => c.remove());
 
-    // Remove the selection layer
-    svg.lastElementChild!.lastElementChild!.children[5].remove();
+    // Selection state is interactive UI and should not appear in exported SVGs.
+    svg.querySelector('#selection-layer')?.remove();
 
     svg.removeAttribute('width');
     svg.removeAttribute('height');

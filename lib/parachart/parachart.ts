@@ -20,7 +20,7 @@ import { createRef, ref } from 'lit/directives/ref.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { Logger, getLogger } from '@fizz/logger';
-import { type ChartType } from '@fizz/paramanifest'
+import { type ChartType } from '@fizz/chartsignal-internal'
 import { PairAnalyzerConstructor, SeriesAnalyzerConstructor } from '@fizz/paramodel';
 import { ParaComponent } from '../components';
 import { ConfigSetting, SettingsInput } from '../config/config_types';
@@ -86,6 +86,7 @@ export class ParaChart extends ParaComponent {
   protected _hasFocus = false;
   private _brailleTranslation = new BrailleTranslationService();
   private _activeBrailleProvider?: BrailleTranslationProvider;
+  private _pollTimer: ReturnType<typeof setInterval> | undefined;
 
   constructor(
     seriesAnalyzerConstructor?: SeriesAnalyzerConstructor,
@@ -157,11 +158,6 @@ export class ParaChart extends ParaComponent {
         if (this.manifest && !this.headless) {
           this.runLoader(this.manifest, this.manifestType, true, undefined, true, this.config).then(() => {
             this.log.info('ParaCharts fully initialized');
-            if (this.pollInterval && this.manifestType === 'url') {
-              setInterval(() => {
-                this.runLoader(this.manifest, this.manifestType, true, undefined, true, this.config);
-              }, this.pollInterval * 1000);
-            }
             this._scrollyteller = new Scrollyteller(this);
           });
         } else if (this.getElementsByTagName("table")[0]) {
@@ -269,8 +265,35 @@ export class ParaChart extends ParaComponent {
     this.paraView.showAriaLiveHistory();
   }
 
+  private _stopPolling(): void {
+    if (this._pollTimer !== undefined) {
+      clearInterval(this._pollTimer);
+      this._pollTimer = undefined;
+    }
+  }
+
+  private _startPolling(): void {
+    if (
+      this._pollTimer !== undefined
+      || !this.isConnected
+      || this.headless
+      || !this.manifest
+      || this.manifestType !== 'url'
+      || !Number.isFinite(this.pollInterval)
+      || this.pollInterval <= 0
+      || this._paraState.dataState !== 'complete'
+    ) {
+      return;
+    }
+
+    this._pollTimer = setInterval(() => {
+      void this.runLoader(this.manifest, this.manifestType, true, undefined, true, this.config);
+    }, this.pollInterval * 1000);
+  }
+
   connectedCallback() {
     super.connectedCallback();
+    this._startPolling();
     if (this._styleManager) return;
     this._globalState.init();
     this.isControlPanelOpen = this._paraState.config.controlPanel.isControlPanelDefaultOpen;
@@ -352,7 +375,18 @@ export class ParaChart extends ParaComponent {
     }
   }
 
+  disconnectedCallback(): void {
+    this._stopPolling();
+    super.disconnectedCallback();
+  }
+
   willUpdate(changedProperties: PropertyValues<this>) {
+    const pollingChanged = changedProperties.has('manifest')
+      || changedProperties.has('manifestType')
+      || changedProperties.has('pollInterval');
+    if (pollingChanged) {
+      this._stopPolling();
+    }
     // Don't load a manifest before the paraview has rendered
     if (changedProperties.has('manifest') && this.manifest !== '' && this._paraViewRef.value) {
       console.log(`manifest changed: ${this.manifest}`);
@@ -368,6 +402,9 @@ export class ParaChart extends ParaComponent {
         this._paraState.updateConfig(draft => {
           SettingsManager.set(path, value, draft);
         }));
+    }
+    if (pollingChanged) {
+      this._startPolling();
     }
   }
 
@@ -451,6 +488,7 @@ export class ParaChart extends ParaComponent {
       // this should be called after chart is rendered, as final step
       this.enableScrollytelling();
     }
+    this._startPolling();
   }
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting) {

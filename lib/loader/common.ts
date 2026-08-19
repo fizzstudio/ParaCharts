@@ -1,4 +1,4 @@
-import { type Manifest, type JIMManifest, type Dataset } from '@fizz/paramanifest';
+import { type Manifest, type JIMManifest, type Dataset } from '@fizz/chartsignal-internal';
 
 export type { Manifest, JIMManifest };
 

@@ -41,14 +41,11 @@ export default defineConfig({
   },
 
   test: {
-    dangerouslyIgnoreUnhandledErrors: true,
-
     projects: [
       {
         test: {
           name: 'unit',
           include: ['src/tests/unit/**/*.test.ts'],
-          exclude: ['src/tests/unit/state/preference_manager.test.ts'],
           environment: 'happy-dom'
         }
       },
@@ -57,10 +54,11 @@ export default defineConfig({
         test: {
           name: 'browser',
           include: ['src/tests/browser/**/*.test.ts'],
+          fileParallelism: false,
           browser: {
             enabled: true,
             provider: 'playwright',
-            name: 'chromium',
+            instances: [{ browser: 'chromium' }],
             headless: true
           }
         }
@@ -79,7 +77,7 @@ export default defineConfig({
       'lit/static-html.js',
       '@lit-app/state',
       'immer',
-      '@fizz/paramanifest',
+      '@fizz/chartsignal-internal',
       '@fizz/parasummary',
       '@fizz/chart-classifier-utils',
       '@fizz/ui-components',

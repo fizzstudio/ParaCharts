@@ -1,6 +1,6 @@
 {
   "name": "@fizz/paracharts",
-  "version": "0.39.1",
+  "version": "0.41.0",
   "description": "Not quite Parable Charts",
   "contributors": [
     {
@@ -12,7 +12,7 @@
     {
       "name": "Simon Varey",
       "email": "simon@fizz.studio",
-      "url": "https://github.com/simonvarey",
+      "url": "https://fizz.studio",
       "affiliation": "Fizz Studio"
     },
     {
@@ -38,6 +38,12 @@
       "email": "ryan@fizz.studio",
       "url": "https://github.com/RyanMcCleary",
       "affiliation": "Fizz Studio"
+    },
+    {
+      "name": "Julianna Langston",
+      "email": "julie.langston@gmail.com",
+      "url": "https://github.com/julianna-langston/chart2music",
+      "affiliation": "Chart2Music"
     }
   ],
   "license": "AGPL-3.0-or-later",
@@ -82,7 +88,7 @@
     "pubminor": "npm version minor && npm publish",
     "pubmajor": "npm version major && npm publish",
     "docs:generate": "npm run config:generate && tsc && api-extractor run --local --verbose && npm run docs:api && npm run docs:pages",
-    "docs:check": "git diff --exit-code -- lib/config/config_defaults.ts lib/config/config_metadata.ts lib/config/config_types.ts etc/paracharts.api.md",
+    "docs:check": "git diff --exit-code -- lib/config/config_defaults.ts lib/config/config_metadata.ts lib/config/config_types.ts etc/paracharts.api.md etc/paracharts.ai.api.md",
     "docs:dev": "npm run docs:generate && vitepress dev docs",
     "docs:build": "npm run docs:generate && vitepress build docs",
     "docs:preview": "vitepress preview docs"
@@ -97,7 +103,7 @@
   "types": "./dist/paracharts.d.ts",
   "devDependencies": {
     "@fizz/chart-data": "^2.5.10",
-    "@fizz/test-utils": "^0.2.0",
+    "@fizz/test-utils": "^0.4.7",
     "@microsoft/api-documenter": "^7.25.11",
     "@microsoft/api-extractor": "^7.47.6",
     "@microsoft/api-extractor-model": "^7.33.10",
@@ -129,12 +135,11 @@
     "@fizz/chart-classifier-utils": "^0.17.0",
     "@fizz/clustering": "^0.16.0",
     "@fizz/dataframe": "^0.27.2",
-    "@fizz/jimerator": "^0.20.1",
+    "@fizz/jimerator": "^0.20.2",
     "@fizz/logger": "^0.1.0",
     "@fizz/number-scaling-rounding": "^0.6.1",
-    "@fizz/paramanifest": "^0.12.1",
-    "@fizz/paramodel": "^0.8.22",
-    "@fizz/parasummary": "^0.17.3",
+    "@fizz/paramodel": "^0.8.23",
+    "@fizz/parasummary": "^0.17.4",
     "@fizz/simple-statistics": "^7.10.0",
     "@fizz/sparkbraille-component": "^0.5.0",
     "@fizz/templum": "^0.5.9",

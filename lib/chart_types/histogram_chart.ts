@@ -1,4 +1,4 @@
-import { type ChartType } from "@fizz/paramanifest";
+import { type ChartType } from "@fizz/chartsignal-internal";
 import { PlaneChartInfo } from './plane_chart';
 import { type ParaState } from '../state';
 import { DeepReadonly, type TypeHistogramConfig } from "../config/config_types";
@@ -63,7 +63,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
     const max = this._yRangeInfo!.interval.end; // this._labelInfo.max!;
 
     this._paraState.settingControls.insert(
-      `type.${this._type}.minYValue`,
+      `type.${this.configType}.minYValue`,
       undefined,
       (value: any) => value === 'unset'
         ? min
@@ -79,7 +79,7 @@ export class HistogramChartInfo extends PlaneChartInfo {
           { err: `Min y-value (${value}) must be less than ${min}` } : {};
       });
     this._paraState.settingControls.insert(
-      `type.${this._type}.maxYValue`,
+      `type.${this.configType}.maxYValue`,
       undefined,
       (value: any) => value === 'unset'
         ? max

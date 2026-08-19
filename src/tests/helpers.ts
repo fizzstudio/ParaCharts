@@ -1,5 +1,4 @@
 import * as shadow from 'shadow-dom-testing-library';
-import { Manifest } from '@fizz/paramanifest';
 import { waitFor } from '@testing-library/dom';
 import '../../lib/index';
 

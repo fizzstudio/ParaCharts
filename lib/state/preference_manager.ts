@@ -311,7 +311,7 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
       this.save({ theme: newVal as ThemeMode });
       this._programmaticUpdate = true;
       this._paraState.updateConfig(draft => {
-        draft.color.themeSource = (newVal === 'system' ? 'system' : 'user') as ColorPrefSource;
+        draft.color.themeSource = (newVal === 'auto' ? 'system' : 'user') as ColorPrefSource;
       });
       this._programmaticUpdate = false;
       this._resolve();
@@ -347,7 +347,7 @@ export class ColorPrefManager extends PreferenceManager<StoredColorPrefs> {
       if (this._programmaticUpdate) return;
       this.save({ lowVisionThemeDefault: newVal as ThemeMode });
       if (this._paraState.config.ui.isLowVisionModeEnabled) {
-        if (newVal !== 'system') {
+        if (newVal !== 'auto') {
           this.setModeDefault('themeMode', newVal as 'dark' | 'light', true);
         } else {
           this.clearModeDefault('themeMode');

@@ -1,4 +1,4 @@
-import schema from '../../node_modules/@fizz/paramanifest/schema/manifest_bundle.schema.json' with { type: 'json' };
+import schema from '../../node_modules/@fizz/chartsignal-internal/schema/manifest_bundle.schema.json' with { type: 'json' };
 
 type AnySchema = any;
 

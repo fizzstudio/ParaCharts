@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Decimal } from 'decimal.js';
 import { type Interval } from '@fizz/chart-classifier-utils';
-import { type ChartType, type Facet } from '@fizz/paramanifest';
+import { type ChartType, type Facet } from '@fizz/chartsignal-internal';
 import { type Datapoint, type PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
 import { BaseChartInfo } from './base_chart';
 import { DatapointNavNodeType, NavNode, NavNodeOptionsType, type NavMap } from '../view/layers/data/navigation';
@@ -133,7 +133,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
     const max = this._yRangeInfo!.interval.end; // this._labelInfo.max!;
 
     this._paraState.settingControls.insert(
-      `type.${this._type}.minYValue`,
+      `type.${this.configType}.minYValue`,
       undefined,
       (value: any) => value === 'unset'
         ? min
@@ -149,7 +149,7 @@ export abstract class PlaneChartInfo extends BaseChartInfo {
           { err: `Min y-value (${value}) must be less than ${min}` } : {};
       });
     this._paraState.settingControls.insert(
-      `type.${this._type}.maxYValue`,
+      `type.${this.configType}.maxYValue`,
       undefined,
       (value: any) => value === 'unset'
         ? max

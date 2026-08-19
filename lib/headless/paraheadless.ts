@@ -6,7 +6,7 @@ import { type SettingsInput } from '../config/config_types';
 export { FieldInfo, LoadError, LoadErrorCode, CsvDataType };
 
 /** @public */
-export { type Manifest } from '@fizz/paramanifest';
+export { type Manifest } from '@fizz/chartsignal-internal';
 
 /** @public */
 export type LoadManifestSuccess = {
@@ -128,6 +128,7 @@ export class ParaHeadless {
 
     try {
       await this._paraChart.loaded;
+      await this.jimReady;
       return { success: true };
     } catch (error) {
       if (error instanceof LoadError) {

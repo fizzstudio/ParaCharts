@@ -1,5 +1,5 @@
 import { type Datatype } from '@fizz/dataframe';
-import { ChartType, DisplayType, Facet, Manifest, SeriesManifest } from '@fizz/paramanifest';
+import { ChartType, DisplayType, Facet, Manifest, SeriesManifest } from '@fizz/chartsignal-internal';
 import { Logger, getLogger } from '@fizz/logger';
 import { concatenateSeriesLabels, firstDataset } from './common';
 

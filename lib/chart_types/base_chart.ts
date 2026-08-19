@@ -16,7 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.*/
 
 import { Logger, getLogger } from '@fizz/logger';
 import { Datapoint } from '@fizz/paramodel';
-import { ChartType, Facet } from '@fizz/paramanifest';
+import { ChartType, Facet } from '@fizz/chartsignal-internal';
 import { Summarizer, formatBox, Highlight, summarizerFromModel, HighlightedSummary } from '@fizz/parasummary';
 import { CardinalDirection, ConfigSetting, DeepReadonly } from '../config/config_types';
 import { ConfigGroup, Direction, HorizDirection } from '../config/config_types';
@@ -112,7 +112,17 @@ export abstract class BaseChartInfo {
   }
 
   get managedSettingKeys() {
-    return [`type.${this._type}`];
+    return [`type.${this.configType}`];
+  }
+
+  get configType(): ChartType {
+    const aliases: Partial<Record<ChartType, ChartType>> = {
+      candlestick: 'bar',
+      graph: 'line',
+      lollipop: 'bar',
+      stepline: 'line',
+    };
+    return aliases[this._type] ?? this._type;
   }
 
   get config(): DeepReadonly<ConfigGroup> {
