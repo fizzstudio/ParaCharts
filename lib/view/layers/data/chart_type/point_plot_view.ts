@@ -18,7 +18,7 @@ import { svg } from 'lit';
 import { Datapoint, enumerate } from '@fizz/paramodel';
 import { formatBox } from '@fizz/parasummary';
 import { type SeriesView } from '../../../data/series';
-import { linearRegression } from '@fizz/simple-statistics';
+import { linearRegression } from '@fizz/chartsignal-internal';
 import { View } from '../../../base_view';
 import { Bezier } from '../../../../common';
 import { PointChartInfo } from '../../../../chart_types/point_chart';
