@@ -21,7 +21,8 @@ enablePatches();
 
 import { Logger, getLogger } from '@fizz/logger';
 import {
-  dataFromManifest, type AllSeriesData, type ChartType, isPastryType, isVennType, type Point
+  dataFromManifest, type AllSeriesData, type ChartType, isPastryType, isVennType, type Point,
+  numberToScaledNumberRounded
 } from '@fizz/chartsignal-internal';
 import { Jimerator } from '@fizz/jimerator';
 import {
@@ -40,7 +41,6 @@ import {
 } from '@fizz/parasummary';
 import { clusterObject } from '@fizz/clustering';
 import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
-import { numberToScaledNumberRounded } from '@fizz/number-scaling-rounding';
 
 import { BaseState, SettingObserver } from './base_state';
 import {
