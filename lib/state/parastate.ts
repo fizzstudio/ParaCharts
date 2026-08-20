@@ -18,9 +18,10 @@ import { property } from '@lit-app/state';
 import papa from 'papaparse';
 import { produceWithPatches, enablePatches, applyPatches, type Patch } from 'immer';
 enablePatches();
+
 import { Logger, getLogger } from '@fizz/logger';
 import {
-  dataFromManifest, type AllSeriesData, type ChartType, isPastryType, isVennType
+  dataFromManifest, type AllSeriesData, type ChartType, isPastryType, isVennType, type Point
 } from '@fizz/chartsignal-internal';
 import { Jimerator } from '@fizz/jimerator';
 import {
@@ -38,6 +39,9 @@ import {
   formatBox
 } from '@fizz/parasummary';
 import { clusterObject } from '@fizz/clustering';
+import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
+import { numberToScaledNumberRounded } from '@fizz/number-scaling-rounding';
+
 import { BaseState, SettingObserver } from './base_state';
 import {
   FORMAT_CONTEXT_SETTINGS, FormatContext,
@@ -54,17 +58,14 @@ import { DataSymbols } from '../view/symbol';
 import { SeriesPropertyManager } from './series_properties';
 import { actionMap } from './action_map';
 import { KeymapManager } from './keymap_manager';
-import { SequenceInfo, SeriesAnalysis } from '@fizz/series-analyzer';
 import { Popup } from '../view/popup';
 import { type DatapointCursor } from '../view/layers/data/navigation';
-import { type Point } from '@fizz/chart-classifier-utils';
 import { type PathShape } from '../view/shape';
 import { type GlobalState } from './global_state';
 import { type BaseChartInfo, chartInfoClasses, ComboChartInfo, LineChartInfo, ScatterChartInfo } from '../chart_types';
 import { firstDataset, type Manifest } from '../loader/common';
 import { ClusterShellView } from '../view/layers';
 import { computeLabels } from '../common/axisinfo';
-import { numberToScaledNumberRounded } from '@fizz/number-scaling-rounding';
 import { LegendItem } from '../view/legend';
 import { type BubbleChartInfo } from '../chart_types/bubble_chart';
 

@@ -79,7 +79,6 @@ export default defineConfig({
       'immer',
       '@fizz/chartsignal-internal',
       '@fizz/parasummary',
-      '@fizz/chart-classifier-utils',
       '@fizz/ui-components',
       '@fizz/jimerator',
       '@fizz/paramodel',
@@ -87,8 +86,7 @@ export default defineConfig({
       '@fizz/clustering',
       '@fizz/templum',
       'decimal.js',
-      'papaparse',
-      '@fizz/simple-statistics'
+      'papaparse'
     ]
   }
 });

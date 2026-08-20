@@ -23,7 +23,6 @@ import { PointChartInfo } from './point_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state';
 import { NavNode } from '../view/layers';
 import { DataSymbols } from '../view/symbol';
-import { Interval } from '@fizz/chart-classifier-utils';
 import { ConfigSetting } from '../config/config_types';
 import { AxisRangeInfo } from './plane_chart';
 import { LegendItem } from '../view/legend';

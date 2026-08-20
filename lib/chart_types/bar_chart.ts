@@ -20,7 +20,6 @@ import { ChartType, strToId } from '@fizz/chartsignal-internal';
 import { enumerate, Box, Series } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
-import { Interval } from '@fizz/chart-classifier-utils';
 import { PlaneChartInfo, computeAxisRange, AxisRangeInfo } from './plane_chart';
 import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax } from '../state';
 import { ConfigSetting, DeepReadonly, TypeBarConfig } from '../config/config_types';
