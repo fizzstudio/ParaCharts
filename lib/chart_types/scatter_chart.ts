@@ -6,7 +6,8 @@ import { DatapointNavNodeType, NavNode, NavNodeOptionsType, ScatterPointNavNodeO
 import { Datapoint, PlaneModel } from '@fizz/paramodel';
 import { DataSymbols } from '../view/symbol';
 import { LegendItem } from '../view/legend';
-import { CardinalDirection } from '../common_exports';
+import { CardinalDirection, LegendConfig } from '../common_exports';
+import { SettingsManager } from '../state';
 
 
 export class ScatterChartInfo extends PointChartInfo {
@@ -164,10 +165,11 @@ export class ScatterChartInfo extends PointChartInfo {
 
   legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
     const model = this._paraState.model!;
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const types = new DataSymbols().types;
     if (model.multi || !this.clustering) {
       const seriesKeys = [...model.seriesKeys];
-      if (this._paraState.config.legend.itemOrder === 'alphabetical') {
+      if (config.itemOrder === 'alphabetical') {
         seriesKeys.sort();
       }
       const items = seriesKeys.map((key, i) => ({
@@ -177,7 +179,12 @@ export class ScatterChartInfo extends PointChartInfo {
         symbol: types[i],
         symbolOptions: { lighten: true }
       }));
-      return [{ position: "north", items: items }];
+      const legendItems = [];
+      const position = config.position;
+      if (config.isAlwaysDrawLegend) {
+        legendItems.push({ position: position, items: items });
+      }
+      return legendItems;
     }
     else {
       const items = this.clustering.map((c, i) => ({
@@ -188,7 +195,12 @@ export class ScatterChartInfo extends PointChartInfo {
         symbolOptions: { lighten: true },
         clusterIndex: i
       }))
-      return [{ position: "north", items: items }];
+      const legendItems = [];
+      const position = config.position;
+      if (config.isAlwaysDrawLegend) {
+        legendItems.push({ position: position, items: items });
+      }
+      return legendItems;
     }
   }
 }

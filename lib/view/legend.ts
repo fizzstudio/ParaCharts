@@ -300,7 +300,7 @@ export class Legend extends Container(View) {
         this._grid.children[2 * i + 1].centerY = newY;
         bundledItems.push([this._grid.children[2 * i], this._grid.children[2 * i + 1]])
       }
-      const sortedItems = bundledItems.toSorted((a, b) => a[2].y - b[2].y);
+      const sortedItems = bundledItems.toSorted((a, b) => a[1].y - b[1].y);
       for (let i = 0; i < sortedItems.length; i++) {
         for (let j = i + 1; j < sortedItems.length; j++) {
           const child1 = sortedItems[i][1];

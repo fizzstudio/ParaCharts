@@ -965,6 +965,10 @@ export interface TypePastryConfig extends ConfigGroup {
   explode: string;
   /** Distance for exploded slices */
   explodeDistance: number;
+  /** Format for slice labels */
+  sliceLabelFormat: LabelFormat;
+  /** Format for slice values */
+  sliceValueFormat: LabelFormat;
   /** Shared inside-label settings for radial charts. */
   insideLabels: TypePastryInsidelabelsConfig;
   /** Shared outside-label settings for radial charts. */

@@ -1065,6 +1065,8 @@ export interface TypePastryConfig extends ConfigGroup {
     insideLabels: TypePastryInsidelabelsConfig;
     orientationAngleOffset: number;
     outsideLabels: TypePastryOutsidelabelsConfig;
+    sliceLabelFormat: LabelFormat;
+    sliceValueFormat: LabelFormat;
 }
 
 // @public

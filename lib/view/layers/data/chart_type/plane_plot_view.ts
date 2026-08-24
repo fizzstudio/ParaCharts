@@ -60,8 +60,7 @@ export abstract class PlanePlotView extends DataLayer {
   }
 
   settingDidChange(path: string, oldValue?: ConfigSetting, newValue?: ConfigSetting): void {
-    if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`, 'legend.isAlwaysDrawLegend',
-      'legend.useDirectLegends', 'legend.itemOrder', 'legend.position'].includes(path)) {
+    if ([`type.${this.paraview.paraState.type}.minYValue`, `type.${this.paraview.paraState.type}.maxYValue`].includes(path)) {
       this.paraview.paraState.createChartInfo();
       this.paraview.paraState.resetLegendID();
       this.paraview.paraState.chartInfo.setup().then(() => {

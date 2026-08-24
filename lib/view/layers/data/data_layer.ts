@@ -182,6 +182,14 @@ export abstract class DataLayer extends PlotLayer {
         this.paraview.requestUpdate();
       }
     }
+    if (['legend.isAlwaysDrawLegend', 'legend.useDirectLegends', 'legend.itemOrder', 'legend.position'].includes(path)) {
+      this.paraview.paraState.createChartInfo();
+      this.paraview.paraState.resetLegendID();
+      this.paraview.paraState.chartInfo.setup().then(() => {
+        this.paraview.createDocumentView();
+        this.paraview.requestUpdate();
+      })
+    }
     super.settingDidChange(path, oldValue, newValue);
   }
 

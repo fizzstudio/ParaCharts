@@ -328,6 +328,8 @@ export const defaultConfig: Config = {
         orientationAngleOffset: 90,
         explode: "",
         explodeDistance: 20,
+        sliceLabelFormat: "raw",
+        sliceValueFormat: "raw",
         insideLabels: {
           format: "raw",
           position: 0.85,
@@ -378,6 +380,8 @@ export const defaultConfig: Config = {
         orientationAngleOffset: 90,
         explode: "",
         explodeDistance: 20,
+        sliceLabelFormat: "raw",
+        sliceValueFormat: "raw",
         insideLabels: {
           format: "raw",
           position: 0.9,

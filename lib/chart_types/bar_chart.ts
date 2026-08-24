@@ -20,10 +20,9 @@ import { ChartType, strToId } from '@fizz/chartsignal-internal';
 import { enumerate, Box, Series } from '@fizz/paramodel';
 import { formatBox, formatXYDatapoint, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
-import { Interval } from '@fizz/chart-classifier-utils';
 import { PlaneChartInfo, computeAxisRange, AxisRangeInfo } from './plane_chart';
-import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax } from '../state';
-import { CardinalDirection, ConfigSetting, DeepReadonly, TypeBarConfig } from '../config/config_types';
+import { datapointIdToCursor, type ParaState, queryMessages, describeAdjacentDatapoints, describeSelections, getDatapointMinMax, SettingsManager } from '../state';
+import { CardinalDirection, ConfigSetting, DeepReadonly, LegendConfig, TypeBarConfig } from '../config/config_types';
 import { type Label } from '../view/label';
 import { LegendItem } from '../view/legend';
 
@@ -321,11 +320,12 @@ export class BarChartInfo extends PlaneChartInfo {
 
   legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
     const model = this._paraState.model!;
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const seriesKeys = enumerate([...model.seriesKeys]);
-    if (this._paraState.config.legend.itemOrder === 'alphabetical') {
+    if (config.itemOrder === 'alphabetical') {
       seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
     }
-    else if (this._paraState.config.legend.itemOrder === 'reverseAlphabetical') {
+    else if (config.itemOrder === 'reverseAlphabetical') {
       seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
     }
     const items = seriesKeys.map(key => ({
@@ -333,7 +333,12 @@ export class BarChartInfo extends PlaneChartInfo {
       seriesKey: key[0],
       colorIndex: this._paraState.seriesProperties!.properties(key[0]).colorIndex,
     }));
-    return [{ position: this._paraState.config.legend.position, items: items }]
+    const legendItems = [];
+    const position = config.position;
+    if (config.isAlwaysDrawLegend) {
+      legendItems.push({ position: position, items: items });
+    }
+    return legendItems;
   }
 
   // TODO: localize this text output

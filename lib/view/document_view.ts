@@ -20,8 +20,8 @@ import { Logger, getLogger } from '@fizz/logger';
 import { PlaneChartInfo } from '../chart_types';
 import { View, Container, Padding } from './base_view';
 import { Label } from './label';
-import { ParaState } from '../state';
-import { CardinalDirection, ConfigSetting } from '../config/config_types';
+import { ParaState, SettingsManager } from '../state';
+import { CardinalDirection, ConfigSetting, LegendConfig } from '../config/config_types';
 import { PlotLayerManager } from './layers';
 import { HorizAxis, LabelOverlapError, VertAxis, type AxisCoord } from './axis';
 import { Legend } from './legend';
@@ -152,24 +152,6 @@ export class DocumentView extends Container(View) {
     this._positionTitles();
 
     this.createLegends()
-    /*
-    if (this._shouldAddLegend && this._paraState.config.legend.position === 'north' && this._paraState.type !== 'venn') {
-      this.createLegend('north');
-    }
-
-    // Create any west legend bc it affects the position of the vert axis
-    if (this._shouldAddLegend && this._paraState.config.legend.position === 'west' && this._paraState.type !== 'venn') {
-      this.createLegend('west');
-    }
-
-    if (this._shouldAddLegend && this._paraState.config.legend.position === 'south' && this._paraState.type !== 'venn') {
-      this.createLegend('south');
-    }
-
-    if (true) {
-      this.createLegend('east');
-    }
-*/
     // const horizAxisPos = this._paraState.settings.axis.horiz.position;
 
     const horizFacet = this.paraview.paraState.chartInfo.getFacetForOrientation('horiz');
@@ -212,25 +194,26 @@ export class DocumentView extends Container(View) {
       this._directLabelStrip.updateSize();
     }
 
-
+    const plotWidth = this._width
+      - (this._vertAxis?.width ?? 0)
+      - (this._secondaryVertAxis?.width ?? 0)
+      - (this._directLabelStrip?.width ?? 0)
+      - (this._legends.east?.map(l => l.paddedWidth).reduce((acc, curr) => acc + curr, 0) ?? 0)
+      - (this._legends.west?.map(l => l.paddedWidth).reduce((acc, curr) => acc + curr, 0) ?? 0)
+    const plotHeight = this._height
+      - (this._titleLabel?.paddedHeight ?? 0)
+      - (this._subtitleLabel?.paddedHeight ?? 0)
+      - (this._horizAxis?.height ?? 0)
+      - (this._legends.north?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) ?? 0)
+      - (this._legends.south?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) ?? 0);
 
     if (this._paraState.config.axis.horiz.isDrawAxis && horizFacet) {
-      this._createHorizAxis(horizFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, this._width
-        - (this._vertAxis?.width ?? 0)
-        - (this._secondaryVertAxis?.width ?? 0)
-        - (this._directLabelStrip?.width ?? 0)
-        - (this._legends.east?.map(l => l.width).reduce((acc, curr) => acc + curr, 0) ?? this._legends.west?.map(l => l.width).reduce((acc, curr) => acc + curr, 0) ?? 0));
+      this._createHorizAxis(horizFacet, this.paraview.paraState.chartInfo as PlaneChartInfo, plotWidth);
       this.append(this._horizAxis!);
     }
 
     if (comboFacet) {
-      this._createSecondaryVertAxis(comboFacet, this.paraview.paraState.comboChartInfo as PlaneChartInfo, this._height
-        - (this._titleLabel?.paddedHeight || 0)
-        - (this._subtitleLabel?.paddedHeight || 0)
-        - (this._legends.north?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) || 0)
-        - (this._legends.south?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) || 0)
-        - (this._horizAxis?.height || 0)
-      );
+      this._createSecondaryVertAxis(comboFacet, this.paraview.paraState.comboChartInfo as PlaneChartInfo, plotHeight);
       this.append(this._secondaryVertAxis!);
     }
 
@@ -251,17 +234,6 @@ export class DocumentView extends Container(View) {
       ?? this._paraState.config.chart.title.text;
     //?? `${this._vertAxis.titleText} by ${this._horizAxis.titleText}`;
 
-    const plotWidth = this._width
-      - (this._vertAxis?.width ?? 0)
-      - (this._secondaryVertAxis?.width ?? 0)
-      - (this._directLabelStrip?.width ?? 0)
-      - (this._legends.east?.map(l => l.width).reduce((acc, curr) => acc + curr, 0) ?? this._legends.west?.map(l => l.width).reduce((acc, curr) => acc + curr, 0) ?? 0);
-    const plotHeight = this._height
-      - (this._legends.north?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) ?? 0)
-      - (this._titleLabel?.paddedHeight ?? 0)
-      - (this._subtitleLabel?.paddedHeight ?? 0)
-      - (this._horizAxis?.height ?? 0)
-      - (this._legends.south?.map(l => l.paddedHeight).reduce((acc, curr) => acc + curr, 0) ?? 0);
     this._chartLayers?.remove();
     this._chartLayers = new PlotLayerManager(this.paraview, plotWidth, plotHeight);
     this.append(this._chartLayers);
@@ -288,24 +260,35 @@ export class DocumentView extends Container(View) {
     if (this._vertAxis) {
       this._vertAxis.addGridRules(this._chartLayers.width);
     }
-    if (this._paraState.config.legend.useDirectLegends) {
-      if (this._legends.east?.length) {
-        for (let legend of this._legends.east) {
+
+    if (this._legends.east?.length) {
+      for (let legend of this._legends.east) {
+        const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, legend.id);
+        if (config.useDirectLegends) {
           legend.makeDirect("east");
         }
       }
-      if (this._legends.west?.length) {
-        for (let legend of this._legends.west) {
+    }
+    if (this._legends.west?.length) {
+      for (let legend of this._legends.west) {
+        const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, legend.id);
+        if (config.useDirectLegends) {
           legend.makeDirect("west");
         }
       }
-      if (this._legends.north?.length) {
-        for (let legend of this._legends.north) {
+    }
+    if (this._legends.north?.length) {
+      for (let legend of this._legends.north) {
+        const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, legend.id);
+        if (config.useDirectLegends) {
           legend.makeDirect("north");
         }
       }
-      if (this._legends.south?.length) {
-        for (let legend of this._legends.south) {
+    }
+    if (this._legends.south?.length) {
+      for (let legend of this._legends.south) {
+        const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, legend.id);
+        if (config.useDirectLegends) {
           legend.makeDirect("south");
         }
       }
@@ -464,6 +447,7 @@ export class DocumentView extends Container(View) {
   }
 
   protected get _shouldAddLegend(): boolean {
+    //NB: Deprecated, use individual legend() functions in chartInfo files instead
     return this._paraState.config.legend.isAlwaysDrawLegend;
     /*
     return this._paraState.config.legend.isDrawLegend &&

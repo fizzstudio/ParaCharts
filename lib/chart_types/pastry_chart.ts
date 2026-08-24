@@ -20,8 +20,8 @@ import { Datapoint } from '@fizz/paramodel';
 import { formatBox, formatXYDatapointX } from '@fizz/parasummary';
 import { interpolate } from '@fizz/templum';
 import { BaseChartInfo, RiffOrder } from './base_chart';
-import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax } from '../state';
-import { CardinalDirection, directions, HorizDirection } from '../config/config_types';
+import { type ParaState, datapointIdToCursor, queryMessages, describeSelections, getDatapointMinMax, SettingsManager } from '../state';
+import { CardinalDirection, directions, HorizDirection, LegendConfig } from '../config/config_types';
 import { NavLayer, NavNode } from '../view/layers/data/navigation'
 import { LegendItem } from '../view/legend';
 
@@ -68,6 +68,7 @@ export class PastryChartInfo extends BaseChartInfo {
 
   legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
     const series = this._paraState.model!.series[0];
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const xs = series.datapoints.map(dp =>
       formatBox(dp.facetBox('x')!, this._paraState.getFormatType('pieSliceLabel')));
     const ys = series.datapoints.map(dp =>
@@ -78,7 +79,12 @@ export class PastryChartInfo extends BaseChartInfo {
       colorIndex: i,
       datapointIndex: i
     }));
-    return [{ position: this._paraState.config.legend.position, items: items }];
+    const legendItems = [];
+    const position = config.position;
+    if (config.isAlwaysDrawLegend) {
+      legendItems.push({ position: position, items: items });
+    }
+    return legendItems;
   }
 
   shouldDrawTitle(): boolean {

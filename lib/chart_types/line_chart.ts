@@ -20,10 +20,10 @@ import { formatXYDatapoint } from '@fizz/parasummary';
 import { type ChartType } from '@fizz/chartsignal-internal';
 import { enumerate, PlaneDatapoint, PlaneModel } from '@fizz/paramodel';
 import { PointChartInfo } from './point_chart';
-import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax } from '../state';
+import { datapointIdToCursor, type ParaState, queryMessages, describeSelections, describeAdjacentDatapoints, getDatapointMinMax, SettingsManager } from '../state';
 import { NavNode } from '../view/layers';
 import { DataSymbols } from '../view/symbol';
-import { CardinalDirection, ConfigSetting } from '../config/config_types';
+import { CardinalDirection, ConfigSetting, LegendConfig } from '../config/config_types';
 import { AxisRangeInfo } from './plane_chart';
 import { LegendItem } from '../view/legend';
 
@@ -133,15 +133,16 @@ export class LineChartInfo extends PointChartInfo {
 
   legend(): Array<{ position: CardinalDirection, items: LegendItem[] }> {
     const model = this.model!;
+    const config = SettingsManager.getGroupLinkForInstance<LegendConfig>('legend', this._paraState.config, `legend-${0}`) ?? this._paraState.config.legend;
     const seriesKeys = enumerate([...model.seriesKeys]);
     const types = new DataSymbols().types;
-    if (this._paraState.config.legend.itemOrder === 'alphabetical') {
+    if (config.itemOrder === 'alphabetical') {
       seriesKeys.sort((a, b) => a[0].localeCompare(b[0]));
     }
-    else if (this._paraState.config.legend.itemOrder === 'reverseAlphabetical') {
+    else if (config.itemOrder === 'reverseAlphabetical') {
       seriesKeys.sort((a, b) => -1 * a[0].localeCompare(b[0]));
     }
-    else if (this._paraState.config.legend.itemOrder === 'startingOrder') {
+    else if (config.itemOrder === 'startingOrder') {
       const model = this.model as PlaneModel;
       const startChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(0) as PlaneDatapoint).indepBox)!;
       seriesKeys.sort((a, b) =>
@@ -149,7 +150,7 @@ export class LineChartInfo extends PointChartInfo {
         - startChord.find(point => point.seriesKey === a[0])!.facetValueAsNumber("y")!
       );
     }
-    else if (this._paraState.config.legend.itemOrder === 'endingOrder') {
+    else if (config.itemOrder === 'endingOrder') {
       const model = this.model as PlaneModel;
       const endChord = model.getChordAt(model.independentFacetKeys[0], (model.allPoints.at(-1) as PlaneDatapoint).indepBox)!;
       seriesKeys.sort((a, b) =>
@@ -164,7 +165,12 @@ export class LineChartInfo extends PointChartInfo {
       symbol: types[key[1]],
       symbolOptions: { lighten: true }
     }));
-    return [{ position: this._paraState.config.legend.position, items: items }];
+    const legendItems = [];
+    const position = config.position;
+    if (config.isAlwaysDrawLegend) {
+      legendItems.push({ position: position ?? "east", items: items });
+    }
+    return legendItems;
   }
 
   // TODO: localize this text output
